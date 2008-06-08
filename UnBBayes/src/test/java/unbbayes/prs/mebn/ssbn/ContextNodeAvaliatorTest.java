@@ -111,7 +111,7 @@ public class ContextNodeAvaliatorTest{
 		
 		PrOwlIO io = new PrOwlIO(); 
 		try {
-			mebn = io.loadMebn(new File("examples/mebn/StarTrek37.owl"));
+			mebn = io.loadMebn(new File("examples/mebn/StarTrek.owl"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -34,7 +34,7 @@ public class NodeFormulaTreeTest extends TestCase {
 		super.setUp();
 
 		PrOwlIO io = new PrOwlIO(); 
-		mebn = io.loadMebn(new File("examples/mebn/StarTrek30.owl"));
+		mebn = io.loadMebn(new File("examples/mebn/StarTrek.owl"));
 		
 	}
 

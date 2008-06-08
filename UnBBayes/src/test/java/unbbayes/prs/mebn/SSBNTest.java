@@ -34,9 +34,9 @@ public class SSBNTest {
 	public static void main(String[] args) throws Exception {
 		// 0. Comentar o ConsistencyUtilities.hasCycle()
 		// 0.1. Acrescentar um mecanismo que indique uma RV cujo valor é funcional/exclusiva.
-		// 1. Caregar a ontologia StarTrek27.ubf
+		// 1. Caregar a ontologia StarTrek.ubf
 		PrOwlIO io = new PrOwlIO(); 
-		MultiEntityBayesianNetwork net = io.loadMebn(new File("examples/mebn/StarTrek30.owl"));
+		MultiEntityBayesianNetwork net = io.loadMebn(new File("examples/mebn/StarTrek.owl"));
 		
 		System.out.println(net.getName());
 		

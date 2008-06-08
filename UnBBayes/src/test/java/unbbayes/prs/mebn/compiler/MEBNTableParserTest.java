@@ -27,7 +27,7 @@ public class MEBNTableParserTest extends TestCase {
 		System.out.println("-----Load file test-----"); 
 		
 		try{
-			mebn = prOwlIO.loadMebn(new File("examples/mebn/StarTrek37.owl")); 
+			mebn = prOwlIO.loadMebn(new File("examples/mebn/StarTrek.owl")); 
 			Debug.println("LOAD COMPLETE"); 
 		}
 		catch (IOMebnException e){
@@ -65,15 +65,15 @@ public class MEBNTableParserTest extends TestCase {
 		
 		//		 should go all right
 		String tableString =  
-			" if any st.t have( OpSpec = Cardassian | HarmPotential = true ) " + 
+			" if any st.t have( OperatorSpecies = Cardassian | HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" else if any st.z.t have( OpSpec = Romulan & HarmPotential = true ) " +
+			" else if any st.z.t have( OperatorSpecies = Romulan & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
+			" else if any STj have( OperatorSpecies = Unknown & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
+			" else if any STk have( OperatorSpecies = Klingon & HarmPotential = true ) " +
 			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .65 ] " +
-			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
+			" else if any STl have( OperatorSpecies = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " +
 			" else [ Un = 0 , Hi = 0 , Medium = 0 , Low = 1 ] ";
 		
@@ -96,15 +96,15 @@ public class MEBNTableParserTest extends TestCase {
 	public void testConsistencyNoDefDistro() {
 		//		 Should fail, no default distro
 		String tableString =  
-			" if any STi have( OpSpec = Cardassian & HarmPotential = true ) " + 
+			" if any STi have( OperatorSpecies = Cardassian & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" else if any STj have( OpSpec = Romulan & HarmPotential = true ) " +
+			" else if any STj have( OperatorSpecies = Romulan & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = MIN(0;1) , Medium = .01 , Low = .99 ]  " +
-			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
+			" else if any STj have( OperatorSpecies = Unknown & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = MAX(0;.99) ]  " +
-			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
-			"  [ Un = 0.10 , Hi = CARDINALITY(OpSpec)*0.1 , Medium = .15 , Low = 1- (Un + (Hi + Medium)) ] " +
-			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
+			" else if any STk have( OperatorSpecies = Klingon & HarmPotential = true ) " +
+			"  [ Un = 0.10 , Hi = CARDINALITY(OperatorSpecies)*0.1 , Medium = .15 , Low = 1- (Un + (Hi + Medium)) ] " +
+			" else if any STl have( OperatorSpecies = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " ;
 		
 			
@@ -121,15 +121,15 @@ public class MEBNTableParserTest extends TestCase {
 		
 		//		 Should fail, no else clause
 		tableString =  
-			" if any STi have( OpSpec = Cardassian & HarmPotential = true ) " + 
+			" if any STi have( OperatorSpecies = Cardassian & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" if any STj have( OpSpec = Romulan & HarmPotential = true ) " +
+			" if any STj have( OperatorSpecies = Romulan & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
+			" if any STj have( OperatorSpecies = Unknown & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
+			" if any STk have( OperatorSpecies = Klingon & HarmPotential = true ) " +
 			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .65 ] " +
-			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
+			" else if any STl have( OperatorSpecies = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " ;
 		
 			
@@ -151,15 +151,15 @@ public class MEBNTableParserTest extends TestCase {
 
 		//		 Should fail, some state is above 1
 		String tableString =  
-			" if any STi have( OpSpec = Cardassian & HarmPotential = true ) " + 
+			" if any STi have( OperatorSpecies = Cardassian & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" else if any STj have( OpSpec = Romulan & HarmPotential = true ) " +
+			" else if any STj have( OperatorSpecies = Romulan & HarmPotential = true ) " +
 			"  [ Un = 2 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
+			" else if any STj have( OperatorSpecies = Unknown & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
+			" else if any STk have( OperatorSpecies = Klingon & HarmPotential = true ) " +
 			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .65 ] " +
-			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
+			" else if any STl have( OperatorSpecies = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " +
 			" else [ Un = 0 , Hi = 0 , Medium = 0 , Low = 1 ] ";
 		
@@ -174,15 +174,15 @@ public class MEBNTableParserTest extends TestCase {
 
 		//		 Should fail, some state is below 0
 		tableString =  
-			" if any STi have( OpSpec = Cardassian & HarmPotential = true ) " + 
+			" if any STi have( OperatorSpecies = Cardassian & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" else if any STj have( OpSpec = Romulan & HarmPotential = true ) " +
+			" else if any STj have( OperatorSpecies = Romulan & HarmPotential = true ) " +
 			"  [ Un = 2 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
+			" else if any STj have( OperatorSpecies = Unknown & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
+			" else if any STk have( OperatorSpecies = Klingon & HarmPotential = true ) " +
 			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .65 ] " +
-			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
+			" else if any STl have( OperatorSpecies = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " +
 			" else [ Un = 0 , Hi = 0.5 , Medium = -0.5 , Low = 1 ] ";
 		
@@ -204,15 +204,15 @@ public class MEBNTableParserTest extends TestCase {
 		
 		//		 Should fail sum is above 1 in default distro
 		String tableString =  
-			" if any STi have( OpSpec = Cardassian & HarmPotential = true ) " + 
+			" if any STi have( OperatorSpecies = Cardassian & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" else if any STj have( OpSpec = Romulan & HarmPotential = true ) " +
+			" else if any STj have( OperatorSpecies = Romulan & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
+			" else if any STj have( OperatorSpecies = Unknown & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
+			" else if any STk have( OperatorSpecies = Klingon & HarmPotential = true ) " +
 			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .65 ] " +
-			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
+			" else if any STl have( OperatorSpecies = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " +
 			" else [ Un = 0 , Hi = 0.5 , Medium = 0 , Low = 1 ] ";
 		
@@ -229,15 +229,15 @@ public class MEBNTableParserTest extends TestCase {
 		
 		//		 Should fail sum is above 1
 		tableString =  
-			" if any STi have( OpSpec = Cardassian & HarmPotential = true ) " + 
+			" if any STi have( OperatorSpecies = Cardassian & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" else if any STj have( OpSpec = Romulan & HarmPotential = true ) " +
+			" else if any STj have( OperatorSpecies = Romulan & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0.2 , Medium = .01 , Low = .99 ]  " +
-			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
+			" else if any STj have( OperatorSpecies = Unknown & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
+			" else if any STk have( OperatorSpecies = Klingon & HarmPotential = true ) " +
 			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .65 ] " +
-			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
+			" else if any STl have( OperatorSpecies = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " +
 			" else [ Un = 0 , Hi = 0 , Medium = 0 , Low = 1 ] ";
 		
@@ -252,15 +252,15 @@ public class MEBNTableParserTest extends TestCase {
 		
 		//		 Should fail sum is below 1
 		tableString =  
-			" if any STi have( OpSpec = Cardassian & HarmPotential = true ) " + 
+			" if any STi have( OperatorSpecies = Cardassian & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" else if any STj have( OpSpec = Romulan & HarmPotential = true ) " +
+			" else if any STj have( OperatorSpecies = Romulan & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .0 , Low = .99 ]  " +
-			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
+			" else if any STj have( OperatorSpecies = Unknown & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
+			" else if any STk have( OperatorSpecies = Klingon & HarmPotential = true ) " +
 			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .65 ] " +
-			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
+			" else if any STl have( OperatorSpecies = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " +
 			" else [ Un = 0 , Hi = 0 , Medium = 0 , Low = 1 ] ";
 		
@@ -275,15 +275,15 @@ public class MEBNTableParserTest extends TestCase {
 		
 		//		 Should fail sum is below 1 in default distribution
 		tableString =  
-			" if any STi have( OpSpec = Cardassian & HarmPotential = true ) " + 
+			" if any STi have( OperatorSpecies = Cardassian & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" else if any STj have( OpSpec = Romulan & HarmPotential = true ) " +
+			" else if any STj have( OperatorSpecies = Romulan & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
+			" else if any STj have( OperatorSpecies = Unknown & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
+			" else if any STk have( OperatorSpecies = Klingon & HarmPotential = true ) " +
 			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .65 ] " +
-			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
+			" else if any STl have( OperatorSpecies = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " +
 			" else [ Un = 0 , Hi = 0 , Medium = 0 , Low = 0 ] ";
 		
@@ -302,15 +302,15 @@ public class MEBNTableParserTest extends TestCase {
 	public void testNormalConsistencyCheckWithFunctions() {
 		//		 should go all right
 		String tableString =  
-			" if any STi have( OpSpec = Cardassian & HarmPotential = true ) " + 
-			"  [ Un = 0 , Hi = 0 , Medium = MIN ( CARDINALITY (OpSpec) * 2 ; .2 ) , Low = 1 - Medium ]  " +
-			" else if any STj have( OpSpec = Romulan & HarmPotential = true ) " +
+			" if any STi have( OperatorSpecies = Cardassian & HarmPotential = true ) " + 
+			"  [ Un = 0 , Hi = 0 , Medium = MIN ( CARDINALITY (OperatorSpecies) * 2 ; .2 ) , Low = 1 - Medium ]  " +
+			" else if any STj have( OperatorSpecies = Romulan & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = (.005 + .005) , Low = .99 ]  " +
-			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
+			" else if any STj have( OperatorSpecies = Unknown & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = (((1 - Medium) - Un) - Hi ) ]  " +
-			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
+			" else if any STk have( OperatorSpecies = Klingon & HarmPotential = true ) " +
 			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .65 ] " +
-			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
+			" else if any STl have( OperatorSpecies = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " +
 			" else [ Un = 0 , Hi = 0 , Medium = MAX (.5 ; CARDINALITY (HarmPotential)) , Low = 1 - Medium ] ";
 		
@@ -327,7 +327,7 @@ public class MEBNTableParserTest extends TestCase {
 	public void testNoIfStatement() {
 		//		 should go all right
 		String tableString =  
-			" [ Un = 0 , Hi = 0 , Medium = MIN ( CARDINALITY (OpSpec) * 2 ; .2 ) , Low = 1 - Medium ]  ";		
+			" [ Un = 0 , Hi = 0 , Medium = MIN ( CARDINALITY (OperatorSpecies) * 2 ; .2 ) , Low = 1 - Medium ]  ";		
 		try  {
 			tableParser.parse(tableString);
 		} catch (MEBNException e) {

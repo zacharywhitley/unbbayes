@@ -141,8 +141,8 @@ public class MEBNMetaphorResult extends JPanel {
 		jScrollPane2.getViewport().add(jList2, null);
 		this.add(jPanel2, null);
 		jPanel2.add(jTabbedPane1, BorderLayout.CENTER);
-		jTabbedPane1.add(jScrollPane3, "Description of the ontology:");
-		//jTabbedPane1.add(jScrollPane4, "Laudo");
+		jTabbedPane1.add(jScrollPane3, "Description:");
+		jTabbedPane1.add(jScrollPane4, "Report");
 		jScrollPane4.getViewport().add(jTextArea4, null);
 		jScrollPane3.getViewport().add(jTextArea3, null);
 	}
@@ -239,11 +239,11 @@ public class MEBNMetaphorResult extends JPanel {
 				}
 			}
 			StringBuffer sb = new StringBuffer();
-			sb.append("(Frase Trigger)\n\n");
+			//sb.append("(Frase Trigger)\n\n");
 			addPhrases(sb, trigger);
-			sb.append("(Frase Essencial)\n\n");
+			//sb.append("(Frase Essencial)\n\n");
 			addPhrases(sb, necessary);
-			sb.append("(Frase Complementar)\n\n");
+			//sb.append("(Frase Complementar)\n\n");
 			addPhrases(sb, complementary);
 			diagnostic = sb.toString();
 		}

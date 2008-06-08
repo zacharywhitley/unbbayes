@@ -47,7 +47,7 @@ public class SSBNNodeTest extends TestCase {
 		super.setUp();
 		UbfIO ubf = UbfIO.getInstance();
 		try {
-			mebn = ubf.loadMebn(new File("examples/mebn/StarTrek39.ubf"));
+			mebn = ubf.loadMebn(new File("examples/mebn/StarTrek.ubf"));
 		} catch (Exception e) {
 			fail(e.getMessage());
 			return;
@@ -182,13 +182,14 @@ public class SSBNNodeTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.ssbn.SSBNNode#hasAllOVs(unbbayes.prs.mebn.OrdinaryVariable[])}.
 	 */
 	public void testHasAllOVsOrdinaryVariableArray() {
+		System.out.println("Entered testHasAllOVsOrdinaryVariableArray");
 		TypeContainer tcontainer = new TypeContainer();
 		try{
 			tcontainer.createType("Terminator");
 		} catch(TypeAlreadyExistsException e) {
 			fail(e.getMessage());
 		}
-
+		System.out.println("Obtained container and created terminator");
 		assertTrue(!this.ssbnnode.hasAllOVs((OrdinaryVariable)null));
 		assertTrue(!this.ssbnnode.hasAllOVs((OrdinaryVariable)null,null));
 		assertTrue(!this.ssbnnode.hasAllOVs((OrdinaryVariable[])null));
@@ -197,7 +198,7 @@ public class SSBNNodeTest extends TestCase {
 		OrdinaryVariable[] ovs = {
 			tempList.get(0), tempList.get(1) // {"st" , "t"}
 		};
-		
+		System.out.println("Extracted temporaly list");
 		assertTrue(this.ssbnnode.hasAllOVs(ovs));
 		
 		tempList.add(new OrdinaryVariable("terminator",tcontainer.getType("Terminator"),this.mfrag));
@@ -205,16 +206,18 @@ public class SSBNNodeTest extends TestCase {
 				tempList.get(0), tempList.get(1), // {"st" , "t"}
 				new OrdinaryVariable("terminator",tcontainer.getType("Terminator"),this.mfrag)
 		};
-		
+		System.out.println("Added new ordinary variable to ssbnnode");
 		assertTrue(!this.ssbnnode.hasAllOVs(ovs2));
 		
 		OrdinaryVariable[] ovs3 = {
 				tempList.get(1), // {"st" }
 		};
+		System.out.println("Extracted ov from list");
 		assertTrue(this.ssbnnode.hasAllOVs(ovs3));
 
 		OrdinaryVariable[] ovs4 = {}; //empty
 		assertTrue(!this.ssbnnode.hasAllOVs(ovs4));
+		System.out.println("Tested empty list");
 	}
 
 	/**
@@ -352,17 +355,17 @@ public class SSBNNodeTest extends TestCase {
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.ssbn.SSBNNode#fillProbabilisticTable()}.
 	 */
-	public void testFillProbabilisticTable() {
-		//try{
-		//	this.ssbnnode.fillProbabilisticTable();
-		//} catch (MEBNException mebne) {
-		//	mebne.printStackTrace();
-		//	fail(mebne.getLocalizedMessage());
-		//}
-		//assertNotNull(this.ssbnnode.getProbNode().getPotentialTable());
-		// TODO more detailed test
-		// OBS. this test is done by CompilerTest class
-	}
+//	public void testFillProbabilisticTable() {
+//		//try{
+//		//	this.ssbnnode.fillProbabilisticTable();
+//		//} catch (MEBNException mebne) {
+//		//	mebne.printStackTrace();
+//		//	fail(mebne.getLocalizedMessage());
+//		//}
+//		//assertNotNull(this.ssbnnode.getProbNode().getPotentialTable());
+//		// TODO more detailed test
+//		// OBS. this test is done by CompilerTest class
+//	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.ssbn.SSBNNode#addParent(unbbayes.prs.mebn.ssbn.SSBNNode)}.
@@ -412,7 +415,7 @@ public class SSBNNodeTest extends TestCase {
 		}
 		assertTrue(this.ssbnnode.getParents().contains(parent));
 		
-		parent = SSBNNode.getInstance(this.ssbnnode.getProbabilisticNetwork(),this.mebn.getDomainResidentNode("OpSpec"), new ProbabilisticNode(), false);
+		parent = SSBNNode.getInstance(this.ssbnnode.getProbabilisticNetwork(),this.mebn.getDomainResidentNode("OperatorSpecies"), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent, true);
 			fail("Consistency failure expected");
@@ -422,7 +425,7 @@ public class SSBNNodeTest extends TestCase {
 		assertTrue(!this.ssbnnode.getParents().contains(parent));
 		
 		// should pass consistency check because its off
-		parent = SSBNNode.getInstance(this.ssbnnode.getProbabilisticNetwork(),this.mebn.getDomainResidentNode("OpSpec"), new ProbabilisticNode(), false);
+		parent = SSBNNode.getInstance(this.ssbnnode.getProbabilisticNetwork(),this.mebn.getDomainResidentNode("OperatorSpecies"), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent, false);			
 		} catch(SSBNNodeGeneralException e) {
@@ -431,7 +434,7 @@ public class SSBNNodeTest extends TestCase {
 		assertTrue(this.ssbnnode.getParents().contains(parent));
 		
 		// should have error because parent and child are in different networks
-		parent = SSBNNode.getInstance(null,this.mebn.getDomainResidentNode("OpSpec"), new ProbabilisticNode(), false);
+		parent = SSBNNode.getInstance(null,this.mebn.getDomainResidentNode("OperatorSpecies"), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent, true);
 			fail("Consistency failure expected");

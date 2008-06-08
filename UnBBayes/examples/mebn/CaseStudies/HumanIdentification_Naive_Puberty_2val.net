@@ -1,0 +1,114 @@
+net
+{
+     node_size = (0 0);
+     name = "NaiveBayes";
+     tree = "(sexo,idadenumero,glabela,fronte,incisivos,mentoredondo,mentoproeminencia,orbita)";
+     UnBBayes_Color_Probabilistic_Description = "-256";
+     UnBBayes_Color_Probabilistic_Explanation = "-16711936";
+     UnBBayes_Color_Utility = "-16711681";
+     UnBBayes_Color_Decision = "-14336";
+}
+
+node sexo
+{
+     label = "sexo";
+     position = (350 30);
+     states = ("Feminino" "Masculino");
+}
+
+node idadenumero
+{
+     label = "idadenumero";
+     position = (50 100);
+     states = ("Adulto" "PosPuberal" "Velho");
+}
+
+node glabela
+{
+     label = "glabela";
+     position = (150 100);
+     states = ("NaoProeminente" "Proeminente");
+}
+
+node fronte
+{
+     label = "fronte";
+     position = (250 100);
+     states = ("Vertical" "Inclinada");
+}
+
+node incisivos
+{
+     label = "incisivos";
+     position = (350 100);
+     states = ("Quadrado" "Redondo");
+}
+
+node mentoredondo
+{
+     label = "mentoredondo";
+     position = (450 100);
+     states = ("Arredondado" "Quadrado");
+}
+
+node mentoproeminencia
+{
+     label = "mentoproeminencia";
+     position = (550 100);
+     states = ("Discreto" "Proeminente");
+}
+
+node orbita
+{
+     label = "orbita";
+     position = (650 100);
+     states = ("Angulosa" "Redonda");
+}
+
+potential (sexo)
+{
+ data = ( 0.4684492 0.5315508 );
+}
+
+potential (idadenumero | sexo)
+{
+ data = (( 0.78636366 0.1659091 0.047727272 )
+( 0.757515 0.17234468 0.07014028 ));
+}
+
+potential (glabela | sexo)
+{
+ data = (( 0.9817768 0.018223235 )
+( 0.27108434 0.7289157 ));
+}
+
+potential (fronte | sexo)
+{
+ data = (( 0.5284738 0.4715262 )
+( 0.41164657 0.5883534 ));
+}
+
+potential (incisivos | sexo)
+{
+ data = (( 0.33485195 0.6651481 )
+( 0.8353414 0.16465864 ));
+}
+
+potential (mentoredondo | sexo)
+{
+ data = (( 0.5444191 0.45558086 )
+( 0.42771083 0.57228917 ));
+}
+
+potential (mentoproeminencia | sexo)
+{
+ data = (( 0.5785877 0.4214123 )
+( 0.34738955 0.6526104 ));
+}
+
+potential (orbita | sexo)
+{
+ data = (( 0.40318906 0.59681094 )
+( 0.59638554 0.40361446 ));
+}
+

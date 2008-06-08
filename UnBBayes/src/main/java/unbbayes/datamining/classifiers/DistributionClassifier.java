@@ -52,7 +52,7 @@ public abstract class DistributionClassifier extends Classifier {
 
 	/** Load resources file from this package */
 	protected static ResourceBundle resource = ResourceBundle.getBundle(
-			"unbbayes.datamining.classifiers.resources.ClassifiersResource");
+			"unbbayes.datamining.resources.ClassifiersResource");
 
 	protected float[] originalDistribution;
 	private int[] classValues;

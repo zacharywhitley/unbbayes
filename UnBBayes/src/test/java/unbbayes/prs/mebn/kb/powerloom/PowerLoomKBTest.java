@@ -78,7 +78,7 @@ public class PowerLoomKBTest extends TestCase {
 		assertNotNull(result);
 		System.out.println(result);	
 		try{
-			result = kb.executeCommand(" ( retrieve all  ( EXISTS0 ?x666 ) ) ");
+			result = kb.executeCommand(" ( retrieve all  ( ITEXISTS ?x666 ) ) ");
 		} catch (Exception e){
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -97,7 +97,7 @@ public class PowerLoomKBTest extends TestCase {
 		UbfIO io = UbfIO.getInstance();
 		MultiEntityBayesianNetwork mebn = null;
 		try {
-			mebn = io.loadMebn(new File("examples/mebn/StarTrek51.ubf"));
+			mebn = io.loadMebn(new File("examples/mebn/StarTrek.ubf"));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());

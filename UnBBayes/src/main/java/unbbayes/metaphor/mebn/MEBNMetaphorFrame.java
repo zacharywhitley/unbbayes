@@ -24,6 +24,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.WindowEvent;
+import java.util.ResourceBundle;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -34,6 +35,10 @@ public class MEBNMetaphorFrame extends JFrame{
   /** Serialization runtime version number */
   private static final long serialVersionUID = 0;	
 	
+  
+  private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.metaphor.mebn.resources.MEBNMetaphorResources");
+
+  
   MEBNMetaphorMainPanel jPanel1 = new MEBNMetaphorMainPanel();
   BorderLayout borderLayout1 = new BorderLayout();
   public MEBNMetaphorFrame() {
@@ -53,15 +58,15 @@ public class MEBNMetaphorFrame extends JFrame{
     this.getContentPane().add(jPanel1, BorderLayout.CENTER);
     
     JMenuBar menu = new JMenuBar();
-    JMenu file = new JMenu("File");
+    JMenu file = new JMenu(resource.getString("File"));
     file.setMnemonic(Character.getNumericValue('f'));
-    JMenu view = new JMenu("View");
-    file.setMnemonic(Character.getNumericValue('v'));
-    JMenu help = new JMenu("Help");
+    //JMenu view = new JMenu("View");
+    //file.setMnemonic(Character.getNumericValue('v'));
+    JMenu help = new JMenu(resource.getString("Help"));
     file.setMnemonic(Character.getNumericValue('h'));
     
     menu.add(file);
-    menu.add(view);
+    //menu.add(view);
     menu.add(help);
     this.setJMenuBar(menu);
   }

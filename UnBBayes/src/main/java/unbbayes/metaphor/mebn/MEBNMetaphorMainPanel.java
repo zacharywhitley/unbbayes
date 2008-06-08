@@ -28,6 +28,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.ResourceBundle;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -58,6 +59,10 @@ public class MEBNMetaphorMainPanel extends JPanel
   /** Serialization runtime version number */
   private static final long serialVersionUID = 0;		
 
+  private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.metaphor.mebn.resources.MEBNMetaphorResources");
+
+  
+  
   private BorderLayout borderLayout1 = new BorderLayout();
   private JToolBar metaphorToolBar = new JToolBar();
   private JTabbedPane jTabbedPane1 = new JTabbedPane();
@@ -65,7 +70,7 @@ public class MEBNMetaphorMainPanel extends JPanel
   private BorderLayout borderLayout2 = new BorderLayout();
   private JLabel statusBar = new JLabel();
   private JButton diagnosticButton = new JButton();
-  private JButton saveButton = new JButton();
+  //private JButton saveButton = new JButton();
   private JButton openButton = new JButton();
   private JPanel jPanel1 = new JPanel();
   private JPanel jPanel3 = new JPanel();
@@ -127,9 +132,9 @@ public class MEBNMetaphorMainPanel extends JPanel
     border3 = BorderFactory.createEmptyBorder(5,5,5,5);
     this.setLayout(borderLayout1);
     statusPanel.setLayout(borderLayout2);
-    statusPanel.setBorder(new TitledBorder("Status"));
+    statusPanel.setBorder(new TitledBorder(resource.getString("Status")));
     statusBar.setToolTipText("");
-    statusBar.setText("Showing report of last inference");
+    statusBar.setText(resource.getString("StatusInitialized"));
     metaphorToolBar.setFloatable(false);
     jTabbedPane1.setOpaque(true);
     jPanel1.setLayout(gridBagLayout1);
@@ -139,6 +144,7 @@ public class MEBNMetaphorMainPanel extends JPanel
     openButton.setIcon(openMetaphorIcon);
     openButton.setRolloverIcon(openMetaphorRollOverIcon);
     openButton.setPressedIcon(openMetaphorRollOverIcon);
+    openButton.setToolTipText(resource.getString("OpenButton"));
     openButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -146,14 +152,15 @@ public class MEBNMetaphorMainPanel extends JPanel
         openButton_actionPerformed(e);
       }
     });
-    saveButton.setBorder(border2);
-    saveButton.setIcon(saveMetaphorIcon);
+//    saveButton.setBorder(border2);
+//    saveButton.setIcon(saveMetaphorIcon);
     //saveButton.setRolloverIcon(saveMetaphorRollOverIcon);
     //saveButton.setPressedIcon(saveMetaphorRollOverIcon);
     diagnosticButton.setBorder(border3);
     diagnosticButton.setIcon(diagnosticMetaphorIcon);
     //diagnosticButton.setRolloverIcon(diagnosticMetaphorRollOverIcon);
     //diagnosticButton.setPressedIcon(diagnosticMetaphorRollOverIcon);
+    diagnosticButton.setToolTipText(resource.getString("Propagate"));
     diagnosticButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -170,7 +177,7 @@ public class MEBNMetaphorMainPanel extends JPanel
     jPanel11.setLayout(borderLayout11);
     jPanel10.setLayout(borderLayout12);
     jLabel4.setHorizontalAlignment(SwingConstants.CENTER);
-    jLabel4.setText("Help");
+    jLabel4.setText(resource.getString("Help"));
     jPanel13.setLayout(borderLayout13);
     jPanel8.setLayout(borderLayout10);
     jPanel12.setLayout(borderLayout14);
@@ -178,14 +185,14 @@ public class MEBNMetaphorMainPanel extends JPanel
     jTextArea6.setEditable(false);
     this.add(metaphorToolBar, BorderLayout.NORTH);
     metaphorToolBar.add(openButton, null);
-    metaphorToolBar.add(saveButton, null);
+    //metaphorToolBar.add(saveButton, null);
     metaphorToolBar.add(diagnosticButton, null);
     this.add(jTabbedPane1, BorderLayout.CENTER);
     this.add(statusPanel,  BorderLayout.SOUTH);
     statusPanel.add(statusBar, BorderLayout.NORTH);
-    jTabbedPane1.add(jPanel1,  "Finding entry");
-    jTabbedPane1.add(new JPanel(),"Evidence tuning");
-    jTabbedPane1.add(mEBNMetaphorResult,"Report");    
+    jTabbedPane1.add(jPanel1,  resource.getString("FindingEntry"));
+    //jTabbedPane1.add(new JPanel(),"Evidence tuning");
+    jTabbedPane1.add(mEBNMetaphorResult,resource.getString("Report"));    
     jPanel1.add(jPanel3,       new GridBagConstraints(0, 0, 3, 4, 5.0, 30.0
             ,GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
     jPanel1.add(jPanel9,   new GridBagConstraints(3, 0, 1, 1, 15.0, 30.0
@@ -210,7 +217,8 @@ public class MEBNMetaphorMainPanel extends JPanel
   }
 
   void diagnosticButton_actionPerformed(ActionEvent e)
-  {   jTabbedPane1.setSelectedIndex(1);
+  {   //jTabbedPane1.setSelectedIndex(1);
+  	  jTabbedPane1.setSelectedComponent(mEBNMetaphorResult);
       mEBNMetaphorTree.propagate();
       mEBNMetaphorResult.updateResults();
   }
@@ -220,9 +228,9 @@ public class MEBNMetaphorMainPanel extends JPanel
       String[] s1 = {"net", "xml"};
       fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
       fileChooser.setMultiSelectionEnabled(false);
-      //adicionar FileView no FileChooser para desenhar Icones de arquivos
+
       fileChooser.setFileView(new FileIcon(this));
-      fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "Networks (*.net) or XML-BIF(*.xml)"));
+      fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, resource.getString("FileTypes")));
       int returnVal = fileChooser.showOpenDialog(this);
       if (returnVal == JFileChooser.APPROVE_OPTION)
       {   File selectedFile = fileChooser.getSelectedFile();
