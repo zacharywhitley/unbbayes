@@ -246,7 +246,7 @@ public class BottomUpSSBNGenerator extends AbstractSSBNGenerator {
     		if(!ovProblematicList.isEmpty()){
     			List<SSBNNode> createdNodes = createSSBNNodesOfEntitiesSearchForResidentNode(
     					residentNode.getMFrag(), currentNode, residentNode, 
-    					ovProblematicList, ovInstancesList); 
+    					ovProblematicList, ovInstancesList, true); 
     			
     		    for(SSBNNode ssbnnode: createdNodes){
     		    	generateRecursive(ssbnnode, seen, net);	

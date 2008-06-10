@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.TreeMap;
 
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -27,7 +28,7 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 	private ResourceBundle resource = 
 		ResourceBundle.getBundle("unbbayes.prs.mebn.ssbn.resources.Resources");
 
-	private long recursiveCallLimit = 999999999999999999L;
+	private long recursiveCallLimit = 100L;
 
 	private long recursiveCallCount = 0;
 
@@ -65,6 +66,7 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 		Debug.setDebug(true); 
 
 		ssbnNodeList = new SSBNNodeList(); 
+		ssbnNodesMap = new TreeMap<String, SSBNNode>(); 
 
 		// some data extraction
 		SSBNNode queryNode = query.getQueryNode();
@@ -80,20 +82,19 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 		// call recursive
 		this.recursiveCallCount = 0;
 
-		ssbnNodeList = new SSBNNodeList(); 
-
-		MFragInstance mFragInstanceRootNode = new MFragInstance(queryNode.getResident().getMFrag()); 
+//		MFragInstance mFragInstanceRootNode = new MFragInstance(queryNode.getResident().getMFrag()); 
 
 		queryNode.setPermanent(true); 
-
+		ssbnNodesMap.put(queryNode.getUniqueName(), queryNode); 
+		
 		this.generateRecursive(queryNode, ssbnNodeList, 
 				queryNode.getProbabilisticNetwork());
 
 		this.removeNotPermanentNodes(ssbnNodeList); 
-
+		
 		this.generateCPTForAllSSBNNodes(queryNode); 
 
-//		this.setFindingsAndPropagateEvidences(null, null); 
+		this.setFindingsAndPropagateEvidences(null, null); 
 
 		logManager.appendln("\n");
 		logManager.appendln("SSBN generation finished");
@@ -124,16 +125,22 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 		}
 
 		if(currentNode.getEvaluationState() == EvaluationState.NOT_EVALUATED){
-			logManager.appendln("\nGENERATE RECURSIVE DOWN: " + currentNode.getName() ); 
-			generateRecursiveDown(currentNode, seen, net); 
-			currentNode.setEvaluationState(EvaluationState.EVALUATED_BELOW); 
+			if(currentNode.getEvaluationState() != EvaluationState.EVALUATING_BELOW){
+				currentNode.setEvaluationState(EvaluationState.EVALUATING_BELOW); 
+				logManager.appendln("\nGENERATE RECURSIVE DOWN: " + currentNode.getName() ); 
+				generateRecursiveDown(currentNode, seen, net); 
+				currentNode.setEvaluationState(EvaluationState.EVALUATED_BELOW); 
+			}
 		}
 
 		//verify if OK for generate up
 		if((currentNode.isPermanent())&&(!currentNode.isFinding())){
-			logManager.appendln("\nGENERATE RECURSIVE UP: " + currentNode.getName() ); 
-			generateRecursiveUp(currentNode, seen, net, null);
-			currentNode.setEvaluationState(EvaluationState.EVALUATED_COMPLETE); 
+			if(currentNode.getEvaluationState() != EvaluationState.EVALUATING_UP){
+				currentNode.setEvaluationState(EvaluationState.EVALUATING_UP); 
+				logManager.appendln("\nGENERATE RECURSIVE UP: " + currentNode.getName() ); 
+				generateRecursiveUp(currentNode, seen, net, null);
+				currentNode.setEvaluationState(EvaluationState.EVALUATED_COMPLETE); 
+			}
 		}
 
 	}
@@ -161,7 +168,7 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 
 		currentNode.setPermanent(true); //up always permanent...
 
-		logManager.appendln("\n\n[U] RECURSIVE CALL COUNT = " + recursiveCallCount); 
+		logManager.appendln("\n\n[U] Recursive call count = " + recursiveCallCount); 
 
 		if (this.recursiveCallCount > this.recursiveCallLimit) {
 			throw new SSBNNodeGeneralException(this.resource.getString("RecursiveLimit"));
@@ -185,7 +192,11 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 		if (exactValue != null) {
 			// there were an exact match
 			currentNode.setNodeAsFinding(exactValue.getState());
-			seen.add(currentNode);
+			
+			if(seen.contains(currentNode)){
+				seen.add(currentNode);
+			}
+			
 			logManager.appendln("[U]" + currentNode + ":Exact value of " + currentNode.getName() + "=" + exactValue.getState()); 
 			
 			findingList.add(currentNode); 
@@ -196,9 +207,9 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 		}
 
 		// if the program reached this line, the node doesn't have a finding
-		seen.add(currentNode);	// mark this as already seen  (treated) node
-
-
+		if(seen.contains(currentNode)){
+			seen.add(currentNode);
+		}
 
 
 		//------------------------- STEP 2: analyze context nodes. -------------
@@ -206,10 +217,9 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 		// evaluates querynode's mfrag's context nodes 
 		//(if not OK, sets MFrag Instance's flag to use default CPT)	
 
-		logManager.appendln(currentNode + ":B - Analyse context nodes");
+		logManager.appendln("[U]" + currentNode + ":B - Analyse context nodes");
 		List<OVInstance> ovInstancesList = new ArrayList<OVInstance>(); 
 		ovInstancesList.addAll(currentNode.getArguments()); 
-
 
 		boolean evaluateRelatedContextNodesResult = false;
 
@@ -219,12 +229,12 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 		} catch (OVInstanceFaultException e) {
 			//pre-requisite.
 			e.printStackTrace();
-			logManager.appendln("\n\nFATAL!!!!!!!\n\n"); 
+			logManager.appendln("[U]" + currentNode + "----- FATAL !!!!!!!\n\n"); 
 			return null; 
 		}
 
 		if(!evaluateRelatedContextNodesResult){
-			logManager.appendln("Context Node fail for " + currentNode.getResident().getMFrag()); 
+			logManager.appendln("[U]" + currentNode + "Context Node fail for " + currentNode.getResident().getMFrag()); 
 			currentNode.setUsingDefaultCPT(true);
 			return currentNode; 
 		}
@@ -239,7 +249,7 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 
 		//------------------------- STEP 3: Add and evaluate resident nodes fathers -------------
 
-		logManager.appendln(currentNode + "C:- Analyse resident nodes fathers");
+		logManager.appendln("[U]" + currentNode +  "C:- Analyse resident nodes fathers");
 		for (ResidentNode residentNode : currentNode.getResident().getResidentNodeFatherList()) {
 
 			/*
@@ -253,7 +263,7 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 			if(!ovProblematicList.isEmpty()){
 				List<SSBNNode> createdNodes = createSSBNNodesOfEntitiesSearchForResidentNode(
 						residentNode.getMFrag(), currentNode, residentNode, 
-						ovProblematicList, ovInstancesList); 
+						ovProblematicList, ovInstancesList, true); 
 
 				for(SSBNNode ssbnnode: createdNodes){
 					
@@ -269,32 +279,33 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 					ssbnnode.setPermanent(true); 
 				}
 			}else{ //ovProblematicList.isEmpty
-				SSBNNode ssbnnode = null; 
 
 				List<OVInstance> arguments = fillArguments(currentNode.getArguments(), residentNode);
-				SSBNNode testSSBNNodeDuplicated = getSSBNNodeIfItAlreadyExists(
-						residentNode, arguments, ssbnNodeList); 
+				
+//				SSBNNode testSSBNNodeDuplicated = getSSBNNodeIfItAlreadyExists(
+//						residentNode, arguments, ssbnNodeList); 
 
+				SSBNNode ssbnNode = ssbnNodesMap.get(SSBNNode.getUniqueNameFor(residentNode, arguments)); 
+				
 				logManager.appendln("Verify if the node already exists:" + 
 						residentNode.getName() + currentNode.getArguments() + 
-						" = " + (testSSBNNodeDuplicated == null) ); 
+						" = " + (ssbnNode == null) ); 
 
 				//This test is necessary to avoid creating two equals ssbn nodes (duplicated bayesian nodes). 
-				if(testSSBNNodeDuplicated == null){
-					ssbnnode = SSBNNode.getInstance(net,residentNode, new ProbabilisticNode(), false);
+				if(ssbnNode == null){
+					ssbnNode = SSBNNode.getInstance(net,residentNode, new ProbabilisticNode(), false);
 					for(OVInstance ovInstance: arguments){
-						ssbnnode.addArgument(ovInstance);
+						ssbnNode.addArgument(ovInstance);
 					}
-					ssbnNodeList.add(ssbnnode);
-					generateRecursive(ssbnnode, seen, net);	
-				}else{
-					ssbnnode = testSSBNNodeDuplicated;
+					ssbnNodeList.add(ssbnNode);
+					ssbnNodesMap.put(ssbnNode.getUniqueName(), ssbnNode); 
+					generateRecursive(ssbnNode, seen, net);	
 				}
 
-				ssbnnode.setPermanent(true); 
+				ssbnNode.setPermanent(true); 
 				
-				if(!currentNode.getParents().contains(ssbnnode)){
-					currentNode.addParent(ssbnnode, true);
+				if(!currentNode.getParents().contains(ssbnNode)){
+					currentNode.addParent(ssbnNode, true);
 				}
 			}
 
@@ -331,13 +342,13 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 					//yes... exist recursion...
 					previousNode.setArgumentsOfResidentMFrag();
 
-					//TODO treatment of the MFragInstance
-					MFragInstance mFragInputNode = new MFragInstance(
-							previousNode.getSsbnNode().getResident().getMFrag()); 
+//					//TODO treatment of the MFragInstance
+//					MFragInstance mFragInputNode = new MFragInstance(
+//							previousNode.getSsbnNode().getResident().getMFrag()); 
 
 					generateRecursive(previousNode.getSsbnNode(), seen, net);
 
-					previousNode.setArgumentsOfInputMFrag();
+//					previousNode.setArgumentsOfInputMFrag();
 
 					/* it takes the parameters' names back to normal */
 					if(!currentNode.getParents().contains(previousNode)){
@@ -372,8 +383,8 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 
 					logManager.appendln("Node Created: " + ssbnNode.toString());
 					//TODO treatment of the MFragInstance
-					MFragInstance mFragInputNode = new MFragInstance(
-							ssbnNode.getResident().getMFrag()); 
+//					MFragInstance mFragInputNode = new MFragInstance(
+//							ssbnNode.getResident().getMFrag()); 
 					generateRecursive(ssbnNode, seen, net);	// algorithm's core
 
 					ssbnNodeJacket.setArgumentsOfInputMFrag(); 
@@ -401,9 +412,15 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 
 				ssbnNodeJacket.setArgumentsOfResidentMFrag(); 
 
-//				ssbnNode = checkForDoubleSSBNNode(ssbnNode);
+				SSBNNode test = ssbnNodesMap.get(ssbnNode.getUniqueName());
+				
+				if(test != null){
+					ssbnNodeJacket.getSsbnNode().delete(); 
+					ssbnNodeJacket.setSsbnNode(test); 
+				}
 
-				seen.add(ssbnNode);
+				seen.add(ssbnNodeJacket.getSsbnNode());
+				ssbnNodesMap.put(ssbnNode.getUniqueName(), ssbnNode); 
 
 				boolean contextNodesOK = false;
 
@@ -417,8 +434,8 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 				if(contextNodesOK){
 					//Step 2: context and findngs ok... do the work...	
 					//TODO treatment of the MFragInstance
-					MFragInstance mFragInputNode = new MFragInstance(
-							ssbnNode.getResident().getMFrag()); 
+//					MFragInstance mFragInputNode = new MFragInstance(
+//							ssbnNode.getResident().getMFrag()); 
 					this.generateRecursive(ssbnNode, seen, net);	// algorithm's core	
 				}else{
 					logManager.append("Context Nodes False for " + ssbnNode + " (input node)"); 
@@ -464,11 +481,11 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 			ProbabilisticNetwork net) throws SSBNNodeGeneralException, ImplementationRestrictionException, MEBNException {
 
 
-		ResidentNode resident = currentNode.getResident(); 
+		ResidentNode residentNode = currentNode.getResident(); 
 
 		//some inicializations
 
-		logManager.appendln("\n\n[D] RECURSIVE CALL COUNT = " + recursiveCallCount); 
+		logManager.appendln("\n\n[D] Recursive Call Count = " + recursiveCallCount); 
 
 		if (this.recursiveCallCount > this.recursiveCallLimit) {
 			throw new SSBNNodeGeneralException(this.resource.getString("RecursiveLimit"));
@@ -490,7 +507,11 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 		if (exactValue != null) {
 			// there were an exact match
 			currentNode.setNodeAsFinding(exactValue.getState());
-			seen.add(currentNode); 
+			
+			if(!seen.contains(currentNode)){
+				seen.add(currentNode); 
+			}
+			
 			logManager.appendln("[D]"  + currentNode + ":Exact value of " + currentNode.getName() + "=" + exactValue.getState()); 
 
 			//If some recursive call return true, this node is permanent... and all the nodes above
@@ -504,7 +525,10 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 		}
 
 		// if the program reached this line, the node doesn't have a finding
-		seen.add(currentNode);	// mark this as already seen  (treated) node
+		if(!seen.contains(currentNode)){
+			seen.add(currentNode); 
+		}
+			
 
 
 
@@ -517,8 +541,7 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 		// evaluates querynode's mfrag's context nodes 
 		//(if not OK, sets MFrag Instance's flag to use default CPT)	
 
-		logManager.appendln(currentNode + ":B - Analyse context nodes");
-
+		logManager.appendln("[D]"  + currentNode + ":B - Analyse context nodes");
 
 		boolean evaluateRelatedContextNodesResult = false;
 
@@ -526,9 +549,9 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 			evaluateRelatedContextNodesResult = evaluateRelatedContextNodes(
 					currentNode.getResident(), ovInstancesList, null);
 		} catch (OVInstanceFaultException e) {
-			//pre-requisite.
+			//Pré-requisite...
 			e.printStackTrace();
-			logManager.appendln("\n\nFATAL!!!!!!!\n\n"); 
+			logManager.appendln("[D]"  + currentNode + ":FATAL!!!!!!!\n\n"); 
 			return false; 
 		}
 
@@ -542,7 +565,7 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 
 		//------------------------- STEP 2: Resident nodes childs in the same MFrag  -------------
 
-		for(ResidentNode r: resident.getResidentNodeChildList()){
+		for(ResidentNode r: residentNode.getResidentNodeChildList()){
 
 			logManager.appendln("[D]" + currentNode + ": Resident Node Child analisy -> " + r);
 
@@ -561,18 +584,25 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 				try{
 				    List<SSBNNode> createdNodes = createSSBNNodesOfEntitiesSearchForResidentNode(
 							r.getMFrag(), currentNode, r, 
-							ovProblematicList, ovInstancesList); 
+							ovProblematicList, ovInstancesList, false); 
 					
 					for(SSBNNode ssbnNode: createdNodes){
-						seen.add(ssbnNode); 
+						
 						if(!currentNode.getParents().contains(ssbnNode)){
+							
 							generateRecursive(ssbnNode, seen, net);	
-						    currentNode.addParent(ssbnNode, false);
+							currentNode.addParent(ssbnNode, false);
+						    
+						    if(ssbnNode.isPermanent()){
+						    	currentNode.setPermanent(true); 
+						    }
 						}
 					}
 				}
 				catch(Exception e){
-					logManager.append("ERRO DRASTICO!!! "); 
+					// IncompleteInformation Error???
+					//The search don't is made for the below part of algotithm
+					logManager.appendln("[D]" + currentNode + ":ERRO DRASTICO!!! \n\n"); 
 					e.printStackTrace(); 
 				}
 				finally{
@@ -580,32 +610,41 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 				}
 			}
 
-
 			logManager.appendln("[D]" + currentNode + ": OVariable list OK");
-			//ovProblematicList.isEmpty
-			SSBNNode ssbnnode = null; 
+		
+			SSBNNode ssbnNode = null; 
 
 			List<OVInstance> arguments = fillArguments(ovInstancesList, r);
-			SSBNNode testSSBNNodeDuplicated = getSSBNNodeIfItAlreadyExists(
-					r, arguments, seen); 
+			SSBNNode testSSBNNodeDuplicated = ssbnNodesMap.get(SSBNNode.getUniqueNameFor(r, arguments)); 
 
 			//This test is necessary to avoid creating two equals ssbn nodes (duplicated bayesian nodes). 
 			if(testSSBNNodeDuplicated == null){
-				ssbnnode = SSBNNode.getInstance(net, r , new ProbabilisticNode(), false);
-				ssbnnode.setPermanent(false); 
+				
+				ssbnNode = SSBNNode.getInstance(net, r , new ProbabilisticNode(), false);
+				ssbnNode.setPermanent(false); 
+				
 				for(OVInstance ovInstance: arguments){
-					ssbnnode.addArgument(ovInstance);
+					ssbnNode.addArgument(ovInstance);
 				}
-				seen.add(ssbnnode);
-				generateRecursive(ssbnnode, seen, net);	
+				
+				seen.add(ssbnNode);
+				ssbnNodesMap.put(ssbnNode.getUniqueName(), ssbnNode); 
+				
+				generateRecursive(ssbnNode, seen, net);
+				
+				if(ssbnNode.isPermanent()){
+					currentNode.setPermanent(true); 
+				}
+				
 			}else{
-				ssbnnode = testSSBNNodeDuplicated;
+				ssbnNode = testSSBNNodeDuplicated;
+				
 			}
 
-			if(ssbnnode.isPermanent()){
+			if(ssbnNode.isPermanent()){
 				currentNode.setPermanent(true); 
-				if(!ssbnnode.getParents().contains(currentNode)){
-					ssbnnode.addParent(currentNode, true);
+				if(!ssbnNode.getParents().contains(currentNode)){
+					ssbnNode.addParent(currentNode, true);
 				}
 			}else{
 				//Do nothing... 
@@ -624,54 +663,65 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 
 		//search all the resident nodes in others MFrags referenced by this ResidentNode. 
 
-		for(InputNode inputNode: resident.getInputInstanceFromList()){
+		for(InputNode inputNode: residentNode.getInputInstanceFromList()){
 
 			logManager.appendln("[D]" + currentNode + ": Input Node Child analisy -> " + inputNode);
 
 			//Set the arguments of the input node in the new MFrag. 
 
-			SSBNNodeJacket ssbnNodeJacket = new SSBNNodeJacket(currentNode); 
+			SSBNNodeJacket currentNodeInputSSBNNodeJacket = new SSBNNodeJacket(currentNode); 
 			for(OVInstance ovInstance: currentNode.getArgumentsAsList()){
-				addArgumentToSSBNNodeOfResidentNode(resident, 
-						inputNode, ssbnNodeJacket, ovInstance); 
+				addArgumentToSSBNNodeOfResidentNode(residentNode, 
+						inputNode, currentNodeInputSSBNNodeJacket, ovInstance); 
 			}
 			
-			List<OVInstance> ovInstancesInput = ssbnNodeJacket.getOvInstancesOfInputMFrag(); 
+			List<OVInstance> ovInstancesInput = currentNodeInputSSBNNodeJacket.getOvInstancesOfInputMFrag(); 
 			
 			//Analisy of the context nodes of the new MFrag for the inputNode. 
+			boolean contextNodesOK = false; 
 			
-			//------------------------- STEP 2: analyze context nodes. -------------
-
-			// evaluates querynode's mfrag's context nodes 
-			//(if not OK, sets MFrag Instance's flag to use default CPT)	
-
-			logManager.appendln(currentNode + ":C1 - Analyse context nodes");
-			
-//			boolean evaluateRelatedContextNodesResult = false;
-//
-//			try {
-//				evaluateRelatedContextNodesResult = evaluateRelatedContextNodes(
-//						inputNode, ssbnNodeJacket.getOvInstancesOfInputMFrag(), null);
-//			} catch (OVInstanceFaultException e) {
-//				//pre-requisite.
-//				e.printStackTrace();
-//			}
-//
-//			if(!evaluateRelatedContextNodesResult){
-//				logManager.appendln("Context Node fail for " + currentNode.getResident().getMFrag()); 
-//				//TODO solve this!!! (problema of multiples MFrags...)
-//				inputNode.getMFrag().setAsUsingDefaultCPT(true); 
-//			}
-			
-			
-			//Evaluate each child of the input node
+			try {
+				contextNodesOK = evaluateRelatedContextNodes (inputNode, 
+						ovInstancesInput, null);
+			} catch (OVInstanceFaultException e1) {
+				// IncompleteInformation Error???
+				//The search don't is made for the below part of algotithm
+				logManager.appendln("[D]" + currentNode + ":ERRO DRASTICO!!! \n\n"); 
+				e1.printStackTrace(); 
+			} finally{
+				if(!contextNodesOK){
+					continue; //This input node don't is valid for the algorith...
+				}
+			}
 			
 			for(ResidentNode residentChild: inputNode.getResidentNodeChildList()){
 				logManager.appendln("[D]" + currentNode + ": Child of the input -> " + residentChild);
 				logManager.appendln("[D]" + currentNode + ": do nothing...");
 				
+				//Evaluation of the recursion below
+				//The format of the MFrag in the recursion is: 
+				//      INPUTNODE_A(NODE_A) PAI NODE_A 
+				//That folows: 
+				//       RESIDENTCHILD = NODE_A
+				// (RESIDENTCHILD is the reference of the input INPUTNODE_A
+				
 				if(residentChild.equals(currentNode.getResident())){
-					continue; //Recursion... analisy after...
+					
+					SSBNNode procNode = getProcNode(currentNode, seen, net, 
+							residentChild);
+					
+					if(procNode != null){
+//						procNode.setPermanent(false); 
+						generateRecursive(procNode, seen, net); 
+						procNode.addParent(currentNode, false);
+						
+						if(procNode.isPermanent()){
+							currentNode.setPermanent(true); 
+						}
+					}
+					
+					continue; 
+					
 				}
 
 				/*
@@ -688,11 +738,14 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 					logManager.appendln("[D]" + currentNode + ": TODO OVariable list problem");
 					
 					try{
+						
+						//Note: if the entities for the problematic OV don't was found, 
+						//the search strategy don't will be used. 
 						List<SSBNNode> createdNodes = createSSBNNodesOfEntitiesSearchForResidentNode(
 								residentChild.getMFrag(), currentNode, residentChild, 
-								ovProblematicList, ovInstancesInput); 
+								ovProblematicList, ovInstancesInput, false);
+						
 						for(SSBNNode ssbnNode: createdNodes){
-							seen.add(ssbnNode); 
 							if(!ssbnNode.getParents().contains(currentNode)){
 								generateRecursive(ssbnNode, seen, net);			    	
 								ssbnNode.addParent(currentNode, false);
@@ -701,38 +754,37 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 						continue; 
 					}
 					catch(Exception e){
-						LiteralEntityInstance lei = LiteralEntityInstance.getInstance("T0", ovProblematicList.get(0).getValueType()); 
-						OVInstance ovInstance = OVInstance.getInstance(ovProblematicList.get(0), lei); 
-						ovInstancesInput.add(ovInstance);  //TEMPORARY P.O.G. 
+						logManager.append("\n\nFATAL!!!\n\n");
+						continue; //To the next input node
 					}
 				}
 
 
 				logManager.appendln("[D]" + currentNode + ": OVariable list OK");
 				//ovProblematicList.isEmpty
-				SSBNNode ssbnnode = null; 
+				SSBNNode ssbnNode = null; 
 
 				List<OVInstance> arguments = fillArguments(ovInstancesList, residentChild);
-				SSBNNode testSSBNNodeDuplicated = getSSBNNodeIfItAlreadyExists(
-						residentChild, arguments, seen); 
+				SSBNNode testSSBNNodeDuplicated = ssbnNodesMap.get(SSBNNode.getUniqueNameFor(residentChild, arguments)); 
 
 				//This test is necessary to avoid creating two equals ssbn nodes (duplicated bayesian nodes). 
 				if(testSSBNNodeDuplicated == null){
-					ssbnnode = SSBNNode.getInstance(net, residentChild , new ProbabilisticNode(), false);
-					ssbnnode.setPermanent(false); 
+					ssbnNode = SSBNNode.getInstance(net, residentChild , new ProbabilisticNode(), false);
+					ssbnNode.setPermanent(false); 
 					for(OVInstance ovInstance: arguments){
-						ssbnnode.addArgument(ovInstance);
+						ssbnNode.addArgument(ovInstance);
 					}
-					seen.add(ssbnnode);
-					generateRecursive(ssbnnode, seen, net);	
+					seen.add(ssbnNode);
+					ssbnNodesMap.put(ssbnNode.getName(), ssbnNode); 
+					generateRecursive(ssbnNode, seen, net);	
 				}else{
-					ssbnnode = testSSBNNodeDuplicated;
+					ssbnNode = testSSBNNodeDuplicated;
 				}
 
-				if(ssbnnode.isPermanent()){
+				if(ssbnNode.isPermanent()){
 					currentNode.setPermanent(true); 
-					if(!ssbnnode.getParents().contains(currentNode)){
-					    ssbnnode.addParent(currentNode, true);
+					if(!ssbnNode.getParents().contains(currentNode)){
+					    ssbnNode.addParent(currentNode, true);
 					}
 				}else{
 					//Do nothing... 
@@ -803,9 +855,9 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 
 		// We assume if MFrag is already set to use Default, then some context
 		// has failed previously and there's no need to evaluate again.		
-//		if (mFragInstance.isUsingDefaultDistribution()) {
-//		return false;
-//		};
+		if (residentNode.getMFrag().isUsingDefaultCPT()) {
+			return false;
+		};
 
 		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(getKnowledgeBase()); 
 
@@ -841,9 +893,9 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 
 		// We assume if MFrag is already set to use Default, then some context
 		// has failed previously and there's no need to evaluate again.		
-//		if (mFragInstance.isUsingDefaultDistribution()) {
-//		return false;
-//		};
+		if (inputNode.getMFrag().isUsingDefaultCPT()) {
+			return false;
+		};
 
 		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(getKnowledgeBase()); 
 

@@ -53,7 +53,9 @@ public class SSBNNode {
 	public enum EvaluationState{
 		NOT_EVALUATED, 
 		EVALUATED_BELOW, 
-		EVALUATED_COMPLETE
+		EVALUATED_COMPLETE, 
+		EVALUATING_BELOW, 
+		EVALUATING_UP
 	}
 	
 	private EvaluationState evaluationState = EvaluationState.NOT_EVALUATED; 
@@ -217,6 +219,33 @@ public class SSBNNode {
 		}
 	}
 	
+	/**
+	 * Normal: 
+	 * DangerToSelf_ST4_T0
+	 */
+	public String getUniqueName(){
+		StringBuilder uniqueName = new StringBuilder(); 
+		
+		uniqueName.append(this.resident.getName()); 
+		for(OrdinaryVariable ov: resident.getOrdinaryVariableList()){
+			OVInstance ovInstance = getArgumentByOrdinaryVariable(ov);
+			uniqueName.append("_" + ovInstance.getEntity().getInstanceName()); 
+		}
+		
+		return uniqueName.toString(); 
+	}
+	
+	public static String getUniqueNameFor(ResidentNode resident, Collection<OVInstance> list){
+		StringBuilder uniqueName = new StringBuilder(); 
+		
+		uniqueName.append(resident.getName()); 
+		for(OrdinaryVariable ov: resident.getOrdinaryVariableList()){
+			OVInstance ovInstance = getArgumentByOrdinaryVariable(list, ov);
+			uniqueName.append("_" + ovInstance.getEntity().getInstanceName()); 
+		}
+		
+		return uniqueName.toString(); 
+	}
 	
 	private String getNameByDots(String...names) {
 		String dotName = new String(names[0]);
@@ -535,7 +564,70 @@ public class SSBNNode {
 	 * @throws SSBNNodeGeneralException when parent has no resident node or ProbNode or 
 	 * there were inconsistency when isCheckingParentResident was set to true.
 	 */
+	public void addTemporaryParent(SSBNNode parent, boolean isCheckingParentResident) throws SSBNNodeGeneralException{
+		
+		// initial check. Note that if node is finding (probNode==null), then it should not have a parent
+		if ((parent.getResident() == null ) || (parent.getProbNode() == null)) {
+			throw new SSBNNodeGeneralException();
+		}
+		
+		// perform consistency check
+		if (isCheckingParentResident) {
+			
+			//verify if the parent is in the list of possible parents of the node
+			//(resident/input nodes that have a edge to the node)
+			ArrayList<Node> expectedParents = this.getResident().getParents();
+			boolean isConsistent = false;
+			InputNode input = null;
+			for (int i = 0; i < expectedParents.size(); i++) {
+				if (parent.getResident() == expectedParents.get(i)) {
+					isConsistent = true;
+					break;
+				}
+				if (expectedParents.get(i) instanceof InputNode) {
+					input = (InputNode)expectedParents.get(i);
+					if (input.getResidentNodePointer().getResidentNode() == parent.getResident()) {
+						isConsistent = true;
+						break;
+					}
+				}
+			}
+			if (!isConsistent) {
+				throw new SSBNNodeGeneralException();
+			}
+			// check if both probNodes are in a same network
+			if (this.getProbNode() != null) {
+				if (parent.getProbNode() != null) {
+					if (this.getProbabilisticNetwork() != parent.getProbabilisticNetwork()) {
+						throw new SSBNNodeGeneralException(this.resource.getString("IncompatibleNetworks"));
+					}
+				}
+			}
+		}
+		
+		//consistency OK: add the node 
+		this.getParents().add(parent);
+		parent.children.add(this); 
+		
+		if (this.getProbNode() != null) {
+			if (parent.getProbNode() != null){
+				Edge edge = new Edge(parent.getProbNode(), this.getProbNode());
+				if (this.getProbabilisticNetwork() != null) {
+					this.getProbabilisticNetwork().addEdge(edge);
+					BottomUpSSBNGenerator.logManager.append("\n");
+					BottomUpSSBNGenerator.logManager.append(edge + " created");
+//					BottomUpSSBNGenerator.printAndSaveCurrentNetwork(this);
+				}
+			}
+		}
+		
+	}
+	
 	public void addParent(SSBNNode parent, boolean isCheckingParentResident) throws SSBNNodeGeneralException{
+		
+		if(getParents().contains(parent)){
+			return; //do nothing! already is parent. 
+		}
 		
 		// initial check. Note that if node is finding (probNode==null), then it should not have a parent
 		if ((parent.getResident() == null ) || (parent.getProbNode() == null)) {
@@ -916,6 +1008,17 @@ public class SSBNNode {
 	
 	public OVInstance getArgumentByOrdinaryVariable(OrdinaryVariable ov){
 		for(OVInstance instance: getArguments()){
+			if(instance.getOv().equals(ov)){
+				return instance; 
+			}
+		}
+		return null;
+	}
+	
+	public static OVInstance getArgumentByOrdinaryVariable(Collection<OVInstance> instances, 
+			OrdinaryVariable ov){
+		
+		for(OVInstance instance: instances){
 			if(instance.getOv().equals(ov)){
 				return instance; 
 			}

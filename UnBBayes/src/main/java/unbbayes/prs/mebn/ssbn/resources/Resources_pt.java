@@ -62,6 +62,7 @@ public class Resources_pt extends ListResourceBundle {
 		{"RVNotRecursive","O nó residente não é recursivo pois não possui variáveis ordinárias ordenáveis. Ciclo Encontrado"}, 		
 		{"InvalidContextNodeFormula","Formula do nó de contexto inválida"},
 		{"FindingNotHaveParent","Um finding não pode ter um pai"},
+		{"IncompleteInformation","Não foi possível encontrar entidades que validassem os nós de contexto"},
 		{"OnlyOneFreeVariableRestriction", "O nó de contexto de busca pode ter apenas uma variavel livre!"}
 		
 	};

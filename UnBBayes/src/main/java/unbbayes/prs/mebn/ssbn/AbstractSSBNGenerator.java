@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.TreeMap;
 
 import unbbayes.io.LogManager;
 import unbbayes.prs.Node;
@@ -41,6 +42,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 
 	//all the ssbn nodes created. 
 	protected SSBNNodeList ssbnNodeList;
+	protected Map<String, SSBNNode> ssbnNodesMap = new TreeMap<String, SSBNNode>(); 
 	
 	
 	public AbstractSSBNGenerator(){
@@ -53,23 +55,118 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 	 * @param root
 	 * @param findingsDown
 	 * @throws MEBNException
+	 * @throws SSBNNodeGeneralException 
 	 */
-	protected void generateCPTForAllSSBNNodes(SSBNNode root) throws MEBNException{
-		generateCPTForAllParentsAndNode(root); 
-		generateCPTForAllChildren(root); 	
+	protected void generateCPTForAllSSBNNodes(SSBNNode root) throws MEBNException, SSBNNodeGeneralException{
+//		generateCPTForAllParentsAndNode(root); 
+//		generateCPTForAllChildren(root); 	
+		
+		generateCPTForAllSSBNNodes(root, 0);
+		
+//		logManager.append("Generate CPT for node " + root); 
+//		
+//		if(root.isCptAlreadyGenerated()){
+//			return; 
+//		}else{
+//			
+//			//PARENTS
+//			for(SSBNNode parent: root.getParents()){
+//				generateCPTForAllSSBNNodes(parent); 
+//			}
+//
+//			//NODE
+//			if(root.getContextFatherSSBNNode()!=null){ 
+//				try {
+//					generateCPTForNodeWithContextFather(root); 
+//				} catch (InvalidOperationException e1) {
+//					e1.printStackTrace();
+//					throw new SSBNNodeGeneralException(e1.getMessage()); 
+//				}
+//			}else{
+//				generateCPT(root);
+//			}
+//			root.setCptAlreadyGenerated(true); 
+//			
+//			//CHILDREN
+//			for(SSBNNode child: root.getChildren()){
+//				generateCPTForAllSSBNNodes(child); 
+//			}
+//		}
 	}
 	
-	protected void generateCPTForAllParentsAndNode(SSBNNode root) throws MEBNException{
+	private String getSpaceForLevel(int level){
+		StringBuilder string = new StringBuilder(); 
+		for(int i = 0; i < level; i++){
+			string.append(' '); 
+			string.append(' '); 
+			string.append(level);
+			string.append('-');
+			string.append(' '); 
+		}
+		return string.toString(); 
+	}
+	
+	private void generateCPTForAllSSBNNodes(SSBNNode root, int level) throws MEBNException, SSBNNodeGeneralException{
+		
+		logManager.appendln(getSpaceForLevel(level) + "Generate CPT for node " + root); 
+		logManager.appendln(getSpaceForLevel(level) + "Parents:"); 
 		
 		if(root.isCptAlreadyGenerated()){
 			return; 
 		}else{
+			
+			//PARENTS
 			for(SSBNNode parent: root.getParents()){
-				generateCPTForAllParentsAndNode(parent); 
-				generateCPTForAllChildren(parent); 	
+				generateCPTForAllSSBNNodes(parent, level + 1); 
 			}
-			generateCPT(root);	
+
+			//NODE
+			if(root.getContextFatherSSBNNode()!=null){ 
+				try {
+					generateCPTForNodeWithContextFather(root);
+					logManager.appendln(getSpaceForLevel(level) + "CPT Generated"); 
+				} catch (InvalidOperationException e1) {
+					e1.printStackTrace();
+					throw new SSBNNodeGeneralException(e1.getMessage()); 
+				}
+			}else{
+				generateCPT(root);
+			}
 			root.setCptAlreadyGenerated(true); 
+			
+			logManager.appendln(getSpaceForLevel(level) + "Children:"); 
+			//CHILDREN
+			for(SSBNNode child: root.getChildren()){
+				generateCPTForAllSSBNNodes(child, level + 1); 
+			}
+		}
+	}
+	
+	protected void generateCPTForAllParentsAndNode(SSBNNode root) throws MEBNException, SSBNNodeGeneralException{
+		
+		if(root.isCptAlreadyGenerated()){
+			return; 
+		}else{
+			
+			//PARENTS
+			for(SSBNNode parent: root.getParents()){
+				generateCPTForAllSSBNNodes(parent); 
+			}
+
+			//NODE
+			if(root.getContextFatherSSBNNode()!=null){ 
+				try {
+					generateCPTForNodeWithContextFather(root); 
+				} catch (InvalidOperationException e1) {
+					e1.printStackTrace();
+					throw new SSBNNodeGeneralException(e1.getMessage()); 
+				}
+			}else{
+				generateCPT(root);
+			}
+			
+			root.setCptAlreadyGenerated(true); 
+
 		}
 
 	}
@@ -81,16 +178,26 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 	 * 
 	 * @param root
 	 * @throws MEBNException
+	 * @throws SSBNNodeGeneralException 
 	 */
-	protected void generateCPTForAllChildren(SSBNNode root) throws MEBNException{
+	protected void generateCPTForAllChildren(SSBNNode root) throws MEBNException, SSBNNodeGeneralException{
 		for(SSBNNode child: root.getChildren()){
 
 			if(!child.isCptAlreadyGenerated()){
-				generateCPT(child); 
-				child.setCptAlreadyGenerated(true); 
+				if(child.getContextFatherSSBNNode()!=null){ 
+					try {
+						generateCPTForNodeWithContextFather(child);
+						child.setCptAlreadyGenerated(true);
+					} catch (InvalidOperationException e1) {
+						e1.printStackTrace();
+						throw new SSBNNodeGeneralException(e1.getMessage()); 
+					}
+				}else{
+					generateCPT(child); 
+					child.setCptAlreadyGenerated(true);
+				}
 			}
 			generateCPTForAllChildren(child);
-
 		}
 	}
 	
@@ -198,7 +305,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 			}
 		}
 		
-		logManager.append("getSSBNNode return that the node " + 
+		logManager.appendln("getSSBNNode return that the node " + 
 				residentNode.getName() + "[" + ovInstanceList.toString() + 
 				"] DON'T exists!");
 		
@@ -246,6 +353,8 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 	 * will be create for each entity. Is this case a object ContextFatherSSBNNode 
 	 * wiil be added in the ssbnnode orgin.  
 	 * 
+	 * Note: already put the created nodes in the lists of created nodes. 
+	 * 
 	 * @param mFrag
 	 * @param originNode
 	 * @param fatherNode
@@ -257,7 +366,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 	 * @throws SSBNNodeGeneralException 
 	 */
 	protected List<SSBNNode> createSSBNNodesOfEntitiesSearchForResidentNode(MFrag mFrag, SSBNNode originNode, 
-			ResidentNode fatherNode, List<OrdinaryVariable> ovList, List<OVInstance> ovInstances) 
+			ResidentNode fatherNode, List<OrdinaryVariable> ovList, List<OVInstance> ovInstances, boolean searchIfNotFound) 
 			throws ImplementationRestrictionException, SSBNNodeGeneralException {
 		
 		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(knowledgeBase); 
@@ -290,65 +399,71 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 			List<String> result = avaliator.evalutateSearchContextNode(context, ovInstances);
 			
 			if(result.isEmpty()){
-				
-				logManager.appendln("Evaluate Search Context Node for " + context + "[" + ovInstances + "]" + "return null"); 
-				
-				if(originNode.getContextFatherSSBNNode() != null){
-					ContextFatherSSBNNode contextFatherSSBNNode = originNode.getContextFatherSSBNNode();
-					
-					if(contextFatherSSBNNode.getOvProblematic().equals(ovProblematic)){
-						
-						List<SSBNNode> nodes = new ArrayList<SSBNNode>();
-						
-						for(LiteralEntityInstance entity: contextFatherSSBNNode.getPossibleValues()){
-							SSBNNode node =  createSSBNNodeForEntitySearch(originNode.getProbabilisticNetwork(), 
-									fatherNode, ovInstances, ovProblematic, entity.getInstanceName());
-							nodes.add(node); 
+				if(searchIfNotFound){
+					logManager.appendln("Evaluate Search Context Node for " + context + "[" + ovInstances + "]" + "return null"); 
+
+					if(originNode.getContextFatherSSBNNode() != null){
+						ContextFatherSSBNNode contextFatherSSBNNode = originNode.getContextFatherSSBNNode();
+
+						if(contextFatherSSBNNode.getOvProblematic().equals(ovProblematic)){
+
+							List<SSBNNode> nodes = new ArrayList<SSBNNode>();
+
+							for(LiteralEntityInstance entity: contextFatherSSBNNode.getPossibleValues()){
+								
+								SSBNNode node =  createSSBNNodeForEntitySearch(originNode.getProbabilisticNetwork(), 
+										fatherNode, ovInstances, ovProblematic, entity.getInstanceName());
+								
+								nodes.add(node);
+								
+							}
+
+							return nodes;
 						}
-						
-						return nodes;
+						else{
+							throw new ImplementationRestrictionException(resource.getString("MoreThanOneContextNodeFather"));
+						}
 					}
 					else{
-						throw new ImplementationRestrictionException(resource.getString("MoreThanOneContextNodeFather"));
+
+						//THE XOR ALGORITH...
+
+						/*
+						 * All the instances of the entity will be considered and the 
+						 * context node will be father. 
+						 */
+
+						List<SSBNNode> nodes = new ArrayList<SSBNNode>(); 
+
+						//Add the context node how father
+						ContextFatherSSBNNode contextFatherSSBNNode = new ContextFatherSSBNNode(
+								originNode.getProbabilisticNetwork(), context); 
+						contextFatherSSBNNode.setOvProblematic(ovProblematic);
+
+						originNode.setContextFatherSSBNNode(contextFatherSSBNNode);
+
+						//in this implementation only this is necessary, because the treat
+						//of context nodes how fathers will be """trivial""", using the XOR 
+						//strategy. For a future implementation that accept different 
+						//distributions for the residentNode of the ContextNode, the
+						//arguments of the resident node will have to be filled with the OVInstances
+						//for the analized of the resident node formula. (very complex!).  
+
+						//Search for all the entities present in kb. 
+						result = knowledgeBase.getEntityByType(ovProblematic.getValueType().getName());
+						for(String entity: result){
+							SSBNNode node =  createSSBNNodeForEntitySearch(originNode.getProbabilisticNetwork(), 
+									fatherNode, ovInstances, ovProblematic, entity);
+							contextFatherSSBNNode.addPossibleValue(LiteralEntityInstance.getInstance(entity, ovProblematic.getValueType()));
+							nodes.add(node); 
+						}					
+
+						return nodes;
 					}
 				}
 				else{
-					
-					//THE XOR ALGORITH...
-					
-					/*
-					 * All the instances of the entity will be considered and the 
-					 * context node will be father. 
-					 */
-					
-					List<SSBNNode> nodes = new ArrayList<SSBNNode>(); 
-					
-					//Add the context node how father
-					ContextFatherSSBNNode contextFatherSSBNNode = new ContextFatherSSBNNode(
-							originNode.getProbabilisticNetwork(), context); 
-					contextFatherSSBNNode.setOvProblematic(ovProblematic);
-
-					originNode.setContextFatherSSBNNode(contextFatherSSBNNode);
-					
-					//in this implementation only this is necessary, because the treat
-					//of context nodes how fathers will be """trivial""", using the XOR 
-					//strategy. For a future implementation that accept different 
-					//distributions for the residentNode of the ContextNode, the
-					//arguments of the resident node will have to be filled with the OVInstances
-					//for the analized of the resident node formula. (very complex!).  
-					
-					//Search for all the entities present in kb. 
-					result = knowledgeBase.getEntityByType(ovProblematic.getValueType().getName());
-					for(String entity: result){
-						SSBNNode node =  createSSBNNodeForEntitySearch(originNode.getProbabilisticNetwork(), 
-								fatherNode, ovInstances, ovProblematic, entity);
-						contextFatherSSBNNode.addPossibleValue(LiteralEntityInstance.getInstance(entity, ovProblematic.getValueType()));
-						nodes.add(node); 
-					}					
-					
-					return nodes;
-				}
-				  
+					throw new SSBNNodeGeneralException(resource.getString("IncompleteInformation")); 
+				} 
 			}
 			else{
 				
@@ -510,31 +625,37 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 		}
 	}
 	
-	
+	/**
+	 * 
+	 * @param probabilisticNetwork
+	 * @param residentNode
+	 * @param ovInstances
+	 * @param ov
+	 * @param entity
+	 * @return
+	 */
 	private SSBNNode createSSBNNodeForEntitySearch(ProbabilisticNetwork probabilisticNetwork, 
 			ResidentNode residentNode, List<OVInstance> ovInstances, OrdinaryVariable ov, String entity) {
-		
-		SSBNNode ssbnnode = null; 	
 		
 		List<OVInstance> arguments = fillArguments(ovInstances, residentNode);
 		arguments.add(OVInstance.getInstance(ov, entity, ov.getValueType())); 
 		
-		SSBNNode testSSBNNode = getSSBNNodeIfItAlreadyExists(residentNode, arguments, 
-				ssbnNodeList); 
+//		SSBNNode testSSBNNode = getSSBNNodeIfItAlreadyExists(residentNode, arguments, 
+//				ssbnNodeList); 
+		SSBNNode testSSBNNode = ssbnNodesMap.get(SSBNNode.getUniqueNameFor(residentNode, ovInstances)); 
 		
 		if(testSSBNNode == null){
-			ssbnnode =  SSBNNode.getInstance(probabilisticNetwork,residentNode);
+			testSSBNNode =  SSBNNode.getInstance(probabilisticNetwork,residentNode);
 
 			for(OVInstance ovInstance: arguments){
-				ssbnnode.addArgument(ovInstance);
+				testSSBNNode.addArgument(ovInstance);
 			}
-			ssbnNodeList.add(ssbnnode);
-		}else{
-			ssbnnode = testSSBNNode;
+			ssbnNodeList.add(testSSBNNode);
+			ssbnNodesMap.put(testSSBNNode.getUniqueName(), testSSBNNode); 
+			
 		}
-		
-		return ssbnnode;
 	
+		return testSSBNNode;
 	}
 	
 	/**
@@ -571,6 +692,8 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 	protected SSBNNodeJacket getPreviousNode(SSBNNode currentNode, SSBNNodeList seen, 
 			ProbabilisticNetwork net, ResidentNode residentNode, InputNode inputNode) 
 	        throws SSBNNodeGeneralException, ImplementationRestrictionException {
+		
+		boolean isPrevious = true; 
 		
 		logManager.appendln("Build Previous Node");
 		//Find for ordereable object entity.
@@ -619,10 +742,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 			//Create the new SSBNNode with the setted values. 
 			SSBNNode ssbnNode = SSBNNode.getInstance(net, residentNode, 
 					new ProbabilisticNode(), false);
-		 //TODO avaliar se na evidencia abaixo vai ter verificacao de recursao... 
-			
-			ssbnNode = checkForDoubleSSBNNode(ssbnNode); //!! strange, but possible... 
-			
+
 			SSBNNodeJacket ssbnNodeJacket = new SSBNNodeJacket(ssbnNode);
 			
 			for(OVInstance instance: currentNode.getArguments()){
@@ -645,13 +765,122 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 				}
 			}
 			
-			ssbnNodeList.add(ssbnNode);
+			ssbnNodeJacket.setArgumentsOfResidentMFrag(); 
 			
+			SSBNNode alreadyExistentSSBNNode = ssbnNodesMap.get(SSBNNode.getUniqueNameFor(residentNode, ssbnNode.getArguments())); 
+			
+			if(alreadyExistentSSBNNode != null){
+				ssbnNodeJacket.getSsbnNode().delete(); 
+				ssbnNodeJacket.setSsbnNode(alreadyExistentSSBNNode); 
+			}else{
+				ssbnNodeList.add(ssbnNode);	
+				ssbnNodesMap.put(ssbnNode.getUniqueName(), ssbnNode); 
+			}
+					
 			logManager.appendln("Build Previous Node End");
 			return ssbnNodeJacket;
 		}
 	}
 	
+	
+
+	/**
+	 * Evaluate of recursion in the MEBN model. Return the node before in 
+	 * the recursion.
+	 * 
+	 * - Already include the node created in the ssbnNodeList. 
+	 * 
+	 * @param currentNode
+	 * @param seen
+	 * @param net
+	 * @param residentNode
+	 * 
+	 * @throws SSBNNodeGeneralException
+	 * @throws ImplementationRestrictionException
+	 */
+	protected SSBNNode getProcNode(SSBNNode currentNode, SSBNNodeList seen, 
+			ProbabilisticNetwork net, ResidentNode residentNode) 
+	        throws SSBNNodeGeneralException, ImplementationRestrictionException {
+		
+		logManager.appendln("Build Proc. Node");
+		//Find for ordereable object entity.
+		List<OrdinaryVariable> ovOrdereableList = residentNode.getOrdinaryVariablesOrdereables();
+		
+		if(ovOrdereableList.size() > 1){
+			throw new ImplementationRestrictionException(resource.getString("MoreThanOneOrdereableVariable"));
+		}
+		
+		if(ovOrdereableList.size() < 1){
+			throw new ImplementationRestrictionException(resource.getString("RVNotRecursive"));
+		}
+		
+		OrdinaryVariable ovOrdereableResident = ovOrdereableList.get(0); 
+		logManager.appendln("Ov Ordereable found:" + ovOrdereableResident);
+		ObjectEntity objectEntityOrdereable = currentNode.getResident().getMFrag().
+                        getMultiEntityBayesianNetwork().getObjectEntityContainer().
+                        getObjectEntityByType(ovOrdereableResident.getValueType()); 
+	
+		OVInstance ovInstanceOrdereable = null; 
+		for(OVInstance ovInstance: currentNode.getArguments()){
+			if(ovInstance.getOv() == ovOrdereableResident){
+				ovInstanceOrdereable = ovInstance; 
+				break; 
+			}
+		}
+		
+		if(ovInstanceOrdereable == null){
+			throw new SSBNNodeGeneralException();
+		}
+		
+		String nameEntity = ovInstanceOrdereable.getEntity().getInstanceName(); 
+		
+		ObjectEntityInstanceOrdereable objectEntityInstanceOrdereable = 
+			(ObjectEntityInstanceOrdereable)objectEntityOrdereable.getInstanceByName(nameEntity);
+		
+		if(objectEntityInstanceOrdereable == null){
+			throw new SSBNNodeGeneralException();
+		}
+		
+		ObjectEntityInstanceOrdereable proc = objectEntityInstanceOrdereable.getProc(); 
+		
+		if(proc == null){
+			logManager.appendln("Proc is null... no action to do"); 
+			return null; //end of the recursion
+		}else{
+			//Create the new SSBNNode with the setted values. 
+			SSBNNode ssbnNode = SSBNNode.getInstance(net, residentNode, 
+					new ProbabilisticNode(), false);
+		 
+			for(OVInstance instance: currentNode.getArguments()){
+				if(instance != ovInstanceOrdereable){
+					if(residentNode.getOrdinaryVariableByName(instance.getOv().getName()) != null){
+						ssbnNode.addArgument(instance);
+					}
+				}else{
+					OVInstance newOVInstance = OVInstance.getInstance(ovOrdereableResident, 
+							proc.getName(), ovOrdereableResident.getValueType());
+					ssbnNode.addArgument(newOVInstance); 
+					logManager.appendln("\n\n created:" + ovOrdereableResident + " " + proc.getName());
+				}
+			}
+//			SSBNNode testSSBNNode = getSSBNNodeIfItAlreadyExists(ssbnNode.getResident(), 
+//					ssbnNode.getArguments(), ssbnNodeList); 
+			
+			logManager.append("Search for " + ssbnNode.getUniqueName() + " = " + ssbnNodesMap.get(ssbnNode.getUniqueName())); 
+			SSBNNode testSSBNNode = ssbnNodesMap.get(ssbnNode.getUniqueName()); 
+			
+			if(testSSBNNode != null){
+				ssbnNode.delete(); 
+				ssbnNode = testSSBNNode; 
+			}else{
+				ssbnNodeList.add(ssbnNode);
+				ssbnNodesMap.put(ssbnNode.getUniqueName(), ssbnNode); 
+			}
+			
+			logManager.appendln("Build Proc Node End: Node created:" + ssbnNode);
+			return ssbnNode;
+		}
+	}
 
 	/**
 	 * Calls ContextNodeAvaliator's method to check context node's validation.
@@ -862,7 +1091,18 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 		
 		//Suport for avoid double creation of probabilistic nodes. 
 		ssbnNodeJacket.setArgumentsOfResidentMFrag();
-		ssbnNodeJacket.setSsbnNode(checkForDoubleSSBNNode(ssbnNode));
+		
+		SSBNNode test = ssbnNodesMap.get(ssbnNode.getUniqueName()); 
+		
+		if(test != null){
+			ssbnNodeJacket.getSsbnNode().delete(); 
+			ssbnNodeJacket.setSsbnNode(test); 
+		}
+		
+		ssbnNodeList.add(ssbnNodeJacket.getSsbnNode());
+		ssbnNodesMap.put(ssbnNodeJacket.getSsbnNode().getUniqueName(), ssbnNodeJacket.getSsbnNode()); 	
+		
+//		ssbnNodeJacket.setSsbnNode(checkForDoubleSSBNNode(ssbnNode));
 		
 		logManager.appendln(" ");
 		logManager.appendln("SSBNNode created:" + ssbnNodeJacket.getSsbnNode());
@@ -870,7 +1110,6 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 		logManager.appendln("Resident MFrag Arguments: " + ssbnNodeJacket.getOvInstancesOfResidentMFrag());
 		logManager.appendln(" ");
 		
-		ssbnNodeList.add(ssbnNodeJacket.getSsbnNode());
 		
 		return ssbnNodeJacket;
 	}
@@ -950,8 +1189,14 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 		
 	}
 	
-	/*
-	 * The XOR algorith
+	/**
+	 * The XOR algorith: 
+	 * Generate the cpt of 
+	 * - the context node father
+	 * - the node that have the indeterminated parents
+	 * 
+	 * Pre-requisites: 
+	 * 
 	 */
 	protected void generateCPTForNodeWithContextFather(SSBNNode ssbnNode) 
 	      throws SSBNNodeGeneralException, MEBNException, InvalidOperationException {
@@ -1036,6 +1281,12 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 				
 				mapCPTByEntity.put(entity.getInstanceName(), cpt);
 				Debug.println("Tabela armazenada: " + entity.getInstanceName() + " " + cpt.tableSize());
+			
+				//TODO remove the parents of the tempNode because it is added to the list
+				//of child nodes of the other node!!!
+//				for(SSBNNode parent: groupParents){
+//					tempNode.removeParent(parent); 
+//				}
 			}			
 			
 			//Reorganize the variables in table
@@ -1130,7 +1381,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 									positionTableResident++; 
 									positionAuxEntity++; 
 								}
-								Debug.println("");
+//								Debug.println("");
 							}
 							positionTableEntityInitial += rows; 
 						}

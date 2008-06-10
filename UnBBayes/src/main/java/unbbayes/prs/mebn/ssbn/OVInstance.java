@@ -101,6 +101,11 @@ public class OVInstance {
 		return null; 
 	}
 	
+	/**
+	 * Sample: 
+	 * DistFromOwn((st,ST4)(tPrev,T0)) [F]  [id=10]P=true
+	 * Name + OVInstance List + Finding + Id + Permanent
+	 */
 	public String toString(){
 		String ret = "("; 
 		

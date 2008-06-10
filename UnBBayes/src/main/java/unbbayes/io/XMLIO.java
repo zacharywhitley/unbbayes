@@ -251,6 +251,7 @@ public class XMLIO implements BaseIO{
 					BIFType.NETWORKType.POTENTIALType.POTType.CONDSETType.CONDLEMType condlen = (BIFType.NETWORKType.POTENTIALType.POTType.CONDSETType.CONDLEMType)lcondlen.get(j); 
 					String parent = condlen.getNAME(); 
 					Node parentNode = pn.getNode(parent);
+					System.out.println("Analise:" + parent + " " + parentNode + " " + childNode);
 					Edge auxEdge = new Edge(parentNode, childNode);
 					pn.addEdge(auxEdge); 
 				}

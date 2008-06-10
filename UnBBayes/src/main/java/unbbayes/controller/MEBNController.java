@@ -1641,6 +1641,7 @@ public class MEBNController  {
 				try {
 					ssbn.initializeSSBN();
 				} catch (Exception e) {
+					screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 					JOptionPane.showMessageDialog(getScreen(), 
 							e.getMessage());
 				} 
