@@ -445,7 +445,13 @@ public class Compiler implements ICompiler {
 			
 			// if default distro, then use the default header...
 			// also, if no parents are declared, use default distro...
-			if (this.getSSBNNode().isUsingDefaultCPT() || (this.getSSBNNode().getParents().size() == 0)) {
+			boolean thereAreNoParents = false;
+			if(this.getSSBNNode().getParents() == null) {
+				thereAreNoParents = true;
+			} else if (this.getSSBNNode().getParents().size() == 0) {
+				thereAreNoParents = true;
+			}
+			if (thereAreNoParents || this.getSSBNNode().isUsingDefaultCPT()) {
 				// we assume the default distro is the last block on pseudocode
 				header = this.tempTable.get(this.tempTable.size() - 1);
 				// let's check if this header is really declaring a default distro...
