@@ -212,7 +212,12 @@ public class Compiler implements ICompiler {
 	}
 	
 	
-	
+	/**
+	 * Creates an instance of Compiler. The resident node is necessary
+	 * in order to perform semantic consisntency check.
+	 * @param node: a resident node containing the table to parse
+	 * @return a instance of the compiler.
+	 */
 	public Compiler (ResidentNode node) {
 		super();
 		this.setNode(node);
@@ -227,7 +232,9 @@ public class Compiler implements ICompiler {
 	 * @return a instance of the compiler.
 	 */
 //	public static Compiler getInstance(ResidentNode node) {
-//		return new Compiler(node);
+//	// since we are not using other specific pseudocode Compilers, and we do not use Builders/Factories,
+	// it is not necessary to have a constructor method...
+//	return new Compiler(node);
 //	}
 	
 	
@@ -2253,6 +2260,11 @@ public class Compiler implements ICompiler {
 			this.value = value;
 			this.setEvaluationList(evaluationList);
 		}
+		
+		/**
+		 * 
+		 * @return which parent this leaf represents
+		 */
 		public ResidentNode getParent() {
 			return parent;
 		}
@@ -2313,8 +2325,8 @@ public class Compiler implements ICompiler {
 			return evaluationList;
 		}
 		/**
-		 * note: if param is null, it will set the value of this object as known value = false
-		 * immediately.
+		 * note: if param is null, it will set the value of this object as known value = "false"
+		 * (assume this boolean evaluation as allways false) immediately.
 		 * @param evaluationList the evaluationList to set
 		 */
 		public void setEvaluationList(List<EntityAndArguments> evaluationList) {
@@ -2324,6 +2336,7 @@ public class Compiler implements ICompiler {
 					this.currentEvaluationIndex = 0;
 				}
 			} else {
+				// isKnownValue = true indicates that expression as value "false" no matter when, where or how it is evaluated
 				this.isKnownValue  = true; // we assume if set to null, then false immediately
 			}
 		}
@@ -2651,6 +2664,17 @@ public class Compiler implements ICompiler {
 	private class EntityAndArguments {
 		public Entity entity = null;
 		public List<OVInstance> arguments = null;
+		/**
+		 * Creates an alternative (compact) way to represent a particular state of
+		 * a SSBNNode, by storing its current value (entity) and its current 
+		 * arguments (arguments).
+		 * For instance, if SSBNNode = DangerToSelf((st,ST0),(t,T0)) = [Phaser2Range |
+		 * PulseCannonRange | TorpedoRange], then a possible value of EntityAndArguments 
+		 * would be (Phaser2Range;[(st,ST0),(t,T0)]), which means that DangerToSelf
+		 * is at value Phaser2Range when its arguments st=T0 and t=T0.
+		 * @param entity
+		 * @param arguments
+		 */
 		public EntityAndArguments (Entity entity, List<OVInstance> arguments) {
 			this.entity = entity;
 			this.arguments = arguments;

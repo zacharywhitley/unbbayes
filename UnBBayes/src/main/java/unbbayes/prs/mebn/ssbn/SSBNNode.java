@@ -141,7 +141,7 @@ public class SSBNNode {
 		
 		return new SSBNNode(probabilisticNetwork, resident,probNode);
 		
-	}
+	}	
 	
 	/**
 	 *  This class is a temporary representation of a resident random variable instance at ssbn creation step.
@@ -733,7 +733,8 @@ public class SSBNNode {
 	 * Obviously, it may be a list of entity instances.
 	 */
 	public Collection<Entity> getActualValues() {
-		if (this.getProbNode() == null) {			
+		if ((this.getProbNode() == null )) {			
+		//if ((this.getProbNode() == null ) || this.isFinding()) {			
 			ArrayList<Entity> ret = new ArrayList<Entity>();
 			ret.add(this.actualValues.iterator().next());
 			return ret;

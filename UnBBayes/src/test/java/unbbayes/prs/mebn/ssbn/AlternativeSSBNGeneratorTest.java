@@ -25,7 +25,7 @@ public class AlternativeSSBNGeneratorTest extends TestCase{
 	public static final String KB_GENERATIVE_FILE = "examples/mebn/KnowledgeBase/KnowledgeBaseGenerative.plm";
 	
 	
-	public static final String STARTREK_UBF = "examples/mebn/StarTrek52.ubf"; 
+	public static final String STARTREK_UBF = "examples/mebn/StarTrek.ubf"; 
 
 	public static void main(String arguments[]){
 		
