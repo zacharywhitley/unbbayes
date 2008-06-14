@@ -355,9 +355,11 @@ public class Compiler implements ICompiler {
 		if (this.tempTable == null) {
 			return null;
 		}
-		if (this.ssbnnode.isFinding()) {
-			return null;
-		}
+		
+//		if (this.ssbnnode.isFinding()) {
+//			return null;
+//		}
+		
 		if (this.ssbnnode.getProbNode() == null) {
 			return null;
 		}
@@ -515,9 +517,9 @@ public class Compiler implements ICompiler {
 		if (ssbnnode == null) {
 			return null;
 		}
-		if (ssbnnode.isFinding()) {
-			return null;
-		}
+//		if (ssbnnode.isFinding()) {
+//			return null;
+//		}
 		this.init(ssbnnode);
 		this.parse();
 		return getCPT();
@@ -2260,11 +2262,6 @@ public class Compiler implements ICompiler {
 			this.value = value;
 			this.setEvaluationList(evaluationList);
 		}
-		
-		/**
-		 * 
-		 * @return which parent this leaf represents
-		 */
 		public ResidentNode getParent() {
 			return parent;
 		}
@@ -2325,8 +2322,8 @@ public class Compiler implements ICompiler {
 			return evaluationList;
 		}
 		/**
-		 * note: if param is null, it will set the value of this object as known value = "false"
-		 * (assume this boolean evaluation as allways false) immediately.
+		 * note: if param is null, it will set the value of this object as known value = false
+		 * immediately.
 		 * @param evaluationList the evaluationList to set
 		 */
 		public void setEvaluationList(List<EntityAndArguments> evaluationList) {
@@ -2374,6 +2371,9 @@ public class Compiler implements ICompiler {
 		 * @return true if currently evaluated entity list has next element
 		 */
 		public boolean hasNextEvaluation() {
+			
+//			if(this.evaluationList == null) return false; 
+			
 			return (this.currentEvaluationIndex + 1 ) < this.evaluationList.size();
 		}
 		
