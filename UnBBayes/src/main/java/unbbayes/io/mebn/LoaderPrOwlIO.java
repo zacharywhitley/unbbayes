@@ -86,6 +86,7 @@ import edu.stanford.smi.protegex.owl.model.OWLObjectProperty;
  * (http://www.pr-owl.org/pr-owl.owl) 
  * 
  * @author Laecio Lima dos Santos
+ * @author Shou Matsumoto
  * @version 1.0 
  */
 

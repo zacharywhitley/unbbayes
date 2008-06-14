@@ -91,10 +91,10 @@ public class CL extends CBLToolkit{
 	 * Informação mutua da variavel xk para a xi
 	 */	
 	public double mutualInformation(LearningNode xi,LearningNode xk){    	
-    	int nt = 0;
-    	int il = 0;    	
-    	int kl = 0;
-    	double im = 0;    	
+    	int nt = 0;					// numero total de casos (entrada da base de dados) analisados
+    	int il = 0;    				// estado atualmente analisado do no xi		
+    	int kl = 0;					// estado atualmente analisado do no xk
+    	double im = 0;    			// informação mutua
     	double pik = 0;
         int ri = xi.getEstadoTamanho();
         int rk = xk.getEstadoTamanho();
