@@ -22,12 +22,10 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 public class AlternativeSSBNGeneratorTest extends TestCase{
 
 	public static final String KB_FINDING_FILE = "examples/mebn/KnowledgeBase/KnowledgeBaseWithStarshipZoneST4ver2.plm";
-
-	public static final String STARTREK_UBF = "examples/mebn/StarTrek.ubf"; 
-
 	public static final String KB_GENERATIVE_FILE = "examples/mebn/KnowledgeBase/KnowledgeBaseGenerative.plm";
 	
-
+	
+	public static final String STARTREK_UBF = "examples/mebn/StarTrek52.ubf"; 
 
 	public static void main(String arguments[]){
 		
@@ -70,7 +68,7 @@ public class AlternativeSSBNGeneratorTest extends TestCase{
 		
 		System.out.println("Knowledge base init and filled");
 		
-		SSBNNode queryNode = createQueryNode_HarmPotential_ST4_T0(mebn); 
+		SSBNNode queryNode = createQueryNode_HarmPotential_ST4_T3(mebn); 
 		
 		Query query = new Query(kb, queryNode, mebn); 
 		query.setMebn(mebn); 
@@ -90,7 +88,7 @@ public class AlternativeSSBNGeneratorTest extends TestCase{
 		
 		System.out.println("SSBN OK");
 		
-		BottomUpSSBNGenerator.printAndSaveCurrentNetwork(queryNode);
+//		BottomUpSSBNGenerator.printAndSaveCurrentNetwork(queryNode);
 		System.out.println("End");
 		
 	}
@@ -112,7 +110,7 @@ public class AlternativeSSBNGeneratorTest extends TestCase{
 		
 		MFrag mFrag = mebn.getMFragByName(mFragName); 
 		ResidentNode residentNode = mFrag.getDomainResidentNodeByName(residentNodeName); 
-		SSBNNode queryNode = SSBNNode.getInstance(null,residentNode, new ProbabilisticNode(), false); 
+		SSBNNode queryNode = SSBNNode.getInstance(null,residentNode, new ProbabilisticNode()); 
 		
 		try {
 			for(int i = 0; i < ovVariableNameList.length; i++){
