@@ -39,18 +39,16 @@ import unbbayes.prs.mebn.compiler.ICompiler;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
-
 /**
- *
- * @author shou matsumoto
- *
+ * @author Shou Matsumoto
+ * @author Laecio Santos
  */
 public class SSBNNode {
 	
 	private static int count = 0; 
 	private int id; 
 	
-	public enum EvaluationState{
+	protected enum EvaluationSSBNNodeState{
 		NOT_EVALUATED, 
 		EVALUATED_BELOW, 
 		EVALUATED_COMPLETE, 
@@ -58,19 +56,22 @@ public class SSBNNode {
 		EVALUATING_UP
 	}
 	
-	private EvaluationState evaluationState = EvaluationState.NOT_EVALUATED; 
+	private EvaluationSSBNNodeState evaluationState = 
+		EvaluationSSBNNodeState.NOT_EVALUATED; 
 	
 	// Private Attributes
 	
-	private ResidentNode resident = null;	// what resident node this instance represents
-	private ProbabilisticNode  probNode = null;	// stores the UnBBayes BN ordinal node which represents this SSBNNode
+	private ResidentNode residentNode = null;	// what resident node this instance represents
+	private ProbabilisticNode  probabilisticNode = null;	// stores the UnBBayes BN ordinal node which represents this SSBNNode
 	
 	private List<OVInstance> arguments = null;
 	private Collection<SSBNNode> parents = null;
 	private Collection<SSBNNode> children = null; 
 	
-	private Collection<Entity> actualValues = null; // this is the possible values of this node at that moment (might be one, if there is an evidence)
+	private Collection<Entity> actualValues = null; // this is the possible values of this node at that moment 
 													// this is useful when this node must provide some values different than the resident nodes' ones
+	
+	private Entity value = null; //setted when this node is a finding
 	
 	//private boolean isUsingDefaultCPT = false;	// checks if this node should use defaultCPT
 	
@@ -79,8 +80,6 @@ public class SSBNNode {
 	private boolean cptAlreadyGenerated = false; //Indicate if the cpf already was generated
 	
 	private ICompiler compiler = null;
-	
-	private boolean isFinding = false;
 	
 	private ContextFatherSSBNNode contextFatherSSBNNode= null;
 	
@@ -93,7 +92,8 @@ public class SSBNNode {
 	
 	// Constructors	
 	
-	private SSBNNode (ProbabilisticNetwork pnet, ResidentNode resident , ProbabilisticNode probNode, boolean isFinding) {
+	private SSBNNode (ProbabilisticNetwork pnet, ResidentNode resident , 
+			ProbabilisticNode probNode) {
 		
 		id = count; 
 		count++; 
@@ -101,12 +101,11 @@ public class SSBNNode {
 		this.arguments = new ArrayList<OVInstance>();
 		this.parents = new ArrayList<SSBNNode>();
 		this.children = new ArrayList<SSBNNode>(); 
-		this.resident = resident;
-		
-		this.isFinding = isFinding;
+		this.residentNode = resident;
 		
 		if (pnet == null) {
-			this.probabilisticNetwork = new ProbabilisticNetwork(this.resource.getString("DefaultNetworkName"));
+			this.probabilisticNetwork = 
+				new ProbabilisticNetwork(this.resource.getString("DefaultNetworkName"));
 		} else {
 			this.probabilisticNetwork = pnet;
 		}
@@ -116,21 +115,8 @@ public class SSBNNode {
 		}else{
 			this.setProbNode(probNode);
 		}
-
 		
-		// below is unecessary because setProbeNode already does
-		//this.appendProbNodeState();	// if OK, probNode's states become the same of the resident's one
-		
-		this.actualValues = null;
-		
-		if (!isFinding) {
-			this.actualValues = this.resident.getPossibleValueListIncludingEntityInstances();
-		} else {
-			//TODO What is this???
-			this.actualValues = new ArrayList<Entity>();
-			this.actualValues.add(resident.getPossibleValueLinkList().get(0).getState());
-		}
-		
+		this.actualValues =  this.residentNode.getPossibleValueListIncludingEntityInstances();
 		
 		this.setUsingDefaultCPT(false);
 		
@@ -147,43 +133,15 @@ public class SSBNNode {
 	 * represent this node once SSBN is generated.
 	 * If declared as a finding, probNode will be set to null (the value would be the 1st possible value declared
 	 * by its resident node).
-	 * @param isFinding: declares this node as a finding node, making it impossible to set multiple values and add a parent
 	 * @param probabilisticNetwork: the network which probNode should work on. If null, a new one will be created.
 	 * @return a SSBNNode instance.
 	 */
-	public static SSBNNode getInstance (ProbabilisticNetwork probabilisticNetwork,ResidentNode resident , ProbabilisticNode probNode, boolean isFinding)  {
-		return new SSBNNode(probabilisticNetwork, resident,probNode, isFinding);
+	public static SSBNNode getInstance (ProbabilisticNetwork probabilisticNetwork,
+			ResidentNode resident , ProbabilisticNode probNode){
+		
+		return new SSBNNode(probabilisticNetwork, resident,probNode);
+		
 	}
-	
-	/*
-	 *  This class is a temporary representation of a resident random variable instance at ssbn creation step.
-	 * Basically, works as a bridge (not a design pattern) between MEBN solid resident node representation (DomainResidentNode)
-	 * and the actual ProbabilisticNode on UnBBayes.
-	 * @param resident: the resident node this SSBNNode represents
-	 * @param probNode: this is useful when we already know which ProbabilisticNode (UnBBayes representation of a node) shall
-	 * represent this node once SSBN is generated.
-	 * If declared as a finding, probNode will be set to null (the value would be the 1st possible value declared
-	 * by its resident node).
-	 * @param isFinding: declares this node as a finding node, making it impossible to set multiple values and add a parent
-	 * @return a SSBNNode instance.
-	 */
-	//public static SSBNNode getInstance (DomainResidentNode resident , ProbabilisticNode probNode, boolean isFinding)  {
-	//	return new SSBNNode(null,resident,probNode, isFinding);
-	//}
-	
-	/*
-	 *  This class is a temporary representation of a resident random variable instance at ssbn creation step.
-	 * Basically, works as a bridge (not a design pattern) between MEBN solid resident node representation (DomainResidentNode)
-	 * and the actual ProbabilisticNode on UnBBayes. This is, for now, identical to getInstance(null, resident,null, false)
-	 * NOTE THAT THIS IS GOING TO CREATE A NEW PROBABILISTICNETWORK
-	 * @param resident: the resident node this SSBNNode represents
-	 * @return a SSBNNode instance.
-	 * 
-	 */
-	
-	//public static SSBNNode getInstance (DomainResidentNode resident)  {
-	//	return new SSBNNode(null,resident,null, false);
-	//}
 	
 	/**
 	 *  This class is a temporary representation of a resident random variable instance at ssbn creation step.
@@ -196,27 +154,11 @@ public class SSBNNode {
 	 * 
 	 */
 	public static SSBNNode getInstance (ProbabilisticNetwork net ,ResidentNode resident)  {
-		return new SSBNNode(net,resident,null, false);
+		return new SSBNNode(net,resident,null);
 	}
-	
 	
 	public static SSBNNode getInstance (ResidentNode resident)  {
-		return new SSBNNode(null,resident,null, false);
-	}
-	
-	
-	private void appendProbNodeState() {
-		if (this.getProbNode() == null) {
-			return;
-		}
-		if (this.getResident() != null) {
-			for (Entity entity : this.resident.getPossibleValueListIncludingEntityInstances()) {
-				this.getProbNode().appendState(entity.getName());
-			}
-		}
-		if (this.getProbNode().getPotentialTable() != null) {
-			this.getProbNode().getPotentialTable().addVariable(this.getProbNode());
-		}
+		return new SSBNNode(null,resident,null);
 	}
 	
 	/**
@@ -226,8 +168,8 @@ public class SSBNNode {
 	public String getUniqueName(){
 		StringBuilder uniqueName = new StringBuilder(); 
 		
-		uniqueName.append(this.resident.getName()); 
-		for(OrdinaryVariable ov: resident.getOrdinaryVariableList()){
+		uniqueName.append(this.residentNode.getName()); 
+		for(OrdinaryVariable ov: residentNode.getOrdinaryVariableList()){
 			OVInstance ovInstance = getArgumentByOrdinaryVariable(ov);
 			uniqueName.append("_" + ovInstance.getEntity().getInstanceName()); 
 		}
@@ -246,120 +188,6 @@ public class SSBNNode {
 		
 		return uniqueName.toString(); 
 	}
-	
-	private String getNameByDots(String...names) {
-		String dotName = new String(names[0]);
-		for (int i = 1; i < names.length; i++) {
-			dotName.concat("." + names[i]);
-		}
-		return dotName;
-	}
-	
-	private String getNameByDots(Collection<OrdinaryVariable> ovs) {
-		OrdinaryVariable[] ovArray = new OrdinaryVariable[ovs.size()];
-		int i = 0;
-		for (OrdinaryVariable variable : ovs) {
-			ovArray[i] = variable;
-			i++;
-		}
-			
-		String dotName = new String(ovArray[0].getName());
-		for (i = 1; i < ovArray.length; i++) {
-			dotName+= ("." + ovArray[i].getName());
-		}
-		return dotName;
-	}
-	
-	private boolean isAllValuesBelow(int value, int[] vector) {
-		for (int i = 0; i < vector.length; i++) {
-			if(vector[i] >= value) {
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	private int factorial(int n) {
-		int ret = 1;
-		for (int i = 1; i <= n; i++) {
-			ret *= i;
-		}
-		return ret;
-	}
-	
-	private int combination(int n , int by) {
-		if (n < by) {
-			return 1;
-		}
-		return (factorial(n) / (factorial(by)*factorial(n-by)));
-	}
-	
-	private Collection<Collection<OrdinaryVariable>> getOVCombination(int byHowMany, OrdinaryVariable... ovs ){
-		
-		Collection<Collection<OrdinaryVariable>> ret = new ArrayList<Collection<OrdinaryVariable>>();
-		if (byHowMany <= 0) {
-			return ret;
-		}
-		if (byHowMany > ovs.length) {
-			return ret;
-		}
-		
-		OrdinaryVariable[] ovArray = (OrdinaryVariable[])ovs;
-		int[] indexes = new int[byHowMany];
-		
-		for (int i = 0; i < indexes.length; i++) {
-			indexes[i] = i;
-		}
-		
-		Collection<OrdinaryVariable> tempOVs = null;
-		//while (indexes[0] <= ovArray.length - indexes.length)
-		int combination = this.combination(ovArray.length, byHowMany);
-		for (int i = 0; i < combination; i++) {
-			
-			tempOVs = new ArrayList<OrdinaryVariable>();
-			for (int j = 0; j < indexes.length; j++) {
-				tempOVs.add(ovArray[indexes[j]]);
-			}
-			ret.add(tempOVs);
-			
-			indexes[indexes.length - 1]++;
-			for (int j = indexes.length - 2; j >= 0; j--) {
-				if (indexes[j + 1] > ovArray.length - (indexes.length - (j+1))) {
-					if (indexes[j] + 1 < indexes[j + 1]) {
-						indexes[j]++;
-						for (int k = j + 1; k < indexes.length; k++) {
-							indexes[k] = indexes[k-1] + 1;
-						}
-						
-					}
-				}
-			}
-		}
-		return ret;
-	}
-	
-	private Collection<Collection<OrdinaryVariable>> getOVCombination(int byHowMany, Collection<OrdinaryVariable> ovs ) {
-		OrdinaryVariable[] array = new OrdinaryVariable[ovs.size()];
-		int i = 0;
-		for (OrdinaryVariable ov : ovs) {
-			array[i] = ov;
-			i++;
-		}
-		return this.getOVCombination(byHowMany, array);
-	}
-	
-	
-	private Collection<OrdinaryVariable> getAllParentsOV() {
-		Set<OrdinaryVariable> ovs = new HashSet<OrdinaryVariable>();
-		for (SSBNNode parent : this.getParents()) {
-			ovs.addAll(parent.getOVs());
-		}
-		return ovs;
-	}
-	
-	
-	// exported methods
-	
 	
 	/**
 	 * 
@@ -532,22 +360,21 @@ public class SSBNNode {
 	 * @param uniqueValue: the unique value this node represents
 	 */
 	public void setNodeAsFinding(Entity uniqueValue) {
-		Collection actualValue = new ArrayList<Entity>();
-		actualValue.add(uniqueValue);
-		this.setActualValues(actualValue);
-		this.setFinding(true);
-		
-//		//TODO correcty this...
-//		if(this.getProbNode()!=null){
-//			ProbabilisticNode node = this.getProbNode();
-//			if(probabilisticNetwork != null){
-//			    probabilisticNetwork.removeNode(node);
-//			}
-//			this.setProbNode(null);	
-//		}
+		value = uniqueValue; 	
 	}
 	
-	// Parent controller
+	/**
+	 * @return If this node is a finging
+	 */
+	public boolean isFinding(){
+		return (value != null); 
+	}
+	
+	
+
+	public void addTemporaryParent(SSBNNode parent, boolean isCheckingParentResident) throws SSBNNodeGeneralException{
+		
+	}
 	
 	/**
 	 * This will add a parent to this node. It may check if the resident node
@@ -564,65 +391,6 @@ public class SSBNNode {
 	 * @throws SSBNNodeGeneralException when parent has no resident node or ProbNode or 
 	 * there were inconsistency when isCheckingParentResident was set to true.
 	 */
-	public void addTemporaryParent(SSBNNode parent, boolean isCheckingParentResident) throws SSBNNodeGeneralException{
-		
-		// initial check. Note that if node is finding (probNode==null), then it should not have a parent
-		if ((parent.getResident() == null ) || (parent.getProbNode() == null)) {
-			throw new SSBNNodeGeneralException();
-		}
-		
-		// perform consistency check
-		if (isCheckingParentResident) {
-			
-			//verify if the parent is in the list of possible parents of the node
-			//(resident/input nodes that have a edge to the node)
-			ArrayList<Node> expectedParents = this.getResident().getParents();
-			boolean isConsistent = false;
-			InputNode input = null;
-			for (int i = 0; i < expectedParents.size(); i++) {
-				if (parent.getResident() == expectedParents.get(i)) {
-					isConsistent = true;
-					break;
-				}
-				if (expectedParents.get(i) instanceof InputNode) {
-					input = (InputNode)expectedParents.get(i);
-					if (input.getResidentNodePointer().getResidentNode() == parent.getResident()) {
-						isConsistent = true;
-						break;
-					}
-				}
-			}
-			if (!isConsistent) {
-				throw new SSBNNodeGeneralException();
-			}
-			// check if both probNodes are in a same network
-			if (this.getProbNode() != null) {
-				if (parent.getProbNode() != null) {
-					if (this.getProbabilisticNetwork() != parent.getProbabilisticNetwork()) {
-						throw new SSBNNodeGeneralException(this.resource.getString("IncompatibleNetworks"));
-					}
-				}
-			}
-		}
-		
-		//consistency OK: add the node 
-		this.getParents().add(parent);
-		parent.children.add(this); 
-		
-		if (this.getProbNode() != null) {
-			if (parent.getProbNode() != null){
-				Edge edge = new Edge(parent.getProbNode(), this.getProbNode());
-				if (this.getProbabilisticNetwork() != null) {
-					this.getProbabilisticNetwork().addEdge(edge);
-					BottomUpSSBNGenerator.logManager.append("\n");
-					BottomUpSSBNGenerator.logManager.append(edge + " created");
-//					BottomUpSSBNGenerator.printAndSaveCurrentNetwork(this);
-				}
-			}
-		}
-		
-	}
-	
 	public void addParent(SSBNNode parent, boolean isCheckingParentResident) throws SSBNNodeGeneralException{
 		
 		if(getParents().contains(parent)){
@@ -631,7 +399,7 @@ public class SSBNNode {
 		
 		// initial check. Note that if node is finding (probNode==null), then it should not have a parent
 		if ((parent.getResident() == null ) || (parent.getProbNode() == null)) {
-			throw new SSBNNodeGeneralException();
+			throw new SSBNNodeGeneralException(resource.getString("InternalError"));
 		}
 		
 		// perform consistency check
@@ -656,7 +424,7 @@ public class SSBNNode {
 				}
 			}
 			if (!isConsistent) {
-				throw new SSBNNodeGeneralException();
+				throw new SSBNNodeGeneralException("InconsistencyError");
 			}
 			// check if both probNodes are in a same network
 			if (this.getProbNode() != null) {
@@ -677,8 +445,8 @@ public class SSBNNode {
 				Edge edge = new Edge(parent.getProbNode(), this.getProbNode());
 				if (this.getProbabilisticNetwork() != null) {
 					this.getProbabilisticNetwork().addEdge(edge);
-					BottomUpSSBNGenerator.logManager.append("\n");
-					BottomUpSSBNGenerator.logManager.append(edge + " created");
+					AbstractSSBNGenerator.logManager.append("\n");
+					AbstractSSBNGenerator.logManager.append(edge + " created");
 //					BottomUpSSBNGenerator.printAndSaveCurrentNetwork(this);
 				}
 			}
@@ -697,7 +465,7 @@ public class SSBNNode {
 		
 		for(SSBNNode node: aux){
 			this.removeParent(node); 
-			node.children.remove(this); 
+			node.getChildren().remove(this); 
 		}
 		
 		removeContextFatherSSBNNode(); 
@@ -706,7 +474,7 @@ public class SSBNNode {
 	protected void removeParent(SSBNNode parent) {
 		
 		this.getParents().remove(parent);
-		parent.children.remove(this); 
+		parent.getChildren().remove(this); 
 		
 		if (this.getProbNode() != null) {
 			this.getProbNode().getParents().remove(this.getProbNode());
@@ -724,9 +492,6 @@ public class SSBNNode {
 		if (name == null) {
 			return;
 		}
-		if (this.isFinding) {
-			return;
-		}
 		Collection<SSBNNode> parents = this.getParents();
 		Collection<SSBNNode> removingNodes = new ArrayList<SSBNNode>();
 		for (SSBNNode node : parents) {
@@ -737,7 +502,7 @@ public class SSBNNode {
 		}
 		parents.removeAll(removingNodes);
 		for(SSBNNode parent: removingNodes){
-			parent.children.remove(this); 
+			parent.getChildren().remove(this); 
 		}
 	}
 	
@@ -758,9 +523,9 @@ public class SSBNNode {
 		if (ovNames.length <= 0) {
 			return parents;
 		}
-		if (this.isFinding) {
-			return parents;
-		}
+//		if (this.isFinding) {
+//			return parents;
+//		}
 		for (SSBNNode parent : this.parents) {
 			if (parent.hasAllOVs(true, ovNames)) {
 				if (isExactMatch) {
@@ -789,9 +554,9 @@ public class SSBNNode {
 		if (setOfOV == null) {
 			return parents;
 		}
-		if (this.isFinding) {
-			return parents;
-		}
+//		if (this.isFinding) {
+//			return parents;
+//		}
 		for (SSBNNode parent : this.parents) {
 			if (parent.hasAllOVs(setOfOV)) {
 				if (isExactMatch) {
@@ -823,9 +588,9 @@ public class SSBNNode {
 		if (setOfOV.length <= 0) {
 			return parents;
 		}
-		if (this.isFinding) {
-			return parents;
-		}
+//		if (this.isFinding) {
+//			return parents;
+//		}
 		for (SSBNNode parent : this.parents) {
 			if (parent.hasAllOVs(setOfOV)) {
 				if (isExactMatch) {
@@ -854,9 +619,9 @@ public class SSBNNode {
 		
 		List<SSBNNode> ret = new ArrayList<SSBNNode>();
 		// checks...
-		if (this.isFinding) {
-			return ret;
-		}
+//		if (this.isFinding) {
+//			return ret;
+//		}
 		if (strongOVs == null) {
 			return ret;
 		}
@@ -931,21 +696,15 @@ public class SSBNNode {
 	
 	
 	
-	
-	
-	// Ordinal getters and setters
-
-	private static int Number = 0; 
-	
 	/**
 	 * Returns the name of the node -> which is the same of resident's and
 	 * its current arguments (entity instances) between parentheses, with no
-	 * spaces. E.g. HarmPotential(ST4,T0)
-	 * @return
+	 * spaces. E.g. HarmPotential(ST4,T0) [id = 90] P = true
+	 * where id is the number of this ssbnnode and P is the permanent flag
 	 */
 	public String getName() {
 		
-		String name = new String(this.resident.getName());
+		String name = new String(this.residentNode.getName());
 		name += "(";
 		for (OVInstance ovi : this.getArguments()) {
 			if (name.charAt(name.length() - 1) != '(') {
@@ -974,7 +733,7 @@ public class SSBNNode {
 	 * Obviously, it may be a list of entity instances.
 	 */
 	public Collection<Entity> getActualValues() {
-		if (this.getProbNode() == null || this.isFinding) {
+		if (this.getProbNode() == null) {			
 			ArrayList<Entity> ret = new ArrayList<Entity>();
 			ret.add(this.actualValues.iterator().next());
 			return ret;
@@ -1026,196 +785,9 @@ public class SSBNNode {
 		return null;
 	}
 	
-	/**
-	 * @param arguments the arguments to set
-	 */
-	public void setArguments(List<OVInstance> arguments) {
-		this.arguments = arguments;
-	}
-
-	/**
-	 * @return the isUsingDefaultCPT
-	 */
-	public boolean isUsingDefaultCPT() {
-		return resident.getMFrag().isUsingDefaultCPT();
-	}
-
-	/**
-	 * Adds a note whitch determines this mode must (or not) use its default CPT distribution. It also adds a note for
-	 * nodes from its MFrag.
-	 * @param isUsingDefaultCPT the isUsingDefaultCPT to set
-	 */
-	public void setUsingDefaultCPT(boolean isUsingDefaultCPT) {
-		resident.getMFrag().setAsUsingDefaultCPT(isUsingDefaultCPT);
-	}
-
-	/**
-	 * @return the parents
-	 */
-	public Collection<SSBNNode> getParents() {
-		if (this.isFinding) {
-			return new ArrayList<SSBNNode>();
-		}
-		return parents;
-	}
-
-	/**
-	 * This method sets a parent without checking structure consistency. Be careful when using this.
-	 * @param parents the parents to set
-	 */
-	public void setParents(Collection<SSBNNode> parents) {
-		this.parents = parents;
-	}
-
-	/**
-	 * @return the probNode. Null if it should be a finding
-	 */
-	public ProbabilisticNode getProbNode() {
-		//if (this.probNode != null) {
-			// currently, this process is redundant (because getName already sets probNode's name)...
-			//this.probNode.setName(this.getName());
-		//}
-		return probNode;
-	}
-
-	/**
-	 * Setting a probNode to null is the same of declaring it as a finding 
-	 * (the value should be the 1st possible value declared by its resident node). 
-	 * The new probNode should not have parents.
-	 * 
-	 * Note: this method set the name of the probNode (use the ssbnNode attributes for 
-	 * this) and add the node in the probabilistic network
-	 * 
-	 * @param probNode the ProbabilisticNode (UnBBayes node representation) to set
-	 */
-	public void setProbNode(ProbabilisticNode probNode) {
-		
-		// TODO treat parents and dangling references
-		if (this.probNode != null) {
-			this.getProbabilisticNetwork().removeNode(this.probNode);
-		}
-		this.probNode = probNode;
-		this.appendProbNodeState();
-		
-		if (this.probNode != null) {
-			this.probNode.setName(this.getName());
-			this.getProbNode().setDescription(this.getName()); // TODO optimize. above code is setting probnode'name twice
-			this.getProbabilisticNetwork().addNode(this.probNode);
-		}
-	}
-
-	/**
-	 * @return the DomainResidentNode this node represents
-	 */
-	public ResidentNode getResident() {
-		return resident;
-	}
-
-	/**
-	 * @param resident the resident to set
-	 */
-	protected void setResident(ResidentNode resident) {
-		this.resident = resident;
-		this.setProbNode(new ProbabilisticNode());
-	}
-
-	/**
-	 * When creating names for sets of strong OVs, this string/char separates the compound names.
-	 * Ex. When separator is ".", ovs = {st,z} -> name= "st.z"
-	 * @return the strongOVSeparator
-	 */
-	public String getStrongOVSeparator() {
-		return strongOVSeparator;
-	}
-
-	/**
-	 * When creating names for sets of strong OVs, this string/char separates the compound names.
-	 * Ex. When separator is ".", ovs = {st,z} -> name= "st.z"
-	 * @param strongOVSeparator the strongOVSeparator to set
-	 */
-	public void setStrongOVSeparator(String strongOVSeparator) {
-		this.strongOVSeparator = strongOVSeparator;
-	}
-
-	/**
-	 * @return the current compiler
-	 */
-	public ICompiler getCompiler() {
-		return compiler;
-	}
-
-	/**
-	 * Sets which compiler class we should use to parse pseudocode and generate CPT
-	 * @param compiler: the compiler to set
-	 */
-	public void setCompiler(ICompiler compiler) {
-		this.compiler = compiler;
-	}
-
-	/**
-	 * @return true if this node is set as a finding. False otherwise.
-	 */
-	public boolean isFinding() {
-		return isFinding;
-	}
-
-	/**
-	 * @param isFinding: true if this node is set as a finding. False otherwise. Setting this
-	 * value to true will make it impossible to set multiple possible values and/or add a parent
-	 */
-	private void setFinding(boolean isFinding) {
-		this.isFinding = isFinding;
-	}
-
-	/**
-	 * @return the probabilisticNetwork
-	 */
-	public ProbabilisticNetwork getProbabilisticNetwork() {
-		return probabilisticNetwork;
-	}
-
-	/**
-	 * @param probabilisticNetwork the probabilisticNetwork to set
-	 */
-	public void setProbabilisticNetwork(ProbabilisticNetwork probabilisticNetwork) throws SSBNNodeGeneralException {
-		if (probabilisticNetwork == null) {
-			throw new SSBNNodeGeneralException(this.resource.getString("NoNetworkDefined"));
-		}
-		this.probabilisticNetwork = probabilisticNetwork;
-		
-		if (this.getProbNode() != null) {
-			this.probabilisticNetwork.addNode(this.getProbNode());
-		}
-	}
-	
-	public String toString(){
-		String ret = resident.getName(); 
-		
-		ret+="(";
-		for(OVInstance instance: arguments){
-			ret+= instance.toString();
-		}
-		ret+=")";
-		
-		if(isFinding){
-			ret+= " [F] ";
-		}
-		
-		ret +=" [id=" + id + "]P=" + permanent; 
-		
-		return ret;  
-	}
 	
 	public void delete(){
-		
 		probabilisticNetwork.removeNode(this.getProbNode()); 
-		
-		try {
-			super.finalize();
-		} catch (Throwable e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
 	}
 
 	public ContextFatherSSBNNode getContextFatherSSBNNode() {
@@ -1254,6 +826,169 @@ public class SSBNNode {
 		}
 	}
 
+	
+	
+	
+	//------------------- ORDINARY METHODS --------------------------------
+
+	/**
+	 * @param arguments the arguments to set
+	 */
+	public void setArguments(List<OVInstance> arguments) {
+		this.arguments = arguments;
+	}
+
+	/**
+	 * @return the isUsingDefaultCPT
+	 */
+	public boolean isUsingDefaultCPT() {
+		return residentNode.getMFrag().isUsingDefaultCPT();
+	}
+
+	/**
+	 * Adds a note whitch determines this mode must (or not) use its default CPT distribution. It also adds a note for
+	 * nodes from its MFrag.
+	 * @param isUsingDefaultCPT the isUsingDefaultCPT to set
+	 */
+	public void setUsingDefaultCPT(boolean isUsingDefaultCPT) {
+		residentNode.getMFrag().setAsUsingDefaultCPT(isUsingDefaultCPT);
+	}
+
+	/**
+	 * @return the parents
+	 */
+	public Collection<SSBNNode> getParents() {
+		return parents;
+	}
+
+	/**
+	 * This method sets a parent without checking structure consistency. Be careful when using this.
+	 * @param parents the parents to set
+	 */
+	public void setParents(Collection<SSBNNode> parents) {
+		this.parents = parents;
+	}
+
+	/**
+	 * @return the probNode. Null if it should be a finding
+	 */
+	public ProbabilisticNode getProbNode() {
+		return probabilisticNode;
+	}
+
+	/**
+	 * Setting a probNode to null is the same of declaring it as a finding 
+	 * (the value should be the 1st possible value declared by its resident node). 
+	 * The new probNode should not have parents.
+	 * 
+	 * Note: this method set the name of the probNode (use the ssbnNode attributes for 
+	 * this) and add the node in the probabilistic network
+	 * 
+	 * @param probNode the ProbabilisticNode (UnBBayes node representation) to set
+	 */
+	public void setProbNode(ProbabilisticNode probNode) {
+		
+		// TODO treat parents and dangling references
+		if (this.probabilisticNode != null) {
+			this.getProbabilisticNetwork().removeNode(this.probabilisticNode);
+		}
+		this.probabilisticNode = probNode;
+		this.appendProbNodeState();
+		
+		if (this.probabilisticNode != null) {
+			this.probabilisticNode.setName(this.getName());
+			this.getProbNode().setDescription(this.getName()); // TODO optimize. above code is setting probnode'name twice
+			this.getProbabilisticNetwork().addNode(this.probabilisticNode);
+		}
+	}
+
+	/**
+	 * @return the DomainResidentNode this node represents
+	 */
+	public ResidentNode getResident() {
+		return residentNode;
+	}
+
+	/**
+	 * @param resident the resident to set
+	 */
+	protected void setResident(ResidentNode resident) {
+		this.residentNode = resident;
+		this.setProbNode(new ProbabilisticNode());
+	}
+
+	/**
+	 * When creating names for sets of strong OVs, this string/char separates the compound names.
+	 * Ex. When separator is ".", ovs = {st,z} -> name= "st.z"
+	 * @return the strongOVSeparator
+	 */
+	public String getStrongOVSeparator() {
+		return strongOVSeparator;
+	}
+
+	/**
+	 * When creating names for sets of strong OVs, this string/char separates the compound names.
+	 * Ex. When separator is ".", ovs = {st,z} -> name= "st.z"
+	 * @param strongOVSeparator the strongOVSeparator to set
+	 */
+	public void setStrongOVSeparator(String strongOVSeparator) {
+		this.strongOVSeparator = strongOVSeparator;
+	}
+
+	/**
+	 * @return the current compiler
+	 */
+	public ICompiler getCompiler() {
+		return compiler;
+	}
+
+	/**
+	 * Sets which compiler class we should use to parse pseudocode and generate CPT
+	 * @param compiler: the compiler to set
+	 */
+	public void setCompiler(ICompiler compiler) {
+		this.compiler = compiler;
+	}
+
+	/**
+	 * @return the probabilisticNetwork
+	 */
+	public ProbabilisticNetwork getProbabilisticNetwork() {
+		return probabilisticNetwork;
+	}
+
+	/**
+	 * @param probabilisticNetwork the probabilisticNetwork to set
+	 */
+	public void setProbabilisticNetwork(ProbabilisticNetwork probabilisticNetwork) throws SSBNNodeGeneralException {
+		if (probabilisticNetwork == null) {
+			throw new SSBNNodeGeneralException(this.resource.getString("NoNetworkDefined"));
+		}
+		this.probabilisticNetwork = probabilisticNetwork;
+		
+		if (this.getProbNode() != null) {
+			this.probabilisticNetwork.addNode(this.getProbNode());
+		}
+	}
+	
+	public String toString(){
+		String ret = residentNode.getName(); 
+		
+		ret+="(";
+		for(OVInstance instance: arguments){
+			ret+= instance.toString();
+		}
+		ret+=")";
+		
+		if(value != null){
+			ret+= " [F] ";
+		}
+		
+		ret +=" [id=" + id + "]P=" + permanent; 
+		
+		return ret;  
+	}
+	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
@@ -1287,15 +1022,170 @@ public class SSBNNode {
 		this.permanent = permanent;
 	}
 
-	public EvaluationState getEvaluationState() {
+	public EvaluationSSBNNodeState getEvaluationState() {
 		return evaluationState;
 	}
 
-	public void setEvaluationState(EvaluationState evaluationState) {
+	public void setEvaluationState(EvaluationSSBNNodeState evaluationState) {
 		this.evaluationState = evaluationState;
+	}
+
+	public Entity getValue() {
+		return value;
+	}
+
+	public void setValue(Entity value) {
+		this.value = value;
+	}
+
+	public static int getCount() {
+		return count;
+	}
+
+	public static void setCount(int count) {
+		SSBNNode.count = count;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 
 	
 	
+	//------------------- PRIVATE METHODS --------------------------------
+	
+	private String getNameByDots(String...names) {
+		String dotName = new String(names[0]);
+		for (int i = 1; i < names.length; i++) {
+			dotName.concat("." + names[i]);
+		}
+		return dotName;
+	}
+	
+	private String getNameByDots(Collection<OrdinaryVariable> ovs) {
+		OrdinaryVariable[] ovArray = new OrdinaryVariable[ovs.size()];
+		int i = 0;
+		for (OrdinaryVariable variable : ovs) {
+			ovArray[i] = variable;
+			i++;
+		}
+			
+		String dotName = new String(ovArray[0].getName());
+		for (i = 1; i < ovArray.length; i++) {
+			dotName+= ("." + ovArray[i].getName());
+		}
+		return dotName;
+	}
+	
+	private boolean isAllValuesBelow(int value, int[] vector) {
+		for (int i = 0; i < vector.length; i++) {
+			if(vector[i] >= value) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	private int factorial(int n) {
+		int ret = 1;
+		for (int i = 1; i <= n; i++) {
+			ret *= i;
+		}
+		return ret;
+	}
+	
+	private int combination(int n , int by) {
+		if (n < by) {
+			return 1;
+		}
+		return (factorial(n) / (factorial(by)*factorial(n-by)));
+	}
+	
+	private Collection<Collection<OrdinaryVariable>> getOVCombination(int byHowMany, OrdinaryVariable... ovs ){
+		
+		Collection<Collection<OrdinaryVariable>> ret = new ArrayList<Collection<OrdinaryVariable>>();
+		if (byHowMany <= 0) {
+			return ret;
+		}
+		if (byHowMany > ovs.length) {
+			return ret;
+		}
+		
+		OrdinaryVariable[] ovArray = (OrdinaryVariable[])ovs;
+		int[] indexes = new int[byHowMany];
+		
+		for (int i = 0; i < indexes.length; i++) {
+			indexes[i] = i;
+		}
+		
+		Collection<OrdinaryVariable> tempOVs = null;
+		//while (indexes[0] <= ovArray.length - indexes.length)
+		int combination = this.combination(ovArray.length, byHowMany);
+		for (int i = 0; i < combination; i++) {
+			
+			tempOVs = new ArrayList<OrdinaryVariable>();
+			for (int j = 0; j < indexes.length; j++) {
+				tempOVs.add(ovArray[indexes[j]]);
+			}
+			ret.add(tempOVs);
+			
+			indexes[indexes.length - 1]++;
+			for (int j = indexes.length - 2; j >= 0; j--) {
+				if (indexes[j + 1] > ovArray.length - (indexes.length - (j+1))) {
+					if (indexes[j] + 1 < indexes[j + 1]) {
+						indexes[j]++;
+						for (int k = j + 1; k < indexes.length; k++) {
+							indexes[k] = indexes[k-1] + 1;
+						}
+						
+					}
+				}
+			}
+		}
+		return ret;
+	}
+	
+	private Collection<Collection<OrdinaryVariable>> getOVCombination(int byHowMany, Collection<OrdinaryVariable> ovs ) {
+		OrdinaryVariable[] array = new OrdinaryVariable[ovs.size()];
+		int i = 0;
+		for (OrdinaryVariable ov : ovs) {
+			array[i] = ov;
+			i++;
+		}
+		return this.getOVCombination(byHowMany, array);
+	}
+	
+	
+	private Collection<OrdinaryVariable> getAllParentsOV() {
+		Set<OrdinaryVariable> ovs = new HashSet<OrdinaryVariable>();
+		for (SSBNNode parent : this.getParents()) {
+			ovs.addAll(parent.getOVs());
+		}
+		return ovs;
+	}
+
+	
+	
+	private void appendProbNodeState() {
+		if (this.getProbNode() == null) {
+			return;
+		}
+		if (this.getResident() != null) {
+			for (Entity entity : this.residentNode.getPossibleValueListIncludingEntityInstances()) {
+				this.getProbNode().appendState(entity.getName());
+			}
+		}
+		if (this.getProbNode().getPotentialTable() != null) {
+			this.getProbNode().getPotentialTable().addVariable(this.getProbNode());
+		}
+	}
+
+	public void setChildren(Collection<SSBNNode> children) {
+		this.children = children;
+	}
 	
 }

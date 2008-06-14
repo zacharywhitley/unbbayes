@@ -63,6 +63,9 @@ public class Resources extends ListResourceBundle {
 		{"InvalidContextNodeFormula","Invalid Context node Formula"}, 
 		{"FindingNotHaveParent","An finding don't should have a parent"}, 
 		{"IncompleteInformation","Impossible find variables that validate the context nodes"},
+		{"InternalError","Internal Error"},
+		{"InconsistencyError","Inconsistenty found"},
+		{"TwoContextFathersError", "One node couldn't have two context nodes fathers!"}, 
 		{"OnlyOneFreeVariableRestriction", "The search context node can not have more than one free variable!"}
 		
 	};

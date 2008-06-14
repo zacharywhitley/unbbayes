@@ -67,7 +67,7 @@ import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.exception.CycleFoundException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
-import unbbayes.prs.mebn.ssbn.BottomUpSSBNGenerator;
+import unbbayes.prs.mebn.ssbn.AbstractSSBNGenerator;
 
 /**
  * This class is responsible for delegating instructions that is going to be 
@@ -545,7 +545,7 @@ public class NetworkController implements KeyListener {
         if (singleEntityNetwork != null) {
         	texto.setText(singleEntityNetwork.getLog());
         } else {
-        	texto.setText(BottomUpSSBNGenerator.logManager.getLog());
+        	texto.setText(AbstractSSBNGenerator.logManager.getLog());
         }
         
         texto.moveCaretPosition(0);

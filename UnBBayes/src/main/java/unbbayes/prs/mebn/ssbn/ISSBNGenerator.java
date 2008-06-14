@@ -16,7 +16,6 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
- *
  */
 package unbbayes.prs.mebn.ssbn;
 
@@ -28,7 +27,6 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
 /**
  * @author Shou Matsumoto
- *
  */
 public interface ISSBNGenerator {
 
@@ -43,5 +41,4 @@ public interface ISSBNGenerator {
 	 */
 	public SituationSpecificBayesianNetwork generateSSBN(Query query) throws SSBNNodeGeneralException, 
 	                                    ImplementationRestrictionException, MEBNException, OVInstanceFaultException;
-
 }

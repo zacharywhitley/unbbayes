@@ -31,7 +31,7 @@ import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 /**
  * Class that contains methods for evaluate the context nodes of a MFrag. 
  * 
- * @author Laecio Lima dos Santos (laecio@gmail.com)
+ * @author Laecio Santos (laecio@gmail.com)
  */
 public class ContextNodeAvaliator {
 
@@ -51,7 +51,8 @@ public class ContextNodeAvaliator {
 	 * @return
 	 * @throws OVInstanceFaultException
 	 */
-	public boolean evaluateContextNode(ContextNode node, List<OVInstance> ovInstances) throws OVInstanceFaultException{
+	public boolean evaluateContextNode(ContextNode node, List<OVInstance> ovInstances) 
+	         throws OVInstanceFaultException{
 		
 		List<OrdinaryVariable> ovFaultList = node.getOVFaultForOVInstanceSet(ovInstances); 
 		
@@ -76,10 +77,20 @@ public class ContextNodeAvaliator {
 	 * @throws InvalidContextNodeFormulaException
 	 * @throws OVInstanceFaultException 
 	 */
-	public List<String> evalutateSearchContextNode(ContextNode context, List<OVInstance> ovInstances) throws InvalidContextNodeFormulaException, OVInstanceFaultException{
+	public List<String> evalutateSearchContextNode(ContextNode context, List<OVInstance> ovInstances) 
+	        throws InvalidContextNodeFormulaException, OVInstanceFaultException{
 		
 			List<String> entitiesResult = kb.evaluateSearchContextNodeFormula(context, ovInstances); 
 			return entitiesResult;
+	}
+
+	/**
+	 * Return all the entities of one type. 
+	 * @param type
+	 * @return
+	 */
+	public List<String> getEntityByType(String type){
+		return kb.getEntityByType(type); 
 	}
 	
 }

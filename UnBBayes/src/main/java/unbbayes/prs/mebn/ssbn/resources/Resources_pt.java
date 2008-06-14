@@ -63,6 +63,9 @@ public class Resources_pt extends ListResourceBundle {
 		{"InvalidContextNodeFormula","Formula do nó de contexto inválida"},
 		{"FindingNotHaveParent","Um finding não pode ter um pai"},
 		{"IncompleteInformation","Não foi possível encontrar entidades que validassem os nós de contexto"},
+		{"InternalError","Erro interno"},
+		{"InconsistencyError","Inconsistência encontrada"},
+		{"TwoContextFathersError", "Um nó não pode ter dois nós de contexto pais!"}, 
 		{"OnlyOneFreeVariableRestriction", "O nó de contexto de busca pode ter apenas uma variavel livre!"}
 		
 	};
