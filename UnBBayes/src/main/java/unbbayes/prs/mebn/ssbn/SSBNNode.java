@@ -45,6 +45,8 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
  */
 public class SSBNNode {
 	
+	private boolean isDefaultCPT = false;
+	
 	private static int count = 0; 
 	private int id; 
 	

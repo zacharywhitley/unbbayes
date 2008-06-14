@@ -2262,6 +2262,11 @@ public class Compiler implements ICompiler {
 			this.value = value;
 			this.setEvaluationList(evaluationList);
 		}
+		
+		/**
+		 * 
+		 * @return which parent this leaf represents
+		 */
 		public ResidentNode getParent() {
 			return parent;
 		}
@@ -2322,8 +2327,8 @@ public class Compiler implements ICompiler {
 			return evaluationList;
 		}
 		/**
-		 * note: if param is null, it will set the value of this object as known value = false
-		 * immediately.
+		 * note: if param is null, it will set the value of this object as known value = "false"
+		 * (assume this boolean evaluation as allways false) immediately.
 		 * @param evaluationList the evaluationList to set
 		 */
 		public void setEvaluationList(List<EntityAndArguments> evaluationList) {
@@ -2372,7 +2377,7 @@ public class Compiler implements ICompiler {
 		 */
 		public boolean hasNextEvaluation() {
 			
-//			if(this.evaluationList == null) return false; 
+			if(this.evaluationList == null) return false; 
 			
 			return (this.currentEvaluationIndex + 1 ) < this.evaluationList.size();
 		}
