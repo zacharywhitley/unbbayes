@@ -444,7 +444,8 @@ public class Compiler implements ICompiler {
 			TempTableHeaderCell header = null;
 			
 			// if default distro, then use the default header...
-			if (this.getSSBNNode().isUsingDefaultCPT()) {
+			// also, if no parents are declared, use default distro...
+			if (this.getSSBNNode().isUsingDefaultCPT() || (this.getSSBNNode().getParents().size() == 0)) {
 				// we assume the default distro is the last block on pseudocode
 				header = this.tempTable.get(this.tempTable.size() - 1);
 				// let's check if this header is really declaring a default distro...
@@ -2377,7 +2378,7 @@ public class Compiler implements ICompiler {
 		 */
 		public boolean hasNextEvaluation() {
 			
-			if(this.evaluationList == null) return false; 
+			//if(this.evaluationList == null) return false; 
 			
 			return (this.currentEvaluationIndex + 1 ) < this.evaluationList.size();
 		}
