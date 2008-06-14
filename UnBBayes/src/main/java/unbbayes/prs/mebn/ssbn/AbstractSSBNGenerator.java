@@ -947,6 +947,8 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 					position++; 
 				}
 				
+				//Gera a tabela para este grupo de pais (o conjunto de tabelas será 
+				//utilizado no xor. 
 				SSBNNode tempNode = SSBNNode.getInstance(ssbnNode.getResident()); 
 				for(SSBNNode parent: groupParents){
 					tempNode.addParent(parent, false); 
@@ -956,6 +958,12 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 				
 //				gpt = new GUIPotentialTable(cpt); 
 //				gpt.showTable("Table for Node " + ssbnNode + " - " + groupParents);
+				
+				//Remove the temp node of the list of children of the node. 
+				for(SSBNNode parent: groupParents){
+					parent.getProbNode().getChildren().remove(tempNode.getProbNode()); 
+				    parent.getChildren().remove(tempNode); 
+				}
 				
 				mapCPTByEntity.put(entity.getInstanceName(), cpt);
 				Debug.println("Tabela armazenada: " + entity.getInstanceName() + " " + cpt.tableSize());
