@@ -52,6 +52,12 @@ import unbbayes.util.Debug;
  ----------------
  Changes (Date/Month/Year): 
  
+ 	15/06/2008:
+ 			Description: a boolean expression was returning a boolean neutral value (false in "Any" 
+ 			and true in "All") when no valid expression (involving parents) was evaluated. It
+ 			is now returning false when no expression was valid
+ 			Author: Shou Matsumoto (cardialfly@[gmail,yahoo].com)
+ 
  	03/03/2008:
  			Description: compiler was trying to parse a table even when node was
  			known to be a finding (a finding doesn't need a cpt). This condition now 
@@ -1957,6 +1963,8 @@ public class Compiler implements ICompiler {
 			
 			//	evaluate (True,Alpha), (False,Alpha), (True,Beta), (False,Beta)...
 			boolean hasMoreCombination = true;
+			// expressionWasEvaluated checks if boolean header was once evaluated. If not, all condicionants were invalid (in that case, return false)
+			boolean expressionWasEvaluated = false;
 			while (hasMoreCombination) {
 				// TODO the test below might be dangerous in multithread application...?
 				if (isSameOVsameEntity()) { // only evaluates same entities for same OVs
@@ -1974,6 +1982,7 @@ public class Compiler implements ICompiler {
 						}
 						this.increaseValidParentSetCount();
 					}
+					expressionWasEvaluated = true; // there was a valid header, so, the return value is valid
 				}
 				
 				// update leaf's evaluation variables
@@ -2002,8 +2011,19 @@ public class Compiler implements ICompiler {
 				}
 			}	
 			
+			if (expressionWasEvaluated) {
+				// since the expression was actually evaluated, ret would be the result of evaluation.
+				return ret;
+			}
 			
-			return ret;
+			// if the boolean expression was never evaluated, ret is storing a default boolean neutral value.
+			// We do not want that (since a neutral in "Any" is false and in "All" is true). If no expression was
+			// actually evaluated, it means that the whole expression was invalid (it happens in meantimes like
+			// when the "strong OV set" is not matching any parents) and a invalid expression should return false!
+//			Debug.println("!!!No valid expression was evaluated by the compiler!!!");
+//			Debug.println("   It happens when the parents expected by the pseudocode was never linked by the SSBN Algorithm");
+//			Debug.println("   or all connected parents was not expected by the pseudocode (invalidated by the boolean expression)");
+			return false;
 		}
 		
 		/**
@@ -2383,8 +2403,17 @@ public class Compiler implements ICompiler {
 		 * @return true if currently evaluated entity list has next element
 		 */
 		public boolean hasNextEvaluation() {
-			
-			//if(this.evaluationList == null) return false; 
+			// the below chech is truly dangerous, since if this.evaluationList == null at this moment,
+			// it means that something was wrong long way before... It might hide important bugs...
+			// but in order to mantain execution security, we are making those checks.
+			if (this.evaluationList == null) {
+//				Debug.println("!!!==========================================!!!");
+//				Debug.println("There was an attempt to evaluate a expression with no possible states.");
+//				Debug.println("It may happen sometimes at SSBN generation when pseudocode expects parents");
+//				Debug.println("   but no valid parents were linked to its node.");
+//				Debug.println("!!!==========================================!!!");
+				return false; 
+			}
 			
 			return (this.currentEvaluationIndex + 1 ) < this.evaluationList.size();
 		}
