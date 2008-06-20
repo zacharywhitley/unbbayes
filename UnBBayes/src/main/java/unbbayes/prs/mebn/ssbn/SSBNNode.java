@@ -22,8 +22,10 @@ package unbbayes.prs.mebn.ssbn;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -32,6 +34,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.InputNode;
+import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.compiler.Compiler;
@@ -67,6 +70,12 @@ public class SSBNNode {
 	private ProbabilisticNode  probabilisticNode = null;	// stores the UnBBayes BN ordinal node which represents this SSBNNode
 	
 	private List<OVInstance> arguments = null;
+	
+	private boolean isRecursive = false; 
+	private List<OVInstance> argumentsResidentMFrag; 
+	private Map<MFrag, List<OVInstance>> argumentsForMFrag; 
+	
+	
 	private Collection<SSBNNode> parents = null;
 	private Collection<SSBNNode> children = null; 
 	
@@ -100,10 +109,12 @@ public class SSBNNode {
 		id = count; 
 		count++; 
 		
+		this.argumentsResidentMFrag = new ArrayList<OVInstance>(); 
 		this.arguments = new ArrayList<OVInstance>();
 		this.parents = new ArrayList<SSBNNode>();
 		this.children = new ArrayList<SSBNNode>(); 
 		this.residentNode = resident;
+		this.argumentsForMFrag = new HashMap<MFrag, List<OVInstance>>(); 
 		
 		if (pnet == null) {
 			this.probabilisticNetwork = 
@@ -143,7 +154,7 @@ public class SSBNNode {
 		
 		return new SSBNNode(probabilisticNetwork, resident,probNode);
 		
-	}	
+	}
 	
 	/**
 	 *  This class is a temporary representation of a resident random variable instance at ssbn creation step.
@@ -173,7 +184,12 @@ public class SSBNNode {
 		uniqueName.append(this.residentNode.getName()); 
 		for(OrdinaryVariable ov: residentNode.getOrdinaryVariableList()){
 			OVInstance ovInstance = getArgumentByOrdinaryVariable(ov);
-			uniqueName.append("_" + ovInstance.getEntity().getInstanceName()); 
+			try{
+			uniqueName.append("_" + ovInstance.getEntity().getInstanceName());
+			}
+			catch(RuntimeException er){
+				uniqueName.append("_?"); 
+			}
 		}
 		
 		return uniqueName.toString(); 
@@ -319,7 +335,10 @@ public class SSBNNode {
 		if (entityInstanceName.length() <= 0) {
 			return;
 		}
-		this.arguments.add(OVInstance.getInstance( ov, entityInstanceName , ov.getValueType() ));
+	
+		OVInstance ovInstance = OVInstance.getInstance( ov, entityInstanceName , ov.getValueType() ); 
+		this.arguments.add(ovInstance);
+	    this.argumentsResidentMFrag.add(ovInstance); 
 	}
 	
 	/**
@@ -328,6 +347,7 @@ public class SSBNNode {
 	 */
 	public void addArgument(OVInstance ovInstance){
 		this.arguments.add(ovInstance); 
+	    this.argumentsResidentMFrag.add(ovInstance); 
 	}
 	
 	/**
@@ -341,7 +361,10 @@ public class SSBNNode {
 		if (entityInstanceName.length() <= 0) {
 			return;
 		}
-		this.arguments.add(pos, OVInstance.getInstance( ov, entityInstanceName , ov.getValueType() ));
+		
+		OVInstance ovInstance = OVInstance.getInstance( ov, entityInstanceName , ov.getValueType()); 
+		this.arguments.add(pos, ovInstance);
+		this.argumentsResidentMFrag.add(ovInstance); 
 	}
 	
 	/**
@@ -349,6 +372,7 @@ public class SSBNNode {
 	 */
 	public void removeAllArguments(){
 		this.arguments.clear(); 
+		this.argumentsResidentMFrag.clear(); 
 	}
 	
 	
@@ -440,7 +464,7 @@ public class SSBNNode {
 		
 		//consistency OK: add the node 
 		this.getParents().add(parent);
-		parent.children.add(this); 
+		parent.getChildren().add(this); 
 		
 		if (this.getProbNode() != null) {
 			if (parent.getProbNode() != null){
@@ -455,7 +479,7 @@ public class SSBNNode {
 		}
 		
 	}
-	
+		
 	/**
 	 * Remove all parents of the ssbnnode. 
 	 * The references of the probabilistic nodes will be updated. 
@@ -735,8 +759,7 @@ public class SSBNNode {
 	 * Obviously, it may be a list of entity instances.
 	 */
 	public Collection<Entity> getActualValues() {
-		if ((this.getProbNode() == null )) {			
-		//if ((this.getProbNode() == null ) || this.isFinding()) {			
+		if (this.getProbNode() == null) {			
 			ArrayList<Entity> ret = new ArrayList<Entity>();
 			ret.add(this.actualValues.iterator().next());
 			return ret;
@@ -839,6 +862,7 @@ public class SSBNNode {
 	 */
 	public void setArguments(List<OVInstance> arguments) {
 		this.arguments = arguments;
+		this.argumentsResidentMFrag = arguments; 
 	}
 
 	/**
@@ -1190,5 +1214,52 @@ public class SSBNNode {
 	public void setChildren(Collection<SSBNNode> children) {
 		this.children = children;
 	}
+	
+	public void setRecursiveOVInstanceList(List<OVInstance> listOVInstanceInputNode){
+		
+		isRecursive = true; 
+		argumentsForMFrag.put(this.getResident().getMFrag(), listOVInstanceInputNode); 
+	
+	}
+	
+	public void addArgumentsForMFrag(MFrag mFrag, List<OVInstance> listArgumentsOfMFrag){
+	
+		argumentsForMFrag.put(mFrag, listArgumentsOfMFrag); 
+	
+	}
+	
+	/**
+	 * Turn the arguemnts of the SSBNNode for the arguments that it should 
+	 * have in the given mFrag
+	 * 
+	 * @return true if the arguments changed with sucess
+	 *         false if don't have arguments for the Mfrag (the arguments isn't 
+	 *         changed). 
+	 */
+	public boolean turnArgumentsForMFrag(MFrag mFrag){
+		
+		if(mFrag.equals(this.getResident().getMFrag())){
+			if(isRecursive){
+				arguments = argumentsForMFrag.get(mFrag);
+				return true; 
+			}else{
+				return true; 
+			}
+		}
+		else{
+			List<OVInstance> argumentsTemp = argumentsForMFrag.get(mFrag); 
+			if(argumentsTemp != null){
+				arguments = argumentsTemp; 
+				return true; 
+			}else{
+				return false; 
+			}
+		}
+	}
+	
+	public void changeArgumentsToResidentMFrag(){
+		arguments = argumentsResidentMFrag; 
+	}
+	
 	
 }

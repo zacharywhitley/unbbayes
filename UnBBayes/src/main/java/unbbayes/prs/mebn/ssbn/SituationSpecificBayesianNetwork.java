@@ -20,6 +20,11 @@ public class SituationSpecificBayesianNetwork {
 	private final List<SSBNNode> findingList; 
 	private final List<Query> queryList; 
 	
+	/* The process of generation of algorithm should have some wanings (situations
+	 * that don't is a error but is important comunicate to the user). 
+	 */
+	private List<SSBNWarning> warningList; 
+	
 	private enum State{
 		INITIAL, 
 		COMPILED, 
@@ -56,10 +61,21 @@ public class SituationSpecificBayesianNetwork {
 	 * After this, the network is ready to show to the user
 	 * @throws Exception 
 	 */
-	public void initializeSSBN() throws Exception{
+	public void compileAndInitializeSSBN() throws Exception{
 		compileNetwork(); 
+		System.out.println("Rede compilada");
 		addFindings();
+		System.out.println("Evidencias setadas");
 		propagateFindings(); 
+		System.out.println("Evidencias propagadas");
+	}
+	
+	public void reinitializeSSBN() throws Exception{
+	    this.probabilisticNetwork.initialize();
+		addFindings();
+		System.out.println("Evidencias setadas");
+		propagateFindings(); 
+		System.out.println("Evidencias propagadas");	    
 	}
 	
 	private void compileNetwork() throws Exception{
@@ -77,11 +93,10 @@ public class SituationSpecificBayesianNetwork {
 	private void addFindings() throws SSBNNodeGeneralException{
 		
 		for(SSBNNode findingNode: findingList){
+			System.out.println("Set finding: " + findingNode + "=" + findingNode.getValue());
 			TreeVariable node = findingNode.getProbNode();
-			
-			Collection<Entity> actualValues = findingNode.getActualValues(); 			
 
-			String nameState = actualValues.toArray(new Entity[1])[0].getName(); 
+			String nameState = findingNode.getValue().getName(); 
 			
 			boolean ok = false; 
 			for(int i = 0; i < node.getStatesSize(); i++){
@@ -118,6 +133,13 @@ public class SituationSpecificBayesianNetwork {
 	public List<Query> getQueryList() {
 		return queryList;
 	}
+
+	public List<SSBNWarning> getWarningList() {
+		return warningList;
+	}
 	
+	public void setWarningList(List<SSBNWarning> warningList){
+		this.warningList = warningList; 
+	}
 	
 }

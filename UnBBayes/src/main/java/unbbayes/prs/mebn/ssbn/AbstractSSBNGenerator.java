@@ -72,8 +72,8 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 	 */
 	private void generateCPTForAllSSBNNodes(SSBNNode root, int level) throws MEBNException, SSBNNodeGeneralException{
 		
-		logManager.appendln(getSpaceForLevel(level) + "Generate CPT for node " + root); 
-		logManager.appendln(getSpaceForLevel(level) + "Parents:"); 
+//		logManager.appendln(getSpaceForLevel(level) + "Generate CPT for node " + root); 
+//		logManager.appendln(getSpaceForLevel(level) + "Parents:"); 
 		
 		if(root.isCptAlreadyGenerated()){
 			return; 
@@ -85,12 +85,12 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 			}
 
 			//------------------ NODE
-			logManager.appendln(getSpaceForLevel(level) + "CPT for root"); 
+//			logManager.appendln(getSpaceForLevel(level) + "CPT for root"); 
 			generateCPT(root);
 			root.setCptAlreadyGenerated(true); 
 
 			//------------------ CHILDREN
-			logManager.appendln(getSpaceForLevel(level) + "Children:"); 
+//			logManager.appendln(getSpaceForLevel(level) + "Children:"); 
 			for(SSBNNode child: root.getChildren()){
 				generateCPTForAllSSBNNodes(child, level + 1); 
 			}
@@ -106,7 +106,29 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 	 * @throws SSBNNodeGeneralException 
 	 */
 	private void generateCPT(SSBNNode ssbnNode) throws MEBNException, SSBNNodeGeneralException {
+		
+		//Change the ov of the fathers for the ov when it is a father. 
+		//This is for solve the problem of recursion, when the SSBNNode 
+		//recursive has one ordinary variable for the case that it is the
+		//child and other ordinary variable for when it is father: 
+		//
+		//Ex: DistFromOwn(st, t) and DistFromOwn(st, tPrev). 
+		
+		ssbnNode.changeArgumentsToResidentMFrag(); 
+		
+		for(SSBNNode parent: ssbnNode.getParents()){
+			parent.turnArgumentsForMFrag(ssbnNode.getResident().getMFrag()); 
+		}
+		
+		logManager.appendln("---- CPT for node: " + ssbnNode.getUniqueName() + "-----"); 
+		logManager.appendln("Parents:"); 
+		for(SSBNNode parent: ssbnNode.getParents()){
+			logManager.appendln(parent.toString()); 
+		}
+		logManager.appendln("Init"); 
+		
 		if(ssbnNode.isPermanent()){
+			//Generate the cpt of the context father ssbnnode
 			if(ssbnNode.getContextFatherSSBNNode()!=null){ 
 				try {
 					generateCPTForNodeWithContextFather(ssbnNode);
@@ -118,6 +140,9 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 				ssbnNode.getCompiler().generateCPT(ssbnNode);
 			}
 		}
+		
+		logManager.appendln("End");
+		
 	}
 	
 	
@@ -501,8 +526,6 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 			ProbabilisticNetwork net, ResidentNode residentNode, InputNode inputNode) 
 	        throws SSBNNodeGeneralException, ImplementationRestrictionException {
 		
-		boolean isPrevious = true; 
-		
 		logManager.appendln("Build Previous Node");
 		//Find for ordereable object entity.
 		List<OrdinaryVariable> ovOrdereableList = residentNode.getOrdinaryVariablesOrdereables();
@@ -577,11 +600,15 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 			
 			SSBNNode alreadyExistentSSBNNode = ssbnNodesMap.get(SSBNNode.getUniqueNameFor(residentNode, ssbnNode.getArguments())); 
 			
+
 			if(alreadyExistentSSBNNode != null){
-				ssbnNodeJacket.getSsbnNode().delete(); 
-				ssbnNodeJacket.setSsbnNode(alreadyExistentSSBNNode); 
+				alreadyExistentSSBNNode.setRecursiveOVInstanceList(ssbnNodeJacket.getOvInstancesOfInputMFrag());
+				ssbnNodeJacket.getSsbnNode().delete();
+				ssbnNodeJacket.setSsbnNode(alreadyExistentSSBNNode);
+				
 			}else{
-				ssbnNodeList.add(ssbnNode);	
+				ssbnNode.setRecursiveOVInstanceList(ssbnNodeJacket.getOvInstancesOfInputMFrag());
+			    ssbnNodeList.add(ssbnNode);	
 				ssbnNodesMap.put(ssbnNode.getUniqueName(), ssbnNode); 
 			}
 					
@@ -607,7 +634,8 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 	 * @throws ImplementationRestrictionException
 	 */
 	protected SSBNNode getProcNode(SSBNNode currentNode, SSBNNodeList seen, 
-			ProbabilisticNetwork net, ResidentNode residentNode) 
+			ProbabilisticNetwork net, ResidentNode residentNode, 
+			List<OVInstance> listOvInstancesInput, InputNode inputNode) 
 	        throws SSBNNodeGeneralException, ImplementationRestrictionException {
 		
 		logManager.appendln("Build Proc. Node");
@@ -663,11 +691,19 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 				if(instance != ovInstanceOrdereable){
 					if(residentNode.getOrdinaryVariableByName(instance.getOv().getName()) != null){
 						ssbnNode.addArgument(instance);
+						listOvInstancesInput.add(instance); 
 					}
 				}else{
 					OVInstance newOVInstance = OVInstance.getInstance(ovOrdereableResident, 
 							proc.getName(), ovOrdereableResident.getValueType());
 					ssbnNode.addArgument(newOVInstance); 
+					
+					int index = residentNode.getOrdinaryVariableList().indexOf(ovOrdereableResident);
+					OrdinaryVariable ovOrdereableInput = inputNode.getOrdinaryVariableByIndex(index);
+					newOVInstance = OVInstance.getInstance(ovOrdereableInput, 
+							objectEntityInstanceOrdereable.getName(), ovOrdereableResident.getValueType());
+					listOvInstancesInput.add(newOVInstance); 
+					
 					logManager.appendln("\n\n created:" + ovOrdereableResident + " " + proc.getName());
 				}
 			}

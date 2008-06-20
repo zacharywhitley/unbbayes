@@ -131,6 +131,8 @@ public class QueryPanel extends JDialog{
 
 		JLabel label = new JLabel(resource.getString("selectOneVariable") + "               ");
 		
+		//TODO put options of the algorithm here. 
+		
 		contentPane.add(label, BorderLayout.PAGE_START); 
 		contentPane.add(randonVariableListPane, BorderLayout.CENTER);
 		contentPane.add(toolBar, BorderLayout.PAGE_END);

@@ -1,3 +1,24 @@
+ /*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 package unbbayes.prs.mebn.ssbn;
 
 import java.io.IOException;
@@ -23,7 +44,7 @@ import unbbayes.prs.mebn.ssbn.util.PositionAdjustmentUtils;
 import unbbayes.prs.mebn.ssbn.util.SSBNDebugInformationUtil;
 import unbbayes.util.Debug;
 
-public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
+public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 
 	private ResourceBundle resource = 
 		ResourceBundle.getBundle("unbbayes.prs.mebn.ssbn.resources.Resources");
@@ -37,7 +58,7 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 
 	private List<SSBNNode> findingList; 
 	
-	public AlternativeSSBNGenerator(){
+	public ExplosiveSSBNGenerator(){
 		super();  
 		Debug.setDebug(true); 
 		
@@ -73,10 +94,13 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 		SSBNNode queryNode = query.getQueryNode();
 		this.setKnowledgeBase(query.getKb());
 		stepCount = 0L;
-		queryName = queryNode.toString();
+		queryName = queryNode.getUniqueName();
 		logManager.clear();
 		this.recursiveCallCount = 0;
 
+		List<Query> queryList = new ArrayList<Query>(); 
+		queryList.add(query); 
+		
 		// THE PROCESS
 		queryNode.setPermanent(true); 
 		ssbnNodesMap.put(queryNode.getUniqueName(), queryNode); 
@@ -100,9 +124,11 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
-
+		
 		SituationSpecificBayesianNetwork ssbn = new SituationSpecificBayesianNetwork(
-				queryNode.getProbabilisticNetwork(), findingList, new ArrayList()); 
+				queryNode.getProbabilisticNetwork(), findingList, queryList); 
+		
+		ssbn.setWarningList(this.warningList); 
 		
 		return ssbn;
 	}
@@ -360,6 +386,9 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 
 					SSBNNode ssbnNode = ssbnNodeJacket.getSsbnNode();
 
+					ssbnNode.addArgumentsForMFrag(currentNode.getResident().getMFrag(), 
+							ssbnNodeJacket.getOvInstancesOfInputMFrag()); 
+					
 //					ssbnNodeJacket.setSsbnNode(checkForDoubleSSBNNode(ssbnNode)); 
 					if(!currentNode.isFinding()){
 						ssbnNodeJacket.setArgumentsOfResidentMFrag(); 
@@ -369,7 +398,9 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 					
 					logManager.appendln("Node Created: " + ssbnNode.toString());
 
-					ssbnNodeJacket.setArgumentsOfInputMFrag(); 
+					//TODO Analisar se é pra setar para input ou resident
+//					ssbnNodeJacket.setArgumentsOfInputMFrag(); 
+					ssbnNodeJacket.setArgumentsOfResidentMFrag(); 
 					
 					if(!currentNode.getParents().contains(ssbnNode)){
 						currentNode.addParent(ssbnNode, true);
@@ -536,6 +567,10 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 
 		//------------------------- STEP 2: Resident nodes childs in the same MFrag  -------------
 
+		/*
+		 * Para os nós residentes filhos (que estão portanto na mesma MFrag), 
+		 * alteração nenhuma deve ser feita nos argumentos do nó corrente. 
+		 */
 		for(ResidentNode r: residentNode.getResidentNodeChildList()){
 
 			logManager.appendln("[D]" + currentNode + ": Resident Node Child analisy -> " + r);
@@ -639,7 +674,8 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 						inputNode, currentNodeInputSSBNNodeJacket, ovInstance); 
 			}
 			
-			List<OVInstance> ovInstancesInput = currentNodeInputSSBNNodeJacket.getOvInstancesOfInputMFrag(); 
+			List<OVInstance> ovInstancesInput = 
+				currentNodeInputSSBNNodeJacket.getOvInstancesOfInputMFrag(); 
 			
 			//Analisy of the context nodes of the new MFrag for the inputNode. 
 			boolean contextNodesOK = false; 
@@ -671,12 +707,25 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 				
 				if(residentChild.equals(currentNode.getResident())){
 					
+					List<OVInstance> temporaryListArgumentsFather = new ArrayList<OVInstance>(); 
+					
 					SSBNNode procNode = getProcNode(currentNode, seen, net, 
-							residentChild);
+							residentChild, temporaryListArgumentsFather, inputNode);
 					
 					if(procNode != null){
+						
+						//Este nó é input de proxNode... Logo temos que colocar os
+						//argumentos para poder obter tal comportamento: 
+						currentNode.setRecursiveOVInstanceList(temporaryListArgumentsFather); 
+						
 						generateRecursive(procNode, seen, net); 
 						procNode.addParent(currentNode, false);
+						
+						//Arrumar os argumentos do nó de input para que quando a 
+						//tabela de <proc> for gerada, ele tenha as suas 
+						//variaveis ordinárias corretas. 
+						currentNode.setRecursiveOVInstanceList(
+								currentNodeInputSSBNNodeJacket.getOvInstancesOfInputMFrag()); 
 						
 						if(procNode.isPermanent()){
 							currentNode.setPermanent(true); 
@@ -684,7 +733,15 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 					}
 					
 					continue; 
+				
+				}else{
 					
+					//Acrescentar os argumentos que o nó deve assumir quando estiver 
+					//sendo avaliado como nó de input para o dado residente node
+					//child (ou seja, na MFrag do resident node child). 
+					
+					currentNode.addArgumentsForMFrag(residentChild.getMFrag(), 
+							currentNodeInputSSBNNodeJacket.getOvInstancesOfInputMFrag());
 				}
 
 				/*
@@ -703,7 +760,15 @@ public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
 					try{
 						
 						//Note: if the entities for the problematic OV don't was found, 
-						//the search strategy don't will be used. 
+						//the search strategy don't will be used.
+						
+						//Lembre-se que por pre-requisito, current node já deve ter
+						//todos os argumentos esperados... portanto nao teremos que
+						//fazer nenhuma alteração nele após esta busca de entidades
+						//faltantes 
+						
+						//Os nós criados terão o nó corrente como pai...   Um pai, 
+						//varios filhos, com a entidade faltante variando... 
 						List<SSBNNode> createdNodes = createSSBNNodesOfEntitiesSearchForResidentNode(
 								residentChild.getMFrag(), currentNode, residentChild, 
 								ovProblematicList, ovInstancesInput, false);

@@ -150,6 +150,7 @@ public class QueryArgumentsPane extends JPanel{
 	}
 	
 	private boolean isNameValid(String name){
+		//TODO implement this method. 
 		return true;
 	}
 	
