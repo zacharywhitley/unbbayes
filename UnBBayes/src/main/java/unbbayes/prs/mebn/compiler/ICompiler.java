@@ -21,6 +21,7 @@
 package unbbayes.prs.mebn.compiler;
 
 import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.compiler.exception.UndeclaredTableException;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
@@ -59,4 +60,14 @@ public interface ICompiler {
 	 * the ProbabilisticNode contained inside the ssbnnode).
 	 */
 	public PotentialTable generateCPT(SSBNNode ssbnnode) throws MEBNException;
+	
+	
+	/**
+	 * This method just fills the node's probabilistic tables w/ equal values.
+	 * For instance, if a node has 4 possible values, then the table will contain
+	 * only cells w/ 25% value (1/4).
+	 * @param probNode
+	 */
+	public PotentialTable generateLinearDistroCPT(ProbabilisticNode probNode);
+	
 }

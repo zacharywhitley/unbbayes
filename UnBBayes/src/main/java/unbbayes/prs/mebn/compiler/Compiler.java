@@ -545,13 +545,14 @@ public class Compiler implements ICompiler {
 	 * only cells w/ 25% value (1/4).
 	 * @param probNode
 	 */
-	private void generateLinearDistroCPT(ProbabilisticNode probNode) {
+	public PotentialTable generateLinearDistroCPT(ProbabilisticNode probNode) {
 		float value = 1.0F / probNode.getStatesSize();
 		PotentialTable table = probNode.getPotentialTable();
 		for (int i = 0; i < probNode.getPotentialTable().tableSize(); i++) {
 			 // TODO in float operation, since 1/3 + 1/3 + 1/3 might not be 1, implement some precision control
 			 table.setValue(i, value);
 		}
+		return table;
 	}
 	
 	/**
