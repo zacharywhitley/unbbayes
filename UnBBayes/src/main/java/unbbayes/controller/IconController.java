@@ -293,6 +293,10 @@ public class IconController implements Serializable {
 	
 	protected ImageIcon triangleIcon; 
 	
+	protected ImageIcon warningIcon; 
+	
+	
+	
 	public static IconController getInstance() {
 		if (singleton == null) {
 			singleton = new IconController();
@@ -310,6 +314,16 @@ public class IconController implements Serializable {
 			triangleIcon = new ImageIcon(getClass()
 					.getResource("/icons/triangle.gif"));
 			return triangleIcon;
+		}
+	}
+	
+	public ImageIcon getWarningIcon() {
+		if (warningIcon != null) {
+			return warningIcon;
+		} else {
+			warningIcon = new ImageIcon(getClass()
+					.getResource("/icons/emblem-important.png"));
+			return warningIcon;
 		}
 	}
 	

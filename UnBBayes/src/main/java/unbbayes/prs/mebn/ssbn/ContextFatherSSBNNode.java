@@ -67,8 +67,10 @@ public class ContextFatherSSBNNode {
 		this.pnet = pnet;
 		this.contextNode = contextNode;
 		this.probNode = probNode; 
-		probNode.setName("Context");
-		probNode.setDescription("Context");
+//		probNode.setName(contextNode.getFormula());
+//		probNode.setDescription(contextNode.getFormula());
+		probNode.setName("context");
+		probNode.setDescription("context");
 		pnet.addNode(probNode);
 		
 		possibleValues = new ArrayList<LiteralEntityInstance>();
@@ -108,6 +110,8 @@ public class ContextFatherSSBNNode {
 			for(int i = 0; i < possibleValues.size(); i++){
 				cpt.setValue(i, probabilityOfEachState); 	
 			}
+
+			cptGenerated = true; 
 			
 		}else{
 			throw new InvalidOperationException();

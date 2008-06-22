@@ -66,7 +66,12 @@ public class Resources_pt extends ListResourceBundle {
 		{"InternalError","Erro interno"},
 		{"InconsistencyError","Inconsistência encontrada"},
 		{"TwoContextFathersError", "Um nó não pode ter dois nós de contexto pais!"}, 
-		{"OnlyOneFreeVariableRestriction", "O nó de contexto de busca pode ter apenas uma variavel livre!"}
+		{"OnlyOneFreeVariableRestriction", "O nó de contexto de busca pode ter apenas uma variavel livre!"},
 		
+		//SSBNWarning
+		{"OVProblem", "Entidades para as variáveis ordinarias não pode ser determinadas"}, 
+		{"contextInputNodeProblem", "Avaliação dos nós de contexto falhou porque não foram encontrados todas as entidades que preenchem as variáveis ordinárias"}, 
+		{"OVProblemResidentChild", "Falta instância de entidade para avaliar o nó residente filho"}, 
+		{"_", "End"} 
 	};
 }

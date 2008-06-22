@@ -608,6 +608,22 @@ public class NetworkController implements KeyListener {
     }
 
     /**
+     * Warning dialog (only ssbn of mebn)
+     */
+    public void openWarningDialog(){
+    	if(multiEntityBayesianNetwork != null){
+    		mebnController.openWarningDialog(); 
+    	}
+    }
+    
+    public void closeWarningDialog(){
+    	if(multiEntityBayesianNetwork != null){
+    		mebnController.closeWarningDialog(); 
+    	}
+    }
+    
+    
+    /**
      * Preview the log printing.
      */
     public void previewPrintLog(final JTextArea texto, final JDialog dialog) {

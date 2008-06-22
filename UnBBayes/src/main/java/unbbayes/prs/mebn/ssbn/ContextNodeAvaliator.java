@@ -27,6 +27,7 @@ import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
+import unbbayes.util.Debug;
 
 /**
  * Class that contains methods for evaluate the context nodes of a MFrag. 
@@ -54,12 +55,20 @@ public class ContextNodeAvaliator {
 	public boolean evaluateContextNode(ContextNode node, List<OVInstance> ovInstances) 
 	         throws OVInstanceFaultException{
 		
+		boolean isDebug = Debug.isDebugMode(); 
+		Debug.setDebug(false); 
+		
 		List<OrdinaryVariable> ovFaultList = node.getOVFaultForOVInstanceSet(ovInstances); 
+
 		
 		if(!ovFaultList.isEmpty()){
+
+			Debug.setDebug(isDebug); 
 			throw new OVInstanceFaultException(ovFaultList); 
 		}else{
-			return kb.evaluateContextNodeFormula(node, ovInstances);
+            boolean result = kb.evaluateContextNodeFormula(node, ovInstances);
+			Debug.setDebug(isDebug); 
+			return result; 
 		}
 		
 	}

@@ -1655,7 +1655,7 @@ public class MEBNController  {
 							e.getMessage());
 				} 
 
-				openWarningDialog(ssbn); 
+				openWarningDialog(); 
 				
 				this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
 
@@ -1681,23 +1681,36 @@ public class MEBNController  {
 	}
 
 
-	private void openWarningDialog(SituationSpecificBayesianNetwork ssbn) {
-		List<SSBNWarning> listWarnings = ssbn.getWarningList(); 
-		
-		warningDialog = new JDialog(); 
-		WarningPanel warningPanel = new WarningPanel(this);
-		warningPanel.setListWarningAndUpdateText(listWarnings); 
-		warningDialog.setContentPane(warningPanel);
-		warningDialog.pack(); 
-		warningDialog.setLocationRelativeTo(
-				this.getMebnEditionPane().getNetworkWindow()); 
-		warningDialog.setVisible(true); 
+	public void openWarningDialog() {
+		if(ssbn != null){
+			
+			if(warningDialog != null){
+				warningDialog.setVisible(false); 
+				warningDialog.dispose(); 
+			}
+			
+			List<SSBNWarning> listWarnings = ssbn.getWarningList(); 
+
+			warningDialog = new JDialog(); 
+			warningDialog.setTitle(resource.getString("ResultDialog")); 
+			WarningPanel warningPanel = new WarningPanel(this);
+			warningPanel.setListWarningAndUpdateText(listWarnings); 
+			warningDialog.setContentPane(warningPanel);
+			warningDialog.setMinimumSize(new Dimension(600, 400)); 
+			warningDialog.setPreferredSize(new Dimension(600,400));
+			warningDialog.setMaximumSize(new Dimension(600, 400)); 
+			warningDialog.pack(); 
+			warningDialog.setLocationRelativeTo(
+					this.getMebnEditionPane().getNetworkWindow()); 
+			warningDialog.setVisible(true);
+		}
 	}
 
 	
 	public void closeWarningDialog(){
 		if(warningDialog != null){
-			warningDialog.dispose(); 
+			warningDialog.dispose();
+			warningDialog = null; 
 		}
 	}
 	
@@ -1799,6 +1812,11 @@ public class MEBNController  {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			try {
+				ssbn.reinitializeSSBN();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			} 
 			JOptionPane.showMessageDialog(screen, e.getMessage(), resourcePN
 					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
 		}

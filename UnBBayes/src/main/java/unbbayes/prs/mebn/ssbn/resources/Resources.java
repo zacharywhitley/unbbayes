@@ -66,7 +66,15 @@ public class Resources extends ListResourceBundle {
 		{"InternalError","Internal Error"},
 		{"InconsistencyError","Inconsistenty found"},
 		{"TwoContextFathersError", "One node couldn't have two context nodes fathers!"}, 
-		{"OnlyOneFreeVariableRestriction", "The search context node can not have more than one free variable!"}
+		{"OnlyOneFreeVariableRestriction", "The search context node can not have more than one free variable!"}, 
+		
+		//SSBNWarning
+		{"OVProblem", "Entities for variables ordinaries don't should be determinated"}, 
+		{"contextInputNodeProblem", "Evaluation of context nodes fail because don't found all entities that match the ordinary variables."}, 
+		{"OVProblemResidentChild", "Entity instance fault for evaluation the resident node child"}, 
+		
+		{"_", "End"} 
+		
 		
 	};
 }

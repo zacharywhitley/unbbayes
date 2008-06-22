@@ -84,6 +84,7 @@ public class SSBNCompilationPane extends JPanel {
     private final JButton previewNet;
     private final JButton saveNetImage;
     private final JButton saveNet;
+    private final JButton showWarningDialog; 
     
     private final SingleEntityNetwork network;
 
@@ -112,6 +113,7 @@ public class SSBNCompilationPane extends JPanel {
   	    saveNetImage = null;
   	    saveNet = null; 
   	    network = null; 
+  	    showWarningDialog = null; 
   	}
   	
     public SSBNCompilationPane(SingleEntityNetwork sen, NetworkWindow _netWindow,
@@ -143,6 +145,8 @@ public class SSBNCompilationPane extends JPanel {
         saveNetImage      = new JButton(iconController.getSaveNetIcon());
         saveNet           = new JButton(iconController.getSaveIcon());
 
+        showWarningDialog = new JButton(iconController.getWarningIcon()); 
+        
         //setar tooltip para esses bot_es
         propagate.setToolTipText(resource.getString("propagateToolTip"));
         expand.setToolTipText(resource.getString("expandToolTip"));
@@ -150,10 +154,13 @@ public class SSBNCompilationPane extends JPanel {
         editMode.setToolTipText(resource.getString("editToolTip"));
         log.setToolTipText(resource.getString("logToolTip"));
         reset.setToolTipText(resource.getString("resetCrencesToolTip"));
+        saveNet.setToolTipText(resource.getString("saveSSBNToolTip")); 
 //        printNet.setToolTipText(resource.getString("printNetToolTip"));
 //        previewNet.setToolTipText(resource.getString("previewNetToolTip"));
 //        saveNetImage.setToolTipText(resource.getString("saveNetImageToolTip"));
-
+        showWarningDialog.setToolTipText(resource.getString("openWarningDialogToolTip")); 
+        
+        
         //mostra o log da rede compilada
         log.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
@@ -286,6 +293,15 @@ public class SSBNCompilationPane extends JPanel {
 			}
         	
         }); 
+        
+        showWarningDialog.addActionListener(new ActionListener(){
+
+			public void actionPerformed(ActionEvent e) {
+				controller.openWarningDialog(); 
+			}
+        	
+        }); 
+        
         //colocar bot_es e controladores do look-and-feel no toolbar e esse no topPanel
         //TODO fazer os botões funcionarem e colocá-los de volta...
 //        jtbCompilation.add(printNet);
@@ -306,7 +322,8 @@ public class SSBNCompilationPane extends JPanel {
 
         jtbCompilation.add(editMode);
         jtbCompilation.add(log);
-
+        jtbCompilation.add(showWarningDialog); 
+        
         jtbCompilation.addSeparator();
         jtbCompilation.add(saveNet);
         

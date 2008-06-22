@@ -153,7 +153,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"expandToolTip","Expandir a árvore de evidências"},
 		{"collapseToolTip","Contrair a árvore de evidências"},
 		{"editToolTip","Retornar ao modo de edição"},
-		{"logToolTip","Informação sobre a compilação (Log)"},
+		{"logToolTip","Informações sobre a compilação (Log)"},
 		{"resetCrencesToolTip","Reiniciar as crenças"},
 		{"printNetToolTip","Imprimir o grafo"},
 		{"previewNetToolTip","Visualizar a impressão do grafo"},
@@ -463,6 +463,13 @@ public class GuiResources_pt extends ListResourceBundle {
 		
 		{"Version" , "Versão"},	
 		{"Buildid" , "ID do Produto"},	
+
+		//Warning panel
+		{"warningFound" , "Alertas"},
+		{"openWarningDialogToolTip" , "Abrir lista de alertas"},
+		
+		//SSBN panel
+		{"saveSSBNToolTip" , "Salvar ssbn gerada"},
 		
         //Splash loader */
 		{"loading" , "carregando"}

@@ -29,6 +29,10 @@ public class Debug {
 		
 	}
 	
+	public static boolean isDebugMode(){
+		return debug; 
+	}
+	
 	public static void print(String message) {
 		if (debug)
 			System.out.print(message);

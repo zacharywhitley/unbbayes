@@ -2,13 +2,13 @@ package unbbayes.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.ResourceBundle;
 
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -48,7 +48,10 @@ public class WarningPanel extends JPanel{
 		textArea.setEditable(true);
 
 		toolBar = new JToolBar(); 
-		toolBar.setFloatable(false); 
+		toolBar.setFloatable(false);
+		FlowLayout layoutManager = new FlowLayout();
+		layoutManager.setAlignment(FlowLayout.RIGHT); 
+		toolBar.setLayout(layoutManager); 
 		toolBar.setBackground(Color.white); 
 
 		JButton btnEnd = new JButton("" + resource.getString("closeButton")); 
@@ -69,17 +72,21 @@ public class WarningPanel extends JPanel{
 		
 		StringBuilder builder = new StringBuilder(); 
 		
+		builder.append(resource.getString("warningFound") + ":\n");
+		
+		int countWarning = 0; 
+		
+		builder.append("----------\n"); 
 		for(SSBNWarning w: listSSBNWarning){
-			builder.append(w.getNodeCause().toString() + "\n");
-			builder.append("\n----\n\n"); 
+			builder.append("[" + countWarning + "]\n"); 
+			builder.append(w.getNodeCause().getName() + "\n"); 
+			builder.append(w.getExplanation() + "\n");
+			builder.append(w.getDetalhedExplanation() + "\n");
+			builder.append("----------\n"); 
+			countWarning++; 
 		}
 		
 		textArea.setText(builder.toString());
-		JLabel labelDescription = new JLabel(" " + resource.getString("descriptionLabel")); 
-		labelDescription.setBackground(Color.WHITE); 
-		
-		toolBar.removeAll(); 
-		toolBar.add(labelDescription); 
 	}
 
 	public String getDescriptionText(){

@@ -86,6 +86,9 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 
 			//------------------ NODE
 //			logManager.appendln(getSpaceForLevel(level) + "CPT for root"); 
+			if(root.isCptAlreadyGenerated()){
+				return; 
+			}
 			generateCPT(root);
 			root.setCptAlreadyGenerated(true); 
 

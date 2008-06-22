@@ -37,6 +37,7 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.SSBNNode.EvaluationSSBNNodeState;
+import unbbayes.prs.mebn.ssbn.exception.ImplementationError;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
@@ -60,7 +61,6 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 	
 	public ExplosiveSSBNGenerator(){
 		super();  
-		Debug.setDebug(true); 
 		
 		findingList = new ArrayList<SSBNNode>(); 
 	}
@@ -161,6 +161,12 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 			
 			if(currentNode.getEvaluationState() != EvaluationSSBNNodeState.EVALUATING_UP){
 				currentNode.setEvaluationState(EvaluationSSBNNodeState.EVALUATING_UP); 
+				
+				// Step where the node is created for the first time
+				logManager.appendln("\n");
+				logManager.appendln("Node " + currentNode + " created");
+				printAndSaveCurrentNetwork(currentNode);
+				
 				logManager.appendln("\nGENERATE RECURSIVE UP: " + currentNode.getName() ); 
 				generateRecursiveUp(currentNode, seen, net, null);
 				currentNode.setEvaluationState(EvaluationSSBNNodeState.EVALUATED_COMPLETE); 
@@ -204,66 +210,13 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 
 		this.recursiveCallCount++;
 
-		//------------------------- STEP 1: search finding -------------------
-
-		//Already done in the down part!!!
-		
-//		logManager.appendln("[U]" + currentNode + ":A - Search findings");
-//		//check if query node has a known value or it should be a probabilistic node (query the kb)
-//		StateLink exactValue = getKnowledgeBase().searchFinding(currentNode.getResident(), currentNode.getArguments()); 
-//
-//		// Treat returned value
-//		if (exactValue != null) {
-//			// there were an exact match
-//			currentNode.setNodeAsFinding(exactValue.getState());
-//			logManager.appendln("[U]" + currentNode + ":Exact value of " + currentNode.getName() + "=" + exactValue.getState()); 
-//			findingList.add(currentNode);
-//		}else{
-//			logManager.appendln("[U]" + currentNode + ": Search finding fail"); 
-//		}
-//
-//		// if the program reached this line, the node doesn't have a finding
-//		if(!seen.contains(currentNode)){
-//			seen.add(currentNode);
-//		}
-		
-		//------------------------- STEP 2: analyze context nodes. -------------
-
-		// evaluates querynode's mfrag's context nodes 
-		//(if not OK, sets MFrag Instance's flag to use default CPT)	
-
-//		logManager.appendln("[U]" + currentNode + ":B - Analyse context nodes");
+	
 		List<OVInstance> ovInstancesList = new ArrayList<OVInstance>(); 
 		ovInstancesList.addAll(currentNode.getArguments()); 
-//
-//		boolean evaluateRelatedContextNodesResult = false;
-//
-//		try {
-//			evaluateRelatedContextNodesResult = evaluateRelatedContextNodes(
-//					currentNode.getResident(), ovInstancesList, mFragInstance);
-//		} catch (OVInstanceFaultException e) { //pre-requisite.
-//			e.printStackTrace();
-//			logManager.appendln("[U]" + currentNode + "\n ----- FATAL !!!!!!! OVInstance fault in up recursive method! \n"); 
-//			return null; 
-//		}
-//
-//		if(!evaluateRelatedContextNodesResult){
-//			logManager.appendln("[U]" + currentNode + "Context Node fail for " + currentNode.getResident().getMFrag()); 
-//			currentNode.setUsingDefaultCPT(true);
-//			return currentNode; 
-//		}
 
-		// Step where the node is created for the first time
-		logManager.appendln("\n");
-		logManager.appendln("Node " + currentNode + " created");
-		printAndSaveCurrentNetwork(currentNode);
+		//------------------------- STEP 1: Add and evaluate resident nodes fathers -------------
 
-
-
-
-		//------------------------- STEP 3: Add and evaluate resident nodes fathers -------------
-
-		logManager.appendln("[U]" + currentNode +  "C:- Analyse resident nodes fathers");
+		logManager.appendln("[U]" + currentNode +  "A:- Analyse resident nodes fathers");
 		for (ResidentNode residentNode : currentNode.getResident().getResidentNodeFatherList()) {
 
 			/*
@@ -333,9 +286,9 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 
 
 
-		//------------------------- STEP 4: Add and evaluate input nodes fathers -------------
+		//------------------------- STEP 2: Add and evaluate input nodes fathers -------------
 
-		logManager.appendln(currentNode + "D:- Analyze input nodes fathers");
+		logManager.appendln(currentNode + "B:- Analyze input nodes fathers");
 		for (InputNode inputNode : currentNode.getResident().getInputNodeFatherList()) {
 
 			ResidentNode residentNodeTargetOfInput = inputNode.getResidentNodePointer().getResidentNode(); 
@@ -534,16 +487,14 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 			seen.add(currentNode); 
 		}
 
-		//Evaluating context nodes???
+		
+		
+		
+		//------------------------- STEP 2: analyze context nodes. -------------
+		logManager.appendln("[D]"  + currentNode + ":B - Analyse context nodes");
+		
 		List<OVInstance> ovInstancesList = new ArrayList<OVInstance>(); 
 		ovInstancesList.addAll(currentNode.getArguments()); 
-
-		//------------------------- STEP 2: analyze context nodes. -------------
-
-		// evaluates querynode's mfrag's context nodes 
-		//(if not OK, sets MFrag Instance's flag to use default CPT)	
-
-		logManager.appendln("[D]"  + currentNode + ":B - Analyse context nodes");
 
 		boolean evaluateRelatedContextNodesResult = false;
 
@@ -552,20 +503,23 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 					currentNode.getResident(), ovInstancesList, null);
 		} catch (OVInstanceFaultException e) {
 			//Pré-requisite...
-			e.printStackTrace();
-			logManager.appendln("[D]"  + currentNode + ":FATAL!!!!!!!\n\n"); 
-			return false; 
+			logManager.appendln("[D]"  + currentNode + ": OVInstance fault. End down method with fail\n\n"); 
+			throw new ImplementationError("OVInstance fault in the method generateRecursiveDown");  
 		}
 
 		if(!evaluateRelatedContextNodesResult){
-			logManager.appendln("Context Node fail for " + currentNode.getResident().getMFrag()); 
+			logManager.appendln("[D]"  + currentNode + ":Context Node fail for " + currentNode.getResident().getMFrag()); 
 			currentNode.setUsingDefaultCPT(true);
 			return false; 
 		}
+		
+		logManager.appendln("[D]"  + currentNode + ":Context Node evaluation OK for " + currentNode.getResident().getMFrag()); 	
 
-		logManager.appendln("[D]" + currentNode + ":B - Resident Nodes below");
-
+		
+		
+		
 		//------------------------- STEP 2: Resident nodes childs in the same MFrag  -------------
+		logManager.appendln("[D]" + currentNode + ":B - Resident Nodes below");
 
 		/*
 		 * Para os nós residentes filhos (que estão portanto na mesma MFrag), 
@@ -607,9 +561,8 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 				}
 				catch(SSBNNodeGeneralException e){
 					//The search don't is made for the below part of algotithm
-					logManager.appendln("[D]" + currentNode + ":ERRO DRASTICO!!! \n\n"); 
-					e.printStackTrace(); 
-					warningList.add(new SSBNWarning(e, currentNode)); 
+					logManager.appendln("[D]" + currentNode + ": Error: entity for ordinary variable don't found: " + ovProblematicList + " !\n"); 
+					warningList.add(new SSBNWarning(SSBNWarning.ENTYTY_FAULT, e, currentNode, ovProblematicList)); 
 				}
 				finally{
 					continue; //Go to next resident node child... 
@@ -653,9 +606,6 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 
 		}
 
-
-
-
 		//------------------------- STEP 3: Search childs of inputs that have this node how target -------------
 
 		logManager.appendln("[D]" + currentNode + ":C - Input Nodes below");
@@ -688,9 +638,8 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 				}
 			} catch (OVInstanceFaultException e1) {
 				//The search don't is made for the below part of algotithm
-				logManager.appendln("[D]" + currentNode + ":ERRO DRASTICO!!! \n\n"); 
-				e1.printStackTrace(); 
-				warningList.add(new SSBNWarning(e1, currentNode));
+				logManager.appendln("[D]" + currentNode + ": Error (Input node instance from )- Evaluation of context nodes don't found all entities that match the ordinary variables"); 
+				warningList.add(new SSBNWarning(SSBNWarning.OV_FAULT_EVALUATION_OF_CONTEXT_FOR_INPUT_INSTANCE, e1, currentNode, inputNode)); 
 				continue; 
 			}
 			
@@ -755,7 +704,6 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 				if(!ovProblematicList.isEmpty()){
 
 					logManager.appendln("[D]" + currentNode + ": OVariable list problem");
-					logManager.appendln("[D]" + currentNode + ": TODO OVariable list problem");
 					
 					try{
 						
@@ -782,8 +730,8 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 						continue; 
 					}
 					catch(Exception e){
-						logManager.append("\n\nFATAL!!!\n\n");
-						warningList.add(new SSBNWarning(e, currentNode));
+						logManager.appendln("[D]" + currentNode + ": Error - Not all ordinary variables of the resident node filled"); 
+						warningList.add(new SSBNWarning(SSBNWarning.OV_FAULT_RESIDENT_CHILD, e, currentNode, residentChild)); 
 						continue; //To the next input node
 					}
 				}
@@ -856,13 +804,13 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 				residentNode.getOrdinaryVariableList());
 
 		for(ContextNode context: contextNodeList){
-			logManager.appendln("Context Node: " + context.getLabel());
+			logManager.append("Evaluating Context Node: " + context.getLabel());
 			if(!avaliator.evaluateContextNode(context, ovInstances)){
 				residentNode.getMFrag().setAsUsingDefaultCPT(true); 
-				logManager.appendln("Result = FALSE. Use default distribution ");
+				logManager.appendln("  > Result = FALSE. Use default distribution ");
 				return false;  
 			}else{
-				logManager.appendln("Result = TRUE.");
+				logManager.appendln("  > Result = TRUE.");
 			}		
 		}
 

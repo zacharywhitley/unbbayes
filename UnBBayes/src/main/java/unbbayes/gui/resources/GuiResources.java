@@ -462,9 +462,18 @@ public class GuiResources extends ListResourceBundle {
 		{"Collaborators" , "Collaborators"},
 		{"Version" , "Version"},	
 		{"Buildid" , "Build ID"},		
+	
+		//Warning panel
+		{"warningFound" , "Warnings"},		
+		
+		//SSBN panel
+		{"saveSSBNToolTip" , "Save generated SSBN"},
+		{"openWarningDialogToolTip" , "Open warning list"},
 		
         //Splash loader */
 		{"loading" , "loading"}
+		
+	
 		
 	};
 }

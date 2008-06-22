@@ -124,6 +124,9 @@ public class ControllerResources_pt extends ListResourceBundle {
 		//Network Controller
 		{"logDialogTitle", "Log"},
 		
+		//Result Dialog
+		{"ResultDialog", "Resultado"}, 
+		
 		/* load/save */
 		{"saveSucess", "Arquivo salvo com sucesso!"},
 		{"mebnDontExists", "Operao falhou: No há MEBN ativa"},
