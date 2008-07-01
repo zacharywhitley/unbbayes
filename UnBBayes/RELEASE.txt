@@ -1,3 +1,14 @@
+UNBBAYES VERSION 3.5.1-BETA
+----------------------------
+FEATURE LIST		
+Number	Request ID	Summary
+1 		2008231		Implement SSBN algorithm with evidences "below"
+
+
+BUG LIST		
+Number	Request ID	Summary
+1 		1994411  	Compiler bug when ther are only invalid parents
+
 UNBBAYES VERSION 3.4.29-BETA
 ----------------------------
 

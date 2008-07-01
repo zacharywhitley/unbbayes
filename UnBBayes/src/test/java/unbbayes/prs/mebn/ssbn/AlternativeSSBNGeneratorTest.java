@@ -32,64 +32,64 @@ public class AlternativeSSBNGeneratorTest extends TestCase{
 		System.out.println("Begin");
 		
 		KnowledgeBase kb = PowerLoomKB.getNewInstanceKB(); 
-		ISSBNGenerator ssbnGenerator = new AlternativeSSBNGenerator(); 
-		
-		MultiEntityBayesianNetwork mebn = null;
-		
-		UbfIO io = UbfIO.getInstance(); 
-		try {
-			mebn = io.loadMebn(new File(STARTREK_UBF));
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (IOMebnException e) {
-			e.printStackTrace();
-		}
-		System.out.println("Stattrek UBF loaded");
-
-		
-		for(ObjectEntity entity: mebn.getObjectEntityContainer().getListEntity()){
-			kb.createEntityDefinition(entity);
-		}
-
-		for(MFrag mfrag: mebn.getDomainMFragList()){
-			for(ResidentNode resident: mfrag.getResidentNodeList()){
-				kb.createRandomVariableDefinition(resident);
-			}
-		}
-		
-		kb.saveGenerativeMTheory(mebn, new File(KB_GENERATIVE_FILE)); 
-		
-		try {
-			kb.loadModule(new File(KB_FINDING_FILE), true); 
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		
-		System.out.println("Knowledge base init and filled");
-		
-		SSBNNode queryNode = createQueryNode_HarmPotential_ST4_T3(mebn); 
-		
-		Query query = new Query(kb, queryNode, mebn); 
-		query.setMebn(mebn); 
-		
-		try {
-			ssbnGenerator.generateSSBN(query);
-		} catch (SSBNNodeGeneralException e) {
-			e.printStackTrace();
-		}
-		catch (ImplementationRestrictionException ei) {
-			ei.printStackTrace();
-		} catch (MEBNException e) {
-			e.printStackTrace();
-		} catch (OVInstanceFaultException e) {
-			e.printStackTrace();
-		} 
-		
-		System.out.println("SSBN OK");
-		
-//		BottomUpSSBNGenerator.printAndSaveCurrentNetwork(queryNode);
-		System.out.println("End");
+//		ISSBNGenerator ssbnGenerator = new AlternativeSSBNGenerator(); 
+//		
+//		MultiEntityBayesianNetwork mebn = null;
+//		
+//		UbfIO io = UbfIO.getInstance(); 
+//		try {
+//			mebn = io.loadMebn(new File(STARTREK_UBF));
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		} catch (IOMebnException e) {
+//			e.printStackTrace();
+//		}
+//		System.out.println("Stattrek UBF loaded");
+//
+//		
+//		for(ObjectEntity entity: mebn.getObjectEntityContainer().getListEntity()){
+//			kb.createEntityDefinition(entity);
+//		}
+//
+//		for(MFrag mfrag: mebn.getDomainMFragList()){
+//			for(ResidentNode resident: mfrag.getResidentNodeList()){
+//				kb.createRandomVariableDefinition(resident);
+//			}
+//		}
+//		
+//		kb.saveGenerativeMTheory(mebn, new File(KB_GENERATIVE_FILE)); 
+//		
+//		try {
+//			kb.loadModule(new File(KB_FINDING_FILE), true); 
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			fail(e.getMessage());
+//		}
+//		
+//		System.out.println("Knowledge base init and filled");
+//		
+//		SSBNNode queryNode = createQueryNode_HarmPotential_ST4_T3(mebn); 
+//		
+//		Query query = new Query(kb, queryNode, mebn); 
+//		query.setMebn(mebn); 
+//		
+//		try {
+//			ssbnGenerator.generateSSBN(query);
+//		} catch (SSBNNodeGeneralException e) {
+//			e.printStackTrace();
+//		}
+//		catch (ImplementationRestrictionException ei) {
+//			ei.printStackTrace();
+//		} catch (MEBNException e) {
+//			e.printStackTrace();
+//		} catch (OVInstanceFaultException e) {
+//			e.printStackTrace();
+//		} 
+//		
+//		System.out.println("SSBN OK");
+//		
+////		BottomUpSSBNGenerator.printAndSaveCurrentNetwork(queryNode);
+//		System.out.println("End");
 		
 	}
 	
