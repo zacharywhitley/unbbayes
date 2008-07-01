@@ -746,7 +746,7 @@ public class SSBNNode {
 			this.getProbNode().setDescription(name);
 		}
 		
-		name +=" [id=" + id + "] P=" + permanent; 
+		//name +=" [id=" + id + "] P=" + permanent; 
 		
 		return name;
 		
@@ -763,7 +763,7 @@ public class SSBNNode {
 			ArrayList<Entity> ret = new ArrayList<Entity>();
 			ret.add(this.actualValues.iterator().next());
 			return ret;
-		}else{
+		} else {
 			return actualValues;	
 		}
 	}

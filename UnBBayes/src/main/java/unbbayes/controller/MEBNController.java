@@ -1642,7 +1642,7 @@ public class MEBNController  {
 		}
 
 		if(!query.getQueryNode().isFinding()){
-			if(this.compileNetwork(probabilisticNetwork)){
+
 				showSSBNGraph = true; 
 				specificSituationBayesianNetwork = probabilisticNetwork;
 
@@ -1668,10 +1668,15 @@ public class MEBNController  {
 					this.getMebnEditionPane().getNetworkWindow().getGraphPane().update(); 
 				}
 
-			}
+			
 		}else{
+//			JOptionPane.showMessageDialog(getScreen(), 
+//					query.getQueryNode().toString() + " = " + query.getQueryNode().getActualValues());
+			// the code above was substituded because the finding SSBN Node is not behaving as specified
+			// anymore since the new ExplosiveSSBNGeneration replaced BottomUpSSBNGeneration.
 			JOptionPane.showMessageDialog(getScreen(), 
-					query.getQueryNode().toString() + " = " + query.getQueryNode().getActualValues());
+					query.getQueryNode().getName() + " = " + query.getQueryNode().getValue());
+	
 		}
 
 		mebnEditionPane.setStatus(resource.getString("statusReady")); 
