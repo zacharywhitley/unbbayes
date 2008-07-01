@@ -1,0 +1,114 @@
+net
+{
+     node_size = (0 0);
+     name = "NaiveBayes";
+     tree = "(sexo,idadenumero,glabela,fronte,incisivos,mentoredondo,mentoproeminencia,orbita)";
+     UnBBayes_Color_Probabilistic_Description = "-256";
+     UnBBayes_Color_Probabilistic_Explanation = "-16711936";
+     UnBBayes_Color_Utility = "-16711681";
+     UnBBayes_Color_Decision = "-14336";
+}
+
+node sexo
+{
+     label = "sexo";
+     position = (350 30);
+     states = ("Feminino" "Masculino");
+}
+
+node idadenumero
+{
+     label = "idadenumero";
+     position = (65 88);
+     states = ("De30a43" "De54a66" "De23a29" "De44a53" "De18a22");
+}
+
+node glabela
+{
+     label = "glabela";
+     position = (150 100);
+     states = ("NadaProeminente" "Proeminente" "PoucoProeminente" "MuitoProeminente" "Indisponivel");
+}
+
+node fronte
+{
+     label = "fronte";
+     position = (250 100);
+     states = ("MuitoVertical" "Inclinada" "Vertical" "MuitoInclinada" "Indisponivel");
+}
+
+node incisivos
+{
+     label = "incisivos";
+     position = (350 100);
+     states = ("Quadrado" "Redondo" "MuitoQuadrado" "MuitoRedondo" "Indisponivel");
+}
+
+node mentoredondo
+{
+     label = "mentoredondo";
+     position = (450 100);
+     states = ("Arredondado" "Quadrado" "MuitoArredondado" "MuitoQuadrado" "Indisponivel");
+}
+
+node mentoproeminencia
+{
+     label = "mentoproeminencia";
+     position = (550 100);
+     states = ("Discreto" "Proeminente" "MuitoProeminente" "MuitoDiscreto" "Indisponivel");
+}
+
+node orbita
+{
+     label = "orbita";
+     position = (650 100);
+     states = ("Angulosa" "Redonda" "MuitoRedonda" "Indisponivel" "MuitoAngulosa");
+}
+
+potential (sexo)
+{
+ data = ( 0.4680851 0.5319149 );
+}
+
+potential (idadenumero | sexo)
+{
+ data = (( 0.16216215 0.0990991 0.14414415 0.14864865 0.44594595 )
+( 0.17261904 0.14285715 0.121031746 0.109126985 0.45436507 ));
+}
+
+potential (glabela | sexo)
+{
+ data = (( 0.4234234 0.018018018 0.5495495 0.0022522523 0.006756757 )
+( 0.061507937 0.61507934 0.20833333 0.109126985 0.005952381 ));
+}
+
+potential (fronte | sexo)
+{
+ data = (( 0.13738738 0.27477476 0.3873874 0.1936937 0.006756757 )
+( 0.10119048 0.3690476 0.30952382 0.21428572 0.005952381 ));
+}
+
+potential (incisivos | sexo)
+{
+ data = (( 0.27702704 0.527027 0.056306306 0.13288288 0.006756757 )
+( 0.78571427 0.12896825 0.041666668 0.035714287 0.007936508 ));
+}
+
+potential (mentoredondo | sexo)
+{
+ data = (( 0.4234234 0.33333334 0.117117114 0.11936937 0.006756757 )
+( 0.20634921 0.3968254 0.21825397 0.17261904 0.005952381 ));
+}
+
+potential (mentoproeminencia | sexo)
+{
+ data = (( 0.47297296 0.268018 0.1509009 0.10135135 0.006756757 )
+( 0.21230158 0.5 0.14880952 0.13293651 0.005952381 ));
+}
+
+potential (orbita | sexo)
+{
+ data = (( 0.39864865 0.5833333 0.009009009 0.0045045046 0.0045045046 )
+( 0.59126985 0.3888889 0.011904762 0.003968254 0.003968254 ));
+}
+

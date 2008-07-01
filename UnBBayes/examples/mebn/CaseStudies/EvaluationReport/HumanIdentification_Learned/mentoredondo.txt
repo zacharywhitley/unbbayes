@@ -1,0 +1,66 @@
+=== Run information ===
+
+Scheme:           BayesianNetwork
+Relation:         null
+Instances:        467
+Attributes:       8
+                  idadenumero
+                  sexo
+                  glabela
+                  fronte
+                  incisivos
+                  mentoredondo
+                  mentoproeminencia
+                  orbita
+ClassAttribute:   mentoredondo
+Test mode:    === Classifier model ===
+
+Bayesian Network
+sexo (sexo)
+idadenumero (idadenumero)
+fronte (fronte)
+mentoproeminencia (mentoproeminencia)
+incisivos (incisivos)
+orbita (orbita)
+mentoredondo (mentoredondo)
+glabela (glabela)
+
+
+=== Summary ===
+Correctly Classified Instances       163           34.9036 %
+Correct confidence limits
+Pr[c]	   z
+99.8%	[0.2845 , 0.4196]
+99%	[0.2946 , 0.4077]
+98%	[0.2996 , 0.4019]
+90%	[0.3136 , 0.3862]
+80%	[0.3214 , 0.3778]
+60%	[0.3307 , 0.3678]
+20%	[0.3435 , 0.3546]
+Incorrectly Classified Instances     304           65.0964 %
+Incorrect confidence limits
+Pr[c]	   z
+99.8%	[0.5804 , 0.7155]
+99%	[0.5923 , 0.7054]
+98%	[0.5981 , 0.7004]
+90%	[0.6138 , 0.6864]
+80%	[0.6222 , 0.6786]
+60%	[0.6322 , 0.6693]
+20%	[0.6454 , 0.6565]
+Quadratic loss function				           1.3019
+Total Number of Instances            467     
+
+=== Detailed Accuracy By Class ===
+
+TP Rate   FP Rate   TN Rate   FN Rate   Class
+  0.35      0.284      0.716     0.65     Arredondado
+  0.706     0.691      0.309     0.294    Quadrado
+  0         0          1         1        MuitoQuadrado
+  0         0          1         1        MuitoArredondado
+
+=== Confusion Matrix ===
+   a   b   c   d   <-- classified as
+  50  93   0   0 |   a = Arredondado
+  47 113   0   0 |   b = Quadrado
+   4  77   0   0 |   c = MuitoQuadrado
+  41  42   0   0 |   d = MuitoArredondado
