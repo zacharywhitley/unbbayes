@@ -725,6 +725,9 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 							if(!ssbnNode.getParents().contains(currentNode)){
 								generateRecursive(ssbnNode, seen, net);			    	
 								ssbnNode.addParent(currentNode, false);
+								if(ssbnNode.isPermanent()){
+									currentNode.setPermanent(true); 
+								}
 							}
 						}
 						continue; 

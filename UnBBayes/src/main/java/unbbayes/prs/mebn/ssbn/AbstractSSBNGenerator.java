@@ -481,7 +481,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 		List<OVInstance> arguments = takeNecessaryArgumentsForNode(ovInstances, residentNode);
 		arguments.add(OVInstance.getInstance(ov, entity, ov.getValueType())); 
 		
-		SSBNNode testSSBNNode = ssbnNodesMap.get(SSBNNode.getUniqueNameFor(residentNode, ovInstances)); 
+		SSBNNode testSSBNNode = ssbnNodesMap.get(SSBNNode.getUniqueNameFor(residentNode, arguments)); 
 		
 		if(testSSBNNode == null){
 			testSSBNNode =  SSBNNode.getInstance(probabilisticNetwork,residentNode);
