@@ -1566,7 +1566,7 @@ public class MEBNController  {
 		
 		mebnEditionPane.setStatus(resource.getString("statusReady")); 
 		
-		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+		mebnEditionPane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		
 		if (lastException != null) {
 			// commenting below... Power loom was throwing stack trace as message...
