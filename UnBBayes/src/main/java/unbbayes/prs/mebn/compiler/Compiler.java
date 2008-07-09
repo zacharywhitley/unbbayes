@@ -52,6 +52,10 @@ import unbbayes.util.Debug;
  ----------------
  Changes (Date/Month/Year): 
  
+ 	07/09/2008:
+ 			Description: BNF fails to describe a complex boolean expression
+ 			Author: Shou Matsumoto (cardialfly@[gmail,yahoo].com)
+ 	
  	15/06/2008:
  			Description: a boolean expression was returning a boolean neutral value (false in "Any" 
  			and true in "All") when no valid expression (involving parents) was evaluated. It
@@ -123,7 +127,7 @@ import unbbayes.util.Debug;
  b_expression ::= b_term [ "|" b_term ]*
  b_term ::= not_factor [ "&" not_factor ]*
  not_factor ::= [ "~" ] b_factor
- b_factor ::= ident "=" ident
+ b_factor ::= ident "=" ident | "(" b_expression ")"
  else_statement ::= statement | if_statement
  statement ::= "[" assignment "]" 
  assignment ::= ident "=" expression [ "," assignment ]*
@@ -821,7 +825,7 @@ public class Compiler implements ICompiler {
 	}
 
 	/**
-	 * b_factor ::= ident "=" ident
+	 * b_factor ::= ident "=" ident | "(" b_expression ")"
 	 * 
 	 */
 	private ICompilerBooleanValue bFactor() throws InvalidConditionantException,
@@ -829,13 +833,22 @@ public class Compiler implements ICompiler {
 		
 		String conditionantName = null;
 		
-
 		
 		
+		// first, check if it is an expression with parenhtesis - "(" b_expression ")" case.
+		if (look == '(') {
+			match('(');
+			ICompilerBooleanValue ret = bExpression();
+			match(')');
+			return ret;
+		} 
+		
+		// this is not a "(" b_expression ")" case; so, check as ident "=" ident.
 		
 		// Debug.println("Parsing bFactor");
 		// SCAN FOR CONDITIONANTS
 		scan();
+		
 		if (token == 'x') {
 			conditionantName = this.noCaseChangeValue;
 			// consistency check C09: verify whether is conditionant of the node

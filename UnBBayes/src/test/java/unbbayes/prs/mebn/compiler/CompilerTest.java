@@ -142,6 +142,38 @@ public class CompilerTest extends TestCase {
 	}
 	
 	/*
+	 * Test method for 'unbbayes.prs.mebn.compiler.MEBNTableParser.parse()'
+	 */
+	public void testNormalConsistencyCheckWithParenthesisAtBoolExpression() {
+		
+		//		 should go all right
+		String tableString =  
+			" if any st.t have( OperatorSpecies = Cardassian & (HarmPotential = true) ) " + 
+			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
+			" else if any st.z.t have( (OperatorSpecies = Romulan & HarmPotential = true) ) " +
+			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
+			" else if any STj have( (OperatorSpecies = Unknown & HarmPotential = true) | (OperatorSpecies = Unknown & HarmPotential = true) ) " + 
+			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
+			" else if any sr.st have( OperatorSpecies = Klingon & HarmPotential = true ) " +
+			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .6 ] " +
+			" else if any st.z have( OperatorSpecies = Friend & HarmPotential = true ) " +
+			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " +
+			" else [ Un = 0 , Hi = 0 , Medium = 0 , Low = 1 ] ";
+		
+		
+		try  {
+			tableParser.parse(tableString);
+		} catch (MEBNException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+			
+		} 
+		
+		//tableParser.getTempTable();
+		
+	}
+	
+	/*
 	 * Test if parser detect no default distribution table
 	 * or else clause undeclared
 	 *
