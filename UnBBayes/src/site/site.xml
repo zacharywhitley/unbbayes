@@ -14,7 +14,7 @@
       <item name="UnB" href="http://www.unb.br/"/>
     </links>
 
-    <menu name="UnBBayes 3">
+    <menu name="Main">
       <item name="Overview" href="index.html"/>
       <item name="Publications" href="publications.html"/>
       <item name="APT Test" href="test.html"/>
