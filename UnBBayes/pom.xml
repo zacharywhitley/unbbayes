@@ -104,7 +104,7 @@
 			<roles>
 				<role>Project Manager</role>
 			</roles>
-			<organization>University of Brasilia - UnB</organization>
+			<organization>University of Brasília - UnB</organization>
 			<organizationUrl>www.unb.br</organizationUrl>
 			<timezone>-3</timezone>
 		</developer>
@@ -533,8 +533,8 @@
 	</reporting>
 	<distributionManagement>
 		<site>
-			<id>unbbayes.website</id>
-			<url>ftp://sourceforge.net/www/u/un/unbbayes</url>
+			<id>www.unbbayes.sourceforge.net</id>
+			<url>scp://sourceforge.net/www/u/un/unbbayes</url>
 		</site>
 	</distributionManagement>
 </project>

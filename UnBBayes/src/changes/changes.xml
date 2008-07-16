@@ -1,25 +1,124 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <document>
-   <properties>
-      <title>UnBBayes</title>
-      <author email="rommel.carvalho@gmail.com">Rommel Carvalho</author>
-   </properties>
-   <body>
-      <release version="current" description="Current work version">    
-           <action dev="Duke Java" type="add">
-               A new cool feature.
-           </action>         
-         </release>
-      <release version="1.0.1" date="2005-11-18" description="Release fix">   
-           <action dev="Duke Java" type="add">
-               Added a cool feature.
-           </action>                      
-           <action dev="Duke Java" type="fix" issue="1254">
-               Fixed a nasty bug.
-           </action>        
-           <action dev="Duke Java" type="delete">
-               Removed a feature that nobody liked.
-           </action>        
-         </release>         
-   </body>
+	<properties>
+		<title>UnBBayes</title>
+		<author email="rommel.carvalho@gmail.com">
+			Rommel Carvalho
+		</author>
+	</properties>
+	<body>
+		<release version="3.5.1-BETA" description="Current work version">
+			<action dev="Laécio Lima" type="add">
+				2008231	- Implement SSBN algorithm with evidences "below".
+			</action>
+			
+			<action dev="Shou Matsumoto" type="fix">
+				1994411 - Compiler bug when ther are only invalid parents.
+			</action>
+		</release>
+		<release version="3.4.29-BETA" date="2008-05-20"
+			description="Release fix">
+			
+			<action dev="Shou Matsumoto" type="add">
+				1968915	- Pseudocode compiler's optimization.
+			</action>
+			<action dev="Laécio Lima" type="add">
+				1951209	- Refactor NodeList to ArrayList or List.
+			</action>
+			<action dev="Laécio Lima" type="add">
+				1908011	- Button for pre-parsing CPT pseudocode.
+			</action>
+			<action dev="Shou Matsumoto" type="add">
+				1907899 - OWL / PR-OWL "compatibility".
+			</action>
+			
+			<action dev="Shou Matsumoto" type="fix">
+				1962006	- KB's file chooser's file filter message.
+			</action>
+			<action dev="Laécio Lima" type="fix">
+				1960679 - Problem with the Help Pane.
+			</action>
+			<action dev="Laécio Lima" type="fix">
+				1956731 - Deleting resident and inserting a new one with same name...
+			</action>
+			<action dev="Laécio Lima" type="fix">
+				1956730 - BottomUpSSBNGenerator doesn't check if node's already there.
+			</action>
+			<action dev="Laécio Lima" type="fix">
+				1955798 - Duplicated names are acept for objects of diferents types.
+			</action>
+			<action dev="Laécio Lima" type="fix">
+				1954467 - Inserting an edge makes isA node to shrink.
+			</action>
+			<action dev="Laécio Lima" type="fix">
+				1951215 - Resident's ArgumentList is not updated properly.
+			</action>
+			<action dev="Laécio Lima" type="fix">
+				1949131 - Cannot open "global option" at BN ("normal") edition frame...
+			</action>
+			<action dev="Laécio Lima" type="fix">
+				1949125 - Arguments at CPT edition panel should be from parents.
+			</action>
+			<action dev="Laécio Lima" type="fix">
+				1949121 - No text explanation pops up at buttons in resident nodes.
+			</action>
+			<action dev="Shou Matsumoto" type="fix">
+				1949113 - Stack trace as a user's error message...
+			</action>
+			<action dev="Laécio Lima" type="fix">
+				1949107 - No default distro on CPT edition pane.
+			</action>
+			<action dev="Laécio Lima" type="fix">
+				1949104 - CPT edition panel is not inserting commas.
+			</action>
+			<action dev="Shou Matsumoto" type="fix">
+				1949101 - Where the hell the compiler is reporting parse error?
+			</action>
+			<action dev="Laécio Lima" type="fix">
+				1949095 - Can only insert comments to MFrags and nodes?
+			</action>
+			<action dev="Shou Matsumoto" type="fix">
+				1949094 - Compiler (or table edition panel on GUI) crushes.
+			</action>
+			<action dev="Laécio Lima" type="fix">
+				1949091 - Father nodes... Instead of Parents.
+			</action>
+			<action dev="Shou Matsumoto" type="fix">
+				1913024 - defining the resident node's parameters.
+			</action>
+			<action dev="Shou Matsumoto" type="fix">
+				1913020 - typo-error 2.
+			</action>
+			<action dev="Shou Matsumoto" type="fix">
+				1913015 - typo-error 1.
+			</action>
+			<action dev="Shou Matsumoto" type="fix">
+				1909774 - bug following tutorial.
+			</action>
+			<action dev="Laécio Lima" type="fix">
+				1909756 - MTheory tree collapses after edits.
+			</action>
+			<action dev="Shou Matsumoto" type="fix">
+				1907990 - Object entities as resident's possible value.
+			</action>
+			<action dev="Laécio Lima" type="fix">
+				1907974 - Problems deleting nodes (MAC).
+			</action>
+			<action dev="Laécio Lima" type="fix">
+				1907968 - Cannot deselect nodes when using MAC.
+			</action>
+			<action dev="Laécio Lima" type="fix">
+				1907954 - Changing some elements is not updating GUI (by now, MTheory).
+			</action>
+			<action dev="Laécio Lima" type="fix">
+				1907947 - We can't manipulate 2 MTheories at the same time.
+			</action>
+			<action dev="Shou Matsumoto" type="fix">
+				1907897 - Update GUI when loading PowerLoom findings.
+			</action>
+			<action dev="Shou Matsumoto" type="fix">
+				1907290 - Problems when pre-existing OV is resident's argument.
+			</action>
+		</release>
+	</body>
 </document>

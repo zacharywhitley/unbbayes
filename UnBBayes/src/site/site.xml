@@ -17,10 +17,11 @@
     <menu name="Main">
       <item name="Overview" href="index.html"/>
       <item name="Publications" href="publications.html"/>
-      <item name="APT Test" href="test.html"/>
-      <item name="APT Format" href="format.html"/>
-      <item name="FAQ" href="faq.html"/>
-      <item name="Xdoc Example" href="xdoc.html"/>      
+      <item name="FAQ" href="faq.html"/>     
+    </menu>
+    
+    <menu name="Examples">
+      <item name="Poker Game" href="poker_game.html"/>
     </menu>
     
     <menu ref="reports"/>
