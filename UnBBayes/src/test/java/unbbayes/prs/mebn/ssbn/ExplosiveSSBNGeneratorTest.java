@@ -1,8 +1,10 @@
 package unbbayes.prs.mebn.ssbn;
 
+import java.awt.Cursor;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+
+import javax.swing.JOptionPane;
 
 import junit.framework.TestCase;
 import unbbayes.io.mebn.UbfIO;
@@ -19,78 +21,89 @@ import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
-public class AlternativeSSBNGeneratorTest extends TestCase{
+public class ExplosiveSSBNGeneratorTest extends TestCase{
 
 	public static final String KB_FINDING_FILE = "examples/mebn/KnowledgeBase/KnowledgeBaseWithStarshipZoneST4ver2.plm";
 	public static final String KB_GENERATIVE_FILE = "examples/mebn/KnowledgeBase/KnowledgeBaseGenerative.plm";
 	
 	
-	public static final String STARTREK_UBF = "examples/mebn/StarTrek.ubf"; 
+	public static final String STARTREK_UBF = "examples/mebn/StarTrek55.ubf"; 
 
 	public static void main(String arguments[]){
 		
 		System.out.println("Begin");
 		
-		KnowledgeBase kb = PowerLoomKB.getNewInstanceKB(); 
-//		ISSBNGenerator ssbnGenerator = new AlternativeSSBNGenerator(); 
-//		
-//		MultiEntityBayesianNetwork mebn = null;
-//		
-//		UbfIO io = UbfIO.getInstance(); 
-//		try {
-//			mebn = io.loadMebn(new File(STARTREK_UBF));
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		} catch (IOMebnException e) {
-//			e.printStackTrace();
-//		}
-//		System.out.println("Stattrek UBF loaded");
-//
-//		
-//		for(ObjectEntity entity: mebn.getObjectEntityContainer().getListEntity()){
-//			kb.createEntityDefinition(entity);
-//		}
-//
-//		for(MFrag mfrag: mebn.getDomainMFragList()){
-//			for(ResidentNode resident: mfrag.getResidentNodeList()){
-//				kb.createRandomVariableDefinition(resident);
-//			}
-//		}
-//		
-//		kb.saveGenerativeMTheory(mebn, new File(KB_GENERATIVE_FILE)); 
-//		
-//		try {
-//			kb.loadModule(new File(KB_FINDING_FILE), true); 
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		
-//		System.out.println("Knowledge base init and filled");
-//		
-//		SSBNNode queryNode = createQueryNode_HarmPotential_ST4_T3(mebn); 
-//		
-//		Query query = new Query(kb, queryNode, mebn); 
-//		query.setMebn(mebn); 
-//		
-//		try {
-//			ssbnGenerator.generateSSBN(query);
-//		} catch (SSBNNodeGeneralException e) {
-//			e.printStackTrace();
-//		}
-//		catch (ImplementationRestrictionException ei) {
-//			ei.printStackTrace();
-//		} catch (MEBNException e) {
-//			e.printStackTrace();
-//		} catch (OVInstanceFaultException e) {
-//			e.printStackTrace();
-//		} 
-//		
-//		System.out.println("SSBN OK");
-//		
-////		BottomUpSSBNGenerator.printAndSaveCurrentNetwork(queryNode);
-//		System.out.println("End");
+
+		ISSBNGenerator ssbnGenerator = new ExplosiveSSBNGenerator(); 
 		
+		MultiEntityBayesianNetwork mebn = null;
+		
+		UbfIO io = UbfIO.getInstance(); 
+		try {
+			mebn = io.loadMebn(new File(STARTREK_UBF));
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (IOMebnException e) {
+			e.printStackTrace();
+		}
+		System.out.println("Stattrek UBF loaded");
+
+		KnowledgeBase kb = createGenerativeKnowledgeBase(mebn);
+		kb.saveGenerativeMTheory(mebn, new File(KB_GENERATIVE_FILE)); 
+		loadFindingModule(kb);
+		
+		System.out.println("Knowledge base init and filled");
+		
+		SSBNNode queryNode = createQueryNode_HarmPotential_ST4_T3(mebn); 
+		
+		Query query = new Query(kb, queryNode, mebn); 
+		query.setMebn(mebn); 
+		
+		try {
+			SituationSpecificBayesianNetwork ssbn = ssbnGenerator.generateSSBN(query);
+			ssbn.compileAndInitializeSSBN();
+		} catch (SSBNNodeGeneralException e) {
+			e.printStackTrace();
+		}
+		catch (ImplementationRestrictionException ei) {
+			ei.printStackTrace();
+		} catch (MEBNException e) {
+			e.printStackTrace();
+		} catch (OVInstanceFaultException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+		
+		System.out.println("SSBN OK");
+		
+//		BottomUpSSBNGenerator.printAndSaveCurrentNetwork(queryNode);
+		System.out.println("End");
+		
+	}
+
+	private static void loadFindingModule(KnowledgeBase kb) {
+		try {
+			kb.loadModule(new File(KB_FINDING_FILE), true); 
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}
+
+	private static KnowledgeBase createGenerativeKnowledgeBase(
+			MultiEntityBayesianNetwork mebn) {
+		KnowledgeBase kb = PowerLoomKB.getNewInstanceKB(); 
+		for(ObjectEntity entity: mebn.getObjectEntityContainer().getListEntity()){
+			kb.createEntityDefinition(entity);
+		}
+
+		for(MFrag mfrag: mebn.getDomainMFragList()){
+			for(ResidentNode resident: mfrag.getResidentNodeList()){
+				kb.createRandomVariableDefinition(resident);
+			}
+		}
+		return kb;
 	}
 	
 	private static SSBNNode createQueryNode_StarshipClass_ST4(MultiEntityBayesianNetwork mebn) {

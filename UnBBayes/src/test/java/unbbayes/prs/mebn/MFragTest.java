@@ -3,12 +3,15 @@
  */
 package unbbayes.prs.mebn;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 
-import unbbayes.prs.Node;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import unbbayes.io.mebn.UbfIO;
+import unbbayes.prs.Node;
 
 /**
  * @author user
@@ -16,12 +19,59 @@ import junit.framework.TestSuite;
  */
 public class MFragTest extends TestCase {
 
+	public static final String STARTREK_UBF = "examples/mebn/StarTrek55.ubf"; 
 	
 	/**
 	 * @param arg0	
 	 */
 	public MFragTest(String arg0) {
 		super(arg0);
+	}
+	
+	public void testgetContextNodeByOrdinaryVariableRelated(){
+		
+		MultiEntityBayesianNetwork mebn = loadStartrekOntologyExample();
+		
+		MFrag mFrag = mebn.getMFragByName("Starship_MFrag");
+		Collection<OrdinaryVariable> ovList = new ArrayList<OrdinaryVariable>(); 
+		OrdinaryVariable ovZ = mFrag.getOrdinaryVariableByName("z"); 
+		ovList.add(ovZ); 
+		Collection<ContextNode> collection = mFrag.getContextNodeByOrdinaryVariableRelated(ovList); 
+		assertEquals(collection.size(),	3); 
+		
+		mFrag = mebn.getMFragByName("Starship_MFrag");
+		ovList = new ArrayList<OrdinaryVariable>(); 
+		ovZ = mFrag.getOrdinaryVariableByName("st"); 
+		ovList.add(ovZ); 
+		collection = mFrag.getContextNodeByOrdinaryVariableRelated(ovList); 
+		assertEquals(collection.size(),	3); 
+		
+		mFrag = mebn.getMFragByName("SensorReport_MFrag");
+		ovList = new ArrayList<OrdinaryVariable>(); 
+		ovZ = mFrag.getOrdinaryVariableByName("st"); 
+		ovList.add(ovZ); 
+		collection = mFrag.getContextNodeByOrdinaryVariableRelated(ovList); 
+		assertEquals(collection.size(),	2); 
+		
+		mFrag = mebn.getMFragByName("SensorReport_MFrag");
+		ovList = new ArrayList<OrdinaryVariable>(); 
+		ovZ = mFrag.getOrdinaryVariableByName("sr"); 
+		ovList.add(ovZ); 
+		collection = mFrag.getContextNodeByOrdinaryVariableRelated(ovList); 
+		assertEquals(collection.size(),	2); 
+	}
+
+	private MultiEntityBayesianNetwork loadStartrekOntologyExample() {
+		UbfIO io = UbfIO.getInstance(); 
+		MultiEntityBayesianNetwork mebn = null; 
+		
+		try {
+			mebn = io.loadMebn(new File(STARTREK_UBF));
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(); 
+		}
+		return mebn;
 	}
 	
 	

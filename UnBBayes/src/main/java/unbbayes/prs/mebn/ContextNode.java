@@ -454,10 +454,6 @@ public class ContextNode extends MultiEntityNode {
 		return variableSet;
 	}
 
-	public void setVariableList(Set<OrdinaryVariable> variableList) {
-		this.variableSet = variableList;
-	}
-
 	public static void setColor(Color color) {
 		ContextNode.color = color;
 	}

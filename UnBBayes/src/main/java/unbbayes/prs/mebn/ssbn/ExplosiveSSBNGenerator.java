@@ -209,8 +209,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 		}
 
 		this.recursiveCallCount++;
-
-	
+		
 		List<OVInstance> ovInstancesList = new ArrayList<OVInstance>(); 
 		ovInstancesList.addAll(currentNode.getArguments()); 
 

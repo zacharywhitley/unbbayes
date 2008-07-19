@@ -804,8 +804,6 @@ public class MFrag implements Graph{
 	 */
 	public Collection<ContextNode> getContextNodeByOrdinaryVariableRelated(Collection<OrdinaryVariable> allOVs){
 		
-		//TODO Testar....
-		
 		Collection<ContextNode> ret = new ArrayList<ContextNode>();
 		List<OrdinaryVariable> ovList = new ArrayList<OrdinaryVariable>(); 
 		boolean ordinaryVariableAdded = true; 
@@ -821,8 +819,12 @@ public class MFrag implements Graph{
 		 * ordinária ser adicionada a lista (não foi adicionado nenhum nó de 
 		 * contexto que contenha uma variável ordinária inédica). (SFTE)
 		*/
+		int i = 0; 
 		while(ordinaryVariableAdded){
+			
 			ordinaryVariableAdded = false; 
+			
+			List<OrdinaryVariable> plusOrdinaryVariable = new ArrayList<OrdinaryVariable>(); 
 			
 			for(OrdinaryVariable ov: ovList){
 	
@@ -832,8 +834,8 @@ public class MFrag implements Graph{
 							ret.add(ct); 
 							
 							for(OrdinaryVariable ovContext: ct.getVariableList()){
-								if(!(ovList.contains(ov))){
-									ovList.add(ovContext); 
+								if(!(ovList.contains(ovContext))){
+									plusOrdinaryVariable.add(ovContext); 
 									ordinaryVariableAdded = true; 
 								}
 							}			
@@ -841,8 +843,12 @@ public class MFrag implements Graph{
 					}
 				}	
 			}
+			
+			for(OrdinaryVariable ov: plusOrdinaryVariable){
+				ovList.add(ov); 
+			}
+			
 		}
-		
 		
 		return ret; 
 		

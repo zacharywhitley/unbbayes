@@ -135,9 +135,11 @@ public interface KnowledgeBase {
 			List<OVInstance> ovInstances);
 
 	/**
-	 * This method is responsible for evaluating a complex formula. A complex
+	 * This method is responsible for evaluating a search formula. A search
 	 * formula is a formula that returns a list of entities that satisfies a
-	 * restriction. Example: z = StarshipZone(!ST0) return the zones that
+	 * restriction. 
+	 * 
+	 * Example: z = StarshipZone(!ST0) return the zones that
 	 * satisfies StarshipZone(!ST0).
 	 * 
 	 * @param context
