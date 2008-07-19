@@ -210,6 +210,11 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 	/**
 	 * Avalia um nó de contexto com variáveis ordinárias desconhecidas. 
 	 * 
+	 * Restrições: 
+	 * Apenas haverá retorno caso haja como resultado uma (e somente uma) entidade
+	 * para cada uma das variáveis ordinárias solicitadas. Caso contrário, o método
+	 * retornará null. 
+	 * 
 	 * @param mFrag        MFrag of context node
 	 * @param ovFaultList  List of Fault Ordinary Variables 
 	 * @param ovInstances  List of OVINstances (know ordinary variables)
@@ -289,7 +294,7 @@ OUT_LOOP:  for(ContextNode context: cnList){
 					 
 					 System.out.println("Result: " + result);
 					 
-					 if(result.size() > 0){
+					 if((result != null) && (result.size() > 0)){
 						 System.out.println("In");
 						 List<OVInstance> ovInstanceListResult = new ArrayList<OVInstance>(); 
 						 
@@ -349,11 +354,15 @@ OUT_LOOP:  for(ContextNode context: cnList){
 			
 		}while(houveAlteracao); 
 		
-		
-		
 		//Montar resultado e retornar. 
 		
 		System.out.println("Resultado: ");
+		
+		/* 
+		 * Para esta versão, pode ter apenas uma entidade como resultado para 
+		 * cada uma das ordinary variables fautantes. Casos mais complexos por
+		 * enquanto não são cobertos. 
+		 */
 		
 		List<OVInstance> listResult = new ArrayList<OVInstance>(); 
 		for(OrdinaryVariable ov: ovFaultList){
@@ -428,121 +437,161 @@ OUT_LOOP:  for(ContextNode context: cnList){
 			boolean searchIfNotFound) 
 			throws ImplementationRestrictionException, SSBNNodeGeneralException {
 
-		if(ovList.size() > 1){
-			throw new ImplementationRestrictionException(resource.getString("OrdVariableProblemLimit")); 
-		}
-		
-		OrdinaryVariable ovProblematic = ovList.get(0);
-		
-		//search
-		Collection<ContextNode> contextNodeList = mFrag.getSearchContextByOVCombination(ovList);
-		
-		if(contextNodeList.size() > 1){
-			throw new ImplementationRestrictionException(resource.getString("MoreThanOneContextNodeSearh") + ": " + contextNodeList); 
-		}
-		if(contextNodeList.size() < 1){
-			throw new SSBNNodeGeneralException(resource.getString("NoContextNodeFather")); 
-		}
-		
-		//contextNodeList have only one element
-		ContextNode context = contextNodeList.toArray(new ContextNode[contextNodeList.size()])[0];
+//		if(ovList.size() > 1){
+//		throw new ImplementationRestrictionException(resource.getString("OrdVariableProblemLimit")); 
+//		}
 
-		//Complex case: evaluate search context nodes. 
-		logManager.appendln("Context Node: " + context.getLabel()); 
-		
-		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(knowledgeBase); 
-		
-		try {
-			List<String> result = avaliator.evalutateSearchContextNode(context, ovInstances);
-			
-			if(result.isEmpty()){ 
-				if(searchIfNotFound){
-					logManager.appendln("Evaluate Search Context Node for " + context + "[" + ovInstances + "]" + "return null"); 
+//		OrdinaryVariable ovProblematic = ovList.get(0);
 
-					if(originNode.getContextFatherSSBNNode() != null){
-						ContextFatherSSBNNode contextFatherSSBNNode = originNode.getContextFatherSSBNNode();
+//		//search
+//		Collection<ContextNode> contextNodeList = mFrag.getSearchContextByOVCombination(ovList);
 
-						if(contextFatherSSBNNode.getOvProblematic().equals(ovProblematic)){
+//		if(contextNodeList.size() > 1){
+//		throw new ImplementationRestrictionException(resource.getString("MoreThanOneContextNodeSearh") + ": " + contextNodeList); 
+//		}
+//		if(contextNodeList.size() < 1){
+//		throw new SSBNNodeGeneralException(resource.getString("NoContextNodeFather")); 
+//		}
 
-							List<SSBNNode> nodes = new ArrayList<SSBNNode>();
+//		//contextNodeList have only one element
+//		ContextNode context = contextNodeList.toArray(new ContextNode[contextNodeList.size()])[0];
 
-							for(LiteralEntityInstance entity: contextFatherSSBNNode.getPossibleValues()){
-								
-								SSBNNode node =  createSSBNNodeForEntitySearch(originNode.getProbabilisticNetwork(), 
-										fatherNode, ovInstances, ovProblematic, entity.getInstanceName());
-								
-								nodes.add(node);
-								
-							}
+//		//Complex case: evaluate search context nodes. 
+//		logManager.appendln("Context Node: " + context.getLabel()); 
 
-							return nodes;
-						}
-						else{
-							throw new ImplementationRestrictionException(resource.getString("MoreThanOneContextNodeFather"));
-						}
+//		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(knowledgeBase); 
+
+
+		List<OVInstance> listResultSearchContextNode = evaluateSearchContextNode(
+				mFrag, ovList, ovInstances);  
+
+//		List<String> result = avaliator.evalutateSearchContextNode(context, ovInstances);
+
+		if((listResultSearchContextNode == null)||(listResultSearchContextNode.isEmpty())){ 
+
+			if(searchIfNotFound){
+
+				
+				//ALTERNATIVE... USE OF THE XOR ALGORITHM....
+				//IT IS VALID ONLY FOR THE SIMPLE CASE RANDONVARIABLE(OV) = ENTITY
+				
+				if(ovList.size() > 1){
+					throw new ImplementationRestrictionException(resource.getString("OrdVariableProblemLimit")); 
+				}
+
+				OrdinaryVariable ovProblematic = ovList.get(0);
+
+				//search
+				Collection<ContextNode> contextNodeList = mFrag.getSearchContextByOVCombination(ovList);
+
+				if(contextNodeList.size() > 1){
+					throw new ImplementationRestrictionException(resource.getString("MoreThanOneContextNodeSearh") + ": " + contextNodeList); 
+				}
+				if(contextNodeList.size() < 1){
+					throw new SSBNNodeGeneralException(resource.getString("NoContextNodeFather")); 
+				}
+
+				//contextNodeList have only one element
+				
+				//Caso trivial. 
+				ContextNode context = contextNodeList.toArray(new ContextNode[contextNodeList.size()])[0];
+				ContextNodeAvaliator avaliator = new ContextNodeAvaliator(knowledgeBase); 
+				
+				List<String> result = null;
+				try {
+					result = avaliator.evalutateSearchContextNode(context, ovInstances);
+				} catch (OVInstanceFaultException e) {
+					throw new ImplementationRestrictionException(resource.getString("OrdVariableProblemLimit")); 
+				} catch (InvalidContextNodeFormulaException e) {
+					throw new ImplementationRestrictionException(resource.getString("InvalidContextNodeFormula")); 
+				}
+				
+				if((result!= null) && (result.size() > 0)){
+					List<SSBNNode> nodes = new ArrayList<SSBNNode>(); 
+					for(String entity: result){
+						SSBNNode node = createSSBNNodeForEntitySearch(originNode.getProbabilisticNetwork(), 
+								fatherNode, ovInstances, ovProblematic, entity);
+						nodes.add(node); 
 					}
-					else{
+					return nodes; 
+				}
+				
+				logManager.appendln("Evaluate Search Context Node for " + context + "[" + ovInstances + "]" + "return null"); 
 
-						//THE XOR ALGORITH...
+				if(originNode.getContextFatherSSBNNode() != null){
+					ContextFatherSSBNNode contextFatherSSBNNode = originNode.getContextFatherSSBNNode();
 
-						/*
-						 * All the instances of the entity will be considered and the 
-						 * context node will be father. 
-						 */
+					if(contextFatherSSBNNode.getOvProblematic().equals(ovProblematic)){
 
-						List<SSBNNode> nodes = new ArrayList<SSBNNode>(); 
+						List<SSBNNode> nodes = new ArrayList<SSBNNode>();
 
-						//Add the context node how father
-						ContextFatherSSBNNode contextFatherSSBNNode = new ContextFatherSSBNNode(
-								originNode.getProbabilisticNetwork(), context); 
-						contextFatherSSBNNode.setOvProblematic(ovProblematic);
+						for(LiteralEntityInstance entity: contextFatherSSBNNode.getPossibleValues()){
 
-						originNode.setContextFatherSSBNNode(contextFatherSSBNNode);
-
-						//in this implementation only this is necessary, because the treat
-						//of context nodes how fathers will be """trivial""", using the XOR 
-						//strategy. For a future implementation that accept different 
-						//distributions for the residentNode of the ContextNode, the
-						//arguments of the resident node will have to be filled with the OVInstances
-						//for the analized of the resident node formula. (very complex!).  
-
-						//Search for all the entities present in kb. 
-						result = knowledgeBase.getEntityByType(ovProblematic.getValueType().getName());
-						for(String entity: result){
 							SSBNNode node =  createSSBNNodeForEntitySearch(originNode.getProbabilisticNetwork(), 
-									fatherNode, ovInstances, ovProblematic, entity);
-							contextFatherSSBNNode.addPossibleValue(LiteralEntityInstance.getInstance(entity, ovProblematic.getValueType()));
-							nodes.add(node); 
-						}					
+									fatherNode, ovInstances, ovProblematic, entity.getInstanceName());
+
+							nodes.add(node);
+
+						}
 
 						return nodes;
 					}
+					else{
+						throw new ImplementationRestrictionException(resource.getString("MoreThanOneContextNodeFather"));
+					}
 				}
 				else{
-					throw new SSBNNodeGeneralException(resource.getString("IncompleteInformation")); 
-				} 
+
+					//THE XOR ALGORITH...
+
+					/*
+					 * All the instances of the entity will be considered and the 
+					 * context node will be father. 
+					 */
+
+					List<SSBNNode> nodes = new ArrayList<SSBNNode>(); 
+
+					//Add the context node how father
+					ContextFatherSSBNNode contextFatherSSBNNode = new ContextFatherSSBNNode(
+							originNode.getProbabilisticNetwork(), context); 
+					contextFatherSSBNNode.setOvProblematic(ovProblematic);
+
+					originNode.setContextFatherSSBNNode(contextFatherSSBNNode);
+
+					//in this implementation only this is necessary, because the treat
+					//of context nodes how fathers will be """trivial""", using the XOR 
+					//strategy. For a future implementation that accept different 
+					//distributions for the residentNode of the ContextNode, the
+					//arguments of the resident node will have to be filled with the OVInstances
+					//for the analized of the resident node formula. (very complex!).  
+
+					//Search for all the entities present in kb. 
+					result = knowledgeBase.getEntityByType(ovProblematic.getValueType().getName());
+					for(String entity: result){
+						SSBNNode node =  createSSBNNodeForEntitySearch(originNode.getProbabilisticNetwork(), 
+								fatherNode, ovInstances, ovProblematic, entity);
+						contextFatherSSBNNode.addPossibleValue(LiteralEntityInstance.getInstance(entity, ovProblematic.getValueType()));
+						nodes.add(node); 
+					}					
+
+					return nodes;
+				}
 			}
 			else{
-				
-				logManager.appendln("Result list for evaluate search node: " + result); 
-				
-				List<SSBNNode> nodes = new ArrayList<SSBNNode>(); 
-				for(String entity: result){
-					SSBNNode node = createSSBNNodeForEntitySearch(originNode.getProbabilisticNetwork(), 
-							fatherNode, ovInstances, ovProblematic, entity);
-					nodes.add(node); 
-				}
-				return nodes; 
-			}
-			
-		} catch (InvalidContextNodeFormulaException ie) {
-			throw new SSBNNodeGeneralException(resource.getString("InvalidContextNodeFormula") 
-					+ ": " + context.getLabel());  
-		} catch (OVInstanceFaultException e) {
-			throw new ImplementationRestrictionException(resource.getString("OnlyOneFreeVariableRestriction"));
+				throw new SSBNNodeGeneralException(resource.getString("IncompleteInformation")); 
+			} 
 		}
+		else{
+			logManager.appendln("Result list for evaluate search node: " + listResultSearchContextNode); 
+			List<SSBNNode> nodes = new ArrayList<SSBNNode>(); 
+			SSBNNode node = createSSBNNodeForEntitySearch(originNode.getProbabilisticNetwork(), 
+					fatherNode, ovInstances, listResultSearchContextNode);
+			nodes.add(node); 
+			return nodes; 
+		}
+
 	}
-	
+
 
 	/**
 	 * ...for input nodes fathers (because this nodes demand a different treatment
@@ -562,39 +611,85 @@ OUT_LOOP:  for(ContextNode context: cnList){
 			List<OrdinaryVariable> ovProblemList, List<OVInstance> ovInstances) 
 			throws SSBNNodeGeneralException, ImplementationRestrictionException {
 		
-		MFrag mFrag = fatherNode.getMFrag(); 
-		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(this.getKnowledgeBase()); 
-		
-		if(ovProblemList.size() > 1){
-			throw new ImplementationRestrictionException(resource.getString("OrdVariableProblemLimit")); 
-		}
-		
-		//search 
-		Collection<ContextNode> contextNodeList = mFrag.getSearchContextByOVCombination(ovProblemList);
-		int size = contextNodeList.size(); 
-		
-		if(size > 1){
-			throw new ImplementationRestrictionException(resource.getString("MoreThanOneContextNodeSearh")); 
-		}
-		if(size < 1){
-			throw new SSBNNodeGeneralException(resource.getString("MoreThanOneContextNodeSearh")); 
-		}
-		
-		ContextNode context = contextNodeList.toArray(new ContextNode[size])[0];
-		OrdinaryVariable ov = ovProblemList.get(0);
-		
-		logManager.appendln("Context Node: " + context.getLabel()); 
-		
-		try {
-			List<String> result;
-			try {
-				result = avaliator.evalutateSearchContextNode(context, ovInstances);
-			} catch (OVInstanceFaultException e) {
-				throw new ImplementationRestrictionException(resource.getString("OrdVariableProblemLimit")); 
-			}
-			
-			if(result.isEmpty()){
+//		MFrag mFrag = fatherNode.getMFrag(); 
+//		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(this.getKnowledgeBase()); 
+//		
+//		if(ovProblemList.size() > 1){
+//			throw new ImplementationRestrictionException(resource.getString("OrdVariableProblemLimit")); 
+//		}
+//		
+//		//search 
+//		Collection<ContextNode> contextNodeList = mFrag.getSearchContextByOVCombination(ovProblemList);
+//		int size = contextNodeList.size(); 
+//		
+//		if(size > 1){
+//			throw new ImplementationRestrictionException(resource.getString("MoreThanOneContextNodeSearh")); 
+//		}
+//		if(size < 1){
+//			throw new SSBNNodeGeneralException(resource.getString("MoreThanOneContextNodeSearh")); 
+//		}
+//		
+//		ContextNode context = contextNodeList.toArray(new ContextNode[size])[0];
+//		OrdinaryVariable ov = ovProblemList.get(0);
+//		
+//		logManager.appendln("Context Node: " + context.getLabel()); 
 
+			List<OVInstance> listResultSearchContextNode = evaluateSearchContextNode(
+					fatherNode.getMFrag(), ovProblemList, ovInstances);  
+			
+//			List<String> result;
+//			try {
+//				result = avaliator.evalutateSearchContextNode(context, ovInstances);
+//			} catch (OVInstanceFaultException e) {
+//				throw new ImplementationRestrictionException(resource.getString("OrdVariableProblemLimit")); 
+//			}
+			
+			if((listResultSearchContextNode == null)||(listResultSearchContextNode.isEmpty())){ 
+
+				MFrag mFrag = fatherNode.getMFrag(); 
+				ContextNodeAvaliator avaliator = new ContextNodeAvaliator(this.getKnowledgeBase()); 
+				
+				if(ovProblemList.size() > 1){
+					throw new ImplementationRestrictionException(resource.getString("OrdVariableProblemLimit")); 
+				}
+				
+				//search 
+				Collection<ContextNode> contextNodeList = mFrag.getSearchContextByOVCombination(ovProblemList);
+				int size = contextNodeList.size(); 
+				
+				if(size > 1){
+					throw new ImplementationRestrictionException(resource.getString("MoreThanOneContextNodeSearh")); 
+				}
+				if(size < 1){
+					throw new SSBNNodeGeneralException(resource.getString("MoreThanOneContextNodeSearh")); 
+				}
+				
+				ContextNode context = contextNodeList.toArray(new ContextNode[size])[0];
+				OrdinaryVariable ov = ovProblemList.get(0);
+				
+				//No caso trivial de apenas uma ov faultado, podemos trabalhar com 
+				//várias entidades como resposta.... 
+				List<String> result = null; 
+			  	try {
+				   result = avaliator.evalutateSearchContextNode(context, ovInstances);
+			    } catch (OVInstanceFaultException e) {
+				   throw new ImplementationRestrictionException(resource.getString("OrdVariableProblemLimit")); 
+			    } catch (InvalidContextNodeFormulaException e) {
+			    	 throw new ImplementationRestrictionException(resource.getString("InvalidContextNodeFormula")); 
+				}
+			    
+			    if((result!= null) && (result.size() > 0)){
+			    	List<SSBNNodeJacket> nodes = new ArrayList<SSBNNodeJacket>(); 
+					for(String entity: result){
+						SSBNNodeJacket ssbnNodeJacket = createSSBNNodeForEntitySearch(originNode, 
+								fatherNode, ov, entity);
+						nodes.add(ssbnNodeJacket); 
+					}
+					return nodes; 
+			    }
+				
+				logManager.appendln("Context Node: " + context.getLabel()); 
+				
 				if(originNode.getContextFatherSSBNNode() != null){
 					ContextFatherSSBNNode contextFatherSSBNNode = originNode.getContextFatherSSBNNode();
 					
@@ -642,18 +737,13 @@ OUT_LOOP:  for(ContextNode context: cnList){
 			}
 			else{
 				List<SSBNNodeJacket> nodes = new ArrayList<SSBNNodeJacket>(); 
-				for(String entity: result){
-					SSBNNodeJacket ssbnNodeJacket = createSSBNNodeForEntitySearch(originNode, 
-							fatherNode, ov, entity);
-					nodes.add(ssbnNodeJacket); 
-				}
+				SSBNNodeJacket ssbnNodeJacket = createSSBNNodeForEntitySearch(originNode, 
+						fatherNode, listResultSearchContextNode);
+				nodes.add(ssbnNodeJacket); 
 				return nodes; 
 			}
 			
-		} catch (InvalidContextNodeFormulaException ie) {
-			throw new SSBNNodeGeneralException(resource.getString("InvalidContextNodeFormula") 
-					+ ": " + context.getLabel());  
-		}
+
 	}
 
 	
@@ -674,6 +764,29 @@ OUT_LOOP:  for(ContextNode context: cnList){
 		List<OVInstance> arguments = takeNecessaryArgumentsForNode(ovInstances, residentNode);
 		arguments.add(OVInstance.getInstance(ov, entity, ov.getValueType())); 
 		
+		SSBNNode testSSBNNode = ssbnNodesMap.get(SSBNNode.getUniqueNameFor(residentNode, arguments)); 
+		
+		if(testSSBNNode == null){
+			testSSBNNode =  SSBNNode.getInstance(probabilisticNetwork,residentNode);
+
+			for(OVInstance ovInstance: arguments){
+				testSSBNNode.addArgument(ovInstance);
+			}
+			ssbnNodeList.add(testSSBNNode);
+			ssbnNodesMap.put(testSSBNNode.getUniqueName(), testSSBNNode); 
+			
+		}
+	
+		return testSSBNNode;
+	}
+	
+	private SSBNNode createSSBNNodeForEntitySearch(ProbabilisticNetwork probabilisticNetwork, 
+			ResidentNode residentNode, List<OVInstance> ovInstances, List<OVInstance> ovInstancesSearched) {
+		
+		List<OVInstance> arguments = takeNecessaryArgumentsForNode(ovInstances, residentNode);
+		arguments.addAll(ovInstancesSearched); 
+		
+		//TODO naivy... (index of the arguments)
 		SSBNNode testSSBNNode = ssbnNodesMap.get(SSBNNode.getUniqueNameFor(residentNode, arguments)); 
 		
 		if(testSSBNNode == null){
@@ -1023,6 +1136,54 @@ OUT_LOOP:  for(ContextNode context: cnList){
 		return ssbnNodeJacket;
 	}
 
+	/* 
+	 * version for input nodes. 
+	 */
+	private SSBNNodeJacket createSSBNNodeForEntitySearch(SSBNNode originNode, 
+			InputNode fatherNode, List<OVInstance> ovInstanceList) 
+	        throws SSBNNodeGeneralException {
+		
+		SSBNNode ssbnNode = SSBNNode.getInstance(originNode.getProbabilisticNetwork(),
+				(ResidentNode)fatherNode.getResidentNodePointer().getResidentNode(), new ProbabilisticNode()); 
+		
+		SSBNNodeJacket ssbnNodeJacket = new SSBNNodeJacket(ssbnNode); 
+		
+		//Add OVInstance created for the entity search
+		for(OVInstance ovInstance: ovInstanceList){
+			addArgumentToSSBNNodeOfInputNode(fatherNode, ssbnNodeJacket, ovInstance);	
+		}
+
+		
+		//Add all the other OVInstances
+		for(OVInstance instance: originNode.getArguments()){
+			addArgumentToSSBNNodeOfInputNode(fatherNode, ssbnNodeJacket, instance);
+		}
+		
+		//Suport for avoid double creation of probabilistic nodes. 
+		ssbnNodeJacket.setArgumentsOfResidentMFrag();
+		
+		SSBNNode test = ssbnNodesMap.get(ssbnNode.getUniqueName()); 
+		
+		if(test != null){
+			ssbnNodeJacket.getSsbnNode().delete(); 
+			ssbnNodeJacket.setSsbnNode(test); 
+		}
+		
+		ssbnNodeList.add(ssbnNodeJacket.getSsbnNode());
+		ssbnNodesMap.put(ssbnNodeJacket.getSsbnNode().getUniqueName(), ssbnNodeJacket.getSsbnNode()); 	
+		
+//		ssbnNodeJacket.setSsbnNode(checkForDoubleSSBNNode(ssbnNode));
+		
+		logManager.appendln(" ");
+		logManager.appendln("SSBNNode created:" + ssbnNodeJacket.getSsbnNode());
+		logManager.appendln("Input MFrag Arguments: " + ssbnNodeJacket.getOvInstancesOfInputMFrag());
+		logManager.appendln("Resident MFrag Arguments: " + ssbnNodeJacket.getOvInstancesOfResidentMFrag());
+		logManager.appendln(" ");
+		
+		
+		return ssbnNodeJacket;
+	}
+	
 	/*
 	 * This method is used for avoid the creation of double equals ssbnnodes
 	 * (ssbnnodes with the same resident node and the same arguments, because this
