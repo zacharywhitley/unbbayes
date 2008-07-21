@@ -28,6 +28,23 @@ UnBBayes Around the World
   
   Now, the awaited list:
   
+  * <Although the above approaches are promising where applicable, a workable solution for 
+  the Semantic Web requires a general-purpose formalism that gives ontology designers a range 
+  of options to balance tractability against expressiveness. Current research on SW formalisms 
+  using first-order probabilistic logics is still in its infancy, and generally lack a complete 
+  set of publicly available tools. Examples include PR-OWL (Costa, 2005), which is an upper 
+  ontology for building probabilistic ontologies based on MEBN logic, and KEEPER (Pool and 
+  Aiken, 2004), an OWL-based interface for the relational probabilistic toolset Quiddity*Suite, 
+  developed by IET, Inc. Their constructs are similar in spirit and provide an expressive method 
+  for representing uncertainty in OWL ontologies. Costa (2005) gives a definition for 
+  Probabilistic Ontologies, develops rules for constructing PR-OWL ontologies in a manner that 
+  can be translated into Quiddity*Suite, and describes how to perform the translation. Carvalho 
+  et al. (2007) and Costa et. al. (2008) present an open source, Java-based, PR-OWL/MEBN GUI and 
+  reasoner package, UnBBayes-MEBN, that greatly facilitates the process of building probabilistic 
+  ontologies and reasoning with them.>
+  
+    {{{http://www.w3.org/2005/Incubator/urw3/XGR-urw3-20080331/} Uncertainty Reasoning for the World Wide Web - W3C Incubator Group Report}}
+  
   * <However, building MFrags in a probabilistic ontology is a manual, error prone, and 
   tedious process. Avoiding errors or inconsistencies requires deep knowledge of the logic 
   and of the data structures of PR-OWL, since the user would have to know all technical terms 
