@@ -11,9 +11,15 @@
 			<action dev="Laécio Lima" type="add">
 				2008231	- Implement SSBN algorithm with evidences "below".
 			</action>
+			<action dev="Rommel Carvalho" type="add">
+				2023512 - Develop new Web site using Maven.
+			</action>
 			
 			<action dev="Shou Matsumoto" type="fix">
 				1994411 - Compiler bug when ther are only invalid parents.
+			</action>
+			<action dev="Rommel Carvalho" type="fix">
+				1913724 - Web site's Enlgish page is in Portuguese.
 			</action>
 		</release>
 		<release version="3.4.29-BETA" date="2008-05-20"
