@@ -59,7 +59,7 @@ UnBBayes Around the World
     
   
   * <To update the probability vector software named UnBBayes developed by Fernandes (2004) was used. 
-  UnBBayes uses K2 Algorithm which heuristically searches for the most probable belief–network structure 
+  UnBBayes uses K2 Algorithm which heuristically searches for the most probable belief network structure 
   given a database of cases to estimate conditional probabilities.>
   
     {{{http://www.transport.iis.u-tokyo.ac.jp/publications/2007-31.pdf} Self Learning Tool for Travel Time Estimation in Signalized Urban Networks Based on Probe Data}}
