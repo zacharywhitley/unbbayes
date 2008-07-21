@@ -1,13 +1,15 @@
-UNBBAYES VERSION 3.5.1-BETA
+UNBBAYES VERSION 3.6.2-BETA
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
 1 		2008231		Implement SSBN algorithm with evidences "below"
+2		2023512 	Develop new Web site using Maven.
 
 
 BUG LIST		
 Number	Request ID	Summary
 1 		1994411  	Compiler bug when ther are only invalid parents
+2		1913724		Web site's Enlgish page is in Portuguese.
 
 UNBBAYES VERSION 3.4.29-BETA
 ----------------------------
