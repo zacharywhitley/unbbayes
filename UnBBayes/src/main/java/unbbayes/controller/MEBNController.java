@@ -1670,10 +1670,6 @@ public class MEBNController  {
 
 			
 		}else{
-//			JOptionPane.showMessageDialog(getScreen(), 
-//					query.getQueryNode().toString() + " = " + query.getQueryNode().getActualValues());
-			// the code above was substituded because the finding SSBN Node is not behaving as specified
-			// anymore since the new ExplosiveSSBNGeneration replaced BottomUpSSBNGeneration.
 			JOptionPane.showMessageDialog(getScreen(), 
 					query.getQueryNode().getName() + " = " + query.getQueryNode().getValue());
 	

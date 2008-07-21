@@ -464,7 +464,9 @@ public class GuiResources extends ListResourceBundle {
 		{"Buildid" , "Build ID"},		
 	
 		//Warning panel
-		{"warningFound" , "Warnings"},		
+		{"warningFound" , "Warnings"},	
+		{"openWarningDialogToolTip" , "Open warning list"},
+		{"nodeCause" , "Warning during evaluation of node"},
 		
 		//SSBN panel
 		{"saveSSBNToolTip" , "Save generated SSBN"},

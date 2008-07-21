@@ -467,6 +467,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		//Warning panel
 		{"warningFound" , "Alertas"},
 		{"openWarningDialogToolTip" , "Abrir lista de alertas"},
+		{"nodeCause" , "Alerta durante a avaliação do nó"},
 		
 		//SSBN panel
 		{"saveSSBNToolTip" , "Salvar ssbn gerada"},

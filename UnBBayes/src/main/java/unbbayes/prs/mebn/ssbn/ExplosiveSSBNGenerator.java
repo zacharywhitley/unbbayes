@@ -454,7 +454,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 
 		this.recursiveCallCount++; 
 
-		//------------------------- STEP 1: Search for findings -------------
+		//------------------------- STEP 0: Search for findings -------------
 
 		logManager.appendln("[D]" + currentNode + ":A - Search findings");
 
@@ -489,7 +489,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 		
 		
 		
-		//------------------------- STEP 2: analyze context nodes. -------------
+		//------------------------- STEP 1: analyze context nodes. -------------
 		logManager.appendln("[D]"  + currentNode + ":B - Analyse context nodes");
 		
 		List<OVInstance> ovInstancesList = new ArrayList<OVInstance>(); 
@@ -543,7 +543,8 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 				try{
 				    List<SSBNNode> createdNodes = createSSBNNodesOfEntitiesSearchForResidentNode(
 							r.getMFrag(), currentNode, r, 
-							ovProblematicList, ovInstancesList, false); 
+							ovProblematicList, ovInstancesList, 
+							false); 
 					
 					for(SSBNNode ssbnNode: createdNodes){
 						
@@ -782,104 +783,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 		return recursiveCallCount;
 	}
 
-	/**
-	 * Calls ContextNodeAvaliator's method to check context node's validation.
-	 * Evaluate only the context nodes for what have ordinary variables instances
-	 * for all the ordinary variables present (ordinal context nodes). 
-	 */
-	private boolean evaluateRelatedContextNodes (ResidentNode residentNode, 
-			List<OVInstance> ovInstances, MFragInstance mFragInstance) throws OVInstanceFaultException{
-
-		// We assume if MFrag is already set to use Default, then some context
-		// has failed previously and there's no need to evaluate again.		
-		if (residentNode.getMFrag().isUsingDefaultCPT()) {
-			return false;
-		};
-
-		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(getKnowledgeBase()); 
-
-
-		//TODO Refazer!!! Esta abordagem nao permite a abordagem da transitividade
-		//dos nos de contexto... 
-
-		Collection<ContextNode> contextNodeList = residentNode.getMFrag().getContextByOVCombination(
-				residentNode.getOrdinaryVariableList());
-
-		for(ContextNode context: contextNodeList){
-			logManager.append("Evaluating Context Node: " + context.getLabel());
-			if(!avaliator.evaluateContextNode(context, ovInstances)){
-				residentNode.getMFrag().setAsUsingDefaultCPT(true); 
-				logManager.appendln("  > Result = FALSE. Use default distribution ");
-				return false;  
-			}else{
-				logManager.appendln("  > Result = TRUE.");
-			}		
-		}
-
-		return true; 
-	}
-
 	
-	/**
-	 * Calls ContextNodeAvaliator's method to check context node's validation.
-	 * Evaluate only the context nodes for what have ordinary variables instances
-	 * for all the ordinary variables present (ordinal context nodes). 
-	 */
-	private boolean evaluateRelatedContextNodes (InputNode inputNode, 
-			List<OVInstance> ovInstances, MFragInstance mFragInstance) throws OVInstanceFaultException{
-
-		// We assume if MFrag is already set to use Default, then some context
-		// has failed previously and there's no need to evaluate again.		
-		if (inputNode.getMFrag().isUsingDefaultCPT()) {
-			return false;
-		};
-
-		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(getKnowledgeBase()); 
-
-
-		//TODO Refazer!!! Esta abordagem nao permite a abordagem da transitividade
-		//dos nos de contexto... 
-
-		Collection<ContextNode> contextNodeList = inputNode.getMFrag().getContextByOVCombination(
-				inputNode.getOrdinaryVariableList());
-
-		for(ContextNode context: contextNodeList){
-			logManager.appendln("Context Node: " + context.getLabel());
-			if(!avaliator.evaluateContextNode(context, ovInstances)){
-				inputNode.getMFrag().setAsUsingDefaultCPT(true); 
-				logManager.appendln("Result = FALSE. Use default distribution ");
-				return false;  
-			}else{
-				logManager.appendln("Result = TRUE.");
-			}		
-		}
-
-		return true; 
-	}
-
-	
-	public void evaluateContextNodeSet(MFragInstance mFragInstance, 
-			List<OrdinaryVariable> ordinaryVariableList, List<OVInstance> listOVInstance){
-		
-		/*
-		 * Casos: 
-		 * 
-		 * 1-> Argumentos OK, apenas avaliar validade... trivial
-		 * 2-> Faltam argumentos, procurar nós e avaliar resultados que tornem verdadeiro
-		 * 3-> Search case (algoritmo do XOR). 
-		 */
-		
-		//Montar conjunto de nós de contexto de interesse
-		
-		
-		//Avaliar conjunto
-		
-		
-		
-	}
-	
-	
-
 	public void setRecursiveCallCount(long recursiveCallCount) {
 		this.recursiveCallCount = recursiveCallCount;
 	}

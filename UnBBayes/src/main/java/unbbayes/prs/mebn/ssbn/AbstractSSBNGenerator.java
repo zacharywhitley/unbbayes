@@ -2,7 +2,6 @@ package unbbayes.prs.mebn.ssbn;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -208,7 +207,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 	
 
 	/**
-	 * Avalia um nó de contexto com variáveis ordinárias desconhecidas. 
+	 * Evaluate one context node with unknow ordinary variables 
 	 * 
 	 * Restrições: 
 	 * Apenas haverá retorno caso haja como resultado uma (e somente uma) entidade
@@ -239,14 +238,14 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 		
 		Collection<ContextNode> cnList = mFrag.getContextNodeByOrdinaryVariableRelated(ovFaultList); 
 		
-		boolean houveAlteracao = false; 
+		boolean changed = false; 
 		
 		int i = 0; 
 		do{
 			System.out.println("Interacao " + i++);
 			
 			Collection<ContextNode> solvedNodes = new ArrayList<ContextNode>(); 
-			houveAlteracao = false; 
+			changed = false; 
 			
 OUT_LOOP:  for(ContextNode context: cnList){
 	
@@ -321,7 +320,7 @@ OUT_LOOP:  for(ContextNode context: cnList){
 					 
 					 solvedNodes.add(context); 
 					 System.out.println("Houve alteracao");
-					 houveAlteracao = true; 
+					 changed = true; 
 					 
 					 System.out.println("\nMapOVInstance");
 					 for(OrdinaryVariable ov: mapOVInstanceMap.keySet()){
@@ -352,7 +351,7 @@ OUT_LOOP:  for(ContextNode context: cnList){
 				System.out.println("Solved node: " + context);
 			}
 			
-		}while(houveAlteracao); 
+		}while(changed); 
 		
 		//Montar resultado e retornar. 
 		
@@ -437,41 +436,13 @@ OUT_LOOP:  for(ContextNode context: cnList){
 			boolean searchIfNotFound) 
 			throws ImplementationRestrictionException, SSBNNodeGeneralException {
 
-//		if(ovList.size() > 1){
-//		throw new ImplementationRestrictionException(resource.getString("OrdVariableProblemLimit")); 
-//		}
-
-//		OrdinaryVariable ovProblematic = ovList.get(0);
-
-//		//search
-//		Collection<ContextNode> contextNodeList = mFrag.getSearchContextByOVCombination(ovList);
-
-//		if(contextNodeList.size() > 1){
-//		throw new ImplementationRestrictionException(resource.getString("MoreThanOneContextNodeSearh") + ": " + contextNodeList); 
-//		}
-//		if(contextNodeList.size() < 1){
-//		throw new SSBNNodeGeneralException(resource.getString("NoContextNodeFather")); 
-//		}
-
-//		//contextNodeList have only one element
-//		ContextNode context = contextNodeList.toArray(new ContextNode[contextNodeList.size()])[0];
-
-//		//Complex case: evaluate search context nodes. 
-//		logManager.appendln("Context Node: " + context.getLabel()); 
-
-//		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(knowledgeBase); 
-
-
 		List<OVInstance> listResultSearchContextNode = evaluateSearchContextNode(
 				mFrag, ovList, ovInstances);  
-
-//		List<String> result = avaliator.evalutateSearchContextNode(context, ovInstances);
 
 		if((listResultSearchContextNode == null)||(listResultSearchContextNode.isEmpty())){ 
 
 			if(searchIfNotFound){
 
-				
 				//ALTERNATIVE... USE OF THE XOR ALGORITHM....
 				//IT IS VALID ONLY FOR THE SIMPLE CASE RANDONVARIABLE(OV) = ENTITY
 				
@@ -610,40 +581,10 @@ OUT_LOOP:  for(ContextNode context: cnList){
 			SSBNNode originNode, InputNode fatherNode, 
 			List<OrdinaryVariable> ovProblemList, List<OVInstance> ovInstances) 
 			throws SSBNNodeGeneralException, ImplementationRestrictionException {
-		
-//		MFrag mFrag = fatherNode.getMFrag(); 
-//		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(this.getKnowledgeBase()); 
-//		
-//		if(ovProblemList.size() > 1){
-//			throw new ImplementationRestrictionException(resource.getString("OrdVariableProblemLimit")); 
-//		}
-//		
-//		//search 
-//		Collection<ContextNode> contextNodeList = mFrag.getSearchContextByOVCombination(ovProblemList);
-//		int size = contextNodeList.size(); 
-//		
-//		if(size > 1){
-//			throw new ImplementationRestrictionException(resource.getString("MoreThanOneContextNodeSearh")); 
-//		}
-//		if(size < 1){
-//			throw new SSBNNodeGeneralException(resource.getString("MoreThanOneContextNodeSearh")); 
-//		}
-//		
-//		ContextNode context = contextNodeList.toArray(new ContextNode[size])[0];
-//		OrdinaryVariable ov = ovProblemList.get(0);
-//		
-//		logManager.appendln("Context Node: " + context.getLabel()); 
 
 			List<OVInstance> listResultSearchContextNode = evaluateSearchContextNode(
 					fatherNode.getMFrag(), ovProblemList, ovInstances);  
-			
-//			List<String> result;
-//			try {
-//				result = avaliator.evalutateSearchContextNode(context, ovInstances);
-//			} catch (OVInstanceFaultException e) {
-//				throw new ImplementationRestrictionException(resource.getString("OrdVariableProblemLimit")); 
-//			}
-			
+
 			if((listResultSearchContextNode == null)||(listResultSearchContextNode.isEmpty())){ 
 
 				MFrag mFrag = fatherNode.getMFrag(); 
@@ -1087,8 +1028,6 @@ OUT_LOOP:  for(ContextNode context: cnList){
 		
 	}
 	
-
-	
 	
 	/* 
 	 * version for input nodes. 
@@ -1209,6 +1148,82 @@ OUT_LOOP:  for(ContextNode context: cnList){
 		
 	}
 
+	/**
+	 * Calls ContextNodeAvaliator's method to check context node's validation.
+	 * Evaluate only the context nodes for what have ordinary variables instances
+	 * for all the ordinary variables present (ordinal context nodes). 
+	 */
+	protected boolean evaluateRelatedContextNodes (ResidentNode residentNode, 
+			List<OVInstance> ovInstances, MFragInstance mFragInstance) throws OVInstanceFaultException{
+
+		// We assume if MFrag is already set to use Default, then some context
+		// has failed previously and there's no need to evaluate again.		
+		if (residentNode.getMFrag().isUsingDefaultCPT()) {
+			return false;
+		};
+
+		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(getKnowledgeBase()); 
+
+
+		//TODO Refazer!!! Esta abordagem nao permite a abordagem da transitividade
+		//dos nos de contexto... 
+
+		Collection<ContextNode> contextNodeList = residentNode.getMFrag().getContextByOVCombination(
+				residentNode.getOrdinaryVariableList());
+
+		for(ContextNode context: contextNodeList){
+			logManager.append("Evaluating Context Node: " + context.getLabel());
+			if(!avaliator.evaluateContextNode(context, ovInstances)){
+				residentNode.getMFrag().setAsUsingDefaultCPT(true); 
+				logManager.appendln("  > Result = FALSE. Use default distribution ");
+				return false;  
+			}else{
+				logManager.appendln("  > Result = TRUE.");
+			}		
+		}
+
+		return true; 
+	}
+
+	
+	/**
+	 * Calls ContextNodeAvaliator's method to check context node's validation.
+	 * Evaluate only the context nodes for what have ordinary variables instances
+	 * for all the ordinary variables present (ordinal context nodes). 
+	 */
+	protected boolean evaluateRelatedContextNodes (InputNode inputNode, 
+			List<OVInstance> ovInstances, MFragInstance mFragInstance) throws OVInstanceFaultException{
+
+		// We assume if MFrag is already set to use Default, then some context
+		// has failed previously and there's no need to evaluate again.		
+		if (inputNode.getMFrag().isUsingDefaultCPT()) {
+			return false;
+		};
+
+		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(getKnowledgeBase()); 
+
+
+		//TODO Refazer!!! Esta abordagem nao permite a abordagem da transitividade
+		//dos nos de contexto... 
+
+		Collection<ContextNode> contextNodeList = inputNode.getMFrag().getContextByOVCombination(
+				inputNode.getOrdinaryVariableList());
+
+		for(ContextNode context: contextNodeList){
+			logManager.appendln("Context Node: " + context.getLabel());
+			if(!avaliator.evaluateContextNode(context, ovInstances)){
+				inputNode.getMFrag().setAsUsingDefaultCPT(true); 
+				logManager.appendln("Result = FALSE. Use default distribution ");
+				return false;  
+			}else{
+				logManager.appendln("Result = TRUE.");
+			}		
+		}
+
+		return true; 
+	}
+
+	
 	
 	/** 
 	 * Add instance how a argument of a ssbnnode originate of a input node. 
