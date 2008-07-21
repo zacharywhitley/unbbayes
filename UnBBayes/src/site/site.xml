@@ -17,11 +17,15 @@
     <menu name="Main">
       <item name="Overview" href="index.html"/>
       <item name="Publications" href="publications.html"/>
+      <item name="Around the World" href="around_the_world.html"/>
       <item name="FAQ" href="faq.html"/>     
     </menu>
     
     <menu name="Examples">
       <item name="Poker Game" href="poker_game.html"/>
+      <item name="MEBN">
+      	<item name="How to Model Probabilistic Ontologies" href="how_to_model_prowl.html"/>
+      </item>
     </menu>
     
     <menu ref="reports"/>

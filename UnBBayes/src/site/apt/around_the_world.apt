@@ -1,0 +1,84 @@
+                                    ------
+                            UnBBayes Around the World 
+                                    ------
+                              Rommel Novaes Carvalho
+                                    ------
+                                  2008-07-21
+
+UnBBayes Around the World
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Have you ever heard about UnBBayes? Is this the first time you see it around? Would you 
+  like to know what the community think about it?
+  
+  If not, have you ever used UnBBayes? Have you ever written an article and referenced 
+  it? Did you like it?
+  
+  Well, here we will show some references and comments about UnBBayes. We would love to 
+  list all projects and articles that ever used or mentioned UnBBayes, but unfortunately 
+  we do not know them all.
+  
+  If you know any other project, article, link, whatever that used or talked about UnBBayes, 
+  please let us know! We, and the community, would appreciate it a lot! Please send us an 
+  e-mail (rommel.carvalho@gmail.com) talking about it. We also encourage the curious user 
+  to send his/her comment to us. We will try our best to make this open source project 
+  better and better.
+  
+[images/around_the_world.jpg]
+  
+  Now, the awaited list:
+  
+  * <However, building MFrags in a probabilistic ontology is a manual, error prone, and 
+  tedious process. Avoiding errors or inconsistencies requires deep knowledge of the logic 
+  and of the data structures of PR-OWL, since the user would have to know all technical terms 
+  such as hasPossibleValues, is-NodeFrom, isResidentNodeIn, etc. In an ideal scenario, many 
+  of these terms could be omitted and filled automatic by a software application projected 
+  to enforce the consistency of a MEBN model.>
+  
+    <The development of UnBBayes-MEBN [12, 13], an open source, Java-based application that 
+    is currently in alpha phase (public release March 08), is an important step towards 
+    this objective, as it provides both a GUI for building probabilistic ontologies and a 
+    reasoner based on the PR-OWL/MEBN framework.>
+    
+    {{{http://ite.gmu.edu/~klaskey/papers/LaskeyCostaJanssen_POFusion.pdf} Probabilistic Ontologies for Knowledge Fusion}}
+
+  * <The probabilistic network for the speed decision is generated from the existing data. 
+  So instead of building up the network and defining the probability function later on, the 
+  data is given and the UnBBayes learning tool [1] generates the nodes and afterward gives 
+  the definition of the relations between the nodes, thus the probability functions are 
+  calculated.>
+  
+    {{{http://www.iasi.cnr.it/ewgt/16conference/ID88.pdf} A Self-Learning Driving Behavior Model for Microscopic Online Simulation based on Remote Sensing and Equipped Vehicle Data}}
+    
+  * {{{http://ieeexplore.ieee.org/Xplore/login.jsp?url=/iel5/11180/36023/01707454.pdf?isnumber=36023&prod=CNF&arnumber=1707454&arSt=1609&ared=1614&arAuthor=Miska%2C+M.Ph.%3B+Muller%2C+T.H.J.%3B+van+Zuylen%2C+H.J} Miska}}
+  
+    
+  
+  * {{{http://www.sbis.org.br/cbis/arquivos/919.doc} Environment for Supervised  Learning for Data Mining in Bayesian Networks in Endocrinology Field (<Ambiente de Aprendizagem Supervisionada para Mineracao de Dados em Redes Bayesianas na Area de Endocrinologia>)}}
+  
+    
+  
+  * <To update the probability vector software named UnBBayes developed by Fernandes (2004) was used. 
+  UnBBayes uses K2 Algorithm which heuristically searches for the most probable belief–network structure 
+  given a database of cases to estimate conditional probabilities.>
+  
+    {{{http://www.transport.iis.u-tokyo.ac.jp/publications/2007-31.pdf} Self Learning Tool for Travel Time Estimation in Signalized Urban Networks Based on Probe Data}}
+    
+  * {{{http://www.informatik.uni-freiburg.de/~ki/teaching/ws0506/advanced/aait-4up-01-bn-overview.pdf} Advanced AI Techniques}}
+  
+    
+  
+  * <UnBBayes: BN, ID, Multiply Sectioned Bayesian Network (MSBN) and Multi-Entity Bayesian 
+  Networks (MEBN). It also includes various algorithms for Bayesian Learning. From the 
+  Group of Artificial Intelligence at University of Brasília (UnB), Brazil.>
+  
+    {{{http://en.wikipedia.org/wiki/Bayesian_network} Bayesian network}}
+    
+  * <Acknoledgements...>
+    
+    <To the UnB group: to Prof. Marcelo Ladeira, that allowed me several and endless conversations, tips, 
+    and references about Bayesian networks, and in the end, gently allowed me to use UnBBayes in this project. 
+    Special thanks to Michael Onishi and Rommel Carvalho, students advised by Dr. Marcelo Ladeira, that were 
+    always ready and available to answer questions about UnBBayes implementation and use.> (Free translation)
+  
+    {{{http://www.bdtd.ufpe.br/tedeSimplificado//tde_arquivos/22/TDE-2007-09-12T091200Z-2709/Publico/jlfv.pdf} Complex System Simulation for Entertainment Use. Using Bayesian Networks: The FutSim Case (<Simulacao de Sistemas Complexos para Fins de Entretenimento. Usando Redes Bayesianas: O Caso do FutSim>)}}
