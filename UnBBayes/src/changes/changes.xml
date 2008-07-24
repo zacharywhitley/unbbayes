@@ -7,7 +7,7 @@
 		</author>
 	</properties>
 	<body>
-		<release version="3.5.1-BETA" description="Current work version">
+		<release version="3.6.3-BETA" description="Current work version">
 			<action dev="Laécio Lima" type="add">
 				2008231	- Implement SSBN algorithm with evidences "below".
 			</action>
@@ -17,6 +17,9 @@
 			
 			<action dev="Shou Matsumoto" type="fix">
 				1994411 - Compiler bug when ther are only invalid parents.
+			</action>
+			<action dev="Shou Matsumoto" type="fix">
+				2014574 - Compiler doesn't accept complex boolean expression.
 			</action>
 			<action dev="Rommel Carvalho" type="fix">
 				1913724 - Web site's Enlgish page is in Portuguese.

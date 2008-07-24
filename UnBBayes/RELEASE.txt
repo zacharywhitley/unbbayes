@@ -1,4 +1,4 @@
-UNBBAYES VERSION 3.6.2-BETA
+UNBBAYES VERSION 3.6.3-BETA
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
@@ -9,7 +9,8 @@ Number	Request ID	Summary
 BUG LIST		
 Number	Request ID	Summary
 1 		1994411  	Compiler bug when ther are only invalid parents
-2		1913724		Web site's Enlgish page is in Portuguese.
+2		2014574 	Compiler doesn't accept complex boolean expression.
+3		1913724		Web site's Enlgish page is in Portuguese.
 
 UNBBAYES VERSION 3.4.29-BETA
 ----------------------------
