@@ -370,6 +370,12 @@ public class GuiResources_pt extends ListResourceBundle {
         {"booleanLabel","Boleano"}, 
         {"categoricalLabel","Categorico"}, 
         
+        /* Randon Variable Finding Panel */
+        {"editNodeFindingTip","Editar evidências do nó selecionado"}, 
+        {"removeFindingTip","Remover evidência selecionada"}, 
+        {"backToNodeSelectionTip","Voltar para seleção de nó"}, 
+        {"addFindingTip","Adicionar evidência"}, 
+        
         /* FormulaTreeConstructionException */
         {"notOperator", "Não é permitido operador nesta posição"}, 
         

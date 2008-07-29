@@ -370,6 +370,12 @@ public class GuiResources extends ListResourceBundle {
         {"booleanLabel","Boolean"}, 
         {"categoricalLabel","Categorical"}, 
         
+        /* Randon Variable Finding Panel */
+        {"editNodeFindingTip","Edit findings of selected node"}, 
+        {"removeFindingTip","Remove selected finding"}, 
+        {"backToNodeSelectionTip","Back to node selection pane"}, 
+        {"addFindingTip","Add finding"}, 
+        
         /* FormulaTreeConstructionException */
         {"notOperator", "Operator is not acceptable at this position"},  
 		

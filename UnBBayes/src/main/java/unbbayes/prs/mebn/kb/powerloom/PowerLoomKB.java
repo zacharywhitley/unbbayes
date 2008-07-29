@@ -172,7 +172,6 @@ public class PowerLoomKB implements KnowledgeBase {
 	/* Methods for save and load modules                                       */
 	/*-------------------------------------------------------------------------*/	
 	
-	@Deprecated
 	public void saveGenerativeMTheory(MultiEntityBayesianNetwork mebn, File file) {
 		Debug.println("Saving generative module...");
 		PLI.sSaveModule(moduleGenerativeName, file.getAbsolutePath(),
@@ -212,7 +211,9 @@ public class PowerLoomKB implements KnowledgeBase {
 	}
 	
 	/**
-	 * This method should be called before the load of a powerloom file. 
+	 * This method should be called before the load of a powerloom file. It is 
+	 * necessary to correct the names of the modules loaded. 
+	 * 
 	 * @throws IOException 
 	 */
 	private File preLoad(File file, boolean findingModule) throws UBIOException{

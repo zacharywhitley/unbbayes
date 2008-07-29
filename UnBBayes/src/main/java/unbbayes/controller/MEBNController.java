@@ -1466,7 +1466,6 @@ public class MEBNController  {
 	private KnowledgeBase getKnowledgeBase(){
 		
 	    if(knowledgeBase == null){
-	    	//TODO put a screen of wait if the eagle loader don't was active
 	    	mebnEditionPane.getGraphPanel().setCursor(new Cursor(Cursor.WAIT_CURSOR)); 
 	    	knowledgeBase = PowerLoomKB.getNewInstanceKB(); 
 	    	mebnEditionPane.getGraphPanel().setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); 
@@ -1521,6 +1520,16 @@ public class MEBNController  {
 			this.saveDefaultTemporaryFindingsFile();
 		}
 	}
+	
+	public void clearFindingsIntoGUI(){
+		
+		for(MFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
+			for(ResidentNode residentNode : mfrag.getResidentNodeList()){
+				residentNode.cleanRandonVariableFindingList(); 
+			}
+		}
+		
+	}
 
 	public void clearKnowledgeBase(){
 		getKnowledgeBase().clearKnowledgeBase();
@@ -1552,8 +1561,12 @@ public class MEBNController  {
 		mebnEditionPane.setStatus(resource.getString("statusLoadingKB")); 
 		
 		Exception lastException = null;
+		
+		//init the powerloom knowledge base
 		createKnowledgeBase(); 	
 		getKnowledgeBase().loadModule(file, true);
+		
+		//init gui
 		for (ResidentNode resident : this.multiEntityBayesianNetwork.getDomainResidentNodes()) {
 			try {
 				 this.knowledgeBase.fillFindings(resident);

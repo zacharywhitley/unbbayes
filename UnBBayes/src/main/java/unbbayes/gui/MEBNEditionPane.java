@@ -721,16 +721,11 @@ public class MEBNEditionPane extends JPanel {
 	 * - save, load, clear knowledge base
 	 * - execute query
 	 * - turn to ssbn/edition mode
-	 * - others...
 	 */
 	private class ToolBarGlobalOptions extends JToolBar{
 
 		private static final long serialVersionUID = 1L;
 
-		private JButton btnGlobalOption;
-
-	    private JButton btnEditingMode;
-	    
 	    private JButton btnDoQuery;
 	    
 	    private JButton btnTurnToSSBNMode; 
@@ -743,9 +738,6 @@ public class MEBNEditionPane extends JPanel {
 	    	
 	    	super(); 
 	    	
-	    	btnGlobalOption = new JButton(iconController.getGlobalOptionIcon());
-	
-	    	btnEditingMode = new JButton(iconController.getGlobalOptionIcon());
 	    	btnDoQuery = new JButton(iconController.getCompileIcon());
 	    	btnTurnToSSBNMode = new JButton(iconController.getSsbnIcon()); 
 	    	btnClearKB = new JButton(iconController.getEditDelete()); 
@@ -783,17 +775,8 @@ public class MEBNEditionPane extends JPanel {
 	    	btnClearKB.addActionListener(new ActionListener(){
 
 				public void actionPerformed(ActionEvent e) {
-					mebnController.clearKnowledgeBase(); 
+					mebnController.clearFindingsIntoGUI(); 
 					JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("KBClean"));
-				}
-	    		
-	    	});
-	    	
-	    	btnGlobalOption.addActionListener(new ActionListener(){
-
-				public void actionPerformed(ActionEvent e) {
-					mebnController.clearKnowledgeBase(); 
-					JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("NotImplemented"));
 				}
 	    		
 	    	});
@@ -844,10 +827,6 @@ public class MEBNEditionPane extends JPanel {
 	        addSeparator(new Dimension(10, 10)); 
 	        
 	        add(btnTurnToSSBNMode); 
-	        
-	        addSeparator(new Dimension(10, 10)); 
-	        
-//	        add(btnEditingMode);
 	        
 	        setFloatable(false);
 	    }; 

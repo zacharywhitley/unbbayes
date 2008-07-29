@@ -95,8 +95,6 @@ public class EntityFindingEditionPane extends JPanel {
 	private IconController iconController = IconController.getInstance(); 
   	private static ResourceBundle resource = 
   		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
-
-  	//private KnowledgeBase knowledgeBase = PowerLoomKB.getInstanceKB();
   	
 	public EntityFindingEditionPane(){
 		super(); 

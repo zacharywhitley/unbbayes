@@ -79,6 +79,10 @@ public class RandonVariableFindingEdtitionPane extends JPanel {
   	private static final String SELECTION_PANE = "SelectionPane"; 
   	private static final String EDITION_PANE = "EditionPane"; 
   	
+  	private RandomVariableFinding instanceSelected = null; 
+  	private ResidentNode residentSelected = null; 
+	private boolean editingInstance = false; //user adding a new instance or only editing a instance previous created. 
+	
   	private JPanel upperPanel; 
   	private JPanel downPanel; 
   	
@@ -93,7 +97,8 @@ public class RandonVariableFindingEdtitionPane extends JPanel {
 		this.mebnController = mebnController; 
 		
 		upperPanel = new JPanel(new BorderLayout());
-		upperPanel.add(new RandonVariableListPane(), BorderLayout.CENTER); 
+		randonVariableListPane = new RandonVariableListPane(); 
+		upperPanel.add(randonVariableListPane, BorderLayout.CENTER); 
 		
 		downPanel = new JPanel(new BorderLayout()); 
 		downPanel.add(new RandonVariableInstanceListPane(), BorderLayout.CENTER); 
@@ -117,7 +122,8 @@ public class RandonVariableFindingEdtitionPane extends JPanel {
 	
 	public void showRandonVariableListPane(){
 		upperPanel.removeAll(); 
-		upperPanel.add(new RandonVariableListPane(), BorderLayout.CENTER); 
+		randonVariableListPane = new RandonVariableListPane(); 
+		upperPanel.add(randonVariableListPane, BorderLayout.CENTER); 
 		upperPanel.validate(); 
 	}
 	
@@ -127,8 +133,10 @@ public class RandonVariableFindingEdtitionPane extends JPanel {
 		private JList jlistResident; 
 		private JScrollPane scrollListObjectEntity; 
 		private DefaultListModel listModel; 
+
+		private JButton btnAddInstance; 
+		private JButton btnRemoveInstance; 
 		
-		private JButton btnEditNode; 
 		private JToolBar jtbOptions; 
 		
 		public RandonVariableListPane(){
@@ -151,34 +159,63 @@ public class RandonVariableFindingEdtitionPane extends JPanel {
 		            new ListSelectionListener(){
 		                public void valueChanged(ListSelectionEvent e) {
 		                	if(jlistResident.getSelectedValue() != null){
-		                	   showRandonVariableInstanceListPane((ResidentNode)(jlistResident.getSelectedValue()));
+		                		editingInstance = false; 
+		                		btnRemoveInstance.setEnabled(false); 
+		                    	residentSelected = (ResidentNode)jlistResident.getSelectedValue();  
+		                    	showRandonVariableInstanceListPane((ResidentNode)(jlistResident.getSelectedValue()));
 		                	}
 		                }
 		            }  	
 			 );
 			
 			jtbOptions = new JToolBar();
-			jtbOptions.setLayout(new GridLayout(1,3)); 
+			jtbOptions.setLayout(new GridLayout(1,4)); 
 			jtbOptions.setFloatable(false); 
-			btnEditNode = new JButton(iconController.getEdit()); 
-			btnEditNode.addActionListener(new ActionListener(){
-
+			
+			btnAddInstance = new JButton(iconController.getEdit()); 
+			btnRemoveInstance = new JButton(iconController.getLessIcon()); 
+			
+			btnAddInstance.setToolTipText(resource.getString("editNodeFindingTip")); 
+			btnRemoveInstance.setToolTipText(resource.getString("removeFindingTip")); 
+			
+			btnAddInstance.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
 					if(jlistResident.getSelectedValue() != null){
 					   showRandonVariableEditionPane((ResidentNode)(jlistResident.getSelectedValue())); 
 					}
 				}
-				
 			}); 
 			
+			btnRemoveInstance.addActionListener(new ActionListener(){
+				public void actionPerformed(ActionEvent e) {
+					if(residentSelected != null){
+						if(instanceSelected!=null){
+							residentSelected.removeRandonVariableFinding(instanceSelected); 
+							instanceSelected = null; 
+							showRandonVariableInstanceListPane(residentSelected); 
+						}
+					}
+				}
+			}); 
+			
+			
 			jtbOptions.add(new JPanel()); 
-			jtbOptions.add(btnEditNode); 
+			jtbOptions.add(btnAddInstance);
+			jtbOptions.add(btnRemoveInstance);
 			jtbOptions.add(new JPanel());
 			
 			this.add(scrollListObjectEntity, BorderLayout.CENTER);
 			this.add(jtbOptions, BorderLayout.PAGE_END); 
 			
 		}		
+		
+		public void enableBtnRemoveInstance(){
+			btnRemoveInstance.setEnabled(true); 
+		}
+		
+		public void unableBtnRemoveInstance(){
+			btnRemoveInstance.setEnabled(false); 
+		}
 	}
 	
 	/**
@@ -203,7 +240,6 @@ public class RandonVariableFindingEdtitionPane extends JPanel {
 		private FindingArgumentPane findingArgumentPane;  
 		
 		private JButton btnInsert; 
-		private JButton btnClear; 
 		private JButton btnBack; 
 		
 		private JToolBar jtbOptions; 
@@ -222,25 +258,23 @@ public class RandonVariableFindingEdtitionPane extends JPanel {
 			findingArgumentPane = new FindingArgumentPane(residentNode, mebnController); 
 			
 			btnBack = new JButton(iconController.getEditUndo()); 
-			btnClear = new JButton(iconController.getEditClear()); 
 			btnInsert = new JButton(iconController.getMoreIcon()); 
 			
+			btnBack.setToolTipText(resource.getString("backToNodeSelectionTip")); 
+			btnInsert.setToolTipText(resource.getString("addFindingTip")); 
+			
+			
 			jtbOptions = new JToolBar(); 
-			jtbOptions.setLayout(new GridLayout(1,3)); 
+			jtbOptions.setLayout(new GridLayout(1,4));
+			jtbOptions.add(new JPanel()); 
 			jtbOptions.add(btnBack); 
-			jtbOptions.add(btnClear); 
 			jtbOptions.add(btnInsert); 
+			jtbOptions.add(new JPanel()); 
 			jtbOptions.setFloatable(false); 
 			
 			btnBack.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
 					showRandonVariableListPane(); 
-				}
-			}); 
-			
-			btnClear.addActionListener(new ActionListener(){
-				public void actionPerformed(ActionEvent e) {
-					findingArgumentPane.clear(); 
 				}
 			}); 
 			
@@ -334,7 +368,12 @@ public class RandonVariableFindingEdtitionPane extends JPanel {
         	jlistFindings.addListSelectionListener(
         			new ListSelectionListener(){
         				public void valueChanged(ListSelectionEvent e) {
-        				
+        				     editingInstance = true; 
+        				     instanceSelected = (RandomVariableFinding)jlistFindings.getSelectedValue();  
+        				     
+        				     if(randonVariableListPane != null){
+        				    	 randonVariableListPane.enableBtnRemoveInstance(); 
+        				     }
         				}
         			}  	
         	);

@@ -139,6 +139,9 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 				}
 			}else{
 				ssbnNode.getCompiler().generateCPT(ssbnNode);
+				PotentialTable t = ssbnNode.getProbNode().getPotentialTable(); 
+				
+//				System.out.println(ssbnNode.getProbNode().getPotentialTable();
 			}
 		}
 		
