@@ -316,23 +316,23 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 	 * FINDINGS METHODS
 	 */
 	
-	public void addRandonVariableFinding(RandomVariableFinding finding){
+	public void addRandomVariableFinding(RandomVariableFinding finding){
 		randomVariableFindingList.add(finding); 
 	}
 	
-	public void removeRandonVariableFinding(RandomVariableFinding finding){
+	public void removeRandomVariableFinding(RandomVariableFinding finding){
 		randomVariableFindingList.remove(finding); 
 	}
 	
-	public boolean containsRandonVariableFinding(RandomVariableFinding finding){
+	public boolean containsRandomVariableFinding(RandomVariableFinding finding){
 		return randomVariableFindingList.contains(finding); 
 	}
 	
-	public void cleanRandonVariableFindingList(){
+	public void cleanRandomVariableFindingList(){
 		randomVariableFindingList.clear(); 
 	}
 	
-	public List<RandomVariableFinding> getRandonVariableFindingList() {
+	public List<RandomVariableFinding> getRandomVariableFindingList() {
 		return randomVariableFindingList;
 	}
 	

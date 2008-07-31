@@ -1372,9 +1372,9 @@ public class PowerLoomKB implements KnowledgeBase {
 			}
 			
 			Debug.println("Finding = " + finding.toString());
-			resident.addRandonVariableFinding(finding);
+			resident.addRandomVariableFinding(finding);
 		}
-		return resident.getRandonVariableFindingList();
+		return resident.getRandomVariableFindingList();
 	}
 
 	

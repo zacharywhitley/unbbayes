@@ -68,7 +68,7 @@ import unbbayes.gui.mebn.auxiliary.ButtonLabel;
 import unbbayes.gui.mebn.auxiliary.FocusListenerTextField;
 import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.gui.mebn.finding.EntityFindingEditionPane;
-import unbbayes.gui.mebn.finding.RandonVariableFindingEdtitionPane;
+import unbbayes.gui.mebn.finding.RandomVariableFindingEdtitionPane;
 import unbbayes.io.exception.UBIOException;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.InputNode;
@@ -130,7 +130,7 @@ public class MEBNEditionPane extends JPanel {
     private EntityEditionPane entityEditionPane;
     private InputNodePane inputNodePane;
     private OVariableEditionPane editOVariableTab;
-    private RandonVariableFindingEdtitionPane nodeFindingEditionPane;
+    private RandomVariableFindingEdtitionPane nodeFindingEditionPane;
     private EntityFindingEditionPane entityFindingEditionPane;
 
     private ResidentNodePane residentNodePane;
@@ -339,7 +339,7 @@ public class MEBNEditionPane extends JPanel {
         entityFindingEditionPane = new EntityFindingEditionPane();
         jpTabSelected.add(ENTITY_FINDING_TAB, entityFindingEditionPane);
 
-        nodeFindingEditionPane = new RandonVariableFindingEdtitionPane();
+        nodeFindingEditionPane = new RandomVariableFindingEdtitionPane();
         jpTabSelected.add(NODE_FINDING_TAB, nodeFindingEditionPane);
 
         cardLayout.show(jpTabSelected, "MTheoryTree");
@@ -636,7 +636,7 @@ public class MEBNEditionPane extends JPanel {
 
     public void setRandonVariableFindingEditionPaneActive(){
        cardLayout.removeLayoutComponent(nodeFindingEditionPane);
-       nodeFindingEditionPane = new RandonVariableFindingEdtitionPane(mebnController);
+       nodeFindingEditionPane = new RandomVariableFindingEdtitionPane(mebnController);
        jpTabSelected.add(NODE_FINDING_TAB, nodeFindingEditionPane);
  	   cardLayout.show(jpTabSelected, NODE_FINDING_TAB);
     }

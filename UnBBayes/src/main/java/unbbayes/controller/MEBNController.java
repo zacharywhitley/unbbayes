@@ -1413,7 +1413,7 @@ public class MEBNController  {
 	/*Findings                                                                 */
 	/*-------------------------------------------------------------------------*/
 	
-	public void createRandonVariableFinding(ResidentNode residentNode, 
+	public void createRandomVariableFinding(ResidentNode residentNode, 
 			ObjectEntityInstance[] arguments, Entity state){
 		
 		RandomVariableFinding finding = new RandomVariableFinding(
@@ -1422,7 +1422,7 @@ public class MEBNController  {
 				state, 
 				this.multiEntityBayesianNetwork);
 		
-		residentNode.addRandonVariableFinding(finding); 
+		residentNode.addRandomVariableFinding(finding); 
 	}
 	
 	
@@ -1502,7 +1502,7 @@ public class MEBNController  {
 	 */
 	private void loadFindingsIntoKB(){
 		
-		KnowledgeBase knowledgeBase = getKnowledgeBase();		
+		KnowledgeBase knowledgeBase = getKnowledgeBase();
 		
 		for(ObjectEntityInstance instance: multiEntityBayesianNetwork.getObjectEntityContainer().getListEntityInstances()){
 			 knowledgeBase.insertEntityInstance(instance); 
@@ -1510,7 +1510,7 @@ public class MEBNController  {
 		
 		for(MFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
 			for(ResidentNode residentNode : mfrag.getResidentNodeList()){
-				for(RandomVariableFinding finding: residentNode.getRandonVariableFindingList()){
+				for(RandomVariableFinding finding: residentNode.getRandomVariableFindingList()){
 					knowledgeBase.insertRandomVariableFinding(finding); 
 				}
 			}
@@ -1525,7 +1525,7 @@ public class MEBNController  {
 		
 		for(MFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
 			for(ResidentNode residentNode : mfrag.getResidentNodeList()){
-				residentNode.cleanRandonVariableFindingList(); 
+				residentNode.cleanRandomVariableFindingList(); 
 			}
 		}
 		
@@ -1589,6 +1589,8 @@ public class MEBNController  {
 	}
 	
 	private void createKnowledgeBase(){
+		// Must remove unwanted findings entered previously 
+		getKnowledgeBase().clearKnowledgeBase();
 		loadGenerativeMEBNIntoKB(); 
 		loadFindingsIntoKB(); 
 //		baseCreated = true; 
