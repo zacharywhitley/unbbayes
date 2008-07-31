@@ -7,7 +7,7 @@
 		</author>
 	</properties>
 	<body>
-		<release version="3.8.3-BETA" description="Current work version">
+		<release version="3.8.3-BETA" date="2008-07-31" description="Third UnBBayes-MEBN beta release">
 			<action dev="Laécio Lima" type="add">
 				2008231	- Implement SSBN algorithm with evidences "below".
 			</action>
@@ -31,8 +31,9 @@
 				1913724 - Web site's Enlgish page is in Portuguese.
 			</action>
 		</release>
+		
 		<release version="3.4.29-BETA" date="2008-05-20"
-			description="Release fix">
+			description="Second UnBBayes-MEBN beta release">
 			
 			<action dev="Shou Matsumoto" type="add">
 				1968915	- Pseudocode compiler's optimization.
