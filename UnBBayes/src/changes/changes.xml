@@ -7,12 +7,18 @@
 		</author>
 	</properties>
 	<body>
-		<release version="3.6.3-BETA" description="Current work version">
+		<release version="3.8.3-BETA" description="Current work version">
 			<action dev="Laécio Lima" type="add">
 				2008231	- Implement SSBN algorithm with evidences "below".
 			</action>
 			<action dev="Rommel Carvalho" type="add">
 				2023512 - Develop new Web site using Maven.
+			</action>
+			<action dev="Laécio Lima" type="add">
+				2027165 - Remove a finding.
+			</action>
+			<action dev="Laécio Lima" type="add">
+				2033356 - upgrade in search context node evaluation.
 			</action>
 			
 			<action dev="Shou Matsumoto" type="fix">
