@@ -42,5 +42,9 @@ public class InvalidProbabilityRangeException extends
 		super(msg, cause);
 		// TODO Auto-generated constructor stub
 	}
+	
+	public InvalidProbabilityRangeException(Throwable cause) {
+		super(resource.getString("InvalidProbabilityRange"), cause);
+	}
 
 }

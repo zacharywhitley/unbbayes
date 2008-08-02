@@ -106,6 +106,9 @@ public class CompilerTest extends TestCase {
 
 	protected void tearDown() throws Exception {
 		super.tearDown();
+		this.mebn = null;
+		this.tableParser = null;
+		System.gc();
 	}
 
 	
@@ -154,7 +157,7 @@ public class CompilerTest extends TestCase {
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
 			" else if any STj have( (OperatorSpecies = Unknown & HarmPotential = true) | (OperatorSpecies = Unknown & HarmPotential = true) ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" else if any sr.st have( OperatorSpecies = Klingon & HarmPotential = true ) " +
+			" else if any sr.st have( OperatorSpecies = Klingon & ~ HarmPotential = true ) " +
 			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .6 ] " +
 			" else if any st.z have( OperatorSpecies = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " +
@@ -426,7 +429,118 @@ public class CompilerTest extends TestCase {
 	}
 	
 	
+	public void testNestedStatements() {
+		String tableString =  
+			" if any st.t have( OperatorSpecies = Cardassian & (HarmPotential = true) )  " + 
+			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
+			" else if any st.z.t have( (OperatorSpecies = Romulan & HarmPotential = true) ) " +
+			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
+			" else if any STj have( (OperatorSpecies = Unknown & HarmPotential = true) | (OperatorSpecies = Unknown & HarmPotential = true) ) " + 
+			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
+			" else if any sr.st have( OperatorSpecies = Klingon & ~ HarmPotential = true ) " +
+			"  [ [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .6 ] ] " +
+			" else if any st.z have( OperatorSpecies = Friend & HarmPotential = true ) " +
+			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " +
+			" else [ Un = 0 , Hi = 0 , Medium = 0 , Low = 1 ] ";
+		
+		
+		try  {
+			tableParser.parse(tableString);
+			fail("No nested statement is allowed");
+		} catch (MEBNException e) {
+			//OK
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		//assertNotNull(tableParser.getTempTable());
+		
+	}
 	
+	
+	public void testNestedIfs() {
+		String tableString =  
+		" if any st0 have( (OperatorSpecies = Unknown & HarmPotential = true) | (OperatorSpecies = Unknown & HarmPotential = true) ) " + 
+			"  [ Un = 0 , Hi = .1 , Medium = .0 , Low = .9 ]  " +
+		" else if any st1 have( OperatorSpecies = Cardassian & (HarmPotential = true) )  [ " + 
+			" if any st11 have ( ~ OperatorSpecies = Cardassian ) " +
+			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
+			" else [ Un = MIN ( .9 ; CARDINALITY(st.t) ) , Hi = 0 , Medium = 0 , Low = 1 - Un ] " +
+		" ] else if any st2 have( (OperatorSpecies = Romulan & HarmPotential = true) ) " +
+		"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
+		" else if any st3 have( (OperatorSpecies = Unknown & HarmPotential = true) | (OperatorSpecies = Unknown & HarmPotential = true) ) " + 
+		"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
+		" else if any st4 have( OperatorSpecies = Klingon & ~ HarmPotential = true ) [ " +
+			" if any st41 have ( ~ OperatorSpecies = Klingon ) [ " +
+				" if any st411 have ( ~ OperatorSpecies = Cardassian ) " +
+				"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
+				" else [ Un = MIN ( .9 ; CARDINALITY(sr) ) , Hi = 0 , Medium = 0 , Low = 1 - Un ] " +
+			" ] else if any st42 have ( ~ OperatorSpecies = Klingon ) [ " +
+				" if any st421 have ( ~ OperatorSpecies = Cardassian ) " +
+				"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
+				" else [ Un = MIN ( .9 ; CARDINALITY(sr) ) , Hi = 0 , Medium = 0 , Low = 1 - Un ] " +
+			" ] else [ Un = MIN ( .9 ; CARDINALITY(sr.st) ) , Hi = 0 , Medium = 0 , Low = 1 - Un ] "  +
+		" ] else if any st5 have( OperatorSpecies = Friend & HarmPotential = true ) " +
+		"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " +
+		" else [ " +
+			" if any stelse have ( ~ OperatorSpecies = Cardassian ) " +
+			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
+			" else [ Un = 0 , Hi = 0 , Medium = 0 , Low = 1 ] " +
+		" ] ";
+		
+		
+		try  {
+			tableParser.parse(tableString);			
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		assertNotNull(tableParser.getTempTable());
+		
+	}
+	
+	
+	public void testNestedDefaultDistro() {
+		String tableString =  
+			"[ if any st1 have( OperatorSpecies = Cardassian & (HarmPotential = true) )  [ " + 
+				" if any st11 have ( ~ OperatorSpecies = Cardassian ) " +
+				"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
+				" else [ Un = MIN ( .9 ; CARDINALITY(st.t) ) , Hi = 0 , Medium = 0 , Low = 1 - Un ] " +
+			" ] else if any st2 have( (OperatorSpecies = Romulan & HarmPotential = true) ) " +
+			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
+			" else if any st3 have( (OperatorSpecies = Unknown & HarmPotential = true) | (OperatorSpecies = Unknown & HarmPotential = true) ) " + 
+			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
+			" else if any st4 have( OperatorSpecies = Klingon & ~ HarmPotential = true ) [ " +
+				" if any st41 have ( ~ OperatorSpecies = Klingon ) [ " +
+					" if any st411 have ( ~ OperatorSpecies = Cardassian ) " +
+					"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
+					" else [ Un = MIN ( .9 ; CARDINALITY(sr) ) , Hi = 0 , Medium = 0 , Low = 1 - Un ] " +
+				" ] else if any st42 have ( ~ OperatorSpecies = Klingon ) [ " +
+					" if any st421 have ( ~ OperatorSpecies = Cardassian ) " +
+					"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
+					" else [ Un = MIN ( .9 ; CARDINALITY(sr) ) , Hi = 0 , Medium = 0 , Low = 1 - Un ] " +
+				" ] else [ Un = MIN ( .9 ; CARDINALITY(sr.st) ) , Hi = 0 , Medium = 0 , Low = 1 - Un ] "  +
+			" ] else if any st5 have( OperatorSpecies = Friend & HarmPotential = true ) " +
+			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " +
+			" else [ " +
+				" if any stelse have ( ~ OperatorSpecies = Cardassian ) " +
+				"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
+				" else [ Un = 0 , Hi = 0 , Medium = 0 , Low = 1 ] " +
+			" ] ]";
+		
+		
+		try  {
+			tableParser.parse(tableString);			
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		assertNotNull(tableParser.getTempTable());
+		
+	}
 	
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.compiler.Compiler#main(java.lang.String[])}.

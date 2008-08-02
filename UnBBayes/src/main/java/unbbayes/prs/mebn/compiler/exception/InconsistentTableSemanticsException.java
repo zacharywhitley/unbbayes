@@ -41,4 +41,8 @@ public class InconsistentTableSemanticsException extends MEBNException {
 	public InconsistentTableSemanticsException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
+	
+	public InconsistentTableSemanticsException(Throwable cause) {
+		super(resource.getString("UnexpectedTokenFound"), cause);
+	}
 }

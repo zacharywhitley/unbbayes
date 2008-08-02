@@ -42,5 +42,10 @@ public class InvalidConditionantException extends
 		super(msg, cause);
 		// TODO Auto-generated constructor stub
 	}
+	
+	public InvalidConditionantException(Throwable cause) {
+		super(resource.getString("InvalidConditionantFound"), cause);
+		// TODO Auto-generated constructor stub
+	}
 
 }

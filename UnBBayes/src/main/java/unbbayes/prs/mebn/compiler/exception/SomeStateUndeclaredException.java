@@ -42,5 +42,9 @@ public class SomeStateUndeclaredException extends
 		super(msg, cause);
 		// TODO Auto-generated constructor stub
 	}
+	
+	public SomeStateUndeclaredException(Throwable cause) {
+		super(resource.getString("SomeStateUndeclared"));
+	}
 
 }

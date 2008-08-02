@@ -41,5 +41,9 @@ public class TableFunctionMalformedException extends MEBNException {
 	public TableFunctionMalformedException(String msg) {
 		super(msg);
 	}
+	
+	public TableFunctionMalformedException(Throwable t) {
+		super(resource.getString("UnexpectedTokenFound"),t);
+	}
 
 }

@@ -22,7 +22,7 @@ public class UndeclaredTableException extends MEBNException {
 	}
 
 	public UndeclaredTableException(Exception e) {
-		super(e);
+		super(resource.getString("TableUndeclared"),e);
 	}
 
 }

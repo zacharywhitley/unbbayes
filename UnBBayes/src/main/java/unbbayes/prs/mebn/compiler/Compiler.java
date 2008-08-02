@@ -50,13 +50,57 @@ import unbbayes.util.Debug;
 /*
  BNF MEBN Table:
  ----------------
- Changes (Date/Month/Year): 
+ Changes (Month/Date/Year): 
+ 
+ 	08/02/2008:
+ 			Description: Added nested "if" feature.
+ 			Now an if-clause would look like this ("else" is still mandatory):
+ 			
+ 				if any x have (parentx = valuex1) [
+ 					myprob1 = 0.5 , 
+ 					myprob2 = 0.5
+ 				] else if all y have (parenty = valuey2) [
+ 					if any z have (parentz = valuez3) [
+ 						myprob1 = 0.2,
+ 						myprob2 = 0.8
+ 					] else [
+ 						myprob1 = 0.8,
+ 						myprob2 = 0.2
+ 					]
+ 				] else if any w have (parentw = veluew4) [
+ 					if any v have (parentv = valuev5 || parentv = valuev6) [
+ 						if any v have (parentv = valuev5 || parentv = valuev6) [
+ 							if any v have (parentv = valuev5 || parentv = valuev6) [
+ 								myprob1 = 0.8,
+ 								myprob2 = 0.2
+ 							] else [
+ 								myprob1 = 0.7,
+ 								myprob2 = 0.3
+ 							]
+ 						] else [
+ 							myprob1 = 0.6,
+ 							myprob2 = 0.4
+ 						]
+ 					] else [
+ 						myprob1 = 0.5,
+ 						myprob2 = 0.5
+ 					]
+ 				] else [
+ 					if all asdf have (parentasdf = valueasdf) [
+ 						myprob1 = 0.1 , 
+ 						myprob2 = 0.9
+ 					] else [
+ 						myprob1 = 0.9 , 
+ 						myprob2 = 0.1
+ 					]
+ 				]
+ 			Author: Shou Matsumoto (cardialfly@[gmail,yahoo].com)
  
  	07/09/2008:
  			Description: BNF fails to describe a complex boolean expression
  			Author: Shou Matsumoto (cardialfly@[gmail,yahoo].com)
  	
- 	15/06/2008:
+ 	06/15/2008:
  			Description: a boolean expression was returning a boolean neutral value (false in "Any" 
  			and true in "All") when no valid expression (involving parents) was evaluated. It
  			is now returning false when no expression was valid
@@ -68,42 +112,39 @@ import unbbayes.util.Debug;
  			is tested before parsing a ssbn node.
  			Author: Shou Matsumoto (cardialfly@[gmail,yahoo].com)
  
- 	28/12/2007:
- 			Description: fixed the BNF definition of factor.
+ 	12/28/2007:
+ 			Description: fixed the BNF definition of factor, and
+ 			added the " char before and after ;.
  			Author: Rommel Carvalho (rommel.carvalho@gmail.com)
  
- 	28/12/2007:
- 			Description: just added the " char before and after ;.
- 			Author: Rommel Carvalho (rommel.carvalho@gmail.com)
- 
- 	27/11/2007:
+ 	11/27/2007:
  			Description: term ::= signed_factor [ mulop factor ]* changed to
  				term ::= signed_factor [ mulop signed_factor ]*,
  				and CPT generation is in alpha state now.
  			Author: Shou Matsumoto
  
- 	25/11/2007:
+ 	11/25/2007:
  			Description: added non-terminal variable "possibleVal" to the grammar (and its implementation).
  			Author: Shou Matsumoto
  	
- 	07/10/2007:
+ 	10/07/2007:
  			Description: "varsetname" has been added to the grammar (and implemented inside the class)
  				in order to allow us to declare parent set by strong OV.
  			Author: Shou Matsumoto
  	
  
- 	24/06/2007:
+ 	06/24/2007:
  			Description: The top level BNF Grammar class was changed from 
  				if_statement to table, in order to make possible a probability
  				table without an if clause.
 			Author: Shou Matsumoto
  
- 	10/06/2007: 
+ 	06/10/2007: 
  			Description: Added cardinality(), min() and max() functions
  			syntax analyzer.
  			Author: Shou Matsumoto 
 
- 	29/05/2007: 
+ 	05/29/2007: 
  			Description: the else clause is now required, in order to
  				force user to declare a default distribution and
  				grant declaration of every possible combination of states
@@ -118,9 +159,8 @@ import unbbayes.util.Debug;
  	
  ===============================================================
  table := statement | if_statement
- if_statement 
- ::= 
- "if" allop varsetname "have" "(" b_expression ")" statement 
+ if_statement  ::= 
+ 	"if" allop varsetname "have" "(" b_expression ")" statement 
  	"else" else_statement 
  allop ::= "any" | "all"
  varsetname ::= ident ["." ident]*
@@ -129,7 +169,8 @@ import unbbayes.util.Debug;
  not_factor ::= [ "~" ] b_factor
  b_factor ::= ident "=" ident | "(" b_expression ")"
  else_statement ::= statement | if_statement
- statement ::= "[" assignment "]" 
+ statement ::= "[" assignment_or_if "]" 
+ assignment_or_if ::= assignment | if_statement
  assignment ::= ident "=" expression [ "," assignment ]*
  expression ::= term [ addop term ]*
  term ::= signed_factor [ mulop signed_factor ]*
@@ -163,11 +204,12 @@ public class Compiler implements ICompiler {
 
 	private char[] text = null;
 
-	/* keywords */
+	/* keywords. */
 	private String kwlist[] = { "IF", "ELSE", "ALL", "ANY", "HAVE" };
 
 	/*
-	 * Special codes for keywords
+	 * Special codes for keywords.
+	 * Obviously, it should represent kwlist.
 	 */
 	private char kwcode[] = { 'i', 'l', 'a', 'y', 'h' };
 
@@ -208,7 +250,7 @@ public class Compiler implements ICompiler {
 	 * probability.
 	 * 
 	 */
-	private List<TempTableHeaderCell> tempTable = null;
+	private TempTable tempTable = null;
 	private TempTableHeaderCell currentHeader = null;
 	//private List<TempTableProbabilityCell> currentProbCellList = null;
 	//private TempTableProbabilityCell currentCell = null;
@@ -217,7 +259,7 @@ public class Compiler implements ICompiler {
 	private int originalTextLength = 0;	// stores the length of the original text before deleting extra spaces
 	
 	private Compiler() {
-		tempTable = new ArrayList<TempTableHeaderCell>();
+		tempTable = new TempTable();
 		originalTextLength = 0;
 	}
 	
@@ -232,7 +274,7 @@ public class Compiler implements ICompiler {
 		super();
 		this.setNode(node);
 		this.cpt = null;
-		tempTable = new ArrayList<TempTableHeaderCell>();
+		tempTable = new TempTable();
 	}
 	
 	/**
@@ -264,7 +306,7 @@ public class Compiler implements ICompiler {
 				this.cpt = this.ssbnnode.getProbNode().getPotentialTable();
 			}			
 		}
-		tempTable = new ArrayList<TempTableHeaderCell>();
+		tempTable = new TempTable();
 	}
 	
 	/* Compiler's initialization */
@@ -303,7 +345,7 @@ public class Compiler implements ICompiler {
 			nextChar();
 		//}
 		
-		tempTable = new ArrayList<TempTableHeaderCell>();
+		tempTable = new TempTable();
 	}
 	
 	/**
@@ -318,7 +360,7 @@ public class Compiler implements ICompiler {
 		String pseudocode = this.node.getTableFunction();
 		
 		if (this.ssbnnode.getProbNode() != null) {
-			this.setCpt(this.ssbnnode.getProbNode().getPotentialTable());			
+			this.setPotentialTable(this.ssbnnode.getProbNode().getPotentialTable());			
 		}
 		
 		this.init(pseudocode);
@@ -373,7 +415,7 @@ public class Compiler implements ICompiler {
 		if (this.ssbnnode.getProbNode() == null) {
 			return null;
 		}
-		if (this.text == null || (this.tempTable.size() <= 0) ) {
+		if (this.text == null || this.tempTable.isEmptyNestedClauses() ) {
 			// Special condition: if pseudocode was not declared, use linear (equal) distribution instead
 			this.generateLinearDistroCPT(this.ssbnnode.getProbNode());
 			return this.ssbnnode.getProbNode().getPotentialTable();
@@ -382,7 +424,7 @@ public class Compiler implements ICompiler {
 		// initialization
 		
 		// eliminates redundancies on table's boolean expression
-		for (TempTableHeaderCell header : this.tempTable) {
+		for (TempTableHeaderCell header : this.tempTable.getNestedClauses()) {
 			header.cleanUpByVarSetName(this.getSSBNNode());
 		}
 		
@@ -463,21 +505,17 @@ public class Compiler implements ICompiler {
 			}
 			if (thereAreNoParents || this.getSSBNNode().isUsingDefaultCPT()) {
 				// we assume the default distro is the last block on pseudocode
-				header = this.tempTable.get(this.tempTable.size() - 1);
-				// let's check if this header is really declaring a default distro...
+				header = this.tempTable.getDefaultClause();
+				// let's just check if this header is really declaring a default distro... Just in case...
 				if (!header.isDefault()) {
 					throw new InconsistentTableSemanticsException();
 				}
 			} else {
-				//	if not default, search the column to verify
-				for (TempTableHeaderCell headCell : this.tempTable) {
-					if (headCell.evaluateBooleanExpressionTree(map)) {
-						// the first expression to return true is the one we want
-						header = headCell;
-						break;	// the first valid block is the one we choose
-						// note that default (else) expression will allways return true!
-					}
-				}
+				//	if not default, look for the column to verify
+				// the first expression to return true is the one we want
+				header = this.tempTable.getFirstTrueClause(map);
+				// note that default (else) expression should allways return true!
+				
 			}
 			
 			
@@ -491,7 +529,7 @@ public class Compiler implements ICompiler {
 				for (TempTableProbabilityCell cell : header.getCellList()) {
 					// we assume the Probabilistic table is in the same order of the list "possibleValues", 
 					// so we look for the entity of possibleValues at a cell
-					if (cell.getPossibleValue().getName().equals(possibleValues.get(j).getName())) {
+					if (cell.getPossibleValue().getName().equalsIgnoreCase(possibleValues.get(j).getName())) {
 						value = cell.getProbabilityValue();
 						break;
 					}
@@ -505,7 +543,7 @@ public class Compiler implements ICompiler {
 			
 		}	// while i < this.cpt.tableSize()
 		
-		// the code below is commented because calling getCPT twice must work as same.
+		// the code below is commented because calling getCPT twice must be working nicely.
 //		// dispose temporary table, because since it is useless anymore
 //		try{
 //			this.tempTable.clear();
@@ -573,31 +611,38 @@ public class Compiler implements ICompiler {
 			
 			// Prepare temporary table's header to declare a default (no-if-clause) statement
 			this.currentHeader = new TempTableHeaderCell(null, true, true, this.ssbnnode);
-			this.tempTable.add(this.currentHeader);
-			// if we catch a sintax error here, it may be a value error
-			try {
-				statement();
-			} catch (TableFunctionMalformedException e) {
-				// Exception translation (perharps an anti-pattern ?)
-				//throw new InvalidProbabilityRangeException(e.getMessage());
-				throw e;
-			}
+			this.tempTable.addNestedClause(this.currentHeader);			
+			
+			// every exceptions would be thrown up...
+			statement(this.currentHeader);
 			
 		} else {
 			// We don't have to prepare temporary table's header to declare a if-clause statement
 			// because the if statement parser would do so.
 			
 			// Please note table() repasses every exception reported by ifStatement()
-			this.ifStatement();
+			
+			// evaluate if-statement setting the tempTable as the upper statement container
+			this.ifStatement(this.tempTable);
 		}
+		
+		// after the final else clause, no declaration should be present
+		this.skipWhite();
+		if (this.look != ' ') {
+			expected("end of declaration");
+		}
+		
 	}
 
 	/**
 	 * if_statement ::= "if" allop ident "have" "(" b_expression ")" statement [
 	 * "else" else_statement ]
-	 * 
+	 * @param upperIf: if this if clause is an inner if, the upper if-clause should be referenced
+	 * by this parameter. If this is a temporary table, this if-clause is the upper-most if-clause within CPT pseudocode.
+	 * If it is null, it will assume tempTable is the upper container
 	 */
-	private void ifStatement() throws NoDefaultDistributionDeclaredException,
+	private void ifStatement(INestedIfElseClauseContainer upperIf) 
+							   throws NoDefaultDistributionDeclaredException,
 									  InvalidConditionantException,
 									  SomeStateUndeclaredException,
 									  InvalidProbabilityRangeException,
@@ -608,7 +653,6 @@ public class Compiler implements ICompiler {
 		matchString("IF");
 		
 		
-
 		// SCAN FOR ALL/ANY
 		scan();
 		switch (token) {
@@ -619,15 +663,23 @@ public class Compiler implements ICompiler {
 			break;
 		case 'y':
 			// Debug.println("ANY VERIFIED");
-			//	sets the table header w/ this parameters (empty list,false,false): empty list (no verified parents), is ANY and is not default
+			//	sets the table header w/ this parameters (empty list,true,false): empty list (no verified parents), is ANY and is not default
 			this.currentHeader = new TempTableHeaderCell(new ArrayList<TempTableHeaderParent>(), true, false, this.ssbnnode);
 			break;
 		default:
 			expected("ALL or ANY");
 		}
 
-		// adds the header to table before it is changed to another header.
-		this.tempTable.add(this.currentHeader);
+		// stores this.currentHeader in order to become an upper clause of any further nested if/else clause
+		INestedIfElseClauseContainer currentIfContainer = this.currentHeader;
+
+		
+		// adds the header to the container (table or upper if/else-clause) before it is changed to another header.
+		if (upperIf == null) {
+			// No upper container identified. Let's assume to be the upper-most container (the temporary table)
+			upperIf = this.tempTable;			
+		} 		
+		upperIf.addNestedClause(this.currentHeader);
 		
 		// SCAN FOR varsetname
 		String varSetName = this.varsetname();
@@ -649,7 +701,7 @@ public class Compiler implements ICompiler {
 		try {
 			expressionTree = bExpression();
 		} catch (TableFunctionMalformedException e) {
-			throw new InvalidConditionantException(e.getMessage());
+			throw new InvalidConditionantException(e);
 		}
 		//this.nextChar();
 		//this.skipWhite();
@@ -668,18 +720,18 @@ public class Compiler implements ICompiler {
 		
 		// if we catch a sintax error here, it may be a value error
 		try {
-			statement();
+			// if there is a nested if, this if should be the upper clause (set currentHeader as upper clause).
+			statement(currentIfContainer);
 		} catch (TableFunctionMalformedException e) {
 			// Debug.println("->" + getNode());
-			e.printStackTrace();
-			throw new InvalidProbabilityRangeException(e.getMessage() + " : " + this.getNode().getName());
+			throw new InvalidProbabilityRangeException("["+this.getNode().getName()+"]",e);
 		}
 		
 		
 		
 		// Debug.println("LOOKING FOR ELSE STATEMENT");
 		// LOOK FOR ELSE
-		// Consistency check C09: the grammar may state else as optional,
+		// Consistency check C09: the grammar "may" state else as optional,
 		// but semantically every table must have a default distribution, which is
 		// declared within an else clause.
 		
@@ -691,7 +743,7 @@ public class Compiler implements ICompiler {
 				scan();
 			} catch (TableFunctionMalformedException e) {
 				// a sintax error here represents a statement other than an else statement
-				throw new NoDefaultDistributionDeclaredException();
+				throw new NoDefaultDistributionDeclaredException(e);
 			}
 		} else {
 			// No statement was found at all (that means no else statement).
@@ -700,17 +752,15 @@ public class Compiler implements ICompiler {
 		}
 		
 		if (token == 'l') {
-			else_statement();
+			// The else statement should be a child statement of the upper container,
+			// that means, it is on the same level of currently evaluated IF clause
+			else_statement(upperIf);
 		} else {
 			// The statement found was not an else statement
 			throw new NoDefaultDistributionDeclaredException();
 		}
 		
-		// after else clause, no declaration should be present
-		this.skipWhite();
-		if (this.look != ' ') {
-			expected("end of declaration");
-		}
+		// we may have another if/else clause after this...
 		
 	}
 	
@@ -862,7 +912,7 @@ public class Compiler implements ICompiler {
 			try{
 				expected("Identifier");
 			} catch (TableFunctionMalformedException e) {
-				throw new InvalidConditionantException(e.getMessage());
+				throw new InvalidConditionantException(e);
 			}
 		}
 		
@@ -886,7 +936,7 @@ public class Compiler implements ICompiler {
 			try{
 				expected("Identifier");
 			} catch (TableFunctionMalformedException e) {
-				throw new InvalidConditionantException(e.getMessage());
+				throw new InvalidConditionantException(e);
 			}
 		}
 		
@@ -899,13 +949,13 @@ public class Compiler implements ICompiler {
 			try{
 				expected("Identifier");
 			} catch (TableFunctionMalformedException e) {
-				throw new InvalidConditionantException(e.getMessage());
+				throw new InvalidConditionantException(e);
 			}
 		}
 		Entity condvalue = null;
 		// search for an entity with a name this.noCaseChangeValue
 		for (Entity possibleValue : resident.getPossibleValueListIncludingEntityInstances()) {
-			if (possibleValue.getName().equals(this.noCaseChangeValue)) {
+			if (possibleValue.getName().equalsIgnoreCase(this.value)) {
 				condvalue = possibleValue;
 				break;
 			}
@@ -915,7 +965,7 @@ public class Compiler implements ICompiler {
 			try{
 				expected("Identifier");
 			} catch (TableFunctionMalformedException e) {
-				throw new InvalidConditionantException(e.getMessage());
+				throw new InvalidConditionantException(e);
 			}
 		}
 		// Set temp table's header condicionant
@@ -930,8 +980,11 @@ public class Compiler implements ICompiler {
 	
 	/**
 	 *  else_statement ::= statement | if_statement
+	 *  @param upperIf: if this if clause is an inner if, the upper if-clause should be referenced
+	 * by this parameter. If this is a temporary table, this if-clause is the upper-most if-clause within CPT pseudocode.
+	 * If it is null, it will assume tempTable is the upper container
 	 */
-	private void else_statement() throws NoDefaultDistributionDeclaredException,
+	private void else_statement(INestedIfElseClauseContainer upperIf) throws NoDefaultDistributionDeclaredException,
 									InvalidConditionantException,
 									SomeStateUndeclaredException,
 									InvalidProbabilityRangeException,									
@@ -939,39 +992,45 @@ public class Compiler implements ICompiler {
 		
 		// Debug.println("ELSE STATEMENT");
 		if ( look == '[' ) {
-			// header ::= no known parent yet, is ANY and is default.
+			// header ::= there are no known parents yet, is ANY and is default.
 			this.currentHeader = new TempTableHeaderCell(null,true,true, this.ssbnnode); 
-			this.tempTable.add(this.currentHeader);
-			this.statement();
+			
+			// register it to the upper container (might be another clause or the temporary table)
+			if (upperIf == null) {
+				// No upper container identified. Let's assume to be the upper-most container (the temporary table)
+				this.tempTable.addNestedClause(this.currentHeader);
+			} else {
+				upperIf.addNestedClause(this.currentHeader);
+			}
+			
+			// if there are nested if/else clauses, their upper container should be the currently evaluated else clause (currentHeader)
+			this.statement(this.currentHeader);
 		} else {
 			// Debug.println("COULD NOT FIND '['");
 			// we dont have to create new header here because ifStatement would do so.
-			ifStatement();
+			// the if statement without "[" is on the same level of currently evaluated else clause, so, pass upperIf as upper container
+			ifStatement(upperIf);
 		}
 	
 	}
 	
 
 	/**
-	 * statement ::= "[" assignment "]" 
+	 * statement ::= "[" assignment_or_if "]" 
 	 * 
+	 * @param upperIf: the upper if-clause or the tempTable (upper-most container).
+	 * Since assignment_or_if might start a nested if/else-clause, this parameter
+	 * helps us keep track where the new if/else-clause is contained.
 	 */
-	private void statement() throws NoDefaultDistributionDeclaredException,
+	private void statement(INestedIfElseClauseContainer upperIf) 
+							 throws NoDefaultDistributionDeclaredException,
 									InvalidConditionantException,
 									SomeStateUndeclaredException,
 									InvalidProbabilityRangeException,									
 									TableFunctionMalformedException{
 		// Debug.println("PARSING STATEMENT, VALUE = " + value + ", LOOKAHEAD = " + look);
 		if (look == '[') {
-			
-			// Consistency check C09
-			// Structures that allow us to Verify if all states has probability declared
-			List<Entity> declaredStates = new ArrayList<Entity>();
-			List<Entity> possibleStates = null;			
-			if (this.node != null) {
-				possibleStates = this.node.getPossibleValueListIncludingEntityInstances();
-			}
-			
+							
 			// Debug.println("");
 			// Debug.print("  ");
 			match('[');
@@ -979,45 +1038,99 @@ public class Compiler implements ICompiler {
 			// initialize currently evaluated temporary table's collumn
 			//this.currentProbCellList = new ArrayList<TempTableProbabilityCell>();
 			
-			// we can ignore the returned value, since it is added to this.currentHeader
-			//IProbabilityValue totalProb = assignment(declaredStates, possibleStates);
-			assignment(declaredStates, possibleStates);
+			assignmentOrIf(upperIf);
 			
 			
 			match(']');
 			// Debug.println("");
 			
-			if (this.node != null) {
-				// Consistency check C09
-				// Verify if all states has probability declared
-				if (!declaredStates.containsAll(possibleStates)) {
-					throw new SomeStateUndeclaredException();
-				}
-			}
-			// Consistency check C09
-			// Verify if sum of all declared states' probability is 1
 			
-			// runtime probability bound check (on SSBN generation time)
-			if (!this.currentHeader.isSumEquals1()) {
-				// Debug.println("Testing cell's probability value's sum: " + currentHeader.getProbCellSum());
-				if (!Float.isNaN(this.currentHeader.getProbCellSum())) {
-					throw new InvalidProbabilityRangeException();
-				} else {
-					// Debug.println("=>NaN found!!!");
-				}
-			}
 		} else {
 			// Debug.println("COULD NOT FIND '['");
 			this.expected("[");
 		}
 	}
 
+	
+	/**
+	 * assignment_or_if ::= assignment | if_statement
+	 * 
+	 * @param upperIf: the upper if-clause or the tempTable (upper-most container).
+	 * Since assignment_or_if might start a nested if/else-clause, this parameter
+	 * helps us keep track where the new if/else-clause is contained.
+	 * @throws InvalidProbabilityRangeException
+	 * @throws TableFunctionMalformedException
+	 * @throws SomeStateUndeclaredException
+	 * @thwows NoDefaultDistributionDeclaredException
+	 * @throws InvalidConditionantException
+	 */
+	private void assignmentOrIf(INestedIfElseClauseContainer upperIf) 
+			throws InvalidProbabilityRangeException, 
+				   TableFunctionMalformedException,
+				   SomeStateUndeclaredException,
+				   NoDefaultDistributionDeclaredException,	// if-clause would eventually throw this
+				   InvalidConditionantException{			// if-clause would eventually throw this
+		
+		try {
+			if (this.tokenLookAhead() == this.kwcode[this.lookup("IF")]) {
+				// this is an if-clause
+				this.ifStatement(upperIf);
+				// an if-clause doesnt have do return something...
+			} else {
+				// since it is an assignment, we should check probability consistency as well
+				
+				// Consistency check C09
+				// Structures that allow us to Verify if all states has probability declared
+				List<Entity> declaredStates = new ArrayList<Entity>();
+				List<Entity> possibleStates = null;			
+				if (this.node != null) {
+					possibleStates = this.node.getPossibleValueListIncludingEntityInstances();
+				}
+				
+				this.assignment(declaredStates, possibleStates);
+				
+				if (this.node != null) {
+					// Consistency check C09
+					// Verify if all states has probability declared
+					if (!declaredStates.containsAll(possibleStates)) {
+						throw new SomeStateUndeclaredException();
+					}
+				}
+				
+				// Consistency check C09
+				// Verify if sum of all declared states' probability is 1
+				
+				// runtime probability bound check (on SSBN generation time)
+				if (!this.currentHeader.isSumEquals1()) {
+					// Debug.println("Testing cell's probability value's sum: " + currentHeader.getProbCellSum());
+					if (!Float.isNaN(this.currentHeader.getProbCellSum())) {
+						throw new InvalidProbabilityRangeException();
+					} else {
+						// Debug.println("=>NaN found!!!");
+					}
+				}
+			}
+		} catch (ArrayIndexOutOfBoundsException e) {
+			/* 
+			 * catching ArrayIndexOutOfBoundsException means that the keyword "IF"
+			 * was not found the list of keywords. It is an horrible implementation error!!
+			 */
+			throw new RuntimeException(this.resource.getString("FatalError"),e);
+		}
+		
+		// any other exception should not be treated by this scope (equivalent to "catch(Exception e){throw e}")
+		
+	}
+	
 	/**
 	 * assignment ::= ident "=" expression [ "," assignment ]*
 	 * 
 	 * declaredStates, possibleStates are used to verify if every single possible state for
 	 * RV has its probability declared.
-	 * 
+	 * @param declaredStates: states actually declared within this clause. It is used afterwards in order to check
+	 * if all states have probability declared.
+	 * @param possibleStates: list of all possible states a node (hosting the pseudocode) may have.
+	 * It is compared to declaredStates in order to ensure declardStates is a sublist of possibleStates.
 	 * returns the sum of all declared states' probability after this assignment recursion phase
 	 * 
 	 */
@@ -1040,7 +1153,7 @@ public class Compiler implements ICompiler {
 					possibleValue = possibleStates.get(this.node.getPossibleValueIndex(this.noCaseChangeValue));
 				} catch (Exception e) {
 					//throw new TableFunctionMalformedException(e.getMessage());
-					throw new TableFunctionMalformedException();
+					throw new TableFunctionMalformedException(e);
 				}
 				if (possibleValue == null) {
 					throw new TableFunctionMalformedException();
@@ -1295,7 +1408,7 @@ public class Compiler implements ICompiler {
 		IProbabilityValue ret = new SimpleProbabilityValue(Float.NaN);
 		if (this.currentHeader != null) {
 			for (TempTableProbabilityCell cell : this.currentHeader.getCellList()) {
-				 if (cell.getPossibleValue().getName().equals(noCaseChangeValue) ) {
+				 if (cell.getPossibleValue().getName().equalsIgnoreCase(value) ) {
 					 // Debug.println("\n => Variable value found: " + cell.getPossibleValue().getName());
 					 return cell.getProbability();
 					 
@@ -1370,6 +1483,33 @@ public class Compiler implements ICompiler {
 		else
 			token = kwcode[kw];
 		// Debug.println("\n!!!Value = "  + value);
+	}
+	
+	/**
+	 * Performs a scan and revert attributes (value, token, look, index, noCaseChangeValue)
+	 * @return: token of the scanned element
+	 */
+	private char tokenLookAhead () throws TableFunctionMalformedException {
+		int originalIndex = this.index;
+		char originalLook = this.look;
+		String originalValue = new String(this.value);
+		String originalNoCaseChangeValue = new String(this.noCaseChangeValue);
+		char originalToken = this.token;
+		char returnedToken = ' ';
+		
+		this.scan();
+		
+		returnedToken = this.token;	// this value will be the return value
+		
+		// revert global attributes
+		this.index = originalIndex;
+		this.look = originalLook;
+		this.value = originalValue;
+		this.noCaseChangeValue = originalNoCaseChangeValue;
+		this.token = originalToken;
+		
+		return returnedToken;
+		
 	}
 
 	/**
@@ -1674,26 +1814,21 @@ public class Compiler implements ICompiler {
 	}
 
 	/**
-	 * @return the cpt
+	 * @return the PotentialTable
 	 */
-	protected PotentialTable getCpt() {
+	protected PotentialTable getPotentialTable() {
 		return cpt;
 	}
 
 	/**
-	 * @param cpt the cpt to set
+	 * @param cpt the PotentialTable to set
 	 */
-	public void setCpt(PotentialTable cpt) {
+	public void setPotentialTable(PotentialTable cpt) {
 		this.cpt = cpt;
 	}
 	
 
-//	/**
-//	 * @return the tempTable
-//	 */
-//	public List<TempTableHeaderCell> getTempTable() {
-//		return tempTable;
-//	}
+
 
 	/**
 	 * @return the ssbnnode
@@ -1717,7 +1852,159 @@ public class Compiler implements ICompiler {
 	
 	// Some inner classes that might be useful for temporaly table creation (organize the table parsed from pseudocode)
 	
-	private class TempTableHeaderCell {
+	/**
+	 * Container of a if-else-clause
+	 */
+	private interface INestedIfElseClauseContainer {
+		/**
+		 * registers an if-clause (or else-clause) as an inner clause of this clause
+		 * @param nestedClause
+		 * @throws NullPointerException: if nestedClause is null
+		 */
+		public void addNestedClause(TempTableHeaderCell nestedClause);
+		
+		/**
+		 * Looks for the first if/else clause (performing deep scan - searches every nested if/else clause
+		 * as well) which the bExpression returns true.
+		 * 
+		 * @param valuesOnCPTColumn: a map which the key is a name of a parent node and
+		 * the value is its current possible values to be evaluated.
+		 * For example, if we want to evalueate an expression when for a node "Node(!ST0)" we
+		 * have parents Parent1(!ST0,!Z0), Parent1(!ST0,!Z1), Parent2(!ST0,!T0), and Parent2(!ST0,!T0)
+		 * with values True, False, Alpha, Beta  respectively, the map should be:
+		 * 		entry0, (key:"Parent1", values: {True, False});
+		 * 		entry1, (key:"Parent2", values: {Alpha, Beta});
+		 * 
+		 * @return: the first if/else clause which returned true.
+		 */
+		public TempTableHeaderCell getFirstTrueClause(Map<String, List<EntityAndArguments>> valuesOnCPTColumn) ;
+		
+		
+		/**
+		 * Tests if this container has no nested clauses.
+		 * @return true if this if/else clause container has 0 nested elements
+		 */
+		public boolean isEmptyNestedClauses ();
+		
+		/**
+		 * @return the clauses
+		 */
+		public List<TempTableHeaderCell> getNestedClauses();
+		
+		/**
+		 * 
+		 * @return the clause this object is contained within
+		 */
+		public INestedIfElseClauseContainer getUpperClause();
+		
+		
+		/**
+		 * sets the clause this object is contained within
+		 * @param upper
+		 */
+		public void setUpperClause(INestedIfElseClauseContainer upper);
+		
+		
+	}
+	
+	
+	private class TempTable implements INestedIfElseClauseContainer{
+
+		private List<TempTableHeaderCell> clauses = null;
+		
+		/**
+		 * Represents the temporary CPT table (a list of if-else clauses)
+		 */
+		public TempTable() {
+			super();
+			this.clauses = new ArrayList<TempTableHeaderCell>();
+		}
+
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.INestedIfElseClauseContainer#addNestedClause(unbbayes.prs.mebn.compiler.Compiler.TempTableHeaderCell)
+		 */
+		public void addNestedClause(TempTableHeaderCell nestedClause) {
+			this.clauses.add(nestedClause);
+			nestedClause.setUpperClause(this);
+		}
+		
+		
+		
+		/**
+		 * @return the clauses
+		 */
+		public List<TempTableHeaderCell> getNestedClauses() {
+			return clauses;
+		}
+
+		/**
+		 * Tests if this table is empty
+		 * @return true if this table has 0 elements
+		 */
+		public boolean isEmptyNestedClauses () {
+			// clauses are asserted not to be null (because we do not have a setter for clauses)
+			return (this.clauses.size() == 0);
+		}
+		
+		/**
+		 * Runs recursively until we get the default distribution of the nested if/else clause's tree
+		 * @return: the default clause
+		 */
+		public TempTableHeaderCell getDefaultClause() {
+			// clauses are asserted not to be null (because we do not have a setter for clauses)
+			
+			// assert clauses are not empty
+			if (this.isEmptyNestedClauses()){
+				return null;
+			}				
+			
+			return this.getNestedClauses().get(this.getNestedClauses().size() - 1).getDefaultClause();
+		}
+
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.INestedIfElseClauseContainer#getFirstTrueClause(java.util.Map)
+		 */
+		public TempTableHeaderCell getFirstTrueClause(
+				Map<String, List<EntityAndArguments>> valuesOnCPTColumn) {
+			
+			// initial assertion
+			if (this.isEmptyNestedClauses()) {
+				// actually, this is an error, since at least a default distribution should be present
+				return null;
+			}
+			
+			for (TempTableHeaderCell clause : this.getNestedClauses()) {
+				if (clause.evaluateBooleanExpressionTree(valuesOnCPTColumn)) {
+					return clause.getFirstTrueClause(valuesOnCPTColumn);
+				}
+			}
+			
+			// no clause was found... This is an error, since at least the default distro should return true...
+			return null;
+		}
+
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.INestedIfElseClauseContainer#getUpperClause()
+		 */
+		public INestedIfElseClauseContainer getUpperClause() {
+			// No  upper clause should exist to temporary table (the temporary table should be the upper-most)
+			return null;
+		}
+
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.INestedIfElseClauseContainer#setUpperClause(unbbayes.prs.mebn.compiler.Compiler.TempTableHeaderCell)
+		 */
+		public void setUpperClause(INestedIfElseClauseContainer upper) {
+			// No  upper clause should exist to temporary table (the temporary table should be the upper-most)
+			// do nothing
+		}
+		
+		
+		
+		
+	}
+	
+	private class TempTableHeaderCell implements INestedIfElseClauseContainer {
 		private ICompilerBooleanValue booleanExpressionTree = null; // core of the if statement
 		private List<TempTableHeaderParent> parents = null;	// this is also the leaf of boolean expression tree
 
@@ -1734,10 +2021,16 @@ public class Compiler implements ICompiler {
 		
 		SSBNNode currentSSBNNode = null;
 		
+		private List<TempTableHeaderCell> nestedIfs = null;
+		
+		private INestedIfElseClauseContainer upperContainer = null;
+		
 		/**
 		 * Represents an entry for temporary table header (parents and their expected single values
-		 * at that table entry/collumn)
-		 * @param parents
+		 * at that table entry/collumn).
+		 * It can directly represent an if-clause (varsetname, any|all, bExpression, values, and nested ifs)
+		 * Since an if-clause may be nested, it has a list of nested if-clauses
+		 * @param parents: entries of an if-clause (list of (parent = value) pairs)
 		 * @param isAny
 		 * @param isDefault
 		 */
@@ -1748,7 +2041,13 @@ public class Compiler implements ICompiler {
 			this.cellList = new ArrayList<TempTableProbabilityCell>();
 			this.validParentSetCount = 0;
 			this.currentSSBNNode = currentSSBNNode;
+			this.nestedIfs = new ArrayList<TempTableHeaderCell>();
 		}
+		/**
+		 * It Gets entries of boolean expression (a pair of Node and its expected value declared
+		 * within a boolean expression inside a if clause)
+		 * @return List of expected parents within if-clause
+		 */		
 		public List<TempTableHeaderParent> getParents() {
 			return parents;
 		}
@@ -1846,6 +2145,18 @@ public class Compiler implements ICompiler {
 		}
 		
 		
+		/**
+		 * @return the nestedIfs
+		 */
+		public List<TempTableHeaderCell> getNestedClauses() {
+			return nestedIfs;
+		}
+		/**
+		 * @param nestedIfs the nestedIfs to set
+		 */
+		public void setNestedIfs(List<TempTableHeaderCell> nestedIfs) {
+			this.nestedIfs = nestedIfs;
+		}
 		public void addCell(Entity possibleValue , IProbabilityValue probability) {
 			this.addCell(new TempTableProbabilityCell(possibleValue, probability));
 		}
@@ -1933,7 +2244,7 @@ public class Compiler implements ICompiler {
 		 * 		entry1, (key:"Parent2", values: {Alpha, Beta});
 		 * @return: if the map is as follows:
 		 * 		entry0, (key:"Parent1", values: {True, False});
-		 * 		entry1, (key:"Parent2", values: {Alpha, Beta});evaluated boolean value obtained by combining each values as follows:
+		 * 		entry1, (key:"Parent2", values: {Alpha, Beta});
 		 * Then, the result would be:
 		 * - if this object was once declared as "ANY" (isAny() == true):
 		 * 			returns: evaluation(True,Alpha) || evaluation(True,Beta) || evaluation(False,Alpha) || evaluation(False,Beta)
@@ -2057,8 +2368,8 @@ public class Compiler implements ICompiler {
 				for (OVInstance argParent : args) {
 					// if it has same OV as ssbnnode, then should be the same entity
 					for (OVInstance argChild : this.currentSSBNNode.getArguments()) {
-						if (argChild.getOv().getName().equals(argParent.getOv().getName())) {
-							if (!argChild.getEntity().getInstanceName().equals(argParent.getEntity().getInstanceName())) {
+						if (argChild.getOv().getName().equalsIgnoreCase(argParent.getOv().getName())) {
+							if (!argChild.getEntity().getInstanceName().equalsIgnoreCase(argParent.getEntity().getInstanceName())) {
 								return false;
 							}
 						}
@@ -2068,8 +2379,8 @@ public class Compiler implements ICompiler {
 					// try all other leaves
 					for (OVInstance argleaf : args) {
 						for (OVInstance argothers : leaves.get(i).getCurrentEntityAndArguments().arguments) {
-							if(argleaf.getOv().getName().equals(argothers.getOv().getName())) {
-								if (!argleaf.getEntity().getInstanceName().equals(argothers.getEntity().getInstanceName()) ) {
+							if(argleaf.getOv().getName().equalsIgnoreCase(argothers.getOv().getName())) {
+								if (!argleaf.getEntity().getInstanceName().equalsIgnoreCase(argothers.getEntity().getInstanceName()) ) {
 									// if they are the same OV but different instances of Entities... then false
 									return false;
 								}
@@ -2120,6 +2431,87 @@ public class Compiler implements ICompiler {
 			     }
 			}
 		}
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.INestedIfElseClauseContainer#addNestedClause(unbbayes.prs.mebn.compiler.Compiler.TempTableHeaderCell)
+		 */
+		public void addNestedClause(TempTableHeaderCell nestedClause) {
+			this.getNestedClauses().add(nestedClause);
+			nestedClause.setUpperClause(this);
+		}
+		
+		/**
+		 * Searches recursively for the most default clause of nested ifs.
+		 * If this object has no nested children, it tests if
+		 * the object itself is a default object (checks isDefault attribute).
+		 * It assumes the default child is always the last element of each
+		 * nested if-clause (i.e. the last else-clause)
+		 * @return: the else clause of all else clauses. Null if no default
+		 * clause is found...
+		 */
+		public TempTableHeaderCell getDefaultClause() {
+			if (this.isEmptyNestedClauses()) {
+				if (this.isDefault()) {
+					return this;
+				} else {
+					// if this code is reached, this object should have been returned, but its not a default clause...
+					return null;
+				}
+			} else {
+				// search for a default clause recursively by looking only the last nested if-clause
+				// OBS. the last nested if-clause should be the default else-clause 
+				return this.getNestedClauses().get(this.getNestedClauses().size() - 1).getDefaultClause();
+			}
+			
+		}
+		
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.INestedIfElseClauseContainer#getFirstTrueClause(java.util.Map)
+		 */
+		public TempTableHeaderCell getFirstTrueClause(
+				Map<String, List<EntityAndArguments>> valuesOnCPTColumn) {
+			
+			if (this.isEmptyNestedClauses()) {
+				// if there is no nested if/else clauses, then this object itself is the first true clause.
+				return this;
+			}
+			
+			for (TempTableHeaderCell nested : this.getNestedClauses()) {
+				if (nested.evaluateBooleanExpressionTree(valuesOnCPTColumn)) {
+					// found something returning true
+					// look deep inside recursively.
+					return nested.getFirstTrueClause(valuesOnCPTColumn);
+				}
+			}
+			
+			// since else-clause is mandatory, the code below should never be reached
+			
+			return null;
+		}
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.INestedIfElseClauseContainer#isEmptyNestedClauses()
+		 */
+		public boolean isEmptyNestedClauses() {
+			if (this.getNestedClauses() == null) {
+				return true;
+			}
+			return this.getNestedClauses().size() == 0;
+		}
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.INestedIfElseClauseContainer#getUpperClause()
+		 */
+		public INestedIfElseClauseContainer getUpperClause() {
+			return this.upperContainer;
+		}
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.INestedIfElseClauseContainer#setUpperClause(unbbayes.prs.mebn.compiler.Compiler.TempTableHeaderCell)
+		 */
+		public void setUpperClause(INestedIfElseClauseContainer upper) {
+			this.upperContainer = upper;
+		}
+		
+		
+		
+		
 		
 		/* (non-Javadoc)
 		 * @see java.lang.Object#equals(java.lang.Object)
@@ -2137,6 +2529,8 @@ public class Compiler implements ICompiler {
 			return false;
 		}
 		*/
+		
+		
 		
 		
 	}
@@ -2327,8 +2721,8 @@ public class Compiler implements ICompiler {
 		public boolean equals(Object arg0) {
 			if (arg0 instanceof TempTableHeaderParent) {
 				TempTableHeaderParent arg = (TempTableHeaderParent)arg0;
-				if (this.parent.getName().equals(arg.getParent().getName())) {
-					if (this.value.getName().equals(arg.getValue().getName())) {
+				if (this.parent.getName().equalsIgnoreCase(arg.getParent().getName())) {
+					if (this.value.getName().equalsIgnoreCase(arg.getValue().getName())) {
 						return true;
 					} else {
 						return false;
@@ -2352,7 +2746,7 @@ public class Compiler implements ICompiler {
 				return false;
 			}
 			// if entities have the same name, they are equals.
-			if (this.getCurrentEvaluation().getName().equals(this.getValue().getName())) {
+			if (this.getCurrentEvaluation().getName().equalsIgnoreCase(this.getValue().getName())) {
 				return true;
 			}
 			return false;
@@ -2641,17 +3035,27 @@ public class Compiler implements ICompiler {
 
 		public float getProbability() throws InvalidProbabilityRangeException {
 			
-			
 			if (this.currentHeader == null) {
 				return Float.NaN;
 			}
 			if (getSSBNNode() == null) {
 				return Float.NaN;
 			}
-			if (!this.varSetName.equals(this.currentHeader.getVarsetname())) {
-				return 0;
+			
+			// look for the upper if clauses which has matching varsetname
+			TempTableHeaderCell matchingHeader = this.currentHeader;
+			while (!matchingHeader.getVarsetname().equalsIgnoreCase(this.varSetName)) {
+				try{
+					matchingHeader = (TempTableHeaderCell)matchingHeader.getUpperClause();
+				} catch (ClassCastException e) {
+					// we found a container other than TempTableHeaderCell
+					// probably, it is a TempTable
+					// so, there was no perfect match for varsetname...
+					return 0;
+				}
 			}
 			
+			// if we reach this code, we found a perfect match for varsetname
 			return this.currentHeader.getValidParentSetCount();
 		}
 
@@ -2734,6 +3138,13 @@ public class Compiler implements ICompiler {
 			this.entity = entity;
 			this.arguments = arguments;
 		}
+	}
+
+	/**
+	 * @return the tempTable
+	 */
+	protected TempTable getTempTable() {
+		return tempTable;
 	}
 
 }
