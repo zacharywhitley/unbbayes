@@ -431,7 +431,15 @@ public class Compiler implements ICompiler {
 		// extracting base values
 		this.cpt = this.ssbnnode.getProbNode().getPotentialTable();
 		
-		ArrayList<SSBNNode> parents = new ArrayList<SSBNNode>(this.ssbnnode.getParents());
+		ArrayList<SSBNNode> parents = null;
+		try {
+			parents = new ArrayList<SSBNNode>(this.ssbnnode.getParents());
+		} catch (NullPointerException e) {
+			parents = new ArrayList<SSBNNode>();
+		} catch (Exception e) {
+			throw new InconsistentTableSemanticsException(e);
+		}
+		
 		
 		ArrayList<Entity> possibleValues = new ArrayList<Entity>(this.ssbnnode.getActualValues());
 		if (( this.ssbnnode.getProbNode().getStatesSize() != possibleValues.size()  )) {
