@@ -35,6 +35,7 @@ import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.compiler.exception.InconsistentTableSemanticsException;
+import unbbayes.prs.mebn.compiler.exception.InstanceException;
 import unbbayes.prs.mebn.compiler.exception.InvalidConditionantException;
 import unbbayes.prs.mebn.compiler.exception.InvalidProbabilityRangeException;
 import unbbayes.prs.mebn.compiler.exception.NoDefaultDistributionDeclaredException;
@@ -398,7 +399,8 @@ public class Compiler implements ICompiler {
 	 * @return GENERATED potential table
 	 */
 	protected PotentialTable getCPT() throws InconsistentTableSemanticsException,
-											InvalidProbabilityRangeException{
+											InvalidProbabilityRangeException,
+											InstanceException{
 		
 		// initial tests
 		if (this.ssbnnode == null) {
@@ -424,8 +426,11 @@ public class Compiler implements ICompiler {
 		// initialization
 		
 		// eliminates redundancies on table's boolean expression
-		for (TempTableHeaderCell header : this.tempTable.getNestedClauses()) {
-			header.cleanUpByVarSetName(this.getSSBNNode());
+		try {
+			this.tempTable.cleanUpKnownValues(this.getSSBNNode());
+		} catch (NullPointerException e) {
+			// The SSBNNode was null...
+			throw new InstanceException(e);
 		}
 		
 		// extracting base values
@@ -1913,6 +1918,14 @@ public class Compiler implements ICompiler {
 		public void setUpperClause(INestedIfElseClauseContainer upper);
 		
 		
+		/**
+		 * Initializes the "isKnownValue" attributes of TempTableHeaderParent objects
+		 * by recursively calling this method for all nested causes.
+		 * @param ssbnnode
+		 * @see TempTableHeaderParent
+		 * @throws NullPointerException if ssbnnode is null
+		 */
+		public void cleanUpKnownValues(SSBNNode ssbnnode);
 	}
 	
 	
@@ -2005,6 +2018,16 @@ public class Compiler implements ICompiler {
 		public void setUpperClause(INestedIfElseClauseContainer upper) {
 			// No  upper clause should exist to temporary table (the temporary table should be the upper-most)
 			// do nothing
+		}
+
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.INestedIfElseClauseContainer#cleanUpKnownValues(unbbayes.prs.mebn.ssbn.SSBNNode)
+		 */
+		public void cleanUpKnownValues(SSBNNode ssbnnode) {
+			// no try-catch for NullPointerException should be necessary, since allways this.getNestedClauses != null
+			for (TempTableHeaderCell clause : this.getNestedClauses()) {
+				clause.cleanUpKnownValues(ssbnnode);
+			}
 		}
 		
 		
@@ -2409,7 +2432,7 @@ public class Compiler implements ICompiler {
 		 * if this SSBNNode is really the expected one. This argument is used by this method
 		 * in order to obtain the "similar" parent set at a given moment.
 		 */
-		public void cleanUpByVarSetName(SSBNNode baseSSBNNode) {
+		private void cleanUpByVarSetName(SSBNNode baseSSBNNode) {
 			
 			// no cleanup is necessary when this is a default distro - no boolean evaluation is present
 			if (this.isDefault()) {
@@ -2515,6 +2538,22 @@ public class Compiler implements ICompiler {
 		 */
 		public void setUpperClause(INestedIfElseClauseContainer upper) {
 			this.upperContainer = upper;
+		}
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.INestedIfElseClauseContainer#cleanUpKnownValues(unbbayes.prs.mebn.ssbn.SSBNNode)
+		 */
+		public void cleanUpKnownValues(SSBNNode ssbnnode) {
+			// clean up myself
+			this.cleanUpByVarSetName(ssbnnode);
+			
+			// clean up my nested children recursively
+			try {
+				for (TempTableHeaderCell clause : this.getNestedClauses()) {
+					clause.cleanUpKnownValues(ssbnnode);
+				}
+			} catch (NullPointerException e) {
+				// there were no nested clauses. It is not an error. Do nothing
+			}
 		}
 		
 		
@@ -3064,7 +3103,7 @@ public class Compiler implements ICompiler {
 			}
 			
 			// if we reach this code, we found a perfect match for varsetname
-			return this.currentHeader.getValidParentSetCount();
+			return matchingHeader.getValidParentSetCount();
 		}
 
 		

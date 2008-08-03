@@ -542,6 +542,119 @@ public class CompilerTest extends TestCase {
 		
 	}
 	
+	
+//	public void testTableGenerationNestedIf() {
+//		ResidentNode distFromOwn = this.mebn.getDomainResidentNode("DistFromOwn");
+//		
+//		OrdinaryVariable st = distFromOwn.getOrdinaryVariableByName("st");
+//		OrdinaryVariable tprev = distFromOwn.getMFrag().getOrdinaryVariableByName("tPrev");
+//		OrdinaryVariable t = distFromOwn.getOrdinaryVariableByName("t");
+//		
+//		OVInstance st0 = OVInstance.getInstance(st, "ST0", st.getValueType());
+//		OVInstance st1 = OVInstance.getInstance(st, "ST1", st.getValueType());
+//		OVInstance t0 = OVInstance.getInstance(tprev, "T0", tprev.getValueType());
+//		OVInstance t1 = OVInstance.getInstance(t, "T1", t.getValueType());
+//		OVInstance t2 = OVInstance.getInstance(t, "T2", t.getValueType());
+//		
+//		ProbabilisticNetwork net = new ProbabilisticNetwork("TestGenerateCPT");
+//		
+//		SSBNNode distFromOwn_ST0_T0 = SSBNNode.getInstance(net, distFromOwn);
+//		try {
+//			distFromOwn_ST0_T0.addArgument(st0);
+//			distFromOwn_ST0_T0.addArgument(t0);
+//			List<Entity> valList = new ArrayList<Entity>(distFromOwn_ST0_T0.getActualValues());
+//			distFromOwn_ST0_T0.setNodeAsFinding(valList.get(0));
+//			
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			fail(e.getMessage());
+//		}
+//		
+//		SSBNNode distFromOwn_ST0_T1 = SSBNNode.getInstance(net, distFromOwn);
+//		try {
+//			distFromOwn_ST0_T1.addArgument(st0);
+//			distFromOwn_ST0_T1.addArgument(t1);
+//			distFromOwn_ST0_T1.addParent(distFromOwn_ST0_T0, false);
+//			distFromOwn_ST0_T1.getProbNode().setName("ST0T1");
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			fail(e.getMessage());
+//		}
+//		
+//		SSBNNode distFromOwn_ST1_T0 = SSBNNode.getInstance(net, distFromOwn);
+//		try {
+//			distFromOwn_ST1_T0.addArgument(st1);
+//			distFromOwn_ST1_T0.addArgument(t0);
+//			distFromOwn_ST0_T1.addParent(distFromOwn_ST1_T0, false);
+//			distFromOwn_ST0_T1.getProbNode().setName("ST1T0");
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			fail(e.getMessage());
+//		}
+//		
+//		SSBNNode distFromOwn_ST0_T1v2 = SSBNNode.getInstance(net, distFromOwn);
+//		try {
+//			distFromOwn_ST0_T1v2.addArgument(st0);
+//			distFromOwn_ST0_T1v2.addArgument(t1);
+//			distFromOwn_ST0_T1.addParent(distFromOwn_ST0_T1v2, false);
+//			distFromOwn_ST0_T1v2.getProbNode().setName("ST0T2");
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			fail(e.getMessage());
+//		}
+//		
+//		
+//		Compiler compiler = new Compiler(distFromOwn_ST0_T1.getResident(),distFromOwn_ST0_T1);
+//		compiler.init(distFromOwn_ST0_T1);
+//		
+////		Compiler compiler = new Compiler(distFromOwn_ST0_T1v2.getResident(),distFromOwn_ST0_T1v2);
+////		compiler.init(distFromOwn_ST0_T1v2);
+//		
+//		
+//		
+//		PotentialTable table = null;
+//		
+//		String code = 
+//		"if any st have ( DistFromOwn = OutOfRange ) [" +
+//				"if all st have (~ DistFromOwn = OutOfRange) " +
+//				"[ OutOfRange = 0 , TorpedoRange = 0 , Phaser2Range = .0 , Phaser1Range = .0 , " +
+//				"PulseCanonRange = .0 , Absurd = 1 ]" +
+//				" else " +
+//				"[ OutOfRange = MIN(0.3 * CARDINALITY(st); .99) , TorpedoRange = 1 - OutOfRange , Phaser2Range = .0 , Phaser1Range = .0 , " +
+//				"PulseCanonRange = .0 , Absurd = 0 ]" +
+//		"] else [" +
+//				"if all st have (~ DistFromOwn = OutOfRange) " +
+//				"[ PulseCanonRange = MIN(0.2 * CARDINALITY(st); .99) , Phaser2Range = 1 - PulseCanonRange , TorpedoRange = .0 , Phaser1Range = .0 , " +
+//				"OutOfRange = .0 , Absurd = 0 ]" +
+//				" else " +
+//				"[ OutOfRange = MIN(0.01 ; .99) , Phaser1Range = 0 , Phaser2Range = .0 , TorpedoRange = .0 , " +
+//				"PulseCanonRange = .0 , Absurd = 1 - OutOfRange ]" +
+//		"]";
+//		    
+//		try {
+//			compiler.parse(code);		
+//		} catch (MEBNException e) {
+//			e.printStackTrace();
+//			System.out.println(code.substring(compiler.getIndex() - 10));
+//			fail(e.getMessage() + " at [" +  compiler.getIndex() + "]");
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			fail(e.getMessage());
+//		}
+//		try {
+//			table = compiler.getCPT();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			fail(e.getMessage());
+//		}
+//		
+//		
+//		GUIPotentialTable guiCPT = new GUIPotentialTable(table);
+//		guiCPT.showTable("VAI FUNCIONAR???!!");
+//		
+//		while(true);
+//	}
+	
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.compiler.Compiler#main(java.lang.String[])}.
 	 */

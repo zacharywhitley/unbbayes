@@ -51,6 +51,7 @@ public class Resources_pt extends ListResourceBundle {
 		{"SomeStateUndeclared","Todos os estados deste no deve ter uma probabilidade associada."},
 		{"UnexpectedTokenFound","Um termo inesperado foi encontrado."},
 		{"TableUndeclared","A tabela não está declarada."},
-		{"FatalError","Erro Fatal: O compilador do pseudocodigo da CPT foi mal implementada."}
+		{"FatalError","Erro Fatal: O compilador do pseudocódigo da CPT foi mal implementada."},
+		{"SSBNInstanceFailure","O gerador de SSBN falhou na instanciação de nós."}
 	};
 }

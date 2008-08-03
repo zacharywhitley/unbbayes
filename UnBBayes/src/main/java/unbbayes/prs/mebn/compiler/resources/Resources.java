@@ -51,7 +51,7 @@ public class Resources extends ListResourceBundle {
 		{"SomeStateUndeclared","All possible states of this node must have an associated probability."},
 		{"UnexpectedTokenFound","Unexpected token found."},
 		{"TableUndeclared","A table was not declared."},
-		{"FatalError","Fatal Error: CPT Pseudocode Compiler was badly implemented."}
-		
+		{"FatalError","Fatal Error: CPT Pseudocode Compiler was badly implemented."},
+		{"SSBNInstanceFailure","SSBN generation failed to properly create nodes."}
 	};
 }
