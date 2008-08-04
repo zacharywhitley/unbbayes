@@ -1,0 +1,142 @@
+% Cabeçalho UBF
+Version=0.03
+PrOwl="Licitacao_Indices01_mod.owl"
+
+% Declaração de MTheory - UBF
+MTheory=NovaMEBN
+NextMFrag=4
+NextResident=8
+NextInput=5
+NextContext=4
+NextEntity=1
+
+% Declaração de MFrags e nós UBF
+
+% MFrag
+MFrag=ExigenciaNaHabilitacao_MF
+NextOrdinaryVar=3
+
+% Nós Residentes
+
+
+Node=ValorMinimoDoIndice
+Type=DomainResidentNode
+Position=161.0,252.0
+Size=100,20
+
+Node=TipoDeIndice
+Type=DomainResidentNode
+Position=390.0,255.0
+Size=100,20
+
+Node=ExigeExperienciaEmUnicoContrato
+Type=DomainResidentNode
+Position=287.0,334.0
+Size=100,20
+
+Node=IndiceUtilizadoNaLicitacao
+Type=DomainResidentNode
+Position=551.0,295.0
+Size=100,20
+
+% Nós de Contexto
+
+
+Node=CX1
+Type=ContextNode
+Position=516.0,69.0
+Size=100,20
+
+% Variáveis Ordinárias
+
+
+Node=lic
+Type=OrdinalVar
+Position=342.0,72.0
+Size=100,20
+
+Node=ind
+Type=OrdinalVar
+Position=172.0,74.0
+Size=100,20
+
+% MFrag
+MFrag=DirecionamentoPorIndicies_MF
+NextOrdinaryVar=3
+
+% Nós Residentes
+
+
+Node=DirecionamentoDaLicitacaoPorIndice
+Type=DomainResidentNode
+Position=345.0,376.0
+Size=100,20
+
+% nós Input
+
+
+Node=IX1
+Type=GenerativeInputNode
+Position=168.0,254.0
+Size=100,20
+
+Node=IX2
+Type=GenerativeInputNode
+Position=488.0,263.0
+Size=100,20
+
+% Nós de Contexto
+
+
+Node=CX2
+Type=ContextNode
+Position=450.0,56.0
+Size=100,20
+
+% Variáveis Ordinárias
+
+
+Node=ind
+Type=OrdinalVar
+Position=144.0,57.0
+Size=100,20
+
+Node=lic
+Type=OrdinalVar
+Position=287.0,57.0
+Size=100,20
+
+% MFrag
+MFrag=DirecionamentoLicitacao_MF
+NextOrdinaryVar=2
+
+% Nós Residentes
+
+
+Node=DirecionamentoDaLicitacao
+Type=DomainResidentNode
+Position=294.0,285.0
+Size=100,20
+
+% nós Input
+
+
+Node=IX3
+Type=GenerativeInputNode
+Position=183.0,183.0
+Size=100,20
+
+Node=IX4
+Type=GenerativeInputNode
+Position=407.0,180.0
+Size=100,20
+
+% Variáveis Ordinárias
+
+
+Node=lic
+Type=OrdinalVar
+Position=282.0,77.0
+Size=100,20
+
+% Instâncias de Entidades Objetos
