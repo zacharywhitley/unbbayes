@@ -1,6 +1,6 @@
 % Cabeçalho UBF
 Version=0.03
-PrOwl="Licitacao08.owl"
+PrOwl="Licitacao.owl"
 
 % Declaração de MTheory - UBF
 MTheory=AvaliacaoDeLicitacoes

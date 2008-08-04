@@ -1,13 +1,13 @@
 % Cabeçalho UBF
 Version=0.03
-PrOwl="Licitacao_Indices01.owl"
+PrOwl="Licitacao_Indices.owl"
 
 % Declaração de MTheory - UBF
-MTheory=NovaMEBN
+MTheory=DirecionamentoNaLicitacao_MT
 NextMFrag=4
-NextResident=7
+NextResident=8
 NextInput=5
-NextContext=3
+NextContext=4
 NextEntity=1
 
 % Declaração de MFrags e nós UBF
@@ -54,7 +54,7 @@ NextOrdinaryVar=3
 
 Node=DirecionamentoDaLicitacaoPorIndice
 Type=DomainResidentNode
-Position=303.0,313.0
+Position=345.0,376.0
 Size=35,35
 
 % nós Input
@@ -62,12 +62,12 @@ Size=35,35
 
 Node=IX1
 Type=GenerativeInputNode
-Position=224.0,194.0
+Position=168.0,254.0
 Size=35,35
 
 Node=IX2
 Type=GenerativeInputNode
-Position=391.0,191.0
+Position=488.0,263.0
 Size=35,35
 
 % Nós de Contexto
@@ -98,24 +98,24 @@ NextOrdinaryVar=3
 % Nós Residentes
 
 
-Node=ValorMinimoDoIndice
+Node=IndiceUtilizadoNaLicitacao
 Type=DomainResidentNode
-Position=202.0,234.0
+Position=351.0,173.0
 Size=35,35
 
 Node=TipoDeIndice
 Type=DomainResidentNode
-Position=379.0,236.0
+Position=449.0,212.0
 Size=35,35
 
 Node=ExigeExperienciaEmUnicoContrato
 Type=DomainResidentNode
-Position=315.0,334.0
+Position=357.0,257.0
 Size=35,35
 
-Node=IndiceExigidoNaLicitacao
+Node=ValorMinimoDoIndice
 Type=DomainResidentNode
-Position=558.0,332.0
+Position=262.0,210.0
 Size=35,35
 
 % Nós de Contexto
@@ -123,7 +123,7 @@ Size=35,35
 
 Node=CX1
 Type=ContextNode
-Position=516.0,71.0
+Position=507.0,71.0
 Size=35,35
 
 % Variáveis Ordinárias
@@ -136,7 +136,7 @@ Size=35,35
 
 Node=ind
 Type=OrdinalVar
-Position=172.0,74.0
+Position=199.0,69.0
 Size=35,35
 
 % Instâncias de Entidades Objetos
