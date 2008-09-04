@@ -66,6 +66,11 @@ public class UtilityTable extends PotentialTable implements java.io.Serializable
         variaveis.remove(index);
     }
 
+	@Override
+	public void removeVariable(Node variable, boolean normalize) {
+		removeVariable(variable); 
+	}
+    
     protected void argMax(int control, int index, int coord[]) {
         if (control == -1) {
             int linearCoordToKill = getLinearCoord(coord);
@@ -83,4 +88,5 @@ public class UtilityTable extends PotentialTable implements java.io.Serializable
             argMax(control-1, index, coord);
         }
     }
+
 }

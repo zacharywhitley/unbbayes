@@ -193,34 +193,34 @@ public class Network implements Graph{
 	}
 
 	/**
-	 *  Remove arco do grafo.
+	 * Remove edge of the network
 	 *
-	 *@param  elemento  arco a ser removido
+	 *@param  elemento  edge to be removed
 	 */
 	private void removeArco(Edge elemento) {
 	    Node auxNo;
-	    ITabledVariable auxVTab;
-	    PotentialTable auxTP;
+	    ITabledVariable auxTabledVariable;
+	    PotentialTable auxPotentialTable;
 	
 	    edgeList.remove(elemento);
 	
 	    auxNo = elemento.getDestinationNode();
 	    if (auxNo instanceof ITabledVariable) {
-	        auxVTab = (ITabledVariable)auxNo;
-	        auxTP = auxVTab.getPotentialTable();
-	        auxTP.removeVariable(elemento.getOriginNode());
+	        auxTabledVariable = (ITabledVariable)auxNo;
+	        auxPotentialTable = auxTabledVariable.getPotentialTable();
+	        auxPotentialTable.removeVariable(elemento.getOriginNode(), true);
 	    }
 	}
 
 	/**
-	 *  Limpa a lista de n�s.
+	 *  Clean the node list
 	 */
 	protected void clearNodes() {
 	    nodeList.clear();
 	}
 
 	/**
-	 *  Limpa a lista de edgeList.
+	 *  Clean the edge list
 	 */
 	protected void clearEdges() {
 	    edgeList.clear();

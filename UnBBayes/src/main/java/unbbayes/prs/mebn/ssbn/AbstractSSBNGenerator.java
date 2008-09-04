@@ -1,3 +1,24 @@
+ /*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 package unbbayes.prs.mebn.ssbn;
 
 import java.util.ArrayList;
@@ -28,6 +49,7 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.util.Debug;
 
 /**
+ * General methods for implementation of the ssbn generator algorithm. 
  * 
  * @author Laecio Santos (laecio@gmail.com)
  * @author Shou Matsumoto (cardialfly@gmail.com)
@@ -99,7 +121,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 	}
 	
 	/**
-	 * Generate the cpt for the ssbnNode
+	 * Generate the CPT for the ssbnNode
 	 * 
 	 * out-assertives:
 	 * - The CPT of the probabilistic node referenced by the ssbnNode is setted
@@ -171,7 +193,10 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 		
 		for(SSBNNode node: nodesToDelete){
 			logManager.appendln("...Removing node " + node.getName());
+			
 			node.delete(); 
+			
+			
 			listSSBNNode.remove(node); 
 		}
 		

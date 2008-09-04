@@ -68,7 +68,42 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 		variaveis.remove(index);
 	}
 
-
+	/**
+	 * Remove the variable of the table. 
+	 * 
+	 * Note: 
+	 * Substitute the previous method removeVariable(Node variable)
+	 *
+	 * @param variable  Variable to be removed
+	 * @param normalize True if is to normalize the cpt after the node remotion
+	 */	
+	public void removeVariable(Node variable, boolean normalize){
+		calcularFatores();
+		int index = variaveis.indexOf(variable);
+		if (variable.getType() == Node.DECISION_NODE_TYPE) {
+			DecisionNode decision = (DecisionNode) variable;
+			int statesSize = variable.getStatesSize();
+			if (decision.hasEvidence()) {
+				finding(variaveis.size()-1, index, new int[variaveis.size()], decision.getEvidence());
+			} else {
+				sum(index);
+				for (int i = dados.size-1; i >= 0; i--) {
+					dados.data[i] = dados.data[i] / statesSize;
+				}
+			}
+		} else {
+			sum(index);
+			if(normalize){
+				int statesSize = variable.getStatesSize();
+				for (int i = dados.size-1; i >= 0; i--) {
+					dados.data[i] = dados.data[i] / statesSize;
+				}
+			}
+		}
+		variableModified();
+		variaveis.remove(index);
+	}
+	
 	/**
 	 *  Verifica a consist�ncia das probabilidades da tabela.
 	 *

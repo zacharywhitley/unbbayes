@@ -63,7 +63,8 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 
 	/**
 	 * Fatores utilizados para converter coordenadas lineares em
-	 * multidimensionais.
+	 * multidimensionais. Armazena a posição onde começa a tabela de cada
+	 * variável. 
 	 */
 	protected int[] fatores;
 
@@ -264,7 +265,17 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	 *            Variavel a ser retirada da tabela.
 	 */
 	public abstract void removeVariable(Node variavel);
-
+	
+	/**
+	 * Remove the variable of the table. 
+	 * 
+	 * Note: 
+	 * Substitute the previous method removeVariable(Node variable)
+	 *
+	 * @param variable  Variable to be removed
+	 * @param normalize True if is to normalize the cpt after the node remotion
+	 */	
+	public abstract void removeVariable(Node variable, boolean normalize); 
 	/**
 	 * Returns a new instance of a PotentialTable of the current implemented
 	 * sub-class.
