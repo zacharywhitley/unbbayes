@@ -1605,10 +1605,11 @@ public class MEBNController  {
 	 * @throws InconsistentArgumentException
 	 * @throws ImplementationRestrictionException 
 	 * @throws SSBNNodeGeneralException 
+	 * @throws OVInstanceFaultException 
 	 */
 	public ProbabilisticNetwork executeQuery(ResidentNode residentNode, ObjectEntityInstance[] arguments)
 	                           throws InconsistentArgumentException, SSBNNodeGeneralException, 
-	                                  ImplementationRestrictionException, MEBNException {
+	                                  ImplementationRestrictionException, MEBNException, OVInstanceFaultException {
 		
 		mebnEditionPane.setStatus(resource.getString("statusGeneratingSSBN")); 
 		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -1648,13 +1649,9 @@ public class MEBNController  {
 		
 		ISSBNGenerator ssbngenerator = new ExplosiveSSBNGenerator();
 
-		try {
-			ssbn = ssbngenerator.generateSSBN(query); 
-			probabilisticNetwork = ssbn.getPn();
-		} catch (OVInstanceFaultException e) {
-			JOptionPane.showMessageDialog(getScreen(), 
-					e.getMessage());
-		}
+		ssbn = ssbngenerator.generateSSBN(query); 
+		
+		probabilisticNetwork = ssbn.getPn();
 
 		if(!query.getQueryNode().isFinding()){
 

@@ -195,6 +195,20 @@ public class SSBNNode {
 		return uniqueName.toString(); 
 	}
 	
+	/**
+	 * This unique name is: 
+	 * 
+	 * name of the node resident + 
+	 * name of the instance of the argument 1 + 
+	 * _ + name of the instance of the argument 2 +
+	 * _ + name of the instance of the argument 3 +
+	 * ...
+	 * _ + name of the instance of the argument n
+	 * 
+	 * @param resident
+	 * @param list 
+	 * @return the unique name (see the rules)
+	 */
 	public static String getUniqueNameFor(ResidentNode resident, Collection<OVInstance> list){
 		StringBuilder uniqueName = new StringBuilder(); 
 		

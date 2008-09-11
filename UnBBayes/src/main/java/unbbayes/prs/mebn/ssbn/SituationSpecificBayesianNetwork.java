@@ -1,11 +1,30 @@
+ /*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 package unbbayes.prs.mebn.ssbn;
 
-import java.util.Collection;
 import java.util.List;
 
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;
-import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
 /**
@@ -63,19 +82,19 @@ public class SituationSpecificBayesianNetwork {
 	 */
 	public void compileAndInitializeSSBN() throws Exception{
 		compileNetwork(); 
-		System.out.println("Rede compilada");
+		System.out.println("Network compiled");
 		addFindings();
-		System.out.println("Evidencias setadas");
+		System.out.println("Findings setted");
 		propagateFindings(); 
-		System.out.println("Evidencias propagadas");
+		System.out.println("Findings propagated");
 	}
 	
 	public void reinitializeSSBN() throws Exception{
 	    this.probabilisticNetwork.initialize();
 		addFindings();
-		System.out.println("Evidencias setadas");
+		System.out.println("Findings setted");
 		propagateFindings(); 
-		System.out.println("Evidencias propagadas");	    
+		System.out.println("Findings propagated");	    
 	}
 	
 	private void compileNetwork() throws Exception{
