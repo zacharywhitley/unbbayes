@@ -23,10 +23,11 @@ package unbbayes.gui.mebn;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Event;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collections;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import javax.swing.DefaultListModel;
@@ -39,7 +40,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -161,6 +161,7 @@ public class QueryPanel extends JDialog{
 			super(new BorderLayout());
 
 			listModel = new DefaultListModel();
+			
 			for(MFrag mfrag: mebnController.getMultiEntityBayesianNetwork().getMFragList()){
 				for(ResidentNode node: mfrag.getResidentNodeList()){
 					listModel.addElement(node);

@@ -245,8 +245,9 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 							generateRecursive(ssbnnode, seen, net);	
 							ssbnnode.setPermanent(true);
 						}
-
-						currentNode.addParent(ssbnnode, true);
+						if(!currentNode.getParents().contains(ssbnnode)){
+							currentNode.addParent(ssbnnode, true);
+						}
 					}
 				}
 			}else{ //ovProblematicList.isEmpty
@@ -383,6 +384,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 				SSBNNode test = ssbnNodesMap.get(ssbnNode.getUniqueName());
 
 				if(test != null){
+					ssbnNode = test; 
 					ssbnNodeJacket.getSsbnNode().delete(); 
 					ssbnNodeJacket.setSsbnNode(test); 
 				}
@@ -458,10 +460,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 			throw new SSBNNodeGeneralException(this.resource.getString("RecursiveLimit"));
 		}
 
-		this.recursiveCallCount++; 
-
-		
-		
+		this.recursiveCallCount++; 		
 		
 		//------------------------- STEP A: Search for findings -------------
 
@@ -562,7 +561,10 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 						if(!currentNode.getParents().contains(ssbnNode)){
 
 							generateRecursive(ssbnNode, seen, net);	
-							currentNode.addParent(ssbnNode, true);
+
+							if(!currentNode.getParents().contains(ssbnNode)){
+								currentNode.addParent(ssbnNode, true);
+							}
 
 							if(ssbnNode.isPermanent()){
 								currentNode.setPermanent(true); 
@@ -682,7 +684,10 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 						currentNode.setRecursiveOVInstanceList(temporaryListArgumentsFather); 
 
 						generateRecursive(procNode, seen, net); 
-						procNode.addParent(currentNode, false);
+
+						if(!procNode.getParents().contains(currentNode)){
+							procNode.addParent(currentNode, false);
+						}
 
 						//Arrumar os argumentos do nó de input para que quando a 
 						//tabela de <proc> for gerada, ele tenha as suas 
@@ -737,8 +742,12 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 
 						for(SSBNNode ssbnNode: createdNodes){
 							if(!ssbnNode.getParents().contains(currentNode)){
-								generateRecursive(ssbnNode, seen, net);			    	
-								ssbnNode.addParent(currentNode, false);
+								generateRecursive(ssbnNode, seen, net);	
+
+								if(!ssbnNode.getParents().contains(currentNode)){
+									ssbnNode.addParent(currentNode, false);
+								}
+								
 								if(ssbnNode.isPermanent()){
 									currentNode.setPermanent(true); 
 								}

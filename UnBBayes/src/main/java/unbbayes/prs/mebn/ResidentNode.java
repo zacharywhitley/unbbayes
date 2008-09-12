@@ -40,7 +40,8 @@ import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
  *
  */
 
-public class ResidentNode extends MultiEntityNode implements ITabledVariable {
+public class ResidentNode extends MultiEntityNode 
+         implements ITabledVariable {
 	
 	private static final long serialVersionUID = 1L;
 

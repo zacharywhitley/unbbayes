@@ -1659,7 +1659,22 @@ public class MEBNController  {
 				specificSituationBayesianNetwork = probabilisticNetwork;
 
 				try {
+					
 					ssbn.compileAndInitializeSSBN();
+					
+					openWarningDialog(); 
+					
+					this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
+
+					Dimension sizeOfGraph = PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(specificSituationBayesianNetwork); 
+					Dimension originalDimension = this.getMebnEditionPane().getNetworkWindow().getGraphPane().getGraphDimension(); 
+					if((originalDimension.getHeight() < sizeOfGraph.getHeight()) || 
+							(originalDimension.getWidth() < sizeOfGraph.getWidth())){
+						dimensionSSBNGraph = sizeOfGraph; 
+						this.getMebnEditionPane().getNetworkWindow().getGraphPane().setGraphDimension(sizeOfGraph); 
+						this.getMebnEditionPane().getNetworkWindow().getGraphPane().update(); 
+					}
+					
 				} catch (Exception e) {
 					e.printStackTrace(); 
 					screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -1667,18 +1682,6 @@ public class MEBNController  {
 							e.getMessage());
 				} 
 
-				openWarningDialog(); 
-				
-				this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
-
-				Dimension sizeOfGraph = PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(specificSituationBayesianNetwork); 
-				Dimension originalDimension = this.getMebnEditionPane().getNetworkWindow().getGraphPane().getGraphDimension(); 
-				if((originalDimension.getHeight() < sizeOfGraph.getHeight()) || 
-						(originalDimension.getWidth() < sizeOfGraph.getWidth())){
-					dimensionSSBNGraph = sizeOfGraph; 
-					this.getMebnEditionPane().getNetworkWindow().getGraphPane().setGraphDimension(sizeOfGraph); 
-					this.getMebnEditionPane().getNetworkWindow().getGraphPane().update(); 
-				}
 
 			
 		}else{

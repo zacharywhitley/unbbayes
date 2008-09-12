@@ -486,7 +486,7 @@ public class SSBNNode {
 				if (this.getProbabilisticNetwork() != null) {
 					this.getProbabilisticNetwork().addEdge(edge);
 					AbstractSSBNGenerator.logManager.append("\n");
-					AbstractSSBNGenerator.logManager.append(edge + " created");
+					AbstractSSBNGenerator.logManager.append(">>EDGE>> " + edge + " created");
 //					BottomUpSSBNGenerator.printAndSaveCurrentNetwork(this);
 				}
 			}
