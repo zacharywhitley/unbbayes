@@ -12,9 +12,9 @@ import unbbayes.util.NodeList;
 
 /**
  * 
- * Classe que implementa o método de simulação de Monte Carlo
- * Por este método são gerados números aleatórios entre 0 e 1. Cada valor sorteado vai estar associada a uma
- * instancia dentro do universo representado pela rede bayseana. Esta associação é feito com base em um função
+ * Classe que implementa o mï¿½todo de simulaï¿½ï¿½o de Monte Carlo
+ * Por este mï¿½todo sï¿½o gerados nï¿½meros aleatï¿½rios entre 0 e 1. Cada valor sorteado vai estar associada a uma
+ * instancia dentro do universo representado pela rede bayseana. Esta associaï¿½ï¿½o ï¿½ feito com base em um funï¿½ï¿½o
  * de densidade acumulada que representa a rede.
  * 
  * @author Danilo
@@ -28,9 +28,9 @@ public class SimulacaoMonteCarlo {
 	
 	
 	/**
-	 * Método que gera a simulação de Monte Carlo
-	 * @param pn Rede a partir da qual serão gerados os casos
-	 * @param nCasos numero de casos que seráo gerados
+	 * Mï¿½todo que gera a simulaï¿½ï¿½o de Monte Carlo
+	 * @param pn Rede a partir da qual serï¿½o gerados os casos
+	 * @param nCasos numero de casos que serï¿½o gerados
 	 */
 	public SimulacaoMonteCarlo(ProbabilisticNetwork pn , int nCasos){		
 		this.pn = pn;
@@ -165,7 +165,7 @@ public class SimulacaoMonteCarlo {
 	
 	private double[]  getColuna(int[] estado,List indicesAnteriores, ProbabilisticNode n){
 		PotentialTable pt = n.getPotentialTable();
-		//System.out.println("Nomde Nó = "+ n.getDescription());
+		//System.out.println("Nomde Nï¿½ = "+ n.getDescription());
 		int numeroEstados = n.getStatesSize();
 		int indice;
 		double[] coluna = new double[numeroEstados];
@@ -179,7 +179,8 @@ public class SimulacaoMonteCarlo {
 					parents.add(fila.get(indice));
 					coordenadas[j+1] = estado[indice];								
 				}
-			}			
+			}
+			coluna[i] = pt.getValue(coordenadas);
 			/*for(int k = 0 ; k < coordenadas.length ; k++){
 				System.out.print("Coordenada "+ k +" = "+ coordenadas[k]);								
 			}*/
