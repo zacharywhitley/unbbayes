@@ -31,12 +31,12 @@ import unbbayes.prs.bn.ProbabilisticNode;
 
 /**
  * 
- * Classe que implementa o m�todo de simula��o de Monte Carlo
- * Por este m�todo s�o gerados n�meros aleat�rios entre 0 e 1. Cada valor sorteado vai estar associada a uma
- * instancia dentro do universo representado pela rede bayseana. Esta associa��o � feito com base em um fun��o
+ * Classe que implementa o metodo de simulacao de Monte Carlo
+ * Por este metodo sao gerados numeros aleatorios entre 0 e 1. Cada valor sorteado vai estar associada a uma
+ * instancia dentro do universo representado pela rede bayseana. Esta associacao e feita com base em uma funcao
  * de densidade acumulada que representa a rede.
  * 
- * @author Danilo
+ * @author Danilo Custodio
  *
  */
 public class SimulacaoMonteCarlo {
@@ -47,9 +47,9 @@ public class SimulacaoMonteCarlo {
 	
 	
 	/**
-	 * M�todo que gera a simula��o de Monte Carlo
-	 * @param pn Rede a partir da qual ser�o gerados os casos
-	 * @param nCasos numero de casos que ser�o gerados
+	 * Metodo que gera a simulacao de Monte Carlo
+	 * @param pn Rede a partir da qual serao gerados os casos
+	 * @param nCasos Numero de casos que serao gerados
 	 */
 	public SimulacaoMonteCarlo(ProbabilisticNetwork pn , int nCasos){		
 		this.pn = pn;
@@ -64,28 +64,55 @@ public class SimulacaoMonteCarlo {
 		for(int i = 0; i < nCasos; i++){						
 			simular(matrizFila, i);
 		}
+		
+		System.out.print("CASE");
+		for (int i = 0; i < pn.getNodeCount(); i++) {
+			System.out.print("	" + pn.getNodeAt(i).getName() /*+ " - " + pn.getNodeAt(i).getDescription()*/);
+		}
+		System.out.println();
+		for (int i = 0; i < matrizFila.length; i++) {
+			System.out.print(i + " :" );
+			for (int j = 0; j < matrizFila[0].length; j++) {
+				System.out.print("	" + pn.getNodeAt(j).getStateAt(matrizFila[i][j]));
+			}
+			System.out.println();
+		}
+		
 	}
 	
+	/**
+	 * Creates the queue of the nodes that are going to be analyzed.
+	 */
 	private void criarFila(){				
 		boolean[] visitados = new boolean[pn.getNodeCount()];
 		inicializaFila(visitados);											
 		for(int i = 0; i < fila.size(); i++){
-			Node n = fila.get(i);
-			adicionaFila(n.getChildren(),visitados);			
+			Node node = fila.get(i);
+			adicionaFila(node.getChildren(), visitados);			
 		}		
 	}
 	
+	/**
+	 * Initializes the queue with the nodes that are root. In other words. 
+	 * It will put in the queue the nodes that do not have parents.
+	 * @param visitados Contains the nodes that were already added to the queue.
+	 */
 	private void inicializaFila(boolean[] visitados){
 		for(int i = 0 ; i < pn.getNodeCount(); i++){
 			if(pn.getNodeAt(i).getParents().size() == 0 ){
-				visitados[i]= true ;					
+				visitados[i]= true;					
 				fila.add(pn.getNodeAt(i));
-				
 			}
 		}			
 	}
 	
-	private void adicionaFila(ArrayList<Node> filhos,boolean[] visitados){
+	/**
+	 * Take the children of a node that have already been added to the queue. Analyze them
+	 * one by one and add the child that is not in the queue yet. 
+	 * @param filhos Children of a node that is already in the queue.
+	 * @param visitados Nodes that have already been added to the queue.
+	 */
+	private void adicionaFila(ArrayList<Node> filhos, boolean[] visitados){
 		for(int i = 0 ; i < filhos.size(); i++){
 			Node n1 = filhos.get(i);
 			for(int j = 0 ; j < pn.getNodeCount(); j++){
@@ -98,156 +125,114 @@ public class SimulacaoMonteCarlo {
 					}										
 				}				
 			}	
-		}
-		System.out.println();		
+		}	
 	}
 	
 	private void simular(byte[][] matrizFila, int caso){
-		List<Integer> indicesAnteriores = new ArrayList<Integer>();
-		double numero = Math.random();		
-		double[] coluna;
+		List<Integer> parentsIndexes = new ArrayList<Integer>();
+		double[] column;
 		int[] estado = new int[fila.size()];
 		for(int i = 0 ; i < fila.size(); i++){			
-			ProbabilisticNode n = (ProbabilisticNode)fila.get(i);									
-			indicesAnteriores = getIndices(n);
-			coluna = getColuna(estado,indicesAnteriores,n);													
-			estado[i] = getEstado(coluna);
+			ProbabilisticNode node = (ProbabilisticNode)fila.get(i);									
+			parentsIndexes = getParentsIndicesInQueue(node);
+			// It seems we can optimize this. It always give the same result.
+			column = getColumn(estado, parentsIndexes, node);													
+			estado[i] = getState(column);
 			matrizFila[caso][i] = (byte)estado[i];
-			//System.out.println("Estado "+ n.getDescription() + " = " + estado[i]); 						 						
 		}				
 	}
 	
-	private List<Integer> getIndices(ProbabilisticNode n){
+	/**
+	 * Return the indexes in the queue for the parents of a given node. 
+	 * @param node The node to retrieve the parents for finding the indexes.
+	 * @return List of indexes of a node's parents in the queue.
+	 */
+	private List<Integer> getParentsIndicesInQueue(ProbabilisticNode node){
 		List<Integer> indices = new ArrayList<Integer>();
-		ArrayList<Node> pais = n.getParents();		
-		for(int i = 0 ; i < pais.size();i++){
-			Node n1 = pais.get(i);
-			indices.add(getIndiceFila(n1));						
+		ArrayList<Node> parents = node.getParents();		
+		for(int i = 0 ; i < parents.size();i++){
+			Node node1 = parents.get(i);
+			indices.add(getIndexInQueue(node1));						
 		}	
 		return indices;		
 	}
 	
-	private Integer getIndiceFila(Node n){
+	/**
+	 * Retrieves the node's index in the queue.  
+	 * @param node
+	 * @return
+	 */
+	private Integer getIndexInQueue(Node node){
 		for(int i = 0 ; i <fila.size();i++){
-			if(n.getName().equals(fila.get(i).getName())){				
-				return new Integer(i);				
+			if(node.getName().equals(fila.get(i).getName())){				
+				return i;				
 			}			
 		}	
 		return null;	
 	}
 	
-	private int getEstado(double[] coluna){		
-		double[][] faixa;
+	private int getState(double[] column){
+		// Cumulative distribution function
+		double[][] cdf;
 		double numero = Math.random();		
-		faixa = criarFaixasIntervalo(coluna);			
-		for(int i = 0; i< faixa.length; i++){
+		cdf = createCumulativeDistributionFunction(column);
+		for(int i = 0; i< cdf.length; i++){
 			if(i == 0){				
-				if (numero <= faixa[i][1] || faixa[i][1] == 0.0 ){
+				if (numero <= cdf[i][1] || cdf[i][1] == 0.0 ){
 					return i;										
 				}
 				continue;  				
 			}else{				
-				if(numero <= faixa[i][1] && numero > faixa[i][0]){
+				if(numero <= cdf[i][1] && numero > cdf[i][0]){
 					return i;	
 				}				
 			}			
 		}
-		System.out.println("AKI  = " + numero);
 		return -1;				
 	}
 	
-	private double[][] criarFaixasIntervalo(double[] coluna){
-		double[][] faixa = new double[coluna.length][2];		
-		//double[] colunaOrdenada = ordenar(coluna);
+	private double[][] createCumulativeDistributionFunction(double[] coluna){
+		// Instead of using [statesSize][2] we could only use [statesSize]
+		// and the upper value for the interval would be the lower value of 
+		// the following state. In the last state the upper value would be 1.
+		double[][] cdf = new double[coluna.length][2];		
 		double atual = 0.0d;
 		for(int i = 0 ; i < coluna.length; i++){
-			faixa[i][0] = atual;
-			//
-			faixa[i][1] = coluna[i] + atual;			
-			atual = faixa[i][1]; 
-		}
-		return faixa;
-	}
-	
-	private double[] ordenar(double[] coluna){		
-		List<Double> lista = new ArrayList<Double>();
-		double[] colunaOrdenada = new double[coluna.length];	
-		for(int i = 0 ; i < coluna.length; i++){
-			lista.add(new Double(coluna[i]));				
-		}
-		Collections.sort(lista);
-		for(int i = 0 ; i < lista.size(); i++){
-			colunaOrdenada[i] = (lista.get(i)).doubleValue();				
-		}				
-		return colunaOrdenada;		
-	}
-	
-	private double[]  getColuna(int[] estado,List indicesAnteriores, ProbabilisticNode n){
-		PotentialTable pt = n.getPotentialTable();
-		//System.out.println("Nomde N� = "+ n.getDescription());
-		int numeroEstados = n.getStatesSize();
-		int indice;
-		double[] coluna = new double[numeroEstados];
-		int[] coordenadas = new int[indicesAnteriores.size()+1];
-		ArrayList<Node> parents = new ArrayList<Node>();		
-		for(int i = 0; i < n.getStatesSize(); i++){				
-			coordenadas[0] = i;
-			if(i == 0){
-				for(int j = 0 ; j < indicesAnteriores.size(); j++){				
-					indice = ((Integer)indicesAnteriores.get(j)).intValue();
-					parents.add(fila.get(indice));
-					coordenadas[j+1] = estado[indice];								
-				}
-			}			
-			/*for(int k = 0 ; k < coordenadas.length ; k++){
-				System.out.print("Coordenada "+ k +" = "+ coordenadas[k]);								
-			}*/
-			//System.out.println();
-			/*try{
-				
-				if( i == 1 && coluna[i] == 0.0){
-				  //System.out.println("Coluna "+ i + " = " + coluna[i]);				  
-				}*s/coluna[i] = pt.getValue(getLinearCoord(coordenadas,parents));/* 	
-			}catch(Exception e){
-				for(int k = 0 ; k < coordenadas.length ; k++){
-					  System.out.println(" Coordenada  "+ k +"  =  "+ coordenadas[k]);								
-				}
-				e.printStackTrace();
-			}*/
+			// Lower value
+			cdf[i][0] = atual;
+			// Upper value
+			cdf[i][1] = coluna[i] + atual;
 			
-			//			
-		}		
-		return coluna;
+			// Next lower value is equal to the previous upper value
+			atual = cdf[i][1];
+		}
+		return cdf;
 	}
 	
-	public  final int getLinearCoord(int coord[], ArrayList<Node> parents) {
-        int fatores[] = calcularFatores(parents);
-        int coordLinear = 0;
-        int sizeVariaveis = parents.size();
-        for (int v = 0; v < sizeVariaveis; v++) {
-            coordLinear += coord[v] * fatores[v];
-            System.out.print("Coord = " + coord[v] + " Fator  = " + fatores[v]);
-        }        
-        System.out.println();
-        return coordLinear;        
-    }
-    
-	 protected int[] calcularFatores(ArrayList<Node> variaveis) {		
-		int sizeVariaveis = variaveis.size();
-		int fatores[] = null;
-		if (fatores == null || fatores.length < sizeVariaveis) {
-			fatores = new int[sizeVariaveis];
+	private double[]  getColumn(int[] estado, List<Integer> parentsIndexes, ProbabilisticNode node){
+		PotentialTable pt = node.getPotentialTable();
+		int statesSize = node.getStatesSize();
+		int index;
+		double[] column = new double[statesSize];
+		int[] coordinates = new int[parentsIndexes.size() + 1];
+		ArrayList<Node> parents = new ArrayList<Node>();		
+		for(int i = 0; i < node.getStatesSize(); i++){				
+			coordinates[0] = i;
+			if(i == 0){
+				for(int j = 0 ; j < parentsIndexes.size(); j++){				
+					index = parentsIndexes.get(j);
+					parents.add(fila.get(index));
+					coordinates[j + 1] = estado[index];								
+				}
+			}
+			column[i] = pt.getValue(coordinates);
 		}
-		if(fatores.length > 0 ){
-			fatores[0] = 1;
+		/*System.out.println("Node " + node.getName());
+		for (int i = 0; i < column.length; i++) {
+			System.out.print(node.getStateAt(i) + " = " + column[i] + " ");
 		}
-		Node auxNo;
-		for (int i = 1; i < sizeVariaveis; i++) {
-			 auxNo = variaveis.get(i-1);
-			 fatores[i] = fatores[i-1] * auxNo.getStatesSize();
-		}
-		return fatores;
-  }
-	
+		System.out.println();*/
+		return column;
+	}	
 	
 }
