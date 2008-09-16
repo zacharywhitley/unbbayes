@@ -693,62 +693,41 @@ MEBN logic has the concept of a simple and a composite random variable term. Sim
                   <MetaEntity rdf:ID="Procurement_label">
                     <isTypeOf>
                       <Procurement rdf:ID="proc2">
+                        <hasType rdf:resource="#Procurement_label"/>
                         <hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
                         >!proc2</hasUID>
-                        <hasType rdf:resource="#Procurement_label"/>
                       </Procurement>
                     </isTypeOf>
                     <subsOVar>
                       <OVariable rdf:ID="DirectingProcurement_MF.proc">
-                        <isSubsBy rdf:resource="#Procurement_label"/>
-                        <isArgTermIn>
-                          <SimpleArgRelationship rdf:ID="IsProcurementDirected_1">
-                            <hasArgTerm rdf:resource="#DirectingProcurement_MF.proc"/>
-                            <isArgumentOf>
+                        <isOVariableIn>
+                          <Domain_MFrag rdf:ID="DirectingProcurement_MF">
+                            <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                            ></rdfs:comment>
+                            <hasResidentNode>
                               <Domain_Res rdf:ID="IsProcurementDirected">
-                                <isResidentNodeIn>
-                                  <Domain_MFrag rdf:ID="DirectingProcurement_MF">
-                                    <hasOVariable rdf:resource="#DirectingProcurement_MF.proc"/>
-                                    <hasResidentNode rdf:resource="#IsProcurementDirected"/>
-                                    <isMFragOf>
-                                      <MTheory rdf:ID="DirecionamentoNaLicitacao_MT">
-                                        <hasMFrag>
-                                          <Domain_MFrag rdf:ID="ProcurementRequirement_Other_MF">
-                                            <isMFragOf rdf:resource="#DirecionamentoNaLicitacao_MT"/>
-                                            <hasOVariable>
-                                              <OVariable rdf:ID="ProcurementRequirement_Other_MF.proc">
-                                                <isOVariableIn rdf:resource="#ProcurementRequirement_Other_MF"/>
-                                                <isArgTermIn>
-                                                  <SimpleArgRelationship rdf:ID="IX6_1">
-                                                    <hasArgNumber
-                                                     rdf:datatype=
-                                                    "http://www.w3.org/2001/XMLSchema#int"
-                                                    >1</hasArgNumber>
-                                                    <hasArgTerm rdf:resource="#ProcurementRequirement_Other_MF.proc"/>
-                                                    <isArgumentOf>
-                                                      <Generative_input rdf:ID="IX6">
-                                                        <rdfs:comment
-                                                         rdf:datatype=
-                                                        "http://www.w3.org/2001/XMLSchema#string"
-                                                        >If the procurement is being directed, demanding 
-experience in only one contract is something that is 
-usually done to direct the procurement to a specific 
-company.</rdfs:comment>                                 <isInputInstanceOf rdf:resource="#IsProcurementDirected"/>
-                                                        <isInputNodeIn rdf:resource="#ProcurementRequirement_Other_MF"/>
-                                                        <hasArgument rdf:resource="#IX6_1"/>
-                                                        <hasPossibleValues>
-                                                          <BooleanRVState rdf:ID="true">
-                                                            <isPossibleValueOf>
-                                                              <Generative_input rdf:ID="IX8">
-    <isInputNodeIn>
-      <Domain_MFrag rdf:ID="ProcurementRequirement_Indexes_MF">
-        <hasResidentNode>
-          <Domain_Res rdf:ID="IndexType">
-            <hasProbDist>
-              <DeclarativeDist rdf:ID="IndexType_Table">
-                <isProbDistOf rdf:resource="#IndexType"/>
-                <hasDeclaration rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-                >if any proc have ( IsProcurementDirectedByIndexes = true ) [
+                                <isResidentNodeIn rdf:resource="#DirectingProcurement_MF"/>
+                                <hasPossibleValues>
+                                  <BooleanRVState rdf:ID="false">
+                                    <hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                                    >F</hasUID>
+                                    <isPossibleValueOf>
+                                      <BuiltInRV rdf:ID="exists">
+                                        <hasPossibleValues>
+                                          <BooleanRVState rdf:ID="true">
+                                            <isPossibleValueOf>
+                                              <Generative_input rdf:ID="IX8">
+                                                <isInputNodeIn>
+                                                  <Domain_MFrag rdf:ID="ProcurementRequirement_Indexes_MF">
+                                                    <hasResidentNode>
+                                                      <Domain_Res rdf:ID="IndexType">
+                                                        <hasProbDist>
+                                                          <DeclarativeDist rdf:ID="IndexType_Table">
+                                                            <isProbDistOf rdf:resource="#IndexType"/>
+                                                            <hasDeclaration
+                                                             rdf:datatype=
+                                                            "http://www.w3.org/2001/XMLSchema#string"
+                                                            >if any proc have ( IsProcurementDirectedByIndexes = true ) [
    ILC = 0.10,
    ISG = 0.10,
    IE = 0.10,
@@ -761,43 +740,40 @@ company.</rdfs:comment>                                 <isInputInstanceOf rdf:r
    ISG = 0.24,
    Other = 0.04
 ]
-</hasDeclaration>
-              </DeclarativeDist>
-            </hasProbDist>
+</hasDeclaration>                                         </DeclarativeDist>
+                                                        </hasProbDist>
+                                                        <hasPossibleValues>
+                                                          <CategoricalRVState rdf:ID="IE">
+                                                            <hasType>
+                                                              <MetaEntity rdf:ID="CategoryLabel">
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >This MetaEntity should be assigned to the labels for the states of random variables whose domain is a list of categorical values</rdfs:comment>
+    <isTypeOf>
+      <CategoricalRVState rdf:ID="ILC">
+        <isPossibleValueOf rdf:resource="#IndexType"/>
+        <hasType rdf:resource="#CategoryLabel"/>
+      </CategoricalRVState>
+    </isTypeOf>
+    <isTypeOf>
+      <CategoricalRVState rdf:ID="Between2and3">
+        <isPossibleValueOf>
+          <Domain_Res rdf:ID="IndexMinValue">
             <hasPossibleValues>
-              <CategoricalRVState rdf:ID="IE">
-                <hasType>
-                  <MetaEntity rdf:ID="CategoryLabel">
-                    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-                    >This MetaEntity should be assigned to the labels for the states of random variables whose domain is a list of categorical values</rdfs:comment>
-                    <isTypeOf>
-                      <CategoricalRVState rdf:ID="ILC">
-                        <isPossibleValueOf rdf:resource="#IndexType"/>
-                        <hasType rdf:resource="#CategoryLabel"/>
-                      </CategoricalRVState>
-                    </isTypeOf>
-                    <isTypeOf>
-                      <CategoricalRVState rdf:ID="Between2and3">
-                        <hasType rdf:resource="#CategoryLabel"/>
-                        <isPossibleValueOf>
-                          <Domain_Res rdf:ID="IndexMinValue">
-                            <hasPossibleValues>
-                              <CategoricalRVState rdf:ID="Between0and1">
-                                <hasType rdf:resource="#CategoryLabel"/>
-                                <isPossibleValueOf rdf:resource="#IndexMinValue"/>
-                              </CategoricalRVState>
-                            </hasPossibleValues>
-                            <isResidentNodeIn rdf:resource="#ProcurementRequirement_Indexes_MF"/>
-                            <hasPossibleValues rdf:resource="#Between2and3"/>
-                            <hasProbDist>
-                              <DeclarativeDist rdf:ID="IndexMinValue_Table">
-                                <isProbDistOf rdf:resource="#IndexMinValue"/>
-                                <hasDeclaration rdf:datatype=
-                                "http://www.w3.org/2001/XMLSchema#string"
-                                >if any proc have ( IsProcurementDirectedByIndexes = true ) [
+              <CategoricalRVState rdf:ID="Between0and1">
+                <isPossibleValueOf rdf:resource="#IndexMinValue"/>
+                <hasType rdf:resource="#CategoryLabel"/>
+              </CategoricalRVState>
+            </hasPossibleValues>
+            <isResidentNodeIn rdf:resource="#ProcurementRequirement_Indexes_MF"/>
+            <hasPossibleValues rdf:resource="#Between2and3"/>
+            <hasProbDist>
+              <DeclarativeDist rdf:ID="IndexMinValue_Table">
+                <isProbDistOf rdf:resource="#IndexMinValue"/>
+                <hasDeclaration rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                >if any proc have ( IsProcurementDirectedByIndexes = true ) [
    Between0and1 = 0.01,
-   Between1and2 = 0.30,
-   Between2and3 = 0.30,
+   Between1and2 = 0.25,
+   Between2and3 = 0.35,
    GreaterThan3 = 0.39
 ] else [
    Between0and1 = 0.900,
@@ -805,169 +781,108 @@ company.</rdfs:comment>                                 <isInputInstanceOf rdf:r
    Between2and3 = 0.009,
    GreaterThan3 = 0.001
 ]
-</hasDeclaration>             </DeclarativeDist>
-                            </hasProbDist>
-                            <hasPossibleValues>
-                              <CategoricalRVState rdf:ID="GreaterThan3">
-                                <hasType rdf:resource="#CategoryLabel"/>
-                                <isPossibleValueOf rdf:resource="#IndexMinValue"/>
-                              </CategoricalRVState>
-                            </hasPossibleValues>
-                            <hasParent rdf:resource="#IX8"/>
-                            <hasArgument>
-                              <SimpleArgRelationship rdf:ID="IndexMinValue_1">
-                                <isArgumentOf rdf:resource="#IndexMinValue"/>
-                                <hasArgNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
-                                >1</hasArgNumber>
-                                <hasArgTerm>
-                                  <OVariable rdf:ID="ProcurementRequirement_Indexes_MF.ind">
-                                    <isSubsBy>
-                                      <MetaEntity rdf:ID="Index_label">
-                                        <isTypeOf>
-                                          <Index rdf:ID="ind6">
-                                            <hasType rdf:resource="#Index_label"/>
-                                            <hasUID rdf:datatype=
-                                            "http://www.w3.org/2001/XMLSchema#string"
-                                            >!ind6</hasUID>
-                                          </Index>
-                                        </isTypeOf>
-                                        <isTypeOf>
-                                          <Index rdf:ID="ind3">
-                                            <hasType rdf:resource="#Index_label"/>
-                                            <hasUID rdf:datatype=
-                                            "http://www.w3.org/2001/XMLSchema#string"
-                                            >!ind3</hasUID>
-                                          </Index>
-                                        </isTypeOf>
-                                        <isTypeOf>
-                                          <Index rdf:ID="ind2">
-                                            <hasUID rdf:datatype=
-                                            "http://www.w3.org/2001/XMLSchema#string"
-                                            >!ind2</hasUID>
-                                            <hasType rdf:resource="#Index_label"/>
-                                          </Index>
-                                        </isTypeOf>
-                                        <isTypeOf>
-                                          <Index rdf:ID="ind5">
-                                            <hasUID rdf:datatype=
-                                            "http://www.w3.org/2001/XMLSchema#string"
-                                            >!ind5</hasUID>
-                                            <hasType rdf:resource="#Index_label"/>
-                                          </Index>
-                                        </isTypeOf>
-                                        <hasUID rdf:datatype=
+</hasDeclaration>
+              </DeclarativeDist>
+            </hasProbDist>
+            <hasPossibleValues>
+              <CategoricalRVState rdf:ID="GreaterThan3">
+                <isPossibleValueOf rdf:resource="#IndexMinValue"/>
+                <hasType rdf:resource="#CategoryLabel"/>
+              </CategoricalRVState>
+            </hasPossibleValues>
+            <hasParent rdf:resource="#IX8"/>
+            <hasArgument>
+              <SimpleArgRelationship rdf:ID="IndexMinValue_1">
+                <hasArgTerm>
+                  <OVariable rdf:ID="ProcurementRequirement_Indexes_MF.ind">
+                    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                    >OX1</rdfs:comment>
+                    <isArgTermIn>
+                      <SimpleArgRelationship rdf:ID="CX1_1_inner_1">
+                        <hasArgTerm rdf:resource="#ProcurementRequirement_Indexes_MF.ind"/>
+                        <isArgumentOf>
+                          <Context rdf:ID="CX1_1_inner">
+                            <isInnerTermOf>
+                              <Context rdf:ID="CX1">
+                                <hasInnerTerm rdf:resource="#CX1_1_inner"/>
+                                <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                                >CX1</rdfs:comment>
+                                <hasArgument>
+                                  <SimpleArgRelationship rdf:ID="CX1_2">
+                                    <hasArgTerm>
+                                      <OVariable rdf:ID="ProcurementRequirement_Indexes_MF.proc">
+                                        <isArgTermIn>
+                                          <SimpleArgRelationship rdf:ID="IX8_1">
+                                            <hasArgNumber rdf:datatype=
+                                            "http://www.w3.org/2001/XMLSchema#int"
+                                            >1</hasArgNumber>
+                                            <isArgumentOf rdf:resource="#IX8"/>
+                                            <hasArgTerm rdf:resource="#ProcurementRequirement_Indexes_MF.proc"/>
+                                          </SimpleArgRelationship>
+                                        </isArgTermIn>
+                                        <isArgTermIn rdf:resource="#CX1_2"/>
+                                        <isSubsBy rdf:resource="#Procurement_label"/>
+                                        <isOVariableIn rdf:resource="#ProcurementRequirement_Indexes_MF"/>
+                                        <rdfs:comment rdf:datatype=
                                         "http://www.w3.org/2001/XMLSchema#string"
-                                        >!Index_label</hasUID>
-                                        <isTypeOf>
-                                          <Index rdf:ID="ind1">
-                                            <hasType rdf:resource="#Index_label"/>
-                                            <hasUID rdf:datatype=
-                                            "http://www.w3.org/2001/XMLSchema#string"
-                                            >!ind1</hasUID>
-                                          </Index>
-                                        </isTypeOf>
-                                        <subsOVar rdf:resource="#ProcurementRequirement_Indexes_MF.ind"/>
-                                        <hasType rdf:resource="#TypeLabel"/>
-                                        <isTypeOf>
-                                          <Index rdf:ID="ind4">
-                                            <hasUID rdf:datatype=
-                                            "http://www.w3.org/2001/XMLSchema#string"
-                                            >!ind4</hasUID>
-                                            <hasType rdf:resource="#Index_label"/>
-                                          </Index>
-                                        </isTypeOf>
-                                      </MetaEntity>
-                                    </isSubsBy>
-                                    <isOVariableIn rdf:resource="#ProcurementRequirement_Indexes_MF"/>
-                                    <isArgTermIn>
-                                      <SimpleArgRelationship rdf:ID="CX1_1_inner_1">
-                                        <hasArgTerm rdf:resource="#ProcurementRequirement_Indexes_MF.ind"/>
-                                        <hasArgNumber rdf:datatype=
-                                        "http://www.w3.org/2001/XMLSchema#int"
-                                        >1</hasArgNumber>
-                                        <isArgumentOf>
-                                          <Context rdf:ID="CX1_1_inner">
-                                            <hasArgument rdf:resource="#CX1_1_inner_1"/>
-                                            <hasPossibleValues rdf:resource="#Procurement_label"/>
-                                            <isContextInstanceOf>
-                                              <Domain_Res rdf:ID="IndexProcurement">
-                                                <hasPossibleValues rdf:resource="#Procurement_label"/>
-                                                <hasArgument>
-                                                  <SimpleArgRelationship rdf:ID="IndexProcurement_1">
-                                                    <hasArgTerm rdf:resource="#ProcurementRequirement_Indexes_MF.ind"/>
-                                                    <hasArgNumber
+                                        >OX2</rdfs:comment>
+                                      </OVariable>
+                                    </hasArgTerm>
+                                    <hasArgNumber rdf:datatype=
+                                    "http://www.w3.org/2001/XMLSchema#int"
+                                    >2</hasArgNumber>
+                                    <isArgumentOf rdf:resource="#CX1"/>
+                                  </SimpleArgRelationship>
+                                </hasArgument>
+                                <hasArgument>
+                                  <ArgRelationship rdf:ID="CX1_1">
+                                    <isArgumentOf rdf:resource="#CX1"/>
+                                    <hasArgNumber rdf:datatype=
+                                    "http://www.w3.org/2001/XMLSchema#int"
+                                    >1</hasArgNumber>
+                                    <hasArgTerm rdf:resource="#CX1_1_inner"/>
+                                  </ArgRelationship>
+                                </hasArgument>
+                                <isContextNodeIn rdf:resource="#ProcurementRequirement_Indexes_MF"/>
+                                <isContextInstanceOf>
+                                  <BuiltInRV rdf:ID="equalto">
+                                    <hasContextInstance rdf:resource="#CX1"/>
+                                    <hasPossibleValues rdf:resource="#true"/>
+                                    <hasPossibleValues rdf:resource="#false"/>
+                                    <hasPossibleValues>
+                                      <BooleanRVState rdf:ID="absurd">
+                                        <isPossibleValueOf>
+                                          <BuiltInRV rdf:ID="forall">
+                                            <hasPossibleValues rdf:resource="#true"/>
+                                            <hasPossibleValues rdf:resource="#false"/>
+                                            <hasPossibleValues rdf:resource="#absurd"/>
+                                          </BuiltInRV>
+                                        </isPossibleValueOf>
+                                        <isPossibleValueOf>
+                                          <BuiltInRV rdf:ID="iff">
+                                            <hasPossibleValues rdf:resource="#true"/>
+                                            <hasPossibleValues rdf:resource="#false"/>
+                                            <hasPossibleValues rdf:resource="#absurd"/>
+                                          </BuiltInRV>
+                                        </isPossibleValueOf>
+                                        <isPossibleValueOf>
+                                          <BuiltInRV rdf:ID="implies">
+                                            <hasPossibleValues rdf:resource="#true"/>
+                                            <hasPossibleValues rdf:resource="#false"/>
+                                            <hasPossibleValues rdf:resource="#absurd"/>
+                                          </BuiltInRV>
+                                        </isPossibleValueOf>
+                                        <isPossibleValueOf>
+                                          <Generative_input rdf:ID="IX5">
+                                            <isParentOf>
+                                              <Domain_Res rdf:ID="IsProcurementDirectedByIndexes">
+                                                <hasProbDist>
+                                                  <DeclarativeDist rdf:ID="IsProcurementDirectedByIndexes_Table">
+                                                    <isProbDistOf rdf:resource="#IsProcurementDirectedByIndexes"/>
+                                                    <hasDeclaration
                                                      rdf:datatype=
-                                                    "http://www.w3.org/2001/XMLSchema#int"
-                                                    >1</hasArgNumber>
-                                                    <isArgumentOf rdf:resource="#IndexProcurement"/>
-                                                  </SimpleArgRelationship>
-                                                </hasArgument>
-                                                <isResidentNodeIn rdf:resource="#ProcurementRequirement_Indexes_MF"/>
-                                                <rdfs:comment
-                                                 rdf:datatype=
-                                                "http://www.w3.org/2001/XMLSchema#string"
-                                                >Represents the procurement where the given index 
-is used.</rdfs:comment>                         <hasContextInstance rdf:resource="#CX1_1_inner"/>
-                                              </Domain_Res>
-                                            </isContextInstanceOf>
-                                            <isContextNodeIn rdf:resource="#ProcurementRequirement_Indexes_MF"/>
-                                            <isInnerTermOf>
-                                              <Context rdf:ID="CX1">
-                                                <rdfs:comment
-                                                 rdf:datatype=
-                                                "http://www.w3.org/2001/XMLSchema#string"
-                                                >CX1</rdfs:comment>
-                                                <isContextInstanceOf>
-                                                  <BuiltInRV rdf:ID="equalto">
-                                                    <hasContextInstance rdf:resource="#CX1"/>
-                                                    <hasPossibleValues rdf:resource="#true"/>
-                                                    <hasPossibleValues>
-                                                      <BooleanRVState rdf:ID="false">
-                                                        <hasUID
-                                                         rdf:datatype=
-                                                        "http://www.w3.org/2001/XMLSchema#string"
-                                                        >F</hasUID>
-                                                        <isPossibleValueOf>
-                                                          <BuiltInRV rdf:ID="exists">
-                                                            <hasPossibleValues rdf:resource="#true"/>
-                                                            <hasPossibleValues rdf:resource="#false"/>
-                                                            <hasPossibleValues>
-                                                              <BooleanRVState rdf:ID="absurd">
-    <isPossibleValueOf>
-      <BuiltInRV rdf:ID="forall">
-        <hasPossibleValues rdf:resource="#true"/>
-        <hasPossibleValues rdf:resource="#false"/>
-        <hasPossibleValues rdf:resource="#absurd"/>
-      </BuiltInRV>
-    </isPossibleValueOf>
-    <isPossibleValueOf>
-      <BuiltInRV rdf:ID="iff">
-        <hasPossibleValues rdf:resource="#true"/>
-        <hasPossibleValues rdf:resource="#false"/>
-        <hasPossibleValues rdf:resource="#absurd"/>
-      </BuiltInRV>
-    </isPossibleValueOf>
-    <isPossibleValueOf>
-      <BuiltInRV rdf:ID="implies">
-        <hasPossibleValues rdf:resource="#true"/>
-        <hasPossibleValues rdf:resource="#false"/>
-        <hasPossibleValues rdf:resource="#absurd"/>
-      </BuiltInRV>
-    </isPossibleValueOf>
-    <isPossibleValueOf>
-      <Generative_input rdf:ID="IX5">
-        <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-        >If the procurement is being directed there is a higher chance 
-that the procurement is being directed by the use of 
-accounting indexes.</rdfs:comment>
-        <isInputNodeIn>
-          <Domain_MFrag rdf:ID="DirectingProcurementByIndexes_MF">
-            <hasResidentNode>
-              <Domain_Res rdf:ID="IsProcurementDirectedByIndexes">
-                <hasProbDist>
-                  <DeclarativeDist rdf:ID="IsProcurementDirectedByIndexes_Table">
-                    <hasDeclaration rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-                    >if any ind have ( IsProcurementDirected = true ) [
+                                                    "http://www.w3.org/2001/XMLSchema#string"
+                                                    >if any ind have ( IsProcurementDirected = true ) [
   true = 0.20,
   false = 0.80,
   absurd = 0.0
@@ -978,108 +893,88 @@ accounting indexes.</rdfs:comment>
 ]
 
 
-</hasDeclaration>   <isProbDistOf rdf:resource="#IsProcurementDirectedByIndexes"/>
-                  </DeclarativeDist>
-                </hasProbDist>
-                <hasParent rdf:resource="#IX5"/>
-                <isResidentNodeIn rdf:resource="#DirectingProcurementByIndexes_MF"/>
-                <hasPossibleValues rdf:resource="#true"/>
-                <hasPossibleValues rdf:resource="#false"/>
-                <hasInputInstance rdf:resource="#IX8"/>
-                <hasPossibleValues rdf:resource="#absurd"/>
-                <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-                >Represents if a procurement is being directed to a specific 
-company through the use of accounting indexes.</rdfs:comment>
-                <hasArgument>
-                  <SimpleArgRelationship rdf:ID="IsProcurementDirectedByIndexes_1">
-                    <hasArgNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
-                    >1</hasArgNumber>
-                    <hasArgTerm>
-                      <OVariable rdf:ID="DirectingProcurementByIndexes_MF.proc">
-                        <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-                        >OX2</rdfs:comment>
-                        <isSubsBy rdf:resource="#Procurement_label"/>
-                        <isArgTermIn>
-                          <SimpleArgRelationship rdf:ID="IX5_1">
-                            <hasArgNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
-                            >1</hasArgNumber>
-                            <isArgumentOf rdf:resource="#IX5"/>
-                            <hasArgTerm rdf:resource="#DirectingProcurementByIndexes_MF.proc"/>
-                          </SimpleArgRelationship>
-                        </isArgTermIn>
-                        <isArgTermIn rdf:resource="#IsProcurementDirectedByIndexes_1"/>
-                        <isOVariableIn rdf:resource="#DirectingProcurementByIndexes_MF"/>
-                      </OVariable>
-                    </hasArgTerm>
-                    <isArgumentOf rdf:resource="#IsProcurementDirectedByIndexes"/>
-                  </SimpleArgRelationship>
-                </hasArgument>
-              </Domain_Res>
-            </hasResidentNode>
-            <isMFragOf rdf:resource="#DirecionamentoNaLicitacao_MT"/>
-            <hasInputNode rdf:resource="#IX5"/>
-            <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-            ></rdfs:comment>
-            <hasOVariable rdf:resource="#DirectingProcurementByIndexes_MF.proc"/>
-          </Domain_MFrag>
-        </isInputNodeIn>
-        <hasPossibleValues rdf:resource="#true"/>
-        <hasPossibleValues rdf:resource="#false"/>
-        <hasPossibleValues rdf:resource="#absurd"/>
-        <hasArgument rdf:resource="#IX5_1"/>
-        <isInputInstanceOf rdf:resource="#IsProcurementDirected"/>
-        <isParentOf rdf:resource="#IsProcurementDirectedByIndexes"/>
-      </Generative_input>
-    </isPossibleValueOf>
-    <isPossibleValueOf rdf:resource="#IsProcurementDirected"/>
-    <isPossibleValueOf rdf:resource="#exists"/>
-    <isPossibleValueOf rdf:resource="#IX6"/>
-    <hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >⊥</hasUID>
-    <isPossibleValueOf>
-      <BuiltInRV rdf:ID="or">
-        <hasPossibleValues rdf:resource="#true"/>
-        <hasPossibleValues rdf:resource="#false"/>
-        <hasPossibleValues rdf:resource="#absurd"/>
-      </BuiltInRV>
-    </isPossibleValueOf>
-    <isPossibleValueOf>
-      <BuiltInRV rdf:ID="and">
-        <hasPossibleValues rdf:resource="#true"/>
-        <hasPossibleValues rdf:resource="#false"/>
-        <hasPossibleValues rdf:resource="#absurd"/>
-      </BuiltInRV>
-    </isPossibleValueOf>
-    <isPossibleValueOf rdf:resource="#IsProcurementDirectedByIndexes"/>
+</hasDeclaration>                                 </DeclarativeDist>
+                                                </hasProbDist>
+                                                <hasParent rdf:resource="#IX5"/>
+                                                <isResidentNodeIn>
+                                                  <Domain_MFrag rdf:ID="DirectingProcurementByIndexes_MF">
+                                                    <hasInputNode rdf:resource="#IX5"/>
+                                                    <hasOVariable>
+                                                      <OVariable rdf:ID="DirectingProcurementByIndexes_MF.proc">
+                                                        <isOVariableIn rdf:resource="#DirectingProcurementByIndexes_MF"/>
+                                                        <isArgTermIn>
+                                                          <SimpleArgRelationship rdf:ID="IX5_1">
+                                                            <hasArgNumber
+                                                             rdf:datatype=
+                                                            "http://www.w3.org/2001/XMLSchema#int"
+                                                            >1</hasArgNumber>
+                                                            <isArgumentOf rdf:resource="#IX5"/>
+                                                            <hasArgTerm rdf:resource="#DirectingProcurementByIndexes_MF.proc"/>
+                                                          </SimpleArgRelationship>
+                                                        </isArgTermIn>
+                                                        <isArgTermIn>
+                                                          <SimpleArgRelationship rdf:ID="IsProcurementDirectedByIndexes_1">
+                                                            <isArgumentOf rdf:resource="#IsProcurementDirectedByIndexes"/>
+                                                            <hasArgNumber
+                                                             rdf:datatype=
+                                                            "http://www.w3.org/2001/XMLSchema#int"
+                                                            >1</hasArgNumber>
+                                                            <hasArgTerm rdf:resource="#DirectingProcurementByIndexes_MF.proc"/>
+                                                          </SimpleArgRelationship>
+                                                        </isArgTermIn>
+                                                        <isSubsBy rdf:resource="#Procurement_label"/>
+                                                        <rdfs:comment
+                                                         rdf:datatype=
+                                                        "http://www.w3.org/2001/XMLSchema#string"
+                                                        >OX2</rdfs:comment>
+                                                      </OVariable>
+                                                    </hasOVariable>
+                                                    <hasResidentNode rdf:resource="#IsProcurementDirectedByIndexes"/>
+                                                    <isMFragOf>
+                                                      <MTheory rdf:ID="DirecionamentoNaLicitacao_MT">
+                                                        <rdfs:comment
+                                                         rdf:datatype=
+                                                        "http://www.w3.org/2001/XMLSchema#string"
+                                                        ></rdfs:comment>
+                                                        <hasMFrag>
+                                                          <Domain_MFrag rdf:ID="ProcurementRequirement_Other_MF">
+                                                            <rdfs:comment
+                                                             rdf:datatype=
+                                                            "http://www.w3.org/2001/XMLSchema#string"
+                                                            ></rdfs:comment>
+                                                            <hasOVariable>
+                                                              <OVariable rdf:ID="ProcurementRequirement_Other_MF.proc">
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >This state is used for the cases in which a truth-value cannot be applied to a random variable (i.e. meaningless, undefined, or contradictory hypotheses).</rdfs:comment>
-    <hasType rdf:resource="#Boolean"/>
-    <isPossibleValueOf rdf:resource="#IX8"/>
-    <isPossibleValueOf rdf:resource="#equalto"/>
-    <isPossibleValueOf>
-      <BuiltInRV rdf:ID="not">
-        <hasPossibleValues rdf:resource="#true"/>
-        <hasPossibleValues rdf:resource="#false"/>
-        <hasPossibleValues rdf:resource="#absurd"/>
-      </BuiltInRV>
-    </isPossibleValueOf>
-    <isPossibleValueOf>
-      <Domain_Res rdf:ID="ExperienceInOnlyOneContract">
-        <hasParent rdf:resource="#IX6"/>
-        <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-        >Represents if a given procurement is demanding 
+    >OX1</rdfs:comment>
+    <isOVariableIn rdf:resource="#ProcurementRequirement_Other_MF"/>
+    <isArgTermIn>
+      <SimpleArgRelationship rdf:ID="IX6_1">
+        <hasArgNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
+        >1</hasArgNumber>
+        <isArgumentOf>
+          <Generative_input rdf:ID="IX6">
+            <isParentOf>
+              <Domain_Res rdf:ID="ExperienceInOnlyOneContract">
+                <hasParent rdf:resource="#IX6"/>
+                <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                >Represents if a given procurement is demanding 
 proof of experience in only one contract. In almost 
 every case, the experience is not gained only by doing 
 something in just one contract, but also by doing it over 
 and over again. In other words, in different contracts.</rdfs:comment>
-        <isResidentNodeIn rdf:resource="#ProcurementRequirement_Other_MF"/>
-        <hasPossibleValues rdf:resource="#absurd"/>
-        <hasPossibleValues rdf:resource="#false"/>
-        <hasPossibleValues rdf:resource="#true"/>
-        <hasProbDist>
-          <DeclarativeDist rdf:ID="ExperienceInOnlyOneContract_Table">
-            <hasDeclaration rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-            >if any proc have ( IsProcurementDirected = true ) [
+                <hasArgument>
+                  <SimpleArgRelationship rdf:ID="ExperienceInOnlyOneContract_1">
+                    <isArgumentOf rdf:resource="#ExperienceInOnlyOneContract"/>
+                    <hasArgNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
+                    >1</hasArgNumber>
+                    <hasArgTerm rdf:resource="#ProcurementRequirement_Other_MF.proc"/>
+                  </SimpleArgRelationship>
+                </hasArgument>
+                <hasProbDist>
+                  <DeclarativeDist rdf:ID="ExperienceInOnlyOneContract_Table">
+                    <isProbDistOf rdf:resource="#ExperienceInOnlyOneContract"/>
+                    <hasDeclaration rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                    >if any proc have ( IsProcurementDirected = true ) [
    true = 0.25,
    false = 0.75,
    absurd = 0.0
@@ -1088,308 +983,395 @@ and over again. In other words, in different contracts.</rdfs:comment>
    false = 0.999,
    absurd = 0.0
 ]
-</hasDeclaration>
-            <isProbDistOf rdf:resource="#ExperienceInOnlyOneContract"/>
-          </DeclarativeDist>
-        </hasProbDist>
-        <hasArgument>
-          <SimpleArgRelationship rdf:ID="ExperienceInOnlyOneContract_1">
-            <hasArgNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
-            >1</hasArgNumber>
-            <isArgumentOf rdf:resource="#ExperienceInOnlyOneContract"/>
-            <hasArgTerm rdf:resource="#ProcurementRequirement_Other_MF.proc"/>
-          </SimpleArgRelationship>
-        </hasArgument>
-      </Domain_Res>
-    </isPossibleValueOf>                                      </BooleanRVState>
-                                                            </hasPossibleValues>
-                                                          </BuiltInRV>
-                                                        </isPossibleValueOf>
-                                                        <isPossibleValueOf rdf:resource="#and"/>
-                                                        <isPossibleValueOf rdf:resource="#IX8"/>
-                                                        <isPossibleValueOf rdf:resource="#ExperienceInOnlyOneContract"/>
-                                                        <isPossibleValueOf rdf:resource="#IX5"/>
-                                                        <isPossibleValueOf rdf:resource="#iff"/>
-                                                        <rdfs:comment
-                                                         rdf:datatype=
-                                                        "http://www.w3.org/2001/XMLSchema#string"
-                                                        >This state corresponds to the meaningfull hypotheses that have a false truth-value.</rdfs:comment>
-                                                        <isPossibleValueOf rdf:resource="#forall"/>
-                                                        <isPossibleValueOf rdf:resource="#equalto"/>
-                                                        <isPossibleValueOf rdf:resource="#IsProcurementDirected"/>
-                                                        <isPossibleValueOf rdf:resource="#implies"/>
-                                                        <isPossibleValueOf rdf:resource="#IX6"/>
-                                                        <hasType rdf:resource="#Boolean"/>
-                                                        <isPossibleValueOf rdf:resource="#or"/>
-                                                        <isPossibleValueOf rdf:resource="#IsProcurementDirectedByIndexes"/>
-                                                        <isPossibleValueOf rdf:resource="#not"/>
-                                                      </BooleanRVState>
-                                                    </hasPossibleValues>
-                                                    <hasPossibleValues rdf:resource="#absurd"/>
-                                                  </BuiltInRV>
-                                                </isContextInstanceOf>
-                                                <hasInnerTerm rdf:resource="#CX1_1_inner"/>
-                                                <isContextNodeIn rdf:resource="#ProcurementRequirement_Indexes_MF"/>
-                                                <hasArgument>
-                                                  <SimpleArgRelationship rdf:ID="CX1_2">
-                                                    <hasArgTerm>
-                                                      <OVariable rdf:ID="ProcurementRequirement_Indexes_MF.proc">
-                                                        <rdfs:comment
-                                                         rdf:datatype=
-                                                        "http://www.w3.org/2001/XMLSchema#string"
-                                                        >OX2</rdfs:comment>
-                                                        <isSubsBy rdf:resource="#Procurement_label"/>
-                                                        <isArgTermIn>
-                                                          <SimpleArgRelationship rdf:ID="IX8_1">
-                                                            <hasArgNumber
-                                                             rdf:datatype=
-                                                            "http://www.w3.org/2001/XMLSchema#int"
-                                                            >1</hasArgNumber>
-                                                            <isArgumentOf rdf:resource="#IX8"/>
-                                                            <hasArgTerm rdf:resource="#ProcurementRequirement_Indexes_MF.proc"/>
-                                                          </SimpleArgRelationship>
-                                                        </isArgTermIn>
-                                                        <isArgTermIn rdf:resource="#CX1_2"/>
-                                                        <isOVariableIn rdf:resource="#ProcurementRequirement_Indexes_MF"/>
-                                                      </OVariable>
-                                                    </hasArgTerm>
-                                                    <hasArgNumber
+</hasDeclaration> </DeclarativeDist>
+                </hasProbDist>
+                <isResidentNodeIn rdf:resource="#ProcurementRequirement_Other_MF"/>
+                <hasPossibleValues rdf:resource="#absurd"/>
+                <hasPossibleValues rdf:resource="#false"/>
+                <hasPossibleValues rdf:resource="#true"/>
+              </Domain_Res>
+            </isParentOf>
+            <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+            >If the procurement is being directed, demanding 
+experience in only one contract is something that is 
+usually done to direct the procurement to a specific 
+company.</rdfs:comment>
+            <hasArgument rdf:resource="#IX6_1"/>
+            <hasPossibleValues rdf:resource="#true"/>
+            <hasPossibleValues rdf:resource="#false"/>
+            <hasPossibleValues rdf:resource="#absurd"/>
+            <isInputNodeIn rdf:resource="#ProcurementRequirement_Other_MF"/>
+            <isInputInstanceOf rdf:resource="#IsProcurementDirected"/>
+          </Generative_input>
+        </isArgumentOf>
+        <hasArgTerm rdf:resource="#ProcurementRequirement_Other_MF.proc"/>
+      </SimpleArgRelationship>
+    </isArgTermIn>
+    <isArgTermIn rdf:resource="#ExperienceInOnlyOneContract_1"/>
+    <isSubsBy rdf:resource="#Procurement_label"/>             </OVariable>
+                                                            </hasOVariable>
+                                                            <hasInputNode rdf:resource="#IX6"/>
+                                                            <isMFragOf rdf:resource="#DirecionamentoNaLicitacao_MT"/>
+                                                            <hasResidentNode rdf:resource="#ExperienceInOnlyOneContract"/>
+                                                          </Domain_MFrag>
+                                                        </hasMFrag>
+                                                        <hasMFrag rdf:resource="#DirectingProcurement_MF"/>
+                                                        <hasMFrag rdf:resource="#DirectingProcurementByIndexes_MF"/>
+                                                        <hasMFrag rdf:resource="#ProcurementRequirement_Indexes_MF"/>
+                                                      </MTheory>
+                                                    </isMFragOf>
+                                                    <rdfs:comment
                                                      rdf:datatype=
-                                                    "http://www.w3.org/2001/XMLSchema#int"
-                                                    >2</hasArgNumber>
-                                                    <isArgumentOf rdf:resource="#CX1"/>
-                                                  </SimpleArgRelationship>
-                                                </hasArgument>
-                                                <hasArgument>
-                                                  <ArgRelationship rdf:ID="CX1_1">
-                                                    <hasArgTerm rdf:resource="#CX1_1_inner"/>
-                                                    <isArgumentOf rdf:resource="#CX1"/>
-                                                    <hasArgNumber
-                                                     rdf:datatype=
-                                                    "http://www.w3.org/2001/XMLSchema#int"
-                                                    >1</hasArgNumber>
-                                                  </ArgRelationship>
-                                                </hasArgument>
-                                              </Context>
-                                            </isInnerTermOf>
-                                          </Context>
-                                        </isArgumentOf>
-                                      </SimpleArgRelationship>
-                                    </isArgTermIn>
-                                    <isArgTermIn rdf:resource="#IndexMinValue_1"/>
-                                    <isArgTermIn>
-                                      <SimpleArgRelationship rdf:ID="IndexType_1">
-                                        <hasArgTerm rdf:resource="#ProcurementRequirement_Indexes_MF.ind"/>
-                                        <isArgumentOf rdf:resource="#IndexType"/>
-                                        <hasArgNumber rdf:datatype=
-                                        "http://www.w3.org/2001/XMLSchema#int"
-                                        >1</hasArgNumber>
-                                      </SimpleArgRelationship>
-                                    </isArgTermIn>
-                                    <isArgTermIn rdf:resource="#IndexProcurement_1"/>
-                                    <rdfs:comment rdf:datatype=
-                                    "http://www.w3.org/2001/XMLSchema#string"
-                                    >OX1</rdfs:comment>
-                                  </OVariable>
-                                </hasArgTerm>
-                              </SimpleArgRelationship>
-                            </hasArgument>
-                            <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-                            >Minimun value required for a given accounting index 
+                                                    "http://www.w3.org/2001/XMLSchema#string"
+                                                    ></rdfs:comment>
+                                                  </Domain_MFrag>
+                                                </isResidentNodeIn>
+                                                <hasPossibleValues rdf:resource="#true"/>
+                                                <hasPossibleValues rdf:resource="#false"/>
+                                                <hasInputInstance rdf:resource="#IX8"/>
+                                                <hasPossibleValues rdf:resource="#absurd"/>
+                                                <rdfs:comment
+                                                 rdf:datatype=
+                                                "http://www.w3.org/2001/XMLSchema#string"
+                                                >Represents if a procurement is being directed to a specific 
+company through the use of accounting indexes.</rdfs:comment>
+                                                <hasArgument rdf:resource="#IsProcurementDirectedByIndexes_1"/>
+                                              </Domain_Res>
+                                            </isParentOf>
+                                            <hasPossibleValues rdf:resource="#true"/>
+                                            <hasPossibleValues rdf:resource="#false"/>
+                                            <hasPossibleValues rdf:resource="#absurd"/>
+                                            <hasArgument rdf:resource="#IX5_1"/>
+                                            <rdfs:comment rdf:datatype=
+                                            "http://www.w3.org/2001/XMLSchema#string"
+                                            >If the procurement is being directed there is a higher chance 
+that the procurement is being directed by the use of 
+accounting indexes.</rdfs:comment>          <isInputInstanceOf rdf:resource="#IsProcurementDirected"/>
+                                            <isInputNodeIn rdf:resource="#DirectingProcurementByIndexes_MF"/>
+                                          </Generative_input>
+                                        </isPossibleValueOf>
+                                        <isPossibleValueOf rdf:resource="#IsProcurementDirected"/>
+                                        <isPossibleValueOf rdf:resource="#exists"/>
+                                        <isPossibleValueOf rdf:resource="#IX6"/>
+                                        <hasUID rdf:datatype=
+                                        "http://www.w3.org/2001/XMLSchema#string"
+                                        >⊥</hasUID>
+                                        <isPossibleValueOf>
+                                          <BuiltInRV rdf:ID="or">
+                                            <hasPossibleValues rdf:resource="#true"/>
+                                            <hasPossibleValues rdf:resource="#false"/>
+                                            <hasPossibleValues rdf:resource="#absurd"/>
+                                          </BuiltInRV>
+                                        </isPossibleValueOf>
+                                        <isPossibleValueOf>
+                                          <BuiltInRV rdf:ID="and">
+                                            <hasPossibleValues rdf:resource="#true"/>
+                                            <hasPossibleValues rdf:resource="#false"/>
+                                            <hasPossibleValues rdf:resource="#absurd"/>
+                                          </BuiltInRV>
+                                        </isPossibleValueOf>
+                                        <isPossibleValueOf rdf:resource="#IsProcurementDirectedByIndexes"/>
+                                        <rdfs:comment rdf:datatype=
+                                        "http://www.w3.org/2001/XMLSchema#string"
+                                        >This state is used for the cases in which a truth-value cannot be applied to a random variable (i.e. meaningless, undefined, or contradictory hypotheses).</rdfs:comment>
+                                        <hasType rdf:resource="#Boolean"/>
+                                        <isPossibleValueOf rdf:resource="#IX8"/>
+                                        <isPossibleValueOf rdf:resource="#equalto"/>
+                                        <isPossibleValueOf>
+                                          <BuiltInRV rdf:ID="not">
+                                            <hasPossibleValues rdf:resource="#true"/>
+                                            <hasPossibleValues rdf:resource="#false"/>
+                                            <hasPossibleValues rdf:resource="#absurd"/>
+                                          </BuiltInRV>
+                                        </isPossibleValueOf>
+                                        <isPossibleValueOf rdf:resource="#ExperienceInOnlyOneContract"/>
+                                      </BooleanRVState>
+                                    </hasPossibleValues>
+                                  </BuiltInRV>
+                                </isContextInstanceOf>
+                              </Context>
+                            </isInnerTermOf>
+                            <isContextInstanceOf>
+                              <Domain_Res rdf:ID="IndexProcurement">
+                                <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                                >Represents the procurement where the given index 
+is used.</rdfs:comment>         <hasContextInstance rdf:resource="#CX1_1_inner"/>
+                                <hasPossibleValues rdf:resource="#Procurement_label"/>
+                                <isResidentNodeIn rdf:resource="#ProcurementRequirement_Indexes_MF"/>
+                                <hasArgument>
+                                  <SimpleArgRelationship rdf:ID="IndexProcurement_1">
+                                    <isArgumentOf rdf:resource="#IndexProcurement"/>
+                                    <hasArgNumber rdf:datatype=
+                                    "http://www.w3.org/2001/XMLSchema#int"
+                                    >1</hasArgNumber>
+                                    <hasArgTerm rdf:resource="#ProcurementRequirement_Indexes_MF.ind"/>
+                                  </SimpleArgRelationship>
+                                </hasArgument>
+                              </Domain_Res>
+                            </isContextInstanceOf>
+                            <hasArgument rdf:resource="#CX1_1_inner_1"/>
+                            <isContextNodeIn rdf:resource="#ProcurementRequirement_Indexes_MF"/>
+                            <hasPossibleValues rdf:resource="#Procurement_label"/>
+                          </Context>
+                        </isArgumentOf>
+                        <hasArgNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
+                        >1</hasArgNumber>
+                      </SimpleArgRelationship>
+                    </isArgTermIn>
+                    <isArgTermIn rdf:resource="#IndexMinValue_1"/>
+                    <isArgTermIn>
+                      <SimpleArgRelationship rdf:ID="IndexType_1">
+                        <hasArgTerm rdf:resource="#ProcurementRequirement_Indexes_MF.ind"/>
+                        <hasArgNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
+                        >1</hasArgNumber>
+                        <isArgumentOf rdf:resource="#IndexType"/>
+                      </SimpleArgRelationship>
+                    </isArgTermIn>
+                    <isArgTermIn rdf:resource="#IndexProcurement_1"/>
+                    <isOVariableIn rdf:resource="#ProcurementRequirement_Indexes_MF"/>
+                    <isSubsBy>
+                      <MetaEntity rdf:ID="Index_label">
+                        <isTypeOf>
+                          <Index rdf:ID="ind6">
+                            <hasType rdf:resource="#Index_label"/>
+                            <hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                            >!ind6</hasUID>
+                          </Index>
+                        </isTypeOf>
+                        <isTypeOf>
+                          <Index rdf:ID="ind3">
+                            <hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                            >!ind3</hasUID>
+                            <hasType rdf:resource="#Index_label"/>
+                          </Index>
+                        </isTypeOf>
+                        <isTypeOf>
+                          <Index rdf:ID="ind2">
+                            <hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                            >!ind2</hasUID>
+                            <hasType rdf:resource="#Index_label"/>
+                          </Index>
+                        </isTypeOf>
+                        <isTypeOf>
+                          <Index rdf:ID="ind5">
+                            <hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                            >!ind5</hasUID>
+                            <hasType rdf:resource="#Index_label"/>
+                          </Index>
+                        </isTypeOf>
+                        <hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                        >!Index_label</hasUID>
+                        <isTypeOf>
+                          <Index rdf:ID="ind1">
+                            <hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                            >!ind1</hasUID>
+                            <hasType rdf:resource="#Index_label"/>
+                          </Index>
+                        </isTypeOf>
+                        <subsOVar rdf:resource="#ProcurementRequirement_Indexes_MF.ind"/>
+                        <hasType rdf:resource="#TypeLabel"/>
+                        <isTypeOf>
+                          <Index rdf:ID="ind4">
+                            <hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                            >!ind4</hasUID>
+                            <hasType rdf:resource="#Index_label"/>
+                          </Index>
+                        </isTypeOf>
+                      </MetaEntity>
+                    </isSubsBy>
+                  </OVariable>
+                </hasArgTerm>
+                <isArgumentOf rdf:resource="#IndexMinValue"/>
+                <hasArgNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
+                >1</hasArgNumber>
+              </SimpleArgRelationship>
+            </hasArgument>
+            <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+            >Minimun value required for a given accounting index 
 that is used as a requirement in a certain procurement. 
 The mimimun value that is usually required is 1.0. 
 The higher this minimun value, the higher the chance of 
 the procurement is being directed to some company, 
 because it is narrowing competition.</rdfs:comment>
-                            <hasPossibleValues>
-                              <CategoricalRVState rdf:ID="Between1and2">
-                                <isPossibleValueOf rdf:resource="#IndexMinValue"/>
-                                <hasType rdf:resource="#CategoryLabel"/>
-                              </CategoricalRVState>
-                            </hasPossibleValues>
-                          </Domain_Res>
-                        </isPossibleValueOf>
-                      </CategoricalRVState>
-                    </isTypeOf>
-                    <isTypeOf>
-                      <CategoricalRVState rdf:ID="Entre2e3">
-                        <hasType rdf:resource="#CategoryLabel"/>
-                      </CategoricalRVState>
-                    </isTypeOf>
-                    <isTypeOf>
-                      <CategoricalRVState rdf:ID="MaiorQue3">
-                        <hasType rdf:resource="#CategoryLabel"/>
-                      </CategoricalRVState>
-                    </isTypeOf>
-                    <isTypeOf>
-                      <CategoricalRVState rdf:ID="ISG">
-                        <hasType rdf:resource="#CategoryLabel"/>
-                        <isPossibleValueOf rdf:resource="#IndexType"/>
-                      </CategoricalRVState>
-                    </isTypeOf>
-                    <isTypeOf rdf:resource="#GreaterThan3"/>
-                    <isTypeOf>
-                      <CategoricalRVState rdf:ID="Entre1e2">
-                        <hasType rdf:resource="#CategoryLabel"/>
-                      </CategoricalRVState>
-                    </isTypeOf>
-                    <isTypeOf>
-                      <CategoricalRVState rdf:ID="Other">
-                        <hasType rdf:resource="#CategoryLabel"/>
-                        <isPossibleValueOf rdf:resource="#IndexType"/>
-                      </CategoricalRVState>
-                    </isTypeOf>
-                    <isTypeOf>
-                      <CategoricalRVState rdf:ID="_2a3">
-                        <hasType rdf:resource="#CategoryLabel"/>
-                      </CategoricalRVState>
-                    </isTypeOf>
-                    <isTypeOf>
-                      <CategoricalRVState rdf:ID="_0a1">
-                        <hasType rdf:resource="#CategoryLabel"/>
-                      </CategoricalRVState>
-                    </isTypeOf>
-                    <isTypeOf>
-                      <CategoricalRVState rdf:ID="_1a2">
-                        <hasType rdf:resource="#CategoryLabel"/>
-                      </CategoricalRVState>
-                    </isTypeOf>
-                    <hasType rdf:resource="#TypeLabel"/>
-                    <isTypeOf rdf:resource="#Between0and1"/>
-                    <isTypeOf>
-                      <CategoricalRVState rdf:ID="Entre0e1">
-                        <hasType rdf:resource="#CategoryLabel"/>
-                      </CategoricalRVState>
-                    </isTypeOf>
-                    <isTypeOf>
-                      <CategoricalRVState rdf:ID="Between0e1">
-                        <hasType rdf:resource="#CategoryLabel"/>
-                      </CategoricalRVState>
-                    </isTypeOf>
-                    <isTypeOf rdf:resource="#Between1and2"/>
-                    <isTypeOf>
-                      <CategoricalRVState rdf:ID="ILG">
-                        <hasType rdf:resource="#CategoryLabel"/>
-                        <isPossibleValueOf rdf:resource="#IndexType"/>
-                      </CategoricalRVState>
-                    </isTypeOf>
-                    <isTypeOf rdf:resource="#IE"/>
-                    <hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-                    >!CategoryLabel</hasUID>
-                    <isTypeOf>
-                      <CategoricalRVState rdf:ID="Outro">
-                        <hasType rdf:resource="#CategoryLabel"/>
-                      </CategoricalRVState>
-                    </isTypeOf>
-                  </MetaEntity>
-                </hasType>
-                <isPossibleValueOf rdf:resource="#IndexType"/>
+            <hasPossibleValues>
+              <CategoricalRVState rdf:ID="Between1and2">
+                <isPossibleValueOf rdf:resource="#IndexMinValue"/>
+                <hasType rdf:resource="#CategoryLabel"/>
               </CategoricalRVState>
             </hasPossibleValues>
-            <hasPossibleValues rdf:resource="#ILC"/>
-            <hasPossibleValues rdf:resource="#ILG"/>
-            <hasParent rdf:resource="#IX8"/>
-            <hasPossibleValues rdf:resource="#ISG"/>
-            <isResidentNodeIn rdf:resource="#ProcurementRequirement_Indexes_MF"/>
-            <hasArgument rdf:resource="#IndexType_1"/>
-            <hasPossibleValues rdf:resource="#Other"/>
-            <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-            >Type of a given accounting index that is being used as 
+          </Domain_Res>
+        </isPossibleValueOf>
+        <hasType rdf:resource="#CategoryLabel"/>
+      </CategoricalRVState>
+    </isTypeOf>
+    <isTypeOf>
+      <CategoricalRVState rdf:ID="Entre2e3">
+        <hasType rdf:resource="#CategoryLabel"/>
+      </CategoricalRVState>
+    </isTypeOf>
+    <isTypeOf>
+      <CategoricalRVState rdf:ID="MaiorQue3">
+        <hasType rdf:resource="#CategoryLabel"/>
+      </CategoricalRVState>
+    </isTypeOf>
+    <isTypeOf>
+      <CategoricalRVState rdf:ID="ISG">
+        <isPossibleValueOf rdf:resource="#IndexType"/>
+        <hasType rdf:resource="#CategoryLabel"/>
+      </CategoricalRVState>
+    </isTypeOf>
+    <isTypeOf rdf:resource="#GreaterThan3"/>
+    <isTypeOf>
+      <CategoricalRVState rdf:ID="Entre1e2">
+        <hasType rdf:resource="#CategoryLabel"/>
+      </CategoricalRVState>
+    </isTypeOf>
+    <isTypeOf>
+      <CategoricalRVState rdf:ID="Other">
+        <hasType rdf:resource="#CategoryLabel"/>
+        <isPossibleValueOf rdf:resource="#IndexType"/>
+      </CategoricalRVState>
+    </isTypeOf>
+    <isTypeOf>
+      <CategoricalRVState rdf:ID="_2a3">
+        <hasType rdf:resource="#CategoryLabel"/>
+      </CategoricalRVState>
+    </isTypeOf>
+    <isTypeOf>
+      <CategoricalRVState rdf:ID="_0a1">
+        <hasType rdf:resource="#CategoryLabel"/>
+      </CategoricalRVState>
+    </isTypeOf>
+    <isTypeOf>
+      <CategoricalRVState rdf:ID="_1a2">
+        <hasType rdf:resource="#CategoryLabel"/>
+      </CategoricalRVState>
+    </isTypeOf>
+    <hasType rdf:resource="#TypeLabel"/>
+    <isTypeOf rdf:resource="#Between0and1"/>
+    <isTypeOf>
+      <CategoricalRVState rdf:ID="Entre0e1">
+        <hasType rdf:resource="#CategoryLabel"/>
+      </CategoricalRVState>
+    </isTypeOf>
+    <isTypeOf>
+      <CategoricalRVState rdf:ID="Between0e1">
+        <hasType rdf:resource="#CategoryLabel"/>
+      </CategoricalRVState>
+    </isTypeOf>
+    <isTypeOf rdf:resource="#Between1and2"/>
+    <isTypeOf>
+      <CategoricalRVState rdf:ID="ILG">
+        <isPossibleValueOf rdf:resource="#IndexType"/>
+        <hasType rdf:resource="#CategoryLabel"/>
+      </CategoricalRVState>
+    </isTypeOf>
+    <isTypeOf rdf:resource="#IE"/>
+    <hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >!CategoryLabel</hasUID>
+    <isTypeOf>
+      <CategoricalRVState rdf:ID="Outro">
+        <hasType rdf:resource="#CategoryLabel"/>
+      </CategoricalRVState>
+    </isTypeOf>                                               </MetaEntity>
+                                                            </hasType>
+                                                            <isPossibleValueOf rdf:resource="#IndexType"/>
+                                                          </CategoricalRVState>
+                                                        </hasPossibleValues>
+                                                        <hasPossibleValues rdf:resource="#ILC"/>
+                                                        <hasPossibleValues rdf:resource="#ILG"/>
+                                                        <hasParent rdf:resource="#IX8"/>
+                                                        <hasPossibleValues rdf:resource="#ISG"/>
+                                                        <isResidentNodeIn rdf:resource="#ProcurementRequirement_Indexes_MF"/>
+                                                        <hasArgument rdf:resource="#IndexType_1"/>
+                                                        <hasPossibleValues rdf:resource="#Other"/>
+                                                        <rdfs:comment
+                                                         rdf:datatype=
+                                                        "http://www.w3.org/2001/XMLSchema#string"
+                                                        >Type of a given accounting index that is being used as 
 requirement in a procurement. There are 4 commom 
 types of indexes that are usually used as requirements in 
 procurements (ILC, ILG, ISG, and IE). Any other type is 
 probably something made up to help direct the procurement 
-to some specific company.</rdfs:comment>
-          </Domain_Res>
-        </hasResidentNode>
-        <hasResidentNode rdf:resource="#IndexMinValue"/>
-        <hasOVariable rdf:resource="#ProcurementRequirement_Indexes_MF.ind"/>
-        <hasInputNode rdf:resource="#IX8"/>
-        <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-        ></rdfs:comment>
-        <hasResidentNode rdf:resource="#IndexProcurement"/>
-        <hasOVariable rdf:resource="#ProcurementRequirement_Indexes_MF.proc"/>
-        <hasContextNode rdf:resource="#CX1_1_inner"/>
-        <isMFragOf rdf:resource="#DirecionamentoNaLicitacao_MT"/>
-        <hasContextNode rdf:resource="#CX1"/>
-      </Domain_MFrag>
-    </isInputNodeIn>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >If the procurement is being directed by the use of 
-indexes, there is a higher chance 
-that unknown indexes are being used and that the 
-minimun value is greater than one.</rdfs:comment>
-    <hasPossibleValues rdf:resource="#false"/>
-    <hasPossibleValues rdf:resource="#true"/>
-    <hasArgument rdf:resource="#IX8_1"/>
-    <hasPossibleValues rdf:resource="#absurd"/>
-    <isInputInstanceOf rdf:resource="#IsProcurementDirectedByIndexes"/>
-    <isParentOf rdf:resource="#IndexMinValue"/>
-    <isParentOf rdf:resource="#IndexType"/>                   </Generative_input>
-                                                            </isPossibleValueOf>
-                                                            <isPossibleValueOf rdf:resource="#IsProcurementDirectedByIndexes"/>
-                                                            <isPossibleValueOf rdf:resource="#exists"/>
-                                                            <hasType rdf:resource="#Boolean"/>
-                                                            <isPossibleValueOf rdf:resource="#not"/>
-                                                            <isPossibleValueOf rdf:resource="#forall"/>
-                                                            <isPossibleValueOf rdf:resource="#iff"/>
-                                                            <isPossibleValueOf rdf:resource="#ExperienceInOnlyOneContract"/>
-                                                            <isPossibleValueOf rdf:resource="#or"/>
-                                                            <rdfs:comment
-                                                             rdf:datatype=
-                                                            "http://www.w3.org/2001/XMLSchema#string"
-                                                            >This state corresponds to the meaningfull hypotheses that have a false truth-value.</rdfs:comment>
-                                                            <isPossibleValueOf rdf:resource="#IX6"/>
-                                                            <hasUID
-                                                             rdf:datatype=
-                                                            "http://www.w3.org/2001/XMLSchema#string"
-                                                            >T</hasUID>
-                                                            <isPossibleValueOf rdf:resource="#IsProcurementDirected"/>
-                                                            <isPossibleValueOf rdf:resource="#and"/>
-                                                            <isPossibleValueOf rdf:resource="#implies"/>
-                                                            <isPossibleValueOf rdf:resource="#equalto"/>
-                                                            <isPossibleValueOf rdf:resource="#IX5"/>
-                                                          </BooleanRVState>
-                                                        </hasPossibleValues>
-                                                        <hasPossibleValues rdf:resource="#false"/>
-                                                        <hasPossibleValues rdf:resource="#absurd"/>
-                                                        <isParentOf rdf:resource="#ExperienceInOnlyOneContract"/>
-                                                      </Generative_input>
-                                                    </isArgumentOf>
-                                                  </SimpleArgRelationship>
-                                                </isArgTermIn>
-                                                <isArgTermIn rdf:resource="#ExperienceInOnlyOneContract_1"/>
-                                                <isSubsBy rdf:resource="#Procurement_label"/>
+to some specific company.</rdfs:comment>              </Domain_Res>
+                                                    </hasResidentNode>
+                                                    <hasResidentNode rdf:resource="#IndexMinValue"/>
+                                                    <hasOVariable rdf:resource="#ProcurementRequirement_Indexes_MF.ind"/>
+                                                    <hasInputNode rdf:resource="#IX8"/>
+                                                    <rdfs:comment
+                                                     rdf:datatype=
+                                                    "http://www.w3.org/2001/XMLSchema#string"
+                                                    ></rdfs:comment>
+                                                    <hasResidentNode rdf:resource="#IndexProcurement"/>
+                                                    <hasOVariable rdf:resource="#ProcurementRequirement_Indexes_MF.proc"/>
+                                                    <hasContextNode rdf:resource="#CX1_1_inner"/>
+                                                    <isMFragOf rdf:resource="#DirecionamentoNaLicitacao_MT"/>
+                                                    <hasContextNode rdf:resource="#CX1"/>
+                                                  </Domain_MFrag>
+                                                </isInputNodeIn>
                                                 <rdfs:comment
                                                  rdf:datatype=
                                                 "http://www.w3.org/2001/XMLSchema#string"
-                                                >OX1</rdfs:comment>
-                                              </OVariable>
-                                            </hasOVariable>
-                                            <hasResidentNode rdf:resource="#ExperienceInOnlyOneContract"/>
+                                                >If the procurement is being directed by the use of 
+indexes, there is a higher chance 
+that unknown indexes are being used and that the 
+minimun value is greater than one.</rdfs:comment>
+                                                <hasPossibleValues rdf:resource="#false"/>
+                                                <hasPossibleValues rdf:resource="#true"/>
+                                                <hasArgument rdf:resource="#IX8_1"/>
+                                                <hasPossibleValues rdf:resource="#absurd"/>
+                                                <isInputInstanceOf rdf:resource="#IsProcurementDirectedByIndexes"/>
+                                                <isParentOf rdf:resource="#IndexMinValue"/>
+                                                <isParentOf rdf:resource="#IndexType"/>
+                                              </Generative_input>
+                                            </isPossibleValueOf>
+                                            <isPossibleValueOf rdf:resource="#IsProcurementDirectedByIndexes"/>
+                                            <isPossibleValueOf rdf:resource="#exists"/>
+                                            <hasType rdf:resource="#Boolean"/>
+                                            <isPossibleValueOf rdf:resource="#not"/>
+                                            <isPossibleValueOf rdf:resource="#forall"/>
+                                            <isPossibleValueOf rdf:resource="#iff"/>
+                                            <isPossibleValueOf rdf:resource="#ExperienceInOnlyOneContract"/>
+                                            <isPossibleValueOf rdf:resource="#or"/>
                                             <rdfs:comment rdf:datatype=
                                             "http://www.w3.org/2001/XMLSchema#string"
-                                            ></rdfs:comment>
-                                            <hasInputNode rdf:resource="#IX6"/>
-                                          </Domain_MFrag>
-                                        </hasMFrag>
-                                        <hasMFrag rdf:resource="#DirectingProcurement_MF"/>
-                                        <hasMFrag rdf:resource="#DirectingProcurementByIndexes_MF"/>
-                                        <hasMFrag rdf:resource="#ProcurementRequirement_Indexes_MF"/>
-                                        <rdfs:comment rdf:datatype=
-                                        "http://www.w3.org/2001/XMLSchema#string"
-                                        ></rdfs:comment>
-                                      </MTheory>
-                                    </isMFragOf>
+                                            >This state corresponds to the meaningfull hypotheses that have a false truth-value.</rdfs:comment>
+                                            <isPossibleValueOf rdf:resource="#IX6"/>
+                                            <hasUID rdf:datatype=
+                                            "http://www.w3.org/2001/XMLSchema#string"
+                                            >T</hasUID>
+                                            <isPossibleValueOf rdf:resource="#IsProcurementDirected"/>
+                                            <isPossibleValueOf rdf:resource="#and"/>
+                                            <isPossibleValueOf rdf:resource="#implies"/>
+                                            <isPossibleValueOf rdf:resource="#equalto"/>
+                                            <isPossibleValueOf rdf:resource="#IX5"/>
+                                          </BooleanRVState>
+                                        </hasPossibleValues>
+                                        <hasPossibleValues rdf:resource="#false"/>
+                                        <hasPossibleValues rdf:resource="#absurd"/>
+                                      </BuiltInRV>
+                                    </isPossibleValueOf>
+                                    <isPossibleValueOf rdf:resource="#and"/>
+                                    <isPossibleValueOf rdf:resource="#IX8"/>
+                                    <isPossibleValueOf rdf:resource="#ExperienceInOnlyOneContract"/>
+                                    <isPossibleValueOf rdf:resource="#IX5"/>
+                                    <isPossibleValueOf rdf:resource="#iff"/>
                                     <rdfs:comment rdf:datatype=
                                     "http://www.w3.org/2001/XMLSchema#string"
-                                    ></rdfs:comment>
-                                  </Domain_MFrag>
-                                </isResidentNodeIn>
-                                <hasPossibleValues rdf:resource="#false"/>
+                                    >This state corresponds to the meaningfull hypotheses that have a false truth-value.</rdfs:comment>
+                                    <isPossibleValueOf rdf:resource="#forall"/>
+                                    <isPossibleValueOf rdf:resource="#equalto"/>
+                                    <isPossibleValueOf rdf:resource="#IsProcurementDirected"/>
+                                    <isPossibleValueOf rdf:resource="#implies"/>
+                                    <isPossibleValueOf rdf:resource="#IX6"/>
+                                    <hasType rdf:resource="#Boolean"/>
+                                    <isPossibleValueOf rdf:resource="#or"/>
+                                    <isPossibleValueOf rdf:resource="#IsProcurementDirectedByIndexes"/>
+                                    <isPossibleValueOf rdf:resource="#not"/>
+                                  </BooleanRVState>
+                                </hasPossibleValues>
                                 <hasProbDist>
                                   <DeclarativeDist rdf:ID="IsProcurementDirected_Table">
-                                    <isProbDistOf rdf:resource="#IsProcurementDirected"/>
                                     <hasDeclaration rdf:datatype=
                                     "http://www.w3.org/2001/XMLSchema#string"
                                     >[
@@ -1397,11 +1379,20 @@ minimun value is greater than one.</rdfs:comment>
    false = 0.999,
    absurd = 0
 ]
-</hasDeclaration>                 </DeclarativeDist>
+</hasDeclaration>                   <isProbDistOf rdf:resource="#IsProcurementDirected"/>
+                                  </DeclarativeDist>
                                 </hasProbDist>
                                 <hasInputInstance rdf:resource="#IX6"/>
                                 <hasPossibleValues rdf:resource="#true"/>
-                                <hasArgument rdf:resource="#IsProcurementDirected_1"/>
+                                <hasArgument>
+                                  <SimpleArgRelationship rdf:ID="IsProcurementDirected_1">
+                                    <hasArgNumber rdf:datatype=
+                                    "http://www.w3.org/2001/XMLSchema#int"
+                                    >1</hasArgNumber>
+                                    <isArgumentOf rdf:resource="#IsProcurementDirected"/>
+                                    <hasArgTerm rdf:resource="#DirectingProcurement_MF.proc"/>
+                                  </SimpleArgRelationship>
+                                </hasArgument>
                                 <hasPossibleValues rdf:resource="#absurd"/>
                                 <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
                                 >This variable tells if a given procurement proc is being
@@ -1411,12 +1402,13 @@ procurement is trying to benefit some specific
 company in detriment of fair competition.</rdfs:comment>
                                 <hasInputInstance rdf:resource="#IX5"/>
                               </Domain_Res>
-                            </isArgumentOf>
-                            <hasArgNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
-                            >1</hasArgNumber>
-                          </SimpleArgRelationship>
-                        </isArgTermIn>
-                        <isOVariableIn rdf:resource="#DirectingProcurement_MF"/>
+                            </hasResidentNode>
+                            <hasOVariable rdf:resource="#DirectingProcurement_MF.proc"/>
+                            <isMFragOf rdf:resource="#DirecionamentoNaLicitacao_MT"/>
+                          </Domain_MFrag>
+                        </isOVariableIn>
+                        <isArgTermIn rdf:resource="#IsProcurementDirected_1"/>
+                        <isSubsBy rdf:resource="#Procurement_label"/>
                         <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
                         >Represents the accounting indexes that are usually 
 used as requirements in procurements.</rdfs:comment>

@@ -22,17 +22,17 @@ NextOrdinaryVar=3
 Node=IndexProcurement
 Type=DomainResidentNode
 Position=355.0,302.0
-Size=35,35
+Size=100,20
 
 Node=IndexType
 Type=DomainResidentNode
 Position=440.0,248.0
-Size=35,35
+Size=100,20
 
 Node=IndexMinValue
 Type=DomainResidentNode
 Position=262.0,247.0
-Size=35,35
+Size=100,20
 
 % Input nodes
 
@@ -40,7 +40,7 @@ Size=35,35
 Node=IX8
 Type=GenerativeInputNode
 Position=352.0,151.0
-Size=35,35
+Size=100,20
 
 % Context nodes
 
@@ -48,7 +48,7 @@ Size=35,35
 Node=CX1
 Type=ContextNode
 Position=536.0,72.0
-Size=35,35
+Size=100,20
 
 % Ordinary Variables
 
@@ -56,12 +56,12 @@ Size=35,35
 Node=proc
 Type=OrdinalVar
 Position=342.0,72.0
-Size=35,35
+Size=100,20
 
 Node=ind
 Type=OrdinalVar
 Position=199.0,69.0
-Size=35,35
+Size=100,20
 
 % MFrag
 MFrag=DirectingProcurementByIndexes_MF
@@ -73,7 +73,7 @@ NextOrdinaryVar=3
 Node=IsProcurementDirectedByIndexes
 Type=DomainResidentNode
 Position=339.0,316.0
-Size=35,35
+Size=100,20
 
 % Input nodes
 
@@ -81,7 +81,7 @@ Size=35,35
 Node=IX5
 Type=GenerativeInputNode
 Position=338.0,206.0
-Size=35,35
+Size=100,20
 
 % Ordinary Variables
 
@@ -89,7 +89,7 @@ Size=35,35
 Node=proc
 Type=OrdinalVar
 Position=342.0,83.0
-Size=35,35
+Size=100,20
 
 % MFrag
 MFrag=DirectingProcurement_MF
@@ -101,7 +101,7 @@ NextOrdinaryVar=2
 Node=IsProcurementDirected
 Type=DomainResidentNode
 Position=274.0,185.0
-Size=35,35
+Size=100,20
 
 % Ordinary Variables
 
@@ -109,7 +109,7 @@ Size=35,35
 Node=proc
 Type=OrdinalVar
 Position=282.0,77.0
-Size=35,35
+Size=100,20
 
 % MFrag
 MFrag=ProcurementRequirement_Other_MF
@@ -121,7 +121,7 @@ NextOrdinaryVar=2
 Node=ExperienceInOnlyOneContract
 Type=DomainResidentNode
 Position=313.0,256.0
-Size=35,35
+Size=100,20
 
 % Input nodes
 
@@ -129,7 +129,7 @@ Size=35,35
 Node=IX6
 Type=GenerativeInputNode
 Position=312.0,162.0
-Size=35,35
+Size=100,20
 
 % Ordinary Variables
 
@@ -137,6 +137,6 @@ Size=35,35
 Node=proc
 Type=OrdinalVar
 Position=314.0,68.0
-Size=35,35
+Size=100,20
 
 % Object Entity Instances
