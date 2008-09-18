@@ -47,6 +47,7 @@ import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.gui.ParcialStateException;
 import unbbayes.gui.mebn.auxiliary.ListCellRenderer;
+import unbbayes.gui.mebn.util.OrganizerUtils;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.RandomVariableFinding;
 import unbbayes.prs.mebn.ResidentNode;
@@ -144,10 +145,13 @@ public class RandomVariableFindingEdtitionPane extends JPanel {
 			super(new BorderLayout()); 
 			
 			listModel = new DefaultListModel(); 
-			for(MFrag mfrag: mebnController.getMultiEntityBayesianNetwork().getMFragList()){
-				for(ResidentNode node: mfrag.getResidentNodeList()){
-					listModel.addElement(node); 
-				}
+			
+			List<ResidentNode> listResident = 
+				OrganizerUtils.createOrderedResidentNodeList(
+						mebnController.getMultiEntityBayesianNetwork()); 
+			
+			for(ResidentNode node: listResident){
+				listModel.addElement(new ResidentNodeJacket(node));
 			}
 			
 			jlistResident = new JList(listModel); 
@@ -161,8 +165,10 @@ public class RandomVariableFindingEdtitionPane extends JPanel {
 		                	if(jlistResident.getSelectedValue() != null){
 		                		editingInstance = false; 
 		                		btnRemoveInstance.setEnabled(false); 
-		                    	residentSelected = (ResidentNode)jlistResident.getSelectedValue();  
-		                    	showRandomVariableInstanceListPane((ResidentNode)(jlistResident.getSelectedValue()));
+		                    	residentSelected = (ResidentNode)(
+		                    			((ResidentNodeJacket)jlistResident.getSelectedValue()).getResidentNode());  
+		                    	showRandomVariableInstanceListPane((ResidentNode)(
+		                    			((ResidentNodeJacket)jlistResident.getSelectedValue()).getResidentNode()));
 		                	}
 		                }
 		            }  	
@@ -181,7 +187,8 @@ public class RandomVariableFindingEdtitionPane extends JPanel {
 			btnAddInstance.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
 					if(jlistResident.getSelectedValue() != null){
-					   showRandomVariableEditionPane((ResidentNode)(jlistResident.getSelectedValue())); 
+					   showRandomVariableEditionPane((ResidentNode)(
+                   			((ResidentNodeJacket)jlistResident.getSelectedValue()).getResidentNode())); 
 					}
 				}
 			}); 
@@ -206,7 +213,6 @@ public class RandomVariableFindingEdtitionPane extends JPanel {
 			
 			this.add(scrollListObjectEntity, BorderLayout.CENTER);
 			this.add(jtbOptions, BorderLayout.PAGE_END); 
-			
 		}		
 		
 		public void enableBtnRemoveInstance(){
@@ -216,6 +222,26 @@ public class RandomVariableFindingEdtitionPane extends JPanel {
 		public void unableBtnRemoveInstance(){
 			btnRemoveInstance.setEnabled(false); 
 		}
+		
+        
+        class ResidentNodeJacket{
+        	
+        	private ResidentNode resident; 
+        	
+        	public ResidentNodeJacket(ResidentNode resident){
+        		this.resident = resident; 
+        	}
+        	
+        	public String toString(){
+        		return "<html>" + resident.toString() + "<font color=blue>" + 
+        		" (" + resident.getRandomVariableFindingList().size() + ")" + "</font></style>"; 
+        	}
+        	
+        	public ResidentNode getResidentNode(){
+        		return resident; 
+        	}
+        	
+        }
 	}
 	
 	/**
@@ -381,6 +407,7 @@ public class RandomVariableFindingEdtitionPane extends JPanel {
         	this.add(scrollListObjectEntity, BorderLayout.CENTER);
         
         }
+
 		
 	}
 	

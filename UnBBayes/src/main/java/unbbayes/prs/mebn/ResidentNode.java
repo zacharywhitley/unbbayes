@@ -41,7 +41,7 @@ import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
  */
 
 public class ResidentNode extends MultiEntityNode 
-         implements ITabledVariable {
+         implements ITabledVariable, Comparable<ResidentNode> {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -665,6 +665,10 @@ public class ResidentNode extends MultiEntityNode
 	
 	public String toString() {
 		return name;
+	}
+
+	public int compareTo(ResidentNode arg0) {
+		return this.getName().compareTo(((ResidentNode)arg0).getName());	
 	}
 	
 }

@@ -26,7 +26,6 @@ import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -49,8 +48,8 @@ import unbbayes.controller.exception.InconsistentArgumentException;
 import unbbayes.gui.ParcialStateException;
 import unbbayes.gui.UnBBayesFrame;
 import unbbayes.gui.mebn.auxiliary.ListCellRenderer;
+import unbbayes.gui.mebn.util.OrganizerUtils;
 import unbbayes.prs.bn.ProbabilisticNetwork;
-import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.exception.MEBNException;
@@ -162,10 +161,12 @@ public class QueryPanel extends JDialog{
 
 			listModel = new DefaultListModel();
 			
-			for(MFrag mfrag: mebnController.getMultiEntityBayesianNetwork().getMFragList()){
-				for(ResidentNode node: mfrag.getResidentNodeList()){
-					listModel.addElement(node);
-				}
+			List<ResidentNode> listResident = 
+				OrganizerUtils.createOrderedResidentNodeList(
+						mebnController.getMultiEntityBayesianNetwork()); 
+			
+			for(ResidentNode node: listResident){
+				listModel.addElement(node);
 			}
 
 			jlistResident = new JList(listModel);
