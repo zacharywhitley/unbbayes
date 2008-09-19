@@ -18,8 +18,8 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
 public class AbstractSSBNGeneratorTest extends TestCase{
 
-	public static final String TCU_UBF = "examples/mebn/TCU/Licitacao04.ubf"; 
-	public static final String KB_FINDING_FILE = "examples/mebn/TCU/kb.plm";
+	public static final String TCU_UBF = "examples/mebn/CGU/Licitacao04.ubf"; 
+	public static final String KB_FINDING_FILE = "examples/mebn/CGU/kb.plm";
 	
 	private AbstractSSBNGenerator abstractSSBNGenerator; 
 	
