@@ -49,14 +49,14 @@ public class RandomVariableFinding {
 	 * @param arguments
 	 * @param state
 	 */
-	public RandomVariableFinding(ResidentNode node, ObjectEntityInstance[] arguments, Entity state, MultiEntityBayesianNetwork mebn){
+	public RandomVariableFinding(ResidentNode node, ObjectEntityInstance[] arguments, 
+			Entity state, MultiEntityBayesianNetwork mebn){
 
 		this.node = node;
 		this.arguments = arguments;
 		this.state = state;
 		this.mebn = mebn;
 
-		//TODO name...
 		name = "RVF"; //this object don't is saved... 
 	}
 

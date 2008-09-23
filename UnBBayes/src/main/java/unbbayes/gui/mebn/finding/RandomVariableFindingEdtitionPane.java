@@ -151,6 +151,7 @@ public class RandomVariableFindingEdtitionPane extends JPanel {
 						mebnController.getMultiEntityBayesianNetwork()); 
 			
 			for(ResidentNode node: listResident){
+				System.out.println(node);
 				listModel.addElement(new ResidentNodeJacket(node));
 			}
 			

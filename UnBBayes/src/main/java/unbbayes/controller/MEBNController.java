@@ -1607,9 +1607,13 @@ public class MEBNController  {
 	 * @throws SSBNNodeGeneralException 
 	 * @throws OVInstanceFaultException 
 	 */
-	public ProbabilisticNetwork executeQuery(ResidentNode residentNode, ObjectEntityInstance[] arguments)
-	                           throws InconsistentArgumentException, SSBNNodeGeneralException, 
-	                                  ImplementationRestrictionException, MEBNException, OVInstanceFaultException {
+	public ProbabilisticNetwork executeQuery(ResidentNode residentNode, 
+			ObjectEntityInstance[] arguments)
+	                           throws InconsistentArgumentException, 
+	                                  SSBNNodeGeneralException, 
+	                                  ImplementationRestrictionException, 
+	                                  MEBNException, 
+	                                  OVInstanceFaultException {
 		
 		mebnEditionPane.setStatus(resource.getString("statusGeneratingSSBN")); 
 		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -1662,7 +1666,9 @@ public class MEBNController  {
 					
 					ssbn.compileAndInitializeSSBN();
 					
-					openWarningDialog(); 
+					if (ssbn.getWarningList().size() > 0){
+						openWarningDialog(); 	
+					}
 					
 					this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
 

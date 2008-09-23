@@ -1,12 +1,8 @@
-package unbbayes.prs.mebn.ssbn;
+package unbbayes.prs.mebn.ontology;
 
-import java.awt.Cursor;
 import java.io.File;
 import java.io.IOException;
 
-import javax.swing.JOptionPane;
-
-import junit.framework.TestCase;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -17,22 +13,25 @@ import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
+import unbbayes.prs.mebn.ssbn.ExplosiveSSBNGenerator;
+import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
+import unbbayes.prs.mebn.ssbn.Query;
+import unbbayes.prs.mebn.ssbn.SSBNNode;
+import unbbayes.prs.mebn.ssbn.SituationSpecificBayesianNetwork;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
-public class ExplosiveSSBNGeneratorTest extends TestCase{
+public class StartrekTestSet{
 
 	public static final String KB_FINDING_FILE = "examples/mebn/KnowledgeBase/KnowledgeBaseWithStarshipZoneST4ver2.plm";
 	public static final String KB_GENERATIVE_FILE = "examples/mebn/KnowledgeBase/KnowledgeBaseGenerative.plm";
-	
 	
 	public static final String STARTREK_UBF = "examples/mebn/StarTrek55.ubf"; 
 
 	public static void main(String arguments[]){
 		
 		System.out.println("Begin");
-		
 
 		ISSBNGenerator ssbnGenerator = new ExplosiveSSBNGenerator(); 
 		
@@ -46,6 +45,7 @@ public class ExplosiveSSBNGeneratorTest extends TestCase{
 		} catch (IOMebnException e) {
 			e.printStackTrace();
 		}
+		
 		System.out.println("Stattrek UBF loaded");
 
 		KnowledgeBase kb = createGenerativeKnowledgeBase(mebn);
@@ -87,12 +87,12 @@ public class ExplosiveSSBNGeneratorTest extends TestCase{
 			kb.loadModule(new File(KB_FINDING_FILE), true); 
 		} catch (Exception e) {
 			e.printStackTrace();
-			fail(e.getMessage());
 		}
 	}
 
 	private static KnowledgeBase createGenerativeKnowledgeBase(
 			MultiEntityBayesianNetwork mebn) {
+		
 		KnowledgeBase kb = PowerLoomKB.getNewInstanceKB(); 
 		for(ObjectEntity entity: mebn.getObjectEntityContainer().getListEntity()){
 			kb.createEntityDefinition(entity);
@@ -104,6 +104,7 @@ public class ExplosiveSSBNGeneratorTest extends TestCase{
 			}
 		}
 		return kb;
+		
 	}
 	
 	private static SSBNNode createQueryNode_StarshipClass_ST4(MultiEntityBayesianNetwork mebn) {

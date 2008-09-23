@@ -1,0 +1,647 @@
+% UBF file header
+Version=0.03
+PrOwl="HeparII_01.owl"
+
+% UBF MTheory declaration
+MTheory=HeparII
+NextMFrag=23
+NextResident=30
+NextInput=29
+NextContext=1
+NextEntity=1
+
+% UBF MFrags and Nodes declaration
+
+% MFrag
+MFrag=Fatigue_MFrag
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=Fatigue
+Type=DomainResidentNode
+Position=122.0,191.0
+Size=100,20
+
+% Input nodes
+
+
+Node=IX8
+Type=GenerativeInputNode
+Position=123.0,117.0
+Size=100,20
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=130.0,53.0
+Size=100,20
+
+% MFrag
+MFrag=HaemorrhagieDiathesis_MFrag
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=HaemorrhagieDiathesis
+Type=DomainResidentNode
+Position=148.0,182.0
+Size=100,20
+
+% Input nodes
+
+
+Node=IX13
+Type=GenerativeInputNode
+Position=204.0,113.0
+Size=100,20
+
+Node=IX12
+Type=GenerativeInputNode
+Position=76.0,115.0
+Size=100,20
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=149.0,65.0
+Size=100,20
+
+% MFrag
+MFrag=FunctionalHyperbilirubinemia_MFrag
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=FunctionalHyperbilirubinemia
+Type=DomainResidentNode
+Position=183.0,211.0
+Size=100,20
+
+% Input nodes
+
+
+Node=IX2
+Type=GenerativeInputNode
+Position=120.0,132.0
+Size=100,20
+
+Node=IX3
+Type=GenerativeInputNode
+Position=254.0,132.0
+Size=100,20
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=162.0,49.0
+Size=100,20
+
+% MFrag
+MFrag=ToxicHepatitis_MFrag
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=HistoryAlcAbuse
+Type=DomainResidentNode
+Position=86.0,125.0
+Size=100,20
+
+Node=HepatoxicMeds
+Type=DomainResidentNode
+Position=214.0,119.0
+Size=100,20
+
+Node=ToxicHepatitis
+Type=DomainResidentNode
+Position=138.0,221.0
+Size=100,20
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=118.0,45.0
+Size=100,20
+
+% MFrag
+MFrag=PlateletCount_MFrag
+NextOrdinaryVar=3
+
+% Resident nodes
+
+
+Node=PlateletCount
+Type=DomainResidentNode
+Position=155.0,168.0
+Size=100,20
+
+% Input nodes
+
+
+Node=IX11
+Type=GenerativeInputNode
+Position=153.0,106.0
+Size=100,20
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=149.0,45.0
+Size=100,20
+
+% MFrag
+MFrag=ImpairedConsciousness_MFrag
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=ImpairedConsciousness
+Type=DomainResidentNode
+Position=160.0,185.0
+Size=100,20
+
+% Input nodes
+
+
+Node=IX24
+Type=GenerativeInputNode
+Position=162.0,114.0
+Size=100,20
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=174.0,47.0
+Size=100,20
+
+% MFrag
+MFrag=PBC_MFrag
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=PBC
+Type=DomainResidentNode
+Position=226.0,202.0
+Size=100,20
+
+% Input nodes
+
+
+Node=IX4
+Type=GenerativeInputNode
+Position=175.0,127.0
+Size=100,20
+
+Node=IX5
+Type=GenerativeInputNode
+Position=295.0,123.0
+Size=100,20
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=206.0,70.0
+Size=100,20
+
+% MFrag
+MFrag=EnlargedSpleen_DMFrag
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=EnlargedSpleen
+Type=DomainResidentNode
+Position=126.0,174.0
+Size=100,20
+
+% Input nodes
+
+
+Node=IX9
+Type=GenerativeInputNode
+Position=125.0,107.0
+Size=100,20
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=126.0,45.0
+Size=100,20
+
+% MFrag
+MFrag=Sex_MFrag
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=Sex
+Type=DomainResidentNode
+Position=171.0,141.0
+Size=100,20
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=171.0,59.0
+Size=100,20
+
+% MFrag
+MFrag=IncreasedLiverDensity_MFrag
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=IncreasedLiverDensity
+Type=DomainResidentNode
+Position=143.0,187.0
+Size=100,20
+
+% Input nodes
+
+
+Node=IX23
+Type=GenerativeInputNode
+Position=140.0,102.0
+Size=100,20
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=142.0,39.0
+Size=100,20
+
+% MFrag
+MFrag=AST_MFrag
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=AST
+Type=DomainResidentNode
+Position=124.0,164.0
+Size=100,20
+
+% Input nodes
+
+
+Node=IX7
+Type=GenerativeInputNode
+Position=124.0,96.0
+Size=100,20
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=88.0,37.0
+Size=100,20
+
+% MFrag
+MFrag=Yellowingoftheskin_MFrag
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=Yellowingoftheskin
+Type=DomainResidentNode
+Position=91.0,202.0
+Size=100,20
+
+% Input nodes
+
+
+Node=IX26
+Type=GenerativeInputNode
+Position=106.0,125.0
+Size=100,20
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=84.0,68.0
+Size=100,20
+
+% MFrag
+MFrag=TotalBilirubin_MFrag
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=TotalBilirubin
+Type=DomainResidentNode
+Position=144.0,208.0
+Size=100,20
+
+% Input nodes
+
+
+Node=IX15
+Type=GenerativeInputNode
+Position=237.0,98.0
+Size=100,20
+
+Node=IX14
+Type=GenerativeInputNode
+Position=105.0,98.0
+Size=100,20
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=128.0,44.0
+Size=100,20
+
+% MFrag
+MFrag=MusculoSkeletalPain_MFrag
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=MusculoSkeletalPain
+Type=DomainResidentNode
+Position=147.0,209.0
+Size=100,20
+
+% Input nodes
+
+
+Node=IX21
+Type=GenerativeInputNode
+Position=221.0,114.0
+Size=100,20
+
+Node=IX20
+Type=GenerativeInputNode
+Position=101.0,127.0
+Size=100,20
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=97.0,48.0
+Size=100,20
+
+% MFrag
+MFrag=HepaticEncephalopathy_MFrag
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=HepaticEncephalopathy
+Type=DomainResidentNode
+Position=125.0,217.0
+Size=100,20
+
+% Input nodes
+
+
+Node=IX22
+Type=GenerativeInputNode
+Position=125.0,136.0
+Size=100,20
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=124.0,68.0
+Size=100,20
+
+% MFrag
+MFrag=JointsSwelling_MFrag
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=JointsSwelling
+Type=DomainResidentNode
+Position=99.0,179.0
+Size=100,20
+
+% Input nodes
+
+
+Node=IX18
+Type=GenerativeInputNode
+Position=81.0,73.0
+Size=100,20
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=91.0,16.0
+Size=100,20
+
+% MFrag
+MFrag=ALT_MFrag
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=ALT
+Type=DomainResidentNode
+Position=131.0,191.0
+Size=100,20
+
+% Input nodes
+
+
+Node=IX10
+Type=GenerativeInputNode
+Position=129.0,131.0
+Size=100,20
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=144.0,85.0
+Size=100,20
+
+% MFrag
+MFrag=Age_MFrag
+NextOrdinaryVar=3
+
+% Resident nodes
+
+
+Node=Age
+Type=DomainResidentNode
+Position=215.0,114.0
+Size=100,20
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=214.0,49.0
+Size=100,20
+
+% MFrag
+MFrag=BloodUrea_MFrag
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=BloodUrea
+Type=DomainResidentNode
+Position=130.0,206.0
+Size=100,20
+
+% Input nodes
+
+
+Node=IX25
+Type=GenerativeInputNode
+Position=137.0,104.0
+Size=100,20
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=142.0,33.0
+Size=100,20
+
+% MFrag
+MFrag=Itching_MFrag
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=Itching
+Type=DomainResidentNode
+Position=136.0,155.0
+Size=100,20
+
+% Input nodes
+
+
+Node=IX16
+Type=GenerativeInputNode
+Position=132.0,79.0
+Size=100,20
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=135.0,32.0
+Size=100,20
+
+% MFrag
+MFrag=Jaundice_MFrag
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=Jaundice
+Type=DomainResidentNode
+Position=127.0,186.0
+Size=100,20
+
+% Input nodes
+
+
+Node=IX17
+Type=GenerativeInputNode
+Position=127.0,118.0
+Size=100,20
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=144.0,70.0
+Size=100,20
+
+% MFrag
+MFrag=INR_MFrag
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=INR
+Type=DomainResidentNode
+Position=180.0,198.0
+Size=100,20
+
+% Input nodes
+
+
+Node=IX1
+Type=GenerativeInputNode
+Position=293.0,121.0
+Size=100,20
+
+Node=IX28
+Type=GenerativeInputNode
+Position=105.0,85.0
+Size=100,20
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=254.0,56.0
+Size=100,20
+
+% Object Entity Instances

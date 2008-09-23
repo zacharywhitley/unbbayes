@@ -32,6 +32,7 @@ import javax.swing.tree.DefaultTreeModel;
 
 import unbbayes.gui.HierarchicTree;
 import unbbayes.io.LogManager;
+import unbbayes.io.NetworkCompilationLogManager;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
@@ -67,7 +68,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
     /**
 	 * Faz o processamento do log de compila��o.
 	 */
-	protected LogManager logManager;
+	protected NetworkCompilationLogManager logManager;
 
 	/**
 	 *  Lista de edgeList utilizada no processo de transforma��o.
@@ -103,7 +104,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
     public SingleEntityNetwork(String name) {
     	super(name);
         arcosMarkov = new ArrayList<Edge>();
-        logManager = new LogManager(); 
+        logManager = new NetworkCompilationLogManager(); 
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
 		DefaultTreeModel model = new DefaultTreeModel(root);
         hierarchicTree = new HierarchicTree(model);
