@@ -42,32 +42,37 @@ import unbbayes.prs.bn.ProbabilisticNode;
 public class SimulacaoMonteCarlo {
 	
 	private ProbabilisticNetwork pn;
-	private int nCasos;
+	private int nCases;
 	private ArrayList<Node> fila;
 	
 	
 	/**
-	 * Metodo que gera a simulacao de Monte Carlo
-	 * @param pn Rede a partir da qual serao gerados os casos
-	 * @param nCasos Numero de casos que serao gerados
+	 * Responsible for setting the initial variables for Monte Carlo simulation.
+	 * @param pn Probabilistic network that will be used for sampling.
+	 * @param nCases Number of cases to generate.
 	 */
-	public SimulacaoMonteCarlo(ProbabilisticNetwork pn , int nCasos){		
+	public SimulacaoMonteCarlo(ProbabilisticNetwork pn , int nCases){		
 		this.pn = pn;
-		this.nCasos = nCasos;	
-		iniciar();				
+		this.nCases = nCases;	
+		//start();				
 	}
 	
-	private void iniciar(){
+	/**
+	 * Generates the MC sample and return this sample as a matrix[i][j]. Row represents the sample case, 
+	 * column represents the node, and the value at matrix[i][j] represents the state's node for this case.
+	 * @return A matrix with the state for each node for each case of the sample.
+	 */
+	public byte[][] start(){
 		fila = new ArrayList<Node>();		
 		criarFila();
-		byte [][] matrizFila = new byte[nCasos][pn.getNodeCount()];		
-		for(int i = 0; i < nCasos; i++){						
+		byte [][] matrizFila = new byte[nCases][pn.getNodeCount()];		
+		for(int i = 0; i < nCases; i++){						
 			simular(matrizFila, i);
 		}
-		
+		/*
 		System.out.print("CASE");
 		for (int i = 0; i < pn.getNodeCount(); i++) {
-			System.out.print("	" + pn.getNodeAt(i).getName() /*+ " - " + pn.getNodeAt(i).getDescription()*/);
+			System.out.print("	" + pn.getNodeAt(i).getName() + " - " + pn.getNodeAt(i).getDescription());
 		}
 		System.out.println();
 		for (int i = 0; i < matrizFila.length; i++) {
@@ -77,7 +82,8 @@ public class SimulacaoMonteCarlo {
 			}
 			System.out.println();
 		}
-		
+		*/
+		return matrizFila;
 	}
 	
 	/**
@@ -134,7 +140,7 @@ public class SimulacaoMonteCarlo {
 		int[] estado = new int[fila.size()];
 		for(int i = 0 ; i < fila.size(); i++){			
 			ProbabilisticNode node = (ProbabilisticNode)fila.get(i);									
-			parentsIndexes = getParentsIndicesInQueue(node);
+			parentsIndexes = getParentsIndexesInQueue(node);
 			// It seems we can optimize this. It always give the same result.
 			column = getColumn(estado, parentsIndexes, node);													
 			estado[i] = getState(column);
@@ -147,7 +153,7 @@ public class SimulacaoMonteCarlo {
 	 * @param node The node to retrieve the parents for finding the indexes.
 	 * @return List of indexes of a node's parents in the queue.
 	 */
-	private List<Integer> getParentsIndicesInQueue(ProbabilisticNode node){
+	private List<Integer> getParentsIndexesInQueue(ProbabilisticNode node){
 		List<Integer> indices = new ArrayList<Integer>();
 		ArrayList<Node> parents = node.getParents();		
 		for(int i = 0 ; i < parents.size();i++){
@@ -178,7 +184,7 @@ public class SimulacaoMonteCarlo {
 		cdf = createCumulativeDistributionFunction(column);
 		for(int i = 0; i< cdf.length; i++){
 			if(i == 0){				
-				if (numero <= cdf[i][1] || cdf[i][1] == 0.0 ){
+				if (numero <= cdf[i][1]){
 					return i;										
 				}
 				continue;  				
