@@ -27,12 +27,21 @@ public class Evaluate {
 	private int targetStatesProduct;
 
 	private int evidenceStatesProduct;
+	
+	byte[][] sampleMatrix;
+	
+	int[] positionTargetNodeList;
+	int[] positionEvidenceNodeList;
+	
+	private Formatter formatter;
+	
+	private TreeVariable targetNode;
 
-	public Evaluate(String netFileName, List<String> targetNodeNameList, List<String> evidenceNodeNameList) throws Exception {
+	public Evaluate(String netFileName, List<String> targetNodeNameList, List<String> evidenceNodeNameList, int nSample) throws Exception {
 		
 		StringBuilder sb = new StringBuilder();
 		// Send all output to the Appendable object sb
-		Formatter formatter = new Formatter(sb, Locale.US);
+		formatter = new Formatter(sb, Locale.US);
 
 		
 		laodNetwork(netFileName);
@@ -45,18 +54,18 @@ public class Evaluate {
 		// 002	 2					0					1
 		// ...
 		// i	 x					y					z
-		SimulacaoMonteCarlo mc = new SimulacaoMonteCarlo(net, 100000);
-		byte[][] sampleMatrix = mc.start();
+		SimulacaoMonteCarlo mc = new SimulacaoMonteCarlo(net, nSample);
+		sampleMatrix = mc.start();
 		
 		// FIXME For now let's just consider the simple case of having just one target node!
-		TreeVariable targetNode = targetNodeList[0];
+		targetNode = targetNodeList[0];
 		if (targetNodeList.length != 1) {
 			throw new Exception("For now, just one target node is accepted!");
 		}
 		
 		// Get the position in the network of target and evidence nodes
-		int[] positionTargetNodeList = new int[targetNodeList.length];
-		int[] positionEvidenceNodeList = new int[evidenceNodeList.length];
+		positionTargetNodeList = new int[targetNodeList.length];
+		positionEvidenceNodeList = new int[evidenceNodeList.length];
 		
 		for (int i = 0; i < positionTargetNodeList.length; i++) {
 			positionTargetNodeList[i] = net.getNodeIndex(targetNodeList[i].getName());
@@ -66,6 +75,119 @@ public class Evaluate {
 			positionEvidenceNodeList[i] = net.getNodeIndex(evidenceNodeList[i].getName());
 		}
 		
+		// 2. Count # of occurrences of evidence nodes given target nodes
+		int[] frequencyEvidenceGivenTargetList = new int[statesProduct];
+		int[] frequencyEvidenceList = new int[targetStatesProduct];
+		
+		// Iterate over all cases in the MC sample
+		for (int i = 0; i < sampleMatrix.length; i++) {
+			// Row to compute the frequency
+			int row = 0;
+			int currentStatesProduct = evidenceStatesProduct;
+			for (int j = positionTargetNodeList.length - 1; j >= 0; j--) {
+				byte state = sampleMatrix[i][positionTargetNodeList[j]];
+				row += state * currentStatesProduct;
+				currentStatesProduct *= net.getNodeAt(positionTargetNodeList[j]).getStatesSize();
+			}
+			
+			// Add to total frequency for evidence nodes independent of state
+			frequencyEvidenceList[(int)(row/evidenceStatesProduct)]++;
+			
+			currentStatesProduct = evidenceStatesProduct;
+			for (int j = 0; j < positionEvidenceNodeList.length; j++) {
+				currentStatesProduct /= net.getNodeAt(positionEvidenceNodeList[j]).getStatesSize();
+				byte state = sampleMatrix[i][positionEvidenceNodeList[j]];
+				row += state * currentStatesProduct;
+			}
+			
+			// Add to total frequency for specific evidences
+			frequencyEvidenceGivenTargetList[row]++;
+		}
+		
+		// 3. Compute probabilities for evidence nodes given target nodes
+		float[] postProbEvidenceGivenTarget = new float[statesProduct];
+		for (int i = 0; i < postProbEvidenceGivenTarget.length; i++) {
+			float n = (float)frequencyEvidenceList[(int)(i / evidenceStatesProduct)];
+			if (n != 0) {
+				postProbEvidenceGivenTarget[i] = (float)frequencyEvidenceGivenTargetList[i] / n;
+			}
+		}
+		
+		// 4. Compute probabilities for target given evidence using evidence given target
+		// P(T|E) = P(E|T)P(T)
+		float[] postProbTargetGivenEvidence = new float[statesProduct];
+		int row = 0;
+		float prob = 0.0f;
+		float[] normalizationList = new float[evidenceStatesProduct];
+		net.compile();
+		for (int i = 0; i < targetNode.getStatesSize(); i++) {
+			for (int j = 0; j < evidenceStatesProduct; j++) {
+				row = j + i * evidenceStatesProduct;
+				prob = postProbEvidenceGivenTarget[row] * targetNode.getMarginalAt(i);
+				postProbTargetGivenEvidence[row] = prob;
+				normalizationList[j] += prob;
+			}
+		}
+		
+		float norm = 0;
+		for (int i = 0; i < postProbTargetGivenEvidence.length; i++) {
+			norm = normalizationList[i % evidenceStatesProduct];
+			if (norm != 0) {
+				postProbTargetGivenEvidence[i] /= norm;
+			}
+		}
+		
+		// 5. Compute probabilities for target given target
+		// P(T|T) = P(T|E)P(E|T)
+		float[] postProbTargetGivenTarget = new float[(int)Math.pow(targetNode.getStatesSize(), 2)];
+		int statesSize = targetNode.getStatesSize();
+		row = 0;
+		int index = 0;
+		for (int i = 0; i < statesProduct; i++) {
+			for (int j = 0; j < statesSize; j++) {
+				row = ((int)(i / evidenceStatesProduct)) * statesSize + j;
+				index = (i % evidenceStatesProduct) + j * evidenceStatesProduct;
+				postProbTargetGivenTarget[row] += postProbTargetGivenEvidence[i] * postProbEvidenceGivenTarget[index];
+			}
+		}
+		
+		formatter.format("P(E|T)\n");
+		for (int i = 0; i < evidenceStatesProduct; i++) {
+			for (int j = 0; j < targetStatesProduct; j++) {
+				formatter.format("%2.2f	", postProbEvidenceGivenTarget[i * targetStatesProduct + j] * 100);
+			}
+			formatter.format("\n");
+		}
+		
+		formatter.format("\n");
+		
+		formatter.format("P(T|E) = N[ P(E|T)P(T) ]\n");
+		for (int i = 0; i < targetStatesProduct; i++) {
+			for (int j = 0; j < evidenceStatesProduct; j++) {
+				formatter.format("%2.2f	", postProbTargetGivenEvidence[i * evidenceStatesProduct + j] * 100);
+			}
+			formatter.format("\n");
+		}
+		
+		formatter.format("\n");
+		
+		formatter.format("P(T|T) = P(T|E)P(E|T)\n");
+		for (int i = 0; i < statesSize; i++) {
+			for (int j = 0; j < statesSize; j++) {
+				formatter.format("%2.2f	", postProbTargetGivenTarget[i * statesSize + j] * 100);
+			}
+			formatter.format("\n");
+		}
+		
+		
+		
+		System.out.println(sb);
+		
+		
+		
+	}
+
+	private float[] computePostProbTargetGivenEvidenceUsingMC() {
 		// 2. Count # of occurrences of target nodes given evidence nodes
 		int[] frequencyTargetGivenEvidenceList = new int[statesProduct];
 		int[] frequencyTargetList = new int[evidenceStatesProduct];
@@ -101,64 +223,12 @@ public class Evaluate {
 			if (n != 0) {
 				postProbTargetGivenEvidence[i] = (float)frequencyTargetGivenEvidenceList[i] / n;
 			}
-			formatter.format("%2.2f\n", postProbTargetGivenEvidence[i]);
+			formatter.format("%2.2f\n", postProbTargetGivenEvidence[i] * 100);
 		}
 		
 		formatter.format("\n\n");
 		
-		// 4. Count # of occurrences of evidence nodes given target nodes
-		int[] frequencyEvidenceGivenTargetList = new int[statesProduct];
-		int[] frequencyEvidenceList = new int[targetStatesProduct];
-		
-		// Iterate over all cases in the MC sample
-		for (int i = 0; i < sampleMatrix.length; i++) {
-			// Row to compute the frequency
-			int row = 0;
-			int currentStatesProduct = evidenceStatesProduct;
-			for (int j = positionTargetNodeList.length - 1; j >= 0; j--) {
-				byte state = sampleMatrix[i][positionTargetNodeList[j]];
-				row += state * currentStatesProduct;
-				currentStatesProduct *= net.getNodeAt(positionTargetNodeList[j]).getStatesSize();
-			}
-			
-			// Add to total frequency for evidence nodes independent of state
-			frequencyEvidenceList[(int)(row/evidenceStatesProduct)]++;
-			
-			currentStatesProduct = evidenceStatesProduct;
-			for (int j = 0; j < positionEvidenceNodeList.length; j++) {
-				currentStatesProduct /= net.getNodeAt(positionEvidenceNodeList[j]).getStatesSize();
-				byte state = sampleMatrix[i][positionEvidenceNodeList[j]];
-				row += state * currentStatesProduct;
-			}
-			
-			// Add to total frequency for specific evidences
-			frequencyEvidenceGivenTargetList[row]++;
-		}
-		
-		// 5. Compute probabilities for evidence nodes given target nodes
-		float[] postProbEvidenceGivenTarget = new float[statesProduct];
-		for (int i = 0; i < postProbEvidenceGivenTarget.length; i++) {
-			float n = (float)frequencyEvidenceList[(int)(i / evidenceStatesProduct)];
-			if (n != 0) {
-				postProbEvidenceGivenTarget[i] = (float)frequencyEvidenceGivenTargetList[i] / n;
-			}
-			formatter.format("%2.2f\n", postProbEvidenceGivenTarget[i]);
-		}
-		
-		System.out.println(sb);
-		
-		getExatProbTargetGivenEvidence();
-		
-		getExatProbEvidenceGivenTarget();
-		
-		//getRowByState(new byte[net.getNodesCount()]);
-		
-		try {
-        	net.updateEvidences();
-        } catch (Exception exc) {
-        	System.out.println(exc.getMessage());               	
-        }
-		
+		return postProbTargetGivenEvidence;
 	}
 
 	private void getExatProbTargetGivenEvidence() throws Exception {
@@ -199,43 +269,7 @@ public class Evaluate {
 	}
 	
 	private void getExatProbEvidenceGivenTarget() throws Exception {
-		// TODO for now I am just considering there is one target node!
-		TreeVariable targetNode = targetNodeList[0];
-
-		net.compile();
-
-		float[] postProbList = new float[statesProduct];
-
-		int sProd = targetNode.getStatesSize();
-
-		byte[][] stateCombinationMatrix = new byte[statesProduct][net
-				.getNodes().size()];
-		int state = 0;
-		float prob = 1;
-		for (int row = 0; row < statesProduct; row++) {
-			stateCombinationMatrix[row][0] = (byte) (row / (statesProduct / sProd));
-			targetNode.addFinding(stateCombinationMatrix[row][0]);
-			try {
-				net.updateEvidences();
-			} catch (Exception e) {
-				prob = 0;
-			}
-			
-			for (int j = 0; j < evidenceNodeList.length; j++) {
-				sProd *= evidenceNodeList[j].getStatesSize();
-				state = (row / (statesProduct / sProd))
-						% evidenceNodeList[j].getStatesSize();
-				stateCombinationMatrix[row][j + 1] = (byte) state;
-				prob *= evidenceNodeList[j].getMarginalAt(state);
-			}
-			sProd = targetNode.getStatesSize();
-			postProbList[row] = prob;
-			prob = 1;
-			net.compile();
-		}
-				
-
-		printProbMatrix(stateCombinationMatrix, postProbList);
+		
 
 	}
 
@@ -253,7 +287,6 @@ public class Evaluate {
 
 	private void init(List<String> targetNodeNameList,
 			List<String> evidenceNodeNameList) {
-		List<Node> nodeList = (List<Node>) net.getNodes().clone();
 		targetNodeList = new TreeVariable[targetNodeNameList.size()];
 		evidenceNodeList = new TreeVariable[evidenceNodeNameList.size()];
 		statesProduct = 1;
@@ -317,12 +350,10 @@ public class Evaluate {
 		evidenceNodeNameList.add("Wet");
 
 		String netFileName = "../UnBBayes/examples/xml-bif/WetGrass.xml";
+		
+		int nSample = 100000;
 
-		new Evaluate(netFileName, targetNodeNameList, evidenceNodeNameList);
+		new Evaluate(netFileName, targetNodeNameList, evidenceNodeNameList, nSample);
 
-	}
-
-	private static int getRowByState(byte[] states) {
-		return 0;
 	}
 }
