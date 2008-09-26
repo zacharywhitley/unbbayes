@@ -143,28 +143,33 @@ public class Evaluate {
 		int statesSize = targetNode.getStatesSize();
 		row = 0;
 		int index = 0;
+//		System.out.println();
 		for (int i = 0; i < statesProduct; i++) {
 			for (int j = 0; j < statesSize; j++) {
 				row = ((int)(i / evidenceStatesProduct)) * statesSize + j;
 				index = (i % evidenceStatesProduct) + j * evidenceStatesProduct;
+//				System.out.println("P(T|T)[" + row + "] = P(T|T)[" + row + "] + P(T|E)[" + i + "] * P(E|T)[" + index + "]");
+//				System.out.println("P(T|T)[" + row + "] = " + postProbTargetGivenTarget[row] + " + " + postProbTargetGivenEvidence[i] + " * " + postProbEvidenceGivenTarget[index]);
 				postProbTargetGivenTarget[row] += postProbTargetGivenEvidence[i] * postProbEvidenceGivenTarget[index];
+//				System.out.println("P(T|T)[" + row + "] = " + postProbTargetGivenTarget[row]);
 			}
 		}
+//		System.out.println();
 		
-		formatter.format("P(E|T)\n");
-		for (int i = 0; i < evidenceStatesProduct; i++) {
-			for (int j = 0; j < targetStatesProduct; j++) {
-				formatter.format("%2.2f	", postProbEvidenceGivenTarget[i * targetStatesProduct + j] * 100);
+		formatter.format("P(T|E) = N[ P(E|T)P(T) ]\n");
+		for (int i = 0; i < targetStatesProduct; i++) {
+			for (int j = 0; j < evidenceStatesProduct; j++) {
+				formatter.format("%2.2f	", postProbTargetGivenEvidence[i * evidenceStatesProduct + j] * 100);
 			}
 			formatter.format("\n");
 		}
 		
 		formatter.format("\n");
 		
-		formatter.format("P(T|E) = N[ P(E|T)P(T) ]\n");
-		for (int i = 0; i < targetStatesProduct; i++) {
-			for (int j = 0; j < evidenceStatesProduct; j++) {
-				formatter.format("%2.2f	", postProbTargetGivenEvidence[i * evidenceStatesProduct + j] * 100);
+		formatter.format("P(E|T)\n");
+		for (int i = 0; i < evidenceStatesProduct; i++) {
+			for (int j = 0; j < targetStatesProduct; j++) {
+				formatter.format("%2.2f	", postProbEvidenceGivenTarget[i * targetStatesProduct + j] * 100);
 			}
 			formatter.format("\n");
 		}
@@ -179,16 +184,12 @@ public class Evaluate {
 			formatter.format("\n");
 		}
 		
-		
-		
 		System.out.println(sb);
-		
-		
 		
 	}
 
 	private float[] computePostProbTargetGivenEvidenceUsingMC() {
-		// 2. Count # of occurrences of target nodes given evidence nodes
+		// 1. Count # of occurrences of target nodes given evidence nodes
 		int[] frequencyTargetGivenEvidenceList = new int[statesProduct];
 		int[] frequencyTargetList = new int[evidenceStatesProduct];
 		
@@ -216,7 +217,7 @@ public class Evaluate {
 			frequencyTargetGivenEvidenceList[row]++;
 		}
 		
-		// 3. Compute probabilities for target nodes given evidence nodes
+		// 2. Compute probabilities for target nodes given evidence nodes
 		float[] postProbTargetGivenEvidence = new float[statesProduct];
 		for (int i = 0; i < postProbTargetGivenEvidence.length; i++) {
 			float n = (float)frequencyTargetList[i % (evidenceStatesProduct)];
@@ -342,11 +343,11 @@ public class Evaluate {
 	public static void main(String[] args) throws Exception {
 
 		List<String> targetNodeNameList = new ArrayList<String>();
-		targetNodeNameList.add("Cloudy");
+		targetNodeNameList.add("Rain");
 
 		List<String> evidenceNodeNameList = new ArrayList<String>();
 		evidenceNodeNameList.add("Springler");
-		evidenceNodeNameList.add("Rain");
+		evidenceNodeNameList.add("Cloudy");
 		evidenceNodeNameList.add("Wet");
 
 		String netFileName = "../UnBBayes/examples/xml-bif/WetGrass.xml";
