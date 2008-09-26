@@ -162,6 +162,7 @@ public class GuiResources extends ListResourceBundle {
 		{"typeLabel", "Type:"}, 
 		{"descriptionLabel","Description:"},
 		{"ordereableLabel", "Is Ordenable"}, 
+		{"evaluateToolTip","Evaluate probabilistic network"},
 		{"compileToolTip","Compile junction tree"},
 		{"moreToolTip","Add state"},
 		{"lessToolTip","Remove state"},

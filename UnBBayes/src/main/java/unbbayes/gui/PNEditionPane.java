@@ -82,6 +82,8 @@ public class PNEditionPane extends JPanel {
     private final JLabel sigla;
     private final JLabel description;
 
+    private final JButton btnEvaluate;
+    
     private final JButton btnCompile;
     private final JButton btnAddState;
     private final JButton btnRemoveState;
@@ -129,7 +131,8 @@ public class PNEditionPane extends JPanel {
         txtSigla           = new JTextField(10);
         txtDescription     = new JTextField(15);
 
-        //criar bot�es que ser�o usados nodeList toolbars
+        // Create buttons that are going to be used in the nodeList tool bar
+        btnEvaluate           = new JButton(iconController.getEvaluateIcon());
         btnCompile           = new JButton(iconController.getCompileIcon());
         btnAddState              = new JButton(iconController.getMoreIcon());
         btnRemoveState              = new JButton(iconController.getLessIcon());
@@ -147,7 +150,8 @@ public class PNEditionPane extends JPanel {
         btnGlobalOption      = new JButton(iconController.getGlobalOptionIcon());
         btnHierarchy         = new JButton(iconController.getHierarchyIcon());
 
-        //setar tooltip para esses bot�es
+        // Set tool tip for the following buttons
+        btnEvaluate.setToolTipText(resource.getString("evaluateToolTip"));
         btnCompile.setToolTipText(resource.getString("compileToolTip"));
         btnAddState.setToolTipText(resource.getString("moreToolTip"));
         btnRemoveState.setToolTipText(resource.getString("lessToolTip"));
@@ -191,6 +195,13 @@ public class PNEditionPane extends JPanel {
                     return;
                 }
                 netWindow.changeToPNCompilationPane();
+            }
+        });
+        
+        // Call the evaluate method in the controller
+        btnEvaluate.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                controller.evaluateNetwork();
             }
         });
 
@@ -413,6 +424,7 @@ public class PNEditionPane extends JPanel {
         jtbEdition.add(btnAddEdge);
         jtbEdition.add(btnSelectObject);
         jtbEdition.add(btnCompile);
+        jtbEdition.add(btnEvaluate);
 
         jtbEdition.addSeparator();
 

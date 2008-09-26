@@ -54,6 +54,7 @@ import javax.swing.JTextArea;
 
 import org.shetline.io.GIFOutputStream;
 
+import unbbayes.evaluation.controller.EvaluationController;
 import unbbayes.gui.FileIcon;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.SimpleFileFilter;
@@ -61,6 +62,7 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -263,6 +265,18 @@ public class NetworkController implements KeyListener {
     public boolean compileNetwork() {
     	if (senController != null) return senController.compileNetwork();
     	return false;
+    }
+    
+    /**
+     * Change the GUI to allow PN evaluation.
+     */
+    public void evaluateNetwork() {
+    	if (singleEntityNetwork != null && singleEntityNetwork instanceof ProbabilisticNetwork) {
+    		EvaluationController evaluationController = new EvaluationController((ProbabilisticNetwork)singleEntityNetwork);
+    		screen.changeToPNEvaluationPane(evaluationController.getView());
+    	} else {
+    		JOptionPane.showMessageDialog(screen, "Evaluation can only be done in probabilistic networks.", "Evaluation Error", JOptionPane.ERROR_MESSAGE);
+    	}
     }
 
 

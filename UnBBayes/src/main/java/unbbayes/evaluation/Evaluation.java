@@ -1,4 +1,4 @@
-package unbbayes.evaluate;
+package unbbayes.evaluation;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -14,7 +14,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;
 
-public class Evaluate {
+public class Evaluation {
 
 	private ProbabilisticNetwork net;
 
@@ -37,14 +37,22 @@ public class Evaluate {
 	
 	private TreeVariable targetNode;
 
-	public Evaluate(String netFileName, List<String> targetNodeNameList, List<String> evidenceNodeNameList, int nSample) throws Exception {
+	public String evaluate(String netFileName, List<String> targetNodeNameList, List<String> evidenceNodeNameList, int sampleSize) throws Exception {
+		laodNetwork(netFileName);
+		return evaluate(targetNodeNameList, evidenceNodeNameList, sampleSize);
+	}
+	
+	public String evaluate(ProbabilisticNetwork net, List<String> targetNodeNameList, List<String> evidenceNodeNameList, int sampleSize) throws Exception {
+		this.net = net;
+		return evaluate(targetNodeNameList, evidenceNodeNameList, sampleSize);
+	}
+
+	private String evaluate(List<String> targetNodeNameList,
+			List<String> evidenceNodeNameList, int sampleSize) throws Exception {
 		
 		StringBuilder sb = new StringBuilder();
-		// Send all output to the Appendable object sb
+		// Send all output to the appendable object sb
 		formatter = new Formatter(sb, Locale.US);
-
-		
-		laodNetwork(netFileName);
 		
 		init(targetNodeNameList, evidenceNodeNameList);
 		
@@ -54,7 +62,7 @@ public class Evaluate {
 		// 002	 2					0					1
 		// ...
 		// i	 x					y					z
-		SimulacaoMonteCarlo mc = new SimulacaoMonteCarlo(net, nSample);
+		SimulacaoMonteCarlo mc = new SimulacaoMonteCarlo(net, sampleSize);
 		sampleMatrix = mc.start();
 		
 		// FIXME For now let's just consider the simple case of having just one target node!
@@ -184,7 +192,9 @@ public class Evaluate {
 			formatter.format("\n");
 		}
 		
-		System.out.println(sb);
+//		System.out.println(sb);
+		
+		return sb.toString();
 		
 	}
 
@@ -352,9 +362,10 @@ public class Evaluate {
 
 		String netFileName = "../UnBBayes/examples/xml-bif/WetGrass.xml";
 		
-		int nSample = 100000;
+		int sampleSize = 100000;
 
-		new Evaluate(netFileName, targetNodeNameList, evidenceNodeNameList, nSample);
+		Evaluation evaluation = new Evaluation();
+		evaluation.evaluate(netFileName, targetNodeNameList, evidenceNodeNameList, sampleSize);
 
 	}
 }

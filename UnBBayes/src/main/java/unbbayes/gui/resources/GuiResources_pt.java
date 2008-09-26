@@ -163,6 +163,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"typeLabel", "Tipo:"}, 
 		{"descriptionLabel","Descrição:"},
 		{"ordereableLabel", "É Ordenável"}, 
+		{"evaluateToolTip","Avaliar rede probabilística"},
 		{"compileToolTip","Compilar árvore de junção"},
 		{"moreToolTip","Adicionar estado"},
 		{"lessToolTip","Remover estado"},

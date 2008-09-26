@@ -60,6 +60,8 @@ public class IconController implements Serializable {
 
 	protected ImageIcon openIcon;
 
+	protected ImageIcon evaluateIcon;
+	
 	protected ImageIcon compileIcon;
 
 	protected ImageIcon saveIcon;
@@ -422,6 +424,16 @@ public class IconController implements Serializable {
 			visualizeIcon = new ImageIcon(getClass().getResource(
 					"/icons/visualize.gif"));
 			return visualizeIcon;
+		}
+	}
+	
+	public ImageIcon getEvaluateIcon() {
+		if (evaluateIcon != null) {
+			return evaluateIcon;
+		} else {
+			evaluateIcon = new ImageIcon(getClass().getResource(
+					"/icons/eye.gif"));
+			return evaluateIcon;
 		}
 	}
 

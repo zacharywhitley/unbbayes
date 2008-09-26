@@ -20,21 +20,29 @@
  */
 package unbbayes.gui;
 
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.util.ResourceBundle;
 
+import javax.swing.JButton;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.JViewport;
 
+import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
@@ -97,6 +105,8 @@ public class NetworkWindow extends JInternalFrame {
 	private final String PN_PANE_PN_COMPILATION_PANE = "pnCompilationPane";
 
 	private final String PN_PANE_HIERARCHY_PANE = "hierarchy";
+	
+	private final String PN_PANE_EVALUATION_PANE = "pnEvaluation";
 
 	private final String MEBN_PANE_MEBN_EDITION_PANE = "mebnEditionPane";
 
@@ -370,6 +380,42 @@ public class NetworkWindow extends JInternalFrame {
 
 			card.show(getContentPane(), PN_PANE_PN_COMPILATION_PANE);
 			pnCompilationPane.getEvidenceTree().updateTree();
+		}
+
+	}
+	
+	public void changeToPNEvaluationPane(JPanel evaluationPane) {
+
+		if (mode == NetworkWindow.PN_MODE) {
+			graphPane.setAction(GraphAction.NONE);
+			graphPane.removeKeyListener(controller);
+			
+			
+			// FIXME THINK MORE IN WHERE TO PUT THIS... DOES NOT LOOK GOOD...
+			JPanel leftPane = new JPanel(new BorderLayout());
+			JToolBar toolBar = new JToolBar();
+			
+			JButton editMode = new JButton(IconController.getInstance().getEditIcon());
+			editMode.setToolTipText(resource.getString("editToolTip"));
+				
+			// Go back to editing mode 
+	        editMode.addActionListener(new ActionListener() {
+	            public void actionPerformed(ActionEvent ae) {
+	                changeToPNEditionPane();
+	            }
+	        });
+			toolBar.add(editMode);
+			
+			leftPane.add(toolBar, BorderLayout.NORTH);
+			leftPane.add(evaluationPane, BorderLayout.CENTER);
+			
+			JSplitPane mainPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPane, jspGraph);
+			
+			mainPane.setDividerLocation(500);
+			
+			getContentPane().add(mainPane, PN_PANE_EVALUATION_PANE);
+
+			card.show(getContentPane(), PN_PANE_EVALUATION_PANE);
 		}
 
 	}
