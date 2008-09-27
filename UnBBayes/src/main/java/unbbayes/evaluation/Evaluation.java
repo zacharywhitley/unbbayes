@@ -177,7 +177,7 @@ public class Evaluation {
 		formatter.format("P(E|T)\n");
 		for (int i = 0; i < evidenceStatesProduct; i++) {
 			for (int j = 0; j < targetStatesProduct; j++) {
-				formatter.format("%2.2f	", postProbEvidenceGivenTarget[i * targetStatesProduct + j] * 100);
+				formatter.format("%2.2f	", postProbEvidenceGivenTarget[j * evidenceStatesProduct + i] * 100);
 			}
 			formatter.format("\n");
 		}
