@@ -65,8 +65,8 @@ public class HeparIITestSet {
 	private static final String RV_ToxicHepatitis = "ToxicHepatitis"; 
 	private static final String RV_Yellowingoftheskin = "Yellowingoftheskin"; 
 	
-	private static final String RV_HistoryAlcAbuse_MFrag = ""; 
-	private static final String RV_HepatoxicMeds_MFrag = ""; 
+	private static final String RV_HistoryAlcAbuse_MFrag = "ToxicHepatitis_MFrag"; 
+	private static final String RV_HepatoxicMeds_MFrag = "ToxicHepatitis_MFrag"; 
 	
 	
 	private static final String OV_P = "p"; 
@@ -1204,7 +1204,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_HistoryAlcAbuse_MFrag, RV_HistoryAlcAbuse, true), 
 					createBooleanFinding(RV_HepatoxicMeds_MFrag, RV_HepatoxicMeds, true), 
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true), 
-					createFinding(RV_AGE + "_MFrag", RV_Sex, "65_100")
+					createFinding(RV_AGE + "_MFrag", RV_Sex, "age65_100")
 					}; 
 
 			executeTestCaseSerieD(64, RV_INR,  RV_INR + "_MFrag", findings); 
@@ -1237,7 +1237,7 @@ public class HeparIITestSet {
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_ToxicHepatitis + "_MFrag", RV_ToxicHepatitis, true), 
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true), 
-					createFinding(RV_AGE + "_MFrag", RV_Sex, "age65_100")
+					createFinding(RV_AGE + "_MFrag", RV_AGE, "age65_100")
 					}; 
 
 			executeTestCaseSerieD(66, RV_INR,  RV_INR + "_MFrag", findings); 
@@ -1333,7 +1333,7 @@ public class HeparIITestSet {
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_PBC + "_MFrag", RV_PBC, true), 
-					createFinding(RV_Sex + "_MFrag", RV_Sex, "65_100")
+					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
 			executeTestCaseSerieD(73, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
@@ -1445,7 +1445,7 @@ public class HeparIITestSet {
 	private void executeTestCase81(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
-					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)	}; 
+					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)}; 
 
 			executeTestCaseSerieD(81, RV_MusculoSkeletalPain,  RV_MusculoSkeletalPain + "_MFrag", findings); 
 		}
