@@ -40,6 +40,7 @@ import unbbayes.io.exception.UBIOException;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.RandomVariableFinding;
@@ -126,8 +127,8 @@ public class PowerLoomKB implements KnowledgeBase {
 		initialize(); 
 		idInstance = id; 
 		
-		moduleGenerativeName =  GENERATIVE_MODULE_NAME + "_" + id; 
-		moduleFindingName = FINDING_MODULE_NAME + "_" + id; 
+		moduleGenerativeName =  GENERATIVE_MODULE_NAME + "_" + idInstance; 
+		moduleFindingName = FINDING_MODULE_NAME + "_" + idInstance; 
 		
 		Module fatherModule = PLI.getModule(POWER_LOOM_KERNEL_MODULE, environment);
 		moduleGenerative = PLI.createModule(moduleGenerativeName, fatherModule,
@@ -156,12 +157,9 @@ public class PowerLoomKB implements KnowledgeBase {
 	 * @return One new Knowledge Base.
 	 */
 	public synchronized static PowerLoomKB getNewInstanceKB() {
-
-		PowerLoomKB kb = new PowerLoomKB(nextId); 
-		nextId++; 
-
-		return kb;
-
+		
+		return new PowerLoomKB(nextId++); 
+	
 	}
 	
 	
@@ -432,6 +430,21 @@ public class PowerLoomKB implements KnowledgeBase {
 
 	}
 
+	public void createGenerativeKnowledgeBase(
+			MultiEntityBayesianNetwork mebn) {
+		
+		for(ObjectEntity entity: mebn.getObjectEntityContainer().getListEntity()){
+			createEntityDefinition(entity);
+		}
+
+		for(MFrag mfrag: mebn.getDomainMFragList()){
+			for(ResidentNode resident: mfrag.getResidentNodeList()){
+				createRandomVariableDefinition(resident);
+			}
+		}
+		
+	}
+	
 	/**
 	 * Syntax example: 
 	 * (ASSERT (STARSHIP_LABEL ST0))

@@ -53,6 +53,14 @@ public interface KnowledgeBase {
 	public void clearKnowledgeBase();
 
 	/**
+	 * Fill the generative Knowledge Base with the terms of the mebn. 
+	 * 
+	 * @param mebn Multi Entity Bayesian Network that contains the terms
+	 */
+	public void createGenerativeKnowledgeBase(
+			MultiEntityBayesianNetwork mebn); 
+	
+	/**
 	 * It inserts the entity into KB as a definition.
 	 * 
 	 * @param entity
