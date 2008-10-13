@@ -71,7 +71,9 @@ import unbbayes.monteCarlo.controlador.ControladorPrincipal;
  * 
  * @author Rommel Novaes Carvalho (rommel.carvalho@gmail.com)
  * @author Michael S. Onishi (mso@gmail.com)
+ * @author Laecio Lima dos Santos (laecio@gmail.com)
  * @created 27 de Junho de 2001
+ * 
  * @see JFrame
  */
 public class UnBBayesFrame extends JFrame {
@@ -146,11 +148,9 @@ public class UnBBayesFrame extends JFrame {
 			.getBundle("unbbayes.gui.resources.GuiResources");
 
 	/**
-	 * Constr�i a tela principal do programa, ajustando os Layouts e criando
-	 * bot�es, labels, e outros respons�veis pela interface. Al�m disso nesse
-	 * contrutor tamb�m criamos os respectivos <code>ActionListener</code>,
-	 * <code>KeyListener</code> e <code>MouseListener</code> para os
-	 * respectivos componentes.
+	 * Build the main program frame, adjusting the layouts and building the 
+	 * buttons, labels, and others elements of the interface. Create too the 
+	 * listeners. 
 	 * 
 	 * @see ActionListener
 	 * @see MouseListener
@@ -186,7 +186,7 @@ public class UnBBayesFrame extends JFrame {
 		this.setIconImage(iconController.getUnBBayesIcon().getImage());
 		
 		setLocationByPlatform(true); 
-		setLocationRelativeTo(null); 
+		setExtendedState(JFrame.MAXIMIZED_BOTH); 
 		setVisible(true);
 
 		singleton = this;
@@ -734,7 +734,7 @@ public class UnBBayesFrame extends JFrame {
 		tbView.addActionListener(alTbView);
 		tbTools.addActionListener(alTbTools);
 		tbWindow.addActionListener(alTbWindow);
-//		tbHelp.addActionListener(alTbHelp);
+		tbHelp.addActionListener(alTbHelp);
 		metalItem.addActionListener(alMetal);
 		motifItem.addActionListener(alMotif);
 		windowsItem.addActionListener(alWindows);
@@ -826,7 +826,7 @@ public class UnBBayesFrame extends JFrame {
 		jtbView = new JToolBar();
 		jtbTools = new JToolBar();
 		jtbWindow = new JToolBar();
-//		jtbHelp = new JToolBar();
+		jtbHelp = new JToolBar();
 
 		// add their buttons
 		jtbFile.add(newNet);
@@ -840,14 +840,14 @@ public class UnBBayesFrame extends JFrame {
 		jtbView.add(windows);
 		jtbWindow.add(cascade);
 		jtbWindow.add(tile);
-//		jtbHelp.add(help);
+		jtbHelp.add(help);
 
 		// add the tool bars to the topPanel
 		topPanel.add(jtbFile);
 		topPanel.add(jtbView);
 		topPanel.add(jtbTools);
 		topPanel.add(jtbWindow);
-//		topPanel.add(jtbHelp);
+		topPanel.add(jtbHelp);
 	}
 
 	/**
