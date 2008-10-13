@@ -314,7 +314,7 @@ OUT_LOOP:  for(ContextNode context: cnList){
 
 				 try {
 					 System.out.println("Tentando avaliar nó de contexto: ");
-					 ContextNodeAvaliator avaliator = new ContextNodeAvaliator(knowledgeBase); 
+					 ContextNodeAvaliator avaliator = new ContextNodeAvaliator(getKnowledgeBase()); 
 					 List<String> result = avaliator.evalutateSearchContextNode(context, ovInstanceList);
 					 
 					 System.out.println("Result: " + result);
@@ -492,7 +492,7 @@ OUT_LOOP:  for(ContextNode context: cnList){
 				
 				//Caso trivial. 
 				ContextNode context = contextNodeList.toArray(new ContextNode[contextNodeList.size()])[0];
-				ContextNodeAvaliator avaliator = new ContextNodeAvaliator(knowledgeBase); 
+				ContextNodeAvaliator avaliator = new ContextNodeAvaliator(getKnowledgeBase()); 
 				
 				List<String> result = null;
 				try {
@@ -563,7 +563,7 @@ OUT_LOOP:  for(ContextNode context: cnList){
 					//for the analized of the resident node formula. (very complex!).  
 
 					//Search for all the entities present in kb. 
-					result = knowledgeBase.getEntityByType(ovProblematic.getValueType().getName());
+					result = getKnowledgeBase().getEntityByType(ovProblematic.getValueType().getName());
 					for(String entity: result){
 						SSBNNode node =  createSSBNNodeForEntitySearch(originNode.getProbabilisticNetwork(), 
 								fatherNode, ovInstances, ovProblematic, entity);

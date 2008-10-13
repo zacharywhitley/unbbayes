@@ -65,7 +65,6 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 
 	public ExplosiveSSBNGenerator(){
 		super();  
-		findingList = new ArrayList<SSBNNode>(); 
 	}
 
 	/**
@@ -92,14 +91,15 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 		ssbnNodeList = new SSBNNodeList(); 
 		ssbnNodesMap = new TreeMap<String, SSBNNode>(); 
 		warningList = new ArrayList<SSBNWarning>(); 
-
+		findingList = new ArrayList<SSBNNode>(); 
+		
 		// THE PREPARATION
 		SSBNNode queryNode = query.getQueryNode();
-		this.setKnowledgeBase(query.getKb());
+		setKnowledgeBase(query.getKb());
 		stepCount = 0L;
 		queryName = queryNode.getUniqueName();
 		logManager.clear();
-		this.recursiveCallCount = 0;
+		recursiveCallCount = 0;
 
 		List<Query> queryList = new ArrayList<Query>(); 
 		queryList.add(query); 
