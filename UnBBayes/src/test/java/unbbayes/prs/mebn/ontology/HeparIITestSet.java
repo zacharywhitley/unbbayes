@@ -5,7 +5,10 @@ import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.Locale;
 
+import javax.xml.bind.JAXBException;
+
 import unbbayes.io.LogManager;
+import unbbayes.io.XMLIO;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.TreeVariable;
@@ -39,6 +42,7 @@ public class HeparIITestSet {
 
 	private static final String HEPARII_UBF_FILE = "examples/mebn/HeparII/HeparII_01.ubf";
 	private static final String TEST_FILE_NAME = "HeparIITestSet.log"; 
+	private static final String PATH = "examples/mebn/tests/HeparIITestSet"; 
 	
 	private static final String RV_ALT = "ALT"; 
 	private static final String RV_AST = "AST"; 
@@ -74,18 +78,19 @@ public class HeparIITestSet {
 	
 	private ISSBNGenerator ssbnGenerator; 
 	private MultiEntityBayesianNetwork mebn;
-	private KnowledgeBase kb;
 	
 	private LogManager logManager; 
 	
 	private NumberFormat nf;
+	
+	private static int testNumber = 0; 
 	
 	public HeparIITestSet(){
 		
 		//Initialization
 		ssbnGenerator = new ExplosiveSSBNGenerator(); 
 		logManager = new LogManager(); 
-		kb = PowerLoomKB.getNewInstanceKB(); 
+
 		
 		nf = NumberFormat.getInstance(Locale.US);
 		nf.setMaximumFractionDigits(2);
@@ -101,8 +106,12 @@ public class HeparIITestSet {
 			System.exit(1); 
 		}
 		
+		File directory = new File(PATH); 
+		if(!directory.exists()){
+			directory.mkdir(); 
+		}
+		
 		//Executing the test
-		createGenerativeKnowledgeBase(mebn); 
 		
 		executeTestCase1(); 
 		executeTestCase2(); 
@@ -251,8 +260,6 @@ public class HeparIITestSet {
 		executeTestCase138(); 
 		executeTestCase139(); 
 		
-		
-		
 		finishLog(); 
 	}
 	
@@ -274,6 +281,9 @@ public class HeparIITestSet {
 		TreeVariable treeVariable = query.getQueryNode().getProbNode(); 
 		
 		int statesSize = treeVariable.getStatesSize();
+		
+		logManager.appendln("States = " + statesSize); 
+		
 		for (int j = 0; j < statesSize; j++) {
 			String label;
 			label = treeVariable.getStateAt(j)+ ": "
@@ -284,7 +294,7 @@ public class HeparIITestSet {
 	
 	private void finishLog(){
 		try {
-			logManager.writeToDisk("HeparIITestSet.log", false);
+			logManager.writeToDisk(PATH + "/" + "HeparIITestSet.log", false);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} 
@@ -293,6 +303,10 @@ public class HeparIITestSet {
 	private void executeQuery(Query query) {
 		try {
 			SituationSpecificBayesianNetwork ssbn = ssbnGenerator.generateSSBN(query);
+
+			File file = new File(PATH + "/" + "Test" + testNumber + ".xml"); 
+			saveNetworkFile(file, query.getQueryNode()); 
+			
 			ssbn.compileAndInitializeSSBN();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -300,9 +314,21 @@ public class HeparIITestSet {
 		}
 	}
 	
+	public static void saveNetworkFile(File file, SSBNNode queryNode){
+	    XMLIO netIO = new XMLIO(); 
+		
+		try {
+			netIO.save(file, queryNode.getProbabilisticNetwork());
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (JAXBException e) {
+			e.printStackTrace();
+		}		
+	}
+	
 	private Query createGenericQueryNode(MultiEntityBayesianNetwork mebn,
 			String mFragName, String residentNodeName, 
-			String[] ovVariableNameList, String[] instanceNameList){
+			String[] ovVariableNameList, String[] instanceNameList, KnowledgeBase kb){
 		
 		MFrag mFrag = mebn.getMFragByName(mFragName); 
 		ResidentNode residentNode = mFrag.getDomainResidentNodeByName(residentNodeName); 
@@ -323,119 +349,36 @@ public class HeparIITestSet {
 		return query;				
 	}
 	
-	private KnowledgeBase createGenerativeKnowledgeBase(
-			MultiEntityBayesianNetwork mebn) {
-		for(ObjectEntity entity: mebn.getObjectEntityContainer().getListEntity()){
-			kb.createEntityDefinition(entity);
-		}
-
-		for(MFrag mfrag: mebn.getDomainMFragList()){
-			for(ResidentNode resident: mfrag.getResidentNodeList()){
-				kb.createRandomVariableDefinition(resident);
-			}
-		}
-		return kb;
-	}
-	
 	private void executeQueryAndPrintResults(Query query) {
 		executeQuery(query);
 		printTreeVariableTable(query);
 		printTestFoot();
 	}
 	
-	private void executeTestCaseSerieC(int index, String nameResidentNode, String nameMFrag){
-		printTestHeader(index, nameResidentNode);
-		
-		Query query = createGenericQueryNode(mebn, nameMFrag, nameResidentNode, 
-				new String[]{"p"}, 
-				new String[]{"maria"} ); 
-
-		executeQueryAndPrintResults(query); 				
+	private void executeTestCase(int index, String nameResidentNode, String nameMFrag){
+		executeTestCase(index, nameResidentNode, nameMFrag, null); 			
 	}
 
-	private void executeTestCase1(){
-		executeTestCaseSerieC(1, RV_AST, RV_AST + "_MFrag"); 				
-	}
 
-	private void executeTestCase2(){
-		executeTestCaseSerieC(2, RV_Fatigue, RV_Fatigue + "_MFrag"); 					
-	}
-	
-	private void executeTestCase3(){
-		executeTestCaseSerieC(3, RV_EnlargedSpleen, RV_EnlargedSpleen + "_MFrag"); 				
-	}
-	
-	private void executeTestCase4(){
-		executeTestCaseSerieC(4, RV_ALT, RV_ALT + "_MFrag"); 				
-	}
-	
-	private void executeTestCase5(){
-		executeTestCaseSerieC(5, RV_HaemorrhagieDiathesis, RV_HaemorrhagieDiathesis + "_MFrag"); 			
-	}
-	
-	private void executeTestCase6(){
-		executeTestCaseSerieC(6, RV_INR, RV_INR + "_MFrag"); 					
-	}
-
-	private void executeTestCase7(){
-		executeTestCaseSerieC(7, RV_PlateletCount, RV_PlateletCount + "_MFrag"); 				
-	}
-	
-	private void executeTestCase8(){
-		executeTestCaseSerieC(8, RV_Yellowingoftheskin, RV_Yellowingoftheskin + "_MFrag"); 				
-	}
-
-	private void executeTestCase9(){
-		executeTestCaseSerieC(9, RV_Itching, RV_Itching + "_MFrag"); 					
-	}
-	
-	private void executeTestCase10(){
-		executeTestCaseSerieC(10, RV_Jaundice, RV_Jaundice + "_MFrag"); 				
-	}
-	
-	private void executeTestCase11(){
-		executeTestCaseSerieC(11, RV_TotalBilirubin, RV_TotalBilirubin + "_MFrag"); 				
-	}
-	
-	private void executeTestCase12(){
-		executeTestCaseSerieC(12, RV_BloodUrea, RV_BloodUrea + "_MFrag"); 			
-	}
-	
-	private void executeTestCase13(){
-		executeTestCaseSerieC(13, RV_IncreasedLiverDensity, RV_IncreasedLiverDensity + "_MFrag"); 					
-	}
-
-	private void executeTestCase14(){
-		executeTestCaseSerieC(14, RV_ImpairedConsciousness, RV_ImpairedConsciousness + "_MFrag"); 				
-	}
-	
-	private void executeTestCase15(){
-		executeTestCaseSerieC(15, RV_HepaticEncephalopathy, RV_HepaticEncephalopathy + "_MFrag"); 			
-	}
-	
-	private void executeTestCase16(){
-		executeTestCaseSerieC(16, RV_MusculoSkeletalPain, RV_MusculoSkeletalPain + "_MFrag"); 					
-	}
-
-	private void executeTestCase17(){
-		executeTestCaseSerieC(17, RV_JointsSwelling, RV_JointsSwelling + "_MFrag"); 				
-	}	
-	
-	private void executeTestCaseSerieD(int index, String nameResidentNode, String nameMFrag, 
+	private void executeTestCase(int index, String nameResidentNode, String nameMFrag, 
 			RandomVariableFinding[] findingList){
 		
 		printTestHeader(index, nameResidentNode);
-
-		kb.clearKnowledgeBase(); 
-		kb = createGenerativeKnowledgeBase(mebn); 
-
-		for(RandomVariableFinding finding: findingList){
-			kb.insertRandomVariableFinding(finding); 
-		}
 		
+		testNumber++; 
+		
+		KnowledgeBase kb = PowerLoomKB.getNewInstanceKB(); 
+		kb.createGenerativeKnowledgeBase(mebn); 
+		
+		if(findingList != null){
+			for(RandomVariableFinding finding: findingList){
+				kb.insertRandomVariableFinding(finding); 
+			}
+		}
+
 		Query query = createGenericQueryNode(mebn, nameMFrag, nameResidentNode, 
 				new String[]{"p"}, 
-				new String[]{"maria"} ); 
+				new String[]{"maria"}, kb); 
 
 		executeQueryAndPrintResults(query); 				
 	}
@@ -462,20 +405,87 @@ public class HeparIITestSet {
 		ObjectEntity patient = mebn.getObjectEntityContainer().getObjectEntityByName("Patient"); 
 		ObjectEntityInstance maria = new ObjectEntityInstance("maria" , patient); 
 		
-		System.out.println(maria);
-		
 		BooleanStateEntity entity = null; 
-		
+
 		if(state){
-		entity = mebn.getBooleanStatesEntityContainer().getTrueStateEntity(); 
+			entity = mebn.getBooleanStatesEntityContainer().getTrueStateEntity(); 
 		}else{
 			entity = mebn.getBooleanStatesEntityContainer().getFalseStateEntity(); 	
 		}
-		
+
 		return  new RandomVariableFinding(residentNode, 
 				new ObjectEntityInstance[]{maria}, entity, mebn);
-	
+
 	}
+	
+	private void executeTestCase1(){
+		executeTestCase(1, RV_AST, RV_AST + "_MFrag"); 				
+	}
+
+	private void executeTestCase2(){
+		executeTestCase(2, RV_Fatigue, RV_Fatigue + "_MFrag"); 					
+	}
+	
+	private void executeTestCase3(){
+		executeTestCase(3, RV_EnlargedSpleen, RV_EnlargedSpleen + "_MFrag"); 				
+	}
+	
+	private void executeTestCase4(){
+		executeTestCase(4, RV_ALT, RV_ALT + "_MFrag"); 				
+	}
+	
+	private void executeTestCase5(){
+		executeTestCase(5, RV_HaemorrhagieDiathesis, RV_HaemorrhagieDiathesis + "_MFrag"); 			
+	}
+	
+	private void executeTestCase6(){
+		executeTestCase(6, RV_INR, RV_INR + "_MFrag"); 					
+	}
+
+	private void executeTestCase7(){
+		executeTestCase(7, RV_PlateletCount, RV_PlateletCount + "_MFrag"); 				
+	}
+	
+	private void executeTestCase8(){
+		executeTestCase(8, RV_Yellowingoftheskin, RV_Yellowingoftheskin + "_MFrag"); 				
+	}
+
+	private void executeTestCase9(){
+		executeTestCase(9, RV_Itching, RV_Itching + "_MFrag"); 					
+	}
+	
+	private void executeTestCase10(){
+		executeTestCase(10, RV_Jaundice, RV_Jaundice + "_MFrag"); 				
+	}
+	
+	private void executeTestCase11(){
+		executeTestCase(11, RV_TotalBilirubin, RV_TotalBilirubin + "_MFrag"); 				
+	}
+	
+	private void executeTestCase12(){
+		executeTestCase(12, RV_BloodUrea, RV_BloodUrea + "_MFrag"); 			
+	}
+	
+	private void executeTestCase13(){
+		executeTestCase(13, RV_IncreasedLiverDensity, RV_IncreasedLiverDensity + "_MFrag"); 					
+	}
+
+	private void executeTestCase14(){
+		executeTestCase(14, RV_ImpairedConsciousness, RV_ImpairedConsciousness + "_MFrag"); 				
+	}
+	
+	private void executeTestCase15(){
+		executeTestCase(15, RV_HepaticEncephalopathy, RV_HepaticEncephalopathy + "_MFrag"); 			
+	}
+	
+	private void executeTestCase16(){
+		executeTestCase(16, RV_MusculoSkeletalPain, RV_MusculoSkeletalPain + "_MFrag"); 					
+	}
+
+	private void executeTestCase17(){
+		executeTestCase(17, RV_JointsSwelling, RV_JointsSwelling + "_MFrag"); 				
+	}	
+	
 	
 	private void executeTestCase18(){
 		
@@ -483,7 +493,7 @@ public class HeparIITestSet {
 			RandomVariableFinding finding = createFinding(RV_AST + "_MFrag", RV_AST, "a700_400");
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{finding}; 
 
-			executeTestCaseSerieD(18, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
+			executeTestCase(18, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -498,7 +508,7 @@ public class HeparIITestSet {
 			RandomVariableFinding finding = createBooleanFinding(RV_Fatigue + "_MFrag", RV_Fatigue, true);
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{finding}; 
 
-			executeTestCaseSerieD(19, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
+			executeTestCase(19, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -513,7 +523,7 @@ public class HeparIITestSet {
 			RandomVariableFinding finding = createBooleanFinding(RV_EnlargedSpleen + "_MFrag", RV_EnlargedSpleen, true);
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{finding}; 
 
-			executeTestCaseSerieD(20, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
+			executeTestCase(20, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -528,7 +538,7 @@ public class HeparIITestSet {
 			RandomVariableFinding finding = createFinding(RV_ALT + "_MFrag", RV_ALT, "a850_200");
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{finding}; 
 
-			executeTestCaseSerieD(21, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
+			executeTestCase(21, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -544,7 +554,7 @@ public class HeparIITestSet {
 			RandomVariableFinding finding = createBooleanFinding(RV_HaemorrhagieDiathesis + "_MFrag", RV_HaemorrhagieDiathesis, true);
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{finding}; 
 
-			executeTestCaseSerieD(22, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
+			executeTestCase(22, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -559,7 +569,7 @@ public class HeparIITestSet {
 			RandomVariableFinding finding = createFinding(RV_INR + "_MFrag", RV_INR, "a200_110");
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{finding}; 
 
-			executeTestCaseSerieD(23, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
+			executeTestCase(23, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -576,7 +586,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Fatigue + "_MFrag", RV_Fatigue, true)
 			}; 
 
-			executeTestCaseSerieD(24, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
+			executeTestCase(24, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -594,7 +604,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_EnlargedSpleen + "_MFrag", RV_EnlargedSpleen, true)
 			}; 
 
-			executeTestCaseSerieD(25, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
+			executeTestCase(25, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -613,7 +623,7 @@ public class HeparIITestSet {
 					createFinding(RV_ALT + "_MFrag", RV_ALT, "a850_200")
 			}; 
 
-			executeTestCaseSerieD(26, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
+			executeTestCase(26, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -634,7 +644,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_HaemorrhagieDiathesis + "_MFrag", RV_HaemorrhagieDiathesis, true)
 			}; 
 
-			executeTestCaseSerieD(27, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
+			executeTestCase(27, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -654,7 +664,7 @@ public class HeparIITestSet {
 					createFinding(RV_INR + "_MFrag", RV_INR, "a200_110")
 			}; 
 
-			executeTestCaseSerieD(28, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
+			executeTestCase(28, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -668,7 +678,7 @@ public class HeparIITestSet {
 					createFinding(RV_INR + "_MFrag", RV_INR, "a200_110")
 			}; 
 
-			executeTestCaseSerieD(29, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
+			executeTestCase(29, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -682,7 +692,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_HaemorrhagieDiathesis + "_MFrag", RV_HaemorrhagieDiathesis, true)
 			}; 
 
-			executeTestCaseSerieD(30, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
+			executeTestCase(30, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -696,7 +706,7 @@ public class HeparIITestSet {
 					createFinding(RV_TotalBilirubin + "_MFrag", RV_TotalBilirubin, "a88_20")
 			}; 
 
-			executeTestCaseSerieD(31, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
+			executeTestCase(31, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -710,7 +720,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Yellowingoftheskin + "_MFrag", RV_Yellowingoftheskin, true)
 			}; 
 
-			executeTestCaseSerieD(32, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
+			executeTestCase(32, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -724,7 +734,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Itching + "_MFrag", RV_Itching, true)
 			}; 
 
-			executeTestCaseSerieD(33, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
+			executeTestCase(33, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -738,7 +748,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Jaundice + "_MFrag", RV_Jaundice, true)
 			}; 
 
-			executeTestCaseSerieD(34, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
+			executeTestCase(34, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -753,7 +763,7 @@ public class HeparIITestSet {
 					createFinding(RV_INR + "_MFrag", RV_INR, "a200_110")
 			}; 
 
-			executeTestCaseSerieD(35, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
+			executeTestCase(35, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -768,7 +778,7 @@ public class HeparIITestSet {
 					createFinding(RV_INR + "_MFrag", RV_INR, "a200_110")
 			}; 
 
-			executeTestCaseSerieD(36, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
+			executeTestCase(36, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -785,7 +795,7 @@ public class HeparIITestSet {
 					createFinding(RV_INR + "_MFrag", RV_INR, "a200_110")
 			}; 
 
-			executeTestCaseSerieD(37, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
+			executeTestCase(37, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -799,7 +809,7 @@ public class HeparIITestSet {
 					createFinding(RV_PlateletCount + "_MFrag", RV_PlateletCount, "a597_300")
 			}; 
 
-			executeTestCaseSerieD(38, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(38, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -813,7 +823,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_HaemorrhagieDiathesis + "_MFrag", RV_HaemorrhagieDiathesis, true)
 			}; 
 
-			executeTestCaseSerieD(39, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(39, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -824,10 +834,10 @@ public class HeparIITestSet {
 	private void executeTestCase40(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
-					createFinding(RV_TotalBilirubin + "_MFrag", RV_TotalBilirubin, "a88_20")
+					createFinding(RV_TotalBilirubin + "_MFrag", RV_TotalBilirubin, "a8820")
 			}; 
 
-			executeTestCaseSerieD(40, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(40, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -842,7 +852,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Yellowingoftheskin + "_MFrag", RV_Yellowingoftheskin, true)
 			}; 
 
-			executeTestCaseSerieD(41, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(41, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -856,7 +866,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Itching + "_MFrag", RV_Itching, true)
 			}; 
 
-			executeTestCaseSerieD(42, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(42, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -870,7 +880,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Jaundice + "_MFrag", RV_Jaundice, true)
 			}; 
 
-			executeTestCaseSerieD(43, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(43, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -885,7 +895,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_HepaticEncephalopathy + "_MFrag", RV_HepaticEncephalopathy, true)
 			}; 
 
-			executeTestCaseSerieD(44, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(44, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -900,7 +910,7 @@ public class HeparIITestSet {
 					createFinding(RV_BloodUrea + "_MFrag", RV_BloodUrea, "a165_50")
 			}; 
 
-			executeTestCaseSerieD(45, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(45, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -915,7 +925,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_IncreasedLiverDensity + "_MFrag", RV_IncreasedLiverDensity, true)
 			}; 
 
-			executeTestCaseSerieD(46, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(46, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -930,7 +940,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_ImpairedConsciousness + "_MFrag", RV_ImpairedConsciousness, true)
 			}; 
 
-			executeTestCaseSerieD(47, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(47, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -945,7 +955,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_MusculoSkeletalPain + "_MFrag", RV_MusculoSkeletalPain, true)
 			}; 
 
-			executeTestCaseSerieD(48, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(48, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -960,7 +970,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_JointsSwelling + "_MFrag", RV_JointsSwelling, true)
 			}; 
 
-			executeTestCaseSerieD(49, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(49, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -976,7 +986,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_HaemorrhagieDiathesis + "_MFrag", RV_HaemorrhagieDiathesis, true)
 			}; 
 
-			executeTestCaseSerieD(50, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(50, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -993,7 +1003,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Yellowingoftheskin + "_MFrag", RV_Yellowingoftheskin, true)
 			}; 
 
-			executeTestCaseSerieD(51, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(51, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1011,7 +1021,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Itching + "_MFrag", RV_Itching, true)		
 			}; 
 
-			executeTestCaseSerieD(52, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(52, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1032,7 +1042,7 @@ public class HeparIITestSet {
 
 					}; 
 
-			executeTestCaseSerieD(53, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(53, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1051,7 +1061,7 @@ public class HeparIITestSet {
 
 					}; 
 
-			executeTestCaseSerieD(54, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(54, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1071,7 +1081,7 @@ public class HeparIITestSet {
 
 					}; 
 
-			executeTestCaseSerieD(55, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(55, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1085,7 +1095,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_ToxicHepatitis + "_MFrag", RV_ToxicHepatitis, true) 
 					}; 
 
-			executeTestCaseSerieD(56, RV_INR,  RV_INR + "_MFrag", findings); 
+			executeTestCase(56, RV_INR,  RV_INR + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1100,7 +1110,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_FunctionalHyperbilirubinemia + "_MFrag", RV_FunctionalHyperbilirubinemia, true) 
 					}; 
 
-			executeTestCaseSerieD(57, RV_INR,  RV_INR + "_MFrag", findings); 
+			executeTestCase(57, RV_INR,  RV_INR + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1115,7 +1125,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_HistoryAlcAbuse_MFrag, RV_HistoryAlcAbuse, true) 
 					}; 
 
-			executeTestCaseSerieD(58, RV_INR,  RV_INR + "_MFrag", findings); 
+			executeTestCase(58, RV_INR,  RV_INR + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1129,7 +1139,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_HepatoxicMeds_MFrag, RV_HepatoxicMeds, true) 
 					}; 
 
-			executeTestCaseSerieD(59, RV_INR,  RV_INR + "_MFrag", findings); 
+			executeTestCase(59, RV_INR,  RV_INR + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1144,7 +1154,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true) 
 					}; 
 
-			executeTestCaseSerieD(60, RV_INR,  RV_INR + "_MFrag", findings); 
+			executeTestCase(60, RV_INR,  RV_INR + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1159,7 +1169,7 @@ public class HeparIITestSet {
 					createFinding(RV_AGE + "_MFrag", RV_AGE, "age65_100") 
 					}; 
 
-			executeTestCaseSerieD(61, RV_INR,  RV_INR + "_MFrag", findings); 
+			executeTestCase(61, RV_INR,  RV_INR + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1174,7 +1184,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_FunctionalHyperbilirubinemia + "_MFrag", RV_FunctionalHyperbilirubinemia, true) 
 					}; 
 
-			executeTestCaseSerieD(62, RV_INR,  RV_INR + "_MFrag", findings); 
+			executeTestCase(62, RV_INR,  RV_INR + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1190,7 +1200,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
-			executeTestCaseSerieD(63, RV_INR,  RV_INR + "_MFrag", findings); 
+			executeTestCase(63, RV_INR,  RV_INR + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1204,10 +1214,10 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_HistoryAlcAbuse_MFrag, RV_HistoryAlcAbuse, true), 
 					createBooleanFinding(RV_HepatoxicMeds_MFrag, RV_HepatoxicMeds, true), 
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true), 
-					createFinding(RV_AGE + "_MFrag", RV_Sex, "age65_100")
+					createFinding(RV_AGE + "_MFrag", RV_AGE, "age65_100")
 					}; 
 
-			executeTestCaseSerieD(64, RV_INR,  RV_INR + "_MFrag", findings); 
+			executeTestCase(64, RV_INR,  RV_INR + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1223,7 +1233,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
-			executeTestCaseSerieD(65, RV_INR,  RV_INR + "_MFrag", findings); 
+			executeTestCase(65, RV_INR,  RV_INR + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1240,7 +1250,7 @@ public class HeparIITestSet {
 					createFinding(RV_AGE + "_MFrag", RV_AGE, "age65_100")
 					}; 
 
-			executeTestCaseSerieD(66, RV_INR,  RV_INR + "_MFrag", findings); 
+			executeTestCase(66, RV_INR,  RV_INR + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1253,7 +1263,7 @@ public class HeparIITestSet {
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_FunctionalHyperbilirubinemia + "_MFrag", RV_FunctionalHyperbilirubinemia, true)					}; 
 
-			executeTestCaseSerieD(67, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(67, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1266,7 +1276,7 @@ public class HeparIITestSet {
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_PBC + "_MFrag", RV_PBC, true)					}; 
 
-			executeTestCaseSerieD(68, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(68, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1279,7 +1289,7 @@ public class HeparIITestSet {
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)					}; 
 
-			executeTestCaseSerieD(69, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(69, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1292,7 +1302,7 @@ public class HeparIITestSet {
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createFinding(RV_AGE + "_MFrag", RV_AGE, "age65_100")					}; 
 
-			executeTestCaseSerieD(70, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(70, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1305,7 +1315,7 @@ public class HeparIITestSet {
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_FunctionalHyperbilirubinemia + "_MFrag", RV_FunctionalHyperbilirubinemia, true)					}; 
 
-			executeTestCaseSerieD(71, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(71, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1320,7 +1330,7 @@ public class HeparIITestSet {
 					createFinding(RV_AGE + "_MFrag", RV_AGE, "age65_100")
 					}; 
 
-			executeTestCaseSerieD(72, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(72, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1336,7 +1346,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
-			executeTestCaseSerieD(73, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(73, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1351,7 +1361,7 @@ public class HeparIITestSet {
 					createFinding(RV_AGE + "_MFrag", RV_AGE, "age65_100")
 					}; 
 			
-			executeTestCaseSerieD(74, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(74, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1364,7 +1374,7 @@ public class HeparIITestSet {
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_PBC + "_MFrag", RV_PBC, true)					}; 
 
-			executeTestCaseSerieD(75, RV_HepaticEncephalopathy,  RV_HepaticEncephalopathy + "_MFrag", findings); 
+			executeTestCase(75, RV_HepaticEncephalopathy,  RV_HepaticEncephalopathy + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1378,7 +1388,7 @@ public class HeparIITestSet {
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)					}; 
 
-			executeTestCaseSerieD(76, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(76, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1392,7 +1402,7 @@ public class HeparIITestSet {
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createFinding(RV_AGE + "_MFrag", RV_AGE, "age65_100")					}; 
 
-			executeTestCaseSerieD(77, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(77, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1407,7 +1417,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true), 
 					createFinding(RV_AGE + "_MFrag", RV_AGE, "age65_100")	}; 
 
-			executeTestCaseSerieD(78, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(78, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1421,7 +1431,7 @@ public class HeparIITestSet {
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_PBC + "_MFrag", RV_PBC, true)	}; 
 
-			executeTestCaseSerieD(79, RV_MusculoSkeletalPain,  RV_MusculoSkeletalPain + "_MFrag", findings); 
+			executeTestCase(79, RV_MusculoSkeletalPain,  RV_MusculoSkeletalPain + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1434,7 +1444,7 @@ public class HeparIITestSet {
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_JointsSwelling + "_MFrag", RV_JointsSwelling, true)	}; 
 
-			executeTestCaseSerieD(80, RV_MusculoSkeletalPain,  RV_MusculoSkeletalPain + "_MFrag", findings); 
+			executeTestCase(80, RV_MusculoSkeletalPain,  RV_MusculoSkeletalPain + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1447,7 +1457,7 @@ public class HeparIITestSet {
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)}; 
 
-			executeTestCaseSerieD(81, RV_MusculoSkeletalPain,  RV_MusculoSkeletalPain + "_MFrag", findings); 
+			executeTestCase(81, RV_MusculoSkeletalPain,  RV_MusculoSkeletalPain + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1461,7 +1471,7 @@ public class HeparIITestSet {
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createFinding(RV_AGE + "_MFrag", RV_AGE, "age65_100")	}; 
 
-			executeTestCaseSerieD(82, RV_MusculoSkeletalPain,  RV_MusculoSkeletalPain + "_MFrag", findings); 
+			executeTestCase(82, RV_MusculoSkeletalPain,  RV_MusculoSkeletalPain + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1475,7 +1485,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true), 
 					createBooleanFinding(RV_JointsSwelling + "_MFrag", RV_JointsSwelling, true)}; 
 
-			executeTestCaseSerieD(83, RV_MusculoSkeletalPain,  RV_MusculoSkeletalPain + "_MFrag", findings); 
+			executeTestCase(83, RV_MusculoSkeletalPain,  RV_MusculoSkeletalPain + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1489,7 +1499,7 @@ public class HeparIITestSet {
 					createFinding(RV_AGE + "_MFrag", RV_AGE, "age65_100"), 
 					createBooleanFinding(RV_JointsSwelling + "_MFrag", RV_JointsSwelling, true)}; 
 
-			executeTestCaseSerieD(84, RV_MusculoSkeletalPain,  RV_MusculoSkeletalPain + "_MFrag", findings); 
+			executeTestCase(84, RV_MusculoSkeletalPain,  RV_MusculoSkeletalPain + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1504,7 +1514,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_ToxicHepatitis + "_MFrag", RV_ToxicHepatitis, true), 
 					createBooleanFinding(RV_HaemorrhagieDiathesis + "_MFrag", RV_HaemorrhagieDiathesis, true)}; 
 
-			executeTestCaseSerieD(85, RV_INR,  RV_INR + "_MFrag", findings); 
+			executeTestCase(85, RV_INR,  RV_INR + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1518,7 +1528,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_FunctionalHyperbilirubinemia + "_MFrag", RV_FunctionalHyperbilirubinemia, true), 
 					createBooleanFinding(RV_HaemorrhagieDiathesis + "_MFrag", RV_HaemorrhagieDiathesis, true)}; 
 
-			executeTestCaseSerieD(86, RV_INR,  RV_INR + "_MFrag", findings); 
+			executeTestCase(86, RV_INR,  RV_INR + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1532,7 +1542,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_HistoryAlcAbuse_MFrag, RV_HistoryAlcAbuse, true), 
 					createBooleanFinding(RV_HaemorrhagieDiathesis + "_MFrag", RV_HaemorrhagieDiathesis, true)}; 
 
-			executeTestCaseSerieD(87, RV_INR,  RV_INR + "_MFrag", findings); 
+			executeTestCase(87, RV_INR,  RV_INR + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1547,7 +1557,7 @@ public class HeparIITestSet {
 					createFinding(RV_AGE+ "_MFrag", RV_AGE, "age65_100"), 
 					createBooleanFinding(RV_HaemorrhagieDiathesis + "_MFrag", RV_HaemorrhagieDiathesis, true)}; 
 
-			executeTestCaseSerieD(88, RV_INR,  RV_INR + "_MFrag", findings); 
+			executeTestCase(88, RV_INR,  RV_INR + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1561,7 +1571,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_PBC + "_MFrag", RV_PBC, true), 
 					createBooleanFinding(RV_HaemorrhagieDiathesis + "_MFrag", RV_HaemorrhagieDiathesis, true)}; 
 
-			executeTestCaseSerieD(89, RV_PlateletCount,  RV_PlateletCount + "_MFrag", findings); 
+			executeTestCase(89, RV_PlateletCount,  RV_PlateletCount + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1576,7 +1586,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_FunctionalHyperbilirubinemia + "_MFrag", RV_FunctionalHyperbilirubinemia, true), 
 					createBooleanFinding(RV_Yellowingoftheskin + "_MFrag", RV_Yellowingoftheskin, true)}; 
 
-			executeTestCaseSerieD(90, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(90, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1591,7 +1601,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_PBC + "_MFrag", RV_PBC, true), 
 					createBooleanFinding(RV_Yellowingoftheskin + "_MFrag", RV_Yellowingoftheskin, true)}; 
 
-			executeTestCaseSerieD(91, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(91, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1605,7 +1615,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true), 
 					createBooleanFinding(RV_Yellowingoftheskin + "_MFrag", RV_Yellowingoftheskin, true)}; 
 
-			executeTestCaseSerieD(92, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(92, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1620,7 +1630,7 @@ public class HeparIITestSet {
 					createFinding(RV_AGE + "_MFrag", RV_AGE, "age65_100"), 
 					createBooleanFinding(RV_Yellowingoftheskin + "_MFrag", RV_Yellowingoftheskin, true)}; 
 
-			executeTestCaseSerieD(93, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(93, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1634,7 +1644,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_FunctionalHyperbilirubinemia + "_MFrag", RV_FunctionalHyperbilirubinemia, true), 
 					createBooleanFinding(RV_Itching + "_MFrag", RV_Itching, true)}; 
 
-			executeTestCaseSerieD(94, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(94, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1650,7 +1660,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_PBC + "_MFrag", RV_PBC, true)		
 			}; 
 
-			executeTestCaseSerieD(95, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(95, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1665,7 +1675,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_PBC + "_MFrag", RV_PBC, true)
 			}; 
 
-			executeTestCaseSerieD(96, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(96, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1681,7 +1691,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Itching + "_MFrag", RV_Itching, true)
 			}; 
 
-			executeTestCaseSerieD(97, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(97, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1695,7 +1705,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_FunctionalHyperbilirubinemia + "_MFrag", RV_FunctionalHyperbilirubinemia, true), 
 					createBooleanFinding(RV_Jaundice + "_MFrag", RV_Jaundice, true)}; 
 
-			executeTestCaseSerieD(98, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(98, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1710,7 +1720,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Jaundice + "_MFrag", RV_Jaundice, true), 
 					createBooleanFinding(RV_PBC + "_MFrag", RV_PBC, true)}; 
 
-			executeTestCaseSerieD(99, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(99, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1725,7 +1735,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
-			executeTestCaseSerieD(100, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(100, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1741,7 +1751,7 @@ public class HeparIITestSet {
 					createFinding(RV_AGE + "_MFrag", RV_AGE, "age65_100")
 			}; 
 
-			executeTestCaseSerieD(101, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(101, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1757,7 +1767,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Jaundice + "_MFrag", RV_Jaundice, true)
 					}; 
 
-			executeTestCaseSerieD(102, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(102, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1774,7 +1784,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_PBC + "_MFrag", RV_PBC, true)
 					}; 
 
-			executeTestCaseSerieD(103, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(103, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1790,7 +1800,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Jaundice + "_MFrag", RV_Jaundice, true)
 					}; 
 
-			executeTestCaseSerieD(104, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(104, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1807,7 +1817,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Jaundice + "_MFrag", RV_Jaundice, true)
 					}; 
 
-			executeTestCaseSerieD(105, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
+			executeTestCase(105, RV_TotalBilirubin,  RV_TotalBilirubin + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1819,10 +1829,10 @@ public class HeparIITestSet {
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_PBC + "_MFrag", RV_PBC, true), 
-					createBooleanFinding(RV_BloodUrea + "_MFrag", RV_BloodUrea, true) 
+					createFinding(RV_BloodUrea + "_MFrag", RV_BloodUrea, "a165_50") 
 					}; 
 
-			executeTestCaseSerieD(106, RV_HepaticEncephalopathy,  RV_HepaticEncephalopathy + "_MFrag", findings); 
+			executeTestCase(106, RV_HepaticEncephalopathy,  RV_HepaticEncephalopathy + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1837,7 +1847,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_IncreasedLiverDensity + "_MFrag", RV_IncreasedLiverDensity, true) 
 					}; 
 
-			executeTestCaseSerieD(107, RV_HepaticEncephalopathy,  RV_HepaticEncephalopathy + "_MFrag", findings); 
+			executeTestCase(107, RV_HepaticEncephalopathy,  RV_HepaticEncephalopathy + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1853,7 +1863,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_ImpairedConsciousness + "_MFrag", RV_ImpairedConsciousness, true) 
 					}; 
 
-			executeTestCaseSerieD(108, RV_HepaticEncephalopathy,  RV_HepaticEncephalopathy + "_MFrag", findings); 
+			executeTestCase(108, RV_HepaticEncephalopathy,  RV_HepaticEncephalopathy + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1866,11 +1876,11 @@ public class HeparIITestSet {
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_PBC + "_MFrag", RV_PBC, true), 
-					createBooleanFinding(RV_BloodUrea + "_MFrag", RV_BloodUrea, true) , 
+					createFinding(RV_BloodUrea + "_MFrag", RV_BloodUrea, "a165_50"), 
 					createBooleanFinding(RV_IncreasedLiverDensity + "_MFrag", RV_IncreasedLiverDensity, true)
 					}; 
 
-			executeTestCaseSerieD(109, RV_HepaticEncephalopathy,  RV_HepaticEncephalopathy + "_MFrag", findings); 
+			executeTestCase(109, RV_HepaticEncephalopathy,  RV_HepaticEncephalopathy + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1883,11 +1893,11 @@ public class HeparIITestSet {
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_PBC + "_MFrag", RV_PBC, true), 
-					createBooleanFinding(RV_BloodUrea + "_MFrag", RV_BloodUrea, true) , 
+					createFinding(RV_BloodUrea + "_MFrag", RV_BloodUrea, "a165_50") , 
 					createBooleanFinding(RV_ImpairedConsciousness + "_MFrag", RV_ImpairedConsciousness, true) 
 					}; 
 
-			executeTestCaseSerieD(110, RV_HepaticEncephalopathy,  RV_HepaticEncephalopathy + "_MFrag", findings); 
+			executeTestCase(110, RV_HepaticEncephalopathy,  RV_HepaticEncephalopathy + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1904,7 +1914,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_ImpairedConsciousness + "_MFrag", RV_ImpairedConsciousness, true)
 					}; 
 
-			executeTestCaseSerieD(111, RV_HepaticEncephalopathy,  RV_HepaticEncephalopathy + "_MFrag", findings); 
+			executeTestCase(111, RV_HepaticEncephalopathy,  RV_HepaticEncephalopathy + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1922,7 +1932,7 @@ public class HeparIITestSet {
 					createFinding(RV_BloodUrea+ "_MFrag", RV_BloodUrea, "a165_50")
 					}; 
 
-			executeTestCaseSerieD(112, RV_HepaticEncephalopathy,  RV_HepaticEncephalopathy + "_MFrag", findings); 
+			executeTestCase(112, RV_HepaticEncephalopathy,  RV_HepaticEncephalopathy + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1938,7 +1948,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_MusculoSkeletalPain + "_MFrag", RV_MusculoSkeletalPain, true) 
 					}; 
 
-			executeTestCaseSerieD(113, RV_JointsSwelling,  RV_JointsSwelling + "_MFrag", findings); 
+			executeTestCase(113, RV_JointsSwelling,  RV_JointsSwelling + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1953,7 +1963,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_HistoryAlcAbuse_MFrag, RV_HistoryAlcAbuse, true) 
 					}; 
 
-			executeTestCaseSerieD(114, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
+			executeTestCase(114, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1969,7 +1979,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_HistoryAlcAbuse_MFrag, RV_HistoryAlcAbuse, true) 
 					}; 
 
-			executeTestCaseSerieD(115, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
+			executeTestCase(115, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -1984,7 +1994,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_HistoryAlcAbuse_MFrag, RV_HistoryAlcAbuse, true) 
 					}; 
 
-			executeTestCaseSerieD(116, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
+			executeTestCase(116, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -2001,7 +2011,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_HistoryAlcAbuse_MFrag, RV_HistoryAlcAbuse, true) 
 					}; 
 
-			executeTestCaseSerieD(117, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
+			executeTestCase(117, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -2017,7 +2027,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_HistoryAlcAbuse_MFrag, RV_HistoryAlcAbuse, true) 
 					}; 
 
-			executeTestCaseSerieD(118, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
+			executeTestCase(118, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -2034,7 +2044,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_HistoryAlcAbuse_MFrag, RV_HistoryAlcAbuse, true) 
 					}; 
 
-			executeTestCaseSerieD(119, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
+			executeTestCase(119, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -2048,11 +2058,11 @@ public class HeparIITestSet {
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createFinding(RV_AST + "_MFrag", RV_AST, "a700_400"), 
 					createFinding(RV_INR + "_MFrag", RV_INR, "a200_110"), 
-					createBooleanFinding(RV_Fatigue, RV_Fatigue, true), 
+					createBooleanFinding(RV_Fatigue + "_MFrag", RV_Fatigue, true), 
 					createBooleanFinding(RV_HistoryAlcAbuse_MFrag, RV_HistoryAlcAbuse, true) 
 					}; 
 
-			executeTestCaseSerieD(120, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
+			executeTestCase(120, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -2067,11 +2077,11 @@ public class HeparIITestSet {
 					createFinding(RV_AST + "_MFrag", RV_AST, "a700_400"), 
 					createFinding(RV_INR + "_MFrag", RV_INR, "a200_110"), 
 					createBooleanFinding(RV_HepatoxicMeds_MFrag, RV_HepatoxicMeds, true), 
-					createBooleanFinding(RV_Fatigue, RV_Fatigue, true), 
+					createBooleanFinding(RV_Fatigue + "_MFrag", RV_Fatigue, true), 
 					createBooleanFinding(RV_HistoryAlcAbuse_MFrag, RV_HistoryAlcAbuse, true) 
 					}; 
 
-			executeTestCaseSerieD(121, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
+			executeTestCase(121, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -2086,7 +2096,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
-			executeTestCaseSerieD(122, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
+			executeTestCase(122, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -2102,7 +2112,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
-			executeTestCaseSerieD(123, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
+			executeTestCase(123, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -2117,7 +2127,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
-			executeTestCaseSerieD(124, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
+			executeTestCase(124, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -2134,7 +2144,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
-			executeTestCaseSerieD(125, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
+			executeTestCase(125, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -2151,7 +2161,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
-			executeTestCaseSerieD(126, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
+			executeTestCase(126, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -2169,7 +2179,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
-			executeTestCaseSerieD(127, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
+			executeTestCase(127, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -2184,7 +2194,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
-			executeTestCaseSerieD(128, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(128, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -2200,7 +2210,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
-			executeTestCaseSerieD(129, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(129, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -2212,11 +2222,11 @@ public class HeparIITestSet {
 	private void executeTestCase130(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
-					createFinding(RV_HepaticEncephalopathy + "_MFrag", RV_HepaticEncephalopathy, "a88_20"), 
+					createBooleanFinding(RV_HepaticEncephalopathy + "_MFrag", RV_HepaticEncephalopathy, true), 
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
-			executeTestCaseSerieD(130, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(130, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -2228,12 +2238,12 @@ public class HeparIITestSet {
 	private void executeTestCase131(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
-					createFinding(RV_HepaticEncephalopathy + "_MFrag", RV_HepaticEncephalopathy, "a88_20"), 
+					createBooleanFinding(RV_HepaticEncephalopathy + "_MFrag", RV_HepaticEncephalopathy, true), 
 					createFinding(RV_AGE + "_MFrag", RV_AGE, "age65_100"), 
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
-			executeTestCaseSerieD(131, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(131, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -2249,7 +2259,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
-			executeTestCaseSerieD(132, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(132, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -2266,7 +2276,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
-			executeTestCaseSerieD(133, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(133, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -2282,7 +2292,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
-			executeTestCaseSerieD(134, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(134, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -2299,7 +2309,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
-			executeTestCaseSerieD(135, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(135, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -2316,7 +2326,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
-			executeTestCaseSerieD(136, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(136, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -2334,7 +2344,7 @@ public class HeparIITestSet {
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
-			executeTestCaseSerieD(137, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(137, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -2347,12 +2357,12 @@ public class HeparIITestSet {
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_JointsSwelling + "_MFrag", RV_JointsSwelling,true), 
-					createFinding(RV_HepaticEncephalopathy + "_MFrag", RV_HepaticEncephalopathy, "a88_20"), 
+					createBooleanFinding(RV_HepaticEncephalopathy + "_MFrag", RV_HepaticEncephalopathy, true), 
 					createBooleanFinding(RV_MusculoSkeletalPain + "_MFrag", RV_MusculoSkeletalPain ,true), 
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
-			executeTestCaseSerieD(138, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(138, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -2366,12 +2376,12 @@ public class HeparIITestSet {
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_JointsSwelling + "_MFrag", RV_JointsSwelling,true), 
 					createFinding(RV_AGE + "_MFrag", RV_AGE, "age65_100"), 
-					createFinding(RV_HepaticEncephalopathy + "_MFrag", RV_HepaticEncephalopathy, "a88_20"), 
+					createBooleanFinding(RV_HepaticEncephalopathy + "_MFrag", RV_HepaticEncephalopathy, true), 
 					createBooleanFinding(RV_MusculoSkeletalPain + "_MFrag", RV_MusculoSkeletalPain ,true), 
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
-			executeTestCaseSerieD(139, RV_PBC,  RV_PBC + "_MFrag", findings); 
+			executeTestCase(139, RV_PBC,  RV_PBC + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
