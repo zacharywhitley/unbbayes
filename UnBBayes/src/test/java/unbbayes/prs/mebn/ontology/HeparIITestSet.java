@@ -42,6 +42,8 @@ public class HeparIITestSet {
 
 	private static final String HEPARII_UBF_FILE = "examples/mebn/HeparII/HeparII_01.ubf";
 	private static final String TEST_FILE_NAME = "HeparIITestSet.log"; 
+	
+	private static final String PATH_Tests = "examples/mebn/tests"; 
 	private static final String PATH = "examples/mebn/tests/HeparIITestSet"; 
 	
 	private static final String RV_ALT = "ALT"; 
@@ -106,7 +108,12 @@ public class HeparIITestSet {
 			System.exit(1); 
 		}
 		
-		File directory = new File(PATH); 
+		File directory = new File(PATH_Tests); 
+		if(!directory.exists()){
+			directory.mkdir(); 
+		}
+		
+		directory = new File(PATH); 
 		if(!directory.exists()){
 			directory.mkdir(); 
 		}
