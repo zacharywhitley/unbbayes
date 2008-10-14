@@ -1,140 +1,100 @@
 package unbbayes.prs.mebn.ontology;
 
 import java.io.File;
-import java.io.IOException;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 import unbbayes.io.mebn.UbfIO;
-import unbbayes.io.mebn.exceptions.IOMebnException;
-import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.ResidentNode;
-import unbbayes.prs.mebn.entity.ObjectEntity;
-import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.prs.mebn.ssbn.ExplosiveSSBNGenerator;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.Query;
-import unbbayes.prs.mebn.ssbn.SSBNNode;
-import unbbayes.prs.mebn.ssbn.SituationSpecificBayesianNetwork;
-import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
-import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
-import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
-public class StartrekTestSet{
+public class StartrekTestSet extends TestSet{
 
-	public static final String KB_FINDING_FILE = "examples/mebn/KnowledgeBase/KnowledgeBaseWithStarshipZoneST4ver2.plm";
-	public static final String KB_GENERATIVE_FILE = "examples/mebn/KnowledgeBase/KnowledgeBaseGenerative.plm";
+	//Names of files
+	private static final String STARTREK_UBF_FILE = "examples/mebn/StarTrek/StarTrek.ubf";
+	private static final String TEST_FILE_NAME = "StarTrekTestSet.log"; 
+	private static final String PATH = "examples/mebn/Tests/StarTrekTestSet"; 
 	
-	public static final String STARTREK_UBF = "examples/mebn/StarTrek55.ubf"; 
-
-	public static void main(String arguments[]){
+	private static final String KB_SITUATION1 = "examples/mebn/StarTrek/KnowledgeBase_Situation1.plm";
+	
+	//Variables
+	private MultiEntityBayesianNetwork mebn;	
+	private static int testNumber = 0; 
+	
+	
+	public StartrekTestSet(ISSBNGenerator ssbnGenerator){
+		super(ssbnGenerator); 
 		
-		System.out.println("Begin");
-
-		ISSBNGenerator ssbnGenerator = new ExplosiveSSBNGenerator(); 
+		NumberFormat nf = NumberFormat.getInstance(Locale.US);
+		nf.setMaximumFractionDigits(2);
 		
-		MultiEntityBayesianNetwork mebn = null;
-		
+		//Loading the network
 		UbfIO io = UbfIO.getInstance(); 
 		try {
-			mebn = io.loadMebn(new File(STARTREK_UBF));
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (IOMebnException e) {
-			e.printStackTrace();
-		}
-		
-		System.out.println("Stattrek UBF loaded");
-
-		KnowledgeBase kb = createGenerativeKnowledgeBase(mebn);
-		kb.saveGenerativeMTheory(mebn, new File(KB_GENERATIVE_FILE)); 
-		loadFindingModule(kb);
-		
-		System.out.println("Knowledge base init and filled");
-		
-		SSBNNode queryNode = createQueryNode_HarmPotential_ST4_T3(mebn); 
-		
-		Query query = new Query(kb, queryNode, mebn); 
-		query.setMebn(mebn); 
-		
-		try {
-			SituationSpecificBayesianNetwork ssbn = ssbnGenerator.generateSSBN(query);
-			ssbn.compileAndInitializeSSBN();
-		} catch (SSBNNodeGeneralException e) {
-			e.printStackTrace();
-		}
-		catch (ImplementationRestrictionException ei) {
-			ei.printStackTrace();
-		} catch (MEBNException e) {
-			e.printStackTrace();
-		} catch (OVInstanceFaultException e) {
-			e.printStackTrace();
+			mebn = io.loadMebn(new File(STARTREK_UBF_FILE));
 		} catch (Exception e) {
 			e.printStackTrace();
-		} 
+			logManager.appendln(e.toString());
+			finishLog(PATH + "/" + TEST_FILE_NAME); 
+			System.exit(1); 
+		}
 		
-		System.out.println("SSBN OK");
-		
-//		BottomUpSSBNGenerator.printAndSaveCurrentNetwork(queryNode);
-		System.out.println("End");
-		
-	}
-
-	private static void loadFindingModule(KnowledgeBase kb) {
-		try {
-			kb.loadModule(new File(KB_FINDING_FILE), true); 
-		} catch (Exception e) {
-			e.printStackTrace();
+		File directory = new File(PATH);  
+		if(!directory.exists()){
+			directory.mkdir(); 
 		}
 	}
+	
+	public static void main(String arguments[]){
+		
+		ISSBNGenerator ssbnGenerator = new ExplosiveSSBNGenerator();
+		
+		TestSet testSet = new StartrekTestSet(ssbnGenerator);
+		testSet.executeTests(); 
+		testSet.finishLog(PATH + "/" + TEST_FILE_NAME); 
+		
+	}
+	
+	public void executeTests(){
+		executeTest1(); 
+	}
 
-	private static KnowledgeBase createGenerativeKnowledgeBase(
-			MultiEntityBayesianNetwork mebn) {
+	public void executeTest1(){
+		Query query = createQueryNode_HarmPotential_ST4_T3(mebn); 
+		executeTestCase(
+				1, 
+				query.getQueryNode().getResident().getName(), 
+				query.getQueryNode().getResident().getMFrag().getName(), 
+				KB_SITUATION1 , 
+				query); 
+	}
+	
+	private void executeTestCase(int index, String nameResidentNode, String nameMFrag, 
+			String findingFileName, Query query){
+		
+		printTestHeader(index, nameResidentNode);
+		
+		testNumber++; 
 		
 		KnowledgeBase kb = PowerLoomKB.getNewInstanceKB(); 
-		for(ObjectEntity entity: mebn.getObjectEntityContainer().getListEntity()){
-			kb.createEntityDefinition(entity);
+		kb.createGenerativeKnowledgeBase(mebn); 
+		
+		boolean loaded = loadFindingModule(kb, findingFileName); 
+		if(!loaded){
+			return; 
 		}
+		
+		query.setKb(kb); 
+		
+		executeQueryAndPrintResults(query, PATH + "/" + "Test" + testNumber + ".xml"); 				
+	}
 
-		for(MFrag mfrag: mebn.getDomainMFragList()){
-			for(ResidentNode resident: mfrag.getResidentNodeList()){
-				kb.createRandomVariableDefinition(resident);
-			}
-		}
-		return kb;
-		
-	}
-	
-	private static SSBNNode createQueryNode_StarshipClass_ST4(MultiEntityBayesianNetwork mebn) {
-		return createGenericQueryNode(mebn, "Starship_MFrag", "StarshipClass", new String[]{"st"}, new String[]{"ST4"});
-	}
-	private static SSBNNode createQueryNode_HarmPotential_ST4_T3(MultiEntityBayesianNetwork mebn) {
-		return createGenericQueryNode(mebn, "Starship_MFrag", "HarmPotential", new String[]{"st", "t"}, new String[]{"ST4", "T3"});
-	}
-	
-	private static SSBNNode createQueryNode_HarmPotential_ST4_T0(MultiEntityBayesianNetwork mebn) {
-		return createGenericQueryNode(mebn, "Starship_MFrag", "HarmPotential", new String[]{"st", "t"}, new String[]{"ST4", "T0"});
-	}
-	
-	private static SSBNNode createGenericQueryNode(MultiEntityBayesianNetwork mebn,
-			String mFragName, String residentNodeName, 
-			String[] ovVariableNameList, String[] instanceNameList){
-		
-		MFrag mFrag = mebn.getMFragByName(mFragName); 
-		ResidentNode residentNode = mFrag.getDomainResidentNodeByName(residentNodeName); 
-		SSBNNode queryNode = SSBNNode.getInstance(null,residentNode, new ProbabilisticNode()); 
-		
-		try {
-			for(int i = 0; i < ovVariableNameList.length; i++){
-				queryNode.addArgument(residentNode.getOrdinaryVariableByName(ovVariableNameList[i]), instanceNameList[i]);	
-			}
-		} catch (SSBNNodeGeneralException e1) {
-			e1.printStackTrace();
-		}
-		
-		return queryNode;				
-	}
+	private Query createQueryNode_HarmPotential_ST4_T3(MultiEntityBayesianNetwork mebn) {
+		return createGenericQueryNode(mebn, "Starship_MFrag", "HarmPotential", new String[]{"st", "t"}, new String[]{"ST4", "T3"}, null);
+	}	
 	
 }
