@@ -1,17 +1,10 @@
 package unbbayes.prs.mebn.ontology;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-import javax.xml.bind.JAXBException;
-
-import unbbayes.io.LogManager;
-import unbbayes.io.XMLIO;
 import unbbayes.io.mebn.UbfIO;
-import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.RandomVariableFinding;
@@ -26,9 +19,6 @@ import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.prs.mebn.ssbn.ExplosiveSSBNGenerator;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.Query;
-import unbbayes.prs.mebn.ssbn.SSBNNode;
-import unbbayes.prs.mebn.ssbn.SituationSpecificBayesianNetwork;
-import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
 /**
  * This is a set of case test developer por Cheol Young Park using the Hepar II 
@@ -38,14 +28,18 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  *
  */
-public class HeparIITestSet {
+public class HeparIITestSet  extends TestSet{
 
+	//Names of files
 	private static final String HEPARII_UBF_FILE = "examples/mebn/HeparII/HeparII_01.ubf";
 	private static final String TEST_FILE_NAME = "HeparIITestSet.log"; 
+	private static final String PATH = "examples/mebn/Tests/HeparIITestSet"; 
 	
-	private static final String PATH_Tests = "examples/mebn/tests"; 
-	private static final String PATH = "examples/mebn/tests/HeparIITestSet"; 
+	//Variables
+	private MultiEntityBayesianNetwork mebn;	
+	private static int testNumber = 0; 
 	
+	//Mapping the MEBN elements
 	private static final String RV_ALT = "ALT"; 
 	private static final String RV_AST = "AST"; 
 	private static final String RV_AGE = "Age"; 
@@ -77,24 +71,12 @@ public class HeparIITestSet {
 	
 	private static final String OV_P = "p"; 
 	
-	
-	private ISSBNGenerator ssbnGenerator; 
-	private MultiEntityBayesianNetwork mebn;
-	
-	private LogManager logManager; 
-	
-	private NumberFormat nf;
-	
-	private static int testNumber = 0; 
-	
-	public HeparIITestSet(){
-		
-		//Initialization
-		ssbnGenerator = new ExplosiveSSBNGenerator(); 
-		logManager = new LogManager(); 
 
+	
+	public HeparIITestSet(ISSBNGenerator ssbnGenerator){
+		super(ssbnGenerator); 
 		
-		nf = NumberFormat.getInstance(Locale.US);
+		NumberFormat nf = NumberFormat.getInstance(Locale.US);
 		nf.setMaximumFractionDigits(2);
 		
 		//Loading the network
@@ -104,20 +86,28 @@ public class HeparIITestSet {
 		} catch (Exception e) {
 			e.printStackTrace();
 			logManager.appendln(e.toString());
-			finishLog(); 
+			finishLog(PATH + "/" + TEST_FILE_NAME); 
 			System.exit(1); 
 		}
 		
-		File directory = new File(PATH_Tests); 
+		File directory = new File(PATH);  
 		if(!directory.exists()){
 			directory.mkdir(); 
 		}
+	}
+	
+	public static void main(String[] args){
 		
-		directory = new File(PATH); 
-		if(!directory.exists()){
-			directory.mkdir(); 
-		}
+		ISSBNGenerator ssbnGenerator = new ExplosiveSSBNGenerator();
 		
+		TestSet testSet = new HeparIITestSet(ssbnGenerator);
+		testSet.executeTests(); 
+		testSet.finishLog(PATH + "/" + TEST_FILE_NAME); 
+		
+	}
+	
+
+	public void executeTests(){
 		//Executing the test
 		
 		executeTestCase1(); 
@@ -266,106 +256,11 @@ public class HeparIITestSet {
 		executeTestCase137(); 
 		executeTestCase138(); 
 		executeTestCase139(); 
-		
-		finishLog(); 
-	}
-	
-	public static void main(String[] args){
-		HeparIITestSet heparIITestSet = new HeparIITestSet(); 
-	}
-	
-	private void printTestFoot() {
-		logManager.appendln("-----------------------------------------------"); 
-		logManager.appendln("");
-	}
-
-	private void printTestHeader(int i, String NodeName) {
-		logManager.appendln("-----------------------------------------------"); 
-		logManager.appendln("Test" + i + ":" + NodeName);
-	}
-
-	private void printTreeVariableTable(Query query) {
-		TreeVariable treeVariable = query.getQueryNode().getProbNode(); 
-		
-		int statesSize = treeVariable.getStatesSize();
-		
-		logManager.appendln("States = " + statesSize); 
-		
-		for (int j = 0; j < statesSize; j++) {
-			String label;
-			label = treeVariable.getStateAt(j)+ ": "
-			+ nf.format(treeVariable.getMarginalAt(j) * 100.0);
-			logManager.appendln(label); 
-		}
-	}
-	
-	private void finishLog(){
-		try {
-			logManager.writeToDisk(PATH + "/" + "HeparIITestSet.log", false);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} 
-	}
-
-	private void executeQuery(Query query) {
-		try {
-			SituationSpecificBayesianNetwork ssbn = ssbnGenerator.generateSSBN(query);
-
-			File file = new File(PATH + "/" + "Test" + testNumber + ".xml"); 
-			saveNetworkFile(file, query.getQueryNode()); 
-			
-			ssbn.compileAndInitializeSSBN();
-		} catch (Exception e) {
-			e.printStackTrace();
-			logManager.appendln(e.toString());
-		}
-	}
-	
-	public static void saveNetworkFile(File file, SSBNNode queryNode){
-	    XMLIO netIO = new XMLIO(); 
-		
-		try {
-			netIO.save(file, queryNode.getProbabilisticNetwork());
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (JAXBException e) {
-			e.printStackTrace();
-		}		
-	}
-	
-	private Query createGenericQueryNode(MultiEntityBayesianNetwork mebn,
-			String mFragName, String residentNodeName, 
-			String[] ovVariableNameList, String[] instanceNameList, KnowledgeBase kb){
-		
-		MFrag mFrag = mebn.getMFragByName(mFragName); 
-		ResidentNode residentNode = mFrag.getDomainResidentNodeByName(residentNodeName); 
-		SSBNNode queryNode = SSBNNode.getInstance(null,residentNode, new ProbabilisticNode()); 
-		
-		try {
-			for(int i = 0; i < ovVariableNameList.length; i++){
-				queryNode.addArgument(residentNode.getOrdinaryVariableByName(ovVariableNameList[i]), instanceNameList[i]);	
-			}
-		} catch (SSBNNodeGeneralException e1) {
-			e1.printStackTrace();
-			logManager.appendln(e1.toString());
-		}
-		
-		Query query = new Query(kb, queryNode, mebn); 
-		query.setMebn(mebn); 
-		
-		return query;				
-	}
-	
-	private void executeQueryAndPrintResults(Query query) {
-		executeQuery(query);
-		printTreeVariableTable(query);
-		printTestFoot();
 	}
 	
 	private void executeTestCase(int index, String nameResidentNode, String nameMFrag){
 		executeTestCase(index, nameResidentNode, nameMFrag, null); 			
 	}
-
 
 	private void executeTestCase(int index, String nameResidentNode, String nameMFrag, 
 			RandomVariableFinding[] findingList){
@@ -387,7 +282,7 @@ public class HeparIITestSet {
 				new String[]{"p"}, 
 				new String[]{"maria"}, kb); 
 
-		executeQueryAndPrintResults(query); 				
+		executeQueryAndPrintResults(query, PATH + "/" + "Test" + testNumber + ".xml"); 				
 	}
 	
 
