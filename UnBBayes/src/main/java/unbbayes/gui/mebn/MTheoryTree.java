@@ -21,7 +21,6 @@
 package unbbayes.gui.mebn;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -42,7 +41,6 @@ import javax.swing.tree.TreePath;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
-import unbbayes.gui.GraphAction;
 import unbbayes.gui.GraphPane;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.ContextNode;
@@ -421,10 +419,10 @@ public class MTheoryTree extends JTree {
 			} 
 			else { //Not is a leaf 
 				
-				Object nodeLeaf = nodeTreeMap.get(mutableTreeNode); 
-				objectSelected = nodeLeaf; 
+				Object nodeSelected = nodeTreeMap.get(mutableTreeNode); 
+				objectSelected = nodeSelected; 
 				
-				if (nodeLeaf instanceof MFrag){
+				if (nodeSelected instanceof MFrag){
 					if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
 						
 						popupMFrag.setEnabled(true);
@@ -433,7 +431,8 @@ public class MTheoryTree extends JTree {
 					} else if (e.getClickCount() == 2
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 						
-						mebnController.setCurrentMFrag((MFrag)nodeLeaf);
+						mebnController.setCurrentMFrag((MFrag)nodeSelected);
+						MTheoryTree.this.expandRow(selRow);
 						
 					} else if (e.getClickCount() == 1) {
 					    
