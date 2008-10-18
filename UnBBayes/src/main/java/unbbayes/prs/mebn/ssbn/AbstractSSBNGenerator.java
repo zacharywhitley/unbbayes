@@ -64,6 +64,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 	//all the ssbn nodes created. 
 	protected SSBNNodeList ssbnNodeList;
 	
+	//all the ssbn's nodes createds organized by unique name
 	protected Map<String, SSBNNode> ssbnNodesMap; 
 
 	protected List<SSBNWarning> warningList; 
@@ -85,26 +86,21 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 		generateCPTForAllSSBNNodes(root, 0);
 	}
 	
-	/*
-	 * 1 - generate cpt for parents
-	 * 2 - generate cpt for node
-	 * 3 - generate cpt for children
-	 */
 	private void generateCPTForAllSSBNNodes(SSBNNode root, int level) throws MEBNException, SSBNNodeGeneralException{
-		
+
 //		logManager.appendln(getSpaceForLevel(level) + "Generate CPT for node " + root); 
-//		logManager.appendln(getSpaceForLevel(level) + "Parents:"); 
-		
+
 		if(root.isCptAlreadyGenerated()){
 			return; 
 		}else{
 			
-			//------------------ PARENTS
+			//------------------1) PARENTS
+//			logManager.appendln(getSpaceForLevel(level) + "Parents:"); 
 			for(SSBNNode parent: root.getParents()){
 				generateCPTForAllSSBNNodes(parent, level + 1); 
 			}
 
-			//------------------ NODE
+			//------------------2) NODE
 //			logManager.appendln(getSpaceForLevel(level) + "CPT for root"); 
 			if(root.isCptAlreadyGenerated()){
 				return; 
@@ -112,7 +108,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 			generateCPT(root);
 			root.setCptAlreadyGenerated(true); 
 
-			//------------------ CHILDREN
+			//------------------3) CHILDREN
 //			logManager.appendln(getSpaceForLevel(level) + "Children:"); 
 			for(SSBNNode child: root.getChildren()){
 				generateCPTForAllSSBNNodes(child, level + 1); 
@@ -174,7 +170,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 			
 	
 	/**
-	 * Remove of the network all nodes in what the atribute permanent = false. 
+	 * Remove of the network all nodes in what the attribute permanent = false. 
 	 * 
 	 * @param pn
 	 */
@@ -191,10 +187,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 		
 		for(SSBNNode node: nodesToDelete){
 			logManager.appendln("...Removing node " + node.getName());
-			
 			node.delete(); 
-			
-			
 			listSSBNNode.remove(node); 
 		}
 		
@@ -233,7 +226,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 	
 
 	/**
-	 * Evaluate one context node with unknow ordinary variables 
+	 * Evaluate one context node with unknown ordinary variables 
 	 * 
 	 * Restrições: 
 	 * Apenas haverá retorno caso haja como resultado uma (e somente uma) entidade
