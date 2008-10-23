@@ -9,10 +9,10 @@ import java.util.Locale;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
 import unbbayes.io.XMLIO;
-import unbbayes.monteCarlo.sampling.MonteCarloSampling;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;
+import unbbayes.simulation.montecarlo.sampling.MonteCarloSampling;
 
 public class Evaluation {
 

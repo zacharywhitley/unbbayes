@@ -18,7 +18,7 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.monteCarlo.io;
+package unbbayes.simulation.montecarlo.io;
 
 
 import java.io.File;

@@ -18,9 +18,9 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.monteCarlo;
+package unbbayes.simulation.montecarlo;
 
-import unbbayes.monteCarlo.controller.MCMainController;
+import unbbayes.simulation.montecarlo.controller.MCMainController;
 
 /**
  * 	Classe que que gera amostras baseadas em uma rede bayseana

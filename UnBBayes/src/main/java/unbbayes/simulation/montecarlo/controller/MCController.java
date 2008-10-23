@@ -18,72 +18,56 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.monteCarlo.controller;
+package unbbayes.simulation.montecarlo.controller;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 
-import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
 
-import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
 import unbbayes.io.XMLIO;
 import unbbayes.io.exception.LoadException;
-import unbbayes.monteCarlo.gui.MCParametersPane;
-import unbbayes.monteCarlo.sampling.MonteCarloSampling;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.simulation.montecarlo.gui.MCParametersPane;
+import unbbayes.simulation.montecarlo.sampling.MonteCarloSampling;
 
 /**
  * Classe que controla as a��es relativas a gera��o de amostras pelo algoritimo de montecarlo
  * 
  * @author Danilo
  */
-public class MCMainController {
+public class MCController {
 	
 	private MCParametersPane tp;
 	private BaseIO io;
 	ProbabilisticNetwork redeProbabilistica;	
 	
-	public MCMainController(){	
-		
-		getNet();
-		
-		tp = new MCParametersPane();
-		adicionarListeners();
-	}	
-	
-	private void getNet(){			
-		try{			
-			String[] nets = new String[] { "net", "xml" };
-			JFileChooser chooser = new JFileChooser(".");
-			chooser.setMultiSelectionEnabled(false);				
-			chooser.addChoosableFileFilter(
-					//TODO utilizar resources...
-				new SimpleFileFilter(nets,"Carregar .net, .xml"));
-			int option = chooser.showOpenDialog(null);
-			if (option == JFileChooser.APPROVE_OPTION) {
-				if (chooser.getSelectedFile() != null) {
-					String fileName = chooser.getSelectedFile().getName();
-					if(fileName.endsWith(".net")){
-						io = new NetIO();						
-					}
-					else{
-						io = new XMLIO(); 
-					}
-					redeProbabilistica = io.load(chooser.getSelectedFile());
-				}
-			}
-		}catch(LoadException le){
-			le.printStackTrace();
-		}catch(IOException ie){
-			ie.printStackTrace();
-		} catch (JAXBException je){
-        	je.printStackTrace(); 
+	public MCController(File file){
+        String fileName = file.getName();
+        if(fileName.endsWith(".net")){
+            io = new NetIO();                       
+        } else{
+            io = new XMLIO(); 
         }
+        try {
+            redeProbabilistica = io.load(file);
+            tp = new MCParametersPane();
+            adicionarListeners();
+        } catch (LoadException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (JAXBException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }        
 	}
 	
 	public void adicionarListeners(){

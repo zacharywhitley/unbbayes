@@ -18,7 +18,7 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.monteCarlo.gui;
+package unbbayes.simulation.montecarlo.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Container;

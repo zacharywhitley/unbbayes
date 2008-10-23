@@ -63,7 +63,7 @@ import unbbayes.controller.IconController;
 import unbbayes.controller.JavaHelperController;
 import unbbayes.controller.MainController;
 import unbbayes.io.mebn.UbfIO;
-import unbbayes.monteCarlo.controller.MCMainController;
+import unbbayes.simulation.montecarlo.controller.MCMainController;
 
 /**
  * This class extends <code>JFrame</code> and it is responsible for 
