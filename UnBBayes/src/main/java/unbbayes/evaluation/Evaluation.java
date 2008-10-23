@@ -57,13 +57,14 @@ public class Evaluation {
 		init(targetNodeNameList, evidenceNodeNameList);
 		
 		// 1. Generate the MC sample from the network file
-		// Case# StateIndexForNode1	StateIndexForNode2	StateIndexForNodeJ
-		// 001	 0					1					0
-		// 002	 2					0					1
+		// Trial# StateIndexForNode1	StateIndexForNode2	StateIndexForNodeJ
+		// 001	  0						1					0
+		// 002	  2						0					1
 		// ...
-		// i	 x					y					z
+		// i	  x						y					z
 		MonteCarloSampling mc = new MonteCarloSampling(net, sampleSize);
-		sampleMatrix = mc.start();
+		mc.start();
+		sampleMatrix = mc.getSampledStatesMatrix(); 
 		
 		// FIXME For now let's just consider the simple case of having just one target node!
 		targetNode = targetNodeList[0];
@@ -75,12 +76,17 @@ public class Evaluation {
 		positionTargetNodeList = new int[targetNodeList.length];
 		positionEvidenceNodeList = new int[evidenceNodeList.length];
 		
+		// Position of the nodes in the sampled matrix.
+		List<Node> positionNodeList = mc.getSamplingNodeOrderQueue();
+		
 		for (int i = 0; i < positionTargetNodeList.length; i++) {
-			positionTargetNodeList[i] = net.getNodeIndex(targetNodeList[i].getName());
+			//positionTargetNodeList[i] = net.getNodeIndex(targetNodeList[i].getName());
+			positionTargetNodeList[i] = positionNodeList.indexOf(net.getNode(targetNodeList[i].getName()));
 		}
 		
 		for (int i = 0; i < positionEvidenceNodeList.length; i++) {
-			positionEvidenceNodeList[i] = net.getNodeIndex(evidenceNodeList[i].getName());
+			//positionEvidenceNodeList[i] = net.getNodeIndex(evidenceNodeList[i].getName());
+			positionEvidenceNodeList[i] = positionNodeList.indexOf(net.getNode(evidenceNodeList[i].getName()));
 		}
 		
 		// 2. Count # of occurrences of evidence nodes given target nodes
