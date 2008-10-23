@@ -21,7 +21,6 @@
 package unbbayes.monteCarlo.simulacao;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import unbbayes.prs.Node;
@@ -31,29 +30,30 @@ import unbbayes.prs.bn.ProbabilisticNode;
 
 /**
  * 
- * Classe que implementa o metodo de simulacao de Monte Carlo
- * Por este metodo sao gerados numeros aleatorios entre 0 e 1. Cada valor sorteado vai estar associada a uma
- * instancia dentro do universo representado pela rede bayseana. Esta associacao e feita com base em uma funcao
- * de densidade acumulada que representa a rede.
+ * Class that implements the Monte Carlo simulation.
+ * It uses forward sampling to calculate a RV's probability mass function. Based on its pmf, it then 
+ * calculates the cumulative density function. Finally, a random number between 0 and 1 is generated 
+ * and the sampled state is defined by the state the random number relates based on its cdf. 
  * 
  * @author Danilo Custodio
+ * @author Rommel Carvalho
  *
  */
 public class SimulacaoMonteCarlo {
 	
 	private ProbabilisticNetwork pn;
-	private int nCases;
-	private ArrayList<Node> fila;
+	private int nTrials;
+	private ArrayList<Node> samplingNodeOrderQueue;
 	
 	
 	/**
 	 * Responsible for setting the initial variables for Monte Carlo simulation.
 	 * @param pn Probabilistic network that will be used for sampling.
-	 * @param nCases Number of cases to generate.
+	 * @param nTrials Number of trials to generate.
 	 */
-	public SimulacaoMonteCarlo(ProbabilisticNetwork pn , int nCases){		
+	public SimulacaoMonteCarlo(ProbabilisticNetwork pn , int nTrials){		
 		this.pn = pn;
-		this.nCases = nCases;	
+		this.nTrials = nTrials;	
 		//start();				
 	}
 	
@@ -63,51 +63,52 @@ public class SimulacaoMonteCarlo {
 	 * @return A matrix with the state for each node for each case of the sample.
 	 */
 	public byte[][] start(){
-		fila = new ArrayList<Node>();		
-		criarFila();
-		byte [][] matrizFila = new byte[nCases][pn.getNodeCount()];		
-		for(int i = 0; i < nCases; i++){						
-			simular(matrizFila, i);
+		samplingNodeOrderQueue = new ArrayList<Node>();		
+		createSamplingOrderQueue();
+		byte [][] sampledStatesMatrix = new byte[nTrials][pn.getNodeCount()];		
+		for(int i = 0; i < nTrials; i++){						
+			simulate(sampledStatesMatrix, i);
 		}
 		/*
-		System.out.print("CASE");
+		System.out.print("TRIAL");
 		for (int i = 0; i < pn.getNodeCount(); i++) {
 			System.out.print("	" + pn.getNodeAt(i).getName() + " - " + pn.getNodeAt(i).getDescription());
 		}
 		System.out.println();
-		for (int i = 0; i < matrizFila.length; i++) {
+		for (int i = 0; i < sampledStatesMatrix.length; i++) {
 			System.out.print(i + " :" );
-			for (int j = 0; j < matrizFila[0].length; j++) {
-				System.out.print("	" + pn.getNodeAt(j).getStateAt(matrizFila[i][j]));
+			for (int j = 0; j < sampledStatesMatrix[0].length; j++) {
+				System.out.print("	" + pn.getNodeAt(j).getStateAt(sampledStatesMatrix[i][j]));
 			}
 			System.out.println();
 		}
 		*/
-		return matrizFila;
+		return sampledStatesMatrix;
 	}
 	
 	/**
 	 * Creates the queue of the nodes that are going to be analyzed.
 	 */
-	private void criarFila(){				
-		boolean[] visitados = new boolean[pn.getNodeCount()];
-		inicializaFila(visitados);											
-		for(int i = 0; i < fila.size(); i++){
-			Node node = fila.get(i);
-			adicionaFila(node.getChildren(), visitados);			
+	private void createSamplingOrderQueue(){
+		// Keeps track of the nodes that have already been added to the queue (nodeAddedList[nodeIndex]=true). 
+		boolean[] nodeAddedList = new boolean[pn.getNodeCount()];
+		initSamplingOrderQueue(nodeAddedList);											
+		for(int i = 0; i < samplingNodeOrderQueue.size(); i++){
+			Node node = samplingNodeOrderQueue.get(i);
+			addToSamplingOrderQueue(node.getChildren(), nodeAddedList);			
 		}		
 	}
 	
 	/**
 	 * Initializes the queue with the nodes that are root. In other words. 
 	 * It will put in the queue the nodes that do not have parents.
-	 * @param visitados Contains the nodes that were already added to the queue.
+	 * @param nodeAddedList Keeps track of the nodes that have already been added to the queue (nodeAddedList[nodeIndex]=true).
 	 */
-	private void inicializaFila(boolean[] visitados){
+	private void initSamplingOrderQueue(boolean[] nodeAddedList){
 		for(int i = 0 ; i < pn.getNodeCount(); i++){
 			if(pn.getNodeAt(i).getParents().size() == 0 ){
-				visitados[i]= true;					
-				fila.add(pn.getNodeAt(i));
+				nodeAddedList[i]= true;					
+				samplingNodeOrderQueue.add(pn.getNodeAt(i));
 			}
 		}			
 	}
@@ -115,18 +116,18 @@ public class SimulacaoMonteCarlo {
 	/**
 	 * Take the children of a node that have already been added to the queue. Analyze them
 	 * one by one and add the child that is not in the queue yet. 
-	 * @param filhos Children of a node that is already in the queue.
-	 * @param visitados Nodes that have already been added to the queue.
+	 * @param children Children of a node that is already in the queue.
+	 * @param nodeAddedList Nodes that have already been added to the queue.
 	 */
-	private void adicionaFila(ArrayList<Node> filhos, boolean[] visitados){
-		for(int i = 0 ; i < filhos.size(); i++){
-			Node n1 = filhos.get(i);
+	private void addToSamplingOrderQueue(ArrayList<Node> children, boolean[] nodeAddedList){
+		for(int i = 0 ; i < children.size(); i++){
+			Node n1 = children.get(i);
 			for(int j = 0 ; j < pn.getNodeCount(); j++){
 				Node n2 = pn.getNodeAt(j);
 				if(n1.getName().equals(n2.getName())){
-					if(!visitados[j]){
-						fila.add(n1);						
-						visitados[j] = true;						
+					if(!nodeAddedList[j]){
+						samplingNodeOrderQueue.add(n1);						
+						nodeAddedList[j] = true;						
 						break;						
 					}										
 				}				
@@ -134,33 +135,37 @@ public class SimulacaoMonteCarlo {
 		}	
 	}
 	
-	private void simular(byte[][] matrizFila, int caso){
+	/**
+	 * Responsible for simulating MC for sampling.
+	 * @param sampledStatesMatrix The matrix containing the sampled states for every trial. 
+	 * @param nTrial The trial number to simulate.
+	 */
+	private void simulate(byte[][] sampledStatesMatrix, int nTrial){
 		List<Integer> parentsIndexes = new ArrayList<Integer>();
-		double[] column;
-		int[] estado = new int[fila.size()];
-		for(int i = 0 ; i < fila.size(); i++){			
-			ProbabilisticNode node = (ProbabilisticNode)fila.get(i);									
+		double[] pmf;
+		int[] sampledStates = new int[samplingNodeOrderQueue.size()];
+		for(int i = 0 ; i < samplingNodeOrderQueue.size(); i++){			
+			ProbabilisticNode node = (ProbabilisticNode)samplingNodeOrderQueue.get(i);									
 			parentsIndexes = getParentsIndexesInQueue(node);
-			// It seems we can optimize this. It always give the same result.
-			column = getColumn(estado, parentsIndexes, node);													
-			estado[i] = getState(column);
-			matrizFila[caso][i] = (byte)estado[i];
+			pmf = getProbabilityMassFunction(sampledStates, parentsIndexes, node);													
+			sampledStates[i] = getState(pmf);
+			sampledStatesMatrix[nTrial][i] = (byte)sampledStates[i];
 		}				
 	}
 	
 	/**
-	 * Return the indexes in the queue for the parents of a given node. 
+	 * Return the indexes (sampling order) in the queue for the parents of a given node. 
 	 * @param node The node to retrieve the parents for finding the indexes.
-	 * @return List of indexes of a node's parents in the queue.
+	 * @return List of indexes (sampling order) of a node's parents in the queue.
 	 */
 	private List<Integer> getParentsIndexesInQueue(ProbabilisticNode node){
-		List<Integer> indices = new ArrayList<Integer>();
+		List<Integer> indexes = new ArrayList<Integer>();
 		ArrayList<Node> parents = node.getParents();		
 		for(int i = 0 ; i < parents.size();i++){
-			Node node1 = parents.get(i);
-			indices.add(getIndexInQueue(node1));						
+			Node parentNode = parents.get(i);
+			indexes.add(getIndexInQueue(parentNode));						
 		}	
-		return indices;		
+		return indexes;		
 	}
 	
 	/**
@@ -169,19 +174,24 @@ public class SimulacaoMonteCarlo {
 	 * @return
 	 */
 	private Integer getIndexInQueue(Node node){
-		for(int i = 0 ; i <fila.size();i++){
-			if(node.getName().equals(fila.get(i).getName())){				
+		for(int i = 0 ; i <samplingNodeOrderQueue.size();i++){
+			if(node.getName().equals(samplingNodeOrderQueue.get(i).getName())){				
 				return i;				
 			}			
 		}	
 		return null;	
 	}
 	
-	private int getState(double[] column){
+	/**
+	 * Uses the pmf to retrieve the cdf to choose a state from a random generated number (between 0 and 1).
+	 * @param pmf The probability mass function for the node RV that we want to sample the state for.
+	 * @return The sampled state for a given RV (based on its pmf).
+	 */
+	private int getState(double[] pmf){
 		// Cumulative distribution function
 		double[][] cdf;
 		double numero = Math.random();		
-		cdf = createCumulativeDistributionFunction(column);
+		cdf = getCumulativeDistributionFunction(pmf);
 		for(int i = 0; i< cdf.length; i++){
 			if(i == 0){				
 				if (numero <= cdf[i][1]){
@@ -197,17 +207,22 @@ public class SimulacaoMonteCarlo {
 		return -1;				
 	}
 	
-	private double[][] createCumulativeDistributionFunction(double[] coluna){
+	/**
+	 * Creates the cumulative distribution function (cdf) based on the node RV's pmf.
+	 * @param pmf The probability mass function of the RV to calculate the cdf.
+	 * @return The cumulative distribution function (cdf) for the given pmf.
+	 */
+	private double[][] getCumulativeDistributionFunction(double[] pmf){
 		// Instead of using [statesSize][2] we could only use [statesSize]
 		// and the upper value for the interval would be the lower value of 
 		// the following state. In the last state the upper value would be 1.
-		double[][] cdf = new double[coluna.length][2];		
+		double[][] cdf = new double[pmf.length][2];		
 		double atual = 0.0d;
-		for(int i = 0 ; i < coluna.length; i++){
+		for(int i = 0 ; i < pmf.length; i++){
 			// Lower value
 			cdf[i][0] = atual;
 			// Upper value
-			cdf[i][1] = coluna[i] + atual;
+			cdf[i][1] = pmf[i] + atual;
 			
 			// Next lower value is equal to the previous upper value
 			atual = cdf[i][1];
@@ -215,30 +230,37 @@ public class SimulacaoMonteCarlo {
 		return cdf;
 	}
 	
-	private double[]  getColumn(int[] estado, List<Integer> parentsIndexes, ProbabilisticNode node){
+	/**
+	 * Creates the probability mass function based on the states sampled for the parents.
+	 * @param sampledStates The states (sampledStates[nodeIndex]) sampled for the nodes (nodeIndex).
+	 * @param parentsIndexes The nodeIndex for each parent.
+	 * @param node The node/RV to calculate the pmf.
+	 * @return The probability mass function (pmf) of the node RV.
+	 */
+	private double[]  getProbabilityMassFunction(int[] sampledStates, List<Integer> parentsIndexes, ProbabilisticNode node){
 		PotentialTable pt = node.getPotentialTable();
 		int statesSize = node.getStatesSize();
-		int index;
-		double[] column = new double[statesSize];
+		int nodeIndex;
+		double[] pmf = new double[statesSize];
 		int[] coordinates = new int[parentsIndexes.size() + 1];
 		ArrayList<Node> parents = new ArrayList<Node>();		
 		for(int i = 0; i < node.getStatesSize(); i++){				
 			coordinates[0] = i;
 			if(i == 0){
 				for(int j = 0 ; j < parentsIndexes.size(); j++){				
-					index = parentsIndexes.get(j);
-					parents.add(fila.get(index));
-					coordinates[j + 1] = estado[index];								
+					nodeIndex = parentsIndexes.get(j);
+					parents.add(samplingNodeOrderQueue.get(nodeIndex));
+					coordinates[j + 1] = sampledStates[nodeIndex];								
 				}
 			}
-			column[i] = pt.getValue(coordinates);
+			pmf[i] = pt.getValue(coordinates);
 		}
 		/*System.out.println("Node " + node.getName());
-		for (int i = 0; i < column.length; i++) {
-			System.out.print(node.getStateAt(i) + " = " + column[i] + " ");
+		for (int i = 0; i < pmf.length; i++) {
+			System.out.print(node.getStateAt(i) + " = " + pmf[i] + " ");
 		}
 		System.out.println();*/
-		return column;
+		return pmf;
 	}	
 	
 }
