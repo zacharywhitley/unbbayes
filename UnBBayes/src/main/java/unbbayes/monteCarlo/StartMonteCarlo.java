@@ -20,7 +20,7 @@
  */
 package unbbayes.monteCarlo;
 
-import unbbayes.monteCarlo.controlador.ControladorPrincipal;
+import unbbayes.monteCarlo.controller.MCMainController;
 
 /**
  * 	Classe que que gera amostras baseadas em uma rede bayseana
@@ -34,6 +34,6 @@ import unbbayes.monteCarlo.controlador.ControladorPrincipal;
 public class StartMonteCarlo {
 
 	public static void main(String[] args){
-		ControladorPrincipal cp = new ControladorPrincipal();		
+		MCMainController cp = new MCMainController();		
 	}
 }

@@ -63,7 +63,7 @@ import unbbayes.controller.IconController;
 import unbbayes.controller.JavaHelperController;
 import unbbayes.controller.MainController;
 import unbbayes.io.mebn.UbfIO;
-import unbbayes.monteCarlo.controlador.ControladorPrincipal;
+import unbbayes.monteCarlo.controller.MCMainController;
 
 /**
  * This class extends <code>JFrame</code> and it is responsible for 
@@ -419,7 +419,7 @@ public class UnBBayesFrame extends JFrame {
 		alMonteCarlo = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				// ControladorPrincipal cp = new ControladorPrincipal();
-				new ControladorPrincipal();
+				new MCMainController();
 			}
 		};
 

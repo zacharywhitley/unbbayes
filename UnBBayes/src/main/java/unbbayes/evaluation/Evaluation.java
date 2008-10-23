@@ -9,7 +9,7 @@ import java.util.Locale;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
 import unbbayes.io.XMLIO;
-import unbbayes.monteCarlo.simulacao.SimulacaoMonteCarlo;
+import unbbayes.monteCarlo.sampling.MonteCarloSampling;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;
@@ -62,7 +62,7 @@ public class Evaluation {
 		// 002	 2					0					1
 		// ...
 		// i	 x					y					z
-		SimulacaoMonteCarlo mc = new SimulacaoMonteCarlo(net, sampleSize);
+		MonteCarloSampling mc = new MonteCarloSampling(net, sampleSize);
 		sampleMatrix = mc.start();
 		
 		// FIXME For now let's just consider the simple case of having just one target node!

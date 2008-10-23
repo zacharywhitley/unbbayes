@@ -18,22 +18,23 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.monteCarlo.controlador;
+package unbbayes.monteCarlo.controller;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.io.IOException;
 
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
 
+import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
 import unbbayes.io.XMLIO;
 import unbbayes.io.exception.LoadException;
-import unbbayes.monteCarlo.gui.TelaParametros;
-import unbbayes.monteCarlo.simulacao.SimulacaoMonteCarlo;
+import unbbayes.monteCarlo.gui.MCParametersPane;
+import unbbayes.monteCarlo.sampling.MonteCarloSampling;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 
 /**
@@ -41,33 +42,48 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
  * 
  * @author Danilo
  */
-public class MonteCarloController {
+public class MCMainController {
 	
-	private TelaParametros tp;
+	private MCParametersPane tp;
 	private BaseIO io;
 	ProbabilisticNetwork redeProbabilistica;	
 	
-	public MonteCarloController(File file){
-        String fileName = file.getName();
-        if(fileName.endsWith(".net")){
-            io = new NetIO();                       
-        } else{
-            io = new XMLIO(); 
+	public MCMainController(){	
+		
+		getNet();
+		
+		tp = new MCParametersPane();
+		adicionarListeners();
+	}	
+	
+	private void getNet(){			
+		try{			
+			String[] nets = new String[] { "net", "xml" };
+			JFileChooser chooser = new JFileChooser(".");
+			chooser.setMultiSelectionEnabled(false);				
+			chooser.addChoosableFileFilter(
+					//TODO utilizar resources...
+				new SimpleFileFilter(nets,"Carregar .net, .xml"));
+			int option = chooser.showOpenDialog(null);
+			if (option == JFileChooser.APPROVE_OPTION) {
+				if (chooser.getSelectedFile() != null) {
+					String fileName = chooser.getSelectedFile().getName();
+					if(fileName.endsWith(".net")){
+						io = new NetIO();						
+					}
+					else{
+						io = new XMLIO(); 
+					}
+					redeProbabilistica = io.load(chooser.getSelectedFile());
+				}
+			}
+		}catch(LoadException le){
+			le.printStackTrace();
+		}catch(IOException ie){
+			ie.printStackTrace();
+		} catch (JAXBException je){
+        	je.printStackTrace(); 
         }
-        try {
-            redeProbabilistica = io.load(file);
-            tp = new TelaParametros();
-            adicionarListeners();
-        } catch (LoadException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (JAXBException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }        
 	}
 	
 	public void adicionarListeners(){
@@ -90,7 +106,7 @@ public class MonteCarloController {
 		public void actionPerformed(ActionEvent ae){
 			int n = validaNatural(tp.getNumeroCasos());
 			if(n>= 0){								
-				new SimulacaoMonteCarlo(redeProbabilistica,n);
+				new MonteCarloSampling(redeProbabilistica,n);
 				tp.dispose();
 			}else{			
 				JOptionPane.showMessageDialog(null,"O numero de casos deve ser um natural","ERROR",JOptionPane.ERROR_MESSAGE);

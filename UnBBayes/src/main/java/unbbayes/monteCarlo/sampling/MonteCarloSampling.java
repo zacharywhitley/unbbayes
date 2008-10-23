@@ -18,7 +18,7 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.monteCarlo.simulacao;
+package unbbayes.monteCarlo.sampling;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ import unbbayes.prs.bn.ProbabilisticNode;
  * @author Rommel Carvalho
  *
  */
-public class SimulacaoMonteCarlo {
+public class MonteCarloSampling {
 	
 	private ProbabilisticNetwork pn;
 	private int nTrials;
@@ -51,7 +51,7 @@ public class SimulacaoMonteCarlo {
 	 * @param pn Probabilistic network that will be used for sampling.
 	 * @param nTrials Number of trials to generate.
 	 */
-	public SimulacaoMonteCarlo(ProbabilisticNetwork pn , int nTrials){		
+	public MonteCarloSampling(ProbabilisticNetwork pn , int nTrials){		
 		this.pn = pn;
 		this.nTrials = nTrials;	
 		//start();				

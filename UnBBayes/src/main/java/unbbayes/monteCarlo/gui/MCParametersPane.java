@@ -37,7 +37,7 @@ import javax.swing.JTextField;
  * 
  * @author Danilo
  */
-public class TelaParametros extends JFrame {
+public class MCParametersPane extends JFrame {
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
@@ -49,7 +49,7 @@ public class TelaParametros extends JFrame {
 	private JButton btnOK;
 	
 	
-	public TelaParametros(){
+	public MCParametersPane(){
 		super("Monte Carlo Simulation");
 		Container c = getContentPane();		
 		c.add(criarTela());		

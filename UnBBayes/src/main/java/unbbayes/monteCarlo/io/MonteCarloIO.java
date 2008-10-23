@@ -39,13 +39,13 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
  * To change this generated comment go to 
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
-public class IOMonteCarlo {
+public class MonteCarloIO {
 
    private byte[][] matrix;
    private File file;
    private PrintStream ps;  
    
-   public IOMonteCarlo(byte[][] matrix) throws IOException{
+   public MonteCarloIO(byte[][] matrix) throws IOException{
    	    file = getFile();
    	    ps = new PrintStream(new FileOutputStream(file));
    		this.matrix = matrix;      
