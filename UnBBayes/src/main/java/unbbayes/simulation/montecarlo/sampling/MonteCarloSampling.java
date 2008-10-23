@@ -41,11 +41,28 @@ import unbbayes.prs.bn.ProbabilisticNode;
  */
 public class MonteCarloSampling {
 	
-	private ProbabilisticNetwork pn;
-	private int nTrials;
-	private ArrayList<Node> samplingNodeOrderQueue;
+	protected ProbabilisticNetwork pn;
+	protected int nTrials;
+	protected List<Node> samplingNodeOrderQueue;
 	
+	/**
+	 * Return the order the nodes are in the sampled matrix.
+	 * @return The order the nodes are in the sampled matrix.
+	 */
+	public List<Node> getSamplingNodeOrderQueue() {
+		return samplingNodeOrderQueue;
+	}
+
+	protected byte [][] sampledStatesMatrix;
 	
+	/**
+	 * Returns the generated sample matrix.
+	 * @return The generated sample matrix.
+	 */
+	public byte[][] getSampledStatesMatrix() {
+		return sampledStatesMatrix;
+	}
+
 	/**
 	 * Responsible for setting the initial variables for Monte Carlo simulation.
 	 * @param pn Probabilistic network that will be used for sampling.
@@ -62,10 +79,10 @@ public class MonteCarloSampling {
 	 * column represents the node, and the value at matrix[i][j] represents the state's node for this case.
 	 * @return A matrix with the state for each node for each case of the sample.
 	 */
-	public byte[][] start(){
+	public void start(){
 		samplingNodeOrderQueue = new ArrayList<Node>();		
 		createSamplingOrderQueue();
-		byte [][] sampledStatesMatrix = new byte[nTrials][pn.getNodeCount()];		
+		sampledStatesMatrix = new byte[nTrials][pn.getNodeCount()];		
 		for(int i = 0; i < nTrials; i++){						
 			simulate(sampledStatesMatrix, i);
 		}
@@ -83,13 +100,12 @@ public class MonteCarloSampling {
 			System.out.println();
 		}
 		*/
-		return sampledStatesMatrix;
 	}
 	
 	/**
 	 * Creates the queue of the nodes that are going to be analyzed.
 	 */
-	private void createSamplingOrderQueue(){
+	protected void createSamplingOrderQueue(){
 		// Keeps track of the nodes that have already been added to the queue (nodeAddedList[nodeIndex]=true). 
 		boolean[] nodeAddedList = new boolean[pn.getNodeCount()];
 		initSamplingOrderQueue(nodeAddedList);											
@@ -104,7 +120,7 @@ public class MonteCarloSampling {
 	 * It will put in the queue the nodes that do not have parents.
 	 * @param nodeAddedList Keeps track of the nodes that have already been added to the queue (nodeAddedList[nodeIndex]=true).
 	 */
-	private void initSamplingOrderQueue(boolean[] nodeAddedList){
+	protected void initSamplingOrderQueue(boolean[] nodeAddedList){
 		for(int i = 0 ; i < pn.getNodeCount(); i++){
 			if(pn.getNodeAt(i).getParents().size() == 0 ){
 				nodeAddedList[i]= true;					
@@ -119,7 +135,7 @@ public class MonteCarloSampling {
 	 * @param children Children of a node that is already in the queue.
 	 * @param nodeAddedList Nodes that have already been added to the queue.
 	 */
-	private void addToSamplingOrderQueue(ArrayList<Node> children, boolean[] nodeAddedList){
+	protected void addToSamplingOrderQueue(ArrayList<Node> children, boolean[] nodeAddedList){
 		for(int i = 0 ; i < children.size(); i++){
 			Node n1 = children.get(i);
 			for(int j = 0 ; j < pn.getNodeCount(); j++){
@@ -140,7 +156,7 @@ public class MonteCarloSampling {
 	 * @param sampledStatesMatrix The matrix containing the sampled states for every trial. 
 	 * @param nTrial The trial number to simulate.
 	 */
-	private void simulate(byte[][] sampledStatesMatrix, int nTrial){
+	protected void simulate(byte[][] sampledStatesMatrix, int nTrial){
 		List<Integer> parentsIndexes = new ArrayList<Integer>();
 		double[] pmf;
 		int[] sampledStates = new int[samplingNodeOrderQueue.size()];
@@ -158,7 +174,7 @@ public class MonteCarloSampling {
 	 * @param node The node to retrieve the parents for finding the indexes.
 	 * @return List of indexes (sampling order) of a node's parents in the queue.
 	 */
-	private List<Integer> getParentsIndexesInQueue(ProbabilisticNode node){
+	protected List<Integer> getParentsIndexesInQueue(ProbabilisticNode node){
 		List<Integer> indexes = new ArrayList<Integer>();
 		ArrayList<Node> parents = node.getParents();		
 		for(int i = 0 ; i < parents.size();i++){
@@ -173,7 +189,7 @@ public class MonteCarloSampling {
 	 * @param node
 	 * @return
 	 */
-	private Integer getIndexInQueue(Node node){
+	protected Integer getIndexInQueue(Node node){
 		for(int i = 0 ; i <samplingNodeOrderQueue.size();i++){
 			if(node.getName().equals(samplingNodeOrderQueue.get(i).getName())){				
 				return i;				
@@ -187,7 +203,7 @@ public class MonteCarloSampling {
 	 * @param pmf The probability mass function for the node RV that we want to sample the state for.
 	 * @return The sampled state for a given RV (based on its pmf).
 	 */
-	private int getState(double[] pmf){
+	protected int getState(double[] pmf){
 		// Cumulative distribution function
 		double[][] cdf;
 		double numero = Math.random();		
@@ -212,7 +228,7 @@ public class MonteCarloSampling {
 	 * @param pmf The probability mass function of the RV to calculate the cdf.
 	 * @return The cumulative distribution function (cdf) for the given pmf.
 	 */
-	private double[][] getCumulativeDistributionFunction(double[] pmf){
+	protected double[][] getCumulativeDistributionFunction(double[] pmf){
 		// Instead of using [statesSize][2] we could only use [statesSize]
 		// and the upper value for the interval would be the lower value of 
 		// the following state. In the last state the upper value would be 1.
@@ -237,7 +253,7 @@ public class MonteCarloSampling {
 	 * @param node The node/RV to calculate the pmf.
 	 * @return The probability mass function (pmf) of the node RV.
 	 */
-	private double[]  getProbabilityMassFunction(int[] sampledStates, List<Integer> parentsIndexes, ProbabilisticNode node){
+	protected double[]  getProbabilityMassFunction(int[] sampledStates, List<Integer> parentsIndexes, ProbabilisticNode node){
 		PotentialTable pt = node.getPotentialTable();
 		int statesSize = node.getStatesSize();
 		int nodeIndex;
