@@ -32,7 +32,7 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     protected ITabledVariable cliqueAssociado;
 
     // Armazena marginais e evid�ncias.
-    protected float[] marginais;
+    protected float[] marginalList;
     
     private float[] marginalCopy;
 
@@ -44,15 +44,19 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
      */
     protected abstract void marginal();
     
+    public void initMarginalList() {
+    	marginalList = new float[getStatesSize()];
+    }
+    
     void copyMarginal() {
-    	int size = marginais.length;
+    	int size = marginalList.length;
     	marginalCopy = new float[size];
-    	System.arraycopy(marginais, 0, marginalCopy, 0, size);
+    	System.arraycopy(marginalList, 0, marginalCopy, 0, size);
     }
     
     void restoreMarginal() {
-    	int size = marginais.length;
-    	System.arraycopy(marginalCopy, 0, marginais, 0, size);
+    	int size = marginalList.length;
+    	System.arraycopy(marginalCopy, 0, marginalList, 0, size);
     }
     
     /**
@@ -62,11 +66,11 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
      *@return    valor da marginal de determinado �ndice.
      */
     public float getMarginalAt(int index) {
-        return marginais[index];
+        return marginalList[index];
     }
 
     void setMarginalAt(int index, float value) {
-        marginais[index] = value;
+        marginalList[index] = value;
     }
 
     /**
@@ -145,7 +149,7 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
 	
 	private void updateRecursive(PotentialTable tab, int c, int linear, int index, int state) {
     	if (c >= tab.variaveis.size()) {
-    		tab.dados.data[linear] *= marginais[state];
+    		tab.dados.data[linear] *= marginalList[state];
     		return;    		    		
     	}
     	

@@ -70,9 +70,9 @@ public class DecisionNode extends TreeVariable implements java.io.Serializable {
         cloned.setExplanationDescription(this.getExplanationDescription());
         cloned.setPhrasesMap(this.getPhrasesMap());
         cloned.setInformationType(this.getInformationType());
-        float[] marginais = new float[super.marginais.length];
-        System.arraycopy(super.marginais, 0, marginais, 0, marginais.length);
-        cloned.marginais = marginais;
+        float[] marginais = new float[super.marginalList.length];
+        System.arraycopy(super.marginalList, 0, marginais, 0, marginais.length);
+        cloned.marginalList = marginais;
         
         return cloned;
     }
@@ -113,7 +113,7 @@ public class DecisionNode extends TreeVariable implements java.io.Serializable {
     }
 
     protected void marginal() {
-        marginais = new float[getStatesSize()];
+        marginalList = new float[getStatesSize()];
         PotentialTable auxTab = (PotentialTable)((Clique)cliqueAssociado).getUtilityTable().clone();
         auxTab.directOpTab(cliqueAssociado.getPotentialTable(), PotentialTable.PRODUCT_OPERATOR);
         int index = auxTab.indexOfVariable(this);
@@ -124,11 +124,11 @@ public class DecisionNode extends TreeVariable implements java.io.Serializable {
         }
 
         if (hasEvidence()) {
-            marginais[getEvidence()] = auxTab.getValue(getEvidence());
+            marginalList[getEvidence()] = auxTab.getValue(getEvidence());
         } else {
             int tableSize = auxTab.tableSize();
             for (int i = 0; i < tableSize; i++) {
-                marginais[i] = auxTab.getValue(i);
+                marginalList[i] = auxTab.getValue(i);
             }
         }
     }

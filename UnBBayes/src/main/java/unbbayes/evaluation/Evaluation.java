@@ -38,7 +38,7 @@ public class Evaluation {
 	private TreeVariable targetNode;
 
 	public String evaluate(String netFileName, List<String> targetNodeNameList, List<String> evidenceNodeNameList, int sampleSize) throws Exception {
-		laodNetwork(netFileName);
+		loadNetwork(netFileName);
 		return evaluate(targetNodeNameList, evidenceNodeNameList, sampleSize);
 	}
 	
@@ -335,7 +335,7 @@ public class Evaluation {
 		statesProduct = targetStatesProduct * evidenceStatesProduct;
 	}
 
-	private void laodNetwork(String netFileName) {
+	private void loadNetwork(String netFileName) {
 		File netFile = new File(netFileName);
 		String fileExt = netFileName.substring(netFileName.length() - 3);
 
