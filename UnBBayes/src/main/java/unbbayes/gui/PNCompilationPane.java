@@ -217,9 +217,6 @@ public class PNCompilationPane extends JPanel {
         //setar o tamanho do divisor entre o jspGraph(vem do NetWindow) e jspTree
         centerPanel.setDividerSize(3);
 
-        //setar os tamanho de cada jsp(arvore e draw) para os seus PreferredSizes
-        centerPanel.resetToPreferredSizes();
-
         bottomPanel.add(status);
 
         //adiciona containers para o contentPane
@@ -227,6 +224,11 @@ public class PNCompilationPane extends JPanel {
         this.add(centerPanel, BorderLayout.CENTER);
         this.add(bottomPanel, BorderLayout.SOUTH);
         setVisible(true);
+    }
+    
+    public void updateToPreferredSize() {
+    	// Put the divider just after the width of the evidence tree
+        centerPanel.setDividerLocation(evidenceTree.getPreferredSize().width + centerPanel.getDividerSize() + 1);
     }
 
     /**

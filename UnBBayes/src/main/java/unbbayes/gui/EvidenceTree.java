@@ -248,10 +248,11 @@ public class EvidenceTree extends JTree {
 	 * @see            JTree
 	 */
 	public void updateTree() {
+
 		if (expandedNodes == null) {
 			expandedNodes = new boolean[net.getNodesCopy().size()];
 			for (int i = 0; i < expandedNodes.length; i++) {
-				expandedNodes[i] = false;
+				expandedNodes[i] = true;
 			}
 		}
 

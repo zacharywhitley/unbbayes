@@ -380,6 +380,8 @@ public class NetworkWindow extends JInternalFrame {
 
 			card.show(getContentPane(), PN_PANE_PN_COMPILATION_PANE);
 			pnCompilationPane.getEvidenceTree().updateTree();
+			
+			pnCompilationPane.updateToPreferredSize();
 		}
 
 	}
