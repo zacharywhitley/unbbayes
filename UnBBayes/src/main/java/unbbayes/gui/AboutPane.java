@@ -24,14 +24,12 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.GridLayout;
-import java.awt.Image;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Properties;
 import java.util.ResourceBundle;
 
 import javax.swing.BorderFactory;
@@ -57,9 +55,12 @@ public class AboutPane extends JDialog{
 
 	private Color backgroundColor; 
 	
-	private String name = "UnBBayes 3 (MEBN)"; 
-	private String version = "3.4.29"; 
-	private String buildID = "20080520-01"; 
+	private String name; 
+	private String version; 
+	private String buildID; 
+	private String stableStatus; 
+	
+	private final String propertyFile = "unbbayes.properties"; 
 	
 	private static final String COLABORATORS_PAGE = "/html/Colaborators.html"; 
 	private static final String LOGO_PICTURE = "/img/logo_small.png"; 
@@ -69,6 +70,7 @@ public class AboutPane extends JDialog{
 	
 	public AboutPane(){
 		super(UnBBayesFrame.getIUnBBayes(), true); 
+		initialize(); 
 		setTitle(resource.getString("AboultPane")); 
 	
 		this.setLocation(GUIUtils.getCenterPositionForComponent(400,270));	
@@ -82,6 +84,20 @@ public class AboutPane extends JDialog{
 		setMaximumSize(new Dimension(400, 270));
 		pack(); 
 		backgroundColor = getBackground(); 
+	}
+	
+	private void initialize(){
+        Properties properties = new Properties();
+	    try {
+	        properties.load(new FileInputStream(propertyFile));
+	    } catch (IOException e) {
+	    	System.out.println(e);
+	    }
+
+	    version = properties.getProperty("version", ""); 
+	    buildID = properties.getProperty("buildId", ""); 
+	    stableStatus = properties.getProperty("stableStatus", ""); 	
+	    
 	}
 	
 	class MainPane extends JPanel{
@@ -234,7 +250,22 @@ public class AboutPane extends JDialog{
 		public VersionPane(){
 			super(new GridLayout(4,1)); 
 			
-			JLabel labelVersion = new JLabel(("   " + resource.getString("Version") + ": " + version + " (beta)")); 
+			String status; 
+			if(stableStatus.equals("0")){
+				status = resource.getString("stableStatusAlpha"); 
+			}else{
+				if(stableStatus.equals("1")){
+					status = resource.getString("stableStatusBeta"); 
+				}else{
+					if(stableStatus.equals("2")){
+						status = resource.getString("stableStatusStable"); 
+					}else{
+						status = ""; 
+					}
+				}
+			}
+			
+			JLabel labelVersion = new JLabel(("   " + resource.getString("Version") + ": " + version + " (" + status + ")")); 
 			JLabel labelBuildID= new JLabel("   " + resource.getString("Buildid") + ": " + buildID); 
 			
 			add(labelVersion); 

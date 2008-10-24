@@ -468,7 +468,11 @@ public class GuiResources extends ListResourceBundle {
 		
 		{"Collaborators" , "Collaborators"},
 		{"Version" , "Version"},	
-		{"Buildid" , "Build ID"},		
+		{"Buildid" , "Build ID"},	
+		
+		{"stableStatusAlpha" , "Alpha"},	
+		{"stableStatusBeta" , "Beta"},	
+		{"stableStatusStable" , "Stable"},	
 	
 		//Warning panel
 		{"warningFound" , "Warnings"},	

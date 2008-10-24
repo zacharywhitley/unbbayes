@@ -471,6 +471,10 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"Version" , "Versão"},	
 		{"Buildid" , "ID do Produto"},	
 
+		{"stableStatusAlpha" , "Alfa"},	
+		{"stableStatusBeta" , "Beta"},	
+		{"stableStatusStable" , "Estável"},	
+		
 		//Warning panel
 		{"warningFound" , "Alertas"},
 		{"openWarningDialogToolTip" , "Abrir lista de alertas"},
