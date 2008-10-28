@@ -484,6 +484,12 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"saveSSBNToolTip" , "Salvar ssbn gerada"},
 		
         //Splash loader */
-		{"loading" , "carregando"}
+		{"loading" , "carregando"},
+		
+		/* Likelihood Weighting Option Pane */
+		{"algorithmTab" , "Algoritmo de Inferência"},
+		{"junctionTreeAlgorithmName" , "Árvore de Junção"},
+		{"likelihoodWeightingAlgorithmName" , "Likelihood Weighting"}
+		
 	};
 }

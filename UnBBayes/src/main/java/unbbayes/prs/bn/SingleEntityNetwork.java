@@ -403,7 +403,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 		}
 	}
 
-	protected void resetEvidences() {
+	public void resetEvidences() {
 		int size = copiaNos.size();
 		for (int i = 0; i < size; i++) {
 			((TreeVariable) copiaNos.get(i)).resetEvidence();

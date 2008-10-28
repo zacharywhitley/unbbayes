@@ -45,6 +45,7 @@ import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
+import unbbayes.simulation.likelihoodweighting.inference.LikelihoodWeightingInference;
 
 public class SENController {
 
@@ -58,6 +59,21 @@ public class SENController {
 			.compile("[0-9]*([.|,][0-9]+)?");
 
 	private Matcher matcher;
+	
+	LikelihoodWeightingInference lwInference;
+	
+    // TODO CHANGE THIS!! NEW MODELING!!
+    // True if it is to use junction tree for compiling (exact)
+    // False if it is to use likelihood weighting for compiling (approximation)
+    boolean useJunctionTree = true;
+
+    public boolean isUseJunctionTree() {
+		return useJunctionTree;
+	}
+
+	public void setUseJunctionTree(boolean useJunctionTree) {
+		this.useJunctionTree = useJunctionTree;
+	}
 
 	/** Load resource file from this package */
 	private static ResourceBundle resource = ResourceBundle
@@ -105,13 +121,18 @@ public class SENController {
 		no.removeLastState();
 		screen.setTable(makeTable(no));
 	}
-
+	
 	/**
-	 * Initializes the junction tree's known facts
+	 * Reset the beliefs for the prior probabilities.
 	 */
 	public void initialize() {
 		try {
-			singleEntityNetwork.initialize();
+			if (isUseJunctionTree()) {
+				singleEntityNetwork.initialize();
+			} else {
+				singleEntityNetwork.resetEvidences();
+				lwInference.run();
+			}
 			screen.getEvidenceTree().updateTree();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -119,30 +140,32 @@ public class SENController {
 	}
 
 	/**
-	 * Propagates the bayesian network's evidences ( <code>TRP</code> ).
-	 * 
-	 * @since
+	 * Propagates the network's evidences.
 	 */
 	public void propagate() {
 		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-		boolean temLikeliHood = false;
-		try {
-			singleEntityNetwork.updateEvidences();
-			if (!temLikeliHood) {
-				screen.setStatus(resource
-						.getString("statusEvidenceProbabilistic")
-						+ df.format(singleEntityNetwork.PET() * 100.0));
+		if (isUseJunctionTree()) {
+			boolean temLikeliHood = false;
+			try {
+				singleEntityNetwork.updateEvidences();
+				if (!temLikeliHood) {
+					screen.setStatus(resource
+							.getString("statusEvidenceProbabilistic")
+							+ df.format(singleEntityNetwork.PET() * 100.0));
+				}
+			} catch (Exception e) {
+				JOptionPane.showMessageDialog(screen, e.getMessage(), resource
+						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
 			}
-		} catch (Exception e) {
-			JOptionPane.showMessageDialog(screen, e.getMessage(), resource
-					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+		} else {
+			lwInference.run();
 		}
 		screen.getEvidenceTree().updateTree();
 		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}
 
 	/**
-	 * Compiles the bayesian network. If there was any problem during compilation, the error
+	 * Compiles the network. If there was any problem during compilation, the error
 	 * message will be shown as a <code>JOptionPane</code> .
 	 * 
 	 * @return true if the net was compiled without any problem, false if there was a problem
@@ -152,14 +175,37 @@ public class SENController {
 	public boolean compileNetwork() {
 		long ini = System.currentTimeMillis();
 		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-		try {
-			((ProbabilisticNetwork) singleEntityNetwork).compile();
-		} catch (Exception e) {
-			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, e.getMessage(), resource
-					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
-			screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-			return false;
+		
+		if (isUseJunctionTree()) {
+			try {
+				((ProbabilisticNetwork) singleEntityNetwork).compile();
+			} catch (Exception e) {
+				e.printStackTrace();
+				JOptionPane.showMessageDialog(null, e.getMessage(), resource
+						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				return false;
+			}
+		} else {
+			String sampleSizeText = JOptionPane.showInputDialog(screen, resource.getString("sampleSizeInputMessage"), resource.getString("sampleSizeInputTitle"), JOptionPane.QUESTION_MESSAGE);
+			int sampleSize = 0;
+			try {
+				sampleSize = Integer.parseInt(sampleSizeText);
+			} catch (NumberFormatException e) {
+				JOptionPane.showMessageDialog(null, resource.getString("sampleSizeInputError"), resource
+						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				return false;
+			}
+			if (singleEntityNetwork instanceof ProbabilisticNetwork && !singleEntityNetwork.isID()) {
+				lwInference = new LikelihoodWeightingInference((ProbabilisticNetwork)singleEntityNetwork, sampleSize);
+				lwInference.run();
+			} else {
+				JOptionPane.showMessageDialog(null, resource.getString("likelihoodWeightingNotApplicableError"), resource
+						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				return false;
+			}
 		}
 
 		// Order by node description just to make tree's visualization easy.

@@ -91,15 +91,24 @@ public class NetworkController implements KeyListener {
     private SENController senController;
     private MEBNController mebnController;
     
-/*  private List copia;
-    private List<ProbabilisticNode> copiados;
+    // TODO CHANGE THIS!! NEW MODELING!!
+    // True if it is to use junction tree for compiling (exact)
+    // False if it is to use likelihood weighting for compiling (approximation)
+    public boolean isUseJunctionTree() {
+    	if (senController != null) {
+    		return senController.isUseJunctionTree();
+    	}
+    	return true;
+	}
 
-    private boolean bColou;*/
-
-    /** Load resource file from this package */
+	public void setUseJunctionTree(boolean useJunctionTree) {
+		if (senController != null) {
+    		senController.setUseJunctionTree(useJunctionTree);
+    	}
+	}
+    
+	/** Load resource file from this package */
     private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.controller.resources.ControllerResources");
-    
-    
     
     
     /***************** BEGIN CONTROLLING MULTI ENTTITY BAYESIAN NETWORK *********************/
@@ -173,8 +182,6 @@ public class NetworkController implements KeyListener {
         this.singleEntityNetwork = singleEntityNetwork;
         this.screen = screen;
         this.senController = new SENController(singleEntityNetwork, screen);
-        /*copia = new ArrayList();
-        copiados = new ArrayList<ProbabilisticNode>();*/
     }
     
     /**
@@ -391,54 +398,6 @@ public class NetworkController implements KeyListener {
      * @see KeyListener
      */
     public void keyPressed(KeyEvent e) {
-       /* if (e.getKeyCode() ==  KeyEvent.VK_C) {
-            copia = screen.getGraphPane().getSelectedGroup();
-        }
-
-        if ((e.getKeyCode() ==  KeyEvent.VK_P) && (!bColou)) {
-            for (int i = 0; i < copia.size(); i++) {
-                if (copia.get(i) instanceof Node) {
-                    ProbabilisticNode noAux = (ProbabilisticNode)copia.get(i);
-                    ProbabilisticNode noAux2 = new ProbabilisticNode();
-                    noAux2 = (ProbabilisticNode)noAux.clone(Node.getWidth()/2);
-                    net.addNode(noAux2);
-                    copiados.add(noAux2);
-                }
-            }
-
-            for (int i = 0; i < copia.size(); i++) {
-                if (copia.get(i) instanceof Edge) {
-
-                    Edge arcoAux = (Edge)copia.get(i);
-                    Node no1 = null;
-                    Node no2 = null;
-                    Node noAux;
-                    boolean achouNo1 = false;
-                    boolean achouNo2 = false;
-                    for (int j = 0; j < copiados.size(); j++) {
-                        noAux = (ProbabilisticNode)copiados.get(j);
-                        if (noAux.getName().equals(resource.getString("copiedNodeName") + arcoAux.getOriginNode().getName()) && noAux.getDescription().equals(resource.getString("copiedNodeName") + arcoAux.getOriginNode().getDescription())) {
-                            no1 = noAux;
-                            achouNo1 = true;
-                        } else if (noAux.getName().equals(resource.getString("copiedNodeName") + arcoAux.getDestinationNode().getName()) && noAux.getDescription().equals(resource.getString("copiedNodeName") + arcoAux.getDestinationNode().getDescription())) {
-                            no2 = noAux;
-                            achouNo2 = true;
-                        }
-                    }
-                    if (!achouNo1) {
-                        no1 = arcoAux.getOriginNode();
-                    }
-                    if (!achouNo2) {
-                        no2 = arcoAux.getDestinationNode();
-                    }
-                    no2.getParents().add(no1);
-                    no1.getChildren().add(no2);
-                    net.getEdges().add(new Edge(no1, no2));
-                }
-            }
-            bColou = true;
-        }
-        copiados.clear();*/
 
         if (e.getKeyCode() == KeyEvent.VK_DELETE) {
             Object selecionado = screen.getGraphPane().getSelected();
@@ -459,7 +418,6 @@ public class NetworkController implements KeyListener {
      * @see KeyListener
      */
     public void keyReleased(KeyEvent e) {
-        /*bColou = false;*/
     }
     
     /****************** END KEY LISTENER METHODS *********************/

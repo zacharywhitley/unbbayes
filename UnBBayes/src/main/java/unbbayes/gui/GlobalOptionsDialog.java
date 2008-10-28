@@ -35,12 +35,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
@@ -57,8 +59,9 @@ import unbbayes.prs.id.UtilityNode;
  *  Classe responsável pelas configuracoes basicas da rede Bayesiana. Ela extende
  *  a classe <code>JDialog</code>.
  *
- *@author     Rommel N. Carvalho, Michael S. Onishi
- *@created    27 de Junho de 2001
+ *@author Rommel N. Carvalho
+ *@author Michael S. Onishi
+ *@created 27 de Junho de 2001
  *@see JDialog
  */
 public class GlobalOptionsDialog extends JDialog {
@@ -82,27 +85,16 @@ public class GlobalOptionsDialog extends JDialog {
 	private JPanel northControllerSizePanel = new JPanel();
     private JPanel flowControllerColorPanel1;
     private JPanel flowControllerColorPanel2;
-//    private JPanel decimalPatternPanel;
     private JPanel radiusPanel;
     private JPanel netPanel;
     private JPanel confirmationPanel;
     private JPanel logPanel;
+    private JPanel algorithmPanel;
     private GridBagLayout gbl;
     private GridBagConstraints gbc;
     private JButton confirm;
     private JButton restore;
     private JButton cancel;
-    /*
-    private ButtonGroup decimalGroup;
-    private JRadioButtonMenuItem usa;
-    private JRadioButtonMenuItem china;
-    private JRadioButtonMenuItem japan;
-    private JRadioButtonMenuItem canada;
-    private JRadioButtonMenuItem uk;
-    private JRadioButtonMenuItem italy;
-    private JRadioButtonMenuItem brazil;
-    private JRadioButtonMenuItem korea;
-    */
     private Color probabilisticDescriptionNodeColor;
     private Color probabilisticExplanationNodeColor;
 	private Color decisionNodeColor;
@@ -116,6 +108,9 @@ public class GlobalOptionsDialog extends JDialog {
     private JSlider netSlider;
     private JCheckBox createLog;
     private boolean createLogBoolean;
+    private ButtonGroup algorithmGroup;
+    private JRadioButtonMenuItem junctionTreeAlgorithm;
+    private JRadioButtonMenuItem likelihoodWeightingAlgorithm;
     //private PreviewPane preview;
     private final GraphPane graph;
 
@@ -136,20 +131,12 @@ public class GlobalOptionsDialog extends JDialog {
         this.graph = gra;
         this.controller = con;
 
-		/*
-        decimalGroup = new ButtonGroup();
-        usa          = new JRadioButtonMenuItem(resource.getString("usaName"));
-        china        = new JRadioButtonMenuItem(resource.getString("chinaName"));
-        japan        = new JRadioButtonMenuItem(resource.getString("japanName"));
-        canada       = new JRadioButtonMenuItem(resource.getString("canadaName"));
-        uk           = new JRadioButtonMenuItem(resource.getString("ukName"));
-        italy        = new JRadioButtonMenuItem(resource.getString("italyName"));
-        brazil       = new JRadioButtonMenuItem(resource.getString("brazilName"));
-        korea        = new JRadioButtonMenuItem(resource.getString("koreaName"));
-        */
-
         createLog = new JCheckBox(resource.getString("createLogLabel"));
 
+        algorithmGroup = new ButtonGroup();
+        junctionTreeAlgorithm         = new JRadioButtonMenuItem(resource.getString("junctionTreeAlgorithmName"), controller.isUseJunctionTree());
+        likelihoodWeightingAlgorithm  = new JRadioButtonMenuItem(resource.getString("likelihoodWeightingAlgorithmName"), !controller.isUseJunctionTree());
+        
         gbl     = new GridBagLayout();
         gbc     = new GridBagConstraints();
         //preview = new PreviewPane(this);
@@ -186,11 +173,11 @@ public class GlobalOptionsDialog extends JDialog {
 		jtp                       = new JTabbedPane();
         radiusPanel               = new JPanel(gbl);
         netPanel                  = new JPanel(gbl);
-//        decimalPatternPanel       = new JPanel(new GridLayout(4, 2));
         confirmationPanel         = new JPanel(new FlowLayout(FlowLayout.CENTER));
         flowControllerColorPanel1 = new JPanel();
         flowControllerColorPanel2 = new JPanel();
         logPanel                  = new JPanel();
+        algorithmPanel            = new JPanel();
 
 		probabilisticDescriptionNode = new JButton(resource.getString("probabilisticDescriptionNodeColorLabel"));
 		probabilisticDescriptionNode.setToolTipText(resource.getString("probabilisticDescriptionNodeColorToolTip"));
@@ -313,6 +300,7 @@ public class GlobalOptionsDialog extends JDialog {
                     Node.setSize(radiusSlider.getValue()*2, radiusSlider.getValue()*2);
                     graph.setGraphDimension(new Dimension((int) netSlider.getValue(), (int) netSlider.getValue()));
                     controller.getSingleEntityNetwork().setCreateLog(createLog.isSelected());
+                    controller.setUseJunctionTree(junctionTreeAlgorithm.isSelected());
                     setVisible(false);
                     dispose();
                     graph.update();
@@ -358,67 +346,6 @@ public class GlobalOptionsDialog extends JDialog {
                 }
             });
 
-            /** @todo listeners de numero! */
-
-            /*
-        usa.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    controller.setNumberFormat(Locale.US);
-                }
-            });
-
-        canada.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    controller.setNumberFormat(Locale.CANADA);
-                }
-            });
-
-        japan.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    controller.setNumberFormat(Locale.JAPAN);
-                }
-            });
-
-        china.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    controller.setNumberFormat(Locale.CHINA);
-                }
-            });
-
-        uk.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    controller.setNumberFormat(Locale.UK);
-                }
-            });
-
-        italy.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    controller.setNumberFormat(Locale.ITALY);
-                }
-            });
-
-        brazil.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    controller.setNumberFormat(Locale.GERMANY);
-                }
-            });
-
-        korea.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    controller.setNumberFormat(Locale.KOREA);
-                }
-            });
-
-            */
-
         //adicionar constrainsts para layout do label raio
         setConstraints(gbc, 0, 0, 1, 1, 1, 1);
         gbc.fill = GridBagConstraints.BOTH;
@@ -447,24 +374,7 @@ public class GlobalOptionsDialog extends JDialog {
         radiusPanel.add(radiusSlider);
         netPanel.add(net);
         netPanel.add(netSlider);
-        /*
-        decimalGroup.add(usa);
-        decimalGroup.add(canada);
-        decimalGroup.add(japan);
-        decimalGroup.add(china);
-        decimalGroup.add(uk);
-        decimalGroup.add(italy);
-        decimalGroup.add(brazil);
-        decimalGroup.add(korea);
-        decimalPatternPanel.add(brazil);
-        decimalPatternPanel.add(usa);
-        decimalPatternPanel.add(canada);
-        decimalPatternPanel.add(china);
-        decimalPatternPanel.add(japan);
-        decimalPatternPanel.add(korea);
-        decimalPatternPanel.add(uk);
-        decimalPatternPanel.add(italy);
-        */
+
         flowControllerColorPanel1.add(probabilisticDescriptionNode);
         flowControllerColorPanel1.add(probabilisticExplanationNode);
 		flowControllerColorPanel1.add(decisionNode);
@@ -481,10 +391,14 @@ public class GlobalOptionsDialog extends JDialog {
 		controllerSizePanel.add(northControllerSizePanel,  BorderLayout.NORTH);
 		controllerSizePanel.add(new PreviewPane(this),  BorderLayout.CENTER);
 		logPanel.add(createLog);
+		algorithmGroup.add(junctionTreeAlgorithm);
+        algorithmGroup.add(likelihoodWeightingAlgorithm);
+        algorithmPanel.add(junctionTreeAlgorithm);
+        algorithmPanel.add(likelihoodWeightingAlgorithm);
 
-//		jtp.addTab(resource.getString("decimalPatternTab"), decimalPatternPanel);
 		jtp.addTab(resource.getString("colorControllerTab"), controllerColorPanel);
 		jtp.addTab(resource.getString("sizeControllerTab"), controllerSizePanel);
+		jtp.addTab(resource.getString("algorithmTab"), algorithmPanel);
 		jtp.addTab(resource.getString("logTab"), logPanel);
         contentPane.add(jtp, BorderLayout.CENTER);
         contentPane.add(confirmationPanel, BorderLayout.SOUTH);

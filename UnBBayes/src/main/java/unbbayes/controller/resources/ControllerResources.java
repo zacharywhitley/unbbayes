@@ -135,6 +135,13 @@ public class ControllerResources extends ListResourceBundle {
 		{"sucess", "Sucess"}, 
 		{"error", "Error"},
 		{"loadHasError", "The file has been loaded with some errors"},
-		{"withoutPosfixe", "The type of the file wasn't provided"}
+		{"withoutPosfixe", "The type of the file wasn't provided"},
+
+		/* Likelihood Weighting Inference */
+		{"sampleSizeInputMessage", "Please enter the sample size (number of trials)."},
+		{"sampleSizeInputTitle", "Sample size"}, 
+		{"sampleSizeInputError", "The sample size must be an integer number greater than zero."},
+		{"likelihoodWeightingNotApplicableError", "The Likelihood Weighting algorithm can only be used with a Bayesian network. Please choose another algorithm."}
+		
 	};
 }

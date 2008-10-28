@@ -484,9 +484,12 @@ public class GuiResources extends ListResourceBundle {
 		{"openWarningDialogToolTip" , "Open warning list"},
 		
         //Splash loader */
-		{"loading" , "loading"}
+		{"loading" , "loading"},
 		
-	
+		/* Likelihood Weighting Option Pane */
+		{"algorithmTab" , "Inference Algorithm"},
+		{"junctionTreeAlgorithmName" , "Junction Tree"},
+		{"likelihoodWeightingAlgorithmName" , "Likelihood Weighting"}
 		
 	};
 }
