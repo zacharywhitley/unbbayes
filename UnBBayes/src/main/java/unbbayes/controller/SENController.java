@@ -46,6 +46,7 @@ import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
 import unbbayes.simulation.likelihoodweighting.inference.LikelihoodWeightingInference;
+import unbbayes.util.SortUtil;
 
 public class SENController {
 
@@ -209,21 +210,8 @@ public class SENController {
 		}
 
 		// Order by node description just to make tree's visualization easy.
-		ArrayList<Node> nos = singleEntityNetwork.getNodesCopy();
-		boolean haTroca = true;
-		while (haTroca) {
-			haTroca = false;
-			for (int i = 0; i < nos.size() - 1; i++) {
-				Node node1 = nos.get(i);
-				Node node2 = nos.get(i + 1);
-				if (node1.getDescription().compareToIgnoreCase(
-						node2.getDescription()) > 0) {
-					nos.set(i + 1, node1);
-					nos.set(i, node2);
-					haTroca = true;
-				}
-			}
-		}
+		ArrayList<Node> nodeList = singleEntityNetwork.getNodesCopy();
+		SortUtil.sortNodeListByDescription(nodeList);
 
 		screen.getEvidenceTree().updateTree();
 

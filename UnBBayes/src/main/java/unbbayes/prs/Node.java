@@ -73,6 +73,8 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 
 	public static final int DESCRIPTION_TYPE = 3;
 	public static final int EXPLANATION_TYPE = 4;
+	
+	public static final int CONTINUOUS_NODE_TYPE = 5;
 
 	protected DrawElement drawElement;
 	
