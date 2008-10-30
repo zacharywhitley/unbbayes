@@ -58,4 +58,16 @@ public class SingleAgentMSBN extends AbstractMSBN {
 		
 //		assert activeNet == net;
 	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.msbn.AbstractMSBN#compile(unbbayes.prs.msbn.SubNetwork)
+	 */
+	@Override
+	public void compile(SubNetwork activeNet) throws Exception {
+		this.activeNet = activeNet;
+		super.compile(activeNet);
+	}
+	
+	
+	
 }
