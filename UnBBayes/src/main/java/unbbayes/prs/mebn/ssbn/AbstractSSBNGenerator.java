@@ -445,6 +445,9 @@ OUT_LOOP:  for(ContextNode context: cnList){
 	 * @param ovList list of ov's for what don't have a value. (for this implementation, 
 	 *                this list should contain only one element). 
 	 * @param ovInstances
+	 * @param searchIfNotFound indicate if the search for the instances of the 
+	 *                         knowledge base should be made if the context nodes 
+	 *                         don't recover the entities.
 	 * 
 	 * @throws ImplementationRestrictionException 
 	 * @throws SSBNNodeGeneralException 
@@ -721,7 +724,7 @@ OUT_LOOP:  for(ContextNode context: cnList){
 	private SSBNNode createSSBNNodeForEntitySearch(ProbabilisticNetwork probabilisticNetwork, 
 			ResidentNode residentNode, List<OVInstance> ovInstances, OrdinaryVariable ov, String entity) {
 		
-		List<OVInstance> arguments = takeNecessaryArgumentsForNode(ovInstances, residentNode);
+		List<OVInstance> arguments = filterArgumentsForNode(ovInstances, residentNode);
 		arguments.add(OVInstance.getInstance(ov, entity, ov.getValueType())); 
 		
 		SSBNNode testSSBNNode = ssbnNodesMap.get(SSBNNode.getUniqueNameFor(residentNode, arguments)); 
@@ -743,7 +746,7 @@ OUT_LOOP:  for(ContextNode context: cnList){
 	private SSBNNode createSSBNNodeForEntitySearch(ProbabilisticNetwork probabilisticNetwork, 
 			ResidentNode residentNode, List<OVInstance> ovInstances, List<OVInstance> ovInstancesSearched) {
 		
-		List<OVInstance> arguments = takeNecessaryArgumentsForNode(ovInstances, residentNode);
+		List<OVInstance> arguments = filterArgumentsForNode(ovInstances, residentNode);
 		arguments.addAll(ovInstancesSearched); 
 		
 		//TODO naivy... (index of the arguments)
@@ -763,7 +766,7 @@ OUT_LOOP:  for(ContextNode context: cnList){
 		return testSSBNNode;
 	}
 	
-	protected List<OVInstance> takeNecessaryArgumentsForNode(Collection<OVInstance> ovInstanceList, ResidentNode node) {
+	protected List<OVInstance> filterArgumentsForNode(Collection<OVInstance> ovInstanceList, ResidentNode node) {
 	
 		List<OVInstance> ret = new ArrayList<OVInstance>(); 
 		
@@ -865,18 +868,18 @@ OUT_LOOP:  for(ContextNode context: cnList){
 				}
 			}
 			
-			ssbnNodeJacket.setArgumentsOfResidentMFrag(); 
+			ssbnNodeJacket.setResidentMFragArguments(); 
 			
 			SSBNNode alreadyExistentSSBNNode = ssbnNodesMap.get(SSBNNode.getUniqueNameFor(residentNode, ssbnNode.getArguments())); 
 			
 
 			if(alreadyExistentSSBNNode != null){
-				alreadyExistentSSBNNode.setRecursiveOVInstanceList(ssbnNodeJacket.getOvInstancesOfInputMFrag());
+				alreadyExistentSSBNNode.setRecursiveOVInstanceList(ssbnNodeJacket.getInputMFragOvInstances());
 				ssbnNodeJacket.getSsbnNode().delete();
 				ssbnNodeJacket.setSsbnNode(alreadyExistentSSBNNode);
 				
 			}else{
-				ssbnNode.setRecursiveOVInstanceList(ssbnNodeJacket.getOvInstancesOfInputMFrag());
+				ssbnNode.setRecursiveOVInstanceList(ssbnNodeJacket.getInputMFragOvInstances());
 			    ssbnNodeList.add(ssbnNode);	
 				ssbnNodesMap.put(ssbnNode.getUniqueName(), ssbnNode); 
 			}
@@ -889,7 +892,7 @@ OUT_LOOP:  for(ContextNode context: cnList){
 	
 
 	/**
-	 * Evaluate of recursion in the MEBN model. Return the node before in 
+	 * Evaluate of recursion in the MEBN model. Return the node procc in 
 	 * the recursion.
 	 * 
 	 * - Already include the node created in the ssbnNodeList. 
@@ -1061,16 +1064,16 @@ OUT_LOOP:  for(ContextNode context: cnList){
 		SSBNNodeJacket ssbnNodeJacket = new SSBNNodeJacket(ssbnNode); 
 		
 		//Add OVInstance created for the entity search
-		addArgumentToSSBNNodeOfInputNode(fatherNode, ssbnNodeJacket,  
+		ssbnNodeJacket.addArgument(fatherNode,  
 				OVInstance.getInstance(ov, entityName, ov.getValueType()));	
 		
 		//Add all the other OVInstances
 		for(OVInstance instance: originNode.getArguments()){
-			addArgumentToSSBNNodeOfInputNode(fatherNode, ssbnNodeJacket, instance);
+			ssbnNodeJacket.addArgument(fatherNode, instance);
 		}
 		
 		//Suport for avoid double creation of probabilistic nodes. 
-		ssbnNodeJacket.setArgumentsOfResidentMFrag();
+		ssbnNodeJacket.setResidentMFragArguments();
 		
 		SSBNNode test = ssbnNodesMap.get(ssbnNode.getUniqueName()); 
 		
@@ -1086,8 +1089,8 @@ OUT_LOOP:  for(ContextNode context: cnList){
 		
 		logManager.appendln(" ");
 		logManager.appendln("SSBNNode created:" + ssbnNodeJacket.getSsbnNode());
-		logManager.appendln("Input MFrag Arguments: " + ssbnNodeJacket.getOvInstancesOfInputMFrag());
-		logManager.appendln("Resident MFrag Arguments: " + ssbnNodeJacket.getOvInstancesOfResidentMFrag());
+		logManager.appendln("Input MFrag Arguments: " + ssbnNodeJacket.getInputMFragOvInstances());
+		logManager.appendln("Resident MFrag Arguments: " + ssbnNodeJacket.getResidentMFragOvInstances());
 		logManager.appendln(" ");
 		
 		
@@ -1108,17 +1111,17 @@ OUT_LOOP:  for(ContextNode context: cnList){
 		
 		//Add OVInstance created for the entity search
 		for(OVInstance ovInstance: ovInstanceList){
-			addArgumentToSSBNNodeOfInputNode(fatherNode, ssbnNodeJacket, ovInstance);	
+			ssbnNodeJacket.addArgument(fatherNode, ovInstance);	
 		}
 
 		
 		//Add all the other OVInstances
 		for(OVInstance instance: originNode.getArguments()){
-			addArgumentToSSBNNodeOfInputNode(fatherNode, ssbnNodeJacket, instance);
+			ssbnNodeJacket.addArgument(fatherNode, instance);
 		}
 		
 		//Suport for avoid double creation of probabilistic nodes. 
-		ssbnNodeJacket.setArgumentsOfResidentMFrag();
+		ssbnNodeJacket.setResidentMFragArguments();
 		
 		SSBNNode test = ssbnNodesMap.get(ssbnNode.getUniqueName()); 
 		
@@ -1134,8 +1137,8 @@ OUT_LOOP:  for(ContextNode context: cnList){
 		
 		logManager.appendln(" ");
 		logManager.appendln("SSBNNode created:" + ssbnNodeJacket.getSsbnNode());
-		logManager.appendln("Input MFrag Arguments: " + ssbnNodeJacket.getOvInstancesOfInputMFrag());
-		logManager.appendln("Resident MFrag Arguments: " + ssbnNodeJacket.getOvInstancesOfResidentMFrag());
+		logManager.appendln("Input MFrag Arguments: " + ssbnNodeJacket.getInputMFragOvInstances());
+		logManager.appendln("Resident MFrag Arguments: " + ssbnNodeJacket.getResidentMFragOvInstances());
 		logManager.appendln(" ");
 		
 		
@@ -1240,45 +1243,6 @@ OUT_LOOP:  for(ContextNode context: cnList){
 		}
 
 		return true; 
-	}
-
-	
-	
-	/** 
-	 * Add instance how a argument of a ssbnnode originate of a input node. 
-	 *
-	 * @param inputNode Node that originate the SSBNNode
-	 * @param ssbnnodeJacket Jacket with reference to the SSBNNode
-	 * @param ovInstanceInputMFrag OVInstance of the input MFrag (MFrag where exists the input node)
-	 * @throws SSBNNodeGeneralException
-	 */
-	protected void addArgumentToSSBNNodeOfInputNode(InputNode inputNode, 
-			SSBNNodeJacket ssbnnodeJacket, OVInstance ovInstanceInputMFrag) throws SSBNNodeGeneralException {
-		
-		ResidentNode residentNode = inputNode.getResidentNodePointer().getResidentNode(); 
-		OrdinaryVariable ovInputMFrag = ovInstanceInputMFrag.getOv(); 
-		int index = inputNode.getResidentNodePointer().getOrdinaryVariableIndex(ovInputMFrag);
-		if(index > -1){
-			ssbnnodeJacket.addOVInstanceOfInputMFrag(ovInstanceInputMFrag); 
-			OrdinaryVariable ovResidentMFrag = residentNode.getOrdinaryVariableList().get(index);
-			ssbnnodeJacket.addOVInstanceOfResidentMFrag(
-					OVInstance.getInstance(ovResidentMFrag, ovInstanceInputMFrag.getEntity()));
-		}
-	}
-	
-	protected void addArgumentToSSBNNodeOfResidentNode(ResidentNode residentNode, 
-			InputNode inputNode, SSBNNodeJacket ssbnNodeJacket, OVInstance ovInstanceResidentMFrag){
-		
-		OrdinaryVariable ovResidentMFrag = ovInstanceResidentMFrag.getOv(); 
-		int index = residentNode.getOrdinaryVariableIndex(ovResidentMFrag); 
-		
-		if(index > -1){
-			ssbnNodeJacket.addOVInstanceOfResidentMFrag(ovInstanceResidentMFrag); 
-			OrdinaryVariable ovInputMFrag = inputNode.getOrdinaryVariableByIndex(index); 
-			ssbnNodeJacket.addOVInstanceOfInputMFrag(
-					OVInstance.getInstance(ovInputMFrag, ovInstanceResidentMFrag.getEntity())); 
-		}
-		
 	}
 	
 	protected OVInstance getListArgumentsOfInputVariableInOriginalMFrag(InputNode inputNode, OVInstance ovInstanceInputMFrag){
@@ -1591,90 +1555,6 @@ OUT_LOOP:  for(ContextNode context: cnList){
 	}
 	
 	
-	/*-------------------------------------------------------------------------
-	 * Private Classes 
-	 *------------------------------------------------------------------------/
-	
-	/*
-	 * This class is used for the management of the arguments of a ssbnnode 
-	 * build for a InputNode. This is necessary because the arguments of this
-	 * ssbn node need to be interchangeable (should refer to the ordinary
-	 * variables of the MFrag of the ssbn node when the evaluation is of the 
-	 * input how father of a resident node and to the ordinary variables of the 
-	 * MFrag where the node is residente if the evaluation is about the 
-	 * ssbnnode itself). 
-	 */
-	protected class SSBNNodeJacket{
-		
-		private final Integer ARGUMENTS_OF_INPUT_MFRAG = 0; 
-		private final Integer ARGUMENTS_OF_RESIDENT_MFRAG = 1; 
-		
-		private SSBNNode ssbnNode; 
-		private List<OVInstance> ovInstancesOfInputMFrag; 
-		private List<OVInstance> ovInstancesOfResidentMFrag; 
-		private Integer typeAtualArguments; 
-		
-		public SSBNNodeJacket(SSBNNode ssbnNode){
-			this.ssbnNode = ssbnNode;
-			this.typeAtualArguments = -1; 
-			ovInstancesOfInputMFrag = new ArrayList<OVInstance>();
-			ovInstancesOfResidentMFrag = new ArrayList<OVInstance>(); 
-		}
 
-		public SSBNNode getSsbnNode() {
-			return ssbnNode;
-		}
-
-		public void setSsbnNode(SSBNNode ssbnNode) {
-			this.ssbnNode = ssbnNode;
-		}
-
-		public List<OVInstance> getOvInstancesOfInputMFrag() {
-			return ovInstancesOfInputMFrag;
-		}
-
-		public void addOVInstanceOfInputMFrag(OVInstance ovInstance){
-			this.ovInstancesOfInputMFrag.add(ovInstance);
-		}
-		
-		public Collection<OVInstance> getOvInstancesOfResidentMFrag() {
-			return ovInstancesOfResidentMFrag;
-		}
-
-		public void addOVInstanceOfResidentMFrag(OVInstance ovInstance){
-			this.ovInstancesOfResidentMFrag.add(ovInstance);
-		}		
-		
-		public void setArgumentsOfInputMFrag(){
-			if(typeAtualArguments != ARGUMENTS_OF_INPUT_MFRAG){
-				ssbnNode.removeAllArguments(); 
-				ssbnNode.setArguments(ovInstancesOfInputMFrag);
-				typeAtualArguments = ARGUMENTS_OF_INPUT_MFRAG;
-			}
-		}
-		
-		public void setArgumentsOfResidentMFrag(){
-			if(typeAtualArguments != ARGUMENTS_OF_RESIDENT_MFRAG){
-				ssbnNode.removeAllArguments(); 
-				ssbnNode.setArguments(ovInstancesOfResidentMFrag);
-				typeAtualArguments = ARGUMENTS_OF_RESIDENT_MFRAG;
-			}
-		}
-
-		public Integer getTypeAtualArguments() {
-			return typeAtualArguments;
-		}
-
-		public void setTypeAtualArguments(Integer typeAtualArguments) {
-			this.typeAtualArguments = typeAtualArguments;
-		}
-		
-		public String toString(){
-			return ssbnNode.toString() +  
-			       " Input["+ ovInstancesOfInputMFrag + "]" + 
-			       " Resident[" + ovInstancesOfResidentMFrag + "]";
-		}
-		
-	}
 	
 }
