@@ -47,4 +47,14 @@ public class Debug {
 		if (debug)
 			System.out.println("[DEBUG] " + classOrigin + ": " + message);
 	}
+	
+	public static void println(Class classOrigin, String message, Throwable t) {
+		if (debug) {
+			System.out.println("[DEBUG] " + classOrigin + ": " + message);
+			System.out.println("[DEBUG] \t " + t.getMessage() + ": ");
+			for (StackTraceElement element : t.getStackTrace()) {
+				System.out.println("[DEBUG] \t \t" + element.toString() + "; ");
+			}
+		}
+	}
 }
