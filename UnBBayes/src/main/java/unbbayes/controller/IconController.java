@@ -144,6 +144,8 @@ public class IconController implements Serializable {
 	protected ImageIcon newMSBNIcon; 
 	
 	protected ImageIcon newMEBNIcon; 
+	
+	protected ImageIcon newOOBNIcon; 
 
 	protected ImageIcon informationIcon;
 
@@ -296,6 +298,11 @@ public class IconController implements Serializable {
 	protected ImageIcon triangleIcon; 
 	
 	protected ImageIcon warningIcon; 
+	
+	protected ImageIcon deleteClassIcon; 
+
+	protected ImageIcon newClassFromFileIcon; 
+	
 	
 	
 	
@@ -788,6 +795,15 @@ public class IconController implements Serializable {
 		} else {
 			newMEBNIcon = new ImageIcon(getClass().getResource("/icons/new-mebn.png"));
 			return newMEBNIcon;
+		}
+	}	
+	
+	public ImageIcon getNewOOBNIcon() {
+		if (newOOBNIcon != null) {
+			return newOOBNIcon;
+		} else {
+			newOOBNIcon = new ImageIcon(getClass().getResource("/icons/new-oobn.png"));
+			return newOOBNIcon;
 		}
 	}	
 
@@ -1518,4 +1534,23 @@ public class IconController implements Serializable {
 			return arrowIcon;
 		}
 	}	
+	
+	public ImageIcon getDeleteClassIcon() {
+		if (deleteClassIcon != null) {
+			return deleteClassIcon;
+		} else {
+			deleteClassIcon = new ImageIcon(getClass().getResource(
+					"/icons/document-delete.png"));
+			return deleteClassIcon;
+		}
+	}	
+	
+	public ImageIcon getNewClassFromFileIcon() {
+		if (newClassFromFileIcon != null) {
+			return newClassFromFileIcon;
+		} else {
+			newClassFromFileIcon = new ImageIcon(getClass().getResource("/icons/document-new-file.png"));
+			return newClassFromFileIcon;
+		}
+	}
 }

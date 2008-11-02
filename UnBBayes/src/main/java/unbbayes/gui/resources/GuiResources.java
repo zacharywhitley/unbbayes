@@ -74,6 +74,7 @@ public class GuiResources extends ListResourceBundle {
 		{"newToolTip","New net"},
 		{"newMsbnToolTip", "New MSBN"}, 
 		{"newMebnToolTip", "New MEBN"}, 
+		{"newOobnToolTip", "New OOBN"}, 
 		{"openToolTip","Open net"},
 		{"saveToolTip","Save net"},
 		{"learningToolTip","Learning mode"},
@@ -272,6 +273,7 @@ public class GuiResources extends ListResourceBundle {
         {"newBN", "New BN"},
         {"newMSBN", "New MSBN"},
         {"newMEBN","New MEBN"},
+        {"newOOBN","New OOBN"},
         {"openItem","Open..."},
         {"saveItem","Save as..."},
         {"exitItem","Exit"},
@@ -317,6 +319,7 @@ public class GuiResources extends ListResourceBundle {
         {"newBNMn","B"},
         {"newMSBNMn","M"},
         {"newMEBNMn","E"},
+        {"newOOBNMn","O"},
         
         {"learningItemMn","L"},
         {"tanItemMn","T"},
@@ -489,7 +492,20 @@ public class GuiResources extends ListResourceBundle {
 		/* Likelihood Weighting Option Pane */
 		{"algorithmTab" , "Inference Algorithm"},
 		{"junctionTreeAlgorithmName" , "Junction Tree"},
-		{"likelihoodWeightingAlgorithmName" , "Likelihood Weighting"}
+		{"likelihoodWeightingAlgorithmName" , "Likelihood Weighting"},
 		
+		
+		// OOBN specific resources
+		{"editionToolTip","Go to edition mode"},
+		{"removeToolTip","Delete selected class from project"},
+		{"newToolTip","Add new class to project"},
+		{"newFromFileToolTip","Add new class from file"},
+		{"status","Status:"},
+		{"newOOBNClass","NewOOBNClass"},
+		{"renameClass", "Renaming the oobn class"},
+		{"oobnFileFilter","Net (.net), Net for OOBN (.oobn)"},
+		{"NoClassSelected","No OOBN class was selected"},
+		{"compilationError" , "Compilation Error"},
+		{"DuplicatedClassName","Class name is duplicated"},
 	};
 }

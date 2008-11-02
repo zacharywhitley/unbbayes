@@ -48,6 +48,8 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.msbn.SingleAgentMSBN;
+import unbbayes.prs.oobn.IObjectOrientedBayesianNetwork;
+import unbbayes.prs.oobn.impl.ObjectOrientedBayesianNetwork;
 import unbbayes.util.Debug;
 import edu.isi.powerloom.PLI;
 import edu.stanford.smi.protegex.owl.ProtegeOWL;
@@ -177,6 +179,15 @@ public class MainController {
 		MultiEntityBayesianNetwork mebn = new MultiEntityBayesianNetwork(resource.getString("NewMEBNName"));
 		NetworkWindow netWindow = new NetworkWindow(mebn);
 		screen.addWindow(netWindow);
+	}
+	
+	/**
+	 * This method is responsible for creating a new OOBN.
+	 *
+	 */
+	public void newOOBN() {
+		IObjectOrientedBayesianNetwork oobn = ObjectOrientedBayesianNetwork.newInstance(resource.getString("NewOOBNName"));
+		OOBNController controller = OOBNController.newInstance(oobn, screen);
 	}
 	
 	/**

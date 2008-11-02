@@ -95,6 +95,7 @@ public class UnBBayesFrame extends JFrame {
 	private JButton newNet;
 	private JButton newMsbn;
 	private JButton newMebn;
+	private JButton newOobn;
 	private JButton openNet;
 	private JButton saveNet;
 
@@ -116,6 +117,7 @@ public class UnBBayesFrame extends JFrame {
 	private ActionListener alBAN;
 	private ActionListener alNewMSBN;
 	private ActionListener alNewMEBN;
+	private ActionListener alNewOOBN;
 	private ActionListener alOpen;
 	private ActionListener alSave;
 	private ActionListener alExit;
@@ -216,16 +218,16 @@ public class UnBBayesFrame extends JFrame {
 	}
 
 	/**
-	 * Retorna a janela que est� selecionada.
+	 * Returns the selected window.
 	 * 
-	 * @return janela que est� selecionada.
+	 * @return the selected window.
 	 */
 	public JInternalFrame getSelectedWindow() {
 		return desktop.getSelectedFrame();
 	}
 
 	/**
-	 * Adiciona uma nova janela.
+	 * Adds a new window.
 	 * 
 	 * @param newWindow
 	 *            nova janela.
@@ -262,6 +264,15 @@ public class UnBBayesFrame extends JFrame {
 			public void actionPerformed(ActionEvent ae) {
 				setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				controller.newMEBN();
+				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
+		};
+		
+		// create an ActionListener for opening new window for OOBN
+		alNewOOBN = new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				setCursor(new Cursor(Cursor.WAIT_CURSOR));
+				controller.newOOBN();
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		};
@@ -639,10 +650,14 @@ public class UnBBayesFrame extends JFrame {
 				iconController.getNewIcon());
 		JMenuItem newMEBN = new JMenuItem(resource.getString("newMEBN"),
 				iconController.getNewIcon());
+		
+		JMenuItem newOOBN = new JMenuItem(resource.getString("newOOBN"),
+				iconController.getNewIcon());
 
 		newBN.setMnemonic(resource.getString("newBNMn").charAt(0));
 		newMSBN.setMnemonic(resource.getString("newMSBNMn").charAt(0));
 		newMEBN.setMnemonic(resource.getString("newMEBNMn").charAt(0));
+		newOOBN.setMnemonic(resource.getString("newOOBNMn").charAt(0));
 		
 		JMenuItem openItem = new JMenuItem(resource.getString("openItem"),
 				iconController.getOpenIcon());
@@ -727,6 +742,7 @@ public class UnBBayesFrame extends JFrame {
 		newBN.addActionListener(alNewBN);
 		newMSBN.addActionListener(alNewMSBN);
 		newMEBN.addActionListener(alNewMEBN);
+		newOOBN.addActionListener(alNewOOBN);
 		openItem.addActionListener(alOpen);
 		saveItem.addActionListener(alSave);
 		exitItem.addActionListener(alExit);
@@ -755,6 +771,7 @@ public class UnBBayesFrame extends JFrame {
 		newMenu.add(newBN);
 		newMenu.add(newMSBN);
 		newMenu.add(newMEBN);
+		newMenu.add(newOOBN);
 		fileMenu.add(newMenu);
 		fileMenu.add(openItem);
 		fileMenu.add(saveItem);
@@ -832,6 +849,7 @@ public class UnBBayesFrame extends JFrame {
 		jtbFile.add(newNet);
 		jtbFile.add(newMsbn);
 		jtbFile.add(newMebn);
+		jtbFile.add(newOobn);
 		jtbFile.add(openNet);
 		jtbFile.add(saveNet);
 		jtbTools.add(learn);
@@ -859,6 +877,7 @@ public class UnBBayesFrame extends JFrame {
 		newNet = new JButton(iconController.getNewBNIcon());
 		newMsbn = new JButton(iconController.getNewMSBNIcon());
 		newMebn = new JButton(iconController.getNewMEBNIcon());
+		newOobn = new JButton(iconController.getNewOOBNIcon());
 		openNet = new JButton(iconController.getOpenIcon());
 		saveNet = new JButton(iconController.getSaveIcon());
 		learn = new JButton(iconController.getLearningIcon());
@@ -874,6 +893,7 @@ public class UnBBayesFrame extends JFrame {
 		newNet.setToolTipText(resource.getString("newToolTip"));
 		newMsbn.setToolTipText(resource.getString("newMsbnToolTip"));
 		newMebn.setToolTipText(resource.getString("newMebnToolTip"));
+		newOobn.setToolTipText(resource.getString("newOobnToolTip"));
 		openNet.setToolTipText(resource.getString("openToolTip"));
 		saveNet.setToolTipText(resource.getString("saveToolTip"));
 		learn.setToolTipText(resource.getString("learningToolTip"));
@@ -893,6 +913,7 @@ public class UnBBayesFrame extends JFrame {
 		newNet.addActionListener(alNewBN);
 		newMsbn.addActionListener(alNewMSBN);
 		newMebn.addActionListener(alNewMEBN);
+		newOobn.addActionListener(alNewOOBN);
 		openNet.addActionListener(alOpen);
 		saveNet.addActionListener(alSave);
 		metal.addActionListener(alMetal);
