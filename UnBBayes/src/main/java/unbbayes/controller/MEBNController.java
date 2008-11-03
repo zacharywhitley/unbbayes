@@ -35,6 +35,8 @@ import javax.swing.JOptionPane;
 
 import unbbayes.controller.exception.InconsistentArgumentException;
 import unbbayes.controller.exception.InvalidOperationException;
+import unbbayes.controller.mebn.MEBNFactory;
+import unbbayes.controller.mebn.MEBNFactoryImpl;
 import unbbayes.gui.GraphAction;
 import unbbayes.gui.MEBNEditionPane;
 import unbbayes.gui.NetworkWindow;
@@ -73,7 +75,9 @@ import unbbayes.prs.mebn.exception.DuplicatedNameException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
+import unbbayes.prs.mebn.exception.NameException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
+import unbbayes.prs.mebn.exception.ReservedWordException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.prs.mebn.ssbn.ExplosiveSSBNGenerator;
@@ -106,6 +110,7 @@ public class MEBNController  {
 	/*-------------------------------------------------------------------------*/
 	
 	private KnowledgeBase knowledgeBase; 
+	private MEBNFactory mebnFactory; 
 	
 	/*-------------------------------------------------------------------------*/
 	/* Atributes                                                               */
@@ -213,6 +218,8 @@ public class MEBNController  {
 		this.screen = screen;
 		this.mebnEditionPane = new MEBNEditionPane(screen, this);
 
+		this.mebnFactory = new MEBNFactoryImpl(); 
+		
 		df = NumberFormat.getInstance(Locale.getDefault());
 		df.setMaximumFractionDigits(4);
 		
@@ -269,18 +276,27 @@ public class MEBNController  {
 	 * Set the name of the MTheory active.
 	 * @param name The new name
 	 */
-	public void renameMTheory(String name) throws DuplicatedNameException{
+	public void renameMTheory(String name) throws DuplicatedNameException,
+	                                              ReservedWordException{
 
-		if(multiEntityBayesianNetwork.getNamesUsed().contains(name)){
-			throw new DuplicatedNameException(); 
-		}
-		
+		checkName(name);
 		multiEntityBayesianNetwork.getNamesUsed().remove(multiEntityBayesianNetwork.getName()); 
 		multiEntityBayesianNetwork.setName(name);
 		mebnEditionPane.setNameMTheory(name);
 		mebnEditionPane.getMTheoryTree().renameMTheory(name); 
 		multiEntityBayesianNetwork.getNamesUsed().add(name); 
 
+	}
+
+
+	private void checkName(String name) throws DuplicatedNameException,
+			ReservedWordException {
+		if(multiEntityBayesianNetwork.getNamesUsed().contains(name)){
+			throw new DuplicatedNameException(name); 
+		}
+		if(mebnFactory.getReservedWords().contains(name)){
+			throw new ReservedWordException(name); 
+		}
 	}
 	
 	/**
@@ -437,13 +453,12 @@ public class MEBNController  {
 	 * rename the MFrag and update its name in the title of the graph
 	 * @param mFrag
 	 * @param name
+	 * @throws ReservedWordException 
 	 */
-	public void renameMFrag(MFrag mFrag, String name) throws DuplicatedNameException{
+	public void renameMFrag(MFrag mFrag, String name) throws DuplicatedNameException, ReservedWordException{
 
-           if (multiEntityBayesianNetwork.getNamesUsed().contains(name)){
-        	   throw new DuplicatedNameException();
-           }
-
+           checkName(name); 
+           
             multiEntityBayesianNetwork.getNamesUsed().remove(mFrag.getName()); 
 		    mFrag.setName(name);
 		    multiEntityBayesianNetwork.getNamesUsed().add(name); 
@@ -520,17 +535,14 @@ public class MEBNController  {
 	}
 
 	public void renameDomainResidentNode(ResidentNode resident, String newName)
-	                                   throws DuplicatedNameException{
-		
-		if(!multiEntityBayesianNetwork.getNamesUsed().contains(newName)){;
-		   multiEntityBayesianNetwork.getNamesUsed().remove(resident.getName()); 
-		   resident.setName(newName);
-		   multiEntityBayesianNetwork.getNamesUsed().add(newName); 
-		   mebnEditionPane.repaint();
-		}
-		else{
-			throw new DuplicatedNameException();
-		}
+	               throws DuplicatedNameException, ReservedWordException{
+
+		checkName(newName); 
+		multiEntityBayesianNetwork.getNamesUsed().remove(resident.getName()); 
+		resident.setName(newName);
+		multiEntityBayesianNetwork.getNamesUsed().add(newName); 
+		mebnEditionPane.repaint();
+
 	}
 
 	
@@ -543,12 +555,12 @@ public class MEBNController  {
 	 * Adds a possible value (state) into a resident node...
 	 * @param resident
 	 * @param value
+	 * @throws ReservedWordException 
 	 */
-	public StateLink addPossibleValue(ResidentNode resident, String nameValue) throws DuplicatedNameException{
+	public StateLink addPossibleValue(ResidentNode resident, String nameValue) 
+	                       throws DuplicatedNameException, ReservedWordException{
 
-		if(multiEntityBayesianNetwork.getNamesUsed().contains(nameValue)){
-			throw new DuplicatedNameException(); 
-		}
+		checkName(nameValue); 
 		
 		CategoricalStateEntity value = multiEntityBayesianNetwork.getCategoricalStatesEntityContainer().createCategoricalEntity(nameValue);
 		multiEntityBayesianNetwork.getNamesUsed().add(nameValue); 
@@ -1049,12 +1061,10 @@ public class MEBNController  {
 
 	}
 
-	public void renameOrdinaryVariable(OrdinaryVariable ov, String name) throws DuplicatedNameException{
+	public void renameOrdinaryVariable(OrdinaryVariable ov, String name) 
+	               throws DuplicatedNameException, ReservedWordException{
 		
-		   if(ov.getMFrag().getOrdinaryVariableByName(name)!=null){
-			   throw new DuplicatedNameException(); 
-		   }
-		
+		   checkName(name); 
 		   ov.setName(name); 
 	       ov.updateLabel();
 	       mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
@@ -1163,14 +1173,12 @@ public class MEBNController  {
 	}
 
 	@Deprecated
-	public void renameOVariableOfResidentTree(String name) throws DuplicatedNameException{
+	public void renameOVariableOfResidentTree(String name) 
+	                 throws DuplicatedNameException, ReservedWordException{
 		
 		OrdinaryVariable ov = mebnEditionPane.getEditArgumentsTab().getResidentOVariableTree().getOVariableSelected();
 	    
-		if(ov.getMFrag().getOrdinaryVariableByName(name)!=null){
-			throw new DuplicatedNameException(); 
-		}
-		
+		checkName(name); 
 		ov.setName(name);
 	    ov.updateLabel();
 		mebnEditionPane.getEditArgumentsTab().setTxtName(ov.getName());
@@ -1178,13 +1186,11 @@ public class MEBNController  {
 	}
 
 	@Deprecated
-	public void renameOVariableOfMFragTree(String name) throws DuplicatedNameException{
+	public void renameOVariableOfMFragTree(String name) 
+	               throws DuplicatedNameException, ReservedWordException{
 		OrdinaryVariable ov = mebnEditionPane.getEditArgumentsTab().getMFragOVariableTree().getOVariableSelected();
 
-		if(ov.getMFrag().getOrdinaryVariableByName(name)!=null){
-			throw new DuplicatedNameException(); 
-		}
-		
+		checkName(name); 
 		ov.setName(name);
 	    ov.updateLabel();
 		mebnEditionPane.getEditArgumentsTab().setTxtName(ov.getName());
@@ -1192,7 +1198,8 @@ public class MEBNController  {
 	}
 
 	@Deprecated
-	public void renameOVariableInArgumentEditionPane(String name) throws DuplicatedNameException{
+	public void renameOVariableInArgumentEditionPane(String name) 
+	                 throws DuplicatedNameException, ReservedWordException{
 		if (mebnEditionPane.getEditArgumentsTab().isTreeResidentActive()){
 			renameOVariableOfResidentTree(name);
 		}
@@ -1249,12 +1256,12 @@ public class MEBNController  {
 	 * @param entity
 	 * @param name
 	 * @throws TypeAlreadyExistsException
+	 * @throws ReservedWordException 
 	 */
-	public void renameObjectEntity(ObjectEntity entity, String name) throws TypeAlreadyExistsException, DuplicatedNameException{
+	public void renameObjectEntity(ObjectEntity entity, String name) 
+	            throws TypeAlreadyExistsException, DuplicatedNameException, ReservedWordException{
 		
-		if(multiEntityBayesianNetwork.getNamesUsed().contains(name)){
-			throw new DuplicatedNameException(); 
-		}
+		checkName(name); 
 		
 		multiEntityBayesianNetwork.getNamesUsed().remove(name); 
 		entity.setName(name);
@@ -1306,18 +1313,17 @@ public class MEBNController  {
 	 * @throws EntityInstanceAlreadyExistsException
 	 * @throws InvalidOperationException
 	 * @throws DuplicatedNameException
+	 * @throws ReservedWordException 
 	 */
 	public void createEntityIntance(ObjectEntity entity, String nameInstance) 
 	throws EntityInstanceAlreadyExistsException, InvalidOperationException, 
-	       DuplicatedNameException{
+	       DuplicatedNameException, ReservedWordException{
 
 		if(entity.isOrdereable()){
 			throw new InvalidOperationException();
 		}
 		
-		if(multiEntityBayesianNetwork.getNamesUsed().contains(nameInstance)){
-			throw new DuplicatedNameException(); 
-		}
+		checkName(nameInstance); 
 		
 		if(multiEntityBayesianNetwork.getObjectEntityContainer().getEntityInstanceByName(nameInstance)!=null){
 			throw new EntityInstanceAlreadyExistsException();
@@ -1338,15 +1344,13 @@ public class MEBNController  {
 	public void createEntityIntanceOrdereable(ObjectEntity entity, 
 			String nameInstance, ObjectEntityInstanceOrdereable previous) 
 	throws EntityInstanceAlreadyExistsException, InvalidOperationException, 
-	       DuplicatedNameException{
+	       DuplicatedNameException, ReservedWordException{
 
 		if(!entity.isOrdereable()){
 			throw new InvalidOperationException();
 		}
 		
-		if(multiEntityBayesianNetwork.getNamesUsed().contains(nameInstance)){
-			throw new DuplicatedNameException(); 
-		}
+		checkName(nameInstance); 
 		
 		if(multiEntityBayesianNetwork.getObjectEntityContainer().getEntityInstanceByName(nameInstance)!=null){
 			throw new EntityInstanceAlreadyExistsException();
@@ -1371,11 +1375,9 @@ public class MEBNController  {
 	}
 
 	public void renameEntityIntance(ObjectEntityInstance entity, String newName) throws EntityInstanceAlreadyExistsException, 
-																						DuplicatedNameException{
+																						DuplicatedNameException, ReservedWordException{
 
-		if(multiEntityBayesianNetwork.getNamesUsed().contains(newName)){
-			throw new DuplicatedNameException(); 
-		}
+		checkName(newName); 
 		
 		if(multiEntityBayesianNetwork.getObjectEntityContainer().getEntityInstanceByName(newName)!=null){
 			throw new EntityInstanceAlreadyExistsException();
