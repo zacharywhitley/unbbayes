@@ -76,6 +76,7 @@ import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.exception.DuplicatedNameException;
 import unbbayes.prs.mebn.exception.MEBNException;
+import unbbayes.prs.mebn.exception.ReservedWordException;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.util.ResourceController;
 
@@ -1113,6 +1114,11 @@ public class MEBNEditionPane extends JPanel {
 	  	  									resource.getString("nameError"),
 	  	  									resource.getString("nameDuplicated"),
 	  	  									JOptionPane.ERROR_MESSAGE);
+								} catch (ReservedWordException e2) {
+	  	  							JOptionPane.showMessageDialog(netWindow,
+	  	  									resource.getString("nameError"),
+	  	  									resource.getString("nameReserved"),
+	  	  									JOptionPane.ERROR_MESSAGE);
 								}
   	  						}  else {
   	  							txtNameMTheory.setBackground(MebnToolkit.getColorTextFieldError());
@@ -1200,6 +1206,12 @@ public class MEBNEditionPane extends JPanel {
       	  									resource.getString("nameException"),
       	  									JOptionPane.ERROR_MESSAGE);
       							}
+      							 catch (ReservedWordException e2) {
+ 	  	  							JOptionPane.showMessageDialog(netWindow,
+ 	  	  									resource.getString("nameError"),
+ 	  	  									resource.getString("nameReserved"),
+ 	  	  									JOptionPane.ERROR_MESSAGE);
+ 								}
       						}  else {
       							txtNameMFrag.setBackground(MebnToolkit.getColorTextFieldError());
       							txtNameMFrag.setForeground(Color.WHITE);
@@ -1401,7 +1413,12 @@ public class MEBNEditionPane extends JPanel {
     	  									resource.getString("nameAlreadyExists"),
     	  									resource.getString("nameException"),
     	  									JOptionPane.ERROR_MESSAGE);
-    					}
+    					} catch (ReservedWordException e2) {
+	  							JOptionPane.showMessageDialog(netWindow,
+  	  									resource.getString("nameError"),
+  	  									resource.getString("nameReserved"),
+  	  									JOptionPane.ERROR_MESSAGE);
+							}
       				}
       			}
 

@@ -1171,7 +1171,7 @@ OUT_LOOP:  for(ContextNode context: cnList){
 	}
 
 	/**
-	 * Calls ContextNodeAvaliator's method to check context node's validation.
+	 * Check context node's validation.
 	 * Evaluate only the context nodes for what have ordinary variables instances
 	 * for all the ordinary variables present (ordinal context nodes). 
 	 */

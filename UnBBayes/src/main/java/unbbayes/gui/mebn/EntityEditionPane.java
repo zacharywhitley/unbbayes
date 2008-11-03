@@ -57,6 +57,7 @@ import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.exception.ObjectEntityHasInstancesException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 import unbbayes.prs.mebn.exception.DuplicatedNameException;
+import unbbayes.prs.mebn.exception.ReservedWordException;
 
 /**
  * Pane for edition of object entities: 
@@ -254,16 +255,21 @@ public class EntityEditionPane extends JPanel{
 									update();
 								} catch (DuplicatedNameException e1) {
 									JOptionPane.showMessageDialog(mebnController.getScreen(),
-											resource.getString("nameError"),
 											resource.getString("nameDuplicated"),
+											resource.getString("nameError"),
 											JOptionPane.ERROR_MESSAGE);
+								} catch (ReservedWordException e2) {
+	  	  							JOptionPane.showMessageDialog(mebnController.getScreen(),
+	  	  									resource.getString("nameReserved"),
+	  	  									resource.getString("nameError"),
+	  	  									JOptionPane.ERROR_MESSAGE);
 								}
 
 							}
 							catch (TypeException typeException){
 								JOptionPane.showMessageDialog(null, 
 										resource.getString("nameDuplicated"), 
-										resource.getString("nameException"), 
+										resource.getString("nameError"), 
 										JOptionPane.ERROR_MESSAGE);
 								txtName.selectAll();
 							}
@@ -271,8 +277,8 @@ public class EntityEditionPane extends JPanel{
 							txtName.setBackground(MebnToolkit.getColorTextFieldError()); 
 							txtName.setForeground(Color.WHITE); 
 							JOptionPane.showMessageDialog(null, 
-									resource.getString("nameError"), 
 									resource.getString("nameException"), 
+									resource.getString("nameError"), 
 									JOptionPane.ERROR_MESSAGE);
 							txtName.selectAll();
 						}
@@ -338,7 +344,7 @@ public class EntityEditionPane extends JPanel{
 				catch(TypeException e){
 					JOptionPane.showMessageDialog(null, 
 							resource.getString("nameDuplicated"), 
-							resource.getString("nameException"), 
+							resource.getString("nameError"), 
 							JOptionPane.ERROR_MESSAGE);
 				}
 			}

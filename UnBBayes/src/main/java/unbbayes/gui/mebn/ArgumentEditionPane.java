@@ -49,6 +49,7 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.DuplicatedNameException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
+import unbbayes.prs.mebn.exception.ReservedWordException;
 
 /**
  * A panel to be used by the user in order to edit the arguments of a resident
@@ -250,10 +251,15 @@ public class ArgumentEditionPane extends JPanel{
 								mebnController.renameOVariableInArgumentEditionPane(name);
 							} catch (DuplicatedNameException e1) {
   	  							JOptionPane.showMessageDialog(mebnController.getScreen(),
-  	  									resource.getString("nameError"),
   	  									resource.getString("nameDuplicated"),
+  	  									resource.getString("nameError"),
   	  									JOptionPane.ERROR_MESSAGE);
-							} 
+							} catch (ReservedWordException e2) {
+  	  							JOptionPane.showMessageDialog(mebnController.getScreen(),
+  	  									resource.getString("nameReserved"),
+  	  									resource.getString("nameError"),
+  	  									JOptionPane.ERROR_MESSAGE);
+							}
   						}  else {
   							JOptionPane.showMessageDialog(null, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
   							

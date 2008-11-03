@@ -62,6 +62,7 @@ import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.exception.DuplicatedNameException;
+import unbbayes.prs.mebn.exception.ReservedWordException;
 
 /**
  * Panel for selection of the possible values (states) of a resident node.
@@ -540,8 +541,8 @@ public class PossibleValuesEditionPane extends JPanel {
 				if (matcher.matches()) {
 					if(mebnController.existPossibleValue(nameValue)){
 						JOptionPane.showMessageDialog(null, resource
-								.getString("nameAlreadyExists"), resource
-								.getString("nameException"),
+								.getString("nameError"), resource
+								.getString("nameAlreadyExists"),
 								JOptionPane.ERROR_MESSAGE);
 					}else{
 						if (!residentNode.existsPossibleValueByName(nameValue)){
@@ -566,8 +567,13 @@ public class PossibleValuesEditionPane extends JPanel {
 										
 									} catch (DuplicatedNameException e) {
 		  	  							JOptionPane.showMessageDialog(mebnController.getScreen(),
-		  	  									resource.getString("nameError"),
 		  	  									resource.getString("nameDuplicated"),
+		  	  									resource.getString("nameError"),
+		  	  									JOptionPane.ERROR_MESSAGE);
+									} catch (ReservedWordException e2) {
+		  	  							JOptionPane.showMessageDialog(mebnController.getScreen(),
+		  	  									resource.getString("nameReserved"),
+		  	  									resource.getString("nameError"),
 		  	  									JOptionPane.ERROR_MESSAGE);
 									}
 								}
@@ -578,8 +584,13 @@ public class PossibleValuesEditionPane extends JPanel {
 									stateLink.setGloballyExclusive(checkGloballyExclusive.isSelected());
 								} catch (DuplicatedNameException e) {
 	  	  							JOptionPane.showMessageDialog(mebnController.getScreen(),
-	  	  									resource.getString("nameError"),
 	  	  									resource.getString("nameDuplicated"),
+	  	  									resource.getString("nameError"),
+	  	  									JOptionPane.ERROR_MESSAGE);
+								} catch (ReservedWordException e2) {
+	  	  							JOptionPane.showMessageDialog(mebnController.getScreen(),
+	  	  									resource.getString("nameReserved"),
+	  	  									resource.getString("nameError"),
 	  	  									JOptionPane.ERROR_MESSAGE);
 								}
 							}
@@ -587,7 +598,7 @@ public class PossibleValuesEditionPane extends JPanel {
 						} else {
 							JOptionPane.showMessageDialog(null, resource
 									.getString("nameDuplicated"), resource
-									.getString("nameException"),
+									.getString("nameError"),
 									JOptionPane.ERROR_MESSAGE);
 						}
 						
@@ -596,8 +607,8 @@ public class PossibleValuesEditionPane extends JPanel {
 					}
 				} else {
 					JOptionPane.showMessageDialog(null, resource
-							.getString("nameError"), resource
-							.getString("nameException"),
+							.getString("nameException"), resource
+							.getString("nameError"),
 							JOptionPane.ERROR_MESSAGE);
 					txtName.selectAll();
 				}

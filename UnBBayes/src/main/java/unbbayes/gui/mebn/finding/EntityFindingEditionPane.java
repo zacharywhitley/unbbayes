@@ -59,6 +59,7 @@ import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
 import unbbayes.prs.mebn.exception.DuplicatedNameException;
+import unbbayes.prs.mebn.exception.ReservedWordException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 
@@ -299,9 +300,14 @@ public class EntityFindingEditionPane extends JPanel {
 									mebnController.createEntityIntance(objectEntity, nameObjectEntity.getText());
 								} catch (DuplicatedNameException e) {
 									JOptionPane.showMessageDialog(null, 
-											resource.getString("nameError"), 
 											resource.getString("nameDuplicated"), 
+											resource.getString("nameError"), 
 											JOptionPane.ERROR_MESSAGE);
+								} catch (ReservedWordException e2) {
+	  	  							JOptionPane.showMessageDialog(mebnController.getScreen(),
+	  	  									resource.getString("nameReserved"),
+	  	  									resource.getString("nameError"),
+	  	  									JOptionPane.ERROR_MESSAGE);
 								}
 							} catch (InvalidOperationException e) {
 								e.printStackTrace();
@@ -313,9 +319,14 @@ public class EntityFindingEditionPane extends JPanel {
 											objectEntity, nameObjectEntity.getText(), last);
 								} catch (DuplicatedNameException e) {
 									JOptionPane.showMessageDialog(null, 
-											resource.getString("nameError"), 
 											resource.getString("nameDuplicated"), 
+											resource.getString("nameError"), 
 											JOptionPane.ERROR_MESSAGE);
+								} catch (ReservedWordException e2) {
+	  	  							JOptionPane.showMessageDialog(mebnController.getScreen(),
+	  	  									resource.getString("nameReserved"),
+	  	  									resource.getString("nameError"),
+	  	  									JOptionPane.ERROR_MESSAGE);
 								}
 							} catch (InvalidOperationException e) {
 								e.printStackTrace();
@@ -327,7 +338,7 @@ public class EntityFindingEditionPane extends JPanel {
 					catch(EntityInstanceAlreadyExistsException ex){
 						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), 
 								resource.getString("nameDuplicated"), 
-								resource.getString("nameException"), 
+								resource.getString("nameError"), 
 								JOptionPane.ERROR_MESSAGE);
 					}
 				}else{
@@ -336,16 +347,21 @@ public class EntityFindingEditionPane extends JPanel {
 							mebnController.renameEntityIntance((ObjectEntityInstance)selected, nameObjectEntity.getText());
 							objectEntityInstanceListPane.update();
 						} catch (DuplicatedNameException e) {
-							JOptionPane.showMessageDialog(null, 
-									resource.getString("nameError"), 
+							JOptionPane.showMessageDialog(mebnController.getScreen(), 
 									resource.getString("nameDuplicated"), 
+									resource.getString("nameError"), 
 									JOptionPane.ERROR_MESSAGE);
-						} 
+						}  catch (ReservedWordException e2) {
+	  							JOptionPane.showMessageDialog(mebnController.getScreen(),
+  	  									resource.getString("nameReserved"),
+  	  									resource.getString("nameError"),
+  	  									JOptionPane.ERROR_MESSAGE);
+							}
 					}
 					catch(EntityInstanceAlreadyExistsException ex){
 						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), 
 								resource.getString("nameDuplicated"), 
-								resource.getString("nameException"), 
+								resource.getString("nameError"), 
 								JOptionPane.ERROR_MESSAGE);
 					}
 				}

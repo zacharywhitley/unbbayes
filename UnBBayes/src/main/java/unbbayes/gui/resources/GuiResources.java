@@ -334,6 +334,7 @@ public class GuiResources extends ListResourceBundle {
         {"properties","Properties..."},
         {"nameException","Name Error"},
         {"nameDuplicated", "The name already exists..."}, 
+        {"nameReserved", "Name is a reserved word."},
         {"nameEmpty","The name cannot be empty"},
         {"siglaError","The sigla must have only letters and numbers."},
         {"descriptionError","The description must have only letters and numbers."}, 

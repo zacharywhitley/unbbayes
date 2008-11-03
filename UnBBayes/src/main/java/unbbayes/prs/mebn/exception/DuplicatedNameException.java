@@ -21,14 +21,10 @@
 package unbbayes.prs.mebn.exception;
 
 
-public class DuplicatedNameException extends Exception{
-
-	private DuplicatedNameException(String msg){
-		super(msg); 
-	}
+public class DuplicatedNameException extends NameException{
 	
-	public DuplicatedNameException(){
-		super(); 
+	public DuplicatedNameException(String name){
+		super("", name); 
 	}
 	
 }

@@ -46,6 +46,7 @@ import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.exception.DuplicatedNameException;
+import unbbayes.prs.mebn.exception.ReservedWordException;
 
 /**
  * Bar of edition for one ordinary variable. 
@@ -69,7 +70,8 @@ public class ToolBarOrdVariable extends JToolBar{
 	private Type[] types; 	
 	
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  			"unbbayes.gui.resources.GuiResources");
 	
     private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9]*");
     private Matcher matcher;	
@@ -105,7 +107,7 @@ public class ToolBarOrdVariable extends JToolBar{
   								if(mebnController.getCurrentMFrag().getOrdinaryVariableByName(name)!= null){
   									JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), 
   	  	  									resource.getString("nameAlreadyExists"), 
-  	  	  									resource.getString("nameException"), 
+  	  	  									resource.getString("nameError"), 
   	  	  									JOptionPane.ERROR_MESSAGE);
   	  							   	
   								}else{
@@ -113,9 +115,14 @@ public class ToolBarOrdVariable extends JToolBar{
 										mebnController.renameOrdinaryVariable(ov, name);
 									} catch (DuplicatedNameException e1) {
 										JOptionPane.showMessageDialog(null, 
-												resource.getString("nameError"), 
 												resource.getString("nameDuplicated"), 
+												resource.getString("nameError"), 
 												JOptionPane.ERROR_MESSAGE);
+									} catch (ReservedWordException e2) {
+		  	  							JOptionPane.showMessageDialog(mebnController.getScreen(),
+		  	  									resource.getString("nameReserved"),
+		  	  									resource.getString("nameError"),
+		  	  									JOptionPane.ERROR_MESSAGE);
 									}
   								}
   							}
@@ -123,7 +130,10 @@ public class ToolBarOrdVariable extends JToolBar{
   							txtName.setBackground(MebnToolkit.getColorTextFieldError()); 
   							txtName.setForeground(Color.WHITE); 
   							txtName.selectAll();
-  							JOptionPane.showMessageDialog(null, resource.getString("nameError"), resource.getString("nameDuplicated"), JOptionPane.ERROR_MESSAGE);
+  							JOptionPane.showMessageDialog(null, 
+  									resource.getString("nameDuplicated"), 
+  									resource.getString("nameError"), 
+  									JOptionPane.ERROR_MESSAGE);
   						}
   					}
   					catch (javax.swing.text.BadLocationException ble) {

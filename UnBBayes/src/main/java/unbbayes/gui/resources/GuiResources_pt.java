@@ -335,6 +335,7 @@ public class GuiResources_pt extends ListResourceBundle {
         {"nameException","Erro no Nome"},
         {"nameEmpty","O nome não pode ser branco"},
         {"nameDuplicated", "Nome já existe..."}, 
+        {"nameReserved", "Nome é uma palavra reservada."}, 
         {"siglaError","A sigla só pode ter letras e números."},
         {"descriptionError","A descrição só pode ter letras e números."},
         

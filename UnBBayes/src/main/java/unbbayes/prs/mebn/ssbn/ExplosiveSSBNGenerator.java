@@ -171,10 +171,16 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 
 		}
 
-		//verify if OK for generate up
+		/*
+		 * The evaluation up is realized only if
+		 * - the node is permantent
+		 * - the node don't is using the default CPT (the context nodes are valid)
+		 */
 		if(currentNode.isPermanent()){
 
-			if(currentNode.getEvaluationState() != EvaluationSSBNNodeState.EVALUATING_UP){
+			if((currentNode.getEvaluationState() != EvaluationSSBNNodeState.EVALUATING_UP)&&
+					(!currentNode.isUsingDefaultCPT())){
+				
 				currentNode.setEvaluationState(EvaluationSSBNNodeState.EVALUATING_UP); 
 
 				// Step where the node is created for the first time
