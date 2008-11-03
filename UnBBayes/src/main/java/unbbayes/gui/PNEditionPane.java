@@ -138,7 +138,8 @@ public class PNEditionPane extends JPanel {
         btnAddState              = new JButton(iconController.getMoreIcon());
         btnRemoveState              = new JButton(iconController.getLessIcon());
         btnAddEdge               = new JButton(iconController.getEdgeIcon());
-        btnAddContinuousNode = new JButton(iconController.getEllipsisIcon());
+        // TODO CHANGE THE CONTINUOUS ICON!
+        btnAddContinuousNode = new JButton(iconController.getBlueNodeIcon());
         btnAddProbabilisticNode = new JButton(iconController.getEllipsisIcon());
         btnAddDecisionNode      = new JButton(iconController.getDecisionNodeIcon());
         btnAddUtilityNode       = new JButton(iconController.getUtilityNodeIcon());
