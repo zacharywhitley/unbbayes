@@ -1118,6 +1118,9 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	 * @return vetor de c�pia dos n�s sem as vari�veis de utilidade.
 	 */
 	public ArrayList<Node> getNodesCopy() {
+		if (copiaNos == null) {
+			copiaNos = (ArrayList<Node>)nodeList.clone();
+		}
 		return copiaNos;
 	}
 
