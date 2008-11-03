@@ -943,7 +943,6 @@ public class UnBBayesFrame extends JFrame {
 	     * from the window's system menu.
 	     */
 	    public void windowClosing(WindowEvent e){
-	    	System.out.println("foi...");
 	    	controller.saveConfigurations(); 
 	    }
 
