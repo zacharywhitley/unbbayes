@@ -21,17 +21,11 @@
 package unbbayes.controller;
 
 import java.awt.Component;
-import java.awt.Cursor;
 import java.io.File;
 import java.io.IOException;
 import java.util.ResourceBundle;
 
-import javax.help.HelpSet;
-// javax.help.JHelp appears to have a compatibility problem with java 6, so, it is removed for now
-// TODO find another choice replacing javax.help.JHelp
-import javax.help.JHelp;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 
 import unbbayes.datamining.datamanipulation.ArffSaver;
 import unbbayes.datamining.datamanipulation.InstanceSet;

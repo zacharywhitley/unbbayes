@@ -58,10 +58,12 @@ import unbbayes.evaluation.controller.EvaluationController;
 import unbbayes.gui.FileIcon;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.SimpleFileFilter;
+import unbbayes.gui.continuous.ContinuousNormalDistributionPane;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.ContinuousNode;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
@@ -241,6 +243,36 @@ public class NetworkController implements KeyListener {
     		}
     	}
     }
+    
+    /**
+	 * Creates and shows the panel to edit the node's table.
+	 * @param node The table owner.
+	 */
+	public void createTable(Node node) {
+		if (node.getType() == Node.PROBABILISTIC_NODE_TYPE) {
+			createDiscreteTable(node);
+		} else if (node.getType() == Node.CONTINUOUS_NODE_TYPE) {
+			createContinuousDistribution((ContinuousNode)node);
+		}
+	}
+    
+	/**
+	 * Creates and shows the panel where the user can edit the 
+	 * continuous node normal distribution.
+	 * @param node The continuous node to create the distribution pane for.
+	 */
+	public void createContinuousDistribution(ContinuousNode node) {
+		if (senController != null) senController.createContinuousDistribution(node);
+	}
+	
+	/**
+	 * Creates and shows the panel where the user can edit the discrete 
+	 * node table.
+	 * @param node The discrete node to create the table pan for.
+	 */
+	public void createDiscreteTable(Node node) {
+		if (senController != null) senController.createDiscreteTable(node);
+	}
 
     /**
      * Construct a potential table of the given node.
@@ -286,10 +318,20 @@ public class NetworkController implements KeyListener {
     	}
     }
 
+    /**
+     * Insert a new continuous node in the SingleEntityNetwork with 
+     * the standard label and description.
+     *
+     * @param x The x position of the new node.
+     * @param y The y position of the new node.
+     */
+    public void insertContinuousNode(double x, double y) {
+    	if (senController != null) senController.insertContinuousNode(x,y);
+    }
 
     /**
      * Insert a new probabilistic node in the SingleEntityNetwork with 
-     * the standard label and descritpion.
+     * the standard label and description.
      *
      * @param x The x position of the new node.
      * @param y The y position of the new node.

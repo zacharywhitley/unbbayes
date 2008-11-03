@@ -480,6 +480,10 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 			
 			switch (getAction()) {
 			
+			case CREATE_CONTINUOUS_NODE:
+				controller.insertContinuousNode(e.getX(), e.getY());
+				return;
+			
 			case CREATE_PROBABILISTIC_NODE:
 				controller.insertProbabilisticNode(e.getX(), e.getY());
 				return;
@@ -620,40 +624,24 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	
 	
 	/**
-	 *  M�todo respons�vel por tratar o evento de clique no bot�o do mouse
+	 *  Responsible for dealing with mouse click event.
 	 *
-	 *@param  e  O <code>MouseEvent</code>
+	 *@param  e  The <code>MouseEvent</code>
 	 *@see MouseEvent
 	 */
 	public void mouseClicked(MouseEvent e) {
 		// receber o focus para poder tratar o evento de tecla
 		this.requestFocus();
 		
+		// Show the table pane to edit the distribution
 		Node node = getNode(e.getX(), e.getY());
 		if (node != null) {
 			if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 				if (controller.getGraph() instanceof SingleEntityNetwork) {
-					controller.getScreen().setTable(controller.makeTable(node));
-					controller.getScreen().setTableOwner(node);
-					if (controller.getScreen().isCompiled()) {
-						for (int i = 0; i < controller.getScreen().getEvidenceTree().getRowCount(); i++) {
-							if (controller.getScreen().getEvidenceTree().getPathForRow(i).getLastPathComponent().toString().equals(selected.toString())) {
-								if (controller.getScreen().getEvidenceTree().isExpanded(controller.getScreen().getEvidenceTree().getPathForRow(i))) {
-									controller.getScreen().getEvidenceTree().collapsePath(controller.getScreen().getEvidenceTree().getPathForRow(i));
-								}
-								else {
-									controller.getScreen().getEvidenceTree().expandPath(controller.getScreen().getEvidenceTree().getPathForRow(i));
-								}
-								break;
-							}
-						}
-					}
-				}
-				else{
-					
-					
+					controller.createTable(node);
 				}
 			}
+		// Change the edge direction
 		} else {
 			Edge edge = getEdge(e.getX(), e.getY());
 			if ((edge != null) && (e.getModifiers() == MouseEvent.BUTTON1_MASK) && (e.getClickCount() == 2)) {
@@ -725,13 +713,13 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 		
 		update();
 		
-		if (e.isPopupTrigger() && (getSelected() != null))
-		{   if (!(getSelected() instanceof Edge))
-		{   if (((Node)getSelected()).getInformationType() == Node.EXPLANATION_TYPE)
-		{   popup.setEnabled(true);
-		popup.show(e.getComponent(),e.getX(),e.getY());
-		}
-		}
+		if (e.isPopupTrigger() && (getSelected() != null)) {
+			if (!(getSelected() instanceof Edge)) {
+				if (((Node) getSelected()).getInformationType() == Node.EXPLANATION_TYPE) {
+					popup.setEnabled(true);
+					popup.show(e.getComponent(), e.getX(), e.getY());
+				}
+			}
 		}
 	}
 	
@@ -1004,6 +992,8 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	 */
 	public void setAction(GraphAction action) {
 		switch (action) {
+		
+		case CREATE_CONTINUOUS_NODE:
 		
 		case CREATE_PROBABILISTIC_NODE:
 			

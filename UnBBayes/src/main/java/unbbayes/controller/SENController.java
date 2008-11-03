@@ -21,8 +21,11 @@
 package unbbayes.controller;
 
 import java.awt.Cursor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
@@ -35,9 +38,12 @@ import javax.swing.event.TableModelListener;
 
 import unbbayes.gui.ExplanationProperties;
 import unbbayes.gui.NetworkWindow;
+import unbbayes.gui.continuous.ContinuousNormalDistributionPane;
 import unbbayes.gui.table.GUIPotentialTable;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.CNNormalDistribution;
+import unbbayes.prs.bn.ContinuousNode;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -222,14 +228,27 @@ public class SENController {
 				+ resource.getString("statusSeconds"));
 		return true;
 	}
+	
+	/**
+	 * Inserts the desired node inside the network creating default state, symbol and description
+	 * @param x The x position.
+	 * @param y The y position. 
+	 */
+	public void insertContinuousNode(double x, double y) {
+		ContinuousNode node = new ContinuousNode();
+		node.setPosition(x, y);
+		node.appendState(resource.getString("firstStateProbabilisticName"));
+		node.setName(resource.getString("probabilisticNodeName")
+				+ singleEntityNetwork.getNodeCount());
+		node.setDescription(node.getName());
+		
+		singleEntityNetwork.addNode(node);
+	}
 
 	/**
-	 * Inserts the desired node inside the network creating default state, simbol and description
-	 * 
-	 * @param no
-	 *            <code>Node</code> representing the inserting node
-	 * @since
-	 * @see unbbayes.prs.Node
+	 * Inserts the desired node inside the network creating default state, symbol and description
+	 * @param x The x position.
+	 * @param y The y position.
 	 */
 	public void insertProbabilisticNode(double x, double y) {
 		ProbabilisticNode node = new ProbabilisticNode();
@@ -246,12 +265,9 @@ public class SENController {
 	}
 
 	/**
-	 * Inserts the desired node inside a network creating a default state, simbol and description.
-	 * 
-	 * @param no
-	 *            <code>DecisionNode</code> representing the inserting node
-	 * @since
-	 * @see unbbayes.prs.DecisionNode
+	 * Inserts the desired node inside a network creating a default state, symbol and description.
+	 * @param x The x position.
+	 * @param y The y position.
 	 */
 	public void insertDecisionNode(double x, double y) {
 		DecisionNode node = new DecisionNode();
@@ -264,12 +280,9 @@ public class SENController {
 	}
 
 	/**
-	 * Inserts the desired node inside a network creating a default state, simbol and description.
-	 * 
-	 * @param no
-	 *            A <code>UtilityNode</code> representing a inserting node.
-	 * @since
-	 * @see unbbayes.prs.UtilityNode
+	 * Inserts the desired node inside a network creating a default state, symbol and description.
+	 * @param x The x position.
+	 * @param y The y position. 
 	 */
 	public void insertUtilityNode(double x, double y) {
 		UtilityNode node = new UtilityNode();
@@ -285,12 +298,158 @@ public class SENController {
 	/**
 	 * Links an edge connecting parents and children.
 	 * 
-	 * @param arco
-	 *            an <code>Edge</code> representing a linking edge
-	 * @since
+	 * @param edge An <code>Edge</code> representing a linking edge
 	 */
-	public void insertEdge(Edge arco) {
-		singleEntityNetwork.addEdge(arco);
+	public void insertEdge(Edge edge) {
+		singleEntityNetwork.addEdge(edge);
+		if (edge.getDestinationNode().getType() == Node.CONTINUOUS_NODE_TYPE) {
+			((ContinuousNode)edge.getDestinationNode()).getCnNormalDistribution().refreshParents();
+		}
+	}
+	
+	/**
+	 * Creates and shows the panel where the user can edit the 
+	 * continuous node normal distribution.
+	 * @param node The continuous node to create the distribution pane for.
+	 */
+	public void createContinuousDistribution(final ContinuousNode node) {
+		// Separate continuous from discrete parent nodes
+		final List<Node> discreteNodeList = new ArrayList<Node>();
+		final List<String> discreteNodeNameList = new ArrayList<String>();
+		final List<String> continuousNodeNameList = new ArrayList<String>();
+		for (Node n : node.getParents()) {
+			if (n.getType() ==  Node.PROBABILISTIC_NODE_TYPE) {
+				discreteNodeList.add(n);
+				discreteNodeNameList.add(n.getName());
+			} else if (n.getType() == Node.CONTINUOUS_NODE_TYPE) {
+				continuousNodeNameList.add(n.getName());
+			}
+		}
+		
+		// Create the distribution pane
+		final ContinuousNormalDistributionPane distributionPane = new ContinuousNormalDistributionPane(discreteNodeNameList, continuousNodeNameList);
+		screen.setDistributionPane(distributionPane);
+		screen.setTableOwner(node);
+		
+		// Fill discrete parent node states
+		for (Node n : discreteNodeList) {
+			List<String> stateList = new ArrayList<String>(n.getStatesSize());
+			for (int i = 0; i < n.getStatesSize(); i++) {
+				stateList.add(n.getStateAt(i));
+			}
+			distributionPane.fillDiscreteParentStateSelection(n.getName(), stateList);
+		}
+		
+		loadContinuousDistributionPaneValues(distributionPane, node.getCnNormalDistribution());
+		
+		// Create the confirm action listener. Responsible for setting the distribution values.
+		ActionListener confirmAL = new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				setContinuousDistributionValues(distributionPane, node.getCnNormalDistribution());
+			}
+		};
+		
+		// Responsible for loading the values from the normal distribution into the distribution pane.
+		// Used in cancel and in parent state change listeners.
+		ActionListener restoreValuesFromDistributionAL = new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				loadContinuousDistributionPaneValues(distributionPane, node.getCnNormalDistribution());
+			}
+		};
+		
+		distributionPane.addConfirmButtonActionListener(confirmAL);
+		distributionPane.addCancelButtonActionListener(restoreValuesFromDistributionAL);
+		distributionPane.addParentStateChangeActionListener(restoreValuesFromDistributionAL);
+		
+		screen.setAddRemoveStateButtonVisible(false);
+	}
+	
+	/**
+	 * Get the values from the normal distribution and set them into the distribution pane.
+	 * @param distributionPane The pane to set the values from the normal distribution.
+	 * @param distribution The normal distribution to get the values from. 
+	 */
+	private void loadContinuousDistributionPaneValues(ContinuousNormalDistributionPane distributionPane, CNNormalDistribution distribution) {
+		// Get the multidimensional coordinate (state associated with each discrete parent) 
+		int[] mCoord = distributionPane.getDiscreteParentNodeStateSelectedList();					
+		if (mCoord.length == 0) {
+			mCoord = new int[1];
+			mCoord[0] = 0;
+		}
+		
+		// Get the parameters values from the distribution 
+		String mean = String.valueOf(distribution.getMean(mCoord));
+		String variance = String.valueOf(distribution.getVariance(mCoord));
+		List<String> constantList = new ArrayList<String>(distribution.getConstantListSize());
+		for (int i = 0; i < distribution.getConstantListSize(); i++) {
+			constantList.add(String.valueOf(distribution.getConstantAt(i, mCoord)));
+		}
+		
+		// Set the parameters values in the distribution pane
+		distributionPane.setMeanText(mean);
+		distributionPane.setVarianceText(variance);
+		distributionPane.setConstantTextList(constantList);
+	}
+	
+	/**
+	 * Get the values from the distribution pane and set them into the normal distribution.
+	 * @param distributionPane The pane to get the values from.
+	 * @param distribution The normal distribution to set the values into.
+	 */
+	private void setContinuousDistributionValues(ContinuousNormalDistributionPane distributionPane, CNNormalDistribution distribution) {
+		try {
+			// Get all parameter to set in continuous node distribution
+			double mean = Double.parseDouble(distributionPane.getMeanText());
+			double variance = Double.parseDouble(distributionPane.getVarianceText());
+			List<String> constantTextList = distributionPane.getConstantTextList();
+			List<Double> constantList = new ArrayList<Double>(constantTextList.size());
+			for (String constantText : constantTextList) {
+				constantList.add(Double.parseDouble(constantText));
+			}
+			
+			// Get the multidimensional coordinate (state associated with each discrete parent)
+			int[] multidimensionalCoord = distributionPane.getDiscreteParentNodeStateSelectedList();					
+			if (multidimensionalCoord.length == 0) {
+				multidimensionalCoord = new int[1];
+				multidimensionalCoord[0] = 0;
+			}
+			
+			// Set the parameters values in the distribution 
+			distribution.setMean(mean, multidimensionalCoord);
+			distribution.setVariance(variance, multidimensionalCoord);
+			for (int i = 0; i < constantList.size(); i++) {
+				distribution.setConstantAt(i, constantList.get(i), multidimensionalCoord);
+			}
+			
+		} catch (NumberFormatException e) {
+			JOptionPane.showMessageDialog(null, resource.getString("continuousNormalDistributionParamError"), resource
+					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+		}
+	}
+	
+	/**
+	 * Creates and shows the panel where the user can edit the discrete 
+	 * node table.
+	 * @param node The discrete node to create the table pan for.
+	 */
+	public void createDiscreteTable(Node node) {
+		screen.setTable(makeTable(node));
+		screen.setTableOwner(node);
+		// Show the selected node
+		if (screen.isCompiled()) {
+			for (int i = 0; i < screen.getEvidenceTree().getRowCount(); i++) {
+				if (screen.getEvidenceTree().getPathForRow(i).getLastPathComponent().toString().equals(node.toString())) {
+					if (screen.getEvidenceTree().isExpanded(screen.getEvidenceTree().getPathForRow(i))) {
+						screen.getEvidenceTree().collapsePath(screen.getEvidenceTree().getPathForRow(i));
+					}
+					else {
+						screen.getEvidenceTree().expandPath(screen.getEvidenceTree().getPathForRow(i));
+					}
+					break;
+				}
+			}
+		}
+		screen.setAddRemoveStateButtonVisible(true);
 	}
 
 	/**

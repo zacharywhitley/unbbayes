@@ -283,6 +283,10 @@ public class NetworkWindow extends JInternalFrame {
 	public JTextField getTxtSigla() {
 		return pnEditionPane.getTxtSigla();
 	}
+	
+	public void setDistributionPane(JPanel distributionPane) {
+		pnEditionPane.setDistributionPane(distributionPane);
+	}
 
 	/**
 	 * Substitui a tabela de probabilidades existente pela desejada.
@@ -563,6 +567,11 @@ public class NetworkWindow extends JInternalFrame {
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 		this.updateTitle(); 
+	}
+	
+	public void setAddRemoveStateButtonVisible(boolean visible) {
+		pnEditionPane.getBtnAddState().setVisible(visible);
+		pnEditionPane.getBtnRemoveState().setVisible(visible);
 	}
 
 }

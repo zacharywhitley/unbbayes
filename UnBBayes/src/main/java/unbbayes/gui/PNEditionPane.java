@@ -88,6 +88,7 @@ public class PNEditionPane extends JPanel {
     private final JButton btnAddState;
     private final JButton btnRemoveState;
     private final JButton btnAddEdge;
+    private final JButton btnAddContinuousNode;
     private final JButton btnAddProbabilisticNode;
     private final JButton btnAddDecisionNode;
     private final JButton btnAddUtilityNode;
@@ -137,6 +138,7 @@ public class PNEditionPane extends JPanel {
         btnAddState              = new JButton(iconController.getMoreIcon());
         btnRemoveState              = new JButton(iconController.getLessIcon());
         btnAddEdge               = new JButton(iconController.getEdgeIcon());
+        btnAddContinuousNode = new JButton(iconController.getEllipsisIcon());
         btnAddProbabilisticNode = new JButton(iconController.getEllipsisIcon());
         btnAddDecisionNode      = new JButton(iconController.getDecisionNodeIcon());
         btnAddUtilityNode       = new JButton(iconController.getUtilityNodeIcon());
@@ -156,6 +158,7 @@ public class PNEditionPane extends JPanel {
         btnAddState.setToolTipText(resource.getString("moreToolTip"));
         btnRemoveState.setToolTipText(resource.getString("lessToolTip"));
         btnAddEdge.setToolTipText(resource.getString("arcToolTip"));
+        btnAddContinuousNode.setToolTipText(resource.getString("continuousNodeInsertToolTip"));
         btnAddProbabilisticNode.setToolTipText(resource.getString("probabilisticNodeInsertToolTip"));
         btnAddDecisionNode.setToolTipText(resource.getString("decisionNodeInsertToolTip"));
         btnAddUtilityNode.setToolTipText(resource.getString("utilityNodeInsertToolTip"));;
@@ -208,23 +211,20 @@ public class PNEditionPane extends JPanel {
         //ao clicar no bot�o btnAddEdge setamos as vari�veis booleanas e os estados dos but�es
         btnAddEdge.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                /*netWindow.getIGraph().setbProbabilisticNode(false);
-                netWindow.getIGraph().setbDecisionNode(false);
-                netWindow.getIGraph().setbUtilityNode(false);
-                netWindow.getIGraph().setbSelect(false);
-                netWindow.getIGraph().setbArc(true);*/
             	netWindow.getGraphPane().setAction(GraphAction.CREATE_EDGE);
+            }
+        });
+        
+        // Creates a continuous node
+        btnAddContinuousNode.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+            	netWindow.getGraphPane().setAction(GraphAction.CREATE_CONTINUOUS_NODE);
             }
         });
 
         //ao clicar no bot�o node setamos as vari�veis booleanas e os estados dos but�es
         btnAddProbabilisticNode.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                /*netWindow.getIGraph().setbArc(false);
-                netWindow.getIGraph().setbSelect(false);
-                netWindow.getIGraph().setbDecisionNode(false);
-                netWindow.getIGraph().setbUtilityNode(false);
-                netWindow.getIGraph().setbProbabilisticNode(true);*/
             	netWindow.getGraphPane().setAction(GraphAction.CREATE_PROBABILISTIC_NODE);
             }
         });
@@ -233,11 +233,6 @@ public class PNEditionPane extends JPanel {
         //ao clicar no bot�o btnAddDecisionNode setamos as vari�veis booleanas e os estados dos but�es
         btnAddDecisionNode.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                /*netWindow.getIGraph().setbArc(false);
-                netWindow.getIGraph().setbSelect(false);
-                netWindow.getIGraph().setbUtilityNode(false);
-                netWindow.getIGraph().setbProbabilisticNode(false);
-                netWindow.getIGraph().setbDecisionNode(true);*/
             	netWindow.getGraphPane().setAction(GraphAction.CREATE_DECISION_NODE);
             }
         });
@@ -245,11 +240,6 @@ public class PNEditionPane extends JPanel {
         //ao clicar no bot�o btnAddUtilityNode setamos as vari�veis booleanas e os estados dos but�es
         btnAddUtilityNode.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                /*netWindow.getIGraph().setbArc(false);
-                netWindow.getIGraph().setbSelect(false);
-                netWindow.getIGraph().setbProbabilisticNode(false);
-                netWindow.getIGraph().setbDecisionNode(false);
-                netWindow.getIGraph().setbUtilityNode(true);*/
             	netWindow.getGraphPane().setAction(GraphAction.CREATE_UTILITY_NODE);
             }
         });
@@ -258,11 +248,6 @@ public class PNEditionPane extends JPanel {
         //ao clicar no bot�o node setamos as vari�veis booleanas e os estados dos but�es
         btnSelectObject.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                /*netWindow.getIGraph().setbArc(false);
-                netWindow.getIGraph().setbProbabilisticNode(false);
-                netWindow.getIGraph().setbDecisionNode(false);
-                netWindow.getIGraph().setbUtilityNode(false);
-                netWindow.getIGraph().setbSelect(true);*/
             	netWindow.getGraphPane().setAction(GraphAction.SELECT_MANY_OBJECTS);
             }
         });
@@ -418,6 +403,7 @@ public class PNEditionPane extends JPanel {
 
         jtbEdition.addSeparator();
 
+        jtbEdition.add(btnAddContinuousNode);
         jtbEdition.add(btnAddProbabilisticNode);
         jtbEdition.add(btnAddDecisionNode);
         jtbEdition.add(btnAddUtilityNode);
@@ -513,16 +499,20 @@ public class PNEditionPane extends JPanel {
     public JTextField getTxtSigla() {
       return this.txtSigla;
     }
+    
+    public void setDistributionPane(JPanel distributionPane) {
+    	this.centerPanel.setTopComponent(distributionPane);
+    }
 
     /**
-     *  Substitui a tabela de probabilidades existente pela desejada.
+     *  Change the shown table to the given one.
      *
-     *@parm      table a nova tabela (<code>JTable</code>) desejada.
-     *@see       JTable
+     *@param table The new table to show.
      */
     public void setTable(JTable table) {
         this.table = table;
         jspTable.setViewportView(table);
+        this.centerPanel.setTopComponent(jspTable);
     }
 
     public Node getTableOwner() {
@@ -594,6 +584,10 @@ public class PNEditionPane extends JPanel {
 
     public JButton getBtnPrintTable() {
         return this.btnPrintTable;
+    }
+    
+    public JButton getBtnAddContinuousNode() {
+    	return this.btnAddContinuousNode;
     }
 
     public JButton getBtnAddProbabilisticNode() {
