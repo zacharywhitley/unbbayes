@@ -188,7 +188,7 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
         ArrayList<Node> clones[] = new ArrayList[getChildren().size()];
 		int indexes[] = new int[getChildren().size()];
         for (int i = 0; i < getChildren().size(); i++) {
-        	if (getChildren().get(i).getType() == Node.DECISION_NODE_TYPE) {
+        	if (getChildren().get(i).getType() == Node.DECISION_NODE_TYPE || getChildren().get(i).getType() == Node.CONTINUOUS_NODE_TYPE) {
         		continue;
         	}
        		PotentialTable auxTab = ((ITabledVariable) getChildren().get(i)).getPotentialTable();
@@ -197,7 +197,7 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
         }
         
         for (int i = 0; i < getChildren().size(); i++) {
-        	if (getChildren().get(i).getType() == Node.DECISION_NODE_TYPE) {
+        	if (getChildren().get(i).getType() == Node.DECISION_NODE_TYPE || getChildren().get(i).getType() == Node.CONTINUOUS_NODE_TYPE) {
         		continue;
         	}
             PotentialTable auxTab = ((ITabledVariable) getChildren().get(i)).getPotentialTable();
@@ -216,7 +216,7 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
        
         
         for (int i = 0; i < getChildren().size(); i++) {
-        	if (getChildren().get(i).getType() == Node.DECISION_NODE_TYPE) {
+        	if (getChildren().get(i).getType() == Node.DECISION_NODE_TYPE || getChildren().get(i).getType() == Node.CONTINUOUS_NODE_TYPE) {
         		continue;
         	}
             PotentialTable auxTab = ((ITabledVariable) getChildren().get(i)).getPotentialTable();
@@ -231,7 +231,7 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
     /**
      *  Returns node's color.
      *
-     * @return color of the probabilisti node.
+     * @return color of the probabilistic node.
      */
     public static Color getDescriptionColor() {
         return descriptionColor;

@@ -168,6 +168,7 @@ public class GuiResources extends ListResourceBundle {
 		{"moreToolTip","Add state"},
 		{"lessToolTip","Remove state"},
 		{"arcToolTip","Insert edge"},
+		{"continuousNodeInsertToolTip","Insert continuous variable"},
 		{"probabilisticNodeInsertToolTip","Insert probabilistic variable"},
 		{"decisionNodeInsertToolTip","Insert decision variable"},
 		{"utilityNodeInsertToolTip","Insert utility variable"},
@@ -494,6 +495,13 @@ public class GuiResources extends ListResourceBundle {
 		{"junctionTreeAlgorithmName" , "Junction Tree"},
 		{"likelihoodWeightingAlgorithmName" , "Likelihood Weighting"},
 		
+		/* Continuous Normal Distribution Pane */
+		{"meanLabel" , "Mean"},
+		{"varianceLabel" , "Variance"},
+		{"constantLabel" , "k"},
+		{"followsLabel" , "~"},
+		{"normalFunctionLabel" , "N(mean,variance)"},
+		{"continuousNormalDistributionParamError" , "The values must be real numbers."},
 		
 		// OOBN specific resources
 		{"editionToolTip","Go to edition mode"},
@@ -506,6 +514,6 @@ public class GuiResources extends ListResourceBundle {
 		{"oobnFileFilter","Net (.net), Net for OOBN (.oobn)"},
 		{"NoClassSelected","No OOBN class was selected"},
 		{"compilationError" , "Compilation Error"},
-		{"DuplicatedClassName","Class name is duplicated"},
+		{"DuplicatedClassName","Class name is duplicated"}
 	};
 }

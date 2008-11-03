@@ -8,7 +8,8 @@ public class NormalDistribution {
 	private double variance;
 	
 	public NormalDistribution() {
-		
+		this.mean = 0;
+		this.variance = 1;
 	}
 	
 	public NormalDistribution(double mean, double variance) {

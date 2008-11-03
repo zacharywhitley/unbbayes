@@ -43,11 +43,17 @@ public class CNNormalDistribution {
 		SortUtil.sortNodeListByDescription(continuousParentList);
 		
 		calculateFactors();
-		int lastNode = factors.length - 1;
-		int ndfListSize = factors[lastNode] * discreteParentList.get(lastNode).getStatesSize();
-		ndfList = new NormalDistributionFunction[ndfListSize];
-		for (int i = 0; i < ndfList.length; i++) {
-			ndfList[i] = new NormalDistributionFunction();
+		if (discreteParentList.size() > 0) {
+			int lastNode = factors.length - 1;
+			int ndfListSize = factors[lastNode] * discreteParentList.get(lastNode).getStatesSize();
+			ndfList = new NormalDistributionFunction[ndfListSize];
+			for (int i = 0; i < ndfList.length; i++) {
+				ndfList[i] = new NormalDistributionFunction();
+			}
+		} else {
+			// There is just one normal distribution
+			ndfList = new NormalDistributionFunction[1];
+			ndfList[0] = new NormalDistributionFunction();
 		}
 	}
 	
@@ -64,6 +70,14 @@ public class CNNormalDistribution {
 		ndfList[getLinearCoord(multidimensionalCoord)].setConstantAt(index, value);
 	}
 	
+	public double getConstantAt(int index, int[] multidimensionalCoord) {
+		return ndfList[getLinearCoord(multidimensionalCoord)].getConstantAt(index);
+	}
+	
+	public int getConstantListSize() {
+		return continuousParentList.size();
+	}
+	
 	/**
 	 * Set the normal distribution mean for the given combination of discrete 
 	 * parent node's states, which is the multidimensional coordinate.
@@ -73,6 +87,10 @@ public class CNNormalDistribution {
 	 */
 	public void setMean(double mean, int[] multidimensionalCoord) {
 		ndfList[getLinearCoord(multidimensionalCoord)].setMean(mean);
+	}
+	
+	public double getMean(int[] multidimensionalCoord) {
+		return ndfList[getLinearCoord(multidimensionalCoord)].getMean();
 	}
 
 	/**
@@ -86,6 +104,10 @@ public class CNNormalDistribution {
 		ndfList[getLinearCoord(multidimensionalCoord)].setVariance(variance);
 	}
 	
+	public double getVariance(int[] multidimensionalCoord) {
+		return ndfList[getLinearCoord(multidimensionalCoord)].getVariance();
+	}
+	
 	/**
 	 * Calculate the factors necessary to transform the linear coordinate into a multidimensional 
 	 * one (which is the the state for each possible discrete parent node).
@@ -97,6 +119,11 @@ public class CNNormalDistribution {
 		if (factors == null || factors.length != size) {
 		   factors = new int[size];
 		}
+		// If there is no discrete parent, then there is only one normal distribution
+		if (size == 0) {
+			factors = new int[1];
+		}
+	
 		factors[0] = 1;
 		Node node;
 		for (int i = 1; i < size; i++) {
@@ -158,6 +185,9 @@ public class CNNormalDistribution {
 		
 		public NormalDistributionFunction() {
 			constantList = new double[continuousParentList.size()];
+			for (int i = 0; i < constantList.length; i++) {
+				constantList[i] = 0;
+			}
 			normalDistribution = new NormalDistribution();
 		}
 		
@@ -169,12 +199,20 @@ public class CNNormalDistribution {
 			normalDistribution.setMean(mean);
 		}
 		
+		public double getMean() {
+			return normalDistribution.getMean();
+		}
+		
 		/**
 		 * Set the normal distribution variance.
 		 * @param variance The normal distribution variance.
 		 */
 		public void setVariance(double variance) {
 			normalDistribution.setVariance(variance);
+		}
+		
+		public double getVariance() {
+			return normalDistribution.getVariance();
 		}
 		
 		/**
@@ -184,6 +222,10 @@ public class CNNormalDistribution {
 		 */
 		public void setConstantAt(int index, double value) {
 			constantList[index] = value;
+		}
+		
+		public double getConstantAt(int index) {
+			return constantList[index];
 		}
 		
 	}

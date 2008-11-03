@@ -1,21 +1,27 @@
 package unbbayes.gui.continuous;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
+import unbbayes.util.ResourceController;
 import unbbayes.util.SortUtil;
 
 public class ContinuousNormalDistributionPane extends JPanel {
 
 	private static final long serialVersionUID = 1L;
-	
-	private String followsTitle;
 	
 	private JPanel followsPane;
 	private JLabel followsLabel;
@@ -24,42 +30,131 @@ public class ContinuousNormalDistributionPane extends JPanel {
 	private List<String> continuousParentNodeNameList;
 	
 	private JPanel parentStateListPane;
-	private List<JList> discreteParentNodeStateSelectionList;
+	private List<JComboBox> discreteParentNodeStateSelectionList;
 	
-	public ContinuousNormalDistributionPane(String followsTitle, List<String> discreteParentNodeNameList, List<String> continuousParentNodeNameList) {
-		this.followsTitle = followsTitle;
-		createFollowsPane();
-		this.discreteParentNodeNameList = discreteParentNodeNameList;
-		this.continuousParentNodeNameList = continuousParentNodeNameList;
+	private JPanel inputPane;
+	private List<JTextField> constantTextFieldList;
+	private JTextField meanTextField;
+	private JTextField varianceTextField;
+	
+	private JPanel buttonPane;
+	private JButton confirmButton;
+	private JButton cancelButton;
+	
+	private ResourceBundle resource = ResourceController.RS_GUI;
+	
+	public ContinuousNormalDistributionPane(List<String> discreteParentNodeNameList, List<String> continuousParentNodeNameList) {
+		if (discreteParentNodeNameList != null) {
+			this.discreteParentNodeNameList = discreteParentNodeNameList;
+		} else {
+			this.discreteParentNodeNameList = new ArrayList<String>(0);
+		}
+		if (continuousParentNodeNameList != null) {
+			this.continuousParentNodeNameList = continuousParentNodeNameList;
+		} else {
+			this.continuousParentNodeNameList = new ArrayList<String>(0);
+		}
 		SortUtil.sort(this.discreteParentNodeNameList);
 		SortUtil.sort(this.continuousParentNodeNameList);
+		
+		createFollowsPane();
 		createParentStateListPane();
+		createInputPane();
+		createButtonPane();
+		createMainPane();
 	}
 	
+	private void createMainPane() {
+		this.setLayout(new BorderLayout());
+		
+		// Set north panel
+		JPanel northPanel = new JPanel(new GridLayout(2, 1));
+		northPanel.add(followsPane);
+		northPanel.add(parentStateListPane);
+		this.add(northPanel, BorderLayout.NORTH);
+		
+		// Set center panel
+		this.add(inputPane, BorderLayout.CENTER);
+		
+		// Set south panel
+		this.add(buttonPane, BorderLayout.SOUTH);
+		
+	}
+
+	public void addConfirmButtonActionListener(ActionListener al) {
+		this.confirmButton.addActionListener(al);
+	}
+	
+	public void addCancelButtonActionListener(ActionListener al) {
+		this.cancelButton.addActionListener(al);
+	}
+	
+	public void addParentStateChangeActionListener(ActionListener al) {
+		for (JComboBox comboBox : discreteParentNodeStateSelectionList) {
+			comboBox.addActionListener(al);
+		}
+	}
+	
+	private void createButtonPane() {
+		this.buttonPane = new JPanel();
+		this.confirmButton = new JButton(resource.getString("confirmLabel"));
+		this.cancelButton = new JButton(resource.getString("cancelLabel"));
+		buttonPane.add(confirmButton);
+		buttonPane.add(cancelButton);
+	}
+
+	private void createInputPane() {
+		this.inputPane = new JPanel(new GridLayout((int)((continuousParentNodeNameList.size() + 2) / 2), 4));
+		
+		meanTextField = new JTextField(10);
+		inputPane.add(new JLabel(resource.getString("meanLabel")));
+		inputPane.add(meanTextField);
+		varianceTextField = new JTextField(10);
+		inputPane.add(new JLabel(resource.getString("varianceLabel")));
+		inputPane.add(varianceTextField);
+		
+		this.constantTextFieldList = new ArrayList<JTextField>(continuousParentNodeNameList.size());
+		for (int i = 0; i < continuousParentNodeNameList.size(); i++) {
+			constantTextFieldList.add(i, new JTextField(10));
+			inputPane.add(new JLabel(resource.getString("constantLabel") + i));
+			inputPane.add(constantTextFieldList.get(i));
+		}
+		
+	}
+
 	public void createFollowsPane() {
 		followsPane = new JPanel();
-		followsLabel = new JLabel(followsTitle);
+
+		StringBuffer followsTitle = new StringBuffer();
+		followsTitle.append(resource.getString("followsLabel") + " ");
+		for (int i = 0; i < continuousParentNodeNameList.size(); i++) {
+			if (i != 0) {
+				followsTitle.append(" + ");
+			}
+			followsTitle.append(resource.getString("constantLabel") + i + " * " + continuousParentNodeNameList.get(i));
+		}
+		if (continuousParentNodeNameList.size() > 0) {
+			followsTitle.append(" + ");
+		}
+		followsTitle.append(resource.getString("normalFunctionLabel"));
+		 
+		followsLabel = new JLabel(followsTitle.toString());
 		followsLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
 		followsLabel.setForeground(Color.BLUE);
 		followsPane.add(followsLabel);
 	}
 	
-	public void setFollowsTitle(String followsTitle) {
-		this.followsTitle = followsTitle;
-		followsLabel.setText(this.followsTitle);
-	}
-	
 	private void createParentStateListPane() {
 		parentStateListPane = new JPanel();
-		discreteParentNodeStateSelectionList = new ArrayList<JList>(discreteParentNodeNameList.size());
+		discreteParentNodeStateSelectionList = new ArrayList<JComboBox>(discreteParentNodeNameList.size());
 		JLabel label;
-		JList list;
+		JComboBox comboBox;
 		for (String name : discreteParentNodeNameList) {
 			label = new JLabel(name + " = ");
-			list = new JList();
-			discreteParentNodeStateSelectionList.add(list);
+			comboBox = new JComboBox();
+			discreteParentNodeStateSelectionList.add(comboBox);
 			parentStateListPane.add(label);
-			parentStateListPane.add(list);
+			parentStateListPane.add(comboBox);
 			parentStateListPane.add(new JLabel("\t"));
 		}
 		parentStateListPane.add(new JLabel("-\t"));
@@ -69,15 +164,18 @@ public class ContinuousNormalDistributionPane extends JPanel {
 	}
 	
 	public void fillDiscreteParentStateSelection(String parentName, List<String> stateList) {
-		JList list = null;
+		JComboBox comboBox = null;
 		for (int i = 0; i < discreteParentNodeNameList.size(); i++) {
 			if (discreteParentNodeNameList.get(i).equals(parentName)) {
-				list = discreteParentNodeStateSelectionList.get(i);
+				comboBox = discreteParentNodeStateSelectionList.get(i);
 				break;
 			}
 		}
-		if (list != null) {
-			// TODO DEFAULTLISTMODEL HERE!
+		if (comboBox != null) {
+			comboBox.removeAllItems();
+			for (String state : stateList) {
+				comboBox.addItem(state);
+			}
 		}
 	}
 
@@ -102,6 +200,73 @@ public class ContinuousNormalDistributionPane extends JPanel {
 		this.continuousParentNodeNameList = continuousParentNodeNameList;
 		SortUtil.sort(this.continuousParentNodeNameList);
 		createParentStateListPane();
+	}
+	
+	public static void main(String[] args) {
+		JFrame f = new JFrame();
+		
+		List<String> dis = new ArrayList<String>();
+		dis.add("D2");
+		dis.add("D1");
+		dis.add("D4");
+		dis.add("D3");
+		
+		List<String> con = new ArrayList<String>();
+		con.add("C2");
+		con.add("C1");
+		con.add("C3");
+		
+		ContinuousNormalDistributionPane p = new ContinuousNormalDistributionPane(dis, con);
+		
+		for (String string : dis) {
+			p.fillDiscreteParentStateSelection(string, con);
+		}
+		
+		
+		f.add(p);
+		f.pack();
+		f.setVisible(true);
+		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	}
+	
+	public String getMeanText() {
+		return meanTextField.getText();
+	}
+	
+	public void setMeanText(String mean) {
+		meanTextField.setText(mean);
+	}
+	
+	public String getVarianceText() {
+		return varianceTextField.getText();
+	}
+	
+	public void setVarianceText(String variance) {
+		varianceTextField.setText(variance);
+	}
+	
+	public List<String> getConstantTextList() {
+		List<String> constantTextList = new ArrayList<String>(constantTextFieldList.size());
+		for (JTextField textField : constantTextFieldList) {
+			constantTextList.add(textField.getText());
+		}
+		return constantTextList;
+	}
+	
+	public void setConstantTextList(List<String> constantList) {
+		if (constantList.size() == constantTextFieldList.size()) {
+			for (int i = 0; i < constantList.size(); i++) {
+				constantTextFieldList.get(i).setText(constantList.get(i));
+			}
+		}
+	}
+	
+	public int[] getDiscreteParentNodeStateSelectedList() {
+		int[] parentStateList  = new int[discreteParentNodeStateSelectionList.size()];
+		for (int i = 0; i < discreteParentNodeStateSelectionList.size(); i++) {
+			parentStateList[i] = discreteParentNodeStateSelectionList.get(i).getSelectedIndex();
+		}
+		return parentStateList;
 	}
 
 }
