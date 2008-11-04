@@ -32,6 +32,7 @@ import unbbayes.io.LogManager;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
@@ -451,12 +452,13 @@ OUT_LOOP:  for(ContextNode context: cnList){
 	 * 
 	 * @throws ImplementationRestrictionException 
 	 * @throws SSBNNodeGeneralException 
+	 * @throws InvalidParentException 
 	 */
 	protected List<SSBNNode> createSSBNNodesOfEntitiesSearchForResidentNode(
 			MFrag mFrag, SSBNNode originNode, ResidentNode fatherNode, 
 			List<OrdinaryVariable> ovList, List<OVInstance> ovInstances, 
 			boolean searchIfNotFound) 
-			throws ImplementationRestrictionException, SSBNNodeGeneralException {
+			throws ImplementationRestrictionException, SSBNNodeGeneralException, InvalidParentException {
 
 		List<OVInstance> listResultSearchContextNode = evaluateSearchContextNode(
 				mFrag, ovList, ovInstances);  
@@ -598,11 +600,12 @@ OUT_LOOP:  for(ContextNode context: cnList){
 	 * @return
 	 * @throws SSBNNodeGeneralException
 	 * @throws ImplementationRestrictionException 
+	 * @throws InvalidParentException 
 	 */
 	protected List<SSBNNodeJacket> createSSBNNodesOfEntitiesSearchForInputNode(
 			SSBNNode originNode, InputNode fatherNode, 
 			List<OrdinaryVariable> ovProblemList, List<OVInstance> ovInstances) 
-			throws SSBNNodeGeneralException, ImplementationRestrictionException {
+			throws SSBNNodeGeneralException, ImplementationRestrictionException, InvalidParentException {
 
 			List<OVInstance> listResultSearchContextNode = evaluateSearchContextNode(
 					fatherNode.getMFrag(), ovProblemList, ovInstances);  

@@ -33,6 +33,7 @@ import unbbayes.draw.DrawText;
 import unbbayes.draw.IOnePositionDrawable;
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.ITabledVariable;
+import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.ArrayMap;
 import unbbayes.util.SerializablePoint2D;
 
@@ -224,11 +225,11 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 		this.parents = parents;
 	}
 	
-	public void addChild(Node filho){
-		this.children.add(filho);
+	public void addChild(Node child) throws InvalidParentException{
+		this.children.add(child);
 	}
 	
-	public void addParent(Node parent){
+	public void addParent(Node parent) throws InvalidParentException{
 		this.parents.add(parent);
 	}
 

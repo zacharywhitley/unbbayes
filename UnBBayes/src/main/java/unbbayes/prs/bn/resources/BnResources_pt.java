@@ -65,6 +65,9 @@ public class BnResources_pt extends ListResourceBundle {
 		{"variableTableName","Tabela da variável "},
 		{"inconsistencyName"," inconsistente -> "},
 		{"utilityName","Utilidade"},
-		{"InconsistencyUnderflowException","Encontrado erro numérico ou inconsistência."}
+		{"InconsistencyUnderflowException","Encontrado erro numérico ou inconsistência."},
+		
+		/* Continuous Node */
+		{"continuousNodeInvalidParentException","Um nó contínuo apenas permite:\nPai:\n-Nó contínuo;\n-Nó probabilístico discreto.\nFilho:\n-Nó contínuo."}
 	};
 }

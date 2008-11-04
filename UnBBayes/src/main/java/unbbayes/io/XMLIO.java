@@ -55,6 +55,7 @@ import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
+import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
 import unbbayes.prs.msbn.SingleAgentMSBN;
@@ -253,7 +254,11 @@ public class XMLIO implements BaseIO{
 					Node parentNode = pn.getNode(parent);
 //					System.out.println("Analise:" + parent + " " + parentNode + " " + childNode);
 					Edge auxEdge = new Edge(parentNode, childNode);
-					pn.addEdge(auxEdge); 
+					try {
+						pn.addEdge(auxEdge);
+					} catch (InvalidParentException e) {
+						throw new LoadException(e.getMessage());
+					} 
 				}
 				
 				if (childNode.getType() == Node.DECISION_NODE_TYPE){

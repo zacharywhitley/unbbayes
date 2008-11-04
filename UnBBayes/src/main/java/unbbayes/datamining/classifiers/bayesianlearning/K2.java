@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import unbbayes.datamining.datamanipulation.Attribute;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.exception.InvalidParentException;
 
 public class K2
 {
@@ -109,7 +110,7 @@ public class K2
        	return parentsTemp;        				
     }
 
-    public ProbabilisticNetwork getProbabilisticNetwork()
+    public ProbabilisticNetwork getProbabilisticNetwork() throws InvalidParentException
     {
     	return m_pl.getProbabilisticNetwork(finalConfiguration);
     }

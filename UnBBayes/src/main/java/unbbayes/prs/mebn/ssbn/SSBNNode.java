@@ -33,6 +33,7 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -419,7 +420,7 @@ public class SSBNNode {
 	/**
 	 * This will add a parent to this node. It may check if the resident node
 	 * remains consistent. If argument is null, it throws NullPointerException.
-	 * The EDGE between the probalistic nodes is added to the network. 
+	 * The EDGE between the probabilistic nodes is added to the network. 
 	 * 
 	 * @param parent the node to be added as parent. Its ProbNode will be added as
 	 * this ProbNode's parent and, if said so, its resident node will be checked if it is the
@@ -431,7 +432,7 @@ public class SSBNNode {
 	 * @throws SSBNNodeGeneralException when parent has no resident node or ProbNode or 
 	 * there were inconsistency when isCheckingParentResident was set to true.
 	 */
-	public void addParent(SSBNNode parent, boolean isCheckingParentResident) throws SSBNNodeGeneralException{
+	public void addParent(SSBNNode parent, boolean isCheckingParentResident) throws SSBNNodeGeneralException {
 		
 		if(getParents().contains(parent)){
 			return; //do nothing! already is parent. 
@@ -484,7 +485,11 @@ public class SSBNNode {
 			if (parent.getProbNode() != null){
 				Edge edge = new Edge(parent.getProbNode(), this.getProbNode());
 				if (this.getProbabilisticNetwork() != null) {
-					this.getProbabilisticNetwork().addEdge(edge);
+					try {
+						this.getProbabilisticNetwork().addEdge(edge);
+					} catch (InvalidParentException e) {
+						throw new SSBNNodeGeneralException(e.getMessage());
+					}
 					AbstractSSBNGenerator.logManager.append("\n");
 					AbstractSSBNGenerator.logManager.append(">>EDGE>> " + edge + " created");
 //					BottomUpSSBNGenerator.printAndSaveCurrentNetwork(this);
@@ -839,8 +844,9 @@ public class SSBNNode {
 	 * entre o probabilistic node do contextFatherSSBNNode e o probabilistic node
 	 * deste nó (SSBNNode). 
 	 * @param contextFatherSSBNNode
+	 * @throws InvalidParentException when the parent is the wrong type for the child.
 	 */
-	public void setContextFatherSSBNNode(ContextFatherSSBNNode contextFatherSSBNNode) {
+	public void setContextFatherSSBNNode(ContextFatherSSBNNode contextFatherSSBNNode) throws InvalidParentException {
 		this.contextFatherSSBNNode = contextFatherSSBNNode;
 		
 		if (this.getProbNode() != null) {

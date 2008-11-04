@@ -49,6 +49,7 @@ import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
+import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
 import unbbayes.simulation.likelihoodweighting.inference.LikelihoodWeightingInference;
@@ -301,7 +302,12 @@ public class SENController {
 	 * @param edge An <code>Edge</code> representing a linking edge
 	 */
 	public void insertEdge(Edge edge) {
-		singleEntityNetwork.addEdge(edge);
+		try {
+			singleEntityNetwork.addEdge(edge);
+		} catch (InvalidParentException e) {
+			JOptionPane.showMessageDialog(null, e.getMessage(), resource
+					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+		}
 		if (edge.getDestinationNode().getType() == Node.CONTINUOUS_NODE_TYPE) {
 			((ContinuousNode)edge.getDestinationNode()).getCnNormalDistribution().refreshParents();
 		}

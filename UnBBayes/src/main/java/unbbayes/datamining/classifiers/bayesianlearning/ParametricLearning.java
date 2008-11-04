@@ -29,6 +29,7 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.exception.InvalidParentException;
 
 public class ParametricLearning
 {
@@ -209,7 +210,7 @@ public ArrayList<float[][]> prob(ArrayList<int[]> pa)
   return p;
 }
 //----------------------------------------------------------------------------//
-public ProbabilisticNetwork getProbabilisticNetwork(ArrayList<int[]> pa)
+public ProbabilisticNetwork getProbabilisticNetwork(ArrayList<int[]> pa) throws InvalidParentException
 {
 	ProbabilisticNetwork net = new ProbabilisticNetwork("net");
     int width = 50;

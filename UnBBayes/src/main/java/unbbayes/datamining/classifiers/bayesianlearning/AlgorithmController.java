@@ -24,6 +24,7 @@ import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.PNEditionPane;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.exception.InvalidParentException;
 /**
  * @author M�rio Henrique
  *
@@ -36,9 +37,9 @@ public class AlgorithmController {
 
   private NetworkWindow netWindow;
 
-  public AlgorithmController(InstanceSet instanceSet, String algorithm, String metric)
+  public AlgorithmController(InstanceSet instanceSet, String algorithm, String metric) throws InvalidParentException
   {
-    System.out.println("cheguei");
+//    System.out.println("cheguei");
 
     //testes
     K2 k2 = new K2(instanceSet,new ParametricLearning(instanceSet));    

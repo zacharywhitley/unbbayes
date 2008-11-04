@@ -63,6 +63,7 @@ import unbbayes.controller.IconController;
 import unbbayes.controller.JavaHelperController;
 import unbbayes.controller.MainController;
 import unbbayes.io.mebn.UbfIO;
+import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.simulation.montecarlo.controller.MCMainController;
 
 /**
@@ -291,7 +292,12 @@ public class UnBBayesFrame extends JFrame {
 					file = chooser.getSelectedFile();
 					fileController.setCurrentDirectory(chooser
 							.getCurrentDirectory());
-					new ConstructionController(file, controller, classe);
+					try {
+						new ConstructionController(file, controller, classe);
+					} catch (InvalidParentException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 
 			}
@@ -310,7 +316,12 @@ public class UnBBayesFrame extends JFrame {
 					file = chooser.getSelectedFile();
 					fileController.setCurrentDirectory(chooser
 							.getCurrentDirectory());
-					new ConstructionController(file, controller, classe, true);
+					try {
+						new ConstructionController(file, controller, classe, true);
+					} catch (InvalidParentException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 
 			}

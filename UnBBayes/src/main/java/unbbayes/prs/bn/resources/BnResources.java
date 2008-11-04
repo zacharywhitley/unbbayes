@@ -66,6 +66,9 @@ public class BnResources extends ListResourceBundle {
 		{"variableTableName","Variable Table "},
 		{"inconsistencyName"," inconsistency -> "},
 		{"utilityName","Utility"},
-		{"InconsistencyUnderflowException","Inconsistency or Underflow found."}
+		{"InconsistencyUnderflowException","Inconsistency or Underflow found."},
+		
+		/* Continuous Node */
+		{"continuousNodeInvalidParentException","A continuous node only allows:\nParent:\n-Continuous node;\n-Discrete probabilistic node.\nChild:\n-Continuous node."}
 	};
 }

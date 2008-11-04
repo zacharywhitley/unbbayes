@@ -47,6 +47,7 @@ import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
+import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
 import unbbayes.prs.msbn.SingleAgentMSBN;
@@ -500,7 +501,11 @@ public class NetIO implements BaseIO {
 				while (!st.sval.startsWith("{")) {
 					auxNo2 = net.getNode(st.sval);
 					auxArco = new Edge(auxNo2, auxNo1);
-					net.addEdge(auxArco);
+					try {
+						net.addEdge(auxArco);
+					} catch (InvalidParentException e) {
+						throw new LoadException(e.getMessage());
+					}
 					proximo(st);
 				}
 				

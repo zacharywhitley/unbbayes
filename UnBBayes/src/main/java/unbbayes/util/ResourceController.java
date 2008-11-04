@@ -32,5 +32,8 @@ public class ResourceController {
 	
 	public static ResourceBundle RS_SSBN = ResourceBundle
 	.getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName());
+	
+	public static ResourceBundle RS_BN = ResourceBundle
+	.getBundle(unbbayes.prs.bn.resources.BnResources.class.getName());
 	 
 }

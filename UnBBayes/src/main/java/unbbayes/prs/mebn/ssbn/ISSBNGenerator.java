@@ -19,6 +19,7 @@
  */
 package unbbayes.prs.mebn.ssbn;
 
+import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
@@ -37,7 +38,8 @@ public interface ISSBNGenerator {
 	 * @throws ImplementationRestrictionException
 	 * @throws MEBNException 
 	 * @throws OVInstanceFaultException 
+	 * @throws InvalidParentException when the parent is the wrong type for the child.
 	 */
 	public SituationSpecificBayesianNetwork generateSSBN(Query query) throws SSBNNodeGeneralException, 
-	                                    ImplementationRestrictionException, MEBNException, OVInstanceFaultException;
+	                                    ImplementationRestrictionException, MEBNException, OVInstanceFaultException, InvalidParentException;
 }

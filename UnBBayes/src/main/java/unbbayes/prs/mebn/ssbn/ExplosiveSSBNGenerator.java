@@ -29,6 +29,7 @@ import java.util.TreeMap;
 
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
@@ -80,11 +81,12 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 	 * 1) Build of the network
 	 * 2) Generate CPT's for the nodes of the created network
 	 * 3) Set the finding nodes and propagate the evidences
+	 * @throws InvalidParentException 
 	 */
 
 	public SituationSpecificBayesianNetwork generateSSBN(Query query)
 	throws SSBNNodeGeneralException, ImplementationRestrictionException, 
-	MEBNException {
+	MEBNException, InvalidParentException {
 
 		Debug.setDebug(true); 
 
@@ -148,11 +150,12 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 	 * @throws SSBNNodeGeneralException
 	 * @throws ImplementationRestrictionException
 	 * @throws MEBNException
+	 * @throws InvalidParentException 
 	 */
 	private void generateRecursive(SSBNNode currentNode , SSBNNodeList seen, 
 			ProbabilisticNetwork net, boolean generatedByDownProcessOfOriginNode) throws SSBNNodeGeneralException, 
 			ImplementationRestrictionException, 
-			MEBNException {
+			MEBNException, InvalidParentException {
 
 		//generate below
 
@@ -217,11 +220,12 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 	 * @throws SSBNNodeGeneralException
 	 * @throws ImplementationRestrictionException
 	 * @throws MEBNException
+	 * @throws InvalidParentException 
 	 */
 	private boolean generateRecursiveDown(SSBNNode currentNode , SSBNNodeList seen, 
 			ProbabilisticNetwork net, boolean generatedByDownProcessOfOriginNode) 
 	        throws SSBNNodeGeneralException, 
-			ImplementationRestrictionException, MEBNException {
+			ImplementationRestrictionException, MEBNException, InvalidParentException {
 
 		logManager.appendln("\n\n[D] Recursive Call Count = " + recursiveCallCount); 
 		logManager.appendln("[D]" + currentNode + ": -------------EVALUATING NODE BELOW: " + currentNode.getName() + "--------------\n"); 
@@ -578,12 +582,13 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 	 * 
 	 * Pre-requisites: 
 	 * - The node current node has a OVInstance for all OrdinaryVariable argument
+	 * @throws InvalidParentException 
 	 * 
 	 */
 	private SSBNNode generateRecursiveUp(SSBNNode currentNode , SSBNNodeList seen, 
 			ProbabilisticNetwork net, MFragInstance mFragInstance, boolean generatedByDownProcessOfOriginNode) throws SSBNNodeGeneralException, 
 			ImplementationRestrictionException, 
-			MEBNException {
+			MEBNException, InvalidParentException {
 
 		logManager.appendln("\n\n[U] Recursive call count = " + recursiveCallCount); 
 		logManager.appendln("[U]" + currentNode + ":-------------EVALUATING NODE: " + currentNode.getName() + "--------------\n"); 

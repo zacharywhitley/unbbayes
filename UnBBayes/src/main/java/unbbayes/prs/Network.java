@@ -27,6 +27,7 @@ import java.util.Map;
 
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.exception.InvalidParentException;
 
 public class Network implements Graph{
 
@@ -139,11 +140,12 @@ public class Network implements Graph{
 	 *  
 	 *  - The table of the destination node will be updated with the new Variable
 	 *
-	 *@param  edge  An edge to be inserted.
+	 * @param  edge  An edge to be inserted.
+	 * @throws InvalidParentException 
 	 */
-	public void addEdge(Edge edge) {
-		edge.getOriginNode().getChildren().add(edge.getDestinationNode());
-		edge.getDestinationNode().getParents().add(edge.getOriginNode());
+	public void addEdge(Edge edge) throws InvalidParentException {
+		edge.getOriginNode().addChild(edge.getDestinationNode());
+		edge.getDestinationNode().addParent(edge.getOriginNode());
 	    edgeList.add(edge);
 	    if (edge.getDestinationNode() instanceof ITabledVariable) {
 			ITabledVariable v2 = (ITabledVariable) edge.getDestinationNode();

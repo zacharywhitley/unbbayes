@@ -3,9 +3,12 @@ package unbbayes.prs.bn;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.io.Serializable;
+import java.util.ResourceBundle;
 
 import unbbayes.draw.DrawEllipse;
 import unbbayes.prs.Node;
+import unbbayes.prs.exception.InvalidParentException;
+import unbbayes.util.ResourceController;
 
 // FIXME We have to refactor the Node inheritance to separate discrete from continuous and other messy things!
 // FIXME GATO no continuous node
@@ -17,6 +20,8 @@ public class ContinuousNode extends TreeVariable implements Serializable {
     private DrawEllipse drawEllipse;
 	
 	private CNNormalDistribution cnNormalDistribution;
+	
+	private ResourceBundle resource = ResourceController.RS_BN;
 	
 	@Override
 	public int getType() {
@@ -58,6 +63,22 @@ public class ContinuousNode extends TreeVariable implements Serializable {
 	protected void marginal() {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	@Override
+	public void addParent(Node parent) throws InvalidParentException {
+		if (parent.getType() != Node.PROBABILISTIC_NODE_TYPE && parent.getType() != Node.CONTINUOUS_NODE_TYPE) {
+			throw new InvalidParentException(resource.getString("continuousNodeInvalidParentException"));
+		}
+		super.addParent(parent);
+	}
+	
+	@Override
+	public void addChild(Node child) throws InvalidParentException {
+		if (child.getType() != Node.CONTINUOUS_NODE_TYPE) {
+			throw new InvalidParentException(resource.getString("continuousNodeInvalidParentException"));
+		}
+		super.addChild(child);
 	}
 
 }

@@ -36,6 +36,7 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.exception.InvalidParentException;
 
 /**
  * Title: Exemplo de Uso da API atrav�s de um Modo Gr�fico
@@ -93,7 +94,12 @@ public class GraphicMode {
 
                 ProbabilisticNode auxVP2 = (ProbabilisticNode)rede.getNode("A");
                 Edge auxArco = new Edge(auxVP, auxVP2);
-                rede.addEdge(auxArco);
+                try {
+					rede.addEdge(auxArco);
+				} catch (InvalidParentException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 
                 try {
                    rede.compile();

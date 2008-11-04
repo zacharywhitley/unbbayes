@@ -48,6 +48,7 @@ import unbbayes.io.exception.UBIOException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.InputNode;
@@ -1608,6 +1609,7 @@ public class MEBNController  {
 	 * @throws ImplementationRestrictionException 
 	 * @throws SSBNNodeGeneralException 
 	 * @throws OVInstanceFaultException 
+	 * @throws InvalidParentException 
 	 */
 	public ProbabilisticNetwork executeQuery(ResidentNode residentNode, 
 			ObjectEntityInstance[] arguments)
@@ -1615,7 +1617,7 @@ public class MEBNController  {
 	                                  SSBNNodeGeneralException, 
 	                                  ImplementationRestrictionException, 
 	                                  MEBNException, 
-	                                  OVInstanceFaultException {
+	                                  OVInstanceFaultException, InvalidParentException {
 		
 		mebnEditionPane.setStatus(resource.getString("statusGeneratingSSBN")); 
 		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));

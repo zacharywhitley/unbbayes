@@ -45,6 +45,7 @@ import java.text.AttributedString;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JViewport;
 
@@ -52,6 +53,7 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.exception.InvalidParentException;
 
 /**
  *  Essa classe e responsavel por desenhar a rede Bayesiana na tela. Ela extende a classe
@@ -895,7 +897,12 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
         Node no1 = getNo(x1, y1);
         Node no2 = getNo(x2, y2);
         Edge arcoInserir = new Edge(no1, no2);
-        net.addEdge(arcoInserir);
+        try {
+			net.addEdge(arcoInserir);
+		} catch (InvalidParentException e) {
+			JOptionPane.showMessageDialog(null, e.getMessage(), resource
+					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+		}
 /*
 		arcoInserir.getOriginNode().getChildren().add(arcoInserir.getDestinationNode());
         arcoInserir.getDestinationNode().getParents().add(arcoInserir.getOriginNode());

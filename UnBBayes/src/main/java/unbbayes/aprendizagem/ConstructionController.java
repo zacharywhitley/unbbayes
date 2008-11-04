@@ -36,6 +36,7 @@ import unbbayes.gui.UnBBayesFrame;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.exception.InvalidParentException;
 
 /*
  * UnbBayes Copyright (C) 2002 Universidade de Brasília
@@ -223,9 +224,10 @@ public class ConstructionController {
 	 * @author Gabriel Guimarães - aluno de IC 2005-2006
 	 * @author Marcelo Ladeira - Orientador
 	 * @author Patricia Marinho
+	 * @throws InvalidParentException 
 	 */
 	public ConstructionController(File file, MainController controller,
-			int classei, boolean cbg) {
+			int classei, boolean cbg) throws InvalidParentException {
 		int classex = 0;
 		try {
 			InputStreamReader isr = new InputStreamReader(new FileInputStream(
@@ -301,9 +303,10 @@ public class ConstructionController {
 	 * @param classe
 	 * @author Gabriel Guimarães
 	 * @author Patricia
+	 * @throws InvalidParentException 
 	 */
 	public ConstructionController(File file, MainController controller,
-			int classei) {
+			int classei) throws InvalidParentException {
 		int classex = 0;
 		try {
 			InputStreamReader isr = new InputStreamReader(new FileInputStream(

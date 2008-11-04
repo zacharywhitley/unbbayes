@@ -12,6 +12,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.prs.Node;
+import unbbayes.prs.exception.InvalidParentException;
 
 /**
  * @author user
@@ -91,7 +92,12 @@ public class MFragTest extends TestCase {
 		} catch (Exception e) {
 			fail("A cycle has been found");
 		}
-		resident2.addParent(input1);
+		try {
+			resident2.addParent(input1);
+		} catch (InvalidParentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		ArrayList<Node> temp = mfrag1.getNodeList();
 		for (int i = 0; i < temp.size(); i++) {

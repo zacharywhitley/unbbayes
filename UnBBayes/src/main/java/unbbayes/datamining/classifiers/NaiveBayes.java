@@ -33,6 +33,7 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.exception.InvalidParentException;
 
 /**
  * Class implementing an Naive Bayes classifier.
@@ -232,8 +233,9 @@ public class NaiveBayes extends DistributionClassifier implements Serializable {
 	 * Creates an attribute node.
 	 * 
 	 * @param att attribute
+	 * @throws InvalidParentException 
 	 */
-	private void createProbabilisticNode(int att, byte attributeType) {
+	private void createProbabilisticNode(int att, byte attributeType) throws InvalidParentException {
 		Attribute attribute = attributes[att];
 		ProbabilisticNode node = new ProbabilisticNode();
 		node.setDescription(attribute.getAttributeName());
