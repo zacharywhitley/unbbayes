@@ -1,6 +1,26 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.prs.bn;
 
-import edu.csusb.danby.math.ProbMath;
+import unbbayes.util.ProbabilityMath;
 
 public class NormalDistribution {
 	
@@ -25,7 +45,7 @@ public class NormalDistribution {
 	 * @return The CDF upper bound (x).
 	 */
 	public double getCDFUpperBound(double probability) {
-		double z = ProbMath.inverseNormal(probability);
+		double z = ProbabilityMath.inverseNormal(probability);
 		double x = Math.sqrt(variance) * z + mean;
 		return x;
 	}
@@ -38,19 +58,28 @@ public class NormalDistribution {
 	 */
 	public double getCDF(double x) {
 		double z = (x - mean) / Math.sqrt(variance);
-		double probability = ProbMath.normalCdf(z);
+		double probability = ProbabilityMath.normalCdf(z);
 		return probability;
 	}
 	
 	/**
-	 * Calculate PDF from an interval from CDF. 
+	 * Calculate probability for an interval from CDF. 
 	 * P(ini <= X <= end) = P(X <= end) - P(X <= ini).
 	 * @param ini The interval initial value.
 	 * @param end The interval end value.
-	 * @return The PDF for the interval from initial to end value.
+	 * @return The probability for the interval from initial to end value.
 	 */
-	public double getPDF(double ini, double end) {
+	public double getProbability(double ini, double end) {
 		return getCDF(end) - getCDF(ini);
+	}
+	
+	/**
+	 * Returns the probability of a given value x for this normal distribution.
+	 * @param x The value we want to know the probability of.
+	 * @return The probability of x for this normal distribution.
+	 */
+	public double getProbability(double x) {
+		return ProbabilityMath.getNormalPDF(x, this.mean, this.variance);
 	}
 	
 	/**

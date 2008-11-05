@@ -12,7 +12,6 @@ Go to \lib>
 mvn install:install-file -DgroupId=guess -DartifactId=GIFOutput -Dversion=1.0 -Dpackaging=jar -Dfile=GIFOutput.jar
 mvn install:install-file -DgroupId=guess -DartifactId=plot -Dversion=1.0 -Dpackaging=jar -Dfile=plot.jar
 mvn install:install-file -DgroupId=guess -DartifactId=miglayout15-swing -Dversion=1.0 -Dpackaging=jar -Dfile=miglayout15-swing.jar
-mvn install:install-file -DgroupId=guess -DartifactId=danby -Dversion=1.0 -Dpackaging=jar -Dfile=danby.jar
 
 Go to \lib\powerloom>
 mvn install:install-file -DgroupId=guess -DartifactId=powerloom -Dversion=1.0 -Dpackaging=jar -Dfile=powerloom.jar

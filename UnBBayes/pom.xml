@@ -322,14 +322,6 @@
 		</dependency>
 		<!-- JAXME/JAXB -->
 		
-		<!-- DANBY -->
-		<dependency>
-			<groupId>guess</groupId>
-			<artifactId>danby</artifactId>
-			<version>1.0</version>
-		</dependency>
-		<!-- DANBY -->
-
 		<!-- XALAN -->
 		<dependency>
 			<!-- Xalan-Java is an XSLT processor for transforming XML documents into 
