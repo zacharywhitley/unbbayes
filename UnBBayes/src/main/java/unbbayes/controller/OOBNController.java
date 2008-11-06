@@ -6,6 +6,8 @@ package unbbayes.controller;
 import java.awt.BorderLayout;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JInternalFrame;
 
@@ -161,10 +163,14 @@ public class OOBNController {
 	 * Loads a new OOBN class from file
 	 * @param file
 	 */
-	public IOOBNClass loadOOBNClassFromFile(File file) {
+	public Set<IOOBNClass> loadOOBNClassesFromFile(File file) {
 		// TODO implement this
 		Debug.println(this.getClass(), "File loader not yet implemented");
-		return BasicOOBNClass.newInstance("Stub");
+		Set<IOOBNClass> ret = new HashSet<IOOBNClass>();
+		ret.add(BasicOOBNClass.newInstance("Stub"));
+		ret.add(BasicOOBNClass.newInstance("Stub1"));
+		ret.add(BasicOOBNClass.newInstance("Stub2"));
+		return ret;
 	}
 	
 	/**
@@ -177,6 +183,21 @@ public class OOBNController {
 			// if this is the first time we add a classs, change the active class to it.
 			this.changeActiveOOBNClass(OOBNClassWindow.newInstance(getOobn().getOOBNClassList().get(0)));					
 		}
+	}
+	
+	/**
+	 * Searches for classes and detects if there is a class with same name
+	 * @param className: a name to find
+	 * @return: true if there is a class with such name already. False otherwise.
+	 * @throws NullPointerException if className == null
+	 */
+	public boolean containsOOBNClassByName(String className) {
+		for (IOOBNClass oobnClass : this.getOobn().getOOBNClassList()) {
+			if (className.equals(oobnClass.getClassName())) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	

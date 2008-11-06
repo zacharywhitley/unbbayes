@@ -13,6 +13,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
+import java.util.Collection;
 import java.util.ResourceBundle;
 
 import javax.swing.AbstractListModel;
@@ -262,7 +263,7 @@ public class OOBNWindow extends JInternalFrame  {
 		           getController().changeActiveOOBNClass(classWindow);		             	
 	           } 	
 		       
-		       
+		       // if left click, change the name
                if(e.getModifiers() == MouseEvent.BUTTON3_MASK){
 
                    ListSelectionModel selmodel = getNetList().getSelectionModel();
@@ -278,6 +279,12 @@ public class OOBNWindow extends JInternalFrame  {
                 	   newName = text.trim();
                    } else {
                 	   return;
+                   }
+                   if (getController().containsOOBNClassByName(newName)) {
+					   Debug.println(this.getClass(), "The name already exists");
+					   JOptionPane.showMessageDialog(getController().getPanel(), resource.getString("DuplicatedClassName"), resource.getString("renameClass"), JOptionPane.ERROR_MESSAGE);
+						
+					   return;
                    }
                    if (!newName.isEmpty()) {
                 	    // renames the class
@@ -337,9 +344,12 @@ public class OOBNWindow extends JInternalFrame  {
 							    chooser.setVisible(false); 
 							    chooser.setEnabled(false);
 							    
-								IOOBNClass newClass = getController().loadOOBNClassFromFile(file);
+							    
 								try{
-									getController().addOOBNClass(newClass);
+									Collection<IOOBNClass> newClasses = getController().loadOOBNClassesFromFile(file);
+									for (IOOBNClass loadedClass : newClasses) {
+										getController().addOOBNClass(loadedClass);
+									}
 								} catch (IllegalArgumentException iae) {
 									JOptionPane.showMessageDialog(getController().getPanel(), resource.getString("DuplicatedClassName"), iae.getMessage(), JOptionPane.ERROR_MESSAGE);
 									Debug.println(this.getClass(), resource.getString("NoClassSelected"), iae);
