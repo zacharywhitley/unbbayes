@@ -34,6 +34,8 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -47,6 +49,7 @@ import javax.swing.JInternalFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
@@ -54,6 +57,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.xml.bind.JAXBException;
 
 import unbbayes.aprendizagem.ConstructionController;
 import unbbayes.aprendizagem.incrementalLearning.ILBridge;
@@ -62,8 +66,16 @@ import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.JavaHelperController;
 import unbbayes.controller.MainController;
+import unbbayes.controller.exception.InvalidFileNameException;
+import unbbayes.controller.exception.ObjectToBeSavedDontExistsException;
+import unbbayes.io.exception.LoadException;
 import unbbayes.io.mebn.UbfIO;
+<<<<<<< .mine
+import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.exception.InvalidParentException;
+=======
+import unbbayes.prs.exception.InvalidParentException;
+>>>>>>> .r1376
 import unbbayes.simulation.montecarlo.controller.MCMainController;
 
 /**
@@ -360,7 +372,34 @@ public class UnBBayesFrame extends JFrame {
 					    chooser.setVisible(false); 
 					    chooser.setEnabled(false);
 					    
-						controller.loadNet(file);
+						try {
+							controller.loadNet(file);
+						} catch (LoadException e) {
+							e.printStackTrace();
+							JOptionPane.showMessageDialog(UnBBayesFrame.this, 
+									e.getMessage(), 
+									resource.getString("loadNetException"), 
+									JOptionPane.ERROR_MESSAGE); 
+						} catch (IOException e) {
+							e.printStackTrace();
+							JOptionPane.showMessageDialog(UnBBayesFrame.this, 
+									e.getMessage(), 
+									resource.getString("loadNetException"), 
+									JOptionPane.ERROR_MESSAGE); 
+						} catch (IOMebnException e) {
+							e.printStackTrace();
+							JOptionPane.showMessageDialog(UnBBayesFrame.this, 
+									e.getMessage(), 
+									resource.getString("loadNetException"), 
+									JOptionPane.ERROR_MESSAGE); 
+						} catch (JAXBException e) {
+							e.printStackTrace();
+							JOptionPane.showMessageDialog(UnBBayesFrame.this, 
+									resource.getString("JAXBExceptionFound"), 
+									resource.getString("loadNetException"), 
+									JOptionPane.ERROR_MESSAGE);
+						} 
+						
 					}
 				}
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -397,7 +436,21 @@ public class UnBBayesFrame extends JFrame {
 							 * fileController.setCurrentDirectory(chooser.getCurrentDirectory()); }
 							 */
 						}
-						controller.saveNet(file);
+						try {
+							if(controller.saveNet(file)){
+								JOptionPane.showMessageDialog(UnBBayesFrame.this, 
+										resource.getString("saveSucess"), 
+										resource.getString("sucess"), 
+										JOptionPane.WARNING_MESSAGE); 
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+							JOptionPane.showMessageDialog(UnBBayesFrame.this, 
+									e.getMessage(), 
+									resource.getString("error"), 
+									JOptionPane.ERROR_MESSAGE); 
+							e.printStackTrace();
+						}
 					}
 				}
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -613,9 +666,37 @@ public class UnBBayesFrame extends JFrame {
 			this.file = file; 
 		}
 		
-		public void actionPerformed(ActionEvent e) {
+		public void actionPerformed(ActionEvent ae) {
 			setCursor(new Cursor(Cursor.WAIT_CURSOR));
-			controller.loadNet(file);
+			
+			try{
+			      controller.loadNet(file);
+			} catch (LoadException e) {
+				e.printStackTrace();
+				JOptionPane.showMessageDialog(UnBBayesFrame.this, 
+						e.getMessage(), 
+						resource.getString("loadNetException"), 
+						JOptionPane.ERROR_MESSAGE); 
+			} catch (IOException e) {
+				e.printStackTrace();
+				JOptionPane.showMessageDialog(UnBBayesFrame.this, 
+						e.getMessage(), 
+						resource.getString("loadNetException"), 
+						JOptionPane.ERROR_MESSAGE); 
+			} catch (IOMebnException e) {
+				e.printStackTrace();
+				JOptionPane.showMessageDialog(UnBBayesFrame.this, 
+						e.getMessage(), 
+						resource.getString("loadNetException"), 
+						JOptionPane.ERROR_MESSAGE); 
+			} catch (JAXBException e) {
+				e.printStackTrace();
+				JOptionPane.showMessageDialog(UnBBayesFrame.this, 
+						resource.getString("JAXBExceptionFound"), 
+						resource.getString("loadNetException"), 
+						JOptionPane.ERROR_MESSAGE);
+			}
+			
 			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		}
 		
@@ -954,7 +1035,12 @@ public class UnBBayesFrame extends JFrame {
 	     * from the window's system menu.
 	     */
 	    public void windowClosing(WindowEvent e){
-	    	controller.saveConfigurations(); 
+	    	try {
+				controller.saveConfigurations();
+			} catch (IOException e1) {
+				//invisible for the user. 
+				e1.printStackTrace();
+			} 
 	    }
 
 	    /**
