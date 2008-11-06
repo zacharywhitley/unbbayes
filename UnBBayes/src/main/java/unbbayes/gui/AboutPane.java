@@ -167,9 +167,9 @@ public class AboutPane extends JDialog{
 			
 			JToolBar jtb = new JToolBar();
 			jtb.setLayout(new FlowLayout(FlowLayout.TRAILING)); 
-			jtb.add(btnLicence); 
-			jtb.add(btnFeatures); 
-			jtb.add(btnHistoric); 
+//			jtb.add(btnLicence); 
+//			jtb.add(btnFeatures); 
+//			jtb.add(btnHistoric); 
 			jtb.add(btnClose); 
 			jtb.setFloatable(false); 
 			
