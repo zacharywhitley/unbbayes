@@ -22,6 +22,7 @@ package unbbayes.controller;
 
 import java.awt.Cursor;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
@@ -30,6 +31,8 @@ import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
 
+import unbbayes.controller.exception.InvalidFileNameException;
+import unbbayes.controller.exception.ObjectToBeSavedDontExistsException;
 import unbbayes.gui.Configurations;
 import unbbayes.gui.MSBNWindow;
 import unbbayes.gui.NetworkWindow;
@@ -40,9 +43,11 @@ import unbbayes.io.NetIO;
 import unbbayes.io.XMLIO;
 import unbbayes.io.configurations.ConfigurationsIO;
 import unbbayes.io.configurations.ConfigurationsIOInputStream;
+import unbbayes.io.exception.LoadException;
 import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.PrOwlIO;
 import unbbayes.io.mebn.UbfIO;
+import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -79,12 +84,23 @@ public class MainController {
 	 */
 	public MainController() {
 //		eagleLoader(); 
-		loadConfigurations(); 
+		
+		try {
+			loadConfigurations();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 
 		
 		screen = new UnBBayesFrame(this);
 	}
 	
-	public void loadConfigurations(){
+	/**
+	 * Load the configuration file and setting the configurations object in the 
+	 * ConfigurationsController. 
+	 * 
+	 * @throws IOException Exception try to read the configurations file
+	 */
+	public void loadConfigurations() throws IOException{
 		ConfigurationsController configController = ConfigurationsController.getInstance(); 
 		ConfigurationsIO configurationsIO = new ConfigurationsIOInputStream(); 
 		
@@ -92,21 +108,16 @@ public class MainController {
 			Configurations configurations = configurationsIO.load(new File(configController.getFileConfigurationsPath()));
 			configController.setConfigurations(configurations); 
 			configController.setFileOpenedSucessfull(true); 
-		} catch (IOException e) {
-			e.printStackTrace(); 
-			configController.setFileOpenedSucessfull(false); 
+		} catch (IOException e) { 
+			configController.setFileOpenedSucessfull(false);
+			throw e; 
 		}
 	}
 	
-	public void saveConfigurations(){
+	public void saveConfigurations() throws IOException{
 		ConfigurationsController configController = ConfigurationsController.getInstance(); 
 		ConfigurationsIO configurationsIO = new ConfigurationsIOInputStream(); 
-		
-		try {
-			configurationsIO.save(new File(configController.getFileConfigurationsPath()), configController.getConfigurations());
-		} catch (IOException e) {
-			e.printStackTrace(); 
-		}
+		configurationsIO.save(new File(configController.getFileConfigurationsPath()), configController.getConfigurations());
 	}
 
 	/**
@@ -195,30 +206,37 @@ public class MainController {
 	 *  on the file's extension, or saves the MSBN if the file given is a directory.
 	 *
 	 * @param file The file where to save the network.
+	 * @throws JAXBException 
+	 * @throws IOException 
+	 * @throws FileNotFoundException 
 	 */
-	public void saveNet(File file) {
+	public boolean saveNet(File file) throws ObjectToBeSavedDontExistsException, 
+	                    IOMebnException, InvalidFileNameException, FileNotFoundException, 
+	                    IOException, Exception{
+		
 		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		
 		MebnIO ubfIo = UbfIO.getInstance();
 		
-		try {
+		try{
 			BaseIO io = null;
 			PrOwlIO prOwlIo = null; 
 			JInternalFrame window = screen.getSelectedWindow();
 			
 			if(window == null){
-				JOptionPane.showMessageDialog(screen, resource.getString("windowDontExists") , resource.getString("error"), JOptionPane.ERROR_MESSAGE);
-				return; 
+				throw new ObjectToBeSavedDontExistsException(resource.getString("windowDontExists")); 
 			}
 			
 			if (file.isDirectory()) {
 				io = new NetIO();
 				if (!(window instanceof MSBNWindow)){
-					JOptionPane.showMessageDialog(screen, resource.getString("msbnDontExists") , resource.getString("error"), JOptionPane.ERROR_MESSAGE);
+					throw new ObjectToBeSavedDontExistsException(resource.getString("msbnDontExists"));
 				} else{
-					io.saveMSBN(file, ((MSBNWindow) window).getMSNet());		
+					io.saveMSBN(file, ((MSBNWindow) window).getMSNet());	
+					return true; 
 				}
 			} else {
+				
 				String name = file.getName().toLowerCase();							
 				if (name.endsWith("net")) {
 					io = new NetIO();		
@@ -228,52 +246,36 @@ public class MainController {
 				}
 				else if (name.endsWith(UbfIO.fileExtension)) {
 					ubfIo = UbfIO.getInstance();
-					/*
-					 } else if (name.endsWith("owl")){
-					 prOwlIo = new PrOwlIO();
-					 */
 				}
 				
 				if (io != null)
 					if (!(window instanceof NetworkWindow)){
-						JOptionPane.showMessageDialog(screen, resource.getString("bnDontExists") , resource.getString("error"), JOptionPane.ERROR_MESSAGE);
+						throw new ObjectToBeSavedDontExistsException(resource.getString("bnDontExists"));
 					}
 					else{
 						io.save(file, ((NetworkWindow) window).getSingleEntityNetwork());
+						return true; 
 					}
 				else { 
 					if (ubfIo != null) {
 						if (!(window instanceof NetworkWindow)){
-							JOptionPane.showMessageDialog(screen, resource.getString("mebnDontExists") , resource.getString("error"), JOptionPane.ERROR_MESSAGE);
+							throw new ObjectToBeSavedDontExistsException(resource.getString("mebnDontExists"));
 						}
 						else{
-							try {
-								if(((NetworkWindow) window).getMultiEntityBayesianNetwork() == null){
-									JOptionPane.showMessageDialog(screen, resource.getString("mebnDontExists") , resource.getString("error"), JOptionPane.ERROR_MESSAGE);
-								}
-								ubfIo.saveMebn(file, ((NetworkWindow) window).getMultiEntityBayesianNetwork()); 
-								JOptionPane.showMessageDialog(screen, resource.getString("saveSucess") , resource.getString("sucess"), JOptionPane.INFORMATION_MESSAGE);
-							} catch (Exception e) {
-								JOptionPane.showMessageDialog(screen, e.getMessage(), "saveNetException", JOptionPane.ERROR_MESSAGE);        	
-								e.printStackTrace(); 
+							if(((NetworkWindow) window).getMultiEntityBayesianNetwork() == null){
+								throw new ObjectToBeSavedDontExistsException(resource.getString("mebnDontExists"));
 							}
+							ubfIo.saveMebn(file, ((NetworkWindow) window).getMultiEntityBayesianNetwork()); 
+							return true; 
+
 						}
 					}
 					else{
-						JOptionPane.showMessageDialog(screen, resource.getString("withoutPosfixe") , resource.getString("error"), JOptionPane.ERROR_MESSAGE);							
+						throw new InvalidFileNameException(resource.getString("withoutPosfixe"));							
 					}
 				}
 			}
-		} catch (IOException e) {
-			JOptionPane.showMessageDialog(screen, e.getMessage(), "saveNetException", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
-		} catch (JAXBException je){
-			je.printStackTrace(); 
-		} /*catch (IOMebnException me){
-		JOptionPane.showMessageDialog(screen, me.getMessage(), "saveNetException", JOptionPane.ERROR_MESSAGE);        	
-		me.printStackTrace(); 
-		}*/
-		
+		}
 		finally {
 			screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		}
@@ -283,8 +285,12 @@ public class MainController {
 	/**
 	 *  Loads the probabilistic network from both .net and .xml format, depending
 	 *  on the file's extension, or loads the MSBN if the file given is a directory.
+	 * @throws JAXBException 
+	 * @throws IOException 
+	 * @throws LoadException 
+	 * @throws IOMebnException 
 	 */
-	public void loadNet(final File file) {
+	public void loadNet(final File file) throws LoadException, IOException, JAXBException, IOMebnException {
 		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));        
 		try {
 			JInternalFrame window = null;
@@ -366,13 +372,6 @@ public class MainController {
 				}
 			}
 			screen.addWindow(window);
-		}  catch (JAXBException je){
-			JOptionPane.showMessageDialog(screen, resource.getString("JAXBExceptionFound"), resource.getString("loadNetException"), JOptionPane.ERROR_MESSAGE);
-			je.printStackTrace();        	
-		}
-		catch (Exception e){
-			JOptionPane.showMessageDialog(screen, e.getMessage(), resource.getString("loadNetException"), JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
 		} finally {
 			screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		}

@@ -148,6 +148,11 @@ public class GuiResources extends ListResourceBundle {
 		{"argumentMissing","Missing arguments"},	
 		{"stateUnmarked","State is not marked"},	
 		
+		{"loadNetException","Error to load net file"},
+		{"JAXBExceptionFound", "Sintax error..."},
+		{"SaveNetException", "Error trying to save the net"},
+		{"saveSucess", "File saved"},
+		
 		{"helpToolTip","UnBBayes help"},
 		{"propagateToolTip","Propagate evidences"},
 		{"expandToolTip","Expand evidences tree"},

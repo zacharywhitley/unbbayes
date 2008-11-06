@@ -149,6 +149,11 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"argumentMissing","Faltando argumentos"},	
 		{"stateUnmarked","Estado não marcado"},	
 		
+		{"loadNetException","Erro ao Abrir a Rede"},
+		{"JAXBExceptionFound", "Erro de sintaxe..."},
+		{"SaveNetException", "Erro ao salvar a rede"},
+		{"saveSucess", "Arquivo salvo com sucesso!"},
+		
 		{"helpToolTip","Ajuda do UnBBayes"},
 		{"propagateToolTip","Propagar as evidências"},
 		{"expandToolTip","Expandir a árvore de evidências"},
