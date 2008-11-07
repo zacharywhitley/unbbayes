@@ -514,6 +514,15 @@ public class PNEditionPane extends JPanel {
         this.table = table;
         jspTable.setViewportView(table);
         this.centerPanel.setTopComponent(jspTable);
+        int location = table.getPreferredSize().height + centerPanel.getDividerSize() + 2;
+        if (table.getTableHeader() != null) {
+        	location += table.getTableHeader().getPreferredSize().height;
+        }
+        if (jspTable.getVisibleRect().width < table.getPreferredSize().width) {
+        	jspTable.createHorizontalScrollBar();
+        	location += jspTable.getHorizontalScrollBar().getHeight() + 2;
+        }
+        centerPanel.setDividerLocation(location);
     }
 
     public Node getTableOwner() {
