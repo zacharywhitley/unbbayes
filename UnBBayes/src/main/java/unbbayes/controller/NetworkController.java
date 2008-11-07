@@ -249,10 +249,10 @@ public class NetworkController implements KeyListener {
 	 * @param node The table owner.
 	 */
 	public void createTable(Node node) {
-		if (node.getType() == Node.PROBABILISTIC_NODE_TYPE) {
-			createDiscreteTable(node);
-		} else if (node.getType() == Node.CONTINUOUS_NODE_TYPE) {
+		if (node.getType() == Node.CONTINUOUS_NODE_TYPE) {
 			createContinuousDistribution((ContinuousNode)node);
+		} else {
+			createDiscreteTable(node);
 		}
 	}
     
