@@ -34,7 +34,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -66,16 +65,10 @@ import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.JavaHelperController;
 import unbbayes.controller.MainController;
-import unbbayes.controller.exception.InvalidFileNameException;
-import unbbayes.controller.exception.ObjectToBeSavedDontExistsException;
 import unbbayes.io.exception.LoadException;
 import unbbayes.io.mebn.UbfIO;
-<<<<<<< .mine
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.exception.InvalidParentException;
-=======
-import unbbayes.prs.exception.InvalidParentException;
->>>>>>> .r1376
 import unbbayes.simulation.montecarlo.controller.MCMainController;
 
 /**
