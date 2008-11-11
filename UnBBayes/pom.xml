@@ -231,16 +231,16 @@
 					</execution>
 				</executions>
 				<configuration>
-					<!-- BEGIN - this is a work around, because the plugin does not to work as documented -->
+					<!-- BEGIN - this is a work around, because the plugin does not work as documented -->
 					<target>
 						${project.build.directory}/target/jaxme/java
 					</target>
 					<resourceTarget>
 						${project.build.directory}/../target/jaxme/resources
 					</resourceTarget>
-					<!--  END  - this is a work around, because the plugin does not to work as documented -->
+					<!--  END  - this is a work around, because the plugin does not work as documented -->
 					<schemas>
-						<value>src/main/xsd/*.xsd</value>
+						<value>src/main/xsd/XMLBIF_0_4.xsd</value>
 					</schemas>
 					<packageName>unbbayes.io.xmlclasses</packageName>
 				</configuration>
