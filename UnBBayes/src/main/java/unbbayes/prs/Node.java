@@ -26,6 +26,7 @@ import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import unbbayes.draw.DrawElement;
@@ -34,6 +35,9 @@ import unbbayes.draw.IOnePositionDrawable;
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.exception.InvalidParentException;
+import unbbayes.prs.mebn.MFrag;
+import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.util.ArrayMap;
 import unbbayes.util.SerializablePoint2D;
 
@@ -41,7 +45,8 @@ import unbbayes.util.SerializablePoint2D;
  * A class representing a generic node.
  * @author Michael e Rommel
  */
-public abstract class Node implements Serializable, IOnePositionDrawable {
+public abstract class Node implements Serializable, IOnePositionDrawable, 
+                                      Comparable<Node>{
 
 	private String description;
 	protected String name;
@@ -499,6 +504,11 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 		return false; //obj == null && this != null 
 		
 	}
+
+	public int compareTo(Node arg0) {
+		return this.getName().compareTo(((Node)arg0).getName());	
+	}
+	
 
 	public void paint(Graphics2D graphics) {
 		drawElement.paint(graphics);

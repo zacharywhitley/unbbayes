@@ -49,8 +49,9 @@ public class ContextNodeAvaliator {
 	 * 
 	 * @param node
 	 * @param ovInstances
-	 * @return
-	 * @throws OVInstanceFaultException
+	 * @return the evaluation of context node
+	 * @throws OVInstanceFaultException One or more ordinary variable of the context 
+	 *                                  node don't have one associated OVInstance
 	 */
 	public boolean evaluateContextNode(ContextNode node, List<OVInstance> ovInstances) 
 	         throws OVInstanceFaultException{
@@ -60,10 +61,8 @@ public class ContextNodeAvaliator {
 		
 		List<OrdinaryVariable> ovFaultList = node.getOVFaultForOVInstanceSet(ovInstances); 
 
-		
+		Debug.setDebug(isDebug); 
 		if(!ovFaultList.isEmpty()){
-
-			Debug.setDebug(isDebug); 
 			throw new OVInstanceFaultException(ovFaultList); 
 		}else{
             boolean result = kb.evaluateContextNodeFormula(node, ovInstances);

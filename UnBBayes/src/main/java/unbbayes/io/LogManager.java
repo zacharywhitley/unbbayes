@@ -76,6 +76,12 @@ public class LogManager implements java.io.Serializable {
         log.append(text);
         Debug.print(text);
     }
+
+    public void appendIfTrue(boolean debug, String text) {
+    	if(debug){
+    		append(text);
+    	}
+    }
     
     public void appendln(String text) {
         log.append(text);
@@ -84,6 +90,12 @@ public class LogManager implements java.io.Serializable {
         Debug.println(text);
     }
 
+    public void appendlnIfTrue(boolean debug, String text) {
+    	if(debug){
+    		appendln(text); 
+    	}
+    }
+    
     public String getLog() {
         return log.toString();
     }

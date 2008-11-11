@@ -205,7 +205,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 	 * @param ovInstanceList
 	 * @return List of ordinary variables that does not have an OVInstance. 
 	 */
-	protected List<OrdinaryVariable> getOVInstancesForWhichNotExistOV(
+	protected List<OrdinaryVariable> getOVForWhichNotExistOVInstance(
 			       Collection<OrdinaryVariable> ordVariableList, 
 			       Collection<OVInstance> ovInstanceList){
     	
@@ -229,14 +229,12 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 	/**
 	 * Evaluate one context node with unknown ordinary variables 
 	 * 
-	 * Restrições: 
-	 * Apenas haverá retorno caso haja como resultado uma (e somente uma) entidade
-	 * para cada uma das variáveis ordinárias solicitadas. Caso contrário, o método
-	 * retornará null. 
-	 * 
 	 * @param mFrag        MFrag of context node
 	 * @param ovFaultList  List of Fault Ordinary Variables 
 	 * @param ovInstances  List of OVINstances (know ordinary variables)
+	 * 
+	 * @return: Only will have return if the result is one (and only one) entity for each
+	 *          ordinary variable. Otherside return null 
 	 * 
 	 * @throws ImplementationRestrictionException
 	 * @throws SSBNNodeGeneralException
@@ -246,6 +244,8 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 			List<OrdinaryVariable> ovFaultList, 
 			List<OVInstance> ovInstances) 
 	throws ImplementationRestrictionException, SSBNNodeGeneralException {
+		
+		boolean debug = false; 
 		
 		Map<OrdinaryVariable, List<OVInstance>> mapOVInstanceMap; 
 		mapOVInstanceMap = new HashMap<OrdinaryVariable, List<OVInstance>>(); 
@@ -262,7 +262,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 		
 		int i = 0; 
 		do{
-			System.out.println("Interacao " + i++);
+			logManager.appendlnIfTrue(debug, "Interaction " + i++);
 			
 			Collection<ContextNode> solvedNodes = new ArrayList<ContextNode>(); 
 			changed = false; 
@@ -1189,9 +1189,7 @@ OUT_LOOP:  for(ContextNode context: cnList){
 
 		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(getKnowledgeBase()); 
 
-
-		//TODO Refazer!!! Esta abordagem nao permite a abordagem da transitividade
-		//dos nos de contexto... 
+		//Note: don't observes the transitivity in context nodes.  
 
 		Collection<ContextNode> contextNodeList = residentNode.getMFrag().getContextByOVCombination(
 				residentNode.getOrdinaryVariableList());
@@ -1216,6 +1214,7 @@ OUT_LOOP:  for(ContextNode context: cnList){
 	 * Evaluate only the context nodes for what have ordinary variables instances
 	 * for all the ordinary variables present (ordinal context nodes). 
 	 */
+	//TODO this method is absolutely equal the other (ResidentNode residentNode)
 	protected boolean evaluateRelatedContextNodes (InputNode inputNode, 
 			List<OVInstance> ovInstances, MFragInstance mFragInstance) throws OVInstanceFaultException{
 
@@ -1227,9 +1226,7 @@ OUT_LOOP:  for(ContextNode context: cnList){
 
 		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(getKnowledgeBase()); 
 
-
-		//TODO Refazer!!! Esta abordagem nao permite a abordagem da transitividade
-		//dos nos de contexto... 
+		//Note: don't observes the transitivity in context nodes.  
 
 		Collection<ContextNode> contextNodeList = inputNode.getMFrag().getContextByOVCombination(
 				inputNode.getOrdinaryVariableList());

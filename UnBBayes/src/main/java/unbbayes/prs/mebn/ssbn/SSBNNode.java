@@ -49,8 +49,6 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
  */
 public class SSBNNode {
 	
-	private boolean isDefaultCPT = false;
-	
 	private static int count = 0; 
 	private int id; 
 	
@@ -85,7 +83,7 @@ public class SSBNNode {
 	
 	private Entity value = null; //setted when this node is a finding
 	
-	//private boolean isUsingDefaultCPT = false;	// checks if this node should use defaultCPT
+	private boolean isUsingDefaultCPT = false;	// checks if this node should use defaultCPT
 	
 	private String strongOVSeparator = ".";	// When creating names for sets of strong OVs, this string/char separates the compound names. Ex. When separator is ".", ovs = {st,z} -> name= "st.z"
 	
@@ -176,24 +174,21 @@ public class SSBNNode {
 	}
 	
 	/**
-	 * Normal: 
-	 * DangerToSelf_ST4_T0
+	 * This unique name is: 
+	 * 
+	 * name of the node resident + 
+	 * name of the instance of the argument 1 + 
+	 * _ + name of the instance of the argument 2 +
+	 * _ + name of the instance of the argument 3 +
+	 * ...
+	 * _ + name of the instance of the argument n
+	 * 
+	 * @param resident
+	 * @param list 
+	 * @return the unique name (see the rules)
 	 */
 	public String getUniqueName(){
-		StringBuilder uniqueName = new StringBuilder(); 
-		
-		uniqueName.append(this.residentNode.getName()); 
-		for(OrdinaryVariable ov: residentNode.getOrdinaryVariableList()){
-			OVInstance ovInstance = getArgumentByOrdinaryVariable(ov);
-			try{
-			uniqueName.append("_" + ovInstance.getEntity().getInstanceName());
-			}
-			catch(RuntimeException er){
-				uniqueName.append("_?"); 
-			}
-		}
-		
-		return uniqueName.toString(); 
+		return getUniqueNameFor(this.residentNode, this.getArguments()); 
 	}
 	
 	/**
@@ -216,7 +211,11 @@ public class SSBNNode {
 		uniqueName.append(resident.getName()); 
 		for(OrdinaryVariable ov: resident.getOrdinaryVariableList()){
 			OVInstance ovInstance = getArgumentByOrdinaryVariable(list, ov);
-			uniqueName.append("_" + ovInstance.getEntity().getInstanceName()); 
+			try{
+				uniqueName.append("_" + ovInstance.getEntity().getInstanceName());}
+			catch(RuntimeException er){
+				uniqueName.append("_?"); 
+			}
 		}
 		
 		return uniqueName.toString(); 

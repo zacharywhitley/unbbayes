@@ -68,13 +68,6 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 		super();  
 	}
 
-	/**
-	 * Avaliação dos nós de contexto
-	 * 
-	 * 1) Verificar se todas as variaveis ordinarias estao OK. Se tiver avaliar
-	 * 2) Caso não estejam, fazer busca. 
-	 * 3) Caso a busca não retorne nada, tentar o caso do XOR. 
-	 */
 
 	/**
 	 * The SSBN Node is generate in a process with tree partes:
@@ -321,7 +314,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 			 * is not true, verify if it has some context node able to recover 
 			 * the instances that match with the ordinary variable.  
 			 */
-			List<OrdinaryVariable> ovProblematicList = getOVInstancesForWhichNotExistOV(
+			List<OrdinaryVariable> ovProblematicList = getOVForWhichNotExistOVInstance(
 					childResidentNode.getOrdinaryVariableList(), ovInstancesList); 
 
 			if(!ovProblematicList.isEmpty()){
@@ -490,7 +483,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 				 * is not true, verify if it has some context node able to recover 
 				 * the instances that match with the ordinary variable.  
 				 */
-				List<OrdinaryVariable> ovProblematicList = getOVInstancesForWhichNotExistOV(
+				List<OrdinaryVariable> ovProblematicList = getOVForWhichNotExistOVInstance(
 						residentChild.getOrdinaryVariableList(), ovInstancesInput); 
 
 				if(!ovProblematicList.isEmpty()){
@@ -576,14 +569,10 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 	 * 
 	 * - If the node has a finding, create the SSBNNode, set it how finding and retorne it
 	 * 
-	 * - Tratamento especial para os nós de findings, pois para estes, precisamos
-	 * apenas da primeira geração de pais... (não precisamos rodar o algoritmo 
-	 * recursivamente nos pais). 
-	 * 
 	 * Pre-requisites: 
 	 * - The node current node has a OVInstance for all OrdinaryVariable argument
-	 * @throws InvalidParentException 
 	 * 
+	 * @throws InvalidParentException 
 	 */
 	private SSBNNode generateRecursiveUp(SSBNNode currentNode , SSBNNodeList seen, 
 			ProbabilisticNetwork net, MFragInstance mFragInstance, boolean generatedByDownProcessOfOriginNode) throws SSBNNodeGeneralException, 
@@ -614,7 +603,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 			 * is not true, verify if it has some context node able to recover 
 			 * the instances that match with the ordinary variable.  
 			 */
-			List<OrdinaryVariable> ovProblematicList = getOVInstancesForWhichNotExistOV(
+			List<OrdinaryVariable> ovProblematicList = getOVForWhichNotExistOVInstance(
 					residentNode.getOrdinaryVariableList(), currentNode.getArguments()); 
 
 			if(!ovProblematicList.isEmpty()){
@@ -740,7 +729,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 
 			//Step 1: evaluate context and search for findings
 			List<OrdinaryVariable> ovProblematicList = 
-				getOVInstancesForWhichNotExistOV(inputNode.getOrdinaryVariableList(), 
+				getOVForWhichNotExistOVInstance(inputNode.getOrdinaryVariableList(), 
 						currentNode.getArguments()); 
 
 			if(!ovProblematicList.isEmpty()){

@@ -25,12 +25,12 @@ public class OrganizerUtils {
 		List<ResidentNode> listResident = new ArrayList<ResidentNode>(); 
 		
 		for(MFrag mfrag: mebn.getMFragList()){
-			
 			for(ResidentNode node: mfrag.getResidentNodeList()){
 				listResident.add(node);
 			}
-			Collections.sort(listResident); 	
 		}
+
+		Collections.sort(listResident); 	
 		
 		return listResident; 
 	}
