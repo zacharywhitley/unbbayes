@@ -186,6 +186,10 @@ public class NetworkController implements KeyListener {
         this.senController = new SENController(singleEntityNetwork, screen);
     }
     
+    public SENController getSENController(){
+    	return this.senController; 
+    }
+    
     /**
      *  Get the single entity network.
      *

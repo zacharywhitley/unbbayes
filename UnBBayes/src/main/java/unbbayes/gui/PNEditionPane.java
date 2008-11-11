@@ -33,6 +33,7 @@ import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -41,6 +42,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 
 import unbbayes.controller.IconController;
@@ -87,12 +89,9 @@ public class PNEditionPane extends JPanel {
     private final JButton btnCompile;
     private final JButton btnAddState;
     private final JButton btnRemoveState;
-    private final JButton btnAddEdge;
-    private final JButton btnAddContinuousNode;
-    private final JButton btnAddProbabilisticNode;
-    private final JButton btnAddDecisionNode;
-    private final JButton btnAddUtilityNode;
-    private final JButton btnSelectObject;
+    
+    private final ToolBarEdition tbEdition; 
+    
     private final JButton btnPrintNet;
     private final JButton btnPrintTable;
     private final JButton btnPreviewNet;
@@ -137,13 +136,6 @@ public class PNEditionPane extends JPanel {
         btnCompile           = new JButton(iconController.getCompileIcon());
         btnAddState              = new JButton(iconController.getMoreIcon());
         btnRemoveState              = new JButton(iconController.getLessIcon());
-        btnAddEdge               = new JButton(iconController.getEdgeIcon());
-        // TODO CHANGE THE CONTINUOUS ICON!
-        btnAddContinuousNode = new JButton(iconController.getBlueNodeIcon());
-        btnAddProbabilisticNode = new JButton(iconController.getEllipsisIcon());
-        btnAddDecisionNode      = new JButton(iconController.getDecisionNodeIcon());
-        btnAddUtilityNode       = new JButton(iconController.getUtilityNodeIcon());
-        btnSelectObject            = new JButton(iconController.getSelectionIcon());
         btnPrintNet          = new JButton(iconController.getPrintNetIcon());
         btnPrintTable        = new JButton(iconController.getPrintTableIcon());
         btnPreviewNet        = new JButton(iconController.getPrintPreviewNetIcon());
@@ -158,12 +150,6 @@ public class PNEditionPane extends JPanel {
         btnCompile.setToolTipText(resource.getString("compileToolTip"));
         btnAddState.setToolTipText(resource.getString("moreToolTip"));
         btnRemoveState.setToolTipText(resource.getString("lessToolTip"));
-        btnAddEdge.setToolTipText(resource.getString("arcToolTip"));
-        btnAddContinuousNode.setToolTipText(resource.getString("continuousNodeInsertToolTip"));
-        btnAddProbabilisticNode.setToolTipText(resource.getString("probabilisticNodeInsertToolTip"));
-        btnAddDecisionNode.setToolTipText(resource.getString("decisionNodeInsertToolTip"));
-        btnAddUtilityNode.setToolTipText(resource.getString("utilityNodeInsertToolTip"));;
-        btnSelectObject.setToolTipText(resource.getString("selectToolTip"));
         btnPrintNet.setToolTipText(resource.getString("printNetToolTip"));
         btnPrintTable.setToolTipText(resource.getString("printTableToolTip"));
         btnPreviewNet.setToolTipText(resource.getString("previewNetToolTip"));
@@ -209,49 +195,7 @@ public class PNEditionPane extends JPanel {
             }
         });
 
-        //ao clicar no bot�o btnAddEdge setamos as vari�veis booleanas e os estados dos but�es
-        btnAddEdge.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-            	netWindow.getGraphPane().setAction(GraphAction.CREATE_EDGE);
-            }
-        });
-        
-        // Creates a continuous node
-        btnAddContinuousNode.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-            	netWindow.getGraphPane().setAction(GraphAction.CREATE_CONTINUOUS_NODE);
-            }
-        });
 
-        //ao clicar no bot�o node setamos as vari�veis booleanas e os estados dos but�es
-        btnAddProbabilisticNode.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-            	netWindow.getGraphPane().setAction(GraphAction.CREATE_PROBABILISTIC_NODE);
-            }
-        });
-
-
-        //ao clicar no bot�o btnAddDecisionNode setamos as vari�veis booleanas e os estados dos but�es
-        btnAddDecisionNode.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-            	netWindow.getGraphPane().setAction(GraphAction.CREATE_DECISION_NODE);
-            }
-        });
-
-        //ao clicar no bot�o btnAddUtilityNode setamos as vari�veis booleanas e os estados dos but�es
-        btnAddUtilityNode.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-            	netWindow.getGraphPane().setAction(GraphAction.CREATE_UTILITY_NODE);
-            }
-        });
-
-
-        //ao clicar no bot�o node setamos as vari�veis booleanas e os estados dos but�es
-        btnSelectObject.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-            	netWindow.getGraphPane().setAction(GraphAction.SELECT_MANY_OBJECTS);
-            }
-        });
         /*
         // listener respons�vel pela entrada de
         table.addKeyListener(new KeyAdapter() {
@@ -404,12 +348,11 @@ public class PNEditionPane extends JPanel {
 
         jtbEdition.addSeparator();
 
-        jtbEdition.add(btnAddContinuousNode);
-        jtbEdition.add(btnAddProbabilisticNode);
-        jtbEdition.add(btnAddDecisionNode);
-        jtbEdition.add(btnAddUtilityNode);
-        jtbEdition.add(btnAddEdge);
-        jtbEdition.add(btnSelectObject);
+        tbEdition = new ToolBarEdition(); 
+        jtbEdition.add(tbEdition); 
+        
+        jtbEdition.addSeparator(); 
+        
         jtbEdition.add(btnCompile);
         jtbEdition.add(btnEvaluate);
 
@@ -552,16 +495,8 @@ public class PNEditionPane extends JPanel {
       return this.centerPanel;
     }
 
-    public JButton getBtnAddEdge() {
-        return this.btnAddEdge;
-    }
-
     public JButton getBtnCompile() {
         return this.btnCompile;
-    }
-
-    public JButton getBtnAddDecisionNode() {
-        return this.btnAddDecisionNode;
     }
 
     public JLabel getDescription() {
@@ -595,14 +530,6 @@ public class PNEditionPane extends JPanel {
     public JButton getBtnPrintTable() {
         return this.btnPrintTable;
     }
-    
-    public JButton getBtnAddContinuousNode() {
-    	return this.btnAddContinuousNode;
-    }
-
-    public JButton getBtnAddProbabilisticNode() {
-        return this.btnAddProbabilisticNode;
-    }
 
     public JButton getBtnSaveNetImage() {
         return this.btnSaveNetImage;
@@ -612,20 +539,162 @@ public class PNEditionPane extends JPanel {
         return this.btnSaveTableImage;
     }
 
-    public JButton getBtnSelectObject() {
-        return this.btnSelectObject;
-    }
-
     public JLabel getSigla() {
         return this.sigla;
-    }
-
-    public JButton getBtnAddUtilityNode() {
-        return this.btnAddUtilityNode;
     }
 
     public JButton getBtnHierarchy() {
         return this.btnHierarchy;
     }
+    
+  	public class ToolBarEdition extends JToolBar{
+  	    
+  		private static final long serialVersionUID = 1L;
+		
+  		private final JToggleButton btnResetCursor; 
+		private final JToggleButton btnAddEdge;
+  	    private final JToggleButton btnAddContinuousNode;
+  	    private final JToggleButton btnAddProbabilisticNode;
+  	    private final JToggleButton btnAddDecisionNode;
+  	    private final JToggleButton btnAddUtilityNode;
+  	    private final JToggleButton btnDeleteSelectedItem; 
+  	    private final JToggleButton btnSelectObject;
+  	    
+  	    private final ButtonGroup groupEditionButtons; 
+  	    
+  		public ToolBarEdition(){
+  	        
+  			super(); 
+  			setFloatable(false); 
+  			
+  	        btnAddProbabilisticNode  = new JToggleButton(iconController.getEllipsisIcon());
+  	        btnAddDecisionNode       = new JToggleButton(iconController.getDecisionNodeIcon());
+  	        btnAddUtilityNode        = new JToggleButton(iconController.getUtilityNodeIcon());
+  	        // TODO CHANGE THE CONTINUOUS ICON!
+  	        btnAddContinuousNode     = new JToggleButton(iconController.getBlueNodeIcon());
+  	        btnAddEdge               = new JToggleButton(iconController.getEdgeIcon());
+  	        btnSelectObject          = new JToggleButton(iconController.getSelectionIcon());
+  	        btnResetCursor = new JToggleButton(iconController.getArrowIcon()); 
+  	        btnDeleteSelectedItem = new JToggleButton(iconController.getEditDelete());
+  			
+  			btnAddEdge.setToolTipText(resource.getString("arcToolTip"));
+  	        btnAddContinuousNode.setToolTipText(resource.getString("continuousNodeInsertToolTip"));
+  	        btnAddProbabilisticNode.setToolTipText(resource.getString("probabilisticNodeInsertToolTip"));
+  	        btnAddDecisionNode.setToolTipText(resource.getString("decisionNodeInsertToolTip"));
+  	        btnAddUtilityNode.setToolTipText(resource.getString("utilityNodeInsertToolTip"));;
+  	        btnSelectObject.setToolTipText(resource.getString("selectToolTip"));
+  	        btnResetCursor.setToolTipText(resource.getString("resetToolTip"));
+  	        btnDeleteSelectedItem.setToolTipText(resource.getString("deleteSelectedItemToolTip"));
+  	        
+  	        groupEditionButtons = new ButtonGroup(); 
+  	        groupEditionButtons.add(btnResetCursor);
+  	        groupEditionButtons.add(btnAddEdge);
+  	        groupEditionButtons.add(btnAddContinuousNode);
+  	        groupEditionButtons.add(btnAddProbabilisticNode);
+  	        groupEditionButtons.add(btnAddDecisionNode);
+  	        groupEditionButtons.add(btnAddUtilityNode);
+  	        groupEditionButtons.add(btnSelectObject);
+  	        groupEditionButtons.add(btnDeleteSelectedItem); 
+	         
+  	        add(btnResetCursor);
+  	        add(btnAddProbabilisticNode); 
+  	        add(btnAddDecisionNode); 
+  	        add(btnAddUtilityNode); 
+  	        add(btnAddContinuousNode); 
+  	        add(btnAddEdge); 
+  	        add(btnDeleteSelectedItem);
+  	        add(btnSelectObject); 
+  	        
+  	        btnResetCursor.addActionListener(new ActionListener(){
+  	  			public void actionPerformed(ActionEvent ae){
+  	  		    	netWindow.getGraphPane().setAction(GraphAction.NONE);
+  	  			}
+  	  		});
+  	        
+  	        //ao clicar no bot�o btnAddEdge setamos as vari�veis booleanas e os estados dos but�es
+  	        btnAddEdge.addActionListener(new ActionListener() {
+  	            public void actionPerformed(ActionEvent ae) {
+  	            	netWindow.getGraphPane().setAction(GraphAction.CREATE_EDGE);
+  	            }
+  	        });
+  	        
+  	        // Creates a continuous node
+  	        btnAddContinuousNode.addActionListener(new ActionListener() {
+  	            public void actionPerformed(ActionEvent ae) {
+  	            	netWindow.getGraphPane().setAction(GraphAction.CREATE_CONTINUOUS_NODE);
+  	            }
+  	        });
+
+  	        //ao clicar no bot�o node setamos as vari�veis booleanas e os estados dos but�es
+  	        btnAddProbabilisticNode.addActionListener(new ActionListener() {
+  	            public void actionPerformed(ActionEvent ae) {
+  	            	netWindow.getGraphPane().setAction(GraphAction.CREATE_PROBABILISTIC_NODE);
+  	            }
+  	        });
+
+
+  	        //ao clicar no bot�o btnAddDecisionNode setamos as vari�veis booleanas e os estados dos but�es
+  	        btnAddDecisionNode.addActionListener(new ActionListener() {
+  	            public void actionPerformed(ActionEvent ae) {
+  	            	netWindow.getGraphPane().setAction(GraphAction.CREATE_DECISION_NODE);
+  	            }
+  	        });
+
+  	        //ao clicar no bot�o btnAddUtilityNode setamos as vari�veis booleanas e os estados dos but�es
+  	        btnAddUtilityNode.addActionListener(new ActionListener() {
+  	            public void actionPerformed(ActionEvent ae) {
+  	            	netWindow.getGraphPane().setAction(GraphAction.CREATE_UTILITY_NODE);
+  	            }
+  	        });
+
+
+  	        //ao clicar no bot�o node setamos as vari�veis booleanas e os estados dos but�es
+  	        btnSelectObject.addActionListener(new ActionListener() {
+  	            public void actionPerformed(ActionEvent ae) {
+  	            	netWindow.getGraphPane().setAction(GraphAction.SELECT_MANY_OBJECTS);
+  	            }
+  	        });
+  	        
+
+  	  		btnDeleteSelectedItem.addActionListener(new ActionListener() {
+  	  			public void actionPerformed(ActionEvent ae) {
+  	  				controller.getSENController().deleteSelectedItem(); 
+  	  			}
+  	  		});
+  		}
+
+		public JToggleButton getBtnAddEdge() {
+			return btnAddEdge;
+		}
+
+		public JToggleButton getBtnAddContinuousNode() {
+			return btnAddContinuousNode;
+		}
+
+		public JToggleButton getBtnAddProbabilisticNode() {
+			return btnAddProbabilisticNode;
+		}
+
+		public JToggleButton getBtnAddDecisionNode() {
+			return btnAddDecisionNode;
+		}
+
+		public JToggleButton getBtnAddUtilityNode() {
+			return btnAddUtilityNode;
+		}
+
+		public JToggleButton getBtnSelectObject() {
+			return btnSelectObject;
+		}
+
+		public ButtonGroup getGroupEditionButtons() {
+			return groupEditionButtons;
+		}
+  	    
+  	}
+
+	public ToolBarEdition getTbEdition() {
+		return tbEdition;
+	}
 
 }

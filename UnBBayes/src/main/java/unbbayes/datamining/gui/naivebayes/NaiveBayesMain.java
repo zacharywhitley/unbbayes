@@ -297,11 +297,11 @@ public class NaiveBayesMain extends JInternalFrame
 							// deixa invis�veis alguns bot�es do unbbayes
 							edition.getBtnAddState().setVisible(false);
 							edition.getBtnRemoveState().setVisible(false);
-							edition.getBtnAddEdge().setVisible(false);
-							edition.getBtnAddDecisionNode().setVisible(false);
-							edition.getBtnAddProbabilisticNode().setVisible(false);
-							edition.getBtnAddUtilityNode().setVisible(false);
-							edition.getBtnSelectObject().setVisible(false);
+							edition.getTbEdition().getBtnAddEdge().setVisible(false);
+							edition.getTbEdition().getBtnAddDecisionNode().setVisible(false);
+							edition.getTbEdition().getBtnAddProbabilisticNode().setVisible(false);
+							edition.getTbEdition().getBtnAddUtilityNode().setVisible(false);
+							edition.getTbEdition().getBtnSelectObject().setVisible(false);
 							edition.getBtnHierarchy().setVisible(false);
 
 							// mostra a nova tela

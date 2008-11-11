@@ -314,6 +314,19 @@ public class SENController {
 	}
 	
 	/**
+	 * Delete the selected item of the graph (a node or a edge)
+	 */
+	public void deleteSelectedItem(){
+		
+		Object selected = screen.getGraphPane().getSelected(); 
+		if(selected != null){
+			deleteSelected(selected); 
+		}
+		
+		screen.getGraphPane().update(); 
+	}
+	
+	/**
 	 * Creates and shows the panel where the user can edit the 
 	 * continuous node normal distribution.
 	 * @param node The continuous node to create the distribution pane for.
@@ -764,11 +777,14 @@ public class SENController {
 	}
 
 	public void deleteSelected(Object selecionado) {
+		
 		if (selecionado instanceof Edge) {
 			singleEntityNetwork.removeEdge((Edge) selecionado);
 		} else if (selecionado instanceof Node) {
 			singleEntityNetwork.removeNode((Node) selecionado);
 		}
+		
+		
 	}
 
 	public void showExplanationProperties(ProbabilisticNode node) {
