@@ -40,6 +40,7 @@ import unbbayes.gui.ExplanationProperties;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.continuous.ContinuousNormalDistributionPane;
 import unbbayes.gui.table.GUIPotentialTable;
+import unbbayes.gui.table.ReplaceTextCellEditor;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.CNNormalDistribution;
@@ -63,11 +64,6 @@ public class SENController {
 
 	private NumberFormat df;
 
-	private final Pattern decimalPattern = Pattern
-			.compile("[0-9]*([.|,][0-9]+)?");
-
-	private Matcher matcher;
-	
 	LikelihoodWeightingInference lwInference;
 	
     // TODO CHANGE THIS!! NEW MODELING!!
@@ -486,7 +482,6 @@ public class SENController {
 
 		final JTable table;
 		final PotentialTable potTab;
-		final int nVariables;
 
 		/* Check if the node represents a numeric attribute */
 		if (node.getStatesSize() == 0) {
@@ -517,9 +512,6 @@ public class SENController {
 		if (node instanceof ITabledVariable) {
 			potTab = ((ITabledVariable) node).getPotentialTable();
 
-			// Number of variables
-			nVariables = potTab.variableCount();
-			
 			table = new GUIPotentialTable(potTab).makeTable();
 
 		} else {
@@ -533,7 +525,6 @@ public class SENController {
 			// there is no potential table and the number of variables is the
 			// number of parents this node has.
 			potTab = null;
-			nVariables = node.getParents().size();
 
 			table = new JTable(node.getStatesSize(), 1);
 			// put the name of each state in the first and only column.
@@ -548,38 +539,50 @@ public class SENController {
 		// TODO MIGRATE TO A DIFFERENT CLASS - GUI.TABLE.PROBABILISTICTABLEMODEL
 		table.getModel().addTableModelListener(new TableModelListener() {
 			public void tableChanged(TableModelEvent e) {
+				// Change state name or reset to its previous value.
 				if (e.getColumn() == 0) {
-					if (!table.getValueAt(e.getLastRow(), e.getColumn())
-							.equals("")) {
+					if (!table.getValueAt(e.getLastRow(), e.getColumn()).toString().trim().equals("")) {
 						node.setStateAt(table.getValueAt(e.getLastRow(),
 								e.getColumn()).toString(), e.getLastRow()
 								- (table.getRowCount() - node.getStatesSize()));
+					} else {
+						table.revalidate();
+						table.setValueAt(node.getStateAt(e.getLastRow()
+								- (table.getRowCount() - node.getStatesSize())), e.getLastRow(),
+								e.getColumn());
 					}
-				} else {
+				// Change the CPT cell or reset to its previous value.
+				} else if (potTab != null) {
+					String valueText = table.getValueAt(e.getLastRow(),
+							e.getColumn()).toString().replace(',', '.');
 					try {
-						String temp = table.getValueAt(e.getLastRow(),
-								e.getColumn()).toString().replace(',', '.');
-						matcher = decimalPattern.matcher(temp);
-						if (!matcher.matches()) {
-							JOptionPane.showMessageDialog(null, /* resource.getString("decimalError") */
-									"Decimal Error", /* resource.getString("decimalException") */
-									"Decimal Exception",
+						float value = Float.parseFloat(valueText);
+						potTab.setValue((e.getColumn() - 1) * node.getStatesSize() + e.getLastRow(), value);
+					} catch (NumberFormatException nfe) {
+						// Just shows the error message if the value is not empty.
+						if (!valueText.trim().equals("")) {
+							JOptionPane.showMessageDialog(null, 
+									resource.getString("numberFormatError"), 
+									resource.getString("error"),
 									JOptionPane.ERROR_MESSAGE);
-							table.revalidate();
-							table.setValueAt(""
-									+ potTab.getValue((e.getColumn() - 1) * node.getStatesSize() + e.getLastRow()),
-									e.getLastRow(), e.getColumn());
-							return;
 						}
-						float valor = Float.parseFloat(temp);
-						potTab.setValue((e.getColumn() - 1) * node.getStatesSize() + e.getLastRow(), valor);
-					} catch (Exception pe) {
-						System.err.println(resource
-								.getString("potentialTableException"));
+						table.revalidate();
+						table.setValueAt(""
+								+ potTab.getValue((e.getColumn() - 1) * node.getStatesSize() + e.getLastRow()),
+								e.getLastRow(), e.getColumn());
 					}
 				}
 			}
 		});
+		
+		// Change the text cell editor to replace text instead of appending it for all columns.
+		ReplaceTextCellEditor cellEditor = new ReplaceTextCellEditor();
+		for (int i = 0; i < table.getColumnModel().getColumnCount(); i++) {
+			table.getColumnModel().getColumn(i).setCellEditor(cellEditor);
+		}
+			
+		// Shows the caret while editing cell.
+		table.setSurrendersFocusOnKeystroke(true);
 
 		return table;
 	}
@@ -744,30 +747,20 @@ public class SENController {
 								- (table.getRowCount() - node.getStatesSize()));
 					}
 				} else {
+					String temp = table.getValueAt(e.getLastRow(),
+							e.getColumn()).toString().replace(',', '.');
 					try {
-						String temp = table.getValueAt(e.getLastRow(),
-								e.getColumn()).toString().replace(',', '.');
-						matcher = decimalPattern.matcher(temp);
-						if (!matcher.matches()) {
-							JOptionPane.showMessageDialog(null, /* resource.getString("decimalError") */
-									"Decimal Error", /* resource.getString("decimalException") */
-									"Decimal Exception",
-									JOptionPane.ERROR_MESSAGE);
-							table.revalidate();
-							table.setValueAt(""
-									+ potTab.getValue((e.getColumn() - 1)
-											* node.getStatesSize()
-											+ e.getLastRow() - variables + 1),
-									e.getLastRow(), e.getColumn());
-							return;
-						}
 						float valor = Float.parseFloat(temp);
-						potTab.setValue((e.getColumn() - 1)
-								* node.getStatesSize() + e.getLastRow()
-								- variables + 1, valor);
-					} catch (Exception pe) {
-						System.err.println(resource
-								.getString("potentialTableException"));
+						potTab.setValue((e.getColumn() - 1) * node.getStatesSize() + e.getLastRow(), valor);
+					} catch (NumberFormatException nfe) {
+						JOptionPane.showMessageDialog(null, 
+								resource.getString("error"), 
+								resource.getString("realNumberError"),
+								JOptionPane.ERROR_MESSAGE);
+						table.revalidate();
+						table.setValueAt(""
+								+ potTab.getValue((e.getColumn() - 1) * node.getStatesSize() + e.getLastRow()),
+								e.getLastRow(), e.getColumn());
 					}
 				}
 			}

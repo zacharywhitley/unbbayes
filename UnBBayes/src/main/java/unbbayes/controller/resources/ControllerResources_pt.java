@@ -92,7 +92,6 @@ public class ControllerResources_pt extends ListResourceBundle {
 		{"domainMFragName","DMFrag"},	
 		{"findingMFragName","FMFrag"},				
 		
-		{"potentialTableException","Não é um número!"},
 		{"copiedNodeName","Cópia do "},
 		{"askTitle","Digite um rótulo para a rede"},
 		{"informationText","Informação"},
@@ -108,6 +107,8 @@ public class ControllerResources_pt extends ListResourceBundle {
 		{"loading","Carregando "},
 		{"cancel","Cancelar"},
 		{"of"," de "},
+		{"numberFormatError","O valor deve ser um número real."},
+		
 		
 		/* Exceptions MEBN */
 		{"withoutMFrag", "No existe nenhuma MFrag"}, 
