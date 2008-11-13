@@ -571,7 +571,7 @@ public class PNEditionPane extends JPanel {
   	        btnAddDecisionNode       = new JToggleButton(iconController.getDecisionNodeIcon());
   	        btnAddUtilityNode        = new JToggleButton(iconController.getUtilityNodeIcon());
   	        // TODO CHANGE THE CONTINUOUS ICON!
-  	        btnAddContinuousNode     = new JToggleButton(iconController.getBlueNodeIcon());
+  	        btnAddContinuousNode     = new JToggleButton(iconController.getGreenNodeIcon());
   	        btnAddEdge               = new JToggleButton(iconController.getEdgeIcon());
   	        btnSelectObject          = new JToggleButton(iconController.getSelectionIcon());
   	        btnResetCursor = new JToggleButton(iconController.getArrowIcon()); 

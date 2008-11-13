@@ -36,7 +36,7 @@ public class ContinuousNode extends TreeVariable implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
-	private static Color color = Color.BLUE;
+	private static Color color = Color.GREEN;
     private DrawEllipse drawEllipse;
 	
 	private CNNormalDistribution cnNormalDistribution;
