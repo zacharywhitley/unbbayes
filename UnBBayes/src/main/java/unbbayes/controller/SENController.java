@@ -106,6 +106,13 @@ public class SENController {
 		if (no instanceof ProbabilisticNode) {
 			no.appendState(resource.getString("stateProbabilisticName")
 					+ no.getStatesSize());
+			// TODO The node class should have a listener to its change.
+			// The code below is just temporary (implement NodeChangeListener)
+			for (Node child : no.getChildren()) {
+				if (child.getType() == Node.CONTINUOUS_NODE_TYPE) {
+					((ContinuousNode)child).getCnNormalDistribution().refreshParents();
+				}
+			}
 		} else if (no instanceof DecisionNode) {
 			no.appendState(resource.getString("stateDecisionName")
 					+ no.getStatesSize());
