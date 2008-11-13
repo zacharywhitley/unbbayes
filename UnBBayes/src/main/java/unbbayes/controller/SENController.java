@@ -97,47 +97,47 @@ public class SENController {
 
 	/**
 	 * Inserts a new state for a selected node
-	 * @param no
+	 * @param node
 	 *            The selected <code>Object <code>.
 	 * @since
 	 * @see		Object
 	 */
-	public void insertState(Node no) {
-		if (no instanceof ProbabilisticNode) {
-			no.appendState(resource.getString("stateProbabilisticName")
-					+ no.getStatesSize());
+	public void insertState(Node node) {
+		if (node instanceof ProbabilisticNode) {
+			node.appendState(resource.getString("stateProbabilisticName")
+					+ node.getStatesSize());
 			// TODO The node class should have a listener to its change.
 			// The code below is just temporary (implement NodeChangeListener)
-			for (Node child : no.getChildren()) {
+			for (Node child : node.getChildren()) {
 				if (child.getType() == Node.CONTINUOUS_NODE_TYPE) {
 					((ContinuousNode)child).getCnNormalDistribution().refreshParents();
 				}
 			}
-		} else if (no instanceof DecisionNode) {
-			no.appendState(resource.getString("stateDecisionName")
-					+ no.getStatesSize());
+		} else if (node instanceof DecisionNode) {
+			node.appendState(resource.getString("stateDecisionName")
+					+ node.getStatesSize());
 		}
-		screen.setTable(makeTable(no));
+		screen.setTable(makeTable(node));
 	}
 
 	/**
 	 * Deletes the last state of a selected node
 	 * 
-	 * @param no
+	 * @param node
 	 *            selected <code>Object <code>.
 	 * @since
 	 * @see		Object
 	 */
-	public void removeState(Node no) {
-		no.removeLastState();
+	public void removeState(Node node) {
+		node.removeLastState();
 		// TODO The node class should have a listener to its change.
 		// The code below is just temporary (implement NodeChangeListener)
-		for (Node child : no.getChildren()) {
+		for (Node child : node.getChildren()) {
 			if (child.getType() == Node.CONTINUOUS_NODE_TYPE) {
 				((ContinuousNode)child).getCnNormalDistribution().refreshParents();
 			}
 		}
-		screen.setTable(makeTable(no));
+		screen.setTable(makeTable(node));
 	}
 	
 	/**
