@@ -62,41 +62,41 @@ public class NetworkWindow extends JInternalFrame {
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
 
-	private JViewport graphViewport;
+	private JViewport graphViewport = null;
 
-	private final GraphPane graphPane;
+	private  GraphPane graphPane = null;
 
-	private final NetworkController controller;
+	private  NetworkController controller = null;
 
-	private final Network net; 
+	private  Network net = null; 
 	
-	private String fileName; 
+	private String fileName = null; 
 	
-	private JScrollPane jspGraph;
+	private JScrollPane jspGraph = null;
 
-	private JLabel status;
+	private JLabel status = null;
 
-	private boolean bCompiled;
+	private boolean bCompiled = false;
 
 	private CardLayout card;
 
-	private PNEditionPane pnEditionPane;
+	private PNEditionPane pnEditionPane = null;
 
-	private PNCompilationPane pnCompilationPane;
+	private PNCompilationPane pnCompilationPane = null;
 
-	private SSBNCompilationPane ssbnCompilationPane;
+	private SSBNCompilationPane ssbnCompilationPane = null;
 
-	private HierarchicDefinitionPane hierarchyPanel;
+	private HierarchicDefinitionPane hierarchyPanel = null;
 
-	private EditNet editNet;
+	private EditNet editNet = null;
 
-	private MEBNEditionPane mebnEditionPane;
+	private MEBNEditionPane mebnEditionPane = null;
 
 	private static Integer PN_MODE = 0;
 
 	private static Integer MEBN_MODE = 1;
 
-	private final Integer mode;
+	private Integer mode = null;
 
 	private final String PN_PANE_PN_EDITION_PANE = "pnEditionPane";
 
@@ -116,6 +116,16 @@ public class NetworkWindow extends JInternalFrame {
 	private static ResourceBundle resource = ResourceBundle
 			.getBundle("unbbayes.gui.resources.GuiResources");
 
+	
+	/**
+	 * Default constructor useful for extended classes
+	 */
+	protected NetworkWindow() {
+		super("", true, true, true, true);
+		
+		
+	}
+	
 	public NetworkWindow(Network net) {
 		super(net.getName(), true, true, true, true);
 		

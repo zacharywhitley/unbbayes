@@ -33,6 +33,7 @@ import javax.xml.bind.JAXBException;
 
 import unbbayes.controller.exception.InvalidFileNameException;
 import unbbayes.controller.exception.ObjectToBeSavedDontExistsException;
+import unbbayes.controller.oobn.OOBNController;
 import unbbayes.gui.Configurations;
 import unbbayes.gui.MSBNWindow;
 import unbbayes.gui.NetworkWindow;
@@ -199,6 +200,7 @@ public class MainController {
 	public void newOOBN() {
 		IObjectOrientedBayesianNetwork oobn = ObjectOrientedBayesianNetwork.newInstance(resource.getString("NewOOBNName"));
 		OOBNController controller = OOBNController.newInstance(oobn, screen);
+		screen.addWindow(controller.getPanel());
 	}
 	
 	/**

@@ -697,4 +697,14 @@ public class PNEditionPane extends JPanel {
 		return tbEdition;
 	}
 
+	/**
+	 * @return the btnEvaluate
+	 */
+	public JButton getBtnEvaluate() {
+		return btnEvaluate;
+	}
+	
+	
+	
+
 }

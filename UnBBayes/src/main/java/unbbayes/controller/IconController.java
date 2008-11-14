@@ -300,6 +300,8 @@ public class IconController implements Serializable {
 	protected ImageIcon warningIcon; 
 	
 	protected ImageIcon deleteClassIcon; 
+	
+	protected ImageIcon newClassIcon; 
 
 	protected ImageIcon newClassFromFileIcon; 
 	
@@ -1540,7 +1542,7 @@ public class IconController implements Serializable {
 			return deleteClassIcon;
 		} else {
 			deleteClassIcon = new ImageIcon(getClass().getResource(
-					"/icons/document-delete.png"));
+					"/icons/class-delete.png"));
 			return deleteClassIcon;
 		}
 	}	
@@ -1549,8 +1551,17 @@ public class IconController implements Serializable {
 		if (newClassFromFileIcon != null) {
 			return newClassFromFileIcon;
 		} else {
-			newClassFromFileIcon = new ImageIcon(getClass().getResource("/icons/document-new-file.png"));
+			newClassFromFileIcon = new ImageIcon(getClass().getResource("/icons/class-new-file.png"));
 			return newClassFromFileIcon;
+		}
+	}
+	
+	public ImageIcon getNewClassIcon() {
+		if (newClassIcon != null) {
+			return newClassIcon;
+		} else {
+			newClassIcon = new ImageIcon(getClass().getResource("/icons/class-new.png"));
+			return newClassIcon;
 		}
 	}
 }

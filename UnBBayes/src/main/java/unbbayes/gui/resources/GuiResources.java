@@ -509,17 +509,6 @@ public class GuiResources extends ListResourceBundle {
 		{"normalFunctionLabel" , "N(mean,variance)"},
 		{"continuousNormalDistributionParamError" , "The values must be real numbers."},
 		
-		// OOBN specific resources
-		{"editionToolTip","Go to edition mode"},
-		{"removeToolTip","Delete selected class from project"},
-		{"newToolTip","Add new class to project"},
-		{"newFromFileToolTip","Add new class from file"},
-		{"status","Status:"},
-		{"newOOBNClass","NewOOBNClass"},
-		{"renameClass", "Renaming the oobn class"},
-		{"oobnFileFilter","Net (.net), Net for OOBN (.oobn)"},
-		{"NoClassSelected","No OOBN class was selected"},
-		{"compilationError" , "Compilation Error"},
-		{"DuplicatedClassName","Class name is duplicated"}
+		
 	};
 }

@@ -21,14 +21,14 @@ public class ObjectOrientedBayesianNetwork extends SingleEntityNetwork implement
 
 	private NonDuplicatedArrayList<IOOBNClass> classesList = null; 
 
-	private ObjectOrientedBayesianNetwork() {
+	protected ObjectOrientedBayesianNetwork() {
 		super("OOBN");
 	}
 
 	/**
 	 * @param name
 	 */
-	private ObjectOrientedBayesianNetwork(String name) {
+	protected ObjectOrientedBayesianNetwork(String name) {
 		super(name);
 		this.setOOBNClassList(new NonDuplicatedArrayList<IOOBNClass>());
 	}
@@ -78,6 +78,23 @@ public class ObjectOrientedBayesianNetwork extends SingleEntityNetwork implement
 	}
 	
 	
+	
+	
+	
+	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.oobn.IObjectOrientedBayesianNetwork#getSingleEntityNetwork()
+	 */
+	public SingleEntityNetwork getSingleEntityNetwork() {
+		// TODO Auto-generated method stub
+		return this;
+	}
+
+
+
+
+
+
 	private class NonDuplicatedArrayList<T> extends ArrayList<T>{
 		static final long serialVersionUID = 0xA0L;
 		
@@ -153,4 +170,6 @@ public class ObjectOrientedBayesianNetwork extends SingleEntityNetwork implement
 		
 	}
 
+	
+	
 }

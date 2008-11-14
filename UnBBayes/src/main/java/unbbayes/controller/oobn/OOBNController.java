@@ -1,7 +1,7 @@
 /**
  * 
  */
-package unbbayes.controller;
+package unbbayes.controller.oobn;
 
 import java.awt.BorderLayout;
 import java.io.File;
@@ -11,32 +11,52 @@ import java.util.Set;
 
 import javax.swing.JInternalFrame;
 
+import unbbayes.controller.NetworkController;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.UnBBayesFrame;
 import unbbayes.gui.oobn.OOBNClassWindow;
 import unbbayes.gui.oobn.OOBNWindow;
+import unbbayes.gui.oobn.node.OOBNNodeGraphicalWrapper;
+import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
+import unbbayes.prs.msbn.AbstractMSBN;
+import unbbayes.prs.msbn.SingleAgentMSBN;
+import unbbayes.prs.msbn.SubNetwork;
 import unbbayes.prs.oobn.IOOBNClass;
+import unbbayes.prs.oobn.IOOBNNode;
 import unbbayes.prs.oobn.IObjectOrientedBayesianNetwork;
+import unbbayes.prs.oobn.compiler.IOOBNCompiler;
+import unbbayes.prs.oobn.compiler.impl.OOBNToSingleAgentMSBNCompiler;
 import unbbayes.prs.oobn.impl.BasicOOBNClass;
+import unbbayes.prs.oobn.impl.OOBNClassSingleEntityNetworkWrapper;
 import unbbayes.util.Debug;
 
 /**
  * @author Shou Matsumoto
  *
  */
-public class OOBNController {
+public class OOBNController extends NetworkController {
 
 	// the index of the very firs network/class in a project
 	private static int FIRST_NETWORK_INDEX = 0;
 	
-	private OOBNController() {
+//	private OOBNClassController classController = null;
+	
+	protected OOBNController() {
 		// TODO Auto-generated constructor stub
+		super((SingleEntityNetwork)null, null);
+//		try{
+//			this.classController = OOBNClassController.newInstance(null,null);
+//		} catch (Exception e) {
+//			// TODO: handle exception
+//		}
 	}
 	
 	private IObjectOrientedBayesianNetwork oobn;
 	private OOBNWindow window;
-	private NetworkWindow active;
+	private OOBNClassWindow active;
+	
+	private IOOBNClass selectedClass = null;
 	
 	private UnBBayesFrame upperUnBBayesFrame = null;
 	
@@ -45,13 +65,15 @@ public class OOBNController {
 	 * The MSBNWindows is created.
 	 * @param oobn The oobn to display.
 	 */
-	private OOBNController(IObjectOrientedBayesianNetwork oobn, UnBBayesFrame upperUnBBayesFrame) {
+	protected OOBNController(IObjectOrientedBayesianNetwork oobn, UnBBayesFrame upperUnBBayesFrame) {
+		super(oobn.getSingleEntityNetwork(),null);
 		this.oobn = oobn;
 		this.setUpperUnBBayesFrame(upperUnBBayesFrame);
-		this.window = new OOBNWindow(oobn, this);
+		this.window = OOBNWindow.newInstance(oobn, this);
 		this.init();	
-
-		upperUnBBayesFrame.addWindow(this.getPanel());
+//		upperUnBBayesFrame.addWindow(this.getPanel());
+		
+//		this.classController = OOBNClassController.newInstance(oobn.getSingleEntityNetwork(), this.getScreen());
 	}
 	
 	/**
@@ -104,8 +126,8 @@ public class OOBNController {
 		if (newWindow == null) {
 			return;			
 		}
-		active.getNetWindowEdition().getBtnCompile().setVisible(false);
-		active.getNetWindowCompilation().getEditMode().setVisible(false);
+//		active.getNetWindowEdition().getBtnCompile().setVisible(false);
+//		active.getNetWindowCompilation().getEditMode().setVisible(false);
 		window.getContentPane().add(active.getContentPane(), BorderLayout.CENTER);
 		window.updateUI();
 	}
@@ -150,12 +172,18 @@ public class OOBNController {
 	
 	
 	/**
-	 * Compilers the currently active OOBN class
+	 * Compiles the currently active OOBN class
 	 * @see OOBNController#getActive()
 	 */
-	public void compileActiveOOBNClass() {
-		// TODO implement this
-		Debug.println(this.getClass(), "Compiler not yet implemented");
+	public AbstractMSBN compileActiveOOBNClassToMSBN() {
+		try {
+			IOOBNCompiler compiler = OOBNToSingleAgentMSBNCompiler.newInstance();
+			AbstractMSBN msbn = (AbstractMSBN)compiler.compile(this.getOobn(),OOBNClassSingleEntityNetworkWrapper.newInstance((SingleEntityNetwork)this.getActive().getNetworkController().getNetwork()));
+			return msbn;
+		} catch (Exception e) {
+			Debug.println(this.getClass(), "Not Yet implemented thus", e);
+		}
+		return new SingleAgentMSBN("Stubberaklsdjf");
 	}
 	
 	
@@ -200,6 +228,25 @@ public class OOBNController {
 		return false;
 	}
 	
+	/**
+	 * Searches for a OOBNNode by giving class name and node name
+	 * @param className
+	 * @param nodeName
+	 * @return
+	 */
+	public OOBNNodeGraphicalWrapper getOOBNNodeFromNames(String className, String nodeName) {
+		for (IOOBNClass oobnClass : this.getOobn().getOOBNClassList()) {
+			if (nodeName.equals(oobnClass.getClassName())) {
+				for (IOOBNNode node : oobnClass.getAllNodes()) {
+					if (nodeName.equals(node.getName())) {
+						return OOBNNodeGraphicalWrapper.newInstance(node);
+					}
+				}
+			}
+		}
+		return null;
+	}
+	
 	
 	// getters and setters
 	
@@ -235,14 +282,14 @@ public class OOBNController {
 	/**
 	 * @return the active
 	 */
-	public NetworkWindow getActive() {
+	public OOBNClassWindow getActive() {
 		return active;
 	}
 
 	/**
 	 * @param active the active to set
 	 */
-	public void setActive(NetworkWindow active) {
+	public void setActive(OOBNClassWindow active) {
 		this.active = active;
 	}
 
@@ -258,6 +305,34 @@ public class OOBNController {
 	 */
 	public void setUpperUnBBayesFrame(UnBBayesFrame upperUnBBayesFrame) {
 		this.upperUnBBayesFrame = upperUnBBayesFrame;
+	}
+
+//	/**
+//	 * @return the classController
+//	 */
+//	public OOBNClassController getClassController() {
+//		return classController;
+//	}
+//
+//	/**
+//	 * @param classController the classController to set
+//	 */
+//	public void setClassController(OOBNClassController classController) {
+//		this.classController = classController;
+//	}
+
+	/**
+	 * @return the selectedClass
+	 */
+	public IOOBNClass getSelectedClass() {
+		return selectedClass;
+	}
+
+	/**
+	 * @param selectedClass the selectedClass to set
+	 */
+	public void setSelectedClass(IOOBNClass selectedClass) {
+		this.selectedClass = selectedClass;
 	}
 
 

@@ -7,8 +7,12 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Container;
 import java.awt.Cursor;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -17,7 +21,9 @@ import java.util.Collection;
 import java.util.ResourceBundle;
 
 import javax.swing.AbstractListModel;
+import javax.swing.DropMode;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
@@ -28,17 +34,22 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
+import javax.swing.TransferHandler;
+import javax.swing.TransferHandler.TransferSupport;
 import javax.swing.border.TitledBorder;
 
 import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MSBNController;
-import unbbayes.controller.OOBNController;
+import unbbayes.controller.oobn.OOBNController;
 import unbbayes.gui.FileIcon;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.gui.UnBBayesFrame;
 import unbbayes.io.mebn.UbfIO;
+import unbbayes.prs.bn.SingleEntityNetwork;
+import unbbayes.prs.msbn.AbstractMSBN;
 import unbbayes.prs.msbn.SingleAgentMSBN;
+import unbbayes.prs.msbn.SubNetwork;
 import unbbayes.prs.oobn.IOOBNClass;
 import unbbayes.prs.oobn.IObjectOrientedBayesianNetwork;
 import unbbayes.util.Debug;
@@ -56,13 +67,15 @@ public class OOBNWindow extends JInternalFrame  {
 
 	/** Load resource file from this package */
 	private static ResourceBundle resource =
-		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+		ResourceBundle.getBundle("unbbayes.gui.oobn.resources.OOBNGuiResource");
+//	private static ResourceBundle rootGUIResource =
+//		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 	
 	// lets stop using model object directly and start quering controller each time we need to access oobn
 	//private IObjectOrientedBayesianNetwork oobn;
 
-	private JScrollPane netScroll;
-	private JList netList;
+	private JScrollPane oobnClassScroll;
+	private JList oobnClassList;
 
 	private JButton compileBtn;
 	//private JButton editionBtn;
@@ -91,10 +104,11 @@ public class OOBNWindow extends JInternalFrame  {
 	 * @param oobn: the model representation of OOBN
 	 * @param controller: who is the controller of this OOBN
 	 */
-	public OOBNWindow(IObjectOrientedBayesianNetwork oobn, OOBNController controller) {
+    protected OOBNWindow(IObjectOrientedBayesianNetwork oobn, OOBNController controller) {
 		
 		super(oobn.getTitle(), true, true, true, true);
 		
+		// we do not need to trace the oobn since we can do it by calling it from the controller
 //		this.setOobn(oobn);
 		
         this.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
@@ -114,27 +128,78 @@ public class OOBNWindow extends JInternalFrame  {
 	}
 	
 	
-
+    /**
+	 * Builds a window to visualize and edit OOBN
+	 * @param oobn: the model representation of OOBN
+	 * @param controller: who is the controller of this OOBN
+	 */
+    public static OOBNWindow newInstance(IObjectOrientedBayesianNetwork oobn, OOBNController controller) {
+    	return new OOBNWindow(oobn, controller);
+    }
 	
 
-	
-
+    
 	/**
 	 * Build up the basic component hierarchy of this window
 	 * and initializes some attributes
 	 */
 	private void initComponents() {
-		this.netList = new JList(new OOBNListModel());
-		this.netList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		this.netList.setEnabled(true);
-		this.netList.setDragEnabled(true);
+		this.oobnClassList = new JList(new OOBNListModel());
+		this.oobnClassList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		this.oobnClassList.setEnabled(true);
+		this.oobnClassList.setDragEnabled(true);
+		
+		// change the data transfer behavior on drag n drop action (or copy n paste)
+		this.oobnClassList.setTransferHandler(new TransferHandler () {
+
+			/* (non-Javadoc)
+			 * @see javax.swing.TransferHandler#createTransferable(javax.swing.JComponent)
+			 */
+			@Override
+			protected Transferable createTransferable(JComponent c) {
+				try{
+					// obtains the currently selected oobn class (which may be different than currently active one)
+					return getController().getSelectedClass();
+				} catch (Exception e) {
+					Debug.println(this.getClass(), "It was not possible to create transferable data", e);
+				}
+				return null;
+			}
+
+			/* (non-Javadoc)
+			 * @see javax.swing.TransferHandler#getSourceActions(javax.swing.JComponent)
+			 */
+			@Override
+			public int getSourceActions(JComponent c) {
+				// declares that only copy mode is enabled
+				// copy mode means that the source is not deleted
+				return TransferHandler.COPY;
+			}
+
+			/* (non-Javadoc)
+			 * @see javax.swing.TransferHandler#exportDone(javax.swing.JComponent, java.awt.datatransfer.Transferable, int)
+			 */
+			@Override
+			protected void exportDone(JComponent source, Transferable data,
+					int action) {
+				Debug.println(this.getClass(), "Export of data was done");
+				renewClassListIndex();
+				super.exportDone(source, data, action);
+			}
+			
+			
+			
+			
+			
+		});
+		
 		
 		// icons
 		
 		this.compileBtn = new JButton(iconController.getCompileIcon());		
 		//this.editionBtn = new JButton(iconController.getEditIcon());
 		this.removeBtn = new JButton(iconController.getDeleteClassIcon());
-		this.newBtn = new JButton(iconController.getNewIcon());
+		this.newBtn = new JButton(iconController.getNewClassIcon());
 		this.newFromFileBtn = new JButton(iconController.getNewClassFromFileIcon());
 		
 		// tool tips
@@ -176,14 +241,18 @@ public class OOBNWindow extends JInternalFrame  {
 	private JPanel buildClassNavigationPanel() {		
 		
 		this.netPanel = new JPanel(new BorderLayout());
-		this.netScroll = new JScrollPane(netList);
+		this.oobnClassScroll = new JScrollPane(oobnClassList);
 		
-		netPanel.add(this.netScroll, BorderLayout.CENTER);
+		netPanel.setBorder(new TitledBorder(resource.getString("classNavigationPanelLabel")));
+		netPanel.setToolTipText(resource.getString("dragNDropToAddInstance"));
+		
+		netPanel.add(this.oobnClassScroll, BorderLayout.CENTER);
 		
 		this.jtbBtns = new JToolBar();
 		this.jtbBtns.add(buildButtonsPanel(), EDITION_PANE);
 		
 		netPanel.add(jtbBtns, BorderLayout.NORTH);
+		
 		
 		return netPanel;
 	}
@@ -236,7 +305,7 @@ public class OOBNWindow extends JInternalFrame  {
 //	}
 
 	public void addListMouseListener(MouseListener l) {
-		this.netList.addMouseListener(l);
+		this.oobnClassList.addMouseListener(l);
 	}
 
 	public void showBtnPanel(String paneName) {
@@ -244,23 +313,74 @@ public class OOBNWindow extends JInternalFrame  {
 	}
 	
 	
+	
+	
 	/**
 	 * starts filling the action listeners
 	 */
 	private void fillListeners() {
 		
+		
+		
 		// action performed by clicking a class within oobn class list
 		addListMouseListener(new MouseAdapter() {
-		     public void mouseClicked(MouseEvent e) {
+		     
+			
+			/* (non-Javadoc)
+			 * @see java.awt.event.MouseAdapter#mousePressed(java.awt.event.MouseEvent)
+			 */
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if (e.getButton() == e.BUTTON1) {
+					try {
+						int index = getNetList().locationToIndex(e.getPoint());
+						getController().setSelectedClass((getController().getOobn().getOOBNClassList().get(index)));
+					} catch (Exception exc) {
+						Debug.println(this.getClass(), "It was not possible to perform mouse pressed event", exc);
+					}
+				}
+				
+//				super.mousePressed(e);
+			}
+			
+			
+
+			
+
+
+
+			/* (non-Javadoc)
+			 * @see java.awt.event.MouseAdapter#mouseEntered(java.awt.event.MouseEvent)
+			 */
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				// just to make it sure that the list is pointing to the correct element
+				renewClassListIndex();
+				super.mouseEntered(e);
+			}
+			
+			
+			
+
+
+
+
+
+
+
+			public void mouseClicked(MouseEvent e) {
 		       
 		       int index = getNetList().locationToIndex(e.getPoint());
+		       
+		       
 		       
 		       // change the selected oobn class only if the selected one is different than the previous
 		       if ( ( index >= 0 ) 
 	              && ( getNetList().getModel().getElementAt(index) != getController().getActive().getSingleEntityNetwork())) {
 		    	   // set the active oobn class as the selected one
 		           OOBNClassWindow classWindow = OOBNClassWindow.newInstance((getController().getOobn().getOOBNClassList().get(index)));
-		           getController().changeActiveOOBNClass(classWindow);		             	
+		           getController().changeActiveOOBNClass(classWindow);	
+		           
 	           } 	
 		       
 		       // if left click, change the name
@@ -269,8 +389,7 @@ public class OOBNWindow extends JInternalFrame  {
                    ListSelectionModel selmodel = getNetList().getSelectionModel();
                    selmodel.setLeadSelectionIndex(index);
             	   
-            	   // if double click, extract the element and open an input dialog
-                   Object item = getNetList().getModel().getElementAt(index);
+            	   Object item = getNetList().getModel().getElementAt(index);
                    String text = JOptionPane.showInputDialog(resource.getString("renameClass"), item);
                    
                    //tests if the input is reasonable (not null and not empty)                   
@@ -318,12 +437,11 @@ public class OOBNWindow extends JInternalFrame  {
 		addNewFromFileBtnActionListener( new ActionListener() {
 					public void actionPerformed(ActionEvent ae) {
 						setCursor(new Cursor(Cursor.WAIT_CURSOR));
-						// String[] nets = new String[] { "net", "xml", "owl" };
 						String[] nets = new String[] { "net", "oobn"};
 						JFileChooser chooser = new JFileChooser(fileController.getCurrentDirectory());
-						chooser.setDialogTitle(resource.getString("openTitle")); 
+						chooser.setDialogTitle(resource.getString("openClassFromFile")); 
 						chooser.setMultiSelectionEnabled(false);
-						chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+						chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
 						// adicionar FileView no FileChooser para desenhar icones de
 						// arquivos
@@ -353,7 +471,10 @@ public class OOBNWindow extends JInternalFrame  {
 								} catch (IllegalArgumentException iae) {
 									JOptionPane.showMessageDialog(getController().getPanel(), resource.getString("DuplicatedClassName"), iae.getMessage(), JOptionPane.ERROR_MESSAGE);
 									Debug.println(this.getClass(), resource.getString("NoClassSelected"), iae);
-								}
+								} catch (Exception e) {
+									JOptionPane.showMessageDialog(getController().getPanel(), resource.getString("ErrorLoadingClass"), e.getMessage(), JOptionPane.ERROR_MESSAGE);
+									Debug.println(this.getClass(), "Error opening file", e);
+								} 
 								
 								// renew the list view
 								getNetList().updateUI();
@@ -367,7 +488,7 @@ public class OOBNWindow extends JInternalFrame  {
 		addRemoveBtnActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
-				// tests if ther is any active class. If not, no class is selected...
+				// tests if there is any active class. If not, no class is selected...
 				if (getController().getActive() == null) {
 					// since no class is selected, we'll do nothing
 					return;
@@ -400,10 +521,10 @@ public class OOBNWindow extends JInternalFrame  {
 		addCompileBtnActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
 				try {
-					getController().compileActiveOOBNClass();
+					
 					// TODO stub!!
-					SingleAgentMSBN msbn = new SingleAgentMSBN(getController().getActive().getName());
-					MSBNController controller = new MSBNController(msbn);
+					AbstractMSBN msbn = getController().compileActiveOOBNClassToMSBN();
+					MSBNController controller = new MSBNController((SingleAgentMSBN)msbn);
 					getController().getUpperUnBBayesFrame().addWindow(controller.getPanel());
 				} catch (NullPointerException npe) {
 					JOptionPane.showMessageDialog(getController().getPanel(), resource.getString("NoClassSelected"), resource.getString("compilationError"), JOptionPane.ERROR_MESSAGE);
@@ -421,21 +542,41 @@ public class OOBNWindow extends JInternalFrame  {
 	
 
 	/**
-	 * Returns the netList.
+	 * Returns the oobnClassList.
 	 * @return JList
 	 */
 	public JList getNetList() {
-		return this.netList;
+		return this.oobnClassList;
 	}
 
 	public void changeToTreeView(JTree tree) {
-		this.netScroll.setViewportView(tree);
+		this.oobnClassScroll.setViewportView(tree);
 	}
 
 	public void changeToListView() {
-		this.netScroll.setViewportView(this.netList);
+		this.oobnClassScroll.setViewportView(this.oobnClassList);
 	}
 
+	
+	/**
+	 * This method resets the currently selected class list element
+	 * to the currently active class window.
+	 * It is useful to make sure that the selected class at class list is
+	 * allways the currently active class.
+	 * @see OOBNController#getActive()
+	 */
+	protected void renewClassListIndex() {
+		try {
+			SingleEntityNetwork activeNetwork = getController().getActive().getController().getSingleEntityNetwork();
+			int indexOfActiveNetwork = getController().getOobn().getOOBNClassList().indexOf(activeNetwork);
+			
+			getOobnClassList().setSelectedIndex(indexOfActiveNetwork);
+			getOobnClassList().updateUI();
+			Debug.println(this.getClass(), "Setted active class list index to " + indexOfActiveNetwork);
+		} catch (Exception exc) {
+			Debug.println(this.getClass(), "Could not treat event in order to change selected OOBN class", exc);
+		}
+	}
 
 	public OOBNController getController() {
 		return controller;
@@ -444,6 +585,9 @@ public class OOBNWindow extends JInternalFrame  {
 	public void setController(OOBNController controller) {
 		this.controller = controller;
 	}
+	
+	
+	
 	
 	/**
 	 * Inner class to make it easier to  manage JList and its
@@ -485,6 +629,234 @@ public class OOBNWindow extends JInternalFrame  {
 		
 
 	}
+
+
+
+
+	/**
+	 * @return the oobnClassScroll
+	 */
+	public JScrollPane getOobnClassScroll() {
+		return oobnClassScroll;
+	}
+
+
+	/**
+	 * @param oobnClassScroll the oobnClassScroll to set
+	 */
+	public void setOobnClassScroll(JScrollPane oobnClassScroll) {
+		this.oobnClassScroll = oobnClassScroll;
+	}
+
+
+	/**
+	 * @return the oobnClassList
+	 */
+	public JList getOobnClassList() {
+		return oobnClassList;
+	}
+
+
+	/**
+	 * @param oobnClassList the oobnClassList to set
+	 */
+	public void setOobnClassList(JList oobnClassList) {
+		this.oobnClassList = oobnClassList;
+	}
+
+
+	/**
+	 * @return the compileBtn
+	 */
+	public JButton getCompileBtn() {
+		return compileBtn;
+	}
+
+
+	/**
+	 * @param compileBtn the compileBtn to set
+	 */
+	public void setCompileBtn(JButton compileBtn) {
+		this.compileBtn = compileBtn;
+	}
+
+
+	/**
+	 * @return the removeBtn
+	 */
+	public JButton getRemoveBtn() {
+		return removeBtn;
+	}
+
+
+	/**
+	 * @param removeBtn the removeBtn to set
+	 */
+	public void setRemoveBtn(JButton removeBtn) {
+		this.removeBtn = removeBtn;
+	}
+
+
+	/**
+	 * @return the newBtn
+	 */
+	public JButton getNewBtn() {
+		return newBtn;
+	}
+
+
+	/**
+	 * @param newBtn the newBtn to set
+	 */
+	public void setNewBtn(JButton newBtn) {
+		this.newBtn = newBtn;
+	}
+
+
+	/**
+	 * @return the newFromFileBtn
+	 */
+	public JButton getNewFromFileBtn() {
+		return newFromFileBtn;
+	}
+
+
+	/**
+	 * @param newFromFileBtn the newFromFileBtn to set
+	 */
+	public void setNewFromFileBtn(JButton newFromFileBtn) {
+		this.newFromFileBtn = newFromFileBtn;
+	}
+
+
+	/**
+	 * @return the btnCard
+	 */
+	public CardLayout getBtnCard() {
+		return btnCard;
+	}
+
+
+	/**
+	 * @param btnCard the btnCard to set
+	 */
+	public void setBtnCard(CardLayout btnCard) {
+		this.btnCard = btnCard;
+	}
+
+
+	/**
+	 * @return the jtbBtns
+	 */
+	public JToolBar getJtbBtns() {
+		return jtbBtns;
+	}
+
+
+	/**
+	 * @param jtbBtns the jtbBtns to set
+	 */
+	public void setJtbBtns(JToolBar jtbBtns) {
+		this.jtbBtns = jtbBtns;
+	}
+
+
+	/**
+	 * @return the statusPanel
+	 */
+	public JPanel getStatusPanel() {
+		return statusPanel;
+	}
+
+
+	/**
+	 * @param statusPanel the statusPanel to set
+	 */
+	public void setStatusPanel(JPanel statusPanel) {
+		this.statusPanel = statusPanel;
+	}
+
+
+	/**
+	 * @return the statusBar
+	 */
+	public JLabel getStatusBar() {
+		return statusBar;
+	}
+
+
+	/**
+	 * @param statusBar the statusBar to set
+	 */
+	public void setStatusBar(JLabel statusBar) {
+		this.statusBar = statusBar;
+	}
+
+
+	/**
+	 * @return the netPanel
+	 */
+	public JPanel getNetPanel() {
+		return netPanel;
+	}
+
+
+	/**
+	 * @param netPanel the netPanel to set
+	 */
+	public void setNetPanel(JPanel netPanel) {
+		this.netPanel = netPanel;
+	}
+
+
+	/**
+	 * @return the editionPane
+	 */
+	public JPanel getEditionPane() {
+		return editionPane;
+	}
+
+
+	/**
+	 * @param editionPane the editionPane to set
+	 */
+	public void setEditionPane(JPanel editionPane) {
+		this.editionPane = editionPane;
+	}
+
+
+	/**
+	 * @return the iconController
+	 */
+	public IconController getIconController() {
+		return iconController;
+	}
+
+
+	/**
+	 * @param iconController the iconController to set
+	 */
+	public void setIconController(IconController iconController) {
+		this.iconController = iconController;
+	}
+
+
+	/**
+	 * @return the fileController
+	 */
+	public FileController getFileController() {
+		return fileController;
+	}
+
+
+	/**
+	 * @param fileController the fileController to set
+	 */
+	public void setFileController(FileController fileController) {
+		this.fileController = fileController;
+	}
+	
+	
 	
 
 }

@@ -23,6 +23,7 @@ package unbbayes.prs.msbn;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.util.SetToolkit;
 
@@ -34,7 +35,7 @@ import unbbayes.util.SetToolkit;
  * To enable and disable the creation of type comments go to
  * Window>Preferences>Java>Code Generation.
  */
-public abstract class AbstractMSBN {
+public abstract class AbstractMSBN extends Network {
 	protected List<SubNetwork> nets;
 	protected List<Linkage> links;
 	protected String id;
@@ -44,6 +45,7 @@ public abstract class AbstractMSBN {
 	 * @param id	the id of this multi-sectioned network
 	 */
 	public AbstractMSBN(String id) {
+		super(id);
 		this.id = id;
 		nets = new ArrayList<SubNetwork>();
 		links = new ArrayList<Linkage>();				
