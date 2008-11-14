@@ -1,0 +1,152 @@
+<?xml version='1.0' encoding='US-ASCII'?>
+<xbifns:XMLBIF version="0.5" xmlns:xbifns="http://unbbayes.sourceforge.net/xml/XMLBIF_0_5.xsd">
+  <xbifns:header>
+    <xbifns:version>1.0</xbifns:version>
+    <xbifns:name>New BN</xbifns:name>
+    <xbifns:creator>UnBBayes</xbifns:creator>
+  </xbifns:header>
+  <xbifns:staticProperty>
+    <xbifns:nodeSize>0</xbifns:nodeSize>
+    <xbifns:nodeFontSize>0</xbifns:nodeFontSize>
+    <xbifns:colorUtilityNode>-16711681</xbifns:colorUtilityNode>
+    <xbifns:colorDecisionNode>-14336</xbifns:colorDecisionNode>
+    <xbifns:colorDiscreteProbabilisticNode>-256</xbifns:colorDiscreteProbabilisticNode>
+    <xbifns:colorContinuousProbilisticNode>-16711936</xbifns:colorContinuousProbilisticNode>
+    <xbifns:colorExplanationNode>-16711936</xbifns:colorExplanationNode>
+  </xbifns:staticProperty>
+  <xbifns:hierarchy>
+    <xbifns:root name="root">
+      <xbifns:level name="C2"/>
+      <xbifns:level name="C3"/>
+    </xbifns:root>
+  </xbifns:hierarchy>
+  <xbifns:network>
+    <xbifns:variables>
+      <xbifns:variable yPos="88" xPos="323" type="ContinuousProbabilistic" name="C0">
+        <xbifns:description>C0</xbifns:description>
+        <xbifns:state name="State 0"/>
+      </xbifns:variable>
+      <xbifns:variable yPos="239" xPos="349" type="ContinuousProbabilistic" name="C1">
+        <xbifns:description>C1</xbifns:description>
+        <xbifns:state name="State 0"/>
+      </xbifns:variable>
+      <xbifns:variable yPos="46" xPos="203" type="DiscreteProbabilistic" name="C2">
+        <xbifns:description>C2</xbifns:description>
+        <xbifns:state name="State 0"/>
+        <xbifns:state name="State 1"/>
+        <xbifns:state name="State 2"/>
+      </xbifns:variable>
+      <xbifns:variable yPos="55" xPos="399" type="DiscreteProbabilistic" name="C3">
+        <xbifns:description>C3</xbifns:description>
+        <xbifns:state name="State 0"/>
+        <xbifns:state name="State 1"/>
+        <xbifns:state name="State 2"/>
+      </xbifns:variable>
+    </xbifns:variables>
+    <xbifns:structure>
+      <xbifns:edge child="C1" parent="C0"/>
+      <xbifns:edge child="C1" parent="C2"/>
+      <xbifns:edge child="C1" parent="C3"/>
+    </xbifns:structure>
+    <xbifns:conditionalDistributionSet>
+      <xbifns:conditionalDistribution type="Continuous">
+        <xbifns:owner name="C0"/>
+        <xbifns:normal>
+          <xbifns:function index="0">
+            <xbifns:mean>5.0</xbifns:mean>
+            <xbifns:variance>6.0</xbifns:variance>
+          </xbifns:function>
+        </xbifns:normal>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Continuous">
+        <xbifns:owner name="C1"/>
+        <xbifns:parents>
+          <xbifns:parent index="0" name="C0"/>
+          <xbifns:parent index="1" name="C2"/>
+          <xbifns:parent index="2" name="C3"/>
+        </xbifns:parents>
+        <xbifns:normal>
+          <xbifns:function index="0">
+            <xbifns:mean>1.0</xbifns:mean>
+            <xbifns:variance>2.0</xbifns:variance>
+            <xbifns:constants>
+              <xbifns:constant index="0">3.0</xbifns:constant>
+            </xbifns:constants>
+          </xbifns:function>
+          <xbifns:function index="1">
+            <xbifns:mean>0.0</xbifns:mean>
+            <xbifns:variance>1.0</xbifns:variance>
+            <xbifns:constants>
+              <xbifns:constant index="0">0.0</xbifns:constant>
+            </xbifns:constants>
+          </xbifns:function>
+          <xbifns:function index="2">
+            <xbifns:mean>0.0</xbifns:mean>
+            <xbifns:variance>1.0</xbifns:variance>
+            <xbifns:constants>
+              <xbifns:constant index="0">0.0</xbifns:constant>
+            </xbifns:constants>
+          </xbifns:function>
+          <xbifns:function index="3">
+            <xbifns:mean>11.0</xbifns:mean>
+            <xbifns:variance>22.0</xbifns:variance>
+            <xbifns:constants>
+              <xbifns:constant index="0">33.0</xbifns:constant>
+            </xbifns:constants>
+          </xbifns:function>
+          <xbifns:function index="4">
+            <xbifns:mean>0.0</xbifns:mean>
+            <xbifns:variance>1.0</xbifns:variance>
+            <xbifns:constants>
+              <xbifns:constant index="0">0.0</xbifns:constant>
+            </xbifns:constants>
+          </xbifns:function>
+          <xbifns:function index="5">
+            <xbifns:mean>0.0</xbifns:mean>
+            <xbifns:variance>1.0</xbifns:variance>
+            <xbifns:constants>
+              <xbifns:constant index="0">0.0</xbifns:constant>
+            </xbifns:constants>
+          </xbifns:function>
+          <xbifns:function index="6">
+            <xbifns:mean>0.0</xbifns:mean>
+            <xbifns:variance>1.0</xbifns:variance>
+            <xbifns:constants>
+              <xbifns:constant index="0">0.0</xbifns:constant>
+            </xbifns:constants>
+          </xbifns:function>
+          <xbifns:function index="7">
+            <xbifns:mean>111.0</xbifns:mean>
+            <xbifns:variance>222.0</xbifns:variance>
+            <xbifns:constants>
+              <xbifns:constant index="0">333.0</xbifns:constant>
+            </xbifns:constants>
+          </xbifns:function>
+          <xbifns:function index="8">
+            <xbifns:mean>0.0</xbifns:mean>
+            <xbifns:variance>1.0</xbifns:variance>
+            <xbifns:constants>
+              <xbifns:constant index="0">0.0</xbifns:constant>
+            </xbifns:constants>
+          </xbifns:function>
+        </xbifns:normal>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="C2"/>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">1.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.0</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="C3"/>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">1.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.0</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+    </xbifns:conditionalDistributionSet>
+  </xbifns:network>
+</xbifns:XMLBIF>

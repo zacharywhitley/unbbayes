@@ -30,6 +30,29 @@ public class SortUtil {
 			}
 		}
 	}
+	
+	/**
+	 * Responsible for ordering the given node list by the node's name.
+	 * 
+	 * @param nodeList
+	 *            The node list to be ordered.
+	 */
+	public static void sortNodeListByName(List<Node> nodeList) {
+		boolean haTroca = true;
+		while (haTroca) {
+			haTroca = false;
+			for (int i = 0; i < nodeList.size() - 1; i++) {
+				Node node1 = nodeList.get(i);
+				Node node2 = nodeList.get(i + 1);
+				if (node1.getName().compareToIgnoreCase(
+						node2.getName()) > 0) {
+					nodeList.set(i + 1, node1);
+					nodeList.set(i, node2);
+					haTroca = true;
+				}
+			}
+		}
+	}
 
 	public static <T extends Comparable<? super T>> void sort(List<T> list) {
 		Object a[] = list.toArray();

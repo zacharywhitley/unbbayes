@@ -8,7 +8,7 @@ import java.util.Locale;
 import javax.xml.bind.JAXBException;
 
 import unbbayes.io.LogManager;
-import unbbayes.io.XMLIO;
+import unbbayes.io.XMLBIFIO;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.mebn.MFrag;
@@ -110,7 +110,7 @@ public abstract class TestSet {
 	
 	
 	public static void saveNetworkFile(File file, SSBNNode queryNode){
-	    XMLIO netIO = new XMLIO(); 
+	    XMLBIFIO netIO = new XMLBIFIO(); 
 		
 		try {
 			netIO.save(file, queryNode.getProbabilisticNetwork());

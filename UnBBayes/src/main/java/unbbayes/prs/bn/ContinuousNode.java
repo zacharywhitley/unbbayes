@@ -66,6 +66,10 @@ public class ContinuousNode extends TreeVariable implements Serializable {
 		ContinuousNode.color = color;
 	}
 	
+	public static void setColor(int c) {
+		ContinuousNode.color = new Color(c);
+	}
+	
 	@Override
 	public void setSelected(boolean b) {
 		// Update the DrawEllipse selection state

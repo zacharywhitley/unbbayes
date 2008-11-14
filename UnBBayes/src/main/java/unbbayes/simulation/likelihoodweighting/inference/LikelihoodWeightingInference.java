@@ -26,7 +26,7 @@ import java.util.Locale;
 
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
-import unbbayes.io.XMLIO;
+import unbbayes.io.XMLBIFIO;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;
@@ -96,7 +96,7 @@ public class LikelihoodWeightingInference {
 		try {
 			BaseIO io = null;
 			if (fileExt.equalsIgnoreCase("xml")) {
-				io = new XMLIO();
+				io = new XMLBIFIO();
 			} else if (fileExt.equalsIgnoreCase("net")) {
 				io = new NetIO();
 			} else {

@@ -55,7 +55,7 @@ import unbbayes.gui.FileIcon;
 import unbbayes.gui.HierarchicTree;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.NetIO;
-import unbbayes.io.XMLIO;
+import unbbayes.io.XMLBIFIO;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 
@@ -274,7 +274,7 @@ public class AFINMetaphorMainPanel extends JPanel
 		  if (name.endsWith("net")) {
 			 net = new NetIO().load(selectedFile);					
 		  } else if (name.endsWith("xml")){
-		 	net = new XMLIO().load(selectedFile);				
+		 	net = new XMLBIFIO().load(selectedFile);				
 		  }
 		
           net.compile();

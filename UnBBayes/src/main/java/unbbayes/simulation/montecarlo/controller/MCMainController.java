@@ -31,7 +31,7 @@ import javax.xml.bind.JAXBException;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
-import unbbayes.io.XMLIO;
+import unbbayes.io.XMLBIFIO;
 import unbbayes.io.exception.LoadException;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.simulation.montecarlo.gui.MCParametersPane;
@@ -72,7 +72,7 @@ public class MCMainController {
 						io = new NetIO();						
 					}
 					else{
-						io = new XMLIO(); 
+						io = new XMLBIFIO(); 
 					}
 					redeProbabilistica = io.load(chooser.getSelectedFile());
 				}

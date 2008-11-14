@@ -6,7 +6,7 @@ import java.io.IOException;
 import javax.xml.bind.JAXBException;
 
 import unbbayes.io.LogManager;
-import unbbayes.io.XMLIO;
+import unbbayes.io.XMLBIFIO;
 import unbbayes.prs.Edge;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
@@ -70,7 +70,7 @@ public class SSBNDebugInformationUtil {
 		logManager.appendln("  |-------------------------------------------------------");
 		logManager.appendln("\n"); 
 		
-	    XMLIO netIO = new XMLIO(); 
+	    XMLBIFIO netIO = new XMLBIFIO(); 
 		
 		try {
 			netIO.save(file, queryNode.getProbabilisticNetwork());

@@ -240,9 +240,9 @@
 					</resourceTarget>
 					<!--  END  - this is a work around, because the plugin does not work as documented -->
 					<schemas>
-						<value>src/main/xsd/XMLBIF_0_4.xsd</value>
+						<!-- >value>src/main/xsd/XMLBIF_0_5.xsd</value -->
 					</schemas>
-					<packageName>unbbayes.io.xmlclasses</packageName>
+					<packageName>unbbayes.io.xmlbif.version5.xmlclasses</packageName>
 				</configuration>
 			</plugin>
 		</plugins>

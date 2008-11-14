@@ -27,6 +27,7 @@ import java.io.IOException;
 import javax.xml.bind.JAXBException;
 
 import unbbayes.io.exception.LoadException;
+import unbbayes.io.exception.SaveException;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.msbn.SingleAgentMSBN;
@@ -69,6 +70,7 @@ public interface BaseIO {
      * Saves a MSBN to the output directory.
      * @param output The output file to save
      * @param net		The MSBN to save.
+     * @throws SaveException If the output is not a directory.
      */
-    public void saveMSBN(File output, SingleAgentMSBN net) throws FileNotFoundException,IOException,  JAXBException;
+    public void saveMSBN(File output, SingleAgentMSBN net) throws FileNotFoundException,IOException,  JAXBException, SaveException;
 }

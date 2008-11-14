@@ -40,7 +40,7 @@ import unbbayes.gui.SplashScreen;
 import unbbayes.gui.UnBBayesFrame;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
-import unbbayes.io.XMLIO;
+import unbbayes.io.XMLBIFIO;
 import unbbayes.io.configurations.ConfigurationsIO;
 import unbbayes.io.configurations.ConfigurationsIOInputStream;
 import unbbayes.io.exception.LoadException;
@@ -242,7 +242,7 @@ public class MainController {
 					io = new NetIO();		
 				} 
 				else if (name.endsWith("xml")){
-					io = new XMLIO();
+					io = new XMLBIFIO();
 				}
 				else if (name.endsWith(UbfIO.fileExtension)) {
 					ubfIo = UbfIO.getInstance();
@@ -310,7 +310,7 @@ public class MainController {
 					window = new NetworkWindow(net);	
 					((NetworkWindow)window).setFileName(name); 
 				} else if (name.endsWith("xml")){
-					io = new XMLIO();	
+					io = new XMLBIFIO();	
 					ProbabilisticNetwork net = io.load(file);
 					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
 					window = new NetworkWindow(net);	

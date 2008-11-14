@@ -46,7 +46,7 @@ import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
-import unbbayes.io.XMLIO;
+import unbbayes.io.XMLBIFIO;
 import unbbayes.prs.bn.SingleEntityNetwork;
 
 /**
@@ -262,7 +262,7 @@ public class SSBNCompilationPane extends JPanel {
 								}
     						} 
     						else if (name.endsWith("xml")){
-    							io = new XMLIO();
+    							io = new XMLBIFIO();
     							try {
 									io.save(file, network);
 								} catch (IOException e1) {

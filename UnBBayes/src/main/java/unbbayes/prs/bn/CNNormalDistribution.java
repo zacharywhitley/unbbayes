@@ -48,6 +48,9 @@ public class CNNormalDistribution {
 	
 	/**
 	 * Must be called when there is some change in the parents.
+	 * The order of discrete parents list and continuous parents list is
+	 * always ascendent by its name. This is important to know to which parent 
+	 * the respective index refers. 
 	 */
 	public void refreshParents() {
 		discreteParentList = new ArrayList<Node>();
@@ -59,8 +62,8 @@ public class CNNormalDistribution {
 				discreteParentList.add(node);
 			}
 		} 
-		SortUtil.sortNodeListByDescription(discreteParentList);
-		SortUtil.sortNodeListByDescription(continuousParentList);
+		SortUtil.sortNodeListByName(discreteParentList);
+		SortUtil.sortNodeListByName(continuousParentList);
 		
 		calculateFactors();
 		if (discreteParentList.size() > 0) {
@@ -81,17 +84,34 @@ public class CNNormalDistribution {
 	 * Set the constant that multiplies the continuous parent node at index to the 
 	 * given value for the given combination of discrete parent node's states, 
 	 * which is the multidimensional coordinate.
-	 * @param index The continuous parent node index.
+	 * @param constantIndex The continuous parent node index.
 	 * @param value The new value for the constant.
 	 * @param multidimensionalCoord The multidimensional coordinate which is the 
 	 * state associated with each possible discrete parent node.
 	 */
-	public void setConstantAt(int index, double value, int[] multidimensionalCoord) {
-		ndfList[getLinearCoord(multidimensionalCoord)].setConstantAt(index, value);
+	public void setConstantAt(int constantIndex, double value, int[] multidimensionalCoord) {
+		ndfList[getLinearCoord(multidimensionalCoord)].setConstantAt(constantIndex, value);
 	}
 	
-	public double getConstantAt(int index, int[] multidimensionalCoord) {
-		return ndfList[getLinearCoord(multidimensionalCoord)].getConstantAt(index);
+	/**
+	 * Set the constant that multiplies the continuous parent node at index to the 
+	 * given value for the given combination of discrete parent node's states, 
+	 * which is the multidimensional coordinate.
+	 * @param constantIndex The continuous parent node index.
+	 * @param value The new value for the constant.
+	 * @param index The index which is the state associated with each possible 
+	 * discrete parent node.
+	 */
+	public void setConstantAt(int constantIndex, double value, int index) {
+		ndfList[index].setConstantAt(constantIndex, value);
+	}
+	
+	public double getConstantAt(int constantIndex, int[] multidimensionalCoord) {
+		return ndfList[getLinearCoord(multidimensionalCoord)].getConstantAt(constantIndex);
+	}
+	
+	public double getConstantAt(int constantIndex, int index) {
+		return ndfList[index].getConstantAt(constantIndex);
 	}
 	
 	public int getConstantListSize() {
@@ -109,8 +129,23 @@ public class CNNormalDistribution {
 		ndfList[getLinearCoord(multidimensionalCoord)].setMean(mean);
 	}
 	
+	/**
+	 * Set the normal distribution mean for the given combination of discrete 
+	 * parent node's states, which is represented by the given index.
+	 * @param mean The normal distribution mean.
+	 * @param index The index which is the state associated with each possible 
+	 * discrete parent node.
+	 */
+	public void setMean(double mean, int index) {
+		ndfList[index].setMean(mean);
+	}
+	
 	public double getMean(int[] multidimensionalCoord) {
 		return ndfList[getLinearCoord(multidimensionalCoord)].getMean();
+	}
+	
+	public double getMean(int index) {
+		return ndfList[index].getMean();
 	}
 
 	/**
@@ -124,8 +159,23 @@ public class CNNormalDistribution {
 		ndfList[getLinearCoord(multidimensionalCoord)].setVariance(variance);
 	}
 	
+	/**
+	 * Set the normal distribution variance for the given combination of discrete 
+	 * parent node's states, which is represented by the given index.
+	 * @param variance The normal distribution variance.
+	 * @param index The index which is the state associated with each possible 
+	 * discrete parent node.
+	 */
+	public void setVariance(double variance, int index) {
+		ndfList[index].setVariance(variance);
+	}
+	
 	public double getVariance(int[] multidimensionalCoord) {
 		return ndfList[getLinearCoord(multidimensionalCoord)].getVariance();
+	}
+	
+	public double getVariance(int index) {
+		return ndfList[index].getVariance();
 	}
 	
 	/**
@@ -189,6 +239,14 @@ public class CNNormalDistribution {
 			linearCoord %= factorI;
 		}
 		return multidimensionalCoord;
+	}
+	
+	/**
+	 * Returns the number of normal distribution functions.
+	 * @return The number of normal distribution functions.
+	 */
+	public int functionSize() {
+		return ndfList.length;
 	}
 	
 	/**

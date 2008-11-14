@@ -31,7 +31,7 @@ import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 
-import unbbayes.io.XMLIO;
+import unbbayes.io.XMLBIFIO;
 import unbbayes.io.exception.LoadException;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -146,7 +146,7 @@ public class PositionAdjustmentUtils {
 		
 		System.out.println("Init");
 		ProbabilisticNetwork net = null;
-		XMLIO io = new XMLIO();	
+		XMLBIFIO io = new XMLBIFIO();	
 		try {
           net = io.load(new File(PositionAdjustmentUtils.fileTestLoad));
 		} catch (LoadException e) {
