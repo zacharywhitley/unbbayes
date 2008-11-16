@@ -20,6 +20,7 @@ import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.ProbabilisticTable;
+import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.oobn.IOOBNNode;
 import unbbayes.util.Debug;
 import unbbayes.util.SetToolkit;
@@ -644,6 +645,56 @@ public class OOBNNodeGraphicalWrapper extends ProbabilisticNode {
 				throw e;
 			}
 		}
+	}
+
+	// the graphical wrapper has no need to overwrite addChild
+//	/* (non-Javadoc)
+//	 * @see unbbayes.prs.Node#addChild(unbbayes.prs.Node)
+//	 */
+//	@Override
+//	public void addChild(Node child) throws InvalidParentException {
+//		
+//		try{
+//			this.getWrappedNode().addChild(((OOBNNodeGraphicalWrapper)child).getWrappedNode());
+//			super.addChild(child);
+//		} catch (Exception e) {
+//			Debug.println(this.getClass(), "Could not add a child to wrapped OOBN node", e);
+//			throw new InvalidParentException(e.getMessage());
+//		}
+//	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.Node#addParent(unbbayes.prs.Node)
+	 */
+	@Override
+	public void addParent(Node parent) throws InvalidParentException {
+		
+		try {
+			// this is going to add child to the parent as well
+			this.getWrappedNode().addParent(((OOBNNodeGraphicalWrapper)parent).getWrappedNode());
+			super.addParent(parent);
+		} catch (Exception e) {
+			Debug.println(this.getClass(), "Could not add a parent to wrapped OOBN node", e);
+			throw new InvalidParentException(e.getMessage());
+		}
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.Node#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+
+		if (obj == null) {
+			return false;
+		}
+		
+		if (obj instanceof IOOBNNode) {
+			return this.getWrappedNode().equals(obj);
+		}
+		
+		return super.equals(obj);
 	}
 	
 	

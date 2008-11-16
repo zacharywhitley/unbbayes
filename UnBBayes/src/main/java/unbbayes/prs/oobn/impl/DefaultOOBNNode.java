@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import unbbayes.prs.oobn.IOOBNClass;
@@ -17,6 +18,10 @@ import unbbayes.prs.oobn.IOOBNNode;
  *
  */
 public class DefaultOOBNNode implements IOOBNNode {
+	
+	/** Load resource file from this package */
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.oobn.resources.Resources");  		
+	
 
 	private List<String> stateNames = null;
 	
@@ -35,12 +40,18 @@ public class DefaultOOBNNode implements IOOBNNode {
 	
 	private IOOBNNode originalClassNode = null;
 	
+	private Set<IOOBNNode> parents = null;
+	private Set<IOOBNNode> children = null;
+	
+	
 	/**
 	 * 
 	 */
 	protected DefaultOOBNNode() {
 		this.innerNodes = new HashSet<IOOBNNode>();
 		this.stateNames = new ArrayList<String>();
+		this.parents = new HashSet<IOOBNNode>();
+		this.children = new HashSet<IOOBNNode>();
 	}
 
 	
@@ -81,9 +92,16 @@ public class DefaultOOBNNode implements IOOBNNode {
 
 
 	/**
+	 * This method also tests consistency for basic node types (input, output, private)
 	 * @param type the type to set
 	 */
 	public void setType(int type) {
+		if (type == TYPE_INPUT) {
+			if (this.getOOBNParents().size() > 0) {
+				// input node (of a class) must not have parents
+				throw new IllegalArgumentException(resource.getString("InputNodeHasNoParents"));
+			}
+		}
 		this.type = type;
 	}
 
@@ -113,9 +131,9 @@ public class DefaultOOBNNode implements IOOBNNode {
 
 
 	/* (non-Javadoc)
-	 * @see unbbayes.prs.oobn.IOOBNNode#getInnerNodes(unbbayes.prs.oobn.IOOBNNode)
+	 * @see unbbayes.prs.oobn.IOOBNNode#getInnerNodes()
 	 */
-	public Collection<IOOBNNode> getInnerNodes(IOOBNNode upperInstanceNode) {
+	public Collection<IOOBNNode> getInnerNodes() {
 		return this.innerNodes;
 	}
 
@@ -201,9 +219,127 @@ public class DefaultOOBNNode implements IOOBNNode {
 	}
 
 
-	
-	
-	
-	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.oobn.IOOBNNode#addParent(unbbayes.prs.oobn.IOOBNNode)
+	 */
+	public void addParent(IOOBNNode node) {
+		
+		// type consistency
+		
+		if ((this.getType() == this.TYPE_INPUT )) {
+			// input node (of a class) must not have parents
+			throw new IllegalArgumentException(resource.getString("InputNodeHasNoParents"));
+		}
+		
+		if ((this.getType() == this.TYPE_INSTANCE_OUTPUT)) {
+			// output node (of a instance) must not have parents
+			throw new IllegalArgumentException(resource.getString("InstanceOutputNodeHasNoParents"));
+		}
+		
+		if ((this.getType() == this.TYPE_INSTANCE_INPUT)) {
+			// instance input node should never have 2 or more parents
+			if (this.getOOBNParents().size() > 0) {
+				throw new IllegalArgumentException(resource.getString("InstanceInputNodeHasNoMultipleParents"));
+			}
+		}
+		
+		if ((this.getType() == this.TYPE_INSTANCE)) {
+			// instance node must not have direct children or parents.
+			// Parents of instance node should be parents of instance input nodes.
+			// Children of instance node should be children of instance output nodes.
+			throw new IllegalArgumentException(resource.getString("PleaseAddParentToInstanceInputNodes"));
+		}
+		
+		if ((node.getType() == node.TYPE_INSTANCE_INPUT)) {
+			// no instance input node should have children
+			throw new IllegalArgumentException(resource.getString("PleaseAddChildToInstanceOutputNodes"));
+		}
+		
+		this.parents.add(node);
+		try{
+			node.addChild(this);
+		} catch (RuntimeException e) {
+			// revert undo to parent (make add child and add parent transactional)
+			this.parents.remove(node);
+			throw e;
+		}
+	}
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.oobn.IOOBNNode#getOOBNParents()
+	 */
+	public Set<IOOBNNode> getOOBNParents() {
+		return this.parents;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.oobn.IOOBNNode#addChild(unbbayes.prs.oobn.IOOBNNode)
+	 */
+	public void addChild(IOOBNNode node) {
+		
+		// type consistency
+		
+		// a node must never be a parent of 2 or more instance input nodes
+		// we are not testing it to ordinal input node because addParent is doing so
+		if ((node.getType() == node.TYPE_INSTANCE_INPUT) ) {			
+			if (this.getOOBNChildren() != null) {
+				// check if this already has an input instance node
+				for (IOOBNNode child : this.getOOBNChildren()) {
+					if ((child.getType() == child.TYPE_INSTANCE_INPUT)) {
+						throw new IllegalArgumentException(resource.getString("NoNodeIsParentOf2InstanceInput"));
+					}
+				}
+			}			
+			
+		}
+		
+		
+		if ((this.getType() == this.TYPE_INSTANCE)) {
+			// instance node must not have direct children or parents.
+			// Parents of instance node should be parents of instance input nodes.
+			// Children of instance node should be children of instance output nodes.
+			throw new IllegalArgumentException(resource.getString("PleaseAddChildToInstanceOutputNodes"));
+		}
+		
+		this.children.add(node);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		// this is not null, but if obj is null, it is not equal
+		if (obj == null) {
+			return false;
+		}
+		
+		// if they are the same instances, of course they are equal
+		if (this == obj) {
+			return true;
+		}
+		
+		// if obj has compatible type, compare its names
+		if (obj instanceof IOOBNNode) {
+			if (this.getName().equals(((IOOBNNode)obj).getName())) {
+				return true;
+			}
+		}
+		// or else, call super class...
+		return super.equals(obj);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.oobn.IOOBNNode#getOOBNChildren()
+	 */
+	public Set<IOOBNNode> getOOBNChildren() {
+		return this.children;
+	}
+
+
 	
 }

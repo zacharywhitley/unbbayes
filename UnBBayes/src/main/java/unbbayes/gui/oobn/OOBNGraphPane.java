@@ -15,6 +15,7 @@ import java.awt.event.MouseEvent;
 import java.util.ResourceBundle;
 
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JViewport;
 import javax.swing.TransferHandler;
@@ -98,6 +99,8 @@ public class OOBNGraphPane extends GraphPane {
 					node.getWrappedNode().setType(IOOBNNode.TYPE_INPUT);
 					Debug.println(this.getClass(), "I'm setting the node as an input");	
 					update();
+				} catch (IllegalArgumentException iae) {
+					JOptionPane.showMessageDialog(getController().getScreen(), iae.getMessage(), resource.getString("changeNodeToInput"), JOptionPane.ERROR_MESSAGE);
 				} catch (Exception e) {
 					Debug.println(this.getClass(), "The selected node does not look like a valid wrapped OOBN node", e);
 					throw new IllegalArgumentException(e);
@@ -216,6 +219,7 @@ public class OOBNGraphPane extends GraphPane {
 									
 					
 				} catch (Exception e) {
+					JOptionPane.showMessageDialog(getController().getScreen(), e.getMessage(), resource.getString("CannotDragNDrop"), JOptionPane.ERROR_MESSAGE);
 					throw new RuntimeException(resource.getString("CannotDragNDrop") , e);
 				}
 				
@@ -416,7 +420,7 @@ public class OOBNGraphPane extends GraphPane {
 		double menorX;
 		double menorY;
 		
-		if (this.isBMoveNode() && this.getSelected() instanceof OOBNNodeGraphicalWrapper){
+		if (this.isBMoveNode() && (this.getSelected() instanceof OOBNNodeGraphicalWrapper)){
 			OOBNNodeGraphicalWrapper noAux = (OOBNNodeGraphicalWrapper) this.getSelected();
 			maiorX = noAux.getPosition().getX();
 			menorX = noAux.getPosition().getX();
@@ -471,9 +475,13 @@ public class OOBNGraphPane extends GraphPane {
 			long width = noAux.getThisWidth()/2;
 			long height = noAux.getThisWidth()/2;
 			
+			Debug.println(this.getClass(), "Obtaining rectangle repaint from OOBNGraphPane");
 			return new Rectangle((int) (menorX - 6 * width), (int) (menorY - 6 * height), (int) (maiorX - menorX + 12 * width), (int) (maiorY - menorY + 12 * height));
 		} else {
+
+			Debug.println(super.getClass(), "Obtaining rectangle repaint from superclass");
 			return super.getRectangleRepaint();
+			
 		}
 	}
 
@@ -522,13 +530,21 @@ public class OOBNGraphPane extends GraphPane {
 			Debug.println(this.getClass(), "Upper instance node is " + ((node.getWrappedNode().getUpperInstanceNode()!=null)?node.getWrappedNode().getUpperInstanceNode().getName():"null"));
 			Debug.println(this.getClass(), "Parent class is " + ((node.getWrappedNode().getParentClass()!=null)?node.getWrappedNode().getParentClass().getClassName():"null"));
 			
-			if (node.getWrappedNode().getUpperInstanceNode() != null) {
-				if (node.getWrappedNode().getInnerNodes(node.getWrappedNode().getUpperInstanceNode()) != null) {
-					for (IOOBNNode inner : node.getWrappedNode().getInnerNodes(node.getWrappedNode().getUpperInstanceNode())) {
-						Debug.println(this.getClass(), "Inner node is " + inner.getName() + " of type " + types[inner.getType()]);
-					}
+			if (node.getWrappedNode().getInnerNodes() != null) {
+				for (IOOBNNode inner : node.getWrappedNode().getInnerNodes()) {
+					Debug.println(this.getClass(), "Inner node is " + inner.getName() + " of type " + types[inner.getType()]);
 				}
 			}
+			
+			Debug.println(this.getClass(), "Parents are:");
+			for (IOOBNNode parent : node.getWrappedNode().getOOBNParents()) {
+				Debug.println(this.getClass(), "\t" + parent.getName());				
+			}
+			Debug.println(this.getClass(), "Children are:");
+			for (IOOBNNode child : node.getWrappedNode().getOOBNChildren()) {
+				Debug.println(this.getClass(), "\t" + child.getName());				
+			}
+			
 		} catch (Exception t) {
 			// do nothing
 		}

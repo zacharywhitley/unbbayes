@@ -31,6 +31,13 @@ public class Resources extends ListResourceBundle {
 		
 
 		{"DuplicateOOBNClassExceptionMessage","Duplicate OOBN class found"},
+		
+		{"InputNodeHasNoParents", "Input node should have no parents"},
+		{"InstanceOutputNodeHasNoParents", "Output node of an instance should have no parents"},
+		{"InstanceInputNodeHasNoMultipleParents", "Input node of an instance should not have multiple parents"},
+		{"NoNodeIsParentOf2InstanceInput","No node should be parent of 2 or more instance input node"},
+		{"PleaseAddParentToInstanceInputNodes","Please, add an edge to an input node"},
+		{"PleaseAddChildToInstanceOutputNodes", "Please, add an edge to an output node"},
 	};
 	
 }

@@ -5,6 +5,7 @@ package unbbayes.prs.oobn;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Shou Matsumoto
@@ -78,7 +79,7 @@ public interface IOOBNNode {
 	 * If node is has inner nodes within an instance node, we may
 	 * want to obtain that instance nodes
 	 */
-	public Collection<IOOBNNode> getInnerNodes(IOOBNNode upperInstanceNode);
+	public Collection<IOOBNNode> getInnerNodes();
 	
 	/**
 	 * Gets the name of this node
@@ -121,4 +122,35 @@ public interface IOOBNNode {
 	 * if node's type is instancial
 	 */
 	public IOOBNNode getOriginalClassNode();
+	
+	/**
+	 * Obtains the parents of this node.
+	 * If this node is an Input node, it returns the associated node (a node which this input
+	 * node should be replaced to).
+	 * Please, note that if this node has TYPE_INSTANCE_OUTPUT type, it must have no parent node
+	 * (only the original TYPE_OUTPUT node should have parents).
+	 * @return A set of parents
+	 */
+	public Set<IOOBNNode> getOOBNParents();
+	
+	/**
+	 * Add a parent to this node.
+	 * If this is an input instance node, add a node which this input
+	 * node should be replaced to.
+	 * @param node
+	 */
+	public void addParent(IOOBNNode node);
+	
+	
+	/**
+	 * Add a child to this node.
+	 * @param node
+	 */
+	public void addChild(IOOBNNode node);
+	
+	/**
+	 * Obtains a set of children
+	 * @return
+	 */
+	public Set<IOOBNNode> getOOBNChildren();
 }

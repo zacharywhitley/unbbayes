@@ -31,11 +31,12 @@ import unbbayes.util.Debug;
  */
 public class OOBNClassController extends NetworkController {
 
-	
+	private IOOBNClass controlledClass = null;
 
+	
 	/** Load resource file from this package */
 	private static ResourceBundle resource = ResourceBundle
-			.getBundle("unbbayes.controller.resources.ControllerResources");
+			.getBundle("unbbayes.controller.oobn.resources.OOBNControllerResources");
 
 	
 	
@@ -53,8 +54,10 @@ public class OOBNClassController extends NetworkController {
 	 * @param singleEntityNetwork
 	 * @param screen
 	 */
-	public static OOBNClassController newInstance (SingleEntityNetwork singleEntityNetwork, NetworkWindow screen) {
-		return new OOBNClassController(singleEntityNetwork,screen);
+	public static OOBNClassController newInstance (IOOBNClass oobnClass, NetworkWindow screen) {
+		OOBNClassController ret = new OOBNClassController((SingleEntityNetwork)oobnClass.getNetwork(),screen);
+		ret.setControlledClass(oobnClass);
+		return ret;
 	}
 
 	/* (non-Javadoc)
@@ -86,6 +89,11 @@ public class OOBNClassController extends NetworkController {
 	 */
 	public void insertInstanceNode(IOOBNClass oobnClass, double x, double y) {
 
+		// consistency: we cannot insert a instance of a class to itself (no class recursion is allowed)
+		if (this.getControlledClass().equals(oobnClass)) {
+			throw new RuntimeException(resource.getString("OOBNClassCycle"));
+		}
+		
 		// new oobn node being added
 		DefaultOOBNNode wrappedNode = DefaultOOBNNode.newInstance();
 		
@@ -130,6 +138,20 @@ public class OOBNClassController extends NetworkController {
 		
 		
 		
+	}
+
+	/**
+	 * @return the controlledClass
+	 */
+	public IOOBNClass getControlledClass() {
+		return controlledClass;
+	}
+
+	/**
+	 * @param controlledClass the controlledClass to set
+	 */
+	protected void setControlledClass(IOOBNClass controlledClass) {
+		this.controlledClass = controlledClass;
 	}
 	
 	

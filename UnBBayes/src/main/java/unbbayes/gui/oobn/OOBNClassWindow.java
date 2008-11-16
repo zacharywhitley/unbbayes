@@ -104,10 +104,10 @@ public class OOBNClassWindow extends NetworkWindow {
 	/**
 	 * Use this just in case you want to extend this class...
 	 */
-	protected OOBNClassWindow(SingleEntityNetwork net) {
+	protected OOBNClassWindow(IOOBNClass net) {
 		super();
 		
-		this.net = net; 
+		this.net = net.getNetwork(); 
 		fileName = null; 
 		this.controller = OOBNClassController.newInstance(net, this);
 		card = new CardLayout();
@@ -121,7 +121,7 @@ public class OOBNClassWindow extends NetworkWindow {
 	}
 	
 	public static OOBNClassWindow newInstance (IOOBNClass net) {
-		OOBNClassWindow ret = new OOBNClassWindow((SingleEntityNetwork)net.getNetwork());
+		OOBNClassWindow ret = new OOBNClassWindow(net);
 		ret.initComponents();
 		return ret;
 	}

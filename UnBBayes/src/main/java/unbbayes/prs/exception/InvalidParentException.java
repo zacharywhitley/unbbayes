@@ -7,5 +7,9 @@ public class InvalidParentException extends Exception {
 	public InvalidParentException(String msg) {
 		super(msg);
 	}
+	
+	public InvalidParentException(String msg, Throwable t) {
+		super(msg,t);
+	}
 
 }

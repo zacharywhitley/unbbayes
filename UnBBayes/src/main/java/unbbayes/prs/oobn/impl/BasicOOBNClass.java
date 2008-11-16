@@ -10,9 +10,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 import unbbayes.gui.oobn.node.OOBNNodeGraphicalWrapper;
+import unbbayes.prs.Edge;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.ITabledVariable;
+import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.SingleEntityNetwork;
+import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.oobn.IOOBNClass;
 import unbbayes.prs.oobn.IOOBNNode;
 import unbbayes.prs.oobn.exception.OOBNException;
@@ -170,11 +174,68 @@ public class BasicOOBNClass extends SingleEntityNetwork implements IOOBNClass {
 		return ret;
 	}
 
-	
-	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.Network#removeNode(unbbayes.prs.Node)
+	 */
+	@Override
+	public void removeNode(Node element) {
+		
+		Debug.println(this.getClass(), "Removing node " + element.getName());
+		
+		// obtain wrapped IOOBNNode
+		IOOBNNode removingNode = null;
+		for (IOOBNNode node : this.getAllNodes()) {
+			// I'm comparing element.equals instead of node.equals because I expect element
+			// is a graphical wrapper of node (the graphical wrapper can treat IOOBNNode, bug
+			// IOOBNNode cannot treat the graphical wrapper)
+			if (element.equals(node)) {
+				removingNode = node;
+				break;
+			}
+		}
+		
+		
+		
+		// Update wrapped IOOBNNode
+		if (removingNode != null) {
+			
+			// update children
+			for (IOOBNNode child : removingNode.getOOBNChildren()) {
+				child.getOOBNParents().remove(removingNode);
+				Debug.println(this.getClass(), "Removing parent " + removingNode.getName() + " from " + child.getName());
+			}
+			// update parents
+			for (IOOBNNode parent : removingNode.getOOBNParents()) {
+				parent.getOOBNChildren().remove(removingNode);
+
+				Debug.println(this.getClass(), "Removing child " + removingNode.getName() + " from " + parent.getName());
+			}
+		}
+		
+		// update the graphical wrapper as well
+		super.removeNode(element);
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.Network#addEdge(unbbayes.prs.Edge)
+	 */
+	@Override
+	public void addEdge(Edge edge) throws InvalidParentException {
+		
+		// I'm extending this method in order to make add child and add parent as
+		// only one method (and make it transactional).
+		
+		edge.getDestinationNode().addParent(edge.getOriginNode());
+	    edgeList.add(edge);
+	    if (edge.getDestinationNode() instanceof ITabledVariable) {
+			ITabledVariable v2 = (ITabledVariable) edge.getDestinationNode();
+			PotentialTable auxTab = v2.getPotentialTable();
+			auxTab.addVariable(edge.getOriginNode());
+		}
+	}
 
 	
-	
+
 	
 	
 	
