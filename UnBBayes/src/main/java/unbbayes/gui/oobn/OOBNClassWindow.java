@@ -54,7 +54,7 @@ public class OOBNClassWindow extends NetworkWindow {
 
 	private JViewport graphViewport = null;
 
-	private  GraphPane graphPane = null;
+	private  OOBNGraphPane graphPane = null;
 
 	private  OOBNClassController controller = null;
 
@@ -228,7 +228,7 @@ public class OOBNClassWindow extends NetworkWindow {
 	 * @return retorna o (<code>GraphPane</code>)
 	 * @see GraphPane
 	 */
-	public GraphPane getGraphPane() {
+	public OOBNGraphPane getGraphPane() {
 		return this.graphPane;
 	}
 
@@ -592,7 +592,7 @@ public class OOBNClassWindow extends NetworkWindow {
 	/**
 	 * @param graphPane the graphPane to set
 	 */
-	public void setGraphPane(GraphPane graphPane) {
+	public void setGraphPane(OOBNGraphPane graphPane) {
 		this.graphPane = graphPane;
 	}
 

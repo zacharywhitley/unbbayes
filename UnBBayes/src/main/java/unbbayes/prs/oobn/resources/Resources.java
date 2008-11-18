@@ -38,6 +38,8 @@ public class Resources extends ListResourceBundle {
 		{"NoNodeIsParentOf2InstanceInput","No node should be parent of 2 or more instance input node"},
 		{"PleaseAddParentToInstanceInputNodes","Please, add an edge to an input node"},
 		{"PleaseAddChildToInstanceOutputNodes", "Please, add an edge to an output node"},
+		{"InstanceInputTypeCompatibilityFailed", "Node types are not compatible. Please, check number and name of states"},
+		{"ClassCycleFound", "There is a cycle: class contains itself"},
 	};
 	
 }

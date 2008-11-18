@@ -153,6 +153,9 @@ public class OOBNClassController extends NetworkController {
 	protected void setControlledClass(IOOBNClass controlledClass) {
 		this.controlledClass = controlledClass;
 	}
+
+	
+	
 	
 	
 

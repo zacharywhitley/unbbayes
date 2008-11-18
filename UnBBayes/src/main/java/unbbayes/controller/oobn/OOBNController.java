@@ -27,7 +27,7 @@ import unbbayes.prs.oobn.IOOBNNode;
 import unbbayes.prs.oobn.IObjectOrientedBayesianNetwork;
 import unbbayes.prs.oobn.compiler.IOOBNCompiler;
 import unbbayes.prs.oobn.compiler.impl.OOBNToSingleAgentMSBNCompiler;
-import unbbayes.prs.oobn.impl.BasicOOBNClass;
+import unbbayes.prs.oobn.impl.DefaultOOBNClass;
 import unbbayes.prs.oobn.impl.OOBNClassSingleEntityNetworkWrapper;
 import unbbayes.util.Debug;
 
@@ -138,7 +138,7 @@ public class OOBNController extends NetworkController {
 	 * @param name: name/title of the new class
 	 */
 	public void addNewOOBNClass(String name) {
-		this.addOOBNClass(BasicOOBNClass.newInstance(name));
+		this.addOOBNClass(DefaultOOBNClass.newInstance(name));
 	}
 	
 	/**
@@ -195,9 +195,9 @@ public class OOBNController extends NetworkController {
 		// TODO implement this
 		Debug.println(this.getClass(), "File loader not yet implemented");
 		Set<IOOBNClass> ret = new HashSet<IOOBNClass>();
-		ret.add(BasicOOBNClass.newInstance("Stub"));
-		ret.add(BasicOOBNClass.newInstance("Stub1"));
-		ret.add(BasicOOBNClass.newInstance("Stub2"));
+		ret.add(DefaultOOBNClass.newInstance("Stub"));
+		ret.add(DefaultOOBNClass.newInstance("Stub1"));
+		ret.add(DefaultOOBNClass.newInstance("Stub2"));
 		return ret;
 	}
 	

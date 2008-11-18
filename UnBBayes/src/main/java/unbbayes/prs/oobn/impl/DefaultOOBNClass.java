@@ -7,6 +7,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import unbbayes.gui.oobn.node.OOBNNodeGraphicalWrapper;
@@ -26,25 +27,29 @@ import unbbayes.util.Debug;
  * @author Shou Matsumoto
  *
  */
-public class BasicOOBNClass extends SingleEntityNetwork implements IOOBNClass {
+public class DefaultOOBNClass extends SingleEntityNetwork implements IOOBNClass {
 
+	
+	/** Load resource file from this package */
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.oobn.resources.Resources");  		
+	
 	
 	/**
 	 * @param name
 	 */
-	protected BasicOOBNClass(String name) {
+	protected DefaultOOBNClass(String name) {
 		super(name);
 		// TODO Auto-generated constructor stub
 	}
 	
 	/**
-	 * Constructor method for BasicOOBNClass,
+	 * Constructor method for DefaultOOBNClass,
 	 * a simplified implementation of IOOBNClass
 	 * @param name: name/title of the oobn class
 	 * @return a new instance of a oobn class
 	 */
-	public static BasicOOBNClass newInstance(String name) {
-		return new BasicOOBNClass(name);
+	public static DefaultOOBNClass newInstance(String name) {
+		return new DefaultOOBNClass(name);
 	}
 
 	/* (non-Javadoc)
@@ -71,7 +76,7 @@ public class BasicOOBNClass extends SingleEntityNetwork implements IOOBNClass {
 	@Override
 	public boolean equals(Object obj) {
 		try {
-			return super.equals(obj) || this.getName().equals(((BasicOOBNClass)obj).getName());
+			return super.equals(obj) || this.getName().equals(((DefaultOOBNClass)obj).getName());
 		} catch (Exception e) {
 			// if conversion is throwing an exception, we assume they are not "compatible",
 			// so, they are not "equal"
@@ -212,7 +217,19 @@ public class BasicOOBNClass extends SingleEntityNetwork implements IOOBNClass {
 			}
 		}
 		
-		// update the graphical wrapper as well
+		// update the graphical wrapper as well		
+		
+		if (element instanceof OOBNNodeGraphicalWrapper) {
+			OOBNNodeGraphicalWrapper node = (OOBNNodeGraphicalWrapper)element;
+			// if node is a instance type, we must remove all inner nodes as well
+			if ( ( node.getWrappedNode().getType() & IOOBNNode.TYPE_INSTANCE ) != 0 ) {
+				for (OOBNNodeGraphicalWrapper inner : node.getInnerNodes()) {
+					this.removeNode(inner);
+				}
+			}
+		}
+		
+		// remove the current graphical node
 		super.removeNode(element);
 	}
 
@@ -232,6 +249,65 @@ public class BasicOOBNClass extends SingleEntityNetwork implements IOOBNClass {
 			PotentialTable auxTab = v2.getPotentialTable();
 			auxTab.addVariable(edge.getOriginNode());
 		}
+	}
+	
+	
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.oobn.IOOBNClass#containsInstanceOf(unbbayes.prs.oobn.IOOBNClass)
+	 */
+	public boolean containsInstanceOf(IOOBNClass classToCheck) {
+		
+		// if this is equal to classToCheck, this contains classToCheck
+		if (this.equals(classToCheck)) {
+			return true;
+		}
+		
+		// try recursively for all classes loaded by this class, by inspecting all instance nodes
+		for (IOOBNNode node : this.getAllNodes()) {
+			if (node.getType() == node.TYPE_INSTANCE) {
+				if (node.getParentClass().containsInstanceOf(classToCheck)){
+					return true;
+				}
+			}
+		}
+		
+		// no class was found...
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.Network#addNode(unbbayes.prs.Node)
+	 */
+	@Override
+	public void addNode(Node node) {
+		
+		// consistency check (class cycle)
+		
+		if (node instanceof OOBNNodeGraphicalWrapper) {
+			// extract wrapper
+			OOBNNodeGraphicalWrapper wrapper = (OOBNNodeGraphicalWrapper)node;
+			// if this node's type is instance, we must check cycle
+			if ( ( wrapper.getWrappedNode().getType() & IOOBNNode.TYPE_INSTANCE ) != 0 ) {
+				// if class contains itself, there is a cycle
+				if (wrapper.getWrappedNode().getParentClass().containsInstanceOf(this)) {
+					// there is a cycle here
+					throw new IllegalArgumentException(resource.getString("ClassCycleFound"));
+				}
+			}
+			
+		}
+		
+		// no consistency error found. Let's continue
+		super.addNode(node);
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.oobn.IOOBNClass#addOOBNNode(unbbayes.prs.oobn.IOOBNNode)
+	 */
+	public void addOOBNNode(IOOBNNode node) {
+		// just wrapps a node
+		this.addNode(OOBNNodeGraphicalWrapper.newInstance(node));		
 	}
 
 	

@@ -15,7 +15,7 @@ import unbbayes.prs.oobn.exception.OOBNException;
  * @author Shou Matsumoto
  *
  */
-public class OOBNClassSingleEntityNetworkWrapper extends BasicOOBNClass {
+public class OOBNClassSingleEntityNetworkWrapper extends DefaultOOBNClass {
 
 	private SingleEntityNetwork wrapped = null;
 	
@@ -34,7 +34,7 @@ public class OOBNClassSingleEntityNetworkWrapper extends BasicOOBNClass {
 
 
 	/* (non-Javadoc)
-	 * @see unbbayes.prs.oobn.impl.BasicOOBNClass#getNetwork()
+	 * @see unbbayes.prs.oobn.impl.DefaultOOBNClass#getNetwork()
 	 */
 	@Override
 	public Network getNetwork() {
@@ -42,7 +42,7 @@ public class OOBNClassSingleEntityNetworkWrapper extends BasicOOBNClass {
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.prs.oobn.impl.BasicOOBNClass#setClassName(java.lang.String)
+	 * @see unbbayes.prs.oobn.impl.DefaultOOBNClass#setClassName(java.lang.String)
 	 */
 	@Override
 	public void setClassName(String name) throws OOBNException {
@@ -50,7 +50,7 @@ public class OOBNClassSingleEntityNetworkWrapper extends BasicOOBNClass {
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.prs.oobn.impl.BasicOOBNClass#toString()
+	 * @see unbbayes.prs.oobn.impl.DefaultOOBNClass#toString()
 	 */
 	@Override
 	public String toString() {
@@ -60,7 +60,7 @@ public class OOBNClassSingleEntityNetworkWrapper extends BasicOOBNClass {
 	
 
 	/* (non-Javadoc)
-	 * @see unbbayes.prs.oobn.impl.BasicOOBNClass#equals(java.lang.Object)
+	 * @see unbbayes.prs.oobn.impl.DefaultOOBNClass#equals(java.lang.Object)
 	 */
 	@Override
 	public boolean equals(Object obj) {
@@ -75,7 +75,7 @@ public class OOBNClassSingleEntityNetworkWrapper extends BasicOOBNClass {
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.prs.oobn.impl.BasicOOBNClass#getClassName()
+	 * @see unbbayes.prs.oobn.impl.DefaultOOBNClass#getClassName()
 	 */
 	@Override
 	public String getClassName() {

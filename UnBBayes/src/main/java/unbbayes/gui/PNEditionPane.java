@@ -686,6 +686,22 @@ public class PNEditionPane extends JPanel {
 		public JToggleButton getBtnSelectObject() {
 			return btnSelectObject;
 		}
+		
+		
+
+		/**
+		 * @return the btnResetCursor
+		 */
+		public JToggleButton getBtnResetCursor() {
+			return btnResetCursor;
+		}
+
+		/**
+		 * @return the btnDeleteSelectedItem
+		 */
+		public JToggleButton getBtnDeleteSelectedItem() {
+			return btnDeleteSelectedItem;
+		}
 
 		public ButtonGroup getGroupEditionButtons() {
 			return groupEditionButtons;

@@ -56,4 +56,17 @@ public interface IOOBNClass extends Transferable{
 //	 * @param net
 //	 */
 //	public void setNetwork(Network net);
+	
+	
+	/**
+	 * Adds a node to this class
+	 */
+	public void addOOBNNode(IOOBNNode node);
+	
+	/**
+	 * Verify RECURSIVELY if this class contains any instance of a particular class
+	 * @param classToCheck: an OOBN class which we are testing if it is inside this class
+	 * @return: true if this class has an instance of classToCheck.
+	 */
+	public boolean containsInstanceOf(IOOBNClass classToCheck);
 }

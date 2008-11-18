@@ -22,7 +22,7 @@ public class DefaultOOBNNode implements IOOBNNode {
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.oobn.resources.Resources");  		
 	
-
+  	/** name of states. Please, use an implementation which uses equals() to compare elements or you'll experience trouble at inner instance input nodes */
 	private List<String> stateNames = null;
 	
 	private Set<IOOBNNode> innerNodes = null;
@@ -49,6 +49,7 @@ public class DefaultOOBNNode implements IOOBNNode {
 	 */
 	protected DefaultOOBNNode() {
 		this.innerNodes = new HashSet<IOOBNNode>();
+		// I'm using 
 		this.stateNames = new ArrayList<String>();
 		this.parents = new HashSet<IOOBNNode>();
 		this.children = new HashSet<IOOBNNode>();
@@ -240,6 +241,11 @@ public class DefaultOOBNNode implements IOOBNNode {
 			// instance input node should never have 2 or more parents
 			if (this.getOOBNParents().size() > 0) {
 				throw new IllegalArgumentException(resource.getString("InstanceInputNodeHasNoMultipleParents"));
+			}
+			
+			// instance input node should have type-compatible parent
+			if (!this.getStateNames().equals(node.getStateNames())) {
+				throw new IllegalArgumentException(resource.getString("InstanceInputTypeCompatibilityFailed"));
 			}
 		}
 		

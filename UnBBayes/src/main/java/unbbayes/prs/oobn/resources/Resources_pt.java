@@ -38,5 +38,7 @@ public class Resources_pt extends ListResourceBundle {
 		{"NoNodeIsParentOf2InstanceInput","Um nó não deve ser pai de duas ou mais instâncias de Input"},
 		{"PleaseAddParentToInstanceInputNodes","Insira um arco a um nó de Input"},
 		{"PleaseAddChildToInstanceOutputNodes", "Insira um arco a um nó de Output"},
+		{"InstanceInputTypeCompatibilityFailed", "Os tipos dos nós estão incompatíveis. Cheque o número e o nome dos estados"},
+		{"ClassCycleFound", "Ciclo encontrado: a classe contém ela mesma"},
 	};
 }

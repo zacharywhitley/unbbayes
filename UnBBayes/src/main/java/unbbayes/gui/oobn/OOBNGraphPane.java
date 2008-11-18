@@ -3,6 +3,7 @@
  */
 package unbbayes.gui.oobn;
 
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -78,6 +79,8 @@ public class OOBNGraphPane extends GraphPane {
 		ret.setUpTransferHundler();
 		
 		ret.setVisibleDimension(new Dimension());
+		
+		ret.setToolTipText(resource.getString("leftClickToChangeNodeType"));
 		
 		return ret;
 	}
@@ -305,19 +308,7 @@ public class OOBNGraphPane extends GraphPane {
 	public void mouseReleased(MouseEvent e) {
 		// I'm overwriting this method to add special node treatment for OOBN node
 		// when a mouse is clicked over such node.
-		// I'm not using e.isPoputrigger because it seems not to be working on Linux...
-		if ((e.getModifiers() == MouseEvent.BUTTON3_MASK) && (getSelected() != null)) {
-			// we should only trigger such event if the selected one is an OOBN Node
-			if (this.getSelected() instanceof OOBNNodeGraphicalWrapper) {
-				// only allow to popup if selected node is not an instance node
-				if ((((OOBNNodeGraphicalWrapper)this.getSelected()).getWrappedNode().getType() & IOOBNNode.TYPE_INSTANCE) == 0) {
-					this.getOobnOnNodePopup().setEnabled(true);
-					this.getOobnOnNodePopup().show(e.getComponent(), e.getX(), e.getY());
-				}
-			} else {
-				// nothing to do
-			}
-		} 
+		
 		
 		switch (this.getAction()) {
 		case NONE:
@@ -333,6 +324,17 @@ public class OOBNGraphPane extends GraphPane {
 		
 		// if the event is not what we intended to overwrite, pass to upper class
 		super.mouseReleased(e);
+		
+		// I'm not using e.isPoputrigger because it seems not to be working on Linux...
+		if ((e.getModifiers() == MouseEvent.BUTTON3_MASK) && (getSelected() != null)) {
+			// we should only trigger such event if the selected one is an OOBN Node
+			if (this.getSelected() instanceof OOBNNodeGraphicalWrapper) {
+				// only allow to popup if selected node is not an instance node
+				this.showNodeTypeChangePopup(e.getComponent(), e.getX(), e.getY());
+			} else {
+				// nothing to do
+			}
+		} 
 		
 	}
 	
@@ -476,11 +478,11 @@ public class OOBNGraphPane extends GraphPane {
 			long width = noAux.getThisWidth()/2;
 			long height = noAux.getThisWidth()/2;
 			
-			Debug.println(this.getClass(), "Obtaining rectangle repaint from OOBNGraphPane");
+			//Debug.println(this.getClass(), "Obtaining rectangle repaint from OOBNGraphPane");
 			return new Rectangle((int) (menorX - 6 * width), (int) (menorY - 6 * height), (int) (maiorX - menorX + 12 * width), (int) (maiorY - menorY + 12 * height));
 		} else {
 
-			Debug.println(super.getClass(), "Obtaining rectangle repaint from superclass");
+			//Debug.println(super.getClass(), "Obtaining rectangle repaint from superclass");
 			return super.getRectangleRepaint();
 			
 		}
@@ -553,6 +555,11 @@ public class OOBNGraphPane extends GraphPane {
 	
 	
 	
-	
+	public void showNodeTypeChangePopup(Component invoker, int x, int y) {
+		if ((((OOBNNodeGraphicalWrapper)this.getSelected()).getWrappedNode().getType() & IOOBNNode.TYPE_INSTANCE) == 0) {
+			this.getOobnOnNodePopup().setEnabled(true);
+			this.getOobnOnNodePopup().show(invoker, x, y);
+		}	
+	}
 	
 }

@@ -63,6 +63,11 @@ public class OOBNGuiResource_pt extends ListResourceBundle {
 
 		{"classNavigationPanelLabel", "Lista de classes"},
 		
+
+		{"leftClickToChangeNodeType", "Clique com o botão direito para alterar o tipo do nó"},
+		
+
+		{"changeNodeType", "Alterar o tipo do nó selecionado"},
 		
 	};
 }

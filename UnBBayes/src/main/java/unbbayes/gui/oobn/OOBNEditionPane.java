@@ -6,14 +6,20 @@ package unbbayes.gui.oobn;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ResourceBundle;
 
+import javax.swing.JButton;
+import javax.swing.JPopupMenu;
+import javax.swing.JToggleButton;
+
+import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
 import unbbayes.gui.GlobalOptionsDialog;
 import unbbayes.gui.GraphAction;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.PNEditionPane;
 import unbbayes.prs.Network;
-import unbbayes.prs.oobn.impl.BasicOOBNClass;
+import unbbayes.prs.oobn.impl.DefaultOOBNClass;
 import unbbayes.util.Debug;
 
 /**
@@ -23,6 +29,16 @@ import unbbayes.util.Debug;
 public class OOBNEditionPane extends PNEditionPane {
 
 	private OOBNClassWindow linkedWindow = null;
+	
+	
+	private JButton changeNodeTypeButton = null;
+	
+	private IconController iconController = IconController.getInstance();
+	
+	
+	/** Load resource file from this package */
+	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.oobn.resources.OOBNGuiResource");
+	
 	
 	/**
 	 * @param window
@@ -43,6 +59,7 @@ public class OOBNEditionPane extends PNEditionPane {
 		ret.filterUnusedToolBarEditionButtons();
 		ret.setUpButtonListeners();
 		ret.setLinkedWindow(window);
+		ret.setUpOOBNSpecificButtons();
 		return ret;
 	}
 	
@@ -76,6 +93,40 @@ public class OOBNEditionPane extends PNEditionPane {
 		super.getBtnEvaluate().setVisible(false);
 		
 	}
+	
+	/**
+	 * Sets up the buttons for OOBN edition;
+	 * like the button to change node's type
+	 */
+	public void setUpOOBNSpecificButtons() {
+		
+		// setting up button to change node type
+		
+		JButton button = new JButton(this.getIconController().getChangeNodeTypeIcon());
+		
+		this.setChangeNodeTypeButton(button);
+		button.setToolTipText(resource.getString("changeNodeType"));
+		
+		this.getChangeNodeTypeButton().addActionListener(new ActionListener() {
+			/* (non-Javadoc)
+			 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+			 */
+			public void actionPerformed(ActionEvent e) {
+				getLinkedWindow().getGraphPane().showNodeTypeChangePopup(getChangeNodeTypeButton()
+										, getChangeNodeTypeButton().getX()
+										, getChangeNodeTypeButton().getY());
+				
+			}
+			
+		});
+		
+		super.getTbEdition().add(button);
+		
+		
+		
+		
+		
+	}
 
 	/**
 	 * @return the linkedWindow
@@ -89,6 +140,34 @@ public class OOBNEditionPane extends PNEditionPane {
 	 */
 	public void setLinkedWindow(OOBNClassWindow linkedWindow) {
 		this.linkedWindow = linkedWindow;
+	}
+
+	/**
+	 * @return the changeNodeTypeButton
+	 */
+	public JButton getChangeNodeTypeButton() {
+		return changeNodeTypeButton;
+	}
+
+	/**
+	 * @param changeNodeTypeButton the changeNodeTypeButton to set
+	 */
+	public void setChangeNodeTypeButton(JButton changeNodeTypeButton) {
+		this.changeNodeTypeButton = changeNodeTypeButton;
+	}
+
+	/**
+	 * @return the iconController
+	 */
+	public IconController getIconController() {
+		return iconController;
+	}
+
+	/**
+	 * @param iconController the iconController to set
+	 */
+	public void setIconController(IconController iconController) {
+		this.iconController = iconController;
 	}
 	
 	

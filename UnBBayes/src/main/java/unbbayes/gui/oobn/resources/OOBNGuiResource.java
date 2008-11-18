@@ -62,5 +62,9 @@ public class OOBNGuiResource extends ListResourceBundle {
 		
 		{"classNavigationPanelLabel", "Classes List"},
 		
+		{"leftClickToChangeNodeType", "Left click to change node's type"},
+		
+		{"changeNodeType", "Change selected node type"},
+		
 	};
 }

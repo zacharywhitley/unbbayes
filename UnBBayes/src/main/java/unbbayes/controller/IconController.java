@@ -305,6 +305,8 @@ public class IconController implements Serializable {
 
 	protected ImageIcon newClassFromFileIcon; 
 	
+	protected ImageIcon changeNodeTypeIcon; 
+	
 	
 	
 	
@@ -1541,8 +1543,7 @@ public class IconController implements Serializable {
 		if (deleteClassIcon != null) {
 			return deleteClassIcon;
 		} else {
-			deleteClassIcon = new ImageIcon(getClass().getResource(
-					"/icons/class-delete.png"));
+			deleteClassIcon = this.getEditDelete();
 			return deleteClassIcon;
 		}
 	}	
@@ -1551,7 +1552,7 @@ public class IconController implements Serializable {
 		if (newClassFromFileIcon != null) {
 			return newClassFromFileIcon;
 		} else {
-			newClassFromFileIcon = new ImageIcon(getClass().getResource("/icons/class-new-file.png"));
+			newClassFromFileIcon = this.getOpenIcon();
 			return newClassFromFileIcon;
 		}
 	}
@@ -1564,4 +1565,15 @@ public class IconController implements Serializable {
 			return newClassIcon;
 		}
 	}
+	
+	public ImageIcon getChangeNodeTypeIcon() {
+		if (changeNodeTypeIcon != null) {
+			return changeNodeTypeIcon;
+		} else {
+			changeNodeTypeIcon = new ImageIcon(getClass().getResource("/icons/change-node-type.gif"));
+			return changeNodeTypeIcon;
+		}
+	}
+	
+	
 }
