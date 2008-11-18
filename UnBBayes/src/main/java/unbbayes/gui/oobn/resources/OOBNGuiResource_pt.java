@@ -61,7 +61,7 @@ public class OOBNGuiResource_pt extends ListResourceBundle {
 		{"statusReadyLabel", "Pronto"},
 		
 
-		{"classNavigationPanelLabel", "Lista de classes OOBN carregadas para este projeto"},
+		{"classNavigationPanelLabel", "Lista de classes"},
 		
 		
 	};

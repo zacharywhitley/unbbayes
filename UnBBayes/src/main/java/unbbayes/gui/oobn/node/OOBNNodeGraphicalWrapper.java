@@ -100,6 +100,8 @@ public class OOBNNodeGraphicalWrapper extends ProbabilisticNode {
 		
 		ret.setInnerNodes(new HashSet<OOBNNodeGraphicalWrapper>());
 		
+		ret.initMarginalList();
+		
 //		ret.potentialTable = new ProbabilisticTable();
 		
 		
@@ -672,7 +674,9 @@ public class OOBNNodeGraphicalWrapper extends ProbabilisticNode {
 		try {
 			// this is going to add child to the parent as well
 			this.getWrappedNode().addParent(((OOBNNodeGraphicalWrapper)parent).getWrappedNode());
+			// update parents/childrens for super class as well
 			super.addParent(parent);
+			parent.addChild(this);
 		} catch (Exception e) {
 			Debug.println(this.getClass(), "Could not add a parent to wrapped OOBN node", e);
 			throw new InvalidParentException(e.getMessage());

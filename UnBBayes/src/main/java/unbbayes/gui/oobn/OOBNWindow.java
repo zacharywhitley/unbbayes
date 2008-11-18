@@ -148,6 +148,7 @@ public class OOBNWindow extends JInternalFrame  {
 		this.oobnClassList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		this.oobnClassList.setEnabled(true);
 		this.oobnClassList.setDragEnabled(true);
+		this.oobnClassList.setToolTipText(resource.getString("dragNDropToAddInstance"));
 		
 		// change the data transfer behavior on drag n drop action (or copy n paste)
 		this.oobnClassList.setTransferHandler(new TransferHandler () {
@@ -242,9 +243,11 @@ public class OOBNWindow extends JInternalFrame  {
 		
 		this.netPanel = new JPanel(new BorderLayout());
 		this.oobnClassScroll = new JScrollPane(oobnClassList);
+		this.oobnClassScroll.setToolTipText(resource.getString("dragNDropToAddInstance"));
+		
+		
 		
 		netPanel.setBorder(new TitledBorder(resource.getString("classNavigationPanelLabel")));
-		netPanel.setToolTipText(resource.getString("dragNDropToAddInstance"));
 		
 		netPanel.add(this.oobnClassScroll, BorderLayout.CENTER);
 		

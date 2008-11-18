@@ -305,7 +305,8 @@ public class OOBNGraphPane extends GraphPane {
 	public void mouseReleased(MouseEvent e) {
 		// I'm overwriting this method to add special node treatment for OOBN node
 		// when a mouse is clicked over such node.
-		if (e.isPopupTrigger() && (getSelected() != null)) {
+		// I'm not using e.isPoputrigger because it seems not to be working on Linux...
+		if ((e.getModifiers() == MouseEvent.BUTTON3_MASK) && (getSelected() != null)) {
 			// we should only trigger such event if the selected one is an OOBN Node
 			if (this.getSelected() instanceof OOBNNodeGraphicalWrapper) {
 				// only allow to popup if selected node is not an instance node

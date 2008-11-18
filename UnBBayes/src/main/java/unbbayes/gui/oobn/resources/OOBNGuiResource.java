@@ -60,7 +60,7 @@ public class OOBNGuiResource extends ListResourceBundle {
 		{"compileToolTip","Compile OOBN using selected class"},
 		{"statusReadyLabel", "Ready"},
 		
-		{"classNavigationPanelLabel", "List of loaded OOBN classes for this project"},
+		{"classNavigationPanelLabel", "Classes List"},
 		
 	};
 }
