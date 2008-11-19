@@ -4,7 +4,7 @@ After that, it is necessary to install the maven plugin for your IDE, in this ca
 The update site for this plugin is: http://q4e.googlecode.com/svn/trunk/updatesite/.
 
 Before using this new Maven project, it is necessary to install the following libraries in
-the local repository. These jars were not found in commom remote repositories.
+the local repository. These jars were not found in common remote repositories.
 
 In the near future, these files shall be in unbbayes's remote project.
 
