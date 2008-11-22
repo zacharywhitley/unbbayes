@@ -38,6 +38,8 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 
 import unbbayes.gui.HierarchicTree;
+import unbbayes.io.builder.IProbabilisticNetworkBuilder;
+import unbbayes.io.builder.impl.DefaultProbabilisticNetworkBuilder;
 import unbbayes.io.exception.LoadException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
@@ -53,13 +55,15 @@ import unbbayes.prs.id.UtilityNode;
 import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.prs.msbn.SubNetwork;
 import unbbayes.util.ArrayMap;
+import unbbayes.util.Debug;
 
 /**
  * Manipulates input/output of NET files.
  * @author Rommel N. Carvalho
  * @author Michael S. Onishi
- * @author Mrio Henrique Paes Vieira (mariohpv@bol.com.br)
- * @version 1.0
+ * @author Mario Henrique Paes Vieira (mariohpv@bol.com.br)
+ * @author Shou Matsumoto
+ * @version 2.0
  */
 public class NetIO implements BaseIO {
 
@@ -70,7 +74,10 @@ public class NetIO implements BaseIO {
 	private static final String ERROR_NET = resource.getString("errorNet");
 	
 	/**
-	 *  Loads a NET format file
+	 *  Loads a NET format file using default node/network builder.
+	 *  In other words, this method returns exactly instances of ProbabilisticNetwork filled
+	 *  by DecisionNode, ProbabilisticNode and UtilityNode.
+	 * @see DefaultProbabilisticNodeBuilder
 	 * @param  input  file to be read.
 	 * @return loaded net.
 	 * @throws LoadException when there were errors loading the network
@@ -81,8 +88,36 @@ public class NetIO implements BaseIO {
 		
 		int index = input.getName().lastIndexOf('.');
 		String id = input.getName().substring(0, index);
-		ProbabilisticNetwork net = new ProbabilisticNetwork(id);
-		load(input, net);
+		
+		// create network using default builder
+		IProbabilisticNetworkBuilder networkBuilder = DefaultProbabilisticNetworkBuilder.newInstance();
+		
+		ProbabilisticNetwork net = networkBuilder.buildNetwork(id);
+		
+		load(input, net, networkBuilder);
+		return net;		
+	}
+	
+	/**
+	 *  Loads a NET format file using network builder
+	 * @see IProbabilisticNetworkBuilder
+	 * @param  input  file to be read.
+	 * @param  networkBuilder: builder to be used in order to generate expected instances
+	 * of probabilistic network, probabilistic nodes, decision nodes and utility nodes. This
+	 * is useful if you want to reuse NetIO for networks/nodes which extends ProbabilisticNetwork,
+	 * ProbabilisticNode, DecisionNode and UtilityNode (or else NetIO will be bound to those 
+	 * superclasses only).
+	 * @return loaded net.
+	 * @throws LoadException when there were errors loading the network
+	 * @throws IOException in case there were errors when manipulating files.
+	 */
+	public ProbabilisticNetwork load(File input, IProbabilisticNetworkBuilder networkBuilder)
+		throws LoadException, IOException {
+		
+		int index = input.getName().lastIndexOf('.');
+		String id = input.getName().substring(0, index);
+		ProbabilisticNetwork net = networkBuilder.buildNetwork(id);
+		load(input, net, networkBuilder);
 		return net;		
 	}
 
@@ -116,7 +151,7 @@ public class NetIO implements BaseIO {
 		int sizeNos = net.getNodeCount();
 		Node auxNo1;
 		for (int c1 = 0; c1 < sizeNos; c1++) {
-			auxNo1 = (Node) net.getNodeAt(c1);
+			auxNo1 =  net.getNodeAt(c1);
 			if (auxNo1.getType() == Node.PROBABILISTIC_NODE_TYPE) {
 				arq.print("node");
 			} else if (auxNo1.getType() == Node.DECISION_NODE_TYPE) {
@@ -266,6 +301,10 @@ public class NetIO implements BaseIO {
 		arq.close();
 	}
 	
+	/**
+	 * TODO create a class for loading/saving MSBN and use delegator pattern to
+	 * use NetIO routines.
+	 */
 	public void saveMSBN(File output, SingleAgentMSBN msbn) throws FileNotFoundException {
 		if (! output.isDirectory()) {
 			System.err.println(resource.getString("IsNotDirectoryException"));
@@ -279,12 +318,19 @@ public class NetIO implements BaseIO {
 		}
 	}
 
-	
+	/**
+	 * TODO create a class for loading/saving MSBN and use delegator pattern to
+	 * use NetIO routines.
+	 */
 	public SingleAgentMSBN loadMSBN(File input) throws IOException,LoadException {
 		if (! input.isDirectory()) {
 			throw new LoadException(resource.getString("IsNotDirectoryException"));
 		}
+		
+		IProbabilisticNetworkBuilder networkBuilder = DefaultProbabilisticNetworkBuilder.newInstance();
+		
 		SingleAgentMSBN msbn = new SingleAgentMSBN(input.getName());
+		
 		File files[] = input.listFiles();
 		for (int i = 0; i < files.length; i++) {			
 			if (files[i].isFile()) {
@@ -295,7 +341,7 @@ public class NetIO implements BaseIO {
 				}
 				if (fileName.substring(index+1).equalsIgnoreCase("net")) {
 					SubNetwork net = new SubNetwork(fileName.substring(0, index));
-					load(files[i], net);
+					load(files[i], net, networkBuilder);
 					msbn.addNetwork(net);
 				}
 			}
@@ -303,7 +349,8 @@ public class NetIO implements BaseIO {
 		return msbn;
 	}
 	
-	private void load(File input, SingleEntityNetwork net) throws IOException, LoadException {
+	private void load(File input, SingleEntityNetwork net, IProbabilisticNetworkBuilder networkBuilder) 
+				throws IOException, LoadException {
 		ITabledVariable auxIVTab = null;
 		PotentialTable auxTabPot = null;
 
@@ -324,25 +371,25 @@ public class NetIO implements BaseIO {
 		st.quoteChar('"');
 		//st.commentChar('%');
 
-		proximo(st);
+		getNext(st);
 		if (st.sval.equals("net")) {
-			proximo(st);
+			getNext(st);
 
 			if (st.sval.equals("{")) {
-				proximo(st);
+				getNext(st);
 				while (!st.sval.equals("}")) {
 					if (st.sval.equals("name")) {
-						proximo(st);
+						getNext(st);
 						net.setName(st.sval);
 					} else if (st.sval.equals("node_size")) {
-						proximo(st);
-						proximo(st);
+						getNext(st);
+						getNext(st);
 						net.setRadius(Double.parseDouble(st.sval) / 2);
 					} else if (st.sval.equals("tree")) {
-						proximo(st);
+						getNext(st);
 						StringBuffer sb = new StringBuffer(st.sval);
 						DefaultMutableTreeNode root =
-							new DefaultMutableTreeNode("Variveis de Informao");
+							new DefaultMutableTreeNode("Information Variable");
 						loadHierarchicTree(sb, root);
 
 						// construct tree
@@ -352,19 +399,19 @@ public class NetIO implements BaseIO {
 
 						net.setHierarchicTree(hierarchicTree);
 					} else if (st.sval.equals("UnBBayes_Color_Utility")) {
-						proximo(st);
+						getNext(st);
 						UtilityNode.setColor(Integer.parseInt(st.sval));
 					} else if (st.sval.equals("UnBBayes_Color_Decision")) {
-						proximo(st);
+						getNext(st);
 						DecisionNode.setColor(Integer.parseInt(st.sval));
 					} else if (st.sval.equals("UnBBayes_Color_Probabilistic_Description")) {
-                        proximo(st);
+                        getNext(st);
                         ProbabilisticNode.setDescriptionColor(Integer.parseInt(st.sval));
                     } else if (st.sval.equals("UnBBayes_Color_Probabilistic_Explanation")) {
-                        proximo(st);
+                        getNext(st);
                         ProbabilisticNode.setExplanationColor(Integer.parseInt(st.sval));
                     }
-					proximo(st);
+					getNext(st);
 				}
 			}
 		} else {
@@ -372,33 +419,36 @@ public class NetIO implements BaseIO {
 				ERROR_NET + resource.getString("LoadException"));
 		}
 
-		while (proximo(st) != StreamTokenizer.TT_EOF) {
+		while (getNext(st) != StreamTokenizer.TT_EOF) {
 			if (st.sval.equals("node")
 				|| st.sval.equals("decision")
 				|| st.sval.equals("utility")) {
 				Node auxNo = null;
 				if (st.sval.equals("node")) {
-					auxNo = new ProbabilisticNode();
+//					auxNo = new ProbabilisticNode();
+					auxNo = networkBuilder.getProbabilisticNodeBuilder().buildNode();
 				} else if (st.sval.equals("decision")) {
-					auxNo = new DecisionNode();
+//					auxNo = new DecisionNode();
+					auxNo = networkBuilder.getDecisionNodeBuilder().buildNode();
 				} else { // utility
-					auxNo = new UtilityNode();
+//					auxNo = new UtilityNode();
+					auxNo = networkBuilder.getUtilityNodeBuilder().buildNode();
 				}
 
-				proximo(st);
+				getNext(st);
 				auxNo.setName(st.sval);
-				proximo(st);
+				getNext(st);
 				if (st.sval.equals("{")) {
-					proximo(st);
+					getNext(st);
 					while (!st.sval.equals("}")) {
 						if (st.sval.equals("label")) {
-							proximo(st);
+							getNext(st);
 							auxNo.setDescription(st.sval);
-							proximo(st);
+							getNext(st);
 						} else if (st.sval.equals("position")) {
-							proximo(st);
+							getNext(st);
 							int x = Integer.parseInt(st.sval);
-							proximo(st);
+							getNext(st);
 							if (x <= 0) {
 								x = Node.getWidth();
 							}
@@ -407,14 +457,14 @@ public class NetIO implements BaseIO {
 								y = Node.getHeight();
 							}
 							auxNo.getPosition().setLocation(x, y);
-							proximo(st);
+							getNext(st);
 						} else if (st.sval.equals("states")) {
-							while (proximo(st) == '"') {
+							while (getNext(st) == '"') {
 								auxNo.appendState(st.sval);
 							}
 						} else if (st.sval.equals("meanPerClass")) {
 							ArrayList<String> array = new ArrayList<String>();
-							while (proximo(st) == '"') {
+							while (getNext(st) == '"') {
 								array.add(st.sval);
 							}
 							int size = array.size();
@@ -425,7 +475,7 @@ public class NetIO implements BaseIO {
 							auxNo.setMean(mean);
 						} else if (st.sval.equals("stdDevPerClass")) {
 							ArrayList<String> array = new ArrayList<String>();
-							while (proximo(st) == '"') {
+							while (getNext(st) == '"') {
 								array.add(st.sval);
 							}
 							int size = array.size();
@@ -435,18 +485,18 @@ public class NetIO implements BaseIO {
 							}
 							auxNo.setStandardDeviation(stdDev);
 						} else if (st.sval.equals("%descricao")) {
-							proximo(st);
+							getNext(st);
 							auxNo.setExplanationDescription(
 								unformatString(st.sval));
 							auxNo.setInformationType(Node.EXPLANATION_TYPE);
 							readTillEOL(st);
-							proximo(st);
+							getNext(st);
 						} else if (st.sval.equals("%frase")) {
-							proximo(st);
+							getNext(st);
 							ExplanationPhrase explanationPhrase =
 								new ExplanationPhrase();
 							explanationPhrase.setNode(st.sval);
-							proximo(st);
+							getNext(st);
 							try {
 								explanationPhrase.setEvidenceType(
 									Integer.parseInt(st.sval));
@@ -458,12 +508,17 @@ public class NetIO implements BaseIO {
 										+ resource.getString("LoadException2")
 										+ st.sval);
 							}
-							proximo(st);
+							getNext(st);
 							explanationPhrase.setPhrase(
 								unformatString(st.sval));
 							auxNo.addExplanationPhrase(explanationPhrase);
 							readTillEOL(st);
-							proximo(st);
+							getNext(st);
+						} else if (st.sval.contains("HR_")) {
+							// this is a HUGIN specific declaration.
+							// let's ignore it
+							Debug.println(this.getClass(), "Ignoring HR declaration: " + st.sval);
+							while (getNext(st) == '"');
 						} else {
 							throw new LoadException(
 								ERROR_NET
@@ -482,7 +537,7 @@ public class NetIO implements BaseIO {
 							+ resource.getString("LoadException3"));
 				}
 			} else if (st.sval.equals("potential")) {
-				proximo(st);
+				getNext(st);
 				Node auxNo1 = net.getNode(st.sval);
 
 				if (auxNo1 instanceof ITabledVariable) {
@@ -491,9 +546,9 @@ public class NetIO implements BaseIO {
 					auxTabPot.addVariable(auxNo1);
 				}
 
-				proximo(st);
+				getNext(st);
 				if (st.sval.equals("|")) {
-					proximo(st);
+					getNext(st);
 				}
 
 				Node auxNo2;
@@ -506,7 +561,7 @@ public class NetIO implements BaseIO {
 					} catch (InvalidParentException e) {
 						throw new LoadException(e.getMessage());
 					}
-					proximo(st);
+					getNext(st);
 				}
 				
 				/*
@@ -529,7 +584,7 @@ public class NetIO implements BaseIO {
 				}
 				
 				if (st.sval.length() == 1) {
-					proximo(st);
+					getNext(st);
 				}
 
 				int nDim = 0;
@@ -543,7 +598,7 @@ public class NetIO implements BaseIO {
 									+ st.lineno()
 									+ resource.getString("LoadException4"));
 						}
-						proximo(st);
+						getNext(st);
 						while (!st.sval.equals("}")) {
 							if (st.sval.equals("%")) {
 								readTillEOL(st);
@@ -552,7 +607,7 @@ public class NetIO implements BaseIO {
 									nDim++,
 									Float.parseFloat(st.sval));
 							}
-							proximo(st);
+							getNext(st);
 						}
 					} else {
 						throw new LoadException(
@@ -571,7 +626,7 @@ public class NetIO implements BaseIO {
 		}
 	}	
 
-	private int proximo(StreamTokenizer st) throws IOException {
+	private int getNext(StreamTokenizer st) throws IOException {
 		do {
 			st.nextToken();
 		} while (

@@ -66,5 +66,8 @@ public class OOBNGuiResource extends ListResourceBundle {
 		
 		{"changeNodeType", "Change selected node type"},
 		
+
+		{"netFileFilterSaveOOBN","Net 3rd specification (.oobn)"},
+		
 	};
 }

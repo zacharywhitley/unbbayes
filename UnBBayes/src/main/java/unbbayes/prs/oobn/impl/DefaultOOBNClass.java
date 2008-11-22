@@ -16,6 +16,7 @@ import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.oobn.IOOBNClass;
@@ -27,7 +28,7 @@ import unbbayes.util.Debug;
  * @author Shou Matsumoto
  *
  */
-public class DefaultOOBNClass extends SingleEntityNetwork implements IOOBNClass {
+public class DefaultOOBNClass extends ProbabilisticNetwork implements IOOBNClass {
 
 	
 	/** Load resource file from this package */

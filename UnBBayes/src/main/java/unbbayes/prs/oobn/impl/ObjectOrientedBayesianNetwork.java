@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 
 
+import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.oobn.IOOBNClass;
 import unbbayes.prs.oobn.IObjectOrientedBayesianNetwork;
@@ -16,7 +17,7 @@ import unbbayes.prs.oobn.IObjectOrientedBayesianNetwork;
  * @author Shou Matsumoto
  *
  */
-public class ObjectOrientedBayesianNetwork extends SingleEntityNetwork implements
+public class ObjectOrientedBayesianNetwork extends ProbabilisticNetwork implements
 		IObjectOrientedBayesianNetwork {
 
 	private NonDuplicatedArrayList<IOOBNClass> classesList = null; 

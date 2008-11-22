@@ -17,6 +17,8 @@ import unbbayes.gui.UnBBayesFrame;
 import unbbayes.gui.oobn.OOBNClassWindow;
 import unbbayes.gui.oobn.OOBNWindow;
 import unbbayes.gui.oobn.node.OOBNNodeGraphicalWrapper;
+import unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO;
+import unbbayes.io.oobn.impl.DefaultOOBNIO;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.msbn.AbstractMSBN;
@@ -190,9 +192,20 @@ public class OOBNController extends NetworkController {
 		// TODO implement this
 		Debug.println(this.getClass(), "File loader not yet implemented");
 		Set<IOOBNClass> ret = new HashSet<IOOBNClass>();
-		ret.add(DefaultOOBNClass.newInstance("Stub"));
-		ret.add(DefaultOOBNClass.newInstance("Stub1"));
-		ret.add(DefaultOOBNClass.newInstance("Stub2"));
+		
+		IObjectOrientedBayesianNetworkIO io = DefaultOOBNIO.newInstance();
+		
+		try {
+			IOOBNClass loadedOOBN = (IOOBNClass)io.load(file);		
+			ret.add(loadedOOBN);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		
+		
+//		ret.add(DefaultOOBNClass.newInstance("STUB"));
+//		RET.ADD(DEFAULTOOBNCLASS.NEWINSTANCE("STUB1"));
+//		RET.ADD(DEFAULTOOBNCLASS.NEWINSTANCE("STUB2"));
 		return ret;
 	}
 	

@@ -49,6 +49,8 @@ import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.PrOwlIO;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
+import unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO;
+import unbbayes.io.oobn.impl.DefaultOOBNIO;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -371,6 +373,11 @@ public class MainController {
 					window = new NetworkWindow(mebn);	
 					((NetworkWindow)window).setFileName(name); 
 				    
+				} else if (name.endsWith(IObjectOrientedBayesianNetworkIO.fileExtension)) {
+					IObjectOrientedBayesianNetworkIO oobnIO = DefaultOOBNIO.newInstance();
+					IObjectOrientedBayesianNetwork oobn = oobnIO.loadOOBN(file);	
+					OOBNController controller = OOBNController.newInstance(oobn, screen);
+					window = controller.getPanel();
 				}
 			}
 			screen.addWindow(window);

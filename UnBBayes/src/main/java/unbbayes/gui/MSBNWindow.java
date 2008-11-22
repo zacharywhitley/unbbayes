@@ -38,6 +38,7 @@ import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 
 import unbbayes.controller.IconController;
+import unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO;
 import unbbayes.prs.msbn.SingleAgentMSBN;
 
 /**
@@ -48,7 +49,11 @@ import unbbayes.prs.msbn.SingleAgentMSBN;
  * To enable and disable the creation of type comments go to
  * Window>Preferences>Java>Code Generation.
  */
-public class MSBNWindow extends JInternalFrame {
+public class MSBNWindow extends JInternalFrame implements IFileExtensionAwareWindow {
+	
+	// since this implements IFileExtensionAwareWindow, let's store them 
+	// The supported file is a folder...
+	private static final String[] SUPPORTED_FILE_EXTENSIONS = {};
 	
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;	
@@ -181,4 +186,23 @@ public class MSBNWindow extends JInternalFrame {
 	public void changeToListView() {
 		netScroll.setViewportView(netList);
 	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.gui.IFileExtensionAwareWindow#getSupportedFileExtensions()
+	 */
+	public String[] getSupportedFileExtensions() {
+		// The supported file is a folder...
+		return SUPPORTED_FILE_EXTENSIONS;
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.gui.IFileExtensionAwareWindow#getSupportedFilesDescription()
+	 */
+	public String getSupportedFilesDescription() {
+		return resource.getString("netFileFilterSaveMSBN");
+	}
+	
+	
+	
+	
 }

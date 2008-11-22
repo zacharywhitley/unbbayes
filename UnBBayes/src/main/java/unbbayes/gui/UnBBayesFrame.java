@@ -68,8 +68,10 @@ import unbbayes.controller.MainController;
 import unbbayes.io.exception.LoadException;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
+import unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.simulation.montecarlo.controller.MCMainController;
+import unbbayes.util.Debug;
 
 /**
  * This class extends <code>JFrame</code> and it is responsible for 
@@ -340,7 +342,7 @@ public class UnBBayesFrame extends JFrame {
 				setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				// String[] nets = new String[] { "net", "xml", "owl" };
 				String[] nets = new String[] { "net", "xml", "owl",
-						UbfIO.fileExtension };
+						UbfIO.fileExtension, IObjectOrientedBayesianNetworkIO.fileExtension };
 				chooser = new JFileChooser(fileController.getCurrentDirectory());
 				chooser.setDialogTitle(resource.getString("openTitle")); 
 				chooser.setMultiSelectionEnabled(false);
@@ -349,6 +351,8 @@ public class UnBBayesFrame extends JFrame {
 				// adicionar FileView no FileChooser para desenhar �cones de
 				// arquivos
 				chooser.setFileView(new FileIcon(UnBBayesFrame.this));
+				
+				
 
 				chooser.addChoosableFileFilter(new SimpleFileFilter(nets,
 						resource.getString("netFileFilter")));
@@ -403,9 +407,30 @@ public class UnBBayesFrame extends JFrame {
 		alSave = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				setCursor(new Cursor(Cursor.WAIT_CURSOR));
-				// String[] nets = new String[] { "net", "xml", "owl" };
-				String[] nets = new String[] { "net", "xml",
-						UbfIO.fileExtension };
+				
+				// Select filter using currently focused window
+				String[] nets = null;			// file filter content
+				String filterMessage = null;	// message to be added to file filter
+				JInternalFrame focusedInnerFrame = desktop.getSelectedFrame(); // currently focused window
+				if (focusedInnerFrame != null) {
+					if (focusedInnerFrame instanceof IFileExtensionAwareWindow) {
+						IFileExtensionAwareWindow currentWindow = ((IFileExtensionAwareWindow)focusedInnerFrame);
+						nets = currentWindow.getSupportedFileExtensions();
+						filterMessage = currentWindow.getSupportedFilesDescription();
+					} else {
+						// unsupported window type...
+						// let's assume it is an ordinal BN...
+						nets = new String[] { "net", "xml"};
+						filterMessage = resource.getString("netFileFilterSave");
+						Debug.println(this.getClass(), "Unknown desktop internal window was found");
+					}
+				} else {
+					// no window is focused
+					// so, nothing is to be stored by now
+					Debug.println(this.getClass(), "No focused window to save.");
+					setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+					return;
+				}
 
 				chooser = new JFileChooser(fileController.getCurrentDirectory());
 				chooser.setMultiSelectionEnabled(false);
@@ -415,8 +440,7 @@ public class UnBBayesFrame extends JFrame {
 				// adicionar FileView no FileChooser para desenhar �cones de
 				// arquivos
 				chooser.setFileView(new FileIcon(UnBBayesFrame.this));
-				chooser.addChoosableFileFilter(new SimpleFileFilter(nets,
-						resource.getString("netFileFilterSave")));
+				chooser.addChoosableFileFilter(new SimpleFileFilter(nets, filterMessage));
 				int option = chooser.showSaveDialog(null);
 				if (option == JFileChooser.APPROVE_OPTION) {
 					File file = chooser.getSelectedFile();

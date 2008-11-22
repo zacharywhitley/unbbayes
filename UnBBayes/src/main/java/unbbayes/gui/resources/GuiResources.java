@@ -57,8 +57,10 @@ public class GuiResources extends ListResourceBundle {
 		{"fileNETType","Baysian Netwotk File NET"},
 		{"fileGenericType","Generic File"},
 		
-		{"netFileFilter","Net (.net), XMLBIF (.xml), PR-OWL (.owl), UnBBayes file (.ubf)"},
-		{"netFileFilterSave","Net (.net), XMLBIF (.xml), UnBBayes file (.ubf)"},
+		{"netFileFilter","Net (.net, .oobn), XMLBIF (.xml), PR-OWL (.owl), UnBBayes file (.ubf)"},
+		{"netFileFilterSave","Net (.net), XMLBIF (.xml)"},
+		{"netFileFilterSaveMSBN","Select a folder"},
+		{"netFileFilterSaveMEBN", "UnBBayes file (.ubf)"},
 		{"powerloomFileFilter","Knowledge Base (.plm)"},
 		{"xmlBIFFileFilter", "XMLBIF (.xml)"},
 		{"textFileFilter","Text (.txt)"},

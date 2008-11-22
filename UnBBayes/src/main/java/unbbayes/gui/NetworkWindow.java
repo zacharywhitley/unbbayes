@@ -44,6 +44,7 @@ import javax.swing.JViewport;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
+import unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -56,9 +57,18 @@ import unbbayes.prs.mebn.MultiEntityNode;
  * 
  * @author Michael
  * @author Rommel
+ * @author Laecio Lima dos Santos
+ * @author Shou Matsumoto
+ * 
+ * TODO stop using this class as MEBN window (and migrate MEBN specific codes to a new class, say MEBNWindow)
  */
-public class NetworkWindow extends JInternalFrame {
-
+public class NetworkWindow extends JInternalFrame implements IFileExtensionAwareWindow {
+	
+	// since this implements IFileExtensionAwareWindow, let's store them
+	private static final String[] SUPPORTED_FILE_EXTENSIONS = { "net", "xml"};
+	private static final String[] SUPPORTED_FILE_EXTENSIONS_MEBN = { unbbayes.io.mebn.UbfIO.fileExtension };
+	
+	
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
 
@@ -92,9 +102,9 @@ public class NetworkWindow extends JInternalFrame {
 
 	private MEBNEditionPane mebnEditionPane = null;
 
-	private static Integer PN_MODE = 0;
+	public static final Integer PN_MODE = 0;
 
-	private static Integer MEBN_MODE = 1;
+	public static final Integer MEBN_MODE = 1;
 
 	private Integer mode = null;
 
@@ -584,4 +594,42 @@ public class NetworkWindow extends JInternalFrame {
 		pnEditionPane.getBtnRemoveState().setVisible(visible);
 	}
 
+	/**
+	 * @return the mode
+	 */
+	public Integer getMode() {
+		return mode;
+	}
+
+	/**
+	 * @param mode the mode to set
+	 */
+	public void setMode(Integer mode) {
+		this.mode = mode;
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.gui.IFileExtensionAwareWindow#getSupportedFileExtensions()
+	 */
+	public String[] getSupportedFileExtensions() {
+		if (this.getMode() == MEBN_MODE) {
+			return SUPPORTED_FILE_EXTENSIONS_MEBN;
+		} else {
+			return SUPPORTED_FILE_EXTENSIONS;
+		}	
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.gui.IFileExtensionAwareWindow#getSupportedFilesDescription()
+	 */
+	public String getSupportedFilesDescription() {
+		if (this.getMode() == MEBN_MODE) {
+			return resource.getString("netFileFilterSaveMEBN");
+		} else {
+			return resource.getString("netFileFilterSave");
+		}	
+	}
+
+	
+	
 }
