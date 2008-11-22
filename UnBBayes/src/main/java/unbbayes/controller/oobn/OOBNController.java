@@ -176,14 +176,9 @@ public class OOBNController extends NetworkController {
 	 * @see OOBNController#getActive()
 	 */
 	public AbstractMSBN compileActiveOOBNClassToMSBN() {
-		try {
-			IOOBNCompiler compiler = OOBNToSingleAgentMSBNCompiler.newInstance();
-			AbstractMSBN msbn = (AbstractMSBN)compiler.compile(this.getOobn(),OOBNClassSingleEntityNetworkWrapper.newInstance((SingleEntityNetwork)this.getActive().getNetworkController().getNetwork()));
-			return msbn;
-		} catch (Exception e) {
-			Debug.println(this.getClass(), "Not Yet implemented thus", e);
-		}
-		return new SingleAgentMSBN("Stubberaklsdjf");
+		IOOBNCompiler compiler = OOBNToSingleAgentMSBNCompiler.newInstance();
+		AbstractMSBN msbn = (AbstractMSBN)compiler.compile(this.getOobn(),OOBNClassSingleEntityNetworkWrapper.newInstance((SingleEntityNetwork)this.getActive().getNetworkController().getNetwork()));
+		return msbn;
 	}
 	
 	

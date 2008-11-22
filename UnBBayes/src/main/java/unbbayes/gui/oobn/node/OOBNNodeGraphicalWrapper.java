@@ -394,7 +394,7 @@ public class OOBNNodeGraphicalWrapper extends ProbabilisticNode {
 		super.setStateAt(state, index);
 		
 		try{
-			this.getWrappedNode().getStateNames().add(index, state);
+			this.getWrappedNode().getStateNames().set(index, state);
 		} catch (Exception e) {
 			Debug.println(this.getClass(), "Failure setStateAt", e);
 		}

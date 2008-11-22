@@ -78,7 +78,7 @@ public class OOBNControllerResources extends ListResourceBundle {
 		{"NewPNName","New BN"},
 		{"NewMSBNName","New MSBN"},
 		{"NewMEBNName","NewMEBN"},
-		{"NewOOBNName","New OOBN"},
+		{"NewOOBNName","NewOOBN"},
 		
 		{"probabilisticNodeName","C"},
 		{"decisionNodeName","D"},

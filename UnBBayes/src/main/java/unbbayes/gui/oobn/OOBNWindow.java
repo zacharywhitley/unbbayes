@@ -525,7 +525,6 @@ public class OOBNWindow extends JInternalFrame  {
 			public void actionPerformed(ActionEvent ev) {
 				try {
 					
-					// TODO stub!!
 					AbstractMSBN msbn = getController().compileActiveOOBNClassToMSBN();
 					MSBNController controller = new MSBNController((SingleAgentMSBN)msbn);
 					getController().getUpperUnBBayesFrame().addWindow(controller.getPanel());

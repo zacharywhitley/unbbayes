@@ -144,10 +144,13 @@ public class DefaultOOBNNode implements IOOBNNode {
 	 */
 	public String getName() {
 		if ( ( this.getType() == this.TYPE_INSTANCE_INPUT ) || ( this.getType() == this.TYPE_INSTANCE_OUTPUT ) ) {
+		//if (  this.getType() == this.TYPE_INSTANCE_OUTPUT ) {
 			try{
-				return this.getUpperInstanceNode().getName() + "_" + this.getOriginalClassNode().getName();
+				return this.getUpperInstanceNode().getName() + "_" 
+								+ this.getOriginalClassNode().getName();
 			} catch (Exception e) {
-				return this.getUpperInstanceNode().getName() + "_" + this.name;
+				return this.getUpperInstanceNode().getName() + "_" 
+								+ this.name;
 			}
 		}
 		return this.name;
