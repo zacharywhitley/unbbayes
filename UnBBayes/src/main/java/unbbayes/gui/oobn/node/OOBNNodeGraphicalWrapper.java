@@ -490,6 +490,9 @@ public class OOBNNodeGraphicalWrapper extends ProbabilisticNode {
 			return;
 		}
 		
+		// assert that this node's description is not the default description (like C1, C2...)
+		this.setDescription(this.getName());
+		
 		// assert that this node (instance node) has a position already defined
 		if (this.getPosition() == null) {
 			throw new IllegalArgumentException(this.getName() + ": position == null");

@@ -411,17 +411,20 @@ public class UnBBayesFrame extends JFrame {
 				// Select filter using currently focused window
 				String[] nets = null;			// file filter content
 				String filterMessage = null;	// message to be added to file filter
-				JInternalFrame focusedInnerFrame = desktop.getSelectedFrame(); // currently focused window
+				String dialogueTitle = null;	// title of the file chooser
+				JInternalFrame focusedInnerFrame = desktop.getSelectedFrame(); 	// currently focused window
 				if (focusedInnerFrame != null) {
 					if (focusedInnerFrame instanceof IFileExtensionAwareWindow) {
 						IFileExtensionAwareWindow currentWindow = ((IFileExtensionAwareWindow)focusedInnerFrame);
 						nets = currentWindow.getSupportedFileExtensions();
 						filterMessage = currentWindow.getSupportedFilesDescription();
+						dialogueTitle = currentWindow.getSavingMessage();
 					} else {
 						// unsupported window type...
 						// let's assume it is an ordinal BN...
 						nets = new String[] { "net", "xml"};
 						filterMessage = resource.getString("netFileFilterSave");
+						dialogueTitle = resource.getString("saveTitle");
 						Debug.println(this.getClass(), "Unknown desktop internal window was found");
 					}
 				} else {
@@ -435,7 +438,7 @@ public class UnBBayesFrame extends JFrame {
 				chooser = new JFileChooser(fileController.getCurrentDirectory());
 				chooser.setMultiSelectionEnabled(false);
 				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-				chooser.setDialogTitle(resource.getString("saveTitle")); 
+				chooser.setDialogTitle(dialogueTitle); 
 				
 				// adicionar FileView no FileChooser para desenhar �cones de
 				// arquivos

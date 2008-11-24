@@ -68,6 +68,7 @@ public class OOBNGuiResource extends ListResourceBundle {
 		
 
 		{"netFileFilterSaveOOBN","Net 3rd specification (.oobn)"},
+		{"saveTitle", "Save currently active class"},
 		
 	};
 }

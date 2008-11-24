@@ -288,6 +288,7 @@ public class DefaultOOBNClass extends ProbabilisticNetwork implements IOOBNClass
 		if (node instanceof OOBNNodeGraphicalWrapper) {
 			// extract wrapper
 			OOBNNodeGraphicalWrapper wrapper = (OOBNNodeGraphicalWrapper)node;
+			
 			// if this node's type is instance, we must check cycle
 			if ( ( wrapper.getWrappedNode().getType() & IOOBNNode.TYPE_INSTANCE ) != 0 ) {
 				// if class contains itself, there is a cycle
@@ -297,11 +298,32 @@ public class DefaultOOBNClass extends ProbabilisticNetwork implements IOOBNClass
 				}
 			}
 			
+			
+			
+			
 		}
 		
 		// no consistency error found. Let's continue
 		super.addNode(node);
+		
+		
+		// manage inner nodes (after adding instance node, in order to appear above the square)
+		if (node instanceof OOBNNodeGraphicalWrapper) {
+			// extract wrapper
+			OOBNNodeGraphicalWrapper wrapper = (OOBNNodeGraphicalWrapper)node;
+			if (wrapper.getWrappedNode().getType() == IOOBNNode.TYPE_INSTANCE) {
+				// starts inserting the inner nodes to the managed network
+				// the inner nodes are automatically instantiated by the instance node, but it is not
+				// part of network yet
+				for (OOBNNodeGraphicalWrapper innerNode : wrapper.getInnerNodes()) {
+					super.addNode(innerNode);
+				}
+			}
+		}
 	}
+	
+	
+	
 
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.oobn.IOOBNClass#addOOBNNode(unbbayes.prs.oobn.IOOBNNode)

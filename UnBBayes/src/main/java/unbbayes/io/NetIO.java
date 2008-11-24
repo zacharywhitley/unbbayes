@@ -73,6 +73,10 @@ public class NetIO implements BaseIO {
 
 	private static final String ERROR_NET = resource.getString("errorNet");
 	
+	// since the StreamTokenizer is not counting linenumber depending on the configuration,
+	// let's count it by ourselves
+	protected long lineno = 1;
+	
 	/**
 	 *  Loads a NET format file using default node/network builder.
 	 *  In other words, this method returns exactly instances of ProbabilisticNetwork filled
@@ -128,177 +132,33 @@ public class NetIO implements BaseIO {
 	 * @param net network to be saved.
 	 */
 	public void save(File output, SingleEntityNetwork net) throws FileNotFoundException {
-		PrintStream arq = new PrintStream(new FileOutputStream(output));
-		arq.println("net");
-		arq.println("{");
-		arq.println(
-			"     node_size = ("
-				+ (int) (net.getRadius() * 2)
-				+ " "
-				+ (int) (net.getRadius() * 2)
-				+ ");");
-		arq.println("     name = \"" + net.getName() + "\";");
-		String tree = saveHierarchicTree(net.getHierarchicTree());
-		if (tree != null)
-			arq.println("     tree = \"" + tree + "\";");
-        arq.println("     UnBBayes_Color_Probabilistic_Description = \"" + ProbabilisticNode.getDescriptionColor().getRGB() + "\";");
-        arq.println("     UnBBayes_Color_Probabilistic_Explanation = \"" + ProbabilisticNode.getExplanationColor().getRGB() + "\";");
-		arq.println("     UnBBayes_Color_Utility = \"" + UtilityNode.getColor().getRGB() + "\";");
-		arq.println("     UnBBayes_Color_Decision = \"" + DecisionNode.getColor().getRGB() + "\";");
-		arq.println("}");
-		arq.println();
+		PrintStream stream = new PrintStream(new FileOutputStream(output));
+		
+		
+		
+		this.saveNetHeader(stream, net);
 
-		int sizeNos = net.getNodeCount();
-		Node auxNo1;
-		for (int c1 = 0; c1 < sizeNos; c1++) {
-			auxNo1 =  net.getNodeAt(c1);
-			if (auxNo1.getType() == Node.PROBABILISTIC_NODE_TYPE) {
-				arq.print("node");
-			} else if (auxNo1.getType() == Node.DECISION_NODE_TYPE) {
-				arq.print("decision");
-			} else { // TVU
-				arq.print("utility");
-			}
-
-			arq.println(" " + auxNo1.getName());
-			arq.println("{");
-			arq.println(
-				"     label = \"" + auxNo1.getDescription() + "\";");
-			arq.println(
-				"     position = ("
-					+ (int) auxNo1.getPosition().getX()
-					+ " "
-					+ (int) auxNo1.getPosition().getY()
-					+ ");");
-
-			if (!(auxNo1.getType() == Node.UTILITY_NODE_TYPE)) {
-				/* Check if the node represents a numeric attribute */
-				if (auxNo1.getStatesSize() == 0) {
-					/* The node represents a numeric attribute */
-					double[] mean = auxNo1.getMean();
-					double[] stdDev = auxNo1.getStandardDeviation();
-					StringBuffer auxString = new StringBuffer();
-					
-					/* Mean per class */
-					auxString.append("\"" + mean[0] + "\"");
-					for (int i = 1; i < mean.length; i++) {
-						auxString.append(" \"" + mean[i] + "\"");
-					}
-					arq.println(
-							"     meanPerClass = (" + auxString.toString() + ");");
-					
-					/* Standard deviation per class */
-					auxString = new StringBuffer();
-					auxString.append("\"" + stdDev[0] + "\"");
-					for (int i = 1; i < mean.length; i++) {
-						auxString.append(" \"" + stdDev[i] + "\"");
-					}
-					arq.println(
-							"     stdDevPerClass = (" + auxString.toString() + ");");
-				} else {
-					/* The node represents a nominal attribute */
-					StringBuffer auxString =
-						new StringBuffer("\"" + auxNo1.getStateAt(0) + "\"");
-	
-					int sizeEstados = auxNo1.getStatesSize();
-					for (int c2 = 1; c2 < sizeEstados; c2++) {
-						auxString.append(" \"" + auxNo1.getStateAt(c2) + "\"");
-					}
-					arq.println(
-						"     states = (" + auxString.toString() + ");");
-				}
-			}
-			if (auxNo1.getInformationType() == Node.EXPLANATION_TYPE)
-                            {
-                              String explanationDescription = formatString(auxNo1.getExplanationDescription());
-                              arq.println("     %descricao \"" + explanationDescription + "\"");
-                              ArrayMap arrayMap = auxNo1.getPhrasesMap();
-                              int size = arrayMap.size();
-                              ArrayList keys = arrayMap.getKeys();
-                              for (int i = 0; i < size; i++)
-                              {
-                                Object key = keys.get(i);
-                                ExplanationPhrase explanationPhrase = (ExplanationPhrase) arrayMap.get(key);
-                                arq.println("     %frase \""+ explanationPhrase.getNode()+ "\" "+ "\""
-                                    + explanationPhrase.getEvidenceType()+ "\" "+ "\""
-                                    + formatString(explanationPhrase.getPhrase())+ "\"");
-                              }
-			}
-			arq.println("}");
-			arq.println();
+		
+		// start filling node/decision/utility declaration
+		
+		int nodeSize = net.getNodeCount();
+		Node auxNode1;
+		for (int c1 = 0; c1 < nodeSize; c1++) {
+			auxNode1 =  net.getNodeAt(c1);
+			
+			this.saveNodeDeclaration(stream, auxNode1, net);
+			
 		}
 		/* 
 		 * end of variable writing
 		 * let's start writing potenciais!
 		 */
 		for (int c1 = 0; c1 < net.getNodeCount(); c1++) {
-			auxNo1 = (Node) net.getNodeAt(c1);
+			auxNode1 = (Node) net.getNodeAt(c1);
 
-			ArrayList<Node> auxListVa = auxNo1.getParents();
-
-			arq.print("potential (" + auxNo1.getName());
-
-			int sizeVa = auxListVa.size();
-			if (sizeVa > 0) {
-				arq.print(" |");
-				for (int c2 = 0; c2 < sizeVa; c2++) {
-					Node auxNo2 = (Node) auxListVa.get(c2);
-					arq.print(" " + auxNo2.getName());
-				}
-			}
-			
-			arq.println(")");
-			arq.println("{");
-			if (auxNo1 instanceof ITabledVariable) {
-				PotentialTable auxTabPot =
-					((ITabledVariable) auxNo1).getPotentialTable();
-				int sizeVa1 = auxTabPot.variableCount();
-
-				arq.print(" data = ");
-				int[] coord;
-				boolean[] paren = new boolean[sizeVa1];
-
-				int sizeDados = auxTabPot.tableSize();
-				for (int c2 = 0; c2 < sizeDados; c2++) {
-					coord = auxTabPot.voltaCoord(c2);
-
-					for (int c3 = 0; c3 < sizeVa1; c3++) {
-						if ((coord[c3] == 0) && (!paren[c3])) {
-							arq.print("(");
-							paren[c3] = true;
-						}
-					}
-					arq.print(" " + auxTabPot.getValue(c2));
-					if ((c2 % auxNo1.getStatesSize())
-						== auxNo1.getStatesSize() - 1) {
-						arq.print(" ");
-					}
-
-					int celulas = 1;
-
-					Node auxNo2;
-					for (int c3 = 0; c3 < sizeVa1; c3++) {
-						auxNo2 = auxTabPot.getVariableAt(c3);
-						celulas *= auxNo2.getStatesSize();
-						if (((c2 + 1) % celulas) == 0) {
-							arq.print(")");
-							if (c3 == sizeVa1 - 1) {
-								arq.print(";");
-							}
-							paren[c3] = false;
-						}
-					}
-
-					if (((c2 + 1) % auxNo1.getStatesSize()) == 0) {
-						arq.println();
-					}
-				}
-			}
-
-			arq.println("}");
-			arq.println();
+			this.savePotentialDeclaration(stream, auxNode1, net);
 		}
-		arq.close();
+		stream.close();
 	}
 	
 	/**
@@ -349,286 +209,46 @@ public class NetIO implements BaseIO {
 		return msbn;
 	}
 	
-	private void load(File input, SingleEntityNetwork net, IProbabilisticNetworkBuilder networkBuilder) 
+	protected void load(File input, SingleEntityNetwork net, IProbabilisticNetworkBuilder networkBuilder) 
 				throws IOException, LoadException {
-		ITabledVariable auxIVTab = null;
-		PotentialTable auxTabPot = null;
-
+		
 		BufferedReader r = new BufferedReader(new FileReader(input));
 		StreamTokenizer st = new StreamTokenizer(r);
-		st.resetSyntax();
+		this.setUpStreamTokenizer(st);
 
-		st.wordChars('A', 'Z');
-		st.wordChars('a', '}');
-		st.wordChars('\u00A0', '\u00FF'); // letras com acentos
-		st.wordChars('_', '_');
-		st.wordChars('-', '-');
-		st.wordChars('0', '9');
-		st.wordChars('.', '.');
-		st.wordChars('%', '%');
-		st.ordinaryChars('(', ')');
-		st.eolIsSignificant(false);
-		st.quoteChar('"');
-		//st.commentChar('%');
-
+		// treat header
+		
 		getNext(st);
 		if (st.sval.equals("net")) {
-			getNext(st);
-
-			if (st.sval.equals("{")) {
-				getNext(st);
-				while (!st.sval.equals("}")) {
-					if (st.sval.equals("name")) {
-						getNext(st);
-						net.setName(st.sval);
-					} else if (st.sval.equals("node_size")) {
-						getNext(st);
-						getNext(st);
-						net.setRadius(Double.parseDouble(st.sval) / 2);
-					} else if (st.sval.equals("tree")) {
-						getNext(st);
-						StringBuffer sb = new StringBuffer(st.sval);
-						DefaultMutableTreeNode root =
-							new DefaultMutableTreeNode("Information Variable");
-						loadHierarchicTree(sb, root);
-
-						// construct tree
-						DefaultTreeModel model = new DefaultTreeModel(root);
-						HierarchicTree hierarchicTree =
-							new HierarchicTree(model);
-
-						net.setHierarchicTree(hierarchicTree);
-					} else if (st.sval.equals("UnBBayes_Color_Utility")) {
-						getNext(st);
-						UtilityNode.setColor(Integer.parseInt(st.sval));
-					} else if (st.sval.equals("UnBBayes_Color_Decision")) {
-						getNext(st);
-						DecisionNode.setColor(Integer.parseInt(st.sval));
-					} else if (st.sval.equals("UnBBayes_Color_Probabilistic_Description")) {
-                        getNext(st);
-                        ProbabilisticNode.setDescriptionColor(Integer.parseInt(st.sval));
-                    } else if (st.sval.equals("UnBBayes_Color_Probabilistic_Explanation")) {
-                        getNext(st);
-                        ProbabilisticNode.setExplanationColor(Integer.parseInt(st.sval));
-                    }
-					getNext(st);
-				}
-			}
+			this.loadNetHeader(st, net);
 		} else {
 			throw new LoadException(
 				ERROR_NET + resource.getString("LoadException"));
 		}
 
+		// start treating body
 		while (getNext(st) != StreamTokenizer.TT_EOF) {
-			if (st.sval.equals("node")
-				|| st.sval.equals("decision")
-				|| st.sval.equals("utility")) {
-				Node auxNo = null;
-				if (st.sval.equals("node")) {
-//					auxNo = new ProbabilisticNode();
-					auxNo = networkBuilder.getProbabilisticNodeBuilder().buildNode();
-				} else if (st.sval.equals("decision")) {
-//					auxNo = new DecisionNode();
-					auxNo = networkBuilder.getDecisionNodeBuilder().buildNode();
-				} else { // utility
-//					auxNo = new UtilityNode();
-					auxNo = networkBuilder.getUtilityNodeBuilder().buildNode();
-				}
-
-				getNext(st);
-				auxNo.setName(st.sval);
-				getNext(st);
-				if (st.sval.equals("{")) {
-					getNext(st);
-					while (!st.sval.equals("}")) {
-						if (st.sval.equals("label")) {
-							getNext(st);
-							auxNo.setDescription(st.sval);
-							getNext(st);
-						} else if (st.sval.equals("position")) {
-							getNext(st);
-							int x = Integer.parseInt(st.sval);
-							getNext(st);
-							if (x <= 0) {
-								x = Node.getWidth();
-							}
-							int y = Integer.parseInt(st.sval);
-							if (y <= 0) {
-								y = Node.getHeight();
-							}
-							auxNo.getPosition().setLocation(x, y);
-							getNext(st);
-						} else if (st.sval.equals("states")) {
-							while (getNext(st) == '"') {
-								auxNo.appendState(st.sval);
-							}
-						} else if (st.sval.equals("meanPerClass")) {
-							ArrayList<String> array = new ArrayList<String>();
-							while (getNext(st) == '"') {
-								array.add(st.sval);
-							}
-							int size = array.size();
-							double[] mean = new double[size];
-							for (int i = 0; i < size; i++) {
-								mean[i] = Double.parseDouble(array.get(i));
-							}
-							auxNo.setMean(mean);
-						} else if (st.sval.equals("stdDevPerClass")) {
-							ArrayList<String> array = new ArrayList<String>();
-							while (getNext(st) == '"') {
-								array.add(st.sval);
-							}
-							int size = array.size();
-							double[] stdDev = new double[size];
-							for (int i = 0; i < size; i++) {
-								stdDev[i] = Double.parseDouble(array.get(i));
-							}
-							auxNo.setStandardDeviation(stdDev);
-						} else if (st.sval.equals("%descricao")) {
-							getNext(st);
-							auxNo.setExplanationDescription(
-								unformatString(st.sval));
-							auxNo.setInformationType(Node.EXPLANATION_TYPE);
-							readTillEOL(st);
-							getNext(st);
-						} else if (st.sval.equals("%frase")) {
-							getNext(st);
-							ExplanationPhrase explanationPhrase =
-								new ExplanationPhrase();
-							explanationPhrase.setNode(st.sval);
-							getNext(st);
-							try {
-								explanationPhrase.setEvidenceType(
-									Integer.parseInt(st.sval));
-							} catch (Exception ex) {
-								throw new LoadException(
-									ERROR_NET
-										+ " l."
-										+ st.lineno()
-										+ resource.getString("LoadException2")
-										+ st.sval);
-							}
-							getNext(st);
-							explanationPhrase.setPhrase(
-								unformatString(st.sval));
-							auxNo.addExplanationPhrase(explanationPhrase);
-							readTillEOL(st);
-							getNext(st);
-						} else if (st.sval.contains("HR_")) {
-							// this is a HUGIN specific declaration.
-							// let's ignore it
-							Debug.println(this.getClass(), "Ignoring HR declaration: " + st.sval);
-							while (getNext(st) == '"');
-						} else {
-							throw new LoadException(
-								ERROR_NET
-									+ " l."
-									+ st.lineno()
-									+ resource.getString("LoadException2")
-									+ st.sval);
-						}
-					}
-					net.addNode(auxNo);
-				} else {
-					throw new LoadException(
-						ERROR_NET
-							+ " l."
-							+ st.lineno()
-							+ resource.getString("LoadException3"));
-				}
-			} else if (st.sval.equals("potential")) {
-				getNext(st);
-				Node auxNo1 = net.getNode(st.sval);
-
-				if (auxNo1 instanceof ITabledVariable) {
-					auxIVTab = (ITabledVariable) auxNo1;
-					auxTabPot = auxIVTab.getPotentialTable();
-					auxTabPot.addVariable(auxNo1);
-				}
-
-				getNext(st);
-				if (st.sval.equals("|")) {
-					getNext(st);
-				}
-
-				Node auxNo2;
-				Edge auxArco;
-				while (!st.sval.startsWith("{")) {
-					auxNo2 = net.getNode(st.sval);
-					auxArco = new Edge(auxNo2, auxNo1);
-					try {
-						net.addEdge(auxArco);
-					} catch (InvalidParentException e) {
-						throw new LoadException(e.getMessage());
-					}
-					getNext(st);
-				}
-				
-				/*
-				 * Invert the parents in the table, to
-				 * mantain consistency in the program.
-				 * Internal pre-requisite.
-				 */
-				if (auxNo1 instanceof ITabledVariable) {
-					int sizeVetor = auxTabPot.variableCount() / 2;
-					for (int k = 1; k <= sizeVetor; k++) {
-						Object temp = auxTabPot.getVariableAt(k);
-						auxTabPot.setVariableAt(
-							k,
-							auxTabPot.getVariableAt(
-								auxTabPot.variableCount() - k));
-						auxTabPot.setVariableAt(
-							auxTabPot.variableCount() - k,
-							(Node) temp);
-					}
-				}
-				
-				if (st.sval.length() == 1) {
-					getNext(st);
-				}
-
-				int nDim = 0;
-
-				while (!st.sval.endsWith("}")) {
-					if (st.sval.equals("data")) {
-						if (auxNo1.getType() == Node.DECISION_NODE_TYPE) {
-							throw new LoadException(
-								ERROR_NET
-									+ " l."
-									+ st.lineno()
-									+ resource.getString("LoadException4"));
-						}
-						getNext(st);
-						while (!st.sval.equals("}")) {
-							if (st.sval.equals("%")) {
-								readTillEOL(st);
-							} else {
-								auxTabPot.setValue(
-									nDim++,
-									Float.parseFloat(st.sval));
-							}
-							getNext(st);
-						}
-					} else {
-						throw new LoadException(
-							ERROR_NET
-								+ " l."
-								+ st.lineno()
-								+ resource.getString("LoadException5"));
-					}
-				}
-			}
+			
+			// if declaration is "node" type, treat it
+			this.loadNodeDeclaration(st, net, networkBuilder);
+			
+			// if declaration is "potential" type, treat it
+			this.loadPotentialDeclaration(st, net);
+			
+			// ignore other declarations
 		}
+		
 		r.close();
-		HierarchicTree tree = net.getHierarchicTree();
-		if (tree != null) {
-			tree.setProbabilisticNetwork(net,HierarchicTree.DESCRIPTION_TYPE);
-		}
+		
+		this.setUpHierarchicTree(net);
 	}	
 
-	private int getNext(StreamTokenizer st) throws IOException {
+	protected int getNext(StreamTokenizer st) throws IOException {
 		do {
 			st.nextToken();
+			if (st.ttype == StreamTokenizer.TT_EOL) {
+				this.lineno++;
+			}
 		} while (
 			(st.ttype != StreamTokenizer.TT_WORD)
 				&& (st.ttype != '"')
@@ -636,7 +256,7 @@ public class NetIO implements BaseIO {
 		return st.ttype;
 	}
 
-	private void loadHierarchicTree(
+	protected void loadHierarchicTree(
 		StringBuffer sb,
 		DefaultMutableTreeNode root) {
 		int size = sb.length();
@@ -670,7 +290,7 @@ public class NetIO implements BaseIO {
 		}
 	}
 
-	private String saveHierarchicTree(HierarchicTree hierarchicTree) {
+	protected String saveHierarchicTree(HierarchicTree hierarchicTree) {
 		TreeModel model = hierarchicTree.getModel();
 		StringBuffer sb = new StringBuffer();
 		TreeNode root = (TreeNode) model.getRoot();
@@ -690,7 +310,7 @@ public class NetIO implements BaseIO {
 		}
 	}
 
-	private void processTreeNode(
+	protected void processTreeNode(
 		TreeNode node,
 		StringBuffer sb,
 		TreeModel model) {
@@ -714,18 +334,612 @@ public class NetIO implements BaseIO {
 	* @param tokenizer Stream tokenizer
 	* @throws IOException EOF not found
 	*/
-	private void readTillEOL(StreamTokenizer tokenizer) throws IOException {
+	protected void readTillEOL(StreamTokenizer tokenizer) throws IOException {
 		while (tokenizer.nextToken() != StreamTokenizer.TT_EOL) {
 		};
 		tokenizer.pushBack();
 	}
 
-	private String formatString(String string) {
+	protected String formatString(String string) {
 		return string.replace('\n', '#');
 	}
 
-	private String unformatString(String string) {
+	protected String unformatString(String string) {
 		return string.replace('#', '\n');
 	}
+	
+	/**
+	 * Configures valid/invalid character ranges of stream tokenizer.
+	 * By setting up using protected method, it becomes easier to extend this class
+	 * @param st: StreamTokenizer to set up
+	 */
+	protected void setUpStreamTokenizer(StreamTokenizer st) throws IOException {
+		
+		st.resetSyntax();
+		
+		st.wordChars('A', 'Z');
+		st.wordChars('a', '}');
+		st.wordChars('\u00A0', '\u00FF'); // characters with accents
+		st.wordChars('_', '_');
+		st.wordChars('-', '-');
+		st.wordChars('0', '9');
+		st.wordChars('.', '.');
+		st.wordChars('%', '%');
+		st.ordinaryChars('(', ')');
+		st.eolIsSignificant(false);
+		st.quoteChar('"');
+		//st.commentChar('%');
+		
+	}
 
+	/**
+	 * Start loading net{} header from .net specification file; iterating under 
+	 * {@link NetIO#loadNetHeaderBody(StreamTokenizer, SingleEntityNetwork)}
+	 * in order to treat each declaration.
+	 * {@link NetIO#loadNetHeaderBody(StreamTokenizer, SingleEntityNetwork)}
+	 * must ignore incompatible declaration.
+	 * @param st
+	 * @param net
+	 * @throws IOException
+	 */
+	protected void loadNetHeader(StreamTokenizer st, SingleEntityNetwork net)
+								throws IOException {
+		
+		getNext(st);
+		if (st.sval.equals("{")) {
+			getNext(st);
+			while (!st.sval.equals("}")) {
+				this.loadNetHeaderBody(st, net);
+				getNext(st);
+			}			
+		}
+	}
+	
+	/**
+	 * If a declaration inside net header is treatable, treat it.
+	 * The currently compatible declarations are:
+	 * 			name, node_size, tree, UnBBayes_Color_Utility, UnBBayes_Color_Decision,
+	 * 			UnBBayes_Color_Probabilistic_Description, UnBBayes_Color_Probabilistic_Explanation.
+	 * If declaration is not compatible, it will be ignored.
+	 * @param st
+	 * @param net
+	 * @throws IOException
+	 */
+	protected void loadNetHeaderBody(StreamTokenizer st, SingleEntityNetwork net)
+													throws IOException {
+		
+		if (st.sval.equals("name")) {
+			getNext(st);
+			net.setName(st.sval);
+		} else if (st.sval.equals("node_size")) {
+			getNext(st);
+			getNext(st);
+			net.setRadius(Double.parseDouble(st.sval) / 2);
+		} else if (st.sval.equals("tree")) {
+			getNext(st);
+			StringBuffer sb = new StringBuffer(st.sval);
+			DefaultMutableTreeNode root =
+				new DefaultMutableTreeNode("Information Variable");
+			loadHierarchicTree(sb, root);
+
+			// construct tree
+			DefaultTreeModel model = new DefaultTreeModel(root);
+			HierarchicTree hierarchicTree =
+				new HierarchicTree(model);
+
+			net.setHierarchicTree(hierarchicTree);
+		} else if (st.sval.equals("UnBBayes_Color_Utility")) {
+			getNext(st);
+			UtilityNode.setColor(Integer.parseInt(st.sval));
+		} else if (st.sval.equals("UnBBayes_Color_Decision")) {
+			getNext(st);
+			DecisionNode.setColor(Integer.parseInt(st.sval));
+		} else if (st.sval.equals("UnBBayes_Color_Probabilistic_Description")) {
+            getNext(st);
+            ProbabilisticNode.setDescriptionColor(Integer.parseInt(st.sval));
+        } else if (st.sval.equals("UnBBayes_Color_Probabilistic_Explanation")) {
+            getNext(st);
+            ProbabilisticNode.setExplanationColor(Integer.parseInt(st.sval));
+        }
+		
+	}
+	
+	/**
+	 * If the current declaration is of type "node" (or "decision" or "utility"), loads
+	 * that node (creating new instances using networkBuilder) and adds it to net.
+	 * If declaration is not "node" (or "decision" or "utility"), it will not move the
+	 * token index from st.
+	 * @param st
+	 * @param net
+	 * @param networkBuilder
+	 * @throws IOException
+	 * @throws LoadException
+	 */
+	protected void loadNodeDeclaration (StreamTokenizer st, SingleEntityNetwork net, IProbabilisticNetworkBuilder networkBuilder)
+										throws IOException , LoadException{
+		if (st.sval.equals("node")
+				|| st.sval.equals("decision")
+				|| st.sval.equals("utility")) {
+				Node auxNode = null;
+				if (st.sval.equals("node")) {
+//					auxNo = new ProbabilisticNode();
+					auxNode = networkBuilder.getProbabilisticNodeBuilder().buildNode();
+				} else if (st.sval.equals("decision")) {
+//					auxNo = new DecisionNode();
+					auxNode = networkBuilder.getDecisionNodeBuilder().buildNode();
+				} else { // utility
+//					auxNo = new UtilityNode();
+					auxNode = networkBuilder.getUtilityNodeBuilder().buildNode();
+				}
+
+				getNext(st);
+				auxNode.setName(st.sval);
+				getNext(st);
+				if (st.sval.equals("{")) {
+					getNext(st);
+					while (!st.sval.equals("}")) {
+						this.loadNodeDeclarationBody(st, auxNode);
+					}
+					net.addNode(auxNode);
+				} else {
+					throw new LoadException(
+						ERROR_NET
+							+ " l."
+							+ ((st.lineno() < this.lineno)?this.lineno:st.lineno())
+							+ resource.getString("LoadException3"));
+				}
+			}
+	}
+	
+	
+	/**
+	 * If the current declaration is "potential", treat that declaration and adds it
+	 * to a node contained within net.
+	 * If current declaration is not "potential", this method ignores it and remains the
+	 * st untouched
+	 * @param st
+	 * @param net
+	 * @throws IOException
+	 * @throws LoadException
+	 */
+	protected void loadPotentialDeclaration(StreamTokenizer st, SingleEntityNetwork net) 
+											throws IOException , LoadException {
+		
+		if (st.sval.equals("potential")) {
+			
+			ITabledVariable auxTableVar = null;
+			PotentialTable auxPotentialTable = null;
+			
+			getNext(st);
+			Node auxNode1 = net.getNode(st.sval);
+
+			if (auxNode1 instanceof ITabledVariable) {
+				auxTableVar = (ITabledVariable) auxNode1;
+				auxPotentialTable = auxTableVar.getPotentialTable();
+				auxPotentialTable.addVariable(auxNode1);
+			}
+
+			getNext(st);
+			if (st.sval.equals("|")) {
+				getNext(st);
+			}
+
+			Node auxNo2;
+			Edge auxArco;
+			while (!st.sval.startsWith("{")) {
+				auxNo2 = net.getNode(st.sval);
+				auxArco = new Edge(auxNo2, auxNode1);
+				try {
+					net.addEdge(auxArco);
+				} catch (InvalidParentException e) {
+					throw new LoadException(e.getMessage());
+				}
+				getNext(st);
+			}
+			
+			/*
+			 * Invert the parents in the table, to
+			 * mantain consistency in the program.
+			 * Internal pre-requisite.
+			 */
+			if (auxNode1 instanceof ITabledVariable) {
+				int sizeVetor = auxPotentialTable.variableCount() / 2;
+				for (int k = 1; k <= sizeVetor; k++) {
+					Object temp = auxPotentialTable.getVariableAt(k);
+					auxPotentialTable.setVariableAt(
+						k,
+						auxPotentialTable.getVariableAt(
+							auxPotentialTable.variableCount() - k));
+					auxPotentialTable.setVariableAt(
+						auxPotentialTable.variableCount() - k,
+						(Node) temp);
+				}
+			}
+			
+			if (st.sval.length() == 1) {
+				getNext(st);
+			}
+
+			int nDim = 0;
+
+			while (!st.sval.endsWith("}")) {
+				if (st.sval.equals("data")) {
+					if (auxNode1.getType() == Node.DECISION_NODE_TYPE) {
+						throw new LoadException(
+							ERROR_NET
+								+ " l."
+								+ ((st.lineno() < this.lineno)?this.lineno:st.lineno())
+								+ resource.getString("LoadException4"));
+					}
+					getNext(st);
+					while (!st.sval.equals("}")) {
+						if (st.sval.equals("%")) {
+							readTillEOL(st);
+						} else {
+							auxPotentialTable.setValue(
+								nDim++,
+								Float.parseFloat(st.sval));
+						}
+						getNext(st);
+					}
+				} else {
+					throw new LoadException(
+						ERROR_NET
+							+ " l."
+							+ ((st.lineno() < this.lineno)?this.lineno:st.lineno())
+							+ resource.getString("LoadException5"));
+				}
+			}
+		}
+	}
+	
+	
+	/**
+	 * Sets up the hierarchic tree after the network is completely loaded
+	 * @param net
+	 */
+	protected void setUpHierarchicTree(SingleEntityNetwork net) {
+		HierarchicTree tree = net.getHierarchicTree();
+		if (tree != null) {
+			tree.setProbabilisticNetwork(net,HierarchicTree.DESCRIPTION_TYPE);
+		}
+	}
+	
+	
+	/**
+	 * Reads inside the node declaration.
+	 * 			node {[READS THIS CONTENT]}
+	 * @param st
+	 * @param node: node to be filled
+	 * @throws IOException
+	 */
+	protected void loadNodeDeclarationBody(StreamTokenizer st , Node node) throws IOException, LoadException {
+		if (st.sval.equals("label")) {
+			getNext(st);
+			node.setDescription(st.sval);
+			getNext(st);
+		} else if (st.sval.equals("position")) {
+			getNext(st);
+			int x = Integer.parseInt(st.sval);
+			getNext(st);
+			if (x <= 0) {
+				x = Node.getWidth();
+			}
+			int y = Integer.parseInt(st.sval);
+			if (y <= 0) {
+				y = Node.getHeight();
+			}
+			node.getPosition().setLocation(x, y);
+			getNext(st);
+		} else if (st.sval.equals("states")) {
+			while (getNext(st) == '"') {
+				node.appendState(st.sval);
+			}
+		} else if (st.sval.equals("meanPerClass")) {
+			ArrayList<String> array = new ArrayList<String>();
+			while (getNext(st) == '"') {
+				array.add(st.sval);
+			}
+			int size = array.size();
+			double[] mean = new double[size];
+			for (int i = 0; i < size; i++) {
+				mean[i] = Double.parseDouble(array.get(i));
+			}
+			node.setMean(mean);
+		} else if (st.sval.equals("stdDevPerClass")) {
+			ArrayList<String> array = new ArrayList<String>();
+			while (getNext(st) == '"') {
+				array.add(st.sval);
+			}
+			int size = array.size();
+			double[] stdDev = new double[size];
+			for (int i = 0; i < size; i++) {
+				stdDev[i] = Double.parseDouble(array.get(i));
+			}
+			node.setStandardDeviation(stdDev);
+		} else if (st.sval.equals("%descricao")) {
+			getNext(st);
+			node.setExplanationDescription(
+				unformatString(st.sval));
+			node.setInformationType(Node.EXPLANATION_TYPE);
+			readTillEOL(st);
+			getNext(st);
+		} else if (st.sval.equals("%frase")) {
+			getNext(st);
+			ExplanationPhrase explanationPhrase =
+				new ExplanationPhrase();
+			explanationPhrase.setNode(st.sval);
+			getNext(st);
+			try {
+				explanationPhrase.setEvidenceType(
+					Integer.parseInt(st.sval));
+			} catch (Exception ex) {
+				throw new LoadException(
+					ERROR_NET
+						+ " l."
+						+ ((st.lineno() < this.lineno)?this.lineno:st.lineno())
+						+ resource.getString("LoadException2")
+						+ st.sval);
+			}
+			getNext(st);
+			explanationPhrase.setPhrase(
+				unformatString(st.sval));
+			node.addExplanationPhrase(explanationPhrase);
+			readTillEOL(st);
+			getNext(st);
+		} else if (st.sval.contains("HR_")) {
+			// this is a HUGIN specific declaration.
+			// let's ignore it
+			Debug.println(this.getClass(), "Ignoring HR declaration: " + st.sval);
+			while (getNext(st) == '"');
+		} else {
+			throw new LoadException(
+				ERROR_NET
+					+ " l."
+					+ ((st.lineno() < this.lineno)?this.lineno:st.lineno())
+					+ resource.getString("LoadException2")
+					+ st.sval);
+		}
+	}
+	
+	
+	/**
+	 * Fills the PrintStream with net{} header, starting with "net {" declaration and closing with "}"
+	 * @param stream: stream to write to
+	 * @param net: network to be saved to stream
+	 */
+	protected void saveNetHeader(PrintStream stream, SingleEntityNetwork net) {
+		
+		stream.println("net");
+		stream.println("{");
+		
+		this.saveNetHeaderBody(stream, net);
+		
+		
+		stream.println("}");
+		stream.println();
+		
+	}
+	
+	/**
+	 * Stores the content of net{[CONTENT]} header to a stream.
+	 * the informations are: 
+	 * 			node_size, name, tree, UnBBayes_Color_Probabilistic_Description, 
+	 * 			UnBBayes_Color_Probabilistic_Explanation, UnBBayes_Color_Utility,
+	 * 			UnBBayes_Color_Decision.
+	 * @param stream
+	 * @param net
+	 */
+	protected void saveNetHeaderBody(PrintStream stream, SingleEntityNetwork net) {
+		stream.println(
+				"     node_size = ("
+					+ (int) (net.getRadius() * 2)
+					+ " "
+					+ (int) (net.getRadius() * 2)
+					+ ");");
+		stream.println("     name = \"" + net.getName() + "\";");
+		String tree = saveHierarchicTree(net.getHierarchicTree());
+		if (tree != null)
+			stream.println("     tree = \"" + tree + "\";");
+        stream.println("     UnBBayes_Color_Probabilistic_Description = \"" + ProbabilisticNode.getDescriptionColor().getRGB() + "\";");
+        stream.println("     UnBBayes_Color_Probabilistic_Explanation = \"" + ProbabilisticNode.getExplanationColor().getRGB() + "\";");
+		stream.println("     UnBBayes_Color_Utility = \"" + UtilityNode.getColor().getRGB() + "\";");
+		stream.println("     UnBBayes_Color_Decision = \"" + DecisionNode.getColor().getRGB() + "\";");
+	}
+	
+	
+	/**
+	 * Writes to a PrintStream a node/decision/utility{} declaration.
+	 * 						node|decision|utility [NAME] {[CONTENT]}
+	 * @param stream
+	 * @param node
+	 * @param net
+	 */
+	protected void saveNodeDeclaration(PrintStream stream, Node node, SingleEntityNetwork net) {
+		if (node.getType() == Node.PROBABILISTIC_NODE_TYPE) {
+			stream.print("node");
+		} else if (node.getType() == Node.DECISION_NODE_TYPE) {
+			stream.print("decision");
+		} else { // TVU
+			stream.print("utility");
+		}
+
+		stream.println(" " + node.getName());
+		stream.println("{");
+		
+		this.saveNodeDeclarationBody(stream, node, net);
+		
+		stream.println("}");
+		stream.println();
+	}
+	
+	/**
+	 * Writes to a PrintStream the body of node/decision/utility{} declaration.
+	 * 						node|decision|utility [NAME] {[THIS_CONTENT_IS_WRITTEN]}
+	 * @param stream
+	 * @param node
+	 * @param net
+	 */
+	protected void saveNodeDeclarationBody(PrintStream stream, Node node, SingleEntityNetwork net) {
+			
+			this.saveNodeLabelAndPosition(stream, node);
+		
+
+			if (!(node.getType() == Node.UTILITY_NODE_TYPE)) {
+				/* Check if the node represents a numeric attribute */
+				if (node.getStatesSize() == 0) {
+					/* The node represents a numeric attribute */
+					double[] mean = node.getMean();
+					double[] stdDev = node.getStandardDeviation();
+					StringBuffer auxString = new StringBuffer();
+					
+					/* Mean per class */
+					auxString.append("\"" + mean[0] + "\"");
+					for (int i = 1; i < mean.length; i++) {
+						auxString.append(" \"" + mean[i] + "\"");
+					}
+					stream.println(
+							"     meanPerClass = (" + auxString.toString() + ");");
+					
+					/* Standard deviation per class */
+					auxString = new StringBuffer();
+					auxString.append("\"" + stdDev[0] + "\"");
+					for (int i = 1; i < mean.length; i++) {
+						auxString.append(" \"" + stdDev[i] + "\"");
+					}
+					stream.println(
+							"     stdDevPerClass = (" + auxString.toString() + ");");
+				} else {
+					/* The node represents a nominal attribute */
+					StringBuffer auxString =
+						new StringBuffer("\"" + node.getStateAt(0) + "\"");
+
+					int sizeEstados = node.getStatesSize();
+					for (int c2 = 1; c2 < sizeEstados; c2++) {
+						auxString.append(" \"" + node.getStateAt(c2) + "\"");
+					}
+					stream.println(
+						"     states = (" + auxString.toString() + ");");
+				}
+			}
+			if (node.getInformationType() == Node.EXPLANATION_TYPE)
+	                        {
+	                          String explanationDescription = formatString(node.getExplanationDescription());
+	                          stream.println("     %descricao \"" + explanationDescription + "\"");
+	                          ArrayMap arrayMap = node.getPhrasesMap();
+	                          int size = arrayMap.size();
+	                          ArrayList keys = arrayMap.getKeys();
+	                          for (int i = 0; i < size; i++)
+	                          {
+	                            Object key = keys.get(i);
+	                            ExplanationPhrase explanationPhrase = (ExplanationPhrase) arrayMap.get(key);
+	                            stream.println("     %frase \""+ explanationPhrase.getNode()+ "\" "+ "\""
+	                                + explanationPhrase.getEvidenceType()+ "\" "+ "\""
+	                                + formatString(explanationPhrase.getPhrase())+ "\"");
+	                          }
+			}
+	}
+	
+	
+	/**
+	 * Stores to PrintStream the potential{} declaration
+	 * @param stream
+	 * @param node
+	 * @param net
+	 */
+	protected void savePotentialDeclaration(PrintStream stream, Node node, SingleEntityNetwork net) {
+		ArrayList<Node> auxParentList = node.getParents();
+
+		stream.print("potential (" + node.getName());
+
+		int sizeVa = auxParentList.size();
+		if (sizeVa > 0) {
+			stream.print(" |");
+			for (int c2 = 0; c2 < sizeVa; c2++) {
+				Node auxNo2 = (Node) auxParentList.get(c2);
+				stream.print(" " + auxNo2.getName());
+			}
+		}
+		
+		stream.println(")");
+		stream.println("{");
+		
+		this.savePotentialDeclarationBody(stream, node, net);
+
+		stream.println("}");
+		stream.println();
+	}
+	
+	
+	/**
+	 * Stores to PrintStream the [BODY] of potential {[BODY]} declaration
+	 * @param stream
+	 * @param node
+	 * @param net
+	 */
+	protected void savePotentialDeclarationBody(PrintStream stream, Node node, SingleEntityNetwork net) {
+		if (node instanceof ITabledVariable) {
+			PotentialTable auxTabPot =
+				((ITabledVariable) node).getPotentialTable();
+			int sizeVa1 = auxTabPot.variableCount();
+
+			stream.print(" data = ");
+			int[] coord;
+			boolean[] paren = new boolean[sizeVa1];
+
+			int sizeDados = auxTabPot.tableSize();
+			for (int c2 = 0; c2 < sizeDados; c2++) {
+				coord = auxTabPot.voltaCoord(c2);
+
+				for (int c3 = 0; c3 < sizeVa1; c3++) {
+					if ((coord[c3] == 0) && (!paren[c3])) {
+						stream.print("(");
+						paren[c3] = true;
+					}
+				}
+				stream.print(" " + auxTabPot.getValue(c2));
+				if ((c2 % node.getStatesSize())
+					== node.getStatesSize() - 1) {
+					stream.print(" ");
+				}
+
+				int celulas = 1;
+
+				Node auxNo2;
+				for (int c3 = 0; c3 < sizeVa1; c3++) {
+					auxNo2 = auxTabPot.getVariableAt(c3);
+					celulas *= auxNo2.getStatesSize();
+					if (((c2 + 1) % celulas) == 0) {
+						stream.print(")");
+						if (c3 == sizeVa1 - 1) {
+							stream.print(";");
+						}
+						paren[c3] = false;
+					}
+				}
+
+				if (((c2 + 1) % node.getStatesSize()) == 0) {
+					stream.println();
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Stores node's label = "[LABEL]"; and position = ([X], [Y]); declarations 
+	 * inside "node" declaration's body
+	 * @param stream
+	 * @param node
+	 */
+	protected void saveNodeLabelAndPosition(PrintStream stream, Node node) {
+		stream.println(
+				"     label = \"" + node.getDescription() + "\";");
+		stream.println(
+			"     position = ("
+				+ (int) node.getPosition().getX()
+				+ " "
+				+ (int) node.getPosition().getY()
+				+ ");");
+	}
+	
 }

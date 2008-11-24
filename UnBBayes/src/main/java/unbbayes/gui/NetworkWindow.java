@@ -631,5 +631,10 @@ public class NetworkWindow extends JInternalFrame implements IFileExtensionAware
 	}
 
 	
-	
+	/* (non-Javadoc)
+	 * @see unbbayes.gui.IFileExtensionAwareWindow#getSavingMessage()
+	 */
+	public String getSavingMessage() {
+		return resource.getString("saveTitle");
+	}
 }

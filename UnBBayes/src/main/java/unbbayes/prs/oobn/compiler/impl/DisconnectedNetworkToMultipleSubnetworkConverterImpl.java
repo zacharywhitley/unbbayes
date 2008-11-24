@@ -73,17 +73,21 @@ public class DisconnectedNetworkToMultipleSubnetworkConverterImpl implements
 		
 		// adds edges from parents to current node
 		for (Node parent : currentNode.getParents()) {
-			// check if parent is already added
-			// this check is going to be OK because ArrayList uses equals to check it and Node uses name to check equality
-			if (networkToAddInto.getNodes().contains(parent)) {
+			
+			Edge edge = referenceNetwork.getEdge(parent, currentNode);
+			
+			// check if edge is already added
+			if ( (edge != null) && (networkToAddInto.getEdges().contains(edge)) ) {
 				continue;
 			}
-			Edge edge = referenceNetwork.getEdge(parent, currentNode);
+			
 			if (edge != null) {
 //				Node parentCpy = (Node)((ProbabilisticNode)parent).clone();
 //				networkToAddInto.addNode(parentCpy);
 //				networkToAddInto.getEdges().add(new Edge(parentCpy, currentDestinationNode));
-				networkToAddInto.addNode(parent);
+				if (!networkToAddInto.getNodes().contains(parent)) {
+					networkToAddInto.addNode(parent);
+				}
 				networkToAddInto.getEdges().add(edge);
 				// do recursive visit
 				this.visitRecursively(parent, /*parentCpy,*/ networkToAddInto, referenceNetwork);
@@ -95,17 +99,21 @@ public class DisconnectedNetworkToMultipleSubnetworkConverterImpl implements
 		
 		// adds edges from current node to children
 		for (Node child : currentNode.getChildren()) {
-			// check if child is already added
-			// this check is going to be OK because ArrayList uses equals to check it and Node uses name to check equality
-			if (networkToAddInto.getNodes().contains(child)) {
+			
+			Edge edge = referenceNetwork.getEdge(currentNode, child);
+			
+			// check if edge is already added
+			if ( (edge != null) && (networkToAddInto.getEdges().contains(edge)) ) {
 				continue;
 			}
-			Edge edge = referenceNetwork.getEdge(currentNode, child);
+			
 			if (edge != null) {
 //				Node childCpy = (Node)((ProbabilisticNode)child).clone();
 //				networkToAddInto.addNode(childCpy);
 //				networkToAddInto.getEdges().add(new Edge(currentDestinationNode, childCpy));
-				networkToAddInto.addNode(child);
+				if (!networkToAddInto.getNodes().contains(child)) {
+					networkToAddInto.addNode(child);
+				}
 				networkToAddInto.getEdges().add(edge);
 				// do recursive visit
 				this.visitRecursively(child, /*childCpy,*/ networkToAddInto, referenceNetwork);

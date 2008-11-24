@@ -474,11 +474,12 @@ public class OOBNWindow extends JInternalFrame implements IFileExtensionAwareWin
 								try{
 									Collection<IOOBNClass> newClasses = getController().loadOOBNClassesFromFile(file);
 									for (IOOBNClass loadedClass : newClasses) {
-										getController().addOOBNClass(loadedClass);
+										try{
+											getController().addOOBNClass(loadedClass);
+										} catch (IllegalArgumentException iae) {
+											Debug.println(this.getClass(), "Loaded a class already loaded.");
+										}
 									}
-								} catch (IllegalArgumentException iae) {
-									JOptionPane.showMessageDialog(getController().getPanel(), resource.getString("DuplicatedClassName"), iae.getMessage(), JOptionPane.ERROR_MESSAGE);
-									Debug.println(this.getClass(), resource.getString("NoClassSelected"), iae);
 								} catch (Exception e) {
 									JOptionPane.showMessageDialog(getController().getPanel(), resource.getString("ErrorLoadingClass"), e.getMessage(), JOptionPane.ERROR_MESSAGE);
 									Debug.println(this.getClass(), "Error opening file", e);
@@ -880,6 +881,11 @@ public class OOBNWindow extends JInternalFrame implements IFileExtensionAwareWin
 	}
 	
 	
-	
+	/* (non-Javadoc)
+	 * @see unbbayes.gui.IFileExtensionAwareWindow#getSavingMessage()
+	 */
+	public String getSavingMessage() {
+		return resource.getString("saveTitle");
+	}
 
 }

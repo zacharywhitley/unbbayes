@@ -196,8 +196,11 @@ public class OOBNController extends NetworkController {
 		IObjectOrientedBayesianNetworkIO io = DefaultOOBNIO.newInstance();
 		
 		try {
-			IOOBNClass loadedOOBN = (IOOBNClass)io.load(file);		
-			ret.add(loadedOOBN);
+//			IOOBNClass loadedOOBN = (IOOBNClass)io.load(file);		
+			IObjectOrientedBayesianNetwork returnedOOBN = io.loadOOBN(file);
+			for (IOOBNClass loadedOOBN : returnedOOBN.getOOBNClassList()) {
+				ret.add(loadedOOBN);
+			}			
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

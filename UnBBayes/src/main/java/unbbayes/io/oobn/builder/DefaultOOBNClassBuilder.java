@@ -4,6 +4,7 @@
 package unbbayes.io.oobn.builder;
 
 
+import unbbayes.io.builder.INodeBuilder;
 import unbbayes.io.builder.impl.DefaultProbabilisticNetworkBuilder;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.oobn.impl.DefaultOOBNClass;
@@ -17,8 +18,11 @@ import unbbayes.prs.oobn.impl.DefaultOOBNClass;
  * @see unbbayes.prs.oobn.impl.DefaultOOBNClass
  * @see unbbayes.gui.oobn.node.OOBNNodeGraphicalWrapper
  */
-public class DefaultOOBNClassBuilder extends DefaultProbabilisticNetworkBuilder {
+public class DefaultOOBNClassBuilder extends DefaultProbabilisticNetworkBuilder implements IOOBNClassBuilder {
 
+	private IOOBNInstanceNodeBuilder instanceNodeBuilder = null;
+	
+	
 	/**
 	 * Builder used by OOBN module in order to let NetIO load .net files
 	 * using DefaultOOBNClass as ProbabilisticNetwork and OOBNNodeGraphicalWrapper
@@ -29,6 +33,10 @@ public class DefaultOOBNClassBuilder extends DefaultProbabilisticNetworkBuilder 
 	protected DefaultOOBNClassBuilder() {
 		super();
 		this.setProbabilisticNodeBuilder(DefaultOOBNNodeGraphicalWrapperBuilder.newInstance());
+		
+		// since the DefaultOOBNNodeGraphicalWrapperBuilder is also a IOOBNInstanceNodeBuilder,
+		// we can use the same builder
+		this.setInstanceNodeBuilder((IOOBNInstanceNodeBuilder)this.getProbabilisticNodeBuilder());
 	}
 	
 	/**
@@ -48,6 +56,14 @@ public class DefaultOOBNClassBuilder extends DefaultProbabilisticNetworkBuilder 
 	@Override
 	public DefaultOOBNClass buildNetwork(String name) {
 		return DefaultOOBNClass.newInstance(name);
+	}
+
+	public IOOBNInstanceNodeBuilder getInstanceNodeBuilder() {
+		return instanceNodeBuilder;
+	}
+
+	public void setInstanceNodeBuilder(IOOBNInstanceNodeBuilder instanceNodeBuilder) {
+		this.instanceNodeBuilder = instanceNodeBuilder;
 	}
 	
 	

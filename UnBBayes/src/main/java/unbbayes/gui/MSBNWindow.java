@@ -201,6 +201,13 @@ public class MSBNWindow extends JInternalFrame implements IFileExtensionAwareWin
 	public String getSupportedFilesDescription() {
 		return resource.getString("netFileFilterSaveMSBN");
 	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.gui.IFileExtensionAwareWindow#getSavingMessage()
+	 */
+	public String getSavingMessage() {
+		return resource.getString("saveTitle");
+	}
 	
 	
 	

@@ -87,7 +87,7 @@ public class OOBNClassController extends NetworkController {
 	 * @param x: x axis' position of new instance
 	 * @param y: y axis' position of new instance
 	 */
-	public void insertInstanceNode(IOOBNClass oobnClass, double x, double y) {
+	public OOBNNodeGraphicalWrapper insertInstanceNode(IOOBNClass oobnClass, double x, double y) {
 
 		// consistency: we cannot insert a instance of a class to itself (no class recursion is allowed)
 		if (this.getControlledClass().equals(oobnClass)) {
@@ -129,15 +129,15 @@ public class OOBNClassController extends NetworkController {
 		this.getNetwork().addNode(node);
 		
 		
-		// starts inserting the inner nodes to the managed network
-		// the inner nodes are automatically instantiated by the instance node, but it is not
-		// part of network yet
-		for (OOBNNodeGraphicalWrapper innerNode : node.getInnerNodes()) {
-			this.getNetwork().addNode(innerNode);
-		}
+//		// starts inserting the inner nodes to the managed network
+//		// the inner nodes are automatically instantiated by the instance node, but it is not
+//		// part of network yet
+//		for (OOBNNodeGraphicalWrapper innerNode : node.getInnerNodes()) {
+//			this.getNetwork().addNode(innerNode);
+//		}
 		
 		
-		
+		return node;
 	}
 
 	/**

@@ -26,4 +26,13 @@ public interface IFileExtensionAwareWindow {
 	 * E.g. "Net (.net), XMLBIF(.xml), UnBBayes File (.ubf)"
 	 */
 	public String getSupportedFilesDescription();
+	
+	
+	/**
+	 * Obtains a message to be shown to user while saving a net editted by a window implementing this
+	 * interface.
+	 * For example, you may want a FileChooser to show personalized title depending on what you are saving.
+	 * @return
+	 */
+	public String getSavingMessage();
 }

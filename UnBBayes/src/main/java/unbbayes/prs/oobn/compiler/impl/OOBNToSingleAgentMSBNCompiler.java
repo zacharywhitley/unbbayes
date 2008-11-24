@@ -54,7 +54,7 @@ public class OOBNToSingleAgentMSBNCompiler implements IOOBNCompiler {
 	public Network compile(IObjectOrientedBayesianNetwork oobn,
 			IOOBNClass mainClass) {
 				
-		AbstractMSBN msbn = new SingleAgentMSBN(oobn.getTitle());	// MSBN to be returned
+		AbstractMSBN msbn = new SingleAgentMSBN(mainClass.getClassName());	// MSBN to be returned
 					
 		// create an instance of mainClass
 		IOOBNNode mainInstance = DefaultOOBNNode.newInstance();

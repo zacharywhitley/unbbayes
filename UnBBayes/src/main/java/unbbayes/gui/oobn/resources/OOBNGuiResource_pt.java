@@ -70,6 +70,7 @@ public class OOBNGuiResource_pt extends ListResourceBundle {
 		{"changeNodeType", "Alterar o tipo do nó selecionado"},
 		
 		{"netFileFilterSaveOOBN","Net especificação 3 (.oobn)"},
+		{"saveTitle", "Armazenar a classe atual"},
 		
 	};
 }

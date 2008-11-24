@@ -39,6 +39,7 @@ import unbbayes.gui.MSBNWindow;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.SplashScreen;
 import unbbayes.gui.UnBBayesFrame;
+import unbbayes.gui.oobn.OOBNWindow;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
 import unbbayes.io.XMLBIFIO;
@@ -220,11 +221,14 @@ public class MainController {
 		
 		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		
-		MebnIO ubfIo = UbfIO.getInstance();
+		MebnIO ubfIo = null;
+		IObjectOrientedBayesianNetworkIO oobnIO = null;
+		
+		// TODO stop using this sequences of if-else conditionals and start using object binding conditionals
 		
 		try{
 			BaseIO io = null;
-			PrOwlIO prOwlIo = null; 
+//			PrOwlIO prOwlIo = null; 
 			JInternalFrame window = screen.getSelectedWindow();
 			
 			if(window == null){
@@ -251,6 +255,11 @@ public class MainController {
 				else if (name.endsWith(UbfIO.fileExtension)) {
 					ubfIo = UbfIO.getInstance();
 				}
+				else if (name.endsWith(IObjectOrientedBayesianNetworkIO.fileExtension)) {
+					if (window instanceof OOBNWindow) {
+						oobnIO = DefaultOOBNIO.newInstance(((OOBNWindow)window).getController().getOobn());
+					}
+				}
 				
 				if (io != null)
 					if (!(window instanceof NetworkWindow)){
@@ -273,6 +282,12 @@ public class MainController {
 							return true; 
 
 						}
+					} else if (oobnIO != null) {
+						if (window instanceof OOBNWindow) {
+							oobnIO.saveOOBNClass(file, ((OOBNWindow)window).getController().getActive().getController().getControlledClass());
+							return true;
+						}
+						return false;
 					}
 					else{
 						throw new InvalidFileNameException(resource.getString("withoutPosfixe"));							
@@ -376,6 +391,7 @@ public class MainController {
 				} else if (name.endsWith(IObjectOrientedBayesianNetworkIO.fileExtension)) {
 					IObjectOrientedBayesianNetworkIO oobnIO = DefaultOOBNIO.newInstance();
 					IObjectOrientedBayesianNetwork oobn = oobnIO.loadOOBN(file);	
+					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
 					OOBNController controller = OOBNController.newInstance(oobn, screen);
 					window = controller.getPanel();
 				}
