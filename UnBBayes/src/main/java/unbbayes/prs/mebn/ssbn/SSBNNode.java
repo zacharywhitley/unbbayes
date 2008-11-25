@@ -350,7 +350,7 @@ public class SSBNNode {
 			return;
 		}
 	
-		OVInstance ovInstance = OVInstance.getInstance( ov, entityInstanceName , ov.getValueType() ); 
+		OVInstance ovInstance = OVInstance.getInstance( ov, LiteralEntityInstance.getInstance(entityInstanceName , ov.getValueType())); 
 		this.arguments.add(ovInstance);
 	    this.argumentsResidentMFrag.add(ovInstance); 
 	}
@@ -376,7 +376,7 @@ public class SSBNNode {
 			return;
 		}
 		
-		OVInstance ovInstance = OVInstance.getInstance( ov, entityInstanceName , ov.getValueType()); 
+		OVInstance ovInstance = OVInstance.getInstance( ov, LiteralEntityInstance.getInstance(entityInstanceName , ov.getValueType())); 
 		this.arguments.add(pos, ovInstance);
 		this.argumentsResidentMFrag.add(ovInstance); 
 	}

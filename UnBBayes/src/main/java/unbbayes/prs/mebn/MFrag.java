@@ -733,9 +733,9 @@ public class MFrag implements Graph{
 	}
 
 	/**
-	 * 
 	 * @param allOVs set of OrdinaryVariable to be looked for.
-	 * @return set of ContextNodes containing combinations of the Ordinary Variables passed by its arguments
+	 * @return set of ContextNodes containing combinations of the Ordinary 
+	 * Variables passed by its arguments
 	 */	
 	public Collection<ContextNode> getContextByOVCombination(Collection<OrdinaryVariable> allOVs) {
 		

@@ -28,7 +28,12 @@ import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 
-
+/**
+ * A warning is a situation that don't stop the evaluation of the SSBN algorithm. 
+ * 
+ * @author Laecio Lima dos Santos (laecio@gmail.com)
+ *
+ */
 public class SSBNWarning {
 
 	private SSBNNode nodeCause; 

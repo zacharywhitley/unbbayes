@@ -70,6 +70,8 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 
 	protected List<SSBNWarning> warningList; 
 	
+	private ContextNodeAvaliator contextNodeAvaliator; 
+	
 	private ResourceBundle resource = 
 		ResourceBundle.getBundle("unbbayes.prs.mebn.ssbn.resources.Resources");
 	
@@ -225,192 +227,6 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
     	return ovProblemList; 
 	}
 	
-
-	/**
-	 * Evaluate one context node with unknown ordinary variables 
-	 * 
-	 * @param mFrag        MFrag of context node
-	 * @param ovFaultList  List of Fault Ordinary Variables 
-	 * @param ovInstances  List of OVINstances (know ordinary variables)
-	 * 
-	 * @return: Only will have return if the result is one (and only one) entity for each
-	 *          ordinary variable. Otherside return null 
-	 * 
-	 * @throws ImplementationRestrictionException
-	 * @throws SSBNNodeGeneralException
-	 */
-	public List<OVInstance> evaluateSearchContextNode(
-			MFrag mFrag, 
-			List<OrdinaryVariable> ovFaultList, 
-			List<OVInstance> ovInstances) 
-	throws ImplementationRestrictionException, SSBNNodeGeneralException {
-		
-		boolean debug = false; 
-		
-		Map<OrdinaryVariable, List<OVInstance>> mapOVInstanceMap; 
-		mapOVInstanceMap = new HashMap<OrdinaryVariable, List<OVInstance>>(); 
-		
-		for(OVInstance ovInstance: ovInstances){
-			List<OVInstance> list = new ArrayList<OVInstance>(); 
-			list.add(ovInstance); 
-			mapOVInstanceMap.put(ovInstance.getOv(), list); 
-		}
-		
-		Collection<ContextNode> cnList = mFrag.getContextNodeByOrdinaryVariableRelated(ovFaultList); 
-		
-		boolean changed = false; 
-		
-		int i = 0; 
-		do{
-			logManager.appendlnIfTrue(debug, "Interaction " + i++);
-			
-			Collection<ContextNode> solvedNodes = new ArrayList<ContextNode>(); 
-			changed = false; 
-			
-OUT_LOOP:  for(ContextNode context: cnList){
-	
-	             System.out.println("Nó de contexto avaliado: " + context);
-				 List<OrdinaryVariable> ovFaultTempList = new ArrayList<OrdinaryVariable>(); 
-				 List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
-				 ovInstanceList.addAll(ovInstances); 
-				 
-				 boolean doIntersection = false; 
-				 
-				 //Step 1: evaluate if the node should be solved
-    		    for(OrdinaryVariable ov: context.getVariableList()){
-					
-    		    	System.out.println("Ordinary variable: " + ov);
-				 	//Problema: análise combinatória dos resultados! 
-			 		List<OVInstance> instanceListForOV = mapOVInstanceMap.get(ov); 
-		 			
-		 			if(instanceListForOV!=null){
-						if(instanceListForOV.size() == 1){
-							System.out.println("   OVInstance: " + instanceListForOV.get(0));
-							if(!ovInstanceList.contains(instanceListForOV.get(0))){
-								ovInstanceList.add(instanceListForOV.get(0)); 
-							}
-						}else{
-							System.out.println("  Do intersection");
-							doIntersection = true; 
-							ovFaultTempList.add(ov);
-						}
-					}else{
-						System.out.println(" OV Fault!!! ");
-						ovFaultTempList.add(ov);
-					}
-				}
-    		    
-				//TODO restrição atual do algoritmo (considera apenas casos triviais)
-			    if(ovFaultTempList.size() > 1){
-			    	System.out.println("OV Fault List maior que 1");
-			    	continue OUT_LOOP; 
-			    }
-
-				 try {
-					 System.out.println("Tentando avaliar nó de contexto: ");
-					 ContextNodeAvaliator avaliator = new ContextNodeAvaliator(getKnowledgeBase()); 
-					 List<String> result = avaliator.evalutateSearchContextNode(context, ovInstanceList);
-					 
-					 System.out.println("Result: " + result);
-					 
-					 if((result != null) && (result.size() > 0)){
-						 System.out.println("In");
-						 List<OVInstance> ovInstanceListResult = new ArrayList<OVInstance>(); 
-						 
-						 //Using the restriction....
-						 List<OrdinaryVariable> contextNodeOvFaultList = context.getOVFaultForOVInstanceSet(ovInstanceList); 
-						 OrdinaryVariable ovFault = contextNodeOvFaultList.get(0); 
-						 
-						 for(String ovInstanceName: result){
-							 ovInstanceListResult.add(OVInstance.getInstance(ovFault, 
-									 ovInstanceName, ovFault.getValueType())); 
-						 }
-						 
-						 if(doIntersection){
-							 //Do intersection
-							 OrdinaryVariable ov = ovFaultTempList.get(0);
-							 List<OVInstance> instanceListForOV = mapOVInstanceMap.get(ov); 
-							 ovInstanceListResult = intersection(instanceListForOV, ovInstanceListResult); 
-						 }
-						 
-						 mapOVInstanceMap.put(ovFault, ovInstanceListResult); 
-						 System.out.println("Out ["  + ovFault + " " + 
-								 ovInstanceListResult + "]");
-					 }
-					 
-					 solvedNodes.add(context); 
-					 System.out.println("Houve alteracao");
-					 changed = true; 
-					 
-					 System.out.println("\nMapOVInstance");
-					 for(OrdinaryVariable ov: mapOVInstanceMap.keySet()){
-						 System.out.println("> OV=" + ov + "[");
-						 List<OVInstance> ovInstanceListResult = mapOVInstanceMap.get(ov); 
-						 for(OVInstance ovI: ovInstanceListResult){
-							 System.out.println("   " + ovI);
-						 }
-						 System.out.println("]");
-						 
-					 }
-					 System.out.println("\n");
-					 
-//					 if(verifyOVFaultList(ovFaultList, ovInsntanceList)); 
-					 
-				 } catch (InvalidContextNodeFormulaException e) {
-					 e.printStackTrace();
-					 break OUT_LOOP; 
-				 } catch (OVInstanceFaultException e) {
-					 e.printStackTrace();
-					 break OUT_LOOP; 
-				 } 
-				
-		   	}
-			
-			for(ContextNode context: solvedNodes){
-				cnList.remove(context);
-				System.out.println("Solved node: " + context);
-			}
-			
-		}while(changed); 
-		
-		//Montar resultado e retornar. 
-		
-		System.out.println("Resultado: ");
-		
-		/* 
-		 * Para esta versão, pode ter apenas uma entidade como resultado para 
-		 * cada uma das ordinary variables fautantes. Casos mais complexos por
-		 * enquanto não são cobertos. 
-		 */
-		
-		List<OVInstance> listResult = new ArrayList<OVInstance>(); 
-		for(OrdinaryVariable ov: ovFaultList){
-			System.out.println("Ordinary Variable: " + ov);
-			List<OVInstance> listOVInstance = mapOVInstanceMap.get(ov); 
-			if((listOVInstance != null) && (listOVInstance.size() == 1)){
-				System.out.println("   OVInstance = " + listOVInstance.get(0));
-				listResult.add( listOVInstance.get(0) ); 
-			}else{
-				System.out.println("   Not ov instance for the ordinary variable");
-				return null; 
-			}
-		}
-		
-		return listResult; 
-	}
-	
-	private List<OVInstance> intersection(List<OVInstance> list1, List<OVInstance> list2){
-		
-		List<OVInstance> listIntersection =  new ArrayList<OVInstance>(); 
-		
-		for(OVInstance ovIns: list1){
-			if(list2.contains(ovIns)){
-				listIntersection.add(ovIns); 
-			}
-		}
-		
-		return listIntersection; 
-	}
 	
 	private boolean verifyOVFaultList(List<OrdinaryVariable> ovFaultList, List<OVInstance> ovInsntanceList){
 		
@@ -431,12 +247,14 @@ OUT_LOOP:  for(ContextNode context: cnList){
 	
 	/**
 	 * Search for a context node that recover the entities that match with the 
-	 * ordinary variable list. 
+	 * ordinary variable list. <br><br>
 	 * A) Case this search returns entities, one SSBNNode will be create for each entity (the entity is a argument of the fatherNode
-	 * that is the node referenced by the SSBNNOde). 
+	 * that is the node referenced by the SSBNNOde). <br><br> 
 	 * B) Case this search don't return entities, all the entities of the knowledge base will be recover and one SSBNNode
 	 * will be create for each entity. Is this case a object ContextFatherSSBNNode 
-	 * wiil be added in the ssbnnode orgin.  
+	 * will be added in the ssbnnode origin.  
+	 * 
+	 * <br><br>
 	 * 
 	 * Note: already put the created nodes in the lists of created nodes. 
 	 * 
@@ -460,7 +278,7 @@ OUT_LOOP:  for(ContextNode context: cnList){
 			boolean searchIfNotFound) 
 			throws ImplementationRestrictionException, SSBNNodeGeneralException, InvalidParentException {
 
-		List<OVInstance> listResultSearchContextNode = evaluateSearchContextNode(
+		List<OVInstance> listResultSearchContextNode = getContextNodeAvaliator().evaluateSearchContextNode(
 				mFrag, ovList, ovInstances);  
 
 		if((listResultSearchContextNode == null)||(listResultSearchContextNode.isEmpty())){ 
@@ -607,7 +425,7 @@ OUT_LOOP:  for(ContextNode context: cnList){
 			List<OrdinaryVariable> ovProblemList, List<OVInstance> ovInstances) 
 			throws SSBNNodeGeneralException, ImplementationRestrictionException, InvalidParentException {
 
-			List<OVInstance> listResultSearchContextNode = evaluateSearchContextNode(
+			List<OVInstance> listResultSearchContextNode = getContextNodeAvaliator().evaluateSearchContextNode(
 					fatherNode.getMFrag(), ovProblemList, ovInstances);  
 
 			if((listResultSearchContextNode == null)||(listResultSearchContextNode.isEmpty())){ 
@@ -728,7 +546,7 @@ OUT_LOOP:  for(ContextNode context: cnList){
 			ResidentNode residentNode, List<OVInstance> ovInstances, OrdinaryVariable ov, String entity) {
 		
 		List<OVInstance> arguments = filterArgumentsForNode(ovInstances, residentNode);
-		arguments.add(OVInstance.getInstance(ov, entity, ov.getValueType())); 
+		arguments.add(OVInstance.getInstance(ov, LiteralEntityInstance.getInstance(entity, ov.getValueType()))); 
 		
 		SSBNNode testSSBNNode = ssbnNodesMap.get(SSBNNode.getUniqueNameFor(residentNode, arguments)); 
 		
@@ -859,13 +677,13 @@ OUT_LOOP:  for(ContextNode context: cnList){
 					}
 				}else{
 					OVInstance newOVInstance = OVInstance.getInstance(ovOrdereableResident, 
-							prev.getName(), ovOrdereableResident.getValueType());
+							LiteralEntityInstance.getInstance(prev.getName(), ovOrdereableResident.getValueType()));
 					ssbnNodeJacket.addOVInstanceOfResidentMFrag(newOVInstance);
 					
 					int index = residentNode.getOrdinaryVariableList().indexOf(ovOrdereableResident);
 					OrdinaryVariable ovOrdereableInput = inputNode.getOrdinaryVariableByIndex(index);
 					newOVInstance = OVInstance.getInstance(ovOrdereableInput, 
-							prev.getName(), ovOrdereableResident.getValueType());
+							LiteralEntityInstance.getInstance(prev.getName(), ovOrdereableResident.getValueType()));
 					ssbnNodeJacket.addOVInstanceOfInputMFrag(newOVInstance);
 				
 				}
@@ -970,13 +788,13 @@ OUT_LOOP:  for(ContextNode context: cnList){
 					}
 				}else{
 					OVInstance newOVInstance = OVInstance.getInstance(ovOrdereableResident, 
-							proc.getName(), ovOrdereableResident.getValueType());
+							LiteralEntityInstance.getInstance(proc.getName(), ovOrdereableResident.getValueType()));
 					ssbnNode.addArgument(newOVInstance); 
 					
 					int index = residentNode.getOrdinaryVariableList().indexOf(ovOrdereableResident);
 					OrdinaryVariable ovOrdereableInput = inputNode.getOrdinaryVariableByIndex(index);
 					newOVInstance = OVInstance.getInstance(ovOrdereableInput, 
-							objectEntityInstanceOrdereable.getName(), ovOrdereableResident.getValueType());
+							LiteralEntityInstance.getInstance(objectEntityInstanceOrdereable.getName(), ovOrdereableResident.getValueType()));
 					listOvInstancesInput.add(newOVInstance); 
 					
 					logManager.appendln("\n\n created:" + ovOrdereableResident + " " + proc.getName());
@@ -1068,7 +886,7 @@ OUT_LOOP:  for(ContextNode context: cnList){
 		
 		//Add OVInstance created for the entity search
 		ssbnNodeJacket.addArgument(fatherNode,  
-				OVInstance.getInstance(ov, entityName, ov.getValueType()));	
+				OVInstance.getInstance(ov, LiteralEntityInstance.getInstance(entityName, ov.getValueType())));	
 		
 		//Add all the other OVInstances
 		for(OVInstance instance: originNode.getArguments()){
@@ -1171,78 +989,6 @@ OUT_LOOP:  for(ContextNode context: cnList){
 		
 		return ssbnnode;
 		
-	}
-
-	/**
-	 * Check context node's validation.
-	 * Evaluate only the context nodes for what have ordinary variables instances
-	 * for all the ordinary variables present (ordinal context nodes). 
-	 */
-	protected boolean evaluateRelatedContextNodes (ResidentNode residentNode, 
-			List<OVInstance> ovInstances, MFragInstance mFragInstance) throws OVInstanceFaultException{
-
-		// We assume if MFrag is already set to use Default, then some context
-		// has failed previously and there's no need to evaluate again.		
-		if (residentNode.getMFrag().isUsingDefaultCPT()) {
-			return false;
-		};
-
-		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(getKnowledgeBase()); 
-
-		//Note: don't observes the transitivity in context nodes.  
-
-		Collection<ContextNode> contextNodeList = residentNode.getMFrag().getContextByOVCombination(
-				residentNode.getOrdinaryVariableList());
-
-		for(ContextNode context: contextNodeList){
-			logManager.append("Evaluating Context Node: " + context.getLabel());
-			if(!avaliator.evaluateContextNode(context, ovInstances)){
-				residentNode.getMFrag().setAsUsingDefaultCPT(true); 
-				logManager.appendln("  > Result = FALSE. Use default distribution ");
-				return false;  
-			}else{
-				logManager.appendln("  > Result = TRUE.");
-			}		
-		}
-
-		return true; 
-	}
-
-	
-	/**
-	 * Calls ContextNodeAvaliator's method to check context node's validation.
-	 * Evaluate only the context nodes for what have ordinary variables instances
-	 * for all the ordinary variables present (ordinal context nodes). 
-	 */
-	//TODO this method is absolutely equal the other (ResidentNode residentNode)
-	protected boolean evaluateRelatedContextNodes (InputNode inputNode, 
-			List<OVInstance> ovInstances, MFragInstance mFragInstance) throws OVInstanceFaultException{
-
-		// We assume if MFrag is already set to use Default, then some context
-		// has failed previously and there's no need to evaluate again.		
-		if (inputNode.getMFrag().isUsingDefaultCPT()) {
-			return false;
-		};
-
-		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(getKnowledgeBase()); 
-
-		//Note: don't observes the transitivity in context nodes.  
-
-		Collection<ContextNode> contextNodeList = inputNode.getMFrag().getContextByOVCombination(
-				inputNode.getOrdinaryVariableList());
-
-		for(ContextNode context: contextNodeList){
-			logManager.appendln("Context Node: " + context.getLabel());
-			if(!avaliator.evaluateContextNode(context, ovInstances)){
-				inputNode.getMFrag().setAsUsingDefaultCPT(true); 
-				logManager.appendln("Result = FALSE. Use default distribution ");
-				return false;  
-			}else{
-				logManager.appendln("Result = TRUE.");
-			}		
-		}
-
-		return true; 
 	}
 	
 	protected OVInstance getListArgumentsOfInputVariableInOriginalMFrag(InputNode inputNode, OVInstance ovInstanceInputMFrag){
@@ -1552,6 +1298,14 @@ OUT_LOOP:  for(ContextNode context: cnList){
 	
 	public void setKnowledgeBase(KnowledgeBase kb){
 		this.knowledgeBase = kb; 
+	}
+
+	public ContextNodeAvaliator getContextNodeAvaliator() {
+		return contextNodeAvaliator;
+	}
+
+	public void setContextNodeAvaliator(ContextNodeAvaliator contextNodeAvaliator) {
+		this.contextNodeAvaliator = contextNodeAvaliator;
 	}
 	
 	

@@ -20,14 +20,12 @@
  */
 package unbbayes.prs.mebn.ssbn;
 
-import java.util.List;
-
 import unbbayes.prs.mebn.OrdinaryVariable;
-import unbbayes.prs.mebn.entity.Type;
 
 /**
+ * Represents a ordinary variable instanciate for a entity 
+ * 
  * @author Shou Matsumoto
- *
  */
 public class OVInstance {
 	private OrdinaryVariable ov = null;
@@ -37,24 +35,10 @@ public class OVInstance {
 		super();
 	}
 	
-	public static OVInstance getInstance(OrdinaryVariable ov) {
-		OVInstance ovi = new OVInstance();
-		ovi.setOv(ov);
-		ovi.setEntity(LiteralEntityInstance.getInstance(ov.getName(), ov.getValueType()));
-		return ovi;
-	}
-	
 	public static OVInstance getInstance(OrdinaryVariable ov , LiteralEntityInstance ei) {
 		OVInstance ovi = new OVInstance();
 		ovi.setOv(ov);
 		ovi.setEntity(ei);
-		return ovi;
-	}
-	
-	public static OVInstance getInstance(OrdinaryVariable ov , String entityName , Type entityType) {
-		OVInstance ovi = new OVInstance();
-		ovi.setOv(ov);
-		ovi.setEntity(LiteralEntityInstance.getInstance(entityName, entityType));
 		return ovi;
 	}
 	
@@ -67,7 +51,7 @@ public class OVInstance {
 	/**
 	 * @param entity the entity to set
 	 */
-	public void setEntity(LiteralEntityInstance entity) {
+	private void setEntity(LiteralEntityInstance entity) {
 		this.entity = entity;
 	}
 	/**
@@ -79,26 +63,8 @@ public class OVInstance {
 	/**
 	 * @param ov the ov to set
 	 */
-	public void setOv(OrdinaryVariable ov) {
+	private void setOv(OrdinaryVariable ov) {
 		this.ov = ov;
-	}
-	
-	/* 
-	 * devera ser criado um metodo para retornar a OVInstance para uma data OV, 
-	 * em uma lista de OVInstance...
-	 * 
-	 *  Objeto "Parameters"? 
-	 */
-	
-	private OVInstance getOVInstanceForOV(OrdinaryVariable ov, List<OVInstance> list){
-		
-		for(OVInstance ovi: list){
-			if (ovi.getOv() == ov){
-				return ovi; 
-			}
-		}
-		
-		return null; 
 	}
 	
 	/**

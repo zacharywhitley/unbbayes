@@ -45,7 +45,7 @@ import unbbayes.prs.mebn.ssbn.util.SSBNDebugInformationUtil;
 import unbbayes.util.Debug;
 
 /**
- * Implementation of a algothm for generate ssbn's for mtheories. 
+ * Implementation of a algorithm for generate ssbn's for MTheories. 
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  */
@@ -63,6 +63,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 	public static String queryName = "";
 
 	private List<SSBNNode> findingList; 
+	
 
 	public ExplosiveSSBNGenerator(){
 		super();  
@@ -91,6 +92,8 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 		// THE PREPARATION
 		SSBNNode queryNode = query.getQueryNode();
 		setKnowledgeBase(query.getKb());
+		setContextNodeAvaliator(new ContextNodeAvaliator(getKnowledgeBase())); 
+		
 		stepCount = 0L;
 		queryName = queryNode.getUniqueName();
 		logManager.clear();
@@ -221,7 +224,8 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 			ImplementationRestrictionException, MEBNException, InvalidParentException {
 
 		logManager.appendln("\n\n[D] Recursive Call Count = " + recursiveCallCount); 
-		logManager.appendln("[D]" + currentNode + ": -------------EVALUATING NODE BELOW: " + currentNode.getName() + "--------------\n"); 
+		logManager.appendln("[D]" + currentNode + ": -------------EVALUATING NODE BELOW: " 
+				+ currentNode.getName() + "--------------\n"); 
 
 		ResidentNode residentNode = currentNode.getResident(); 
 
@@ -264,8 +268,8 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 		if(!seen.contains(currentNode)){
 			seen.add(currentNode); 
 		}
-
-
+		
+		
 
 
 		//------------------------- STEP B: Analyze Context Nodes. -------------
@@ -274,17 +278,17 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 		List<OVInstance> ovInstancesList = new ArrayList<OVInstance>(); 
 		ovInstancesList.addAll(currentNode.getArguments()); 
 
-		boolean evaluateRelatedContextNodesResult = false;
+		boolean relatedContextNodesEvaluation = false;
 
 		try {
-			evaluateRelatedContextNodesResult = evaluateRelatedContextNodes(
+			relatedContextNodesEvaluation = getContextNodeAvaliator().evaluateRelatedContextNodes(
 					currentNode.getResident(), ovInstancesList, null);
 		} catch (OVInstanceFaultException e) {
 			logManager.appendln("[D]"  + currentNode + ": OVInstance fault. End down method with fail\n\n"); 
 			throw new ImplementationError("OVInstance fault in the method generateRecursiveDown");  
 		}
 
-		if(!evaluateRelatedContextNodesResult){
+		if(!relatedContextNodesEvaluation){
 			logManager.appendln("[D]"  + currentNode + ":Context Node fail for " 
 					+ currentNode.getResident().getMFrag()); 
 			currentNode.setUsingDefaultCPT(true);
@@ -341,15 +345,22 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 								currentNode.setPermanent(true); 
 							}
 						}
+						
 					}
 				}
 				catch(SSBNNodeGeneralException e){
-					//The search don't is made for the below part of algotithm
+					
+					/* The search is made in the down part of the algorithm, but
+					 * case this don't return a result, a exception don't stop the
+					 * algorithm. Only a warning is throw. */
+					
 					logManager.appendln("[D]" + currentNode + 
 							": Error: entity for ordinary variable don't found: " 
-							+ ovProblematicList + " !\n"); 
+							+ ovProblematicList + " !\n");
+					
 					warningList.add(new SSBNWarning(SSBNWarning.ENTYTY_FAULT, e, 
 							currentNode, ovProblematicList)); 
+				
 				}
 				finally{
 					continue; //Go to next resident node child... 
@@ -406,31 +417,41 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 
 			//Set the arguments of the input node in the new MFrag. 
 
-			SSBNNodeJacket currentNodeInputSSBNNodeJacket = new SSBNNodeJacket(currentNode); 
+			SSBNNodeJacket curNodeInputSNJacket = new SSBNNodeJacket(currentNode); 
 			for(OVInstance ovInstance: currentNode.getArgumentsAsList()){
-				currentNodeInputSSBNNodeJacket.addArgument(residentNode, 
+				curNodeInputSNJacket.addArgument(residentNode, 
 						inputNode, ovInstance); 
 			}
 
-			List<OVInstance> ovInstancesInput = currentNodeInputSSBNNodeJacket.getInputMFragOvInstances(); 
+			List<OVInstance> ovInstancesInputList = curNodeInputSNJacket.getInputMFragOvInstances(); 
 
-			//Analisy of the context nodes of the new MFrag for the inputNode. 
+			//Analisy the context nodes of the new MFrag for the inputNode. 
 			boolean contextNodesOK = false; 
 
 			try {
-				contextNodesOK = evaluateRelatedContextNodes(inputNode, 
-						ovInstancesInput, null);
+				//For the inputs nodes, the down part of the algorithm don't is made
+				contextNodesOK = getContextNodeAvaliator().evaluateRelatedContextNodes(inputNode, 
+						ovInstancesInputList, null);
 				if(!contextNodesOK){
-					continue; //This input node don't is valid for the algorith...
+					inputNode.getMFrag().setAsUsingDefaultCPT(true); 
+					continue; //This input node don't is valid for the algorithm...
 				}
 			} catch (OVInstanceFaultException e1) {
-				//The search don't is made for the below part of algotithm
-				logManager.appendln("[D]" + currentNode + ": Error (Input node instance from )- Evaluation of context nodes don't found all entities that match the ordinary variables"); 
-				warningList.add(new SSBNWarning(SSBNWarning.OV_FAULT_EVALUATION_OF_CONTEXT_FOR_INPUT_INSTANCE, e1, currentNode, inputNode)); 
+				
+				logManager.appendln("[D]" + currentNode + 
+						": Error (Input node instance from )- " +
+						"Evaluation of context nodes don't found all entities " +
+						"that match the ordinary variables");
+				
+				warningList.add(new SSBNWarning(
+						SSBNWarning.OV_FAULT_EVALUATION_OF_CONTEXT_FOR_INPUT_INSTANCE, 
+						e1, currentNode, inputNode));                                 
+				
 				continue; 
 			}
 
 			for(ResidentNode residentChild: inputNode.getResidentNodeChildList()){
+				
 				logManager.appendln("[D]" + currentNode + ": Child of the input -> " + residentChild);
 				logManager.appendln("[D]" + currentNode + ": do nothing...");
 
@@ -462,7 +483,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 
 						//Back the original arguments
 						currentNode.setRecursiveOVInstanceList(
-								currentNodeInputSSBNNodeJacket.getInputMFragOvInstances()); 
+								curNodeInputSNJacket.getInputMFragOvInstances()); 
 
 						if(procNode.isPermanent()){
 							currentNode.setPermanent(true); 
@@ -475,7 +496,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 
 					//Add the arguments for the node when it is input node in a MFrag
 					currentNode.addArgumentsForMFrag(residentChild.getMFrag(), 
-							currentNodeInputSSBNNodeJacket.getInputMFragOvInstances());
+							curNodeInputSNJacket.getInputMFragOvInstances());
 				}
 
 				/*
@@ -484,7 +505,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 				 * the instances that match with the ordinary variable.  
 				 */
 				List<OrdinaryVariable> ovProblematicList = getOVForWhichNotExistOVInstance(
-						residentChild.getOrdinaryVariableList(), ovInstancesInput); 
+						residentChild.getOrdinaryVariableList(), ovInstancesInputList); 
 
 				if(!ovProblematicList.isEmpty()){
 
@@ -494,13 +515,11 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 
 						/* 
 						 * The created nodes have the current node how father. One father, 
-						 * many childs, with the fault entity varying. Note that if
-						 * the context nodes don't recover entites, the search for
-						 * all the enties of the knowledge base don't id made.  
+						 * many childs, with the fault entity varying.  
 						 */ 
 						List<SSBNNode> createdNodes = createSSBNNodesOfEntitiesSearchForResidentNode(
 								residentChild.getMFrag(), currentNode, residentChild, 
-								ovProblematicList, ovInstancesInput, false);
+								ovProblematicList, ovInstancesInputList, false);
 
 						for(SSBNNode ssbnNode: createdNodes){
 							if(!ssbnNode.getParents().contains(currentNode)){
@@ -518,8 +537,13 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 						continue; 
 					}
 					catch(Exception e){
-						logManager.appendln("[D]" + currentNode + ": Error - Not all ordinary variables of the resident node filled"); 
-						warningList.add(new SSBNWarning(SSBNWarning.OV_FAULT_RESIDENT_CHILD, e, currentNode, residentChild)); 
+						
+						logManager.appendln("[D]" + currentNode + "" +
+								": Error - Not all ordinary variables of the resident node filled"); 
+						
+						warningList.add(new SSBNWarning(SSBNWarning.OV_FAULT_RESIDENT_CHILD, 
+								e, currentNode, residentChild)); 
+						
 						continue; //To the next input node
 					}
 				}else{
@@ -651,12 +675,14 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 						generateRecursive(ssbnNode, seen, net, false);
 						ssbnNode.setPermanent(true); 	
 					}else{
-						//because the Convergency case in the D-Separation cases, 
-						//the father of this finding influency the node father of 
-						//the finding.(the flag generatedByDownProcessOfOriginNode 
-						//is used for see if the finding is a child, otherwise, the
-						//divergency case in the D-Separation cases will make that
-						//the fathers of the finding don't is influency nodes). 
+						
+						/* because the Convergency case in the D-Separation cases, 
+						 * the father of this finding influency the node father of 
+						 * the finding.(the flag generatedByDownProcessOfOriginNode 
+						 * is used for see if the finding is a child, otherwise, the
+						 * divergency case in the D-Separation cases will make that
+						 * the fathers of the finding don't is influency nodes). */
+						
 						if(generatedByDownProcessOfOriginNode){
 							ssbnNode.setPermanent(true); 
 							generateRecursive(ssbnNode, seen, net, false);
