@@ -34,6 +34,7 @@ import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.prs.mebn.ssbn.ContextNodeAvaliator;
+import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
@@ -110,7 +111,7 @@ public class KBTest  extends TestCase {
 		ContextNode contextNode = mebn.getContextNode("CX11"); 
 		
 		OrdinaryVariable ovS = mebn.getMFragByName("Starship_MFrag").getOrdinaryVariableByName("st"); 
-		OVInstance ovInstance = OVInstance.getInstance(ovS, "ST4", ovS.getValueType()); 
+		OVInstance ovInstance = OVInstance.getInstance(ovS, LiteralEntityInstance.getInstance("ST4", ovS.getValueType())); 
 		
 		List<OVInstance> args = new ArrayList<OVInstance>(); 
 		
@@ -134,7 +135,7 @@ public class KBTest  extends TestCase {
 		ContextNode contextNode = mebn.getContextNode("CX4"); 
 		
 		OrdinaryVariable ovS = mebn.getMFragByName("DangerToSelf_MFrag").getOrdinaryVariableByName("s"); 
-		OVInstance ovInstance = OVInstance.getInstance(ovS, "ST0", ovS.getValueType()); 
+		OVInstance ovInstance = OVInstance.getInstance(ovS, LiteralEntityInstance.getInstance("ST0", ovS.getValueType())); 
 		
 		List<OVInstance> args = new ArrayList<OVInstance>(); 
 		
@@ -160,11 +161,11 @@ public class KBTest  extends TestCase {
 		ContextNode contextNode = mebn.getContextNode("CX4"); 
 		
 		OrdinaryVariable ovS = mebn.getMFragByName("DangerToSelf_MFrag").getOrdinaryVariableByName("s"); 
-		OVInstance ovInstance = OVInstance.getInstance(ovS, "ST0", ovS.getValueType()); 
+		OVInstance ovInstance = OVInstance.getInstance(ovS, LiteralEntityInstance.getInstance("ST0", ovS.getValueType())); 
 		args.add(ovInstance);
 		
 		ovS = mebn.getMFragByName("DangerToSelf_MFrag").getOrdinaryVariableByName("st"); 
-		ovInstance = OVInstance.getInstance(ovS, "ST1", ovS.getValueType()); 
+		ovInstance = OVInstance.getInstance(ovS, LiteralEntityInstance.getInstance("ST1", ovS.getValueType())); 
 		args.add(ovInstance);
 		
 		try {

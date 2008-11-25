@@ -43,11 +43,11 @@ public class AbstractSSBNGeneratorTest extends TestCase{
 		
 		List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
 		OrdinaryVariable lic = mFrag.getOrdinaryVariableByName("lic"); 
-		OVInstance ovInstance = OVInstance.getInstance(lic, "LICITACAO1", lic.getValueType()); 
+		OVInstance ovInstance = OVInstance.getInstance(lic, LiteralEntityInstance.getInstance("LICITACAO1", lic.getValueType())); 
 		ovInstanceList.add(ovInstance); 
 		
 		try {
-			List<OVInstance> listResult = abstractSSBNGenerator.evaluateSearchContextNode(
+			List<OVInstance> listResult = abstractSSBNGenerator.getContextNodeAvaliator().evaluateSearchContextNode(
 					mFrag, ovFaultList, ovInstanceList);
 		    
 			assertNotNull(listResult); 
