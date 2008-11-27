@@ -629,7 +629,10 @@ public class NetIO implements BaseIO {
 			if (y <= 0) {
 				y = Node.getHeight();
 			}
-			node.getPosition().setLocation(x, y);
+			
+//			node.getPosition().setLocation(x, y);
+			node.setPosition(x, y);
+			
 			getNext(st);
 		} else if (st.sval.equals("states")) {
 			while (getNext(st) == '"') {

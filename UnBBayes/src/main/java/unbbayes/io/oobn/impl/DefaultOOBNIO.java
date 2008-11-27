@@ -32,6 +32,7 @@ import unbbayes.io.oobn.builder.IOOBNClassBuilder;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
+import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.prs.oobn.IOOBNClass;
 import unbbayes.prs.oobn.IOOBNNode;
@@ -48,6 +49,13 @@ import unbbayes.util.Debug;
  */
 public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetworkIO  {
 
+	/**
+	 * The file extension assumed by this class when recursivelly loading class dependency.
+	 * This class will suppose the dependency to be loaded will have filename as
+	 * [CLASSNAME]+[FILE_EXTENSION]
+	 */
+	public static final String FILE_EXTENSION = ".oobn";
+	
 //	private NetIO netIO = null;
 	private IObjectOrientedBayesianNetwork oobn = null;
 	
@@ -346,7 +354,8 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 		
 		this.getOobn().setTitle(classFile.getName());
 		try{
-			this.getOobn().getOOBNClassList().add((IOOBNClass)this.load(classFile));
+//			this.getOobn().getOOBNClassList().add((IOOBNClass)this.load(classFile));
+			this.load(classFile);
 		} catch (LoadException le) {
 			throw new IOException(le);
 		}
@@ -389,6 +398,9 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 		// list of names of all output nodes. We'll use them to set nodes as output after nodes are loaded
 		List<String> outputNodesNames = new ArrayList<String>();
 
+		// map containing instance input nodes and names of their expected parents
+		Map<OOBNNodeGraphicalWrapper, String> instanceInputParentMap = new HashMap<OOBNNodeGraphicalWrapper, String>();
+		
 		
 		// setting up the stream tokenizer...
 		BufferedReader r = new BufferedReader(new FileReader(input));
@@ -417,6 +429,10 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 			// Unfortunatelly, if we use the superclass method using current network builder, it will work as every node are private,
 			// so, let' call supermethod using DefaultOOBNClassBuilder (which generates output nodes as default)
 			super.load(input, net, DefaultOOBNClassBuilder.newInstance());
+			
+			// add it to currently managed oobn.
+			// since the currently managed oobn traces the already loaded classes, and is used by loadOOBN as a return value
+			this.getOobn().getOOBNClassList().add((IOOBNClass)net);
 			return;
 		}
 
@@ -425,7 +441,7 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 		while (getNext(st) != StreamTokenizer.TT_EOF) {
 			
 			// if declaration is "instance" type, treat it
-			this.treatInstanceNodeDeclaration(st, net, (IOOBNClassBuilder)networkBuilder, this.classNameToClassMap);
+			this.treatInstanceNodeDeclaration(input, st, net, (IOOBNClassBuilder)networkBuilder, networkBuilder, this.classNameToClassMap, instanceInputParentMap);
 			
 			// if declaration is "node" type, treat it
 			this.loadNodeDeclaration(st, net, networkBuilder);
@@ -459,10 +475,25 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 			}
 		}
 		
+		// also, since all nodes are loaded, let's map the instance input's parents
+		for (OOBNNodeGraphicalWrapper key : instanceInputParentMap.keySet()) {
+			String parentName = instanceInputParentMap.get(key);
+			try {
+				key.addParent(net.getNode(parentName));
+			} catch (InvalidParentException ipe) {
+				Debug.println(this.getClass(), "Error insertng instance input's parent: "
+						+ key.getName() + " <- " + parentName , ipe);
+			}
+		}
 		
 		
 		// I'm not sure if it is necessary to call the method below...
 		this.setUpHierarchicTree(net);
+		
+		
+		// add it to currently managed oobn.
+		// since the currently managed oobn traces the already loaded classes
+		this.getOobn().getOOBNClassList().add((IOOBNClass)net);
 		
 	}
 	
@@ -481,7 +512,7 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 		getNext(st);
 		if (st.sval.equals("{")) {
 			getNext(st);
-			while (!st.sval.equals("node")) {
+			while (!st.sval.equals("node") && !st.sval.equals("instance")) {
 				if (st.sval.equals("inputs")) {
 					// register inputs of this net
 					// I cannot use getNext, because the specification does not use quoted text,
@@ -541,15 +572,20 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 	 * @param net
 	 * @param networkBuilder
 	 * @param classNameToClassMap map containing already-inserted classes and its names
+	 * @return map containing inner nodes and its parent's names
 	 */
-	protected void treatInstanceNodeDeclaration ( StreamTokenizer st, SingleEntityNetwork net
+	protected void treatInstanceNodeDeclaration ( File originalClassFile, StreamTokenizer st, SingleEntityNetwork net
 												, IOOBNClassBuilder classBuilder
-												, Map<String, IOOBNClass> classNameToClassMap)
+												, IProbabilisticNetworkBuilder networkBuilder
+												, Map<String, IOOBNClass> classNameToClassMap
+												, Map<OOBNNodeGraphicalWrapper, String> instanceInputParentMap)
 												  throws IOException, LoadException {
 		
-		Debug.println(this.getClass(), "treatInstanceNodeDeclaration not implemented yet");
+		
 		
 		if (st.sval.equals("instance")) {
+			
+			
 			
 			if (getNext(st) != st.TT_WORD) {
 				throw new LoadException("-> ["+((super.lineno > st.lineno())?super.lineno:st.lineno()) + "] instance [???]");
@@ -561,20 +597,69 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 			}
 			String className = st.sval;	// extract class name
 			
-			// TODO extract class by classname
+			Debug.println(this.getClass(), "Loading instance " + instanceName + " instanceof " + className );
 			
-			// TODO create instance node using class we  just extracted
-			OOBNNodeGraphicalWrapper instance = (OOBNNodeGraphicalWrapper)classBuilder.getInstanceNodeBuilder().buildInstanceNode((DefaultOOBNClass)classBuilder.buildNetwork(className));
+			// extract class by classname
+			IOOBNClass oobnClass = null;
+			for (IOOBNClass currentClass : this.getOobn().getOOBNClassList()) {
+				if (currentClass.getClassName().equals(className)) {
+					oobnClass = currentClass;
+					break;
+				}
+			}
 			
-			// TODO rename instance name
+			// if the class was not loaded before, load it recursively
+			if (oobnClass == null) {
+				// suppose file name is [CLASSNAME].oobn
+				File input = new File(originalClassFile.getParent() , className + FILE_EXTENSION);
+				oobnClass = (IOOBNClass)classBuilder.buildNetwork(className);
+				this.load(input, (SingleEntityNetwork)oobnClass.getNetwork(), networkBuilder);
+				// load will also add the loaded new class to this.oobn
+			}
+			
+			// create instance node using class we  just extracted
+			OOBNNodeGraphicalWrapper instance = (OOBNNodeGraphicalWrapper)classBuilder.getInstanceNodeBuilder().buildInstanceNode(oobnClass);
+			
+			// rename instance name
 			instance.setName(instanceName);
 			
 			while (getNextWithoutIgnoringChars(st, ';') != ';') {
-				// TODO start filling map of instance input node's parents
+				
+				// start filling map of instance input node's parents
+				
+				String nodeName = st.sval;
+				
+				// find the node it refers (since the name it refers is the original one)
+				OOBNNodeGraphicalWrapper instanceInputNode = null;
+				for (OOBNNodeGraphicalWrapper inner : instance.getInnerNodes()) {
+					if (inner.getWrappedNode().getOriginalClassNode().getName().equals(nodeName)) {
+						instanceInputNode = inner;
+						break;
+					}
+				}
+				
+				
+				
+				// extract the parent name
+				if (this.getNext(st) != st.TT_WORD) {
+					// there is no parent name declared within parent name mapping (this is an error)
+					throw new LoadException(nodeName + " <- " + (char)st.ttype);
+				}
+				
+				// assert instanceInputNode != null
+				if (instanceInputNode != null) {
+					instanceInputParentMap.put(instanceInputNode, st.sval);
+				} else {
+					Debug.println(this.getClass(), "An inconsistent instance input mapping was found: " + nodeName + " <- " + st.sval);
+				}
+				
+				
 			}
 			
-			while (getNext(st) != '{') {
-				// ignore definition of original nodes, since they are automatic at UnBBayes
+			// load instance output mapping
+			for (getNext(st); !st.sval.equals("{") ; getNext(st)) {
+				// ignore definition of original nodes, since they are automatic at UnBBayes OOBN implementation
+				Debug.println(this.getClass(), "Ignoring instance output declaration: " + "[TTYPE = " + st.ttype + "] " + st.sval);
 			}
 			
 			getNext(st);
@@ -583,9 +668,12 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 			}
 			
 			
-			// TODO add instance to network
+			// add instance to network
 			net.addNode(instance);
+			
+			
 		}
+		
 		
 	}
 

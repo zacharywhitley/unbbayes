@@ -3,6 +3,7 @@
  */
 package unbbayes.controller.oobn;
 
+import java.awt.event.KeyEvent;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -97,6 +98,9 @@ public class OOBNClassController extends NetworkController {
 		// new oobn node being added
 		DefaultOOBNNode wrappedNode = DefaultOOBNNode.newInstance();
 		
+		wrappedNode.setName(oobnClass.getClassName() //+ "_"
+				+ this.getNetwork().getNodeCount());
+		
 		// set parameters of the wrapped nodes
 		wrappedNode.setParentClass(oobnClass);
 		wrappedNode.setType(IOOBNNode.TYPE_INSTANCE);
@@ -113,8 +117,7 @@ public class OOBNClassController extends NetworkController {
 		node.appendState(resource.getString("firstStateProbabilisticName"));
 		
 		
-		node.setName(oobnClass.getClassName() //+ "_"
-				+ this.getNetwork().getNodeCount());
+		node.setName(wrappedNode.getName());
 		
 		node.setDescription(node.getName());
 		
@@ -152,6 +155,23 @@ public class OOBNClassController extends NetworkController {
 	 */
 	protected void setControlledClass(IOOBNClass controlledClass) {
 		this.controlledClass = controlledClass;
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.NetworkController#keyPressed(java.awt.event.KeyEvent)
+	 */
+	@Override
+	public void keyPressed(KeyEvent e) {
+		Debug.println(this.getClass(), "A key was pressed!!");
+		if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+            Object selected = this.getScreen().getGraphPane().getSelected();
+            this.getSENController().deleteSelected(selected);
+            for (int i = 0; i < this.getScreen().getGraphPane().getSelectedGroup().size(); i++) {
+                selected = this.getScreen().getGraphPane().getSelectedGroup().get(i);
+                this.getSENController().deleteSelected(selected);
+            }
+        }
+		super.keyPressed(e);
 	}
 
 	

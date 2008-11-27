@@ -119,7 +119,10 @@ public class DefaultOOBNNode implements IOOBNNode {
 	 * @see unbbayes.prs.oobn.IOOBNNode#setUpperInstanceNode(unbbayes.prs.oobn.IOOBNNode)
 	 */
 	public void setUpperInstanceNode(IOOBNNode upperInstanceNode) {
+		
 		this.upperInstance = upperInstanceNode;
+		
+		
 	}
 
 
@@ -143,15 +146,12 @@ public class DefaultOOBNNode implements IOOBNNode {
 	 * @see unbbayes.prs.oobn.IOOBNNode#getName()
 	 */
 	public String getName() {
-		if ( ( this.getType() == this.TYPE_INSTANCE_INPUT ) || ( this.getType() == this.TYPE_INSTANCE_OUTPUT ) ) {
-		//if (  this.getType() == this.TYPE_INSTANCE_OUTPUT ) {
-			try{
-				return this.getUpperInstanceNode().getName() + "_" 
-								+ this.getOriginalClassNode().getName();
-			} catch (Exception e) {
-				return this.getUpperInstanceNode().getName() + "_" 
-								+ this.name;
-			}
+		if ( ( this.getType() == this.TYPE_INSTANCE_INPUT ) 
+		  || ( this.getType() == this.TYPE_INSTANCE_OUTPUT ) ) {
+			
+			return( this.getUpperInstanceNode().getName() 
+			+ "_" + this.getOriginalClassNode().getName());	
+			
 		}
 		return this.name;
 	}

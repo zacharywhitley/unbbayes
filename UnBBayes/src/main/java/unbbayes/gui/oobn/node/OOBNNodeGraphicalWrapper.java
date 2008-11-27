@@ -595,6 +595,8 @@ public class OOBNNodeGraphicalWrapper extends ProbabilisticNode {
 		
 		node.getWrappedNode().setParentClass(upperNode.getParentClass());
 		
+		upperNode.addInnerNode(node.getWrappedNode());
+		
 		PotentialTable auxTabProb = ((ITabledVariable) node).getPotentialTable();
 		auxTabProb.addVariable(node);
 		
@@ -699,6 +701,10 @@ public class OOBNNodeGraphicalWrapper extends ProbabilisticNode {
 		
 		if (obj instanceof IOOBNNode) {
 			return this.getWrappedNode().equals(obj);
+		}
+		
+		if (obj instanceof OOBNNodeGraphicalWrapper) {
+			return this == obj || this.getName().equals(((OOBNNodeGraphicalWrapper)obj).getName());
 		}
 		
 		return super.equals(obj);

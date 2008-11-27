@@ -188,17 +188,24 @@ public class DefaultOOBNClass extends ProbabilisticNetwork implements IOOBNClass
 		
 		Debug.println(this.getClass(), "Removing node " + element.getName());
 		
-		// obtain wrapped IOOBNNode
 		IOOBNNode removingNode = null;
-		for (IOOBNNode node : this.getAllNodes()) {
-			// I'm comparing element.equals instead of node.equals because I expect element
-			// is a graphical wrapper of node (the graphical wrapper can treat IOOBNNode, bug
-			// IOOBNNode cannot treat the graphical wrapper)
-			if (element.equals(node)) {
-				removingNode = node;
-				break;
+		if (element instanceof OOBNNodeGraphicalWrapper) {
+			removingNode = ((OOBNNodeGraphicalWrapper)element).getWrappedNode();
+		} else {
+			// if we did not find the wrapped node, force obtain wrapped IOOBNNode
+			Debug.println(this.getClass(), "Could not determine wrapped node to remove from " + element.toString());
+			for (IOOBNNode node : this.getAllNodes()) {
+				// I'm comparing element.equals instead of node.equals because I expect element
+				// is a graphical wrapper of node (the graphical wrapper can treat IOOBNNode, bug
+				// IOOBNNode cannot treat the graphical wrapper)
+				if (element.equals(node)) {
+					removingNode = node;
+					break;
+				}
 			}
 		}
+		
+		
 		
 		
 		
@@ -223,7 +230,7 @@ public class DefaultOOBNClass extends ProbabilisticNetwork implements IOOBNClass
 		if (element instanceof OOBNNodeGraphicalWrapper) {
 			OOBNNodeGraphicalWrapper node = (OOBNNodeGraphicalWrapper)element;
 			// if node is a instance type, we must remove all inner nodes as well
-			if ( ( node.getWrappedNode().getType() & IOOBNNode.TYPE_INSTANCE ) != 0 ) {
+			if ( ( node.getWrappedNode().getType() == IOOBNNode.TYPE_INSTANCE ) ) {
 				for (OOBNNodeGraphicalWrapper inner : node.getInnerNodes()) {
 					this.removeNode(inner);
 				}
@@ -331,6 +338,23 @@ public class DefaultOOBNClass extends ProbabilisticNetwork implements IOOBNClass
 	public void addOOBNNode(IOOBNNode node) {
 		// just wrapps a node
 		this.addNode(OOBNNodeGraphicalWrapper.newInstance(node));		
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.Network#removeEdge(unbbayes.prs.Edge)
+	 */
+	@Override
+	public void removeEdge(Edge edge) {
+		
+		// overwrite remove edge in order to update wrapped node as well
+		
+		OOBNNodeGraphicalWrapper origin = (OOBNNodeGraphicalWrapper)edge.getOriginNode();
+		OOBNNodeGraphicalWrapper destination = (OOBNNodeGraphicalWrapper)edge.getDestinationNode();
+		
+		origin.getWrappedNode().getOOBNChildren().remove(destination.getWrappedNode());
+		destination.getWrappedNode().getOOBNParents().remove(origin.getWrappedNode());
+		
+		super.removeEdge(edge);
 	}
 
 	

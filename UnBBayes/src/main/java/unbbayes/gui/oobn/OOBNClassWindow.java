@@ -118,6 +118,9 @@ public class OOBNClassWindow extends NetworkWindow {
 		jspGraph = new JScrollPane(graphViewport);
 		status = new JLabel(resource.getString("statusReadyLabel"));
 		bCompiled = false;
+		
+		// adding key action events impemented by the networkcontroller, which is a key controller as well...
+		this.graphPane.addKeyListener(this.controller);
 	}
 	
 	public static OOBNClassWindow newInstance (IOOBNClass net) {

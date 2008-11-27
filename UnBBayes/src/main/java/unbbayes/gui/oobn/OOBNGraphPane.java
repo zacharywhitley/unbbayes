@@ -539,6 +539,12 @@ public class OOBNGraphPane extends GraphPane {
 				}
 			}
 			
+			if (node.getInnerNodes() != null) {
+				for (OOBNNodeGraphicalWrapper inner : node.getInnerNodes()) {
+					Debug.println(this.getClass(), "Graphical Inner node is " + inner.getName() + " of type " + types[inner.getType()]);
+				}
+			}
+			
 			Debug.println(this.getClass(), "Parents are:");
 			for (IOOBNNode parent : node.getWrappedNode().getOOBNParents()) {
 				Debug.println(this.getClass(), "\t" + parent.getName());				
