@@ -29,6 +29,7 @@ import unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO;
 import unbbayes.io.oobn.builder.DefaultOOBNClassBuilder;
 import unbbayes.io.oobn.builder.DefaultPrivateOOBNNodeGraphicalWrapperBuilder;
 import unbbayes.io.oobn.builder.IOOBNClassBuilder;
+import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
@@ -37,6 +38,7 @@ import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.prs.oobn.IOOBNClass;
 import unbbayes.prs.oobn.IOOBNNode;
 import unbbayes.prs.oobn.IObjectOrientedBayesianNetwork;
+import unbbayes.prs.oobn.exception.OOBNException;
 import unbbayes.prs.oobn.impl.DefaultOOBNClass;
 import unbbayes.prs.oobn.impl.ObjectOrientedBayesianNetwork;
 import unbbayes.util.Debug;
@@ -381,6 +383,12 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 	 * @see unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO#saveOOBNClass(java.io.File, unbbayes.prs.oobn.IOOBNClass)
 	 */
 	public void saveOOBNClass(File classFile, IOOBNClass oobnClass) throws IOException {
+		String newClassName = classFile.getName().substring(0, classFile.getName().lastIndexOf("."));
+		try{
+			oobnClass.setClassName(newClassName);
+		} catch (OOBNException oobne) {
+			throw new IOException(oobne);
+		}
 		this.save(classFile, (SingleEntityNetwork)oobnClass.getNetwork());
 	}
 	
@@ -443,6 +451,9 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 			// if declaration is "instance" type, treat it
 			this.treatInstanceNodeDeclaration(input, st, net, (IOOBNClassBuilder)networkBuilder, networkBuilder, this.classNameToClassMap, instanceInputParentMap);
 			
+			// if declaration is "continuous node" type, treat it
+			this.loadContinuousNodeDeclaration(st, net, networkBuilder);
+			
 			// if declaration is "node" type, treat it
 			this.loadNodeDeclaration(st, net, networkBuilder);
 			
@@ -479,11 +490,13 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 		for (OOBNNodeGraphicalWrapper key : instanceInputParentMap.keySet()) {
 			String parentName = instanceInputParentMap.get(key);
 			try {
-				key.addParent(net.getNode(parentName));
+//				key.addParent(net.getNode(parentName));	
+				net.addEdge(new Edge(net.getNode(parentName) , key));
 			} catch (InvalidParentException ipe) {
 				Debug.println(this.getClass(), "Error insertng instance input's parent: "
 						+ key.getName() + " <- " + parentName , ipe);
 			}
+			
 		}
 		
 		

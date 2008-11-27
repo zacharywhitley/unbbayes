@@ -43,6 +43,7 @@ import unbbayes.io.builder.impl.DefaultProbabilisticNetworkBuilder;
 import unbbayes.io.exception.LoadException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.ContinuousNode;
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
@@ -231,6 +232,9 @@ public class NetIO implements BaseIO {
 			
 			// if declaration is "node" type, treat it
 			this.loadNodeDeclaration(st, net, networkBuilder);
+			
+			// if declaration is "continuous node" type, treat it
+			this.loadContinuousNodeDeclaration(st, net, networkBuilder);
 			
 			// if declaration is "potential" type, treat it
 			this.loadPotentialDeclaration(st, net);
@@ -493,6 +497,45 @@ public class NetIO implements BaseIO {
 	
 	
 	/**
+	 * If the current declaration is of type "continuous node", loads
+	 * that node (creating new instances using networkBuilder) and adds it to net.
+	 * If declaration is not "continuous node", it will not move the
+	 * token index from st.
+	 * @param st
+	 * @param net
+	 * @param networkBuilder
+	 * @throws IOException
+	 * @throws LoadException
+	 */
+	protected void loadContinuousNodeDeclaration (StreamTokenizer st, SingleEntityNetwork net, IProbabilisticNetworkBuilder networkBuilder)
+										throws IOException , LoadException{
+		if (st.sval.equals("continuous")) {
+			this.getNext(st);
+			if (st.sval.equals("node")) {
+				Node continuousNode = networkBuilder.getContinuousNodeBuilder().buildNode();;
+				
+				getNext(st);
+				continuousNode.setName(st.sval);
+				getNext(st);
+				if (st.sval.equals("{")) {
+					getNext(st);
+					while (!st.sval.equals("}")) {
+						this.loadNodeDeclarationBody(st, continuousNode);
+					}
+					net.addNode(continuousNode);
+				} else {
+					throw new LoadException(
+						ERROR_NET
+							+ " l."
+							+ ((st.lineno() < this.lineno)?this.lineno:st.lineno())
+							+ resource.getString("LoadException3"));
+				}
+			}
+		}
+	}
+	
+	
+	/**
 	 * If the current declaration is "potential", treat that declaration and adds it
 	 * to a node contained within net.
 	 * If current declaration is not "potential", this method ignores it and remains the
@@ -510,7 +553,7 @@ public class NetIO implements BaseIO {
 			ITabledVariable auxTableVar = null;
 			PotentialTable auxPotentialTable = null;
 			
-			getNext(st);
+			getNext(st);	// node name
 			Node auxNode1 = net.getNode(st.sval);
 
 			if (auxNode1 instanceof ITabledVariable) {
@@ -521,7 +564,7 @@ public class NetIO implements BaseIO {
 
 			getNext(st);
 			if (st.sval.equals("|")) {
-				getNext(st);
+				getNext(st);	// parent names
 			}
 
 			Node auxNo2;
@@ -559,29 +602,23 @@ public class NetIO implements BaseIO {
 			if (st.sval.length() == 1) {
 				getNext(st);
 			}
-
-			int nDim = 0;
+			
+			if (st.sval.endsWith("}")) {
+				// there were nothing declared
+				Debug.println(this.getClass(), "Empty potential declaration found for " + auxNode1.getName());
+			}
 
 			while (!st.sval.endsWith("}")) {
 				if (st.sval.equals("data")) {
-					if (auxNode1.getType() == Node.DECISION_NODE_TYPE) {
-						throw new LoadException(
-							ERROR_NET
-								+ " l."
-								+ ((st.lineno() < this.lineno)?this.lineno:st.lineno())
-								+ resource.getString("LoadException4"));
+					getNext(st);	// extract "normal"
+					if (st.sval.equals("normal")) {
+						// this is a continuous node
+						this.loadPotentialDataContinuous(st, auxNode1);
+					} else {
+						// this is a ordinal node
+						this.loadPotentialDataOrdinal(st, auxNode1);
 					}
-					getNext(st);
-					while (!st.sval.equals("}")) {
-						if (st.sval.equals("%")) {
-							readTillEOL(st);
-						} else {
-							auxPotentialTable.setValue(
-								nDim++,
-								Float.parseFloat(st.sval));
-						}
-						getNext(st);
-					}
+					
 				} else {
 					throw new LoadException(
 						ERROR_NET
@@ -705,6 +742,55 @@ public class NetIO implements BaseIO {
 		}
 	}
 	
+	/**
+	 * Loads potential declaration's content assuming it is declaring
+	 * ordinal "stateful" probability declaration
+	 * @param st
+	 * @param node
+	 * @throws LoadException
+	 * @throws IOException
+	 */
+	protected void loadPotentialDataOrdinal(StreamTokenizer st, Node node)
+								throws LoadException , IOException {
+		
+		PotentialTable auxPotentialTable = ((ITabledVariable)node).getPotentialTable();
+		
+		if (node.getType() == Node.DECISION_NODE_TYPE) {
+			throw new LoadException(
+				ERROR_NET
+					+ " l."
+					+ ((st.lineno() < this.lineno)?this.lineno:st.lineno())
+					+ resource.getString("LoadException4"));
+		}
+//		this.getNext(st);
+		int nDim = 0;
+		while (!st.sval.equals("}")) {
+			if (st.sval.equals("%")) {
+				readTillEOL(st);
+			} else {
+				auxPotentialTable.setValue(
+					nDim++,
+					Float.parseFloat(st.sval));
+			}
+			getNext(st);
+		}
+	}
+	
+	/**
+	 * Loads potential declaration assuming it is declaring continuous distribution
+	 * @param st
+	 * @param node
+	 */
+	protected void loadPotentialDataContinuous (StreamTokenizer st, Node node)
+												throws LoadException , IOException {
+		// TODO finish implementing this
+		Debug.println(this.getClass(), "Continuous potential loading is not implemented yet: " + node.getName());
+		while (!st.sval.equals("}")) {
+			// just skip it...
+			getNext(st);
+		}
+	}
+	
 	
 	/**
 	 * Fills the PrintStream with net{} header, starting with "net {" declaration and closing with "}"
@@ -759,7 +845,9 @@ public class NetIO implements BaseIO {
 	 * @param net
 	 */
 	protected void saveNodeDeclaration(PrintStream stream, Node node, SingleEntityNetwork net) {
-		if (node.getType() == Node.PROBABILISTIC_NODE_TYPE) {
+		if (node instanceof ContinuousNode) {
+			stream.print("continuous node");
+		} else if (node.getType() == Node.PROBABILISTIC_NODE_TYPE) {
 			stream.print("node");
 		} else if (node.getType() == Node.DECISION_NODE_TYPE) {
 			stream.print("decision");
@@ -788,58 +876,63 @@ public class NetIO implements BaseIO {
 			this.saveNodeLabelAndPosition(stream, node);
 		
 
-			if (!(node.getType() == Node.UTILITY_NODE_TYPE)) {
-				/* Check if the node represents a numeric attribute */
-				if (node.getStatesSize() == 0) {
-					/* The node represents a numeric attribute */
-					double[] mean = node.getMean();
-					double[] stdDev = node.getStandardDeviation();
-					StringBuffer auxString = new StringBuffer();
-					
-					/* Mean per class */
-					auxString.append("\"" + mean[0] + "\"");
-					for (int i = 1; i < mean.length; i++) {
-						auxString.append(" \"" + mean[i] + "\"");
-					}
-					stream.println(
-							"     meanPerClass = (" + auxString.toString() + ");");
-					
-					/* Standard deviation per class */
-					auxString = new StringBuffer();
-					auxString.append("\"" + stdDev[0] + "\"");
-					for (int i = 1; i < mean.length; i++) {
-						auxString.append(" \"" + stdDev[i] + "\"");
-					}
-					stream.println(
-							"     stdDevPerClass = (" + auxString.toString() + ");");
-				} else {
-					/* The node represents a nominal attribute */
-					StringBuffer auxString =
-						new StringBuffer("\"" + node.getStateAt(0) + "\"");
+			if (node instanceof ContinuousNode) {
+				// a continuous node only needs to save label and position				
+			} else {
+				if (!(node.getType() == Node.UTILITY_NODE_TYPE)) {
+					/* Check if the node represents a numeric attribute */
+					if (node.getStatesSize() == 0) {
+						/* The node represents a numeric attribute */
+						double[] mean = node.getMean();
+						double[] stdDev = node.getStandardDeviation();
+						StringBuffer auxString = new StringBuffer();
+						
+						/* Mean per class */
+						auxString.append("\"" + mean[0] + "\"");
+						for (int i = 1; i < mean.length; i++) {
+							auxString.append(" \"" + mean[i] + "\"");
+						}
+						stream.println(
+								"     meanPerClass = (" + auxString.toString() + ");");
+						
+						/* Standard deviation per class */
+						auxString = new StringBuffer();
+						auxString.append("\"" + stdDev[0] + "\"");
+						for (int i = 1; i < mean.length; i++) {
+							auxString.append(" \"" + stdDev[i] + "\"");
+						}
+						stream.println(
+								"     stdDevPerClass = (" + auxString.toString() + ");");
+					} else {
+						/* The node represents a nominal attribute */
+						StringBuffer auxString =
+							new StringBuffer("\"" + node.getStateAt(0) + "\"");
 
-					int sizeEstados = node.getStatesSize();
-					for (int c2 = 1; c2 < sizeEstados; c2++) {
-						auxString.append(" \"" + node.getStateAt(c2) + "\"");
+						int sizeEstados = node.getStatesSize();
+						for (int c2 = 1; c2 < sizeEstados; c2++) {
+							auxString.append(" \"" + node.getStateAt(c2) + "\"");
+						}
+						stream.println(
+							"     states = (" + auxString.toString() + ");");
 					}
-					stream.println(
-						"     states = (" + auxString.toString() + ");");
 				}
-			}
-			if (node.getInformationType() == Node.EXPLANATION_TYPE)
-	                        {
-	                          String explanationDescription = formatString(node.getExplanationDescription());
-	                          stream.println("     %descricao \"" + explanationDescription + "\"");
-	                          ArrayMap arrayMap = node.getPhrasesMap();
-	                          int size = arrayMap.size();
-	                          ArrayList keys = arrayMap.getKeys();
-	                          for (int i = 0; i < size; i++)
-	                          {
-	                            Object key = keys.get(i);
-	                            ExplanationPhrase explanationPhrase = (ExplanationPhrase) arrayMap.get(key);
-	                            stream.println("     %frase \""+ explanationPhrase.getNode()+ "\" "+ "\""
-	                                + explanationPhrase.getEvidenceType()+ "\" "+ "\""
-	                                + formatString(explanationPhrase.getPhrase())+ "\"");
-	                          }
+				
+				if (node.getInformationType() == Node.EXPLANATION_TYPE)
+		                        {
+		                          String explanationDescription = formatString(node.getExplanationDescription());
+		                          stream.println("     %descricao \"" + explanationDescription + "\"");
+		                          ArrayMap arrayMap = node.getPhrasesMap();
+		                          int size = arrayMap.size();
+		                          ArrayList keys = arrayMap.getKeys();
+		                          for (int i = 0; i < size; i++)
+		                          {
+		                            Object key = keys.get(i);
+		                            ExplanationPhrase explanationPhrase = (ExplanationPhrase) arrayMap.get(key);
+		                            stream.println("     %frase \""+ explanationPhrase.getNode()+ "\" "+ "\""
+		                                + explanationPhrase.getEvidenceType()+ "\" "+ "\""
+		                                + formatString(explanationPhrase.getPhrase())+ "\"");
+		                          }
+				}
 			}
 	}
 	
@@ -881,7 +974,22 @@ public class NetIO implements BaseIO {
 	 * @param net
 	 */
 	protected void savePotentialDeclarationBody(PrintStream stream, Node node, SingleEntityNetwork net) {
-		if (node instanceof ITabledVariable) {
+		if (node instanceof ContinuousNode) {
+			// TODO stub!!
+			// TODO implement continuous node's potential treatment
+			Debug.println(this.getClass(), "TODO implement continuous node's potential treatment: " + node.getName());
+			
+			ContinuousNode continuous = (ContinuousNode)node;
+			stream.print(" data = normal ( ");
+			stream.print(continuous.getCnNormalDistribution().getMean(0));
+			for (Node parent : continuous.getParents()) {
+				// TODO implement continuous node's parent treatment
+				Debug.println(this.getClass(), "TODO implement continuous node's parent treatment: " + parent.getName());
+			}
+			stream.print(", " + continuous.getCnNormalDistribution().getVariance(0));
+			stream.println(" );");
+		
+		} else if (node instanceof ITabledVariable) {
 			PotentialTable auxTabPot =
 				((ITabledVariable) node).getPotentialTable();
 			int sizeVa1 = auxTabPot.variableCount();

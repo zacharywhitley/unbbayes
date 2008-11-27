@@ -31,6 +31,11 @@ public class DefaultProbabilisticNetworkBuilder implements
 	private INodeBuilder utilityNodeBuilder = null;
 	
 	/**
+	 * Builder for continuous nodes
+	 */
+	private INodeBuilder continuousNodeBuilder = null;
+	
+	/**
 	 * Default implementation of builder for probabilistic networks
 	 * @see IProbabilisticNetworkBuilder
 	 * @see INodeBuilder
@@ -38,7 +43,9 @@ public class DefaultProbabilisticNetworkBuilder implements
 	protected DefaultProbabilisticNetworkBuilder() {
 		this.probabilisticNodeBuilder = DefaultProbabilisticNodeBuilder.newInstance();
 		this.decisionNodeBuilder = DefaultDecisionNodeBuilder.newInstance();
-		this.utilityNodeBuilder = DefaultUtilityNodeBuilder.newInstance();	}
+		this.utilityNodeBuilder = DefaultUtilityNodeBuilder.newInstance();	
+		this.continuousNodeBuilder = DefaultContinuousNodeBuilder.newInstance();
+	}
 	
 	/**
 	 * Constructor method for DefaultProbabilisticNetworkBuilder.
@@ -127,5 +134,22 @@ public class DefaultProbabilisticNetworkBuilder implements
 	public void setUtilityNodeBuilder(INodeBuilder builder) {
 		this.utilityNodeBuilder = builder;
 	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.io.builder.IProbabilisticNetworkBuilder#getContinuousNodeBuilder()
+	 */
+	public INodeBuilder getContinuousNodeBuilder() {
+		return this.continuousNodeBuilder;
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.io.builder.IProbabilisticNetworkBuilder#setContinuousNodeBuilder(unbbayes.io.builder.INodeBuilder)
+	 */
+	public void setContinuousNodeBuilder(INodeBuilder builder) {
+		this.continuousNodeBuilder = builder;
+	}
+	
+	
+	
 
 }

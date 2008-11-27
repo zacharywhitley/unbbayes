@@ -105,8 +105,18 @@ public class DefaultOOBNClass extends ProbabilisticNetwork implements IOOBNClass
 	 */
 	public void setClassName(String name) throws OOBNException {
 		// TODO implement name consistency check
+		// TODO stub!!
 		Debug.println(this.getClass(), "Name consistency check is not implemented yet.");
 		if (name.contains("!")) {
+			throw new OOBNException();
+		}
+		if (name.contains("-")) {
+			throw new OOBNException();
+		}
+		if (name.contains(".")) {
+			throw new OOBNException();
+		}
+		if (name.contains("'")) {
 			throw new OOBNException();
 		}
 		this.setName(name);

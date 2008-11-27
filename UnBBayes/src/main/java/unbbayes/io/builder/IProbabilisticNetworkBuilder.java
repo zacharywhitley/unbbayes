@@ -35,6 +35,12 @@ public interface IProbabilisticNetworkBuilder {
 	public INodeBuilder getUtilityNodeBuilder();
 	
 	/**
+	 * Obtains the NodeBuilder to generate subclasses of ContinuousNode
+	 * @return a Node builder to be used
+	 */
+	public INodeBuilder getContinuousNodeBuilder();
+	
+	/**
 	 * Setter for builder of ProbabilisticNode
 	 * @param builder
 	 */
@@ -51,6 +57,12 @@ public interface IProbabilisticNetworkBuilder {
 	 * @param builder
 	 */
 	public void setUtilityNodeBuilder(INodeBuilder builder);
+	
+	/**
+	 * Setter for builder of ContinuousNode
+	 * @param builder
+	 */
+	public void setContinuousNodeBuilder(INodeBuilder builder);
 	
 	/**
 	 * Generates a new instance of network
