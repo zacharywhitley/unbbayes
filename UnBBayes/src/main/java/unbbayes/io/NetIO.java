@@ -982,10 +982,13 @@ public class NetIO implements BaseIO {
 			ContinuousNode continuous = (ContinuousNode)node;
 			stream.print(" data = normal ( ");
 			stream.print(continuous.getCnNormalDistribution().getMean(0));
-			for (Node parent : continuous.getParents()) {
-				// TODO implement continuous node's parent treatment
-				Debug.println(this.getClass(), "TODO implement continuous node's parent treatment: " + parent.getName());
+			for (int i = 0; i < continuous.getParents().size(); i++) {
+				// TODO implement continuous node's parent treatment. This is stub
+				Debug.println(this.getClass(), "TODO implement continuous node's parent treatment: " + continuous.getParents().get(i).getName());
+				stream.print(" + " + continuous.getCnNormalDistribution().getConstantAt(i, 0));
+				stream.print(" * " + continuous.getParents().get(i).getName());
 			}
+
 			stream.print(", " + continuous.getCnNormalDistribution().getVariance(0));
 			stream.println(" );");
 		
