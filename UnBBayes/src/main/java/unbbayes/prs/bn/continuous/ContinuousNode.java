@@ -18,7 +18,7 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.prs.bn;
+package unbbayes.prs.bn.continuous;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -27,6 +27,7 @@ import java.util.ResourceBundle;
 
 import unbbayes.draw.DrawEllipse;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.ResourceController;
 
@@ -50,6 +51,9 @@ public class ContinuousNode extends TreeVariable implements Serializable {
 	
 	public ContinuousNode() {
 		cnNormalDistribution = new CNNormalDistribution(this);
+		// TODO Internationalization!!! Mean and variance!!!
+		this.appendState("Mean");
+		this.appendState("Variance");
 		drawEllipse = new DrawEllipse(position, size);
         drawElement.add(drawEllipse);
 	}

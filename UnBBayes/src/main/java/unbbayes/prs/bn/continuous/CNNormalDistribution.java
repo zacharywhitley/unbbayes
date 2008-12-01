@@ -18,7 +18,7 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.prs.bn;
+package unbbayes.prs.bn.continuous;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,8 +37,17 @@ public class CNNormalDistribution {
 	protected NormalDistributionFunction[] ndfList;
 	
 	protected List<Node> discreteParentList;
+	
+	public List<Node> getDiscreteParentList() {
+		return discreteParentList;
+	}
+
 	protected List<Node> continuousParentList;
 	
+	public List<Node> getContinuousParentList() {
+		return continuousParentList;
+	}
+
 	protected int[] factors;
 	
 	public CNNormalDistribution(ContinuousNode cNode) {

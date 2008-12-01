@@ -18,7 +18,7 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.prs.bn;
+package unbbayes.prs.bn.continuous;
 
 import unbbayes.util.ProbabilityMath;
 
