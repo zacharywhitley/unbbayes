@@ -1,0 +1,102 @@
+<?xml version='1.0' encoding='US-ASCII'?>
+<xbifns:XMLBIF version="0.5" xmlns:xbifns="http://unbbayes.sourceforge.net/xml/XMLBIF_0_5.xsd">
+  <xbifns:header>
+    <xbifns:version>1.0</xbifns:version>
+    <xbifns:name>hepparII</xbifns:name>
+    <xbifns:creator>UnBBayes</xbifns:creator>
+  </xbifns:header>
+  <xbifns:staticProperty>
+    <xbifns:nodeSize>36</xbifns:nodeSize>
+    <xbifns:nodeFontSize>0</xbifns:nodeFontSize>
+    <xbifns:colorUtilityNode>-16711681</xbifns:colorUtilityNode>
+    <xbifns:colorDecisionNode>-14336</xbifns:colorDecisionNode>
+    <xbifns:colorDiscreteProbabilisticNode>-256</xbifns:colorDiscreteProbabilisticNode>
+    <xbifns:colorContinuousProbilisticNode>-16711936</xbifns:colorContinuousProbilisticNode>
+    <xbifns:colorExplanationNode>-16711936</xbifns:colorExplanationNode>
+  </xbifns:staticProperty>
+  <xbifns:hierarchy>
+    <xbifns:root name="root">
+      <xbifns:level name="History of alcohol abuse"/>
+      <xbifns:level name="Hepatotoxic medications"/>
+      <xbifns:level name="INR"/>
+      <xbifns:level name="Toxic hepatitis"/>
+    </xbifns:root>
+  </xbifns:hierarchy>
+  <xbifns:network>
+    <xbifns:variables>
+      <xbifns:variable yPos="475" xPos="270" type="DiscreteProbabilistic" name="alcoholism">
+        <xbifns:description>History of alcohol abuse</xbifns:description>
+        <xbifns:state name="present"/>
+        <xbifns:state name="absent"/>
+      </xbifns:variable>
+      <xbifns:variable yPos="478" xPos="423" type="DiscreteProbabilistic" name="hepatotoxic">
+        <xbifns:description>Hepatotoxic medications</xbifns:description>
+        <xbifns:state name="present"/>
+        <xbifns:state name="absent"/>
+      </xbifns:variable>
+      <xbifns:variable yPos="358" xPos="323" type="DiscreteProbabilistic" name="THepatitis">
+        <xbifns:description>Toxic hepatitis</xbifns:description>
+        <xbifns:state name="present"/>
+        <xbifns:state name="absent"/>
+      </xbifns:variable>
+      <xbifns:variable yPos="231" xPos="290" type="DiscreteProbabilistic" name="inr">
+        <xbifns:description>INR</xbifns:description>
+        <xbifns:state name="a200_110"/>
+        <xbifns:state name="a109_70"/>
+        <xbifns:state name="a69_0"/>
+      </xbifns:variable>
+    </xbifns:variables>
+    <xbifns:structure>
+      <xbifns:edge child="THepatitis" parent="hepatotoxic"/>
+      <xbifns:edge child="THepatitis" parent="alcoholism"/>
+      <xbifns:edge child="inr" parent="THepatitis"/>
+    </xbifns:structure>
+    <xbifns:conditionalDistributionSet>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="alcoholism"/>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.13590843975543976</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.8640915751457214</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="hepatotoxic"/>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.08154506236314774</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.9184549450874329</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="THepatitis"/>
+        <xbifns:parents>
+          <xbifns:parent index="0" name="hepatotoxic"/>
+          <xbifns:parent index="1" name="alcoholism"/>
+        </xbifns:parents>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.20000000298023224</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.800000011920929</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.001919390051625669</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="3">0.9980806112289429</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="4">0.08888889104127884</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="5">0.9111111164093018</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="6">0.032608699053525925</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="7">0.967391312122345</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="inr"/>
+        <xbifns:parents>
+          <xbifns:parent index="0" name="THepatitis"/>
+        </xbifns:parents>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.015265434980392456</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.8301435708999634</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.15459102392196655</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="3">0.019086025655269623</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="4">0.8086021542549133</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="5">0.17231182754039764</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+    </xbifns:conditionalDistributionSet>
+  </xbifns:network>
+</xbifns:XMLBIF>

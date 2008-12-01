@@ -1,0 +1,129 @@
+<?xml version='1.0' encoding='US-ASCII'?>
+<xbifns:XMLBIF version="0.5" xmlns:xbifns="http://unbbayes.sourceforge.net/xml/XMLBIF_0_5.xsd">
+  <xbifns:header>
+    <xbifns:version>1.0</xbifns:version>
+    <xbifns:name>ToxicHepatitis_maria - Step 005</xbifns:name>
+    <xbifns:creator>UnBBayes</xbifns:creator>
+  </xbifns:header>
+  <xbifns:staticProperty>
+    <xbifns:nodeSize>0</xbifns:nodeSize>
+    <xbifns:nodeFontSize>0</xbifns:nodeFontSize>
+    <xbifns:colorUtilityNode>-16711681</xbifns:colorUtilityNode>
+    <xbifns:colorDecisionNode>-14336</xbifns:colorDecisionNode>
+    <xbifns:colorDiscreteProbabilisticNode>-256</xbifns:colorDiscreteProbabilisticNode>
+    <xbifns:colorContinuousProbilisticNode>-16711936</xbifns:colorContinuousProbilisticNode>
+    <xbifns:colorExplanationNode>-16711936</xbifns:colorExplanationNode>
+  </xbifns:staticProperty>
+  <xbifns:hierarchy>
+    <xbifns:root name="root">
+      <xbifns:level name="HistoryAlcAbuse(maria)"/>
+      <xbifns:level name="HepatoxicMeds(maria)"/>
+      <xbifns:level name="INR(maria)"/>
+      <xbifns:level name="ToxicHepatitis(maria)"/>
+    </xbifns:root>
+  </xbifns:hierarchy>
+  <xbifns:network>
+    <xbifns:variables>
+      <xbifns:variable yPos="200" xPos="100" type="DiscreteProbabilistic" name="ToxicHepatitis(maria)">
+        <xbifns:description>ToxicHepatitis(maria)</xbifns:description>
+        <xbifns:state name="absurd"/>
+        <xbifns:state name="false"/>
+        <xbifns:state name="true"/>
+      </xbifns:variable>
+      <xbifns:variable yPos="300" xPos="100" type="DiscreteProbabilistic" name="INR(maria)">
+        <xbifns:description>INR(maria)</xbifns:description>
+        <xbifns:state name="a69_0"/>
+        <xbifns:state name="a200_110"/>
+        <xbifns:state name="a109_70"/>
+      </xbifns:variable>
+      <xbifns:variable yPos="100" xPos="100" type="DiscreteProbabilistic" name="HistoryAlcAbuse(maria)">
+        <xbifns:description>HistoryAlcAbuse(maria)</xbifns:description>
+        <xbifns:state name="true"/>
+        <xbifns:state name="false"/>
+        <xbifns:state name="absurd"/>
+      </xbifns:variable>
+      <xbifns:variable yPos="102" xPos="251" type="DiscreteProbabilistic" name="HepatoxicMeds(maria)">
+        <xbifns:description>HepatoxicMeds(maria)</xbifns:description>
+        <xbifns:state name="true"/>
+        <xbifns:state name="false"/>
+        <xbifns:state name="absurd"/>
+      </xbifns:variable>
+    </xbifns:variables>
+    <xbifns:structure>
+      <xbifns:edge child="ToxicHepatitis(maria)" parent="HistoryAlcAbuse(maria)"/>
+      <xbifns:edge child="ToxicHepatitis(maria)" parent="HepatoxicMeds(maria)"/>
+      <xbifns:edge child="INR(maria)" parent="ToxicHepatitis(maria)"/>
+    </xbifns:structure>
+    <xbifns:conditionalDistributionSet>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="ToxicHepatitis(maria)"/>
+        <xbifns:parents>
+          <xbifns:parent index="0" name="HistoryAlcAbuse(maria)"/>
+          <xbifns:parent index="1" name="HepatoxicMeds(maria)"/>
+        </xbifns:parents>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.800000011920929</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.20000000298023224</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="3">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="4">0.9980806112289429</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="5">0.001919390051625669</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="6">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="7">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="8">1.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="9">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="10">0.9111111164093018</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="11">0.08888889104127884</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="12">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="13">0.967391312122345</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="14">0.032608699053525925</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="15">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="16">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="17">1.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="18">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="19">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="20">1.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="21">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="22">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="23">1.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="24">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="25">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="26">1.0</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="INR(maria)"/>
+        <xbifns:parents>
+          <xbifns:parent index="0" name="ToxicHepatitis(maria)"/>
+        </xbifns:parents>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">1.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="3">0.11738816648721695</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="4">0.3432178795337677</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="5">0.539393961429596</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="6">0.10054706782102585</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="7">0.3463497459888458</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="8">0.5531032085418701</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="HistoryAlcAbuse(maria)"/>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.13590843975543976</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.8640915751457214</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.0</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="HepatoxicMeds(maria)"/>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.08154506236314774</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.9184549450874329</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.0</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+    </xbifns:conditionalDistributionSet>
+  </xbifns:network>
+</xbifns:XMLBIF>
