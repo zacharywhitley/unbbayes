@@ -23,18 +23,19 @@ package unbbayes.simulation.likelihoodweighting.inference;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 
 import unbbayes.io.XMLBIFIO;
 import unbbayes.io.exception.LoadException;
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.ITabledVariable;
-import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.TreeVariable;
+import unbbayes.prs.bn.continuous.CNNormalDistribution;
 import unbbayes.prs.bn.continuous.ContinuousNode;
 import unbbayes.util.SortUtil;
 
@@ -45,7 +46,6 @@ import unbbayes.util.SortUtil;
  * calculates the cumulative density function. Finally, a random number between 0 and 1 is generated 
  * and the sampled state is defined by the state the random number relates based on its cdf. 
  * 
- * @author Danilo Custodio
  * @author Rommel Carvalho
  *
  */
@@ -136,7 +136,7 @@ public class ContinuousInference {
 	}
 	
 
-	protected void simulate() {
+	protected void run() throws Exception {
 		for(int i = 0; i < nodeOrderQueue.size(); i++) {
 			
 			Node node = nodeOrderQueue.get(i);
@@ -156,35 +156,111 @@ public class ContinuousInference {
 			// number of discrete parents this continuous node has.
 			// But there might be two parent nodes in the same PN, in that case the network used
 			// will be the same.
-			ProbabilisticNetwork[] pnList = new ProbabilisticNetwork[discreteParentList.size()];
-			List<Node> nodeInNetwork;
+			// The purpose of creating a network with all non-continuous nodes connected to a 
+			// parent of the current continuous node is to come up with its posterior distribution.
+			// This is a hybrid approach. We use Junction Tree where possible (discrete nodes) and
+			// Weighted Gaussian Sum for the rest (continuous nodes).
+			// Initializes all discrete nodes as not visited.
+			Map<String, Boolean> nodeVisitedBeforeMap = new HashMap<String, Boolean>();
+			for (Node discreteNode : pn.getNodes()) {
+				if (discreteNode.getType() == Node.PROBABILISTIC_NODE_TYPE) {
+					nodeVisitedBeforeMap.put(discreteNode.getName(), false);
+				}
+			}
+			List<Node> nodeInNetworkList;
 			boolean nodeVisitedBefore;
 			for (int j = 0; j < discreteParentList.size(); j++) {
-				nodeVisitedBefore = false;
-				for (int k = 0; k < j && !nodeVisitedBefore; k++) {
-					for (Node n : pnList[k].getNodes()) {
-						if (discreteParentList.get(j).getName().equals(n.getName())) {
-							nodeVisitedBefore = true;
-							pnList[j] = pnList[k];
-							break;
-						}
-					}
-				}
+				nodeVisitedBefore = nodeVisitedBeforeMap.get(discreteParentList.get(j).getName());
 				if (!nodeVisitedBefore) {
-					nodeInNetwork = new ArrayList<Node>();
-					addAdjacentNodes(clonedPN.getNode(discreteParentList.get(j).getName()), nodeInNetwork);
-					pnList[j] = clonedPN;
+					nodeInNetworkList = new ArrayList<Node>();
+					addAdjacentNodes(clonedPN.getNode(discreteParentList.get(j).getName()), nodeInNetworkList);
 					for (Node nodeToRemove : clonedPN.getNodes()) {
-						if (!nodeInNetwork.contains(nodeToRemove)) {
+						if (!nodeInNetworkList.contains(nodeToRemove)) {
 							clonedPN.removeNode(nodeToRemove);
 						}
+					}
+					// Add the calculated marginal to the initial network (pn).
+					// We already know that every node here is discrete.
+					clonedPN.compile();
+					for (Node nodeToGetMarginal : clonedPN.getNodes()) {
+						TreeVariable variableToGetMarginal = (TreeVariable)nodeToGetMarginal;
+						TreeVariable variable = (TreeVariable)pn.getNode(nodeToGetMarginal.getName());
+						float[] values = new float[variable.getStatesSize()];
+						for (int stateIndex = 0; stateIndex < variable.getStatesSize(); stateIndex++) {
+							values[stateIndex] = variableToGetMarginal.getMarginalAt(stateIndex);
+						}
+						variable.addLikeliHood(values);
+						
+						// Add its name to the list of already visited nodes.
+						nodeVisitedBeforeMap.put(nodeToGetMarginal.getName(), true);
 					}
 					clonedPN = clonePN(this.pn);
 				}
 			}
 			
 			// Now we have the posterior of all parents of the current continuous node.
-			// TODO get multi coord to get probability and multiply to come up with alpha from C. Weighted Gaussian Sum!
+			// Calculate Weighted Gaussian Sum (from Symbolic Probabilistic Inference with both 
+			// Discrete and Continuous Variables, appendix C)
+			// First lets calculate the mean SumOf(Prob[Parents(node)] * PartialMean), for every 
+			// normal distribution function possible (combination of parents' states).
+			// discreteParentList.size() == cDistribution.functionSize()
+			double[] partialMeanList = new double[discreteParentList.size()];
+			double[] partialVarianceList = new double[discreteParentList.size()];
+			double[] probabilityList = new double[discreteParentList.size()];
+			double weightedMean = 0.0;
+			CNNormalDistribution cDistribution = ((ContinuousNode)node).getCnNormalDistribution();
+			for (int ndfIndex = 0; ndfIndex < cDistribution.functionSize(); ndfIndex++) {
+				// Each normal distribution function has the mean SumOf(PartialMean), for every normal
+				// distribution in the function (one for each continuous parent and one for the noise
+				// normal distribution). As each continuous parent distribution is multiplied by a 
+				// constant, its PartialMean = constant * MeanWithoutConstant.
+				// First we add the mean of the noise normal distribution.
+				partialMeanList[ndfIndex] = cDistribution.getMean(ndfIndex);
+				// Each normal distribution function has the variance SumOf(PartialVariance), for every normal
+				// distribution in the function (one for each continuous parent and one for the noise
+				// normal distribution). As each continuous parent distribution is multiplied by a 
+				// constant, its PartialVariance = constant^2 * VarianceWithoutConstant.
+				// For the variance, we first add the variance of the noise normal distribution.
+				partialVarianceList[ndfIndex] = cDistribution.getVariance(ndfIndex);
+				// Then, for each continuous parent we add constant * MeanWithoutConstant for the PartialMean 
+				// and constant^2 * VarianceWithoutConstant for the PartialVariance.
+				double meanWithoutConstant;
+				double varianceWithoutConstant;
+				for (int parentIndex = 0; parentIndex < cDistribution.getContinuousParentList().size(); parentIndex++) {
+					TreeVariable variable = (TreeVariable)cDistribution.getContinuousParentList().get(parentIndex);
+					// By the time we get here, the continuous parent already calculated its mean and variance previously.
+					meanWithoutConstant = variable.getMarginalAt(ContinuousNode.MEAN_MARGINAL_INDEX);
+					varianceWithoutConstant = variable.getMarginalAt(ContinuousNode.VARIANCE_MARGINAL_INDEX);
+					partialMeanList[ndfIndex] += cDistribution.getConstantAt(i, ndfIndex) * meanWithoutConstant;
+					partialVarianceList[ndfIndex] += Math.pow(cDistribution.getConstantAt(i, ndfIndex), 2) * varianceWithoutConstant;
+				}
+				
+				// Now we get the configuration of its parents states to calculate its probability.
+				int[] parentsStatesConfiguration = cDistribution.getMultidimensionalCoord(ndfIndex);
+				probabilityList[ndfIndex] = 1.0;
+				for (int parentIndex = 0; i < parentsStatesConfiguration.length; parentIndex++) {
+					probabilityList[ndfIndex] *= ((TreeVariable)pn.getNode(discreteParentList.get(parentIndex).getName())).getMarginalAt(parentsStatesConfiguration[parentIndex]);
+				}
+				
+				// Finally, calculate the weighted gaussian sum SumOf(Prob[Parents(node)] * PartialMean).
+				weightedMean += probabilityList[ndfIndex] * partialMeanList[ndfIndex];
+				
+				// We can only calculate the weightedVariance after we have the final result 
+				// for the weightedMean.
+			}
+			
+			// Now that we have the final weightedMean, we can calculate the weightedVariance.
+			// WeightedVariance = SumOf(Prob[Parents(node)] * (PartialVariance + PartialMean^2 - WeightedMean^2))
+			double weightedVariance = 0.0;
+			for (int ndfIndex = 0; ndfIndex < cDistribution.functionSize(); ndfIndex++) {
+				weightedVariance += probabilityList[ndfIndex] * (partialVarianceList[ndfIndex] + Math.pow(partialMeanList[ndfIndex], 2) - Math.pow(weightedMean, 2));
+			}
+			
+			// Add the mean and variance as its marginal in the TreeVariable.
+			float[] values = new float[2];
+			values[ContinuousNode.MEAN_MARGINAL_INDEX] = (float)weightedMean;
+			values[ContinuousNode.VARIANCE_MARGINAL_INDEX] = (float)weightedVariance;
+			((TreeVariable)node).addLikeliHood(values);
 		}
 	}
 	
@@ -242,6 +318,7 @@ public class ContinuousInference {
 		
 		XMLBIFIO io = new XMLBIFIO();
 		try {
+			// TODO ROMMEL - change this name to a default one but that will not cause concurrent problems.
 			File file = new File("clone.xml");
 			io.save(file, network);
 			clone = io.load(file);
