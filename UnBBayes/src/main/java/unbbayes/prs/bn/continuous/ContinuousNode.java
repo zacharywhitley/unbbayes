@@ -34,6 +34,9 @@ import unbbayes.util.ResourceController;
 // FIXME We have to refactor the Node inheritance to separate discrete from continuous and other messy things!
 // FIXME GATO no continuous node
 public class ContinuousNode extends TreeVariable implements Serializable {
+	
+	public final static int MEAN_MARGINAL_INDEX = 0;
+	public final static int VARIANCE_MARGINAL_INDEX = 1;
 
 	private static final long serialVersionUID = 1L;
 	
