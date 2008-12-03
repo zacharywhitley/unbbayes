@@ -144,7 +144,23 @@ public class ControllerResources_pt extends ListResourceBundle {
 		{"sampleSizeInputMessage", "Favor entrar com o tamanho da amostragem (número de casos)."},
 		{"sampleSizeInputTitle", "Tamanho da amostragem"}, 
 		{"sampleSizeInputError", "O tamanho da amostragem deve ser um número inteiro maior zero."},
-		{"likelihoodWeightingNotApplicableError", "O algoritmo de Likelihood Weighting só pode ser usado com uma rede bayesiana. Favor escolher outro algoritmo."}
+		{"likelihoodWeightingNotApplicableError", 
+			"O algoritmo de Likelihood Weighting só pode ser \n" +
+			"usado com uma rede bayesiana. Favor escolher \n" +
+			"outro algoritmo."},
+		
+		/* Continuous Inference */
+		{"continuousInferenceNotApplicableError", 
+			"O algoritmo de inferência para redes com nós \n" +
+			"contínuos só pode ser usado com uma rede \n" +
+			"bayesiana híbrida (com pelo menos um nó \n" +
+			"contínuo). Favor escolher outro algoritmo."},
+		
+		/* Junction Tree Inference */
+		{"junctionTreeNotApplicableError", 
+			"O algoritmo de Árvore de Junção só pode ser usado com uma \n" +
+			"rede bayesiana ou diagrama de influência. Favor escolher \n" +
+			"outro algoritmo."},
 		
 	};
 }

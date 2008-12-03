@@ -54,11 +54,11 @@ import javax.swing.JTextArea;
 
 import org.shetline.io.GIFOutputStream;
 
+import unbbayes.controller.SENController.InferenceAlgorithmEnum;
 import unbbayes.evaluation.controller.EvaluationController;
 import unbbayes.gui.FileIcon;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.SimpleFileFilter;
-import unbbayes.gui.continuous.ContinuousNormalDistributionPane;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Network;
@@ -93,19 +93,17 @@ public class NetworkController implements KeyListener {
     private SENController senController;
     private MEBNController mebnController;
     
-    // TODO CHANGE THIS!! NEW MODELING!!
-    // True if it is to use junction tree for compiling (exact)
-    // False if it is to use likelihood weighting for compiling (approximation)
-    public boolean isUseJunctionTree() {
+    // TODO ROMMEL - CHANGE THIS!! NEW MODELING!!
+    public InferenceAlgorithmEnum getInferenceAlgorithm() {
     	if (senController != null) {
-    		return senController.isUseJunctionTree();
+    		return senController.getInferenceAlgorithm();
     	}
-    	return true;
+    	return null;
 	}
 
-	public void setUseJunctionTree(boolean useJunctionTree) {
+	public void setInferenceAlgorithm(InferenceAlgorithmEnum inferenceAlgorithm) {
 		if (senController != null) {
-    		senController.setUseJunctionTree(useJunctionTree);
+    		senController.setInferenceAlgorithm(inferenceAlgorithm);
     	}
 	}
     

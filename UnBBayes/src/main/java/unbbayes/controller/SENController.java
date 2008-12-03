@@ -28,8 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
@@ -53,6 +51,7 @@ import unbbayes.prs.bn.continuous.ContinuousNode;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
+import unbbayes.simulation.likelihoodweighting.inference.ContinuousInference;
 import unbbayes.simulation.likelihoodweighting.inference.LikelihoodWeightingInference;
 import unbbayes.util.SortUtil;
 
@@ -64,19 +63,25 @@ public class SENController {
 
 	private NumberFormat df;
 
-	LikelihoodWeightingInference lwInference;
+	protected LikelihoodWeightingInference lwInference;
 	
-    // TODO CHANGE THIS!! NEW MODELING!!
-    // True if it is to use junction tree for compiling (exact)
-    // False if it is to use likelihood weighting for compiling (approximation)
-    boolean useJunctionTree = true;
+	protected ContinuousInference cInference;
+	
+	public enum InferenceAlgorithmEnum {
+    	JUNCTION_TREE,
+    	LIKELIHOOD_WEIGHTING,
+    	CONTINUOUS
+    }
+	
+    // TODO ROMMEL - CHANGE THIS!! NEW MODELING!!
+	private InferenceAlgorithmEnum inferenceAlgorithm = InferenceAlgorithmEnum.JUNCTION_TREE;
 
-    public boolean isUseJunctionTree() {
-		return useJunctionTree;
+	public InferenceAlgorithmEnum getInferenceAlgorithm() {
+		return inferenceAlgorithm;
 	}
 
-	public void setUseJunctionTree(boolean useJunctionTree) {
-		this.useJunctionTree = useJunctionTree;
+	public void setInferenceAlgorithm(InferenceAlgorithmEnum inferenceAlgorithm) {
+		this.inferenceAlgorithm = inferenceAlgorithm;
 	}
 
 	/** Load resource file from this package */
@@ -106,7 +111,7 @@ public class SENController {
 		if (node instanceof ProbabilisticNode) {
 			node.appendState(resource.getString("stateProbabilisticName")
 					+ node.getStatesSize());
-			// TODO The node class should have a listener to its change.
+			// TODO ROMMEL - The node class should have a listener to its change.
 			// The code below is just temporary (implement NodeChangeListener)
 			for (Node child : node.getChildren()) {
 				if (child.getType() == Node.CONTINUOUS_NODE_TYPE) {
@@ -130,7 +135,7 @@ public class SENController {
 	 */
 	public void removeState(Node node) {
 		node.removeLastState();
-		// TODO The node class should have a listener to its change.
+		// TODO ROMMEL - The node class should have a listener to its change.
 		// The code below is just temporary (implement NodeChangeListener)
 		for (Node child : node.getChildren()) {
 			if (child.getType() == Node.CONTINUOUS_NODE_TYPE) {
@@ -145,11 +150,16 @@ public class SENController {
 	 */
 	public void initialize() {
 		try {
-			if (isUseJunctionTree()) {
+			if (getInferenceAlgorithm() == InferenceAlgorithmEnum.JUNCTION_TREE) {
 				singleEntityNetwork.initialize();
 			} else {
-				singleEntityNetwork.resetEvidences();
-				lwInference.run();
+				if (getInferenceAlgorithm() == InferenceAlgorithmEnum.LIKELIHOOD_WEIGHTING) {
+					singleEntityNetwork.resetEvidences();
+					lwInference.run();
+				} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.CONTINUOUS) {
+					singleEntityNetwork.resetEvidences();
+					cInference.run();
+				}
 			}
 			screen.getEvidenceTree().updateTree();
 		} catch (Exception e) {
@@ -162,7 +172,7 @@ public class SENController {
 	 */
 	public void propagate() {
 		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-		if (isUseJunctionTree()) {
+		if (getInferenceAlgorithm() == InferenceAlgorithmEnum.JUNCTION_TREE) {
 			boolean temLikeliHood = false;
 			try {
 				singleEntityNetwork.updateEvidences();
@@ -175,8 +185,12 @@ public class SENController {
 				JOptionPane.showMessageDialog(screen, e.getMessage(), resource
 						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
 			}
-		} else {
+		} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.LIKELIHOOD_WEIGHTING) {
 			lwInference.run();
+		} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.CONTINUOUS) {
+			// TODO ROMMEL - Implement propagation
+			JOptionPane.showMessageDialog(screen, "Not yet implemented!", resource
+					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
 		}
 		screen.getEvidenceTree().updateTree();
 		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -194,28 +208,40 @@ public class SENController {
 		long ini = System.currentTimeMillis();
 		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		
-		if (isUseJunctionTree()) {
-			try {
-				((ProbabilisticNetwork) singleEntityNetwork).compile();
-			} catch (Exception e) {
-				e.printStackTrace();
-				JOptionPane.showMessageDialog(null, e.getMessage(), resource
+		if (getInferenceAlgorithm() == InferenceAlgorithmEnum.JUNCTION_TREE) {
+			if (singleEntityNetwork.isBN() || singleEntityNetwork.isID()) {
+				try {
+					((ProbabilisticNetwork) singleEntityNetwork).compile();
+				} catch (Exception e) {
+					e.printStackTrace();
+					JOptionPane.showMessageDialog(null, e.getMessage(), resource
+							.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+					screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+					return false;
+				}
+			} else {
+				JOptionPane.showMessageDialog(null, resource.getString("junctionTreeNotApplicableError"), resource
 						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
 				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 				return false;
 			}
-		} else {
-			String sampleSizeText = JOptionPane.showInputDialog(screen, resource.getString("sampleSizeInputMessage"), resource.getString("sampleSizeInputTitle"), JOptionPane.QUESTION_MESSAGE);
-			int sampleSize = 0;
-			try {
-				sampleSize = Integer.parseInt(sampleSizeText);
-			} catch (NumberFormatException e) {
-				JOptionPane.showMessageDialog(null, resource.getString("sampleSizeInputError"), resource
-						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
-				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-				return false;
-			}
-			if (singleEntityNetwork instanceof ProbabilisticNetwork && !singleEntityNetwork.isID()) {
+		} if (getInferenceAlgorithm() == InferenceAlgorithmEnum.LIKELIHOOD_WEIGHTING) {
+			if (singleEntityNetwork.isBN()) {
+				String sampleSizeText = JOptionPane.showInputDialog(screen, resource.getString("sampleSizeInputMessage"), resource.getString("sampleSizeInputTitle"), JOptionPane.QUESTION_MESSAGE);
+				// Stop compilation if user cancel operation.
+				if (sampleSizeText == null) {
+					return false;
+				}
+				int sampleSize = 0;
+				try {
+					sampleSize = Integer.parseInt(sampleSizeText);
+				} catch (NumberFormatException e) {
+					JOptionPane.showMessageDialog(null, resource.getString("sampleSizeInputError"), resource
+							.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+					screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+					return false;
+				}
+				singleEntityNetwork.resetEvidences();
 				lwInference = new LikelihoodWeightingInference((ProbabilisticNetwork)singleEntityNetwork, sampleSize);
 				lwInference.run();
 			} else {
@@ -224,11 +250,26 @@ public class SENController {
 				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 				return false;
 			}
+		} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.CONTINUOUS) {
+			if (singleEntityNetwork.isHybridBN()) {
+				try {
+					singleEntityNetwork.resetEvidences();
+					cInference = new ContinuousInference((ProbabilisticNetwork)singleEntityNetwork);
+					cInference.run();
+				} catch (Exception e) {
+					e.printStackTrace();
+					JOptionPane.showMessageDialog(null, e.getMessage(), resource
+							.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+					screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+					return false;
+				}
+			} else {
+				JOptionPane.showMessageDialog(null, resource.getString("continuousInferenceNotApplicableError"), resource
+						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				return false;
+			}
 		}
-
-		// Order by node description just to make tree's visualization easy.
-		ArrayList<Node> nodeList = singleEntityNetwork.getNodesCopy();
-		SortUtil.sortNodeListByDescription(nodeList);
 
 		screen.getEvidenceTree().updateTree();
 
@@ -248,7 +289,6 @@ public class SENController {
 	public void insertContinuousNode(double x, double y) {
 		ContinuousNode node = new ContinuousNode();
 		node.setPosition(x, y);
-		node.appendState(resource.getString("firstStateProbabilisticName"));
 		node.setName(resource.getString("probabilisticNodeName")
 				+ singleEntityNetwork.getNodeCount());
 		node.setDescription(node.getName());
@@ -317,9 +357,6 @@ public class SENController {
 		} catch (InvalidParentException e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), resource
 					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
-		}
-		if (edge.getDestinationNode().getType() == Node.CONTINUOUS_NODE_TYPE) {
-			((ContinuousNode)edge.getDestinationNode()).getCnNormalDistribution().refreshParents();
 		}
 	}
 	

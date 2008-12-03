@@ -54,9 +54,8 @@ public class ContinuousNode extends TreeVariable implements Serializable {
 	
 	public ContinuousNode() {
 		cnNormalDistribution = new CNNormalDistribution(this);
-		// TODO Internationalization!!! Mean and variance!!!
-		this.appendState("Mean");
-		this.appendState("Variance");
+		this.appendState(resource.getString("meanName"));
+		this.appendState(resource.getString("varianceName"));
 		drawEllipse = new DrawEllipse(position, size);
         drawElement.add(drawEllipse);
 	}
@@ -102,6 +101,13 @@ public class ContinuousNode extends TreeVariable implements Serializable {
 			throw new InvalidParentException(resource.getString("continuousNodeInvalidParentException"));
 		}
 		super.addParent(parent);
+		cnNormalDistribution.refreshParents();
+	}
+	
+	@Override
+	public void removeParent(Node parent) {
+		super.removeParent(parent);
+		cnNormalDistribution.refreshParents();
 	}
 	
 	@Override
@@ -110,6 +116,14 @@ public class ContinuousNode extends TreeVariable implements Serializable {
 			throw new InvalidParentException(resource.getString("continuousNodeInvalidParentException"));
 		}
 		super.addChild(child);
+		cnNormalDistribution.refreshParents();
+	}
+	
+	@Override
+	public void removeChild(Node child) {
+		// TODO Auto-generated method stub
+		super.removeChild(child);
+		cnNormalDistribution.refreshParents();
 	}
 
 }

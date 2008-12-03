@@ -142,7 +142,21 @@ public class ControllerResources extends ListResourceBundle {
 		{"sampleSizeInputMessage", "Please enter the sample size (number of trials)."},
 		{"sampleSizeInputTitle", "Sample size"}, 
 		{"sampleSizeInputError", "The sample size must be an integer number greater than zero."},
-		{"likelihoodWeightingNotApplicableError", "The Likelihood Weighting algorithm can only be used with a Bayesian network. Please choose another algorithm."}
+		{"likelihoodWeightingNotApplicableError", 
+			"The Likelihood Weighting algorithm can only be used with \n" +
+			"a Bayesian network. Please choose another algorithm."},
+		
+		/* Continuous Inference */
+		{"continuousInferenceNotApplicableError", 
+			"The inference algorithm for networks with continuous \n" +
+			"nodes can only be used with a hybrid Bayesian network \n" +
+			"(with at least one continuous node). Please choose \n" +
+			"another algorithm."},
+		
+		/* Junction Tree Inference */
+		{"junctionTreeNotApplicableError", 
+			"The Junction Tree algorithm can only be used with a Bayesian \n" +
+			"network or an influence diagram. Please choose another algorithm."},
 		
 	};
 }

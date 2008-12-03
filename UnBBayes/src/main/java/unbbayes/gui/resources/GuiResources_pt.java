@@ -498,10 +498,12 @@ public class GuiResources_pt extends ListResourceBundle {
         //Splash loader */
 		{"loading" , "carregando"},
 		
-		/* Likelihood Weighting Option Pane */
+		/* Inference Algorithm Option Pane */
 		{"algorithmTab" , "Algoritmo de Inferência"},
 		{"junctionTreeAlgorithmName" , "Árvore de Junção"},
 		{"likelihoodWeightingAlgorithmName" , "Likelihood Weighting"},
+		// TODO ROMMEL - Change name of algorithm
+		{"continuousAlgorithmName" , "Contínuo***"},
 		
 		/* Continuous Normal Distribution Pane */
 		{"meanLabel" , "Média"},
@@ -510,8 +512,6 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"followsLabel" , "~"},
 		{"normalFunctionLabel" , "N(média,variância)"},
 		{"continuousNormalDistributionParamError" , "Os valores devem ser números reais."},
-		
-		
 		
 	};
 }

@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import unbbayes.prs.Node.NodeNameChangedEvent;
+import unbbayes.prs.Node.NodeNameChangedListener;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.exception.InvalidParentException;
@@ -44,12 +46,23 @@ public class Network implements Graph{
 	protected List<Edge> edgeList;
 	
 	protected Map<String,Integer> nodeIndexes;
+	
+	protected NodeNameChangedListener nodeNameChangedListener;
 
 	public Network(String name) {
 		this.id = this.name = name;
 		nodeList = new ArrayList<Node>();
         edgeList = new ArrayList<Edge>();
         nodeIndexes = new HashMap<String,Integer>();
+        
+        // Event responsible for updating the index for the node that just changed its name.
+        nodeNameChangedListener = new NodeNameChangedListener() {
+        	public void nodeNameChanged(NodeNameChangedEvent event) {
+        		int index = nodeIndexes.get(event.getOldName());
+        		nodeIndexes.remove(event.getOldName());
+        		nodeIndexes.put(event.getNewName(), index);
+        	}
+        };
 	}
 
 	/**
@@ -104,7 +117,8 @@ public class Network implements Graph{
 	}
 
 	/**
-	 * @todo prever o caso de mudanca de nome de nodeList.
+	 * Return the index for the node with the given name.
+	 * @return the index for the node with the given name.
 	 */
 	public int getNodeIndex(String name) {
 		Integer index = nodeIndexes.get(name);
@@ -115,24 +129,26 @@ public class Network implements Graph{
 	}
 
 	/**
-	 *  Retira do grafo o arco especificado.
+	 *  Remove the edge.
 	 *
-	 *@param  arco  arco a ser retirado.
+	 *@param  edge  the edge to be removed.
 	 */
-	public void removeEdge(Edge arco) {
-	    arco.getOriginNode().getChildren().remove(arco.getDestinationNode());
-	    arco.getDestinationNode().getParents().remove(arco.getOriginNode());
-	    removeArco(arco);
+	public void removeEdge(Edge edge) {
+	    edge.getOriginNode().removeChild(edge.getDestinationNode());
+	    edge.getDestinationNode().removeParent(edge.getOriginNode());
+	    removeArco(edge);
 	}
 
 	/**
-	 *  Adiciona novo n� ao grafo.
+	 *  Add the node.
 	 *
-	 *@param  no  n� a ser inserido.
+	 *@param  node  node to be added.
 	 */
-	public void addNode(Node no) {
-	    nodeList.add(no);
-	    nodeIndexes.put(no.getName(), new Integer(nodeList.size()-1));
+	public void addNode(Node node) {
+	    nodeList.add(node);
+	    // Set its index and add the listener to make sure it is always updated.
+	    nodeIndexes.put(node.getName(), new Integer(nodeList.size()-1));
+	    node.addNodeNameChangedListener(nodeNameChangedListener);
 	}
 
 	/**
@@ -155,30 +171,30 @@ public class Network implements Graph{
 	}
 
 	/**
-	 *  Remove node of the graph
+	 *  Remove node.
 	 *
-	 *@param  elemento  no a ser removido.
+	 *@param  element  node to be removed.
 	 */
-	public void removeNode(Node elemento) {
+	public void removeNode(Node element) {
 	    int c;
 	    Node auxNo;
 	    Edge auxArco;
 	    
-	    nodeList.remove(elemento);
+	    nodeList.remove(element);
 	    
 	    //nodeIndexes.remove(elemento.getName());
 	    nodeIndexes.clear();
 	    for (c = 0; c < nodeList.size(); c++) {
 	        auxNo = nodeList.get(c);
-	        auxNo.getParents().remove(elemento);
-	        auxNo.getChildren().remove(elemento);
+	        auxNo.removeParent(element);
+	        auxNo.removeChild(element);
 	        nodeIndexes.put(auxNo.getName(), new Integer(c));
 	    }
 	    if (!edgeList.isEmpty()) {
 	        auxArco = edgeList.get(0);
 	        c = 0;
 	        while (auxArco != edgeList.get(edgeList.size() - 1)) {
-	            if ((auxArco.getOriginNode() == elemento) || (auxArco.getDestinationNode() == elemento)) {
+	            if ((auxArco.getOriginNode() == element) || (auxArco.getDestinationNode() == element)) {
 	                removeArco(auxArco);
 	            }
 	            else {
@@ -186,7 +202,7 @@ public class Network implements Graph{
 	            }
 	            auxArco = edgeList.get(c);
 	        }
-	        if ((auxArco.getOriginNode() == elemento) || (auxArco.getDestinationNode() == elemento)) {
+	        if ((auxArco.getOriginNode() == element) || (auxArco.getDestinationNode() == element)) {
 	            removeArco(auxArco);
 	        }
 	    }

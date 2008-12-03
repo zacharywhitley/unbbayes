@@ -404,9 +404,9 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	public void resetEvidences() {
-		int size = copiaNos.size();
+		int size = getNodesCopy().size();
 		for (int i = 0; i < size; i++) {
-			((TreeVariable) copiaNos.get(i)).resetEvidence();
+			((TreeVariable) getNodesCopy().get(i)).resetEvidence();
 		}
 	}
 
@@ -423,6 +423,33 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * Returns true if this network is hybrid, in other words, if it has at least 
+	 * one continuous node.
+	 * @return Returns true if this network is hybrid (continuous and discrete nodes).
+	 */
+	public boolean isHybridBN() {
+		for (int i = 0; i < nodeList.size(); i++) {
+			if (nodeList.get(i).getType() == Node.CONTINUOUS_NODE_TYPE) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Returns true if this network has only discrete probabilistic nodes, i.e. simple BN.
+	 * @return Returns true if this network has only discrete probabilistic nodes, i.e. simple BN.
+	 */
+	public boolean isBN() {
+		for (int i = 0; i < nodeList.size(); i++) {
+			if (nodeList.get(i).getType() != Node.PROBABILISTIC_NODE_TYPE) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	protected void updateMarginais() {

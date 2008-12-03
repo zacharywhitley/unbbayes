@@ -1778,23 +1778,6 @@ public class MEBNController  {
 			return false;
 		}
 
-		// Order by node description just to make tree's visualization easy.
-		ArrayList<Node> nos = network.getNodesCopy();
-		boolean haTroca = true;
-		while (haTroca) {
-			haTroca = false;
-			for (int i = 0; i < nos.size() - 1; i++) {
-				Node node1 = nos.get(i);
-				Node node2 = nos.get(i + 1);
-				if (node1.getDescription().compareToIgnoreCase(
-						node2.getDescription()) > 0) {
-					nos.set(i + 1, node1);
-					nos.set(i, node2);
-					haTroca = true;
-				}
-			}
-		}
-
 		/* isto será feito dentro do changeToSSBNCompilationPane */
 //		screen.getEvidenceTree().updateTree();  hehe... ainda não temos uma evidence tree... sorry!
 		

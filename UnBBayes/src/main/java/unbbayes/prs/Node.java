@@ -26,7 +26,6 @@ import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import unbbayes.draw.DrawElement;
@@ -35,15 +34,13 @@ import unbbayes.draw.IOnePositionDrawable;
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.exception.InvalidParentException;
-import unbbayes.prs.mebn.MFrag;
-import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.util.ArrayMap;
 import unbbayes.util.SerializablePoint2D;
 
 /**
  * A class representing a generic node.
- * @author Michael e Rommel
+ * @author Michael 
+ * @author Rommel Carvalho (rommel.caralho@gmail.com)
  */
 public abstract class Node implements Serializable, IOnePositionDrawable, 
                                       Comparable<Node>{
@@ -180,16 +177,18 @@ public abstract class Node implements Serializable, IOnePositionDrawable,
 	}
 
 	/**
-	 * Set the node's name.
+	 * Set the node's name. It also causes the nodeNameChanged event to be fired.
 	 * 
 	 * @param name
 	 *            Node's name.
 	 */
 	public void setName(String name) {
+		NodeNameChangedEvent event = new NodeNameChangedEvent(this.name, name);
 		this.name = name;
 		if (nameIsLabel == true) {
 			((DrawText) drawElement).setText(name);
 		}
+		this.nameChanged(event);
 	}
 
 	/**
@@ -234,8 +233,16 @@ public abstract class Node implements Serializable, IOnePositionDrawable,
 		this.children.add(child);
 	}
 	
+	public void removeChild(Node child) {
+		this.children.remove(child);
+	}
+	
 	public void addParent(Node parent) throws InvalidParentException{
 		this.parents.add(parent);
+	}
+	
+	public void removeParent(Node parent) {
+		this.parents.remove(parent);
 	}
 
 	public boolean isParentOf(Node child) {
@@ -248,8 +255,6 @@ public abstract class Node implements Serializable, IOnePositionDrawable,
 						.getName())));
 			}
 		} catch (Exception ee) {
-			int debug = 0;
-			int debug2 = debug;
 		}
 		return result;
 	}
@@ -627,6 +632,47 @@ public abstract class Node implements Serializable, IOnePositionDrawable,
 	 */
 	public double[] getStandardDeviation() {
 		return standardDeviation;
+	}
+	
+	/*********** NAME CHANGE LISTENER ***************/
+	
+	public class NodeNameChangedEvent {
+		
+		private String oldName;
+		private String newName;
+		
+		public NodeNameChangedEvent(String oldName, String newName) {
+			this.oldName = oldName;
+			this.newName = newName;
+		}
+
+		public String getOldName() {
+			return oldName;
+		}
+
+		public String getNewName() {
+			return newName;
+		}
+	}
+	
+	public interface NodeNameChangedListener {
+		public void nodeNameChanged(NodeNameChangedEvent event);
+	}
+	
+	protected List<NodeNameChangedListener> nodeNameChangedListenerList = new ArrayList<NodeNameChangedListener>();
+	
+	public void addNodeNameChangedListener(NodeNameChangedListener listener) {
+		nodeNameChangedListenerList.add(listener);
+	}
+	
+	public void removeNodeNameChangedListener(NodeNameChangedListener listener) {
+		nodeNameChangedListenerList.remove(listener);
+	}
+	
+	protected void nameChanged(NodeNameChangedEvent event) {
+		for (NodeNameChangedListener listener : nodeNameChangedListenerList) {
+			listener.nodeNameChanged(event);
+		}
 	}
 
 }

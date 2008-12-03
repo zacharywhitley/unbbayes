@@ -76,10 +76,11 @@ public class ContinuousInference {
 			} else {
 				discreteNodeList.add(node);
 			}
-		} 
+		}
+		init();
 	}
 	
-	public void start(){
+	protected void init(){
 		nodeOrderQueue = new ArrayList<Node>();		
 		createOrderQueue();
 	}
@@ -136,7 +137,7 @@ public class ContinuousInference {
 	}
 	
 
-	protected void run() throws Exception {
+	public void run() throws Exception {
 		for(int i = 0; i < nodeOrderQueue.size(); i++) {
 			
 			Node node = nodeOrderQueue.get(i);
@@ -174,10 +175,14 @@ public class ContinuousInference {
 				if (!nodeVisitedBefore) {
 					nodeInNetworkList = new ArrayList<Node>();
 					addAdjacentNodes(clonedPN.getNode(discreteParentList.get(j).getName()), nodeInNetworkList);
+					List<Node> nodeToRemoveList = new ArrayList<Node>();
 					for (Node nodeToRemove : clonedPN.getNodes()) {
 						if (!nodeInNetworkList.contains(nodeToRemove)) {
-							clonedPN.removeNode(nodeToRemove);
+							nodeToRemoveList.add(nodeToRemove);
 						}
+					}
+					for (Node nodeToRemove : nodeToRemoveList) {
+						clonedPN.removeNode(nodeToRemove);
 					}
 					// Add the calculated marginal to the initial network (pn).
 					// We already know that every node here is discrete.
@@ -189,6 +194,7 @@ public class ContinuousInference {
 						for (int stateIndex = 0; stateIndex < variable.getStatesSize(); stateIndex++) {
 							values[stateIndex] = variableToGetMarginal.getMarginalAt(stateIndex);
 						}
+						variable.initMarginalList();
 						variable.addLikeliHood(values);
 						
 						// Add its name to the list of already visited nodes.
@@ -203,12 +209,11 @@ public class ContinuousInference {
 			// Discrete and Continuous Variables, appendix C)
 			// First lets calculate the mean SumOf(Prob[Parents(node)] * PartialMean), for every 
 			// normal distribution function possible (combination of parents' states).
-			// discreteParentList.size() == cDistribution.functionSize()
-			double[] partialMeanList = new double[discreteParentList.size()];
-			double[] partialVarianceList = new double[discreteParentList.size()];
-			double[] probabilityList = new double[discreteParentList.size()];
-			double weightedMean = 0.0;
 			CNNormalDistribution cDistribution = ((ContinuousNode)node).getCnNormalDistribution();
+			double[] partialMeanList = new double[cDistribution.functionSize()];
+			double[] partialVarianceList = new double[cDistribution.functionSize()];
+			double[] probabilityList = new double[cDistribution.functionSize()];
+			double weightedMean = 0.0;
 			for (int ndfIndex = 0; ndfIndex < cDistribution.functionSize(); ndfIndex++) {
 				// Each normal distribution function has the mean SumOf(PartialMean), for every normal
 				// distribution in the function (one for each continuous parent and one for the noise
@@ -231,14 +236,14 @@ public class ContinuousInference {
 					// By the time we get here, the continuous parent already calculated its mean and variance previously.
 					meanWithoutConstant = variable.getMarginalAt(ContinuousNode.MEAN_MARGINAL_INDEX);
 					varianceWithoutConstant = variable.getMarginalAt(ContinuousNode.VARIANCE_MARGINAL_INDEX);
-					partialMeanList[ndfIndex] += cDistribution.getConstantAt(i, ndfIndex) * meanWithoutConstant;
-					partialVarianceList[ndfIndex] += Math.pow(cDistribution.getConstantAt(i, ndfIndex), 2) * varianceWithoutConstant;
+					partialMeanList[ndfIndex] += cDistribution.getConstantAt(parentIndex, ndfIndex) * meanWithoutConstant;
+					partialVarianceList[ndfIndex] += Math.pow(cDistribution.getConstantAt(parentIndex, ndfIndex), 2) * varianceWithoutConstant;
 				}
 				
 				// Now we get the configuration of its parents states to calculate its probability.
 				int[] parentsStatesConfiguration = cDistribution.getMultidimensionalCoord(ndfIndex);
 				probabilityList[ndfIndex] = 1.0;
-				for (int parentIndex = 0; i < parentsStatesConfiguration.length; parentIndex++) {
+				for (int parentIndex = 0; parentIndex < parentsStatesConfiguration.length; parentIndex++) {
 					probabilityList[ndfIndex] *= ((TreeVariable)pn.getNode(discreteParentList.get(parentIndex).getName())).getMarginalAt(parentsStatesConfiguration[parentIndex]);
 				}
 				
@@ -257,9 +262,10 @@ public class ContinuousInference {
 			}
 			
 			// Add the mean and variance as its marginal in the TreeVariable.
-			float[] values = new float[2];
+			float[] values = new float[node.getStatesSize()];
 			values[ContinuousNode.MEAN_MARGINAL_INDEX] = (float)weightedMean;
 			values[ContinuousNode.VARIANCE_MARGINAL_INDEX] = (float)weightedVariance;
+			((TreeVariable)node).initMarginalList();
 			((TreeVariable)node).addLikeliHood(values);
 		}
 	}
@@ -322,6 +328,7 @@ public class ContinuousInference {
 			File file = new File("clone.xml");
 			io.save(file, network);
 			clone = io.load(file);
+			file.delete();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

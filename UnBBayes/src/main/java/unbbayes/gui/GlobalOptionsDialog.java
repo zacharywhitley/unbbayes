@@ -49,6 +49,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import unbbayes.controller.NetworkController;
+import unbbayes.controller.SENController.InferenceAlgorithmEnum;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -56,12 +57,12 @@ import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
 
 /**
- *  Classe responsável pelas configuracoes basicas da rede Bayesiana. Ela extende
- *  a classe <code>JDialog</code>.
+ *  Class responsible for general configurations, like node color, size, algorithm to 
+ *  use for compilation, etc.
  *
- *@author Rommel N. Carvalho
+ *@author Rommel N. Carvalho (rommel.carvalho@gmail.com)
  *@author Michael S. Onishi
- *@created 27 de Junho de 2001
+ *@created 27 of June 2001
  *@see JDialog
  */
 public class GlobalOptionsDialog extends JDialog {
@@ -111,6 +112,7 @@ public class GlobalOptionsDialog extends JDialog {
     private ButtonGroup algorithmGroup;
     private JRadioButtonMenuItem junctionTreeAlgorithm;
     private JRadioButtonMenuItem likelihoodWeightingAlgorithm;
+    private JRadioButtonMenuItem continuousAlgorithm;
     //private PreviewPane preview;
     private final GraphPane graph;
 
@@ -134,8 +136,9 @@ public class GlobalOptionsDialog extends JDialog {
         createLog = new JCheckBox(resource.getString("createLogLabel"));
 
         algorithmGroup = new ButtonGroup();
-        junctionTreeAlgorithm         = new JRadioButtonMenuItem(resource.getString("junctionTreeAlgorithmName"), controller.isUseJunctionTree());
-        likelihoodWeightingAlgorithm  = new JRadioButtonMenuItem(resource.getString("likelihoodWeightingAlgorithmName"), !controller.isUseJunctionTree());
+        junctionTreeAlgorithm         = new JRadioButtonMenuItem(resource.getString("junctionTreeAlgorithmName"), (controller.getInferenceAlgorithm() == InferenceAlgorithmEnum.JUNCTION_TREE));
+        likelihoodWeightingAlgorithm  = new JRadioButtonMenuItem(resource.getString("likelihoodWeightingAlgorithmName"), (controller.getInferenceAlgorithm() == InferenceAlgorithmEnum.LIKELIHOOD_WEIGHTING));
+        continuousAlgorithm  		  = new JRadioButtonMenuItem(resource.getString("continuousAlgorithmName"), (controller.getInferenceAlgorithm() == InferenceAlgorithmEnum.CONTINUOUS));
         
         gbl     = new GridBagLayout();
         gbc     = new GridBagConstraints();
@@ -300,7 +303,13 @@ public class GlobalOptionsDialog extends JDialog {
                     Node.setSize(radiusSlider.getValue()*2, radiusSlider.getValue()*2);
                     graph.setGraphDimension(new Dimension((int) netSlider.getValue(), (int) netSlider.getValue()));
                     controller.getSingleEntityNetwork().setCreateLog(createLog.isSelected());
-                    controller.setUseJunctionTree(junctionTreeAlgorithm.isSelected());
+                    if (junctionTreeAlgorithm.isSelected()) {
+                    	controller.setInferenceAlgorithm(InferenceAlgorithmEnum.JUNCTION_TREE);
+                    } else if (likelihoodWeightingAlgorithm.isSelected()) {
+                    	controller.setInferenceAlgorithm(InferenceAlgorithmEnum.LIKELIHOOD_WEIGHTING);
+                    } else if (continuousAlgorithm.isSelected()) {
+                    	controller.setInferenceAlgorithm(InferenceAlgorithmEnum.CONTINUOUS);
+                    }
                     setVisible(false);
                     dispose();
                     graph.update();
@@ -393,8 +402,10 @@ public class GlobalOptionsDialog extends JDialog {
 		logPanel.add(createLog);
 		algorithmGroup.add(junctionTreeAlgorithm);
         algorithmGroup.add(likelihoodWeightingAlgorithm);
+        algorithmGroup.add(continuousAlgorithm);
         algorithmPanel.add(junctionTreeAlgorithm);
         algorithmPanel.add(likelihoodWeightingAlgorithm);
+        algorithmPanel.add(continuousAlgorithm);
 
 		jtp.addTab(resource.getString("colorControllerTab"), controllerColorPanel);
 		jtp.addTab(resource.getString("sizeControllerTab"), controllerSizePanel);

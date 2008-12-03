@@ -475,13 +475,16 @@ public class XMLBIFIO {
 		node.setDescription(variable.getDescription());
 		node.setPosition(variable.getXPos(), variable.getYPos());
 		
-		List stateList = variable.getState(); 
-		
-		for (int j = 0; j < stateList.size(); j++){
-			XMLBIFType.NetworkType.VariablesType.VariableType.StateType state = (XMLBIFType.NetworkType.VariablesType.VariableType.StateType)stateList.get(j);
-			node.appendState(state.getName());
-			// TODO set description
-			// TODO set mmedia
+		// Only add states for non continuous node.
+		if (nodeType != VariableType.CONTINUOUSPROBABILISTIC) {
+			List stateList = variable.getState(); 
+			
+			for (int j = 0; j < stateList.size(); j++){
+				XMLBIFType.NetworkType.VariablesType.VariableType.StateType state = (XMLBIFType.NetworkType.VariablesType.VariableType.StateType)stateList.get(j);
+				node.appendState(state.getName());
+				// TODO set description
+				// TODO set mmedia
+			}
 		}
 		
 		// Fill Metaphore values if present

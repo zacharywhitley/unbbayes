@@ -69,6 +69,8 @@ public class BnResources extends ListResourceBundle {
 		{"InconsistencyUnderflowException","Inconsistency or Underflow found."},
 		
 		/* Continuous Node */
-		{"continuousNodeInvalidParentException","A continuous node only allows:\nParent:\n-Continuous node;\n-Discrete probabilistic node.\nChild:\n-Continuous node."}
+		{"continuousNodeInvalidParentException","A continuous node only allows:\nParent:\n-Continuous node;\n-Discrete probabilistic node.\nChild:\n-Continuous node."},
+		{"meanName","Mean"},
+		{"varianceName","Variance"}
 	};
 }
