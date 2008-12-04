@@ -43,6 +43,7 @@ public interface IDisconnectedNetworkToMultipleSubnetworkConverter {
 	/**
 	 * Converts a network
 	 * with diconnected graphs into multiple connected sub-networks.
+	 * If a sub-network is only a single node, the sub-network is ignored.
 	 * 
 	 * Sample:
 	 * 

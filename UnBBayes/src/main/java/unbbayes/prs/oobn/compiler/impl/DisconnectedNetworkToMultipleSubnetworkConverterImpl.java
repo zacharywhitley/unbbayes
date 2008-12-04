@@ -23,7 +23,10 @@ import unbbayes.util.Debug;
 public class DisconnectedNetworkToMultipleSubnetworkConverterImpl implements
 		IDisconnectedNetworkToMultipleSubnetworkConverter {
 
-
+	/**
+	 * Default constructor.
+	 * It's visibility is protected in order to make it easier to extend
+	 */
 	protected DisconnectedNetworkToMultipleSubnetworkConverterImpl() {
 		// TODO Auto-generated constructor stub
 	}
@@ -139,29 +142,29 @@ public class DisconnectedNetworkToMultipleSubnetworkConverterImpl implements
 		Collection<Node> treatedNodes = new ArrayList<Node>();
 		
 		try {
-			int subnetworkCounter = 0;
+//			int subnetworkCounter = 0;
 			for (Node currentNode : net.getNodes()) {
 				if (!treatedNodes.contains(currentNode)) {
 					// this is the new network to be added to return
 					SubNetwork networkToAddInto = null;
-					if (subnetworkCounter <= 0) {
+					if (ret.size() <= 0) {
 						// I dont want the 1st one to have a name concatenated with number
 						// That guarantees that if network is not fragmented, then the name is not changed
 						networkToAddInto = new SubNetwork(net.getName());
 					} else {
-						networkToAddInto = new SubNetwork(net.getName() + "_" + subnetworkCounter);
+						networkToAddInto = new SubNetwork(net.getName() + "_" + ret.size());
 					}
 					// fill new network
 //					Node currentNodeCpy = (Node)((ProbabilisticNode)currentNode).clone();
 //					networkToAddInto.addNode(currentNodeCpy);
 					networkToAddInto.addNode(currentNode);
 					this.visitRecursively(currentNode, /*currentNodeCpy,*/  networkToAddInto, net);
-					// add a new network into return
-					ret.add(networkToAddInto);
+					// add a new network into return, only if it has joint probability (there are more than 1 node)
+					if (networkToAddInto.getNodes().size() > 1) {
+						ret.add(networkToAddInto);
+					}
 					// mark every node of new network as treated
 					treatedNodes.addAll(networkToAddInto.getNodes());
-					// update subnetwork counter
-					subnetworkCounter++;
 				}
 			}
 		} catch (Exception e) {

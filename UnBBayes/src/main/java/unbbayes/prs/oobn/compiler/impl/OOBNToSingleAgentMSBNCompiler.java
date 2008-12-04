@@ -34,10 +34,10 @@ import unbbayes.util.Debug;
 public class OOBNToSingleAgentMSBNCompiler implements IOOBNCompiler {
 
 	/**
-	 * 
+	 * Default constructor. It is made protected in order to make it easier to extend
 	 */
-	private OOBNToSingleAgentMSBNCompiler() {
-		// TODO Auto-generated constructor stub
+	protected OOBNToSingleAgentMSBNCompiler() {
+		
 	}
 	
 	/**
@@ -74,6 +74,12 @@ public class OOBNToSingleAgentMSBNCompiler implements IOOBNCompiler {
 				// if network is disconnected, create multiple sub-networks in order to make them connected
 				for (SubNetwork subnetwork : fragmenter.generateSubnetworks(newNetwork)) {
 					msbn.addNetwork(subnetwork);
+					/*
+					 * Actually, considering only those fragments with more than 1 node
+					 * (I.E. having at least 1 edge) makes the final MSBN more legible, 
+					 * without changing the final joint probability distribution. 
+					 * generateSubnetworks() does that.
+					 */
 				}			
 			}
 		} catch (Exception e) {
