@@ -107,7 +107,14 @@ public class ContinuousInference {
 	protected void initOrderQueue(boolean[] nodeAddedList){
 		for (int i = 0; i < continuousNodeList.size(); i++) {
 			Node node = continuousNodeList.get(i);
-			if(node.getParents().size() == 0 ) {
+			boolean hasContinuousParent = false;
+			for (Node parentNode : node.getParents()) {
+				if (parentNode.getType() == Node.CONTINUOUS_NODE_TYPE) {
+					hasContinuousParent = true;
+					break;
+				}
+			}
+			if(!hasContinuousParent) {
 				nodeAddedList[i]= true;					
 				nodeOrderQueue.add(node);
 			}
