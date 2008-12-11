@@ -1139,16 +1139,23 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 * Retorna o vetor de c�pia dos n�s
-	 * (sem as vari�veis de utilidade).
+	 * Return a copy of the nodes (without utility nodes).
 	 *
-	 * @return vetor de c�pia dos n�s sem as vari�veis de utilidade.
+	 * @return A copy of the nodes (without utility nodes).
 	 */
 	public ArrayList<Node> getNodesCopy() {
 		if (copiaNos == null) {
 			copiaNos = (ArrayList<Node>)nodeList.clone();
 		}
 		return copiaNos;
+	}
+	
+	/**
+	 * Reset the copy of the nodes. It is usually due to changes 
+	 * in the network.
+	 */
+	public void resetNodesCopy() {
+		copiaNos = (ArrayList<Node>)nodeList.clone();
 	}
 
 	public String getLog() {

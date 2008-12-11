@@ -238,6 +238,13 @@ public class EvidenceTree extends JTree {
 			}
 		}
 	}
+	
+	/**
+	 * Reset the evidence tree to its default.
+	 */
+	public void resetTree() {
+		expandedNodes = null;
+	}
 
 	/**
 	 *  Atualiza as marginais na arvore desejada.

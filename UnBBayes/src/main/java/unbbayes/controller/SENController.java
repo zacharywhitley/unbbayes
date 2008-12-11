@@ -208,6 +208,12 @@ public class SENController {
 		long ini = System.currentTimeMillis();
 		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		
+		// Make sure the copy of the nodes is updated due to changes in the network. (only possible in the edition mode).
+		singleEntityNetwork.resetNodesCopy();
+		// Also used to make sure the tree is updated with the network changes, if there is any. The expanded nodes are also 
+		// gone to its default (all expanded).
+		screen.getEvidenceTree().resetTree();
+		
 		if (getInferenceAlgorithm() == InferenceAlgorithmEnum.JUNCTION_TREE) {
 			if (singleEntityNetwork.isBN() || singleEntityNetwork.isID()) {
 				try {
@@ -271,7 +277,7 @@ public class SENController {
 			}
 		}
 
-		screen.getEvidenceTree().updateTree();
+		//screen.getEvidenceTree().updateTree();
 
 		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 
