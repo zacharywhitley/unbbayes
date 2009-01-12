@@ -170,6 +170,13 @@ public class Evaluation {
 		}
 //		System.out.println();
 		
+		// 6. Compute the average correct classification probability (average the main diagonal)
+		float averageClassification = 0.0f;
+		for (int i = 0; i < statesSize; i++) {
+			averageClassification += postProbTargetGivenTarget[i * statesSize + i];
+		}
+		averageClassification /= statesSize;
+		
 		formatter.format("P(T|E) = N[ P(E|T)P(T) ]\n");
 		for (int i = 0; i < targetStatesProduct; i++) {
 			for (int j = 0; j < evidenceStatesProduct; j++) {
@@ -197,6 +204,11 @@ public class Evaluation {
 			}
 			formatter.format("\n");
 		}
+		
+		formatter.format("\n");
+		
+		formatter.format("Average Correct Classification Probability\n");
+		formatter.format("%2.2f	", averageClassification * 100);
 		
 //		System.out.println(sb);
 		
