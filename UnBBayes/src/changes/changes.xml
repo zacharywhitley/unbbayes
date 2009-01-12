@@ -7,6 +7,91 @@
 		</author>
 	</properties>
 	<body>
+		<release version="3.26.9-BETA" date="2009-01-20" description="Fourth UnBBayes-MEBN beta release">
+			<action dev="Shou Matsumoto" type="add">
+				2286514	- Net 3rd Spec for OOBN I/O.
+			</action>
+			<action dev="Shou Matsumoto" type="add">
+				2286474	- Implement OOBN visual edition.
+			</action>
+			<action dev="Rommel Carvalho" type="add">
+				2286048	- Load and Save XMLBIF version 0.5.
+			</action>
+			<action dev="Rommel Carvalho" type="add">
+				2272627	- Change CPT edition behaviour.
+			</action>
+			<action dev="Laécio Lima" type="add">
+				2258810	- Add delete and reset button to edition of pn's.
+			</action>
+			<action dev="Rommel Carvalho" type="add">
+				2234791	- Resize table panel.
+			</action>
+			<action dev="Rommel Carvalho" type="add">
+				2221807	- Load and Save BN with continuous node.
+			</action>
+			<action dev="Rommel Carvalho" type="add">
+				2208499	- GUI to model continuous node.
+			</action>
+			<action dev="Rommel Carvalho" type="add">
+				2208491	- Add continuous node to BN.
+			</action>
+			<action dev="Rommel Carvalho" type="add">
+				2204389	- Include Likelihood Weighting in GUI Framework.
+			</action>
+			<action dev="Rommel Carvalho" type="add">
+				2192929	- Adjust the divider after compilation.
+			</action>
+			<action dev="Rommel Carvalho" type="add">
+				2192859	- Likelihood Weighting Inference.
+			</action>
+			<action dev="Rommel Carvalho" type="add">
+				2190279	- Likelihood Weighting Sampling.
+			</action>
+			<action dev="Rommel Carvalho" type="add">
+				2131239	- Evaluate PN by calculating P(T|T).
+			</action>
+			<action dev="Laécio Lima" type="add">
+				2117095	- Ordering resident node list in query and finding list.
+			</action>
+			<action dev="Shou Matsumoto" type="add">
+				2037996 - Nested IF for MEBN CPT.
+			</action>
+			<action dev="Laécio Lima" type="add">
+				2027175 - Indicate presence of finding.
+			</action>
+			<action dev="Paulo Costa" type="add">
+				1908040 - Propose new SSBN algorithm considering evidences "below".
+			</action>
+			
+			<action dev="Rommel Carvalho" type="fix">
+				2380157 - Update node index map.
+			</action>
+			<action dev="Rommel Carvalho" type="fix">
+				2190264 - Node order in evaluation is wrong.
+			</action>
+			<action dev="Rommel Carvalho" type="fix">
+				2125443 - MC sampler generates state 0 for range from 0.0 to 0.0.
+			</action>
+			<action dev="Rommel Carvalho" type="fix">
+				2125441 - MC sampler always generates state 0.
+			</action>
+			<action dev="Laécio Lima" type="fix">
+				1956734 - HarmPotential(ST3,T15) generates unknown error (-1).
+			</action>
+			<action dev="Laécio Lima" type="fix">
+				1949136 - Blue buttons looks horrible in different look'n'feel.
+			</action>
+			<action dev="Laécio Lima" type="fix">
+				1949118 - After generating SSBN, the leftmost tree' panel is too small.
+			</action>
+			<action dev="Laécio Lima" type="fix">
+				1949087 - Cannot change MTheory's name.
+			</action>
+			<action dev="Shou Matsumoto" type="fix">
+				1907274 - Strange behavior when query->move node.
+			</action>
+		</release>
+		
 		<release version="3.8.3-BETA" date="2008-07-31" description="Third UnBBayes-MEBN beta release">
 			<action dev="Laécio Lima" type="add">
 				2008231	- Implement SSBN algorithm with evidences "below".
