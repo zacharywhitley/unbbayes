@@ -25,10 +25,10 @@ import java.util.ListResourceBundle;
 
 /**
  * <p>Title: UnBBayes</p>
- * <p>Description: Resources file for unbbayes.prs.bn package. Localization = english.</p>
+ * <p>Description: Resources file for unbbayes.prs.hybridbn package. Localization = english.</p>
  * <p>Copyright: Copyright (c) 2001</p>
  * <p>Company: UnB</p>
- * @author Rommel Novaes Carvalho
+ * @author Rommel Novaes Carvalho (rommel.carvalho@gmail.com)
  * @author Michael Onishi
  * @version 1.0
  * @since 02/05/2002

@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import javax.swing.JInternalFrame;
-import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
 
 import unbbayes.controller.exception.InvalidFileNameException;

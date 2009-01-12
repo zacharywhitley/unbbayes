@@ -43,8 +43,8 @@ import javax.swing.tree.TreePath;
 
 import unbbayes.controller.IconController;
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.util.ArrayMap;
 import unbbayes.util.ResourceController;

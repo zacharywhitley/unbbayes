@@ -46,8 +46,8 @@ import javax.swing.border.TitledBorder;
 
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ExplanationPhrase;
-import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.SingleEntityNetwork;
 
 /**
  *

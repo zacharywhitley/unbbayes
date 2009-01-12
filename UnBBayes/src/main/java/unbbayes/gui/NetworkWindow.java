@@ -44,7 +44,6 @@ import javax.swing.JViewport;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
-import unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;

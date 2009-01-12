@@ -53,7 +53,6 @@ import unbbayes.prs.hybridbn.GaussianMixture;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
 import unbbayes.simulation.likelihoodweighting.inference.LikelihoodWeightingInference;
-import unbbayes.util.SortUtil;
 
 public class SENController {
 

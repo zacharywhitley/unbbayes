@@ -38,7 +38,6 @@ import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 
 import unbbayes.controller.IconController;
-import unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO;
 import unbbayes.prs.msbn.SingleAgentMSBN;
 
 /**
