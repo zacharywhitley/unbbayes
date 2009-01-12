@@ -16,9 +16,19 @@ UnBBayes Overview
       
           * Bayesian Network (BN)
           
+          		* Junction Tree
+          		
+          		* Likelihood Weighting
+          		
+          		* Correct Classification Evaluation
+          
           * Influence Diagram (ID)
           
           * Multiply Sectioned Bayesian Network (MSBN)
+          
+          * Hybrid Bayesian Network (Gaussian Mixture) - Propagation under development
+          
+          * Object-Oriented Bayesian Network (OOBN) - Under development
           
       * FOL Probabilistic Network:
       
