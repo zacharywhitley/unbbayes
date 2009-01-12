@@ -3,7 +3,7 @@ Version=0.03
 PrOwl="Procurement_Indexes_EvidenceAsParent.owl"
 
 % UBF MTheory declaration
-MTheory=DirecionamentoNaLicitacao_MT
+MTheory=FraudDetection_MT
 NextMFrag=4
 NextResident=8
 NextInput=5
@@ -13,38 +13,28 @@ NextEntity=1
 % UBF MFrags and Nodes declaration
 
 % MFrag
-MFrag=ProcurementRequirement_MF
-NextOrdinaryVar=3
+MFrag=DirectingProcurement_MF
+NextOrdinaryVar=2
 
 % Resident nodes
 
 
-Node=IndexProcurement
+Node=IsProcurementDirected
 Type=DomainResidentNode
-Position=321.0,128.0
+Position=326.0,188.0
 Size=35,35
 
-Node=IndexType
-Type=DomainResidentNode
-Position=435.0,171.0
+% Input nodes
+
+
+Node=IX4
+Type=GenerativeInputNode
+Position=422.0,100.0
 Size=35,35
 
-Node=ExperienceInOnlyOneContract
-Type=DomainResidentNode
-Position=324.0,210.0
-Size=35,35
-
-Node=IndexMinValue
-Type=DomainResidentNode
-Position=211.0,163.0
-Size=35,35
-
-% Context nodes
-
-
-Node=CX1
-Type=ContextNode
-Position=481.0,71.0
+Node=IX3
+Type=GenerativeInputNode
+Position=226.0,100.0
 Size=35,35
 
 % Ordinary Variables
@@ -52,12 +42,7 @@ Size=35,35
 
 Node=proc
 Type=OrdinalVar
-Position=320.0,71.0
-Size=35,35
-
-Node=ind
-Type=OrdinalVar
-Position=178.0,69.0
+Position=320.0,40.0
 Size=35,35
 
 % MFrag
@@ -107,28 +92,38 @@ Position=287.0,57.0
 Size=35,35
 
 % MFrag
-MFrag=DirectingProcurement_MF
-NextOrdinaryVar=2
+MFrag=ProcurementRequirement_MF
+NextOrdinaryVar=3
 
 % Resident nodes
 
 
-Node=IsProcurementDirected
+Node=ExperienceInOnlyOneContract
 Type=DomainResidentNode
-Position=326.0,188.0
+Position=324.0,210.0
 Size=35,35
 
-% Input nodes
-
-
-Node=IX3
-Type=GenerativeInputNode
-Position=226.0,100.0
+Node=IndexProcurement
+Type=DomainResidentNode
+Position=321.0,128.0
 Size=35,35
 
-Node=IX4
-Type=GenerativeInputNode
-Position=422.0,100.0
+Node=IndexMinValue
+Type=DomainResidentNode
+Position=211.0,163.0
+Size=35,35
+
+Node=IndexType
+Type=DomainResidentNode
+Position=435.0,171.0
+Size=35,35
+
+% Context nodes
+
+
+Node=CX1
+Type=ContextNode
+Position=481.0,71.0
 Size=35,35
 
 % Ordinary Variables
@@ -136,7 +131,12 @@ Size=35,35
 
 Node=proc
 Type=OrdinalVar
-Position=320.0,40.0
+Position=320.0,71.0
+Size=35,35
+
+Node=ind
+Type=OrdinalVar
+Position=178.0,69.0
 Size=35,35
 
 % Object Entity Instances
