@@ -29,11 +29,22 @@ CREATING A RELEASE
 -------------------
 
 To create a release, change the pom file so that it defines the right version (majorVersion.NumberOfFeatures.NumberOfFixedBugs).
-Define the features implemented and bugs fixed in the RELEASE.txt file. Change the unbbayes.gui.AboutPane to show the 
-correct version.
+Define the features implemented and bugs fixed in the RELEASE.txt file and in src/changes/changes.xml. Change the 
+unbbayes.properties file to the correct version.
 
 Go to the projects root folder command line and run:
 mvn assembly:assembly -Dmaven.test.skip=true
+
+Unzip the distribution file somewhere. Remove unnecessary example files (until examples folder is cleaned up).
+Zip the remain files again (without the '-dist' part).
+
+Build the new web page with the changes (code, javadoc, features, bugs, etc).
+
+Go to the projects root folder command line and run:
+mvn site:site -Dmaven.test.skip=true
+
+Upload file realease (http://alexandria.wiki.sourceforge.net/File+Release+System+-+Offering+Files+for+Download).
+Upload web site files (http://alexandria.wiki.sourceforge.net/Project+Web,+Shell,+VHOST+and+Database+Services).
 
 CANDIDATES FOR NEXT RELEASE
 ---------------------------
