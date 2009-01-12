@@ -18,7 +18,7 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.prs.bn.resources;
+package unbbayes.prs.hybridbn.resources;
 
 import java.util.ListResourceBundle;
 
@@ -33,7 +33,7 @@ import java.util.ListResourceBundle;
  * @since 02/05/2002
  */
 
-public class BnResources_pt extends ListResourceBundle {
+public class HybridBnResources_pt extends ListResourceBundle {
 
     /**
 	 *  Sobrescreve getContents e retorna um array, onde cada item no array �
@@ -50,21 +50,10 @@ public class BnResources_pt extends ListResourceBundle {
 	 * Os recursos
 	 */
 	static final Object[][] contents =
-	{	{"CicleNetException","Rede com ciclo:"},
-		{"DisconectedNetException","Rede desconexa"},
-		{"TableSizeException","Tamanho das tabelas diferem"},
-		{"OperatorException","Operador desconhecido"},
-		{"moralizeLabel","Moralizados com os arcos:\n"},
-		{"triangulateLabel","\nOrdem de Eliminação e Triangulação (ligações):\n"},
-		{"EmptyNetException","A rede está vazia!"},		
-		{"DecisionOrderException","Não existe ordenação das variáveis de decisão"},
-		{"variableName","Variável "},
-		{"hasChildName"," contém filho(s)"},
-		{"linkedName"," ligado a "},
-		{"copyName","Cópia do "},
-		{"variableTableName","Tabela da variável "},
-		{"inconsistencyName"," inconsistente -> "},
-		{"utilityName","Utilidade"},
-		{"InconsistencyUnderflowException","Encontrado erro numérico ou inconsistência."}
+	{			
+		/* Continuous Node */
+		{"continuousNodeInvalidParentException","Um nó contínuo apenas permite:\nPai:\n-Nó contínuo;\n-Nó probabilístico discreto.\nFilho:\n-Nó contínuo."},
+		{"meanName","Média"},
+		{"varianceName","Variância"}
 	};
 }

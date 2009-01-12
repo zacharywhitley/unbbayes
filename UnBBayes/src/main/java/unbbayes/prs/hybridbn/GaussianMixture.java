@@ -18,7 +18,7 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.simulation.likelihoodweighting.inference;
+package unbbayes.prs.hybridbn;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,21 +35,18 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.TreeVariable;
-import unbbayes.prs.bn.continuous.CNNormalDistribution;
-import unbbayes.prs.bn.continuous.ContinuousNode;
 import unbbayes.util.SortUtil;
 
 /**
  * 
- * Class that implements the Monte Carlo simulation.
- * It uses forward sampling to calculate a RV's probability mass function. Based on its pmf, it then 
- * calculates the cumulative density function. Finally, a random number between 0 and 1 is generated 
- * and the sampled state is defined by the state the random number relates based on its cdf. 
+ * Class that implements the Gaussian Mixture inference algorithm. It calculates the 
+ * prior (compilation) for the discrete nodes and the mean and variance for the continuous nodes.
+ * The propagation is not yet implemented.
  * 
  * @author Rommel Carvalho
  *
  */
-public class ContinuousInference {
+public class GaussianMixture {
 	
 	protected ProbabilisticNetwork pn;
 	protected ProbabilisticNetwork clonedPN;
@@ -65,7 +62,7 @@ public class ContinuousInference {
 		return nodeOrderQueue;
 	}
 	
-	public ContinuousInference(ProbabilisticNetwork pn){		
+	public GaussianMixture(ProbabilisticNetwork pn){		
 		this.pn = pn;
 		this.clonedPN = clonePN(pn);
 		discreteNodeList = new ArrayList<Node>();

@@ -18,7 +18,7 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.prs.bn.resources;
+package unbbayes.prs.hybridbn.resources;
 
 
 import java.util.ListResourceBundle;
@@ -34,7 +34,7 @@ import java.util.ListResourceBundle;
  * @since 02/05/2002
  */
 
-public class BnResources extends ListResourceBundle {
+public class HybridBnResources extends ListResourceBundle {
 
     /**
 	 *  Override getContents and provide an array, where each item in the array is a pair
@@ -51,21 +51,10 @@ public class BnResources extends ListResourceBundle {
 	 * The resources
 	 */
 	static final Object[][] contents =
-	{	{"CicleNetException","Net with cicle:"},
-		{"DisconectedNetException","Net disconected"},
-		{"TableSizeException","Table size's differs"},
-		{"OperatorException","Unknown operator"},
-		{"moralizeLabel","Moralized with arcs:\n"},
-		{"triangulateLabel","\nTriangulation and Elimination Order (links):\n"},
-		{"EmptyNetException","The net is empty!"},		
-		{"DecisionOrderException","There is no ordenation of the decision variables"},
-		{"variableName","Variable "},
-		{"hasChildName"," has child(s)"},
-		{"linkedName"," linked to "},
-		{"copyName","Copy of "},
-		{"variableTableName","Variable Table "},
-		{"inconsistencyName"," inconsistency -> "},
-		{"utilityName","Utility"},
-		{"InconsistencyUnderflowException","Inconsistency or Underflow found."}
+	{	
+		/* Continuous Node */
+		{"continuousNodeInvalidParentException","A continuous node only allows:\nParent:\n-Continuous node;\n-Discrete probabilistic node.\nChild:\n-Continuous node."},
+		{"meanName","Mean"},
+		{"varianceName","Variance"}
 	};
 }

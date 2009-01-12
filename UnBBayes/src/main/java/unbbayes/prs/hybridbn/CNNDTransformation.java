@@ -1,4 +1,4 @@
-package unbbayes.prs.bn.continuous;
+package unbbayes.prs.hybridbn;
 
 import unbbayes.prs.Node;
 

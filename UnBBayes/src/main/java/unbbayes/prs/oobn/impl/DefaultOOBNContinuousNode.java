@@ -10,7 +10,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.continuous.ContinuousNode;
+import unbbayes.prs.hybridbn.ContinuousNode;
 import unbbayes.prs.oobn.IOOBNClass;
 import unbbayes.prs.oobn.IOOBNNode;
 import unbbayes.util.ArrayMap;

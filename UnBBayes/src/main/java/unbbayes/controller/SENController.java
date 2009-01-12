@@ -46,12 +46,12 @@ import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
-import unbbayes.prs.bn.continuous.CNNormalDistribution;
-import unbbayes.prs.bn.continuous.ContinuousNode;
 import unbbayes.prs.exception.InvalidParentException;
+import unbbayes.prs.hybridbn.CNNormalDistribution;
+import unbbayes.prs.hybridbn.ContinuousNode;
+import unbbayes.prs.hybridbn.GaussianMixture;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
-import unbbayes.simulation.likelihoodweighting.inference.ContinuousInference;
 import unbbayes.simulation.likelihoodweighting.inference.LikelihoodWeightingInference;
 import unbbayes.util.SortUtil;
 
@@ -65,12 +65,12 @@ public class SENController {
 
 	protected LikelihoodWeightingInference lwInference;
 	
-	protected ContinuousInference cInference;
+	protected GaussianMixture gmInference;
 	
 	public enum InferenceAlgorithmEnum {
     	JUNCTION_TREE,
     	LIKELIHOOD_WEIGHTING,
-    	CONTINUOUS
+    	GAUSSIAN_MIXTURE
     }
 	
     // TODO ROMMEL - CHANGE THIS!! NEW MODELING!!
@@ -156,9 +156,9 @@ public class SENController {
 				if (getInferenceAlgorithm() == InferenceAlgorithmEnum.LIKELIHOOD_WEIGHTING) {
 					singleEntityNetwork.resetEvidences();
 					lwInference.run();
-				} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.CONTINUOUS) {
+				} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.GAUSSIAN_MIXTURE) {
 					singleEntityNetwork.resetEvidences();
-					cInference.run();
+					gmInference.run();
 				}
 			}
 			screen.getEvidenceTree().updateTree();
@@ -187,7 +187,7 @@ public class SENController {
 			}
 		} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.LIKELIHOOD_WEIGHTING) {
 			lwInference.run();
-		} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.CONTINUOUS) {
+		} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.GAUSSIAN_MIXTURE) {
 			// TODO ROMMEL - Implement propagation
 			JOptionPane.showMessageDialog(screen, "Not yet implemented!", resource
 					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
@@ -256,12 +256,12 @@ public class SENController {
 				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 				return false;
 			}
-		} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.CONTINUOUS) {
+		} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.GAUSSIAN_MIXTURE) {
 			if (singleEntityNetwork.isHybridBN()) {
 				try {
 					singleEntityNetwork.resetEvidences();
-					cInference = new ContinuousInference((ProbabilisticNetwork)singleEntityNetwork);
-					cInference.run();
+					gmInference = new GaussianMixture((ProbabilisticNetwork)singleEntityNetwork);
+					gmInference.run();
 				} catch (Exception e) {
 					e.printStackTrace();
 					JOptionPane.showMessageDialog(null, e.getMessage(), resource

@@ -18,7 +18,7 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.prs.bn.continuous;
+package unbbayes.prs.hybridbn;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -45,7 +45,7 @@ public class ContinuousNode extends TreeVariable implements Serializable {
 	
 	private CNNormalDistribution cnNormalDistribution;
 	
-	private ResourceBundle resource = ResourceController.RS_BN;
+	private ResourceBundle resource = ResourceController.RS_HYBRID_BN;
 	
 	@Override
 	public int getType() {

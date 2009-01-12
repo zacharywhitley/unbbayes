@@ -35,5 +35,8 @@ public class ResourceController {
 	
 	public static ResourceBundle RS_BN = ResourceBundle
 	.getBundle(unbbayes.prs.bn.resources.BnResources.class.getName());
+	
+	public static ResourceBundle RS_HYBRID_BN = ResourceBundle
+	.getBundle(unbbayes.prs.hybridbn.resources.HybridBnResources.class.getName());
 	 
 }

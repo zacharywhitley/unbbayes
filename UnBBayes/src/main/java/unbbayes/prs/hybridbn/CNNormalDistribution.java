@@ -18,7 +18,7 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.prs.bn.continuous;
+package unbbayes.prs.hybridbn;
 
 import java.util.ArrayList;
 import java.util.List;

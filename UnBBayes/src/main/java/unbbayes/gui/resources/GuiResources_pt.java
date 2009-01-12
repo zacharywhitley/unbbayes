@@ -502,8 +502,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"algorithmTab" , "Algoritmo de Inferência"},
 		{"junctionTreeAlgorithmName" , "Árvore de Junção"},
 		{"likelihoodWeightingAlgorithmName" , "Likelihood Weighting"},
-		// TODO ROMMEL - Change name of algorithm
-		{"continuousAlgorithmName" , "Contínuo***"},
+		{"gaussianMixtureAlgorithmName" , "Gaussian Mixture"},
 		
 		/* Continuous Normal Distribution Pane */
 		{"meanLabel" , "Média"},

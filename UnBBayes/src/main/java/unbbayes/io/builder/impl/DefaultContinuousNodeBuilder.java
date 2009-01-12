@@ -6,7 +6,7 @@ package unbbayes.io.builder.impl;
 import unbbayes.io.builder.INodeBuilder;
 import unbbayes.io.builder.IProbabilisticNetworkBuilder;
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.continuous.ContinuousNode;
+import unbbayes.prs.hybridbn.ContinuousNode;
 
 /**
  * @author Shou Matsumoto
