@@ -1,3 +1,23 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.evaluation.controller;
 
 import java.awt.event.ActionEvent;
@@ -9,6 +29,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import unbbayes.evaluation.Evaluation;
+import unbbayes.evaluation.Evaluation.EvidenceEvaluation;
 import unbbayes.evaluation.exception.EvaluationException;
 import unbbayes.evaluation.gui.EvaluationPane;
 import unbbayes.prs.Node;
@@ -34,9 +55,9 @@ public class EvaluationController {
 		for (Node node : nodeList) {
 			nodeNameList.add(node.getName());
 		}
-		evaluationPane.fillNodeList(nodeNameList);
+		evaluationPane.addInputValues(nodeNameList);
 		
-		evaluationPane.setRunBtnActionListener(new ActionListener() {
+		evaluationPane.setRunButtonActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent arg0) {
 				runEvaluation();
@@ -49,7 +70,7 @@ public class EvaluationController {
 		StringBuffer errorMsg = new StringBuffer();
 		
 		try {
-			Integer sampleSize = Integer.valueOf(evaluationPane.getSampleSizeText());
+			Integer sampleSize = evaluationPane.getSampleSizeValue();
 			if (sampleSize <= 0) {
 				errorMsg.append("Sample size has to be greater than 0. \n");
 			}
@@ -81,11 +102,23 @@ public class EvaluationController {
 		
 		List<String> targetNodeNameList = evaluationPane.getTargetNodeNameList();
 		List<String> evidenceNodeNameList = evaluationPane.getEvidenceNodeNameList();
-		Integer sampleSize = Integer.valueOf(evaluationPane.getSampleSizeText());
+		Integer sampleSize = evaluationPane.getSampleSizeValue();
 		
 		try {
-			String output = evaluation.evaluate(network, targetNodeNameList, evidenceNodeNameList, sampleSize);
-			evaluationPane.setOutputText(output);
+			evaluation.evaluate(network, targetNodeNameList, evidenceNodeNameList, sampleSize);
+			
+			List<EvidenceEvaluation> evidenceEvaluationList = evaluation.getBestMarginalImprovement();
+			
+			for (EvidenceEvaluation evidenceEvaluation : evidenceEvaluationList) {
+				evidenceEvaluation.setCost(evaluationPane.getCost(evidenceEvaluation.getName()));
+			}
+			
+			evaluationPane.setPccValue(evaluation.getEvidenceSetPCC());
+			
+			evaluationPane.addOutputValues(evidenceEvaluationList);
+			
+			evaluationPane.revalidate();
+			evaluationPane.repaint();
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(evaluationPane, e.getMessage(), "Evaluation Error", JOptionPane.ERROR_MESSAGE);
 			return;

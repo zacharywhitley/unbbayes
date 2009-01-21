@@ -1,332 +1,421 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.evaluation.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
-import javax.swing.DropMode;
 import javax.swing.JButton;
-import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.TransferHandler;
+import javax.swing.JTable;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+
+import com.ibm.icu.text.NumberFormat;
+import com.sun.tools.corba.se.idl.constExpr.EvaluationException;
+
+import unbbayes.evaluation.Evaluation.EvidenceEvaluation;
+import unbbayes.gui.table.NumberEditor;
+import unbbayes.gui.table.PercentEditor;
+import unbbayes.gui.table.RadioButtonCellEditor;
+import unbbayes.gui.table.RadioButtonCellRenderer;
 
 public class EvaluationPane extends JPanel {
-	
+
 	private static final long serialVersionUID = 1L;
 	
-	// Left pane
-	private JSplitPane leftPane;
-	private JPanel nodeListPane;
-	private JPanel buttonPane;
-	private JPanel gcmPane;
+	private JPanel inputPane;
+	private JTable inputTable;
+	private JLabel sampleSizeLabel;
+	private JFormattedTextField sampleSizeTextField;
+	private JButton runButton;
 	
-	// Button pane
-	private JLabel sampleLbl;
-	private JTextField sampleSizeTxt;
-	private JButton runBtn;
-	
-	// GCM pane
-	private JTextArea outputTxt;
-	
-	// Right pane
-	private JSplitPane rightPane;
-	
-	// Main pane
-	private JSplitPane mainPane;
-	
-	// Nodes lists
-	private JList nodeList;
-	private JList targetNodeList;
-	private JList evidenceNodeList;
+	private JPanel outputPane;
+	private JTable outputTable;
+	private JLabel pccLabel;
+	private JLabel pccValueLabel;
 
 	public EvaluationPane() {
-		// Left pane
-		nodeListPane = new JPanel(new BorderLayout());
-		buttonPane = new JPanel();
-		gcmPane = new JPanel();
-
-		// Create a list model with an empty list.
-		DefaultListModel listModel = new DefaultListModel();
-		nodeList = new JList(listModel);
-		nodeListPane.add(createPanelForComponent(setUpList(nodeList), "Node List"));
+		super(new GridLayout(2, 0));
 		
-		sampleLbl = new JLabel("Sample Size:");
-		sampleSizeTxt = new JTextField(6);
-		runBtn = new JButton("Run");
+		setUpInputPane();
 		
-		buttonPane.add(sampleLbl);
-		buttonPane.add(sampleSizeTxt);
-		buttonPane.add(runBtn);
+		setUpOutputPane();
 		
-		outputTxt = new JTextArea(8, 17);
-		outputTxt.setEditable(false);
-		JScrollPane outputView = new JScrollPane(outputTxt);
-		outputView.setPreferredSize(new Dimension(200, 150));
-		
-		gcmPane.add(createPanelForComponent(outputView, "Global Confusion Matrix"));
-
-		nodeListPane.add(buttonPane, BorderLayout.SOUTH);
-
-		leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-				nodeListPane, gcmPane);
-
-		// Right pane
-		// Create a list model with an empty list.
-		listModel = new DefaultListModel();
-		targetNodeList = new JList(listModel);
-		listModel = new DefaultListModel();
-		evidenceNodeList = new JList(listModel);
-		
-		rightPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-				createPanelForComponent(setUpList(targetNodeList), "Target Node List"),
-				createPanelForComponent(setUpList(evidenceNodeList), "Evidence Node List"));
-
-		mainPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-				leftPane, rightPane);
-
-		this.add(mainPane);
+		add(inputPane);
+		add(outputPane);
 
 	}
 	
-	/**
-	 * Fills the node list with the given values.
-	 * @param valueList List all nodes names.
-	 */
-	public void fillNodeList(List<String> valueList) {
-		DefaultListModel listModel = (DefaultListModel)nodeList.getModel();
-		for (String value : valueList) {
-			listModel.addElement(value);
-		}
+	private void setUpOutputPane() {
+		outputPane = new JPanel(new BorderLayout());
+		
+		setUpPccPane();
+		
+		setUpOutputTable();
 	}
 	
-	/**
-	 * Returns the text associated to the sample size text field.
-	 * @return The text associated to the sample size text field.
-	 */
-	public String getSampleSizeText () {
-		return sampleSizeTxt.getText();
+	private void setUpPccPane() {
+		JPanel pccPane = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		
+		pccLabel = new JLabel("Probability of Correct Classification:");
+		pccValueLabel = new JLabel("");
+		
+		pccPane.add(pccLabel);
+		pccPane.add(pccValueLabel);
+		
+		outputPane.add(pccPane, BorderLayout.NORTH);
 	}
 	
-	/**
-	 * Returns the names of all target nodes.
-	 * @return The names of all target nodes.
-	 */
+	private void setUpInputPane() {
+		inputPane = new JPanel(new BorderLayout());
+		
+		setUpInputTable();
+		
+		setUpSampleSizePane();
+		
+	}
+	
+	private void setUpSampleSizePane() {
+		JPanel sampleSizePane = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		
+		sampleSizeLabel = new JLabel("Sample Size:");
+		sampleSizeTextField = new JFormattedTextField(NumberFormat.getIntegerInstance());
+		sampleSizeTextField.setColumns(10);
+		
+		runButton = new JButton("Run");
+		
+		sampleSizePane.add(sampleSizeLabel);
+		sampleSizePane.add(sampleSizeTextField);
+		sampleSizePane.add(runButton);
+		
+		inputPane.add(sampleSizePane, BorderLayout.SOUTH);
+	}
+
+	private void setUpInputTable() {
+		TableModel dm = new EvaluationInputTableModel();
+		
+		inputTable = new JTable(dm);
+		inputTable.setPreferredScrollableViewportSize(new Dimension(500, 70));
+
+		// Create the scroll pane and add the table to it.
+		JScrollPane scrollPane = new JScrollPane(inputTable);
+
+		inputTable.getColumn("Target").setCellRenderer(
+				new RadioButtonCellRenderer());
+		inputTable.getColumn("Target").setCellEditor(
+				new RadioButtonCellEditor());
+
+		inputTable.setDefaultEditor(Float.class, new NumberEditor());
+		
+		inputPane.add(scrollPane, BorderLayout.CENTER);
+	}
+
+	private void setUpOutputTable() {
+		TableModel dm = new EvaluationOutputTableModel();
+
+		outputTable = new JTable(dm);
+		outputTable.setPreferredScrollableViewportSize(new Dimension(500, 70));
+
+		// Create the scroll pane and add the table to it.
+		JScrollPane scrollPane = new JScrollPane(outputTable);
+		
+		
+		outputTable.getColumn("Marginal PCC (%)").setCellEditor(
+				new PercentEditor());
+		outputTable.getColumn("Marginal Improvement (%)").setCellEditor(
+				new PercentEditor());
+		outputTable.getColumn("Individual PCC (%)").setCellEditor(
+				new PercentEditor());
+		outputTable.getColumn("Cost").setCellEditor(
+				new NumberEditor());
+		outputTable.getColumn("Individual Cost Rate").setCellEditor(
+				new NumberEditor());
+
+		outputPane.add(scrollPane, BorderLayout.CENTER);
+	}
+	
+	public void setRunButtonActionListener(ActionListener actionListener) {
+		runButton.addActionListener(actionListener);
+		
+	}
+	
+	public Integer getSampleSizeValue() {
+		return ((Long)sampleSizeTextField.getValue()).intValue();
+	}
+	
 	public List<String> getTargetNodeNameList() {
 		List<String> targetNodeNameList = new ArrayList<String>();
-		DefaultListModel listModel = (DefaultListModel)targetNodeList.getModel();
-		for (int i = 0; i < listModel.size(); i++) {
-			targetNodeNameList.add((String)listModel.get(i));
+		
+		TableModel dm = inputTable.getModel();
+		
+		for (int i = 0; i < dm.getRowCount(); i++) {
+			if ((Boolean)dm.getValueAt(i, 1)) {
+				targetNodeNameList.add((String)dm.getValueAt(i, 0));
+			}
 		}
+		
 		return targetNodeNameList;
 	}
-	
-	/**
-	 * Set the action listener to be associated with the run button.
-	 * @param action The action listener to associate with the run button.
-	 */
-	public void setRunBtnActionListener(ActionListener action) {
-		runBtn.addActionListener(action);
-	}
-	
-	/**
-	 * Returns the names of all evidence nodes.
-	 * @return The names of all evidence nodes.
-	 */
+
 	public List<String> getEvidenceNodeNameList() {
 		List<String> evidenceNodeNameList = new ArrayList<String>();
-		DefaultListModel listModel = (DefaultListModel)evidenceNodeList.getModel();
-		for (int i = 0; i < listModel.size(); i++) {
-			evidenceNodeNameList.add((String)listModel.get(i));
+		
+		TableModel dm = inputTable.getModel();
+		
+		for (int i = 0; i < dm.getRowCount(); i++) {
+			if ((Boolean)dm.getValueAt(i, 2)) {
+				evidenceNodeNameList.add((String)dm.getValueAt(i, 0));
+			}
 		}
+		
 		return evidenceNodeNameList;
 	}
 	
-	/**
-	 * Update the output pane with the output information.
-	 * @param output The output information to be updated.
-	 */
-	public void setOutputText(String output) {
-		outputTxt.setText(output);
-	}
-
-	private JScrollPane setUpList(JList list) {
+	public float getCost(String nodeName) {
 		
-		list.setVisibleRowCount(-1);
-		list.getSelectionModel().setSelectionMode(
-				ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-
-		list.setTransferHandler(new ListTransferHandler());
-		list.setDragEnabled(true);
-		list.setDropMode(DropMode.INSERT);
-
-		JScrollPane listView = new JScrollPane(list);
-		listView.setPreferredSize(new Dimension(200, 150));
+		TableModel dm = inputTable.getModel();
 		
-		return listView;
-	}
-
-	public JPanel createPanelForComponent(JComponent comp, String title) {
-		JPanel panel = new JPanel(new BorderLayout());
-		panel.add(comp, BorderLayout.CENTER);
-		if (title != null) {
-			panel.setBorder(BorderFactory.createTitledBorder(title));
+		for (int i = 0; i < dm.getRowCount(); i++) {
+			// If it is an evidence node and it has the name given
+			if ((Boolean)dm.getValueAt(i, 2) && dm.getValueAt(i, 0).equals(nodeName)) {
+				// Return its cost
+				return (Float)dm.getValueAt(i, 3);
+			}
 		}
-		return panel;
+		
+		return 0.0f;
+	}
+	
+	public void setPccValue(float pccValue) {
+		pccValueLabel.setText("" + pccValue);
+	}
+	
+	public void addOutputValues(List<EvidenceEvaluation> evidenceEvaluationList) throws EvaluationException {
+		((EvaluationOutputTableModel)outputTable.getModel()).addValues(evidenceEvaluationList);
+		outputTable.revalidate();
 	}
 
-	public class ListTransferHandler extends TransferHandler {
+	private class EvaluationOutputTableModel extends AbstractTableModel {
 
 		private static final long serialVersionUID = 1L;
+
+		private String[] columnNames = { "Node", "Marginal PCC (%)",
+				"Marginal Improvement (%)", "Individual PCC (%)", "Cost",
+				"Individual Cost Rate" };
+
+		private Object[][] data  = new Object[0][6];
+
+		public void addValues(List<EvidenceEvaluation> evidenceEvaluationList) throws EvaluationException {
+			data = new Object[evidenceEvaluationList.size()][getColumnCount()];
+			EvidenceEvaluation evidenceEvaluation;
+			for (int i = 0; i < evidenceEvaluationList.size(); i++) {
+				evidenceEvaluation = evidenceEvaluationList.get(i);
+				data[i][0] = evidenceEvaluation.getName();
+				data[i][1] = evidenceEvaluation.getMarginalPCC();
+				data[i][2] = evidenceEvaluation.getMarginalImprovement();
+				data[i][3] = evidenceEvaluation.getIndividualPCC();
+				data[i][4] = evidenceEvaluation.getCost();
+				data[i][5] = evidenceEvaluation.getCostRate();
+			}
+		}
+
+		public int getColumnCount() {
+			return columnNames.length;
+		}
+
+		public int getRowCount() {
+			return data.length;
+		}
+
+		public String getColumnName(int col) {
+			return columnNames[col];
+		}
+
+		public Object getValueAt(int row, int col) {
+			return data[row][col];
+		}
+
+		/**
+		 * JTable uses this method to determine the default renderer/ editor for
+		 * each cell. If we didn't implement this method, then the last column
+		 * would contain text ("true"/"false"), rather than a check box.
+		 */
+		public Class getColumnClass(int c) {
+			if (c == 0) {
+				return String.class;
+			} else {
+				return Float.class;
+			}
+		}
+
+		public boolean isCellEditable(int row, int col) {
+			return false;
+		}
+
+	}
+
+	public void addInputValues(List<String> nodeNameList) {
+		((EvaluationInputTableModel)inputTable.getModel()).addValues(nodeNameList);
+		inputTable.revalidate();
+	}
+	
+	private class EvaluationInputTableModel extends AbstractTableModel {
+
+		private static final long serialVersionUID = 1L;
+
+		private String[] columnNames = { "Node", "Target", "Evidence", "Cost" };
+
+		private Object[][] data = new Object[0][4];
 		
-		private int[] indices = null;
-		
-		@SuppressWarnings("unused")
-		private int addIndex = -1; //Location where items were added
-	    @SuppressWarnings("unused")
-		private int addCount = 0;  //Number of items added.
-
-
-		/**
-		 * We only support importing strings.
-		 */
-		public boolean canImport(TransferHandler.TransferSupport info) {
-			// Check for String flavor
-			if (!info.isDataFlavorSupported(DataFlavor.stringFlavor)) {
-				return false;
+		public void addValues(List<String> nodeNameList) {
+			data = new Object[nodeNameList.size()][getColumnCount()];
+			for (int i = 0; i < nodeNameList.size(); i++) {
+				data[i][0] = nodeNameList.get(i);
+				data[i][1] = Boolean.FALSE;
+				data[i][2] = Boolean.FALSE;
+				data[i][3] = new Float(100.00);
 			}
-			return true;
+		}
+
+		public int getColumnCount() {
+			return columnNames.length;
+		}
+
+		public int getRowCount() {
+			return data.length;
+		}
+
+		public String getColumnName(int col) {
+			return columnNames[col];
+		}
+
+		public Object getValueAt(int row, int col) {
+			return data[row][col];
+		}
+
+		public Class getColumnClass(int c) {
+			if (c == 0) {
+				return String.class;
+			} else if (c == 1 || c == 2) {
+				return Boolean.class;
+			} else {
+				return Float.class;
+			}
+		}
+
+		public boolean isCellEditable(int row, int col) {
+			// Just the node name is not editable
+			return (col != 0);
+		}
+
+		public void setValueAt(Object value, int row, int col) {
+			data[row][col] = value;
+			fireTableCellUpdated(row, col);
+
+			// If selected as target
+			if (col == 1 && value.equals(Boolean.TRUE)) {
+				// Make sure there is just one target selected
+				resetNonSelectedValues(row, col);
+				// Make sure it is not selected as evidence
+				setValueAt(Boolean.FALSE, row, col + 1);
+				fireTableCellUpdated(row, col + 1);
+				// If selected as evidence
+			} else if (col == 2 && value.equals(Boolean.TRUE)) {
+				// Make sure it is not selected as target
+				setValueAt(Boolean.FALSE, row, col - 1);
+				fireTableCellUpdated(row, col - 1);
+			}
 		}
 
 		/**
-		 * Bundle up the selected items in a single list for export. Each line
-		 * is separated by a newline.
+		 * This will give the behavior of a ButtonGroup
 		 */
-		protected Transferable createTransferable(JComponent c) {
-			JList list = (JList) c;
-			indices = list.getSelectedIndices();
-			Object[] values = list.getSelectedValues();
-
-			StringBuffer buff = new StringBuffer();
-
-			for (int i = 0; i < values.length; i++) {
-				Object val = values[i];
-				buff.append(val == null ? "" : val.toString());
-				if (i != values.length - 1) {
-					buff.append("\n");
+		private void resetNonSelectedValues(int newRow, int col) {
+			for (int row = 0; row < data.length; row++) {
+				if (getValueAt(row, col).equals(Boolean.TRUE) && row != newRow) {
+					setValueAt(Boolean.FALSE, row, col);
+					fireTableCellUpdated(row, col);
 				}
 			}
-
-			return new StringSelection(buff.toString());
 		}
 
-		/**
-		 * We support both copy and move actions.
-		 */
-		public int getSourceActions(JComponent c) {
-			return TransferHandler.COPY_OR_MOVE;
-		}
+	}
 
-		/**
-		 * Perform the actual import. This demo only supports drag and drop.
-		 */
-		public boolean importData(TransferHandler.TransferSupport info) {
-			if (!info.isDrop()) {
-				return false;
-			}
+	/**
+	 * Create the GUI and show it. For thread safety, this method should be
+	 * invoked from the event-dispatching thread.
+	 */
+	private static void createAndShowGUI() {
+		// Create and set up the window.
+		JFrame frame = new JFrame("TableRenderDemo");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-			JList list = (JList) info.getComponent();
-			DefaultListModel listModel = (DefaultListModel) list.getModel();
-			JList.DropLocation dl = (JList.DropLocation) info.getDropLocation();
-			int index = dl.getIndex();
-			boolean insert = dl.isInsert();
+		// Create and set up the content pane.
+		EvaluationPane newContentPane = new EvaluationPane();
+		newContentPane.setOpaque(true); // content panes must be opaque
+		frame.setContentPane(newContentPane);
 
-			// Get the string that is being dropped.
-			Transferable t = info.getTransferable();
-			String data;
-			try {
-				data = (String) t.getTransferData(DataFlavor.stringFlavor);
-			} catch (Exception e) {
-				return false;
-			}
-
-			// Wherever there is a newline in the incoming data,
-			// break it into a separate item in the list.
-			String[] values = data.split("\n");
-
-			addIndex = index;
-			addCount = values.length;
-
-			// Perform the actual import.
-			for (int i = 0; i < values.length; i++) {
-				if (insert) {
-					listModel.add(index++, values[i]);
-				} else {
-					// If the items go beyond the end of the current
-					// list, add them in.
-					if (index < listModel.getSize()) {
-						listModel.set(index++, values[i]);
-					} else {
-						listModel.add(index++, values[i]);
-					}
-				}
-			}
-			return true;
-		}
-
-		/**
-		 * Remove the items moved from the list.
-		 */
-		protected void exportDone(JComponent c, Transferable data, int action) {
-			JList source = (JList) c;
-			DefaultListModel listModel = (DefaultListModel) source.getModel();
-
-			if (action == TransferHandler.MOVE) {
-				for (int i = indices.length - 1; i >= 0; i--) {
-					listModel.remove(indices[i]);
-				}
-			}
-
-			indices = null;
-			addCount = 0;
-			addIndex = -1;
-		}
+		// Display the window.
+		frame.pack();
+		frame.setVisible(true);
 	}
 
 	public static void main(String[] args) {
-		JFrame frame = new JFrame("Evaluation Test");
-		
-		EvaluationPane pane = new EvaluationPane();
-		
-		List<String> nodeNameList = new ArrayList<String>();
-		nodeNameList.add("Node1");
-		nodeNameList.add("Node2");
-		nodeNameList.add("Node3");
-		nodeNameList.add("Node4");
-		
-		pane.fillNodeList(nodeNameList);
-		
-		
-		frame.add(pane);
-		frame.setSize(800, 450);
-		frame.setVisible(true);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-		pane.setOutputText("aasdfasdfasfasdfsdf\nasdfasdf\nasfasfd\n");
+
+		// Schedule a job for the event-dispatching thread:
+		// creating and showing this application's GUI.
+		javax.swing.SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				createAndShowGUI();
+			}
+		});
+
+		// JFrame frame = new JFrame("Evaluation Test");
+		//
+		// EvaluationPane pane = new EvaluationPane();
+		//
+		// List<String> nodeNameList = new ArrayList<String>();
+		// nodeNameList.add("Node1");
+		// nodeNameList.add("Node2");
+		// nodeNameList.add("Node3");
+		// nodeNameList.add("Node4");
+		//
+		// frame.add(pane);
+		// frame.setSize(800, 450);
+		// frame.setVisible(true);
+		// frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
 	}
 
 }
