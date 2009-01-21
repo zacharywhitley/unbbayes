@@ -159,7 +159,7 @@ public class ContinuousNormalDistributionPane extends JPanel {
 		followsTitle.append(resource.getString("normalFunctionLabel"));
 		 
 		followsLabel = new JLabel(followsTitle.toString());
-		followsLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+		followsLabel.setFont(new Font("Arial", Font.BOLD, 12));
 		followsLabel.setForeground(Color.BLUE);
 		followsPane.add(followsLabel);
 	}
