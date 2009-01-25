@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.ResourceBundle;
 
 import javax.swing.AbstractListModel;
-import javax.swing.DropMode;
+//import javax.swing.DropMode;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -35,7 +35,7 @@ import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 import javax.swing.TransferHandler;
-import javax.swing.TransferHandler.TransferSupport;
+//import javax.swing.TransferHandler.TransferSupport;
 import javax.swing.border.TitledBorder;
 
 import unbbayes.controller.FileController;
@@ -413,7 +413,7 @@ public class OOBNWindow extends JInternalFrame implements IFileExtensionAwareWin
 						
 					   return;
                    }
-                   if (!newName.isEmpty()) {
+                   if (newName != null && !newName.equalsIgnoreCase("")) {
                 	    // renames the class
                 	    try {
                 		   getController().getOobn().getOOBNClassList().get(index).setClassName(newName);

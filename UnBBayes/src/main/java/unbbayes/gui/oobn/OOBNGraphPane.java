@@ -7,6 +7,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -15,12 +16,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.ResourceBundle;
 
+import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JViewport;
 import javax.swing.TransferHandler;
-import javax.swing.TransferHandler.TransferSupport;
+//import javax.swing.TransferHandler.TransferSupport;
 
 import unbbayes.controller.NetworkController;
 import unbbayes.controller.oobn.OOBNClassController;
@@ -166,18 +168,44 @@ public class OOBNGraphPane extends GraphPane {
 	public void setUpTransferHundler() {
 		this.setTransferHandler(new TransferHandler() {
 
+//			/* (non-Javadoc)
+//			 * @see javax.swing.TransferHandler#canImport(javax.swing.TransferHandler.TransferSupport)
+//			 */
+//			@Override
+//			public boolean canImport(TransferSupport support) {
+//				// check if this is local java object
+//				try{
+//					boolean ret = support.isDataFlavorSupported(new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType));
+//					return ret;
+//				} catch (Exception e) {
+//					try{
+//						Debug.println(this.getClass(), "Could not support data transfer from " + support.getComponent().getName(), e);
+//					} catch (Exception newe) {
+//						Debug.println(this.getClass(), "Could not support data transfer using drag/drop or copy/paste", e);
+//					}
+//					return false;
+//				}
+//			}
+			
+			
+
 			/* (non-Javadoc)
-			 * @see javax.swing.TransferHandler#canImport(javax.swing.TransferHandler.TransferSupport)
+			 * @see javax.swing.TransferHandler#canImport(javax.swing.JComponent, java.awt.datatransfer.DataFlavor[])
 			 */
 			@Override
-			public boolean canImport(TransferSupport support) {
-				// check if this is local java object
+			public boolean canImport(JComponent comp,
+					DataFlavor[] transferFlavors) {				
+				// check if this is at least a local java object
 				try{
-					boolean ret = support.isDataFlavorSupported(new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType));
-					return ret;
+					for (DataFlavor dataFlavor : transferFlavors) {
+						if (DataFlavor.javaJVMLocalObjectMimeType.equalsIgnoreCase(dataFlavor.getMimeType())) {
+							return true;
+						}							
+					}
+					return false;
 				} catch (Exception e) {
 					try{
-						Debug.println(this.getClass(), "Could not support data transfer from " + support.getComponent().getName(), e);
+						Debug.println(this.getClass(), "Could not support data transfer from " + comp.getName(), e);
 					} catch (Exception newe) {
 						Debug.println(this.getClass(), "Could not support data transfer using drag/drop or copy/paste", e);
 					}
@@ -185,27 +213,28 @@ public class OOBNGraphPane extends GraphPane {
 				}
 			}
 
+
+			
 			/* (non-Javadoc)
-			 * @see javax.swing.TransferHandler#importData(javax.swing.TransferHandler.TransferSupport)
+			 * @see javax.swing.TransferHandler#importData(javax.swing.JComponent, java.awt.datatransfer.Transferable)
 			 */
 			@Override
-			public boolean importData(TransferSupport support) {
-				
-				Debug.println(this.getClass(), "Importing data from dragndrop: " + support.toString());
+			public boolean importData(JComponent comp, Transferable t) {
+				Debug.println(this.getClass(), "Importing data from dragndrop: " + t.toString() + ", from component " + comp.getName());
 				
 				
 				// TODO finish this
-				if (!this.canImport(support)) {
+				if (!this.canImport(comp,t.getTransferDataFlavors())) {
 					return false;
 				}
 				
 				try {
 					// obtains the location to insert oobn instance
-					DropLocation location = support.getDropLocation();
-					
+//					DropLocation location = support.getDropLocation();
+					Point location = comp.getMousePosition();
 					
 					// extract the oobn class
-					Transferable transfer = support.getTransferable();
+					Transferable transfer = t;
 					IOOBNClass oobnClass = (IOOBNClass)transfer.getTransferData(new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType));
 					
 					if (oobnClass == null) {
@@ -214,10 +243,10 @@ public class OOBNGraphPane extends GraphPane {
 					} 
 					
 					// insert new oobn class' instance
-					getController().insertInstanceNode(oobnClass, location.getDropPoint().getX(), location.getDropPoint().getY());
+					getController().insertInstanceNode(oobnClass, location.getX(), location.getY());
 					
 					Debug.println(this.getClass(), "It seems that we added the class " + oobnClass.getClassName() 
-							+ "at position (" + location.getDropPoint().getX() + "," + location.getDropPoint().getY() + ")");
+							+ "at position (" + location.getX() + "," + location.getY() + ")");
 					
 									
 					
@@ -228,14 +257,69 @@ public class OOBNGraphPane extends GraphPane {
 				
 				
 				// delegate to upper class
-				super.importData(support);
+				super.importData(comp, t);
 				
 				// update whole panel (instead of ordinal update, which only updates a small part of screen)
 				repaint();	
 				
 				// if this code is reached, no problem was found
 				return true;
+			
 			}
+
+
+
+//			/* (non-Javadoc)
+//			 * @see javax.swing.TransferHandler#importData(javax.swing.TransferHandler.TransferSupport)
+//			 */
+//			@Override
+//			public boolean importData(TransferSupport support) {
+//				
+//				Debug.println(this.getClass(), "Importing data from dragndrop: " + support.toString());
+//				
+//				
+//				// TODO finish this
+//				if (!this.canImport(support)) {
+//					return false;
+//				}
+//				
+//				try {
+//					// obtains the location to insert oobn instance
+//					DropLocation location = support.getDropLocation();
+//					
+//					
+//					// extract the oobn class
+//					Transferable transfer = support.getTransferable();
+//					IOOBNClass oobnClass = (IOOBNClass)transfer.getTransferData(new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType));
+//					
+//					if (oobnClass == null) {
+//						Debug.println(this.getClass(), "Nothing was extracted from drag n drop");
+//						return false;
+//					} 
+//					
+//					// insert new oobn class' instance
+//					getController().insertInstanceNode(oobnClass, location.getDropPoint().getX(), location.getDropPoint().getY());
+//					
+//					Debug.println(this.getClass(), "It seems that we added the class " + oobnClass.getClassName() 
+//							+ "at position (" + location.getDropPoint().getX() + "," + location.getDropPoint().getY() + ")");
+//					
+//									
+//					
+//				} catch (Exception e) {
+//					JOptionPane.showMessageDialog(getController().getScreen(), e.getMessage(), resource.getString("CannotDragNDrop"), JOptionPane.ERROR_MESSAGE);
+//					throw new RuntimeException(resource.getString("CannotDragNDrop") , e);
+//				}
+//				
+//				
+//				// delegate to upper class
+//				super.importData(support);
+//				
+//				// update whole panel (instead of ordinal update, which only updates a small part of screen)
+//				repaint();	
+//				
+//				// if this code is reached, no problem was found
+//				return true;
+//			}
 			
 			
 		});

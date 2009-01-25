@@ -25,6 +25,7 @@ import unbbayes.io.NetIO;
 import unbbayes.io.builder.IProbabilisticNetworkBuilder;
 import unbbayes.io.exception.LoadException;
 import unbbayes.io.exception.SaveException;
+import unbbayes.io.exception.oobn.OOBNIOException;
 import unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO;
 import unbbayes.io.oobn.builder.DefaultOOBNClassBuilder;
 import unbbayes.io.oobn.builder.DefaultPrivateOOBNNodeGraphicalWrapperBuilder;
@@ -359,7 +360,7 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 //			this.getOobn().getOOBNClassList().add((IOOBNClass)this.load(classFile));
 			this.load(classFile);
 		} catch (LoadException le) {
-			throw new IOException(le);
+			throw new OOBNIOException(le);
 		}
 		return this.getOobn();
 	}
@@ -387,7 +388,7 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 		try{
 			oobnClass.setClassName(newClassName);
 		} catch (OOBNException oobne) {
-			throw new IOException(oobne);
+			throw new OOBNIOException(oobne);
 		}
 		this.save(classFile, (SingleEntityNetwork)oobnClass.getNetwork());
 	}

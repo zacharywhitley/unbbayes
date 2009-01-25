@@ -121,7 +121,7 @@ public class OOBNToSingleAgentMSBNCompiler implements IOOBNCompiler {
 		Map<String, ProbabilisticNode> originalNameToCloneMap = new HashMap<String, ProbabilisticNode>();
 		
 		SubNetwork newNetwork = null;	// new network to add
-		if (thisInstance.getName() != null && !thisInstance.getName().isEmpty()) {
+		if (thisInstance.getName() != null && !thisInstance.getName().equalsIgnoreCase("")) {
 			// if instance name was defined, use it as the new network's name
 			newNetwork = new SubNetwork(thisInstance.getName());
 		} else {
