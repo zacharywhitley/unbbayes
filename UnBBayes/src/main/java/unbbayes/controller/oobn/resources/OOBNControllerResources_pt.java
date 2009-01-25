@@ -74,7 +74,9 @@ public class OOBNControllerResources_pt extends ListResourceBundle {
 		{"statusLoadingKB","Carregando base de conhecimento..."},
 		{"statusSavingKB","Salvando base de conhecimento..."},
 		{"statusGeneratingSSBN","Gerando SSBN..."},
-		{"statusReady","Ready"},		
+		{"statusReady","Pronto"},
+		{"statusEdittingClass","Editando a classe: "},
+				
 		
 		//MainController
 		{"NewPNName","Nova BN"},

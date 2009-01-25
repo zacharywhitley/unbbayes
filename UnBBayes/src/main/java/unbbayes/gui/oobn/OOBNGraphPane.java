@@ -198,7 +198,7 @@ public class OOBNGraphPane extends GraphPane {
 				// check if this is at least a local java object
 				try{
 					for (DataFlavor dataFlavor : transferFlavors) {
-						if (DataFlavor.javaJVMLocalObjectMimeType.equalsIgnoreCase(dataFlavor.getMimeType())) {
+						if (java.awt.datatransfer.DataFlavor.javaJVMLocalObjectMimeType.contains(dataFlavor.getSubType())) {
 							return true;
 						}							
 					}
@@ -211,6 +211,7 @@ public class OOBNGraphPane extends GraphPane {
 					}
 					return false;
 				}
+//				return true;
 			}
 
 

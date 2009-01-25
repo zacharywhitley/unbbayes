@@ -7,6 +7,7 @@ import java.awt.BorderLayout;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.swing.JInternalFrame;
@@ -41,6 +42,10 @@ public class OOBNController extends NetworkController {
 
 	// the index of the very firs network/class in a project
 	private static int FIRST_NETWORK_INDEX = 0;
+	
+	/** Load resource file from this package's graphic resources */
+	private static ResourceBundle resource =
+		ResourceBundle.getBundle("unbbayes.controller.oobn.resources.OOBNControllerResources"); 
 	
 //	private OOBNClassController classController = null;
 	
@@ -131,7 +136,15 @@ public class OOBNController extends NetworkController {
 //		active.getNetWindowEdition().getBtnCompile().setVisible(false);
 //		active.getNetWindowCompilation().getEditMode().setVisible(false);
 		window.getContentPane().add(active.getContentPane(), BorderLayout.CENTER);
+		this.updateStatusBarEditionMessage();
 		window.updateUI();
+	}
+	
+	/**
+	 * Updates the message from status bar telling us what class is currently being editted
+	 */
+	public void updateStatusBarEditionMessage() {
+		this.getWindow().setStatusBarText(resource.getString("statusEdittingClass") + active.getController().getControlledClass().getClassName());
 	}
 	
 	
@@ -333,6 +346,8 @@ public class OOBNController extends NetworkController {
 //	}
 
 	/**
+	 * Gets the currently selected class by the oobn class list.
+	 * Note that the selected class is not allways the active class (active for edition)
 	 * @return the selectedClass
 	 */
 	public IOOBNClass getSelectedClass() {
@@ -340,9 +355,12 @@ public class OOBNController extends NetworkController {
 	}
 
 	/**
+	 * Sets the currently selected class by the oobn class list.
+	 * Note that the selected class is not allways the active class (active for edition)
 	 * @param selectedClass the selectedClass to set
 	 */
 	public void setSelectedClass(IOOBNClass selectedClass) {
+		Debug.println(this.getClass(), "The currently selected class was set to " + selectedClass.getClassName());
 		this.selectedClass = selectedClass;
 	}
 

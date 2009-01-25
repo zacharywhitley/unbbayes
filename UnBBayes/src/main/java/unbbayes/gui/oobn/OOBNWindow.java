@@ -165,7 +165,9 @@ public class OOBNWindow extends JInternalFrame implements IFileExtensionAwareWin
 			protected Transferable createTransferable(JComponent c) {
 				try{
 					// obtains the currently selected oobn class (which may be different than currently active one)
-					return getController().getSelectedClass();
+					IOOBNClass oobnclass = getController().getSelectedClass();
+					Debug.println(this.getClass(), "Creating transferable element for oobnclass: " + oobnclass.getClassName());
+					return oobnclass;
 				} catch (Exception e) {
 					Debug.println(this.getClass(), "It was not possible to create transferable data", e);
 				}
@@ -342,6 +344,7 @@ public class OOBNWindow extends JInternalFrame implements IFileExtensionAwareWin
 				if (e.getButton() == e.BUTTON1) {
 					try {
 						int index = getNetList().locationToIndex(e.getPoint());
+						// set the "selected class", which may be not the currently active class for edition
 						getController().setSelectedClass((getController().getOobn().getOOBNClassList().get(index)));
 					} catch (Exception exc) {
 						Debug.println(this.getClass(), "It was not possible to perform mouse pressed event", exc);
@@ -373,11 +376,21 @@ public class OOBNWindow extends JInternalFrame implements IFileExtensionAwareWin
 
 
 
-
+			
 
 
 			public void mouseClicked(MouseEvent e) {
 		       
+			   if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {
+					if (e.getClickCount() < 2) {
+						   // If this was a single click with left button, do nothing here
+						   Debug.println(this.getClass(), "Use double click to activate an oobnclass.");
+						   return;
+					   }
+			   }
+			   
+			   // if we reach this code, it was a double click or right/center click
+				
 		       int index = getNetList().locationToIndex(e.getPoint());
 		       
 		       
@@ -417,7 +430,8 @@ public class OOBNWindow extends JInternalFrame implements IFileExtensionAwareWin
                 	    // renames the class
                 	    try {
                 		   getController().getOobn().getOOBNClassList().get(index).setClassName(newName);
-						} catch (Exception e1) {
+                		   getController().updateStatusBarEditionMessage(); // this will update the status bar message
+                	    } catch (Exception e1) {
 						   Debug.println(this.getClass(), "Invalid name", e1);
 						   System.err.print(e1.getMessage());
 						}
@@ -886,6 +900,14 @@ public class OOBNWindow extends JInternalFrame implements IFileExtensionAwareWin
 	 */
 	public String getSavingMessage() {
 		return resource.getString("saveTitle");
+	}
+	
+	/**
+	 * Setts the status bar's message
+	 * @param text
+	 */
+	public void setStatusBarText(String text) {
+		this.getStatusBar().setText(text);
 	}
 
 }

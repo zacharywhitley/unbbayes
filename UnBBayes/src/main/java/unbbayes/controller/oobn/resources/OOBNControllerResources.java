@@ -68,11 +68,13 @@ public class OOBNControllerResources extends ListResourceBundle {
 		{"firstStateDecisionName","Action 0"},
 		{"nodeName","Node: "},
 		
-		//Barra de status
+		//status
 		{"statusLoadingKB","Loading knowledge base..."},
 		{"statusSavingKB","Loading knowledge base..."},
 		{"statusGeneratingSSBN","Generating SSBN..."},
 		{"statusReady","Ready"},
+		{"statusEdittingClass","You are editting class: "},
+		
 		
 		//MainController
 		{"NewPNName","New BN"},
