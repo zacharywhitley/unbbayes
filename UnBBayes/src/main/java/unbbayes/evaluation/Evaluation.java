@@ -27,8 +27,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
-import com.sun.tools.corba.se.idl.constExpr.EvaluationException;
-
+import unbbayes.evaluation.exception.EvaluationException;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
 import unbbayes.io.XMLBIFIO;

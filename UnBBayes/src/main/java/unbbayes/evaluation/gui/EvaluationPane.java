@@ -21,7 +21,6 @@
 package unbbayes.evaluation.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -37,18 +36,16 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
-import com.ibm.icu.text.NumberFormat;
-import com.sun.tools.corba.se.idl.constExpr.EvaluationException;
-
 import unbbayes.evaluation.Evaluation.EvidenceEvaluation;
+import unbbayes.evaluation.exception.EvaluationException;
 import unbbayes.gui.table.NumberEditor;
 import unbbayes.gui.table.PercentEditor;
 import unbbayes.gui.table.RadioButtonCellEditor;
 import unbbayes.gui.table.RadioButtonCellRenderer;
+
+import com.ibm.icu.text.NumberFormat;
 
 public class EvaluationPane extends JPanel {
 
