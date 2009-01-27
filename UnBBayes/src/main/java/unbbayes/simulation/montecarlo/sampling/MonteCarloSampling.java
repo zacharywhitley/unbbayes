@@ -203,19 +203,23 @@ public class MonteCarloSampling {
 	 * @param pmf The probability mass function for the node RV that we want to sample the state for.
 	 * @return The sampled state for a given RV (based on its pmf).
 	 */
-	protected int getState(double[] pmf){
+	protected int getState(double[] pmf) {
 		// Cumulative distribution function
 		double[][] cdf;
 		double numero = Math.random();		
 		cdf = getCumulativeDistributionFunction(pmf);
-		for(int i = 0; i< cdf.length; i++){
-			if(i == 0){				
-				if (numero <= cdf[i][1]){
+		for(int i = 0; i < cdf.length; i++) {
+			if(i == 0) {				
+				if (numero <= cdf[i][1]) {
 					return i;										
 				}
 				continue;  				
-			}else{				
-				if(numero <= cdf[i][1] && numero > cdf[i][0]){
+			} else if (i == cdf.length - 1) {				
+				if (numero > cdf[i][0]) {
+					return i;	
+				}				
+			} else {				
+				if (numero <= cdf[i][1] && numero > cdf[i][0]) {
 					return i;	
 				}				
 			}			
@@ -259,14 +263,12 @@ public class MonteCarloSampling {
 		int nodeIndex;
 		double[] pmf = new double[statesSize];
 		int[] coordinates = new int[parentsIndexes.size() + 1];
-		ArrayList<Node> parents = new ArrayList<Node>();		
 		for(int i = 0; i < node.getStatesSize(); i++){				
 			coordinates[0] = i;
 			if(i == 0){
 				for(int j = 0 ; j < parentsIndexes.size(); j++){				
 					nodeIndex = parentsIndexes.get(j);
-					parents.add(samplingNodeOrderQueue.get(nodeIndex));
-					coordinates[j + 1] = sampledStates[nodeIndex];								
+					coordinates[pt.indexOfVariable(samplingNodeOrderQueue.get(nodeIndex))] = sampledStates[nodeIndex];								
 				}
 			}
 			pmf[i] = pt.getValue(coordinates);
