@@ -341,7 +341,7 @@ public class UnBBayesFrame extends JFrame {
 			public void actionPerformed(ActionEvent ae) {
 				setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				// String[] nets = new String[] { "net", "xml", "owl" };
-				String[] nets = new String[] { "net", "xml", "owl",
+				String[] nets = new String[] { "net", "xml", "dne", "owl",
 						UbfIO.fileExtension, IObjectOrientedBayesianNetworkIO.fileExtension };
 				chooser = new JFileChooser(fileController.getCurrentDirectory());
 				chooser.setDialogTitle(resource.getString("openTitle")); 

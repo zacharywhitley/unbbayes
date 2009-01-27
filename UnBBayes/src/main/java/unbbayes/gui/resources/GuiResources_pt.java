@@ -57,7 +57,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"fileNETType","Arquivo de Rede Bayesiana NET"},
 		{"fileGenericType","Arquivo Genérico"},
 		
-		{"netFileFilter","Net (.net, .oobn), XMLBIF (.xml), PR-OWL (.owl), UnBBayes file (.ubf)"},
+		{"netFileFilter","Net (.net, .oobn), XMLBIF (.xml), Netica (.dne), PR-OWL (.owl), UnBBayes file (.ubf)"},
 		{"netFileFilterSave","Net (.net), XMLBIF (.xml)"},
 		{"netFileFilterSaveMSBN","Selecione uma pasta"},
 		{"netFileFilterSaveMEBN", "Arquivo UnBBayes(.ubf)"},
