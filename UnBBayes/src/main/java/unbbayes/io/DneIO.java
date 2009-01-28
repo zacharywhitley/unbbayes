@@ -75,6 +75,9 @@ public class DneIO implements BaseIO {
 	// let's count it by ourselves
 	protected long lineno = 1;
 	
+	// If the current node being loaded is discrete
+	protected boolean isDiscreteNode;
+	
 	/**
 	 *  Loads a NET format file using default node/network builder.
 	 *  In other words, this method returns exactly instances of ProbabilisticNetwork filled
@@ -391,7 +394,9 @@ public class DneIO implements BaseIO {
 				auxNode.setName(st.sval);
 				getNext(st);
 				if (st.sval.equals("{")) {
+					boolean discrete = true;
 					getNext(st);
+					isDiscreteNode = true;
 					while (!st.sval.equals("}")) {
 						this.loadNodeDeclarationBody(st, auxNode, net);
 					}
@@ -473,6 +478,10 @@ public class DneIO implements BaseIO {
 			getNext(st);
 			node.setDescription(st.sval);
 			getNext(st);
+		} else if (st.sval.equals("discrete")) {
+			getNext(st);
+			isDiscreteNode = st.sval.equals("TRUE");
+			getNext(st);
 		// If discrete
 		} else if (st.sval.equals("states")) {
 			while (getNext(st) != ';') {
@@ -481,10 +490,16 @@ public class DneIO implements BaseIO {
 		// If continuous, but in a discrete way
 		} else if (st.sval.equals("levels")) {
 			getNext(st);
-			String stateBeginValue = st.sval;
-			while (getNext(st) != ';') {
-				node.appendState(stateBeginValue + "To" + st.sval);
-				stateBeginValue = st.sval;
+			if (!isDiscreteNode) {
+				String stateBeginValue = st.sval;
+				while (getNext(st) != ';') {
+					node.appendState(stateBeginValue + "To" + st.sval);
+					stateBeginValue = st.sval;
+				}
+			} else {
+				do {
+					node.appendState(st.sval);
+				} while (getNext(st) != ';');
 			}
 		} else if (st.sval.equals("parents")) {
 			loadParents(st, node, net);
