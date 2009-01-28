@@ -41,6 +41,8 @@ public class Evaluation {
 	// ------- VALUES THAT DO NOT CHANGE --------//
 
 	private ProbabilisticNetwork net;
+	
+	private int sampleSize;
 
 	// It will change when more than one target node is allowed
 	private TreeVariable targetNode;
@@ -63,6 +65,8 @@ public class Evaluation {
 	private int evidenceStatesProduct;
 
 	private byte[][] sampleMatrix;
+	
+	private List<Node> positionNodeList;
 
 	private int[] positionTargetNodeList;
 
@@ -77,11 +81,19 @@ public class Evaluation {
 	private List<EvidenceEvaluation> evidenceEvaluationList;
 	
 	public List<EvidenceEvaluation> getEvidenceEvaluationList() {
-		return evidenceEvaluationList;
+		return this.evidenceEvaluationList;
 	}
 
 	public float[][] getEvidenceSetLCM() {
-		return evidenceSetLCM;
+		return this.evidenceSetLCM;
+	}
+	
+	public int getSampleSize() {
+		return this.sampleSize;
+	}
+	
+	public float getError() {
+		return (float) (1/Math.sqrt(this.sampleSize));
 	}
 
 	public float getEvidenceSetPCC() throws EvaluationException {
@@ -96,7 +108,7 @@ public class Evaluation {
 			}
 			evidenceSetPCC /= evidenceSetLCM.length;
 		}
-		return evidenceSetPCC;
+		return this.evidenceSetPCC;
 	}
 	
 	public List<EvidenceEvaluation> getBestIndividualPCC() throws EvaluationException {
@@ -171,8 +183,12 @@ public class Evaluation {
 
 	private String evaluate(List<String> targetNodeNameList,
 			List<String> evidenceNodeNameList, int sampleSize) throws Exception {
+		
+		this.sampleSize = sampleSize;
 
-		evidenceSetLCM = computeLCM(targetNodeNameList, evidenceNodeNameList, sampleSize);
+		evidenceSetLCM = computeLCM(targetNodeNameList, evidenceNodeNameList);
+		// As the set LCM was computed, its PCC is now unset (lazy computing)
+		evidenceSetPCC = Evaluation.UNSET_VALUE;
 		
 		evidenceEvaluationList = new ArrayList<EvidenceEvaluation>();
 		for (String evidenceName : evidenceNodeNameList) {
@@ -181,13 +197,13 @@ public class Evaluation {
 			// Compute individual LCM
 			List<String> tempList = new ArrayList<String>();
 			tempList.add(evidenceName);
-			evidenceEvaluation.setIndividualLCM(computeLCM(targetNodeNameList, tempList, sampleSize));
+			evidenceEvaluation.setIndividualLCM(computeLCM(targetNodeNameList, tempList));
 			
 			// Compute marginal LCM
 			tempList.clear();
 			tempList.addAll(evidenceNodeNameList);
 			tempList.remove(evidenceName);
-			evidenceEvaluation.setMarginalLCM(computeLCM(targetNodeNameList, tempList, sampleSize));
+			evidenceEvaluation.setMarginalLCM(computeLCM(targetNodeNameList, tempList));
 			
 			evidenceEvaluationList.add(evidenceEvaluation);
 		}
@@ -197,7 +213,7 @@ public class Evaluation {
 	}
 
 	private float[][] computeLCM(List<String> targetNodeNameList,
-			List<String> evidenceNodeNameList, int sampleSize) throws Exception {
+			List<String> evidenceNodeNameList) throws Exception {
 
 		init(targetNodeNameList, evidenceNodeNameList);
 
@@ -218,25 +234,19 @@ public class Evaluation {
 			throw new Exception("For now, just one target node is accepted!");
 		}
 
-		// Get the position in the network of target and evidence nodes
+		// Get the position in the sampled matrix of target and evidence nodes
 		positionTargetNodeList = new int[targetNodeList.length];
 		positionEvidenceNodeList = new int[evidenceNodeList.length];
 
 		// Position of the nodes in the sampled matrix.
-		List<Node> positionNodeList = mc.getSamplingNodeOrderQueue();
+		positionNodeList = mc.getSamplingNodeOrderQueue();
 
 		for (int i = 0; i < positionTargetNodeList.length; i++) {
-			// positionTargetNodeList[i] =
-			// net.getNodeIndex(targetNodeList[i].getName());
-			positionTargetNodeList[i] = positionNodeList.indexOf(net
-					.getNode(targetNodeList[i].getName()));
+			positionTargetNodeList[i] = positionNodeList.indexOf((Node)targetNodeList[i]);
 		}
 
 		for (int i = 0; i < positionEvidenceNodeList.length; i++) {
-			// positionEvidenceNodeList[i] =
-			// net.getNodeIndex(evidenceNodeList[i].getName());
-			positionEvidenceNodeList[i] = positionNodeList.indexOf(net
-					.getNode(evidenceNodeList[i].getName()));
+			positionEvidenceNodeList[i] = positionNodeList.indexOf((Node)evidenceNodeList[i]);
 		}
 
 		// 2. Count # of occurrences of evidence nodes given target nodes
@@ -251,8 +261,7 @@ public class Evaluation {
 			for (int j = positionTargetNodeList.length - 1; j >= 0; j--) {
 				byte state = sampleMatrix[i][positionTargetNodeList[j]];
 				row += state * currentStatesProduct;
-				currentStatesProduct *= net
-						.getNodeAt(positionTargetNodeList[j]).getStatesSize();
+				currentStatesProduct *= positionNodeList.get(positionTargetNodeList[j]).getStatesSize();
 			}
 
 			// Add to total frequency for evidence nodes independent of state
@@ -260,7 +269,7 @@ public class Evaluation {
 
 			currentStatesProduct = evidenceStatesProduct;
 			for (int j = 0; j < positionEvidenceNodeList.length; j++) {
-				currentStatesProduct /= net.getNodeAt(
+				currentStatesProduct /= positionNodeList.get(
 						positionEvidenceNodeList[j]).getStatesSize();
 				byte state = sampleMatrix[i][positionEvidenceNodeList[j]];
 				row += state * currentStatesProduct;
@@ -505,7 +514,7 @@ public class Evaluation {
 			for (int j = positionEvidenceNodeList.length - 1; j >= 0; j--) {
 				byte state = sampleMatrix[i][positionEvidenceNodeList[j]];
 				row += state * currentStatesProduct;
-				currentStatesProduct *= net.getNodeAt(
+				currentStatesProduct *= positionNodeList.get(
 						positionEvidenceNodeList[j]).getStatesSize();
 			}
 
@@ -515,8 +524,8 @@ public class Evaluation {
 			for (int j = 0; j < positionTargetNodeList.length; j++) {
 				byte state = sampleMatrix[i][positionTargetNodeList[j]];
 				row += state * currentStatesProduct;
-				currentStatesProduct *= net
-						.getNodeAt(positionTargetNodeList[j]).getStatesSize();
+				currentStatesProduct *= positionNodeList
+						.get(positionTargetNodeList[j]).getStatesSize();
 			}
 
 			// Add to total frequency for specific targets
@@ -637,7 +646,7 @@ public class Evaluation {
 				io = new NetIO();
 			} else {
 				throw new Exception(
-						"The network must be in XMLBIF 0.4 or NET format!");
+						"The network must be in XMLBIF 0.5 or NET format!");
 			}
 			net = io.load(netFile);
 		} catch (Exception e) {
