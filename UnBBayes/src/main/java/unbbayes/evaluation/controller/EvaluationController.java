@@ -115,6 +115,8 @@ public class EvaluationController {
 			
 			evaluationPane.setPccValue(evaluation.getEvidenceSetPCC());
 			
+			evaluationPane.setErrorValue(evaluation.getError());
+			
 			evaluationPane.addOutputValues(evidenceEvaluationList);
 			
 			evaluationPane.revalidate();

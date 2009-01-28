@@ -56,6 +56,9 @@ public class PercentEditor extends DefaultCellEditor {
 
 		// Set up the editor for the integer cells.
 		percentFormat = NumberFormat.getPercentInstance();
+		percentFormat.setMinimumIntegerDigits(1);
+		percentFormat.setMinimumFractionDigits(2);
+		percentFormat.setMaximumFractionDigits(2);
 		NumberFormatter percentFormatter = new NumberFormatter(percentFormat);
 		percentFormatter.setFormat(percentFormat);
 

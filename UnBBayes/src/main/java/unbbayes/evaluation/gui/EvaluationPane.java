@@ -55,12 +55,14 @@ public class EvaluationPane extends JPanel {
 	private JTable inputTable;
 	private JLabel sampleSizeLabel;
 	private JFormattedTextField sampleSizeTextField;
+	private JLabel errorLabel;
+	private JFormattedTextField errorTextField;
 	private JButton runButton;
 	
 	private JPanel outputPane;
 	private JTable outputTable;
 	private JLabel pccLabel;
-	private JLabel pccValueLabel;
+	private JFormattedTextField pccValueTextField;
 
 	public EvaluationPane() {
 		super(new GridLayout(2, 0));
@@ -86,10 +88,16 @@ public class EvaluationPane extends JPanel {
 		JPanel pccPane = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		
 		pccLabel = new JLabel("Probability of Correct Classification:");
-		pccValueLabel = new JLabel("");
+		NumberFormat numberFormat = NumberFormat.getPercentInstance();
+		numberFormat.setMinimumIntegerDigits(1);
+		numberFormat.setMinimumFractionDigits(2);
+		numberFormat.setMaximumFractionDigits(2);
+		pccValueTextField = new JFormattedTextField(numberFormat);
+		pccValueTextField.setColumns(10);
+		pccValueTextField.setEditable(false);
 		
 		pccPane.add(pccLabel);
-		pccPane.add(pccValueLabel);
+		pccPane.add(pccValueTextField);
 		
 		outputPane.add(pccPane, BorderLayout.NORTH);
 	}
@@ -110,10 +118,19 @@ public class EvaluationPane extends JPanel {
 		sampleSizeTextField = new JFormattedTextField(NumberFormat.getIntegerInstance());
 		sampleSizeTextField.setColumns(10);
 		
+		errorLabel = new JLabel("Error:");
+		NumberFormat numberFormat = NumberFormat.getScientificInstance();
+		numberFormat.setMaximumFractionDigits(3);
+		errorTextField = new JFormattedTextField(numberFormat);
+		errorTextField.setColumns(5);
+		errorTextField.setEditable(false);
+		
 		runButton = new JButton("Run");
 		
 		sampleSizePane.add(sampleSizeLabel);
 		sampleSizePane.add(sampleSizeTextField);
+		sampleSizePane.add(errorLabel);
+		sampleSizePane.add(errorTextField);
 		sampleSizePane.add(runButton);
 		
 		inputPane.add(sampleSizePane, BorderLayout.SOUTH);
@@ -215,7 +232,11 @@ public class EvaluationPane extends JPanel {
 	}
 	
 	public void setPccValue(float pccValue) {
-		pccValueLabel.setText("" + pccValue);
+		pccValueTextField.setValue(pccValue);
+	}
+	
+	public void setErrorValue(float errorValue) {
+		errorTextField.setValue(errorValue);
 	}
 	
 	public void addOutputValues(List<EvidenceEvaluation> evidenceEvaluationList) throws EvaluationException {
