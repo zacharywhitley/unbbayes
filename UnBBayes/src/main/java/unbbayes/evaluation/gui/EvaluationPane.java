@@ -25,6 +25,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,12 +37,14 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 
 import unbbayes.evaluation.Evaluation.EvidenceEvaluation;
 import unbbayes.evaluation.exception.EvaluationException;
 import unbbayes.gui.table.NumberEditor;
-import unbbayes.gui.table.PercentEditor;
+import unbbayes.gui.table.NumberRenderer;
+import unbbayes.gui.table.PercentRenderer;
 import unbbayes.gui.table.RadioButtonCellEditor;
 import unbbayes.gui.table.RadioButtonCellRenderer;
 
@@ -151,6 +154,7 @@ public class EvaluationPane extends JPanel {
 				new RadioButtonCellEditor());
 
 		inputTable.setDefaultEditor(Float.class, new NumberEditor());
+		inputTable.setDefaultRenderer(Float.class, new NumberRenderer());
 		
 		inputPane.add(scrollPane, BorderLayout.CENTER);
 	}
@@ -158,24 +162,36 @@ public class EvaluationPane extends JPanel {
 	private void setUpOutputTable() {
 		TableModel dm = new EvaluationOutputTableModel();
 
-		outputTable = new JTable(dm);
+		outputTable = new JTable(dm) {
+			private static final long serialVersionUID = 1L;
+
+		    //Implement table header tool tips.
+		    protected JTableHeader createDefaultTableHeader() {
+		        return new JTableHeader(columnModel) {
+					private static final long serialVersionUID = 1L;
+
+					public String getToolTipText(MouseEvent e) {
+		                java.awt.Point p = e.getPoint();
+		                int index = columnModel.getColumnIndexAtX(p.x);
+		                int realIndex = 
+		                        columnModel.getColumn(index).getModelIndex();
+		                return ((EvaluationOutputTableModel)getModel()).getColumnToolTip(realIndex);
+		            }
+		        };
+		    }
+		};
+		
 		outputTable.setPreferredScrollableViewportSize(new Dimension(500, 70));
 
 		// Create the scroll pane and add the table to it.
 		JScrollPane scrollPane = new JScrollPane(outputTable);
 		
+		outputTable.setDefaultRenderer(Float.class, new PercentRenderer());
+		outputTable.getColumn("Cost").setCellRenderer(
+				new NumberRenderer());
+		outputTable.getColumn("Cost Rate").setCellRenderer(
+				new NumberRenderer(2, 6));
 		
-		outputTable.getColumn("Marginal PCC (%)").setCellEditor(
-				new PercentEditor());
-		outputTable.getColumn("Marginal Improvement (%)").setCellEditor(
-				new PercentEditor());
-		outputTable.getColumn("Individual PCC (%)").setCellEditor(
-				new PercentEditor());
-		outputTable.getColumn("Cost").setCellEditor(
-				new NumberEditor());
-		outputTable.getColumn("Individual Cost Rate").setCellEditor(
-				new NumberEditor());
-
 		outputPane.add(scrollPane, BorderLayout.CENTER);
 	}
 	
@@ -248,11 +264,20 @@ public class EvaluationPane extends JPanel {
 
 		private static final long serialVersionUID = 1L;
 
-		private String[] columnNames = { "Node", "Marginal PCC (%)",
+		private String[] columnToolTips = { "Node", "Marginal PCC (%)",
 				"Marginal Improvement (%)", "Individual PCC (%)", "Cost",
 				"Individual Cost Rate" };
-
+		
+		private String[] columnNames = { "Node", "MPCC (%)",
+				"MI (%)", "IPCC (%)", "Cost",
+				"Cost Rate" };
+		
 		private Object[][] data  = new Object[0][6];
+		
+		public EvaluationOutputTableModel() {
+			super();
+			
+		}
 
 		public void addValues(List<EvidenceEvaluation> evidenceEvaluationList) throws EvaluationException {
 			data = new Object[evidenceEvaluationList.size()][getColumnCount()];
@@ -278,6 +303,10 @@ public class EvaluationPane extends JPanel {
 
 		public String getColumnName(int col) {
 			return columnNames[col];
+		}
+		
+		public String getColumnToolTip(int col) {
+			return columnToolTips[col];
 		}
 
 		public Object getValueAt(int row, int col) {

@@ -56,6 +56,9 @@ public class NumberEditor extends DefaultCellEditor {
 
 		// Set up the editor for the integer cells.
 		numberFormat = NumberFormat.getNumberInstance();
+		numberFormat.setMinimumFractionDigits(2);
+		numberFormat.setMaximumFractionDigits(2);
+		numberFormat.setMinimumIntegerDigits(1);
 		NumberFormatter numberFormatter = new NumberFormatter(numberFormat);
 		numberFormatter.setFormat(numberFormat);
 
