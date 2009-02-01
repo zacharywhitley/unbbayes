@@ -160,9 +160,9 @@ public class DisconnectedNetworkToMultipleSubnetworkConverterImpl implements
 					networkToAddInto.addNode(currentNode);
 					this.visitRecursively(currentNode, /*currentNodeCpy,*/  networkToAddInto, net);
 					// add a new network into return, only if it has joint probability (there are more than 1 node)
-					if (networkToAddInto.getNodes().size() > 1) {
+//					if (networkToAddInto.getNodes().size() > 1) {
 						ret.add(networkToAddInto);
-					}
+//					}
 					// mark every node of new network as treated
 					treatedNodes.addAll(networkToAddInto.getNodes());
 				}

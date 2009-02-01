@@ -188,6 +188,17 @@ public class OOBNToSingleAgentMSBNCompiler implements IOOBNCompiler {
 					probabilisticNode.setName(prefix + probabilisticNode.getName());
 				}				
 				
+				// since it may be a parent of an instance input node, let's register it
+				// by doing this, we make it possible to delegate input nodes far deeper inside.
+				for (IOOBNNode child : node.getOOBNChildren()) {
+					if (child.getType() == child.TYPE_INSTANCE_INPUT) {
+						// we use the prefix + name in order to support multiple nested namespace levels
+						newInputInstanceToParentCloneMap.put(prefix + child.getName(), probabilisticNode);
+						// despite we assume a node is parent of only one instance input, it may be changed later,
+						// so, I'm not braking the operation
+					}
+				}
+				
 			} else {
 				// this is either output or private node
 				// simply add prefix to its name
