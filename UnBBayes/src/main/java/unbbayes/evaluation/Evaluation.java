@@ -74,7 +74,7 @@ public class Evaluation {
 
 	// -------- OUTPUT VALUES - EVALUATION --------//
 
-	private float[][] evidenceSetLCM;
+	private float[][] evidenceSetCM;
 
 	private float evidenceSetPCC = Evaluation.UNSET_VALUE;
 
@@ -84,8 +84,8 @@ public class Evaluation {
 		return this.evidenceEvaluationList;
 	}
 
-	public float[][] getEvidenceSetLCM() {
-		return this.evidenceSetLCM;
+	public float[][] getEvidenceSetCM() {
+		return this.evidenceSetCM;
 	}
 	
 	public int getSampleSize() {
@@ -98,15 +98,15 @@ public class Evaluation {
 
 	public float getEvidenceSetPCC() throws EvaluationException {
 		if (evidenceSetPCC == Evaluation.UNSET_VALUE) {
-			if (evidenceSetLCM == null) {
+			if (evidenceSetCM == null) {
 				throw new EvaluationException(
 						"Must calculate evidence set LCM before computing evidence set PCC.");
 			}
 			evidenceSetPCC = 0;
-			for (int i = 0; i < evidenceSetLCM.length; i++) {
-				evidenceSetPCC += evidenceSetLCM[i][i];
+			for (int i = 0; i < evidenceSetCM.length; i++) {
+				evidenceSetPCC += evidenceSetCM[i][i];
 			}
-			evidenceSetPCC /= evidenceSetLCM.length;
+			evidenceSetPCC /= evidenceSetCM.length;
 		}
 		return this.evidenceSetPCC;
 	}
@@ -168,25 +168,25 @@ public class Evaluation {
 		return sortedList;
 	}
 	
-	public String evaluate(String netFileName, List<String> targetNodeNameList,
+	public void evaluate(String netFileName, List<String> targetNodeNameList,
 			List<String> evidenceNodeNameList, int sampleSize) throws Exception {
 		loadNetwork(netFileName);
-		return evaluate(targetNodeNameList, evidenceNodeNameList, sampleSize);
+		evaluate(targetNodeNameList, evidenceNodeNameList, sampleSize);
 	}
 
-	public String evaluate(ProbabilisticNetwork net,
+	public void evaluate(ProbabilisticNetwork net,
 			List<String> targetNodeNameList, List<String> evidenceNodeNameList,
 			int sampleSize) throws Exception {
 		this.net = net;
-		return evaluate(targetNodeNameList, evidenceNodeNameList, sampleSize);
+		evaluate(targetNodeNameList, evidenceNodeNameList, sampleSize);
 	}
 
-	private String evaluate(List<String> targetNodeNameList,
+	private void evaluate(List<String> targetNodeNameList,
 			List<String> evidenceNodeNameList, int sampleSize) throws Exception {
 		
 		this.sampleSize = sampleSize;
 
-		evidenceSetLCM = computeLCM(targetNodeNameList, evidenceNodeNameList);
+		evidenceSetCM = computeApproximateCM(targetNodeNameList, evidenceNodeNameList);
 		// As the set LCM was computed, its PCC is now unset (lazy computing)
 		evidenceSetPCC = Evaluation.UNSET_VALUE;
 		
@@ -197,22 +197,59 @@ public class Evaluation {
 			// Compute individual LCM
 			List<String> tempList = new ArrayList<String>();
 			tempList.add(evidenceName);
-			evidenceEvaluation.setIndividualLCM(computeLCM(targetNodeNameList, tempList));
+			evidenceEvaluation.setLCM(computeApproximateCM(targetNodeNameList, tempList));
 			
 			// Compute marginal LCM
 			tempList.clear();
 			tempList.addAll(evidenceNodeNameList);
 			tempList.remove(evidenceName);
-			evidenceEvaluation.setMarginalLCM(computeLCM(targetNodeNameList, tempList));
+			evidenceEvaluation.setMarginalCM(computeApproximateCM(targetNodeNameList, tempList));
 			
 			evidenceEvaluationList.add(evidenceEvaluation);
 		}
 
-		return "";
+	}
+	
+	public void evaluate(String netFileName, List<String> targetNodeNameList,
+			List<String> evidenceNodeNameList) throws Exception {
+		loadNetwork(netFileName);
+		evaluate(targetNodeNameList, evidenceNodeNameList);
+	}
+
+	public void evaluate(ProbabilisticNetwork net,
+			List<String> targetNodeNameList, List<String> evidenceNodeNameList) throws Exception {
+		this.net = net;
+		evaluate(targetNodeNameList, evidenceNodeNameList);
+	}
+
+	private void evaluate(List<String> targetNodeNameList,
+			List<String> evidenceNodeNameList) throws Exception {
+		
+		evidenceSetCM = computeExactCM(targetNodeNameList, evidenceNodeNameList);
+		// As the set LCM was computed, its PCC is now unset (lazy computing)
+		evidenceSetPCC = Evaluation.UNSET_VALUE;
+		
+		evidenceEvaluationList = new ArrayList<EvidenceEvaluation>();
+		for (String evidenceName : evidenceNodeNameList) {
+			EvidenceEvaluation evidenceEvaluation = new EvidenceEvaluation(evidenceName);
+			
+			// Compute individual LCM
+			List<String> tempList = new ArrayList<String>();
+			tempList.add(evidenceName);
+			evidenceEvaluation.setLCM(computeExactCM(targetNodeNameList, tempList));
+			
+			// Compute marginal LCM
+			tempList.clear();
+			tempList.addAll(evidenceNodeNameList);
+			tempList.remove(evidenceName);
+			evidenceEvaluation.setMarginalCM(computeExactCM(targetNodeNameList, tempList));
+			
+			evidenceEvaluationList.add(evidenceEvaluation);
+		}
 
 	}
 
-	private float[][] computeLCM(List<String> targetNodeNameList,
+	private float[][] computeApproximateCM(List<String> targetNodeNameList,
 			List<String> evidenceNodeNameList) throws Exception {
 
 		init(targetNodeNameList, evidenceNodeNameList);
@@ -322,7 +359,10 @@ public class Evaluation {
 		int statesSize = targetNode.getStatesSize();
 		row = 0;
 		int index = 0;
+		System.out.println("Approximate");
 		for (int i = 0; i < statesProduct; i++) {
+			System.out.println("P(T|E) " + printArray(getMultidimensionalCoord(i)) + postProbTargetGivenEvidence[i]);
+			System.out.println("P(E|T) " + printArray(getMultidimensionalCoord(i)) + postProbEvidenceGivenTarget[i]);
 			for (int j = 0; j < statesSize; j++) {
 				row = ((int) (i / evidenceStatesProduct)) * statesSize + j;
 				index = (i % evidenceStatesProduct) + j * evidenceStatesProduct;
@@ -331,18 +371,18 @@ public class Evaluation {
 			}
 		}
 
-		// 6. Set LCM
-		float[][] LCM = new float[statesSize][statesSize];
+		// 6. Set CM
+		float[][] CM = new float[statesSize][statesSize];
 		for (int i = 0; i < statesSize; i++) {
 			for (int j = 0; j < statesSize; j++) {
-				LCM[i][j] = postProbTargetGivenTarget[i * statesSize + j];
+				CM[i][j] = postProbTargetGivenTarget[i * statesSize + j];
 			}
 		}
 
 //		System.out.println(getLCMLog(postProbTargetGivenEvidence,
 //				postProbEvidenceGivenTarget, postProbTargetGivenTarget));
 
-		return LCM;
+		return CM;
 	}
 
 	private String getLCMLog(float[] postProbTargetGivenEvidence,
@@ -397,14 +437,14 @@ public class Evaluation {
 		private float individualPCC = Evaluation.UNSET_VALUE;
 
 		// Individual local confusion matrix
-		private float[][] individualLCM;
+		private float[][] LCM;
 
 		// Probability of correct classification of the evidence set without
 		// this evidence
 		private float marginalPCC = Evaluation.UNSET_VALUE;
 
 		// Local confusion matrix of the evidence set without this evidence
-		private float[][] marginalLCM;
+		private float[][] marginalCM;
 
 		// The evidence set PCC minus the setPCC (PCC of the set without this
 		// evidence)
@@ -424,30 +464,30 @@ public class Evaluation {
 
 		public float getIndividualPCC() throws EvaluationException {
 			if (individualPCC == Evaluation.UNSET_VALUE) {
-				if (individualLCM == null) {
+				if (LCM == null) {
 					throw new EvaluationException(
 							"Must calculate individual LCM before computing individual PCC.");
 				}
 				individualPCC = 0;
-				for (int i = 0; i < individualLCM.length; i++) {
-					individualPCC += individualLCM[i][i];
+				for (int i = 0; i < LCM.length; i++) {
+					individualPCC += LCM[i][i];
 				}
-				individualPCC /= individualLCM.length;
+				individualPCC /= LCM.length;
 			}
 			return individualPCC;
 		}
 
 		public float getMarginalPCC() throws EvaluationException {
 			if (marginalPCC == Evaluation.UNSET_VALUE) {
-				if (marginalLCM == null) {
+				if (marginalCM == null) {
 					throw new EvaluationException(
 							"Must calculate marginal LCM before computing marginal PCC.");
 				}
 				marginalPCC = 0;
-				for (int i = 0; i < marginalLCM.length; i++) {
-					marginalPCC += marginalLCM[i][i];
+				for (int i = 0; i < marginalCM.length; i++) {
+					marginalPCC += marginalCM[i][i];
 				}
-				marginalPCC /= marginalLCM.length;
+				marginalPCC /= marginalCM.length;
 			}
 			return marginalPCC;
 		}
@@ -480,19 +520,19 @@ public class Evaluation {
 		}
 
 		public float[][] getIndividualLCM() {
-			return individualLCM;
+			return LCM;
 		}
 
-		public void setIndividualLCM(float[][] individualLCM) {
-			this.individualLCM = individualLCM;
+		public void setLCM(float[][] LCM) {
+			this.LCM = LCM;
 		}
 
-		public float[][] getMarginalLCM() {
-			return marginalLCM;
+		public float[][] getMarginalCM() {
+			return marginalCM;
 		}
 
-		public void setMarginalLCM(float[][] marginalLCM) {
-			this.marginalLCM = marginalLCM;
+		public void setMarginalCM(float[][] marginalCM) {
+			this.marginalCM = marginalCM;
 		}
 
 		public String getName() {
@@ -501,54 +541,7 @@ public class Evaluation {
 
 	}
 
-	private float[] computePostProbTargetGivenEvidenceUsingMC() {
-		// 1. Count # of occurrences of target nodes given evidence nodes
-		int[] frequencyTargetGivenEvidenceList = new int[statesProduct];
-		int[] frequencyTargetList = new int[evidenceStatesProduct];
-
-		// Iterate over all cases in the MC sample
-		for (int i = 0; i < sampleMatrix.length; i++) {
-			// Row to compute the frequency
-			int row = 0;
-			int currentStatesProduct = 1;
-			for (int j = positionEvidenceNodeList.length - 1; j >= 0; j--) {
-				byte state = sampleMatrix[i][positionEvidenceNodeList[j]];
-				row += state * currentStatesProduct;
-				currentStatesProduct *= positionNodeList.get(
-						positionEvidenceNodeList[j]).getStatesSize();
-			}
-
-			// Add to total frequency for target nodes independent of state
-			frequencyTargetList[row]++;
-
-			for (int j = 0; j < positionTargetNodeList.length; j++) {
-				byte state = sampleMatrix[i][positionTargetNodeList[j]];
-				row += state * currentStatesProduct;
-				currentStatesProduct *= positionNodeList
-						.get(positionTargetNodeList[j]).getStatesSize();
-			}
-
-			// Add to total frequency for specific targets
-			frequencyTargetGivenEvidenceList[row]++;
-		}
-
-		// 2. Compute probabilities for target nodes given evidence nodes
-		float[] postProbTargetGivenEvidence = new float[statesProduct];
-		for (int i = 0; i < postProbTargetGivenEvidence.length; i++) {
-			float n = (float) frequencyTargetList[i % (evidenceStatesProduct)];
-			if (n != 0) {
-				postProbTargetGivenEvidence[i] = (float) frequencyTargetGivenEvidenceList[i]
-						/ n;
-			}
-			formatter.format("%2.2f\n", postProbTargetGivenEvidence[i] * 100);
-		}
-
-		formatter.format("\n\n");
-
-		return postProbTargetGivenEvidence;
-	}
-
-	private void getExatProbTargetGivenEvidence() throws Exception {
+	private float[] getExatProbTargetGivenEvidence() throws Exception {
 		// TODO for now I am just considering there is one target node!
 		TreeVariable targetNode = targetNodeList[0];
 
@@ -558,8 +551,7 @@ public class Evaluation {
 
 		int sProd = targetNode.getStatesSize();
 
-		byte[][] stateCombinationMatrix = new byte[statesProduct][net
-				.getNodes().size()];
+		byte[][] stateCombinationMatrix = new byte[statesProduct][1 + evidenceNodeList.length];
 		int state = 0;
 		for (int row = 0; row < statesProduct; row++) {
 			stateCombinationMatrix[row][0] = (byte) (row / (statesProduct / sProd));
@@ -582,11 +574,173 @@ public class Evaluation {
 		}
 
 		printProbMatrix(stateCombinationMatrix, postProbList);
-
+		return postProbList;
 	}
 
-	private void getExatProbEvidenceGivenTarget() throws Exception {
+	private float[][] computeExactCM(List<String> targetNodeNameList, List<String> evidenceNodeNameList) throws Exception {
+		
+		init(targetNodeNameList, evidenceNodeNameList);
 
+		// FIXME For now let's just consider the simple case of having just one
+		// target node!
+		targetNode = targetNodeList[0];
+		if (targetNodeList.length != 1) {
+			throw new Exception("For now, just one target node is accepted!");
+		}
+
+		// First column is the P(T|E) and the second is P(E|T) 
+		float[][] postProbList = new float[statesProduct][2];
+
+
+		for (int row = 0; row < statesProduct; row++) {
+			// It has the state of target/evidence node at index i (first nodes are target then evidence)
+			int [] states = getMultidimensionalCoord(row);
+			// P(T|E)
+			float probTGivenE = getProbTargetGivenEvidence(states);
+			postProbList[row][0] = probTGivenE;
+			// P(E)
+			int [] evidencesStates = new int[states.length - 1];
+			for (int i = 0; i < evidencesStates.length; i++) {
+				evidencesStates[i] = states[i+1];
+			}
+			float probE = getEvidencesJointProbability(evidencesStates);
+			// P(T)
+			float probT = getTargetPriorProbability(states[0]);
+			// P(E|T) = P(T|E)P(E)/P(T)
+			float probEGivenT = probTGivenE * probE / probT;
+			postProbList[row][1] = probEGivenT;
+		}
+		
+		// Compute probabilities for target given target
+		// P(T|T) = P(T|E)P(E|T)
+		float[] postProbTargetGivenTarget = new float[(int) Math.pow(targetNode
+				.getStatesSize(), 2)];
+		int statesSize = targetNode.getStatesSize();
+		int row = 0;
+		int index = 0;
+		System.out.println("Exact");
+		for (int i = 0; i < statesProduct; i++) {
+			System.out.println("P(T|E) " + printArray(getMultidimensionalCoord(i)) + postProbList[i][0]);
+			System.out.println("P(E|T) " + printArray(getMultidimensionalCoord(i)) + postProbList[i][1]);
+			for (int j = 0; j < statesSize; j++) {
+				row = ((int) (i / evidenceStatesProduct)) * statesSize + j;
+				index = (i % evidenceStatesProduct) + j * evidenceStatesProduct;
+				postProbTargetGivenTarget[row] += postProbList[i][0]
+						* postProbList[index][1];
+			}
+		}
+
+		// Set CM
+		float[][] CM = new float[statesSize][statesSize];
+		for (int i = 0; i < statesSize; i++) {
+			for (int j = 0; j < statesSize; j++) {
+				CM[i][j] = postProbTargetGivenTarget[i * statesSize + j];
+			}
+		}
+		
+		return CM;
+	}
+	
+	private float getProbTargetGivenEvidence(int[] states) throws Exception {
+		
+		net.compile();
+		// Add findings
+		for (int i = 0; i < evidenceNodeList.length; i++) {
+			// The evidence state index is its index plus one, because the target node is the first index.
+			evidenceNodeList[i].addFinding(states[1 + i]);
+		}
+		
+		try {
+			net.updateEvidences();
+			return targetNode.getMarginalAt(states[0]);
+		} catch (Exception e) {
+			return 0;
+		}
+		
+	}
+	
+	private float getEvidencesJointProbability(int states[]) throws Exception {
+		net.compile();
+
+		float prob = 1;
+
+		for (int j = 0; j < evidenceNodeList.length; j++) {
+			
+			if (j > 0) {
+				evidenceNodeList[j-1].addFinding(states[j-1]);
+			}
+			
+			try {
+				net.updateEvidences();
+				prob *= evidenceNodeList[j].getMarginalAt(states[j]);
+			} catch (Exception e) {
+				return 0;
+			}
+			
+		}
+
+		return prob;
+		
+	}
+	
+	private float[] getEvidencesJointProbability() throws Exception {
+		net.compile();
+
+		float[] jointProbability = new float[evidenceStatesProduct];
+
+		int sProd = 1;
+
+		// TODO - Rommel - Remove the matrix afterwards!!
+		//byte[][] stateCombinationMatrix = new byte[evidenceStatesProduct][evidenceNodeList.length];
+		int stateCurrentNode = 0;
+		int statePreviousNode = 0;
+		for (int row = 0; row < evidenceStatesProduct; row++) {
+			jointProbability[row] = 1;
+			for (int j = 0; j < evidenceNodeList.length; j++) {
+				sProd *= evidenceNodeList[j].getStatesSize();
+				stateCurrentNode = (row / (evidenceStatesProduct / sProd))
+						% evidenceNodeList[j].getStatesSize();
+				
+				//stateCombinationMatrix[row][j] = (byte) state;
+				//for (int k = j - 1; k < 0; k--) {
+				if (j > 0) {
+					evidenceNodeList[j-1].addFinding(statePreviousNode);
+				}
+				
+				try {
+					net.updateEvidences();
+					jointProbability[row] *= evidenceNodeList[j]
+							.getMarginalAt(stateCurrentNode);
+				} catch (Exception e) {
+					jointProbability[row] = 0;
+				}
+				
+				statePreviousNode = stateCurrentNode;
+			}
+			sProd = 1;
+			net.compile();
+		}
+
+		//printProbMatrix(stateCombinationMatrix, jointProbability);
+		return jointProbability;
+		
+	}
+	
+	private float getTargetPriorProbability(int state) throws Exception {
+		net.compile();
+
+		return targetNode.getMarginalAt(state);
+	}
+	
+	private float[] getTargetPriorProbability() throws Exception {
+		net.compile();
+
+		float[] priorProb = new float[targetNode.getStatesSize()];
+		for (int i = 0; i < targetNode.getStatesSize(); i++) {
+			priorProb[i] = targetNode.getMarginalAt(i);
+		}
+		
+		return priorProb;
 	}
 
 	private void printProbMatrix(byte[][] stateCombinationMatrix,
@@ -599,6 +753,76 @@ public class Evaluation {
 			System.out.println(postProbList[i]);
 		}
 
+	}
+	
+	protected int[] factors;
+	
+	/**
+	 * Calculate the factors necessary to transform the linear coordinate into a multidimensional 
+	 * one (which is the the state for each possible node - target and evidence).
+	 * FactorForNode[i + 1] = ProductOf(NumberOfStates[i]), for all previous nodes (i).
+	 */
+	protected void computeFactors() {
+		int size = targetNodeList.length + evidenceNodeList.length;
+		if (factors == null || factors.length != size) {
+		   factors = new int[size];
+		}
+		
+		// Create one list of all nodes
+		TreeVariable[] nodes = new TreeVariable[size];
+		int nodeIndex = 0;
+		for (int i = 0; i < targetNodeList.length; i++) {
+			nodes[nodeIndex++] = targetNodeList[i];
+		}
+		for (int i = 0; i < evidenceNodeList.length; i++) {
+			nodes[nodeIndex++] = evidenceNodeList[i];
+		}
+		
+		factors[0] = 1;
+		Node node;
+		for (int i = 1; i < size; i++) {
+			node = nodes[i-1];
+			factors[i] = factors[i-1] * node.getStatesSize();
+		}
+	}
+	
+	/**
+	 * Get the linear coordinate from the multidimensional one.
+	 * LinearCoord = SumOf(StateOf[i] * FactorOf[i]), for all 
+	 * possible nodes (i).
+	 * 
+	 * @param multidimensionalCoord Multidimensional coordinate (represented by the state for
+	 * each node).
+	 * @return The corresponding linear coordinate.
+	 */
+	protected final int getLinearCoord(int multidimensionalCoord[]) {
+		computeFactors();
+		int coordLinear = 0;
+		int size = targetNodeList.length + evidenceNodeList.length;
+		for (int v = 0; v < size; v++) {
+			coordLinear += multidimensionalCoord[v] * factors[v];
+		}
+		return coordLinear;
+	}
+
+	/**
+	 * Get the multidimensional coordinate from the linear one.
+	 * 
+	 * @param linearCoord The linear coordinate.
+	 * @return The corresponding multidimensional coordinate.
+	 */
+	protected final int[] getMultidimensionalCoord(int linearCoord) {
+		computeFactors();
+		int factorI;
+		int size = targetNodeList.length + evidenceNodeList.length;
+		int multidimensionalCoord[] = new int[size];
+		int i = size - 1;
+		while (linearCoord != 0) {
+			factorI = factors[i];
+			multidimensionalCoord[i--] = linearCoord / factorI;
+			linearCoord %= factorI;
+		}
+		return multidimensionalCoord;
 	}
 
 	private void init(List<String> targetNodeNameList,
@@ -669,9 +893,12 @@ public class Evaluation {
 
 		int sampleSize = 100000;
 
-		Evaluation evaluation = new Evaluation();
-		evaluation.evaluate(netFileName, targetNodeNameList,
+		Evaluation evaluationApproximate = new Evaluation();
+		evaluationApproximate.evaluate(netFileName, targetNodeNameList,
 				evidenceNodeNameList, sampleSize);
+		Evaluation evaluationExact = new Evaluation();
+		evaluationExact.evaluate(netFileName, targetNodeNameList,
+				evidenceNodeNameList);
 		
 		StringBuilder sb = new StringBuilder();
 		// Send all output to the appendable object sb
@@ -681,18 +908,22 @@ public class Evaluation {
 		formatter.format("\n\n");
 		
 		formatter.format("LCM:\n");
-		printMatrix(evaluation.getEvidenceSetLCM(), formatter);
+		printMatrix(evaluationApproximate.getEvidenceSetCM(), formatter);
+		printMatrix(evaluationExact.getEvidenceSetCM(), formatter);
 		
 		formatter.format("\n");
 		
 		formatter.format("PCC: ");
-		formatter.format("%2.2f\n", evaluation.getEvidenceSetPCC() * 100);
+		formatter.format("%2.2f\n", evaluationApproximate.getEvidenceSetPCC() * 100);
+		formatter.format("%2.2f\n", evaluationExact.getEvidenceSetPCC() * 100);
 		
 		formatter.format("\n\n\n");
 		formatter.format("----MARGINAL------");
 		formatter.format("\n\n");
 		
-		List<EvidenceEvaluation> list = evaluation.getBestMarginalImprovement();
+		// APPROXIMATE //
+		
+		List<EvidenceEvaluation> list = evaluationApproximate.getBestMarginalImprovement();
 		
 		for (EvidenceEvaluation evidenceEvaluation : list) {
 			
@@ -700,7 +931,7 @@ public class Evaluation {
 			formatter.format("\n\n");
 			
 			formatter.format("LCM:\n");
-			printMatrix(evidenceEvaluation.getMarginalLCM(), formatter);
+			printMatrix(evidenceEvaluation.getMarginalCM(), formatter);
 			
 			formatter.format("\n");
 			
@@ -719,7 +950,7 @@ public class Evaluation {
 		formatter.format("----INDIVIDUAL PCC------");
 		formatter.format("\n\n");
 		
-		list = evaluation.getBestIndividualPCC();
+		list = evaluationApproximate.getBestIndividualPCC();
 		
 		for (EvidenceEvaluation evidenceEvaluation : list) {
 			
@@ -744,7 +975,7 @@ public class Evaluation {
 		formatter.format("----INDIVIDUAL PCC------");
 		formatter.format("\n\n");
 		
-		list = evaluation.getBestIndividualCostRate();
+		list = evaluationApproximate.getBestIndividualCostRate();
 		
 		for (EvidenceEvaluation evidenceEvaluation : list) {
 			
@@ -767,8 +998,94 @@ public class Evaluation {
 			formatter.format("\n\n");
 		}
 		
-		System.out.println(sb.toString());
+		// EXACT //
+		
+		list = evaluationExact.getBestMarginalImprovement();
+		
+		for (EvidenceEvaluation evidenceEvaluation : list) {
+			
+			formatter.format("-" + evidenceEvaluation.getName() + "-");
+			formatter.format("\n\n");
+			
+			formatter.format("LCM:\n");
+			printMatrix(evidenceEvaluation.getMarginalCM(), formatter);
+			
+			formatter.format("\n");
+			
+			formatter.format("PCC: ");
+			formatter.format("%2.2f\n", evidenceEvaluation.getMarginalPCC() * 100);
+			
+			formatter.format("\n");
+			
+			formatter.format("Marginal Improvement: ");
+			formatter.format("%2.2f\n", evidenceEvaluation.getMarginalImprovement() * 100);
+			
+			formatter.format("\n\n");
+		}
+		
+		formatter.format("\n");
+		formatter.format("----INDIVIDUAL PCC------");
+		formatter.format("\n\n");
+		
+		list = evaluationExact.getBestIndividualPCC();
+		
+		for (EvidenceEvaluation evidenceEvaluation : list) {
+			
+			formatter.format("-" + evidenceEvaluation.getName() + "-");
+			formatter.format("\n\n");
+			
+			formatter.format("LCM:\n");
+			printMatrix(evidenceEvaluation.getIndividualLCM(), formatter);
+			
+			formatter.format("\n");
+			
+			formatter.format("PCC: ");
+			formatter.format("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
+			
+			formatter.format("\n\n");
+			
+			// Add random costs for each
+			evidenceEvaluation.setCost((new Random()).nextFloat() * 1000);
+		}
+		
+		formatter.format("\n");
+		formatter.format("----INDIVIDUAL PCC------");
+		formatter.format("\n\n");
+		
+		list = evaluationExact.getBestIndividualCostRate();
+		
+		for (EvidenceEvaluation evidenceEvaluation : list) {
+			
+			formatter.format("-" + evidenceEvaluation.getName() + "-");
+			formatter.format("\n\n");
+			
+			formatter.format("PCC: ");
+			formatter.format("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
+			
+			formatter.format("\n");
+			
+			formatter.format("Cost: ");
+			formatter.format("%2.2f\n", evidenceEvaluation.getCost());
+			
+			formatter.format("\n");
+			
+			formatter.format("Cost Rate: ");
+			formatter.format("%2.2f\n", evidenceEvaluation.getCostRate() * 100);
+			
+			formatter.format("\n\n");
+		}
+		
+		
+		//System.out.println(sb.toString());
 
+	}
+	
+	private String printArray(int[] array) {
+		String str = "";
+		for (int i = 0; i < array.length; i++) {
+			str += " " + array[i];
+		}
+		return str;
 	}
 	
 	public static void printMatrix(float[][] matrix, Formatter formatter) {
