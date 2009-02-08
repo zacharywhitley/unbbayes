@@ -13,7 +13,6 @@ import unbbayes.gui.oobn.node.OOBNNodeGraphicalWrapper;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.msbn.AbstractMSBN;
@@ -33,19 +32,49 @@ import unbbayes.util.Debug;
  */
 public class OOBNToSingleAgentMSBNCompiler implements IOOBNCompiler {
 
+	
+	private IDisconnectedNetworkToMultipleSubnetworkConverter multipleSubNetworkConverter = null;
+	
 	/**
 	 * Default constructor. It is made protected in order to make it easier to extend
+	 * It does not initialize components (so, it must be done manually)
 	 */
 	protected OOBNToSingleAgentMSBNCompiler() {
-		
+//		this.setMultipleSubNetworkConverter(DisconnectedNetworkToMultipleSubnetworkConverterImpl.newInstance());
 	}
+	
+//	/**
+//	 * Default constructor. It is made protected in order to make it easier to extend
+//	 * It sets multipleSubNetworkConverter as a default one.
+//	 * @param converter : This multipleSubNetworkConverter is a component which does the final touch of the generated
+//	 * MSBN. Eg. converts disconnected sub-networks into multiple MSBN sections.
+//	 */
+//	protected OOBNToSingleAgentMSBNCompiler(IDisconnectedNetworkToMultipleSubnetworkConverter converter) {
+//		this.setMultipleSubNetworkConverter(converter);
+//	}
 	
 	/**
 	 * Default construction method
+	 * It sets multipleSubNetworkConverter as a default one.
 	 * @return a new instance
 	 */
 	public static OOBNToSingleAgentMSBNCompiler newInstance() {
-		return new OOBNToSingleAgentMSBNCompiler();
+		OOBNToSingleAgentMSBNCompiler newObj = new OOBNToSingleAgentMSBNCompiler();
+		newObj.setMultipleSubNetworkConverter(DisconnectedNetworkToMultipleSubnetworkConverterImpl.newInstance());
+		return newObj;
+	}
+	
+	/**
+	 * 
+	 * @param converter: This multipleSubNetworkConverter is a component which does the final touch of the generated
+	 * MSBN in order to make it compatible with other modules within UnBBayes. 
+	 * Eg. converts disconnected sub-networks into multiple MSBN sections.
+	 * @return
+	 */
+	public static OOBNToSingleAgentMSBNCompiler newInstance(IDisconnectedNetworkToMultipleSubnetworkConverter converter ) {
+		OOBNToSingleAgentMSBNCompiler newObj = new OOBNToSingleAgentMSBNCompiler();
+		newObj.setMultipleSubNetworkConverter(converter);
+		return newObj;
 	}
 
 	/* (non-Javadoc)
@@ -65,14 +94,11 @@ public class OOBNToSingleAgentMSBNCompiler implements IOOBNCompiler {
 		// generate the networks using the main instance, no prefix and no mappings to upper input nodes (since there is no upper)
 		Collection<Network> generatedNetworks = this.generateNetworksRecursively(mainInstance, "", new HashMap<String, ProbabilisticNode>());
 		
-		// obtain network fragmenter
-		IDisconnectedNetworkToMultipleSubnetworkConverter fragmenter = DisconnectedNetworkToMultipleSubnetworkConverterImpl.newInstance();
-		
 		try {
 			// add each class to MSBN (treating only those referenced by mainClass/mainInstance)
 			for (Network newNetwork : generatedNetworks) {
 				// if network is disconnected, create multiple sub-networks in order to make them connected
-				for (SubNetwork subnetwork : fragmenter.generateSubnetworks(newNetwork)) {
+				for (SubNetwork subnetwork : this.getMultipleSubNetworkConverter().generateSubnetworks(newNetwork)) {
 					msbn.addNetwork(subnetwork);
 					/*
 					 * Actually, considering only those fragments with more than 1 node
@@ -173,14 +199,33 @@ public class OOBNToSingleAgentMSBNCompiler implements IOOBNCompiler {
 					// should  be equivalent to set them as equal nodes (only at MSBN)
 					probabilisticNode.setName(parentClone.getName());
 					
-					// by setting the CPT as uniform, the UnBBayes MSBN implementation behaves as the node has no potential at all
-					// and thus, it behaves like it's using the CPT of a node defined in another subnetwork (another network section)
-					// which in our case is in the upper instance node. This is what we want.
-					float linearValue = 1f / probabilisticNode.getStatesSize();
-					PotentialTable cpt = probabilisticNode.getPotentialTable();
-					for (int i = 0; i < cpt.tableSize(); i++) {
-						cpt.setValue(i, linearValue);	
+					// if parent clone is actually going to be alive within another subnetwork  after all,
+					// we must set the input node's CPT as uniform
+					try {
+						if ( this.getMultipleSubNetworkConverter().isIgnorableNode( parentClone ) ) {
+							// since the parent is not persistent and will vanish, this node must store its CPT.
+							// Let's copy it
+							PotentialTable parentCpt = parentClone.getPotentialTable();
+							PotentialTable cpt = probabilisticNode.getPotentialTable();
+							for (int i = 0; i < cpt.tableSize(); i++) {
+								cpt.setValue(i, parentCpt.getValue(i));	
+							}
+						} else {
+							// by setting the CPT as uniform, the UnBBayes MSBN implementation behaves as the node has no potential at all
+							// and thus, it behaves like it's using the CPT from a node defined in another subnetwork (another network section)
+							// which in our case is in the upper instance node. This is what we want.
+							float linearValue = 1f / probabilisticNode.getStatesSize();
+							PotentialTable cpt = probabilisticNode.getPotentialTable();
+							for (int i = 0; i < cpt.tableSize(); i++) {
+								cpt.setValue(i, linearValue);	
+							}
+						}
+					} catch (Exception e) {
+						Debug.println(this.getClass(), "Could not determine if " + parentClone.getName() 
+								+ " is not going to become persistent.", e);
 					}
+					
+					
 				} else {
 					// no parent was found for the upper instance of this input node. 
 					// This means that the input node must behave as it is an private node
@@ -315,4 +360,28 @@ public class OOBNToSingleAgentMSBNCompiler implements IOOBNCompiler {
 		
 		return ret;
 	}
+
+	/**
+	 * This multipleSubNetworkConverter is a component which does the final touch of the generated
+	 * MSBN in order to make it compatible with other modules within UnBBayes. 
+	 * Eg. converts disconnected sub-networks into multiple MSBN sections.
+	 * @return the multipleSubNetworkConverter
+	 */
+	public IDisconnectedNetworkToMultipleSubnetworkConverter getMultipleSubNetworkConverter() {
+		return multipleSubNetworkConverter;
+	}
+
+	/**
+	 * This multipleSubNetworkConverter is a component which does the final touch of the generated
+	 * MSBN in order to make it compatible with other modules within UnBBayes. 
+	 * Eg. converts disconnected sub-networks into multiple MSBN sections.
+	 * @param multipleSubNetworkConverter the multipleSubNetworkConverter to set
+	 */
+	public void setMultipleSubNetworkConverter(
+			IDisconnectedNetworkToMultipleSubnetworkConverter multipleSubNetworkConverter) {
+		this.multipleSubNetworkConverter = multipleSubNetworkConverter;
+	}
+	
+	
+	
 }

@@ -6,7 +6,10 @@ package unbbayes.prs.oobn.compiler;
 import java.util.Collection;
 
 import unbbayes.prs.Network;
+import unbbayes.prs.Node;
+import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.msbn.SubNetwork;
+import unbbayes.prs.oobn.IOOBNNode;
 
 /**
  * 
@@ -70,5 +73,22 @@ public interface IDisconnectedNetworkToMultipleSubnetworkConverter {
 	 * @return a collection of locally-connected sub-networks
 	 */
 	public Collection<SubNetwork> generateSubnetworks(Network net);
+	
+	
+	/**
+	 * Verifies if a node will become a disconnected single node by
+	 * {@link IDisconnectedNetworkToMultipleSubnetworkConverter#generateSubnetworks(Network)}
+	 * (when generating multiple subnetworks). In that case, the node may be ignored, since
+	 * it will have no influence to the total joint probability function.
+	 * 
+	 * Those ignorable nodes might not be added to the result subnetworks by 
+	 * {@link IDisconnectedNetworkToMultipleSubnetworkConverter#generateSubnetworks(Network)}.
+	 * If you do not want to ignore such nodes, you should implement this method in order 
+	 * to return false.
+	 * 
+	 * @param node : the node to be analyzed
+	 * @return : true if the node will become a disconnected node. False otherwise.
+	 */
+	public boolean isIgnorableNode(Node node);
 	
 }

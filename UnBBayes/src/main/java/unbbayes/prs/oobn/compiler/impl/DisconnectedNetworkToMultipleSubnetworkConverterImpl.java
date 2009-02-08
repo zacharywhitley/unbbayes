@@ -13,6 +13,7 @@ import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.msbn.SubNetwork;
+import unbbayes.prs.oobn.IOOBNNode;
 import unbbayes.prs.oobn.compiler.IDisconnectedNetworkToMultipleSubnetworkConverter;
 import unbbayes.util.Debug;
 
@@ -130,6 +131,9 @@ public class DisconnectedNetworkToMultipleSubnetworkConverterImpl implements
 	}
 	
 	
+	
+	
+
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.oobn.compiler.IDisconnectedNetworkToMultipleSubnetworkConverter#generateSubnetworks(unbbayes.prs.Network)
 	 */
@@ -160,9 +164,9 @@ public class DisconnectedNetworkToMultipleSubnetworkConverterImpl implements
 					networkToAddInto.addNode(currentNode);
 					this.visitRecursively(currentNode, /*currentNodeCpy,*/  networkToAddInto, net);
 					// add a new network into return, only if it has joint probability (there are more than 1 node)
-//					if (networkToAddInto.getNodes().size() > 1) {
+					if (networkToAddInto.getNodes().size() > 1) {
 						ret.add(networkToAddInto);
-//					}
+					}
 					// mark every node of new network as treated
 					treatedNodes.addAll(networkToAddInto.getNodes());
 				}
@@ -178,4 +182,26 @@ public class DisconnectedNetworkToMultipleSubnetworkConverterImpl implements
 		return ret;
 	}
 
+	/** 
+	 * Note: this method is not used by {@link IDisconnectedNetworkToMultipleSubnetworkConverter#generateSubnetworks(Network)}
+	 * @see unbbayes.prs.oobn.compiler.IDisconnectedNetworkToMultipleSubnetworkConverter#isIgnorableNode(Node)
+	 */
+	public boolean isIgnorableNode(Node node) {
+		// Nodes will become "alone" if they have no parents and no children at all.
+		if (node.getParents() != null && node.getParents().size() > 0) {
+			// there is at least 1 parent, so, it is not alone.
+			return false;
+		}
+		// there are no parents
+		if (node.getChildren() == null || node.getChildren().size() < 1) {
+			// no parents and no children
+			return true;
+		}
+		// there are at least one child
+		return false;
+	}
+	
+	
+
+	
 }
