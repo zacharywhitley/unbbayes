@@ -55,9 +55,9 @@ public class SSBNNode {
 	protected enum EvaluationSSBNNodeState{
 		NOT_EVALUATED, 
 		EVALUATED_BELOW, 
-		EVALUATED_COMPLETE, 
 		EVALUATING_BELOW, 
-		EVALUATING_UP
+		EVALUATING_UP,
+		EVALUATED_COMPLETE 
 	}
 	
 	private EvaluationSSBNNodeState evaluationState = 

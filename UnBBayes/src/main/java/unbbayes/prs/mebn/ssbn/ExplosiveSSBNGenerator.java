@@ -63,7 +63,6 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 	public static String queryName = "";
 
 	private List<SSBNNode> findingList; 
-	
 
 	public ExplosiveSSBNGenerator(){
 		super();  
@@ -71,7 +70,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 
 
 	/**
-	 * The SSBN Node is generate in a process with tree partes:
+	 * The SSBN Node is generate in a process with three parts:
 	 * 1) Build of the network
 	 * 2) Generate CPT's for the nodes of the created network
 	 * 3) Set the finding nodes and propagate the evidences
@@ -143,13 +142,16 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 	 * @param currentNode
 	 * @param seen
 	 * @param net
+	 * @param generatedByDownProcessOfOriginNode
+	 * 
 	 * @throws SSBNNodeGeneralException
 	 * @throws ImplementationRestrictionException
 	 * @throws MEBNException
 	 * @throws InvalidParentException 
 	 */
 	private void generateRecursive(SSBNNode currentNode , SSBNNodeList seen, 
-			ProbabilisticNetwork net, boolean generatedByDownProcessOfOriginNode) throws SSBNNodeGeneralException, 
+			ProbabilisticNetwork net, boolean generatedByDownProcessOfOriginNode) throws 
+			SSBNNodeGeneralException, 
 			ImplementationRestrictionException, 
 			MEBNException, InvalidParentException {
 
@@ -205,7 +207,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 	 * 
 	 * <br>
 	 * <strong>Pos requisites:</strong> 
-	 * <br>If the node is a finding, the atribute permanent will be setted how <code>true</code>
+	 * <br>If the node is a finding, the attribute permanent will be setted how <code>true</code>
 	 * 
 	 * @param currentNode
 	 * @param seen
@@ -245,7 +247,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 				currentNode.getResident(), currentNode.getArguments()); 
 
 		if (exactValue != null) {
-			// there were an exact match
+			// EXACT MATCH!!!
 			currentNode.setNodeAsFinding(exactValue.getState());
 
 			if(!seen.contains(currentNode)){
@@ -300,7 +302,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 
 
 
-		//------------------------- STEP 2: Resident nodes childs in the same MFrag  -------------
+		//------------------------- STEP 2: Resident nodes children in the same MFrag  -------------
 		logManager.appendln("[D]" + currentNode + ":B - Resident Nodes below");
 
 		for(ResidentNode childResidentNode: residentNode.getResidentNodeChildList()){
@@ -373,7 +375,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 
 			List<OVInstance> arguments = filterArgumentsForNode(ovInstancesList, childResidentNode);
 
-			//This test is necessary to avoid creating two equals ssbn nodes (duplicated bayesian nodes). 
+			//This test is necessary to avoid creating two equals SSBN nodes (duplicated bayesian nodes). 
 			SSBNNode testSSBNNodeDuplicated = ssbnNodesMap.get(SSBNNode.getUniqueNameFor(childResidentNode, arguments)); 
 			
 			if(testSSBNNodeDuplicated == null){
@@ -425,16 +427,18 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 
 			List<OVInstance> ovInstancesInputList = curNodeInputSNJacket.getInputMFragOvInstances(); 
 
-			//Analisy the context nodes of the new MFrag for the inputNode. 
+			//Analisy the context nodes of the new MFrag for the inputNode. For 
+			//the input nodes, the down part of the algorithm don't is made. Valid 
+			//only MFrags where the context nodes are evaluated for the actual 
+			//arguments of the input node. 
 			boolean contextNodesOK = false; 
 
 			try {
-				//For the inputs nodes, the down part of the algorithm don't is made
-				contextNodesOK = getContextNodeAvaliator().evaluateRelatedContextNodes(inputNode, 
-						ovInstancesInputList, null);
+				contextNodesOK = getContextNodeAvaliator().evaluateRelatedContextNodes(
+						inputNode, ovInstancesInputList, null);
 				if(!contextNodesOK){
 					inputNode.getMFrag().setAsUsingDefaultCPT(true); 
-					continue; //This input node don't is valid for the algorithm...
+					continue; 
 				}
 			} catch (OVInstanceFaultException e1) {
 				
@@ -455,11 +459,13 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 				logManager.appendln("[D]" + currentNode + ": Child of the input -> " + residentChild);
 				logManager.appendln("[D]" + currentNode + ": do nothing...");
 
-				//Evaluation of the RECURSION below
+				//--------------------------------------------------------------
+				//EVALUATION OF THE RECURSION BELOW 
+				//--------------------------------------------------------------
 				
 				//The format of the MFrag in the recursion is: 
 				//      INPUTNODE_A(NODE_A) PAI NODE_A 
-				//That follow: 
+				//That follows: 
 				//       RESIDENTCHILD = NODE_A
 				// (RESIDENTCHILD is the reference of the input INPUTNODE_A
 
@@ -515,7 +521,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 
 						/* 
 						 * The created nodes have the current node how father. One father, 
-						 * many childs, with the fault entity varying.  
+						 * many children, with the fault entity varying.  
 						 */ 
 						List<SSBNNode> createdNodes = createSSBNNodesOfEntitiesSearchForResidentNode(
 								residentChild.getMFrag(), currentNode, residentChild, 
@@ -591,7 +597,8 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 	 * Generate recursive method for the parents of a node. 
 	 * All the nodes created will be marked how permanent. 
 	 * 
-	 * - If the node has a finding, create the SSBNNode, set it how finding and retorne it
+	 * - If the node has a finding, create the SSBNNode, set it how finding 
+	 * and return it
 	 * 
 	 * Pre-requisites: 
 	 * - The node current node has a OVInstance for all OrdinaryVariable argument

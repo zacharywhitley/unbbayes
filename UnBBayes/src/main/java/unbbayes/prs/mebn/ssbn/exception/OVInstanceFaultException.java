@@ -24,6 +24,10 @@ import java.util.List;
 
 import unbbayes.prs.mebn.OrdinaryVariable;
 
+/**
+ * 
+ * @author Laecio Santos (laecio@gmail.com)
+ */
 public class OVInstanceFaultException extends Exception{
 
 	private List<OrdinaryVariable> ovFaultList; 

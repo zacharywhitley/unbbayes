@@ -77,7 +77,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 	
 	
 	/**
-	 * Generate the ssbn nodes parents of root and for the ssbn nodes parents of 
+	 * Generate the SSBN nodes parents of root and for the SSBN nodes parents of 
 	 * findingsDown and child of root.
 	 *  
 	 * @param root
@@ -89,6 +89,15 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 		generateCPTForAllSSBNNodes(root, 0);
 	}
 	
+	/*
+	 * Recursively generate the cpt for the node root, its fathers and its 
+	 * children. 
+	 * 
+	 * @param root
+	 * @param level
+	 * @throws MEBNException
+	 * @throws SSBNNodeGeneralException
+	 */
 	private void generateCPTForAllSSBNNodes(SSBNNode root, int level) throws MEBNException, SSBNNodeGeneralException{
 
 //		logManager.appendln(getSpaceForLevel(level) + "Generate CPT for node " + root); 
@@ -288,6 +297,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 				//ALTERNATIVE... USE OF THE XOR ALGORITHM....
 				//IT IS VALID ONLY FOR THE SIMPLE CASE RANDONVARIABLE(OV) = ENTITY
 				
+				//Test the restrictions.
 				if(ovList.size() > 1){
 					throw new ImplementationRestrictionException(resource.getString("OrdVariableProblemLimit")); 
 				}
@@ -304,9 +314,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 					throw new SSBNNodeGeneralException(resource.getString("NoContextNodeFather")); 
 				}
 
-				//contextNodeList have only one element
-				
-				//Caso trivial. 
+				//ContextNodeList have only one element (Trivial Case)
 				ContextNode context = contextNodeList.toArray(new ContextNode[contextNodeList.size()])[0];
 				ContextNodeAvaliator avaliator = new ContextNodeAvaliator(getKnowledgeBase()); 
 				
@@ -713,7 +721,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 	
 
 	/**
-	 * Evaluate of recursion in the MEBN model. Return the node procc in 
+	 * Evaluate of recursion in the MEBN model. Return the node proc in 
 	 * the recursion.
 	 * 
 	 * - Already include the node created in the ssbnNodeList. 

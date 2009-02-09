@@ -56,28 +56,24 @@ public class ContextNodeAvaliator {
 
 	
 	/**
-	 * Evaluate a context node. 
+	 * Evaluate a context node. Should have a OVInstance for each ordinary 
+	 * variable present in the context node or a exception will be throw. 
 	 * 
-	 * @param node
+	 * @param contextNode 
 	 * @param ovInstances
-	 * @return the evaluation of context node
+	 * @return the result of the evaluation of context node (true or false)
 	 * @throws OVInstanceFaultException One or more ordinary variable of the context 
 	 *                                  node don't have one associated OVInstance
 	 */
-	public boolean evaluateContextNode(ContextNode node, List<OVInstance> ovInstances) 
+	public boolean evaluateContextNode(ContextNode contextNode, List<OVInstance> ovInstances) 
 	         throws OVInstanceFaultException{
-		
-		boolean isDebug = Debug.isDebugMode(); 
-		Debug.setDebug(false); 
-		
-		List<OrdinaryVariable> ovFaultList = node.getOVFaultForOVInstanceSet(ovInstances); 
 
-		Debug.setDebug(isDebug); 
+		List<OrdinaryVariable> ovFaultList = contextNode.getOVFaultForOVInstanceSet(ovInstances); 
+
 		if(!ovFaultList.isEmpty()){
 			throw new OVInstanceFaultException(ovFaultList); 
 		}else{
-            boolean result = kb.evaluateContextNodeFormula(node, ovInstances);
-			Debug.setDebug(isDebug); 
+            boolean result = kb.evaluateContextNodeFormula(contextNode, ovInstances);
 			return result; 
 		}
 		
@@ -161,7 +157,9 @@ public class ContextNodeAvaliator {
 	
 	
 	/**
-	 * Evaluate one context node with unknown ordinary variables 
+	 * Evaluate one context node with unknown ordinary variables. Only will have
+	 * return if the result is one (and only onde) entity for each ordinary
+	 * variable. Otherside, return null. 
 	 * 
 	 * @param mFrag        MFrag of context node
 	 * @param ovFaultList  List of Fault Ordinary Variables 
@@ -178,10 +176,11 @@ public class ContextNodeAvaliator {
 			List<OrdinaryVariable> ovFaultList, 
 			List<OVInstance> ovInstances) 
 	throws ImplementationRestrictionException, SSBNNodeGeneralException {
+				
+		//List of ov instances for each ordinary variable. 
+		Map<OrdinaryVariable, List<OVInstance>> mapOVInstanceMap;
 		
-		boolean debug = false; 
 		
-		Map<OrdinaryVariable, List<OVInstance>> mapOVInstanceMap; 
 		mapOVInstanceMap = new HashMap<OrdinaryVariable, List<OVInstance>>(); 
 		
 		for(OVInstance ovInstance: ovInstances){
@@ -194,7 +193,12 @@ public class ContextNodeAvaliator {
 		
 		boolean changed = false; 
 		
-		int i = 0; 
+		// The idea is in the iteration "i" try to find information about some of 
+		// the unknown ordinary variables. This information is used in the next
+		// iteration for try to find information about the others ordinary 
+		// variables. This is made until a iteration where nothing information
+		// was found. 
+		
 		do{
 //			logManager.appendlnIfTrue(debug, "Interaction " + i++);
 			

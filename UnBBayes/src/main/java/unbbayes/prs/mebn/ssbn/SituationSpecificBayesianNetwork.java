@@ -39,7 +39,7 @@ public class SituationSpecificBayesianNetwork {
 	private final List<SSBNNode> findingList; 
 	private final List<Query> queryList; 
 	
-	/* The process of generation of algorithm should have some wanings (situations
+	/* The process of generation of algorithm should have some warnings (situations
 	 * that don't is a error but is important comunicate to the user). 
 	 */
 	private List<SSBNWarning> warningList; 
@@ -56,7 +56,7 @@ public class SituationSpecificBayesianNetwork {
 	
 	/**
 	 *
-	 * @param pn Probabilistic network get on the algorith 
+	 * @param pn Probabilistic network get on the algorithm 
 	 * @param findingList List of SSBNNode's where for each element the property isFinding = true
 	 * @param queryList List of queries
 	 */
@@ -81,6 +81,7 @@ public class SituationSpecificBayesianNetwork {
 	 * @throws Exception 
 	 */
 	public void compileAndInitializeSSBN() throws Exception{
+		//TODO retire this syouts test methods
 		compileNetwork(); 
 		System.out.println("Network compiled");
 		addFindings();

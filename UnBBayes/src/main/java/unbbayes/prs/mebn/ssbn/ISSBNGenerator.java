@@ -26,6 +26,8 @@ import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
 /**
+ * Interface for the class that implements the SSBN Algorithm
+ * 
  * @author Shou Matsumoto
  */
 public interface ISSBNGenerator {

@@ -72,13 +72,13 @@ public class SSBNDebugInformationUtil {
 		
 	    XMLBIFIO netIO = new XMLBIFIO(); 
 		
-		try {
-			netIO.save(file, queryNode.getProbabilisticNetwork());
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (JAXBException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			netIO.save(file, queryNode.getProbabilisticNetwork());
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		} catch (JAXBException e) {
+//			e.printStackTrace();
+//		}
 		
 		try {
 			logManager.writeToDisk("teste.txt", false);
