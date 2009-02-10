@@ -1,0 +1,188 @@
+<?xml version='1.0' encoding='US-ASCII'?>
+<mstns:BIF VERSION="0" xmlns:mstns="http://localhost/xml/model.xsd">
+  <mstns:HEADER>
+    <mstns:NAME>Nova BN</mstns:NAME>
+    <mstns:VERSION>1</mstns:VERSION>
+    <mstns:CREATOR>UnBBayes</mstns:CREATOR>
+  </mstns:HEADER>
+  <mstns:STATICPROPERTY>
+    <mstns:NODESIZE>0</mstns:NODESIZE>
+    <mstns:NODEFONTSIZE>0</mstns:NODEFONTSIZE>
+    <mstns:COLORUTILITY>-16711681</mstns:COLORUTILITY>
+    <mstns:COLORDECISION>-14336</mstns:COLORDECISION>
+    <mstns:COLORPROBDESCRIPTION>-256</mstns:COLORPROBDESCRIPTION>
+    <mstns:COLORPROBEXPLANATION>-16711936</mstns:COLORPROBEXPLANATION>
+  </mstns:STATICPROPERTY>
+  <mstns:HIERARCHY>
+    <mstns:ROOT NAME="root">
+      <mstns:LEVEL NAME="C0"/>
+      <mstns:LEVEL NAME="C1"/>
+      <mstns:LEVEL NAME="C2"/>
+      <mstns:LEVEL NAME="C3"/>
+      <mstns:LEVEL NAME="C4"/>
+      <mstns:LEVEL NAME="C5"/>
+      <mstns:LEVEL NAME="C6"/>
+      <mstns:LEVEL NAME="C7"/>
+      <mstns:LEVEL NAME="C8"/>
+      <mstns:LEVEL NAME="C9"/>
+      <mstns:LEVEL NAME="C10"/>
+      <mstns:LEVEL NAME="C11"/>
+      <mstns:LEVEL NAME="C12"/>
+      <mstns:LEVEL NAME="C13"/>
+      <mstns:LEVEL NAME="C14"/>
+      <mstns:LEVEL NAME="C15"/>
+    </mstns:ROOT>
+  </mstns:HIERARCHY>
+  <mstns:NETWORK>
+    <mstns:VARIABLES>
+      <mstns:VAR YPOS="323" XPOS="561" TYPE="discrete" NAME="CloakMode_St4">
+        <mstns:LABEL>C0</mstns:LABEL>
+        <mstns:STATENAME>Estado 0</mstns:STATENAME>
+      </mstns:VAR>
+      <mstns:VAR YPOS="347" XPOS="350" TYPE="discrete" NAME="StarshipClass_St4">
+        <mstns:LABEL>C1</mstns:LABEL>
+        <mstns:STATENAME>Estado 0</mstns:STATENAME>
+      </mstns:VAR>
+      <mstns:VAR YPOS="242" XPOS="283" TYPE="discrete" NAME="OperatorSpecies_St4">
+        <mstns:LABEL>C2</mstns:LABEL>
+        <mstns:STATENAME>Estado 0</mstns:STATENAME>
+      </mstns:VAR>
+      <mstns:VAR YPOS="110" XPOS="202" TYPE="discrete" NAME="ZoneFShips_Z2">
+        <mstns:LABEL>C3</mstns:LABEL>
+        <mstns:STATENAME>Estado 0</mstns:STATENAME>
+      </mstns:VAR>
+      <mstns:VAR YPOS="118" XPOS="435" TYPE="discrete" NAME="ZoneEShips_Z2">
+        <mstns:LABEL>C8</mstns:LABEL>
+        <mstns:STATENAME>Estado 0</mstns:STATENAME>
+      </mstns:VAR>
+      <mstns:VAR YPOS="27" XPOS="339" TYPE="discrete" NAME="ZoneNature_Z2">
+        <mstns:LABEL>C12</mstns:LABEL>
+        <mstns:STATENAME>Estado 0</mstns:STATENAME>
+      </mstns:VAR>
+      <mstns:VAR YPOS="413" XPOS="277" TYPE="discrete" NAME="HarmPotential_St4_T1">
+        <mstns:LABEL>C6</mstns:LABEL>
+        <mstns:STATENAME>Estado 0</mstns:STATENAME>
+      </mstns:VAR>
+      <mstns:VAR YPOS="286" XPOS="108" TYPE="discrete" NAME="DistFromOwn_St4_T1">
+        <mstns:LABEL>C7</mstns:LABEL>
+        <mstns:STATENAME>Estado 0</mstns:STATENAME>
+      </mstns:VAR>
+      <mstns:VAR YPOS="234" XPOS="440" TYPE="discrete" NAME="ItExists_St4">
+        <mstns:LABEL>C8</mstns:LABEL>
+        <mstns:STATENAME>Estado 0</mstns:STATENAME>
+      </mstns:VAR>
+      <mstns:VAR YPOS="143" XPOS="621" TYPE="discrete" NAME="ZoneMD_Z2_T1">
+        <mstns:LABEL>C11</mstns:LABEL>
+        <mstns:STATENAME>Estado 0</mstns:STATENAME>
+      </mstns:VAR>
+    </mstns:VARIABLES>
+    <mstns:STRUCTURE>
+      <mstns:ARC CHILD="CloakMode_St4" PARENT="StarshipClass_St4"/>
+      <mstns:ARC CHILD="CloakMode_St4" PARENT="OperatorSpecies_St4"/>
+      <mstns:ARC CHILD="StarshipClass_St4" PARENT="OperatorSpecies_St4"/>
+      <mstns:ARC CHILD="OperatorSpecies_St4" PARENT="ZoneFShips_Z2"/>
+      <mstns:ARC CHILD="OperatorSpecies_St4" PARENT="ZoneEShips_Z2"/>
+      <mstns:ARC CHILD="ZoneFShips_Z2" PARENT="ZoneNature_Z2"/>
+      <mstns:ARC CHILD="ZoneEShips_Z2" PARENT="ZoneNature_Z2"/>
+      <mstns:ARC CHILD="HarmPotential_St4_T1" PARENT="StarshipClass_St4"/>
+      <mstns:ARC CHILD="HarmPotential_St4_T1" PARENT="DistFromOwn_St4_T1"/>
+      <mstns:ARC CHILD="ItExists_St4" PARENT="ZoneFShips_Z2"/>
+      <mstns:ARC CHILD="ItExists_St4" PARENT="ZoneEShips_Z2"/>
+      <mstns:ARC CHILD="ZoneMD_Z2_T1" PARENT="ZoneNature_Z2"/>
+      <mstns:ARC CHILD="ZoneMD_Z2_T1" PARENT="CloakMode_St4"/>
+    </mstns:STRUCTURE>
+    <mstns:POTENTIAL>
+      <mstns:POT>
+        <mstns:PRIVATE NAME="CloakMode_St4"/>
+        <mstns:CONDSET>
+          <mstns:CONDLEM NAME="StarshipClass_St4"/>
+          <mstns:CONDLEM NAME="OperatorSpecies_St4"/>
+        </mstns:CONDSET>
+        <mstns:DPIS>
+          <mstns:DPI INDEXES="0">1.0</mstns:DPI>
+        </mstns:DPIS>
+      </mstns:POT>
+      <mstns:POT>
+        <mstns:PRIVATE NAME="StarshipClass_St4"/>
+        <mstns:CONDSET>
+          <mstns:CONDLEM NAME="OperatorSpecies_St4"/>
+        </mstns:CONDSET>
+        <mstns:DPIS>
+          <mstns:DPI INDEXES="0">1.0</mstns:DPI>
+        </mstns:DPIS>
+      </mstns:POT>
+      <mstns:POT>
+        <mstns:PRIVATE NAME="OperatorSpecies_St4"/>
+        <mstns:CONDSET>
+          <mstns:CONDLEM NAME="ZoneFShips_Z2"/>
+          <mstns:CONDLEM NAME="ZoneEShips_Z2"/>
+        </mstns:CONDSET>
+        <mstns:DPIS>
+          <mstns:DPI INDEXES="0">1.0</mstns:DPI>
+        </mstns:DPIS>
+      </mstns:POT>
+      <mstns:POT>
+        <mstns:PRIVATE NAME="ZoneFShips_Z2"/>
+        <mstns:CONDSET>
+          <mstns:CONDLEM NAME="ZoneNature_Z2"/>
+        </mstns:CONDSET>
+        <mstns:DPIS>
+          <mstns:DPI INDEXES="0">1.0</mstns:DPI>
+        </mstns:DPIS>
+      </mstns:POT>
+      <mstns:POT>
+        <mstns:PRIVATE NAME="ZoneEShips_Z2"/>
+        <mstns:CONDSET>
+          <mstns:CONDLEM NAME="ZoneNature_Z2"/>
+        </mstns:CONDSET>
+        <mstns:DPIS>
+          <mstns:DPI INDEXES="0">1.0</mstns:DPI>
+        </mstns:DPIS>
+      </mstns:POT>
+      <mstns:POT>
+        <mstns:PRIVATE NAME="ZoneNature_Z2"/>
+        <mstns:CONDSET/>
+        <mstns:DPIS>
+          <mstns:DPI INDEXES="0">1.0</mstns:DPI>
+        </mstns:DPIS>
+      </mstns:POT>
+      <mstns:POT>
+        <mstns:PRIVATE NAME="HarmPotential_St4_T1"/>
+        <mstns:CONDSET>
+          <mstns:CONDLEM NAME="StarshipClass_St4"/>
+          <mstns:CONDLEM NAME="DistFromOwn_St4_T1"/>
+        </mstns:CONDSET>
+        <mstns:DPIS>
+          <mstns:DPI INDEXES="0">1.0</mstns:DPI>
+        </mstns:DPIS>
+      </mstns:POT>
+      <mstns:POT>
+        <mstns:PRIVATE NAME="DistFromOwn_St4_T1"/>
+        <mstns:CONDSET/>
+        <mstns:DPIS>
+          <mstns:DPI INDEXES="0">1.0</mstns:DPI>
+        </mstns:DPIS>
+      </mstns:POT>
+      <mstns:POT>
+        <mstns:PRIVATE NAME="ItExists_St4"/>
+        <mstns:CONDSET>
+          <mstns:CONDLEM NAME="ZoneFShips_Z2"/>
+          <mstns:CONDLEM NAME="ZoneEShips_Z2"/>
+        </mstns:CONDSET>
+        <mstns:DPIS>
+          <mstns:DPI INDEXES="0">1.0</mstns:DPI>
+        </mstns:DPIS>
+      </mstns:POT>
+      <mstns:POT>
+        <mstns:PRIVATE NAME="ZoneMD_Z2_T1"/>
+        <mstns:CONDSET>
+          <mstns:CONDLEM NAME="ZoneNature_Z2"/>
+          <mstns:CONDLEM NAME="CloakMode_St4"/>
+        </mstns:CONDSET>
+        <mstns:DPIS>
+          <mstns:DPI INDEXES="0">1.0</mstns:DPI>
+        </mstns:DPIS>
+      </mstns:POT>
+    </mstns:POTENTIAL>
+  </mstns:NETWORK>
+</mstns:BIF>
