@@ -207,7 +207,7 @@ public class ContextNodeAvaliator {
 			
 OUT_LOOP:  for(ContextNode context: cnList){
 	
-	             System.out.println("Nó de contexto avaliado: " + context);
+//	             System.out.println("Nó de contexto avaliado: " + context);
 				 List<OrdinaryVariable> ovFaultTempList = new ArrayList<OrdinaryVariable>(); 
 				 List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
 				 ovInstanceList.addAll(ovInstances); 
@@ -217,41 +217,41 @@ OUT_LOOP:  for(ContextNode context: cnList){
 				 //Step 1: evaluate if the node should be solved
     		    for(OrdinaryVariable ov: context.getVariableList()){
 					
-    		    	System.out.println("Ordinary variable: " + ov);
+//    		    	System.out.println("Ordinary variable: " + ov);
 				 	//Problema: análise combinatória dos resultados! 
 			 		List<OVInstance> instanceListForOV = mapOVInstanceMap.get(ov); 
 		 			
 		 			if(instanceListForOV!=null){
 						if(instanceListForOV.size() == 1){
-							System.out.println("   OVInstance: " + instanceListForOV.get(0));
+//							System.out.println("   OVInstance: " + instanceListForOV.get(0));
 							if(!ovInstanceList.contains(instanceListForOV.get(0))){
 								ovInstanceList.add(instanceListForOV.get(0)); 
 							}
 						}else{
-							System.out.println("  Do intersection");
+//							System.out.println("  Do intersection");
 							doIntersection = true; 
 							ovFaultTempList.add(ov);
 						}
 					}else{
-						System.out.println(" OV Fault!!! ");
+//						System.out.println(" OV Fault!!! ");
 						ovFaultTempList.add(ov);
 					}
 				}
     		    
 				//TODO restrição atual do algoritmo (considera apenas casos triviais)
 			    if(ovFaultTempList.size() > 1){
-			    	System.out.println("OV Fault List maior que 1");
+//			    	System.out.println("OV Fault List maior que 1");
 			    	continue OUT_LOOP; 
 			    }
 
 				 try {
-					 System.out.println("Tentando avaliar nó de contexto: ");
+//					 System.out.println("Tentando avaliar nó de contexto: ");
 					 List<String> result = evalutateSearchContextNode(context, ovInstanceList);
 					 
-					 System.out.println("Result: " + result);
+//					 System.out.println("Result: " + result);
 					 
 					 if((result != null) && (result.size() > 0)){
-						 System.out.println("In");
+//						 System.out.println("In");
 						 List<OVInstance> ovInstanceListResult = new ArrayList<OVInstance>(); 
 						 
 						 //Using the restriction....
@@ -271,25 +271,25 @@ OUT_LOOP:  for(ContextNode context: cnList){
 						 }
 						 
 						 mapOVInstanceMap.put(ovFault, ovInstanceListResult); 
-						 System.out.println("Out ["  + ovFault + " " + 
-								 ovInstanceListResult + "]");
+//						 System.out.println("Out ["  + ovFault + " " + 
+//								 ovInstanceListResult + "]");
 					 }
 					 
 					 solvedNodes.add(context); 
-					 System.out.println("Houve alteracao");
+//					 System.out.println("Houve alteracao");
 					 changed = true; 
 					 
-					 System.out.println("\nMapOVInstance");
+//					 System.out.println("\nMapOVInstance");
 					 for(OrdinaryVariable ov: mapOVInstanceMap.keySet()){
-						 System.out.println("> OV=" + ov + "[");
+//						 System.out.println("> OV=" + ov + "[");
 						 List<OVInstance> ovInstanceListResult = mapOVInstanceMap.get(ov); 
 						 for(OVInstance ovI: ovInstanceListResult){
-							 System.out.println("   " + ovI);
+//							 System.out.println("   " + ovI);
 						 }
-						 System.out.println("]");
+//						 System.out.println("]");
 						 
 					 }
-					 System.out.println("\n");
+//					 System.out.println("\n");
 					 
 //					 if(verifyOVFaultList(ovFaultList, ovInsntanceList)); 
 					 
@@ -305,14 +305,14 @@ OUT_LOOP:  for(ContextNode context: cnList){
 			
 			for(ContextNode context: solvedNodes){
 				cnList.remove(context);
-				System.out.println("Solved node: " + context);
+//				System.out.println("Solved node: " + context);
 			}
 			
 		}while(changed); 
 		
 		//Montar resultado e retornar. 
 		
-		System.out.println("Resultado: ");
+//		System.out.println("Resultado: ");
 		
 		/* 
 		 * Para esta versão, pode ter apenas uma entidade como resultado para 
@@ -322,13 +322,13 @@ OUT_LOOP:  for(ContextNode context: cnList){
 		
 		List<OVInstance> listResult = new ArrayList<OVInstance>(); 
 		for(OrdinaryVariable ov: ovFaultList){
-			System.out.println("Ordinary Variable: " + ov);
+//			System.out.println("Ordinary Variable: " + ov);
 			List<OVInstance> listOVInstance = mapOVInstanceMap.get(ov); 
 			if((listOVInstance != null) && (listOVInstance.size() == 1)){
-				System.out.println("   OVInstance = " + listOVInstance.get(0));
+//				System.out.println("   OVInstance = " + listOVInstance.get(0));
 				listResult.add( listOVInstance.get(0) ); 
 			}else{
-				System.out.println("   Not ov instance for the ordinary variable");
+//				System.out.println("   Not ov instance for the ordinary variable");
 				return null; 
 			}
 		}
