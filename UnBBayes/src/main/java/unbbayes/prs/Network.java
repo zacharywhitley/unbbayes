@@ -58,9 +58,13 @@ public class Network implements Graph{
         // Event responsible for updating the index for the node that just changed its name.
         nodeNameChangedListener = new NodeNameChangedListener() {
         	public void nodeNameChanged(NodeNameChangedEvent event) {
-        		int index = nodeIndexes.get(event.getOldName());
-        		nodeIndexes.remove(event.getOldName());
-        		nodeIndexes.put(event.getNewName(), index);
+        		Integer index = nodeIndexes.get(event.getOldName());
+        		
+        		if(index!=null){
+        			nodeIndexes.remove(event.getOldName());
+        			nodeIndexes.put(event.getNewName(), index);
+        		}
+        		
         	}
         };
 	}
