@@ -359,10 +359,10 @@ public class Evaluation {
 		int statesSize = targetNode.getStatesSize();
 		row = 0;
 		int index = 0;
-		System.out.println("Approximate");
+//		System.out.println("Approximate");
 		for (int i = 0; i < statesProduct; i++) {
-			System.out.println("P(T|E) " + printArray(getMultidimensionalCoord(i)) + postProbTargetGivenEvidence[i]);
-			System.out.println("P(E|T) " + printArray(getMultidimensionalCoord(i)) + postProbEvidenceGivenTarget[i]);
+//			System.out.println("P(T|E) " + printArray(getMultidimensionalCoord(i)) + postProbTargetGivenEvidence[i]);
+//			System.out.println("P(E|T) " + printArray(getMultidimensionalCoord(i)) + postProbEvidenceGivenTarget[i]);
 			for (int j = 0; j < statesSize; j++) {
 				row = ((int) (i / evidenceStatesProduct)) * statesSize + j;
 				index = (i % evidenceStatesProduct) + j * evidenceStatesProduct;
@@ -618,10 +618,10 @@ public class Evaluation {
 		int statesSize = targetNode.getStatesSize();
 		int row = 0;
 		int index = 0;
-		System.out.println("Exact");
+//		System.out.println("Exact");
 		for (int i = 0; i < statesProduct; i++) {
-			System.out.println("P(T|E) " + printArray(getMultidimensionalCoord(i)) + postProbList[i][0]);
-			System.out.println("P(E|T) " + printArray(getMultidimensionalCoord(i)) + postProbList[i][1]);
+//			System.out.println("P(T|E) " + printArray(getMultidimensionalCoord(i)) + postProbList[i][0]);
+//			System.out.println("P(E|T) " + printArray(getMultidimensionalCoord(i)) + postProbList[i][1]);
 			for (int j = 0; j < statesSize; j++) {
 				row = ((int) (i / evidenceStatesProduct)) * statesSize + j;
 				index = (i % evidenceStatesProduct) + j * evidenceStatesProduct;
@@ -748,9 +748,9 @@ public class Evaluation {
 
 		for (int i = 0; i < stateCombinationMatrix.length; i++) {
 			for (int j = 0; j < stateCombinationMatrix[0].length; j++) {
-				System.out.print(stateCombinationMatrix[i][j] + "    ");
+//				System.out.print(stateCombinationMatrix[i][j] + "    ");
 			}
-			System.out.println(postProbList[i]);
+//			System.out.println(postProbList[i]);
 		}
 
 	}
