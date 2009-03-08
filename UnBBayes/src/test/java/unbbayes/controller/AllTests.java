@@ -20,13 +20,14 @@
  */
 package unbbayes.controller;
 
+
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
 public class AllTests {
 
 	public static Test suite() {
-		TestSuite suite = new TestSuite("Test for unbbayes.controller.test");
+		TestSuite suite = new TestSuite("Test suit for unbbayes.controller package");
 		//$JUnit-BEGIN$
 		suite.addTest(MEBNControllerTest.suite());
 		//$JUnit-END$

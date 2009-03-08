@@ -84,7 +84,7 @@ public class CompilerTest extends TestCase {
 		System.out.println("-----Load file test-----"); 
 		
 		try{
-			mebn = ubfIO.loadMebn(new File("examples/mebn/StarTrek.ubf")); 
+			mebn = ubfIO.loadMebn(new File("src/main/resources/testCases/mebn/StarTrek.ubf")); 
 			Debug.println("LOAD COMPLETE"); 
 		}
 		catch (IOMebnException e){

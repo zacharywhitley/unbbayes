@@ -27,7 +27,7 @@ public class MEBNTableParserTest extends TestCase {
 		System.out.println("-----Load file test-----"); 
 		
 		try{
-			mebn = prOwlIO.loadMebn(new File("examples/mebn/StarTrek.owl")); 
+			mebn = prOwlIO.loadMebn(new File("src/main/resources/testCases/mebn/StarTrek.owl")); 
 			Debug.println("LOAD COMPLETE"); 
 		}
 		catch (IOMebnException e){

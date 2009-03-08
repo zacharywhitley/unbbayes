@@ -30,7 +30,6 @@ public class AllTests {
 				"Test for unbbayes.prs.mebn.compiler.test");
 		//$JUnit-BEGIN$
 		suite.addTestSuite(CompilerTest.class);
-		suite.addTestSuite(CompilerUtilTest.class);
 		//$JUnit-END$
 		return suite;
 	}

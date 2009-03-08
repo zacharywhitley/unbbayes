@@ -29,11 +29,7 @@ public class AllTests {
 		TestSuite suite = new TestSuite(
 				"Test for unbbayes.prs.mebn.entity.test");
 		//$JUnit-BEGIN$
-		suite.addTestSuite(EntityTest.class);
-		suite.addTestSuite(BooleanStatesEntityTest.class);
-		suite.addTestSuite(ObjectEntityTest.class);
-		suite.addTestSuite(CategoricalStatesEntityTest.class);
-		suite.addTestSuite(TypeTest.class);
+//		suite.addTestSuite(EntityTest.class);
 		//$JUnit-END$
 		return suite;
 	}

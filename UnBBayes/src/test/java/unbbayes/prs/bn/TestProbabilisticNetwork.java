@@ -30,7 +30,7 @@ import unbbayes.prs.bn.ProbabilisticNode;
 
 public class TestProbabilisticNetwork extends TestCase {
 
-    public static File ASIA_FILE = new File("examples/asia.net");
+    public static File ASIA_FILE = new File("src/main/resources/testCases/asia.net");
     public static double DELTA = 0.0001;
 
     private ProbabilisticNetwork net;

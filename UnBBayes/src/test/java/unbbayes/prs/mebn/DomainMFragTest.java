@@ -20,7 +20,7 @@ import unbbayes.prs.mebn.exception.ArgumentOVariableAlreadySetException;
 
 /**
  * @author Shou
- *
+ * FIXME or the tested class is erroneous or the test suite is not well implemented
  */
 public class DomainMFragTest extends TestCase {
 
@@ -130,19 +130,7 @@ public class DomainMFragTest extends TestCase {
 		
 	}
 
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.MFrag#addResidentNode(unbbayes.prs.mebn.ResidentNode)}.
-	 */
-	public void testAddResidentNode() {
-		fail("Not visible, method is protected");// TODO
-	}
-
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.MFrag#addInputNode(unbbayes.prs.mebn.InputNode)}.
-	 */
-	public void testAddInputNode() {
-		fail("Not visible, method is protected");// TODO
-	}
+	
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#removeNode(unbbayes.prs.Node)}.

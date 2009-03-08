@@ -53,7 +53,7 @@ public class PowerLoomKBTest extends TestCase {
 		super.setUp();
 		Debug.setDebug(true);
 		kb = PowerLoomKB.getNewInstanceKB();
-		kb.loadModule(new File("examples/mebn/KnowledgeBase/KnowledgeBaseWithStarshipZoneST4ver2.plm"), true);
+		kb.loadModule(new File("esrc/main/resources/testCases/mebn/knowledgeBase/KnowledgeBaseWithStarshipZoneST4ver2.plm"), true);
 	}
 
 	/* (non-Javadoc)

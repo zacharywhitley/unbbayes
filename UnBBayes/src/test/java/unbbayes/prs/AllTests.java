@@ -18,50 +18,20 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.prs.mebn.builtInRV;
+package unbbayes.prs;
 
-import junit.framework.TestCase;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-/**
- * @author user
- *
- */
-public class BuiltInRVEqualToTest extends TestCase {
+public class AllTests {
 
-	/**
-	 * @param arg0
-	 */
-	public BuiltInRVEqualToTest(String arg0) {
-		super(arg0);
-	}
-
-	/* (non-Javadoc)
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	protected void setUp() throws Exception {
-		super.setUp();
-	}
-
-	/* (non-Javadoc)
-	 * @see junit.framework.TestCase#tearDown()
-	 */
-	protected void tearDown() throws Exception {
-		super.tearDown();
-	}
-
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.builtInRV.BuiltInRVEqualTo#BuiltInRVEqualTo()}.
-	 */
-	public void testBuiltInRVEqualTo() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 *  Use this for test suite creation
-	 */
 	public static Test suite() {
-		return new TestSuite(BuiltInRVEqualToTest.class);
+		TestSuite suite = new TestSuite(
+				"Test for unbbayes.prs");
+		//$JUnit-BEGIN$
+//		suite.addTest(BuiltInRVEqualToTest.suite());
+		//$JUnit-END$
+		return suite;
 	}
+
 }
