@@ -16,9 +16,10 @@ import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.exception.CategoricalStateDoesNotExistException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
-import unbbayes.prs.mebn.ssbn.ExplosiveSSBNGenerator;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.Query;
+import unbbayes.prs.mebn.ssbn.SSBN;
+import unbbayes.prs.mebn.ssbn.giaalgorithm.ExplosiveSSBNGenerator;
 
 /**
  * This is a set of case test developer por Cheol Young Park using the Hepar II 
@@ -258,11 +259,11 @@ public class HeparIITestSet  extends TestSet{
 		executeTestCase139(); 
 	}
 	
-	private void executeTestCase(int index, String nameResidentNode, String nameMFrag){
-		executeTestCase(index, nameResidentNode, nameMFrag, null); 			
+	private SSBN executeTestCase(int index, String nameResidentNode, String nameMFrag){
+		return executeTestCase(index, nameResidentNode, nameMFrag, null); 			
 	}
 
-	private void executeTestCase(int index, String nameResidentNode, String nameMFrag, 
+	private SSBN executeTestCase(int index, String nameResidentNode, String nameMFrag, 
 			RandomVariableFinding[] findingList){
 		
 		printTestHeader(index, nameResidentNode);
@@ -282,7 +283,7 @@ public class HeparIITestSet  extends TestSet{
 				new String[]{"p"}, 
 				new String[]{"maria"}, kb); 
 
-		executeQueryAndPrintResults(query, PATH + "/" + "Test" + testNumber + ".xml"); 				
+		return executeQueryAndPrintResults(query, PATH + "/" + "Test" + testNumber + ".xml"); 				
 	}
 	
 
@@ -320,8 +321,8 @@ public class HeparIITestSet  extends TestSet{
 
 	}
 	
-	private void executeTestCase1(){
-		executeTestCase(1, RV_AST, RV_AST + "_MFrag"); 				
+	public SSBN executeTestCase1(){
+		return executeTestCase(1, RV_AST, RV_AST + "_MFrag"); 				
 	}
 
 	private void executeTestCase2(){

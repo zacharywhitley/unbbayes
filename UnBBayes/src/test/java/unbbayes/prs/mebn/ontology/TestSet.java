@@ -3,6 +3,8 @@ package unbbayes.prs.mebn.ontology;
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import javax.xml.bind.JAXBException;
@@ -17,8 +19,8 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.Query;
+import unbbayes.prs.mebn.ssbn.SSBN;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
-import unbbayes.prs.mebn.ssbn.SituationSpecificBayesianNetwork;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
 /**
@@ -87,25 +89,34 @@ public abstract class TestSet {
 	}
 	
 
-	private void executeQuery(Query query, String nameOfNetworkGenerated) {
+	private SSBN executeQuery(Query query, String nameOfNetworkGenerated) {
+		
 		try {
-			SituationSpecificBayesianNetwork ssbn = ssbnGenerator.generateSSBN(query);
+			List<Query> listQueries = new ArrayList<Query>(); 
+			listQueries.add(query); 
+			
+			SSBN ssbn = ssbnGenerator.generateSSBN(listQueries, query.getKb());
 
 			File file = new File(nameOfNetworkGenerated); 
 			saveNetworkFile(file, query.getQueryNode()); 
 			
 			ssbn.compileAndInitializeSSBN();
+			
+			return ssbn; 
 		} catch (Exception e) {
 			e.printStackTrace();
 			logManager.appendln(e.toString());
 		}
+		
+		return null; 
 	}
 	
 
-	protected void executeQueryAndPrintResults(Query query, String nameOfNetworkGenerated) {
-		executeQuery(query, nameOfNetworkGenerated);
+	protected SSBN executeQueryAndPrintResults(Query query, String nameOfNetworkGenerated) {
+		SSBN ssbn = executeQuery(query, nameOfNetworkGenerated);
 		printTreeVariableTable(query);
 		printTestFoot();
+		return ssbn; 
 	}
 	
 	

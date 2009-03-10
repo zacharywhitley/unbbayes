@@ -15,6 +15,8 @@ import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
+import unbbayes.prs.mebn.ssbn.giaalgorithm.AbstractSSBNGenerator;
+import unbbayes.prs.mebn.ssbn.giaalgorithm.ExplosiveSSBNGenerator;
 
 public class AbstractSSBNGeneratorTest extends TestCase{
 

@@ -8,9 +8,9 @@ import unbbayes.io.mebn.UbfIO;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
-import unbbayes.prs.mebn.ssbn.ExplosiveSSBNGenerator;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.Query;
+import unbbayes.prs.mebn.ssbn.giaalgorithm.ExplosiveSSBNGenerator;
 
 public class StartrekTestSet extends TestSet{
 
