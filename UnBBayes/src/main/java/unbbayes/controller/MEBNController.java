@@ -24,6 +24,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.io.File;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -79,15 +80,16 @@ import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 import unbbayes.prs.mebn.exception.ReservedWordException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
-import unbbayes.prs.mebn.ssbn.ExplosiveSSBNGenerator;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.prs.mebn.ssbn.SSBNWarning;
-import unbbayes.prs.mebn.ssbn.SituationSpecificBayesianNetwork;
+import unbbayes.prs.mebn.ssbn.SSBN;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
+import unbbayes.prs.mebn.ssbn.giaalgorithm.ExplosiveSSBNGenerator;
+import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSBNGenerator;
 import unbbayes.prs.mebn.ssbn.util.PositionAdjustmentUtils;
 import unbbayes.util.Debug;
 import unbbayes.util.ResourceController;
@@ -196,7 +198,7 @@ public class MEBNController  {
 	/* SSBN Mode                                                               */
 	/*-------------------------------------------------------------------------*/
 		
-	private SituationSpecificBayesianNetwork ssbn = null; 
+	private SSBN ssbn = null; 
 	
 	/*-------------------------------------------------------------------------*/
 	/* Constructors                                                            */
@@ -1632,7 +1634,8 @@ public class MEBNController  {
 		
 		for (int i = 1; i <= arguments.length; i++) {
 			try {
-				//TODO It has to get in the right order. For some reason in argList, sometimes the second argument comes first
+				//TODO It has to get in the right order. For some reason in argList, 
+				// sometimes the second argument comes first
 				for (Argument argument : arglist) {
 					if (argument.getArgNumber() == i) {
 						queryNode.addArgument(argument.getOVariable(), arguments[i-1].getName());
@@ -1655,9 +1658,12 @@ public class MEBNController  {
 		
 		ISSBNGenerator ssbngenerator = new ExplosiveSSBNGenerator();
 
-		ssbn = ssbngenerator.generateSSBN(query); 
+		List<Query> listQueries = new ArrayList<Query>(); 
+		listQueries.add(query); 
 		
-		probabilisticNetwork = ssbn.getPn();
+		ssbn = ssbngenerator.generateSSBN(listQueries, getKnowledgeBase()); 
+		
+		probabilisticNetwork = ssbn.getProbabilisticNetwork();
 
 		if(!query.getQueryNode().isFinding()){
 
@@ -1704,6 +1710,40 @@ public class MEBNController  {
 		return specificSituationBayesianNetwork ;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 	}
 
+	/**
+	 * Execute a query. 
+	 * 
+	 * @param residentNode
+	 * @param arguments
+	 * @return
+	 * @throws InconsistentArgumentException
+	 * @throws ImplementationRestrictionException 
+	 * @throws SSBNNodeGeneralException 
+	 * @throws OVInstanceFaultException 
+	 * @throws InvalidParentException 
+	 */
+	public ProbabilisticNetwork executeQueryLaskeyAlgorithm(List<Query> listQueries)
+	                           throws InconsistentArgumentException, 
+	                                  SSBNNodeGeneralException, 
+	                                  ImplementationRestrictionException, 
+	                                  MEBNException, 
+	                                  OVInstanceFaultException, InvalidParentException {
+		
+		mebnEditionPane.setStatus(resource.getString("statusGeneratingSSBN")); 
+		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+		
+	    createKnowledgeBase(); 	
+		
+		ISSBNGenerator ssbngenerator = new LaskeySSBNGenerator();
+		
+		ssbn = ssbngenerator.generateSSBN(listQueries, getKnowledgeBase()); 
+		
+		mebnEditionPane.setStatus(resource.getString("statusReady")); 
+		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+		
+		return specificSituationBayesianNetwork ;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+	}
+	
 
 	public void openWarningDialog() {
 		if(ssbn != null){

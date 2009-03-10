@@ -42,6 +42,7 @@ import unbbayes.prs.mebn.compiler.Compiler;
 import unbbayes.prs.mebn.compiler.ICompiler;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
+import unbbayes.prs.mebn.ssbn.giaalgorithm.AbstractSSBNGenerator;
 
 /**
  * @author Shou Matsumoto
@@ -52,7 +53,7 @@ public class SSBNNode {
 	private static int count = 0; 
 	private int id; 
 	
-	protected enum EvaluationSSBNNodeState{
+	public enum EvaluationSSBNNodeState{
 		NOT_EVALUATED, 
 		EVALUATED_BELOW, 
 		EVALUATING_BELOW, 

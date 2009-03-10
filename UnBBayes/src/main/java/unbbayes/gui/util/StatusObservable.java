@@ -8,10 +8,10 @@ package unbbayes.gui.util;
  */
 public interface StatusObservable {
 
-	public void attach(StatusObserver observer); 
+	public void registerObserver(StatusObserver observer); 
 	
-	public void detach(StatusObserver observer);
+	public void removeObserver(StatusObserver observer);
 	
-	public void notity(StatusChangedEvent event);
+	public void notityObservers(StatusChangedEvent event);
 	
 }

@@ -19,7 +19,7 @@
  *
  */
 
-package unbbayes.prs.mebn.ssbn;
+package unbbayes.prs.mebn.ssbn.giaalgorithm;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,6 +35,16 @@ import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.exception.MEBNException;
+import unbbayes.prs.mebn.kb.KnowledgeBase;
+import unbbayes.prs.mebn.ssbn.ContextNodeAvaliator;
+import unbbayes.prs.mebn.ssbn.MFragInstance;
+import unbbayes.prs.mebn.ssbn.OVInstance;
+import unbbayes.prs.mebn.ssbn.Query;
+import unbbayes.prs.mebn.ssbn.SSBN;
+import unbbayes.prs.mebn.ssbn.SSBNNode;
+import unbbayes.prs.mebn.ssbn.SSBNNodeJacket;
+import unbbayes.prs.mebn.ssbn.SSBNNodeList;
+import unbbayes.prs.mebn.ssbn.SSBNWarning;
 import unbbayes.prs.mebn.ssbn.SSBNNode.EvaluationSSBNNodeState;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationError;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
@@ -68,6 +78,12 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 		super();  
 	}
 
+	public SSBN generateSSBN(List<Query> listQueries, 
+			KnowledgeBase kb) throws SSBNNodeGeneralException,
+	ImplementationRestrictionException, MEBNException,
+	OVInstanceFaultException, InvalidParentException {
+		return generateSSBN(listQueries.get(0));
+	}
 
 	/**
 	 * The SSBN Node is generate in a process with three parts:
@@ -77,7 +93,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 	 * @throws InvalidParentException 
 	 */
 
-	public SituationSpecificBayesianNetwork generateSSBN(Query query)
+	public SSBN generateSSBN(Query query)
 	throws SSBNNodeGeneralException, ImplementationRestrictionException, 
 	MEBNException, InvalidParentException {
 
@@ -89,7 +105,10 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 		findingList = new ArrayList<SSBNNode>(); 
 		
 		// THE PREPARATION
+		
 		SSBNNode queryNode = query.getQueryNode();
+		
+		
 		setKnowledgeBase(query.getKb());
 		setContextNodeAvaliator(new ContextNodeAvaliator(getKnowledgeBase())); 
 		
@@ -128,8 +147,10 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 			} 	
 		}
 
-		SituationSpecificBayesianNetwork ssbn = new SituationSpecificBayesianNetwork(
-				queryNode.getProbabilisticNetwork(), findingList, queryList); 
+		SSBN ssbn = new SSBN();
+		ssbn.setProbabilisticNetwork(queryNode.getProbabilisticNetwork()); 
+		ssbn.setFindingList(findingList); 
+		ssbn.setQueryList(queryList); 
 
 		ssbn.setWarningList(this.warningList); 
 
@@ -892,5 +913,6 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 		PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(queryNode.getProbabilisticNetwork()); 
 		SSBNDebugInformationUtil.printNetworkInformation(logManager, queryNode, stepCount, queryName); 
 	}
+
 
 }

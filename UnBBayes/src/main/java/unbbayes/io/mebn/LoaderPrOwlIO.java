@@ -267,7 +267,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements StatusObservable{
 		StatusChangedEvent event = new StatusChangedEvent(); 
 		event.setPercentageConclude(5); 
 		event.setMsg(msg); 
-		notity(event); 
+		notityObservers(event); 
 	}
 	
 	/**
@@ -1704,15 +1704,15 @@ public class LoaderPrOwlIO extends PROWLModelUser implements StatusObservable{
 		return;
 	}
 
-	public void attach(StatusObserver observer) {
+	public void registerObserver(StatusObserver observer) {
 		observers.add(observer); 
 	}
 
-	public void detach(StatusObserver observer) {
+	public void removeObserver(StatusObserver observer) {
 		observers.remove(observer); 
 	}
 
-	public void notity(StatusChangedEvent event) {
+	public void notityObservers(StatusChangedEvent event) {
 		for(StatusObserver observer: observers){
 			observer.update(event); 
 		}

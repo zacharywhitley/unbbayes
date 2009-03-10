@@ -25,7 +25,7 @@ import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.ArgumentOVariableAlreadySetException;
 
 /**
- * Used only in the process of loading and saving PR-OWL. 
+ * Argument of a node
  */
 public class Argument {
 	

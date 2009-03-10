@@ -21,6 +21,7 @@
 
 package unbbayes.prs.mebn.ssbn;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -33,16 +34,19 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  *
  */
-public class SituationSpecificBayesianNetwork {
+public class SSBN {
 
-	private final ProbabilisticNetwork probabilisticNetwork; 
-	private final List<SSBNNode> findingList; 
-	private final List<Query> queryList; 
+	private ProbabilisticNetwork probabilisticNetwork; 
 	
-	/* The process of generation of algorithm should have some warnings (situations
-	 * that don't is a error but is important comunicate to the user). 
-	 */
+	private List<SSBNNode> findingList; 
+	
+	private List<Query> queryList; 
+	
 	private List<SSBNWarning> warningList; 
+	
+	private List<SimpleSSBNNode> ssbnNodeList; 
+	
+	private List<SimpleEdge> edgeList; 
 	
 	private enum State{
 		INITIAL, 
@@ -60,15 +64,12 @@ public class SituationSpecificBayesianNetwork {
 	 * @param findingList List of SSBNNode's where for each element the property isFinding = true
 	 * @param queryList List of queries
 	 */
-	public SituationSpecificBayesianNetwork(
-			ProbabilisticNetwork pn, 
-			List<SSBNNode> findingList, 
-			List<Query> queryList){
-	
-		this.probabilisticNetwork = pn; 
-		this.findingList = findingList; 
-		this.queryList = queryList;
-		
+	public SSBN(){
+		findingList = new ArrayList<SSBNNode>(); 
+		queryList = new ArrayList<Query>(); 
+		warningList = new ArrayList<SSBNWarning>();
+		ssbnNodeList = new ArrayList<SimpleSSBNNode>(); 
+		edgeList = new ArrayList<SimpleEdge>(); 
 	}
 	
 	/**
@@ -81,21 +82,20 @@ public class SituationSpecificBayesianNetwork {
 	 * @throws Exception 
 	 */
 	public void compileAndInitializeSSBN() throws Exception{
-		//TODO retire this syouts test methods
 		compileNetwork(); 
-		System.out.println("Network compiled");
+//		System.out.println("Network compiled");
 		addFindings();
-		System.out.println("Findings setted");
+//		System.out.println("Findings setted");
 		propagateFindings(); 
-		System.out.println("Findings propagated");
+//		System.out.println("Findings propagated");
 	}
 	
 	public void reinitializeSSBN() throws Exception{
 	    this.probabilisticNetwork.initialize();
 		addFindings();
-		System.out.println("Findings setted");
+//		System.out.println("Findings setted");
 		propagateFindings(); 
-		System.out.println("Findings propagated");	    
+//		System.out.println("Findings propagated");	    
 	}
 	
 	private void compileNetwork() throws Exception{
@@ -113,7 +113,7 @@ public class SituationSpecificBayesianNetwork {
 	private void addFindings() throws SSBNNodeGeneralException{
 		
 		for(SSBNNode findingNode: findingList){
-			System.out.println("Set finding: " + findingNode + "=" + findingNode.getValue());
+//			System.out.println("Set finding: " + findingNode + "=" + findingNode.getValue());
 			TreeVariable node = findingNode.getProbNode();
 
 			String nameState = findingNode.getValue().getName(); 
@@ -142,16 +142,30 @@ public class SituationSpecificBayesianNetwork {
 		state = State.FINDINGS_PROPAGATED; 
 	}
 
-	public ProbabilisticNetwork getPn() {
-		return probabilisticNetwork;
-	}
-
+	// GET AND SET'S METHODS
+	
 	public List<SSBNNode> getFindingList() {
 		return findingList;
 	}
 
 	public List<Query> getQueryList() {
 		return queryList;
+	}
+	
+	public ProbabilisticNetwork getProbabilisticNetwork() {
+		return probabilisticNetwork;
+	}
+
+	public void setProbabilisticNetwork(ProbabilisticNetwork probabilisticNetwork) {
+		this.probabilisticNetwork = probabilisticNetwork;
+	}
+
+	public void setFindingList(List<SSBNNode> findingList) {
+		this.findingList = findingList;
+	}
+
+	public void setQueryList(List<Query> queryList) {
+		this.queryList = queryList;
 	}
 
 	public List<SSBNWarning> getWarningList() {
@@ -161,5 +175,19 @@ public class SituationSpecificBayesianNetwork {
 	public void setWarningList(List<SSBNWarning> warningList){
 		this.warningList = warningList; 
 	}
+
+	public List<SimpleSSBNNode> getSsbnNodeList() {
+		return ssbnNodeList;
+	}
+	
+	public void addSSBNNode(SimpleSSBNNode node){
+		this.ssbnNodeList.add(node); 
+	}
+
+	public List<SimpleEdge> getEdgeList() {
+		return edgeList;
+	}
+
+
 	
 }

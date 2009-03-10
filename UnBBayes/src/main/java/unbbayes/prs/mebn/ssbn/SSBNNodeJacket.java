@@ -39,7 +39,7 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
  * MFrag where the node is residente if the evaluation is about the 
  * ssbnnode itself). 
  */
-class SSBNNodeJacket{
+public class SSBNNodeJacket{
 	
 	private final Integer ARGUMENTS_OF_INPUT_MFRAG = 0; 
 	private final Integer ARGUMENTS_OF_RESIDENT_MFRAG = 1; 
@@ -130,7 +130,7 @@ class SSBNNodeJacket{
 	 * 
 	 * @throws SSBNNodeGeneralException
 	 */
-	protected void addArgument(InputNode inputNode, OVInstance ovInstanceInputMFrag) 
+	public void addArgument(InputNode inputNode, OVInstance ovInstanceInputMFrag) 
 	            throws SSBNNodeGeneralException {
 		
 		ResidentNode residentNode = inputNode.getResidentNodePointer().getResidentNode(); 

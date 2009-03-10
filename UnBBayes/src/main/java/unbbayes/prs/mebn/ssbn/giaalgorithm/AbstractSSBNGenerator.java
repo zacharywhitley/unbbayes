@@ -19,7 +19,7 @@
  *
  */
 
-package unbbayes.prs.mebn.ssbn;
+package unbbayes.prs.mebn.ssbn.giaalgorithm;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,6 +42,15 @@ import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
+import unbbayes.prs.mebn.ssbn.ContextFatherSSBNNode;
+import unbbayes.prs.mebn.ssbn.ContextNodeAvaliator;
+import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
+import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
+import unbbayes.prs.mebn.ssbn.OVInstance;
+import unbbayes.prs.mebn.ssbn.SSBNNode;
+import unbbayes.prs.mebn.ssbn.SSBNNodeJacket;
+import unbbayes.prs.mebn.ssbn.SSBNNodeList;
+import unbbayes.prs.mebn.ssbn.SSBNWarning;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
 import unbbayes.prs.mebn.ssbn.exception.InvalidOperationException;

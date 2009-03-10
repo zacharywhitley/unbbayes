@@ -21,7 +21,7 @@
 
 package unbbayes.prs.mebn.ssbn;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import unbbayes.prs.mebn.ContextNode;
@@ -40,12 +40,20 @@ public class MFragInstance {
 	
 	private boolean useDefaultDistribution; 
 
-	//Ordinary variables
+	private Map<OrdinaryVariable, List<LiteralEntityInstance>> instanciatedArguments; 
 	
-	private Map<OrdinaryVariable, LiteralEntityInstance> ordinaryVariableEvaluationState;
+	private List<SSBNNode> nodeList; 
+	
+	private ContextNodeAvaliator contextNodeAvaliator; 
 	
 	private Map<ContextNode, ContextNodeEvaluationState> contextNodeEvaluationState; 
 	
+	
+	//Boolean
+	// Evaluation OK - Context node evaluated true with all the arguments filled
+	// Evaluation fail - Context node evaluated false with all the arguments filled
+	// Evaluation search - Context node result in a list of ord. variables that fill the argument
+	// Not evaluated yet- Context node not evaluated yet. 
 	
 	public enum ContextNodeEvaluationState{
 		EVALUATION_OK, 
@@ -57,25 +65,9 @@ public class MFragInstance {
 	public MFragInstance(MFrag mFragOrigin){
 		this.mFragOrigin = mFragOrigin; 
 		
-		contextNodeEvaluationState = new HashMap<ContextNode, ContextNodeEvaluationState>(); 
-		for(ContextNode contextNode: mFragOrigin.getContextNodeList()){
-			contextNodeEvaluationState.put(contextNode, ContextNodeEvaluationState.NOT_EVALUATED_YET); 
-		}
-		
-		ordinaryVariableEvaluationState = new HashMap<OrdinaryVariable, LiteralEntityInstance>(); 
-		for(OrdinaryVariable ordinaryVariable: mFragOrigin.getOrdinaryVariableList()){
-			ordinaryVariableEvaluationState.put(ordinaryVariable, null); 
-		}
-	
 	}
 	
-	public void setContextNodeEvaluationState(ContextNode context, ContextNodeEvaluationState state){
-		contextNodeEvaluationState.put(context, state); 
-	}
-
-	public void setOrdinaryVariableEvaluationState(OrdinaryVariable ov, LiteralEntityInstance instance){
-		ordinaryVariableEvaluationState.put(ov, instance); 
-	}
+	// GET AND SET'S METHODS
 	
 	public boolean isUsingDefaultDistribution() {
 		return useDefaultDistribution;

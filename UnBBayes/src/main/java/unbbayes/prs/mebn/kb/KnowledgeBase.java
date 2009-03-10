@@ -168,7 +168,8 @@ public interface KnowledgeBase {
 			List<OVInstance> ovInstances) throws OVInstanceFaultException;
 	
 	
-	public Map<OrdinaryVariable, List<String>> evaluateMultipleSearchContextNodeFormula(List<ContextNode> contextList, List<OVInstance> ovInstances);
+	public Map<OrdinaryVariable, List<String>> evaluateMultipleSearchContextNodeFormula(
+			List<ContextNode> contextList, List<OVInstance> ovInstances);
 	
 	
 	

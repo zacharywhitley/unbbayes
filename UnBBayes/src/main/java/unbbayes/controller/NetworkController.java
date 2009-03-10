@@ -71,7 +71,7 @@ import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.exception.CycleFoundException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
-import unbbayes.prs.mebn.ssbn.AbstractSSBNGenerator;
+import unbbayes.prs.mebn.ssbn.giaalgorithm.AbstractSSBNGenerator;
 
 /**
  * This class is responsible for delegating instructions that is going to be 

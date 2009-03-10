@@ -14,7 +14,6 @@ import unbbayes.util.Debug;
 
 public class SSBNDebugInformationUtil {
 
-
 	/*
 	 * This debug method print the informations about the network build by
 	 * the SSBN algorithm and save a file xmlbif with the bayesian network built. 

@@ -21,7 +21,7 @@
 package unbbayes.prs.mebn.ssbn.exception;
 
 /**
- * The situation dont is treat for this implementation
+ * The situation don't is treat for this implementation
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  */

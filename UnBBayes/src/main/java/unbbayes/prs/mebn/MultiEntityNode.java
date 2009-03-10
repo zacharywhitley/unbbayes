@@ -180,6 +180,19 @@ public class MultiEntityNode extends Node {
 		return argumentList; 
 	}
 	
+	/**
+	 * @param argNumber Number of the argument to be recover
+	 * @return the argument or null if don't have a argument with the specific number
+	 */
+	public Argument getArgumentNumber(int argNumber){
+		for(Argument argument: argumentList){
+			if(argument.getArgNumber() ==  argNumber){
+				return argument; 
+			}
+		}
+		return null; 
+	}
+	
 	public List<MultiEntityNode> getInnerTermOfList(){
 		return innerTermOfList; 
 	}

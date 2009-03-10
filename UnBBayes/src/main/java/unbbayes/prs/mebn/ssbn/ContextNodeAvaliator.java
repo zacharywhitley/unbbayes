@@ -37,7 +37,6 @@ import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
-import unbbayes.util.Debug;
 
 /**
  * Class that contains methods for evaluate the context nodes of a MFrag. 
@@ -54,6 +53,23 @@ public class ContextNodeAvaliator {
 		
 	}
 
+	/**
+	 * Evaluate the context nodes of a MFrag using the ordinary variables already
+	 * instanciated. 
+	 * 
+	 * - Ordinary variables don't instanciated yet will be instanciated.
+	 * - Should have more than one reference for a ordinary variable 
+	 * - Should have reference uncertainty problem (how return this problem)
+	 * - Should have ordinary variables that don't have instance for it
+	 * 
+	 * Solution: return all in a MFragInstance object. 
+	 * 
+	 * @param mfrag MFrag evaluated
+	 * @param ovInstances Ordinary variables already instanciated. 
+	 */
+	public MFragInstance evaluateMFragContextNode(MFrag mfrag, List<OVInstance> ovInstances){
+		return new MFragInstance(null); 
+	}
 	
 	/**
 	 * Evaluate a context node. Should have a OVInstance for each ordinary 
@@ -107,7 +123,7 @@ public class ContextNodeAvaliator {
 	 * @return true evaluation OK
 	 *         false evaluation FALSE. 
 	 */
-	protected boolean evaluateRelatedContextNodes (ResidentNode residentNode, 
+	public boolean evaluateRelatedContextNodes (ResidentNode residentNode, 
 			List<OVInstance> ovInstances, MFragInstance mFragInstance) throws OVInstanceFaultException{
 
 		return evaluateRelatedContextNodes(residentNode, ovInstances, mFragInstance, 
@@ -120,7 +136,7 @@ public class ContextNodeAvaliator {
 	 * Evaluate only the context nodes for what have ordinary variables instances
 	 * for all the ordinary variables present (ordinal context nodes). 
 	 */
-	protected boolean evaluateRelatedContextNodes (InputNode inputNode, 
+	public boolean evaluateRelatedContextNodes (InputNode inputNode, 
 			List<OVInstance> ovInstances, MFragInstance mFragInstance) throws OVInstanceFaultException{
 
 		return evaluateRelatedContextNodes(inputNode, ovInstances, mFragInstance, 

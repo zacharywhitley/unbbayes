@@ -28,6 +28,7 @@ import unbbayes.prs.mebn.OrdinaryVariable;
  * @author Shou Matsumoto
  */
 public class OVInstance {
+	
 	private OrdinaryVariable ov = null;
 	private LiteralEntityInstance entity = null;
 	

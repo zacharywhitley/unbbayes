@@ -22,7 +22,7 @@ package unbbayes.prs.mebn.entity;
 
 
 /**
- * Instance of the Object Entity Class. 
+ * Instance of one Object Entity. 
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  */
