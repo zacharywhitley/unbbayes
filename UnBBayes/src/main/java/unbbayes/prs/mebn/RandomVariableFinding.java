@@ -42,6 +42,7 @@ public class RandomVariableFinding {
 	private Entity state;
 
 	private String name;
+	private static int rvfNumber = 1; 
 
 	/**
 	 *
@@ -57,7 +58,8 @@ public class RandomVariableFinding {
 		this.state = state;
 		this.mebn = mebn;
 
-		name = "RVF"; //this object don't is saved... 
+		name = "RVF" + "_" + rvfNumber; //this object don't is saved... 
+	    rvfNumber++; 
 	}
 
 	public ObjectEntityInstance[] getArguments() {
