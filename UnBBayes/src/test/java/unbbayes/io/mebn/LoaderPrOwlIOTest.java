@@ -44,8 +44,8 @@ import junit.framework.TestSuite;
  */
 public class LoaderPrOwlIOTest extends TestCase {
 
-	public static final String STARSHIP16FILEEXAMPLE = "src/main/resources/testCases/mebn/StarTrek.owl"; 
-	public static final String STARSHIP16FILEEXAMPLESAVED = "src/main/resources/testCases/mebn/StarTrek_result.owl"; 
+	public static final String STARSHIP16FILEEXAMPLE = "src/test/resources/testCases/mebn/StarTrek.owl"; 
+	public static final String STARSHIP16FILEEXAMPLESAVED = "src/test/resources/testCases/mebn/StarTrek_result.owl"; 
 	
 	/**
 	 * @param arg0

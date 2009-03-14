@@ -20,7 +20,7 @@ import unbbayes.prs.exception.InvalidParentException;
  */
 public class MFragTest extends TestCase {
 
-	public static final String STARTREK_UBF = "src/main/resources/testCases/mebn/StarTrek.ubf"; 
+	public static final String STARTREK_UBF = "src/test/resources/testCases/mebn/StarTrek.ubf"; 
 	
 	/**
 	 * @param arg0	

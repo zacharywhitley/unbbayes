@@ -55,10 +55,10 @@ public class KBTest  extends TestCase {
 	}
 
 //	private static final String KNOWLEDGE_BASE = "KnowledgeBaseWithStarshipZoneST4.ubf"; 
-	private static final String FILE_STARTREK = "src/main/resources/testCases/mebn/StarTrek.ubf"; 
+	private static final String FILE_STARTREK = "src/test/resources/testCases/mebn/StarTrek.ubf"; 
 	
-	public static final String KB_GENERATIVE_FILE = "src/main/resources/testCases/mebn/knowledgeBase/testeGenerativeStarship.plm";
-	public static final String KB_FINDING_FILE = "src/main/resources/testCases/mebn/knowledgeBase/KnowledgeBaseWithStarshipZoneST4ver2.plm";  	
+	public static final String KB_GENERATIVE_FILE = "src/test/resources/testCases/mebn/knowledgeBase/testeGenerativeStarship.plm";
+	public static final String KB_FINDING_FILE = "src/test/resources/testCases/mebn/knowledgeBase/KnowledgeBaseWithStarshipZoneST4ver2.plm";  	
 	
 	private KnowledgeBase kb; 
 	private MultiEntityBayesianNetwork mebn; 
