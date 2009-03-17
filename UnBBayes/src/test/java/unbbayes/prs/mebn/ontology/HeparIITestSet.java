@@ -275,6 +275,7 @@ public class HeparIITestSet  extends TestSet{
 		
 		if(findingList != null){
 			for(RandomVariableFinding finding: findingList){
+				finding.getNode().addRandomVariableFinding(finding); 
 				kb.insertRandomVariableFinding(finding); 
 			}
 		}
@@ -325,20 +326,20 @@ public class HeparIITestSet  extends TestSet{
 		return executeTestCase(1, RV_AST, RV_AST + "_MFrag"); 				
 	}
 
-	private void executeTestCase2(){
-		executeTestCase(2, RV_Fatigue, RV_Fatigue + "_MFrag"); 					
+	public SSBN executeTestCase2(){
+		return executeTestCase(2, RV_Fatigue, RV_Fatigue + "_MFrag"); 					
 	}
 	
-	private void executeTestCase3(){
-		executeTestCase(3, RV_EnlargedSpleen, RV_EnlargedSpleen + "_MFrag"); 				
+	public SSBN executeTestCase3(){
+		return executeTestCase(3, RV_EnlargedSpleen, RV_EnlargedSpleen + "_MFrag"); 				
 	}
 	
-	private void executeTestCase4(){
-		executeTestCase(4, RV_ALT, RV_ALT + "_MFrag"); 				
+	public SSBN executeTestCase4(){
+		return executeTestCase(4, RV_ALT, RV_ALT + "_MFrag"); 				
 	}
 	
-	private void executeTestCase5(){
-		executeTestCase(5, RV_HaemorrhagieDiathesis, RV_HaemorrhagieDiathesis + "_MFrag"); 			
+	public SSBN executeTestCase5(){
+		return executeTestCase(5, RV_HaemorrhagieDiathesis, RV_HaemorrhagieDiathesis + "_MFrag"); 			
 	}
 	
 	private void executeTestCase6(){
@@ -390,18 +391,20 @@ public class HeparIITestSet  extends TestSet{
 	}	
 	
 	
-	private void executeTestCase18(){
+	public SSBN executeTestCase18(){
 		
 		try{
 			RandomVariableFinding finding = createFinding(RV_AST + "_MFrag", RV_AST, "a700_400");
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{finding}; 
 
-			executeTestCase(18, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
+			return executeTestCase(18, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
 			logManager.appendln(e.toString()); 
 		}
+		
+		return null; 
 
 	}
 	
@@ -481,7 +484,7 @@ public class HeparIITestSet  extends TestSet{
 
 	}
 	
-	private void executeTestCase24(){
+	public SSBN executeTestCase24(){
 		
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
@@ -489,12 +492,14 @@ public class HeparIITestSet  extends TestSet{
 					createBooleanFinding(RV_Fatigue + "_MFrag", RV_Fatigue, true)
 			}; 
 
-			executeTestCase(24, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
+			return executeTestCase(24, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
 			logManager.appendln(e.toString()); 
 		}
+		
+		return null; 
 
 	}
 	

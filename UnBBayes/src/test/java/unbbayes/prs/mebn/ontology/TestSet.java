@@ -18,6 +18,8 @@ import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
+import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
+import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBN;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
@@ -36,6 +38,9 @@ public abstract class TestSet {
 	
 	protected LogManager logManager; 
 	private ISSBNGenerator ssbnGenerator; 
+	
+	public static boolean compileSSBNGenerated = false; 
+	public static boolean printTable = false; 
 	
 	public TestSet(ISSBNGenerator ssbnGenerator){
 		logManager = new LogManager(); 
@@ -100,7 +105,9 @@ public abstract class TestSet {
 			File file = new File(nameOfNetworkGenerated); 
 			saveNetworkFile(file, query.getQueryNode()); 
 			
-			ssbn.compileAndInitializeSSBN();
+			if(compileSSBNGenerated){
+				ssbn.compileAndInitializeSSBN();
+			}
 			
 			return ssbn; 
 		} catch (Exception e) {
@@ -114,8 +121,12 @@ public abstract class TestSet {
 
 	protected SSBN executeQueryAndPrintResults(Query query, String nameOfNetworkGenerated) {
 		SSBN ssbn = executeQuery(query, nameOfNetworkGenerated);
-		printTreeVariableTable(query);
-		printTestFoot();
+		
+		if(printTable){
+			printTreeVariableTable(query);
+			printTestFoot();
+		}
+		
 		return ssbn; 
 	}
 	
@@ -140,18 +151,26 @@ public abstract class TestSet {
 		ResidentNode residentNode = mFrag.getDomainResidentNodeByName(residentNodeName); 
 		SSBNNode queryNode = SSBNNode.getInstance(null,residentNode, new ProbabilisticNode()); 
 		
+		Query query = new Query(kb, queryNode, mebn); 
+		query.setMebn(mebn);
+		
 		try {
 			for(int i = 0; i < ovVariableNameList.length; i++){
 				queryNode.addArgument(residentNode.getOrdinaryVariableByName(ovVariableNameList[i]), instanceNameList[i]);	
+				OVInstance ovInstance = OVInstance.getInstance( 
+						residentNode.getOrdinaryVariableByName(
+								ovVariableNameList[i]), 
+								LiteralEntityInstance.getInstance(
+										instanceNameList[i] , 
+										residentNode.getOrdinaryVariableByName(
+												ovVariableNameList[i]).getValueType())); 
+				query.getArguments().add(ovInstance); 
 			}
 		} catch (SSBNNodeGeneralException e1) {
 			e1.printStackTrace();
 			logManager.appendln(e1.toString());
 		}
-		
-		Query query = new Query(kb, queryNode, mebn); 
-		query.setMebn(mebn); 
-		
+
 		return query;				
 	}
 	

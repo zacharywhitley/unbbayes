@@ -7,7 +7,7 @@ import unbbayes.prs.mebn.ssbn.SimpleSSBNNode;
 
 /**
  * 
- * @author Laecio
+ * @author Laecio Lima dos Santos (laecio@gmail.com)
  */
 public class LaskeySSBNGeneratorTest  extends TestCase {
 
@@ -27,14 +27,19 @@ public class LaskeySSBNGeneratorTest  extends TestCase {
 	protected void tearDown() throws Exception {
 	}
 	
-	public void testHepparSet(){
+	public void testInitializationWithHepparSet(){
+
+//		SSBN ssbn = hepparTestSet.executeTestCase24(); 
+//		for(SimpleSSBNNode s: ssbn.getSsbnNodeList()){
+//			System.out.println(s);
+//		}
+//		System.out.println("Size=" + ssbn.getSsbnNodeList().size());
 		
-		SSBN ssbn = hepparTestSet.executeTestCase1();
-		for(SimpleSSBNNode node: ssbn.getSsbnNodeList()){
-			
-		}
-		
-		assertTrue(true); 
+		//1 node is the query, the others are findings. 
+		assertEquals(hepparTestSet.executeTestCase1().getSsbnNodeList().size(), 1);
+		assertEquals(hepparTestSet.executeTestCase18().getSsbnNodeList().size(), 2); 
+		assertEquals(hepparTestSet.executeTestCase24().getSsbnNodeList().size(), 3); 
+		 
 	}
 	
 }
