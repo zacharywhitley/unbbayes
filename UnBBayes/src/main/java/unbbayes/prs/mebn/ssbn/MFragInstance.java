@@ -21,6 +21,8 @@
 
 package unbbayes.prs.mebn.ssbn;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +31,7 @@ import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
 
 /**
- * Represent a MFrag instanciate for a set of entities and encapsule the state
+ * Represent a MFrag instanciated for a set of entities and encapsule the state
  * of evaluation of the context nodes of this MFrag for this set of entities. 
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
@@ -39,10 +41,12 @@ public class MFragInstance {
 	private MFrag mFragOrigin; 
 	
 	private boolean useDefaultDistribution; 
-
-	private Map<OrdinaryVariable, List<LiteralEntityInstance>> instanciatedArguments; 
 	
-	private List<SSBNNode> nodeList; 
+	private OrdinaryVariable[] ovList; 
+	private List<LiteralEntityInstance>[] instanceList; 
+	private SimpleContextNodeFatherSSBNNode[] contextList; 
+	
+	private List<SimpleSSBNNode> nodeList; 
 	
 	private ContextNodeAvaliator contextNodeAvaliator; 
 	
@@ -65,6 +69,15 @@ public class MFragInstance {
 	public MFragInstance(MFrag mFragOrigin){
 		this.mFragOrigin = mFragOrigin; 
 		
+		this.ovList = new OrdinaryVariable[mFragOrigin.getOrdinaryVariableList().size()]; 
+		int index = 0; 
+		for(OrdinaryVariable ov: mFragOrigin.getOrdinaryVariableList()){
+			ovList[index] = ov; 
+			instanceList[index] = new ArrayList<LiteralEntityInstance>(); 
+			contextList[index] = null; 
+			index++; 
+		}
+		
 	}
 	
 	// GET AND SET'S METHODS
@@ -75,6 +88,100 @@ public class MFragInstance {
 
 	public void setUseDefaultDistribution(boolean useDefaultDistribution) {
 		this.useDefaultDistribution = useDefaultDistribution;
+	}
+
+	public MFrag getMFragOrigin() {
+		return mFragOrigin;
+	}
+
+	public void setMFragOrigin(MFrag fragOrigin) {
+		mFragOrigin = fragOrigin;
+	}
+	
+
+	/**
+	 * Return true if the operation is OK or false otherside. 
+	 */
+	public boolean addInstanciatedOV(OrdinaryVariable ov, LiteralEntityInstance lei){
+		int index = -1; 
+		
+		for(int i = 0; i < ovList.length; i++){
+			if(ovList[i] == ov){
+				index = i; 
+				break; 
+			}
+		}
+		
+		if(index < 0){
+			return false; 
+		}else{
+			instanceList[index].add(lei);
+			return true; 
+		}
+		
+	}
+	
+	public List<LiteralEntityInstance> getInstanciatedOV(OrdinaryVariable ov){
+		for(int i = 0; i < ovList.length; i++){
+			if(ovList[i] == ov){
+				return instanceList[i];  
+			}
+		}
+		return null; 
+	}
+	
+	public SimpleContextNodeFatherSSBNNode getContextNodeFather(OrdinaryVariable ov){
+		for(int i = 0; i < ovList.length; i++){
+			if(ovList[i] == ov){
+				return contextList[i];  
+			}
+		}
+		return null; 
+	}
+	
+	/**
+	 * @return All OV of the MFrag don't instanciated yet. 
+	 */
+	public List<OrdinaryVariable> getOVFaultList(){
+
+		List<OrdinaryVariable> ovFaultList = new ArrayList<OrdinaryVariable>(); 
+		
+		for(int i = 0; i < instanceList.length; i++){
+			if(instanceList[i].size() == 0){
+				ovFaultList.add(ovList[i]); 
+			}
+		}
+		
+		return ovFaultList; 
+	}
+
+	public ContextNodeAvaliator getContextNodeAvaliator() {
+		return contextNodeAvaliator;
+	}
+
+	public void setContextNodeAvaliator(ContextNodeAvaliator contextNodeAvaliator) {
+		this.contextNodeAvaliator = contextNodeAvaliator;
+	}
+
+	public Map<ContextNode, ContextNodeEvaluationState> getContextNodeEvaluationState() {
+		return contextNodeEvaluationState;
+	}
+
+	public void setContextNodeEvaluationState(
+			Map<ContextNode, ContextNodeEvaluationState> contextNodeEvaluationState) {
+		this.contextNodeEvaluationState = contextNodeEvaluationState;
+	}
+
+	public boolean isUseDefaultDistribution() {
+		return useDefaultDistribution;
+	}
+
+	public List<SimpleSSBNNode> getNodeList() {
+		return nodeList;
+	}
+
+	public void setNodeList(List<SimpleSSBNNode> nodeList) {
+		this.nodeList = nodeList;
 	}
 	
 }

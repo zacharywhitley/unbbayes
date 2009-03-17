@@ -67,8 +67,11 @@ public class ContextNodeAvaliator {
 	 * @param mfrag MFrag evaluated
 	 * @param ovInstances Ordinary variables already instanciated. 
 	 */
-	public MFragInstance evaluateMFragContextNode(MFrag mfrag, List<OVInstance> ovInstances){
-		return new MFragInstance(null); 
+	public MFragInstance evaluateMFragContextNode(MFragInstance mFrag){
+		
+		
+		
+		return mFrag; 
 	}
 	
 	/**

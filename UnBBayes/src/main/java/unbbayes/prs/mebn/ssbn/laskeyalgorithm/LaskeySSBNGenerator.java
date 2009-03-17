@@ -76,10 +76,10 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 	}
 	
 	//Initialization
+	//Note: the findings are taken by the structure and not by the knowledge base
 	private void initialization(List<Query> queryList, KnowledgeBase knowledgeBase){
 		
 		this.knowledgeBase = knowledgeBase; 
-		
 		
 		//We assume that all the queries is referent to the same MEBN
 		this.mebn = queryList.get(0).getMebn(); 
@@ -87,7 +87,6 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		//Parameters: 
 		
 		//recursiveCallLimit
-		
 		
 		//Add queries to the list of nodes
 		for(Query query: queryList){

@@ -20,12 +20,12 @@
  */
 package unbbayes.prs.mebn.ssbn;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
-import unbbayes.prs.mebn.ssbn.OVInstance;
 
 /**
  * @author Shou Matsumoto
@@ -46,7 +46,9 @@ public class Query {
 	public Query(KnowledgeBase kb, SSBNNode queryNode, MultiEntityBayesianNetwork mebn) {
 		this.mebn = mebn; 
 		this.kb = kb; 
+		this.residentNode = queryNode.getResident(); 
 		this.queryNode = queryNode;  
+		this.arguments = new ArrayList<OVInstance>(); 
 	}
 	
 	public Query(ResidentNode residentNode, List<OVInstance> arguments){
@@ -85,6 +87,10 @@ public class Query {
 
 	public List<OVInstance> getArguments() {
 		return arguments;
+	}
+	
+	public void addArgument(OVInstance ovInstance){
+		arguments.add(ovInstance); 
 	}
 	
 	
