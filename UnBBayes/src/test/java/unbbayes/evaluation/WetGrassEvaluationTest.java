@@ -74,14 +74,14 @@ public class WetGrassEvaluationTest {
 		float[][] cm = evaluationApproximate.getEvidenceSetCM();
 		
 		// CM
-		// [73.5 11.5]
-		// [26.5 88.5]
+		// [73.75 11.27]
+		// [26.25 88.73]
 		
 		// Columns add to one
-		assertEquals(.735, cm[0][0], DELTA);
-		assertEquals(1-.735, cm[1][0], DELTA);
-		assertEquals(.885, cm[1][1], DELTA);
-		assertEquals(1-.885, cm[0][1], DELTA);
+		assertEquals(.7375, cm[0][0], DELTA);
+		assertEquals(1-.7375, cm[1][0], DELTA);
+		assertEquals(.8873, cm[1][1], DELTA);
+		assertEquals(1-.8873, cm[0][1], DELTA);
 	}
 	
 	@Test
@@ -89,8 +89,8 @@ public class WetGrassEvaluationTest {
 		
 		float pcc = evaluationApproximate.getEvidenceSetPCC();
 		
-		// Pcc = 81.5
-		assertEquals(.815, pcc, DELTA);
+		// Pcc = 81.24
+		assertEquals(.8124, pcc, DELTA);
 	}
 	
 	@Test
