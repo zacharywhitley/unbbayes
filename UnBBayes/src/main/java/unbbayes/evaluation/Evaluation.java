@@ -501,12 +501,16 @@ public class Evaluation {
 
 		public float getCostRate() throws EvaluationException {
 			if (costRate == Evaluation.UNSET_VALUE) {
-				if (cost == Evaluation.UNSET_VALUE
-						|| individualPCC == Evaluation.UNSET_VALUE) {
+				if (cost == Evaluation.UNSET_VALUE) {
 					throw new EvaluationException(
-							"Must set cost and calculate individual PCC before computing cost rate.");
+							"Must set cost before computing cost rate.");
 				}
-				costRate = individualPCC / cost;
+				try {
+					costRate = getIndividualPCC() / cost;
+				} catch(EvaluationException e) {
+					throw new EvaluationException(
+					"Must calculate individual Pcc before computing cost rate." + " " + e.getMessage());
+				}
 			}
 			return costRate;
 		}
@@ -882,11 +886,11 @@ public class Evaluation {
 	public static void main(String[] args) throws Exception {
 
 		List<String> targetNodeNameList = new ArrayList<String>();
-		targetNodeNameList.add("Rain");
+		targetNodeNameList.add("Springler");
 
 		List<String> evidenceNodeNameList = new ArrayList<String>();
-		evidenceNodeNameList.add("Springler");
 		evidenceNodeNameList.add("Cloudy");
+		evidenceNodeNameList.add("Rain");
 		evidenceNodeNameList.add("Wet");
 
 		String netFileName = "../UnBBayes/examples/xml-bif/WetGrass_XMLBIF5.xml";
@@ -896,9 +900,9 @@ public class Evaluation {
 		Evaluation evaluationApproximate = new Evaluation();
 		evaluationApproximate.evaluate(netFileName, targetNodeNameList,
 				evidenceNodeNameList, sampleSize);
-		Evaluation evaluationExact = new Evaluation();
-		evaluationExact.evaluate(netFileName, targetNodeNameList,
-				evidenceNodeNameList);
+//		Evaluation evaluationExact = new Evaluation();
+//		evaluationExact.evaluate(netFileName, targetNodeNameList,
+//				evidenceNodeNameList);
 		
 		StringBuilder sb = new StringBuilder();
 		// Send all output to the appendable object sb
@@ -909,13 +913,13 @@ public class Evaluation {
 		
 		formatter.format("LCM:\n");
 		printMatrix(evaluationApproximate.getEvidenceSetCM(), formatter);
-		printMatrix(evaluationExact.getEvidenceSetCM(), formatter);
+//		printMatrix(evaluationExact.getEvidenceSetCM(), formatter);
 		
 		formatter.format("\n");
 		
 		formatter.format("PCC: ");
 		formatter.format("%2.2f\n", evaluationApproximate.getEvidenceSetPCC() * 100);
-		formatter.format("%2.2f\n", evaluationExact.getEvidenceSetPCC() * 100);
+//		formatter.format("%2.2f\n", evaluationExact.getEvidenceSetPCC() * 100);
 		
 		formatter.format("\n\n\n");
 		formatter.format("----MARGINAL------");
@@ -998,85 +1002,85 @@ public class Evaluation {
 			formatter.format("\n\n");
 		}
 		
-		// EXACT //
+//		// EXACT //
+//		
+//		list = evaluationExact.getBestMarginalImprovement();
+//		
+//		for (EvidenceEvaluation evidenceEvaluation : list) {
+//			
+//			formatter.format("-" + evidenceEvaluation.getName() + "-");
+//			formatter.format("\n\n");
+//			
+//			formatter.format("LCM:\n");
+//			printMatrix(evidenceEvaluation.getMarginalCM(), formatter);
+//			
+//			formatter.format("\n");
+//			
+//			formatter.format("PCC: ");
+//			formatter.format("%2.2f\n", evidenceEvaluation.getMarginalPCC() * 100);
+//			
+//			formatter.format("\n");
+//			
+//			formatter.format("Marginal Improvement: ");
+//			formatter.format("%2.2f\n", evidenceEvaluation.getMarginalImprovement() * 100);
+//			
+//			formatter.format("\n\n");
+//		}
+//		
+//		formatter.format("\n");
+//		formatter.format("----INDIVIDUAL PCC------");
+//		formatter.format("\n\n");
+//		
+//		list = evaluationExact.getBestIndividualPCC();
+//		
+//		for (EvidenceEvaluation evidenceEvaluation : list) {
+//			
+//			formatter.format("-" + evidenceEvaluation.getName() + "-");
+//			formatter.format("\n\n");
+//			
+//			formatter.format("LCM:\n");
+//			printMatrix(evidenceEvaluation.getIndividualLCM(), formatter);
+//			
+//			formatter.format("\n");
+//			
+//			formatter.format("PCC: ");
+//			formatter.format("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
+//			
+//			formatter.format("\n\n");
+//			
+//			// Add random costs for each
+//			evidenceEvaluation.setCost((new Random()).nextFloat() * 1000);
+//		}
+//		
+//		formatter.format("\n");
+//		formatter.format("----INDIVIDUAL PCC------");
+//		formatter.format("\n\n");
+//		
+//		list = evaluationExact.getBestIndividualCostRate();
+//		
+//		for (EvidenceEvaluation evidenceEvaluation : list) {
+//			
+//			formatter.format("-" + evidenceEvaluation.getName() + "-");
+//			formatter.format("\n\n");
+//			
+//			formatter.format("PCC: ");
+//			formatter.format("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
+//			
+//			formatter.format("\n");
+//			
+//			formatter.format("Cost: ");
+//			formatter.format("%2.2f\n", evidenceEvaluation.getCost());
+//			
+//			formatter.format("\n");
+//			
+//			formatter.format("Cost Rate: ");
+//			formatter.format("%2.2f\n", evidenceEvaluation.getCostRate() * 100);
+//			
+//			formatter.format("\n\n");
+//		}
 		
-		list = evaluationExact.getBestMarginalImprovement();
 		
-		for (EvidenceEvaluation evidenceEvaluation : list) {
-			
-			formatter.format("-" + evidenceEvaluation.getName() + "-");
-			formatter.format("\n\n");
-			
-			formatter.format("LCM:\n");
-			printMatrix(evidenceEvaluation.getMarginalCM(), formatter);
-			
-			formatter.format("\n");
-			
-			formatter.format("PCC: ");
-			formatter.format("%2.2f\n", evidenceEvaluation.getMarginalPCC() * 100);
-			
-			formatter.format("\n");
-			
-			formatter.format("Marginal Improvement: ");
-			formatter.format("%2.2f\n", evidenceEvaluation.getMarginalImprovement() * 100);
-			
-			formatter.format("\n\n");
-		}
-		
-		formatter.format("\n");
-		formatter.format("----INDIVIDUAL PCC------");
-		formatter.format("\n\n");
-		
-		list = evaluationExact.getBestIndividualPCC();
-		
-		for (EvidenceEvaluation evidenceEvaluation : list) {
-			
-			formatter.format("-" + evidenceEvaluation.getName() + "-");
-			formatter.format("\n\n");
-			
-			formatter.format("LCM:\n");
-			printMatrix(evidenceEvaluation.getIndividualLCM(), formatter);
-			
-			formatter.format("\n");
-			
-			formatter.format("PCC: ");
-			formatter.format("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
-			
-			formatter.format("\n\n");
-			
-			// Add random costs for each
-			evidenceEvaluation.setCost((new Random()).nextFloat() * 1000);
-		}
-		
-		formatter.format("\n");
-		formatter.format("----INDIVIDUAL PCC------");
-		formatter.format("\n\n");
-		
-		list = evaluationExact.getBestIndividualCostRate();
-		
-		for (EvidenceEvaluation evidenceEvaluation : list) {
-			
-			formatter.format("-" + evidenceEvaluation.getName() + "-");
-			formatter.format("\n\n");
-			
-			formatter.format("PCC: ");
-			formatter.format("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
-			
-			formatter.format("\n");
-			
-			formatter.format("Cost: ");
-			formatter.format("%2.2f\n", evidenceEvaluation.getCost());
-			
-			formatter.format("\n");
-			
-			formatter.format("Cost Rate: ");
-			formatter.format("%2.2f\n", evidenceEvaluation.getCostRate() * 100);
-			
-			formatter.format("\n\n");
-		}
-		
-		
-		//System.out.println(sb.toString());
+		System.out.println(sb.toString());
 
 	}
 	

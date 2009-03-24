@@ -20,10 +20,13 @@
  */
 package unbbayes.evaluation.controller;
 
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Formatter;
 import java.util.List;
+import java.util.Locale;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -93,6 +96,8 @@ public class EvaluationController {
 	}
 	
 	private void runEvaluation() {
+		evaluationPane.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+		
 		try {
 			validateData();
 		} catch (EvaluationException e) {
@@ -113,6 +118,12 @@ public class EvaluationController {
 				evidenceEvaluation.setCost(evaluationPane.getCost(evidenceEvaluation.getName()));
 			}
 			
+			StringBuilder sb = new StringBuilder();
+			// Send all output to the appendable object sb
+			Formatter formatter = new Formatter(sb, Locale.US);
+			Evaluation.printMatrix(evaluation.getEvidenceSetCM(), formatter);
+			System.out.println(sb.toString());
+			
 			evaluationPane.setPccValue(evaluation.getEvidenceSetPCC());
 			
 			evaluationPane.setErrorValue(evaluation.getError());
@@ -125,6 +136,8 @@ public class EvaluationController {
 			JOptionPane.showMessageDialog(evaluationPane, e.getMessage(), "Evaluation Error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
+		
+		evaluationPane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}
 	
 	public JPanel getView() {
