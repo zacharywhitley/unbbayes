@@ -146,7 +146,19 @@ public class XMLBIFIO {
 					
 					List dpiList = cpt.getDependentParentIndex();
 					
-					PotentialTable table = ((ITabledVariable)childNode).getPotentialTable();	
+					PotentialTable table = ((ITabledVariable)childNode).getPotentialTable();
+					
+					/*
+					 * Invert the parents in the table, to
+					 * maintain consistency in the program.
+					 * Internal pre-requisite.
+					 */
+					int sizeVetor = table.variableCount() / 2;
+					for (int k = 1; k <= sizeVetor; k++) {
+						Object temp = table.getVariableAt(k);
+						table.setVariableAt(k,table.getVariableAt(table.variableCount() - k));
+						table.setVariableAt(table.variableCount() - k,(Node) temp);
+					}
 					
 					for (int dpiIndex = 0; dpiIndex < dpiList.size(); dpiIndex++) {
 						
