@@ -270,12 +270,16 @@ public class HeparIITestSet  extends TestSet{
 		
 		testNumber++; 
 		
+		clearRandomVariableFinding(); 
+		
 		KnowledgeBase kb = PowerLoomKB.getNewInstanceKB(); 
+		
 		kb.createGenerativeKnowledgeBase(mebn); 
 		
 		if(findingList != null){
 			for(RandomVariableFinding finding: findingList){
-				finding.getNode().addRandomVariableFinding(finding); 
+				ResidentNode node = finding.getNode(); 
+				node.addRandomVariableFinding(finding); 
 				kb.insertRandomVariableFinding(finding); 
 			}
 		}
@@ -287,7 +291,14 @@ public class HeparIITestSet  extends TestSet{
 		return executeQueryAndPrintResults(query, PATH + "/" + "Test" + testNumber + ".xml"); 				
 	}
 	
-
+	private void clearRandomVariableFinding(){
+		for(MFrag mFrag: mebn.getMFragList()){
+			for(ResidentNode resident: mFrag.getResidentNodeList()){
+				resident.cleanRandomVariableFindingList(); 
+			}
+		}
+	}
+	
 	private RandomVariableFinding createFinding(String mFragName, String residentNodeName, String state) throws CategoricalStateDoesNotExistException {
 		MFrag mFrag = mebn.getMFragByName(mFragName); 
 		ResidentNode residentNode = mFrag.getDomainResidentNodeByName(residentNodeName);

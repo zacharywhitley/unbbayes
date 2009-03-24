@@ -7,6 +7,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import junit.framework.TestCase;
+
 import unbbayes.io.exception.UBIOException;
 import unbbayes.io.mebn.PrOwlIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
@@ -23,11 +25,13 @@ import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.util.Debug;
 
-/*
- * only tests... 
+/**
+ * Test the class ContextNodeAvaliator
  */
-public class ContextNodeAvaliatorTest{
+public class ContextNodeAvaliatorTest extends TestCase{
 
+//TODO create tests for this class. 
+	
 	private static String FILE_GENERATIVE = "examples/mebn/KnowledgeBase/KnowledgeBaseGenerative.plm";
 	private static String FILE_INPUT = "examples/mebn/KnowledgeBase/KnowledgeBaseWithStarshipZoneST4ver2.plm";
 	private static String FILE_MTHEORY = "examples/mebn/StarTrek52.owl"; 
@@ -35,8 +39,6 @@ public class ContextNodeAvaliatorTest{
     public static void main(String[] args) throws Exception {
 		MultiEntityBayesianNetwork mebn = null; 
     	
-
-
 		KnowledgeBase kb = PowerLoomKB.getNewInstanceKB(); 
 		
 		PrOwlIO io = new PrOwlIO(); 

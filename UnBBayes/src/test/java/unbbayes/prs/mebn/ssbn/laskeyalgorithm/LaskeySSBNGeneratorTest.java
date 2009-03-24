@@ -29,11 +29,27 @@ public class LaskeySSBNGeneratorTest  extends TestCase {
 	
 	public void testInitializationWithHepparSet(){
 
-//		SSBN ssbn = hepparTestSet.executeTestCase24(); 
-//		for(SimpleSSBNNode s: ssbn.getSsbnNodeList()){
-//			System.out.println(s);
-//		}
-//		System.out.println("Size=" + ssbn.getSsbnNodeList().size());
+		SSBN ssbn = hepparTestSet.executeTestCase1(); 
+		System.out.println("HeparTestSet TestCase 01");
+		for(SimpleSSBNNode s: ssbn.getSsbnNodeList()){
+			System.out.println(s);
+		}
+		System.out.println("Size=" + ssbn.getSsbnNodeList().size());
+		
+		
+		ssbn = hepparTestSet.executeTestCase18(); 
+		System.out.println("HeparTestSet TestCase 18");
+		for(SimpleSSBNNode s: ssbn.getSsbnNodeList()){
+			System.out.println(s);
+		}
+		System.out.println("Size=" + ssbn.getSsbnNodeList().size());
+		
+		ssbn = hepparTestSet.executeTestCase24(); 
+		System.out.println("HeparTestSet TestCase 24");
+		for(SimpleSSBNNode s: ssbn.getSsbnNodeList()){
+			System.out.println(s);
+		}
+		System.out.println("Size=" + ssbn.getSsbnNodeList().size());
 		
 		//1 node is the query, the others are findings. 
 		assertEquals(hepparTestSet.executeTestCase1().getSsbnNodeList().size(), 1);

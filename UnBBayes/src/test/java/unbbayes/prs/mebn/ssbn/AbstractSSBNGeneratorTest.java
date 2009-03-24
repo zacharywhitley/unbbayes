@@ -49,7 +49,7 @@ public class AbstractSSBNGeneratorTest extends TestCase{
 		ovInstanceList.add(ovInstance); 
 		
 		try {
-			List<OVInstance> listResult = abstractSSBNGenerator.getContextNodeAvaliator().evaluateSearchContextNode(
+			List<OVInstance> listResult = abstractSSBNGenerator.getContextNodeAvaliator().evaluateSearchContextNodesRestrict(
 					mFrag, ovFaultList, ovInstanceList);
 		    
 			assertNotNull(listResult); 
