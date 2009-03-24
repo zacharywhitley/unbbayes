@@ -11,7 +11,7 @@ public interface BuilderStructure {
 	 * @param kb
 	 * @return
 	 */
-	public boolean buildStructure(SSBN ssbn, 
+	public void buildStructure(SSBN ssbn, 
 			KnowledgeBase kb); 
 	
 }

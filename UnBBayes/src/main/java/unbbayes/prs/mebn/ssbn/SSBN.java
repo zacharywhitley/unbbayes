@@ -26,6 +26,9 @@ import java.util.List;
 
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;
+import unbbayes.prs.mebn.InputNode;
+import unbbayes.prs.mebn.MFrag;
+import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
 /**
@@ -45,6 +48,8 @@ public class SSBN {
 	private List<SSBNWarning> warningList; 
 	
 	private List<SimpleSSBNNode> ssbnNodeList; 
+	
+	private List<MFragInstance> mFragInstanceList; 
 	
 	private List<SimpleEdge> edgeList; 
 	
@@ -69,8 +74,91 @@ public class SSBN {
 		queryList = new ArrayList<Query>(); 
 		warningList = new ArrayList<SSBNWarning>();
 		ssbnNodeList = new ArrayList<SimpleSSBNNode>(); 
-		edgeList = new ArrayList<SimpleEdge>(); 
+		edgeList = new ArrayList<SimpleEdge>();
+		mFragInstanceList = new ArrayList<MFragInstance>(); 
 	}
+	
+	
+	
+	
+	//---------- METHODS FOR ADD COMPONENTS TO THE ALGORITHM EVALUATION ---
+	
+	/**
+	 * Create a new MFragInstance. Verify in the list of created MFragInstances if
+	 * already have one equals to the new MFragInstance, return this if positive. 
+	 * 
+	 * @return the MFragInstance (the new if it created or the already existent otherside)
+	 */
+	public MFragInstance createMFragInstance(MFrag mFrag, List<OVInstance> ovInstanceList){
+		
+		MFragInstance mFragInstance = new MFragInstance(mFrag); 
+		for(OVInstance ovInstance: ovInstanceList){
+			mFragInstance.addInstanciatedOV(ovInstance.getOv(), ovInstance.getEntity()); 
+		}
+		
+		for(MFragInstance mfi: this.mFragInstanceList){
+			if(mfi.equals(mFragInstance)){
+				return mfi; 
+			}
+		}
+		
+		mFragInstanceList.add(mFragInstance); 
+		
+		return mFragInstance; 
+	}
+	
+	/**
+	 * Create a new SSBNNode with the arguments. Verify if already exist a ssbn
+	 * node equals to the new wanted, returning this if positive. 
+	 */
+	public SimpleSSBNNode createSSBNNode(ResidentNode resident, List<OVInstance> ovInstanceList){
+		
+		SimpleSSBNNode node = SimpleSSBNNode.getInstance(resident); 
+		for(OVInstance ovInstance: ovInstanceList){
+			node.addArgument(ovInstance); 	
+		}
+		
+//		for(SimpleSSBNNode n: ssbnNodeList){
+//			if(n.equals(node)){
+//				return n; 
+//			}
+//		}
+		
+		ssbnNodeList.add(node); 
+		
+		return node; 
+	
+	}
+	
+	/**
+	 * Create a new SSBNNode with the arguments. Verify if already exist a ssbn
+	 * node equals to the new wanted, returning this if positive. 
+	 */
+	public SimpleSSBNNode createSSBNNode(InputNode input, List<OVInstance> ovInstanceList){
+		
+		ResidentNode residentNode = input.getResidentNodePointer().getResidentNode(); 
+		
+		SimpleSSBNNode node = SimpleSSBNNode.getInstance(residentNode); 
+		for(OVInstance ovInstance: ovInstanceList){
+			node.addArgumentsForExternalMFrag(input.getMFrag(), ovInstanceList); 	
+		}
+		
+		node.setMFragInstance(null); 
+		
+		for(SimpleSSBNNode n: ssbnNodeList){
+			if(n.equals(node)){
+				return n; 
+			}
+		}
+		
+		ssbnNodeList.add(node); 
+		
+		return node; 
+	
+	}
+	
+	
+	//---------- METHODS FOR ITERATION WITH THE STATE OF THE CPT EVALUATION ---
 	
 	/**
 	 * Initialize the ssbn: 
@@ -83,19 +171,14 @@ public class SSBN {
 	 */
 	public void compileAndInitializeSSBN() throws Exception{
 		compileNetwork(); 
-//		System.out.println("Network compiled");
 		addFindings();
-//		System.out.println("Findings setted");
 		propagateFindings(); 
-//		System.out.println("Findings propagated");
 	}
 	
 	public void reinitializeSSBN() throws Exception{
 	    this.probabilisticNetwork.initialize();
 		addFindings();
-//		System.out.println("Findings setted");
 		propagateFindings(); 
-//		System.out.println("Findings propagated");	    
 	}
 	
 	private void compileNetwork() throws Exception{
@@ -113,7 +196,6 @@ public class SSBN {
 	private void addFindings() throws SSBNNodeGeneralException{
 		
 		for(SSBNNode findingNode: findingList){
-//			System.out.println("Set finding: " + findingNode + "=" + findingNode.getValue());
 			TreeVariable node = findingNode.getProbNode();
 
 			String nameState = findingNode.getValue().getName(); 
@@ -142,6 +224,9 @@ public class SSBN {
 		state = State.FINDINGS_PROPAGATED; 
 	}
 
+	
+	
+	
 	// GET AND SET'S METHODS
 	
 	public List<SSBNNode> getFindingList() {
@@ -188,6 +273,10 @@ public class SSBN {
 		return edgeList;
 	}
 
+	public List<MFragInstance> getMFragInstanceList() {
+		return mFragInstanceList;
+	}
 
+	
 	
 }

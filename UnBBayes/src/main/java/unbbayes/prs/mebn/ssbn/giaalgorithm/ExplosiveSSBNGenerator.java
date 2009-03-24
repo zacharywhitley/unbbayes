@@ -108,7 +108,6 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 		
 		SSBNNode queryNode = query.getQueryNode();
 		
-		
 		setKnowledgeBase(query.getKb());
 		setContextNodeAvaliator(new ContextNodeAvaliator(getKnowledgeBase())); 
 		
@@ -318,7 +317,8 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 			return false; 
 		}
 
-		logManager.appendln("[D]"  + currentNode + ":Context Node evaluation OK for " + currentNode.getResident().getMFrag()); 	
+		logManager.appendln("[D]"  + currentNode + ":Context Node evaluation OK for " + 
+				currentNode.getResident().getMFrag()); 	
 
 
 
@@ -329,7 +329,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 		for(ResidentNode childResidentNode: residentNode.getResidentNodeChildList()){
 
 			/*
-			 * For the child resident nodes in the same Mfrag, not change is 
+			 * For the child resident nodes in the same MFrag, not change is 
 			 * necessary to be make in the current nodes arguments for use it for 
 			 * the childs. 
 			 */

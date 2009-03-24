@@ -296,7 +296,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 			boolean searchIfNotFound) 
 			throws ImplementationRestrictionException, SSBNNodeGeneralException, InvalidParentException {
 
-		List<OVInstance> listResultSearchContextNode = getContextNodeAvaliator().evaluateSearchContextNode(
+		List<OVInstance> listResultSearchContextNode = getContextNodeAvaliator().evaluateSearchContextNodesRestrict(
 				mFrag, ovList, ovInstances);  
 
 		if((listResultSearchContextNode == null)||(listResultSearchContextNode.isEmpty())){ 
@@ -442,7 +442,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 			List<OrdinaryVariable> ovProblemList, List<OVInstance> ovInstances) 
 			throws SSBNNodeGeneralException, ImplementationRestrictionException, InvalidParentException {
 
-			List<OVInstance> listResultSearchContextNode = getContextNodeAvaliator().evaluateSearchContextNode(
+			List<OVInstance> listResultSearchContextNode = getContextNodeAvaliator().evaluateSearchContextNodesRestrict(
 					fatherNode.getMFrag(), ovProblemList, ovInstances);  
 
 			if((listResultSearchContextNode == null)||(listResultSearchContextNode.isEmpty())){ 
@@ -831,7 +831,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 				ssbnNodesMap.put(ssbnNode.getUniqueName(), ssbnNode); 
 			}
 			
-			logManager.appendln("Build Proc Node End: Node created:" + ssbnNode);
+			logManager.appendln("Build proc node end: Node created:" + ssbnNode);
 			return ssbnNode;
 		}
 	}

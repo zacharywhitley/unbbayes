@@ -1,5 +1,6 @@
 package unbbayes.prs.mebn.ssbn.laskeyalgorithm;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.exception.InvalidParentException;
@@ -63,6 +64,8 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		//Step 1: 
 		initialization(queryList, knowledgeBase); 
 		
+		System.out.println("Nodes found = " + ssbn.getSsbnNodeList().size());
+		
 		//Step 2: 
 		buildStructure(); 
 		
@@ -90,28 +93,26 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		
 		//Add queries to the list of nodes
 		for(Query query: queryList){
-			SimpleSSBNNode node =  SimpleSSBNNode.getInstance(query.getResidentNode()); 
-			for(OVInstance ovInstance: query.getArguments()){
-				node.addArgument(ovInstance); 
-			} 
-			ssbn.addSSBNNode(node); 
+			SimpleSSBNNode node = ssbn.createSSBNNode(query.getResidentNode(), query.getArguments());  
+			node.setFinished(false); 
 		}
 		
 		//Add findings to the list of nodes
-		for(MFrag mFrag: this.mebn.getMFragList()){
+		for(MFrag mFrag: mebn.getMFragList()){
 			for(ResidentNode residentNode: mFrag.getResidentNodeList()){
 				for(RandomVariableFinding finding: residentNode.getRandomVariableFindingList()){
-					SimpleSSBNNode node = SimpleSSBNNode.getInstance(residentNode); 
 					
 					ObjectEntityInstance arguments[] = finding.getArguments(); 
+					List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
 					for(int i = 1; i < arguments.length; i++){
 						OrdinaryVariable ov = residentNode.getArgumentNumber(i).getOVariable();
 						LiteralEntityInstance lei = LiteralEntityInstance.getInstance(arguments[i-1].getName() , ov.getValueType()); 
-						node.addArgument(OVInstance.getInstance(ov, lei)); 
+						ovInstanceList.add(OVInstance.getInstance(ov, lei)); 
 					}
 					
+					SimpleSSBNNode node = ssbn.createSSBNNode(residentNode, ovInstanceList); 
 					node.setState(finding.getState()); 
-					ssbn.addSSBNNode(node);
+					node.setFinished(false); 
 				}
 			}
 		}

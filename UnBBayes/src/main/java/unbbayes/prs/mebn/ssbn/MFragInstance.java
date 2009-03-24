@@ -24,7 +24,6 @@ package unbbayes.prs.mebn.ssbn;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.MFrag;
@@ -36,45 +35,66 @@ import unbbayes.prs.mebn.OrdinaryVariable;
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  */
+
+/*
+ * Notes: 
+ * The MFragInstance exist only in the builder phase of the algorithm. 
+ */
 public class MFragInstance {
 
+	public enum ContextNodeEvaluationState{
+		EVALUATION_OK, // Evaluation OK - Context node evaluated true with all the arguments filled
+		EVALUATION_FAIL, 	// Evaluation fail - Context node evaluated false with all the arguments filled
+		EVALUATION_SEARCH, 	// Evaluation search - Context node result in a list of ord. variables that fill the argument
+		NOT_EVALUATED_YET	// Not evaluated yet- Context node not evaluated yet. 
+	}
+	
 	private MFrag mFragOrigin; 
 	
 	private boolean useDefaultDistribution; 
 	
+	//Teorem: For the same set of ordinary variables instance values, 
+	//        the evaluation of the context node should be the same. 
 	private OrdinaryVariable[] ovList; 
 	private List<LiteralEntityInstance>[] instanceList; 
-	private SimpleContextNodeFatherSSBNNode[] contextList; 
+	//if is a context related with a ordinary variable, then the unreferenced macanism 
+	//was used to recover the ordinary variable fault. Else, the instanceList 
+	//is the normal findings. 
+	private SimpleContextNodeFatherSSBNNode[] contextForOVList; 
 	
 	private List<SimpleSSBNNode> nodeList; 
 	
 	private ContextNodeAvaliator contextNodeAvaliator; 
 	
-	private Map<ContextNode, ContextNodeEvaluationState> contextNodeEvaluationState; 
+	private ContextNode[] contextNodeList; 
+	private ContextNodeEvaluationState[] contextNodeEvaluationStateList; 
 	
-	
-	//Boolean
-	// Evaluation OK - Context node evaluated true with all the arguments filled
-	// Evaluation fail - Context node evaluated false with all the arguments filled
-	// Evaluation search - Context node result in a list of ord. variables that fill the argument
-	// Not evaluated yet- Context node not evaluated yet. 
-	
-	public enum ContextNodeEvaluationState{
-		EVALUATION_OK, 
-		EVALUATION_FAIL, 
-		EVALUATION_SEARCH, 
-		NOT_EVALUATED_YET
-	}
+	private boolean evaluated = false; 
 	
 	public MFragInstance(MFrag mFragOrigin){
+		
+		int index = 0; 
+		int size = 0; 
+		
 		this.mFragOrigin = mFragOrigin; 
 		
-		this.ovList = new OrdinaryVariable[mFragOrigin.getOrdinaryVariableList().size()]; 
-		int index = 0; 
+		//Create the list of states of evaluation of the ordinary variables.
+		size = mFragOrigin.getOrdinaryVariableList().size(); index = 0; 
+		this.ovList = new OrdinaryVariable[size];  
 		for(OrdinaryVariable ov: mFragOrigin.getOrdinaryVariableList()){
 			ovList[index] = ov; 
 			instanceList[index] = new ArrayList<LiteralEntityInstance>(); 
-			contextList[index] = null; 
+			contextForOVList[index] = null; 
+			index++; 
+		}
+		
+		//Create the list of states of evaluation of the context nodes. 
+		size = mFragOrigin.getContextNodeList().size(); index = 0;  
+		contextNodeList = new ContextNode[size]; 
+		contextNodeEvaluationStateList = new ContextNodeEvaluationState[size]; 
+		for(ContextNode context: mFragOrigin.getContextNodeList()){
+			contextNodeList[index] = context; 
+			contextNodeEvaluationStateList[index] = ContextNodeEvaluationState.NOT_EVALUATED_YET; 
 			index++; 
 		}
 		
@@ -98,6 +118,10 @@ public class MFragInstance {
 		mFragOrigin = fragOrigin;
 	}
 	
+	
+	
+	
+	// ORDINARY VARIABLE EVALUATION STATE LISTS
 
 	/**
 	 * Return true if the operation is OK or false otherside. 
@@ -121,7 +145,7 @@ public class MFragInstance {
 		
 	}
 	
-	public List<LiteralEntityInstance> getInstanciatedOV(OrdinaryVariable ov){
+	public List<LiteralEntityInstance> getInstanciatedOVValue(OrdinaryVariable ov){
 		for(int i = 0; i < ovList.length; i++){
 			if(ovList[i] == ov){
 				return instanceList[i];  
@@ -130,10 +154,23 @@ public class MFragInstance {
 		return null; 
 	}
 	
+	/**
+	 * @return All the ordinary variable that don't are instanciated yet. 
+	 */
+	public List<OrdinaryVariable> getListNotInstanciatedOV(){
+		List<OrdinaryVariable> ovNotInstanciatedList = new ArrayList<OrdinaryVariable>(); 
+		for(int i = 0; i < ovList.length; i++){
+			if(instanceList[i].size() <= 0){
+				ovNotInstanciatedList.add(ovList[i]);  
+			}
+		}
+		return ovNotInstanciatedList; 
+	}
+	
 	public SimpleContextNodeFatherSSBNNode getContextNodeFather(OrdinaryVariable ov){
 		for(int i = 0; i < ovList.length; i++){
 			if(ovList[i] == ov){
-				return contextList[i];  
+				return contextForOVList[i];  
 			}
 		}
 		return null; 
@@ -155,21 +192,59 @@ public class MFragInstance {
 		return ovFaultList; 
 	}
 
+	public List<OVInstance> getOVInstanceList(){
+		
+		return null; 
+		
+	}
+	
+	
+	// CONTEXT NODE EVALUATION STATE 
+	/**
+	 * @param contextNode     the context node 
+	 * @return                the state of the context node or null otherside (Context Node not found)
+	 */
+	public ContextNodeEvaluationState getStateEvaluationOfContextNode(ContextNode contextNode){
+		int index = 0; 
+		for(ContextNode ctx: contextNodeList){
+			if(ctx == contextNode){
+				return contextNodeEvaluationStateList[index];
+			}else{
+				index++; 
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * @param contextNode    ContextNode to be setted
+	 * @param state          New state of the context node
+	 * @return true          if the state are setted, false otherside (Context Node not found). 
+	 */
+	public boolean setStateEvaluationOfContextNode(ContextNode contextNode, ContextNodeEvaluationState state){
+		int index = 0; 
+		for(ContextNode ctx: contextNodeList){
+			if(ctx == contextNode){
+				this.contextNodeEvaluationStateList[index] = state;
+				return true; 
+			}else{
+				index++; 
+			}
+		}
+		return false; 
+	}
+	
+	public List<ContextNode> getContextNodeList(){
+		return Arrays.asList(contextNodeList); 
+	}
+	
+	
 	public ContextNodeAvaliator getContextNodeAvaliator() {
 		return contextNodeAvaliator;
 	}
 
 	public void setContextNodeAvaliator(ContextNodeAvaliator contextNodeAvaliator) {
 		this.contextNodeAvaliator = contextNodeAvaliator;
-	}
-
-	public Map<ContextNode, ContextNodeEvaluationState> getContextNodeEvaluationState() {
-		return contextNodeEvaluationState;
-	}
-
-	public void setContextNodeEvaluationState(
-			Map<ContextNode, ContextNodeEvaluationState> contextNodeEvaluationState) {
-		this.contextNodeEvaluationState = contextNodeEvaluationState;
 	}
 
 	public boolean isUseDefaultDistribution() {
@@ -182,6 +257,32 @@ public class MFragInstance {
 
 	public void setNodeList(List<SimpleSSBNNode> nodeList) {
 		this.nodeList = nodeList;
+	}
+
+	/*
+	 * When two mFragInstances are equals? 
+	 * 
+	 * 1. The two are referenced to the same MFrag
+	 * 2. For each ordinary variable OVia and OVib
+	 *   2.1. If OVia == !c then OVib == !c 
+	 *   2.2. If   OVia == uncertainty by context node ctx1, 
+	 *        then OVib == uncertainty by context node ctx1
+	 * 
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object mFragInstance){
+		MFragInstance node = (MFragInstance)mFragInstance;
+		
+		return true; 
+	}
+
+	public boolean isEvaluated() {
+		return evaluated;
+	}
+
+	public void setEvaluated(boolean evaluated) {
+		this.evaluated = evaluated;
 	}
 	
 }

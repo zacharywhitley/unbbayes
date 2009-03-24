@@ -68,6 +68,9 @@ public class Resources extends ListResourceBundle {
 		{"TwoContextFathersError", "One node couldn't have two context nodes fathers!"}, 
 		{"OnlyOneFreeVariableRestriction", "The search context node can not have more than one free variable!"}, 
 		
+		//ImplementationRestrictionException
+		{"OnlyOneOVInstanceForOV", "Should have only one instance for each ordinary variable."},
+		
 		//SSBNWarning
 		{"OVProblem", "Entities for variables ordinaries don't should be determinated"}, 
 		{"contextInputNodeProblem", "Evaluation of context nodes fail because don't found all entities that match the ordinary variables."}, 

@@ -28,11 +28,13 @@ public class SimpleSSBNNode {
 	//Contain the arguments for the home MFrag of the resident node
 	private List<OVInstance> listArguments; 
 	
+	//Contain the arguments for the input's MFrag's of the resident node
+	private Map<MFrag, List<OVInstance>> argumentsForMFrag; 
+	
 	//if state != null this node is a finding
 	private Entity state;
 	
-	//Contain the arguments for the input's MFrag's of the resident node
-	private Map<MFrag, List<OVInstance>> argumentsForMFrag; 
+	private boolean defaultDistribution = false; 
 	
 	private SimpleSSBNNode(ResidentNode residentNode){
 		
@@ -102,8 +104,8 @@ public class SimpleSSBNNode {
 		return mFragInstance;
 	}
 
-	public void setMFragInstance(MFragInstance fragInstance) {
-		mFragInstance = fragInstance;
+	public void setMFragInstance(MFragInstance mFragInstance) {
+		this.mFragInstance = mFragInstance;
 	}
 
 	public List<OVInstance> getListArguments() {
@@ -132,6 +134,14 @@ public class SimpleSSBNNode {
 	
 	public boolean isFinding(){
 		return (state != null); 
+	}
+
+	public boolean isDefaultDistribution() {
+		return defaultDistribution;
+	}
+
+	public void setDefaultDistribution(boolean defaultDistribution) {
+		this.defaultDistribution = defaultDistribution;
 	}
 	
 

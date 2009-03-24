@@ -20,13 +20,21 @@
  */
 package unbbayes.prs.mebn.ssbn.exception;
 
+import java.util.ResourceBundle;
+
 /**
- * The situation don't is treat for this implementation
+ * The situation don't is treat for this implementation of the algorithm  
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  */
 public class ImplementationRestrictionException extends Exception{
 
+	private static ResourceBundle resource = 
+		ResourceBundle.getBundle("unbbayes.prs.mebn.ssbn.resources.Resources");
+	
+	//Possible Restrictions
+	public final static String ONLY_ONE_OVINSTANCE_FOR_OV = resource.getString("OnlyOneOVInstanceForOV"); 
+	
 	public ImplementationRestrictionException(){
 		super();
 	}

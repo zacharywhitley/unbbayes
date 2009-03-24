@@ -16,12 +16,16 @@ public class LaskeyAlgorithmParameters extends Parameters{
 	public static final int DO_PRUNE              = 0x0003; 
 	public static final int DO_CPT_GENERATION     = 0x0004;
 	
+	public static final int USE_USER_INTERATION   = 0x0005; 
+	
 	public LaskeyAlgorithmParameters(){
 		addParameter(RECURSIVE_LIMIT, "100");
 		
 		addParameter(DO_BUILDER, "true"); 
 		addParameter(DO_PRUNE, "true"); 
 		addParameter(DO_CPT_GENERATION, "true"); 
+		
+		addParameter(USE_USER_INTERATION, "false"); 
 	}
 	
 }

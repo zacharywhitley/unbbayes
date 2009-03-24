@@ -23,8 +23,10 @@ package unbbayes.prs.mebn.ssbn;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.InputNode;
@@ -33,6 +35,7 @@ import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
+import unbbayes.prs.mebn.ssbn.MFragInstance.ContextNodeEvaluationState;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
@@ -46,6 +49,7 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 public class ContextNodeAvaliator {
 
 	private KnowledgeBase kb; 
+	private SSBNAlgorithmInterationHelper interationHelper; 
 	
 	public ContextNodeAvaliator(KnowledgeBase kb){
 		
@@ -64,14 +68,81 @@ public class ContextNodeAvaliator {
 	 * 
 	 * Solution: return all in a MFragInstance object. 
 	 * 
+	 * Cases: 
+	 * - Trivial case
+	 * - Simple Search (one entity for ov)
+	 * - Compost Search (more than one entity)
+	 * - Undefined Context (more than one possible result)
+	 * 
 	 * @param mfrag MFrag evaluated
 	 * @param ovInstances Ordinary variables already instanciated. 
+	 * @throws SSBNNodeGeneralException 
+	 * @throws ImplementationRestrictionException 
+	 * @throws OVInstanceFaultException 
 	 */
-	public MFragInstance evaluateMFragContextNode(MFragInstance mFrag){
+	public MFragInstance evaluateMFragContextNode(MFragInstance mFragInstance) 
+	                   throws ImplementationRestrictionException, 
+	                          SSBNNodeGeneralException, 
+	                          OVInstanceFaultException{
+		
+		//Create OVInstance list with the single arguments of the mFrag passed how parameter. 
+		
+		//STEP 1: Evaluate the context nodes with all variables filled. (Simple case) 
+		//This don't will be necessary if have ordinary variables problematic's. 
+//		for(ContextNode contextNode: mFragInstance.getContextNodeList()){
+//			evaluateRelatedContextNodes(mFragInstance); 
+//		}
+		
+		//STEP 2: Search the arguments for ordinary variables fault and evaluate its state.
+		List<OrdinaryVariable> notInstanciatedOVList = mFragInstance.getListNotInstanciatedOV(); 
+		
+		//Try 1: Use the transitivity aproach 
+		//Only the normal cases with only a one ordinary variable for passage
+		if (notInstanciatedOVList.size() != 0){
+			
+			List<OVInstance> ovInstanceResultList = 
+				evaluateSearchContextNodes(mFragInstance.getMFragOrigin(), 
+						notInstanciatedOVList, mFragInstance.getOVInstanceList()); 
+			
+			for(OVInstance ovInstance: ovInstanceResultList){
+				mFragInstance.addInstanciatedOV(ovInstance.getOv(), ovInstance.getEntity()); 
+			}
+
+		}
+
+		//Try 2: Ask for the user for the ordinary variables fault (case the iteraction is on)
+		notInstanciatedOVList = mFragInstance.getListNotInstanciatedOV(); 
+		if (notInstanciatedOVList.size() != 0){
+			for(OrdinaryVariable ov: notInstanciatedOVList){
+				if(interationHelper!=null){
+					OVInstance ovInstance = interationHelper.getInstanceValueForOVFault(ov);
+					if(ovInstance != null){
+						mFragInstance.addInstanciatedOV(ovInstance.getOv(),	ovInstance.getEntity()); 
+					}
+				}
+			}
+		}
+		
+		//Try 3: Yet ov faults! Return error. 
+		notInstanciatedOVList = mFragInstance.getListNotInstanciatedOV(); 
+		if (notInstanciatedOVList.size() != 0){
+			throw new OVInstanceFaultException(notInstanciatedOVList); 
+		}
+		
+		//Mark the result of evaluation of a context node 
+		
+		//STEP 3: Use the XOR methodology for the ordinary variables don't found yet. 
+		//Only the single case z = StarshipZone(st) //take out restriction in the order of the formula. 
 		
 		
 		
-		return mFrag; 
+		//STEP 4: Evaluate the context nodes. 
+		evaluateMFragInstanceCompleteContextNodes(mFragInstance); 
+
+		
+		//Return mFragInstance with the ordinary variables filled. 
+		
+		return mFragInstance; 
 	}
 	
 	/**
@@ -147,6 +218,7 @@ public class ContextNodeAvaliator {
 		
 	}
 	
+	//Note: don't observes the transitivity in context nodes. 
 	private boolean evaluateRelatedContextNodes (MultiEntityNode multiEntityNode, 
 			List<OVInstance> ovInstances, MFragInstance mFragInstance, List<OrdinaryVariable> ovList) throws OVInstanceFaultException{
 
@@ -155,8 +227,6 @@ public class ContextNodeAvaliator {
 		if (multiEntityNode.getMFrag().isUsingDefaultCPT()) {
 			return false;
 		};
-
-		//Note: don't observes the transitivity in context nodes.  
 
 		Collection<ContextNode> contextNodeList = multiEntityNode.getMFrag().getContextByOVCombination(
 				ovList);
@@ -173,16 +243,99 @@ public class ContextNodeAvaliator {
 
 		return true; 
 	}
+
+	/**
+	 * Evaluate the context nodes of a MFrag that should be solved with the given 
+	 * ordinary variables instances. 
+	 * Set the state of evaluation of each node at mFragInstance 
+	 * (using the atribute StateEvaluationOfContextNode). 
+	 * 
+	 * @param ovInstances
+	 * @param mFragInstance
+	 * @param ovList
+	 * @return if the MFrag will use the default distribution 
+	 * @throws OVInstanceFaultException
+	 */
+	private boolean evaluateMFragInstanceCompleteContextNodes( 
+			MFragInstance mFragInstance) throws OVInstanceFaultException{
+
+		//TODO this method should treat the case when have more than one ov for each ordinary variable. 
+		
+		Set<OrdinaryVariable> setOV = new HashSet<OrdinaryVariable>(); 
+		
+		for(OVInstance ovi: mFragInstance.getOVInstanceList()){
+			setOV.add(ovi.getOv()); 
+		}
+		
+		Collection<ContextNode> contextNodeList = mFragInstance.getMFragOrigin().getContextByOVCombination(
+				setOV);
+
+		for(ContextNode context: contextNodeList){
+			if (!(mFragInstance.getStateEvaluationOfContextNode(context) == 
+				ContextNodeEvaluationState.NOT_EVALUATED_YET)){
+	
+				if(!evaluateContextNode(context, mFragInstance.getOVInstanceList())){
+					mFragInstance.setStateEvaluationOfContextNode(context, ContextNodeEvaluationState.EVALUATION_FAIL);   
+					mFragInstance.setUseDefaultDistribution(true); 
+				}else{
+					mFragInstance.setStateEvaluationOfContextNode(context, ContextNodeEvaluationState.EVALUATION_OK); 
+				}
+				
+			}
+		}
+
+		return mFragInstance.isUsingDefaultDistribution(); 
+	}
+	
+	/**
+	 * Note: This class was created for mantain the normal evaluation of the 
+	 * GIA's SSBN Generator Algorithm implementation. 
+	 * 
+	 * @see evaluateSearchContextNodes
+	 */
+	public List<OVInstance> evaluateSearchContextNodesRestrict(
+			MFrag mFrag, 
+			List<OrdinaryVariable> ovFaultList, 
+			List<OVInstance> ovInstanceList)	
+			throws ImplementationRestrictionException, SSBNNodeGeneralException{
+		
+		List<OVInstance> listOVInstance = evaluateSearchContextNodes(
+				mFrag, ovFaultList, ovInstanceList); 
+		
+		//Verify if all the OV fault are filled. 
+		for(OrdinaryVariable ov: ovFaultList){
+			boolean find = false; 
+			for(OVInstance ovInstance: listOVInstance){
+				if(ovInstance.getOv().equals(ov)){
+					find = true; 
+					break; 
+				}
+			}
+			if(!find){
+				return null; 
+			}
+		}
+		
+		//All the OV Fault are filled 
+		return listOVInstance; 
+		
+	}
 	
 	
 	/**
 	 * Evaluate one context node with unknown ordinary variables. Only will have
-	 * return if the result is one (and only onde) entity for each ordinary
-	 * variable. Otherside, return null. 
+	 * return if the result is one (and only one) entity for each ordinary
+	 * variable. 
+	 * 
+	 * Restrictions: 
+	 * 1. Each context node used in search should have only one OV fault. 
+	 * 
+	 * TODO: Analyze: 
+	 * - When have more than one OV instance for one OV in the ovInstanceList
 	 * 
 	 * @param mFrag        MFrag of context node
 	 * @param ovFaultList  List of Fault Ordinary Variables 
-	 * @param ovInstances  List of OVINstances (know ordinary variables)
+	 * @param ovInstanceList  List of OVINstances (know ordinary variables)
 	 * 
 	 * @return: Only will have return if the result is one (and only one) entity for each
 	 *          ordinary variable. Otherside return null 
@@ -190,19 +343,18 @@ public class ContextNodeAvaliator {
 	 * @throws ImplementationRestrictionException
 	 * @throws SSBNNodeGeneralException
 	 */
-	public List<OVInstance> evaluateSearchContextNode(
+	public List<OVInstance> evaluateSearchContextNodes(
 			MFrag mFrag, 
 			List<OrdinaryVariable> ovFaultList, 
-			List<OVInstance> ovInstances) 
+			List<OVInstance> ovInstanceList) 
 	throws ImplementationRestrictionException, SSBNNodeGeneralException {
 				
-		//List of ov instances for each ordinary variable. 
+		//List of Ordinary Variable instances for each ordinary variable. 
 		Map<OrdinaryVariable, List<OVInstance>> mapOVInstanceMap;
-		
 		
 		mapOVInstanceMap = new HashMap<OrdinaryVariable, List<OVInstance>>(); 
 		
-		for(OVInstance ovInstance: ovInstances){
+		for(OVInstance ovInstance: ovInstanceList){
 			List<OVInstance> list = new ArrayList<OVInstance>(); 
 			list.add(ovInstance); 
 			mapOVInstanceMap.put(ovInstance.getOv(), list); 
@@ -228,8 +380,8 @@ OUT_LOOP:  for(ContextNode context: cnList){
 	
 //	             System.out.println("Nó de contexto avaliado: " + context);
 				 List<OrdinaryVariable> ovFaultTempList = new ArrayList<OrdinaryVariable>(); 
-				 List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
-				 ovInstanceList.addAll(ovInstances); 
+				 List<OVInstance> ovInstanceForCnList = new ArrayList<OVInstance>(); 
+				 ovInstanceForCnList.addAll(ovInstanceList); 
 				 
 				 boolean doIntersection = false; 
 				 
@@ -237,14 +389,13 @@ OUT_LOOP:  for(ContextNode context: cnList){
     		    for(OrdinaryVariable ov: context.getVariableList()){
 					
 //    		    	System.out.println("Ordinary variable: " + ov);
-				 	//Problema: análise combinatória dos resultados! 
 			 		List<OVInstance> instanceListForOV = mapOVInstanceMap.get(ov); 
 		 			
 		 			if(instanceListForOV!=null){
 						if(instanceListForOV.size() == 1){
 //							System.out.println("   OVInstance: " + instanceListForOV.get(0));
-							if(!ovInstanceList.contains(instanceListForOV.get(0))){
-								ovInstanceList.add(instanceListForOV.get(0)); 
+							if(!ovInstanceForCnList.contains(instanceListForOV.get(0))){
+								ovInstanceForCnList.add(instanceListForOV.get(0)); 
 							}
 						}else{
 //							System.out.println("  Do intersection");
@@ -257,98 +408,92 @@ OUT_LOOP:  for(ContextNode context: cnList){
 					}
 				}
     		    
-				//TODO restrição atual do algoritmo (considera apenas casos triviais)
+				//The algorithm consider only trivial cases
 			    if(ovFaultTempList.size() > 1){
 //			    	System.out.println("OV Fault List maior que 1");
 			    	continue OUT_LOOP; 
-			    }
+			    }else{
 
-				 try {
-//					 System.out.println("Tentando avaliar nó de contexto: ");
-					 List<String> result = evalutateSearchContextNode(context, ovInstanceList);
-					 
-//					 System.out.println("Result: " + result);
-					 
-					 if((result != null) && (result.size() > 0)){
-//						 System.out.println("In");
-						 List<OVInstance> ovInstanceListResult = new ArrayList<OVInstance>(); 
-						 
-						 //Using the restriction....
-						 List<OrdinaryVariable> contextNodeOvFaultList = context.getOVFaultForOVInstanceSet(ovInstanceList); 
-						 OrdinaryVariable ovFault = contextNodeOvFaultList.get(0); 
-						 
-						 for(String ovInstanceName: result){
-							 ovInstanceListResult.add(OVInstance.getInstance(ovFault, 
-									 LiteralEntityInstance.getInstance(ovInstanceName, ovFault.getValueType()))); 
-						 }
-						 
-						 if(doIntersection){
-							 //Do intersection
-							 OrdinaryVariable ov = ovFaultTempList.get(0);
-							 List<OVInstance> instanceListForOV = mapOVInstanceMap.get(ov); 
-							 ovInstanceListResult = intersection(instanceListForOV, ovInstanceListResult); 
-						 }
-						 
-						 mapOVInstanceMap.put(ovFault, ovInstanceListResult); 
-//						 System.out.println("Out ["  + ovFault + " " + 
-//								 ovInstanceListResult + "]");
-					 }
-					 
-					 solvedNodes.add(context); 
-//					 System.out.println("Houve alteracao");
-					 changed = true; 
-					 
-//					 System.out.println("\nMapOVInstance");
-					 for(OrdinaryVariable ov: mapOVInstanceMap.keySet()){
-//						 System.out.println("> OV=" + ov + "[");
-						 List<OVInstance> ovInstanceListResult = mapOVInstanceMap.get(ov); 
-						 for(OVInstance ovI: ovInstanceListResult){
-//							 System.out.println("   " + ovI);
-						 }
-//						 System.out.println("]");
-						 
-					 }
-//					 System.out.println("\n");
-					 
-//					 if(verifyOVFaultList(ovFaultList, ovInsntanceList)); 
-					 
-				 } catch (InvalidContextNodeFormulaException e) {
-					 e.printStackTrace();
-					 break OUT_LOOP; 
-				 } catch (OVInstanceFaultException e) {
-					 e.printStackTrace();
-					 break OUT_LOOP; 
-				 } 
+			    	try {
+//			    		System.out.println("Tentando avaliar nó de contexto: ");
+			    		List<String> result = evalutateSearchContextNode(context, ovInstanceForCnList);
+
+//			    		System.out.println("Result: " + result);
+
+			    		if((result != null) && (result.size() > 0)){
+//			    			System.out.println("In");
+			    			List<OVInstance> ovInstanceListResult = new ArrayList<OVInstance>(); 
+
+			    			//Using the restriction....
+			    			List<OrdinaryVariable> contextNodeOvFaultList = context.getOVFaultForOVInstanceSet(ovInstanceForCnList); 
+			    			OrdinaryVariable ovFault = contextNodeOvFaultList.get(0); 
+
+			    			for(String ovInstanceName: result){
+			    				ovInstanceListResult.add(OVInstance.getInstance(ovFault, 
+			    						LiteralEntityInstance.getInstance(ovInstanceName, ovFault.getValueType()))); 
+			    			}
+
+			    			if(doIntersection){
+			    				//Do intersection
+			    				OrdinaryVariable ov = ovFaultTempList.get(0);
+			    				List<OVInstance> instanceListForOV = mapOVInstanceMap.get(ov); 
+			    				ovInstanceListResult = intersection(instanceListForOV, ovInstanceListResult); 
+			    			}
+
+			    			mapOVInstanceMap.put(ovFault, ovInstanceListResult); 
+//			    			System.out.println("Out ["  + ovFault + " " + 
+//			    			ovInstanceListResult + "]");
+			    		}
+
+			    		solvedNodes.add(context); 
+//			    		System.out.println("Houve alteracao");
+			    		changed = true; 
+
+//			    		System.out.println("\nMapOVInstance");
+			    		for(OrdinaryVariable ov: mapOVInstanceMap.keySet()){
+//			    			System.out.println("> OV=" + ov + "[");
+			    			List<OVInstance> ovInstanceListResult = mapOVInstanceMap.get(ov); 
+			    			for(OVInstance ovI: ovInstanceListResult){
+//			    				System.out.println("   " + ovI);
+			    			}
+//			    			System.out.println("]");
+
+			    		}
+//			    		System.out.println("\n");
+
+//			    		if(verifyOVFaultList(ovFaultList, ovInsntanceList)); 
+
+			    	} catch (InvalidContextNodeFormulaException e) {
+			    		e.printStackTrace();
+			    		break OUT_LOOP; 
+			    	} catch (OVInstanceFaultException e) {
+			    		e.printStackTrace();
+			    		break OUT_LOOP; 
+			    	} 
+			    } //else
 				
-		   	}
+		   	} //for 
 			
 			for(ContextNode context: solvedNodes){
 				cnList.remove(context);
-//				System.out.println("Solved node: " + context);
 			}
 			
 		}while(changed); 
 		
-		//Montar resultado e retornar. 
-		
-//		System.out.println("Resultado: ");
-		
 		/* 
-		 * Para esta versão, pode ter apenas uma entidade como resultado para 
-		 * cada uma das ordinary variables fautantes. Casos mais complexos por
-		 * enquanto não são cobertos. 
+		 * For this version, should have only one entity how result for each 
+		 * empty ordinary variable.  
 		 */
-		
 		List<OVInstance> listResult = new ArrayList<OVInstance>(); 
 		for(OrdinaryVariable ov: ovFaultList){
-//			System.out.println("Ordinary Variable: " + ov);
 			List<OVInstance> listOVInstance = mapOVInstanceMap.get(ov); 
-			if((listOVInstance != null) && (listOVInstance.size() == 1)){
-//				System.out.println("   OVInstance = " + listOVInstance.get(0));
-				listResult.add( listOVInstance.get(0) ); 
-			}else{
-//				System.out.println("   Not ov instance for the ordinary variable");
-				return null; 
+			if(listOVInstance!=null){
+				if(listOVInstance.size() == 1){
+					listResult.add( listOVInstance.get(0) );
+				}else{
+					throw new ImplementationRestrictionException(
+							ImplementationRestrictionException.ONLY_ONE_OVINSTANCE_FOR_OV); 
+				}
 			}
 		}
 		
@@ -376,6 +521,14 @@ OUT_LOOP:  for(ContextNode context: cnList){
 		}
 		
 		return listIntersection; 
+	}
+
+	public SSBNAlgorithmInterationHelper getInterationHelper() {
+		return interationHelper;
+	}
+
+	public void setInterationHelper(SSBNAlgorithmInterationHelper interationHelper) {
+		this.interationHelper = interationHelper;
 	}
 	
 }
