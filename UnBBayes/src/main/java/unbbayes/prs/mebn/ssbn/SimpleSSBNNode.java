@@ -96,8 +96,9 @@ public class SimpleSSBNNode {
 		return parents;
 	}
 
-	public void setParents(List<SimpleSSBNNode> parents) {
-		this.parents = parents;
+	
+	public void addParent(SimpleSSBNNode parent){
+		parents.add(parent); 
 	}
 
 	public MFragInstance getMFragInstance() {
@@ -108,7 +109,7 @@ public class SimpleSSBNNode {
 		this.mFragInstance = mFragInstance;
 	}
 
-	public List<OVInstance> getListArguments() {
+	public List<OVInstance> getArgumentList() {
 		return listArguments;
 	}
 	

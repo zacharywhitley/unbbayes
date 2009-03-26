@@ -25,9 +25,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import unbbayes.prs.Node;
 import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
+import unbbayes.prs.mebn.ResidentNode;
 
 /**
  * Represent a MFrag instanciated for a set of entities and encapsule the state
@@ -196,6 +199,45 @@ public class MFragInstance {
 		
 		return null; 
 		
+	}
+	
+	
+	/**
+	 * 
+	 * @param node               Input or Resident Node parent
+	 * @param ovInstanceList     Arguments of the parent node
+	 * @return
+	 */
+	public List<SimpleSSBNNode> getSSBNNodeForNode(Node node, List<OVInstance> ovInstanceList){
+		
+		List<SimpleSSBNNode> listSSBNNode = new ArrayList<SimpleSSBNNode>(); 
+		
+		ResidentNode residentNode; 
+		
+		//Bad form to do this. 
+		if(node instanceof InputNode){
+			residentNode = ((InputNode)node).getResidentNodePointer().getResidentNode();  
+		}else{
+			residentNode = (ResidentNode) node; 
+		}
+		
+		for(SimpleSSBNNode ssbnNode: listSSBNNode){
+			
+			if(ssbnNode.getResidentNode().equals(residentNode)){
+				if(isOVInstanceListEquivalent(ovInstanceList, ssbnNode.getArgumentList())){
+					listSSBNNode.add(ssbnNode); 
+				}
+			}
+			
+		}
+		
+		return listSSBNNode; 
+		
+	}
+	
+	private boolean isOVInstanceListEquivalent(List<OVInstance> ovInstanceList1, List<OVInstance> ovInstanceList2){
+		//TODO implement this method
+		return true; 
 	}
 	
 	

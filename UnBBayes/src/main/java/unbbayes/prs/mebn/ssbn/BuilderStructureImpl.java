@@ -3,6 +3,7 @@ package unbbayes.prs.mebn.ssbn;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.prs.Node;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -80,6 +81,10 @@ public class BuilderStructureImpl implements BuilderStructure{
 		
 		//Evaluate all the not finished nodes
 		//Maybe try a order that facilite the evaluation (nodes at some MFrag for example)
+		
+		//Cases: 
+		//Query and Findings nodes
+		//Input nodes still don't evaluated 
 		while(!notFinishedNodeList.isEmpty()){
 			for(SimpleSSBNNode node: notFinishedNodeList){
 			   evaluateUnfinishedRV(node); 
@@ -97,7 +102,7 @@ public class BuilderStructureImpl implements BuilderStructure{
 
 		//Build the MFragInstance related to the node
 		MFragInstance mFragInstance = 
-			ssbn.createMFragInstance(node.getResidentNode().getMFrag(), node.getListArguments()); 
+			ssbn.createMFragInstance(node.getResidentNode().getMFrag(), node.getArgumentList()); 
 
 		//Evaluate the mFragInstances and create the nodes of its.
 		evaluateMFragInstance(mFragInstance); 
@@ -217,6 +222,7 @@ public class BuilderStructureImpl implements BuilderStructure{
 						ovInstanceListSimpleCase); 
 				
 				ssbnNode.setFinished(false); 
+				notFinishedNodeList.add(ssbnNode); 
 			
 			}else{
 				//Create a list of nodes with the combinations of the arguments. 
@@ -225,12 +231,45 @@ public class BuilderStructureImpl implements BuilderStructure{
 		}		
 		
 		//Step 3: Create the edges between the nodes
-		//Put the context node special node in the network in case of uncertainty reference
-		
 		
 		
 		
 		mFragInstance.setEvaluated(true); 
 	}
 	
+	public void createEdgesForMFragInstance(MFragInstance mFragInstance){
+		
+		//Put the context node special node in the network in case of uncertainty reference
+		
+		//Don't exist edge between two input nodes
+		//ResidentNodes
+		for(SimpleSSBNNode evaluatedNode: mFragInstance.getNodeList()){
+			
+			//Taken only the nodes that are resident in this MFrag
+			if(evaluatedNode.getMFragInstance().equals(mFragInstance)){
+				
+				//input node or resident node
+				for(Node mebnNode: evaluatedNode.getResidentNode().getParents()){
+					
+					for(SimpleSSBNNode ssbnNodeParent: 
+						mFragInstance.getSSBNNodeForNode(mebnNode, evaluatedNode.getArgumentList())){
+						
+						evaluatedNode.addParent(ssbnNodeParent); 
+					
+					}
+					
+				}
+				
+			}
+			
+		}
+		
+	}
+	
+
+	
+	
 }
+
+
+
