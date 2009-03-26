@@ -1,11 +1,11 @@
 // ~->[DNET-1]->~
 
-// File created by someone at SEOR-GMU using Netica 3.19 on May 14, 2008 at 18:47:05.
+// File created by someone at SEOR-GMU using Netica 4.02 on Mar 22, 2009 at 17:08:45.
 
-bnet LahoreSSBN2mod {
+bnet LahoreSSBN3mod {
 AutoCompile = TRUE;
 autoupdate = TRUE;
-whenchanged = 1210816007;
+whenchanged = 1237755587;
 
 visual V1 {
 	defdispform = BELIEFBARS;
@@ -560,20 +560,23 @@ node LocationConstraint {
 	chance = DETERMIN;
 	states = (Possible, Impossible);
 	parents = (AgentAtVenue3, AgentAtVenue);
-	probs = 
-		// Possible     Impossible      // AgentAtVenue3 AgentAtVenue 
-		(((0,           1),             // true          true         
-		  (1,           0)),            // true          false        
-		 ((1,           0),             // false         true         
-		  (1,           0)));           // false         false        ;
+	functable = 
+		                     // AgentAtVenue3 AgentAtVenue 
+		 ((Impossible,       // true          true         
+		   Possible),        // true          false        
+		  (Possible,         // false         true         
+		   Possible));       // false         false        ;
 	numcases = 1;
-	title = "LocationConstraint(ResC,Conf)";
-	whenchanged = 1210816007;
+	title = "LocationConstraint(ResC,Conf,TL6)";
+	whenchanged = 1237755587;
 	evidence = Possible;
 	belief = (1, 0);
 	visual V1 {
 		center = (774, 690);
 		height = 22;
+		link 1 {
+			path = ((441, 655), (648, 677));
+			};
 		};
 	};
 
