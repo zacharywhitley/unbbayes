@@ -1,0 +1,83 @@
+% UBF file header
+Version=0.03
+PrOwl="OVs.owl"
+
+% UBF MTheory declaration
+MTheory=NewMEBN
+NextMFrag=3
+NextResident=4
+NextInput=1
+NextContext=2
+NextEntity=1
+
+% UBF MFrags and Nodes declaration
+
+% MFrag
+MFrag=DMFrag1
+NextOrdinaryVar=3
+
+% Resident nodes
+
+
+Node=ReturnA
+Type=DomainResidentNode
+Position=366.0,169.0
+Size=35,35
+
+% Ordinary Variables
+
+
+Node=b
+Type=OrdinalVar
+Position=300.0,70.0
+Size=35,35
+
+Node=c
+Type=OrdinalVar
+Position=438.0,65.0
+Size=35,35
+
+% MFrag
+MFrag=DMFrag2
+NextOrdinaryVar=4
+
+% Resident nodes
+
+
+Node=NodeA
+Type=DomainResidentNode
+Position=213.0,281.0
+Size=35,35
+
+Node=NodeX
+Type=DomainResidentNode
+Position=213.0,165.0
+Size=35,35
+
+% Context nodes
+
+
+Node=CX1
+Type=ContextNode
+Position=210.0,99.0
+Size=35,35
+
+% Ordinary Variables
+
+
+Node=a
+Type=OrdinalVar
+Position=94.0,33.0
+Size=35,35
+
+Node=b
+Type=OrdinalVar
+Position=212.0,33.0
+Size=35,35
+
+Node=c
+Type=OrdinalVar
+Position=329.0,33.0
+Size=35,35
+
+% Object Entity Instances
