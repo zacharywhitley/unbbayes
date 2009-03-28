@@ -849,7 +849,9 @@ public class Evaluation {
 
 	public static void main(String[] args) throws Exception {
 		
-		boolean runSmallTest = true;
+		boolean runSmallTest = false;
+		boolean runApproximate = false;
+		boolean runExact = true;
 
 		List<String> targetNodeNameList = new ArrayList<String>();
 		List<String> evidenceNodeNameList = new ArrayList<String>();
@@ -878,188 +880,206 @@ public class Evaluation {
 			netFileName = "src/test/resources/testCases/evaluation/AirID.xml";
 		}
 
-		int sampleSize = 100000;
-
-		Evaluation evaluationApproximate = new Evaluation();
-		evaluationApproximate.evaluate(netFileName, targetNodeNameList,
-				evidenceNodeNameList, sampleSize);
-		Evaluation evaluationExact = new Evaluation();
-		evaluationExact.evaluate(netFileName, targetNodeNameList,
-				evidenceNodeNameList);
-		
-		System.out.println("----TOTAL------");
-		
-		System.out.println("LCM:\n");
-		System.out.println("Approximate:");
-		show(evaluationApproximate.getEvidenceSetCM());
-		System.out.println("Exact:");
-		show(evaluationExact.getEvidenceSetCM());
-		
-		System.out.println("\n");
-		
-		System.out.println("PCC: ");
-		System.out.println("Approximate:");
-		System.out.printf("%2.2f\n", evaluationApproximate.getEvidenceSetPCC() * 100);
-		System.out.println("Exact:");
-		System.out.printf("%2.2f\n", evaluationExact.getEvidenceSetPCC() * 100);
-		
-		System.out.println("\n\n\n");
-		System.out.println("----MARGINAL------");
-		System.out.println("\n\n");
-		
 		// APPROXIMATE //
-		
-		List<EvidenceEvaluation> list = evaluationApproximate.getBestMarginalImprovement();
-		
-		for (EvidenceEvaluation evidenceEvaluation : list) {
+		if (runApproximate) {
 			
-			System.out.println("-" + evidenceEvaluation.getName() + "-");
-			System.out.println("\n\n");
+			int sampleSize = 0;
+			if (runSmallTest) {
+				sampleSize = 100000;
+			} else {
+				sampleSize = 500000;
+			}
 			
-			System.out.println("LCM:\n");
-			show(evidenceEvaluation.getMarginalCM());
+			Evaluation evaluationApproximate = new Evaluation();
+			evaluationApproximate.evaluate(netFileName, targetNodeNameList,
+					evidenceNodeNameList, sampleSize);
 			
-			System.out.println("\n");
-			
-			System.out.println("PCC: ");
-			System.out.printf("%2.2f\n", evidenceEvaluation.getMarginalPCC() * 100);
-			
-			System.out.println("\n");
-			
-			System.out.println("Marginal Improvement: ");
-			System.out.printf("%2.2f\n", evidenceEvaluation.getMarginalImprovement() * 100);
-			
-			System.out.println("\n\n");
-		}
-		
-		System.out.println("\n");
-		System.out.println("----INDIVIDUAL PCC------");
-		System.out.println("\n\n");
-		
-		list = evaluationApproximate.getBestIndividualPCC();
-		
-		for (EvidenceEvaluation evidenceEvaluation : list) {
-			
-			System.out.println("-" + evidenceEvaluation.getName() + "-");
-			System.out.println("\n\n");
+			System.out.println("----TOTAL------");
 			
 			System.out.println("LCM:\n");
-			show(evidenceEvaluation.getIndividualLCM());
-			
+			show(evaluationApproximate.getEvidenceSetCM());
 			System.out.println("\n");
 			
 			System.out.println("PCC: ");
-			System.out.printf("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
+			System.out.printf("%2.2f\n", evaluationApproximate.getEvidenceSetPCC() * 100);
 			
+			System.out.println("\n\n\n");
+			System.out.println("----MARGINAL------");
 			System.out.println("\n\n");
 			
-			// Add random costs for each
-			evidenceEvaluation.setCost((new Random()).nextFloat() * 1000);
-		}
-		
-		System.out.println("\n");
-		System.out.println("----INDIVIDUAL PCC------");
-		System.out.println("\n\n");
-		
-		list = evaluationApproximate.getBestIndividualCostRate();
-		
-		for (EvidenceEvaluation evidenceEvaluation : list) {
+			List<EvidenceEvaluation> list = evaluationApproximate.getBestMarginalImprovement();
 			
-			System.out.println("-" + evidenceEvaluation.getName() + "-");
-			System.out.println("\n\n");
-			
-			System.out.println("PCC: ");
-			System.out.printf("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
+			for (EvidenceEvaluation evidenceEvaluation : list) {
+				
+				System.out.println("-" + evidenceEvaluation.getName() + "-");
+				System.out.println("\n\n");
+				
+				System.out.println("LCM:\n");
+				show(evidenceEvaluation.getMarginalCM());
+				
+				System.out.println("\n");
+				
+				System.out.println("PCC: ");
+				System.out.printf("%2.2f\n", evidenceEvaluation.getMarginalPCC() * 100);
+				
+				System.out.println("\n");
+				
+				System.out.println("Marginal Improvement: ");
+				System.out.printf("%2.2f\n", evidenceEvaluation.getMarginalImprovement() * 100);
+				
+				System.out.println("\n\n");
+			}
 			
 			System.out.println("\n");
+			System.out.println("----INDIVIDUAL PCC------");
+			System.out.println("\n\n");
 			
-			System.out.println("Cost: ");
-			System.out.printf("%2.2f\n", evidenceEvaluation.getCost());
+			list = evaluationApproximate.getBestIndividualPCC();
+			
+			for (EvidenceEvaluation evidenceEvaluation : list) {
+				
+				System.out.println("-" + evidenceEvaluation.getName() + "-");
+				System.out.println("\n\n");
+				
+				System.out.println("LCM:\n");
+				show(evidenceEvaluation.getIndividualLCM());
+				
+				System.out.println("\n");
+				
+				System.out.println("PCC: ");
+				System.out.printf("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
+				
+				System.out.println("\n\n");
+				
+				// Add random costs for each
+				evidenceEvaluation.setCost((new Random()).nextFloat() * 1000);
+			}
 			
 			System.out.println("\n");
-			
-			System.out.println("Cost Rate: ");
-			System.out.printf("%2.2f\n", evidenceEvaluation.getCostRate() * 100);
-			
+			System.out.println("----INDIVIDUAL PCC------");
 			System.out.println("\n\n");
+			
+			list = evaluationApproximate.getBestIndividualCostRate();
+			
+			for (EvidenceEvaluation evidenceEvaluation : list) {
+				
+				System.out.println("-" + evidenceEvaluation.getName() + "-");
+				System.out.println("\n\n");
+				
+				System.out.println("PCC: ");
+				System.out.printf("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
+				
+				System.out.println("\n");
+				
+				System.out.println("Cost: ");
+				System.out.printf("%2.2f\n", evidenceEvaluation.getCost());
+				
+				System.out.println("\n");
+				
+				System.out.println("Cost Rate: ");
+				System.out.printf("%2.2f\n", evidenceEvaluation.getCostRate() * 100);
+				
+				System.out.println("\n\n");
+			}
 		}
 		
 		// EXACT //
-		
-		list = evaluationExact.getBestMarginalImprovement();
-		
-		for (EvidenceEvaluation evidenceEvaluation : list) {
+		if (runExact) {
+			Evaluation evaluationExact = new Evaluation();
+			evaluationExact.evaluate(netFileName, targetNodeNameList,
+					evidenceNodeNameList);
 			
-			System.out.println("-" + evidenceEvaluation.getName() + "-");
-			System.out.println("\n\n");
-			
-			System.out.println("LCM:\n");
-			show(evidenceEvaluation.getMarginalCM());
-			
-			System.out.println("\n");
-			
-			System.out.println("PCC: ");
-			System.out.printf("%2.2f\n", evidenceEvaluation.getMarginalPCC() * 100);
-			
-			System.out.println("\n");
-			
-			System.out.println("Marginal Improvement: ");
-			System.out.printf("%2.2f\n", evidenceEvaluation.getMarginalImprovement() * 100);
-			
-			System.out.println("\n\n");
-		}
-		
-		System.out.println("\n");
-		System.out.println("----INDIVIDUAL PCC------");
-		System.out.println("\n\n");
-		
-		list = evaluationExact.getBestIndividualPCC();
-		
-		for (EvidenceEvaluation evidenceEvaluation : list) {
-			
-			System.out.println("-" + evidenceEvaluation.getName() + "-");
-			System.out.println("\n\n");
+			System.out.println("----TOTAL------");
 			
 			System.out.println("LCM:\n");
-			show(evidenceEvaluation.getIndividualLCM());
+			show(evaluationExact.getEvidenceSetCM());
 			
 			System.out.println("\n");
 			
 			System.out.println("PCC: ");
-			System.out.printf("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
+			System.out.printf("%2.2f\n", evaluationExact.getEvidenceSetPCC() * 100);
 			
+			System.out.println("\n\n\n");
+			System.out.println("----MARGINAL------");
 			System.out.println("\n\n");
 			
-			// Add random costs for each
-			evidenceEvaluation.setCost((new Random()).nextFloat() * 1000);
-		}
-		
-		System.out.println("\n");
-		System.out.println("----INDIVIDUAL PCC------");
-		System.out.println("\n\n");
-		
-		list = evaluationExact.getBestIndividualCostRate();
-		
-		for (EvidenceEvaluation evidenceEvaluation : list) {
+			List<EvidenceEvaluation> list = evaluationExact.getBestMarginalImprovement();
 			
-			System.out.println("-" + evidenceEvaluation.getName() + "-");
-			System.out.println("\n\n");
-			
-			System.out.println("PCC: ");
-			System.out.printf("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
+			for (EvidenceEvaluation evidenceEvaluation : list) {
+				
+				System.out.println("-" + evidenceEvaluation.getName() + "-");
+				System.out.println("\n\n");
+				
+				System.out.println("LCM:\n");
+				show(evidenceEvaluation.getMarginalCM());
+				
+				System.out.println("\n");
+				
+				System.out.println("PCC: ");
+				System.out.printf("%2.2f\n", evidenceEvaluation.getMarginalPCC() * 100);
+				
+				System.out.println("\n");
+				
+				System.out.println("Marginal Improvement: ");
+				System.out.printf("%2.2f\n", evidenceEvaluation.getMarginalImprovement() * 100);
+				
+				System.out.println("\n\n");
+			}
 			
 			System.out.println("\n");
+			System.out.println("----INDIVIDUAL PCC------");
+			System.out.println("\n\n");
 			
-			System.out.println("Cost: ");
-			System.out.printf("%2.2f\n", evidenceEvaluation.getCost());
+			list = evaluationExact.getBestIndividualPCC();
+			
+			for (EvidenceEvaluation evidenceEvaluation : list) {
+				
+				System.out.println("-" + evidenceEvaluation.getName() + "-");
+				System.out.println("\n\n");
+				
+				System.out.println("LCM:\n");
+				show(evidenceEvaluation.getIndividualLCM());
+				
+				System.out.println("\n");
+				
+				System.out.println("PCC: ");
+				System.out.printf("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
+				
+				System.out.println("\n\n");
+				
+				// Add random costs for each
+				evidenceEvaluation.setCost((new Random()).nextFloat() * 1000);
+			}
 			
 			System.out.println("\n");
-			
-			System.out.println("Cost Rate: ");
-			System.out.printf("%2.2f\n", evidenceEvaluation.getCostRate() * 100);
-			
+			System.out.println("----INDIVIDUAL PCC------");
 			System.out.println("\n\n");
+			
+			list = evaluationExact.getBestIndividualCostRate();
+			
+			for (EvidenceEvaluation evidenceEvaluation : list) {
+				
+				System.out.println("-" + evidenceEvaluation.getName() + "-");
+				System.out.println("\n\n");
+				
+				System.out.println("PCC: ");
+				System.out.printf("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
+				
+				System.out.println("\n");
+				
+				System.out.println("Cost: ");
+				System.out.printf("%2.2f\n", evidenceEvaluation.getCost());
+				
+				System.out.println("\n");
+				
+				System.out.println("Cost Rate: ");
+				System.out.printf("%2.2f\n", evidenceEvaluation.getCostRate() * 100);
+				
+				System.out.println("\n\n");
+			}
 		}
+		
+		
 
 	}
 	
