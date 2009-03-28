@@ -21,12 +21,16 @@
 package unbbayes.simulation.montecarlo.sampling;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.TreeVariable;
 
 /**
  * 
@@ -53,14 +57,37 @@ public class MonteCarloSampling {
 		return samplingNodeOrderQueue;
 	}
 
-	protected byte [][] sampledStatesMatrix;
+	protected Map<Integer,Integer> sampledStatesMap;
 	
 	/**
 	 * Returns the generated sample matrix.
 	 * @return The generated sample matrix.
 	 */
 	public byte[][] getSampledStatesMatrix() {
+		byte [][] sampledStatesMatrix = new byte[nTrials][samplingNodeOrderQueue.size()];
+		int index = 0;
+		Set<Integer> keySet = sampledStatesMap.keySet();
+		byte[] sampledStates;
+		int value;
+		for (Integer key : keySet) {
+			sampledStates = new byte[samplingNodeOrderQueue.size()];
+			value = sampledStatesMap.get(key);
+			for (int i = 0; i < value; i++) {
+				for (int j = 0; j < sampledStates.length; j++) {
+					sampledStatesMatrix[index++][j] = sampledStates[j];
+				}
+			}
+		}
 		return sampledStatesMatrix;
+	}
+	
+	/**
+	 * Returns the generated sample map, with key = linear coord (representing the sates sampled) and 
+	 * value = number of times this key was sampled.
+	 * @return The generated sample map.
+	 */
+	public Map<Integer,Integer> getSampledStatesMap() {
+		return sampledStatesMap;
 	}
 
 	/**
@@ -80,12 +107,19 @@ public class MonteCarloSampling {
 	 * @return A matrix with the state for each node for each case of the sample.
 	 */
 	public void start(){
+		sampledStatesMap = new HashMap<Integer, Integer>();
 		samplingNodeOrderQueue = new ArrayList<Node>();		
 		createSamplingOrderQueue();
-		sampledStatesMatrix = new byte[nTrials][pn.getNodeCount()];		
+		int[] sampledStates = null;
 		for(int i = 0; i < nTrials; i++){						
-			simulate(sampledStatesMatrix, i);
+			sampledStates = simulate();
+			int key = getLinearCoord(sampledStates);
+			Integer value = sampledStatesMap.get(key);
+			if (value != null) {
+				sampledStatesMap.put(key, ++value);
+			}
 		}
+		
 		/*
 		System.out.print("TRIAL");
 		for (int i = 0; i < pn.getNodeCount(); i++) {
@@ -156,7 +190,7 @@ public class MonteCarloSampling {
 	 * @param sampledStatesMatrix The matrix containing the sampled states for every trial. 
 	 * @param nTrial The trial number to simulate.
 	 */
-	protected void simulate(byte[][] sampledStatesMatrix, int nTrial){
+	protected int[] simulate(){
 		List<Integer> parentsIndexes = new ArrayList<Integer>();
 		double[] pmf;
 		int[] sampledStates = new int[samplingNodeOrderQueue.size()];
@@ -165,8 +199,8 @@ public class MonteCarloSampling {
 			parentsIndexes = getParentsIndexesInQueue(node);
 			pmf = getProbabilityMassFunction(sampledStates, parentsIndexes, node);													
 			sampledStates[i] = getState(pmf);
-			sampledStatesMatrix[nTrial][i] = (byte)sampledStates[i];
-		}				
+		}	
+		return sampledStates;
 	}
 	
 	/**
@@ -203,15 +237,15 @@ public class MonteCarloSampling {
 	 * @param pmf The probability mass function for the node RV that we want to sample the state for.
 	 * @return The sampled state for a given RV (based on its pmf).
 	 */
-	protected int getState(double[] pmf) {
+	protected byte getState(double[] pmf) {
 		// Cumulative distribution function
 		double[][] cdf;
 		double numero = Math.random();		
 		cdf = getCumulativeDistributionFunction(pmf);
-		for(int i = 0; i < cdf.length; i++) {
+		for(byte i = 0; i < cdf.length; i++) {
 			if(i == 0) {				
 				if (numero <= cdf[i][1]) {
-					return i;										
+					return i;							
 				}
 				continue;  				
 			} else if (i == cdf.length - 1) {				
@@ -279,6 +313,66 @@ public class MonteCarloSampling {
 		}
 		System.out.println();*/
 		return pmf;
-	}	
+	}
+	
+	protected int[] factors;
+	
+	/**
+	 * Calculate the factors necessary to transform the linear coordinate into a multidimensional 
+	 * one (which is the the state for each possible node - target and evidence).
+	 * FactorForNode[i + 1] = ProductOf(NumberOfStates[i]), for all previous nodes (i).
+	 */
+	protected void computeFactors() {
+		int size = samplingNodeOrderQueue.size();
+		if (factors == null || factors.length != size) {
+		   factors = new int[size];
+		}
+		
+		factors[0] = 1;
+		Node node;
+		for (int i = 1; i < size; i++) {
+			node = samplingNodeOrderQueue.get(i-1);
+			factors[i] = factors[i-1] * node.getStatesSize();
+		}
+	}
+	
+	/**
+	 * Get the linear coordinate from the multidimensional one.
+	 * LinearCoord = SumOf(StateOf[i] * FactorOf[i]), for all 
+	 * possible nodes (i).
+	 * 
+	 * @param multidimensionalCoord Multidimensional coordinate (represented by the state for
+	 * each node).
+	 * @return The corresponding linear coordinate.
+	 */
+	public final int getLinearCoord(int multidimensionalCoord[]) {
+		computeFactors();
+		int coordLinear = 0;
+		int size = samplingNodeOrderQueue.size();
+		for (int v = 0; v < size; v++) {
+			coordLinear += multidimensionalCoord[v] * factors[v];
+		}
+		return coordLinear;
+	}
+	
+	/**
+	 * Get the multidimensional coordinate from the linear one.
+	 * 
+	 * @param linearCoord The linear coordinate.
+	 * @return The corresponding multidimensional coordinate.
+	 */
+	public final int[] getMultidimensionalCoord(int linearCoord) {
+		computeFactors();
+		int factorI;
+		int size = samplingNodeOrderQueue.size();
+		int multidimensionalCoord[] = new int[size];
+		int i = size - 1;
+		while (linearCoord != 0) {
+			factorI = factors[i];
+			multidimensionalCoord[i--] = linearCoord / factorI;
+			linearCoord %= factorI;
+		}
+		return multidimensionalCoord;
+	}
 	
 }
