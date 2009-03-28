@@ -52,8 +52,6 @@ public class Evaluation {
 
 	public static final float UNSET_VALUE = Float.NEGATIVE_INFINITY;
 
-	private Formatter formatter;
-
 	// ------- VALUES THAT DO CHANGE FOR EACH SUB-EVALUATION --------//
 
 	private TreeVariable[] targetNodeList;
@@ -359,10 +357,7 @@ public class Evaluation {
 		int statesSize = targetNode.getStatesSize();
 		row = 0;
 		int index = 0;
-//		System.out.println("Approximate");
 		for (int i = 0; i < statesProduct; i++) {
-//			System.out.println("P(T|E) " + printArray(getMultidimensionalCoord(i)) + postProbTargetGivenEvidence[i]);
-//			System.out.println("P(E|T) " + printArray(getMultidimensionalCoord(i)) + postProbEvidenceGivenTarget[i]);
 			for (int j = 0; j < statesSize; j++) {
 				row = ((int) (i / evidenceStatesProduct)) * statesSize + j;
 				index = (i % evidenceStatesProduct) + j * evidenceStatesProduct;
@@ -379,52 +374,26 @@ public class Evaluation {
 			}
 		}
 
-//		System.out.println(getLCMLog(postProbTargetGivenEvidence,
-//				postProbEvidenceGivenTarget, postProbTargetGivenTarget));
-
 		return CM;
 	}
 
-	private String getLCMLog(float[] postProbTargetGivenEvidence,
-			float[] postProbEvidenceGivenTarget,
-			float[] postProbTargetGivenTarget) {
-		StringBuilder sb = new StringBuilder();
-		// Send all output to the appendable object sb
-		formatter = new Formatter(sb, Locale.US);
+	private void printCMLog(float[][] postProbTargetGivenEvidence,
+			float[][] postProbEvidenceGivenTarget,
+			float[][] postProbTargetGivenTarget) {
 
-		formatter.format("P(T|E) = N[ P(E|T)P(T) ]\n");
-		for (int i = 0; i < targetStatesProduct; i++) {
-			for (int j = 0; j < evidenceStatesProduct; j++) {
-				formatter.format("%2.2f	", postProbTargetGivenEvidence[i
-						* evidenceStatesProduct + j] * 100);
-			}
-			formatter.format("\n");
-		}
+		System.out.println("P(T|E) = N[ P(E|T)P(T) ]\n");
+		show(postProbTargetGivenEvidence);
 
-		formatter.format("\n");
+		System.out.println("\n");
 
-		formatter.format("P(E|T)\n");
-		for (int i = 0; i < evidenceStatesProduct; i++) {
-			for (int j = 0; j < targetStatesProduct; j++) {
-				formatter.format("%2.2f	", postProbEvidenceGivenTarget[j
-						* evidenceStatesProduct + i] * 100);
-			}
-			formatter.format("\n");
-		}
+		System.out.println("P(E|T)\n");
+		show(postProbEvidenceGivenTarget);
 
-		formatter.format("\n");
+		System.out.println("\n");
 
-		formatter.format("P(T|T) = P(T|E)P(E|T)\n");
-		int statesSize = targetNode.getStatesSize();
-		for (int i = 0; i < statesSize; i++) {
-			for (int j = 0; j < statesSize; j++) {
-				formatter.format("%2.2f	", postProbTargetGivenTarget[i
-						* statesSize + j] * 100);
-			}
-			formatter.format("\n");
-		}
+		System.out.println("P(T|T) = P(T|E)P(E|T)\n");
+		show(postProbTargetGivenTarget);
 
-		return sb.toString();
 	}
 
 	public class EvidenceEvaluation {
@@ -577,7 +546,6 @@ public class Evaluation {
 			net.compile();
 		}
 
-		printProbMatrix(stateCombinationMatrix, postProbList);
 		return postProbList;
 	}
 
@@ -592,16 +560,16 @@ public class Evaluation {
 			throw new Exception("For now, just one target node is accepted!");
 		}
 
-		// First column is the P(T|E) and the second is P(E|T) 
-		float[][] postProbList = new float[statesProduct][2];
-
-
+		float [][] postTGivenE = new float[targetNode.getStatesSize()][evidenceStatesProduct];
+		float [][] postEGivenT = new float[evidenceStatesProduct][targetNode.getStatesSize()];
 		for (int row = 0; row < statesProduct; row++) {
 			// It has the state of target/evidence node at index i (first nodes are target then evidence)
 			int [] states = getMultidimensionalCoord(row);
+			int indexTarget = states[0];
+			int indexEvidence = getEvidenceLinearCoord(states); //row - (indexTarget * evidenceStatesProduct);
 			// P(T|E)
 			float probTGivenE = getProbTargetGivenEvidence(states);
-			postProbList[row][0] = probTGivenE;
+			postTGivenE[indexTarget][indexEvidence] = probTGivenE;
 			// P(E)
 			int [] evidencesStates = new int[states.length - 1];
 			for (int i = 0; i < evidencesStates.length; i++) {
@@ -612,35 +580,33 @@ public class Evaluation {
 			float probT = getTargetPriorProbability(states[0]);
 			// P(E|T) = P(T|E)P(E)/P(T)
 			float probEGivenT = probTGivenE * probE / probT;
-			postProbList[row][1] = probEGivenT;
+			postEGivenT[indexEvidence][indexTarget] = probEGivenT;
+			
 		}
 		
-		// Compute probabilities for target given target
+		// Compute probabilities for target given target and set as CM
 		// P(T|T) = P(T|E)P(E|T)
-		float[] postProbTargetGivenTarget = new float[(int) Math.pow(targetNode
-				.getStatesSize(), 2)];
-		int statesSize = targetNode.getStatesSize();
-		int row = 0;
-		int index = 0;
-//		System.out.println("Exact");
-		for (int i = 0; i < statesProduct; i++) {
-//			System.out.println("P(T|E) " + printArray(getMultidimensionalCoord(i)) + postProbList[i][0]);
-//			System.out.println("P(E|T) " + printArray(getMultidimensionalCoord(i)) + postProbList[i][1]);
-			for (int j = 0; j < statesSize; j++) {
-				row = ((int) (i / evidenceStatesProduct)) * statesSize + j;
-				index = (i % evidenceStatesProduct) + j * evidenceStatesProduct;
-				postProbTargetGivenTarget[row] += postProbList[i][0]
-						* postProbList[index][1];
-			}
-		}
-
-		// Set CM
-		float[][] CM = new float[statesSize][statesSize];
-		for (int i = 0; i < statesSize; i++) {
-			for (int j = 0; j < statesSize; j++) {
-				CM[i][j] = postProbTargetGivenTarget[i * statesSize + j];
-			}
-		}
+		int N = targetNode.getStatesSize();
+		float[][] CM = new float[N][N];
+		// ikj pure row
+        //long start = System.currentTimeMillis(); 
+        for (int i = 0; i < N; i++) {
+            float[] arowi = postTGivenE[i];
+            float[] crowi = CM[i];
+            for (int k = 0; k < evidenceStatesProduct; k++) {
+                float[] browk = postEGivenT[k];
+                float aik = arowi[k];
+                for (int j = 0; j < N; j++) {
+                    crowi[j] += aik * browk[j];
+                }
+            }
+        }
+        //long stop = System.currentTimeMillis();
+        //float elapsed = (stop - start) / 1000.0f;
+        //System.out.println("Order ikj pure row:   " + elapsed + " seconds");
+        //show(postTGivenE);
+        //show(postEGivenT);
+        //show(CM);
 		
 		return CM;
 	}
@@ -747,18 +713,6 @@ public class Evaluation {
 		return priorProb;
 	}
 
-	private void printProbMatrix(byte[][] stateCombinationMatrix,
-			float[] postProbList) {
-
-		for (int i = 0; i < stateCombinationMatrix.length; i++) {
-			for (int j = 0; j < stateCombinationMatrix[0].length; j++) {
-//				System.out.print(stateCombinationMatrix[i][j] + "    ");
-			}
-//			System.out.println(postProbList[i]);
-		}
-
-	}
-	
 	protected int[] factors;
 	
 	/**
@@ -805,6 +759,16 @@ public class Evaluation {
 		int size = targetNodeList.length + evidenceNodeList.length;
 		for (int v = 0; v < size; v++) {
 			coordLinear += multidimensionalCoord[v] * factors[v];
+		}
+		return coordLinear;
+	}
+	
+	protected final int getEvidenceLinearCoord(int multidimensionalCoord[]) {
+		computeFactors();
+		int coordLinear = 0;
+		int size = targetNodeList.length + evidenceNodeList.length;
+		for (int v = 1; v < size; v++) {
+			coordLinear += multidimensionalCoord[v] * factors[v]/factors[1];
 		}
 		return coordLinear;
 	}
@@ -884,46 +848,64 @@ public class Evaluation {
 	}
 
 	public static void main(String[] args) throws Exception {
+		
+		boolean runSmallTest = true;
 
 		List<String> targetNodeNameList = new ArrayList<String>();
-		targetNodeNameList.add("Springler");
-
 		List<String> evidenceNodeNameList = new ArrayList<String>();
-		evidenceNodeNameList.add("Cloudy");
-		evidenceNodeNameList.add("Rain");
-		evidenceNodeNameList.add("Wet");
-
-		String netFileName = "../UnBBayes/examples/xml-bif/WetGrass_XMLBIF5.xml";
+		String netFileName = "";
+		if (runSmallTest) {
+			targetNodeNameList = new ArrayList<String>();
+			targetNodeNameList.add("Springler");
+	
+			evidenceNodeNameList = new ArrayList<String>();
+			evidenceNodeNameList.add("Cloudy");
+			evidenceNodeNameList.add("Rain");
+			evidenceNodeNameList.add("Wet");
+	
+			netFileName = "../UnBBayes/examples/xml-bif/WetGrass_XMLBIF5.xml";
+		} else {
+			targetNodeNameList = new ArrayList<String>();
+			targetNodeNameList.add("TargetType");
+	
+			evidenceNodeNameList = new ArrayList<String>();
+			evidenceNodeNameList.add("UHRR_Confusion");
+			evidenceNodeNameList.add("ModulationFrequency");
+			evidenceNodeNameList.add("CenterFrequency");
+			evidenceNodeNameList.add("PRI");
+			evidenceNodeNameList.add("PRF");
+	
+			netFileName = "src/test/resources/testCases/evaluation/AirID.xml";
+		}
 
 		int sampleSize = 100000;
 
 		Evaluation evaluationApproximate = new Evaluation();
 		evaluationApproximate.evaluate(netFileName, targetNodeNameList,
 				evidenceNodeNameList, sampleSize);
-//		Evaluation evaluationExact = new Evaluation();
-//		evaluationExact.evaluate(netFileName, targetNodeNameList,
-//				evidenceNodeNameList);
+		Evaluation evaluationExact = new Evaluation();
+		evaluationExact.evaluate(netFileName, targetNodeNameList,
+				evidenceNodeNameList);
 		
-		StringBuilder sb = new StringBuilder();
-		// Send all output to the appendable object sb
-		Formatter formatter = new Formatter(sb, Locale.US);
+		System.out.println("----TOTAL------");
 		
-		formatter.format("----TOTAL------");
-		formatter.format("\n\n");
+		System.out.println("LCM:\n");
+		System.out.println("Approximate:");
+		show(evaluationApproximate.getEvidenceSetCM());
+		System.out.println("Exact:");
+		show(evaluationExact.getEvidenceSetCM());
 		
-		formatter.format("LCM:\n");
-		printMatrix(evaluationApproximate.getEvidenceSetCM(), formatter);
-//		printMatrix(evaluationExact.getEvidenceSetCM(), formatter);
+		System.out.println("\n");
 		
-		formatter.format("\n");
+		System.out.println("PCC: ");
+		System.out.println("Approximate:");
+		System.out.printf("%2.2f\n", evaluationApproximate.getEvidenceSetPCC() * 100);
+		System.out.println("Exact:");
+		System.out.printf("%2.2f\n", evaluationExact.getEvidenceSetPCC() * 100);
 		
-		formatter.format("PCC: ");
-		formatter.format("%2.2f\n", evaluationApproximate.getEvidenceSetPCC() * 100);
-//		formatter.format("%2.2f\n", evaluationExact.getEvidenceSetPCC() * 100);
-		
-		formatter.format("\n\n\n");
-		formatter.format("----MARGINAL------");
-		formatter.format("\n\n");
+		System.out.println("\n\n\n");
+		System.out.println("----MARGINAL------");
+		System.out.println("\n\n");
 		
 		// APPROXIMATE //
 		
@@ -931,158 +913,165 @@ public class Evaluation {
 		
 		for (EvidenceEvaluation evidenceEvaluation : list) {
 			
-			formatter.format("-" + evidenceEvaluation.getName() + "-");
-			formatter.format("\n\n");
+			System.out.println("-" + evidenceEvaluation.getName() + "-");
+			System.out.println("\n\n");
 			
-			formatter.format("LCM:\n");
-			printMatrix(evidenceEvaluation.getMarginalCM(), formatter);
+			System.out.println("LCM:\n");
+			show(evidenceEvaluation.getMarginalCM());
 			
-			formatter.format("\n");
+			System.out.println("\n");
 			
-			formatter.format("PCC: ");
-			formatter.format("%2.2f\n", evidenceEvaluation.getMarginalPCC() * 100);
+			System.out.println("PCC: ");
+			System.out.printf("%2.2f\n", evidenceEvaluation.getMarginalPCC() * 100);
 			
-			formatter.format("\n");
+			System.out.println("\n");
 			
-			formatter.format("Marginal Improvement: ");
-			formatter.format("%2.2f\n", evidenceEvaluation.getMarginalImprovement() * 100);
+			System.out.println("Marginal Improvement: ");
+			System.out.printf("%2.2f\n", evidenceEvaluation.getMarginalImprovement() * 100);
 			
-			formatter.format("\n\n");
+			System.out.println("\n\n");
 		}
 		
-		formatter.format("\n");
-		formatter.format("----INDIVIDUAL PCC------");
-		formatter.format("\n\n");
+		System.out.println("\n");
+		System.out.println("----INDIVIDUAL PCC------");
+		System.out.println("\n\n");
 		
 		list = evaluationApproximate.getBestIndividualPCC();
 		
 		for (EvidenceEvaluation evidenceEvaluation : list) {
 			
-			formatter.format("-" + evidenceEvaluation.getName() + "-");
-			formatter.format("\n\n");
+			System.out.println("-" + evidenceEvaluation.getName() + "-");
+			System.out.println("\n\n");
 			
-			formatter.format("LCM:\n");
-			printMatrix(evidenceEvaluation.getIndividualLCM(), formatter);
+			System.out.println("LCM:\n");
+			show(evidenceEvaluation.getIndividualLCM());
 			
-			formatter.format("\n");
+			System.out.println("\n");
 			
-			formatter.format("PCC: ");
-			formatter.format("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
+			System.out.println("PCC: ");
+			System.out.printf("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
 			
-			formatter.format("\n\n");
+			System.out.println("\n\n");
 			
 			// Add random costs for each
 			evidenceEvaluation.setCost((new Random()).nextFloat() * 1000);
 		}
 		
-		formatter.format("\n");
-		formatter.format("----INDIVIDUAL PCC------");
-		formatter.format("\n\n");
+		System.out.println("\n");
+		System.out.println("----INDIVIDUAL PCC------");
+		System.out.println("\n\n");
 		
 		list = evaluationApproximate.getBestIndividualCostRate();
 		
 		for (EvidenceEvaluation evidenceEvaluation : list) {
 			
-			formatter.format("-" + evidenceEvaluation.getName() + "-");
-			formatter.format("\n\n");
+			System.out.println("-" + evidenceEvaluation.getName() + "-");
+			System.out.println("\n\n");
 			
-			formatter.format("PCC: ");
-			formatter.format("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
+			System.out.println("PCC: ");
+			System.out.printf("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
 			
-			formatter.format("\n");
+			System.out.println("\n");
 			
-			formatter.format("Cost: ");
-			formatter.format("%2.2f\n", evidenceEvaluation.getCost());
+			System.out.println("Cost: ");
+			System.out.printf("%2.2f\n", evidenceEvaluation.getCost());
 			
-			formatter.format("\n");
+			System.out.println("\n");
 			
-			formatter.format("Cost Rate: ");
-			formatter.format("%2.2f\n", evidenceEvaluation.getCostRate() * 100);
+			System.out.println("Cost Rate: ");
+			System.out.printf("%2.2f\n", evidenceEvaluation.getCostRate() * 100);
 			
-			formatter.format("\n\n");
+			System.out.println("\n\n");
 		}
 		
-//		// EXACT //
-//		
-//		list = evaluationExact.getBestMarginalImprovement();
-//		
-//		for (EvidenceEvaluation evidenceEvaluation : list) {
-//			
-//			formatter.format("-" + evidenceEvaluation.getName() + "-");
-//			formatter.format("\n\n");
-//			
-//			formatter.format("LCM:\n");
-//			printMatrix(evidenceEvaluation.getMarginalCM(), formatter);
-//			
-//			formatter.format("\n");
-//			
-//			formatter.format("PCC: ");
-//			formatter.format("%2.2f\n", evidenceEvaluation.getMarginalPCC() * 100);
-//			
-//			formatter.format("\n");
-//			
-//			formatter.format("Marginal Improvement: ");
-//			formatter.format("%2.2f\n", evidenceEvaluation.getMarginalImprovement() * 100);
-//			
-//			formatter.format("\n\n");
-//		}
-//		
-//		formatter.format("\n");
-//		formatter.format("----INDIVIDUAL PCC------");
-//		formatter.format("\n\n");
-//		
-//		list = evaluationExact.getBestIndividualPCC();
-//		
-//		for (EvidenceEvaluation evidenceEvaluation : list) {
-//			
-//			formatter.format("-" + evidenceEvaluation.getName() + "-");
-//			formatter.format("\n\n");
-//			
-//			formatter.format("LCM:\n");
-//			printMatrix(evidenceEvaluation.getIndividualLCM(), formatter);
-//			
-//			formatter.format("\n");
-//			
-//			formatter.format("PCC: ");
-//			formatter.format("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
-//			
-//			formatter.format("\n\n");
-//			
-//			// Add random costs for each
-//			evidenceEvaluation.setCost((new Random()).nextFloat() * 1000);
-//		}
-//		
-//		formatter.format("\n");
-//		formatter.format("----INDIVIDUAL PCC------");
-//		formatter.format("\n\n");
-//		
-//		list = evaluationExact.getBestIndividualCostRate();
-//		
-//		for (EvidenceEvaluation evidenceEvaluation : list) {
-//			
-//			formatter.format("-" + evidenceEvaluation.getName() + "-");
-//			formatter.format("\n\n");
-//			
-//			formatter.format("PCC: ");
-//			formatter.format("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
-//			
-//			formatter.format("\n");
-//			
-//			formatter.format("Cost: ");
-//			formatter.format("%2.2f\n", evidenceEvaluation.getCost());
-//			
-//			formatter.format("\n");
-//			
-//			formatter.format("Cost Rate: ");
-//			formatter.format("%2.2f\n", evidenceEvaluation.getCostRate() * 100);
-//			
-//			formatter.format("\n\n");
-//		}
+		// EXACT //
 		
+		list = evaluationExact.getBestMarginalImprovement();
 		
-		System.out.println(sb.toString());
+		for (EvidenceEvaluation evidenceEvaluation : list) {
+			
+			System.out.println("-" + evidenceEvaluation.getName() + "-");
+			System.out.println("\n\n");
+			
+			System.out.println("LCM:\n");
+			show(evidenceEvaluation.getMarginalCM());
+			
+			System.out.println("\n");
+			
+			System.out.println("PCC: ");
+			System.out.printf("%2.2f\n", evidenceEvaluation.getMarginalPCC() * 100);
+			
+			System.out.println("\n");
+			
+			System.out.println("Marginal Improvement: ");
+			System.out.printf("%2.2f\n", evidenceEvaluation.getMarginalImprovement() * 100);
+			
+			System.out.println("\n\n");
+		}
+		
+		System.out.println("\n");
+		System.out.println("----INDIVIDUAL PCC------");
+		System.out.println("\n\n");
+		
+		list = evaluationExact.getBestIndividualPCC();
+		
+		for (EvidenceEvaluation evidenceEvaluation : list) {
+			
+			System.out.println("-" + evidenceEvaluation.getName() + "-");
+			System.out.println("\n\n");
+			
+			System.out.println("LCM:\n");
+			show(evidenceEvaluation.getIndividualLCM());
+			
+			System.out.println("\n");
+			
+			System.out.println("PCC: ");
+			System.out.printf("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
+			
+			System.out.println("\n\n");
+			
+			// Add random costs for each
+			evidenceEvaluation.setCost((new Random()).nextFloat() * 1000);
+		}
+		
+		System.out.println("\n");
+		System.out.println("----INDIVIDUAL PCC------");
+		System.out.println("\n\n");
+		
+		list = evaluationExact.getBestIndividualCostRate();
+		
+		for (EvidenceEvaluation evidenceEvaluation : list) {
+			
+			System.out.println("-" + evidenceEvaluation.getName() + "-");
+			System.out.println("\n\n");
+			
+			System.out.println("PCC: ");
+			System.out.printf("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
+			
+			System.out.println("\n");
+			
+			System.out.println("Cost: ");
+			System.out.printf("%2.2f\n", evidenceEvaluation.getCost());
+			
+			System.out.println("\n");
+			
+			System.out.println("Cost Rate: ");
+			System.out.printf("%2.2f\n", evidenceEvaluation.getCostRate() * 100);
+			
+			System.out.println("\n\n");
+		}
 
 	}
+	
+	public static void show(float[][] a) {
+        for (int i = 0; i < a.length; i++) {
+            for (int j = 0; j < a[0].length; j++) {
+                System.out.printf("%6.4f ", a[i][j]);
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
 	
 	private String printArray(int[] array) {
 		String str = "";
@@ -1095,9 +1084,9 @@ public class Evaluation {
 	public static void printMatrix(float[][] matrix, Formatter formatter) {
 		for (int i = 0; i < matrix.length; i++) {
 			for (int j = 0; j < matrix[0].length; j++) {
-				formatter.format("%2.2f ", matrix[i][j] * 100);
+				System.out.printf("%2.2f ", matrix[i][j] * 100);
 			}
-			formatter.format("\n");
+			System.out.println("\n");
 		}
 	}
 }
