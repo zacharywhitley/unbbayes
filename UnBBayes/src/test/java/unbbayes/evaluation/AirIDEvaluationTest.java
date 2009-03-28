@@ -16,7 +16,7 @@ public class AirIDEvaluationTest {
 	
 	private static Evaluation evaluationApproximate;
 	
-	private final float DELTA = .5f;
+	private final float DELTA = .01f;
 	
 	@BeforeClass
 	public static void oneTimeSetUp() throws Exception {

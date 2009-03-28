@@ -18,7 +18,7 @@ public class WetGrassEvaluationTest {
 	
 	private static Evaluation evaluationApproximate;
 	
-	private final float DELTA = .5f;
+	private final float DELTA = .01f;
 	private static final float COST_C = 10f;
 	private static final float COST_R = 100f;
 	private static final float COST_W = 1000f;
@@ -285,6 +285,8 @@ public class WetGrassEvaluationTest {
 		evidenceEvaluation = list.get(1);
 		
 		assertEquals("Rain", evidenceEvaluation.getName());
+		
+		cm = evidenceEvaluation.getIndividualLCM();
 		
 		// LCM
 		// [34.0 28.0]
