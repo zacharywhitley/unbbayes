@@ -1120,11 +1120,11 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			}
 		}
 	
-		int sizeDecisao1 = decisionNodes.size();
-		for (int i = 0; i < sizeDecisao1; i++) {
-			System.out.print(decisionNodes.get(i) + " ");
-		}
-		System.out.println();
+//		int sizeDecisao1 = decisionNodes.size();
+//		for (int i = 0; i < sizeDecisao1; i++) {
+//			System.out.print(decisionNodes.get(i) + " ");
+//		}
+//		System.out.println();
 	
 		for (int i = 0; i < decisionNodes.size(); i++) {
 			aux = decisionNodes.get(i);
