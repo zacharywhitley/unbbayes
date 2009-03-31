@@ -3,6 +3,7 @@ package unbbayes.prs.mebn.ssbn.laskeyalgorithm;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.io.LogManager;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -82,6 +83,8 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 	//Note: the findings are taken by the structure and not by the knowledge base
 	private void initialization(List<Query> queryList, KnowledgeBase knowledgeBase){
 		
+		System.out.println("\n\n\nInitialization started");
+		
 		this.knowledgeBase = knowledgeBase; 
 		
 		//We assume that all the queries is referent to the same MEBN
@@ -92,30 +95,37 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		//recursiveCallLimit
 		
 		//Add queries to the list of nodes
+		System.out.println("\nStep 1: recover the query nodes");
 		for(Query query: queryList){
 			SimpleSSBNNode node = ssbn.createSSBNNode(query.getResidentNode(), query.getArguments());  
 			node.setFinished(false); 
+			System.out.println("    -> " + node);
 		}
 		
 		//Add findings to the list of nodes
+		System.out.println("\nStep 2: recover the findings nodes");
 		for(MFrag mFrag: mebn.getMFragList()){
 			for(ResidentNode residentNode: mFrag.getResidentNodeList()){
 				for(RandomVariableFinding finding: residentNode.getRandomVariableFindingList()){
 					
 					ObjectEntityInstance arguments[] = finding.getArguments(); 
 					List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
-					for(int i = 1; i < arguments.length; i++){
-						OrdinaryVariable ov = residentNode.getArgumentNumber(i).getOVariable();
-						LiteralEntityInstance lei = LiteralEntityInstance.getInstance(arguments[i-1].getName() , ov.getValueType()); 
+					for(int i = 0; i < arguments.length ; i++){
+						OrdinaryVariable ov = residentNode.getArgumentNumber(i + 1).getOVariable();
+						LiteralEntityInstance lei = LiteralEntityInstance.getInstance(arguments[i].getName() , ov.getValueType()); 
 						ovInstanceList.add(OVInstance.getInstance(ov, lei)); 
 					}
 					
 					SimpleSSBNNode node = ssbn.createSSBNNode(residentNode, ovInstanceList); 
 					node.setState(finding.getState()); 
 					node.setFinished(false); 
+					System.out.println("    -> " + node);
+					
 				}
 			}
 		}
+		
+		System.out.println("\nInitialization finished");
 		
 	}
 	
