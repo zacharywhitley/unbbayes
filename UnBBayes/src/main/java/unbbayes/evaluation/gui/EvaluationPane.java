@@ -40,7 +40,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 
-import unbbayes.evaluation.Evaluation.EvidenceEvaluation;
+import unbbayes.evaluation.EvidenceEvaluation;
 import unbbayes.evaluation.exception.EvaluationException;
 import unbbayes.gui.table.NumberEditor;
 import unbbayes.gui.table.NumberRenderer;

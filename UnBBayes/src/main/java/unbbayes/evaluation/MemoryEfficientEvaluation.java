@@ -37,7 +37,8 @@ import unbbayes.io.XMLBIFIO;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;
-import unbbayes.simulation.montecarlo.sampling.MonteCarloSampling;
+import unbbayes.simulation.montecarlo.sampling.IMonteCarloSampling;
+import unbbayes.simulation.montecarlo.sampling.MapMonteCarloSampling;
 
 public class MemoryEfficientEvaluation {
 
@@ -65,8 +66,6 @@ public class MemoryEfficientEvaluation {
 
 	private int evidenceStatesProduct;
 
-	private int[][] sampleMatrix;
-	
 	private List<Node> positionNodeList;
 
 	private int[] positionTargetNodeList;
@@ -194,7 +193,7 @@ public class MemoryEfficientEvaluation {
 		if (!onlyGCM) {
 			evidenceEvaluationList = new ArrayList<EvidenceEvaluation>();
 			for (String evidenceName : evidenceNodeNameList) {
-				EvidenceEvaluation evidenceEvaluation = new EvidenceEvaluation(evidenceName);
+				EvidenceEvaluation evidenceEvaluation = new EvidenceEvaluation(evidenceName, getEvidenceSetPCC());
 				
 				// Compute individual LCM
 				List<String> tempList = new ArrayList<String>();
@@ -235,7 +234,7 @@ public class MemoryEfficientEvaluation {
 		if (!onlyGCM) {
 			evidenceEvaluationList = new ArrayList<EvidenceEvaluation>();
 			for (String evidenceName : evidenceNodeNameList) {
-				EvidenceEvaluation evidenceEvaluation = new EvidenceEvaluation(evidenceName);
+				EvidenceEvaluation evidenceEvaluation = new EvidenceEvaluation(evidenceName, getEvidenceSetPCC());
 				
 				// Compute individual LCM
 				List<String> tempList = new ArrayList<String>();
@@ -265,16 +264,17 @@ public class MemoryEfficientEvaluation {
 		// 002 2 0 1 35
 		// ...
 		// i x y z nTimes
-		MonteCarloSampling mc = new MonteCarloSampling(net, sampleSize);
+		IMonteCarloSampling mc = new MapMonteCarloSampling();
 		long init = System.currentTimeMillis();
-		mc.start();
+		mc.start(net, sampleSize);
 		long end = System.currentTimeMillis();
 		System.out.println("Time elapsed for sampling: " + (float)(end-init)/1000);
 		Set<Map.Entry<Integer,Integer>> sampledSet = mc.getSampledStatesMap().entrySet();
-//		sampleMatrix = mc.getSampledStatesCompactMatrix();
 		System.out.println("Sample size: " + sampleSize);
 		System.out.println("Sample map size: " + sampledSet.size());
 //		show(sampleMatrix);
+		
+		init = System.currentTimeMillis();
 
 		// FIXME For now let's just consider the simple case of having just one
 		// target node!
@@ -321,40 +321,6 @@ public class MemoryEfficientEvaluation {
 			
 		}
 
-//		// 2. Count # of occurrences of evidence nodes given target nodes
-//		int[] frequencyEvidenceGivenTargetList = new int[statesProduct];
-//		int[] frequencyTargetList = new int[targetStatesProduct];
-//
-//		// Iterate over all cases in the MC sample
-//		for (int i = 0; i < sampleMatrix.length; i++) {
-//			// Row to compute the frequency
-//			int row = 0;
-//			int currentStatesProduct = evidenceStatesProduct;
-//			for (int j = positionTargetNodeList.length - 1; j >= 0; j--) {
-//				int state = sampleMatrix[i][positionTargetNodeList[j]];
-//				row += state * currentStatesProduct;
-//				currentStatesProduct *= positionNodeList.get(positionTargetNodeList[j]).getStatesSize();
-//			}
-//
-//			// Add to total frequency for target state independent of evidence nodes states
-//			// The last positions holds the # of times this set of sates was sampled
-//			int number = sampleMatrix[i][positionNodeList.size()];
-//			frequencyTargetList[(int) (row / evidenceStatesProduct)] += number;
-//
-//			currentStatesProduct = evidenceStatesProduct;
-//			for (int j = 0; j < positionEvidenceNodeList.length; j++) {
-//				currentStatesProduct /= positionNodeList.get(
-//						positionEvidenceNodeList[j]).getStatesSize();
-//				int state = sampleMatrix[i][positionEvidenceNodeList[j]];
-//				row += state * currentStatesProduct;
-//			}
-//
-//			// Add to total frequency for specific evidences
-//			// The last positions holds the # of times this set of sates was sampled
-//			number = sampleMatrix[i][positionNodeList.size()];
-//			frequencyEvidenceGivenTargetList[row] += number;
-//		}
-		
 		// 3. Compute probabilities for evidence nodes given target nodes
 		Map<Integer, Float> postProbEvidenceGivenTargetMap = new HashMap<Integer, Float>();
 		Set<Map.Entry<Integer, Integer>> frequencyEvidenceGivenTargetSet = frequencyEvidenceGivenTargetMap.entrySet();
@@ -368,17 +334,6 @@ public class MemoryEfficientEvaluation {
 			postProbEvidenceGivenTarget[getEvidenceLinearCoord(dim)][dim[0]] = prob;
 		}
 //		show(postProbEvidenceGivenTarget);
-		
-
-//		// 3. Compute probabilities for evidence nodes given target nodes
-//		float[] postProbEvidenceGivenTarget = new float[statesProduct];
-//		for (int i = 0; i < postProbEvidenceGivenTarget.length; i++) {
-//			float n = (float) frequencyTargetList[(int) (i / evidenceStatesProduct)];
-//			if (n != 0) {
-//				postProbEvidenceGivenTarget[i] = (float) frequencyEvidenceGivenTargetList[i]
-//						/ n;
-//			}
-//		}
 		
 		// 4. Compute probabilities for target given evidence using evidence
 		// given target
@@ -410,34 +365,8 @@ public class MemoryEfficientEvaluation {
 			postProbTargetGivenEvidence[dim[0]][getEvidenceLinearCoord(dim)] = prob;
 		}
 //		show(postProbTargetGivenEvidence);
-
-//		// 4. Compute probabilities for target given evidence using evidence
-//		// given target
-//		// P(T|E) = P(E|T)P(T)
-//		float[] postProbTargetGivenEvidence = new float[statesProduct];
-//		int row = 0;
-//		float prob = 0.0f;
-//		float[] normalizationList = new float[evidenceStatesProduct];
-//		net.compile();
-//		for (int i = 0; i < targetNode.getStatesSize(); i++) {
-//			for (int j = 0; j < evidenceStatesProduct; j++) {
-//				row = j + i * evidenceStatesProduct;
-//				prob = postProbEvidenceGivenTarget[row]
-//						* targetNode.getMarginalAt(i);
-//				postProbTargetGivenEvidence[row] = prob;
-//				normalizationList[j] += prob;
-//			}
-//		}
-//
-//		float norm = 0;
-//		for (int i = 0; i < postProbTargetGivenEvidence.length; i++) {
-//			norm = normalizationList[i % evidenceStatesProduct];
-//			if (norm != 0) {
-//				postProbTargetGivenEvidence[i] /= norm;
-//			}
-//		}
 		
-		// Compute probabilities for target given target and set as CM
+		// 5. Compute probabilities for target given target and set as CM
 		// P(T|T) = P(T|E)P(E|T)
 		int N = targetNode.getStatesSize();
 		float[][] CM = new float[N][N];
@@ -455,177 +384,10 @@ public class MemoryEfficientEvaluation {
             }
         }
 
-//		// 5. Compute probabilities for target given target
-//		// P(T|T) = P(T|E)P(E|T)
-//		float[] postProbTargetGivenTarget = new float[(int) Math.pow(targetNode
-//				.getStatesSize(), 2)];
-//		int statesSize = targetNode.getStatesSize();
-//		int row = 0;
-//		int index = 0;
-//		Float probT = 0f;
-//		Float probE = 0f;
-//		for (int i = 0; i < statesProduct; i++) {
-//			for (int j = 0; j < statesSize; j++) {
-//				row = ((int) (i / evidenceStatesProduct)) * statesSize + j;
-//				index = (i % evidenceStatesProduct) + j * evidenceStatesProduct;
-//				probT = postProbTargetGivenEvidenceMap.get(i);
-//				if (probT ==  null) {
-//					probT = 0f;
-//				}
-//				probE = postProbEvidenceGivenTargetMap.get(index);
-//				if (probE ==  null) {
-//					probE = 0f;
-//				}
-//				postProbTargetGivenTarget[row] += probT * probE;
-//			}
-//		}
-//
-//		// 6. Set CM
-//		float[][] CM = new float[statesSize][statesSize];
-//		for (int i = 0; i < statesSize; i++) {
-//			for (int j = 0; j < statesSize; j++) {
-//				CM[i][j] = postProbTargetGivenTarget[i * statesSize + j];
-//			}
-//		}
+        end = System.currentTimeMillis();
+		System.out.println("Time elapsed for computing CM: " + (float)(end-init)/1000);
 
 		return CM;
-	}
-
-	private void printCMLog(float[][] postProbTargetGivenEvidence,
-			float[][] postProbEvidenceGivenTarget,
-			float[][] postProbTargetGivenTarget) {
-
-		System.out.println("P(T|E) = N[ P(E|T)P(T) ]\n");
-		show(postProbTargetGivenEvidence);
-
-		System.out.println("\n");
-
-		System.out.println("P(E|T)\n");
-		show(postProbEvidenceGivenTarget);
-
-		System.out.println("\n");
-
-		System.out.println("P(T|T) = P(T|E)P(E|T)\n");
-		show(postProbTargetGivenTarget);
-
-	}
-
-	public class EvidenceEvaluation {
-
-		private String name;
-
-		private float cost = MemoryEfficientEvaluation.UNSET_VALUE;
-
-		// Individual probability of correct classification
-		private float individualPCC = MemoryEfficientEvaluation.UNSET_VALUE;
-
-		// Individual local confusion matrix
-		private float[][] LCM;
-
-		// Probability of correct classification of the evidence set without
-		// this evidence
-		private float marginalPCC = MemoryEfficientEvaluation.UNSET_VALUE;
-
-		// Local confusion matrix of the evidence set without this evidence
-		private float[][] marginalCM;
-
-		// The evidence set PCC minus the setPCC (PCC of the set without this
-		// evidence)
-		private float marginalImprovement = MemoryEfficientEvaluation.UNSET_VALUE;
-
-		// Individual PCC divided by its cost
-		private float costRate = MemoryEfficientEvaluation.UNSET_VALUE;
-
-		public EvidenceEvaluation(String name) {
-			this.name = name;
-		}
-
-		public EvidenceEvaluation(String name, float cost) {
-			this(name);
-			this.cost = cost;
-		}
-
-		public float getIndividualPCC() throws EvaluationException {
-			if (individualPCC == MemoryEfficientEvaluation.UNSET_VALUE) {
-				if (LCM == null) {
-					throw new EvaluationException(
-							"Must calculate individual LCM before computing individual PCC.");
-				}
-				individualPCC = 0;
-				for (int i = 0; i < LCM.length; i++) {
-					individualPCC += LCM[i][i];
-				}
-				individualPCC /= LCM.length;
-			}
-			return individualPCC;
-		}
-
-		public float getMarginalPCC() throws EvaluationException {
-			if (marginalPCC == MemoryEfficientEvaluation.UNSET_VALUE) {
-				if (marginalCM == null) {
-					throw new EvaluationException(
-							"Must calculate marginal LCM before computing marginal PCC.");
-				}
-				marginalPCC = 0;
-				for (int i = 0; i < marginalCM.length; i++) {
-					marginalPCC += marginalCM[i][i];
-				}
-				marginalPCC /= marginalCM.length;
-			}
-			return marginalPCC;
-		}
-
-		public float getMarginalImprovement() throws EvaluationException {
-			if (marginalImprovement == MemoryEfficientEvaluation.UNSET_VALUE) {
-				marginalImprovement = getEvidenceSetPCC() - getMarginalPCC();
-			}
-			return marginalImprovement;
-		}
-
-		public float getCostRate() throws EvaluationException {
-			if (costRate == MemoryEfficientEvaluation.UNSET_VALUE) {
-				if (cost == MemoryEfficientEvaluation.UNSET_VALUE) {
-					throw new EvaluationException(
-							"Must set cost before computing cost rate.");
-				}
-				try {
-					costRate = getIndividualPCC() / cost;
-				} catch(EvaluationException e) {
-					throw new EvaluationException(
-					"Must calculate individual Pcc before computing cost rate." + " " + e.getMessage());
-				}
-			}
-			return costRate;
-		}
-
-		public float getCost() {
-			return cost;
-		}
-
-		public void setCost(float cost) {
-			this.cost = cost;
-		}
-
-		public float[][] getIndividualLCM() {
-			return LCM;
-		}
-
-		public void setLCM(float[][] LCM) {
-			this.LCM = LCM;
-		}
-
-		public float[][] getMarginalCM() {
-			return marginalCM;
-		}
-
-		public void setMarginalCM(float[][] marginalCM) {
-			this.marginalCM = marginalCM;
-		}
-
-		public String getName() {
-			return name;
-		}
-
 	}
 
 	private float[] getExatProbTargetGivenEvidence() throws Exception {
@@ -914,7 +676,7 @@ public class MemoryEfficientEvaluation {
 	 * @param dim Monte carlo multidimensional coordinate.
 	 * @return The corresponding multidimensional coordinate.
 	 */
-	protected final int[] getMultidimensionalCoord(int[] dim) {
+	protected final int[] getMultidimensionalCoord(byte[] dim) {
 		int size = targetNodeList.length + evidenceNodeList.length;
 		int multidimensionalCoord[] = new int[size];
 		for (int i = 0; i < positionTargetNodeList.length; i++) {
@@ -1021,7 +783,7 @@ public class MemoryEfficientEvaluation {
 			if (runSmallTest) {
 				sampleSize = 100000;
 			} else {
-				sampleSize = 1500000;
+				sampleSize = 50000000;
 			}
 			
 			MemoryEfficientEvaluation evaluationApproximate = new MemoryEfficientEvaluation();
@@ -1118,101 +880,102 @@ public class MemoryEfficientEvaluation {
 					System.out.println("\n\n");
 				}
 			}
-			
-			
+
 			// EXACT //
-			MemoryEfficientEvaluation evaluationExact = new MemoryEfficientEvaluation();
-			evaluationExact.evaluate(netFileName, targetNodeNameList,
-					evidenceNodeNameList, onlyGCM);
-			
-			System.out.println("----TOTAL------");
-			
-			System.out.println("LCM:\n");
-			show(evaluationExact.getEvidenceSetCM());
-			
-			System.out.println("\n");
-			
-			System.out.println("PCC: ");
-			System.out.printf("%2.2f\n", evaluationExact.getEvidenceSetPCC() * 100);
-			
 			if (runExact) {
-				System.out.println("\n\n\n");
-				System.out.println("----MARGINAL------");
-				System.out.println("\n\n");
+				MemoryEfficientEvaluation evaluationExact = new MemoryEfficientEvaluation();
+				evaluationExact.evaluate(netFileName, targetNodeNameList,
+						evidenceNodeNameList, onlyGCM);
 				
-				List<EvidenceEvaluation> list = evaluationExact.getBestMarginalImprovement();
+				System.out.println("----TOTAL------");
 				
-				for (EvidenceEvaluation evidenceEvaluation : list) {
-					
-					System.out.println("-" + evidenceEvaluation.getName() + "-");
-					System.out.println("\n\n");
-					
-					System.out.println("LCM:\n");
-					show(evidenceEvaluation.getMarginalCM());
-					
-					System.out.println("\n");
-					
-					System.out.println("PCC: ");
-					System.out.printf("%2.2f\n", evidenceEvaluation.getMarginalPCC() * 100);
-					
-					System.out.println("\n");
-					
-					System.out.println("Marginal Improvement: ");
-					System.out.printf("%2.2f\n", evidenceEvaluation.getMarginalImprovement() * 100);
-					
-					System.out.println("\n\n");
-				}
+				System.out.println("LCM:\n");
+				show(evaluationExact.getEvidenceSetCM());
 				
 				System.out.println("\n");
-				System.out.println("----INDIVIDUAL PCC------");
-				System.out.println("\n\n");
 				
-				list = evaluationExact.getBestIndividualPCC();
+				System.out.println("PCC: ");
+				System.out.printf("%2.2f\n", evaluationExact.getEvidenceSetPCC() * 100);
 				
-				for (EvidenceEvaluation evidenceEvaluation : list) {
-					
-					System.out.println("-" + evidenceEvaluation.getName() + "-");
+				if (!onlyGCM) {
+					System.out.println("\n\n\n");
+					System.out.println("----MARGINAL------");
 					System.out.println("\n\n");
 					
-					System.out.println("LCM:\n");
-					show(evidenceEvaluation.getIndividualLCM());
+					List<EvidenceEvaluation> list = evaluationExact.getBestMarginalImprovement();
+					
+					for (EvidenceEvaluation evidenceEvaluation : list) {
+						
+						System.out.println("-" + evidenceEvaluation.getName() + "-");
+						System.out.println("\n\n");
+						
+						System.out.println("LCM:\n");
+						show(evidenceEvaluation.getMarginalCM());
+						
+						System.out.println("\n");
+						
+						System.out.println("PCC: ");
+						System.out.printf("%2.2f\n", evidenceEvaluation.getMarginalPCC() * 100);
+						
+						System.out.println("\n");
+						
+						System.out.println("Marginal Improvement: ");
+						System.out.printf("%2.2f\n", evidenceEvaluation.getMarginalImprovement() * 100);
+						
+						System.out.println("\n\n");
+					}
 					
 					System.out.println("\n");
-					
-					System.out.println("PCC: ");
-					System.out.printf("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
-					
+					System.out.println("----INDIVIDUAL PCC------");
 					System.out.println("\n\n");
 					
-					// Add random costs for each
-					evidenceEvaluation.setCost((new Random()).nextFloat() * 1000);
-				}
-				
-				System.out.println("\n");
-				System.out.println("----INDIVIDUAL PCC------");
-				System.out.println("\n\n");
-				
-				list = evaluationExact.getBestIndividualCostRate();
-				
-				for (EvidenceEvaluation evidenceEvaluation : list) {
+					list = evaluationExact.getBestIndividualPCC();
 					
-					System.out.println("-" + evidenceEvaluation.getName() + "-");
-					System.out.println("\n\n");
-					
-					System.out.println("PCC: ");
-					System.out.printf("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
+					for (EvidenceEvaluation evidenceEvaluation : list) {
+						
+						System.out.println("-" + evidenceEvaluation.getName() + "-");
+						System.out.println("\n\n");
+						
+						System.out.println("LCM:\n");
+						show(evidenceEvaluation.getIndividualLCM());
+						
+						System.out.println("\n");
+						
+						System.out.println("PCC: ");
+						System.out.printf("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
+						
+						System.out.println("\n\n");
+						
+						// Add random costs for each
+						evidenceEvaluation.setCost((new Random()).nextFloat() * 1000);
+					}
 					
 					System.out.println("\n");
-					
-					System.out.println("Cost: ");
-					System.out.printf("%2.2f\n", evidenceEvaluation.getCost());
-					
-					System.out.println("\n");
-					
-					System.out.println("Cost Rate: ");
-					System.out.printf("%2.2f\n", evidenceEvaluation.getCostRate() * 100);
-					
+					System.out.println("----INDIVIDUAL PCC------");
 					System.out.println("\n\n");
+					
+					list = evaluationExact.getBestIndividualCostRate();
+					
+					for (EvidenceEvaluation evidenceEvaluation : list) {
+						
+						System.out.println("-" + evidenceEvaluation.getName() + "-");
+						System.out.println("\n\n");
+						
+						System.out.println("PCC: ");
+						System.out.printf("%2.2f\n", evidenceEvaluation.getIndividualPCC() * 100);
+						
+						System.out.println("\n");
+						
+						System.out.println("Cost: ");
+						System.out.printf("%2.2f\n", evidenceEvaluation.getCost());
+						
+						System.out.println("\n");
+						
+						System.out.println("Cost Rate: ");
+						System.out.printf("%2.2f\n", evidenceEvaluation.getCostRate() * 100);
+						
+						System.out.println("\n\n");
+					}
 				}
 			}
 		}

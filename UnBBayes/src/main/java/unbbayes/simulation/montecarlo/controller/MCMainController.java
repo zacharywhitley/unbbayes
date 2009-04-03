@@ -35,7 +35,8 @@ import unbbayes.io.XMLBIFIO;
 import unbbayes.io.exception.LoadException;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.simulation.montecarlo.gui.MCParametersPane;
-import unbbayes.simulation.montecarlo.sampling.MonteCarloSampling;
+import unbbayes.simulation.montecarlo.sampling.IMonteCarloSampling;
+import unbbayes.simulation.montecarlo.sampling.MatrixMonteCarloSampling;
 
 /**
  * Classe que controla as a��es relativas a gera��o de amostras pelo algoritimo de montecarlo
@@ -106,7 +107,8 @@ public class MCMainController {
 		public void actionPerformed(ActionEvent ae){
 			int n = validaNatural(tp.getNumeroCasos());
 			if(n>= 0){								
-				new MonteCarloSampling(redeProbabilistica,n);
+				IMonteCarloSampling mc = new MatrixMonteCarloSampling();
+				mc.start(redeProbabilistica,n);
 				tp.dispose();
 			}else{			
 				JOptionPane.showMessageDialog(null,"O numero de casos deve ser um natural","ERROR",JOptionPane.ERROR_MESSAGE);

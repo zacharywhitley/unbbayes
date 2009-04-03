@@ -32,7 +32,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import unbbayes.evaluation.Evaluation;
-import unbbayes.evaluation.Evaluation.EvidenceEvaluation;
+import unbbayes.evaluation.EvidenceEvaluation;
 import unbbayes.evaluation.exception.EvaluationException;
 import unbbayes.evaluation.gui.EvaluationPane;
 import unbbayes.prs.Node;
@@ -110,7 +110,7 @@ public class EvaluationController {
 		Integer sampleSize = evaluationPane.getSampleSizeValue();
 		
 		try {
-			evaluation.evaluate(network, targetNodeNameList, evidenceNodeNameList, sampleSize);
+			evaluation.evaluate(network, targetNodeNameList, evidenceNodeNameList, sampleSize, false);
 			
 			List<EvidenceEvaluation> evidenceEvaluationList = evaluation.getBestMarginalImprovement();
 			

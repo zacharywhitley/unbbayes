@@ -1,53 +1,60 @@
-/*
- *  UnBBayes
- *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
- *
- *  This file is part of UnBBayes.
- *
- *  UnBBayes is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  UnBBayes is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
 package unbbayes.simulation.montecarlo.sampling;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 
-/**
- * 
- * Class that implements the Monte Carlo simulation.
- * It uses forward sampling to calculate a RV's probability mass function. Based on its pmf, it then 
- * calculates the cumulative density function. Finally, a random number between 0 and 1 is generated 
- * and the sampled state is defined by the state the random number relates based on its cdf. 
- * 
- * @author Danilo Custodio
- * @author Rommel Carvalho
- *
- */
-public class NewMonteCarloSampling {
+public abstract class AMonteCarloSampling implements IMonteCarloSampling {
 	
+	/**
+	 * Returns the generated sample matrix. The row represents the ith trial and the column 
+	 * represents the jth node from the sampled order. The value matrix[i][j] 
+	 * represents the sampled state index (respecting the node's states order) for the 
+	 * jth node in the ith trial.
+	 * @return The generated sample matrix.
+	 */
+	public abstract byte[][] getSampledStatesMatrix();
+	
+	/**
+	 * Returns the generated compact sample matrix. The row represents the ith sampled state set
+	 * and the column represents the jth node from the sampled order. The value matrix[i][j] 
+	 * represents the sampled state index (respecting the node's states order) for the 
+	 * jth node in the ith sampled state set. To get the number of times the 
+	 * ith set of states was sampled use <code>getStatesSetTimesSampled()</code>.
+	 * @return The generated compact sample matrix.
+	 */
+	public abstract byte[][] getSampledStatesCompactMatrix();
+	
+	/**
+	 * The number of times the ith set of states was sampled. 
+	 * @return The number of times the ith set of states was sampled.
+	 */
+	public abstract int[] getStatesSetTimesSampled();
+	
+	/**
+	 * Returns the generated sample map, with key = linear coord (representing the sates sampled) and 
+	 * value = number of times this key was sampled.
+	 * @return The generated sample map.
+	 */
+	public abstract Map<Integer,Integer> getSampledStatesMap();
+	
+	/**
+	 * Generates the MC sample with the given size for the given probabilistic network.
+	 * @param pn Probabilistic network that will be used for sampling.
+	 * @param nTrials Number of trials to generate.
+	 */
+	public abstract void start(ProbabilisticNetwork pn , int nTrials);
+
 	protected ProbabilisticNetwork pn;
 	protected int nTrials;
 	protected List<Node> samplingNodeOrderQueue;
-	
+	protected Map<Integer,Integer> sampledStatesMap;
+
 	/**
 	 * Return the order the nodes are in the sampled matrix.
 	 * @return The order the nodes are in the sampled matrix.
@@ -56,121 +63,14 @@ public class NewMonteCarloSampling {
 		return samplingNodeOrderQueue;
 	}
 
-	protected Map<Integer,Integer> sampledStatesMap;
-	
-	/**
-	 * Returns the generated sample matrix. The row represents the ith trial and the column 
-	 * represents the jth node from the samplingNodeOrderQueue. The value matrix[i][j] 
-	 * represents the sampled state index (respecting the node's states order) for the 
-	 * jth node in the ith trial.
-	 * @return The generated sample matrix.
-	 */
-	public byte[][] getSampledStatesMatrix() {
-		byte [][] sampledStatesMatrix = new byte[nTrials][samplingNodeOrderQueue.size()];
-		int index = 0;
-		Set<Integer> keySet = sampledStatesMap.keySet();
-		int[] sampledStates;
-		int value;
-		for (Integer key : keySet) {
-			sampledStates = getMultidimensionalCoord(key);
-			value = sampledStatesMap.get(key);
-			for (int i = 0; i < value; i++) {
-				for (int j = 0; j < sampledStates.length; j++) {
-					sampledStatesMatrix[index][j] = (byte)sampledStates[j];
-				}
-				index++;
-			}
-		}
-		return sampledStatesMatrix;
-	}
-	
-	/**
-	 * Returns the generated compact sample matrix. The row represents the ith sampled state set
-	 * and the column represents the jth node from the samplingNodeOrderQueue. The value matrix[i][j] 
-	 * represents the sampled state index (respecting the node's states order) for the 
-	 * jth node in the ith sampled state set. The last column represents the number of times the 
-	 * ith set of states was sampled.  
-	 * @return The generated compact sample matrix.
-	 */
-	public int[][] getSampledStatesCompactMatrix() {
-		int [][] sampledStatesMatrix = new int[sampledStatesMap.size()][samplingNodeOrderQueue.size() + 1];
-		int index = 0;
-		Set<Integer> keySet = sampledStatesMap.keySet();
-		int[] sampledStates;
-		int value;
-		for (Integer key : keySet) {
-			sampledStates = getMultidimensionalCoord(key);
-			value = sampledStatesMap.get(key);
-			for (int j = 0; j < sampledStates.length; j++) {
-				sampledStatesMatrix[index][j] = sampledStates[j];
-			}
-			sampledStatesMatrix[index][samplingNodeOrderQueue.size()] = value;
-			index++;
-		}
-		return sampledStatesMatrix;
-	}
-	
-	/**
-	 * Returns the generated sample map, with key = linear coord (representing the sates sampled) and 
-	 * value = number of times this key was sampled.
-	 * @return The generated sample map.
-	 */
-	public Map<Integer,Integer> getSampledStatesMap() {
-		return sampledStatesMap;
-	}
+	protected byte[][] sampledStatesMatrix = null;
+	protected int [] timesSampled = null;
+	protected int[] factors;
 
-	/**
-	 * Responsible for setting the initial variables for Monte Carlo simulation.
-	 * @param pn Probabilistic network that will be used for sampling.
-	 * @param nTrials Number of trials to generate.
-	 */
-	public NewMonteCarloSampling(ProbabilisticNetwork pn , int nTrials){		
-		this.pn = pn;
-		this.nTrials = nTrials;	
-		//start();				
-	}
-	
-	/**
-	 * Generates the MC sample and return this sample as a matrix[i][j]. Row represents the sample case, 
-	 * column represents the node, and the value at matrix[i][j] represents the state's node for this case.
-	 * @return A matrix with the state for each node for each case of the sample.
-	 */
-	public void start(){
-		sampledStatesMap = new HashMap<Integer, Integer>();
-		samplingNodeOrderQueue = new ArrayList<Node>();		
-		createSamplingOrderQueue();
-		int[] sampledStates = null;
-		for(int i = 0; i < nTrials; i++){						
-			sampledStates = simulate();
-			int key = getLinearCoord(sampledStates);
-			Integer value = sampledStatesMap.get(key);
-			if (value != null) {
-				sampledStatesMap.put(key, ++value);
-			} else {
-				sampledStatesMap.put(key, 1);
-			}
-		}
-		
-		/*
-		System.out.print("TRIAL");
-		for (int i = 0; i < pn.getNodeCount(); i++) {
-			System.out.print("	" + pn.getNodeAt(i).getName() + " - " + pn.getNodeAt(i).getDescription());
-		}
-		System.out.println();
-		for (int i = 0; i < sampledStatesMatrix.length; i++) {
-			System.out.print(i + " :" );
-			for (int j = 0; j < sampledStatesMatrix[0].length; j++) {
-				System.out.print("	" + pn.getNodeAt(j).getStateAt(sampledStatesMatrix[i][j]));
-			}
-			System.out.println();
-		}
-		*/
-	}
-	
 	/**
 	 * Creates the queue of the nodes that are going to be analyzed.
 	 */
-	protected void createSamplingOrderQueue(){
+	protected void createSamplingOrderQueue() {
 		// Keeps track of the nodes that have already been added to the queue (nodeAddedList[nodeIndex]=true). 
 		boolean[] nodeAddedList = new boolean[pn.getNodeCount()];
 		initSamplingOrderQueue(nodeAddedList);											
@@ -179,13 +79,13 @@ public class NewMonteCarloSampling {
 			addToSamplingOrderQueue(node.getChildren(), nodeAddedList);			
 		}		
 	}
-	
+
 	/**
 	 * Initializes the queue with the nodes that are root. In other words. 
 	 * It will put in the queue the nodes that do not have parents.
 	 * @param nodeAddedList Keeps track of the nodes that have already been added to the queue (nodeAddedList[nodeIndex]=true).
 	 */
-	protected void initSamplingOrderQueue(boolean[] nodeAddedList){
+	protected void initSamplingOrderQueue(boolean[] nodeAddedList) {
 		for(int i = 0 ; i < pn.getNodeCount(); i++){
 			if(pn.getNodeAt(i).getParents().size() == 0 ){
 				nodeAddedList[i]= true;					
@@ -193,14 +93,14 @@ public class NewMonteCarloSampling {
 			}
 		}			
 	}
-	
+
 	/**
 	 * Take the children of a node that have already been added to the queue. Analyze them
 	 * one by one and add the child that is not in the queue yet. 
 	 * @param children Children of a node that is already in the queue.
 	 * @param nodeAddedList Nodes that have already been added to the queue.
 	 */
-	protected void addToSamplingOrderQueue(ArrayList<Node> children, boolean[] nodeAddedList){
+	protected void addToSamplingOrderQueue(ArrayList<Node> children, boolean[] nodeAddedList) {
 		for(int i = 0 ; i < children.size(); i++){
 			Node n1 = children.get(i);
 			for(int j = 0 ; j < pn.getNodeCount(); j++){
@@ -215,31 +115,13 @@ public class NewMonteCarloSampling {
 			}	
 		}	
 	}
-	
-	/**
-	 * Responsible for simulating MC for sampling.
-	 * @param sampledStatesMatrix The matrix containing the sampled states for every trial. 
-	 * @param nTrial The trial number to simulate.
-	 */
-	protected int[] simulate(){
-		List<Integer> parentsIndexes = new ArrayList<Integer>();
-		double[] pmf;
-		int[] sampledStates = new int[samplingNodeOrderQueue.size()];
-		for(int i = 0 ; i < samplingNodeOrderQueue.size(); i++){			
-			ProbabilisticNode node = (ProbabilisticNode)samplingNodeOrderQueue.get(i);									
-			parentsIndexes = getParentsIndexesInQueue(node);
-			pmf = getProbabilityMassFunction(sampledStates, parentsIndexes, node);													
-			sampledStates[i] = getState(pmf);
-		}	
-		return sampledStates;
-	}
-	
+
 	/**
 	 * Return the indexes (sampling order) in the queue for the parents of a given node. 
 	 * @param node The node to retrieve the parents for finding the indexes.
 	 * @return List of indexes (sampling order) of a node's parents in the queue.
 	 */
-	protected List<Integer> getParentsIndexesInQueue(ProbabilisticNode node){
+	protected List<Integer> getParentsIndexesInQueue(ProbabilisticNode node) {
 		List<Integer> indexes = new ArrayList<Integer>();
 		ArrayList<Node> parents = node.getParents();		
 		for(int i = 0 ; i < parents.size();i++){
@@ -248,13 +130,13 @@ public class NewMonteCarloSampling {
 		}	
 		return indexes;		
 	}
-	
+
 	/**
 	 * Retrieves the node's index in the queue.  
 	 * @param node
 	 * @return
 	 */
-	protected Integer getIndexInQueue(Node node){
+	protected Integer getIndexInQueue(Node node) {
 		for(int i = 0 ; i <samplingNodeOrderQueue.size();i++){
 			if(node.getName().equals(samplingNodeOrderQueue.get(i).getName())){				
 				return i;				
@@ -262,7 +144,7 @@ public class NewMonteCarloSampling {
 		}	
 		return null;	
 	}
-	
+
 	/**
 	 * Uses the pmf to retrieve the cdf to choose a state from a random generated number (between 0 and 1).
 	 * @param pmf The probability mass function for the node RV that we want to sample the state for.
@@ -291,13 +173,13 @@ public class NewMonteCarloSampling {
 		}
 		return -1;				
 	}
-	
+
 	/**
 	 * Creates the cumulative distribution function (cdf) based on the node RV's pmf.
 	 * @param pmf The probability mass function of the RV to calculate the cdf.
 	 * @return The cumulative distribution function (cdf) for the given pmf.
 	 */
-	protected double[][] getCumulativeDistributionFunction(double[] pmf){
+	protected double[][] getCumulativeDistributionFunction(double[] pmf) {
 		// Instead of using [statesSize][2] we could only use [statesSize]
 		// and the upper value for the interval would be the lower value of 
 		// the following state. In the last state the upper value would be 1.
@@ -314,7 +196,7 @@ public class NewMonteCarloSampling {
 		}
 		return cdf;
 	}
-	
+
 	/**
 	 * Creates the probability mass function based on the states sampled for the parents.
 	 * @param sampledStates The states (sampledStates[nodeIndex]) sampled for the nodes (nodeIndex).
@@ -322,32 +204,31 @@ public class NewMonteCarloSampling {
 	 * @param node The node/RV to calculate the pmf.
 	 * @return The probability mass function (pmf) of the node RV.
 	 */
-	protected double[]  getProbabilityMassFunction(int[] sampledStates, List<Integer> parentsIndexes, ProbabilisticNode node){
-		PotentialTable pt = node.getPotentialTable();
-		int statesSize = node.getStatesSize();
-		int nodeIndex;
-		double[] pmf = new double[statesSize];
-		int[] coordinates = new int[parentsIndexes.size() + 1];
-		for(int i = 0; i < node.getStatesSize(); i++){				
-			coordinates[0] = i;
-			if(i == 0){
-				for(int j = 0 ; j < parentsIndexes.size(); j++){				
-					nodeIndex = parentsIndexes.get(j);
-					coordinates[pt.indexOfVariable(samplingNodeOrderQueue.get(nodeIndex))] = sampledStates[nodeIndex];								
+	protected double[] getProbabilityMassFunction(int[] sampledStates, List<Integer> parentsIndexes,
+			ProbabilisticNode node) {
+				PotentialTable pt = node.getPotentialTable();
+				int statesSize = node.getStatesSize();
+				int nodeIndex;
+				double[] pmf = new double[statesSize];
+				int[] coordinates = new int[parentsIndexes.size() + 1];
+				for(int i = 0; i < node.getStatesSize(); i++){				
+					coordinates[0] = i;
+					if(i == 0){
+						for(int j = 0 ; j < parentsIndexes.size(); j++){				
+							nodeIndex = parentsIndexes.get(j);
+							coordinates[pt.indexOfVariable(samplingNodeOrderQueue.get(nodeIndex))] = sampledStates[nodeIndex];								
+						}
+					}
+					pmf[i] = pt.getValue(coordinates);
 				}
+				/*System.out.println("Node " + node.getName());
+				for (int i = 0; i < pmf.length; i++) {
+					System.out.print(node.getStateAt(i) + " = " + pmf[i] + " ");
+				}
+				System.out.println();*/
+				return pmf;
 			}
-			pmf[i] = pt.getValue(coordinates);
-		}
-		/*System.out.println("Node " + node.getName());
-		for (int i = 0; i < pmf.length; i++) {
-			System.out.print(node.getStateAt(i) + " = " + pmf[i] + " ");
-		}
-		System.out.println();*/
-		return pmf;
-	}
-	
-	protected int[] factors;
-	
+
 	/**
 	 * Calculate the factors necessary to transform the linear coordinate into a multidimensional 
 	 * one (which is the the state for each possible node - target and evidence).
@@ -366,7 +247,7 @@ public class NewMonteCarloSampling {
 			factors[i] = factors[i-1] * node.getStatesSize();
 		}
 	}
-	
+
 	/**
 	 * Get the linear coordinate from the multidimensional one.
 	 * LinearCoord = SumOf(StateOf[i] * FactorOf[i]), for all 
@@ -385,25 +266,25 @@ public class NewMonteCarloSampling {
 		}
 		return coordLinear;
 	}
-	
+
 	/**
 	 * Get the multidimensional coordinate from the linear one.
 	 * 
 	 * @param linearCoord The linear coordinate.
 	 * @return The corresponding multidimensional coordinate.
 	 */
-	public final int[] getMultidimensionalCoord(int linearCoord) {
+	public final byte[] getMultidimensionalCoord(int linearCoord) {
 		computeFactors();
 		int factorI;
 		int size = samplingNodeOrderQueue.size();
-		int multidimensionalCoord[] = new int[size];
+		byte multidimensionalCoord[] = new byte[size];
 		int i = size - 1;
 		while (linearCoord != 0) {
 			factorI = factors[i];
-			multidimensionalCoord[i--] = linearCoord / factorI;
+			multidimensionalCoord[i--] = (byte)(linearCoord / factorI);
 			linearCoord %= factorI;
 		}
 		return multidimensionalCoord;
 	}
-	
+
 }

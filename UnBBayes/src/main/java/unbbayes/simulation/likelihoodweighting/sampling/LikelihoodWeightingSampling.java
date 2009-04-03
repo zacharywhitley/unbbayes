@@ -27,7 +27,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.TreeVariable;
-import unbbayes.simulation.montecarlo.sampling.MonteCarloSampling;
+import unbbayes.simulation.montecarlo.sampling.MatrixMonteCarloSampling;
 
 /**
  * 
@@ -39,7 +39,7 @@ import unbbayes.simulation.montecarlo.sampling.MonteCarloSampling;
  * @author Rommel Carvalho
  *
  */
-public class LikelihoodWeightingSampling extends MonteCarloSampling {
+public class LikelihoodWeightingSampling extends MatrixMonteCarloSampling {
 	
 	protected List<Node> evidenceNodeList;
 	// P(E|Par(E)) = ProductOf[P(Ei|Par(Ei))] for all evidences (findings). There is
