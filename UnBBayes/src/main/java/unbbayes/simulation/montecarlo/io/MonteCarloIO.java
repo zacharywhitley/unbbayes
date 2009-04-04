@@ -1,6 +1,6 @@
 /*
  *  UnBBayes
- *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *  Copyright (C) 2002, 2009 Universidade de Brasilia - http://www.unb.br
  *
  *  This file is part of UnBBayes.
  *
@@ -54,7 +54,6 @@ public class MonteCarloIO {
    public void makeFile(int[] positions, ProbabilisticNetwork pn){
    		makeFirstLine(pn);
    		Node node;
-   		byte index;
    		for(int i = 0 ; i < matrix.length; i++){
    			for(int j = 0 ; j < pn.getNodeCount(); j++){
    				node = pn.getNodeAt(j);

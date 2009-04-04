@@ -1,3 +1,23 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2009 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.evaluation;
 
 import unbbayes.evaluation.exception.EvaluationException;
@@ -6,27 +26,27 @@ public class EvidenceEvaluation {
 
 	private String name;
 
-	private float cost = MemoryEfficientEvaluation.UNSET_VALUE;
+	private float cost = MemoryEfficientApproximateEvaluation.UNSET_VALUE;
 
 	// Individual probability of correct classification
-	private float individualPCC = MemoryEfficientEvaluation.UNSET_VALUE;
+	private float individualPCC = MemoryEfficientApproximateEvaluation.UNSET_VALUE;
 
 	// Individual local confusion matrix
 	private float[][] LCM;
 
 	// Probability of correct classification of the evidence set without
 	// this evidence
-	private float marginalPCC = MemoryEfficientEvaluation.UNSET_VALUE;
+	private float marginalPCC = MemoryEfficientApproximateEvaluation.UNSET_VALUE;
 
 	// Local confusion matrix of the evidence set without this evidence
 	private float[][] marginalCM;
 
 	// The evidence set PCC minus the setPCC (PCC of the set without this
 	// evidence)
-	private float marginalImprovement = MemoryEfficientEvaluation.UNSET_VALUE;
+	private float marginalImprovement = MemoryEfficientApproximateEvaluation.UNSET_VALUE;
 
 	// Individual PCC divided by its cost
-	private float costRate = MemoryEfficientEvaluation.UNSET_VALUE;
+	private float costRate = MemoryEfficientApproximateEvaluation.UNSET_VALUE;
 
 	// Evidence set PCC used to compute the marginal improvement
 	private float evidenceSetPcc;
@@ -42,7 +62,7 @@ public class EvidenceEvaluation {
 	}
 
 	public float getIndividualPCC() throws EvaluationException {
-		if (individualPCC == MemoryEfficientEvaluation.UNSET_VALUE) {
+		if (individualPCC == MemoryEfficientApproximateEvaluation.UNSET_VALUE) {
 			if (LCM == null) {
 				throw new EvaluationException(
 						"Must calculate individual LCM before computing individual PCC.");
@@ -57,7 +77,7 @@ public class EvidenceEvaluation {
 	}
 
 	public float getMarginalPCC() throws EvaluationException {
-		if (marginalPCC == MemoryEfficientEvaluation.UNSET_VALUE) {
+		if (marginalPCC == MemoryEfficientApproximateEvaluation.UNSET_VALUE) {
 			if (marginalCM == null) {
 				throw new EvaluationException(
 						"Must calculate marginal LCM before computing marginal PCC.");
@@ -72,15 +92,15 @@ public class EvidenceEvaluation {
 	}
 
 	public float getMarginalImprovement() throws EvaluationException {
-		if (marginalImprovement == MemoryEfficientEvaluation.UNSET_VALUE) {
+		if (marginalImprovement == MemoryEfficientApproximateEvaluation.UNSET_VALUE) {
 			marginalImprovement = evidenceSetPcc - getMarginalPCC();
 		}
 		return marginalImprovement;
 	}
 
 	public float getCostRate() throws EvaluationException {
-		if (costRate == MemoryEfficientEvaluation.UNSET_VALUE) {
-			if (cost == MemoryEfficientEvaluation.UNSET_VALUE) {
+		if (costRate == MemoryEfficientApproximateEvaluation.UNSET_VALUE) {
+			if (cost == MemoryEfficientApproximateEvaluation.UNSET_VALUE) {
 				throw new EvaluationException(
 						"Must set cost before computing cost rate.");
 			}

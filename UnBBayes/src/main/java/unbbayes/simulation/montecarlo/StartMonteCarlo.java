@@ -1,6 +1,6 @@
 /*
  *  UnBBayes
- *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *  Copyright (C) 2002, 2009 Universidade de Brasilia - http://www.unb.br
  *
  *  This file is part of UnBBayes.
  *
@@ -34,6 +34,6 @@ import unbbayes.simulation.montecarlo.controller.MCMainController;
 public class StartMonteCarlo {
 
 	public static void main(String[] args){
-		MCMainController cp = new MCMainController();		
+		new MCMainController();		
 	}
 }

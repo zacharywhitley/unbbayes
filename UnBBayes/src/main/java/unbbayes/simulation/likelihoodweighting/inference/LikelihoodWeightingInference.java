@@ -1,6 +1,6 @@
 /*
  *  UnBBayes
- *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *  Copyright (C) 2002, 2009 Universidade de Brasilia - http://www.unb.br
  *
  *  This file is part of UnBBayes.
  *
@@ -41,11 +41,11 @@ public class LikelihoodWeightingInference {
 	public LikelihoodWeightingInference(ProbabilisticNetwork pn , int nTrials){		
 		this.pn = pn;
 		this.nTrials = nTrials;	
-		this.lwSampling = new LikelihoodWeightingSampling(pn, nTrials);
+		this.lwSampling = new LikelihoodWeightingSampling();
 	}
 	
 	public void run() {
-		lwSampling.start();
+		lwSampling.start(pn, nTrials);
 		for (int i = 0; i < pn.getNodeCount(); i++) {
 			Node node = pn.getNodeAt(i);
 			if (!((TreeVariable)node).hasEvidence()) {

@@ -1,6 +1,6 @@
 /*
  *  UnBBayes
- *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *  Copyright (C) 2002, 2009 Universidade de Brasilia - http://www.unb.br
  *
  *  This file is part of UnBBayes.
  *
@@ -318,6 +318,7 @@ public class EvaluationPane extends JPanel {
 		 * each cell. If we didn't implement this method, then the last column
 		 * would contain text ("true"/"false"), rather than a check box.
 		 */
+		@SuppressWarnings("unchecked")
 		public Class getColumnClass(int c) {
 			if (c == 0) {
 				return String.class;
@@ -371,6 +372,7 @@ public class EvaluationPane extends JPanel {
 			return data[row][col];
 		}
 
+		@SuppressWarnings("unchecked")
 		public Class getColumnClass(int c) {
 			if (c == 0) {
 				return String.class;

@@ -1,6 +1,6 @@
 /*
  *  UnBBayes
- *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *  Copyright (C) 2002, 2009 Universidade de Brasilia - http://www.unb.br
  *
  *  This file is part of UnBBayes.
  *
@@ -35,10 +35,10 @@ import unbbayes.simulation.montecarlo.sampling.MatrixMonteCarloSampling;
  * sample for the evidence nodes, it just sets as the given state, and it 
  * calculates P(E|Par(E)) for each trial. 
  * 
- * @author Danilo Custodio
  * @author Rommel Carvalho
  *
  */
+// TODO ROMMEL - CREATE ONE SAMPLING THAT USES MAPMCSAMPLING
 public class LikelihoodWeightingSampling extends MatrixMonteCarloSampling {
 	
 	protected List<Node> evidenceNodeList;
@@ -55,20 +55,21 @@ public class LikelihoodWeightingSampling extends MatrixMonteCarloSampling {
 		return probabilityEvidenceGivenParentList;
 	}
 
+	@Override
 	/**
 	 * Responsible for setting the initial variables for Likelihood Weighting.
-	 * Besides sampling, it calculates P(E|Par(E)) for each trial.
+	 * Besides sampling (like MC), it calculates P(E|Par(E)) for each trial.
 	 * @param pn Probabilistic network that will be used for sampling.
 	 * @param nTrials Number of trials to generate.
 	 */
-	public LikelihoodWeightingSampling(ProbabilisticNetwork pn, int nTrials) {
-		super(pn, nTrials);
+	public void start(ProbabilisticNetwork pn , int nTrials){
 		this.probabilityEvidenceGivenParentList = new float[nTrials];
 		// Init all values as 1, because we are going to multiply these numbers for 
 		// P(E|Par(E)) = ProductOf[P(Ei|Par(Ei))] for all evidences (findings).
 		for (int i = 0; i < this.probabilityEvidenceGivenParentList.length; i++) {
 			probabilityEvidenceGivenParentList[i] = 1;
 		}
+		super.start(pn, nTrials);
 	}
 	
 	@Override
@@ -76,7 +77,7 @@ public class LikelihoodWeightingSampling extends MatrixMonteCarloSampling {
 	 * It does the same thing as the MC sampling, but now it calculates P(E|Par(E)) \
 	 * for each trial. 
 	 */
-	protected void simulate(byte[][] sampledStatesMatrix, int nTrial) {
+	protected void simulate(int nTrial) {
 		List<Integer> parentsIndexes = new ArrayList<Integer>();
 		double[] pmf;
 		int[] sampledStates = new int[samplingNodeOrderQueue.size()];

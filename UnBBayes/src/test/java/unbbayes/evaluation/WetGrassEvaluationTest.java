@@ -1,3 +1,23 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2009 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.evaluation;
 
 
@@ -11,12 +31,11 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import unbbayes.evaluation.Evaluation.EvidenceEvaluation;
 import unbbayes.evaluation.exception.EvaluationException;
 
 public class WetGrassEvaluationTest {
 	
-	private static Evaluation evaluationApproximate;
+	private static IEvaluation evaluationApproximate;
 	
 	private final float DELTA = .01f;
 	private static final float COST_C = 10f;
@@ -40,12 +59,12 @@ public class WetGrassEvaluationTest {
 
 		int sampleSize = 100000;
 
-		evaluationApproximate = new Evaluation();
+		evaluationApproximate = new FastApproximateEvaluation(sampleSize);
 		if (computeTime) {
 			time = System.currentTimeMillis();
 		}
 		evaluationApproximate.evaluate(netFileName, targetNodeNameList,
-				evidenceNodeNameList, sampleSize);
+				evidenceNodeNameList, false);
 		if (computeTime) {
 			time = System.currentTimeMillis() - time;
 			System.out.println("Time to compute evaluation: " + (float)(time)/1000 + " seconds");

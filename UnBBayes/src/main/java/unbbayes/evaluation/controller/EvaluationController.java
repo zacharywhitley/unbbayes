@@ -1,6 +1,6 @@
 /*
  *  UnBBayes
- *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *  Copyright (C) 2002, 2009 Universidade de Brasilia - http://www.unb.br
  *
  *  This file is part of UnBBayes.
  *
@@ -24,15 +24,14 @@ import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Formatter;
 import java.util.List;
-import java.util.Locale;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import unbbayes.evaluation.Evaluation;
 import unbbayes.evaluation.EvidenceEvaluation;
+import unbbayes.evaluation.FastApproximateEvaluation;
+import unbbayes.evaluation.IEvaluation;
 import unbbayes.evaluation.exception.EvaluationException;
 import unbbayes.evaluation.gui.EvaluationPane;
 import unbbayes.prs.Node;
@@ -42,12 +41,11 @@ public class EvaluationController {
 	
 	private EvaluationPane evaluationPane;
 	private ProbabilisticNetwork network;
-	private Evaluation evaluation;
+	private IEvaluation evaluation;
 	
 	public EvaluationController(ProbabilisticNetwork network) {
 		this.network = network;
 		this.evaluationPane = new EvaluationPane();
-		this.evaluation = new Evaluation();
 		
 		setUpEvaluation();
 	}
@@ -107,22 +105,17 @@ public class EvaluationController {
 		
 		List<String> targetNodeNameList = evaluationPane.getTargetNodeNameList();
 		List<String> evidenceNodeNameList = evaluationPane.getEvidenceNodeNameList();
-		Integer sampleSize = evaluationPane.getSampleSizeValue();
+		int sampleSize = evaluationPane.getSampleSizeValue();
 		
 		try {
-			evaluation.evaluate(network, targetNodeNameList, evidenceNodeNameList, sampleSize, false);
+			evaluation = new FastApproximateEvaluation(sampleSize);
+			evaluation.evaluate(network, targetNodeNameList, evidenceNodeNameList, false);
 			
 			List<EvidenceEvaluation> evidenceEvaluationList = evaluation.getBestMarginalImprovement();
 			
 			for (EvidenceEvaluation evidenceEvaluation : evidenceEvaluationList) {
 				evidenceEvaluation.setCost(evaluationPane.getCost(evidenceEvaluation.getName()));
 			}
-			
-			StringBuilder sb = new StringBuilder();
-			// Send all output to the appendable object sb
-			Formatter formatter = new Formatter(sb, Locale.US);
-			Evaluation.printMatrix(evaluation.getEvidenceSetCM(), formatter);
-			System.out.println(sb.toString());
 			
 			evaluationPane.setPccValue(evaluation.getEvidenceSetPCC());
 			
