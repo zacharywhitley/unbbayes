@@ -209,6 +209,15 @@ public class PowerLoomKB implements KnowledgeBase {
 	}
 	
 	/**
+	 * @see KnowledgeBase
+	 */
+	public void clearFindings() {
+		PLI.clearModule(moduleFinding);
+	}
+		
+	
+	
+	/**
 	 * This method should be called before the load of a powerloom file. It is 
 	 * necessary to correct the names of the modules loaded. 
 	 * 
@@ -710,63 +719,7 @@ public class PowerLoomKB implements KnowledgeBase {
 
 		return result;
 	}
-
-	
-
-	/**
-	 * 
-	 * Avalia nós de contexto que possuem diversos elementos a serem buscados. 
-	 * 
-	 * @see KnowledgeBase
-	 */
-    public Map<OrdinaryVariable, List<String>> evaluateSearchContextNodeWithMultipleOVFaultFormula(
-    		ContextNode context, List<OVInstance> ovInstances)    
-    		throws OVInstanceFaultException{
-    	
-    	Map<OrdinaryVariable, List<String>> mapResult = null; 
-    	
-    	String formula = ""; 
-		
-		NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree(); 
-		
-		List<OrdinaryVariable> ovFaultList = context.getOVFaultForOVInstanceSet(ovInstances); 
-		
-		//The search isn't necessary. 
-		if(ovFaultList.size() == 0){
-			return null; 
-		}
-//		
-//		//The list have only one element
-//		OrdinaryVariable ovFault = ovFaultList.get(0); 
-//		
-//		//Build the retrieve statement. 
-//		formula+=" all ";
-//		
-//		//List of variables of retrieve
-//		formula+="(" + "?" + ovFault.getName() + " " + ovFault.getValueType() + ")"; 
-//		
-//		//Formula
-//		formula+= "(";  
-//		formula+= makeOperatorString(formulaTree, ovInstances); 		
-//		formula+= ")"; 
-//		
-//		Debug.println("Original formula: " + context.getLabel()); 
-//		Debug.println("PowerLoom Formula: " + formula); 
-//		
-//		PlIterator iterator = PLI.sRetrieve(formula, moduleFindingName, null);
-//	    List result = new ArrayList<String>(); 
-//		
-//	    iterator.length();
-//	    
-//		while(iterator.nextP()){
-//			result.add(PLI.getNameInModule(iterator.value, moduleFinding, environment)); 
-//		}
-
-		//TODO Make it
-		
-		return mapResult;
-	}
-
+    
     
     
     

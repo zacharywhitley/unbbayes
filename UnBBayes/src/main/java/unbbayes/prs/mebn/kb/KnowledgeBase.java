@@ -25,6 +25,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import edu.isi.powerloom.PLI;
+
 import unbbayes.io.exception.UBIOException;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -52,6 +54,11 @@ public interface KnowledgeBase {
 	 */
 	public void clearKnowledgeBase();
 
+	/**
+	 * It clear the findings of the knowledge base; 
+	 */
+	public void clearFindings();
+	
 	/**
 	 * Fill the generative Knowledge Base with the terms of the mebn. 
 	 * 
