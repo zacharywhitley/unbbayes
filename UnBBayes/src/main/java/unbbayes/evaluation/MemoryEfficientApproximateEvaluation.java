@@ -33,6 +33,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.simulation.montecarlo.sampling.IMonteCarloSampling;
 import unbbayes.simulation.montecarlo.sampling.MapMonteCarloSampling;
+import unbbayes.util.Debug;
 
 public class MemoryEfficientApproximateEvaluation extends AEvaluation {
 
@@ -78,10 +79,10 @@ public class MemoryEfficientApproximateEvaluation extends AEvaluation {
 		long init = System.currentTimeMillis();
 		mc.start(net, sampleSize);
 		long end = System.currentTimeMillis();
-		System.out.println("Time elapsed for sampling: " + (float)(end-init)/1000);
+		Debug.println("Time elapsed for sampling: " + (float)(end-init)/1000);
 		sampledSet = mc.getSampledStatesMap().entrySet();
-		System.out.println("Sample size: " + sampleSize);
-		System.out.println("Sample map size: " + sampledSet.size());
+		Debug.println("Sample size: " + sampleSize);
+		Debug.println("Sample map size: " + sampledSet.size());
 //		show(sampleMatrix);
 
 		super.evaluate(targetNodeNameList, evidenceNodeNameList, onlyGCM);
@@ -208,7 +209,7 @@ public class MemoryEfficientApproximateEvaluation extends AEvaluation {
         }
 
         long end = System.currentTimeMillis();
-		System.out.println("Time elapsed for computing CM: " + (float)(end-init)/1000);
+        Debug.println("Time elapsed for computing CM: " + (float)(end-init)/1000);
 
 		return CM;
 	}
