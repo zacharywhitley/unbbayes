@@ -24,9 +24,12 @@ import java.io.File;
 
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
+
+import java.util.List;
 import java.util.ResourceBundle;
 
 import unbbayes.prs.Edge;
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -75,17 +78,33 @@ public class TextMode {
 		rede.addEdge(auxArco);
 
 		rede.compile();
-
-		float likelihood[] = new float[auxVP.getStatesSize()];
-		likelihood[0] = 1;
-		likelihood[1] = 0.8f;
-
-		auxVP.addLikeliHood(likelihood);
-
+		
+		List<Node> nodeList = rede.getNodes();
+		for (Node node : nodeList) {
+			System.out.println(node.getDescription());
+			for (int i = 0; i < node.getStatesSize(); i++) {
+				System.out.println(node.getStateAt(i) + " : " + ((ProbabilisticNode)node).getMarginalAt(i));
+			}
+		}
+		
+		int indexFirstNode = 0;
+		ProbabilisticNode findingNode = (ProbabilisticNode)nodeList.get(indexFirstNode);
+		int indexFirstState = 0;
+		findingNode.addFinding(indexFirstState);
+		
+		System.out.println();
+		
 		try {
         	rede.updateEvidences();
         } catch (Exception exc) {
         	System.out.println(exc.getMessage());               	
         }
+        
+		for (Node node : nodeList) {
+			System.out.println(node.getDescription());
+			for (int i = 0; i < node.getStatesSize(); i++) {
+				System.out.println(node.getStateAt(i) + " : " + ((ProbabilisticNode)node).getMarginalAt(i));
+			}
+		}
 	}
 }
