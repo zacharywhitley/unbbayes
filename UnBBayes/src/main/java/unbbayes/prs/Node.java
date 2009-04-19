@@ -38,12 +38,16 @@ import unbbayes.util.ArrayMap;
 import unbbayes.util.SerializablePoint2D;
 
 /**
- * A class representing a generic node.
+ * A class representing a generic node containing graphical/visual information.
  * @author Michael 
  * @author Rommel Carvalho (rommel.caralho@gmail.com)
+ * 
+ * @version 04/18/2009
+ * @author Shou Matsumoto
+ * 		   Refactor: interface extraction -> INode
  */
 public abstract class Node implements Serializable, IOnePositionDrawable, 
-                                      Comparable<Node>{
+                                      Comparable<Node>, INode{
 
 	private String description;
 	protected String name;
@@ -124,7 +128,7 @@ public abstract class Node implements Serializable, IOnePositionDrawable,
 		return DEFAULT_SIZE;
 	}
 	
-	public abstract int getType();
+	
 
 	/**
 	 * Returns the type of information of this node.
@@ -219,6 +223,8 @@ public abstract class Node implements Serializable, IOnePositionDrawable,
 	public void setChildren(ArrayList<Node> children) {
 		this.children = children;
 	}
+	
+	
 
 	/**
 	 * Sets a new list of parents.
@@ -469,7 +475,7 @@ public abstract class Node implements Serializable, IOnePositionDrawable,
 	 *            The adjacents to set
 	 */
 	public void setAdjacents(ArrayList<Node> adjacents) {
-		this.adjacents = adjacents;
+		this.adjacents = new ArrayList<Node>(adjacents);
 	}
 
 	/**
@@ -674,5 +680,72 @@ public abstract class Node implements Serializable, IOnePositionDrawable,
 			listener.nodeNameChanged(event);
 		}
 	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#addChildNode(unbbayes.prs.INode)
+	 */
+	public void addChildNode(INode child) throws InvalidParentException {
+		this.addChild((Node)child);
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#addParentNode(unbbayes.prs.INode)
+	 */
+	public void addParentNode(INode parent) throws InvalidParentException {
+		this.addParent((Node)parent);
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#getAdjacentNodeList()
+	 */
+	public List<INode> getAdjacentNodes() {
+		this.makeAdjacents();
+		return (List)this.getAdjacents();
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#getChildrenNodeList()
+	 */
+	public List<INode> getChildNodes() {
+		return (List)this.getChildren();
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#getParentNodeList()
+	 */
+	public List<INode> getParentNodes() {
+		return (List)this.getParents();
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#removeChildNode(unbbayes.prs.INode)
+	 */
+	public void removeChildNode(INode child) {
+		this.removeChild((Node)child);
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#removeParentNode(unbbayes.prs.INode)
+	 */
+	public void removeParentNode(INode parent) {
+		this.removeParent((Node)parent);
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#setChildrenNodeList(java.util.List)
+	 */
+	public void setChildNodes(List<INode> children) {
+		this.setChildren (new ArrayList(children));
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#setParentNodeList(java.util.List)
+	 */
+	public void setParentNodes(List<INode> parents) {
+		this.setParents(new ArrayList(parents));
+	}
+	
+	
+	
 
 }

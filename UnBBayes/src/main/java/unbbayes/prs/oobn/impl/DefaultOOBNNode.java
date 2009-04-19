@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 
+import unbbayes.prs.INode;
+import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.oobn.IOOBNClass;
 import unbbayes.prs.oobn.IOOBNNode;
 
@@ -42,6 +44,8 @@ public class DefaultOOBNNode implements IOOBNNode {
 	
 	private Set<IOOBNNode> parents = null;
 	private Set<IOOBNNode> children = null;
+	
+	private String description = null;
 	
 	
 	/**
@@ -341,6 +345,7 @@ public class DefaultOOBNNode implements IOOBNNode {
 		return super.equals(obj);
 	}
 
+	
 
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.oobn.IOOBNNode#getOOBNChildren()
@@ -350,5 +355,165 @@ public class DefaultOOBNNode implements IOOBNNode {
 	}
 
 
+	// Methods maintained only to assure interface compatibility
+	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#addChildNode(unbbayes.prs.INode)
+	 */
+	public void addChildNode(INode child) throws InvalidParentException {
+		this.addChild((IOOBNNode)child);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#addParentNode(unbbayes.prs.INode)
+	 */
+	public void addParentNode(INode parent) throws InvalidParentException {
+		this.addParent((IOOBNNode)parent);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#appendState(java.lang.String)
+	 */
+	public void appendState(String state) {
+		this.getStateNames().add(state);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#getAdjacentNodes()
+	 */
+	public List<INode> getAdjacentNodes() {
+		// I'm using a set just in order to assure unique elements
+		Set<INode> ret = new HashSet<INode>();
+		ret.addAll(this.getParentNodes());
+		ret.addAll(this.getChildNodes());
+		return new ArrayList<INode>(ret);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#getChildNodes()
+	 */
+	public List<INode> getChildNodes() {
+		return new ArrayList<INode>(this.getOOBNChildren());
+	}
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#getDescription()
+	 */
+	public String getDescription() {
+		if (this.description == null) {
+			if (this.getOriginalClassNode() != null) {
+				return this.getOriginalClassNode().getDescription() + "." + this.getName();
+			}
+			return this.getName();
+		}
+		return this.description;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#getParentNodes()
+	 */
+	public List<INode> getParentNodes() {
+		return new ArrayList<INode>(this.getOOBNParents());
+	}
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#getStateAt(int)
+	 */
+	public String getStateAt(int index) {
+		return this.getStateNames().get(index);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#getStatesSize()
+	 */
+	public int getStatesSize() {
+		return this.getStateNames().size();
+	}
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#removeChildNode(unbbayes.prs.INode)
+	 */
+	public void removeChildNode(INode child) {
+		this.getOOBNChildren().remove(child);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#removeLastState()
+	 */
+	public void removeLastState() {
+		if (this.getStateNames().size() > 0) {
+			this.getStateNames().remove(this.getStatesSize()-1);
+		}		
+	}
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#removeParentNode(unbbayes.prs.INode)
+	 */
+	public void removeParentNode(INode parent) {
+		this.getOOBNParents().remove(parent);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#removeStateAt(int)
+	 */
+	public void removeStateAt(int index) {
+		this.getStateNames().remove(index);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#setChildNodes(java.util.List)
+	 */
+	public void setChildNodes(List<INode> children) {
+		this.children = new HashSet(children);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#setDescription(java.lang.String)
+	 */
+	public void setDescription(String text) {
+		this.description = text;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#setParentNodes(java.util.List)
+	 */
+	public void setParentNodes(List<INode> parents) {
+		this.parents = new HashSet(parents);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#setStateAt(java.lang.String, int)
+	 */
+	public void setStateAt(String state, int index) {
+		this.getStateNames().set(index, state);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.INode#setStates(java.util.List)
+	 */
+	public void setStates(List<String> states) {
+		this.setStateNames(states);
+	}
+
+
+	
+	
 	
 }

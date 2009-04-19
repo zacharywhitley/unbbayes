@@ -39,13 +39,14 @@ import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.exception.InvalidParentException;
 
 /**
- * Title: Exemplo de Uso da API atrav�s de um Modo Gr�fico
- * Description: Essa classe feita em JAVA abre um modo gr�fico onde o usu�rio entra com o endere�o e
- *              nome de um arquivo ".net". Depois esse arquivo � carregado, modificado em algumas
- *              partes e ent�o compilado. Essa classe tem a fun��o de apenas exemplificar como se
- *              pode usar a API desenvolvida para trabalhar com Redes Bayesianas.
+ * Title: Sample code for using this API's graphic mode.
+ * Description: This class, written in JAVA, opens a ".net" file ("asia.net"), and, after that,
+ * 				modifies some parts and then compiles it. This class is provided only as
+ * 				a sample, in order to show how to work out using this API, developed for bayesian
+ * 				network manipulation.
+ * 
  * Copyright:   Copyright (c) 2001
- * Company:     UnB - Universidade de Bras�lia
+ * Company:     UnB - Universidade de Brasilia
  * @author      Rommel Novaes Carvalho
  * @author      Michael S. Onishi
  * @version 1.0

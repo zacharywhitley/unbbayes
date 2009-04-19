@@ -35,13 +35,14 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 
 /**
- * Title: Exemplo de Uso da API atrav�s de um Modo de Texto
- * Description: Essa classe feita em JAVA abre um arquivo ".net", "asia.net". Depois esse arquivo �
- *              carregado, modificado em algumas partes e ent�o compilado. Essa classe tem a fun��o
- *              de apenas exemplificar como se pode usar a API desenvolvida para trabalhar com
- *              Redes Bayesianas.
+ * Title: Sample code for using UnBBayes' API at text mode.
+ * Description: This class, written in JAVA, opens a ".net" file ("asia.net"), and, after that,
+ * 				modifies some parts and then compiles it. This class is provided only as
+ * 				a sample, in order to show how to work out using this API, developed for bayesian
+ * 				network manipulation.
+ * 
  * Copyright:   Copyright (c) 2001
- * Company:     UnB - Universidade de Bras�lia
+ * Company:     UnB - Universidade de Brasilia
  * @author      Rommel Novaes Carvalho
  * @author      Michael S. Onishi
  */

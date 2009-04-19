@@ -25,7 +25,11 @@ import java.util.ArrayList;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
 
-
+/**
+ * Chang Bel Lee
+ * 
+ *
+ */
 public class CBLA extends CBLToolkit{
 	
 	

@@ -7,11 +7,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import unbbayes.prs.INode;
+
 /**
  * @author Shou Matsumoto
  *
  */
-public interface IOOBNNode {
+public interface IOOBNNode extends INode {
 
 	public static int TYPE_OUTPUT = 1;
 	public static int TYPE_PRIVATE = 2;

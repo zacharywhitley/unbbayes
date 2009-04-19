@@ -27,6 +27,10 @@ import java.util.TreeSet;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
 
+/**
+ * CBL - Chang, Bell, Liu
+ *
+ */
 public abstract class CBLToolkit extends LearningToolkit {
 
 	protected ArrayList<Node> variablesVector;

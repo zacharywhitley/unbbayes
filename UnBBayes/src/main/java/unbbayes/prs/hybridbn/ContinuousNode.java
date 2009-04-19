@@ -47,7 +47,10 @@ public class ContinuousNode extends TreeVariable implements Serializable {
 	
 	private ResourceBundle resource = ResourceController.RS_HYBRID_BN;
 	
-	@Override
+	// Please, avoid using @Override annotation, since it makes interface extraction (refactor) very difficult,
+	// because it supposes a inherited method is declared always inside a class, 
+	// and fails if it becomes declared inside an interface.
+//	@Override
 	public int getType() {
 		return Node.CONTINUOUS_NODE_TYPE;
 	}

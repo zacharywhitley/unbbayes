@@ -71,7 +71,10 @@ public class MultiEntityNode extends Node {
 	 * It returns the node's type. Not used for this node.
 	 * @see Node#getType()
 	 */
-	@Override
+	// Please, avoid using @Override annotation, since it makes interface extraction (refactor) very difficult,
+	// because it supposes a inherited method is declared always inside a class, 
+	// and fails if it becomes declared inside an interface.
+//	@Override
 	public int getType() {
 		// TODO Auto-generated method stub
 		return 0;

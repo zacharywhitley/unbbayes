@@ -29,17 +29,26 @@ import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.prs.msbn.SubNetwork;
 
 /**
- * Exemplo de uso da API para MSBN
+ * Sample code for MSBN API
  * @author Michael
  * @author Rommel
+ * @deprecated see {@link unbbayes.msbn.MSBNExampleTest} instead.
+ * @see unbbayes.msbn.MSBNExampleTest
  */
 public class MSBNExample {
 
+	/**
+	 * Sample code for MSBN API
+	 * @author Michael
+	 * @author Rommel
+	 * @deprecated see {@link unbbayes.msbn.MSBNExampleTest} instead.
+	 * @see unbbayes.msbn.MSBNExampleTest
+	 */
 	public static void main(String[] args) throws Exception {
 		SingleAgentMSBN msbn = null;
 		
 		BaseIO io = new NetIO();
-		msbn = io.loadMSBN(new File("./examples/msbn/5partc/"));
+		msbn = io.loadMSBN(new File("src/test/resources/testCases/msbn/5partc/"));
 		
 		msbn.compile();
 		
