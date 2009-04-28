@@ -25,8 +25,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import edu.isi.powerloom.PLI;
-
 import unbbayes.io.exception.UBIOException;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -135,9 +133,13 @@ public interface KnowledgeBase {
 	public void loadModule(File file, boolean findingModule) throws UBIOException;
 
 	/**
-	 * This method is responsible for evaluating a simple formula. A simple
-	 * formula is a formula that does not have variables and the result is a
-	 * boolean value (true/false). Example: IsOwnStarship(!ST0).
+	 * Evaluate a simple formula. A simple formula is a formula that doesn't have 
+	 * variables not instanciated and the result is a boolean value (true/false). <p>
+	 * 
+	 * Examples: <br>
+	 * <i>IsOwnStarship(!ST0).</i><br>
+	 * <i>Exists(!ST0)</i><br>
+	 * <i>Z1! = StarshipZone(!SR2)</i><br>
 	 * 
 	 * @param context
 	 *            the context node that has the formula.
@@ -150,12 +152,14 @@ public interface KnowledgeBase {
 			List<OVInstance> ovInstances);
 
 	/**
-	 * This method is responsible for evaluating a search formula. A search
+	 * This method is responsible for evaluating a single search formula. A search
 	 * formula is a formula that returns a list of entities that satisfies a
-	 * restriction. 
+	 * restriction. A single search formula is a formula with only one search 
+	 * variable <p>
 	 * 
-	 * Example: z = StarshipZone(!ST0) return the zones that
-	 * satisfies StarshipZone(!ST0).
+	 * Example:<br>
+	 * <i>z = StarshipZone(!ST0)</i> return the zones that
+	 * satisfies <i>StarshipZone(!ST0)</i>.
 	 * 
 	 * @param context
 	 *            the context node that has the formula.
@@ -171,10 +175,40 @@ public interface KnowledgeBase {
 	 *            one ov instance should be present in ovInstances list, otherside
 	 *            this exception will be throw.  
 	 */
-	public List<String> evaluateSearchContextNodeFormula(ContextNode context,
+	public List<String> evaluateSingleSearchContextNodeFormula(ContextNode context,
 			List<OVInstance> ovInstances) throws OVInstanceFaultException;
 	
+	/**
+	 * This method is responsible for evaluating a search formula. A search
+	 * formula is a formula that returns a list of entities that satisfies a
+	 * restriction. <p>
+	 * 
+	 * Example:<br>
+	 * <i>z = StarshipZone(!ST0)</i> return the zones that
+	 * satisfies <i>StarshipZone(!ST0)</i>.
+	 * 
+	 * @param context
+	 *            the context node that has the formula.
+	 *            
+	 * @param ovInstances
+	 *            the list of OVInstance. 
+	 * @return 
+	 *        The values for each fault variable that satisfies the context node, 
+	 *        or null if not exists valuese that satisfies the context node. 
+	 */
+	public SearchResult evaluateSearchContextNodeFormula(ContextNode context,
+			List<OVInstance> ovInstances);
 	
+	
+	/**
+	 * Try to recover the entity values that satisfies all the context nodes.
+	 * (evaluate the free variables) 
+	 * 
+	 * @param contextList 
+	 * @param ovInstances Values for the know variables
+	 * @return The values for each fault variable that satisfies all the 
+	 *         context nodes. 
+	 */
 	public Map<OrdinaryVariable, List<String>> evaluateMultipleSearchContextNodeFormula(
 			List<ContextNode> contextList, List<OVInstance> ovInstances);
 	
@@ -193,8 +227,8 @@ public interface KnowledgeBase {
 	 * Verify if exists a findings in the knowledge base. Return the finding if its
 	 * exists (a finding is a state for the randon variables with the arguments). 
 	 * Return null otherside. 
-	 * @param nameRV
-	 * @param listArguments
+	 * @param randonVariable The resident variable to be tested 
+	 * @param listArguments  The arguments (in the some order that the arguments of the node)
 	 * @return
 	 */
     public StateLink searchFinding(ResidentNode randonVariable, Collection<OVInstance> listArguments); 
@@ -215,4 +249,6 @@ public interface KnowledgeBase {
 	 * @see RandomVariableFinding
 	 */
 	public void fillFindings(ResidentNode resident); 
+	
+	
 }

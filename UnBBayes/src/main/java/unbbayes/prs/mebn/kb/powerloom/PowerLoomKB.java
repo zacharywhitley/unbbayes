@@ -62,6 +62,7 @@ import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
+import unbbayes.prs.mebn.kb.SearchResult;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.util.Debug;
@@ -584,7 +585,126 @@ public class PowerLoomKB implements KnowledgeBase {
 	}
     
 	/**
-	 * 
+	 * @see KnowledgeBase
+	 */
+    public List<String> evaluateSingleSearchContextNodeFormula(ContextNode context, List<OVInstance> ovInstances)
+                                     throws OVInstanceFaultException{
+    	
+    	Debug.setDebug(true); 
+    	String formula = ""; 
+		
+		NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree(); 
+		
+		List<OrdinaryVariable> ovFaultList = context.getOVFaultForOVInstanceSet(ovInstances); 
+		
+		//This implementation treat only the case where have only one search variable
+		if(ovFaultList.size()>1){
+			Debug.println("--> OV Fault list grater than 1!"); 
+			throw new OVInstanceFaultException(ovFaultList); 
+		}
+		
+		//The search isn't necessary. 
+		if(ovFaultList.size() == 0){
+			return null; 
+		}
+		
+		//The list have only one element
+		OrdinaryVariable ovFault = ovFaultList.get(0); 
+		
+		//Build the retrieve statement. 
+		formula+=" all ";
+		
+		//List of variables of retrieve
+		formula+="(" + "?" + ovFault.getName() + " " + ovFault.getValueType() + ")"; 
+		
+		//Formula
+		formula+= "(";  
+		formula+= makeOperatorString(formulaTree, ovInstances); 		
+		formula+= ")"; 
+		
+		Debug.println("Original formula: " + context.getLabel()); 
+		Debug.println("PowerLoom Formula: " + formula); 
+		
+		PlIterator iterator = PLI.sRetrieve(formula, moduleFindingName, null);
+	    List result = new ArrayList<String>(); 
+	    
+		while(iterator.nextP()){
+			result.add(PLI.getNameInModule(iterator.value, moduleFinding, environment)); 
+		}
+
+		return result;
+	}
+
+	/**
+	 * @see KnowledgeBase
+	 */
+	public SearchResult evaluateSearchContextNodeFormula(
+			ContextNode context, List<OVInstance> ovInstances) {
+		
+		Debug.setDebug(true); 
+    	String formula = ""; 
+		
+		NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree(); 
+		
+		OrdinaryVariable ovFaultArray[] = context.getOVFaultForOVInstanceSet(ovInstances).toArray(
+		                                		   new OrdinaryVariable[context.getOVFaultForOVInstanceSet(ovInstances).size()]); 
+		
+		//The search isn't necessary. 
+		if(ovFaultArray.length == 0){
+			return null; 
+		}
+		
+		//Build the retrieve statement. 
+		formula+=" all ";
+		
+		//List of variables of retrieve
+        formula+="("; 
+        for(OrdinaryVariable ov: ovFaultArray){
+        	formula+= " ?" + ov.getName(); 
+        }
+        
+        Debug.println("Formula = " + formula);
+        formula+=")"; 
+		
+		//Formula
+		formula+= "(";  
+		formula+= makeOperatorString(formulaTree, ovInstances); 		
+		formula+= ")"; 
+		
+		Debug.println("Original formula: " + context.getLabel()); 
+		Debug.println("PowerLoom Formula: " + formula); 
+		
+		PlIterator iterator = PLI.sRetrieve(formula, moduleFindingName, null);
+		
+		SearchResult searchResult; 
+		
+		if(iterator.length() != 0){
+			
+			//Create the SearchResult object. 
+			searchResult = new SearchResult(ovFaultArray);
+			while(iterator.nextP()){
+				String[] resultN = new String[ovFaultArray.length];
+				for(int i = 0; i < ovFaultArray.length; i++){ 
+					resultN[i] = PLI.getNthString(iterator, i, moduleFinding, environment); 
+				}
+				searchResult.addResult(resultN); 
+			}
+			
+		}else{
+
+			//No result for this evaluation
+			searchResult = null; 
+			
+		}
+		
+		
+				
+		return searchResult;
+	}
+
+    
+	/**
+	 * @see KnowledgeBase
 	 */
 	public Map<OrdinaryVariable, List<String>> evaluateMultipleSearchContextNodeFormula(List<ContextNode> contextList, List<OVInstance> ovInstances){
 	
@@ -611,8 +731,6 @@ public class PowerLoomKB implements KnowledgeBase {
 		if(ovFaultList.size() == 0){
 			return null; 
 		}
-		
-		
 		
 		//EXAMPLES SEARCHS...
         formula+=" all ";
@@ -666,58 +784,6 @@ public class PowerLoomKB implements KnowledgeBase {
 
 		return values;
         
-	}
-	
-	
-	/**
-	 * @see KnowledgeBase
-	 */
-    public List<String> evaluateSearchContextNodeFormula(ContextNode context, List<OVInstance> ovInstances)
-                                     throws OVInstanceFaultException{
-    	
-    	Debug.setDebug(true); 
-    	String formula = ""; 
-		
-		NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree(); 
-		
-		List<OrdinaryVariable> ovFaultList = context.getOVFaultForOVInstanceSet(ovInstances); 
-		
-		//This implementation treat only the case where have only one search variable
-		if(ovFaultList.size()>1){
-			Debug.println("--> OV Fault list grater than 1!"); 
-			throw new OVInstanceFaultException(ovFaultList); 
-		}
-		
-		//The search isn't necessary. 
-		if(ovFaultList.size() == 0){
-			return null; 
-		}
-		
-		//The list have only one element
-		OrdinaryVariable ovFault = ovFaultList.get(0); 
-		
-		//Build the retrieve statement. 
-		formula+=" all ";
-		
-		//List of variables of retrieve
-		formula+="(" + "?" + ovFault.getName() + " " + ovFault.getValueType() + ")"; 
-		
-		//Formula
-		formula+= "(";  
-		formula+= makeOperatorString(formulaTree, ovInstances); 		
-		formula+= ")"; 
-		
-		Debug.println("Original formula: " + context.getLabel()); 
-		Debug.println("PowerLoom Formula: " + formula); 
-		
-		PlIterator iterator = PLI.sRetrieve(formula, moduleFindingName, null);
-	    List result = new ArrayList<String>(); 
-	    
-		while(iterator.nextP()){
-			result.add(PLI.getNameInModule(iterator.value, moduleFinding, environment)); 
-		}
-
-		return result;
 	}
     
     
@@ -1342,6 +1408,5 @@ public class PowerLoomKB implements KnowledgeBase {
 		}
 		return resident.getRandomVariableFindingList();
 	}
-
 	
 }
