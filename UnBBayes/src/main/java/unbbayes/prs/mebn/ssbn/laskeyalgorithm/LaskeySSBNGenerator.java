@@ -13,12 +13,12 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
-import unbbayes.prs.mebn.ssbn.BuilderStructure;
+import unbbayes.prs.mebn.ssbn.IBuilderStructure;
 import unbbayes.prs.mebn.ssbn.BuilderStructureImpl;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
-import unbbayes.prs.mebn.ssbn.PruneStructure;
+import unbbayes.prs.mebn.ssbn.IPruneStructure;
 import unbbayes.prs.mebn.ssbn.PruneStructureImpl;
 import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBN;
@@ -40,8 +40,8 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 	private MultiEntityBayesianNetwork mebn; 
 	private SSBN ssbn; 
 	
-	private BuilderStructure builderStructure; 
-	private PruneStructure pruneStructure; 
+	private IBuilderStructure builderStructure; 
+	private IPruneStructure pruneStructure; 
 	
 	public LaskeySSBNGenerator(){
 		setBuilderStructure(new BuilderStructureImpl()); 
@@ -97,9 +97,16 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		//Add queries to the list of nodes
 		System.out.println("\nStep 1: recover the query nodes");
 		for(Query query: queryList){
-			SimpleSSBNNode node = ssbn.createSSBNNode(query.getResidentNode(), query.getArguments());  
-			node.setFinished(false); 
-			System.out.println("    -> " + node);
+			SimpleSSBNNode ssbnNode = SimpleSSBNNode.getInstance(query.getResidentNode()); 
+			
+			for(OVInstance argument : query.getArguments()){
+				ssbnNode.setEntityForOv(argument.getOv(), argument.getEntity()); 	
+			}
+			
+			ssbn.addSSBNNodeIfItDontAdded(ssbnNode); 
+			
+			ssbnNode.setFinished(false); 
+			System.out.println("    -> " + ssbnNode);
 		}
 		
 		//Add findings to the list of nodes
@@ -116,10 +123,14 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 						ovInstanceList.add(OVInstance.getInstance(ov, lei)); 
 					}
 					
-					SimpleSSBNNode node = ssbn.createSSBNNode(residentNode, ovInstanceList); 
-					node.setState(finding.getState()); 
-					node.setFinished(false); 
-					System.out.println("    -> " + node);
+					SimpleSSBNNode ssbnNode = SimpleSSBNNode.getInstance(residentNode); 
+					
+					for(OVInstance argument : ovInstanceList){
+						ssbnNode.setEntityForOv(argument.getOv(), argument.getEntity()); 	
+					}
+					
+					ssbnNode.setState(finding.getState()); 
+					ssbnNode.setFinished(false); 
 					
 				}
 			}
@@ -145,19 +156,19 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		//node is used) and create the CPT of each node. 
 	}
 
-	public BuilderStructure getBuilderStructure() {
+	public IBuilderStructure getBuilderStructure() {
 		return builderStructure;
 	}
 
-	public void setBuilderStructure(BuilderStructure builderStructure) {
+	public void setBuilderStructure(IBuilderStructure builderStructure) {
 		this.builderStructure = builderStructure;
 	}
 
-	public PruneStructure getPruneStructure() {
+	public IPruneStructure getPruneStructure() {
 		return pruneStructure;
 	}
 
-	public void setPruneStructure(PruneStructure pruneStructure) {
+	public void setPruneStructure(IPruneStructure pruneStructure) {
 		this.pruneStructure = pruneStructure;
 	}
 	
