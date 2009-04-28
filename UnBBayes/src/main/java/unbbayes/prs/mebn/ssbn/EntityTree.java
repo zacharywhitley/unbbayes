@@ -56,8 +56,9 @@ public class EntityTree{
 		
 		//2) Add OV that don't is still in the tree
 		
+		
 		//walk in each path
-		for(EntityNode node: getNodesOfLastLevel()){
+		for(EntityNode lastNodeOfAPath: getNodesOfLastLevel()){
 			
 			//Mount the entitiesForOrdinaryVariable information. 
 			String[] entitiesForOrdinaryVariables = new String[ovArray.length];
@@ -65,7 +66,7 @@ public class EntityTree{
 			//Search if the ordinary variable is in the ovArray and add the 
 			//information about the entity if it is found. Walk for all the tree
 			//search for the ordinary variable. 
-			EntityNode testNode = node; 
+			EntityNode testNode = lastNodeOfAPath; 
 			
 			while(testNode != null){
 				
@@ -78,17 +79,18 @@ public class EntityTree{
 				testNode = testNode.getParent(); 
 				
 			}
+
 			
 			//Evaluate if it is a valid path against the new information
 			List<String[]> resultToBeUsed = new ArrayList<String[]>(); 
 			
-			for(String[] resultList : entityValuesArray){
+			for(String[] resultPossible : entityValuesArray){
 				
 				int ovValid = 0; 
 				
 				for(int index = 0; index < ovArray.length; index++){
 					if(entitiesForOrdinaryVariables[index] != null){
-						if(!resultList[index].equals(entitiesForOrdinaryVariables[index])){
+						if(!resultPossible[index].equals(entitiesForOrdinaryVariables[index])){
 						    break; 
 						}else{
 							ovValid++; 
@@ -100,18 +102,16 @@ public class EntityTree{
 				
 				//This is a valid path
 				if(ovValid == ovArray.length){
-					resultToBeUsed.add(resultList); 
+					resultToBeUsed.add(resultPossible); 
 				}
 			}
 			
-			if(resultToBeUsed.size() == 0){
-				//TODO Create the message for the error. 
-				throw new MFragContextFailException(); 
+			if(resultToBeUsed.size() == 0){ //This don't is a valid way!!! 
+				destroyPath(lastNodeOfAPath); 
 			}
 			
 			for(String[] result: resultToBeUsed){
-				
-				EntityNode parentNode = node; 
+				EntityNode parentNode = lastNodeOfAPath; 
 				for(int index = 0; index < ovArray.length; index++){
 					if(entitiesForOrdinaryVariables[index] == null){
 						EntityNode newNode = new EntityNode(result[index], ovArray[index], parentNode); 
@@ -391,7 +391,9 @@ public class EntityTree{
 			String string = ""; 
 			
 			string+="["; 
-			string+= this.getOv().getName(); 
+			if(this.getOv()!=null){
+				string+= this.getOv().getName();
+			}
 			string+="="; 
 			string+= this.getEntityName(); 
 			string+="]"; 
@@ -406,13 +408,15 @@ public class EntityTree{
 	}
 	
 	public void printNodeChildren(EntityNode node, int identation){
+		
+		int newIdentation = identation + 1; 
+		
 		for(EntityNode nodeChild : node.getChildren()){
 			for(int i = 0; i < identation; i++){
 				System.out.print("  ");
 			}
 			System.out.println(nodeChild); 
-			identation++; 
-			printNodeChildren(nodeChild, identation); 
+			printNodeChildren(nodeChild, newIdentation); 
 		}
 	}
 }
