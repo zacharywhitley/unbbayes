@@ -43,7 +43,7 @@ import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.ssbn.ContextFatherSSBNNode;
-import unbbayes.prs.mebn.ssbn.ContextNodeAvaliator;
+import unbbayes.prs.mebn.ssbn.ContextNodeEvaluator;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
@@ -79,7 +79,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 
 	protected List<SSBNWarning> warningList; 
 	
-	private ContextNodeAvaliator contextNodeAvaliator; 
+	private ContextNodeEvaluator contextNodeAvaliator; 
 	
 	private ResourceBundle resource = 
 		ResourceBundle.getBundle("unbbayes.prs.mebn.ssbn.resources.Resources");
@@ -325,7 +325,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 
 				//ContextNodeList have only one element (Trivial Case)
 				ContextNode context = contextNodeList.toArray(new ContextNode[contextNodeList.size()])[0];
-				ContextNodeAvaliator avaliator = new ContextNodeAvaliator(getKnowledgeBase()); 
+				ContextNodeEvaluator avaliator = new ContextNodeEvaluator(getKnowledgeBase()); 
 				
 				List<String> result = null;
 				try {
@@ -448,7 +448,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 			if((listResultSearchContextNode == null)||(listResultSearchContextNode.isEmpty())){ 
 
 				MFrag mFrag = fatherNode.getMFrag(); 
-				ContextNodeAvaliator avaliator = new ContextNodeAvaliator(this.getKnowledgeBase()); 
+				ContextNodeEvaluator avaliator = new ContextNodeEvaluator(this.getKnowledgeBase()); 
 				
 				if(ovProblemList.size() > 1){
 					throw new ImplementationRestrictionException(resource.getString("OrdVariableProblemLimit")); 
@@ -869,7 +869,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 			return false;
 		};
 		
-		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(this.getKnowledgeBase()); 
+		ContextNodeEvaluator avaliator = new ContextNodeEvaluator(this.getKnowledgeBase()); 
 		
 		Collection<ContextNode> contextNodeList = mFrag.getContextByOVCombination(ovList);
 		
@@ -1317,11 +1317,11 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 		this.knowledgeBase = kb; 
 	}
 
-	public ContextNodeAvaliator getContextNodeAvaliator() {
+	public ContextNodeEvaluator getContextNodeAvaliator() {
 		return contextNodeAvaliator;
 	}
 
-	public void setContextNodeAvaliator(ContextNodeAvaliator contextNodeAvaliator) {
+	public void setContextNodeAvaliator(ContextNodeEvaluator contextNodeAvaliator) {
 		this.contextNodeAvaliator = contextNodeAvaliator;
 	}
 	

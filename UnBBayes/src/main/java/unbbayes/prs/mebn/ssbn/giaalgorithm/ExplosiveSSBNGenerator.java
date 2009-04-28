@@ -36,7 +36,7 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
-import unbbayes.prs.mebn.ssbn.ContextNodeAvaliator;
+import unbbayes.prs.mebn.ssbn.ContextNodeEvaluator;
 import unbbayes.prs.mebn.ssbn.MFragInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.Query;
@@ -109,7 +109,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 		SSBNNode queryNode = query.getQueryNode();
 		
 		setKnowledgeBase(query.getKb());
-		setContextNodeAvaliator(new ContextNodeAvaliator(getKnowledgeBase())); 
+		setContextNodeAvaliator(new ContextNodeEvaluator(getKnowledgeBase())); 
 		
 		stepCount = 0L;
 		queryName = queryNode.getUniqueName();
