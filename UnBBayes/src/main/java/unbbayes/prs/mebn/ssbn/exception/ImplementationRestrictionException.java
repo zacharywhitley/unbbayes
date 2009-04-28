@@ -34,6 +34,12 @@ public class ImplementationRestrictionException extends Exception{
 	
 	//Possible Restrictions
 	public final static String ONLY_ONE_OVINSTANCE_FOR_OV = resource.getString("OnlyOneOVInstanceForOV"); 
+	public final static String MORE_THAN_ONE_CTXT_NODE_SEARCH = resource.getString("MoreThanOneContextNodeSearh"); 
+	public final static String NO_CONTEXT_NODE_FATHER = resource.getString("NoContextNodeFather"); 
+	public final static String INVALID_CTXT_NODE_FORMULA = resource.getString("InvalidContextNodeFormula"); 
+	public final static String ONLY_ONE_OV_FAULT_LIMIT = resource.getString("OrdVariableProblemLimit"); 
+	public final static String MORE_THAN_ONE_ORDEREABLE_VARIABLE = resource.getString("MoreThanOneOrdereableVariable"); 
+	public final static String RV_NOT_RECURSIVE = resource.getString("RVNotRecursive"); 
 	
 	public ImplementationRestrictionException(){
 		super();

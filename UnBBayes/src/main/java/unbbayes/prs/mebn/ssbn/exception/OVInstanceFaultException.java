@@ -20,17 +20,26 @@
  */
 package unbbayes.prs.mebn.ssbn.exception;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.mebn.OrdinaryVariable;
 
 /**
+ * The evaluation is aborted because a ov instance for one ordinary variable
+ * don't was found. 
  * 
  * @author Laecio Santos (laecio@gmail.com)
  */
 public class OVInstanceFaultException extends Exception{
 
 	private List<OrdinaryVariable> ovFaultList; 
+
+	public OVInstanceFaultException(OrdinaryVariable ovFault){
+		super(); 
+		this.ovFaultList = new ArrayList<OrdinaryVariable>();
+		ovFaultList.add(ovFault); 
+	}
 	
 	public OVInstanceFaultException(List<OrdinaryVariable> ovFaultList){
 		super(); 
