@@ -2,7 +2,7 @@ package unbbayes.prs.mebn.ssbn;
 
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 
-public interface BuilderStructure {
+public interface IBuilderStructure {
 
 	/**
 	 * 

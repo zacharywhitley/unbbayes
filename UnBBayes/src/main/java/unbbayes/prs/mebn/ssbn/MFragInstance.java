@@ -25,12 +25,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import unbbayes.prs.Node;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.entity.StateLink;
+import unbbayes.prs.mebn.ssbn.exception.MFragContextFailException;
 
 /**
  * Represent a MFrag instanciated for a set of entities and encapsule the state
@@ -44,37 +45,33 @@ import unbbayes.prs.mebn.ResidentNode;
  * The MFragInstance exist only in the builder phase of the algorithm. 
  */
 public class MFragInstance {
-
-	public enum ContextNodeEvaluationState{
-		EVALUATION_OK, // Evaluation OK - Context node evaluated true with all the arguments filled
-		EVALUATION_FAIL, 	// Evaluation fail - Context node evaluated false with all the arguments filled
-		EVALUATION_SEARCH, 	// Evaluation search - Context node result in a list of ord. variables that fill the argument
-		NOT_EVALUATED_YET	// Not evaluated yet- Context node not evaluated yet. 
-	}
 	
 	private MFrag mFragOrigin; 
+	
+	private SSBN ssbn; 
+	
+	private ContextNodeEvaluator contextNodeAvaliator; 
 	
 	private boolean useDefaultDistribution; 
 	
 	//Teorem: For the same set of ordinary variables instance values, 
 	//        the evaluation of the context node should be the same. 
 	private OrdinaryVariable[] ovList; 
-	private List<LiteralEntityInstance>[] instanceList; 
-	//if is a context related with a ordinary variable, then the unreferenced macanism 
-	//was used to recover the ordinary variable fault. Else, the instanceList 
-	//is the normal findings. 
 	private SimpleContextNodeFatherSSBNNode[] contextForOVList; 
 	
-	private List<SimpleSSBNNode> nodeList; 
+	private EntityTree entityTree; 
 	
-	private ContextNodeAvaliator contextNodeAvaliator; 
+	//This three lists contains the evaluation of the MFrag: the nodes and the 
+	//edges generateds. 
+	private List<SimpleSSBNNode> ssbNodeList; 
+	private List<SimpleEdge> edgeList; 
 	
 	private ContextNode[] contextNodeList; 
 	private ContextNodeEvaluationState[] contextNodeEvaluationStateList; 
 	
 	private boolean evaluated = false; 
 	
-	public MFragInstance(MFrag mFragOrigin){
+	private MFragInstance(MFrag mFragOrigin){
 		
 		int index = 0; 
 		int size = 0; 
@@ -82,17 +79,20 @@ public class MFragInstance {
 		this.mFragOrigin = mFragOrigin; 
 		
 		//Create the list of states of evaluation of the ordinary variables.
-		size = mFragOrigin.getOrdinaryVariableList().size(); index = 0; 
+		size = mFragOrigin.getOrdinaryVariableList().size(); 
+		index = 0; 
 		this.ovList = new OrdinaryVariable[size];  
+		this.contextForOVList = new SimpleContextNodeFatherSSBNNode[size]; 
+		
 		for(OrdinaryVariable ov: mFragOrigin.getOrdinaryVariableList()){
 			ovList[index] = ov; 
-			instanceList[index] = new ArrayList<LiteralEntityInstance>(); 
 			contextForOVList[index] = null; 
 			index++; 
 		}
 		
 		//Create the list of states of evaluation of the context nodes. 
-		size = mFragOrigin.getContextNodeList().size(); index = 0;  
+		size = mFragOrigin.getContextNodeList().size(); 
+		index = 0;  
 		contextNodeList = new ContextNode[size]; 
 		contextNodeEvaluationStateList = new ContextNodeEvaluationState[size]; 
 		for(ContextNode context: mFragOrigin.getContextNodeList()){
@@ -101,8 +101,34 @@ public class MFragInstance {
 			index++; 
 		}
 		
+		this.entityTree = new EntityTree(); 
+		
+		this.ssbNodeList = new ArrayList<SimpleSSBNNode>(); 
+		this.edgeList = new ArrayList<SimpleEdge>(); 
+		
 	}
 	
+	public static MFragInstance getInstance(MFrag mFragOrigin){
+		return new MFragInstance(mFragOrigin); 
+	}
+	
+	//Nodes
+	
+	/**
+	 * Add a value of a OV that is instanciated for a unique value. 
+	 */
+	public void addOVValue(OrdinaryVariable ov, String entity) throws MFragContextFailException{
+		
+		this.entityTree.updateTreeForNewInformation(ov, entity); 
+		
+	}
+	
+	public List<OVInstance> getOVInstances(){
+		
+		return entityTree.getOVInstances(); 
+		
+	}
+
 	// GET AND SET'S METHODS
 	
 	public boolean isUsingDefaultDistribution() {
@@ -122,53 +148,8 @@ public class MFragInstance {
 	}
 	
 	
-	
-	
 	// ORDINARY VARIABLE EVALUATION STATE LISTS
 
-	/**
-	 * Return true if the operation is OK or false otherside. 
-	 */
-	public boolean addInstanciatedOV(OrdinaryVariable ov, LiteralEntityInstance lei){
-		int index = -1; 
-		
-		for(int i = 0; i < ovList.length; i++){
-			if(ovList[i] == ov){
-				index = i; 
-				break; 
-			}
-		}
-		
-		if(index < 0){
-			return false; 
-		}else{
-			instanceList[index].add(lei);
-			return true; 
-		}
-		
-	}
-	
-	public List<LiteralEntityInstance> getInstanciatedOVValue(OrdinaryVariable ov){
-		for(int i = 0; i < ovList.length; i++){
-			if(ovList[i] == ov){
-				return instanceList[i];  
-			}
-		}
-		return null; 
-	}
-	
-	/**
-	 * @return All the ordinary variable that don't are instanciated yet. 
-	 */
-	public List<OrdinaryVariable> getListNotInstanciatedOV(){
-		List<OrdinaryVariable> ovNotInstanciatedList = new ArrayList<OrdinaryVariable>(); 
-		for(int i = 0; i < ovList.length; i++){
-			if(instanceList[i].size() <= 0){
-				ovNotInstanciatedList.add(ovList[i]);  
-			}
-		}
-		return ovNotInstanciatedList; 
-	}
 	
 	public SimpleContextNodeFatherSSBNNode getContextNodeFather(OrdinaryVariable ov){
 		for(int i = 0; i < ovList.length; i++){
@@ -180,66 +161,24 @@ public class MFragInstance {
 	}
 	
 	/**
-	 * @return All OV of the MFrag don't instanciated yet. 
-	 */
-	public List<OrdinaryVariable> getOVFaultList(){
-
-		List<OrdinaryVariable> ovFaultList = new ArrayList<OrdinaryVariable>(); 
-		
-		for(int i = 0; i < instanceList.length; i++){
-			if(instanceList[i].size() == 0){
-				ovFaultList.add(ovList[i]); 
-			}
-		}
-		
-		return ovFaultList; 
-	}
-
-	public List<OVInstance> getOVInstanceList(){
-		
-		return null; 
-		
-	}
-	
-	
-	/**
+	 * Monta uma combinação de todos os resultados possíveis para as variáveis 
+	 * ordinárias contidas em ovSearchArray, utilizando a arvore de entidades onde 
+	 * será utilizada os valores das variáveis já preenchidas. 
 	 * 
-	 * @param node               Input or Resident Node parent
-	 * @param ovInstanceList     Arguments of the parent node
-	 * @return
+	 * @param knownOVArray
+	 * @param knownEntityArray
+	 * @param ovSearchArray
+	 * @return Um array com todos os resultados possíveis para a lista ovSearchArray. 
+	 *         Os elementos do retorno estão na mesma ordem. 
 	 */
-	public List<SimpleSSBNNode> getSSBNNodeForNode(Node node, List<OVInstance> ovInstanceList){
+	public List<String[]> recoverCombinationsEntitiesPossibles(
+			OrdinaryVariable[] knownOVArray,
+			LiteralEntityInstance[] knownEntityArray,
+			OrdinaryVariable[] ovSearchArray){
 		
-		List<SimpleSSBNNode> listSSBNNode = new ArrayList<SimpleSSBNNode>(); 
-		
-		ResidentNode residentNode; 
-		
-		//Bad form to do this. 
-		if(node instanceof InputNode){
-			residentNode = ((InputNode)node).getResidentNodePointer().getResidentNode();  
-		}else{
-			residentNode = (ResidentNode) node; 
-		}
-		
-		for(SimpleSSBNNode ssbnNode: listSSBNNode){
-			
-			if(ssbnNode.getResidentNode().equals(residentNode)){
-				if(isOVInstanceListEquivalent(ovInstanceList, ssbnNode.getArgumentList())){
-					listSSBNNode.add(ssbnNode); 
-				}
-			}
-			
-		}
-		
-		return listSSBNNode; 
-		
+		return entityTree.recoverCombinationsEntitiesPossibles(knownOVArray, 
+				knownEntityArray, ovSearchArray); 
 	}
-	
-	private boolean isOVInstanceListEquivalent(List<OVInstance> ovInstanceList1, List<OVInstance> ovInstanceList2){
-		//TODO implement this method
-		return true; 
-	}
-	
 	
 	// CONTEXT NODE EVALUATION STATE 
 	/**
@@ -257,7 +196,7 @@ public class MFragInstance {
 		}
 		return null;
 	}
-
+	
 	/**
 	 * @param contextNode    ContextNode to be setted
 	 * @param state          New state of the context node
@@ -276,16 +215,57 @@ public class MFragInstance {
 		return false; 
 	}
 	
+	
+	/**
+	 * Two MFrag Instances are equals if: 
+	 * 
+	 * 1. The two are referenced to the same MFrag
+	 * 2. The entityTree of the two MFrag's are equal
+	 * 
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o){
+		MFragInstance mFrag = (MFragInstance)o;
+		
+		boolean result = true; 
+		
+		if(this.mFragOrigin.equals(mFrag.getMFragOrigin())){
+
+			if(!this.entityTree.equals((mFrag.getEntityTree()))){
+				result = false; 
+			}
+		
+		}else{
+			result = false; 
+		}
+		
+		return result; 
+		
+	}
+	
+	@Override
+	public String toString(){
+		
+		String result = ""; 
+		
+		result += this.mFragOrigin.getName(); 
+		
+		return result; 
+	}
+	
+	// GET'S AND SET'S METHODS
+	
 	public List<ContextNode> getContextNodeList(){
 		return Arrays.asList(contextNodeList); 
 	}
 	
 	
-	public ContextNodeAvaliator getContextNodeAvaliator() {
+	public ContextNodeEvaluator getContextNodeAvaliator() {
 		return contextNodeAvaliator;
 	}
 
-	public void setContextNodeAvaliator(ContextNodeAvaliator contextNodeAvaliator) {
+	public void setContextNodeAvaliator(ContextNodeEvaluator contextNodeAvaliator) {
 		this.contextNodeAvaliator = contextNodeAvaliator;
 	}
 
@@ -293,38 +273,44 @@ public class MFragInstance {
 		return useDefaultDistribution;
 	}
 
-	public List<SimpleSSBNNode> getNodeList() {
-		return nodeList;
+	public List<SimpleSSBNNode> getSSBNNodeList() {
+		return ssbNodeList;
 	}
 
-	public void setNodeList(List<SimpleSSBNNode> nodeList) {
-		this.nodeList = nodeList;
+	public void addSSBNNode(SimpleSSBNNode ssbnNode) {
+		this.ssbNodeList.add(ssbnNode);
+	}
+	
+	public List<SimpleEdge> getEdgeList() {
+		return edgeList;
 	}
 
-	/*
-	 * When two mFragInstances are equals? 
-	 * 
-	 * 1. The two are referenced to the same MFrag
-	 * 2. For each ordinary variable OVia and OVib
-	 *   2.1. If OVia == !c then OVib == !c 
-	 *   2.2. If   OVia == uncertainty by context node ctx1, 
-	 *        then OVib == uncertainty by context node ctx1
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
+	public void addEdge(SimpleEdge edge) {
+		this.edgeList.add(edge);
+	}
+
+	/**
+	 * An MFragInstance is marked how evaluated when all nodes are marked how 
+	 * evaluated and the context nodes are all evaluated. 
 	 */
-	@Override
-	public boolean equals(Object mFragInstance){
-		MFragInstance node = (MFragInstance)mFragInstance;
-		
-		return true; 
-	}
-
 	public boolean isEvaluated() {
 		return evaluated;
 	}
 
 	public void setEvaluated(boolean evaluated) {
 		this.evaluated = evaluated;
+	}
+
+	public OrdinaryVariable[] getOvList() {
+		return ovList;
+	}
+
+	public EntityTree getEntityTree() {
+		return entityTree;
+	}
+
+	public void setEntityTree(EntityTree entityTree) {
+		this.entityTree = entityTree;
 	}
 	
 }

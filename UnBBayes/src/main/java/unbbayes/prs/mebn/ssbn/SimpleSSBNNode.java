@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import unbbayes.prs.mebn.MFrag;
+import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.Entity;
 
@@ -17,24 +18,24 @@ import unbbayes.prs.mebn.entity.Entity;
  */
 public class SimpleSSBNNode {
 
-	private final ResidentNode residentNode; 
+	private final ResidentNode residentNode;
+	
+	private MFragInstance mFragInstance;
 	
 	private boolean finished; //indicate if the node already was processed 
 	
 	private List<SimpleSSBNNode> parents; 
+	private List<SimpleContextNodeFatherSSBNNode> contextParents; 
 	
-	private MFragInstance mFragInstance;
-	
-	//Contain the arguments for the home MFrag of the resident node
-	private List<OVInstance> listArguments; 
-	
-	//Contain the arguments for the input's MFrag's of the resident node
-	private Map<MFrag, List<OVInstance>> argumentsForMFrag; 
-	
-	//if state != null this node is a finding
-	private Entity state;
+	private OrdinaryVariable                    ovArray[];       //ordinary variables for the home mfrag (The order of the resident node)
+	private LiteralEntityInstance               entityArray[];   //evaluation of the ov  
+	private Map<MFrag, OrdinaryVariable[]>      ovArrayForMFrag; //correspondency between the ov of the home mFrag with the ov of the external MFrags. 
+
+	private Entity state;	//if state != null this node is a finding
 	
 	private boolean defaultDistribution = false; 
+	private boolean evaluatedForHomeMFrag = false; 
+	
 	
 	private SimpleSSBNNode(ResidentNode residentNode){
 		
@@ -43,10 +44,19 @@ public class SimpleSSBNNode {
 		this.finished = false;
 		
 		this.parents = new ArrayList<SimpleSSBNNode>(); 
-		this.listArguments = new ArrayList<OVInstance>(); 
-		this.argumentsForMFrag = new HashMap<MFrag, List<OVInstance>>(); 
+		this.contextParents = new ArrayList<SimpleContextNodeFatherSSBNNode>(); 
 		
 		this.state = null; 
+		
+		ovArray = new OrdinaryVariable[residentNode.getOrdinaryVariableList().size()]; 
+		int index = 0; 
+		for(OrdinaryVariable ordinaryVariable: residentNode.getOrdinaryVariableList()){
+			ovArray[index] = ordinaryVariable; 
+			index++; 
+		}
+		
+		entityArray = new LiteralEntityInstance[residentNode.getOrdinaryVariableList().size()]; 
+		ovArrayForMFrag = new HashMap<MFrag, OrdinaryVariable[]>(); 
 		
 	}
 	
@@ -54,10 +64,33 @@ public class SimpleSSBNNode {
 		return new SimpleSSBNNode(residentNode); 
 	}
 	
-	//Evaluate if two SimpleSSBNNodes are equals. 
+	/**
+	 * Two SimpleSSBNNode are equals if: 
+	 * 
+	 * 1. It referes to the same Resident Node. 
+	 * 2. The instanciated entity for each ordinary variable are the same. 
+	 */
+	@Override
 	public boolean equals(Object obj) {
 
-		return true; 
+		boolean result = true; 
+		
+		SimpleSSBNNode ssbnNode = (SimpleSSBNNode)obj;
+		
+		if(ssbnNode.getResidentNode().equals(this.getResidentNode())){
+			
+			for(int i = 0; i < entityArray.length; i++){
+				if(!entityArray[i].equals(ssbnNode.entityArray[i])){
+					result = false; 
+					break; 
+				}
+			}
+			
+		}else{
+			result = false; 
+		}
+		
+		return result; 
 		
 	}
 
@@ -66,8 +99,12 @@ public class SimpleSSBNNode {
 		String ret = residentNode.getName(); 
 
 		ret+="(";
-		for(OVInstance instance: listArguments){
-			ret+= instance.toString();
+		for(int i = 0; i < ovArray.length; i++){
+			ret+= "(";
+			ret+= ovArray[i].getName();
+			ret+= ","; 
+			ret+= entityArray[i].getInstanceName(); 
+			ret+= ")"; 
 		}
 		ret+=")";
 
@@ -96,7 +133,6 @@ public class SimpleSSBNNode {
 		return parents;
 	}
 
-	
 	public void addParent(SimpleSSBNNode parent){
 		parents.add(parent); 
 	}
@@ -108,23 +144,7 @@ public class SimpleSSBNNode {
 	public void setMFragInstance(MFragInstance mFragInstance) {
 		this.mFragInstance = mFragInstance;
 	}
-
-	public List<OVInstance> getArgumentList() {
-		return listArguments;
-	}
 	
-	public void addArgument(OVInstance argument){
-		this.listArguments.add(argument); 
-	}
-
-	public List<OVInstance> getArgumentsForExternalMFrag(MFrag externalMFrag) {
-		return argumentsForMFrag.get(externalMFrag);
-	}
-
-	public void addArgumentsForExternalMFrag(MFrag externalMFrag, List<OVInstance> argumentList){
-		this.argumentsForMFrag.put(externalMFrag, argumentList); 
-	}
-
 	public Entity getState() {
 		return state;
 	}
@@ -144,7 +164,68 @@ public class SimpleSSBNNode {
 	public void setDefaultDistribution(boolean defaultDistribution) {
 		this.defaultDistribution = defaultDistribution;
 	}
+
+	public boolean isEvaluatedForHomeMFrag() {
+		return evaluatedForHomeMFrag;
+	}
+
+	public void setEvaluatedForHomeMFrag(boolean evaluatedForHomeMFrag) {
+		this.evaluatedForHomeMFrag = evaluatedForHomeMFrag;
+	}
+
+	public List<SimpleContextNodeFatherSSBNNode> getContextParents() {
+		return contextParents;
+	}
+
+	public void addContextParent(
+			SimpleContextNodeFatherSSBNNode contextParents) {
+		this.contextParents.add(contextParents);
+	}
+
 	
+	
+	
+	// OV AND ENTITIES METHODS
+	
+	/**
+	 * Set the value of ov how the entity if this node have the ov how argument. 
+	 * If it don't have, don't do anything. 
+	 */
+	public void setEntityForOv(OrdinaryVariable ov, LiteralEntityInstance lei){
+		
+		for(int i = 0; i < ovArray.length; i++){
+			if(ovArray[i].equals(ov)){
+				entityArray[i] = lei; 
+				break; 
+			}
+		}
+	}
+	
+	public OrdinaryVariable[] getOvArray() {
+		return ovArray;
+	}
+
+	public LiteralEntityInstance[] getEntityArray() {
+		return entityArray;
+	}
+
+	public LiteralEntityInstance getEntityForOv(OrdinaryVariable ov){
+		
+		LiteralEntityInstance entity = null;
+		
+		for(int i = 0; i < ovArray.length; i++){
+			if(ovArray[i].equals(ov)){
+				entity = entityArray[i]; 
+				break; 
+			}
+		}
+		
+		return entity; 
+	}
+	
+	public Map<MFrag, OrdinaryVariable[]> getOvArrayForMFrag() {
+		return ovArrayForMFrag;
+	}
 
 	
 }

@@ -24,6 +24,7 @@ package unbbayes.prs.mebn.ssbn;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.io.LogManager;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.mebn.InputNode;
@@ -45,13 +46,14 @@ public class SSBN {
 	
 	private List<Query> queryList; 
 	
-	private List<SSBNWarning> warningList; 
-	
 	private List<SimpleSSBNNode> ssbnNodeList; 
+	private List<SimpleEdge> edgeList; 
 	
 	private List<MFragInstance> mFragInstanceList; 
 	
-	private List<SimpleEdge> edgeList; 
+	//informations about the creation of the SSBN
+	private LogManager logManager = new LogManager();
+	private List<SSBNWarning> warningList; 
 	
 	private enum State{
 		INITIAL, 
@@ -83,78 +85,32 @@ public class SSBN {
 	
 	//---------- METHODS FOR ADD COMPONENTS TO THE ALGORITHM EVALUATION ---
 	
-	/**
-	 * Create a new MFragInstance. Verify in the list of created MFragInstances if
-	 * already have one equals to the new MFragInstance, return this if positive. 
-	 * 
-	 * @return the MFragInstance (the new if it created or the already existent otherside)
-	 */
-	public MFragInstance createMFragInstance(MFrag mFrag, List<OVInstance> ovInstanceList){
+	//Be careful... this method is very hard!!! 
+	public MFragInstance addMFragIfItDontAdded(MFragInstance mFragInstance){
 		
-		MFragInstance mFragInstance = new MFragInstance(mFrag); 
-		for(OVInstance ovInstance: ovInstanceList){
-			mFragInstance.addInstanciatedOV(ovInstance.getOv(), ovInstance.getEntity()); 
-		}
-		
-		for(MFragInstance mfi: this.mFragInstanceList){
-			if(mfi.equals(mFragInstance)){
-				return mfi; 
+		for(MFragInstance mFragInstanceTest: mFragInstanceList){
+			if(mFragInstanceTest.equals(mFragInstance)){
+				return mFragInstanceTest; 
 			}
 		}
 		
-		mFragInstanceList.add(mFragInstance); 
-		
-		return mFragInstance; 
+		return null; 
 	}
 	
 	/**
-	 * Create a new SSBNNode with the arguments. Verify if already exist a ssbn
-	 * node equals to the new wanted, returning this if positive. 
+	 * Verify if already exists a node in the list of nodes. If its exists, return
+	 * the already existent node, else return added the node to the list of node 
+	 * and return it; 
 	 */
-	public SimpleSSBNNode createSSBNNode(ResidentNode resident, List<OVInstance> ovInstanceList){
-		
-		SimpleSSBNNode node = SimpleSSBNNode.getInstance(resident); 
-		for(OVInstance ovInstance: ovInstanceList){
-			node.addArgument(ovInstance); 	
-		}
-		
-//		for(SimpleSSBNNode n: ssbnNodeList){
-//			if(n.equals(node)){
-//				return n; 
-//			}
-//		}
-		
-		ssbnNodeList.add(node); 
-		
-		return node; 
-	
-	}
-	
-	/**
-	 * Create a new SSBNNode with the arguments. Verify if already exist a ssbn
-	 * node equals to the new wanted, returning this if positive. 
-	 */
-	public SimpleSSBNNode createSSBNNode(InputNode input, List<OVInstance> ovInstanceList){
-		
-		ResidentNode residentNode = input.getResidentNodePointer().getResidentNode(); 
-		
-		SimpleSSBNNode node = SimpleSSBNNode.getInstance(residentNode); 
-		for(OVInstance ovInstance: ovInstanceList){
-			node.addArgumentsForExternalMFrag(input.getMFrag(), ovInstanceList); 	
-		}
-		
-		node.setMFragInstance(null); 
+	public SimpleSSBNNode addSSBNNodeIfItDontAdded(SimpleSSBNNode ssbnNode){
 		
 		for(SimpleSSBNNode n: ssbnNodeList){
-			if(n.equals(node)){
+			if(n.equals(ssbnNode)){
 				return n; 
 			}
 		}
 		
-		ssbnNodeList.add(node); 
-		
-		return node; 
-	
+		return null; 
 	}
 	
 	
@@ -252,15 +208,7 @@ public class SSBN {
 	public void setQueryList(List<Query> queryList) {
 		this.queryList = queryList;
 	}
-
-	public List<SSBNWarning> getWarningList() {
-		return warningList;
-	}
 	
-	public void setWarningList(List<SSBNWarning> warningList){
-		this.warningList = warningList; 
-	}
-
 	public List<SimpleSSBNNode> getSsbnNodeList() {
 		return ssbnNodeList;
 	}
@@ -272,9 +220,29 @@ public class SSBN {
 	public List<SimpleEdge> getEdgeList() {
 		return edgeList;
 	}
-
+	
+	public void addEdge(SimpleEdge edge) {
+		this.edgeList.add(edge);
+	}
+	
 	public List<MFragInstance> getMFragInstanceList() {
 		return mFragInstanceList;
+	}
+	
+	
+	//INFORMATIONS ABOUT THE GENERATION OF THE SSBN 
+	
+	public List<SSBNWarning> getWarningList() {
+		return warningList;
+	}
+	
+	//TODO remove this method
+	public void setWarningList(List<SSBNWarning> e){
+		this.warningList = e ; 
+	}
+	
+	public LogManager getLogManager() {
+		return logManager;
 	}
 
 	

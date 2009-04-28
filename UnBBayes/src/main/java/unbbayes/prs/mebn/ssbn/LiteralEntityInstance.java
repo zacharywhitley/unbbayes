@@ -86,7 +86,7 @@ public class LiteralEntityInstance {
 	}
 	
 	public String toString(){
-		return "LiteralEntityInstance:" + instanceName + "[" + type + "]";
+		return "LitEntInst:" + instanceName + "[" + type + "]";
 	}
 	
 	

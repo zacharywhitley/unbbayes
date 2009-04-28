@@ -23,10 +23,9 @@ package unbbayes.prs.mebn.ssbn;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.TreeMap;
 
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.InputNode;
@@ -35,7 +34,6 @@ import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
-import unbbayes.prs.mebn.ssbn.MFragInstance.ContextNodeEvaluationState;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
@@ -46,104 +44,74 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
  * 
  * @author Laecio Santos (laecio@gmail.com)
  */
-public class ContextNodeAvaliator {
+public class ContextNodeEvaluator {
 
 	private KnowledgeBase kb; 
 	private SSBNAlgorithmInterationHelper interationHelper; 
 	
-	public ContextNodeAvaliator(KnowledgeBase kb){
+	private Map<String, List<LiteralEntityInstance>> valuesEntityMap; 
+	
+	public ContextNodeEvaluator(KnowledgeBase kb){
 		
 		this.kb = kb; 
 		
+		//Inicialization of the lists
+		this.valuesEntityMap = new TreeMap<String, List<LiteralEntityInstance>>(); 
+		
 	}
 
-	/**
-	 * Evaluate the context nodes of a MFrag using the ordinary variables already
-	 * instanciated. 
-	 * 
-	 * - Ordinary variables don't instanciated yet will be instanciated.
-	 * - Should have more than one reference for a ordinary variable 
-	 * - Should have reference uncertainty problem (how return this problem)
-	 * - Should have ordinary variables that don't have instance for it
-	 * 
-	 * Solution: return all in a MFragInstance object. 
-	 * 
-	 * Cases: 
-	 * - Trivial case
-	 * - Simple Search (one entity for ov)
-	 * - Compost Search (more than one entity)
-	 * - Undefined Context (more than one possible result)
-	 * 
-	 * @param mfrag MFrag evaluated
-	 * @param ovInstances Ordinary variables already instanciated. 
-	 * @throws SSBNNodeGeneralException 
-	 * @throws ImplementationRestrictionException 
-	 * @throws OVInstanceFaultException 
-	 */
-	public MFragInstance evaluateMFragContextNode(MFragInstance mFragInstance) 
-	                   throws ImplementationRestrictionException, 
-	                          SSBNNodeGeneralException, 
-	                          OVInstanceFaultException{
-		
-		//Create OVInstance list with the single arguments of the mFrag passed how parameter. 
-		
-		//STEP 1: Evaluate the context nodes with all variables filled. (Simple case) 
-		//This don't will be necessary if have ordinary variables problematic's. 
-//		for(ContextNode contextNode: mFragInstance.getContextNodeList()){
-//			evaluateRelatedContextNodes(mFragInstance); 
+	
+//	/**
+//	 * Only for the case where the ordinary variable should be recover by the 
+//	 * use of a context node with the format Zone(ST0!) = z where only z is 
+//	 * unknow. Try use this strategy to solve all the ordinary variables fault 
+//	 * at MFrag. The result are put at the MFragInstance.  
+//	 */
+//	public void evaluateUncertaintyReferenceContextCase(MFragInstance mFragInstance) 
+//	                   throws ImplementationRestrictionException{
+//		
+//		List<OrdinaryVariable> notInstanciatedOVList = mFragInstance.getListNotInstanciatedOV(); 
+//		
+//		for(OrdinaryVariable ov: notInstanciatedOVList){
+//			
+//			List<OrdinaryVariable> ovList = new ArrayList<OrdinaryVariable>(); 
+//			ovList.add(ov); 
+//			Collection<ContextNode> contextNodeList = mFragInstance.getMFragOrigin().getSearchContextByOVCombination(ovList);
+//
+//			if(contextNodeList.size() > 1){
+//				throw new ImplementationRestrictionException(
+//						ImplementationRestrictionException.MORE_THAN_ONE_CTXT_NODE_SEARCH); 
+//			}
+//			if(contextNodeList.size() < 1){
+//				throw new ImplementationRestrictionException(
+//						ImplementationRestrictionException.NO_CONTEXT_NODE_FATHER); 
+//			}
+//			
+//			//ContextNodeList have only one element (Trivial Case)
+//			ContextNode context = contextNodeList.toArray(new ContextNode[contextNodeList.size()])[0];
+//			
+//			boolean isContextNodeValid = false; 
+//			
+//			try{
+//				isContextNodeValid = isContextNodeSearchValidFormat(context);
+//			} catch (OVInstanceFaultException e) {
+//				throw new ImplementationRestrictionException(
+//						ImplementationRestrictionException.ONLY_ONE_OV_FAULT_LIMIT); 
+//			} 
+//			
+//			if(!isContextNodeValid){
+//				throw new ImplementationRestrictionException(
+//						ImplementationRestrictionException.INVALID_CTXT_NODE_FORMULA); 
+//			}else{
+//				
+//				List<LiteralEntityInstance> entityList = searchEntitiesForOrdinaryVariable(ov); 
+////				mFragInstance.addInstanciatedOV(ov, context, entityList); 
+//			
+//			}
+//			
 //		}
-		
-		//STEP 2: Search the arguments for ordinary variables fault and evaluate its state.
-		List<OrdinaryVariable> notInstanciatedOVList = mFragInstance.getListNotInstanciatedOV(); 
-		
-		//Try 1: Use the transitivity aproach 
-		//Only the normal cases with only a one ordinary variable for passage
-		if (notInstanciatedOVList.size() != 0){
-			
-			List<OVInstance> ovInstanceResultList = 
-				evaluateSearchContextNodes(mFragInstance.getMFragOrigin(), 
-						notInstanciatedOVList, mFragInstance.getOVInstanceList()); 
-			
-			for(OVInstance ovInstance: ovInstanceResultList){
-				mFragInstance.addInstanciatedOV(ovInstance.getOv(), ovInstance.getEntity()); 
-			}
-
-		}
-
-		//Try 2: Ask for the user for the ordinary variables fault (case the iteraction is on)
-		notInstanciatedOVList = mFragInstance.getListNotInstanciatedOV(); 
-		if (notInstanciatedOVList.size() != 0){
-			for(OrdinaryVariable ov: notInstanciatedOVList){
-				if(interationHelper!=null){
-					OVInstance ovInstance = interationHelper.getInstanceValueForOVFault(ov);
-					if(ovInstance != null){
-						mFragInstance.addInstanciatedOV(ovInstance.getOv(),	ovInstance.getEntity()); 
-					}
-				}
-			}
-		}
-		
-		//Try 3: Yet ov faults! Return error. 
-		notInstanciatedOVList = mFragInstance.getListNotInstanciatedOV(); 
-		if (notInstanciatedOVList.size() != 0){
-			throw new OVInstanceFaultException(notInstanciatedOVList); 
-		}
-		
-		//Mark the result of evaluation of a context node 
-		
-		//STEP 3: Use the XOR methodology for the ordinary variables don't found yet. 
-		//Only the single case z = StarshipZone(st) //take out restriction in the order of the formula. 
-		
-		
-		
-		//STEP 4: Evaluate the context nodes. 
-		evaluateMFragInstanceCompleteContextNodes(mFragInstance); 
-
-		
-		//Return mFragInstance with the ordinary variables filled. 
-		
-		return mFragInstance; 
-	}
+//		
+//	}
 	
 	/**
 	 * Evaluate a context node. Should have a OVInstance for each ordinary 
@@ -185,8 +153,13 @@ public class ContextNodeAvaliator {
 	public List<String> evalutateSearchContextNode(ContextNode context, List<OVInstance> ovInstances) 
 	        throws InvalidContextNodeFormulaException, OVInstanceFaultException{
 		
-			List<String> entitiesResult = kb.evaluateSearchContextNodeFormula(context, ovInstances); 
+			List<String> entitiesResult = kb.evaluateSingleSearchContextNodeFormula(context, ovInstances); 
 			return entitiesResult;
+	}
+	
+	
+	public boolean isContextNodeSearchValidFormat(ContextNode context) throws OVInstanceFaultException{
+		return true; 
 	}
 	
 	/**
@@ -243,49 +216,50 @@ public class ContextNodeAvaliator {
 
 		return true; 
 	}
-
-	/**
-	 * Evaluate the context nodes of a MFrag that should be solved with the given 
-	 * ordinary variables instances. 
-	 * Set the state of evaluation of each node at mFragInstance 
-	 * (using the atribute StateEvaluationOfContextNode). 
-	 * 
-	 * @param ovInstances
-	 * @param mFragInstance
-	 * @param ovList
-	 * @return if the MFrag will use the default distribution 
-	 * @throws OVInstanceFaultException
-	 */
-	private boolean evaluateMFragInstanceCompleteContextNodes( 
-			MFragInstance mFragInstance) throws OVInstanceFaultException{
-
-		//TODO this method should treat the case when have more than one ov for each ordinary variable. 
-		
-		Set<OrdinaryVariable> setOV = new HashSet<OrdinaryVariable>(); 
-		
-		for(OVInstance ovi: mFragInstance.getOVInstanceList()){
-			setOV.add(ovi.getOv()); 
-		}
-		
-		Collection<ContextNode> contextNodeList = mFragInstance.getMFragOrigin().getContextByOVCombination(
-				setOV);
-
-		for(ContextNode context: contextNodeList){
-			if (!(mFragInstance.getStateEvaluationOfContextNode(context) == 
-				ContextNodeEvaluationState.NOT_EVALUATED_YET)){
 	
-				if(!evaluateContextNode(context, mFragInstance.getOVInstanceList())){
-					mFragInstance.setStateEvaluationOfContextNode(context, ContextNodeEvaluationState.EVALUATION_FAIL);   
-					mFragInstance.setUseDefaultDistribution(true); 
-				}else{
-					mFragInstance.setStateEvaluationOfContextNode(context, ContextNodeEvaluationState.EVALUATION_OK); 
-				}
-				
-			}
-		}
-
-		return mFragInstance.isUsingDefaultDistribution(); 
-	}
+	
+//	/**
+//	 * Evaluate the context nodes of a MFrag that should be solved with the given 
+//	 * ordinary variables instances. 
+//	 * Set the state of evaluation of each node at mFragInstance 
+//	 * (using the atribute StateEvaluationOfContextNode). 
+//	 * 
+//	 * @param ovInstances
+//	 * @param mFragInstance
+//	 * @param ovList
+//	 * @return if the MFrag will use the default distribution 
+//	 * @throws OVInstanceFaultException
+//	 */
+//	private boolean evaluateMFragInstanceCompleteContextNodes( 
+//			MFragInstance mFragInstance) throws OVInstanceFaultException{
+//
+//		//TODO This method should treat the case when have more than one OV for each ordinary variable. 
+//		
+//		Set<OrdinaryVariable> setOV = new HashSet<OrdinaryVariable>(); 
+//		
+//		for(OVInstance ovi: mFragInstance.getOVInstanceList()){
+//			setOV.add(ovi.getOv()); 
+//		}
+//		
+//		Collection<ContextNode> contextNodeList = mFragInstance.getMFragOrigin().getContextByOVCombination(
+//				setOV);
+//
+//		for(ContextNode context: contextNodeList){
+//			if (!(mFragInstance.getStateEvaluationOfContextNode(context) == 
+//				ContextNodeEvaluationState.NOT_EVALUATED_YET)){
+//	
+//				if(!evaluateContextNode(context, mFragInstance.getOVInstanceList())){
+//					mFragInstance.setStateEvaluationOfContextNode(context, ContextNodeEvaluationState.EVALUATION_FAIL);   
+//					mFragInstance.setUseDefaultDistribution(true); 
+//				}else{
+//					mFragInstance.setStateEvaluationOfContextNode(context, ContextNodeEvaluationState.EVALUATION_OK); 
+//				}
+//				
+//			}
+//		}
+//
+//		return mFragInstance.isUsingDefaultDistribution(); 
+//	}
 	
 	/**
 	 * Note: This class was created for mantain the normal evaluation of the 
@@ -501,10 +475,34 @@ OUT_LOOP:  for(ContextNode context: cnList){
 	}
 
 	/**
-	 * Return all the entities of one type. 
-	 * @param type
+	 * Return all the entities that are possible values for the Type 
+	 * @param ov
 	 * @return
 	 */
+	public List<LiteralEntityInstance> searchEntitiesForOrdinaryVariable(OrdinaryVariable ov){
+		
+		List<LiteralEntityInstance> entityList = null; 
+		
+		if((entityList = valuesEntityMap.get(ov.getValueType().getName())) == null){
+			
+			List<String> entityStringList = kb.getEntityByType(ov.getValueType().getName());
+			entityList = new ArrayList<LiteralEntityInstance>(); 
+			for(String entity: entityStringList){
+				entityList.add(LiteralEntityInstance.getInstance(entity, ov.getValueType())); 
+			}
+			valuesEntityMap.put(ov.getValueType().getName(), entityList); 
+		}
+		
+		return entityList; 
+	}
+	
+	/**
+	 * Return all the entities of one type. 
+	 * 
+	 * deprecated: 
+	 * use the method searchEntitiesForOrdinaryVariable
+	 */
+	@Deprecated
 	public List<String> getEntityByType(String type){
 		return kb.getEntityByType(type); 
 	}
@@ -529,6 +527,10 @@ OUT_LOOP:  for(ContextNode context: cnList){
 
 	public void setInterationHelper(SSBNAlgorithmInterationHelper interationHelper) {
 		this.interationHelper = interationHelper;
+	}
+	
+	private KnowledgeBase getKnowledgeBase(){
+		return this.kb; 
 	}
 	
 }

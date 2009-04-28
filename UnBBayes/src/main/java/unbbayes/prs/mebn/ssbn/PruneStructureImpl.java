@@ -1,6 +1,6 @@
 package unbbayes.prs.mebn.ssbn;
 
-public class PruneStructureImpl implements PruneStructure{
+public class PruneStructureImpl implements IPruneStructure{
 
 	//D-Separation
 	//Barren Nodes
