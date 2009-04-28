@@ -143,6 +143,42 @@ public class ResidentNodePointer {
 	}	
 	
 	/**
+	 * Return the index of a ordinary variable
+	 * @param ov
+	 * @return indice or -1 if the ov don't is an argument. 
+	 */
+	public int getOrdinaryVariableIndex(OrdinaryVariable ov){
+		
+		int result = -1; 
+		
+		for(int i= 0; i < ordinaryVariableList.length; i++){
+			if(ordinaryVariableList[i].equals(ov)){
+				result = i;
+				break; 
+			}
+		}
+		
+		return result; 
+		
+	}
+	
+	/**
+	 * Return the ordinary variable at the resident node that corresponds to 
+	 * the ordinary variable at the input node
+	 * 
+	 * @param inputNodeOV
+	 */
+	public OrdinaryVariable getCorrespondentOrdinaryVariable(OrdinaryVariable inputNodeOV){
+		
+		int index; 
+		
+		index = getOrdinaryVariableIndex(inputNodeOV); 
+		
+		return this.residentNode.getOrdinaryVariableByIndex(index); 
+		
+	}
+	
+	/**
 	 * Remove from the list of arguments all the references
 	 * for the ordinary variable.
 	 */
@@ -185,31 +221,11 @@ public class ResidentNodePointer {
 		return vetor;
 	}
 	
-	/**
-	 * 
-	 * @param ov
-	 * @return indice or -1 if the ov don't is an argument. 
-	 */
-	public int getOrdinaryVariableIndex(OrdinaryVariable ov){
-		for(int i= 0; i < ordinaryVariableList.length; i++){
-			if(ordinaryVariableList[i].equals(ov)){
-				return i; 
-			}
-		}
-		return -1; 
-	}
-	
 	public OrdinaryVariable[] getOrdinaryVariableArray(){
 		
 		return this.ordinaryVariableList; 
 		
 	}
-
-	/*
-	public void setOrdinaryVariableList(
-			Vector<OrdinaryVariable> ordinaryVariableList) {
-		this.ordinaryVariableList = ordinaryVariableList;
-	}*/
 
 	public Type getTypeOfArgument(int index){
 		return typesOfOrdinaryVariableList[index]; 
@@ -229,12 +245,7 @@ public class ResidentNodePointer {
 		
 		return vetor;
 	}
-/*
-	public void setTypesOfOrdinaryVariableList(
-			Vector<String> typesOfOrdinaryVariableList) {
-		this.typesOfOrdinaryVariableList = typesOfOrdinaryVariableList;
-	}
-*/
+
 	public void setResidentNode(ResidentNode residentNode) {
 		this.residentNode = residentNode;
 	}

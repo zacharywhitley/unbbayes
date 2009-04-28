@@ -277,21 +277,32 @@ public class OrdinaryVariable extends Node{
 	}
 	
 	/**
-	 * @see java.lang.Object#equals(java.lang.Object)
+	 * Two ordinary variables are equals if: <br>
+	 * - Have the same name <br> 
+	 * - Have the same type <br>
+	 * - Have the same MFrag <br> 
 	 */
 	@Override
 	public boolean equals(Object obj) {
 		
+		boolean result = false; 
+		
 		if (obj == this) {
-			return true;
+			result = true;
+		}else{
+			if((obj != null)&&(obj instanceof OrdinaryVariable)){
+				OrdinaryVariable node = (OrdinaryVariable) obj;
+				if(     (node.name.equals(this.name) &&
+						(node.getValueType().equals(this.getValueType()))) &&
+						(node.getMFrag().equals(this.mFrag))){
+				    
+					result = true;
+				
+				}
+			}
 		}
 		
-		if((obj != null)&&(obj instanceof OrdinaryVariable)){
-		   OrdinaryVariable node = (OrdinaryVariable) obj;
-		   return (node.name.equals(this.name));
-		}
-		
-		return false; //obj == null && this != null 
+		return result; //obj == null && this != null 
 		
 	}
 	

@@ -445,6 +445,22 @@ public class ResidentNode extends MultiEntityNode
 	}
 	
 	/**
+	 * Recover the ordinary variable in the index position, or null if the 
+	 * position don't exists. 
+	 * 
+	 * @param index Index of the ordinary variable to recover
+	 */
+	public OrdinaryVariable getOrdinaryVariableByIndex(int index){
+		
+		if((index < 0 )||(index > ordinaryVariableList.size())){
+			return null; 
+		}else{
+			return ordinaryVariableList.get(index); 
+		}
+		
+	}
+	
+	/**
 	 * @return A list with all the ordinary variables ordereables present in this node.
 	 */
 	public List<OrdinaryVariable> getOrdinaryVariablesOrdereables(){

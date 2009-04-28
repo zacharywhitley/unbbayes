@@ -62,6 +62,11 @@ public class RandomVariableFinding {
 	    rvfNumber++; 
 	}
 
+	/**
+	 * Return the arguments of the random variable finding. This arguments are 
+	 * in the same order that the expected ordinary variables at the resident node
+	 * original. 
+	 */
 	public ObjectEntityInstance[] getArguments() {
 		return arguments;
 	}
