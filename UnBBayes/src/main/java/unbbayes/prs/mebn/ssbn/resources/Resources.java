@@ -54,7 +54,6 @@ public class Resources extends ListResourceBundle {
 		{"IncompatibleNetworks","Parents and childs belong to different networks"},
 		{"RecursiveLimit","Recursivity limit has been overlapped"}, 
 		{"OrdVariableProblemLimit","For this implementation only one ord. variable search is possible"}, 
-		{"MoreThanOneContextNodeSearh","More then one context node search found for the ord. variable. This implementation treat only the trival case of one node"}, 
 		{"ContextNodeSearchDontFound","Search context node dont found"}, 
 		{"MoreThanOneOrdereableVariable","More than one ordinary variable was found for the recursive resident node. This implementation only works with one recursive variable."},
 		{"MoreThanOneContextNodeFather", "A node can not have more than one context node as father!"},
@@ -70,6 +69,7 @@ public class Resources extends ListResourceBundle {
 		
 		//ImplementationRestrictionException
 		{"OnlyOneOVInstanceForOV", "Should have only one instance for each ordinary variable."},
+		{"MoreThanOneContextNodeSearh","More then one context node search found for the ord. variable. This implementation treat only the trival case of one node"}, 
 		
 		//SSBNWarning
 		{"OVProblem", "Entities for variables ordinaries don't should be determinated"}, 

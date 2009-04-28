@@ -54,7 +54,6 @@ public class Resources_pt extends ListResourceBundle {
 		{"IncompatibleNetworks","Nós pais e filhos estão em redes diferentes"},
 		{"RecursiveLimit","Limite de recursividade atingida"}, 
 		{"OrdVariableProblemLimit","Esta implementação permite que apenas uma var. ordinária seja de busca"}, 
-		{"MoreThanOneContextNodeSearh","Mais de um nó de contexto de busca foi achado para a var. ordinária. Esta implementação trata apenas o caso de apenas um nó"},
 		{"ContextNodeSearchDontFound","Nó de contexto de busca não encontrado"}, 
 		{"MoreThanOneOrdereableVariable","Foram encontradas mais de uma variável ordinárea ordenável para o nó residente recursivo. Esta implementação trata apenas o caso trivial de uma variável recursiva."},
 		{"MoreThanOneContextNodeFather", "Um nó não pode ter dois nós de contexto pais!"},
@@ -70,6 +69,7 @@ public class Resources_pt extends ListResourceBundle {
 		
 		//ImplementationRestrictionException
 		{"OnlyOneOVInstanceForOV", "Deve haver apenas uma instância para cada variável ordinária."},
+		{"MoreThanOneContextNodeSearh", "Mais de um nó de contexto de busca foi achado para a var. ordinária. Esta implementação trata apenas o caso de apenas um nó"},
 		
 		//SSBNWarning
 		{"OVProblem", "Entidades para as variáveis ordinarias não pode ser determinadas"}, 
