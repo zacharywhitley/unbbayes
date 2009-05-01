@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import unbbayes.prs.INode;
+import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
@@ -16,7 +18,7 @@ import unbbayes.prs.mebn.entity.Entity;
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  */
-public class SimpleSSBNNode {
+public class SimpleSSBNNode implements INode {
 
 	private final ResidentNode residentNode;
 	
@@ -25,6 +27,7 @@ public class SimpleSSBNNode {
 	private boolean finished; //indicate if the node already was processed 
 	
 	private List<SimpleSSBNNode> parents; 
+	private List<INode> children; // we need to store the child nodes to test adjacency
 	private List<SimpleContextNodeFatherSSBNNode> contextParents; 
 	
 	private OrdinaryVariable                    ovArray[];       //ordinary variables for the home mfrag (The order of the resident node)
@@ -44,6 +47,7 @@ public class SimpleSSBNNode {
 		this.finished = false;
 		
 		this.parents = new ArrayList<SimpleSSBNNode>(); 
+		this.children = new ArrayList<INode>(); 
 		this.contextParents = new ArrayList<SimpleContextNodeFatherSSBNNode>(); 
 		
 		this.state = null; 
@@ -134,7 +138,12 @@ public class SimpleSSBNNode {
 	}
 
 	public void addParent(SimpleSSBNNode parent){
-		parents.add(parent); 
+		parents.add(parent);
+		try {
+			parent.addChildNode(this);
+		} catch (InvalidParentException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public MFragInstance getMFragInstance() {
@@ -225,6 +234,155 @@ public class SimpleSSBNNode {
 	
 	public Map<MFrag, OrdinaryVariable[]> getOvArrayForMFrag() {
 		return ovArrayForMFrag;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.INode#addChildNode(unbbayes.prs.INode)
+	 */
+	public void addChildNode(INode child) throws InvalidParentException {
+		if (!this.getChildNodes().contains(child)) {
+			this.getChildNodes().add(child);
+		}
+		if (!child.getParentNodes().contains(child)) {
+			child.addParentNode(this);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.INode#addParentNode(unbbayes.prs.INode)
+	 */
+	public void addParentNode(INode parent) throws InvalidParentException {
+		this.addParent((SimpleSSBNNode)parent);
+	}
+
+	/**
+	 * @deprecated do not use it
+	 */
+	public void appendState(String state) {
+		throw new java.lang.UnsupportedOperationException("appendState");
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.INode#getAdjacentNodes()
+	 */
+	public List<INode> getAdjacentNodes() {
+		List<INode> adjacents = new ArrayList<INode>();
+		adjacents.addAll(this.getParentNodes());
+		adjacents.addAll(this.getChildNodes());
+		return adjacents;
+	}
+
+	public List<INode> getChildNodes() {
+		return this.children;
+	}
+
+	public String getDescription() {
+		return this.toString();
+	}
+
+	public String getName() {
+		return this.toString();
+	}
+
+	public List<INode> getParentNodes() {
+		return (List)this.getParents();
+	}
+
+	/**
+	 * @deprecated use {@link #getState()}
+	 */
+	public String getStateAt(int index) {
+		return this.getEntityArray()[index].getInstanceName();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.INode#getStatesSize()
+	 */
+	public int getStatesSize() {
+		return this.getEntityArray().length;
+	}
+
+	/**
+	 * @deprecated
+	 * @see #getResidentNode()
+	 */
+	public int getType() {
+		return this.getResidentNode().getType();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.INode#removeChildNode(unbbayes.prs.INode)
+	 */
+	public void removeChildNode(INode child) {
+		this.children.remove(child);
+	}
+
+	/**
+	 * @deprecated
+	 */
+	public void removeLastState() {
+		throw new java.lang.UnsupportedOperationException("removeLastState");
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.INode#removeParentNode(unbbayes.prs.INode)
+	 */
+	public void removeParentNode(INode parent) {
+		this.parents.remove(parent);
+	}
+
+	/**
+	 * @deprecated
+	 */
+	public void removeStateAt(int index) {
+		throw new java.lang.UnsupportedOperationException("removeStateAt");
+	}
+
+	public void setChildNodes(List<INode> children) {
+		this.children = children;
+	}
+
+	/**
+	 * @deprecated
+	 */
+	public void setDescription(String text) {
+		throw new java.lang.UnsupportedOperationException("setDescription");
+	}
+
+	/**
+	 * @deprecated
+	 */
+	public void setName(String name) {
+		throw new java.lang.UnsupportedOperationException("setName");
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.INode#setParentNodes(java.util.List)
+	 */
+	public void setParentNodes(List<INode> parents) {
+		this.parents = (List)parents;
+	}
+
+	/**
+	 * @deprecated use {@link #setState(Entity)} or {@link #getEntityArray()}
+	 * 
+	 */
+	public void setStateAt(String state, int index) {
+		throw new java.lang.UnsupportedOperationException("setStateAt");
+	}
+
+	/**
+	 * @deprecated use {@link #setState(Entity)} or {@link #getEntityArray()}
+	 */
+	public void setStates(List<String> states) {
+		throw new java.lang.UnsupportedOperationException("setStates");
 	}
 
 	

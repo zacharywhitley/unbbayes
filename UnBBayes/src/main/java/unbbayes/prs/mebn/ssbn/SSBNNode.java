@@ -30,6 +30,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 
 import unbbayes.prs.Edge;
+import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -48,7 +49,7 @@ import unbbayes.prs.mebn.ssbn.giaalgorithm.AbstractSSBNGenerator;
  * @author Shou Matsumoto
  * @author Laecio Santos
  */
-public class SSBNNode {
+public class SSBNNode implements INode {
 	
 	private static int count = 0; 
 	private int id; 
@@ -1041,12 +1042,14 @@ public class SSBNNode {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		SSBNNode node = (SSBNNode)obj;
-		if (this.getName().equals(node.getName())) {
-			return true;
-		} else {
+		if (obj == null) {
 			return false;
 		}
+		if (obj instanceof INode) {
+			INode node = (INode) obj;
+			return this.getName().equals(node.getName());
+		}
+		return super.equals(obj);
 	}
 
 	public boolean isCptAlreadyGenerated() {
@@ -1279,6 +1282,180 @@ public class SSBNNode {
 	
 	public void changeArgumentsToResidentMFrag(){
 		arguments = argumentsResidentMFrag; 
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.INode#addChildNode(unbbayes.prs.INode)
+	 */
+	public void addChildNode(INode child) throws InvalidParentException {
+		if (!this.getChildren().contains(child)) {
+			this.getChildren().add((SSBNNode)child);
+		}
+		if (!child.getParentNodes().contains(this)) {
+			child.addParentNode(this);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.INode#addParentNode(unbbayes.prs.INode)
+	 */
+	public void addParentNode(INode parent) throws InvalidParentException {
+		if (!this.getParents().contains(parent)) {
+			this.getParents().add((SSBNNode)parent);
+		}
+		if (!parent.getChildNodes().contains(this)) {
+			parent.addChildNode(this);
+		}
+	}
+
+	/**
+	 * @deprecated use {@link #setEvaluationState(unbbayes.prs.mebn.ssbn.SSBNNode.EvaluationSSBNNodeState)}
+	 * @throws UnsupportedOperationException
+	 */
+	public void appendState(String state) {
+		throw new java.lang.UnsupportedOperationException("appendState");
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.INode#getAdjacentNodes()
+	 */
+	public List<INode> getAdjacentNodes() {
+		List<INode> adjacents = new ArrayList<INode>();
+		adjacents.addAll(this.getParentNodes());
+		adjacents.addAll(this.getChildNodes());
+		return adjacents;
+	}
+
+	/**
+	 * returns a copy of child nodes.
+	 * @deprecated use {@link #getChildren()} instead
+	 */
+	public List<INode> getChildNodes() {
+		return (List)this.getChildren();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.INode#getDescription()
+	 * 
+	 */
+	public String getDescription() {
+		return this.toString();
+	}
+
+	/**
+	 * Returns a copy of parent nodes.
+	 * @deprecated use {@link #getParents()} instead
+	 */
+	public List<INode> getParentNodes() {
+		return (List)this.getParents();
+	}
+
+	/**
+	 * Returns a state of this SSBN node.
+	 * In this class, a State is not a possible Entity value. It is a current evaluation state,
+	 * which may be one of {@link EvaluationSSBNNodeState}
+	 * @deprecated use {@link EvaluationSSBNNodeState} directly
+	 */
+	public String getStateAt(int index) {
+		return EvaluationSSBNNodeState.values()[index].name();
+	}
+
+	/**
+	 * Returns a number of states of this SSBN node.
+	 * In this class, a State is not a possible Entity value. It is a current evaluation state,
+	 * which may be one of {@link EvaluationSSBNNodeState}
+	 * @deprecated use {@link EvaluationSSBNNodeState} directly
+	 */
+	public int getStatesSize() {
+		return EvaluationSSBNNodeState.values().length;
+	}
+
+	/**
+	 * Returns an ID of this object
+	 * @deprecated use {@link #getId()} instead
+	 */
+	public int getType() {
+		return this.getId();
+	}
+
+	public void removeChildNode(INode child) {
+		this.getChildren().remove(child);
+	}
+
+	/**
+	 * @deprecated
+	 * @throws UnsupportedOperationException
+	 */
+	public void removeLastState() {
+		throw new java.lang.UnsupportedOperationException("removeLastState");
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.INode#removeParentNode(unbbayes.prs.INode)
+	 */
+	public void removeParentNode(INode parent) {
+		this.getParents().remove(parent);
+	}
+
+	/**
+	 * @deprecated
+	 * @throws UnsupportedOperationException
+	 */
+	public void removeStateAt(int index) {
+		throw new java.lang.UnsupportedOperationException("removeLastState");
+	}
+
+	/**
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.INode#setChildNodes(java.util.List)
+	 */
+	public void setChildNodes(List<INode> children) {
+		this.setChildren(new ArrayList(children));
+	}
+
+	/**
+	 * @deprecated
+	 * @throws UnsupportedOperationException
+	 */
+	public void setDescription(String text) {
+		throw new java.lang.UnsupportedOperationException("setDescription");
+	}
+
+	/**
+	 * @deprecated
+	 * @throws UnsupportedOperationException
+	 */
+	public void setName(String name) {
+		throw new java.lang.UnsupportedOperationException("setName");
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.INode#setParentNodes(java.util.List)
+	 */
+	public void setParentNodes(List<INode> parents) {
+		this.setParents(new ArrayList(parents));
+	}
+
+	/**
+	 * @deprecated
+	 * @throws UnsupportedOperationException
+	 */
+	public void setStateAt(String state, int index) {
+		throw new java.lang.UnsupportedOperationException("setStateAt");
+	}
+
+	/**
+	 * @deprecated
+	 * @throws UnsupportedOperationException
+	 */
+	public void setStates(List<String> states) {
+		throw new java.lang.UnsupportedOperationException("setStateAt");
 	}
 	
 	

@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 
 import junit.framework.TestCase;
-import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
 import unbbayes.prs.exception.InvalidParentException;
 
@@ -55,6 +54,9 @@ public class MSeparationUtilityTest extends TestCase {
 		int numberOfNodes = 6;	// how many nodes there are
 		this.nodesUnderTest = new ArrayList<INode>(numberOfNodes);
 		for (int i = 0; i < numberOfNodes; i++) {
+//			this.nodesUnderTest.add(
+//					SSBNNode.getInstance(new ResidentNode("Node" + i, new MFrag("MFrag" , new MultiEntityBayesianNetwork("MEBN"))))
+//				);
 			this.nodesUnderTest.add(new MSeparationTestNode("Node" + i));
 		}
 		

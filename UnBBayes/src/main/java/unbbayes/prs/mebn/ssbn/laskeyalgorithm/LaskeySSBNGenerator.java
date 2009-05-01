@@ -18,14 +18,14 @@ import unbbayes.prs.mebn.ssbn.BuilderStructureImpl;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
-import unbbayes.prs.mebn.ssbn.IPruneStructure;
-import unbbayes.prs.mebn.ssbn.PruneStructureImpl;
 import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBN;
 import unbbayes.prs.mebn.ssbn.SimpleSSBNNode;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
+import unbbayes.prs.mebn.ssbn.pruner.IPruneStructure;
+import unbbayes.prs.mebn.ssbn.pruner.impl.PruneStructureImpl;
 
 /**
  * Implementation of the Laskey's SSBN Algorithm
@@ -45,7 +45,7 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 	
 	public LaskeySSBNGenerator(){
 		setBuilderStructure(new BuilderStructureImpl()); 
-		setPruneStructure(new PruneStructureImpl()); 
+		setPruneStructure(PruneStructureImpl.newInstance()); 
 	}
 	
 	//Use Strategy

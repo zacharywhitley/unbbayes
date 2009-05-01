@@ -65,7 +65,7 @@ public class ContextNodeAvaliatorTest extends TestCase{
 //		kb.loadModule(new File(FILE_GENERATIVE), false); 
 		kb.loadModule(new File(FILE_INPUT), true); 
 		
-		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(kb); 
+		ContextNodeEvaluator evaluator = new ContextNodeEvaluator(kb); 
 		
 		MFrag mFrag = mebn.getMFragByName("DangerToSelf_MFrag");
 
@@ -163,9 +163,9 @@ public class ContextNodeAvaliatorTest extends TestCase{
 		}
 		ovList.addAll(ordVariableList); 
 		
-		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(kb); 
+		ContextNodeEvaluator evaluator = new ContextNodeEvaluator(kb); 
 		
-		evaluateContextNodes(mFrag, ovInstanceList, ordVariableList, avaliator, kb);
+		evaluateContextNodes(mFrag, ovInstanceList, ordVariableList, evaluator, kb);
 	}	
     
 
@@ -180,7 +180,7 @@ public class ContextNodeAvaliatorTest extends TestCase{
 	 * @param ordVariableList
 	 */
 	public static void evaluateContextNodes(MFrag mFrag, List<OVInstance> ovInstanceList, List<OrdinaryVariable> ordVariableList, 
-			ContextNodeAvaliator avaliator, KnowledgeBase kb){
+			ContextNodeEvaluator avaliator, KnowledgeBase kb){
 		
 		Debug.setDebug(true); 
 		

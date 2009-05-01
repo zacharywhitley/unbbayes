@@ -33,7 +33,7 @@ import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
-import unbbayes.prs.mebn.ssbn.ContextNodeAvaliator;
+import unbbayes.prs.mebn.ssbn.ContextNodeEvaluator;
 import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
@@ -62,7 +62,7 @@ public class KBTest  extends TestCase {
 	
 	private KnowledgeBase kb; 
 	private MultiEntityBayesianNetwork mebn; 
-	private ContextNodeAvaliator avaliator; 
+	private ContextNodeEvaluator avaliator; 
 	
 	/* (non-Javadoc)
 	 * @see junit.framework.TestCase#setUp()
@@ -103,7 +103,7 @@ public class KBTest  extends TestCase {
 		}
 		
 			
-		avaliator = new ContextNodeAvaliator(kb); 
+		avaliator = new ContextNodeEvaluator(kb); 
 		
 	}
 	
