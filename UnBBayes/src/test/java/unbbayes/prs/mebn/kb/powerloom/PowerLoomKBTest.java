@@ -21,15 +21,22 @@
 package unbbayes.prs.mebn.kb.powerloom;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
+import java.util.ResourceBundle;
+import java.util.Set;
 
 import junit.framework.TestCase;
 import unbbayes.io.mebn.UbfIO;
+import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.RandomVariableFinding;
-import unbbayes.prs.mebn.ResidentNode;
-import unbbayes.util.Debug;
+import unbbayes.prs.mebn.OrdinaryVariable;
+import unbbayes.prs.mebn.entity.Type;
+import unbbayes.prs.mebn.kb.KnowledgeBase;
+import unbbayes.prs.mebn.kb.SearchResult;
+import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
+import unbbayes.prs.mebn.ssbn.OVInstance;
 
 /**
  * @author user
@@ -38,6 +45,10 @@ import unbbayes.util.Debug;
 public class PowerLoomKBTest extends TestCase {
 
 	private PowerLoomKB kb = null;
+	private MultiEntityBayesianNetwork mebn = null; 
+	
+	private ResourceBundle resourceFiles = 
+		ResourceBundle.getBundle("unbbayes.prs.mebn.resources.ResourceFiles");
 	
 	/**
 	 * @param arg0
@@ -51,41 +62,183 @@ public class PowerLoomKBTest extends TestCase {
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
-		Debug.setDebug(true);
-		kb = PowerLoomKB.getNewInstanceKB();
-		kb.loadModule(new File("src/test/resources/testCases/mebn/knowledgeBase/KnowledgeBaseWithStarshipZoneST4ver2.plm"), true);
+		
+		System.out.println("SetUp");
+		mebn = loadStarTrekOntologyExample(); 
+		
+		kb = PowerLoomKB.getNewInstanceKB(); 
+		kb.createGenerativeKnowledgeBase(mebn); 
+		
+		loadFindingsSet(kb, resourceFiles.getString("StarTrekKB_Situation1")); 
+	
+		System.out.println("SetUp End");
+		
+//		kb.loadModule(new File("src/test/resources/testCases/mebn/knowledgeBase/KnowledgeBaseWithStarshipZoneST4ver2.plm"), true);
 	}
+	
 
 	/* (non-Javadoc)
 	 * @see junit.framework.TestCase#tearDown()
 	 */
 	protected void tearDown() throws Exception {
 		super.tearDown();
-		Debug.setDebug(false);
+//		Debug.setDebug(false);
 	}
 
+	public void testEvaluateSearchContextNodeFormula(){
+		
+		Type type; 
+		MFrag mFrag; 
+		LiteralEntityInstance literalEntityInstance; 
+		OrdinaryVariable ov;
+		OVInstance ovInstance;
+		List<OVInstance> ovInstanceList; 
+		ContextNode contextNode; 
+		
+		SearchResult result; 
+		Set<OrdinaryVariable> ovFaultSet; 
+		
+		/*
+		 * Case 1: 
+		 * z = StarshipZone(ST4)
+		 */
+		
+		ovInstanceList  = new ArrayList<OVInstance>(); 
+		type = mebn.getTypeContainer().getType("Starship_label"); 
+		literalEntityInstance = LiteralEntityInstance.getInstance("ST4", type); 
+		
+		mFrag = mebn.getMFragByName("Starship_MFrag"); 
+		
+		ov = new OrdinaryVariable("st", type, mFrag); 
+		ovInstance = OVInstance.getInstance(ov, literalEntityInstance); 
+		ovInstanceList.add(ovInstance); 
+		
+		contextNode = mFrag.getContextNodeByName("CX11");
+		
+		result = 
+			kb.evaluateSearchContextNodeFormula(contextNode, ovInstanceList); 
+		
+		System.out.println("\n------Result: --------\n");
+		for(OrdinaryVariable ovFault: result.getOrdinaryVariableSequence()){
+			System.out.print(ovFault.getName() + " ");
+		}
+		System.out.println();
+		for(String[] lineM: result.getValuesResultList()){
+		    System.out.print("[");
+		    for(String columnN: lineM){
+		       System.out.print(columnN + " ");
+		    }
+		    System.out.print("]\n");
+		}
+		
+		
+		/*
+		 * Case 2: 
+		 * z = StarshipZone(st)
+		 */
+		
+		ovInstanceList  = new ArrayList<OVInstance>(); 
+		
+		mFrag = mebn.getMFragByName("Starship_MFrag"); 
+		
+		contextNode = mFrag.getContextNodeByName("CX11");
+		
+		result = 
+			kb.evaluateSearchContextNodeFormula(contextNode, ovInstanceList); 
+		
+		System.out.println("\n------Result: --------\n");
+		for(OrdinaryVariable ovFault: result.getOrdinaryVariableSequence()){
+			System.out.print(ovFault.getName());
+		}
+		System.out.println();
+		for(String[] lineM: result.getValuesResultList()){
+		    System.out.print("[");
+		    for(String columnN: lineM){
+		       System.out.print(columnN + " ");
+		    }
+		    System.out.print("]\n");
+		}
+		
+		/*
+		 * Case 3: 
+		 * Z1 = StarshipZone(ST4)
+		 */
+		
+		ovInstanceList  = new ArrayList<OVInstance>(); 
+
+		type = mebn.getTypeContainer().getType("Starship_label"); 
+		literalEntityInstance = LiteralEntityInstance.getInstance("ST4", type); 
+		
+		mFrag = mebn.getMFragByName("Starship_MFrag"); 
+		
+		ov = new OrdinaryVariable("st", type, mFrag); 
+		ovInstance = OVInstance.getInstance(ov, literalEntityInstance); 
+		ovInstanceList.add(ovInstance); 
+		
+		type = mebn.getTypeContainer().getType("Zone_label"); 
+		literalEntityInstance = LiteralEntityInstance.getInstance("Z1", type); 
+		
+		mFrag = mebn.getMFragByName("Starship_MFrag"); 
+		
+		ov = new OrdinaryVariable("z", type, mFrag); 
+		ovInstance = OVInstance.getInstance(ov, literalEntityInstance); 
+		ovInstanceList.add(ovInstance);
+		
+		contextNode = mFrag.getContextNodeByName("CX11");
+		
+		result = kb.evaluateSearchContextNodeFormula(contextNode, ovInstanceList); 
+		
+		assertEquals(result, null); 
+		
+	}
+	
+	
+	
+	private void loadFindingsSet(KnowledgeBase kb, String nameOfFile) {
+		try {
+			kb.loadModule(new File(nameOfFile), true);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(); 
+		}
+	}	
+	
+	private MultiEntityBayesianNetwork loadStarTrekOntologyExample() {
+		UbfIO io = UbfIO.getInstance(); 
+		MultiEntityBayesianNetwork mebn = null; 
+		
+		try {
+			mebn = io.loadMebn(new File(resourceFiles.getString("UnBBayesUBF")));
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(); 
+		}
+		return mebn;
+	}
+	
+	
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.kb.powerloom.PowerLoomKB#executeCommand(java.lang.String)}.
 	 */
-	public void testExecuteCommand() {
-		String result = kb.executeCommand(" ( retrieve all ( = ( STARSHIPZONE ?x1  ) ?x ) ) ");
-		assertNotNull(result);
-		System.out.println(result);		
-		result = kb.executeCommand(" ( retrieve all (   ISOWNSTARSHIP ?x11 ) ) ");
-		assertNotNull(result);
-		System.out.println(result);
-		result = kb.executeCommand(" ( retrieve all ( not ( ISOWNSTARSHIP ?x21 ) ) ) ");
-		assertNotNull(result);
-		System.out.println(result);	
-		try{
-			result = kb.executeCommand(" ( retrieve all  ( ITEXISTS ?x666 ) ) ");
-		} catch (Exception e){
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		assertNotNull(result);
-		System.out.println(result);	
-	}
+//	public void testExecuteCommand() {
+//		String result = kb.executeCommand(" ( retrieve all ( = ( STARSHIPZONE ?x1  ) ?x ) ) ");
+//		assertNotNull(result);
+//		System.out.println(result);		
+//		result = kb.executeCommand(" ( retrieve all (   ISOWNSTARSHIP ?x11 ) ) ");
+//		assertNotNull(result);
+//		System.out.println(result);
+//		result = kb.executeCommand(" ( retrieve all ( not ( ISOWNSTARSHIP ?x21 ) ) ) ");
+//		assertNotNull(result);
+//		System.out.println(result);	
+//		try{
+//			result = kb.executeCommand(" ( retrieve all  ( ITEXISTS ?x666 ) ) ");
+//		} catch (Exception e){
+//			e.printStackTrace();
+//			fail(e.getMessage());
+//		}
+//		assertNotNull(result);
+//		System.out.println(result);	
+//	}
 
 
 	/**

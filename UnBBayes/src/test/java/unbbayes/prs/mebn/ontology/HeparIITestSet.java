@@ -514,7 +514,7 @@ public class HeparIITestSet  extends TestSet{
 
 	}
 	
-	private void executeTestCase25(){
+	public void executeTestCase25(){
 		
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
@@ -532,7 +532,7 @@ public class HeparIITestSet  extends TestSet{
 
 	}
 	
-	private void executeTestCase26(){
+	public void executeTestCase26(){
 		
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
@@ -552,7 +552,7 @@ public class HeparIITestSet  extends TestSet{
 	}
 	
 	
-	private void executeTestCase27(){
+	public void executeTestCase27(){
 		
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
@@ -573,7 +573,7 @@ public class HeparIITestSet  extends TestSet{
 	}
 	
 	
-	private void executeTestCase28(){
+	public SSBN executeTestCase28(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createFinding(RV_AST + "_MFrag", RV_AST, "a700_400"), 
@@ -583,15 +583,17 @@ public class HeparIITestSet  extends TestSet{
 					createFinding(RV_INR + "_MFrag", RV_INR, "a200_110")
 			}; 
 
-			executeTestCase(28, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
+			return executeTestCase(28, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
 			logManager.appendln(e.toString()); 
 		}
+		
+		return null; 
 	}
 	
-	private void executeTestCase29(){
+	public void executeTestCase29(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createFinding(RV_INR + "_MFrag", RV_INR, "a200_110")
@@ -605,7 +607,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}
 	
-	private void executeTestCase30(){
+	public void executeTestCase30(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_HaemorrhagieDiathesis + "_MFrag", RV_HaemorrhagieDiathesis, true)
@@ -619,7 +621,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}
 	
-	private void executeTestCase31(){
+	public void executeTestCase31(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createFinding(RV_TotalBilirubin + "_MFrag", RV_TotalBilirubin, "a88_20")
@@ -633,7 +635,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}
 	
-	private void executeTestCase32(){
+	public void executeTestCase32(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_Yellowingoftheskin + "_MFrag", RV_Yellowingoftheskin, true)
@@ -647,7 +649,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}
 	
-	private void executeTestCase33(){
+	public void executeTestCase33(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_Itching + "_MFrag", RV_Itching, true)
@@ -661,7 +663,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}
 	
-	private void executeTestCase34(){
+	public void executeTestCase34(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_Jaundice + "_MFrag", RV_Jaundice, true)
@@ -675,7 +677,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}
 	
-	private void executeTestCase35(){
+	public void executeTestCase35(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createFinding(RV_TotalBilirubin + "_MFrag", RV_TotalBilirubin, "a88_20"),
@@ -690,7 +692,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}
 	
-	private void executeTestCase36(){
+	public void executeTestCase36(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_Yellowingoftheskin + "_MFrag", RV_Yellowingoftheskin, true),
@@ -705,7 +707,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}
 	
-	private void executeTestCase37(){
+	public void executeTestCase37(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_Yellowingoftheskin + "_MFrag", RV_Yellowingoftheskin, true),
@@ -722,7 +724,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}
 	
-	private void executeTestCase38(){
+	public void executeTestCase38(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createFinding(RV_PlateletCount + "_MFrag", RV_PlateletCount, "a597_300")
@@ -736,7 +738,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}
 
-	private void executeTestCase39(){
+	public void executeTestCase39(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_HaemorrhagieDiathesis + "_MFrag", RV_HaemorrhagieDiathesis, true)
@@ -750,7 +752,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}
 
-	private void executeTestCase40(){
+	public void executeTestCase40(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createFinding(RV_TotalBilirubin + "_MFrag", RV_TotalBilirubin, "a8820")
@@ -765,7 +767,7 @@ public class HeparIITestSet  extends TestSet{
 	}
 	
 
-	private void executeTestCase41(){
+	public void executeTestCase41(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_Yellowingoftheskin + "_MFrag", RV_Yellowingoftheskin, true)
@@ -779,7 +781,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}
 	
-	private void executeTestCase42(){
+	public void executeTestCase42(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_Itching + "_MFrag", RV_Itching, true)
@@ -793,7 +795,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}
 	
-	private void executeTestCase43(){
+	public void executeTestCase43(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_Jaundice + "_MFrag", RV_Jaundice, true)
@@ -808,7 +810,7 @@ public class HeparIITestSet  extends TestSet{
 	}
 	
 	
-	private void executeTestCase44(){
+	public void executeTestCase44(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_HepaticEncephalopathy + "_MFrag", RV_HepaticEncephalopathy, true)
@@ -823,7 +825,7 @@ public class HeparIITestSet  extends TestSet{
 	}
 	
 	
-	private void executeTestCase45(){
+	public void executeTestCase45(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createFinding(RV_BloodUrea + "_MFrag", RV_BloodUrea, "a165_50")
@@ -838,7 +840,7 @@ public class HeparIITestSet  extends TestSet{
 	}
 	
 	
-	private void executeTestCase46(){
+	public void executeTestCase46(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_IncreasedLiverDensity + "_MFrag", RV_IncreasedLiverDensity, true)
@@ -853,7 +855,7 @@ public class HeparIITestSet  extends TestSet{
 	}
 	
 	
-	private void executeTestCase47(){
+	public void executeTestCase47(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_ImpairedConsciousness + "_MFrag", RV_ImpairedConsciousness, true)
@@ -868,7 +870,7 @@ public class HeparIITestSet  extends TestSet{
 	}
 	
 	
-	private void executeTestCase48(){
+	public void executeTestCase48(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_MusculoSkeletalPain + "_MFrag", RV_MusculoSkeletalPain, true)
@@ -883,7 +885,7 @@ public class HeparIITestSet  extends TestSet{
 	}
 	
 	
-	private void executeTestCase49(){
+	public void executeTestCase49(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_JointsSwelling + "_MFrag", RV_JointsSwelling, true)
@@ -898,7 +900,7 @@ public class HeparIITestSet  extends TestSet{
 	}
 	
 	
-	private void executeTestCase50(){
+	public void executeTestCase50(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createFinding(RV_INR + "_MFrag", RV_INR, "a200_110"), 
@@ -914,7 +916,7 @@ public class HeparIITestSet  extends TestSet{
 	}
 	
 	
-	private void executeTestCase51(){
+	public void executeTestCase51(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createFinding(RV_INR + "_MFrag", RV_INR, "a200_110"), 
@@ -931,7 +933,7 @@ public class HeparIITestSet  extends TestSet{
 	}
 	
 	
-	private void executeTestCase52(){
+	public void executeTestCase52(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createFinding(RV_INR + "_MFrag", RV_INR, "a200_110"), 
@@ -949,7 +951,7 @@ public class HeparIITestSet  extends TestSet{
 	}
 	
 	
-	private void executeTestCase53(){
+	public void executeTestCase53(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createFinding(RV_INR + "_MFrag", RV_INR, "a200_110"), 
@@ -970,7 +972,7 @@ public class HeparIITestSet  extends TestSet{
 	}
 	
 	
-	private void executeTestCase54(){
+	public void executeTestCase54(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createFinding(RV_INR + "_MFrag", RV_INR, "a200_110"), 
@@ -989,7 +991,7 @@ public class HeparIITestSet  extends TestSet{
 	}
 	
 	
-	private void executeTestCase55(){
+	public void executeTestCase55(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createFinding(RV_INR + "_MFrag", RV_INR, "a200_110"), 
@@ -1008,7 +1010,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}
 	
-	private void executeTestCase56(){
+	public void executeTestCase56(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_ToxicHepatitis + "_MFrag", RV_ToxicHepatitis, true) 
@@ -1023,7 +1025,7 @@ public class HeparIITestSet  extends TestSet{
 	}
 	
 	
-	private void executeTestCase57(){
+	public void executeTestCase57(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_FunctionalHyperbilirubinemia + "_MFrag", RV_FunctionalHyperbilirubinemia, true) 
@@ -1038,7 +1040,7 @@ public class HeparIITestSet  extends TestSet{
 	}
 	
 	
-	private void executeTestCase58(){
+	public void executeTestCase58(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_HistoryAlcAbuse_MFrag, RV_HistoryAlcAbuse, true) 
@@ -1052,7 +1054,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}
 	
-	private void executeTestCase59(){
+	public void executeTestCase59(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_HepatoxicMeds_MFrag, RV_HepatoxicMeds, true) 
@@ -1067,7 +1069,7 @@ public class HeparIITestSet  extends TestSet{
 	}
 	
 	
-	private void executeTestCase60(){
+	public void executeTestCase60(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true) 
@@ -1082,7 +1084,7 @@ public class HeparIITestSet  extends TestSet{
 	}
 	
 	
-	private void executeTestCase61(){
+	public void executeTestCase61(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createFinding(RV_AGE + "_MFrag", RV_AGE, "age65_100") 
@@ -1096,7 +1098,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}
 	
-	private void executeTestCase62(){
+	public void executeTestCase62(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_ToxicHepatitis + "_MFrag", RV_ToxicHepatitis, true), 
@@ -1111,7 +1113,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}
 	
-	private void executeTestCase63(){
+	public SSBN executeTestCase63(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_HistoryAlcAbuse_MFrag, RV_HistoryAlcAbuse, true), 
@@ -1119,15 +1121,17 @@ public class HeparIITestSet  extends TestSet{
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
-			executeTestCase(63, RV_INR,  RV_INR + "_MFrag", findings); 
+			return executeTestCase(63, RV_INR,  RV_INR + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
 			logManager.appendln(e.toString()); 
 		}
+		
+		return null; 
 	}
 	
-	private void executeTestCase64(){
+	public void executeTestCase64(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_HistoryAlcAbuse_MFrag, RV_HistoryAlcAbuse, true), 
@@ -1145,7 +1149,7 @@ public class HeparIITestSet  extends TestSet{
 	}
 	
 	
-	private void executeTestCase65(){
+	public void executeTestCase65(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_ToxicHepatitis + "_MFrag", RV_ToxicHepatitis, true), 
@@ -1161,7 +1165,7 @@ public class HeparIITestSet  extends TestSet{
 	}
 	
 	
-	private void executeTestCase66(){
+	public void executeTestCase66(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_ToxicHepatitis + "_MFrag", RV_ToxicHepatitis, true), 
@@ -1177,7 +1181,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}	
 	
-	private void executeTestCase67(){
+	public void executeTestCase67(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_FunctionalHyperbilirubinemia + "_MFrag", RV_FunctionalHyperbilirubinemia, true)					}; 
@@ -1190,7 +1194,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}
 	
-	private void executeTestCase68(){
+	public void executeTestCase68(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_PBC + "_MFrag", RV_PBC, true)					}; 
@@ -1203,7 +1207,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}
 
-	private void executeTestCase69(){
+	public void executeTestCase69(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)					}; 
@@ -1216,7 +1220,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}
 
-	private void executeTestCase70(){
+	public void executeTestCase70(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createFinding(RV_AGE + "_MFrag", RV_AGE, "age65_100")					}; 
@@ -1229,7 +1233,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}
 	
-	private void executeTestCase71(){
+	public void executeTestCase71(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_FunctionalHyperbilirubinemia + "_MFrag", RV_FunctionalHyperbilirubinemia, true)					}; 
@@ -1242,7 +1246,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}	
 	
-	private void executeTestCase72(){
+	public void executeTestCase72(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_FunctionalHyperbilirubinemia + "_MFrag", RV_FunctionalHyperbilirubinemia, true), 
@@ -1258,7 +1262,7 @@ public class HeparIITestSet  extends TestSet{
 	}
 	
 	
-	private void executeTestCase73(){
+	public void executeTestCase73(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_PBC + "_MFrag", RV_PBC, true), 
@@ -1273,7 +1277,7 @@ public class HeparIITestSet  extends TestSet{
 		}
 	}
 	
-	private void executeTestCase74(){
+	public void executeTestCase74(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
 					createBooleanFinding(RV_PBC + "_MFrag", RV_PBC, true), 

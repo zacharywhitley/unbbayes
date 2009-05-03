@@ -84,17 +84,11 @@ public class AbstractSSBNGeneratorTest extends TestCase{
 	
 	private static KnowledgeBase createGenerativeKnowledgeBase(
 			MultiEntityBayesianNetwork mebn) {
+		
 		KnowledgeBase kb = PowerLoomKB.getNewInstanceKB(); 
-		for(ObjectEntity entity: mebn.getObjectEntityContainer().getListEntity()){
-			kb.createEntityDefinition(entity);
-		}
-
-		for(MFrag mfrag: mebn.getDomainMFragList()){
-			for(ResidentNode resident: mfrag.getResidentNodeList()){
-				kb.createRandomVariableDefinition(resident);
-			}
-		}
+		kb.createGenerativeKnowledgeBase(mebn); 
 		return kb;
+		
 	}
 	
 	private static void loadFindingModule(KnowledgeBase kb) {
