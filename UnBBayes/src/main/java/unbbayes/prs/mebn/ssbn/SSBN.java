@@ -104,13 +104,20 @@ public class SSBN {
 	 */
 	public SimpleSSBNNode addSSBNNodeIfItDontAdded(SimpleSSBNNode ssbnNode){
 		
+		SimpleSSBNNode alreadyExistentNode = null; 
+		
 		for(SimpleSSBNNode n: ssbnNodeList){
 			if(n.equals(ssbnNode)){
-				return n; 
+				alreadyExistentNode = n;  
 			}
 		}
 		
-		return null; 
+		if(alreadyExistentNode==null){
+			alreadyExistentNode = ssbnNode; 
+			this.ssbnNodeList.add(ssbnNode); 
+		}
+		
+		return alreadyExistentNode; 
 	}
 	
 	

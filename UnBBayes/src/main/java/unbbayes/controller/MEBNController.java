@@ -89,6 +89,7 @@ import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.prs.mebn.ssbn.giaalgorithm.ExplosiveSSBNGenerator;
+import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeyAlgorithmParameters;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSBNGenerator;
 import unbbayes.prs.mebn.ssbn.util.PositionAdjustmentUtils;
 import unbbayes.util.Debug;
@@ -1734,7 +1735,13 @@ public class MEBNController  {
 		
 	    createKnowledgeBase(); 	
 		
-		ISSBNGenerator ssbngenerator = new LaskeySSBNGenerator();
+		LaskeyAlgorithmParameters parameters = new LaskeyAlgorithmParameters(); 
+		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION, "true");
+		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_BUILDER, "true"); 
+		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_PRUNE, "false"); 
+		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION, "true"); 
+	    
+		ISSBNGenerator ssbngenerator = new LaskeySSBNGenerator(parameters);
 		
 		ssbn = ssbngenerator.generateSSBN(listQueries, getKnowledgeBase()); 
 		

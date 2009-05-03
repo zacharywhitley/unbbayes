@@ -3,7 +3,6 @@ package unbbayes.prs.mebn.ssbn.laskeyalgorithm;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.io.LogManager;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -13,11 +12,12 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
-import unbbayes.prs.mebn.ssbn.IBuilderStructure;
 import unbbayes.prs.mebn.ssbn.BuilderStructureImpl;
+import unbbayes.prs.mebn.ssbn.IBuilderStructure;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
+import unbbayes.prs.mebn.ssbn.Parameters;
 import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBN;
 import unbbayes.prs.mebn.ssbn.SimpleSSBNNode;
@@ -40,10 +40,13 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 	private MultiEntityBayesianNetwork mebn; 
 	private SSBN ssbn; 
 	
+	private Parameters parameters; 
+	
 	private IBuilderStructure builderStructure; 
 	private IPruneStructure pruneStructure; 
 	
-	public LaskeySSBNGenerator(){
+	public LaskeySSBNGenerator(LaskeyAlgorithmParameters _parameters){
+		parameters = _parameters; 
 		setBuilderStructure(new BuilderStructureImpl()); 
 		setPruneStructure(PruneStructureImpl.newInstance()); 
 	}
@@ -63,18 +66,26 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		}
 		
 		//Step 1: 
-		initialization(queryList, knowledgeBase); 
 		
-		System.out.println("Nodes found = " + ssbn.getSsbnNodeList().size());
+		if(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION).equals("true")){
+			initialization(queryList, knowledgeBase); 
+			System.out.println("Nodes found = " + ssbn.getSsbnNodeList().size());
+		}
 		
 		//Step 2: 
-		buildStructure(); 
+		if(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_BUILDER).equals("true")){
+			buildStructure(); 
+		}
 		
 		//Step 3: 
-		pruneStruture(); 
+		if(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_PRUNE).equals("true")){
+			pruneStruture(); 
+		}
 		
 		//Step 4: 
-		buildLocalDistribution(); 
+		if(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION).equals("true")){
+			buildLocalDistribution();
+		}
 		
 		return ssbn;
 	}
@@ -103,9 +114,9 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 				ssbnNode.setEntityForOv(argument.getOv(), argument.getEntity()); 	
 			}
 			
-			ssbn.addSSBNNodeIfItDontAdded(ssbnNode); 
-			
 			ssbnNode.setFinished(false); 
+			ssbn.addSSBNNodeIfItDontAdded(ssbnNode);
+			
 			System.out.println("    -> " + ssbnNode);
 		}
 		
@@ -114,7 +125,7 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		for(MFrag mFrag: mebn.getMFragList()){
 			for(ResidentNode residentNode: mFrag.getResidentNodeList()){
 				for(RandomVariableFinding finding: residentNode.getRandomVariableFindingList()){
-					
+					System.out.println("Finding: " + finding);
 					ObjectEntityInstance arguments[] = finding.getArguments(); 
 					List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
 					for(int i = 0; i < arguments.length ; i++){
@@ -131,6 +142,8 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 					
 					ssbnNode.setState(finding.getState()); 
 					ssbnNode.setFinished(false); 
+
+					ssbn.addSSBNNodeIfItDontAdded(ssbnNode); 
 					
 				}
 			}

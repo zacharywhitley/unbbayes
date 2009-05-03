@@ -36,11 +36,16 @@ public class EntityTree{
 	}
 	
 	/**
+	 * Update the tree of evaluation of the context nodes of a MFrag with the new 
+	 * result. 
 	 * 
 	 * @param ovArray               Sequence of the ordinary variables of the context node
 	 * @param entityValuesArray     Sequence of possible evaluations for the OV set. 
 	 * 
-	 * @throws MFragContextFailException 
+	 * @throws MFragContextFailException throw if the new results added to the tree
+	 *                                   don't are possible against the previous 
+	 *                                   result. The context node set of the mfrag
+	 *                                   fail (don't is consistent). 
 	 */
 	public void updateTreeForNewInformation(OrdinaryVariable ovArray[], List<String[]> entityValuesArray) 
          	throws MFragContextFailException{
@@ -55,7 +60,6 @@ public class EntityTree{
 		//1.2) OV is in the new evaluation: delete all paths with not value among the new values
 		
 		//2) Add OV that don't is still in the tree
-		
 		
 		//walk in each path
 		for(EntityNode lastNodeOfAPath: getNodesOfLastLevel()){
@@ -108,19 +112,27 @@ public class EntityTree{
 			
 			if(resultToBeUsed.size() == 0){ //This don't is a valid way!!! 
 				destroyPath(lastNodeOfAPath); 
-			}
-			
-			for(String[] result: resultToBeUsed){
-				EntityNode parentNode = lastNodeOfAPath; 
-				for(int index = 0; index < ovArray.length; index++){
-					if(entitiesForOrdinaryVariables[index] == null){
-						EntityNode newNode = new EntityNode(result[index], ovArray[index], parentNode); 
-						parentNode.addChildren(newNode); 
-						parentNode = newNode; 
-					}	
+			}else{
+				//Add the new ordinary variables and its evaluatin to the path
+				for(String[] result: resultToBeUsed){
+					EntityNode parentNode = lastNodeOfAPath; 
+					for(int index = 0; index < ovArray.length; index++){
+						if(entitiesForOrdinaryVariables[index] == null){
+							EntityNode newNode = new EntityNode(result[index], ovArray[index], parentNode); 
+							parentNode.addChildren(newNode); 
+							parentNode = newNode; 
+						}	
+					}
 				}
 			}
 		}
+		
+		//Verify if the tree was destroyed with the new informations: 
+		//The evaluation is false... 
+		if(isTreeEmpty()){
+			throw new MFragContextFailException(); 
+		}
+		
 	}	
 	
 	/**
@@ -153,9 +165,9 @@ public class EntityTree{
 			String[] tempEntityArray = new String[ovSearchArray.length]; 
 			
 			//Node for node... 
-			while(nodeOfPath != null){
+			while(nodeOfPath.getOv() == null){ //the root
 				
-				for(int index = 0; index <= knownOVArray.length; index++){
+				for(int index = 0; index < knownOVArray.length; index++){
 					if(nodeOfPath.getOv().equals(knownOVArray[index])){
 						if(nodeOfPath.getEntityName().equals(knownEntityArray[index])){
 							ovFoundQuant++; 
@@ -171,7 +183,7 @@ public class EntityTree{
 				
 				}else{
 		
-					for(int index = 0; index <= ovSearchArray.length; index++){
+					for(int index = 0; index < ovSearchArray.length; index++){
 						if(nodeOfPath.getOv().equals(ovSearchArray[index])){
 							tempEntityArray[index] = nodeOfPath.getEntityName(); 
 						}
@@ -237,6 +249,16 @@ public class EntityTree{
 		
 		//then we recover all the nodes that have its same ordinary variable
 		return getNodesOfLevel(node.getOv()); 
+	}
+	
+	private boolean isTreeEmpty(){
+	
+		if(root.getChildren().size()==0){
+			return true; 
+		}else{
+			return false; 
+		}
+		
 	}
 	
 	/**
