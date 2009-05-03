@@ -137,15 +137,6 @@ public class SimpleSSBNNode implements INode {
 		return parents;
 	}
 
-	public void addParent(SimpleSSBNNode parent){
-		parents.add(parent);
-		try {
-			parent.addChildNode(this);
-		} catch (InvalidParentException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
 	public MFragInstance getMFragInstance() {
 		return mFragInstance;
 	}
@@ -244,8 +235,8 @@ public class SimpleSSBNNode implements INode {
 		if (!this.getChildNodes().contains(child)) {
 			this.getChildNodes().add(child);
 		}
-		if (!child.getParentNodes().contains(child)) {
-			child.addParentNode(this);
+		if (!child.getParentNodes().contains(this)) {
+			child.getParentNodes().add(this); 
 		}
 	}
 
@@ -257,6 +248,18 @@ public class SimpleSSBNNode implements INode {
 		this.addParent((SimpleSSBNNode)parent);
 	}
 
+	public void addParent(SimpleSSBNNode parent){
+		
+		if (!this.getParentNodes().contains(parent)) {
+			this.getParentNodes().add(parent);
+		}
+		
+		if (!parent.getChildNodes().contains(this)) {
+			parent.getChildNodes().add(this);
+		}
+		
+	}
+	
 	/**
 	 * @deprecated do not use it
 	 */
