@@ -112,7 +112,7 @@ public class SSBN {
 			}
 		}
 		
-		if(alreadyExistentNode==null){
+		if(alreadyExistentNode == null){
 			alreadyExistentNode = ssbnNode; 
 			this.ssbnNodeList.add(ssbnNode); 
 		}

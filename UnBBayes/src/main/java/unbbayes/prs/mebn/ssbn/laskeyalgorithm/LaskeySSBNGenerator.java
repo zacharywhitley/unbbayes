@@ -46,9 +46,12 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 	private IPruneStructure pruneStructure; 
 	
 	public LaskeySSBNGenerator(LaskeyAlgorithmParameters _parameters){
+		
 		parameters = _parameters; 
-		setBuilderStructure(new BuilderStructureImpl()); 
+		
+		setBuilderStructure(BuilderStructureImpl.newInstance()); 
 		setPruneStructure(PruneStructureImpl.newInstance()); 
+	
 	}
 	
 	//Use Strategy

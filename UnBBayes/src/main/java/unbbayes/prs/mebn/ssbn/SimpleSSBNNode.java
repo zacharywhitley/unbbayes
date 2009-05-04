@@ -20,6 +20,9 @@ import unbbayes.prs.mebn.entity.Entity;
  */
 public class SimpleSSBNNode implements INode {
 
+	private static int ssbnNodeCount = 0; 
+	private int id; 
+	
 	private final ResidentNode residentNode;
 	
 	private MFragInstance mFragInstance;
@@ -41,6 +44,9 @@ public class SimpleSSBNNode implements INode {
 	
 	
 	private SimpleSSBNNode(ResidentNode residentNode){
+		
+		id = this.ssbnNodeCount; 
+		this.ssbnNodeCount++; 
 		
 		this.residentNode = residentNode; 
 		
@@ -115,6 +121,8 @@ public class SimpleSSBNNode implements INode {
 		if(state != null){
 			ret+= "=" + state.getName() + " [F] ";
 		}
+		
+		ret+="[" + id + "]"; 
 
 		return ret;  
 	}

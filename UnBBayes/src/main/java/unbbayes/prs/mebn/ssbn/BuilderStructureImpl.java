@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -35,8 +36,18 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	
 	private boolean internalDebug = false; 
 	
-	public BuilderStructureImpl(){
+	private BuilderStructureImpl(){
 		
+	}
+	
+	public static BuilderStructureImpl newInstance(){
+		return new BuilderStructureImpl(); 
+	}
+	
+	public static BuilderStructureImpl newInstance(KnowledgeBase _kb){
+		BuilderStructureImpl builder = new BuilderStructureImpl(); 
+		builder.kb = _kb;
+		return builder; 
 	}
 	
 	/**
@@ -121,7 +132,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	private void evaluateUnfinishedRV(SimpleSSBNNode node) throws ImplementationRestrictionException, 
 	                  SSBNNodeGeneralException{
 		
-		System.out.println("Evaluate unfinished node = " + node);
+		System.out.println("------ Evaluate unfinished node = " + node + "------");
 		
 		//TODO view if already exists a equal MFragInstance. 
 		
@@ -133,7 +144,6 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			try {
 				mFragInstance.addOVValue(node.getOvArray()[i], node.getEntityArray()[i].getInstanceName());
 			} catch (MFragContextFailException e) {
-				// TODO Auto-generated catch block
 				//TODO throw exception
 				//internal error... 
 				e.printStackTrace();
@@ -240,6 +250,8 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	private void evaluateNodeInMFragInstance(MFragInstance mFragInstance, SimpleSSBNNode node) 
 	       throws ImplementationRestrictionException, SSBNNodeGeneralException{
 		
+		System.out.println("\nCreate parents of node " + node);
+		
 		node.setMFragInstance(mFragInstance); 
 		
 		//--- 1) Evaluate if the node is a finding. 
@@ -266,10 +278,18 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		if(exactValue!= null){
 			//The node is a finding... 
 			node.setState(exactValue.getState());
+			System.out.println("Node setted how a finding = " + node);
 		}
 		
 		
 		//---- 2) Create the parents of node from the resident nodes
+		
+		//If the context node of the MFrag don't are evaluated, the creation of 
+		//the parents insn't possible
+		if(mFragInstance.isUseDefaultDistribution()){
+			System.out.println("Node can't be evaluated: mfrag using default distribution");
+			return; 
+		}
 		
 		OrdinaryVariable[] ovFilledArray = node.getOvArray(); 
 		LiteralEntityInstance[] entityFilledArray = node.getEntityArray(); 
@@ -279,7 +299,10 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			List<SimpleSSBNNode> createdNodesList = createParents(node, ovFilledArray, entityFilledArray,
 					residentNodeParent);
 			
+			System.out.println("Evaluate the parents created for the resident parents:");
+			int count = 0; 
 			for(SimpleSSBNNode newNode: createdNodesList){
+				System.out.println("Evaluate " + count + " - "+ newNode); count= count + 1 ; 
 				evaluateNodeInMFragInstance(mFragInstance, newNode); 
 			}
 			
@@ -289,20 +312,30 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		for(InputNode inputNodeParent: resident.getInputNodeFatherList()){
 			
 			if(inputNodeParent.getResidentNodePointer().getResidentNode().equals(resident)){
-				//Special case: the recursivity... 
-				SimpleSSBNNode newNode = createRecursiveParents(node, ovFilledArray, entityFilledArray, 
-						inputNodeParent);
-				evaluateNodeInMFragInstance(mFragInstance, newNode); 
+				//Special case: the recursivity.
+				System.out.println("Recursivity treatment: " + resident);
+				
+				SimpleSSBNNode newNode = createRecursiveParents(node, ovFilledArray, 
+						entityFilledArray, inputNodeParent);
+				
+				if(newNode != null){
+					evaluateNodeInMFragInstance(mFragInstance, newNode); 
+				}
 				
 			}else{
-				createParents(node, ovFilledArray, entityFilledArray,
-						inputNodeParent);	
+				List<SimpleSSBNNode> createdNodesList = createParents(node, ovFilledArray, 
+						entityFilledArray, inputNodeParent);	
+				
+				System.out.println("Nodes createds from the input parents: ");
+				for(SimpleSSBNNode newNode: createdNodesList){
+					System.out.println("Node: " + newNode);
+				}
 			}
 			
 		}
 		
 		node.setFinished(true); 
-		
+		System.out.println("Node " + node + " setted finished");
 
 		mFragInstance.setEvaluated(true); 
 	}
@@ -318,6 +351,11 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	private List<SimpleSSBNNode> createParents(SimpleSSBNNode node,
 			OrdinaryVariable[] ovFilledArray, LiteralEntityInstance[] entityFilledArray,
 			ResidentNode residentNodeParent) {
+		
+		//Bug... 
+		if(residentNodeParent.equals(node.getResidentNode())){
+			return new ArrayList<SimpleSSBNNode>(); 
+		}
 		
 		JacketNode nodeParent = new JacketNode(residentNodeParent); 
 		
@@ -335,6 +373,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	private  List<SimpleSSBNNode> createParents(SimpleSSBNNode node,
 			OrdinaryVariable[] ovFilledArray, LiteralEntityInstance[] entityFilledArray,
 			InputNode inputNodeParent) {
+
 		
 		JacketNode nodeParent = new JacketNode(inputNodeParent); 
 		
@@ -389,6 +428,14 @@ public class BuilderStructureImpl implements IBuilderStructure{
 				      	entityFilledArray, 
 					    newNodeOvFaultList.toArray(
                     		 new OrdinaryVariable[newNodeOvFaultList.size()])); 
+			
+			System.out.println("Possible combinations for ov fault: ");
+			for(String[] combination: possibleCombinationsForOvFaultList){
+				System.out.print("Combination: ");
+				for(String entity: combination){
+					System.out.print(entity + " ");
+				}
+			}
 		}else{
 			possibleCombinationsForOvFaultList.add(new String[0]); //A stub element
 		}
@@ -503,20 +550,23 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	
 	private  SimpleSSBNNode createRecursiveParents(SimpleSSBNNode node,
 			OrdinaryVariable[] ovFilledArray, LiteralEntityInstance[] entityFilledArray,
-			InputNode inputNodeParent) throws ImplementationRestrictionException, SSBNNodeGeneralException {
+			InputNode inputNodeParent) 
+	             throws ImplementationRestrictionException, 
+	                    SSBNNodeGeneralException {
 		
 		ResidentNode residentNode = node.getResidentNode(); 
-		
 		
 		//1) FIND THE ENTITY ORDEREABLE 
 		List<OrdinaryVariable> ovOrdereableList = residentNode.getOrdinaryVariablesOrdereables();
 		
 		if(ovOrdereableList.size() > 1){
-			throw new ImplementationRestrictionException(ImplementationRestrictionException.MORE_THAN_ONE_ORDEREABLE_VARIABLE);
+			throw new ImplementationRestrictionException(
+					ImplementationRestrictionException.MORE_THAN_ONE_ORDEREABLE_VARIABLE);
 		}
 		
 		if(ovOrdereableList.size() < 1){
-			throw new ImplementationRestrictionException(ImplementationRestrictionException.RV_NOT_RECURSIVE);
+			throw new ImplementationRestrictionException(
+					ImplementationRestrictionException.RV_NOT_RECURSIVE);
 		}
 		
 		OrdinaryVariable ovOrdereable = ovOrdereableList.get(0); //Have only one element... 
@@ -544,30 +594,39 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		
 		ObjectEntityInstanceOrdereable prev = objectEntityInstanceOrdereable.getPrev(); 
 
-		LiteralEntityInstance ovOrdereablePreviusValue = 
-			LiteralEntityInstance.getInstance(prev.getName(), ovOrdereable.getValueType());
-		
-		//3) Mount the father 
-		
-		/*
-		 * Nota: uma pequena restrição aqui (fácil de ser retirada entretanto):
-		 * Consideramos que o nó pai e o nó filho possuem os mesmos argumentos com 
-		 * excessão do argumento recursivo. Isto mantém a compatibilidade com as 
-		 * considerações feitas no algoritmo anterior.  
-		 */ 
-		
-		SimpleSSBNNode newNode = SimpleSSBNNode.getInstance(residentNode); 
-		for(int i = 0; i < node.getOvArray().length; i++){
-			if(!node.getOvArray()[i].equals(ovOrdereable)){
-				newNode.setEntityForOv(node.getOvArray()[i], ovOrdereablePreviusValue); 
-			}else{
-				newNode.setEntityForOv(node.getOvArray()[i], node.getEntityArray()[i]); 
+		if(prev != null){
+
+			System.out.println("Previous node = " + prev + " (" + objectEntityInstanceOrdereable + ")");
+			
+			LiteralEntityInstance ovOrdereablePreviusValue = 
+				LiteralEntityInstance.getInstance(prev.getName(), ovOrdereable.getValueType());
+
+			//3) Mount the father 
+
+			/*
+			 * Nota: uma pequena restrição aqui (fácil de ser retirada entretanto):
+			 * Consideramos que o nó pai e o nó filho possuem os mesmos argumentos com 
+			 * excessão do argumento recursivo. Isto mantém a compatibilidade com as 
+			 * considerações feitas no algoritmo anterior.  
+			 */ 
+
+			SimpleSSBNNode newNode = SimpleSSBNNode.getInstance(residentNode); 
+			for(int i = 0; i < node.getOvArray().length; i++){
+				if(!node.getOvArray()[i].equals(ovOrdereable)){
+					newNode.setEntityForOv(node.getOvArray()[i], ovOrdereablePreviusValue); 
+				}else{
+					newNode.setEntityForOv(node.getOvArray()[i], node.getEntityArray()[i]); 
+				}
 			}
+
+			newNode = addNodeToMFragInstance(node, newNode);
+
+			return newNode; 
+		
+		}else{
+			return null; 
 		}
 		
-		newNode = addNodeToMFragInstance(node, newNode);
-		
-		return newNode; 
 	}
 
 	/**
@@ -576,19 +635,25 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	 * in the ssbn, take the alread exist object if positive (return it). 
 	 * 
 	 * @param child  The node alread present in mFragInstance 
-	 * @param father The new Node to be added. 
+	 * @param parent The new Node to be added. 
 	 * @return       the new node
 	 */
 	private SimpleSSBNNode addNodeToMFragInstance(SimpleSSBNNode child,
-			SimpleSSBNNode father) {
+			SimpleSSBNNode parent) {
 		
-		father = ssbn.addSSBNNodeIfItDontAdded(father);
+		parent = ssbn.addSSBNNodeIfItDontAdded(parent);
 		
-		child.addParent(father);
-		child.getMFragInstance().addSSBNNode(father);
-		child.getMFragInstance().addEdge(new SimpleEdge(father, child));
+		try {
+			child.addParentNode(parent);
+		} catch (InvalidParentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+		child.getMFragInstance().addSSBNNode(parent);
+		child.getMFragInstance().addEdge(new SimpleEdge(parent, child));
 		
-		return father;
+		return parent;
 	
 	}	
 	
@@ -619,12 +684,15 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	                          SSBNNodeGeneralException, 
 	                          OVInstanceFaultException{
 		
+		System.out.println("EvaluateMFragContextNodes: " + mFragInstance);
+		
 		//Consider that the tree with the know ordinary variables are already mounted. 
 		//Consider that the only ordinary variables filled are the alread know OV
 		List<OVInstance> ovInstances = mFragInstance.getOVInstances(); 
 		
 		for(ContextNode contextNode: mFragInstance.getContextNodeList()){
 			
+			System.out.println("Context Node: " + contextNode);
 			
 			//---> 1) Verify if the context node is soluted only with the know arguments. 
 			List<OrdinaryVariable> ovInstancesFault = contextNode.getOVFaultForOVInstanceSet(ovInstances); 
@@ -634,66 +702,85 @@ public class BuilderStructureImpl implements IBuilderStructure{
 				if(result){
 					mFragInstance.setStateEvaluationOfContextNode(contextNode, 
 							ContextNodeEvaluationState.EVALUATION_OK); 
-					break; 
+					System.out.println("Evaluated OK");
+					continue; 
 				}else{
 					System.out.println("Context Node Evaluation fail"); 
 					mFragInstance.setStateEvaluationOfContextNode(contextNode, 
 							ContextNodeEvaluationState.EVALUATION_FAIL);
 					mFragInstance.setUseDefaultDistribution(true); 
+					System.out.println("Evaluated faulse.. default distribution. ");
 					break; //TODO: the MFragInstance should continue to be evaluated?
 				}
-			}
+			}else{
 			
-			
-			//---> 2) Use the Entity Tree Strategy. 
-			SearchResult searchResult = kb.evaluateSearchContextNodeFormula(contextNode, ovInstances); 
-			
-			if(searchResult!= null){  
+				System.out.println("Evaluate with OV Fault. ");
 				
-				//Result valid results: Add the result to the tree of result.
-				try {
+				//---> 2) Use the Entity Tree Strategy. 
+				SearchResult searchResult = kb.evaluateSearchContextNodeFormula(contextNode, ovInstances); 
+
+				if(searchResult!= null){  
+
+					System.out.println("Search Result: ");
+					for(String[] result: searchResult.getValuesResultList()){
+						for(int i = 0; i < result.length; i++){
+							System.out.print(result[i] + " "); 
+						}
+						System.out.println("");
+					}
 					
-					mFragInstance.getEntityTree().updateTreeForNewInformation(
-							searchResult.getOrdinaryVariableSequence(), 
-							searchResult.getValuesResultList());
+					//Result valid results: Add the result to the tree of result.
+					try {
 
-					mFragInstance.setStateEvaluationOfContextNode(contextNode, ContextNodeEvaluationState.EVALUATION_OK); 
+						mFragInstance.getEntityTree().updateTreeForNewInformation(
+								searchResult.getOrdinaryVariableSequence(), 
+								searchResult.getValuesResultList());
 
-				} catch (MFragContextFailException e) {
-					e.printStackTrace(); 
-					mFragInstance.setStateEvaluationOfContextNode(contextNode, ContextNodeEvaluationState.EVALUATION_FAIL); 
-				    mFragInstance.setUseDefaultDistribution(true); 
-				}
-				
-				break;
-			}
-			
-			
-			//---> 3) Use the Interation with user Strategy. 
-			// To be developed yet... 
-//			notInstanciatedOVList = mFragInstance.getListNotInstanciatedOV(); 
-//			System.out.println("\nOVInstances don't found = " + notInstanciatedOVList.size());
-//			for(OrdinaryVariable ov: notInstanciatedOVList){
-//				System.out.println(ov.getName());
-//			}
-//			if (notInstanciatedOVList.size() != 0){
-//				System.out.println("Try 2: Use the iteration aproach");
-//				for(OrdinaryVariable ov: notInstanciatedOVList){
-//					if(interationHelper!=null){
-//						OVInstance ovInstance = interationHelper.getInstanceValueForOVFault(ov);
-//						if(ovInstance != null){
-//							mFragInstance.addInstanciatedOV(ovInstance.getOv(),	ovInstance.getEntity()); 
-//						}
+						mFragInstance.setStateEvaluationOfContextNode(contextNode, ContextNodeEvaluationState.EVALUATION_OK); 
+						
+						System.out.println("Evaluated OK");
+						
+					} catch (MFragContextFailException e) {
+						e.printStackTrace(); 
+						mFragInstance.setStateEvaluationOfContextNode(contextNode, ContextNodeEvaluationState.EVALUATION_FAIL); 
+						mFragInstance.setUseDefaultDistribution(true); 
+					}
+
+					break;
+
+				}else{
+
+
+					//---> 3) Use the Interation with user Strategy. 
+					// To be developed yet... 
+//					notInstanciatedOVList = mFragInstance.getListNotInstanciatedOV(); 
+//					System.out.println("\nOVInstances don't found = " + notInstanciatedOVList.size());
+//					for(OrdinaryVariable ov: notInstanciatedOVList){
+//					System.out.println(ov.getName());
 //					}
-//				}
-//			}
-			
-			//---> 4) Use the uncertainty Strategy. 
-			//To be developed yet
-			
-			//--> 5) Nothing more to try... context fail
-			mFragInstance.setStateEvaluationOfContextNode(contextNode, ContextNodeEvaluationState.EVALUATION_SEARCH); 
-			mFragInstance.setUseDefaultDistribution(false); 
+//					if (notInstanciatedOVList.size() != 0){
+//					System.out.println("Try 2: Use the iteration aproach");
+//					for(OrdinaryVariable ov: notInstanciatedOVList){
+//					if(interationHelper!=null){
+//					OVInstance ovInstance = interationHelper.getInstanceValueForOVFault(ov);
+//					if(ovInstance != null){
+//					mFragInstance.addInstanciatedOV(ovInstance.getOv(),	ovInstance.getEntity()); 
+//					}
+//					}
+//					}
+//					}
+
+					//---> 4) Use the uncertainty Strategy. 
+					//To be developed yet
+
+					//--> 5) Nothing more to try... context fail
+					mFragInstance.setStateEvaluationOfContextNode(contextNode, 
+							ContextNodeEvaluationState.EVALUATION_SEARCH); 
+					mFragInstance.setUseDefaultDistribution(true);
+					//TODO Maybe a warning... Not so drastic! 
+					
+				}
+			}
 			
 		}
 		
