@@ -612,7 +612,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 
 			SimpleSSBNNode newNode = SimpleSSBNNode.getInstance(residentNode); 
 			for(int i = 0; i < node.getOvArray().length; i++){
-				if(!node.getOvArray()[i].equals(ovOrdereable)){
+				if(node.getOvArray()[i].equals(ovOrdereable)){
 					newNode.setEntityForOv(node.getOvArray()[i], ovOrdereablePreviusValue); 
 				}else{
 					newNode.setEntityForOv(node.getOvArray()[i], node.getEntityArray()[i]); 
