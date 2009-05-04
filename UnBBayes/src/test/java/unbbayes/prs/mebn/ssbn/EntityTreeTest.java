@@ -1,9 +1,9 @@
 package unbbayes.prs.mebn.ssbn;
 
-import static org.junit.Assert.fail;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import junit.framework.TestCase;
 
 import org.junit.After;
 import org.junit.Before;
@@ -14,7 +14,7 @@ import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.entity.TypeContainer;
 import unbbayes.prs.mebn.ssbn.exception.MFragContextFailException;
 
-public class EntityTreeTest {
+public class EntityTreeTest extends TestCase{
 
 	Type testType = null; 
 	
@@ -31,8 +31,8 @@ public class EntityTreeTest {
 		
 	}
 
-	@Test
-	public void testUpdateTreeForNewInformationOrdinaryVariableString() {
+//	@Test
+	public void tesdtUpdateTreeForNewInformationOrdinaryVariableString() {
 		
 		EntityTree entityTree; 
 		OrdinaryVariable ov; 
@@ -208,6 +208,81 @@ public class EntityTreeTest {
 
 	@Test
 	public void testUpdateTreeForNewInformationOrdinaryVariableArrayListOfString() {
+		
+		EntityTree entityTree; 
+		OrdinaryVariable ov; 
+		OrdinaryVariable ovArray[]; 
+		String entityArray[]; 
+		List<String[]> entityArrayList; 
+		
+		/*
+		 * Test 3: 
+		 * Initial tree: empty
+		 * Operation: 1) add a simple ov = OV1 = ENT01; 
+		 *            2) add OV2 = ENT02, OV2 = ENT03
+		 * Expected: 
+		 *       [OV1=ENT01]
+		 *         [OV2=ENT02]
+		 *       [OV1=ENT01]  
+		 *         [OV2=ENT03]
+		 */
+		
+		entityTree = new EntityTree(); 
+		
+		ovArray = new OrdinaryVariable[2]; 
+		ovArray[0] = new OrdinaryVariable("OV1", testType, null);
+		ovArray[1] = new OrdinaryVariable("OV2", testType, null); 
+		
+		entityArrayList = new ArrayList<String[]>(); 
+		
+		entityArray = new String[2]; 
+		entityArray[0] = new String("ENT01");
+		entityArray[1] = new String("ENT02");
+		entityArrayList.add(entityArray); 
+		
+		entityArray = new String[2]; 
+		entityArray[0] = new String("ENT01");
+		entityArray[1] = new String("ENT03");
+		entityArrayList.add(entityArray); 
+		
+		try {
+			entityTree.updateTreeForNewInformation(ovArray, entityArrayList);
+		} catch (MFragContextFailException e) {
+			fail("Error in the update process");
+			e.printStackTrace(); 
+		} 
+		
+		System.out.println("\n(Test 1) EntityTree: ");
+		entityTree.printTree(); 
+		System.out.println("");
+		
+		OrdinaryVariable[] knownOVArray = new OrdinaryVariable[1]; 
+		knownOVArray[0] = ovArray[0]; //OV1
+		
+		LiteralEntityInstance[] knownEntityArray = new LiteralEntityInstance[1];
+		knownEntityArray[0] = LiteralEntityInstance.getInstance("ENT01", ovArray[0].getValueType()); 
+		
+		OrdinaryVariable[] ovSearchArray = new OrdinaryVariable[1];
+		ovSearchArray[0] = ovArray[1]; //OV2
+		
+		List<String[]> combinations = 
+			entityTree.recoverCombinationsEntitiesPossibles(
+					knownOVArray, knownEntityArray, ovSearchArray); 
+		
+		/* 
+		 * Expected: (2 results)
+		 * [ENT02]
+		 * [ENT03]
+		 */
+		System.out.println("Combinations: ");
+		for(String[] combination: combinations){
+			System.out.print("Combination: ");
+			for(String element: combination){
+				System.out.println(element);
+			}
+		}
+		
+		assertEquals(2, combinations.size()); 
 		
 	}
 
