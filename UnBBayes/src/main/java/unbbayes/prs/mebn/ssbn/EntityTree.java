@@ -151,8 +151,6 @@ public class EntityTree{
 			LiteralEntityInstance[] knownEntityArray,
 			OrdinaryVariable[] ovSearchArray){
 		
-		//TODO test... 
-		
 		List<String[]> combinationList = new ArrayList<String[]>(); 
 		
 		List<EntityNode> nodesOfLastLevel = getNodesOfLastLevel(); 
@@ -165,11 +163,11 @@ public class EntityTree{
 			String[] tempEntityArray = new String[ovSearchArray.length]; 
 			
 			//Node for node... 
-			while(nodeOfPath.getOv() == null){ //the root
+			while(nodeOfPath.getOv() != null){ //the root
 				
 				for(int index = 0; index < knownOVArray.length; index++){
 					if(nodeOfPath.getOv().equals(knownOVArray[index])){
-						if(nodeOfPath.getEntityName().equals(knownEntityArray[index])){
+						if(nodeOfPath.entityName.equals(knownEntityArray[index].getInstanceName())){
 							ovFoundQuant++; 
 						}else{
 							break; 
@@ -178,11 +176,12 @@ public class EntityTree{
 				}
 				
 				if(ovFoundQuant == knownOVArray.length){
-					
+					//all the entities known are in this path! 
 					break; 
 				
 				}else{
-		
+					
+		            //see if the ov is one of the ov fault... 
 					for(int index = 0; index < ovSearchArray.length; index++){
 						if(nodeOfPath.getOv().equals(ovSearchArray[index])){
 							tempEntityArray[index] = nodeOfPath.getEntityName(); 
