@@ -58,7 +58,7 @@ public class AirIDEvaluationTest {
 
 		int sampleSize = 500000;
 
-		evaluationApproximate = new FastApproximateEvaluation(sampleSize);
+		evaluationApproximate = new FastMCApproximateEvaluation(sampleSize);
 		if (computeTime) {
 			time = System.currentTimeMillis();
 		}

@@ -59,7 +59,7 @@ public class WetGrassEvaluationTest {
 
 		int sampleSize = 100000;
 
-		evaluationApproximate = new FastApproximateEvaluation(sampleSize);
+		evaluationApproximate = new FastMCApproximateEvaluation(sampleSize);
 		if (computeTime) {
 			time = System.currentTimeMillis();
 		}

@@ -27,16 +27,16 @@ import java.util.Random;
 import unbbayes.evaluation.exception.EvaluationException;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.TreeVariable;
-import unbbayes.simulation.montecarlo.sampling.IMonteCarloSampling;
-import unbbayes.simulation.montecarlo.sampling.MatrixMonteCarloSampling;
+import unbbayes.simulation.likelihoodweighting.ILikelihoodWeightingSampling;
+import unbbayes.simulation.likelihoodweighting.sampling.LikelihoodWeightingSampling;
 
-public class FastApproximateEvaluation extends AEvaluation {
+public class FastLWApproximateEvaluation extends AEvaluation {
 
 	// ------- VALUES THAT DO NOT CHANGE --------//
 
 	protected int sampleSize;
 	
-	protected IMonteCarloSampling mc;
+	protected ILikelihoodWeightingSampling lw;
 
 	// It will change when more than one target node is allowed
 	protected TreeVariable targetNode;
@@ -44,6 +44,7 @@ public class FastApproximateEvaluation extends AEvaluation {
 	// ------- VALUES THAT DO CHANGE FOR EACH SUB-EVALUATION --------//
 
 	protected byte[][] sampleMatrix;
+	protected float[] sampleWeight;
 	
 	protected List<Node> positionNodeList;
 
@@ -57,7 +58,7 @@ public class FastApproximateEvaluation extends AEvaluation {
 		return (float) (1/Math.sqrt(this.sampleSize));
 	}
 	
-	public FastApproximateEvaluation(int sampleSize) {
+	public FastLWApproximateEvaluation(int sampleSize) {
 		this.sampleSize = sampleSize;
 	}
 	
@@ -70,13 +71,14 @@ public class FastApproximateEvaluation extends AEvaluation {
 		// 002 2 0 1
 		// ...
 		// i x y z
-		mc = new MatrixMonteCarloSampling();
+		lw = new LikelihoodWeightingSampling();
 		long init = System.currentTimeMillis();
-		mc.start(net, sampleSize);
+		lw.start(net, sampleSize);
 		long end = System.currentTimeMillis();
 		System.out.println("Time elapsed for sampling: " + (float)(end-init)/1000);
 		init = System.currentTimeMillis();
-		sampleMatrix = mc.getSampledStatesMatrix();
+		sampleMatrix = lw.getSampledStatesMatrix();
+		sampleWeight = lw.getFullStatesSetWeight();
 		end = System.currentTimeMillis();
 		System.out.println("Time elapsed for matrix: " + (float)(end-init)/1000);
 		System.out.println();
@@ -104,7 +106,7 @@ public class FastApproximateEvaluation extends AEvaluation {
 		positionEvidenceNodeList = new int[evidenceNodeList.length];
 
 		// Position of the nodes in the sampled matrix.
-		positionNodeList = mc.getSamplingNodeOrderQueue();
+		positionNodeList = lw.getSamplingNodeOrderQueue();
 
 		for (int i = 0; i < positionTargetNodeList.length; i++) {
 			positionTargetNodeList[i] = positionNodeList.indexOf((Node)targetNodeList[i]);
@@ -114,13 +116,13 @@ public class FastApproximateEvaluation extends AEvaluation {
 			positionEvidenceNodeList[i] = positionNodeList.indexOf((Node)evidenceNodeList[i]);
 		}
 
-		// 2. Count # of occurrences of evidence nodes given target nodes
-		int[] frequencyEvidenceGivenTargetList = new int[statesProduct];
-		int[] frequencyEvidenceList = new int[targetStatesProduct];
+		// 2. Count weight of evidence nodes given target nodes
+		float[] weightEvidenceGivenTargetList = new float[statesProduct];
+		float[] weightEvidenceList = new float[targetStatesProduct];
 
-		// Iterate over all cases in the MC sample
+		// Iterate over all cases in the LW sample
 		for (int i = 0; i < sampleMatrix.length; i++) {
-			// Row to compute the frequency
+			// Row to compute the weight
 			int row = 0;
 			int currentStatesProduct = evidenceStatesProduct;
 			for (int j = positionTargetNodeList.length - 1; j >= 0; j--) {
@@ -129,8 +131,8 @@ public class FastApproximateEvaluation extends AEvaluation {
 				currentStatesProduct *= positionNodeList.get(positionTargetNodeList[j]).getStatesSize();
 			}
 
-			// Add to total frequency for evidence nodes independent of state
-			frequencyEvidenceList[(int) (row / evidenceStatesProduct)]++;
+			// Add to total weight for evidence nodes independent of state
+			weightEvidenceList[(int) (row / evidenceStatesProduct)] += sampleWeight[i];
 
 			currentStatesProduct = evidenceStatesProduct;
 			for (int j = 0; j < positionEvidenceNodeList.length; j++) {
@@ -140,16 +142,16 @@ public class FastApproximateEvaluation extends AEvaluation {
 				row += state * currentStatesProduct;
 			}
 
-			// Add to total frequency for specific evidences
-			frequencyEvidenceGivenTargetList[row]++;
+			// Add to total weight for specific evidences
+			weightEvidenceGivenTargetList[row] += sampleWeight[i];
 		}
 
 		// 3. Compute probabilities for evidence nodes given target nodes
 		float[] postProbEvidenceGivenTarget = new float[statesProduct];
 		for (int i = 0; i < postProbEvidenceGivenTarget.length; i++) {
-			float n = (float) frequencyEvidenceList[(int) (i / evidenceStatesProduct)];
+			float n = weightEvidenceList[(int) (i / evidenceStatesProduct)];
 			if (n != 0) {
-				postProbEvidenceGivenTarget[i] = (float) frequencyEvidenceGivenTargetList[i]
+				postProbEvidenceGivenTarget[i] = (float) weightEvidenceGivenTargetList[i]
 						/ n;
 			}
 		}
@@ -247,11 +249,11 @@ public class FastApproximateEvaluation extends AEvaluation {
 			evidenceNodeNameList.add("PRF");
 	
 			netFileName = "src/test/resources/testCases/evaluation/AirID.xml";
-			sampleSize = 50000000;
+			sampleSize = 500000;
 		}
 
 		// APPROXIMATE //
-		FastApproximateEvaluation evaluationApproximate = new FastApproximateEvaluation(sampleSize);
+		FastLWApproximateEvaluation evaluationApproximate = new FastLWApproximateEvaluation(sampleSize);
 		evaluationApproximate.evaluate(netFileName, targetNodeNameList,
 				evidenceNodeNameList, onlyGCM);
 		

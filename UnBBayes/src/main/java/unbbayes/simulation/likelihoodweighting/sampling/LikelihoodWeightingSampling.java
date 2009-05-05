@@ -22,11 +22,13 @@ package unbbayes.simulation.likelihoodweighting.sampling;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.TreeVariable;
+import unbbayes.simulation.likelihoodweighting.ILikelihoodWeightingSampling;
 import unbbayes.simulation.montecarlo.sampling.MatrixMonteCarloSampling;
 
 /**
@@ -35,11 +37,11 @@ import unbbayes.simulation.montecarlo.sampling.MatrixMonteCarloSampling;
  * sample for the evidence nodes, it just sets as the given state, and it 
  * calculates P(E|Par(E)) for each trial. 
  * 
- * @author Rommel Carvalho
+ * @author Rommel Carvalho (rommel.carvalho@gmail.com)
  *
  */
 // TODO ROMMEL - CREATE ONE SAMPLING THAT USES MAPMCSAMPLING
-public class LikelihoodWeightingSampling extends MatrixMonteCarloSampling {
+public class LikelihoodWeightingSampling extends MatrixMonteCarloSampling implements ILikelihoodWeightingSampling {
 	
 	protected List<Node> evidenceNodeList;
 	// P(E|Par(E)) = ProductOf[P(Ei|Par(Ei))] for all evidences (findings). There is
@@ -51,7 +53,7 @@ public class LikelihoodWeightingSampling extends MatrixMonteCarloSampling {
 	 * There is one probability associated with each trial.
 	 * @return P(E|Par(E)) for each trial.
 	 */
-	public float[] getProbabilityEvidenceGivenParentList() {
+	public float[] getFullStatesSetWeight() {
 		return probabilityEvidenceGivenParentList;
 	}
 
@@ -96,6 +98,22 @@ public class LikelihoodWeightingSampling extends MatrixMonteCarloSampling {
 			}
 			sampledStatesMatrix[nTrial][i] = (byte)sampledStates[i];
 		}	
+	}
+
+	/**
+	 * Not implemented.
+	 * @return null.
+	 */
+	public float[] getCompactStatesSetWeight() {
+		return null;
+	}
+
+	/**
+	 * Not implemented.
+	 * @return null.
+	 */
+	public Map<Integer, Float> getMapStatesSetWeight() {
+		return null;
 	}
 	
 }

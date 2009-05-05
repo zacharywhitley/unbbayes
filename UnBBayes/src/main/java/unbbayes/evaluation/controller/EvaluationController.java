@@ -30,7 +30,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import unbbayes.evaluation.EvidenceEvaluation;
-import unbbayes.evaluation.FastApproximateEvaluation;
+import unbbayes.evaluation.FastMCApproximateEvaluation;
 import unbbayes.evaluation.IEvaluation;
 import unbbayes.evaluation.exception.EvaluationException;
 import unbbayes.evaluation.gui.EvaluationPane;
@@ -108,7 +108,7 @@ public class EvaluationController {
 		int sampleSize = evaluationPane.getSampleSizeValue();
 		
 		try {
-			evaluation = new FastApproximateEvaluation(sampleSize);
+			evaluation = new FastMCApproximateEvaluation(sampleSize);
 			evaluation.evaluate(network, targetNodeNameList, evidenceNodeNameList, false);
 			
 			List<EvidenceEvaluation> evidenceEvaluationList = evaluation.getBestMarginalImprovement();

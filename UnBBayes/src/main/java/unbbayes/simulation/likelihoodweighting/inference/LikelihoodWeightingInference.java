@@ -58,7 +58,7 @@ public class LikelihoodWeightingInference {
 		float[] marginal = new float[node.getStatesSize()];
 		
 		byte[][] sampledMatrix = lwSampling.getSampledStatesMatrix();
-		float[] probEvdGivenPar = lwSampling.getProbabilityEvidenceGivenParentList();
+		float[] probEvdGivenPar = lwSampling.getFullStatesSetWeight();
 		int nodeIndex = lwSampling.getSamplingNodeOrderQueue().indexOf(node);
 		int state;
 		for (int i = 0; i < sampledMatrix.length; i++) {
