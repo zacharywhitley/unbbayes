@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import unbbayes.io.mebn.UbfIO;
+import unbbayes.prs.INode;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.MFrag;
@@ -29,6 +30,15 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeyAlgorithmParameters;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSBNGenerator;
 
+/**
+ * Tests of the BuilderStructureImpl. 
+ *  
+ *  Note: is very hard automatize the analize of the results of the tests of 
+ *  generate the SSBN. Because this, in many of this test methods, the analisy
+ *  of the results should be do for the user.  
+ *  
+ * @author Laecio Lima dos Santos (laecio@gmail.com)
+ */
 public class BuilderStructureImplTest extends TestCase{
 
 	private ResourceBundle resourceFiles = 
@@ -46,156 +56,13 @@ public class BuilderStructureImplTest extends TestCase{
 	public void testBuildStructure() {
 	}
 
-	@Test
-	public void testGetPossiblesCombinationsOfArgumentsForSSBNNode() {
-		
-//		List<LiteralEntityInstance> instanceListForOViVector[]; 
-//		
-//		BuilderStructureImpl builder = new BuilderStructureImpl(); 	
-//		
-//		LiteralEntityInstance instance;
-//		List<LiteralEntityInstance> instanceListForOVi; 
-//		
-//		//Case 1: Node(x1, x2, x3)
-//		//X1 = 1A
-//		//X2 = 2A
-//		//X3 = 3A
-//		//Result expected = [1A, 2A, 3A]
-//		
-//		instanceListForOViVector = new ArrayList[3]; 
-//		
-//		instanceListForOVi = new ArrayList<LiteralEntityInstance>(); 
-//		instanceListForOVi.add(LiteralEntityInstance.getInstance("1A", null)); 
-//		instanceListForOViVector[0] = instanceListForOVi; 
-//
-//		instanceListForOVi = new ArrayList<LiteralEntityInstance>(); 
-//		instanceListForOVi.add(LiteralEntityInstance.getInstance("2A", null)); 
-//		instanceListForOViVector[1] = instanceListForOVi; 
-//		
-//		instanceListForOVi = new ArrayList<LiteralEntityInstance>(); 
-//		instanceListForOVi.add(LiteralEntityInstance.getInstance("3A", null)); 
-//		instanceListForOViVector[2] = instanceListForOVi; 		
-//		
-//		List<LiteralEntityInstance[]> result = builder.getPossiblesCombinationsOfArgumentsForSSBNNode(instanceListForOViVector); 
-//		assertEquals(result.size(), 1); 
-//		assertEquals(result.get(0).length, 3); 
-//		
-//		int nodeNumber = 0; 
-//		System.out.println("Case 1: Result size = " + result.size());
-//		for(LiteralEntityInstance[] vectorNodeI: result){
-//			System.out.print("Node " + nodeNumber + ":");
-//			for(LiteralEntityInstance lei: vectorNodeI){
-//				System.out.print(lei + " ");
-//			}
-//			nodeNumber++; 
-//			System.out.println("");
-//		}
-//		
-//		//Case 2: Node(x1, x2, x3)
-//		//X1 = 1A, 1B
-//		//X2 = 2A
-//		//X3 = 3A
-//		//Result expected = [1A, 2A, 3A]
-//		//                  [1B, 2A, 3A]		
-//		
-//		instanceListForOViVector = new ArrayList[3]; 
-//		
-//		instanceListForOVi = new ArrayList<LiteralEntityInstance>(); 
-//		instanceListForOVi.add(LiteralEntityInstance.getInstance("1A", null)); 
-//		instanceListForOVi.add(LiteralEntityInstance.getInstance("1B", null)); 
-//		instanceListForOViVector[0] = instanceListForOVi; 
-//
-//		instanceListForOVi = new ArrayList<LiteralEntityInstance>(); 
-//		instanceListForOVi.add(LiteralEntityInstance.getInstance("2A", null)); 
-//		instanceListForOViVector[1] = instanceListForOVi; 
-//		
-//		instanceListForOVi = new ArrayList<LiteralEntityInstance>(); 
-//		instanceListForOVi.add(LiteralEntityInstance.getInstance("3A", null)); 
-//		instanceListForOViVector[2] = instanceListForOVi; 		
-//		
-//		result = builder.getPossiblesCombinationsOfArgumentsForSSBNNode(instanceListForOViVector); 
-//		assertEquals(result.size(), 2); 
-//		assertEquals(result.get(0).length, 3); 
-//		assertEquals(result.get(1).length, 3); 
-//		
-//		nodeNumber = 0; 
-//		System.out.println("Case 2: Result size = " + result.size());
-//		for(LiteralEntityInstance[] vectorNodeI: result){
-//			System.out.print("Node " + nodeNumber + ":");
-//			for(LiteralEntityInstance lei: vectorNodeI){
-//				System.out.print(lei + " ");
-//			}
-//			nodeNumber++; 
-//			System.out.println("");
-//		}		
-//		
-//		//Case 3: Node(x1, x2, x3)
-//		//X1 = 1A, 1B, 2C
-//		//X2 = 2A, 2B
-//		//X3 = 3A, 3B
-//		//Result expected = [1A, 2A, 3A]
-//		//                  [1A, 2A, 3B]		
-//		//                  [1A, 2B, 3A]
-//		//                  [1A, 2B, 3B]
-//		//                  [1A, 2C, 3A]		
-//		//                  [1A, 2C, 3B]
-//		//Result expected = [1B, 2A, 3A]
-//		//                  [1B, 2A, 3B]		
-//		//                  [1B, 2B, 3A]
-//		//                  [1B, 2B, 3B]
-//		//                  [1B, 2C, 3A]		
-//		//                  [1B, 2C, 3B]
-//		//Result expected = [1C, 2A, 3A]
-//		//                  [1C, 2A, 3B]		
-//		//                  [1C, 2B, 3A]
-//		//                  [1C, 2B, 3B]
-//		//                  [1C, 2C, 3A]		
-//		//                  [1C, 2C, 3B]		
-//		
-//		instanceListForOViVector = new ArrayList[3]; 
-//		
-//		instanceListForOVi = new ArrayList<LiteralEntityInstance>(); 
-//		instanceListForOVi.add(LiteralEntityInstance.getInstance("1A", null)); 
-//		instanceListForOVi.add(LiteralEntityInstance.getInstance("1B", null)); 
-//		instanceListForOVi.add(LiteralEntityInstance.getInstance("1C", null)); 
-//		instanceListForOViVector[0] = instanceListForOVi; 
-//
-//		instanceListForOVi = new ArrayList<LiteralEntityInstance>(); 
-//		instanceListForOVi.add(LiteralEntityInstance.getInstance("2A", null)); 
-//		instanceListForOVi.add(LiteralEntityInstance.getInstance("2B", null)); 
-//		instanceListForOViVector[1] = instanceListForOVi; 
-//		
-//		instanceListForOVi = new ArrayList<LiteralEntityInstance>(); 
-//		instanceListForOVi.add(LiteralEntityInstance.getInstance("3A", null)); 
-//		instanceListForOVi.add(LiteralEntityInstance.getInstance("3B", null)); 
-//		instanceListForOViVector[2] = instanceListForOVi; 		
-//		
-//		result = builder.getPossiblesCombinationsOfArgumentsForSSBNNode(instanceListForOViVector); 
-//		assertEquals(result.size(), 12); 
-//		assertEquals(result.get(0).length, 3); 
-//		assertEquals(result.get(1).length, 3); 
-//		
-//		nodeNumber = 0; 
-//		System.out.println("Case 3: Result size = " + result.size());
-//		for(LiteralEntityInstance[] vectorNodeI: result){
-//			System.out.print("Node " + nodeNumber + ":");
-//			for(LiteralEntityInstance lei: vectorNodeI){
-//				System.out.print(lei + " ");
-//			}
-//			nodeNumber++; 
-//			System.out.println("");
-//		}				
-		
-	}
-
-
 	public void terstBuildWithHepparSet(){
 		
 		HeparIITestSet hepparTestSet; 
 		
 		System.out.println("\n\n---------------------------------------------------\n");
 		System.out.println("                 BUILD WITH HEPPAR SET                 ");
-		System.out.println("---------------------------------------------------");
+		System.out.println("-------------------------------------------------------");
 		
 		LaskeyAlgorithmParameters parameters = new LaskeyAlgorithmParameters(); 
 		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION, "true");
@@ -328,13 +195,7 @@ public class BuilderStructureImplTest extends TestCase{
 		
 		LaskeySSBNGenerator algorithm = new LaskeySSBNGenerator(parameters); 
 		
-		/*
-		 * Test 1: 
-		 * HarmPotential(ST0, T0)
-		 * Result: 
-		 * fail because the context node not IsOwnStarship(ST0) fail. 
-		 */
-//		ssbn = starTrekCase1(ssbn, mebn, kb, algorithm);
+
 		
 //		assertEquals(ssbn.getSsbnNodeList().size(), 11); 
 		
@@ -348,73 +209,16 @@ public class BuilderStructureImplTest extends TestCase{
 		
 	}
 
-	private void starTrekCase2(SSBN ssbn, MultiEntityBayesianNetwork mebn,
-			KnowledgeBase kb, LaskeySSBNGenerator algorithm) {
-		
-		MFragInstance mFragInstance;
-		MFrag mFrag;
-		ResidentNode resident;
-		List<OVInstance> ovInstanceList;
-		OrdinaryVariable ov;
-		OVInstance ovInstance;
-		Query query;
-		List<Query> queryList;
-		
-		System.out.println("\n\n\n\nTest 2: HarmPotential(ST4, T3)");
-		
-		mFrag = mebn.getMFragByName("Starship_MFrag"); 
-		mFragInstance = MFragInstance.getInstance(mFrag); 
-		
-		resident = mFrag.getDomainResidentNodeByName("HarmPotential");
-		
-		ovInstanceList = new ArrayList<OVInstance>(); 
-		ov = mFrag.getOrdinaryVariableByName("st"); 
-		ovInstance = OVInstance.getInstance(ov, LiteralEntityInstance.getInstance("ST4", ov.getValueType())); 
-		ovInstanceList.add(ovInstance); 
-		ov = mFrag.getOrdinaryVariableByName("t"); 
-		ovInstance = OVInstance.getInstance(ov, LiteralEntityInstance.getInstance("T3", ov.getValueType())); 
-		ovInstanceList.add(ovInstance); 
-		
-		query = new Query(resident, ovInstanceList); 
-		
-		queryList = new ArrayList<Query>();
-		queryList.add(query); 
-		
-		try {
-			ssbn = algorithm.generateSSBN(queryList, kb);
-		} catch (SSBNNodeGeneralException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			fail(); 
-		} catch (ImplementationRestrictionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			fail(); 
-		} catch (MEBNException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			fail(); 
-		} catch (OVInstanceFaultException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			fail(); 
-		} catch (InvalidParentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			fail(); 
-		} 
-		
-		for(SimpleSSBNNode s: ssbn.getSsbnNodeList()){
-			System.out.println(s);
-		}
-		System.out.println("Size=" + ssbn.getSsbnNodeList().size());
-	}
 
+	/*
+	 * Query: HarmPotential(ST0, T0)
+	 * KnowledgeBase: StarTrekKB_Situation1
+	 * Result: fail because the context node not IsOwnStarship(ST0) fail. 
+	 */
 	private SSBN starTrekCase1(SSBN ssbn, MultiEntityBayesianNetwork mebn,
 			KnowledgeBase kb, LaskeySSBNGenerator algorithm) {
-		MFragInstance mFragInstance;
+		
 		MFrag mFrag = mebn.getMFragByName("Starship_MFrag"); 
-		mFragInstance = MFragInstance.getInstance(mFrag); 
 		
 		ResidentNode resident = mFrag.getDomainResidentNodeByName("HarmPotential");
 		
@@ -431,6 +235,58 @@ public class BuilderStructureImplTest extends TestCase{
 		List<Query> queryList = new ArrayList<Query>();
 		queryList.add(query); 
 		
+		ssbn = executeAlgorithm(ssbn, kb, algorithm, queryList); 
+		
+		printSSBNNodeList(ssbn);
+		return ssbn;
+	}
+
+
+	
+	/*
+	 * Query: HarmPotential(ST4, T3)
+	 * KnowledgeBase: StarTrekKB_Situation1
+	 * Result: this is the network of the monograph
+	 */
+	private void starTrekCase2(SSBN ssbn, MultiEntityBayesianNetwork mebn,
+			KnowledgeBase kb, LaskeySSBNGenerator algorithm) {
+		
+		MFrag mFrag;
+		ResidentNode resident;
+		List<OVInstance> ovInstanceList;
+		OrdinaryVariable ov;
+		OVInstance ovInstance;
+		Query query;
+		List<Query> queryList;
+		
+		System.out.println("\n\n\n\nTest 2: HarmPotential(ST4, T3)");
+		
+		mFrag = mebn.getMFragByName("Starship_MFrag"); 
+		
+		resident = mFrag.getDomainResidentNodeByName("HarmPotential");
+		
+		ovInstanceList = new ArrayList<OVInstance>(); 
+		ov = mFrag.getOrdinaryVariableByName("st"); 
+		ovInstance = OVInstance.getInstance(ov, 
+				LiteralEntityInstance.getInstance("ST4", ov.getValueType())); 
+		ovInstanceList.add(ovInstance); 
+		ov = mFrag.getOrdinaryVariableByName("t"); 
+		ovInstance = OVInstance.getInstance(ov, 
+				LiteralEntityInstance.getInstance("T3", ov.getValueType())); 
+		ovInstanceList.add(ovInstance); 
+		
+		query = new Query(resident, ovInstanceList); 
+		
+		queryList = new ArrayList<Query>();
+		queryList.add(query); 
+		
+		ssbn = executeAlgorithm(ssbn, kb, algorithm, queryList); 
+		
+		printSSBNNodeList(ssbn); 
+	}
+
+	private SSBN executeAlgorithm(SSBN ssbn, KnowledgeBase kb,
+			LaskeySSBNGenerator algorithm, List<Query> queryList) {
 		try {
 			ssbn = algorithm.generateSSBN(queryList, kb);
 		} catch (SSBNNodeGeneralException e) {
@@ -453,15 +309,20 @@ public class BuilderStructureImplTest extends TestCase{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			fail(); 
-		} 
-		
+		}
+		return ssbn;
+	}
+
+	private void printSSBNNodeList(SSBN ssbn) {
 		System.out.println("\n\n\n Result");
 		for(SimpleSSBNNode s: ssbn.getSsbnNodeList()){
 			System.out.println(s);
+			for(INode sChild: s.getChildNodes()){
+				System.out.println("   " + sChild);
+			}
 		}
 		System.out.println("Size=" + ssbn.getSsbnNodeList().size());
 		System.out.println("---------------------------------------------------\n\n");
-		return ssbn;
 	}
 	
 //	@Test
