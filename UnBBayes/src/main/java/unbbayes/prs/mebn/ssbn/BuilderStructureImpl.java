@@ -73,7 +73,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		
 		//Fill the list of notFinishedNodeList
 		System.out.println("Initial list of not finished nodes: ");
-		for(SimpleSSBNNode node: ssbn.getSsbnNodeList()){
+		for(SimpleSSBNNode node: ssbn.getSimpleSsbnNodeList()){
 			System.out.println("     -> " + node);
 			notFinishedNodeList.add(node);
 		}		
@@ -109,7 +109,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			System.out.println("Result after node evaluation: " +
 					"Not finished nodes: ");
 			
-			for(SimpleSSBNNode node: ssbn.getSsbnNodeList()){
+			for(SimpleSSBNNode node: ssbn.getSimpleSsbnNodeList()){
 				if(!node.isFinished()){
 					System.out.println("     - " + node.toString());
 					notFinishedNodeList.add(node); 

@@ -82,7 +82,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 			KnowledgeBase kb) throws SSBNNodeGeneralException,
 	ImplementationRestrictionException, MEBNException,
 	OVInstanceFaultException, InvalidParentException {
-		return generateSSBN(listQueries.get(0));
+		return generateSSBN(listQueries.get(0), kb);
 	}
 
 	/**
@@ -93,7 +93,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 	 * @throws InvalidParentException 
 	 */
 
-	public SSBN generateSSBN(Query query)
+	public SSBN generateSSBN(Query query, KnowledgeBase kb)
 	throws SSBNNodeGeneralException, ImplementationRestrictionException, 
 	MEBNException, InvalidParentException {
 
@@ -108,7 +108,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 		
 		SSBNNode queryNode = query.getQueryNode();
 		
-		setKnowledgeBase(query.getKb());
+		setKnowledgeBase(kb);
 		setContextNodeAvaliator(new ContextNodeEvaluator(getKnowledgeBase())); 
 		
 		stepCount = 0L;

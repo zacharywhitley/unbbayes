@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import unbbayes.prs.INode;
+import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -38,6 +39,8 @@ public class SimpleSSBNNode implements INode {
 	private Map<MFrag, OrdinaryVariable[]>      ovArrayForMFrag; //correspondency between the ov of the home mFrag with the ov of the external MFrags. 
 
 	private Entity state;	//if state != null this node is a finding
+	
+	private ProbabilisticNode probNode = null; 
 	
 	private boolean defaultDistribution = false; 
 	private boolean evaluatedForHomeMFrag = false; 
@@ -394,6 +397,14 @@ public class SimpleSSBNNode implements INode {
 	 */
 	public void setStates(List<String> states) {
 		throw new java.lang.UnsupportedOperationException("setStates");
+	}
+
+	public ProbabilisticNode getProbNode() {
+		return probNode;
+	}
+
+	public void setProbNode(ProbabilisticNode probNode) {
+		this.probNode = probNode;
 	}
 
 	

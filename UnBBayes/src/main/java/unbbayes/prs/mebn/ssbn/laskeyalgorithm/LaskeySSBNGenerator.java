@@ -12,7 +12,9 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
+import unbbayes.prs.mebn.ssbn.BuilderLocalDistributionImpl;
 import unbbayes.prs.mebn.ssbn.BuilderStructureImpl;
+import unbbayes.prs.mebn.ssbn.IBuilderLocalDistribution;
 import unbbayes.prs.mebn.ssbn.IBuilderStructure;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
@@ -35,7 +37,6 @@ import unbbayes.prs.mebn.ssbn.pruner.impl.PruneStructureImpl;
 
 public class LaskeySSBNGenerator implements ISSBNGenerator{
 	
-	private List<Query> queries; 
 	private KnowledgeBase knowledgeBase; 
 	private MultiEntityBayesianNetwork mebn; 
 	private SSBN ssbn; 
@@ -44,6 +45,7 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 	
 	private IBuilderStructure builderStructure; 
 	private IPruneStructure pruneStructure; 
+	private IBuilderLocalDistribution buildLocalDistribution; 
 	
 	public LaskeySSBNGenerator(LaskeyAlgorithmParameters _parameters){
 		
@@ -51,10 +53,11 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		
 		setBuilderStructure(BuilderStructureImpl.newInstance()); 
 		setPruneStructure(PruneStructureImpl.newInstance()); 
+		setBuildLocalDistribution(BuilderLocalDistributionImpl.newInstance()); 
 	
 	}
 	
-	//Use Strategy
+	//Use Strategy design pattern
 	public SSBN generateSSBN(List<Query> queryList, KnowledgeBase knowledgeBase)
 			throws SSBNNodeGeneralException,
 			ImplementationRestrictionException, MEBNException,
@@ -72,7 +75,6 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		
 		if(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION).equals("true")){
 			initialization(queryList, knowledgeBase); 
-			System.out.println("Nodes found = " + ssbn.getSsbnNodeList().size());
 		}
 		
 		//Step 2: 
@@ -168,8 +170,7 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 	
 	//Build Local Distribution
 	private void buildLocalDistribution(){
-		//Adapte the structure for a SSBNNode with all necessary (if a Simple
-		//node is used) and create the CPT of each node. 
+		getBuildLocalDistribution().buildLocalDistribution(ssbn); 
 	}
 
 	public IBuilderStructure getBuilderStructure() {
@@ -186,6 +187,15 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 
 	public void setPruneStructure(IPruneStructure pruneStructure) {
 		this.pruneStructure = pruneStructure;
+	}
+
+	public IBuilderLocalDistribution getBuildLocalDistribution() {
+		return buildLocalDistribution;
+	}
+
+	public void setBuildLocalDistribution(
+			IBuilderLocalDistribution buildLocalDistribution) {
+		this.buildLocalDistribution = buildLocalDistribution;
 	}
 	
 }

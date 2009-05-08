@@ -23,13 +23,14 @@ package unbbayes.prs.mebn.ssbn;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 
 /**
  * @author Shou Matsumoto
- *
+ * @author Laecio Lima dos Santos 
  */
 public class Query {
 	
@@ -39,10 +40,21 @@ public class Query {
 
 	private ResidentNode residentNode = null; 
 	private List<OVInstance> arguments = null;
+	private SimpleSSBNNode simpleSSBNNode = null; 
+	
+	private ProbabilisticNode probabilisticNode = null; 
+	
+	/*
+	 * Note: For while have two versions of the Query's constructor for mantain the 
+	 * conpatibility for the GIA's Algorithm version and for the Laskey's 
+	 * algorithm version. Solve this after do the refactory in the Gia version. 
+	 */
 	
 	/**
-	 * Default query. 
+	 * Default query.
+	 * This version is used in Gia's SSBN Algorithm 
 	 */
+	@Deprecated
 	public Query(KnowledgeBase kb, SSBNNode queryNode, MultiEntityBayesianNetwork mebn) {
 		this.mebn = mebn; 
 		this.kb = kb; 
@@ -51,10 +63,20 @@ public class Query {
 		this.arguments = new ArrayList<OVInstance>(); 
 	}
 	
+	/**
+	 * This version is used in Laskey's SSBN Algorithm
+	 * @param residentNode
+	 * @param arguments
+	 */
 	public Query(ResidentNode residentNode, List<OVInstance> arguments){
 		this.residentNode = residentNode;
 		this.mebn = residentNode.getMFrag().getMultiEntityBayesianNetwork(); 
 		this.arguments = arguments; 
+		
+		this.simpleSSBNNode =  SimpleSSBNNode.getInstance(residentNode); 
+		for(OVInstance ovInstance: arguments){
+			simpleSSBNNode.setEntityForOv(ovInstance.getOv(), ovInstance.getEntity()); 
+		}
 	}
 
 	public KnowledgeBase getKb() {
@@ -76,9 +98,9 @@ public class Query {
 	public SSBNNode getQueryNode() {
 		return queryNode;
 	}
-
-	public void setQueryNode(SSBNNode queryNode) {
-		this.queryNode = queryNode;
+	
+	public SimpleSSBNNode getSSBNNode(){
+		return simpleSSBNNode; 
 	}
 
 	public ResidentNode getResidentNode() {
@@ -91,6 +113,14 @@ public class Query {
 	
 	public void addArgument(OVInstance ovInstance){
 		arguments.add(ovInstance); 
+	}
+
+	public ProbabilisticNode getProbabilisticNode() {
+		return probabilisticNode;
+	}
+
+	public void setProbabilisticNode(ProbabilisticNode probabilisticNode) {
+		this.probabilisticNode = probabilisticNode;
 	}
 	
 	
