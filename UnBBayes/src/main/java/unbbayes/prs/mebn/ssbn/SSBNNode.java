@@ -130,6 +130,8 @@ public class SSBNNode implements INode {
 			this.setProbNode(probNode);
 		}
 		
+		updateProbabilisticNodeName(); 
+		
 		this.actualValues =  this.residentNode.getPossibleValueListIncludingEntityInstances();
 		
 		this.setUsingDefaultCPT(false);
@@ -338,9 +340,6 @@ public class SSBNNode implements INode {
 	}
 	
 	
-	
-	
-	
 	/**
 	 * Adds an argument. If input is null, NullPointerException should be returned.
 	 * It does nothing when entityInstanceName is not null but empty!!
@@ -355,6 +354,8 @@ public class SSBNNode implements INode {
 		OVInstance ovInstance = OVInstance.getInstance( ov, LiteralEntityInstance.getInstance(entityInstanceName , ov.getValueType())); 
 		this.arguments.add(ovInstance);
 	    this.argumentsResidentMFrag.add(ovInstance); 
+	    
+		updateProbabilisticNodeName(); 
 	}
 	
 	/**
@@ -364,7 +365,11 @@ public class SSBNNode implements INode {
 	public void addArgument(OVInstance ovInstance){
 		this.arguments.add(ovInstance); 
 	    this.argumentsResidentMFrag.add(ovInstance); 
+	    
+	    updateProbabilisticNodeName(); 
+	
 	}
+
 	
 	/**
 	 * Adds an argument at a particular position	 * 
@@ -381,6 +386,8 @@ public class SSBNNode implements INode {
 		OVInstance ovInstance = OVInstance.getInstance( ov, LiteralEntityInstance.getInstance(entityInstanceName , ov.getValueType())); 
 		this.arguments.add(pos, ovInstance);
 		this.argumentsResidentMFrag.add(ovInstance); 
+		
+		updateProbabilisticNodeName(); 
 	}
 	
 	/**
@@ -389,6 +396,8 @@ public class SSBNNode implements INode {
 	public void removeAllArguments(){
 		this.arguments.clear(); 
 		this.argumentsResidentMFrag.clear(); 
+		
+		updateProbabilisticNodeName(); 
 	}
 	
 	
@@ -412,11 +421,6 @@ public class SSBNNode implements INode {
 		return (value != null); 
 	}
 	
-	
-
-	public void addTemporaryParent(SSBNNode parent, boolean isCheckingParentResident) throws SSBNNodeGeneralException{
-		
-	}
 	
 	/**
 	 * This will add a parent to this node. It may check if the resident node
@@ -760,12 +764,6 @@ public class SSBNNode implements INode {
 		}
 		name += ")";
 		
-		//strange... very strange... get + set?
-		if (this.getProbNode() != null) {
-			this.getProbNode().setName(name);
-			this.getProbNode().setDescription(name);
-		}
-		
 		//name +=" [id=" + id + "] P=" + permanent; 
 		
 		return name;
@@ -944,8 +942,7 @@ public class SSBNNode implements INode {
 		this.appendProbNodeState();
 		
 		if (this.probabilisticNode != null) {
-			this.probabilisticNode.setName(this.getName());
-			this.getProbNode().setDescription(this.getName()); // TODO optimize. above code is setting probnode'name twice
+			updateProbabilisticNodeName(); 
 			this.getProbabilisticNetwork().addNode(this.probabilisticNode);
 		}
 	}
@@ -955,14 +952,6 @@ public class SSBNNode implements INode {
 	 */
 	public ResidentNode getResident() {
 		return residentNode;
-	}
-
-	/**
-	 * @param resident the resident to set
-	 */
-	protected void setResident(ResidentNode resident) {
-		this.residentNode = resident;
-		this.setProbNode(new ProbabilisticNode());
 	}
 
 	/**
@@ -1003,20 +992,6 @@ public class SSBNNode implements INode {
 	 */
 	public ProbabilisticNetwork getProbabilisticNetwork() {
 		return probabilisticNetwork;
-	}
-
-	/**
-	 * @param probabilisticNetwork the probabilisticNetwork to set
-	 */
-	public void setProbabilisticNetwork(ProbabilisticNetwork probabilisticNetwork) throws SSBNNodeGeneralException {
-		if (probabilisticNetwork == null) {
-			throw new SSBNNodeGeneralException(this.resource.getString("NoNetworkDefined"));
-		}
-		this.probabilisticNetwork = probabilisticNetwork;
-		
-		if (this.getProbNode() != null) {
-			this.probabilisticNetwork.addNode(this.getProbNode());
-		}
 	}
 	
 	public String toString(){
@@ -1107,6 +1082,14 @@ public class SSBNNode implements INode {
 	
 	
 	//------------------- PRIVATE METHODS --------------------------------
+	
+	private void updateProbabilisticNodeName(){
+		if (this.getProbNode() != null) {
+			String name = getName(); 
+			this.getProbNode().setName(name);
+			this.getProbNode().setDescription(name);
+		}
+	}
 	
 	private String getNameByDots(String...names) {
 		String dotName = new String(names[0]);
