@@ -1712,7 +1712,7 @@ public class MEBNController  {
 	}
 
 	/**
-	 * Execute a query. 
+	 * Execute a query using the Laskey's  
 	 * 
 	 * @param residentNode
 	 * @param arguments
@@ -1730,6 +1730,9 @@ public class MEBNController  {
 	                                  MEBNException, 
 	                                  OVInstanceFaultException, InvalidParentException {
 		
+
+		ProbabilisticNetwork probabilisticNetwork = null; 
+		
 		mebnEditionPane.setStatus(resource.getString("statusGeneratingSSBN")); 
 		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		
@@ -1738,12 +1741,56 @@ public class MEBNController  {
 		LaskeyAlgorithmParameters parameters = new LaskeyAlgorithmParameters(); 
 		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION, "true");
 		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_BUILDER, "true"); 
-		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_PRUNE, "false"); 
+		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_PRUNE, "true"); 
 		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION, "true"); 
 	    
 		ISSBNGenerator ssbngenerator = new LaskeySSBNGenerator(parameters);
 		
 		ssbn = ssbngenerator.generateSSBN(listQueries, getKnowledgeBase()); 
+		
+		probabilisticNetwork = ssbn.getProbabilisticNetwork();
+
+//		if(!query.getQueryNode().isFinding()){
+
+				showSSBNGraph = true; 
+				specificSituationBayesianNetwork = probabilisticNetwork;
+
+				try {
+					
+					ssbn.compileAndInitializeSSBN();
+					
+					if (ssbn.getWarningList().size() > 0){
+						openWarningDialog(); 	
+					}
+					
+					this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
+
+					Dimension sizeOfGraph = PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(specificSituationBayesianNetwork); 
+					Dimension originalDimension = this.getMebnEditionPane().getNetworkWindow().getGraphPane().getGraphDimension(); 
+					if((originalDimension.getHeight() < sizeOfGraph.getHeight()) || 
+							(originalDimension.getWidth() < sizeOfGraph.getWidth())){
+						dimensionSSBNGraph = sizeOfGraph; 
+						this.getMebnEditionPane().getNetworkWindow().getGraphPane().setGraphDimension(sizeOfGraph); 
+						this.getMebnEditionPane().getNetworkWindow().getGraphPane().update(); 
+					}
+					
+				} catch (Exception e) {
+					e.printStackTrace(); 
+					screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+					JOptionPane.showMessageDialog(getScreen(), 
+							e.getMessage());
+				} 
+
+
+			
+//		}else{
+//			JOptionPane.showMessageDialog(getScreen(), 
+//					query.getQueryNode().getName() + " = " + query.getQueryNode().getValue());
+//	
+//		}
+
+		mebnEditionPane.setStatus(resource.getString("statusReady")); 
+		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		
 		mebnEditionPane.setStatus(resource.getString("statusReady")); 
 		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
