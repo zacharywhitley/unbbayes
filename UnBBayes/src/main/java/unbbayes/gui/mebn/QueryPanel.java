@@ -26,6 +26,7 @@ import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -50,9 +51,14 @@ import unbbayes.gui.UnBBayesFrame;
 import unbbayes.gui.mebn.auxiliary.ListCellRenderer;
 import unbbayes.gui.mebn.util.OrganizerUtils;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.mebn.Argument;
+import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.exception.MEBNException;
+import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
+import unbbayes.prs.mebn.ssbn.OVInstance;
+import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
@@ -250,8 +256,44 @@ public class QueryPanel extends JDialog{
 						setVisible(false); 
 						
 						mebnController.getScreen().setCursor(new Cursor(Cursor.WAIT_CURSOR)); 
-				        ProbabilisticNetwork network = mebnController.executeQuery(residentNode, arguments);
-						mebnController.getScreen().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+//				        ProbabilisticNetwork network = mebnController.executeQuery(residentNode, arguments);
+						
+						List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
+						
+						List<Argument> arglist = residentNode.getArgumentList();
+						
+						if (arglist.size() != arguments.length) {
+							throw new InconsistentArgumentException();
+						}
+						
+						for (int i = 1; i <= arguments.length; i++) {
+
+							//TODO It has to get in the right order. For some reason in argList, 
+							// sometimes the second argument comes first
+							for (Argument argument : arglist) {
+								if (argument.getArgNumber() == i) {
+									OrdinaryVariable ov = argument.getOVariable(); 
+									OVInstance ovInstance = OVInstance.getInstance(
+											ov, 
+											LiteralEntityInstance.getInstance(arguments[i-1].getName(), ov.getValueType()));
+									ovInstanceList.add(ovInstance); 
+									break;
+								}
+							}
+
+
+						}
+						
+						Query query = new Query(residentNode, ovInstanceList); 
+						
+						List<Query> queryList = new ArrayList<Query>();
+						queryList.add(query); 
+						ProbabilisticNetwork network = mebnController.executeQueryLaskeyAlgorithm(queryList);
+						
+						
+						
+						
+				        mebnController.getScreen().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 						
 				        exit();
 					}
