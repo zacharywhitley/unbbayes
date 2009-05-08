@@ -81,11 +81,11 @@ public class BuilderStructureImplTest extends TestCase{
 		 */
 		SSBN ssbn = hepparTestSet.executeTestCase1(); 
 		System.out.println("HeparTestSet TestCase 01");
-		for(SimpleSSBNNode s: ssbn.getSsbnNodeList()){
+		for(SimpleSSBNNode s: ssbn.getSimpleSsbnNodeList()){
 			System.out.println(s);
 		}
-		System.out.println("Size=" + ssbn.getSsbnNodeList().size());
-		assertEquals(ssbn.getSsbnNodeList().size(), 4); 
+		System.out.println("Size=" + ssbn.getSimpleSsbnNodeList().size());
+		assertEquals(ssbn.getSimpleSsbnNodeList().size(), 4); 
 		
 		System.out.println("\n---------------------------------------------------\n");
 		
@@ -98,11 +98,11 @@ public class BuilderStructureImplTest extends TestCase{
 		 */
 		ssbn = hepparTestSet.executeTestCase18(); 
 		System.out.println("HeparTestSet TestCase 18");
-		for(SimpleSSBNNode s: ssbn.getSsbnNodeList()){
+		for(SimpleSSBNNode s: ssbn.getSimpleSsbnNodeList()){
 			System.out.println(s);
 		}
-		System.out.println("Size=" + ssbn.getSsbnNodeList().size());
-		assertEquals(ssbn.getSsbnNodeList().size(), 4); 
+		System.out.println("Size=" + ssbn.getSimpleSsbnNodeList().size());
+		assertEquals(ssbn.getSimpleSsbnNodeList().size(), 4); 
 		
 		System.out.println("\n---------------------------------------------------\n");
 		
@@ -116,11 +116,11 @@ public class BuilderStructureImplTest extends TestCase{
 		 */
 		ssbn = hepparTestSet.executeTestCase24(); 
 		System.out.println("HeparTestSet TestCase 24");
-		for(SimpleSSBNNode s: ssbn.getSsbnNodeList()){
+		for(SimpleSSBNNode s: ssbn.getSimpleSsbnNodeList()){
 			System.out.println(s);
 		}
-		System.out.println("Size=" + ssbn.getSsbnNodeList().size());
-		assertEquals(ssbn.getSsbnNodeList().size(), 5); 
+		System.out.println("Size=" + ssbn.getSimpleSsbnNodeList().size());
+		assertEquals(ssbn.getSimpleSsbnNodeList().size(), 5); 
 		
 		System.out.println("\n---------------------------------------------------\n");
 		
@@ -144,11 +144,11 @@ public class BuilderStructureImplTest extends TestCase{
 		 */
 		ssbn = hepparTestSet.executeTestCase28(); 
 		System.out.println("HeparTestSet TestCase 28");
-		for(SimpleSSBNNode s: ssbn.getSsbnNodeList()){
+		for(SimpleSSBNNode s: ssbn.getSimpleSsbnNodeList()){
 			System.out.println(s);
 		}
-		System.out.println("Size=" + ssbn.getSsbnNodeList().size());
-		assertEquals(ssbn.getSsbnNodeList().size(), 11); 
+		System.out.println("Size=" + ssbn.getSimpleSsbnNodeList().size());
+		assertEquals(ssbn.getSimpleSsbnNodeList().size(), 11); 
 		 
 		/*
 		 * Test 63: Expected (7 nodes)
@@ -165,11 +165,11 @@ public class BuilderStructureImplTest extends TestCase{
 		 */
 		ssbn = hepparTestSet.executeTestCase63(); 
 		System.out.println("HeparTestSet TestCase 63");
-		for(SimpleSSBNNode s: ssbn.getSsbnNodeList()){
+		for(SimpleSSBNNode s: ssbn.getSimpleSsbnNodeList()){
 			System.out.println(s);
 		}
-		System.out.println("Size=" + ssbn.getSsbnNodeList().size());
-		assertEquals(ssbn.getSsbnNodeList().size(), 11); 
+		System.out.println("Size=" + ssbn.getSimpleSsbnNodeList().size());
+		assertEquals(ssbn.getSimpleSsbnNodeList().size(), 11); 
 		
 	}
 
@@ -315,13 +315,13 @@ public class BuilderStructureImplTest extends TestCase{
 
 	private void printSSBNNodeList(SSBN ssbn) {
 		System.out.println("\n\n\n Result");
-		for(SimpleSSBNNode s: ssbn.getSsbnNodeList()){
+		for(SimpleSSBNNode s: ssbn.getSimpleSsbnNodeList()){
 			System.out.println(s);
 			for(INode sChild: s.getChildNodes()){
 				System.out.println("   " + sChild);
 			}
 		}
-		System.out.println("Size=" + ssbn.getSsbnNodeList().size());
+		System.out.println("Size=" + ssbn.getSimpleSsbnNodeList().size());
 		System.out.println("---------------------------------------------------\n\n");
 	}
 	

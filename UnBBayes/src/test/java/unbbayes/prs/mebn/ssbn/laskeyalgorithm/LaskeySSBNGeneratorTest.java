@@ -67,32 +67,32 @@ public class LaskeySSBNGeneratorTest  extends TestCase {
 		
 		SSBN ssbn = hepparTestSet.executeTestCase1(); 
 		System.out.println("HeparTestSet TestCase 01");
-		for(SimpleSSBNNode s: ssbn.getSsbnNodeList()){
+		for(SimpleSSBNNode s: ssbn.getSimpleSsbnNodeList()){
 			System.out.println(s);
 		}
-		System.out.println("Size=" + ssbn.getSsbnNodeList().size());
+		System.out.println("Size=" + ssbn.getSimpleSsbnNodeList().size());
 		
 		System.out.println("....\n\n");
 
-		assertEquals(ssbn.getSsbnNodeList().size(), 1);
+		assertEquals(ssbn.getSimpleSsbnNodeList().size(), 1);
 				
 		ssbn = hepparTestSet.executeTestCase18(); 
 		System.out.println("HeparTestSet TestCase 18");
-		for(SimpleSSBNNode s: ssbn.getSsbnNodeList()){
+		for(SimpleSSBNNode s: ssbn.getSimpleSsbnNodeList()){
 			System.out.println(s);
 		}
-		System.out.println("Size=" + ssbn.getSsbnNodeList().size());
+		System.out.println("Size=" + ssbn.getSimpleSsbnNodeList().size());
 
-		assertEquals(ssbn.getSsbnNodeList().size(), 2); 
+		assertEquals(ssbn.getSimpleSsbnNodeList().size(), 2); 
 		
 		ssbn = hepparTestSet.executeTestCase24(); 
 		System.out.println("HeparTestSet TestCase 24");
-		for(SimpleSSBNNode s: ssbn.getSsbnNodeList()){
+		for(SimpleSSBNNode s: ssbn.getSimpleSsbnNodeList()){
 			System.out.println(s);
 		}
-		System.out.println("Size=" + ssbn.getSsbnNodeList().size());
+		System.out.println("Size=" + ssbn.getSimpleSsbnNodeList().size());
 		
-		assertEquals(ssbn.getSsbnNodeList().size(), 3); 
+		assertEquals(ssbn.getSimpleSsbnNodeList().size(), 3); 
 		 
 	}
 	
@@ -166,11 +166,11 @@ public class LaskeySSBNGeneratorTest  extends TestCase {
 				fail(); 
 			} 
 			
-			for(SimpleSSBNNode s: ssbn.getSsbnNodeList()){
+			for(SimpleSSBNNode s: ssbn.getSimpleSsbnNodeList()){
 				System.out.println(s);
 			}
-			System.out.println("Size=" + ssbn.getSsbnNodeList().size());
-			assertEquals(ssbn.getSsbnNodeList().size(), 37); 
+			System.out.println("Size=" + ssbn.getSimpleSsbnNodeList().size());
+			assertEquals(ssbn.getSimpleSsbnNodeList().size(), 37); 
 			System.out.println("---------------------------------------------------\n\n");
 
 			
