@@ -70,7 +70,7 @@ public class DSeparationPruner implements IPruner {
 		// converts a list of queries into a list of INodes
 		List<INode> queryNodes = new ArrayList<INode>();
 		for (Query query : ssbn.getQueryList()) {
-			queryNodes.add(query.getQueryNode());
+			queryNodes.add(query.getSSBNNode());
 		}
 		
 		// stores the nodes to be removed
@@ -80,7 +80,7 @@ public class DSeparationPruner implements IPruner {
 		Set<INode> uniqueElementSet = new HashSet<INode>(1);
 		
 		// find d-separated nodes
-		for (INode node : ssbn.getSsbnNodeList()) {
+		for (INode node : ssbn.getSimpleSsbnNodeList()) {
 			if (!queryNodes.contains(node) && !findingNodes.contains(node)) {
 				// if node is neither query nor finding, test d-separation
 				uniqueElementSet.clear();
@@ -96,7 +96,7 @@ public class DSeparationPruner implements IPruner {
 		
 		// remove d-separated nodes from ssbn
 		// TODO check if it is OK to retain the edges
-		ssbn.getSsbnNodeList().removeAll(nodesToPrune);
+		ssbn.getSimpleSsbnNodeList().removeAll(nodesToPrune);
 	}
 
 	/**
