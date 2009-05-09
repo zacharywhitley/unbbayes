@@ -3,8 +3,16 @@
  */
 package unbbayes.prs.mebn.ssbn.pruner.impl;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import unbbayes.prs.INode;
+import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBN;
 import unbbayes.prs.mebn.ssbn.pruner.IPruner;
+import unbbayes.util.dseparation.impl.MSeparationUtility;
 
 /**
  * @author Shou Matsumoto
@@ -32,7 +40,27 @@ public class BarrenNodePruner implements IPruner {
 	 * @see unbbayes.prs.mebn.ssbn.pruner.IPruner#prune(unbbayes.prs.mebn.ssbn.SSBN)
 	 */
 	public void prune(SSBN ssbn) {
-		throw new java.lang.IllegalStateException("Not yet implemented");
+		MSeparationUtility utility = MSeparationUtility.newInstance();
+		
+		// extract finding's ancestors
+		Set<INode> ancestors = utility.getAllAncestors(new HashSet(ssbn.getFindingList()));
+
+		// extract queries' ancestors
+		Set<INode> queries = new HashSet<INode>();
+		for (Query query : ssbn.getQueryList()) {
+			queries.add(query.getSSBNNode());
+		}
+		ancestors.addAll(utility.getAllAncestors(queries));
+		
+		Collection<INode> nodesToRemove = new HashSet<INode>();
+		
+		for (INode node : ssbn.getSsbnNodeList()) {
+			if (ancestors.contains(node)) {
+				nodesToRemove.add(node);
+			}
+		}
+		
+		ssbn.removeAll(nodesToRemove);
 	}
 
 }

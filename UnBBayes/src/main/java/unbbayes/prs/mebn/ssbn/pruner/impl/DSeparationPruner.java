@@ -66,12 +66,14 @@ public class DSeparationPruner implements IPruner {
 	public void prune(SSBN ssbn) {
 		// converts a list of findings into a list of INodes
 		List<INode> findingNodes = new ArrayList<INode>(ssbn.getFindingList());
+		Set<INode> findingSet = new HashSet<INode>(findingNodes);
 		
 		// converts a list of queries into a list of INodes
 		List<INode> queryNodes = new ArrayList<INode>();
 		for (Query query : ssbn.getQueryList()) {
 			queryNodes.add(query.getSSBNNode());
 		}
+		Set<INode> querySet =  new HashSet<INode>(queryNodes);
 		
 		// stores the nodes to be removed
 		Set<INode> nodesToPrune = new HashSet<INode>();
@@ -86,8 +88,7 @@ public class DSeparationPruner implements IPruner {
 				uniqueElementSet.clear();
 				uniqueElementSet.add(node);
 				if (this.getDSeparationUtility().isDSeparated(null, uniqueElementSet, 
-															  new HashSet<INode>(queryNodes), 
-															  new HashSet<INode>(findingNodes))) {
+															  querySet, findingSet)) {
 					// node is d-separated from query given finding
 					nodesToPrune.add(node);
 				}
@@ -96,7 +97,8 @@ public class DSeparationPruner implements IPruner {
 		
 		// remove d-separated nodes from ssbn
 		// TODO check if it is OK to retain the edges
-		ssbn.getSimpleSsbnNodeList().removeAll(nodesToPrune);
+		// TODO migrate this routine into the upper entity (class SSBN)
+		ssbn.removeAll(nodesToPrune);
 	}
 
 	/**

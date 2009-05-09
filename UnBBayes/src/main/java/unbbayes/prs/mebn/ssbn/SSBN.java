@@ -22,10 +22,12 @@
 package unbbayes.prs.mebn.ssbn;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import unbbayes.io.ILogManager;
 import unbbayes.io.TextLogManager;
+import unbbayes.prs.INode;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
@@ -190,8 +192,9 @@ public class SSBN {
 	/**
 	 * Used to mantain the compatibility for the Gia's SSBN Algorithm. 
 	 * @param findingList
+	 * 
+	 * @deprecated
 	 */
-	@Deprecated
 	public void setFindingList(List<SSBNNode> findingList){
 		
 		for(SSBNNode finding: findingList){
@@ -306,5 +309,25 @@ public class SSBN {
 
 
 	
-	
+	/**
+	 * Removes a specified collection of nodes from this network, regarding each
+	 * node's dependency (if any node references the nodes given by the argument, it
+	 * removes that dependency)
+	 * It does not remove finding nodes or query nodes, yet.
+	 * @param nodesToRemove
+	 */
+	public boolean removeAll(Collection<INode> nodesToRemove) {
+		boolean ret = false;
+		for (INode nodeToRemove : nodesToRemove) {
+			for (INode parent : nodeToRemove.getParentNodes()) {
+				parent.removeChildNode(nodeToRemove);
+			}
+			for (INode child : nodeToRemove.getChildNodes()) {
+				child.removeParentNode(nodeToRemove);
+			}
+		}
+		ret = this.getSsbnNodeList().removeAll(nodesToRemove) || ret;
+		ret = this.getSimpleSsbnNodeList().removeAll(nodesToRemove) || ret;
+		return ret;
+	}
 }
