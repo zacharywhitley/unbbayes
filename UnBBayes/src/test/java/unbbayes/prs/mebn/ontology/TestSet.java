@@ -9,7 +9,8 @@ import java.util.Locale;
 
 import javax.xml.bind.JAXBException;
 
-import unbbayes.io.LogManager;
+import unbbayes.io.ILogManager;
+import unbbayes.io.TextLogManager;
 import unbbayes.io.XMLBIFIO;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.TreeVariable;
@@ -36,14 +37,14 @@ public abstract class TestSet {
 
 	private static final String PATH_Tests = "examples/mebn/Tests"; 
 	
-	protected LogManager logManager; 
+	protected ILogManager logManager; 
 	private ISSBNGenerator ssbnGenerator; 
 	
 	public static boolean compileSSBNGenerated = false; 
 	public static boolean printTable = false; 
 	
 	public TestSet(ISSBNGenerator ssbnGenerator){
-		logManager = new LogManager(); 
+		logManager = new TextLogManager(); 
 		this.ssbnGenerator = ssbnGenerator; 
 		
 

@@ -23,16 +23,8 @@ package unbbayes.io;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.ResourceBundle;
 
-import unbbayes.prs.Node;
-import unbbayes.prs.bn.Clique;
-import unbbayes.prs.bn.JunctionTree;
-import unbbayes.prs.bn.PotentialTable;
-import unbbayes.prs.bn.Separator;
 import unbbayes.util.Debug;
 
 /**
@@ -42,7 +34,7 @@ import unbbayes.util.Debug;
  * @author Michael S. Onishi
  * @version 1.0
  */
-public class LogManager implements java.io.Serializable {
+public class TextLogManager implements ILogManager, java.io.Serializable {
     
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;	
@@ -50,17 +42,21 @@ public class LogManager implements java.io.Serializable {
 	public static final int DEFAULT_BUFFER_SIZE = 10 * 1024;
     public static final String DEFAULT_FILENAME = "aj.txt";
 
+    public static final int numColumn = 80; 
+    public static final char separator = '*'; 
+    
     private StringBuffer log;
     
     /** Load resource file from this package */
-  	protected static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.io.resources.IoResources");
+  	protected static ResourceBundle resource = ResourceBundle.getBundle(
+  			"unbbayes.io.resources.IoResources");
 
-    public LogManager(int bufferSize) {
+    public TextLogManager(int bufferSize) {
         log = new StringBuffer(bufferSize);
         reset();
     }
 
-    public LogManager() {
+    public TextLogManager() {
         this(DEFAULT_BUFFER_SIZE);
     }
 
@@ -96,6 +92,13 @@ public class LogManager implements java.io.Serializable {
     	}
     }
     
+    public void appendSeparator(){
+    	for(int i = 0; i < numColumn; i++){
+    		log.append(separator); 
+    	}
+    	log.append("\n"); 
+    }
+    
     public String getLog() {
         return log.toString();
     }
@@ -106,5 +109,13 @@ public class LogManager implements java.io.Serializable {
         out.flush();
         out.close();
     }
+
+	public void addTitle(String text) {
+		append(text); 
+	}
+
+	public void appendSectionTitle(String text) {
+		append(text); 
+	}
 
 }

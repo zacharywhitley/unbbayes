@@ -19,7 +19,7 @@ import unbbayes.prs.bn.Separator;
  * @version 1.0
  */
 
-public class NetworkCompilationLogManager extends LogManager{
+public class NetworkCompilationLogManager extends TextLogManager{
 
     /**
      *  Initializes the logfile of network compilation. Writes the header inside the file.

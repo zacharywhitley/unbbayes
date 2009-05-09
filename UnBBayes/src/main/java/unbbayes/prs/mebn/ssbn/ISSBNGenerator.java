@@ -36,9 +36,14 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 public interface ISSBNGenerator {
 
 	/**
+	 * Generate the SSBN from the list of queries and the knowledge base
 	 * 
-	 * @param query
+	 * @param listQueries List of the queries (don't empty)
+	 * @param kb          KnowledgeBase populated with the entities and findings of the 
+	 *                    specific situation. 
+	 * 
 	 * @return The SSBN generated. 
+	 * 
 	 * @throws SSBNNodeGeneralException
 	 * @throws ImplementationRestrictionException
 	 * @throws MEBNException 

@@ -1586,7 +1586,7 @@ public class MEBNController  {
 		mebnEditionPane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		
 		if (lastException != null) {
-			// commenting below... Power loom was throwing stack trace as message...
+			// commenting below... PowerLoom was throwing stack trace as message...
 			//throw new MEBNException(lastException);
 			throw new MEBNException(resourcePN.getString("loadHasError"));
 		}
@@ -1730,7 +1730,6 @@ public class MEBNController  {
 	                                  MEBNException, 
 	                                  OVInstanceFaultException, InvalidParentException {
 		
-
 		ProbabilisticNetwork probabilisticNetwork = null; 
 		
 		mebnEditionPane.setStatus(resource.getString("statusGeneratingSSBN")); 
@@ -1750,44 +1749,37 @@ public class MEBNController  {
 		
 		probabilisticNetwork = ssbn.getProbabilisticNetwork();
 
-//		if(!query.getQueryNode().isFinding()){
+		showSSBNGraph = true; 
+		specificSituationBayesianNetwork = probabilisticNetwork;
 
-				showSSBNGraph = true; 
-				specificSituationBayesianNetwork = probabilisticNetwork;
+		try {
 
-				try {
-					
-					ssbn.compileAndInitializeSSBN();
-					
-					if (ssbn.getWarningList().size() > 0){
-						openWarningDialog(); 	
-					}
-					
-					this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
+			ssbn.compileAndInitializeSSBN();
 
-					Dimension sizeOfGraph = PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(specificSituationBayesianNetwork); 
-					Dimension originalDimension = this.getMebnEditionPane().getNetworkWindow().getGraphPane().getGraphDimension(); 
-					if((originalDimension.getHeight() < sizeOfGraph.getHeight()) || 
-							(originalDimension.getWidth() < sizeOfGraph.getWidth())){
-						dimensionSSBNGraph = sizeOfGraph; 
-						this.getMebnEditionPane().getNetworkWindow().getGraphPane().setGraphDimension(sizeOfGraph); 
-						this.getMebnEditionPane().getNetworkWindow().getGraphPane().update(); 
-					}
-					
-				} catch (Exception e) {
-					e.printStackTrace(); 
-					screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-					JOptionPane.showMessageDialog(getScreen(), 
-							e.getMessage());
-				} 
+			if (ssbn.getWarningList().size() > 0){
+				openWarningDialog(); 	
+			}
 
+			this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
 
-			
-//		}else{
-//			JOptionPane.showMessageDialog(getScreen(), 
-//					query.getQueryNode().getName() + " = " + query.getQueryNode().getValue());
-//	
-//		}
+			Dimension sizeOfGraph = PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(specificSituationBayesianNetwork); 
+			Dimension originalDimension = this.getMebnEditionPane().getNetworkWindow().getGraphPane().getGraphDimension(); 
+
+			if((originalDimension.getHeight() < sizeOfGraph.getHeight()) || 
+					(originalDimension.getWidth() < sizeOfGraph.getWidth())){
+
+				dimensionSSBNGraph = sizeOfGraph; 
+				this.getMebnEditionPane().getNetworkWindow().getGraphPane().setGraphDimension(sizeOfGraph); 
+				this.getMebnEditionPane().getNetworkWindow().getGraphPane().update(); 
+
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace(); 
+			screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			JOptionPane.showMessageDialog(getScreen(), 
+					e.getMessage());
+		} 
 
 		mebnEditionPane.setStatus(resource.getString("statusReady")); 
 		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));

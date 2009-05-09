@@ -24,9 +24,11 @@ package unbbayes.prs.mebn.ssbn;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.io.LogManager;
+import unbbayes.io.ILogManager;
+import unbbayes.io.TextLogManager;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;
+import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
 /**
@@ -39,8 +41,9 @@ public class SSBN {
 
 	private ProbabilisticNetwork probabilisticNetwork; 
 	
-	private List<SimpleSSBNNode> findingList; 
+	private KnowledgeBase knowledgeBase; 
 	
+	private List<SimpleSSBNNode> findingList; 
 	private List<Query> queryList; 
 	
 	private List<SimpleSSBNNode> simpleSSBNNodeList; 
@@ -51,7 +54,7 @@ public class SSBN {
 	private List<MFragInstance> mFragInstanceList; 
 	
 	//informations about the creation of the SSBN
-	private LogManager logManager = new LogManager();
+	private ILogManager logManager;
 	private List<SSBNWarning> warningList; 
 	
 	private enum State{
@@ -78,6 +81,8 @@ public class SSBN {
 		ssbnNodeList = new ArrayList<SSBNNode>(); 
 		edgeList = new ArrayList<SimpleEdge>();
 		mFragInstanceList = new ArrayList<MFragInstance>(); 
+		
+		logManager = new TextLogManager(); 
 	}
 	
 	
@@ -205,9 +210,6 @@ public class SSBN {
 		probabilisticNetwork.updateEvidences();
 		state = State.FINDINGS_PROPAGATED; 
 	}
-
-	
-	
 	
 	// GET AND SET'S METHODS
 	
@@ -270,8 +272,36 @@ public class SSBN {
 		this.warningList = e ; 
 	}
 	
-	public LogManager getLogManager() {
+	public ILogManager getLogManager() {
 		return logManager;
+	}
+
+
+
+
+	public KnowledgeBase getKnowledgeBase() {
+		return knowledgeBase;
+	}
+
+
+
+
+	public void setKnowledgeBase(KnowledgeBase knowledgeBase) {
+		this.knowledgeBase = knowledgeBase;
+	}
+
+
+
+
+	public State getState() {
+		return state;
+	}
+
+
+
+
+	public void setState(State state) {
+		this.state = state;
 	}
 
 

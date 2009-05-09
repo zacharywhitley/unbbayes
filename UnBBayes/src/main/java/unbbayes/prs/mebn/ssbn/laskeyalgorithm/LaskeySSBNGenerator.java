@@ -37,10 +37,6 @@ import unbbayes.prs.mebn.ssbn.pruner.impl.PruneStructureImpl;
 
 public class LaskeySSBNGenerator implements ISSBNGenerator{
 	
-	private KnowledgeBase knowledgeBase; 
-	private MultiEntityBayesianNetwork mebn; 
-	private SSBN ssbn; 
-	
 	private Parameters parameters; 
 	
 	private IBuilderStructure builderStructure; 
@@ -51,6 +47,7 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		
 		parameters = _parameters; 
 		
+		//Set the default implementations. 
 		setBuilderStructure(BuilderStructureImpl.newInstance()); 
 		setPruneStructure(PruneStructureImpl.newInstance()); 
 		setBuildLocalDistribution(BuilderLocalDistributionImpl.newInstance()); 
@@ -63,33 +60,26 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 			ImplementationRestrictionException, MEBNException,
 			OVInstanceFaultException, InvalidParentException {
 		
-		//Step 0: Testing the arguments and restrictions 
-		
-		this.ssbn = new SSBN(); 
-		
-		if(queryList.size() == 0){
-			//TODO
-		}
+		SSBN ssbn = null; 
 		
 		//Step 1: 
-		
 		if(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION).equals("true")){
-			initialization(queryList, knowledgeBase); 
+			ssbn = initialization(queryList, knowledgeBase); 
 		}
 		
 		//Step 2: 
 		if(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_BUILDER).equals("true")){
-			buildStructure(); 
+			buildStructure(ssbn); 
 		}
 		
 		//Step 3: 
 		if(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_PRUNE).equals("true")){
-			pruneStruture(); 
+			pruneStruture(ssbn); 
 		}
 		
 		//Step 4: 
 		if(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION).equals("true")){
-			buildLocalDistribution();
+			buildLocalDistribution(ssbn);
 		}
 		
 		return ssbn;
@@ -97,21 +87,23 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 	
 	//Initialization
 	//Note: the findings are taken by the structure and not by the knowledge base
-	private void initialization(List<Query> queryList, KnowledgeBase knowledgeBase){
+	private SSBN initialization(List<Query> queryList, KnowledgeBase knowledgeBase){
 		
-		System.out.println("\n\n\nInitialization started");
+		SSBN ssbn = null; 
+		MultiEntityBayesianNetwork mebn = null; 
 		
-		this.knowledgeBase = knowledgeBase; 
+		ssbn.getLogManager().append("Initialization started"); 
+		
+		ssbn.setKnowledgeBase(knowledgeBase); 
 		
 		//We assume that all the queries is referent to the same MEBN
-		this.mebn = queryList.get(0).getMebn(); 
+		mebn = queryList.get(0).getMebn(); 
 		
 		//Parameters: 
-		
-		//recursiveCallLimit
+
 		
 		//Add queries to the list of nodes
-		System.out.println("\nStep 1: recover the query nodes");
+		System.out.println("Step 1: recover the query nodes");
 		for(Query query: queryList){
 			SimpleSSBNNode ssbnNode = SimpleSSBNNode.getInstance(query.getResidentNode()); 
 			
@@ -154,22 +146,23 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 			}
 		}
 		
-		System.out.println("\nInitialization finished");
+		ssbn.getLogManager().append("\nInitialization finished");
+		return ssbn; 
 		
 	}
 	
 	//Build Structure
-	private void buildStructure(){
-		getBuilderStructure().buildStructure(ssbn, knowledgeBase); 
+	private void buildStructure(SSBN ssbn){
+		getBuilderStructure().buildStructure(ssbn); 
 	}
 	
 	//Prune Structure
-	private void pruneStruture(){
+	private void pruneStruture(SSBN ssbn){
 		getPruneStructure().pruneStructure(ssbn); 
 	}
 	
 	//Build Local Distribution
-	private void buildLocalDistribution(){
+	private void buildLocalDistribution(SSBN ssbn){
 		getBuildLocalDistribution().buildLocalDistribution(ssbn); 
 	}
 

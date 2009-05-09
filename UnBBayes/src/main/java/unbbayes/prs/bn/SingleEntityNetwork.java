@@ -31,7 +31,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
 import unbbayes.gui.HierarchicTree;
-import unbbayes.io.LogManager;
+import unbbayes.io.TextLogManager;
 import unbbayes.io.NetworkCompilationLogManager;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Network;
@@ -592,7 +592,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			if (id != null) {
 				logManager.writeToDisk(id + ".txt", false);
 			} else {
-				logManager.writeToDisk(LogManager.DEFAULT_FILENAME, false);				
+				logManager.writeToDisk(TextLogManager.DEFAULT_FILENAME, false);				
 			}
 		} catch (java.io.IOException ioe) {
 			System.err.println(ioe.getMessage());

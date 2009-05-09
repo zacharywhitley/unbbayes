@@ -28,7 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import unbbayes.io.LogManager;
+import unbbayes.io.ILogManager;
+import unbbayes.io.TextLogManager;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -67,7 +68,7 @@ import unbbayes.util.Debug;
  */
 public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 
-	public static LogManager logManager = new LogManager();
+	public static ILogManager logManager = new TextLogManager();
 
 	private KnowledgeBase knowledgeBase; 
 

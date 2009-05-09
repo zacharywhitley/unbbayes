@@ -3,9 +3,7 @@ package unbbayes.prs.mebn.ssbn.util;
 import java.io.File;
 import java.io.IOException;
 
-import javax.xml.bind.JAXBException;
-
-import unbbayes.io.LogManager;
+import unbbayes.io.ILogManager;
 import unbbayes.io.XMLBIFIO;
 import unbbayes.prs.Edge;
 import unbbayes.prs.mebn.ssbn.OVInstance;
@@ -20,7 +18,7 @@ public class SSBNDebugInformationUtil {
 	 * 
 	 * @param querynode
 	 */
-	public static void printNetworkInformation(LogManager logManager, SSBNNode queryNode, 
+	public static void printNetworkInformation(ILogManager logManager, SSBNNode queryNode, 
 			 long stepCount, String queryName) {
 		
 		//TODO Use a decimal format instead
@@ -90,7 +88,7 @@ public class SSBNDebugInformationUtil {
 	/*
 	 * debug method. 
 	 */
-	public static void printParents(LogManager logManager, SSBNNode node, int nivel){
+	public static void printParents(ILogManager logManager, SSBNNode node, int nivel){
 		for(SSBNNode parent: node.getParents()){
 			for(int i = 0; i <= nivel; i++){
 				if (i == 0) {

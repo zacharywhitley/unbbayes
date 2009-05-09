@@ -59,15 +59,14 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	 * Pos-requisites
 	 *     - All nodes of the SSBN are marked finished.     
 	 */
-	public void buildStructure(SSBN _ssbn,
-			KnowledgeBase _kb) {
+	public void buildStructure(SSBN _ssbn) {
 		
 		notFinishedNodeList = new ArrayList<SimpleSSBNNode>(); 
 		mFragInstanceList = new ArrayList<MFragInstance>();
 		contextNodeAvaliator = new ContextNodeEvaluator(kb); 
 		
 		this.ssbn = _ssbn; 
-		this.kb = _kb; 
+		this.kb = ssbn.getKnowledgeBase(); 
 		
 		System.out.println("Build Structure");
 		
