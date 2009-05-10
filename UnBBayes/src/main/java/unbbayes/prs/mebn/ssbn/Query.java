@@ -123,6 +123,23 @@ public class Query {
 		this.probabilisticNode = probabilisticNode;
 	}
 	
+	@Override
+	/**
+	 * ex.: 
+	 * RandomVariable(ov1=X1 ov2=X2)
+	 */
+	public String toString(){
+		String string = "";
+		
+		string+= this.getResidentNode().getName(); 
+		string+="(";
+		for(OVInstance argument: this.getArguments()){
+			string+= argument.getOv().getName() + "=" + argument.getEntity() + " "; 
+		}
+		string+=")";
+		
+		return string;
+	}
 	
 
 	
