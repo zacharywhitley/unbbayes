@@ -26,7 +26,7 @@ import java.util.Map;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 
-
+//TODO ROMMEL - BREAK INTO DIFFERENT INTERFACES - MC - MCCOMPACT - LW
 public interface IMonteCarloSampling {
 	
 	/**
