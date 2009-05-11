@@ -23,6 +23,7 @@ package unbbayes.controller;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.io.File;
+import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -1745,7 +1746,61 @@ public class MEBNController  {
 	    
 		ISSBNGenerator ssbngenerator = new LaskeySSBNGenerator(parameters);
 		
-		ssbn = ssbngenerator.generateSSBN(listQueries, getKnowledgeBase()); 
+		try{
+			ssbn = ssbngenerator.generateSSBN(listQueries, getKnowledgeBase()); 
+		}
+		catch(ImplementationRestrictionException e){
+			String fileName = "e:\\Teste.log"; 
+			try {
+				ssbn.getLogManager().writeToDisk(fileName, true);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			} 
+			throw e; 
+		}
+		catch(InvalidParentException e2){
+			String fileName = "e:\\Teste.log"; 
+			try {
+				ssbn.getLogManager().writeToDisk(fileName, true);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			} 
+			throw e2; 
+		}
+		catch(MEBNException e3){
+			String fileName = "e:\\Teste.log"; 
+			try {
+				ssbn.getLogManager().writeToDisk(fileName, true);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			} 
+			throw e3; 
+		}
+		catch(OVInstanceFaultException e4){
+			String fileName = "e:\\Teste.log"; 
+			try {
+				ssbn.getLogManager().writeToDisk(fileName, true);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			} 
+			throw e4; 
+		}
+		catch(SSBNNodeGeneralException e5){
+			String fileName = "e:\\Teste.log"; 
+			try {
+				ssbn.getLogManager().writeToDisk(fileName, true);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			} 
+			throw e5; 
+		}
+		
+		String fileName = "e:\\Teste.log"; 
+		try {
+			ssbn.getLogManager().writeToDisk(fileName, true);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		} 
 		
 		probabilisticNetwork = ssbn.getProbabilisticNetwork();
 

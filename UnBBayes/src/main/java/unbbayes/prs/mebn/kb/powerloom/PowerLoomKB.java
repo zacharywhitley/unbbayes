@@ -622,7 +622,6 @@ public class PowerLoomKB implements KnowledgeBase {
 		formula+= makeOperatorString(formulaTree, ovInstances); 		
 		formula+= ")"; 
 		
-		Debug.println("Original formula: " + context.getLabel()); 
 		Debug.println("PowerLoom Formula: " + formula); 
 		
 		PlIterator iterator = PLI.sRetrieve(formula, moduleFindingName, null);
@@ -663,7 +662,6 @@ public class PowerLoomKB implements KnowledgeBase {
         	formula+= " ?" + ov.getName(); 
         }
         
-        Debug.println("Formula = " + formula);
         formula+=")"; 
 		
 		//Formula
@@ -671,7 +669,6 @@ public class PowerLoomKB implements KnowledgeBase {
 		formula+= makeOperatorString(formulaTree, ovInstances); 		
 		formula+= ")"; 
 		
-		Debug.println("Original formula: " + context.getLabel()); 
 		Debug.println("PowerLoom Formula: " + formula); 
 		
 		PlIterator iterator = PLI.sRetrieve(formula, moduleFindingName, null);

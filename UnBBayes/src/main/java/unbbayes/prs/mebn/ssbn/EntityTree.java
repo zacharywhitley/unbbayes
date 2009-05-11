@@ -204,7 +204,53 @@ public class EntityTree{
 		
 	}
 	
-	public int getIndexOfOv(OrdinaryVariable[] ovArray, OrdinaryVariable ov){
+	/**
+	 * Return all ov instances 
+	 */
+	public List<OVInstance> getOVInstanceList(){
+		List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
+		
+		List<EntityNode> entityNodeList = getTreeHowList(); 
+		for(EntityNode entityNode: entityNodeList){
+			LiteralEntityInstance lei = LiteralEntityInstance.getInstance(
+					entityNode.getEntityName(), entityNode.getOv().getValueType()); 
+			
+			OVInstance ovInstance = OVInstance.getInstance(entityNode.getOv(), 
+					lei);
+			
+			ovInstanceList.add(ovInstance); 
+		}
+		
+		return ovInstanceList; 
+	}
+	
+	/**
+	 * Return all ov instances for the ordinary variable. 
+	 */
+	public List<OVInstance> getOVInstanceListForOrdinaryVariable(OrdinaryVariable ov){
+		List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
+		
+		List<EntityNode> entityNodeList = getNodesOfLevel(ov);
+		
+		for(EntityNode entityNode: entityNodeList){
+			LiteralEntityInstance lei = LiteralEntityInstance.getInstance(
+					entityNode.getEntityName(), entityNode.getOv().getValueType()); 
+			
+			OVInstance ovInstance = OVInstance.getInstance(entityNode.getOv(), 
+					lei);
+			
+			ovInstanceList.add(ovInstance); 
+		}
+		
+		return ovInstanceList; 
+	}		
+	
+	
+	/*--------------------------------------------------------------------------
+	 * Private Methods
+	 *-------------------------------------------------------------------------*/
+	
+	private int getIndexOfOv(OrdinaryVariable[] ovArray, OrdinaryVariable ov){
 		
 		int index = 0; 
 		
@@ -225,7 +271,7 @@ public class EntityTree{
 	 * 
 	 * @param node
 	 */
-	public void destroyPath(EntityNode node){
+	private void destroyPath(EntityNode node){
 		
 		EntityNode parent = node.getParent(); 
 		
@@ -264,7 +310,7 @@ public class EntityTree{
 	 * Get the level of a ov in the tree. The root have level 0, its children 
 	 * have level 1. If the ov don't is in the tree, return -1.  
 	 */
-	public int getOvLevel(OrdinaryVariable ov){
+	private int getOvLevel(OrdinaryVariable ov){
 		
 		EntityNode node = root; 
 		int level = 0; 
@@ -281,48 +327,8 @@ public class EntityTree{
 		}
 		
 	}
-
-	/**
-	 * Get all nodes of the level where is ov. If ov = null, return the root (level 0) 
-	 */
-	public List<EntityNode> getNodesOfLevel(OrdinaryVariable ov){
-		
-		List<EntityNode> resultList = new ArrayList<EntityNode>(); 
-		
-		if(ov == null){
-			resultList.add(root); 
-		}else{
-			List<EntityNode> nodeList = getTreeHowList(); 
-
-			for(EntityNode node: nodeList){
-				if(node.getOv().equals(ov)){
-					resultList.add(node); 
-				}
-			}
-		}
-
-		return resultList;
-		
-	}
 	
-	public List<OVInstance> getOVInstances(){
-		List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
-		
-		List<EntityNode> entityNodeList = getTreeHowList(); 
-		for(EntityNode entityNode: entityNodeList){
-			LiteralEntityInstance lei = LiteralEntityInstance.getInstance(
-					entityNode.getEntityName(), entityNode.getOv().getValueType()); 
-			
-			OVInstance ovInstance = OVInstance.getInstance(entityNode.getOv(), 
-					lei);
-			
-			ovInstanceList.add(ovInstance); 
-		}
-		
-		return ovInstanceList; 
-	}
-	
-	public List<EntityNode> getTreeHowList(){
+	private List<EntityNode> getTreeHowList(){
 		EntityNode node = root; 
 		
 		List<EntityNode> list = new ArrayList<EntityNode>(); 
@@ -332,7 +338,7 @@ public class EntityTree{
 		return list; 
 	}
 	
-	public void addChildrenToList(EntityNode node, List<EntityNode> list){
+	private void addChildrenToList(EntityNode node, List<EntityNode> list){
 		
 		List<EntityNode> children = node.getChildren(); 
 		
@@ -359,6 +365,29 @@ public class EntityTree{
 				root.addChildren(newNode); 
 			}
 		}
+	}
+	
+	/**
+	 * Get all nodes of the level where is ov. If ov = null, return the root (level 0) 
+	 */
+	private List<EntityNode> getNodesOfLevel(OrdinaryVariable ov){
+		
+		List<EntityNode> resultList = new ArrayList<EntityNode>(); 
+		
+		if(ov == null){
+			resultList.add(root); 
+		}else{
+			List<EntityNode> nodeList = getTreeHowList(); 
+
+			for(EntityNode node: nodeList){
+				if(node.getOv().equals(ov)){
+					resultList.add(node); 
+				}
+			}
+		}
+
+		return resultList;
+		
 	}
 	
 	/**
@@ -423,7 +452,13 @@ public class EntityTree{
 		}
 	}
 	
-	//Debug classes
+	
+	
+	
+	/*--------------------------------------------------------------------------
+	 * Debug Methods
+	 *-------------------------------------------------------------------------*/
+	
 	public void printTree(){
 		printNodeChildren(root, 1); 
 	}

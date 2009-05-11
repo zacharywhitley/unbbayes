@@ -34,10 +34,14 @@ public interface ILogManager {
      */
     public void appendln(String text); 
     
+    public void appendln(int identation, String text); 
+    
     /**
      * Append the text and make new line if debug = true. 
      */   
     public void appendlnIfTrue(boolean debug, String text); 
+    
+    public void appendlnIfTrue(int identation, boolean debug, String text); 
     
     /**
      * Append separator line. 

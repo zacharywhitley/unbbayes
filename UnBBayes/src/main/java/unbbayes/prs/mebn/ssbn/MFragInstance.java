@@ -123,9 +123,51 @@ public class MFragInstance {
 		
 	}
 	
-	public List<OVInstance> getOVInstances(){
+	/**
+	 * Update the  evaluation of the context nodes of a MFrag with the new result. 
+	 * 
+	 * @param ovArray               Sequence of the ordinary variables of the context node
+	 * @param entityValuesArray     Sequence of possible evaluations for the OV set. 
+	 * 
+	 * @throws MFragContextFailException throw if the new results added 
+	 *                                   don't are possible against the previous 
+	 *                                   result. The context node set of the mfrag
+	 *                                   fail (don't is consistent). 
+	 */
+	public void addOVValuesCombination(OrdinaryVariable ovArray[], List<String[]> entityValuesArray) 
+ 	                 throws MFragContextFailException{
 		
-		return entityTree.getOVInstances(); 
+		this.entityTree.updateTreeForNewInformation(ovArray, entityValuesArray); 
+	
+	}
+	
+	public void addOVValueCombination(OrdinaryVariable ov, List<String> entityValues) 
+	                 throws MFragContextFailException{
+
+		OrdinaryVariable ovArray[] = new OrdinaryVariable[1];
+		List<String[]> entityValuesArray = new ArrayList<String[]>(); 
+
+		ovArray[0] = ov; 
+
+		for(String entity: entityValues){
+			String[] entitiesArray = new String[1]; 
+			entitiesArray[0] = entity; 
+			entityValuesArray.add(entitiesArray); 
+		}
+
+		this.entityTree.updateTreeForNewInformation(ovArray, entityValuesArray); 
+
+	}
+	
+	public List<OVInstance> getOVInstanceList(){
+		
+		return entityTree.getOVInstanceList(); 
+		
+	}
+	
+	public List<OVInstance> getOVInstanceListForOrdinaryVariable(OrdinaryVariable ov){
+		
+		return entityTree.getOVInstanceListForOrdinaryVariable(ov); 
 		
 	}
 
@@ -153,11 +195,22 @@ public class MFragInstance {
 	
 	public SimpleContextNodeFatherSSBNNode getContextNodeFather(OrdinaryVariable ov){
 		for(int i = 0; i < ovList.length; i++){
-			if(ovList[i] == ov){
+			if(ovList[i].equals(ov)){
 				return contextForOVList[i];  
 			}
 		}
 		return null; 
+	}
+	
+	public void setContextNodeForOrdinaryVariable(OrdinaryVariable ov, 
+			SimpleContextNodeFatherSSBNNode contextNode){
+		
+		for(int i = 0; i < ovList.length; i++){
+			if(ovList[i].equals(ov)){
+				contextForOVList[i] = contextNode;  
+			}
+		}
+		
 	}
 	
 	/**
@@ -178,6 +231,7 @@ public class MFragInstance {
 		
 		return entityTree.recoverCombinationsEntitiesPossibles(knownOVArray, 
 				knownEntityArray, ovSearchArray); 
+		
 	}
 	
 	// CONTEXT NODE EVALUATION STATE 
@@ -305,12 +359,12 @@ public class MFragInstance {
 		return ovList;
 	}
 
-	public EntityTree getEntityTree() {
-		return entityTree;
-	}
-
 	public void setEntityTree(EntityTree entityTree) {
 		this.entityTree = entityTree;
+	}
+	
+	private EntityTree getEntityTree() {
+		return entityTree;
 	}
 	
 }

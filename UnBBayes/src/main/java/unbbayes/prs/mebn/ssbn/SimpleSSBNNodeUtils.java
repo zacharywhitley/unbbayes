@@ -4,28 +4,58 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.exception.InvalidParentException;
+import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
+import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
+/**
+ * Auxiliar methods for treatment of the SimpleSSBNNode. 
+ * 
+ * @author Laecio Lima dos Santos (laecio@gmail.com)
+ */
 public class SimpleSSBNNodeUtils {
-
-	private ResourceBundle resource = 
-		ResourceBundle.getBundle("unbbayes.prs.mebn.ssbn.resources.Resources");	
 	
+	/**
+	 * Translate the SimpleSSBNNode's for the SSBNNode. The SimpleSSBNNode was 
+	 * created for economize memory in the step of build the network. For posterior
+	 * steps, how generation of the CPTs, is necessary more informations that the
+	 * information offer by the SimpleSSBNNode. The SSBNNode contain all the 
+	 * information necessary. This method translate the simpleSSBNNodes to the 
+	 * correspondent SSBNNode and add the informations about parents (context node 
+	 * parents too). 
+	 * 
+	 * @param simpleSSBNNodeList
+	 * @param pn The probabilisticNetwork where will be created the ProbabilisticNodes 
+	 *           (referenced by the SSBNNodes)
+	 *           
+	 * @return The list contain the SSBNNodes correspondent to the simpleSSBNNodeList.
+	 *         In this list don't are returned the ContextFatherSSBNNode's correspondent 
+	 *         to the SimpleContextNodeFatherSSBNNode's. This is setted how parent
+	 *         at the SSBNNode that originated it. 
+	 * 
+	 * @throws SSBNNodeGeneralException
+	 * @throws ImplementationRestrictionException
+	 */
 	public static List<SSBNNode> translateSimpleSSBNNodeListToSSBNNodeList( 
-			List<SimpleSSBNNode> list, ProbabilisticNetwork pn) throws SSBNNodeGeneralException{
+			List<SimpleSSBNNode> simpleSSBNNodeList, ProbabilisticNetwork pn) throws 
+			                SSBNNodeGeneralException,  ImplementationRestrictionException{
 		
 		List<SSBNNode> listSSBNNodes = new ArrayList<SSBNNode>(); 
 		Map<SimpleSSBNNode, SSBNNode> correspondencyMap = new HashMap<SimpleSSBNNode, SSBNNode>(); 
 		
+		Map<ContextNode, ContextFatherSSBNNode> mapContextNode = 
+			    new HashMap<ContextNode, ContextFatherSSBNNode>(); 
+		
 		//1 Create all the nodes with its states 
 		
-		for(SimpleSSBNNode simple: list){
+		for(SimpleSSBNNode simple: simpleSSBNNodeList){
 			
+			//A simple extraction of barren nodes.... 
 			if(simple.getParents().size()==0){
 				if(simple.getChildNodes().size()==0){
 					continue; //This node is out of the network. 
@@ -71,11 +101,47 @@ public class SimpleSSBNNodeUtils {
 						argumentsForMFrag); 
 			}
 			
+			//Treat the context node father
+			List<SimpleContextNodeFatherSSBNNode> simpleContextNodeList = 
+				simple.getContextParents(); 
+			
+			if(simpleContextNodeList.size() > 0){
+				if(simpleContextNodeList.size() > 1){
+					throw new ImplementationRestrictionException(
+							ImplementationRestrictionException.MORE_THAN_ONE_CTXT_NODE_SEARCH); 
+				}else{
+					//We have only one context node father
+					ContextNode contextNode = simpleContextNodeList.get(0).getContextNode(); 
+					ContextFatherSSBNNode contextFather = mapContextNode.get(contextNode); 
+					if(contextFather == null){
+						contextFather = new ContextFatherSSBNNode(pn, contextNode);
+						
+						List<LiteralEntityInstance> possibleValueList = new ArrayList<LiteralEntityInstance>(); 
+						for(String entity: simpleContextNodeList.get(0).getPossibleValues()){
+							possibleValueList.add(LiteralEntityInstance.getInstance(entity, simpleContextNodeList.get(0).getOvProblematic().getValueType())); 
+						}
+						
+						contextFather.setPossibleValues(possibleValueList);
+						contextFather.setOvProblematic(simpleContextNodeList.get(0).getOvProblematic()); 
+						mapContextNode.put(contextNode, contextFather); 
+					}
+					
+					try {
+						ssbnNode.setContextFatherSSBNNode(contextFather);
+					} catch (InvalidParentException e) {
+						//This exception don't occur in this case... 
+						e.printStackTrace();
+						throw new RuntimeException(e.getMessage()); 
+					} 
+					
+				}
+				
+			}
 		}
 		
 		//Create the parent structure 
 		
-		for(SimpleSSBNNode simple: list){
+		for(SimpleSSBNNode simple: simpleSSBNNodeList){
 			
 			if(simple.getParents().size()==0){
 				if(simple.getChildNodes().size()==0){

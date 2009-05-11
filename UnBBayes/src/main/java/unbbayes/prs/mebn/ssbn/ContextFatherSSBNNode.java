@@ -163,5 +163,24 @@ public class ContextFatherSSBNNode {
 	public String toString(){
 		return "SSBNNode:" + contextNode.getLabel() + " " + ovProblematic + "[" + possibleValues + "]";
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+
+		if(! (obj instanceof ContextFatherSSBNNode)){
+			return false;
+		}
+		
+		ContextFatherSSBNNode ssbnNode = (ContextFatherSSBNNode)obj;
+		
+		if(ssbnNode.getContextNode().equals(this.getContextNode())){
+			
+			return true; 
+			
+		}else{
+			return false;  
+		}
+		
+	}
 
 }

@@ -24,9 +24,10 @@ package unbbayes.prs.mebn.ssbn.exception;
 import java.util.ResourceBundle;
 
 /**
- * @author shou matsumoto
+ * Exception in a operation with a SSBNNode. 
+ * 
+ * @author Shou Matsumoto
  * @since September 11, 2007
- *
  */
 public class SSBNNodeGeneralException extends Exception {
 	

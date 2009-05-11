@@ -134,7 +134,7 @@ public class Query {
 		string+= this.getResidentNode().getName(); 
 		string+="(";
 		for(OVInstance argument: this.getArguments()){
-			string+= argument.getOv().getName() + "=" + argument.getEntity() + " "; 
+			string+= argument.getOv().getName() + "=" + argument.getEntity().getInstanceName() + " "; 
 		}
 		string+=")";
 		

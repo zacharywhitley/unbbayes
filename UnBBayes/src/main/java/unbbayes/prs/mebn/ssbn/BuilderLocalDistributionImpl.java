@@ -6,6 +6,7 @@ import java.util.ResourceBundle;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.cptgeneration.CPTForSSBNNodeGenerator;
+import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
 public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
@@ -21,7 +22,7 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 		return new BuilderLocalDistributionImpl();
 	}
 	
-	public void buildLocalDistribution(SSBN ssbn) {
+	public void buildLocalDistribution(SSBN ssbn) throws MEBNException, SSBNNodeGeneralException {
 		
 		ProbabilisticNetwork pn; 
 		
@@ -33,21 +34,19 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 		} catch (SSBNNodeGeneralException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (ImplementationRestrictionException e) {
+			//This exception don't should be throw in a correct algorithm. 
+			e.printStackTrace();
+			throw new RuntimeException(e.getMessage()); 
 		} 
 		
 		System.out.println("\n\nTranslated\n\n");
 		
 	    CPTForSSBNNodeGenerator build = new CPTForSSBNNodeGenerator();
 	    
-	    try {
-			build.generateCPTForAllSSBNNodes(ssbn.getSsbnNodeList().get(0));
-		} catch (MEBNException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SSBNNodeGeneralException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
+	    if(ssbn.getSimpleSsbnNodeList().size()>0){
+	    	build.generateCPTForAllSSBNNodes(ssbn.getSsbnNodeList().get(0));
+	    }
 		
 	}
 

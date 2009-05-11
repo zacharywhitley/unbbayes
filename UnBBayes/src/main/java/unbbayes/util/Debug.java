@@ -33,6 +33,11 @@ public class Debug {
 		return debug; 
 	}
 	
+	public static void print(char message) {
+		if (debug)
+			System.out.print(message);
+	}
+	
 	public static void print(String message) {
 		if (debug)
 			System.out.print(message);

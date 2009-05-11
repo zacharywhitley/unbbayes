@@ -24,6 +24,8 @@ import java.util.*;
 
 /**
  * @author Shou Matsumoto
+ * @author Laecio Lima dos Santos
+ * 
  * @version 1.0
  * @since September, 11, 2007
  */
@@ -70,6 +72,7 @@ public class Resources_pt extends ListResourceBundle {
 		//ImplementationRestrictionException
 		{"OnlyOneOVInstanceForOV", "Deve haver apenas uma instância para cada variável ordinária."},
 		{"MoreThanOneContextNodeSearh", "Mais de um nó de contexto de busca foi achado para a var. ordinária. Esta implementação trata apenas o caso de apenas um nó"},
+		{"MoreThanOneValueForOVSearchFormula","Mais do que um valor para variável ordinária utilizada em uma fórmula de busca. "}, 
 		
 		//SSBNWarning
 		{"OVProblem", "Entidades para as variáveis ordinarias não pode ser determinadas"}, 

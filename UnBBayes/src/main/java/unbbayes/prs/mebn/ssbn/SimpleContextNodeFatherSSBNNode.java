@@ -20,7 +20,7 @@ public class SimpleContextNodeFatherSSBNNode {
 
 	private ContextNode contextNode;	    //what resident node this instance represents
 	
-	private Collection<LiteralEntityInstance> possibleValues; //this is the possible values of this node at that moment (might be one, if there is an evidence)
+	private Collection<String> possibleValues; //this is the possible values of this node at that moment (might be one, if there is an evidence)
 
 	private OrdinaryVariable ovProblematic; 
 
@@ -33,25 +33,22 @@ public class SimpleContextNodeFatherSSBNNode {
 	 * @param contextNode
 	 * @param probNode
 	 */
-	public SimpleContextNodeFatherSSBNNode(ContextNode contextNode) {
+	public SimpleContextNodeFatherSSBNNode(ContextNode contextNode, OrdinaryVariable ovFault) {
 		this.contextNode = contextNode;
-		possibleValues = new ArrayList<LiteralEntityInstance>();
+		this.ovProblematic = ovFault; 
+		possibleValues = new ArrayList<String>();
 	}
 
 	public OrdinaryVariable getOvProblematic() {
 		return ovProblematic;
 	}
 
-	public void setOvProblematic(OrdinaryVariable ovProblematic) {
-		this.ovProblematic = ovProblematic;
-	}
-
-	public Collection<LiteralEntityInstance> getPossibleValues() {
+	public Collection<String> getPossibleValues() {
 		return possibleValues;
 	}
 
-	public void setPossibleValues(Collection<LiteralEntityInstance> possibleValues) {
-		this.possibleValues = possibleValues;
+	public void setPossibleValues(Collection<String> _possibleValues) {
+		this.possibleValues = _possibleValues;
 	}
 
 
@@ -63,4 +60,21 @@ public class SimpleContextNodeFatherSSBNNode {
 		return "SSBNNode:" + contextNode.getLabel() + " " + ovProblematic + "[" + possibleValues + "]";
 	}
 
+	@Override
+	public boolean equals(Object o){
+		
+		SimpleContextNodeFatherSSBNNode context = (SimpleContextNodeFatherSSBNNode)o;
+		
+		boolean result = false; 
+		
+		if(context.contextNode.equals(this.contextNode)){
+			if(context.ovProblematic.equals(this.ovProblematic)){
+				result = true; 
+			}
+		}
+		
+		return result; 
+		
+	}
+	
 }

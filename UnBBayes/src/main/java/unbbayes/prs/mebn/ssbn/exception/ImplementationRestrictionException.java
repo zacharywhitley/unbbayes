@@ -40,6 +40,7 @@ public class ImplementationRestrictionException extends Exception{
 	public final static String ONLY_ONE_OV_FAULT_LIMIT = resource.getString("OrdVariableProblemLimit"); 
 	public final static String MORE_THAN_ONE_ORDEREABLE_VARIABLE = resource.getString("MoreThanOneOrdereableVariable"); 
 	public final static String RV_NOT_RECURSIVE = resource.getString("RVNotRecursive"); 
+	public final static String MORE_THAN_ONE_VALUE_FOR_OV_OF_SEARCH_FORMULA = resource.getString("MoreThanOneValueForOVSearchFormula"); 
 	
 	public ImplementationRestrictionException(){
 		super();

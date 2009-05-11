@@ -829,7 +829,6 @@ public class SSBNNode implements INode {
 		return null;
 	}
 	
-	
 	public void delete(){
 		probabilisticNetwork.removeNode(this.getProbNode()); 
 	}

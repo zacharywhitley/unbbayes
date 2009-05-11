@@ -1,5 +1,8 @@
 package unbbayes.prs.mebn.ssbn;
 
+import unbbayes.prs.mebn.exception.MEBNException;
+import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
+
 
 public interface IBuilderLocalDistribution {
 
@@ -9,7 +12,9 @@ public interface IBuilderLocalDistribution {
 	 *             the node list. 
 	 * @param kb
 	 * @return
+	 * @throws SSBNNodeGeneralException 
+	 * @throws MEBNException 
 	 */
-	public void buildLocalDistribution(SSBN ssbn); 
+	public void buildLocalDistribution(SSBN ssbn) throws MEBNException, SSBNNodeGeneralException; 
 	
 }

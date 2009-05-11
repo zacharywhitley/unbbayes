@@ -32,7 +32,9 @@ import unbbayes.util.Debug;
  * 
  * @author Rommel N. Carvalho
  * @author Michael S. Onishi
- * @version 1.0
+ * @author Laecio L. dos Santos
+ * 
+ * @version 2.0
  */
 public class TextLogManager implements ILogManager, java.io.Serializable {
     
@@ -44,6 +46,7 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
 
     public static final int numColumn = 80; 
     public static final char separator = '*'; 
+    public static final String identationString = " > "; 
     
     private StringBuffer log;
     
@@ -92,11 +95,31 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
     	}
     }
     
+	public void appendln(int identation, String text) {
+		
+		for(int i= 0; i < identation; i++){
+			log.append(identationString); 
+		}
+		
+        log.append(text);
+        log.append("\n");
+
+        Debug.println(text);
+	}
+
+	public void appendlnIfTrue(int identation, boolean debug, String text) {
+    	if(debug){
+    		appendln(identation, text); 
+    	}
+	}
+    
     public void appendSeparator(){
     	for(int i = 0; i < numColumn; i++){
     		log.append(separator); 
+    		Debug.print(separator); 
     	}
-    	log.append("\n"); 
+    	log.append("\n\n"); 
+    	Debug.print("\n\n"); 
     }
     
     public String getLog() {
@@ -111,11 +134,16 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
     }
 
 	public void addTitle(String text) {
-		append(text); 
+		appendSeparator(); 
+		appendln(text); 
+		appendSeparator(); 
+		appendln(" "); 
 	}
 
 	public void appendSectionTitle(String text) {
-		append(text); 
+		append("\n" + text.toUpperCase() + "\n\n"); 
 	}
+
+
 
 }

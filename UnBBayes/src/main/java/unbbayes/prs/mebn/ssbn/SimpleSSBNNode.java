@@ -88,6 +88,10 @@ public class SimpleSSBNNode implements INode {
 
 		boolean result = true; 
 		
+		if(! (obj instanceof SimpleSSBNNode)){
+			return false;
+		}
+		
 		SimpleSSBNNode ssbnNode = (SimpleSSBNNode)obj;
 		
 		if(ssbnNode.getResidentNode().equals(this.getResidentNode())){
@@ -188,9 +192,17 @@ public class SimpleSSBNNode implements INode {
 		return contextParents;
 	}
 
+	/**
+	 * Add a context node parent if it don't is at the context node parent list
+	 * yet. 
+	 */
 	public void addContextParent(
-			SimpleContextNodeFatherSSBNNode contextParents) {
-		this.contextParents.add(contextParents);
+			SimpleContextNodeFatherSSBNNode contextNodeParent) {
+		
+		if(!contextParents.contains(contextNodeParent)){
+			this.contextParents.add(contextNodeParent);
+		}
+		
 	}
 
 	

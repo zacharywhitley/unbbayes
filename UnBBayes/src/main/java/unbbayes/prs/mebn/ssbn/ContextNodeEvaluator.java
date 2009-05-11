@@ -59,59 +59,6 @@ public class ContextNodeEvaluator {
 		this.valuesEntityMap = new TreeMap<String, List<LiteralEntityInstance>>(); 
 		
 	}
-
-	
-//	/**
-//	 * Only for the case where the ordinary variable should be recover by the 
-//	 * use of a context node with the format Zone(ST0!) = z where only z is 
-//	 * unknow. Try use this strategy to solve all the ordinary variables fault 
-//	 * at MFrag. The result are put at the MFragInstance.  
-//	 */
-//	public void evaluateUncertaintyReferenceContextCase(MFragInstance mFragInstance) 
-//	                   throws ImplementationRestrictionException{
-//		
-//		List<OrdinaryVariable> notInstanciatedOVList = mFragInstance.getListNotInstanciatedOV(); 
-//		
-//		for(OrdinaryVariable ov: notInstanciatedOVList){
-//			
-//			List<OrdinaryVariable> ovList = new ArrayList<OrdinaryVariable>(); 
-//			ovList.add(ov); 
-//			Collection<ContextNode> contextNodeList = mFragInstance.getMFragOrigin().getSearchContextByOVCombination(ovList);
-//
-//			if(contextNodeList.size() > 1){
-//				throw new ImplementationRestrictionException(
-//						ImplementationRestrictionException.MORE_THAN_ONE_CTXT_NODE_SEARCH); 
-//			}
-//			if(contextNodeList.size() < 1){
-//				throw new ImplementationRestrictionException(
-//						ImplementationRestrictionException.NO_CONTEXT_NODE_FATHER); 
-//			}
-//			
-//			//ContextNodeList have only one element (Trivial Case)
-//			ContextNode context = contextNodeList.toArray(new ContextNode[contextNodeList.size()])[0];
-//			
-//			boolean isContextNodeValid = false; 
-//			
-//			try{
-//				isContextNodeValid = isContextNodeSearchValidFormat(context);
-//			} catch (OVInstanceFaultException e) {
-//				throw new ImplementationRestrictionException(
-//						ImplementationRestrictionException.ONLY_ONE_OV_FAULT_LIMIT); 
-//			} 
-//			
-//			if(!isContextNodeValid){
-//				throw new ImplementationRestrictionException(
-//						ImplementationRestrictionException.INVALID_CTXT_NODE_FORMULA); 
-//			}else{
-//				
-//				List<LiteralEntityInstance> entityList = searchEntitiesForOrdinaryVariable(ov); 
-////				mFragInstance.addInstanciatedOV(ov, context, entityList); 
-//			
-//			}
-//			
-//		}
-//		
-//	}
 	
 	/**
 	 * Evaluate a context node. Should have a OVInstance for each ordinary 
@@ -216,50 +163,6 @@ public class ContextNodeEvaluator {
 
 		return true; 
 	}
-	
-	
-//	/**
-//	 * Evaluate the context nodes of a MFrag that should be solved with the given 
-//	 * ordinary variables instances. 
-//	 * Set the state of evaluation of each node at mFragInstance 
-//	 * (using the atribute StateEvaluationOfContextNode). 
-//	 * 
-//	 * @param ovInstances
-//	 * @param mFragInstance
-//	 * @param ovList
-//	 * @return if the MFrag will use the default distribution 
-//	 * @throws OVInstanceFaultException
-//	 */
-//	private boolean evaluateMFragInstanceCompleteContextNodes( 
-//			MFragInstance mFragInstance) throws OVInstanceFaultException{
-//
-//		//TODO This method should treat the case when have more than one OV for each ordinary variable. 
-//		
-//		Set<OrdinaryVariable> setOV = new HashSet<OrdinaryVariable>(); 
-//		
-//		for(OVInstance ovi: mFragInstance.getOVInstanceList()){
-//			setOV.add(ovi.getOv()); 
-//		}
-//		
-//		Collection<ContextNode> contextNodeList = mFragInstance.getMFragOrigin().getContextByOVCombination(
-//				setOV);
-//
-//		for(ContextNode context: contextNodeList){
-//			if (!(mFragInstance.getStateEvaluationOfContextNode(context) == 
-//				ContextNodeEvaluationState.NOT_EVALUATED_YET)){
-//	
-//				if(!evaluateContextNode(context, mFragInstance.getOVInstanceList())){
-//					mFragInstance.setStateEvaluationOfContextNode(context, ContextNodeEvaluationState.EVALUATION_FAIL);   
-//					mFragInstance.setUseDefaultDistribution(true); 
-//				}else{
-//					mFragInstance.setStateEvaluationOfContextNode(context, ContextNodeEvaluationState.EVALUATION_OK); 
-//				}
-//				
-//			}
-//		}
-//
-//		return mFragInstance.isUsingDefaultDistribution(); 
-//	}
 	
 	/**
 	 * Note: This class was created for mantain the normal evaluation of the 
@@ -494,6 +397,18 @@ OUT_LOOP:  for(ContextNode context: cnList){
 		}
 		
 		return entityList; 
+	}
+	
+	/**
+	 * Test if a context node are in the correct format z = StarshipZone(st) 
+	 * or StarshipZone(st) = z; 
+	 */
+	public boolean testContextNodeFormatRestriction(ContextNode contextNode){
+		
+		//TODO implement... 
+		
+		return true; 
+		
 	}
 	
 	/**

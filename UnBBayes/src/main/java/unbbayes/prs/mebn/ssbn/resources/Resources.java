@@ -20,10 +20,12 @@
  */
 package unbbayes.prs.mebn.ssbn.resources;
 
-import java.util.ListResourceBundle;
+import java.util.*;
 
 /**
  * @author Shou Matsumoto
+ * @author Laecio Lima dos Santos
+ * 
  * @version 1.0
  * @since September, 11, 2007
  */
@@ -70,6 +72,7 @@ public class Resources extends ListResourceBundle {
 		//ImplementationRestrictionException
 		{"OnlyOneOVInstanceForOV", "Should have only one instance for each ordinary variable."},
 		{"MoreThanOneContextNodeSearh","More then one context node search found for the ord. variable. This implementation treat only the trival case of one node"}, 
+		{"MoreThanOneValueForOVSearchFormula","More than one value for ordinary variable used in a search formula."}, 
 		
 		//SSBNWarning
 		{"OVProblem", "Entities for variables ordinaries don't should be determinated"}, 
