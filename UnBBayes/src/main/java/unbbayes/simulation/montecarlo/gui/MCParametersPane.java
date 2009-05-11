@@ -24,6 +24,7 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
+import java.util.ResourceBundle;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -33,52 +34,56 @@ import javax.swing.JTextField;
 
 /**
  * 
- * Class which constructs a screen for user interaction, related to sample generation of montecarlo method
+ * Class which constructs a GUI for user interaction, related to sample generation of Monte Carlo methods.
  * 
- * @author Danilo
+ * @author Danilo Custódio (danilocustodio@gmail.com)
+ * @author Rommel Carvalho (rommel.carvalho@gmail.com)
  */
 public class MCParametersPane extends JFrame {
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
 	
-	private JPanel painelPrincipal; 
-	private JPanel painelNCasos;
-	private JLabel lNCasos;
-	private JTextField txtNCasos;
-	private JButton btnOK;
+	/** Load resource file from this package */
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.simulation.montecarlo.resources.MCResources");
+	
+	private JPanel mainPane; 
+	private JPanel sampleSizePane;
+	private JLabel sampleSizeLbl;
+	private JTextField sampleSizeTxt;
+	private JButton okBtn;
 	
 	
 	public MCParametersPane(){
-		super("Monte Carlo Simulation");
+		super(resource.getString("mcTitle"));
 		Container c = getContentPane();		
-		c.add(criarTela());		
+		c.add(createPane());		
 		pack();
 		setVisible(true);
 	}
 	
-	private JPanel criarTela(){
-		painelPrincipal = new JPanel(new BorderLayout());
-		painelPrincipal.add(getPainelNCasos());
-		return painelPrincipal;		
+	private JPanel createPane(){
+		mainPane = new JPanel(new BorderLayout());
+		mainPane.add(getSampleSizePane());
+		return mainPane;		
 	}
 	
-	private JPanel getPainelNCasos(){
-		painelNCasos = new JPanel(new GridLayout(1,3,5,5));
-		lNCasos = new JLabel("Number of cases : ");
-		txtNCasos = new JTextField();		
-		btnOK = new JButton("OK");
-		painelNCasos.add(lNCasos);
-		painelNCasos.add(txtNCasos);
-		painelNCasos.add(btnOK);
-		return painelNCasos;
+	private JPanel getSampleSizePane(){
+		sampleSizePane = new JPanel(new GridLayout(1,3,5,5));
+		sampleSizeLbl = new JLabel(resource.getString("sampleSizeLbl"));
+		sampleSizeTxt = new JTextField();		
+		okBtn = new JButton(resource.getString("ok"));
+		sampleSizePane.add(sampleSizeLbl);
+		sampleSizePane.add(sampleSizeTxt);
+		sampleSizePane.add(okBtn);
+		return sampleSizePane;
 	}	
 	
-	public String getNumeroCasos(){
-		return txtNCasos.getText();		
+	public String getSampleSize(){
+		return sampleSizeTxt.getText();		
 	}
 	
-	public void adicionaOKListener(ActionListener al){
-		btnOK.addActionListener(al);		
+	public void addOKListener(ActionListener al){
+		okBtn.addActionListener(al);		
 	}	
 }

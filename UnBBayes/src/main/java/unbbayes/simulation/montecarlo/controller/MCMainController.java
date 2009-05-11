@@ -23,38 +23,42 @@ package unbbayes.simulation.montecarlo.controller;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ResourceBundle;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.xml.bind.JAXBException;
 
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
 import unbbayes.io.XMLBIFIO;
-import unbbayes.io.exception.LoadException;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.simulation.montecarlo.gui.MCParametersPane;
+import unbbayes.simulation.montecarlo.io.MonteCarloIO;
 import unbbayes.simulation.montecarlo.sampling.IMonteCarloSampling;
-import unbbayes.simulation.montecarlo.sampling.MatrixMonteCarloSampling;
 
 /**
- * Classe que controla as a��es relativas a gera��o de amostras pelo algoritimo de montecarlo
+ * Class responsible for controlling the user action for generating samples for a BN.
  * 
- * @author Danilo
+ * @author Danilo Custódio (danilocustodio@gmail.com)
+ * @author Rommel Carvalho (rommel.carvalho@gmail.com)
  */
 public class MCMainController {
 	
-	private MCParametersPane tp;
-	private BaseIO io;
-	ProbabilisticNetwork redeProbabilistica;	
+	/** Load resource file from this package */
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.simulation.montecarlo.resources.MCResources");
 	
-	public MCMainController(){	
-		
+	private MCParametersPane paramPane;
+	private BaseIO io;
+	private ProbabilisticNetwork pn;
+	private IMonteCarloSampling mc;
+	
+	public MCMainController(IMonteCarloSampling mc){	
+		this.mc = mc;
 		getNet();
 		
-		tp = new MCParametersPane();
-		adicionarListeners();
+		paramPane = new MCParametersPane();
+		addListeners();
 	}	
 	
 	private void getNet(){			
@@ -63,8 +67,7 @@ public class MCMainController {
 			JFileChooser chooser = new JFileChooser(".");
 			chooser.setMultiSelectionEnabled(false);				
 			chooser.addChoosableFileFilter(
-					//TODO utilizar resources...
-				new SimpleFileFilter(nets,"Carregar .net, .xml"));
+				new SimpleFileFilter(nets, resource.getString("netFileFilter")));
 			int option = chooser.showOpenDialog(null);
 			if (option == JFileChooser.APPROVE_OPTION) {
 				if (chooser.getSelectedFile() != null) {
@@ -75,26 +78,22 @@ public class MCMainController {
 					else{
 						io = new XMLBIFIO(); 
 					}
-					redeProbabilistica = io.load(chooser.getSelectedFile());
+					pn = io.load(chooser.getSelectedFile());
 				}
 			}
-		}catch(LoadException le){
-			le.printStackTrace();
-		}catch(IOException ie){
-			ie.printStackTrace();
-		} catch (JAXBException je){
-        	je.printStackTrace(); 
+		}catch(Exception e){
+        	JOptionPane.showMessageDialog(paramPane, resource.getString("loadNetException"), resource.getString("error"), JOptionPane.ERROR_MESSAGE);
         }
 	}
 	
-	public void adicionarListeners(){
-		tp.adicionaOKListener(okListener);
+	public void addListeners(){
+		paramPane.addOKListener(okListener);
 	}
 	
 	private int validaNatural(String n){
 		try{
 			int numero = Integer.parseInt(n);
-			if(numero >= 0){			
+			if(numero > 0){			
 				return numero;
 			}
 			return -1;
@@ -105,13 +104,19 @@ public class MCMainController {
 	
 	ActionListener okListener = new ActionListener(){
 		public void actionPerformed(ActionEvent ae){
-			int n = validaNatural(tp.getNumeroCasos());
-			if(n>= 0){								
-				IMonteCarloSampling mc = new MatrixMonteCarloSampling();
-				mc.start(redeProbabilistica,n);
-				tp.dispose();
-			}else{			
-				JOptionPane.showMessageDialog(null,"O numero de casos deve ser um natural","ERROR",JOptionPane.ERROR_MESSAGE);
+			int n = validaNatural(paramPane.getSampleSize());
+			if(n != -1){								
+				mc.start(pn, n);
+				paramPane.dispose();
+				try {
+					MonteCarloIO io = new MonteCarloIO(mc.getSampledStatesMatrix());
+					io.makeFile(mc.getSamplingNodeOrderQueue());
+					JOptionPane.showMessageDialog(paramPane, resource.getString("saveSuccess"), resource.getString("success"), JOptionPane.INFORMATION_MESSAGE);
+				} catch (IOException e) {
+					JOptionPane.showMessageDialog(paramPane, resource.getString("saveException"), resource.getString("error"), JOptionPane.ERROR_MESSAGE);
+				}
+			} else {			
+				JOptionPane.showMessageDialog(paramPane, resource.getString("sampleSizeException"), resource.getString("error"), JOptionPane.ERROR_MESSAGE);
 			}
 		}	
 	};

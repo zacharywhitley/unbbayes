@@ -70,7 +70,10 @@ import unbbayes.io.mebn.UbfIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO;
 import unbbayes.prs.exception.InvalidParentException;
+import unbbayes.simulation.likelihoodweighting.sampling.LikelihoodWeightingSampling;
 import unbbayes.simulation.montecarlo.controller.MCMainController;
+import unbbayes.simulation.montecarlo.sampling.MatrixMonteCarloSampling;
+import unbbayes.simulation.sampling.GibbsSampling;
 import unbbayes.util.Debug;
 
 /**
@@ -138,13 +141,15 @@ public class UnBBayesFrame extends JFrame {
 	private ActionListener alMotif;
 	private ActionListener alWindows;
 	private ActionListener alLearn;
+	private ActionListener alIL;
 	private ActionListener alCascade;
 	private ActionListener alTile;
 	private ActionListener alHelp;
 	private ActionListener alAbout;
-	private ActionListener alMonteCarlo;
+	private ActionListener alLogic;
+	private ActionListener alLW;
 	private ActionListener alGibbs;
-	private ActionListener alIL;
+	
 
 	private JFileChooser chooser;
 	private FileController fileController;
@@ -348,8 +353,6 @@ public class UnBBayesFrame extends JFrame {
 				chooser.setMultiSelectionEnabled(false);
 				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
-				// adicionar FileView no FileChooser para desenhar �cones de
-				// arquivos
 				chooser.setFileView(new FileIcon(UnBBayesFrame.this));
 				
 				
@@ -440,8 +443,6 @@ public class UnBBayesFrame extends JFrame {
 				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 				chooser.setDialogTitle(dialogueTitle); 
 				
-				// adicionar FileView no FileChooser para desenhar �cones de
-				// arquivos
 				chooser.setFileView(new FileIcon(UnBBayesFrame.this));
 				chooser.addChoosableFileFilter(new SimpleFileFilter(nets, filterMessage));
 				int option = chooser.showSaveDialog(null);
@@ -511,15 +512,23 @@ public class UnBBayesFrame extends JFrame {
 			}
 		};
 
-		alMonteCarlo = new ActionListener() {
+		alLogic = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				// ControladorPrincipal cp = new ControladorPrincipal();
-				new MCMainController();
+				new MCMainController(new MatrixMonteCarloSampling());
+			}
+		};
+		
+		alLW = new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				// ControladorPrincipal cp = new ControladorPrincipal();
+				new MCMainController(new LikelihoodWeightingSampling());
 			}
 		};
 
 		alGibbs = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
+				new MCMainController(new GibbsSampling());
 			}
 		};
 
@@ -742,6 +751,7 @@ public class UnBBayesFrame extends JFrame {
 		JMenu tbMenu = new JMenu(resource.getString("tbMenu"));
 		JMenu newMenu = new JMenu(resource.getString("newMenu"));
 		JMenu toolsMenu = new JMenu(resource.getString("toolsMenu"));
+		JMenu samplingMenu = new JMenu(resource.getString("samplingMenu"));
 		JMenu windowMenu = new JMenu(resource.getString("windowMenu"));
 		JMenu helpMenu = new JMenu(resource.getString("helpMenu"));
 		
@@ -831,23 +841,22 @@ public class UnBBayesFrame extends JFrame {
 		JMenuItem learningItem = new JMenuItem(resource.getString("learningItem"), iconController.getLearningIcon());
 		JMenuItem tanItem = new JMenuItem(resource.getString("tanItem"));
 		JMenuItem banItem = new JMenuItem(resource.getString("banItem"));
-		JMenuItem monteCarloItem = new JMenuItem(resource.getString("monteCarloItem"));
-		JMenuItem gibbsItem = new JMenuItem(resource.getString("GibbsItem"));
+		JMenuItem logicItem = new JMenuItem(resource.getString("logicItem"));
+		JMenuItem lwItem = new JMenuItem(resource.getString("likelihoodWeightingItem"));
+		JMenuItem gibbsItem = new JMenuItem(resource.getString("gibbsItem"));
 		JMenuItem iLearningItem = new JMenuItem(resource.getString("ILearningItem"));
 		
 		learningItem.setMnemonic(resource.getString("learningItemMn").charAt(0));
 		tanItem.setMnemonic(resource.getString("tanItemMn").charAt(0));
 		banItem.setMnemonic(resource.getString("banItemMn").charAt(0));
-		monteCarloItem.setMnemonic(resource.getString("monteCarloItemMn").charAt(0));
-		gibbsItem.setMnemonic(resource.getString("GibbsItemMn").charAt(0));
 		iLearningItem.setMnemonic(resource.getString("ILearningItemMn").charAt(0));
+		
+		logicItem.setMnemonic(resource.getString("logicItemMn").charAt(0));
+		lwItem.setMnemonic(resource.getString("likelihoodWeightingItemMn").charAt(0));
+		gibbsItem.setMnemonic(resource.getString("gibbsItemMn").charAt(0));
 		
 		learningItem.setAccelerator(KeyStroke.getKeyStroke(resource.getString(
 				"learningItemMn").charAt(0), Event.CTRL_MASK, false));
-		
-		
-		
-		
 		
 
 		// add ActionListener to all menu items
@@ -867,12 +876,15 @@ public class UnBBayesFrame extends JFrame {
 		motifItem.addActionListener(alMotif);
 		windowsItem.addActionListener(alWindows);
 		learningItem.addActionListener(alLearn);
+		iLearningItem.addActionListener(alIL);
 		cascadeItem.addActionListener(alCascade);
 		tileItem.addActionListener(alTile);
-		helpItem.addActionListener(alHelp);
-		monteCarloItem.addActionListener(alMonteCarlo);
-		iLearningItem.addActionListener(alIL);
+		
+		logicItem.addActionListener(alLogic);
+		lwItem.addActionListener(alLW);
 		gibbsItem.addActionListener(alGibbs);
+		
+		helpItem.addActionListener(alHelp);
 		aboutItem.addActionListener(alAbout);
 
 		// add menu items to their respective menu
@@ -923,9 +935,11 @@ public class UnBBayesFrame extends JFrame {
 		toolsMenu.add(learningItem);
 		toolsMenu.add(tanItem);
 		toolsMenu.add(banItem);
-		toolsMenu.add(monteCarloItem);
-		toolsMenu.add(gibbsItem);
 		toolsMenu.add(iLearningItem);
+		
+		samplingMenu.add(logicItem);
+		samplingMenu.add(lwItem);
+		samplingMenu.add(gibbsItem);
 		
 		windowMenu.add(cascadeItem);
 		windowMenu.add(tileItem);
@@ -935,6 +949,7 @@ public class UnBBayesFrame extends JFrame {
 		menu.add(fileMenu);
 		menu.add(viewMenu);
 		menu.add(toolsMenu);
+		menu.add(samplingMenu);
 		menu.add(windowMenu);
 		menu.add(helpMenu);
 

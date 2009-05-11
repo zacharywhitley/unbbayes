@@ -21,6 +21,7 @@
 package unbbayes.simulation.montecarlo;
 
 import unbbayes.simulation.montecarlo.controller.MCMainController;
+import unbbayes.simulation.montecarlo.sampling.MatrixMonteCarloSampling;
 
 /**
  * 	Classe que que gera amostras baseadas em uma rede bayseana
@@ -34,6 +35,6 @@ import unbbayes.simulation.montecarlo.controller.MCMainController;
 public class StartMonteCarlo {
 
 	public static void main(String[] args){
-		new MCMainController();		
+		new MCMainController(new MatrixMonteCarloSampling());		
 	}
 }

@@ -112,6 +112,7 @@ public class GlobalOptionsDialog extends JDialog {
     private ButtonGroup algorithmGroup;
     private JRadioButtonMenuItem junctionTreeAlgorithm;
     private JRadioButtonMenuItem likelihoodWeightingAlgorithm;
+    private JRadioButtonMenuItem gibbsAlgorithm;
     private JRadioButtonMenuItem gaussianMixtureAlgorithm;
     //private PreviewPane preview;
     private final GraphPane graph;
@@ -138,7 +139,8 @@ public class GlobalOptionsDialog extends JDialog {
         algorithmGroup = new ButtonGroup();
         junctionTreeAlgorithm         = new JRadioButtonMenuItem(resource.getString("junctionTreeAlgorithmName"), (controller.getInferenceAlgorithm() == InferenceAlgorithmEnum.JUNCTION_TREE));
         likelihoodWeightingAlgorithm  = new JRadioButtonMenuItem(resource.getString("likelihoodWeightingAlgorithmName"), (controller.getInferenceAlgorithm() == InferenceAlgorithmEnum.LIKELIHOOD_WEIGHTING));
-        gaussianMixtureAlgorithm  		  = new JRadioButtonMenuItem(resource.getString("gaussianMixtureAlgorithmName"), (controller.getInferenceAlgorithm() == InferenceAlgorithmEnum.GAUSSIAN_MIXTURE));
+        gibbsAlgorithm 				  = new JRadioButtonMenuItem(resource.getString("gibbsAlgorithmName"), (controller.getInferenceAlgorithm() == InferenceAlgorithmEnum.GIBBS));
+        gaussianMixtureAlgorithm  	  = new JRadioButtonMenuItem(resource.getString("gaussianMixtureAlgorithmName"), (controller.getInferenceAlgorithm() == InferenceAlgorithmEnum.GAUSSIAN_MIXTURE));
         
         gbl     = new GridBagLayout();
         gbc     = new GridBagConstraints();
@@ -307,6 +309,8 @@ public class GlobalOptionsDialog extends JDialog {
                     	controller.setInferenceAlgorithm(InferenceAlgorithmEnum.JUNCTION_TREE);
                     } else if (likelihoodWeightingAlgorithm.isSelected()) {
                     	controller.setInferenceAlgorithm(InferenceAlgorithmEnum.LIKELIHOOD_WEIGHTING);
+                    } else if (gibbsAlgorithm.isSelected()) {
+                    	controller.setInferenceAlgorithm(InferenceAlgorithmEnum.GIBBS);
                     } else if (gaussianMixtureAlgorithm.isSelected()) {
                     	controller.setInferenceAlgorithm(InferenceAlgorithmEnum.GAUSSIAN_MIXTURE);
                     }
@@ -402,9 +406,11 @@ public class GlobalOptionsDialog extends JDialog {
 		logPanel.add(createLog);
 		algorithmGroup.add(junctionTreeAlgorithm);
         algorithmGroup.add(likelihoodWeightingAlgorithm);
+        algorithmGroup.add(gibbsAlgorithm);
         algorithmGroup.add(gaussianMixtureAlgorithm);
         algorithmPanel.add(junctionTreeAlgorithm);
         algorithmPanel.add(likelihoodWeightingAlgorithm);
+        algorithmPanel.add(gibbsAlgorithm);
         algorithmPanel.add(gaussianMixtureAlgorithm);
 
 		jtp.addTab(resource.getString("colorControllerTab"), controllerColorPanel);

@@ -26,12 +26,11 @@ import java.util.ResourceBundle;
 import javax.swing.filechooser.FileFilter;
 
 /**
- *  Classe que extende <code>FileFilter</code>, respons�vel por filtrar
- *  os tipos de arquivo a mostrar.
+ *  Class responsible for filtering the type of files to show.
  *
- *@author     Rommel N. Carvalho, Michael S. Onishi
- *@created    27 de Junho de 2001
- *@see        FileFilter
+ *@author   Rommel N. Carvalho (rommel.carvalho@gmail.com)
+ *@author 	Michael S. Onishi (michael.onishi@gmail.com)
+ *@see      FileFilter
  */
 public class SimpleFileFilter extends FileFilter {
 
@@ -43,9 +42,9 @@ public class SimpleFileFilter extends FileFilter {
 
 
     /**
-     *  Constr�i um <code>FileFilter</code> com a extens�o desejada.
+     *  Creates a <code>FileFilter</code> with the desired file extension.
      *
-     *@param  ext  extens�o (<code>String</code>) dos arquivos a mostrar
+     *@param  ext  Extension of the files to be shown.
      *@see         FileFilter
      */
     public SimpleFileFilter(String ext) {
@@ -54,13 +53,11 @@ public class SimpleFileFilter extends FileFilter {
 
 
     /**
-     *  Constr�i um <code>FileFilter</code> com as extens�es desejadas e
-     *  descri��o dessas extens�es.
+     *  Creates a <code>FileFilter</code> with the desired file extension and description.
      *
-     *@param  exts   um array de <code>String</code> (extens�es desejadas)
-     *@param  descr  descri��o das extens�es (<code>String</code>)
-     *
-     *@see           String
+     *@param  exts   Extensions of the files to be shown.
+     *@param  descr  Descriptions of the files to be shown.
+     *@see	FileFilter
      */
     public SimpleFileFilter(String[] exts, String descr) {
         //clona e coloca em lowercase as extens�es
@@ -74,10 +71,9 @@ public class SimpleFileFilter extends FileFilter {
 
 
     /**
-     *  Retorna a descri��o geral.
+     *  Returns a generic description.
      *
-     *@return    descri��o (<code>String</code>) geral
-     *@see       String
+     *@return    A generic description.
      */
     public String getDescription() {
         return description;
@@ -85,18 +81,18 @@ public class SimpleFileFilter extends FileFilter {
 
 
     /**
-     *  Verifica se o arquivo desejado possui a extens�o que a classe filtra.
+     *  Verify if the file has one of the valid extensions.
      *
-     *@param  f  arquivo (<code>File</code>) a verificar
-     *@return    true se possuir a extens�o correta e false caso contr�rio
+     *@param  f  File to be checked for valid extension.
+     *@return    True if it has a valid extension, false otherwise.
      */
     public boolean accept(File f) {
-        //sempre permitimos diret�rios independente da extensao
+        // We will always allow directories
         if (f.isDirectory()) {
             return true;
         }
 
-        //checar a extens�o
+        // Check for valid extension
         String name = f.getName().toLowerCase();
         for (int i = extensions.length - 1; i >= 0; i--) {
             if (name.endsWith(extensions[i])) {

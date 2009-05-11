@@ -100,8 +100,8 @@ public class PNEditionPane extends JPanel {
     private final JButton btnSaveTableImage;
     private final JButton btnGlobalOption;
     private final JButton btnHierarchy;
-    private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9]*");
-    private final Pattern descriptionPattern = Pattern.compile("[ a-zA-Z_0-9áéíóúãõçâêîôûüà]*");
+    private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9(),]*");
+    private final Pattern descriptionPattern = Pattern.compile("[ a-zA-Z_0-9áéíóúãõçâêîôûüà(),]*");
     private Matcher matcher;
 
     private final IconController iconController = IconController.getInstance();

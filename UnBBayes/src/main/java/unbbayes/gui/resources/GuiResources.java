@@ -275,6 +275,7 @@ public class GuiResources extends ListResourceBundle {
         {"recentFilesMenu","Recent Files"},
         {"tbMenu","Toolbars"},
         {"toolsMenu","Tools"},
+        {"samplingMenu","Sampling"},
         {"windowMenu","Window"},
         {"helpMenu","Help"},
         {"newMenu","New..."},
@@ -296,8 +297,9 @@ public class GuiResources extends ListResourceBundle {
         {"learningItem","Learning"},
         {"tanItem","TAN"},
         {"banItem","BAN"},
-        {"monteCarloItem","Monte Carlo"},
-        {"GibbsItem","Gibbs"},
+        {"logicItem","Logic"},
+        {"likelihoodWeightingItem","Likelihood Weighting"},
+        {"gibbsItem","Gibbs"},
         {"ILearningItem","Incremental Learning"},
         {"cascadeItem","Cascade"},
         {"tileItem","Tile"},
@@ -332,9 +334,11 @@ public class GuiResources extends ListResourceBundle {
         {"learningItemMn","L"},
         {"tanItemMn","T"},
         {"banItemMn","B"},
-        {"monteCarloItemMn","M"},
-        {"GibbsItemMn","G"},
-        {"ILearningItemMn","I"},               
+        {"ILearningItemMn","I"},
+        
+        {"logicItemMn","L"},
+        {"likelihoodWeightingItemMn","W"},
+        {"gibbsItemMn","G"},
  
         {"operationError","Operation Error"},        
         {"oVariableAlreadyIsArgumentError","Ord. Variable is already an argument of this node!"},
@@ -502,6 +506,7 @@ public class GuiResources extends ListResourceBundle {
 		{"algorithmTab" , "Inference Algorithm"},
 		{"junctionTreeAlgorithmName" , "Junction Tree"},
 		{"likelihoodWeightingAlgorithmName" , "Likelihood Weighting"},
+		{"gibbsAlgorithmName" , "Gibbs"},
 		{"gaussianMixtureAlgorithmName" , "Gaussian Mixture"},
 		
 		/* Continuous Normal Distribution Pane */

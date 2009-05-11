@@ -276,6 +276,7 @@ public class GuiResources_pt extends ListResourceBundle {
         {"viewMenu","Exibir"},
         {"tbMenu","Barras de Ferramentas"},
         {"toolsMenu","Ferramentas"},
+        {"samplingMenu","Amostragem"},
         {"windowMenu","Janela"},
         {"helpMenu","Ajuda"},
         {"newMenu","Novo..."},
@@ -297,8 +298,9 @@ public class GuiResources_pt extends ListResourceBundle {
         {"learningItem","Aprendizagem"},
         {"tanItem","TAN"},
         {"banItem","BAN"},
-        {"monteCarloItem","Monte Carlo"},
-        {"GibbsItem","Gibbs"},
+        {"logicItem","Logic"},
+        {"likelihoodWeightingItem","Likelihood Weighting"},
+        {"gibbsItem","Gibbs"},
         {"ILearningItem","Aprendizagem Incremental"},
         {"tileItem","Lado a lado verticalmente"},
         {"helpItem","Ajuda"},
@@ -329,12 +331,14 @@ public class GuiResources_pt extends ListResourceBundle {
         {"newMEBNMn","E"},
         {"newOOBNMn","O"},
         
-        {"learningItemMn","P"},
+        {"learningItemMn","L"},
         {"tanItemMn","T"},
         {"banItemMn","B"},
-        {"monteCarloItemMn","M"},
-        {"GibbsItemMn","G"},
-        {"ILearningItemMn","R"},       
+        {"ILearningItemMn","I"},
+        
+        {"logicItemMn","L"},
+        {"likelihoodWeightingItemMn","W"},
+        {"gibbsItemMn","G"},    
         
         {"operationError","Erro na operação"},           
         {"oVariableAlreadyIsArgumentError","Variável ord. já é argumento deste nó!"},       
@@ -502,6 +506,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"algorithmTab" , "Algoritmo de Inferência"},
 		{"junctionTreeAlgorithmName" , "Árvore de Junção"},
 		{"likelihoodWeightingAlgorithmName" , "Likelihood Weighting"},
+		{"gibbsAlgorithmName" , "Gibbs"},
 		{"gaussianMixtureAlgorithmName" , "Gaussian Mixture"},
 		
 		/* Continuous Normal Distribution Pane */
