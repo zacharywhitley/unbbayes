@@ -14,30 +14,38 @@
     <xbifns:colorContinuousProbilisticNode>-16711936</xbifns:colorContinuousProbilisticNode>
     <xbifns:colorExplanationNode>-16711936</xbifns:colorExplanationNode>
   </xbifns:staticProperty>
-  <xbifns:hierarchy/>
+  <xbifns:hierarchy>
+    <xbifns:root name="root">
+      <xbifns:level name="A"/>
+      <xbifns:level name="B"/>
+      <xbifns:level name="C"/>
+      <xbifns:level name="D"/>
+      <xbifns:level name="E"/>
+    </xbifns:root>
+  </xbifns:hierarchy>
   <xbifns:network>
     <xbifns:variables>
-      <xbifns:variable yPos="90" xPos="447" type="DiscreteProbabilistic" name="A">
+      <xbifns:variable yPos="96" xPos="430" type="DiscreteProbabilistic" name="A">
         <xbifns:description>A</xbifns:description>
         <xbifns:state name="Y"/>
         <xbifns:state name="N"/>
       </xbifns:variable>
-      <xbifns:variable yPos="187" xPos="325" type="DiscreteProbabilistic" name="B">
+      <xbifns:variable yPos="156" xPos="382" type="DiscreteProbabilistic" name="B">
         <xbifns:description>B</xbifns:description>
         <xbifns:state name="Y"/>
         <xbifns:state name="N"/>
       </xbifns:variable>
-      <xbifns:variable yPos="181" xPos="543" type="DiscreteProbabilistic" name="C">
+      <xbifns:variable yPos="158" xPos="476" type="DiscreteProbabilistic" name="C">
         <xbifns:description>C</xbifns:description>
         <xbifns:state name="Y"/>
         <xbifns:state name="N"/>
       </xbifns:variable>
-      <xbifns:variable yPos="307" xPos="331" type="DiscreteProbabilistic" name="D">
+      <xbifns:variable yPos="237" xPos="384" type="DiscreteProbabilistic" name="D">
         <xbifns:description>D</xbifns:description>
         <xbifns:state name="Y"/>
         <xbifns:state name="N"/>
       </xbifns:variable>
-      <xbifns:variable yPos="303" xPos="539" type="DiscreteProbabilistic" name="E">
+      <xbifns:variable yPos="236" xPos="478" type="DiscreteProbabilistic" name="E">
         <xbifns:description>E</xbifns:description>
         <xbifns:state name="Y"/>
         <xbifns:state name="N"/>
@@ -97,8 +105,8 @@
       <xbifns:conditionalDistribution type="Discrete">
         <xbifns:owner name="E"/>
         <xbifns:parents>
-          <xbifns:parent index="0" name="C"/>
-          <xbifns:parent index="1" name="D"/>
+          <xbifns:parent index="0" name="D"/>
+          <xbifns:parent index="1" name="C"/>
         </xbifns:parents>
         <xbifns:CPT>
           <xbifns:dependentParentIndex index="0">0.8999999761581421</xbifns:dependentParentIndex>
