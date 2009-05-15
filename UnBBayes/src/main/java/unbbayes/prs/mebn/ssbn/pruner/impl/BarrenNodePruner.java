@@ -42,20 +42,22 @@ public class BarrenNodePruner implements IPruner {
 	public void prune(SSBN ssbn) {
 		MSeparationUtility utility = MSeparationUtility.newInstance();
 		
-		// extract finding's ancestors
-		Set<INode> ancestors = utility.getAllAncestors(new HashSet(ssbn.getFindingList()));
+		// extract finding's ancestors and findings themselves
+		Set<INode> ancestors = new HashSet(ssbn.getFindingList());
+		ancestors.addAll(utility.getAllAncestors(ancestors));
 
-		// extract queries' ancestors
+		// extract queries' ancestors and queries themselves
 		Set<INode> queries = new HashSet<INode>();
 		for (Query query : ssbn.getQueryList()) {
 			queries.add(query.getSSBNNode());
 		}
+		ancestors.addAll(queries);
 		ancestors.addAll(utility.getAllAncestors(queries));
 		
 		Collection<INode> nodesToRemove = new HashSet<INode>();
 		
-		for (INode node : ssbn.getSsbnNodeList()) {
-			if (ancestors.contains(node)) {
+		for (INode node : ssbn.getSimpleSsbnNodeList()) {
+			if (!ancestors.contains(node)) {
 				nodesToRemove.add(node);
 			}
 		}
