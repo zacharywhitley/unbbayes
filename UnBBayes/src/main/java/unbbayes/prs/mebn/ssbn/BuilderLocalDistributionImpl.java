@@ -32,17 +32,15 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 		    ssbn.setSsbnNodeList(listSSBNNode); 
 			ssbn.setProbabilisticNetwork(pn); 
 		} catch (SSBNNodeGeneralException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			throw e; 
 		} catch (ImplementationRestrictionException e) {
 			//This exception don't should be throw in a correct algorithm. 
 			e.printStackTrace();
 			throw new RuntimeException(e.getMessage()); 
 		} 
 		
-		System.out.println("\n\nTranslated\n\n");
-		
-	    CPTForSSBNNodeGenerator build = new CPTForSSBNNodeGenerator();
+	    CPTForSSBNNodeGenerator build = new CPTForSSBNNodeGenerator(ssbn.getLogManager());
 	    
 	    if(ssbn.getSimpleSsbnNodeList().size()>0){
 	    	build.generateCPTForAllSSBNNodes(ssbn.getSsbnNodeList().get(0));

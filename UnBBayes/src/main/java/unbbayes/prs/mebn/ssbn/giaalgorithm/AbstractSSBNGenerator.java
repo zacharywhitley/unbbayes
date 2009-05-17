@@ -1117,7 +1117,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 				//Remove the temp node of the list of children of the node. 
 				for(SSBNNode parent: groupParents){
 					parent.getProbNode().getChildren().remove(tempNode.getProbNode()); 
-				    parent.getChildren().remove(tempNode); 
+				    parent.removeChildNode(tempNode); 
 				}
 				
 				mapCPTByEntity.put(entity.getInstanceName(), cpt);

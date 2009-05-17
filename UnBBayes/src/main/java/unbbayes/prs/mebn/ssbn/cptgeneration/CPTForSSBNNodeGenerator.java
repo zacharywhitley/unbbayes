@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import unbbayes.gui.table.GUIPotentialTable;
+import unbbayes.io.ILogManager;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -20,6 +21,12 @@ import unbbayes.util.Debug;
 
 public class CPTForSSBNNodeGenerator {
 
+	public ILogManager logManager; 
+	
+	public CPTForSSBNNodeGenerator(ILogManager logManager){
+		this.logManager = logManager; 
+	}
+	
 	/**
 	 * Generate the SSBN nodes parents of root and for the SSBN nodes parents of 
 	 * findingsDown and child of root.
@@ -44,22 +51,23 @@ public class CPTForSSBNNodeGenerator {
 	 */
 	private void generateCPTForAllSSBNNodes(SSBNNode root, int level) throws MEBNException, SSBNNodeGeneralException{
 
-//		logManager.appendln(getSpaceForLevel(level) + "Generate CPT for node " + root); 
-
-		System.out.println("Generate CPT for node " + root);
-		
 		if(root.isCptAlreadyGenerated()){
 			return; 
 		}else{
 			
+			logManager.appendln(level, "\nGenerate CPT for node " + root); 
+			
 			//------------------1) PARENTS
-//			logManager.appendln(getSpaceForLevel(level) + "Parents:"); 
-			for(SSBNNode parent: root.getParents()){
+			logManager.appendln(level, "Parents:"); 
+			SSBNNode[] parents = root.getParents().toArray(new SSBNNode[root.getParents().size()]); 
+			for(SSBNNode parent: parents){
+				logManager.appendln(level, ">" + parent); 
 				generateCPTForAllSSBNNodes(parent, level + 1); 
 			}
 
 			//------------------2) NODE
-//			logManager.appendln(getSpaceForLevel(level) + "CPT for root"); 
+			logManager.appendln(level, "CPT for root");
+			logManager.appendln(level, ">" + root); 
 			if(root.isCptAlreadyGenerated()){
 				return; 
 			}
@@ -67,8 +75,13 @@ public class CPTForSSBNNodeGenerator {
 			root.setCptAlreadyGenerated(true); 
 
 			//------------------3) CHILDREN
-//			logManager.appendln(getSpaceForLevel(level) + "Children:"); 
-			for(SSBNNode child: root.getChildren()){
+			logManager.appendln(level, "Children:"); 
+			//To avoid the ConcurrentModificationException: the method 
+			//generateCPTForNodeWithContextFather add and remove childs for the
+			//children list. 
+			SSBNNode[] children = root.getChildren().toArray(new SSBNNode[root.getChildren().size()]); 
+			for(SSBNNode child: children){
+				logManager.appendln(level, ">" + child); 
 				generateCPTForAllSSBNNodes(child, level + 1); 
 			}
 		}
@@ -109,6 +122,7 @@ public class CPTForSSBNNodeGenerator {
 			if(ssbnNode.getContextFatherSSBNNode()!=null){ 
 				try {
 					generateCPTForNodeWithContextFather(ssbnNode);
+					System.out.println("              Saiu do metodo!!!!!!");
 				} catch (InvalidOperationException e1) {
 					e1.printStackTrace();
 					throw new SSBNNodeGeneralException(e1.getMessage()); 
@@ -146,7 +160,7 @@ public class CPTForSSBNNodeGenerator {
 //				logManager.appendln("  " + parent);
 //			}
 			
-			//Debug.setDebug(false);
+			Debug.setDebug(false);
 			
 			Map<String, List<SSBNNode>> mapParentsByEntity = new HashMap<String, List<SSBNNode>>(); 
 			Map<String, PotentialTable> mapCPTByEntity = new HashMap<String, PotentialTable>(); 
@@ -170,16 +184,18 @@ public class CPTForSSBNNodeGenerator {
 			for(SSBNNode parent: ssbnNode.getParents()){
 				
 				System.out.println("Ordinary variables for parent " + parent.getName());
+				boolean contain = false; 
 				for(OrdinaryVariable ov: parent.getOVs()){
-					System.out.println(ov.getName() + " - " + ov.getMFrag().getName() + " - " + ov.getValueType().getName());
+					contain = ov.equals(contextFather.getOvProblematic());
 				}
 				
-//				if(!parent.getOVs().contains(contextFather.getOvProblematic())){
-//					generalParents.add(parent); 
-//				}else{
+//				if(!parent.getOVs().contains(contextFather.getOvProblematic())){ //For some motive don't go!!!
+				if(!contain){	
+					generalParents.add(parent); 
+				}else{
 					String entity = parent.getArgumentByOrdinaryVariable(contextFather.getOvProblematic()).getEntity().getInstanceName(); 
 					mapParentsByEntity.get(entity).add(parent); 
-//				}
+				}
 			}
 			
 			int sizeCPTOfEntity = 0; 
@@ -224,7 +240,7 @@ public class CPTForSSBNNodeGenerator {
 				//Remove the temp node of the list of children of the node. 
 				for(SSBNNode parent: groupParents){
 					parent.getProbNode().getChildren().remove(tempNode.getProbNode()); 
-				    parent.getChildren().remove(tempNode); 
+				    parent.removeChildNode(tempNode); 
 				}
 				
 				mapCPTByEntity.put(entity.getInstanceName(), cpt);
@@ -232,9 +248,9 @@ public class CPTForSSBNNodeGenerator {
 			
 				//TODO remove the parents of the tempNode because it is added to the list
 				//of child nodes of the other node!!!
-//				for(SSBNNode parent: groupParents){
-//					tempNode.removeParent(parent); 
-//				}
+				for(SSBNNode parent: groupParents){
+//					tempNode.removeParentNode(parent); 
+				}
 			}			
 			
 			//Reorganize the variables in table
@@ -345,8 +361,9 @@ public class CPTForSSBNNodeGenerator {
 //			gpt = new GUIPotentialTable(ssbnNode.getProbNode().getPotentialTable()); 
 //			gpt.showTable("Table for Node " + ssbnNode);
 			
-			//Debug.setDebug(true);
-//			logManager.appendln("CPT OK\n");
+			Debug.setDebug(true);
+			
+			logManager.appendln("CPT OK\n");
 		
 	}
 	

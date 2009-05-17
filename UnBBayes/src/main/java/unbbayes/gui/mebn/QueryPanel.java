@@ -256,8 +256,14 @@ public class QueryPanel extends JDialog{
 						setVisible(false); 
 						
 						mebnController.getScreen().setCursor(new Cursor(Cursor.WAIT_CURSOR)); 
+						
+						
+						//ALG1
 //				        ProbabilisticNetwork network = mebnController.executeQuery(residentNode, arguments);
 						
+				        
+				        
+				        //ALG2
 						List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
 						
 						List<Argument> arglist = residentNode.getArgumentList();
@@ -291,6 +297,7 @@ public class QueryPanel extends JDialog{
 						ProbabilisticNetwork network = mebnController.executeQueryLaskeyAlgorithm(queryList);
 						
 						
+				        
 						
 						
 				        mebnController.getScreen().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));

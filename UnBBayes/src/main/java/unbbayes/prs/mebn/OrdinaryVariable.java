@@ -292,19 +292,18 @@ public class OrdinaryVariable extends Node{
 		}else{
 			if((obj != null)&&(obj instanceof OrdinaryVariable)){
 				OrdinaryVariable node = (OrdinaryVariable) obj;
-				if((node.getMFrag()!=null)&&(node.getValueType()!=null)){
-					if(     (node.name.equals(this.name)) ){
-
+				
+				if(node.getValueType()!=null){
+					if(     (node.name.equals(this.name)) && 
+							(node.getValueType().equals(this.getValueType()))){
 						result = true;
-
 					}
 				}else{
 					if(node.name.equals(this.name)){
-
 						result = true;
-
 					}					
 				}
+				
 			}
 		}
 		

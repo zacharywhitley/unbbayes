@@ -3,6 +3,7 @@ package unbbayes.prs.mebn.ssbn.laskeyalgorithm;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -28,6 +29,8 @@ import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.prs.mebn.ssbn.pruner.IPruneStructure;
 import unbbayes.prs.mebn.ssbn.pruner.impl.PruneStructureImpl;
+import unbbayes.prs.mebn.ssbn.util.PositionAdjustmentUtils;
+import unbbayes.prs.mebn.ssbn.util.SSBNDebugInformationUtil;
 
 /**
  * Implementation of the Laskey's SSBN Algorithm
@@ -104,6 +107,8 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 			buildLocalDistribution(ssbn);
 			ssbn.getLogManager().appendln("Generate CPT's Finished\n");
 		}
+		
+		SSBNDebugInformationUtil.printAndSaveCurrentNetwork(ssbn); 
 		
 		return ssbn;
 	}

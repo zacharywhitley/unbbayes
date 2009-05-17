@@ -67,10 +67,10 @@ public class ContextFatherSSBNNode {
 		this.pnet = pnet;
 		this.contextNode = contextNode;
 		this.probNode = probNode; 
-//		probNode.setName(contextNode.getFormula());
+		probNode.setName(contextNode.getName());
 //		probNode.setDescription(contextNode.getFormula());
-		probNode.setName("context");
-		probNode.setDescription("context");
+//		probNode.setName("context");
+		probNode.setDescription(contextNode.getName());
 		pnet.addNode(probNode);
 		
 		possibleValues = new ArrayList<LiteralEntityInstance>();

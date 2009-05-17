@@ -97,14 +97,11 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
 	public void appendln(int identation, String text) {
 		
 		for(int i= 0; i < identation; i++){
-			log.append(identationString); 
-	        System.out.print(text);
+			log.append(identationString);
 		}
 		
         log.append(text);
         log.append("\n");
-
-        System.out.println(text);
 	}
 
 	public void appendlnIfTrue(int identation, boolean debug, String text) {
@@ -116,10 +113,8 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
     public void appendSeparator(){
     	for(int i = 0; i < numColumn; i++){
     		log.append(separator); 
-    		System.out.print(separator); 
     	}
     	log.append("\n"); 
-    	System.out.println(" ");
     }
     
     public String getLog() {
