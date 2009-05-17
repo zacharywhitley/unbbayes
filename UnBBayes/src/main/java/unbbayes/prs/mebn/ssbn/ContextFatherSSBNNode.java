@@ -138,11 +138,6 @@ public class ContextFatherSSBNNode {
 	public Collection<LiteralEntityInstance> getPossibleValues() {
 		return possibleValues;
 	}
-
-	public void setPossibleValues(Collection<LiteralEntityInstance> possibleValues) {
-		this.possibleValues = possibleValues;
-	}
-	
 	
 	public ContextNode getContextNode() {
 		return contextNode;

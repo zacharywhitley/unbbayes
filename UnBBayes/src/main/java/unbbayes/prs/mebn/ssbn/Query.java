@@ -95,8 +95,13 @@ public class Query {
 		this.mebn = mebn;
 	}
 
+	@Deprecated
 	public SSBNNode getQueryNode() {
 		return queryNode;
+	}
+	
+	public void setSSBNNode(SimpleSSBNNode _simpleSSBNNode){
+		this.simpleSSBNNode = _simpleSSBNNode; 
 	}
 	
 	public SimpleSSBNNode getSSBNNode(){

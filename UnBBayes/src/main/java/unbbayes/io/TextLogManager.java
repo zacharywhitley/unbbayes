@@ -25,8 +25,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ResourceBundle;
 
-import unbbayes.util.Debug;
-
 /**
  * Responsible for generating network compilation log
  * 
@@ -73,7 +71,8 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
 
     public void append(String text) {
         log.append(text);
-        Debug.print(text);
+        
+        System.out.print(text);
     }
 
     public void appendIfTrue(boolean debug, String text) {
@@ -86,7 +85,7 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
         log.append(text);
         log.append("\n");
 
-        Debug.println(text);
+        System.out.println(text);
     }
 
     public void appendlnIfTrue(boolean debug, String text) {
@@ -99,12 +98,13 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
 		
 		for(int i= 0; i < identation; i++){
 			log.append(identationString); 
+	        System.out.print(text);
 		}
 		
         log.append(text);
         log.append("\n");
 
-        Debug.println(text);
+        System.out.println(text);
 	}
 
 	public void appendlnIfTrue(int identation, boolean debug, String text) {
@@ -116,10 +116,10 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
     public void appendSeparator(){
     	for(int i = 0; i < numColumn; i++){
     		log.append(separator); 
-    		Debug.print(separator); 
+    		System.out.print(separator); 
     	}
-    	log.append("\n\n"); 
-    	Debug.print("\n\n"); 
+    	log.append("\n"); 
+    	System.out.println(" ");
     }
     
     public String getLog() {

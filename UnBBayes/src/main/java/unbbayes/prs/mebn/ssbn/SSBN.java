@@ -166,21 +166,24 @@ public class SSBN {
 	private void addFindings() throws SSBNNodeGeneralException{
 		
 		for(SimpleSSBNNode findingNode: findingList){
-			TreeVariable node = findingNode.getProbNode();
+			
+			if(findingNode.getProbNode()!=null){ //Not all findings nodes are at the network. 
+				TreeVariable node = findingNode.getProbNode();
 
-			String nameState = findingNode.getState().getName(); 
-			
-			boolean ok = false; 
-			for(int i = 0; i < node.getStatesSize(); i++){
-				if(node.getStateAt(i).equals(nameState)){
-					node.addFinding(i);
-					ok = true; 
-					break; 
+				String nameState = findingNode.getState().getName(); 
+
+				boolean ok = false; 
+				for(int i = 0; i < node.getStatesSize(); i++){
+					if(node.getStateAt(i).equals(nameState)){
+						node.addFinding(i);
+						ok = true; 
+						break; 
+					}
 				}
-			}
-			
-			if(!ok){
-				throw new SSBNNodeGeneralException(); 
+
+				if(!ok){
+					throw new SSBNNodeGeneralException(); 
+				}
 			}
 			
 		}
@@ -216,6 +219,16 @@ public class SSBN {
 	
 	// GET AND SET'S METHODS
 	
+	/**
+	 * Add one finding to the finding list. Dont't add this node to the list of 
+	 * nodes of the SSBN (use the method addSSBNNodeIfItDontAdded for this).
+	 */
+	public void addFindingToTheFindingList(SimpleSSBNNode finding){
+		if(!this.findingList.contains(finding)){
+			this.findingList.add(finding); 
+		}
+	}
+	
 	public List<SimpleSSBNNode> getFindingList() {
 		return findingList;
 	}
@@ -232,8 +245,14 @@ public class SSBN {
 		this.probabilisticNetwork = probabilisticNetwork;
 	}
 
-	public void setQueryList(List<Query> queryList) {
-		this.queryList = queryList;
+	/**
+	 * Add a query to the query list. Dont't add this node to the list of 
+	 * nodes of the SSBN (use the method addSSBNNodeIfItDontAdded for this).
+	 */
+	public void addQueryToTheQueryList(Query query){
+		if(!this.queryList.contains(query)){
+			this.queryList.add(query); 
+		}
 	}
 	
 	public List<SimpleSSBNNode> getSimpleSsbnNodeList() {

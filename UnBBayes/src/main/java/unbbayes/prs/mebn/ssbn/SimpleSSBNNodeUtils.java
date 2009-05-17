@@ -78,6 +78,7 @@ public class SimpleSSBNNodeUtils {
 				ssbnNode.setValue(simple.getState()); 
 			}
 			
+			
 			//Default distribution
 			if(simple.isDefaultDistribution()){
 				ssbnNode.setUsingDefaultCPT(true); 
@@ -121,7 +122,10 @@ public class SimpleSSBNNodeUtils {
 							possibleValueList.add(LiteralEntityInstance.getInstance(entity, simpleContextNodeList.get(0).getOvProblematic().getValueType())); 
 						}
 						
-						contextFather.setPossibleValues(possibleValueList);
+						for(LiteralEntityInstance lei: possibleValueList){
+							contextFather.addPossibleValue(lei);
+						}
+						
 						contextFather.setOvProblematic(simpleContextNodeList.get(0).getOvProblematic()); 
 						mapContextNode.put(contextNode, contextFather); 
 					}
@@ -137,6 +141,8 @@ public class SimpleSSBNNodeUtils {
 				}
 				
 			}
+			
+			simple.setProbNode(ssbnNode.getProbNode());
 		}
 		
 		//Create the parent structure 

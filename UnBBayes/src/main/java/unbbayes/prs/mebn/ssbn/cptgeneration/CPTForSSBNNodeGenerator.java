@@ -152,8 +152,6 @@ public class CPTForSSBNNodeGenerator {
 			Map<String, PotentialTable> mapCPTByEntity = new HashMap<String, PotentialTable>(); 
 			
 			ContextFatherSSBNNode contextFather = ssbnNode.getContextFatherSSBNNode();
-			OrdinaryVariable ovProblematic = contextFather.getOvProblematic(); 
-			
 			for(LiteralEntityInstance entity: contextFather.getPossibleValues()){
 				mapParentsByEntity.put(entity.getInstanceName(), new ArrayList<SSBNNode>()); 
 			}
@@ -165,17 +163,23 @@ public class CPTForSSBNNodeGenerator {
 //			gpt = new GUIPotentialTable(ssbnNode.getContextFatherSSBNNode().getProbNode().getPotentialTable()); 
 //			gpt.showTable("Table for Node " + ssbnNode.getContextFatherSSBNNode());
 			
-			//Step 1: Dividir os pais em grupos de acordo com a variavel problemática
-			Collection<SSBNNode> parents = ssbnNode.getParents(); 
 			Collection<SSBNNode> generalParents = new ArrayList<SSBNNode>(); //Independent of the entity problematic
 			
-			for(SSBNNode parent: parents){
-				if(!parent.getOVs().contains(ovProblematic)){
-					generalParents.add(parent); 
-				}else{
-					String entity = parent.getArgumentByOrdinaryVariable(ovProblematic).getEntity().getInstanceName(); 
-					mapParentsByEntity.get(entity).add(parent); 
+			System.out.println("OVProblematic = " + contextFather.getOvProblematic().getName() + " " + contextFather.getOvProblematic().getMFrag().getName() + contextFather.getOvProblematic().getValueType().getName());
+			
+			for(SSBNNode parent: ssbnNode.getParents()){
+				
+				System.out.println("Ordinary variables for parent " + parent.getName());
+				for(OrdinaryVariable ov: parent.getOVs()){
+					System.out.println(ov.getName() + " - " + ov.getMFrag().getName() + " - " + ov.getValueType().getName());
 				}
+				
+//				if(!parent.getOVs().contains(contextFather.getOvProblematic())){
+//					generalParents.add(parent); 
+//				}else{
+					String entity = parent.getArgumentByOrdinaryVariable(contextFather.getOvProblematic()).getEntity().getInstanceName(); 
+					mapParentsByEntity.get(entity).add(parent); 
+//				}
 			}
 			
 			int sizeCPTOfEntity = 0; 

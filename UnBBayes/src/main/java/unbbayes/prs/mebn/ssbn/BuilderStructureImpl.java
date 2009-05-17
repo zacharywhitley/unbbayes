@@ -65,12 +65,8 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		this.ssbn = _ssbn; 
 		this.kb = ssbn.getKnowledgeBase(); 
 		
-		System.out.println("Build Structure");
-		
-		//Fill the list of notFinishedNodeList
-		System.out.println("Initial list of not finished nodes: ");
 		for(SimpleSSBNNode node: ssbn.getSimpleSsbnNodeList()){
-			System.out.println("     -> " + node);
+//			System.out.println("     -> " + node);
 			notFinishedNodeList.add(node);
 		}		
 		
@@ -83,8 +79,9 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		int iteration = 0; 
 		
 		while(!notFinishedNodeList.isEmpty()){
-			System.out.println("\n Not finished = false. New Iteration necessary");
-			System.out.println("Iteration = " + iteration);
+			ssbn.getLogManager().appendln("\n--------------------------------"); 
+			ssbn.getLogManager().appendln("---   Iteration = " + iteration + "   ---");
+			ssbn.getLogManager().appendln("--------------------------------\n"); 
 			
 			for(SimpleSSBNNode node: notFinishedNodeList){
 		        try {
@@ -102,12 +99,11 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			//update the not finished list
 			notFinishedNodeList.clear();
 
-			System.out.println("Result after node evaluation: " +
-					"Not finished nodes: ");
+			ssbn.getLogManager().appendln("\nNot finished nodes list : ");
 			
 			for(SimpleSSBNNode node: ssbn.getSimpleSsbnNodeList()){
 				if(!node.isFinished()){
-					System.out.println("     - " + node.toString());
+					ssbn.getLogManager().appendln("     - " + node.toString());
 					notFinishedNodeList.add(node); 
 				}
 			}
@@ -115,6 +111,8 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			iteration++; 
 			
 		}
+		
+		ssbn.getLogManager().appendln("\nNot finished nodes list : ");
 		
 		System.out.println("Finished");
 	}
@@ -128,9 +126,9 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	private void evaluateUnfinishedRV(SimpleSSBNNode node) throws ImplementationRestrictionException, 
 	                  SSBNNodeGeneralException{
 		
-		ssbn.getLogManager().appendSectionTitle("Evaluate unfinished node = " + node );
+		ssbn.getLogManager().appendSectionTitle("\n---> Evaluate unfinished node = " + node );
 		
-		//TODO view if already exists a equal MFragInstance. 
+		//Note: In this implementation don't is averiguated if already have a equal MFragInstance. 
 		
 		//Build the MFragInstance related to the node
 		MFragInstance mFragInstance = MFragInstance.getInstance(node.getResidentNode().getMFrag()); 
@@ -140,9 +138,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			try {
 				mFragInstance.addOVValue(node.getOvArray()[i], node.getEntityArray()[i].getInstanceName());
 			} catch (MFragContextFailException e) {
-				//TODO throw exception
-				//internal error... 
-				e.printStackTrace();
+				throw new SSBNNodeGeneralException(e.getMessage()); //a bug... 
 			} 
 		}
 		
@@ -153,7 +149,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		
 		node.setFinished(true);
 		
-		System.out.println("Unfinished node = " + node + " setted true");
+		ssbn.getLogManager().appendSectionTitle("---> Unfinished node = " + node + " setted true\n");
 		
 	}
 	
@@ -168,7 +164,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	private void evaluateMFragInstance(MFragInstance mFragInstance, SimpleSSBNNode ssbnNode) 
 	      throws ImplementationRestrictionException, SSBNNodeGeneralException{
 
-		System.out.println("Evaluate MFragInstance " + mFragInstance);
+		ssbn.getLogManager().appendSectionTitle("\nEvaluate MFragInstance " + mFragInstance);
 		
 		// 1) Test if the MFragInstance already was evaluated
 		if(mFragInstance.isEvaluated()){
@@ -177,23 +173,22 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		
 	    // 2) Evaluate MFragInstance context
 		try {
+			
 			evaluateMFragContextNodes(mFragInstance);
-			
-			System.out.println("Context Nodes evaluateds");
-			
+			ssbn.getLogManager().appendSectionTitle("Context Nodes evaluateds");
+		
 		} catch (ImplementationRestrictionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw e; 
 		} catch (SSBNNodeGeneralException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw e; 
 		} catch (OVInstanceFaultException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new ImplementationRestrictionException(e.getMessage()); 
 		} 
 		
 		// 3) Create the nodes of the MFragInstance
 		evaluateNodeInMFragInstance(mFragInstance, ssbnNode);
+		
+		ssbn.getLogManager().appendSectionTitle("Evaluate MFragInstance finished. \n");
 		
 	}	
 	
@@ -248,8 +243,11 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		if(exactValue!= null){
 			//The node is a finding... 
 			node.setState(exactValue.getState());
+			ssbn.addFindingToTheFindingList(node); 
+			
 			ssbn.getLogManager().appendln("Node" + node + 
 					" setted how a finding. Exact Value = " + exactValue.getState());
+			
 		}
 		
 		

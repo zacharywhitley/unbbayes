@@ -113,7 +113,7 @@ public class Type implements Comparable<Type>{
 	
 	public boolean equals(Object obj){
 		if(obj instanceof Type){
-			if (((Type)obj).getName() == this.name) return true;
+			if (((Type)obj).getName().equals(this.name)) return true;
 			else return false; 
 		}
 		else return false; 
