@@ -27,9 +27,14 @@ import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -42,6 +47,7 @@ import javax.swing.table.TableModel;
 
 import unbbayes.evaluation.EvidenceEvaluation;
 import unbbayes.evaluation.exception.EvaluationException;
+import unbbayes.gui.table.EachRowEditor;
 import unbbayes.gui.table.NumberEditor;
 import unbbayes.gui.table.NumberRenderer;
 import unbbayes.gui.table.PercentRenderer;
@@ -247,6 +253,21 @@ public class EvaluationPane extends JPanel {
 		return 0.0f;
 	}
 	
+	public Map<String, String> getNodeFindingMap() {
+		Map<String, String> nodeFindingMap = new HashMap<String, String>();
+		
+		TableModel dm = inputTable.getModel();
+		
+		for (int i = 0; i < dm.getRowCount(); i++) {
+			String finding = (String)dm.getValueAt(i, 4);
+			if (!finding.equals("")) {
+				nodeFindingMap.put((String)dm.getValueAt(i, 0), finding);
+			}
+		}
+		
+		return nodeFindingMap;
+	}
+	
 	public void setPccValue(float pccValue) {
 		pccValueTextField.setValue(pccValue);
 	}
@@ -333,29 +354,50 @@ public class EvaluationPane extends JPanel {
 
 	}
 
-	public void addInputValues(List<String> nodeNameList) {
+	public void addInputValues(Map<String, List<String>> nodeFindingMap) {
+		Set<String> nodeNameList = nodeFindingMap.keySet();
 		((EvaluationInputTableModel)inputTable.getModel()).addValues(nodeNameList);
+		
+		int i = 0;
+		JComboBox comboBox;
+		EachRowEditor rowEditor = new EachRowEditor(inputTable);
+		inputTable.getColumn("Finding").setCellEditor(rowEditor);
+		for (String node : nodeNameList) {
+			comboBox = getComboBox(nodeFindingMap.get(node));
+			rowEditor.setEditorAt(i++, new DefaultCellEditor(comboBox));
+		}
 		inputTable.revalidate();
+	}
+	
+	private JComboBox getComboBox(List<String> findingList) {
+		JComboBox combo = new JComboBox();
+		combo.addItem("");
+		for (String finding : findingList) {
+			combo.addItem(finding);
+		}
+		return combo;
 	}
 	
 	private class EvaluationInputTableModel extends AbstractTableModel {
 
 		private static final long serialVersionUID = 1L;
 
-		private String[] columnNames = { "Node", "Target", "Evidence", "Cost" };
+		private String[] columnNames = { "Node", "Target", "Evidence", "Cost", "Finding" };
 
-		private Object[][] data = new Object[0][4];
+		private Object[][] data = new Object[0][5];
 		
-		public void addValues(List<String> nodeNameList) {
-			data = new Object[nodeNameList.size()][getColumnCount()];
-			for (int i = 0; i < nodeNameList.size(); i++) {
-				data[i][0] = nodeNameList.get(i);
+		public void addValues(Set<String> nodeNameSet) {
+			data = new Object[nodeNameSet.size()][getColumnCount()];
+			int i = 0;
+			for (String node : nodeNameSet) {
+				data[i][0] = node;
 				data[i][1] = Boolean.FALSE;
 				data[i][2] = Boolean.FALSE;
 				data[i][3] = new Float(100.00);
+				data[i++][4] = "";
 			}
 		}
-
+		
 		public int getColumnCount() {
 			return columnNames.length;
 		}
@@ -374,7 +416,7 @@ public class EvaluationPane extends JPanel {
 
 		@SuppressWarnings("unchecked")
 		public Class getColumnClass(int c) {
-			if (c == 0) {
+			if (c == 0 || c == 4) {
 				return String.class;
 			} else if (c == 1 || c == 2) {
 				return Boolean.class;
@@ -397,13 +439,26 @@ public class EvaluationPane extends JPanel {
 				// Make sure there is just one target selected
 				resetNonSelectedValues(row, col);
 				// Make sure it is not selected as evidence
-				setValueAt(Boolean.FALSE, row, col + 1);
-				fireTableCellUpdated(row, col + 1);
+				setValueAt(Boolean.FALSE, row, 2);
+				fireTableCellUpdated(row, 2);
+				// Make sure it does not have finding
+				setValueAt("", row, 4);
+				fireTableCellUpdated(row, 4);
 				// If selected as evidence
 			} else if (col == 2 && value.equals(Boolean.TRUE)) {
 				// Make sure it is not selected as target
-				setValueAt(Boolean.FALSE, row, col - 1);
-				fireTableCellUpdated(row, col - 1);
+				setValueAt(Boolean.FALSE, row, 1);
+				fireTableCellUpdated(row, 1);
+				// Make sure it does not have finding
+				setValueAt("", row, 4);
+				fireTableCellUpdated(row, 4);
+			} else if (col == 4 && !value.equals("")) {
+				// Make sure it is not selected as target
+				setValueAt(Boolean.FALSE, row, 1);
+				fireTableCellUpdated(row, 1);
+				// Make sure it is not selected as evidence
+				setValueAt(Boolean.FALSE, row, 2);
+				fireTableCellUpdated(row, 2);
 			}
 		}
 

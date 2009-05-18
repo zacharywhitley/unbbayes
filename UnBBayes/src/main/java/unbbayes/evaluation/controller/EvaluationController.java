@@ -24,18 +24,21 @@ import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import unbbayes.evaluation.EvidenceEvaluation;
-import unbbayes.evaluation.FastMCApproximateEvaluation;
+import unbbayes.evaluation.FastLWApproximateEvaluation;
 import unbbayes.evaluation.IEvaluation;
 import unbbayes.evaluation.exception.EvaluationException;
 import unbbayes.evaluation.gui.EvaluationPane;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.bn.ProbabilisticNode;
 
 public class EvaluationController {
 	
@@ -51,12 +54,19 @@ public class EvaluationController {
 	}
 	
 	public void setUpEvaluation() {
-		List<String> nodeNameList = new ArrayList<String>();
 		List<Node> nodeList = network.getNodes();
+		
+		Map<String, List<String>> nodeFindingMap = new HashMap<String, List<String>>();
+		List<String> findingList;
 		for (Node node : nodeList) {
-			nodeNameList.add(node.getName());
+			findingList = new ArrayList<String>(node.getStatesSize());
+			for (int i = 0; i < node.getStatesSize(); i++) {
+				findingList.add(node.getStateAt(i));
+			}
+			nodeFindingMap.put(node.getName(), findingList);
 		}
-		evaluationPane.addInputValues(nodeNameList);
+		
+		evaluationPane.addInputValues(nodeFindingMap);
 		
 		evaluationPane.setRunButtonActionListener(new ActionListener() {
 
@@ -94,7 +104,7 @@ public class EvaluationController {
 	}
 	
 	private void runEvaluation() {
-		evaluationPane.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+		evaluationPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		
 		try {
 			validateData();
@@ -107,8 +117,19 @@ public class EvaluationController {
 		List<String> evidenceNodeNameList = evaluationPane.getEvidenceNodeNameList();
 		int sampleSize = evaluationPane.getSampleSizeValue();
 		
+		Map<String, String> nodeFindingMap = evaluationPane.getNodeFindingMap();
+		ProbabilisticNode node;
+		for (String nodeName : nodeFindingMap.keySet()) {
+			node = (ProbabilisticNode)network.getNode(nodeName);
+			for (int i = 0; i < node.getStatesSize(); i++) {
+				if (nodeFindingMap.get(nodeName).equals(node.getStateAt(i))) {
+					node.addFinding(i);
+				}
+			}
+		}
+		
 		try {
-			evaluation = new FastMCApproximateEvaluation(sampleSize);
+			evaluation = new FastLWApproximateEvaluation(sampleSize);
 			evaluation.evaluate(network, targetNodeNameList, evidenceNodeNameList, false);
 			
 			List<EvidenceEvaluation> evidenceEvaluationList = evaluation.getBestMarginalImprovement();
@@ -130,7 +151,10 @@ public class EvaluationController {
 			return;
 		}
 		
-		evaluationPane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+		// Reset evidences to all finding/conditional nodes, which means they do not have findings any more.  
+		network.resetEvidences();
+		
+		evaluationPane.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 	}
 	
 	public JPanel getView() {
