@@ -192,7 +192,7 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 	}
 	
 	//Build Structure
-	private void buildStructure(SSBN ssbn){
+	private void buildStructure(SSBN ssbn) throws ImplementationRestrictionException, SSBNNodeGeneralException{
 		getBuilderStructure().buildStructure(ssbn); 
 	}
 	

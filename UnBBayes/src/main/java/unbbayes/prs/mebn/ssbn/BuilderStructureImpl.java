@@ -15,7 +15,6 @@ import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.SearchResult;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
-import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
 import unbbayes.prs.mebn.ssbn.exception.MFragContextFailException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
@@ -57,8 +56,11 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	 *     
 	 * Pos-requisites
 	 *     - All nodes of the SSBN are marked finished.     
+	 * @throws ImplementationRestrictionException 
+	 * @throws SSBNNodeGeneralException 
 	 */
-	public void buildStructure(SSBN _ssbn) {
+	public void buildStructure(SSBN _ssbn) throws ImplementationRestrictionException, 
+	                                              SSBNNodeGeneralException {
 		
 		notFinishedNodeList = new ArrayList<SimpleSSBNNode>();
 		
@@ -66,7 +68,6 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		this.kb = ssbn.getKnowledgeBase(); 
 		
 		for(SimpleSSBNNode node: ssbn.getSimpleSsbnNodeList()){
-//			System.out.println("     -> " + node);
 			notFinishedNodeList.add(node);
 		}		
 		
@@ -87,12 +88,11 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		        try {
 					evaluateUnfinishedRV(node);
 				} catch (ImplementationRestrictionException e) {
-					// TODO Auto-generated catch block 
-					//TODO throw exceptions of this method. 
 					e.printStackTrace();
+					throw e; 
 				} catch (SSBNNodeGeneralException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
+					throw e; 
 				} 
 			}
 			
@@ -138,7 +138,8 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			try {
 				mFragInstance.addOVValue(node.getOvArray()[i], node.getEntityArray()[i].getInstanceName());
 			} catch (MFragContextFailException e) {
-				throw new SSBNNodeGeneralException(e.getMessage()); //a bug... 
+				//this is a bug... the context can't fail here. 
+				throw new SSBNNodeGeneralException(e.getMessage()); 
 			} 
 		}
 		
@@ -178,6 +179,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			ssbn.getLogManager().appendSectionTitle("Context Nodes evaluateds");
 		
 		} catch (ImplementationRestrictionException e) {
+			//Stop the evaluation when the context nodes fail. 
 			throw e; 
 		} catch (SSBNNodeGeneralException e) {
 			throw e; 

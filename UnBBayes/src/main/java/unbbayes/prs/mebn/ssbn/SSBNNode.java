@@ -495,8 +495,8 @@ public class SSBNNode implements INode {
 					} catch (InvalidParentException e) {
 						throw new SSBNNodeGeneralException(e.getMessage());
 					}
-					AbstractSSBNGenerator.logManager.append("\n");
-					AbstractSSBNGenerator.logManager.append(">>EDGE>> " + edge + " created");
+//					AbstractSSBNGenerator.logManager.append("\n");
+//					AbstractSSBNGenerator.logManager.append(">>EDGE>> " + edge + " created");
 //					BottomUpSSBNGenerator.printAndSaveCurrentNetwork(this);
 				}
 			}

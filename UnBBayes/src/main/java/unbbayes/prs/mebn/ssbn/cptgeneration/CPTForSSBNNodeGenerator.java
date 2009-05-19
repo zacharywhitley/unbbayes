@@ -49,7 +49,8 @@ public class CPTForSSBNNodeGenerator {
 	 * @throws MEBNException
 	 * @throws SSBNNodeGeneralException
 	 */
-	private void generateCPTForAllSSBNNodes(SSBNNode root, int level) throws MEBNException, SSBNNodeGeneralException{
+	private void generateCPTForAllSSBNNodes(SSBNNode root, int level) throws MEBNException, 
+	                    SSBNNodeGeneralException{
 
 		if(root.isCptAlreadyGenerated()){
 			return; 
@@ -71,7 +72,19 @@ public class CPTForSSBNNodeGenerator {
 			if(root.isCptAlreadyGenerated()){
 				return; 
 			}
+			
+			try{
 			generateCPT(root);
+			}
+			catch (MEBNException e) {
+				logManager.appendln("ERROR IN THE CPT EVALUATION OF NODE " + root.getName());
+				throw e; 
+			}
+			catch (SSBNNodeGeneralException e) {
+				logManager.appendln("ERROR IN THE CPT EVALUATION OF NODE " + root.getName());
+				throw e; 
+			}
+			
 			root.setCptAlreadyGenerated(true); 
 
 			//------------------3) CHILDREN
@@ -122,8 +135,8 @@ public class CPTForSSBNNodeGenerator {
 			if(ssbnNode.getContextFatherSSBNNode()!=null){ 
 				try {
 					generateCPTForNodeWithContextFather(ssbnNode);
-					System.out.println("              Saiu do metodo!!!!!!");
 				} catch (InvalidOperationException e1) {
+					logManager.appendln("ERROR IN THE CPT EVALUATION OF NODE " + ssbnNode.getName()); 
 					e1.printStackTrace();
 					throw new SSBNNodeGeneralException(e1.getMessage()); 
 				}

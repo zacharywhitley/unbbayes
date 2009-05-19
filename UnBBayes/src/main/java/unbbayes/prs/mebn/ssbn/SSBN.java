@@ -92,18 +92,6 @@ public class SSBN {
 	
 	//---------- METHODS FOR ADD COMPONENTS TO THE ALGORITHM EVALUATION ---
 	
-	//Be careful... this method is very hard!!! 
-	public MFragInstance addMFragIfItDontAdded(MFragInstance mFragInstance){
-		
-		for(MFragInstance mFragInstanceTest: mFragInstanceList){
-			if(mFragInstanceTest.equals(mFragInstance)){
-				return mFragInstanceTest; 
-			}
-		}
-		
-		return null; 
-	}
-	
 	/**
 	 * Verify if already exists a node in the list of nodes. If its exists, return
 	 * the already existent node, else return added the node to the list of node 
@@ -153,9 +141,13 @@ public class SSBN {
 	
 	private void compileNetwork() throws Exception{
 		probabilisticNetwork.compile(); 
-		state = State.COMPILED; 
+		setState(State.COMPILED); 
 	}
 	
+	private void propagateFindings() throws Exception{
+		probabilisticNetwork.updateEvidences();
+		setState(State.FINDINGS_PROPAGATED); 
+	}
 	
 	/**
 	 * Propagate the findings 
@@ -188,34 +180,19 @@ public class SSBN {
 			
 		}
 		
-		state = State.WITH_FINDINGS; 
+		setState(State.WITH_FINDINGS); 
 		
 	}
 	
-	/**
-	 * Used to mantain the compatibility for the Gia's SSBN Algorithm. 
-	 * @param findingList
-	 * 
-	 * @deprecated
-	 */
-	public void setFindingList(List<SSBNNode> findingList){
-		
-		for(SSBNNode finding: findingList){
-			SimpleSSBNNode simple = SimpleSSBNNode.getInstance(finding.getResident()); 
-			for(OVInstance argument: finding.getArguments()){
-				simple.setEntityForOv(argument.getOv(), argument.getEntity()); 
-			}
-			simple.setState(finding.getValue()); 
-			simple.setProbNode(finding.getProbNode()); 
-			
-			this.findingList.add(simple); 
-		}
+	public State getState() {
+		return state;
+	}
+
+	public void setState(State state) {
+		this.state = state;
 	}
 	
-	private void propagateFindings() throws Exception{
-		probabilisticNetwork.updateEvidences();
-		state = State.FINDINGS_PROPAGATED; 
-	}
+
 	
 	// GET AND SET'S METHODS
 	
@@ -289,7 +266,6 @@ public class SSBN {
 		return warningList;
 	}
 	
-	//TODO remove this method
 	public void setWarningList(List<SSBNWarning> e){
 		this.warningList = e ; 
 	}
@@ -305,28 +281,9 @@ public class SSBN {
 		return knowledgeBase;
 	}
 
-
-
-
 	public void setKnowledgeBase(KnowledgeBase knowledgeBase) {
 		this.knowledgeBase = knowledgeBase;
 	}
-
-
-
-
-	public State getState() {
-		return state;
-	}
-
-
-
-
-	public void setState(State state) {
-		this.state = state;
-	}
-
-
 	
 	/**
 	 * Removes a specified collection of nodes from this network, regarding each

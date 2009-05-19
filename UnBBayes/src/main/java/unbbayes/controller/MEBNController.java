@@ -1741,7 +1741,7 @@ public class MEBNController  {
 		LaskeyAlgorithmParameters parameters = new LaskeyAlgorithmParameters(); 
 		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION, "true");
 		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_BUILDER, "true"); 
-		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_PRUNE, "true"); 
+		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_PRUNE, "false"); 
 		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION, "true"); 
 	    
 		ISSBNGenerator ssbngenerator = new LaskeySSBNGenerator(parameters);
@@ -1750,48 +1750,18 @@ public class MEBNController  {
 			ssbn = ssbngenerator.generateSSBN(listQueries, getKnowledgeBase()); 
 		}
 		catch(ImplementationRestrictionException e){
-			String fileName = "e:\\Teste.log"; 
-			try {
-				ssbn.getLogManager().writeToDisk(fileName, true);
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			} 
 			throw e; 
 		}
 		catch(InvalidParentException e2){
-			String fileName = "e:\\Teste.log"; 
-			try {
-				ssbn.getLogManager().writeToDisk(fileName, true);
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			} 
 			throw e2; 
 		}
 		catch(MEBNException e3){
-			String fileName = "e:\\Teste.log"; 
-			try {
-				ssbn.getLogManager().writeToDisk(fileName, true);
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			} 
 			throw e3; 
 		}
 		catch(OVInstanceFaultException e4){
-			String fileName = "e:\\Teste.log"; 
-			try {
-				ssbn.getLogManager().writeToDisk(fileName, true);
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			} 
 			throw e4; 
 		}
 		catch(SSBNNodeGeneralException e5){
-			String fileName = "e:\\Teste.log"; 
-			try {
-				ssbn.getLogManager().writeToDisk(fileName, true);
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			} 
 			throw e5; 
 		}
 		
