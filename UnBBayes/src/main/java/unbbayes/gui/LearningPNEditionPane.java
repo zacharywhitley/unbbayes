@@ -1025,7 +1025,7 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
             if (noAux.getName() == null) {
                 noAux.setName(resource.getString("nodeGraphName") + i);
             }
-            //desenha a sigla do no
+            //desenha a nome do no
             AttributedString as = new AttributedString(noAux.getName());
             Font serifFont = new Font("Serif", Font.PLAIN, 12);
             FontRenderContext frc = new FontRenderContext(new AffineTransform(), true, true);

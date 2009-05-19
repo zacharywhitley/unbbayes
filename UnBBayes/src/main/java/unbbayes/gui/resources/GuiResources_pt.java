@@ -166,7 +166,6 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"printNetToolTip","Imprimir o grafo"},
 		{"previewNetToolTip","Visualizar a impressão do grafo"},
 		{"saveNetImageToolTip","Salvar o grafo como imagem gif"},
-		{"siglaLabel","Sigla:"},
 		{"nameLabel", "Nome:"}, 
 		{"typeLabel", "Tipo:"}, 
 		{"descriptionLabel","Descrição:"},
@@ -347,8 +346,8 @@ public class GuiResources_pt extends ListResourceBundle {
         {"nameEmpty","O nome não pode ser branco"},
         {"nameDuplicated", "Nome já existe..."}, 
         {"nameReserved", "Nome é uma palavra reservada."}, 
-        {"siglaError","A sigla só pode ter letras e números."},
-        {"descriptionError","A descrição só pode ter letras e números."},
+        {"nameError","O nome só pode ter letras, números, parênteses e vírgulas."},
+        {"descriptionError","A descrição só pode ter letras, números, parênteses, vírgulas e espaços."},
         
         /* Resident Panel */
         {"stateEditionTip", "Editar Estados"}, 

@@ -109,10 +109,10 @@ public class Network implements Graph{
 	}
 
 	/**
-	 *  Retorna o n� do grafo com a respectiva sigla.
+	 *  Returns the node that has the given name.
 	 *
-	 *@param  name  nome do n�.
-	 *@return       n� com a respectiva sigla.
+	 *@param  name  node name.
+	 *@return the node that has the given name.
 	 */
 	public Node getNode(String name) {
 		int index = getNodeIndex(name);

@@ -274,9 +274,9 @@ public class NetworkWindow extends JInternalFrame implements IFileExtensionAware
 	}
 
 	/**
-	 * Retorna a tabela de probabilidades.
+	 * Returns the CPT <code>JTable</code>.
 	 * 
-	 * @return retorna a table (<code>JTable</code>)
+	 * @return the CPT <code>JTable</code>.
 	 * @see JTable
 	 */
 	public JTable getTable() {
@@ -284,9 +284,9 @@ public class NetworkWindow extends JInternalFrame implements IFileExtensionAware
 	}
 
 	/**
-	 * Retorna o text field da descricao do no.
+	 * Returns the <code>JTextField</code> that has the node's description.
 	 * 
-	 * @return retorna a txtDescricao (<code>JTextField</code>)
+	 * @return the <code>JTextField</code> that has the node's description.
 	 * @see JTextField
 	 */
 	public JTextField getTxtDescription() {
@@ -294,13 +294,13 @@ public class NetworkWindow extends JInternalFrame implements IFileExtensionAware
 	}
 
 	/**
-	 * Retorna o text field da sigla do no.
+	 * Returns the <code>JTextField</code> that has the node's name.
 	 * 
-	 * @return retorna a txtSigla (<code>JTextField</code>)
+	 * @return the <code>JTextField</code> that has the node's name.
 	 * @see JTextField
 	 */
-	public JTextField getTxtSigla() {
-		return pnEditionPane.getTxtSigla();
+	public JTextField getTxtName() {
+		return pnEditionPane.getTxtName();
 	}
 	
 	public void setDistributionPane(JPanel distributionPane) {

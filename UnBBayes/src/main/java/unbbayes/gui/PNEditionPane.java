@@ -68,7 +68,7 @@ public class PNEditionPane extends JPanel {
 
     private GlobalOptionsDialog go;
     private JTable table;
-    private final JTextField txtSigla;
+    private final JTextField txtName;
     private final JTextField txtDescription;
     private final NetworkController controller;
     private final JScrollPane jspTable;
@@ -81,8 +81,8 @@ public class PNEditionPane extends JPanel {
     private final JToolBar jtbState;
     private final JToolBar jtbEdition;
 
-    private final JLabel sigla;
-    private final JLabel description;
+    private final JLabel lblName;
+    private final JLabel lblDescription;
 
     private final JButton btnEvaluate;
     
@@ -126,9 +126,9 @@ public class PNEditionPane extends JPanel {
         status      = new JLabel(resource.getString("statusReadyLabel"));
 
         //criar labels e textfields que ser�o usados no jtbState
-        sigla       = new JLabel(resource.getString("siglaLabel") + " ");
-        description = new JLabel(resource.getString("descriptionLabel") + " ");
-        txtSigla           = new JTextField(10);
+        lblName       = new JLabel(resource.getString("nameLabel") + " ");
+        lblDescription = new JLabel(resource.getString("descriptionLabel") + " ");
+        txtName           = new JTextField(10);
         txtDescription     = new JTextField(15);
 
         // Create buttons that are going to be used in the nodeList tool bar
@@ -195,49 +195,22 @@ public class PNEditionPane extends JPanel {
             }
         });
 
-
-        /*
-        // listener respons�vel pela entrada de
-        table.addKeyListener(new KeyAdapter() {
-          public void keyPressed(KeyEvent e) {
-
-              if ((e.getKeyCode() == e.VK_ENTER) && (txtSigla.getText().length()>1)) {
-                try {
-                    String name = txtSigla.getText(0,txtSigla.getText().length());
-                    matcher = wordPattern.matcher(name);
-                    if (matcher.matches()) {
-                      nodeAux.setName(name);
-                      repaint();
-                    }  else {
-                        JOptionPane.showMessageDialog(netWindow, resource.getString("siglaError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
-                        txtSigla.selectAll();
-                    }
-                }
-                catch (javax.swing.text.BadLocationException ble) {
-                    System.out.println(ble.getMessage());
-                }
-              }
-
-          }
-        });
-*/
-
-        // listener respons�vel pela atualiza��o do texo da sigla do n�
-        txtSigla.addKeyListener(new KeyAdapter() {
+        // listener responsible for updating the node's name.
+        txtName.addKeyListener(new KeyAdapter() {
           public void keyPressed(KeyEvent e) {
             Object selected = netWindow.getGraphPane().getSelected();
             if (selected instanceof Node) {
               Node nodeAux = (Node)selected;
-              if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtSigla.getText().length()>0)) {
+              if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtName.getText().length()>0)) {
                 try {
-                    String name = txtSigla.getText(0,txtSigla.getText().length());
+                    String name = txtName.getText(0,txtName.getText().length());
                     matcher = wordPattern.matcher(name);
                     if (matcher.matches()) {
                       nodeAux.setName(name);
                       repaint();
                     }  else {
-                        JOptionPane.showMessageDialog(netWindow, resource.getString("siglaError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
-                        txtSigla.selectAll();
+                        JOptionPane.showMessageDialog(netWindow, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
+                        txtName.selectAll();
                     }
                 }
                 catch (javax.swing.text.BadLocationException ble) {
@@ -363,17 +336,9 @@ public class PNEditionPane extends JPanel {
 
         topPanel.add(jtbEdition);
 
-        //setar controladores de estados para false
-        /*
-        btnAddState.setEnabled(false);
-        btnRemoveState.setEnabled(false);
-        txtDescription.setEnabled(false);
-        txtSigla.setEnabled(false);
-        */
-
         //colocar bot�es, labels e textfields no toolbar e coloc�-lo no topPanel
-        jtbState.add(sigla);
-        jtbState.add(txtSigla);
+        jtbState.add(lblName);
+        jtbState.add(txtName);
 
         jtbState.addSeparator();
         jtbState.addSeparator();
@@ -384,7 +349,7 @@ public class PNEditionPane extends JPanel {
         jtbState.addSeparator();
         jtbState.addSeparator();
 
-        jtbState.add(description);
+        jtbState.add(lblDescription);
         jtbState.add(txtDescription);
 
         topPanel.add(jtbState);
@@ -434,14 +399,8 @@ public class PNEditionPane extends JPanel {
       return this.txtDescription;
     }
 
-    /**
-     *  Retorna o text field da sigla do n�.
-     *
-     *@return    retorna a txtSigla (<code>JTextField</code>)
-     *@see       JTextField
-     */
-    public JTextField getTxtSigla() {
-      return this.txtSigla;
+    public JTextField getTxtName() {
+      return this.txtName;
     }
     
     public void setDistributionPane(JPanel distributionPane) {
@@ -499,8 +458,8 @@ public class PNEditionPane extends JPanel {
         return this.btnCompile;
     }
 
-    public JLabel getDescription() {
-        return this.description;
+    public JLabel getLblDescription() {
+        return this.lblDescription;
     }
 
     public JButton getBtnGlobalOption() {
@@ -539,8 +498,8 @@ public class PNEditionPane extends JPanel {
         return this.btnSaveTableImage;
     }
 
-    public JLabel getSigla() {
-        return this.sigla;
+    public JLabel getLblName() {
+        return this.lblName;
     }
 
     public JButton getBtnHierarchy() {

@@ -41,7 +41,6 @@ public class CompactChooseInterationController {
             for (int i = 0 ; i < variablesVector.size() ;i++ ){
                 aux = (LearningNode)variablesVector.get(i);
                 if (aux.getName().equals(name)){
-                    System.out.println("Sigla = " + aux.getName());
                     aux.isRep(true);
                     break;
                 }

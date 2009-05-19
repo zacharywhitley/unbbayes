@@ -274,24 +274,12 @@ public class OOBNClassWindow extends NetworkWindow {
 		return pnEditionPane.getTable();
 	}
 
-	/**
-	 * Retorna o text field da descricao do no.
-	 * 
-	 * @return retorna a txtDescricao (<code>JTextField</code>)
-	 * @see JTextField
-	 */
 	public JTextField getTxtDescription() {
 		return pnEditionPane.getTxtDescription();
 	}
 
-	/**
-	 * Retorna o text field da sigla do no.
-	 * 
-	 * @return retorna a txtSigla (<code>JTextField</code>)
-	 * @see JTextField
-	 */
-	public JTextField getTxtSigla() {
-		return pnEditionPane.getTxtSigla();
+	public JTextField getTxtName() {
+		return pnEditionPane.getTxtName();
 	}
 	
 	public void setDistributionPane(JPanel distributionPane) {

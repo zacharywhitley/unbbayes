@@ -566,9 +566,9 @@ public class SENController {
 	 */
 	public JTable makeTable(final Node node) {
 		screen.getTxtDescription().setEnabled(true);
-		screen.getTxtSigla().setEnabled(true);
+		screen.getTxtName().setEnabled(true);
 		screen.getTxtDescription().setText(node.getDescription());
-		screen.getTxtSigla().setText(node.getName());
+		screen.getTxtName().setText(node.getName());
 
 		final JTable table;
 		final PotentialTable potTab;
@@ -688,9 +688,9 @@ public class SENController {
 	 */
 	public JTable makeTableOld(final Node node) {
 		screen.getTxtDescription().setEnabled(true);
-		screen.getTxtSigla().setEnabled(true);
+		screen.getTxtName().setEnabled(true);
 		screen.getTxtDescription().setText(node.getDescription());
-		screen.getTxtSigla().setText(node.getName());
+		screen.getTxtName().setText(node.getName());
 
 		final JTable table;
 		final PotentialTable potTab;

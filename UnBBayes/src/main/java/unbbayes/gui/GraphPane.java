@@ -616,6 +616,15 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 			controller.setResetButtonActive(); 
 		}
 		
+		if (e.isPopupTrigger() && (getSelected() != null)) {
+			if (!(getSelected() instanceof Edge)) {
+				if (((Node) getSelected()).getInformationType() == Node.EXPLANATION_TYPE) {
+					popup.setEnabled(true);
+					popup.show(e.getComponent(), e.getX(), e.getY());
+				}
+			}
+		}
+		
 		this.repaint((int) controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue(), 
 				     (int) controller.getScreen().getJspGraph().getVerticalScrollBar().getValue(), 
 				     (int) visibleDimension.getWidth(), 
@@ -711,8 +720,6 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 			setAction(GraphAction.NONE);
 		}
 		
-		update();
-		
 		if (e.isPopupTrigger() && (getSelected() != null)) {
 			if (!(getSelected() instanceof Edge)) {
 				if (((Node) getSelected()).getInformationType() == Node.EXPLANATION_TYPE) {
@@ -721,6 +728,8 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 				}
 			}
 		}
+		
+		update();
 	}
 	
 	

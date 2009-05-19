@@ -51,7 +51,7 @@ public class OOBNControllerResources_pt extends ListResourceBundle {
 	 * Os recursos
 	 */
 	static final Object[][] contents =
-	{	{"imageFileFilter","Imagem (*.gif)"},
+	{	{"imageFileFilter","PNG (.png), JPEG (.jpg), GIF (.gif), BMP (.bmp)"},
 		{"likelihoodName","Likelihood"},
 		{"likelihoodException","Só tem zeros!"},
 		{"statusEvidenceProbabilistic","Probabilidade da Evidência Total: "},

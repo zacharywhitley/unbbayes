@@ -249,15 +249,6 @@
 	</build>
 	<dependencies>
 
-		<!-- PANEL-AS-IMAGE -->
-		<dependency>
-			<!-- Used for saving BN, ID, MSBN, etc as images. -->
-			<groupId>guess</groupId>
-			<artifactId>GIFOutput</artifactId>
-			<version>1.0</version>
-		</dependency>
-		<!-- PANEL-AS-IMAGE -->
-
 		<!-- JAVAHELP -->
 		<dependency>
 			<!-- JavaHelp is an open source software, a full-featured, platform-independent,

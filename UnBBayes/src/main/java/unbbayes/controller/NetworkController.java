@@ -25,7 +25,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -33,15 +33,16 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.PrinterException;
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -51,8 +52,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
-
-import org.shetline.io.GIFOutputStream;
 
 import unbbayes.controller.SENController.InferenceAlgorithmEnum;
 import unbbayes.evaluation.controller.EvaluationController;
@@ -477,75 +476,85 @@ public class NetworkController implements KeyListener {
         return this.screen;
     }
 
-
-    /**
-     * Convert a component to an image.
-     * @param component The component to be converted.
-     * @param r The area to consider of the given component.
-     */
-    private BufferedImage graphicsToImage(Component component, Rectangle r){
-        BufferedImage buffImg = new BufferedImage(component.getWidth(),
-
-        component.getHeight(), BufferedImage.TYPE_BYTE_INDEXED);
-        component.setVisible(true);
-        Graphics g = (Graphics)buffImg.createGraphics();
-
-        component.paint(g);
-        g.dispose();
-        return(buffImg);
-    }
-    
     /**
      * Save the network image to a file.
      */
     public void saveNetImage() {
-        String gif[] = { "GIF" };
+        String images[] = { "PNG", "JPG", "GIF", "BMP" };
         JFileChooser chooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
         chooser.setMultiSelectionEnabled(false);
 
-        //adicionar FileView no FileChooser para desenhar �cones de arquivos
         chooser.setFileView(new FileIcon(screen));
-        chooser.addChoosableFileFilter(new SimpleFileFilter( gif, resource.getString("imageFileFilter")));
+        chooser.addChoosableFileFilter(new SimpleFileFilter( images, resource.getString("imageFileFilter")));
 
         int opcao = chooser.showSaveDialog(screen);
         if (opcao == JFileChooser.APPROVE_OPTION) {
-            try {
-                GIFOutputStream out = new GIFOutputStream(new BufferedOutputStream(new FileOutputStream(chooser.getSelectedFile().getPath() + ".gif")));
-                Rectangle r = calculateNetRectangle();
-                out.write(graphicsToImage(screen.getGraphPane().getGraphViewport(), r));
-                out.flush();
-                out.close();
-                FileController.getInstance().setCurrentDirectory(chooser.getCurrentDirectory());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        	Rectangle r = calculateNetRectangle();
+        	Component comp = screen.getGraphPane().getGraphViewport();
+        	File file = new File(chooser.getSelectedFile().getPath());
+        	saveComponentAsImage(comp, r.width, r.height, file);
+        	FileController.getInstance().setCurrentDirectory(chooser.getCurrentDirectory());
         }
+    }
+    
+    protected void saveComponentAsImage(Component comp, int width, int height, File file) {
+    	BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+
+        Graphics2D g2d = bufferedImage.createGraphics();
+
+        comp.paint(g2d);
+        g2d.dispose();
+        RenderedImage rendImage = bufferedImage;
+        
+        boolean wrongName = false;
+
+        String fileName = file.getName();
+        if (fileName.length() > 4) {
+        	String fileExt = fileName.substring(fileName.length() - 3);
+        	try {
+    	        if (fileExt.equalsIgnoreCase("png")) {
+    				ImageIO.write(rendImage, "png", file);
+    	        } else if (fileExt.equalsIgnoreCase("jpg")) {
+    	        	ImageIO.write(rendImage, "jpg", file);
+    	        } else if (fileExt.equalsIgnoreCase("gif")) {
+    	        	ImageIO.write(rendImage, "gif", file);
+    	        } else if (fileExt.equalsIgnoreCase("bmp")) {
+    	        	ImageIO.write(rendImage, "bmp", file);
+    	        } else {
+    	        	wrongName = true;
+    	        }
+    		} catch (IOException e1) {
+    			// TODO SHOW MESSAGE TO USER
+    			e1.printStackTrace();
+    		}
+        }  else {
+        	wrongName = true;
+        }
+        
+        if (wrongName) {
+        	// TODO SHOW MESSAGE TO USER
+        }
+        
     }
 
     /**
      * Save the table image to a file.
      */
     public void saveTableImage() {
-        String gif[] = { "GIF" };
+    	String images[] = { "PNG", "JPG", "GIF", "BMP" };
         JFileChooser chooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
         chooser.setMultiSelectionEnabled(false);
 
-
-        //adicionar FileView no FileChooser para desenhar �cones de arquivos
         chooser.setFileView(new FileIcon(screen));
-        chooser.addChoosableFileFilter(new SimpleFileFilter( gif, resource.getString("imageFileFilter")));
+        chooser.addChoosableFileFilter(new SimpleFileFilter( images, resource.getString("imageFileFilter")));
 
         int opcao = chooser.showSaveDialog(screen);
         if (opcao == JFileChooser.APPROVE_OPTION) {
-            try {
-                GIFOutputStream out = new GIFOutputStream(new BufferedOutputStream(new FileOutputStream(chooser.getSelectedFile().getPath() + ".gif")));
-                out.write(graphicsToImage(screen.getTable(), null));
-                out.flush();
-                out.close();
-                FileController.getInstance().setCurrentDirectory(chooser.getCurrentDirectory());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        	// TODO MAKE IT SHOW THE HEADER ALSO
+        	Component comp = screen.getTable();
+        	File file = new File(chooser.getSelectedFile().getPath());
+        	saveComponentAsImage(comp, comp.getWidth(), comp.getHeight(), file);
+        	FileController.getInstance().setCurrentDirectory(chooser.getCurrentDirectory());
         }
     }
 
@@ -869,11 +878,11 @@ public class NetworkController implements KeyListener {
                 menorY = yAux;
             }
         }
-        double raio = Node.getWidth()/2;
-        maiorX += raio;
-        maiorY += raio;
-        menorX -= raio;
-        menorY -= raio;
+        double nodeWidth = Node.getWidth();
+        maiorX += nodeWidth;
+        maiorY += nodeWidth;
+        menorX -= nodeWidth;
+        menorY -= nodeWidth;
         return new Rectangle(menorX, menorY, maiorX - menorX, maiorY - menorY);
     }
     

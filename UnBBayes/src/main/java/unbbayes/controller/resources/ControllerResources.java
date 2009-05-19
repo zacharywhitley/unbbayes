@@ -49,7 +49,7 @@ public class ControllerResources extends ListResourceBundle {
 	 * The resources
 	 */
 	static final Object[][] contents =
-	{	{"imageFileFilter","Image (*.gif)"},
+	{	{"imageFileFilter","PNG (.png), JPEG (.jpg), GIF (.gif), BMP (.bmp)"},
 		{"likelihoodName","Likelihood"},
 		{"likelihoodException","There are only zeros!"},
 		{"statusEvidenceProbabilistic","Total Evidence Probabilistic: "},

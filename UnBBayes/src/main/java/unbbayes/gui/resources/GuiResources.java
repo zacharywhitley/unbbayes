@@ -165,7 +165,6 @@ public class GuiResources extends ListResourceBundle {
 		{"printNetToolTip","Print graph"},
 		{"previewNetToolTip","Print graph preview"},
 		{"saveNetImageToolTip","Save graph as a gif image"},
-		{"siglaLabel","Sigla:"},
 		{"nameLabel", "Name:"}, 
 		{"typeLabel", "Type:"}, 
 		{"descriptionLabel","Description:"},
@@ -347,8 +346,8 @@ public class GuiResources extends ListResourceBundle {
         {"nameDuplicated", "The name already exists..."}, 
         {"nameReserved", "Name is a reserved word."},
         {"nameEmpty","The name cannot be empty"},
-        {"siglaError","The sigla must have only letters and numbers."},
-        {"descriptionError","The description must have only letters and numbers."}, 
+        {"nameError","The name must have only letters, numbers, parentheses, and commas."},
+        {"descriptionError","The description must have only letters, numbers, parentheses, commas, and spaces."}, 
         
         /* Resident Panel */
         {"stateEditionTip", "Edit States"}, 
