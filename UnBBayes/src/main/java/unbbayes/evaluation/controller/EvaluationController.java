@@ -117,12 +117,13 @@ public class EvaluationController {
 		List<String> evidenceNodeNameList = evaluationPane.getEvidenceNodeNameList();
 		int sampleSize = evaluationPane.getSampleSizeValue();
 		
-		Map<String, String> nodeFindingMap = evaluationPane.getNodeFindingMap();
+		Map<String, String> nodeFindingMap = evaluationPane.getNodeConditionMap();
 		ProbabilisticNode node;
 		for (String nodeName : nodeFindingMap.keySet()) {
 			node = (ProbabilisticNode)network.getNode(nodeName);
 			for (int i = 0; i < node.getStatesSize(); i++) {
 				if (nodeFindingMap.get(nodeName).equals(node.getStateAt(i))) {
+					node.initMarginalList();
 					node.addFinding(i);
 				}
 			}

@@ -253,19 +253,19 @@ public class EvaluationPane extends JPanel {
 		return 0.0f;
 	}
 	
-	public Map<String, String> getNodeFindingMap() {
-		Map<String, String> nodeFindingMap = new HashMap<String, String>();
+	public Map<String, String> getNodeConditionMap() {
+		Map<String, String> nodeConditionMap = new HashMap<String, String>();
 		
 		TableModel dm = inputTable.getModel();
 		
 		for (int i = 0; i < dm.getRowCount(); i++) {
 			String finding = (String)dm.getValueAt(i, 4);
 			if (!finding.equals("")) {
-				nodeFindingMap.put((String)dm.getValueAt(i, 0), finding);
+				nodeConditionMap.put((String)dm.getValueAt(i, 0), finding);
 			}
 		}
 		
-		return nodeFindingMap;
+		return nodeConditionMap;
 	}
 	
 	public void setPccValue(float pccValue) {
@@ -354,16 +354,16 @@ public class EvaluationPane extends JPanel {
 
 	}
 
-	public void addInputValues(Map<String, List<String>> nodeFindingMap) {
-		Set<String> nodeNameList = nodeFindingMap.keySet();
+	public void addInputValues(Map<String, List<String>> nodeConditionMap) {
+		Set<String> nodeNameList = nodeConditionMap.keySet();
 		((EvaluationInputTableModel)inputTable.getModel()).addValues(nodeNameList);
 		
 		int i = 0;
 		JComboBox comboBox;
 		EachRowEditor rowEditor = new EachRowEditor(inputTable);
-		inputTable.getColumn("Finding").setCellEditor(rowEditor);
+		inputTable.getColumn("Condition").setCellEditor(rowEditor);
 		for (String node : nodeNameList) {
-			comboBox = getComboBox(nodeFindingMap.get(node));
+			comboBox = getComboBox(nodeConditionMap.get(node));
 			rowEditor.setEditorAt(i++, new DefaultCellEditor(comboBox));
 		}
 		inputTable.revalidate();
@@ -382,7 +382,7 @@ public class EvaluationPane extends JPanel {
 
 		private static final long serialVersionUID = 1L;
 
-		private String[] columnNames = { "Node", "Target", "Evidence", "Cost", "Finding" };
+		private String[] columnNames = { "Node", "Target", "Evidence", "Cost", "Condition" };
 
 		private Object[][] data = new Object[0][5];
 		
