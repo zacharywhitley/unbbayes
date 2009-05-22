@@ -158,10 +158,11 @@ public class MSeparationUtility implements IDSeparationUtility {
 	 * This is implemented here because I don't want public or protected methods to be recursive...
 	 * Don't ask me why.
 	 * Make sure from != to
-	 * @param processedPath (input): registers the already visited nodes, in order to prevent cycle. Not null. 
+	 * @param processedPath (input): registers the already visited nodes, in order to prevent cycle. Not null.
+	 * @param nodesNotToContain : nodes that a returned path should not contain. The algorithm will ignore 
 	 * It is concatenated to the return list, as a prefix.
 	 */
-	private Set<List<INode>> getRoutesRec(INode from, INode to, Map<INode, Set<INode>> closedAdjacentNodeMap, List<INode> processedPath) {
+	private Set<List<INode>> getRoutesRec(INode from, INode to, Map<INode, Set<INode>> closedAdjacentNodeMap, List<INode> processedPath, Set<INode> nodesNotToContain) {
 		
 		Set<List<INode>> ret = new HashSet<List<INode>>(); // Initialize the return value
 		
@@ -187,6 +188,10 @@ public class MSeparationUtility implements IDSeparationUtility {
 				// this is a cicle. Ignore this sub-path
 				continue;
 			}
+			if (nodesNotToContain.contains(adjacent)) {
+				// since no path should contain nodes within nodesNotToContain, we should ignore such adjacent nodes
+				continue;
+			}
 			if (adjacent.equals(to)) {
 				// path found!
 				List<INode> path = new ArrayList<INode>(processingPath);
@@ -196,7 +201,7 @@ public class MSeparationUtility implements IDSeparationUtility {
 			}
 			
 			// recursive call
-			ret.addAll(this.getRoutesRec(adjacent, to, closedAdjacentNodeMap, processingPath));
+			ret.addAll(this.getRoutesRec(adjacent, to, closedAdjacentNodeMap, processingPath, nodesNotToContain));
 		}
 		
 		return ret;
@@ -208,11 +213,13 @@ public class MSeparationUtility implements IDSeparationUtility {
 	 * @param from : a node to start from
 	 * @param to : a destination node
 	 * @param closedAdjacentNodeMap : a map indicating all node's adjacency. 
+	 * @param nodesNotToContain : nodes that a returned path should not contain. The algorithm will ignore
+	 * a path if it contains any node within it.
 	 * If set to null, this method will start using {@link INode#getChildren()} to build a directed path.
 	 * @return : a set of all path from "from" to "to". The path is represented as a list containing all
 	 * nodes included in the path. Since it is a list, it stores the visit order as well.
 	 */
-	public Set<List<INode>> getRoutes(INode from, INode to, Map<INode, Set<INode>> closedAdjacentNodeMap) {
+	public Set<List<INode>> getRoutes(INode from, INode to, Map<INode, Set<INode>> closedAdjacentNodeMap, Set<INode> nodesNotToContain) {
 				
 		// treating special case: auto-relationship ("from" is adjacent to itself and from == to)
 		if (from.equals(to)) {
@@ -242,8 +249,31 @@ public class MSeparationUtility implements IDSeparationUtility {
 			return ret;	// we shall not start recursive call when from == to, ever.
 		}
 		
+		// the method should not throw null pointer exception because of nodes to be ignored
+		// so, initialize it
+		if (nodesNotToContain == null) {
+			nodesNotToContain = new HashSet<INode>();
+		}
+		
 		// normal case: recursive call considering the "current path" as a empty list of nodes
-		return this.getRoutesRec(from, to, closedAdjacentNodeMap, new ArrayList<INode>());		
+		return this.getRoutesRec(from, to, closedAdjacentNodeMap, new ArrayList<INode>(), nodesNotToContain);		
+	}
+	
+	
+	/**
+	 * Obtains a set of path/routes between two nodes, including themselves.
+	 * Cycles are not counted as new routes.
+	 * This is equals to {@link #getRoutesRec(INode, INode, Map, List, null)}
+	 * @param from : a node to start from
+	 * @param to : a destination node
+	 * @param closedAdjacentNodeMap : a map indicating all node's adjacency. 
+	 * a path if it contains any node within it.
+	 * If set to null, this method will start using {@link INode#getChildren()} to build a directed path.
+	 * @return : a set of all path from "from" to "to". The path is represented as a list containing all
+	 * nodes included in the path. Since it is a list, it stores the visit order as well.
+	 */
+	public Set<List<INode>> getRoutes(INode from, INode to, Map<INode, Set<INode>> closedAdjacentNodeMap) {
+		return this.getRoutes(from, to, closedAdjacentNodeMap, null);
 	}
 	
 	/**
@@ -258,7 +288,7 @@ public class MSeparationUtility implements IDSeparationUtility {
 	 * @see #getRoutes(INode, INode, Map)
 	 */
 	public Set<List<INode>> getRoutes (INode from, INode to) {
-		return this.getRoutes(from, to, null);
+		return this.getRoutes(from, to, null, null);
 	}
 	
 	
@@ -354,14 +384,8 @@ public class MSeparationUtility implements IDSeparationUtility {
 		// TODO optimize this, since this is becoming a very heavy procedure...
 		for (INode nodeFrom : from) {
 			for (INode nodeTo : to) {
-				for (List<INode> path : this.getRoutes(nodeFrom, nodeTo, mapRepresentingNonOrientedGraph)) {
-					if (this.containsAtLeastOneOf(path, separators)) {
-						// Path contains an element from separators. This path is blocked. Search for others.
-						continue;
-					} else {
-						// there is a non-blocked path. It breaks m-separation criterion immediately
-						return false;
-					}
+				if (this.getRoutes(nodeFrom, nodeTo, mapRepresentingNonOrientedGraph, separators).size() > 0) {
+					return false;
 				}
 			}
 		}
