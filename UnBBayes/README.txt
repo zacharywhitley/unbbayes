@@ -36,6 +36,7 @@ Go to the projects root folder command line and run:
 mvn assembly:assembly -Dmaven.test.skip=true
 
 Unzip the distribution file somewhere. Remove unnecessary example files (until examples folder is cleaned up).
+Rename the jar file to unbbayes.jar.
 Zip the remain files again (without the '-dist' part).
 
 Build the new web page with the changes (code, javadoc, features, bugs, etc).
