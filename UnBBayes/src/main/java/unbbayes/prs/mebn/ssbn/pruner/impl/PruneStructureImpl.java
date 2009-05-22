@@ -52,8 +52,8 @@ public class PruneStructureImpl implements IPruneStructure{
 	public static IPruneStructure newInstance() {
 		PruneStructureImpl instance = new PruneStructureImpl();
 		List<IPruner> pruners = new ArrayList<IPruner>(2);
-		pruners.add(DSeparationPruner.newInstance());
 		pruners.add(BarrenNodePruner.newInstance());
+		pruners.add(DSeparationPruner.newInstance());
 		instance.setListOfPruners(pruners);
 		return instance;
 	}

@@ -830,7 +830,12 @@ public class Compiler implements ICompiler {
 			match('|');
 			ICompilerBooleanValue val2 = bTerm();
 			// Debug.println("EXITING BEXPRESSION AS OR");
-			return new CompilerOrValue(val1, val2);
+			if (look == '|') {
+				match('|');
+				return new CompilerOrValue(val1, new CompilerOrValue(val2,bExpression()));
+			} else {
+				return new CompilerOrValue(val1, val2);
+			}
 		} else {
 			// Debug.println("EXITING BEXPRESSION AS SINGLE TERM");			
 			return val1;
@@ -852,7 +857,12 @@ public class Compiler implements ICompiler {
 		if (look == '&') {
 			match('&');
 			ICompilerBooleanValue val2 = notFactor();
-			return new CompilerAndValue(val1, val2);
+			if (look == '&') {
+				match('&');
+				return new CompilerAndValue(val1, new CompilerAndValue(val2,bTerm()));
+			} else {
+				return new CompilerAndValue(val1, val2);
+			}
 		} else {
 			return val1;
 		}
@@ -1568,7 +1578,7 @@ public class Compiler implements ICompiler {
 	/* Verifies if an input is an expected one */
 	private void match(char c) throws TableFunctionMalformedException {
 		
-		// Debug.println("Matching " + c + " ");
+		//Debug.println("Matching " + c + " ");
 		if (look != c)
 			expected("" + c);
 		nextChar();
@@ -2409,6 +2419,13 @@ public class Compiler implements ICompiler {
 				for (int i = leaves.indexOf(leaf) + 1; i < leaves.size(); i++) {
 					// try all other leaves
 					for (OVInstance argleaf : args) {
+						if (leaves.get(i).isKnownValue()) {
+							// if current leaf has a known value (i.e. it is allways evaluating false), then
+							// it is not necessary to test OVInstance's name-value consistency
+							// (we don't have to check if OVs with same name has same value, since
+							// at evaluation time their values are not going to be used at all)
+							continue;
+						}
 						for (OVInstance argothers : leaves.get(i).getCurrentEntityAndArguments().arguments) {
 							if(argleaf.getOv().getName().equalsIgnoreCase(argothers.getOv().getName())) {
 								if (!argleaf.getEntity().getInstanceName().equalsIgnoreCase(argothers.getEntity().getInstanceName()) ) {
