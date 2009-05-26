@@ -43,8 +43,8 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
     public static final String DEFAULT_FILENAME = "aj.txt";
 
     public static final int numColumn = 80; 
-    public static final char separator = '*'; 
-    public static final String identationString = " > "; 
+    public static final String separator = "*"; 
+    public static final String identationString = "  "; 
     
     private StringBuffer log;
     
@@ -112,9 +112,9 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
     
     public void appendSeparator(){
     	for(int i = 0; i < numColumn; i++){
-    		log.append(separator); 
+    		this.append(separator); 
     	}
-    	log.append("\n"); 
+    	this.append("\n\n"); 
     }
     
     public String getLog() {

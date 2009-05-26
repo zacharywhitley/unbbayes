@@ -40,10 +40,14 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 			throw new RuntimeException(e.getMessage()); 
 		} 
 		
+		ssbn.getLogManager().appendln("Simple Nodes translated to SSBNNodes"); 
+		
 	    CPTForSSBNNodeGenerator build = new CPTForSSBNNodeGenerator(ssbn.getLogManager());
 	    
-	    if(ssbn.getSimpleSsbnNodeList().size()>0){
+	    if(ssbn.getSsbnNodeList().size() > 0){
 	    	build.generateCPTForAllSSBNNodes(ssbn.getSsbnNodeList().get(0));
+	    }else{
+	    	throw new SSBNNodeGeneralException(resource.getString("NotNodeInSSBN")); 
 	    }
 		
 	}

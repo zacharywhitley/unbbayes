@@ -75,7 +75,7 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		//Step 2: 
 		if(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_BUILDER).equals("true")){
 			ssbn.getLogManager().appendSeparator(); 
-			ssbn.getLogManager().appendln("----> Part 2/4: Builder Structure Started"); 
+			ssbn.getLogManager().appendln("----> Part 2: Builder Structure Started"); 
 			buildStructure(ssbn); 
 			
 			ssbn.getLogManager().appendln("Builder Structure Finished");
@@ -89,7 +89,7 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		//Step 3: 
 		if(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_PRUNE).equals("true")){
 			ssbn.getLogManager().appendSeparator();
-			ssbn.getLogManager().appendln("----> Part 3/4: Prune Structure Started"); 
+			ssbn.getLogManager().appendln("----> Part 3: Prune Structure Started"); 
 			pruneStruture(ssbn); 
 			
 			ssbn.getLogManager().appendln("Prune Structure Finished");
@@ -103,7 +103,7 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		//Step 4: 
 		if(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION).equals("true")){
 			ssbn.getLogManager().appendSeparator();
-			ssbn.getLogManager().appendln("----> Part 4/4: Generate CPT's started"); 
+			ssbn.getLogManager().appendln("----> Part 4: Generate CPT's started"); 
 			buildLocalDistribution(ssbn);
 			ssbn.getLogManager().appendln("Generate CPT's Finished\n");
 		}
@@ -120,10 +120,10 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		SSBN ssbn = new SSBN(); 
 		
 		MultiEntityBayesianNetwork mebn = null; 
-		ssbn.getLogManager().append("\n"); 
 		ssbn.getLogManager().addTitle("SSBN Generation for query " + queryList.get(0)); 
 		
-		ssbn.getLogManager().appendln("----> Part 1/4: Initialization Started"); 
+		ssbn.getLogManager().appendln("----> Part 1: Initialization Started" + "\n"); 
+		
 		
 		ssbn.setKnowledgeBase(knowledgeBase); 
 		
@@ -134,7 +134,7 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 
 		
 		//Add queries to the list of nodes
-		ssbn.getLogManager().appendln("Step 1: recover the query nodes");
+		ssbn.getLogManager().appendln("   1: Build the query nodes list");
 		for(Query query: queryList){
 			SimpleSSBNNode ssbnNode = SimpleSSBNNode.getInstance(query.getResidentNode()); 
 			query.setSSBNNode(ssbnNode); 
@@ -147,19 +147,21 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 			ssbn.addSSBNNodeIfItDontAdded(ssbnNode);
 			ssbn.addQueryToTheQueryList(query); 
 			
-			ssbn.getLogManager().appendln("    -> " + ssbnNode);
+			ssbn.getLogManager().appendln("      - " + ssbnNode);
 			                                                                    
 		}
+		
+		ssbn.getLogManager().appendln(""); 
 		
 		//Add findings to the list of nodes
 		
 		if(addFindings){
-			ssbn.getLogManager().appendln("Step 2: recover the findings nodes");
+			ssbn.getLogManager().appendln("   2: Build the findings nodes list");
 
 			for(MFrag mFrag: mebn.getMFragList()){
 				for(ResidentNode residentNode: mFrag.getResidentNodeList()){
 					for(RandomVariableFinding finding: residentNode.getRandomVariableFindingList()){
-						ssbn.getLogManager().appendln("    -> " + finding);
+						ssbn.getLogManager().appendln("      - " + finding);
 						ObjectEntityInstance arguments[] = finding.getArguments(); 
 						List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
 						for(int i = 0; i < arguments.length ; i++){
@@ -183,9 +185,6 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 				}
 			}
 		}
-		
-		ssbn.getLogManager().appendln("Initialization Finished");
-		ssbn.getLogManager().appendSeparator(); 
 		
 		return ssbn; 
 		

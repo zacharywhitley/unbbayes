@@ -68,7 +68,8 @@ public class Resources_pt extends ListResourceBundle {
 		{"InconsistencyError","Inconsistência encontrada"},
 		{"TwoContextFathersError", "Um nó não pode ter dois nós de contexto pais!"}, 
 		{"OnlyOneFreeVariableRestriction", "O nó de contexto de busca pode ter apenas uma variavel livre!"},
-		
+		{"NotNodeInSSBN", "Não há nós na SSBN"},
+				
 		//ImplementationRestrictionException
 		{"OnlyOneOVInstanceForOV", "Deve haver apenas uma instância para cada variável ordinária."},
 		{"MoreThanOneContextNodeSearh", "Mais de um nó de contexto de busca foi achado para a var. ordinária. Esta implementação trata apenas o caso de apenas um nó"},

@@ -1741,7 +1741,7 @@ public class MEBNController  {
 		LaskeyAlgorithmParameters parameters = new LaskeyAlgorithmParameters(); 
 		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION, "true");
 		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_BUILDER, "true"); 
-		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_PRUNE, "false"); 
+		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_PRUNE, "true"); 
 		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION, "true"); 
 	    
 		ISSBNGenerator ssbngenerator = new LaskeySSBNGenerator(parameters);

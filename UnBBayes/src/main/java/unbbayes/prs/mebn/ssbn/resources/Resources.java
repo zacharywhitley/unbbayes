@@ -68,6 +68,7 @@ public class Resources extends ListResourceBundle {
 		{"InconsistencyError","Inconsistenty found"},
 		{"TwoContextFathersError", "One node couldn't have two context nodes fathers!"}, 
 		{"OnlyOneFreeVariableRestriction", "The search context node can not have more than one free variable!"}, 
+		{"NotNodeInSSBN", "Not have nodes at the SSBN. "},
 		
 		//ImplementationRestrictionException
 		{"OnlyOneOVInstanceForOV", "Should have only one instance for each ordinary variable."},
