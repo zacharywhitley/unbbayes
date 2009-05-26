@@ -46,7 +46,7 @@ public class EvidenceEvaluation {
 	private float marginalImprovement = MemoryEfficientApproximateEvaluation.UNSET_VALUE;
 
 	// Individual PCC divided by its cost
-	private float costRate = MemoryEfficientApproximateEvaluation.UNSET_VALUE;
+	private float marginalCost = MemoryEfficientApproximateEvaluation.UNSET_VALUE;
 
 	// Evidence set PCC used to compute the marginal improvement
 	private float evidenceSetPcc;
@@ -98,20 +98,20 @@ public class EvidenceEvaluation {
 		return marginalImprovement;
 	}
 
-	public float getCostRate() throws EvaluationException {
-		if (costRate == MemoryEfficientApproximateEvaluation.UNSET_VALUE) {
+	public float getMarginalCost() throws EvaluationException {
+		if (marginalCost == MemoryEfficientApproximateEvaluation.UNSET_VALUE) {
 			if (cost == MemoryEfficientApproximateEvaluation.UNSET_VALUE) {
 				throw new EvaluationException(
 						"Must set cost before computing cost rate.");
 			}
 			try {
-				costRate = getIndividualPCC() / cost;
+				marginalCost =  cost / (getIndividualPCC() * 100);
 			} catch(EvaluationException e) {
 				throw new EvaluationException(
 				"Must calculate individual Pcc before computing cost rate." + " " + e.getMessage());
 			}
 		}
-		return costRate;
+		return marginalCost;
 	}
 
 	public float getCost() {

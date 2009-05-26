@@ -120,7 +120,7 @@ public abstract class AEvaluation implements IEvaluation {
 			for (int i = 0; i < sortedList.size() - 1; i++) {
 				EvidenceEvaluation ev1 = sortedList.get(i);
 				EvidenceEvaluation ev2 = sortedList.get(i + 1);
-				if (ev1.getCostRate() - ev2.getCostRate() < 0) {
+				if (ev1.getMarginalCost() - ev2.getMarginalCost() < 0) {
 					sortedList.set(i + 1, ev1);
 					sortedList.set(i, ev2);
 					change = true;

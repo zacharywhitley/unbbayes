@@ -20,7 +20,6 @@
  */
 package unbbayes.evaluation.gui;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -32,15 +31,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.AbstractListModel;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ListModel;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
@@ -53,6 +56,7 @@ import unbbayes.gui.table.NumberRenderer;
 import unbbayes.gui.table.PercentRenderer;
 import unbbayes.gui.table.RadioButtonCellEditor;
 import unbbayes.gui.table.RadioButtonCellRenderer;
+import unbbayes.gui.table.RowHeaderRenderer;
 
 import com.ibm.icu.text.NumberFormat;
 
@@ -60,7 +64,8 @@ public class EvaluationPane extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 	
-	private JPanel inputPane;
+	private JPanel mainPane;
+	
 	private JTable inputTable;
 	private JLabel sampleSizeLabel;
 	private JFormattedTextField sampleSizeTextField;
@@ -68,56 +73,49 @@ public class EvaluationPane extends JPanel {
 	private JFormattedTextField errorTextField;
 	private JButton runButton;
 	
-	private JPanel outputPane;
 	private JTable outputTable;
+	private JScrollPane cmOutputTableScroll;
 	private JLabel pccLabel;
 	private JFormattedTextField pccValueTextField;
 
 	public EvaluationPane() {
-		super(new GridLayout(2, 0));
+		super(new GridLayout(1,1));
+		
+		mainPane = new JPanel();
+		mainPane.setLayout(new BoxLayout(mainPane, BoxLayout.Y_AXIS));
 		
 		setUpInputPane();
 		
 		setUpOutputPane();
 		
-		add(inputPane);
-		add(outputPane);
+		add(mainPane);
 
 	}
 	
-	private void setUpOutputPane() {
-		outputPane = new JPanel(new BorderLayout());
-		
-		setUpPccPane();
-		
-		setUpOutputTable();
-	}
-	
-	private void setUpPccPane() {
-		JPanel pccPane = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		
-		pccLabel = new JLabel("Probability of Correct Classification:");
-		NumberFormat numberFormat = NumberFormat.getPercentInstance();
-		numberFormat.setMinimumIntegerDigits(1);
-		numberFormat.setMinimumFractionDigits(2);
-		numberFormat.setMaximumFractionDigits(2);
-		pccValueTextField = new JFormattedTextField(numberFormat);
-		pccValueTextField.setColumns(10);
-		pccValueTextField.setEditable(false);
-		
-		pccPane.add(pccLabel);
-		pccPane.add(pccValueTextField);
-		
-		outputPane.add(pccPane, BorderLayout.NORTH);
-	}
-	
 	private void setUpInputPane() {
-		inputPane = new JPanel(new BorderLayout());
-		
 		setUpInputTable();
 		
 		setUpSampleSizePane();
+	}
+	
+	private void setUpInputTable() {
+		TableModel dm = new EvaluationInputTableModel();
 		
+		inputTable = new JTable(dm);
+		inputTable.setPreferredScrollableViewportSize(new Dimension(500, 140));
+
+		// Create the scroll pane and add the table to it.
+		JScrollPane scrollPane = new JScrollPane(inputTable);
+
+		inputTable.getColumn("Target").setCellRenderer(
+				new RadioButtonCellRenderer());
+		inputTable.getColumn("Target").setCellEditor(
+				new RadioButtonCellEditor());
+
+		inputTable.setDefaultEditor(Float.class, new NumberEditor());
+		inputTable.setDefaultRenderer(Float.class, new NumberRenderer());
+		
+		mainPane.add(scrollPane);
 	}
 	
 	private void setUpSampleSizePane() {
@@ -142,29 +140,35 @@ public class EvaluationPane extends JPanel {
 		sampleSizePane.add(errorTextField);
 		sampleSizePane.add(runButton);
 		
-		inputPane.add(sampleSizePane, BorderLayout.SOUTH);
+		mainPane.add(sampleSizePane);
 	}
 
-	private void setUpInputTable() {
-		TableModel dm = new EvaluationInputTableModel();
+	private void setUpOutputPane() {
+		setUpPccPane();
 		
-		inputTable = new JTable(dm);
-		inputTable.setPreferredScrollableViewportSize(new Dimension(500, 70));
-
-		// Create the scroll pane and add the table to it.
-		JScrollPane scrollPane = new JScrollPane(inputTable);
-
-		inputTable.getColumn("Target").setCellRenderer(
-				new RadioButtonCellRenderer());
-		inputTable.getColumn("Target").setCellEditor(
-				new RadioButtonCellEditor());
-
-		inputTable.setDefaultEditor(Float.class, new NumberEditor());
-		inputTable.setDefaultRenderer(Float.class, new NumberRenderer());
+		setUpOutputTable();
 		
-		inputPane.add(scrollPane, BorderLayout.CENTER);
+		setUpOutputCM(new Float[0][0], new String[0]);
 	}
-
+	
+	private void setUpPccPane() {
+		JPanel pccPane = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		
+		pccLabel = new JLabel("Probability of Correct Classification:");
+		NumberFormat numberFormat = NumberFormat.getPercentInstance();
+		numberFormat.setMinimumIntegerDigits(1);
+		numberFormat.setMinimumFractionDigits(2);
+		numberFormat.setMaximumFractionDigits(2);
+		pccValueTextField = new JFormattedTextField(numberFormat);
+		pccValueTextField.setColumns(10);
+		pccValueTextField.setEditable(false);
+		
+		pccPane.add(pccLabel);
+		pccPane.add(pccValueTextField);
+		
+		mainPane.add(pccPane);
+	}
+	
 	private void setUpOutputTable() {
 		TableModel dm = new EvaluationOutputTableModel();
 
@@ -195,12 +199,48 @@ public class EvaluationPane extends JPanel {
 		outputTable.setDefaultRenderer(Float.class, new PercentRenderer());
 		outputTable.getColumn("Cost").setCellRenderer(
 				new NumberRenderer());
-		outputTable.getColumn("Cost Rate").setCellRenderer(
+		outputTable.getColumn("Marginal Cost").setCellRenderer(
 				new NumberRenderer(2, 6));
 		
-		outputPane.add(scrollPane, BorderLayout.CENTER);
+		mainPane.add(scrollPane);
 	}
 	
+	public void setUpOutputCM(Float[][] rowData, final String[] header) {
+		
+		if (cmOutputTableScroll != null) {
+			mainPane.remove(cmOutputTableScroll);
+		}
+		
+		ListModel lm = new AbstractListModel() {
+			private static final long serialVersionUID = 1L;
+			
+			String headers[] = header;
+
+			public int getSize() {
+				return headers.length;
+			}
+
+			public Object getElementAt(int index) {
+				return headers[index];
+			}
+		};
+
+		CMOutputTableModel tm = new CMOutputTableModel(rowData, header);
+		JTable table = new JTable(tm);
+
+		JList rowHeader = new JList(lm);
+		rowHeader.setCellRenderer(new RowHeaderRenderer(table));
+		
+		cmOutputTableScroll = new JScrollPane(table);
+		cmOutputTableScroll.setRowHeaderView(rowHeader);
+		
+		table.setPreferredScrollableViewportSize(new Dimension(500, 70));
+		
+		table.setDefaultRenderer(Float.class, new PercentRenderer());
+		
+		mainPane.add(cmOutputTableScroll);
+	}
+
 	public void setRunButtonActionListener(ActionListener actionListener) {
 		runButton.addActionListener(actionListener);
 		
@@ -276,6 +316,52 @@ public class EvaluationPane extends JPanel {
 		errorTextField.setValue(errorValue);
 	}
 	
+	private class CMOutputTableModel extends AbstractTableModel {
+
+		private static final long serialVersionUID = 1L;
+
+		private String[] columnNames;
+		
+		private Object[][] data;
+		
+		public CMOutputTableModel(Float[][] data, String[] columnNames) {
+			super();
+			this.data = data;
+			this.columnNames = columnNames;
+		}
+
+		public int getColumnCount() {
+			return columnNames.length;
+		}
+
+		public int getRowCount() {
+			return data.length;
+		}
+
+		public String getColumnName(int col) {
+			return columnNames[col];
+		}
+		
+		public Object getValueAt(int row, int col) {
+			return data[row][col];
+		}
+
+		/**
+		 * JTable uses this method to determine the default renderer/ editor for
+		 * each cell. If we didn't implement this method, then the last column
+		 * would contain text ("true"/"false"), rather than a check box.
+		 */
+		@SuppressWarnings("unchecked")
+		public Class getColumnClass(int c) {
+			return Float.class;
+		}
+
+		public boolean isCellEditable(int row, int col) {
+			return false;
+		}
+
+	}
+	
 	public void addOutputValues(List<EvidenceEvaluation> evidenceEvaluationList) throws EvaluationException {
 		((EvaluationOutputTableModel)outputTable.getModel()).addValues(evidenceEvaluationList);
 		outputTable.revalidate();
@@ -287,11 +373,11 @@ public class EvaluationPane extends JPanel {
 
 		private String[] columnToolTips = { "Node", "Marginal PCC (%)",
 				"Marginal Improvement (%)", "Individual PCC (%)", "Cost",
-				"Individual Cost Rate" };
+				"Individual Marginal Cost" };
 		
 		private String[] columnNames = { "Node", "MPCC (%)",
 				"MI (%)", "IPCC (%)", "Cost",
-				"Cost Rate" };
+				"Marginal Cost" };
 		
 		private Object[][] data  = new Object[0][6];
 		
@@ -310,7 +396,7 @@ public class EvaluationPane extends JPanel {
 				data[i][2] = evidenceEvaluation.getMarginalImprovement();
 				data[i][3] = evidenceEvaluation.getIndividualPCC();
 				data[i][4] = evidenceEvaluation.getCost();
-				data[i][5] = evidenceEvaluation.getCostRate();
+				data[i][5] = evidenceEvaluation.getMarginalCost();
 			}
 		}
 

@@ -145,6 +145,23 @@ public class EvaluationController {
 			
 			evaluationPane.addOutputValues(evidenceEvaluationList);
 			
+			node = (ProbabilisticNode)network.getNode(targetNodeNameList.get(0));
+			
+			String[] header = new String[node.getStatesSize()];
+			for (int i = 0; i < node.getStatesSize(); i++) {
+				header[i] = node.getStateAt(i);
+			}
+			
+			float[][] data = evaluation.getEvidenceSetCM();
+			Float[][] rowData = new Float[data.length][data[0].length];
+			for (int i = 0; i < rowData.length; i++) {
+				for (int j = 0; j < rowData[0].length; j++) {
+					rowData[i][j] = data[i][j];
+				}
+			}
+			
+			evaluationPane.setUpOutputCM(rowData, header);
+			
 			evaluationPane.revalidate();
 			evaluationPane.repaint();
 		} catch (Exception e) {

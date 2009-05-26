@@ -358,7 +358,7 @@ public class MemoryEfficientApproximateEvaluation extends AEvaluation {
 				System.out.println("\n");
 				
 				System.out.println("Cost Rate: ");
-				System.out.printf("%2.2f\n", evidenceEvaluation.getCostRate() * 100);
+				System.out.printf("%2.2f\n", evidenceEvaluation.getMarginalCost() * 100);
 				
 				System.out.println("\n\n");
 			}

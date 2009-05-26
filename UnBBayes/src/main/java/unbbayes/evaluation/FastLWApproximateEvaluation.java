@@ -75,13 +75,13 @@ public class FastLWApproximateEvaluation extends AEvaluation {
 		long init = System.currentTimeMillis();
 		lw.start(net, sampleSize);
 		long end = System.currentTimeMillis();
-		System.out.println("Time elapsed for sampling: " + (float)(end-init)/1000);
+//		System.out.println("Time elapsed for sampling: " + (float)(end-init)/1000);
 		init = System.currentTimeMillis();
 		sampleMatrix = lw.getSampledStatesMatrix();
 		sampleWeight = lw.getFullStatesSetWeight();
 		end = System.currentTimeMillis();
-		System.out.println("Time elapsed for matrix: " + (float)(end-init)/1000);
-		System.out.println();
+//		System.out.println("Time elapsed for matrix: " + (float)(end-init)/1000);
+//		System.out.println();
 
 		super.evaluate(targetNodeNameList, evidenceNodeNameList, onlyGCM);
 
@@ -341,7 +341,7 @@ public class FastLWApproximateEvaluation extends AEvaluation {
 				System.out.println("\n");
 				
 				System.out.println("Cost Rate: ");
-				System.out.printf("%2.2f\n", evidenceEvaluation.getCostRate() * 100);
+				System.out.printf("%2.2f\n", evidenceEvaluation.getMarginalCost() * 100);
 				
 				System.out.println("\n\n");
 			}

@@ -132,8 +132,8 @@ public class WetGrassEvaluationTest {
 	public void testBestIndividualCostRate() throws EvaluationException {
 		List<EvidenceEvaluation> list = evaluationApproximate.getBestIndividualCostRate();
 		
-		assertTrue(list.get(0).getCostRate() >= list.get(1).getCostRate());
-		assertTrue(list.get(1).getCostRate() >= list.get(2).getCostRate());
+		assertTrue(list.get(0).getMarginalCost() >= list.get(1).getMarginalCost());
+		assertTrue(list.get(1).getMarginalCost() >= list.get(2).getMarginalCost());
 	}
 	
 	@Test
@@ -391,7 +391,7 @@ public class WetGrassEvaluationTest {
 		
 		assertEquals(cost, evidenceEvaluation.getCost(), 0);
 		
-		assertEquals(.575/cost, evidenceEvaluation.getCostRate(), DELTA/cost);
+		assertEquals(.575/cost, evidenceEvaluation.getMarginalCost(), DELTA/cost);
 		
 		
 		
@@ -404,7 +404,7 @@ public class WetGrassEvaluationTest {
 		
 		assertEquals(cost, evidenceEvaluation.getCost(), 0);
 		
-		assertEquals(.535/cost, evidenceEvaluation.getCostRate(), DELTA/cost);
+		assertEquals(.535/cost, evidenceEvaluation.getMarginalCost(), DELTA/cost);
 		
 		
 		
@@ -417,7 +417,7 @@ public class WetGrassEvaluationTest {
 		
 		assertEquals(cost, evidenceEvaluation.getCost(), 0);
 		
-		assertEquals(.595/cost, evidenceEvaluation.getCostRate(), DELTA/cost);
+		assertEquals(.595/cost, evidenceEvaluation.getMarginalCost(), DELTA/cost);
 		
 	}
 
