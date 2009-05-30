@@ -3,7 +3,10 @@ package unbbayes.prs.mebn.ontology;
 import java.io.File;
 import java.text.NumberFormat;
 import java.util.Locale;
+import java.util.ResourceBundle;
 
+import unbbayes.io.ILogManager;
+import unbbayes.io.TextLogManager;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -34,7 +37,9 @@ public class HeparIITestSet  extends TestSet{
 	//Names of files
 	private static final String HEPARII_UBF_FILE = "examples/mebn/HeparII/HeparII_01.ubf";
 	private static final String TEST_FILE_NAME = "HeparIITestSet.log"; 
-	private static final String PATH = "examples/mebn/Tests/HeparIITestSet"; 
+	
+	private static ResourceBundle resourceFiles = 
+		ResourceBundle.getBundle("unbbayes.prs.mebn.resources.ResourceFiles");
 	
 	//Variables
 	private MultiEntityBayesianNetwork mebn;	
@@ -72,13 +77,21 @@ public class HeparIITestSet  extends TestSet{
 	
 	private static final String OV_P = "p"; 
 	
-
-	
 	public HeparIITestSet(ISSBNGenerator ssbnGenerator){
-		super(ssbnGenerator); 
+		this(ssbnGenerator, new TextLogManager()); 
+	}
+	
+	public HeparIITestSet(ISSBNGenerator ssbnGenerator, ILogManager logManager){
+		super(ssbnGenerator, logManager); 
 		
 		NumberFormat nf = NumberFormat.getInstance(Locale.US);
 		nf.setMaximumFractionDigits(2);
+		
+		String path = resourceFiles.getString("PathHepparIITestDirectory");
+		File directory = new File(path);  
+		if(!directory.exists()){
+			directory.mkdir(); 
+		}
 		
 		//Loading the network
 		UbfIO io = UbfIO.getInstance(); 
@@ -87,23 +100,20 @@ public class HeparIITestSet  extends TestSet{
 		} catch (Exception e) {
 			e.printStackTrace();
 			logManager.appendln(e.toString());
-			finishLog(PATH + "/" + TEST_FILE_NAME); 
+			finishLog(path + "/" + TEST_FILE_NAME); 
 			System.exit(1); 
 		}
-		
-		File directory = new File(PATH);  
-		if(!directory.exists()){
-			directory.mkdir(); 
-		}
+
+
 	}
 	
 	public static void main(String[] args){
 		
 		ISSBNGenerator ssbnGenerator = new ExplosiveSSBNGenerator();
 		
-		TestSet testSet = new HeparIITestSet(ssbnGenerator);
-		testSet.executeTests(); 
-		testSet.finishLog(PATH + "/" + TEST_FILE_NAME); 
+		TestSet testSet = new HeparIITestSet(ssbnGenerator, new TextLogManager());
+
+		testSet.finishLog(resourceFiles.getString("PathHepparIITestDirectory") + "/" + TEST_FILE_NAME); 
 		
 	}
 	
@@ -259,6 +269,13 @@ public class HeparIITestSet  extends TestSet{
 		executeTestCase139(); 
 	}
 	
+	/**
+	 * Record the log informations
+	 */
+	public void recordLog(){
+		this.finishLog(resourceFiles.getString("PathHepparIITestDirectory") + "/" + TEST_FILE_NAME); 
+	}
+	
 	private SSBN executeTestCase(int index, String nameResidentNode, String nameMFrag){
 		return executeTestCase(index, nameResidentNode, nameMFrag, null); 			
 	}
@@ -288,7 +305,7 @@ public class HeparIITestSet  extends TestSet{
 				new String[]{"p"}, 
 				new String[]{"maria"}, kb); 
 
-		return executeQueryAndPrintResults(query, PATH + "/" + "Test" + testNumber + ".xml"); 				
+		return executeQueryAndPrintResults(query, resourceFiles.getString("PathHepparIITestDirectory") + "/" + "Test" + testNumber + ".xml"); 				
 	}
 	
 	private void clearRandomVariableFinding(){
@@ -353,52 +370,52 @@ public class HeparIITestSet  extends TestSet{
 		return executeTestCase(5, RV_HaemorrhagieDiathesis, RV_HaemorrhagieDiathesis + "_MFrag"); 			
 	}
 	
-	private void executeTestCase6(){
-		executeTestCase(6, RV_INR, RV_INR + "_MFrag"); 					
+	public SSBN executeTestCase6(){
+		return executeTestCase(6, RV_INR, RV_INR + "_MFrag"); 					
 	}
 
-	private void executeTestCase7(){
-		executeTestCase(7, RV_PlateletCount, RV_PlateletCount + "_MFrag"); 				
+	public SSBN  executeTestCase7(){
+		return executeTestCase(7, RV_PlateletCount, RV_PlateletCount + "_MFrag"); 				
 	}
 	
-	private void executeTestCase8(){
-		executeTestCase(8, RV_Yellowingoftheskin, RV_Yellowingoftheskin + "_MFrag"); 				
+	public SSBN executeTestCase8(){
+		return executeTestCase(8, RV_Yellowingoftheskin, RV_Yellowingoftheskin + "_MFrag"); 				
 	}
 
-	private void executeTestCase9(){
-		executeTestCase(9, RV_Itching, RV_Itching + "_MFrag"); 					
+	public SSBN  executeTestCase9(){
+		return executeTestCase(9, RV_Itching, RV_Itching + "_MFrag"); 					
 	}
 	
-	private void executeTestCase10(){
-		executeTestCase(10, RV_Jaundice, RV_Jaundice + "_MFrag"); 				
+	public SSBN  executeTestCase10(){
+		return executeTestCase(10, RV_Jaundice, RV_Jaundice + "_MFrag"); 				
 	}
 	
-	private void executeTestCase11(){
-		executeTestCase(11, RV_TotalBilirubin, RV_TotalBilirubin + "_MFrag"); 				
+	public SSBN executeTestCase11(){
+		return executeTestCase(11, RV_TotalBilirubin, RV_TotalBilirubin + "_MFrag"); 				
 	}
 	
-	private void executeTestCase12(){
-		executeTestCase(12, RV_BloodUrea, RV_BloodUrea + "_MFrag"); 			
+	public SSBN  executeTestCase12(){
+		return executeTestCase(12, RV_BloodUrea, RV_BloodUrea + "_MFrag"); 			
 	}
 	
-	private void executeTestCase13(){
-		executeTestCase(13, RV_IncreasedLiverDensity, RV_IncreasedLiverDensity + "_MFrag"); 					
+	public SSBN  executeTestCase13(){
+		return executeTestCase(13, RV_IncreasedLiverDensity, RV_IncreasedLiverDensity + "_MFrag"); 					
 	}
 
-	private void executeTestCase14(){
-		executeTestCase(14, RV_ImpairedConsciousness, RV_ImpairedConsciousness + "_MFrag"); 				
+	public SSBN  executeTestCase14(){
+		return executeTestCase(14, RV_ImpairedConsciousness, RV_ImpairedConsciousness + "_MFrag"); 				
 	}
 	
-	private void executeTestCase15(){
-		executeTestCase(15, RV_HepaticEncephalopathy, RV_HepaticEncephalopathy + "_MFrag"); 			
+	public SSBN executeTestCase15(){
+		return executeTestCase(15, RV_HepaticEncephalopathy, RV_HepaticEncephalopathy + "_MFrag"); 			
 	}
 	
-	private void executeTestCase16(){
-		executeTestCase(16, RV_MusculoSkeletalPain, RV_MusculoSkeletalPain + "_MFrag"); 					
+	public SSBN  executeTestCase16(){
+		return executeTestCase(16, RV_MusculoSkeletalPain, RV_MusculoSkeletalPain + "_MFrag"); 					
 	}
 
-	private void executeTestCase17(){
-		executeTestCase(17, RV_JointsSwelling, RV_JointsSwelling + "_MFrag"); 				
+	public SSBN  executeTestCase17(){
+		return executeTestCase(17, RV_JointsSwelling, RV_JointsSwelling + "_MFrag"); 				
 	}	
 	
 	
@@ -419,18 +436,20 @@ public class HeparIITestSet  extends TestSet{
 
 	}
 	
-	private void executeTestCase19(){
+	public SSBN executeTestCase19(){
 		
 		try{
 			RandomVariableFinding finding = createBooleanFinding(RV_Fatigue + "_MFrag", RV_Fatigue, true);
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{finding}; 
 
-			executeTestCase(19, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
+			return executeTestCase(19, RV_ToxicHepatitis,  RV_ToxicHepatitis + "_MFrag", findings); 
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
 			logManager.appendln(e.toString()); 
 		}
+		
+		return null; 
 
 	}
 	

@@ -12,6 +12,7 @@ import javax.xml.bind.JAXBException;
 import unbbayes.io.ILogManager;
 import unbbayes.io.TextLogManager;
 import unbbayes.io.XMLBIFIO;
+import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.mebn.MFrag;
@@ -34,29 +35,26 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
  */
 
 public abstract class TestSet {
-
-	private static final String PATH_Tests = "examples/mebn/Tests"; 
 	
 	protected ILogManager logManager; 
 	private ISSBNGenerator ssbnGenerator; 
 	
-	public static boolean compileSSBNGenerated = false; 
-	public static boolean printTable = false; 
+	public static boolean compileSSBNGenerated = true; 
+	public static boolean printTable = true; 
+	
+	public TestSet(ISSBNGenerator ssbnGenerator, ILogManager _logManager){
+		logManager = _logManager; 
+		this.ssbnGenerator = ssbnGenerator; 
+	}
 	
 	public TestSet(ISSBNGenerator ssbnGenerator){
-		logManager = new TextLogManager(); 
-		this.ssbnGenerator = ssbnGenerator; 
-		
-
-		File directory = new File(PATH_Tests); 
-		if(!directory.exists()){
-			directory.mkdir(); 
-		}
+		this(ssbnGenerator, new TextLogManager()); 
 	}
 	
 	public abstract void executeTests(); 
 	
 	protected void finishLog(String nameOfFile){
+		
 		try {
 			logManager.writeToDisk(nameOfFile, false);
 		} catch (IOException e) {
@@ -74,8 +72,8 @@ public abstract class TestSet {
 		logManager.appendln("Test" + i + ":" + NodeName);
 	}
 
-	private void printTreeVariableTable(Query query) {
-		TreeVariable treeVariable = query.getQueryNode().getProbNode(); 
+	private void printTreeVariableTable(ProbabilisticNode query) {
+		TreeVariable treeVariable = query; 
 		
 		int statesSize = treeVariable.getStatesSize();
 		
@@ -104,7 +102,7 @@ public abstract class TestSet {
 			SSBN ssbn = ssbnGenerator.generateSSBN(listQueries, query.getKb());
 
 			File file = new File(nameOfNetworkGenerated); 
-			saveNetworkFile(file, query.getQueryNode()); 
+			saveNetworkFile(file, ssbn.getProbabilisticNetwork()); 
 			
 			if(compileSSBNGenerated){
 				ssbn.compileAndInitializeSSBN();
@@ -121,22 +119,30 @@ public abstract class TestSet {
 	
 
 	protected SSBN executeQueryAndPrintResults(Query query, String nameOfNetworkGenerated) {
+		
 		SSBN ssbn = executeQuery(query, nameOfNetworkGenerated);
 		
 		if(printTable){
-			printTreeVariableTable(query);
+			if(query.getProbabilisticNode() != null){
+				printTreeVariableTable(query.getProbabilisticNode());
+			}
+			else{
+				if(query.getSSBNNode() != null){
+					printTreeVariableTable(query.getSSBNNode().getProbNode()); 
+				}
+			}
 			printTestFoot();
 		}
 		
 		return ssbn; 
+	
 	}
 	
-	
-	public static void saveNetworkFile(File file, SSBNNode queryNode){
+	public static void saveNetworkFile(File file, ProbabilisticNetwork pn){
 	    XMLBIFIO netIO = new XMLBIFIO(); 
 		
 		try {
-			netIO.save(file, queryNode.getProbabilisticNetwork());
+			netIO.save(file, pn);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (JAXBException e) {

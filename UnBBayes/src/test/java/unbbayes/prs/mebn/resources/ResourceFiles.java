@@ -25,10 +25,17 @@ public class ResourceFiles extends ListResourceBundle {
 	 * The resources
 	 */
 	static final Object[][] contents =
-	{	{"UnBBayesUBF","examples/mebn/StarTrek/StarTrek.ubf"}, 
+	{
+		{"UnBBayesUBF","examples/mebn/StarTrek/StarTrek.ubf"}, 
 		{"StarTrekKB_Situation1", "examples/mebn/StarTrek/KnowledgeBase_Situation1.plm"}, 
 		
 		{"StarTrek_PATHTests","examples/mebn/Tests/StarTrekTestSet"}, 
 		{"StarTrek_LogFileName","StarTrekTestSet.log"},
+		
+		{"PathTestDirectory", "src/test/resources/testCases/mebn"}, 
+		{"PathHepparIITestDirectory", "src/test/resources/testCases/mebn/hepparII/results"}, 
+		
+		{"HepparIIUBF","src/test/resources/testCases/mebn/hepparII/hepparII.ubf"}
+		
 	};
 }
