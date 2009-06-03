@@ -8,6 +8,28 @@ Publications
 ~~~~~~~~~~~~
 
   Here are the main publications related to UnBBayes:
+  
+      * Carvalho, Rommel N.; Laskey, Kathryn B.; Costa, Paulo Cesar G.; Ladeira, Marcelo; 
+      Santos, Laecio L.; Matsumoto, Shou (2009) \
+      <<UnBBayes: Modeling Uncertainty for Plausible Reasoning in the Semantic Web>>. \
+      Chapter in Semantic Web. 
+      IntechWeb, Vienna, Austria, EU. July, 2009. \
+      (To appear). \
+      {{http://intechweb.org/invitations.php?code=1624930e2ef7789489df257852ad92bb}}
+  
+      * Carvalho, Rommel N.; Chang, Kuo-Chu (2009) \
+      <<A Performance Evaluation Tool for Multi-Sensor Classification Systems>>. \
+      In Proceedings of the 12th International Conference on Information Fusion (FUISION 2009). 
+      Seattle, Washington, USA. July 6-9, 2009. \
+      (To appear). \
+      {{http://isif.org/fusion2009.htm}}
+      
+      * Costa, Paulo Cesar G.; Laskey, Kathryn B.; Chang, Kuo-Chu; Carvalho, Rommel N. (2009) \
+      <<A Multi-Disciplinary Approach to High Level Fusion in Predictive Situational Awareness Presentation>>. \
+      In Proceedings of the 12th International Conference on Information Fusion (FUISION 2009). 
+      Seattle, Washington, USA. July 6-9, 2009. \
+      (To appear). \
+      {{http://isif.org/fusion2009.htm}}
  
       * Costa, Paulo Cesar G.; Carvalho, Rommel N.; Santos, Laecio L.; Matsumoto, Shou; 
       Ladeira, Marcelo; Laskey, Kathryn B. (2008) \
@@ -22,14 +44,18 @@ Publications
       * Carvalho, Rommel N.; Santos, Laecio L.; Matsumoto, Shou; Ladeira, Marcelo; 
       Costa, Paulo Cesar G. (2008) \
       <<UnBBayes-MEBN: Comments on Implementing a Probabilistic Ontology Tool>>. \
-      In IADIS Applied Computing 2008 conference. Algarve, Portugal. April 10-13, 2008.
+      In IADIS Applied Computing 2008 conference. Algarve, Portugal. April 10-13, 2008. \
+      {{http://www2.computer.org/portal/web/csdl/doi/10.1109/ISDA.2007.127}}
       
       
       * Carvalho, Rommel N.; Santos, Laecio L.; Matsumoto, Shou; Ladeira, Marcelo; 
       Costa, Paulo Cesar G. (2008) \
-      <<A book chapter>>. \
-      In Computational Intelligence in Information Assurance and Security. \
-      Springer-Verlag Berlin Heidelberg New York, USA. <To be published>
+      <<A GUI Tool for Plausible Reasoning in the Semantic Web Using MEBN>>. \
+      Chapter in Innovative Applications in Data Mining. \
+      Studies in Computational Science, Vol. 169/2009, pp. 17-45. \
+      Springer-Verlag: Berlin/Heidelberg. \
+      {{http://www.springer.com/engineering/book/978-3-540-88044-8?detailsPage=toc}}
+      
       
       
       * Carvalho, Rommel N.; Santos, Laecio L.; Ladeira, Marcelo; 
@@ -86,6 +112,13 @@ Publications
       <<Open and Platform Independent Tool For Probabilistic Networks>>. \
       In Anais do XXIII Congresso da Sociedade Brasileira de Computacao, 2003. v. I, p. 220-220. 
       Campinas, SP, Brazil.
+      
+      * Ladeira, Marcelo; Vicari, Rosa M.; Coelho, Helder (2002) \
+      <<Multiagent Bayesian Networks (Redes Bayesianas Muiltiagentes)>>
+      In Sociedade Brasileira de Computação, Revista Eletrônica de Iniciação Científica. \
+      ISSN 1519-8219. \
+      Year II, Volume II, Number I, March, 2002. \
+      {{http://www.sbc.org.br/reic/edicoes/2002e1/tutoriais/Edicao_Marco_2002_Artigo13_Resumo.htm}}
       
       
       * Carvalho, Rommel N.; Onishi, Michael S.; Ladeira, Marcelo (2002) \

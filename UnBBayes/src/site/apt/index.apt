@@ -20,13 +20,15 @@ UnBBayes Overview
           		
           		* Likelihood Weighting
           		
-          		* Correct Classification Evaluation
+          		* Gibbs
           
           * Influence Diagram (ID)
           
           * Multiply Sectioned Bayesian Network (MSBN)
           
-          * Hybrid Bayesian Network (Gaussian Mixture) - Propagation under development
+          * Hybrid Bayesian Network (HBN)
+          
+              * Gaussian Mixture - Propagation under development
           
           * Object-Oriented Bayesian Network (OOBN) - Under development
           
@@ -37,13 +39,31 @@ UnBBayes Overview
           * Probabilistic Ontology Language (PR-OWL)
           
       * Learning Bayesian Network:
-       
+      
           * K2
           
           * B
           
+          * CBL-A
+          
+          * CBL-B
+          
           * V
           
           * Incremental Learning
+          
+      * Sampling
+      
+          * Logic
+          
+          * Likelihood Weighting
+          
+          * Gibbs
+          
+      * Correct Classification Evaluation
+      
+          * Evaluation using Logic Sampling
+          
+          * Evaluation using Likelihood Weighting Sampling
  
  

@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <faqs id="General FAQ">
   <part id="General">
+  
     <faq id="howtorun">
       <question>After I download the zip file, how do I run UnBBayes?</question>
       <answer>
@@ -11,6 +12,7 @@
         </p>
       </answer>
     </faq>
+    
     <faq id="macdelete">
       <question>I am running UnBBayes in my Mac and it does not seem to have
       			a way of deleting nodes. Is there any secret way?</question>
@@ -21,5 +23,46 @@
         </p>
       </answer>
     </faq>
+    
+    <faq id="srccode">
+      <question>How do I get UnBBayes' current source code?</question>
+      <answer>
+        <p>
+          Although the CVS repository is active, we have stopped using it. Therefore, 
+          download UnBBayes current code you have to get it from our SVN repository as 
+          explained in the SVN source code menu at http://www.sourceforge.net/projects/UnBBayes. 
+          Our current source code is on a branch /branches/UnBBayesOntologyMaven/UnBBayes.
+          That is the module you have to check out.
+        </p>
+      </answer>
+    </faq>
+    
+    <faq id="srceclipse">
+      <question>I downloaded the source code, but I am getting some errors when
+      			I try to compile it. How can I fix this?</question>
+      <answer>
+        <p>
+          The easiest way to get UnBBayes' current version up and running is to download our 
+          source code in Eclipse using subversion plugin (http://subclipse.tigris.org/install.html). 
+          
+          Once you download our source code, open the README.txt file and follow the instructions to 
+          install maven plugin in eclipse and make the project compile correctly (install the 
+          libraries into your local repository). We currently use Java 5. Due to some Mac compatibilities 
+          problems we did not migrate to Java 6 yet.
+        </p>
+      </answer>
+    </faq>
+    
+    <faq id="simpleexample">
+      <question>I want to use UnBBayes' API. Do you have any simple example I could look at?</question>
+      <answer>
+        <p>
+          To see how to use the exact inference go to our class in unbbayes.example.TextMode.java. 
+          There you will see the basic classes and methods needed to compile, add findings, 
+          propagate (update evidences), and get the marginal of a node.
+        </p>
+      </answer>
+    </faq>
+      
   </part>
 </faqs>
