@@ -136,7 +136,18 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
 	}
 
 	public void appendSectionTitle(String text) {
-		append("\n" + text.toUpperCase() + "\n\n"); 
+		append("\n" + text.toUpperCase() + "\n"); 
+	}
+
+	public void appendSpecialTitle(String text) {
+		 appendln("."); 
+		 appendln("."); 
+		 appendln("................................................................................"); 
+		 appendln(". " + text); 
+		 appendln("................................................................................"); 
+		 appendln("."); 
+		 appendln("."); 
+		 appendln(""); 
 	}
 
 

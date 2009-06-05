@@ -1765,7 +1765,7 @@ public class MEBNController  {
 			throw e5; 
 		}
 		
-		String fileName = "e:\\Teste.log"; 
+		String fileName = "SSBN_Test.log"; 
 		try {
 			ssbn.getLogManager().writeToDisk(fileName, true);
 		} catch (IOException e1) {

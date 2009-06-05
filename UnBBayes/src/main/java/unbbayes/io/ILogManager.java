@@ -54,6 +54,11 @@ public interface ILogManager {
     public void appendSectionTitle(String text); 
     
     /**
+     * Append a section title 
+     */
+    public void appendSpecialTitle(String text); 
+    
+    /**
      * Get the log how a String. 
      */
     public String getLog(); 
