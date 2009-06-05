@@ -36,24 +36,25 @@ CREATING A RELEASE
 2. Define the features implemented and bugs fixed in the RELEASE.txt file and in src/changes/changes.xml 
 and the candidates features and bugs for the next version in README.txt. 
 3. Change the unbbayes.properties file to the correct version
-4. Create dist file. Go to the projects root folder command line and run:
+4. Create dist file. Go to the projects root folder command line and run*:
 mvn assembly:assembly -Dmaven.test.skip=true
 5. Make a few changes in the generated dist file. 
 a) Unzip the distribution file somewhere. Remove unnecessary example files (until examples folder is cleaned up).
 b) Rename the jar file to unbbayes.jar.
 c) Zip the remain files again (without the '-dist' part).
 
--> NEW WEBSITE*
+-> NEW WEBSITE**
 6. Make the necessary changes in the web site by changing the files in /src/site/.
 7. Create the website. Go to the projects root folder command line and run**:
 mvn site:site -Dmaven.test.skip=true
 8. Verify that the created website is correct.
 9. Deploy the new website. Go to the projects root folder command line and run**:
 mvn site:deploy -Dmaven.test.skip=true
-* To make sure you can deploy the website, please configure your machine to be able to connect 
+
+* For now we are skipping the tests because we have to fix some tests before doing that.
+** To make sure you can deploy the website, please configure your machine to be able to connect 
 to the sourceforge server. Read http://docs.codehaus.org/display/MAVENUSER/MavenAndSourceforge 
 for details.
-** For now we are skipping the tests because we have to fix some tests before doing that.
 
 
 CANDIDATES FOR NEXT RELEASE
