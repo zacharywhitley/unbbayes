@@ -59,16 +59,16 @@ public class CPTForSSBNNodeGenerator {
 			logManager.appendln(level, "\nGenerate CPT for node " + root); 
 			
 			//------------------1) PARENTS
-			logManager.appendln(level, "Parents:"); 
+//			logManager.appendln(level, "Parents:"); 
 			SSBNNode[] parents = root.getParents().toArray(new SSBNNode[root.getParents().size()]); 
 			for(SSBNNode parent: parents){
-				logManager.appendln(level, ">" + parent); 
+//				logManager.appendln(level, ">" + parent); 
 				generateCPTForAllSSBNNodes(parent, level + 1); 
 			}
 
 			//------------------2) NODE
-			logManager.appendln(level, "CPT for root");
-			logManager.appendln(level, ">" + root); 
+//			logManager.appendln(level, "CPT for root");
+//			logManager.appendln(level, ">" + root); 
 			if(root.isCptAlreadyGenerated()){
 				return; 
 			}
@@ -88,13 +88,13 @@ public class CPTForSSBNNodeGenerator {
 			root.setCptAlreadyGenerated(true); 
 
 			//------------------3) CHILDREN
-			logManager.appendln(level, "Children:"); 
+//			logManager.appendln(level, "Children:"); 
 			//To avoid the ConcurrentModificationException: the method 
 			//generateCPTForNodeWithContextFather add and remove childs for the
 			//children list. 
 			SSBNNode[] children = root.getChildren().toArray(new SSBNNode[root.getChildren().size()]); 
 			for(SSBNNode child: children){
-				logManager.appendln(level, ">" + child); 
+//				logManager.appendln(level, ">" + child); 
 				generateCPTForAllSSBNNodes(child, level + 1); 
 			}
 		}

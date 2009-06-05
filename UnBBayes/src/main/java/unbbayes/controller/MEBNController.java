@@ -1765,12 +1765,12 @@ public class MEBNController  {
 			throw e5; 
 		}
 		
-		String fileName = "SSBN_Test.log"; 
-		try {
-			ssbn.getLogManager().writeToDisk(fileName, true);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		} 
+//		String fileName = "SSBN_Test.log"; 
+//		try {
+//			ssbn.getLogManager().writeToDisk(fileName, true);
+//		} catch (IOException e1) {
+//			e1.printStackTrace();
+//		} 
 		
 		probabilisticNetwork = ssbn.getProbabilisticNetwork();
 
