@@ -49,7 +49,7 @@
         <xbifns:state name="No"/>
       </xbifns:variable>
       <xbifns:variable yPos="78" xPos="498" type="DiscreteProbabilistic" name="TargetType">
-        <xbifns:description>TargettType</xbifns:description>
+        <xbifns:description>TargetType</xbifns:description>
         <xbifns:state name="Blue1"/>
         <xbifns:state name="Blue2"/>
         <xbifns:state name="Red1"/>

@@ -39,7 +39,7 @@ node Detect
 
 node TargetType
 {
-     label = "TargettType";
+     label = "TargetType";
      position = (498 78);
      states = ("Blue1" "Blue2" "Red1" "Red2" "Neutral" "Unknown");
 }
