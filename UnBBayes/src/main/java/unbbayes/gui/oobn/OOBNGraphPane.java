@@ -366,12 +366,31 @@ public class OOBNGraphPane extends GraphPane {
 				this.describeOOBNNode(node);
 				
 				if (node != null) {
-					if ( node.getWrappedNode().getType() == node.getWrappedNode().TYPE_INSTANCE_INPUT
-					  || node.getWrappedNode().getType() == node.getWrappedNode().TYPE_INSTANCE_OUTPUT ){
-						 // I do not want to make inner nodes selectable.
-						 // so, return without changing status
-						 return;
-					}						
+					if ((node.getWrappedNode().getType() | node.getWrappedNode().TYPE_INSTANCE ) != 0){
+						// the selected node is not a instance node.
+						// since it is a node w/ probabilities, we can show name/description/table
+						this.controller.getScreen().getNetWindowEdition().getJspTable().setVisible(true);	
+						this.controller.getScreen().getNetWindowEdition().getJtbState().setVisible(true);	
+						this.repaint();
+						if ( node.getWrappedNode().getType() == node.getWrappedNode().TYPE_INSTANCE_INPUT
+								  || node.getWrappedNode().getType() == node.getWrappedNode().TYPE_INSTANCE_OUTPUT ){
+							 // I do not want to make inner nodes selectable either.
+							 // so, return without changing status
+							 return;
+						} 
+					} else {
+						// the selected node is not a instance node.
+						// since it is a node w/ probabilities, we can show name/description/table
+						this.controller.getScreen().getNetWindowEdition().getJspTable().setVisible(true);	
+						this.controller.getScreen().getNetWindowEdition().getJtbState().setVisible(true);	
+						this.repaint();
+					}
+					
+				} else {
+					// if no node is selected, I dont want the name/description edition pane to be visible either.
+					this.controller.getScreen().getNetWindowEdition().getJspTable().setVisible(false);
+					this.controller.getScreen().getNetWindowEdition().getJtbState().setVisible(false);	
+					this.repaint();
 				}
 			} catch (Exception t) {
 				Debug.println(this.getClass(), "You clicked at a non-OOBN node", t);
@@ -401,6 +420,7 @@ public class OOBNGraphPane extends GraphPane {
 			// in order to easily overwrite getRectangleRepresentation.
 			this.setBMoveNode(false);
 			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			
 			break;
 		default:
 			break;

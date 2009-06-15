@@ -112,7 +112,6 @@ public class OOBNClassWindow extends NetworkWindow {
 		this.controller = OOBNClassController.newInstance(net, this);
 		card = new CardLayout();
 		
-		// instancia variaveis de instancia
 		graphViewport = new JViewport();
 		graphPane = OOBNGraphPane.newInstance(controller, graphViewport);
 		jspGraph = new JScrollPane(graphViewport);

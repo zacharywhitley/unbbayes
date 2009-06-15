@@ -86,6 +86,11 @@ public class OOBNEditionPane extends PNEditionPane {
 		super.getTbEdition().getBtnAddDecisionNode().setVisible(false);
 		super.getTbEdition().getBtnAddUtilityNode().setVisible(false);
 		
+		// the two below is set to false because we cannot get the dimensions correctly by now
+		super.getBtnPrintNet().setVisible(false);
+		super.getBtnSaveNetImage().setVisible(false);
+		
+		
 		super.getBtnCompile().setVisible(false);
 		super.getBtnHierarchy().setVisible(false);
 		super.getBtnPreviewNet().setVisible(false);

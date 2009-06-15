@@ -678,6 +678,20 @@ public class PNEditionPane extends JPanel {
 	public JButton getBtnEvaluate() {
 		return btnEvaluate;
 	}
+
+	/**
+	 * @return the jtbState
+	 */
+	public JToolBar getJtbState() {
+		return jtbState;
+	}
+
+	/**
+	 * @return the jspTable
+	 */
+	public JScrollPane getJspTable() {
+		return jspTable;
+	}
 	
 	
 	
