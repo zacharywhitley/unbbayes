@@ -622,6 +622,117 @@ public class MSeparationUtilityTest extends TestCase {
 	}
 
 	
+	/**
+	 * Test method for {@link MSeparationUtility#getAllDSeparatedNodes(Set, Set, Set)}.
+	 */
+	public final void testGetAllDSeparatedNodes() {
+		
+		// set up sets
+		
+		Set<INode> set2 = new HashSet<INode>();
+		set2.add(this.nodesUnderTest.get(2));
+		
+		Set<INode> set3 = new HashSet<INode>();
+		set3.add(this.nodesUnderTest.get(3));
+		
+		Set<INode> set0 = new HashSet<INode>();
+		set0.add(this.nodesUnderTest.get(0));
+		
+		Set<INode> set5 = new HashSet<INode>();
+		set5.add(this.nodesUnderTest.get(5));
+		
+		Set<INode> set23 = new HashSet<INode>();
+		set23.addAll(set2);
+		set23.addAll(set3);
+		
+		Set<INode> set05 = new HashSet<INode>();
+		set05 .addAll(set0);
+		set05 .addAll(set5);
+		
+		Set<INode> set01 = new HashSet<INode>();
+		set01.add(this.nodesUnderTest.get(0));
+		set01.add(this.nodesUnderTest.get(1));
+		
+		Set<INode> set45 = new HashSet<INode>();
+		set45.add(this.nodesUnderTest.get(4));
+		set45.add(this.nodesUnderTest.get(5));
+		
+		
+		/*
+		 * Set up relationship as shown below:
+		 * 
+		 * (Node0)
+		 *   |
+		 *   V
+		 * (Node1)------>(Node2)--------
+		 *   \                          \
+		 *    \                          V
+		 *     ------->(Node3)-------->(Node4)----->(Node5)
+		 * 
+		 */	
+		
+		// testing for empty sets - if consideredNodes or from is empty, no m-separated nodes should be detected
+		assertEquals("No m-separated nodes should exist for empty set", 0, this.classUnderTest.getAllDSeparatedNodes( new HashSet<INode>(), new HashSet<INode>(), new HashSet<INode>()).size());
+		assertEquals("No m-separated nodes should exist for empty set", 0, this.classUnderTest.getAllDSeparatedNodes( set23, new HashSet<INode>(), new HashSet<INode>()).size());
+		assertEquals("No m-separated nodes should exist for empty set", 0, this.classUnderTest.getAllDSeparatedNodes( new HashSet<INode>(), set23, new HashSet<INode>()).size());
+		assertEquals("No m-separated nodes should exist for empty set", 0, this.classUnderTest.getAllDSeparatedNodes( new HashSet<INode>(), new HashSet<INode>(), set23).size());
+		assertEquals("No m-separated nodes should exist for empty set", 0, this.classUnderTest.getAllDSeparatedNodes( set0, new HashSet<INode>(), set23).size());
+		assertEquals("No m-separated nodes should exist for empty set", 0, this.classUnderTest.getAllDSeparatedNodes( new HashSet<INode>(), set5, set23).size());
+		
+		// general use (consideredNodes are all nodes available)
+		assertTrue(this.classUnderTest.getAllDSeparatedNodes(new HashSet<INode>(this.nodesUnderTest),set5,set23).containsAll(set01));
+		assertTrue(this.classUnderTest.getAllDSeparatedNodes(new HashSet<INode>(this.nodesUnderTest),set0,set23).containsAll(set45));
+		assertTrue(this.classUnderTest.getAllDSeparatedNodes(new HashSet<INode>(this.nodesUnderTest),set05,set23).isEmpty());
+		
+		// m-separation between 0 and 5
+		assertTrue(this.classUnderTest.getAllDSeparatedNodes(set0, set5, set23).containsAll(set0));
+		assertTrue(this.classUnderTest.getAllDSeparatedNodes( set5, set0, set23).containsAll(set5));
+		assertTrue(this.classUnderTest.getAllDSeparatedNodes(set0, set5, set2).isEmpty());
+		assertTrue(this.classUnderTest.getAllDSeparatedNodes(set5, set0, set2).isEmpty());
+		assertTrue(this.classUnderTest.getAllDSeparatedNodes(set0, set5, set3).isEmpty());
+		assertTrue(this.classUnderTest.getAllDSeparatedNodes( set5, set0, set3).isEmpty());
+		assertTrue(this.classUnderTest.getAllDSeparatedNodes(set0, set5, new HashSet<INode>()).isEmpty());
+		assertTrue(this.classUnderTest.getAllDSeparatedNodes( set5, set0, new HashSet<INode>()).isEmpty());
+		
+		
+		// m-separation between {0,1} and 5
+		assertTrue(this.classUnderTest.getAllDSeparatedNodes(set01, set5, set23).containsAll(set01));
+		assertTrue(this.classUnderTest.getAllDSeparatedNodes(set5, set01, set23).containsAll(set5));
+		assertTrue(this.classUnderTest.getAllDSeparatedNodes(set01, set5, set2).isEmpty());
+		assertTrue(this.classUnderTest.getAllDSeparatedNodes(set5, set01, set2).isEmpty());
+		assertTrue(this.classUnderTest.getAllDSeparatedNodes(set01, set5, set3).isEmpty());
+		assertTrue(this.classUnderTest.getAllDSeparatedNodes(set5, set01, set3).isEmpty());
+		assertTrue(this.classUnderTest.getAllDSeparatedNodes(set01, set5, new HashSet<INode>()).isEmpty());
+		assertTrue(this.classUnderTest.getAllDSeparatedNodes(set5, set01, new HashSet<INode>()).isEmpty());
+		
+//		// m-separation between 0 and {4,5}
+//		assertTrue(this.classUnderTest.isDSeparated(null, set0, set45, set23));
+//		assertTrue(this.classUnderTest.isDSeparated(null, set45, set0, set23));
+//		assertFalse(this.classUnderTest.isDSeparated(null, set0, set45, set2));
+//		assertFalse(this.classUnderTest.isDSeparated(null, set45, set0, set2));
+//		assertFalse(this.classUnderTest.isDSeparated(null, set0, set45, set3));
+//		assertFalse(this.classUnderTest.isDSeparated(null, set45, set0, set3));	
+//		assertFalse(this.classUnderTest.isDSeparated(null, set0, set45, new HashSet<INode>()));
+//		assertFalse(this.classUnderTest.isDSeparated(null, set45, set0, new HashSet<INode>()));		
+//		
+//		// m-separation between {0,1} and {4,5}
+//		assertTrue(this.classUnderTest.isDSeparated(null, set01, set45, set23));
+//		assertTrue(this.classUnderTest.isDSeparated(null, set45, set01, set23));
+//		assertFalse(this.classUnderTest.isDSeparated(null, set01, set45, set2));
+//		assertFalse(this.classUnderTest.isDSeparated(null, set45, set01, set2));
+//		assertFalse(this.classUnderTest.isDSeparated(null, set01, set45, set3));
+//		assertFalse(this.classUnderTest.isDSeparated(null, set45, set01, set3));
+//		assertFalse(this.classUnderTest.isDSeparated(null, set01, set45, new HashSet<INode>()));
+//		assertFalse(this.classUnderTest.isDSeparated(null, set45, set01, new HashSet<INode>()));
+//		
+//		// m-separation between 2 and 3
+//		assertTrue(this.classUnderTest.isDSeparated(null, set2, set3, set01));
+//		assertTrue(this.classUnderTest.isDSeparated(null, set3, set2, set01));
+//		assertFalse(this.classUnderTest.isDSeparated(null, set2, set3, set45));
+//		assertFalse(this.classUnderTest.isDSeparated(null, set3, set2, set45));
+		
+	}
+	
 	// inner classes
 	
 	/**

@@ -75,29 +75,12 @@ public class DSeparationPruner implements IPruner {
 		}
 		Set<INode> querySet =  new HashSet<INode>(queryNodes);
 		
-		// stores the nodes to be removed
-		Set<INode> nodesToPrune = new HashSet<INode>();
+		// stores the nodes to be removed and find d-separated nodes
+		Set<INode> nodesToPrune = this.getDSeparationUtility().getAllDSeparatedNodes(new HashSet<INode>(ssbn.getSimpleSsbnNodeList()), querySet, findingSet);
 		
-		// a set containing only 1 element - used by d-separation utility to test d-separation
-		Set<INode> uniqueElementSet = new HashSet<INode>(1);
-		
-		// find d-separated nodes
-		for (INode node : ssbn.getSimpleSsbnNodeList()) {
-			if (!queryNodes.contains(node) && !findingNodes.contains(node)) {
-				// if node is neither query nor finding, test d-separation
-				uniqueElementSet.clear();
-				uniqueElementSet.add(node);
-				if (this.getDSeparationUtility().isDSeparated(null, uniqueElementSet, 
-															  querySet, findingSet)) {
-					// node is d-separated from query given finding
-					nodesToPrune.add(node);
-				}
-			}
-		}		
 		
 		// remove d-separated nodes from ssbn
 		// TODO check if it is OK to retain the edges
-		// TODO migrate this routine into the upper entity (class SSBN)
 		ssbn.removeAll(nodesToPrune);
 	}
 

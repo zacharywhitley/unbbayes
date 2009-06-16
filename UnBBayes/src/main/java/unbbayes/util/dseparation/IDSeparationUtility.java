@@ -36,7 +36,7 @@ public interface IDSeparationUtility {
 	/**
 	 * Checks if the nodes within "from" are d-separated from nodes from "to", given a set
 	 * of "separators".
-	 * @param graph : network containing the nodes within from, to and separators sets.
+	 * @param consideredNodes : represent a network containing the nodes within from, to and separators sets.
 	 * @param from : set 1 of nodes which d-separation is going to be tested
 	 * @param to : set 2 of nodes which d-separation is going to be tested
 	 * @param separators : set of separators.
@@ -44,6 +44,15 @@ public interface IDSeparationUtility {
 	 * @throws IllegalArgumentException : when there are some inconsistency between "graph" and the
 	 * "from", "to" and "separators" sets.
 	 */
-	boolean isDSeparated(Graph graph, Set<INode> from, Set<INode> to, Set<INode> separators );
+	boolean isDSeparated(Set<INode> consideredNodes, Set<INode> from, Set<INode> to, Set<INode> separators );
+	
+	/**
+	 * Obtains all nodes within graph which is d-separated from the set "from" given the separators.
+	 * @param consideredNodes : nodes to be tested. They must reside in the same network containing the nodes within from, and separators sets.
+	 * @param from set of nodes which d-separation is going to be tested
+	 * @param separators : set of separators.
+	 * @return set of all d-separated nodes within graph
+	 */
+	Set<INode> getAllDSeparatedNodes(Set<INode> consideredNodes, Set<INode> from, Set<INode> separators);
 	
 }

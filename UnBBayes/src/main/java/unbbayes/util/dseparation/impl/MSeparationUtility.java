@@ -26,11 +26,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 
 
-import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
 import unbbayes.util.Debug;
 import unbbayes.util.dseparation.IDSeparationUtility;
@@ -50,7 +48,7 @@ import unbbayes.util.dseparation.IDSeparationUtility;
  * 
  */
 public class MSeparationUtility implements IDSeparationUtility {
-
+	
 	
   	
 	
@@ -161,10 +159,17 @@ public class MSeparationUtility implements IDSeparationUtility {
 	 * @param processedPath (input): registers the already visited nodes, in order to prevent cycle. Not null.
 	 * @param nodesNotToContain : nodes that a returned path should not contain. The algorithm will ignore 
 	 * It is concatenated to the return list, as a prefix.
+	 * @param maxRoutes : maximum number of routes to obtain.
+	 * @param deadNodes : nodes that we are certain that there is no route to setTo, for the upper scope.
 	 */
-	private Set<List<INode>> getRoutesRec(INode from, INode to, Map<INode, Set<INode>> closedAdjacentNodeMap, List<INode> processedPath, Set<INode> nodesNotToContain) {
+	private Set<List<INode>> getRoutesRec(INode from, Set<INode> setTo, Map<INode, Set<INode>> closedAdjacentNodeMap, List<INode> processedPath, 
+			Set<INode> nodesNotToContain, int maxRoutes, Set<INode> deadNodes) {
 		
 		Set<List<INode>> ret = new HashSet<List<INode>>(); // Initialize the return value
+		
+		if (maxRoutes <= 0) {
+			return ret;
+		}
 		
 		
 		// mark the current node as "evaluated", but don't use processedPath directly, since we don't want it to be an output parameter
@@ -181,27 +186,62 @@ public class MSeparationUtility implements IDSeparationUtility {
 			adjacentSet = new HashSet<INode>(from.getChildNodes());
 		}
 		
+		// initialize a set of dead nodes for my scope
+		// note that if a node is dead for my scope (currently processing path), it may not be dead for my upper scope (another path)
+		// that's why I must create deadNodes for my scope
+		Set<INode> deadNodesForMyScope = new HashSet<INode>(deadNodes);
 		
 		for (INode adjacent : adjacentSet) {
 			
+			if (deadNodes.contains(adjacent)) {
+				// we know dead nodes have no path to the setTo...
+				continue;
+			}
 			if (processingPath.contains(adjacent)) {
 				// this is a cicle. Ignore this sub-path
 				continue;
 			}
 			if (nodesNotToContain.contains(adjacent)) {
+//				Debug.println(this.getClass(),"\nFinding found: " + adjacent.toString());
+//				for (INode node : processingPath) {
+//					Debug.print(" | " + node.toString());
+//				}
+//				Debug.println("");
 				// since no path should contain nodes within nodesNotToContain, we should ignore such adjacent nodes
 				continue;
 			}
-			if (adjacent.equals(to)) {
+			if (setTo.contains(adjacent)) {
 				// path found!
 				List<INode> path = new ArrayList<INode>(processingPath);
 				path.add(adjacent);
 				ret.add(path);
-				continue;
+				maxRoutes--;
+				
+//				Debug.println(this.getClass(),"\n!!Found path!!");
+//				for (INode node : path) {
+//					Debug.print(" | " + node.toString());
+//				}
+//				Debug.println("");
+				
+				if (maxRoutes > 0 ) {
+					// if we should find more routes, lets continue
+					continue;	
+				} else {
+					// maxRoutes has exceeded
+					break;
+				}
 			}
 			
 			// recursive call
-			ret.addAll(this.getRoutesRec(adjacent, to, closedAdjacentNodeMap, processingPath, nodesNotToContain));
+			Set<List<INode>> rec = this.getRoutesRec(adjacent, setTo, closedAdjacentNodeMap, processingPath, nodesNotToContain, maxRoutes, deadNodesForMyScope);
+			if (rec.size() <= 0) {
+				// we recursively know that there is no path from adjacent to setTo, so, it is dead
+				deadNodesForMyScope.add(adjacent);
+			}else {
+				// we found some path
+				maxRoutes -= rec.size();
+			}
+			ret.addAll(rec);
 		}
 		
 		return ret;
@@ -209,44 +249,65 @@ public class MSeparationUtility implements IDSeparationUtility {
 	
 	/**
 	 * Obtains a set of path/routes between two nodes, including themselves.
-	 * Cycles are not counted as new routes.
+	 * Cycles and auto-relationships are not counted as new routes.
 	 * @param from : a node to start from
 	 * @param to : a destination node
 	 * @param closedAdjacentNodeMap : a map indicating all node's adjacency. 
 	 * @param nodesNotToContain : nodes that a returned path should not contain. The algorithm will ignore
 	 * a path if it contains any node within it.
 	 * If set to null, this method will start using {@link INode#getChildren()} to build a directed path.
+	 * @param maxRoutes : maximum number of routes to obtain.
 	 * @return : a set of all path from "from" to "to". The path is represented as a list containing all
 	 * nodes included in the path. Since it is a list, it stores the visit order as well.
 	 */
-	public Set<List<INode>> getRoutes(INode from, INode to, Map<INode, Set<INode>> closedAdjacentNodeMap, Set<INode> nodesNotToContain) {
-				
+	public Set<List<INode>> getRoutes(INode from, INode to, Map<INode, Set<INode>> closedAdjacentNodeMap, Set<INode> nodesNotToContain, int maxRoutes) {
+		Set<INode> singleSet = new HashSet<INode>(1);
+		singleSet.add(to);
+		return this.getRoutes(from, singleSet, closedAdjacentNodeMap, nodesNotToContain, maxRoutes);
+	}
+	
+	
+	/**
+	 * Obtains a set of path/routes between two nodes, including themselves.
+	 * Cycles are not counted as new routes.
+	 * @param from : a node to start from
+	 * @param setTo : a set of possible destination node. A returning path will contain (only) one node within setTo at the end of path.
+	 * @param closedAdjacentNodeMap : a map indicating all node's adjacency. 
+	 * @param nodesNotToContain : nodes that a returned path should not contain. The algorithm will ignore
+	 * a path if it contains any node within it.
+	 * If set to null, this method will start using {@link INode#getChildren()} to build a directed path.
+	 * @param maxRoutes : maximum number of routes to obtain.
+	 * @return : a set of all path from "from" to "to". The path is represented as a list containing all
+	 * nodes included in the path. Since it is a list, it stores the visit order as well.
+	 */
+	public Set<List<INode>> getRoutes(INode from, Set<INode> setTo, Map<INode, Set<INode>> closedAdjacentNodeMap, Set<INode> nodesNotToContain, int maxRoutes) {
+		
+		
+		
 		// treating special case: auto-relationship ("from" is adjacent to itself and from == to)
-		if (from.equals(to)) {
+		if (setTo.contains(from)) {
+			throw new RuntimeException("from == to");
 			
-			Set<List<INode>> ret = new HashSet<List<INode>>();	// returning set
-			
-			// initialize the set of adjacent nodes
-			Set<INode> adjacentSet = null;
-			if (closedAdjacentNodeMap != null) {
-				// if we have a pre-defined adjacency map, use it
-				adjacentSet = closedAdjacentNodeMap.get(from);
-			} else {
-				// since we don't have an adjacency map, assume as a directed graph (use only children).
-				adjacentSet = new HashSet<INode>(from.getChildNodes());
-			}
-			
-			// if "from" was adjacent to itself, we shall consider from -> from a correct path
-			if (adjacentSet.contains(to)) {
-				List<INode> autoRelationPath = new ArrayList<INode>();
-				autoRelationPath.add(from);
-				autoRelationPath.add(to);				
-				ret.add(autoRelationPath);
-			} else {
-				// just return an empty set below
-			}
-			
-			return ret;	// we shall not start recursive call when from == to, ever.
+//			Set<List<INode>> ret = new HashSet<List<INode>>();	// returning set		
+//			// initialize the set of adjacent nodes
+//			Set<INode> adjacentSet = null;
+//			if (closedAdjacentNodeMap != null) {
+//				// if we have a pre-defined adjacency map, use it
+//				adjacentSet = closedAdjacentNodeMap.get(from);
+//			} else {
+//				// since we don't have an adjacency map, assume as a directed graph (use only children).
+//				adjacentSet = new HashSet<INode>(from.getChildNodes());
+//			}
+//			
+//			// if "from" was adjacent to itself, we shall consider from -> from a correct path
+//			if (adjacentSet.contains(from)) {
+//				List<INode> autoRelationPath = new ArrayList<INode>();
+//				autoRelationPath.add(from);
+//				autoRelationPath.add(from);				
+//				ret.add(autoRelationPath);
+//			} else {
+//				// just return an empty set below
+//			}
 		}
 		
 		// the method should not throw null pointer exception because of nodes to be ignored
@@ -256,7 +317,7 @@ public class MSeparationUtility implements IDSeparationUtility {
 		}
 		
 		// normal case: recursive call considering the "current path" as a empty list of nodes
-		return this.getRoutesRec(from, to, closedAdjacentNodeMap, new ArrayList<INode>(), nodesNotToContain);		
+		return this.getRoutesRec(from, setTo, closedAdjacentNodeMap, new ArrayList<INode>(), nodesNotToContain, maxRoutes, new HashSet<INode>());
 	}
 	
 	
@@ -273,7 +334,7 @@ public class MSeparationUtility implements IDSeparationUtility {
 	 * nodes included in the path. Since it is a list, it stores the visit order as well.
 	 */
 	public Set<List<INode>> getRoutes(INode from, INode to, Map<INode, Set<INode>> closedAdjacentNodeMap) {
-		return this.getRoutes(from, to, closedAdjacentNodeMap, null);
+		return this.getRoutes(from, to, closedAdjacentNodeMap, null, Integer.MAX_VALUE);
 	}
 	
 	/**
@@ -288,7 +349,7 @@ public class MSeparationUtility implements IDSeparationUtility {
 	 * @see #getRoutes(INode, INode, Map)
 	 */
 	public Set<List<INode>> getRoutes (INode from, INode to) {
-		return this.getRoutes(from, to, null, null);
+		return this.getRoutes(from, to, null, null, Integer.MAX_VALUE);
 	}
 	
 	
@@ -353,7 +414,7 @@ public class MSeparationUtility implements IDSeparationUtility {
 	 * @param separators : set of separators.
 	 * @return : true if "from" is m-separated with "to" given "separators". False otherwise.
 	 */
-	public boolean isDSeparated(Graph graph, Set<INode> from, Set<INode> to, Set<INode> separators) {
+	public boolean isDSeparated(Set<INode> consideredNodes, Set<INode> from, Set<INode> to, Set<INode> separators) {
 		
 		// initial check
 		if (from.isEmpty()) {
@@ -383,15 +444,62 @@ public class MSeparationUtility implements IDSeparationUtility {
 		// step 4 - if each path between "from" and "to" are blocked by any "separator", the graph is m-separated
 		// TODO optimize this, since this is becoming a very heavy procedure...
 		for (INode nodeFrom : from) {
-			for (INode nodeTo : to) {
-				if (this.getRoutes(nodeFrom, nodeTo, mapRepresentingNonOrientedGraph, separators).size() > 0) {
-					return false;
-				}
+			if (this.getRoutes(nodeFrom, to, mapRepresentingNonOrientedGraph, separators, 1).size() > 0) {
+				return false;
 			}
 		}
 		
 		// all paths between "from" and "to" are blocked by "separators", so, it is m-separated
 		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.dseparation.IDSeparationUtility#getAllDSeparatedNodes(java.util.Set, java.util.Set, java.util.Set)
+	 */
+	public Set<INode> getAllDSeparatedNodes(Set<INode> consideredNodes,
+			Set<INode> from, Set<INode> separators) {
+		
+		Set<INode> ret = new HashSet<INode>();
+		
+		// initial check
+		if (from.isEmpty()) {
+			return ret;
+		}
+		if (consideredNodes.isEmpty()) {
+			return ret;
+		}
+		
+		// start m-separation algorithm
+		
+		// step 1 - use only nodes within "from", "consideredNodes", "separators" and their ancestors.
+		Set<INode> usedNodes = new HashSet<INode>();	// we assume a Set will prevent adding same nodes
+		usedNodes.addAll(from);
+		usedNodes.addAll(consideredNodes);
+		usedNodes.addAll(separators);
+		usedNodes.addAll(this.getAllAncestors(from));
+		usedNodes.addAll(this.getAllAncestors(consideredNodes));
+		usedNodes.addAll(this.getAllAncestors(separators));
+		
+		// step 2 & 3 - create a non-oriented representation of this graph (containing only usedNodes)
+		Map<INode, Set<INode>> mapRepresentingNonOrientedGraph = this.buildClosedAdjacentNodeMap(usedNodes);
+		
+		// step 2 & 3 - make it moral: propose parents' marriage...
+		mapRepresentingNonOrientedGraph = this.makeItMoral(mapRepresentingNonOrientedGraph);
+		
+		// it is obvious that there is no self-d-separation, so, lets remove from and separators from consideredNodes
+		consideredNodes.removeAll(from);
+		consideredNodes.removeAll(separators);
+		
+		// step 4 - if there is no path from the considered node to "from", not-blocked by separator, 
+		// the considered node is m-separated from "from"
+		for (INode consideredNode : consideredNodes) {
+			if (this.getRoutes(consideredNode, from, mapRepresentingNonOrientedGraph, separators, 1).size() <= 0) {
+				ret.add(consideredNode);
+			}
+		}
+		
+		return ret;
 	}
 	
 	

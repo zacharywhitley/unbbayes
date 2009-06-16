@@ -12,6 +12,7 @@ import unbbayes.prs.INode;
 import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBN;
 import unbbayes.prs.mebn.ssbn.pruner.IPruner;
+import unbbayes.util.Debug;
 import unbbayes.util.dseparation.impl.MSeparationUtility;
 
 /**
@@ -58,6 +59,7 @@ public class BarrenNodePruner implements IPruner {
 		
 		for (INode node : ssbn.getSimpleSsbnNodeList()) {
 			if (!ancestors.contains(node)) {
+				Debug.println(this.getClass(), "Removing node: " + node.toString());
 				nodesToRemove.add(node);
 			}
 		}
