@@ -165,6 +165,10 @@ public class MFragInstance {
 		
 	}
 	
+	/**
+	 * Return all ov instances for the ordinary variable. If don't have ov instances
+	 * return a empty list. 
+	 */
 	public List<OVInstance> getOVInstanceListForOrdinaryVariable(OrdinaryVariable ov){
 		
 		return entityTree.getOVInstanceListForOrdinaryVariable(ov); 

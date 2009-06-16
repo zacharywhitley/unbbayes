@@ -193,7 +193,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		evaluateNodeInMFragInstance(mFragInstance, ssbnNode);
 		ssbn.getLogManager().appendln("Create the nodes of MFrag finished");		
 		
-		ssbn.getLogManager().appendSectionTitle("-> Evaluate MFragInstance" + mFragInstance + " finished. \n");
+		ssbn.getLogManager().appendSectionTitle("-> Evaluate MFragInstance " + mFragInstance + " finished. \n");
 		
 		
 	}	
@@ -705,6 +705,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		//Consider that the only ordinary variables filled are the alread know OV
 		List<OVInstance> ovInstances = mFragInstance.getOVInstanceList(); 
 		
+		ssbn.getLogManager().appendln("1) Loop for evaluate context nodes."); 
 		for(ContextNode contextNode: mFragInstance.getContextNodeList()){
 			
 			ssbn.getLogManager().appendln(1, "Context Node: " + contextNode);
@@ -747,7 +748,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 //						}
 //						System.out.println("");
 //					}
-//					
+					
 					//Result valid results: Add the result to the tree of result.
 					try {
 
@@ -832,6 +833,46 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			}
 			
 		}
+		
+		
+		ssbn.getLogManager().appendln("2) Loop for evaluate the IsA nodes"); 
+		
+		//Return a list of ordinary variables of the MFrag that don't are evaluated yet. 
+		List<OrdinaryVariable> ovDontFoundYetList = new ArrayList<OrdinaryVariable>(); 
+		for(OrdinaryVariable ov: mFragInstance.getMFragOrigin().getOrdinaryVariableList()){
+			if(mFragInstance.getOVInstanceListForOrdinaryVariable(ov).size() == 0){
+				ovDontFoundYetList.add(ov);
+			}
+		}
+		
+		//Evaluate this ordinary variables
+		for(OrdinaryVariable ov: ovDontFoundYetList){
+			//no context node about this ov... the value is unknown, we should 
+			//consider all the possible values. Note the use of the Closed Word
+			//Asspetion. 
+			ssbn.getLogManager().appendln("Evaluate IsA for OV " + ov.getName());
+			
+			List<String> possibleValues = kb.getEntityByType(ov.getValueType().getName()); 
+			
+			for(String possibleValue: possibleValues){
+				ssbn.getLogManager().appendln("  > " + possibleValue);
+			}
+			
+			String possibleValuesArray[] = possibleValues.toArray(new String[possibleValues.size()]); 
+			List<String[]> entityValuesArray = new ArrayList<String[]>(); 
+			entityValuesArray.add(possibleValuesArray); 
+				
+			OrdinaryVariable ovArray[] = new OrdinaryVariable[1];
+			ovArray[0] = ov; 
+			
+			try {
+				mFragInstance.addOVValuesCombination(ovArray, entityValuesArray);
+			} catch (MFragContextFailException e) {
+				e.printStackTrace(); 
+				mFragInstance.setUseDefaultDistribution(true); 
+			}
+		}
+		
 		
 		//Return mFragInstance with the ordinary variables filled. 
 		return mFragInstance; 

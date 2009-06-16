@@ -3,7 +3,7 @@ package unbbayes.prs.mebn.ssbn.laskeyalgorithm;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.INode;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -29,7 +29,6 @@ import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.prs.mebn.ssbn.pruner.IPruneStructure;
 import unbbayes.prs.mebn.ssbn.pruner.impl.PruneStructureImpl;
-import unbbayes.prs.mebn.ssbn.util.PositionAdjustmentUtils;
 import unbbayes.prs.mebn.ssbn.util.SSBNDebugInformationUtil;
 
 /**
@@ -80,9 +79,7 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 			
 			ssbn.getLogManager().appendln("Builder Structure Finished");
 			ssbn.getLogManager().appendln("List of nodes: "); 
-			for(SimpleSSBNNode node: ssbn.getSimpleSsbnNodeList()){
-				ssbn.getLogManager().appendln("   - " + node.toString());
-			}
+			printSimpleSSBNNodeList(ssbn); 
 			ssbn.getLogManager().appendln(""); 
 		}
 		
@@ -94,9 +91,7 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 			
 			ssbn.getLogManager().appendln("Prune Structure Finished");
 			ssbn.getLogManager().appendln("\nList of nodes: "); 
-			for(SimpleSSBNNode node: ssbn.getSimpleSsbnNodeList()){
-				ssbn.getLogManager().appendln("   - " + node.toString());
-			}
+			printSimpleSSBNNodeList(ssbn); 
 			ssbn.getLogManager().appendln(""); 
 		}
 		
@@ -111,6 +106,18 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		SSBNDebugInformationUtil.printAndSaveCurrentNetwork(ssbn); 
 		
 		return ssbn;
+	}
+
+	private void printSimpleSSBNNodeList(SSBN ssbn) {
+		for(SimpleSSBNNode node: ssbn.getSimpleSsbnNodeList()){
+			String parentIdList = " ";
+			for(INode nodeParent: node.getParentNodes()){
+			      parentIdList+= ((SimpleSSBNNode)nodeParent).getId() + " "; 
+			}
+			ssbn.getLogManager().appendln(
+					"   - " + node.toString() + " Parents = [" + parentIdList +"]");
+		}
+		ssbn.getLogManager().appendln("");
 	}
 	
 	//Initialization

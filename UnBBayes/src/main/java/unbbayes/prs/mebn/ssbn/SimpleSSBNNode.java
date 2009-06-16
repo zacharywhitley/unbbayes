@@ -418,6 +418,10 @@ public class SimpleSSBNNode implements INode {
 	public void setProbNode(ProbabilisticNode probNode) {
 		this.probNode = probNode;
 	}
+	
+	public int getId(){
+		return id; 
+	}
 
 	
 }

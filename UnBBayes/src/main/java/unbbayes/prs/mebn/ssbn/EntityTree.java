@@ -225,7 +225,8 @@ public class EntityTree{
 	}
 	
 	/**
-	 * Return all ov instances for the ordinary variable. 
+	 * Return all ov instances for the ordinary variable. If don't have ov instances
+	 * return a empty list. 
 	 */
 	public List<OVInstance> getOVInstanceListForOrdinaryVariable(OrdinaryVariable ov){
 		List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
