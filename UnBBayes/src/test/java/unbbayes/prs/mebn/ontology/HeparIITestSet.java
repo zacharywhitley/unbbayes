@@ -121,152 +121,152 @@ public class HeparIITestSet  extends TestSet{
 	public void executeTests(){
 		//Executing the test
 		
-		executeTestCase1(); 
-		executeTestCase2(); 
-		executeTestCase3(); 
-		executeTestCase4(); 
-		executeTestCase5(); 
-		executeTestCase6(); 
-		executeTestCase7(); 
-		executeTestCase8(); 
-		executeTestCase9(); 
-		executeTestCase10(); 
-		executeTestCase11(); 
-		executeTestCase12(); 
-		executeTestCase13(); 
-		executeTestCase14(); 
-		executeTestCase15(); 
-		executeTestCase16(); 
-		executeTestCase17(); 
-		
-		executeTestCase18(); 
-		executeTestCase19(); 
-		executeTestCase20(); 
-		executeTestCase21(); 
-		executeTestCase22(); 
-		executeTestCase23(); 
-		executeTestCase24(); 
-		executeTestCase25(); 
-		executeTestCase26(); 
-		executeTestCase27(); 
-		executeTestCase28(); 
-		
-		executeTestCase29(); 
-		executeTestCase30(); 
+//		executeTestCase1(); 
+//		executeTestCase2(); 
+//		executeTestCase3(); 
+//		executeTestCase4(); 
+//		executeTestCase5(); 
+//		executeTestCase6(); 
+//		executeTestCase7(); 
+//		executeTestCase8(); 
+//		executeTestCase9(); 
+//		executeTestCase10(); 
+//		executeTestCase11(); 
+//		executeTestCase12(); 
+//		executeTestCase13(); 
+//		executeTestCase14(); 
+//		executeTestCase15(); 
+//		executeTestCase16(); 
+//		executeTestCase17(); 
+//		
+//		executeTestCase18(); 
+//		executeTestCase19(); 
+//		executeTestCase20(); 
+//		executeTestCase21(); 
+//		executeTestCase22(); 
+//		executeTestCase23(); 
+//		executeTestCase24(); 
+//		executeTestCase25(); 
+//		executeTestCase26(); 
+//		executeTestCase27(); 
+//		executeTestCase28(); 
+//		
+//		executeTestCase29(); 
+//		executeTestCase30(); 
 		executeTestCase31(); 
-		executeTestCase32(); 
-		executeTestCase33(); 
-		executeTestCase34(); 
-		executeTestCase35(); 
-		executeTestCase36(); 
-		executeTestCase37(); 
-		
-		executeTestCase38(); 
-		executeTestCase39(); 
-		executeTestCase40(); 
-		executeTestCase41(); 
-		executeTestCase42(); 
-		executeTestCase43(); 
-		executeTestCase44(); 
-		executeTestCase45(); 
-		executeTestCase46(); 
-		executeTestCase47(); 
-		executeTestCase48(); 
-		executeTestCase49(); 
-		executeTestCase50(); 
-		executeTestCase51(); 
-		executeTestCase52(); 
-		executeTestCase53(); 
-		executeTestCase54(); 
-		executeTestCase55(); 
-		executeTestCase56(); 
-		executeTestCase57(); 
-		
-		executeTestCase58(); 
-		executeTestCase59(); 
-		executeTestCase60(); 
-		executeTestCase61(); 
-		executeTestCase62(); 
-		executeTestCase63(); 
-		executeTestCase64(); 
-		executeTestCase65(); 
-		executeTestCase66(); 
-		executeTestCase67(); 
-		executeTestCase68(); 
-		executeTestCase69(); 
-		executeTestCase70(); 
-		executeTestCase71(); 
-		executeTestCase72(); 
-		executeTestCase73(); 
-		executeTestCase74(); 
-		executeTestCase75(); 
-		executeTestCase76(); 
-		executeTestCase77(); 
-	
-		executeTestCase78(); 
-		executeTestCase79(); 
-		executeTestCase80(); 
-		executeTestCase81(); 
-		executeTestCase82(); 
-		executeTestCase83(); 
-		executeTestCase84(); 
-		executeTestCase85(); 
-		executeTestCase86(); 
-		executeTestCase87(); 
-		executeTestCase88(); 
-		executeTestCase89(); 
-		executeTestCase90(); 
-		executeTestCase91(); 
-		executeTestCase92(); 
-		executeTestCase93(); 
-		executeTestCase94(); 
-		executeTestCase95(); 
-		executeTestCase96(); 
-		executeTestCase97(); 
-		
-		executeTestCase98(); 
-		executeTestCase99(); 
-		executeTestCase100(); 
-		executeTestCase101(); 
-		executeTestCase102(); 
-		executeTestCase103(); 
-		executeTestCase104(); 
-		executeTestCase105(); 
-		executeTestCase106(); 
-		executeTestCase107(); 
-		executeTestCase108(); 
-		executeTestCase109(); 
-		executeTestCase110(); 
-		executeTestCase111(); 
-		executeTestCase112(); 
-		executeTestCase113(); 
-		executeTestCase114(); 
-		executeTestCase115(); 
-		executeTestCase116(); 
-		executeTestCase117(); 
-		
-		executeTestCase118(); 
-		executeTestCase119(); 
-		executeTestCase120(); 
-		executeTestCase121(); 
-		executeTestCase122(); 
-		executeTestCase123(); 
-		executeTestCase124(); 
-		executeTestCase125(); 
-		executeTestCase126(); 
-		executeTestCase127(); 
-		executeTestCase128(); 
-		executeTestCase129(); 
-		executeTestCase130(); 
-		executeTestCase131(); 
-		executeTestCase132(); 
-		executeTestCase133(); 
-		executeTestCase134(); 
-		executeTestCase135(); 
-		executeTestCase136(); 
-		executeTestCase137(); 
-		executeTestCase138(); 
-		executeTestCase139(); 
+//		executeTestCase32(); 
+//		executeTestCase33(); 
+//		executeTestCase34(); 
+//		executeTestCase35(); 
+//		executeTestCase36(); 
+//		executeTestCase37(); 
+//		
+//		executeTestCase38(); 
+//		executeTestCase39(); 
+//		executeTestCase40(); 
+//		executeTestCase41(); 
+//		executeTestCase42(); 
+//		executeTestCase43(); 
+//		executeTestCase44(); 
+//		executeTestCase45(); 
+//		executeTestCase46(); 
+//		executeTestCase47(); 
+//		executeTestCase48(); 
+//		executeTestCase49(); 
+//		executeTestCase50(); 
+//		executeTestCase51(); 
+//		executeTestCase52(); 
+//		executeTestCase53(); 
+//		executeTestCase54(); 
+//		executeTestCase55(); 
+//		executeTestCase56(); 
+//		executeTestCase57(); 
+//		
+//		executeTestCase58(); 
+//		executeTestCase59(); 
+//		executeTestCase60(); 
+//		executeTestCase61(); 
+//		executeTestCase62(); 
+//		executeTestCase63(); 
+//		executeTestCase64(); 
+//		executeTestCase65(); 
+//		executeTestCase66(); 
+//		executeTestCase67(); 
+//		executeTestCase68(); 
+//		executeTestCase69(); 
+//		executeTestCase70(); 
+//		executeTestCase71(); 
+//		executeTestCase72(); 
+//		executeTestCase73(); 
+//		executeTestCase74(); 
+//		executeTestCase75(); 
+//		executeTestCase76(); 
+//		executeTestCase77(); 
+//	
+//		executeTestCase78(); 
+//		executeTestCase79(); 
+//		executeTestCase80(); 
+//		executeTestCase81(); 
+//		executeTestCase82(); 
+//		executeTestCase83(); 
+//		executeTestCase84(); 
+//		executeTestCase85(); 
+//		executeTestCase86(); 
+//		executeTestCase87(); 
+//		executeTestCase88(); 
+//		executeTestCase89(); 
+//		executeTestCase90(); 
+//		executeTestCase91(); 
+//		executeTestCase92(); 
+//		executeTestCase93(); 
+//		executeTestCase94(); 
+//		executeTestCase95(); 
+//		executeTestCase96(); 
+//		executeTestCase97(); 
+//		
+//		executeTestCase98(); 
+//		executeTestCase99(); 
+//		executeTestCase100(); 
+//		executeTestCase101(); 
+//		executeTestCase102(); 
+//		executeTestCase103(); 
+//		executeTestCase104(); 
+//		executeTestCase105(); 
+//		executeTestCase106(); 
+//		executeTestCase107(); 
+//		executeTestCase108(); 
+//		executeTestCase109(); 
+//		executeTestCase110(); 
+//		executeTestCase111(); 
+//		executeTestCase112(); 
+//		executeTestCase113(); 
+//		executeTestCase114(); 
+//		executeTestCase115(); 
+//		executeTestCase116(); 
+//		executeTestCase117(); 
+//		
+//		executeTestCase118(); 
+//		executeTestCase119(); 
+//		executeTestCase120(); 
+//		executeTestCase121(); 
+//		executeTestCase122(); 
+//		executeTestCase123(); 
+//		executeTestCase124(); 
+//		executeTestCase125(); 
+//		executeTestCase126(); 
+//		executeTestCase127(); 
+//		executeTestCase128(); 
+//		executeTestCase129(); 
+//		executeTestCase130(); 
+//		executeTestCase131(); 
+//		executeTestCase132(); 
+//		executeTestCase133(); 
+//		executeTestCase134(); 
+//		executeTestCase135(); 
+//		executeTestCase136(); 
+//		executeTestCase137(); 
+//		executeTestCase138(); 
+//		executeTestCase139(); 
 	}
 	
 	/**
@@ -643,7 +643,7 @@ public class HeparIITestSet  extends TestSet{
 	public void executeTestCase31(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
-					createFinding(RV_TotalBilirubin + "_MFrag", RV_TotalBilirubin, "a88_20")
+					createFinding(RV_TotalBilirubin + "_MFrag", RV_TotalBilirubin, "a8820")
 			}; 
 
 			executeTestCase(31, RV_FunctionalHyperbilirubinemia,  RV_FunctionalHyperbilirubinemia + "_MFrag", findings); 
@@ -699,7 +699,7 @@ public class HeparIITestSet  extends TestSet{
 	public void executeTestCase35(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
-					createFinding(RV_TotalBilirubin + "_MFrag", RV_TotalBilirubin, "a88_20"),
+					createFinding(RV_TotalBilirubin + "_MFrag", RV_TotalBilirubin, "a8820"),
 					createFinding(RV_INR + "_MFrag", RV_INR, "a200_110")
 			}; 
 
@@ -2065,7 +2065,7 @@ public class HeparIITestSet  extends TestSet{
 	private void executeTestCase124(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
-					createFinding(RV_TotalBilirubin + "_MFrag", RV_TotalBilirubin, "a88_20"), 
+					createFinding(RV_TotalBilirubin + "_MFrag", RV_TotalBilirubin, "a8820"), 
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
@@ -2081,7 +2081,7 @@ public class HeparIITestSet  extends TestSet{
 	private void executeTestCase125(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
-					createFinding(RV_TotalBilirubin + "_MFrag", RV_TotalBilirubin, "a88_20"), 
+					createFinding(RV_TotalBilirubin + "_MFrag", RV_TotalBilirubin, "a8820"), 
 					createFinding(RV_AGE + "_MFrag", RV_AGE, "age65_100"), 
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
@@ -2098,7 +2098,7 @@ public class HeparIITestSet  extends TestSet{
 	private void executeTestCase126(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
-					createFinding(RV_TotalBilirubin + "_MFrag", RV_TotalBilirubin, "a88_20"), 
+					createFinding(RV_TotalBilirubin + "_MFrag", RV_TotalBilirubin, "a8820"), 
 					createFinding(RV_INR + "_MFrag", RV_INR, "a200_110"), 
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
@@ -2115,7 +2115,7 @@ public class HeparIITestSet  extends TestSet{
 	private void executeTestCase127(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
-					createFinding(RV_TotalBilirubin + "_MFrag", RV_TotalBilirubin, "a88_20"), 
+					createFinding(RV_TotalBilirubin + "_MFrag", RV_TotalBilirubin, "a8820"), 
 					createFinding(RV_INR + "_MFrag", RV_INR, "a200_110"), 
 					createFinding(RV_AGE + "_MFrag", RV_AGE, "age65_100"), 
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
@@ -2132,7 +2132,7 @@ public class HeparIITestSet  extends TestSet{
 	private void executeTestCase128(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
-					createFinding(RV_TotalBilirubin + "_MFrag", RV_TotalBilirubin, "a88_20"), 
+					createFinding(RV_TotalBilirubin + "_MFrag", RV_TotalBilirubin, "a8820"), 
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
 
@@ -2147,7 +2147,7 @@ public class HeparIITestSet  extends TestSet{
 	private void executeTestCase129(){
 		try{
 			RandomVariableFinding findings[] = new RandomVariableFinding[]{
-					createFinding(RV_TotalBilirubin + "_MFrag", RV_TotalBilirubin, "a88_20"), 
+					createFinding(RV_TotalBilirubin + "_MFrag", RV_TotalBilirubin, "a8820"), 
 					createFinding(RV_AGE + "_MFrag", RV_AGE, "age65_100"), 
 					createBooleanFinding(RV_Sex + "_MFrag", RV_Sex, true)
 					}; 
