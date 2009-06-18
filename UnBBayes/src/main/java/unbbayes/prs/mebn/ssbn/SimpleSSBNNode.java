@@ -82,6 +82,7 @@ public class SimpleSSBNNode implements INode {
 	 * 
 	 * 1. It referes to the same Resident Node. 
 	 * 2. The instanciated entity for each ordinary variable are the same. 
+	 *
 	 */
 	@Override
 	public boolean equals(Object obj) {

@@ -55,13 +55,6 @@ public class SimpleSSBNNodeUtils {
 		
 		for(SimpleSSBNNode simple: simpleSSBNNodeList){
 			
-			//A simple extraction of barren nodes.... 
-			if(simple.getParents().size()==0){
-				if(simple.getChildNodes().size()==0){
-					continue; //This node is out of the network. 
-				}
-			}
-			
 			SSBNNode ssbnNode = SSBNNode.getInstance(pn, simple.getResidentNode()); 
 			correspondencyMap.put(simple, ssbnNode);
 			listSSBNNodes.add(ssbnNode); 

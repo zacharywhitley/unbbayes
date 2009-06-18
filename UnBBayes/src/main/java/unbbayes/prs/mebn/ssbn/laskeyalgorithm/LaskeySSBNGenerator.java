@@ -182,11 +182,11 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 						for(OVInstance argument : ovInstanceList){
 							ssbnNode.setEntityForOv(argument.getOv(), argument.getEntity()); 	
 						}
+						ssbnNode = ssbn.addSSBNNodeIfItDontAdded(ssbnNode); 
 
 						ssbnNode.setState(finding.getState()); 
 						ssbnNode.setFinished(false); 
-
-						ssbn.addSSBNNodeIfItDontAdded(ssbnNode); 
+						
 						ssbn.addFindingToTheFindingList(ssbnNode); 
 					}
 				}

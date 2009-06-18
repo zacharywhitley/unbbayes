@@ -251,7 +251,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			node.setState(exactValue.getState());
 			ssbn.addFindingToTheFindingList(node); 
 			
-			ssbn.getLogManager().appendln("Node" + node + 
+			ssbn.getLogManager().appendln("Node " + node + 
 					" setted how a finding. Exact Value = " + exactValue.getState());
 			
 		}
