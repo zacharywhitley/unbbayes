@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import unbbayes.prs.INode;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.ContextNode;
@@ -158,6 +159,103 @@ public class SimpleSSBNNodeUtils {
 		}
 		
 		return listSSBNNodes; 
+	}
+	
+	/**
+	 * The objective of this method is separete desconected networks in singles
+	 * networks. The argument is a list of nodes that have its relations by the 
+	 * parents atributes. From this relations, the nodes are separated in singles 
+	 * networks where if two nodes have a edge between its, its are in the 
+	 * same single network. 
+	 * 
+	 * @param simpleSSBNNodeList List contain the SimpleSSBNNodes 
+	 * @return A list of lists of ssbn nodes, where each of this list are a 
+	 *         single conected network. 
+	 */
+	public static List<SimpleSSBNNode>[] individualizeDesconectedNetworks(
+			List<SimpleSSBNNode> simpleSSBNNodeList){
+		
+		List<SimpleSSBNNodeNetworkAssociation> nodeNetAssociationList = 
+			new ArrayList<SimpleSSBNNodeNetworkAssociation>(); 
+		
+		for(SimpleSSBNNode simpleSSBNNode: simpleSSBNNodeList){
+			SimpleSSBNNodeNetworkAssociation nodeNetAssociation = 
+				new SimpleSSBNNodeNetworkAssociation(simpleSSBNNode); 
+			nodeNetAssociationList.add(nodeNetAssociation); 
+		}
+		
+		int nextNetworkId = 0; 
+		
+		for(SimpleSSBNNodeNetworkAssociation nodeNetAssociation: nodeNetAssociationList){
+			
+			if(nodeNetAssociation.getNetworkId() == -1){
+				nodeNetAssociation.setNetworkId(nextNetworkId); 
+				nextNetworkId++; 
+				setNetIdToAdjacentNodes(nodeNetAssociation, nodeNetAssociationList); 
+			}
+			
+		}
+		
+		List<SimpleSSBNNode>[] nodesPerNetworkArray = new List[nextNetworkId]; 
+		
+		for(int i = 0; i < nodesPerNetworkArray.length; i++){
+			nodesPerNetworkArray[i] = new ArrayList<SimpleSSBNNode>(); 
+		}
+		
+		for(SimpleSSBNNodeNetworkAssociation nodeNetAssociation: nodeNetAssociationList){
+			nodesPerNetworkArray[nodeNetAssociation.getNetworkId()].add(nodeNetAssociation.getNode()); 
+		}
+		
+		return nodesPerNetworkArray; 
+	}
+	
+	//Recursive... 
+	private static void setNetIdToAdjacentNodes(SimpleSSBNNodeNetworkAssociation nodeNetAssociation, 
+			List<SimpleSSBNNodeNetworkAssociation> nodeNetAssociationList){
+		
+		for(SimpleSSBNNode parentNode: nodeNetAssociation.getNode().getParents()){
+			for(SimpleSSBNNodeNetworkAssociation nodeParentTest: nodeNetAssociationList){
+				if(parentNode == nodeParentTest.getNode()){
+					if(nodeParentTest.getNetworkId() == -1){
+						nodeParentTest.setNetworkId(nodeNetAssociation.getNetworkId()); 
+						setNetIdToAdjacentNodes(nodeParentTest, nodeNetAssociationList);
+					}
+				}
+			}
+		}
+		
+		for(INode parentNode: nodeNetAssociation.getNode().getChildNodes()){
+			for(SimpleSSBNNodeNetworkAssociation nodeParentTest: nodeNetAssociationList){
+				if(parentNode == nodeParentTest.getNode()){
+					if(nodeParentTest.getNetworkId() == -1){
+						nodeParentTest.setNetworkId(nodeNetAssociation.getNetworkId()); 
+						setNetIdToAdjacentNodes(nodeParentTest, nodeNetAssociationList); 
+					}
+				}
+			}
+		}
+		
+	}
+	
+	private static class SimpleSSBNNodeNetworkAssociation{
+		final SimpleSSBNNode node; 
+		int networkId = -1; 
+		
+		SimpleSSBNNodeNetworkAssociation(SimpleSSBNNode _node){
+			node = _node; 
+		}
+		
+		int getNetworkId(){
+			return networkId; 
+		}
+		
+		SimpleSSBNNode getNode(){
+			return node; 
+		}
+		
+		void setNetworkId(int _networkId){
+			this.networkId = _networkId; 
+		}
 	}
 	
 	

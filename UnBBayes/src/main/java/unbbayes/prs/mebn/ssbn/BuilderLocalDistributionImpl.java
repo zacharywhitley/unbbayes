@@ -27,10 +27,42 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 		ProbabilisticNetwork pn; 
 		
 		try {
+			//Here only one probabilistic network are created... The fix should be
+			//here, creating multiples pn's. 
+			ssbn.getLogManager().appendln("\n[1] Separing the desconected networks"); 
+			List<SimpleSSBNNode>[] nodesPerNetworkArray = SimpleSSBNNodeUtils.individualizeDesconectedNetworks(ssbn.getSimpleSsbnNodeList()); 
+			int netId = 0; 
+			for(List<SimpleSSBNNode> networkNodesList: nodesPerNetworkArray){
+				ssbn.getLogManager().appendln("Network " + netId + ":"); netId++; 
+				for(SimpleSSBNNode node: networkNodesList){
+					ssbn.getLogManager().appendln(" >" + node);
+				}
+			}
+			
+			SimpleSSBNNode nodeOfQuery = ssbn.getQueryList().get(0).getSSBNNode(); 
+			List<SimpleSSBNNode> listForQuery = null; 
+			
+			for(List<SimpleSSBNNode> networkNodesList: nodesPerNetworkArray){
+				for(SimpleSSBNNode node: networkNodesList){
+					if(node.equals(nodeOfQuery)){
+						listForQuery = networkNodesList; 
+						break; 
+					}
+				}
+			}
+			
+			
+			ssbn.getLogManager().appendln("\n[2] Genering the network"); 
 			pn =  new ProbabilisticNetwork(this.resource.getString("DefaultNetworkName"));
-			List<SSBNNode> listSSBNNode = SimpleSSBNNodeUtils.translateSimpleSSBNNodeListToSSBNNodeList(ssbn.getSimpleSsbnNodeList(), pn);
-		    ssbn.setSsbnNodeList(listSSBNNode); 
-			ssbn.setProbabilisticNetwork(pn); 
+			if(listForQuery!=null){
+				List<SSBNNode> listSSBNNode = SimpleSSBNNodeUtils.translateSimpleSSBNNodeListToSSBNNodeList(listForQuery, pn);
+			    ssbn.setSsbnNodeList(listSSBNNode); 
+				ssbn.setProbabilisticNetwork(pn); 
+			}else{
+				List<SSBNNode> listSSBNNode = SimpleSSBNNodeUtils.translateSimpleSSBNNodeListToSSBNNodeList(ssbn.getSimpleSsbnNodeList(), pn);
+			    ssbn.setSsbnNodeList(listSSBNNode); 
+				ssbn.setProbabilisticNetwork(pn); 
+			}
 		} catch (SSBNNodeGeneralException e) {
 			e.printStackTrace();
 			throw e; 
@@ -40,7 +72,7 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 			throw new RuntimeException(e.getMessage()); 
 		} 
 		
-		ssbn.getLogManager().appendln("Simple Nodes translated to SSBNNodes"); 
+		ssbn.getLogManager().appendln("\nSimple Nodes translated to SSBNNodes"); 
 		
 	    CPTForSSBNNodeGenerator build = new CPTForSSBNNodeGenerator(ssbn.getLogManager());
 	    
