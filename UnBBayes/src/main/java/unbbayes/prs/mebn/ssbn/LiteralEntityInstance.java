@@ -77,7 +77,7 @@ public class LiteralEntityInstance {
 		
 		if((obj != null)&&(obj instanceof LiteralEntityInstance)){
 			LiteralEntityInstance entityInstance = (LiteralEntityInstance) obj;
-		   return ((entityInstance.getInstanceName().equals(this.getInstanceName())) &&
+		   return ((entityInstance.getInstanceName().equalsIgnoreCase(this.getInstanceName())) && //The knowledge information is upper case
 		            (entityInstance.getType().equals(this.getType())));
 		}else{
 			return false; //obj == null && this != null 
