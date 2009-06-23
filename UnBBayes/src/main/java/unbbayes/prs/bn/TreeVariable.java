@@ -142,24 +142,24 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
 		if (evidence != -1) {						
 			PotentialTable auxTab = cliqueAssociado.getPotentialTable();
 			int index = auxTab.indexOfVariable(this);
-			auxTab.calcularFatores();
+			auxTab.computeFactors();
 			updateRecursive(auxTab, 0, 0, index, 0);			
 		}
 	}
 	
 	private void updateRecursive(PotentialTable tab, int c, int linear, int index, int state) {
-    	if (c >= tab.variaveis.size()) {
-    		tab.dados.data[linear] *= marginalList[state];
+    	if (c >= tab.variableList.size()) {
+    		tab.dataPT.data[linear] *= marginalList[state];
     		return;    		    		
     	}
     	
     	if (index == c) {
-    		for (int i = tab.variaveis.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
-	    		updateRecursive(tab, c+1, linear + i*tab.fatores[c] , index, i);
+    		for (int i = tab.variableList.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
+	    		updateRecursive(tab, c+1, linear + i*tab.factorsPT[c] , index, i);
     		}
     	} else {
-	    	for (int i = tab.variaveis.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
-	    		updateRecursive(tab, c+1, linear + i*tab.fatores[c] , index, state);
+	    	for (int i = tab.variableList.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
+	    		updateRecursive(tab, c+1, linear + i*tab.factorsPT[c] , index, state);
     		}
     	}
     }

@@ -46,18 +46,18 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 	 *@param  variavel  Variavel a ser retirada da tabela.
 	 */
 	public void removeVariable(Node variavel) {
-		calcularFatores();
-		int index = variaveis.indexOf(variavel);
+		computeFactors();
+		int index = variableList.indexOf(variavel);
 		if (variavel.getType() == Node.DECISION_NODE_TYPE) {
 			DecisionNode decision = (DecisionNode) variavel;
 			int statesSize = variavel.getStatesSize();
 			if (decision.hasEvidence()) {
-				finding(variaveis.size()-1, index, new int[variaveis.size()], decision.getEvidence());
+				finding(variableList.size()-1, index, new int[variableList.size()], decision.getEvidence());
 			} else {
 //				sum(variaveis.size()-1, index, 0, 0);
 				sum(index);
-				for (int i = dados.size-1; i >= 0; i--) {
-					dados.data[i] = dados.data[i] / statesSize;
+				for (int i = dataPT.size-1; i >= 0; i--) {
+					dataPT.data[i] = dataPT.data[i] / statesSize;
 				}
 			}
 		} else {
@@ -65,7 +65,7 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 		  sum(index);
 		}
 		variableModified();
-		variaveis.remove(index);
+		variableList.remove(index);
 	}
 
 	/**
@@ -78,30 +78,30 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 	 * @param normalize True if is to normalize the cpt after the node remotion
 	 */	
 	public void removeVariable(Node variable, boolean normalize){
-		calcularFatores();
-		int index = variaveis.indexOf(variable);
+		computeFactors();
+		int index = variableList.indexOf(variable);
 		if (variable.getType() == Node.DECISION_NODE_TYPE) {
 			DecisionNode decision = (DecisionNode) variable;
 			int statesSize = variable.getStatesSize();
 			if (decision.hasEvidence()) {
-				finding(variaveis.size()-1, index, new int[variaveis.size()], decision.getEvidence());
+				finding(variableList.size()-1, index, new int[variableList.size()], decision.getEvidence());
 			} else {
 				sum(index);
-				for (int i = dados.size-1; i >= 0; i--) {
-					dados.data[i] = dados.data[i] / statesSize;
+				for (int i = dataPT.size-1; i >= 0; i--) {
+					dataPT.data[i] = dataPT.data[i] / statesSize;
 				}
 			}
 		} else {
 			sum(index);
 			if(normalize){
 				int statesSize = variable.getStatesSize();
-				for (int i = dados.size-1; i >= 0; i--) {
-					dados.data[i] = dados.data[i] / statesSize;
+				for (int i = dataPT.size-1; i >= 0; i--) {
+					dataPT.data[i] = dataPT.data[i] / statesSize;
 				}
 			}
 		}
 		variableModified();
-		variaveis.remove(index);
+		variableList.remove(index);
 	}
 	
 	/**
@@ -111,7 +111,7 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 	 *				   qualquer configura��o de estados dos pais.
 	 */
 	public void verifyConsistency() throws Exception {
-		Node auxNo = variaveis.get(0);
+		Node auxNo = variableList.get(0);
 		int noLin = auxNo.getStatesSize();
 
 		/* Check if the node represents a numeric attribute */
@@ -124,9 +124,9 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 		}
 		
 		int noCol = 1;
-		int sizeVariaveis = variaveis.size();
+		int sizeVariaveis = variableList.size();
 		for (int k = 1; k < sizeVariaveis; k++) {
-			auxNo = variaveis.get(k);
+			auxNo = variableList.get(k);
 			noCol *= auxNo.getStatesSize();
 		}
 
@@ -134,11 +134,11 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 		for (int j = 0; j < noCol; j++) {
 			soma = 0;
 			for (int i = 0; i < noLin; i++) {
-				soma += dados.data[j * noLin + i] * 100;
+				soma += dataPT.data[j * noLin + i] * 100;
 			}
 
 			if (Math.abs(soma - 100.0) > 0.01) {
-				throw new Exception(resource.getString("variableTableName") + variaveis.get(0) + resource.getString("inconsistencyName") + soma + "%\n");
+				throw new Exception(resource.getString("variableTableName") + variableList.get(0) + resource.getString("inconsistencyName") + soma + "%\n");
 			}
 		}
 	}

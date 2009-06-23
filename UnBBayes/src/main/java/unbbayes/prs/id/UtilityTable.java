@@ -49,21 +49,21 @@ public class UtilityTable extends PotentialTable implements java.io.Serializable
      *@param  variavel  Variavel a ser retirada da tabela.
      */
     public void removeVariable(Node variavel) {
-    	calcularFatores();
-        int index = variaveis.indexOf(variavel);
+    	computeFactors();
+        int index = variableList.indexOf(variavel);
         if (variavel.getType() == Node.PROBABILISTIC_NODE_TYPE) {
 //			sum(variaveis.size()-1, index, 0, 0);			
 			sum(index);
         } else {        	
             DecisionNode decision = (DecisionNode) variavel;
             if (decision.hasEvidence()) {
-                finding(variaveis.size()-1, index, new int[variaveis.size()], decision.getEvidence());
+                finding(variableList.size()-1, index, new int[variableList.size()], decision.getEvidence());
             } else {
-                argMax(variaveis.size()-1, index, new int[variaveis.size()]);
+                argMax(variableList.size()-1, index, new int[variableList.size()]);
             }
         }
         variableModified();
-        variaveis.remove(index);
+        variableList.remove(index);
     }
 
 	@Override
@@ -74,15 +74,15 @@ public class UtilityTable extends PotentialTable implements java.io.Serializable
     protected void argMax(int control, int index, int coord[]) {
         if (control == -1) {
             int linearCoordToKill = getLinearCoord(coord);
-            int linearCoordDestination = linearCoordToKill - coord[index]*fatores[index];
-            float value = Math.max(dados.data[linearCoordDestination], dados.data[linearCoordToKill]);
-            dados.data[linearCoordDestination] = value;
-            dados.remove(linearCoordToKill);
+            int linearCoordDestination = linearCoordToKill - coord[index]*factorsPT[index];
+            float value = Math.max(dataPT.data[linearCoordDestination], dataPT.data[linearCoordToKill]);
+            dataPT.data[linearCoordDestination] = value;
+            dataPT.remove(linearCoordToKill);
             return;
         }
 
         int fim = (index == control) ? 1 : 0;
-        Node node = variaveis.get(control);
+        Node node = variableList.get(control);
         for (int i = node.getStatesSize()-1; i >= fim; i--) {
             coord[control] = i;
             argMax(control-1, index, coord);

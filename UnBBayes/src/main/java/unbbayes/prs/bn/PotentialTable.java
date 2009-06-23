@@ -22,6 +22,7 @@ package unbbayes.prs.bn;
 
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import unbbayes.prs.Node;
@@ -47,87 +48,111 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
 
 	/**
-	 * Vari�veis que pertencem � tabela
+	 * RVs that are in the table, including the variable that owns the table.
 	 */
-	protected ArrayList<Node> variaveis;
+	protected List<Node> variableList;
 
 	/**
-	 * Dados armazenados em forma de lista do tipo primitivo float
+	 * The data from the table as a list of floats. The use of this data 
+	 * is done by using coordinates and linear coordinates.
 	 */
-	protected FloatCollection dados;
+	protected FloatCollection dataPT;
 	
 	/**
-	 * Copy of the table data
+	 * Copy of the data from the data.
 	 */
 	protected FloatCollection dataCopy;
-
+	
 	/**
-	 * Fatores utilizados para converter coordenadas lineares em
-	 * multidimensionais. Armazena a posição onde começa a tabela de cada
-	 * variável. 
+	 * The data from the table as a list of floats. Usually used to compute
+	 * the marginal probabilities "manually", i.e. by removing each and every
+	 * parent from the potential table. The use of this data is done by using  
+	 * coordinates and linear coordinates for the marginal data.
 	 */
-	protected int[] fatores;
+	protected FloatCollection dataMarginal;
 
 	/**
-	 * Inicializa os dados e variaveis.
+	 * Factors used to convert linear coordinates in multidimensional ones. 
+	 * It stores the position that starts the table of each variable, for the
+	 * potential table data.
+	 */
+	protected int[] factorsPT;
+	
+	/**
+	 * Factors used to convert linear coordinates in multidimensional ones. 
+	 * It stores the position that starts the table of each variable, for the
+	 * marginal data.
+	 */
+	protected int[] factorsMarginal;
+
+	/**
+	 * Initialize data and variables.
 	 */
 	public PotentialTable() {
 		modified = true;
-		dados = new FloatCollection();
+		dataPT = new FloatCollection();
 		dataCopy = new FloatCollection();
-		variaveis = new ArrayList<Node>();
+		dataMarginal = new FloatCollection();
+		variableList = new ArrayList<Node>();
 	}
 	
+	/**
+	 * Creates a copy of the data from the table.
+	 */
 	public void copyData() {
-		int dataSize = dados.size;
+		int dataSize = dataPT.size;
 		for (int i = 0; i < dataSize; i++) {
-			dataCopy.add(dados.data[i]);
+			dataCopy.add(dataPT.data[i]);
 		}
 	}
 	
+	/**
+	 * Restores the data from the table using its stored copy.
+	 */
 	public void restoreData() {
-		int dataSize = dados.size;
+		int dataSize = dataPT.size;
 		for (int i = 0; i < dataSize; i++) {
-			dados.data[i] = dataCopy.data[i];
+			dataPT.data[i] = dataCopy.data[i];
 		}
 	}
 
 	/**
-	 * Tem que ser chamado quando h� mudan�a em alguma vari�vel desta tabela
+	 * This method has to be called when there is a change in any of the
+	 * variables in this table.
 	 */
 	public void variableModified() {
 	   modified = true;
 	}
 
 	/**
-	 * Retorna uma COPIA da lista de vari�veis desta tabela.
+	 * Returns a copy of the variables in this table.
 	 * 
-	 * @return COPIA da lista de variaveis desta tabela.
+	 * @return A copy of the variables in this table.
 	 */
-	public ArrayList<Node> cloneVariables() {
-		return SetToolkit.clone(variaveis);
+	public List<Node> cloneVariables() {
+		return SetToolkit.clone(variableList);
 	}
 
 	public final int indexOfVariable(Node node) {
-		return variaveis.indexOf(node);
+		return variableList.indexOf(node);
 	}
 
 	public final int variableCount() {
-		return variaveis.size();
+		return variableList.size();
 	}
 
 	public void setVariableAt(int index, Node node) {
 		variableModified();
-		variaveis.set(index, node);
+		variableList.set(index, node);
 	}
 
 	public final Node getVariableAt(int index) {
-		return variaveis.get(index);
+		return variableList.get(index);
 	}
 	
 	public final int getVariableIndex(Node variable){
-		for(int i = 0; i < variaveis.size(); i++){
-			if(variaveis.get(i) == variable){
+		for(int i = 0; i < variableList.size(); i++){
+			if(variableList.get(i) == variable){
 				return i; 
 			}
 		}
@@ -135,54 +160,58 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	}
 
 	public void addValueAt(int index, float value) {
-		dados.add(index, value);
+		dataPT.add(index, value);
 	}
 	
 	public final void removeValueAt(int index) {
-		dados.remove(index);
+		dataPT.remove(index);
 	}
 
 	public int tableSize() {
-	   return dados.size;
+	   return dataPT.size;
 	}
 
 	/**
-	 * Retorna uma c�pia da tabela.
+	 * Returns a copy of the data from the table.
 	 * 
-	 * @return c�pia da tabela.
+	 * @return A copy of the data from the table.
 	 */
 	public Object clone() {
 		PotentialTable auxTab = newInstance();
-		auxTab.variaveis = SetToolkit.clone(variaveis);
-		int sizeDados = dados.size;
+		auxTab.variableList = SetToolkit.clone(variableList);
+		int sizeDados = dataPT.size;
 		for (int c = 0; c < sizeDados; c++) {
-			auxTab.dados.add(dados.data[c]);
+			auxTab.dataPT.add(dataPT.data[c]);
 		}
 		return auxTab;
 	}
 
 	/**
-	 * Insere celula na tabela pelas coordenadas.
+	 * Set a value in the table using the multidimensional coordinate, 
+	 * which is a list containing the state of each variable in the table.
 	 * 
-	 * @param coordenadas
-	 *            Coordenada na tabela.
-	 * @param valor
-	 *            Valor a ser colocado na coordenada especificada
+	 * @param coord
+	 *            The multidimensional coordinate, which is a list containing 
+	 *            the state of each variable in the table.
+	 * @param value
+	 *            The value to be set in the table.
 	 */
-	public void setValue(int[] coordenadas, float valor) {
-		dados.data[getLinearCoord(coordenadas)] = valor;
+	public void setValue(int[] coord, float value) {
+		dataPT.data[getLinearCoord(coord)] = value;
 	}
 
 	/**
-	 * Insere valor na posi��o (linear) na lista de dados.
+	 * Set a value in the table using the linear coordinate, 
+	 * which corresponds to the state of each variable in the table.
 	 * 
 	 * @param index
-	 *            posicao linear onde o valor entrar�
-	 * @param valor
-	 *            valor a ser colocado na posicao especificada.
+	 *            The linear coordinate, which corresponds to the state 
+	 *            of each variable in the table.
+	 * @param value
+	 *            The value to be set in the table.
 	 */
-	public final void setValue(int index, float valor) {
-		dados.data[index] = valor;
+	public final void setValue(int index, float value) {
+		dataPT.data[index] = value;
 	}
 
 	/**
@@ -193,7 +222,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	 * @return valor na tabela correspondente ao indice linear especificado.
 	 */
 	public final float getValue(int index) {
-		return dados.data[index];
+		return dataPT.data[index];
 	}
 
 	/**
@@ -204,7 +233,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	 * @return valor na tabela especificada pelas coordenadas.
 	 */
 	public final float getValue(int[] coordenadas) {
-		return dados.data[getLinearCoord(coordenadas)];
+		return dataPT.data[getLinearCoord(coordenadas)];
 	}
 
 	/**
@@ -217,20 +246,20 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 		/** @todo Reimplementar este m�todo de forma correta. */
 		variableModified();
 		int noEstados = variavel.getStatesSize();
-		int noCelBasica = this.dados.size;
-		if (variaveis.size() == 0) {
+		int noCelBasica = this.dataPT.size;
+		if (variableList.size() == 0) {
 			for (int i = 0; i < noEstados; i++) {
-				dados.add(0);
+				dataPT.add(0);
 			}
 		} else {
 			while (noEstados > 1) {
 				noEstados--;
 				for (int i = 0; i < noCelBasica; i++) {
-					dados.add(dados.data[i]);
+					dataPT.add(dataPT.data[i]);
 				}
 			}
 		}
-		variaveis.add(variavel);
+		variableList.add(variavel);
 	}
 	
 	/**
@@ -248,13 +277,13 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	 */
 	public void moveVariableWithoutMoveData(int initialPosition, int destinationPosition){
 		
-		Node nodeToMove = variaveis.remove(initialPosition); 
-		variaveis.add(destinationPosition, nodeToMove); 
+		Node nodeToMove = variableList.remove(initialPosition); 
+		variableList.add(destinationPosition, nodeToMove); 
 		
 	}
 	
 	public int getVariablesSize(){
-		return variaveis.size(); 
+		return variableList.size(); 
 	}
 
 	/**
@@ -276,6 +305,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	 * @param normalize True if is to normalize the cpt after the node remotion
 	 */	
 	public abstract void removeVariable(Node variable, boolean normalize); 
+	
 	/**
 	 * Returns a new instance of a PotentialTable of the current implemented
 	 * sub-class.
@@ -286,18 +316,18 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	public abstract PotentialTable newInstance();
 
 	protected void sum(int index) {
-		boolean marked[]  = new boolean[dados.size];		
-		sumAux(variaveis.size() - 1, index, 0, 0, marked);
+		boolean marked[]  = new boolean[dataPT.size];		
+		sumAux(variableList.size() - 1, index, 0, 0, marked);
 		
 		int j = 0;
-		for (int i = 0; i < dados.size; i++) {
+		for (int i = 0; i < dataPT.size; i++) {
 			if (marked[i]) {
 				continue;				
 			}
-			dados.data[j++] = dados.data[i];
+			dataPT.data[j++] = dataPT.data[i];
 		}
 		
-		dados.size = j;
+		dataPT.size = j;
 	}
 	
 	
@@ -319,20 +349,20 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	private void sumAux(int control, int index, int coord, int base, boolean[] marked) {
 		if (control == -1) {
 			int linearCoordDestination = coord - base;
-			float value = dados.data[linearCoordDestination] + dados.data[coord];
-			dados.data[linearCoordDestination] = value;
+			float value = dataPT.data[linearCoordDestination] + dataPT.data[coord];
+			dataPT.data[linearCoordDestination] = value;
 			marked[coord] = true;
 			return;
 		}
 		
-		Node node = variaveis.get(control);
+		Node node = variableList.get(control);
 		if (control == index) {	
 			for (int i = node.getStatesSize()-1; i >= 1; i--) {
-				sumAux(control-1, index, coord + i*fatores[control], i*fatores[index], marked);
+				sumAux(control-1, index, coord + i*factorsPT[control], i*factorsPT[index], marked);
 			}	
 		} else {
 			for (int i = node.getStatesSize()-1; i >= 0; i--) {
-				sumAux(control-1, index, coord + i*fatores[control], base, marked);
+				sumAux(control-1, index, coord + i*factorsPT[control], base, marked);
 			}
 		}
 	}
@@ -342,16 +372,16 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 		if (control == -1) {
 			int linearCoordToKill = getLinearCoord(coord);
 			if (coord[index] == state) {
-				int linearCoordDestination = linearCoordToKill - coord[index]*fatores[index];
-				float value = dados.data[linearCoordToKill];
-				dados.data[linearCoordDestination] = value;
+				int linearCoordDestination = linearCoordToKill - coord[index]*factorsPT[index];
+				float value = dataPT.data[linearCoordToKill];
+				dataPT.data[linearCoordDestination] = value;
 			}
-			dados.remove(linearCoordToKill);
+			dataPT.remove(linearCoordToKill);
 			return;
 		}
 
 		int fim = (index == control) ? 1 : 0;
-		Node node = variaveis.get(control);
+		Node node = variableList.get(control);
 		for (int i = node.getStatesSize()-1; i >= fim; i--) {
 			coord[control] = i;
 			finding(control-1, index, coord, state);
@@ -360,64 +390,127 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 
 
 	/**
-	 * Retorna a coordenada linear referente � coordenada multidimensional
-	 * especificada.
+	 * Get the linear coordinate from the multidimensional one.
+	 * LinearCoord = SumOf(StateOf[i] * FactorOf[i]), for all 
+	 * possible nodes (i), which are the nodes in the table.
 	 * 
-	 * @param coord
-	 *            coordenada multidimensional.
-	 * @return coordenada linear correspondente.
+	 * @param multidimensionalCoord Multidimensional coordinate (represented by the state for
+	 * each node).
+	 * @return The corresponding linear coordinate.
 	 */
-	public final int getLinearCoord(int coord[]) {
-		calcularFatores();
+	public final int getLinearCoord(int multidimensionalCoord[]) {
+		computeFactors();
 		int coordLinear = 0;
-		int sizeVariaveis = variaveis.size();
+		int sizeVariaveis = variableList.size();
 		for (int v = 0; v < sizeVariaveis; v++) {
-			coordLinear += coord[v] * fatores[v];
+			coordLinear += multidimensionalCoord[v] * factorsPT[v];
 		}
 		return coordLinear;
 	}
 
 
 	/**
-	 * Calcula os fatores necess�rios para transformar as coordenadas lineares
-	 * em multidimensionais.
+	 * Calculate the factors necessary to transform the linear coordinate into a multidimensional 
+	 * one, which is a list containing the state of each variable in the table.
 	 */
-	protected void calcularFatores() {
+	protected void computeFactors() {
 		if (! modified) {
 			return;
 		}
 		modified = false;
-		int sizeVariaveis = variaveis.size();
-		if (fatores == null || fatores.length < sizeVariaveis) {
-		   fatores = new int[sizeVariaveis];
+		int sizeVariaveis = variableList.size();
+		if (factorsPT == null || factorsPT.length < sizeVariaveis) {
+		   factorsPT = new int[sizeVariaveis];
 		}
-		fatores[0] = 1;
+		factorsPT[0] = 1;
 		Node auxNo;
 		for (int i = 1; i < sizeVariaveis; i++) {
-			auxNo = variaveis.get(i-1);
-			fatores[i] = fatores[i-1] * auxNo.getStatesSize();
+			auxNo = variableList.get(i-1);
+			factorsPT[i] = factorsPT[i-1] * auxNo.getStatesSize();
 		}
 	}
 
 
 
 	/**
-	 * Retorna valor em coordenada a partir do �ndice na lista.
+	 * Get the multidimensional coordinate from the linear one.
 	 * 
-	 * @param index
-	 *            �ndice linear na tabela.
-	 * @return array das coordenadas respectivo ao indice linear especificado.
+	 * @param linearCoord The linear coordinate.
+	 * @return The corresponding multidimensional coordinate.
 	 */
-	public final int[] voltaCoord(int index) {
-		calcularFatores();
+	public final int[] getMultidimensionalCoord(int linearCoord) {
+		computeFactors();
 		int fatorI;
-		int sizeVariaveis = variaveis.size();
+		int sizeVariaveis = variableList.size();
 		int coord[] = new int[sizeVariaveis];
 		int i = sizeVariaveis - 1;
-		while (index != 0) {
-			fatorI = fatores[i];
-			coord[i--] = index / fatorI;
-			index %= fatorI;
+		while (linearCoord != 0) {
+			fatorI = factorsPT[i];
+			coord[i--] = linearCoord / fatorI;
+			linearCoord %= fatorI;
+		}
+		return coord;
+	}
+	
+	/**
+	 * Get the linear coordinate from the multidimensional one.
+	 * LinearCoord = SumOf(StateOf[i] * FactorOf[i]), for all 
+	 * possible nodes (i), which are the nodes in the table.
+	 * 
+	 * @param multidimensionalCoord Multidimensional coordinate (represented by the state for
+	 * each node).
+	 * @return The corresponding linear coordinate.
+	 */
+	public final int getLinearCoordMarginal(int multidimensionalCoord[]) {
+		computeFactorsMarginal();
+		int coordLinear = 0;
+		int sizeVariaveis = variableList.size();
+		for (int v = 0; v < sizeVariaveis; v++) {
+			coordLinear += multidimensionalCoord[v] * factorsPT[v];
+		}
+		return coordLinear;
+	}
+
+
+	/**
+	 * Calculate the factors necessary to transform the linear coordinate into a multidimensional 
+	 * one, which is a list containing the state of each variable in the table.
+	 */
+	protected void computeFactorsMarginal() {
+		if (! modified) {
+			return;
+		}
+		modified = false;
+		int sizeVariaveis = variableList.size();
+		if (factorsPT == null || factorsPT.length < sizeVariaveis) {
+		   factorsPT = new int[sizeVariaveis];
+		}
+		factorsPT[0] = 1;
+		Node auxNo;
+		for (int i = 1; i < sizeVariaveis; i++) {
+			auxNo = variableList.get(i-1);
+			factorsPT[i] = factorsPT[i-1] * auxNo.getStatesSize();
+		}
+	}
+
+
+
+	/**
+	 * Get the multidimensional coordinate from the linear one.
+	 * 
+	 * @param linearCoord The linear coordinate.
+	 * @return The corresponding multidimensional coordinate.
+	 */
+	public final int[] getMultidimensionalCoordMarginal(int linearCoord) {
+		computeFactors();
+		int fatorI;
+		int sizeVariaveis = variableList.size();
+		int coord[] = new int[sizeVariaveis];
+		int i = sizeVariaveis - 1;
+		while (linearCoord != 0) {
+			fatorI = factorsPT[i];
+			coord[i--] = linearCoord / fatorI;
+			linearCoord %= fatorI;
 		}
 		return coord;
 	}
@@ -438,23 +531,23 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 		switch (operator) {
 			case PRODUCT_OPERATOR:
 				for (int k = tableSize()-1; k >= 0; k--) {
-					dados.data[k] *= tab.dados.data[k];
+					dataPT.data[k] *= tab.dataPT.data[k];
 				}
 				break;
 			 
 			case DIVISION_OPERATOR:
 				for (int k = tableSize()-1; k >= 0; k--) {
-					if (tab.dados.data[k] != 0) {
-						dados.data[k] /= tab.dados.data[k];
+					if (tab.dataPT.data[k] != 0) {
+						dataPT.data[k] /= tab.dataPT.data[k];
 					} else {
-						dados.data[k] = 0;						
+						dataPT.data[k] = 0;						
 					}
 				}
 				break;
 			
 			case MINUS_OPERATOR:
 				for (int k = tableSize()-1; k >= 0; k--) {
-					dados.data[k] -= tab.dados.data[k];
+					dataPT.data[k] -= tab.dataPT.data[k];
 				}
 				break;
 		}
@@ -471,12 +564,12 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	 *            classe.
 	 */
 	public final void opTab(PotentialTable tab, int operator) {		
-		int[] index = new int[variaveis.size()];
-		for (int c = variaveis.size()-1; c >= 0; c--) {
-			index[c] = tab.variaveis.indexOf(variaveis.get(c));
+		int[] index = new int[variableList.size()];
+		for (int c = variableList.size()-1; c >= 0; c--) {
+			index[c] = tab.variableList.indexOf(variableList.get(c));
 		}
-		calcularFatores();
-		tab.calcularFatores();
+		computeFactors();
+		tab.computeFactors();
 		
 		switch (operator) {
 			case PRODUCT_OPERATOR:
@@ -492,55 +585,54 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 				break;
 				
 			default:
-// assert false : "Operador n�o suportado!";
 		}
 	}
 	
 	
 	private void fastOpTabPlus(int c, int linearA, int linearB, int index[], PotentialTable tab) {
-		if (c >= variaveis.size()) {			
-			dados.data[linearA] += tab.dados.data[linearB];
+		if (c >= variableList.size()) {			
+			dataPT.data[linearA] += tab.dataPT.data[linearB];
 			return;						
 		}
 		if (index[c] == -1) {
-			for (int i = variaveis.get(c).getStatesSize() - 1; i >= 0; i--) {						
-				fastOpTabPlus(c+1, linearA + i*fatores[c] , linearB, index, tab);
+			for (int i = variableList.get(c).getStatesSize() - 1; i >= 0; i--) {						
+				fastOpTabPlus(c+1, linearA + i*factorsPT[c] , linearB, index, tab);
 			}
 		} else {
-			for (int i = variaveis.get(c).getStatesSize() - 1; i >= 0; i--) {						
-				fastOpTabPlus(c+1, linearA + i*fatores[c] , linearB + i*tab.fatores[index[c]], index, tab);
+			for (int i = variableList.get(c).getStatesSize() - 1; i >= 0; i--) {						
+				fastOpTabPlus(c+1, linearA + i*factorsPT[c] , linearB + i*tab.factorsPT[index[c]], index, tab);
 			}
 		}
 	}
 
 	private void fastOpTabProd(int c, int linearA, int linearB, int index[], PotentialTable tab) {
-		if (c >= variaveis.size()) {
-			dados.data[linearA] *= tab.dados.data[linearB];
+		if (c >= variableList.size()) {
+			dataPT.data[linearA] *= tab.dataPT.data[linearB];
 			return;						
 		}
 		if (index[c] == -1) {
-			for (int i = variaveis.get(c).getStatesSize() - 1; i >= 0; i--) {						
-				fastOpTabProd(c+1, linearA + i*fatores[c] , linearB, index, tab);
+			for (int i = variableList.get(c).getStatesSize() - 1; i >= 0; i--) {						
+				fastOpTabProd(c+1, linearA + i*factorsPT[c] , linearB, index, tab);
 			}
 		} else {
-			for (int i = variaveis.get(c).getStatesSize() - 1; i >= 0; i--) {						
-				fastOpTabProd(c+1, linearA + i*fatores[c] , linearB + i*tab.fatores[index[c]], index, tab);
+			for (int i = variableList.get(c).getStatesSize() - 1; i >= 0; i--) {						
+				fastOpTabProd(c+1, linearA + i*factorsPT[c] , linearB + i*tab.factorsPT[index[c]], index, tab);
 			}
 		}
 	}
 	
 	private void fastOpTabDiv(int c, int linearA, int linearB, int index[], PotentialTable tab) {
-		if (c >= variaveis.size()) {
-			dados.data[linearA] /= tab.dados.data[linearB];
+		if (c >= variableList.size()) {
+			dataPT.data[linearA] /= tab.dataPT.data[linearB];
 			return;						
 		}
 		if (index[c] == -1) {
-			for (int i = variaveis.get(c).getStatesSize() - 1; i >= 0; i--) {						
-				fastOpTabDiv(c+1, linearA + i*fatores[c] , linearB, index, tab);
+			for (int i = variableList.get(c).getStatesSize() - 1; i >= 0; i--) {						
+				fastOpTabDiv(c+1, linearA + i*factorsPT[c] , linearB, index, tab);
 			}
 		} else {
-			for (int i = variaveis.get(c).getStatesSize() - 1; i >= 0; i--) {						
-				fastOpTabDiv(c+1, linearA + i*fatores[c] , linearB + i*tab.fatores[index[c]], index, tab);
+			for (int i = variableList.get(c).getStatesSize() - 1; i >= 0; i--) {						
+				fastOpTabDiv(c+1, linearA + i*factorsPT[c] , linearB + i*tab.factorsPT[index[c]], index, tab);
 			}
 		}
 	}

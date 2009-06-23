@@ -1003,7 +1003,7 @@ public class NetIO implements BaseIO {
 
 			int sizeDados = auxTabPot.tableSize();
 			for (int c2 = 0; c2 < sizeDados; c2++) {
-				coord = auxTabPot.voltaCoord(c2);
+				coord = auxTabPot.getMultidimensionalCoord(c2);
 
 				for (int c3 = 0; c3 < sizeVa1; c3++) {
 					if ((coord[c3] == 0) && (!paren[c3])) {
