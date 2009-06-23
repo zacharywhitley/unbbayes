@@ -98,10 +98,13 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
 		
 		for(int i= 0; i < identation; i++){
 			log.append(identationString);
+			System.out.print(" ");
 		}
 		
         log.append(text);
         log.append("\n");
+        
+        System.out.println(text);
 	}
 
 	public void appendlnIfTrue(int identation, boolean debug, String text) {
