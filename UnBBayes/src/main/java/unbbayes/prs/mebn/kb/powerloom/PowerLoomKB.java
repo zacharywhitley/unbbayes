@@ -659,7 +659,7 @@ public class PowerLoomKB implements KnowledgeBase {
 		//List of variables of retrieve
         formula+="("; 
         for(OrdinaryVariable ov: ovFaultArray){
-        	formula+= " ?" + ov.getName(); 
+        	formula+= " ?" + ov.getName() + " " + ov.getValueType().getName(); 
         }
         
         formula+=")"; 
@@ -674,7 +674,7 @@ public class PowerLoomKB implements KnowledgeBase {
 		PlIterator iterator = PLI.sRetrieve(formula, moduleFindingName, null);
 		
 		SearchResult searchResult; 
-		
+		System.out.println("Result = " + iterator.length());
 		if(iterator.length() != 0){
 			
 			//Create the SearchResult object. 
@@ -683,6 +683,7 @@ public class PowerLoomKB implements KnowledgeBase {
 				String[] resultN = new String[ovFaultArray.length];
 				for(int i = 0; i < ovFaultArray.length; i++){ 
 					resultN[i] = PLI.getNthString(iterator, i, moduleFinding, environment); 
+					System.out.println("   > " + resultN[i]);
 				}
 				searchResult.addResult(resultN); 
 			}
