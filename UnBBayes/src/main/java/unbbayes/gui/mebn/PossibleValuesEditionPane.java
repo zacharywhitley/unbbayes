@@ -541,7 +541,7 @@ public class PossibleValuesEditionPane extends JPanel {
 				if (matcher.matches()) {
 					if(mebnController.existPossibleValue(nameValue)){
 						JOptionPane.showMessageDialog(null, resource
-								.getString("nameError"), resource
+								.getString("nameException"), resource
 								.getString("nameAlreadyExists"),
 								JOptionPane.ERROR_MESSAGE);
 					}else{
@@ -567,13 +567,13 @@ public class PossibleValuesEditionPane extends JPanel {
 										
 									} catch (DuplicatedNameException e) {
 		  	  							JOptionPane.showMessageDialog(mebnController.getScreen(),
+		  	  									resource.getString("nameException"),
 		  	  									resource.getString("nameDuplicated"),
-		  	  									resource.getString("nameError"),
 		  	  									JOptionPane.ERROR_MESSAGE);
 									} catch (ReservedWordException e2) {
 		  	  							JOptionPane.showMessageDialog(mebnController.getScreen(),
+		  	  									resource.getString("nameException"),
 		  	  									resource.getString("nameReserved"),
-		  	  									resource.getString("nameError"),
 		  	  									JOptionPane.ERROR_MESSAGE);
 									}
 								}
@@ -584,21 +584,21 @@ public class PossibleValuesEditionPane extends JPanel {
 									stateLink.setGloballyExclusive(checkGloballyExclusive.isSelected());
 								} catch (DuplicatedNameException e) {
 	  	  							JOptionPane.showMessageDialog(mebnController.getScreen(),
+	  	  									resource.getString("nameException"),
 	  	  									resource.getString("nameDuplicated"),
-	  	  									resource.getString("nameError"),
 	  	  									JOptionPane.ERROR_MESSAGE);
 								} catch (ReservedWordException e2) {
 	  	  							JOptionPane.showMessageDialog(mebnController.getScreen(),
+	  	  									resource.getString("nameException"),
 	  	  									resource.getString("nameReserved"),
-	  	  									resource.getString("nameError"),
 	  	  									JOptionPane.ERROR_MESSAGE);
 								}
 							}
 							
 						} else {
 							JOptionPane.showMessageDialog(null, resource
-									.getString("nameDuplicated"), resource
-									.getString("nameError"),
+									.getString("nameException"), resource
+									.getString("nameDuplicated"),
 									JOptionPane.ERROR_MESSAGE);
 						}
 						
