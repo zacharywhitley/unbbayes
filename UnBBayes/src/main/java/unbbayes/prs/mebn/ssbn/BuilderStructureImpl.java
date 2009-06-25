@@ -169,7 +169,10 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		
 		// 1) Test if the MFragInstance already was evaluated
 		if(mFragInstance.isEvaluated()){
-			return; 
+			return; //Be careful here if you change the algorithm for search for
+			        //mFragInstances equal to the that are evaluated... In this case
+			        //maybe a new evaluation of the mfrag will be necessary 
+			        //because the enter node should be other. 
 		}
 		
 	    // 2) Evaluate MFragInstance context
@@ -705,7 +708,8 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		//Consider that the only ordinary variables filled are the alread know OV
 		List<OVInstance> ovInstances = mFragInstance.getOVInstanceList(); 
 		
-		ssbn.getLogManager().appendln("1) Loop for evaluate context nodes."); 
+		ssbn.getLogManager().appendln("1) Loop for evaluate context nodes.");
+		
 		for(ContextNode contextNode: mFragInstance.getContextNodeList()){
 			
 			ssbn.getLogManager().appendln(1, "Context Node: " + contextNode);
@@ -724,11 +728,12 @@ public class BuilderStructureImpl implements IBuilderStructure{
 					continue; 
 				
 				}else{
-					ssbn.getLogManager().appendln(2, "Context Node Evaluation fail"); 
 					mFragInstance.setStateEvaluationOfContextNode(contextNode, 
 							ContextNodeEvaluationState.EVALUATION_FAIL);
 					mFragInstance.setUseDefaultDistribution(true); 
-					break; //TODO: the MFragInstance should continue to be evaluated?
+					ssbn.getLogManager().appendln(2, "Context Node Evaluation fail"); 
+					break; //The MFragInstance continue to be evaluated only
+					       //to show to the user a network more complete. 
 				}
 			}else{
 			
@@ -741,13 +746,13 @@ public class BuilderStructureImpl implements IBuilderStructure{
 
 				if(searchResult!= null){  
 
-//					System.out.println("Search Result: ");
-//					for(String[] result: searchResult.getValuesResultList()){
-//						for(int i = 0; i < result.length; i++){
-//							System.out.print(result[i] + " "); 
-//						}
-//						System.out.println("");
-//					}
+					System.out.println("Search Result: ");
+					for(String[] result: searchResult.getValuesResultList()){
+						for(int i = 0; i < result.length; i++){
+							System.out.print(result[i] + " "); 
+						}
+						System.out.println("");
+					}
 					
 					//Result valid results: Add the result to the tree of result.
 					try {
@@ -764,6 +769,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 						e.printStackTrace(); 
 						mFragInstance.setStateEvaluationOfContextNode(contextNode, ContextNodeEvaluationState.EVALUATION_FAIL); 
 						mFragInstance.setUseDefaultDistribution(true); 
+						ssbn.getLogManager().appendln(2,"Context node fail: use the default distribution");
 					}
 
 					break;
@@ -854,9 +860,9 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			
 			List<String> possibleValues = kb.getEntityByType(ov.getValueType().getName()); 
 			
-			for(String possibleValue: possibleValues){
-				ssbn.getLogManager().appendln("  > " + possibleValue);
-			}
+//			for(String possibleValue: possibleValues){
+//				ssbn.getLogManager().appendln("  > " + possibleValue);
+//			}
 			
 			String possibleValuesArray[] = possibleValues.toArray(new String[possibleValues.size()]); 
 			List<String[]> entityValuesArray = new ArrayList<String[]>(); 

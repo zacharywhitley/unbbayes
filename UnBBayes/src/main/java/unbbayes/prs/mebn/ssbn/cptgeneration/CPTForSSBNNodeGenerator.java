@@ -23,8 +23,8 @@ public class CPTForSSBNNodeGenerator {
 
 	public ILogManager logManager; 
 	
-	public CPTForSSBNNodeGenerator(ILogManager logManager){
-		this.logManager = logManager; 
+	public CPTForSSBNNodeGenerator(ILogManager _logManager){
+		this.logManager = _logManager; 
 	}
 	
 	/**
@@ -123,17 +123,18 @@ public class CPTForSSBNNodeGenerator {
 			parent.turnArgumentsForMFrag(ssbnNode.getResident().getMFrag()); 
 		}
 		
-//		logManager.appendln("---- CPT for node: " + ssbnNode.getUniqueName() + "-----"); 
-//		logManager.appendln("Parents:"); 
-//		for(SSBNNode parent: ssbnNode.getParents()){
-//			logManager.appendln(parent.toString()); 
-//		}
+		logManager.appendln("---- CPT for node: " + ssbnNode.getUniqueName() + "-----"); 
+		logManager.appendln("Parents:"); 
+		for(SSBNNode parent: ssbnNode.getParents()){
+			logManager.appendln(parent.toString()); 
+		}
 //		logManager.appendln("Init"); 
 		
 		if(ssbnNode.isPermanent()){
 			//Generate the cpt of the context father ssbnnode
 			if(ssbnNode.getContextFatherSSBNNode()!=null){ 
 				try {
+					logManager.appendln(" Context Parent Node: " + ssbnNode.getContextFatherSSBNNode()); 
 					generateCPTForNodeWithContextFather(ssbnNode);
 				} catch (InvalidOperationException e1) {
 					logManager.appendln("ERROR IN THE CPT EVALUATION OF NODE " + ssbnNode.getName()); 
@@ -163,17 +164,8 @@ public class CPTForSSBNNodeGenerator {
 	 */
 	protected void generateCPTForNodeWithContextFather(SSBNNode ssbnNode) 
 	      throws SSBNNodeGeneralException, MEBNException, InvalidOperationException {
-		
-
-//		    GUIPotentialTable gpt; 
-		
-//			logManager.appendln("\nGenerate table for node (with context father): " + ssbnNode);
-//			logManager.appendln("Parents:");
-//			for(SSBNNode parent: ssbnNode.getParents()){
-//				logManager.appendln("  " + parent);
-//			}
-			
-			Debug.setDebug(false);
+	
+			Debug.setDebug(true);
 			
 			Map<String, List<SSBNNode>> mapParentsByEntity = new HashMap<String, List<SSBNNode>>(); 
 			Map<String, PotentialTable> mapCPTByEntity = new HashMap<String, PotentialTable>(); 
@@ -183,27 +175,41 @@ public class CPTForSSBNNodeGenerator {
 				mapParentsByEntity.put(entity.getInstanceName(), new ArrayList<SSBNNode>()); 
 			}
 			
-			//Step 0: Calcular a tabela do nó de contexto
-
-			ssbnNode.getContextFatherSSBNNode().generateCPT();
+			logManager.appendln("\nGenerate table for node (with context father): " + ssbnNode);
+			logManager.appendln("Parents:");
+			for(SSBNNode parent: ssbnNode.getParents()){
+				logManager.appendln("  " + parent);
+			}
+			logManager.appendln("OVProblematic = " + contextFather.getOvProblematic().getName() 
+					+ " " + contextFather.getOvProblematic().getMFrag().getName() 
+					+ contextFather.getOvProblematic().getValueType().getName());
 			
+
+			//Step 0: Generate the context node CPT. 
+
+			if(!ssbnNode.getContextFatherSSBNNode().isCptGenerated()){
+				ssbnNode.getContextFatherSSBNNode().generateCPT();
+			}
+
+//		    GUIPotentialTable gpt; 			
 //			gpt = new GUIPotentialTable(ssbnNode.getContextFatherSSBNNode().getProbNode().getPotentialTable()); 
 //			gpt.showTable("Table for Node " + ssbnNode.getContextFatherSSBNNode());
 			
 			Collection<SSBNNode> generalParents = new ArrayList<SSBNNode>(); //Independent of the entity problematic
 			
-			System.out.println("OVProblematic = " + contextFather.getOvProblematic().getName() + " " + contextFather.getOvProblematic().getMFrag().getName() + contextFather.getOvProblematic().getValueType().getName());
-			
-			for(SSBNNode parent: ssbnNode.getParents()){
+			// Step 1: Separate the parent nodes that contain the OV problematic for that
+			// nodes that don't contain. 
+			for(SSBNNode parent: ssbnNode.getParents()){	
 				
-				System.out.println("Ordinary variables for parent " + parent.getName());
-				boolean contain = false; 
+				boolean containOVProblematic = false; 
 				for(OrdinaryVariable ov: parent.getOVs()){
-					contain = ov.equals(contextFather.getOvProblematic());
+					containOVProblematic = ov.equals(contextFather.getOvProblematic());
+					if(containOVProblematic){
+						break; 
+					}
 				}
-				
-//				if(!parent.getOVs().contains(contextFather.getOvProblematic())){ //For some motive don't go!!!
-				if(!contain){	
+
+				if(!containOVProblematic){	
 					generalParents.add(parent); 
 				}else{
 					String entity = parent.getArgumentByOrdinaryVariable(contextFather.getOvProblematic()).getEntity().getInstanceName(); 
@@ -215,33 +221,34 @@ public class CPTForSSBNNodeGenerator {
 			
 			PotentialTable cptResidentNode = ssbnNode.getProbNode().getPotentialTable(); 
 						
-			//Step 2: Construir as tabelas para os diversos grupos de pais
-			int position = 1; 
+			//Step 2: Build the CPT's for the diverses groups of parents. 
+			int parentPosition = 1; 
 			
 			for(LiteralEntityInstance entity: contextFather.getPossibleValues()){
 				
-				ArrayList<SSBNNode> groupParents = new ArrayList<SSBNNode>(); 
+				ArrayList<SSBNNode> parentsForEntityList = new ArrayList<SSBNNode>(); 
 				
-				groupParents.addAll(mapParentsByEntity.get(entity.getInstanceName())); //Sempre na mesma ordem? 
+				List<SSBNNode> parentsByEntityList = mapParentsByEntity.get(entity.getInstanceName()); 
 				
-				List<SSBNNode> parentsByEntity = mapParentsByEntity.get(entity.getInstanceName()); 
-				for(SSBNNode node: parentsByEntity){
-					int index = cptResidentNode.getVariableIndex(node.getProbNode()); 
-					cptResidentNode.moveVariableWithoutMoveData(index, position); 
-					position++; 
+				parentsForEntityList.addAll(parentsByEntityList); //TODO Sempre na mesma ordem? 
+				
+				for(SSBNNode parent: parentsByEntityList){
+					int actualParentPosition = cptResidentNode.getVariableIndex(parent.getProbNode()); 
+					cptResidentNode.moveVariableWithoutMoveData(actualParentPosition, parentPosition); 
+					parentPosition++; 
 				}
 				
-				groupParents.addAll(generalParents); //OK, sempre estarão na mesma ordem. 
-				for(SSBNNode node: generalParents){
-					int index = cptResidentNode.getVariableIndex(node.getProbNode()); 
-					cptResidentNode.moveVariableWithoutMoveData(index, position); 
-					position++; 
+				parentsForEntityList.addAll(generalParents); //OK, always in the some order 
+				for(SSBNNode parent: generalParents){
+					int index = cptResidentNode.getVariableIndex(parent.getProbNode()); 
+					cptResidentNode.moveVariableWithoutMoveData(index, parentPosition); 
+					parentPosition++; 
 				}
 				
-				//Gera a tabela para este grupo de pais (o conjunto de tabelas será 
-				//utilizado no xor. 
+				//Generate the table for this group of parents (this temp table
+				// will be used at the xor. 
 				SSBNNode tempNode = SSBNNode.getInstance(ssbnNode.getResident()); 
-				for(SSBNNode parent: groupParents){
+				for(SSBNNode parent: parentsForEntityList){
 					tempNode.addParent(parent, false); 
 				}
 				PotentialTable cpt = tempNode.getCompiler().generateCPT(tempNode); 
@@ -251,7 +258,7 @@ public class CPTForSSBNNodeGenerator {
 //				gpt.showTable("Table for Node " + ssbnNode + " - " + groupParents);
 				
 				//Remove the temp node of the list of children of the node. 
-				for(SSBNNode parent: groupParents){
+				for(SSBNNode parent: parentsForEntityList){
 					parent.getProbNode().getChildren().remove(tempNode.getProbNode()); 
 				    parent.removeChildNode(tempNode); 
 				}
@@ -261,41 +268,42 @@ public class CPTForSSBNNodeGenerator {
 			
 				//TODO remove the parents of the tempNode because it is added to the list
 				//of child nodes of the other node!!!
-				for(SSBNNode parent: groupParents){
+				for(SSBNNode parent: parentsForEntityList){
 //					tempNode.removeParentNode(parent); 
 				}
 			}			
 			
-			//Reorganize the variables in table
-			int variablesSize = cptResidentNode.getVariablesSize(); 
-			int indexContext = cptResidentNode.getVariableIndex(ssbnNode.getContextFatherSSBNNode().getProbNode()); 
-			cptResidentNode.moveVariableWithoutMoveData(indexContext, variablesSize - 1); 
+			//Reajust the position of the context node
+			cptResidentNode.moveVariableWithoutMoveData(
+					cptResidentNode.getVariableIndex(ssbnNode.getContextFatherSSBNNode().getProbNode())
+					, cptResidentNode.getVariablesSize() - 1); 
 			
-			//Step 3: Fazer o XOR das tabelas obtidas utilizando a tabela do nó de contexto
 			
-			Debug.println("Gerando tabela para o nó residente");
+			//Step 3: Make the XOR at the tables generate from the previous instructions
+			
+			Debug.println("Table for the resident node: ");
 
-			int columnsByEntity = cptResidentNode.tableSize() / ssbnNode.getResident().getPossibleValueListIncludingEntityInstances().size();
+			int columnsByEntity = cptResidentNode.tableSize() / 
+			                    ssbnNode.getResident().getPossibleValueListIncludingEntityInstances().size();
 			columnsByEntity /= contextFather.getProbNode().getStatesSize(); 
 			
-			Debug.println("Colunas por entidade= " + columnsByEntity);
+			Debug.println("Columns per entity = " + columnsByEntity);
 
 			int rows = ssbnNode.getProbNode().getStatesSize(); 
 			
-			for(int i=0; i < contextFather.getProbNode().getStatesSize(); i++){
+			for(int stateIndex = 0; stateIndex < contextFather.getProbNode().getStatesSize(); stateIndex++){
 			    
-				Debug.println("\n i = " + i);
-				
-				String entity = contextFather.getProbNode().getStateAt(i);
-				Debug.println("Entity = " + entity);
+				String entity = contextFather.getProbNode().getStateAt(stateIndex);
+				Debug.println("\n State index = " + stateIndex + ": " + entity);
 				PotentialTable cptEntity = mapCPTByEntity.get(entity); 
 				
-				//descobrir a posição inicial...
-				List<SSBNNode> parentsByEntity = mapParentsByEntity.get(entity); 
-				ProbabilisticNode pnEntity = parentsByEntity.get(0).getProbNode(); 
+				//Discover initial position
+				List<SSBNNode> parentsForEntity = mapParentsByEntity.get(entity); 
+				
+				ProbabilisticNode pnEntity = parentsForEntity.get(0).getProbNode(); //??
 			
 				int indexEntityInCptResidentNode = cptResidentNode.getVariableIndex(pnEntity) - 1; //the index 0 is the node itself
-				int entityIndex = (indexEntityInCptResidentNode + parentsByEntity.size() - 1)/ parentsByEntity.size(); 
+				int entityIndex = (indexEntityInCptResidentNode + parentsForEntity.size() - 1)/ parentsForEntity.size(); 
 				
 				Debug.println("Entity Index=" + entityIndex);
 				
@@ -315,7 +323,7 @@ public class CPTForSSBNNodeGenerator {
 				
                 //Repetitions of a all is based of the number os variables down of this. 
 				int repAll = 1; 
-				for(int index = indexEntityInCptResidentNode + parentsByEntity.size(); 
+				for(int index = indexEntityInCptResidentNode + parentsForEntity.size(); 
 				    index < cptResidentNode.getVariablesSize() - 2;  //minus Entity row and Node row.  
 				    index++){
 		
@@ -324,7 +332,7 @@ public class CPTForSSBNNodeGenerator {
 				}
 				
 				int inOrder = 1; 
-				for(SSBNNode node: parentsByEntity){
+				for(SSBNNode node: parentsForEntity){
 					inOrder*= node.getResident().getPossibleValueList().size(); 
 				}
 				

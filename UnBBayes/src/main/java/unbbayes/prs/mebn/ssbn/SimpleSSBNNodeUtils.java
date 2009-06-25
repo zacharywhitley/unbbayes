@@ -107,6 +107,7 @@ public class SimpleSSBNNodeUtils {
 				}else{
 					//We have only one context node father
 					ContextNode contextNode = simpleContextNodeList.get(0).getContextNode(); 
+					System.out.println("Translate..." + contextNode.getName());
 					ContextFatherSSBNNode contextFather = mapContextNode.get(contextNode); 
 					if(contextFather == null){
 						contextFather = new ContextFatherSSBNNode(pn, contextNode);
@@ -143,20 +144,24 @@ public class SimpleSSBNNodeUtils {
 		
 		for(SimpleSSBNNode simple: simpleSSBNNodeList){
 			
-			if(simple.getParents().size()==0){
-				if(simple.getChildNodes().size()==0){
-					continue; //This node is out of the network. 
-				}
-			}
+//			if(simple.getParents().size()==0){
+//				if(simple.getChildNodes().size()==0){
+//					continue; //This node is out of the network. 
+//				}
+//			}
 			
 			SSBNNode ssbnNode = correspondencyMap.get(simple); 
 			
+			System.out.println("SSBNNode = " + ssbnNode);
 			for(SimpleSSBNNode parent: simple.getParents()){
+				System.out.println("   > add parent = " + parent);
 				SSBNNode parentSSBNNode = correspondencyMap.get(parent); 
 				ssbnNode.addParent(parentSSBNNode, false); 
 			}
 			
 		}
+		
+		System.out.println("end..");
 		
 		return listSSBNNodes; 
 	}

@@ -128,7 +128,7 @@ public class ContextFatherSSBNNode {
 	}
 
 	public void addPossibleValue(LiteralEntityInstance e){
-		Debug.println("--> Acrescentado estado ao ssbn context node = "  + e.toString());
+		Debug.println(this.contextNode.getFormula() + " --> Acrescentado estado ao ssbn context node = "  + e.toString());
 		if(possibleValues != null){
 			possibleValues.add(e);
 			probNode.appendState(e.getInstanceName());
