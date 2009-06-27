@@ -204,6 +204,36 @@ public class EntityTree{
 		
 	}
 	
+	/** 
+	 * Recover all the possible combinations of entities 
+	 */
+	public List<String[]> recoverCombinationsEntitiesPossibles(){
+		
+		List<String[]> combinationList = new ArrayList<String[]>(); 
+		
+		List<EntityNode> nodesOfLastLevel = getNodesOfLastLevel(); 
+		
+		//Search in each path
+		for(EntityNode lastNodeOfPath: nodesOfLastLevel){
+			
+			EntityNode nodeOfPath = lastNodeOfPath; 
+			
+			String[] entityArray = new String[this.getNumberOfLevels()]; 
+			
+			int i = 0; 
+			while(nodeOfPath != root){
+				entityArray[i] = nodeOfPath.getEntityName();
+				nodeOfPath = nodeOfPath.getParent(); 
+				i++; 
+			}
+			
+			combinationList.add(entityArray); 
+		}//for path
+		
+		return combinationList; 
+		
+	}
+	
 	/**
 	 * Return all ov instances 
 	 */
@@ -326,6 +356,21 @@ public class EntityTree{
 		}else{
 			return -1; 
 		}
+		
+	}
+	
+	private int getNumberOfLevels(){
+		
+		EntityNode node = root; 
+		int numberOfLevels = 0; 
+		
+		//node should have a node of the last level 
+		while(node.getChildren().size()!=0){
+			node = node.getChildren().get(0);
+			numberOfLevels++;
+		}
+		
+		return numberOfLevels; 
 		
 	}
 	
@@ -452,7 +497,6 @@ public class EntityTree{
 			return string; 
 		}
 	}
-	
 	
 	
 	

@@ -197,7 +197,7 @@ public class MFragInstance {
 	// ORDINARY VARIABLE EVALUATION STATE LISTS
 
 	
-	public SimpleContextNodeFatherSSBNNode getContextNodeFather(OrdinaryVariable ov){
+	public SimpleContextNodeFatherSSBNNode getContextNodeFatherForOv(OrdinaryVariable ov){
 		for(int i = 0; i < ovList.length; i++){
 			if(ovList[i].equals(ov)){
 				return contextForOVList[i];  
@@ -207,11 +207,11 @@ public class MFragInstance {
 	}
 	
 	public void setContextNodeForOrdinaryVariable(OrdinaryVariable ov, 
-			SimpleContextNodeFatherSSBNNode contextNode){
+			SimpleContextNodeFatherSSBNNode contextNodeFather){
 		
 		for(int i = 0; i < ovList.length; i++){
 			if(ovList[i].equals(ov)){
-				contextForOVList[i] = contextNode;  
+				contextForOVList[i] = contextNodeFather;  
 			}
 		}
 		
@@ -235,6 +235,12 @@ public class MFragInstance {
 		
 		return entityTree.recoverCombinationsEntitiesPossibles(knownOVArray, 
 				knownEntityArray, ovSearchArray); 
+		
+	}
+	
+	public List<String[]> recoverAllCombinationsEntitiesPossibles(){
+		
+		return entityTree.recoverCombinationsEntitiesPossibles(); 
 		
 	}
 	

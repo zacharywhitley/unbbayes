@@ -107,7 +107,6 @@ public class SimpleSSBNNodeUtils {
 				}else{
 					//We have only one context node father
 					ContextNode contextNode = simpleContextNodeList.get(0).getContextNode(); 
-					System.out.println("Translate..." + contextNode.getName());
 					ContextFatherSSBNNode contextFather = mapContextNode.get(contextNode); 
 					if(contextFather == null){
 						contextFather = new ContextFatherSSBNNode(pn, contextNode);

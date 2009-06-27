@@ -327,16 +327,19 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	}
 
 	/**
-	 * Cria SSBNNodes pais de um node para determinado nó residente. 
+	 * Create the SSBNNodes parents for a node (version when the parent is a 
+	 * resident node). 
 	 * 
-	 * @param node                    Nó para o qual o pai serão avaliados
-	 * @param ovFilledArray           Variaveis ordinarias que já possuem os seus valores definidos
-	 * @param entityFilledArray       Valores definidos para as variáveis ordinarias de ovFilledArray
-	 * @param residentNodeParent      Pai a ser avaliado. 
+	 * @param node                    Node for witch the parents will be evaluated
+	 * @param ovFilledArray           Ordinary variables that already are instanciated
+	 * @param entityFilledArray       Entity values for the ordinary variablese of the ovFilledArray
+	 * @param residentNodeParent      Parent to be evaluated
+	 * 
+	 * @throws ImplementationRestrictionException 
 	 */
 	private List<SimpleSSBNNode> createParents(SimpleSSBNNode node,
 			OrdinaryVariable[] ovFilledArray, LiteralEntityInstance[] entityFilledArray,
-			ResidentNode residentNodeParent) {
+			ResidentNode residentNodeParent) throws ImplementationRestrictionException {
 		
 		//fix a unknown Bug (mistic)... 
 		if(residentNodeParent.equals(node.getResidentNode())){
@@ -349,16 +352,18 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	}
 
 	/**
-	 * Cria SSBNNodes pais de um node para determinado nó residente. 
+	 * Create the SSBNNodes parents for a node (version when the parent is a input node)
 	 * 
-	 * @param node                    Nó para o qual o pai serão avaliados
-	 * @param ovFilledArray           Variaveis ordinarias que já possuem os seus valores definidos
-	 * @param entityFilledArray       Valores definidos para as variáveis ordinarias de ovFilledArray
-	 * @param residentNodeParent      Pai a ser avaliado. 
+	 * @param node                    Node for witch the parents will be evaluated
+	 * @param ovFilledArray           Ordinary variables that already are instanciated
+	 * @param entityFilledArray       Entity values for the ordinary variablese of the ovFilledArray
+	 * @param residentNodeParent      Parent to be evaluated
+	 * 
+	 * @throws ImplementationRestrictionException 
 	 */
 	private  List<SimpleSSBNNode> createParents(SimpleSSBNNode node,
 			OrdinaryVariable[] ovFilledArray, LiteralEntityInstance[] entityFilledArray,
-			InputNode inputNodeParent) {
+			InputNode inputNodeParent) throws ImplementationRestrictionException {
 
 		
 		JacketNode nodeParent = new JacketNode(inputNodeParent); 
@@ -366,9 +371,19 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		return createParents(node, ovFilledArray, entityFilledArray, nodeParent); 
 	}	
 	
+	/**
+	 * Create the SSBNNodes parents for a node 
+	 * 
+	 * @param node                    Node for witch the parents will be evaluated
+	 * @param ovFilledArray           Ordinary variables that already are instanciated
+	 * @param entityFilledArray       Entity values for the ordinary variablese of the ovFilledArray
+	 * @param residentNodeParent      Parent to be evaluated
+	 * 
+	 * @throws ImplementationRestrictionException 
+	 */	
 	private  List<SimpleSSBNNode> createParents(SimpleSSBNNode node,
 			OrdinaryVariable[] ovFilledArray, LiteralEntityInstance[] entityFilledArray,
-			JacketNode nodeParent) {
+			JacketNode nodeParent) throws ImplementationRestrictionException {
 		
 //		if(internalDebug){
 //			System.out.println("[In] CreateParents");
@@ -390,7 +405,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		
 		int contextParentsCount = 0; 
 		
-		List<OrdinaryVariable> newNodeOvFaultList = new ArrayList<OrdinaryVariable>(); 
+		List<OrdinaryVariable> ovFaultForNewNodeList = new ArrayList<OrdinaryVariable>(); 
 		
 		//Fill the ovFault list. 
 		for(OrdinaryVariable ov: nodeParent.getOrdinaryVariableList()){
@@ -402,7 +417,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 				}
 			}
 			if(!find){
-				newNodeOvFaultList.add(ov); 
+				ovFaultForNewNodeList.add(ov); 
 			}
 		}
 		
@@ -412,31 +427,33 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		List<SimpleContextNodeFatherSSBNNode> contextNodeFatherList = 
 			new ArrayList<SimpleContextNodeFatherSSBNNode>(); 
 		
-		if(newNodeOvFaultList.size()>0){
+		if(ovFaultForNewNodeList.size()>0){
 			
-			for(OrdinaryVariable ov: newNodeOvFaultList){
+			for(OrdinaryVariable ov: ovFaultForNewNodeList){
 				
 				SimpleContextNodeFatherSSBNNode contextNodeFather = 
-					node.getMFragInstance().getContextNodeFather(ov); 
+					node.getMFragInstance().getContextNodeFatherForOv(ov); 
 				
 				if(contextNodeFather != null){
 					contextParentsCount++;
 					contextNodeFatherList.add(contextNodeFather); 
 
 					if(contextParentsCount > 1)	{
-						//TODO Exception??? Is dificult treat more than one context parent? 
+						//In this implementation, only one context node parent is accept 
+						throw new ImplementationRestrictionException(
+								ImplementationRestrictionException.MORE_THAN_ONE_CTXT_NODE_SEARCH); 
 					}
-				
+				}else{
+					//In this case the ov was solved using the IsA nodes. 
 				}
-				
 			}
 			
 			possibleCombinationsForOvFaultList = node.getMFragInstance().
 			        recoverCombinationsEntitiesPossibles(
 					    ovFilledArray, 
 				      	entityFilledArray, 
-					    newNodeOvFaultList.toArray(
-                    		 new OrdinaryVariable[newNodeOvFaultList.size()])); 
+					    ovFaultForNewNodeList.toArray(
+                    		 new OrdinaryVariable[ovFaultForNewNodeList.size()])); 
 			
 			System.out.println("Possible combinations for ov fault: ");
 			for(String[] combination: possibleCombinationsForOvFaultList){
@@ -450,10 +467,12 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			
 			
 		}else{
-			possibleCombinationsForOvFaultList.add(new String[0]); //A stub element
+			possibleCombinationsForOvFaultList.add(new String[0]); //A stub element (see for below)
 		}
 		
-		//Create the new node... 
+		//Create the new node... We pass by each combination for the ov fault list. 
+		//Note that if we don't have any ov fault, we should have one stub element
+		//in the possibleCombinationsForOvFaultList for pass for this loop one time. 
 		for(String[] possibleCombination: possibleCombinationsForOvFaultList){
 			
 			SimpleSSBNNode newNode = SimpleSSBNNode.getInstance(
@@ -462,10 +481,10 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			//1. Add the ovInstances of the children that the father also have 
 			for(int i = 0; i < node.getOvArray().length; i++){
 				
-				//Para um nó de input IX1 referente ao nó resident RX1 devemos recuperar 
-				//a variável ordinária da HomeMFrag de RX1 correspondente a V.O. 
-				//da MFrag de IX1 para então setar-mos o ssbnNode. 
-				
+				//For a input node IX1 that references the resident node RX1, we 
+				//should recover the ordinary variable of the RX1's HomeMFrag that
+				//correspond to the OV of the IX1's MFrag and then set it to the 
+				//SSBNNode. 
 				OrdinaryVariable correspondentOV = 
 					nodeParent.getCorrespondentOrdinaryVariable(node.getOvArray()[i]);
 				
@@ -477,15 +496,15 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			}
 			
 			//2. Create the new OVInstances for the combination
-			for(int index = 0; index < newNodeOvFaultList.size(); index++){
+			for(int index = 0; index < ovFaultForNewNodeList.size(); index++){
 				
 				OrdinaryVariable correspondentOV = 
-					nodeParent.getCorrespondentOrdinaryVariable(newNodeOvFaultList.get(index));
+					nodeParent.getCorrespondentOrdinaryVariable(ovFaultForNewNodeList.get(index));
 				
 				newNode.setEntityForOv(
 						correspondentOV, 
 						LiteralEntityInstance.getInstance(possibleCombination[index], 
-								newNodeOvFaultList.get(index).getValueType())); 
+								ovFaultForNewNodeList.get(index).getValueType())); 
 			}
 			
 			newNode = addNodeToMFragInstance(node, newNode); 
@@ -777,6 +796,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 				}else{
 
 					ssbn.getLogManager().appendln(2,"Try 2: Use the iteration strategy");
+					ssbn.getLogManager().appendln(2,"...still not implemented.\n");
 					
 					//---> 3) Use the Interation with user Strategy. 
 					//TODO To be developed yet... 
@@ -818,7 +838,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 							simpleContextNodeFather = 
 								evaluateUncertaintyReferenceCase(mFragInstance, 
 										contextNode, ovInstancesFault.get(0)); 
-							if(simpleContextNodeFather!=null){
+							if(simpleContextNodeFather != null){
 								break; //OK!!! Good!!! Yes!!! 
 							}
 						}
@@ -860,14 +880,17 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			
 			List<String> possibleValues = kb.getEntityByType(ov.getValueType().getName()); 
 			
-//			for(String possibleValue: possibleValues){
-//				ssbn.getLogManager().appendln("  > " + possibleValue);
-//			}
+			for(String possibleValue: possibleValues){
+				ssbn.getLogManager().appendln("  > " + possibleValue);
+			}
 			
 			String possibleValuesArray[] = possibleValues.toArray(new String[possibleValues.size()]); 
 			List<String[]> entityValuesArray = new ArrayList<String[]>(); 
-			entityValuesArray.add(possibleValuesArray); 
-				
+			
+			for(String possibleValue: possibleValuesArray){
+				entityValuesArray.add(new String[]{possibleValue}); 
+			}
+				                                                                
 			OrdinaryVariable ovArray[] = new OrdinaryVariable[1];
 			ovArray[0] = ov; 
 			
@@ -879,6 +902,17 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			}
 		}
 		
+		List<String[]> possibleCombinationsList = mFragInstance.recoverAllCombinationsEntitiesPossibles(); 
+		ssbn.getLogManager().appendln("|-------------------------------------------------------"); 
+		ssbn.getLogManager().appendln("| Result of evalation of the context nodes (Possible combinations): ");
+		for(String[] possibleCombination : possibleCombinationsList){
+			ssbn.getLogManager().append("| > ");
+			for(String ordinaryVariableValue: possibleCombination){
+				ssbn.getLogManager().append(" " + ordinaryVariableValue);
+			}
+			ssbn.getLogManager().appendln(" < ");
+		}
+		ssbn.getLogManager().appendln("|-------------------------------------------------------"); 
 		
 		//Return mFragInstance with the ordinary variables filled. 
 		return mFragInstance; 
@@ -956,6 +990,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			return contextParent; 
 			
 		} catch (MFragContextFailException e) {
+			
 			//This exception don't should be throw because we assume that don't 
 			//have value for the ordinary variable at the list of OVInstances 
 			//of the MFrag and for this, don't exists a way to exists a inconsistency
