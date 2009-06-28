@@ -192,7 +192,7 @@ public class ContextNode extends MultiEntityNode {
     		for(OVInstance ovInstance: ovInstanceSet){
     			if(ov.equals(ovInstance.getOv())){
     				found = true; 
-    				break; 
+    				continue; 
     			}
     		}
     		
