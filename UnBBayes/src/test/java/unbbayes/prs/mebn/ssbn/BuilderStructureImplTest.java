@@ -372,6 +372,9 @@ public class BuilderStructureImplTest extends TestCase{
 		} catch (OVInstanceFaultException e) {
 			e.printStackTrace();
 			fail(); 
+		} catch (MFragContextFailException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} 
 		
 		for(ContextNode context: mFragInstance.getContextNodeList()){
@@ -414,6 +417,9 @@ public class BuilderStructureImplTest extends TestCase{
 		} catch (OVInstanceFaultException e) {
 			e.printStackTrace();
 			fail(); 
+		} catch (MFragContextFailException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} 
 		
 		assertEquals(true, mFragInstance.isUseDefaultDistribution()); 
@@ -452,6 +458,9 @@ public class BuilderStructureImplTest extends TestCase{
 		} catch (OVInstanceFaultException e) {
 			e.printStackTrace();
 			fail(); 
+		} catch (MFragContextFailException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} 
 		
 		assertEquals(true, mFragInstance.isUseDefaultDistribution()); 
