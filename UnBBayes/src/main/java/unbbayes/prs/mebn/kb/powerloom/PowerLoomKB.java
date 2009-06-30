@@ -599,7 +599,6 @@ public class PowerLoomKB implements KnowledgeBase {
 		
 		//This implementation treat only the case where have only one search variable
 		if(ovFaultList.size()>1){
-			Debug.println("--> OV Fault list grater than 1!"); 
 			throw new OVInstanceFaultException(ovFaultList); 
 		}
 		
@@ -614,7 +613,7 @@ public class PowerLoomKB implements KnowledgeBase {
 		//Build the retrieve statement. 
 		formula+=" all ";
 		
-		//List of variables of retrieve
+		//List of variables of retrieve. Only one ordinary variable fault. 
 		formula+="(" + "?" + ovFault.getName() + " " + ovFault.getValueType() + ")"; 
 		
 		//Formula
@@ -654,10 +653,14 @@ public class PowerLoomKB implements KnowledgeBase {
 		}
 		
 		//Build the retrieve statement. 
-		formula+=" all ";
 		
 		//List of variables of retrieve
-        formula+="("; 
+		//Sample: (all ((?x Person)(?Y Person) (Likes ?x ?y)))
+		//That will be: (retrieve (all ((?x Person)(?Y Person) (Likes ?x ?y))))
+        
+		formula+=" all ";
+		
+		formula+="("; 
         for(OrdinaryVariable ov: ovFaultArray){
         	formula+= "(" + " ?" + ov.getName() + " " + ov.getValueType().getName() + ")"; 
         }
@@ -674,7 +677,7 @@ public class PowerLoomKB implements KnowledgeBase {
 		PlIterator iterator = PLI.sRetrieve(formula, moduleFindingName, null);
 		
 		SearchResult searchResult; 
-		System.out.println("Result = " + iterator.length());
+		Debug.println("Result = " + iterator.length());
 		if(iterator.length() != 0){
 			
 			//Create the SearchResult object. 
@@ -683,7 +686,7 @@ public class PowerLoomKB implements KnowledgeBase {
 				String[] resultN = new String[ovFaultArray.length];
 				for(int i = 0; i < ovFaultArray.length; i++){ 
 					resultN[i] = PLI.getNthString(iterator, i, moduleFinding, environment); 
-					System.out.println("   > " + resultN[i]);
+					Debug.println("   > " + resultN[i]);
 				}
 				searchResult.addResult(resultN); 
 			}
@@ -962,8 +965,7 @@ public class PowerLoomKB implements KnowledgeBase {
 		
 		ResidentNodePointer node = (ResidentNodePointer)operatorNode.getNodeVariable(); 
 		   operator+= node.getResidentNode().getName(); 
-		   
-//		   operator+="("; 
+
 		   for(OrdinaryVariable ordVariable: node.getOrdinaryVariableList()){
 			   operator += " "; 
 			   OVInstance ovInstance = getOVInstanceForOV(ordVariable, ovInstances); 
@@ -974,7 +976,6 @@ public class PowerLoomKB implements KnowledgeBase {
 				   operator += "?" + ordVariable.getName(); 
 			   } 
 		   }
-//		   operator+=")";
 		   
 		return operator;
 	}
@@ -1051,8 +1052,8 @@ public class PowerLoomKB implements KnowledgeBase {
 	 * Used for: 
 	 * AND
 	 * OR
-	 * =>
-	 * <=>
+	 * => (implies)
+	 * <=> (iff)
 	 */
 	private String makeBynaryStatement(NodeFormulaTree node, String conectiveName, List<OVInstance> ovInstances){
     	
@@ -1079,7 +1080,7 @@ public class PowerLoomKB implements KnowledgeBase {
 	
 	/* 
 	 * Used for:
-	 * =
+	 * = (equal)
 	 */
 	private String makeEqualStatement(NodeFormulaTree node, String conectiveName, List<OVInstance> ovInstances){
     	
@@ -1153,7 +1154,7 @@ public class PowerLoomKB implements KnowledgeBase {
     		retorno+= "?" + ov.getName() + ",";
     	}
     	
-    	//retirar a virgula: 
+    	//delete the virgle
     	if(listExemplares.getChildren().size() > 0){
     	   retorno = retorno.substring(0, retorno.length() - 2); 
     	}
