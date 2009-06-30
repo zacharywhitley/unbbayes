@@ -659,7 +659,7 @@ public class PowerLoomKB implements KnowledgeBase {
 		//List of variables of retrieve
         formula+="("; 
         for(OrdinaryVariable ov: ovFaultArray){
-        	formula+= " ?" + ov.getName() + " " + ov.getValueType().getName(); 
+        	formula+= "(" + " ?" + ov.getName() + " " + ov.getValueType().getName() + ")"; 
         }
         
         formula+=")"; 
