@@ -49,7 +49,6 @@ public class SSBN {
 	private List<Query> queryList; 
 	
 	private List<SimpleSSBNNode> simpleSSBNNodeList; 
-	private List<SimpleEdge> edgeList; 
 	
 	private List<SSBNNode> ssbnNodeList;
 	
@@ -81,7 +80,6 @@ public class SSBN {
 		warningList = new ArrayList<SSBNWarning>();
 		simpleSSBNNodeList = new ArrayList<SimpleSSBNNode>(); 
 		ssbnNodeList = new ArrayList<SSBNNode>(); 
-		edgeList = new ArrayList<SimpleEdge>();
 		mFragInstanceList = new ArrayList<MFragInstance>(); 
 		
 		logManager = new TextLogManager(); 
@@ -236,6 +234,10 @@ public class SSBN {
 		return simpleSSBNNodeList;
 	}
 	
+	public void clearSimpleSsbnNodeList(){
+		this.simpleSSBNNodeList.clear(); 
+	}
+	
 	public List<SSBNNode> getSsbnNodeList(){
 		return ssbnNodeList; 
 	}
@@ -247,17 +249,13 @@ public class SSBN {
 	public void addSSBNNode(SimpleSSBNNode node){
 		this.simpleSSBNNodeList.add(node); 
 	}
-
-	public List<SimpleEdge> getEdgeList() {
-		return edgeList;
-	}
-	
-	public void addEdge(SimpleEdge edge) {
-		this.edgeList.add(edge);
-	}
 	
 	public List<MFragInstance> getMFragInstanceList() {
 		return mFragInstanceList;
+	}
+	
+	public void clearMFragInstanceList(){
+		this.mFragInstanceList.clear(); 
 	}
 	
 	//INFORMATIONS ABOUT THE GENERATION OF THE SSBN 
