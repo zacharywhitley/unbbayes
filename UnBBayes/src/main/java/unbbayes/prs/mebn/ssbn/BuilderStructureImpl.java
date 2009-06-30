@@ -187,6 +187,8 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			throw e; 
 		} catch (OVInstanceFaultException e) {
 			throw new ImplementationRestrictionException(e.getMessage()); 
+		} catch (MFragContextFailException e) {
+			throw new SSBNNodeGeneralException(e.getMessage()); 
 		} 
 		
 		ssbn.getLogManager().appendln(" "); 
@@ -717,11 +719,12 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	 * @throws SSBNNodeGeneralException 
 	 * @throws ImplementationRestrictionException 
 	 * @throws OVInstanceFaultException 
+	 * @throws MFragContextFailException 
 	 */
 	public MFragInstance evaluateMFragContextNodes(MFragInstance mFragInstance) 
 	                   throws ImplementationRestrictionException, 
 	                          SSBNNodeGeneralException, 
-	                          OVInstanceFaultException{
+	                          OVInstanceFaultException, MFragContextFailException{
 		
 		//Consider that the tree with the know ordinary variables are already mounted. 
 		//Consider that the only ordinary variables filled are the alread know OV
@@ -788,7 +791,12 @@ public class BuilderStructureImpl implements IBuilderStructure{
 						e.printStackTrace(); 
 						mFragInstance.setStateEvaluationOfContextNode(contextNode, ContextNodeEvaluationState.EVALUATION_FAIL); 
 						mFragInstance.setUseDefaultDistribution(true); 
-						ssbn.getLogManager().appendln(2,"Context node fail: use the default distribution");
+						ssbn.getLogManager().appendln(2,"   !!!Context node fail: use the default distribution");
+						
+						//Here, the context node fail adding the values for a ordinary variable
+						//fault. This fail impossibilite the evaluation of the rest of the MFragInstance, 
+						//because, this node, used to recover the possible values, fail. 
+						throw e; 
 					}
 
 					break;
