@@ -873,6 +873,14 @@ public class MSeparationUtilityTest extends TestCase {
 				return this.getName().equals(node.getName());
 			}
 			return false;
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			return this.getName();
 		}		
 		
 		

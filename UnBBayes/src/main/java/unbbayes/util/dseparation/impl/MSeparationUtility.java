@@ -28,10 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
 import unbbayes.prs.INode;
 import unbbayes.util.Debug;
 import unbbayes.util.dseparation.IDSeparationUtility;
+
 
 /**
  * @author Shou Matsumoto
@@ -354,17 +354,54 @@ public class MSeparationUtility implements IDSeparationUtility {
 	
 	
 	/**
-	 * Obtains recursively all ancesters of a given node.
+	 * Obtains recursively all ancestors of a given node.
 	 * I just don't want a public method to be recursive... Don't ask me why.
 	 * @param node
+	 * @param nodesToStop : the recursive search for further ancestors will stop if any of those nodes are detected as direct ancestor.
+	 *                      Only the current recursion will stop, so, only the nodes which are exclusively ancestors
+	 *                      of nodesToStop will be ignored.
 	 * @return set of nodes
 	 */
-	private Set<INode> getAllAncestorsRec(INode node) {
+	private Set<INode> getAllAncestorsRec(INode node, Set<INode> nodesToStop) {
 		Set<INode> ret = new HashSet<INode>();		
 		try {
 			for (INode parent : node.getParentNodes()) {
-				ret.add(parent);
-				ret.addAll(this.getAllAncestorsRec(parent));
+				if (!nodesToStop.contains(parent)) {
+					ret.add(parent);
+					ret.addAll(this.getAllAncestorsRec(parent, nodesToStop));
+				}
+			}
+		} catch (NullPointerException npe) {
+			// we can assume that there is no parent...
+			Debug.println(this.getClass(), npe.getMessage(), npe);
+		}		
+		return ret;
+	}
+	
+	/**
+	 * Obtains recursively all descendants of a given node.
+	 * I just don't want a public method to be recursive... Don't ask me why.
+	 * @param node
+	 * @param nodesToStop : the recursive search for further descendants will stop if any of those nodes are detected.
+	 *                      Only the current recursion will stop, so, only the nodes which are exclusively descendants
+	 *                      of nodesToStop will be ignored.
+	 * @param visitor : visitor to be executed when any of nodesToStop is detected. A node inside nodesToStop
+	 *                  will be passed as argument. The returned value will be added to return. Set it to null if nothing must be done.
+	 * @return set of nodes
+	 */
+	private Set<INode> getAllDescendantsRec(INode node, Set<INode> nodesToStop, MSeparationUtilityNodeVisitor visitor) {
+		Set<INode> ret = new HashSet<INode>();		
+		try {
+			for (INode child : node.getChildNodes()) {
+				if (!nodesToStop.contains(child)) {
+					ret.add(child);
+					ret.addAll(this.getAllDescendantsRec(child, nodesToStop, visitor));
+				} else if (visitor != null) {
+					Collection c = visitor.visit(child);
+					if (c != null) {
+						ret.addAll(c);
+					}
+				}
 			}
 		} catch (NullPointerException npe) {
 			// we can assume that there is no parent...
@@ -375,14 +412,69 @@ public class MSeparationUtility implements IDSeparationUtility {
 	
 	/**
 	 * Method to get all ancestors of a given set of nodes.
+	 * It is equivalent to {@link #getAllAncestors(Set, null)}
+	 * @see #getAllAncestors(Set, Set)
 	 * @param nodes : nodes to be analyzed.
 	 * @return : a set of nodes
 	 */
 	public Set<INode> getAllAncestors(Set<INode> nodes) {
+		return this.getAllAncestors(nodes, null);
+	}
+	
+	
+	/**
+	 * Method to get all ancestors of a given set of nodes.
+	 * @param nodes : nodes to be analyzed.
+	 * @param nodesToStop : the recursive search for further ancestors will stop if any of those nodes are detected as direct ancestor.
+	 *                      Only the current recursion will stop, so, only the nodes which are exclusively ancestors
+	 *                      of nodesToStop will be ignored.
+	 * @return : a set of nodes not including nodesToStop and their unique ancestors (nodes which are
+	 *           ancestors of only nodesToStop)
+	 */
+	protected Set<INode> getAllAncestors(Set<INode> nodes, Set<INode> nodesToStop) {
 		Set<INode> ret = new HashSet<INode>();	
+		if (nodesToStop == null) {
+			nodesToStop = new HashSet<INode>(0);
+		}
 		for (INode node : nodes) {
 			// searches recursivelly
-			ret.addAll(this.getAllAncestorsRec(node));	
+			ret.addAll(this.getAllAncestorsRec(node, nodesToStop));	
+		}
+		return ret;
+	}
+	
+	
+	/**
+	 * Method to get all descendants of a given set of nodes.
+	 * @param nodes : nodes to be analyzed.
+	 * @return : a set of nodes not including nodesToStop and their unique descendants (nodes which are
+	 *           descendants of only nodesToStop)
+	 */
+	public Set<INode> getAllDescendants(Set<INode> nodes) {
+		return this.getAllDescendants(nodes, null, null);
+	}
+	
+	
+	/**
+	 * Method to get all descendants of a given set of nodes.
+	 * @param nodes : nodes to be analyzed.
+	 * @param nodesToStop : the recursive search for further descendants will stop if any of those nodes are detected.
+	 *                      Only the current recursion will stop, so, only the nodes which are exclusively descendants
+	 *                      of nodesToStop will be ignored.
+	 *                      Using null to this param will make this method to find all descendants
+	 * @param visitor : visitor to be executed when any of nodesToStop is detected. A node inside nodesToStop
+	 *                  will be passed as argument and its return will be added to return. Set it to null if nothing must be done.
+	 * @return : a set of nodes not including nodesToStop and their unique descendants (nodes which are
+	 *           descendants of only nodesToStop)
+	 */
+	protected Set<INode> getAllDescendants(Set<INode> nodes, Set<INode> nodesToStop, MSeparationUtilityNodeVisitor visitor) {
+		Set<INode> ret = new HashSet<INode>();	
+		if (nodesToStop == null) {
+			nodesToStop = new HashSet<INode>(0);
+		}
+		for (INode node : nodes) {
+			// searches recursivelly
+			ret.addAll(this.getAllDescendantsRec(node, nodesToStop, visitor));	
 		}
 		return ret;
 	}
@@ -416,6 +508,28 @@ public class MSeparationUtility implements IDSeparationUtility {
 	 */
 	public boolean isDSeparated(Set<INode> consideredNodes, Set<INode> from, Set<INode> to, Set<INode> separators) {
 		
+		// lets guarantee that no input parameters are changed after method execution
+		if (from != null) {
+			from = new HashSet<INode>(from);
+		} else {
+			from = new HashSet<INode>(0);
+		}
+		if (to != null) {
+			to = new HashSet<INode>(to);
+		} else {
+			to = new HashSet<INode>(0);
+		}
+		if (consideredNodes != null) {
+			consideredNodes = new HashSet<INode>(consideredNodes);
+		} else {
+			consideredNodes = new HashSet<INode>(0);
+		}
+		if (separators != null) {
+			separators = new HashSet<INode>(separators);
+		} else {
+			separators = new HashSet<INode>(0);
+		}
+		
 		// initial check
 		if (from.isEmpty()) {
 			return false;
@@ -441,6 +555,61 @@ public class MSeparationUtility implements IDSeparationUtility {
 		// step 2 & 3 - make it moral: propose parents' marriage...
 		mapRepresentingNonOrientedGraph = this.makeItMoral(mapRepresentingNonOrientedGraph);
 		
+		
+		/*
+		 * Optimization attempts:
+		 * 	#1 - If a node n has the i-th adjacent node A(n,i) with no active path to query node, no adjacent node
+		 *      A(n,j) as j != i has an active path to query node passing by A(n,i). So, there is no need to 
+		 *      test such path again.
+		 *  #2 - Ancestors and descendants of query nodes are not d-separated if they are not blocked by a finding.
+		 * 		So, we do not have to test d-separation for (a) ancestors of queries which are not
+		 * 		ancestors of findings; (b) descendants of queries which are not descendants of findings.
+		 *  #3 - If a child node is a query or a finding, its parent's moralyzed path will exist at any testing
+		 *      context (no matter what nodes are being tested; those nodes would be moralyzed).
+		 *  #4 - Since we are testing path existence (path with no findings blocking its way), we can assume
+		 *  	that if a node n has an active path to query, any node having an active path to n has also an
+		 *  	active path to query. In that case, n may be considered as query node as well (having a path
+		 *  	to n means directly that there is a path to query too).
+		 */
+		
+		// optimization attempt #2 and #4
+		to.addAll(this.getAllAncestors(to, separators));
+		
+		// optimization attempt #2 and #4 and some initializations for attempt #3
+		Set<INode> reachableSeparators = new HashSet<INode>();
+		to.addAll(
+				this.getAllDescendants(
+						to, 
+						separators, 
+						new MSeparationUtilityNodeVisitor (reachableSeparators) {
+							public Collection visit(Object ... param) {
+								// we are just adding to set reachableSeparators the findings that are reachable from query.
+								// we assume param[0] is the finding which getAllDescendants above has detected.
+								// reachableSeparators will be used after this in order to do optimization attempt #3
+								((Set)this.attribute).add(param[0]); // attribute is reachableSeparators
+								return null;	// do nothing more
+							}
+						}
+				)
+		);
+		
+		/* 
+		 * optimization attempt #3
+		 * Since param is a finding which is a descendant of query, this means that this finding has at least 1 parent
+		 * which has an active path to query. Since every ancestors of findings are present for every possible
+		 * contexts at m-separation algorithm, and all parents of this finding are moralyzed (connected), 
+		 * all ancestors of this finding has an active path to query as well if they have an active path to any parent
+		 * of this finding.
+		 */
+		to.addAll(this.getAllAncestors(reachableSeparators, separators));
+		
+		
+		// we should not test a path going to itself. If there is, it is obviously not d-separated
+		if (this.containsAtLeastOneOf(to, from)) {
+			return false;
+		}
+		
+		
 		// step 4 - if each path between "from" and "to" are blocked by any "separator", the graph is m-separated
 		// TODO optimize this, since this is becoming a very heavy procedure...
 		for (INode nodeFrom : from) {
@@ -461,6 +630,24 @@ public class MSeparationUtility implements IDSeparationUtility {
 			Set<INode> from, Set<INode> separators) {
 		
 		Set<INode> ret = new HashSet<INode>();
+		
+		// lets guarantee that no input parameters are changed after method execution
+		if (from != null) {
+			from = new HashSet<INode>(from);
+		} else {
+			from = new HashSet<INode>(0);
+		}
+		if (consideredNodes != null) {
+			consideredNodes = new HashSet<INode>(consideredNodes);
+		} else {
+			consideredNodes = new HashSet<INode>(0);
+		}
+		if (separators != null) {
+			separators = new HashSet<INode>(separators);
+		} else {
+			separators = new HashSet<INode>(0);
+		}
+		
 		
 		// initial check
 		if (from.isEmpty()) {
@@ -487,6 +674,55 @@ public class MSeparationUtility implements IDSeparationUtility {
 		// step 2 & 3 - make it moral: propose parents' marriage...
 		mapRepresentingNonOrientedGraph = this.makeItMoral(mapRepresentingNonOrientedGraph);
 		
+		
+		
+		/*
+		 * Optimization attempts:
+		 * 	#1 - If a node n has the i-th adjacent node A(n,i) with no active path to query node, no adjacent node
+		 *      A(n,j) as j != i has an active path to query node passing by A(n,i). So, there is no need to 
+		 *      test such path again.
+		 *  #2 - Ancestors and descendants of query nodes are not d-separated if they are not blocked by a finding.
+		 * 		So, we do not have to test d-separation for (a) ancestors of queries which are not
+		 * 		ancestors of findings; (b) descendants of queries which are not descendants of findings.
+		 *  #3 - If a child node is a query or a finding, its parent's moralyzed path will exist at any testing
+		 *      context (no matter what nodes are being tested; those nodes would be moralyzed).
+		 *  #4 - Since we are testing path existence (path with no findings blocking its way), we can assume
+		 *  	that if a node n has an active path to query, any node having an active path to n has also an
+		 *  	active path to query. In that case, n may be considered as query node as well (having a path
+		 *  	to n means directly that there is a path to query too).
+		 */
+		
+		// optimization attempt #2 and #4
+		from.addAll(this.getAllAncestors(from, separators));
+		
+		// optimization attempt #2 and #4 and some initializations for attempt #3
+		Set<INode> reachableSeparators = new HashSet<INode>();
+		from.addAll(
+				this.getAllDescendants(
+						from, 
+						separators, 
+						new MSeparationUtilityNodeVisitor (reachableSeparators) {
+							public Collection visit(Object ... param) {
+								// we are just adding to set reachableSeparators the findings that are reachable from query.
+								// we assume param[0] is the finding which getAllDescendants above has detected.
+								// reachableSeparators will be used after this in order to do optimization attempt #3
+								((Set)this.attribute).add(param[0]); // attribute is reachableSeparators
+								return null;	// do nothing more
+							}
+						}
+				)
+		);
+		
+		/* 
+		 * optimization attempt #3 and #4
+		 * Since param is a finding which is a descendant of query, this means that this finding has at least 1 parent
+		 * which has an active path to query. Since every ancestors of findings are present for every possible
+		 * contexts at m-separation algorithm, and all parents of this finding are moralyzed (connected), 
+		 * all ancestors of this finding has an active path to query as well if they have an active path to any parent
+		 * of this finding.
+		 */
+		from.addAll(this.getAllAncestors(reachableSeparators, separators));
+		
 		// it is obvious that there is no self-d-separation, so, lets remove from and separators from consideredNodes
 		consideredNodes.removeAll(from);
 		consideredNodes.removeAll(separators);
@@ -494,8 +730,12 @@ public class MSeparationUtility implements IDSeparationUtility {
 		// step 4 - if there is no path from the considered node to "from", not-blocked by separator, 
 		// the considered node is m-separated from "from"
 		for (INode consideredNode : consideredNodes) {
+			// optimization attempt #1 is implemented by getRoutesRec within this method.
 			if (this.getRoutes(consideredNode, from, mapRepresentingNonOrientedGraph, separators, 1).size() <= 0) {
 				ret.add(consideredNode);
+			} else {
+				// optimization attempt #4
+				from.add(consideredNode);
 			}
 		}
 		
@@ -503,5 +743,19 @@ public class MSeparationUtility implements IDSeparationUtility {
 	}
 	
 	
+	/**
+	 * Visitor Pattern.
+	 * Does some action triggered by some event during m-separation. 
+	 * @author Shou Matsumoto
+	 *
+	 */
+	public abstract class MSeparationUtilityNodeVisitor {
+		protected Object attribute;
+		public MSeparationUtilityNodeVisitor(){super();};
+		public MSeparationUtilityNodeVisitor(Object attribute){
+			this.attribute = attribute;
+		}
+		public abstract Collection visit(Object ... param);
+	}
 
 }
