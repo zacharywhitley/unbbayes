@@ -192,7 +192,7 @@ public class PowerLoomKB implements KnowledgeBase {
 	 * @see KnowledgeBase
 	 */
 	public synchronized void loadModule(File file, boolean findingModule) throws UBIOException{
-		Debug.println("Loading module...");
+		Debug.println("Loading module " + file);
 		
 		File tempFile = preLoad(file, findingModule);
 		PLI.load(tempFile.getAbsolutePath(), environment);
@@ -218,7 +218,7 @@ public class PowerLoomKB implements KnowledgeBase {
 		
 	
 	
-	/**
+	/*
 	 * This method should be called before the load of a powerloom file. It is 
 	 * necessary to correct the names of the modules loaded. 
 	 * 
@@ -297,6 +297,13 @@ public class PowerLoomKB implements KnowledgeBase {
 		
 	}
 	
+	/*
+	 * write: 
+	 * (CL:IN-PACKAGE "STELLA")
+	 * (DEFMODULE "moduleFindingName": CASE-SENSITIVE? FALSE)
+	 * (IN-MODULE "moduleFindingName")
+	 * (IN-DIALECT :KIF)
+	 */
 	private void writeModuleFindingDefinition(BufferedWriter writer) throws IOException{
 	    writer.write("(CL:IN-PACKAGE \"STELLA\")"); 
 	    writer.newLine();
@@ -308,6 +315,13 @@ public class PowerLoomKB implements KnowledgeBase {
 	    writer.newLine();
 	}
 	
+	/*
+	 * write:
+	 * (CL:IN-PACKAGE "STELLA")
+	 * (DEFMODULE "moduleGenerativeName": CASE-SENSITIVE? FALSE)
+	 * (IN-MODULE "moduleGenerativeName")
+	 * (IN-DIALECT :KIF)
+	 */
 	private void writeModuleGenerativeDefinition(BufferedWriter writer) throws IOException{
 	    writer.write("(CL:IN-PACKAGE \"STELLA\")"); 
 	    writer.newLine();
@@ -319,25 +333,15 @@ public class PowerLoomKB implements KnowledgeBase {
 	    writer.newLine();
 	}
 	
-	/**
-	 * This method should be called before the save of a powerloom file. 
-	 */
-	private void preSave(){
-		
-	}
-	
-	
 
 	/*-------------------------------------------------------------------------*/
 	/*Methods for insert elements in the KB                                    */
 	/*-------------------------------------------------------------------------*/	
 	
 	/**
-	 * Syntax example: 
+	 * <p>Syntax example: 
 	 * (DEFCONCEPT CATEGORY_LABEL)
-	 * 
-	 * Nota: As object entities sao salvas pelo seu tipo (label) ao inves de
-	 * pelo seu nome porque as suas instancias tem referencia apenas ao tipo. 
+	 * <p>
 	 * Note: The object entities are saved by its type (label) instead of its
 	 * name because its instances reference only its type.
 	 * 
@@ -355,10 +359,14 @@ public class PowerLoomKB implements KnowledgeBase {
 
 	/**
 	 * Syntax example: 
-	 * ;;States definition 
+	 * <p>
+	 * States definition 
+	 * <p>
 	 * (DEFCONCEPT SRDISTANCE_STATE (?Z) :<=>
 	 * (MEMBER-OF ?Z (SETOF PHASER1RANGE PULSECANONRANGE))) 
+	 * 
 	 * ;;Arguments definition 
+	 * 
 	 * (DEFFUNCTION SRDISTANCE ( (?ARG_0 SENSORREPORT_LABEL) (?ARG_1
 	 * TIMESTEP_LABEL) (?RANGE SRDISTANCE_STATE)))
 	 * 
@@ -368,7 +376,11 @@ public class PowerLoomKB implements KnowledgeBase {
 		
 		List<StateLink> links = resident.getPossibleValueLinkList(); 
 		
+		Debug.setDebug(true); 
+		
 		String range = ""; 
+		
+		System.out.println("Analising node " + resident);
 		
 		switch(resident.getTypeOfStates()){
 		
@@ -392,10 +404,16 @@ public class PowerLoomKB implements KnowledgeBase {
 			// definition of the function image
 			String residentStateListName = resident.getName()
 					+ POSSIBLE_STATE_SUFIX;
-			PLI.sEvaluate("(defconcept " + residentStateListName
+			Stella_Object result = PLI.sEvaluate("(defconcept " + residentStateListName
 					+ "(?z) :<=> (member-of ?z ( setof " + setofList + ")))",
 					moduleGenerativeName, environment);
 
+			if(result == null){
+				System.out.println("Powerloom problem in evaluation of the possible states of the resident node "  + resident);
+			}else{
+				System.out.println("Result 1 " + result.toString());
+			}
+			
 			range = "(" + "?range " + residentStateListName + ")";
 
 			break;
@@ -426,13 +444,18 @@ public class PowerLoomKB implements KnowledgeBase {
 					moduleGenerativeName, null);
 			if (result != null) {
 				Debug.println(result.toString());
+			}else{
+				System.out.println("Powerloom problem in evaluation of the types of the resident node: " + resident);
 			}
 		} else {
 			Stella_Object result = PLI.sEvaluate("(deffunction "
 					+ resident.getName() + " (" + arguments + range + "))",
 					moduleGenerativeName, null);
-			Debug.println(result.toString());
-
+			if(result != null){
+				Debug.println(result.toString());
+			}else{
+				System.out.println("Powerloom problem in evaluation of the types of the resident node: " + resident);
+			}
 		}
 		// TODO closed or open world ?
 		// PLI.sEvaluate("(assert (closed " + resident.getName() + "))",
