@@ -750,6 +750,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 					continue; 
 				
 				}else{
+					//TODO analyse this... if the context fail, is good continue to up?
 					mFragInstance.setStateEvaluationOfContextNode(contextNode, 
 							ContextNodeEvaluationState.EVALUATION_FAIL);
 					mFragInstance.setUseDefaultDistribution(true); 
@@ -799,7 +800,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 						throw e; 
 					}
 
-					break;
+					continue;
 
 				}else{
 
@@ -847,7 +848,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 								evaluateUncertaintyReferenceCase(mFragInstance, 
 										contextNode, ovInstancesFault.get(0)); 
 							if(simpleContextNodeFather != null){
-								break; //OK!!! Good!!! Yes!!! 
+								continue; //OK!!! Good!!! Yes!!! 
 							}
 						}
 						catch(ImplementationRestrictionException e){
