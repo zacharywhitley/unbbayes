@@ -1,22 +1,22 @@
-% Cabeçalho UBF
+% UBF file header
 Version=0.03
 PrOwl="FraudInPublicProcurement.owl"
 
-% Declaração de MTheory - UBF
+% UBF MTheory declaration
 MTheory=FraudPreventionAndDetectionInPublicProcurements_MTheory
 NextMFrag=12
 NextResident=25
 NextInput=14
-NextContext=22
+NextContext=23
 NextEntity=1
 
-% Declaração de MFrags e nós UBF
+% UBF MFrags and Nodes declaration
 
 % MFrag
 MFrag=OwnEnterpriseSuspendedForProcureing_MFrag
 NextOrdinaryVar=3
 
-% Nós Residentes
+% Resident nodes
 
 
 Node=OwnEnterpriseSuspendedForProcuring
@@ -24,7 +24,7 @@ Type=DomainResidentNode
 Position=233.0,176.0
 Size=35,35
 
-% nós Input
+% Input nodes
 
 
 Node=IX8
@@ -32,7 +32,7 @@ Type=GenerativeInputNode
 Position=233.0,119.0
 Size=35,35
 
-% Nós de Contexto
+% Context nodes
 
 
 Node=CX19
@@ -40,24 +40,24 @@ Type=ContextNode
 Position=233.0,86.0
 Size=35,35
 
-% Variáveis Ordinárias
+% Ordinary Variables
 
-
-Node=enterprise
-Type=OrdinalVar
-Position=156.0,45.0
-Size=35,35
 
 Node=person
 Type=OrdinalVar
 Position=304.0,46.0
 Size=35,35
 
+Node=enterprise
+Type=OrdinalVar
+Position=156.0,45.0
+Size=35,35
+
 % MFrag
 MFrag=PersonalInfo_MFrag
 NextOrdinaryVar=4
 
-% Nós Residentes
+% Resident nodes
 
 
 Node=AreRelated
@@ -80,7 +80,7 @@ Type=DomainResidentNode
 Position=389.0,151.0
 Size=35,35
 
-% Nós de Contexto
+% Context nodes
 
 
 Node=CX2
@@ -88,7 +88,7 @@ Type=ContextNode
 Position=270.0,74.0
 Size=35,35
 
-% Variáveis Ordinárias
+% Ordinary Variables
 
 
 Node=person2
@@ -105,7 +105,7 @@ Size=35,35
 MFrag=DoFurtherInvestigation_MFrag
 NextOrdinaryVar=4
 
-% Nós Residentes
+% Resident nodes
 
 
 Node=DoFurtherInvestigation
@@ -113,7 +113,7 @@ Type=DomainResidentNode
 Position=243.0,140.0
 Size=35,35
 
-% nós Input
+% Input nodes
 
 
 Node=IX11
@@ -126,7 +126,7 @@ Type=GenerativeInputNode
 Position=127.0,90.0
 Size=35,35
 
-% Nós de Contexto
+% Context nodes
 
 
 Node=CX21
@@ -139,7 +139,7 @@ Type=ContextNode
 Position=164.0,56.0
 Size=35,35
 
-% Variáveis Ordinárias
+% Ordinary Variables
 
 
 Node=person
@@ -161,37 +161,37 @@ Size=35,35
 MFrag=EnterpriseInfo_MFrag
 NextOrdinaryVar=3
 
-% Nós Residentes
+% Resident nodes
 
-
-Node=IsResponsibleFor
-Type=DomainResidentNode
-Position=199.0,84.0
-Size=35,35
 
 Node=IsSuspendedForProcuring
 Type=DomainResidentNode
 Position=384.0,84.0
 Size=35,35
 
-% Variáveis Ordinárias
-
-
-Node=enterprise
-Type=OrdinalVar
-Position=201.0,45.0
+Node=IsResponsibleFor
+Type=DomainResidentNode
+Position=199.0,84.0
 Size=35,35
+
+% Ordinary Variables
+
 
 Node=person
 Type=OrdinalVar
 Position=382.0,45.0
 Size=35,35
 
+Node=enterprise
+Type=OrdinalVar
+Position=201.0,45.0
+Size=35,35
+
 % MFrag
 MFrag=ProcurementInfo_MFrag
 NextOrdinaryVar=4
 
-% Nós Residentes
+% Resident nodes
 
 
 Node=IsParticipantIn
@@ -224,7 +224,7 @@ Type=DomainResidentNode
 Position=191.0,119.0
 Size=35,35
 
-% Variáveis Ordinárias
+% Ordinary Variables
 
 
 Node=person
@@ -246,7 +246,7 @@ Size=35,35
 MFrag=CompetitionCompromised_MFrag
 NextOrdinaryVar=8
 
-% Nós Residentes
+% Resident nodes
 
 
 Node=IsCompetitionCompromised
@@ -254,7 +254,7 @@ Type=DomainResidentNode
 Position=295.0,319.0
 Size=35,35
 
-% nós Input
+% Input nodes
 
 
 Node=IX12
@@ -282,7 +282,7 @@ Type=GenerativeInputNode
 Position=473.0,279.0
 Size=35,35
 
-% Nós de Contexto
+% Context nodes
 
 
 Node=CX11
@@ -330,7 +330,7 @@ Type=ContextNode
 Position=469.0,132.0
 Size=35,35
 
-% Variáveis Ordinárias
+% Ordinary Variables
 
 
 Node=procurement
@@ -367,7 +367,7 @@ Size=35,35
 MFrag=FrontOfEnterprise_MFrag
 NextOrdinaryVar=4
 
-% Nós Residentes
+% Resident nodes
 
 
 Node=IsFrontFor
@@ -375,7 +375,7 @@ Type=DomainResidentNode
 Position=302.0,164.0
 Size=35,35
 
-% nós Input
+% Input nodes
 
 
 Node=IX1
@@ -388,7 +388,7 @@ Type=GenerativeInputNode
 Position=368.0,117.0
 Size=35,35
 
-% Nós de Contexto
+% Context nodes
 
 
 Node=CX4
@@ -401,7 +401,7 @@ Type=ContextNode
 Position=393.0,84.0
 Size=35,35
 
-% Variáveis Ordinárias
+% Ordinary Variables
 
 
 Node=person
@@ -421,9 +421,9 @@ Size=35,35
 
 % MFrag
 MFrag=ChangeCommittee_MFrag
-NextOrdinaryVar=7
+NextOrdinaryVar=8
 
-% Nós Residentes
+% Resident nodes
 
 
 Node=HasToChangeCommittee
@@ -431,7 +431,7 @@ Type=DomainResidentNode
 Position=356.0,310.0
 Size=35,35
 
-% nós Input
+% Input nodes
 
 
 Node=IX3
@@ -444,7 +444,7 @@ Type=GenerativeInputNode
 Position=509.0,222.0
 Size=35,35
 
-% Nós de Contexto
+% Context nodes
 
 
 Node=CX7
@@ -467,7 +467,12 @@ Type=ContextNode
 Position=323.0,151.0
 Size=35,35
 
-% Variáveis Ordinárias
+Node=CX22
+Type=ContextNode
+Position=644.0,91.0
+Size=35,35
+
+% Ordinary Variables
 
 
 Node=previousProcurement
@@ -495,16 +500,21 @@ Type=OrdinalVar
 Position=103.0,151.0
 Size=35,35
 
+Node=member2
+Type=OrdinalVar
+Position=643.0,45.0
+Size=35,35
+
 % MFrag
 MFrag=JudgmentHistory_MFrag
 NextOrdinaryVar=2
 
-% Nós Residentes
+% Resident nodes
 
 
-Node=HasCleanHistory
+Node=CriminalHistory
 Type=DomainResidentNode
-Position=217.0,135.0
+Position=143.0,88.0
 Size=35,35
 
 Node=AdministrativeHistory
@@ -512,12 +522,12 @@ Type=DomainResidentNode
 Position=292.0,88.0
 Size=35,35
 
-Node=CriminalHistory
+Node=HasCleanHistory
 Type=DomainResidentNode
-Position=143.0,88.0
+Position=217.0,135.0
 Size=35,35
 
-% Variáveis Ordinárias
+% Ordinary Variables
 
 
 Node=person
@@ -525,4 +535,4 @@ Type=OrdinalVar
 Position=213.0,54.0
 Size=35,35
 
-% Instâncias de Entidades Objetos
+% Object Entity Instances
