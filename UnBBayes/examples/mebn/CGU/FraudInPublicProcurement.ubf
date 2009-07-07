@@ -1,8 +1,8 @@
-% UBF file header
+% Cabeçalho UBF
 Version=0.03
 PrOwl="FraudInPublicProcurement.owl"
 
-% UBF MTheory declaration
+% Declaração de MTheory - UBF
 MTheory=FraudPreventionAndDetectionInPublicProcurements_MTheory
 NextMFrag=12
 NextResident=25
@@ -10,99 +10,188 @@ NextInput=14
 NextContext=22
 NextEntity=1
 
-% UBF MFrags and Nodes declaration
+% Declaração de MFrags e nós UBF
 
 % MFrag
-MFrag=FrontOfEnterprise_MFrag
+MFrag=OwnEnterpriseSuspendedForProcureing_MFrag
+NextOrdinaryVar=3
+
+% Nós Residentes
+
+
+Node=OwnEnterpriseSuspendedForProcuring
+Type=DomainResidentNode
+Position=233.0,176.0
+Size=35,35
+
+% nós Input
+
+
+Node=IX8
+Type=GenerativeInputNode
+Position=233.0,119.0
+Size=35,35
+
+% Nós de Contexto
+
+
+Node=CX19
+Type=ContextNode
+Position=233.0,86.0
+Size=35,35
+
+% Variáveis Ordinárias
+
+
+Node=enterprise
+Type=OrdinalVar
+Position=156.0,45.0
+Size=35,35
+
+Node=person
+Type=OrdinalVar
+Position=304.0,46.0
+Size=35,35
+
+% MFrag
+MFrag=PersonalInfo_MFrag
 NextOrdinaryVar=4
 
-% Resident nodes
+% Nós Residentes
 
 
-Node=IsFrontFor
+Node=AreRelated
 Type=DomainResidentNode
-Position=302.0,164.0
+Position=275.0,180.0
 Size=35,35
 
-% Input nodes
-
-
-Node=IX1
-Type=GenerativeInputNode
-Position=237.0,118.0
+Node=LiveInSameAddress
+Type=DomainResidentNode
+Position=275.0,112.0
 Size=35,35
 
-Node=IX2
-Type=GenerativeInputNode
-Position=368.0,117.0
+Node=AnnualIncome
+Type=DomainResidentNode
+Position=160.0,150.0
 Size=35,35
 
-% Context nodes
+Node=Education
+Type=DomainResidentNode
+Position=389.0,151.0
+Size=35,35
+
+% Nós de Contexto
 
 
-Node=CX4
+Node=CX2
 Type=ContextNode
-Position=209.0,84.0
+Position=270.0,74.0
 Size=35,35
 
-Node=CX5
-Type=ContextNode
-Position=393.0,84.0
-Size=35,35
-
-% Ordinary Variables
+% Variáveis Ordinárias
 
 
-Node=procurement
+Node=person2
 Type=OrdinalVar
-Position=152.0,45.0
+Position=364.0,40.0
+Size=35,35
+
+Node=person1
+Type=OrdinalVar
+Position=180.0,39.0
+Size=35,35
+
+% MFrag
+MFrag=DoFurtherInvestigation_MFrag
+NextOrdinaryVar=4
+
+% Nós Residentes
+
+
+Node=DoFurtherInvestigation
+Type=DomainResidentNode
+Position=243.0,140.0
+Size=35,35
+
+% nós Input
+
+
+Node=IX11
+Type=GenerativeInputNode
+Position=362.0,91.0
+Size=35,35
+
+Node=IX10
+Type=GenerativeInputNode
+Position=127.0,90.0
+Size=35,35
+
+% Nós de Contexto
+
+
+Node=CX21
+Type=ContextNode
+Position=346.0,56.0
+Size=35,35
+
+Node=CX20
+Type=ContextNode
+Position=164.0,56.0
+Size=35,35
+
+% Variáveis Ordinárias
+
+
+Node=person
+Type=OrdinalVar
+Position=256.0,23.0
 Size=35,35
 
 Node=enterprise
 Type=OrdinalVar
-Position=321.0,45.0
+Position=400.0,23.0
 Size=35,35
 
-Node=person
+Node=procurement
 Type=OrdinalVar
-Position=465.0,45.0
+Position=100.0,23.0
 Size=35,35
 
 % MFrag
-MFrag=JudgmentHistory_MFrag
-NextOrdinaryVar=2
+MFrag=EnterpriseInfo_MFrag
+NextOrdinaryVar=3
 
-% Resident nodes
+% Nós Residentes
 
 
-Node=HasCleanHistory
+Node=IsResponsibleFor
 Type=DomainResidentNode
-Position=217.0,135.0
+Position=199.0,84.0
 Size=35,35
 
-Node=AdministrativeHistory
+Node=IsSuspendedForProcuring
 Type=DomainResidentNode
-Position=292.0,88.0
+Position=384.0,84.0
 Size=35,35
 
-Node=CriminalHistory
-Type=DomainResidentNode
-Position=143.0,88.0
+% Variáveis Ordinárias
+
+
+Node=enterprise
+Type=OrdinalVar
+Position=201.0,45.0
 Size=35,35
-
-% Ordinary Variables
-
 
 Node=person
 Type=OrdinalVar
-Position=213.0,54.0
+Position=382.0,45.0
 Size=35,35
 
 % MFrag
 MFrag=ProcurementInfo_MFrag
 NextOrdinaryVar=4
 
-% Resident nodes
+% Nós Residentes
 
 
 Node=IsParticipantIn
@@ -135,7 +224,7 @@ Type=DomainResidentNode
 Position=191.0,119.0
 Size=35,35
 
-% Ordinary Variables
+% Variáveis Ordinárias
 
 
 Node=person
@@ -154,164 +243,10 @@ Position=267.0,48.0
 Size=35,35
 
 % MFrag
-MFrag=PersonalInfo_MFrag
-NextOrdinaryVar=4
-
-% Resident nodes
-
-
-Node=AreRelated
-Type=DomainResidentNode
-Position=275.0,180.0
-Size=35,35
-
-Node=AnnualIncome
-Type=DomainResidentNode
-Position=160.0,150.0
-Size=35,35
-
-Node=LiveInSameAddress
-Type=DomainResidentNode
-Position=275.0,112.0
-Size=35,35
-
-Node=Education
-Type=DomainResidentNode
-Position=389.0,151.0
-Size=35,35
-
-% Context nodes
-
-
-Node=CX2
-Type=ContextNode
-Position=270.0,74.0
-Size=35,35
-
-% Ordinary Variables
-
-
-Node=person2
-Type=OrdinalVar
-Position=364.0,40.0
-Size=35,35
-
-Node=person1
-Type=OrdinalVar
-Position=180.0,39.0
-Size=35,35
-
-% MFrag
-MFrag=EnterpriseInfo_MFrag
-NextOrdinaryVar=3
-
-% Resident nodes
-
-
-Node=IsResponsibleFor
-Type=DomainResidentNode
-Position=199.0,84.0
-Size=35,35
-
-Node=IsSuspendedForProcuring
-Type=DomainResidentNode
-Position=384.0,84.0
-Size=35,35
-
-% Ordinary Variables
-
-
-Node=enterprise
-Type=OrdinalVar
-Position=201.0,45.0
-Size=35,35
-
-Node=person
-Type=OrdinalVar
-Position=382.0,45.0
-Size=35,35
-
-% MFrag
-MFrag=ChangeCommittee_MFrag
-NextOrdinaryVar=7
-
-% Resident nodes
-
-
-Node=HasToChangeCommittee
-Type=DomainResidentNode
-Position=324.0,217.0
-Size=35,35
-
-% Input nodes
-
-
-Node=IX3
-Type=GenerativeInputNode
-Position=216.0,161.0
-Size=35,35
-
-Node=IX4
-Type=GenerativeInputNode
-Position=426.0,160.0
-Size=35,35
-
-% Context nodes
-
-
-Node=CX6
-Type=ContextNode
-Position=210.0,88.0
-Size=35,35
-
-Node=CX7
-Type=ContextNode
-Position=424.0,89.0
-Size=35,35
-
-Node=CX8
-Type=ContextNode
-Position=319.0,125.0
-Size=35,35
-
-Node=CX9
-Type=ContextNode
-Position=531.0,125.0
-Size=35,35
-
-% Ordinary Variables
-
-
-Node=member
-Type=OrdinalVar
-Position=423.0,21.0
-Size=35,35
-
-Node=currentProcurement
-Type=OrdinalVar
-Position=212.0,21.0
-Size=35,35
-
-Node=previousProcurement
-Type=OrdinalVar
-Position=210.0,55.0
-Size=35,35
-
-Node=enterprise
-Type=OrdinalVar
-Position=123.0,125.0
-Size=35,35
-
-Node=person
-Type=OrdinalVar
-Position=423.0,55.0
-Size=35,35
-
-% MFrag
 MFrag=CompetitionCompromised_MFrag
 NextOrdinaryVar=8
 
-% Resident nodes
+% Nós Residentes
 
 
 Node=IsCompetitionCompromised
@@ -319,12 +254,22 @@ Type=DomainResidentNode
 Position=295.0,319.0
 Size=35,35
 
-% Input nodes
+% nós Input
 
+
+Node=IX12
+Type=GenerativeInputNode
+Position=135.0,245.0
+Size=35,35
 
 Node=IX5
 Type=GenerativeInputNode
 Position=293.0,246.0
+Size=35,35
+
+Node=IX13
+Type=GenerativeInputNode
+Position=449.0,247.0
 Size=35,35
 
 Node=IX6
@@ -337,52 +282,12 @@ Type=GenerativeInputNode
 Position=473.0,279.0
 Size=35,35
 
-Node=IX12
-Type=GenerativeInputNode
-Position=135.0,245.0
-Size=35,35
+% Nós de Contexto
 
-Node=IX13
-Type=GenerativeInputNode
-Position=449.0,247.0
-Size=35,35
-
-% Context nodes
-
-
-Node=CX10
-Type=ContextNode
-Position=193.0,173.0
-Size=35,35
 
 Node=CX11
 Type=ContextNode
 Position=391.0,173.0
-Size=35,35
-
-Node=CX12
-Type=ContextNode
-Position=193.0,213.0
-Size=35,35
-
-Node=CX13
-Type=ContextNode
-Position=390.0,212.0
-Size=35,35
-
-Node=CX14
-Type=ContextNode
-Position=469.0,132.0
-Size=35,35
-
-Node=CX15
-Type=ContextNode
-Position=469.0,60.0
-Size=35,35
-
-Node=CX16
-Type=ContextNode
-Position=131.0,133.0
 Size=35,35
 
 Node=CX17
@@ -390,12 +295,42 @@ Type=ContextNode
 Position=295.0,131.0
 Size=35,35
 
+Node=CX12
+Type=ContextNode
+Position=193.0,213.0
+Size=35,35
+
+Node=CX15
+Type=ContextNode
+Position=469.0,60.0
+Size=35,35
+
+Node=CX10
+Type=ContextNode
+Position=193.0,173.0
+Size=35,35
+
+Node=CX16
+Type=ContextNode
+Position=131.0,133.0
+Size=35,35
+
+Node=CX13
+Type=ContextNode
+Position=390.0,212.0
+Size=35,35
+
 Node=CX18
 Type=ContextNode
 Position=396.0,22.0
 Size=35,35
 
-% Ordinary Variables
+Node=CX14
+Type=ContextNode
+Position=469.0,132.0
+Size=35,35
+
+% Variáveis Ordinárias
 
 
 Node=procurement
@@ -403,9 +338,9 @@ Type=OrdinalVar
 Position=196.0,23.0
 Size=35,35
 
-Node=person1
+Node=person2
 Type=OrdinalVar
-Position=298.0,97.0
+Position=470.0,97.0
 Size=35,35
 
 Node=enterprise1
@@ -413,9 +348,9 @@ Type=OrdinalVar
 Position=131.0,61.0
 Size=35,35
 
-Node=person2
+Node=person
 Type=OrdinalVar
-Position=470.0,97.0
+Position=132.0,97.0
 Size=35,35
 
 Node=enterprise2
@@ -423,106 +358,171 @@ Type=OrdinalVar
 Position=299.0,61.0
 Size=35,35
 
-Node=person
+Node=person1
 Type=OrdinalVar
-Position=132.0,97.0
+Position=298.0,97.0
 Size=35,35
 
 % MFrag
-MFrag=OwnEnterpriseSuspendedForProcureing_MFrag
-NextOrdinaryVar=3
+MFrag=FrontOfEnterprise_MFrag
+NextOrdinaryVar=4
 
-% Resident nodes
+% Nós Residentes
 
 
-Node=OwnEnterpriseSuspendedForProcuring
+Node=IsFrontFor
 Type=DomainResidentNode
-Position=233.0,176.0
+Position=302.0,164.0
 Size=35,35
 
-% Input nodes
+% nós Input
 
 
-Node=IX8
+Node=IX1
 Type=GenerativeInputNode
-Position=233.0,119.0
+Position=237.0,118.0
 Size=35,35
 
-% Context nodes
+Node=IX2
+Type=GenerativeInputNode
+Position=368.0,117.0
+Size=35,35
+
+% Nós de Contexto
 
 
-Node=CX19
+Node=CX4
 Type=ContextNode
-Position=233.0,86.0
+Position=209.0,84.0
 Size=35,35
 
-% Ordinary Variables
+Node=CX5
+Type=ContextNode
+Position=393.0,84.0
+Size=35,35
 
+% Variáveis Ordinárias
+
+
+Node=person
+Type=OrdinalVar
+Position=465.0,45.0
+Size=35,35
 
 Node=enterprise
 Type=OrdinalVar
-Position=156.0,45.0
+Position=321.0,45.0
 Size=35,35
-
-Node=person
-Type=OrdinalVar
-Position=304.0,46.0
-Size=35,35
-
-% MFrag
-MFrag=DoFurtherInvestigation_MFrag
-NextOrdinaryVar=4
-
-% Resident nodes
-
-
-Node=DoFurtherInvestigation
-Type=DomainResidentNode
-Position=243.0,140.0
-Size=35,35
-
-% Input nodes
-
-
-Node=IX10
-Type=GenerativeInputNode
-Position=127.0,90.0
-Size=35,35
-
-Node=IX11
-Type=GenerativeInputNode
-Position=362.0,91.0
-Size=35,35
-
-% Context nodes
-
-
-Node=CX20
-Type=ContextNode
-Position=164.0,56.0
-Size=35,35
-
-Node=CX21
-Type=ContextNode
-Position=346.0,56.0
-Size=35,35
-
-% Ordinary Variables
-
 
 Node=procurement
 Type=OrdinalVar
-Position=100.0,23.0
+Position=152.0,45.0
+Size=35,35
+
+% MFrag
+MFrag=ChangeCommittee_MFrag
+NextOrdinaryVar=7
+
+% Nós Residentes
+
+
+Node=HasToChangeCommittee
+Type=DomainResidentNode
+Position=356.0,310.0
+Size=35,35
+
+% nós Input
+
+
+Node=IX3
+Type=GenerativeInputNode
+Position=174.0,224.0
+Size=35,35
+
+Node=IX4
+Type=GenerativeInputNode
+Position=509.0,222.0
+Size=35,35
+
+% Nós de Contexto
+
+
+Node=CX7
+Type=ContextNode
+Position=424.0,89.0
+Size=35,35
+
+Node=CX6
+Type=ContextNode
+Position=210.0,88.0
+Size=35,35
+
+Node=CX9
+Type=ContextNode
+Position=575.0,158.0
+Size=35,35
+
+Node=CX8
+Type=ContextNode
+Position=323.0,151.0
+Size=35,35
+
+% Variáveis Ordinárias
+
+
+Node=previousProcurement
+Type=OrdinalVar
+Position=210.0,55.0
+Size=35,35
+
+Node=member
+Type=OrdinalVar
+Position=423.0,21.0
 Size=35,35
 
 Node=person
 Type=OrdinalVar
-Position=256.0,23.0
+Position=423.0,55.0
+Size=35,35
+
+Node=currentProcurement
+Type=OrdinalVar
+Position=212.0,21.0
 Size=35,35
 
 Node=enterprise
 Type=OrdinalVar
-Position=400.0,23.0
+Position=103.0,151.0
 Size=35,35
 
-% Object Entity Instances
+% MFrag
+MFrag=JudgmentHistory_MFrag
+NextOrdinaryVar=2
+
+% Nós Residentes
+
+
+Node=HasCleanHistory
+Type=DomainResidentNode
+Position=217.0,135.0
+Size=35,35
+
+Node=AdministrativeHistory
+Type=DomainResidentNode
+Position=292.0,88.0
+Size=35,35
+
+Node=CriminalHistory
+Type=DomainResidentNode
+Position=143.0,88.0
+Size=35,35
+
+% Variáveis Ordinárias
+
+
+Node=person
+Type=OrdinalVar
+Position=213.0,54.0
+Size=35,35
+
+% Instâncias de Entidades Objetos
