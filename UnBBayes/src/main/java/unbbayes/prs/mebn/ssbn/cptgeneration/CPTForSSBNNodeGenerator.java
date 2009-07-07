@@ -19,6 +19,11 @@ import unbbayes.prs.mebn.ssbn.exception.InvalidOperationException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.util.Debug;
 
+/**
+ * Class responsible for generate the CPT's of the SSBN Nodes. 
+ * 
+ * @author Laecio Lima dos Santos (laecio@gmail.com)
+ */
 public class CPTForSSBNNodeGenerator {
 
 	public ILogManager logManager; 
