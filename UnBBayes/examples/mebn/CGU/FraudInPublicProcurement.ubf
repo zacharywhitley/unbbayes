@@ -490,6 +490,11 @@ Type=OrdinalVar
 Position=423.0,55.0
 Size=35,35
 
+Node=member2
+Type=OrdinalVar
+Position=643.0,45.0
+Size=35,35
+
 Node=currentProcurement
 Type=OrdinalVar
 Position=212.0,21.0
@@ -498,11 +503,6 @@ Size=35,35
 Node=enterprise
 Type=OrdinalVar
 Position=103.0,151.0
-Size=35,35
-
-Node=member2
-Type=OrdinalVar
-Position=643.0,45.0
 Size=35,35
 
 % MFrag
