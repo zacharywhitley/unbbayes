@@ -182,13 +182,13 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			ssbn.getLogManager().appendln("Evaluate MFrag Context Nodes for MFrag " + mFragInstance + " finished");
 		} catch (ImplementationRestrictionException e) {
 			//Stop the evaluation when the context nodes fail. 
-			throw e; 
-		} catch (SSBNNodeGeneralException e) {
-			throw e; 
-		} catch (OVInstanceFaultException e) {
-			throw new ImplementationRestrictionException(e.getMessage()); 
+			//TODO warning... the evaluation continue, using the default distribution
+//			throw e; 
+//		} catch (OVInstanceFaultException e) {
+//			throw new ImplementationRestrictionException(e.getMessage()); 
 		} catch (MFragContextFailException e) {
-			throw new SSBNNodeGeneralException(e.getMessage()); 
+			//TODO warning... the evaluation continue, using the default distribution
+//			throw new SSBNNodeGeneralException(e.getMessage()); 
 		} 
 		
 		ssbn.getLogManager().appendln(" "); 
@@ -265,7 +265,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		//---- 2) Create the parents of node from the resident nodes
 		
 		//If the context node of the MFrag don't are evaluated, the creation of 
-		//the parents insn't possible
+		//the parents isn't possible
 		if(mFragInstance.isUseDefaultDistribution()){
 			
 			ssbn.getLogManager().appendln("Node can't be evaluated: mfrag using default distribution");
@@ -723,8 +723,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	 */
 	public MFragInstance evaluateMFragContextNodes(MFragInstance mFragInstance) 
 	                   throws ImplementationRestrictionException, 
-	                          SSBNNodeGeneralException, 
-	                          OVInstanceFaultException, MFragContextFailException{
+	                          MFragContextFailException{
 		
 		//Consider that the tree with the know ordinary variables are already mounted. 
 		//Consider that the only ordinary variables filled are the alread know OV
@@ -748,15 +747,13 @@ public class BuilderStructureImpl implements IBuilderStructure{
 							ContextNodeEvaluationState.EVALUATION_OK); 
 					ssbn.getLogManager().appendln("Evaluated OK");	
 					continue; 
-				
 				}else{
-					//TODO analyse this... if the context fail, is good continue to up?
 					mFragInstance.setStateEvaluationOfContextNode(contextNode, 
 							ContextNodeEvaluationState.EVALUATION_FAIL);
 					mFragInstance.setUseDefaultDistribution(true); 
 					ssbn.getLogManager().appendln(2, "Context Node Evaluation fail"); 
-					break; //The MFragInstance continue to be evaluated only
-					       //to show to the user a network more complete. 
+					continue; //The MFragInstance continue to be evaluated only
+					          //to show to the user a network more complete. 
 				}
 			}else{
 			
@@ -852,7 +849,9 @@ public class BuilderStructureImpl implements IBuilderStructure{
 							}
 						}
 						catch(ImplementationRestrictionException e){
+							mFragInstance.setUseDefaultDistribution(true); 
 							ssbn.getLogManager().appendln(3,"Fail: " + e.getMessage());
+							//TODO Warning list
 						}
 					}
 					

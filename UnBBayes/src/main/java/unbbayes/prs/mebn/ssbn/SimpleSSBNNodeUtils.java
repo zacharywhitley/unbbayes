@@ -15,7 +15,8 @@ import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
 /**
- * Auxiliar methods for treatment of the SimpleSSBNNode. 
+ * Auxiliar methods for treatment of the SimpleSSBNNode and conversion this for
+ * normal SSBNNode's. 
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  */
@@ -151,8 +152,11 @@ public class SimpleSSBNNodeUtils {
 			
 			SSBNNode ssbnNode = correspondencyMap.get(simple); 
 			
+			Runtime rt = Runtime.getRuntime(); 
+			
 			System.out.println("SSBNNode = " + ssbnNode);
 			for(SimpleSSBNNode parent: simple.getParents()){
+				System.out.println("Free Memory = " + rt.freeMemory() / 1024 / 1024 + "MB");
 				System.out.println("   > add parent = " + parent);
 				SSBNNode parentSSBNNode = correspondencyMap.get(parent); 
 				ssbnNode.addParent(parentSSBNNode, false); 
