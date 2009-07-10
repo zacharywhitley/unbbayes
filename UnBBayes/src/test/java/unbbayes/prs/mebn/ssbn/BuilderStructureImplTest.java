@@ -366,12 +366,6 @@ public class BuilderStructureImplTest extends TestCase{
 		} catch (ImplementationRestrictionException e) {
 			e.printStackTrace();
 			fail(); 
-		} catch (SSBNNodeGeneralException e) {
-			e.printStackTrace();
-			fail(); 
-		} catch (OVInstanceFaultException e) {
-			e.printStackTrace();
-			fail(); 
 		} catch (MFragContextFailException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -411,12 +405,6 @@ public class BuilderStructureImplTest extends TestCase{
 		} catch (ImplementationRestrictionException e) {
 			e.printStackTrace();
 			fail(); 
-		} catch (SSBNNodeGeneralException e) {
-			e.printStackTrace();
-			fail(); 
-		} catch (OVInstanceFaultException e) {
-			e.printStackTrace();
-			fail(); 
 		} catch (MFragContextFailException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -450,12 +438,6 @@ public class BuilderStructureImplTest extends TestCase{
 		try {
 			builderStructure.evaluateMFragContextNodes(mFragInstance);
 		} catch (ImplementationRestrictionException e) {
-			e.printStackTrace();
-			fail(); 
-		} catch (SSBNNodeGeneralException e) {
-			e.printStackTrace();
-			fail(); 
-		} catch (OVInstanceFaultException e) {
 			e.printStackTrace();
 			fail(); 
 		} catch (MFragContextFailException e) {
