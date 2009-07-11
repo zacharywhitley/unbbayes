@@ -1,0 +1,95 @@
+UNBBAYES VERSION 3.27.9-BETA
+----------------------------
+FEATURE LIST		
+Number	Request ID	Summary
+1		2502330		Implement average correct classification probability.
+2		2286514		Net 3rd Spec for OOBN I/O.
+3		2286474		Implement OOBN visual edition.
+4		2286048		Load and Save XMLBIF version 0.5.
+5		2272627		Change CPT edition behaviour.
+6		2258810		Add delete and reset button to edition of pn's.
+7		2234791		Resize table panel.
+8		2221807		Load and Save BN with continuous node.
+9		2208499		GUI to model continuous node.
+10		2208491		Add continuous node to BN.
+11		2204389		Include Likelihood Weighting in GUI Framework.
+12		2192929		Adjust the divider after compilation.
+13		2192859		Likelihood Weighting Inference.
+14		2190279		Likelihood Weighting Sampling.
+15		2131239		Evaluate PN by calculating P(T|T).
+16		2117095		Ordering resident node list in query and finding list.
+17		2037996		Nested IF for MEBN CPT.
+18		2027175		Indicate presence of finding.
+19		1908040		Propose new SSBN algorithm considering evidences "below".
+
+
+BUG LIST		
+Number	Request ID	Summary
+1		2380157		Update node index map.
+2		2190264		Node order in evaluation is wrong.
+3		2125443		MC sampler generates state 0 for range from 0.0 to 0.0.
+4		2125441		MC sampler always generates state 0.
+5		1956734		HarmPotential(ST3,T15) generates unknown error (-1).
+6		1949136		Blue buttons looks horrible in different look'n'feel.
+7		1949118		After generating SSBN, the leftmost tree' panel is too small.
+8		1949087		Cannot change MTheory's name.
+9		1907274		Strange behavior when query->move node.
+
+UNBBAYES VERSION 3.8.3-BETA
+----------------------------
+FEATURE LIST		
+Number	Request ID	Summary
+1 		2008231		Implement SSBN algorithm with evidences "below"
+2		2023512 	Develop new Web site using Maven.
+3		2027165  	Remove a finding
+4		2033356  	upgrade in search context node evaluation    
+
+
+BUG LIST		
+Number	Request ID	Summary
+1 		1994411  	Compiler bug when ther are only invalid parents
+2		2014574 	Compiler doesn't accept complex boolean expression.
+3		1913724		Web site's Enlgish page is in Portuguese.
+
+UNBBAYES VERSION 3.4.29-BETA
+----------------------------
+
+FEATURE LIST		
+Number	Request ID	Summary
+1	1968915	Pseudocode compiler's optimization
+2	1951209	Refactor NodeList to ArrayList or List
+3	1908011	Button for pre-parsing CPT pseudocode
+4	1907899	OWL <-> PR-OWL "compatibility"
+
+BUG LIST		
+Number	Request ID	Summary
+1	1962006	KB's file chooser's file filter message. 
+2	1960679	Problem with the Help Pane 
+3	1956731	Deleting resident and inserting a new one with same name... 
+4	1956730	BottomUpSSBNGenerator doesn't check if node's already there
+5	1955798	Duplicated names are acept for objects of diferents types 
+6	1954467	Inserting an edge makes isA node to shrink 
+7	1951215	Resident's ArgumentList is not updated properly 
+8	1949131	Cannot open "global option" at BN ("normal") edition frame.. 
+9	1949125	Arguments at CPT edition panel should be from parents. 
+10	1949121	No text explanation pops up at buttons in resident nodes. 
+11	1949113	Stack trace as a user's error message... 
+12	1949107	No default distro on CPT edition pane 
+13	1949104	CPT edition panel is not inserting commas . 
+14	1949101	Where the hell the compiler is reporting parse error? 
+15	1949095	Can only insert comments to MFrags and nodes? 
+16	1949094	Compiler (or table edition panel on GUI) crushes 
+17	1949091	Father nodes... Instead of Parents 
+18	1913024	defining the resident node's parameters 
+19	1913020	typo-error 2 
+20	1913015	typo-error 1 
+21	1909774	bug following tutorial 
+22	1909756	MTheory tree collapses after edits 
+23	1907990	Object entities as resident's possible value. 
+24	1907974	Problems deleting nodes (MAC) 
+25	1907968	Cannot deselect nodes when using MAC 
+26	1907954	Changing some elements is not updating GUI (by now, MTheory) 
+27	1907947	We can't manipulate 2 MTheories at the same time 
+28	1907897	Update GUI when loading PowerLoom findings 
+29	1907290	Problems when pre-existing OV is resident's argument 
+
