@@ -258,6 +258,9 @@ public class XMLBIFTypeImpl implements unbbayes.io.xmlbif.version5.xmlclasses.XM
       
         private java.lang.String _type;
       
+        //by young 
+        private int _Color;
+        //by young end
         private int _xPos;
       
         private int _yPos;
@@ -286,6 +289,15 @@ public class XMLBIFTypeImpl implements unbbayes.io.xmlbif.version5.xmlclasses.XM
         public void setType(java.lang.String pType) {
           _type = pType;
         }
+        //by young
+        public int getCOLOR() {
+            return _Color;
+          }
+       
+     	 public void setCOLOR(int c) {
+        _Color = c;
+     	 }
+     	//by young end
       
         public int getXPos() {
           return _xPos;

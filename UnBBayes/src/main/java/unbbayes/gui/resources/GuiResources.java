@@ -33,8 +33,8 @@ import java.util.ListResourceBundle;
  */
 
 public class GuiResources extends ListResourceBundle {
-
-    /**
+ 
+    /** 
 	 *  Override getContents and provide an array, where each item in the array is a pair
 	 *	of objects. The first element of each pair is a String key,
 	 *	and the second is the value associated with that key.
@@ -44,7 +44,7 @@ public class GuiResources extends ListResourceBundle {
 	public Object[][] getContents() {
 		return contents;
 	}
-
+ 
 	/**
 	 * The resources
 	 */

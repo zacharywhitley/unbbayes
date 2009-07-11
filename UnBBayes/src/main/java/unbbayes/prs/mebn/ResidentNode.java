@@ -25,7 +25,6 @@ import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.draw.DrawRoundedRectangle;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.mebn.entity.Entity;
@@ -73,8 +72,6 @@ public class ResidentNode extends MultiEntityNode
 	
 	//Graphics informations 
 	
-	private DrawRoundedRectangle drawResidentNode; 
-	
 	private static Color color = new Color(254, 250, 158); 	
 	
 	
@@ -104,9 +101,8 @@ public class ResidentNode extends MultiEntityNode
 		
 		setName(name); 
 		updateLabel(); 		
-
-    	drawResidentNode = new DrawRoundedRectangle(position, size);
-        drawElement.add(drawResidentNode);
+		//by young
+		setColor(new Color(254, 250, 158));
 	}
 	
 	
@@ -119,24 +115,20 @@ public class ResidentNode extends MultiEntityNode
      *
      * @return The color of all domain resident node's color.
      */
-    public static Color getColor() {
-        return color;
-    }
+	//by young
+   // public static Color getColor() {
+    //    return color;
+    //}
 
     /**
      *  Sets the new color for all domain resident node.
      *
      * @return The new color of all domain resident node in RGB.
      */
-    public static void setColor(int c) {
-        color = new Color(c);
-    }	
-	
-	@Override
-	public void setSelected(boolean b) {
-		drawResidentNode.setSelected(b);
-		super.setSelected(b);
-	}    
+    //by young
+//	public static void setColor(int c) {
+ //       color = new Color(c);
+  //  }	
     
 	/**
 	 * Update the label of this node. 
@@ -147,7 +139,8 @@ public class ResidentNode extends MultiEntityNode
 	 *  update too the copies of this labels in input nodes. 
 	 */
 	
-    public void updateLabel(){
+	//by young
+    public String updateLabel(){
     	
     	String newLabel; 
     	List<OrdinaryVariable> ordinaryVariableList = getOrdinaryVariableList(); 
@@ -173,13 +166,9 @@ public class ResidentNode extends MultiEntityNode
     		inputNode.updateLabel(); 
     	}
     	
+    	return newLabel;
+    	
     }
-    
-	@Override
-	public void paint(Graphics2D graphics) {
-		drawResidentNode.setFillColor(getColor());
-		super.paint(graphics);
-	}	
 	
 	public void setName(String name){
 		

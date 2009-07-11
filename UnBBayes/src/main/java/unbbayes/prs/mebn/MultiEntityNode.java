@@ -45,10 +45,11 @@ public class MultiEntityNode extends Node {
 	
 	private List<Entity> possibleValueList; 
 	
-	private static final Point DEFAULT_MEBN_SIZE = new Point(100,20); 
+	//by young
+//	private static final Point DEFAULT_MEBN_SIZE = new Point(100,20); 
 	
-	protected static SerializablePoint2D size = new SerializablePoint2D(
-			DEFAULT_MEBN_SIZE.getX(), DEFAULT_MEBN_SIZE.getY());
+//	protected static SerializablePoint2D size = new SerializablePoint2D(
+//			DEFAULT_MEBN_SIZE.getX(), DEFAULT_MEBN_SIZE.getY());
 
 
 	private static Color color;
@@ -89,18 +90,20 @@ public class MultiEntityNode extends Node {
      *
      * @return The color of all context node's color.
      */
-    public static Color getColor() {
-        return color;
-    }
+	//by young
+	// public static Color getColor() {
+     //   return color;
+    //}
 
     /**
      *  Sets the new color for all context node.
      *
      * @return The new color of all context node in RGB.
      */
-    public static void setColor(int c) {
-        color = new Color(c);
-    }	
+	//by young
+    // public static void setColor(int c) {
+    //    color = new Color(c);
+    //}	
     
     /**
      * Gets the default size of a MultiEntityNode 
@@ -335,7 +338,8 @@ public class MultiEntityNode extends Node {
 	 * 
 	 * @return The node's size.
 	 */
-	public static Point2D.Double getSize() {
+	//by young
+	public Point2D.Double getSize() {
 
 		return size;
 

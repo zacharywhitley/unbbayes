@@ -149,17 +149,29 @@ public class GlobalOptionsDialog extends JDialog {
         //setar cores padroes do no, arco e de selecao e boolean de criar log
         probabilisticDescriptionNodeColor = ProbabilisticNode.getDescriptionColor();
         probabilisticExplanationNodeColor = ProbabilisticNode.getExplanationColor();
+        
+        //by young
+        decisionNodeColor      = Color.YELLOW;
+		utilityNodeColor       = Color.YELLOW;
+        edgeColor              = Color.YELLOW;
+        selectionColor         = Color.YELLOW;
+        backgroundColor        = Color.YELLOW;
+        createLogBoolean       = controller.getSingleEntityNetwork().isCreateLog();
+      
+        /*
 		decisionNodeColor      = DecisionNode.getColor();
 		utilityNodeColor       = UtilityNode.getColor();
         edgeColor              = Edge.getColor();
         selectionColor         = GraphPane.getSelectionColor();
-        backgroundColor              = graph.getBackgroundColor();
+        backgroundColor        = graph.getBackgroundColor();
         createLogBoolean       = controller.getSingleEntityNetwork().isCreateLog();
-
+*/  //by young end
         radius = new JLabel(resource.getString("radiusLabel"));
         radius.setToolTipText(resource.getString("radiusToolTip"));
         // TODO Acrescentar possibilidade de alterar largura e altura.
-        radiusSlider = new JSlider(JSlider.HORIZONTAL, 10, 40, (int)(Node.getWidth()/2));
+        //by young 
+        radiusSlider = new JSlider(JSlider.HORIZONTAL, 10, 40, (int)(Node.getDefaultSize().x/2));
+        //by young end
         radiusSlider.setToolTipText(resource.getString("radiusToolTip"));
         radiusSlider.setMinorTickSpacing(1);
         radiusSlider.setMajorTickSpacing(10);
@@ -297,6 +309,8 @@ public class GlobalOptionsDialog extends JDialog {
                 public void actionPerformed(ActionEvent e) {
                     ProbabilisticNode.setDescriptionColor(probabilisticDescriptionNodeColor.getRGB());
                     ProbabilisticNode.setExplanationColor(probabilisticExplanationNodeColor.getRGB());
+                    //by young 
+                    /*
 					DecisionNode.setColor(decisionNodeColor.getRGB());
 					UtilityNode.setColor(utilityNodeColor.getRGB());
                     Edge.setColor(edgeColor.getRGB());
@@ -304,6 +318,8 @@ public class GlobalOptionsDialog extends JDialog {
                     graph.setBackgroundColor(backgroundColor);
                     Node.setSize(radiusSlider.getValue()*2, radiusSlider.getValue()*2);
                     graph.setGraphDimension(new Dimension((int) netSlider.getValue(), (int) netSlider.getValue()));
+                    */
+                    //by young end
                     controller.getSingleEntityNetwork().setCreateLog(createLog.isSelected());
                     if (junctionTreeAlgorithm.isSelected()) {
                     	controller.setInferenceAlgorithm(InferenceAlgorithmEnum.JUNCTION_TREE);
@@ -328,6 +344,8 @@ public class GlobalOptionsDialog extends JDialog {
                 public void actionPerformed(ActionEvent e) {
                     probabilisticDescriptionNodeColor = ProbabilisticNode.getDescriptionColor();
                     probabilisticExplanationNodeColor = ProbabilisticNode.getExplanationColor();
+                    //by young
+                    /*
 					decisionNodeColor = DecisionNode.getColor();
 					utilityNodeColor = UtilityNode.getColor();
                     edgeColor = Edge.getColor();
@@ -335,6 +353,8 @@ public class GlobalOptionsDialog extends JDialog {
                     backgroundColor = graph.getBackgroundColor();
                     netSlider.setValue((int) graph.getGraphDimension().getWidth());
                     radiusSlider.setValue((int)Node.getWidth()/2);
+                    */
+                    //by young end
                     controller.getSingleEntityNetwork().setCreateLog(createLogBoolean);
                     repaint();
                 }

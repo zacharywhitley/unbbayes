@@ -21,9 +21,7 @@
 package unbbayes.prs.id;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
 
-import unbbayes.draw.DrawRectangle;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.TreeVariable;
@@ -43,22 +41,17 @@ public class DecisionNode extends TreeVariable implements java.io.Serializable {
 	
 	private static Color color = Color.orange;
 	
-	private DrawRectangle drawRectangle;
-
 	/**
      * Constructs a DecisionNode with an incremented DrawElement.
      */
     public DecisionNode() {
-    	// Here it is defined how this node is going to be drawn.
-        // In the superclass, Node, it was already definied to draw text, here
-        // we add the draw rectangle.
-        drawRectangle = new DrawRectangle(position, size);
-        drawElement.add(drawRectangle);
+      	//by young
+		setColor(Color.orange);
     }
     
     public Object clone() {
     	DecisionNode cloned = new DecisionNode();
-		DecisionNode.setColor(DecisionNode.getColor().getRGB());
+    	//by young
 		cloned.setDescription(this.getDescription());
 		cloned.setName(this.getName());
 		cloned.setPosition(this.getPosition().getX(), this.getPosition().getY());
@@ -86,32 +79,22 @@ public class DecisionNode extends TreeVariable implements java.io.Serializable {
      *  Get the node's color.
      *	@return The node's color.
      */
-    public static Color getColor() {
-        return color;
-    }
+    //by young
+     public static Color getStaticColor() 
+     {
+         return color;
+     }
     
     /**
      *  Set the node's color.
      *
      *@param rgb The node's RGB color.
      */
-    public static void setColor(int rgb) {
-        color = new Color(rgb);
+    //by young
+   	 public static void setStaticColor(int rgb) {
+   		 color = new Color(rgb);
     }
-    
-    @Override
-	public void setSelected(boolean b) {
-		// Update the DrawEllipse selection state
-		drawRectangle.setSelected(b);
-		super.setSelected(b);
-	}
-    
-    @Override
-    public void paint(Graphics2D graphics) {
-    	drawRectangle.setFillColor(getColor());
-    	super.paint(graphics);
-    }
-
+   	 
     protected void marginal() {
         marginalList = new float[getStatesSize()];
         PotentialTable auxTab = (PotentialTable)((Clique)cliqueAssociado).getUtilityTable().clone();

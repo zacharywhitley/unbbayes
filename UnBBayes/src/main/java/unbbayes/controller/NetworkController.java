@@ -31,7 +31,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.print.PageFormat;
@@ -140,19 +139,22 @@ public class NetworkController implements KeyListener {
      * @param y The y position of the new node.
      */
     
-    public void insertResidentNode(double x, double y) throws MFragDoesNotExistException{
+    public Node insertResidentNode(double x, double y) throws MFragDoesNotExistException{
     	if (mebnController != null)
-			mebnController.insertDomainResidentNode(x,y);
+    		return mebnController.insertDomainResidentNode(x,y);
+    	return null;
     }
         
-    public void insertInputNode(double x, double y) throws MFragDoesNotExistException{
+    public Node insertInputNode(double x, double y) throws MFragDoesNotExistException{
     	if (mebnController != null)
-			mebnController.insertGenerativeInputNode(x,y);
+    		return mebnController.insertGenerativeInputNode(x,y);
+    	return null;
     }
     
-    public void insertContextNode(double x, double y) throws MFragDoesNotExistException{
+    public Node insertContextNode(double x, double y) throws MFragDoesNotExistException{
     	if (mebnController != null)
-				mebnController.insertContextNode(x,y);
+				return mebnController.insertContextNode(x,y);
+    	return null;
     }
     
     public MEBNController getMebnController(){
@@ -326,8 +328,9 @@ public class NetworkController implements KeyListener {
      * @param x The x position of the new node.
      * @param y The y position of the new node.
      */
-    public void insertContinuousNode(double x, double y) {
-    	if (senController != null) senController.insertContinuousNode(x,y);
+    public Node insertContinuousNode(double x, double y) {
+    	if (senController != null) return senController.insertContinuousNode(x,y);
+    	return null;
     }
 
     /**
@@ -337,8 +340,9 @@ public class NetworkController implements KeyListener {
      * @param x The x position of the new node.
      * @param y The y position of the new node.
      */
-    public void insertProbabilisticNode(double x, double y) {
-    	if (senController != null) senController.insertProbabilisticNode(x,y);
+    public Node insertProbabilisticNode(double x, double y) {
+    	if (senController != null) return senController.insertProbabilisticNode(x,y);
+    	return null;
     }
 
 
@@ -349,8 +353,9 @@ public class NetworkController implements KeyListener {
      * @param x The x position of the new node.
      * @param y The y position of the new node.
      */
-    public void insertDecisionNode(double x, double y) {
-    	if (senController != null) senController.insertDecisionNode(x, y);
+    public Node insertDecisionNode(double x, double y) {
+    	if (senController != null) return senController.insertDecisionNode(x, y);
+    	return null;
     }
 
     /**
@@ -360,8 +365,9 @@ public class NetworkController implements KeyListener {
      * @param x The x position of the new node.
      * @param y The y position of the new node.
      */
-    public void insertUtilityNode(double x, double y) {
-    	if (senController != null) senController.insertUtilityNode(x, y);
+    public Node insertUtilityNode(double x, double y) {
+    	if (senController != null) return senController.insertUtilityNode(x, y);
+    	return null;
     }
 
     /**
@@ -382,11 +388,13 @@ public class NetworkController implements KeyListener {
      *
      * @param edge The new edge to be inserted.
      */
-    public void insertEdge(Edge edge) throws MEBNConstructionException, CycleFoundException, Exception{
-    	if (senController != null) senController.insertEdge(edge); 
+    public boolean insertEdge(Edge edge) throws MEBNConstructionException, CycleFoundException, Exception{
+    	if (senController != null) return senController.insertEdge(edge); 
     	else{
-    		if (mebnController!= null) mebnController.insertEdge(edge); 
+    		if (mebnController!= null) return mebnController.insertEdge(edge); 
     	}
+    	
+    	return false;
     }
     
     /**
@@ -411,7 +419,8 @@ public class NetworkController implements KeyListener {
      * Delete the selected object from the network.
      * @param selected The selected object to delete.
      */
-    private void deleteSelected(Object selected) {
+    //by young
+    public void deleteSelected(Object selected) {
     	if (senController != null) senController.deleteSelected(selected);
     	else if (mebnController != null) mebnController.deleteSelected(selected);
     }
@@ -442,15 +451,17 @@ public class NetworkController implements KeyListener {
      */
     public void keyPressed(KeyEvent e) {
 
-        if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+    	//by young
+      /*  if (e.getKeyCode() == KeyEvent.VK_DELETE) {
             Object selecionado = screen.getGraphPane().getSelected();
             deleteSelected(selecionado);
+            
             for (int i = 0; i < screen.getGraphPane().getSelectedGroup().size(); i++) {
                 selecionado = screen.getGraphPane().getSelectedGroup().get(i);
                 deleteSelected(selecionado);
             }
         }
-        screen.getGraphPane().update();
+        screen.getGraphPane().update();*/
     }
     
     /**
@@ -836,6 +847,9 @@ public class NetworkController implements KeyListener {
      * Otherwise, all objects from the network are considered.
      */
     public Rectangle calculateNetRectangle() {
+    	
+    	//by young
+    	/*
     	ArrayList<Node> nos;
         List vetorAux = screen.getGraphPane().getSelectedGroup();
 
@@ -878,18 +892,24 @@ public class NetworkController implements KeyListener {
                 menorY = yAux;
             }
         }
-        double nodeWidth = Node.getWidth();
+        //by young
+         
+        double nodeWidth = noAux.getWidth();
         maiorX += nodeWidth;
         maiorY += nodeWidth;
         menorX -= nodeWidth;
         menorY -= nodeWidth;
-        return new Rectangle(menorX, menorY, maiorX - menorX, maiorY - menorY);
+        
+        return new Rectangle(menorX, menorY, maiorX - menorX, maiorY - menorY);*/
+    	
+    	return new Rectangle(0, 0, (int)screen.getGraphPane().getBiggestPoint().x, (int)screen.getGraphPane().getBiggestPoint().y);
+        
+        
     }
     
     public void selectNode(Node node){
     	if (multiEntityBayesianNetwork != null){
     		mebnController.selectNode(node); 
-    		screen.getGraphPane().selectObject(node); 
     	}
     }
     

@@ -154,6 +154,22 @@ public class IconController implements Serializable {
 	protected ImageIcon ellipsisIcon;
 
 	protected ImageIcon decisionNodeIcon;
+	
+	protected ImageIcon decisionNodeCursor;
+	
+	protected ImageIcon utilityNodeCursor;
+	
+	protected ImageIcon residentNodeCursor;
+	
+	protected ImageIcon ovariableNodeCursor;
+	
+	protected ImageIcon inputNodeCursor;
+	
+	protected ImageIcon ellipsisNodeCursor;
+		
+	protected ImageIcon continueNodeCursor;
+	
+	protected ImageIcon contextNodeCursor;	
 
 	protected ImageIcon utilityNodeIcon;
 
@@ -858,6 +874,94 @@ public class IconController implements Serializable {
 		}
 	}
 
+	//by young
+	public ImageIcon getContextNodeCursor() {
+		if (contextNodeCursor != null) {
+			return contextNodeCursor;
+		} else {
+			contextNodeCursor = new ImageIcon(getClass().getResource(
+					"/icons/cursor-context.gif"));
+			return contextNodeCursor;
+		}
+	}
+	
+	//by young
+	public ImageIcon getContinueNodeCursor() {
+		if (continueNodeCursor != null) {
+			return continueNodeCursor;
+		} else {
+			continueNodeCursor = new ImageIcon(getClass().getResource(
+					"/icons/cursor-continue.gif"));
+			return continueNodeCursor;
+		}
+	}
+	
+	//by young
+	public ImageIcon getDecisionNodeCursor() {
+		if (decisionNodeCursor != null) {
+			return decisionNodeCursor;
+		} else {
+			decisionNodeCursor = new ImageIcon(getClass().getResource(
+					"/icons/cursor-decision.gif"));
+			return decisionNodeCursor;
+		}
+	}
+	
+	//by young
+	public ImageIcon getEllipsisNodeCursor() {
+		if (ellipsisNodeCursor != null) {
+			return ellipsisNodeCursor;
+		} else {
+			ellipsisNodeCursor = new ImageIcon(getClass().getResource(
+					"/icons/cursor-ellipsis.gif"));
+			return ellipsisNodeCursor;
+		}
+	}
+	
+	//by young
+	public ImageIcon getInputNodeCursor() {
+		if (inputNodeCursor != null) {
+			return inputNodeCursor;
+		} else {
+			inputNodeCursor = new ImageIcon(getClass().getResource(
+					"/icons/cursor-input.gif"));
+			return inputNodeCursor;
+		}
+	}
+	
+	//by young
+	public ImageIcon getOvariableNodeCursor() {
+		if (ovariableNodeCursor != null) {
+			return ovariableNodeCursor;
+		} else {
+			ovariableNodeCursor = new ImageIcon(getClass().getResource(
+					"/icons/cursor-ovariable.gif"));
+			return ovariableNodeCursor;
+		}
+	}
+	
+	//by young
+	public ImageIcon getResidentNodeCursor() {
+		if (residentNodeCursor != null) {
+			return residentNodeCursor;
+		} else {
+			residentNodeCursor = new ImageIcon(getClass().getResource(
+					"/icons/cursor-resident.gif"));
+			return residentNodeCursor;
+		}
+	}
+	
+	//by young
+	public ImageIcon getUtilityNodeCursor() {
+		if (utilityNodeCursor != null) {
+			return utilityNodeCursor;
+		} else {
+			utilityNodeCursor = new ImageIcon(getClass().getResource(
+					"/icons/cursor-utility.gif"));
+			return utilityNodeCursor;
+		}
+	}
+	
 	public ImageIcon getDecisionNodeIcon() {
 		if (decisionNodeIcon != null) {
 			return decisionNodeIcon;

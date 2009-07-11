@@ -20,12 +20,10 @@
  */
 package unbbayes.prs.hybridbn;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.io.Serializable;
 import java.util.ResourceBundle;
 
-import unbbayes.draw.DrawEllipse;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.exception.InvalidParentException;
@@ -39,9 +37,6 @@ public class ContinuousNode extends TreeVariable implements Serializable {
 	public final static int VARIANCE_MARGINAL_INDEX = 1;
 
 	private static final long serialVersionUID = 1L;
-	
-	private static Color color = Color.GREEN;
-    private DrawEllipse drawEllipse;
 	
 	private CNNormalDistribution cnNormalDistribution;
 	
@@ -59,39 +54,12 @@ public class ContinuousNode extends TreeVariable implements Serializable {
 		cnNormalDistribution = new CNNormalDistribution(this);
 		this.appendState(resource.getString("meanName"));
 		this.appendState(resource.getString("varianceName"));
-		drawEllipse = new DrawEllipse(position, size);
-        drawElement.add(drawEllipse);
 	}
 	
 	public CNNormalDistribution getCnNormalDistribution() {
 		return cnNormalDistribution;
 	}
 	
-	public static Color getColor() {
-		return color;
-	}
-
-	public static void setColor(Color color) {
-		ContinuousNode.color = color;
-	}
-	
-	public static void setColor(int c) {
-		ContinuousNode.color = new Color(c);
-	}
-	
-	@Override
-	public void setSelected(boolean b) {
-		// Update the DrawEllipse selection state
-		drawEllipse.setSelected(b);
-		super.setSelected(b);
-	}
-	
-	@Override
-	public void paint(Graphics2D graphics) {
-    	drawEllipse.setFillColor(getColor());
-		super.paint(graphics);
-	}
-
 	@Override
 	protected void marginal() {
 		// TODO Auto-generated method stub

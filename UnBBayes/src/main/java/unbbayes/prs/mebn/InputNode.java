@@ -21,12 +21,10 @@
 package unbbayes.prs.mebn;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-import unbbayes.draw.DrawTwoBaseRectangle;
 import unbbayes.prs.mebn.entity.Type;
 
 public class InputNode extends MultiEntityNode {
@@ -51,8 +49,6 @@ public class InputNode extends MultiEntityNode {
 	
 	private ResidentNode inputInstanceOfNode;
 	
-	private DrawTwoBaseRectangle drawInputNode; 
-	
 	private static Color color = new Color(220, 220, 220); 	
 	
 	//DON'T USE THIS CONSTRUCTOR! IS ONLY TEMPORARY FOR CLEAR THE TESTS
@@ -66,53 +62,16 @@ public class InputNode extends MultiEntityNode {
 		
 		setName(name); 
 		setLabel(" "); 
-		
+		//by young
+		setColor(new Color(220, 220, 220));
+
 		this.mFrag = mFrag;
 		
 		residentNodeChildList = new ArrayList<ResidentNode>(); 
 		
 		size.x = 100;
-		size.y = 20; 
-		drawInputNode = new DrawTwoBaseRectangle(position, size);
-		drawElement.add(drawInputNode);	
+		size.y = 60; 
 	}
-	
-	
-	
-	
-	
-	
-	
-	@Override
-	public void setSelected(boolean b) {
-		drawInputNode.setSelected(b);
-		super.setSelected(b);
-	}    		
-	
-	/**
-	 *  Gets all generative input node node's color.
-	 *
-	 * @return The color of all generative input node's color.
-	 */
-	public static Color getColor() {
-		return color;
-	}
-	
-	/**
-	 *  Sets the new color for all generative input node node.
-	 *
-	 * @return The new color of all generative input node in RGB.
-	 */
-	public static void setColor(int c) {
-		color = new Color(c);
-	}		
-	
-	@Override
-	public void paint(Graphics2D graphics) {
-		drawInputNode.setFillColor(getColor());
-		super.paint(graphics);
-	}	
-	
 	
 	/**
 	 * Atualiza o texto do label apresentado pelo no... 
@@ -120,14 +79,17 @@ public class InputNode extends MultiEntityNode {
 	 * built in o qual este n� representa.
 	 */
 	
-	public void updateLabel(){
+	//by young
+	public String updateLabel(){
+		
+		String newLabel = ""; 
 		
 		Object inputInstanceOf = getInputInstanceOf();
 		
 		if(inputInstanceOf != null){
 			if(inputInstanceOf instanceof ResidentNode){
 				ResidentNodePointer pointer = getResidentNodePointer();
-				String newLabel = ""; 
+			
 				
 				newLabel+= pointer.getResidentNode().getName(); 
 				newLabel+= "("; 
@@ -156,6 +118,8 @@ public class InputNode extends MultiEntityNode {
 		else{
 			setLabel(" "); 
 		}
+		
+		return newLabel;
 	}	
 	
 	

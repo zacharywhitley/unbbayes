@@ -21,13 +21,10 @@
 package unbbayes.prs.mebn;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.draw.DrawFlatPentagon;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.entity.Type;
 import unbbayes.util.SerializablePoint2D;
@@ -68,9 +65,6 @@ public class OrdinaryVariable extends Node{
 	
 	private static Color color = new Color(176, 252, 131); 
 	
-    private DrawFlatPentagon drawContextNode;
-    
-    
 	private static final Point DEFAULT_MEBN_SIZE = new Point(100,20); 
 	
 	protected static SerializablePoint2D size = new SerializablePoint2D(
@@ -97,12 +91,11 @@ public class OrdinaryVariable extends Node{
 		isArgumentOfList = new  ArrayList<ResidentNodePointer>(); 
 		
     	/* draw */
+	  	//by young
+		setColor(new Color(176, 252, 131));
     	updateLabel(); 
     	size.x = 100;
-    	size.y = 20; 
-    	drawContextNode = new DrawFlatPentagon(position, size);
-        drawElement.add(drawContextNode);
-		
+    	size.y = 60; 
 	}
 	
 	/**
@@ -215,39 +208,6 @@ public class OrdinaryVariable extends Node{
 	    
 	}
 	
-	/* draw */
-	/*-------------------------------------------------------------*/
-	
-	/**
-     *  Gets all context node's color.
-     *
-     * @return The color of all context node's color.
-     */
-    public static Color getColor() {
-        return color;
-    }
-
-    /**
-     *  Sets the new color for all context node.
-     *
-     * @return The new color of all context node in RGB.
-     */
-    public static void setColor(int c) {
-        color = new Color(c);
-    }
-	 
-	@Override
-	public void setSelected(boolean b) {
-		drawContextNode.setSelected(b);
-		super.setSelected(b);
-	}
-	
-	@Override
-	public void paint(Graphics2D graphics) {
-		drawContextNode.setFillColor(getColor());
-		super.paint(graphics);
-	}
-	
 	/**
 	 * Update the label of this node, representing the isA(Type) context node. 
 	 * @see Type
@@ -311,17 +271,7 @@ public class OrdinaryVariable extends Node{
 		
 	}
 	
-	/**
-	 * Returns the node's size (x,y) where x = width and y = height.
-	 * 
-	 * @return The node's size.
-	 */
-	public static Point2D.Double getSize() {
-
-		return size;
-
-	}
-	
+	 
 	/**
 	 * @see java.lang.Object#toString()
 	 */

@@ -1,5 +1,8 @@
 package unbbayes.io.xmlbif.version5;
 
+//by young 
+import java.awt.Color;
+//by young end
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
@@ -67,12 +70,13 @@ public class XMLBIFIO {
 			pn.setRadius(staticProperty.getNodeSize() / 2); 		    
 			// TODO -----> setNODEFONTNAME();
 			// TODO -----> setNODEFONTSIZE();
-			UtilityNode.setColor(staticProperty.getColorUtilityNode());
-			DecisionNode.setColor(staticProperty.getColorDecisionNode());
-			ProbabilisticNode.setDescriptionColor(staticProperty.getColorDiscreteProbabilisticNode());
-			ProbabilisticNode.setExplanationColor(staticProperty.getColorExplanationNode());
-			ContinuousNode.setColor(staticProperty.getColorContinuousProbilisticNode());
-			
+			//by young 
+			//UtilityNode.setColor(staticProperty.getColorUtilityNode());
+			//DecisionNode.setColor(staticProperty.getColorDecisionNode());
+			//ProbabilisticNode.setDescriptionColor(staticProperty.getColorDiscreteProbabilisticNode());
+			//ProbabilisticNode.setExplanationColor(staticProperty.getColorExplanationNode());
+			//ContinuousNode.setColor(staticProperty.getColorContinuousProbilisticNode());
+			//by young end
 			// ------------------- Hierarchy -------------------------------------------------------
 			
 			XMLBIFType.HierarchyType hierarchy = XMLBIF.getHierarchy(); 
@@ -227,12 +231,14 @@ public class XMLBIFIO {
 		staticProperty.setNodeSize((int) net.getRadius() * 2);
 		// TODO -----> setNODEFONTNAME();
 		// TODO -----> setNODEFONTSIZE();
-		staticProperty.setColorUtilityNode(UtilityNode.getColor().getRGB());
-		staticProperty.setColorDecisionNode(DecisionNode.getColor().getRGB());
-		staticProperty.setColorDiscreteProbabilisticNode(ProbabilisticNode.getDescriptionColor().getRGB()); 
-		staticProperty.setColorExplanationNode(ProbabilisticNode.getExplanationColor().getRGB());
-		staticProperty.setColorContinuousProbilisticNode(ContinuousNode.getColor().getRGB());
 		
+		//by young
+		//staticProperty.setColorUtilityNode(UtilityNode.getColor().getRGB());
+		//staticProperty.setColorDecisionNode(DecisionNode.getColor().getRGB());
+		//staticProperty.setColorDiscreteProbabilisticNode(ProbabilisticNode.getDescriptionColor().getRGB()); 
+		//staticProperty.setColorExplanationNode(ProbabilisticNode.getExplanationColor().getRGB());
+		//staticProperty.setColorContinuousProbilisticNode(ContinuousNode.getColor().getRGB());
+		//by young end
 		
 		xmlBif.setStaticProperty(staticProperty);
 		
@@ -290,7 +296,9 @@ public class XMLBIFIO {
 			}
 			variable.setXPos((int) node.getPosition().getX());
 			variable.setYPos((int) node.getPosition().getY());
-			
+			//by young
+			variable.setCOLOR((int) node.getColor().getRGB());
+			//by young end
 			variable.setDescription(node.getDescription());
 			// TODO set variable mmedia (UnBBayes does not support yet)
 			
@@ -487,6 +495,9 @@ public class XMLBIFIO {
 		node.setDescription(variable.getDescription());
 		node.setPosition(variable.getXPos(), variable.getYPos());
 		
+		//by young
+		node.setColor(new Color(variable.getCOLOR()));
+		//by young end
 		// Only add states for non continuous node.
 		if (nodeType != VariableType.CONTINUOUSPROBABILISTIC) {
 			List stateList = variable.getState(); 

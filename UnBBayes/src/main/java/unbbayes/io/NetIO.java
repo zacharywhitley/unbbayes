@@ -20,6 +20,9 @@
  */
 package unbbayes.io;
 
+//by young 
+import java.awt.Color;
+//by young end
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -434,16 +437,28 @@ public class NetIO implements BaseIO {
 			net.setHierarchicTree(hierarchicTree);
 		} else if (st.sval.equals("UnBBayes_Color_Utility")) {
 			getNext(st);
-			UtilityNode.setColor(Integer.parseInt(st.sval));
+			//by young
+			//UtilityNode.setColor(Integer.parseInt(st.sval));
+			Integer.parseInt(st.sval);
+			//by young end
 		} else if (st.sval.equals("UnBBayes_Color_Decision")) {
 			getNext(st);
-			DecisionNode.setColor(Integer.parseInt(st.sval));
+			//by young
+			//DecisionNode.setColor(Integer.parseInt(st.sval));
+			Integer.parseInt(st.sval);
+			//by young end
 		} else if (st.sval.equals("UnBBayes_Color_Probabilistic_Description")) {
             getNext(st);
-            ProbabilisticNode.setDescriptionColor(Integer.parseInt(st.sval));
+            //by young
+            Integer.parseInt(st.sval);
+            //ProbabilisticNode.setDescriptionColor(Integer.parseInt(st.sval));
+            //by young end
         } else if (st.sval.equals("UnBBayes_Color_Probabilistic_Explanation")) {
             getNext(st);
-            ProbabilisticNode.setExplanationColor(Integer.parseInt(st.sval));
+            //by young
+            Integer.parseInt(st.sval);
+            //ProbabilisticNode.setExplanationColor(Integer.parseInt(st.sval));
+            //by young end
         }
 		
 	}
@@ -660,18 +675,31 @@ public class NetIO implements BaseIO {
 			int x = Integer.parseInt(st.sval);
 			getNext(st);
 			if (x <= 0) {
-				x = Node.getWidth();
+				//by young
+				x = node.getWidth();
+				//by young end
 			}
 			int y = Integer.parseInt(st.sval);
 			if (y <= 0) {
-				y = Node.getHeight();
+				//by young
+				y = node.getHeight();
+				//by young end
 			}
 			
 //			node.getPosition().setLocation(x, y);
 			node.setPosition(x, y);
 			
 			getNext(st);
-		} else if (st.sval.equals("states")) {
+		}  //by young
+		else if (st.sval.equals("color")) {
+			getNext(st);
+			int c = Integer.parseInt(st.sval);
+		 
+			node.setColor(new Color(c));
+			
+			getNext(st);
+		} //by young end
+		else if (st.sval.equals("states")) {
 			while (getNext(st) == '"') {
 				node.appendState(st.sval);
 			}
@@ -832,8 +860,13 @@ public class NetIO implements BaseIO {
 			stream.println("     tree = \"" + tree + "\";");
         stream.println("     UnBBayes_Color_Probabilistic_Description = \"" + ProbabilisticNode.getDescriptionColor().getRGB() + "\";");
         stream.println("     UnBBayes_Color_Probabilistic_Explanation = \"" + ProbabilisticNode.getExplanationColor().getRGB() + "\";");
-		stream.println("     UnBBayes_Color_Utility = \"" + UtilityNode.getColor().getRGB() + "\";");
-		stream.println("     UnBBayes_Color_Decision = \"" + DecisionNode.getColor().getRGB() + "\";");
+		
+        //by young
+        stream.println("     UnBBayes_Color_Utility = \"" + "1" + "\";");
+		stream.println("     UnBBayes_Color_Decision = \"" + "1" + "\";");
+        //stream.println("     UnBBayes_Color_Utility = \"" + UtilityNode.getColor().getRGB() + "\";");
+		//stream.println("     UnBBayes_Color_Decision = \"" + DecisionNode.getColor().getRGB() + "\";");
+		//by young end
 	}
 	
 	
@@ -1054,6 +1087,13 @@ public class NetIO implements BaseIO {
 				+ " "
 				+ (int) node.getPosition().getY()
 				+ ");");
+		
+		//by young
+		stream.println(
+				"     color = ("
+					+ (int)node.getColor().getRGB()
+					+ ");");
+		//by young end
 	}
 	
 }

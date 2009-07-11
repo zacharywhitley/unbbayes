@@ -133,7 +133,11 @@ public interface XMLBIFType {
         public java.lang.String getType();
       
         public void setType(java.lang.String pType);
-      
+        //by young
+        public int getCOLOR() ;
+ 
+        public void setCOLOR(int c) ;
+        //by young end
         public int getXPos();
       
         public void setXPos(int pXPos);

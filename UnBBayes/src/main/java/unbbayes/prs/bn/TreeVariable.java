@@ -48,6 +48,16 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     	marginalList = new float[getStatesSize()];
     }
     
+    //by young
+	public boolean IsMarginalList() 
+	{  				
+		if( marginalList != null )
+			return true;
+		
+		return false;		
+	}
+   //by young end
+	
     void copyMarginal() {
     	int size = marginalList.length;
     	marginalCopy = new float[size];
@@ -66,7 +76,11 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
      *@return    valor da marginal de determinado �ndice.
      */
     public float getMarginalAt(int index) {
-        return marginalList[index];
+	//by young
+    	if( marginalList != null )
+    		return marginalList[index];
+    	return -0.0f;
+    //by young end
     }
 
     void setMarginalAt(int index, float value) {

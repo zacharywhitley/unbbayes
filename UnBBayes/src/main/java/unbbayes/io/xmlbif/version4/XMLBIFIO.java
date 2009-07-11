@@ -69,8 +69,8 @@ public class XMLBIFIO {
 			pn.setRadius(Double.parseDouble((staticProperty.getNODESIZE()))/2); 		    
 			//-----> setNODEFONTNAME();
 			//-----> setNODEFONTSIZE();
-			UtilityNode.setColor(staticProperty.getCOLORUTILITY());
-			DecisionNode.setColor(staticProperty.getCOLORDECISION());
+			UtilityNode.setStaticColor(staticProperty.getCOLORUTILITY());
+			DecisionNode.setStaticColor(staticProperty.getCOLORDECISION());
 			ProbabilisticNode.setDescriptionColor(staticProperty.getCOLORPROBDESCRIPTION());
 			ProbabilisticNode.setExplanationColor(staticProperty.getCOLORPROBEXPLANATION()); 
 			
@@ -202,8 +202,8 @@ public class XMLBIFIO {
 		staticProperty.setNODESIZE("" + ((int) net.getRadius() * 2));
 		//-----> setNODEFONTNAME();
 		//-----> setNODEFONTSIZE();
-		staticProperty.setCOLORUTILITY(UtilityNode.getColor().getRGB());
-		staticProperty.setCOLORDECISION(DecisionNode.getColor().getRGB());
+		staticProperty.setCOLORUTILITY(UtilityNode.getStaticColor().getRGB());
+		staticProperty.setCOLORDECISION(DecisionNode.getStaticColor().getRGB());
 		staticProperty.setCOLORPROBDESCRIPTION(ProbabilisticNode.getDescriptionColor().getRGB()); 
 		staticProperty.setCOLORPROBEXPLANATION(ProbabilisticNode.getExplanationColor().getRGB()); 
 		

@@ -4,26 +4,19 @@
 package unbbayes.controller.oobn;
 
 import java.awt.event.KeyEvent;
-import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Set;
 
 import unbbayes.controller.NetworkController;
-import unbbayes.draw.DrawElement;
-import unbbayes.draw.DrawEllipse;
 import unbbayes.gui.NetworkWindow;
-import unbbayes.gui.oobn.OOBNClassWindow;
 import unbbayes.gui.oobn.node.OOBNNodeGraphicalWrapper;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
-import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.oobn.IOOBNClass;
 import unbbayes.prs.oobn.IOOBNNode;
 import unbbayes.prs.oobn.impl.DefaultOOBNNode;
-import unbbayes.prs.oobn.impl.ObjectOrientedBayesianNetwork;
 import unbbayes.util.Debug;
 
 /**
@@ -65,7 +58,7 @@ public class OOBNClassController extends NetworkController {
 	 * @see unbbayes.controller.NetworkController#insertProbabilisticNode(double, double)
 	 */
 	@Override
-	public void insertProbabilisticNode(double x, double y) {
+	public Node insertProbabilisticNode(double x, double y) {
 		ProbabilisticNode node = OOBNNodeGraphicalWrapper.newInstance(DefaultOOBNNode.newInstance());
 		node.setPosition(x, y);
 		node.appendState(resource.getString("firstStateProbabilisticName"));
@@ -79,6 +72,8 @@ public class OOBNClassController extends NetworkController {
 		
 		
 		this.getNetwork().addNode(node);
+		
+		return node;
 	}
 	
 	
@@ -109,9 +104,12 @@ public class OOBNClassController extends NetworkController {
 		OOBNNodeGraphicalWrapper node = OOBNNodeGraphicalWrapper.newInstance(wrappedNode);
 		
 		// update position of graphical wrapper
-		node.setPosition(x, y);		
+		//by young
+		//node.setPosition(x, y);		
 		
-		
+		//by young
+		node.setInstanceNodePositionAndSize((int)x, (int)y);
+		  
 		// set parameters of this node (which in most of cases it is not used)
 		// but the UnBBayes framework forces us to create node with at least 1 state...
 		node.appendState(resource.getString("firstStateProbabilisticName"));

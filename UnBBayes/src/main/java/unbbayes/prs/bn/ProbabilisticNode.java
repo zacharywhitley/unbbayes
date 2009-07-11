@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import unbbayes.draw.DrawEllipse;
 import unbbayes.prs.Node;
 import unbbayes.util.SetToolkit;
 
@@ -46,7 +45,6 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
 	private ProbabilisticTable tabelaPot;
     private static Color descriptionColor = Color.yellow;
     private static Color explanationColor = Color.green;
-    private DrawEllipse drawEllipse;
 
     /** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
@@ -57,18 +55,15 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
      */
     public ProbabilisticNode() {
         tabelaPot = new ProbabilisticTable();
-        // Here it is defined how this node is going to be drawn.
-        // In the superclass, Node, it was already definied to draw text, here
-        // we add the draw ellipse.
-        drawEllipse = new DrawEllipse(position, size);
-        drawElement.add(drawEllipse);
+	  	//by young
+		setColor(descriptionColor);
     }
 
 
     public int getType() {
     	return PROBABILISTIC_NODE_TYPE;
     }
-
+    
     /**
      *  Copia as caracter�sticas principais para o n� desejado
      *@param raio raio do n�.
@@ -263,23 +258,6 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
 	 */
 	public static Color getExplanationColor() {
 		return explanationColor;
-	}
-	
-	@Override
-	public void setSelected(boolean b) {
-		// Update the DrawEllipse selection state
-		drawEllipse.setSelected(b);
-		super.setSelected(b);
-	}
-	
-	@Override
-	public void paint(Graphics2D graphics) {
-		if (getInformationType() == Node.DESCRIPTION_TYPE) {
-			drawEllipse.setFillColor(getDescriptionColor());
-    	} else if (getInformationType() == Node.EXPLANATION_TYPE) {
-    		drawEllipse.setFillColor(getExplanationColor());
-    	}
-		super.paint(graphics);
 	}
 
 }

@@ -21,16 +21,12 @@
 package unbbayes.prs;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.draw.DrawElement;
-import unbbayes.draw.DrawText;
-import unbbayes.draw.IOnePositionDrawable;
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.exception.InvalidParentException;
@@ -46,7 +42,7 @@ import unbbayes.util.SerializablePoint2D;
  * @author Shou Matsumoto
  * 		   Refactor: interface extraction -> INode
  */
-public abstract class Node implements Serializable, IOnePositionDrawable, 
+public abstract class Node implements Serializable, 
                                       Comparable<Node>, INode{
 
 	private String description;
@@ -54,12 +50,14 @@ public abstract class Node implements Serializable, IOnePositionDrawable,
 	protected String label;
 	private boolean nameIsLabel = true;
 
-
-	private static final Point DEFAULT_SIZE = new Point(35,35); 
+	//by young	
+	public static Point DEFAULT_SIZE = new Point(80,60); 
 	
 	protected SerializablePoint2D position;
-	protected static SerializablePoint2D size = new SerializablePoint2D(DEFAULT_SIZE.getX(), DEFAULT_SIZE.getY());
-
+	//by young	
+	protected Color backColor;
+	//by young
+	protected SerializablePoint2D size = new SerializablePoint2D(DEFAULT_SIZE.getX(), DEFAULT_SIZE.getY());
 	protected SerializablePoint2D sizeVariable = new SerializablePoint2D();
 	protected boolean sizeIsVariable = false;
 
@@ -72,7 +70,12 @@ public abstract class Node implements Serializable, IOnePositionDrawable,
 	private ArrayMap<String, ExplanationPhrase> phrasesMap;
 	private int informationType;
 	public int infoestados[];
-	
+
+    //by young
+ 	public static final String DISPLAY_MODE_ELLIPSE		= "Display Mode Ellipse";
+ 	public static final String DISPLAY_MODE_BAR			= "Display Mode BAR";
+ 	private String m_displayMode = DISPLAY_MODE_ELLIPSE;
+  
 
 	public static final int PROBABILISTIC_NODE_TYPE = 0;
 	public static final int UTILITY_NODE_TYPE = 1;
@@ -83,8 +86,6 @@ public abstract class Node implements Serializable, IOnePositionDrawable,
 	
 	public static final int CONTINUOUS_NODE_TYPE = 5;
 
-	protected DrawElement drawElement;
-	
 	/**
 	 * Holds the mean of the values for each class if this is a numeric
 	 * attribute node
@@ -118,10 +119,11 @@ public abstract class Node implements Serializable, IOnePositionDrawable,
 
 		position = new SerializablePoint2D();
 		bSelected = false;
-		drawElement = new DrawText(name, position);
-		drawElement.setFillColor(Color.black);
 		phrasesMap = new ArrayMap<String, ExplanationPhrase>();
 		informationType = DESCRIPTION_TYPE;
+		
+		//by young
+		setColor(Color.white); 
 	}
 
 	public static Point getDefaultSize(){
@@ -189,9 +191,6 @@ public abstract class Node implements Serializable, IOnePositionDrawable,
 	public void setName(String name) {
 		NodeNameChangedEvent event = new NodeNameChangedEvent(this.name, name);
 		this.name = name;
-		if (nameIsLabel == true) {
-			((DrawText) drawElement).setText(name);
-		}
 		this.nameChanged(event);
 	}
 
@@ -204,7 +203,6 @@ public abstract class Node implements Serializable, IOnePositionDrawable,
 	public void setLabel(String label) {
 		this.label = label;
 		nameIsLabel = false;
-		((DrawText) drawElement).setText(label);
 	}
 
 	/**
@@ -212,6 +210,12 @@ public abstract class Node implements Serializable, IOnePositionDrawable,
 	 * 
 	 */
 	public String getLabel() {
+		return label;
+	}
+	
+	//by young
+	public String updateLabel()
+	{
 		return label;
 	}
 
@@ -467,6 +471,17 @@ public abstract class Node implements Serializable, IOnePositionDrawable,
 			}
 		}
 	}
+	
+	 //by young
+    public void setDisplayMode(String s) 
+	{  
+    	m_displayMode = s;
+	}	
+	
+	public String getDisplayMode() 
+	{
+		return m_displayMode;
+	}
 
 	/**
 	 * Sets the adjacents.
@@ -520,11 +535,6 @@ public abstract class Node implements Serializable, IOnePositionDrawable,
 		return this.getName().compareTo(((Node)arg0).getName());	
 	}
 	
-
-	public void paint(Graphics2D graphics) {
-		drawElement.paint(graphics);
-	}
-
 	public boolean isPointInDrawableArea(int x, int y) {
 		double x1 = position.x;
 		double y1 = position.y;
@@ -555,12 +565,23 @@ public abstract class Node implements Serializable, IOnePositionDrawable,
 		position.setLocation(x, y);
 	}
 
+	//by young
+	public Color getColor() {
+		return backColor;
+	}
+ 
+	//by young
+	public void setColor(Color c) {
+		backColor = c;
+	}
+	
 	/**
 	 * Get the node's width.
 	 * 
 	 * @return Node's width.
 	 */
-	public static int getWidth() {
+	//by young
+	public int getWidth() {
 		return (int) size.x;
 	}
 
@@ -569,8 +590,29 @@ public abstract class Node implements Serializable, IOnePositionDrawable,
 	 * 
 	 * @return The node's height.
 	 */
-	public static int getHeight() {
+	//by young
+	public int getHeight() {
 		return (int) size.y;
+	}
+	
+	/**
+	 * Get the node's width.
+	 * 
+	 * @return Node's width.
+	 */
+	//by young
+	public static int getDefaultWidth() {
+		return (int) DEFAULT_SIZE.x;
+	}
+
+	/**
+	 * Get the node's height.
+	 * 
+	 * @return The node's height.
+	 */
+	//by young
+	public static int getDefaultHeight() {
+		return (int) DEFAULT_SIZE.y;
 	}
 
 	/**
@@ -578,7 +620,8 @@ public abstract class Node implements Serializable, IOnePositionDrawable,
 	 * 
 	 * @return The node's size.
 	 */
-	public static Point2D.Double getSize() {
+	//by young
+	public Point2D.Double getSize() {
 
 		return size;
 
@@ -592,8 +635,10 @@ public abstract class Node implements Serializable, IOnePositionDrawable,
 	 * @param height
 	 *            The node's height.
 	 */
-	public static void setSize(double width, double height) {
-		size.setLocation(width, height);
+	//by young
+	public void setSize(double width, double height) {
+		size.x = width;
+		size.y = height;
 	}
 
 	public void setSizeVariable(double width, double height) {

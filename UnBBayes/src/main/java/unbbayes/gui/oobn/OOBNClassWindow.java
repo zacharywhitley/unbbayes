@@ -154,12 +154,10 @@ public class OOBNClassWindow extends NetworkWindow {
 		
 		this.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
 
+		//by young
+		long width = Node.getDefaultSize().x;
+		long height = Node.getDefaultSize().y;
 		
-
-
-		
-		long width = Node.getWidth();
-		long height = Node.getHeight();
 		this.graphPane.getGraphViewport().reshape(0, 0,
 				(int) (this.graphPane.getBiggestPoint().getX() + width),
 				(int) (this.graphPane.getBiggestPoint().getY() + height));
@@ -200,6 +198,8 @@ public class OOBNClassWindow extends NetworkWindow {
 		card.show(getContentPane(), PN_PANE_PN_EDITION_PANE);
 		
 
+		//by young
+		this.graphPane.update();
 		
 	}
 	

@@ -357,10 +357,10 @@ public class DneIO implements BaseIO {
 			net.setRadius(Double.parseDouble(st.sval) / 2);
 		} else if (st.sval.equals("UnBBayes_Color_Utility")) {
 			getNext(st);
-			UtilityNode.setColor(Integer.parseInt(st.sval));
+			UtilityNode.setStaticColor(Integer.parseInt(st.sval));
 		} else if (st.sval.equals("UnBBayes_Color_Decision")) {
 			getNext(st);
-			DecisionNode.setColor(Integer.parseInt(st.sval));
+			DecisionNode.setStaticColor(Integer.parseInt(st.sval));
 		} else if (st.sval.equals("UnBBayes_Color_Probabilistic_Description")) {
             getNext(st);
             ProbabilisticNode.setDescriptionColor(Integer.parseInt(st.sval));
@@ -515,12 +515,12 @@ public class DneIO implements BaseIO {
 						getNext(st);
 						int x = Integer.parseInt(st.sval);
 						if (x <= 0) {
-							x = Node.getWidth();
+							x = Node.getDefaultWidth();
 						}
 						getNext(st);
 						int y = Integer.parseInt(st.sval);
 						if (y <= 0) {
-							y = Node.getHeight();
+							y = Node.getDefaultHeight();
 						}
 						node.setPosition(x, y);
 					}
@@ -606,8 +606,8 @@ public class DneIO implements BaseIO {
 		stream.println("     name = \"" + net.getName() + "\";");
         stream.println("     UnBBayes_Color_Probabilistic_Description = \"" + ProbabilisticNode.getDescriptionColor().getRGB() + "\";");
         stream.println("     UnBBayes_Color_Probabilistic_Explanation = \"" + ProbabilisticNode.getExplanationColor().getRGB() + "\";");
-		stream.println("     UnBBayes_Color_Utility = \"" + UtilityNode.getColor().getRGB() + "\";");
-		stream.println("     UnBBayes_Color_Decision = \"" + DecisionNode.getColor().getRGB() + "\";");
+		stream.println("     UnBBayes_Color_Utility = \"" + UtilityNode.getStaticColor().getRGB() + "\";");
+		stream.println("     UnBBayes_Color_Decision = \"" + DecisionNode.getStaticColor().getRGB() + "\";");
 	}
 	
 	

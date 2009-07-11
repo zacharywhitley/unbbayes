@@ -162,8 +162,9 @@ public class NetworkWindow extends JInternalFrame implements IFileExtensionAware
 		jspGraph = new JScrollPane(graphViewport);
 		status = new JLabel(resource.getString("statusReadyLabel"));
 		bCompiled = false;
-		long width = Node.getWidth();
-		long height = Node.getHeight();
+		//by young
+		long width = (long)Node.getDefaultSize().getX();
+		long height = (long)Node.getDefaultSize().getY();
 		graphPane.getGraphViewport().reshape(0, 0,
 				(int) (graphPane.getBiggestPoint().getX() + width),
 				(int) (graphPane.getBiggestPoint().getY() + height));
@@ -452,8 +453,8 @@ public class NetworkWindow extends JInternalFrame implements IFileExtensionAware
 	public void changeToMEBNEditionPane() {
 
 		if (mode == NetworkWindow.MEBN_MODE) {
-			Node.setSize(MultiEntityNode.getDefaultSize().getX(),
-					MultiEntityNode.getDefaultSize().getY());
+			//by young
+			//Node.setSize(MultiEntityNode.getDefaultSize().getX(), MultiEntityNode.getDefaultSize().getY());
 			graphPane.addKeyListener(controller);
 
 			controller.getMebnController().setEditionMode();
@@ -472,8 +473,8 @@ public class NetworkWindow extends JInternalFrame implements IFileExtensionAware
 	public void changeToSSBNCompilationPane(SingleEntityNetwork ssbn) {
 
 		if (mode == NetworkWindow.MEBN_MODE) {
-			Node.setSize(Node.getDefaultSize().getX(), Node.getDefaultSize()
-					.getY());
+			//by young
+			//Node.setSize(Node.getDefaultSize().getX(), Node.getDefaultSize().getY());
 
 			Container contentPane = getContentPane();
 			contentPane.remove(ssbnCompilationPane);
@@ -514,6 +515,9 @@ public class NetworkWindow extends JInternalFrame implements IFileExtensionAware
 
 			controller.getSingleEntityNetwork().setFirstInitialization(true);
 
+			//by young
+			graphPane.update();
+			
 			card.show(getContentPane(), "pnEditionPane");
 		}
 	}

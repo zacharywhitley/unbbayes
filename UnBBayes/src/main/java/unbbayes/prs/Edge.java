@@ -24,9 +24,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 
-import unbbayes.draw.DrawArrow;
-import unbbayes.draw.DrawLine;
-import unbbayes.draw.ITwoPositionDrawable;
+import sun.java2d.loops.DrawLine;
 import unbbayes.util.GeometricUtil;
 
 
@@ -36,11 +34,9 @@ import unbbayes.util.GeometricUtil;
  *@author Michael Onishi
  *@author Rommel Carvalho
  */
-public class Edge implements java.io.Serializable, ITwoPositionDrawable {
+public class Edge implements java.io.Serializable {
 	
 	private static Color color = Color.black;
-	private DrawLine drawLine;
-	private DrawArrow drawArrow;
 	
 	/**
 	 * 
@@ -80,26 +76,8 @@ public class Edge implements java.io.Serializable, ITwoPositionDrawable {
         
         // assert node1 != node2 : "arco malfeito";
         direction = true;
-        
-        // Here it is defined how this edge is going to be drawn.
-        drawLine = new DrawLine(node1.getPosition(), node2.getPosition(), Node.getSize());
-        drawArrow = new DrawArrow(node1.getPosition(), node2.getPosition(), Node.getSize());
-        drawArrow.setNew(false);
-        drawLine.add(drawArrow);
     }
 
-
-    /**
-     *  Modifica o status de sele��o do arco.
-     *
-     *@param  bSelected  status de sele��o desejado.
-     */
-    public void setSelected(boolean b) {
-    	// Update the DrawArrow and DrawLine selection state
-		drawArrow.setSelected(b);
-		drawLine.setSelected(b);
-        this.bSelected = b;
-    }
     
     /**
      *  Modifica o status de dire��o do arco.
@@ -109,8 +87,14 @@ public class Edge implements java.io.Serializable, ITwoPositionDrawable {
     public void setDirection(boolean direction) {
         this.direction = direction;
     }
-
-
+  
+    /**
+     *  Modified by Young
+     */
+    public boolean getDirection() {
+        return this.direction;
+    }
+    
     /**
      *  Retorna o primeiro n� associado ao arco.
      *
@@ -179,12 +163,6 @@ public class Edge implements java.io.Serializable, ITwoPositionDrawable {
         color = new Color(rgb);
     }
     
-	public void paint(Graphics2D graphics) {
-		drawLine.setFillColor(getColor());
-		drawArrow.setFillColor(getColor());
-		drawLine.paint(graphics);
-	}
-	
 	public boolean isPointInDrawableArea(int x, int y) {
 		double x1 = node1.getPosition().getX();
         double y1 = node1.getPosition().getY();
@@ -194,8 +172,9 @@ public class Edge implements java.io.Serializable, ITwoPositionDrawable {
         double yTeste = ((y2 - y1) / (x2 - x1)) * x + (y1 - x1 * ((y2 - y1) / (x2 - x1)));
         double xTeste = (y - (y1 - x1 * ((y2 - y1) / (x2 - x1)))) / ((y2 - y1) / (x2 - x1));
 
-        Point2D.Double ponto1 = GeometricUtil.getCircunferenceTangentPoint(node1.getPosition(), node2.getPosition(), (Node.getWidth() + Node.getHeight())/4);
-        Point2D.Double ponto2 = GeometricUtil.getCircunferenceTangentPoint(node2.getPosition(), node1.getPosition(), (Node.getWidth() + Node.getHeight())/4);
+        //by young
+        Point2D.Double ponto1 = GeometricUtil.getCircunferenceTangentPoint(node1.getPosition(), node2.getPosition(), (node1.getWidth() + node1.getHeight())/4);
+        Point2D.Double ponto2 = GeometricUtil.getCircunferenceTangentPoint(node2.getPosition(), node1.getPosition(), (node1.getWidth() + node1.getHeight())/4);
 
         if (ponto1.getX() < ponto2.getX()) {
             if (((y <= yTeste + 5) && (y >= yTeste - 5)) || ((x <= xTeste + 5) && (x >= xTeste - 5))) {
@@ -248,12 +227,6 @@ public class Edge implements java.io.Serializable, ITwoPositionDrawable {
 		node2.setPosition(x, y);
 		
 	}
-
-	public void setNew(boolean bNew) {
-		drawArrow.setNew(bNew);
-		drawLine.setNew(bNew);
-	}
-	
 
 }
 

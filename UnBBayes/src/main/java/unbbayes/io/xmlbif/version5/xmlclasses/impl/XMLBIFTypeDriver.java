@@ -261,6 +261,9 @@ public class XMLBIFTypeDriver implements org.apache.ws.jaxme.impl.JMSAXDriver {
           }
           _1.addAttribute("", "xPos", pController.getAttrQName(this, "", "xPos"), "CDATA", pController.getDatatypeConverter().printInt(_2.getXPos()));
           _1.addAttribute("", "yPos", pController.getAttrQName(this, "", "yPos"), "CDATA", pController.getDatatypeConverter().printInt(_2.getYPos()));
+         //by young
+          _1.addAttribute("", "Color", pController.getAttrQName(this, "", "Color"), "CDATA", pController.getDatatypeConverter().printInt(_2.getCOLOR()));
+          //by young end
           return _1;
         }
       

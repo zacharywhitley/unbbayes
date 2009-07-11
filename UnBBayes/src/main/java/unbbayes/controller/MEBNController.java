@@ -23,7 +23,6 @@ package unbbayes.controller;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.io.File;
-import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -83,9 +82,9 @@ import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.Query;
+import unbbayes.prs.mebn.ssbn.SSBN;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.prs.mebn.ssbn.SSBNWarning;
-import unbbayes.prs.mebn.ssbn.SSBN;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
@@ -235,7 +234,6 @@ public class MEBNController  {
 		setCurrentMFrag(node.getMFrag()); 
 		selectNode(node); 
 		setResidentNodeActive(node); 
-		screen.getGraphPane().selectObject(node); 
 	}
 	
 	
@@ -337,11 +335,13 @@ public class MEBNController  {
      * @since
      */
 
-    public void insertEdge(Edge edge) throws MEBNConstructionException, CycleFoundException, Exception{
+    public boolean insertEdge(Edge edge) throws MEBNConstructionException, CycleFoundException, Exception{
 
     	MFrag mFragCurrent = multiEntityBayesianNetwork.getCurrentMFrag();
 
     	mFragCurrent.addEdge(edge);
+    	
+    	return true;
 
     }
 
@@ -445,7 +445,6 @@ public class MEBNController  {
 	private void showGraphMFrag(){
 
 		multiEntityBayesianNetwork.setCurrentMFrag(null);
-		screen.getGraphPane().showEmptyGraph();
 		mebnEditionPane.hideTopComponent();
 		mebnEditionPane.setEmptyBarActive();
 		mFragActive = null;
@@ -738,7 +737,8 @@ public class MEBNController  {
 			}
 		}
 		
-		mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
+		//by Young
+		//mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
 
 	}
 
@@ -759,7 +759,8 @@ public class MEBNController  {
 			}
 		}
 		
-		mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
+		//by young
+		//mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
 
 	}
 
@@ -864,6 +865,8 @@ public class MEBNController  {
 		if(selected != null){
 			deleteSelected(selected); 
 		}
+		
+	
 	}
 	
 	public void deleteSelected(Object selected) {
@@ -905,7 +908,7 @@ public class MEBNController  {
 			}
 		}
 
-		mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
+
 
 	}
 
@@ -1077,7 +1080,9 @@ public class MEBNController  {
 	public void setOrdinaryVariableType(OrdinaryVariable ov, Type type){
 		   ov.setValueType(type); 
 		   ov.updateLabel(); 
-		   mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
+		
+		   //by Young
+	 	   //mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
 		   mebnEditionPane.getEditOVariableTab().update(); 
 		
 	}

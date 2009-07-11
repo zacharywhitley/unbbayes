@@ -24,7 +24,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ResourceBundle;
 
-import unbbayes.draw.DrawParallelogram;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
@@ -44,8 +43,6 @@ public class UtilityNode extends Node implements ITabledVariable, java.io.Serial
 
     private static Color color = Color.cyan;
     
-    private DrawParallelogram drawParallelogram;
-    
     /** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
 
@@ -54,13 +51,12 @@ public class UtilityNode extends Node implements ITabledVariable, java.io.Serial
      * an incremented DrawElement.
      */
     public UtilityNode() {
+    	
+	  	//by young
+		setColor(Color.cyan);
+		
         utilTable = new UtilityTable();
         states.add(resource.getString("utilityName"));
-        // Here it is defined how this node is going to be drawn.
-        // In the superclass, Node, it was already definied to draw text, here
-        // we add the draw parallelogram.
-        drawParallelogram = new DrawParallelogram(position, size);
-        drawElement.add(drawParallelogram);
     }
     
     
@@ -89,33 +85,26 @@ public class UtilityNode extends Node implements ITabledVariable, java.io.Serial
         return this.utilTable;
     }
 
+    
     /**
      *  Get the node's color.
      *	@return The node's color.
      */
-    public static Color getColor() {
+    //by young
+     
+    public static Color getStaticColor() {
         return color;
-    }
+    } 
     
     /**
      *  Set the node's color.
      *
      *@param rgb The node's RGB color.
      */
-    public static void setColor(int rgb) {
+    //by young
+     
+    public static void setStaticColor(int rgb) {
         color = new Color(rgb);
     }
     
-    @Override
-	public void setSelected(boolean b) {
-		// Update the DrawEllipse selection state
-    	drawParallelogram.setSelected(b);
-		super.setSelected(b);
-	}
-    
-    @Override
-    public void paint(Graphics2D graphics) {
-    	drawParallelogram.setFillColor(getColor());
-    	super.paint(graphics);
-    }
 }

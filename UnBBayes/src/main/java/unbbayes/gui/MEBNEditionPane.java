@@ -1025,7 +1025,12 @@ public class MEBNEditionPane extends JPanel {
 
   	  		btnDeleteSelectedItem.addActionListener(new ActionListener() {
   	  			public void actionPerformed(ActionEvent ae) {
-  	  				mebnController.deleteSelectedItem(); 
+
+  	  				//by young
+  	  				//	mebnController.deleteSelectedItem(); 
+  	  				
+  	  				//by young
+  	  				netWindow.getGraphPane().DeleteSelectedShape(); 
   	  			}
   	  		});
 

@@ -2,18 +2,17 @@
  * 
  */
 package unbbayes.gui.oobn;
-
+//by young
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Point2D;
 import java.util.ResourceBundle;
 
 import javax.swing.JComponent;
@@ -21,18 +20,18 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
-//import javax.swing.TransferHandler.TransferSupport;
 
-import unbbayes.controller.NetworkController;
 import unbbayes.controller.oobn.OOBNClassController;
-import unbbayes.controller.oobn.OOBNController;
+import unbbayes.draw.UShape;
+import unbbayes.draw.UShapeFrame;
+import unbbayes.draw.UShapeLine;
+import unbbayes.draw.UShapeOOBNNode;
 import unbbayes.gui.GraphPane;
 import unbbayes.gui.oobn.node.OOBNNodeGraphicalWrapper;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.oobn.IOOBNClass;
 import unbbayes.prs.oobn.IOOBNNode;
 import unbbayes.util.Debug;
@@ -74,23 +73,47 @@ public class OOBNGraphPane extends GraphPane {
 	 */
 	public static OOBNGraphPane newInstance(OOBNClassController controller, JViewport graphViewport) {
 		OOBNGraphPane ret = new OOBNGraphPane( controller,  graphViewport);
-		
+				 	 
 		ret.setOobnOnNodePopup(new JPopupMenu(resource.getString("OOBNPopupMenuMessage")));		
 		ret.setUpPopupMenu();
-		
+		 		
 		ret.setUpTransferHundler();
 		
+		//
+		//by young: this function is removed
+		//
+		/*
 		ret.setVisibleDimension(new Dimension());
+		*/
 		
 		ret.setToolTipText(resource.getString("leftClickToChangeNodeType"));
 		
 		return ret;
 	}
 	
+	//by young
+	public void changeAllSelectedNodeType(int type) 
+	{
+		int n = this.getComponentCount();
+		
+    	for( int i = 0; i < n; i++ )
+    	{
+    		UShape shape = (UShape)this.getComponent(i);
+    		
+    		if( shape.getState() == UShape.STATE_SELECTED )
+    		{
+    			((OOBNNodeGraphicalWrapper)shape.getNode()).getWrappedNode().setType(type);
+    			((UShapeOOBNNode)shape).shapeTypeChange(type);
+
+    		}
+    	}    	
+	}
+	
 	/**
 	 * Initializes the OOBN node edition popup menu
 	 * (the menu which pops up when left-clicking an OOBN node)
 	 */
+ 
 	protected void setUpPopupMenu() {
 		
 		// menu item to set node as input node
@@ -100,10 +123,14 @@ public class OOBNGraphPane extends GraphPane {
 			public void actionPerformed(ActionEvent ae) {
 				OOBNNodeGraphicalWrapper node = null;
 				try {
+					changeAllSelectedNodeType(IOOBNNode.TYPE_INPUT);
+					Debug.println(this.getClass(), "I'm setting the node as an input");
+					/*
+					 * by young
 					node = (OOBNNodeGraphicalWrapper)getSelected();
 					node.getWrappedNode().setType(IOOBNNode.TYPE_INPUT);
 					Debug.println(this.getClass(), "I'm setting the node as an input");	
-					update();
+					update();*/
 				} catch (IllegalArgumentException iae) {
 					JOptionPane.showMessageDialog(getController().getScreen(), iae.getMessage(), resource.getString("changeNodeToInput"), JOptionPane.ERROR_MESSAGE);
 				} catch (Exception e) {
@@ -120,10 +147,15 @@ public class OOBNGraphPane extends GraphPane {
 			public void actionPerformed(ActionEvent ae) {
 				OOBNNodeGraphicalWrapper node = null;
 				try {
+					changeAllSelectedNodeType(IOOBNNode.TYPE_OUTPUT);
+					Debug.println(this.getClass(), "I'm setting the node as an output");
+					/*
+					 * by young
 					node = (OOBNNodeGraphicalWrapper)getSelected();
 					node.getWrappedNode().setType(IOOBNNode.TYPE_OUTPUT);
 					Debug.println(this.getClass(), "I'm setting the node as an output");	
 					update();
+					*/
 				} catch (Exception e) {
 					Debug.println(this.getClass(), "The selected node does not look like a valid wrapped OOBN node", e);
 					throw new IllegalArgumentException(e);
@@ -138,10 +170,16 @@ public class OOBNGraphPane extends GraphPane {
 			public void actionPerformed(ActionEvent ae) {
 				OOBNNodeGraphicalWrapper node = null;
 				try {
+					changeAllSelectedNodeType(IOOBNNode.TYPE_PRIVATE);
+					Debug.println(this.getClass(), "I'm setting the node as private");
+					/*
+					 *by young
+					 *
 					node = (OOBNNodeGraphicalWrapper)getSelected();
 					node.getWrappedNode().setType(IOOBNNode.TYPE_PRIVATE);
 					Debug.println(this.getClass(), "I'm setting the node as private");	
 					update();
+					*/
 				} catch (Exception e) {
 					Debug.println(this.getClass(), "The selected node does not look like a valid wrapped OOBN node", e);
 					throw new IllegalArgumentException(e);
@@ -159,8 +197,123 @@ public class OOBNGraphPane extends GraphPane {
 		
 		this.getOobnOnNodePopup().setLabel(resource.getString("OOBNPopupMenuMessage"));
 		this.getOobnOnNodePopup().setToolTipText(resource.getString("OOBNPopupMenuTooltipMessage"));
+	} 
+ 
+    public void onShapeChanged( UShape s )
+	{ 
+    	if(s.getNode() instanceof OOBNNodeGraphicalWrapper) 
+    	{
+    		if( ((OOBNNodeGraphicalWrapper)s.getNode()).getWrappedNode().getType() == IOOBNNode.TYPE_INSTANCE ||
+    			((OOBNNodeGraphicalWrapper)s.getNode()).getWrappedNode().getType() == IOOBNNode.TYPE_INSTANCE_INPUT ||
+    			((OOBNNodeGraphicalWrapper)s.getNode()).getWrappedNode().getType() == IOOBNNode.TYPE_INSTANCE_OUTPUT )
+    		{
+    			
+    		}
+    		else
+    			super.onShapeChanged(s);
+    	}    	
+ 	}
+    
+	public UShape getUShape(IOOBNNode oobnNode) 
+	{
+	 	int size = this.getComponentCount();
+    	for( int i = 0; i < size; i++ )
+    	{
+    		UShape shape = (UShape)this.getComponent(i);
+    		if( shape.getNode() != null )
+    		{
+    			IOOBNNode wrapper = ((OOBNNodeGraphicalWrapper)shape.getNode()).getWrappedNode();
+    			
+    			if( wrapper  == oobnNode)
+    				return shape;
+    		}
+    	}
+    	
+    	return null;
 	}
+    
+	public void createNode( Node newNode )
+    {
+		 UShape shape = null;
+		 
+		if(newNode instanceof OOBNNodeGraphicalWrapper) 
+		{
+			IOOBNNode wrapper = ((OOBNNodeGraphicalWrapper)newNode).getWrappedNode();
+			
+			if( wrapper.getType() == IOOBNNode.TYPE_INSTANCE )
+			{								 				
+				shape = new UShapeFrame(this, newNode, (int)newNode.getPosition().x, (int)newNode.getPosition().y, (int)newNode.getWidth(), (int)newNode.getHeight());
+				addShape( shape );	
+				shape.setState(UShape.STATE_NONE);
+			}
+			else
+			{		 
+				IOOBNNode upperInstanceNode = wrapper.getUpperInstanceNode();
+				UShape shapeFrame = null;
+		 
+				shapeFrame = getUShape( upperInstanceNode );
+					
+				shape = new UShapeOOBNNode(this, newNode, (int)newNode.getPosition().x, (int)newNode.getPosition().y, newNode.getWidth(), newNode.getHeight());
+				 	
+				if( shapeFrame != null )
+				{
+					//Point locFrame = shapeFrame.getLocation();
+					//Point loc = shape.getLocation();
+					
+					//shape.move(loc.x - locFrame.x, loc.y - locFrame.y);					
+					shapeFrame.add(shape);
+					shapeFrame.setState(UShape.STATE_NONE);
+					shape.setState(UShape.STATE_NONE);
+				}
+				else
+				{
+					addShape( shape );
+					shape.setState(UShape.STATE_NONE);
+				}
+			}
+ 		}
+		    	
+    	
+    } 
 	
+	public void update()
+	{
+		this.removeAll();
+		
+		Node n; 
+		Edge e;
+		UShape shape = null;
+		Point2D defaultStartPos = new Point2D.Double(0,0);
+		 
+		// Load all nodes.
+		for (int i = 0; i < nodeList.size(); i++) 
+		{
+			n = nodeList.get(i);
+			n.updateLabel();
+  	
+			createNode( n );
+		 
+		}	
+		
+		// Load all Edges
+		for (int i = 0; i < edgeList.size(); i++) 
+		{
+			e = edgeList.get(i);
+			
+			if(getNodeUShape(e.getOriginNode()) != null && getNodeUShape(e.getDestinationNode()) != null )
+			{
+				UShapeLine line = new UShapeLine(this, getNodeUShape(e.getOriginNode()), getNodeUShape(e.getDestinationNode()) );
+				line.setEdge(e);
+				line.setUseSelection(false);
+				addShape( line );
+			}
+		}	
+		
+		setShapeStateAll(UShape.STATE_NONE);
+		fitCanvasSizeToAllUShapes();
+		 
+	} 
+
 	/**
 	 * Initializes the TransferHundler, which is responsible for
 	 * drag n drop / copy n paste operations
@@ -223,12 +376,16 @@ public class OOBNGraphPane extends GraphPane {
 			public boolean importData(JComponent comp, Transferable t) {
 				Debug.println(this.getClass(), "Importing data from dragndrop: " + t.toString() + ", from component " + comp.getName());
 				
+			 
+				//by young
+				//all selected nodes be unselected
+				setShapeStateAll(UShape.STATE_NONE);
 				
 				// TODO finish this
 				if (!this.canImport(comp,t.getTransferDataFlavors())) {
 					return false;
 				}
-				
+				 
 				try {
 					// obtains the location to insert oobn instance
 //					DropLocation location = support.getDropLocation();
@@ -242,14 +399,13 @@ public class OOBNGraphPane extends GraphPane {
 						Debug.println(this.getClass(), "Nothing was extracted from drag n drop");
 						return false;
 					} 
-					
+					 
 					// insert new oobn class' instance
 					getController().insertInstanceNode(oobnClass, location.getX(), location.getY());
 					
 					Debug.println(this.getClass(), "It seems that we added the class " + oobnClass.getClassName() 
 							+ "at position (" + location.getX() + "," + location.getY() + ")");
-					
-									
+					 
 					
 				} catch (Exception e) {
 					JOptionPane.showMessageDialog(getController().getScreen(), e.getMessage(), resource.getString("CannotDragNDrop"), JOptionPane.ERROR_MESSAGE);
@@ -261,8 +417,8 @@ public class OOBNGraphPane extends GraphPane {
 				super.importData(comp, t);
 				
 				// update whole panel (instead of ordinal update, which only updates a small part of screen)
-				repaint();	
-				
+				update();	
+				 
 				// if this code is reached, no problem was found
 				return true;
 			
@@ -356,6 +512,10 @@ public class OOBNGraphPane extends GraphPane {
 		
 		// also, this method is used to change details of mouse event behavior, like selection of nodes
 		
+		//
+		// by young : this function moved to UShapeOOBNNode, because node's action should work in UShapeOOBNNode
+		// 
+		/*
 		switch (this.getAction()) {
 		case NONE:
 			this.setBMoveNode(true);
@@ -398,7 +558,7 @@ public class OOBNGraphPane extends GraphPane {
 				
 		default:
 			break;
-		}
+		}*/
 		
 		// do the default behavior as well		
 		super.mousePressed(e);
@@ -410,10 +570,15 @@ public class OOBNGraphPane extends GraphPane {
 	 */
 	@Override
 	public void mouseReleased(MouseEvent e) {
+		super.mouseReleased(e);
 		// I'm overwriting this method to add special node treatment for OOBN node
 		// when a mouse is clicked over such node.
 		
 		
+		//
+		// by young : this function moved to UShapeOOBNNode, because node's action should work in UShapeOOBNNode
+		// 
+		/*
 		switch (this.getAction()) {
 		case NONE:
 			// this case was added just because to make bMoveNode as local variable,
@@ -440,6 +605,7 @@ public class OOBNGraphPane extends GraphPane {
 				// nothing to do
 			}
 		} 
+		*/
 		
 	}
 	
@@ -450,7 +616,37 @@ public class OOBNGraphPane extends GraphPane {
 	 * @see unbbayes.gui.GraphPane#mouseClicked(java.awt.event.MouseEvent)
 	 */
 	@Override
-	public void mouseClicked(MouseEvent e) {
+	public void mouseClicked(MouseEvent e) 
+	{
+		//
+		//by young: this function is removed
+		//
+		if (SwingUtilities.isLeftMouseButton(e)) 
+		{
+			Node newNode = null;
+			
+			switch (getAction()) 
+			{ 
+				case CREATE_PROBABILISTIC_NODE:
+				{
+					newNode = controller.insertProbabilisticNode(e.getX(), e.getY());
+					UShapeOOBNNode shape = new UShapeOOBNNode(this, newNode, (int)newNode.getPosition().x-newNode.getWidth()/2, (int)newNode.getPosition().y-newNode.getHeight()/2, newNode.getWidth(), newNode.getHeight());
+					addShape( shape );	
+					shape.setState(UShape.STATE_SELECTED);
+					updateNewInformationIntoTreeAndTableViewer(newNode);				 
+				}
+				break;
+				case NONE:
+				{
+					if( controller != null )
+						controller.unselectAll(); 
+				}
+				break;
+			}
+			
+		}
+				
+		/*
 		Node node = getNode(e.getX(), e.getY());
 		try {
 			if (node != null) {
@@ -462,7 +658,10 @@ public class OOBNGraphPane extends GraphPane {
 		} catch (Exception ex) {
 			Debug.println(this.getClass(), "The node was not in an expected format", ex);
 		}
-		super.mouseClicked(e);
+		
+		
+	 	super.mouseClicked(e);*/
+		
 	}
 	
 	
@@ -476,13 +675,17 @@ public class OOBNGraphPane extends GraphPane {
 	public void mouseEntered(MouseEvent e) {
 		// this case was added just because to make visibleDimension as local variable,
 		// in order to easily overwrite getRectangleRepresentation.
+		//
+		//by young: this function is removed
+		//
+		/*
 		if (!this.isBMoveNode()) {
 			try{
 				this.setVisibleDimension(new Dimension((int) (controller.getScreen().getJspGraph().getSize().getWidth()), (int) (controller.getScreen().getJspGraph().getSize().getHeight())));
 			} catch (Exception exc) {
 				Debug.println(this.getClass(), "Not able to set new visible dimension", exc);
 			}
-		}
+		}*/
 		super.mouseEntered(e);
 	}
 
@@ -493,6 +696,8 @@ public class OOBNGraphPane extends GraphPane {
 		return controller;
 	}
 
+	
+	
 	/**
 	 * @param controller the controller to set
 	 */
@@ -513,14 +718,18 @@ public class OOBNGraphPane extends GraphPane {
 	 * This popupmenu is used by this pane to edit an
 	 * oobn node
 	 * @param oobnOnNodePopup the oobnOnNodePopup to set
-	 */
+	 */	 
 	public void setOobnOnNodePopup(JPopupMenu oobnOnNodePopup) {
 		this.oobnOnNodePopup = oobnOnNodePopup;
-	}
+	} 
 
 	/* (non-Javadoc)
 	 * @see unbbayes.gui.GraphPane#getRectangleRepaint()
 	 */
+	//
+	//by young: this function is removed
+	//
+	/*
 	@Override
 	public Rectangle getRectangleRepaint() {
 		double maiorX;
@@ -592,41 +801,61 @@ public class OOBNGraphPane extends GraphPane {
 			
 		}
 	}
-
+*/
 	/**
 	 * @return the bMoveNode
 	 */
+	//
+	//by young: this function is removed
+	//
+	/*
 	protected boolean isBMoveNode() {
 		return bMoveNode;
 	}
-
+*/
 	/**
 	 * @param moveNode the bMoveNode to set
 	 */
+	//
+	//by young: this function is removed
+	//
+	/*
 	protected void setBMoveNode(boolean moveNode) {
 		bMoveNode = moveNode;
 	}
+	*/
 
 	/**
 	 * @return the visibleDimension
 	 */
+	//
+	//by young: this function is removed
+	//
+	/*
 	protected Dimension getVisibleDimension() {
 		return visibleDimension;
-	}
+	}*/
 
 	/**
 	 * @param visibleDimension the visibleDimension to set
 	 */
+	//
+	//by young: this function is removed
+	//
+	/*
 	protected void setVisibleDimension(Dimension visibleDimension) {
 		this.visibleDimension = visibleDimension;
-	}
+	}*/
 
 	
 	/**
 	 * If debug mode is on, this method writes to Debug a description of OOBN node
 	 * @param node
 	 */
-	protected void describeOOBNNode(OOBNNodeGraphicalWrapper node) {
+	//
+	// by young : this function moved to UShapeOOBNNode, because node's action should work in UShapeOOBNNode
+	// 
+	/*protected void describeOOBNNode(OOBNNodeGraphicalWrapper node) {
 		try {
 			Debug.println(this.getClass(), "Node " + node.getName() + " pressed.");
 			Debug.println(this.getClass(), "Wrapped node name is " + node.getWrappedNode().getName());
@@ -662,15 +891,24 @@ public class OOBNGraphPane extends GraphPane {
 		} catch (Exception t) {
 			// do nothing
 		}
-	}
-	
-	
-	
-	public void showNodeTypeChangePopup(Component invoker, int x, int y) {
-		if ((((OOBNNodeGraphicalWrapper)this.getSelected()).getWrappedNode().getType() & IOOBNNode.TYPE_INSTANCE) == 0) {
-			this.getOobnOnNodePopup().setEnabled(true);
-			this.getOobnOnNodePopup().show(invoker, x, y);
-		}	
-	}
-	
+	}*/
+		 
+	public void showNodeTypeChangePopup(Component invoker, int x, int y) 
+	{
+		int n = this.getComponentCount();
+    	for( int i = 0; i < n; i++ )
+    	{
+    		UShape shape = (UShape)this.getComponent(i);
+    		
+    		if( shape.getState() == UShape.STATE_SELECTED )
+    		{
+    			if ((((OOBNNodeGraphicalWrapper)shape.getNode()).getWrappedNode().getType() & IOOBNNode.TYPE_INSTANCE) == 0) {
+    				this.getOobnOnNodePopup().setEnabled(true);
+    				this.getOobnOnNodePopup().show(invoker, x, y);
+    				
+    				return;
+    			}	
+    		}
+    	}    	
+	} 	
 }

@@ -21,16 +21,14 @@
 package unbbayes.prs.mebn;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import unbbayes.draw.DrawFlatPentagon;
-import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.context.EnumSubType;
 import unbbayes.prs.mebn.context.EnumType;
+import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
 
@@ -78,8 +76,6 @@ public class ContextNode extends MultiEntityNode {
 	
 	private static Color color = new Color(176, 252, 131); 
 	
-    private DrawFlatPentagon drawContextNode;
-    
     /**
      * Create the context node and add your default possible values 
      * @param name
@@ -91,7 +87,9 @@ public class ContextNode extends MultiEntityNode {
     	
     	setName(name); 
     	setLabel(" "); 
-    	
+    	//by young
+		setColor(new Color(176, 252, 131));
+		
     	this.mFrag = mFrag; 
     	
     	innerTermOfList = new ArrayList<ContextNode>();
@@ -99,10 +97,7 @@ public class ContextNode extends MultiEntityNode {
     	
     	/* draw */
     	size.x = 100;
-    	size.y = 20; 
-    	drawContextNode = new DrawFlatPentagon(position, size);
-        drawElement.add(drawContextNode);
-
+    	size.y = 60; 
     }
     
 	/**
@@ -346,36 +341,6 @@ public class ContextNode extends MultiEntityNode {
 	/*-------------------------------------------------------------*/
 	
 	/**
-     *  Gets all context node's color.
-     *
-     * @return The color of all context node's color.
-     */
-    public static Color getColor() {
-        return color;
-    }
-
-    /**
-     *  Sets the new color for all context node.
-     *
-     * @return The new color of all context node in RGB.
-     */
-    public static void setColor(int c) {
-        color = new Color(c);
-    }
-	 
-	@Override
-	public void setSelected(boolean b) {
-		drawContextNode.setSelected(b);
-		super.setSelected(b);
-	}
-	
-	@Override
-	public void paint(Graphics2D graphics) {
-		drawContextNode.setFillColor(getColor());
-		super.paint(graphics);
-	}
-	
-	/**
 	 * update the label of this node. 
 	 * The label is the formula that represents this context node.  
 	 */
@@ -404,14 +369,6 @@ public class ContextNode extends MultiEntityNode {
 
 	public static long getSerialVersionUID() {
 		return serialVersionUID;
-	}
-
-	public DrawFlatPentagon getDrawContextNode() {
-		return drawContextNode;
-	}
-
-	public void setDrawContextNode(DrawFlatPentagon drawContextNode) {
-		this.drawContextNode = drawContextNode;
 	}
 
 	public Set<OrdinaryVariable> getExemplarList() {
@@ -454,9 +411,5 @@ public class ContextNode extends MultiEntityNode {
 		return variableSet;
 	}
 
-	public static void setColor(Color color) {
-		ContextNode.color = color;
-	}
-    
 }
  

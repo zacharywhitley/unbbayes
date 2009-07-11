@@ -1035,7 +1035,15 @@ public class XMLBIFTypeHandler extends org.apache.ws.jaxme.impl.JMSAXElementPars
                 getHandler().parseConversionEvent("Failed to convert value of @yPos: " + pValue, _3);
               }
               return;
-            }
+           //by young
+            } else if ("Color".equals(pLocalName)) {
+                try {
+                  _1.setCOLOR(getHandler().getDatatypeConverter().parseInt((java.lang.String) pValue));
+                } catch (java.lang.Exception _4) {
+                  getHandler().parseConversionEvent("Failed to convert value of @Color: " + pValue, _4);
+                }
+                return;
+              }//by young end
           }
           super.addAttribute(pURI, pLocalName, pValue);
         }

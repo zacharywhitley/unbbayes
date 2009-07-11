@@ -325,7 +325,7 @@ public class SENController {
 	 * @param x The x position.
 	 * @param y The y position. 
 	 */
-	public void insertContinuousNode(double x, double y) {
+	public Node insertContinuousNode(double x, double y) {
 		ContinuousNode node = new ContinuousNode();
 		node.setPosition(x, y);
 		node.setName(resource.getString("probabilisticNodeName")
@@ -333,6 +333,8 @@ public class SENController {
 		node.setDescription(node.getName());
 		
 		singleEntityNetwork.addNode(node);
+		
+		return node;
 	}
 
 	/**
@@ -340,7 +342,7 @@ public class SENController {
 	 * @param x The x position.
 	 * @param y The y position.
 	 */
-	public void insertProbabilisticNode(double x, double y) {
+	public Node insertProbabilisticNode(double x, double y) {
 		ProbabilisticNode node = new ProbabilisticNode();
 		node.setPosition(x, y);
 		node.appendState(resource.getString("firstStateProbabilisticName"));
@@ -352,6 +354,8 @@ public class SENController {
 		auxTabProb.addVariable(node);
 		auxTabProb.setValue(0, 1);
 		singleEntityNetwork.addNode(node);
+		
+		return node;
 	}
 
 	/**
@@ -359,7 +363,7 @@ public class SENController {
 	 * @param x The x position.
 	 * @param y The y position.
 	 */
-	public void insertDecisionNode(double x, double y) {
+	public Node insertDecisionNode(double x, double y) {
 		DecisionNode node = new DecisionNode();
 		node.setPosition(x, y);
 		node.appendState(resource.getString("firstStateDecisionName"));
@@ -367,6 +371,8 @@ public class SENController {
 				+ singleEntityNetwork.getNodeCount());
 		node.setDescription(node.getName());
 		singleEntityNetwork.addNode(node);
+		
+		return node;
 	}
 
 	/**
@@ -374,7 +380,7 @@ public class SENController {
 	 * @param x The x position.
 	 * @param y The y position. 
 	 */
-	public void insertUtilityNode(double x, double y) {
+	public Node insertUtilityNode(double x, double y) {
 		UtilityNode node = new UtilityNode();
 		node.setPosition(x, y);
 		node.setName(resource.getString("utilityNodeName")
@@ -383,6 +389,8 @@ public class SENController {
 		PotentialTable auxTab = ((ITabledVariable) node).getPotentialTable();
 		auxTab.addVariable(node);
 		singleEntityNetwork.addNode(node);
+		
+		return node;
 	}
 
 	/**
@@ -390,13 +398,18 @@ public class SENController {
 	 * 
 	 * @param edge An <code>Edge</code> representing a linking edge
 	 */
-	public void insertEdge(Edge edge) {
+	//by young
+	public boolean insertEdge(Edge edge) {
 		try {
 			singleEntityNetwork.addEdge(edge);
 		} catch (InvalidParentException e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), resource
 					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+			
+			return false;
 		}
+		
+		return true;
 	}
 	
 	/**
@@ -408,14 +421,14 @@ public class SENController {
 		if(selected != null){
 			deleteSelected(selected); 
 		}
-		
+		//by young	
 		screen.getGraphPane().update(); 
 	}
 	
 	/**
 	 * Creates and shows the panel where the user can edit the 
 	 * continuous node normal distribution.
-	 * @param node The continuous node to create the distribution pane for.
+	 * @param node The continuous node to create the distribution p`ane for.
 	 */
 	public void createContinuousDistribution(final ContinuousNode node) {
 		// Separate continuous from discrete parent nodes

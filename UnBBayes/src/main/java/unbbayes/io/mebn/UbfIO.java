@@ -20,6 +20,7 @@
  */
 package unbbayes.io.mebn;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -96,6 +97,8 @@ public class UbfIO implements MebnIO {
 			{"TypeDeclarator" , "Type"},
 			{"PositionDeclarator" , "Position"},	
 			{"SizeDeclarator" , "Size"},	
+			{"ColorDeclarator" , "Color"},
+			
 			{"NextArgumentDeclarator" , "NextArgument"},
 			
 			{"DomainResidentType" , "DomainResidentNode"},
@@ -534,13 +537,20 @@ public class UbfIO implements MebnIO {
 //			 Set node size (height,width)
 			if ( this.getToken("SizeDeclarator").equals(st.sval)  )  {
 				double width = 100;
+				double height = 100;
 				while (st.nextToken() != st.TT_EOL) {
 					if (st.ttype == st.TT_NUMBER) {
-						width = st.nval;
+						//by young						
+						width = Math.max(node.getWidth(), st.nval);
+												
 						while (st.nextToken() != st.TT_EOL) {
 							if (st.ttype == st.TT_NUMBER) {
-								node.setSize(width,st.nval);
-								//System.out.println("Setting node size:" + width + "," + st.nval);
+								
+								//by young
+								height = Math.max(node.getHeight(), st.nval);
+								System.out.println("Setting node size:" + width + "," + height);
+								node.setSize(width,height);
+								
 								break;
 							}
 						}
@@ -549,7 +559,19 @@ public class UbfIO implements MebnIO {
 				}
 			}
 			
-			
+			//by young
+			// determine node color 
+			if ( this.getToken("ColorDeclarator").equals(st.sval)  )  {
+				
+				while (st.nextToken() != st.TT_EOL) {
+					if (st.ttype == st.TT_NUMBER) {
+						Color c = new Color((int)st.nval);
+						node.setColor(c);
+						}
+						break;
+					}
+				}
+				
 		} // while not EOF
 	}
 	
@@ -807,6 +829,12 @@ public class UbfIO implements MebnIO {
 						out.println( this.getToken("SizeDeclarator")     
 								+ this.getToken("AttributionSeparator") + node.getWidth()
 								   + this.getToken("ArgumentSeparator") + node.getHeight());
+						
+						//by young
+						out.println( this.getToken("ColorDeclarator")     
+								+ this.getToken("AttributionSeparator") + node.getColor().getRGB());
+						
+						
 						//out.println(this.getToken("NextArgumentDeclarator") + node.getNumNextArgument());
 					}
 				}	
@@ -832,6 +860,10 @@ public class UbfIO implements MebnIO {
 						out.println( this.getToken("SizeDeclarator")     
 								+ this.getToken("AttributionSeparator") +  node.getWidth()
 								   + this.getToken("ArgumentSeparator") + node.getHeight());
+						 
+						//by young
+						out.println( this.getToken("ColorDeclarator")     
+								+ this.getToken("AttributionSeparator") + node.getColor().getRGB());
 					}
 				}
 			}
@@ -856,6 +888,11 @@ public class UbfIO implements MebnIO {
 						out.println( this.getToken("SizeDeclarator")     
 								+ this.getToken("AttributionSeparator") +  node.getWidth()
 								   + this.getToken("ArgumentSeparator") + node.getHeight());
+						
+						 
+						//by young
+						out.println( this.getToken("ColorDeclarator")     
+								+ this.getToken("AttributionSeparator") + node.getColor().getRGB());
 					}
 				}
 			}
@@ -880,6 +917,11 @@ public class UbfIO implements MebnIO {
 						out.println( this.getToken("SizeDeclarator")     
 								+ this.getToken("AttributionSeparator") +  node.getWidth()
 								   + this.getToken("ArgumentSeparator") + node.getHeight());
+						
+						 
+						//by young
+						out.println( this.getToken("ColorDeclarator")     
+								+ this.getToken("AttributionSeparator") + node.getColor().getRGB());
 					}
 				}
 			}

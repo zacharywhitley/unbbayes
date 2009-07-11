@@ -9,7 +9,6 @@ import java.awt.geom.Point2D.Double;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.draw.DrawElement;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.PotentialTable;
@@ -259,13 +258,6 @@ public class OOBNNodeGraphicalWrapperPointer extends OOBNNodeGraphicalWrapper {
 		return pointsTo.getName();
 	}
 
-	/**
-	 * @return
-	 * @see unbbayes.gui.oobn.node.OOBNNodeGraphicalWrapper#getNodeDrawer()
-	 */
-	public DrawElement getNodeDrawer() {
-		return pointsTo.getNodeDrawer();
-	}
 
 	/**
 	 * @return
@@ -408,14 +400,6 @@ public class OOBNNodeGraphicalWrapperPointer extends OOBNNodeGraphicalWrapper {
 	}
 
 	/**
-	 * @param graphics
-	 * @see unbbayes.gui.oobn.node.OOBNNodeGraphicalWrapper#paint(java.awt.Graphics2D)
-	 */
-	public void paint(Graphics2D graphics) {
-		pointsTo.paint(graphics);
-	}
-
-	/**
 	 * 
 	 * @see unbbayes.prs.bn.ProbabilisticNode#removeLastState()
 	 */
@@ -519,13 +503,6 @@ public class OOBNNodeGraphicalWrapperPointer extends OOBNNodeGraphicalWrapper {
 		pointsTo.setName(name);
 	}
 
-	/**
-	 * @param nodeDrawer
-	 * @see unbbayes.gui.oobn.node.OOBNNodeGraphicalWrapper#setNodeDrawer(unbbayes.draw.DrawElement)
-	 */
-	public void setNodeDrawer(DrawElement nodeDrawer) {
-		pointsTo.setNodeDrawer(nodeDrawer);
-	}
 
 	/**
 	 * @param outputColor

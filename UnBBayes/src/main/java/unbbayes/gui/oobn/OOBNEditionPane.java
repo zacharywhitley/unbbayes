@@ -3,23 +3,16 @@
  */
 package unbbayes.gui.oobn;
 
-import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
 
 import javax.swing.JButton;
-import javax.swing.JPopupMenu;
-import javax.swing.JToggleButton;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
-import unbbayes.gui.GlobalOptionsDialog;
 import unbbayes.gui.GraphAction;
-import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.PNEditionPane;
-import unbbayes.prs.Network;
-import unbbayes.prs.oobn.impl.DefaultOOBNClass;
 import unbbayes.util.Debug;
 
 /**
@@ -85,12 +78,12 @@ public class OOBNEditionPane extends PNEditionPane {
 		super.getTbEdition().getBtnAddContinuousNode().setVisible(false);
 		super.getTbEdition().getBtnAddDecisionNode().setVisible(false);
 		super.getTbEdition().getBtnAddUtilityNode().setVisible(false);
-		
+		 
 		// the two below is set to false because we cannot get the dimensions correctly by now
 		super.getBtnPrintNet().setVisible(false);
 		super.getBtnSaveNetImage().setVisible(false);
 		
-		
+		 
 		super.getBtnCompile().setVisible(false);
 		super.getBtnHierarchy().setVisible(false);
 		super.getBtnPreviewNet().setVisible(false);
@@ -113,13 +106,11 @@ public class OOBNEditionPane extends PNEditionPane {
 		button.setToolTipText(resource.getString("changeNodeType"));
 		
 		this.getChangeNodeTypeButton().addActionListener(new ActionListener() {
-			/* (non-Javadoc)
-			 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-			 */
+			 
 			public void actionPerformed(ActionEvent e) {
 				getLinkedWindow().getGraphPane().showNodeTypeChangePopup(getChangeNodeTypeButton()
-										, getChangeNodeTypeButton().getX()
-										, getChangeNodeTypeButton().getY());
+												, getChangeNodeTypeButton().getX()
+												, getChangeNodeTypeButton().getY());
 				
 			}
 			

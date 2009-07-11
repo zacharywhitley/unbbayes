@@ -1,33 +1,31 @@
 /*
- *  UnBBayes
- *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *  UnbBayes
+ *  Copyright (C) 2002 Universidade de Bras�lia
  *
- *  This file is part of UnBBayes.
+ *  This file is part of UnbBayes.
  *
- *  UnBBayes is free software: you can redistribute it and/or modify
+ *  UnbBayes is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
+ *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
  *
- *  UnBBayes is distributed in the hope that it will be useful,
+ *  UnbBayes is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
- *
+ *  along with UnbBayes; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package unbbayes.gui;
 
-import java.awt.BasicStroke;
+package unbbayes.gui;
+ 
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -38,25 +36,44 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javax.swing.JDialog;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 
+import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
-import unbbayes.draw.DrawDashRectangle;
-import unbbayes.draw.DrawElement;
-import unbbayes.draw.IDrawable;
+import unbbayes.draw.UCanvas;
+import unbbayes.draw.UShape;
+import unbbayes.draw.UShapeContextNode;
+import unbbayes.draw.UShapeDecisionNode;
+import unbbayes.draw.UShapeInputNode;
+import unbbayes.draw.UShapeLine;
+import unbbayes.draw.UShapeOOBNNode;
+import unbbayes.draw.UShapeOrdinaryVariableNode;
+import unbbayes.draw.UShapeProbabilisticNode;
+import unbbayes.draw.UShapeResidentNode;
+import unbbayes.draw.UShapeState;
+import unbbayes.draw.UShapeUtilityNode;
+import unbbayes.gui.oobn.node.OOBNNodeGraphicalWrapper;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
-import unbbayes.prs.mebn.MultiEntityNode;
+import unbbayes.prs.hybridbn.ContinuousNode;
+import unbbayes.prs.id.DecisionNode;
+import unbbayes.prs.id.UtilityNode;
+import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.InputNode;
+import unbbayes.prs.mebn.OrdinaryVariable;
+import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.exception.CycleFoundException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
-import unbbayes.util.GeometricUtil;
 
 
 /**
@@ -69,42 +86,50 @@ import unbbayes.util.GeometricUtil;
  *@author     Rommel N. Carvalho
  *@created    27 de Junho de 2001
  *@see        JPanel
+ *
+ * Modified by Young, 4.13.2009
+ *
  */
-public class GraphPane extends JPanel implements MouseListener, MouseMotionListener {
+public class GraphPane extends UCanvas implements MouseListener, MouseMotionListener {
 	
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
 	
-	private NetworkController controller;
-	private List<Edge> edgeList;
+	public NetworkController controller;
+	public  List<Edge> edgeList;
 	// TODO Substituir essa lista de n�s por generics como est� acima com a lista de Edge. Fazer isso em todo lugar que for necess�rio, at� que se possa exluir o NodeList 
-	private ArrayList<Node> nodeList;
-	private List<IDrawable> selectedGroup;
-	private IDrawable selected;
-	private Graphics2D graphBoard;
-	private Point2D.Double startSelectionPoint;
-	private Point2D.Double endSelectionPoint;
-	private DrawElement drawSelection;
-	private GraphAction action;
-	private Node movingNode;
-	private Edge movingEdge;
-	private boolean bMoveEdge;
-	private boolean bMoveNode;
-	private static Color selectionColor;
-	private static Color backgroundColor;
-	// TODO Fazer com que salve e carregue o tamanho do n�!!!
-	private JViewport graphViewport;
-	private Dimension visibleDimension;
-	private Dimension graphDimension;
-	
-	// se 0 e 1 mudar a dire��o do arco e se 2 deixar sem dire��o
-	private int direction;
+	public  ArrayList<Node> nodeList;
+	public List<Node> selectedGroup;
+	public GraphAction action;
+	public static Color backgroundColor;
+	public JViewport graphViewport;
+	public Dimension visibleDimension;
+	public Dimension graphDimension;
+    /* Icon Controller */
+	public final IconController iconController = IconController.getInstance();
+	public ProbabilisticNetwork net;
 	
 	private JPopupMenu popup = new JPopupMenu();
 	
 	/** Load resource file from this package */
 	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+		 
+	public GraphPane(JDialog dlg, ProbabilisticNetwork n) 
+	{    	
+		super();
+		net = n; 
+		
+		edgeList = net.getEdges();
+	    nodeList = net.getNodes();
 	
+		this.setSize(800, 600); 
+		 
+		graphDimension = new Dimension(1500, 1500);
+		visibleDimension = new Dimension(0, 0);
+		action = GraphAction.NONE;
+	    
+		update();
+	}
 	
 	/**
 	 *  O construtor � respons�vel por iniciar todas as vari�veis que ser�o
@@ -115,63 +140,24 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	 */
 	public GraphPane(final NetworkController controller, JViewport graphViewport) {    	
 		super();
-		this.addMouseListener(this);
-		this.addMouseMotionListener(this);
-		this.addKeyListener(controller);
-		this.controller = controller;
-		this.setRequestFocusEnabled(true);
-		this.graphViewport = graphViewport;
-		this.setSize(800, 600);
-		
-		//TODO RETIRAR A NECESSIDADE DE PEGAR A REDE, PEGAR DIRETO OS N�S, ETC.
+		 
 
+		this.controller = controller;
+		this.graphViewport = graphViewport;
+		this.setSize(800, 600); 
+		
  	    edgeList = controller.getGraph().getEdges();
 	    nodeList = controller.getGraph().getNodes();
 		
-		selectedGroup = new ArrayList<IDrawable>();
-		startSelectionPoint = new Point2D.Double();
-		endSelectionPoint = new Point2D.Double();
-		drawSelection = new DrawDashRectangle(startSelectionPoint, endSelectionPoint);
-		bMoveEdge = false;
-		bMoveNode = false;
-		selectionColor = Color.red;
-		backgroundColor = Color.white;
+	 	selectedGroup = new ArrayList<Node>();
 		graphDimension = new Dimension(1500, 1500);
 		visibleDimension = new Dimension(0, 0);
 		action = GraphAction.NONE;
 		
-		JMenuItem item = new JMenuItem(resource.getString("properties"));
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ae)
-			{   
-				controller.showExplanationProperties((ProbabilisticNode)getSelected());
-			}
-		});
-		popup.add(item);
+		graphViewport.setViewSize(visibleDimension);
+		 
 	}
-	
-	/**
-	 *  Seta o atributo corSelecao (cor de sele��o) do objeto da classe GraphPane
-	 *
-	 *@param  selectionColor  A nova cor, <code>Color</code>, de sele��o
-	 *@see Color
-	 */
-	public static void setSelectionColor(Color selectionColor) {
-		GraphPane.selectionColor = selectionColor;
-		// Update the selection color for the DrawElement
-		DrawElement.setSelectionColor(selectionColor);
-	}
-	
-	
-	/**
-	 *  Seta o atributo corFundo (cor de fundo) do objeto da classe GraphPane
-	 *
-	 *@param  backgroundColor  A nova cor, <code>Color</code>, de Fundo
-	 *@see Color
-	 */
-	public void setBackgroundColor(Color backColor) {
-		GraphPane.backgroundColor = backColor;
-	}
+	  
 	
 	
 	/**
@@ -185,34 +171,24 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	}
 	
 	/**
-	 *  Retorna a cor de fundo
+	 *  Retorna o objeto selecionado (<code>Object</code>), que pode ser um <code>Node</code> ou <code>Edge</code>
 	 *
-	 *@return    a backgroundColor (<code>Color</code>)
-	 *@see Color
+	 *@return    O valor do <code>Object</code> selected
+	 *@see Object
+	 *@see Node
+	 *@see Edge
 	 */
-	public Color getBackgroundColor() {
-		return GraphPane.backgroundColor;
+	public Object getSelected() 
+	{		
+		return getSelectedShapesNode();
+	}
+	
+	public void updateSelectedNode()
+	{
+		getSelectedShape().update();
 	}
 	
 	
-	/**
-	 *  Retorna a cor de sele��o
-	 *
-	 *@return    a selectionColor (<code>Color</code>)
-	 *@see Color
-	 */
-	public static Color getSelectionColor() {
-		return GraphPane.selectionColor;
-	}
-	
-	/**
-	 *  Return the selected object:
-     *     - Node
-     *     - Edge
-     **/
-	public Object getSelected() {
-		return this.selected;
-	}
 	
 	/**
 	 *  Retorna uma lista de selecionados (<code>List</code>), que podem ser um <code>Node</code> e/ou <code>Edge</code>
@@ -222,9 +198,25 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	 *@see Node
 	 *@see Edge
 	 */
-	public List getSelectedGroup() {
-		return this.selectedGroup;
-	}
+	 public List<Node> getSelectedGroup() 
+	 {
+		 selectedGroup.clear();
+		 
+		 int n = this.getComponentCount();
+		 for( int i = 0; i < n; i++ )
+		 {
+			 UShape shape = (UShape)this.getComponent(i);
+    		
+			 if( shape.getState() == UShape.STATE_SELECTED && shape.getNode() != null )
+			 {
+				 controller.selectNode(shape.getNode());
+				 
+				 selectedGroup.add(shape.getNode());
+			 }
+		 }    			 
+		 
+		return selectedGroup;
+	} 
 	
 	
 	/**
@@ -232,37 +224,15 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	 *
 	 *@return    A <code>Dimension</code> graphDimension
 	 */
-	public Dimension getGraphDimension() {
+ 	public Dimension getGraphDimension() {
 		return this.graphDimension;
 	}
-	
-	
-	/**
-	 *  Pega o n� que se encontra na posi��o x,y
-	 *
-	 *@param  x  A posi��o x (double)
-	 *@param  y  A posi��o y (double)
-	 *@return    O n� encontrado (<code>Node</code>)
-	 *@see Node
-	 */
-	public Node getNode(double x, double y) {
-		
-		double x1;
-		double y1;
-		long width = Node.getWidth()/2;
-		long height = Node.getHeight()/2;
-		
-		for (int i = 0; i < nodeList.size(); i++) {
-			Node nodeAux = nodeList.get(i);
-			x1 = nodeAux.getPosition().getX();
-			y1 = nodeAux.getPosition().getY();
-			
-			if ((x >= x1 - width) && (x <= x1 + width) && (y >= y1 - height) && (y <= y1 + height)) {
-				return nodeAux;
-			}
-		}
-		return null;
-	}
+	 
+ 	public void setState(String s)
+ 	{
+ 		super.setState(s);
+ 	}
+	 
 	
 	/**
 	 *  Pega o atributo focusTransversable do objeto da classe GraphPane
@@ -273,69 +243,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 		return true;
 	}
 	
-	
-	/**
-	 *  Pega o arco que se encontra na posi��o x,y
-	 *
-	 *@param  x  A posi��o x (double)
-	 *@param  y  A posi��o y (double)
-	 *@return    O arco encontrado (<code>Edge</code>)
-	 *@see Edge
-	 */
-	public Edge getEdge(double x, double y) {
-		double x1;
-		double y1;
-		double x2;
-		double y2;
-		
-		for (int i = 0; i < edgeList.size(); i++) {
-			Edge arcoPegar = (Edge) edgeList.get(i);
-			x1 = arcoPegar.getOriginNode().getPosition().getX();
-			y1 = arcoPegar.getOriginNode().getPosition().getY();
-			x2 = arcoPegar.getDestinationNode().getPosition().getX();
-			y2 = arcoPegar.getDestinationNode().getPosition().getY();
-			
-			double yTeste = ((y2 - y1) / (x2 - x1)) * x + (y1 - x1 * ((y2 - y1) / (x2 - x1)));
-			double xTeste = (y - (y1 - x1 * ((y2 - y1) / (x2 - x1)))) / ((y2 - y1) / (x2 - x1));
-			
-			Node no1 = arcoPegar.getOriginNode();
-			Node no2 = arcoPegar.getDestinationNode();
-			
-			Point2D.Double ponto1 = GeometricUtil.getCircunferenceTangentPoint(no1.getPosition(), no2.getPosition(), (Node.getWidth() + Node.getHeight())/4);
-			Point2D.Double ponto2 = GeometricUtil.getCircunferenceTangentPoint(no2.getPosition(), no1.getPosition(), (Node.getWidth() + Node.getHeight())/4);
-			
-			if (ponto1.getX() < ponto2.getX()) {
-				if (((y <= yTeste + 5) && (y >= yTeste - 5)) || ((x <= xTeste + 5) && (x >= xTeste - 5))) {
-					if (ponto1.getY() < ponto2.getY()) {
-						if ((y >= ponto1.getY() - 5) && (y <= ponto2.getY() + 5) && (x >= ponto1.getX() - 5) && (x <= ponto2.getX() + 5)) {
-							return arcoPegar;
-						}
-					}
-					else {
-						if ((y >= ponto2.getY() - 5) && (y <= ponto1.getY() + 5) && (x >= ponto1.getX() - 5) && (x <= ponto2.getX() + 5)) {
-							return arcoPegar;
-						}
-					}
-				}
-			}
-			else {
-				if (((y <= yTeste + 5) && (y >= yTeste - 5)) || ((x <= xTeste + 5) && (x >= xTeste - 5))) {
-					if (ponto1.getY() < ponto2.getY()) {
-						if ((y >= ponto1.getY() - 5) && (y <= ponto2.getY() + 5) && (x >= ponto2.getX() - 5) && (x <= ponto1.getX() + 5)) {
-							return arcoPegar;
-						}
-					}
-					else {
-						if ((y >= ponto2.getY() - 5) && (y <= ponto1.getY() + 5) && (x >= ponto2.getX() - 5) && (x <= ponto1.getX() + 5)) {
-							return arcoPegar;
-						}
-					}
-				}
-			}
-		}
-		
-		return null;
-	}
+	 
 	
 	/**
 	 *  Pega o atributo graphViewport (<code>JViewport</code>) do objeto da classe GraphPane
@@ -353,20 +261,18 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	 *@return    O maior ponto (x,y) existente nessa rede Bayesiana
 	 *@see Point2D.Double
 	 */
-	public Point2D.Double getBiggestPoint() {
+ 	public Point2D.Double getBiggestPoint() {
 		double maiorX = 0;
 		double maiorY = 0;
-		long width = Node.getWidth()/2;
-		long height = Node.getHeight()/2;
-		
+		   
 		for (int i = 0; i < nodeList.size(); i++) {
 			Node noAux = (Node) nodeList.get(i);
-			if (maiorX < noAux.getPosition().getX() + width) {
-				maiorX = noAux.getPosition().getX() + width;
+			if (maiorX < noAux.getPosition().getX() + noAux.getWidth()) {
+				maiorX = noAux.getPosition().getX() + noAux.getWidth();
 			}
 			
-			if (maiorY < noAux.getPosition().getY() + height) {
-				maiorY = noAux.getPosition().getY() + height;
+			if (maiorY < noAux.getPosition().getY() + noAux.getHeight()) {
+				maiorY = noAux.getPosition().getY() + noAux.getHeight();
 			}
 		}
 		if (maiorX < visibleDimension.getWidth()) {
@@ -374,658 +280,317 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 		}
 		if (maiorY < visibleDimension.getHeight()) {
 			maiorY = graphViewport.getViewSize().getHeight();
-		}
+		} 
 		
 		return new Point2D.Double(maiorX, maiorY);
 	}
+	 
+	 
 	
-	
-	/**
-	 *  Pega o tamanho necess�rio para repintar a tela (<code>Rectangle</code>)
-	 *
-	 *@return    O tamanho necess�rio para repintar a tela
-	 *@see Rectangle
-	 */
-	public Rectangle getRectangleRepaint() {
-		double maiorX;
-		double maiorY;
-		double menorX;
-		double menorY;
-		
-		if (bMoveNode && selected instanceof Node)
+	public void updateNewInformationIntoTreeAndTableViewer(Node newNode) 
+	{
+		//set new information of node into tree and table viewer 
+						
+		if( controller != null )
+		if (controller.getGraph() instanceof SingleEntityNetwork) 
 		{
-			Node noAux = (Node) selected;
-			maiorX = noAux.getPosition().getX();
-			menorX = noAux.getPosition().getX();
-			maiorY = noAux.getPosition().getY();
-			menorY = noAux.getPosition().getY();
-			
-			Node noAux2;
-			for (int i = 0; i < noAux.getParents().size(); i++) {
-				noAux2 = (Node) noAux.getParents().get(i);
-				
-				if (maiorX < noAux2.getPosition().getX()) {
-					maiorX = noAux2.getPosition().getX();
-				}
-				else {
-					if (menorX > noAux2.getPosition().getX()) {
-						menorX = noAux2.getPosition().getX();
-					}
-				}
-				
-				if (maiorY < noAux2.getPosition().getY()) {
-					maiorY = noAux2.getPosition().getY();
-				}
-				else {
-					if (menorY > noAux2.getPosition().getY()) {
-						menorY = noAux2.getPosition().getY();
-					}
-				}
-			}
-			
-			for (int i = 0; i < noAux.getChildren().size(); i++) {
-				noAux2 = (Node) noAux.getChildren().get(i);
-				
-				if (maiorX < noAux2.getPosition().getX()) {
-					maiorX = noAux2.getPosition().getX();
-				}
-				else {
-					if (menorX > noAux2.getPosition().getX()) {
-						menorX = noAux2.getPosition().getX();
-					}
-				}
-				
-				if (maiorY < noAux2.getPosition().getY()) {
-					maiorY = noAux2.getPosition().getY();
-				}
-				else {
-					if (menorY > noAux2.getPosition().getY()) {
-						menorY = noAux2.getPosition().getY();
-					}
-				}
-			}
-			
-			long width = Node.getWidth()/2;
-			long height = Node.getHeight()/2;
-			return new Rectangle((int) (menorX - 6 * width), (int) (menorY - 6 * height), (int) (maiorX - menorX + 12 * width), (int) (maiorY - menorY + 12 * height));
-		} else {
-			return new Rectangle((int) controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue(), (int) controller.getScreen().getJspGraph().getVerticalScrollBar().getValue(), (int) visibleDimension.getWidth(), (int) visibleDimension.getHeight());
+			if(newNode != null);
+				controller.createTable(newNode);
 		}
-	}
-	
-	
-	/**
-	 *  Repaint the network
-	 */
-	public void update(){
-		this.repaint(getRectangleRepaint());
-	}
-	
-	
+	} 
 	
 	/**
-	 *  M�todo respons�vel por tratar o evento de bot�o de mouse pressionado
+	 *  M�todo respons�vel por tratar o evento de clique no bot�o do mouse
 	 *
 	 *@param  e  O <code>MouseEvent</code>
 	 *@see MouseEvent
 	 */
-	public void mousePressed(MouseEvent e) {
-		//setar o melhor scrollMode para desenhar e mexer na rede
-		graphViewport.setScrollMode(JViewport.BLIT_SCROLL_MODE);
-		
-		if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {
+	public void mouseClicked(MouseEvent e) 
+	{
+	  
+		if (SwingUtilities.isLeftMouseButton(e)) 
+		{
+			Node newNode = null;
 			
-			Node node = getNode(e.getX(), e.getY());
-			Edge arc = getEdge(e.getX(), e.getY());
-			
-			switch (getAction()) {
-			
-			case CREATE_CONTINUOUS_NODE:
-				controller.insertContinuousNode(e.getX(), e.getY());
-				return;
-			
-			case CREATE_PROBABILISTIC_NODE:
-				controller.insertProbabilisticNode(e.getX(), e.getY());
-				return;
-				
-			case CREATE_DECISION_NODE:
-				controller.insertDecisionNode(e.getX(), e.getY());
-				return;
-				
-			case CREATE_UTILITY_NODE:
-				controller.insertUtilityNode(e.getX(), e.getY());
-				return;
-				
-			case CREATE_DOMAIN_MFRAG:
-				controller.insertDomainMFrag(); 
-				return; 
-				
-			case CREATE_CONTEXT_NODE:
-				try{
-				   controller.insertContextNode(e.getX(), e.getY());
-				   node = getNode(e.getX(), e.getY());
-				   selectObject(node);
-				   controller.selectNode(node); 
+			switch (getAction()) 
+			{
+ 
+				case CREATE_CONTINUOUS_NODE:
+				{
+					newNode = controller.insertContinuousNode(e.getX(), e.getY());
+					UShapeProbabilisticNode shape = new UShapeProbabilisticNode(this, newNode, (int)newNode.getPosition().x-newNode.getWidth()/2, (int)newNode.getPosition().y-newNode.getHeight()/2, newNode.getWidth(), newNode.getHeight());
+					addShape( shape );
+					shape.setBackColor(Color.GREEN);						
+					shape.setState(UShape.STATE_SELECTED);
+					updateNewInformationIntoTreeAndTableViewer(newNode); 
 				}
-				catch(MEBNConstructionException exception){
-					JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
-							resource.getString("withoutMFrag"),
-						    resource.getString("operationError"),
-						    JOptionPane.WARNING_MESSAGE);
-				}
-			    return; 
-				
-			case CREATE_RESIDENT_NODE:
-				try{
-				controller.insertResidentNode(e.getX(), e.getY());
-                node = getNode(e.getX(), e.getY());
-				   selectObject(node);
-				   controller.selectNode(node); 
-				}
-				catch(MEBNConstructionException exception){
-					JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
-							resource.getString("withoutMFrag"),
-						    resource.getString("operationError"),
-						    JOptionPane.WARNING_MESSAGE);
-				}				
-				return; 
-				
-			case CREATE_INPUT_NODE:
-                try{
-				controller.insertInputNode(e.getX(), e.getY());
-                node = getNode(e.getX(), e.getY());
-				   selectObject(node);
-				   controller.selectNode(node);
-                }
-				catch(MFragDoesNotExistException exception){
-					JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
-							resource.getString("withoutMFrag"),
-						    resource.getString("operationError"),
-						    JOptionPane.WARNING_MESSAGE);
-				}
-				return; 	
-				
-			case CREATE_ORDINARYVARIABLE_NODE:
-				try{
-				controller.getMebnController().insertOrdinaryVariable(e.getX(), e.getY());
-                node = getNode(e.getX(), e.getY());
-				   selectObject(node);
-				   controller.selectNode(node); 
-				}
-				catch(MEBNConstructionException exception){
-					JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
-							resource.getString("withoutMFrag"),
-						    resource.getString("operationError"),
-						    JOptionPane.WARNING_MESSAGE);
-				}				
-				return; 		
-				
-			case CREATE_EDGE:
-				if (node != null) {
-					bMoveEdge = true;
+				break; 
+				case CREATE_PROBABILISTIC_NODE:
+				{
+					newNode = controller.insertProbabilisticNode(e.getX(), e.getY());
+					UShapeProbabilisticNode shape = new UShapeProbabilisticNode(this, newNode, (int)newNode.getPosition().x-newNode.getWidth()/2, (int)newNode.getPosition().y-newNode.getHeight()/2, newNode.getWidth(), newNode.getHeight());
+					addShape( shape );	
+					shape.setState(UShape.STATE_SELECTED);
+					updateNewInformationIntoTreeAndTableViewer(newNode);
 					
-					Node node2; 
-					
-					if (controller.getMebnController() != null){
-					   node2 = new MultiEntityNode();
-					}
-					else{
-						node2 = new ProbabilisticNode(); 
-					}
-					node2.setPosition(e.getX(), e.getY());
-					movingEdge = new Edge(node, node2);
-					// Inform that the edge is a new one, therefore it is not 
-					// part of the graph yet.
-					movingEdge.setNew(true);
-				}
-				return;
-				
-			case SELECT_MANY_OBJECTS:
-				startSelectionPoint.setLocation(e.getX(), e.getY());
-				endSelectionPoint.setLocation(e.getX(), e.getY());
-				return;
-				
-			case NONE:
-				if (node != null) {
-					if (!node.isSelected()) {
-						selectObject(node);
-						controller.selectNode(node); 
-						// Show the corresponding node in the compilation tree.
-						if (controller.getScreen().isCompiled()) {
-							for (int i = 0; i < controller.getScreen().getEvidenceTree().getRowCount(); i++) {
-								if (controller.getScreen().getEvidenceTree().getPathForRow(i).getLastPathComponent().toString().equals(selected.toString())) {
-									controller.getScreen().getEvidenceTree().setSelectionPath(controller.getScreen().getEvidenceTree().getPathForRow(i));
-									break;
-								}
+					JMenuItem item = new JMenuItem(resource.getString("properties"));
+					item.addActionListener
+					(	
+						new ActionListener() 
+						{
+							public void actionPerformed(ActionEvent ae)
+							{   
+						//		controller.showExplanationProperties((ProbabilisticNode)newNode);
 							}
 						}
-					} 
-					if (selectedGroup.size() == 0){
-						movingNode = node;
-						bMoveNode = true;
-						setCursor(new Cursor(Cursor.MOVE_CURSOR));
+					);
+					
+					shape.popup.add(item);
+				}
+				break;
+				case CREATE_DECISION_NODE:
+				{
+					newNode = controller.insertDecisionNode(e.getX(), e.getY());
+					UShapeDecisionNode shape = new UShapeDecisionNode(this, newNode, (int)newNode.getPosition().x-newNode.getWidth()/2, (int)newNode.getPosition().y-newNode.getHeight()/2, newNode.getWidth(), newNode.getHeight() );
+					addShape( shape );		
+					shape.setState(UShape.STATE_SELECTED);
+					updateNewInformationIntoTreeAndTableViewer(newNode);
+				}
+				break;
+				case CREATE_UTILITY_NODE:
+				{
+					newNode = controller.insertUtilityNode(e.getX(), e.getY());
+					UShapeUtilityNode shape = new UShapeUtilityNode(this,  newNode, (int)newNode.getPosition().x-newNode.getWidth()/2, (int)newNode.getPosition().y-newNode.getHeight()/2, newNode.getWidth(), newNode.getHeight() );
+					addShape( shape );
+					shape.setState(UShape.STATE_SELECTED);
+					updateNewInformationIntoTreeAndTableViewer(newNode);
+				} 
+				break;
+				case CREATE_DOMAIN_MFRAG:
+				{
+					controller.insertDomainMFrag(); 
+				} 
+				break;					
+				case CREATE_CONTEXT_NODE:
+				{
+					try
+					{ 
+					   newNode = controller.insertContextNode(e.getX(), e.getY());
+					   UShapeContextNode shape = new UShapeContextNode(this, newNode, (int)newNode.getPosition().x-newNode.getWidth()/2, (int)newNode.getPosition().y-newNode.getHeight()/2, newNode.getWidth(), newNode.getHeight() );
+					   addShape( shape );
+					   shape.setState(UShape.STATE_SELECTED);
+					   controller.selectNode(newNode); 
 					}
-				} else if (arc != null && !arc.isSelected()) {
-					selectObject(arc);
+					catch(MEBNConstructionException exception){
+						JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
+								resource.getString("withoutMFrag"),
+							    resource.getString("operationError"),
+							    JOptionPane.WARNING_MESSAGE);
+					}
+				} 
+				break; 
+				case CREATE_RESIDENT_NODE:
+				{
+					try{ 
+					   newNode = controller.insertResidentNode(e.getX(), e.getY());
+					   UShapeResidentNode shape = new UShapeResidentNode(this, newNode, (int)newNode.getPosition().x-newNode.getWidth()/2, (int)newNode.getPosition().y-newNode.getHeight()/2, newNode.getWidth(), newNode.getHeight() );
+					   addShape( shape );
+					   shape.setState(UShape.STATE_SELECTED);
+					   controller.selectNode(newNode); 
+					}
+					catch(MEBNConstructionException exception){
+						JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
+								resource.getString("withoutMFrag"),
+							    resource.getString("operationError"),
+							    JOptionPane.WARNING_MESSAGE);
+					}				
+				} 
+				break;
+				case CREATE_INPUT_NODE:
+				{
+	                try{ 
+					   newNode = controller.insertInputNode(e.getX(), e.getY());
+					   UShapeInputNode shape = new UShapeInputNode(this, newNode, (int)newNode.getPosition().x-newNode.getWidth()/2, (int)newNode.getPosition().y-newNode.getHeight()/2, newNode.getWidth(), newNode.getHeight() );
+					   addShape( shape );
+					   shape.setState(UShape.STATE_SELECTED);
+					   controller.selectNode(newNode); 
+	                }
+					catch(MFragDoesNotExistException exception){
+						JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
+								resource.getString("withoutMFrag"),
+							    resource.getString("operationError"),
+							    JOptionPane.WARNING_MESSAGE);
+					}
+				} 
+				break;
+				case CREATE_ORDINARYVARIABLE_NODE:
+				{
+					try{ 
+					   newNode = controller.getMebnController().insertOrdinaryVariable(e.getX(), e.getY());
+					   UShapeOrdinaryVariableNode shape = new UShapeOrdinaryVariableNode(this, newNode, (int)newNode.getPosition().x-newNode.getWidth()/2, (int)newNode.getPosition().y-newNode.getHeight()/2, newNode.getWidth(), newNode.getHeight() );
+					   addShape( shape );
+					   shape.setState(UShape.STATE_SELECTED);
+					   controller.selectNode(newNode); 
+					   
+					}
+					catch(MEBNConstructionException exception){
+						JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
+								resource.getString("withoutMFrag"),
+							    resource.getString("operationError"),
+							    JOptionPane.WARNING_MESSAGE);
+					}		  		
+				} 
+				break;		
+				case NONE:
+				{
+					if( controller != null )
+						controller.unselectAll(); 
 				}
-				return;
-			}
-			
-		} else if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
-			setAction(GraphAction.NONE);
-			controller.setResetButtonActive(); 
-		}
-		
-		if (e.isPopupTrigger() && (getSelected() != null)) {
-			if (!(getSelected() instanceof Edge)) {
-				if (((Node) getSelected()).getInformationType() == Node.EXPLANATION_TYPE) {
-					popup.setEnabled(true);
-					popup.show(e.getComponent(), e.getX(), e.getY());
-				}
+				break;
 			}
 		}
 		
-		this.repaint((int) controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue(), 
-				     (int) controller.getScreen().getJspGraph().getVerticalScrollBar().getValue(), 
-				     (int) visibleDimension.getWidth(), 
-				     (int) visibleDimension.getHeight());
+	}
+ 
+	public void mouseReleased(MouseEvent e) 
+	{
+		super.mouseReleased(e);
+		
+	    if (SwingUtilities.isLeftMouseButton(e)) 
+	    {
+	          System.out.println("Left button released.");
+	    }
+	        
+	    if (SwingUtilities.isMiddleMouseButton(e)) 
+	    {
+	          System.out.println("Middle button released.");
+	    }
+	        
+	    if (SwingUtilities.isRightMouseButton(e)) 
+	    {
+	       	System.out.println("Right button released.");
+	        
+	       	resetPopup();
+	       	popup.setEnabled(true);
+			popup.show(e.getComponent(),e.getX(),e.getY());
+	    }
 	}
 	
-	
-	/**
-	 *  Responsible for dealing with mouse click event.
-	 *
-	 *@param  e  The <code>MouseEvent</code>
-	 *@see MouseEvent
-	 */
-	public void mouseClicked(MouseEvent e) {
-		// receber o focus para poder tratar o evento de tecla
-		this.requestFocus();
-		
-		// Show the table pane to edit the distribution
-		Node node = getNode(e.getX(), e.getY());
-		if (node != null) {
-			if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-				if (controller.getGraph() instanceof SingleEntityNetwork) {
-					controller.createTable(node);
-				}
-			}
-		// Change the edge direction
-		} else {
-			Edge edge = getEdge(e.getX(), e.getY());
-			if ((edge != null) && (e.getModifiers() == MouseEvent.BUTTON1_MASK) && (e.getClickCount() == 2)) {
-				if ((direction == 0) || (direction == 1)) {
-					direction++;
-					edge.setDirection(true);
-					edge.changeDirection();
-				} else if (direction == 2) {
-					direction = 0;
-					edge.setDirection(false);
-				}
-			}
-		}
+	public void selectNode(Node n) 
+	{
+		UShape shape = null;
+		shape = getNodeUShape(n);
+		shape.setState(UShape.STATE_SELECTED);
+ 
 	}
 	
-	
-	/**
-	 *  M�todo respons�vel por tratar o evento de bot�o de mouse soltado
-	 *
-	 *@param  e  O <code>MouseEvent</code>
-	 *@see MouseEvent
-	 */
-	public void mouseReleased(MouseEvent e) {
+	public boolean insertEdge(Edge edge) 
+	{
 		
-		Node destinationNode = getNode(e.getX(), e.getY());
-		Edge edge = getEdge(e.getX(), e.getY());
-		
-		switch (getAction()) {
-		
-		case CREATE_EDGE:
-			if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-				Node originNode = movingEdge.getOriginNode();
-//				TODO RETIRAR A NECESSIDADE DE PEGAR A REDE, PEGAR DIRETO OS N�S, ETC.
-				if ((destinationNode != null) && !originNode.equals(destinationNode) && (controller.getGraph().hasEdge(originNode, destinationNode) == -1)) {
-					movingEdge = new Edge(originNode, destinationNode);
-					insertEdge(movingEdge);
-				}
-				
-				// As the edge has been inserted, there is no more new edge.
-				movingEdge = null;
-			}
-			break;
-			
-		case SELECT_MANY_OBJECTS:
-			endSelectionPoint.setLocation(e.getX(), e.getY());
-			setSelectedGroup(startSelectionPoint, endSelectionPoint);
-			startSelectionPoint.setLocation(-1,-1);
-			endSelectionPoint.setLocation(-1,-1);
-			break;
-			
-		case NONE:
-			bMoveNode = false;
-			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-			if ((selected == null) || (destinationNode == null || !selected.equals(destinationNode)) && (edge == null || !selected.equals(edge))) {
-				unselectAll();
-				controller.unselectAll(); 
-			}
-			break;
-		}
-		
-		if (bMoveEdge) {
-			//seta para false para dizer que acabou o movimento
-			bMoveEdge = false;
-		}
-		
-		if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
-			setAction(GraphAction.NONE);
-		}
-		
-		if (e.isPopupTrigger() && (getSelected() != null)) {
-			if (!(getSelected() instanceof Edge)) {
-				if (((Node) getSelected()).getInformationType() == Node.EXPLANATION_TYPE) {
-					popup.setEnabled(true);
-					popup.show(e.getComponent(), e.getX(), e.getY());
-				}
-			}
-		}
-		
-		update();
-	}
-	
-	
-	/**
-	 *  M�todo respons�vel por tratar o evento do mouse entrar nesse componente (objeto da classe GraphPane)
-	 *
-	 *@param  e  O <code>MouseEvent</code>
-	 *@see MouseEvent
-	 */
-	public void mouseEntered(MouseEvent e) {
-		if ((!bMoveNode) && (!bMoveEdge)) {
-			//setar o tamanho visivel da rede como o tamanho o jspDesenho - raio
-			visibleDimension = new Dimension((int) (controller.getScreen().getJspGraph().getSize().getWidth()), (int) (controller.getScreen().getJspGraph().getSize().getHeight()));
-			graphViewport.setOpaque(true);
-			graphViewport.scrollRectToVisible(new Rectangle(graphDimension));
-			graphViewport.setPreferredSize(graphDimension);
-			graphViewport.revalidate();
-		}
-	}
-	
-	
-	/**
-	 *  M�todo respons�vel por tratar o evento do mouse sair desse componente (objeto da classe GraphPane)
-	 *
-	 *@param  e  O <code>MouseEvent</code>
-	 *@see MouseEvent
-	 */
-	public void mouseExited(MouseEvent e) {
-		
-	}
-	
-	
-	/**
-	 *  M�todo respons�vel por tratar o evento arrastar o mouse com o bot�o pressionado
-	 *
-	 *@param  e  O <code>MouseEvent</code>
-	 *@see MouseEvent
-	 */
-	public void mouseDragged(MouseEvent e) {
-		// End point of the selection square.
-		if (getAction() == GraphAction.SELECT_MANY_OBJECTS) {
-			updateEndSelectionPoint(e.getX(), e.getY());
-		}
-		
-		//long width = Node.getWidth()/2;
-		//long height = Node.getHeight()/2;
- 		long width = Node.getWidth()/2;
-		long height = Node.getHeight()/2;
-		
-		
-		// Move the scroll with the arrow and/or node.
-		if ((e.getX() < graphDimension.getWidth()) && (e.getY() < graphDimension.getHeight()) && (e.getX() + 2 * width > visibleDimension.getWidth() + controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue()) && (e.getY() + 2 * height > visibleDimension.getHeight() + controller.getScreen().getJspGraph().getVerticalScrollBar().getValue())) {
-			controller.getScreen().getJspGraph().getHorizontalScrollBar().setValue((int) (e.getX() + 2 * width - visibleDimension.getWidth()));
-			controller.getScreen().getJspGraph().getVerticalScrollBar().setValue((int) (e.getY() + 2 * height - visibleDimension.getHeight()));
-		} else if ((e.getX() < graphDimension.getWidth()) && (e.getX() + 2 * width > visibleDimension.getWidth() + controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue()) && (e.getY() + 2 * height <= visibleDimension.getHeight() + controller.getScreen().getJspGraph().getVerticalScrollBar().getValue())) {
-			controller.getScreen().getJspGraph().getHorizontalScrollBar().setValue((int) (e.getX() + 2 * width - visibleDimension.getWidth()));
-		} else if ((e.getY() < graphDimension.getHeight()) && (e.getX() + 2 * width <= visibleDimension.getWidth() + controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue()) && (e.getY() + 2 * height > visibleDimension.getHeight() + controller.getScreen().getJspGraph().getVerticalScrollBar().getValue())) {
-			controller.getScreen().getJspGraph().getVerticalScrollBar().setValue((int) (e.getY() + 2 * height - visibleDimension.getHeight()));
-		} else if ((e.getX() > 0) && (e.getY() > 0) && (e.getX() - width < controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue()) && (e.getY() - height < controller.getScreen().getJspGraph().getVerticalScrollBar().getValue())) {
-			controller.getScreen().getJspGraph().getHorizontalScrollBar().setValue((int) (e.getX() - width));
-			controller.getScreen().getJspGraph().getVerticalScrollBar().setValue((int) (e.getY() - height));
-		} else if ((e.getY() > 0) && (e.getX() - width >= controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue()) && (e.getY() - height < controller.getScreen().getJspGraph().getVerticalScrollBar().getValue())) {
-			controller.getScreen().getJspGraph().getVerticalScrollBar().setValue((int) (e.getY() - height));
-		} else if ((e.getX() > 0) && (e.getX() - width < controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue()) && (e.getY() - height >= controller.getScreen().getJspGraph().getVerticalScrollBar().getValue())) {
-			controller.getScreen().getJspGraph().getHorizontalScrollBar().setValue((int) (e.getX() - width));
-		}
-		
-		if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-			
-			int compareX = 0;
-			int compareY = 0;
-			int x = -1;
-			int y = -1;
-			if (bMoveNode) {
-				compareX = (int)width;
-				compareY = (int)height;
-			}
-			// Update the edge/node position being drawn.
-			if ((e.getX() > compareX) && (e.getY() > compareY)
-					&& (e.getX() < graphDimension.getWidth() - compareX)
-					&& (e.getY() < graphDimension.getHeight() - compareY)) {
-				x = e.getX();
-				y = e.getY();
-			} else if ((e.getX() <= compareX) && (e.getY() > compareY)
-					&& (e.getX() < graphDimension.getWidth() - compareX)
-					&& (e.getY() < graphDimension.getHeight() - compareY)) {
-				x = compareX;
-				y = e.getY();
-			} else if ((e.getX() > compareX) && (e.getY() <= compareY)
-					&& (e.getX() < graphDimension.getWidth() - compareX)
-					&& (e.getY() < graphDimension.getHeight() - compareY)) {
-				x = e.getX();
-				y = compareY;
-			} else if ((e.getX() <= compareX) && (e.getY() <= compareY)
-					&& (e.getX() < graphDimension.getWidth() - compareX)
-					&& (e.getY() < graphDimension.getHeight() - compareY)) {
-				x = compareX;
-				y = compareY;
-			} else if ((e.getX() <= compareX) && (e.getY() > compareY)
-					&& (e.getX() < graphDimension.getWidth() - compareX)
-					&& (e.getY() >= graphDimension.getHeight() - compareY)) {
-				x = compareX;
-				y = (int) graphDimension.getHeight() - compareY;
-			} else if ((e.getX() > compareX) && (e.getY() > compareY)
-					&& (e.getX() < graphDimension.getWidth() - compareX)
-					&& (e.getY() >= graphDimension.getHeight() - compareY)) {
-				x = e.getX();
-				y = (int) graphDimension.getHeight() - compareY;
-			} else if ((e.getX() > compareX) && (e.getY() > compareY)
-					&& (e.getX() >= graphDimension.getWidth() - compareX)
-					&& (e.getY() >= graphDimension.getHeight() - compareY)) {
-				x = (int) graphDimension.getWidth() - compareX;
-				y = (int) graphDimension.getHeight() - compareY;
-			} else if ((e.getX() > compareX) && (e.getY() > compareY)
-					&& (e.getX() >= graphDimension.getWidth() - compareX)
-					&& (e.getY() < graphDimension.getHeight() - compareY)) {
-				x = (int) graphDimension.getWidth() - compareX;
-				y = e.getY();
-			} else if ((e.getX() > compareX) && (e.getY() <= compareY)
-					&& (e.getX() >= graphDimension.getWidth() - compareX)
-					&& (e.getY() < graphDimension.getHeight() - compareY)) {
-				x = (int) graphDimension.getWidth() - compareX;
-				y = compareY;
-			}
-			
-			if (x != -1 && y != -1) {
-				if (getAction() == GraphAction.CREATE_EDGE && bMoveEdge) {
-					updateMovingEdge(x, y);
-				} else if (bMoveNode) {
-					updateMovingNode(x, y);
-				}
-			}
-		}
-	}
-	
-	
-	/**
-	 *  M�todo respons�vel por tratar o evento de mover o mouse
-	 *
-	 *@param  e  O <code>MouseEvent</code>
-	 *@see MouseEvent
-	 */
-	public void mouseMoved(MouseEvent e) {
-		
-	}
-	
-	public void selectObject(IDrawable object) {
-		unselectAll();
-		object.setSelected(true);
-		selected = object;
-		
-	}
-	
-	/**
-	 *  M�todo respons�vel por atualizar o arco (<code>Edge</code>) atual ao se mover um arco
-	 *
-	 *@param  x  Posi��o x (double) da ponta do arco
-	 *@param  y  Posi��o y (double) da ponta do arco
-	 *@see Edge
-	 */
-	public void updateMovingEdge(double x, double y) {
-		movingEdge.setDestinationPosition(x, y);
-		update();
-	}
-	
-	/**
-	 *  M�todo respons�vel por atualizar o n� (<code>Node</code>) atual ao se mover um n�
-	 *
-	 *@param  x  Posi��o x (double) do centro do n�
-	 *@param  y  Posi��o y (double) do centro do n�
-	 *@see Node
-	 */
-	public void updateMovingNode(double x, double y) {
-		movingNode.setPosition(x, y);
-		update();
-	}
-	
-	/**
-	 *  M�todo respons�vel por atualizar o ponto final de sele��o ao se mover o mouse para sele��o
-	 *
-	 *@param  x  Posi��o x (double)
-	 *@param  y  Posi��o y (double)
-	 */
-	public void updateEndSelectionPoint(double x, double y) {
-		endSelectionPoint.setLocation(x, y);
-		update();
-	}
-	
-	public void insertEdge(Edge edge) {
 		// Ask the controller to insert the following edge
 		try{
-		   controller.insertEdge(edge);
+			return controller.insertEdge(edge);
 		}
 		catch(MEBNConstructionException me){
 			JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
 					me.getMessage(),
 				    resource.getString("error"),
-				    JOptionPane.ERROR_MESSAGE);			
+				    JOptionPane.ERROR_MESSAGE);
+			return false;
 		}
 		catch(CycleFoundException cycle){
 			JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
 					cycle.getMessage(),
 				    resource.getString("error"),
-				    JOptionPane.ERROR_MESSAGE);	
+				    JOptionPane.ERROR_MESSAGE);
+			return false;
 		}
 		catch(Exception e){
-			e.printStackTrace(); 
+			e.printStackTrace();
+			return false;
 		}
 		
-		// Inform that the edge has being inserted in the graph, therefore 
-		// it is not new anymore.
-		edge.setNew(false);
-		update();
-	}
-	
-	/**
-	 *  M�todo respons�vel por definir quais os obejos (<code>Node</code> e/ou <code>Edge</code>) foram selecionados
-	 *
-	 *@param  p1  Ponto p1 (Point2D.Double) do in�cio do ret�ngulo
-	 *@param  p2  Ponto p2 (Point2D.Double) do fim do ret�ngulo
-	 *@see Node
-	 *@see Point2D.Double
-	 */
-	public void setSelectedGroup(Point2D.Double p1, Point2D.Double p2) {
-		unselectAll();
-		for (int i = 0; i < nodeList.size(); i++) {
-			Node nodeAux = (Node)nodeList.get(i);
-			if ( ( ((p1.getX() <= p2.getX()) && (nodeAux.getPosition().getX() >= p1.getX()) && (nodeAux.getPosition().getX() <= p2.getX()))
-					|| ((p2.getX() < p1.getX()) && (nodeAux.getPosition().getX() >= p2.getX()) && (nodeAux.getPosition().getX() <= p1.getX())) )
-					&& ( ((p1.getY() <= p2.getY()) && (nodeAux.getPosition().getY() >= p1.getY()) && (nodeAux.getPosition().getY() <= p2.getY()))
-							|| ((p2.getY() < p1.getY()) && (nodeAux.getPosition().getY() >= p2.getY()) && (nodeAux.getPosition().getY() <= p1.getY())) ) ) {
-				selectedGroup.add(nodeAux);
-				nodeAux.setSelected(true);
-			}
-		}
-		for (int i = 0; i < edgeList.size(); i++) {
-			Edge arcAux = (Edge)edgeList.get(i);
-			Node nodeAux2 = arcAux.getDestinationNode();
-			if (( ( ((p1.getX() <= p2.getX()) && (nodeAux2.getPosition().getX() >= p1.getX()) && (nodeAux2.getPosition().getX() <= p2.getX()))
-					|| ((p2.getX() < p1.getX()) && (nodeAux2.getPosition().getX() >= p2.getX()) && (nodeAux2.getPosition().getX() <= p1.getX())) )
-					&& ( ((p1.getY() <= p2.getY()) && (nodeAux2.getPosition().getY() >= p1.getY()) && (nodeAux2.getPosition().getY() <= p2.getY()))
-							|| ((p2.getY() < p1.getY()) && (nodeAux2.getPosition().getY() >= p2.getY()) && (nodeAux2.getPosition().getY() <= p1.getY())) ) ) ) {
-				selectedGroup.add(arcAux);
-				arcAux.setSelected(true);
-			}
-		}
-	}
-	
-	/**
-	 * Unselect all objects selected, from single and group selection.  
-	 *
-	 */
-	public void unselectAll() {
-		// Unselect the single selection.
-		if (selected != null) {
-			selected.setSelected(false);
-			selected = null;
-		}
-		// Unselect the group selection.
-		for (int i = 0; i < selectedGroup.size(); i++) {
-			selectedGroup.get(i).setSelected(false);
-		}
-		selectedGroup.clear();
 	}
 	
 	/**
 	 * Set the action to be taken.
 	 * @param action The action to be taken.
 	 */
-	public void setAction(GraphAction action) {
-		switch (action) {
+	public void setAction(GraphAction action) 
+	{
+		Toolkit toolkit = Toolkit.getDefaultToolkit();
+		Cursor customCursor;
 		
+		switch (action) 
+		{
 		case CREATE_CONTINUOUS_NODE:
-		
+		{
+			customCursor = toolkit.createCustomCursor(iconController.getContinueNodeCursor().getImage(), new Point(0,0), "Cursor");
+		    setCursor(customCursor);
+		    setState(STATE_NONE);
+		}
+		break;		
 		case CREATE_PROBABILISTIC_NODE:
-			
+		{
+			customCursor = toolkit.createCustomCursor(iconController.getEllipsisNodeCursor().getImage(), new Point(0,0), "Cursor");
+		    setCursor(customCursor);
+		    setState(STATE_NONE);
+		}
+		break;	
 		case CREATE_DECISION_NODE:
-			
+		{
+			customCursor = toolkit.createCustomCursor(iconController.getDecisionNodeCursor().getImage(), new Point(0,0), "Cursor");
+		    setCursor(customCursor);
+		    setState(STATE_NONE);
+		}
+		break;			
 		case CREATE_UTILITY_NODE:
-			
+		{
+			customCursor = toolkit.createCustomCursor(iconController.getUtilityNodeCursor().getImage(), new Point(0,0), "Cursor");
+		    setCursor(customCursor);
+		    setState(STATE_NONE);
+		}
+		break;						
 		case CREATE_CONTEXT_NODE:
-			
+		{
+			customCursor = toolkit.createCustomCursor(iconController.getContextNodeCursor().getImage(), new Point(0,0), "Cursor");
+		    setCursor(customCursor);
+		    setState(STATE_NONE);
+		}
+		break;						
 		case CREATE_INPUT_NODE:
-			
+		{
+			customCursor = toolkit.createCustomCursor(iconController.getInputNodeCursor().getImage(), new Point(0,0), "Cursor");
+		    setCursor(customCursor);
+		    setState(STATE_NONE);
+		}
+		break;							
 		case CREATE_RESIDENT_NODE: 
-			
+		{
+			customCursor = toolkit.createCustomCursor(iconController.getResidentNodeCursor().getImage(), new Point(0,0), "Cursor");
+		    setCursor(customCursor);
+		    setState(STATE_NONE);
+		}	
+		break;	
 		case CREATE_ORDINARYVARIABLE_NODE: 	
-			
-			setCursor(new Cursor(Cursor.HAND_CURSOR));
-			break;
-			
+		{
+			customCursor = toolkit.createCustomCursor(iconController.getOvariableNodeCursor().getImage(), new Point(0,0), "Cursor");
+		    setCursor(customCursor);
+		    setState(STATE_NONE);
+		}				
+		break;	
 		case CREATE_EDGE:
-			
+		{
+			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			setState(STATE_CONNECT_COMP);
+		}			
+		break;
 		case SELECT_MANY_OBJECTS:
-			setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-			break;
+		{
+			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			setState(STATE_NONE);
+		}
+		break;
 			
 		default:
 			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -1043,20 +608,161 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 		return action;
 	}
 	
+	 public void createNode( Node newNode )
+    {
+		 UShape shape = null;
+		 
+		if(newNode instanceof ContinuousNode) 
+		{
+			shape = new UShapeProbabilisticNode(this, newNode, (int)newNode.getPosition().x, (int)newNode.getPosition().y, newNode.getWidth(), newNode.getHeight());
+ 		}
+    	else
+    	if(newNode instanceof ProbabilisticNode) 
+		{
+			shape = new UShapeProbabilisticNode(this, newNode, (int)newNode.getPosition().x, (int)newNode.getPosition().y, newNode.getWidth(), newNode.getHeight());
+		}
+    	else
+		if(newNode instanceof DecisionNode) 
+		{
+			shape = new UShapeDecisionNode(this, newNode, (int)newNode.getPosition().x, (int)newNode.getPosition().y, newNode.getWidth(), newNode.getHeight() );
+		}
+    	else
+		if(newNode instanceof UtilityNode) 
+		{
+			shape = new UShapeUtilityNode(this, newNode, (int)newNode.getPosition().x, (int)newNode.getPosition().y, newNode.getWidth(), newNode.getHeight() );
+		}
+    	else  		
+		if(newNode instanceof ContextNode) 
+		{		
+		    shape = new UShapeContextNode(this, newNode, (int)newNode.getPosition().x, (int)newNode.getPosition().y, newNode.getWidth(), newNode.getHeight() );
+	 	}
+    	else  		
+		if(newNode instanceof ResidentNode) 
+		{
+			shape = new UShapeResidentNode(this, newNode, (int)newNode.getPosition().x, (int)newNode.getPosition().y, newNode.getWidth(), newNode.getHeight() );
+		}
+    	else
+		if(newNode instanceof InputNode) 
+		{
+			shape = new UShapeInputNode(this, newNode, (int)newNode.getPosition().x, (int)newNode.getPosition().y, newNode.getWidth(), newNode.getHeight() );
+		}
+    	else	
+		if(newNode instanceof OrdinaryVariable) 
+		{
+			shape = new UShapeOrdinaryVariableNode(this, newNode, (int)newNode.getPosition().x, (int)newNode.getPosition().y, newNode.getWidth(), newNode.getHeight() );
+		}
+		else
+    	if(newNode instanceof OOBNNodeGraphicalWrapper) 
+		{
+			shape = new UShapeOOBNNode(this, newNode, (int)newNode.getPosition().x, (int)newNode.getPosition().y, newNode.getWidth(), newNode.getHeight());
+		}
+    	
+  
+    	addShape( shape );	
+    	shape.setState(UShape.STATE_SELECTED);
+    } 
+	 
+	public void compiled(Node selectedNode )
+	{ 
+		this.removeAll();
+		
+		Node n; 
+		Edge e;
+		UShape shape = null;
+		
+		// Load all nodes.
+		for (int i = 0; i < nodeList.size(); i++) 
+		{
+			n = nodeList.get(i);
+			createNode( n );
+			
+			if(n instanceof ContinuousNode || n instanceof ProbabilisticNode) 
+			{
+				shape = getNodeUShape(n);
+				shape.shapeTypeChange(UShapeProbabilisticNode.STYPE_BAR);
+		    	shape.setState(UShape.STATE_RESIZED);
+			}
+		}	
+		
+		// Load all Edges
+		for (int i = 0; i < edgeList.size(); i++) 
+		{
+			e = edgeList.get(i);
+			
+			if(getNodeUShape(e.getOriginNode()) != null && getNodeUShape(e.getDestinationNode()) != null )
+			{
+				UShapeLine line = new UShapeLine(this, getNodeUShape(e.getOriginNode()), getNodeUShape(e.getDestinationNode()) );
+				line.setEdge(e);
+				line.setUseSelection(false);
+				addShape( line );
+			}
+		}	
+		
+		setShapeStateAll(UShape.STATE_NONE);
+		fitCanvasSizeToAllUShapes();
+		
+		if( selectedNode!= null )
+		{
+			shape = getNodeUShape(selectedNode);
+	  		shape.setState(UShape.STATE_SELECTED);
+		} 
+	}	 
+	 
+	public void update()
+	{
+		this.removeAll();
+		
+		Node n; 
+		Edge e;
+		UShape shape = null;
+		
+		// Load all nodes.
+		for (int i = 0; i < nodeList.size(); i++) 
+		{
+			n = nodeList.get(i);
+			n.updateLabel();
+			 
+			createNode( n );
+												
+			if(n instanceof ContinuousNode || n instanceof ProbabilisticNode) 
+			{
+				shape = getNodeUShape(n);
+				
+				if( shape != null )
+				{
+					shape.shapeTypeChange(UShapeProbabilisticNode.STYPE_NONE);				
+					shape.setState(UShape.STATE_RESIZED);
+				}
+			}
+		}	
+		
+		// Load all Edges
+		for (int i = 0; i < edgeList.size(); i++) 
+		{
+			e = edgeList.get(i);
+			
+			if(getNodeUShape(e.getOriginNode()) != null && getNodeUShape(e.getDestinationNode()) != null )
+			{
+				UShapeLine line = new UShapeLine(this, getNodeUShape(e.getOriginNode()), getNodeUShape(e.getDestinationNode()) );
+				line.setEdge(e);
+				line.setUseSelection(false);
+				addShape( line );
+			}
+		}	 
+	 	
+		setShapeStateAll(UShape.STATE_NONE);
+		fitCanvasSizeToAllUShapes();
+ 
+	} 
+	
 	public void resetGraph(){
+		
+		if( controller== null )
+    		return;
 		
 	    edgeList = controller.getGraph().getEdges();
 	    nodeList = controller.getGraph().getNodes();  
 		
-		selectedGroup = new ArrayList<IDrawable>();
-		startSelectionPoint = new Point2D.Double();
-		endSelectionPoint = new Point2D.Double();
-		drawSelection = new DrawDashRectangle(startSelectionPoint, endSelectionPoint);
-		bMoveEdge = false;
-		bMoveNode = false;
-		
-		graphDimension = new Dimension(1500, 1500);
-		visibleDimension = new Dimension(0, 0);
 		action = GraphAction.NONE;
 		
 		JMenuItem item = new JMenuItem(resource.getString("properties"));
@@ -1066,66 +772,157 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 				controller.showExplanationProperties((ProbabilisticNode)getSelected());
 			}
 		});
+		
 		popup.add(item);		
 		
-		repaint(); 		
-	}
-	
-	/**
-	 * Reset the graph to a empty graph. 
-	 */
-	
-	public void showEmptyGraph(){
-	    edgeList = new ArrayList<Edge>();
-	    nodeList = new ArrayList<Node>();  
-	    
-		selectedGroup = new ArrayList<IDrawable>();
-		startSelectionPoint = new Point2D.Double();
-		endSelectionPoint = new Point2D.Double();
-		drawSelection = new DrawDashRectangle(startSelectionPoint, endSelectionPoint);
-		bMoveEdge = false;
-		bMoveNode = false;
-		
-		graphDimension = new Dimension(1500, 1500);
-		visibleDimension = new Dimension(0, 0);
-		action = GraphAction.NONE;
-		
+		update(); 
 		repaint(); 	
 	}
 	
-	/**
-	 *  M�todo respons�vel por pintar a rede Bayesiana, ou seja, o objeto da classe GraphPane
-	 *
-	 *@param  g  O <code>Graphics</code>
-	 *@see Graphics
-	 */
-	public void paint(Graphics g) {
-		graphBoard = (Graphics2D) g;
-		graphBoard.setBackground(getBackgroundColor());
-		graphBoard.clearRect((int) controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue(), (int) controller.getScreen().getJspGraph().getVerticalScrollBar().getValue(), (int) (controller.getScreen().getJspGraph().getSize().getWidth()), (int) (controller.getScreen().getJspGraph().getSize().getHeight()));
-		graphBoard.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-		
-		// Draw the selection area, if asked to.
-		if (getAction() == GraphAction.SELECT_MANY_OBJECTS) {
-			drawSelection.paint(graphBoard);
-		}
-		
-		graphBoard.setStroke(new BasicStroke(1));
-		
-		// Draw all nodes.
-		for (int i = 0; i < nodeList.size(); i++) {
-			nodeList.get(i).paint(graphBoard);
-		}
-		
-		// Draw new edge (not part of the graph yet).
-		if (bMoveEdge) {
-			movingEdge.paint(graphBoard);
-		}
-		
-		// Draw all edges.
-		for (Edge edge : edgeList) {
-			edge.paint(graphBoard);
-		}
+	public void updateAllNodesName()
+	{
+		if( getMode() == MODE_USE_NAME )
+			useNameAllShape();
+		else
+		if( getMode() == MODE_USE_DESC )
+			useDescAllShape();
 	}
 	
+	public void useNameAllShape()
+	{
+		setMode(MODE_USE_NAME);
+		controller.getScreen().getEvidenceTree().setMode(MODE_USE_NAME);
+				
+		int n = this.getComponentCount();
+		for( int i = 0; i < n; i++ )
+		{
+			UShape shape = (UShape)this.getComponent(i);
+		
+			Node node = shape.getNode();
+			if( node != null )
+				shape.setLabel( node.getName() );
+		}    
+		
+		repaint();
+	}
+	
+	public void useDescAllShape()
+	{
+		setMode(MODE_USE_DESC);
+		controller.getScreen().getEvidenceTree().setMode(MODE_USE_DESC);
+		
+		int n = this.getComponentCount();
+		for( int i = 0; i < n; i++ )
+		{
+			UShape shape = (UShape)this.getComponent(i);
+		
+			Node node = shape.getNode();
+			if( node != null )
+				shape.setLabel( node.getDescription());
+		}
+		
+		repaint();
+	}
+	
+	public void resetPopup()
+	{
+		popup.removeAll();
+		
+		JMenuItem item1 = new JMenuItem("View Name");
+		item1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae)
+			{   
+				useNameAllShape();  	
+			}
+		});
+		
+		JMenuItem item2 = new JMenuItem("View Description");
+		item2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae)
+			{   
+				useDescAllShape();
+			}
+		});
+		
+		popup.add(item1);
+		popup.add(item2);
+	}
+	 
+    public UShapeLine onDrawConnectLineReleased(UShape shapeParent, int x, int y)
+    {
+    	UShapeLine line = super.onDrawConnectLineReleased( shapeParent, x, y );
+    	
+    	if( line != null )
+    	{
+	    	Edge e = new Edge(line.getSource().getNode(), line.getTarget().getNode());
+	    	if( e != null )
+	    	{
+	    		if( insertEdge(e) == true )
+	    		{ 
+	    			line.setEdge(e);	    						
+	    		}
+	    		else
+	    		{
+	    			delShape(line);
+	    			repaint();
+	    		}
+	    	}
+    	}
+    	
+    	return line;
+    }
+    
+    public void onShapeChanged( UShape s )
+	{ 
+    	if(s instanceof UShapeState) 
+    	{
+    		Node n = ((UShape)s.getParent()).getNode();
+    		controller.getScreen().getEvidenceTree().selectTreeItemByState(n, s.getName());    		 
+    		((UShapeProbabilisticNode)s.getParent()).update(s.getName());
+    	}
+    	else
+    	if(s instanceof UShapeLine) 
+    	{
+    	
+    	}
+    	else
+    	{
+    		updateNewInformationIntoTreeAndTableViewer(s.getNode()); 
+    	}
+ 	}
+   
+    public void onShapeDeleted( UShape s )
+	{ 
+    	if( controller == null )
+    		return;
+    	
+    	if(s instanceof UShapeLine) 
+    		controller.deleteSelected(((UShapeLine)s).getEdge());
+    	else
+    	{ 
+    		controller.deleteSelected(s.getNode());
+    	}
+ 	}   
+    
+    public void onSelectionChanged()
+	{     
+    	if( controller == null )
+    		return;
+    	
+    	controller.unselectAll();
+    	
+    	int n = this.getComponentCount();
+    	for( int i = 0; i < n; i++ )
+    	{
+    		UShape shape = (UShape)this.getComponent(i);
+    		
+    		if( shape.getState() == UShape.STATE_SELECTED && shape.getNode() != null )
+    		{
+    			controller.selectNode(shape.getNode());
+    			
+    			if( controller.getScreen().getEvidenceTree() != null )
+    				controller.getScreen().getEvidenceTree().selectTreeItemByNode(shape.getNode());
+    		}
+    	}    	
+	}      
 }

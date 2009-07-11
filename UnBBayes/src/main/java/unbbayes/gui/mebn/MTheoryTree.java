@@ -188,6 +188,8 @@ public class MTheoryTree extends JTree {
 		itemDelete.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
 				mebnController.deleteSelected(objectSelected); 
+				//by young
+				mebnController.getScreen().getGraphPane().update(); 
 			}
 		}); 		
 		

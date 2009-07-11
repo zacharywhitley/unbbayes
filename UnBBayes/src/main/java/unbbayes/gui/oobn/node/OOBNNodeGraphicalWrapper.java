@@ -6,24 +6,17 @@ package unbbayes.gui.oobn.node;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import unbbayes.draw.DrawElement;
-import unbbayes.draw.DrawEllipse;
-import unbbayes.draw.DrawRectangle;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.oobn.IOOBNNode;
 import unbbayes.util.Debug;
-import unbbayes.util.SetToolkit;
 
 /**
  * This class represents graphically an OOBN node.
@@ -34,8 +27,9 @@ import unbbayes.util.SetToolkit;
  */
 public class OOBNNodeGraphicalWrapper extends ProbabilisticNode {
 	
-	private int width = Node.getWidth();
-	private int height = Node.getHeight();
+	//by young
+	private int width = (int)Node.getDefaultSize().getX();
+	private int height = (int)Node.getDefaultSize().getY();
 	
 	
 	// this number is used to ajust instance node's size
@@ -43,9 +37,6 @@ public class OOBNNodeGraphicalWrapper extends ProbabilisticNode {
 	
 	// this number is used to ajust instance node's size
 	private static final int RAWS_NUM = 3;
-	
-	// the element which is responsible to draw this node
-	private DrawElement nodeDrawer = null;
 	
 	// the OOBN node that this graphic wraps
 	private IOOBNNode wrappedNode = null;
@@ -95,7 +86,6 @@ public class OOBNNodeGraphicalWrapper extends ProbabilisticNode {
 	 */
 	public static OOBNNodeGraphicalWrapper newInstance(IOOBNNode wrappedNode) {
 		OOBNNodeGraphicalWrapper ret =  new OOBNNodeGraphicalWrapper(wrappedNode);
-		ret.initDrawer();
 		ret.setOutputColor(ret.getDescriptionColor());
 		
 		ret.setInnerNodes(new HashSet<OOBNNodeGraphicalWrapper>());
@@ -106,72 +96,49 @@ public class OOBNNodeGraphicalWrapper extends ProbabilisticNode {
 		
 		
 		// if node type is instance node, then we must fill its inner nodes (external input/output nodes)
-		ret.setUpInnerNodesGraphically();	// this should fill the inner node set as well
+	 	ret.setUpInnerNodesGraphically();	// this should fill the inner node set as well
 		
 		return ret;
 	}
-	
-	/**
-	 * Sets up the drawer responsible to draw ordinal OOBN nodes (nodes which are not instance nodes)
-	 */
-	protected void initDrawer() {
-		this.nodeDrawer = new DrawEllipse(position, size);
 		
+	public void setInstanceNodePositionAndSize(int x, int y)
+	{
+		if ((this.getWrappedNode().getType() & IOOBNNode.TYPE_INSTANCE) == 0) {
+			// we should not set up a node as an instance node if it is not so
+			return;
+		}
 		
-		// initialize basic drawer
-		drawElement.setSelectionColor(this.nodeDrawer.getSelectionColor());
-		Color transparent = new Color(255,255,255,0); // transparent color
-		drawElement.setOutlineColor(transparent);
-		drawElement.setFillColor(transparent);
+		// calculate size, proportional of number of nodes
+		int horizontalNodeNumber = Math.max(this.getWrappedNode().getParentClass().getInputNodes().size()
+									      , this.getWrappedNode().getParentClass().getOutputNodes().size());
 		
-		// initialize node outline colors
-		this.nodeDrawer.setOutlineColor(Color.BLACK);
-		this.nodeDrawer.setFillColor(this.getOutputColor());
-		this.nodeDrawer.setSelectionColor(Color.RED);
-		
-        drawElement.add(this.nodeDrawer);
-	}
-
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.bn.ProbabilisticNode#paint(java.awt.Graphics2D)
-	 */
-	@Override
-	public void paint(Graphics2D graphics) {
-		
-		if (!this.isImmutableNode()) {
-			switch (this.getWrappedNode().getType()) {
-			case IOOBNNode.TYPE_INPUT:
-				this.getNodeDrawer().setFillColor(this.getInputColor());
-				break;
-			case IOOBNNode.TYPE_PRIVATE:
-				this.getNodeDrawer().setFillColor(this.getPrivateColor());
-				break;
-			case  IOOBNNode.TYPE_INSTANCE:
-				this.setUpInstanceDrawer();
-				this.setImmutableNode(true);
-				break;
-			case  IOOBNNode.TYPE_INSTANCE_INPUT:
-				this.getNodeDrawer().setFillColor(this.getInstanceInputColor());
-				break;
-			case  IOOBNNode.TYPE_INSTANCE_OUTPUT:
-				this.getNodeDrawer().setFillColor(this.getInstanceOutputColor());
-				break;
-			default:
-				this.getNodeDrawer().setFillColor(this.getOutputColor());
-				break;
-			}
+		// do not allow the horizontal size to be zero
+		if (horizontalNodeNumber <= 0) {
+			horizontalNodeNumber = 1;
 		}
 		
 		
-		// the below is a hack to overdraw a red line above the superclass' node
-		this.getNodeDrawer().setSelected(this.isSelected());
+		Point2D.Double size = new Point2D.Double((int)Node.getDefaultSize().getX() * horizontalNodeNumber * this.INSTANCE_SIZE_MULTIPLIER
+											   , (int)Node.getDefaultSize().getY() * RAWS_NUM * this.INSTANCE_SIZE_MULTIPLIER);
 		
-		// since nodeDrawer is inside the super class' drawer, we can repass it to superclass to paint
-		super.paint(graphics);
+		//by young
+		this.setPosition(x-(int)size.getX()/2+(int)Node.getDefaultSize().getX()/2, y-(int)size.getY()/2);
+ 		this.setSize(size.getX(), size.getY());
+ 		 		
+ 		System.out.println("setInstanceNodePositionAndSize " + getPosition().x + " " + getPosition().y );
+ 		
+		// if node type is instance node, then we must fill its inner nodes (external input/output nodes)
+		this.setUpInnerNodesGraphically();	// this should fill the inner node set as well
 		
-		
-		
+		try {
+			this.setSizeVariable(size.getX(), size.getY());
+			this.setWidth((int)size.getX());
+			this.setHeight((int)size.getY());
+		} catch (Exception e) {
+			Debug.println(this.getClass(), "Could not set width and height", e);
+		}	
 	}
+	
 	
 	/**
 	 * Initializes the drawer which draws a instance node
@@ -192,15 +159,14 @@ public class OOBNNodeGraphicalWrapper extends ProbabilisticNode {
 			horizontalNodeNumber = 1;
 		}
 		
-		Point2D.Double size = new Point2D.Double(Node.getSize().getX() * horizontalNodeNumber * this.INSTANCE_SIZE_MULTIPLIER
-											   , Node.getSize().getY() * RAWS_NUM * this.INSTANCE_SIZE_MULTIPLIER);
 		
+		Point2D.Double size = new Point2D.Double((int)Node.getDefaultSize().getX() * horizontalNodeNumber * this.INSTANCE_SIZE_MULTIPLIER
+											   , (int)Node.getDefaultSize().getY() * RAWS_NUM * this.INSTANCE_SIZE_MULTIPLIER);
 		
-		this.setNodeDrawer(new DrawRectangle(this.getPosition(), size));
-		
-		this.getNodeDrawer().setFillColor(this.getInstanceColor());
-		this.getNodeDrawer().setOutlineColor(Color.black);
-		
+ 
+		//by young 
+ 		this.setSize(size.getX(), size.getY());
+ 		
 		try {
 			this.setSizeVariable(size.getX(), size.getY());
 			this.setWidth((int)size.getX());
@@ -224,22 +190,6 @@ public class OOBNNodeGraphicalWrapper extends ProbabilisticNode {
 	 */
 	public void setWrappedNode(IOOBNNode wrappedNode) {
 		this.wrappedNode = wrappedNode;
-	}
-
-	/**
-	 * @return the nodeDrawer
-	 */
-	public DrawElement getNodeDrawer() {
-		return nodeDrawer;
-	}
-
-	/**
-	 * @param nodeDrawer the nodeDrawer to set
-	 */
-	public void setNodeDrawer(DrawElement nodeDrawer) {
-		this.drawElement.remove(this.getNodeDrawer());
-		this.nodeDrawer = nodeDrawer;
-		this.drawElement.add(this.nodeDrawer);
 	}
 
 	/**
@@ -490,6 +440,9 @@ public class OOBNNodeGraphicalWrapper extends ProbabilisticNode {
 			return;
 		}
 		
+		//by young
+		setUpInstanceDrawer();
+		
 		// assert that this node's description is not the default description (like C1, C2...)
 		this.setDescription(this.getName());
 		
@@ -499,10 +452,12 @@ public class OOBNNodeGraphicalWrapper extends ProbabilisticNode {
 		}
 		
 		// input nodes should be inserted slightly above the instance node's center
-		double inputNodeY = this.getPosition().getY() - (Node.getSize().getY());
+		double inputNodeY = (int)Node.getDefaultSize().getY();
+		//double inputNodeY = this.getPosition().getY() - (int)Node.getDefaultSize().getY();
 		
 		// output nodes should be inserted slightly below the instance node's center
-		double outputNodeY = this.getPosition().getY() + (Node.getSize().getY() );
+		double outputNodeY = 3*((int)Node.getDefaultSize().getY() );
+		//double outputNodeY = this.getPosition().getY() + ((int)Node.getDefaultSize().getY() );
 		
 		// obtain input nodes
 		Set<IOOBNNode> inputNodes = null;
@@ -514,7 +469,8 @@ public class OOBNNodeGraphicalWrapper extends ProbabilisticNode {
 		
 		// adjust x position of starting node
 		// if number of nodes is even, slide a half of node's size to right and slide all to left
-		double nodeX = this.getPosition().getX() + ((inputNodes.size() % 2 == 0)?(Node.getWidth()* OOBNNodeGraphicalWrapper.INSTANCE_SIZE_MULTIPLIER/2):0) - ((inputNodes.size() / 2) * Node.getWidth() * OOBNNodeGraphicalWrapper.INSTANCE_SIZE_MULTIPLIER);
+		double nodeX = (int)this.getWidth()/2 - (int)Node.getDefaultSize().getX()/2 + ((inputNodes.size() % 2 == 0)?((int)Node.getDefaultSize().getX()* OOBNNodeGraphicalWrapper.INSTANCE_SIZE_MULTIPLIER/2):0) - ((inputNodes.size() / 2) * (int)Node.getDefaultSize().getX() * OOBNNodeGraphicalWrapper.INSTANCE_SIZE_MULTIPLIER);
+		//double nodeX = this.getPosition().getX() + ((inputNodes.size() % 2 == 0)?((int)Node.getDefaultSize().getX()* OOBNNodeGraphicalWrapper.INSTANCE_SIZE_MULTIPLIER/2):0) - ((inputNodes.size() / 2) * (int)Node.getDefaultSize().getX() * OOBNNodeGraphicalWrapper.INSTANCE_SIZE_MULTIPLIER);
 		
 		try {
 			// add instance's input inner nodes to set
@@ -526,7 +482,10 @@ public class OOBNNodeGraphicalWrapper extends ProbabilisticNode {
 								nodeX, 
 								inputNodeY )
 				);
-				nodeX += Node.getWidth() * OOBNNodeGraphicalWrapper.INSTANCE_SIZE_MULTIPLIER;
+				
+				System.out.println("RESIZED " + input.getName() + " "+ nodeX + " " + inputNodeY);
+				
+				nodeX += (int)Node.getDefaultSize().getX() * OOBNNodeGraphicalWrapper.INSTANCE_SIZE_MULTIPLIER;				
 			}
 		} catch (Exception e) {
 			Debug.println(this.getClass(), "Error filling Input nodes", e);
@@ -542,7 +501,8 @@ public class OOBNNodeGraphicalWrapper extends ProbabilisticNode {
 		
 		// adjust x position of starting node
 		// if number of nodes is even, slide a half of node's size to right and slide all to left
-		nodeX = this.getPosition().getX() + ((outputNodes.size() % 2 == 0)?(Node.getWidth()* OOBNNodeGraphicalWrapper.INSTANCE_SIZE_MULTIPLIER/2):0) - ((outputNodes.size() / 2) * Node.getWidth() * OOBNNodeGraphicalWrapper.INSTANCE_SIZE_MULTIPLIER);
+		nodeX = (int)this.getWidth()/2 - (int)Node.getDefaultSize().getX()/2 + ((outputNodes.size() % 2 == 0)?((int)Node.getDefaultSize().getX()* OOBNNodeGraphicalWrapper.INSTANCE_SIZE_MULTIPLIER/2):0) - ((outputNodes.size() / 2) * (int)Node.getDefaultSize().getX() * OOBNNodeGraphicalWrapper.INSTANCE_SIZE_MULTIPLIER);
+		//nodeX = this.getPosition().getX() + ((outputNodes.size() % 2 == 0)?((int)Node.getDefaultSize().getX()* OOBNNodeGraphicalWrapper.INSTANCE_SIZE_MULTIPLIER/2):0) - ((outputNodes.size() / 2) * (int)Node.getDefaultSize().getX() * OOBNNodeGraphicalWrapper.INSTANCE_SIZE_MULTIPLIER);
 		
 		// add instance's output inner nodes to set
 		for (IOOBNNode output : outputNodes) {
@@ -552,11 +512,17 @@ public class OOBNNodeGraphicalWrapper extends ProbabilisticNode {
 					output.TYPE_INSTANCE_OUTPUT, 
 					nodeX, 
 					outputNodeY)
+					
+					
 			);
-			nodeX += Node.getWidth() * OOBNNodeGraphicalWrapper.INSTANCE_SIZE_MULTIPLIER;
+			
+			System.out.println("RESIZED " + output.getName() + " "+ nodeX + " " + outputNodeY);
+			
+			nodeX += (int)Node.getDefaultSize().getX()* OOBNNodeGraphicalWrapper.INSTANCE_SIZE_MULTIPLIER;
 		}
 		
 		Debug.println(this.getClass(), "Instance node " + this.getName() + "'s inner nodes are fully populated now.");
+		 
 	}
 	
 	
@@ -629,8 +595,11 @@ public class OOBNNodeGraphicalWrapper extends ProbabilisticNode {
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.Node#setPosition(double, double)
 	 */
+	//by young
+	/*
 	@Override
 	public void setPosition(double x, double y) {
+		
 		
 		// overwriting this method in order to move inner nodes when necessary
 		
@@ -652,8 +621,11 @@ public class OOBNNodeGraphicalWrapper extends ProbabilisticNode {
 				throw e;
 			}
 		}
+		
+	
 	}
 
+*/
 	// the graphical wrapper has no need to overwrite addChild
 //	/* (non-Javadoc)
 //	 * @see unbbayes.prs.Node#addChild(unbbayes.prs.Node)

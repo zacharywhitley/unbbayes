@@ -38,6 +38,7 @@ import javax.swing.JToolBar;
 import javax.swing.JViewport;
 
 import unbbayes.controller.IconController;
+import unbbayes.draw.UCanvas;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -58,7 +59,10 @@ public class LearningPNEditionDialog extends JDialog {
 	
     private JToolBar jtb;
     private JViewport view;
-    private LearningPNEditionPane rede;
+    
+    //by young
+    //private LearningPNEditionPane rede;
+    private GraphPane rede;
     private JButton insereArco;
     private JButton reaprende;
     private JScrollPane jspView;
@@ -81,7 +85,11 @@ public class LearningPNEditionDialog extends JDialog {
         reaprende  = new JButton(iconController.getCompileIcon());
         view       = new JViewport();
         jtb        = new JToolBar();
+                
+     
         rede       = new LearningPNEditionPane(this, net);
+        
+        
         jspView    = new JScrollPane(view);
 
         view.setView(rede);
@@ -123,7 +131,9 @@ public class LearningPNEditionDialog extends JDialog {
 
         insereArco.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                rede.setbArco(true);
+            //by young
+           //     rede.setbArco(true);
+            	rede.setState(UCanvas.STATE_CONNECT_COMP);
             }
         });
 

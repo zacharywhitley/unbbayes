@@ -67,11 +67,17 @@ public class EvidenceTree extends JTree {
     private final NetworkWindow netWindow; 
     
 	private ResourceBundle resource = ResourceController.RS_GUI; 
-    
+	
+	//by young
+	public String strMode;
+	public static final String MODE_USE_NAME	= "UseName";
+	public static final String MODE_USE_DESC	= "UseDescription";
+		
 	public EvidenceTree(SingleEntityNetwork sen, final NetworkWindow netWindow) {
 		
 		this.net = sen;
 		this.netWindow = netWindow; 
+		strMode = MODE_USE_NAME;
 		
 		nf = NumberFormat.getInstance(Locale.US);
 		nf.setMaximumFractionDigits(2);
@@ -99,6 +105,9 @@ public class EvidenceTree extends JTree {
 						e.getClickCount() == 2
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 						treeDoubleClick(node);
+						//by young
+						Node newNode = getNodeMap(node);
+						netWindow.getGraphPane().compiled(newNode);
 					}
 				} else {
 					if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
@@ -107,8 +116,9 @@ public class EvidenceTree extends JTree {
 					if (e.getClickCount() == 1) {
 						Node newNode = getNodeMap(node);
 						if (newNode != null) {
-							netWindow.getGraphPane().selectObject(newNode);
-							netWindow.getGraphPane().update();
+							netWindow.getGraphPane().selectNode(newNode);
+							//by young
+							netWindow.getGraphPane().compiled(newNode);
 						}
 					} else if (e.getClickCount() == 2) {
 						DefaultMutableTreeNode root = (DefaultMutableTreeNode)getModel().getRoot();
@@ -127,6 +137,7 @@ public class EvidenceTree extends JTree {
 			}
 		});
 		super.treeDidChange();
+
 	}
 
 	private class EvidenceTreeCellRenderer extends DefaultTreeCellRenderer {
@@ -191,6 +202,19 @@ public class EvidenceTree extends JTree {
 			}
 			return this;
 		}
+	}
+	
+	//by young
+	public void setMode( String str )
+	{
+		strMode = str;
+		updateTree();
+	}
+	
+	//by young
+	public String getMode()
+	{
+		return strMode;
 	}
 
 	/**
@@ -274,21 +298,46 @@ public class EvidenceTree extends JTree {
 					.copyTree()
 					.getModel()
 					.getRoot());
+	
 		this.setModel(model);
+		
 		root = (DefaultMutableTreeNode) getModel().getRoot();
+		
+		//by young
+		root.removeAllChildren();
+		
 		ArrayList<Node> nodes = net.getNodesCopy();
 		int size = nodes.size();
 		for (int i = 0; i < size; i++) {
 			Node node = (Node) nodes.get(i);
 			TreeVariable treeVariable = (TreeVariable) node;
-			DefaultMutableTreeNode treeNode =
-				findUserObject(node.getDescription(), root);
-			if (treeNode == null) {
-				treeNode = new DefaultMutableTreeNode(node.getDescription());
+			DefaultMutableTreeNode treeNode = null;
+			
+			//by young
+			if( getMode() == MODE_USE_NAME )
+				treeNode = findUserObject(node.getName(), root);
+			else
+			if( getMode() == MODE_USE_DESC )
+				treeNode = findUserObject(node.getDescription(), root);
+			
+			if (treeNode == null) 
+			{
+				if( getMode() == MODE_USE_NAME )
+					treeNode = new DefaultMutableTreeNode(node.getName());
+				else
+				if( getMode() == MODE_USE_DESC )
+					treeNode = new DefaultMutableTreeNode(node.getDescription());
+				
+			 
 				root.add(treeNode);
 			}
+			
 			objectsMap.put(treeNode, node);
+			
 			int statesSize = node.getStatesSize();
+			
+			System.out.println("new tree node "+ treeNode.toString() );
+			
 			for (int j = 0; j < statesSize; j++) {
 				String label;
 				if (treeVariable.getType() == Node.PROBABILISTIC_NODE_TYPE) {
@@ -302,13 +351,60 @@ public class EvidenceTree extends JTree {
 							+ ": "
 							+ nf.format(treeVariable.getMarginalAt(j));
 				}
+				
 				treeNode.add(new DefaultMutableTreeNode(label));
+				
+				System.out.println("new tree node sub "+ label );
 			}
+			 
 		}
 		restoreTree();
 		((DefaultTreeModel) getModel()).reload(root);
 		restoreTree();
+		
+		
+		//by young
+		netWindow.getGraphPane().compiled(null);
 	}
+	
+	//by young, modified
+	public void selectTreeItemByNode(Node n) 
+	{
+		DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel().getRoot();
+		DefaultMutableTreeNode treeNode = null;
+		
+		if( getMode() == MODE_USE_NAME )
+			treeNode = findUserObject(n.getName(), root);
+		else
+		if( getMode() == MODE_USE_DESC )
+			treeNode = findUserObject(n.getDescription(), root);
+		
+		if( treeNode != null )
+		{
+			TreePath tp = new TreePath(treeNode.getPath());
+	        expandPath(tp);
+			scrollPathToVisible(tp);
+			setSelectionPath(tp);
+		}
+	}
+	
+	//by young 
+	public void selectTreeItemByState(Node node, String stateName) 
+	{
+		DefaultMutableTreeNode parent = findUserObject(node);
+		for (int i = 0; i < parent.getChildCount(); i++) 
+		{
+			DefaultMutableTreeNode auxNode = (DefaultMutableTreeNode) parent.getChildAt(i);
+			
+			int n = parent.getIndex(auxNode);
+			if( node.getStateAt(n) == stateName )
+			{
+				treeDoubleClick( auxNode );
+				return;
+			}			
+		}
+	}
+	
 
 	/**
 	 * Modifica o formato de numeros
@@ -319,6 +415,24 @@ public class EvidenceTree extends JTree {
 		nf = NumberFormat.getInstance(local);
 	}
 
+	private DefaultMutableTreeNode findUserObject(Node node)
+	{
+		String name = null;
+		if( getMode() == MODE_USE_NAME )
+			name = node.getName();
+		else
+		if( getMode() == MODE_USE_DESC )
+			name = node.getDescription();
+		
+		return findUserObject( name );
+	}
+	
+	private DefaultMutableTreeNode findUserObject(String treeNode)
+	{
+		DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel().getRoot();
+		return findUserObject( treeNode, root );
+	}
+	
 	private DefaultMutableTreeNode findUserObject(
 		String treeNode,
 		DefaultMutableTreeNode root) {
@@ -363,6 +477,9 @@ public class EvidenceTree extends JTree {
 				}
 				node.addFinding(parent.getIndex(treeNode));
 				((DefaultTreeModel) getModel()).reload(parent);
+				
+				//by young
+				netWindow.getGraphPane().selectNode(node);
 			}
 		}
 	}
