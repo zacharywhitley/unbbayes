@@ -1,14 +1,29 @@
- 
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2009 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */ 
 package unbbayes.draw;
 
 import java.awt.Color;
-import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.GeneralPath;
-import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 
 import unbbayes.prs.Node;
@@ -16,6 +31,11 @@ import unbbayes.prs.Node;
 
 public class UShapeResidentNode extends UShape  
 {       
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3577145414171234382L;
+	
 	protected RoundRectangle2D roundRect;
 	
 	public UShapeResidentNode(UCanvas c, Node pNode, int x, int y, int w, int h)

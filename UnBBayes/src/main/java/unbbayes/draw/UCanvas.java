@@ -1,16 +1,31 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2009 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.draw;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
@@ -18,27 +33,11 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowFocusListener;
 import java.awt.geom.Line2D;
-import java.util.Enumeration;
-import java.util.Vector;
 
-import javax.swing.BorderFactory;
 import javax.swing.JLayeredPane;
-import javax.swing.JOptionPane;
-import javax.swing.JTextField;
-import javax.swing.border.Border;
 
-import unbbayes.controller.IconController;
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.ITabledVariable;
-import unbbayes.prs.bn.PotentialTable;
-import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.id.DecisionNode;
-import unbbayes.prs.id.UtilityNode;
-import unbbayes.prs.mebn.exception.MEBNConstructionException;
-import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
  
  
  
@@ -46,6 +45,10 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener, MouseL
 
 {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3124079297866124183L;
 	protected int layerID = 0;
 	UShape rootShape; 
 	

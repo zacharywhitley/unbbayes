@@ -1,45 +1,54 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2009 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.draw;
  
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.geom.RoundRectangle2D;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.ResourceBundle;
 
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-import javax.swing.tree.DefaultMutableTreeNode;
-  
+
 import unbbayes.gui.oobn.OOBNGraphPane;
 import unbbayes.gui.oobn.node.OOBNNodeGraphicalWrapper;
-import unbbayes.gui.table.GUIPotentialTable;
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.ITabledVariable;
-import unbbayes.prs.bn.PotentialTable;
-import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.oobn.IOOBNNode;
 import unbbayes.util.Debug;
-import unbbayes.controller.IconController;
-import unbbayes.controller.NetworkController;
 
 public class UShapeOOBNNode extends UShape  
 {       
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3394350011502329353L;
+
 	/** Load resource file from this package */
 	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.oobn.resources.OOBNGuiResource");
 	

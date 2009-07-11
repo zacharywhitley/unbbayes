@@ -1,36 +1,47 @@
- 
-
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2009 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */ 
 package unbbayes.draw;
 
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.text.NumberFormat;
-import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Locale;
-import java.util.Map;
-
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.TreeVariable;
-import unbbayes.prs.id.DecisionNode;
 
 public class UShapeState extends UShape implements MouseMotionListener, MouseListener, Cloneable
 {       
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6856101647287130364L;
+	
 	protected Rectangle2D rect;
 	protected Rectangle   rectTextArea;
 	protected float marginal; 
