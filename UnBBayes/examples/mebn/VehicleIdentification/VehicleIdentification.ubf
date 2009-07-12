@@ -1,0 +1,266 @@
+% UBF file header
+Version=0.03
+PrOwl="VehicleIdentification.owl"
+
+% UBF MTheory declaration
+MTheory=VehiclesIdentification_MTheory
+NextMFrag=6
+NextResident=11
+NextInput=8
+NextContext=5
+NextEntity=1
+
+% UBF MFrags and Nodes declaration
+
+% MFrag
+MFrag=Speed_MFrag
+NextOrdinaryVar=7
+
+% Resident nodes
+
+
+Node=Speed
+Type=DomainResidentNode
+Position=230.0,257.0
+Size=125,60
+Color=-66914
+
+Node=MTI
+Type=DomainResidentNode
+Position=244.0,365.0
+Size=96,60
+Color=-66914
+
+% Input nodes
+
+
+Node=IX4
+Type=GenerativeInputNode
+Position=133.0,163.0
+Size=148,62
+Color=-2302756
+
+Node=IX5
+Type=GenerativeInputNode
+Position=300.0,167.0
+Size=144,60
+Color=-2302756
+
+Node=IX7
+Type=GenerativeInputNode
+Position=45.0,257.0
+Size=146,60
+Color=-2302756
+
+% Ordinary Variables
+
+
+Node=rgn
+Type=OrdinalVar
+Position=215.0,23.0
+Size=171,60
+Color=-5178237
+
+Node=t
+Type=OrdinalVar
+Position=115.0,91.0
+Size=171,60
+Color=-5178237
+
+Node=tPrev
+Type=OrdinalVar
+Position=316.0,92.0
+Size=196,60
+Color=-5178237
+
+Node=rpt
+Type=OrdinalVar
+Position=408.0,23.0
+Size=169,60
+Color=-5178237
+
+Node=obj
+Type=OrdinalVar
+Position=43.0,21.0
+Size=170,60
+Color=-5178237
+
+% MFrag
+MFrag=ImageTypeReport_MFrag
+NextOrdinaryVar=4
+
+% Resident nodes
+
+
+Node=ImageTypeReport
+Type=DomainResidentNode
+Position=216.0,340.0
+Size=178,60
+Color=-66914
+
+% Input nodes
+
+
+Node=IX2
+Type=GenerativeInputNode
+Position=130.0,232.0
+Size=144,60
+Color=-2302756
+
+Node=IX3
+Type=GenerativeInputNode
+Position=337.0,232.0
+Size=124,60
+Color=-2302756
+
+% Context nodes
+
+
+Node=CX4
+Type=ContextNode
+Position=327.0,127.0
+Size=100,60
+Color=-5178237
+
+Node=CX3
+Type=ContextNode
+Position=156.0,127.0
+Size=100,60
+Color=-5178237
+
+% Ordinary Variables
+
+
+Node=rpt
+Type=OrdinalVar
+Position=392.0,34.0
+Size=178,60
+Color=-5178237
+
+Node=rgn
+Type=OrdinalVar
+Position=205.0,34.0
+Size=180,60
+Color=-5178237
+
+Node=obj
+Type=OrdinalVar
+Position=22.0,34.0
+Size=180,60
+Color=-5178237
+
+% MFrag
+MFrag=Object_MFrag
+NextOrdinaryVar=3
+
+% Resident nodes
+
+
+Node=ObjectType
+Type=DomainResidentNode
+Position=195.0,303.0
+Size=144,60
+Color=-66914
+
+% Input nodes
+
+
+Node=IX1
+Type=GenerativeInputNode
+Position=192.0,188.0
+Size=148,60
+Color=-2302756
+
+% Context nodes
+
+
+Node=CX2
+Type=ContextNode
+Position=206.0,105.0
+Size=100,60
+Color=-5178237
+
+% Ordinary Variables
+
+
+Node=rgn
+Type=OrdinalVar
+Position=275.0,37.0
+Size=180,60
+Color=-5178237
+
+Node=obj
+Type=OrdinalVar
+Position=53.0,36.0
+Size=180,60
+Color=-5178237
+
+% MFrag
+MFrag=GISReport_MFrag
+NextOrdinaryVar=3
+
+% Resident nodes
+
+
+Node=TerrainType
+Type=DomainResidentNode
+Position=193.0,195.0
+Size=148,60
+Color=-66914
+
+Node=GISReport
+Type=DomainResidentNode
+Position=200.0,311.0
+Size=132,60
+Color=-66914
+
+% Context nodes
+
+
+Node=CX1
+Type=ContextNode
+Position=202.0,110.0
+Size=100,60
+Color=-5178237
+
+% Ordinary Variables
+
+
+Node=rpt
+Type=OrdinalVar
+Position=268.0,49.0
+Size=178,60
+Color=-5178237
+
+Node=rgn
+Type=OrdinalVar
+Position=77.0,50.0
+Size=171,60
+Color=-5178237
+
+% MFrag
+MFrag=Weather_MFrag
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=Weather
+Type=DomainResidentNode
+Position=150.0,148.0
+Size=132,81
+Color=-66914
+
+% Ordinary Variables
+
+
+Node=rgn
+Type=OrdinalVar
+Position=126.0,51.0
+Size=177,81
+Color=-5178237
+
+% Object Entity Instances
+
+ObjEntity=TimeStep
+Instances=
