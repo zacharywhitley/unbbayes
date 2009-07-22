@@ -18,9 +18,10 @@ import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.MFragContextFailException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
+import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeyAlgorithmParameters;
 
 /**
- * 
+ * Build the Grand BN. 
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  */
@@ -33,6 +34,9 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	private SSBN ssbn; 
 	
 	private boolean internalDebug = false; 
+	
+	private long maxNumberNodes = 10000000;  
+	private long numberNodes = 0; 
 	
 	private BuilderStructureImpl(){
 		
@@ -50,12 +54,13 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	
 	/**
 	 * 
-	 * 
-	 * Pre-requisites
+	 * <p>
+	 * <b>Pre-requisites</b> <br>
 	 *     - All nodes of the SSBN are marked not finished. 
-	 *     
-	 * Pos-requisites
+	 * <p>    
+	 * <b>Pos-requisites</b> <br>
 	 *     - All nodes of the SSBN are marked finished.     
+	 *     
 	 * @throws ImplementationRestrictionException 
 	 * @throws SSBNNodeGeneralException 
 	 */
@@ -67,8 +72,12 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		this.ssbn = _ssbn; 
 		this.kb = ssbn.getKnowledgeBase(); 
 		
+		this.maxNumberNodes = Long.valueOf(
+				ssbn.getParameters().getParameterValue(LaskeyAlgorithmParameters.NUMBER_NODES_LIMIT)); 
+		
 		for(SimpleSSBNNode node: ssbn.getSimpleSsbnNodeList()){
 			notFinishedNodeList.add(node);
+			numberNodes++; 
 		}		
 		
 		//Evaluate all the not finished nodes
@@ -338,10 +347,11 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	 * @param residentNodeParent      Parent to be evaluated
 	 * 
 	 * @throws ImplementationRestrictionException 
+	 * @throws SSBNNodeGeneralException 
 	 */
 	private List<SimpleSSBNNode> createParents(SimpleSSBNNode node,
 			OrdinaryVariable[] ovFilledArray, LiteralEntityInstance[] entityFilledArray,
-			ResidentNode residentNodeParent) throws ImplementationRestrictionException {
+			ResidentNode residentNodeParent) throws ImplementationRestrictionException, SSBNNodeGeneralException {
 		
 		//fix a unknown Bug (mistic)... 
 		if(residentNodeParent.equals(node.getResidentNode())){
@@ -362,10 +372,11 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	 * @param residentNodeParent      Parent to be evaluated
 	 * 
 	 * @throws ImplementationRestrictionException 
+	 * @throws SSBNNodeGeneralException 
 	 */
 	private  List<SimpleSSBNNode> createParents(SimpleSSBNNode node,
 			OrdinaryVariable[] ovFilledArray, LiteralEntityInstance[] entityFilledArray,
-			InputNode inputNodeParent) throws ImplementationRestrictionException {
+			InputNode inputNodeParent) throws ImplementationRestrictionException, SSBNNodeGeneralException {
 
 		
 		JacketNode nodeParent = new JacketNode(inputNodeParent); 
@@ -382,10 +393,11 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	 * @param residentNodeParent      Parent to be evaluated
 	 * 
 	 * @throws ImplementationRestrictionException 
+	 * @throws SSBNNodeGeneralException 
 	 */	
 	private  List<SimpleSSBNNode> createParents(SimpleSSBNNode node,
 			OrdinaryVariable[] ovFilledArray, LiteralEntityInstance[] entityFilledArray,
-			JacketNode nodeParent) throws ImplementationRestrictionException {
+			JacketNode nodeParent) throws ImplementationRestrictionException, SSBNNodeGeneralException {
 		
 //		if(internalDebug){
 //			System.out.println("[In] CreateParents");
@@ -507,6 +519,11 @@ public class BuilderStructureImpl implements IBuilderStructure{
 						correspondentOV, 
 						LiteralEntityInstance.getInstance(possibleCombination[index], 
 								ovFaultForNewNodeList.get(index).getValueType())); 
+			}
+			
+			if(numberNodes > maxNumberNodes){
+				//TODO define exception
+				throw new SSBNNodeGeneralException("Max of nodes created: " + numberNodes); 
 			}
 			
 			newNode = addNodeToMFragInstance(node, newNode); 
@@ -661,6 +678,10 @@ public class BuilderStructureImpl implements IBuilderStructure{
 				}
 			}
 
+			if(numberNodes > maxNumberNodes){
+				//TODO define exception
+				throw new SSBNNodeGeneralException("Max of nodes created: " + numberNodes); 
+			}
 			newNode = addNodeToMFragInstance(node, newNode);
 
 			return newNode; 
@@ -683,7 +704,13 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	private SimpleSSBNNode addNodeToMFragInstance(SimpleSSBNNode child,
 			SimpleSSBNNode parent) {
 		
-		parent = ssbn.addSSBNNodeIfItDontAdded(parent);
+		SimpleSSBNNode testNode = parent; 
+		
+		parent = ssbn.addSSBNNodeIfItDontAdded(testNode);
+		
+		if(parent != testNode){
+			numberNodes++; 
+		}
 		
 		try {
 			child.addParentNode(parent);

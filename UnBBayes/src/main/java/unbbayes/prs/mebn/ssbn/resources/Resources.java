@@ -69,7 +69,8 @@ public class Resources extends ListResourceBundle {
 		{"TwoContextFathersError", "One node couldn't have two context nodes fathers!"}, 
 		{"OnlyOneFreeVariableRestriction", "The search context node can not have more than one free variable!"}, 
 		{"NotNodeInSSBN", "Not have nodes at the SSBN. "},
-		
+		{"MaxNodeLimit", "Number max of nodes created in ssbn generation"},
+				
 		//ImplementationRestrictionException
 		{"OnlyOneOVInstanceForOV", "Should have only one instance for each ordinary variable."},
 		{"MoreThanOneContextNodeSearh","More then one context node search found for the ord. variable. This implementation treat only the trival case of one node"}, 

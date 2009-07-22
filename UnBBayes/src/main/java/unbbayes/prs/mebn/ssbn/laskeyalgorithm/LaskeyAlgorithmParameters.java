@@ -58,7 +58,7 @@ public class LaskeyAlgorithmParameters extends Parameters{
 	public static final int NUMBER_NODES_LIMIT    = 0x0008; 
 	
 	public LaskeyAlgorithmParameters(){
-		addParameter(NUMBER_NODES_LIMIT, "1000");
+		addParameter(NUMBER_NODES_LIMIT, "100000");
 		
 		addParameter(DO_INITIALIZATION, "true"); 
 		addParameter(DO_BUILDER, "true"); 

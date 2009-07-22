@@ -54,9 +54,12 @@ public class SSBN {
 	
 	private List<MFragInstance> mFragInstanceList; 
 	
-	//informations about the creation of the SSBN
+	//Information about the creation of the SSBN
 	private ILogManager logManager;
 	private List<SSBNWarning> warningList; 
+	
+	//Parameters for the SSBN generation
+	private Parameters parameters; 
 	
 	private enum State{
 		INITIAL, 
@@ -194,6 +197,14 @@ public class SSBN {
 	
 	// GET AND SET'S METHODS
 	
+	public Parameters getParameters() {
+		return parameters;
+	}
+
+	public void setParameters(Parameters parameters) {
+		this.parameters = parameters;
+	}
+	
 	/**
 	 * Add one finding to the finding list. Dont't add this node to the list of 
 	 * nodes of the SSBN (use the method addSSBNNodeIfItDontAdded for this).
@@ -304,4 +315,5 @@ public class SSBN {
 		ret = this.getSimpleSsbnNodeList().removeAll(nodesToRemove) || ret;
 		return ret;
 	}
+
 }

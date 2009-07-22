@@ -69,6 +69,7 @@ public class Resources_pt extends ListResourceBundle {
 		{"TwoContextFathersError", "Um nó não pode ter dois nós de contexto pais!"}, 
 		{"OnlyOneFreeVariableRestriction", "O nó de contexto de busca pode ter apenas uma variavel livre!"},
 		{"NotNodeInSSBN", "Não há nós na SSBN"},
+		{"MaxNodeLimit", "Número máximo de nós criados na geração de SSBN"},
 				
 		//ImplementationRestrictionException
 		{"OnlyOneOVInstanceForOV", "Deve haver apenas uma instância para cada variável ordinária."},

@@ -67,12 +67,13 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		SSBN ssbn = null; 
 		
 		//Step 1: 
-		if(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION).equals("true")){
+		if(Boolean.valueOf(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION))){
 			ssbn = initialization(queryList, knowledgeBase); 
+			ssbn.setParameters(parameters); 
 		}
 		
 		//Step 2: 
-		if(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_BUILDER).equals("true")){
+		if(Boolean.valueOf(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_BUILDER))){
 			ssbn.getLogManager().appendSeparator(); 
 			ssbn.getLogManager().appendSpecialTitle("Part 2: Builder Structure Started"); 
 			buildStructure(ssbn); 
@@ -84,7 +85,7 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		}
 		
 		//Step 3: 
-		if(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_PRUNE).equals("true")){
+		if(Boolean.valueOf(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_PRUNE))){
 			ssbn.getLogManager().appendSeparator();
 			ssbn.getLogManager().appendSpecialTitle("Part 3: Prune Structure Started"); 
 			pruneStruture(ssbn); 
@@ -96,7 +97,7 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		}
 		
 		//Step 4: 
-		if(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION).equals("true")){
+		if(Boolean.valueOf(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION))){
 			ssbn.getLogManager().appendSeparator();
 			ssbn.getLogManager().appendSpecialTitle("Part 4: Generate CPT's started"); 
 			buildLocalDistribution(ssbn);
