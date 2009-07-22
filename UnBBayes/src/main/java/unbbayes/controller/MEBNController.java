@@ -1454,6 +1454,7 @@ public class MEBNController  {
 		if(cptEditionPane == null){
 			cptEditionPane = new CPTFrame(this, residentNode);
 			mapCpt.put(residentNode, cptEditionPane); 
+			cptEditionPane.setVisible(true); 
 		}else{
 			cptEditionPane.setVisible(true); 
 		}

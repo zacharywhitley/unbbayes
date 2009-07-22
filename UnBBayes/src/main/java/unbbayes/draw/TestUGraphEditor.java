@@ -22,21 +22,33 @@ package unbbayes.draw;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowStateListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JColorChooser;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 
+import unbbayes.controller.MEBNController;
+import unbbayes.gui.NetworkWindow;
+import unbbayes.gui.mebn.cpt.CPTFrame;
+import unbbayes.prs.Network;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.mebn.MFrag;
+import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.ResidentNode;
 
 public class TestUGraphEditor extends JFrame implements WindowStateListener
 {
@@ -115,9 +127,27 @@ public class TestUGraphEditor extends JFrame implements WindowStateListener
         {
         	public void actionPerformed(ActionEvent e) 
         	{
-        		m_Canvas.setFrame(110,110,220,220);
+        		 m_Canvas.setFrame(110,110,220,220);
             }
         });
+        
+        
+        btn = addButton(buttonPanel, "Create DLG");        
+        btn.addActionListener(new ActionListener() 
+        {
+        	public void actionPerformed(ActionEvent e) 
+        	{  
+        		MultiEntityBayesianNetwork MEBN = new MultiEntityBayesianNetwork("testMEBN");
+        		NetworkWindow nwindow = new NetworkWindow(MEBN);
+        		MEBNController mebnController_ = new MEBNController(MEBN, ((NetworkWindow)nwindow));
+        		MFrag mfrag = new MFrag("mfag", MEBN);
+        		ResidentNode residentNode_ = new ResidentNode("re", mfrag);
+        		
+        		CPTFrame cptEditionPane = new CPTFrame( mebnController_,  residentNode_);
+        		cptEditionPane.setVisible(true); 
+            }
+        });
+         
         
         btn = addButton(buttonPanel, "Create Ellipse");        
         btn.addActionListener(new ActionListener() 
@@ -165,6 +195,42 @@ public class TestUGraphEditor extends JFrame implements WindowStateListener
         }); 
 	} 
   
+	public void createColorChooser()
+	{
+ 		final JColorChooser colorChooser = new JColorChooser();
+   	    final JLabel previewLabel = new JLabel("Color", JLabel.CENTER);
+   	    previewLabel.setFont(new Font("Serif", Font.BOLD | Font.ITALIC, 48));
+   	    previewLabel.setSize(previewLabel.getPreferredSize());
+   	    previewLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 1, 0));
+   	    colorChooser.setPreviewPanel(previewLabel);
+
+   	    ActionListener okActionListener = new ActionListener() 
+   	    {
+   	    	public void actionPerformed(ActionEvent actionEvent) 
+   	      	{
+   	    		System.out.println("OK Button");
+   	    		System.out.println(colorChooser.getColor().toString()); 
+   	    		
+   	    	//	getCanvas().onShapeColorChanged( colorChooser.getColor() );
+   	        	repaint();
+   	      	}
+   	    };
+
+   	    ActionListener cancelActionListener = new ActionListener() 
+   	    {
+   	    	public void actionPerformed(ActionEvent actionEvent) 
+   	    	{
+   	    		System.out.println("Cancel Button");
+   	    	}
+   	    };
+
+   	    final JDialog dialog = JColorChooser.createDialog(null, "Change Button Background", true,
+   	        colorChooser, okActionListener, cancelActionListener);
+
+   	    dialog.setVisible(true);
+
+	}
+	
 	public JButton addButton(JPanel buttonPanel, String Name) 
   	{
 		JButton button = new JButton(Name);
