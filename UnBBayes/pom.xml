@@ -229,9 +229,9 @@
 						documented
 					-->
 					<schemas>
-						<!-- >value>src/main/xsd/XMLBIF_0_5.xsd</value -->
+						<!-- value>src/main/xsd/XMLBIF_0_6.xsd</value -->
 					</schemas>
-					<packageName>unbbayes.io.xmlbif.version5.xmlclasses
+					<packageName>unbbayes.io.xmlbif.version6.xmlclasses
 					</packageName>
 				</configuration>
 			</plugin>

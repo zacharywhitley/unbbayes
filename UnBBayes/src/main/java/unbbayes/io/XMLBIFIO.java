@@ -63,16 +63,22 @@ public class XMLBIFIO implements BaseIO{
 		int index = input.getName().lastIndexOf('.');
 		String id = input.getName().substring(0, index);
 		ProbabilisticNetwork pn = new ProbabilisticNetwork(id);	
-		try {
-			unbbayes.io.xmlbif.version5.XMLBIFIO.loadXML(input, pn);
+		try { 
+			unbbayes.io.xmlbif.version6.XMLBIFIO.loadXML(input, pn);
 		} catch (Exception e) {
-			// Try older version.
 			try {
+				// Try version 0.5.
 				e.printStackTrace();
-				unbbayes.io.xmlbif.version4.XMLBIFIO.loadXML(input, pn);
+				unbbayes.io.xmlbif.version5.XMLBIFIO.loadXML(input, pn);
 			} catch (Exception e2) {
-				e2.printStackTrace();
-				throw new LoadException(resource.getString("UnsupportedError"));
+				// Try version 0.4.
+				try {
+					e2.printStackTrace();
+					unbbayes.io.xmlbif.version4.XMLBIFIO.loadXML(input, pn);
+				} catch (Exception e3) {
+					e3.printStackTrace();
+					throw new LoadException(resource.getString("UnsupportedError"));
+				}
 			}
 		}
 		return pn; 
@@ -101,13 +107,21 @@ public class XMLBIFIO implements BaseIO{
 				if (fileName.substring(index+1).equalsIgnoreCase("xml")) {
 					SubNetwork net = new SubNetwork(fileName.substring(0, index));
 					try {
-						unbbayes.io.xmlbif.version5.XMLBIFIO.loadXML(files[i], net);
+						unbbayes.io.xmlbif.version6.XMLBIFIO.loadXML(files[i], net);
 					} catch (Exception e) {
-						// Try older version.
+						// Try version 0.5.
 						try {
-							unbbayes.io.xmlbif.version4.XMLBIFIO.loadXML(files[i], net);
+							e.printStackTrace();
+							unbbayes.io.xmlbif.version5.XMLBIFIO.loadXML(files[i], net);
 						} catch (Exception e2) {
-							throw new LoadException(resource.getString("UnsupportedError"));
+							// Try version 0.4.
+							try {
+								e2.printStackTrace();
+								unbbayes.io.xmlbif.version4.XMLBIFIO.loadXML(files[i], net);
+							} catch (Exception e3) {
+								e3.printStackTrace();
+								throw new LoadException(resource.getString("UnsupportedError"));
+							}
 						}
 					}
 					msbn.addNetwork(net);
@@ -129,7 +143,8 @@ public class XMLBIFIO implements BaseIO{
 
 		// Saving in older version is not supported.
 		// unbbayes.io.xmlbif.version4.XMLBIFIO.saveXML(outputxml, net); 
-		unbbayes.io.xmlbif.version5.XMLBIFIO.saveXML(outputxml, net);
+		// unbbayes.io.xmlbif.version5.XMLBIFIO.saveXML(outputxml, net);
+		unbbayes.io.xmlbif.version6.XMLBIFIO.saveXML(outputxml, net);
 
 		outputxml.flush();
 		outputxml.close();
