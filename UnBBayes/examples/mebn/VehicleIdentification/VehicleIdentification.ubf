@@ -4,13 +4,53 @@ PrOwl="VehicleIdentification.owl"
 
 % UBF MTheory declaration
 MTheory=VehiclesIdentification_MTheory
-NextMFrag=6
-NextResident=11
+NextMFrag=7
+NextResident=14
 NextInput=8
 NextContext=5
 NextEntity=1
 
 % UBF MFrags and Nodes declaration
+
+% MFrag
+MFrag=Reference_MFrag
+NextOrdinaryVar=3
+
+% Resident nodes
+
+
+Node=ReportedObject
+Type=DomainResidentNode
+Position=170.0,247.0
+Size=167,60
+Color=-66914
+
+Node=ReportedRegion
+Type=DomainResidentNode
+Position=275.0,170.0
+Size=160,60
+Color=-66914
+
+Node=Location
+Type=DomainResidentNode
+Position=111.0,172.0
+Size=124,60
+Color=-66914
+
+% Ordinary Variables
+
+
+Node=rpt
+Type=OrdinalVar
+Position=293.0,27.0
+Size=169,60
+Color=-5178237
+
+Node=obj
+Type=OrdinalVar
+Position=88.0,21.0
+Size=170,60
+Color=-5178237
 
 % MFrag
 MFrag=Speed_MFrag
@@ -19,20 +59,26 @@ NextOrdinaryVar=7
 % Resident nodes
 
 
-Node=Speed
-Type=DomainResidentNode
-Position=230.0,257.0
-Size=125,60
-Color=-66914
-
 Node=MTI
 Type=DomainResidentNode
 Position=244.0,365.0
 Size=96,60
 Color=-66914
 
+Node=Speed
+Type=DomainResidentNode
+Position=230.0,257.0
+Size=125,60
+Color=-66914
+
 % Input nodes
 
+
+Node=IX7
+Type=GenerativeInputNode
+Position=45.0,257.0
+Size=146,60
+Color=-2302756
 
 Node=IX4
 Type=GenerativeInputNode
@@ -44,12 +90,6 @@ Node=IX5
 Type=GenerativeInputNode
 Position=300.0,167.0
 Size=144,60
-Color=-2302756
-
-Node=IX7
-Type=GenerativeInputNode
-Position=45.0,257.0
-Size=146,60
 Color=-2302756
 
 % Ordinary Variables
@@ -118,14 +158,14 @@ Color=-2302756
 
 Node=CX4
 Type=ContextNode
-Position=327.0,127.0
-Size=100,60
+Position=302.0,133.0
+Size=220,60
 Color=-5178237
 
 Node=CX3
 Type=ContextNode
-Position=156.0,127.0
-Size=100,60
+Position=89.0,131.0
+Size=177,60
 Color=-5178237
 
 % Ordinary Variables
@@ -176,8 +216,8 @@ Color=-2302756
 
 Node=CX2
 Type=ContextNode
-Position=206.0,105.0
-Size=100,60
+Position=164.0,107.0
+Size=177,60
 Color=-5178237
 
 % Ordinary Variables
@@ -196,7 +236,7 @@ Size=180,60
 Color=-5178237
 
 % MFrag
-MFrag=GISReport_MFrag
+MFrag=TerrainType_MFrag
 NextOrdinaryVar=3
 
 % Resident nodes
@@ -219,8 +259,8 @@ Color=-66914
 
 Node=CX1
 Type=ContextNode
-Position=202.0,110.0
-Size=100,60
+Position=163.0,122.0
+Size=213,60
 Color=-5178237
 
 % Ordinary Variables
@@ -239,7 +279,7 @@ Size=171,60
 Color=-5178237
 
 % MFrag
-MFrag=Weather_MFrag
+MFrag=Region_MFrag
 NextOrdinaryVar=2
 
 % Resident nodes
