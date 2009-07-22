@@ -54,6 +54,7 @@ public class UShapeLine extends UShape
 	protected int direction = 0;
 	protected Edge edge;
 	protected JPopupMenu popupLine = new JPopupMenu();
+	protected GeneralPath parallelogram;
 	
 	public UShapeLine(UCanvas c, UShape source, UShape target)
 	{
@@ -206,6 +207,13 @@ public class UShapeLine extends UShape
 			
 			changeToLocalPosition(pSource);
 			changeToLocalPosition(pTarget);
+			
+		/*	parallelogram = new GeneralPath();
+			parallelogram.moveTo((float)(pSource.x), (float)(pSource.y));
+			parallelogram.lineTo((float)(-GAP + getWidth() - getWidth()*0.2), 	(float)(GAP));  
+			parallelogram.lineTo((float)(getWidth()-GAP ), 					(float)(getHeight()-GAP));  
+			parallelogram.lineTo((float)(GAP ), 							(float)(getHeight()-GAP));
+			parallelogram.closePath();*/ 
 		}
 		
 		repaint();

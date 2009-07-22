@@ -131,10 +131,10 @@ public class UShapeOOBNNode extends UShape
 	}	 
 	
 	public void update() 
-	{  				
-		if( getNode() != null )
-			setName(getNode().getName());
-		  
+	{ 
+		//by young3
+		updateNodeInformation();	
+	 
 		InitShape();
 		createResizeBtn();
 		removeTextBox();

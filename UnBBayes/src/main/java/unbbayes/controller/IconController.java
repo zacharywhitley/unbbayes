@@ -155,6 +155,9 @@ public class IconController implements Serializable {
 
 	protected ImageIcon decisionNodeIcon;
 	
+	//by young2
+	protected ImageIcon LineCursor;
+	
 	protected ImageIcon decisionNodeCursor;
 	
 	protected ImageIcon utilityNodeCursor;
@@ -222,6 +225,9 @@ public class IconController implements Serializable {
 	
 	protected ImageIcon orangeNodeIcon; 
 	
+	//by young3
+	protected ImageIcon continousNodeIcon; 
+	 
 	protected ImageIcon greenNodeIcon; 
 	
 	protected ImageIcon blueNodeIcon; 
@@ -874,6 +880,17 @@ public class IconController implements Serializable {
 		}
 	}
 
+	//by young2
+	public ImageIcon getLineCursor() {
+		if (LineCursor != null) {
+			return LineCursor;
+		} else {
+			LineCursor = new ImageIcon(getClass().getResource(
+					"/icons/cursor-line.gif"));
+			return LineCursor;
+		}
+	}
+	
 	//by young
 	public ImageIcon getContextNodeCursor() {
 		if (contextNodeCursor != null) {
@@ -1209,6 +1226,17 @@ public class IconController implements Serializable {
 			yellowNodeIcon = new ImageIcon(getClass().getResource(
 					"/icons/yellow-node.gif"));
 			return yellowNodeIcon;
+		}
+	}	
+	 
+	//by young3
+	public ImageIcon getContinousNodeIcon() {
+		if (continousNodeIcon != null) {
+			return continousNodeIcon;
+		} else {
+			continousNodeIcon = new ImageIcon(getClass().getResource(
+					"/icons/continous-node.gif"));
+			return continousNodeIcon;
 		}
 	}	
 	

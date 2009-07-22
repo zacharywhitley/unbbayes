@@ -56,7 +56,7 @@ public class UShapeProbabilisticNode extends UShape
 	protected String finding;
 	
 	
-	protected Color stateColor[] = {Color.BLUE, Color.RED, Color.GREEN, Color.CYAN, Color.DARK_GRAY, Color.MAGENTA, Color.ORANGE, Color.PINK, Color.YELLOW };
+	protected Color stateColor[] = {Color.BLUE, Color.RED, Color.GREEN, Color.ORANGE, Color.CYAN, Color.DARK_GRAY, Color.MAGENTA, Color.ORANGE, Color.PINK, Color.YELLOW };
 	 
 	public static final String STYPE_BAR  = "Bar";
  
@@ -76,6 +76,10 @@ public class UShapeProbabilisticNode extends UShape
 				shapeTypeChange(STYPE_BAR);
 			}
 		}
+		
+		//by young3
+		if( pNode instanceof ProbabilisticNode )
+			finding = ((ProbabilisticNode)pNode).getFinding();
 		
 		InitShape();		 
     }    
@@ -137,10 +141,10 @@ public class UShapeProbabilisticNode extends UShape
 	}
 	
 	public void update() 
-	{  				
-		if( getNode() != null )
-			setName(getNode().getName());
-		 
+	{  		 
+		//by young3
+		updateNodeInformation();	
+		
 		if( STYPE_BAR == getShapeType() )
 		{	
 			removeShapeState();
@@ -180,7 +184,7 @@ public class UShapeProbabilisticNode extends UShape
 					stateShape.setMarginal(treeVariable.getMarginalAt(i));
 					
 					if( finding == node.getStateAt(i) )
-						stateShape.setBackColor(Color.ORANGE);
+						stateShape.setBackColor(Color.GRAY);
 					else
 						stateShape.setBackColor(stateColor[0]);
 					
@@ -270,13 +274,13 @@ public class UShapeProbabilisticNode extends UShape
 		if (SwingUtilities.isLeftMouseButton(arg0)) 
 	    {
 	        if (arg0.getClickCount() == 2 && !arg0.isConsumed()) 
-	        {
-	        	System.out.println("handle double click.");
-	        	
-	        	arg0.consume();
-	        	
+	        { 
+	        	//by young2
+	        	//prevent text editing box
+	        	/*
+	        	arg0.consume();	        	
 	         	setState( STATE_WAIT_EDIT );
-	        	
+	        	*/
 	        }
 	    }
 	        

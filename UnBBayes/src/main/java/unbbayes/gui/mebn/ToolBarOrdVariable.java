@@ -210,7 +210,7 @@ public class ToolBarOrdVariable extends JToolBar{
 		//select the type of the OV in the combo box
 		for(int i = 0; i < types.length; i++){
 			if(types[i].equals(ov.getValueType())){
-				jcbType.setSelectedIndex(i); 
+				jcbType.setSelectedIndex(i);
 				break; 
 			}
 		}
@@ -240,7 +240,8 @@ public class ToolBarOrdVariable extends JToolBar{
            new ActionListener(){
         	   public void actionPerformed(ActionEvent e){
 	    	        Type typeName = (Type)jcbType.getSelectedItem();
-	    	        if(ov != null){
+	    	        //by young2
+	    	        if(ov != null && !typeName.equals(ov.getValueType()) ){
 	    	        	mebnController.setOrdinaryVariableType(ov, typeName); 
 	    	        }
         	   }

@@ -45,6 +45,9 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
 	private ProbabilisticTable tabelaPot;
     private static Color descriptionColor = Color.yellow;
     private static Color explanationColor = Color.green;
+    
+    //by young2
+    private String strFinding;
 
     /** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
@@ -260,4 +263,18 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
 		return explanationColor;
 	}
 
+	
+    //by young2
+    public void setFinding(String str)
+    {
+    	strFinding = str;
+    }
+ 
+    //by young2
+    public String getFinding()
+    {
+    	return strFinding;
+    }
+
+    
 }

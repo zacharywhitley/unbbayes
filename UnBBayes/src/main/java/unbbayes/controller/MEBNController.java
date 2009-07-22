@@ -544,6 +544,9 @@ public class MEBNController  {
 		resident.setName(newName);
 		multiEntityBayesianNetwork.getNamesUsed().add(newName); 
 		mebnEditionPane.repaint();
+		
+		//by young2
+		mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
 
 	}
 
@@ -738,7 +741,7 @@ public class MEBNController  {
 		}
 		
 		//by Young
-		//mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
+		 mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
 
 	}
 
@@ -1082,7 +1085,7 @@ public class MEBNController  {
 		   ov.updateLabel(); 
 		
 		   //by Young
-	 	   //mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
+	 	   mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
 		   mebnEditionPane.getEditOVariableTab().update(); 
 		
 	}
@@ -1912,7 +1915,8 @@ public class MEBNController  {
 	public void initialize() {
 		try {
 			ssbn.reinitializeSSBN(); 
-			screen.getEvidenceTree().updateTree();
+			//by young2
+			screen.getEvidenceTree().updateTree(true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -1943,7 +1947,8 @@ public class MEBNController  {
 			JOptionPane.showMessageDialog(screen, e.getMessage(), resourcePN
 					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
 		}
-		screen.getEvidenceTree().updateTree();
+		//by young2
+		screen.getEvidenceTree().updateTree(false);
 		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}
 	

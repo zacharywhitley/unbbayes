@@ -168,20 +168,8 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 		if( pNode != null)
 		{
 			setNode(pNode);
-			setName(pNode.getName());
-				
-			if(pNode.getLabel().equals(""))
-				setLabel(pNode.getName());
-			else
-				setLabel(pNode.getLabel());
-			
-			if( getCanvas().getMode() == UCanvas.MODE_USE_NAME )
-				setLabel(pNode.getName());
-			else
-			if( getCanvas().getMode() == UCanvas.MODE_USE_DESC )
-				setLabel(pNode.getDescription());
-		  
-			setBackColor( pNode.getColor() );
+			//by young3
+			updateNodeInformation();			
 		}
 		
 		addMouseMotionListener(this);
@@ -207,6 +195,27 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 		
 	}
 	 
+	//by young3
+	public void updateNodeInformation()
+	{
+		if( getNode() != null ) 
+		{ 
+			setName(getNode().getName());
+				
+			if(getNode().getLabel().equals(""))
+				setLabel(getNode().getName());
+			else
+				setLabel(getNode().getLabel());
+			
+			if( getCanvas().getMode() == UCanvas.MODE_USE_NAME )
+				setLabel(getNode().getName());
+			else
+			if( getCanvas().getMode() == UCanvas.MODE_USE_DESC )
+				setLabel(getNode().getDescription());
+		   
+			setBackColor( getNode().getColor() );
+		} 
+	}
 	
 	public void update()
 	{
@@ -738,6 +747,13 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 		return 	getGlobalY()+ getHeight()/2;
 	} 
 	
+	//by young2 
+	public Rectangle getShapeRect()
+	{
+		Rectangle rc = this.getBounds();
+		return  new Rectangle(rc.x + GAP, rc.y + GAP, rc.width - GAP*2, rc.height - GAP*2); 
+	}
+	
   
 	public boolean checkLimitSize( Rectangle rc ) 
 	{    
@@ -757,8 +773,9 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 	}
 	
 	public boolean isContained(Rectangle rc) 
-	{
-		if( rc.contains(this.getBounds()) )
+	{	
+		//by young2 
+		if( rc.contains(getShapeRect()) )
 			return true;
 		
 		return false;

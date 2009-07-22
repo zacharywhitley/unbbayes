@@ -41,11 +41,17 @@ public class UShapeResidentNode extends UShape
 	public UShapeResidentNode(UCanvas c, Node pNode, int x, int y, int w, int h)
 	{
 		super(c, pNode, x, y, w, h);  
-		 
 		
 		InitShape();
-
     }    
+	
+	public void update() 
+	{  		 
+		//by young3
+		updateNodeInformation();	
+		InitShape();
+		repaint();
+	}
 	
 	public void InitShape() 
 	{

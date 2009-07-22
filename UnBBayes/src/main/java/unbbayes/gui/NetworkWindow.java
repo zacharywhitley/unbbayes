@@ -403,7 +403,9 @@ public class NetworkWindow extends JInternalFrame implements IFileExtensionAware
 			controller.getSingleEntityNetwork().setFirstInitialization(true);
 
 			card.show(getContentPane(), PN_PANE_PN_COMPILATION_PANE);
-			pnCompilationPane.getEvidenceTree().updateTree();
+			
+			//by young2
+			pnCompilationPane.getEvidenceTree().updateTree(false);
 			
 			pnCompilationPane.updateToPreferredSize();
 		}
@@ -487,7 +489,8 @@ public class NetworkWindow extends JInternalFrame implements IFileExtensionAware
 			ssbnCompilationPane.getEvidenceTree().setRootVisible(true);
 			ssbnCompilationPane.getEvidenceTree().expandRow(0);
 			ssbnCompilationPane.getEvidenceTree().setRootVisible(false);
-			ssbnCompilationPane.getEvidenceTree().updateTree();
+			//by young2
+			ssbnCompilationPane.getEvidenceTree().updateTree(true);
 
 			contentPane.add(ssbnCompilationPane,
 					MEBN_PANE_SSBN_COMPILATION_PANE);

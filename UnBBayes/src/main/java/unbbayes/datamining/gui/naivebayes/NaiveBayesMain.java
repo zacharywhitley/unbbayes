@@ -301,7 +301,9 @@ public class NaiveBayesMain extends JInternalFrame
 							edition.getTbEdition().getBtnAddDecisionNode().setVisible(false);
 							edition.getTbEdition().getBtnAddProbabilisticNode().setVisible(false);
 							edition.getTbEdition().getBtnAddUtilityNode().setVisible(false);
-							edition.getTbEdition().getBtnSelectObject().setVisible(false);
+							
+							//by young2
+							//edition.getTbEdition().getBtnSelectObject().setVisible(false);
 							edition.getBtnHierarchy().setVisible(false);
 
 							// mostra a nova tela

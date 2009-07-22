@@ -158,7 +158,8 @@ public class ArgumentsTypedPane extends JPanel{
 				indexSelected = 0; //null
 			}
 			
-			argument[i].setSelectedIndex(indexSelected); 
+			//by young2
+			//	argument[i].setSelectedIndex(indexSelected); 
 			
 			//Adicionando componentes ao painel. 
 			btnArgXNumber = new JButton("" + i);

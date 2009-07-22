@@ -148,7 +148,8 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener, MouseL
     	for( int i = 0; i < size; i++ )
     	{
     		UShape shape = (UShape)parent.getComponent(i);
-    		    		
+
+    		if( shape != null )
     		if( shape.getNode() != null && shape.getNode() == n )
     			return shape;			
     	}

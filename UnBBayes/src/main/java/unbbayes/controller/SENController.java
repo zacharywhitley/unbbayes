@@ -167,7 +167,8 @@ public class SENController {
 					gmInference.run();
 				}
 			}
-			screen.getEvidenceTree().updateTree();
+			//by young2 (true:update, false:complie)
+			screen.getEvidenceTree().updateTree(true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -200,7 +201,8 @@ public class SENController {
 			JOptionPane.showMessageDialog(screen, "Not yet implemented!", resource
 					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
 		}
-		screen.getEvidenceTree().updateTree();
+		//by young2 (true:update, false:complie)
+		screen.getEvidenceTree().updateTree(false);
 		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}
 

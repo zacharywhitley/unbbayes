@@ -44,6 +44,14 @@ public class UShapeDecisionNode extends UShape
 		InitShape();
     }    
 	 
+	public void update() 
+	{  		 
+		//by young3
+		updateNodeInformation();	
+		InitShape();
+		repaint();
+	}
+	
 	public void InitShape() 
 	{
 		 rect = new Rectangle2D.Double(GAP ,GAP,getWidth()-GAP*2-1,getHeight()-GAP*2-1 );

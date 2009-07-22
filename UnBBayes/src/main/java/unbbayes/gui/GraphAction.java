@@ -41,7 +41,7 @@ public enum GraphAction {
 		CREATE_ORDINARYVARIABLE_NODE, 
 		
 		CREATE_DOMAIN_MFRAG, 
-		
-		SELECT_MANY_OBJECTS
+		//by young2
+		//SELECT_MANY_OBJECTS
 	
 }

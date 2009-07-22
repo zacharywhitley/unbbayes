@@ -319,8 +319,7 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 				{
 					newNode = controller.insertContinuousNode(e.getX(), e.getY());
 					UShapeProbabilisticNode shape = new UShapeProbabilisticNode(this, newNode, (int)newNode.getPosition().x-newNode.getWidth()/2, (int)newNode.getPosition().y-newNode.getHeight()/2, newNode.getWidth(), newNode.getHeight());
-					addShape( shape );
-					shape.setBackColor(Color.GREEN);						
+					addShape( shape );						
 					shape.setState(UShape.STATE_SELECTED);
 					updateNewInformationIntoTreeAndTableViewer(newNode); 
 				}
@@ -581,11 +580,12 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 		break;	
 		case CREATE_EDGE:
 		{
-			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			customCursor = toolkit.createCustomCursor(iconController.getLineCursor().getImage(), new Point(0,0), "Cursor");
+		    setCursor(customCursor);
 			setState(STATE_CONNECT_COMP);
 		}			
 		break;
-		case SELECT_MANY_OBJECTS:
+		case NONE://by young2
 		{
 			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			setState(STATE_NONE);
@@ -662,7 +662,7 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
     	shape.setState(UShape.STATE_SELECTED);
     } 
 	 
-	public void compiled(Node selectedNode )
+	public void compiled(boolean reset, Node selectedNode )
 	{ 
 		this.removeAll();
 		
@@ -674,14 +674,24 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 		for (int i = 0; i < nodeList.size(); i++) 
 		{
 			n = nodeList.get(i);
+			
 			createNode( n );
+			
+			if(reset == true && n instanceof ProbabilisticNode) 
+			{
+				shape = getNodeUShape(n);
+				((ProbabilisticNode)n).setFinding("");
+				((UShapeProbabilisticNode)shape).update("");
+			}
 			
 			if(n instanceof ContinuousNode || n instanceof ProbabilisticNode) 
 			{
+				 
 				shape = getNodeUShape(n);
 				shape.shapeTypeChange(UShapeProbabilisticNode.STYPE_BAR);
 		    	shape.setState(UShape.STATE_RESIZED);
 			}
+			
 		}	
 		
 		// Load all Edges
@@ -877,6 +887,7 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
     	if(s instanceof UShapeState) 
     	{
     		Node n = ((UShape)s.getParent()).getNode();
+    		((ProbabilisticNode)n).setFinding(s.getName());
     		controller.getScreen().getEvidenceTree().selectTreeItemByState(n, s.getName());    		 
     		((UShapeProbabilisticNode)s.getParent()).update(s.getName());
     	}

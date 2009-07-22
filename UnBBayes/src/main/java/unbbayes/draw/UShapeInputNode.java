@@ -46,6 +46,14 @@ public class UShapeInputNode extends UShape
  	
     }    
 	
+	public void update() 
+	{  		 
+		//by young3
+		updateNodeInformation();	
+		InitShape();
+		repaint();
+	}
+	
 	public void InitShape() 
 	{
 		parallelogram = new GeneralPath();

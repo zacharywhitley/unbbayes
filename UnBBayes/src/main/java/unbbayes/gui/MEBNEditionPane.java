@@ -912,7 +912,9 @@ public class MEBNEditionPane extends JPanel {
   	    private final JToggleButton btnAddEdge;
   	    private final JToggleButton btnAddOrdinaryVariable;
   	    private final JToggleButton btnEditMTheory;
-  	    private final JToggleButton btnSelectObject;
+  	  
+  	    //by young2
+  	    //private final JToggleButton btnSelectObject;
   	    private final JToggleButton btnDeleteSelectedItem; 
   	    
   	    private final ButtonGroup groupEditionButtons; 
@@ -925,7 +927,9 @@ public class MEBNEditionPane extends JPanel {
   	        btnAddResidentNode  = new JToggleButton(iconController.getResidentNodeIcon());
   	        btnAddOrdinaryVariable = new JToggleButton(iconController.getOVariableNodeIcon());
   	        btnAddMFrag		= new JToggleButton(iconController.getMFragIcon());
-  	        btnSelectObject            = new JToggleButton(iconController.getSelectionIcon());
+  	        
+  	        //by young2
+  	        //btnSelectObject            = new JToggleButton(iconController.getSelectionIcon());
   	        btnResetCursor = new JToggleButton(iconController.getArrowIcon()); 
   	        btnDeleteSelectedItem = new JToggleButton(iconController.getEditDelete());
   	        
@@ -935,7 +939,9 @@ public class MEBNEditionPane extends JPanel {
   	        btnAddContextNode.setToolTipText(resource.getString("contextNodeInsertToolTip"));
   	        btnAddInputNode.setToolTipText(resource.getString("inputNodeInsertToolTip"));
   	        btnAddResidentNode.setToolTipText(resource.getString("residentNodeInsertToolTip"));
-  	        btnSelectObject.setToolTipText(resource.getString("selectObjectToolTip"));
+  	     
+  	        //by young2
+  	        //btnSelectObject.setToolTipText(resource.getString("selectObjectToolTip"));
   	        btnAddOrdinaryVariable.setToolTipText(resource.getString("ordinaryVariableInsertToolTip"));
   	        btnResetCursor.setToolTipText(resource.getString("resetToolTip"));
   	        btnDeleteSelectedItem.setToolTipText(resource.getString("deleteSelectedItemToolTip"));
@@ -948,7 +954,8 @@ public class MEBNEditionPane extends JPanel {
   	        groupEditionButtons.add(btnAddResidentNode); 
   	        groupEditionButtons.add(btnAddOrdinaryVariable); 
   	        groupEditionButtons.add(btnAddMFrag); 
-  	        groupEditionButtons.add(btnSelectObject); 
+  	        //by young2
+  	        //groupEditionButtons.add(btnSelectObject); 
   	        groupEditionButtons.add(btnResetCursor); 
   	        groupEditionButtons.add(btnEditMTheory); 
   	        groupEditionButtons.add(btnDeleteSelectedItem);
@@ -967,8 +974,9 @@ public class MEBNEditionPane extends JPanel {
   	        addSeparator(); 
   	        add(btnDeleteSelectedItem); 
   	        addSeparator();
-  	        add(btnSelectObject);
-  	        addSeparator();
+  	        //by young2
+  	        //add(btnSelectObject);
+  	        //addSeparator();
 
   	        btnResetCursor.addActionListener(new ActionListener(){
   	  			public void actionPerformed(ActionEvent ae){
@@ -1034,12 +1042,13 @@ public class MEBNEditionPane extends JPanel {
   	  			}
   	  		});
 
-  	  		//ao clicar no botao node setamos as variaveis booleanas e os estados dos butoes
+  	  		//by young2
+  	  		/*//ao clicar no botao node setamos as variaveis booleanas e os estados dos butoes
   	  		btnSelectObject.addActionListener(new ActionListener() {
   	  			public void actionPerformed(ActionEvent ae) {
   	  				netWindow.getGraphPane().setAction(GraphAction.SELECT_MANY_OBJECTS);
   	  			}
-  	  		});
+  	  		});*/
 
   		}
 
@@ -1075,9 +1084,11 @@ public class MEBNEditionPane extends JPanel {
 			btnEditMTheory.setSelected(true); 
 		}
 
+		//by young2
+		/*
 		public void selectBtnSelectObject() {
 			btnSelectObject.setSelected(true); 
-		}
+		}*/
 
 		public void selectBtnDeleteSelectedItem() {
 			btnDeleteSelectedItem.setSelected(true); 

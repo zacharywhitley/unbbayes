@@ -144,7 +144,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"LookAndFeelIllegalAccessException","Esse LookAndFeel não pode ser usado: "},
 		{"nameError","Nome não aceito"},
 		{"operationFail","Operação não aceita"},
-		{"nameAlreadyExists","Já existe um objeto com este nome"},	
+		{"nameAlreadyExists","Já existe um objeto com este nome."},	
 		{"objectEntityHasInstance","Há instâncias da entidade selecionada. Remova-as e tente novamente."},
 		{"internalError","Erro interno... Reporte aos desenvolvedores"},
 		{"error","Erro"},	

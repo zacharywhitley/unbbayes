@@ -483,21 +483,42 @@ public class XMLBIFIO {
 		VariableType nodeType = VariableType.valueOf(variable.getType().toUpperCase());
 		if (nodeType == VariableType.DISCRETEPROBABILISTIC) {
 			node = new ProbabilisticNode();
+			//by young2
+			if( variable.getCOLOR() == 0 )
+				node.setColor(ProbabilisticNode.getDescriptionColor()  );
+			else
+				node.setColor(new Color(variable.getCOLOR()));			
 		} else if (nodeType == VariableType.CONTINUOUSPROBABILISTIC) { 
 			node = new ContinuousNode();
+			//by young2
+			if( variable.getCOLOR() == 0 )
+				node.setColor(ContinuousNode.getStaticColor()  );
+			else
+				node.setColor(new Color(variable.getCOLOR()));
 		} else if (nodeType == VariableType.DECISION) {
 			node = new DecisionNode();
+			//by young2
+			if( variable.getCOLOR() == 0 )
+				node.setColor(DecisionNode.getStaticColor() );
+			else
+				node.setColor(new Color(variable.getCOLOR()));
 		} else if (nodeType == VariableType.UTILITY) {
 			node = new UtilityNode();
+			//by young2
+			if( variable.getCOLOR() == 0 )
+				node.setColor(UtilityNode.getStaticColor()  );
+			else
+				node.setColor(new Color(variable.getCOLOR()));
 		}
 		
 		node.setName(variable.getName());
 		node.setDescription(variable.getDescription());
 		node.setPosition(variable.getXPos(), variable.getYPos());
 		
-		//by young
-		node.setColor(new Color(variable.getCOLOR()));
+		
+		
 		//by young end
+				
 		// Only add states for non continuous node.
 		if (nodeType != VariableType.CONTINUOUSPROBABILISTIC) {
 			List stateList = variable.getState(); 
@@ -513,6 +534,10 @@ public class XMLBIFIO {
 		// Fill Metaphore values if present
 		XMLBIFType.NetworkType.VariablesType.VariableType.MetaphoreType metaphore = (XMLBIFType.NetworkType.VariablesType.VariableType.MetaphoreType)variable.getMetaphore(); 
 		if (metaphore != null){
+			
+			// by young3
+			if( variable.getCOLOR() == 0 )
+				node.setColor(ProbabilisticNode.getExplanationColor());
 			
 			node.setInformationType(Node.EXPLANATION_TYPE);
 			

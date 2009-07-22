@@ -207,7 +207,9 @@ public class PNEditionPane extends JPanel {
                     matcher = wordPattern.matcher(name);
                     if (matcher.matches()) {
                       nodeAux.setName(name);
-                      repaint();
+                    //by young3
+                      netWindow.getGraphPane().updateSelectedNode();
+                    //  repaint();
                     }  else {
                         JOptionPane.showMessageDialog(netWindow, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
                         txtName.selectAll();
@@ -235,6 +237,8 @@ public class PNEditionPane extends JPanel {
                     matcher = descriptionPattern.matcher(name);
                     if (matcher.matches()) {
                       nodeAux.setDescription(name);
+                      //by young3
+                      netWindow.getGraphPane().updateSelectedNode();
                       repaint();
                     } else {
                         JOptionPane.showMessageDialog(netWindow, resource.getString("descriptionError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
@@ -517,7 +521,8 @@ public class PNEditionPane extends JPanel {
   	    private final JToggleButton btnAddDecisionNode;
   	    private final JToggleButton btnAddUtilityNode;
   	    private final JToggleButton btnDeleteSelectedItem; 
-  	    private final JToggleButton btnSelectObject;
+  	    //by young2  	    
+  	    //private final JToggleButton btnSelectObject;
   	    
   	    private final ButtonGroup groupEditionButtons; 
   	    
@@ -530,9 +535,11 @@ public class PNEditionPane extends JPanel {
   	        btnAddDecisionNode       = new JToggleButton(iconController.getDecisionNodeIcon());
   	        btnAddUtilityNode        = new JToggleButton(iconController.getUtilityNodeIcon());
   	        // TODO CHANGE THE CONTINUOUS ICON!
-  	        btnAddContinuousNode     = new JToggleButton(iconController.getGreenNodeIcon());
+  	        //by young3
+  	        btnAddContinuousNode     = new JToggleButton(iconController.getContinousNodeIcon());
   	        btnAddEdge               = new JToggleButton(iconController.getEdgeIcon());
-  	        btnSelectObject          = new JToggleButton(iconController.getSelectionIcon());
+     	    //by young2
+  	        //btnSelectObject          = new JToggleButton(iconController.getSelectionIcon());
   	        btnResetCursor = new JToggleButton(iconController.getArrowIcon()); 
   	        btnDeleteSelectedItem = new JToggleButton(iconController.getEditDelete());
   			
@@ -541,7 +548,8 @@ public class PNEditionPane extends JPanel {
   	        btnAddProbabilisticNode.setToolTipText(resource.getString("probabilisticNodeInsertToolTip"));
   	        btnAddDecisionNode.setToolTipText(resource.getString("decisionNodeInsertToolTip"));
   	        btnAddUtilityNode.setToolTipText(resource.getString("utilityNodeInsertToolTip"));;
-  	        btnSelectObject.setToolTipText(resource.getString("selectToolTip"));
+  	        //by young2
+  	        //btnSelectObject.setToolTipText(resource.getString("selectToolTip"));
   	        btnResetCursor.setToolTipText(resource.getString("resetToolTip"));
   	        btnDeleteSelectedItem.setToolTipText(resource.getString("deleteSelectedItemToolTip"));
   	        
@@ -552,7 +560,8 @@ public class PNEditionPane extends JPanel {
   	        groupEditionButtons.add(btnAddProbabilisticNode);
   	        groupEditionButtons.add(btnAddDecisionNode);
   	        groupEditionButtons.add(btnAddUtilityNode);
-  	        groupEditionButtons.add(btnSelectObject);
+   	        //by young2
+  	        //groupEditionButtons.add(btnSelectObject);
   	        groupEditionButtons.add(btnDeleteSelectedItem); 
 	         
   	        add(btnResetCursor);
@@ -562,7 +571,8 @@ public class PNEditionPane extends JPanel {
   	        add(btnAddContinuousNode); 
   	        add(btnAddEdge); 
   	        add(btnDeleteSelectedItem);
-  	        add(btnSelectObject); 
+  	        //by young2
+  	        //add(btnSelectObject); 
   	        
   	        btnResetCursor.addActionListener(new ActionListener(){
   	  			public void actionPerformed(ActionEvent ae){
@@ -607,12 +617,14 @@ public class PNEditionPane extends JPanel {
   	        });
 
 
+  	      	//by young2
+  	        /*
   	        //ao clicar no bot�o node setamos as vari�veis booleanas e os estados dos but�es
   	        btnSelectObject.addActionListener(new ActionListener() {
   	            public void actionPerformed(ActionEvent ae) {
   	            	netWindow.getGraphPane().setAction(GraphAction.SELECT_MANY_OBJECTS);
   	            }
-  	        });
+  	        });*/
   	        
 
   	  		btnDeleteSelectedItem.addActionListener(new ActionListener() {
@@ -642,9 +654,11 @@ public class PNEditionPane extends JPanel {
 			return btnAddUtilityNode;
 		}
 
+		//by young2
+		/*
 		public JToggleButton getBtnSelectObject() {
 			return btnSelectObject;
-		}
+		}*/
 		
 		
 

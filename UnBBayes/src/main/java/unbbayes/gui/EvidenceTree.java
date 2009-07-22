@@ -70,8 +70,9 @@ public class EvidenceTree extends JTree {
 	
 	//by young
 	public String strMode;
-	public static final String MODE_USE_NAME	= "UseName";
-	public static final String MODE_USE_DESC	= "UseDescription";
+	public static final String MODE_USE_NAME		= "UseName";
+	public static final String MODE_USE_DESC		= "UseDescription"; 
+	
 		
 	public EvidenceTree(SingleEntityNetwork sen, final NetworkWindow netWindow) {
 		
@@ -107,7 +108,7 @@ public class EvidenceTree extends JTree {
 						treeDoubleClick(node);
 						//by young
 						Node newNode = getNodeMap(node);
-						netWindow.getGraphPane().compiled(newNode);
+						netWindow.getGraphPane().compiled(false, newNode);
 					}
 				} else {
 					if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
@@ -118,7 +119,7 @@ public class EvidenceTree extends JTree {
 						if (newNode != null) {
 							netWindow.getGraphPane().selectNode(newNode);
 							//by young
-							netWindow.getGraphPane().compiled(newNode);
+							netWindow.getGraphPane().compiled(false, newNode);
 						}
 					} else if (e.getClickCount() == 2) {
 						DefaultMutableTreeNode root = (DefaultMutableTreeNode)getModel().getRoot();
@@ -208,7 +209,7 @@ public class EvidenceTree extends JTree {
 	public void setMode( String str )
 	{
 		strMode = str;
-		updateTree();
+		updateTree(false);
 	}
 	
 	//by young
@@ -278,7 +279,7 @@ public class EvidenceTree extends JTree {
 	 * @since
 	 * @see            JTree
 	 */
-	public void updateTree() {
+	public void updateTree(boolean reset) {
 
 		if (expandedNodes == null) {
 			expandedNodes = new boolean[net.getNodesCopy().size()];
@@ -364,7 +365,7 @@ public class EvidenceTree extends JTree {
 		
 		
 		//by young
-		netWindow.getGraphPane().compiled(null);
+		netWindow.getGraphPane().compiled(reset, null);
 	}
 	
 	//by young, modified
@@ -469,7 +470,10 @@ public class EvidenceTree extends JTree {
 				}
 
 				if (node.getType() == Node.PROBABILISTIC_NODE_TYPE) {
-					treeNode.setUserObject(
+					//by young2
+					((ProbabilisticNode)node).setFinding(node.getStateAt(parent.getIndex(treeNode)));
+					
+					treeNode.setUserObject(						
 						node.getStateAt(parent.getIndex(treeNode)) + ": 100");
 				} else {
 					treeNode.setUserObject(

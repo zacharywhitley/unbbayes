@@ -121,8 +121,9 @@ public class PNCompilationPane extends JPanel {
         //mostra o log da rede compilada
         log.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
+            	//by young2
+                netWindow.getGraphPane().compiled(false, null);
                 controller.showLog();
-                netWindow.getGraphPane().update();
             }
         });
 

@@ -20,6 +20,7 @@
  */
 package unbbayes.prs.hybridbn;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.io.Serializable;
 import java.util.ResourceBundle;
@@ -35,7 +36,10 @@ public class ContinuousNode extends TreeVariable implements Serializable {
 	
 	public final static int MEAN_MARGINAL_INDEX = 0;
 	public final static int VARIANCE_MARGINAL_INDEX = 1;
-
+    
+	//by young2
+	private static Color staticColor = Color.GREEN;	
+	
 	private static final long serialVersionUID = 1L;
 	
 	private CNNormalDistribution cnNormalDistribution;
@@ -50,10 +54,17 @@ public class ContinuousNode extends TreeVariable implements Serializable {
 		return Node.CONTINUOUS_NODE_TYPE;
 	}
 	
+	public static Color getStaticColor(){
+		return staticColor;
+	}
+	
 	public ContinuousNode() {
 		cnNormalDistribution = new CNNormalDistribution(this);
 		this.appendState(resource.getString("meanName"));
 		this.appendState(resource.getString("varianceName"));
+		
+		//by young2
+		setColor(staticColor);
 	}
 	
 	public CNNormalDistribution getCnNormalDistribution() {
