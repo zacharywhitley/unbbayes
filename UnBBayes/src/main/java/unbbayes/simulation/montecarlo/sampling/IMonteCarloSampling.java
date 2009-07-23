@@ -25,9 +25,10 @@ import java.util.Map;
 
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.util.longtask.ILongTaskProgressObservable;
 
 //TODO ROMMEL - BREAK INTO DIFFERENT INTERFACES - MC - MCCOMPACT - LW
-public interface IMonteCarloSampling {
+public interface IMonteCarloSampling extends ILongTaskProgressObservable {
 	
 	/**
 	 * Returns the generated sample matrix. The row represents the ith trial and the column 

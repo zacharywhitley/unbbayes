@@ -6,10 +6,10 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
-import unbbayes.gui.util.StatusChangedEvent;
-import unbbayes.gui.util.StatusObserver;
+import unbbayes.util.longtask.LongTaskProgressChangedEvent;
+import unbbayes.util.longtask.ILongTaskProgressObserver;
 
-public class ProgressBarPanel extends JPanel implements StatusObserver{
+public class ProgressBarPanel extends JPanel implements ILongTaskProgressObserver{
 
     private JProgressBar progressBar;
     private JButton cancelButton;
@@ -47,8 +47,8 @@ public class ProgressBarPanel extends JPanel implements StatusObserver{
 		paintImmediately(0, 0, this.getWidth(), this.getHeight()); 
 	}
 	
-	public void update(StatusChangedEvent status) {
-		progressBar.setValue(status.getPercentageConclude()); 
+	public void update(LongTaskProgressChangedEvent status) {
+		progressBar.setValue(status.getPercentageDone()); 
 		this.paintImmediately(0, 0, this.getWidth(), this.getHeight()); 
 	}
 	

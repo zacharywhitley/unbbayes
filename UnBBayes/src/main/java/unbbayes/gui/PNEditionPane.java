@@ -47,6 +47,7 @@ import javax.swing.JToolBar;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
+import unbbayes.controller.CompilationThread;
 import unbbayes.prs.Node;
 
 
@@ -177,14 +178,12 @@ public class PNEditionPane extends JPanel {
             }
         });
 
-        //ao clicar no bot�o btnCompile, chama-se o m�todo de compila��o da rede e
-        //atualiza os toolbars
+        //Compile the network when this button is pressed
         btnCompile.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                if (! controller.compileNetwork()) {
-                    return;
-                }
-                netWindow.changeToPNCompilationPane();
+            	
+            	new CompilationThread(controller,netWindow);
+               
             }
         });
         

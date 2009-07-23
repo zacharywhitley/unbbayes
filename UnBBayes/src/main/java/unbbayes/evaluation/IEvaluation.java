@@ -28,8 +28,9 @@ import javax.xml.bind.JAXBException;
 import unbbayes.evaluation.exception.EvaluationException;
 import unbbayes.io.exception.LoadException;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.util.longtask.ILongTaskProgressObservable;
 
-public interface IEvaluation {
+public interface IEvaluation extends ILongTaskProgressObservable {
 
 	public float[][] getEvidenceSetCM();
 	

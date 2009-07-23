@@ -20,6 +20,8 @@
  */
 package unbbayes.evaluation.gui;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -32,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.AbstractListModel;
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
@@ -41,14 +44,18 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListModel;
+import javax.swing.border.Border;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 
 import unbbayes.evaluation.EvidenceEvaluation;
+import unbbayes.evaluation.controller.Listeners;
+import unbbayes.evaluation.controller.Listeners.btnDoAction;
 import unbbayes.evaluation.exception.EvaluationException;
 import unbbayes.gui.table.EachRowEditor;
 import unbbayes.gui.table.NumberEditor;
@@ -64,7 +71,7 @@ public class EvaluationPane extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 	
-	private JPanel mainPane;
+	public JPanel mainPane;
 	
 	private JTable inputTable;
 	private JLabel sampleSizeLabel;
@@ -72,11 +79,15 @@ public class EvaluationPane extends JPanel {
 	private JLabel errorLabel;
 	private JFormattedTextField errorTextField;
 	private JButton runButton;
+	public JButton btnDo;
+	public JProgressBar progressBar;
 	
 	private JTable outputTable;
 	private JScrollPane cmOutputTableScroll;
 	private JLabel pccLabel;
 	private JFormattedTextField pccValueTextField;
+	public JPanel sampleSizePane;
+	Listeners lis;
 
 	public EvaluationPane() {
 		super(new GridLayout(1,1));
@@ -102,7 +113,7 @@ public class EvaluationPane extends JPanel {
 		TableModel dm = new EvaluationInputTableModel();
 		
 		inputTable = new JTable(dm);
-		inputTable.setPreferredScrollableViewportSize(new Dimension(500, 140));
+		inputTable.setPreferredScrollableViewportSize(new Dimension(500, 80));
 
 		// Create the scroll pane and add the table to it.
 		JScrollPane scrollPane = new JScrollPane(inputTable);
@@ -119,7 +130,7 @@ public class EvaluationPane extends JPanel {
 	}
 	
 	private void setUpSampleSizePane() {
-		JPanel sampleSizePane = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		sampleSizePane = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		
 		sampleSizeLabel = new JLabel("Sample Size:");
 		sampleSizeTextField = new JFormattedTextField(NumberFormat.getIntegerInstance());
@@ -133,12 +144,21 @@ public class EvaluationPane extends JPanel {
 		errorTextField.setEditable(false);
 		
 		runButton = new JButton("Run");
-		
 		sampleSizePane.add(sampleSizeLabel);
 		sampleSizePane.add(sampleSizeTextField);
 		sampleSizePane.add(errorLabel);
 		sampleSizePane.add(errorTextField);
 		sampleSizePane.add(runButton);
+		
+		btnDo = new JButton("Cancel");
+		sampleSizePane.add(btnDo);
+		btnDo.setBounds(100, 35, 100, 25);
+		progressBar = new JProgressBar(0, 1000);
+		progressBar.setValue(0);
+		progressBar.setStringPainted(true);
+		sampleSizePane.add(progressBar, BorderLayout.NORTH);
+		btnDo.setVisible(false);
+		
 		
 		mainPane.add(sampleSizePane);
 	}

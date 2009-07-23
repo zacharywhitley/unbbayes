@@ -41,7 +41,11 @@ public class LikelihoodWeightingInference {
 	public LikelihoodWeightingInference(ProbabilisticNetwork pn , int nTrials){		
 		this.pn = pn;
 		this.nTrials = nTrials;	
-		this.lwSampling = new LikelihoodWeightingSampling();
+		this.lwSampling= new LikelihoodWeightingSampling();
+	}
+	
+	public LikelihoodWeightingSampling getLikelihoodWeightingSampling() {
+		return lwSampling;
 	}
 	
 	public void run() {
@@ -147,4 +151,5 @@ public class LikelihoodWeightingInference {
 			System.out.println();
 		}
 	}
+
 }

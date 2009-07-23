@@ -20,15 +20,22 @@
  */
 package unbbayes.simulation.montecarlo.sampling;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.JOptionPane;
+
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.simulation.montecarlo.controller.*;
+import unbbayes.util.longtask.ILongTaskProgressObserver;
+import unbbayes.util.longtask.LongTaskProgressChangedEvent;
 
 /**
  * 
@@ -43,6 +50,8 @@ import unbbayes.prs.bn.ProbabilisticNode;
  */
 public class MapMonteCarloSampling extends AMonteCarloSampling {
 	
+	// TODO - ROMMEL - Actually use observable methods stuff to update the progress!!!
+    
 	/**
 	 * Returns the generated sample matrix. The row represents the ith trial and the column 
 	 * represents the jth node from the samplingNodeOrderQueue. The value matrix[i][j] 

@@ -20,13 +20,21 @@
  */
 package unbbayes.simulation.montecarlo.sampling;
 
+import java.beans.*;
+
+import unbbayes.gui.ProgressBar;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JOptionPane;
+
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.util.longtask.ILongTaskProgressObserver;
+import unbbayes.util.longtask.LongTaskProgressChangedEvent;
 
 /**
  * 
@@ -41,10 +49,6 @@ import unbbayes.prs.bn.ProbabilisticNode;
  */
 public class MatrixMonteCarloSampling extends AMonteCarloSampling {
 	
-	/**
-	 * Not implemented.
-	 * @return null.
-	 */
 	public byte[][] getSampledStatesCompactMatrix() {
 		return null;
 	}
@@ -82,10 +86,14 @@ public class MatrixMonteCarloSampling extends AMonteCarloSampling {
 	public void start(ProbabilisticNetwork pn , int nTrials){
 		this.pn = pn;
 		this.nTrials = nTrials;
+		// set max value allowed for the progress
+		this.maxProgress = nTrials; 
 		samplingNodeOrderQueue = new ArrayList<Node>();		
 		createSamplingOrderQueue();
 		sampledStatesMatrix = new byte[nTrials][pn.getNodeCount()];		
-		for(int i = 0; i < nTrials; i++){						
+		for(int i = 0; i < nTrials; i++){	
+			// update the current value of the progress
+			updateProgress(i);
 			simulate(i);
 		}
 	}

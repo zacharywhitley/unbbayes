@@ -36,20 +36,22 @@ import unbbayes.evaluation.FastLWApproximateEvaluation;
 import unbbayes.evaluation.IEvaluation;
 import unbbayes.evaluation.exception.EvaluationException;
 import unbbayes.evaluation.gui.EvaluationPane;
+import unbbayes.gui.ProgressBar;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.simulation.montecarlo.controller.MonteCarloThread;
 
 public class EvaluationController {
 	
-	private EvaluationPane evaluationPane;
+	public EvaluationPane evaluationPane;
 	private ProbabilisticNetwork network;
 	private IEvaluation evaluation;
+	private int sampleSize;
 	
 	public EvaluationController(ProbabilisticNetwork network) {
 		this.network = network;
 		this.evaluationPane = new EvaluationPane();
-		
 		setUpEvaluation();
 	}
 	
@@ -71,10 +73,29 @@ public class EvaluationController {
 		evaluationPane.setRunButtonActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent arg0) {
-				runEvaluation();
+				new ControllerThread(EvaluationController.this);  // thread is called here
 			}
 
 		});
+	}
+	
+	public void runEvaluation() {
+		sampleSize = evaluationPane.getSampleSizeValue();
+		FastLWApproximateEvaluation flw = new FastLWApproximateEvaluation(
+				sampleSize);
+		// Start progress bar
+    	ProgressBar pb = new ProgressBar();
+    	// Register progress bar as observer of the long task mc
+    	flw.registerObserver(pb);
+    	pb.setProgressbar(100);
+		runEvaluation(flw);
+		// Add thread to progress bar to allow canceling the operation
+    	pb.setThread(MonteCarloThread.t);
+    	pb.setProgressbar(10000);
+		// Hides the frame of the progress bar
+		pb.hideProgressbar(); 
+		
+		ControllerThread.controller.evaluationPane.btnDo.setVisible(false);
 	}
 	
 	private void validateData() throws EvaluationException {
@@ -103,7 +124,7 @@ public class EvaluationController {
 			
 	}
 	
-	private void runEvaluation() {
+	void runEvaluation(IEvaluation evaluation) {
 		evaluationPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		
 		try {
@@ -115,7 +136,7 @@ public class EvaluationController {
 		
 		List<String> targetNodeNameList = evaluationPane.getTargetNodeNameList();
 		List<String> evidenceNodeNameList = evaluationPane.getEvidenceNodeNameList();
-		int sampleSize = evaluationPane.getSampleSizeValue();
+		//int sampleSize = evaluationPane.getSampleSizeValue();
 		
 		Map<String, String> nodeFindingMap = evaluationPane.getNodeConditionMap();
 		ProbabilisticNode node;
@@ -130,7 +151,6 @@ public class EvaluationController {
 		}
 		
 		try {
-			evaluation = new FastLWApproximateEvaluation(sampleSize);
 			evaluation.evaluate(network, targetNodeNameList, evidenceNodeNameList, false);
 			
 			List<EvidenceEvaluation> evidenceEvaluationList = evaluation.getBestMarginalImprovement();

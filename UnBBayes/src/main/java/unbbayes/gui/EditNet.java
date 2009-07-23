@@ -99,6 +99,7 @@ public class EditNet extends JPanel {
 
         compile.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
+            	System.out.println("i came to edit net \n");
                 if (! controller.compileNetwork()) {
                     return;
                 }

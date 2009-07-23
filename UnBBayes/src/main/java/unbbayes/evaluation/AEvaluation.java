@@ -35,6 +35,8 @@ import unbbayes.io.exception.LoadException;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;
+import unbbayes.util.longtask.ILongTaskProgressObserver;
+import unbbayes.util.longtask.LongTaskProgressChangedEvent;
 
 public abstract class AEvaluation implements IEvaluation {
 	
@@ -348,5 +350,58 @@ public abstract class AEvaluation implements IEvaluation {
         }
         System.out.println();
     }
+	
+	/* LONG TASK BEGIN */
+
+	private List<ILongTaskProgressObserver> observers = new ArrayList<ILongTaskProgressObserver>();
+	
+	public void registerObserver(ILongTaskProgressObserver observer) {
+		observers.add(observer); 
+	}
+
+	public void removeObserver(ILongTaskProgressObserver observer) {
+		observers.remove(observer); 
+	}
+
+	public void notityObservers(LongTaskProgressChangedEvent event) {
+		for(ILongTaskProgressObserver observer: observers){
+			observer.update(event); 
+		}
+	}
+	
+	protected int maxProgress = 100;
+	
+	public int getMaxProgress() {
+		return maxProgress;
+	}
+	
+	protected int currentProgress = 0;
+	
+	public int getCurrentProgress() {
+		return currentProgress;
+	}
+	
+	public int getPercentageDone() {
+		return currentProgress * 10000 / maxProgress;
+	}
+	
+	protected String currentProgressStatus = "";
+	
+	public String getCurrentProgressStatus() {
+		return currentProgressStatus;
+	}
+	
+	protected void updateProgress(int progress, String progressStatus){
+		currentProgress = progress;
+		currentProgressStatus = progressStatus;
+		LongTaskProgressChangedEvent event = new LongTaskProgressChangedEvent(getCurrentProgressStatus(), getPercentageDone()); 
+		notityObservers(event); 
+	}
+	
+	protected void updateProgress(int progress){
+		updateProgress(progress, ""); 
+	}
+	
+	/* LONG TASK END */
 
 }

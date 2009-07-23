@@ -31,9 +31,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import unbbayes.gui.InternalErrorDialog;
-import unbbayes.gui.util.StatusChangedEvent;
-import unbbayes.gui.util.StatusObservable;
-import unbbayes.gui.util.StatusObserver;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.mebn.Argument;
@@ -68,6 +65,9 @@ import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 import unbbayes.prs.mebn.exception.OVDontIsOfTypeExpected;
 import unbbayes.util.Debug;
+import unbbayes.util.longtask.LongTaskProgressChangedEvent;
+import unbbayes.util.longtask.ILongTaskProgressObservable;
+import unbbayes.util.longtask.ILongTaskProgressObserver;
 
 import com.hp.hpl.jena.util.FileUtils;
 
@@ -90,10 +90,8 @@ import edu.stanford.smi.protegex.owl.model.OWLObjectProperty;
  * @version 1.0 
  */
 
-public class LoaderPrOwlIO extends PROWLModelUser implements StatusObservable{
+public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressObservable{
 
-	private List<StatusObserver> observers = new ArrayList<StatusObserver>(); 
-	
 	/* MEBN Structure */ 
 	
 	private MultiEntityBayesianNetwork mebn = null;
@@ -170,7 +168,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements StatusObservable{
 		
 		List<String> listWarnings = new ArrayList<String>(); 
 		
-		updateStatus(0, ""); 
+		updateProgress(0, ""); 
 		owlModel = ProtegeOWL.createJenaOWLModel();
 		
 		Debug.println("[DEBUG]" + this.getClass() + " -> Load begin"); 
@@ -194,7 +192,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements StatusObservable{
 		
 		try{
 			owlModel.load(inputStream, FileUtils.langXMLAbbrev);   
-			updateStatus(5, ""); 
+			updateProgress(5, ""); 
 		}
 		catch (Exception e){
 			throw new IOMebnException(resource.getString("ErrorReadingFile") + 
@@ -203,71 +201,64 @@ public class LoaderPrOwlIO extends PROWLModelUser implements StatusObservable{
 		
 		/*------------------- MTheory -------------------*/
 		loadMTheoryClass(); 
-		updateStatus(6, ""); 
+		updateProgress(6, ""); 
 		
 		/*------------------- Entities -------------------*/
 
 		loadObjectEntity(); 
-		updateStatus(7, "");
+		updateProgress(7, "");
 		
 		loadMetaEntitiesClasses();
-		updateStatus(9, "");
+		updateProgress(9, "");
 		
 		loadCategoricalStateEntity(); 
-		updateStatus(11, "");
+		updateProgress(11, "");
 		
 		loadBooleanStateEntity(); 
-		updateStatus(13, "");
+		updateProgress(13, "");
 		
 		/*-------------------MTheory elements------------*/
 		loadDomainMFrag(); 
-		updateStatus(20, "");
+		updateProgress(20, "");
 		
 		loadBuiltInRV(); 
-		updateStatus(25, "");
+		updateProgress(25, "");
 		
 		loadContextNode(); 	
-		updateStatus(35, "");
+		updateProgress(35, "");
 		
 		loadDomainResidentNode();
-		updateStatus(45, "");
+		updateProgress(45, "");
 		
 		loadGenerativeInputNode(); 	
-		updateStatus(55, "");
+		updateProgress(55, "");
 		
 		/*---------------------Arguments-------------------*/
 		loadOrdinaryVariable();
-		updateStatus(65, "");
+		updateProgress(65, "");
 		
 		loadArgRelationship();
-		updateStatus(75, "");
+		updateProgress(75, "");
 		 		
 		loadSimpleArgRelationship(); 
-		updateStatus(85, "");
+		updateProgress(85, "");
 		
 		ajustArgumentOfNodes(); 
-		updateStatus(90, "");
+		updateProgress(90, "");
 		
 		setFormulasOfContextNodes();
-		updateStatus(95, "");
+		updateProgress(95, "");
 		
 		// Load object entity individuals (ObjectEntityInstances)
 		try {
 			loadObjectEntityIndividuals();
-			updateStatus(100, "");
+			updateProgress(100, "");
 		} catch (TypeException te) {
 			te.printStackTrace();
 			throw new IOMebnException(te.getMessage());
 		}
 		
 		return mebn; 		
-	}
-	
-	private void updateStatus(int percentage, String msg){
-		StatusChangedEvent event = new StatusChangedEvent(); 
-		event.setPercentageConclude(5); 
-		event.setMsg(msg); 
-		notityObservers(event); 
 	}
 	
 	/**
@@ -1703,20 +1694,57 @@ public class LoaderPrOwlIO extends PROWLModelUser implements StatusObservable{
 		// this class should work only with internally loaded OWL models
 		return;
 	}
+	
+	/* LONG TASK BEGIN */
 
-	public void registerObserver(StatusObserver observer) {
+	private List<ILongTaskProgressObserver> observers = new ArrayList<ILongTaskProgressObserver>();
+	
+	public void registerObserver(ILongTaskProgressObserver observer) {
 		observers.add(observer); 
 	}
 
-	public void removeObserver(StatusObserver observer) {
+	public void removeObserver(ILongTaskProgressObserver observer) {
 		observers.remove(observer); 
 	}
 
-	public void notityObservers(StatusChangedEvent event) {
-		for(StatusObserver observer: observers){
+	public void notityObservers(LongTaskProgressChangedEvent event) {
+		for(ILongTaskProgressObserver observer: observers){
 			observer.update(event); 
 		}
 	}
 	
+	protected int maxProgress = 100;
 	
+	public int getMaxProgress() {
+		return maxProgress;
+	}
+	
+	protected int currentProgress = 0;
+	
+	public int getCurrentProgress() {
+		return currentProgress;
+	}
+	
+	public int getPercentageDone() {
+		return currentProgress * 10000 / maxProgress;
+	}
+	
+	protected String currentProgressStatus = "";
+	
+	public String getCurrentProgressStatus() {
+		return currentProgressStatus;
+	}
+	
+	protected void updateProgress(int progress, String progressStatus){
+		currentProgress = progress;
+		currentProgressStatus = progressStatus;
+		LongTaskProgressChangedEvent event = new LongTaskProgressChangedEvent(getCurrentProgressStatus(), getPercentageDone()); 
+		notityObservers(event); 
+	}
+	
+	protected void updateProgress(int progress){
+		updateProgress(progress, ""); 
+	}
+	
+	/* LONG TASK END */
 }

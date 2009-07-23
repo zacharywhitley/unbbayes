@@ -28,6 +28,8 @@ import java.util.ResourceBundle;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
+import unbbayes.controller.CompilationThread;
+import unbbayes.gui.ProgressBar;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
@@ -40,7 +42,7 @@ import unbbayes.simulation.montecarlo.sampling.IMonteCarloSampling;
 /**
  * Class responsible for controlling the user action for generating samples for a BN.
  * 
- * @author Danilo Custódio (danilocustodio@gmail.com)
+ * @author Danilo CustÃ³dio (danilocustodio@gmail.com)
  * @author Rommel Carvalho (rommel.carvalho@gmail.com)
  */
 public class MCMainController {
@@ -56,7 +58,6 @@ public class MCMainController {
 	public MCMainController(IMonteCarloSampling mc){	
 		this.mc = mc;
 		getNet();
-		
 		paramPane = new MCParametersPane();
 		addListeners();
 	}	
@@ -104,23 +105,41 @@ public class MCMainController {
 	
 	ActionListener okListener = new ActionListener(){
 		public void actionPerformed(ActionEvent ae){
-			int n = validaNatural(paramPane.getSampleSize());
-			if(n != -1){								
-				mc.start(pn, n);
-				paramPane.dispose();
-				try {
-					MonteCarloIO io = new MonteCarloIO(mc.getSampledStatesMatrix());
-					io.makeFile(mc.getSamplingNodeOrderQueue());
-					JOptionPane.showMessageDialog(paramPane, resource.getString("saveSuccess"), resource.getString("success"), JOptionPane.INFORMATION_MESSAGE);
-				} catch (IOException e) {
-					JOptionPane.showMessageDialog(paramPane, resource.getString("saveException"), resource.getString("error"), JOptionPane.ERROR_MESSAGE);
-				}
-			} else {			
-				JOptionPane.showMessageDialog(paramPane, resource.getString("sampleSizeException"), resource.getString("error"), JOptionPane.ERROR_MESSAGE);
-			}
+			// to do on pressing OK
+			new MonteCarloThread(MCMainController.this); // calling thread interface
 		}	
 	};
 	
-	
+	public void startMC() {
+		int n = validaNatural(paramPane.getSampleSize());
+		if (n != -1) {
+			// Start progress bar
+	    	ProgressBar pb = new ProgressBar();
+	    	// Register progress bar as observer of the long task mc
+	    	mc.registerObserver(pb);
+			mc.start(pn, n);
+			// Add thread to progress bar to allow canceling the operation
+	    	pb.setThread(MonteCarloThread.t);
+			// Hides the frame of the progress bar
+			pb.hideProgressbar(); 
+			try {
+				MonteCarloIO io = new MonteCarloIO(mc.getSampledStatesMatrix());
+				io.makeFile(mc.getSamplingNodeOrderQueue());
+				JOptionPane.showMessageDialog(paramPane, resource
+						.getString("saveSuccess"), resource
+						.getString("success"), JOptionPane.INFORMATION_MESSAGE);
+			} catch (IOException e) {
+				JOptionPane.showMessageDialog(paramPane, resource
+						.getString("saveException"), resource
+						.getString("error"), JOptionPane.ERROR_MESSAGE);
+			}
+		} else {
+			JOptionPane.showMessageDialog(paramPane, resource
+					.getString("sampleSizeException"), resource
+					.getString("error"), JOptionPane.ERROR_MESSAGE);
+		}
+		
+		
+	}
 
 }

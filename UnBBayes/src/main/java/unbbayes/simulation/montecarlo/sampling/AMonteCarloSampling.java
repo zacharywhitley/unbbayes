@@ -28,8 +28,63 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.util.longtask.ILongTaskProgressObserver;
+import unbbayes.util.longtask.LongTaskProgressChangedEvent;
 
 public abstract class AMonteCarloSampling implements IMonteCarloSampling {
+	
+	/* LONG TASK BEGIN */
+
+	private List<ILongTaskProgressObserver> observers = new ArrayList<ILongTaskProgressObserver>();
+	
+	public void registerObserver(ILongTaskProgressObserver observer) {
+		observers.add(observer); 
+	}
+
+	public void removeObserver(ILongTaskProgressObserver observer) {
+		observers.remove(observer); 
+	}
+
+	public void notityObservers(LongTaskProgressChangedEvent event) {
+		for(ILongTaskProgressObserver observer: observers){
+			observer.update(event); 
+		}
+	}
+	
+	protected int maxProgress = 100;
+	
+	public int getMaxProgress() {
+		return maxProgress;
+	}
+	
+	protected int currentProgress = 0;
+	
+	public int getCurrentProgress() {
+		return currentProgress;
+	}
+	
+	public int getPercentageDone() {
+		return currentProgress * 10000 / maxProgress;
+	}
+	
+	protected String currentProgressStatus = "";
+	
+	public String getCurrentProgressStatus() {
+		return currentProgressStatus;
+	}
+	
+	protected void updateProgress(int progress, String progressStatus){
+		currentProgress = progress;
+		currentProgressStatus = progressStatus;
+		LongTaskProgressChangedEvent event = new LongTaskProgressChangedEvent(getCurrentProgressStatus(), getPercentageDone()); 
+		notityObservers(event); 
+	}
+	
+	protected void updateProgress(int progress){
+		updateProgress(progress, ""); 
+	}
+	
+	/* LONG TASK END */
 	
 	/**
 	 * Returns the generated sample matrix. The row represents the ith trial and the column 
@@ -68,6 +123,7 @@ public abstract class AMonteCarloSampling implements IMonteCarloSampling {
 	 * @param pn Probabilistic network that will be used for sampling.
 	 * @param nTrials Number of trials to generate.
 	 */
+	
 	public abstract void start(ProbabilisticNetwork pn , int nTrials);
 
 	protected ProbabilisticNetwork pn;
