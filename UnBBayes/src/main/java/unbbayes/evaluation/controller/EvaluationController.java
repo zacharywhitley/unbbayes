@@ -36,18 +36,16 @@ import unbbayes.evaluation.FastLWApproximateEvaluation;
 import unbbayes.evaluation.IEvaluation;
 import unbbayes.evaluation.exception.EvaluationException;
 import unbbayes.evaluation.gui.EvaluationPane;
-import unbbayes.gui.ProgressBar;
+import unbbayes.gui.LongTaskProgressBar;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.simulation.montecarlo.controller.MonteCarloThread;
 
 public class EvaluationController {
 	
-	public EvaluationPane evaluationPane;
+	private EvaluationPane evaluationPane;
 	private ProbabilisticNetwork network;
 	private IEvaluation evaluation;
-	private int sampleSize;
 	
 	public EvaluationController(ProbabilisticNetwork network) {
 		this.network = network;
@@ -73,29 +71,10 @@ public class EvaluationController {
 		evaluationPane.setRunButtonActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent arg0) {
-				new ControllerThread(EvaluationController.this);  // thread is called here
+				new EvaluationThread(EvaluationController.this);  // thread is called here
 			}
 
 		});
-	}
-	
-	public void runEvaluation() {
-		sampleSize = evaluationPane.getSampleSizeValue();
-		FastLWApproximateEvaluation flw = new FastLWApproximateEvaluation(
-				sampleSize);
-		// Start progress bar
-    	ProgressBar pb = new ProgressBar();
-    	// Register progress bar as observer of the long task mc
-    	flw.registerObserver(pb);
-    	pb.setProgressbar(100);
-		runEvaluation(flw);
-		// Add thread to progress bar to allow canceling the operation
-    	pb.setThread(MonteCarloThread.t);
-    	pb.setProgressbar(10000);
-		// Hides the frame of the progress bar
-		pb.hideProgressbar(); 
-		
-		ControllerThread.controller.evaluationPane.btnDo.setVisible(false);
 	}
 	
 	private void validateData() throws EvaluationException {
@@ -124,7 +103,7 @@ public class EvaluationController {
 			
 	}
 	
-	void runEvaluation(IEvaluation evaluation) {
+	void runEvaluation() {
 		evaluationPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		
 		try {
@@ -136,8 +115,24 @@ public class EvaluationController {
 		
 		List<String> targetNodeNameList = evaluationPane.getTargetNodeNameList();
 		List<String> evidenceNodeNameList = evaluationPane.getEvidenceNodeNameList();
-		//int sampleSize = evaluationPane.getSampleSizeValue();
+		int sampleSize = evaluationPane.getSampleSizeValue();
 		
+		evaluation = new FastLWApproximateEvaluation(sampleSize);
+		// Start progress bar
+		LongTaskProgressBar progress = new LongTaskProgressBar(false);
+		// Set up what to do once the long task is canceled
+		progress.getCancelButton().addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				finishEvaluation();
+			}
+		});
+		// Register progress bar as observer of the long task
+		evaluation.registerObserver(progress);
+		// Add thread to progress bar to allow canceling the operation
+		progress.setThread(EvaluationThread.t);
+		// Update the pane with the progress bar just created
+		evaluationPane.updateProgressBarPane(progress);
+
 		Map<String, String> nodeFindingMap = evaluationPane.getNodeConditionMap();
 		ProbabilisticNode node;
 		for (String nodeName : nodeFindingMap.keySet()) {
@@ -151,7 +146,10 @@ public class EvaluationController {
 		}
 		
 		try {
+			// Run the long task
 			evaluation.evaluate(network, targetNodeNameList, evidenceNodeNameList, false);
+			// Set long task as done on the progress bar (100%)
+			progress.setProgressBar(10000);
 			
 			List<EvidenceEvaluation> evidenceEvaluationList = evaluation.getBestMarginalImprovement();
 			
@@ -192,6 +190,11 @@ public class EvaluationController {
 		// Reset evidences to all finding/conditional nodes, which means they do not have findings any more.  
 		network.resetEvidences();
 		
+		finishEvaluation();
+	}
+	
+	private void finishEvaluation() {
+		evaluationPane.resetProgressBar();
 		evaluationPane.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 	}
 	

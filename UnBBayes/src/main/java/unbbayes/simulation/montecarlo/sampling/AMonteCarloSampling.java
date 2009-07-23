@@ -64,7 +64,7 @@ public abstract class AMonteCarloSampling implements IMonteCarloSampling {
 	}
 	
 	public int getPercentageDone() {
-		return currentProgress * 10000 / maxProgress;
+		return Math.round((float)currentProgress / maxProgress * 10000);
 	}
 	
 	protected String currentProgressStatus = "";
@@ -73,11 +73,15 @@ public abstract class AMonteCarloSampling implements IMonteCarloSampling {
 		return currentProgressStatus;
 	}
 	
-	protected void updateProgress(int progress, String progressStatus){
+	protected void updateProgress(int progress, String progressStatus) {
 		currentProgress = progress;
 		currentProgressStatus = progressStatus;
-		LongTaskProgressChangedEvent event = new LongTaskProgressChangedEvent(getCurrentProgressStatus(), getPercentageDone()); 
-		notityObservers(event); 
+		// Avoid updating too much. Just update every third of one percent (maxProgress * 0.01/3)
+		int step = (int)(maxProgress * 0.01/3);
+		if (step > 0 && currentProgress % step == 0 && getPercentageDone() < 9800) {
+			LongTaskProgressChangedEvent event = new LongTaskProgressChangedEvent(getCurrentProgressStatus(), getPercentageDone()); 
+			notityObservers(event); 
+		}
 	}
 	
 	protected void updateProgress(int progress){

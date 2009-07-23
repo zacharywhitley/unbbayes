@@ -34,10 +34,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import javax.swing.JDialog;
-
-import unbbayes.gui.ProgressBarPanel;
-import unbbayes.gui.UnBBayesFrame;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.ContextNode;
@@ -612,30 +608,6 @@ public class UbfIO implements MebnIO {
 		throw new IllegalArgumentException(this.resource.getString("InvalidSyntax"));
 	}
 	
-	JDialog dialog; 
-	
-	public void createAndShowProgressBar(ProgressBarPanel progressPanel){
-		dialog = new JDialog();
-		dialog.setTitle("Progress"); 
-		dialog.setContentPane(progressPanel); 
-		dialog.pack(); 
-		dialog.repaint(); 
-		dialog.setLocationRelativeTo(UnBBayesFrame.getIUnBBayes()); 
-
-		dialog.setModal(false); 
-		dialog.setVisible(true);
-		dialog.validate(); 
-		dialog.pack(); 
-		
-	}
-	
-	public void disableProgressBar(){
-		if(dialog != null){
-			dialog.dispose(); 
-			dialog = null; 
-		}
-	}
-		
 	/* (non-Javadoc)
 	 * @see unbbayes.io.mebn.MebnIO#loadMebn(java.io.File)
 	 */
@@ -732,8 +704,6 @@ public class UbfIO implements MebnIO {
 
 	    // treating object entity (instances) information (mainly, ordenable entities)
 		updateObjectEntities(st, mebn);
-		
-		disableProgressBar(); 
 		
 		return mebn;
 	}

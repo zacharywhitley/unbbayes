@@ -1726,7 +1726,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 	}
 	
 	public int getPercentageDone() {
-		return currentProgress * 10000 / maxProgress;
+		return Math.round((float)currentProgress / maxProgress * 10000);
 	}
 	
 	protected String currentProgressStatus = "";

@@ -20,21 +20,13 @@
  */
 package unbbayes.simulation.montecarlo.sampling;
 
-import java.beans.*;
-
-import unbbayes.gui.ProgressBar;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.JOptionPane;
-
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.util.longtask.ILongTaskProgressObserver;
-import unbbayes.util.longtask.LongTaskProgressChangedEvent;
 
 /**
  * 

@@ -18,14 +18,24 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+package unbbayes.evaluation.controller;
 
-package unbbayes.util.longtask;
 
-/**
- * This is an interface that each class running a long task must implement.
- */
-public interface ILongTaskThread extends Runnable {
+public class EvaluationThread implements Runnable {
 
-	public void run(); // The long task that needs to be run as a thread
+	public static Thread t;
+
+	private EvaluationController controller;
+
+	public EvaluationThread(EvaluationController controller) {
+		this.controller = controller;
+		t = new Thread(this, "Progress");
+		t.start();
+	}
+
+	public void run() {
+		controller.runEvaluation();
+	}
 
 }
+

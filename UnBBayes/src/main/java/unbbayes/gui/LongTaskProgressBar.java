@@ -34,11 +34,19 @@ import javax.swing.border.Border;
 import unbbayes.util.longtask.ILongTaskProgressObserver;
 import unbbayes.util.longtask.LongTaskProgressChangedEvent;
 
-public class ProgressBar implements ILongTaskProgressObserver {
+public class LongTaskProgressBar implements ILongTaskProgressObserver {
 
-	private JButton btnCancel;
+	private JButton cancelButton;
+	
+	public JButton getCancelButton() {
+		return cancelButton;
+	}
 
 	private JProgressBar progressBar;
+	
+	public JProgressBar getProgressBar() {
+		return progressBar;
+	}
 
 	private JFrame frm;
 
@@ -46,38 +54,41 @@ public class ProgressBar implements ILongTaskProgressObserver {
 
 	private Thread t;
 
-	public ProgressBar() {
+	public LongTaskProgressBar(boolean showProgressBar) {
+		this("Reading...", showProgressBar);
+	}
+	
+	public LongTaskProgressBar(String title, boolean showProgressBar) {
 		frm = new JFrame();
-		frm.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		btnCancel = new JButton("Cancel");
+		frm.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		cancelButton = new JButton("Cancel");
 		content = frm.getContentPane();
-		content.add(btnCancel);
-		btnCancel.setBounds(100, 35, 100, 25);
-		btnCancel.addActionListener(new CancelActionListener()); // Add the button's action
-		progressBar = new JProgressBar(0, 1000);
+		content.add(cancelButton);
+		cancelButton.setBounds(100, 35, 100, 25);
+		cancelButton.addActionListener(new CancelActionListener()); // Add the button's action
+		progressBar = new JProgressBar(0, 10000);
 		progressBar.setValue(0);
 		progressBar.setStringPainted(true);
-		Border border = BorderFactory.createTitledBorder("Reading...");
+		Border border = BorderFactory.createTitledBorder(title);
 		progressBar.setBorder(border);
 		content.add(progressBar, BorderLayout.NORTH);
 		frm.setSize(300, 100);
-		frm.setVisible(true);
+		frm.setVisible(showProgressBar);
 	}
 
 	public void setThread(Thread t) {
 		this.t = t;
 	}
 
-	public void setProgressbar(int n) {
-		// System.out.println("I'm setting " + n + " here \n");
+	public void setProgressBar(int n) {
 		progressBar.setValue(n);
 	}
 
-	public void hideProgressbar() {
+	public void hideProgressBar() {
 		frm.setVisible(false);
 	}
 	
-	public void showProgressbar() {
+	public void showProgressBar() {
 		frm.setVisible(true);
 	}
 	
@@ -87,7 +98,7 @@ public class ProgressBar implements ILongTaskProgressObserver {
 	
 	public void update(LongTaskProgressChangedEvent status) {
 		progressBar.setValue(status.getPercentageDone()); 
-		progressBar.paintImmediately(0, 0, progressBar.getWidth(), progressBar.getHeight()); 
+		update(); 
 	}
 
 	// The action

@@ -20,20 +20,19 @@
  */
 package unbbayes.evaluation;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import unbbayes.evaluation.controller.ControllerThread;
 import unbbayes.evaluation.exception.EvaluationException;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.simulation.likelihoodweighting.ILikelihoodWeightingSampling;
 import unbbayes.simulation.likelihoodweighting.sampling.LikelihoodWeightingSampling;
+import unbbayes.util.longtask.ILongTaskProgressObserver;
+import unbbayes.util.longtask.LongTaskProgressChangedEvent;
 
-public class FastLWApproximateEvaluation extends AEvaluation {
+public class FastLWApproximateEvaluation extends AEvaluation implements ILongTaskProgressObserver {
 
 	// ------- VALUES THAT DO NOT CHANGE --------//
 
@@ -55,40 +54,6 @@ public class FastLWApproximateEvaluation extends AEvaluation {
 
 	protected int[] positionEvidenceNodeList;
 	
-//	 event fire for progress
-	int myProperty=0;
-	public static int temp;
-	int pvalue; // max value based on which the percentage is calculated; static so that it can be accessed elsewhere
-	
-	//	 Create the listener list.
-    public PropertyChangeSupport pceListeners = new PropertyChangeSupport(this);
-
-    public void setMaxPValue(int pvalue,int size)
-    {
-    	temp=pvalue+(size*2*pvalue);
-    	this.pvalue=temp;
-    	myProperty+=(int)(0.01*this.pvalue); // 1% already set
-    }
-   // set the value of the property and return percentage completed
-    public void setMyProperty() {
-    	int newValue;
-        int oldValue = myProperty;
-        myProperty+=1;
-        newValue=(myProperty*1000)/pvalue; // returns percentage completed value
-        if(newValue<981)
-        pceListeners.firePropertyChange("myProperty", new Integer(oldValue), new Integer(newValue));
-    }
-
-    // The listener list wrapper methods.
-    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
-        pceListeners.addPropertyChangeListener(listener);
-    }
-    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
-        pceListeners.removePropertyChangeListener(listener);
-    }
-    
-//  end event fire for progress
-
 	// -------- OUTPUT VALUES - EVALUATION --------//
 
 	public float getError() {
@@ -102,23 +67,28 @@ public class FastLWApproximateEvaluation extends AEvaluation {
 	protected void evaluate(List<String> targetNodeNameList,
 			List<String> evidenceNodeNameList, boolean onlyGCM) throws EvaluationException {
 		
+		// Set the maximum progress for this long task
+		setMaxProgress(evidenceNodeNameList.size());
+		// Set the current progress as 1% of the maximum allowed.
+		updateProgress((int)(maxProgress * 0.01)); 
+		
 		// 1. Generate the MC sample from the network file
 		// Trial# StateIndexForNode1 StateIndexForNode2 StateIndexForNodeJ
 		// 001 0 1 0
 		// 002 2 0 1
 		// ...
 		// i x y z
-		ControllerThread.controller.evaluationPane.progressBar.setValue(10);
 		lw = new LikelihoodWeightingSampling();
-		long init = System.currentTimeMillis();
+		// Register this long task as observer of the sampling task to get a better approximation of the total progress
+		lw.registerObserver(this);
+//		long init = System.currentTimeMillis();
 		lw.start(net, sampleSize);
-		long end = System.currentTimeMillis();
+//		long end = System.currentTimeMillis();
 //		System.out.println("Time elapsed for sampling: " + (float)(end-init)/1000);
-		init = System.currentTimeMillis();
+//		init = System.currentTimeMillis();
 		sampleMatrix = lw.getSampledStatesMatrix();
-		setMaxPValue(sampleMatrix.length,evidenceNodeNameList.size()); // set value for progress bar
 		sampleWeight = lw.getFullStatesSetWeight();
-		end = System.currentTimeMillis();
+//		end = System.currentTimeMillis();
 //		System.out.println("Time elapsed for matrix: " + (float)(end-init)/1000);
 //		System.out.println();
 
@@ -161,7 +131,7 @@ public class FastLWApproximateEvaluation extends AEvaluation {
 
 		// Iterate over all cases in the LW sample
 		for (int i = 0; i < sampleMatrix.length; i++) {
-			setMyProperty();
+			updateProgress(currentProgress + 1);
 			// Row to compute the weight
 			int row = 0;
 			int currentStatesProduct = evidenceStatesProduct;
@@ -255,6 +225,35 @@ public class FastLWApproximateEvaluation extends AEvaluation {
 
 		return CM;
 	}
+	
+	/* LONG TASK BEGIN */
+	
+	private int previousSamplingProgress = 0;
+	
+	/**
+	 * Compute an approximation of the maximum size for the progress of this long task and 
+	 * set it as the value of maxProgress.
+	 */
+	protected void setMaxProgress(int evidenceNodeListSize) {
+    	maxProgress = sampleSize * (2 * evidenceNodeListSize + 2);
+    }
+	
+	/**
+	 * To have a better approximation of the current progress, we have to keep track of the 
+	 * sampling process used in this long task. 
+	 */
+	public void update(LongTaskProgressChangedEvent status) {
+		
+		int samplingProgress = (int)((float)status.getPercentageDone() / 10000 * sampleSize);
+		// Add the delta sampling progress (samplingProgress - previousSamplingProgress) if delta > 0
+		int delta = (samplingProgress - previousSamplingProgress);
+		if (delta > 0) {
+			updateProgress(currentProgress + delta);
+			previousSamplingProgress = samplingProgress;
+		}
+	}
+	
+	/* LONG TASK END */
 
 
 	public static void main(String[] args) throws Exception {

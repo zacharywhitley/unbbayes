@@ -28,8 +28,7 @@ import java.util.ResourceBundle;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
-import unbbayes.controller.CompilationThread;
-import unbbayes.gui.ProgressBar;
+import unbbayes.gui.LongTaskProgressBar;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
@@ -114,14 +113,15 @@ public class MCMainController {
 		int n = validaNatural(paramPane.getSampleSize());
 		if (n != -1) {
 			// Start progress bar
-	    	ProgressBar pb = new ProgressBar();
+	    	LongTaskProgressBar pb = new LongTaskProgressBar("Sampling", true);
 	    	// Register progress bar as observer of the long task mc
 	    	mc.registerObserver(pb);
-			mc.start(pn, n);
-			// Add thread to progress bar to allow canceling the operation
+	    	// Add thread to progress bar to allow canceling the operation
 	    	pb.setThread(MonteCarloThread.t);
+	    	// Run the long task
+			mc.start(pn, n);
 			// Hides the frame of the progress bar
-			pb.hideProgressbar(); 
+			pb.hideProgressBar(); 
 			try {
 				MonteCarloIO io = new MonteCarloIO(mc.getSampledStatesMatrix());
 				io.makeFile(mc.getSamplingNodeOrderQueue());

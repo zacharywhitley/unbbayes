@@ -382,7 +382,7 @@ public abstract class AEvaluation implements IEvaluation {
 	}
 	
 	public int getPercentageDone() {
-		return currentProgress * 10000 / maxProgress;
+		return Math.round((float)currentProgress / maxProgress * 10000);
 	}
 	
 	protected String currentProgressStatus = "";
@@ -391,11 +391,27 @@ public abstract class AEvaluation implements IEvaluation {
 		return currentProgressStatus;
 	}
 	
+	protected int lastProgressUpdated = 0;
+	
+	/**
+	 * As this progress is an approximation, it is going to be updated 
+	 * until it reaches 98%. Then the progress is not going to be updated anymore 
+	 * to avoid getting to 100% before the task is done.
+	 */
 	protected void updateProgress(int progress, String progressStatus){
 		currentProgress = progress;
 		currentProgressStatus = progressStatus;
-		LongTaskProgressChangedEvent event = new LongTaskProgressChangedEvent(getCurrentProgressStatus(), getPercentageDone()); 
-		notityObservers(event); 
+		
+		// Avoid updating too much.
+		// Just update if the delta is greater than step (currentProgress - lastProgressUpdated > step)
+		// or every third of one percent (currentProgress % step == 0)
+		int step = (int)(maxProgress * 0.01/3);
+		boolean update = progress - lastProgressUpdated > step || currentProgress % step == 0;
+		if (update && getPercentageDone() < 9800) {
+			lastProgressUpdated = currentProgress;
+			LongTaskProgressChangedEvent event = new LongTaskProgressChangedEvent(getCurrentProgressStatus(), getPercentageDone()); 
+			notityObservers(event); 
+		}
 	}
 	
 	protected void updateProgress(int progress){

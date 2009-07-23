@@ -36,7 +36,7 @@ import javax.swing.event.TableModelListener;
 
 import unbbayes.gui.ExplanationProperties;
 import unbbayes.gui.NetworkWindow;
-import unbbayes.gui.ProgressBar;
+import unbbayes.gui.LongTaskProgressBar;
 import unbbayes.gui.continuous.ContinuousNormalDistributionPane;
 import unbbayes.gui.table.GUIPotentialTable;
 import unbbayes.gui.table.ReplaceTextCellEditor;
@@ -261,14 +261,15 @@ public class SENController {
 				singleEntityNetwork.resetEvidences();
 				lwInference = new LikelihoodWeightingInference((ProbabilisticNetwork)singleEntityNetwork, sampleSize);
 				// Start progress bar
-            	ProgressBar pb = new ProgressBar();
+            	LongTaskProgressBar pb = new LongTaskProgressBar("Compiling", true);
             	// Register progress bar as observer of the long task lwInference
             	lwInference.getLikelihoodWeightingSampling().registerObserver(pb);
             	// Add thread to progress bar to allow canceling the operation
             	pb.setThread(CompilationThread.t);
+            	// Run the long task
 				lwInference.run();
 				// Hides the frame of the progress bar
-				pb.hideProgressbar(); 
+				pb.hideProgressBar(); 
 			} else {
 				JOptionPane.showMessageDialog(null, resource.getString("likelihoodWeightingNotApplicableError"), resource
 						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
@@ -294,14 +295,14 @@ public class SENController {
 				singleEntityNetwork.resetEvidences();
 				gibbsInference = new GibbsSampling((ProbabilisticNetwork)singleEntityNetwork, sampleSize);
 				// Start progress bar
-            	ProgressBar pb = new ProgressBar();
+            	LongTaskProgressBar pb = new LongTaskProgressBar("Compiling", true);
             	// Register progress bar as observer of the long task gibbsInference
             	gibbsInference.registerObserver(pb);
             	// Add thread to progress bar to allow canceling the operation
             	pb.setThread(CompilationThread.t);
 				gibbsInference.run();
 				// Hides the frame of the progress bar
-				pb.hideProgressbar(); 
+				pb.hideProgressBar(); 
 			} else {
 				JOptionPane.showMessageDialog(null, resource.getString("likelihoodWeightingNotApplicableError"), resource
 						.getString("statusError"), JOptionPane.ERROR_MESSAGE);

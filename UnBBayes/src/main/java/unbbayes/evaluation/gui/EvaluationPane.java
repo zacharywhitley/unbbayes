@@ -20,8 +20,6 @@
  */
 package unbbayes.evaluation.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -34,7 +32,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.AbstractListModel;
-import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
@@ -48,15 +45,13 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListModel;
-import javax.swing.border.Border;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 
 import unbbayes.evaluation.EvidenceEvaluation;
-import unbbayes.evaluation.controller.Listeners;
-import unbbayes.evaluation.controller.Listeners.btnDoAction;
 import unbbayes.evaluation.exception.EvaluationException;
+import unbbayes.gui.LongTaskProgressBar;
 import unbbayes.gui.table.EachRowEditor;
 import unbbayes.gui.table.NumberEditor;
 import unbbayes.gui.table.NumberRenderer;
@@ -79,15 +74,15 @@ public class EvaluationPane extends JPanel {
 	private JLabel errorLabel;
 	private JFormattedTextField errorTextField;
 	private JButton runButton;
-	public JButton btnDo;
-	public JProgressBar progressBar;
+	private JButton cancelButton;
+	private JProgressBar progressBar;
 	
 	private JTable outputTable;
 	private JScrollPane cmOutputTableScroll;
 	private JLabel pccLabel;
 	private JFormattedTextField pccValueTextField;
-	public JPanel sampleSizePane;
-	Listeners lis;
+	private JPanel sampleSizePane;
+	private JPanel progressBarPane;
 
 	public EvaluationPane() {
 		super(new GridLayout(1,1));
@@ -107,6 +102,8 @@ public class EvaluationPane extends JPanel {
 		setUpInputTable();
 		
 		setUpSampleSizePane();
+		
+		setUpProgressBarPane();
 	}
 	
 	private void setUpInputTable() {
@@ -143,24 +140,51 @@ public class EvaluationPane extends JPanel {
 		errorTextField.setColumns(5);
 		errorTextField.setEditable(false);
 		
-		runButton = new JButton("Run");
 		sampleSizePane.add(sampleSizeLabel);
 		sampleSizePane.add(sampleSizeTextField);
 		sampleSizePane.add(errorLabel);
 		sampleSizePane.add(errorTextField);
-		sampleSizePane.add(runButton);
-		
-		btnDo = new JButton("Cancel");
-		sampleSizePane.add(btnDo);
-		btnDo.setBounds(100, 35, 100, 25);
-		progressBar = new JProgressBar(0, 1000);
-		progressBar.setValue(0);
-		progressBar.setStringPainted(true);
-		sampleSizePane.add(progressBar, BorderLayout.NORTH);
-		btnDo.setVisible(false);
-		
 		
 		mainPane.add(sampleSizePane);
+	}
+	
+	private void setUpProgressBarPane() {
+		progressBarPane = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		
+		runButton = new JButton("Run");
+		
+		cancelButton = new JButton("Cancel");
+		cancelButton.setEnabled(false);
+		
+		progressBar = new JProgressBar();
+		progressBar.setValue(0);
+		progressBar.setStringPainted(true);
+		
+		progressBarPane.add(runButton);
+		progressBarPane.add(cancelButton);
+		progressBarPane.add(progressBar);
+		
+		mainPane.add(progressBarPane);
+	}
+	
+	public void updateProgressBarPane(LongTaskProgressBar ltProgressBar) {
+		runButton.setEnabled(false);
+		
+		progressBarPane.remove(cancelButton);
+		cancelButton = ltProgressBar.getCancelButton();
+		progressBarPane.add(cancelButton);
+		cancelButton.setEnabled(true);
+		
+		progressBarPane.remove(progressBar);
+		progressBar = ltProgressBar.getProgressBar();
+		progressBar.setBorder(null);
+		progressBarPane.add(progressBar);
+	}
+	
+	public void resetProgressBar() {
+		runButton.setEnabled(true);
+		cancelButton.setEnabled(false);
+		progressBar.setValue(0);
 	}
 
 	private void setUpOutputPane() {
