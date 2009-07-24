@@ -8,7 +8,25 @@
 	</properties>
 	<body>
 	
-		<release version="3.41.5-BETA" date="2009-06-03" description="Fifth UnBBayes-MEBN beta release">
+		<release version="3.49.6-BETA" date="2009-07-23" description="Fifth UnBBayes-MEBN beta release">
+			<action dev="Shou Matsumoto" type="add" issue="2826255">
+				Integrate Pruning with Grand BN construction.
+			</action>
+			<action dev="Shou Matsumoto" type="add" issue="2826254">
+				Prune Grand BN using d-separation.
+			</action>
+			<action dev="Laecio Lima" type="add" issue="2826253">
+				New Grand BN construction.
+			</action>
+			<action dev="Aditya Mugali" type="add" issue="2825695">
+				Generic Progress Bar.
+			</action>
+			<action dev="Rommel Carvalho" type="add" issue="2825459">
+				Create XMLBIF version 6.
+			</action>
+			<action dev="Young Park" type="add" issue="2819956">
+				New GUI.
+			</action>
 			<action dev="Rommel Carvalho" type="add" issue="2790229">
 				Allow inference with Gibbs.
 			</action>
@@ -51,6 +69,12 @@
 			<action dev="Shou Matsumoto" type="add" issue="2286477">
 				Implement OOBN -> MSBN convertion tool.
 			</action>
+			<action dev="Young Park" type="add" issue="1908023">
+				Arrows at node's edge (outer line).
+			</action>
+			<action dev="Young Park" type="add" issue="1908018">
+				Self-resizing nodes.
+			</action>
 			
 			<action dev="Rommel Carvalho" type="fix" issue="2707961">
 				Invert table's variable order in XML-BIF 5 loader.
@@ -66,6 +90,9 @@
 			</action>
 			<action dev="Shou Matsumoto" type="fix" issue="2390083">
 				OOBN compile failure on input instantiating input.
+			</action>
+			<action dev="Young Park" type="fix" issue="1954465">
+				Resizing of nodes are not applicable anymore (ordinal BN).
 			</action>
 		</release>
 	

@@ -4,7 +4,7 @@
 	<groupId>br.unb.cic</groupId>
 	<artifactId>unbbayes</artifactId>
 	<name>UnBBayes</name>
-	<version>3.41.5-BETA</version>
+	<version>3.49.6-BETA</version>
 	<url>http://unbbayes.sourceforge.net
 	</url>
 	<licenses>
@@ -85,7 +85,7 @@
 	<developers>
 		<developer>
 			<id>mladeira</id>
-			<name>Marcelo Ladeira</name>
+			<name>Dr. Marcelo Ladeira</name>
 			<email>mladeira@unb.br</email>
 			<roles>
 				<role>Project Manager</role>
@@ -101,21 +101,22 @@
 			<roles>
 				<role>Project Manager</role>
 				<role>Architect</role>
+				<role>Developer</role>
 			</roles>
-			<organization>University of Brasilia - UnB</organization>
-			<organizationUrl>www.unb.br</organizationUrl>
-			<timezone>-3</timezone>
+			<organization>George Mason University - GMU</organization>
+			<organizationUrl>www.gmu.edu</organizationUrl>
+			<timezone>-5</timezone>
 		</developer>
 		<developer>
 			<id>pcosta</id>
-			<name>Paulo Cesar G. Costa</name>
+			<name>Dr. Paulo Cesar G. Costa</name>
 			<email>pcosta@gmu.edu</email>
 			<roles>
 				<role>Consultant</role>
 			</roles>
 			<organization>George Mason University - GMU</organization>
 			<organizationUrl>www.gmu.edu</organizationUrl>
-			<timezone>-3</timezone>
+			<timezone>-5</timezone>
 		</developer>
 		<developer>
 			<id>laecio</id>
@@ -139,19 +140,53 @@
 			<organizationUrl>www.unb.br</organizationUrl>
 			<timezone>-3</timezone>
 		</developer>
+		<developer>
+			<id>young</id>
+			<name>Young Park</name>
+			<email>cparkf@gmu.edu</email>
+			<roles>
+				<role>Developer</role>
+			</roles>
+			<organization>George Mason University - GMU</organization>
+			<organizationUrl>www.gmu.edu</organizationUrl>
+			<timezone>-5</timezone>
+		</developer>
+		<developer>
+			<id>aditya</id>
+			<name>Aditya Mugali</name>
+			<email>amugali@gmu.edu</email>
+			<roles>
+				<role>Developer</role>
+			</roles>
+			<organization>George Mason University - GMU</organization>
+			<organizationUrl>www.gmu.edu</organizationUrl>
+			<timezone>-5</timezone>
+		</developer>
 	</developers>
 	<contributors>
 		<contributor>
 			<name>Dr. Kathryn Blackmond Laskey</name>
 			<email>klaskey@gmu.edu</email>
-			<url>http://ite.gmu.edu/~klaskey</url>
+			<url>http://volgenau.gmu.edu/~klaskey</url>
 			<organization>George Mason University - GMU</organization>
 			<organizationUrl>http://www.gmu.edu
 			</organizationUrl>
 			<roles>
 				<role>Consultant</role>
 			</roles>
-			<timezone>-4</timezone>
+			<timezone>-5</timezone>
+		</contributor>
+		<contributor>
+			<name>Dr. Kuo-Chu Chang</name>
+			<email>kchang@gmu.edu</email>
+			<url>http://volgenau.gmu.edu/~kchang</url>
+			<organization>George Mason University - GMU</organization>
+			<organizationUrl>http://www.gmu.edu
+			</organizationUrl>
+			<roles>
+				<role>Consultant</role>
+			</roles>
+			<timezone>-5</timezone>
 		</contributor>
 	</contributors>
 	<scm>

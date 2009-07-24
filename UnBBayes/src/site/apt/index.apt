@@ -30,7 +30,7 @@ UnBBayes Overview
           
               * Gaussian Mixture - Propagation under development
           
-          * Object-Oriented Bayesian Network (OOBN) - Under development
+          * Object-Oriented Bayesian Network (OOBN)
           
       * FOL Probabilistic Network:
       
@@ -48,8 +48,6 @@ UnBBayes Overview
           
           * CBL-B
           
-          * V
-          
           * Incremental Learning
           
       * Sampling
@@ -60,7 +58,7 @@ UnBBayes Overview
           
           * Gibbs
           
-      * Correct Classification Evaluation
+      * Classification Performance Evaluation
       
           * Evaluation using Logic Sampling
           

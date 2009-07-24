@@ -61,6 +61,7 @@ CANDIDATES FOR NEXT RELEASE
 ---------------------------
 
 --add--
+ 2810972	Marginalization	 Open	 2009-06-23	rommelnc	rommelnc	 8
  2718989	Improve performance	 Open	 2009-03-28	rommelnc	rommelnc	 9
  2717798	Implement test case for exact Evaluation	 Open	 2009-03-27	rommelnc	rommelnc	 5
  2027179	Do not allow duplicate finding	 Open	 2008-07-24	laecio_lima	rommelnc	 5
@@ -73,15 +74,14 @@ CANDIDATES FOR NEXT RELEASE
  1949085	Saving findings on PR-OWL files	 Open	 2008-04-22	 nobody	cardialfly	 5
  1908032	MEBN element's description and PR-OWL comments	 Open	 2008-03-05	laecio_lima	cardialfly	 1
  1908029	Dynamic help	 Open	 2008-03-05	laecio_lima	cardialfly	 1
- 1908023	Arrows at node's edge (outer line).	 Open	 2008-03-05	rommelnc	cardialfly	 1
- 1908018	Self-resizing nodes.	 Open	 2008-03-05	rommelnc	cardialfly	 1
  1907930	Saving "recursive" (entity ordering) information in PR-OWL	 Open	 2008-03-05	 nobody	cardialfly	 5
  1907925	Recursive variable definition in PR-OWL	 Open	 2008-03-05	adelfi23	cardialfly	 8
 --fix--
  1975377	Can not edit MTheory name	 Open	 2008-05-27	laecio_lima	rommelnc	 None	 1
  1955808	Problem with the names of the classes of Pr-OWL	 Open	 2008-05-01	 nobody	laecio_lima	 None	 5
- 1954465	Resizing of nodes are not applicable anymore (ordinal BN)	 Open	 2008-04-29	laecio_lima	cardialfly	 None	 3
  1949115	Cannot instantiate categorical entities	 Open	 2008-04-22	 nobody	cardialfly	 None	 3
  1910479	Some variable/entity names causes KB to crush	 Open	 2008-03-09	 nobody	cardialfly	 Later	 6
  1907281	Zombie-nodes at query panel	 Open	 2008-03-04	laecio_lima	cardialfly	 None	 1
+ 
+ 
 

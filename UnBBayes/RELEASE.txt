@@ -1,3 +1,40 @@
+UNBBAYES VERSION 3.49.6-BETA
+----------------------------
+FEATURE LIST		
+Number	Request ID	Summary
+1		2826255		Integrate Pruning with Grand BN construction.
+2		2826254		Prune Grand BN using d-separation.
+3		2826253		New Grand BN construction.
+4		2825695		Generic Progress Bar.
+5		2825459		Create XMLBIF version 6.
+6		2819956		New GUI.
+7		2790229		Allow inference with Gibbs.
+8		2790228		Add simulation to GUI.
+9		2790227		Gibbs Sampling.
+10		2787581		Allow finding in evaluation.
+11		2708052		Implement test case for Evaluation module.
+12		2564961		Compute exact confusion matrix.
+13		2542566		Compute error for evaluation.
+14		2539912		Include Load and Save DNE format in GUI.
+15		2539910		Load and Save DNE format.
+16		2521242		Include PCC marginal improvement and cost rate in GUI.
+17		2521225		Compute evidence cost rate.
+18		2521222		Compute marginal improvement.
+19		2521210		Remove Java 6 dependency.
+20		2286477		Implement OOBN -> MSBN convertion tool.
+21		1908023		Arrows at node's edge (outer line).
+22		1908018		Self-resizing nodes.
+
+BUG LIST		
+Number	Request ID	Summary
+1		2707961		Invert table's variable order in XML-BIF 5 loader.
+2		2583323		Bug in listener of changes in Node name.
+3		2539903		Out of bounds when evaluating.
+4		2539894		Monte carlo gives array out of bounds.
+5		2390083		OOBN compile failure on input instantiating input.
+6		1954465		Resizing of nodes are not applicable anymore (ordinal BN).
+
+
 UNBBAYES VERSION 3.27.9-BETA
 ----------------------------
 FEATURE LIST		
@@ -22,7 +59,6 @@ Number	Request ID	Summary
 18		2027175		Indicate presence of finding.
 19		1908040		Propose new SSBN algorithm considering evidences "below".
 
-
 BUG LIST		
 Number	Request ID	Summary
 1		2380157		Update node index map.
@@ -35,6 +71,7 @@ Number	Request ID	Summary
 8		1949087		Cannot change MTheory's name.
 9		1907274		Strange behavior when query->move node.
 
+
 UNBBAYES VERSION 3.8.3-BETA
 ----------------------------
 FEATURE LIST		
@@ -44,12 +81,12 @@ Number	Request ID	Summary
 3		2027165  	Remove a finding
 4		2033356  	upgrade in search context node evaluation    
 
-
 BUG LIST		
 Number	Request ID	Summary
 1 		1994411  	Compiler bug when ther are only invalid parents
 2		2014574 	Compiler doesn't accept complex boolean expression.
 3		1913724		Web site's Enlgish page is in Portuguese.
+
 
 UNBBAYES VERSION 3.4.29-BETA
 ----------------------------
