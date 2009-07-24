@@ -7,7 +7,7 @@ MTheory=VehiclesIdentification_MTheory
 NextMFrag=7
 NextResident=14
 NextInput=8
-NextContext=5
+NextContext=6
 NextEntity=1
 
 % UBF MFrags and Nodes declaration
@@ -61,13 +61,13 @@ NextOrdinaryVar=7
 
 Node=MTI
 Type=DomainResidentNode
-Position=244.0,365.0
+Position=264.0,433.0
 Size=96,60
 Color=-66914
 
 Node=Speed
 Type=DomainResidentNode
-Position=230.0,257.0
+Position=250.0,325.0
 Size=125,60
 Color=-66914
 
@@ -76,21 +76,30 @@ Color=-66914
 
 Node=IX7
 Type=GenerativeInputNode
-Position=45.0,257.0
+Position=65.0,325.0
 Size=146,60
 Color=-2302756
 
 Node=IX4
 Type=GenerativeInputNode
-Position=133.0,163.0
+Position=153.0,231.0
 Size=148,62
 Color=-2302756
 
 Node=IX5
 Type=GenerativeInputNode
-Position=300.0,167.0
+Position=320.0,235.0
 Size=144,60
 Color=-2302756
+
+% Context nodes
+
+
+Node=CX5
+Type=ContextNode
+Position=210.0,158.0
+Size=220,60
+Color=-5178237
 
 % Ordinary Variables
 
@@ -303,4 +312,4 @@ Color=-5178237
 % Object Entity Instances
 
 ObjEntity=TimeStep
-Instances=
+Instances=T0,T1
