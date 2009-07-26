@@ -1,4 +1,3 @@
-package unbbayes.datamining;
 /*
  *  UnBBayes
  *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
@@ -19,6 +18,8 @@ package unbbayes.datamining;
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+package unbbayes.datamining;
+
 import unbbayes.datamining.gui.InvokerMain;
 
 public class Start
