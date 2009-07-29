@@ -21,37 +21,42 @@ NextOrdinaryVar=3
 
 Node=OwnEnterpriseSuspendedForProcuring
 Type=DomainResidentNode
-Position=233.0,176.0
-Size=35,35
+Position=126.0,260.0
+Size=318,60
+Color=-66914
 
 % Input nodes
 
 
 Node=IX8
 Type=GenerativeInputNode
-Position=233.0,119.0
-Size=35,35
+Position=154.0,152.0
+Size=262,60
+Color=-2302756
 
 % Context nodes
 
 
 Node=CX19
 Type=ContextNode
-Position=233.0,86.0
-Size=35,35
+Position=285.0,21.0
+Size=258,60
+Color=-5178237
 
 % Ordinary Variables
 
 
-Node=person
-Type=OrdinalVar
-Position=304.0,46.0
-Size=35,35
-
 Node=enterprise
 Type=OrdinalVar
-Position=156.0,45.0
-Size=35,35
+Position=33.0,20.0
+Size=231,60
+Color=-5178237
+
+Node=person
+Type=OrdinalVar
+Position=182.0,81.0
+Size=192,60
+Color=-5178237
 
 % MFrag
 MFrag=PersonalInfo_MFrag
@@ -62,44 +67,51 @@ NextOrdinaryVar=4
 
 Node=AreRelated
 Type=DomainResidentNode
-Position=275.0,180.0
-Size=35,35
+Position=188.0,286.0
+Size=226,60
+Color=-66914
 
 Node=LiveInSameAddress
 Type=DomainResidentNode
-Position=275.0,112.0
-Size=35,35
+Position=164.0,134.0
+Size=273,60
+Color=-66914
 
 Node=AnnualIncome
 Type=DomainResidentNode
-Position=160.0,150.0
-Size=35,35
+Position=67.0,204.0
+Size=186,60
+Color=-66914
 
 Node=Education
 Type=DomainResidentNode
-Position=389.0,151.0
-Size=35,35
+Position=375.0,202.0
+Size=162,60
+Color=-66914
 
 % Context nodes
 
 
 Node=CX2
 Type=ContextNode
-Position=270.0,74.0
-Size=35,35
+Position=208.0,70.0
+Size=210,60
+Color=-5178237
 
 % Ordinary Variables
 
 
 Node=person2
 Type=OrdinalVar
-Position=364.0,40.0
-Size=35,35
+Position=332.0,19.0
+Size=200,60
+Color=-5178237
 
 Node=person1
 Type=OrdinalVar
-Position=180.0,39.0
-Size=35,35
+Position=96.0,18.0
+Size=200,60
+Color=-5178237
 
 % MFrag
 MFrag=DoFurtherInvestigation_MFrag
@@ -110,52 +122,60 @@ NextOrdinaryVar=4
 
 Node=DoFurtherInvestigation
 Type=DomainResidentNode
-Position=243.0,140.0
-Size=35,35
+Position=217.0,233.0
+Size=260,60
+Color=-66914
 
 % Input nodes
 
 
 Node=IX11
 Type=GenerativeInputNode
-Position=362.0,91.0
-Size=35,35
+Position=360.0,147.0
+Size=318,60
+Color=-2302756
 
 Node=IX10
 Type=GenerativeInputNode
-Position=127.0,90.0
-Size=35,35
+Position=66.0,149.0
+Size=291,60
+Color=-2302756
 
 % Context nodes
 
 
 Node=CX21
 Type=ContextNode
-Position=346.0,56.0
-Size=35,35
+Position=401.0,73.0
+Size=258,60
+Color=-5178237
 
 Node=CX20
 Type=ContextNode
-Position=164.0,56.0
-Size=35,35
+Position=118.0,70.0
+Size=275,60
+Color=-5178237
 
 % Ordinary Variables
 
 
 Node=person
 Type=OrdinalVar
-Position=256.0,23.0
-Size=35,35
+Position=280.0,7.0
+Size=192,60
+Color=-5178237
 
 Node=enterprise
 Type=OrdinalVar
-Position=400.0,23.0
-Size=35,35
+Position=466.0,7.0
+Size=231,60
+Color=-5178237
 
 Node=procurement
 Type=OrdinalVar
-Position=100.0,23.0
-Size=35,35
+Position=25.0,11.0
+Size=260,60
+Color=-5178237
 
 % MFrag
 MFrag=EnterpriseInfo_MFrag
@@ -164,28 +184,32 @@ NextOrdinaryVar=3
 % Resident nodes
 
 
-Node=IsSuspendedForProcuring
-Type=DomainResidentNode
-Position=384.0,84.0
-Size=35,35
-
 Node=IsResponsibleFor
 Type=DomainResidentNode
-Position=199.0,84.0
-Size=35,35
+Position=84.0,140.0
+Size=262,60
+Color=-66914
+
+Node=IsSuspendedForProcuring
+Type=DomainResidentNode
+Position=359.0,141.0
+Size=262,60
+Color=-66914
 
 % Ordinary Variables
 
 
-Node=person
-Type=OrdinalVar
-Position=382.0,45.0
-Size=35,35
-
 Node=enterprise
 Type=OrdinalVar
-Position=201.0,45.0
-Size=35,35
+Position=127.0,35.0
+Size=231,60
+Color=-5178237
+
+Node=person
+Type=OrdinalVar
+Position=390.0,37.0
+Size=192,60
+Color=-5178237
 
 % MFrag
 MFrag=ProcurementInfo_MFrag
@@ -196,51 +220,60 @@ NextOrdinaryVar=4
 
 Node=IsParticipantIn
 Type=DomainResidentNode
-Position=191.0,149.0
-Size=35,35
+Position=82.0,220.0
+Size=279,60
+Color=-66914
 
 Node=IsMemberOf
 Type=DomainResidentNode
-Position=355.0,85.0
-Size=35,35
+Position=371.0,99.0
+Size=250,60
+Color=-66914
 
 Node=ValueOf
 Type=DomainResidentNode
-Position=355.0,118.0
-Size=35,35
+Position=406.0,156.0
+Size=177,60
+Color=-66914
 
 Node=WinnerOf
 Type=DomainResidentNode
-Position=356.0,149.0
-Size=35,35
+Position=403.0,216.0
+Size=184,60
+Color=-66914
 
 Node=WorksFor
 Type=DomainResidentNode
-Position=189.0,86.0
-Size=35,35
+Position=161.0,97.0
+Size=151,60
+Color=-66914
 
 Node=OwnerOf
 Type=DomainResidentNode
-Position=191.0,119.0
-Size=35,35
+Position=144.0,154.0
+Size=182,60
+Color=-66914
 
 % Ordinary Variables
 
 
 Node=person
 Type=OrdinalVar
-Position=106.0,48.0
-Size=35,35
+Position=61.0,14.0
+Size=192,60
+Color=-5178237
 
 Node=enterprise
 Type=OrdinalVar
-Position=435.0,49.0
-Size=35,35
+Position=527.0,14.0
+Size=231,60
+Color=-5178237
 
 Node=procurement
 Type=OrdinalVar
-Position=267.0,48.0
-Size=35,35
+Position=258.0,13.0
+Size=260,60
+Color=-5178237
 
 % MFrag
 MFrag=CompetitionCompromised_MFrag
@@ -251,117 +284,138 @@ NextOrdinaryVar=8
 
 Node=IsCompetitionCompromised
 Type=DomainResidentNode
-Position=295.0,319.0
-Size=35,35
+Position=264.0,452.0
+Size=291,60
+Color=-66914
 
 % Input nodes
 
 
 Node=IX12
 Type=GenerativeInputNode
-Position=135.0,245.0
-Size=35,35
+Position=74.0,316.0
+Size=233,60
+Color=-2302756
 
 Node=IX5
 Type=GenerativeInputNode
-Position=293.0,246.0
-Size=35,35
+Position=297.0,304.0
+Size=222,60
+Color=-2302756
 
 Node=IX13
 Type=GenerativeInputNode
-Position=449.0,247.0
-Size=35,35
+Position=523.0,321.0
+Size=233,60
+Color=-2302756
 
 Node=IX6
 Type=GenerativeInputNode
-Position=110.0,278.0
-Size=35,35
+Position=50.0,390.0
+Size=214,60
+Color=-2302756
 
 Node=IX7
 Type=GenerativeInputNode
-Position=473.0,279.0
-Size=35,35
+Position=570.0,382.0
+Size=214,60
+Color=-2302756
 
 % Context nodes
 
 
 Node=CX11
 Type=ContextNode
-Position=391.0,173.0
-Size=35,35
+Position=433.0,200.0
+Size=283,60
+Color=-5178237
 
 Node=CX17
 Type=ContextNode
-Position=295.0,131.0
-Size=35,35
+Position=299.0,150.0
+Size=202,60
+Color=-5178237
 
 Node=CX12
 Type=ContextNode
-Position=193.0,213.0
-Size=35,35
+Position=93.0,253.0
+Size=274,60
+Color=-5178237
 
 Node=CX15
 Type=ContextNode
-Position=469.0,60.0
-Size=35,35
+Position=551.0,53.0
+Size=248,60
+Color=-5178237
 
 Node=CX10
 Type=ContextNode
-Position=193.0,173.0
-Size=35,35
+Position=67.0,200.0
+Size=283,60
+Color=-5178237
 
 Node=CX16
 Type=ContextNode
-Position=131.0,133.0
-Size=35,35
+Position=71.0,153.0
+Size=202,60
+Color=-5178237
 
 Node=CX13
 Type=ContextNode
-Position=390.0,212.0
-Size=35,35
+Position=436.0,252.0
+Size=274,60
+Color=-5178237
 
 Node=CX18
 Type=ContextNode
-Position=396.0,22.0
-Size=35,35
+Position=417.0,1.0
+Size=246,60
+Color=-5178237
 
 Node=CX14
 Type=ContextNode
-Position=469.0,132.0
-Size=35,35
+Position=541.0,148.0
+Size=210,60
+Color=-5178237
 
 % Ordinary Variables
 
 
 Node=procurement
 Type=OrdinalVar
-Position=196.0,23.0
-Size=35,35
+Position=127.0,-2.0
+Size=260,60
+Color=-5178237
 
 Node=person2
 Type=OrdinalVar
-Position=470.0,97.0
-Size=35,35
+Position=542.0,103.0
+Size=200,60
+Color=-5178237
 
 Node=enterprise1
 Type=OrdinalVar
-Position=131.0,61.0
-Size=35,35
+Position=59.0,55.0
+Size=239,60
+Color=-5178237
 
 Node=person
 Type=OrdinalVar
-Position=132.0,97.0
-Size=35,35
+Position=82.0,108.0
+Size=192,60
+Color=-5178237
 
 Node=enterprise2
 Type=OrdinalVar
-Position=299.0,61.0
-Size=35,35
+Position=294.0,50.0
+Size=239,60
+Color=-5178237
 
 Node=person1
 Type=OrdinalVar
-Position=298.0,97.0
-Size=35,35
+Position=304.0,105.0
+Size=200,60
+Color=-5178237
 
 % MFrag
 MFrag=FrontOfEnterprise_MFrag
@@ -372,52 +426,60 @@ NextOrdinaryVar=4
 
 Node=IsFrontFor
 Type=DomainResidentNode
-Position=302.0,164.0
-Size=35,35
+Position=278.0,240.0
+Size=221,60
+Color=-66914
 
 % Input nodes
 
 
 Node=IX1
 Type=GenerativeInputNode
-Position=237.0,118.0
-Size=35,35
+Position=172.0,165.0
+Size=177,60
+Color=-2302756
 
 Node=IX2
 Type=GenerativeInputNode
-Position=368.0,117.0
-Size=35,35
+Position=410.0,164.0
+Size=178,60
+Color=-2302756
 
 % Context nodes
 
 
 Node=CX4
 Type=ContextNode
-Position=209.0,84.0
-Size=35,35
+Position=126.0,104.0
+Size=277,60
+Color=-5178237
 
 Node=CX5
 Type=ContextNode
-Position=393.0,84.0
-Size=35,35
+Position=429.0,104.0
+Size=258,60
+Color=-5178237
 
 % Ordinary Variables
 
 
 Node=person
 Type=OrdinalVar
-Position=465.0,45.0
-Size=35,35
+Position=546.0,36.0
+Size=192,60
+Color=-5178237
 
 Node=enterprise
 Type=OrdinalVar
-Position=321.0,45.0
-Size=35,35
+Position=314.0,35.0
+Size=231,60
+Color=-5178237
 
 Node=procurement
 Type=OrdinalVar
-Position=152.0,45.0
-Size=35,35
+Position=50.0,37.0
+Size=260,60
+Color=-5178237
 
 % MFrag
 MFrag=ChangeCommittee_MFrag
@@ -428,82 +490,96 @@ NextOrdinaryVar=8
 
 Node=HasToChangeCommittee
 Type=DomainResidentNode
-Position=356.0,310.0
-Size=35,35
+Position=261.0,325.0
+Size=314,60
+Color=-66914
 
 % Input nodes
 
 
 Node=IX3
 Type=GenerativeInputNode
-Position=174.0,224.0
-Size=35,35
+Position=166.0,232.0
+Size=209,60
+Color=-2302756
 
 Node=IX4
 Type=GenerativeInputNode
-Position=509.0,222.0
-Size=35,35
+Position=487.0,237.0
+Size=215,60
+Color=-2302756
 
 % Context nodes
 
 
 Node=CX7
 Type=ContextNode
-Position=424.0,89.0
-Size=35,35
+Position=351.0,96.0
+Size=303,60
+Color=-5178237
 
 Node=CX6
 Type=ContextNode
-Position=210.0,88.0
-Size=35,35
+Position=60.0,96.0
+Size=295,60
+Color=-5178237
 
 Node=CX9
 Type=ContextNode
-Position=575.0,158.0
-Size=35,35
+Position=644.0,156.0
+Size=258,60
+Color=-5178237
 
 Node=CX8
 Type=ContextNode
-Position=323.0,151.0
-Size=35,35
+Position=314.0,156.0
+Size=325,60
+Color=-5178237
 
 Node=CX22
 Type=ContextNode
-Position=644.0,91.0
-Size=35,35
+Position=645.0,98.0
+Size=303,60
+Color=-5178237
 
 % Ordinary Variables
 
 
 Node=previousProcurement
 Type=OrdinalVar
-Position=210.0,55.0
-Size=35,35
+Position=66.0,44.0
+Size=308,60
+Color=-5178237
 
 Node=member
 Type=OrdinalVar
-Position=423.0,21.0
-Size=35,35
+Position=402.0,-4.0
+Size=201,60
+Color=-5178237
 
 Node=person
 Type=OrdinalVar
-Position=423.0,55.0
-Size=35,35
+Position=405.0,47.0
+Size=192,60
+Color=-5178237
 
 Node=member2
 Type=OrdinalVar
-Position=643.0,45.0
-Size=35,35
+Position=670.0,36.0
+Size=209,60
+Color=-5178237
 
 Node=currentProcurement
 Type=OrdinalVar
-Position=212.0,21.0
-Size=35,35
+Position=73.0,-9.0
+Size=300,60
+Color=-5178237
 
 Node=enterprise
 Type=OrdinalVar
-Position=103.0,151.0
-Size=35,35
+Position=86.0,157.0
+Size=231,60
+Color=-5178237
 
 % MFrag
 MFrag=JudgmentHistory_MFrag
@@ -512,27 +588,31 @@ NextOrdinaryVar=2
 % Resident nodes
 
 
-Node=CriminalHistory
+Node=HasCleanHistory
 Type=DomainResidentNode
-Position=143.0,88.0
-Size=35,35
+Position=188.0,231.0
+Size=192,60
+Color=-66914
 
 Node=AdministrativeHistory
 Type=DomainResidentNode
-Position=292.0,88.0
-Size=35,35
+Position=308.0,129.0
+Size=220,60
+Color=-66914
 
-Node=HasCleanHistory
+Node=CriminalHistory
 Type=DomainResidentNode
-Position=217.0,135.0
-Size=35,35
+Position=97.0,131.0
+Size=185,60
+Color=-66914
 
 % Ordinary Variables
 
 
 Node=person
 Type=OrdinalVar
-Position=213.0,54.0
-Size=35,35
+Position=205.0,41.0
+Size=192,60
+Color=-5178237
 
 % Object Entity Instances
