@@ -695,22 +695,24 @@ public class PowerLoomKB implements KnowledgeBase {
 		formula+= makeOperatorString(formulaTree, ovInstances); 		
 		formula+= ")"; 
 		
-		Debug.println("PowerLoom Formula: " + formula); 
+		Debug.println("Evaluate PowerLoom Formula: " + formula); 
 		
 		PlIterator iterator = PLI.sRetrieve(formula, moduleFindingName, null);
 		
 		SearchResult searchResult; 
-		Debug.println("Result = " + iterator.length());
+		Debug.println("Result Set Size = " + iterator.length());
 		if(iterator.length() != 0){
 			
 			//Create the SearchResult object. 
 			searchResult = new SearchResult(ovFaultArray);
 			while(iterator.nextP()){
 				String[] resultN = new String[ovFaultArray.length];
+				Debug.print("   >"); 
 				for(int i = 0; i < ovFaultArray.length; i++){ 
 					resultN[i] = PLI.getNthString(iterator, i, moduleFinding, environment); 
-					Debug.println("   > " + resultN[i]);
+					Debug.print(" " + resultN[i]);
 				}
+				Debug.println(" <   "); 
 				searchResult.addResult(resultN); 
 			}
 			
