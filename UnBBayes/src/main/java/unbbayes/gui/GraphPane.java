@@ -95,7 +95,8 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
 	
-	public NetworkController controller;
+	//by young4
+	//public NetworkController controller;
 	public  List<Edge> edgeList;
 	// TODO Substituir essa lista de n�s por generics como est� acima com a lista de Edge. Fazer isso em todo lugar que for necess�rio, at� que se possa exluir o NodeList 
 	public  ArrayList<Node> nodeList;
@@ -110,6 +111,10 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 	public ProbabilisticNetwork net;
 	
 	private JPopupMenu popup = new JPopupMenu();
+	
+	public String PANEMODE_NONE 		= "None";
+	public String PANEMODE_COMPILE 		= "Compile";
+	public String strPaneMode			= PANEMODE_NONE; 
 	
 	/** Load resource file from this package */
 	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
@@ -138,9 +143,8 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 	 *@param  controlador  o controlador (<code>TControladorTelaPrincipal</code>)
 	 *@param  graphViewport a tela, (<code>TViewport</code>), onde ser� inserida essa classe
 	 */
-	public GraphPane(final NetworkController controller, JViewport graphViewport) {    	
-		super();
-		 
+	public GraphPane(NetworkController controller, JViewport graphViewport) {    	
+		super(); 
 
 		this.controller = controller;
 		this.graphViewport = graphViewport;
@@ -189,6 +193,16 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 	}
 	
 	
+	public void setPaneMode(String str) 
+	{ 
+		strPaneMode = str;
+	}
+	
+	public String getPaneMode() 
+	{ 
+		return strPaneMode;
+	}
+		
 	
 	/**
 	 *  Retorna uma lista de selecionados (<code>List</code>), que podem ser um <code>Node</code> e/ou <code>Edge</code>
@@ -320,7 +334,7 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 					newNode = controller.insertContinuousNode(e.getX(), e.getY());
 					UShapeProbabilisticNode shape = new UShapeProbabilisticNode(this, newNode, (int)newNode.getPosition().x-newNode.getWidth()/2, (int)newNode.getPosition().y-newNode.getHeight()/2, newNode.getWidth(), newNode.getHeight());
 					addShape( shape );						
-					shape.setState(UShape.STATE_SELECTED);
+					shape.setState(UShape.STATE_SELECTED, null);
 					updateNewInformationIntoTreeAndTableViewer(newNode); 
 				}
 				break; 
@@ -329,22 +343,9 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 					newNode = controller.insertProbabilisticNode(e.getX(), e.getY());
 					UShapeProbabilisticNode shape = new UShapeProbabilisticNode(this, newNode, (int)newNode.getPosition().x-newNode.getWidth()/2, (int)newNode.getPosition().y-newNode.getHeight()/2, newNode.getWidth(), newNode.getHeight());
 					addShape( shape );	
-					shape.setState(UShape.STATE_SELECTED);
+					shape.setState(UShape.STATE_SELECTED, null);
 					updateNewInformationIntoTreeAndTableViewer(newNode);
 					
-					JMenuItem item = new JMenuItem(resource.getString("properties"));
-					item.addActionListener
-					(	
-						new ActionListener() 
-						{
-							public void actionPerformed(ActionEvent ae)
-							{   
-						//		controller.showExplanationProperties((ProbabilisticNode)newNode);
-							}
-						}
-					);
-					
-					shape.popup.add(item);
 				}
 				break;
 				case CREATE_DECISION_NODE:
@@ -352,7 +353,7 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 					newNode = controller.insertDecisionNode(e.getX(), e.getY());
 					UShapeDecisionNode shape = new UShapeDecisionNode(this, newNode, (int)newNode.getPosition().x-newNode.getWidth()/2, (int)newNode.getPosition().y-newNode.getHeight()/2, newNode.getWidth(), newNode.getHeight() );
 					addShape( shape );		
-					shape.setState(UShape.STATE_SELECTED);
+					shape.setState(UShape.STATE_SELECTED, null);
 					updateNewInformationIntoTreeAndTableViewer(newNode);
 				}
 				break;
@@ -361,7 +362,7 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 					newNode = controller.insertUtilityNode(e.getX(), e.getY());
 					UShapeUtilityNode shape = new UShapeUtilityNode(this,  newNode, (int)newNode.getPosition().x-newNode.getWidth()/2, (int)newNode.getPosition().y-newNode.getHeight()/2, newNode.getWidth(), newNode.getHeight() );
 					addShape( shape );
-					shape.setState(UShape.STATE_SELECTED);
+					shape.setState(UShape.STATE_SELECTED, null);
 					updateNewInformationIntoTreeAndTableViewer(newNode);
 				} 
 				break;
@@ -377,7 +378,7 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 					   newNode = controller.insertContextNode(e.getX(), e.getY());
 					   UShapeContextNode shape = new UShapeContextNode(this, newNode, (int)newNode.getPosition().x-newNode.getWidth()/2, (int)newNode.getPosition().y-newNode.getHeight()/2, newNode.getWidth(), newNode.getHeight() );
 					   addShape( shape );
-					   shape.setState(UShape.STATE_SELECTED);
+					   shape.setState(UShape.STATE_SELECTED, null);
 					   controller.selectNode(newNode); 
 					}
 					catch(MEBNConstructionException exception){
@@ -394,7 +395,7 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 					   newNode = controller.insertResidentNode(e.getX(), e.getY());
 					   UShapeResidentNode shape = new UShapeResidentNode(this, newNode, (int)newNode.getPosition().x-newNode.getWidth()/2, (int)newNode.getPosition().y-newNode.getHeight()/2, newNode.getWidth(), newNode.getHeight() );
 					   addShape( shape );
-					   shape.setState(UShape.STATE_SELECTED);
+					   shape.setState(UShape.STATE_SELECTED, null);
 					   controller.selectNode(newNode); 
 					}
 					catch(MEBNConstructionException exception){
@@ -411,7 +412,7 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 					   newNode = controller.insertInputNode(e.getX(), e.getY());
 					   UShapeInputNode shape = new UShapeInputNode(this, newNode, (int)newNode.getPosition().x-newNode.getWidth()/2, (int)newNode.getPosition().y-newNode.getHeight()/2, newNode.getWidth(), newNode.getHeight() );
 					   addShape( shape );
-					   shape.setState(UShape.STATE_SELECTED);
+					   shape.setState(UShape.STATE_SELECTED, null);
 					   controller.selectNode(newNode); 
 	                }
 					catch(MFragDoesNotExistException exception){
@@ -428,7 +429,7 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 					   newNode = controller.getMebnController().insertOrdinaryVariable(e.getX(), e.getY());
 					   UShapeOrdinaryVariableNode shape = new UShapeOrdinaryVariableNode(this, newNode, (int)newNode.getPosition().x-newNode.getWidth()/2, (int)newNode.getPosition().y-newNode.getHeight()/2, newNode.getWidth(), newNode.getHeight() );
 					   addShape( shape );
-					   shape.setState(UShape.STATE_SELECTED);
+					   shape.setState(UShape.STATE_SELECTED, null);
 					   controller.selectNode(newNode); 
 					   
 					}
@@ -469,9 +470,12 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 	    {
 	       	System.out.println("Right button released.");
 	        
-	       	resetPopup();
-	       	popup.setEnabled(true);
-			popup.show(e.getComponent(),e.getX(),e.getY());
+	       	if( getPaneMode() == PANEMODE_COMPILE )
+	       	{		       	
+		       	resetPopup();
+		       	popup.setEnabled(true);
+				popup.show(e.getComponent(),e.getX(),e.getY());
+	       	}
 	    }
 	}
 	
@@ -479,7 +483,7 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 	{
 		UShape shape = null;
 		shape = getNodeUShape(n);
-		shape.setState(UShape.STATE_SELECTED);
+		shape.setState(UShape.STATE_SELECTED, null);
  
 	}
 	
@@ -527,6 +531,7 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 			customCursor = toolkit.createCustomCursor(iconController.getContinueNodeCursor().getImage(), new Point(0,0), "Cursor");
 		    setCursor(customCursor);
 		    setState(STATE_NONE);
+		    this.setShapeStateAll(UShape.STATE_CHANGECURSOR, customCursor);
 		}
 		break;		
 		case CREATE_PROBABILISTIC_NODE:
@@ -534,6 +539,7 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 			customCursor = toolkit.createCustomCursor(iconController.getEllipsisNodeCursor().getImage(), new Point(0,0), "Cursor");
 		    setCursor(customCursor);
 		    setState(STATE_NONE);
+		    this.setShapeStateAll(UShape.STATE_CHANGECURSOR, customCursor);
 		}
 		break;	
 		case CREATE_DECISION_NODE:
@@ -541,6 +547,7 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 			customCursor = toolkit.createCustomCursor(iconController.getDecisionNodeCursor().getImage(), new Point(0,0), "Cursor");
 		    setCursor(customCursor);
 		    setState(STATE_NONE);
+		    this.setShapeStateAll(UShape.STATE_CHANGECURSOR, customCursor);
 		}
 		break;			
 		case CREATE_UTILITY_NODE:
@@ -548,6 +555,7 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 			customCursor = toolkit.createCustomCursor(iconController.getUtilityNodeCursor().getImage(), new Point(0,0), "Cursor");
 		    setCursor(customCursor);
 		    setState(STATE_NONE);
+		    this.setShapeStateAll(UShape.STATE_CHANGECURSOR, customCursor);
 		}
 		break;						
 		case CREATE_CONTEXT_NODE:
@@ -555,6 +563,7 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 			customCursor = toolkit.createCustomCursor(iconController.getContextNodeCursor().getImage(), new Point(0,0), "Cursor");
 		    setCursor(customCursor);
 		    setState(STATE_NONE);
+		    this.setShapeStateAll(UShape.STATE_CHANGECURSOR, customCursor);
 		}
 		break;						
 		case CREATE_INPUT_NODE:
@@ -562,6 +571,7 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 			customCursor = toolkit.createCustomCursor(iconController.getInputNodeCursor().getImage(), new Point(0,0), "Cursor");
 		    setCursor(customCursor);
 		    setState(STATE_NONE);
+		    this.setShapeStateAll(UShape.STATE_CHANGECURSOR, customCursor);
 		}
 		break;							
 		case CREATE_RESIDENT_NODE: 
@@ -569,6 +579,7 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 			customCursor = toolkit.createCustomCursor(iconController.getResidentNodeCursor().getImage(), new Point(0,0), "Cursor");
 		    setCursor(customCursor);
 		    setState(STATE_NONE);
+		    this.setShapeStateAll(UShape.STATE_CHANGECURSOR, customCursor);
 		}	
 		break;	
 		case CREATE_ORDINARYVARIABLE_NODE: 	
@@ -576,6 +587,7 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 			customCursor = toolkit.createCustomCursor(iconController.getOvariableNodeCursor().getImage(), new Point(0,0), "Cursor");
 		    setCursor(customCursor);
 		    setState(STATE_NONE);
+		    this.setShapeStateAll(UShape.STATE_CHANGECURSOR, customCursor);
 		}				
 		break;	
 		case CREATE_EDGE:
@@ -583,12 +595,17 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 			customCursor = toolkit.createCustomCursor(iconController.getLineCursor().getImage(), new Point(0,0), "Cursor");
 		    setCursor(customCursor);
 			setState(STATE_CONNECT_COMP);
+			//by young4
+			this.setShapeStateAll(UShape.STATE_CHANGECURSOR, customCursor);
 		}			
 		break;
 		case NONE://by young2
 		{
 			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			setState(STATE_NONE);
+			
+			//by young4
+			this.setShapeStateAll(UShape.STATE_CHANGECURSOR, new Cursor(Cursor.MOVE_CURSOR));
 		}
 		break;
 			
@@ -659,11 +676,13 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
     	
   
     	addShape( shape );	
-    	shape.setState(UShape.STATE_SELECTED);
+    	shape.setState(UShape.STATE_SELECTED, null);
     } 
 	 
 	public void compiled(boolean reset, Node selectedNode )
 	{ 
+		setPaneMode( PANEMODE_COMPILE );
+		
 		this.removeAll();
 		
 		Node n; 
@@ -689,7 +708,7 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 				 
 				shape = getNodeUShape(n);
 				shape.shapeTypeChange(UShapeProbabilisticNode.STYPE_BAR);
-		    	shape.setState(UShape.STATE_RESIZED);
+		    	shape.setState(UShape.STATE_RESIZED, null);
 			}
 			
 		}	
@@ -708,18 +727,26 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 			}
 		}	
 		
-		setShapeStateAll(UShape.STATE_NONE);
+		//by young4
+		setAction(GraphAction.NONE);
+		setShapeStateAll(UShape.STATE_NONE, null);
 		fitCanvasSizeToAllUShapes();
 		
 		if( selectedNode!= null )
 		{
 			shape = getNodeUShape(selectedNode);
-	  		shape.setState(UShape.STATE_SELECTED);
+	  		shape.setState(UShape.STATE_SELECTED, null);
 		} 
 	}	 
-	 
+	
+	static public int iUpdate = 0;
+	
 	public void update()
 	{
+		setPaneMode( PANEMODE_NONE );
+	  
+		System.out.println("update  = " + iUpdate++ + " "  );
+		
 		this.removeAll();
 		
 		Node n; 
@@ -732,16 +759,22 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 			n = nodeList.get(i);
 			n.updateLabel();
 			 
+			//create node
 			createNode( n );
-												
-			if(n instanceof ContinuousNode || n instanceof ProbabilisticNode) 
+			
+			if( n instanceof ProbabilisticNode) 
 			{
+				((ProbabilisticNode)n).setFinding(null);
+			}
+				
+			if(n instanceof ContinuousNode || n instanceof ProbabilisticNode) 
+			{	
 				shape = getNodeUShape(n);
 				
 				if( shape != null )
 				{
 					shape.shapeTypeChange(UShapeProbabilisticNode.STYPE_NONE);				
-					shape.setState(UShape.STATE_RESIZED);
+					shape.setState(UShape.STATE_RESIZED, null);
 				}
 			}
 		}	
@@ -750,7 +783,8 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 		for (int i = 0; i < edgeList.size(); i++) 
 		{
 			e = edgeList.get(i);
-			
+
+			//createLine
 			if(getNodeUShape(e.getOriginNode()) != null && getNodeUShape(e.getDestinationNode()) != null )
 			{
 				UShapeLine line = new UShapeLine(this, getNodeUShape(e.getOriginNode()), getNodeUShape(e.getDestinationNode()) );
@@ -760,7 +794,9 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 			}
 		}	 
 	 	
-		setShapeStateAll(UShape.STATE_NONE);
+		//by young4
+		setAction(GraphAction.NONE);
+		setShapeStateAll(UShape.STATE_NONE, null);
 		fitCanvasSizeToAllUShapes();
  
 	} 
@@ -791,17 +827,17 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 	
 	public void updateAllNodesName()
 	{
-		if( getMode() == MODE_USE_NAME )
+		if( getTextOutputMode() == TEXTOUTPUTMODEMODE_USE_NAME )
 			useNameAllShape();
 		else
-		if( getMode() == MODE_USE_DESC )
+		if( getTextOutputMode() == TEXTOUTPUTMODEMODE_USE_DESC )
 			useDescAllShape();
 	}
 	
 	public void useNameAllShape()
 	{
-		setMode(MODE_USE_NAME);
-		controller.getScreen().getEvidenceTree().setMode(MODE_USE_NAME);
+		setTextOutputMode(TEXTOUTPUTMODEMODE_USE_NAME);
+		controller.getScreen().getEvidenceTree().setTextOutputMode(TEXTOUTPUTMODEMODE_USE_NAME);
 				
 		int n = this.getComponentCount();
 		for( int i = 0; i < n; i++ )
@@ -818,8 +854,8 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 	
 	public void useDescAllShape()
 	{
-		setMode(MODE_USE_DESC);
-		controller.getScreen().getEvidenceTree().setMode(MODE_USE_DESC);
+		setTextOutputMode(TEXTOUTPUTMODEMODE_USE_DESC);
+		controller.getScreen().getEvidenceTree().setTextOutputMode(TEXTOUTPUTMODEMODE_USE_DESC);
 		
 		int n = this.getComponentCount();
 		for( int i = 0; i < n; i++ )

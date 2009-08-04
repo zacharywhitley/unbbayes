@@ -46,7 +46,10 @@ public class UShapeResidentNode extends UShape
     }    
 	
 	public void update() 
-	{  		 
+	{  
+		//by young4
+		super.update();
+		
 		//by young3
 		updateNodeInformation();	
 		InitShape();

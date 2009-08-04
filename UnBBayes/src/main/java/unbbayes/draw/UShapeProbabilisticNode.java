@@ -142,6 +142,9 @@ public class UShapeProbabilisticNode extends UShape
 	
 	public void update() 
 	{  		 
+		//by young4
+		super.update();
+		
 		//by young3
 		updateNodeInformation();	
 		
@@ -159,7 +162,8 @@ public class UShapeProbabilisticNode extends UShape
 					setBounds(getX(), getY(), getWidth(), 50+size*stateHeight);
 				
 				InitShape(); 
-				createResizeBtn();
+				//by young4
+			//	createResizeBtn();
 				removeTextBox();
 				
 				TreeVariable treeVariable = (TreeVariable) node;
@@ -171,6 +175,8 @@ public class UShapeProbabilisticNode extends UShape
 			//	table.setValueAt(resource.getString("mean"), 1, 0);
 			//	table.setValueAt(resource.getString("stdDev"), 2, 0);
 	
+				setBackColor(getNode().getColor());
+				
 				/* Other columns */
 				for (int i = 0; i < size; i++) 
 				{ 
@@ -184,9 +190,17 @@ public class UShapeProbabilisticNode extends UShape
 					stateShape.setMarginal(treeVariable.getMarginalAt(i));
 					
 					if( finding == node.getStateAt(i) )
-						stateShape.setBackColor(Color.GRAY);
-					else
+					{
+						//setBackColorWithoutNode(Color.ORANGE);
+						setBackColorWithoutNode(Color.lightGray);
 						stateShape.setBackColor(stateColor[0]);
+						
+					//	stateShape.setBackColor(Color.GRAY);
+					}
+					else
+					{						
+						stateShape.setBackColor(stateColor[0]);
+					}
 					
 					add(stateShape); 
 					
@@ -215,7 +229,8 @@ public class UShapeProbabilisticNode extends UShape
 		//	setBounds(getX(), getY(), defaultWidth, defaultHeight);
 			
 			InitShape();
-			createResizeBtn();
+			//by young4
+		//	createResizeBtn();
 			removeTextBox();
 		}
 		
@@ -273,14 +288,16 @@ public class UShapeProbabilisticNode extends UShape
 	{  
 		if (SwingUtilities.isLeftMouseButton(arg0)) 
 	    {
+			
 	        if (arg0.getClickCount() == 2 && !arg0.isConsumed()) 
 	        { 
-	        	//by young2
-	        	//prevent text editing box
-	        	/*
-	        	arg0.consume();	        	
-	         	setState( STATE_WAIT_EDIT );
-	        	*/
+	        	//by young4
+	        	if( STYPE_NONE == getShapeType() )
+	    		{  
+	        		arg0.consume();	        	
+	         		setState( STATE_WAIT_EDIT, null );
+	    		}
+	        	 
 	        }
 	    }
 	        
@@ -334,6 +351,21 @@ public class UShapeProbabilisticNode extends UShape
 				
 				popup.add(item);
 	     	}
+	     	 
+			item = new JMenuItem(resource.getString("properties"));
+			item.addActionListener
+			(	
+				new ActionListener() 
+				{
+					public void actionPerformed(ActionEvent ae)
+					{   
+						getCanvas().controller.showExplanationProperties((ProbabilisticNode)getNode());
+					}
+				}
+			);
+			
+			popup.add(item);
+			
 	     	
 	       	popup.setEnabled(true);
 			popup.show(arg0.getComponent(),arg0.getX(),arg0.getY());

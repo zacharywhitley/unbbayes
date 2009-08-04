@@ -29,6 +29,7 @@ import java.util.List;
 
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.ITabledVariable;
+import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.ArrayMap;
 import unbbayes.util.SerializablePoint2D;
@@ -152,8 +153,14 @@ public abstract class Node implements Serializable,
 	 *            if the type of information is invalid
 	 */
 	public void setInformationType(int informationType) /* throws Exception */{
-		if ((informationType > 2) && (informationType < 5))
+		if ((informationType > 2) && (informationType < 5)) {
 			this.informationType = informationType;
+			// TODO - Rommel think of a better way of doing this!
+			if (getColor() == ProbabilisticNode.getDescriptionColor() && informationType == Node.EXPLANATION_TYPE) {
+				this.setColor(ProbabilisticNode.getExplanationColor());
+			}
+		}
+			
 		/*
 		 * else { throw new Exception("Valor de infroma��o inv�lido"); }
 		 */

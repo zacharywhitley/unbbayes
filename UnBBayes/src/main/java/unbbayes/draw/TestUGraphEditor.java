@@ -39,16 +39,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 
-import unbbayes.controller.MEBNController;
-import unbbayes.gui.NetworkWindow;
-import unbbayes.gui.mebn.cpt.CPTFrame;
-import unbbayes.prs.Network;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.mebn.MFrag;
-import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.ResidentNode;
 
 public class TestUGraphEditor extends JFrame implements WindowStateListener
 {
@@ -77,10 +70,29 @@ public class TestUGraphEditor extends JFrame implements WindowStateListener
      	//Add Buttons 
 		JPanel buttonPanel = new JPanel(new GridLayout());
 		getContentPane().add(buttonPanel, BorderLayout.NORTH);
-        
-		   	//Add Listener
+
+		 
+		double x1 = 10;
+	    double y1 = 10;
+	    double x2 = 0;
+	    double y2 = 0;
+	    
+	    double newX =  5*Math.cos(Math.atan2(y2-y1, x2-x1))+x1;
+		double newY =  5*Math.sin(Math.atan2(y2-y1, x2-x1))+y1;
+				
+	   // double x3 = (-x1+newX)*Math.cos(-Math.PI/2) - (-y1+newY)*Math.sin(-Math.PI/2) + x1; 
+	   // double y3 = (-x1+newX)*Math.sin(-Math.PI/2) + (-y1+newY)*Math.cos(-Math.PI/2) + y1;
+	    
+	    double x3 = (-x1+newX)*Math.cos(Math.PI/2) - (-y1+newY)*Math.sin(Math.PI/2) + x1; 
+	    double y3 = (-x1+newX)*Math.sin(Math.PI/2) + (-y1+newY)*Math.cos(Math.PI/2) + y1;
+	    	    
+		System.out.println(x3 +" "+y3);
+		
+	 
+     
+	   	//Add Listener
 		JButton btn;
-        
+	
         btn = addButton(buttonPanel, "Create ProbabilisticNode");        
         btn.addActionListener(new ActionListener() 
         {
@@ -122,32 +134,26 @@ public class TestUGraphEditor extends JFrame implements WindowStateListener
             }
         });
 
-        btn = addButton(buttonPanel, "Create Frame");        
-        btn.addActionListener(new ActionListener() 
-        {
-        	public void actionPerformed(ActionEvent e) 
-        	{
-        		 m_Canvas.setFrame(110,110,220,220);
-            }
-        });
-        
         
         btn = addButton(buttonPanel, "Create DLG");        
         btn.addActionListener(new ActionListener() 
         {
         	public void actionPerformed(ActionEvent e) 
-        	{  
-        		MultiEntityBayesianNetwork MEBN = new MultiEntityBayesianNetwork("testMEBN");
-        		NetworkWindow nwindow = new NetworkWindow(MEBN);
-        		MEBNController mebnController_ = new MEBNController(MEBN, ((NetworkWindow)nwindow));
-        		MFrag mfrag = new MFrag("mfag", MEBN);
-        		ResidentNode residentNode_ = new ResidentNode("re", mfrag);
-        		
-        		CPTFrame cptEditionPane = new CPTFrame( mebnController_,  residentNode_);
-        		cptEditionPane.setVisible(true); 
+        	{
+        		 createColorChooser();
+        	        
             }
         });
-         
+       
+        btn = addButton(buttonPanel, "Create Frame");        
+        btn.addActionListener(new ActionListener() 
+        {
+        	public void actionPerformed(ActionEvent e) 
+        	{
+        		for(int i = 0; i < 1; i++)
+        			m_Canvas.setFrame(110,110,220,220);
+            }
+        });
         
         btn = addButton(buttonPanel, "Create Ellipse");        
         btn.addActionListener(new ActionListener() 
@@ -195,6 +201,14 @@ public class TestUGraphEditor extends JFrame implements WindowStateListener
         }); 
 	} 
   
+	public JButton addButton(JPanel buttonPanel, String Name) 
+  	{
+		JButton button = new JButton(Name);
+		button.setEnabled(true);
+		buttonPanel.add(button );
+	    return button;
+	}
+	
 	public void createColorChooser()
 	{
  		final JColorChooser colorChooser = new JColorChooser();
@@ -211,7 +225,7 @@ public class TestUGraphEditor extends JFrame implements WindowStateListener
    	    		System.out.println("OK Button");
    	    		System.out.println(colorChooser.getColor().toString()); 
    	    		
-   	    	//	getCanvas().onShapeColorChanged( colorChooser.getColor() );
+   	    		 
    	        	repaint();
    	      	}
    	    };
@@ -229,14 +243,6 @@ public class TestUGraphEditor extends JFrame implements WindowStateListener
 
    	    dialog.setVisible(true);
 
-	}
-	
-	public JButton addButton(JPanel buttonPanel, String Name) 
-  	{
-		JButton button = new JButton(Name);
-		button.setEnabled(true);
-		buttonPanel.add(button );
-	    return button;
 	}
 	
 

@@ -74,7 +74,7 @@ public class LearningPNEditionPane extends GraphPane implements MouseListener, M
 				if( shape != null )
 				{
 					shape.shapeTypeChange(UShapeProbabilisticNode.STYPE_NONE);				
-					shape.setState(UShape.STATE_RESIZED);
+					shape.setState(UShape.STATE_RESIZED, null);
 				}
 			}
 		}	
@@ -93,7 +93,8 @@ public class LearningPNEditionPane extends GraphPane implements MouseListener, M
 			}
 		}	
 		
-		setShapeStateAll(UShape.STATE_NONE);
+		//by young4
+		setShapeStateAll(UShape.STATE_NONE, null);
 		fitCanvasSizeToAllUShapes();
 	} 
 	   

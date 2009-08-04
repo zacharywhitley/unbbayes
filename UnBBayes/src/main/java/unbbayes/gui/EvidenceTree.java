@@ -69,16 +69,16 @@ public class EvidenceTree extends JTree {
 	private ResourceBundle resource = ResourceController.RS_GUI; 
 	
 	//by young
-	public String strMode;
-	public static final String MODE_USE_NAME		= "UseName";
-	public static final String MODE_USE_DESC		= "UseDescription"; 
+	public String strTextOutputMode;
+	public static final String TEXTOUTPUTMODEMODE_USE_NAME		= "UseName";
+	public static final String TEXTOUTPUTMODEMODE_USE_DESC		= "UseDescription"; 
 	
 		
 	public EvidenceTree(SingleEntityNetwork sen, final NetworkWindow netWindow) {
 		
 		this.net = sen;
 		this.netWindow = netWindow; 
-		strMode = MODE_USE_NAME;
+		strTextOutputMode = TEXTOUTPUTMODEMODE_USE_NAME;
 		
 		nf = NumberFormat.getInstance(Locale.US);
 		nf.setMaximumFractionDigits(2);
@@ -206,16 +206,16 @@ public class EvidenceTree extends JTree {
 	}
 	
 	//by young
-	public void setMode( String str )
+	public void setTextOutputMode( String str )
 	{
-		strMode = str;
+		strTextOutputMode = str;
 		updateTree(false);
 	}
 	
 	//by young
-	public String getMode()
+	public String getTextOutputMode()
 	{
-		return strMode;
+		return strTextOutputMode;
 	}
 
 	/**
@@ -315,18 +315,18 @@ public class EvidenceTree extends JTree {
 			DefaultMutableTreeNode treeNode = null;
 			
 			//by young
-			if( getMode() == MODE_USE_NAME )
+			if( getTextOutputMode() == TEXTOUTPUTMODEMODE_USE_NAME )
 				treeNode = findUserObject(node.getName(), root);
 			else
-			if( getMode() == MODE_USE_DESC )
+			if( getTextOutputMode() == TEXTOUTPUTMODEMODE_USE_DESC )
 				treeNode = findUserObject(node.getDescription(), root);
 			
 			if (treeNode == null) 
 			{
-				if( getMode() == MODE_USE_NAME )
+				if( getTextOutputMode() == TEXTOUTPUTMODEMODE_USE_NAME )
 					treeNode = new DefaultMutableTreeNode(node.getName());
 				else
-				if( getMode() == MODE_USE_DESC )
+				if( getTextOutputMode() == TEXTOUTPUTMODEMODE_USE_DESC )
 					treeNode = new DefaultMutableTreeNode(node.getDescription());
 				
 			 
@@ -374,10 +374,10 @@ public class EvidenceTree extends JTree {
 		DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel().getRoot();
 		DefaultMutableTreeNode treeNode = null;
 		
-		if( getMode() == MODE_USE_NAME )
+		if( getTextOutputMode() == TEXTOUTPUTMODEMODE_USE_NAME )
 			treeNode = findUserObject(n.getName(), root);
 		else
-		if( getMode() == MODE_USE_DESC )
+		if( getTextOutputMode() == TEXTOUTPUTMODEMODE_USE_DESC )
 			treeNode = findUserObject(n.getDescription(), root);
 		
 		if( treeNode != null )
@@ -419,10 +419,10 @@ public class EvidenceTree extends JTree {
 	private DefaultMutableTreeNode findUserObject(Node node)
 	{
 		String name = null;
-		if( getMode() == MODE_USE_NAME )
+		if( getTextOutputMode() == TEXTOUTPUTMODEMODE_USE_NAME )
 			name = node.getName();
 		else
-		if( getMode() == MODE_USE_DESC )
+		if( getTextOutputMode() == TEXTOUTPUTMODEMODE_USE_DESC )
 			name = node.getDescription();
 		
 		return findUserObject( name );

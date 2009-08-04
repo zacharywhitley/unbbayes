@@ -44,6 +44,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import javax.swing.BorderFactory;
 import javax.swing.JColorChooser;
@@ -65,6 +66,8 @@ import unbbayes.prs.Node;
  * 
  */
 
+
+ 
 public class UShape extends JComponent implements ActionListener, FocusListener, MouseMotionListener, MouseListener, Cloneable, ComponentListener
 {   
  	/**
@@ -94,6 +97,8 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 	public static final String STATE_RESIZED 	= "Resized";
 	public static final String STATE_MOVE 		= "Move";
 	public static final String STATE_UPDATE 	= "Update";
+	public static final String STATE_CHANGECURSOR 	= "ChangeCursor";
+	
 	
  	public static final String STYPE_NONE 		= "None";
 	
@@ -152,18 +157,27 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 
     
 	   
+	/** Load resource file from this package */
+    public static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+	 
+	static public int iUpdate = 0;
+	
+	
 	public UShape(UCanvas c, Node pNode, int x, int y, int w, int h) 
 	{
+		
 		super(); 
 	  	createID();
 		setName(this.ID);
 		setLabel(this.ID);
 		setCanvas(c);
-		setState(STATE_NONE);
+		setState(STATE_NONE, null);
 		setShapeType(STYPE_NONE); 
 		setLineColor(Color.blue);
 		setBackColor(Color.white);
 		setStroke(stroke1);
+		
+		//System.out.println("create Shape  = " +  this.ID + " " + iUpdate++ );
 		
 		if( pNode != null)
 		{
@@ -187,15 +201,14 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
  
  	  	friends = new ArrayList<UShape>();
  	    pressedPoint = new Point();
- 	       
+  
 	}
 	
 	public void finalize() 
 	{
 		
 	}
-	 
-	//by young3
+		
 	public void updateNodeInformation()
 	{
 		if( getNode() != null ) 
@@ -207,26 +220,33 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 			else
 				setLabel(getNode().getLabel());
 			
-			if( getCanvas().getMode() == UCanvas.MODE_USE_NAME )
+			if( getCanvas().getTextOutputMode() == UCanvas.TEXTOUTPUTMODEMODE_USE_NAME )
 				setLabel(getNode().getName());
 			else
-			if( getCanvas().getMode() == UCanvas.MODE_USE_DESC )
+			if( getCanvas().getTextOutputMode() == UCanvas.TEXTOUTPUTMODEMODE_USE_DESC )
 				setLabel(getNode().getDescription());
 		   
 			setBackColor( getNode().getColor() );
 		} 
 	}
 	
+
+	
 	public void update()
 	{
 		
+		
 	}
+	
 	
 	public void shapeTypeChange(String s) 
 	{
 		
 	}
 	
+	/**
+	 * 
+	 */
 	public void createPopupMenu()
 	{
 		popup.removeAll();
@@ -348,6 +368,10 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 
 	}
 	
+	/**
+	 * 
+	 * @param str
+	 */
 	public void setLabel(String str) 
 	{ 
 		m_label = str;
@@ -368,7 +392,7 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 		return bUseSelection;
 	}
 	 
-	public void setState(String s) 
+	public void setState(String s, Object o) 
 	{  
 		m_state = s;
 		
@@ -387,24 +411,31 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 			else
 			if( s == STATE_SELECTED )
 			{				  
-				createResizeBtn();
+				moveResizeBtn();
 				removeTextBox();
 				getCanvas().requestFocus();
 			}
 			else
 			if( s == STATE_RESIZED )
 			{ 
-				createResizeBtn();
+				moveResizeBtn();
 				removeTextBox();
 				update();
 				m_state = STATE_SELECTED;
 			}
 			else	
+			if( s == STATE_CHANGECURSOR )
+			{
+				Cursor customCursor = (Cursor)o;
+				setCursor(customCursor);
+			}	
+			else
 			if( s == STATE_NONE )
-			{ 
-				removeResizeBtn();
+			{ 				
+				hideResizeBtn();
 				removeTextBox();
 			}		
+
 		} 
 	}	
 	
@@ -428,6 +459,12 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 	{  
 		if( node != null )
 			node.setColor(c);
+	
+		backColor = c;
+	}
+	
+	public void setBackColorWithoutNode(Color c) 
+	{	
 		backColor = c;
 	}
 	
@@ -690,9 +727,7 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 	}
 	
 	public void createResizeBtn() 
-	{ 
-		removeResizeBtn();
-		 
+	{  
 		shape1 = new UShapeSizeBtn(this, 0,0, Cursor.NW_RESIZE_CURSOR);  
 		shape2 = new UShapeSizeBtn(this, (getWidth()-GAP)/2,0,Cursor.N_RESIZE_CURSOR); 
 		shape3 = new UShapeSizeBtn(this, getWidth()-GAP,0,Cursor.NE_RESIZE_CURSOR);  
@@ -701,6 +736,48 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 		shape6 = new UShapeSizeBtn(this, (getWidth()-GAP)/2,getHeight()-GAP,Cursor.S_RESIZE_CURSOR);  
 		shape7 = new UShapeSizeBtn(this, getWidth()-GAP,(getHeight()-GAP)/2,Cursor.W_RESIZE_CURSOR);  
 		shape8 = new UShapeSizeBtn(this, getWidth()-GAP,getHeight()-GAP,Cursor.SE_RESIZE_CURSOR);  
+	}
+	
+	public void moveResizeBtn() 
+	{   
+		if(shape1 == null )
+			createResizeBtn();
+		
+		if(shape1.isVisible() == false )
+			showResizeBtn();
+		
+		shape1.move(0,0);  
+		shape2.move((getWidth()-GAP)/2,0); 
+		shape3.move( getWidth()-GAP,0);  
+		shape4.move( 0,(getHeight()-GAP)/2);  
+		shape5.move( 0,getHeight()-GAP);    
+		shape6.move( (getWidth()-GAP)/2,getHeight()-GAP);  
+		shape7.move( getWidth()-GAP,(getHeight()-GAP)/2);  
+		shape8.move( getWidth()-GAP,getHeight()-GAP);  
+	}
+		
+	public void showResizeBtn() 
+	{   
+		if( shape1 != null ) shape1.setVisible(true);
+		if( shape2 != null ) shape2.setVisible(true);
+		if( shape3 != null ) shape3.setVisible(true);
+		if( shape4 != null ) shape4.setVisible(true);
+		if( shape5 != null ) shape5.setVisible(true);
+		if( shape6 != null ) shape6.setVisible(true);
+		if( shape7 != null ) shape7.setVisible(true);
+		if( shape7 != null ) shape8.setVisible(true);
+	}
+	
+	public void hideResizeBtn() 
+	{ 
+		if( shape1 != null ) shape1.setVisible(false);
+		if( shape2 != null ) shape2.setVisible(false);
+		if( shape3 != null ) shape3.setVisible(false);
+		if( shape4 != null ) shape4.setVisible(false);
+		if( shape5 != null ) shape5.setVisible(false);
+		if( shape6 != null ) shape6.setVisible(false);
+		if( shape7 != null ) shape7.setVisible(false);
+		if( shape7 != null ) shape8.setVisible(false);
 	}
 	
 	public void removeResizeBtn() 
@@ -1029,7 +1106,7 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 	public void setNewSize( int x, int y, int w, int h)
 	{				
 		setBounds(x, y, w, h);
-		setState(UShape.STATE_RESIZED);
+		setState(UShape.STATE_RESIZED, null);
 		sendMessageToFriends( STATE_MOVE );
 		
 	    int n = this.getComponentCount();
@@ -1063,7 +1140,11 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 	
 	public void mouseDragged(MouseEvent arg0) 
 	{ 
-		
+		if( getUseSelection() == false )
+		{			
+			getCanvas().mouseDragged( arg0.getX() + getGlobalX(), arg0.getY() + getGlobalY() ); 
+		}
+		else
 		if( getUseSelection() == true )
 		{
 			Point loc = this.getLocation();
@@ -1117,13 +1198,14 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 		Point2D.Double p = new Point2D.Double(arg0.getX(), arg0.getY());
 		changeToGlobalPosition(p);
 				
-		if( contain(p.x, p.y ))
+	//	if( contain(p.x, p.y ))
 		{
-			setCursor(new Cursor(Cursor.MOVE_CURSOR)); 
+			//setCursor(new Cursor(Cursor.MOVE_CURSOR));
+		//	setCursor(getCursor());
 		}
-		else
+	//	else
 		{
-			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));  
+			//setCursor(new Cursor(Cursor.DEFAULT_CURSOR));  
 		}
 	}
 
@@ -1137,7 +1219,7 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 				
 				arg0.consume();
 				
-				setState( STATE_WAIT_EDIT );
+				setState( STATE_WAIT_EDIT, null );
 			}
 	    }
 	        
@@ -1160,6 +1242,9 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 
 	public void mouseEntered(MouseEvent arg0) 
 	{ 
+		Point2D.Double p = new Point2D.Double(arg0.getX(), arg0.getY());
+		changeToGlobalPosition(p);
+	
 		setDrawColor(Color.red);
 		repaint();
 	}
@@ -1196,13 +1281,13 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 		{
 			if( getState() != STATE_SELECTED )
 			{
-				setState(STATE_SELECTED);
+				setState(STATE_SELECTED, null);
 				getCanvas().onShapeChanged(this);
 				getCanvas().onSelectionChanged();
 			}
 			else
 			{
-				setState(STATE_NONE);
+				setState(STATE_NONE, null);
 				getCanvas().onShapeChanged(this);
 				getCanvas().onSelectionChanged();							
 			}
@@ -1210,10 +1295,16 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 	 	else 
 		if( getState() != STATE_SELECTED )
 		{
-			getCanvas().setShapeStateAll(STATE_NONE);
-			setState(STATE_SELECTED);
+			//by young4
+			getCanvas().setShapeStateAll(STATE_NONE, null);
+			setState(STATE_SELECTED, null);
 			getCanvas().onShapeChanged(this);
 			getCanvas().onSelectionChanged();
+		}
+		
+		if( getUseSelection() == false )
+		{
+			getCanvas().mousePressed( arg0.getX() + getGlobalX(), arg0.getY() + getGlobalY() ); 
 		}
 		
 		repaint();		
@@ -1243,19 +1334,24 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 		
 		//release state
 		if( shapeFrame != null )
-			this.setState(STATE_NONE);
+			this.setState(STATE_NONE, null);
 		
 		//for right mouse button 
 	    if (SwingUtilities.isRightMouseButton(arg0)) 
 	    {
 	       	System.out.println("Right button released.");	         
 	    }
+	    
+		if( getUseSelection() == false )
+		{
+			getCanvas().mouseReleased( arg0.getX() + getGlobalX(), arg0.getY() + getGlobalY() ); 
+		}
 	}
 
 	public void actionPerformed(ActionEvent arg0) 
 	{
 		removeTextBox();
-		setState(STATE_SELECTED);
+		setState(STATE_SELECTED, null);
 	}
 
 	public void focusGained(FocusEvent arg0) 

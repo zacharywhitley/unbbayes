@@ -244,7 +244,7 @@ public class OOBNGraphPane extends GraphPane {
 			{								 				
 				shape = new UShapeFrame(this, newNode, (int)newNode.getPosition().x, (int)newNode.getPosition().y, (int)newNode.getWidth(), (int)newNode.getHeight());
 				addShape( shape );	
-				shape.setState(UShape.STATE_NONE);
+				shape.setState(UShape.STATE_NONE, null);
 			}
 			else
 			{		 
@@ -262,13 +262,13 @@ public class OOBNGraphPane extends GraphPane {
 					
 					//shape.move(loc.x - locFrame.x, loc.y - locFrame.y);					
 					shapeFrame.add(shape);
-					shapeFrame.setState(UShape.STATE_NONE);
-					shape.setState(UShape.STATE_NONE);
+					shapeFrame.setState(UShape.STATE_NONE, null);
+					shape.setState(UShape.STATE_NONE, null);
 				}
 				else
 				{
 					addShape( shape );
-					shape.setState(UShape.STATE_NONE);
+					shape.setState(UShape.STATE_NONE, null);
 				}
 			}
  		}
@@ -309,7 +309,8 @@ public class OOBNGraphPane extends GraphPane {
 			}
 		}	
 		
-		setShapeStateAll(UShape.STATE_NONE);
+		//by young4
+		setShapeStateAll(UShape.STATE_NONE, null);
 		fitCanvasSizeToAllUShapes();
 		 
 	} 
@@ -377,9 +378,9 @@ public class OOBNGraphPane extends GraphPane {
 				Debug.println(this.getClass(), "Importing data from dragndrop: " + t.toString() + ", from component " + comp.getName());
 				
 			 
-				//by young
+				//by young4
 				//all selected nodes be unselected
-				setShapeStateAll(UShape.STATE_NONE);
+				setShapeStateAll(UShape.STATE_NONE, null);
 				
 				// TODO finish this
 				if (!this.canImport(comp,t.getTransferDataFlavors())) {
@@ -632,7 +633,7 @@ public class OOBNGraphPane extends GraphPane {
 					newNode = controller.insertProbabilisticNode(e.getX(), e.getY());
 					UShapeOOBNNode shape = new UShapeOOBNNode(this, newNode, (int)newNode.getPosition().x-newNode.getWidth()/2, (int)newNode.getPosition().y-newNode.getHeight()/2, newNode.getWidth(), newNode.getHeight());
 					addShape( shape );	
-					shape.setState(UShape.STATE_SELECTED);
+					shape.setState(UShape.STATE_SELECTED, null);
 					updateNewInformationIntoTreeAndTableViewer(newNode);				 
 				}
 				break;

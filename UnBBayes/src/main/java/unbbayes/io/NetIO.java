@@ -862,8 +862,8 @@ public class NetIO implements BaseIO {
         stream.println("     UnBBayes_Color_Probabilistic_Explanation = \"" + ProbabilisticNode.getExplanationColor().getRGB() + "\";");
 		
         //by young
-        stream.println("     UnBBayes_Color_Utility = \"" + "1" + "\";");
-		stream.println("     UnBBayes_Color_Decision = \"" + "1" + "\";");
+//      stream.println("     UnBBayes_Color_Utility = \"" + "1" + "\";");
+//		stream.println("     UnBBayes_Color_Decision = \"" + "1" + "\";");
         //stream.println("     UnBBayes_Color_Utility = \"" + UtilityNode.getColor().getRGB() + "\";");
 		//stream.println("     UnBBayes_Color_Decision = \"" + DecisionNode.getColor().getRGB() + "\";");
 		//by young end

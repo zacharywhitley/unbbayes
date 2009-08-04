@@ -21,6 +21,8 @@
 package unbbayes.draw;
 
 import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
@@ -35,6 +37,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
 import unbbayes.prs.Edge;
+import unbbayes.prs.Node;
 import unbbayes.util.GeometricUtil;
 
 
@@ -156,11 +159,12 @@ public class UShapeLine extends UShape
 		shapeTarget.removeFriend( this );
     }
 
+	
 	public UShapeLine(UCanvas c, int x, int y, int w, int h)
 	{
 		super(c, null, x, y, w, h);
     }     
-
+ 
 	public void setEdge(Edge n) 
 	{
 		edge = n;
@@ -193,6 +197,9 @@ public class UShapeLine extends UShape
 	
 	public void update()
 	{
+		//by young4
+		super.update();
+		
 		pSource.x = 0;
 		pSource.y = 0;
 		pTarget.x = 0;
@@ -208,12 +215,37 @@ public class UShapeLine extends UShape
 			changeToLocalPosition(pSource);
 			changeToLocalPosition(pTarget);
 			
-		/*	parallelogram = new GeneralPath();
-			parallelogram.moveTo((float)(pSource.x), (float)(pSource.y));
-			parallelogram.lineTo((float)(-GAP + getWidth() - getWidth()*0.2), 	(float)(GAP));  
-			parallelogram.lineTo((float)(getWidth()-GAP ), 					(float)(getHeight()-GAP));  
-			parallelogram.lineTo((float)(GAP ), 							(float)(getHeight()-GAP));
-			parallelogram.closePath();*/ 
+	
+			//by young4
+			//create wrap of line
+		    double x1 = shapeSource.getCenterX()- getX();
+		    double y1 = shapeSource.getCenterY()- getY();
+		    double x2 = shapeTarget.getCenterX()- getX();
+		    double y2 = shapeTarget.getCenterY()- getY();
+		      
+		    double newX =  5*Math.cos(Math.atan2(y2-y1, x2-x1))+x1;
+			double newY =  5*Math.sin(Math.atan2(y2-y1, x2-x1))+y1;
+					
+		    double x4 = (-x1+newX)*Math.cos(-Math.PI/2) - (-y1+newY)*Math.sin(-Math.PI/2) + x1; 
+		    double y4 = (-x1+newX)*Math.sin(-Math.PI/2) + (-y1+newY)*Math.cos(-Math.PI/2) + y1;
+		    double x5 = (-x1+newX)*Math.cos(Math.PI/2) - (-y1+newY)*Math.sin(Math.PI/2) + x1; 
+		    double y5 = (-x1+newX)*Math.sin(Math.PI/2) + (-y1+newY)*Math.cos(Math.PI/2) + y1;
+		    	     
+		    newX =  5*Math.cos(Math.atan2(y1-y2, x1-x2))+x2;
+			newY =  5*Math.sin(Math.atan2(y1-y2, x1-x2))+y2;
+					
+		    double x6 = (-x2+newX)*Math.cos(-Math.PI/2) - (-y2+newY)*Math.sin(-Math.PI/2) + x2; 
+		    double y6 = (-x2+newX)*Math.sin(-Math.PI/2) + (-y2+newY)*Math.cos(-Math.PI/2) + y2;
+		    double x7 = (-x2+newX)*Math.cos(Math.PI/2) - (-y2+newY)*Math.sin(Math.PI/2) + x2; 
+		    double y7 = (-x2+newX)*Math.sin(Math.PI/2) + (-y2+newY)*Math.cos(Math.PI/2) + y2;
+		    
+			parallelogram = new GeneralPath();
+			parallelogram.moveTo((float)x4, (float)y4);
+			parallelogram.lineTo((float)x5, (float)y5);  
+			parallelogram.lineTo((float)x6, (float)y6);  
+			parallelogram.lineTo((float)x7, (float)y7);
+			parallelogram.closePath();  
+			 
 		}
 		
 		repaint();
@@ -235,8 +267,11 @@ public class UShapeLine extends UShape
 				
 		line.setLine(pSource.x, pSource.y, pTarget.x, pTarget.y);
 		
+		//g2.draw(parallelogram);
+		
 		g2.setStroke(getStroke());
 	  	g2.draw(line);
+	  	
 	  	
  		if( getUseSelection() == true )
  		{
@@ -315,8 +350,9 @@ public class UShapeLine extends UShape
 	}
 	
 	public boolean contain(double x, double y) 
-	{
-		return line.contains((double)(x-getGlobalX()), (double)(y-getGlobalY()));
+	{		
+		return parallelogram.contains((double)(x-getGlobalX()), (double)(y-getGlobalY()));
+	 	 
 	}
 	
 	public void changeDirection() 
@@ -330,6 +366,7 @@ public class UShapeLine extends UShape
 		
 		update();
 	}
+ 
 	
 	public void mouseClicked(MouseEvent arg0) 
 	{ 

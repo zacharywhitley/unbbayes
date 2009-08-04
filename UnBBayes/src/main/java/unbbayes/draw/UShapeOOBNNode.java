@@ -132,6 +132,9 @@ public class UShapeOOBNNode extends UShape
 	
 	public void update() 
 	{ 
+		//by young4
+		super.update();
+		
 		//by young3
 		updateNodeInformation();	
 	 
@@ -206,7 +209,8 @@ public class UShapeOOBNNode extends UShape
 	        	
 	        	arg0.consume();
 	        	
-	         	setState( STATE_WAIT_EDIT );
+	        	//by young4
+	         	setState( STATE_WAIT_EDIT , null);
 	        	
 	        }
 	    }

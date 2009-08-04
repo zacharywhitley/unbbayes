@@ -34,9 +34,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Line2D;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JLayeredPane;
 
+import unbbayes.controller.NetworkController;
 import unbbayes.prs.Node;
  
  
@@ -51,6 +54,8 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener, MouseL
 	private static final long serialVersionUID = 3124079297866124183L;
 	protected int layerID = 0;
 	UShape rootShape; 
+	
+	public NetworkController controller;
 	
  	public static final String STATE_NONE 			= "None";
 	public static final String STATE_RESIZE_COMP 	= "ResizeComponents"; 
@@ -69,11 +74,14 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener, MouseL
 	public Rectangle dragRect;
 	public Rectangle selectRect;
 	public Point dragPoint;
-    public String strMode;
+    public String strTextOutputMode;
+    
+    //by young4
+	public List<UShape> selectedShapes; 
    
-    public static final String MODE_NONE		= "None";
-	public static final String MODE_USE_NAME	= "UseName";
-	public static final String MODE_USE_DESC	= "UseDescription";
+    public static final String TEXTOUTPUTMODEMODE_NONE		= "None";
+	public static final String TEXTOUTPUTMODEMODE_USE_NAME	= "UseName";
+	public static final String TEXTOUTPUTMODEMODE_USE_DESC	= "UseDescription";
 
 	//Test
 	public UShape shapeTest;
@@ -94,6 +102,8 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener, MouseL
 		
 		setState(STATE_NONE); 
 		
+		//by young4
+		selectedShapes= new ArrayList<UShape>();
 		dragPoint = new Point(0,0);
 		dragRect = new Rectangle();
 		selectRect= new Rectangle(); 
@@ -101,14 +111,14 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener, MouseL
 	
   	}
 	
-	public void setMode( String str )
+	public void setTextOutputMode( String str )
 	{
-		strMode = str;
+		strTextOutputMode = str;
 	}
 	
-	public String getMode()
+	public String getTextOutputMode()
 	{
-		return strMode;
+		return strTextOutputMode;
 	}
 	
 	public void setState(String s) 
@@ -181,26 +191,45 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener, MouseL
 		setSize(s);
 	}
 	
+	//by young4
+	public List<UShape> getSelectedShapes() 
+	{
+		selectedShapes.clear();
+		 
+	    int n = this.getComponentCount();
+		for( int i = 0; i < n; i++ )
+		{
+			UShape shape = (UShape)this.getComponent(i);
+    		
+			if( shape.getState() == UShape.STATE_SELECTED && shape.getNode() != null )
+			{ 
+				selectedShapes.add(shape);
+			}
+		}    			 
+		 
+		return selectedShapes;
+    } 
+	 
 	public void DeleteSelectedShape()
 	{
-		int n = this.getComponentCount();
-		
-    	for( int i = 0; i < n; i++ )
-    	{
-    		UShape shape = (UShape)this.getComponent(i);
-    		
-    		if( shape.getState() == UShape.STATE_SELECTED )
-    		{
-    			onShapeDeleted(shape);
-    			this.remove(shape);
-    			DeleteSelectedShape();
-    			repaint();
-    			break;
-    		}
-    	}    
-    
+		getSelectedShapes();
+		 
+		 for (int i = 0; i< selectedShapes.size(); i++) 
+		 {
+			 UShape shape = selectedShapes.get(i);
+			 
+             if (shape instanceof UShape) 
+             {
+            	 System.out.println("DeleteSelectedShape  =" + i + " " + shape.ID );
+     	 		 onShapeDeleted(shape);
+     			 this.remove(shape); 
+             }
+         }
+	
     	update(); 
 	}
+	
+	
 	 
 	public void update()
 	{
@@ -456,27 +485,27 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener, MouseL
 		}  		
 	}
      
-    public void setShapeStateAll(String s) 
+    public void setShapeStateAll(String s, Object o) 
 	{
     	int n = this.getComponentCount();
     	for( int i = 0; i < n; i++ )
     	{
     		UShape shape = (UShape)this.getComponent(i);
-    		shape.setState(s);	
+    		shape.setState(s, o);	
     		
-    		setShapeStateAll(shape, s);
+    		setShapeStateAll(shape, s, o);
     	}
     	
     	repaint();
 	}   
      
-    public void setShapeStateAll(UShape parent, String s) 
+    public void setShapeStateAll(UShape parent, String s, Object o) 
 	{
     	int n = parent.getComponentCount();
     	for( int i = 0; i < n; i++ )
     	{
     		UShape shape = (UShape)parent.getComponent(i);
-    		shape.setState(s);			
+    		shape.setState(s, o);			
     	}
     	
     	repaint();
@@ -662,7 +691,7 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener, MouseL
     		{
     			if(shape.isContained(selectRect))  
     			{
-    				shape.setState(UShape.STATE_SELECTED);
+    				shape.setState(UShape.STATE_SELECTED, null);
     			}
     		}
        	}
@@ -742,15 +771,21 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener, MouseL
 		this.remove(shape);
   	}  	  	
 
-	public void mouseDragged(MouseEvent e) 
+	//by young4
+	public void mouseDragged(int x, int y) 
 	{	
 		if( dragRect.x != 0 && dragRect.y != 0 )
 		{
-			dragRect.width  = ( e.getX()- dragRect.x );
-			dragRect.height = ( e.getY()- dragRect.y );
+			dragRect.width  = ( x- dragRect.x );
+			dragRect.height = ( y- dragRect.y );
 			
 			repaint();
 		}
+	}
+	
+	public void mouseDragged(MouseEvent e) 
+	{	
+		mouseDragged( e.getX(), e.getY());
 	}
 	
 	public void mouseMoved(MouseEvent e) {
@@ -775,20 +810,27 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener, MouseL
 		
 	}
 
-	public void mousePressed(MouseEvent e) 
-	{ 
+	//by young4
+	public void mousePressed(int x, int y) 
+	{	
 		if( dragRect.x == 0 && dragRect.y == 0 )
 		{
-			dragRect.x = e.getX();
-			dragRect.y = e.getY();
+			dragRect.x = x;
+			dragRect.y = y;
 		}
-		  
-		setShapeStateAll(UShape.STATE_NONE);
+		
+		setShapeStateAll(UShape.STATE_NONE, null);
 		repaint();
 	}
-
-	public void mouseReleased(MouseEvent e) 
+	
+	public void mousePressed(MouseEvent e) 
 	{ 
+		mousePressed( e.getX(), e.getY());		
+	}
+
+	//by young4
+	public void mouseReleased(int x, int y) 
+	{	
 		if( dragRect.x != 0 && dragRect.y != 0 )
 		{
 			checkSelectArea();
@@ -798,17 +840,23 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener, MouseL
 			repaint();
 		}
 	}
+	
+	public void mouseReleased(MouseEvent e) 
+	{ 
+		mouseReleased( e.getX(), e.getY() );	 
+	}
 
 	public void componentHidden(ComponentEvent arg0) 
 	{
-		setShapeStateAll(UShape.STATE_NONE);
+		//by young4
+		setShapeStateAll(UShape.STATE_NONE, null);
 		System.out.println("componentHidden " );
 		
 	}
 
 	public void componentMoved(ComponentEvent arg0) 
 	{
-		setShapeStateAll(UShape.STATE_NONE);
+		setShapeStateAll(UShape.STATE_NONE, null);
 		System.out.println("componentMoved " );
 		
 	}
@@ -820,7 +868,7 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener, MouseL
 
 	public void componentShown(ComponentEvent arg0) 
 	{ 
-	 	setShapeStateAll(UShape.STATE_NONE);
+	 	setShapeStateAll(UShape.STATE_NONE, null);
 		System.out.println("componentShown " );
 	}
 
