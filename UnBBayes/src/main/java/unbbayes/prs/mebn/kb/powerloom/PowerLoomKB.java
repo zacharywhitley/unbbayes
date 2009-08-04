@@ -515,41 +515,31 @@ public class PowerLoomKB implements KnowledgeBase {
 		String finding = "";
 		
 		if(randonVariableFinding.getNode().getTypeOfStates() == ResidentNode.BOOLEAN_RV_STATES){
+		
 			finding+= "(";
-			   if(randonVariableFinding.getState().getName().equals("false")){
-				   finding+= "NOT";
-				   finding+= "("; 
-			   }
+			if(randonVariableFinding.getState().getName().equals("false")){
+			    finding+= "NOT";
+				finding+= "("; 
+			}
 			   finding+= randonVariableFinding.getNode().getName(); 
 			      finding+=" "; 
-			         boolean isFirst = true; //usado para não colocar virgula antes do primeiro elemento. 
 			         for(Entity argument: randonVariableFinding.getArguments()){
-			        	 if(isFirst){
-			        		isFirst = false;  
-			        	 }else{
-			        		 finding+=" "; 
-			        	 }
-			        	 finding+=argument.getName();
+			        	 finding+=argument.getName() + " ";
 			         }
 			if(randonVariableFinding.getState().getName().equals("false")){
-			finding+= ") ";
+			    finding+= ") ";
 			} 
+			
 			finding+= ")";	
+		
 		}else{ 
 			finding+= "(=";
 			finding+= "("; 
 			finding+= randonVariableFinding.getNode().getName(); 
 			finding+=" "; 
 			
-			// Used to avoid ',' before the first element
-			boolean isFirst = true; 
 			for(Entity argument: randonVariableFinding.getArguments()){
-			   	 if(isFirst){
-			      		isFirst = false;  
-			   	 }else{
-			       		 finding+=" "; 
-			   	 }
-			   	 finding+=argument.getName();
+			   	 finding+=argument.getName() + " ";
 			}
 			finding+= ") "; 
 			finding+= randonVariableFinding.getState().getName();  
