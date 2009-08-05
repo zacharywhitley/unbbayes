@@ -458,18 +458,7 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener, MouseL
 		}
 		else
 		if(getState() == STATE_NONE)
-		{   
-		   	int n = this.getComponentCount();
-		   	for( int i = 0; i < n; i++ )
-		   	{
-		   		UShape shape = (UShape)this.getComponent(i);
-		    		
-		   		if( shape.getState() == UShape.STATE_SELECTED )
-		   		{
-					shape.sendMessageToFriends(UShape.STATE_MOVE);
-				}
-			}
-		
+		{    		
 		   	//Draw Drag Box
 			if( dragRect.x != 0 && dragRect.y != 0 )
 			{ 

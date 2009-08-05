@@ -606,6 +606,8 @@ public class GraphPane extends UCanvas implements MouseListener, MouseMotionList
 			
 			//by young4
 			this.setShapeStateAll(UShape.STATE_CHANGECURSOR, new Cursor(Cursor.MOVE_CURSOR));
+			this.setShapeStateAll(STATE_NONE, null );
+			
 		}
 		break;
 			

@@ -150,7 +150,7 @@ public class TestUGraphEditor extends JFrame implements WindowStateListener
         {
         	public void actionPerformed(ActionEvent e) 
         	{
-        		for(int i = 0; i < 1; i++)
+        		for(int i = 0; i < 100; i++)
         			m_Canvas.setFrame(110,110,220,220);
             }
         });
