@@ -2,28 +2,29 @@ UNBBAYES VERSION 3.49.6-BETA
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
-1		2826255		Integrate Pruning with Grand BN construction.
-2		2826254		Prune Grand BN using d-separation.
-3		2826253		New Grand BN construction.
-4		2825695		Generic Progress Bar.
-5		2825459		Create XMLBIF version 6.
-6		2819956		New GUI.
-7		2790229		Allow inference with Gibbs.
-8		2790228		Add simulation to GUI.
-9		2790227		Gibbs Sampling.
-10		2787581		Allow finding in evaluation.
-11		2708052		Implement test case for Evaluation module.
-12		2564961		Compute exact confusion matrix.
-13		2542566		Compute error for evaluation.
-14		2539912		Include Load and Save DNE format in GUI.
-15		2539910		Load and Save DNE format.
-16		2521242		Include PCC marginal improvement and cost rate in GUI.
-17		2521225		Compute evidence cost rate.
-18		2521222		Compute marginal improvement.
-19		2521210		Remove Java 6 dependency.
-20		2286477		Implement OOBN -> MSBN convertion tool.
-21		1908023		Arrows at node's edge (outer line).
-22		1908018		Self-resizing nodes.
+1		2832727		Add Metaphor, Medical Metaphor, and UnBMiner to UnBBayes.
+2		2826255		Integrate Pruning with Grand BN construction.
+3		2826254		Prune Grand BN using d-separation.
+4		2826253		New Grand BN construction.
+5		2825695		Generic Progress Bar.
+6		2825459		Create XMLBIF version 6.
+7		2819956		New GUI.
+8		2790229		Allow inference with Gibbs.
+9		2790228		Add simulation to GUI.
+10		2790227		Gibbs Sampling.
+11		2787581		Allow finding in evaluation.
+12		2708052		Implement test case for Evaluation module.
+13		2564961		Compute exact confusion matrix.
+14		2542566		Compute error for evaluation.
+15		2539912		Include Load and Save DNE format in GUI.
+16		2539910		Load and Save DNE format.
+17		2521242		Include PCC marginal improvement and cost rate in GUI.
+18		2521225		Compute evidence cost rate.
+19		2521222		Compute marginal improvement.
+20		2521210		Remove Java 6 dependency.
+21		2286477		Implement OOBN -> MSBN convertion tool.
+22		1908023		Arrows at node's edge (outer line).
+23		1908018		Self-resizing nodes.
 
 BUG LIST		
 Number	Request ID	Summary

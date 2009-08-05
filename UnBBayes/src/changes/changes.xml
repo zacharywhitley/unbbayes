@@ -8,7 +8,10 @@
 	</properties>
 	<body>
 	
-		<release version="3.49.6-BETA" date="2009-07-23" description="Fifth UnBBayes-MEBN beta release">
+		<release version="3.50.6-BETA" date="2009-08-05" description="Fifth UnBBayes-MEBN beta release">
+			<action dev="Rommel Carvalho" type="add" issue="2832727">
+				Add Metaphor, Medical Metaphor, and UnBMiner to UnBBayes.
+			</action>
 			<action dev="Shou Matsumoto" type="add" issue="2826255">
 				Integrate Pruning with Grand BN construction.
 			</action>
