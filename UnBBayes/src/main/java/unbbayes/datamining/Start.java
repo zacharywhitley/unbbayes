@@ -20,12 +20,12 @@
  */
 package unbbayes.datamining;
 
-import unbbayes.datamining.gui.InvokerMain;
+import unbbayes.datamining.gui.UnBMinerFrame;
 
 public class Start
 {
   public static void main(String[] args)
   {
-    (new InvokerMain()).setVisible(true);
+    new UnBMinerFrame().setVisible(true);
   }
 }

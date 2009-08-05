@@ -65,10 +65,13 @@ import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.JavaHelperController;
 import unbbayes.controller.MainController;
+import unbbayes.datamining.gui.UnBMinerFrame;
 import unbbayes.io.exception.LoadException;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO;
+import unbbayes.metaphor.MetaphorFrame;
+import unbbayes.metaphor.afin.AFINMetaphorFrame;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.simulation.likelihoodweighting.sampling.LikelihoodWeightingSampling;
 import unbbayes.simulation.montecarlo.controller.MCMainController;
@@ -142,6 +145,9 @@ public class UnBBayesFrame extends JFrame {
 	private ActionListener alWindows;
 	private ActionListener alLearn;
 	private ActionListener alIL;
+	private ActionListener alMetaphor;
+	private ActionListener alMedicalMetaphor;
+	private ActionListener alUnBMiner;
 	private ActionListener alCascade;
 	private ActionListener alTile;
 	private ActionListener alHelp;
@@ -511,6 +517,30 @@ public class UnBBayesFrame extends JFrame {
 				new ILBridge(controller);
 			}
 		};
+		
+		alMetaphor = new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				AFINMetaphorFrame frame = new AFINMetaphorFrame(); 
+				frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+				frame.setVisible(true);
+			}
+		};
+		
+		alMedicalMetaphor = new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				MetaphorFrame frame = new MetaphorFrame();
+				frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+				frame.setVisible(true);
+			}
+		};
+		
+		alUnBMiner = new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				UnBMinerFrame frame = new UnBMinerFrame();
+				frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+				frame.setVisible(true);
+			}
+		};
 
 		alLogic = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
@@ -845,6 +875,9 @@ public class UnBBayesFrame extends JFrame {
 		JMenuItem lwItem = new JMenuItem(resource.getString("likelihoodWeightingItem"));
 		JMenuItem gibbsItem = new JMenuItem(resource.getString("gibbsItem"));
 		JMenuItem iLearningItem = new JMenuItem(resource.getString("ILearningItem"));
+		JMenuItem metaphorItem = new JMenuItem(resource.getString("MetaphorItem"));
+		JMenuItem medicalMetaphorItem = new JMenuItem(resource.getString("MedicalMetaphorItem"));
+		JMenuItem unbMinerItem = new JMenuItem(resource.getString("UnBMinerItem"));
 		
 		learningItem.setMnemonic(resource.getString("learningItemMn").charAt(0));
 		tanItem.setMnemonic(resource.getString("tanItemMn").charAt(0));
@@ -877,6 +910,9 @@ public class UnBBayesFrame extends JFrame {
 		windowsItem.addActionListener(alWindows);
 		learningItem.addActionListener(alLearn);
 		iLearningItem.addActionListener(alIL);
+		metaphorItem.addActionListener(alMetaphor);
+		medicalMetaphorItem.addActionListener(alMedicalMetaphor);
+		unbMinerItem.addActionListener(alUnBMiner);
 		cascadeItem.addActionListener(alCascade);
 		tileItem.addActionListener(alTile);
 		
@@ -936,6 +972,9 @@ public class UnBBayesFrame extends JFrame {
 		toolsMenu.add(tanItem);
 		toolsMenu.add(banItem);
 		toolsMenu.add(iLearningItem);
+		toolsMenu.add(metaphorItem);
+		toolsMenu.add(medicalMetaphorItem);
+		toolsMenu.add(unbMinerItem);
 		
 		samplingMenu.add(logicItem);
 		samplingMenu.add(lwItem);

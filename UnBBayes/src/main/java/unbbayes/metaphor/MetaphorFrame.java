@@ -49,16 +49,7 @@ public class MetaphorFrame extends JFrame{
 
     this.getContentPane().setLayout(borderLayout1);
     this.getContentPane().add(jPanel1, BorderLayout.CENTER);
-  }
-
-  //Overridden so we can exit when window is closed
-  protected void processWindowEvent(WindowEvent e)
-  {
-    super.processWindowEvent(e);
-    if (e.getID() == WindowEvent.WINDOW_CLOSING)
-    {
-      System.exit(0);
-    }
+    this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
   }
 
   public static void main(String[] args)

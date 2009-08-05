@@ -25,7 +25,6 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
 import java.util.ResourceBundle;
 
 import javax.swing.JFrame;
@@ -107,17 +106,9 @@ public class AFINMetaphorFrame extends JFrame{
     //menu.add(view);
     menu.add(help);
     this.setJMenuBar(menu);
+    this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
   }
 
-  //Overridden so we can exit when window is closed
-  protected void processWindowEvent(WindowEvent e)
-  {
-    super.processWindowEvent(e);
-    if (e.getID() == WindowEvent.WINDOW_CLOSING)
-    {
-      System.exit(0);
-    }
-  }
 
   
   

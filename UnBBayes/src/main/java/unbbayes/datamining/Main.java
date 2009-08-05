@@ -20,7 +20,7 @@
  */
 package unbbayes.datamining;
 
-import unbbayes.datamining.gui.InvokerMain;
+import unbbayes.datamining.gui.UnBMinerFrame;
 
 /**
  *  This class starts UnBMiner
@@ -34,6 +34,6 @@ public class Main {
      *  Starts UnBMiner.
      */
     public static void main(String[] args) {
-      (new InvokerMain()).setVisible(true);
+      (new UnBMinerFrame()).setVisible(true);
     }
 }
