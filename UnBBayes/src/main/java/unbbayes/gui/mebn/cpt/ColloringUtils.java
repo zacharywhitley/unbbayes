@@ -284,7 +284,7 @@ public class ColloringUtils {
 			}
 		}
 		
-		for(InputNode input : residentNode.getInputNodeFatherList()){
+		for(InputNode input : residentNode.getParentInputNodesList()){
 			if(input.getInputInstanceOf() instanceof ResidentNode){
 				ResidentNode resident = (ResidentNode)input.getInputInstanceOf(); 
 				

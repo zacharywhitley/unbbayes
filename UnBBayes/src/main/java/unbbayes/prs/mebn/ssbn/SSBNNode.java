@@ -35,6 +35,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.exception.InvalidParentException;
+import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -43,7 +44,7 @@ import unbbayes.prs.mebn.compiler.Compiler;
 import unbbayes.prs.mebn.compiler.ICompiler;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
-import unbbayes.prs.mebn.ssbn.giaalgorithm.AbstractSSBNGenerator;
+import unbbayes.util.Debug;
 
 /**
  * @author Shou Matsumoto
@@ -101,6 +102,9 @@ public class SSBNNode implements INode {
 		ResourceBundle.getBundle("unbbayes.prs.mebn.ssbn.resources.Resources");	
 	
 	private boolean permanent; //Indicate if the node is permanent or only a node test for the search of findings
+	
+	
+	private MFrag currentlySelectedMFragByTurnArguments = null;	// currently chosen MFrag, by argumentsForMFrag
 	
 	// Constructors	
 	
@@ -406,7 +410,6 @@ public class SSBNNode implements INode {
 	
 	/**
 	 * This is the same as setting node's actual value as a unique value
-	 * and setting ProbNode to null.
 	 * 
 	 * @param uniqueValue: the unique value this node represents
 	 */
@@ -576,10 +579,36 @@ public class SSBNNode implements INode {
 //		if (this.isFinding) {
 //			return parents;
 //		}
+		
+		// auxiliar variables to translate ov names between different MFrags
+		String[] translatedOvNames = null;
+		Map<SSBNNode, InputNode> parentsInputMap = this.getParentsInputMap();
+		
 		for (SSBNNode parent : this.parents) {
-			if (parent.hasAllOVs(true, ovNames)) {
+			
+			// tests if this parent was an input node
+			InputNode parentInput = parentsInputMap.get(parent);
+			if (this.getResident().getMFrag().equals(parent.getCurrentlySelectedMFragByTurnArguments())
+					|| parentInput == null) {
+
+				// it was not an input node or we are evaluating the same mfrag. No need to name conversion
+				translatedOvNames = ovNames;
+			} else {
+				// it was an input node and we are referencing another mfrag. We need to convert names to the bound OV names
+				translatedOvNames = ovNames.clone();	// initialization
+				for (int i = 0; i < ovNames.length; i++) {
+					try{
+						translatedOvNames[i] = parentInput.getOrdinaryVariableBoundToResidentNode(ovNames[i]).getName();
+					} catch (NullPointerException npe) {
+						// Expected issue. Do nothing
+						Debug.println(this.getClass(),parentInput.toString() + ", ov = " + ovNames[i], npe);
+					}
+				}
+			}
+			
+			if (parent.hasAllOVs(true, translatedOvNames)) {
 				if (isExactMatch) {
-					if (parent.getOVs().size() == ovNames.length) {
+					if (parent.getOVs().size() == translatedOvNames.length) {
 						parents.add(parent);
 					}
 				} else {
@@ -600,26 +629,38 @@ public class SSBNNode implements INode {
 	 * If invalid argument was passed, then it will return an empty collection (size = 0)
 	 */
 	public Collection<SSBNNode> getParentSetByStrongOV(boolean isExactMatch, Collection<OrdinaryVariable> setOfOV) {
-		Collection<SSBNNode> parents = new ArrayList<SSBNNode>();
-		if (setOfOV == null) {
-			return parents;
+		
+		if (setOfOV == null || setOfOV.size() <= 0) {
+			return new ArrayList();
 		}
-//		if (this.isFinding) {
+		
+		List<String> ovNames = new ArrayList<String>();
+		for (OrdinaryVariable ov : setOfOV) {
+			ovNames.add(ov.getName());
+		}
+			
+		return this.getParentSetByStrongOV(isExactMatch, ovNames.toArray(new String[ovNames.size()]));
+		
+//		Collection<SSBNNode> parents = new ArrayList<SSBNNode>();
+//		if (setOfOV == null) {
 //			return parents;
 //		}
-		for (SSBNNode parent : this.parents) {
-			if (parent.hasAllOVs(setOfOV)) {
-				if (isExactMatch) {
-					if (parent.getOVs().size() == setOfOV.size()) {
-						parents.add(parent);
-					}	
-				} else {
-					parents.add(parent);
-				}
-							
-			}
-		}
-		return parents;
+////		if (this.isFinding) {
+////			return parents;
+////		}
+//		for (SSBNNode parent : this.parents) {
+//			if (parent.hasAllOVs(setOfOV)) {
+//				if (isExactMatch) {
+//					if (parent.getOVs().size() == setOfOV.size()) {
+//						parents.add(parent);
+//					}	
+//				} else {
+//					parents.add(parent);
+//				}
+//							
+//			}
+//		}
+//		return parents;
 	}
 	
 	/**
@@ -631,29 +672,41 @@ public class SSBNNode implements INode {
 	 * If invalid argument was passed, then it will return an empty collection (size = 0)
 	 */
 	public Collection<SSBNNode> getParentSetByStrongOV(boolean isExactMatch,OrdinaryVariable... setOfOV) {
-		Collection<SSBNNode> parents = new ArrayList<SSBNNode>();
-		if (setOfOV == null) {
-			return parents;
+		if (setOfOV == null || setOfOV.length <= 0) {
+			return new ArrayList();
 		}
-		if (setOfOV.length <= 0) {
-			return parents;
-		}
-//		if (this.isFinding) {
-//			return parents;
-//		}
-		for (SSBNNode parent : this.parents) {
-			if (parent.hasAllOVs(setOfOV)) {
-				if (isExactMatch) {
-					if (parent.getOVs().size() == setOfOV.length) {
-						parents.add(parent);
-					}	
-				} else {
-					parents.add(parent);
-				}
-				
+		String[] ovNames = new String[setOfOV.length];
+		for (int i = 0; i < setOfOV.length; i++) {
+			if (setOfOV[i] != null) {
+				ovNames[i] = setOfOV[i].getName();
 			}
 		}
-		return parents;
+		
+		return this.getParentSetByStrongOV(isExactMatch, ovNames);
+		
+//		Collection<SSBNNode> parents = new ArrayList<SSBNNode>();
+//		if (setOfOV == null) {
+//			return parents;
+//		}
+//		if (setOfOV.length <= 0) {
+//			return parents;
+//		}
+////		if (this.isFinding) {
+////			return parents;
+////		}
+//		for (SSBNNode parent : this.parents) {
+//			if (parent.hasAllOVs(setOfOV)) {
+//				if (isExactMatch) {
+//					if (parent.getOVs().size() == setOfOV.length) {
+//						parents.add(parent);
+//					}	
+//				} else {
+//					parents.add(parent);
+//				}
+//				
+//			}
+//		}
+//		return parents;
 	}
 	
 	
@@ -697,20 +750,7 @@ public class SSBNNode implements INode {
 		
 		//	extracts weak OVs names at parents
 		// TODO optimize to prevent redundant reading...
-		List<String> weakOVs = new ArrayList<String>();
-		for (SSBNNode parent : this.getParents()) {
-			for (OVInstance ovi : parent.getArguments()) {
-				if (ovi.getEntity().getType().hasOrder()) {
-					if (!weakOVs.contains(ovi.getOv().getName())) {
-						// no repeated values allowed
-						//if (!strongOVList.contains(ovi.getOv().getName())) {
-							// should not repeat a OV treated before (which should be in strongOVList)
-							weakOVs.add(ovi.getOv().getName());
-						//}
-					}
-				}
-			}
-		}
+		List<String> weakOVs = new ArrayList<String>(this.getParentsWeakOVNames());
 		
 		// removes weak OVs from strong OVs
 		strongOVList.removeAll(weakOVs);
@@ -734,12 +774,102 @@ public class SSBNNode implements INode {
 		return ret;
 	}
 	
-	
 	/**
-	 * "Automagically" sets up a map containing SSBNs by strong ov's, considering anything but argument as strong variables.
-	 * @param weakOV anything but these ovs will be considered as "strong"
-	 * @return a map containing a set name (which would be strong ov names separated by dots) and parent SSBNNodes containing such ovs as arguments.
+	 * Extracts a set of all weak Ordinal Variables within
+	 * parent's arguments.
+	 * If a parent is expected to be an input node, it uses the OV's from
+	 * the input node, not at the correspondent resident node.
+	 * @return Not null value - A set of names of all weak ordinal variables within parents.
 	 */
+	public Set<String> getParentsWeakOVNames() {
+		Set<String> weakOVs = new HashSet<String>();
+		
+		// this map is used to test if a parent is expected to be an input node.
+		// if so, we must take care of names for OVs, since they may change between different MFrags.
+		Map<SSBNNode,InputNode> inputParentsMap = this.getParentsInputMap();
+		
+		for (SSBNNode parent : this.getParents()) {
+			InputNode input = inputParentsMap.get(parent);
+			if (this.getResident().getMFrag().equals(parent.getCurrentlySelectedMFragByTurnArguments())
+					|| input == null) {
+				// this node was not an input or we are dealing with same MFrag
+				// use default behavior
+				for (OVInstance ovi : parent.getArguments()) {
+					if (ovi.getEntity().getType().hasOrder()) {
+						weakOVs.add(ovi.getOv().getName());
+					}
+				}
+			} else {
+				// this node is an input node
+				// take extra care for OV naming conversion
+				if (input.getOrdinaryVariableList() != null) {
+					for (OrdinaryVariable ov : input.getOrdinaryVariableList()) {
+						if (ov.getValueType().hasOrder()) {
+							weakOVs.add(ov.getName());
+						}
+					}
+				}
+			} 
+		}
+		
+		
+		return weakOVs;
+	}
+
+	/**
+	 * Lists parent nodes which were originally an input node.
+	 * In other words, given parent P of this node, if P was an
+	 * input node before this node was converted to a SSBNNode, then
+	 * this method will return P within this list.
+	 * 
+	 * Please, note that parent's OV names are mostly read from their original resident nodes,
+	 * not from input node, so, the expected name might be different.
+	 * 
+	 * Example: 
+	 * 			If my MFrag has the following node (THIS) ant its parent (PARENT) as an input node: 
+	 * 					THIS(VAR) <- PARENT(VAR) 
+	 * 			And if PARENT is declared at its original MFrag as following:
+	 * 					PARENT(VAR2)
+	 * 			The name of the ordinary variable for PARENT might come VAR2 instead of VAR.
+	 * 
+	 * @return : a map containing of all parent nodes which were once a input node as a key and its
+	 * 			original input node.
+	 * related to this SSBNNode. It is a non-nullable return.
+	 */
+	public Map<SSBNNode,InputNode> getParentsInputMap(){
+		
+		Map<SSBNNode,InputNode> ret = new HashMap<SSBNNode,InputNode>(); // return
+		
+		List<InputNode> inputList = this.getResident().getParentInputNodesList(); // list of all expected input nodes
+		if (inputList == null || inputList.size() <= 0) {
+			return ret;
+		}
+		
+		// extracting resident nodes from input nodes
+		Map<ResidentNode,InputNode> pointingResidentMap = new HashMap<ResidentNode,InputNode>();	// list of resident nodes pointed by input List
+		for (InputNode inputNode : inputList) {
+			pointingResidentMap.put(inputNode.getResidentNodePointer().getResidentNode(),inputNode);
+		}
+		
+		
+		// extracting parent SSBNNodes from ResidentNodes
+		if (this.getParents() != null) {
+			for (SSBNNode parent : this.getParents()) {
+				if (pointingResidentMap.containsKey(parent.getResident())) {
+					ret.put(parent,pointingResidentMap.get(parent.getResident()));
+				}
+			}
+		}
+		
+		
+		return ret;
+	}
+
+//	/**
+//	 * "Automagically" sets up a map containing SSBNs by strong ov's, considering anything but argument as strong variables.
+//	 * @param weakOV anything but these ovs will be considered as "strong"
+//	 * @return a map containing a set name (which would be strong ov names separated by dots) and parent SSBNNodes containing such ovs as arguments.
+//	 */
 	/*public Map<String, SSBNNode> getParentMapByWeakOV(String...weakOVNames) {
 		// TODO implement this if necessary
 	}*/
@@ -775,11 +905,17 @@ public class SSBNNode implements INode {
 	 * @return the actualValues: node's possible values known at that moment. It might be
 	 * different than resident node's ones. It might be a single value, when a finding is present.
 	 * Obviously, it may be a list of entity instances.
+	 * 
+	 * @author Shou Matsumoto
+	 * @since 08-09-2009
+	 * 	Fixed it to return a single value when it is known to be a finding.
+	 * 	This issue was failing to pass the JUnit test.
 	 */
 	public Collection<Entity> getActualValues() {
 		if (this.getProbNode() == null) {			
 			ArrayList<Entity> ret = new ArrayList<Entity>();
-			ret.add(this.actualValues.iterator().next());
+//			ret.add(this.actualValues.iterator().next());
+			ret.add(this.value);
 			return ret;
 		} else {
 			return actualValues;	
@@ -1246,6 +1382,7 @@ public class SSBNNode implements INode {
 		if(mFrag.equals(this.getResident().getMFrag())){
 			if(isRecursive){
 				arguments = argumentsForMFrag.get(mFrag);
+				this.setCurrentlySelectedMFragByTurnArguments(mFrag);
 				return true; 
 			}else{
 				return true; 
@@ -1255,6 +1392,7 @@ public class SSBNNode implements INode {
 			List<OVInstance> argumentsTemp = argumentsForMFrag.get(mFrag); 
 			if(argumentsTemp != null){
 				arguments = argumentsTemp; 
+				this.setCurrentlySelectedMFragByTurnArguments(mFrag);
 				return true; 
 			}else{
 				return false; 
@@ -1438,6 +1576,29 @@ public class SSBNNode implements INode {
 	 */
 	public void setStates(List<String> states) {
 		throw new java.lang.UnsupportedOperationException("setStateAt");
+	}
+
+	/**
+	 * This is the last MFrag set by {@link #turnArgumentsForMFrag(MFrag)}
+	 * @return the currentlySelectedMFragByTurnArguments
+	 * @see #turnArgumentsForMFrag(MFrag)
+	 * @see #addArgumentsForMFrag(MFrag, List)
+	 */
+	public MFrag getCurrentlySelectedMFragByTurnArguments() {
+		return currentlySelectedMFragByTurnArguments;
+	}
+
+	/**
+	 * 
+	 * This is the last MFrag set by {@link #turnArgumentsForMFrag(MFrag)}
+	 * @param currentlySelectedMFragByTurnArguments the currentlySelectedMFragByTurnArguments to set
+	 * 
+	 * @see #turnArgumentsForMFrag(MFrag)
+	 * @see #addArgumentsForMFrag(MFrag, List)
+	 */
+	protected void setCurrentlySelectedMFragByTurnArguments(
+			MFrag currentlySelectedMFragByTurnArguments) {
+		this.currentlySelectedMFragByTurnArguments = currentlySelectedMFragByTurnArguments;
 	}
 	
 	

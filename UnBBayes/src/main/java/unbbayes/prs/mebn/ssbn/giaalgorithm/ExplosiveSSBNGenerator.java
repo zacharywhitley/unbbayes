@@ -742,7 +742,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 		//------------------------- STEP 2: Add and evaluate input nodes fathers -------------
 
 		logManager.appendln(currentNode + "B:- Analyze input nodes fathers");
-		for (InputNode inputNode : currentNode.getResident().getInputNodeFatherList()) {
+		for (InputNode inputNode : currentNode.getResident().getParentInputNodesList()) {
 
 			ResidentNode residentNodeTargetOfInput = inputNode.getResidentNodePointer().getResidentNode(); 
 

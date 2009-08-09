@@ -152,7 +152,7 @@ public class TestMebnIO {
 				}	
 				
 				System.out.println("\n-> inputNodeFatherList: "); 
-				List<InputNode> inputNodeFatherList = domainResidentNode.getInputNodeFatherList(); 
+				List<InputNode> inputNodeFatherList = domainResidentNode.getParentInputNodesList(); 
 				for(InputNode input: inputNodeFatherList){
 					System.out.println(input.getName()); 
 				}	

@@ -228,7 +228,7 @@ public class CPTEditionPane extends JPanel{
 			fatherNodeList.add(residentNode); 
 			
 			//INPUT NODE FATHERS
-			inputNodeList = residentNode.getInputNodeFatherList(); 
+			inputNodeList = residentNode.getParentInputNodesList(); 
 			for(InputNode inputNode: inputNodeList){
 				Object father = inputNode.getInputInstanceOf();
 				if (father instanceof ResidentNode){

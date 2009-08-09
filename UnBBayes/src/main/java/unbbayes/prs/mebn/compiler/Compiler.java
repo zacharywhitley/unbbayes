@@ -32,6 +32,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.InputNode;
+import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.compiler.exception.InconsistentTableSemanticsException;
@@ -425,6 +426,23 @@ public class Compiler implements ICompiler {
 		
 		// initialization
 		
+		// sets all parents current mfrag as the same of this ssbn node, in order to use same OV names
+		// use a map to store previous states, in order to rollback at the end of CPT generation
+		Map<SSBNNode, MFrag> parentToPreviousMFragMap = new HashMap<SSBNNode, MFrag>();
+		for (SSBNNode parent : this.getSSBNNode().getParents()) {
+			if (parent.getCurrentlySelectedMFragByTurnArguments() != null) {
+				parentToPreviousMFragMap.put(parent, parent.getCurrentlySelectedMFragByTurnArguments());
+			} else {
+				//defaults to resident node's mfrag
+				parentToPreviousMFragMap.put(parent, parent.getResident().getMFrag());
+			}
+			try {
+				parent.turnArgumentsForMFrag(this.getSSBNNode().getResident().getMFrag());
+			} catch (Exception e) {
+				Debug.println(this.getClass(), parent.toString(), e);
+			}
+		}
+		
 		// eliminates redundancies on table's boolean expression
 		try {
 			this.tempTable.cleanUpKnownValues(this.getSSBNNode());
@@ -447,7 +465,7 @@ public class Compiler implements ICompiler {
 		
 		
 		ArrayList<Entity> possibleValues = new ArrayList<Entity>(this.ssbnnode.getActualValues());
-		if (( this.ssbnnode.getProbNode().getStatesSize() != possibleValues.size()  )) {
+		if (!this.ssbnnode.isFinding() && ( this.ssbnnode.getProbNode().getStatesSize() != possibleValues.size()  )) {
 			// the ssbnnode and the table is not synchronized!!
 			throw new InconsistentTableSemanticsException();
 		}
@@ -564,6 +582,17 @@ public class Compiler implements ICompiler {
 //			uoe.printStackTrace();
 //			
 //		}
+		
+		
+		// rollback MFrag settings
+		for (SSBNNode parent : parentToPreviousMFragMap.keySet()) {
+			try{
+				parent.turnArgumentsForMFrag(parentToPreviousMFragMap.get(parent));
+			} catch (Exception e) {
+				Debug.println(this.getClass(), parent.toString(), e);
+			}
+		}
+		
 		return this.cpt;
 	}
 	
@@ -2400,14 +2429,20 @@ public class Compiler implements ICompiler {
 		 */
 		private boolean isSameOVsameEntity() {
 			List<TempTableHeaderParent> leaves = this.getParents(); // leaves of boolean expression evaluation tree
+			
 			for (TempTableHeaderParent leaf : leaves) {
 				if (leaf.isKnownValue()) {
 					continue;
 				}
 				List<OVInstance> args = leaf.getCurrentEntityAndArguments().arguments;
+//				asdf
+				
+				// TODO stop obtaining args from actual SSBNNodes and start analyzing input nodes
+				
 				// first, test if leaf has same arguments as its ssbnnode (if ssbnnode has same arguments as parents)
 				for (OVInstance argParent : args) {
 					// if it has same OV as ssbnnode, then should be the same entity
+					
 					for (OVInstance argChild : this.currentSSBNNode.getArguments()) {
 						if (argChild.getOv().getName().equalsIgnoreCase(argParent.getOv().getName())) {
 							if (!argChild.getEntity().getInstanceName().equalsIgnoreCase(argParent.getEntity().getInstanceName())) {
@@ -2853,7 +2888,11 @@ public class Compiler implements ICompiler {
 			return this.evaluationList.get(this.currentEvaluationIndex).entity;
 		}
 		
-		
+		/**
+		 * Obtains a compact representation of the current value of
+		 * a node and its arguments.
+		 * @return
+		 */
 		public EntityAndArguments getCurrentEntityAndArguments() {
 			if (this.evaluationList == null) {
 				return null;

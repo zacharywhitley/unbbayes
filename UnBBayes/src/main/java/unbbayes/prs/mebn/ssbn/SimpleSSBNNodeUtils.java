@@ -81,7 +81,25 @@ public class SimpleSSBNNodeUtils {
 			
 			ssbnNode.setPermanent(true); 
 			
-			//The values of the ordinary variables at the differents MFrags
+			//The values of the ordinary variables are different dependeing on what MFrag we are dealing
+			
+			// lets deal first at resident node's MFrag
+			OrdinaryVariable[] residentOvArray = ssbnNode.getResident().getOrdinaryVariableList().toArray(
+															new OrdinaryVariable[ssbnNode.getResident().getOrdinaryVariableList().size()]
+												  ); 
+			
+			List<OVInstance> argumentsForResidentMFrag = new ArrayList<OVInstance>(); 
+			for(int i = 0; i < residentOvArray.length; i++){
+				OVInstance ovInstance = OVInstance.getInstance(residentOvArray[i], simple.getEntityArray()[i]); 
+				argumentsForResidentMFrag.add(ovInstance); 
+			}
+			
+			ssbnNode.addArgumentsForMFrag(
+					ssbnNode.getResident().getMFrag(), 
+					argumentsForResidentMFrag); 
+			
+			
+			// lets map OVs of every input node pointing to current SSBNNode
 			for(InputNode inputNode: simple.getResidentNode().getInputInstanceFromList()){
 				OrdinaryVariable[] ovArray = 
 					inputNode.getResidentNodePointer().getOrdinaryVariableArray(); 
@@ -93,7 +111,7 @@ public class SimpleSSBNNodeUtils {
 				}
 				
 				ssbnNode.addArgumentsForMFrag(
-						inputNode.getResidentNodePointer().getResidentNode().getMFrag(), 
+						inputNode.getMFrag(), 
 						argumentsForMFrag); 
 			}
 			

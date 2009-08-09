@@ -306,7 +306,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		
 		//---- 3) Create the parents of node from the input nodes
 		ssbn.getLogManager().appendln("Evaluate the input node parents");
-		for(InputNode inputNodeParent: resident.getInputNodeFatherList()){
+		for(InputNode inputNodeParent: resident.getParentInputNodesList()){
 			
 			if(inputNodeParent.getResidentNodePointer().getResidentNode().equals(resident)){
 				//Special case: the recursivity.

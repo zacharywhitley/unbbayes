@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Vector;
 
 import unbbayes.prs.mebn.entity.Type;
+import unbbayes.util.Debug;
 
 public class InputNode extends MultiEntityNode {
 
@@ -234,6 +235,8 @@ public class InputNode extends MultiEntityNode {
 		}
 	}
 	
+	
+	
 	public OrdinaryVariable getOrdinaryVariableByName(String name){
 		for(OrdinaryVariable ordinaryVariable: residentNodePointer.getOrdinaryVariableList()){
 			if(ordinaryVariable.getName().equals(name)){
@@ -243,11 +246,43 @@ public class InputNode extends MultiEntityNode {
 		return null; 
 	}
 	
+	/**
+	 * Search by name.
+	 * 
+	 * Searches for a OV within input node, looks for the bound OV from ResidentNode, and returns it.
+	 * 
+	 * For example:
+	 * 
+	 * 		Suppose this input node has 2 OVs: "s" as Starship and "tPrev" as Time.
+	 * 		Suppose this input node is bound to a resident node containing also 2 OVs: "st" as Starship and "t" as Time.
+	 * 			OBS. In this case, "s" is bound to "st" and "tPrev" is bound to "t"
+	 * 
+	 * 		By searching for "s", this method will return "st". By searching for "tPrev", this method will return "t".
+	 *  
+	 * Please, note that this method relies in the order of {@link ResidentNode#getOrdinaryVariableList()} representing
+	 * the bindings between input and resident nodes.
+	 *  
+	 * @param name
+	 * @return
+	 */
+	public OrdinaryVariable getOrdinaryVariableBoundToResidentNode(String inputOvName) {
+		try {
+			OrdinaryVariable inputOV = this.getOrdinaryVariableByName(inputOvName);
+			return this.getResidentNodePointer().getResidentNode().getOrdinaryVariableByIndex(this.getOrdinaryVariableList().indexOf(inputOV));
+		} catch (Exception e) {
+			Debug.println(this.getClass(), e.getMessage(), e);
+		}
+		return null;
+	}
+	
 	public Vector<Type> getTypesOfOrdinaryVariableList() {
 		return residentNodePointer.getTypesOfOrdinaryVariableList(); 
 	}
 	
 	//TODO este método deve virar privado! O residentNodePointer deve ficar encapsulado no input Node!
+	// Oooops! Changing this method's visibility to private is not enough, since many classes need
+	// to see what resident node is bound to this input node. There is a need for a major refactoring,
+	// in order to truly encapsulate residentNodePointer. A simple change of visibility is definitely not enough
 	public ResidentNodePointer getResidentNodePointer() {
 		return residentNodePointer;
 	}

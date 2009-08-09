@@ -50,7 +50,7 @@ public class ResidentNode extends MultiEntityNode
 
 	private List<InputNode> inputInstanceFromList;
 	
-	private List<InputNode> inputNodeFatherList;
+	private List<InputNode> parentInputNodeList;
 	 
 	/**
 	 * List of fathers of this node
@@ -93,7 +93,7 @@ public class ResidentNode extends MultiEntityNode
         this.mFrag = mFrag; 
 		
 		inputInstanceFromList = new ArrayList<InputNode>(); 
-		inputNodeFatherList = new ArrayList<InputNode>();
+		parentInputNodeList = new ArrayList<InputNode>();
 		residentNodeFatherList = new ArrayList<ResidentNode>();	
 		residentNodeChildList = new ArrayList<ResidentNode>();	
 		randomVariableFindingList = new ArrayList<RandomVariableFinding>(); 
@@ -246,7 +246,7 @@ public class ResidentNode extends MultiEntityNode
 	 * @param father
 	 */
 	protected void addInputNodeFather(InputNode father){
-		inputNodeFatherList.add(father); 
+		parentInputNodeList.add(father); 
 	}	 
 	
 	protected void addInputInstanceFromList(InputNode instance){
@@ -258,8 +258,8 @@ public class ResidentNode extends MultiEntityNode
 		return this.residentNodeFatherList; 
 	}
 	
-	public List<InputNode> getInputNodeFatherList(){
-		return this.inputNodeFatherList; 
+	public List<InputNode> getParentInputNodesList(){
+		return this.parentInputNodeList; 
 	}	
 	
 	public List<ResidentNode> getResidentNodeChildList(){
@@ -278,7 +278,7 @@ public class ResidentNode extends MultiEntityNode
 	}
 	
 	protected void removeInputNodeFatherList(InputNode node){
-		inputNodeFatherList.remove(node); 
+		parentInputNodeList.remove(node); 
 	}	
 	
 	/**
@@ -648,8 +648,8 @@ public class ResidentNode extends MultiEntityNode
 			inputInstanceFromList.remove(0).setInputInstanceOf(); 
 		}
 		
-		while(!inputNodeFatherList.isEmpty()){
-			inputNodeFatherList.remove(0).removeResidentNodeChild(this); 
+		while(!parentInputNodeList.isEmpty()){
+			parentInputNodeList.remove(0).removeResidentNodeChild(this); 
 		}
 		
 		while(!residentNodeFatherList.isEmpty()){

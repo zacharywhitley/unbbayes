@@ -481,7 +481,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
     				domainResIndividual.addPropertyValue(hasParentProperty, residentNodeFatherIndividual);
     			}
     			
-    			for(InputNode inputNodeFather: residentNode.getInputNodeFatherList()){
+    			for(InputNode inputNodeFather: residentNode.getParentInputNodesList()){
     				OWLIndividual inputNodeFatherIndividual = mapGenerativeInput.get(inputNodeFather); 
     				domainResIndividual.addPropertyValue(hasParentProperty, inputNodeFatherIndividual);
     			}		
