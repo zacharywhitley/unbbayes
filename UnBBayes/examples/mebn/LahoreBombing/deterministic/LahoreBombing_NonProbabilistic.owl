@@ -1,0 +1,1211 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE Ontology [
+    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+    <!ENTITY dc "http://purl.org/dc/elements/1.1/" >
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY owl2xml "http://www.w3.org/2006/12/owl2-xml#" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+    <!ENTITY LahoreBombing_NonProbabilistic "http://www.pr-owl.org/ontologies/2009/7/LahoreBombing_NonProbabilistic.owl#" >
+]>
+
+
+<Ontology xmlns="http://www.w3.org/2006/12/owl2-xml#"
+     xml:base="http://www.w3.org/2006/12/owl2-xml#"
+     xmlns:dc="http://purl.org/dc/elements/1.1/"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:owl2xml="http://www.w3.org/2006/12/owl2-xml#"
+     xmlns:LahoreBombing_NonProbabilistic="http://www.pr-owl.org/ontologies/2009/7/LahoreBombing_NonProbabilistic.owl#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     URI="http://www.pr-owl.org/ontologies/2009/7/LahoreBombing_NonProbabilistic.owl">
+    <Annotation annotationURI="&rdfs;comment">
+        <Constant datatypeURI="&xsd;string"
+            >This is a non-probabilistic version of Lahore Bombing ontology.
+Lahore Bombing ontology is found as an example of Multi-Entity Bayesian Network usage at http://unbbayes.sourceforge.net/</Constant>
+    </Annotation>
+    <Annotation annotationURI="&rdfs;label">
+        <Constant datatypeURI="&xsd;string"
+            >Non Probabilistic Lahore Bombing Ontology</Constant>
+    </Annotation>
+    <Annotation annotationURI="&dc;date">
+        <Constant datatypeURI="&xsd;date">07/22/2009</Constant>
+    </Annotation>
+    <Annotation annotationURI="&owl;versionInfo">
+        <Constant datatypeURI="&xsd;float">0.1</Constant>
+    </Annotation>
+    <Annotation annotationURI="&dc;creator">
+        <Constant datatypeURI="&xsd;string"
+            >Shou Matsumoto (cardialfly@[gmail | yahoo].com)</Constant>
+    </Annotation>
+    <Annotation annotationURI="&dc;contributor">
+        <Constant datatypeURI="&xsd;string"
+            >Marcelo Ladeira (mladeira@unb.br);
+Paulo Cesar G. da Costa (pcosta@gmu.edu);
+Rommel Novaes Carvalho (rommel.carvalho@gmail.com);
+Laecio Lima dos Santos (laecio@gmail.com);</Constant>
+    </Annotation>
+    <Annotation annotationURI="&dc;title">
+        <Constant datatypeURI="&xsd;string"
+            >Non-Probabilistic Lahore Bombing</Constant>
+    </Annotation>
+    <DisjointClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;Abstract"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Concrete"/>
+    </DisjointClasses>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;Abstract"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >Untangible elements</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <Declaration>
+        <Class URI="&LahoreBombing_NonProbabilistic;Abstract"/>
+    </Declaration>
+    <SubClassOf>
+        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
+    </SubClassOf>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >This class represents an agent, which is commonly some person that can do something to change their environment.
+In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrorists at this category.</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <Declaration>
+        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+    </Declaration>
+    <SubClassOf>
+        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
+    </SubClassOf>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >This class represents plans to attack some entity, like a plan to strike a place.</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <Declaration>
+        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
+    </Declaration>
+    <SubClassOf>
+        <Class URI="&LahoreBombing_NonProbabilistic;CellPhone"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Phone"/>
+    </SubClassOf>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;CellPhone"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >A particular type of telephone, a portable one.</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <Declaration>
+        <Class URI="&LahoreBombing_NonProbabilistic;CellPhone"/>
+    </Declaration>
+    <DisjointClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;Concrete"/>
+    </DisjointClasses>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;Concrete"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >Tangible elements</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <Declaration>
+        <Class URI="&LahoreBombing_NonProbabilistic;Concrete"/>
+    </Declaration>
+    <SubClassOf>
+        <Class URI="&LahoreBombing_NonProbabilistic;Ideal"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Abstract"/>
+    </SubClassOf>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;Ideal"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >This class represents ideas and/or thoughts.</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <Declaration>
+        <Class URI="&LahoreBombing_NonProbabilistic;Ideal"/>
+    </Declaration>
+    <SubClassOf>
+        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Concrete"/>
+    </SubClassOf>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >As the name suggests, this class represents conceptually a person.</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <Declaration>
+        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
+    </Declaration>
+    <SubClassOf>
+        <Class URI="&LahoreBombing_NonProbabilistic;Phone"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Tool"/>
+    </SubClassOf>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;Phone"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >A telephone, a tool we use to make a call.</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <Declaration>
+        <Class URI="&LahoreBombing_NonProbabilistic;Phone"/>
+    </Declaration>
+    <SubClassOf>
+        <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Concrete"/>
+    </SubClassOf>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >A place, geographic position, country, city, building, avenue, etc.</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <Declaration>
+        <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
+    </Declaration>
+    <SubClassOf>
+        <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Ideal"/>
+    </SubClassOf>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >This class represents a &quot;plan&quot;, meaning &quot;schedules&quot; for the future, or what we want to do for the future.</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <Declaration>
+        <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
+    </Declaration>
+    <SubClassOf>
+        <Class URI="&LahoreBombing_NonProbabilistic;Tool"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Concrete"/>
+    </SubClassOf>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;Tool"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >As a name suggests, this class represents a tool, or any concrete utility which may help someone to do something.</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <Declaration>
+        <Class URI="&LahoreBombing_NonProbabilistic;Tool"/>
+    </Declaration>
+    <SubClassOf>
+        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
+    </SubClassOf>
+    <Declaration>
+        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;AgentAt"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;mainProperties"/>
+    </SubObjectPropertyOf>
+    <FunctionalObjectProperty>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;AgentAt"/>
+    </FunctionalObjectProperty>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;AgentAt"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+            <ObjectMinCardinality cardinality="1">
+                <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
+            </ObjectMinCardinality>
+        </ObjectIntersectionOf>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;AgentAt"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+            <ObjectMinCardinality cardinality="1">
+                <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isMeetingVenue"/>
+            </ObjectMinCardinality>
+            <ObjectExactCardinality cardinality="0">
+                <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isTarget"/>
+            </ObjectExactCardinality>
+        </ObjectIntersectionOf>
+    </ObjectPropertyRange>
+    <DisjointObjectProperties>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;AgentAt"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notAgentAt"/>
+    </DisjointObjectProperties>
+    <SubObjectPropertyOf>
+        <SubObjectPropertyChain>
+            <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
+        </SubObjectPropertyChain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;AgentAt"/>
+    </SubObjectPropertyOf>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;AgentAt"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;Executes"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;mainProperties"/>
+    </SubObjectPropertyOf>
+    <InverseObjectProperties>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;Executes"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExecutedBy"/>
+    </InverseObjectProperties>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;Executes"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;Executes"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
+            <ObjectMinCardinality cardinality="1">
+                <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasTarget"/>
+            </ObjectMinCardinality>
+        </ObjectIntersectionOf>
+    </ObjectPropertyRange>
+    <DisjointObjectProperties>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;Executes"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotExecute"/>
+    </DisjointObjectProperties>
+    <SubObjectPropertyOf>
+        <SubObjectPropertyChain>
+            <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
+        </SubObjectPropertyChain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;Executes"/>
+    </SubObjectPropertyOf>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;Executes"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;HUMINTLocationReport"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;mainProperties"/>
+    </SubObjectPropertyOf>
+    <InverseObjectProperties>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;HUMINTLocationReport"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasHUMINTLocationReport"/>
+    </InverseObjectProperties>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;HUMINTLocationReport"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+            <ObjectMinCardinality cardinality="1">
+                <ObjectProperty URI="&LahoreBombing_NonProbabilistic;AgentAt"/>
+            </ObjectMinCardinality>
+            <ObjectMinCardinality cardinality="1">
+                <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
+            </ObjectMinCardinality>
+        </ObjectIntersectionOf>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;HUMINTLocationReport"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
+    </ObjectPropertyRange>
+    <DisjointObjectProperties>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;HUMINTLocationReport"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notHUMINTLocationReport"/>
+    </DisjointObjectProperties>
+    <SubObjectPropertyOf>
+        <SubObjectPropertyChain>
+            <ObjectProperty URI="&LahoreBombing_NonProbabilistic;AgentAt"/>
+        </SubObjectPropertyChain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;HUMINTLocationReport"/>
+    </SubObjectPropertyOf>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;HUMINTLocationReport"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;MissingCarReport"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;mainProperties"/>
+    </SubObjectPropertyOf>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;MissingCarReport"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+            <ObjectExactCardinality cardinality="0">
+                <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasAgent"/>
+            </ObjectExactCardinality>
+        </ObjectIntersectionOf>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;MissingCarReport"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
+    </ObjectPropertyRange>
+    <DisjointObjectProperties>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;MissingCarReport"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notMissingCarReport"/>
+    </DisjointObjectProperties>
+    <SubObjectPropertyOf>
+        <SubObjectPropertyChain>
+            <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
+        </SubObjectPropertyChain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;MissingCarReport"/>
+    </SubObjectPropertyOf>
+    <SubObjectPropertyOf>
+        <SubObjectPropertyChain>
+            <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notAgentAt"/>
+        </SubObjectPropertyChain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;MissingCarReport"/>
+    </SubObjectPropertyOf>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;MissingCarReport"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;PlantsExplosives"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;mainProperties"/>
+    </SubObjectPropertyOf>
+    <InverseObjectProperties>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;PlantsExplosives"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasExplosivesPlantedBy"/>
+    </InverseObjectProperties>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;PlantsExplosives"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+            <ObjectMinCardinality cardinality="1">
+                <ObjectProperty URI="&LahoreBombing_NonProbabilistic;Executes"/>
+            </ObjectMinCardinality>
+        </ObjectIntersectionOf>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;PlantsExplosives"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+            <ObjectMinCardinality cardinality="1">
+                <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isTarget"/>
+            </ObjectMinCardinality>
+        </ObjectIntersectionOf>
+    </ObjectPropertyRange>
+    <DisjointObjectProperties>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;PlantsExplosives"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotPlantExplosives"/>
+    </DisjointObjectProperties>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;PlantsExplosives"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;ResidesAt"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;mainProperties"/>
+    </SubObjectPropertyOf>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;ResidesAt"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;ResidesAt"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+    </ObjectPropertyRange>
+    <DisjointObjectProperties>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;ResidesAt"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotResideAt"/>
+    </DisjointObjectProperties>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;ResidesAt"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRelated"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;mainProperties"/>
+    </SubObjectPropertyOf>
+    <SymmetricObjectProperty>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRelated"/>
+    </SymmetricObjectProperty>
+    <IrreflexiveObjectProperty>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRelated"/>
+    </IrreflexiveObjectProperty>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRelated"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+            <ObjectMinCardinality cardinality="1">
+                <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
+            </ObjectMinCardinality>
+        </ObjectIntersectionOf>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRelated"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+            <ObjectMinCardinality cardinality="1">
+                <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
+            </ObjectMinCardinality>
+        </ObjectIntersectionOf>
+    </ObjectPropertyRange>
+    <SubObjectPropertyOf>
+        <SubObjectPropertyChain>
+            <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRival"/>
+        </SubObjectPropertyChain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRelated"/>
+    </SubObjectPropertyOf>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRelated"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >Related at social network</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRelated"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRival"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;mainProperties"/>
+    </SubObjectPropertyOf>
+    <SymmetricObjectProperty>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRival"/>
+    </SymmetricObjectProperty>
+    <IrreflexiveObjectProperty>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRival"/>
+    </IrreflexiveObjectProperty>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRival"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRival"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
+    </ObjectPropertyRange>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRival"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >Rivals at social network</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRival"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SuppliesWpnMtrl"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;mainProperties"/>
+    </SubObjectPropertyOf>
+    <InverseObjectProperties>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SuppliesWpnMtrl"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;WpnMtrlSuppliedBy"/>
+    </InverseObjectProperties>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SuppliesWpnMtrl"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+            <ObjectMinCardinality cardinality="1">
+                <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
+            </ObjectMinCardinality>
+        </ObjectIntersectionOf>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SuppliesWpnMtrl"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+            <DataHasValue>
+                <DataProperty URI="&LahoreBombing_NonProbabilistic;isWeaponSupplier"/>
+                <Constant datatypeURI="&xsd;boolean">true</Constant>
+            </DataHasValue>
+        </ObjectIntersectionOf>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SuppliesWpnMtrl"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
+    </ObjectPropertyRange>
+    <DisjointObjectProperties>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SuppliesWpnMtrl"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotSupplyWpnMtrl"/>
+    </DisjointObjectProperties>
+    <SubObjectPropertyOf>
+        <SubObjectPropertyChain>
+            <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
+        </SubObjectPropertyChain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SuppliesWpnMtrl"/>
+    </SubObjectPropertyOf>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SuppliesWpnMtrl"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;WpnMtrlSuppliedBy"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;inverseProperties"/>
+    </SubObjectPropertyOf>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;WpnMtrlSuppliedBy"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotExecute"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
+    </SubObjectPropertyOf>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotExecute"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotExecute"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
+    </ObjectPropertyRange>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotExecute"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotPlantExplosives"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
+    </SubObjectPropertyOf>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotPlantExplosives"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotPlantExplosives"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+    </ObjectPropertyRange>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotPlantExplosives"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotResideAt"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
+    </SubObjectPropertyOf>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotResideAt"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotResideAt"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+    </ObjectPropertyRange>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotResideAt"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotSupplyWpnMtrl"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
+    </SubObjectPropertyOf>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotSupplyWpnMtrl"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotSupplyWpnMtrl"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
+    </ObjectPropertyRange>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotSupplyWpnMtrl"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;expects"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;inverseProperties"/>
+    </SubObjectPropertyOf>
+    <InverseObjectProperties>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;expects"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
+    </InverseObjectProperties>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;expects"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasAgent"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;inverseProperties"/>
+    </SubObjectPropertyOf>
+    <InverseObjectProperties>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasAgent"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;AgentAt"/>
+    </InverseObjectProperties>
+    <InverseFunctionalObjectProperty>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasAgent"/>
+    </InverseFunctionalObjectProperty>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasAgent"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasAgent"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+    </ObjectPropertyRange>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasAgent"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasExplosivesPlantedBy"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;inverseProperties"/>
+    </SubObjectPropertyOf>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasExplosivesPlantedBy"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasExplosivesPlantedBy"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+    </ObjectPropertyRange>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasExplosivesPlantedBy"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasHUMINTLocationReport"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;inverseProperties"/>
+    </SubObjectPropertyOf>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasHUMINTLocationReport"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasHUMINTLocationReport"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+    </ObjectPropertyRange>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasHUMINTLocationReport"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasMeetingVenue"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;inverseProperties"/>
+    </SubObjectPropertyOf>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasMeetingVenue"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasMissingCarReport"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;inverseProperties"/>
+    </SubObjectPropertyOf>
+    <InverseObjectProperties>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasMissingCarReport"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;MissingCarReport"/>
+    </InverseObjectProperties>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasMissingCarReport"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasPlanAgent"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;inverseProperties"/>
+    </SubObjectPropertyOf>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasPlanAgent"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasTarget"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;inverseProperties"/>
+    </SubObjectPropertyOf>
+    <InverseObjectProperties>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasTarget"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isTarget"/>
+    </InverseObjectProperties>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasTarget"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasTarget"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+    </ObjectPropertyRange>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasTarget"/>
+    </Declaration>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;inverseProperties"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >Properties that are inverse to main properties</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;inverseProperties"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;mainProperties"/>
+    </SubObjectPropertyOf>
+    <InverseObjectProperties>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasPlanAgent"/>
+    </InverseObjectProperties>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+            <ObjectMinCardinality cardinality="1">
+                <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRival"/>
+            </ObjectMinCardinality>
+            <DataHasValue>
+                <DataProperty URI="&LahoreBombing_NonProbabilistic;isWeaponSupplier"/>
+                <Constant datatypeURI="&xsd;boolean">true</Constant>
+            </DataHasValue>
+        </ObjectIntersectionOf>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+            <ObjectExactCardinality cardinality="0">
+                <ObjectProperty URI="&LahoreBombing_NonProbabilistic;expects"/>
+            </ObjectExactCardinality>
+        </ObjectIntersectionOf>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
+            <DataHasValue>
+                <DataProperty URI="&LahoreBombing_NonProbabilistic;isActivePlan"/>
+                <Constant datatypeURI="&xsd;boolean">true</Constant>
+            </DataHasValue>
+        </ObjectIntersectionOf>
+    </ObjectPropertyRange>
+    <DisjointObjectProperties>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotAgentOf"/>
+    </DisjointObjectProperties>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExecutedBy"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;inverseProperties"/>
+    </SubObjectPropertyOf>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExecutedBy"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
+            <ObjectMinCardinality cardinality="1">
+                <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasTarget"/>
+            </ObjectMinCardinality>
+        </ObjectIntersectionOf>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExecutedBy"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+    </ObjectPropertyRange>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExecutedBy"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;mainProperties"/>
+    </SubObjectPropertyOf>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+    </ObjectPropertyRange>
+    <DisjointObjectProperties>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotExpectedAt"/>
+    </DisjointObjectProperties>
+    <SubObjectPropertyOf>
+        <SubObjectPropertyChain>
+            <ObjectProperty URI="&LahoreBombing_NonProbabilistic;ResidesAt"/>
+        </SubObjectPropertyChain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
+    </SubObjectPropertyOf>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isMeetingVenue"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;mainProperties"/>
+    </SubObjectPropertyOf>
+    <InverseObjectProperties>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isMeetingVenue"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasMeetingVenue"/>
+    </InverseObjectProperties>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isMeetingVenue"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+            <ObjectMinCardinality cardinality="1">
+                <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isResidedBy"/>
+            </ObjectMinCardinality>
+        </ObjectIntersectionOf>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isMeetingVenue"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
+            <ObjectMinCardinality cardinality="1">
+                <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasPlanAgent"/>
+            </ObjectMinCardinality>
+        </ObjectIntersectionOf>
+    </ObjectPropertyRange>
+    <DisjointObjectProperties>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isMeetingVenue"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotMeetingVenue"/>
+    </DisjointObjectProperties>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isMeetingVenue"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotAgentOf"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
+    </SubObjectPropertyOf>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotAgentOf"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotAgentOf"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
+    </ObjectPropertyRange>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotAgentOf"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotExpectedAt"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
+    </SubObjectPropertyOf>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotExpectedAt"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotExpectedAt"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+    </ObjectPropertyRange>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotExpectedAt"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotMeetingVenue"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
+    </SubObjectPropertyOf>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotMeetingVenue"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotMeetingVenue"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
+    </ObjectPropertyRange>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotMeetingVenue"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotTarget"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
+    </SubObjectPropertyOf>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotTarget"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotTarget"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
+    </ObjectPropertyRange>
+    <DisjointObjectProperties>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotTarget"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isTarget"/>
+    </DisjointObjectProperties>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotTarget"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isResidedBy"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;inverseProperties"/>
+    </SubObjectPropertyOf>
+    <InverseObjectProperties>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isResidedBy"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;ResidesAt"/>
+    </InverseObjectProperties>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isResidedBy"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isTarget"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;mainProperties"/>
+    </SubObjectPropertyOf>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isTarget"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+            <DataHasValue>
+                <DataProperty URI="&LahoreBombing_NonProbabilistic;isPoliticallyImportant"/>
+                <Constant datatypeURI="&xsd;boolean">true</Constant>
+            </DataHasValue>
+        </ObjectIntersectionOf>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isTarget"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
+            <DataHasValue>
+                <DataProperty URI="&LahoreBombing_NonProbabilistic;isActivePlan"/>
+                <Constant datatypeURI="&xsd;boolean">true</Constant>
+            </DataHasValue>
+        </ObjectIntersectionOf>
+    </ObjectPropertyRange>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isTarget"/>
+    </Declaration>
+    <InverseObjectProperties>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;mainProperties"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;inverseProperties"/>
+    </InverseObjectProperties>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;mainProperties"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >Properties that has an equivalent random variable at probabilistic Lahore ontology</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;mainProperties"/>
+    </Declaration>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >Properties that are complementar (disjoint) to mainProperties</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notAgentAt"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
+    </SubObjectPropertyOf>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notAgentAt"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notAgentAt"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+    </ObjectPropertyRange>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notAgentAt"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notHUMINTLocationReport"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
+    </SubObjectPropertyOf>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notHUMINTLocationReport"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notHUMINTLocationReport"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
+    </ObjectPropertyRange>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notHUMINTLocationReport"/>
+    </Declaration>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notMissingCarReport"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
+    </SubObjectPropertyOf>
+    <ObjectPropertyDomain>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notMissingCarReport"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notMissingCarReport"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
+    </ObjectPropertyRange>
+    <Declaration>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notMissingCarReport"/>
+    </Declaration>
+    <DataPropertyDomain>
+        <DataProperty URI="&LahoreBombing_NonProbabilistic;ExplosiveResidueReport"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+            <ObjectMinCardinality cardinality="1">
+                <ObjectProperty URI="&LahoreBombing_NonProbabilistic;PlantsExplosives"/>
+                <ObjectIntersectionOf>
+                    <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+                    <ObjectMinCardinality cardinality="1">
+                        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isTarget"/>
+                        <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
+                    </ObjectMinCardinality>
+                </ObjectIntersectionOf>
+            </ObjectMinCardinality>
+        </ObjectIntersectionOf>
+    </DataPropertyDomain>
+    <DataPropertyRange>
+        <DataProperty URI="&LahoreBombing_NonProbabilistic;ExplosiveResidueReport"/>
+        <Datatype URI="&xsd;boolean"/>
+    </DataPropertyRange>
+    <Declaration>
+        <DataProperty URI="&LahoreBombing_NonProbabilistic;ExplosiveResidueReport"/>
+    </Declaration>
+    <DataPropertyDomain>
+        <DataProperty URI="&LahoreBombing_NonProbabilistic;isActivePlan"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
+    </DataPropertyDomain>
+    <DataPropertyRange>
+        <DataProperty URI="&LahoreBombing_NonProbabilistic;isActivePlan"/>
+        <Datatype URI="&xsd;boolean"/>
+    </DataPropertyRange>
+    <Declaration>
+        <DataProperty URI="&LahoreBombing_NonProbabilistic;isActivePlan"/>
+    </Declaration>
+    <DataPropertyDomain>
+        <DataProperty URI="&LahoreBombing_NonProbabilistic;isPoliticallyImportant"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+    </DataPropertyDomain>
+    <DataPropertyRange>
+        <DataProperty URI="&LahoreBombing_NonProbabilistic;isPoliticallyImportant"/>
+        <Datatype URI="&xsd;boolean"/>
+    </DataPropertyRange>
+    <EntityAnnotation>
+        <DataProperty URI="&LahoreBombing_NonProbabilistic;isPoliticallyImportant"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >Represents the random variable &quot;PoliticalImportance&quot;, which its values can be Low or High. If High, it is politically important. If Low, then it is not very important.</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <Declaration>
+        <DataProperty URI="&LahoreBombing_NonProbabilistic;isPoliticallyImportant"/>
+    </Declaration>
+    <DataPropertyDomain>
+        <DataProperty URI="&LahoreBombing_NonProbabilistic;isWeaponSupplier"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+    </DataPropertyDomain>
+    <DataPropertyRange>
+        <DataProperty URI="&LahoreBombing_NonProbabilistic;isWeaponSupplier"/>
+        <Datatype URI="&xsd;boolean"/>
+    </DataPropertyRange>
+    <Declaration>
+        <DataProperty URI="&LahoreBombing_NonProbabilistic;isWeaponSupplier"/>
+    </Declaration>
+    <ClassAssertion>
+        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;AD"/>
+    </ClassAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;ResidesAt"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;AD"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;Conf"/>
+    </ObjectPropertyAssertion>
+    <DataPropertyAssertion>
+        <DataProperty URI="&LahoreBombing_NonProbabilistic;isWeaponSupplier"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;AD"/>
+        <Constant datatypeURI="&xsd;boolean">true</Constant>
+    </DataPropertyAssertion>
+    <Declaration>
+        <Individual URI="&LahoreBombing_NonProbabilistic;AD"/>
+    </Declaration>
+    <ClassAssertion>
+        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;C"/>
+    </ClassAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;ResidesAt"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;C"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;ResC"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRelated"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;C"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;AD"/>
+    </ObjectPropertyAssertion>
+    <Declaration>
+        <Individual URI="&LahoreBombing_NonProbabilistic;C"/>
+    </Declaration>
+    <ClassAssertion>
+        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;Conf"/>
+    </ClassAssertion>
+    <DataPropertyAssertion>
+        <DataProperty URI="&LahoreBombing_NonProbabilistic;isPoliticallyImportant"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;Conf"/>
+        <Constant datatypeURI="&xsd;boolean">true</Constant>
+    </DataPropertyAssertion>
+    <Declaration>
+        <Individual URI="&LahoreBombing_NonProbabilistic;Conf"/>
+    </Declaration>
+    <ClassAssertion>
+        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;ConfAtk"/>
+    </ClassAssertion>
+    <Declaration>
+        <Individual URI="&LahoreBombing_NonProbabilistic;ConfAtk"/>
+    </Declaration>
+    <ClassAssertion>
+        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;P"/>
+    </ClassAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRelated"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;P"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;AD"/>
+    </ObjectPropertyAssertion>
+    <DataPropertyAssertion>
+        <DataProperty URI="&LahoreBombing_NonProbabilistic;ExplosiveResidueReport"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;P"/>
+        <Constant datatypeURI="&xsd;boolean">true</Constant>
+    </DataPropertyAssertion>
+    <Declaration>
+        <Individual URI="&LahoreBombing_NonProbabilistic;P"/>
+    </Declaration>
+    <ClassAssertion>
+        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;ResC"/>
+    </ClassAssertion>
+    <Declaration>
+        <Individual URI="&LahoreBombing_NonProbabilistic;ResC"/>
+    </Declaration>
+    <ClassAssertion>
+        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
+    </ClassAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;AgentAt"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;ResC"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;AgentAt"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;Conf"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;HUMINTLocationReport"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;ResC"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;MissingCarReport"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;Conf"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRelated"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;C"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;Conf"/>
+    </ObjectPropertyAssertion>
+    <Declaration>
+        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
+    </Declaration>
+    <ClassAssertion>
+        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;V"/>
+    </ClassAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRival"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;V"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;V"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;Conf"/>
+    </ObjectPropertyAssertion>
+    <Declaration>
+        <Individual URI="&LahoreBombing_NonProbabilistic;V"/>
+    </Declaration>
+</Ontology>
+
+
+
+<!-- Generated by the OWL API (version 2.2.1.1138) http://owlapi.sourceforge.net -->
+
