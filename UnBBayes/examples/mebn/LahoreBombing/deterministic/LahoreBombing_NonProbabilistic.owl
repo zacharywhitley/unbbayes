@@ -52,6 +52,10 @@ Laecio Lima dos Santos (laecio@gmail.com);</Constant>
         <Constant datatypeURI="&xsd;string"
             >Non-Probabilistic Lahore Bombing</Constant>
     </Annotation>
+    <SubClassOf>
+        <Class URI="&LahoreBombing_NonProbabilistic;Abstract"/>
+        <Class URI="&owl;Thing"/>
+    </SubClassOf>
     <DisjointClasses>
         <Class URI="&LahoreBombing_NonProbabilistic;Abstract"/>
         <Class URI="&LahoreBombing_NonProbabilistic;Concrete"/>
@@ -66,6 +70,42 @@ Laecio Lima dos Santos (laecio@gmail.com);</Constant>
     <Declaration>
         <Class URI="&LahoreBombing_NonProbabilistic;Abstract"/>
     </Declaration>
+    <EquivalentClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;ActivePlan"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
+            <ObjectComplementOf>
+                <Class URI="&LahoreBombing_NonProbabilistic;InactivePlan"/>
+            </ObjectComplementOf>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;ActivePlan"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
+            <DataHasValue>
+                <DataProperty URI="&LahoreBombing_NonProbabilistic;isActivePlan"/>
+                <Constant datatypeURI="&xsd;boolean">true</Constant>
+            </DataHasValue>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <SubClassOf>
+        <Class URI="&LahoreBombing_NonProbabilistic;ActivePlan"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
+    </SubClassOf>
+    <DisjointClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;ActivePlan"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;InactivePlan"/>
+    </DisjointClasses>
+    <Declaration>
+        <Class URI="&LahoreBombing_NonProbabilistic;ActivePlan"/>
+    </Declaration>
+    <EquivalentClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+        <ObjectMinCardinality cardinality="1">
+            <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
+        </ObjectMinCardinality>
+    </EquivalentClasses>
     <SubClassOf>
         <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
         <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
@@ -94,6 +134,34 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     </EntityAnnotation>
     <Declaration>
         <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
+    </Declaration>
+    <EquivalentClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlanAgent"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty URI="&LahoreBombing_NonProbabilistic;PlantsExplosives"/>
+            <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
+        </ObjectSomeValuesFrom>
+    </EquivalentClasses>
+    <SubClassOf>
+        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlanAgent"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlanAgent"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+            <DataHasValue>
+                <DataProperty URI="&LahoreBombing_NonProbabilistic;ExplosiveResidueReport"/>
+                <Constant datatypeURI="&xsd;boolean">true</Constant>
+            </DataHasValue>
+        </ObjectIntersectionOf>
+    </SubClassOf>
+    <DisjointClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlanAgent"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;NormalPerson"/>
+    </DisjointClasses>
+    <Declaration>
+        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlanAgent"/>
     </Declaration>
     <SubClassOf>
         <Class URI="&LahoreBombing_NonProbabilistic;CellPhone"/>
@@ -135,6 +203,107 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     </EntityAnnotation>
     <Declaration>
         <Class URI="&LahoreBombing_NonProbabilistic;Ideal"/>
+    </Declaration>
+    <EquivalentClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;ImportantPlace"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
+            <ObjectComplementOf>
+                <Class URI="&LahoreBombing_NonProbabilistic;NotImportantPlace"/>
+            </ObjectComplementOf>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;ImportantPlace"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
+            <DataHasValue>
+                <DataProperty URI="&LahoreBombing_NonProbabilistic;isPoliticallyImportant"/>
+                <Constant datatypeURI="&xsd;boolean">true</Constant>
+            </DataHasValue>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <SubClassOf>
+        <Class URI="&LahoreBombing_NonProbabilistic;ImportantPlace"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
+    </SubClassOf>
+    <DisjointClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;ImportantPlace"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;NotImportantPlace"/>
+    </DisjointClasses>
+    <Declaration>
+        <Class URI="&LahoreBombing_NonProbabilistic;ImportantPlace"/>
+    </Declaration>
+    <EquivalentClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;InactivePlan"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
+            <ObjectComplementOf>
+                <Class URI="&LahoreBombing_NonProbabilistic;ActivePlan"/>
+            </ObjectComplementOf>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;InactivePlan"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
+            <DataHasValue>
+                <DataProperty URI="&LahoreBombing_NonProbabilistic;isActivePlan"/>
+                <Constant datatypeURI="&xsd;boolean">false</Constant>
+            </DataHasValue>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <SubClassOf>
+        <Class URI="&LahoreBombing_NonProbabilistic;InactivePlan"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
+    </SubClassOf>
+    <Declaration>
+        <Class URI="&LahoreBombing_NonProbabilistic;InactivePlan"/>
+    </Declaration>
+    <EquivalentClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;NormalPerson"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
+            <ObjectComplementOf>
+                <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+            </ObjectComplementOf>
+            <ObjectComplementOf>
+                <Class URI="&LahoreBombing_NonProbabilistic;WeaponSupplier"/>
+            </ObjectComplementOf>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <SubClassOf>
+        <Class URI="&LahoreBombing_NonProbabilistic;NormalPerson"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
+    </SubClassOf>
+    <Declaration>
+        <Class URI="&LahoreBombing_NonProbabilistic;NormalPerson"/>
+    </Declaration>
+    <EquivalentClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;NotImportantPlace"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
+            <ObjectComplementOf>
+                <Class URI="&LahoreBombing_NonProbabilistic;ImportantPlace"/>
+            </ObjectComplementOf>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;NotImportantPlace"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
+            <DataHasValue>
+                <DataProperty URI="&LahoreBombing_NonProbabilistic;isPoliticallyImportant"/>
+                <Constant datatypeURI="&xsd;boolean">false</Constant>
+            </DataHasValue>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <SubClassOf>
+        <Class URI="&LahoreBombing_NonProbabilistic;NotImportantPlace"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
+    </SubClassOf>
+    <Declaration>
+        <Class URI="&LahoreBombing_NonProbabilistic;NotImportantPlace"/>
     </Declaration>
     <SubClassOf>
         <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
@@ -192,6 +361,40 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     <Declaration>
         <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
     </Declaration>
+    <EquivalentClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;PlanExecutor"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
+            <ObjectSomeValuesFrom>
+                <ObjectProperty URI="&LahoreBombing_NonProbabilistic;Executes"/>
+                <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
+            </ObjectSomeValuesFrom>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <SubClassOf>
+        <Class URI="&LahoreBombing_NonProbabilistic;PlanExecutor"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
+    </SubClassOf>
+    <Declaration>
+        <Class URI="&LahoreBombing_NonProbabilistic;PlanExecutor"/>
+    </Declaration>
+    <EquivalentClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;TargetVenue"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
+            <ObjectSomeValuesFrom>
+                <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isTarget"/>
+                <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
+            </ObjectSomeValuesFrom>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <SubClassOf>
+        <Class URI="&LahoreBombing_NonProbabilistic;TargetVenue"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
+    </SubClassOf>
+    <Declaration>
+        <Class URI="&LahoreBombing_NonProbabilistic;TargetVenue"/>
+    </Declaration>
     <SubClassOf>
         <Class URI="&LahoreBombing_NonProbabilistic;Tool"/>
         <Class URI="&LahoreBombing_NonProbabilistic;Concrete"/>
@@ -213,6 +416,66 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     <Declaration>
         <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
     </Declaration>
+    <EquivalentClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;VenueWithBomb"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+            <ObjectSomeValuesFrom>
+                <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasExplosivesPlantedBy"/>
+                <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
+            </ObjectSomeValuesFrom>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <SubClassOf>
+        <Class URI="&LahoreBombing_NonProbabilistic;VenueWithBomb"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+    </SubClassOf>
+    <DisjointClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;VenueWithBomb"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;VenueWithoutBomb"/>
+    </DisjointClasses>
+    <Declaration>
+        <Class URI="&LahoreBombing_NonProbabilistic;VenueWithBomb"/>
+    </Declaration>
+    <EquivalentClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;VenueWithoutBomb"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+            <ObjectComplementOf>
+                <Class URI="&LahoreBombing_NonProbabilistic;VenueWithBomb"/>
+            </ObjectComplementOf>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;VenueWithoutBomb"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+            <ObjectExactCardinality cardinality="0">
+                <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasExplosivesPlantedBy"/>
+            </ObjectExactCardinality>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <SubClassOf>
+        <Class URI="&LahoreBombing_NonProbabilistic;VenueWithoutBomb"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+    </SubClassOf>
+    <Declaration>
+        <Class URI="&LahoreBombing_NonProbabilistic;VenueWithoutBomb"/>
+    </Declaration>
+    <EquivalentClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;WeaponSupplier"/>
+        <DataHasValue>
+            <DataProperty URI="&LahoreBombing_NonProbabilistic;isWeaponSupplier"/>
+            <Constant datatypeURI="&xsd;boolean">true</Constant>
+        </DataHasValue>
+    </EquivalentClasses>
+    <SubClassOf>
+        <Class URI="&LahoreBombing_NonProbabilistic;WeaponSupplier"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
+    </SubClassOf>
+    <Declaration>
+        <Class URI="&LahoreBombing_NonProbabilistic;WeaponSupplier"/>
+    </Declaration>
     <SubObjectPropertyOf>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;AgentAt"/>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;mainProperties"/>
@@ -232,7 +495,7 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     <ObjectPropertyRange>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;AgentAt"/>
         <ObjectIntersectionOf>
-            <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+            <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
             <ObjectMinCardinality cardinality="1">
                 <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isMeetingVenue"/>
             </ObjectMinCardinality>
@@ -241,10 +504,6 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
             </ObjectExactCardinality>
         </ObjectIntersectionOf>
     </ObjectPropertyRange>
-    <DisjointObjectProperties>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;AgentAt"/>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notAgentAt"/>
-    </DisjointObjectProperties>
     <SubObjectPropertyOf>
         <SubObjectPropertyChain>
             <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
@@ -264,21 +523,17 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     </InverseObjectProperties>
     <ObjectPropertyDomain>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;Executes"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
     </ObjectPropertyDomain>
     <ObjectPropertyRange>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;Executes"/>
         <ObjectIntersectionOf>
-            <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
+            <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
             <ObjectMinCardinality cardinality="1">
                 <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasTarget"/>
             </ObjectMinCardinality>
         </ObjectIntersectionOf>
     </ObjectPropertyRange>
-    <DisjointObjectProperties>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;Executes"/>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotExecute"/>
-    </DisjointObjectProperties>
     <SubObjectPropertyOf>
         <SubObjectPropertyChain>
             <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
@@ -299,7 +554,7 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     <ObjectPropertyDomain>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;HUMINTLocationReport"/>
         <ObjectIntersectionOf>
-            <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+            <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
             <ObjectMinCardinality cardinality="1">
                 <ObjectProperty URI="&LahoreBombing_NonProbabilistic;AgentAt"/>
             </ObjectMinCardinality>
@@ -312,10 +567,6 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;HUMINTLocationReport"/>
         <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
     </ObjectPropertyRange>
-    <DisjointObjectProperties>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;HUMINTLocationReport"/>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notHUMINTLocationReport"/>
-    </DisjointObjectProperties>
     <SubObjectPropertyOf>
         <SubObjectPropertyChain>
             <ObjectProperty URI="&LahoreBombing_NonProbabilistic;AgentAt"/>
@@ -332,7 +583,7 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     <ObjectPropertyDomain>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;MissingCarReport"/>
         <ObjectIntersectionOf>
-            <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+            <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
             <ObjectExactCardinality cardinality="0">
                 <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasAgent"/>
             </ObjectExactCardinality>
@@ -342,19 +593,9 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;MissingCarReport"/>
         <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
     </ObjectPropertyRange>
-    <DisjointObjectProperties>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;MissingCarReport"/>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notMissingCarReport"/>
-    </DisjointObjectProperties>
     <SubObjectPropertyOf>
         <SubObjectPropertyChain>
             <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
-        </SubObjectPropertyChain>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;MissingCarReport"/>
-    </SubObjectPropertyOf>
-    <SubObjectPropertyOf>
-        <SubObjectPropertyChain>
-            <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notAgentAt"/>
         </SubObjectPropertyChain>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;MissingCarReport"/>
     </SubObjectPropertyOf>
@@ -381,16 +622,12 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     <ObjectPropertyRange>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;PlantsExplosives"/>
         <ObjectIntersectionOf>
-            <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+            <Class URI="&LahoreBombing_NonProbabilistic;VenueWithBomb"/>
             <ObjectMinCardinality cardinality="1">
                 <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isTarget"/>
             </ObjectMinCardinality>
         </ObjectIntersectionOf>
     </ObjectPropertyRange>
-    <DisjointObjectProperties>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;PlantsExplosives"/>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotPlantExplosives"/>
-    </DisjointObjectProperties>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;PlantsExplosives"/>
     </Declaration>
@@ -400,16 +637,12 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     </SubObjectPropertyOf>
     <ObjectPropertyDomain>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;ResidesAt"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
     </ObjectPropertyDomain>
     <ObjectPropertyRange>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;ResidesAt"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
     </ObjectPropertyRange>
-    <DisjointObjectProperties>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;ResidesAt"/>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotResideAt"/>
-    </DisjointObjectProperties>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;ResidesAt"/>
     </Declaration>
@@ -426,7 +659,7 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     <ObjectPropertyDomain>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRelated"/>
         <ObjectIntersectionOf>
-            <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+            <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
             <ObjectMinCardinality cardinality="1">
                 <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
             </ObjectMinCardinality>
@@ -435,7 +668,7 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     <ObjectPropertyRange>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRelated"/>
         <ObjectIntersectionOf>
-            <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+            <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
             <ObjectMinCardinality cardinality="1">
                 <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
             </ObjectMinCardinality>
@@ -487,6 +720,10 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     </Declaration>
     <SubObjectPropertyOf>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SuppliesWpnMtrl"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
+    </SubObjectPropertyOf>
+    <SubObjectPropertyOf>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SuppliesWpnMtrl"/>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;mainProperties"/>
     </SubObjectPropertyOf>
     <InverseObjectProperties>
@@ -496,7 +733,7 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     <ObjectPropertyDomain>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SuppliesWpnMtrl"/>
         <ObjectIntersectionOf>
-            <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+            <Class URI="&LahoreBombing_NonProbabilistic;WeaponSupplier"/>
             <ObjectMinCardinality cardinality="1">
                 <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
             </ObjectMinCardinality>
@@ -505,7 +742,7 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     <ObjectPropertyDomain>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SuppliesWpnMtrl"/>
         <ObjectIntersectionOf>
-            <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+            <Class URI="&LahoreBombing_NonProbabilistic;WeaponSupplier"/>
             <DataHasValue>
                 <DataProperty URI="&LahoreBombing_NonProbabilistic;isWeaponSupplier"/>
                 <Constant datatypeURI="&xsd;boolean">true</Constant>
@@ -516,16 +753,6 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SuppliesWpnMtrl"/>
         <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
     </ObjectPropertyRange>
-    <DisjointObjectProperties>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SuppliesWpnMtrl"/>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotSupplyWpnMtrl"/>
-    </DisjointObjectProperties>
-    <SubObjectPropertyOf>
-        <SubObjectPropertyChain>
-            <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
-        </SubObjectPropertyChain>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SuppliesWpnMtrl"/>
-    </SubObjectPropertyOf>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SuppliesWpnMtrl"/>
     </Declaration>
@@ -535,66 +762,6 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     </SubObjectPropertyOf>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;WpnMtrlSuppliedBy"/>
-    </Declaration>
-    <SubObjectPropertyOf>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotExecute"/>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
-    </SubObjectPropertyOf>
-    <ObjectPropertyDomain>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotExecute"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
-    </ObjectPropertyDomain>
-    <ObjectPropertyRange>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotExecute"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
-    </ObjectPropertyRange>
-    <Declaration>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotExecute"/>
-    </Declaration>
-    <SubObjectPropertyOf>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotPlantExplosives"/>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
-    </SubObjectPropertyOf>
-    <ObjectPropertyDomain>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotPlantExplosives"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
-    </ObjectPropertyDomain>
-    <ObjectPropertyRange>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotPlantExplosives"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
-    </ObjectPropertyRange>
-    <Declaration>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotPlantExplosives"/>
-    </Declaration>
-    <SubObjectPropertyOf>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotResideAt"/>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
-    </SubObjectPropertyOf>
-    <ObjectPropertyDomain>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotResideAt"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
-    </ObjectPropertyDomain>
-    <ObjectPropertyRange>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotResideAt"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
-    </ObjectPropertyRange>
-    <Declaration>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotResideAt"/>
-    </Declaration>
-    <SubObjectPropertyOf>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotSupplyWpnMtrl"/>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
-    </SubObjectPropertyOf>
-    <ObjectPropertyDomain>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotSupplyWpnMtrl"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
-    </ObjectPropertyDomain>
-    <ObjectPropertyRange>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotSupplyWpnMtrl"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
-    </ObjectPropertyRange>
-    <Declaration>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;doesNotSupplyWpnMtrl"/>
     </Declaration>
     <SubObjectPropertyOf>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;expects"/>
@@ -618,14 +785,6 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     <InverseFunctionalObjectProperty>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasAgent"/>
     </InverseFunctionalObjectProperty>
-    <ObjectPropertyDomain>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasAgent"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
-    </ObjectPropertyDomain>
-    <ObjectPropertyRange>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasAgent"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
-    </ObjectPropertyRange>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasAgent"/>
     </Declaration>
@@ -633,14 +792,6 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasExplosivesPlantedBy"/>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;inverseProperties"/>
     </SubObjectPropertyOf>
-    <ObjectPropertyDomain>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasExplosivesPlantedBy"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
-    </ObjectPropertyDomain>
-    <ObjectPropertyRange>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasExplosivesPlantedBy"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
-    </ObjectPropertyRange>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasExplosivesPlantedBy"/>
     </Declaration>
@@ -648,14 +799,6 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasHUMINTLocationReport"/>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;inverseProperties"/>
     </SubObjectPropertyOf>
-    <ObjectPropertyDomain>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasHUMINTLocationReport"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
-    </ObjectPropertyDomain>
-    <ObjectPropertyRange>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasHUMINTLocationReport"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
-    </ObjectPropertyRange>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasHUMINTLocationReport"/>
     </Declaration>
@@ -692,14 +835,6 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasTarget"/>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isTarget"/>
     </InverseObjectProperties>
-    <ObjectPropertyDomain>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasTarget"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
-    </ObjectPropertyDomain>
-    <ObjectPropertyRange>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasTarget"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
-    </ObjectPropertyRange>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasTarget"/>
     </Declaration>
@@ -746,17 +881,13 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     <ObjectPropertyRange>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
         <ObjectIntersectionOf>
-            <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
+            <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
             <DataHasValue>
                 <DataProperty URI="&LahoreBombing_NonProbabilistic;isActivePlan"/>
                 <Constant datatypeURI="&xsd;boolean">true</Constant>
             </DataHasValue>
         </ObjectIntersectionOf>
     </ObjectPropertyRange>
-    <DisjointObjectProperties>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotAgentOf"/>
-    </DisjointObjectProperties>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
     </Declaration>
@@ -767,16 +898,12 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     <ObjectPropertyDomain>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExecutedBy"/>
         <ObjectIntersectionOf>
-            <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
+            <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
             <ObjectMinCardinality cardinality="1">
                 <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasTarget"/>
             </ObjectMinCardinality>
         </ObjectIntersectionOf>
     </ObjectPropertyDomain>
-    <ObjectPropertyRange>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExecutedBy"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
-    </ObjectPropertyRange>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExecutedBy"/>
     </Declaration>
@@ -786,16 +913,12 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     </SubObjectPropertyOf>
     <ObjectPropertyDomain>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
     </ObjectPropertyDomain>
     <ObjectPropertyRange>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
         <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
     </ObjectPropertyRange>
-    <DisjointObjectProperties>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotExpectedAt"/>
-    </DisjointObjectProperties>
     <SubObjectPropertyOf>
         <SubObjectPropertyChain>
             <ObjectProperty URI="&LahoreBombing_NonProbabilistic;ResidesAt"/>
@@ -831,76 +954,8 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
             </ObjectMinCardinality>
         </ObjectIntersectionOf>
     </ObjectPropertyRange>
-    <DisjointObjectProperties>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isMeetingVenue"/>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotMeetingVenue"/>
-    </DisjointObjectProperties>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isMeetingVenue"/>
-    </Declaration>
-    <SubObjectPropertyOf>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotAgentOf"/>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
-    </SubObjectPropertyOf>
-    <ObjectPropertyDomain>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotAgentOf"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
-    </ObjectPropertyDomain>
-    <ObjectPropertyRange>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotAgentOf"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
-    </ObjectPropertyRange>
-    <Declaration>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotAgentOf"/>
-    </Declaration>
-    <SubObjectPropertyOf>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotExpectedAt"/>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
-    </SubObjectPropertyOf>
-    <ObjectPropertyDomain>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotExpectedAt"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
-    </ObjectPropertyDomain>
-    <ObjectPropertyRange>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotExpectedAt"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
-    </ObjectPropertyRange>
-    <Declaration>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotExpectedAt"/>
-    </Declaration>
-    <SubObjectPropertyOf>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotMeetingVenue"/>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
-    </SubObjectPropertyOf>
-    <ObjectPropertyDomain>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotMeetingVenue"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
-    </ObjectPropertyDomain>
-    <ObjectPropertyRange>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotMeetingVenue"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
-    </ObjectPropertyRange>
-    <Declaration>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotMeetingVenue"/>
-    </Declaration>
-    <SubObjectPropertyOf>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotTarget"/>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
-    </SubObjectPropertyOf>
-    <ObjectPropertyDomain>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotTarget"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
-    </ObjectPropertyDomain>
-    <ObjectPropertyRange>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotTarget"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
-    </ObjectPropertyRange>
-    <DisjointObjectProperties>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotTarget"/>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isTarget"/>
-    </DisjointObjectProperties>
-    <Declaration>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isNotTarget"/>
     </Declaration>
     <SubObjectPropertyOf>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isResidedBy"/>
@@ -930,7 +985,7 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     <ObjectPropertyRange>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isTarget"/>
         <ObjectIntersectionOf>
-            <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
+            <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
             <DataHasValue>
                 <DataProperty URI="&LahoreBombing_NonProbabilistic;isActivePlan"/>
                 <Constant datatypeURI="&xsd;boolean">true</Constant>
@@ -954,65 +1009,10 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;mainProperties"/>
     </Declaration>
-    <EntityAnnotation>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
-        <Annotation annotationURI="&rdfs;comment">
-            <Constant datatypeURI="&xsd;string"
-                >Properties that are complementar (disjoint) to mainProperties</Constant>
-        </Annotation>
-    </EntityAnnotation>
-    <Declaration>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
-    </Declaration>
-    <SubObjectPropertyOf>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notAgentAt"/>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
-    </SubObjectPropertyOf>
-    <ObjectPropertyDomain>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notAgentAt"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
-    </ObjectPropertyDomain>
-    <ObjectPropertyRange>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notAgentAt"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
-    </ObjectPropertyRange>
-    <Declaration>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notAgentAt"/>
-    </Declaration>
-    <SubObjectPropertyOf>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notHUMINTLocationReport"/>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
-    </SubObjectPropertyOf>
-    <ObjectPropertyDomain>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notHUMINTLocationReport"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
-    </ObjectPropertyDomain>
-    <ObjectPropertyRange>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notHUMINTLocationReport"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
-    </ObjectPropertyRange>
-    <Declaration>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notHUMINTLocationReport"/>
-    </Declaration>
-    <SubObjectPropertyOf>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notMissingCarReport"/>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;negativeProperties"/>
-    </SubObjectPropertyOf>
-    <ObjectPropertyDomain>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notMissingCarReport"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
-    </ObjectPropertyDomain>
-    <ObjectPropertyRange>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notMissingCarReport"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
-    </ObjectPropertyRange>
-    <Declaration>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;notMissingCarReport"/>
-    </Declaration>
     <DataPropertyDomain>
         <DataProperty URI="&LahoreBombing_NonProbabilistic;ExplosiveResidueReport"/>
         <ObjectIntersectionOf>
-            <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+            <Class URI="&LahoreBombing_NonProbabilistic;AttackPlanAgent"/>
             <ObjectMinCardinality cardinality="1">
                 <ObjectProperty URI="&LahoreBombing_NonProbabilistic;PlantsExplosives"/>
                 <ObjectIntersectionOf>
@@ -1034,7 +1034,7 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     </Declaration>
     <DataPropertyDomain>
         <DataProperty URI="&LahoreBombing_NonProbabilistic;isActivePlan"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
     </DataPropertyDomain>
     <DataPropertyRange>
         <DataProperty URI="&LahoreBombing_NonProbabilistic;isActivePlan"/>
@@ -1045,7 +1045,7 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     </Declaration>
     <DataPropertyDomain>
         <DataProperty URI="&LahoreBombing_NonProbabilistic;isPoliticallyImportant"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
     </DataPropertyDomain>
     <DataPropertyRange>
         <DataProperty URI="&LahoreBombing_NonProbabilistic;isPoliticallyImportant"/>
@@ -1063,7 +1063,7 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     </Declaration>
     <DataPropertyDomain>
         <DataProperty URI="&LahoreBombing_NonProbabilistic;isWeaponSupplier"/>
-        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
     </DataPropertyDomain>
     <DataPropertyRange>
         <DataProperty URI="&LahoreBombing_NonProbabilistic;isWeaponSupplier"/>
@@ -1072,44 +1072,6 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     <Declaration>
         <DataProperty URI="&LahoreBombing_NonProbabilistic;isWeaponSupplier"/>
     </Declaration>
-    <ClassAssertion>
-        <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;AD"/>
-    </ClassAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;ResidesAt"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;AD"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;Conf"/>
-    </ObjectPropertyAssertion>
-    <DataPropertyAssertion>
-        <DataProperty URI="&LahoreBombing_NonProbabilistic;isWeaponSupplier"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;AD"/>
-        <Constant datatypeURI="&xsd;boolean">true</Constant>
-    </DataPropertyAssertion>
-    <Declaration>
-        <Individual URI="&LahoreBombing_NonProbabilistic;AD"/>
-    </Declaration>
-    <ClassAssertion>
-        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;C"/>
-    </ClassAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;ResidesAt"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;C"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;ResC"/>
-    </ObjectPropertyAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRelated"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;C"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;AD"/>
-    </ObjectPropertyAssertion>
-    <Declaration>
-        <Individual URI="&LahoreBombing_NonProbabilistic;C"/>
-    </Declaration>
-    <ClassAssertion>
-        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;Conf"/>
-    </ClassAssertion>
     <DataPropertyAssertion>
         <DataProperty URI="&LahoreBombing_NonProbabilistic;isPoliticallyImportant"/>
         <Individual URI="&LahoreBombing_NonProbabilistic;Conf"/>
@@ -1118,21 +1080,23 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     <Declaration>
         <Individual URI="&LahoreBombing_NonProbabilistic;Conf"/>
     </Declaration>
-    <ClassAssertion>
-        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
+    <DataPropertyAssertion>
+        <DataProperty URI="&LahoreBombing_NonProbabilistic;isActivePlan"/>
         <Individual URI="&LahoreBombing_NonProbabilistic;ConfAtk"/>
-    </ClassAssertion>
+        <Constant datatypeURI="&xsd;boolean">true</Constant>
+    </DataPropertyAssertion>
     <Declaration>
         <Individual URI="&LahoreBombing_NonProbabilistic;ConfAtk"/>
     </Declaration>
-    <ClassAssertion>
-        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;P"/>
-    </ClassAssertion>
     <ObjectPropertyAssertion>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRelated"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;Executes"/>
         <Individual URI="&LahoreBombing_NonProbabilistic;P"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;AD"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;ConfAtk"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;P"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;ConfAtk"/>
     </ObjectPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty URI="&LahoreBombing_NonProbabilistic;ExplosiveResidueReport"/>
@@ -1141,67 +1105,6 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     </DataPropertyAssertion>
     <Declaration>
         <Individual URI="&LahoreBombing_NonProbabilistic;P"/>
-    </Declaration>
-    <ClassAssertion>
-        <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;ResC"/>
-    </ClassAssertion>
-    <Declaration>
-        <Individual URI="&LahoreBombing_NonProbabilistic;ResC"/>
-    </Declaration>
-    <ClassAssertion>
-        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
-    </ClassAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;AgentAt"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;ResC"/>
-    </ObjectPropertyAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;AgentAt"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;Conf"/>
-    </ObjectPropertyAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;HUMINTLocationReport"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;ResC"/>
-    </ObjectPropertyAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;MissingCarReport"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;Conf"/>
-    </ObjectPropertyAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRelated"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;C"/>
-    </ObjectPropertyAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;Conf"/>
-    </ObjectPropertyAssertion>
-    <Declaration>
-        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
-    </Declaration>
-    <ClassAssertion>
-        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;V"/>
-    </ClassAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRival"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;V"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
-    </ObjectPropertyAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;V"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;Conf"/>
-    </ObjectPropertyAssertion>
-    <Declaration>
-        <Individual URI="&LahoreBombing_NonProbabilistic;V"/>
     </Declaration>
 </Ontology>
 
