@@ -20,6 +20,11 @@
  */
 package unbbayes.prs.mebn.context;
 
+/**
+ * 
+ * @author Laecio Lima dos Santos (laecio@gmail.com)
+ * @see EnumSubType
+ */
 public enum EnumType{
 	
 		EMPTY, 
