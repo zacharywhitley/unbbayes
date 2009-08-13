@@ -33,6 +33,9 @@ import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.context.EnumSubType;
+import unbbayes.prs.mebn.context.EnumType;
+import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
@@ -400,14 +403,63 @@ OUT_LOOP:  for(ContextNode context: cnList){
 	}
 	
 	/**
-	 * Test if a context node are in the correct format z = StarshipZone(st) 
-	 * or StarshipZone(st) = z; 
+	 * Test if a context node are in the correct format
+	 * ov = RandonVariable(arg1, arg2,...) or RandonVariable(arg1, arg2,...) = ov. 
 	 */
 	public boolean testContextNodeFormatRestriction(ContextNode contextNode){
+
+		boolean test; 
+
+		NodeFormulaTree formulaTree = (NodeFormulaTree) contextNode.getFormulaTree();
 		
-		//TODO implement... 
+		if(formulaTree.getTypeNode() != EnumType.SIMPLE_OPERATOR){
+			//error: don't is a simple operator
+			test = false; 
+		}else{
+			if(formulaTree.getSubTypeNode() != EnumSubType.EQUALTO){
+				//error: don't is a equalto operator
+				test = false; 
+			}else{
+				ArrayList<NodeFormulaTree> listChildren = 
+					(ArrayList<NodeFormulaTree>)formulaTree.getChildren(); 
+				
+				if(listChildren.size() != 2){
+                     //error: don't have two operators
+					test = false; 
+				}else{
+					NodeFormulaTree children1 = listChildren.get(0); 
+					NodeFormulaTree children2 = listChildren.get(1); 
+					
+					if(children1.getTypeNode()!= EnumType.OPERAND || 
+						children2.getTypeNode() != EnumType.OPERAND	){
+						test = false; 
+					}else{
+						if(children1.getSubTypeNode() != EnumSubType.NODE){
+							if(children2.getSubTypeNode() != EnumSubType.NODE){
+								//error: one of the two should be a node
+								test = false; 
+							}else{
+								if(children1.getSubTypeNode() != EnumSubType.OVARIABLE){
+									// error: format should be ov = node
+									test = false; 
+								}else{
+									test = true; 
+								}
+							}
+						}else{
+							if(children2.getSubTypeNode() != EnumSubType.OVARIABLE){
+								//error: format should be node = ov
+								test = false; 
+							}else{
+								test = true; 
+							}
+						}
+					}
+				}
+			}
+		}
 		
-		return true; 
+		return test; 
 		
 	}
 	
