@@ -14,8 +14,9 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.Entity;
 
 /**
- * A SimpleSSBNNode it a node used in the building of the grand SSBN. This only 
- * have the information necessary for build the SSBN, not for build the CPT. 
+ * A SimpleSSBNNode is a node used in the construction of the grand SSBN. This only 
+ * have the information necessary for build the SSBN, not for the construction of
+ * the CPT's. 
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  */

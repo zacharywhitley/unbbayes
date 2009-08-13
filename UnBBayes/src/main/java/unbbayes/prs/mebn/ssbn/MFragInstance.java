@@ -48,10 +48,6 @@ public class MFragInstance {
 	
 	private MFrag mFragOrigin; 
 	
-	private SSBN ssbn; 
-	
-	private ContextNodeEvaluator contextNodeAvaliator; 
-	
 	private boolean useDefaultDistribution; 
 	
 	//Teorem: For the same set of ordinary variables instance values, 
@@ -324,15 +320,6 @@ public class MFragInstance {
 		return Arrays.asList(contextNodeList); 
 	}
 	
-	
-	public ContextNodeEvaluator getContextNodeAvaliator() {
-		return contextNodeAvaliator;
-	}
-
-	public void setContextNodeAvaliator(ContextNodeEvaluator contextNodeAvaliator) {
-		this.contextNodeAvaliator = contextNodeAvaliator;
-	}
-
 	public boolean isUseDefaultDistribution() {
 		return useDefaultDistribution;
 	}
