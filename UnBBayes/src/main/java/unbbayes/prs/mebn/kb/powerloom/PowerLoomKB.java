@@ -1104,15 +1104,11 @@ public class PowerLoomKB implements KnowledgeBase {
     	
 		ArrayList<NodeFormulaTree> listChildren = (ArrayList<NodeFormulaTree>)node.getChildren(); 
     	
-		/*
-		 * Cases:
-		 * StarshipZone(st) = z   (RandomVariable = OrdinaryVariable)
-		 * SkyClean(today) = yes  (RandomVariable = State (Categorical or boolean))
-		 * st = s                 (OrdinaryVariable = OrdinaryVariable)
-		 */
-		
     	NodeFormulaTree leftOperand = listChildren.get(0);
     	
+    	// Brackets aren't necessary when the operand is a ordinary variable. 
+    	// ex: StarshipZone(st) = ov -> (= (StarshipZone ST) ?ov)
+    	// ex: ov = StarshipZone(st) -> (= ?ov (StarshipZone ST))
     	if((leftOperand.getTypeNode() == EnumType.OPERAND)&&(leftOperand.getSubTypeNode() == EnumSubType.OVARIABLE)){
     		retorno+= " ";
     		retorno+= this.makeOperandString(leftOperand, ovInstances);
@@ -1124,7 +1120,16 @@ public class PowerLoomKB implements KnowledgeBase {
     	}
     	
     	NodeFormulaTree rightOperand = listChildren.get(1); 
-		retorno+= this.makeOperandString(rightOperand, ovInstances);  
+    	
+    	if((rightOperand.getTypeNode() == EnumType.OPERAND)&&(rightOperand.getSubTypeNode() == EnumSubType.OVARIABLE)){
+    		retorno+= " ";
+    		retorno+= this.makeOperandString(rightOperand, ovInstances);
+    		retorno+= " ";
+    	}else{
+    		retorno+= " ( ";
+    		retorno+= this.makeOperandString(rightOperand, ovInstances);
+    		retorno+= " ) ";
+    	}
 		
 		return retorno; 
 	}
