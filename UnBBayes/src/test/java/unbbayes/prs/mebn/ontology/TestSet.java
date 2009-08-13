@@ -102,7 +102,7 @@ public abstract class TestSet {
 			SSBN ssbn = ssbnGenerator.generateSSBN(listQueries, query.getKb());
 
 			File file = new File(nameOfNetworkGenerated); 
-			saveNetworkFile(file, ssbn.getProbabilisticNetwork()); 
+//			saveNetworkFile(file, ssbn.getProbabilisticNetwork()); 
 			
 			if(compileSSBNGenerated){
 				ssbn.compileAndInitializeSSBN();
