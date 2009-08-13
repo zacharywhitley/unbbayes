@@ -140,7 +140,7 @@ public class SSBNNode implements INode {
 		
 		this.setUsingDefaultCPT(false);
 		
-		this.setCompiler(new Compiler(resident, this));
+		this.setCompiler(Compiler.getInstance(resident, this));
 		
 	}
 	

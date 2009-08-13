@@ -316,4 +316,14 @@ public class SSBN {
 		return ret;
 	}
 
+
+
+
+	/**
+	 * @param logManager the logManager to set
+	 */
+	public void setLogManager(ILogManager logManager) {
+		this.logManager = logManager;
+	}
+
 }

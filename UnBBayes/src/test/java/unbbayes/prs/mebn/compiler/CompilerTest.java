@@ -99,7 +99,7 @@ public class CompilerTest extends TestCase {
 		
 		
 		
-		tableParser = new Compiler((ResidentNode)mebn.getNode("DangerToSelf"));
+		tableParser = Compiler.getInstance((ResidentNode)mebn.getNode("DangerToSelf"));
 		assertNotNull(tableParser);
 		
 	}

@@ -685,7 +685,7 @@ public class CPTEditionPane extends JPanel{
 			btnCompile.addActionListener(new ActionListener(){
 
 				public void actionPerformed(ActionEvent e) {
-					Compiler compiler = new Compiler(residentNode); 
+					Compiler compiler = Compiler.getInstance(residentNode); 
 					try {
 						compiler.parse(cptTextPane.getTableTxt()); 
 						JOptionPane.showMessageDialog(mebnController.getCPTDialog(residentNode), 

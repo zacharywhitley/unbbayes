@@ -42,7 +42,7 @@ public class MEBNTableParserTest extends TestCase {
 		
 		
 		
-		tableParser = new Compiler((ResidentNode)mebn.getNode("DangerToSelf"));
+		tableParser = Compiler.getInstance((ResidentNode)mebn.getNode("DangerToSelf"));
 		
 	}
 

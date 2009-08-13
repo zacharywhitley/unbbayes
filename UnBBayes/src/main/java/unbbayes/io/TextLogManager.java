@@ -23,7 +23,10 @@ package unbbayes.io;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Properties;
 import java.util.ResourceBundle;
+
+import unbbayes.util.ApplicationPropertyHolder;
 
 /**
  * Responsible for generating network compilation log
@@ -52,9 +55,20 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
   	protected static ResourceBundle resource = ResourceBundle.getBundle(
   			"unbbayes.io.resources.IoResources");
 
+  	private Boolean enabled = true;
+  	
     public TextLogManager(int bufferSize) {
-        log = new StringBuffer(bufferSize);
+        Properties prop = ApplicationPropertyHolder.getProperty();
+    	try {
+    		if (!Boolean.valueOf(prop.get(this.getClass().getCanonicalName()+".enabled").toString())) {
+        		this.setEnabled(false);
+        	}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+    	log = new StringBuffer(bufferSize);
         reset();
+        
     }
 
     public TextLogManager() {
@@ -70,18 +84,27 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
     }
 
     public void append(String text) {
+    	if (!this.isEnabled()) {
+    		return;
+    	}
         log.append(text);
         
         System.out.print(text);
     }
 
     public void appendIfTrue(boolean debug, String text) {
+    	if (!this.isEnabled()) {
+    		return;
+    	}
     	if(debug){
     		append(text);
     	}
     }
     
     public void appendln(String text) {
+    	if (!this.isEnabled()) {
+    		return;
+    	}
         log.append(text);
         log.append("\n");
 
@@ -89,12 +112,18 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
     }
 
     public void appendlnIfTrue(boolean debug, String text) {
+    	if (!this.isEnabled()) {
+    		return;
+    	}
     	if(debug){
     		appendln(text); 
     	}
     }
     
 	public void appendln(int identation, String text) {
+    	if (!this.isEnabled()) {
+    		return;
+    	}
 		
 		for(int i= 0; i < identation; i++){
 			log.append(identationString);
@@ -108,12 +137,18 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
 	}
 
 	public void appendlnIfTrue(int identation, boolean debug, String text) {
+    	if (!this.isEnabled()) {
+    		return;
+    	}
     	if(debug){
     		appendln(identation, text); 
     	}
 	}
     
     public void appendSeparator(){
+    	if (!this.isEnabled()) {
+    		return;
+    	}
     	for(int i = 0; i < numColumn; i++){
     		this.append(separator); 
     	}
@@ -121,10 +156,16 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
     }
     
     public String getLog() {
+    	if (!this.isEnabled()) {
+    		return "";
+    	}
         return log.toString();
     }
 
     public void writeToDisk(String fileName, boolean append) throws IOException {
+    	if (!this.isEnabled()) {
+    		return;
+    	}
         BufferedWriter out = new BufferedWriter(new FileWriter(fileName, append));
         out.write(getLog());
         out.flush();
@@ -132,6 +173,9 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
     }
 
 	public void addTitle(String text) {
+    	if (!this.isEnabled()) {
+    		return;
+    	}
 		appendSeparator(); 
 		appendln(text); 
 		appendSeparator(); 
@@ -139,10 +183,16 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
 	}
 
 	public void appendSectionTitle(String text) {
+    	if (!this.isEnabled()) {
+    		return;
+    	}
 		append("\n" + text.toUpperCase() + "\n"); 
 	}
 
 	public void appendSpecialTitle(String text) {
+    	if (!this.isEnabled()) {
+    		return;
+    	}
 		 appendln("."); 
 		 appendln("."); 
 		 appendln("................................................................................"); 
@@ -151,6 +201,24 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
 		 appendln("."); 
 		 appendln("."); 
 		 appendln(""); 
+	}
+
+	/**
+	 * If this log manager is enabled or not.
+	 * When not enabled, any call would do nothing.
+	 * @return the enabled
+	 */
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	/**
+	 * If this log manager is enabled or not.
+	 * When not enabled, any call would do nothing.
+	 * @param enabled the enabled to set. True to enable. False to disable
+	 */
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
 	}
 
 

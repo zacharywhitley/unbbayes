@@ -21,15 +21,20 @@ import unbbayes.prs.bn.Separator;
 
 public class NetworkCompilationLogManager extends TextLogManager{
 
-    /**
+	private static final long serialVersionUID = 4774442720083112613L;
+
+	/**
      *  Initializes the logfile of network compilation. Writes the header inside the file.
      */
     public void reset() {
-        clear();
+    	clear();
         append(resource.getString("logHeader"));
     }
 	
     public void finishLog(JunctionTree tree, ArrayList<Node> nodes) {
+    	if (!this.isEnabled()) {
+    		return;
+    	}
         List clicks = tree.getCliques();
         Clique auxClique;
         Node node;

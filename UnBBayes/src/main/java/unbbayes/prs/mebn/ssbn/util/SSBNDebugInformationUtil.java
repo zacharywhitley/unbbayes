@@ -17,11 +17,34 @@ import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBN;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.prs.mebn.ssbn.SimpleSSBNNode;
+import unbbayes.util.ApplicationPropertyHolder;
 import unbbayes.util.Debug;
 
+/**
+ * TODO stop relying on static methods, since it
+ * will give us a major hedache at distributed or client/server model.
+ *
+ */
 public class SSBNDebugInformationUtil {
+	
+	private static Boolean enabled = true;
+	
+	static {
+		try {
+    		if (!Boolean.valueOf(ApplicationPropertyHolder.getProperty().get(
+    				SSBNDebugInformationUtil.class.getCanonicalName()+".enabled").toString())) {
+        		enabled = false;
+        	}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 
 	public static void printAndSaveCurrentNetwork(SSBN ssbn) {
+		if (!enabled) {
+			return;
+		}
 		PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(ssbn.getProbabilisticNetwork()); 
 		SSBNDebugInformationUtil.printNetworkInformation(ssbn.getLogManager(), ssbn); 
 	}
@@ -33,6 +56,9 @@ public class SSBNDebugInformationUtil {
 	 * @param querynode
 	 */
 	public static void printNetworkInformation(ILogManager logManager, SSBN ssbn) {
+		if (!enabled) {
+			return;
+		}
 		
 		String netName = "";
 		ssbn.getProbabilisticNetwork().setName(netName);
@@ -117,6 +143,9 @@ public class SSBNDebugInformationUtil {
 	 */
 	public static void printNetworkInformation(ILogManager logManager, SSBNNode queryNode, 
 			 long stepCount, String queryName) {
+		if (!enabled) {
+			return;
+		}
 		
 		//TODO Use a decimal format instead
 		String stepCountFormated = "";
@@ -186,6 +215,9 @@ public class SSBNDebugInformationUtil {
 	 * debug method. 
 	 */
 	public static void printParents(ILogManager logManager, SSBNNode node, int nivel){
+		if (!enabled) {
+			return;
+		}
 		for(SSBNNode parent: node.getParents()){
 			for(int i = 0; i <= nivel; i++){
 				if (i == 0) {
@@ -200,6 +232,9 @@ public class SSBNDebugInformationUtil {
 	}
 	
 	public static void printParents(ILogManager logManager, SimpleSSBNNode node, int nivel){
+		if (!enabled) {
+			return;
+		}
 		for(SimpleSSBNNode parent: node.getParents()){
 			for(int i = 0; i <= nivel; i++){
 				if (i == 0) {
@@ -214,6 +249,9 @@ public class SSBNDebugInformationUtil {
 	}
 	
 	public static void printNodeStructureBeforeCPT(SSBNNode ssbnNode){
+		if (!enabled) {
+			return;
+		}
 		Debug.println("--------------------------------------------------");
 		Debug.println("- Node: " + ssbnNode.toString());
 		Debug.println("- Parents: ");
@@ -228,6 +266,9 @@ public class SSBNDebugInformationUtil {
 	}
 	
 	public void printTreeVariableTable(ProbabilisticNode probabilisticNode, ILogManager logManager) {
+		if (!enabled) {
+			return;
+		}
 		TreeVariable treeVariable = probabilisticNode; 
 		
 		int statesSize = treeVariable.getStatesSize();
@@ -247,6 +288,21 @@ public class SSBNDebugInformationUtil {
 			logManager.appendln(label); 
 		}
 	}
+
+	/**
+	 * @return the enabled
+	 */
+	public static boolean isEnabled() {
+		return enabled;
+	}
+
+	/**
+	 * @param enabled the enabled to set
+	 */
+	public static void setEnabled(boolean enabled) {
+		SSBNDebugInformationUtil.enabled = enabled;
+	}
+
 	
 	
 }

@@ -46,6 +46,7 @@ import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
+import unbbayes.util.ApplicationPropertyHolder;
 import unbbayes.util.Debug;
 
 
@@ -194,6 +195,18 @@ import unbbayes.util.Debug;
 
 public class Compiler implements ICompiler {
 
+	/**
+     * SingletonHolder is loaded on the first execution of Singleton.getInstance() 
+     * or the first access to SingletonHolder.INSTANCE, not before.
+     * This is used for creating singleton instances of compiler
+     */
+    private static class SingletonHolder { 
+    	private static final Compiler INSTANCE = new Compiler();
+    }
+ 
+    /** If this class' constructor should return a singleton or not */
+	private static Boolean singleton = false;
+	
 	// resource files
 	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.mebn.compiler.resources.Resources");
 
@@ -263,53 +276,84 @@ public class Compiler implements ICompiler {
 	private Compiler() {
 		tempTable = new TempTable();
 		originalTextLength = 0;
-	}
-	
-	
-	/**
-	 * Creates an instance of Compiler. The resident node is necessary
-	 * in order to perform semantic consisntency check.
-	 * @param node: a resident node containing the table to parse
-	 * @return a instance of the compiler.
-	 */
-	public Compiler (ResidentNode node) {
-		super();
-		this.setNode(node);
 		this.cpt = null;
-		tempTable = new TempTable();
 	}
 	
-	/**
-	 * Creates an instance of Compiler. The resident node is necessary
-	 * in order to perform semantic consisntency check.
-	 * @param node: a resident node containing the table to parse
-	 * @return a instance of the compiler.
-	 */
-//	public static Compiler getInstance(ResidentNode node) {
-//	// since we are not using other specific pseudocode Compilers, and we do not use Builders/Factories,
-	// it is not necessary to have a constructor method...
-//	return new Compiler(node);
+	
+//	/**
+//	 * Creates an instance of Compiler. The resident node is necessary
+//	 * in order to perform semantic consisntency check.
+//	 * @param node: a resident node containing the table to parse
+//	 * @return a instance of the compiler.
+//	 */
+//	protected Compiler (ResidentNode node) {
+//		this();
+//		this.setNode(node);
 //	}
 	
-	
 	/**
-	 * Note: if the pseudocode passed to this class is either empty or null, this class
-	 * should consider equal probability distribution for all possible states.
-	 * TODO break this class apart, because it's becoming too huge.
-	 * @param node: the node having the CPT's pseudocode being evaluated by this class.
-	 * @param ssbnnode: the node where we should set the output CPT to.
+	 * Creates an instance of Compiler. The resident node is necessary
+	 * in order to perform semantic consisntency check.
+	 * Depending on the application.properties file read by {@link ApplicationPropertyHolder}, 
+	 * this method may return a singleton instance.
+	 * @param node: a resident node containing the table to parse
+	 * @param ssbnnode : a node actually generating cpt table at ssbn generation time. It is optional
+	 * @return a instance of the compiler.
+	 * @see {@link ApplicationPropertyHolder}
 	 */
-	public Compiler (ResidentNode node, SSBNNode ssbnnode) {
-		super();
-		this.setNode(node);
-		this.ssbnnode = ssbnnode;
-		if (this.ssbnnode != null) {
-			if (this.ssbnnode.getProbNode() != null) {
-				this.cpt = this.ssbnnode.getProbNode().getPotentialTable();
+	public static Compiler getInstance(ResidentNode node, SSBNNode ssbnnode) {
+		Compiler comp = null;
+		try {
+    		if (Boolean.valueOf(ApplicationPropertyHolder.getProperty().get(
+    				Compiler.class.getCanonicalName()+".singleton").toString())) {
+        		comp = SingletonHolder.INSTANCE;
+        	} else {
+        		comp = new Compiler();
+        	}
+		} catch (Exception e) {
+			e.printStackTrace();
+			comp = new Compiler();
+		}
+		comp.setNode(node);
+		comp.ssbnnode = ssbnnode;
+		if (comp.ssbnnode != null) {
+			if (comp.ssbnnode.getProbNode() != null) {
+				comp.cpt = comp.ssbnnode.getProbNode().getPotentialTable();
 			}			
 		}
-		tempTable = new TempTable();
+		return comp;
 	}
+	
+	/**
+	 * Creates an instance of Compiler. The resident node is necessary
+	 * in order to perform semantic consisntency check.
+	 * @param node: a resident node containing the table to parse
+	 * @return a instance of the compiler.
+	 * @see {@link Compiler#getInstance(ResidentNode, SSBNNode)}
+	 */
+	public static Compiler getInstance(ResidentNode node) {
+	// since we are not using other specific pseudocode Compilers, and we do not use Builders/Factories,
+	// it is not necessary to have a constructor method...
+		return Compiler.getInstance(node, null);
+	}
+	
+	
+//	/**
+//	 * Note: if the pseudocode passed to this class is either empty or null, this class
+//	 * should consider equal probability distribution for all possible states.
+//	 * TODO break this class apart, because it's becoming too huge.
+//	 * @param node: the node having the CPT's pseudocode being evaluated by this class.
+//	 * @param ssbnnode: the node where we should set the output CPT to.
+//	 */
+//	protected Compiler (ResidentNode node, SSBNNode ssbnnode) {
+//		this(node);
+//		this.ssbnnode = ssbnnode;
+//		if (this.ssbnnode != null) {
+//			if (this.ssbnnode.getProbNode() != null) {
+//				this.cpt = this.ssbnnode.getProbNode().getPotentialTable();
+//			}			
+//		}
+//	}
 	
 	/* Compiler's initialization */
 	/* (non-Javadoc)
@@ -402,6 +446,9 @@ public class Compiler implements ICompiler {
 	protected PotentialTable getCPT() throws InconsistentTableSemanticsException,
 											InvalidProbabilityRangeException,
 											InstanceException{
+		
+		// try to clean garbage before starting an expensive method like this one
+		System.gc();
 		
 		// initial tests
 		if (this.ssbnnode == null) {
@@ -3249,5 +3296,25 @@ public class Compiler implements ICompiler {
 	protected TempTable getTempTable() {
 		return tempTable;
 	}
+
+
+	/**
+	 * If this class' constructor should return a singleton or not
+	 * @return the singleton
+	 */
+	public static Boolean getSingleton() {
+		return singleton;
+	}
+
+
+	/**
+	 * If this class' constructor should return a singleton or not
+	 * @param singleton the singleton to set
+	 */
+	public static void setSingleton(Boolean singleton) {
+		Compiler.singleton = singleton;
+	}
+
+
 
 }
