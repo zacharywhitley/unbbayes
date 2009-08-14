@@ -8,9 +8,21 @@ import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.cptgeneration.CPTForSSBNNodeGenerator;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
+import unbbayes.prs.mebn.ssbn.util.SSBNDebugInformationUtil;
+import unbbayes.util.ApplicationPropertyHolder;
 
 public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 
+	private static boolean clearSimpleSSBNNodeListAtLPD = false;
+	static{
+		try {
+			clearSimpleSSBNNodeListAtLPD = Boolean.valueOf(ApplicationPropertyHolder.getProperty().get(
+					BuilderLocalDistributionImpl.class.getCanonicalName()+".clearSimpleSSBNNodeListAtLPD").toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	private ResourceBundle resource = 
 		ResourceBundle.getBundle("unbbayes.prs.mebn.ssbn.resources.Resources");	
 	
@@ -50,6 +62,7 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 					}
 				}
 			}
+			nodesPerNetworkArray = null;
 			
 			
 			ssbn.getLogManager().appendln("\n[2] Genering the network"); 
@@ -71,8 +84,14 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 			e.printStackTrace();
 			throw new RuntimeException(e.getMessage()); 
 		} 
-		
 		ssbn.getLogManager().appendln("\nSimple Nodes translated to SSBNNodes"); 
+		
+		// clearing simple ssbn nodes
+		if (clearSimpleSSBNNodeListAtLPD) {
+			ssbn.getSimpleSsbnNodeList().clear();
+			// clearing memory before we continue
+			System.gc();
+		}
 		
 	    CPTForSSBNNodeGenerator build = new CPTForSSBNNodeGenerator(ssbn.getLogManager());
 	    
@@ -82,6 +101,21 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 	    	throw new SSBNNodeGeneralException(resource.getString("NotNodeInSSBN")); 
 	    }
 		
+	}
+
+	/**
+	 * @return the clearSimpleSSBNNodeListAtLPD
+	 */
+	public static boolean isClearSimpleSSBNNodeListAfterLPD() {
+		return clearSimpleSSBNNodeListAtLPD;
+	}
+
+	/**
+	 * @param clearSimpleSSBNNodeListAtLPD the clearSimpleSSBNNodeListAtLPD to set
+	 */
+	public static void setClearSimpleSSBNNodeListAfterLPD(
+			boolean clearSimpleSSBNNodeListAfterLPD) {
+		BuilderLocalDistributionImpl.clearSimpleSSBNNodeListAtLPD = clearSimpleSSBNNodeListAfterLPD;
 	}
 
 

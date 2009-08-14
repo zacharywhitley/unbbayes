@@ -1370,6 +1370,16 @@ public class SSBNNode implements INode {
 	}
 	
 	/**
+	 * Clears the currently stored map of arguments for a given
+	 * MFrag. Use it to reset.
+	 * @see #addArgumentsForMFrag(MFrag, List)
+	 * @see #turnArgumentsForMFrag(MFrag)
+	 */
+	public void clearArgumentsForMFrag() {
+		this.argumentsForMFrag.clear();
+	}
+	
+	/**
 	 * Turn the arguemnts of the SSBNNode for the arguments that it should 
 	 * have in the given mFrag
 	 * 

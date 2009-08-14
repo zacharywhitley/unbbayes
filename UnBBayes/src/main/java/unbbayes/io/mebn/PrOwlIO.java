@@ -24,8 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 
-import javax.swing.JProgressBar;
-
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.util.Debug;

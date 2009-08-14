@@ -23,6 +23,7 @@ import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.Parameters;
 import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBN;
+import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.prs.mebn.ssbn.SimpleSSBNNode;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
@@ -106,7 +107,19 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		
 		SSBNDebugInformationUtil.printAndSaveCurrentNetwork(ssbn); 
 		
+		this.cleanUpSSBN(ssbn);
+		
 		return ssbn;
+	}
+	
+	private void cleanUpSSBN(SSBN ssbn){
+		ssbn.getSimpleSsbnNodeList().clear();
+		for (SSBNNode node : ssbn.getSsbnNodeList()) {
+			node.clearArgumentsForMFrag();
+			node.setCompiler(null);
+		}
+		
+		System.gc();
 	}
 
 	private void printSimpleSSBNNodeList(SSBN ssbn) {

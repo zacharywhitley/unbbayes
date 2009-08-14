@@ -643,7 +643,20 @@ public class Compiler implements ICompiler {
 		return this.cpt;
 	}
 	
-	
+	public void clear() {
+		this.tempTable = null;
+		this.cpt = null;
+		this.currentHeader = null;
+		this.kwcode = null;
+		this.kwlist = null;
+		this.mebn = null;
+		this.noCaseChangeValue = null;
+		this.node = null;
+		this.ssbnnode = null;
+		this.text = null;
+		this.value = null;
+		System.gc();
+	}
 	
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.compiler.ICompiler#generateCPT()
@@ -658,6 +671,7 @@ public class Compiler implements ICompiler {
 	 *  @return 
 	 */
 	public PotentialTable generateCPT(SSBNNode ssbnnode) throws MEBNException {
+		System.gc();
 		if (ssbnnode == null) {
 			return null;
 		}

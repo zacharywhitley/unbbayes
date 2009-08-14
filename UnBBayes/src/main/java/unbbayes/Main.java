@@ -28,6 +28,10 @@ import unbbayes.controller.MainController;
  *@author   Michael S. Onishi (mso@gmail.com)
  *@author 	Rommel N. Carvalho (rommel.carvalho@gmail.com)
  *@version    24 de Junho de 2001
+ *
+ *@author Shou Matsumoto
+ *@version 13-08-2009
+ *			Added console mode.
  */
 
 public class Main {
@@ -36,7 +40,17 @@ public class Main {
      *  Starts UnBBayes.
      */
     public static void main(String[] args) {
-        new MainController();
+    	
+    	// extract -t param, expecting at first place
+    	if (args.length > 0 && args[0].equalsIgnoreCase("-t")) {
+    		String[] newArgs = new String[args.length-1];
+    		System.arraycopy(args, 1, newArgs, 0, newArgs.length);
+    		// start in text mode
+    		TextModeRunner.main(newArgs);    		
+    	} else {
+    		// normal mode
+    		new MainController();
+    	}
     }
     
 }

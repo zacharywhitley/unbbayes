@@ -24,7 +24,6 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.io.File;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -44,10 +43,12 @@ import unbbayes.gui.WarningPanel;
 import unbbayes.gui.mebn.DescriptionPane;
 import unbbayes.gui.mebn.OVariableEditionPane;
 import unbbayes.gui.mebn.cpt.CPTFrame;
+import unbbayes.io.ILogManager;
 import unbbayes.io.exception.UBIOException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.ContextNode;
@@ -83,15 +84,14 @@ import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBN;
-import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.prs.mebn.ssbn.SSBNWarning;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
-import unbbayes.prs.mebn.ssbn.giaalgorithm.ExplosiveSSBNGenerator;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeyAlgorithmParameters;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSBNGenerator;
 import unbbayes.prs.mebn.ssbn.util.PositionAdjustmentUtils;
+import unbbayes.util.ApplicationPropertyHolder;
 import unbbayes.util.Debug;
 import unbbayes.util.ResourceController;
 
@@ -107,6 +107,9 @@ import unbbayes.util.ResourceController;
 
 public class MEBNController  {
 
+	/** if set to true, this will log every nodes of SSBN and its probability values */
+	private boolean toLogNodesAndProbabilities = true;
+	
 	/*-------------------------------------------------------------------------*/
 	/*                                                      */
 	/*-------------------------------------------------------------------------*/
@@ -226,6 +229,14 @@ public class MEBNController  {
 		df.setMaximumFractionDigits(4);
 		
 		enableMTheoryEdition(); 
+		
+		
+		try {
+			this.setToLogNodesAndProbabilities(Boolean.valueOf(ApplicationPropertyHolder.getProperty().get(
+    				this.getClass().getCanonicalName()+".toLogNodesAndProbabilities").toString()));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 	}
 
@@ -1610,116 +1621,116 @@ public class MEBNController  {
 //		baseCreated = true; 
 	}
 
-	/**
-	 * Execute a query. 
-	 * 
-	 * @param residentNode
-	 * @param arguments
-	 * @return
-	 * @throws InconsistentArgumentException
-	 * @throws ImplementationRestrictionException 
-	 * @throws SSBNNodeGeneralException 
-	 * @throws OVInstanceFaultException 
-	 * @throws InvalidParentException 
-	 */
-	public ProbabilisticNetwork executeQuery(ResidentNode residentNode, 
-			ObjectEntityInstance[] arguments)
-	                           throws InconsistentArgumentException, 
-	                                  SSBNNodeGeneralException, 
-	                                  ImplementationRestrictionException, 
-	                                  MEBNException, 
-	                                  OVInstanceFaultException, InvalidParentException {
-		
-		mebnEditionPane.setStatus(resource.getString("statusGeneratingSSBN")); 
-		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-		
-		ProbabilisticNetwork probabilisticNetwork = null; 
-		
-		SSBNNode queryNode = SSBNNode.getInstance(null,residentNode); 
-		
-		List<Argument> arglist = residentNode.getArgumentList();
-		
-		if (arglist.size() != arguments.length) {
-			throw new InconsistentArgumentException();
-		}
-		
-		for (int i = 1; i <= arguments.length; i++) {
-			try {
-				//TODO It has to get in the right order. For some reason in argList, 
-				// sometimes the second argument comes first
-				for (Argument argument : arglist) {
-					if (argument.getArgNumber() == i) {
-						queryNode.addArgument(argument.getOVariable(), arguments[i-1].getName());
-						break;
-					}
-				}
-				
-			} catch (SSBNNodeGeneralException e) {
-				
-				mebnEditionPane.setStatus(resource.getString("statusReady")); 
-				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-				
-				throw new InconsistentArgumentException(e);
-			}
-		}
-		
-	    createKnowledgeBase(); 	
-
-		Query query = new Query(getKnowledgeBase(), queryNode, multiEntityBayesianNetwork);
-		
-		ISSBNGenerator ssbngenerator = new ExplosiveSSBNGenerator();
-
-		List<Query> listQueries = new ArrayList<Query>(); 
-		listQueries.add(query); 
-		
-		ssbn = ssbngenerator.generateSSBN(listQueries, getKnowledgeBase()); 
-		
-		probabilisticNetwork = ssbn.getProbabilisticNetwork();
-
-		if(!query.getQueryNode().isFinding()){
-
-				showSSBNGraph = true; 
-				specificSituationBayesianNetwork = probabilisticNetwork;
-
-				try {
-					
-					ssbn.compileAndInitializeSSBN();
-					
-					if (ssbn.getWarningList().size() > 0){
-						openWarningDialog(); 	
-					}
-					
-					this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
-
-					Dimension sizeOfGraph = PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(specificSituationBayesianNetwork); 
-					Dimension originalDimension = this.getMebnEditionPane().getNetworkWindow().getGraphPane().getGraphDimension(); 
-					if((originalDimension.getHeight() < sizeOfGraph.getHeight()) || 
-							(originalDimension.getWidth() < sizeOfGraph.getWidth())){
-						dimensionSSBNGraph = sizeOfGraph; 
-						this.getMebnEditionPane().getNetworkWindow().getGraphPane().setGraphDimension(sizeOfGraph); 
-						this.getMebnEditionPane().getNetworkWindow().getGraphPane().update(); 
-					}
-					
-				} catch (Exception e) {
-					e.printStackTrace(); 
-					screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-					JOptionPane.showMessageDialog(getScreen(), 
-							e.getMessage());
-				} 
-
-
-			
-		}else{
-			JOptionPane.showMessageDialog(getScreen(), 
-					query.getQueryNode().getName() + " = " + query.getQueryNode().getValue());
-	
-		}
-
-		mebnEditionPane.setStatus(resource.getString("statusReady")); 
-		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-		
-		return specificSituationBayesianNetwork ;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
-	}
+//	/**
+//	 * Execute a query. 
+//	 * 
+//	 * @param residentNode
+//	 * @param arguments
+//	 * @return
+//	 * @throws InconsistentArgumentException
+//	 * @throws ImplementationRestrictionException 
+//	 * @throws SSBNNodeGeneralException 
+//	 * @throws OVInstanceFaultException 
+//	 * @throws InvalidParentException 
+//	 */
+//	public ProbabilisticNetwork executeQuery(ResidentNode residentNode, 
+//			ObjectEntityInstance[] arguments)
+//	                           throws InconsistentArgumentException, 
+//	                                  SSBNNodeGeneralException, 
+//	                                  ImplementationRestrictionException, 
+//	                                  MEBNException, 
+//	                                  OVInstanceFaultException, InvalidParentException {
+//		
+//		mebnEditionPane.setStatus(resource.getString("statusGeneratingSSBN")); 
+//		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+//		
+//		ProbabilisticNetwork probabilisticNetwork = null; 
+//		
+//		SSBNNode queryNode = SSBNNode.getInstance(null,residentNode); 
+//		
+//		List<Argument> arglist = residentNode.getArgumentList();
+//		
+//		if (arglist.size() != arguments.length) {
+//			throw new InconsistentArgumentException();
+//		}
+//		
+//		for (int i = 1; i <= arguments.length; i++) {
+//			try {
+//				//TODO It has to get in the right order. For some reason in argList, 
+//				// sometimes the second argument comes first
+//				for (Argument argument : arglist) {
+//					if (argument.getArgNumber() == i) {
+//						queryNode.addArgument(argument.getOVariable(), arguments[i-1].getName());
+//						break;
+//					}
+//				}
+//				
+//			} catch (SSBNNodeGeneralException e) {
+//				
+//				mebnEditionPane.setStatus(resource.getString("statusReady")); 
+//				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+//				
+//				throw new InconsistentArgumentException(e);
+//			}
+//		}
+//		
+//	    createKnowledgeBase(); 	
+//
+//		Query query = new Query(getKnowledgeBase(), queryNode, multiEntityBayesianNetwork);
+//		
+//		ISSBNGenerator ssbngenerator = new ExplosiveSSBNGenerator();
+//
+//		List<Query> listQueries = new ArrayList<Query>(); 
+//		listQueries.add(query); 
+//		
+//		ssbn = ssbngenerator.generateSSBN(listQueries, getKnowledgeBase()); 
+//		
+//		probabilisticNetwork = ssbn.getProbabilisticNetwork();
+//
+//		if(!query.getQueryNode().isFinding()){
+//
+//				showSSBNGraph = true; 
+//				specificSituationBayesianNetwork = probabilisticNetwork;
+//
+//				try {
+//					
+//					ssbn.compileAndInitializeSSBN();
+//					
+//					if (ssbn.getWarningList().size() > 0){
+//						openWarningDialog(); 	
+//					}
+//					
+//					this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
+//
+//					Dimension sizeOfGraph = PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(specificSituationBayesianNetwork); 
+//					Dimension originalDimension = this.getMebnEditionPane().getNetworkWindow().getGraphPane().getGraphDimension(); 
+//					if((originalDimension.getHeight() < sizeOfGraph.getHeight()) || 
+//							(originalDimension.getWidth() < sizeOfGraph.getWidth())){
+//						dimensionSSBNGraph = sizeOfGraph; 
+//						this.getMebnEditionPane().getNetworkWindow().getGraphPane().setGraphDimension(sizeOfGraph); 
+//						this.getMebnEditionPane().getNetworkWindow().getGraphPane().update(); 
+//					}
+//					
+//				} catch (Exception e) {
+//					e.printStackTrace(); 
+//					screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+//					JOptionPane.showMessageDialog(getScreen(), 
+//							e.getMessage());
+//				} 
+//
+//
+//			
+//		}else{
+//			JOptionPane.showMessageDialog(getScreen(), 
+//					query.getQueryNode().getName() + " = " + query.getQueryNode().getValue());
+//	
+//		}
+//
+//		mebnEditionPane.setStatus(resource.getString("statusReady")); 
+//		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+//		
+//		return specificSituationBayesianNetwork ;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+//	}
 
 	/**
 	 * Execute a query using the Laskey's  
@@ -1772,7 +1783,12 @@ public class MEBNController  {
 		}
 		catch(SSBNNodeGeneralException e5){
 			throw e5; 
-		}
+		} catch (Exception e6) {
+			e6.printStackTrace(); 
+			screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			JOptionPane.showMessageDialog(getScreen(), 
+					e6.getMessage());
+		} 
 		
 //		String fileName = "SSBN_Test.log"; 
 //		try {
@@ -1793,7 +1809,10 @@ public class MEBNController  {
 			if (ssbn.getWarningList().size() > 0){
 				openWarningDialog(); 	
 			}
-
+			
+			// logging probabilities of the nodes
+			this.logNodesAndItsProbabilities(ssbn);
+			
 			this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
 
 			Dimension sizeOfGraph = PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(specificSituationBayesianNetwork); 
@@ -1824,6 +1843,39 @@ public class MEBNController  {
 		return specificSituationBayesianNetwork ;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 	}
 	
+
+	/**
+	 * Prints nodes and its states
+	 * @param ssbn
+	 */
+	private void logNodesAndItsProbabilities(SSBN ssbn) {
+		if (!this.isToLogNodesAndProbabilities()) {
+			return;
+		}
+		ILogManager logManager = ssbn.getLogManager();
+		ProbabilisticNetwork probabilisticNetwork = ssbn.getProbabilisticNetwork();
+		if (logManager != null && probabilisticNetwork != null && probabilisticNetwork.getNodes() != null) {
+			logManager.appendSpecialTitle("Result Query: " + ssbn.getQueryList());
+			for (Node node: probabilisticNetwork.getNodes()) {
+				if (!(node instanceof ProbabilisticNode)) {
+					continue;
+				}
+				ProbabilisticNode prob = (ProbabilisticNode)node;
+				logManager.appendSectionTitle(prob.toString());
+				for (int i = 0 ; i < prob.getStatesSize() ; i++) {
+					logManager.append(prob.getStateAt(i));
+					logManager.append(" = ");
+					logManager.append(Float.toString(prob.getMarginalAt(i)));
+					logManager.append(", ");
+				}
+				logManager.appendln(" ");
+			}
+			logManager.appendln(" ");
+			logManager.appendSeparator();
+		}
+	
+	}
+
 
 	public void openWarningDialog() {
 		if(ssbn != null){
@@ -2037,6 +2089,22 @@ public class MEBNController  {
 		for(Argument arg: resident.getArgumentList()){
 			Debug.println(" [" + arg.getArgNumber() + "]:" + arg.getOVariable());
 		}
+	}
+
+
+	/**
+	 * @return the toLogNodesAndProbabilities
+	 */
+	public boolean isToLogNodesAndProbabilities() {
+		return toLogNodesAndProbabilities;
+	}
+
+
+	/**
+	 * @param toLogNodesAndProbabilities the toLogNodesAndProbabilities to set
+	 */
+	public void setToLogNodesAndProbabilities(boolean toLogNodesAndProbabilities) {
+		this.toLogNodesAndProbabilities = toLogNodesAndProbabilities;
 	}
 	
 }

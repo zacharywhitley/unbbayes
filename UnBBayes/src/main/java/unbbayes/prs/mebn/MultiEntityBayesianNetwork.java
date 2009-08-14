@@ -22,6 +22,7 @@ package unbbayes.prs.mebn;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -31,6 +32,7 @@ import unbbayes.prs.mebn.entity.BooleanStatesEntityContainer;
 import unbbayes.prs.mebn.entity.CategoricalStatesEntityContainer;
 import unbbayes.prs.mebn.entity.ObjectEntityConteiner;
 import unbbayes.prs.mebn.entity.TypeContainer;
+import unbbayes.util.ApplicationPropertyHolder;
 import unbbayes.util.IBridgeImplementor;
 
 /**
@@ -78,6 +80,8 @@ public class MultiEntityBayesianNetwork extends Network {
     // Bridge pattern: separates this mebn representation and how mebn should be saved
     IBridgeImplementor storageImplementor = null;
     
+    private boolean useStorageImplementor = true;
+    
     //Controller of the names of the objects in this MTheory for avoid duplicated names. 
     private Set<String> namesUsed; 
     
@@ -96,6 +100,13 @@ public class MultiEntityBayesianNetwork extends Network {
 		booleanStatesEntityContainer = new BooleanStatesEntityContainer(); 
 		categoricalStatesEntityContainer = new CategoricalStatesEntityContainer(); 
 		namesUsed = new TreeSet<String>();
+		try {
+			this.setUseStorageImplementor(Boolean.valueOf(
+					ApplicationPropertyHolder.getProperty().get(
+							this.getClass().getCanonicalName()+".useStorageImplementor").toString()));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/*------------------------ Names of objects in this MTheory ------------*/
@@ -468,19 +479,42 @@ public class MultiEntityBayesianNetwork extends Network {
 	/**
 	 * Obtains a class which should be responsible for saving the MTheory by calling execute().
 	 * It might be useful if you are implementing a "save current" feature.
-	 * @return the storageImplementor
+	 * @return the storageImplementor. If {@link #isUseStorageImplementor()} == false, return null.
+	 * @see #isUseStorageImplementor()
 	 */
 	public IBridgeImplementor getStorageImplementor() {
+		if (!this.isUseStorageImplementor()) {
+			return null;
+		}
 		return storageImplementor;
 	}
 
 	/**
 	 * Sets a class which should be responsible for saving the MTheory by calling execute().
 	 * It might be useful if you are implementing a "save current" feature.
+	 * If {@link #isUseStorageImplementor()} != true, this method does nothing.
 	 * @param storageImplementor the storageImplementor to set
+	 * @see #isUseStorageImplementor()
 	 */
 	public void setStorageImplementor(IBridgeImplementor storageImplementor) {
+		if (!this.isUseStorageImplementor()) {
+			return;
+		}
 		this.storageImplementor = storageImplementor;
+	}
+
+	/**
+	 * @return the useStorageImplementor
+	 */
+	public boolean isUseStorageImplementor() {
+		return useStorageImplementor;
+	}
+
+	/**
+	 * @param useStorageImplementor the useStorageImplementor to set
+	 */
+	public void setUseStorageImplementor(boolean useStorageImplementor) {
+		this.useStorageImplementor = useStorageImplementor;
 	}
 	
 	

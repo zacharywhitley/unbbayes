@@ -174,7 +174,9 @@ public class SimpleSSBNNodeUtils {
 			
 			System.out.println("SSBNNode = " + ssbnNode);
 			for(SimpleSSBNNode parent: simple.getParents()){
-				System.out.println("Free Memory = " + rt.freeMemory() / 1024 / 1024 + "MB");
+				System.out.println("Free Memory = " + rt.freeMemory() / 1024 / 1024 + "MB of " 
+						+ rt.totalMemory() / 1024 / 1024 + "MB, max " 
+						+ rt.maxMemory() / 1024 / 1024 + "MB");
 				System.out.println("   > add parent = " + parent);
 				SSBNNode parentSSBNNode = correspondencyMap.get(parent); 
 				ssbnNode.addParent(parentSSBNNode, false); 
