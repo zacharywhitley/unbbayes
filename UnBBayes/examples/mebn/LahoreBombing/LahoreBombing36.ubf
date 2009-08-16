@@ -1,12 +1,12 @@
 % UBF file header
 Version=0.03
-PrOwl="LahoreBombing35.owl"
+PrOwl="LahoreBombing36.owl"
 
 % UBF MTheory declaration
 MTheory=LahoreBombing
 NextMFrag=9
 NextResident=23
-NextInput=19
+NextInput=21
 NextContext=15
 NextEntity=1
 
@@ -79,7 +79,7 @@ NextOrdinaryVar=4
 
 Node=Executes
 Type=DomainResidentNode
-Position=325.0,238.0
+Position=323.0,237.0
 Size=141,60
 Color=-66914
 
@@ -92,20 +92,17 @@ Color=-66914
 % Input nodes
 
 
+Node=IX19
+Type=GenerativeInputNode
+Position=95.0,146.0
+Size=148,65
+Color=-2302756
+
 Node=IX11
 Type=GenerativeInputNode
 Position=307.0,151.0
 Size=174,60
 Color=-2302756
-
-% Context nodes
-
-
-Node=CX3
-Type=ContextNode
-Position=207.0,10.0
-Size=171,60
-Color=-5178237
 
 % Ordinary Variables
 
@@ -210,7 +207,7 @@ Color=-66914
 
 Node=HUMINTLocationReport
 Type=DomainResidentNode
-Position=383.0,275.0
+Position=382.0,274.0
 Size=234,60
 Color=-66914
 
@@ -302,19 +299,19 @@ NextOrdinaryVar=5
 
 Node=SuppliesWpnMtrl
 Type=DomainResidentNode
-Position=378.0,418.0
+Position=374.0,422.0
 Size=199,60
 Color=-66914
 
 Node=PoliticalImportance
 Type=DomainResidentNode
-Position=97.0,166.0
+Position=38.0,172.0
 Size=175,60
 Color=-66914
 
 Node=IsAgentOf
 Type=DomainResidentNode
-Position=312.0,330.0
+Position=306.0,330.0
 Size=157,60
 Color=-66914
 
@@ -326,7 +323,7 @@ Color=-66914
 
 Node=IsTarget
 Type=DomainResidentNode
-Position=156.0,334.0
+Position=78.0,348.0
 Size=137,60
 Color=-66914
 
@@ -396,13 +393,13 @@ NextOrdinaryVar=4
 
 Node=SNRival
 Type=DomainResidentNode
-Position=495.0,203.0
+Position=491.0,202.0
 Size=155,60
 Color=-66914
 
 Node=SNRelated
 Type=DomainResidentNode
-Position=336.0,284.0
+Position=328.0,287.0
 Size=165,60
 Color=-66914
 
@@ -466,7 +463,7 @@ NextOrdinaryVar=4
 
 Node=ExplosiveResidueReport
 Type=DomainResidentNode
-Position=286.0,257.0
+Position=281.0,263.0
 Size=224,60
 Color=-66914
 
@@ -479,14 +476,11 @@ Position=302.0,156.0
 Size=189,60
 Color=-2302756
 
-% Context nodes
-
-
-Node=CX10
-Type=ContextNode
-Position=436.0,9.0
-Size=153,60
-Color=-5178237
+Node=IX20
+Type=GenerativeInputNode
+Position=76.0,151.0
+Size=135,60
+Color=-2302756
 
 % Ordinary Variables
 

@@ -104,6 +104,14 @@ Laecio Lima dos Santos (laecio@gmail.com);</Constant>
                 >This represents a plan which is currently active.  It was introduced in order to be a complement of inactive plan.</Constant>
         </Annotation>
     </EntityAnnotation>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;ActivePlan"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant
+                >These classes do not appear in the original probabilistic ontology. It was added into this deterministic ontology because of some tecnical restrictions of OWL that makes it difficult do specify complex logical implications to object properties.
+By using classes which have some equivalencies to object properties, we can create rich implications to object properties as well. Also, it is easier to query individuals, because they become &quot;categorized&quot; by object properties.</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <Class URI="&LahoreBombing_NonProbabilistic;ActivePlan"/>
     </Declaration>
@@ -111,9 +119,10 @@ Laecio Lima dos Santos (laecio@gmail.com);</Constant>
         <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
         <ObjectIntersectionOf>
             <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
-            <ObjectMinCardinality cardinality="1">
+            <ObjectSomeValuesFrom>
                 <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
-            </ObjectMinCardinality>
+                <Class URI="&LahoreBombing_NonProbabilistic;ActivePlan"/>
+            </ObjectSomeValuesFrom>
         </ObjectIntersectionOf>
     </EquivalentClasses>
     <SubClassOf>
@@ -175,6 +184,14 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <Annotation annotationURI="&rdfs;comment">
             <Constant datatypeURI="&xsd;string"
                 >Set of persons who participates at a strike plan.</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;AttackPlanAgent"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant
+                >These classes do not appear in the original probabilistic ontology. It was added into this deterministic ontology because of some tecnical restrictions of OWL that makes it difficult do specify complex logical implications to object properties.
+By using classes which have some equivalencies to object properties, we can create rich implications to object properties as well. Also, it is easier to query individuals, because they become &quot;categorized&quot; by object properties.</Constant>
         </Annotation>
     </EntityAnnotation>
     <Declaration>
@@ -255,6 +272,14 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
                 >This is a politically important place, where might be a Venue</Constant>
         </Annotation>
     </EntityAnnotation>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;ImportantPlace"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant
+                >These classes do not appear in the original probabilistic ontology. It was added into this deterministic ontology because of some tecnical restrictions of OWL that makes it difficult do specify complex logical implications to object properties.
+By using classes which have some equivalencies to object properties, we can create rich implications to object properties as well. Also, it is easier to query individuals, because they become &quot;categorized&quot; by object properties.</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <Class URI="&LahoreBombing_NonProbabilistic;ImportantPlace"/>
     </Declaration>
@@ -288,6 +313,14 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
                 >This class represents a plan which is currently inactive. It was introduced in order to be a complement of active plan.</Constant>
         </Annotation>
     </EntityAnnotation>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;InactivePlan"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant
+                >These classes do not appear in the original probabilistic ontology. It was added into this deterministic ontology because of some tecnical restrictions of OWL that makes it difficult do specify complex logical implications to object properties.
+By using classes which have some equivalencies to object properties, we can create rich implications to object properties as well. Also, it is easier to query individuals, because they become &quot;categorized&quot; by object properties.</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <Class URI="&LahoreBombing_NonProbabilistic;InactivePlan"/>
     </Declaration>
@@ -311,7 +344,22 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <Class URI="&LahoreBombing_NonProbabilistic;NormalPerson"/>
         <Annotation annotationURI="&rdfs;comment">
             <Constant datatypeURI="&xsd;string"
+                >A venue where an attack plan will not be executed</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;NormalPerson"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
                 >This is a category of persons which neither are agents nor weapon suppliers</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;NormalPerson"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant
+                >These classes do not appear in the original probabilistic ontology. It was added into this deterministic ontology because of some tecnical restrictions of OWL that makes it difficult do specify complex logical implications to object properties.
+By using classes which have some equivalencies to object properties, we can create rich implications to object properties as well. Also, it is easier to query individuals, because they become &quot;categorized&quot; by object properties.</Constant>
         </Annotation>
     </EntityAnnotation>
     <Declaration>
@@ -344,7 +392,22 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <Class URI="&LahoreBombing_NonProbabilistic;NotImportantPlace"/>
         <Annotation annotationURI="&rdfs;comment">
             <Constant datatypeURI="&xsd;string"
+                >Modeling complementar counterparts usually makes the reasoning more useful.</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;NotImportantPlace"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
                 >This is a counterpart of an ImportantPlace. This is a not-politically importan place, </Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;NotImportantPlace"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant
+                >These classes do not appear in the original probabilistic ontology. It was added into this deterministic ontology because of some tecnical restrictions of OWL that makes it difficult do specify complex logical implications to object properties.
+By using classes which have some equivalencies to object properties, we can create rich implications to object properties as well. Also, it is easier to query individuals, because they become &quot;categorized&quot; by object properties.</Constant>
         </Annotation>
     </EntityAnnotation>
     <Declaration>
@@ -393,6 +456,14 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
                 >This is a set of persons who the HUMINT system reported that the person was at a given place at a given moment</Constant>
         </Annotation>
     </EntityAnnotation>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;PersonLocatedByHUMINTReport"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant
+                >These classes do not appear in the original probabilistic ontology. It was added into this deterministic ontology because of some tecnical restrictions of OWL that makes it difficult do specify complex logical implications to object properties.
+By using classes which have some equivalencies to object properties, we can create rich implications to object properties as well. Also, it is easier to query individuals, because they become &quot;categorized&quot; by object properties.</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <Class URI="&LahoreBombing_NonProbabilistic;PersonLocatedByHUMINTReport"/>
     </Declaration>
@@ -415,6 +486,14 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <Annotation annotationURI="&rdfs;comment">
             <Constant datatypeURI="&xsd;string"
                 >This is a set of persons who the missing car report system has detected that a car of this person is missing at a place.</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;PersonReportedByMissingCarReport"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant
+                >These classes do not appear in the original probabilistic ontology. It was added into this deterministic ontology because of some tecnical restrictions of OWL that makes it difficult do specify complex logical implications to object properties.
+By using classes which have some equivalencies to object properties, we can create rich implications to object properties as well. Also, it is easier to query individuals, because they become &quot;categorized&quot; by object properties.</Constant>
         </Annotation>
     </EntityAnnotation>
     <Declaration>
@@ -473,6 +552,14 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
                 >This is a place where HUMINT system reported that an agent was there at a given moment</Constant>
         </Annotation>
     </EntityAnnotation>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;PlaceReportedByHUMINTReport"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant
+                >These classes do not appear in the original probabilistic ontology. It was added into this deterministic ontology because of some tecnical restrictions of OWL that makes it difficult do specify complex logical implications to object properties.
+By using classes which have some equivalencies to object properties, we can create rich implications to object properties as well. Also, it is easier to query individuals, because they become &quot;categorized&quot; by object properties.</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <Class URI="&LahoreBombing_NonProbabilistic;PlaceReportedByHUMINTReport"/>
     </Declaration>
@@ -495,6 +582,14 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <Annotation annotationURI="&rdfs;comment">
             <Constant datatypeURI="&xsd;string"
                 >This is a place where the missing car report reports a car of a person is missing</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;PlaceReportedByMissingCarReport"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant
+                >These classes do not appear in the original probabilistic ontology. It was added into this deterministic ontology because of some tecnical restrictions of OWL that makes it difficult do specify complex logical implications to object properties.
+By using classes which have some equivalencies to object properties, we can create rich implications to object properties as well. Also, it is easier to query individuals, because they become &quot;categorized&quot; by object properties.</Constant>
         </Annotation>
     </EntityAnnotation>
     <Declaration>
@@ -535,6 +630,14 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
                 >This is someone who executes some plan</Constant>
         </Annotation>
     </EntityAnnotation>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;PlanExecutor"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant
+                >These classes do not appear in the original probabilistic ontology. It was added into this deterministic ontology because of some tecnical restrictions of OWL that makes it difficult do specify complex logical implications to object properties.
+By using classes which have some equivalencies to object properties, we can create rich implications to object properties as well. Also, it is easier to query individuals, because they become &quot;categorized&quot; by object properties.</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <Class URI="&LahoreBombing_NonProbabilistic;PlanExecutor"/>
     </Declaration>
@@ -543,11 +646,24 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <ObjectIntersectionOf>
             <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
             <ObjectSomeValuesFrom>
+                <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isMeetingVenue"/>
+                <ObjectIntersectionOf>
+                    <Class URI="&LahoreBombing_NonProbabilistic;ActivePlan"/>
+                    <ObjectSomeValuesFrom>
+                        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExecutedBy"/>
+                        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
+                    </ObjectSomeValuesFrom>
+                </ObjectIntersectionOf>
+            </ObjectSomeValuesFrom>
+        </ObjectIntersectionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class URI="&LahoreBombing_NonProbabilistic;TargetVenue"/>
+        <ObjectIntersectionOf>
+            <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
+            <ObjectSomeValuesFrom>
                 <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isTarget"/>
-                <DataHasValue>
-                    <DataProperty URI="&LahoreBombing_NonProbabilistic;isActivePlan"/>
-                    <Constant datatypeURI="&xsd;boolean">true</Constant>
-                </DataHasValue>
+                <Class URI="&LahoreBombing_NonProbabilistic;ActivePlan"/>
             </ObjectSomeValuesFrom>
         </ObjectIntersectionOf>
     </EquivalentClasses>
@@ -560,6 +676,14 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <Annotation annotationURI="&rdfs;comment">
             <Constant datatypeURI="&xsd;string"
                 >A venue which is a target of some plan</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;TargetVenue"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant
+                >These classes do not appear in the original probabilistic ontology. It was added into this deterministic ontology because of some tecnical restrictions of OWL that makes it difficult do specify complex logical implications to object properties.
+By using classes which have some equivalencies to object properties, we can create rich implications to object properties as well. Also, it is easier to query individuals, because they become &quot;categorized&quot; by object properties.</Constant>
         </Annotation>
     </EntityAnnotation>
     <Declaration>
@@ -618,6 +742,14 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
                 >A venue where an attack plan will be executed</Constant>
         </Annotation>
     </EntityAnnotation>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;VenueWithBomb"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant
+                >These classes do not appear in the original probabilistic ontology. It was added into this deterministic ontology because of some tecnical restrictions of OWL that makes it difficult do specify complex logical implications to object properties.
+By using classes which have some equivalencies to object properties, we can create rich implications to object properties as well. Also, it is easier to query individuals, because they become &quot;categorized&quot; by object properties.</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <Class URI="&LahoreBombing_NonProbabilistic;VenueWithBomb"/>
     </Declaration>
@@ -650,13 +782,28 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
                 >A venue where an attack plan will not be executed</Constant>
         </Annotation>
     </EntityAnnotation>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;VenueWithoutBomb"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >Modeling complementar counterparts usually makes the reasoning more useful.</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;VenueWithoutBomb"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant
+                >These classes do not appear in the original probabilistic ontology. It was added into this deterministic ontology because of some tecnical restrictions of OWL that makes it difficult do specify complex logical implications to object properties.
+By using classes which have some equivalencies to object properties, we can create rich implications to object properties as well. Also, it is easier to query individuals, because they become &quot;categorized&quot; by object properties.</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <Class URI="&LahoreBombing_NonProbabilistic;VenueWithoutBomb"/>
     </Declaration>
     <EquivalentClasses>
         <Class URI="&LahoreBombing_NonProbabilistic;WeaponSupplier"/>
         <ObjectIntersectionOf>
-            <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
+            <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
             <DataHasValue>
                 <DataProperty URI="&LahoreBombing_NonProbabilistic;isWeaponSupplier"/>
                 <Constant datatypeURI="&xsd;boolean">true</Constant>
@@ -672,6 +819,14 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <Annotation annotationURI="&rdfs;comment">
             <Constant datatypeURI="&xsd;string"
                 >This is a set of persons who can be categorize as a weapon supplier for a given plan.</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <EntityAnnotation>
+        <Class URI="&LahoreBombing_NonProbabilistic;WeaponSupplier"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant
+                >These classes do not appear in the original probabilistic ontology. It was added into this deterministic ontology because of some tecnical restrictions of OWL that makes it difficult do specify complex logical implications to object properties.
+By using classes which have some equivalencies to object properties, we can create rich implications to object properties as well. Also, it is easier to query individuals, because they become &quot;categorized&quot; by object properties.</Constant>
         </Annotation>
     </EntityAnnotation>
     <Declaration>
@@ -705,6 +860,20 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
             </ObjectExactCardinality>
         </ObjectIntersectionOf>
     </ObjectPropertyRange>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;AgentAt"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >Property indicating that an agent is at some place</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;AgentAt"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >This is a property representing a random variable with same name, at probabilistic Lahore Ontology.</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;AgentAt"/>
     </Declaration>
@@ -729,6 +898,20 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
             </ObjectMinCardinality>
         </ObjectIntersectionOf>
     </ObjectPropertyRange>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;Executes"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >Property indicating that an agent will excecute a plan</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;Executes"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >This is a property representing a random variable with same name, at probabilistic Lahore Ontology.</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;Executes"/>
     </Declaration>
@@ -756,12 +939,20 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;HUMINTLocationReport"/>
         <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
     </ObjectPropertyRange>
-    <SubObjectPropertyOf>
-        <SubObjectPropertyChain>
-            <ObjectProperty URI="&LahoreBombing_NonProbabilistic;AgentAt"/>
-        </SubObjectPropertyChain>
+    <EntityAnnotation>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;HUMINTLocationReport"/>
-    </SubObjectPropertyOf>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >Report generated by HUMINT system.</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;HUMINTLocationReport"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >This is a property representing a random variable with same name, at probabilistic Lahore Ontology.</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;HUMINTLocationReport"/>
     </Declaration>
@@ -786,6 +977,20 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;MissingCarReport"/>
         <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
     </ObjectPropertyRange>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;MissingCarReport"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >Report telling that a car of a person is missing at a given place. We do not model a car class since it does not appear at the original probabilistic ontology and we are not interested to describe a car - we only need to know that a car of a person is missing at given place..</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;MissingCarReport"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >This is a property representing a random variable with same name, at probabilistic Lahore Ontology.</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;MissingCarReport"/>
     </Declaration>
@@ -803,6 +1008,7 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
             <Class URI="&LahoreBombing_NonProbabilistic;Agent"/>
             <ObjectMinCardinality cardinality="1">
                 <ObjectProperty URI="&LahoreBombing_NonProbabilistic;Executes"/>
+                <Class URI="&LahoreBombing_NonProbabilistic;ActivePlan"/>
             </ObjectMinCardinality>
         </ObjectIntersectionOf>
     </ObjectPropertyDomain>
@@ -815,6 +1021,20 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
             </ObjectMinCardinality>
         </ObjectIntersectionOf>
     </ObjectPropertyRange>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;PlantsExplosives"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >Tells that an agent will plant an explosive at a place</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;PlantsExplosives"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >This is a property representing a random variable with same name, at probabilistic Lahore Ontology.</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;PlantsExplosives"/>
     </Declaration>
@@ -830,6 +1050,20 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;ResidesAt"/>
         <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
     </ObjectPropertyRange>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;ResidesAt"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >Simply, tells us that a person resides at a given place.</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;ResidesAt"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >This is a property representing a random variable with same name, at probabilistic Lahore Ontology.</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;ResidesAt"/>
     </Declaration>
@@ -845,21 +1079,23 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     </IrreflexiveObjectProperty>
     <ObjectPropertyDomain>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRelated"/>
-        <ObjectIntersectionOf>
+        <ObjectUnionOf>
             <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
-            <ObjectMinCardinality cardinality="1">
+            <ObjectSomeValuesFrom>
                 <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
-            </ObjectMinCardinality>
-        </ObjectIntersectionOf>
+                <Class URI="&LahoreBombing_NonProbabilistic;ActivePlan"/>
+            </ObjectSomeValuesFrom>
+        </ObjectUnionOf>
     </ObjectPropertyDomain>
     <ObjectPropertyRange>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRelated"/>
-        <ObjectIntersectionOf>
+        <ObjectUnionOf>
             <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
-            <ObjectMinCardinality cardinality="1">
+            <ObjectSomeValuesFrom>
                 <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
-            </ObjectMinCardinality>
-        </ObjectIntersectionOf>
+                <Class URI="&LahoreBombing_NonProbabilistic;ActivePlan"/>
+            </ObjectSomeValuesFrom>
+        </ObjectUnionOf>
     </ObjectPropertyRange>
     <SubObjectPropertyOf>
         <SubObjectPropertyChain>
@@ -872,6 +1108,13 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <Annotation annotationURI="&rdfs;comment">
             <Constant datatypeURI="&xsd;string"
                 >Related at social network</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRelated"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >This is a property representing a random variable with same name, at probabilistic Lahore Ontology.</Constant>
         </Annotation>
     </EntityAnnotation>
     <Declaration>
@@ -900,6 +1143,13 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <Annotation annotationURI="&rdfs;comment">
             <Constant datatypeURI="&xsd;string"
                 >Rivals at social network</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRival"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >This is a property representing a random variable with same name, at probabilistic Lahore Ontology.</Constant>
         </Annotation>
     </EntityAnnotation>
     <Declaration>
@@ -936,6 +1186,20 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SuppliesWpnMtrl"/>
         <Class URI="&LahoreBombing_NonProbabilistic;AttackPlan"/>
     </ObjectPropertyRange>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SuppliesWpnMtrl"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >Tells that a person is responsible to supply a weapon for a plan. If a plan envolves a weapon supplier, we may assume it is an attack plan.</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SuppliesWpnMtrl"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >This is a property representing a random variable with same name, at probabilistic Lahore Ontology.</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SuppliesWpnMtrl"/>
     </Declaration>
@@ -943,6 +1207,13 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;WpnMtrlSuppliedBy"/>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;inverseProperties"/>
     </SubObjectPropertyOf>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;WpnMtrlSuppliedBy"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >These properties were added into this ontology as a inverse propery for those properties representing the random variables originally declared at Probabilistic Lahore Ontology. By doing this. it becomes possible to declare restrictions by 2 ways (and we may select the most convenient one to do so).</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;WpnMtrlSuppliedBy"/>
     </Declaration>
@@ -954,6 +1225,13 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;expects"/>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
     </InverseObjectProperties>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;expects"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >These properties were added into this ontology as a inverse propery for those properties representing the random variables originally declared at Probabilistic Lahore Ontology. By doing this. it becomes possible to declare restrictions by 2 ways (and we may select the most convenient one to do so).</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;expects"/>
     </Declaration>
@@ -968,6 +1246,13 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     <InverseFunctionalObjectProperty>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasAgent"/>
     </InverseFunctionalObjectProperty>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasAgent"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >These properties were added into this ontology as a inverse propery for those properties representing the random variables originally declared at Probabilistic Lahore Ontology. By doing this. it becomes possible to declare restrictions by 2 ways (and we may select the most convenient one to do so).</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasAgent"/>
     </Declaration>
@@ -975,6 +1260,13 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasExplosivesPlantedBy"/>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;inverseProperties"/>
     </SubObjectPropertyOf>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasExplosivesPlantedBy"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >These properties were added into this ontology as a inverse propery for those properties representing the random variables originally declared at Probabilistic Lahore Ontology. By doing this. it becomes possible to declare restrictions by 2 ways (and we may select the most convenient one to do so).</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasExplosivesPlantedBy"/>
     </Declaration>
@@ -982,6 +1274,13 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasHUMINTLocationReport"/>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;inverseProperties"/>
     </SubObjectPropertyOf>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasHUMINTLocationReport"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >These properties were added into this ontology as a inverse propery for those properties representing the random variables originally declared at Probabilistic Lahore Ontology. By doing this. it becomes possible to declare restrictions by 2 ways (and we may select the most convenient one to do so).</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasHUMINTLocationReport"/>
     </Declaration>
@@ -989,6 +1288,13 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasMeetingVenue"/>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;inverseProperties"/>
     </SubObjectPropertyOf>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasMeetingVenue"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >These properties were added into this ontology as a inverse propery for those properties representing the random variables originally declared at Probabilistic Lahore Ontology. By doing this. it becomes possible to declare restrictions by 2 ways (and we may select the most convenient one to do so).</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasMeetingVenue"/>
     </Declaration>
@@ -1000,6 +1306,13 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasMissingCarReport"/>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;MissingCarReport"/>
     </InverseObjectProperties>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasMissingCarReport"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >These properties were added into this ontology as a inverse propery for those properties representing the random variables originally declared at Probabilistic Lahore Ontology. By doing this. it becomes possible to declare restrictions by 2 ways (and we may select the most convenient one to do so).</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasMissingCarReport"/>
     </Declaration>
@@ -1007,6 +1320,13 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasPlanAgent"/>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;inverseProperties"/>
     </SubObjectPropertyOf>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasPlanAgent"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >These properties were added into this ontology as a inverse propery for those properties representing the random variables originally declared at Probabilistic Lahore Ontology. By doing this. it becomes possible to declare restrictions by 2 ways (and we may select the most convenient one to do so).</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasPlanAgent"/>
     </Declaration>
@@ -1018,6 +1338,13 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasTarget"/>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isTarget"/>
     </InverseObjectProperties>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasTarget"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >These properties were added into this ontology as a inverse propery for those properties representing the random variables originally declared at Probabilistic Lahore Ontology. By doing this. it becomes possible to declare restrictions by 2 ways (and we may select the most convenient one to do so).</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;hasTarget"/>
     </Declaration>
@@ -1046,10 +1373,6 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
             <ObjectMinCardinality cardinality="1">
                 <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRival"/>
             </ObjectMinCardinality>
-            <DataHasValue>
-                <DataProperty URI="&LahoreBombing_NonProbabilistic;isWeaponSupplier"/>
-                <Constant datatypeURI="&xsd;boolean">true</Constant>
-            </DataHasValue>
         </ObjectIntersectionOf>
     </ObjectPropertyDomain>
     <ObjectPropertyDomain>
@@ -1083,6 +1406,20 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         </SubObjectPropertyChain>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
     </SubObjectPropertyOf>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >Tells that a person is an agent of a plan</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >This is a property representing a random variable with same name, at probabilistic Lahore Ontology.</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
     </Declaration>
@@ -1099,6 +1436,13 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
             </ObjectMinCardinality>
         </ObjectIntersectionOf>
     </ObjectPropertyDomain>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExecutedBy"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >These properties were added into this ontology as a inverse propery for those properties representing the random variables originally declared at Probabilistic Lahore Ontology. By doing this. it becomes possible to declare restrictions by 2 ways (and we may select the most convenient one to do so).</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExecutedBy"/>
     </Declaration>
@@ -1126,6 +1470,20 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         </SubObjectPropertyChain>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
     </SubObjectPropertyOf>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >Indicates that a person should be present at a given place.</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >This is a property representing a random variable with same name, at probabilistic Lahore Ontology.</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
     </Declaration>
@@ -1155,6 +1513,20 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
             </ObjectMinCardinality>
         </ObjectIntersectionOf>
     </ObjectPropertyRange>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isMeetingVenue"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >Indicates that a place (venue) is the meeting place decided for a plan.</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isMeetingVenue"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >This is a property representing a random variable with same name, at probabilistic Lahore Ontology.</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isMeetingVenue"/>
     </Declaration>
@@ -1166,6 +1538,13 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isResidedBy"/>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;ResidesAt"/>
     </InverseObjectProperties>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isResidedBy"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >These properties were added into this ontology as a inverse propery for those properties representing the random variables originally declared at Probabilistic Lahore Ontology. By doing this. it becomes possible to declare restrictions by 2 ways (and we may select the most convenient one to do so).</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isResidedBy"/>
     </Declaration>
@@ -1193,6 +1572,20 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
             </DataHasValue>
         </ObjectIntersectionOf>
     </ObjectPropertyRange>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isTarget"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >Indicates that a place is a target of a given plan. We are not sure yet if this plan is an &quot;attack&quot; plan without more precise information.</Constant>
+        </Annotation>
+    </EntityAnnotation>
+    <EntityAnnotation>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isTarget"/>
+        <Annotation annotationURI="&rdfs;comment">
+            <Constant datatypeURI="&xsd;string"
+                >This is a property representing a random variable with same name, at probabilistic Lahore Ontology.</Constant>
+        </Annotation>
+    </EntityAnnotation>
     <Declaration>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isTarget"/>
     </Declaration>
@@ -1213,17 +1606,11 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     <DataPropertyDomain>
         <DataProperty URI="&LahoreBombing_NonProbabilistic;ExplosiveResidueReport"/>
         <ObjectIntersectionOf>
-            <Class URI="&LahoreBombing_NonProbabilistic;AttackPlanAgent"/>
-            <ObjectMinCardinality cardinality="1">
+            <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
+            <ObjectSomeValuesFrom>
                 <ObjectProperty URI="&LahoreBombing_NonProbabilistic;PlantsExplosives"/>
-                <ObjectIntersectionOf>
-                    <Class URI="&LahoreBombing_NonProbabilistic;Venue"/>
-                    <ObjectMinCardinality cardinality="1">
-                        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isTarget"/>
-                        <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
-                    </ObjectMinCardinality>
-                </ObjectIntersectionOf>
-            </ObjectMinCardinality>
+                <Class URI="&LahoreBombing_NonProbabilistic;TargetVenue"/>
+            </ObjectSomeValuesFrom>
         </ObjectIntersectionOf>
     </DataPropertyDomain>
     <DataPropertyRange>
@@ -1273,24 +1660,131 @@ In this ontology, we may (somehow) consider &quot;secret agents&quot; or terrori
     <Declaration>
         <DataProperty URI="&LahoreBombing_NonProbabilistic;isWeaponSupplier"/>
     </Declaration>
+    <ClassAssertion>
+        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;AD"/>
+    </ClassAssertion>
+    <DataPropertyAssertion>
+        <DataProperty URI="&LahoreBombing_NonProbabilistic;isWeaponSupplier"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;AD"/>
+        <Constant datatypeURI="&xsd;boolean">true</Constant>
+    </DataPropertyAssertion>
     <Declaration>
-        <Individual URI="&LahoreBombing_NonProbabilistic;place"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;AD"/>
     </Declaration>
+    <ClassAssertion>
+        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;C"/>
+    </ClassAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;ResidesAt"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;C"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;ResC"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRelated"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;C"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;AD"/>
+    </ObjectPropertyAssertion>
     <Declaration>
-        <Individual URI="&LahoreBombing_NonProbabilistic;plan"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;C"/>
     </Declaration>
+    <ClassAssertion>
+        <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;Conf"/>
+    </ClassAssertion>
+    <DataPropertyAssertion>
+        <DataProperty URI="&LahoreBombing_NonProbabilistic;isPoliticallyImportant"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;Conf"/>
+        <Constant datatypeURI="&xsd;boolean">true</Constant>
+    </DataPropertyAssertion>
+    <Declaration>
+        <Individual URI="&LahoreBombing_NonProbabilistic;Conf"/>
+    </Declaration>
+    <ClassAssertion>
+        <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;ConfAtk"/>
+    </ClassAssertion>
+    <Declaration>
+        <Individual URI="&LahoreBombing_NonProbabilistic;ConfAtk"/>
+    </Declaration>
+    <ClassAssertion>
+        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;P"/>
+    </ClassAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRelated"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;P"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;AD"/>
+    </ObjectPropertyAssertion>
+    <DataPropertyAssertion>
+        <DataProperty URI="&LahoreBombing_NonProbabilistic;ExplosiveResidueReport"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;P"/>
+        <Constant datatypeURI="&xsd;boolean">true</Constant>
+    </DataPropertyAssertion>
+    <Declaration>
+        <Individual URI="&LahoreBombing_NonProbabilistic;P"/>
+    </Declaration>
+    <ClassAssertion>
+        <Class URI="&LahoreBombing_NonProbabilistic;Place"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;ResC"/>
+    </ClassAssertion>
+    <Declaration>
+        <Individual URI="&LahoreBombing_NonProbabilistic;ResC"/>
+    </Declaration>
+    <ClassAssertion>
+        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
+    </ClassAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty URI="&LahoreBombing_NonProbabilistic;HUMINTLocationReport"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;test"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;place"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;ResC"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
-        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isAgentOf"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;test"/>
-        <Individual URI="&LahoreBombing_NonProbabilistic;plan"/>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;MissingCarReport"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;Conf"/>
     </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRelated"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;C"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;Conf"/>
+    </ObjectPropertyAssertion>
+    <NegativeObjectPropertyAssertion>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;ResC"/>
+    </NegativeObjectPropertyAssertion>
     <Declaration>
-        <Individual URI="&LahoreBombing_NonProbabilistic;test"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
+    </Declaration>
+    <ClassAssertion>
+        <Class URI="&LahoreBombing_NonProbabilistic;Person"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;V"/>
+    </ClassAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;SNRival"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;V"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;TL6"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;V"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;Conf"/>
+    </ObjectPropertyAssertion>
+    <NegativeObjectPropertyAssertion>
+        <ObjectProperty URI="&LahoreBombing_NonProbabilistic;isExpectedAt"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;V"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;ResC"/>
+    </NegativeObjectPropertyAssertion>
+    <Declaration>
+        <Individual URI="&LahoreBombing_NonProbabilistic;V"/>
     </Declaration>
 </Ontology>
 
