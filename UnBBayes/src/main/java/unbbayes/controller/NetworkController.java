@@ -573,7 +573,7 @@ public class NetworkController implements KeyListener {
      *  Show every single step taken during the compilation of the 
      *  SingleEntityNetwork.
      */
-    public void showLog() {
+    public JDialog showLog() {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         final JTextArea texto = new JTextArea();
 
@@ -581,7 +581,8 @@ public class NetworkController implements KeyListener {
         if (singleEntityNetwork != null) {
         	texto.setText(singleEntityNetwork.getLog());
         } else {
-        	texto.setText(AbstractSSBNGenerator.logManager.getLog());
+        	//MEBN
+        	texto.setText(mebnController.getSSBN().getLogManager().getLog());
         }
         
         texto.moveCaretPosition(0);
@@ -637,10 +638,9 @@ public class NetworkController implements KeyListener {
 
         dialog.getContentPane().add(panel);
         dialog.setTitle(resource.getString("logDialogTitle")); 
-        dialog.setLocationRelativeTo(null); 
-        dialog.pack();
-        dialog.setVisible(true);
         screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        
+        return dialog; 
     }
 
     /**

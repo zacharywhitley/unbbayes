@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.ResourceBundle;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -164,7 +165,11 @@ public class SSBNCompilationPane extends JPanel {
         //mostra o log da rede compilada
         log.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                controller.showLog();
+                JDialog jd = controller.showLog();
+                jd.pack();
+                jd.setVisible(true);
+                jd.setLocationRelativeTo(SSBNCompilationPane.this); 
+                jd.setAlwaysOnTop(true); 
                 netWindow.getGraphPane().update();
             }
         });

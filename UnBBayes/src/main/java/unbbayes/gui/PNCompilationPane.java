@@ -29,6 +29,7 @@ import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -123,7 +124,11 @@ public class PNCompilationPane extends JPanel {
             public void actionPerformed(ActionEvent ae) {
             	//by young2
                 netWindow.getGraphPane().compiled(false, null);
-                controller.showLog();
+                JDialog jd = controller.showLog();
+                jd.pack();
+                jd.setVisible(true);
+                jd.setLocationRelativeTo(PNCompilationPane.this); 
+                jd.setAlwaysOnTop(true); 
             }
         });
 

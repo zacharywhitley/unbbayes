@@ -2066,6 +2066,10 @@ public class MEBNController  {
 	public ProbabilisticNetwork getSpecificSituationBayesianNetwork() {
 		return specificSituationBayesianNetwork;
 	}
+	
+	public SSBN getSSBN(){
+		return ssbn; 
+	}
 
 	public void setSpecificSituationBayesianNetwork(
 			ProbabilisticNetwork specificSituationBayesianNetwork) {
