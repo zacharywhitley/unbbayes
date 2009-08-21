@@ -21,24 +21,27 @@ NextOrdinaryVar=2
 
 Node=Fatigue
 Type=DomainResidentNode
-Position=122.0,191.0
-Size=100,20
+Position=357.0,212.0
+Size=92,55
+Color=-66914
 
 % nós Input
 
 
 Node=IX8
 Type=GenerativeInputNode
-Position=123.0,117.0
-Size=100,20
+Position=313.0,107.0
+Size=180,60
+Color=-2302756
 
 % Variáveis Ordinárias
 
 
 Node=p
 Type=OrdinalVar
-Position=130.0,53.0
-Size=100,20
+Position=325.0,30.0
+Size=155,60
+Color=-5178237
 
 % MFrag
 MFrag=HaemorrhagieDiathesis_MFrag
@@ -49,29 +52,33 @@ NextOrdinaryVar=2
 
 Node=HaemorrhagieDiathesis
 Type=DomainResidentNode
-Position=148.0,182.0
-Size=100,20
+Position=278.0,223.0
+Size=207,60
+Color=-66914
 
 % nós Input
 
 
-Node=IX12
-Type=GenerativeInputNode
-Position=76.0,115.0
-Size=100,20
-
 Node=IX13
 Type=GenerativeInputNode
-Position=204.0,113.0
-Size=100,20
+Position=442.0,115.0
+Size=100,60
+Color=-2302756
+
+Node=IX12
+Type=GenerativeInputNode
+Position=205.0,113.0
+Size=126,60
+Color=-2302756
 
 % Variáveis Ordinárias
 
 
 Node=p
 Type=OrdinalVar
-Position=149.0,65.0
-Size=100,20
+Position=319.0,40.0
+Size=144,60
+Color=-5178237
 
 % MFrag
 MFrag=FunctionalHyperbilirubinemia_MFrag
@@ -82,29 +89,33 @@ NextOrdinaryVar=2
 
 Node=FunctionalHyperbilirubinemia
 Type=DomainResidentNode
-Position=183.0,211.0
-Size=100,20
+Position=291.0,237.0
+Size=219,60
+Color=-66914
 
 % nós Input
 
 
-Node=IX3
-Type=GenerativeInputNode
-Position=254.0,132.0
-Size=100,20
-
 Node=IX2
 Type=GenerativeInputNode
-Position=120.0,132.0
-Size=100,20
+Position=260.0,116.0
+Size=100,60
+Color=-2302756
+
+Node=IX3
+Type=GenerativeInputNode
+Position=432.0,106.0
+Size=100,60
+Color=-2302756
 
 % Variáveis Ordinárias
 
 
 Node=p
 Type=OrdinalVar
-Position=162.0,49.0
-Size=100,20
+Position=315.0,31.0
+Size=143,60
+Color=-5178237
 
 % MFrag
 MFrag=ToxicHepatitis_MFrag
@@ -113,28 +124,32 @@ NextOrdinaryVar=2
 % Nós Residentes
 
 
-Node=ToxicHepatitis
+Node=HistoryAlcAbuse
 Type=DomainResidentNode
-Position=138.0,221.0
-Size=100,20
+Position=200.0,119.0
+Size=155,60
+Color=-66914
 
 Node=HepatoxicMeds
 Type=DomainResidentNode
-Position=214.0,119.0
-Size=100,20
+Position=430.0,115.0
+Size=137,60
+Color=-66914
 
-Node=HistoryAlcAbuse
+Node=ToxicHepatitis
 Type=DomainResidentNode
-Position=86.0,125.0
-Size=100,20
+Position=334.0,234.0
+Size=135,60
+Color=-66914
 
 % Variáveis Ordinárias
 
 
 Node=p
 Type=OrdinalVar
-Position=118.0,45.0
-Size=100,20
+Position=306.0,26.0
+Size=168,60
+Color=-5178237
 
 % MFrag
 MFrag=PlateletCount_MFrag
@@ -145,24 +160,27 @@ NextOrdinaryVar=3
 
 Node=PlateletCount
 Type=DomainResidentNode
-Position=155.0,168.0
-Size=100,20
+Position=330.0,188.0
+Size=134,60
+Color=-66914
 
 % nós Input
 
 
 Node=IX11
 Type=GenerativeInputNode
-Position=153.0,106.0
-Size=100,20
+Position=347.0,107.0
+Size=100,60
+Color=-2302756
 
 % Variáveis Ordinárias
 
 
 Node=p
 Type=OrdinalVar
-Position=149.0,45.0
-Size=100,20
+Position=317.0,30.0
+Size=166,60
+Color=-5178237
 
 % MFrag
 MFrag=ImpairedConsciousness_MFrag
@@ -173,24 +191,27 @@ NextOrdinaryVar=2
 
 Node=ImpairedConsciousness
 Type=DomainResidentNode
-Position=160.0,185.0
-Size=100,20
+Position=294.0,203.0
+Size=204,60
+Color=-66914
 
 % nós Input
 
 
 Node=IX24
 Type=GenerativeInputNode
-Position=162.0,114.0
-Size=100,20
+Position=298.0,102.0
+Size=197,60
+Color=-2302756
 
 % Variáveis Ordinárias
 
 
 Node=p
 Type=OrdinalVar
-Position=174.0,47.0
-Size=100,20
+Position=320.0,27.0
+Size=145,60
+Color=-5178237
 
 % MFrag
 MFrag=PBC_MFrag
@@ -201,57 +222,33 @@ NextOrdinaryVar=2
 
 Node=PBC
 Type=DomainResidentNode
-Position=226.0,202.0
-Size=100,20
+Position=336.0,185.0
+Size=100,60
+Color=-66914
 
 % nós Input
 
-
-Node=IX5
-Type=GenerativeInputNode
-Position=295.0,123.0
-Size=100,20
 
 Node=IX4
 Type=GenerativeInputNode
-Position=175.0,127.0
-Size=100,20
+Position=267.0,97.0
+Size=100,60
+Color=-2302756
 
-% Variáveis Ordinárias
-
-
-Node=p
-Type=OrdinalVar
-Position=206.0,70.0
-Size=100,20
-
-% MFrag
-MFrag=EnlargedSpleen_MFrag
-NextOrdinaryVar=2
-
-% Nós Residentes
-
-
-Node=EnlargedSpleen
-Type=DomainResidentNode
-Position=126.0,174.0
-Size=100,20
-
-% nós Input
-
-
-Node=IX9
+Node=IX5
 Type=GenerativeInputNode
-Position=125.0,107.0
-Size=100,20
+Position=413.0,97.0
+Size=103,60
+Color=-2302756
 
 % Variáveis Ordinárias
 
 
 Node=p
 Type=OrdinalVar
-Position=126.0,45.0
-Size=100,20
+Position=327.0,23.0
+Size=143,60
+Color=-5178237
 
 % MFrag
 MFrag=Sex_MFrag
@@ -262,16 +259,18 @@ NextOrdinaryVar=2
 
 Node=Sex
 Type=DomainResidentNode
-Position=171.0,141.0
-Size=100,20
+Position=347.0,106.0
+Size=100,60
+Color=-66914
 
 % Variáveis Ordinárias
 
 
 Node=p
 Type=OrdinalVar
-Position=171.0,59.0
-Size=100,20
+Position=319.0,29.0
+Size=157,60
+Color=-5178237
 
 % MFrag
 MFrag=IncreasedLiverDensity_MFrag
@@ -282,24 +281,27 @@ NextOrdinaryVar=2
 
 Node=IncreasedLiverDensity
 Type=DomainResidentNode
-Position=143.0,187.0
-Size=100,20
+Position=289.0,183.0
+Size=183,60
+Color=-66914
 
 % nós Input
 
 
 Node=IX23
 Type=GenerativeInputNode
-Position=140.0,102.0
-Size=100,20
+Position=277.0,89.0
+Size=206,60
+Color=-2302756
 
 % Variáveis Ordinárias
 
 
 Node=p
 Type=OrdinalVar
-Position=142.0,39.0
-Size=100,20
+Position=310.0,19.0
+Size=142,60
+Color=-5178237
 
 % MFrag
 MFrag=AST_MFrag
@@ -310,24 +312,27 @@ NextOrdinaryVar=2
 
 Node=AST
 Type=DomainResidentNode
-Position=124.0,164.0
-Size=100,20
+Position=342.0,176.0
+Size=100,60
+Color=-66914
 
 % nós Input
 
 
 Node=IX7
 Type=GenerativeInputNode
-Position=124.0,96.0
-Size=100,20
+Position=313.0,97.0
+Size=157,60
+Color=-2302756
 
 % Variáveis Ordinárias
 
 
 Node=p
 Type=OrdinalVar
-Position=88.0,37.0
-Size=100,20
+Position=302.0,24.0
+Size=184,60
+Color=-5178237
 
 % MFrag
 MFrag=Yellowingoftheskin_MFrag
@@ -338,24 +343,27 @@ NextOrdinaryVar=2
 
 Node=Yellowingoftheskin
 Type=DomainResidentNode
-Position=91.0,202.0
-Size=100,20
+Position=319.0,201.0
+Size=160,60
+Color=-66914
 
 % nós Input
 
 
 Node=IX26
 Type=GenerativeInputNode
-Position=106.0,125.0
-Size=100,20
+Position=338.0,96.0
+Size=123,60
+Color=-2302756
 
 % Variáveis Ordinárias
 
 
 Node=p
 Type=OrdinalVar
-Position=84.0,68.0
-Size=100,20
+Position=310.0,19.0
+Size=165,60
+Color=-5178237
 
 % MFrag
 MFrag=TotalBilirubin_MFrag
@@ -366,29 +374,64 @@ NextOrdinaryVar=2
 
 Node=TotalBilirubin
 Type=DomainResidentNode
-Position=144.0,208.0
-Size=100,20
+Position=319.0,207.0
+Size=162,60
+Color=-66914
 
 % nós Input
 
 
-Node=IX14
-Type=GenerativeInputNode
-Position=105.0,98.0
-Size=100,20
-
 Node=IX15
 Type=GenerativeInputNode
-Position=237.0,98.0
-Size=100,20
+Position=483.0,84.0
+Size=100,60
+Color=-2302756
+
+Node=IX14
+Type=GenerativeInputNode
+Position=176.0,92.0
+Size=218,60
+Color=-2302756
 
 % Variáveis Ordinárias
 
 
 Node=p
 Type=OrdinalVar
-Position=128.0,44.0
-Size=100,20
+Position=317.0,17.0
+Size=156,60
+Color=-5178237
+
+% MFrag
+MFrag=EnlargedSpleen_MFrag
+NextOrdinaryVar=2
+
+% Nós Residentes
+
+
+Node=EnlargedSpleen
+Type=DomainResidentNode
+Position=303.0,180.0
+Size=168,60
+Color=-66914
+
+% nós Input
+
+
+Node=IX9
+Type=GenerativeInputNode
+Position=308.0,98.0
+Size=156,60
+Color=-2302756
+
+% Variáveis Ordinárias
+
+
+Node=p
+Type=OrdinalVar
+Position=311.0,23.0
+Size=161,60
+Color=-5178237
 
 % MFrag
 MFrag=MusculoSkeletalPain_MFrag
@@ -399,29 +442,33 @@ NextOrdinaryVar=2
 
 Node=MusculoSkeletalPain
 Type=DomainResidentNode
-Position=147.0,209.0
-Size=100,20
+Position=309.0,205.0
+Size=167,60
+Color=-66914
 
 % nós Input
 
 
-Node=IX20
-Type=GenerativeInputNode
-Position=101.0,127.0
-Size=100,20
-
 Node=IX21
 Type=GenerativeInputNode
-Position=221.0,114.0
-Size=100,20
+Position=389.0,102.0
+Size=165,60
+Color=-2302756
+
+Node=IX20
+Type=GenerativeInputNode
+Position=256.0,106.0
+Size=100,60
+Color=-2302756
 
 % Variáveis Ordinárias
 
 
 Node=p
 Type=OrdinalVar
-Position=97.0,48.0
-Size=100,20
+Position=314.0,23.0
+Size=161,60
+Color=-5178237
 
 % MFrag
 MFrag=HepaticEncephalopathy_MFrag
@@ -432,24 +479,27 @@ NextOrdinaryVar=2
 
 Node=HepaticEncephalopathy
 Type=DomainResidentNode
-Position=125.0,217.0
-Size=100,20
+Position=279.0,189.0
+Size=200,60
+Color=-66914
 
 % nós Input
 
 
 Node=IX22
 Type=GenerativeInputNode
-Position=125.0,136.0
-Size=100,20
+Position=328.0,94.0
+Size=100,60
+Color=-2302756
 
 % Variáveis Ordinárias
 
 
 Node=p
 Type=OrdinalVar
-Position=124.0,68.0
-Size=100,20
+Position=292.0,23.0
+Size=178,60
+Color=-5178237
 
 % MFrag
 MFrag=JointsSwelling_MFrag
@@ -460,24 +510,27 @@ NextOrdinaryVar=2
 
 Node=JointsSwelling
 Type=DomainResidentNode
-Position=99.0,179.0
-Size=100,20
+Position=316.0,171.0
+Size=153,60
+Color=-66914
 
 % nós Input
 
 
 Node=IX18
 Type=GenerativeInputNode
-Position=81.0,73.0
-Size=100,20
+Position=342.0,85.0
+Size=100,60
+Color=-2302756
 
 % Variáveis Ordinárias
 
 
 Node=p
 Type=OrdinalVar
-Position=91.0,16.0
-Size=100,20
+Position=313.0,16.0
+Size=163,60
+Color=-5178237
 
 % MFrag
 MFrag=ALT_MFrag
@@ -488,24 +541,27 @@ NextOrdinaryVar=2
 
 Node=ALT
 Type=DomainResidentNode
-Position=131.0,191.0
-Size=100,20
+Position=345.0,172.0
+Size=100,60
+Color=-66914
 
 % nós Input
 
 
 Node=IX10
 Type=GenerativeInputNode
-Position=129.0,131.0
-Size=100,20
+Position=318.0,84.0
+Size=153,60
+Color=-2302756
 
 % Variáveis Ordinárias
 
 
 Node=p
 Type=OrdinalVar
-Position=144.0,85.0
-Size=100,20
+Position=325.0,22.0
+Size=149,60
+Color=-5178237
 
 % MFrag
 MFrag=Age_MFrag
@@ -516,16 +572,18 @@ NextOrdinaryVar=3
 
 Node=Age
 Type=DomainResidentNode
-Position=215.0,114.0
-Size=100,20
+Position=345.0,94.0
+Size=100,60
+Color=-66914
 
 % Variáveis Ordinárias
 
 
 Node=p
 Type=OrdinalVar
-Position=214.0,49.0
-Size=100,20
+Position=322.0,24.0
+Size=150,60
+Color=-5178237
 
 % MFrag
 MFrag=BloodUrea_MFrag
@@ -536,24 +594,27 @@ NextOrdinaryVar=2
 
 Node=BloodUrea
 Type=DomainResidentNode
-Position=130.0,206.0
-Size=100,20
+Position=328.0,206.0
+Size=133,60
+Color=-66914
 
 % nós Input
 
 
 Node=IX25
 Type=GenerativeInputNode
-Position=137.0,104.0
-Size=100,20
+Position=299.0,95.0
+Size=186,60
+Color=-2302756
 
 % Variáveis Ordinárias
 
 
 Node=p
 Type=OrdinalVar
-Position=142.0,33.0
-Size=100,20
+Position=302.0,23.0
+Size=182,60
+Color=-5178237
 
 % MFrag
 MFrag=Itching_MFrag
@@ -564,24 +625,27 @@ NextOrdinaryVar=2
 
 Node=Itching
 Type=DomainResidentNode
-Position=136.0,155.0
-Size=100,20
+Position=354.0,180.0
+Size=100,60
+Color=-66914
 
 % nós Input
 
 
 Node=IX16
 Type=GenerativeInputNode
-Position=132.0,79.0
-Size=100,20
+Position=323.0,97.0
+Size=161,60
+Color=-2302756
 
 % Variáveis Ordinárias
 
 
 Node=p
 Type=OrdinalVar
-Position=135.0,32.0
-Size=100,20
+Position=322.0,28.0
+Size=156,60
+Color=-5178237
 
 % MFrag
 MFrag=Jaundice_MFrag
@@ -592,24 +656,27 @@ NextOrdinaryVar=2
 
 Node=Jaundice
 Type=DomainResidentNode
-Position=127.0,186.0
-Size=100,20
+Position=340.0,169.0
+Size=100,60
+Color=-66914
 
 % nós Input
 
 
 Node=IX17
 Type=GenerativeInputNode
-Position=127.0,118.0
-Size=100,20
+Position=316.0,90.0
+Size=151,60
+Color=-2302756
 
 % Variáveis Ordinárias
 
 
 Node=p
 Type=OrdinalVar
-Position=144.0,70.0
-Size=100,20
+Position=318.0,15.0
+Size=151,60
+Color=-5178237
 
 % MFrag
 MFrag=INR_MFrag
@@ -620,28 +687,32 @@ NextOrdinaryVar=2
 
 Node=INR
 Type=DomainResidentNode
-Position=180.0,198.0
-Size=100,20
+Position=352.0,194.0
+Size=100,60
+Color=-66914
 
 % nós Input
 
 
-Node=IX28
-Type=GenerativeInputNode
-Position=105.0,85.0
-Size=100,20
-
 Node=IX1
 Type=GenerativeInputNode
-Position=293.0,121.0
-Size=100,20
+Position=467.0,85.0
+Size=139,60
+Color=-2302756
+
+Node=IX28
+Type=GenerativeInputNode
+Position=160.0,87.0
+Size=246,60
+Color=-2302756
 
 % Variáveis Ordinárias
 
 
 Node=p
 Type=OrdinalVar
-Position=254.0,56.0
-Size=100,20
+Position=320.0,9.0
+Size=166,60
+Color=-5178237
 
 % Instâncias de Entidades Objetos
