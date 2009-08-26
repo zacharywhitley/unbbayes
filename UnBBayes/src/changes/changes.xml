@@ -8,7 +8,10 @@
 	</properties>
 	<body>
 	
-		<release version="3.51.7-BETA" date="2009-09-01" description="Fifth UnBBayes-MEBN beta release">
+		<release version="3.52.7-BETA" date="2009-09-01" description="Fifth UnBBayes-MEBN beta release">
+			<action dev="Rommel Carvalho" type="add" issue="2845145">
+				Show findings in different color in SSBN.
+			</action>
 			<action dev="Rommel Carvalho" type="add" issue="2845109">
 				Add look and feel for current system.
 			</action>
