@@ -470,9 +470,6 @@ public class EvidenceTree extends JTree {
 				}
 
 				if (node.getType() == Node.PROBABILISTIC_NODE_TYPE) {
-					//by young2
-					((ProbabilisticNode)node).setFinding(node.getStateAt(parent.getIndex(treeNode)));
-					
 					treeNode.setUserObject(						
 						node.getStateAt(parent.getIndex(treeNode)) + ": 100");
 				} else {

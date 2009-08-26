@@ -718,8 +718,6 @@ public class GraphPane extends UCanvas implements MouseListener,
 
 			if (reset == true && n instanceof ProbabilisticNode) {
 				shape = getNodeUShape(n);
-				((ProbabilisticNode) n).setFinding("");
-				((UShapeProbabilisticNode) shape).update("");
 			}
 
 			if (n instanceof ContinuousNode || n instanceof ProbabilisticNode) {
@@ -777,10 +775,6 @@ public class GraphPane extends UCanvas implements MouseListener,
 
 			// create node
 			createNode(n);
-
-			if (n instanceof ProbabilisticNode) {
-				((ProbabilisticNode) n).setFinding(null);
-			}
 
 			if (n instanceof ContinuousNode || n instanceof ProbabilisticNode) {
 				shape = getNodeUShape(n);
@@ -923,7 +917,6 @@ public class GraphPane extends UCanvas implements MouseListener,
 	public void onShapeChanged(UShape s) {
 		if (s instanceof UShapeState) {
 			Node n = ((UShape) s.getParent()).getNode();
-			((ProbabilisticNode) n).setFinding(s.getName());
 			controller.getScreen().getEvidenceTree().selectTreeItemByState(n,
 					s.getName());
 			((UShapeProbabilisticNode) s.getParent()).update(s.getName());

@@ -77,10 +77,6 @@ public class UShapeProbabilisticNode extends UShape
 			}
 		}
 		
-		//by young3
-		if( pNode instanceof ProbabilisticNode )
-			finding = ((ProbabilisticNode)pNode).getFinding();
-		
 		InitShape();		 
     }    
 	 
@@ -146,7 +142,14 @@ public class UShapeProbabilisticNode extends UShape
 		super.update();
 		
 		//by young3
-		updateNodeInformation();	
+		updateNodeInformation();
+		
+		if( node instanceof ProbabilisticNode && ((ProbabilisticNode)node).hasEvidence() ) {
+			finding = node.getStateAt(((ProbabilisticNode)node).getEvidence());
+		} else {
+			finding = "";
+		}
+			
 		
 		if( STYPE_BAR == getShapeType() )
 		{	
