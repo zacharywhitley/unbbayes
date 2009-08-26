@@ -83,6 +83,7 @@ public class GuiResources extends ListResourceBundle {
 		{"metalToolTip","Metal Look And Feel"},
 		{"motifToolTip","Motif Look And Feel"},
 		{"windowsToolTip","Windows Look And Feel"},
+		{"homeSystemToolTip","Home System Look And Feel"},
 		{"tileToolTip","Organize windows in tile"},
 		{"cascadeToolTip","Organize windows in cascade"},
 		

@@ -80,9 +80,10 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"openToolTip","Abrir rede"},
 		{"saveToolTip","Salvar rede"},
 		{"learningToolTip","Modo de aprendizagem"},
-		{"metalToolTip","Usa Metal Look And Feel"},
-		{"motifToolTip","Usa Motif Look And Feel"},
-		{"windowsToolTip","Usa Windows Look And Feel"},
+		{"metalToolTip","Usar Metal Look And Feel"},
+		{"motifToolTip","Usar Motif Look And Feel"},
+		{"windowsToolTip","Usar Windows Look And Feel"},
+		{"homeSystemToolTip","Usar Home System Look And Feel"},
 		{"tileToolTip","Organizar as janelas em bloco"},
 		{"cascadeToolTip","Organizar as janelas em cascata"},
 		

@@ -56,6 +56,9 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.plaf.metal.DefaultMetalTheme;
+import javax.swing.plaf.metal.MetalLookAndFeel;
+import javax.swing.plaf.metal.OceanTheme;
 import javax.xml.bind.JAXBException;
 
 import unbbayes.aprendizagem.ConstructionController;
@@ -116,7 +119,7 @@ public class UnBBayesFrame extends JFrame {
 	private JButton learn;
 	private JButton metal;
 	private JButton motif;
-	private JButton windows;
+	private JButton homeSystem;
 	private JButton tile;
 	private JButton cascade;
 	private JButton help;
@@ -142,7 +145,7 @@ public class UnBBayesFrame extends JFrame {
 	private ActionListener alTbHelp;
 	private ActionListener alMetal;
 	private ActionListener alMotif;
-	private ActionListener alWindows;
+	private ActionListener alHomeSystem;
 	private ActionListener alLearn;
 	private ActionListener alIL;
 	private ActionListener alMetaphor;
@@ -215,7 +218,11 @@ public class UnBBayesFrame extends JFrame {
 
 	private void setLnF(String lnfName) {
 		try {
-			UIManager.setLookAndFeel(lnfName);
+			if (lnfName.equals("system")) {
+				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			} else {
+				UIManager.setLookAndFeel(lnfName);
+			}
 			SwingUtilities.updateComponentTreeUI(this);
 		} catch (UnsupportedLookAndFeelException ex1) {
 			System.err.println(resource
@@ -652,6 +659,8 @@ public class UnBBayesFrame extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				setLnF("javax.swing.plaf.metal.MetalLookAndFeel");
+				MetalLookAndFeel.setCurrentTheme(new OceanTheme());
+				//MetalLookAndFeel.setCurrentTheme(new DefaultMetalTheme());
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 
@@ -667,11 +676,11 @@ public class UnBBayesFrame extends JFrame {
 
 		};
 
-		// create an ActionListener for choosing Windows Look and Feel
-		alWindows = new ActionListener() {
+		// create an ActionListener for choosing the Home System Look and Feel
+		alHomeSystem = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setCursor(new Cursor(Cursor.WAIT_CURSOR));
-				setLnF("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+				setLnF("system");
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 
@@ -907,7 +916,7 @@ public class UnBBayesFrame extends JFrame {
 		tbHelp.addActionListener(alTbHelp);
 		metalItem.addActionListener(alMetal);
 		motifItem.addActionListener(alMotif);
-		windowsItem.addActionListener(alWindows);
+		windowsItem.addActionListener(alHomeSystem);
 		learningItem.addActionListener(alLearn);
 		iLearningItem.addActionListener(alIL);
 		metaphorItem.addActionListener(alMetaphor);
@@ -1021,7 +1030,7 @@ public class UnBBayesFrame extends JFrame {
 		jtbTools.add(learn);
 		jtbView.add(metal);
 		jtbView.add(motif);
-		jtbView.add(windows);
+		jtbView.add(homeSystem);
 		jtbWindow.add(cascade);
 		jtbWindow.add(tile);
 		jtbHelp.add(help);
@@ -1049,7 +1058,7 @@ public class UnBBayesFrame extends JFrame {
 		learn = new JButton(iconController.getLearningIcon());
 		metal = new JButton(iconController.getMetalIcon());
 		motif = new JButton(iconController.getMotifIcon());
-		windows = new JButton(iconController.getWindowsIcon());
+		homeSystem = new JButton(iconController.getHomeIcon());
 		tile = new JButton(iconController.getTileIcon());
 		cascade = new JButton(iconController.getCascadeIcon());
 		help = new JButton(iconController.getHelpIcon());
@@ -1065,7 +1074,7 @@ public class UnBBayesFrame extends JFrame {
 		learn.setToolTipText(resource.getString("learningToolTip"));
 		metal.setToolTipText(resource.getString("metalToolTip"));
 		motif.setToolTipText(resource.getString("motifToolTip"));
-		windows.setToolTipText(resource.getString("windowsToolTip"));
+		homeSystem.setToolTipText(resource.getString("homeSystemToolTip"));
 		tile.setToolTipText(resource.getString("tileToolTip"));
 		cascade.setToolTipText(resource.getString("cascadeToolTip"));
 	}
@@ -1084,7 +1093,7 @@ public class UnBBayesFrame extends JFrame {
 		saveNet.addActionListener(alSave);
 		metal.addActionListener(alMetal);
 		motif.addActionListener(alMotif);
-		windows.addActionListener(alWindows);
+		homeSystem.addActionListener(alHomeSystem);
 		learn.addActionListener(alLearn);
 		tile.addActionListener(alTile);
 		cascade.addActionListener(alCascade);

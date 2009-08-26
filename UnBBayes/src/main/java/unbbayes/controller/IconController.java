@@ -39,6 +39,8 @@ public class IconController implements Serializable {
 	private static IconController singleton;
 	
 	protected ImageIcon unbbayesIcon;
+	
+	protected ImageIcon homeIcon;
 
 	protected ImageIcon metalIcon;
 
@@ -624,6 +626,16 @@ public class IconController implements Serializable {
 			colapseIcon = new ImageIcon(getClass().getResource(
 					"/icons/contract-nodes.gif"));
 			return colapseIcon;
+		}
+	}
+	
+	public ImageIcon getHomeIcon() {
+		if (homeIcon != null) {
+			return homeIcon;
+		} else {
+			homeIcon = new ImageIcon(getClass().getResource(
+					"/icons/home.png"));
+			return homeIcon;
 		}
 	}
 
