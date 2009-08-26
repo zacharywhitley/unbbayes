@@ -8,7 +8,10 @@
 	</properties>
 	<body>
 	
-		<release version="3.50.6-BETA" date="2009-08-05" description="Fifth UnBBayes-MEBN beta release">
+		<release version="3.51.7-BETA" date="2009-09-01" description="Fifth UnBBayes-MEBN beta release">
+			<action dev="Rommel Carvalho" type="add" issue="2845109">
+				Add look and feel for current system.
+			</action>
 			<action dev="Rommel Carvalho" type="add" issue="2832727">
 				Add Metaphor, Medical Metaphor, and UnBMiner to UnBBayes.
 			</action>
@@ -79,6 +82,9 @@
 				Self-resizing nodes.
 			</action>
 			
+			<action dev="Shou Matsumoto" type="fix" issue="2845111">
+				Incorrect OV reference for input nodes in LPD.
+			</action>
 			<action dev="Rommel Carvalho" type="fix" issue="2707961">
 				Invert table's variable order in XML-BIF 5 loader.
 			</action>

@@ -1,39 +1,41 @@
-UNBBAYES VERSION 3.49.6-BETA
+UNBBAYES VERSION 3.51.7-BETA
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
-1		2832727		Add Metaphor, Medical Metaphor, and UnBMiner to UnBBayes.
-2		2826255		Integrate Pruning with Grand BN construction.
-3		2826254		Prune Grand BN using d-separation.
-4		2826253		New Grand BN construction.
-5		2825695		Generic Progress Bar.
-6		2825459		Create XMLBIF version 6.
-7		2819956		New GUI.
-8		2790229		Allow inference with Gibbs.
-9		2790228		Add simulation to GUI.
-10		2790227		Gibbs Sampling.
-11		2787581		Allow finding in evaluation.
-12		2708052		Implement test case for Evaluation module.
-13		2564961		Compute exact confusion matrix.
-14		2542566		Compute error for evaluation.
-15		2539912		Include Load and Save DNE format in GUI.
-16		2539910		Load and Save DNE format.
-17		2521242		Include PCC marginal improvement and cost rate in GUI.
-18		2521225		Compute evidence cost rate.
-19		2521222		Compute marginal improvement.
-20		2521210		Remove Java 6 dependency.
-21		2286477		Implement OOBN -> MSBN convertion tool.
-22		1908023		Arrows at node's edge (outer line).
-23		1908018		Self-resizing nodes.
+1		2845109		Add look and feel for current system.
+2		2832727		Add Metaphor, Medical Metaphor, and UnBMiner to UnBBayes.
+3		2826255		Integrate Pruning with Grand BN construction.
+4		2826254		Prune Grand BN using d-separation.
+5		2826253		New Grand BN construction.
+6		2825695		Generic Progress Bar.
+7		2825459		Create XMLBIF version 6.
+8		2819956		New GUI.
+9		2790229		Allow inference with Gibbs.
+10		2790228		Add simulation to GUI.
+11		2790227		Gibbs Sampling.
+12		2787581		Allow finding in evaluation.
+13		2708052		Implement test case for Evaluation module.
+14		2564961		Compute exact confusion matrix.
+15		2542566		Compute error for evaluation.
+16		2539912		Include Load and Save DNE format in GUI.
+17		2539910		Load and Save DNE format.
+18		2521242		Include PCC marginal improvement and cost rate in GUI.
+19		2521225		Compute evidence cost rate.
+20		2521222		Compute marginal improvement.
+21		2521210		Remove Java 6 dependency.
+22		2286477		Implement OOBN -> MSBN convertion tool.
+23		1908023		Arrows at node's edge (outer line).
+24		1908018		Self-resizing nodes.
 
 BUG LIST		
 Number	Request ID	Summary
-1		2707961		Invert table's variable order in XML-BIF 5 loader.
-2		2583323		Bug in listener of changes in Node name.
-3		2539903		Out of bounds when evaluating.
-4		2539894		Monte carlo gives array out of bounds.
-5		2390083		OOBN compile failure on input instantiating input.
-6		1954465		Resizing of nodes are not applicable anymore (ordinal BN).
+1		2845111		Incorrect OV reference for input nodes in LPD.
+2		2707961		Invert table's variable order in XML-BIF 5 loader.
+3		2583323		Bug in listener of changes in Node name.
+4		2539903		Out of bounds when evaluating.
+5		2539894		Monte carlo gives array out of bounds.
+6		2390083		OOBN compile failure on input instantiating input.
+7		1954465		Resizing of nodes are not applicable anymore (ordinal BN).
 
 
 UNBBAYES VERSION 3.27.9-BETA
