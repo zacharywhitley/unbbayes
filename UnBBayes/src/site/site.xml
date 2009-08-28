@@ -7,6 +7,7 @@
   </bannerLeft>
   <body>
     <links>
+      <item name="UnBBayes Project" href="http://sourceforge.net/projects/unbbayes"/>
       <item name="UnBBayes News" href="http://sourceforge.net/news/?group_id=47519"/>
       <item name="UnBBayes Wiki" href="http://unbbayes.wiki.sourceforge.net/"/>
       <item name="PR-OWL" href="http://www.pr-owl.org/" />
@@ -26,6 +27,10 @@
       <item name="MEBN" href="mebn.html">
       	<item name="How to Model Probabilistic Ontologies" href="how_to_model_prowl.html"/>
       </item>
+    </menu>
+    
+    <menu name="Tutorials">
+      <item name="Video Tutorials" href="video_tutorial.html"/>
     </menu>
     
     <menu ref="reports"/>
