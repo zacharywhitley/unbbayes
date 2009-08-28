@@ -48,7 +48,10 @@ c) Zip the remain files again (without the '-dist' part).
 7. Create the website. Go to the projects root folder command line and run**:
 mvn site:site -Dmaven.test.skip=true
 8. Verify that the created website is correct.
-9. Deploy the new website. Go to the projects root folder command line and run**:
+9. Since we do not know how to add direct html code using the apt format, we have to manually change the
+generated video_tutorial.html file. Replace the code for showing the youtube video by copying from the .apt 
+source file and pasting into the corresponding postion in the .html generated file.
+10. Deploy the new website. Go to the projects root folder command line and run**:
 mvn site:deploy -Dmaven.test.skip=true
 
 * For now we are skipping the tests because we have to fix some tests before doing that.
