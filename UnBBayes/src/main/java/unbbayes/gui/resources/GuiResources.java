@@ -162,7 +162,7 @@ public class GuiResources extends ListResourceBundle {
 		{"collapseToolTip","Collapse evidences tree"},
 		{"editToolTip","Return to edit mode"},
 		{"logToolTip","Information about Compilation (Log)"},
-		{"resetCrencesToolTip","Reset crences"},
+		{"resetBeliefsToolTip","Reset beliefs"},
 		{"printNetToolTip","Print graph"},
 		{"previewNetToolTip","Print graph preview"},
 		{"saveNetImageToolTip","Save graph as an image"},

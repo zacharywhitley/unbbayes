@@ -154,7 +154,7 @@ public class SSBNCompilationPane extends JPanel {
         collapse.setToolTipText(resource.getString("collapseToolTip"));
         editMode.setToolTipText(resource.getString("editToolTip"));
         log.setToolTipText(resource.getString("logToolTip"));
-        reset.setToolTipText(resource.getString("resetCrencesToolTip"));
+        reset.setToolTipText(resource.getString("resetBeliefsToolTip"));
         saveNet.setToolTipText(resource.getString("saveSSBNToolTip")); 
 //        printNet.setToolTipText(resource.getString("printNetToolTip"));
 //        previewNet.setToolTipText(resource.getString("previewNetToolTip"));
