@@ -175,27 +175,29 @@ public class EntityTree{
 					}
 				}
 				
-				if(ovFoundQuant == knownOVArray.length){
-					//all the entities known are in this path! 
-					break; 
-				
-				}else{
-					
-		            //see if the ov is one of the ov fault... 
-					for(int index = 0; index < ovSearchArray.length; index++){
-						if(nodeOfPath.getOv().equals(ovSearchArray[index])){
-							tempEntityArray[index] = nodeOfPath.getEntityName(); 
-						}
+	            //see if the ov is one of the ov fault... 
+				for(int index = 0; index < ovSearchArray.length; index++){
+					if(nodeOfPath.getOv().equals(ovSearchArray[index])){
+						tempEntityArray[index] = nodeOfPath.getEntityName(); 
 					}
-
-					nodeOfPath = nodeOfPath.getParent(); 
-				
 				}
+				
+				nodeOfPath = nodeOfPath.getParent(); 
 
 			} //while (Node of a path)
 			
 			if(ovFoundQuant == knownOVArray.length){ //All OV found
-				combinationList.add(tempEntityArray); 
+				boolean resultComplete = true; 
+				for(int i = 0; i < ovSearchArray.length; i++){
+					if(tempEntityArray[i] == null){
+						resultComplete = false; 
+					}
+				}
+				if(resultComplete){
+					combinationList.add(tempEntityArray);
+				}else{
+					throw new RuntimeException("Falta variável ordinária"); 
+				}
 			}
 			
 		}//for path
