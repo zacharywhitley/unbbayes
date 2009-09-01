@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import junit.framework.TestCase;
-import unbbayes.io.ILogManager;
-import unbbayes.io.TextLogManager;
+import unbbayes.io.log.ILogManager;
+import unbbayes.io.log.TextLogManager;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.MFrag;

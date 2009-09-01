@@ -5,8 +5,8 @@ import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import unbbayes.io.ILogManager;
-import unbbayes.io.TextLogManager;
+import unbbayes.io.log.ILogManager;
+import unbbayes.io.log.TextLogManager;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;

@@ -9,9 +9,9 @@ import java.util.Locale;
 
 import javax.xml.bind.JAXBException;
 
-import unbbayes.io.ILogManager;
-import unbbayes.io.TextLogManager;
 import unbbayes.io.XMLBIFIO;
+import unbbayes.io.log.ILogManager;
+import unbbayes.io.log.TextLogManager;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.TreeVariable;
