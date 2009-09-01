@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import unbbayes.gui.table.GUIPotentialTable;
-import unbbayes.io.ILogManager;
+import unbbayes.io.log.ILogManager;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.OrdinaryVariable;

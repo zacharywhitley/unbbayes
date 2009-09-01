@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.controller.exception.InconsistentArgumentException;
-import unbbayes.io.ILogManager;
+import unbbayes.io.log.ILogManager;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;

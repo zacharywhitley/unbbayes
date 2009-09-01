@@ -4,6 +4,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.io.log.TextLogManager;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JunctionTree;

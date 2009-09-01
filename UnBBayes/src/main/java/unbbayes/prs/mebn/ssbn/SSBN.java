@@ -25,8 +25,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import unbbayes.io.ILogManager;
-import unbbayes.io.TextLogManager;
+import unbbayes.io.log.ILogManager;
+import unbbayes.io.log.TextLogManager;
 import unbbayes.prs.INode;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;

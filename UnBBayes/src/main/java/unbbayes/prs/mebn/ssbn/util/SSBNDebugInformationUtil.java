@@ -7,8 +7,8 @@ import java.util.Locale;
 
 import javax.xml.bind.JAXBException;
 
-import unbbayes.io.ILogManager;
 import unbbayes.io.XMLBIFIO;
+import unbbayes.io.log.ILogManager;
 import unbbayes.prs.Edge;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.TreeVariable;

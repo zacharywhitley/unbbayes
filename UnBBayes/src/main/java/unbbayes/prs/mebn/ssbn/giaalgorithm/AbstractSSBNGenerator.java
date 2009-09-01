@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import unbbayes.io.ILogManager;
-import unbbayes.io.TextLogManager;
+import unbbayes.io.log.ILogManager;
+import unbbayes.io.log.TextLogManager;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;

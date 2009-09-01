@@ -1,4 +1,4 @@
-package unbbayes.io;
+package unbbayes.io.log;
 
 import java.io.IOException;
 
