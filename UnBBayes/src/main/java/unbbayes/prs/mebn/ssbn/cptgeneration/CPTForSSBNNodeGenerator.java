@@ -61,7 +61,7 @@ public class CPTForSSBNNodeGenerator {
 			return; 
 		}else{
 			
-			logManager.appendln(level, "\nGenerate CPT for node " + root); 
+			logManager.appendln("\nGenerate CPT for node " + root); 
 			
 			//------------------1) PARENTS
 //			logManager.appendln(level, "Parents:"); 

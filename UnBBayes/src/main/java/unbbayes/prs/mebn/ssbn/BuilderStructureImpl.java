@@ -760,14 +760,14 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		
 		for(ContextNode contextNode: mFragInstance.getContextNodeList()){
 			
-			ssbn.getLogManager().appendln(1, "Context Node: " + contextNode);
+			ssbn.getLogManager().appendln("Context Node: " + contextNode);
 			
 			//---> 1) Verify if the context node is soluted only with the know arguments. 
 			List<OrdinaryVariable> ovInstancesFault = contextNode.getOVFaultForOVInstanceSet(ovInstances); 
 			
 			if(ovInstancesFault.size() == 0){
 				
-				ssbn.getLogManager().appendln(2, "All ov are setted"); 
+				ssbn.getLogManager().appendln("All ov are setted"); 
 				boolean result = kb.evaluateContextNodeFormula(contextNode, ovInstances);
 				if(result){
 					mFragInstance.setStateEvaluationOfContextNode(contextNode, 
@@ -778,15 +778,15 @@ public class BuilderStructureImpl implements IBuilderStructure{
 					mFragInstance.setStateEvaluationOfContextNode(contextNode, 
 							ContextNodeEvaluationState.EVALUATION_FAIL);
 					mFragInstance.setUseDefaultDistribution(true); 
-					ssbn.getLogManager().appendln(2, "Context Node Evaluation fail"); 
+					ssbn.getLogManager().appendln("Context Node Evaluation fail"); 
 					continue; //The MFragInstance continue to be evaluated only
 					          //to show to the user a network more complete. 
 				}
 			}else{
 			
-				ssbn.getLogManager().appendln(2,"Evaluate with OV Fault");
+				ssbn.getLogManager().appendln("Evaluate with OV Fault");
 				
-				ssbn.getLogManager().appendln(2,"Try 1: Use the search strategy");
+				ssbn.getLogManager().appendln("Try 1: Use the search strategy");
 				
 				//---> 2) Use the Entity Tree Strategy. 
 				SearchResult searchResult = kb.evaluateSearchContextNodeFormula(contextNode, ovInstances); 
@@ -810,13 +810,13 @@ public class BuilderStructureImpl implements IBuilderStructure{
 
 						mFragInstance.setStateEvaluationOfContextNode(contextNode, ContextNodeEvaluationState.EVALUATION_OK); 
 						
-						ssbn.getLogManager().appendln(2,"Evaluated OK");
+						ssbn.getLogManager().appendln("Evaluated OK");
 						
 					} catch (MFragContextFailException e) {
 						e.printStackTrace(); 
 						mFragInstance.setStateEvaluationOfContextNode(contextNode, ContextNodeEvaluationState.EVALUATION_FAIL); 
 						mFragInstance.setUseDefaultDistribution(true); 
-						ssbn.getLogManager().appendln(2,"   !!!Context node fail: use the default distribution");
+						ssbn.getLogManager().appendln("   !!!Context node fail: use the default distribution");
 						
 						//Here, the context node fail adding the values for a ordinary variable
 						//fault. This fail impossibilite the evaluation of the rest of the MFragInstance, 
@@ -828,8 +828,8 @@ public class BuilderStructureImpl implements IBuilderStructure{
 
 				}else{
 
-					ssbn.getLogManager().appendln(2,"Try 2: Use the iteration strategy");
-					ssbn.getLogManager().appendln(2,"...still not implemented.\n");
+					ssbn.getLogManager().appendln("Try 2: Use the iteration strategy");
+					ssbn.getLogManager().appendln("...still not implemented.\n");
 					
 					//---> 3) Use the Interation with user Strategy. 
 					//TODO To be developed yet... 
@@ -859,7 +859,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 //					}
 
 					//---> 4) Use the uncertainty Strategy. 
-					ssbn.getLogManager().appendln(2,"Try 3: Use the uncertain reference strategy");
+					ssbn.getLogManager().appendln("Try 3: Use the uncertain reference strategy");
 
 					//Utilized only in the specific case z = RandomVariable(x), 
 					//where z is the unknow variable. (Should have only one unknow variable)
@@ -877,13 +877,13 @@ public class BuilderStructureImpl implements IBuilderStructure{
 						}
 						catch(ImplementationRestrictionException e){
 							mFragInstance.setUseDefaultDistribution(true); 
-							ssbn.getLogManager().appendln(3,"Fail: " + e.getMessage());
+							ssbn.getLogManager().appendln("Fail: " + e.getMessage());
 							//TODO Warning list
 						}
 					}
 					
 					//--> 5) Nothing more to try... context fail
-					ssbn.getLogManager().appendln(2,"Still ov fault... nothing more to do. " +
+					ssbn.getLogManager().appendln("Still ov fault... nothing more to do. " +
 							"Use default distribution");
 					mFragInstance.setStateEvaluationOfContextNode(contextNode, 
 							ContextNodeEvaluationState.EVALUATION_FAIL); 
