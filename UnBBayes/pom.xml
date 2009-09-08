@@ -32,9 +32,9 @@
 		<mailingList>
 			<name> Announcements. All messages on this list are also sent to the
 				users list.</name>
-			<subscribe> unbbayes-announce-subscribe@lists.sourceforge.net
+			<subscribe> https://lists.sourceforge.net/lists/listinfo/UnBBayes-announce
 			</subscribe>
-			<unsubscribe> unbbayes-announce-unsubscribe@lists.sourceforge.net
+			<unsubscribe> https://lists.sourceforge.net/lists/listinfo/UnBBayes-announce
 			</unsubscribe>
 			<post>unbbayes-announce@lists.sourceforge.net
 			</post>
@@ -45,9 +45,9 @@
 		<mailingList>
 			<name> A subscriber-only list for those interested in developing
 				UnBBayes.</name>
-			<subscribe> unbbayes-developers-subscribe@lists.sourceforge.net
+			<subscribe> https://lists.sourceforge.net/lists/listinfo/UnBBayes-developers
 			</subscribe>
-			<unsubscribe> unbbayes-developers-unsubscribe@lists.sourceforge.net
+			<unsubscribe> https://lists.sourceforge.net/lists/listinfo/UnBBayes-developers
 			</unsubscribe>
 			<post>unbbayes-developers@lists.sourceforge.net
 			</post>
@@ -58,9 +58,9 @@
 		<mailingList>
 			<name> A subscriber-only list for those interested in translating
 				UnBBayes.</name>
-			<subscribe> unbbayes-translators-subscribe@lists.sourceforge.net
+			<subscribe> https://lists.sourceforge.net/lists/listinfo/UnBBayes-translators
 			</subscribe>
-			<unsubscribe> unbbayes-translators-unsubscribe@lists.sourceforge.net
+			<unsubscribe> https://lists.sourceforge.net/lists/listinfo/UnBBayes-translators
 			</unsubscribe>
 			<post>unbbayes-translators@lists.sourceforge.net
 			</post>
@@ -71,9 +71,9 @@
 		<mailingList>
 			<name> A subscriber-only list for those interested in discussing
 				about UnBBayes.</name>
-			<subscribe> unbbayes-users-subscribe@lists.sourceforge.net
+			<subscribe> https://lists.sourceforge.net/lists/listinfo/UnBBayes-users
 			</subscribe>
-			<unsubscribe> unbbayes-users-unsubscribe@lists.sourceforge.net
+			<unsubscribe> https://lists.sourceforge.net/lists/listinfo/UnBBayes-users
 			</unsubscribe>
 			<post>unbbayes-users@lists.sourceforge.net
 			</post>
