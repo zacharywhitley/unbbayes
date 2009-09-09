@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import unbbayes.io.log.ILogManager;
 import unbbayes.io.log.ISSBNLogManager;
 import unbbayes.io.log.SSBNTextLogManager;
 import unbbayes.prs.INode;

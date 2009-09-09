@@ -3,7 +3,9 @@ package unbbayes.prs.mebn.ssbn;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.ResourceBundle;
 
+import unbbayes.io.log.IdentationLevel;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.InputNode;
@@ -14,6 +16,7 @@ import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.SearchResult;
+import unbbayes.prs.mebn.resources.ResourcesSSBNAlgorithmLog;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.MFragContextFailException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
@@ -37,6 +40,17 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	
 	private long maxNumberNodes = 10000000;  
 	private long numberNodes = 0; 
+	
+	private ResourceBundle resourceLog = 
+		ResourceBundle.getBundle(ResourcesSSBNAlgorithmLog.class.getName()); 
+	
+	//Log
+	IdentationLevel level1; 
+	IdentationLevel level2; 
+	IdentationLevel level3; 
+	IdentationLevel level4; 
+	IdentationLevel level5; 
+	IdentationLevel level6; 
 	
 	private BuilderStructureImpl(){
 		
@@ -88,10 +102,14 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		
 		int iteration = 0; 
 		
+	    level1 =  new IdentationLevel(null); 
+		
+		ssbn.getLogManager().skipLine(); 
+		
 		while(!notFinishedNodeList.isEmpty()){
-			ssbn.getLogManager().appendln("\n--------------------------------"); 
-			ssbn.getLogManager().appendln("    ---   Iteration = " + iteration + "   ---");
-			ssbn.getLogManager().appendln("--------------------------------"); 
+			
+			ssbn.getLogManager().printText(level1, false, 
+					resourceLog.getString("012_IterationNumber") + " "  + iteration); 
 			
 			for(SimpleSSBNNode node: notFinishedNodeList){
 		        try {
@@ -108,22 +126,21 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			//update the not finished list
 			notFinishedNodeList.clear();
 
-			ssbn.getLogManager().appendln("\nNot finished nodes list : ");
+			ssbn.getLogManager().skipLine(); 
+			ssbn.getLogManager().printText(level1, false, 
+					resourceLog.getString("013_NotFinishedNodesList") + ": ");
 			
 			for(SimpleSSBNNode node: ssbn.getSimpleSsbnNodeList()){
 				if(!node.isFinished()){
-					ssbn.getLogManager().appendln("   - " + node.toString());
+					ssbn.getLogManager().printText(level1, false, " - " + node.toString()); 
 					notFinishedNodeList.add(node); 
 				}
 			}
 			
+			ssbn.getLogManager().skipLine(); 
 			iteration++; 
 			
 		}
-		
-		ssbn.getLogManager().appendln("\nNot finished nodes list : ");
-		
-		System.out.println("Finished");
 	}
 
 	/*
@@ -135,7 +152,11 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	private void evaluateUnfinishedRV(SimpleSSBNNode node) throws ImplementationRestrictionException, 
 	                  SSBNNodeGeneralException{
 		
-		ssbn.getLogManager().appendSectionTitle("-> Evaluate unfinished node = " + node );
+		IdentationLevel thisLevel2; 
+		level2 = new IdentationLevel(level1); 
+		thisLevel2 = level2; 
+		
+		ssbn.getLogManager().printText(level2, false, "Evaluate unfinished node" + ": " + node);
 		
 		//Note: In this implementation don't is averiguated if already have a equal MFragInstance. 
 		
@@ -159,7 +180,8 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		
 		node.setFinished(true);
 		
-		ssbn.getLogManager().appendSectionTitle("-> Unfinished node = " + node + " setted true\n");
+		ssbn.getLogManager().printText(thisLevel2, true, "Unfinished node = " + node + " setted true");
+		ssbn.getLogManager().skipLine(); 
 		
 	}
 	
@@ -173,8 +195,8 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	 */
 	private void evaluateMFragInstance(MFragInstance mFragInstance, SimpleSSBNNode ssbnNode) 
 	      throws ImplementationRestrictionException, SSBNNodeGeneralException{
-
-		ssbn.getLogManager().appendSectionTitle("-> Evaluate MFragInstance " + mFragInstance);
+		
+		ssbn.getLogManager().printText(level2, true, "Evaluate MFragInstance" + mFragInstance); 
 		
 		// 1) Test if the MFragInstance already was evaluated
 		if(mFragInstance.isEvaluated()){
@@ -186,9 +208,10 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		
 	    // 2) Evaluate MFragInstance context
 		try {
-			ssbn.getLogManager().appendln("1 - Evaluate MFrag Context Nodes for MFrag " + mFragInstance);
+			level3 = new IdentationLevel(level2); 
+			ssbn.getLogManager().printText(level3, true, "Evaluate MFrag Context Nodes");
 			evaluateMFragContextNodes(mFragInstance);
-			ssbn.getLogManager().appendln("Evaluate MFrag Context Nodes for MFrag " + mFragInstance + " finished");
+			
 		} catch (ImplementationRestrictionException e) {
 			//Stop the evaluation when the context nodes fail. 
 			//TODO warning... the evaluation continue, using the default distribution
@@ -200,15 +223,10 @@ public class BuilderStructureImpl implements IBuilderStructure{
 //			throw new SSBNNodeGeneralException(e.getMessage()); 
 		} 
 		
-		ssbn.getLogManager().appendln(" "); 
-		
 		// 3) Create the nodes of the MFragInstance
-		ssbn.getLogManager().appendln("2 - Create the nodes of MFrag " + mFragInstance);		
-		evaluateNodeInMFragInstance(mFragInstance, ssbnNode);
-		ssbn.getLogManager().appendln("Create the nodes of MFrag finished");		
-		
-		ssbn.getLogManager().appendSectionTitle("-> Evaluate MFragInstance " + mFragInstance + " finished. \n");
-		
+		level3 = new IdentationLevel(level2); 
+		ssbn.getLogManager().printText(level3, true, "Create the nodes of MFrag ");		
+		evaluateNodeInMFragInstance(mFragInstance, ssbnNode);	
 		
 	}	
 	
@@ -235,7 +253,8 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	private void evaluateNodeInMFragInstance(MFragInstance mFragInstance, SimpleSSBNNode node) 
 	       throws ImplementationRestrictionException, SSBNNodeGeneralException{
 		
-		ssbn.getLogManager().appendln("Create parents of node " + node);
+		level4 = new IdentationLevel(level3); 
+		ssbn.getLogManager().printText(level4, false, "Create parents of node " + node);
 		
 		node.setMFragInstance(mFragInstance); 
 		
@@ -265,7 +284,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			node.setState(exactValue.getState());
 			ssbn.addFindingToTheFindingList(node); 
 			
-			ssbn.getLogManager().appendln("Node " + node + 
+			ssbn.getLogManager().printText(level4, false, " -> Node " + node + 
 					" setted how a finding. Exact Value = " + exactValue.getState());
 			
 		}
@@ -277,7 +296,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		//the parents isn't possible
 		if(mFragInstance.isUseDefaultDistribution()){
 			
-			ssbn.getLogManager().appendln("Node can't be evaluated: mfrag using default distribution");
+			ssbn.getLogManager().printText(level4, false, " -> Node can't be evaluated: mfrag using default distribution");
 			return; 
 		
 		}
@@ -285,19 +304,19 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		OrdinaryVariable[] ovFilledArray = node.getOvArray(); 
 		LiteralEntityInstance[] entityFilledArray = node.getEntityArray(); 
 	
-		ssbn.getLogManager().appendln("Evaluate the resident node parents");
+		ssbn.getLogManager().printText(level4, false, " 1) Evaluate the resident node parents");
 		
 		for(ResidentNode residentNodeParent: resident.getResidentNodeFatherList()){
 			
 			List<SimpleSSBNNode> createdNodesList = createParents(node, 
 					ovFilledArray, entityFilledArray, residentNodeParent);
 			
-			ssbn.getLogManager().appendln("Resident parents generates from the resident node " + 
+			ssbn.getLogManager().printText(level4, false, "Resident parents generates from the resident node " + 
 					residentNodeParent);
 			
 			int count = 0; 
 			for(SimpleSSBNNode newNode: createdNodesList){
-				ssbn.getLogManager().appendln("Evaluate " + count + " - "+ newNode); 
+				ssbn.getLogManager().printText(level4, false, "Evaluate " + count + " - "+ newNode); 
 				count= count + 1 ; 
 				evaluateNodeInMFragInstance(mFragInstance, newNode); 
 			}
@@ -305,12 +324,12 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		}
 		
 		//---- 3) Create the parents of node from the input nodes
-		ssbn.getLogManager().appendln("Evaluate the input node parents");
+		ssbn.getLogManager().printText(level4, false, " 2) Evaluate the input node parents");
 		for(InputNode inputNodeParent: resident.getParentInputNodesList()){
 			
 			if(inputNodeParent.getResidentNodePointer().getResidentNode().equals(resident)){
 				//Special case: the recursivity.
-				System.out.println("Recursivity treatment: " + resident);
+				ssbn.getLogManager().printText(level4, false, " Recursivity treatment: " + resident);
 				
 				SimpleSSBNNode newNode = createRecursiveParents(node, ovFilledArray, 
 						entityFilledArray, inputNodeParent);
@@ -322,17 +341,12 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			}else{
 				List<SimpleSSBNNode> createdNodesList = createParents(node, ovFilledArray, 
 						entityFilledArray, inputNodeParent);	
-				
-				System.out.println("Nodes createds from the input parents: ");
-				for(SimpleSSBNNode newNode: createdNodesList){
-					System.out.println("Node: " + newNode);
-				}
 			}
 			
 		}
 		
 		node.setFinished(true); 
-		System.out.println("Node " + node + " setted finished");
+		ssbn.getLogManager().printText(level4, false, "Node " + node + " setted finished");
 
 		mFragInstance.setEvaluated(true); 
 	}
@@ -415,6 +429,9 @@ public class BuilderStructureImpl implements IBuilderStructure{
 //			System.out.println("[Arg] inputNodeParent= " + nodeParent.getResidentNode());
 //		}
 		
+		level5 = new IdentationLevel(level4); 
+		
+		
 		List<SimpleSSBNNode> ssbnCreatedList = new ArrayList<SimpleSSBNNode>();
 		
 		int contextParentsCount = 0; 
@@ -469,13 +486,14 @@ public class BuilderStructureImpl implements IBuilderStructure{
 					    ovFaultForNewNodeList.toArray(
                     		 new OrdinaryVariable[ovFaultForNewNodeList.size()])); 
 			
-			System.out.println("Possible combinations for ov fault: ");
-			for(String[] combination: possibleCombinationsForOvFaultList){
-				System.out.print("Combination: ");
-				for(String entity: combination){
-					System.out.print(entity + " ");
-				}
-			} 
+//			ssbn.getLogManager().printText(level5, false,"Possible combinations for ov fault: ");
+//			for(String[] combination: possibleCombinationsForOvFaultList){
+//				String combinationS = ""; 
+//				for(String entity: combination){
+//					combinationS+= " " + entity;
+//				}
+//				ssbn.getLogManager().printText(level5, false, " >" + combinationS); 
+//			} 
 			
 			//Treat the uncertainty reference
 			
@@ -488,6 +506,8 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		//Note that if we don't have any ov fault, we should have one stub element
 		//in the possibleCombinationsForOvFaultList for pass for this loop one time. 
 		for(String[] possibleCombination: possibleCombinationsForOvFaultList){
+			
+//			System.out.println("Combination=" + possibleCombination);
 			
 			SimpleSSBNNode newNode = SimpleSSBNNode.getInstance(
 					nodeParent.getResidentNode()); 
@@ -527,79 +547,25 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			}
 			
 			newNode = addNodeToMFragInstance(node, newNode); 
-			ssbn.getLogManager().appendln("Created new node: " + newNode);
 			
 			ssbnCreatedList.add(newNode); 
 		}
 		
 		//Add the context node parent if it exists
 		if( contextParentsCount > 0 ){
+			
 			for(SimpleContextNodeFatherSSBNNode contextParent : contextNodeFatherList){
-				System.out.println("Node (context child) = " + node);
+				ssbn.getLogManager().printText(level5, false, 
+						node + " is child of the contextNode " + 
+						contextParent.getContextNode().toString());
+				
 				node.addContextParent(contextParent); 
 			}
 		}
 		
 		return ssbnCreatedList; 
 	}	
-	
-	
-	/**
-	 * This class is used to offer to the resident node and the input node the 
-	 * same comportment for the method "createParents"
-	 * 
-	 * @author Laecio
-	 */
-	private class JacketNode{
-		
-		private ResidentNode residentNode; 
-		private InputNode inputNode; 
-		
-		private boolean isResidentNode = false; 
-		
-		protected JacketNode(ResidentNode _residentNode){
-			this.residentNode = _residentNode;
-			this.isResidentNode = true; 
-		}
 
-		protected JacketNode(InputNode _inputNode){
-			this.inputNode = _inputNode;
-			this.isResidentNode = false; 		
-		}
-
-		public ResidentNode getResidentNode() {
-			if(isResidentNode){
-				return residentNode;
-			}else{
-				return inputNode.getResidentNodePointer().getResidentNode(); 
-			}
-		}
-		
-		public Collection<OrdinaryVariable> getOrdinaryVariableList() {
-			if(isResidentNode){
-				return residentNode.getOrdinaryVariableList(); 
-			}else{
-				return inputNode.getOrdinaryVariableList(); 
-			}
-		}
-		
-		public OrdinaryVariable getCorrespondentOrdinaryVariable(OrdinaryVariable ov){
-			if(isResidentNode){
-				return ov; 
-			}else{
-				return inputNode.getResidentNodePointer().getCorrespondentOrdinaryVariable(ov);
-			}
-		}
-		
-		public boolean isResidentNode() {
-			return isResidentNode;
-		}
-		
-		public boolean isInputNode(){
-			return !isResidentNode; 
-		}
-		
-	}
 	
 	//The format of the MFrag in the recursion is: 
 	//      INPUTNODE_A(NODE_A) PAI NODE_A 
@@ -655,7 +621,8 @@ public class BuilderStructureImpl implements IBuilderStructure{
 
 		if(prev != null){
 
-			System.out.println("Previous node = " + prev + " (" + objectEntityInstanceOrdereable + ")");
+			level5 = new IdentationLevel(level4); 
+			ssbn.getLogManager().printText(level5, false, "Previous node = " + prev + " (" + objectEntityInstanceOrdereable + ")");
 			
 			LiteralEntityInstance ovOrdereablePreviusValue = 
 				LiteralEntityInstance.getInstance(prev.getName(), ovOrdereable.getValueType());
@@ -708,8 +675,9 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		
 		parent = ssbn.addSSBNNodeIfItDontAdded(testNode);
 		
-		if(parent != testNode){
+		if(parent == testNode){
 			numberNodes++; 
+			ssbn.getLogManager().printText(level5, false, "Created new node: " + parent);
 		}
 		
 		try {
@@ -752,53 +720,57 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	                   throws ImplementationRestrictionException, 
 	                          MFragContextFailException{
 		
+		level4 = new IdentationLevel(level3); 
+		
 		//Consider that the tree with the know ordinary variables are already mounted. 
 		//Consider that the only ordinary variables filled are the alread know OV
 		List<OVInstance> ovInstances = mFragInstance.getOVInstanceList(); 
 		
-		ssbn.getLogManager().appendln("1) Loop for evaluate context nodes.");
+		ssbn.getLogManager().printText(level4, false, "1) Loop for evaluate context nodes.");
 		
 		for(ContextNode contextNode: mFragInstance.getContextNodeList()){
 			
-			ssbn.getLogManager().appendln("Context Node: " + contextNode);
+			ssbn.getLogManager().printText(level4, false, "Context Node: " + contextNode);
 			
 			//---> 1) Verify if the context node is soluted only with the know arguments. 
 			List<OrdinaryVariable> ovInstancesFault = contextNode.getOVFaultForOVInstanceSet(ovInstances); 
 			
+			level5 = new IdentationLevel(level4); 
 			if(ovInstancesFault.size() == 0){
 				
-				ssbn.getLogManager().appendln("All ov are setted"); 
+				ssbn.getLogManager().printText(level5, false, "All ov's of the context node are setted"); 
 				boolean result = kb.evaluateContextNodeFormula(contextNode, ovInstances);
 				if(result){
 					mFragInstance.setStateEvaluationOfContextNode(contextNode, 
 							ContextNodeEvaluationState.EVALUATION_OK); 
-					ssbn.getLogManager().appendln("Evaluated OK");	
+					ssbn.getLogManager().printText(level5, false, "Node evaluated OK");	
 					continue; 
 				}else{
 					mFragInstance.setStateEvaluationOfContextNode(contextNode, 
 							ContextNodeEvaluationState.EVALUATION_FAIL);
 					mFragInstance.setUseDefaultDistribution(true); 
-					ssbn.getLogManager().appendln("Context Node Evaluation fail"); 
+					ssbn.getLogManager().printText(level5, false, "Node evaluated FALSE"); 
 					continue; //The MFragInstance continue to be evaluated only
 					          //to show to the user a network more complete. 
 				}
 			}else{
 			
-				ssbn.getLogManager().appendln("Evaluate with OV Fault");
+				ssbn.getLogManager().printText(level5, false, "Some ov's of the context node aren't filled");
 				
-				ssbn.getLogManager().appendln("Try 1: Use the search strategy");
+				ssbn.getLogManager().printText(level5, false, "Try 1: Use the search strategy");
 				
 				//---> 2) Use the Entity Tree Strategy. 
 				SearchResult searchResult = kb.evaluateSearchContextNodeFormula(contextNode, ovInstances); 
 
 				if(searchResult!= null){  
 
-					System.out.println("Search Result: ");
+					ssbn.getLogManager().printText(level5, false, "Search Result: ");
 					for(String[] result: searchResult.getValuesResultList()){
+						String resultOv = " > "; 
 						for(int i = 0; i < result.length; i++){
-							System.out.print(result[i] + " "); 
+							resultOv += result[i] + " "; 
 						}
-						System.out.println("");
+						ssbn.getLogManager().printText(level5, false, resultOv); 
 					}
 					
 					//Result valid results: Add the result to the tree of result.
@@ -810,13 +782,15 @@ public class BuilderStructureImpl implements IBuilderStructure{
 
 						mFragInstance.setStateEvaluationOfContextNode(contextNode, ContextNodeEvaluationState.EVALUATION_OK); 
 						
-						ssbn.getLogManager().appendln("Evaluated OK");
+						ssbn.getLogManager().printText(level5, false, "Node evaluated OK");
 						
 					} catch (MFragContextFailException e) {
+						
 						e.printStackTrace(); 
+						
 						mFragInstance.setStateEvaluationOfContextNode(contextNode, ContextNodeEvaluationState.EVALUATION_FAIL); 
 						mFragInstance.setUseDefaultDistribution(true); 
-						ssbn.getLogManager().appendln("   !!!Context node fail: use the default distribution");
+						ssbn.getLogManager().printText(level5, false,"Context Node FAIL: use the default distribution");
 						
 						//Here, the context node fail adding the values for a ordinary variable
 						//fault. This fail impossibilite the evaluation of the rest of the MFragInstance, 
@@ -828,8 +802,8 @@ public class BuilderStructureImpl implements IBuilderStructure{
 
 				}else{
 
-					ssbn.getLogManager().appendln("Try 2: Use the iteration strategy");
-					ssbn.getLogManager().appendln("...still not implemented.\n");
+//					ssbn.getLogManager().printText(level5, false, "Try 2: Use the iteration strategy");
+//					ssbn.getLogManager().printText(level5, false, "...still not implemented.\n");
 					
 					//---> 3) Use the Interation with user Strategy. 
 					//TODO To be developed yet... 
@@ -859,7 +833,8 @@ public class BuilderStructureImpl implements IBuilderStructure{
 //					}
 
 					//---> 4) Use the uncertainty Strategy. 
-					ssbn.getLogManager().appendln("Try 3: Use the uncertain reference strategy");
+					ssbn.getLogManager().printText(level5, false, 
+							"Try 2: Use the uncertain reference strategy");
 
 					//Utilized only in the specific case z = RandomVariable(x), 
 					//where z is the unknow variable. (Should have only one unknow variable)
@@ -877,13 +852,12 @@ public class BuilderStructureImpl implements IBuilderStructure{
 						}
 						catch(ImplementationRestrictionException e){
 							mFragInstance.setUseDefaultDistribution(true); 
-							ssbn.getLogManager().appendln("Fail: " + e.getMessage());
-							//TODO Warning list
+							ssbn.getLogManager().printText(level5, false, "Fail: " + e.getMessage());
 						}
 					}
 					
 					//--> 5) Nothing more to try... context fail
-					ssbn.getLogManager().appendln("Still ov fault... nothing more to do. " +
+					ssbn.getLogManager().printText(level4, false,"Still ov fault... nothing more to do. " +
 							"Use default distribution");
 					mFragInstance.setStateEvaluationOfContextNode(contextNode, 
 							ContextNodeEvaluationState.EVALUATION_FAIL); 
@@ -896,7 +870,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		}
 		
 		
-		ssbn.getLogManager().appendln("2) Loop for evaluate the IsA nodes"); 
+		ssbn.getLogManager().printText(level4, false,"2) Loop for evaluate the IsA nodes"); 
 		
 		//Return a list of ordinary variables of the MFrag that don't are evaluated yet. 
 		List<OrdinaryVariable> ovDontFoundYetList = new ArrayList<OrdinaryVariable>(); 
@@ -911,12 +885,12 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			//no context node about this ov... the value is unknown, we should 
 			//consider all the possible values. Note the use of the Closed Word
 			//Asspetion. 
-			ssbn.getLogManager().appendln("Evaluate IsA for OV " + ov.getName());
+			ssbn.getLogManager().printText(level4, false,"Evaluate IsA for OV " + ov.getName());
 			
 			List<String> possibleValues = kb.getEntityByType(ov.getValueType().getName()); 
 			
 			for(String possibleValue: possibleValues){
-				ssbn.getLogManager().appendln("  > " + possibleValue);
+				ssbn.getLogManager().printText(level4, false, "  > " + possibleValue);
 			}
 			
 			String possibleValuesArray[] = possibleValues.toArray(new String[possibleValues.size()]); 
@@ -938,16 +912,17 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		}
 		
 		List<String[]> possibleCombinationsList = mFragInstance.recoverAllCombinationsEntitiesPossibles(); 
-		ssbn.getLogManager().appendln("|-------------------------------------------------------"); 
-		ssbn.getLogManager().appendln("| Result of evalation of the context nodes (Possible combinations): ");
+		ssbn.getLogManager().printBox3Bar(level4); 
+		ssbn.getLogManager().printBox3(level4, 0, "Result of evalation of the context nodes (Possible combinations): ");
 		for(String[] possibleCombination : possibleCombinationsList){
-			ssbn.getLogManager().append("| > ");
+			String ordinaryVariableComb = " > ";
 			for(String ordinaryVariableValue: possibleCombination){
-				ssbn.getLogManager().append(" " + ordinaryVariableValue);
+				ordinaryVariableComb += " " + ordinaryVariableValue;
 			}
-			ssbn.getLogManager().appendln(" < ");
+			ordinaryVariableComb += " < ";
+			ssbn.getLogManager().printBox3(level4, 1, ordinaryVariableComb); 
 		}
-		ssbn.getLogManager().appendln("|-------------------------------------------------------"); 
+		ssbn.getLogManager().printBox3Bar(level4); 
 		
 		//Return mFragInstance with the ordinary variables filled. 
 		return mFragInstance; 
@@ -1035,6 +1010,63 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			
 			throw new RuntimeException(e.getMessage()); 
 		} 
+	}
+	
+	/**
+	 * This class is used to offer to the resident node and the input node the 
+	 * same comportment for the method "createParents"
+	 * 
+	 * @author Laecio
+	 */
+	private class JacketNode{
+		
+		private ResidentNode residentNode; 
+		private InputNode inputNode; 
+		
+		private boolean isResidentNode = false; 
+		
+		protected JacketNode(ResidentNode _residentNode){
+			this.residentNode = _residentNode;
+			this.isResidentNode = true; 
+		}
+
+		protected JacketNode(InputNode _inputNode){
+			this.inputNode = _inputNode;
+			this.isResidentNode = false; 		
+		}
+
+		public ResidentNode getResidentNode() {
+			if(isResidentNode){
+				return residentNode;
+			}else{
+				return inputNode.getResidentNodePointer().getResidentNode(); 
+			}
+		}
+		
+		public Collection<OrdinaryVariable> getOrdinaryVariableList() {
+			if(isResidentNode){
+				return residentNode.getOrdinaryVariableList(); 
+			}else{
+				return inputNode.getOrdinaryVariableList(); 
+			}
+		}
+		
+		public OrdinaryVariable getCorrespondentOrdinaryVariable(OrdinaryVariable ov){
+			if(isResidentNode){
+				return ov; 
+			}else{
+				return inputNode.getResidentNodePointer().getCorrespondentOrdinaryVariable(ov);
+			}
+		}
+		
+		public boolean isResidentNode() {
+			return isResidentNode;
+		}
+		
+		public boolean isInputNode(){
+			return !isResidentNode; 
+		}
+		
 	}
 	
 }

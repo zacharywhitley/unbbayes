@@ -58,14 +58,14 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
   	private Boolean enabled = true;
   	
     public TextLogManager(int bufferSize) {
-        Properties prop = ApplicationPropertyHolder.getProperty();
-    	try {
-    		if (!Boolean.valueOf(prop.get(this.getClass().getCanonicalName()+".enabled").toString())) {
-        		this.setEnabled(false);
-        	}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+//        Properties prop = ApplicationPropertyHolder.getProperty();
+//    	try {
+//    		if (!Boolean.valueOf(prop.get(this.getClass().getCanonicalName()+".enabled").toString())) {
+//        		this.setEnabled(false);
+//        	}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
     	log = new StringBuffer(bufferSize);
         reset();
         
@@ -178,10 +178,6 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
 
 	public Boolean getEnabled() {
 		return enabled;
-	}
-
-	public void setEnabled(Boolean enabled) {
-		this.enabled = enabled;
 	}
 
 	public Boolean isEnabled(){

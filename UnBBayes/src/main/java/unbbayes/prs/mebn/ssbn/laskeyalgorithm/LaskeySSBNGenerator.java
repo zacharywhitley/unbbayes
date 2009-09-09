@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import unbbayes.io.log.IdentationNivel;
+import unbbayes.io.log.IdentationLevel;
 import unbbayes.prs.INode;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.MFrag;
@@ -92,9 +92,12 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 			
 			ssbn.getLogManager().printText(null, false, resourceLog.getString("010_StepFinished")); 
 			
-			ssbn.getLogManager().appendln("List of nodes: "); 
+			ssbn.getLogManager().skipLine(); 
+			ssbn.getLogManager().printBox2Bar(); 
+			ssbn.getLogManager().printBox2("List of nodes: "); 
 			printSimpleSSBNNodeList(ssbn); 
-
+			ssbn.getLogManager().printBox2Bar(); 
+			
 			ssbn.getLogManager().skipLine(); 
 			ssbn.getLogManager().printSectionSeparation(); 
 		}
@@ -110,8 +113,11 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 			
 			ssbn.getLogManager().printText(null, false, resourceLog.getString("010_StepFinished")); 
 			
-			ssbn.getLogManager().appendln("\nList of nodes: "); 
+			ssbn.getLogManager().skipLine(); 
+			ssbn.getLogManager().printBox2Bar(); 
+			ssbn.getLogManager().printBox2("List of nodes: "); 
 			printSimpleSSBNNodeList(ssbn); 
+			ssbn.getLogManager().printBox2Bar(); 
 
 			ssbn.getLogManager().skipLine(); 
 			ssbn.getLogManager().printSectionSeparation(); 
@@ -140,6 +146,7 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		ssbn.getLogManager().printBox1(resourceLog.getString("007_ExecutionSucces")); 
 		ssbn.getLogManager().printBox1(resourceLog.getString("009_Time") + ": " + deltaTime + " ms"); 
 		ssbn.getLogManager().printBox1Bar(); 
+		ssbn.getLogManager().skipLine(); 
 		
 		this.cleanUpSSBN(ssbn);
 		
@@ -162,7 +169,7 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 			for(INode nodeParent: node.getParentNodes()){
 			      parentIdList+= ((SimpleSSBNNode)nodeParent).getId() + " "; 
 			}
-			ssbn.getLogManager().appendln(
+			ssbn.getLogManager().printBox2(
 					"   - " + node.toString() + " Parents = [" + parentIdList +"]");
 		}
 		ssbn.getLogManager().appendln("");
@@ -198,10 +205,10 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		
 		//Parameters: 
 
-		IdentationNivel in = new IdentationNivel(null); 
+		IdentationLevel in = new IdentationLevel(null); 
 		
 		//Add queries to the list of nodes
-		IdentationNivel in1 = new IdentationNivel(in); 
+		IdentationLevel in1 = new IdentationLevel(in); 
 		ssbn.getLogManager().printText(in1, true, 
 				resourceLog.getString("011_BuildingSSBNForQueries")); 
 		
@@ -227,7 +234,7 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		//Add findings to the list of nodes
 		
 		if(addFindings){
-			in1 = new IdentationNivel(in); 
+			in1 = new IdentationLevel(in); 
 			ssbn.getLogManager().printText(in1, true, 
 					resourceLog.getString("012_BuildingSSBNForFindings")); 
 

@@ -29,7 +29,7 @@ public class NetworkCompilationLogManager extends TextLogManager{
      */
     public void reset() {
     	clear();
-        append(resource.getString("logHeader"));
+//        append(resource.getString("logHeader"));
     }
 	
     public void finishLog(JunctionTree tree, ArrayList<Node> nodes) {

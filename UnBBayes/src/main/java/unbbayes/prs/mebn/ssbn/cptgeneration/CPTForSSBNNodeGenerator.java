@@ -7,7 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import unbbayes.gui.table.GUIPotentialTable;
-import unbbayes.io.log.ILogManager;
+import unbbayes.io.log.ISSBNLogManager;
+import unbbayes.io.log.IdentationLevel;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -26,9 +27,16 @@ import unbbayes.util.Debug;
  */
 public class CPTForSSBNNodeGenerator {
 
-	public ILogManager logManager; 
+	public ISSBNLogManager logManager; 
 	
-	public CPTForSSBNNodeGenerator(ILogManager _logManager){
+	IdentationLevel level1 = new IdentationLevel(null); 
+	IdentationLevel level2 = new IdentationLevel(level1); 
+	IdentationLevel level3 = new IdentationLevel(level2); 
+	IdentationLevel level4 = new IdentationLevel(level3); 
+	IdentationLevel level5 = new IdentationLevel(level4); 
+	IdentationLevel level6 = new IdentationLevel(level5);
+	
+	public CPTForSSBNNodeGenerator(ISSBNLogManager _logManager){
 		this.logManager = _logManager; 
 	}
 	
@@ -61,7 +69,7 @@ public class CPTForSSBNNodeGenerator {
 			return; 
 		}else{
 			
-			logManager.appendln("\nGenerate CPT for node " + root); 
+//			logManager.printText(level2, false,"Generate CPT for node " + root); 
 			
 			//------------------1) PARENTS
 //			logManager.appendln(level, "Parents:"); 
@@ -82,11 +90,11 @@ public class CPTForSSBNNodeGenerator {
 			generateCPT(root);
 			}
 			catch (MEBNException e) {
-				logManager.appendln("ERROR IN THE CPT EVALUATION OF NODE " + root.getName());
+				logManager.printText(level3, false,"ERROR IN THE CPT EVALUATION OF NODE " + root.getName());
 				throw e; 
 			}
 			catch (SSBNNodeGeneralException e) {
-				logManager.appendln("ERROR IN THE CPT EVALUATION OF NODE " + root.getName());
+				logManager.printText(level3, false,"ERROR IN THE CPT EVALUATION OF NODE " + root.getName());
 				throw e; 
 			}
 			
@@ -128,10 +136,10 @@ public class CPTForSSBNNodeGenerator {
 			parent.turnArgumentsForMFrag(ssbnNode.getResident().getMFrag()); 
 		}
 		
-		logManager.appendln("---- CPT for node: " + ssbnNode.getUniqueName() + "-----"); 
-		logManager.appendln("Parents:"); 
+		logManager.printText(level2, false,"Generate CPT for node " + ssbnNode.getUniqueName()); 
+		logManager.printText(level3, false,"Parents:"); 
 		for(SSBNNode parent: ssbnNode.getParents()){
-			logManager.appendln(parent.toString()); 
+			logManager.printText(level4, false, parent.toString()); 
 		}
 //		logManager.appendln("Init"); 
 		
@@ -139,10 +147,10 @@ public class CPTForSSBNNodeGenerator {
 			//Generate the cpt of the context father ssbnnode
 			if(ssbnNode.getContextFatherSSBNNode()!=null){ 
 				try {
-					logManager.appendln(" Context Parent Node: " + ssbnNode.getContextFatherSSBNNode()); 
+					logManager.printText(level3, false, " Context Parent Node: " + ssbnNode.getContextFatherSSBNNode()); 
 					generateCPTForNodeWithContextFather(ssbnNode);
 				} catch (InvalidOperationException e1) {
-					logManager.appendln("ERROR IN THE CPT EVALUATION OF NODE " + ssbnNode.getName()); 
+					logManager.printText(level3, false, "ERROR IN THE CPT EVALUATION OF NODE " + ssbnNode.getName()); 
 					e1.printStackTrace();
 					throw new SSBNNodeGeneralException(e1.getMessage()); 
 				}
@@ -154,6 +162,7 @@ public class CPTForSSBNNodeGenerator {
 			}
 		}
 		
+		logManager.printText(level3, false,"Generated"); 
 //		logManager.appendln("End");
 		
 	}
@@ -180,12 +189,12 @@ public class CPTForSSBNNodeGenerator {
 				mapParentsByEntity.put(entity.getInstanceName(), new ArrayList<SSBNNode>()); 
 			}
 			
-			logManager.appendln("\nGenerate table for node (with context father): " + ssbnNode);
-			logManager.appendln("Parents:");
-			for(SSBNNode parent: ssbnNode.getParents()){
-				logManager.appendln("  " + parent);
-			}
-			logManager.appendln("OVProblematic = " + contextFather.getOvProblematic().getName() 
+			logManager.printText(level3, false, "Node " + ssbnNode + "have context father.");
+//			logManager.appendln("Parents:");
+//			for(SSBNNode parent: ssbnNode.getParents()){
+//				logManager.appendln("  " + parent);
+//			}
+			logManager.printText(level3, false," OV Problematic = " + contextFather.getOvProblematic().getName() 
 					+ " " + contextFather.getOvProblematic().getMFrag().getName() 
 					+ contextFather.getOvProblematic().getValueType().getName());
 			
@@ -389,7 +398,7 @@ public class CPTForSSBNNodeGenerator {
 			
 			Debug.setDebug(false);
 			
-			logManager.appendln("CPT OK\n");
+			logManager.printText(level3, false,"CPT OK");
 		
 	}
 	

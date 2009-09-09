@@ -35,11 +35,13 @@ public class ResourcesSSBNAlgorithmLog extends ListResourceBundle {
 		{"011_BuildingSSBNForQueries", "Building the SSBNNodes for the queries"}, 
 		{"012_BuildingSSBNForFindings", "Building the SSBNNodes for the findings"}, 
 		
-		
 		{"007_ExecutionSucces",  "Execution Success"},
 		{"008_ExecutionFail", "Execution Fail"}, 
 		{"009_Time", "Time"},
-			
+		
+		{"012_IterationNumber", "Iteration"}, 
+		{"013_NotFinishedNodesList", "List of nodes unfinished"}, 
+		
 		{"CycleFoundException","Cycle found"}
 	};
 }

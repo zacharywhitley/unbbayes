@@ -11,6 +11,10 @@ public class SSBNTextLogManager extends TextLogManager
 	private static char boxWallCharacter = '|';
 	private static char separator = '*'; 
 	
+	public boolean enabled = true; 
+	
+
+	
 	public void printBox1(String text) {
 		super.appendln("" + ' ' + box1BarCharacter + ' ' + text + ' '); 
 	}
@@ -27,12 +31,13 @@ public class SSBNTextLogManager extends TextLogManager
         this.printBar(box2BarCharacter); 
 	}
 
-	public void printBox3(IdentationNivel identationNivel, int position,
+	public void printBox3(IdentationLevel identationNivel, int position,
 			String text) {
 		super.appendln("" + ' ' + identationNivel.getIdentationSpaces() + boxWallCharacter + ' ' + text); 
 	}
 
-	public void printBox3Bar() {
+	public void printBox3Bar(IdentationLevel identationNivel) {
+		super.append("" + ' ' + identationNivel.getIdentationSpaces()); 
         this.printBar(box3BarCharacter); 
 	}
 
@@ -40,7 +45,7 @@ public class SSBNTextLogManager extends TextLogManager
 		this.printBar(separator); 
 	}
 
-	public void printText(IdentationNivel identationNivel, boolean printNumber,
+	public void printText(IdentationLevel identationNivel, boolean printNumber,
 			String text) {
 		
 		StringBuilder sb = new StringBuilder();
@@ -68,5 +73,13 @@ public class SSBNTextLogManager extends TextLogManager
 
 	public void skipLine() {
 		super.appendln(""); 
+	}
+
+	public Boolean isEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
 	}
 }

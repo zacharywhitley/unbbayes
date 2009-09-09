@@ -3,6 +3,7 @@ package unbbayes.prs.mebn.ssbn;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import unbbayes.io.log.IdentationLevel;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.cptgeneration.CPTForSSBNNodeGenerator;
@@ -13,6 +14,13 @@ import unbbayes.util.ApplicationPropertyHolder;
 
 public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 
+	IdentationLevel level1 = new IdentationLevel(null); 
+	IdentationLevel level2 = new IdentationLevel(level1); 
+	IdentationLevel level3 = new IdentationLevel(level2); 
+	IdentationLevel level4 = new IdentationLevel(level3); 
+	IdentationLevel level5 = new IdentationLevel(level4); 
+	IdentationLevel level6 = new IdentationLevel(level5); 
+	
 	private static boolean clearSimpleSSBNNodeListAtLPD = false;
 	static{
 		try {
@@ -41,13 +49,13 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 		try {
 			//Here only one probabilistic network are created... The fix should be
 			//here, creating multiples pn's. 
-			ssbn.getLogManager().appendln("\n[1] Separing the desconected networks"); 
+			ssbn.getLogManager().printText(level1, false, "[1] Separing the desconected networks"); 
 			List<SimpleSSBNNode>[] nodesPerNetworkArray = SimpleSSBNNodeUtils.individualizeDesconectedNetworks(ssbn.getSimpleSsbnNodeList()); 
 			int netId = 0; 
 			for(List<SimpleSSBNNode> networkNodesList: nodesPerNetworkArray){
-				ssbn.getLogManager().appendln("Network " + netId + ":"); netId++; 
+				ssbn.getLogManager().printText(level2, false, "Network " + netId + ":"); netId++; 
 				for(SimpleSSBNNode node: networkNodesList){
-					ssbn.getLogManager().appendln(" >" + node);
+					ssbn.getLogManager().printText(level3, false, " >" + node);
 				}
 			}
 			
@@ -63,9 +71,9 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 				}
 			}
 			nodesPerNetworkArray = null;
+			ssbn.getLogManager().skipLine(); 
 			
-			
-			ssbn.getLogManager().appendln("\n[2] Genering the network"); 
+			ssbn.getLogManager().printText(level1, false, "[2] Genering the network"); 
 			pn =  new ProbabilisticNetwork(this.resource.getString("DefaultNetworkName"));
 			if(listForQuery!=null){
 				List<SSBNNode> listSSBNNode = SimpleSSBNNodeUtils.translateSimpleSSBNNodeListToSSBNNodeList(listForQuery, pn);
@@ -84,7 +92,8 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 			e.printStackTrace();
 			throw new RuntimeException(e.getMessage()); 
 		} 
-		ssbn.getLogManager().appendln("\nSimple Nodes translated to SSBNNodes"); 
+		
+		ssbn.getLogManager().printText(level2,false, "Simple Nodes translated to SSBNNodes"); 
 		
 		// clearing simple ssbn nodes
 		if (clearSimpleSSBNNodeListAtLPD) {
@@ -96,6 +105,7 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 	    CPTForSSBNNodeGenerator build = new CPTForSSBNNodeGenerator(ssbn.getLogManager());
 	    
 	    if(ssbn.getSsbnNodeList().size() > 0){
+			ssbn.getLogManager().printText(level2, false, "Generate CPT for the SSBNNodes");
 	    	build.generateCPTForAllSSBNNodes(ssbn.getSsbnNodeList().get(0));
 	    }else{
 	    	throw new SSBNNodeGeneralException(resource.getString("NotNodeInSSBN")); 

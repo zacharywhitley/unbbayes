@@ -376,6 +376,7 @@ public class PowerLoomKB implements KnowledgeBase {
 		
 		List<StateLink> links = resident.getPossibleValueLinkList(); 
 		
+		boolean debugSetted = Debug.isDebugMode(); 
 		Debug.setDebug(true); 
 		
 		String range = ""; 
@@ -461,6 +462,8 @@ public class PowerLoomKB implements KnowledgeBase {
 		// PLI.sEvaluate("(assert (closed " + resident.getName() + "))",
 		// moduleName, null);
 
+		Debug.setDebug(debugSetted); 
+		
 	}
 
 	public void createGenerativeKnowledgeBase(
@@ -603,7 +606,7 @@ public class PowerLoomKB implements KnowledgeBase {
     public List<String> evaluateSingleSearchContextNodeFormula(ContextNode context, List<OVInstance> ovInstances)
                                      throws OVInstanceFaultException{
     	
-    	Debug.setDebug(true); 
+    	Debug.setDebug(false); 
     	String formula = ""; 
 		
 		NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree(); 
@@ -652,7 +655,7 @@ public class PowerLoomKB implements KnowledgeBase {
 	public SearchResult evaluateSearchContextNodeFormula(
 			ContextNode context, List<OVInstance> ovInstances) {
 		
-		Debug.setDebug(true); 
+		Debug.setDebug(false); 
     	String formula = ""; 
 		
 		NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree(); 
@@ -713,8 +716,6 @@ public class PowerLoomKB implements KnowledgeBase {
 			
 		}
 		
-		
-				
 		return searchResult;
 	}
 

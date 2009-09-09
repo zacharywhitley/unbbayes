@@ -1,6 +1,6 @@
 package unbbayes.io.log;
 
-public class IdentationNivel {
+public class IdentationLevel {
 
 	public static int SPACES_FOR_IDENTATION = 4;  
 	private static char SEPARATOR = '.'; 
@@ -9,11 +9,11 @@ public class IdentationNivel {
 	
 	private int level; 
 	
-	private IdentationNivel father;
+	private IdentationLevel father;
 
 	private int childrenQuant = 0; 
 	
-	public IdentationNivel(IdentationNivel _father){
+	public IdentationLevel(IdentationLevel _father){
 		this.father = _father;
 		if(_father != null){
 			this.level = father.getLevel() + 1; 
@@ -37,7 +37,7 @@ public class IdentationNivel {
 		return number;
 	}
 
-	public IdentationNivel getFather() {
+	public IdentationLevel getFather() {
 		return father;
 	}
 
