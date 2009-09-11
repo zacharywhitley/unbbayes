@@ -20,6 +20,13 @@
       </includes>
     </fileSet>
     <fileSet>
+      <directory>.</directory>
+      <outputDirectory>.</outputDirectory>
+      <includes>
+        <include>unbbayes.properties</include>
+      </includes>
+    </fileSet>
+    <fileSet>
       <directory>examples</directory>
       <outputDirectory>examples</outputDirectory>
       <includes>

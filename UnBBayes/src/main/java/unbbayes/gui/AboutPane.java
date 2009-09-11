@@ -27,9 +27,7 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Properties;
 import java.util.ResourceBundle;
 
 import javax.swing.BorderFactory;
@@ -43,6 +41,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.border.Border;
 
+import unbbayes.util.ApplicationPropertyHolder;
 import unbbayes.util.ResourceController;
 
 /**
@@ -53,14 +52,13 @@ import unbbayes.util.ResourceController;
  */
 public class AboutPane extends JDialog{
 
+	private static final long serialVersionUID = -4899450284495188960L;
+
 	private Color backgroundColor; 
 	
-	private String name; 
 	private String version; 
 	private String buildID; 
 	private String stableStatus; 
-	
-	private final String propertyFile = "unbbayes.properties"; 
 	
 	private static final String COLABORATORS_PAGE = "/html/Colaborators.html"; 
 	private static final String LOGO_PICTURE = "/img/logo_small.png"; 
@@ -87,17 +85,9 @@ public class AboutPane extends JDialog{
 	}
 	
 	private void initialize(){
-        Properties properties = new Properties();
-	    try {
-	        properties.load(new FileInputStream(propertyFile));
-	    } catch (IOException e) {
-	    	System.out.println(e);
-	    }
-
-	    version = properties.getProperty("version", ""); 
-	    buildID = properties.getProperty("buildId", ""); 
-	    stableStatus = properties.getProperty("stableStatus", ""); 	
-	    
+	    version = ApplicationPropertyHolder.getProperty().getProperty("version", ""); 
+	    buildID = ApplicationPropertyHolder.getProperty().getProperty("buildId", ""); 
+	    stableStatus = ApplicationPropertyHolder.getProperty().getProperty("stableStatus", ""); 	
 	}
 	
 	class MainPane extends JPanel{
