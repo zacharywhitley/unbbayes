@@ -1,0 +1,64 @@
+UnBBayes Tutorial
+~~~~~~~~~~~~~~
+
+  Recently we have received a lot of e-mails from users asking us to help them 
+  make the best use of UnBBayes. Since UnBBayes has been developed by Brazilians 
+  from the University of Brasilia (UnB), most of the dissertations, thesis, and 
+  documentation we have are in Portuguese. 
+  
+  Unfortunately, most of UnBBayes' users do not speak Portuguese. Therefore, we 
+  have been working with George Mason University (GMU) on creating/translating 
+  these tutorials in/to English.
+  
+  Part of this effort has been on creating video tutorial to help users get 
+  familiar with UnBBayes even faster.
+
+* Overview
+~~~~~~~~~~~~~~~~~~~~
+
+  In this video we are going to show the basic function we have in UnBBayes. 
+  This is the first of many tutorials we have been creating to support the demand 
+  for documentation on how to use UnBBayes. We hope this will help UnBBayes' user 
+  community to grow even more.
+  
+  <center>
+	  <object width="425" height="344">
+	  	<param name="movie" 
+	  	value="http://www.youtube.com/v/FZa1Obn9qI0&hl=en&fs=1">
+	  	</param>
+	  	<param name="allowFullScreen" value="true">
+	  	</param>
+	  	<param name="allowscriptaccess" value="always">
+	  	</param>
+	  	<embed src="http://www.youtube.com/v/FZa1Obn9qI0&hl=en&fs=1" 
+	  	type="application/x-shockwave-flash" allowscriptaccess="always" 
+	  	allowfullscreen="true" width="425" height="344">
+	  	</embed>
+	  </object>
+  </center>
+
+* Bayesian Network
+~~~~~~~~~~~~~~~~~~~
+
+  In this video we are going to show how to create and compile a Bayesian Network 
+  (BN) in UnBBayes. This is our second of many video tutorials we have been 
+  creating to support the demand for documentation on how to use UnBBayes. 
+  We hope this will help UnBBayes' user community to grow even more.
+  
+  <center>
+	  <object width="425" height="344">
+	  	<param name="movie" 
+	  	value="http://www.youtube.com/v/ExlfjBQfvMk&hl=en&fs=1&">
+	  	</param>
+	  	<param name="allowFullScreen" value="true">
+	  	</param>
+	  	<param name="allowscriptaccess" value="always">
+	  	</param>
+	  	<embed src="http://www.youtube.com/v/ExlfjBQfvMk&hl=en&fs=1&" 
+	  	type="application/x-shockwave-flash" allowscriptaccess="always" 
+	  	allowfullscreen="true" width="425" height="344">
+	  	</embed>
+	  </object>
+  </center>
+
+

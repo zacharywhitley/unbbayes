@@ -1,6 +1,0 @@
-StarTrek40.ubf
--> Modificação do 39 retirando as partes da modelagem que se referiam a modelagem da recursividade utilizando MFrags especiais. 
-
-StarTrek39.ubf
--> Ultima versão do Shou. 
--> Utilizada nas classes de teste do compilador
