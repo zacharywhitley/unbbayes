@@ -1705,6 +1705,11 @@ By using classes which have some equivalencies to object properties, we can crea
         <Class URI="&LahoreBombing_NonProbabilistic;Plan"/>
         <Individual URI="&LahoreBombing_NonProbabilistic;ConfAtk"/>
     </ClassAssertion>
+    <DataPropertyAssertion>
+        <DataProperty URI="&LahoreBombing_NonProbabilistic;isActivePlan"/>
+        <Individual URI="&LahoreBombing_NonProbabilistic;ConfAtk"/>
+        <Constant datatypeURI="&xsd;boolean">true</Constant>
+    </DataPropertyAssertion>
     <Declaration>
         <Individual URI="&LahoreBombing_NonProbabilistic;ConfAtk"/>
     </Declaration>
