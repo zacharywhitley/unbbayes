@@ -332,7 +332,8 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	
 	
 	/**
-	 * Auxiliary method for sum()
+	 * Auxiliary method for sum().
+	 * Recursively sums all the values of the variable with the index specified. 
 	 * 
 	 * @param control
 	 *            Control index for the recursion. Call with the value
@@ -340,14 +341,18 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	 * @param index
 	 *            Index of the variable to delete from the table
 	 * @param coord
+	 *            The current iterated linear coordinate of the table. 
 	 *            Call with 0
 	 * @param base
-	 *            Call with 0
+	 * 			  Represents the number that needs to be subtracted from coord to reach the first coordinate of the variable.
+	 *            Call with 0.
 	 * @param marked
+	 * 			  The removed cells will be marked as 'true'.
 	 *            Call with an array of falses.
 	 */
 	private void sumAux(int control, int index, int coord, int base, boolean[] marked) {
 		if (control == -1) {
+			// concentrate the sum on the first cell. 
 			int linearCoordDestination = coord - base;
 			float value = dataPT.data[linearCoordDestination] + dataPT.data[coord];
 			dataPT.data[linearCoordDestination] = value;
@@ -356,7 +361,9 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 		}
 		
 		Node node = variableList.get(control);
-		if (control == index) {	
+		if (control == index) {
+			// if the current iterated variable is the one we want to delete, then iterate only until 1,
+			// because the position 0 will hold the sum. 
 			for (int i = node.getStatesSize()-1; i >= 1; i--) {
 				sumAux(control-1, index, coord + i*factorsPT[control], i*factorsPT[index], marked);
 			}	
