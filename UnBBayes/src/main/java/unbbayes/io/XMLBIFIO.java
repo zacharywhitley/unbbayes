@@ -68,12 +68,12 @@ public class XMLBIFIO implements BaseIO{
 		} catch (Exception e) {
 			try {
 				// Try version 0.5.
-				e.printStackTrace();
+//				e.printStackTrace();
 				unbbayes.io.xmlbif.version5.XMLBIFIO.loadXML(input, pn);
 			} catch (Exception e2) {
 				// Try version 0.4.
 				try {
-					e2.printStackTrace();
+//					e2.printStackTrace();
 					unbbayes.io.xmlbif.version4.XMLBIFIO.loadXML(input, pn);
 				} catch (Exception e3) {
 					e3.printStackTrace();

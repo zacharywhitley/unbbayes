@@ -22,6 +22,131 @@ public class EvaluationAnalysis {
 	protected int statesProduct;
 	protected IEvaluation evaluation;
 	
+	public void computeErrorBySampleSize(String netFileName, List<String> targetNodeNameList,
+			List<String> evidenceNodeNameList, float exactPcc) throws Exception {
+		
+		loadNetwork(netFileName);
+		computeStatesProduct(targetNodeNameList, evidenceNodeNameList);
+		
+		// As the error is a function of P(E|T) it only depends on the size of E and not T
+		statesProduct /= targetNodeNameList.get(0).length();
+		
+		int sampleSize = 0;
+		if (evidenceNodeNameList.size() == 2) {
+			sampleSize = 500;
+		} else if (evidenceNodeNameList.size() == 3) {
+			sampleSize = 5000;
+		} else if (evidenceNodeNameList.size() == 4) {
+			sampleSize = 50000;
+		} else {
+			return;
+		}
+		
+//		Debug.setDebug(true);
+//		Debug.println("\n****************************************\n");
+//		Debug.print("\n%80s , %20s , %20s , %20s , %20s , %20s , %20s , %20s\n", "Evidences", "States Size", "Exact Pcc", "Sample Size", "Sample / States", "Mean", "Variance", "Time");
+//		Debug.print("%20s %15s", "Target: ", targetNodeNameList.get(0));
+//		Debug.print("\n%20s", "Evidences: ");
+//		for (String evidence : evidenceNodeNameList) {
+//			Debug.print("%20s ", evidence);
+//		}
+//		Debug.print("\n%20s %15d", "States product: ", statesProduct);
+//		Debug.print(" , %20d", statesProduct);
+//		Debug.print("\n%20s %10.5f", "Exact Pcc: ", exactPcc);
+//		Debug.print(" , %1.19f", exactPcc);
+		
+		// pcc[i][j][k], where i is the approximate error 
+		// (i = 0 => .05 => startSampleSize*5, i = 1 => .02 => startSampleSize*10, i = 2 => .005 => startSampleSize*50)
+		// j for different sample size (j = 0 => sampleSize/10, i = 1 => sampleSize, i = 2 => sampleSize*10)
+		// k is each of the 100 pcc we are going to compute.
+		float approximatePcc[][][] = new float[3][3][100];
+		long init;
+		long end;
+		for (int i = 0; i < approximatePcc.length; i++) {
+			if (i == 0) {
+				sampleSize *= 5;
+			} else if (i == 1) {
+				sampleSize *= 10;
+			} else if (i == 2) {
+				sampleSize *= 50;
+			}
+			for (int j = 0; j < approximatePcc[0].length; j++) {
+				if (j == 0) {
+					sampleSize /= 10;
+				} else if (j == 1) {
+				} else if (j == 2) {
+					sampleSize *= 10;
+				}
+				Debug.setDebug(true);
+				Debug.println("");
+				for (int b = 0; b < 4 - evidenceNodeNameList.size(); b++) {
+					Debug.print("%20s", "");
+				}
+				for (String evidence : evidenceNodeNameList) {
+					Debug.print("%20s", evidence);
+				}
+				Debug.print(" , %20d", statesProduct);
+				Debug.print(" , %1.19f", exactPcc);
+				Debug.print(" , %20d , %1.19f", sampleSize, (float)sampleSize / statesProduct);
+				init = System.currentTimeMillis();
+				for (int k = 0; k < approximatePcc[0][0].length && sampleSize < 10000000; k++) {
+					Debug.setDebug(false);
+					
+					evaluation = new MemoryEfficientApproximateEvaluation(sampleSize);
+					
+					evaluation.evaluate(net, targetNodeNameList, evidenceNodeNameList, true);
+					
+//					Debug.setDebug(true);
+//					Debug.println("Sample size: " + (times-1) + " * " + statesProduct + " = " + ((times-1)*statesProduct));
+//					Debug.println("Time elapsed for evaluating: " + (float)(end-init)/1000);
+//					Debug.setDebug(false);
+					approximatePcc[i][j][k] = evaluation.getEvidenceSetPCC();
+					System.gc();
+					
+					Debug.setDebug(true);
+					//Debug.print("\n%20s %10.5f", "Approximate Pcc: ", approximatePcc[i][j][k]);
+//					Debug.print("%10.5f", approximatePcc[i][j][k] - exactPcc);
+				}
+				end = System.currentTimeMillis();
+				Debug.print(" , %1.19f , %1.19f", mean(approximatePcc[i][j]) - exactPcc, variance(approximatePcc[i][j]));
+//				Debug.print("\n%20s %10.5f %15s\n", "Time spent: ", (float)(end-init)/1000, " seconds");
+				Debug.print(" , %1.19f", (float)(end-init)/1000);
+				if (j == 0) {
+					sampleSize *= 10;
+				} else if (j == 2) {
+					sampleSize /= 10;
+				}
+			}
+			if (i == 0) {
+				sampleSize /= 5;
+			} else if (i == 1) {
+				sampleSize /= 10;
+			} else if (i == 2) {
+				sampleSize /= 50;
+			}
+		}
+//		Debug.println("\n****************************************\n");
+		Debug.setDebug(false);
+	}
+	
+	public float mean(float[] values) {
+		float total = 0;
+		for (int i = 0; i < values.length; i++) {
+			total += values[i];
+		}
+		return total / values.length;
+	}
+	
+	public float variance(float[] values) {
+		float total = 0;
+		float total2 = 0;
+		for (int i = 0; i < values.length; i++) {
+			total += values[i];
+			total2 += Math.pow(values[i], 2);
+		}
+		return (total2 / values.length) - (float)Math.pow((total / values.length), 2); 
+	}
+	
 	public void computeSampleSizeByErrorVariance(String netFileName, List<String> targetNodeNameList,
 			List<String> evidenceNodeNameList, float error, float exactPcc) throws Exception {
 		
@@ -149,18 +274,22 @@ public class EvaluationAnalysis {
 		net = io.load(netFile);
 	}
 	
+	public enum EvaluationAnalysisOption {
+		EXACT,
+		SAMPLE_SIZE,
+		ERROR;
+	}
+	
 	public static void main(String[] args) throws Exception {
 		
-		EvaluationAnalysis an = new EvaluationAnalysis();
+		Debug.setDebug(true);
+		Debug.println("\n****************************************\n");
+		Debug.print("\n%80s , %20s , %20s , %20s , %20s , %20s , %20s , %20s", "Evidences", "States Size", "Exact Pcc", "Sample Size", "Sample / States", "Mean", "Variance", "Time");
+		Debug.setDebug(false);
 		
-		String netFileName = "src/test/resources/testCases/evaluation/AirID.xml";
 		List<String> targetNodeNameList = new ArrayList<String>();
 		
 		List<String> evidenceNodeNameList = new ArrayList<String>();
-		
-		boolean approximate = false;
-		
-		float error = .0025f;
 		
 		targetNodeNameList = new ArrayList<String>();
 		targetNodeNameList.add("TargetType");
@@ -172,11 +301,8 @@ public class EvaluationAnalysis {
 //		evidenceNodeNameList.add("PRI");
 //		evidenceNodeNameList.add("PRF");
 
-		if (approximate) {
-			an.computeSampleSizeByErrorVariance(netFileName, targetNodeNameList, evidenceNodeNameList, error, .2228f);
-		} else {
-			an.computeExactSampleSize(netFileName, targetNodeNameList, evidenceNodeNameList);
-		}
+		run(targetNodeNameList, evidenceNodeNameList, .2228f);
+	
 		
 		evidenceNodeNameList = new ArrayList<String>();
 //		evidenceNodeNameList.add("UHRR_Confusion");
@@ -185,11 +311,8 @@ public class EvaluationAnalysis {
 //		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		if (approximate) {
-			an.computeSampleSizeByErrorVariance(netFileName, targetNodeNameList, evidenceNodeNameList, error, .2373f);
-		} else {
-			an.computeExactSampleSize(netFileName, targetNodeNameList, evidenceNodeNameList);
-		}
+		run(targetNodeNameList, evidenceNodeNameList, .2373f);
+		
 		
 		evidenceNodeNameList = new ArrayList<String>();
 //		evidenceNodeNameList.add("UHRR_Confusion");
@@ -198,11 +321,8 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 //		evidenceNodeNameList.add("PRF");
 		
-		if (approximate) {
-			an.computeSampleSizeByErrorVariance(netFileName, targetNodeNameList, evidenceNodeNameList, error, .2382f);
-		} else {
-			an.computeExactSampleSize(netFileName, targetNodeNameList, evidenceNodeNameList);
-		}
+		run(targetNodeNameList, evidenceNodeNameList, .2382f);
+
 		
 		evidenceNodeNameList = new ArrayList<String>();
 //		evidenceNodeNameList.add("UHRR_Confusion");
@@ -211,11 +331,8 @@ public class EvaluationAnalysis {
 //		evidenceNodeNameList.add("PRI");
 //		evidenceNodeNameList.add("PRF");
 		
-		if (approximate) {
-			an.computeSampleSizeByErrorVariance(netFileName, targetNodeNameList, evidenceNodeNameList, error, .2867f);
-		} else {
-			an.computeExactSampleSize(netFileName, targetNodeNameList, evidenceNodeNameList);
-		}
+		run(targetNodeNameList, evidenceNodeNameList, .2867f);
+		
 		
 		evidenceNodeNameList = new ArrayList<String>();
 		evidenceNodeNameList.add("UHRR_Confusion");
@@ -224,11 +341,8 @@ public class EvaluationAnalysis {
 //		evidenceNodeNameList.add("PRI");
 //		evidenceNodeNameList.add("PRF");
 		
-		if (approximate) {
-		an.computeSampleSizeByErrorVariance(netFileName, targetNodeNameList, evidenceNodeNameList, error, .6102f);
-		} else {
-			an.computeExactSampleSize(netFileName, targetNodeNameList, evidenceNodeNameList);
-		}
+		run(targetNodeNameList, evidenceNodeNameList, .6102f);
+		
 		
 		evidenceNodeNameList = new ArrayList<String>();
 //		evidenceNodeNameList.add("UHRR_Confusion");
@@ -237,11 +351,8 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 //		evidenceNodeNameList.add("PRF");
 		
-		if (approximate) {
-			an.computeSampleSizeByErrorVariance(netFileName, targetNodeNameList, evidenceNodeNameList, error, .2785f);
-		} else {
-			an.computeExactSampleSize(netFileName, targetNodeNameList, evidenceNodeNameList);
-		}
+		run(targetNodeNameList, evidenceNodeNameList, .2785f);
+		
 		
 		evidenceNodeNameList = new ArrayList<String>();
 //		evidenceNodeNameList.add("UHRR_Confusion");
@@ -250,11 +361,8 @@ public class EvaluationAnalysis {
 //		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		if (approximate) {
-			an.computeSampleSizeByErrorVariance(netFileName, targetNodeNameList, evidenceNodeNameList, error, .2781f);
-		} else {
-			an.computeExactSampleSize(netFileName, targetNodeNameList, evidenceNodeNameList);
-		}
+		run(targetNodeNameList, evidenceNodeNameList, .2781f);
+		
 		
 		evidenceNodeNameList = new ArrayList<String>();
 //		evidenceNodeNameList.add("UHRR_Confusion");
@@ -263,11 +371,8 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		if (approximate) {
-			an.computeSampleSizeByErrorVariance(netFileName, targetNodeNameList, evidenceNodeNameList, error, .2891f);
-		} else {
-			an.computeExactSampleSize(netFileName, targetNodeNameList, evidenceNodeNameList);
-		}
+		run(targetNodeNameList, evidenceNodeNameList, .2891f);
+		
 		
 		evidenceNodeNameList = new ArrayList<String>();
 		evidenceNodeNameList.add("UHRR_Confusion");
@@ -276,11 +381,8 @@ public class EvaluationAnalysis {
 //		evidenceNodeNameList.add("PRI");
 //		evidenceNodeNameList.add("PRF");
 		
-		if (approximate) {
-			an.computeSampleSizeByErrorVariance(netFileName, targetNodeNameList, evidenceNodeNameList, error, .6548f);
-		} else {
-			an.computeExactSampleSize(netFileName, targetNodeNameList, evidenceNodeNameList);
-		}
+		run(targetNodeNameList, evidenceNodeNameList, .6548f);
+		
 		
 		evidenceNodeNameList = new ArrayList<String>();
 //		evidenceNodeNameList.add("UHRR_Confusion");
@@ -289,11 +391,8 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		if (approximate) {
-			an.computeSampleSizeByErrorVariance(netFileName, targetNodeNameList, evidenceNodeNameList, error, .3172f);
-		} else {
-			an.computeExactSampleSize(netFileName, targetNodeNameList, evidenceNodeNameList);
-		}
+		run(targetNodeNameList, evidenceNodeNameList, .3172f);
+		
 		
 		evidenceNodeNameList = new ArrayList<String>();
 //		evidenceNodeNameList.add("UHRR_Confusion");
@@ -302,11 +401,8 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 //		evidenceNodeNameList.add("PRF");
 		
-		if (approximate) {
-			an.computeSampleSizeByErrorVariance(netFileName, targetNodeNameList, evidenceNodeNameList, error, .3876f);
-		} else {
-			an.computeExactSampleSize(netFileName, targetNodeNameList, evidenceNodeNameList);
-		}
+		run(targetNodeNameList, evidenceNodeNameList, .3876f);
+		
 		
 		evidenceNodeNameList = new ArrayList<String>();
 //		evidenceNodeNameList.add("UHRR_Confusion");
@@ -315,11 +411,8 @@ public class EvaluationAnalysis {
 //		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		if (approximate) {
-			an.computeSampleSizeByErrorVariance(netFileName, targetNodeNameList, evidenceNodeNameList, error, .3872f);
-		} else {
-			an.computeExactSampleSize(netFileName, targetNodeNameList, evidenceNodeNameList);
-		}
+		run(targetNodeNameList, evidenceNodeNameList, .3872f);
+		
 		
 		evidenceNodeNameList = new ArrayList<String>();
 //		evidenceNodeNameList.add("UHRR_Confusion");
@@ -328,11 +421,8 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		if (approximate) {
-			an.computeSampleSizeByErrorVariance(netFileName, targetNodeNameList, evidenceNodeNameList, error, .3967f);
-		} else {
-			an.computeExactSampleSize(netFileName, targetNodeNameList, evidenceNodeNameList);
-		}
+		run(targetNodeNameList, evidenceNodeNameList, .3967f);
+		
 		
 		evidenceNodeNameList = new ArrayList<String>();
 		evidenceNodeNameList.add("UHRR_Confusion");
@@ -341,11 +431,8 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 //		evidenceNodeNameList.add("PRF");
 		
-		if (approximate) {
-			an.computeSampleSizeByErrorVariance(netFileName, targetNodeNameList, evidenceNodeNameList, error, .6561f);
-		} else {
-			an.computeExactSampleSize(netFileName, targetNodeNameList, evidenceNodeNameList);
-		}
+		run(targetNodeNameList, evidenceNodeNameList, .6561f);
+		
 		
 		evidenceNodeNameList = new ArrayList<String>();
 		evidenceNodeNameList.add("UHRR_Confusion");
@@ -354,11 +441,8 @@ public class EvaluationAnalysis {
 //		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		if (approximate) {
-			an.computeSampleSizeByErrorVariance(netFileName, targetNodeNameList, evidenceNodeNameList, error, .6558f);
-		} else {
-			an.computeExactSampleSize(netFileName, targetNodeNameList, evidenceNodeNameList);
-		}
+		run(targetNodeNameList, evidenceNodeNameList, .6558f);
+		
 		
 		evidenceNodeNameList = new ArrayList<String>();
 		evidenceNodeNameList.add("UHRR_Confusion");
@@ -367,11 +451,8 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		if (approximate) {
-			an.computeSampleSizeByErrorVariance(netFileName, targetNodeNameList, evidenceNodeNameList, error, .6616f);
-		} else {
-			an.computeExactSampleSize(netFileName, targetNodeNameList, evidenceNodeNameList);
-		}
+		run(targetNodeNameList, evidenceNodeNameList, .6616f);
+		
 		
 		evidenceNodeNameList = new ArrayList<String>();
 //		evidenceNodeNameList.add("UHRR_Confusion");
@@ -380,11 +461,8 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		if (approximate) {
-			an.computeSampleSizeByErrorVariance(netFileName, targetNodeNameList, evidenceNodeNameList, error, .4214f);
-		} else {
-			an.computeExactSampleSize(netFileName, targetNodeNameList, evidenceNodeNameList);
-		}
+		run(targetNodeNameList, evidenceNodeNameList, .4214f);
+		
 		
 		evidenceNodeNameList = new ArrayList<String>();
 		evidenceNodeNameList.add("UHRR_Confusion");
@@ -393,11 +471,8 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		if (approximate) {
-			an.computeSampleSizeByErrorVariance(netFileName, targetNodeNameList, evidenceNodeNameList, error, .6755f);
-		} else {
-			an.computeExactSampleSize(netFileName, targetNodeNameList, evidenceNodeNameList);
-		}
+		run(targetNodeNameList, evidenceNodeNameList, .6755f);
+		
 		
 		evidenceNodeNameList = new ArrayList<String>();
 		evidenceNodeNameList.add("UHRR_Confusion");
@@ -406,11 +481,8 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 //		evidenceNodeNameList.add("PRF");
 		
-		if (approximate) {
-			an.computeSampleSizeByErrorVariance(netFileName, targetNodeNameList, evidenceNodeNameList, error, .6932f);
-		} else {
-			an.computeExactSampleSize(netFileName, targetNodeNameList, evidenceNodeNameList);
-		}
+		run(targetNodeNameList, evidenceNodeNameList, .6932f);
+		
 		
 		evidenceNodeNameList = new ArrayList<String>();
 		evidenceNodeNameList.add("UHRR_Confusion");
@@ -419,11 +491,8 @@ public class EvaluationAnalysis {
 //		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		if (approximate) {
-			an.computeSampleSizeByErrorVariance(netFileName, targetNodeNameList, evidenceNodeNameList, error, .6931f);
-		} else {
-			an.computeExactSampleSize(netFileName, targetNodeNameList, evidenceNodeNameList);
-		}
+		run(targetNodeNameList, evidenceNodeNameList, .6931f);
+		
 		
 		evidenceNodeNameList = new ArrayList<String>();
 		evidenceNodeNameList.add("UHRR_Confusion");
@@ -432,11 +501,8 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		if (approximate) {
-			an.computeSampleSizeByErrorVariance(netFileName, targetNodeNameList, evidenceNodeNameList, error, .6978f);
-		} else {
-			an.computeExactSampleSize(netFileName, targetNodeNameList, evidenceNodeNameList);
-		}
+		run(targetNodeNameList, evidenceNodeNameList, .6978f);
+		
 	
 		evidenceNodeNameList = new ArrayList<String>();
 		evidenceNodeNameList.add("UHRR_Confusion");
@@ -445,10 +511,32 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		if (approximate) {
-			an.computeSampleSizeByErrorVariance(netFileName, targetNodeNameList, evidenceNodeNameList, error, .7095f);
-		} else {
+		run(targetNodeNameList, evidenceNodeNameList, .7095f);
+		
+	}
+	
+	public static void run(List<String> targetNodeNameList, List<String> evidenceNodeNameList, float exactPcc) throws Exception {
+		
+		EvaluationAnalysis an = new EvaluationAnalysis();
+		
+		String netFileName = "src/test/resources/testCases/evaluation/AirID.xml";
+		
+		EvaluationAnalysisOption option = EvaluationAnalysisOption.ERROR;
+		
+		float error = .0025f;
+		
+		switch (option) {
+		case EXACT:
 			an.computeExactSampleSize(netFileName, targetNodeNameList, evidenceNodeNameList);
+			break;
+	
+		case SAMPLE_SIZE:
+			an.computeSampleSizeByErrorVariance(netFileName, targetNodeNameList, evidenceNodeNameList, error, exactPcc);
+			break;
+		
+		case ERROR:
+			an.computeErrorBySampleSize(netFileName, targetNodeNameList, evidenceNodeNameList, exactPcc);
+			break;
 		}
 	}
 

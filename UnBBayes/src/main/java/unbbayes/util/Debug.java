@@ -53,6 +53,11 @@ public class Debug {
 			System.out.printf(format, message);
 	}
 	
+	public static void print(String format, Object ... message) {
+		if (debug)
+			System.out.printf(format, message);
+	}
+	
 	public static void println(Class classOrigin, String message) {
 		if (debug)
 			System.out.println("[DEBUG] " + classOrigin + ": " + message);
