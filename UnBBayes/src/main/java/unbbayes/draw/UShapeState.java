@@ -31,7 +31,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Rectangle2D;
 import java.text.NumberFormat;
-import java.util.Locale;
 
 import unbbayes.prs.Node;
 
@@ -54,10 +53,10 @@ public class UShapeState extends UShape implements MouseMotionListener, MouseLis
 		setOpaque(false);
   
 		
-		nf = NumberFormat.getInstance(Locale.US);
+		nf = NumberFormat.getInstance();
 		nf.setMaximumFractionDigits(2);
 		
-		rectTextArea = new Rectangle(0,0,(int)(w*(0.32)), h );
+		rectTextArea = new Rectangle(0,0,(int)(w*(0.70)), h );
 		 
 		InitShape() ;
     }    
@@ -81,7 +80,7 @@ public class UShapeState extends UShape implements MouseMotionListener, MouseLis
 	    g2.setPaint( new GradientPaint( (int)(rectTextArea.getWidth()), 
 	    								(int)(getHeight()/2), 
 	    								Color.white, 
-	    								(int)((getWidth() - rectTextArea.getWidth())),
+	    								(int)((getWidth())),
 	    								(int)(getHeight()/2), 
 	    								getBackColor(), 
 	    								false));
