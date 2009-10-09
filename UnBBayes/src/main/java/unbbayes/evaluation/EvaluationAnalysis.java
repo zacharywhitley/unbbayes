@@ -38,6 +38,8 @@ public class EvaluationAnalysis {
 			sampleSize = 5000;
 		} else if (evidenceNodeNameList.size() == 4) {
 			sampleSize = 50000;
+		} else if (evidenceNodeNameList.size() == 5) {
+			sampleSize = 500000;
 		} else {
 			return;
 		}
@@ -280,12 +282,9 @@ public class EvaluationAnalysis {
 		ERROR;
 	}
 	
-	public static void main(String[] args) throws Exception {
+	public static void runCorrectAirIDModel() throws Exception {
 		
-		Debug.setDebug(true);
-		Debug.println("\n****************************************\n");
-		Debug.print("\n%80s , %20s , %20s , %20s , %20s , %20s , %20s , %20s", "Evidences", "States Size", "Exact Pcc", "Sample Size", "Sample / States", "Mean", "Variance", "Time");
-		Debug.setDebug(false);
+		String netFileName = "src/test/resources/testCases/evaluation/AirID.xml";
 		
 		List<String> targetNodeNameList = new ArrayList<String>();
 		
@@ -301,7 +300,7 @@ public class EvaluationAnalysis {
 //		evidenceNodeNameList.add("PRI");
 //		evidenceNodeNameList.add("PRF");
 
-		run(targetNodeNameList, evidenceNodeNameList, .2228f);
+		run(targetNodeNameList, evidenceNodeNameList, .2228f, netFileName);
 	
 		
 		evidenceNodeNameList = new ArrayList<String>();
@@ -311,7 +310,7 @@ public class EvaluationAnalysis {
 //		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		run(targetNodeNameList, evidenceNodeNameList, .2373f);
+		run(targetNodeNameList, evidenceNodeNameList, .2373f, netFileName);
 		
 		
 		evidenceNodeNameList = new ArrayList<String>();
@@ -321,7 +320,7 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 //		evidenceNodeNameList.add("PRF");
 		
-		run(targetNodeNameList, evidenceNodeNameList, .2382f);
+		run(targetNodeNameList, evidenceNodeNameList, .2382f, netFileName);
 
 		
 		evidenceNodeNameList = new ArrayList<String>();
@@ -331,7 +330,7 @@ public class EvaluationAnalysis {
 //		evidenceNodeNameList.add("PRI");
 //		evidenceNodeNameList.add("PRF");
 		
-		run(targetNodeNameList, evidenceNodeNameList, .2867f);
+		run(targetNodeNameList, evidenceNodeNameList, .2867f, netFileName);
 		
 		
 		evidenceNodeNameList = new ArrayList<String>();
@@ -341,7 +340,7 @@ public class EvaluationAnalysis {
 //		evidenceNodeNameList.add("PRI");
 //		evidenceNodeNameList.add("PRF");
 		
-		run(targetNodeNameList, evidenceNodeNameList, .6102f);
+		run(targetNodeNameList, evidenceNodeNameList, .6102f, netFileName);
 		
 		
 		evidenceNodeNameList = new ArrayList<String>();
@@ -351,7 +350,7 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 //		evidenceNodeNameList.add("PRF");
 		
-		run(targetNodeNameList, evidenceNodeNameList, .2785f);
+		run(targetNodeNameList, evidenceNodeNameList, .2785f, netFileName);
 		
 		
 		evidenceNodeNameList = new ArrayList<String>();
@@ -361,7 +360,7 @@ public class EvaluationAnalysis {
 //		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		run(targetNodeNameList, evidenceNodeNameList, .2781f);
+		run(targetNodeNameList, evidenceNodeNameList, .2781f, netFileName);
 		
 		
 		evidenceNodeNameList = new ArrayList<String>();
@@ -371,7 +370,7 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		run(targetNodeNameList, evidenceNodeNameList, .2891f);
+		run(targetNodeNameList, evidenceNodeNameList, .2891f, netFileName);
 		
 		
 		evidenceNodeNameList = new ArrayList<String>();
@@ -381,7 +380,7 @@ public class EvaluationAnalysis {
 //		evidenceNodeNameList.add("PRI");
 //		evidenceNodeNameList.add("PRF");
 		
-		run(targetNodeNameList, evidenceNodeNameList, .6548f);
+		run(targetNodeNameList, evidenceNodeNameList, .6548f, netFileName);
 		
 		
 		evidenceNodeNameList = new ArrayList<String>();
@@ -391,7 +390,7 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		run(targetNodeNameList, evidenceNodeNameList, .3172f);
+		run(targetNodeNameList, evidenceNodeNameList, .3172f, netFileName);
 		
 		
 		evidenceNodeNameList = new ArrayList<String>();
@@ -401,7 +400,7 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 //		evidenceNodeNameList.add("PRF");
 		
-		run(targetNodeNameList, evidenceNodeNameList, .3876f);
+		run(targetNodeNameList, evidenceNodeNameList, .3876f, netFileName);
 		
 		
 		evidenceNodeNameList = new ArrayList<String>();
@@ -411,7 +410,7 @@ public class EvaluationAnalysis {
 //		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		run(targetNodeNameList, evidenceNodeNameList, .3872f);
+		run(targetNodeNameList, evidenceNodeNameList, .3872f, netFileName);
 		
 		
 		evidenceNodeNameList = new ArrayList<String>();
@@ -421,7 +420,7 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		run(targetNodeNameList, evidenceNodeNameList, .3967f);
+		run(targetNodeNameList, evidenceNodeNameList, .3967f, netFileName);
 		
 		
 		evidenceNodeNameList = new ArrayList<String>();
@@ -431,7 +430,7 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 //		evidenceNodeNameList.add("PRF");
 		
-		run(targetNodeNameList, evidenceNodeNameList, .6561f);
+		run(targetNodeNameList, evidenceNodeNameList, .6561f, netFileName);
 		
 		
 		evidenceNodeNameList = new ArrayList<String>();
@@ -441,7 +440,7 @@ public class EvaluationAnalysis {
 //		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		run(targetNodeNameList, evidenceNodeNameList, .6558f);
+		run(targetNodeNameList, evidenceNodeNameList, .6558f, netFileName);
 		
 		
 		evidenceNodeNameList = new ArrayList<String>();
@@ -451,7 +450,7 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		run(targetNodeNameList, evidenceNodeNameList, .6616f);
+		run(targetNodeNameList, evidenceNodeNameList, .6616f, netFileName);
 		
 		
 		evidenceNodeNameList = new ArrayList<String>();
@@ -461,7 +460,7 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		run(targetNodeNameList, evidenceNodeNameList, .4214f);
+		run(targetNodeNameList, evidenceNodeNameList, .4214f, netFileName);
 		
 		
 		evidenceNodeNameList = new ArrayList<String>();
@@ -471,7 +470,7 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		run(targetNodeNameList, evidenceNodeNameList, .6755f);
+		run(targetNodeNameList, evidenceNodeNameList, .6755f, netFileName);
 		
 		
 		evidenceNodeNameList = new ArrayList<String>();
@@ -481,7 +480,7 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 //		evidenceNodeNameList.add("PRF");
 		
-		run(targetNodeNameList, evidenceNodeNameList, .6932f);
+		run(targetNodeNameList, evidenceNodeNameList, .6932f, netFileName);
 		
 		
 		evidenceNodeNameList = new ArrayList<String>();
@@ -491,7 +490,7 @@ public class EvaluationAnalysis {
 //		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		run(targetNodeNameList, evidenceNodeNameList, .6931f);
+		run(targetNodeNameList, evidenceNodeNameList, .6931f, netFileName);
 		
 		
 		evidenceNodeNameList = new ArrayList<String>();
@@ -501,7 +500,7 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		run(targetNodeNameList, evidenceNodeNameList, .6978f);
+		run(targetNodeNameList, evidenceNodeNameList, .6978f, netFileName);
 		
 	
 		evidenceNodeNameList = new ArrayList<String>();
@@ -511,15 +510,60 @@ public class EvaluationAnalysis {
 		evidenceNodeNameList.add("PRI");
 		evidenceNodeNameList.add("PRF");
 		
-		run(targetNodeNameList, evidenceNodeNameList, .7095f);
+		run(targetNodeNameList, evidenceNodeNameList, .7095f, netFileName);
+	}
+	
+	public static void runWrongAirIDModel() throws Exception {
+		
+		String netFileName;
+		
+		List<String> targetNodeNameList = new ArrayList<String>();
+		targetNodeNameList.add("TargetType");
+		
+		List<String> evidenceNodeNameList = new ArrayList<String>();
+		evidenceNodeNameList.add("UHRR_Confusion");
+		evidenceNodeNameList.add("ModulationFrequency");
+		evidenceNodeNameList.add("CenterFrequency");
+		evidenceNodeNameList.add("PRI");
+		evidenceNodeNameList.add("PRF");
+		
+		ExactEvaluation evaluationExact = new ExactEvaluation();
+		
+		// Model with 5% error
+		netFileName = "src/test/resources/testCases/evaluation/AirID_05%.xml";
+		evaluationExact.evaluate(netFileName, targetNodeNameList,
+				evidenceNodeNameList, true);
+		
+		run(targetNodeNameList, evidenceNodeNameList, evaluationExact.getEvidenceSetPCC(), netFileName);
+		
+		// Model with 10% error
+		netFileName = "src/test/resources/testCases/evaluation/AirID_10%.xml";
+		evaluationExact.evaluate(netFileName, targetNodeNameList,
+				evidenceNodeNameList, true);
+		
+		run(targetNodeNameList, evidenceNodeNameList, evaluationExact.getEvidenceSetPCC(), netFileName);
+		
+		// Model with 20% error
+		netFileName = "src/test/resources/testCases/evaluation/AirID_20%.xml";
+		evaluationExact.evaluate(netFileName, targetNodeNameList,
+				evidenceNodeNameList, true);
+		
+		run(targetNodeNameList, evidenceNodeNameList, evaluationExact.getEvidenceSetPCC(), netFileName);
+	}
+	
+	public static void main(String[] args) throws Exception {
+		
+		Debug.setDebug(true);
+		Debug.print("\n%80s , %20s , %20s , %20s , %20s , %20s , %20s , %20s", "Evidences", "States Size", "Exact Pcc", "Sample Size", "Sample / States", "Mean", "Variance", "Time");
+		Debug.setDebug(false);
+		
+		runWrongAirIDModel();
 		
 	}
 	
-	public static void run(List<String> targetNodeNameList, List<String> evidenceNodeNameList, float exactPcc) throws Exception {
+	public static void run(List<String> targetNodeNameList, List<String> evidenceNodeNameList, float exactPcc, String netFileName) throws Exception {
 		
 		EvaluationAnalysis an = new EvaluationAnalysis();
-		
-		String netFileName = "src/test/resources/testCases/evaluation/AirID.xml";
 		
 		EvaluationAnalysisOption option = EvaluationAnalysisOption.ERROR;
 		
