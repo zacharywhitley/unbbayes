@@ -22,7 +22,7 @@
 
 package unbbayes.controller.oobn.resources;
 
-import java.util.*;
+import java.util.ListResourceBundle;
 
 /**
  * <p>Title: UnBBayes</p>

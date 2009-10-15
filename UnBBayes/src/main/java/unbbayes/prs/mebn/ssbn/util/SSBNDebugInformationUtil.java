@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-import javax.xml.bind.JAXBException;
-
 import unbbayes.io.XMLBIFIO;
 import unbbayes.io.log.ILogManager;
 import unbbayes.prs.Edge;
@@ -124,9 +122,7 @@ public class SSBNDebugInformationUtil {
 			netIO.save(file, ssbn.getProbabilisticNetwork());
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (JAXBException e) {
-			e.printStackTrace();
-		}
+		} 
 		
 		try {
 			logManager.writeToDisk(nameDirectory + File.separator +  netName + ".log", false);

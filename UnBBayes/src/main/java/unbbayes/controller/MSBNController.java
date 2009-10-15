@@ -36,6 +36,8 @@ import javax.swing.tree.TreeNode;
 
 import unbbayes.gui.MSBNWindow;
 import unbbayes.gui.NetworkWindow;
+import unbbayes.io.BaseIO;
+import unbbayes.io.msbn.impl.DefaultMSBNIO;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.prs.msbn.SubNetwork;
@@ -53,14 +55,18 @@ public class MSBNController {
 	private MSBNWindow window;
 	private NetworkWindow active;
 	
+	private BaseIO msbnIO = DefaultMSBNIO.newInstance();
+	
 	/**
 	 * Creates a controller that controls a MSBNWindow.
 	 * The MSBNWindows is created.
 	 * @param msbn The msbn to display.
+	 * 
 	 */
 	public MSBNController(SingleAgentMSBN msbn) {
 		this.msbn = msbn;
-		window = new MSBNWindow(msbn);
+		// TODO solve dependency inversion (a controller calling a GUI might not be very flexible)
+		window = new MSBNWindow(msbn, this);
 		init();
 		addListeners();		
 	}
@@ -216,5 +222,19 @@ public class MSBNController {
 				}
 			}
 		});
+	}
+
+	/**
+	 * @return the msbnIO
+	 */
+	public BaseIO getMsbnIO() {
+		return msbnIO;
+	}
+
+	/**
+	 * @param msbnIO the msbnIO to set
+	 */
+	public void setMsbnIO(BaseIO msbnIO) {
+		this.msbnIO = msbnIO;
 	}
 }

@@ -25,8 +25,6 @@ import java.io.File;
 import junit.framework.TestCase;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
-import unbbayes.prs.bn.ProbabilisticNetwork;
-import unbbayes.prs.bn.ProbabilisticNode;
 
 public class TestProbabilisticNetwork extends TestCase {
 
@@ -41,7 +39,7 @@ public class TestProbabilisticNetwork extends TestCase {
 
     public void setUp() throws Exception {
         BaseIO io = new NetIO();
-        net = io.load(ASIA_FILE);
+        net = (ProbabilisticNetwork)io.load(ASIA_FILE);
     }
 
     public void testCompileAsia() throws Exception {

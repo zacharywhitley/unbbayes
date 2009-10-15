@@ -43,11 +43,13 @@ import unbbayes.controller.IconController;
 import unbbayes.controller.MSBNController;
 import unbbayes.controller.oobn.OOBNController;
 import unbbayes.gui.FileIcon;
-import unbbayes.gui.IFileExtensionAwareWindow;
+import unbbayes.gui.IPersistenceAwareWindow;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.gui.UnBBayesFrame;
+import unbbayes.io.BaseIO;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO;
+import unbbayes.prs.Graph;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.msbn.AbstractMSBN;
 import unbbayes.prs.msbn.SingleAgentMSBN;
@@ -60,14 +62,14 @@ import unbbayes.util.Debug;
  * @author Shou Matsumoto
  *
  */
-public class OOBNWindow extends JInternalFrame implements IFileExtensionAwareWindow  {
+public class OOBNWindow extends JInternalFrame implements IPersistenceAwareWindow  {
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;	
 	
 	public static String EDITION_PANE = "editionPane";
 	
-	// since this implements IFileExtensionAwareWindow, let's store them 
+	// since this implements IPersistenceAwareWindow, let's store them 
 	private static final String[] SUPPORTED_FILE_EXTENSIONS = {IObjectOrientedBayesianNetworkIO.fileExtension};
 
 	/** Load resource file from this package */
@@ -880,7 +882,7 @@ public class OOBNWindow extends JInternalFrame implements IFileExtensionAwareWin
 
 
 	/* (non-Javadoc)
-	 * @see unbbayes.gui.IFileExtensionAwareWindow#getSupportedFileExtensions()
+	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFileExtensions()
 	 */
 	public String[] getSupportedFileExtensions() {
 		return SUPPORTED_FILE_EXTENSIONS;
@@ -888,7 +890,7 @@ public class OOBNWindow extends JInternalFrame implements IFileExtensionAwareWin
 	
 
 	/* (non-Javadoc)
-	 * @see unbbayes.gui.IFileExtensionAwareWindow#getSupportedFilesDescription()
+	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFilesDescription()
 	 */
 	public String getSupportedFilesDescription() {
 		return resource.getString("netFileFilterSaveOOBN");
@@ -896,7 +898,7 @@ public class OOBNWindow extends JInternalFrame implements IFileExtensionAwareWin
 	
 	
 	/* (non-Javadoc)
-	 * @see unbbayes.gui.IFileExtensionAwareWindow#getSavingMessage()
+	 * @see unbbayes.gui.IPersistenceAwareWindow#getSavingMessage()
 	 */
 	public String getSavingMessage() {
 		return resource.getString("saveTitle");
@@ -908,6 +910,36 @@ public class OOBNWindow extends JInternalFrame implements IFileExtensionAwareWin
 	 */
 	public void setStatusBarText(String text) {
 		this.getStatusBar().setText(text);
+	}
+
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.gui.IPersistenceAwareWindow#getInternalFrame()
+	 */
+	public JInternalFrame getInternalFrame() {
+		return this;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.gui.IPersistenceAwareWindow#getIO()
+	 */
+	public BaseIO getIO() {
+		return this.getController().getBaseIO();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.gui.IPersistenceAwareWindow#getPersistingGraph()
+	 */
+	public Graph getPersistingGraph() {
+		try {
+			return this.getController().getActive().getController().getControlledClass().getNetwork();
+		} catch (NullPointerException e) {
+			Debug.println(this.getClass(), "Found null at getController().getActive().getController().getControlledClass().getNetwork()", e);
+		}
+		return null;
 	}
 
 }

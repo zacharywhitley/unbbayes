@@ -31,6 +31,8 @@ import javax.xml.bind.JAXBException;
 
 import unbbayes.io.exception.LoadException;
 import unbbayes.io.exception.SaveException;
+import unbbayes.io.exception.UBIOException;
+import unbbayes.prs.Graph;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.msbn.SingleAgentMSBN;
@@ -58,7 +60,7 @@ public class XMLBIFIO implements BaseIO{
 	 * @throws LoadException If the file doesn't describes a network.
 	 * @throws IOException	If an IO error occurs
 	 */
-	public ProbabilisticNetwork load(File input) throws LoadException, IOException, JAXBException{
+	public ProbabilisticNetwork load(File input) throws LoadException, IOException{
 		
 		int index = input.getName().lastIndexOf('.');
 		String id = input.getName().substring(0, index);
@@ -134,17 +136,23 @@ public class XMLBIFIO implements BaseIO{
 	/**
 	 * Saves a network to the output file.
 	 * @param output	The output file to save
-	 * @param net		The network to save.
+	 * @param graph		The network to save.
 	 */
 	
-	public void save(File output, SingleEntityNetwork net) throws IOException, JAXBException{
+	public void save(File output, Graph graph) throws IOException{
+		
+		SingleEntityNetwork net = (SingleEntityNetwork) graph;
 		
 		FileWriter outputxml = new FileWriter(output);
 
 		// Saving in older version is not supported.
 		// unbbayes.io.xmlbif.version4.XMLBIFIO.saveXML(outputxml, net); 
 		// unbbayes.io.xmlbif.version5.XMLBIFIO.saveXML(outputxml, net);
-		unbbayes.io.xmlbif.version6.XMLBIFIO.saveXML(outputxml, net);
+		try {
+			unbbayes.io.xmlbif.version6.XMLBIFIO.saveXML(outputxml, net);
+		} catch (JAXBException e) {
+			throw new UBIOException(e);
+		}
 
 		outputxml.flush();
 		outputxml.close();
@@ -165,6 +173,14 @@ public class XMLBIFIO implements BaseIO{
 			File out = new File(output, net.getId() + ".xml");
 			save(out, net);
 		}    
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#supportsExtension(java.lang.String)
+	 */
+	public boolean supportsExtension(String extension) {
+		return "XML".equalsIgnoreCase(extension);
 	}
 	
 	

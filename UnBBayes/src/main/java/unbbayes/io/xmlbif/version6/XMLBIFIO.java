@@ -2,7 +2,6 @@ package unbbayes.io.xmlbif.version6;
 
 //by young 
 import java.awt.Color;
-//by young end
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;

@@ -78,7 +78,7 @@ public class MCMainController {
 					else{
 						io = new XMLBIFIO(); 
 					}
-					pn = io.load(chooser.getSelectedFile());
+					pn = (ProbabilisticNetwork)io.load(chooser.getSelectedFile());
 				}
 			}
 		}catch(Exception e){

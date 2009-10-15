@@ -34,7 +34,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import unbbayes.io.exception.LoadException;
 import unbbayes.io.mebn.exceptions.IOMebnException;
+import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.InputNode;
@@ -575,6 +577,24 @@ public class UbfIO implements MebnIO {
 	
 	
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#load(java.io.File)
+	 */
+	public Graph load(File input) throws LoadException, IOException {
+		if (input.getName().endsWith(this.prowlExtension)) {
+			return this.prowlIO.loadMebn(input);
+		} else {
+			return this.loadMebn(input);
+		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#save(java.io.File, unbbayes.prs.Graph)
+	 */
+	public void save(File output, Graph net) throws IOException {
+		this.saveMebn(output, (MultiEntityBayesianNetwork)net);
+	}
+	
 	/**
 	 * Convert a token type to .ubf syntax. Search for UBF syntax.
 	 * @param token identifier to be searched
@@ -950,6 +970,14 @@ public class UbfIO implements MebnIO {
 	 */
 	public String getFileExtension() {
 		return this.fileExtension;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#supportsExtension(java.lang.String)
+	 */
+	public boolean supportsExtension(String extension) {
+		return this.getFileExtension().equalsIgnoreCase(extension);
 	}
 	
 	

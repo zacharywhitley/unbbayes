@@ -42,6 +42,7 @@ import unbbayes.io.builder.IProbabilisticNetworkBuilder;
 import unbbayes.io.builder.impl.DefaultProbabilisticNetworkBuilder;
 import unbbayes.io.exception.LoadException;
 import unbbayes.prs.Edge;
+import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.ITabledVariable;
@@ -130,12 +131,12 @@ public class DneIO implements BaseIO {
 	 * Saves a network in basic NET file format.
 	 *
 	 * @param  output file where the net should be saved.
-	 * @param net network to be saved.
+	 * @param graph network to be saved.
 	 */
-	public void save(File output, SingleEntityNetwork net) throws FileNotFoundException {
+	public void save(File output, Graph graph) throws FileNotFoundException {
 		PrintStream stream = new PrintStream(new FileOutputStream(output));
 		
-		
+		SingleEntityNetwork net = (SingleEntityNetwork) graph;
 		
 		this.saveNetHeader(stream, net);
 
@@ -828,6 +829,13 @@ public class DneIO implements BaseIO {
 				+ " "
 				+ (int) node.getPosition().getY()
 				+ ");");
+	}
+
+	/**
+	 * Returns true if the extension equals (ignoring case) "DNE".
+	 */
+	public boolean supportsExtension(String extension) {
+		return "DNE".equalsIgnoreCase(extension);
 	}
 	
 }

@@ -20,7 +20,7 @@
  */
 package unbbayes.controller.resources;
 
-import java.util.*;
+import java.util.ListResourceBundle;
 
 /**
  * <p>Title: UnBBayes</p>

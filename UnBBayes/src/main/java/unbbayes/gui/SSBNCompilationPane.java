@@ -40,7 +40,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
-import javax.xml.bind.JAXBException;
 
 import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
@@ -261,10 +260,7 @@ public class SSBNCompilationPane extends JPanel {
 								} catch (IOException e1) {
 									// TODO Auto-generated catch block
 									e1.printStackTrace();
-								} catch (JAXBException e1) {
-									// TODO Auto-generated catch block
-									e1.printStackTrace();
-								}
+								} 
     						} 
     						else if (name.endsWith("xml")){
     							io = new XMLBIFIO();
@@ -273,10 +269,7 @@ public class SSBNCompilationPane extends JPanel {
 								} catch (IOException e1) {
 									// TODO Auto-generated catch block
 									e1.printStackTrace();
-								} catch (JAXBException e1) {
-									// TODO Auto-generated catch block
-									e1.printStackTrace();
-								}
+								} 
     						}
     						try {
     							if(io != null){
@@ -285,10 +278,7 @@ public class SSBNCompilationPane extends JPanel {
 							} catch (IOException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
-							} catch (JAXBException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
+							} 
 							
     						JOptionPane.showMessageDialog(controller.getScreen(), "Arquivo salvo com sucesso");
     					}

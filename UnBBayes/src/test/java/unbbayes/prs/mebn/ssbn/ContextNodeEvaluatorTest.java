@@ -160,10 +160,7 @@ public class ContextNodeEvaluatorTest extends TestCase{
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (IOMebnException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} 
 		
 		for(ObjectEntity entity: mebn.getObjectEntityContainer().getListEntity()){
 			kb.createEntityDefinition(entity);
@@ -230,10 +227,7 @@ public class ContextNodeEvaluatorTest extends TestCase{
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (IOMebnException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} 
 		
 		MFrag mFrag = mebn.getMFragByName("Starship_MFrag"); 
 		

@@ -20,7 +20,9 @@
  */
 package unbbayes.io.mebn.exceptions;
 
-public class IOMebnException extends Exception{
+import unbbayes.io.exception.UBIOException;
+
+public class IOMebnException extends UBIOException{
 	
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;	

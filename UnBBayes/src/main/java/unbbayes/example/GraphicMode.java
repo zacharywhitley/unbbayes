@@ -26,10 +26,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ResourceBundle;
+
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
 import unbbayes.prs.Edge;
@@ -75,7 +77,7 @@ public class GraphicMode {
                 ProbabilisticNetwork rede = null;
                 try {
                     BaseIO io = new NetIO();
-                    rede = io.load(new File(nomeArquivo.getText()));
+                    rede = (ProbabilisticNetwork)io.load(new File(nomeArquivo.getText()));
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     System.exit(1);

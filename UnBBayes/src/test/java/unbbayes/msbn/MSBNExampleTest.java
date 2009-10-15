@@ -13,6 +13,7 @@ import org.junit.Test;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
 import unbbayes.io.exception.LoadException;
+import unbbayes.io.msbn.impl.DefaultMSBNIO;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.prs.msbn.SubNetwork;
@@ -49,19 +50,16 @@ public class MSBNExampleTest extends TestCase {
 	public final void testMsbnExample()  {
 		SingleAgentMSBN msbn = null;
 		
-		BaseIO io = new NetIO();
+		BaseIO io = DefaultMSBNIO.newInstance();
 		try {
-			msbn = io.loadMSBN(new File("src/test/resources/testCases/msbn/5partc/"));
+			msbn = (SingleAgentMSBN)io.load(new File("src/test/resources/testCases/msbn/5partc/"));
 		} catch (LoadException e) {
 			e.printStackTrace();
 			fail (e.getMessage());
 		} catch (IOException e) {
 			e.printStackTrace();
 			fail (e.getMessage());
-		} catch (JAXBException e) {
-			e.printStackTrace();
-			fail (e.getMessage());
-		}
+		} 
 		
 		try {
 			msbn.compile();

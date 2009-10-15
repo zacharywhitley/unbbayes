@@ -24,7 +24,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 
+import unbbayes.io.exception.LoadException;
+import unbbayes.io.exception.UBIOException;
 import unbbayes.io.mebn.exceptions.IOMebnException;
+import unbbayes.prs.Graph;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.util.Debug;
 import edu.stanford.smi.protegex.owl.jena.JenaOWLModel;
@@ -174,6 +177,30 @@ public class PrOwlIO extends PROWLModelUser implements MebnIO {
 	
 	
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#load(java.io.File)
+	 */
+	public Graph load(File input) throws LoadException, IOException {
+		try {
+			return this.loadMebn(input);
+		} catch (IOMebnException e) {
+			throw new UBIOException(e);
+		}
+	}
+
+
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#save(java.io.File, unbbayes.prs.Graph)
+	 */
+	public void save(File output, Graph net) throws IOException {
+		this.saveMebn(output, (MultiEntityBayesianNetwork)net);
+	}
+
+
+
+
 	/**
 	 * Save the mebn structure in an file pr-owl. 
 	 * @param nameFile: name of the file pr-owl where the mebn structure will be save
@@ -269,6 +296,16 @@ public class PrOwlIO extends PROWLModelUser implements MebnIO {
 
 	public LoaderPrOwlIO getLoader() {
 		return loader;
+	}
+
+
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#supportsExtension(java.lang.String)
+	 */
+	public boolean supportsExtension(String extension) {
+		return FILEEXTENSION.equalsIgnoreCase(extension);
 	}
 	
 	

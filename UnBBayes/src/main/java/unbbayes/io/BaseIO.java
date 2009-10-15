@@ -28,49 +28,43 @@ import javax.xml.bind.JAXBException;
 
 import unbbayes.io.exception.LoadException;
 import unbbayes.io.exception.SaveException;
-import unbbayes.prs.bn.SingleEntityNetwork;
-import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.Graph;
 import unbbayes.prs.msbn.SingleAgentMSBN;
 
 /**
- * Interface de io de uma rede.
+ *  This is the most basic I/O interface for UnBBayes, which basically loads or stores a Graph from/into a file.
  * @author Rommel N. Carvalho
  * @author Michael S. Onishi
- * @version 1.0
+ * @author Shou Matsumoto
+ * @version 2.0
  */
 public interface BaseIO {
 	
 	/**
-	 * Loads a new Probabilistic network from the input file.
+	 * Loads a new network from the input file.
 	 * 
 	 * @param input the input file for the network
 	 * @return The loaded network
-	 * @throws LoadException If the file doesn't describes a network.
+	 * @throws LoadException If the file doesn't describe a network.
 	 * @throws IOException	If an IO error occurs
 	 */
-    public ProbabilisticNetwork load(File input) throws LoadException, IOException, JAXBException;
+    public Graph load(File input) throws LoadException, IOException;
     
-    /**
-     * Loads a new MSBN from the input DIRECTORY
-     * @param input	Input directory for the MSBN
-     * @return The loaded MSBN
-     * @throws LoadException If the directory doesn't describes a MSBN.
-     * @throws IOException	 If an IO error occurs
-     */
-    public SingleAgentMSBN loadMSBN(File input) throws LoadException, IOException, JAXBException;
     
     /**
      * Saves a network to the output file.
      * @param output	The output file to save
      * @param net		The network to save.
      */
-    public void save(File output, SingleEntityNetwork net) throws IOException, JAXBException;
+    public void save(File output, Graph net) throws IOException;
+    
     
     /**
-     * Saves a MSBN to the output directory.
-     * @param output The output file to save
-     * @param net		The MSBN to save.
-     * @throws SaveException If the output is not a directory.
+     * Returns true if the file extension is supported by this IO class.
+     * False otherwise.
+     * @param extension
+     * @return
      */
-    public void saveMSBN(File output, SingleAgentMSBN net) throws FileNotFoundException,IOException,  JAXBException, SaveException;
+    public boolean supportsExtension(String extension);
+   
 }

@@ -23,6 +23,7 @@ package unbbayes.io.mebn;
 import java.io.File;
 import java.io.IOException;
 
+import unbbayes.io.BaseIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 
@@ -32,7 +33,7 @@ import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
  * @version 1.0 2006/10/25
  */
 
-public interface MebnIO {
+public interface MebnIO extends BaseIO {
 
 	public MultiEntityBayesianNetwork loadMebn(File file) throws IOException, IOMebnException;
 	

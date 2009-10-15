@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import javax.xml.bind.JAXBException;
-
 import unbbayes.io.XMLBIFIO;
 import unbbayes.io.log.ILogManager;
 import unbbayes.io.log.TextLogManager;
@@ -145,9 +143,7 @@ public abstract class TestSet {
 			netIO.save(file, pn);
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (JAXBException e) {
-			e.printStackTrace();
-		}		
+		} 	
 	}
 	
 	protected Query createGenericQueryNode(MultiEntityBayesianNetwork mebn,

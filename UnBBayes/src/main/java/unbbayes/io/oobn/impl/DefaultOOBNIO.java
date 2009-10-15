@@ -17,20 +17,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.JAXBException;
-
-import unbbayes.gui.HierarchicTree;
 import unbbayes.gui.oobn.node.OOBNNodeGraphicalWrapper;
 import unbbayes.io.NetIO;
 import unbbayes.io.builder.IProbabilisticNetworkBuilder;
 import unbbayes.io.exception.LoadException;
-import unbbayes.io.exception.SaveException;
 import unbbayes.io.exception.oobn.OOBNIOException;
 import unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO;
 import unbbayes.io.oobn.builder.DefaultOOBNClassBuilder;
 import unbbayes.io.oobn.builder.DefaultPrivateOOBNNodeGraphicalWrapperBuilder;
 import unbbayes.io.oobn.builder.IOOBNClassBuilder;
 import unbbayes.prs.Edge;
+import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
@@ -76,13 +73,13 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 		this.setClassNameToClassMap(new HashMap<String, IOOBNClass>());
 	}
 	
-	/**
-	 * Default constructor method
-	 * @return a new instance
-	 */
-	public static DefaultOOBNIO newInstance() {
-		return new DefaultOOBNIO();
-	}
+//	/**
+//	 * Default constructor method
+//	 * @return a new instance
+//	 */
+//	public static DefaultOOBNIO newInstance() {
+//		return new DefaultOOBNIO();
+//	}
 
 	
 //	/**
@@ -98,7 +95,7 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 	
 	/**
 	 * Constructor method indicating the OOBN to use
-	 * @param oobn
+	 * @param oobn : OOBN to be managed by this IO. It may be an empty OOBN.
 	 * @return a new instance
 	 */
 	public static DefaultOOBNIO newInstance(IObjectOrientedBayesianNetwork oobn) {
@@ -122,33 +119,33 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 //	}
 	
 
-	/* (non-Javadoc)
-	 * @see unbbayes.io.BaseIO#loadMSBN(java.io.File)
-	 */
-	public SingleAgentMSBN loadMSBN(File input) throws LoadException,
-			IOException {
-		// Why BaseIO should be aware of MSBN I/O implementation??? It should be done by another I/O class!!
-		Debug.println(this.getClass(), "An extremely horrible anti-pattern is forced by superclass or interface." 
-									  + this.getClass() + " refuses to realize such bizarre implementation.");
-		throw new IllegalArgumentException(
-			  new NoSuchMethodException(
-					  "No implementation of " + "SingleAgentMSBN loadMSBN(File input)" + " by " + this.getClass()));
-	}
+//	/* (non-Javadoc)
+//	 * @see unbbayes.io.BaseIO#loadMSBN(java.io.File)
+//	 */
+//	public SingleAgentMSBN loadMSBN(File input) throws LoadException,
+//			IOException {
+//		// Why BaseIO should be aware of MSBN I/O implementation??? It should be done by another I/O class!!
+//		Debug.println(this.getClass(), "An extremely horrible anti-pattern is forced by superclass or interface." 
+//									  + this.getClass() + " refuses to realize such bizarre implementation.");
+//		throw new IllegalArgumentException(
+//			  new NoSuchMethodException(
+//					  "No implementation of " + "SingleAgentMSBN loadMSBN(File input)" + " by " + this.getClass()));
+//	}
 
 	
 
-	/* (non-Javadoc)
-	 * @see unbbayes.io.BaseIO#saveMSBN(java.io.File, unbbayes.prs.msbn.SingleAgentMSBN)
-	 */
-	public void saveMSBN(File output, SingleAgentMSBN net)
-			throws FileNotFoundException {
-		// Why BaseIO should be aware of MSBN I/O implementation??? It should be done by another I/O class!!
-		Debug.println(this.getClass(), "An extremely horrible anti-pattern is forced by superclass or interface." 
-				  + this.getClass() + " refuses to realize such bizarre implementation.");
-		throw new IllegalArgumentException(
-			  new NoSuchMethodException(
-					  "No implementation of " + "saveMSBN(File output, SingleAgentMSBN net)" + " by " + this.getClass()));
-	}
+//	/* (non-Javadoc)
+//	 * @see unbbayes.io.BaseIO#saveMSBN(java.io.File, unbbayes.prs.msbn.SingleAgentMSBN)
+//	 */
+//	public void saveMSBN(File output, SingleAgentMSBN net)
+//			throws FileNotFoundException {
+//		// Why BaseIO should be aware of MSBN I/O implementation??? It should be done by another I/O class!!
+//		Debug.println(this.getClass(), "An extremely horrible anti-pattern is forced by superclass or interface." 
+//				  + this.getClass() + " refuses to realize such bizarre implementation.");
+//		throw new IllegalArgumentException(
+//			  new NoSuchMethodException(
+//					  "No implementation of " + "saveMSBN(File output, SingleAgentMSBN net)" + " by " + this.getClass()));
+//	}
 
 	
 	
@@ -183,9 +180,7 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 	 * @throws LoadException
 	 * @throws IOException
 	 * @see unbbayes.io.NetIO#load(java.io.File, unbbayes.io.builder.IProbabilisticNetworkBuilder)
-	 * @deprecated use loadOOBN instead
 	 */
-	@Override
 	public DefaultOOBNClass load(File input,
 			IProbabilisticNetworkBuilder networkBuilder) throws LoadException,
 			IOException {
@@ -213,9 +208,7 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 	 * @throws LoadException
 	 * @throws IOException
 	 * @see unbbayes.io.NetIO#load(java.io.File)
-	 * @deprecated use loadOOBN instead
 	 */
-	@Override
 	public ProbabilisticNetwork load(File input) throws LoadException,
 			IOException {
 		IProbabilisticNetworkBuilder builder = DefaultOOBNClassBuilder.newInstance();
@@ -224,14 +217,41 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 		return this.load(input, builder);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.NetIO#save(java.io.File, unbbayes.prs.Graph)
+	 */
+	public void save(File output, Graph net) throws FileNotFoundException {
+		this.save(output, net, true);
+	}
+	
 	/**
 	 * @param output
 	 * @param net
+	 * @param updateClassName : if set to true, this method will search an OOBN class inside {@link #getOobn()} 
+	 * which {@link IOOBNClass#getNetwork()} matches "net"; if such class if found, it will attempt to change its
+	 * OOBN class name to new file name, so that file name and class name remains identical.
 	 * @throws FileNotFoundException
 	 * @see unbbayes.io.NetIO#save(java.io.File, unbbayes.prs.bn.SingleEntityNetwork)
 	 */
-	public void save(File output, SingleEntityNetwork net)
+	public void save(File output, Graph graph, boolean updateClassName)
 			throws FileNotFoundException {
+		
+		SingleEntityNetwork net = (SingleEntityNetwork)graph;
+		
+		// updating class name
+		if (updateClassName) {
+			try {
+				String newClassName = output.getName().substring(0, output.getName().lastIndexOf("."));
+				for (IOOBNClass oobnClass : this.getOobn().getOOBNClassList()) {
+					if (oobnClass.getNetwork().equals(net)) {
+						oobnClass.setClassName(newClassName);
+					}
+				}
+			} catch (Exception e) {
+				Debug.println(this.getClass(), "Failed to update class name.", e);
+			}
+		}
 		
 		Debug.println(this.getClass(), "Saving multiple classes is not implemented yet. Using default behavior...");
 		
@@ -351,9 +371,6 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 	 */
 	public IObjectOrientedBayesianNetwork loadOOBN(File classFile) throws IOException {
 		
-		Debug.println(this.getClass(), "Dependency treatment is not implemented yet, that means you cannot load a class containing instances yet.");
-		
-		// TODO implement dependency treatment and start loading every dependent classes as well
 		
 		this.getOobn().setTitle(classFile.getName());
 		try{
@@ -384,13 +401,15 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 	 * @see unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO#saveOOBNClass(java.io.File, unbbayes.prs.oobn.IOOBNClass)
 	 */
 	public void saveOOBNClass(File classFile, IOOBNClass oobnClass) throws IOException {
+		
 		String newClassName = classFile.getName().substring(0, classFile.getName().lastIndexOf("."));
 		try{
 			oobnClass.setClassName(newClassName);
 		} catch (OOBNException oobne) {
 			throw new OOBNIOException(oobne);
 		}
-		this.save(classFile, (SingleEntityNetwork)oobnClass.getNetwork());
+		
+		this.save(classFile, (SingleEntityNetwork)oobnClass.getNetwork(), false);
 	}
 	
 	/* (non-Javadoc)

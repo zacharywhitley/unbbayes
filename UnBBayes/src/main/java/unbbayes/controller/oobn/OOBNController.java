@@ -18,6 +18,7 @@ import unbbayes.gui.UnBBayesFrame;
 import unbbayes.gui.oobn.OOBNClassWindow;
 import unbbayes.gui.oobn.OOBNWindow;
 import unbbayes.gui.oobn.node.OOBNNodeGraphicalWrapper;
+import unbbayes.io.BaseIO;
 import unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO;
 import unbbayes.io.oobn.impl.DefaultOOBNIO;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -32,6 +33,7 @@ import unbbayes.prs.oobn.compiler.IOOBNCompiler;
 import unbbayes.prs.oobn.compiler.impl.OOBNToSingleAgentMSBNCompiler;
 import unbbayes.prs.oobn.impl.DefaultOOBNClass;
 import unbbayes.prs.oobn.impl.OOBNClassSingleEntityNetworkWrapper;
+import unbbayes.prs.oobn.impl.ObjectOrientedBayesianNetwork;
 import unbbayes.util.Debug;
 
 /**
@@ -49,6 +51,7 @@ public class OOBNController extends NetworkController {
 	
 //	private OOBNClassController classController = null;
 	
+	
 	protected OOBNController() {
 		// TODO Auto-generated constructor stub
 		super((SingleEntityNetwork)null, null);
@@ -57,6 +60,8 @@ public class OOBNController extends NetworkController {
 //		} catch (Exception e) {
 //			// TODO: handle exception
 //		}
+		
+		this.setBaseIO(DefaultOOBNIO.newInstance(ObjectOrientedBayesianNetwork.newInstance("")));
 	}
 	
 	private IObjectOrientedBayesianNetwork oobn;
@@ -81,6 +86,8 @@ public class OOBNController extends NetworkController {
 //		upperUnBBayesFrame.addWindow(this.getPanel());
 		
 //		this.classController = OOBNClassController.newInstance(oobn.getSingleEntityNetwork(), this.getScreen());
+		
+		this.setBaseIO(DefaultOOBNIO.newInstance(oobn));
 	}
 	
 	/**
@@ -206,7 +213,7 @@ public class OOBNController extends NetworkController {
 		Debug.println(this.getClass(), "File loader not yet implemented");
 		Set<IOOBNClass> ret = new HashSet<IOOBNClass>();
 		
-		IObjectOrientedBayesianNetworkIO io = DefaultOOBNIO.newInstance();
+		IObjectOrientedBayesianNetworkIO io = DefaultOOBNIO.newInstance(ObjectOrientedBayesianNetwork.newInstance(""));
 		
 		try {
 //			IOOBNClass loadedOOBN = (IOOBNClass)io.load(file);		
@@ -287,6 +294,10 @@ public class OOBNController extends NetworkController {
 	 */
 	public void setOobn(IObjectOrientedBayesianNetwork oobn) {
 		this.oobn = oobn;
+		if (this.getBaseIO() instanceof DefaultOOBNIO) {
+			DefaultOOBNIO io = (DefaultOOBNIO) this.getBaseIO();
+			io.setOobn(oobn);
+		}
 	}
 
 	/**
@@ -364,9 +375,6 @@ public class OOBNController extends NetworkController {
 		this.selectedClass = selectedClass;
 	}
 
-
-
-	
 	
 	
 	

@@ -29,8 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.JAXBException;
-
 import unbbayes.io.XMLBIFIO;
 import unbbayes.io.exception.LoadException;
 import unbbayes.prs.Node;
@@ -155,23 +153,17 @@ public class PositionAdjustmentUtils {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (JAXBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} 
 		
 		PositionAdjustmentUtils adjustment = new PositionAdjustmentUtils(); 
 		if(net!=null){
-		   adjustment.adjustPositionProbabilisticNetwork(net); 
-		   try {
-			io.save(new File(PositionAdjustmentUtils.fileTestSave), net);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JAXBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		    adjustment.adjustPositionProbabilisticNetwork(net); 
+		    try {
+		    	io.save(new File(PositionAdjustmentUtils.fileTestSave), net);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
 		}
 		
 		System.out.println("End");

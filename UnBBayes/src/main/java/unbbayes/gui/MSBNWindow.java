@@ -38,6 +38,9 @@ import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 
 import unbbayes.controller.IconController;
+import unbbayes.controller.MSBNController;
+import unbbayes.io.BaseIO;
+import unbbayes.prs.Graph;
 import unbbayes.prs.msbn.SingleAgentMSBN;
 
 /**
@@ -48,9 +51,9 @@ import unbbayes.prs.msbn.SingleAgentMSBN;
  * To enable and disable the creation of type comments go to
  * Window>Preferences>Java>Code Generation.
  */
-public class MSBNWindow extends JInternalFrame implements IFileExtensionAwareWindow {
+public class MSBNWindow extends JInternalFrame implements IPersistenceAwareWindow {
 	
-	// since this implements IFileExtensionAwareWindow, let's store them 
+	// since this implements IPersistenceAwareWindow, let's store them 
 	// The supported file is a folder...
 	private static final String[] SUPPORTED_FILE_EXTENSIONS = {};
 	
@@ -92,8 +95,10 @@ public class MSBNWindow extends JInternalFrame implements IFileExtensionAwareWin
 	private JToolBar jtbBtns;
 
         protected IconController iconController = IconController.getInstance();
+        
+    private MSBNController controller;
 
-	public MSBNWindow(SingleAgentMSBN msbn) {
+	public MSBNWindow(SingleAgentMSBN msbn, MSBNController controller) {
 		super(msbn.getId(), true, true, true, true);
 		this.msbn = msbn;
         setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
@@ -102,6 +107,7 @@ public class MSBNWindow extends JInternalFrame implements IFileExtensionAwareWin
 		pane.setLayout(new BorderLayout());
 		pane.add(makeListPanel(), BorderLayout.WEST);
 		init();
+		this.controller = controller;
 	}
 
 	public SingleAgentMSBN getMSNet() {
@@ -187,7 +193,7 @@ public class MSBNWindow extends JInternalFrame implements IFileExtensionAwareWin
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.gui.IFileExtensionAwareWindow#getSupportedFileExtensions()
+	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFileExtensions()
 	 */
 	public String[] getSupportedFileExtensions() {
 		// The supported file is a folder...
@@ -195,17 +201,57 @@ public class MSBNWindow extends JInternalFrame implements IFileExtensionAwareWin
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.gui.IFileExtensionAwareWindow#getSupportedFilesDescription()
+	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFilesDescription()
 	 */
 	public String getSupportedFilesDescription() {
 		return resource.getString("netFileFilterSaveMSBN");
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.gui.IFileExtensionAwareWindow#getSavingMessage()
+	 * @see unbbayes.gui.IPersistenceAwareWindow#getSavingMessage()
 	 */
 	public String getSavingMessage() {
 		return resource.getString("saveTitle");
+	}
+
+	
+
+	/**
+	 * @return the controller
+	 */
+	public MSBNController getController() {
+		return controller;
+	}
+
+	/**
+	 * @param controller the controller to set
+	 */
+	public void setController(MSBNController controller) {
+		this.controller = controller;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.gui.IPersistenceAwareWindow#getInternalFrame()
+	 */
+	public JInternalFrame getInternalFrame() {
+		return this;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.gui.IPersistenceAwareWindow#getIO()
+	 */
+	public BaseIO getIO() {
+		return this.getController().getMsbnIO();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.gui.IPersistenceAwareWindow#getPersistingGraph()
+	 */
+	public Graph getPersistingGraph() {
+		return this.getMSNet();
 	}
 	
 	

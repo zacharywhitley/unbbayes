@@ -107,7 +107,7 @@ public class LikelihoodWeightingInference {
 				throw new Exception(
 						"The network must be in XMLBIF 0.4 or NET format!");
 			}
-			pn = io.load(netFile);
+			pn = (ProbabilisticNetwork)io.load(netFile);
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(1);

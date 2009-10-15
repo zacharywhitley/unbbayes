@@ -35,4 +35,8 @@ public class LoadException extends Exception {
     public LoadException(String a) {
         super(a);
     }
+    
+    public LoadException(){
+    	super();
+    };
 }

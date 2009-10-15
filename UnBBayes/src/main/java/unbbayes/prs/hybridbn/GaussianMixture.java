@@ -27,8 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.JAXBException;
-
 import unbbayes.io.XMLBIFIO;
 import unbbayes.io.exception.LoadException;
 import unbbayes.prs.Node;
@@ -38,8 +36,7 @@ import unbbayes.prs.bn.TreeVariable;
 import unbbayes.util.SortUtil;
 
 /**
- * 
- * Class that implements the Gaussian Mixture inference algorithm. It calculates the 
+ * Gaussian Mixture inference algorithm. It calculates the 
  * prior (compilation) for the discrete nodes and the mean and variance for the continuous nodes.
  * The propagation is not yet implemented.
  * 
@@ -334,9 +331,6 @@ public class GaussianMixture {
 			clone = io.load(file);
 			file.delete();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JAXBException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (LoadException e) {

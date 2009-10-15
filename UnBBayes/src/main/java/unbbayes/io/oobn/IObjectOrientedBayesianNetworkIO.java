@@ -15,7 +15,7 @@ import unbbayes.prs.oobn.IObjectOrientedBayesianNetwork;
  * @author Shou Matsumoto
  *
  */
-public interface IObjectOrientedBayesianNetworkIO  {
+public interface IObjectOrientedBayesianNetworkIO extends BaseIO  {
 
 	public static String fileExtension = "oobn";
 	

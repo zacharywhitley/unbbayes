@@ -44,7 +44,9 @@ import unbbayes.gui.HierarchicTree;
 import unbbayes.io.builder.IProbabilisticNetworkBuilder;
 import unbbayes.io.builder.impl.DefaultProbabilisticNetworkBuilder;
 import unbbayes.io.exception.LoadException;
+import unbbayes.io.msbn.impl.DefaultMSBNIO;
 import unbbayes.prs.Edge;
+import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.ITabledVariable;
@@ -133,12 +135,15 @@ public class NetIO implements BaseIO {
 	 * Saves a network in basic NET file format.
 	 *
 	 * @param  output file where the net should be saved.
-	 * @param net network to be saved.
+	 * @param graph network to be saved.
 	 */
-	public void save(File output, SingleEntityNetwork net) throws FileNotFoundException {
+	public void save(File output, Graph graph) throws FileNotFoundException {
+		
+		
+		
 		PrintStream stream = new PrintStream(new FileOutputStream(output));
 		
-		
+		SingleEntityNetwork net = (SingleEntityNetwork) graph;
 		
 		this.saveNetHeader(stream, net);
 
@@ -166,8 +171,8 @@ public class NetIO implements BaseIO {
 	}
 	
 	/**
-	 * TODO create a class for loading/saving MSBN and use delegator pattern to
-	 * use NetIO routines.
+	 * Saves a single agent msbn to a file (the file is going to be a directory containing files using NET format).
+	 * TODO migrate it completeley to {@link DefaultMSBNIO}
 	 */
 	public void saveMSBN(File output, SingleAgentMSBN msbn) throws FileNotFoundException {
 		if (! output.isDirectory()) {
@@ -183,8 +188,8 @@ public class NetIO implements BaseIO {
 	}
 
 	/**
-	 * TODO create a class for loading/saving MSBN and use delegator pattern to
-	 * use NetIO routines.
+	 * Loads a single agent msbn from file (the file must be a directory containing files using NET format).
+	 * TODO migrate it completeley to {@link DefaultMSBNIO}
 	 */
 	public SingleAgentMSBN loadMSBN(File input) throws IOException,LoadException {
 		if (! input.isDirectory()) {
@@ -1094,6 +1099,14 @@ public class NetIO implements BaseIO {
 					+ (int)node.getColor().getRGB()
 					+ ");");
 		//by young end
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#supportsExtension(java.lang.String)
+	 */
+	public boolean supportsExtension(String extension) {
+		return "NET".equalsIgnoreCase(extension);
 	}
 	
 }

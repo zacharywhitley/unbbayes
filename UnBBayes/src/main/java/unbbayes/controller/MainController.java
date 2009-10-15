@@ -34,6 +34,7 @@ import unbbayes.controller.exception.InvalidFileNameException;
 import unbbayes.controller.exception.ObjectToBeSavedDontExistsException;
 import unbbayes.controller.oobn.OOBNController;
 import unbbayes.gui.Configurations;
+import unbbayes.gui.IPersistenceAwareWindow;
 import unbbayes.gui.MSBNWindow;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.SplashScreen;
@@ -50,6 +51,7 @@ import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.PrOwlIO;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
+import unbbayes.io.msbn.impl.DefaultMSBNIO;
 import unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO;
 import unbbayes.io.oobn.impl.DefaultOOBNIO;
 import unbbayes.prs.Edge;
@@ -71,6 +73,8 @@ import edu.stanford.smi.protegex.owl.ProtegeOWL;
  * @author     Michael S. Onishi
  * @created    June, 27th, 2001
  * @version    1.5 2006/09/14
+ * 
+ * 
  */
 public class MainController {
 	
@@ -221,83 +225,96 @@ public class MainController {
 		
 		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		
-		MebnIO ubfIo = null;
-		IObjectOrientedBayesianNetworkIO oobnIO = null;
-		
-		// TODO stop using this sequences of if-else conditionals and start using object binding conditionals
-		
-		try{
-			BaseIO io = null;
-//			PrOwlIO prOwlIo = null; 
+		try {
 			JInternalFrame window = screen.getSelectedWindow();
-			
-			if(window == null){
+			if(window == null || !(window instanceof IPersistenceAwareWindow)){
 				throw new ObjectToBeSavedDontExistsException(resource.getString("windowDontExists")); 
 			}
-			
-			if (file.isDirectory()) {
-				io = new NetIO();
-				if (!(window instanceof MSBNWindow)){
-					throw new ObjectToBeSavedDontExistsException(resource.getString("msbnDontExists"));
-				} else{
-					io.saveMSBN(file, ((MSBNWindow) window).getMSNet());	
-					return true; 
-				}
-			} else {
-				
-				String name = file.getName().toLowerCase();							
-				if (name.endsWith("net")) {
-					io = new NetIO();		
-				} 
-				else if (name.endsWith("xml")){
-					io = new XMLBIFIO();
-				}
-				else if (name.endsWith(UbfIO.fileExtension)) {
-					ubfIo = UbfIO.getInstance();
-				}
-				else if (name.endsWith(IObjectOrientedBayesianNetworkIO.fileExtension)) {
-					if (window instanceof OOBNWindow) {
-						oobnIO = DefaultOOBNIO.newInstance(((OOBNWindow)window).getController().getOobn());
-					}
-				}
-				
-				if (io != null)
-					if (!(window instanceof NetworkWindow)){
-						throw new ObjectToBeSavedDontExistsException(resource.getString("bnDontExists"));
-					}
-					else{
-						io.save(file, ((NetworkWindow) window).getSingleEntityNetwork());
-						return true; 
-					}
-				else { 
-					if (ubfIo != null) {
-						if (!(window instanceof NetworkWindow)){
-							throw new ObjectToBeSavedDontExistsException(resource.getString("mebnDontExists"));
-						}
-						else{
-							if(((NetworkWindow) window).getMultiEntityBayesianNetwork() == null){
-								throw new ObjectToBeSavedDontExistsException(resource.getString("mebnDontExists"));
-							}
-							ubfIo.saveMebn(file, ((NetworkWindow) window).getMultiEntityBayesianNetwork()); 
-							return true; 
-
-						}
-					} else if (oobnIO != null) {
-						if (window instanceof OOBNWindow) {
-							oobnIO.saveOOBNClass(file, ((OOBNWindow)window).getController().getActive().getController().getControlledClass());
-							return true;
-						}
-						return false;
-					}
-					else{
-						throw new InvalidFileNameException(resource.getString("withoutPosfixe"));							
-					}
-				}
-			}
-		}
-		finally {
+			IPersistenceAwareWindow persistenceWindow = (IPersistenceAwareWindow) window;
+			persistenceWindow.getIO().save(file, persistenceWindow.getPersistingGraph());
+		} finally {
 			screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		}
+		
+		return true;
+		
+//		MebnIO ubfIo = null;
+//		IObjectOrientedBayesianNetworkIO oobnIO = null;
+//		
+//		// TODO stop using this sequences of if-else conditionals and start using object binding conditionals
+//		
+//		try{
+//			BaseIO io = null;
+////			PrOwlIO prOwlIo = null; 
+//			JInternalFrame window = screen.getSelectedWindow();
+//			
+//			if(window == null){
+//				throw new ObjectToBeSavedDontExistsException(resource.getString("windowDontExists")); 
+//			}
+//			
+//			if (file.isDirectory()) {
+//				io = DefaultMSBNIO.newInstance();
+//				if (!(window instanceof MSBNWindow)){
+//					throw new ObjectToBeSavedDontExistsException(resource.getString("msbnDontExists"));
+//				} else{
+//					io.save(file, ((MSBNWindow) window).getMSNet());	
+//					return true; 
+//				}
+//			} else {
+//				
+//				String name = file.getName().toLowerCase();							
+//				if (name.endsWith("net")) {
+//					io = new NetIO();		
+//				} 
+//				else if (name.endsWith("xml")){
+//					io = new XMLBIFIO();
+//				}
+//				else if (name.endsWith(UbfIO.fileExtension)) {
+//					ubfIo = UbfIO.getInstance();
+//				}
+//				else if (name.endsWith(IObjectOrientedBayesianNetworkIO.fileExtension)) {
+//					if (window instanceof OOBNWindow) {
+//						oobnIO = DefaultOOBNIO.newInstance(((OOBNWindow)window).getController().getOobn());
+//					}
+//				}
+//				
+//				if (io != null)
+//					if (!(window instanceof NetworkWindow)){
+//						throw new ObjectToBeSavedDontExistsException(resource.getString("bnDontExists"));
+//					}
+//					else{
+//						io.save(file, ((NetworkWindow) window).getSingleEntityNetwork());
+//						return true; 
+//					}
+//				else { 
+//					if (ubfIo != null) {
+//						if (!(window instanceof NetworkWindow)){
+//							throw new ObjectToBeSavedDontExistsException(resource.getString("mebnDontExists"));
+//						}
+//						else{
+//							if(((NetworkWindow) window).getMultiEntityBayesianNetwork() == null){
+//								throw new ObjectToBeSavedDontExistsException(resource.getString("mebnDontExists"));
+//							}
+//							ubfIo.saveMebn(file, ((NetworkWindow) window).getMultiEntityBayesianNetwork()); 
+//							return true; 
+//
+//						}
+//					} else if (oobnIO != null) {
+//						if (window instanceof OOBNWindow) {
+//							oobnIO.saveOOBNClass(file, ((OOBNWindow)window).getController().getActive().getController().getControlledClass());
+//							return true;
+//						}
+//						return false;
+//					}
+//					else{
+//						throw new InvalidFileNameException(resource.getString("withoutPosfixe"));							
+//					}
+//				}
+//			}
+//		}
+//		finally {
+//			screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+//		}
 	}
 	
 	
@@ -310,13 +327,14 @@ public class MainController {
 	 * @throws IOMebnException 
 	 */
 	public void loadNet(final File file) throws LoadException, IOException, JAXBException, IOMebnException {
+		// TODO load using plugins and treat conflict
 		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));        
 		try {
 			JInternalFrame window = null;
 			BaseIO io = null;
 			if (file.isDirectory()) { //MSBN
-				io = new NetIO();
-				SingleAgentMSBN msbn = io.loadMSBN(file);	
+				io = DefaultMSBNIO.newInstance();
+				SingleAgentMSBN msbn = (SingleAgentMSBN)io.load(file);	
 				MSBNController controller = new MSBNController(msbn);
 				window = controller.getPanel();
 			} else {
@@ -324,19 +342,19 @@ public class MainController {
 				
 				if (name.endsWith("net")) {
 					io = new NetIO();	
-					ProbabilisticNetwork net = io.load(file);
+					ProbabilisticNetwork net = (ProbabilisticNetwork)io.load(file);
 					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
 					window = new NetworkWindow(net);	
 					((NetworkWindow)window).setFileName(name); 
 				} else if (name.endsWith("xml")){
 					io = new XMLBIFIO();	
-					ProbabilisticNetwork net = io.load(file);
+					ProbabilisticNetwork net = (ProbabilisticNetwork)io.load(file);
 					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
 					window = new NetworkWindow(net);	
 					((NetworkWindow)window).setFileName(name); 
 				} else if (name.endsWith("dne")){
 					io = new DneIO();	
-					ProbabilisticNetwork net = io.load(file);
+					ProbabilisticNetwork net = (ProbabilisticNetwork)io.load(file);
 					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
 					window = new NetworkWindow(net);	
 					((NetworkWindow)window).setFileName(name); 
@@ -395,7 +413,7 @@ public class MainController {
 					((NetworkWindow)window).setFileName(name); 
 				    
 				} else if (name.endsWith(IObjectOrientedBayesianNetworkIO.fileExtension)) {
-					IObjectOrientedBayesianNetworkIO oobnIO = DefaultOOBNIO.newInstance();
+					IObjectOrientedBayesianNetworkIO oobnIO = DefaultOOBNIO.newInstance(ObjectOrientedBayesianNetwork.newInstance(""));
 					IObjectOrientedBayesianNetwork oobn = oobnIO.loadOOBN(file);	
 					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
 					OOBNController controller = OOBNController.newInstance(oobn, screen);

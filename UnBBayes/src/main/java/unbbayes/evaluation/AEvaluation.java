@@ -325,7 +325,7 @@ public abstract class AEvaluation implements IEvaluation {
 		statesProduct = targetStatesProduct * evidenceStatesProduct;
 	}
 
-	protected void loadNetwork(String netFileName) throws LoadException, IOException, JAXBException {
+	protected void loadNetwork(String netFileName) throws LoadException, IOException {
 		File netFile = new File(netFileName);
 		String fileExt = netFileName.substring(netFileName.length() - 3);
 
@@ -338,7 +338,7 @@ public abstract class AEvaluation implements IEvaluation {
 			throw new LoadException(
 					"The network must be in XMLBIF 0.5 or NET format!");
 		}
-		net = io.load(netFile);
+		net = (ProbabilisticNetwork)io.load(netFile);
 	}
 	
 	protected static void show(float[][] a) {

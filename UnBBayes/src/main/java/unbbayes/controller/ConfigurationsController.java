@@ -5,7 +5,7 @@ import java.io.File;
 import unbbayes.gui.Configurations;
 
 /**
- * 
+ * Manages recently opened files.
  * @author Laecio
  */
 public class ConfigurationsController {

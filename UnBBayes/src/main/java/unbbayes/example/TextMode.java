@@ -21,13 +21,11 @@
 package unbbayes.example;
 
 import java.io.File;
-
-import unbbayes.io.BaseIO;
-import unbbayes.io.NetIO;
-
 import java.util.List;
 import java.util.ResourceBundle;
 
+import unbbayes.io.BaseIO;
+import unbbayes.io.NetIO;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
@@ -57,7 +55,7 @@ public class TextMode {
 
 		try {
 			BaseIO io = new NetIO();
-			rede = io.load(new File("./examples/asia.net"));
+			rede = (ProbabilisticNetwork)io.load(new File("./examples/asia.net"));
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(1);

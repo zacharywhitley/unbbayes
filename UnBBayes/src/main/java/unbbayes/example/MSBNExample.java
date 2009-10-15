@@ -24,6 +24,7 @@ import java.io.File;
 
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
+import unbbayes.io.msbn.impl.DefaultMSBNIO;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.prs.msbn.SubNetwork;
@@ -47,8 +48,8 @@ public class MSBNExample {
 	public static void main(String[] args) throws Exception {
 		SingleAgentMSBN msbn = null;
 		
-		BaseIO io = new NetIO();
-		msbn = io.loadMSBN(new File("src/test/resources/testCases/msbn/5partc/"));
+		BaseIO io = DefaultMSBNIO.newInstance();
+		msbn = (SingleAgentMSBN)io.load(new File("src/test/resources/testCases/msbn/5partc/"));
 		
 		msbn.compile();
 		

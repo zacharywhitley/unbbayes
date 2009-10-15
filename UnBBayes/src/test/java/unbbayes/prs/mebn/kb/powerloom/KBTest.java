@@ -89,10 +89,7 @@ public class KBTest  extends TestCase {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (IOMebnException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} 
 
 		try{
 			kb.loadModule(new File(KBTest.KB_GENERATIVE_FILE), false); 

@@ -57,6 +57,9 @@ import unbbayes.evaluation.controller.EvaluationController;
 import unbbayes.gui.FileIcon;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.SimpleFileFilter;
+import unbbayes.io.BaseIO;
+import unbbayes.io.FileExtensionIODelegator;
+import unbbayes.io.mebn.UbfIO;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Network;
@@ -91,6 +94,8 @@ public class NetworkController implements KeyListener {
     private SENController senController;
     private MEBNController mebnController;
     
+    private BaseIO baseIO;
+    
     // TODO ROMMEL - CHANGE THIS!! NEW MODELING!!
     public InferenceAlgorithmEnum getInferenceAlgorithm() {
     	if (senController != null) {
@@ -119,6 +124,7 @@ public class NetworkController implements KeyListener {
         this.multiEntityBayesianNetwork = multiEntityBayesianNetwork;
         this.screen = screen;
         this.mebnController = new MEBNController(multiEntityBayesianNetwork, screen);
+        this.setBaseIO(UbfIO.getInstance());
     }
     
     public void insertDomainMFrag(){
@@ -183,6 +189,7 @@ public class NetworkController implements KeyListener {
         this.singleEntityNetwork = singleEntityNetwork;
         this.screen = screen;
         this.senController = new SENController(singleEntityNetwork, screen);
+        this.setBaseIO(FileExtensionIODelegator.newInstance());
     }
     
     public SENController getSENController(){
@@ -918,6 +925,26 @@ public class NetworkController implements KeyListener {
     		mebnController.unselectNodes(); 
     	}    	
     }
+
+	/**
+	 * This is the class responsible for storing the network controlled by this controller.
+	 * {@link #setBaseIO(BaseIO)} must be set to a correct controller depending to what type of
+	 * network this controller is dealing.
+	 * @return the baseIO
+	 */
+	public BaseIO getBaseIO() {
+		return baseIO;
+	}
+
+	/**
+	 * This is the class responsible for storing the network controlled by this controller.
+	 * {@link #setBaseIO(BaseIO)} must be set to a correct controller depending to what type of
+	 * network this controller is dealing.
+	 * @param baseIO the baseIO to set
+	 */
+	public void setBaseIO(BaseIO baseIO) {
+		this.baseIO = baseIO;
+	}
     
     /****************** END GENERIC METHODS *********************/
 }

@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.JAXBException;
-
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
 import unbbayes.io.XMLBIFIO;
@@ -260,7 +258,7 @@ public class EvaluationAnalysis {
 		statesProduct = targetStatesProduct * evidenceStatesProduct;
 	}
 	
-	protected void loadNetwork(String netFileName) throws LoadException, IOException, JAXBException {
+	protected void loadNetwork(String netFileName) throws LoadException, IOException {
 		File netFile = new File(netFileName);
 		String fileExt = netFileName.substring(netFileName.length() - 3);
 
@@ -273,7 +271,7 @@ public class EvaluationAnalysis {
 			throw new LoadException(
 					"The network must be in XMLBIF 0.5 or NET format!");
 		}
-		net = io.load(netFile);
+		net = (ProbabilisticNetwork)io.load(netFile);
 	}
 	
 	public enum EvaluationAnalysisOption {

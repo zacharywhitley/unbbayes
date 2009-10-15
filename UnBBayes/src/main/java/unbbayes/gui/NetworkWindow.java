@@ -44,6 +44,8 @@ import javax.swing.JViewport;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
+import unbbayes.io.BaseIO;
+import unbbayes.prs.Graph;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -61,9 +63,9 @@ import unbbayes.prs.mebn.MultiEntityNode;
  * 
  * TODO stop using this class as MEBN window (and migrate MEBN specific codes to a new class, say MEBNWindow)
  */
-public class NetworkWindow extends JInternalFrame implements IFileExtensionAwareWindow {
+public class NetworkWindow extends JInternalFrame implements IPersistenceAwareWindow {
 	
-	// since this implements IFileExtensionAwareWindow, let's store them
+	// since this implements IPersistenceAwareWindow, let's store them
 	private static final String[] SUPPORTED_FILE_EXTENSIONS = { "net", "xml"};
 	private static final String[] SUPPORTED_FILE_EXTENSIONS_MEBN = { unbbayes.io.mebn.UbfIO.fileExtension };
 	
@@ -615,7 +617,7 @@ public class NetworkWindow extends JInternalFrame implements IFileExtensionAware
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.gui.IFileExtensionAwareWindow#getSupportedFileExtensions()
+	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFileExtensions()
 	 */
 	public String[] getSupportedFileExtensions() {
 		if (this.getMode() == MEBN_MODE) {
@@ -626,7 +628,7 @@ public class NetworkWindow extends JInternalFrame implements IFileExtensionAware
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.gui.IFileExtensionAwareWindow#getSupportedFilesDescription()
+	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFilesDescription()
 	 */
 	public String getSupportedFilesDescription() {
 		if (this.getMode() == MEBN_MODE) {
@@ -638,9 +640,48 @@ public class NetworkWindow extends JInternalFrame implements IFileExtensionAware
 
 	
 	/* (non-Javadoc)
-	 * @see unbbayes.gui.IFileExtensionAwareWindow#getSavingMessage()
+	 * @see unbbayes.gui.IPersistenceAwareWindow#getSavingMessage()
 	 */
 	public String getSavingMessage() {
 		return resource.getString("saveTitle");
+	}
+
+
+	/**
+	 * @return the controller
+	 */
+	public NetworkController getController() {
+		return controller;
+	}
+
+	/**
+	 * @param controller the controller to set
+	 */
+	public void setController(NetworkController controller) {
+		this.controller = controller;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.gui.IPersistenceAwareWindow#getInternalFrame()
+	 */
+	public JInternalFrame getInternalFrame() {
+		return this;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.gui.IPersistenceAwareWindow#getIO()
+	 */
+	public BaseIO getIO() {
+		return this.getController().getBaseIO();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.gui.IPersistenceAwareWindow#getPersistingGraph()
+	 */
+	public Graph getPersistingGraph() {
+		return this.getController().getNetwork();
 	}
 }

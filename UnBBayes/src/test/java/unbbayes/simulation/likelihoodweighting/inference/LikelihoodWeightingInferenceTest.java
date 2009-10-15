@@ -7,13 +7,13 @@ import java.io.File;
 import java.text.NumberFormat;
 import java.util.Locale;
 
+import junit.framework.TestCase;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
 import unbbayes.io.XMLBIFIO;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;
-import junit.framework.TestCase;
 
 /**
  * @author Shou Matsumoto
@@ -41,7 +41,7 @@ public class LikelihoodWeightingInferenceTest extends TestCase {
 			} else {
 				fail("The network must be in XMLBIF 0.4 or NET format!");
 			}
-			return io.load(netFile);
+			return (ProbabilisticNetwork)io.load(netFile);
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());

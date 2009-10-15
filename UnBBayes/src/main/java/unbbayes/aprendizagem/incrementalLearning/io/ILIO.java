@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFileChooser;
-import javax.xml.bind.JAXBException;
 
 import unbbayes.controller.FileController;
 import unbbayes.gui.SimpleFileFilter;
@@ -53,13 +52,13 @@ public class ILIO {
 
    public ProbabilisticNetwork getNet(File file, BaseIO io) {
       try {
-         return io.load(file);
+         return (ProbabilisticNetwork)io.load(file);
       } catch (LoadException e) {
          e.printStackTrace();
       } catch (IOException e) {
          e.printStackTrace();
-      } catch (JAXBException je){
-      	je.printStackTrace(); 
+      } catch (Exception e){
+      	e.printStackTrace(); 
       }
       return null;
    }
@@ -84,8 +83,8 @@ public class ILIO {
          io.save(file, pn);
       } catch (IOException e) {
          e.printStackTrace();
-      } catch (JAXBException je){
-      	je.printStackTrace(); 
+      } catch (Exception e){
+      	e.printStackTrace(); 
       }
    }
 

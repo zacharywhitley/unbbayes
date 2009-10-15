@@ -56,7 +56,6 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.plaf.metal.DefaultMetalTheme;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.OceanTheme;
 import javax.xml.bind.JAXBException;
@@ -399,12 +398,6 @@ public class UnBBayesFrame extends JFrame {
 									e.getMessage(), 
 									resource.getString("loadNetException"), 
 									JOptionPane.ERROR_MESSAGE); 
-						} catch (IOMebnException e) {
-							e.printStackTrace();
-							JOptionPane.showMessageDialog(UnBBayesFrame.this, 
-									e.getMessage(), 
-									resource.getString("loadNetException"), 
-									JOptionPane.ERROR_MESSAGE); 
 						} catch (JAXBException e) {
 							e.printStackTrace();
 							JOptionPane.showMessageDialog(UnBBayesFrame.this, 
@@ -430,8 +423,8 @@ public class UnBBayesFrame extends JFrame {
 				String dialogueTitle = null;	// title of the file chooser
 				JInternalFrame focusedInnerFrame = desktop.getSelectedFrame(); 	// currently focused window
 				if (focusedInnerFrame != null) {
-					if (focusedInnerFrame instanceof IFileExtensionAwareWindow) {
-						IFileExtensionAwareWindow currentWindow = ((IFileExtensionAwareWindow)focusedInnerFrame);
+					if (focusedInnerFrame instanceof IPersistenceAwareWindow) {
+						IPersistenceAwareWindow currentWindow = ((IPersistenceAwareWindow)focusedInnerFrame);
 						nets = currentWindow.getSupportedFileExtensions();
 						filterMessage = currentWindow.getSupportedFilesDescription();
 						dialogueTitle = currentWindow.getSavingMessage();
@@ -746,12 +739,6 @@ public class UnBBayesFrame extends JFrame {
 						resource.getString("loadNetException"), 
 						JOptionPane.ERROR_MESSAGE); 
 			} catch (IOException e) {
-				e.printStackTrace();
-				JOptionPane.showMessageDialog(UnBBayesFrame.this, 
-						e.getMessage(), 
-						resource.getString("loadNetException"), 
-						JOptionPane.ERROR_MESSAGE); 
-			} catch (IOMebnException e) {
 				e.printStackTrace();
 				JOptionPane.showMessageDialog(UnBBayesFrame.this, 
 						e.getMessage(), 
