@@ -469,6 +469,18 @@
 			<version>1.0</version>
 		</dependency>
 		<!-- MIGLAYOUT -->
+		
+		<dependency>
+			<!--
+				JPF provides a runtime engine that dynamically discovers and loads "plug-ins". 
+				A plug-in is a structured component that describes itself to JPF using a "manifest". 
+				JPF maintains a registry of available plug-ins and the functions they provide (via extension points and extensions).
+				http://jpf.sourceforge.net/index.html
+			-->
+			<groupId>guess</groupId>
+			<artifactId>jpf</artifactId>
+			<version>1.5</version>
+		</dependency>
 	</dependencies>
 	<reporting>
 		<plugins>

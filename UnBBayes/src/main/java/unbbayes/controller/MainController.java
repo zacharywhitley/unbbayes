@@ -25,8 +25,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.ResourceBundle;
 
+import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
 import javax.xml.bind.JAXBException;
 
@@ -86,6 +88,7 @@ public class MainController {
 	
 	/** Load resource file from this package */
 	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.controller.resources.ControllerResources");
+	
 	
 	/**
 	 *  Contructs the main controller with the UnBBayes main frame.
@@ -480,6 +483,8 @@ public class MainController {
 		screen.addWindow(netWindow);
 		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));    	
 	}
+
+	
 	
 }
 

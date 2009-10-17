@@ -942,4 +942,12 @@ public class OOBNWindow extends JInternalFrame implements IPersistenceAwareWindo
 		return null;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.gui.IPersistenceAwareWindow#setPersistingGraph(unbbayes.prs.Graph)
+	 */
+	public void setPersistingGraph(Graph graph) {
+		this.getController().getUpperUnBBayesFrame().add(OOBNController.newInstance((IObjectOrientedBayesianNetwork)graph, this.getController().getUpperUnBBayesFrame()).getScreen());
+	}
+
 }

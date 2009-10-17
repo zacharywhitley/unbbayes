@@ -27,6 +27,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
@@ -38,6 +39,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -51,6 +53,7 @@ import javax.swing.tree.DefaultTreeSelectionModel;
 
 import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
+import unbbayes.gui.AboutPane;
 import unbbayes.gui.FileIcon;
 import unbbayes.gui.HierarchicTree;
 import unbbayes.gui.SimpleFileFilter;
@@ -222,6 +225,16 @@ public class AFINMetaphorMainPanel extends JPanel
     jPanel13.setBackground(Color.WHITE);
     
     
+//    JButton aboutButton = new JButton(resource.getString("AboutItem"));
+//    aboutButton.setToolTipText(resource.getString("AboutItem"));
+//    aboutButton.addActionListener(new ActionListener() {
+//    	public void actionPerformed(ActionEvent e) {
+//        	AboutPane abourPane = new AboutPane();
+//    		abourPane.pack();
+//    		abourPane.setVisible(true);
+//		};
+//    });
+//    metaphorToolBar.add(aboutButton);
     
   }
 
@@ -266,7 +279,7 @@ public class AFINMetaphorMainPanel extends JPanel
 	  return ret;
   }
   
-  private void openFile(File selectedFile)
+  public void openFile(File selectedFile)
   {   try
       {
 	    String name = selectedFile.getName().toLowerCase();				
@@ -277,23 +290,54 @@ public class AFINMetaphorMainPanel extends JPanel
 		 	net = new XMLBIFIO().load(selectedFile);				
 		  }
 		
-          net.compile();
-          aFINMetaphorTree = new AFINMetaphorTree();
-          aFINMetaphorTree.setProbabilisticNetwork(net);
-          aFINMetaphorTree.expandTree();
-          JScrollPane jScrollPane3 = new JScrollPane(aFINMetaphorTree);
-          jPanel3.removeAll();
-          jPanel3.add(jScrollPane3, BorderLayout.CENTER);
-          jPanel3.updateUI();
-          jTabbedPane1.setSelectedComponent(this.findingEntryPanel);
+		  this.setNet(net);
           
-          //aFINMetaphorResult.setExplanationNodes(net.getExplanationNodes());
-          aFINMetaphorResult.setExplanationNodes(this.getNodesWithoutMetaphorHierarch(net,aFINMetaphorTree));
-          
-          
-          statusBar.setText(resource.getString("FileOpened"));
-          
-          aFINMetaphorTree.addMouseListener( new MouseListener() {
+      }
+      catch (Exception e)
+      {   net = null;
+          System.err.print(e.getMessage());
+          statusBar.setText(e.getMessage());
+      }
+  }
+  
+  
+	/**
+	 * @return the net
+	 */
+	public ProbabilisticNetwork getNet() {
+		return net;
+	}
+	
+	
+	/**
+	 * Sets the current net and re-render panel
+	 * @param net the net to set
+	 */
+	public void setNet(ProbabilisticNetwork net) {
+		this.net = net;
+		
+		try {
+			net.compile();
+		} catch (Exception e1) {
+			throw new RuntimeException(e1);
+		}
+		
+        aFINMetaphorTree = new AFINMetaphorTree();
+        aFINMetaphorTree.setProbabilisticNetwork(net);
+        aFINMetaphorTree.expandTree();
+        JScrollPane jScrollPane3 = new JScrollPane(aFINMetaphorTree);
+        jPanel3.removeAll();
+        jPanel3.add(jScrollPane3, BorderLayout.CENTER);
+        jPanel3.updateUI();
+        jTabbedPane1.setSelectedComponent(this.findingEntryPanel);
+        
+        //aFINMetaphorResult.setExplanationNodes(net.getExplanationNodes());
+        aFINMetaphorResult.setExplanationNodes(this.getNodesWithoutMetaphorHierarch(net,aFINMetaphorTree));
+        
+        
+        statusBar.setText(resource.getString("FileOpened"));
+        
+        aFINMetaphorTree.addMouseListener( new MouseListener() {
 			public void mouseClicked(MouseEvent e) {}
 			public void mouseEntered(MouseEvent e) {}
 			public void mouseExited(MouseEvent e) {}
@@ -307,13 +351,7 @@ public class AFINMetaphorMainPanel extends JPanel
 				}
 				
 			}        	  
-          });
-      }
-      catch (Exception e)
-      {   net = null;
-          System.err.print(e.getMessage());
-          statusBar.setText(e.getMessage());
-      }
-  }
+        });
+	}
 
 }

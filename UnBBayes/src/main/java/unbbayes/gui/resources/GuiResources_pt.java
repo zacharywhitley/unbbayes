@@ -520,5 +520,10 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"normalFunctionLabel" , "N(média,variância)"},
 		{"continuousNormalDistributionParamError" , "Os valores devem ser números reais."},
 		
+		
+		/* Suporte a plugins */
+		{"pluginMenu" , "Plugins"},
+		{"newPlugin" , "New "}
+		
 	};
 }

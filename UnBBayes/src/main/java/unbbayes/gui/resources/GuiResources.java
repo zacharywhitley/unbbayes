@@ -518,7 +518,12 @@ public class GuiResources extends ListResourceBundle {
 		{"constantLabel" , "k"},
 		{"followsLabel" , "~"},
 		{"normalFunctionLabel" , "N(mean,variance)"},
-		{"continuousNormalDistributionParamError" , "The values must be real numbers."}
+		{"continuousNormalDistributionParamError" , "The values must be real numbers."},
+		
+
+		/* Plugin Support */
+		{"pluginMenu" , "Plugins"},
+		{"newPlugin" , "New "}
 		
 	};
 }

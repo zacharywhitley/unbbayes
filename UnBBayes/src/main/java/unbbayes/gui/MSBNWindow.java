@@ -253,6 +253,14 @@ public class MSBNWindow extends JInternalFrame implements IPersistenceAwareWindo
 	public Graph getPersistingGraph() {
 		return this.getMSNet();
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.gui.IPersistenceAwareWindow#setPersistingGraph(unbbayes.prs.Graph)
+	 */
+	public void setPersistingGraph(Graph graph) {
+		this.msbn = (SingleAgentMSBN)graph;
+	}
 	
 	
 	

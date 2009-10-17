@@ -27,6 +27,8 @@ mvn install:install-file -DgroupId=guess -DartifactId=iri -Dversion=2.4 -Dpackag
 mvn install:install-file -DgroupId=guess -DartifactId=jena -Dversion=2.4 -Dpackaging=jar -Dfile=jena.jar
 mvn install:install-file -DgroupId=guess -DartifactId=protege-owl -Dversion=3.2 -Dpackaging=jar -Dfile=protege-owl.jar
 
+Go to \lib\jpf>
+mvn install:install-file -DgroupId=guess -DartifactId=jpf -Dversion=1.5 -Dpackaging=jar -Dfile=jpf.jar
 
 CREATING A RELEASE
 -------------------

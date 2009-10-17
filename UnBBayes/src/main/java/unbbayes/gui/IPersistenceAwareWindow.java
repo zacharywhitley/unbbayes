@@ -70,4 +70,11 @@ public interface IPersistenceAwareWindow {
 	 */
 	public Graph getPersistingGraph();
 	
+	
+	/**
+	 * Sets the graph to be persisted or is being edited by this window.
+	 * @param graph : the graph to set.
+	 */
+	public void setPersistingGraph(Graph graph);
+	
 }

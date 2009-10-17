@@ -48,6 +48,13 @@
         <include>unbbayes.sh</include>
       </includes>
     </fileSet>
+    <fileSet>
+      <directory>plugins</directory>
+      <outputDirectory>plugins</outputDirectory>
+      <includes>
+        <include>**/*.*</include>
+      </includes>
+    </fileSet>
   </fileSets>
   <dependencySets>
     <dependencySet>

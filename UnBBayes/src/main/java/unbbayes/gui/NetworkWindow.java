@@ -684,4 +684,12 @@ public class NetworkWindow extends JInternalFrame implements IPersistenceAwareWi
 	public Graph getPersistingGraph() {
 		return this.getController().getNetwork();
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.gui.IPersistenceAwareWindow#setPersistingGraph(unbbayes.prs.Graph)
+	 */
+	public void setPersistingGraph(Graph graph) {
+		new NetworkWindow((Network)graph);
+	}
 }

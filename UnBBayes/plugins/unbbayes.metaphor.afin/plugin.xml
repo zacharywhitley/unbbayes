@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="unbbayes.metaphor.afin" version="1.0.0">
+    <requires>
+        <import plugin-id="unbbayes.util.extension.core"/>
+    </requires>
+    <runtime>
+        <library id="afin" path="classes/" type="code">
+            <export prefix="*" />
+        </library>
+        <library type="resources" path="icons/" id="icons" />
+    </runtime>
+    <extension plugin-id="unbbayes.util.extension.core" point-id="Module" id="afinModule">
+        <parameter id="class" value="unbbayes.metaphor.afin.extension.jpf.Afin" />
+        <parameter id="name" value="AFIN Metaphor" />
+		<parameter id="description" value="Metaphor for AFIN project" />
+		<parameter id="icon" value="open.png" />
+    </extension>
+</plugin>

@@ -36,10 +36,14 @@ import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import javax.help.HelpSet;
 import javax.help.JHelp;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
@@ -60,6 +64,16 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.OceanTheme;
 import javax.xml.bind.JAXBException;
 
+import org.java.plugin.ObjectFactory;
+import org.java.plugin.PluginLifecycleException;
+import org.java.plugin.PluginManager;
+import org.java.plugin.PluginManager.PluginLocation;
+import org.java.plugin.registry.Extension;
+import org.java.plugin.registry.ExtensionPoint;
+import org.java.plugin.registry.PluginDescriptor;
+import org.java.plugin.registry.Extension.Parameter;
+import org.java.plugin.standard.StandardPluginLocation;
+
 import unbbayes.aprendizagem.ConstructionController;
 import unbbayes.aprendizagem.incrementalLearning.ILBridge;
 import unbbayes.controller.ConfigurationsController;
@@ -70,7 +84,6 @@ import unbbayes.controller.MainController;
 import unbbayes.datamining.gui.UnBMinerFrame;
 import unbbayes.io.exception.LoadException;
 import unbbayes.io.mebn.UbfIO;
-import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO;
 import unbbayes.metaphor.MetaphorFrame;
 import unbbayes.metaphor.afin.AFINMetaphorFrame;
@@ -80,6 +93,7 @@ import unbbayes.simulation.montecarlo.controller.MCMainController;
 import unbbayes.simulation.montecarlo.sampling.MatrixMonteCarloSampling;
 import unbbayes.simulation.sampling.GibbsSampling;
 import unbbayes.util.Debug;
+import unbbayes.util.extension.PluginCore;
 
 /**
  * This class extends <code>JFrame</code> and it is responsible for 
@@ -124,8 +138,8 @@ public class UnBBayesFrame extends JFrame {
 	private JButton help;
 	private JButton about; 
 	
-	 private URL helpSetURL;
-	 private HelpSet set;
+	private URL helpSetURL;
+	private HelpSet set;
 	private JHelp jHelp;
 	private ActionListener alNewBN;
 	
@@ -169,6 +183,17 @@ public class UnBBayesFrame extends JFrame {
 	/** Load resource file from this package */
 	private static ResourceBundle resource = ResourceBundle
 			.getBundle("unbbayes.gui.resources.GuiResources");
+	
+	
+	// Adding plugin support
+	private JToolBar pluginToolBar;
+	private JMenu pluginMenu;
+	private PluginManager pluginManager;
+	private String pluginDirectory = "plugins";
+	private String pluginCoreID = "unbbayes.util.extension.core";
+	private String pluginCoreExtensionPoint = "Module";
+	private List<Class> pluginList = null;
+	
 
 	/**
 	 * Build the main program frame, adjusting the layouts and building the 
@@ -213,6 +238,9 @@ public class UnBBayesFrame extends JFrame {
 		setVisible(true);
 
 		singleton = this;
+		
+		// plugin support
+		this.loadPlugins();
 	}
 
 	private void setLnF(String lnfName) {
@@ -781,6 +809,8 @@ public class UnBBayesFrame extends JFrame {
 		JMenu windowMenu = new JMenu(resource.getString("windowMenu"));
 		JMenu helpMenu = new JMenu(resource.getString("helpMenu"));
 		
+		
+		
 		fileMenu.setMnemonic(resource.getString("fileMenuMn").charAt(0));
 		recentFilesMenu.setMnemonic(resource.getString("recentFilesMn").charAt(0));
 		newMenu.setMnemonic(resource.getString("newMenuMn").charAt(0)); 
@@ -790,6 +820,12 @@ public class UnBBayesFrame extends JFrame {
 		toolsMenu.setMnemonic(resource.getString("toolsMenuMn").charAt(0));
 		windowMenu.setMnemonic(resource.getString("windowMenuMn").charAt(0));
 		helpMenu.setMnemonic(resource.getString("helpMenuMn").charAt(0));
+		
+		// plugin support
+		pluginMenu = new JMenu(resource.getString("pluginMenu"));
+		pluginMenu.setMnemonic(resource.getString("pluginMenu").charAt(0));
+		// the menu items are filled at loadPlugins() method
+		
 
 		// create menu items, set their mnemonic and their key accelerator
 		JMenuItem newBN = new JMenuItem(resource.getString("newBN"),
@@ -968,7 +1004,7 @@ public class UnBBayesFrame extends JFrame {
 		toolsMenu.add(tanItem);
 		toolsMenu.add(banItem);
 		toolsMenu.add(iLearningItem);
-		toolsMenu.add(metaphorItem);
+//		toolsMenu.add(metaphorItem);
 		toolsMenu.add(medicalMetaphorItem);
 		toolsMenu.add(unbMinerItem);
 		
@@ -987,9 +1023,141 @@ public class UnBBayesFrame extends JFrame {
 		menu.add(samplingMenu);
 		menu.add(windowMenu);
 		menu.add(helpMenu);
+		
+		menu.add(pluginMenu);
 
 		this.setJMenuBar(menu);
 	}
+	
+	/**
+	 * Creates the plugin manager, loads UnBBayes' core plugins using JPF, 
+	 * fills the menu items and tool bar's buttons and their listeners.
+	 */
+	public void loadPlugins(){
+		// create plugin manager
+		this.setPluginManager(ObjectFactory.newInstance().createManager());
+		
+		// search for files inside plugin directory
+		File pluginsDir = new File(this.getPluginDirectory());
+		File[] plugins = pluginsDir.listFiles();
+
+		// publish (load) plugins
+		try {
+	        PluginLocation[] locations = new PluginLocation[plugins.length];
+	        for (int i = 0; i < plugins.length; i++) {
+	            locations[i] = StandardPluginLocation.create(plugins[i]);
+	        }
+
+	        // enable plugin
+	        this.getPluginManager().publishPlugins(locations);
+	    } catch (Exception e) {
+	    	// could not load plugins, but we shall continue
+	        e.printStackTrace();
+	        this.getPluginToolBar().setVisible(false);
+			this.getPluginMenu().setVisible(false);
+	        return;
+	    }
+
+	    // loads the "core" plugin, which is a stub that we use to declare extension points
+	    PluginDescriptor core = pluginManager.getRegistry().getPluginDescriptor(this.getPluginCoreID());
+        
+	    // load the extension point for new modules (functionalities).
+	    ExtensionPoint point = pluginManager.getRegistry().getExtensionPoint(core.getId(), this.getPluginCoreExtensionPoint());
+
+	    // create menu/buttons that activates a plugin and stores plugin classes to a list
+	    this.setPluginList(this.fillCorePluginMenuAndButtons(pluginManager, point));
+	}
+	
+	/**
+	 * Fills up the menu and tool tip buttons using {@link #getPluginManager()}.
+	 * @param pluginManager : manager to use
+	 * @param point: extension point to be read in order to fill menu and buttons.
+	 * @return a list of loaded plugin classes (usually implements IPersistenceAwareWindow).
+	 */
+	protected List<Class> fillCorePluginMenuAndButtons(PluginManager pluginManager, ExtensionPoint point) {
+		
+		List<Class> ret = new ArrayList<Class>();
+		
+		for (Iterator<Extension> it = point.getConnectedExtensions().iterator(); it.hasNext();) {
+			Extension ext = it.next();
+            PluginDescriptor descr = ext.getDeclaringPluginDescriptor();
+            
+            try {
+				pluginManager.activatePlugin(descr.getId());
+			} catch (PluginLifecycleException e) {
+				e.printStackTrace();
+				// we could not load this plugin, but we shall continue
+				continue;
+			}
+			
+			// extracting parameters
+			Parameter nameParam = ext.getParameter(PluginCore.PARAMETER_NAME);
+			Parameter classParam = ext.getParameter(PluginCore.PARAMETER_CLASS);
+			Parameter descriptionParam = ext.getParameter(PluginCore.PARAMETER_DESCRIPTION);
+			Parameter iconParam = ext.getParameter(PluginCore.PARAMETER_ICON);
+			
+			// extracting plugin class
+			ClassLoader classLoader = pluginManager.getPluginClassLoader(descr);
+            Class pluginCls = null;
+            try {
+				pluginCls = classLoader.loadClass(classParam.valueAsString());
+			} catch (ClassNotFoundException e1) {
+				e1.printStackTrace();
+				continue;
+			}
+			
+			// filling tool bar's button
+			ImageIcon icon = null;
+			if (iconParam != null) {
+				URL iconUrl = pluginManager.getPluginClassLoader(ext.getDeclaringPluginDescriptor()).getResource(iconParam.valueAsString());
+				icon = (iconUrl != null) ? new ImageIcon(iconUrl) : null;
+			}
+			JButton button = new JButton(icon);
+			button.setToolTipText(descriptionParam.valueAsString());
+			
+			// filling menu item
+			JMenuItem menuItem = new JMenuItem(resource.getString("newPlugin") + nameParam.valueAsString(),icon);
+			menuItem.setToolTipText(descriptionParam.valueAsString());
+			
+			// creating action listener
+			ActionListener listener = new ActionListenerSupportingConstructorParam(pluginCls) {
+				public void actionPerformed(ActionEvent e) {
+					setCursor(new Cursor(Cursor.WAIT_CURSOR));
+					IPersistenceAwareWindow window = null;
+					try {
+						window = (IPersistenceAwareWindow)(((Class)this.getParam()).newInstance());
+					} catch (InstantiationException e1) {
+						throw new RuntimeException(e1);
+					} catch (IllegalAccessException e1) {
+						throw new RuntimeException(e1);
+					}
+					addWindow(window.getInternalFrame());
+					window.getInternalFrame().setVisible(true);
+					setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				}
+			};
+			
+			// adding action listener 
+			button.addActionListener(listener);
+			menuItem.addActionListener(listener);
+            
+			// adding tool bar buttons and menu
+			this.getPluginToolBar().add(button);
+			this.getPluginMenu().add(menuItem);
+			
+			// filling the return
+			ret.add(pluginCls);
+		}
+		
+		// if we have no plugins, we should not show the tool bar or the menu
+		if (ret.isEmpty()) {
+			this.getPluginToolBar().setVisible(false);
+			this.getPluginMenu().setVisible(false);
+		}
+		
+		return ret;
+	}
+	
 
 	/**
 	 * Call the method for creating the needed buttons and then create the tool
@@ -1006,6 +1174,9 @@ public class UnBBayesFrame extends JFrame {
 		jtbTools = new JToolBar();
 		jtbWindow = new JToolBar();
 		jtbHelp = new JToolBar();
+		
+		// plugin support. The buttons are filled at loadPlugins
+		pluginToolBar = new JToolBar();
 
 		// add their buttons
 		jtbFile.add(newNet);
@@ -1028,6 +1199,8 @@ public class UnBBayesFrame extends JFrame {
 		topPanel.add(jtbTools);
 		topPanel.add(jtbWindow);
 		topPanel.add(jtbHelp);
+		
+		topPanel.add(pluginToolBar);
 	}
 
 	/**
@@ -1165,4 +1338,133 @@ public class UnBBayesFrame extends JFrame {
 	    }
 	}
 
+	/**
+	 * @return the pluginToolBar
+	 */
+	public JToolBar getPluginToolBar() {
+		return pluginToolBar;
+	}
+
+	/**
+	 * @param pluginToolBar the pluginToolBar to set
+	 */
+	public void setPluginToolBar(JToolBar pluginToolBar) {
+		this.pluginToolBar = pluginToolBar;
+	}
+
+	/**
+	 * @return the pluginMenu
+	 */
+	public JMenu getPluginMenu() {
+		return pluginMenu;
+	}
+
+	/**
+	 * @param pluginMenu the pluginMenu to set
+	 */
+	public void setPluginMenu(JMenu pluginMenu) {
+		this.pluginMenu = pluginMenu;
+	}
+
+	/**
+	 * @return the pluginManager
+	 */
+	public PluginManager getPluginManager() {
+		return pluginManager;
+	}
+
+	/**
+	 * @param pluginManager the pluginManager to set
+	 */
+	public void setPluginManager(PluginManager pluginManager) {
+		this.pluginManager = pluginManager;
+	}
+
+	/**
+	 * The directory where UnBBayes will search for plugins.
+	 * @return the pluginDirectory
+	 */
+	public String getPluginDirectory() {
+		return pluginDirectory;
+	}
+
+	/**
+	 * 
+	 * The directory where UnBBayes will search for plugins.
+	 * @param pluginDirectory the pluginDirectory to set
+	 */
+	public void setPluginDirectory(String pluginDirectory) {
+		this.pluginDirectory = pluginDirectory;
+	}
+
+	/**
+	 * The ID of the core plugin.
+	 * @return the pluginCoreID
+	 */
+	public String getPluginCoreID() {
+		return pluginCoreID;
+	}
+
+	/**
+	 * The ID of the core plugin.
+	 * @param pluginCoreID the pluginCoreID to set
+	 */
+	public void setPluginCoreID(String pluginCoreID) {
+		this.pluginCoreID = pluginCoreID;
+	}
+
+	/**
+	 * The main extension point of the core plugin.
+	 * @return the pluginCoreExtensionPoint
+	 */
+	public String getPluginCoreExtensionPoint() {
+		return pluginCoreExtensionPoint;
+	}
+
+	/**
+	 * The main extension point of the core plugin.
+	 * @param pluginCoreExtensionPoint the pluginCoreExtensionPoint to set
+	 */
+	public void setPluginCoreExtensionPoint(String pluginCoreExtensionPoint) {
+		this.pluginCoreExtensionPoint = pluginCoreExtensionPoint;
+	}
+
+	
+	/**
+	 * Inner class for action listener, supporting constructor's param.
+	 * @author Shou Matsumoto
+	 *
+	 */
+	protected abstract class ActionListenerSupportingConstructorParam implements ActionListener {
+		private Object param;
+		public ActionListenerSupportingConstructorParam(Object param) {
+			this.param = param;
+		}
+		/**
+		 * @return the param
+		 */
+		public Object getParam() {
+			return param;
+		}
+		/**
+		 * @param param the param to set
+		 */
+		public void setParam(Object param) {
+			this.param = param;
+		}
+	}
+
+	/**
+	 * @return the pluginList
+	 */
+	public List<Class> getPluginList() {
+		return pluginList;
+	}
+
+	/**
+	 * @param pluginList the pluginList to set
+	 */
+	public void setPluginList(List<Class> pluginList) {
+		this.pluginList = pluginList;
+	}
 }
