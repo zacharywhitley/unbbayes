@@ -37,9 +37,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import javax.help.HelpSet;
 import javax.help.JHelp;
@@ -185,6 +187,8 @@ public class UnBBayesFrame extends JFrame {
 			.getBundle("unbbayes.gui.resources.GuiResources");
 	
 	
+	private JMenuBar menu;
+	
 	// Adding plugin support
 	private JToolBar pluginToolBar;
 	private JMenu pluginMenu;
@@ -193,6 +197,8 @@ public class UnBBayesFrame extends JFrame {
 	private String pluginCoreID = "unbbayes.util.extension.core";
 	private String pluginCoreExtensionPoint = "Module";
 	private List<Class> pluginList = null;
+	
+	private JMenuItem reloadPluginsMenuItem;
 	
 
 	/**
@@ -795,7 +801,7 @@ public class UnBBayesFrame extends JFrame {
 	 * Method responsible for creating the menu used in this class, JFrame.
 	 */
 	public void createMenu() {
-		JMenuBar menu = new JMenuBar();
+		menu = new JMenuBar();
 
 		// create menus and set their mnemonic
 		JMenu fileMenu = new JMenu(resource.getString("fileMenu"));
@@ -821,10 +827,6 @@ public class UnBBayesFrame extends JFrame {
 		windowMenu.setMnemonic(resource.getString("windowMenuMn").charAt(0));
 		helpMenu.setMnemonic(resource.getString("helpMenuMn").charAt(0));
 		
-		// plugin support
-		pluginMenu = new JMenu(resource.getString("pluginMenu"));
-		pluginMenu.setMnemonic(resource.getString("pluginMenu").charAt(0));
-		// the menu items are filled at loadPlugins() method
 		
 
 		// create menu items, set their mnemonic and their key accelerator
@@ -1024,9 +1026,47 @@ public class UnBBayesFrame extends JFrame {
 		menu.add(windowMenu);
 		menu.add(helpMenu);
 		
-		menu.add(pluginMenu);
 
 		this.setJMenuBar(menu);
+	}
+	
+	/**
+	 * This method is used whithin {@link #loadPlugins()} in order to instantiate the "Plugin" tool bars.
+	 * It does not actually fill the tool bar, since the plugins must be loaded after the creation of the
+	 * toolbar.
+	 */
+	protected void createPluginToolBars() {
+		if (pluginToolBar != null) {
+			topPanel.remove(pluginToolBar);
+		}
+		pluginToolBar = new JToolBar();
+		topPanel.add(pluginToolBar);
+	}
+	
+	/**
+	 * This method is used whithin {@link #loadPlugins()} in order to create the "Plugin" menu.
+	 * It does not actually fill the menu with plugins, since the plugins must be loaded after the creation of the
+	 * menu.
+	 */
+	protected void createPluginMenu(){
+		if (pluginMenu != null) {
+			menu.remove(pluginMenu);
+		}
+		// create menu
+		pluginMenu = new JMenu(resource.getString("pluginMenu"));
+		pluginMenu.setMnemonic(resource.getString("pluginMenu").charAt(0));
+		
+		reloadPluginsMenuItem = new JMenuItem(this.resource.getString("reloadPlugin"));
+		reloadPluginsMenuItem.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+				loadPlugins();
+			}
+		});
+		
+		pluginMenu.add(reloadPluginsMenuItem);
+		pluginMenu.addSeparator();
+		
+		menu.add(pluginMenu);
 	}
 	
 	/**
@@ -1034,6 +1074,10 @@ public class UnBBayesFrame extends JFrame {
 	 * fills the menu items and tool bar's buttons and their listeners.
 	 */
 	public void loadPlugins(){
+		this.createPluginMenu();
+		this.createPluginToolBars();
+		
+		
 		// create plugin manager
 		this.setPluginManager(ObjectFactory.newInstance().createManager());
 		
@@ -1043,18 +1087,21 @@ public class UnBBayesFrame extends JFrame {
 
 		// publish (load) plugins
 		try {
-	        PluginLocation[] locations = new PluginLocation[plugins.length];
-	        for (int i = 0; i < plugins.length; i++) {
-	            locations[i] = StandardPluginLocation.create(plugins[i]);
-	        }
-
+	        Set<PluginLocation> locations = new HashSet<PluginLocation>(plugins.length);
+	        for (File file : plugins) {
+				PluginLocation location = StandardPluginLocation.create(file);
+				if (location != null) {
+					locations.add(location);
+				}
+			}
+	        
 	        // enable plugin
-	        this.getPluginManager().publishPlugins(locations);
+	        this.getPluginManager().publishPlugins(locations.toArray(new PluginLocation[locations.size()]));
 	    } catch (Exception e) {
 	    	// could not load plugins, but we shall continue
 	        e.printStackTrace();
 	        this.getPluginToolBar().setVisible(false);
-			this.getPluginMenu().setVisible(false);
+//			this.getPluginMenu().setVisible(false);
 	        return;
 	    }
 
@@ -1152,7 +1199,7 @@ public class UnBBayesFrame extends JFrame {
 		// if we have no plugins, we should not show the tool bar or the menu
 		if (ret.isEmpty()) {
 			this.getPluginToolBar().setVisible(false);
-			this.getPluginMenu().setVisible(false);
+//			this.getPluginMenu().setVisible(false);
 		}
 		
 		return ret;
@@ -1175,8 +1222,7 @@ public class UnBBayesFrame extends JFrame {
 		jtbWindow = new JToolBar();
 		jtbHelp = new JToolBar();
 		
-		// plugin support. The buttons are filled at loadPlugins
-		pluginToolBar = new JToolBar();
+		
 
 		// add their buttons
 		jtbFile.add(newNet);
@@ -1200,7 +1246,6 @@ public class UnBBayesFrame extends JFrame {
 		topPanel.add(jtbWindow);
 		topPanel.add(jtbHelp);
 		
-		topPanel.add(pluginToolBar);
 	}
 
 	/**
@@ -1466,5 +1511,33 @@ public class UnBBayesFrame extends JFrame {
 	 */
 	public void setPluginList(List<Class> pluginList) {
 		this.pluginList = pluginList;
+	}
+
+	/**
+	 * @return the menu
+	 */
+	public JMenuBar getMenu() {
+		return menu;
+	}
+
+	/**
+	 * @param menu the menu to set
+	 */
+	public void setMenu(JMenuBar menu) {
+		this.menu = menu;
+	}
+
+	/**
+	 * @return the reloadPluginsMenuItem
+	 */
+	public JMenuItem getReloadPluginsItem() {
+		return reloadPluginsMenuItem;
+	}
+
+	/**
+	 * @param reloadPluginsMenuItem the reloadPluginsMenuItem to set
+	 */
+	public void setReloadPluginsItem(JMenuItem reloadPluginsItem) {
+		this.reloadPluginsMenuItem = reloadPluginsItem;
 	}
 }

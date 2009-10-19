@@ -523,7 +523,8 @@ public class GuiResources_pt extends ListResourceBundle {
 		
 		/* Suporte a plugins */
 		{"pluginMenu" , "Plugins"},
-		{"newPlugin" , "New "}
+		{"newPlugin" , "Novo "},
+		{"reloadPlugin" , "Recarregar Plugins"}
 		
 	};
 }
