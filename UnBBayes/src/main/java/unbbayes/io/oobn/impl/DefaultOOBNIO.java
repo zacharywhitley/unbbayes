@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import unbbayes.gui.oobn.node.OOBNNodeGraphicalWrapper;
 import unbbayes.io.NetIO;
@@ -52,9 +53,12 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 	/**
 	 * The file extension assumed by this class when recursivelly loading class dependency.
 	 * This class will suppose the dependency to be loaded will have filename as
-	 * [CLASSNAME]+[FILE_EXTENSION]
+	 * [CLASSNAME]+ "." +[FILE_EXTENSION]
 	 */
-	public static final String FILE_EXTENSION = ".oobn";
+	public static final String FILE_EXTENSION = "oobn";
+	
+//	public static final String[] SUPPORTED_EXTENSIONS_LOAD = {FILE_EXTENSION , "net"};
+	public static final String[] SUPPORTED_EXTENSIONS = {FILE_EXTENSION};
 	
 //	private NetIO netIO = null;
 	private IObjectOrientedBayesianNetwork oobn = null;
@@ -63,6 +67,11 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 	 * Stores the name and the class of dependencies already loaded
 	 */
 	private Map<String, IOOBNClass> classNameToClassMap = null;
+	
+	
+	/** Load resource file from this package */
+	private static ResourceBundle resources = ResourceBundle
+			.getBundle("unbbayes.io.oobn.resources.OOBNIOResources");
 	
 	/**
 	 * Default constructor
@@ -204,17 +213,18 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 
 	/**
 	 * @param input
-	 * @return
+	 * @return 
 	 * @throws LoadException
 	 * @throws IOException
 	 * @see unbbayes.io.NetIO#load(java.io.File)
 	 */
-	public ProbabilisticNetwork load(File input) throws LoadException,
+	public Graph load(File input) throws LoadException,
 			IOException {
 		IProbabilisticNetworkBuilder builder = DefaultOOBNClassBuilder.newInstance();
 		// set the class builder to build only private nodes
 		builder.setProbabilisticNodeBuilder(DefaultPrivateOOBNNodeGraphicalWrapperBuilder.newInstance());
-		return this.load(input, builder);
+		this.load(input, builder);
+		return (Graph)this.getOobn();
 	}
 
 	/*
@@ -644,7 +654,7 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 			// if the class was not loaded before, load it recursively
 			if (oobnClass == null) {
 				// suppose file name is [CLASSNAME].oobn
-				File input = new File(originalClassFile.getParent() , className + FILE_EXTENSION);
+				File input = new File(originalClassFile.getParent() , className + "." + FILE_EXTENSION);
 				oobnClass = (IOOBNClass)classBuilder.buildNetwork(className);
 				this.load(input, (SingleEntityNetwork)oobnClass.getNetwork(), networkBuilder);
 				// load will also add the loaded new class to this.oobn
@@ -855,5 +865,35 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 		// the last parenthesis is filled by upper caller method
 		
 	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.io.NetIO#supportsExtension(java.lang.String)
+	 */
+	public boolean supports(String extension, boolean isLoadOnly) {
+		for (String supported : this.getSupportedFileExtensions(isLoadOnly)) {
+			if (supported.equalsIgnoreCase(extension)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.io.NetIO#getSupportedFileExtensions(boolean)
+	 */
+	public String[] getSupportedFileExtensions(boolean isLoadOnly) {
+		return SUPPORTED_EXTENSIONS;
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.io.NetIO#getSupportedFilesDescription(boolean)
+	 */
+	public String getSupportedFilesDescription(boolean isLoadOnly) {
+		return this.resources.getString("netFileFilterSaveOOBN");
+	}
+	
+	
+	
+	
 	
 }

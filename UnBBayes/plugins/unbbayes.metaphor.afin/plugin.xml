@@ -13,6 +13,7 @@
     <extension plugin-id="unbbayes.util.extension.core" point-id="Module" id="afinModule">
         <parameter id="class" value="unbbayes.metaphor.afin.extension.jpf.Afin" />
         <parameter id="name" value="AFIN Metaphor" />
+        <parameter id="builder" value="unbbayes.metaphor.afin.extension.jpf.Afin" />
 		<parameter id="description" value="Metaphor for AFIN project" />
 		<parameter id="icon" value="open.png" />
     </extension>

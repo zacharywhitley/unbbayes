@@ -24,17 +24,29 @@ public interface IPersistenceAwareWindow {
 	/**
 	 * Obtains an array of file extensions supported by this network window.
 	 * The file extensions should come without the dot
+	 * @param isLoadOnly :  if set to true, it should consider file extensions for file loading (input).
+	 * If set to false, it should consider both saving and loading. Note
+	 * that not every module/plugin can implement both loading and saving, and this parameter may separate such
+	 * special behaviors.
 	 * @return
+	 * @deprecated use {@link BaseIO#getSupportedFileExtensions(boolean)}
+	 * @see #getIO()
 	 */
-	public String[] getSupportedFileExtensions();
+	public String[] getSupportedFileExtensions(boolean isLoadOnly);
 	
 	/**
 	 * Gets a description of supported file extensions,
-	 * which may be shown to the user through file chooser's fileter to explain what
+	 * which may be shown to the user through file chooser's file filter to explain what
 	 * file format are supported.
 	 * E.g. "Net (.net), XMLBIF(.xml), UnBBayes File (.ubf)"
+	 * @param isLoadOnly :  if set to true, it should consider file extensions for file loading (input).
+	 * If set to false, it should consider both saving and loading. Note
+	 * that not every module/plugin can implement both loading and saving, and this parameter may separate such
+	 * special behaviors.
+	 * @deprecated use {@link BaseIO#getSupportedFilesDescription(boolean)}
+	 * @see #getIO()
 	 */
-	public String getSupportedFilesDescription();
+	public String getSupportedFilesDescription(boolean isLoadOnly);
 	
 	
 	/**
@@ -71,10 +83,5 @@ public interface IPersistenceAwareWindow {
 	public Graph getPersistingGraph();
 	
 	
-	/**
-	 * Sets the graph to be persisted or is being edited by this window.
-	 * @param graph : the graph to set.
-	 */
-	public void setPersistingGraph(Graph graph);
 	
 }

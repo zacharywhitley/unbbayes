@@ -83,6 +83,9 @@ public class NetIO implements BaseIO {
 	// let's count it by ourselves
 	protected long lineno = 1;
 	
+	/** Single array containing "net" */
+	public static final String[] SUPPORTED_EXTENSIONS = {"net"};
+	
 	/**
 	 *  Loads a NET format file using default node/network builder.
 	 *  In other words, this method returns exactly instances of ProbabilisticNetwork filled
@@ -93,7 +96,7 @@ public class NetIO implements BaseIO {
 	 * @throws LoadException when there were errors loading the network
 	 * @throws IOException in case there were errors when manipulating files.
 	 */
-	public ProbabilisticNetwork load(File input)
+	public Graph load(File input)
 		throws LoadException, IOException {
 		
 		int index = input.getName().lastIndexOf('.');
@@ -1101,12 +1104,49 @@ public class NetIO implements BaseIO {
 		//by young end
 	}
 
+	/**
+	 * Checks if file extension is compatible to what this i/o expects.
+	 * @see #supports(File, boolean)
+	 * @param extension
+	 * @param isLoadOnly
+	 * @return
+	 */
+	public boolean supports(String extension, boolean isLoadOnly) {
+		return SUPPORTED_EXTENSIONS[0].equalsIgnoreCase(extension);
+	}
+
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.io.BaseIO#supportsExtension(java.lang.String)
+	 * @see unbbayes.io.BaseIO#getSupportedFileExtensions(boolean)
 	 */
-	public boolean supportsExtension(String extension) {
-		return "NET".equalsIgnoreCase(extension);
+	public String[] getSupportedFileExtensions(boolean isLoadOnly) {
+		return SUPPORTED_EXTENSIONS;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#getSupportedFilesDescription(boolean)
+	 */
+	public String getSupportedFilesDescription(boolean isLoadOnly) {
+		return "Net (.net)";
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#supports(java.io.File, boolean)
+	 */
+	public boolean supports(File file, boolean isLoadOnly) {
+		String fileExtension = null;
+		try {
+			int index = file.getName().lastIndexOf(".");
+			if (index >= 0) {
+				fileExtension = file.getName().substring(index + 1);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		return this.supports(fileExtension, isLoadOnly);
 	}
 	
 }

@@ -67,8 +67,10 @@ public class OOBNGuiResource extends ListResourceBundle {
 		{"changeNodeType", "Change selected node type"},
 		
 
-		{"netFileFilterSaveOOBN","Net 3rd specification (.oobn)"},
 		{"saveTitle", "Save currently active class"},
+		
+
+		{"unsupportedGraphFormat" , "This format is not supported by this module/plugin."},
 		
 	};
 }

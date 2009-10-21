@@ -60,11 +60,39 @@ public interface BaseIO {
     
     
     /**
-     * Returns true if the file extension is supported by this IO class.
+     * Returns true if the file is supported by this IO class. It may be implemented as simple extension check.
      * False otherwise.
-     * @param extension
-     * @return
+     * @param file : the file to analyze extension.
+	 * @param isLoadOnly : if set to true, it should consider file extensions for file loading (input).
+	 * If set to false, it should consider both saving and loading. Note
+	 * that not every I/O class can implement both loading and saving, and this parameter may separate such
+	 * special behaviors.
+	 * @return
      */
-    public boolean supportsExtension(String extension);
+    public boolean supports(File file, boolean isLoadOnly);
+    
+    /**
+	 * Obtains an array of file extensions supported by this network window.
+	 * The file extensions should come without the dot
+	 * @param isLoadOnly :  if set to true, it should consider file extensions for file loading (input).
+	 * If set to false, it should consider both saving and loading. Note
+	 * that not every module/plugin can implement both loading and saving, and this parameter may separate such
+	 * special behaviors.
+	 * @return
+	 */
+	public String[] getSupportedFileExtensions(boolean isLoadOnly);
+	
+	/**
+	 * Gets a description of supported file extensions,
+	 * which may be shown to the user through file chooser's file filter to explain what
+	 * file format are supported.
+	 * E.g. "Net (.net), XMLBIF(.xml), UnBBayes File (.ubf)"
+	 * @param isLoadOnly :  if set to true, it should consider file extensions for file loading (input).
+	 * If set to false, it should consider both saving and loading. Note
+	 * that not every module/plugin can implement both loading and saving, and this parameter may separate such
+	 * special behaviors.
+	 */
+	public String getSupportedFilesDescription(boolean isLoadOnly);
+	
    
 }

@@ -232,7 +232,7 @@ public class MetaphorMainPanel extends JPanel
 	    String name = selectedFile.getName().toLowerCase();				
 		
 		  if (name.endsWith("net")) {
-			 net = new NetIO().load(selectedFile);					
+			 net = (ProbabilisticNetwork)new NetIO().load(selectedFile);					
 		  } else if (name.endsWith("xml")){
 		 	net = new XMLBIFIO().load(selectedFile);				
 		  }

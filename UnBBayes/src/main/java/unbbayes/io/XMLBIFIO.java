@@ -52,6 +52,9 @@ public class XMLBIFIO implements BaseIO{
 	private static ResourceBundle resource =
 		ResourceBundle.getBundle("unbbayes.io.resources.IoResources");
 	
+	/** Supported file extension with no dots. The value is {"xml"}  */
+	public static final String[] SUPPORTED_EXTENSIONS = {"xml"};
+	
 	/**
 	 * Loads a new Probabilistic network from the input file.
 	 * 
@@ -175,14 +178,51 @@ public class XMLBIFIO implements BaseIO{
 		}    
 	}
 
+	/**
+	 * Checks if file extension is compatible to what this i/o expects.
+	 * @see #supports(File, boolean)
+	 * @param extension
+	 * @param isLoadOnly
+	 * @return
+	 */
+	public boolean supports(String extension, boolean isLoadOnly) {
+		return SUPPORTED_EXTENSIONS[0].equalsIgnoreCase(extension);
+	}
+
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.io.BaseIO#supportsExtension(java.lang.String)
+	 * @see unbbayes.io.BaseIO#getSupportedFileExtensions(boolean)
 	 */
-	public boolean supportsExtension(String extension) {
-		return "XML".equalsIgnoreCase(extension);
+	public String[] getSupportedFileExtensions(boolean isLoadOnly) {
+		return SUPPORTED_EXTENSIONS;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#getSupportedFilesDescription(boolean)
+	 */
+	public String getSupportedFilesDescription(boolean isLoadOnly) {
+		return "XMLBIF (.xml)";
 	}
 	
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#supports(java.io.File, boolean)
+	 */
+	public boolean supports(File file, boolean isLoadOnly) {
+		String fileExtension = null;
+		try {
+			int index = file.getName().lastIndexOf(".");
+			if (index >= 0) {
+				fileExtension = file.getName().substring(index + 1);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		return this.supports(fileExtension, isLoadOnly);
+	}
 	
 //	----------------------------------------------------------------------------------------
 	

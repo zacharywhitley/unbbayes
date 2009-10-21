@@ -34,5 +34,6 @@ public class OOBNIOResources extends ListResourceBundle {
 	 */
 	static final Object[][] contents =	{	
 		{"NoClassNameDefinition", "No class name was defined at class file."},
+		{"netFileFilterSaveOOBN","Net 3rd specification (.oobn)"},
 	};
 }

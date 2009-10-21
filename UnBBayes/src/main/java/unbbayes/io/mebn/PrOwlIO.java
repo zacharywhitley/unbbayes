@@ -52,6 +52,9 @@ public class PrOwlIO extends PROWLModelUser implements MebnIO {
 	
 	public static final String FILEEXTENSION = "owl";
 	
+	/** Array with a single element {@link #FILEEXTENSION} */
+	public static final String SUPPORTED_EXTENSIONS[] = {FILEEXTENSION};
+	
 	private OWLModel lastOwlModel = null;
 	
 	private LoaderPrOwlIO loader = new LoaderPrOwlIO(); 
@@ -300,15 +303,52 @@ public class PrOwlIO extends PROWLModelUser implements MebnIO {
 
 
 
-	/*
-	 * (non-Javadoc)
-	 * @see unbbayes.io.BaseIO#supportsExtension(java.lang.String)
+	/**
+	 * Cheks file extension compatibility.
+	 * @see #supports(File, boolean)
+	 * @param extension
+	 * @param isLoadOnly
+	 * @return
 	 */
-	public boolean supportsExtension(String extension) {
+	public boolean supports(String extension, boolean isLoadOnly) {
 		return FILEEXTENSION.equalsIgnoreCase(extension);
 	}
+
+
+
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#getSupportedFileExtensions(boolean)
+	 */
+	public String[] getSupportedFileExtensions(boolean isLoadOnly) {
+		return SUPPORTED_EXTENSIONS;
+	}
+
+
+
+
+	public String getSupportedFilesDescription(boolean isLoadOnly) {
+		return "PR-OWL (.owl)";
+	}
 	
-	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#supports(java.io.File, boolean)
+	 */
+	public boolean supports(File file, boolean isLoadOnly) {
+		String fileExtension = null;
+		try {
+			int index = file.getName().lastIndexOf(".");
+			if (index >= 0) {
+				fileExtension = file.getName().substring(index + 1);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		return this.supports(fileExtension, isLoadOnly);
+	}
 	
 	
 	

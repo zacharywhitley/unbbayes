@@ -6,6 +6,7 @@ package unbbayes.io;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import unbbayes.io.exception.LoadException;
@@ -53,17 +54,8 @@ public class FileExtensionIODelegator implements BaseIO {
 			throw new LoadException();
 		}
 		
-		// extract file extension
-		String filename = input.getName();
-		String extension = null;
-		try {
-			extension = filename.substring(filename.lastIndexOf('.')+1, filename.length());
-		} catch (Exception e) {
-			// assume this is a folder...
-		}
-
 		for (BaseIO io : this.getDelegators()) {
-			if (io.supportsExtension(extension)) {
+			if (io.supports(input, true)) {
 				return io.load(input);
 			}
 		}
@@ -79,17 +71,8 @@ public class FileExtensionIODelegator implements BaseIO {
 			throw new IOException();
 		}
 		
-		// extract file extension
-		String filename = output.getName();
-		String extension = null;
-		try {
-			extension = filename.substring(filename.lastIndexOf('.')+1, filename.length());
-		} catch (Exception e) {
-			// assume this is a folder...
-		}
-
 		for (BaseIO io : this.getDelegators()) {
-			if (io.supportsExtension(extension)) {
+			if (io.supports(output, false)) {
 				io.save(output, net);
 				return;
 			}
@@ -99,16 +82,17 @@ public class FileExtensionIODelegator implements BaseIO {
 		throw new IOException();
 	}
 
-	/* (non-Javadoc)
-	 * @see unbbayes.io.BaseIO#supportsExtension(java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#supports(java.io.File, boolean)
 	 */
-	public boolean supportsExtension(String extension) {
+	public boolean supports(File file, boolean isLoadOnly) {
 		if (this.getDelegators() == null) {
 			return false;
 		}
 		
 		for (BaseIO io : this.getDelegators()) {
-			if (io.supportsExtension(extension)) {
+			if (io.supports(file, isLoadOnly)) {
 				return true;
 			}
 		}
@@ -128,6 +112,44 @@ public class FileExtensionIODelegator implements BaseIO {
 	 */
 	public void setDelegators(List<BaseIO> delegators) {
 		this.delegators = delegators;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#getSupportedFileExtensions(boolean)
+	 */
+	public String[] getSupportedFileExtensions(boolean isLoadOnly) {
+		ArrayList<String> ret = new ArrayList<String>();
+		List<BaseIO> delegators = this.getDelegators();
+		if (delegators != null) {
+			for (BaseIO io : delegators) {
+				String [] delegatorExtensions = io.getSupportedFileExtensions(isLoadOnly);
+				if (delegatorExtensions != null) {
+					for (String ext : delegatorExtensions) {
+						ret.add(ext);
+					}
+				}
+			}
+		}
+		return ret.toArray(new String[ret.size()]);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#getSupportedFilesDescription(boolean)
+	 */
+	public String getSupportedFilesDescription(boolean isLoadOnly) {
+		String ret = new String();
+		List<BaseIO> delegators = this.getDelegators();
+		if (delegators != null) {
+			for (BaseIO io : delegators) {
+				String desc = io.getSupportedFilesDescription(isLoadOnly);
+				if (desc != null && (desc.trim().length() > 0)) {
+					ret += (desc + ", ");
+				}
+			}
+		}
+		return ret.substring(0, ret.lastIndexOf(", "));
 	}
 
 }

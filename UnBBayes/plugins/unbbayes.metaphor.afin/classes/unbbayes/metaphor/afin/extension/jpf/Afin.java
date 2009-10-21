@@ -3,21 +3,31 @@
  */
 package unbbayes.metaphor.afin.extension.jpf;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+
+import unbbayes.controller.exception.InvalidFileNameException;
 import unbbayes.io.BaseIO;
 import unbbayes.io.FileExtensionIODelegator;
+import unbbayes.io.NetIO;
+import unbbayes.io.XMLBIFIO;
+import unbbayes.io.exception.LoadException;
+import unbbayes.io.exception.UBIOException;
 import unbbayes.metaphor.afin.AFINMetaphorMainPanel;
 import unbbayes.prs.Graph;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.util.extension.UnBBayesModule;
+import unbbayes.util.extension.UnBBayesModuleBuilder;
 
 /**
  * Sample class that converts Afin metaphor into a plugin for UnBBayes core.
  * @author Shou Matsumoto
  *
  */
-public class Afin extends UnBBayesModule {
+public class Afin extends UnBBayesModule implements UnBBayesModuleBuilder {
 
-	private BaseIO io = FileExtensionIODelegator.newInstance();
+	private BaseIO io;
 	private AFINMetaphorMainPanel mainPanel;
 	
 	public Afin() {
@@ -25,6 +35,11 @@ public class Afin extends UnBBayesModule {
 		this.mainPanel = new AFINMetaphorMainPanel();
 		this.add(this.mainPanel);
 		this.setVisible(false);
+		FileExtensionIODelegator delegator = FileExtensionIODelegator.newInstance();
+		delegator.setDelegators(new ArrayList<BaseIO>());
+		delegator.getDelegators().add(new NetIO());
+		delegator.getDelegators().add(new XMLBIFIO());
+		this.setIO(delegator);
 	}
 	
 	
@@ -71,7 +86,7 @@ public class Afin extends UnBBayesModule {
 	/* (non-Javadoc)
 	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFileExtensions()
 	 */
-	public String[] getSupportedFileExtensions() {
+	public String[] getSupportedFileExtensions(boolean isLoadOnly) {
 		String[] ret = {"net", "xml"};
 		return ret;
 	}
@@ -79,8 +94,8 @@ public class Afin extends UnBBayesModule {
 	/* (non-Javadoc)
 	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFilesDescription()
 	 */
-	public String getSupportedFilesDescription() {
-		return "Net (.net), XMLBIF (.xml)";
+	public String getSupportedFilesDescription(boolean isLoadOnly) {
+		return "Metaphor Files (.net, .xml)";
 	}
 
 	/**
@@ -101,10 +116,55 @@ public class Afin extends UnBBayesModule {
 
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.gui.IPersistenceAwareWindow#setPersistingGraph(unbbayes.prs.Graph)
+	 * @see unbbayes.util.extension.UnBBayesModule#getModuleName()
 	 */
-	public void setPersistingGraph(Graph graph) {
-		this.getMainPanel().setNet((ProbabilisticNetwork)graph);
+	@Override
+	public String getModuleName() {
+		return "Metaphor";
 	}
+
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.UnBBayesModule#openFile(java.io.File)
+	 */
+	@Override
+	public UnBBayesModule openFile(File file) throws IOException {
+		
+		try {
+			this.getMainPanel().setNet((ProbabilisticNetwork)(this.getIO().load(file)));
+		} catch (LoadException e) {
+			throw new UBIOException(e);
+		}
+		
+		return this;
+		
+	}
+
+
+
+	/**
+	 * A extension of IOException in order to support cause's stack tracing.
+	 * @author Shou Matsumoto
+	 *
+	 */
+	public class InvalidFileNameException extends IOException {
+		private static final long serialVersionUID = -2604565168902414428L;
+		public InvalidFileNameException (String msg, Throwable t) {
+			super(msg);
+			this.initCause(t);
+		}
+	}
+
+
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.UnBBayesModuleBuilder#buildUnBBayesModule()
+	 */
+	public UnBBayesModule buildUnBBayesModule() {
+		return this;
+	}
+
 
 }

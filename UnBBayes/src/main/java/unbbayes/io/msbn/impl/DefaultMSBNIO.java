@@ -6,6 +6,7 @@ package unbbayes.io.msbn.impl;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ResourceBundle;
 
 import unbbayes.io.NetIO;
 import unbbayes.io.exception.LoadException;
@@ -21,6 +22,11 @@ import unbbayes.prs.msbn.SingleAgentMSBN;
 public class DefaultMSBNIO implements IMSBNIO {
 
 	private NetIO delegator;
+	
+	/** Load resource file from this package */
+	private static ResourceBundle resource = ResourceBundle
+			.getBundle("unbbayes.io.resources.IoResources");
+	
 
 	/**
 	 * The constructor is not public. Use the constructor method {@link #newInstance()} instead.
@@ -100,13 +106,51 @@ public class DefaultMSBNIO implements IMSBNIO {
 		this.delegator = delegator;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see unbbayes.io.BaseIO#supportsExtension(java.lang.String)
+	/**
+	 * Checks if file extension is compatible to what this i/o expects.
+	 * @see #supports(File, boolean)
+	 * @param extension
+	 * @param isLoadOnly
+	 * @return
 	 */
-	public boolean supportsExtension(String extension) {
+	public boolean supports(String extension, boolean isLoadOnly) {
 		// returns true if there is no extension (file is a folder)
 		return extension == null || (extension.trim().length() <= 0);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#getSupportedFileExtensions(boolean)
+	 */
+	public String[] getSupportedFileExtensions(boolean isLoadOnly) {
+		// return null, indicating that there is no extension (since it is a folder)
+		String [] ret = {};
+		return ret;
+	}
+
+	/**
+	 * 
+	 */
+	public String getSupportedFilesDescription(boolean isLoadOnly) {
+		return this.resource.getString("netFileFilterSaveMSBN");
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#supports(java.io.File, boolean)
+	 */
+	public boolean supports(File file, boolean isLoadOnly) {
+		String fileExtension = null;
+		try {
+			int index = file.getName().lastIndexOf(".");
+			if (index >= 0) {
+				fileExtension = file.getName().substring(index + 1);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		return this.supports(fileExtension, isLoadOnly);
 	}
 
 

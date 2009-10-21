@@ -24,6 +24,9 @@ public class PluginCore extends Plugin {
 	
 	/** Parameter id for the "icon" parameter: icon to be used by buttons */
 	public static final String PARAMETER_ICON = "icon";
+
+	/** Parameter id for the "builder" parameter: class that instantiates the plugin. @see {@link UnBBayesModuleBuilder} */
+	public static final String PARAMETER_BUILDER = "builder";
 	
 	
 	/* (non-Javadoc)

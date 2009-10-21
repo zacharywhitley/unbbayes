@@ -157,6 +157,10 @@ public class ControllerResources extends ListResourceBundle {
 		{"junctionTreeNotApplicableError", 
 			"The Junction Tree algorithm can only be used with a Bayesian \n" +
 			"network or an influence diagram. Please choose another algorithm."},
+			
+		// file managing	
+		{"cannotHandleFileFormat", "This module cannot handle this file format."}
+				
 		
 	};
 }

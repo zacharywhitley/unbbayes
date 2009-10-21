@@ -161,6 +161,8 @@ public class ControllerResources_pt extends ListResourceBundle {
 			"O algoritmo de Árvore de Junção só pode ser usado com uma \n" +
 			"rede bayesiana ou diagrama de influência. Favor escolher \n" +
 			"outro algoritmo."},
-		
+
+		// file managing	
+		{"cannotHandleFileFormat", "Este módulo não pode tratar este tipo de arquivo."}
 	};
 }

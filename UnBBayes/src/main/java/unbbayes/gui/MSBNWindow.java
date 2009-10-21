@@ -25,10 +25,13 @@ import java.awt.CardLayout;
 import java.awt.Container;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
+import java.io.File;
+import java.io.IOException;
 import java.util.ResourceBundle;
 
 import javax.swing.AbstractListModel;
 import javax.swing.JButton;
+import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -40,8 +43,11 @@ import javax.swing.ListSelectionModel;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MSBNController;
 import unbbayes.io.BaseIO;
+import unbbayes.io.exception.LoadException;
+import unbbayes.io.exception.UBIOException;
 import unbbayes.prs.Graph;
 import unbbayes.prs.msbn.SingleAgentMSBN;
+import unbbayes.util.extension.UnBBayesModule;
 
 /**
  * @author Michael Onishi
@@ -51,7 +57,7 @@ import unbbayes.prs.msbn.SingleAgentMSBN;
  * To enable and disable the creation of type comments go to
  * Window>Preferences>Java>Code Generation.
  */
-public class MSBNWindow extends JInternalFrame implements IPersistenceAwareWindow {
+public class MSBNWindow extends UnBBayesModule {
 	
 	// since this implements IPersistenceAwareWindow, let's store them 
 	// The supported file is a folder...
@@ -99,7 +105,7 @@ public class MSBNWindow extends JInternalFrame implements IPersistenceAwareWindo
     private MSBNController controller;
 
 	public MSBNWindow(SingleAgentMSBN msbn, MSBNController controller) {
-		super(msbn.getId(), true, true, true, true);
+		super(msbn.getId());
 		this.msbn = msbn;
         setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
 		Container pane = getContentPane();
@@ -192,20 +198,20 @@ public class MSBNWindow extends JInternalFrame implements IPersistenceAwareWindo
 		netScroll.setViewportView(netList);
 	}
 
-	/* (non-Javadoc)
-	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFileExtensions()
-	 */
-	public String[] getSupportedFileExtensions() {
-		// The supported file is a folder...
-		return SUPPORTED_FILE_EXTENSIONS;
-	}
-
-	/* (non-Javadoc)
-	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFilesDescription()
-	 */
-	public String getSupportedFilesDescription() {
-		return resource.getString("netFileFilterSaveMSBN");
-	}
+//	/* (non-Javadoc)
+//	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFileExtensions()
+//	 */
+//	public String[] getSupportedFileExtensions(boolean isLoadOnly) {
+//		// The supported file is a folder...
+//		return SUPPORTED_FILE_EXTENSIONS;
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFilesDescription()
+//	 */
+//	public String getSupportedFilesDescription(boolean isLoadOnly) {
+//		return resource.getString("netFileFilterSaveMSBN");
+//	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.gui.IPersistenceAwareWindow#getSavingMessage()
@@ -254,12 +260,40 @@ public class MSBNWindow extends JInternalFrame implements IPersistenceAwareWindo
 		return this.getMSNet();
 	}
 
+
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.gui.IPersistenceAwareWindow#setPersistingGraph(unbbayes.prs.Graph)
+	 * @see unbbayes.util.extension.UnBBayesModule#getModuleName()
 	 */
-	public void setPersistingGraph(Graph graph) {
-		this.msbn = (SingleAgentMSBN)graph;
+	@Override
+	public String getModuleName() {
+		return this.resource.getString("MSBNModuleName");
+	}
+
+	/**
+	 * Opens a new desktop window into currently used java desktop
+	 * @see unbbayes.util.extension.UnBBayesModule#openFile(java.io.File)
+	 */
+	@Override
+	public UnBBayesModule openFile(File file) throws IOException {
+		Graph g = null;
+		try {
+			g = this.getIO().load(file);
+		} catch (LoadException e) {
+			new UBIOException(e);
+		}
+		
+		
+		MSBNController controller = null;
+		try {
+			controller = new MSBNController((SingleAgentMSBN)g);
+		} catch (Exception e) {
+			throw new RuntimeException(this.resource.getString("unsupportedGraphFormat"),e);
+		}
+		
+		this.dispose();
+		
+		return (MSBNWindow)controller.getPanel();
 	}
 	
 	

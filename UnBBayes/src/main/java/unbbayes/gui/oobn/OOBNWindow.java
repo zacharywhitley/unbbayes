@@ -17,6 +17,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.ResourceBundle;
 
@@ -24,6 +25,7 @@ import javax.swing.AbstractListModel;
 //import javax.swing.DropMode;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JDesktopPane;
 import javax.swing.JFileChooser;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
@@ -38,17 +40,22 @@ import javax.swing.TransferHandler;
 //import javax.swing.TransferHandler.TransferSupport;
 import javax.swing.border.TitledBorder;
 
+import unbbayes.controller.ConfigurationsController;
 import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MSBNController;
 import unbbayes.controller.oobn.OOBNController;
 import unbbayes.gui.FileIcon;
 import unbbayes.gui.IPersistenceAwareWindow;
+import unbbayes.gui.MDIDesktopPane;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.gui.UnBBayesFrame;
 import unbbayes.io.BaseIO;
+import unbbayes.io.exception.LoadException;
+import unbbayes.io.exception.UBIOException;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO;
+import unbbayes.io.oobn.impl.DefaultOOBNIO;
 import unbbayes.prs.Graph;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.msbn.AbstractMSBN;
@@ -56,13 +63,15 @@ import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.prs.msbn.SubNetwork;
 import unbbayes.prs.oobn.IOOBNClass;
 import unbbayes.prs.oobn.IObjectOrientedBayesianNetwork;
+import unbbayes.prs.oobn.impl.ObjectOrientedBayesianNetwork;
 import unbbayes.util.Debug;
+import unbbayes.util.extension.UnBBayesModule;
 
 /**
  * @author Shou Matsumoto
  *
  */
-public class OOBNWindow extends JInternalFrame implements IPersistenceAwareWindow  {
+public class OOBNWindow extends UnBBayesModule  {
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;	
@@ -113,7 +122,7 @@ public class OOBNWindow extends JInternalFrame implements IPersistenceAwareWindo
 	 */
     protected OOBNWindow(IObjectOrientedBayesianNetwork oobn, OOBNController controller) {
 		
-		super(oobn.getTitle(), true, true, true, true);
+		super(oobn.getTitle());
 		
 		// we do not need to trace the oobn since we can do it by calling it from the controller
 //		this.setOobn(oobn);
@@ -469,17 +478,19 @@ public class OOBNWindow extends JInternalFrame implements IPersistenceAwareWindo
 
 						// adicionar FileView no FileChooser para desenhar icones de
 						// arquivos
-						chooser.setFileView(new FileIcon(getController().getUpperUnBBayesFrame()));
-
+//						chooser.setFileView(new FileIcon(getController().getUpperUnBBayesFrame()));
+						chooser.setFileView(new FileIcon(getDesktopPane().getParent()));
+						
 						chooser.addChoosableFileFilter(new SimpleFileFilter(nets,
 								resource.getString("oobnFileFilter")));
 						
 						
-						int option = chooser.showOpenDialog(getController().getUpperUnBBayesFrame());
+//						int option = chooser.showOpenDialog(getController().getUpperUnBBayesFrame());
+						int option = chooser.showOpenDialog(getDesktopPane().getParent());
 						if (option == JFileChooser.APPROVE_OPTION) {
 							if (chooser.getSelectedFile() != null) {
 								chooser.setVisible(false); 
-								getController().getUpperUnBBayesFrame().repaint(); 
+								getDesktopPane().repaint(); 
 								File file = chooser.getSelectedFile(); 
 								fileController.setCurrentDirectory(chooser
 										.getCurrentDirectory());
@@ -549,7 +560,13 @@ public class OOBNWindow extends JInternalFrame implements IPersistenceAwareWindo
 					
 					AbstractMSBN msbn = getController().compileActiveOOBNClassToMSBN();
 					MSBNController controller = new MSBNController((SingleAgentMSBN)msbn);
-					getController().getUpperUnBBayesFrame().addWindow(controller.getPanel());
+//					getController().getUpperUnBBayesFrame().addWindow(controller.getPanel());
+					if (getDesktopPane() instanceof MDIDesktopPane) {
+						((MDIDesktopPane)getDesktopPane()).add(controller.getPanel());
+					} else {
+						getDesktopPane().add(controller.getPanel());
+					}
+					controller.getPanel().setVisible(true);
 				} catch (NullPointerException npe) {
 					JOptionPane.showMessageDialog(getController().getPanel(), resource.getString("NoClassSelected"), resource.getString("compilationError"), JOptionPane.ERROR_MESSAGE);
 					Debug.println(this.getClass(), resource.getString("NoClassSelected"), npe);
@@ -881,20 +898,20 @@ public class OOBNWindow extends JInternalFrame implements IPersistenceAwareWindo
 	}
 
 
-	/* (non-Javadoc)
-	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFileExtensions()
-	 */
-	public String[] getSupportedFileExtensions() {
-		return SUPPORTED_FILE_EXTENSIONS;
-	}
-	
-
-	/* (non-Javadoc)
-	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFilesDescription()
-	 */
-	public String getSupportedFilesDescription() {
-		return resource.getString("netFileFilterSaveOOBN");
-	}
+//	/* (non-Javadoc)
+//	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFileExtensions()
+//	 */
+//	public String[] getSupportedFileExtensions(boolean isLoadOnly) {
+//		return SUPPORTED_FILE_EXTENSIONS;
+//	}
+//	
+//
+//	/* (non-Javadoc)
+//	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFilesDescription()
+//	 */
+//	public String getSupportedFilesDescription(boolean isLoadOnly) {
+//		return resource.getString("netFileFilterSaveOOBN");
+//	}
 	
 	
 	/* (non-Javadoc)
@@ -942,12 +959,42 @@ public class OOBNWindow extends JInternalFrame implements IPersistenceAwareWindo
 		return null;
 	}
 
+
+
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.gui.IPersistenceAwareWindow#setPersistingGraph(unbbayes.prs.Graph)
+	 * @see unbbayes.util.extension.UnBBayesModule#getModuleName()
 	 */
-	public void setPersistingGraph(Graph graph) {
-		this.getController().getUpperUnBBayesFrame().add(OOBNController.newInstance((IObjectOrientedBayesianNetwork)graph, this.getController().getUpperUnBBayesFrame()).getScreen());
+	@Override
+	public String getModuleName() {
+		return this.resource.getString("OOBNModuleName");
+	}
+	
+	
+	/**
+	 * Opens a new desktop window into currently used java desktop
+	 * @see unbbayes.util.extension.UnBBayesModule#openFile(java.io.File)
+	 */
+	@Override
+	public UnBBayesModule openFile(File file) throws IOException {
+		Graph g = null;
+		try {
+			g = this.getIO().load(file);
+		} catch (LoadException e) {
+			new UBIOException(e);
+		}
+		
+		OOBNController controller = null;
+		try {
+			ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
+			controller = OOBNController.newInstance((IObjectOrientedBayesianNetwork)g);
+		} catch (Exception e) {
+			throw new RuntimeException(this.resource.getString("unsupportedGraphFormat"),e);
+		}
+		
+		this.dispose();
+		
+		return (OOBNWindow)controller.getPanel();
 	}
 
 }

@@ -79,6 +79,9 @@ public class DneIO implements BaseIO {
 	// If the current node being loaded is discrete
 	protected boolean isDiscreteNode;
 	
+	/** Array with a single element "dne" */
+	public static final String[] SUPPORTED_EXTENSIONS = {"dne"};
+	
 	/**
 	 *  Loads a NET format file using default node/network builder.
 	 *  In other words, this method returns exactly instances of ProbabilisticNetwork filled
@@ -163,53 +166,53 @@ public class DneIO implements BaseIO {
 		stream.close();
 	}
 	
-	/**
-	 * TODO create a class for loading/saving MSBN and use delegator pattern to
-	 * use NetIO routines.
-	 */
-	public void saveMSBN(File output, SingleAgentMSBN msbn) throws FileNotFoundException {
-		if (! output.isDirectory()) {
-			System.err.println(resource.getString("IsNotDirectoryException"));
-			return;			
-		}
-		
-		for (int i = msbn.getNetCount()-1; i>=0; i--) {
-			SingleEntityNetwork net = msbn.getNetAt(i);
-			File out = new File(output, net.getId() + ".net");
-			save(out, net);
-		}
-	}
+//	/**
+//	 * TODO create a class for loading/saving MSBN and use delegator pattern to
+//	 * use NetIO routines.
+//	 */
+//	public void saveMSBN(File output, SingleAgentMSBN msbn) throws FileNotFoundException {
+//		if (! output.isDirectory()) {
+//			System.err.println(resource.getString("IsNotDirectoryException"));
+//			return;			
+//		}
+//		
+//		for (int i = msbn.getNetCount()-1; i>=0; i--) {
+//			SingleEntityNetwork net = msbn.getNetAt(i);
+//			File out = new File(output, net.getId() + ".net");
+//			save(out, net);
+//		}
+//	}
 
-	/**
-	 * TODO create a class for loading/saving MSBN and use delegator pattern to
-	 * use NetIO routines.
-	 */
-	public SingleAgentMSBN loadMSBN(File input) throws IOException,LoadException {
-		if (! input.isDirectory()) {
-			throw new LoadException(resource.getString("IsNotDirectoryException"));
-		}
-		
-		IProbabilisticNetworkBuilder networkBuilder = DefaultProbabilisticNetworkBuilder.newInstance();
-		
-		SingleAgentMSBN msbn = new SingleAgentMSBN(input.getName());
-		
-		File files[] = input.listFiles();
-		for (int i = 0; i < files.length; i++) {			
-			if (files[i].isFile()) {
-				String fileName = files[i].getName();
-				int index = fileName.lastIndexOf('.');
-				if (index < 0) {
-					throw new RuntimeException();
-				}
-				if (fileName.substring(index+1).equalsIgnoreCase("net")) {
-					SubNetwork net = new SubNetwork(fileName.substring(0, index));
-					load(files[i], net, networkBuilder);
-					msbn.addNetwork(net);
-				}
-			}
-		}
-		return msbn;
-	}
+//	/**
+//	 * TODO create a class for loading/saving MSBN and use delegator pattern to
+//	 * use NetIO routines.
+//	 */
+//	public SingleAgentMSBN loadMSBN(File input) throws IOException,LoadException {
+//		if (! input.isDirectory()) {
+//			throw new LoadException(resource.getString("IsNotDirectoryException"));
+//		}
+//		
+//		IProbabilisticNetworkBuilder networkBuilder = DefaultProbabilisticNetworkBuilder.newInstance();
+//		
+//		SingleAgentMSBN msbn = new SingleAgentMSBN(input.getName());
+//		
+//		File files[] = input.listFiles();
+//		for (int i = 0; i < files.length; i++) {			
+//			if (files[i].isFile()) {
+//				String fileName = files[i].getName();
+//				int index = fileName.lastIndexOf('.');
+//				if (index < 0) {
+//					throw new RuntimeException();
+//				}
+//				if (fileName.substring(index+1).equalsIgnoreCase("net")) {
+//					SubNetwork net = new SubNetwork(fileName.substring(0, index));
+//					load(files[i], net, networkBuilder);
+//					msbn.addNetwork(net);
+//				}
+//			}
+//		}
+//		return msbn;
+//	}
 	
 	protected void load(File input, SingleEntityNetwork net, IProbabilisticNetworkBuilder networkBuilder) 
 				throws IOException, LoadException {
@@ -832,10 +835,45 @@ public class DneIO implements BaseIO {
 	}
 
 	/**
-	 * Returns true if the extension equals (ignoring case) "DNE".
+	 * @return SUPPORTED_EXTENSIONS_LOAD[0].equalsIgnoreCase(extension) && isLoadOnly;
+	 * FIXME fix saving functionality and make this method return true to "DNE" extension for both save and load.
 	 */
-	public boolean supportsExtension(String extension) {
-		return "DNE".equalsIgnoreCase(extension);
+	public boolean supports(String extension, boolean isLoadOnly) {
+		return SUPPORTED_EXTENSIONS[0].equalsIgnoreCase(extension) && isLoadOnly;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#getSupportedFileExtensions(boolean)
+	 */
+	public String[] getSupportedFileExtensions(boolean isLoadOnly) {
+		return SUPPORTED_EXTENSIONS;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#getSupportedFilesDescription(boolean)
+	 */
+	public String getSupportedFilesDescription(boolean isLoadOnly) {
+		return "Netica (.dne)";
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#supports(java.io.File, boolean)
+	 */
+	public boolean supports(File file, boolean isLoadOnly) {
+		String fileExtension = null;
+		try {
+			int index = file.getName().lastIndexOf(".");
+			if (index >= 0) {
+				fileExtension = file.getName().substring(index + 1);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		return this.supports(fileExtension, isLoadOnly);
 	}
 	
 }

@@ -63,7 +63,7 @@ import unbbayes.util.Debug;
  */
 public class UbfIO implements MebnIO {
 	
-	private static final String  prowlExtension = "owl";
+	private static final String  PROWL_EXTENSION = "owl";
 		
 	private ResourceBundle resource = 
 		ResourceBundle.getBundle("unbbayes.io.mebn.resources.IoUbfResources");	
@@ -111,9 +111,13 @@ public class UbfIO implements MebnIO {
 	
 	public static final double ubfVersion = 0.03;
 	
-	public static final String fileExtension = "ubf";
+	public static final String FILE_EXTENSION = "ubf";
 	
+	/** Supported file extensions (with no dot) at loading time */
+	public static final String[] SUPPORTED_EXTENSIONS_LOAD = {FILE_EXTENSION, PROWL_EXTENSION};
 	
+	/** Supported file extensions for loading and savin time (no dots) */
+	public static final String[] SUPPORTED_EXTENSIONS = {FILE_EXTENSION};
 
 	private UbfIO() {
 		super();
@@ -581,7 +585,7 @@ public class UbfIO implements MebnIO {
 	 * @see unbbayes.io.BaseIO#load(java.io.File)
 	 */
 	public Graph load(File input) throws LoadException, IOException {
-		if (input.getName().endsWith(this.prowlExtension)) {
+		if (input.getName().toLowerCase().endsWith("."+this.PROWL_EXTENSION.toLowerCase())) {
 			return this.prowlIO.loadMebn(input);
 		} else {
 			return this.loadMebn(input);
@@ -650,8 +654,8 @@ public class UbfIO implements MebnIO {
 		MultiEntityBayesianNetwork mebn = null;	// target mebn
 		
 		// Inicially, deducing default owl file name in case we dont find it
-		String owlFilePath = file.getPath().substring(0,file.getPath().lastIndexOf(this.fileExtension)) 
-						+ prowlExtension;
+		String owlFilePath = file.getPath().substring(0,file.getPath().lastIndexOf(this.FILE_EXTENSION)) 
+						+ PROWL_EXTENSION;
         
 		File prowlFile = null;	// correspondent owl file
 		
@@ -738,8 +742,8 @@ public class UbfIO implements MebnIO {
 		String varType = null;
 		
 		// Create .owl placeholder
-		String noExtensionFileName = file.getPath().substring(0,file.getPath().lastIndexOf(this.fileExtension));
-		File prowlFile = new File(noExtensionFileName + prowlExtension);
+		String noExtensionFileName = file.getPath().substring(0,file.getPath().lastIndexOf(this.FILE_EXTENSION));
+		File prowlFile = new File(noExtensionFileName + PROWL_EXTENSION);
 		
 		// create output stream for .ubf files
 		PrintStream out = new PrintStream(new FileOutputStream(file));
@@ -969,17 +973,59 @@ public class UbfIO implements MebnIO {
 	 * @see unbbayes.io.mebn.MebnIO#getFileExtension()
 	 */
 	public String getFileExtension() {
-		return this.fileExtension;
+		return this.FILE_EXTENSION;
+	}
+	
+	/**
+	 * Checks if file extension is compatible to what this i/o expects.
+	 * @see #supports(File, boolean)
+	 * @param extension
+	 * @param isLoadOnly
+	 * @return
+	 */
+	public boolean supports(String extension, boolean isLoadOnly) {
+		for (String ext : this.getSupportedFileExtensions(isLoadOnly)) {
+			if (ext.equalsIgnoreCase(extension)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.io.BaseIO#supportsExtension(java.lang.String)
+	 * @see unbbayes.io.BaseIO#getSupportedFileExtensions(boolean)
 	 */
-	public boolean supportsExtension(String extension) {
-		return this.getFileExtension().equalsIgnoreCase(extension);
+	public String[] getSupportedFileExtensions(boolean isLoadOnly) {
+		return (isLoadOnly?SUPPORTED_EXTENSIONS_LOAD:SUPPORTED_EXTENSIONS);
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#getSupportedFilesDescription(boolean)
+	 */
+	public String getSupportedFilesDescription(boolean isLoadOnly) {
+		return "UnBBayes File (.ubf)";
+	}
+	
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#supports(java.io.File, boolean)
+	 */
+	public boolean supports(File file, boolean isLoadOnly) {
+		String fileExtension = null;
+		try {
+			int index = file.getName().lastIndexOf(".");
+			if (index >= 0) {
+				fileExtension = file.getName().substring(index + 1);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		return this.supports(fileExtension, isLoadOnly);
+	}
 	
 
 }

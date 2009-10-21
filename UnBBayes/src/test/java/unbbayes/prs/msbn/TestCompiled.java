@@ -50,7 +50,7 @@ public class TestCompiled extends TestCase {
 	public void testTopological() throws Exception {
 		NetIO loader = new NetIO();
 		SingleAgentMSBN msbn =  loader.loadMSBN(FILE_5PARTC);
-		ProbabilisticNetwork net = loader.load(FILE_5PARTCMONO);
+		ProbabilisticNetwork net = (ProbabilisticNetwork)loader.load(FILE_5PARTCMONO);
 		net.compile(); 
 		msbn.compile();
 		

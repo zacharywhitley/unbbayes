@@ -57,12 +57,12 @@ public class GuiResources extends ListResourceBundle {
 		{"fileNETType","Baysian Netwotk File NET"},
 		{"fileGenericType","Generic File"},
 		
-		{"netFileFilter","Net (.net, .oobn), XMLBIF (.xml), Netica (.dne), PR-OWL (.owl), UnBBayes file (.ubf)"},
-		{"netFileFilterSave","Net (.net), XMLBIF (.xml)"},
-		{"netFileFilterSaveMSBN","Select a folder"},
-		{"netFileFilterSaveMEBN", "UnBBayes file (.ubf)"},
+//		{"netFileFilter","Net (.net, .oobn), XMLBIF (.xml), Netica (.dne), PR-OWL (.owl), UnBBayes file (.ubf)"},
+//		{"netFileFilterLoad","Net (.net), XMLBIF (.xml), Netica (.dne)"},
+//		{"netFileFilterSaveMEBN", "UnBBayes file (.ubf)"},
+//		{"xmlBIFFileFilter", "XMLBIF (.xml)"},
+		{"allNetFileFilter","All Supported Network Files"},
 		{"powerloomFileFilter","Knowledge Base (.plm)"},
-		{"xmlBIFFileFilter", "XMLBIF (.xml)"},
 		{"textFileFilter","Text (.txt)"},
 		{"fileUntitled","Untitled.txt"},
 		
@@ -524,7 +524,19 @@ public class GuiResources extends ListResourceBundle {
 		/* Plugin Support */
 		{"pluginMenu" , "Plugins"},
 		{"newPlugin" , "New "},
-		{"reloadPlugin" , "Reload Plugins"}
+		{"reloadPlugin" , "Reload Plugins"},
+		{"reloadPluginToolTip" , "Refresh loaded plugins, located at \"plugins\" folder."},
+		{"noModuleDesktop" , "This module/plugin has no associated java desktop environment."},
+		{"unsupportedGraphFormat" , "This format is not supported by this module/plugin."},
+		{"moduleLoadingError" , "An error has occurred while loading a module/plugin. "},
+		{"moduleConflict" , "There was a conflict between modules/plugins"},
+		{"moduleConflictMessage" , "More than one module/plugin can handle this element. Chosse one."},
+		
+		// list of modules/plugins which are already incorporated into core
+		{"PNModuleName" , "Probabilistic Network"},
+		{"MEBNModuleName" , "Multi Entity Bayesian Network"},
+		{"MSBNModuleName" , "Multiple Sectioned Bayesian Network"},
+		{"OOBNModuleName" , "Object Oriented Bayesian Network"}
 		
 	};
 }

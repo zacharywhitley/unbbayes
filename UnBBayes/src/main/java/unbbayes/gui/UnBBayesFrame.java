@@ -37,9 +37,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -84,6 +87,7 @@ import unbbayes.controller.IconController;
 import unbbayes.controller.JavaHelperController;
 import unbbayes.controller.MainController;
 import unbbayes.datamining.gui.UnBMinerFrame;
+import unbbayes.io.BaseIO;
 import unbbayes.io.exception.LoadException;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO;
@@ -96,6 +100,12 @@ import unbbayes.simulation.montecarlo.sampling.MatrixMonteCarloSampling;
 import unbbayes.simulation.sampling.GibbsSampling;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.PluginCore;
+import unbbayes.util.extension.UnBBayesModule;
+import unbbayes.util.extension.UnBBayesModuleBuilder;
+import unbbayes.util.extension.builder.MEBNWindowBuilder;
+import unbbayes.util.extension.builder.MSBNWindowBuilder;
+import unbbayes.util.extension.builder.NetworkWindowBuilder;
+import unbbayes.util.extension.builder.OOBNWindowBuilder;
 
 /**
  * This class extends <code>JFrame</code> and it is responsible for 
@@ -196,7 +206,9 @@ public class UnBBayesFrame extends JFrame {
 	private String pluginDirectory = "plugins";
 	private String pluginCoreID = "unbbayes.util.extension.core";
 	private String pluginCoreExtensionPoint = "Module";
-	private List<Class> pluginList = null;
+	
+	/** Map: ID -> {@link UnBBayesModule} or {@link UnBBayesModuleBuilder} */
+	private Map<String, Class> pluginMap = null;
 	
 	private JMenuItem reloadPluginsMenuItem;
 	
@@ -388,63 +400,7 @@ public class UnBBayesFrame extends JFrame {
 		
 
 		// create an ActionListener for loading
-		alOpen = new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				setCursor(new Cursor(Cursor.WAIT_CURSOR));
-				// String[] nets = new String[] { "net", "xml", "owl" };
-				String[] nets = new String[] { "net", "xml", "dne", "owl",
-						UbfIO.fileExtension, IObjectOrientedBayesianNetworkIO.fileExtension };
-				chooser = new JFileChooser(fileController.getCurrentDirectory());
-				chooser.setDialogTitle(resource.getString("openTitle")); 
-				chooser.setMultiSelectionEnabled(false);
-				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-
-				chooser.setFileView(new FileIcon(UnBBayesFrame.this));
-				
-				
-
-				chooser.addChoosableFileFilter(new SimpleFileFilter(nets,
-						resource.getString("netFileFilter")));
-				
-				
-				int option = chooser.showOpenDialog(UnBBayesFrame.this);
-				if (option == JFileChooser.APPROVE_OPTION) {
-					if (chooser.getSelectedFile() != null) {
-						chooser.setVisible(false); 
-						UnBBayesFrame.this.repaint(); 
-						File file = chooser.getSelectedFile(); 
-						fileController.setCurrentDirectory(chooser
-								.getCurrentDirectory());
-					    chooser.setVisible(false); 
-					    chooser.setEnabled(false);
-					    
-						try {
-							controller.loadNet(file);
-						} catch (LoadException e) {
-							e.printStackTrace();
-							JOptionPane.showMessageDialog(UnBBayesFrame.this, 
-									e.getMessage(), 
-									resource.getString("loadNetException"), 
-									JOptionPane.ERROR_MESSAGE); 
-						} catch (IOException e) {
-							e.printStackTrace();
-							JOptionPane.showMessageDialog(UnBBayesFrame.this, 
-									e.getMessage(), 
-									resource.getString("loadNetException"), 
-									JOptionPane.ERROR_MESSAGE); 
-						} catch (JAXBException e) {
-							e.printStackTrace();
-							JOptionPane.showMessageDialog(UnBBayesFrame.this, 
-									resource.getString("JAXBExceptionFound"), 
-									resource.getString("loadNetException"), 
-									JOptionPane.ERROR_MESSAGE);
-						} 
-						
-					}
-				}
-				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-			}
-		};
+		alOpen = new OpenFileUsingModulesActionListener(null);
 
 		// create an ActionListener for saving
 		alSave = new ActionListener() {
@@ -456,19 +412,17 @@ public class UnBBayesFrame extends JFrame {
 				String filterMessage = null;	// message to be added to file filter
 				String dialogueTitle = null;	// title of the file chooser
 				JInternalFrame focusedInnerFrame = desktop.getSelectedFrame(); 	// currently focused window
+				UnBBayesModule currentWindow = null;
 				if (focusedInnerFrame != null) {
-					if (focusedInnerFrame instanceof IPersistenceAwareWindow) {
-						IPersistenceAwareWindow currentWindow = ((IPersistenceAwareWindow)focusedInnerFrame);
-						nets = currentWindow.getSupportedFileExtensions();
-						filterMessage = currentWindow.getSupportedFilesDescription();
+					if (focusedInnerFrame instanceof UnBBayesModule) {
+						currentWindow = ((UnBBayesModule)focusedInnerFrame);
+						nets = currentWindow.getSupportedFileExtensions(false);
+						filterMessage = currentWindow.getSupportedFilesDescription(false);
 						dialogueTitle = currentWindow.getSavingMessage();
 					} else {
 						// unsupported window type...
-						// let's assume it is an ordinal BN...
-						nets = new String[] { "net", "xml"};
-						filterMessage = resource.getString("netFileFilterSave");
-						dialogueTitle = resource.getString("saveTitle");
-						Debug.println(this.getClass(), "Unknown desktop internal window was found");
+						setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+						return;
 					}
 				} else {
 					// no window is focused
@@ -498,7 +452,7 @@ public class UnBBayesFrame extends JFrame {
 							 */
 						}
 						try {
-							if(controller.saveNet(file)){
+							if(controller.saveNet(file, currentWindow)){
 								JOptionPane.showMessageDialog(UnBBayesFrame.this, 
 										resource.getString("saveSucess"), 
 										resource.getString("sucess"), 
@@ -521,6 +475,11 @@ public class UnBBayesFrame extends JFrame {
 		// create an ActionListener for exiting
 		alExit = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
+				try {
+					controller.saveConfigurations();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 				setVisible(false);
 				dispose();
 				System.exit(0);
@@ -753,43 +712,6 @@ public class UnBBayesFrame extends JFrame {
 		};
 	}
 	
-	private class OpenFileListener implements ActionListener{
-
-		private final File file; 
-		
-		OpenFileListener(File file){
-			this.file = file; 
-		}
-		
-		public void actionPerformed(ActionEvent ae) {
-			setCursor(new Cursor(Cursor.WAIT_CURSOR));
-			
-			try{
-			      controller.loadNet(file);
-			} catch (LoadException e) {
-				e.printStackTrace();
-				JOptionPane.showMessageDialog(UnBBayesFrame.this, 
-						e.getMessage(), 
-						resource.getString("loadNetException"), 
-						JOptionPane.ERROR_MESSAGE); 
-			} catch (IOException e) {
-				e.printStackTrace();
-				JOptionPane.showMessageDialog(UnBBayesFrame.this, 
-						e.getMessage(), 
-						resource.getString("loadNetException"), 
-						JOptionPane.ERROR_MESSAGE); 
-			} catch (JAXBException e) {
-				e.printStackTrace();
-				JOptionPane.showMessageDialog(UnBBayesFrame.this, 
-						resource.getString("JAXBExceptionFound"), 
-						resource.getString("loadNetException"), 
-						JOptionPane.ERROR_MESSAGE);
-			}
-			
-			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-		}
-		
-	}
 
 	private void showAboutPane(){
 		AboutPane abourPane = new AboutPane();
@@ -979,7 +901,7 @@ public class UnBBayesFrame extends JFrame {
 		for(String nameOfFile: configController.getConfigurations().getPreviewOpenFiles()){
 			File file = new File(nameOfFile); 
 			JMenuItem fileMenuItem = new JMenuItem(nameOfFile);  
-			fileMenuItem.addActionListener(new OpenFileListener(file)); 
+			fileMenuItem.addActionListener(new OpenFileUsingModulesActionListener(file)); 
 			
 			recentFilesMenu.add(fileMenuItem); 
 		}
@@ -1060,8 +982,10 @@ public class UnBBayesFrame extends JFrame {
 		reloadPluginsMenuItem.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				loadPlugins();
+				repaint();
 			}
 		});
+		reloadPluginsMenuItem.setToolTipText("reloadPluginToolTip");
 		
 		pluginMenu.add(reloadPluginsMenuItem);
 		pluginMenu.addSeparator();
@@ -1070,10 +994,60 @@ public class UnBBayesFrame extends JFrame {
 	}
 	
 	/**
+	 * Obtains the classes of modules' builders (UnBBayesModuleBuilder) which are part of core implementation of unbbayes.
+	 * Core implementation modules are instances of UnBBayesModule that was not loaded
+	 * by plugin mechanism.
+	 * @return a map of basic modules' classes' builders (or the classes itself): ex. PN, MEBN, OOBN, MSBN.
+	 * The keys are the main ID of the plugin/module
+	 */
+	public Map<String, Class> getCoreUnBBayesModulesClasses() {
+		Map<String, Class> ret = new HashMap<String, Class>();
+		
+		// adding PN module
+		try{
+			ret.put(this.resource.getString("PNModuleName"),NetworkWindowBuilder.class);
+		} catch (Exception e) {
+			throw new RuntimeException(this.resource.getString("moduleLoadingError") 
+					+ this.resource.getString("PNModuleName"));
+		}
+		
+		// adding MEBN module
+		try{
+			ret.put(this.resource.getString("MEBNModuleName"), MEBNWindowBuilder.class);
+		} catch (Exception e) {
+			throw new RuntimeException(this.resource.getString("moduleLoadingError") 
+					+ this.resource.getString("MEBNModuleName"));
+		}
+		
+		// adding MSBN module
+		try{
+			ret.put(this.resource.getString("MSBNModuleName"), MSBNWindowBuilder.class);
+		} catch (Exception e) {
+			throw new RuntimeException(this.resource.getString("moduleLoadingError") 
+					+ this.resource.getString("MSBNModuleName"));
+		}
+		
+		// adding OOBN module
+		try{
+			ret.put(this.resource.getString("OOBNModuleName"), OOBNWindowBuilder.class);
+		} catch (Exception e) {
+			throw new RuntimeException(this.resource.getString("moduleLoadingError") 
+					+ this.resource.getString("OOBNModuleName"));
+		}
+		
+		return ret;
+	}
+	
+	/**
 	 * Creates the plugin manager, loads UnBBayes' core plugins using JPF, 
 	 * fills the menu items and tool bar's buttons and their listeners.
 	 */
 	public void loadPlugins(){
+		
+		// initialize loaded plugins
+		this.setPluginList(this.getCoreUnBBayesModulesClasses());
+		
+		// initialize plugins' menu and tool bars
 		this.createPluginMenu();
 		this.createPluginToolBars();
 		
@@ -1112,18 +1086,18 @@ public class UnBBayesFrame extends JFrame {
 	    ExtensionPoint point = pluginManager.getRegistry().getExtensionPoint(core.getId(), this.getPluginCoreExtensionPoint());
 
 	    // create menu/buttons that activates a plugin and stores plugin classes to a list
-	    this.setPluginList(this.fillCorePluginMenuAndButtons(pluginManager, point));
+	    this.getPluginMap().putAll(this.fillCorePluginMenuAndButtons(pluginManager, point));
 	}
 	
 	/**
 	 * Fills up the menu and tool tip buttons using {@link #getPluginManager()}.
 	 * @param pluginManager : manager to use
 	 * @param point: extension point to be read in order to fill menu and buttons.
-	 * @return a list of loaded plugin classes (usually implements IPersistenceAwareWindow).
+	 * @return a map of connected and activated extensions. The keys are the module's IDs.
 	 */
-	protected List<Class> fillCorePluginMenuAndButtons(PluginManager pluginManager, ExtensionPoint point) {
+	protected Map<String,Class> fillCorePluginMenuAndButtons(PluginManager pluginManager, ExtensionPoint point) {
 		
-		List<Class> ret = new ArrayList<Class>();
+		Map<String,Class> ret = new HashMap<String, Class>();
 		
 		for (Iterator<Extension> it = point.getConnectedExtensions().iterator(); it.hasNext();) {
 			Extension ext = it.next();
@@ -1142,12 +1116,17 @@ public class UnBBayesFrame extends JFrame {
 			Parameter classParam = ext.getParameter(PluginCore.PARAMETER_CLASS);
 			Parameter descriptionParam = ext.getParameter(PluginCore.PARAMETER_DESCRIPTION);
 			Parameter iconParam = ext.getParameter(PluginCore.PARAMETER_ICON);
+			Parameter builderParam = ext.getParameter(PluginCore.PARAMETER_BUILDER);
 			
-			// extracting plugin class
+			// extracting plugin class or builder clas
 			ClassLoader classLoader = pluginManager.getPluginClassLoader(descr);
-            Class pluginCls = null;
+            Class pluginOrBuilderCls = null;	// class for the plugin or its builder (UnBBayesModuleBuilder)
             try {
-				pluginCls = classLoader.loadClass(classParam.valueAsString());
+            	if (builderParam != null) {
+            		pluginOrBuilderCls = classLoader.loadClass(builderParam.valueAsString());
+            	} else {
+            		pluginOrBuilderCls = classLoader.loadClass(classParam.valueAsString());
+            	}
 			} catch (ClassNotFoundException e1) {
 				e1.printStackTrace();
 				continue;
@@ -1167,19 +1146,19 @@ public class UnBBayesFrame extends JFrame {
 			menuItem.setToolTipText(descriptionParam.valueAsString());
 			
 			// creating action listener
-			ActionListener listener = new ActionListenerSupportingConstructorParam(pluginCls) {
+			ActionListener listener = new ActionListenerSupportingConstructorParam(pluginOrBuilderCls) {
 				public void actionPerformed(ActionEvent e) {
 					setCursor(new Cursor(Cursor.WAIT_CURSOR));
-					IPersistenceAwareWindow window = null;
+					UnBBayesModule module = null;
 					try {
-						window = (IPersistenceAwareWindow)(((Class)this.getParam()).newInstance());
+						module = getUnBBayesModuleByPluginClass((Class)this.getParam());
+						addWindow(module);
+						module.setVisible(true);
 					} catch (InstantiationException e1) {
 						throw new RuntimeException(e1);
 					} catch (IllegalAccessException e1) {
 						throw new RuntimeException(e1);
 					}
-					addWindow(window.getInternalFrame());
-					window.getInternalFrame().setVisible(true);
 					setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 				}
 			};
@@ -1193,7 +1172,7 @@ public class UnBBayesFrame extends JFrame {
 			this.getPluginMenu().add(menuItem);
 			
 			// filling the return
-			ret.add(pluginCls);
+			ret.put(nameParam.valueAsString(), pluginOrBuilderCls);
 		}
 		
 		// if we have no plugins, we should not show the tool bar or the menu
@@ -1204,6 +1183,28 @@ public class UnBBayesFrame extends JFrame {
 		
 		return ret;
 	}
+	
+	/**
+	 * Use the parameter "clazz" in order to instantiate a new UnBBayesModule (in this case, "clazz"
+	 * must provide a default constructor) or as a UnBBayesModuleBuilder (which by 
+	 * {@link UnBBayesModuleBuilder#buildUnBBayesModule()} we get the proper UnBBayesModule).
+	 * @param clazz : class extending {@link UnBBayesModule} or implementing {@link UnBBayesModuleBuilder}
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
+	 * @see #addWindow(JInternalFrame)
+	 */
+	public UnBBayesModule getUnBBayesModuleByPluginClass(Class clazz) throws InstantiationException, IllegalAccessException {
+		if (clazz == null) {
+			return null;
+		}
+		if (UnBBayesModuleBuilder.class.isAssignableFrom(clazz)) {
+			UnBBayesModuleBuilder builder = (UnBBayesModuleBuilder) clazz.newInstance();
+			return builder.buildUnBBayesModule();
+		} else {
+			return (UnBBayesModule) clazz.newInstance();
+		}
+	}
+	
 	
 
 	/**
@@ -1500,17 +1501,24 @@ public class UnBBayesFrame extends JFrame {
 	}
 
 	/**
-	 * @return the pluginList
+	 * Connected, loaded and activated extensions.
+	 * This map associates an ID to a {@link UnBBayesModule} or {@link UnBBayesModuleBuilder}
+	 * @return the pluginMap
 	 */
-	public List<Class> getPluginList() {
-		return pluginList;
+	public Map<String,Class> getPluginMap() {
+		if (this.pluginMap == null) {
+			this.pluginMap = new HashMap<String,Class>();
+		}
+		return pluginMap;
 	}
 
 	/**
-	 * @param pluginList the pluginList to set
+	 * Connected, loaded and activated extensions.
+	 * This map associates an ID to a {@link UnBBayesModule} or {@link UnBBayesModuleBuilder}
+	 * @param pluginMap the pluginMap to set
 	 */
-	public void setPluginList(List<Class> pluginList) {
-		this.pluginList = pluginList;
+	public void setPluginList(Map<String,Class> pluginMap) {
+		this.pluginMap = pluginMap;
 	}
 
 	/**
@@ -1539,5 +1547,216 @@ public class UnBBayesFrame extends JFrame {
 	 */
 	public void setReloadPluginsItem(JMenuItem reloadPluginsItem) {
 		this.reloadPluginsMenuItem = reloadPluginsItem;
+	}
+	
+	/**
+	 * Obtains all modules that can treat a specific file (it looks mainly at file extension)
+	 * at loading time. We do not need this method at saving time since {@link IPersistenceAwareWindow#getIO()}
+	 * can do the job by using {@link BaseIO#save(File, unbbayes.prs.Graph)}.
+	 * @param file : file to be loaded.
+	 * @param plugins : a map of classes extending UnBBayesModule. The keys are the plugin/module IDs.
+	 * @return a map of instantiated UnBBayesModule, with setVisible(false). The keys are the plugin/module IDs.
+	 */
+	public Map<String, UnBBayesModule> getUnBBayesModulesByFile(File file, Map<String,Class> plugins) {
+		
+		Map<String,UnBBayesModule> ret = new HashMap<String,UnBBayesModule>();
+	
+		if (plugins != null) {
+			for (String id : plugins.keySet()) {
+				try {
+					UnBBayesModule module = this.getUnBBayesModuleByPluginClass(plugins.get(id));
+					module.setVisible(false);
+					if (module.getIO().supports(file, true)) {
+						ret.put(id,module);
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		return ret;
+	}
+	
+	/**
+	 * Obtains all file extensions (with no dots) that a list of plugins can handle.
+	 * @param plugins : a list of classes extending UnBBayesModule or its builder (UnBBayesModuleBuilder)
+	 * @return array of string containing all file extensions supported currently by the modules.
+	 * @see BaseIO#getSupportedFileExtensions(boolean)
+	 */
+	public String[] getAllSupportedFileExtensions(Collection<Class> plugins) {
+		Set<String> ret = new HashSet<String>();
+		
+		if (plugins != null) {
+			for (Class clazz : plugins) {
+				try {
+					UnBBayesModule module = this.getUnBBayesModuleByPluginClass(clazz);
+					module.setVisible(false);
+					String[] extensions = module.getSupportedFileExtensions(true);
+					if (extensions != null) {
+						for (String ext : extensions) {
+							if (ext != null && (ext.trim().length() > 0)) {
+								ret.add(ext);
+							}
+						}
+					}
+					module.dispose();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		return ret.toArray(new String[ret.size()]);
+	}
+
+	/**
+	 * A listener for opening an existing file using plugins/modules.
+	 * Can be used in 2 ways: 
+	 * 		1 - a file is not specified (in this case a file chooser will be shown to user);
+	 * 		2 - a file is specified (in this case the listener will just open the file)
+	 * @author Shou Matsumoto
+	 *
+	 */
+	public class OpenFileUsingModulesActionListener implements ActionListener {
+		private File file = null; 
+		
+		/**
+		 * Create a listener in order to open a file treating modules' conflicts.
+		 * @param file : if set to null, a file chooser will be opened to select
+		 * a new file.
+		 */
+		public OpenFileUsingModulesActionListener(File file){
+			this.file = file; 
+		}
+		
+		/**
+		 * Shows a file chooser to the user, using filters provided
+		 * by plugins/modules.
+		 * @return the selected file. Null if no file was selected.
+		 * @see JFileChooser#showOpenDialog(java.awt.Component)
+		 */
+		public File showFileChooser() {
+			chooser = new JFileChooser(fileController.getCurrentDirectory());
+			chooser.setDialogTitle(resource.getString("openTitle")); 
+			chooser.setMultiSelectionEnabled(false);
+			chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+
+			chooser.setFileView(new FileIcon(UnBBayesFrame.this));
+			
+			// fills the file filter for each plugin/module
+			for (Class clazz : getPluginMap().values()) {
+				UnBBayesModule mod = null;
+				try {
+					mod = getUnBBayesModuleByPluginClass(clazz);
+					if (mod == null) {
+						continue;
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+					continue;
+				}
+				
+				chooser.addChoosableFileFilter(
+						new SimpleFileFilter(
+								mod.getSupportedFileExtensions(true),
+								mod.getSupportedFilesDescription(true)));
+				
+				mod.dispose();
+			}
+			
+			// filter for all supported files
+			chooser.addChoosableFileFilter(new SimpleFileFilter(
+					getAllSupportedFileExtensions(getPluginMap().values()),
+					resource.getString("allNetFileFilter")));
+			
+			int option = chooser.showOpenDialog(UnBBayesFrame.this);
+			if (option == JFileChooser.APPROVE_OPTION) {
+				fileController.setCurrentDirectory(chooser
+						.getCurrentDirectory());
+				chooser.setVisible(false);
+				chooser.setEnabled(false);
+				return chooser.getSelectedFile();
+			}
+			
+			chooser.setVisible(false);
+			chooser.setEnabled(false);
+			return null;
+		}
+		
+		/**
+		 * If a file is specified, opens it using an appropriate UnBBayesModule.
+		 * I not, a file chooser will be displayed to user and that file will
+		 * be opened using an appropriate UnBBayesModule.
+		 */
+		public void actionPerformed(ActionEvent ae) {
+			setCursor(new Cursor(Cursor.WAIT_CURSOR));
+			
+			// use a default file or choose one if no default file was provided
+			File currentFile = this.file;
+			if (currentFile == null) {
+				currentFile = this.showFileChooser();
+			}
+
+			if (currentFile != null) {
+				// create a instance of File
+				UnBBayesFrame.this.repaint(); 
+				
+			    // load module that can handle the file. Map from id to module.
+			    Map<String, UnBBayesModule> moduleMap = getUnBBayesModulesByFile(currentFile, getPluginMap());
+			    
+			    // choose the best module to load the file
+			    UnBBayesModule selectedModule = null;
+			    if (moduleMap.size() == 1) {
+			    	// if there is only one module handling the file, choose it
+			    	selectedModule = moduleMap.values().iterator().next();
+			    } else if (moduleMap.size() > 1) {
+			    	// if there are more than one module to handle the file, the user shall choose one
+			    	String[] possibleValues = moduleMap.keySet().toArray(new String[moduleMap.keySet().size()]);
+			    	Object selectedValue = JOptionPane.showInputDialog(
+			    			UnBBayesFrame.this, 
+			    			resource.getString("moduleConflictMessage"), 
+			    			resource.getString("moduleConflict"),
+			    			JOptionPane.INFORMATION_MESSAGE, 
+			    			null,
+			    			possibleValues, 
+			    			possibleValues[0]);
+			    	if (selectedValue != null) {
+			    		selectedModule = moduleMap.get(selectedValue.toString());
+			    	} else {
+			    		// user appears to have cancelled
+			    		setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			    		
+				    	return;
+			    	}
+			    }
+			    
+			    // if we reached this code and no module was selected, report error and stop
+			    if (selectedModule == null) {
+			    	JOptionPane.showMessageDialog(UnBBayesFrame.this, 
+			    			resource.getString("unsupportedGraphFormat"), 
+							resource.getString("loadNetException"), 
+							JOptionPane.ERROR_MESSAGE);
+			    	setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			    	return;
+			    }
+			    
+				try {
+					// loading network
+					UnBBayesModule mod = controller.loadNet(currentFile, selectedModule);
+					if (mod != null) {
+						addWindow(mod);
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+					JOptionPane.showMessageDialog(UnBBayesFrame.this, 
+							e.getMessage(), 
+							resource.getString("loadNetException"), 
+							JOptionPane.ERROR_MESSAGE); 
+				} 
+				
+			}
+			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+		}
 	}
 }

@@ -76,6 +76,9 @@ public class IoResources extends ListResourceBundle {
 		{"OpenFileError", "Error at open of a file"}, 
 		{"CreationFileError", "Error at creation of a file"}, 
 		{"WriteReaderFileError", "Error at write or read a file"},
-		{"UnsupportedError", "This format is not supported."}
+		{"UnsupportedError", "This format is not supported."},
+		
+		{"netFileFilterSaveMSBN","Select a folder (MSBN)"},
+
 	};
 }

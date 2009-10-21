@@ -5,13 +5,14 @@ package unbbayes.prs.oobn;
 
 import java.util.List;
 
+import unbbayes.prs.Graph;
 import unbbayes.prs.bn.SingleEntityNetwork;
 
 /**
  * @author Shou Matsumoto
  * Represents a general OOBN project. It contains a set of OOBN classes.
  */
-public interface IObjectOrientedBayesianNetwork {
+public interface IObjectOrientedBayesianNetwork extends Graph {
 
 	/**
 	 * Getter for OOBN's title

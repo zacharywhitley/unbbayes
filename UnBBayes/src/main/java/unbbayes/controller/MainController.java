@@ -25,23 +25,18 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.ResourceBundle;
 
-import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
 import javax.xml.bind.JAXBException;
 
 import unbbayes.controller.exception.InvalidFileNameException;
-import unbbayes.controller.exception.ObjectToBeSavedDontExistsException;
+import unbbayes.controller.exception.NoObjectToBeSavedException;
 import unbbayes.controller.oobn.OOBNController;
 import unbbayes.gui.Configurations;
-import unbbayes.gui.IPersistenceAwareWindow;
-import unbbayes.gui.MSBNWindow;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.SplashScreen;
 import unbbayes.gui.UnBBayesFrame;
-import unbbayes.gui.oobn.OOBNWindow;
 import unbbayes.io.BaseIO;
 import unbbayes.io.DneIO;
 import unbbayes.io.NetIO;
@@ -64,6 +59,12 @@ import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.prs.oobn.IObjectOrientedBayesianNetwork;
 import unbbayes.prs.oobn.impl.ObjectOrientedBayesianNetwork;
 import unbbayes.util.Debug;
+import unbbayes.util.extension.UnBBayesModule;
+import unbbayes.util.extension.builder.MEBNWindowBuilder;
+import unbbayes.util.extension.builder.MSBNWindowBuilder;
+import unbbayes.util.extension.builder.NamedWindowBuilder;
+import unbbayes.util.extension.builder.NetworkWindowBuilder;
+import unbbayes.util.extension.builder.OOBNWindowBuilder;
 import edu.isi.powerloom.PLI;
 import edu.stanford.smi.protegex.owl.ProtegeOWL;
 
@@ -173,14 +174,15 @@ public class MainController {
 	}
 	
 	
+	
 	/**
 	 * This method is responsible for creating a new probabilistic network.
 	 *
 	 */
 	public void newPN() {
-		ProbabilisticNetwork net = new ProbabilisticNetwork(resource.getString("NewPNName"));
-		NetworkWindow netWindow = new NetworkWindow(net);
-		screen.addWindow(netWindow);
+		NamedWindowBuilder builder = new NetworkWindowBuilder();
+		builder.setName(resource.getString("NewPNName"));
+		screen.addWindow(builder.buildUnBBayesModule());
 	}
 	
 	/**
@@ -188,9 +190,9 @@ public class MainController {
 	 *
 	 */
 	public void newMSBN() {
-		SingleAgentMSBN msbn = new SingleAgentMSBN(resource.getString("NewMSBNName"));
-		MSBNController controller = new MSBNController(msbn);
-		screen.addWindow(controller.getPanel());
+		NamedWindowBuilder builder = new MSBNWindowBuilder();
+		builder.setName(resource.getString("NewMSBNName"));
+		screen.addWindow(builder.buildUnBBayesModule());
 	}
 	
 	/**
@@ -198,9 +200,9 @@ public class MainController {
 	 *
 	 */
 	public void newMEBN() {
-		MultiEntityBayesianNetwork mebn = new MultiEntityBayesianNetwork(resource.getString("NewMEBNName"));
-		NetworkWindow netWindow = new NetworkWindow(mebn);
-		screen.addWindow(netWindow);
+		NamedWindowBuilder builder = new MEBNWindowBuilder();
+		builder.setName(resource.getString("NewMEBNName"));
+		screen.addWindow(builder.buildUnBBayesModule());
 	}
 	
 	/**
@@ -208,9 +210,9 @@ public class MainController {
 	 *
 	 */
 	public void newOOBN() {
-		IObjectOrientedBayesianNetwork oobn = ObjectOrientedBayesianNetwork.newInstance(resource.getString("NewOOBNName"));
-		OOBNController controller = OOBNController.newInstance(oobn, screen);
-		screen.addWindow(controller.getPanel());
+		NamedWindowBuilder builder = new OOBNWindowBuilder();
+		builder.setName(resource.getString("NewOOBNName"));
+		screen.addWindow(builder.buildUnBBayesModule());
 	}
 	
 	/**
@@ -218,23 +220,24 @@ public class MainController {
 	 *  on the file's extension, or saves the MSBN if the file given is a directory.
 	 *
 	 * @param file The file where to save the network.
+	 * @param moduleToUse : what module/plugin we shall use in order to store the file
 	 * @throws JAXBException 
 	 * @throws IOException 
 	 * @throws FileNotFoundException 
 	 */
-	public boolean saveNet(File file) throws ObjectToBeSavedDontExistsException, 
+	public boolean saveNet(File file, UnBBayesModule moduleToUse) throws NoObjectToBeSavedException, 
 	                    IOMebnException, InvalidFileNameException, FileNotFoundException, 
 	                    IOException, Exception{
 		
 		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		
 		try {
-			JInternalFrame window = screen.getSelectedWindow();
-			if(window == null || !(window instanceof IPersistenceAwareWindow)){
-				throw new ObjectToBeSavedDontExistsException(resource.getString("windowDontExists")); 
+			if (!moduleToUse.getIO().supports(file, false)) {
+				throw new InvalidFileNameException(this.resource.getString("cannotHandleFileFormat"));
 			}
-			IPersistenceAwareWindow persistenceWindow = (IPersistenceAwareWindow) window;
-			persistenceWindow.getIO().save(file, persistenceWindow.getPersistingGraph());
+			moduleToUse.getIO().save(file, moduleToUse.getPersistingGraph());
+		} catch (NullPointerException e) {
+			throw new NoObjectToBeSavedException(this.resource.getString("cannotHandleFileFormat"),e);
 		} finally {
 			screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		}
@@ -252,13 +255,13 @@ public class MainController {
 //			JInternalFrame window = screen.getSelectedWindow();
 //			
 //			if(window == null){
-//				throw new ObjectToBeSavedDontExistsException(resource.getString("windowDontExists")); 
+//				throw new NoObjectToBeSavedException(resource.getString("windowDontExists")); 
 //			}
 //			
 //			if (file.isDirectory()) {
 //				io = DefaultMSBNIO.newInstance();
 //				if (!(window instanceof MSBNWindow)){
-//					throw new ObjectToBeSavedDontExistsException(resource.getString("msbnDontExists"));
+//					throw new NoObjectToBeSavedException(resource.getString("msbnDontExists"));
 //				} else{
 //					io.save(file, ((MSBNWindow) window).getMSNet());	
 //					return true; 
@@ -272,7 +275,7 @@ public class MainController {
 //				else if (name.endsWith("xml")){
 //					io = new XMLBIFIO();
 //				}
-//				else if (name.endsWith(UbfIO.fileExtension)) {
+//				else if (name.endsWith(UbfIO.FILE_EXTENSION)) {
 //					ubfIo = UbfIO.getInstance();
 //				}
 //				else if (name.endsWith(IObjectOrientedBayesianNetworkIO.fileExtension)) {
@@ -283,7 +286,7 @@ public class MainController {
 //				
 //				if (io != null)
 //					if (!(window instanceof NetworkWindow)){
-//						throw new ObjectToBeSavedDontExistsException(resource.getString("bnDontExists"));
+//						throw new NoObjectToBeSavedException(resource.getString("bnDontExists"));
 //					}
 //					else{
 //						io.save(file, ((NetworkWindow) window).getSingleEntityNetwork());
@@ -292,11 +295,11 @@ public class MainController {
 //				else { 
 //					if (ubfIo != null) {
 //						if (!(window instanceof NetworkWindow)){
-//							throw new ObjectToBeSavedDontExistsException(resource.getString("mebnDontExists"));
+//							throw new NoObjectToBeSavedException(resource.getString("mebnDontExists"));
 //						}
 //						else{
 //							if(((NetworkWindow) window).getMultiEntityBayesianNetwork() == null){
-//								throw new ObjectToBeSavedDontExistsException(resource.getString("mebnDontExists"));
+//								throw new NoObjectToBeSavedException(resource.getString("mebnDontExists"));
 //							}
 //							ubfIo.saveMebn(file, ((NetworkWindow) window).getMultiEntityBayesianNetwork()); 
 //							return true; 
@@ -324,109 +327,118 @@ public class MainController {
 	/**
 	 *  Loads the probabilistic network from both .net and .xml format, depending
 	 *  on the file's extension, or loads the MSBN if the file given is a directory.
-	 * @throws JAXBException 
+	 * @param file : file to load
+	 * @param moduleToUse : the module/plugin to use in order to load file.
+	 * @return the new created module filled the network described by file
 	 * @throws IOException 
-	 * @throws LoadException 
-	 * @throws IOMebnException 
 	 */
-	public void loadNet(final File file) throws LoadException, IOException, JAXBException, IOMebnException {
-		// TODO load using plugins and treat conflict
-		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));        
+	public UnBBayesModule loadNet(final File file, UnBBayesModule moduleToUse) throws IOException {
+		
+//		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));   
+		UnBBayesModule mod = null;
 		try {
-			JInternalFrame window = null;
-			BaseIO io = null;
-			if (file.isDirectory()) { //MSBN
-				io = DefaultMSBNIO.newInstance();
-				SingleAgentMSBN msbn = (SingleAgentMSBN)io.load(file);	
-				MSBNController controller = new MSBNController(msbn);
-				window = controller.getPanel();
-			} else {
-				String name = file.getName().toLowerCase();				
-				
-				if (name.endsWith("net")) {
-					io = new NetIO();	
-					ProbabilisticNetwork net = (ProbabilisticNetwork)io.load(file);
-					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
-					window = new NetworkWindow(net);	
-					((NetworkWindow)window).setFileName(name); 
-				} else if (name.endsWith("xml")){
-					io = new XMLBIFIO();	
-					ProbabilisticNetwork net = (ProbabilisticNetwork)io.load(file);
-					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
-					window = new NetworkWindow(net);	
-					((NetworkWindow)window).setFileName(name); 
-				} else if (name.endsWith("dne")){
-					io = new DneIO();	
-					ProbabilisticNetwork net = (ProbabilisticNetwork)io.load(file);
-					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
-					window = new NetworkWindow(net);	
-					((NetworkWindow)window).setFileName(name); 
-				} else if (name.endsWith("owl")){
-
-//					JProgressBar jpb = new JProgressBar();
-//					jpb.setIndeterminate(true); 
-//					JDialog jDialog = new JDialog(); 
-//					JPanel jpanel = new JPanel();
-//					jpanel.setLayout(new BorderLayout()); 
-//					jpanel.add(jpb, BorderLayout.CENTER); 
-//					jDialog.setContentPane(jpanel); 
-//					jDialog.pack(); 
-//					jDialog.setVisible(true); 
-//					jpb.paintImmediately(0, 0, jpb.getWidth(), jpb.getHeight()); 
-//					jDialog.repaint(0, 0, jDialog.getWidth(), jDialog.getHeight()); 
-//					jDialog.setLocationRelativeTo(UnBBayesFrame.getIUnBBayes()); 
+			mod = moduleToUse.openFile(file);
+		} finally {
+//			screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+		}
+		
+		return mod;
+		
+//		try {
+//			javax.swing.JInternalFrame window = null;
+//			BaseIO io = null;
+//			if (file.isDirectory()) { //MSBN
+//				io = DefaultMSBNIO.newInstance();
+//				SingleAgentMSBN msbn = (SingleAgentMSBN)io.load(file);	
+//				MSBNController controller = new MSBNController(msbn);
+//				window = controller.getPanel();
+//			} else {
+//				String name = file.getName().toLowerCase();				
+//				
+//				if (name.endsWith("net")) {
+//					io = new NetIO();	
+//					ProbabilisticNetwork net = (ProbabilisticNetwork)io.load(file);
+//					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
+//					window = new NetworkWindow(net);	
+//					((NetworkWindow)window).setFileName(name); 
+//				} else if (name.endsWith("xml")){
+//					io = new XMLBIFIO();	
+//					ProbabilisticNetwork net = (ProbabilisticNetwork)io.load(file);
+//					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
+//					window = new NetworkWindow(net);	
+//					((NetworkWindow)window).setFileName(name); 
+//				} else if (name.endsWith("dne")){
+//					io = new DneIO();	
+//					ProbabilisticNetwork net = (ProbabilisticNetwork)io.load(file);
+//					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
+//					window = new NetworkWindow(net);	
+//					((NetworkWindow)window).setFileName(name); 
+//				} else if (name.endsWith("owl")){
+//
+////					JProgressBar jpb = new JProgressBar();
+////					jpb.setIndeterminate(true); 
+////					JDialog jDialog = new JDialog(); 
+////					JPanel jpanel = new JPanel();
+////					jpanel.setLayout(new BorderLayout()); 
+////					jpanel.add(jpb, BorderLayout.CENTER); 
+////					jDialog.setContentPane(jpanel); 
+////					jDialog.pack(); 
+////					jDialog.setVisible(true); 
+////					jpb.paintImmediately(0, 0, jpb.getWidth(), jpb.getHeight()); 
+////					jDialog.repaint(0, 0, jDialog.getWidth(), jDialog.getHeight()); 
+////					jDialog.setLocationRelativeTo(UnBBayesFrame.getIUnBBayes()); 
+////					
+////					MultiEntityBayesianNetwork mebn; 
+////					
+////					Runnable runnable = new Runnable(){
+////
+////						public void run() {
+////							PrOwlIO prOwlIo = new PrOwlIO(); 
+////							try {
+////								MultiEntityBayesianNetwork mebn = prOwlIo.loadMebn(file);
+////								JOptionPane.showMessageDialog(screen, resource.getString("JAXBExceptionFound"), resource.getString("loadNetException"), JOptionPane.ERROR_MESSAGE);
+////							} catch (IOException e) {
+////								// TODO Auto-generated catch block
+////								e.printStackTrace();
+////							} catch (IOMebnException e) {
+////								// TODO Auto-generated catch block
+////								e.printStackTrace();
+////							}
+////						}
+////						
+////					}; 
+////					
+////					Thread thread = new Thread(runnable); 
+////					thread.start();
+////					
+////					Thread.sleep(10000); 
 //					
 //					MultiEntityBayesianNetwork mebn; 
-//					
-//					Runnable runnable = new Runnable(){
-//
-//						public void run() {
-//							PrOwlIO prOwlIo = new PrOwlIO(); 
-//							try {
-//								MultiEntityBayesianNetwork mebn = prOwlIo.loadMebn(file);
-//								JOptionPane.showMessageDialog(screen, resource.getString("JAXBExceptionFound"), resource.getString("loadNetException"), JOptionPane.ERROR_MESSAGE);
-//							} catch (IOException e) {
-//								// TODO Auto-generated catch block
-//								e.printStackTrace();
-//							} catch (IOMebnException e) {
-//								// TODO Auto-generated catch block
-//								e.printStackTrace();
-//							}
-//						}
-//						
-//					}; 
-//					
-//					Thread thread = new Thread(runnable); 
-//					thread.start();
-//					
-//					Thread.sleep(10000); 
-					
-					MultiEntityBayesianNetwork mebn; 
-					PrOwlIO prOwlIo = new PrOwlIO(); 
-					mebn = prOwlIo.loadMebn(file);
-					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
-					window = new NetworkWindow(mebn);
-					((NetworkWindow)window).setFileName(name); 
-				
-				}  else if (name.endsWith(UbfIO.fileExtension)) {        			
-					MebnIO ubfIo = UbfIO.getInstance(); 
-					MultiEntityBayesianNetwork mebn = ubfIo.loadMebn(file);
-					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
-					window = new NetworkWindow(mebn);	
-					((NetworkWindow)window).setFileName(name); 
-				    
-				} else if (name.endsWith(IObjectOrientedBayesianNetworkIO.fileExtension)) {
-					IObjectOrientedBayesianNetworkIO oobnIO = DefaultOOBNIO.newInstance(ObjectOrientedBayesianNetwork.newInstance(""));
-					IObjectOrientedBayesianNetwork oobn = oobnIO.loadOOBN(file);	
-					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
-					OOBNController controller = OOBNController.newInstance(oobn, screen);
-					window = controller.getPanel();
-				}
-			}
-			screen.addWindow(window);
-		} finally {
-			screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-		}
+//					PrOwlIO prOwlIo = new PrOwlIO(); 
+//					mebn = prOwlIo.loadMebn(file);
+//					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
+//					window = new NetworkWindow(mebn);
+//					((NetworkWindow)window).setFileName(name); 
+//				
+//				}  else if (name.endsWith(UbfIO.FILE_EXTENSION)) {        			
+//					MebnIO ubfIo = UbfIO.getInstance(); 
+//					MultiEntityBayesianNetwork mebn = ubfIo.loadMebn(file);
+//					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
+//					window = new NetworkWindow(mebn);	
+//					((NetworkWindow)window).setFileName(name); 
+//				    
+//				} else if (name.endsWith(IObjectOrientedBayesianNetworkIO.fileExtension)) {
+//					IObjectOrientedBayesianNetworkIO oobnIO = DefaultOOBNIO.newInstance(ObjectOrientedBayesianNetwork.newInstance(""));
+//					IObjectOrientedBayesianNetwork oobn = oobnIO.loadOOBN(file);	
+//					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
+//					OOBNController controller = OOBNController.newInstance(oobn);
+//					window = controller.getPanel();
+//				}
+//			}
+//			screen.addWindow(window);
+//		} finally {
+//			screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+//		}
 	}
 	
 	

@@ -28,9 +28,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.io.File;
+import java.io.IOException;
 import java.util.ResourceBundle;
 
 import javax.swing.JButton;
+import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -42,16 +45,22 @@ import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.JViewport;
 
+import unbbayes.controller.ConfigurationsController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
 import unbbayes.io.BaseIO;
+import unbbayes.io.FileExtensionIODelegator;
+import unbbayes.io.exception.LoadException;
+import unbbayes.io.exception.UBIOException;
+import unbbayes.io.mebn.UbfIO;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.MultiEntityNode;
+import unbbayes.util.extension.UnBBayesModule;
+import unbbayes.util.extension.UnBBayesModuleBuilder;
 
 /**
  * Class responsible for representing the network window.
@@ -63,11 +72,12 @@ import unbbayes.prs.mebn.MultiEntityNode;
  * 
  * TODO stop using this class as MEBN window (and migrate MEBN specific codes to a new class, say MEBNWindow)
  */
-public class NetworkWindow extends JInternalFrame implements IPersistenceAwareWindow {
+public class NetworkWindow extends UnBBayesModule {
 	
 	// since this implements IPersistenceAwareWindow, let's store them
 	private static final String[] SUPPORTED_FILE_EXTENSIONS = { "net", "xml"};
-	private static final String[] SUPPORTED_FILE_EXTENSIONS_MEBN = { unbbayes.io.mebn.UbfIO.fileExtension };
+	private static final String[] SUPPORTED_FILE_EXTENSIONS_LOAD = { "net", "xml", "dne"};
+	private static final String[] SUPPORTED_FILE_EXTENSIONS_MEBN = { unbbayes.io.mebn.UbfIO.FILE_EXTENSION };
 	
 	
 	/** Serialization runtime version number */
@@ -109,19 +119,23 @@ public class NetworkWindow extends JInternalFrame implements IPersistenceAwareWi
 
 	private Integer mode = null;
 
-	private final String PN_PANE_PN_EDITION_PANE = "pnEditionPane";
+	private static final String PN_PANE_PN_EDITION_PANE = "pnEditionPane";
 
-	private final String PN_PANE_PN_EDIT_NET = "editNet";
+	private static final String PN_PANE_PN_EDIT_NET = "editNet";
 
-	private final String PN_PANE_PN_COMPILATION_PANE = "pnCompilationPane";
+	private static final String PN_PANE_PN_COMPILATION_PANE = "pnCompilationPane";
 
-	private final String PN_PANE_HIERARCHY_PANE = "hierarchy";
+	private static final String PN_PANE_HIERARCHY_PANE = "hierarchy";
 	
-	private final String PN_PANE_EVALUATION_PANE = "pnEvaluation";
+	private static final String PN_PANE_EVALUATION_PANE = "pnEvaluation";
 
-	private final String MEBN_PANE_MEBN_EDITION_PANE = "mebnEditionPane";
+	private static final String MEBN_PANE_MEBN_EDITION_PANE = "mebnEditionPane";
 
-	private final String MEBN_PANE_SSBN_COMPILATION_PANE = "ssbnCompilationPane";
+	private static final String MEBN_PANE_SSBN_COMPILATION_PANE = "ssbnCompilationPane";
+	
+	// variables that identifies a module (BN or MEBN)
+	
+	private String moduleName;
 
 	/** Load resource file from this package */
 	private static ResourceBundle resource = ResourceBundle
@@ -132,14 +146,15 @@ public class NetworkWindow extends JInternalFrame implements IPersistenceAwareWi
 	 * Default constructor useful for extended classes
 	 */
 	protected NetworkWindow() {
-		super("", true, true, true, true);
-		
-		
+//		super("", true, true, true, true);
+		super("");		
+		this.setModuleName(this.resource.getString("PNModuleName"));
 	}
 	
 	public NetworkWindow(Network net) {
-		super(net.getName(), true, true, true, true);
-		
+//		super(net.getName(), true, true, true, true);
+		super(net.getName());
+				
 		this.net = net; 
 		fileName = null; 
 		
@@ -150,13 +165,16 @@ public class NetworkWindow extends JInternalFrame implements IPersistenceAwareWi
 
 		// instancia variaveis de instancia
 		graphViewport = new JViewport();
-		if (net instanceof SingleEntityNetwork)
+		if (net instanceof SingleEntityNetwork) {
 			controller = new NetworkController((SingleEntityNetwork) net, this);
-		else {
+			this.setModuleName(this.resource.getString("PNModuleName"));
+		} else {
 			controller = new NetworkController(
 					(MultiEntityBayesianNetwork) net, this);
 			mebnEditionPane = controller.getMebnController()
 					.getMebnEditionPane();
+
+			this.setModuleName(this.resource.getString("MEBNModuleName"));
 		}
 
 		graphPane = new GraphPane(controller, graphViewport);
@@ -616,27 +634,31 @@ public class NetworkWindow extends JInternalFrame implements IPersistenceAwareWi
 		this.mode = mode;
 	}
 
-	/* (non-Javadoc)
-	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFileExtensions()
-	 */
-	public String[] getSupportedFileExtensions() {
-		if (this.getMode() == MEBN_MODE) {
-			return SUPPORTED_FILE_EXTENSIONS_MEBN;
-		} else {
-			return SUPPORTED_FILE_EXTENSIONS;
-		}	
-	}
-
-	/* (non-Javadoc)
-	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFilesDescription()
-	 */
-	public String getSupportedFilesDescription() {
-		if (this.getMode() == MEBN_MODE) {
-			return resource.getString("netFileFilterSaveMEBN");
-		} else {
-			return resource.getString("netFileFilterSave");
-		}	
-	}
+//	/* (non-Javadoc)
+//	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFileExtensions(boolean)
+//	 */
+//	public String[] getSupportedFileExtensions(boolean isLoadOnly) {
+//		if (this.getMode() == MEBN_MODE) {
+//			return SUPPORTED_FILE_EXTENSIONS_MEBN;
+//		} else if (isLoadOnly) {
+//			return SUPPORTED_FILE_EXTENSIONS_LOAD;
+//		} else {
+//			return SUPPORTED_FILE_EXTENSIONS;
+//		}
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFilesDescription(boolean)
+//	 */
+//	public String getSupportedFilesDescription(boolean isLoadOnly) {
+//		if (this.getMode() == MEBN_MODE) {
+//			return resource.getString("netFileFilterSaveMEBN");
+//		} else if (isLoadOnly) {
+//			return resource.getString("netFileFilterLoad");
+//		} else {
+//			return resource.getString("netFileFilterSave");
+//		} 
+//	}
 
 	
 	/* (non-Javadoc)
@@ -685,11 +707,60 @@ public class NetworkWindow extends JInternalFrame implements IPersistenceAwareWi
 		return this.getController().getNetwork();
 	}
 
+
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.gui.IPersistenceAwareWindow#setPersistingGraph(unbbayes.prs.Graph)
+	 * @see unbbayes.util.extension.UnBBayesModule#getModuleName()
 	 */
-	public void setPersistingGraph(Graph graph) {
-		new NetworkWindow((Network)graph);
+	@Override
+	public String getModuleName() {
+		return this.moduleName;
 	}
+
+	/**
+	 * @param moduleName the moduleName to set
+	 */
+	public void setModuleName(String moduleName) {
+		this.moduleName = moduleName;
+	}
+	
+	
+	
+	/**
+	 * Opens a new desktop window into currently used java desktop
+	 * @see unbbayes.util.extension.UnBBayesModule#openFile(java.io.File)
+	 */
+	@Override
+	public UnBBayesModule openFile(File file) throws IOException {
+		
+		
+		Graph g = null;
+		
+		// a IO that delegates to correct I/O depending on the file extension (NET, DNE and XMLBIF by default)
+		FileExtensionIODelegator ioDelegator = FileExtensionIODelegator.newInstance();
+		ioDelegator.getDelegators().add(UbfIO.getInstance());	// adding UBF compatibility into delegator
+		
+		try {
+			g = ioDelegator.load(file);
+		} catch (LoadException e) {
+			new UBIOException(e);
+		}
+		
+		NetworkWindow window = null;
+		
+		try {
+			ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
+			window = new NetworkWindow((Network)g);	
+			((NetworkWindow)window).setFileName(file.getName().toLowerCase()); 
+		} catch (Exception e) {
+			throw new RuntimeException(this.resource.getString("unsupportedGraphFormat"),e);
+		}
+		
+		this.dispose();
+		
+		return window;
+	}
+	
+	
+	
 }

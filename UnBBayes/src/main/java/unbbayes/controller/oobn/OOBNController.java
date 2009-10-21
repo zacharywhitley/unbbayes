@@ -70,17 +70,17 @@ public class OOBNController extends NetworkController {
 	
 	private IOOBNClass selectedClass = null;
 	
-	private UnBBayesFrame upperUnBBayesFrame = null;
+//	private UnBBayesFrame upperUnBBayesFrame = null;
 	
 	/**
 	 * Creates a controller that controls a MSBNWindow.
 	 * The MSBNWindows is created.
 	 * @param oobn The oobn to display.
 	 */
-	protected OOBNController(IObjectOrientedBayesianNetwork oobn, UnBBayesFrame upperUnBBayesFrame) {
+	protected OOBNController(IObjectOrientedBayesianNetwork oobn) {
 		super(oobn.getSingleEntityNetwork(),null);
 		this.oobn = oobn;
-		this.setUpperUnBBayesFrame(upperUnBBayesFrame);
+//		this.setUpperUnBBayesFrame(upperUnBBayesFrame);
 		this.window = OOBNWindow.newInstance(oobn, this);
 		this.init();	
 //		upperUnBBayesFrame.addWindow(this.getPanel());
@@ -96,8 +96,8 @@ public class OOBNController extends NetworkController {
 	 * @param oobn The oobn to display.
 	 * @param upperContainer: the container which is going to be hosting the OOBN's internal window
 	 */
-	public static OOBNController newInstance(IObjectOrientedBayesianNetwork oobn, UnBBayesFrame upperContainer){
-		return new OOBNController(oobn, upperContainer);
+	public static OOBNController newInstance(IObjectOrientedBayesianNetwork oobn){
+		return new OOBNController(oobn);
 	}
 	
 	/**
@@ -328,19 +328,19 @@ public class OOBNController extends NetworkController {
 		this.active = active;
 	}
 
-	/**
-	 * @return the upperUnBBayesFrame, container of the OOBNWindow
-	 */
-	public UnBBayesFrame getUpperUnBBayesFrame() {
-		return upperUnBBayesFrame;
-	}
-
-	/**
-	 * @param upperUnBBayesFrame the upperUnBBayesFrame to set, container of the OOBNWindow
-	 */
-	public void setUpperUnBBayesFrame(UnBBayesFrame upperUnBBayesFrame) {
-		this.upperUnBBayesFrame = upperUnBBayesFrame;
-	}
+//	/**
+//	 * @return the upperUnBBayesFrame, container of the OOBNWindow
+//	 */
+//	public UnBBayesFrame getUpperUnBBayesFrame() {
+//		return upperUnBBayesFrame;
+//	}
+//
+//	/**
+//	 * @param upperUnBBayesFrame the upperUnBBayesFrame to set, container of the OOBNWindow
+//	 */
+//	public void setUpperUnBBayesFrame(UnBBayesFrame upperUnBBayesFrame) {
+//		this.upperUnBBayesFrame = upperUnBBayesFrame;
+//	}
 
 //	/**
 //	 * @return the classController
