@@ -63,6 +63,111 @@
         </p>
       </answer>
     </faq>
+    
+    <faq id="manual">
+      <question>When do you think the manual will be available?</question>
+      <answer>
+        <p>
+          It is ready, but we are waiting for the approval from two of our Profs. Probably in 
+          November 2009. 
+        </p>
+      </answer>
+    </faq>
+    
+    <faq id="parallelprocessing">
+      <question>Does it allow parallel processing?</question>
+      <answer>
+        <p>
+           We have not done anything related to that in our current work. 
+        </p>
+      </answer>
+    </faq>
+    
+    <faq id="databus">
+      <question>Does it run on a 32-bit or a 64-bit data bus?</question>
+      <answer>
+        <p>
+           I guess it depends on what Java compiler you use. I am pretty sure the releases we have 
+           available are for 32-bit. But you could compile the source code for a 64-bit.
+        </p>
+      </answer>
+    </faq>
+    
+    <faq id="inferencealgorithm">
+      <question>What kind of algorithm uses to perform inference?</question>
+      <answer>
+        <p>
+           For exact we use Junction Tree and for approximate we have Likelihood Weighting 
+           and Gibbs Sampling.
+        </p>
+      </answer>
+    </faq>
+    
+    <faq id="continuousnodes">
+      <question>Can it handle continuous nodes, if so what kind (e.g. Gaussian, log-normal etc)?</question>
+      <answer>
+        <p>
+           In our last release you are able to only represent the CLG (Gaussian), but we are working on implementing Junction Tree for CLG also. Besides that, we are also developing some distributions (like in Netica), including continuous, instead of just allowing the definition 
+           of CPTs (table entries) as it is done today. For the continuous nodes, the distribution will be 
+           discretized before performing inference (again, like in Netica).
+        </p>
+      </answer>
+    </faq>
+    
+    <faq id="parameterlearning">
+      <question>Does it perform parameter learning?</question>
+      <answer>
+        <p>
+           Yes.
+        </p>
+      </answer>
+    </faq>
+    
+    <faq id="structurelearning">
+      <question>Does it perform structure learning?</question>
+      <answer>
+        <p>
+           Yes.
+        </p>
+      </answer>
+    </faq>
+    
+    <faq id="dynamicnet">
+      <question>Are dynamic networks supported?</question>
+      <answer>
+        <p>
+           No. We currently support BN, ID, MSBN, OOBN, MEBN/PR-OWL, and partially CLG.
+        </p>
+      </answer>
+    </faq>
+    
+    <faq id="sensitivityanalysis">
+      <question>Does it do sensitivity analysis? If so, one way, two way, multidimensional?</question>
+      <answer>
+        <p>
+           No. Not in UnBBayes. We have another tool that might be helpful, UnBMiner. You should 
+           ask Prof. Dr. Marcelo Ladeira for that information.
+        </p>
+      </answer>
+    </faq>
+    
+    <faq id="expectedvalue">
+      <question>Does it provide the expected value of information?</question>
+      <answer>
+        <p>
+           Not now. But it will as soon as we get the other distributions implemented. 
+        </p>
+      </answer>
+    </faq>
+    
+    <faq id="cptinput">
+      <question>Can I input probabilities manually (e.g. not learned from data)?</question>
+      <answer>
+        <p>
+           Yes. 
+        </p>
+      </answer>
+    </faq>
       
   </part>
 </faqs>
