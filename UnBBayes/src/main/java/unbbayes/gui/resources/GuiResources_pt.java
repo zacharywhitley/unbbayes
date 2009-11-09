@@ -122,6 +122,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"selectionColorToolTip","Selecionar a cor de seleção"},
 		{"backgroundColorLabel","Fundo"},
 		{"backgroundColorToolTip","Selecionar a cor de fundo"},
+		{"edgeColor","Cor do arco"},
 		
 		{"confirmLabel","Confirmar"},
 		{"confirmToolTip","Corfimar as alterações"},
@@ -537,7 +538,14 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"PNModuleName" , "Redes Probabilísticas"},
 		{"MEBNModuleName" , "Redes Bayesianas Multi-Entidade"},
 		{"MSBNModuleName" , "Redes Bayesianas Múltiplas-Seccionadas"},
-		{"OOBNModuleName" , "Redes Bayesianas Orientados a Objeto"}
+		{"OOBNModuleName" , "Redes Bayesianas Orientados a Objeto"},
+		
+
+		{"sampleSizeInputMessage", "Favor entrar com o tamanho da amostragem (número de casos)."},
+//		{"sampleSizeInputTitle", "Tamanho da amostragem"}, 
+
+		{"algorithmParameters", "Parâmetros para o algoritmo"},
+		{"availableAlgorithms", "Algoritmos disponíveis"},
 		
 	};
 }

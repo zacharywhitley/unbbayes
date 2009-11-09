@@ -26,14 +26,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import unbbayes.io.XMLBIFIO;
 import unbbayes.io.exception.LoadException;
+import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.util.SortUtil;
+import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 /**
  * Gaussian Mixture inference algorithm. It calculates the 
@@ -43,13 +46,17 @@ import unbbayes.util.SortUtil;
  * @author Rommel Carvalho
  *
  */
-public class GaussianMixture {
+public class GaussianMixture implements IInferenceAlgorithm {
 	
 	protected ProbabilisticNetwork pn;
 	protected ProbabilisticNetwork clonedPN;
 	protected List<Node> nodeOrderQueue;
 	private List<Node> discreteNodeList;
 	private List<Node> continuousNodeList;
+	
+
+	/** Load resource file from util */
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.util.resources.UtilResources");
 	
 	/**
 	 * Return the order the nodes are in the sampled matrix.
@@ -59,8 +66,31 @@ public class GaussianMixture {
 		return nodeOrderQueue;
 	}
 	
+	/**
+	 * Default constructor - created for plugin support
+	 */
+	public GaussianMixture(){
+		super();
+	}
+	
 	public GaussianMixture(ProbabilisticNetwork pn){		
-		this.pn = pn;
+		this.setNetwork(pn);
+		// the code below was migrated into init()
+//		this.clonedPN = clonePN(pn);
+//		discreteNodeList = new ArrayList<Node>();
+//		continuousNodeList = new ArrayList<Node>();
+//		for (Node node : pn.getNodes()) {
+//			if (node.getType() == Node.CONTINUOUS_NODE_TYPE) {
+//				continuousNodeList.add(node);
+//			} else {
+//				discreteNodeList.add(node);
+//			}
+//		}
+		// init was migrated into setNetwork
+//		init();
+	}
+	
+	protected void init(){
 		this.clonedPN = clonePN(pn);
 		discreteNodeList = new ArrayList<Node>();
 		continuousNodeList = new ArrayList<Node>();
@@ -71,10 +101,6 @@ public class GaussianMixture {
 				discreteNodeList.add(node);
 			}
 		}
-		init();
-	}
-	
-	protected void init(){
 		nodeOrderQueue = new ArrayList<Node>();		
 		createOrderQueue();
 	}
@@ -138,7 +164,11 @@ public class GaussianMixture {
 	}
 	
 
-	public void run() throws Exception {
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#run()
+	 */
+	public void run() throws IllegalStateException {
 		for(int i = 0; i < nodeOrderQueue.size(); i++) {
 			
 			Node node = nodeOrderQueue.get(i);
@@ -187,7 +217,11 @@ public class GaussianMixture {
 					}
 					// Add the calculated marginal to the initial network (pn).
 					// We already know that every node here is discrete.
-					clonedPN.compile();
+					try {
+						clonedPN.compile();
+					} catch (Exception e) {
+						throw new IllegalStateException(e);
+					}
 					for (Node nodeToGetMarginal : clonedPN.getNodes()) {
 						TreeVariable variableToGetMarginal = (TreeVariable)nodeToGetMarginal;
 						TreeVariable variable = (TreeVariable)pn.getNode(nodeToGetMarginal.getName());
@@ -340,5 +374,49 @@ public class GaussianMixture {
 		
 		return clone;
 	}
+
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#setNetwork(unbbayes.prs.Graph)
+	 */
+	public void setNetwork(Graph g) throws IllegalArgumentException {
+		this.pn = (ProbabilisticNetwork)g;
+		this.pn.resetEvidences();
+		this.init();
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#getDescription()
+	 */
+	public String getDescription() {
+		return this.resource.getString("gaussianMixtureAlgorithmDescription");
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#getName()
+	 */
+	public String getName() {
+		return this.resource.getString("gaussianMixtureAlgorithmName");
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#reset()
+	 */
+	public void reset() {
+		this.pn.resetEvidences();
+		this.run();
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#propagate()
+	 */
+	public void propagate() {
+		// TODO ROMMEL - Implement propagation
+		throw new RuntimeException("Not implemented yet.");
+	}
+	
+	
 	
 }

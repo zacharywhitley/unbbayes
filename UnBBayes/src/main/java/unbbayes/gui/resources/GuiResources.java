@@ -122,6 +122,7 @@ public class GuiResources extends ListResourceBundle {
 		{"selectionColorToolTip","Select selection color"},
 		{"backgroundColorLabel","Background"},
 		{"backgroundColorToolTip","Select background color"},
+		{"edgeColor","Edge's color"},
 		
 		{"confirmLabel","Confirm"},
 		{"confirmToolTip","Corfim modifications"},
@@ -536,7 +537,13 @@ public class GuiResources extends ListResourceBundle {
 		{"PNModuleName" , "Probabilistic Network"},
 		{"MEBNModuleName" , "Multi Entity Bayesian Network"},
 		{"MSBNModuleName" , "Multiple Sectioned Bayesian Network"},
-		{"OOBNModuleName" , "Object Oriented Bayesian Network"}
+		{"OOBNModuleName" , "Object Oriented Bayesian Network"},
+		
+		
+		{"sampleSizeInputMessage", "Please enter the sample size (number of trials)."},
+//		{"sampleSizeInputTitle", "Sample size"}, 
+		{"algorithmParameters", "Parameters for the algorithm"},
+		{"availableAlgorithms", "Available algorithms"},
 		
 	};
 }

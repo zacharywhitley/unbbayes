@@ -23,25 +23,41 @@ package unbbayes.simulation.likelihoodweighting.inference;
 import java.io.File;
 import java.text.NumberFormat;
 import java.util.Locale;
+import java.util.ResourceBundle;
 
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
 import unbbayes.io.XMLBIFIO;
+import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.simulation.likelihoodweighting.sampling.LikelihoodWeightingSampling;
+import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
-public class LikelihoodWeightingInference {
+public class LikelihoodWeightingInference implements IInferenceAlgorithm {
 	
 	protected LikelihoodWeightingSampling lwSampling;
 	protected ProbabilisticNetwork pn;
 	protected int nTrials;
 	
-	public LikelihoodWeightingInference(ProbabilisticNetwork pn , int nTrials){		
-		this.pn = pn;
-		this.nTrials = nTrials;	
+
+	/** Load resource file from util */
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.util.resources.UtilResources");
+	
+	/**
+	 * Default constructor created for plugin support
+	 */
+	public LikelihoodWeightingInference(){
+		super();
 		this.lwSampling= new LikelihoodWeightingSampling();
+		this.setNTrials(1);
+	}
+	
+	public LikelihoodWeightingInference(ProbabilisticNetwork pn , int nTrials){		
+		this();
+		this.setNetwork(pn);
+		this.nTrials = nTrials;	
 	}
 	
 	public LikelihoodWeightingSampling getLikelihoodWeightingSampling() {
@@ -151,5 +167,61 @@ public class LikelihoodWeightingInference {
 			System.out.println();
 		}
 	}
+
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#setNetwork(unbbayes.prs.Graph)
+	 */
+	public void setNetwork(Graph g) throws IllegalArgumentException {
+		this.pn = (ProbabilisticNetwork)g;
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#getDescription()
+	 */
+	public String getDescription() {
+		return this.resource.getString("likelihoodWeightingAlgorithmDescription");
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#getName()
+	 */
+	public String getName() {
+		return this.resource.getString("likelihoodWeightingAlgorithmName");
+	}
+
+	/**
+	 * @return the nTrials
+	 */
+	public int getNTrials() {
+		return nTrials;
+	}
+
+	/**
+	 * @param trials the nTrials to set
+	 */
+	public void setNTrials(int trials) {
+		nTrials = trials;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#reset()
+	 */
+	public void reset() {
+		this.pn.resetEvidences();
+		this.run();
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#propagate()
+	 */
+	public void propagate() {
+		this.run();
+	}
+	
+	
 
 }

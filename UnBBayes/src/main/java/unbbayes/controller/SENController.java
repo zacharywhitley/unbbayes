@@ -42,6 +42,7 @@ import unbbayes.gui.table.ReplaceTextCellEditor;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ITabledVariable;
+import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -54,6 +55,7 @@ import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
 import unbbayes.simulation.likelihoodweighting.inference.LikelihoodWeightingInference;
 import unbbayes.simulation.sampling.GibbsSampling;
+import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 public class SENController {
 
@@ -77,13 +79,13 @@ public class SENController {
     }
 	
     // TODO ROMMEL - CHANGE THIS!! NEW MODELING!!
-	private InferenceAlgorithmEnum inferenceAlgorithm = InferenceAlgorithmEnum.JUNCTION_TREE;
+	private IInferenceAlgorithm inferenceAlgorithm = new JunctionTreeAlgorithm();
 
-	public InferenceAlgorithmEnum getInferenceAlgorithm() {
+	public IInferenceAlgorithm getInferenceAlgorithm() {
 		return inferenceAlgorithm;
 	}
 
-	public void setInferenceAlgorithm(InferenceAlgorithmEnum inferenceAlgorithm) {
+	public void setInferenceAlgorithm(IInferenceAlgorithm inferenceAlgorithm) {
 		this.inferenceAlgorithm = inferenceAlgorithm;
 	}
 
@@ -153,20 +155,22 @@ public class SENController {
 	 */
 	public void initialize() {
 		try {
-			if (getInferenceAlgorithm() == InferenceAlgorithmEnum.JUNCTION_TREE) {
-				singleEntityNetwork.initialize();
-			} else {
-				if (getInferenceAlgorithm() == InferenceAlgorithmEnum.LIKELIHOOD_WEIGHTING) {
-					singleEntityNetwork.resetEvidences();
-					lwInference.run();
-				} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.GIBBS) {
-					singleEntityNetwork.resetEvidences();
-					gibbsInference.run();
-				} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.GAUSSIAN_MIXTURE) {
-					singleEntityNetwork.resetEvidences();
-					gmInference.run();
-				}
-			}
+			// fixing anti-pattern: avoid using if-then-else and start using method extension.
+//			if (getInferenceAlgorithm() == InferenceAlgorithmEnum.JUNCTION_TREE) {
+//				singleEntityNetwork.initialize();
+//			} else {
+//				if (getInferenceAlgorithm() == InferenceAlgorithmEnum.LIKELIHOOD_WEIGHTING) {
+//					singleEntityNetwork.resetEvidences();
+//					lwInference.run();
+//				} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.GIBBS) {
+//					singleEntityNetwork.resetEvidences();
+//					gibbsInference.run();
+//				} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.GAUSSIAN_MIXTURE) {
+//					singleEntityNetwork.resetEvidences();
+//					gmInference.run();
+//				}
+//			}
+			this.getInferenceAlgorithm().reset();
 			//by young2 (true:update, false:complie)
 			screen.getEvidenceTree().updateTree(true);
 		} catch (Exception e) {
@@ -181,29 +185,38 @@ public class SENController {
 		//by young4
 		boolean bReset = false;
 		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-		if (getInferenceAlgorithm() == InferenceAlgorithmEnum.JUNCTION_TREE) {
-			boolean temLikeliHood = false;
-			try {
-				singleEntityNetwork.updateEvidences();
-				if (!temLikeliHood) {
-					screen.setStatus(resource
-							.getString("statusEvidenceProbabilistic")
-							+ df.format(singleEntityNetwork.PET() * 100.0));
-				}
-			} catch (Exception e) {
-				JOptionPane.showMessageDialog(screen, e.getMessage(), resource
-						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
-				bReset = true;
-			}
-		} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.LIKELIHOOD_WEIGHTING) {
-			lwInference.run();
-		} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.GIBBS) {
-			gibbsInference.run();
-		} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.GAUSSIAN_MIXTURE) {
-			// TODO ROMMEL - Implement propagation
-			JOptionPane.showMessageDialog(screen, "Not yet implemented!", resource
+		// avoiding if-then-else and using method overwriting.
+//		if (getInferenceAlgorithm() == InferenceAlgorithmEnum.JUNCTION_TREE) {
+//			boolean temLikeliHood = false;
+//			try {
+//				singleEntityNetwork.updateEvidences();
+//				if (!temLikeliHood) {
+//					screen.setStatus(resource
+//							.getString("statusEvidenceProbabilistic")
+//							+ df.format(singleEntityNetwork.PET() * 100.0));
+//				}
+//			} catch (Exception e) {
+//				JOptionPane.showMessageDialog(screen, e.getMessage(), resource
+//						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+//				bReset = true;
+//			}
+//		} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.LIKELIHOOD_WEIGHTING) {
+//			lwInference.run();
+//		} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.GIBBS) {
+//			gibbsInference.run();
+//		} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.GAUSSIAN_MIXTURE) {
+//			// TODO ROMMEL - Implement propagation
+//			JOptionPane.showMessageDialog(screen, "Not yet implemented!", resource
+//					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+//		}
+		try {
+			this.getInferenceAlgorithm().propagate();
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(screen, e.getMessage(), resource
 					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+			bReset = true;
 		}
+		
 		//by young2 (true:update, false:complie)
 		screen.getEvidenceTree().updateTree(bReset);
 		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -227,92 +240,105 @@ public class SENController {
 		// gone to its default (all expanded).
 		screen.getEvidenceTree().resetTree();
 		
-		if (getInferenceAlgorithm() == InferenceAlgorithmEnum.JUNCTION_TREE) {
-			if (singleEntityNetwork.isBN() || singleEntityNetwork.isID()) {
-				try {
-					((ProbabilisticNetwork) singleEntityNetwork).compile();
-				} catch (Exception e) {
-					e.printStackTrace();
-					JOptionPane.showMessageDialog(null, e.getMessage(), resource
-							.getString("statusError"), JOptionPane.ERROR_MESSAGE);
-					screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-					return false;
-				}
-			} else {
-				JOptionPane.showMessageDialog(null, resource.getString("junctionTreeNotApplicableError"), resource
-						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
-				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-				return false;
-			}
-		} if (getInferenceAlgorithm() == InferenceAlgorithmEnum.LIKELIHOOD_WEIGHTING) {
-			if (singleEntityNetwork.isBN()) {
-				String sampleSizeText = JOptionPane.showInputDialog(screen, resource.getString("sampleSizeInputMessage"), resource.getString("sampleSizeInputTitle"), JOptionPane.QUESTION_MESSAGE);
-				// Stop compilation if user cancel operation.
-				if (sampleSizeText == null) {
-					return false;
-				}
-				int sampleSize = 0;
-				try {
-					sampleSize = Integer.parseInt(sampleSizeText);
-				} catch (NumberFormatException e) {
-					JOptionPane.showMessageDialog(null, resource.getString("sampleSizeInputError"), resource
-							.getString("statusError"), JOptionPane.ERROR_MESSAGE);
-					screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-					return false;
-				}
-				singleEntityNetwork.resetEvidences();
-				lwInference = new LikelihoodWeightingInference((ProbabilisticNetwork)singleEntityNetwork, sampleSize);
-				lwInference.run();
-			} else {
-				JOptionPane.showMessageDialog(null, resource.getString("likelihoodWeightingNotApplicableError"), resource
-						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
-				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-				return false;
-			}
-		} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.GIBBS) {
-			if (singleEntityNetwork.isBN()) {
-				String sampleSizeText = JOptionPane.showInputDialog(screen, resource.getString("sampleSizeInputMessage"), resource.getString("sampleSizeInputTitle"), JOptionPane.QUESTION_MESSAGE);
-				// Stop compilation if user cancel operation.
-				if (sampleSizeText == null) {
-					return false;
-				}
-				int sampleSize = 0;
-				try {
-					sampleSize = Integer.parseInt(sampleSizeText);
-				} catch (NumberFormatException e) {
-					JOptionPane.showMessageDialog(null, resource.getString("sampleSizeInputError"), resource
-							.getString("statusError"), JOptionPane.ERROR_MESSAGE);
-					screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-					return false;
-				}
-				singleEntityNetwork.resetEvidences();
-				gibbsInference = new GibbsSampling((ProbabilisticNetwork)singleEntityNetwork, sampleSize);
-				gibbsInference.run();
-			} else {
-				JOptionPane.showMessageDialog(null, resource.getString("likelihoodWeightingNotApplicableError"), resource
-						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
-				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-				return false;
-			}
-		} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.GAUSSIAN_MIXTURE) {
-			if (singleEntityNetwork.isHybridBN()) {
-				try {
-					singleEntityNetwork.resetEvidences();
-					gmInference = new GaussianMixture((ProbabilisticNetwork)singleEntityNetwork);
-					gmInference.run();
-				} catch (Exception e) {
-					e.printStackTrace();
-					JOptionPane.showMessageDialog(null, e.getMessage(), resource
-							.getString("statusError"), JOptionPane.ERROR_MESSAGE);
-					screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-					return false;
-				}
-			} else {
-				JOptionPane.showMessageDialog(null, resource.getString("continuousInferenceNotApplicableError"), resource
-						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
-				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-				return false;
-			}
+		// avoiding if-then-else structure and using method overwriting.
+//		if (getInferenceAlgorithm() == InferenceAlgorithmEnum.JUNCTION_TREE) {
+//			if (singleEntityNetwork.isBN() || singleEntityNetwork.isID()) {
+//				try {
+//					((ProbabilisticNetwork) singleEntityNetwork).compile();
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//					JOptionPane.showMessageDialog(null, e.getMessage(), resource
+//							.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+//					screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+//					return false;
+//				}
+//			} else {
+//				JOptionPane.showMessageDialog(null, resource.getString("junctionTreeNotApplicableError"), resource
+//						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+//				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+//				return false;
+//			}
+//		} if (getInferenceAlgorithm() == InferenceAlgorithmEnum.LIKELIHOOD_WEIGHTING) {
+//			if (singleEntityNetwork.isBN()) {
+//				String sampleSizeText = JOptionPane.showInputDialog(screen, resource.getString("sampleSizeInputMessage"), resource.getString("sampleSizeInputTitle"), JOptionPane.QUESTION_MESSAGE);
+//				// Stop compilation if user cancel operation.
+//				if (sampleSizeText == null) {
+//					return false;
+//				}
+//				int sampleSize = 0;
+//				try {
+//					sampleSize = Integer.parseInt(sampleSizeText);
+//				} catch (NumberFormatException e) {
+//					JOptionPane.showMessageDialog(null, resource.getString("sampleSizeInputError"), resource
+//							.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+//					screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+//					return false;
+//				}
+//				singleEntityNetwork.resetEvidences();
+//				lwInference = new LikelihoodWeightingInference((ProbabilisticNetwork)singleEntityNetwork, sampleSize);
+//				lwInference.run();
+//			} else {
+//				JOptionPane.showMessageDialog(null, resource.getString("likelihoodWeightingNotApplicableError"), resource
+//						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+//				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+//				return false;
+//			}
+//		} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.GIBBS) {
+//			if (singleEntityNetwork.isBN()) {
+//				String sampleSizeText = JOptionPane.showInputDialog(screen, resource.getString("sampleSizeInputMessage"), resource.getString("sampleSizeInputTitle"), JOptionPane.QUESTION_MESSAGE);
+//				// Stop compilation if user cancel operation.
+//				if (sampleSizeText == null) {
+//					return false;
+//				}
+//				int sampleSize = 0;
+//				try {
+//					sampleSize = Integer.parseInt(sampleSizeText);
+//				} catch (NumberFormatException e) {
+//					JOptionPane.showMessageDialog(null, resource.getString("sampleSizeInputError"), resource
+//							.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+//					screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+//					return false;
+//				}
+//				singleEntityNetwork.resetEvidences();
+//				gibbsInference = new GibbsSampling((ProbabilisticNetwork)singleEntityNetwork, sampleSize);
+//				gibbsInference.run();
+//			} else {
+//				JOptionPane.showMessageDialog(null, resource.getString("likelihoodWeightingNotApplicableError"), resource
+//						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+//				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+//				return false;
+//			}
+//		} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.GAUSSIAN_MIXTURE) {
+//			if (singleEntityNetwork.isHybridBN()) {
+//				try {
+//					singleEntityNetwork.resetEvidences();
+//					gmInference = new GaussianMixture((ProbabilisticNetwork)singleEntityNetwork);
+//					gmInference.run();
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//					JOptionPane.showMessageDialog(null, e.getMessage(), resource
+//							.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+//					screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+//					return false;
+//				}
+//			} else {
+//				JOptionPane.showMessageDialog(null, resource.getString("continuousInferenceNotApplicableError"), resource
+//						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+//				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+//				return false;
+//			}
+//		}
+		
+		try {
+			singleEntityNetwork.resetEvidences();
+			this.getInferenceAlgorithm().setNetwork(singleEntityNetwork);
+			this.getInferenceAlgorithm().run();
+		} catch (Exception e) {
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, e.getMessage(), resource
+					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+			screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			return false;
 		}
 
 		//screen.getEvidenceTree().updateTree();

@@ -73,6 +73,7 @@ import unbbayes.prs.mebn.exception.CycleFoundException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
 import unbbayes.prs.mebn.ssbn.giaalgorithm.AbstractSSBNGenerator;
+import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 /**
  * This class is responsible for delegating instructions that is going to be 
@@ -97,14 +98,14 @@ public class NetworkController implements KeyListener {
     private BaseIO baseIO;
     
     // TODO ROMMEL - CHANGE THIS!! NEW MODELING!!
-    public InferenceAlgorithmEnum getInferenceAlgorithm() {
+    public IInferenceAlgorithm getInferenceAlgorithm() {
     	if (senController != null) {
     		return senController.getInferenceAlgorithm();
     	}
     	return null;
 	}
 
-	public void setInferenceAlgorithm(InferenceAlgorithmEnum inferenceAlgorithm) {
+	public void setInferenceAlgorithm(IInferenceAlgorithm inferenceAlgorithm) {
 		if (senController != null) {
     		senController.setInferenceAlgorithm(inferenceAlgorithm);
     	}

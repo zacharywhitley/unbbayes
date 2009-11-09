@@ -25,4 +25,17 @@
 		<parameter-def id="description" multiplicity="none-or-one" />
 		<parameter-def id="icon" multiplicity="none-or-one" />
     </extension-point>
+    
+    <!-- BN inference algorithm extension point and its option panel. 
+    	 This extension point is a swing JPanel used as a form in order to fill in some initialization attributes for inference algorithms.
+    	 Inference algorithm are basically called during BN compilation.
+    	 This extension point must extend unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel and provide the following informations:
+    	 	class: full class name. It must extend unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel and provide a default constructor
+    	 							(a constructor with no parameters).
+		 The unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel is just a swing JPanel
+ 		 having a reference to unbbayes.util.extension.bn.inference.IInferenceAlgorithm, which implements the algorithm itself (similar to bridge pattern)
+    -->
+    <extension-point id="InferenceAlgorithm">
+        <parameter-def id="class"/>
+    </extension-point>
 </plugin>

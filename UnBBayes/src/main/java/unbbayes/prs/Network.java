@@ -340,4 +340,18 @@ public class Network implements Graph{
 		return ((name != null) ? name : "") + '(' + id + ')';
 	}
 
+	/**
+	 * @return the nodeIndexes
+	 */
+	public Map<String, Integer> getNodeIndexes() {
+		return nodeIndexes;
+	}
+
+	/**
+	 * @param nodeIndexes the nodeIndexes to set
+	 */
+	public void setNodeIndexes(Map<String, Integer> nodeIndexes) {
+		this.nodeIndexes = nodeIndexes;
+	}
+
 }

@@ -52,6 +52,19 @@ public class UtilResources extends ListResourceBundle {
 	static final Object[][] contents =
 	{	{"IllegalCapacityException","Illegal Capacity: "},
 		{"IllegalAccessException","Error in clone routine. No access"},
-		{"InstantiationException","Error in clone routine. Instantiation"}	
+		{"InstantiationException","Error in clone routine. Instantiation"},
+		
+		// inference algorithms
+		{"junctionTreeAlgorithmName" , "Junction tree"},
+		{"likelihoodWeightingAlgorithmName" , "Likelihood weighting"},
+		{"gibbsAlgorithmName" , "Gibbs"},
+		{"gaussianMixtureAlgorithmName" , "Gaussian Mixture"},
+		{"junctionTreeAlgorithmDescription" , "Compile network using junktion tree (default)"},
+		{"likelihoodWeightingAlgorithmDescription" , "Compile network using likelihood weighting"},
+		{"gibbsAlgorithmDescription" , "Compile network using Gibbs algorithm"},
+		{"gaussianMixtureAlgorithmDescription" , "Compile network using Gaussian Mixture algorithm"},
+		
+		
+		
 	};
 }

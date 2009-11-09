@@ -24,7 +24,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 
+import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -32,6 +34,7 @@ import unbbayes.prs.bn.TreeVariable;
 import unbbayes.simulation.likelihoodweighting.ILikelihoodWeightingSampling;
 import unbbayes.simulation.likelihoodweighting.sampling.LikelihoodWeightingSampling;
 import unbbayes.simulation.montecarlo.sampling.MatrixMonteCarloSampling;
+import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 /**
  * 
@@ -43,7 +46,7 @@ import unbbayes.simulation.montecarlo.sampling.MatrixMonteCarloSampling;
  *
  */
 // TODO ROMMEL - CREATE ONE SAMPLING THAT USES MAPMCSAMPLING
-public class GibbsSampling extends MatrixMonteCarloSampling {
+public class GibbsSampling extends MatrixMonteCarloSampling implements IInferenceAlgorithm {
 	
 	protected ProbabilisticNetwork pn;
 	protected int sampleSize;
@@ -52,13 +55,16 @@ public class GibbsSampling extends MatrixMonteCarloSampling {
 	
 	protected Map<Node, Float[]> marginalMap;
 	
+	/** Load resource file from util */
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.util.resources.UtilResources");
+	
 	public GibbsSampling() {
-		
+		this.sampleSize = 1;
 	}
 
 	public GibbsSampling(ProbabilisticNetwork pn,
 			int sampleSize) {
-		this.pn = pn;
+		this.setNetwork(pn);
 		this.sampleSize = sampleSize;
 	}
 
@@ -70,7 +76,7 @@ public class GibbsSampling extends MatrixMonteCarloSampling {
 	 * @param nTrials Number of trials to generate.
 	 */
 	public void start(ProbabilisticNetwork pn , int nTrials){
-		this.pn = pn;
+		this.setNetwork(pn);
 		this.sampleSize = nTrials;
 		this.marginalMap = new HashMap<Node, Float[]>();
 		Float[] marginal;
@@ -226,8 +232,69 @@ public class GibbsSampling extends MatrixMonteCarloSampling {
 		return indexes;		
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#run()
+	 */
 	public void run() {
 		start(pn, sampleSize);
 	}
+
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#setNetwork(unbbayes.prs.Graph)
+	 */
+	public void setNetwork(Graph g) throws IllegalArgumentException {
+		this.pn = (ProbabilisticNetwork)g;
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#getDescription()
+	 */
+	public String getDescription() {
+		return this.resource.getString("gibbsAlgorithmDescription");
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#getName()
+	 */
+	public String getName() {
+		return this.resource.getString("gibbsAlgorithmName");
+	}
+
+	/**
+	 * @return the sampleSize
+	 */
+	public int getSampleSize() {
+		return sampleSize;
+	}
+
+	/**
+	 * @param sampleSize the sampleSize to set
+	 */
+	public void setSampleSize(int sampleSize) {
+		this.sampleSize = sampleSize;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#reset()
+	 */
+	public void reset() {
+		this.pn.resetEvidences();
+		this.run();
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#propagate()
+	 */
+	public void propagate() {
+		this.run();
+	}
+	
+	
+	
 
 }

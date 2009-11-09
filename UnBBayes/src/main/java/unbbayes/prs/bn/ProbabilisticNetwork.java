@@ -122,6 +122,7 @@ public class ProbabilisticNetwork
 	 * Moraliza. <br>
 	 * Triangula. <br>
 	 * Compila �rvore de Jun��o.
+	 * @deprecated use {@link JunctionTreeAlgorithm#run()}
 	 */
 	public void compile() throws Exception {
 		if (nodeList.size() == 0) {
