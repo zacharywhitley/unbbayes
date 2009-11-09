@@ -985,7 +985,7 @@ public class UnBBayesFrame extends JFrame {
 				repaint();
 			}
 		});
-		reloadPluginsMenuItem.setToolTipText("reloadPluginToolTip");
+		reloadPluginsMenuItem.setToolTipText(this.resource.getString("reloadPluginToolTip"));
 		
 		pluginMenu.add(reloadPluginsMenuItem);
 		pluginMenu.addSeparator();
