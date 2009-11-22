@@ -15,7 +15,7 @@ import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
 /**
- * Auxiliar methods for treatment of the SimpleSSBNNode and conversion this for
+ * Auxiliary methods for treatment of the SimpleSSBNNode and conversion this for
  * normal SSBNNode's. 
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
@@ -37,7 +37,7 @@ public class SimpleSSBNNodeUtils {
 	 *           
 	 * @return The list contain the SSBNNodes correspondent to the simpleSSBNNodeList.
 	 *         In this list don't are returned the ContextFatherSSBNNode's correspondent 
-	 *         to the SimpleContextNodeFatherSSBNNode's. This is setted how parent
+	 *         to the SimpleContextNodeFatherSSBNNode's. This is set as parent
 	 *         at the SSBNNode that originated it. 
 	 * 
 	 * @throws SSBNNodeGeneralException
@@ -181,17 +181,17 @@ public class SimpleSSBNNodeUtils {
 	}
 	
 	/**
-	 * The objective of this method is separete desconected networks in singles
+	 * The objective of this method is separate disconnected networks in singles
 	 * networks. The argument is a list of nodes that have its relations by the 
-	 * parents atributes. From this relations, the nodes are separated in singles 
+	 * parents attributes. From this relations, the nodes are separated in singles 
 	 * networks where if two nodes have a edge between its, its are in the 
 	 * same single network. 
 	 * 
 	 * @param simpleSSBNNodeList List contain the SimpleSSBNNodes 
 	 * @return A list of lists of ssbn nodes, where each of this list are a 
-	 *         single conected network. 
+	 *         single connected network. 
 	 */
-	public static List<SimpleSSBNNode>[] individualizeDesconectedNetworks(
+	public static List<SimpleSSBNNode>[] individualizeDisconnectedNetworks(
 			List<SimpleSSBNNode> simpleSSBNNodeList){
 		
 		List<SimpleSSBNNodeNetworkAssociation> nodeNetAssociationList = 

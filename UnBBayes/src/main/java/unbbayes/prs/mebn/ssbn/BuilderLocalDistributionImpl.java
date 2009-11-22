@@ -9,7 +9,6 @@ import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.cptgeneration.CPTForSSBNNodeGenerator;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
-import unbbayes.prs.mebn.ssbn.util.SSBNDebugInformationUtil;
 import unbbayes.util.ApplicationPropertyHolder;
 
 public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
@@ -47,10 +46,10 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 		ProbabilisticNetwork pn; 
 		
 		try {
-			//Here only one probabilistic network are created... The fix should be
+			//FIX - Here only one probabilistic network are created... The fix should be
 			//here, creating multiples pn's. 
 			ssbn.getLogManager().printText(level1, false, "[1] Separing the desconected networks"); 
-			List<SimpleSSBNNode>[] nodesPerNetworkArray = SimpleSSBNNodeUtils.individualizeDesconectedNetworks(ssbn.getSimpleSsbnNodeList()); 
+			List<SimpleSSBNNode>[] nodesPerNetworkArray = SimpleSSBNNodeUtils.individualizeDisconnectedNetworks(ssbn.getSimpleSsbnNodeList()); 
 			int netId = 0; 
 			for(List<SimpleSSBNNode> networkNodesList: nodesPerNetworkArray){
 				ssbn.getLogManager().printText(level2, false, "Network " + netId + ":"); netId++; 
