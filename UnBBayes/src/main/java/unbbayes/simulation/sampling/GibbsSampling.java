@@ -59,7 +59,7 @@ public class GibbsSampling extends MatrixMonteCarloSampling implements IInferenc
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.util.resources.UtilResources");
 	
 	public GibbsSampling() {
-		this.sampleSize = 1;
+		this.sampleSize = 100000;
 	}
 
 	public GibbsSampling(ProbabilisticNetwork pn,

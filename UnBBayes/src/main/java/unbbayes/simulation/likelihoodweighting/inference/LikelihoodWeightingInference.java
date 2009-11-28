@@ -51,7 +51,7 @@ public class LikelihoodWeightingInference implements IInferenceAlgorithm {
 	public LikelihoodWeightingInference(){
 		super();
 		this.lwSampling= new LikelihoodWeightingSampling();
-		this.setNTrials(1);
+		this.setNTrials(100000);
 	}
 	
 	public LikelihoodWeightingInference(ProbabilisticNetwork pn , int nTrials){		
