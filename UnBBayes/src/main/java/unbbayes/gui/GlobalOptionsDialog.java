@@ -77,6 +77,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.util.extension.PluginCore;
 import unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel;
+import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
 
 /**
  *  Class responsible for general configurations, like node color, size, algorithm to 
@@ -144,7 +145,7 @@ public class GlobalOptionsDialog extends JDialog {
     private Map<JRadioButtonMenuItem, InferenceAlgorithmOptionPanel> algorithmToOptionMap = new HashMap<JRadioButtonMenuItem, InferenceAlgorithmOptionPanel>();
     
     private String pluginDirectory = "plugins";
-    private PluginManager pluginManager;
+//    private PluginManager pluginManager;
     private String pluginCoreID = "unbbayes.util.extension.core";
     private String algorithmExtensionPoint = "InferenceAlgorithm";
     
@@ -525,32 +526,7 @@ public class GlobalOptionsDialog extends JDialog {
     	// initialize default algorithms (those which are not actually "plugins")
     	ret.putAll(this.getDefaultAlgorithms());
     	
-    	// load plugins
-    	
-    	// load plugin manager
-		this.setPluginManager(ObjectFactory.newInstance().createManager());
-		
-		// search for files inside plugin directory
-		File pluginsDir = new File(this.getPluginDirectory());
-		File[] plugins = pluginsDir.listFiles();
-
-		// publish (load) plugins
-		try {
-	        Set<PluginLocation> locations = new HashSet<PluginLocation>(plugins.length);
-	        for (File file : plugins) {
-				PluginLocation location = StandardPluginLocation.create(file);
-				if (location != null) {
-					locations.add(location);
-				}
-			}
-	        
-	        // enable plugin
-	        this.getPluginManager().publishPlugins(locations.toArray(new PluginLocation[locations.size()]));
-	    } catch (Exception e) {
-	    	// could not load plugins, but we shall ignore it and return
-	        e.printStackTrace();
-	        return ret;
-	    }
+    	// we assume the plugins are already published at UnBBayesFrame#loadPlugins(), so, we do not have to republish them.
 
 	    // loads the "core" plugin, which declares general extension points for core (including algorithms)
 	    PluginDescriptor core = this.getPluginManager().getRegistry().getPluginDescriptor(this.getPluginCoreID());
@@ -575,7 +551,7 @@ public class GlobalOptionsDialog extends JDialog {
 			Parameter classParam = ext.getParameter(PluginCore.PARAMETER_CLASS);
 			
 			// extracting plugin class or builder clas
-			ClassLoader classLoader = pluginManager.getPluginClassLoader(descr);
+			ClassLoader classLoader = this.getPluginManager().getPluginClassLoader(descr);
             Class pluginClass = null;	// class for the plugin (InferenceAlgorithmOptionPanel)
             try {
             	 pluginClass = classLoader.loadClass(classParam.valueAsString());
@@ -854,15 +830,9 @@ public class GlobalOptionsDialog extends JDialog {
 	 * @return the pluginManager
 	 */
 	public PluginManager getPluginManager() {
-		return pluginManager;
+		return UnBBayesPluginContextHolder.getPluginManager();
 	}
 
-	/**
-	 * @param pluginManager the pluginManager to set
-	 */
-	public void setPluginManager(PluginManager pluginManager) {
-		this.pluginManager = pluginManager;
-	}
 
 	
 	/**

@@ -67,7 +67,7 @@ public class PNEditionPane extends JPanel {
 	
     private final NetworkWindow netWindow;
 
-    private GlobalOptionsDialog go;
+    private GlobalOptionsDialog go = null;
     private JTable table;
     private final JTextField txtName;
     private final JTextField txtDescription;
@@ -164,7 +164,9 @@ public class PNEditionPane extends JPanel {
         btnGlobalOption.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                go = new GlobalOptionsDialog(netWindow.getGraphPane(), controller);
+                if (go == null) {
+                	go = new GlobalOptionsDialog(netWindow.getGraphPane(), controller);
+                }
                 go.setVisible(true);
                 netWindow.getGraphPane().update();
                 setCursor(new Cursor(Cursor.DEFAULT_CURSOR));

@@ -106,6 +106,7 @@ import unbbayes.util.extension.builder.MEBNWindowBuilder;
 import unbbayes.util.extension.builder.MSBNWindowBuilder;
 import unbbayes.util.extension.builder.NetworkWindowBuilder;
 import unbbayes.util.extension.builder.OOBNWindowBuilder;
+import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
 
 /**
  * This class extends <code>JFrame</code> and it is responsible for 
@@ -202,7 +203,7 @@ public class UnBBayesFrame extends JFrame {
 	// Adding plugin support
 	private JToolBar pluginToolBar;
 	private JMenu pluginMenu;
-	private PluginManager pluginManager;
+//	private PluginManager pluginManager;
 	private String pluginDirectory = "plugins";
 	private String pluginCoreID = "unbbayes.util.extension.core";
 	private String pluginCoreExtensionPoint = "Module";
@@ -1052,41 +1053,25 @@ public class UnBBayesFrame extends JFrame {
 		this.createPluginToolBars();
 		
 		
-		// create plugin manager
-		this.setPluginManager(ObjectFactory.newInstance().createManager());
-		
-		// search for files inside plugin directory
-		File pluginsDir = new File(this.getPluginDirectory());
-		File[] plugins = pluginsDir.listFiles();
-
-		// publish (load) plugins
+		// create plugin manager and load (publish) plugins
 		try {
-	        Set<PluginLocation> locations = new HashSet<PluginLocation>(plugins.length);
-	        for (File file : plugins) {
-				PluginLocation location = StandardPluginLocation.create(file);
-				if (location != null) {
-					locations.add(location);
-				}
-			}
-	        
-	        // enable plugin
-	        this.getPluginManager().publishPlugins(locations.toArray(new PluginLocation[locations.size()]));
-	    } catch (Exception e) {
-	    	// could not load plugins, but we shall continue
+			UnBBayesPluginContextHolder.publishPlugins();
+		} catch (IOException e) {
+			// could not load plugins, but we shall continue
 	        e.printStackTrace();
 	        this.getPluginToolBar().setVisible(false);
 //			this.getPluginMenu().setVisible(false);
 	        return;
-	    }
+		}
 
 	    // loads the "core" plugin, which is a stub that we use to declare extension points
-	    PluginDescriptor core = pluginManager.getRegistry().getPluginDescriptor(this.getPluginCoreID());
+	    PluginDescriptor core = this.getPluginManager().getRegistry().getPluginDescriptor(this.getPluginCoreID());
         
 	    // load the extension point for new modules (functionalities).
-	    ExtensionPoint point = pluginManager.getRegistry().getExtensionPoint(core.getId(), this.getPluginCoreExtensionPoint());
+	    ExtensionPoint point = this.getPluginManager().getRegistry().getExtensionPoint(core.getId(), this.getPluginCoreExtensionPoint());
 
 	    // create menu/buttons that activates a plugin and stores plugin classes to a list
-	    this.getPluginMap().putAll(this.fillCorePluginMenuAndButtons(pluginManager, point));
+	    this.getPluginMap().putAll(this.fillCorePluginMenuAndButtons(this.getPluginManager(), point));
 	}
 	
 	/**
@@ -1416,15 +1401,15 @@ public class UnBBayesFrame extends JFrame {
 	 * @return the pluginManager
 	 */
 	public PluginManager getPluginManager() {
-		return pluginManager;
+		return UnBBayesPluginContextHolder.getPluginManager();
 	}
 
-	/**
-	 * @param pluginManager the pluginManager to set
-	 */
-	public void setPluginManager(PluginManager pluginManager) {
-		this.pluginManager = pluginManager;
-	}
+//	/**
+//	 * @param pluginManager the pluginManager to set
+//	 */
+//	public void setPluginManager(PluginManager pluginManager) {
+//		this.pluginManager = pluginManager;
+//	}
 
 	/**
 	 * The directory where UnBBayes will search for plugins.
