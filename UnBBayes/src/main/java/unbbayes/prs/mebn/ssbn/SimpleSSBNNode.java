@@ -136,6 +136,21 @@ public class SimpleSSBNNode implements INode {
 		return ret;  
 	}
 	
+	public String getShortName(){
+		
+		String name = new String(this.residentNode.getName());
+		name += "(";
+		for(int i = 0; i < entityArray.length; i++){
+			if (name.charAt(name.length() - 1) != '(') {
+				name += ",";
+			}
+			name += entityArray[i].getInstanceName();
+		}
+		name += ")";
+		
+		return name;  
+	}
+	
 	// GET AND SET METHODS
 	
 	public ResidentNode getResidentNode() {

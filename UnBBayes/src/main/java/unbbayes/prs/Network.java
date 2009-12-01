@@ -140,7 +140,7 @@ public class Network implements Graph{
 	public void removeEdge(Edge edge) {
 	    edge.getOriginNode().removeChild(edge.getDestinationNode());
 	    edge.getDestinationNode().removeParent(edge.getOriginNode());
-	    removeArco(edge);
+	    removeArc(edge);
 	}
 
 	/**
@@ -181,33 +181,33 @@ public class Network implements Graph{
 	 */
 	public void removeNode(Node element) {
 	    int c;
-	    Node auxNo;
-	    Edge auxArco;
+	    Node node;
+	    Edge edge;
 	    
 	    nodeList.remove(element);
 	    
 	    //nodeIndexes.remove(elemento.getName());
 	    nodeIndexes.clear();
 	    for (c = 0; c < nodeList.size(); c++) {
-	        auxNo = nodeList.get(c);
-	        auxNo.removeParent(element);
-	        auxNo.removeChild(element);
-	        nodeIndexes.put(auxNo.getName(), new Integer(c));
+	        node = nodeList.get(c);
+	        node.removeParent(element);
+	        node.removeChild(element);
+	        nodeIndexes.put(node.getName(), new Integer(c));
 	    }
 	    if (!edgeList.isEmpty()) {
-	        auxArco = edgeList.get(0);
+	        edge = edgeList.get(0);
 	        c = 0;
-	        while (auxArco != edgeList.get(edgeList.size() - 1)) {
-	            if ((auxArco.getOriginNode() == element) || (auxArco.getDestinationNode() == element)) {
-	                removeArco(auxArco);
+	        while (edge != edgeList.get(edgeList.size() - 1)) {
+	            if ((edge.getOriginNode() == element) || (edge.getDestinationNode() == element)) {
+	                removeArc(edge);
 	            }
 	            else {
 	                c++;
 	            }
-	            auxArco = edgeList.get(c);
+	            edge = edgeList.get(c);
 	        }
-	        if ((auxArco.getOriginNode() == element) || (auxArco.getDestinationNode() == element)) {
-	            removeArco(auxArco);
+	        if ((edge.getOriginNode() == element) || (edge.getDestinationNode() == element)) {
+	            removeArc(edge);
 	        }
 	    }
 	    
@@ -217,20 +217,20 @@ public class Network implements Graph{
 	/**
 	 * Remove edge of the network
 	 *
-	 *@param  elemento  edge to be removed
+	 *@param  edge  edge to be removed
 	 */
-	private void removeArco(Edge elemento) {
+	private void removeArc(Edge edge) {
 	    Node auxNo;
 	    ITabledVariable auxTabledVariable;
 	    PotentialTable auxPotentialTable;
 	
-	    edgeList.remove(elemento);
+	    edgeList.remove(edge);
 	
-	    auxNo = elemento.getDestinationNode();
+	    auxNo = edge.getDestinationNode();
 	    if (auxNo instanceof ITabledVariable) {
 	        auxTabledVariable = (ITabledVariable)auxNo;
 	        auxPotentialTable = auxTabledVariable.getPotentialTable();
-	        auxPotentialTable.removeVariable(elemento.getOriginNode(), true);
+	        auxPotentialTable.removeVariable(edge.getOriginNode(), true);
 	    }
 	}
 

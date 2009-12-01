@@ -2,8 +2,10 @@ package unbbayes.prs.mebn.ssbn;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import unbbayes.prs.INode;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -21,6 +23,8 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  */
 public class SimpleSSBNNodeUtils {
+	
+	public static Map<SimpleSSBNNode, SSBNNode> correspondencyMap;
 	
 	/**
 	 * Translate the SimpleSSBNNode's for the SSBNNode. The SimpleSSBNNode was 
@@ -48,7 +52,7 @@ public class SimpleSSBNNodeUtils {
 			                SSBNNodeGeneralException,  ImplementationRestrictionException{
 		
 		List<SSBNNode> listSSBNNodes = new ArrayList<SSBNNode>(); 
-		Map<SimpleSSBNNode, SSBNNode> correspondencyMap = new HashMap<SimpleSSBNNode, SSBNNode>(); 
+		correspondencyMap = new HashMap<SimpleSSBNNode, SSBNNode>(); 
 		
 		Map<ContextNode, ContextFatherSSBNNode> mapContextNode = 
 			    new HashMap<ContextNode, ContextFatherSSBNNode>(); 
@@ -226,6 +230,42 @@ public class SimpleSSBNNodeUtils {
 		}
 		
 		return nodesPerNetworkArray; 
+	}
+	
+	/**
+	 * Create a MSBN from an SSBN.
+	 * 
+	 * @param simpleSSBNNodeList List contain the SimpleSSBNNodes, which corresponds to the SSBN. 
+	 * @return A map, where the key is the name of the MSBN subnetwork and the value is the list of simple SSBN nodes in that network. 
+	 */
+	public static Map<String, Set<SimpleSSBNNode>> convertSsbnIntoMsbn(
+			List<SimpleSSBNNode> nodeList){
+		
+		Map<String, Set<SimpleSSBNNode>> map = new HashMap<String, Set<SimpleSSBNNode>>();
+		
+		for (SimpleSSBNNode node : nodeList) {
+			// FIXME - ROMMEL - change the name of the MFragInstance so that it is unique!!!
+			// We might have more than one instance of the same MFrag. Here we are putting everything together.
+			String key = node.getMFragInstance().getMFragOrigin().getName();
+			Set<SimpleSSBNNode> msbnSection = map.get(key); 
+			if (msbnSection == null) {
+				msbnSection = new HashSet<SimpleSSBNNode>();
+				map.put(key, msbnSection);
+			}
+			msbnSection.add(node);
+			
+			// The main objective here is to add the input nodes in this subnetwork.
+			// Since this is a set, it does not hurt to add "again" a resident parent.
+			// The only restriction is that the parent has to be in the SSBN in order to show up
+			// in the MSBN.
+			for (SimpleSSBNNode parent : node.getParents()) {
+				if (nodeList.contains(parent)) {
+					msbnSection.add(parent);
+				}
+			}
+		}
+		
+		return map; 
 	}
 	
 	//Recursive... 
