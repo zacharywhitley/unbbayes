@@ -221,7 +221,7 @@ public class PNCompilationPane extends JPanel {
         centerPanel.setLeftComponent(jspTree);
 
         //setar o tamanho do divisor entre o jspGraph(vem do NetWindow) e jspTree
-        centerPanel.setDividerSize(3);
+        centerPanel.setDividerSize(7);
 
         bottomPanel.add(status);
 
@@ -234,7 +234,11 @@ public class PNCompilationPane extends JPanel {
     
     public void updateToPreferredSize() {
     	// Put the divider just after the width of the evidence tree
-        centerPanel.setDividerLocation(evidenceTree.getPreferredSize().width + centerPanel.getDividerSize() + 1);
+    	int width = evidenceTree.getPreferredSize().width + centerPanel.getDividerSize() + 20;
+  		if (width < 200) {
+  			width = 200;
+  		}
+        centerPanel.setDividerLocation(width);
     }
 
     /**

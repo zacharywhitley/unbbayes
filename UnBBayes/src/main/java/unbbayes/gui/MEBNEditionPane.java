@@ -353,8 +353,8 @@ public class MEBNEditionPane extends JPanel {
 
         
         centerPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, tabsPanel, graphPanel);
-        centerPanel.setDividerSize(1);
-        centerPanel.setDividerLocation(200); 
+        centerPanel.setDividerSize(7);
+        updateToPreferredSize(); 
 
         //adiciona containers para o contentPane
         this.add(topPanel, BorderLayout.NORTH);
@@ -362,6 +362,14 @@ public class MEBNEditionPane extends JPanel {
         this.add(centerPanel, BorderLayout.CENTER);
 
         setVisible(true);
+    }
+  	
+  	public void updateToPreferredSize() {
+  		int width = tabsPanel.getPreferredSize().width + centerPanel.getDividerSize() + 20;
+  		if (width < 200) {
+  			width = 200;
+  		}
+        centerPanel.setDividerLocation(width);
     }
 
 

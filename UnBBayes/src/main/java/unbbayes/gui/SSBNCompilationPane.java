@@ -332,7 +332,7 @@ public class SSBNCompilationPane extends JPanel {
         centerPanel.setLeftComponent(jspTree);
 
         //setar o tamanho do divisor entre o jspGraph(vem do NetWindow) e jspTree
-        centerPanel.setDividerSize(3);
+        centerPanel.setDividerSize(7);
 
         //setar os tamanho de cada jsp(arvore e draw) para os seus PreferredSizes
         centerPanel.resetToPreferredSizes();
@@ -344,6 +344,15 @@ public class SSBNCompilationPane extends JPanel {
         this.add(centerPanel, BorderLayout.CENTER);
         this.add(bottomPanel, BorderLayout.SOUTH);
         setVisible(true);
+    }
+    
+    public void updateToPreferredSize() {
+    	// Put the divider just after the width of the evidence tree
+    	int width = evidenceTree.getPreferredSize().width + centerPanel.getDividerSize() + 20;
+  		if (width < 200) {
+  			width = 200;
+  		}
+        centerPanel.setDividerLocation(width);
     }
 
     /**

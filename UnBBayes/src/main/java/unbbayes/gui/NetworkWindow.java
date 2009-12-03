@@ -483,6 +483,8 @@ public class NetworkWindow extends UnBBayesModule {
 			graphPane.resetGraph();
 			// inicia com a tela de edicao de rede(PNEditionPane)
 			mebnEditionPane.getGraphPanel().setBottomComponent(jspGraph);
+			
+			mebnEditionPane.updateToPreferredSize();
 
 			card.show(getContentPane(), MEBN_PANE_MEBN_EDITION_PANE);
 		}
@@ -514,8 +516,8 @@ public class NetworkWindow extends UnBBayesModule {
 
 			contentPane.add(ssbnCompilationPane,
 					MEBN_PANE_SSBN_COMPILATION_PANE);
-
-			ssbnCompilationPane.getCenterPanel().setDividerLocation(200); 
+			
+			ssbnCompilationPane.updateToPreferredSize(); 
 			
 			CardLayout layout = (CardLayout) contentPane.getLayout();
 			layout.show(getContentPane(), MEBN_PANE_SSBN_COMPILATION_PANE);

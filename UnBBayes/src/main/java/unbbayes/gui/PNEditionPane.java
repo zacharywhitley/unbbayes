@@ -369,7 +369,7 @@ public class PNEditionPane extends JPanel {
         centerPanel.setTopComponent(jspTable);
 
         //setar o tamanho do divisor entre o jspGraph(vem do NetWindow) e jspTable
-        centerPanel.setDividerSize(3);
+        centerPanel.setDividerSize(7);
 
         //setar os tamanho de cada jsp(tabela e graph) para os seus PreferredSizes
         centerPanel.resetToPreferredSizes();
