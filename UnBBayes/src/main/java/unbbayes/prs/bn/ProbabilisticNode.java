@@ -107,6 +107,16 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
         
         return cloned;
     }
+    
+    public ProbabilisticNode basicClone() {
+    	ProbabilisticNode cloned = new ProbabilisticNode();
+		cloned.setDescription(this.getDescription());
+		cloned.setName(this.getName());
+		cloned.setPosition(this.getPosition().getX(), this.getPosition().getY());
+		cloned.setStates(SetToolkit.clone(states));
+        
+        return cloned;
+    }
 
 
     /**

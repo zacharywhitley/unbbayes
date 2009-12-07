@@ -42,7 +42,7 @@ public class PositionAdjustmentUtils {
 	
 	
 //	private static Point sizeGraph = new Point(1500, 1500); 
-	private static Point sizeSquare = new Point(100, 100); 
+	private static Point sizeSquare = new Point(300, 150); 
 	private static Point margin = new Point(100, 100); 
 	
 	public static Dimension adjustPositionProbabilisticNetwork(ProbabilisticNetwork net){

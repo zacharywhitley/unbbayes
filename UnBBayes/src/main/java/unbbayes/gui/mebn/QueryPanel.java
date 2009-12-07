@@ -297,9 +297,6 @@ public class QueryPanel extends JDialog{
 						ProbabilisticNetwork network = mebnController.executeQueryLaskeyAlgorithm(queryList);
 						
 						
-				        
-						
-						
 				        mebnController.getScreen().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 						
 				        exit();

@@ -37,6 +37,7 @@ import unbbayes.controller.exception.InvalidOperationException;
 import unbbayes.controller.mebn.MEBNFactory;
 import unbbayes.controller.mebn.MEBNFactoryImpl;
 import unbbayes.gui.GraphAction;
+import unbbayes.gui.MDIDesktopPane;
 import unbbayes.gui.MEBNEditionPane;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.WarningPanel;
@@ -91,6 +92,8 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeyAlgorithmParameters;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSBNGenerator;
 import unbbayes.prs.mebn.ssbn.util.PositionAdjustmentUtils;
+import unbbayes.prs.msbn.AbstractMSBN;
+import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.util.ApplicationPropertyHolder;
 import unbbayes.util.Debug;
 import unbbayes.util.ResourceController;
@@ -1832,8 +1835,10 @@ public class MEBNController  {
 			screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			JOptionPane.showMessageDialog(getScreen(), 
 					e.getMessage());
-		} 
-
+		}
+		
+		openMsbnNetwork();
+		
 		mebnEditionPane.setStatus(resource.getString("statusReady")); 
 		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		
@@ -1841,6 +1846,20 @@ public class MEBNController  {
 		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		
 		return specificSituationBayesianNetwork ;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+	}
+	
+	private void openMsbnNetwork() {
+		AbstractMSBN msbn = ssbn.getMsbnNetwork();
+		MSBNController controller = new MSBNController((SingleAgentMSBN)msbn);
+		try {
+			controller.compile();
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(screen, e.getMessage(), "MSBN compilation error", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		}
+		screen.getDesktopPane().add(controller.getPanel());
+		controller.getPanel().setSize(controller.getPanel().getPreferredSize());
+		controller.getPanel().setVisible(true);
 	}
 	
 

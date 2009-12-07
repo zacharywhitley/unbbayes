@@ -212,16 +212,20 @@ public class MSBNController {
 		window.addCompileBtnActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
 				try {
-					msbn.compile((SubNetwork) active.getSingleEntityNetwork());
-					active.changeToPNCompilationPane();
-					window.changeToTreeView(makeJTree());
-					window.showBtnPanel(MSBNWindow.COMPILED_PANE);
+					compile();
 				} catch (Exception e) {
 					JOptionPane.showMessageDialog(window, e.getMessage(), "Compilation error", JOptionPane.ERROR_MESSAGE);
 					e.printStackTrace();			
 				}
 			}
 		});
+	}
+	
+	public void compile() throws Exception {
+		msbn.compile((SubNetwork) active.getSingleEntityNetwork());
+		active.changeToPNCompilationPane();
+		window.changeToTreeView(makeJTree());
+		window.showBtnPanel(MSBNWindow.COMPILED_PANE);
 	}
 
 	/**

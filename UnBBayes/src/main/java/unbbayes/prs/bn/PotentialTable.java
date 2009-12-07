@@ -185,6 +185,29 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 		}
 		return auxTab;
 	}
+	
+	/**
+	 * Returns a copy of the data from the table associated with the new 
+	 * node, instead of the original node. Useful when cloning a node.
+	 * This method assumes that: 
+	 *   1. The size of the new node table is the same as this node table being copied. 
+	 *   2. If you want an exact copy, the parents in the new node have to be in the same
+	 *      order they were in this node being copied, i.e., the variableList order is the same.
+	 * 
+	 * @return A copy of the data from the table associated with the new node.
+	 */
+	public Object clone(ProbabilisticNode newNode) {
+		PotentialTable auxTab = newInstance();
+		auxTab.addVariable(newNode);
+		for (Node node : newNode.getParents()) {
+			auxTab.addVariable(node);
+		}
+		int sizeDados = dataPT.size;
+		for (int c = 0; c < sizeDados; c++) {
+			auxTab.dataPT.add(dataPT.data[c]);
+		}
+		return auxTab;
+	}
 
 	/**
 	 * Set a value in the table using the multidimensional coordinate, 

@@ -634,7 +634,7 @@ public class OOBNGraphPane extends GraphPane {
 					UShapeOOBNNode shape = new UShapeOOBNNode(this, newNode, (int)newNode.getPosition().x-newNode.getWidth()/2, (int)newNode.getPosition().y-newNode.getHeight()/2, newNode.getWidth(), newNode.getHeight());
 					addShape( shape );	
 					shape.setState(UShape.STATE_SELECTED, null);
-					updateNewInformationIntoTreeAndTableViewer(newNode);				 
+					showCPT(newNode);				 
 				}
 				break;
 				case NONE:

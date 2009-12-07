@@ -305,13 +305,11 @@ public class GraphPane extends UCanvas implements MouseListener,
 		return new Point2D.Double(maiorX, maiorY);
 	}
 
-	public void updateNewInformationIntoTreeAndTableViewer(Node newNode) {
+	public void showCPT(Node newNode) {
 		// set new information of node into tree and table viewer
 
 		if (controller != null)
 			if (controller.getGraph() instanceof SingleEntityNetwork) {
-				if (newNode != null)
-					;
 				controller.createTable(newNode);
 			}
 	}
@@ -340,7 +338,7 @@ public class GraphPane extends UCanvas implements MouseListener,
 						newNode.getHeight());
 				addShape(shape);
 				shape.setState(UShape.STATE_SELECTED, null);
-				updateNewInformationIntoTreeAndTableViewer(newNode);
+				showCPT(newNode);
 			}
 				break;
 			case CREATE_PROBABILISTIC_NODE: {
@@ -354,7 +352,7 @@ public class GraphPane extends UCanvas implements MouseListener,
 						newNode.getHeight());
 				addShape(shape);
 				shape.setState(UShape.STATE_SELECTED, null);
-				updateNewInformationIntoTreeAndTableViewer(newNode);
+				showCPT(newNode);
 
 			}
 				break;
@@ -368,7 +366,7 @@ public class GraphPane extends UCanvas implements MouseListener,
 						newNode.getHeight());
 				addShape(shape);
 				shape.setState(UShape.STATE_SELECTED, null);
-				updateNewInformationIntoTreeAndTableViewer(newNode);
+				showCPT(newNode);
 			}
 				break;
 			case CREATE_UTILITY_NODE: {
@@ -381,7 +379,7 @@ public class GraphPane extends UCanvas implements MouseListener,
 						newNode.getWidth(), newNode.getHeight());
 				addShape(shape);
 				shape.setState(UShape.STATE_SELECTED, null);
-				updateNewInformationIntoTreeAndTableViewer(newNode);
+				showCPT(newNode);
 			}
 				break;
 			case CREATE_DOMAIN_MFRAG: {
@@ -923,7 +921,7 @@ public class GraphPane extends UCanvas implements MouseListener,
 		} else if (s instanceof UShapeLine) {
 
 		} else {
-			updateNewInformationIntoTreeAndTableViewer(s.getNode());
+			showCPT(s.getNode());
 		}
 	}
 
