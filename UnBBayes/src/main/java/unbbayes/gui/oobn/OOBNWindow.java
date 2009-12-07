@@ -341,12 +341,9 @@ public class OOBNWindow extends UnBBayesModule  {
 	 */
 	private void fillListeners() {
 		
-		
-		
 		// action performed by clicking a class within oobn class list
 		addListMouseListener(new MouseAdapter() {
 		     
-			
 			/* (non-Javadoc)
 			 * @see java.awt.event.MouseAdapter#mousePressed(java.awt.event.MouseEvent)
 			 */
@@ -366,8 +363,14 @@ public class OOBNWindow extends UnBBayesModule  {
 			}
 			
 			
-
 			
+			/* (non-Javadoc)
+			 * @see java.awt.event.MouseAdapter#mouseExited(java.awt.event.MouseEvent)
+			 */
+			@Override
+			public void mouseExited(MouseEvent e) {
+				this.mouseEntered(e);
+			}
 
 
 
@@ -380,15 +383,6 @@ public class OOBNWindow extends UnBBayesModule  {
 				renewClassListIndex();
 				super.mouseEntered(e);
 			}
-			
-			
-			
-
-
-
-
-			
-
 
 			public void mouseClicked(MouseEvent e) {
 		       
@@ -403,8 +397,6 @@ public class OOBNWindow extends UnBBayesModule  {
 			   // if we reach this code, it was a double click or right/center click
 				
 		       int index = getNetList().locationToIndex(e.getPoint());
-		       
-		       
 		       
 		       // change the selected oobn class only if the selected one is different than the previous
 		       if ( ( index >= 0 ) 
@@ -448,14 +440,12 @@ public class OOBNWindow extends UnBBayesModule  {
 						}
                    }
                    
-                   
                    // TODO change the references if needed
                    Debug.println(this.getClass(), "Changing references at renaming event is not implemented yet.");
                 }
 		     	
 		     }
 		});
-		
 			
 		// listener for pressing the "add new class" button
 		addNewBtnActionListener(new ActionListener() {

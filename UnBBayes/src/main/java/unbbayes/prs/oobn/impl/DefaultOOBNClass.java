@@ -367,6 +367,19 @@ public class DefaultOOBNClass extends ProbabilisticNetwork implements IOOBNClass
 		super.removeEdge(edge);
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.Network#getNode(java.lang.String)
+	 */
+	public Node getNode(String name) {
+		// I'm overwriting this method because I do not want to use the buggy index-map based search, inherited from Network class
+		for (Node node : this.getNodes()) {
+			if (node.getName().equalsIgnoreCase(name)) {
+				return node;
+			}
+		}
+		return super.getNode(name);
+	}
+
 	
 
 	
