@@ -404,9 +404,11 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	public void resetEvidences() {
-		int size = getNodesCopy().size();
-		for (int i = 0; i < size; i++) {
-			((TreeVariable) getNodesCopy().get(i)).resetEvidence();
+		for (Node node : this.getNodesCopy()) {
+			if (node instanceof TreeVariable) {
+				((TreeVariable)node).resetEvidence();
+				// OBS utility nodes are not tree variables
+			}
 		}
 	}
 
