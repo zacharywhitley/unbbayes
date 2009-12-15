@@ -52,7 +52,7 @@ public class OOBNGuiResource_pt extends ListResourceBundle {
 		{"oobnFileFilter","Net (.net), Net para OOBN (.oobn)"},
 		{"NoClassSelected","Nenhuma classe OOBN foi selecionada"},
 		{"compilationError" , "Erro de Compilação"},
-		{"DuplicatedClassName","Class name is duplicated"},
+		{"DuplicatedClassName","Nome duplicado para a classe"},
 		
 		{"CannotDragNDrop", "Não foi possível arrastar a classe"},
 		{"dragNDropToAddInstance", "Arraste uma classe daqui para adicionar uma instância"},
