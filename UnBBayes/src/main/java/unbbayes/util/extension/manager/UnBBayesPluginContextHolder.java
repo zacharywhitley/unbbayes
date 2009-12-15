@@ -9,8 +9,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.java.plugin.ObjectFactory;
+import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.PluginManager;
 import org.java.plugin.PluginManager.PluginLocation;
+import org.java.plugin.registry.Extension;
+import org.java.plugin.registry.ExtensionPoint;
+import org.java.plugin.registry.PluginDescriptor;
 import org.java.plugin.standard.StandardPluginLocation;
 
 import unbbayes.io.exception.UBIOException;
@@ -27,10 +31,15 @@ import unbbayes.util.ApplicationPropertyHolder;
 public class UnBBayesPluginContextHolder {
 	
 	private static String pluginsDirectoryName = null;
+	private static String pluginCoreID = null;
 	static {
 		pluginsDirectoryName = ApplicationPropertyHolder.getProperty().getProperty("unbbayes.util.extension.manager.UnBBayesPluginContextHolder.pluginsDirectoryName");
 		if (pluginsDirectoryName == null) {
 			pluginsDirectoryName = "plugins";
+		}
+		pluginCoreID = ApplicationPropertyHolder.getProperty().getProperty("unbbayes.util.extension.manager.UnBBayesPluginContextHolder.pluginCoreID");
+		if (pluginCoreID == null) {
+			pluginCoreID = "unbbayes.util.extension.core";
 		}
 	}
 
@@ -84,6 +93,25 @@ public class UnBBayesPluginContextHolder {
 	    	throw new UBIOException(e);
 	    }
 	}
+	
+//	/**
+//	 * Activates all plugins connected to a given extension point.
+//	 * Basically, it does {@link #getPluginManager()}.activatePlugin() for
+//	 * every connected extensions of a given extension point.
+//	 * @param point : extension point to activate.
+//	 */
+//	public static void activateAllExtensionPoint(ExtensionPoint point) {
+//		for (Extension extension : point.getConnectedExtensions()) {
+//			PluginDescriptor descr = extension.getDeclaringPluginDescriptor();
+//            try {
+//				getPluginManager().activatePlugin(descr.getId());
+//			} catch (PluginLifecycleException e) {
+//				e.printStackTrace();
+//				// we could not load this plugin, but we shall continue
+//				continue;
+//			}
+//		}
+//	}
 
 	/**
 	 * @return the pluginsDirectoryName
@@ -97,6 +125,22 @@ public class UnBBayesPluginContextHolder {
 	 */
 	public static void setPluginsDirectoryName(String pluginsDirectoryName) {
 		UnBBayesPluginContextHolder.pluginsDirectoryName = pluginsDirectoryName;
+	}
+	
+	/**
+	 * The ID of the core plugin.
+	 * @return the pluginCoreID
+	 */
+	public static String getPluginCoreID() {
+		return pluginCoreID;
+	}
+
+	/**
+	 * The ID of the core plugin.
+	 * @param pluginCoreID the pluginCoreID to set
+	 */
+	public static void setPluginCoreID(String newPluginCoreID) {
+		pluginCoreID = newPluginCoreID;
 	}
 
 }

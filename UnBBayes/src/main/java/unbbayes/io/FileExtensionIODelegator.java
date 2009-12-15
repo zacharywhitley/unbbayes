@@ -6,10 +6,10 @@ package unbbayes.io;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import unbbayes.io.exception.LoadException;
+import unbbayes.io.extension.jpf.PluginAwareFileExtensionIODelegator;
 import unbbayes.prs.Graph;
 
 /**
@@ -31,18 +31,10 @@ public class FileExtensionIODelegator implements BaseIO {
 	
 	/**
 	 * Constructor method.
-	 * Initializes the {@link #getDelegators()} using the following IO classes:
-	 * 		- {@link NetIO};
-	 * 		- {@link XMLBIFIO};
-	 * 		- {@link DneIO};
-	 * @return a new instance of FileExtensionIODelegator.
+	 * @return {@link PluginAwareFileExtensionIODelegator}.
 	 */
 	public static FileExtensionIODelegator newInstance() {
-		FileExtensionIODelegator ret = new FileExtensionIODelegator();
-		ret.setDelegators(new ArrayList<BaseIO>());
-		ret.getDelegators().add(new NetIO());
-		ret.getDelegators().add(new XMLBIFIO());
-		ret.getDelegators().add(new DneIO());
+		FileExtensionIODelegator ret = PluginAwareFileExtensionIODelegator.newInstance();
 		return ret;
 	}
 

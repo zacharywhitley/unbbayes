@@ -38,4 +38,37 @@
     <extension-point id="InferenceAlgorithm">
         <parameter-def id="class"/>
     </extension-point>
+     <!-- Probabilistic Network I/O extension point. 
+    	 This extension point is basically a set of different classes implementing
+    	 unbbayes.io.BaseIO, in order to add new IO functions into basic PN
+    	 module. The class must contain a public default constructor (no parameters)
+    	 Please, note that this is different from Module extension point. Module extension point
+    	 adds a pair of IO and Module (IO routines and a whole module in order to treat those files),
+    	 but this (PNIO) extension point adds a new IO routine into the basic PN (Probabilistic Network)
+    	 module, which is already incorporated into core.
+    -->
+    <extension-point id="PNIO">
+        <parameter-def id="class"/>
+    </extension-point>
+    <!-- !!!CAUTION: THIS IS NOT IMPLEMENTED YET !!!
+    	 ResourceBundle extension point. 
+    	 This extension point is basically a set of different ResourceBundle, in order to implement
+    	 localization (add new languages) using plugins.
+    	 The classes must extend java.util.ListResourceBundle, respect package position,
+    	 have a correct name (<NameOfTheExtendedResourceClass>_<LocaleID>),
+    	 and feature the keys expected by each correspondent base resource.
+    	 	Ex. If we intend to extend unbbayes.gui.oobn.resources.OOBNGuiResource for japanese support 
+    	 	(locale ID is "ja"), we must create unbbayes.gui.oobn.resources.OOBNGuiResource_ja 
+    	 	and fill the following keys using japanese messages:
+    	 		OOBNPopupMenuMessage, changeNodeToPrivate, changeNodeToOutput, changeNodeToInput
+    	 		OOBNPopupMenuTooltipMessage, openClassFromFile, ErrorLoadingClass, editionToolTip,
+    	 		removeToolTip, newToolTip, newFromFileToolTip, status, newOOBNClass, renameClass,
+    	 		oobnFileFilter, NoClassSelected, compilationError, DuplicatedClassName, 
+    	 		CannotDragNDrop, dragNDropToAddInstance, compileToolTip, statusReadyLabel, 
+    	 		classNavigationPanelLabel, leftClickToChangeNodeType, changeNodeType, saveTitle, 
+    	 		unsupportedGraphFormat, ...    	 	
+    -->
+    <extension-point id="ResourceBundle">
+        <parameter-def id="class"/>
+    </extension-point>
 </plugin>

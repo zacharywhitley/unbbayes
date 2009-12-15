@@ -205,8 +205,7 @@ public class UnBBayesFrame extends JFrame {
 	private JMenu pluginMenu;
 //	private PluginManager pluginManager;
 	private String pluginDirectory = "plugins";
-	private String pluginCoreID = "unbbayes.util.extension.core";
-	private String pluginCoreExtensionPoint = "Module";
+	private String pluginModuleExtensionPoint = "Module";
 	
 	/** Map: ID -> {@link UnBBayesModule} or {@link UnBBayesModuleBuilder} */
 	private Map<String, Class> pluginMap = null;
@@ -1063,15 +1062,20 @@ public class UnBBayesFrame extends JFrame {
 //			this.getPluginMenu().setVisible(false);
 	        return;
 		}
-
-	    // loads the "core" plugin, which is a stub that we use to declare extension points
-	    PluginDescriptor core = this.getPluginManager().getRegistry().getPluginDescriptor(this.getPluginCoreID());
-        
+		
+		// loads the "core" plugin, which is a stub that we use to declare extension points for core
+		PluginDescriptor core = UnBBayesPluginContextHolder.getPluginManager().getRegistry().getPluginDescriptor(
+    			UnBBayesPluginContextHolder.getPluginCoreID()
+    		);
+		
 	    // load the extension point for new modules (functionalities).
-	    ExtensionPoint point = this.getPluginManager().getRegistry().getExtensionPoint(core.getId(), this.getPluginCoreExtensionPoint());
+	    ExtensionPoint point = UnBBayesPluginContextHolder.getPluginManager().getRegistry().getExtensionPoint(
+	    			core.getId(), 
+	    			this.getPluginModuleExtensionPoint()
+	    		);
 
 	    // create menu/buttons that activates a plugin and stores plugin classes to a list
-	    this.getPluginMap().putAll(this.fillCorePluginMenuAndButtons(this.getPluginManager(), point));
+	    this.getPluginMap().putAll(this.fillCorePluginMenuAndButtons(UnBBayesPluginContextHolder.getPluginManager(), point));
 	}
 	
 	/**
@@ -1084,8 +1088,7 @@ public class UnBBayesFrame extends JFrame {
 		
 		Map<String,Class> ret = new HashMap<String, Class>();
 		
-		for (Iterator<Extension> it = point.getConnectedExtensions().iterator(); it.hasNext();) {
-			Extension ext = it.next();
+		for (Extension ext : point.getConnectedExtensions()) {
             PluginDescriptor descr = ext.getDeclaringPluginDescriptor();
             
             try {
@@ -1397,27 +1400,6 @@ public class UnBBayesFrame extends JFrame {
 		this.pluginMenu = pluginMenu;
 	}
 
-	/**
-	 * @return the pluginManager
-	 */
-	public PluginManager getPluginManager() {
-		return UnBBayesPluginContextHolder.getPluginManager();
-	}
-
-//	/**
-//	 * @param pluginManager the pluginManager to set
-//	 */
-//	public void setPluginManager(PluginManager pluginManager) {
-//		this.pluginManager = pluginManager;
-//	}
-
-	/**
-	 * The directory where UnBBayes will search for plugins.
-	 * @return the pluginDirectory
-	 */
-	public String getPluginDirectory() {
-		return pluginDirectory;
-	}
 
 	/**
 	 * 
@@ -1429,35 +1411,19 @@ public class UnBBayesFrame extends JFrame {
 	}
 
 	/**
-	 * The ID of the core plugin.
-	 * @return the pluginCoreID
+	 * The main extension point of the core plugin (Module).
+	 * @return the pluginModuleExtensionPoint
 	 */
-	public String getPluginCoreID() {
-		return pluginCoreID;
+	public String getPluginModuleExtensionPoint() {
+		return pluginModuleExtensionPoint;
 	}
 
 	/**
-	 * The ID of the core plugin.
-	 * @param pluginCoreID the pluginCoreID to set
+	 * The main extension point of the core plugin (Module).
+	 * @param pluginModuleExtensionPoint the module's extension ID to set
 	 */
-	public void setPluginCoreID(String pluginCoreID) {
-		this.pluginCoreID = pluginCoreID;
-	}
-
-	/**
-	 * The main extension point of the core plugin.
-	 * @return the pluginCoreExtensionPoint
-	 */
-	public String getPluginCoreExtensionPoint() {
-		return pluginCoreExtensionPoint;
-	}
-
-	/**
-	 * The main extension point of the core plugin.
-	 * @param pluginCoreExtensionPoint the pluginCoreExtensionPoint to set
-	 */
-	public void setPluginCoreExtensionPoint(String pluginCoreExtensionPoint) {
-		this.pluginCoreExtensionPoint = pluginCoreExtensionPoint;
+	public void setPluginModuleExtensionPoint(String pluginModuleExtensionPoint) {
+		this.pluginModuleExtensionPoint = pluginModuleExtensionPoint;
 	}
 
 	
