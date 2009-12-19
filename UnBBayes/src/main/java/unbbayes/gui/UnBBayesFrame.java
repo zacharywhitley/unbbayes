@@ -194,8 +194,8 @@ public class UnBBayesFrame extends JFrame {
 	private static UnBBayesFrame singleton = null;
 
 	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceBundle
-			.getBundle("unbbayes.gui.resources.GuiResources");
+	private static ResourceBundle resource = ResourceBundle.getBundle(
+			unbbayes.gui.resources.GuiResources.class.getName());
 	
 	
 	private JMenuBar menu;

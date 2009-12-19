@@ -78,7 +78,8 @@ public class PNCompilationPane extends JPanel {
     private final IconController iconController = IconController.getInstance();
 
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  			unbbayes.gui.resources.GuiResources.class.getName());
 
     public PNCompilationPane(NetworkWindow _netWindow,
                           NetworkController _controller) {

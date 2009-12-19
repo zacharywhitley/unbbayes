@@ -136,7 +136,8 @@ public class AdvancedOptionsPanel extends JPanel {
     }
   }
   void jbInit() throws Exception {
-    resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralnetwork.resources.NeuralNetworkResource");
+    resource = ResourceBundle.getBundle(
+    		unbbayes.datamining.gui.neuralnetwork.resources.NeuralNetworkResource.class.getName());
     fuctionSteepSpinner.setModel(activationFunctionSteepSpinnerModel);
     errorVariationSpinner.setModel(minimumErrorVariationSpinnerModel);
     trainningTimeSpinner.setModel(trainningTimeSpinnerModel);

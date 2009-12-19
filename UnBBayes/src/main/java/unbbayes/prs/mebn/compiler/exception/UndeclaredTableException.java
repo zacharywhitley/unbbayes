@@ -6,7 +6,8 @@ import unbbayes.prs.mebn.exception.MEBNException;
 
 public class UndeclaredTableException extends MEBNException {
 
-	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.mebn.compiler.resources.Resources");
+	private static ResourceBundle resource = ResourceBundle.getBundle(
+			unbbayes.prs.mebn.compiler.resources.Resources.class.getName());
 
 	
 	public UndeclaredTableException(String e) {

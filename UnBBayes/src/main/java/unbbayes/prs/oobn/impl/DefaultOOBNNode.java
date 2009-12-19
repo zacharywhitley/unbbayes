@@ -22,7 +22,8 @@ import unbbayes.prs.oobn.IOOBNNode;
 public class DefaultOOBNNode implements IOOBNNode {
 	
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.oobn.resources.Resources");  		
+  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  			unbbayes.prs.oobn.resources.Resources.class.getName());  		
 	
   	/** name of states. Please, use an implementation which uses equals() to compare elements or you'll experience trouble at inner instance input nodes */
 	private List<String> stateNames = null;

@@ -98,7 +98,8 @@ public class EvaluationMain extends JInternalFrame
 	/**Construct the frame*/
 	public EvaluationMain()
 	{ super("",true,true,true,true);
-		resource = ResourceBundle.getBundle("unbbayes.datamining.gui.evaluation.resources.EvaluationResource");
+		resource = ResourceBundle.getBundle(
+				unbbayes.datamining.gui.evaluation.resources.EvaluationResource.class.getName());
 		setTitle(resource.getString("title"));
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 		try

@@ -47,7 +47,8 @@ import unbbayes.prs.bn.ProbabilisticNode;
 public class TextMode {
 	
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.example.resources.ExampleResources");
+  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  			unbbayes.example.resources.ExampleResources.class.getName());
 
 	public static void main(String[] args) throws Exception {
 

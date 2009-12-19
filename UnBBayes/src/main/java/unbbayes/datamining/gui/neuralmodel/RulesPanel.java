@@ -100,7 +100,8 @@ public class RulesPanel extends JPanel {
 
   private RulesPanel() {
     try {
-      resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralmodel.resources.NeuralModelResource");
+      resource = ResourceBundle.getBundle(
+    		  unbbayes.datamining.gui.neuralmodel.resources.NeuralModelResource.class.getName());
       jbInit();
     }
     catch(Exception ex) {

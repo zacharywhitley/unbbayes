@@ -75,7 +75,7 @@ public class RandomVariableFindingEdtitionPane extends JPanel {
 	
 	private IconController iconController = IconController.getInstance(); 
   	private static ResourceBundle resource = 
-  		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+  		ResourceBundle.getBundle(unbbayes.gui.resources.GuiResources.class.getName());
 
   	private static final String SELECTION_PANE = "SelectionPane"; 
   	private static final String EDITION_PANE = "EditionPane"; 

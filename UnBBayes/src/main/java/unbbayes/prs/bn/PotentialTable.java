@@ -45,7 +45,8 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	private boolean modified;
 	
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
+  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  			unbbayes.prs.bn.resources.BnResources.class.getName());
 
 	/**
 	 * RVs that are in the table, including the variable that owns the table.

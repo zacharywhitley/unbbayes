@@ -75,7 +75,7 @@ public class NetIO implements BaseIO {
 
 	/** Load resource file from this package */
 	private static ResourceBundle resource =
-		ResourceBundle.getBundle("unbbayes.io.resources.IoResources");
+		ResourceBundle.getBundle(unbbayes.io.resources.IoResources.class.getName());
 
 	private static final String ERROR_NET = resource.getString("errorNet");
 	

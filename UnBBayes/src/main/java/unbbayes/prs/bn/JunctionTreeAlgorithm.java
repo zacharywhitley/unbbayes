@@ -25,11 +25,13 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 	
 
 	/** Load resource file from util */
-  	private static ResourceBundle utilResource = ResourceBundle.getBundle("unbbayes.util.resources.UtilResources");
+  	private static ResourceBundle utilResource = ResourceBundle.getBundle(
+  			unbbayes.util.resources.UtilResources.class.getName());
 	
 
   	/** Load resource file from this package */
-  	protected static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
+  	protected static ResourceBundle resource = ResourceBundle.getBundle(
+  			unbbayes.prs.bn.resources.BnResources.class.getName());
   	
   	
 	/**

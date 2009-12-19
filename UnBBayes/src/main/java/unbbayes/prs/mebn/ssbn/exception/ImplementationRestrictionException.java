@@ -30,7 +30,7 @@ import java.util.ResourceBundle;
 public class ImplementationRestrictionException extends Exception{
 
 	private static ResourceBundle resource = 
-		ResourceBundle.getBundle("unbbayes.prs.mebn.ssbn.resources.Resources");
+		ResourceBundle.getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName());
 	
 	//Possible Restrictions
 	public final static String ONLY_ONE_OVINSTANCE_FOR_OV = resource.getString("OnlyOneOVInstanceForOV"); 

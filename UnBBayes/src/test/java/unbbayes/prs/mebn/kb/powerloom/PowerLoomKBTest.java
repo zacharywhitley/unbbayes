@@ -48,7 +48,7 @@ public class PowerLoomKBTest extends TestCase {
 	private MultiEntityBayesianNetwork mebn = null; 
 	
 	private ResourceBundle resourceFiles = 
-		ResourceBundle.getBundle("unbbayes.prs.mebn.resources.ResourceFiles");
+		ResourceBundle.getBundle(unbbayes.prs.mebn.resources.ResourceFiles.class.getName());
 	
 	/**
 	 * @param arg0

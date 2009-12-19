@@ -99,7 +99,8 @@ public class SaverPrOwlIO extends PROWLModelUser{
 	private MultiEntityBayesianNetwork mebn; 
 	
 	/** Load resource file from this package */
-	private final ResourceBundle resource = ResourceBundle.getBundle("unbbayes.io.mebn.resources.IoMebnResources");
+	private final ResourceBundle resource = ResourceBundle.getBundle(
+			unbbayes.io.mebn.resources.IoMebnResources.class.getName());
 	
 
 		

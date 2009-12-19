@@ -67,7 +67,8 @@ public class NeuralModelController {
    * Builds a new controller.
    */
   public NeuralModelController(){
-    resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralmodel.resources.NeuralModelResource");
+    resource = ResourceBundle.getBundle(
+    		unbbayes.datamining.gui.neuralmodel.resources.NeuralModelResource.class.getName());
     mainScreen = new NeuralModelMain(this);
     mainScreen.setController(this);
   }

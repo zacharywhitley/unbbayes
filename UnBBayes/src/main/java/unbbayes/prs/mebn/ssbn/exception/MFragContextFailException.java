@@ -5,7 +5,7 @@ import java.util.ResourceBundle;
 public class MFragContextFailException extends Exception{
 
 	private static ResourceBundle resource = 
-		ResourceBundle.getBundle("unbbayes.prs.mebn.ssbn.resources.Resources");
+		ResourceBundle.getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName());
 	
 	
 	

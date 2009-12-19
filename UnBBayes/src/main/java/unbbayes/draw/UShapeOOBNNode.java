@@ -50,7 +50,8 @@ public class UShapeOOBNNode extends UShape
 	private static final long serialVersionUID = -3394350011502329353L;
 
 	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.oobn.resources.OOBNGuiResource");
+	private static ResourceBundle resource = ResourceBundle.getBundle(
+			unbbayes.gui.oobn.resources.OOBNGuiResource.class.getName());
 	
 	protected Ellipse2D ellipse;  
 	protected Rectangle2D rect; 

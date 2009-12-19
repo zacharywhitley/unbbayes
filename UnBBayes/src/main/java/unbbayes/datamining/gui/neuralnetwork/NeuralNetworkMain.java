@@ -113,7 +113,8 @@ public class NeuralNetworkMain extends JInternalFrame {
     }
   }
   private void jbInit() throws Exception {
-    resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralnetwork.resources.NeuralNetworkResource");
+    resource = ResourceBundle.getBundle(
+    		unbbayes.datamining.gui.neuralnetwork.resources.NeuralNetworkResource.class.getName());
     openIcon = iconController.getOpenIcon();
     openModelIcon = iconController.getOpenModelIcon();
     compileIcon = iconController.getCompileIcon();

@@ -63,7 +63,7 @@ import unbbayes.util.Debug;
 public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 
 	private ResourceBundle resource = 
-		ResourceBundle.getBundle("unbbayes.prs.mebn.ssbn.resources.Resources");
+		ResourceBundle.getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName());
 
 	private long recursiveCallLimit = 100L;
 

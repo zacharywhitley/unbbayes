@@ -63,7 +63,7 @@ public class ArgumentsTypedPane extends JPanel{
 	private IconController iconController = IconController.getInstance(); 
 	
   	private static ResourceBundle resource =
-  		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+  		ResourceBundle.getBundle(unbbayes.gui.resources.GuiResources.class.getName());
 	
 	/**
 	 * 

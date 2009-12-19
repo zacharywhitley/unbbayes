@@ -41,7 +41,8 @@ public class PrintTable implements Printable, Pageable {
   private static final int SIZE = 15;
 
   /** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.controller.resources.ControllerResources");
+  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  			unbbayes.controller.resources.ControllerResources.class.getName());
 
   protected List tables;
   protected List owners;

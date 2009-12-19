@@ -71,7 +71,8 @@ public class LearningPNEditionDialog extends JDialog {
     protected IconController iconController = IconController.getInstance();
 
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  			unbbayes.gui.resources.GuiResources.class.getName());
 
     public LearningPNEditionDialog(ProbabilisticNetwork _net) {
 		super(new Frame(), resource.getString("aprendizagemTitle"), true);

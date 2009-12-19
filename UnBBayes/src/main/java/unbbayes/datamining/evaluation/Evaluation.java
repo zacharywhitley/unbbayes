@@ -40,8 +40,8 @@ import unbbayes.datamining.datamanipulation.Utils;
  */
 public class Evaluation implements IProgress {
 	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceBundle.getBundle("" +
-			"unbbayes.datamining.classifiers.resources.ClassifiersResource");
+	private static ResourceBundle resource = ResourceBundle.getBundle(
+			unbbayes.datamining.classifiers.resources.ClassifiersResource.class.getName());
 
 	/** The number of classes. */
 	private int numClasses;

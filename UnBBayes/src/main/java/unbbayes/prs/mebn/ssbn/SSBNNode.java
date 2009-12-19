@@ -99,7 +99,7 @@ public class SSBNNode implements INode {
 	private ProbabilisticNetwork probabilisticNetwork = null;
 	
 	private ResourceBundle resource = 
-		ResourceBundle.getBundle("unbbayes.prs.mebn.ssbn.resources.Resources");	
+		ResourceBundle.getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName());	
 	
 	private boolean permanent; //Indicate if the node is permanent or only a node test for the search of findings
 	

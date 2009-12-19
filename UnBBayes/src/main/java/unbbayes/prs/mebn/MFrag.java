@@ -85,7 +85,8 @@ public class MFrag implements Graph{
 	private boolean isUsingDefaultCPT = false;
 
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.mebn.resources.Resources");  		
+  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  			unbbayes.prs.mebn.resources.Resources.class.getName());  		
 	
 	/**
 	 * Contructs a new MFrag with empty node's list.

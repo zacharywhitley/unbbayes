@@ -43,7 +43,8 @@ public class LikelihoodWeightingInference implements IInferenceAlgorithm {
 	
 
 	/** Load resource file from util */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.util.resources.UtilResources");
+  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  			unbbayes.util.resources.UtilResources.class.getName());
 	
 	/**
 	 * Default constructor created for plugin support

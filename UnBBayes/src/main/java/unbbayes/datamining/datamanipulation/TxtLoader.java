@@ -39,7 +39,8 @@ public class TxtLoader extends Loader {
 	public static final String FILE_EXTENSION = ".txt";
 
 	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.datamanipulation.resources.DataManipulationResource");
+	private static ResourceBundle resource = ResourceBundle.getBundle(
+			unbbayes.datamining.datamanipulation.resources.DataManipulationResource.class.getName());
 
 	/**
 	 * Reads a TXT file from a reader.

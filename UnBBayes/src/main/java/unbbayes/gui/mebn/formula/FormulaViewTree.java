@@ -104,7 +104,8 @@ public class FormulaViewTree extends JTree{
 	private DefaultMutableTreeNode nodeActive; 
 	
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  			unbbayes.gui.resources.GuiResources.class.getName());
 	
 	/**
 	 * @param _controller The controller of this tree

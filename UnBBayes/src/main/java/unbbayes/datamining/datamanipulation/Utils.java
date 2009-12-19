@@ -45,9 +45,8 @@ public final class Utils {
 	public static double SMALL = 1e-6;
 	
 	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceBundle.getBundle("" +
-			"unbbayes.datamining.datamanipulation.resources." +
-			"DataManipulationResource");
+	private static ResourceBundle resource = ResourceBundle.getBundle(
+			unbbayes.datamining.datamanipulation.resources.DataManipulationResource.class.getName());
 
 	private static Random rnd;
 

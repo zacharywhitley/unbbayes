@@ -52,7 +52,8 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	private static final long serialVersionUID = 0;	
 	
 	/** Load resource file from this package */
-  	protected static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
+  	protected static ResourceBundle resource = ResourceBundle.getBundle(
+  			unbbayes.prs.bn.resources.BnResources.class.getName());
   	
   	protected HierarchicTree hierarchicTree;
   	

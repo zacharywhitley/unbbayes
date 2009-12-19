@@ -206,8 +206,8 @@ public class BayesianLearningMain extends JInternalFrame {
 	/** Construct the frame */
 	public BayesianLearningMain() {
 		super("Bayesian Learning", true, true, true, true);
-		resource = ResourceBundle
-				.getBundle("unbbayes.datamining.gui.naivebayes.resources.NaiveBayesResource");
+		resource = ResourceBundle.getBundle(
+						unbbayes.datamining.gui.naivebayes.resources.NaiveBayesResource.class.getName());
 
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 		try {

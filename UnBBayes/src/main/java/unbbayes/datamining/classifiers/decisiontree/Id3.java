@@ -68,7 +68,8 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 	public void buildClassifier(InstanceSet data)
 	throws Exception {
 		//internacionalization
-		resource = ResourceBundle.getBundle("unbbayes.datamining.classifiers.resources.ClassifiersResource");
+		resource = ResourceBundle.getBundle(
+				unbbayes.datamining.classifiers.resources.ClassifiersResource.class.getName());
 
 		// Test if the class is nominal
 		if (!data.getClassAttribute().isNominal())

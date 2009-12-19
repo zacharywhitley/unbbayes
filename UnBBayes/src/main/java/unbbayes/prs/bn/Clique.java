@@ -41,7 +41,8 @@ public class Clique implements ITabledVariable, java.io.Serializable {
 	private static final long serialVersionUID = 0;	
 	
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
+  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  			unbbayes.prs.bn.resources.BnResources.class.getName());
 
     /**
      *  Identifica unicamente o n�.

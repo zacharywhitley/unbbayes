@@ -145,7 +145,8 @@ public class PreprocessPanel extends JPanel
 
   public PreprocessPanel(PreprocessorMain reference)
   { this.reference = reference;
-    resource = ResourceBundle.getBundle("unbbayes.datamining.gui.preprocessor.resources.PreprocessorResource");
+    resource = ResourceBundle.getBundle(
+    		unbbayes.datamining.gui.preprocessor.resources.PreprocessorResource.class.getName());
     try
     {
       jbInit();

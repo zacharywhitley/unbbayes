@@ -365,6 +365,8 @@ public class MEBNEditionPane extends JPanel {
     }
   	
   	public void updateToPreferredSize() {
+
+  		
   		int width = tabsPanel.getPreferredSize().width + centerPanel.getDividerSize() + 20;
   		if (width < 200) {
   			width = 200;

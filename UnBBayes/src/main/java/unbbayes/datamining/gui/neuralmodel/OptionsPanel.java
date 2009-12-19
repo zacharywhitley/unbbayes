@@ -60,7 +60,8 @@ public class OptionsPanel extends JPanel{
 
   public OptionsPanel() {
     try {
-      resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralmodel.resources.NeuralModelResource");
+      resource = ResourceBundle.getBundle(
+    		  unbbayes.datamining.gui.neuralmodel.resources.NeuralModelResource.class.getName());
       jbInit();
     }
     catch(Exception e) {

@@ -78,7 +78,8 @@ public class OVariableEditionPane extends JPanel {
 	private MFrag mFrag; 
 	
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  			unbbayes.gui.resources.GuiResources.class.getName());
 	
     private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9]*");
     private Matcher matcher;	

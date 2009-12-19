@@ -1943,8 +1943,8 @@ public class MEBNController  {
 	 *--------------------------------------------------------------------------/
 	
 		/** Load resource file from this package */
-	private static ResourceBundle resourcePN = ResourceBundle
-			.getBundle("unbbayes.controller.resources.ControllerResources");
+	private static ResourceBundle resourcePN = ResourceBundle.getBundle(
+			unbbayes.controller.resources.ControllerResources.class.getName());
 	
 	/**
 	 * Compiles the bayesian network. If there was any problem during compilation, the error

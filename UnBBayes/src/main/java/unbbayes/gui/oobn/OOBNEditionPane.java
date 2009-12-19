@@ -30,7 +30,8 @@ public class OOBNEditionPane extends PNEditionPane {
 	
 	
 	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.oobn.resources.OOBNGuiResource");
+	private static ResourceBundle resource = ResourceBundle.getBundle(
+			unbbayes.gui.oobn.resources.OOBNGuiResource.class.getName());
 	
 	
 	/**

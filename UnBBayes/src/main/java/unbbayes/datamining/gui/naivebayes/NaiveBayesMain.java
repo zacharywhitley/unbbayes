@@ -110,7 +110,8 @@ public class NaiveBayesMain extends JInternalFrame
 	/**Construct the frame*/
 	public NaiveBayesMain()
 	{ super("Naive Bayes Classifier",true,true,true,true);
-		resource = ResourceBundle.getBundle("unbbayes.datamining.gui.naivebayes.resources.NaiveBayesResource");
+		resource = ResourceBundle.getBundle(
+				unbbayes.datamining.gui.naivebayes.resources.NaiveBayesResource.class.getName());
 
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 		try

@@ -29,8 +29,8 @@ public class OOBNClassController extends NetworkController {
 
 	
 	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceBundle
-			.getBundle("unbbayes.controller.oobn.resources.OOBNControllerResources");
+	private static ResourceBundle resource = ResourceBundle.getBundle(
+			unbbayes.controller.oobn.resources.OOBNControllerResources.class.getName());
 
 	
 	

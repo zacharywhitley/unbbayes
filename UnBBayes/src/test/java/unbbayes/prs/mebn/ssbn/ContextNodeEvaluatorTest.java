@@ -40,7 +40,7 @@ public class ContextNodeEvaluatorTest extends TestCase{
 	private static String FILE_MTHEORY = "examples/mebn/StarTrek52.owl"; 
 	
 	private ResourceBundle resourceFiles = 
-		ResourceBundle.getBundle("unbbayes.prs.mebn.resources.ResourceFiles");
+		ResourceBundle.getBundle(unbbayes.prs.mebn.resources.ResourceFiles.class.getName());
 	
 	private MultiEntityBayesianNetwork mebn = null; 
 	KnowledgeBase kb = null;

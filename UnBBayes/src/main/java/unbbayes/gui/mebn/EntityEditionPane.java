@@ -97,7 +97,7 @@ public class EntityEditionPane extends JPanel{
 
 	/** Load resource file from this package */
 	private static ResourceBundle resource = 
-		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+		ResourceBundle.getBundle(unbbayes.gui.resources.GuiResources.class.getName());
 
 	/**
 	 * 

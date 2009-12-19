@@ -33,8 +33,8 @@ import unbbayes.datamining.datamanipulation.InstanceSet;
  */
 public class Folds {
 	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceBundle.getBundle("" +
-			"unbbayes.datamining.classifiers.resources.ClassifiersResource");
+	private static ResourceBundle resource = ResourceBundle.getBundle(
+			unbbayes.datamining.classifiers.resources.ClassifiersResource.class.getName());
 
 	int numFolds;
 	int currentFold;

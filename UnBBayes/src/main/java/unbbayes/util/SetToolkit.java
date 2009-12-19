@@ -37,7 +37,8 @@ import unbbayes.prs.Node;
 public class SetToolkit {
 	
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.util.resources.UtilResources");
+  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  			unbbayes.util.resources.UtilResources.class.getName());
 
     /**
      *  Realiza a uni�o entre dois conjuntos.

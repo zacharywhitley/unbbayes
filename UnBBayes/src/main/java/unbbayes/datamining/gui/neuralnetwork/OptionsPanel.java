@@ -76,7 +76,8 @@ public class OptionsPanel extends JPanel {
     }
   }
   void jbInit() throws Exception {
-    resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralnetwork.resources.NeuralNetworkResource");
+    resource = ResourceBundle.getBundle(
+    		unbbayes.datamining.gui.neuralnetwork.resources.NeuralNetworkResource.class.getName());
     panelOptions.setBorder(BorderFactory.createEtchedBorder());
     panelOptions.setLayout(gridBagLayout1);
     labelActivationFunction.setText(resource.getString("activationFunctionLabel") + ":");

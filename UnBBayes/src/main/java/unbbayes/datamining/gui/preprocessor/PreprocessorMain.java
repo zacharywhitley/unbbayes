@@ -96,7 +96,8 @@ public class PreprocessorMain extends JInternalFrame
 	/**Construct the frame*/
 	public PreprocessorMain()
 	{ super("InitializePreprocessors",true,true,true,true);
-		resource = ResourceBundle.getBundle("unbbayes.datamining.gui.preprocessor.resources.PreprocessorResource");
+		resource = ResourceBundle.getBundle(
+				unbbayes.datamining.gui.preprocessor.resources.PreprocessorResource.class.getName());
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 		try
 		{

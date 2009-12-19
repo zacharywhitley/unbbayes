@@ -70,8 +70,8 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 	
 	
 	/** Load resource file from this package */
-	private static ResourceBundle resources = ResourceBundle
-			.getBundle("unbbayes.io.oobn.resources.OOBNIOResources");
+	private static ResourceBundle resources = ResourceBundle.getBundle(
+			unbbayes.io.oobn.resources.OOBNIOResources.class.getName());
 	
 	/**
 	 * Default constructor

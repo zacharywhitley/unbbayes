@@ -91,8 +91,8 @@ public class OOBNClassWindow extends NetworkWindow {
 
 	
 	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceBundle
-			.getBundle("unbbayes.gui.resources.GuiResources");
+	private static ResourceBundle resource = ResourceBundle.getBundle(
+			unbbayes.gui.resources.GuiResources.class.getName());
 
 	/**
 	 * Use this just in case you want to extend this class...

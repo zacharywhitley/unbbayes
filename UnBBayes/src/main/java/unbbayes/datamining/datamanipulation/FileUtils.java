@@ -41,9 +41,8 @@ import unbbayes.gui.SimpleFileFilter;
 public class FileUtils {
 
 	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceBundle.getBundle("" +
-			"unbbayes.datamining.datamanipulation.resources." +
-			"DataManipulationResource");
+	private static ResourceBundle resource = ResourceBundle.getBundle(
+			unbbayes.datamining.datamanipulation.resources.DataManipulationResource.class.getName());
 
 	public static final byte OPEN_FILE_DIALOG = 0;
 	public static final byte SAVE_FILE_DIALOG = 1;

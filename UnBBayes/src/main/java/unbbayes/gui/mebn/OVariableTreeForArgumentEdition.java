@@ -45,7 +45,8 @@ public class OVariableTreeForArgumentEdition extends OVariableTree{
 	private MEBNController mebnController; 
     
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  			unbbayes.gui.resources.GuiResources.class.getName());
     	
 	
 	public OVariableTreeForArgumentEdition(final MEBNController controller){

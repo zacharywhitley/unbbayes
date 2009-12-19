@@ -136,7 +136,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 	
 	/** Load resource file from this package */
 	final ResourceBundle resource = 
-		ResourceBundle.getBundle("unbbayes.io.mebn.resources.IoMebnResources");	
+		ResourceBundle.getBundle(unbbayes.io.mebn.resources.IoMebnResources.class.getName());	
 	
 	//private static final String PROWLMODELFILE = "pr-owl/pr-owl.owl";
 	

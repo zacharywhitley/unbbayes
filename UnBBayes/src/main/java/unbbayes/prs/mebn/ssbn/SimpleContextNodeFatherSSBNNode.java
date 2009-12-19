@@ -25,7 +25,7 @@ public class SimpleContextNodeFatherSSBNNode {
 	private OrdinaryVariable ovProblematic; 
 
 	private ResourceBundle resource = 
-		ResourceBundle.getBundle("unbbayes.prs.mebn.ssbn.resources.Resources");	
+		ResourceBundle.getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName());	
 
 	/**
 	 * 

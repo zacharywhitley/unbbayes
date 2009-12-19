@@ -56,7 +56,8 @@ public class PrintPreviewer extends JPanel {
   protected JTextField scaleText;
 
   /** Load resource file from this package */
-  private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.controller.resources.ControllerResources");
+  private static ResourceBundle resource = ResourceBundle.getBundle(
+		  unbbayes.controller.resources.ControllerResources.class.getName());
 
   public PrintPreviewer(Pageable p, int page) {
     pageable = p;

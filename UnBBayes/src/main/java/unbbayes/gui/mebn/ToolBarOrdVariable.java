@@ -71,7 +71,7 @@ public class ToolBarOrdVariable extends JToolBar{
 	
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle(
-  			"unbbayes.gui.resources.GuiResources");
+  			unbbayes.gui.resources.GuiResources.class.getName());
 	
     private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9]*");
     private Matcher matcher;	

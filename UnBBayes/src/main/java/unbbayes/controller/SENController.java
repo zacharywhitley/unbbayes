@@ -90,8 +90,8 @@ public class SENController {
 	}
 
 	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceBundle
-			.getBundle("unbbayes.controller.resources.ControllerResources");
+	private static ResourceBundle resource = ResourceBundle.getBundle(
+			unbbayes.controller.resources.ControllerResources.class.getName());
 
 	/**
 	 * Constructs a controller for SingleEntityNetwork.

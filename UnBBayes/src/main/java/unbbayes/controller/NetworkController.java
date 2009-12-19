@@ -112,7 +112,8 @@ public class NetworkController implements KeyListener {
 	}
     
 	/** Load resource file from this package */
-    private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.controller.resources.ControllerResources");
+    private static ResourceBundle resource = ResourceBundle.getBundle(
+    		unbbayes.controller.resources.ControllerResources.class.getName());
     
     
     /***************** BEGIN CONTROLLING MULTI ENTTITY BAYESIAN NETWORK *********************/

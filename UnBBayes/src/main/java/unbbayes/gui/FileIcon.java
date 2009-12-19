@@ -48,7 +48,8 @@ public class FileIcon extends FileView {
     protected IconController iconController = IconController.getInstance();
 
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  			unbbayes.gui.resources.GuiResources.class.getName());
 
     /**
      *  Constroi um observer para desenhar ícones e um JFileChooser para pegar

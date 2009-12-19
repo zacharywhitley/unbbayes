@@ -77,7 +77,8 @@ public class TrainingPanel extends JPanel implements MeanSquaredError{
     }
   }
   void jbInit() throws Exception {
-    resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralnetwork.resources.NeuralNetworkResource");
+    resource = ResourceBundle.getBundle(
+    		unbbayes.datamining.gui.neuralnetwork.resources.NeuralNetworkResource.class.getName());
     fillIcon = iconController.getFillIcon();
     resetSizeIcon = iconController.getResetSizeIcon();
     gridIcon = iconController.getGridIcon();

@@ -50,7 +50,7 @@ public class XMLBIFIO implements BaseIO{
 	
 	/** Load resource file from this package */
 	private static ResourceBundle resource =
-		ResourceBundle.getBundle("unbbayes.io.resources.IoResources");
+		ResourceBundle.getBundle(unbbayes.io.resources.IoResources.class.getName());
 	
 	/** Supported file extension with no dots. The value is {"xml"}  */
 	public static final String[] SUPPORTED_EXTENSIONS = {"xml"};

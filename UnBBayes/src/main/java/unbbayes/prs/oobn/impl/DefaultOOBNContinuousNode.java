@@ -24,7 +24,8 @@ public class DefaultOOBNContinuousNode extends ContinuousNode implements
 		IOOBNNode {
 
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.oobn.resources.Resources");  		
+  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  			unbbayes.prs.oobn.resources.Resources.class.getName());  		
 	
   	
 	private Set<IOOBNNode> innerNodes = null;

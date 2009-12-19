@@ -38,9 +38,8 @@ public class Instance implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceBundle.getBundle("" +
-			"unbbayes.datamining.datamanipulation.resources." +
-			"DataManipulationResource");
+	private static ResourceBundle resource = ResourceBundle.getBundle(
+			unbbayes.datamining.datamanipulation.resources.DataManipulationResource.class.getName());
 
 	/**
 	 * The instanceSet the instance has access to.  Null if the instance

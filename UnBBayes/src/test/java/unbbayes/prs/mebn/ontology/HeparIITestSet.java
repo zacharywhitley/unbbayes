@@ -39,7 +39,7 @@ public class HeparIITestSet  extends TestSet{
 	private static final String TEST_FILE_NAME = "HeparIITestSet.log"; 
 	
 	private static ResourceBundle resourceFiles = 
-		ResourceBundle.getBundle("unbbayes.prs.mebn.resources.ResourceFiles");
+		ResourceBundle.getBundle(unbbayes.prs.mebn.resources.ResourceFiles.class.getName());
 	
 	//Variables
 	private MultiEntityBayesianNetwork mebn;	

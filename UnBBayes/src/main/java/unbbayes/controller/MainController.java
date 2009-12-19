@@ -88,7 +88,8 @@ public class MainController {
 	
 	
 	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.controller.resources.ControllerResources");
+	private static ResourceBundle resource = ResourceBundle.getBundle(
+			unbbayes.controller.resources.ControllerResources.class.getName());
 	
 	
 	/**

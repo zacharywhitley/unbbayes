@@ -24,8 +24,8 @@ public class DefaultMSBNIO implements IMSBNIO {
 	private NetIO delegator;
 	
 	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceBundle
-			.getBundle("unbbayes.io.resources.IoResources");
+	private static ResourceBundle resource = ResourceBundle.getBundle(
+			unbbayes.io.resources.IoResources.class.getName());
 	
 
 	/**

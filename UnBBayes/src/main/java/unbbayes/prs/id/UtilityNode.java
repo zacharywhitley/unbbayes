@@ -44,7 +44,8 @@ public class UtilityNode extends Node implements ITabledVariable, java.io.Serial
     private static Color color = Color.cyan;
     
     /** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
+  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  			unbbayes.prs.bn.resources.BnResources.class.getName());
 
   	/**
      * Constructs a UtilityNode with an initialized table and 

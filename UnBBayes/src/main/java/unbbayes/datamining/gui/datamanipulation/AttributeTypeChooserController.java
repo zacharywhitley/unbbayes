@@ -68,10 +68,8 @@ import unbbayes.datamining.gui.UtilsGUI.RowHeaderRenderer;
  */
 public class AttributeTypeChooserController {
 	/** Load resource file for this package */
-	private static ResourceBundle resource = ResourceBundle
-			.getBundle("unbbayes"
-					+ ".datamining.gui.datamanipulation.resources."
-					+ "AttributeTypeChooserResource");
+	private static ResourceBundle resource = ResourceBundle.getBundle(
+					unbbayes.datamining.gui.datamanipulation.resources.AttributeTypeChooserResource.class.getName());
 
 	/**
 	 * Stores the type of an attribute: 0 - Numeric 1 - Nominal 2 - Cyclic

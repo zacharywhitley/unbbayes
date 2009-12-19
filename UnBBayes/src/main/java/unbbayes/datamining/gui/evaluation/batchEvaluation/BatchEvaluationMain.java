@@ -94,8 +94,8 @@ public class BatchEvaluationMain extends JInternalFrame {
 
 	public BatchEvaluationMain() {
 		super("", true, true, true, true);
-		resource = ResourceBundle.getBundle("unbbayes.datamining.gui." +
-				"evaluation.batchEvaluation.resources.BatchEvaluationResource");
+		resource = ResourceBundle.getBundle(
+				unbbayes.datamining.gui.evaluation.batchEvaluation.resources.BatchEvaluationResource.class.getName());
 		setTitle(resource.getString("mainTitle"));
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 		

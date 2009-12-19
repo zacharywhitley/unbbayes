@@ -43,7 +43,8 @@ import unbbayes.prs.mebn.context.EnumType;
 public class BuilderMenuNode {
 	
 	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");	
+	private static ResourceBundle resource = ResourceBundle.getBundle(
+			unbbayes.gui.resources.GuiResources.class.getName());	
 	
 	private JMenuItem itemDelete = new JMenuItem("delete"); 
 	

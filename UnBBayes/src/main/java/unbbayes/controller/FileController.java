@@ -43,7 +43,8 @@ public class FileController
 	private JFileChooser fileChooser = new JFileChooser(new File(System.getProperty("user.dir")));
 
 
-	private ResourceBundle resourceNaiveBayesian = ResourceBundle.getBundle("unbbayes.datamining.gui.naivebayes.resources.NaiveBayesResource");
+	private ResourceBundle resourceNaiveBayesian = ResourceBundle.getBundle(
+			unbbayes.datamining.gui.naivebayes.resources.NaiveBayesResource.class.getName());
 	
 	//--------------------------------------------------------------//
 

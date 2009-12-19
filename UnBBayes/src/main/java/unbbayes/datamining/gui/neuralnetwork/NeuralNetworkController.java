@@ -54,7 +54,8 @@ public class NeuralNetworkController {
   private int hiddenLayerSize;
 
   public NeuralNetworkController() {
-    resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralnetwork.resources.NeuralNetworkResource");
+    resource = ResourceBundle.getBundle(
+    		unbbayes.datamining.gui.neuralnetwork.resources.NeuralNetworkResource.class.getName());
     mainScreen = new NeuralNetworkMain();
     mainScreen.setController(this);
   }

@@ -56,7 +56,8 @@ public class GaussianMixture implements IInferenceAlgorithm {
 	
 
 	/** Load resource file from util */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.util.resources.UtilResources");
+  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  			unbbayes.util.resources.UtilResources.class.getName());
 	
 	/**
 	 * Return the order the nodes are in the sampled matrix.

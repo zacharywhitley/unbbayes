@@ -35,8 +35,8 @@ public class LikelihoodWeightingOptionPanel extends
 	
 	
 	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceBundle
-			.getBundle("unbbayes.gui.resources.GuiResources");
+	private static ResourceBundle resource = ResourceBundle.getBundle(
+			unbbayes.gui.resources.GuiResources.class.getName());
 	
 	public LikelihoodWeightingOptionPanel() {
 		super();

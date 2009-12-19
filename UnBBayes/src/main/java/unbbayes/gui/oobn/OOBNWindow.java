@@ -83,9 +83,7 @@ public class OOBNWindow extends UnBBayesModule  {
 
 	/** Load resource file from this package */
 	private static ResourceBundle resource =
-		ResourceBundle.getBundle("unbbayes.gui.oobn.resources.OOBNGuiResource");
-//	private static ResourceBundle rootGUIResource =
-//		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+		ResourceBundle.getBundle(unbbayes.gui.oobn.resources.OOBNGuiResource.class.getName());
 	
 	// lets stop using model object directly and start quering controller each time we need to access oobn
 	//private IObjectOrientedBayesianNetwork oobn;

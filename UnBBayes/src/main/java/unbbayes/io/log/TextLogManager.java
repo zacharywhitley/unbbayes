@@ -53,7 +53,7 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
     
     /** Load resource file from this package */
   	protected static ResourceBundle resource = ResourceBundle.getBundle(
-  			"unbbayes.io.resources.IoResources");
+  			unbbayes.io.resources.IoResources.class.getName());
 
   	private Boolean enabled = true;
   	

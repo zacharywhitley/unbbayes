@@ -49,7 +49,8 @@ public class ProgressDialog extends JDialog
 	/** Create an instance of this class  */
 	public ProgressDialog(String message, IProgress progress)
 	{
-		resource = ResourceBundle.getBundle("unbbayes.controller.resources.ControllerResources");
+		resource = ResourceBundle.getBundle(
+				unbbayes.controller.resources.ControllerResources.class.getName());
 		
 		setTitle(resource.getString("loading"));
 		setSize(280,130);

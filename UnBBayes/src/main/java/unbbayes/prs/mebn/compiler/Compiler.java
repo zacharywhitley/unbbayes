@@ -208,7 +208,8 @@ public class Compiler implements ICompiler {
 	private static Boolean singleton = false;
 	
 	// resource files
-	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.mebn.compiler.resources.Resources");
+	private static ResourceBundle resource = ResourceBundle.getBundle(
+			unbbayes.prs.mebn.compiler.resources.Resources.class.getName());
 
 	
 	/* A previously read character (lookahead) */

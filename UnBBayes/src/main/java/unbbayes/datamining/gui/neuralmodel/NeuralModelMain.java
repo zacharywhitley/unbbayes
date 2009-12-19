@@ -115,7 +115,8 @@ public class NeuralModelMain extends JInternalFrame{
   public NeuralModelMain(NeuralModelController controller){
     super("Combinatorial Neural Model",true,true,true,true);
     this.controller = controller;
-    resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralmodel.resources.NeuralModelResource");
+    resource = ResourceBundle.getBundle(
+    		unbbayes.datamining.gui.neuralmodel.resources.NeuralModelResource.class.getName());
     enableEvents(AWTEvent.WINDOW_EVENT_MASK);
     try{
       jbInit();

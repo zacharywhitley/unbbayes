@@ -13,7 +13,8 @@ import unbbayes.prs.mebn.exception.MEBNException;
  */
 public class InstanceException extends MEBNException {
 	private static final long serialVersionUID = 123456789456L;
-	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.mebn.compiler.resources.Resources");
+	private static ResourceBundle resource = ResourceBundle.getBundle(
+			unbbayes.prs.mebn.compiler.resources.Resources.class.getName());
 
 	
 	public InstanceException () {

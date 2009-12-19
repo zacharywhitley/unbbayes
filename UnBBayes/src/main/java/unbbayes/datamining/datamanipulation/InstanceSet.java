@@ -104,8 +104,8 @@ public class InstanceSet implements Serializable {
 	public int counterIndex;
 
 	/** Load resource file for this package */
-	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes"
-			+ ".datamining.datamanipulation.resources.DataManipulationResource");
+	private static ResourceBundle resource = ResourceBundle.getBundle(
+			unbbayes.datamining.datamanipulation.resources.DataManipulationResource.class.getName());
 
 	/**
 	 * Position of the next instance to be inserted when this instanceSet is

@@ -12,7 +12,8 @@ import java.util.ResourceBundle;
 public class OOBNException extends Exception {
 
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.oobn.resources.Resources");  		
+  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  			unbbayes.prs.oobn.resources.Resources.class.getName());  		
 	
 	
 	/**

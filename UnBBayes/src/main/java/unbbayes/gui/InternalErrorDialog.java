@@ -38,7 +38,8 @@ import javax.swing.JOptionPane;
 public class InternalErrorDialog {
 
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  			unbbayes.gui.resources.GuiResources.class.getName());
 	
 	//TODO concluir o painel, colocando op��es para reporte do erro... 
 	public InternalErrorDialog(){

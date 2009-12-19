@@ -87,7 +87,8 @@ public class InductionPanel extends JPanel
   private ResourceBundle resource;
 
   public InductionPanel()
-  {	resource = ResourceBundle.getBundle("unbbayes.datamining.gui.id3.resources.DecisiontreeResource");
+  {	resource = ResourceBundle.getBundle(
+		  unbbayes.datamining.gui.id3.resources.DecisiontreeResource.class.getName());
     try
     {
       jbInit();

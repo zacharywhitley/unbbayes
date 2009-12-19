@@ -95,8 +95,8 @@ public class UnBMinerFrame extends JFrame {
 	 * Carrega o arquivo de recursos para internacionaliza��o da localidade
 	 * padr�o
 	 */
-	private ResourceBundle resource = ResourceBundle
-			.getBundle("unbbayes.datamining.gui.resources.GuiResource");
+	private ResourceBundle resource = ResourceBundle.getBundle(
+			unbbayes.datamining.gui.resources.GuiResource.class.getName());
 
 	private UnBMinerFrame reference = this;
 

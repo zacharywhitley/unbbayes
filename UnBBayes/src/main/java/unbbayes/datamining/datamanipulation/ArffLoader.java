@@ -40,9 +40,8 @@ public class ArffLoader extends Loader {
 	public static String FILE_EXTENSION = ".arff";
 
 	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceBundle.getBundle(""
-			+ "unbbayes.datamining.datamanipulation.resources."
-			+ "DataManipulationResource");
+	private static ResourceBundle resource = ResourceBundle.getBundle(
+			unbbayes.datamining.datamanipulation.resources.DataManipulationResource.class.getName());
 
 	/**
 	 * Reads a ARFF file from a reader.

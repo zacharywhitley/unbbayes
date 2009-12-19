@@ -69,7 +69,8 @@ public class AFINMetaphorMainPanel extends JPanel
   /** Serialization runtime version number */
   private static final long serialVersionUID = 0;		
 
-  private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.metaphor.afin.resources.AFINMetaphorResources");
+  private static ResourceBundle resource = ResourceBundle.getBundle(
+		  unbbayes.metaphor.afin.resources.AFINMetaphorResources.class.getName());
 
   
   private BorderLayout borderLayout1 = new BorderLayout();

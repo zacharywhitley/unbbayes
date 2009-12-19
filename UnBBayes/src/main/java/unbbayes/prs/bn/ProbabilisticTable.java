@@ -35,7 +35,8 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 	private static final long serialVersionUID = 0;	
 	
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
+  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  			unbbayes.prs.bn.resources.BnResources.class.getName());
 
 	public ProbabilisticTable() {
 	}

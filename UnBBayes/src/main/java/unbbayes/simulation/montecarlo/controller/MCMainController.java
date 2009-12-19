@@ -47,7 +47,8 @@ import unbbayes.simulation.montecarlo.sampling.IMonteCarloSampling;
 public class MCMainController {
 	
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.simulation.montecarlo.resources.MCResources");
+  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  			unbbayes.simulation.montecarlo.resources.MCResources.class.getName());
 	
 	private MCParametersPane paramPane;
 	private BaseIO io;
