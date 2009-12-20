@@ -188,7 +188,7 @@ public class AttributeSelectionPanel extends JPanel
    * Creates the attribute selection panel with no initial instances.
    */
   public AttributeSelectionPanel() {
-   resource = ResourceBundle.getBundle(
+   resource = unbbayes.util.ResourceController.newInstance().getBundle(
 		   unbbayes.datamining.gui.preprocessor.resources.PreprocessorResource.class.getName());
     m_Table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     m_Table.getTableHeader().setReorderingAllowed(false);

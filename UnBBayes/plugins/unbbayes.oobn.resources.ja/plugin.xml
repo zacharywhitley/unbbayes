@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="unbbayes.oobn.resources.ja" version="1.0.0">
+    <requires>
+        <import plugin-id="unbbayes.util.extension.core"/>
+    </requires>
+    <runtime>
+        <library id="oobnResource_ja" path="classes/" type="code">
+            <export prefix="*" />
+        </library>
+    </runtime>
+    <extension plugin-id="unbbayes.util.extension.core" point-id="ResourceBundle" id="oobn_gui_ja">
+        <parameter id="class" value="unbbayes.gui.oobn.resources.OOBNGuiResource_ja" />
+    </extension>
+    <extension plugin-id="unbbayes.util.extension.core" point-id="ResourceBundle" id="oobn_controller_ja">
+        <parameter id="class" value="unbbayes.controller.oobn.resources.OOBNControllerResources_ja" />
+    </extension>
+    <extension plugin-id="unbbayes.util.extension.core" point-id="ResourceBundle" id="oobn_io_ja">
+        <parameter id="class" value="unbbayes.io.oobn.resources.OOBNIOResources_ja" />
+    </extension>
+    <extension plugin-id="unbbayes.util.extension.core" point-id="ResourceBundle" id="oobn_prs_ja">
+        <parameter id="class" value="unbbayes.prs.oobn.resources.Resources_ja" />
+    </extension>
+</plugin>

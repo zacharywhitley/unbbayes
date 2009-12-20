@@ -32,7 +32,7 @@ import java.util.ResourceBundle;
 public class SSBNNodeGeneralException extends Exception {
 	
 	private ResourceBundle resource = 
-		ResourceBundle.getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName());	
+		unbbayes.util.ResourceController.newInstance().getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName());	
 
 	/**
 	 * 

@@ -27,7 +27,7 @@ public class SomeStateUndeclaredException extends
 		InconsistentTableSemanticsException {
 
 	private static final long serialVersionUID = -3141592653589793238L;
-	private static ResourceBundle resource = ResourceBundle.getBundle(
+	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.prs.mebn.compiler.resources.Resources.class.getName());
 
 	public SomeStateUndeclaredException() {

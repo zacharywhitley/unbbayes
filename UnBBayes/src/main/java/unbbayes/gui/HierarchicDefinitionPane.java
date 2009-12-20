@@ -80,7 +80,7 @@ public class HierarchicDefinitionPane extends JPanel
   protected IconController iconController = IconController.getInstance();
 
   /** Load resource file from this package */
-  private static ResourceBundle resource = ResourceBundle.getBundle(
+  private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
 		  unbbayes.gui.resources.GuiResources.class.getName());
 
   public HierarchicDefinitionPane(SingleEntityNetwork net, NetworkWindow netWindow)

@@ -46,7 +46,7 @@ public class NaiveBayes extends DistributionClassifier implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/** Load resources file from this package */
-	private static ResourceBundle resource = ResourceBundle.getBundle(
+	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.datamining.classifiers.resources.ClassifiersResource.class.getName());
 
 	/** All the nominalCounts for nominal attributes. */

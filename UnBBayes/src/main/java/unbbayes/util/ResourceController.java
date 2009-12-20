@@ -9,8 +9,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import org.java.plugin.ObjectFactory;
-import org.java.plugin.PluginManager;
+import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.registry.Extension;
 import org.java.plugin.registry.ExtensionPoint;
 import org.java.plugin.registry.PluginDescriptor;
@@ -24,14 +23,6 @@ import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
  * diverses files of resources of the project. It
  * contains methods to get this resources. 
  * 
- * ...only an experience...
- * 
- * @author Laecio
- * 
- * 
- * @author Shou Matsumoto
- * @since 2009 - 12 - 19
- * @version 19/12/2009
  * Altered this class in order to use singleton pattern and 
  * make it possible to change the classloader/locales dinamically (e.g. plugins).
  * If any classloader modification is needed, you may extend/implement
@@ -40,36 +31,53 @@ import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
  * this singleton instance's default classloader).
  * The plugin support is implemented by setting the default classloader
  * as the plugin classloader.
+ * 
+ * @author Laecio 
+ * @author Shou Matsumoto
+ * 
+ * @version 19/12/2009
  */
 public class ResourceController {
 	
-	public static ResourceBundle RS_GUI = ResourceController.newInstance()
-	.getBundle(GuiResources.class.getName());
+	/** 
+	 * Call to ResourceController.newInstance().getBundle(GuiResources.class.getName())
+	 */
+	public static ResourceBundle RS_GUI = ResourceController.newInstance().getBundle(
+			GuiResources.class.getName());
 	
 	//TODO change the name of the repetitives resouces
 	
-	public static ResourceBundle RS_COMPILER = ResourceController.newInstance()
-	.getBundle(unbbayes.prs.mebn.compiler.resources.Resources.class.getName());
+//	/**
+//	 * Reference to unbbayes.prs.mebn.compiler.resources.Resources.
+//	 * It calls
+//	 * ResourceController.newInstance().getBundle(unbbayes.prs.mebn.compiler.resources.Resources.class.getName())
+//	 */
+//	public static ResourceBundle RS_COMPILER = ResourceController.newInstance()
+//	.getBundle(unbbayes.prs.mebn.compiler.resources.Resources.class.getName());
 
-	public static ResourceBundle RS_MEBN = ResourceController.newInstance()
-	.getBundle(unbbayes.prs.mebn.resources.Resources.class.getName());
+//	/** 
+//	 * Call to ResourceController.newInstance().getBundle(unbbayes.prs.mebn.resources.Resources.class.getName())
+//	 */
+//	public static ResourceBundle RS_MEBN = ResourceController.newInstance()
+//	.getBundle(unbbayes.prs.mebn.resources.Resources.class.getName());
 	
-	public static ResourceBundle RS_SSBN = ResourceController.newInstance()
-	.getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName());
+//	/** Call to ResourceController.newInstance().getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName()) */
+//	public static ResourceBundle RS_SSBN = ResourceController.newInstance()
+//	.getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName());
 	
-	public static ResourceBundle RS_BN = ResourceController.newInstance()
-	.getBundle(unbbayes.prs.bn.resources.BnResources.class.getName());
+//	/** Call to ResourceController.newInstance().getBundle(unbbayes.prs.bn.resources.BnResources.class.getName()) */
+//	public static ResourceBundle RS_BN = ResourceController.newInstance()
+//	.getBundle(unbbayes.prs.bn.resources.BnResources.class.getName());
 	
-	public static ResourceBundle RS_HYBRID_BN = ResourceController.newInstance()
-	.getBundle(unbbayes.prs.hybridbn.resources.HybridBnResources.class.getName());
-
+//	/** Call to ResourceController.newInstance().getBundle(unbbayes.prs.hybridbn.resources.HybridBnResources.class.getName()) */
+//	public static ResourceBundle RS_HYBRID_BN = ResourceController.newInstance()
+//	.getBundle(unbbayes.prs.hybridbn.resources.HybridBnResources.class.getName());
+	
 	
 	
 	
 	private ClassLoader defaultClassLoader = this.getClass().getClassLoader();
-	
 	private Locale defaultLocale = Locale.getDefault();
-	
 	private String extensionPointID = "ResourceBundle";
 	
 	/**
@@ -96,7 +104,16 @@ public class ResourceController {
      * Obtains a ClassLoader which loads classes bound by plugins.
      * @return
      */
-    protected ClassLoader loadPluginClassLoader() {
+    protected synchronized ClassLoader loadPluginClassLoader() {
+    	
+    	// the below code fixes incidents that happens when this method is called before plugin initialization
+    	if (!UnBBayesPluginContextHolder.isInitialized()) {
+    		try {
+				UnBBayesPluginContextHolder.publishPlugins();
+			} catch (IOException e) {
+				throw new IllegalStateException("Plugin infrastructure is not ready",e);
+			}
+    	}
     	
     	// loads the "core" plugin, which is a stub that we use to declare extension points for core
 	    PluginDescriptor core = UnBBayesPluginContextHolder.getPluginManager().getRegistry().getPluginDescriptor(
@@ -114,7 +131,17 @@ public class ResourceController {
 	    
     	for (Extension ext : point.getConnectedExtensions()) {
     		PluginDescriptor descr = ext.getDeclaringPluginDescriptor();
-    		ret.getListOfLoaders().add(UnBBayesPluginContextHolder.getPluginManager().getPluginClassLoader(descr));
+    		try {
+				UnBBayesPluginContextHolder.getPluginManager().activatePlugin(descr.getId());
+			} catch (PluginLifecycleException e) {
+				e.printStackTrace();
+				// we could not load this plugin, but we shall continue
+				continue;
+			}
+			ClassLoader loader = UnBBayesPluginContextHolder.getPluginManager().getPluginClassLoader(descr);
+			if (loader != null) {
+				ret.getListOfLoaders().add(loader);
+			}
     	}
     	
     	return ret;
@@ -161,6 +188,7 @@ public class ResourceController {
 		this.defaultLocale = defaultLocale;
 	}
 	
+	
 	/**
 	 * Obtains a ResourceBundle using current configuration of locale and classloader.
 	 * It calls ResourceBundle.getBundle(baseName, this.getDefaultLocale(), this.getDefaultClassLoader()).
@@ -184,10 +212,6 @@ public class ResourceController {
 				ClassLoader classLoader ) {
 		return ResourceBundle.getBundle(baseName, locale, classLoader);
 	}
-	
-	public static ResourceBundle RS_CONTROLLER = ResourceBundle.getBundle(
-			ControllerResources.class.getName());
-
 	
 
 	/**
@@ -249,7 +273,7 @@ public class ResourceController {
 						return ret;
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
+					Debug.println(this.getClass(), "Error at getResource()", e);
 					continue;
 				}
 			}
@@ -267,7 +291,7 @@ public class ResourceController {
 						return ret;
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
+					Debug.println(this.getClass(), "Error at getResourceAsStream", e);
 					continue;
 				}
 			}
@@ -285,7 +309,7 @@ public class ResourceController {
 						return ret;
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
+					Debug.println(this.getClass(), "Error at getResources", e);
 					continue;
 				}
 			}
@@ -303,7 +327,7 @@ public class ResourceController {
 						return ret;
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
+					Debug.println(this.getClass(), "Error at loadClass", e);
 					continue;
 				}
 			}

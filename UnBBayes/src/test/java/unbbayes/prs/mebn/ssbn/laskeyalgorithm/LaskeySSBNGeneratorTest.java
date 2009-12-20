@@ -37,7 +37,7 @@ public class LaskeySSBNGeneratorTest  extends TestCase {
 	HeparIITestSet hepparTestSet; 
 
 	private ResourceBundle resourceFiles = 
-		ResourceBundle.getBundle(unbbayes.prs.mebn.resources.ResourceFiles.class.getName());
+		unbbayes.util.ResourceController.newInstance().getBundle(unbbayes.prs.mebn.resources.ResourceFiles.class.getName());
 
 	public LaskeySSBNGeneratorTest(String arg0) {
 		super(arg0);

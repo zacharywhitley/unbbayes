@@ -18,7 +18,7 @@ public class JavaHelperController {
 	private static JavaHelperController singleton; 
 	
 	private ResourceBundle resource = 
-		ResourceBundle.getBundle(unbbayes.controller.resources.ControllerResources.class.getName());
+		unbbayes.util.ResourceController.newInstance().getBundle(unbbayes.controller.resources.ControllerResources.class.getName());
 	
 	public static JavaHelperController getInstance(){
 		if(singleton == null){

@@ -69,7 +69,7 @@ public class MTheoryTreeForReplaceInFormula extends JTree {
 	private final MEBNController controller;	
 	
 	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceBundle.getBundle(
+	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.gui.resources.GuiResources.class.getName());
 	
 	private FormulaTreeController formulaTreeController; 

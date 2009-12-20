@@ -95,7 +95,7 @@ public class Attribute implements Serializable {
 	private int attIndex;
 
 	/** Load resource file from this package. */
-	private static ResourceBundle resource = ResourceBundle.getBundle(
+	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.datamining.datamanipulation.resources.DataManipulationResource.class.getName());
 
 	/** The instanceSet to which this attribute is related to */ 

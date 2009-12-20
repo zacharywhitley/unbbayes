@@ -76,7 +76,7 @@ public class DecisionTreeOptions extends JInternalFrame
   /** Default constructor. */
   public DecisionTreeOptions()
   {
-  	resource = ResourceBundle.getBundle(unbbayes.datamining.gui.c45.resources.DecisiontreeResource.class.getName());
+  	resource = unbbayes.util.ResourceController.newInstance().getBundle(unbbayes.datamining.gui.c45.resources.DecisiontreeResource.class.getName());
 	enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 	this.setTitle(resource.getString("preferences"));
 	this.setSize(220,310);

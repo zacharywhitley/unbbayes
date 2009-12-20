@@ -69,7 +69,7 @@ public class janeladiscret extends JFrame {
 
 	int linhas;
 
-	private static ResourceBundle resource = ResourceBundle.getBundle(
+	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.gui.resources.GuiResources.class.getName());
 
 	private JPanel jPanel3 = null;

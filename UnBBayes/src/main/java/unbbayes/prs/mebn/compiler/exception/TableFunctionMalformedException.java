@@ -31,7 +31,7 @@ public class TableFunctionMalformedException extends MEBNException {
 	 */
 	private static final long serialVersionUID = 4621101714330356143L;
 
-	private static ResourceBundle resource = ResourceBundle.getBundle(
+	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.prs.mebn.compiler.resources.Resources.class.getName());
 
 	

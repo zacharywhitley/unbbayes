@@ -72,7 +72,7 @@ public class C45 extends DecisionTreeLearning implements Serializable
 	public void buildClassifier(InstanceSet data) throws Exception
 	{
 		//internacionalization
-		resource = ResourceBundle.getBundle(
+		resource = unbbayes.util.ResourceController.newInstance().getBundle(
 				unbbayes.datamining.classifiers.resources.ClassifiersResource.class.getName());
 
 		//preliminary tests

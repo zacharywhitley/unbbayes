@@ -113,7 +113,7 @@ public class DecisionTreeMain extends JInternalFrame
   public DecisionTreeMain(MDIDesktopPane desktop)
   { super("C45 Classifier",true,true,true,true);
   	this.desktop = desktop;
-    resource = ResourceBundle.getBundle(
+    resource = unbbayes.util.ResourceController.newInstance().getBundle(
     		unbbayes.datamining.gui.c45.resources.DecisiontreeResource.class.getName());
     enableEvents(AWTEvent.WINDOW_EVENT_MASK);
     try

@@ -54,7 +54,7 @@ public class InputNodePane extends JPanel{
 	private MEBNController controller; 
 	
   	private static ResourceBundle resource =
-  		ResourceBundle.getBundle(unbbayes.gui.resources.GuiResources.class.getName());
+  		unbbayes.util.ResourceController.newInstance().getBundle(unbbayes.gui.resources.GuiResources.class.getName());
 	
 	public InputNodePane(){
 		

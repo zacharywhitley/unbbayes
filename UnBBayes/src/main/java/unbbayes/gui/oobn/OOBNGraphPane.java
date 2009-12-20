@@ -43,7 +43,7 @@ import unbbayes.util.Debug;
 public class OOBNGraphPane extends GraphPane {
 	
 	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceBundle.getBundle(
+	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.gui.oobn.resources.OOBNGuiResource.class.getName());
 	
 

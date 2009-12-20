@@ -83,7 +83,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 	private ContextNodeEvaluator contextNodeAvaliator; 
 	
 	private ResourceBundle resource = 
-		ResourceBundle.getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName());
+		unbbayes.util.ResourceController.newInstance().getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName());
 	
 	
 	/**

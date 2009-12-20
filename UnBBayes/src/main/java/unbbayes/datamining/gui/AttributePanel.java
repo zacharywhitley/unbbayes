@@ -62,7 +62,7 @@ public class AttributePanel extends JPanel
 	private ResourceBundle resource;
 
 	public AttributePanel()
-	{ resource = ResourceBundle.getBundle(
+	{ resource = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.datamining.gui.resources.GuiResource.class.getName());
 	try
 		{

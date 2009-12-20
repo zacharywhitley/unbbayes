@@ -70,7 +70,7 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 	
 	
 	/** Load resource file from this package */
-	private static ResourceBundle resources = ResourceBundle.getBundle(
+	private static ResourceBundle resources = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.io.oobn.resources.OOBNIOResources.class.getName());
 	
 	/**
@@ -195,8 +195,6 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 			IOException {
 		
 		DefaultOOBNClass ret = null;
-		
-		Debug.println(this.getClass(), "Loading multiple class is not implemented yet. Using default behavior...");
 		
 		// The name of class will be changed during net file loading, so the name can be initialized as anything,
 		// but since this.load(input, ret, networkBuilder) can pass routine to superclass without setting network name,

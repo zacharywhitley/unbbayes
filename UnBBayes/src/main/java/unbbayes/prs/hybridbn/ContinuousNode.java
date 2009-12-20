@@ -44,7 +44,8 @@ public class ContinuousNode extends TreeVariable implements Serializable {
 	
 	private CNNormalDistribution cnNormalDistribution;
 	
-	private ResourceBundle resource = ResourceController.RS_HYBRID_BN;
+	private ResourceBundle resource = ResourceController.newInstance().getBundle(
+			unbbayes.prs.hybridbn.resources.HybridBnResources.class.getName());
 	
 	// Please, avoid using @Override annotation, since it makes interface extraction (refactor) very difficult,
 	// because it supposes a inherited method is declared always inside a class, 

@@ -128,7 +128,7 @@ public class GraphPane extends UCanvas implements MouseListener,
 	public String strPaneMode = PANEMODE_NONE;
 
 	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceBundle.getBundle(
+	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.gui.resources.GuiResources.class.getName());
 
 	public GraphPane(JDialog dlg, ProbabilisticNetwork n) {

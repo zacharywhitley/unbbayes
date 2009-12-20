@@ -45,7 +45,7 @@ public class MCParametersPane extends JFrame {
 	private static final long serialVersionUID = 0;		
 	
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
   			unbbayes.simulation.montecarlo.resources.MCResources.class.getName());
 	
 	private JPanel mainPane; 

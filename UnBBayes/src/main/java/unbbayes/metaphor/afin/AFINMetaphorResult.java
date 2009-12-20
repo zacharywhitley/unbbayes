@@ -47,7 +47,7 @@ public class AFINMetaphorResult extends JPanel {
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
 	
-	private static ResourceBundle resource = ResourceBundle.getBundle(
+	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.metaphor.afin.resources.AFINMetaphorResources.class.getName());
 
 

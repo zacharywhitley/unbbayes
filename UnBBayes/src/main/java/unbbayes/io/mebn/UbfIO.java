@@ -66,7 +66,7 @@ public class UbfIO implements MebnIO {
 	private static final String  PROWL_EXTENSION = "owl";
 		
 	private ResourceBundle resource = 
-		ResourceBundle.getBundle(unbbayes.io.mebn.resources.IoUbfResources.class.getName());	
+		unbbayes.util.ResourceController.newInstance().getBundle(unbbayes.io.mebn.resources.IoUbfResources.class.getName());	
 	
 	private PrOwlIO prowlIO = null;	// stores files w/ .owl extension
 		

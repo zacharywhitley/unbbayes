@@ -17,7 +17,7 @@ public class UBIOException extends IOException{
 	public static final String ED_READWRITE_FILE = "WriteReaderFileError"; 
 	
   	private static ResourceBundle resource =
-		    ResourceBundle.getBundle(unbbayes.io.resources.IoResources.class.getName());
+		    unbbayes.util.ResourceController.newInstance().getBundle(unbbayes.io.resources.IoResources.class.getName());
 	
   	public UBIOException(String description){
 		super(resource.getString(description)); 

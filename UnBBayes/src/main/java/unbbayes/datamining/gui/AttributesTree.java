@@ -62,7 +62,7 @@ public class AttributesTree extends JTree{
 	private IInferencePanel inferencePanel;
 	protected IconController iconController = IconController.getInstance();
 	private AttributesTree attributesTree;
-	private ResourceBundle resource = ResourceBundle.getBundle(
+	private ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.datamining.gui.resources.GuiResource.class.getName());
 
 	public AttributesTree() {

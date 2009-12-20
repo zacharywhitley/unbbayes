@@ -107,7 +107,7 @@ public class DecisionTreeMain extends JInternalFrame
   /**Construct the frame*/
   public DecisionTreeMain()
   { super("Id3 Classifier",true,true,true,true);
-    resource = ResourceBundle.getBundle(
+    resource = unbbayes.util.ResourceController.newInstance().getBundle(
     		unbbayes.datamining.gui.id3.resources.DecisiontreeResource.class.getName());
     enableEvents(AWTEvent.WINDOW_EVENT_MASK);
     try

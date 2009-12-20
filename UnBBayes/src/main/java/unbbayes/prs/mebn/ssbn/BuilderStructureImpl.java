@@ -42,7 +42,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	private long numberNodes = 0; 
 	
 	private ResourceBundle resourceLog = 
-		ResourceBundle.getBundle(ResourcesSSBNAlgorithmLog.class.getName()); 
+		unbbayes.util.ResourceController.newInstance().getBundle(ResourcesSSBNAlgorithmLog.class.getName()); 
 	
 	//Log
 	IdentationLevel level1; 

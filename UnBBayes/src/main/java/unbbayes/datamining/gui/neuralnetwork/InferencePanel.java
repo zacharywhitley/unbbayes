@@ -91,7 +91,7 @@ public class InferencePanel extends JPanel implements IInferencePanel{
 
   public InferencePanel() {
     try {
-      resource = ResourceBundle.getBundle(
+      resource = unbbayes.util.ResourceController.newInstance().getBundle(
     		  unbbayes.datamining.gui.neuralnetwork.resources.NeuralNetworkResource.class.getName());
       jbInit();
     }

@@ -47,7 +47,7 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
     private static Color explanationColor = Color.green;
     
     /** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
   			unbbayes.prs.bn.resources.BnResources.class.getName());
 
     /**

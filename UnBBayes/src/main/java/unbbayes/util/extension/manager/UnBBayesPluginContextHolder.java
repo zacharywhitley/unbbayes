@@ -42,6 +42,9 @@ public class UnBBayesPluginContextHolder {
 			pluginCoreID = "unbbayes.util.extension.core";
 		}
 	}
+	
+	/** Tells us if the plugin infrastructure is already initialized (published) */
+	private static boolean initialized = false;
 
 	/**
      * SingletonHolder is loaded on the first execution of Singleton.getInstance() 
@@ -72,7 +75,7 @@ public class UnBBayesPluginContextHolder {
 	 * and publish them (make them usable).
 	 * @throws IOException
 	 */
-	public static void publishPlugins() throws IOException {
+	public static synchronized void publishPlugins() throws IOException {
 		// search for files inside plugin directory
 		File pluginsDir = new File(getPluginsDirectoryName());
 		File[] plugins = pluginsDir.listFiles();
@@ -92,6 +95,9 @@ public class UnBBayesPluginContextHolder {
 	    } catch (Exception e) {
 	    	throw new UBIOException(e);
 	    }
+	    
+	    // if we published the plugins, they are initialized.
+	    initialized = true;
 	}
 	
 //	/**
@@ -142,5 +148,15 @@ public class UnBBayesPluginContextHolder {
 	public static void setPluginCoreID(String newPluginCoreID) {
 		pluginCoreID = newPluginCoreID;
 	}
+
+	/**
+	 * Tells us if the plugin infrastructure is already initialized (published).
+	 * {@link #publishPlugins()} initializes the plugins.
+	 * @return true if the plugins were published. False otherwise.
+	 */
+	public static boolean isInitialized() {
+		return initialized;
+	}
+
 
 }

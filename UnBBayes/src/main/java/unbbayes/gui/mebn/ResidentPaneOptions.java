@@ -46,7 +46,7 @@ public class ResidentPaneOptions extends JToolBar{
 	private final MEBNController mebnController; 
 
 	private static ResourceBundle resource =
-		ResourceBundle.getBundle(unbbayes.gui.resources.GuiResources.class.getName());
+		unbbayes.util.ResourceController.newInstance().getBundle(unbbayes.gui.resources.GuiResources.class.getName());
 
 	ResidentPaneOptions(MEBNController mebnController){
 		super(); 

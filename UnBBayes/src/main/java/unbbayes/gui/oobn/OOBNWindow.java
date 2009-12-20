@@ -7,12 +7,9 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Container;
 import java.awt.Cursor;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -22,10 +19,8 @@ import java.util.Collection;
 import java.util.ResourceBundle;
 
 import javax.swing.AbstractListModel;
-//import javax.swing.DropMode;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JDesktopPane;
 import javax.swing.JFileChooser;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
@@ -37,7 +32,6 @@ import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 import javax.swing.TransferHandler;
-//import javax.swing.TransferHandler.TransferSupport;
 import javax.swing.border.TitledBorder;
 
 import unbbayes.controller.ConfigurationsController;
@@ -46,24 +40,18 @@ import unbbayes.controller.IconController;
 import unbbayes.controller.MSBNController;
 import unbbayes.controller.oobn.OOBNController;
 import unbbayes.gui.FileIcon;
-import unbbayes.gui.IPersistenceAwareWindow;
 import unbbayes.gui.MDIDesktopPane;
 import unbbayes.gui.SimpleFileFilter;
-import unbbayes.gui.UnBBayesFrame;
 import unbbayes.io.BaseIO;
 import unbbayes.io.exception.LoadException;
 import unbbayes.io.exception.UBIOException;
-import unbbayes.io.mebn.UbfIO;
 import unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO;
-import unbbayes.io.oobn.impl.DefaultOOBNIO;
 import unbbayes.prs.Graph;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.msbn.AbstractMSBN;
 import unbbayes.prs.msbn.SingleAgentMSBN;
-import unbbayes.prs.msbn.SubNetwork;
 import unbbayes.prs.oobn.IOOBNClass;
 import unbbayes.prs.oobn.IObjectOrientedBayesianNetwork;
-import unbbayes.prs.oobn.impl.ObjectOrientedBayesianNetwork;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.UnBBayesModule;
 
@@ -83,7 +71,7 @@ public class OOBNWindow extends UnBBayesModule  {
 
 	/** Load resource file from this package */
 	private static ResourceBundle resource =
-		ResourceBundle.getBundle(unbbayes.gui.oobn.resources.OOBNGuiResource.class.getName());
+		unbbayes.util.ResourceController.newInstance().getBundle(unbbayes.gui.oobn.resources.OOBNGuiResource.class.getName());
 	
 	// lets stop using model object directly and start quering controller each time we need to access oobn
 	//private IObjectOrientedBayesianNetwork oobn;

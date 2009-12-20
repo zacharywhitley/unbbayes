@@ -51,7 +51,7 @@ public class BatchEvaluation {
 	private Logs logData;
 	
 	public BatchEvaluation() {
-		resource = ResourceBundle.getBundle(
+		resource = unbbayes.util.ResourceController.newInstance().getBundle(
 				unbbayes.datamining.evaluation.batchEvaluation.resources.BatchEvaluationResource.class.getName());
 		datasetData = new Datasets(resource);
 		preprocessorData = new Preprocessors(resource);

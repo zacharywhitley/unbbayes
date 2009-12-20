@@ -68,7 +68,7 @@ import unbbayes.datamining.gui.UtilsGUI.RowHeaderRenderer;
  */
 public class AttributeTypeChooserController {
 	/** Load resource file for this package */
-	private static ResourceBundle resource = ResourceBundle.getBundle(
+	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
 					unbbayes.datamining.gui.datamanipulation.resources.AttributeTypeChooserResource.class.getName());
 
 	/**

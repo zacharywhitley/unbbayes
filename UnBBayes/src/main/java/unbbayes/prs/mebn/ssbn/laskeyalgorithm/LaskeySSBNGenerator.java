@@ -50,7 +50,7 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 	private IBuilderLocalDistribution buildLocalDistribution; 
 	
 	private ResourceBundle resourceLog = 
-		ResourceBundle.getBundle(ResourcesSSBNAlgorithmLog.class.getName()); 
+		unbbayes.util.ResourceController.newInstance().getBundle(ResourcesSSBNAlgorithmLog.class.getName()); 
 	
 	private final boolean addFindings = true;
 	

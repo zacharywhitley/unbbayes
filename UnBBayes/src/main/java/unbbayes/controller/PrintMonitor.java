@@ -46,7 +46,7 @@ public class PrintMonitor implements Pageable {
   protected JDialog statusDialog;
 
   /** Load resource file from this package */
-  private static ResourceBundle resource = ResourceBundle.getBundle(
+  private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
 		  unbbayes.controller.resources.ControllerResources.class.getName());
 
   public PrintMonitor(Pageable p) {

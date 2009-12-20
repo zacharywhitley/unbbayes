@@ -36,6 +36,7 @@ import unbbayes.controller.exception.InconsistentArgumentException;
 import unbbayes.controller.exception.InvalidOperationException;
 import unbbayes.controller.mebn.MEBNFactory;
 import unbbayes.controller.mebn.MEBNFactoryImpl;
+import unbbayes.controller.resources.ControllerResources;
 import unbbayes.gui.GraphAction;
 import unbbayes.gui.MDIDesktopPane;
 import unbbayes.gui.MEBNEditionPane;
@@ -187,7 +188,8 @@ public class MEBNController  {
 	/*-------------------------------------------------------------------------*/
 
 	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceController.RS_CONTROLLER;
+	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
+			ControllerResources.class.getName());;
 
 	private NumberFormat df;
 	
@@ -1943,7 +1945,7 @@ public class MEBNController  {
 	 *--------------------------------------------------------------------------/
 	
 		/** Load resource file from this package */
-	private static ResourceBundle resourcePN = ResourceBundle.getBundle(
+	private static ResourceBundle resourcePN = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.controller.resources.ControllerResources.class.getName());
 	
 	/**

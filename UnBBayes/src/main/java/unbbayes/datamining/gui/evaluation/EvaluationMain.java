@@ -98,7 +98,7 @@ public class EvaluationMain extends JInternalFrame
 	/**Construct the frame*/
 	public EvaluationMain()
 	{ super("",true,true,true,true);
-		resource = ResourceBundle.getBundle(
+		resource = unbbayes.util.ResourceController.newInstance().getBundle(
 				unbbayes.datamining.gui.evaluation.resources.EvaluationResource.class.getName());
 		setTitle(resource.getString("title"));
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);

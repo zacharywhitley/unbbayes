@@ -158,7 +158,7 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
     
 	   
 	/** Load resource file from this package */
-    public static ResourceBundle resource = ResourceBundle.getBundle(
+    public static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
     		unbbayes.gui.resources.GuiResources.class.getName());
 	 
 	static public int iUpdate = 0;

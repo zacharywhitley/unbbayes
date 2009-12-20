@@ -37,7 +37,7 @@ import unbbayes.prs.Node;
 public class SetToolkit {
 	
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
   			unbbayes.util.resources.UtilResources.class.getName());
 
     /**

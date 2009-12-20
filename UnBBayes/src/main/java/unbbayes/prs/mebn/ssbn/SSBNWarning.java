@@ -45,7 +45,7 @@ public class SSBNWarning {
 	private int code; 
 	
 	private ResourceBundle resource = 
-		ResourceBundle.getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName());
+		unbbayes.util.ResourceController.newInstance().getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName());
 	
 	//List of codes
 	

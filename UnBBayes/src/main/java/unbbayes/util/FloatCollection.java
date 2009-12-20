@@ -39,7 +39,7 @@ public final class FloatCollection implements java.io.Serializable {
     public int size;
     
     /** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
   			unbbayes.util.resources.UtilResources.class.getName());
 
     public FloatCollection(int initialCapacity) {

@@ -56,7 +56,7 @@ public class GibbsSampling extends MatrixMonteCarloSampling implements IInferenc
 	protected Map<Node, Float[]> marginalMap;
 	
 	/** Load resource file from util */
-  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
   			unbbayes.util.resources.UtilResources.class.getName());
 	
 	public GibbsSampling() {

@@ -76,7 +76,7 @@ public class OptionsPanel extends JPanel {
     }
   }
   void jbInit() throws Exception {
-    resource = ResourceBundle.getBundle(
+    resource = unbbayes.util.ResourceController.newInstance().getBundle(
     		unbbayes.datamining.gui.neuralnetwork.resources.NeuralNetworkResource.class.getName());
     panelOptions.setBorder(BorderFactory.createEtchedBorder());
     panelOptions.setLayout(gridBagLayout1);

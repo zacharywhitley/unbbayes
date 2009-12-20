@@ -42,7 +42,7 @@ import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSBNGenerator;
 public class BuilderStructureImplTest extends TestCase{
 
 	private ResourceBundle resourceFiles = 
-		ResourceBundle.getBundle(unbbayes.prs.mebn.resources.ResourceFiles.class.getName());
+		unbbayes.util.ResourceController.newInstance().getBundle(unbbayes.prs.mebn.resources.ResourceFiles.class.getName());
 	
 	@Before
 	public void setUp() throws Exception {

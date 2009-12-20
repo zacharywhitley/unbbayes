@@ -56,7 +56,7 @@ import unbbayes.prs.exception.InvalidParentException;
 public class GraphicMode {
 	
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle(
+  	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
   			unbbayes.example.resources.ExampleResources.class.getName());
 	
     public static void main(String[] args) {

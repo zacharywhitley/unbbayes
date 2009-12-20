@@ -53,7 +53,7 @@ public class ContextFatherSSBNNode {
 	private boolean cptGenerated = false; 
 	
 	private ResourceBundle resource = 
-		ResourceBundle.getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName());	
+		unbbayes.util.ResourceController.newInstance().getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName());	
 
 	/**
 	 * 

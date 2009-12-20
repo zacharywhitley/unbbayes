@@ -65,6 +65,7 @@ import unbbayes.util.extension.builder.MSBNWindowBuilder;
 import unbbayes.util.extension.builder.NamedWindowBuilder;
 import unbbayes.util.extension.builder.NetworkWindowBuilder;
 import unbbayes.util.extension.builder.OOBNWindowBuilder;
+import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
 import edu.isi.powerloom.PLI;
 import edu.stanford.smi.protegex.owl.ProtegeOWL;
 
@@ -88,7 +89,9 @@ public class MainController {
 	
 	
 	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceBundle.getBundle(
+//	private static ResourceBundle resource = ResourceBundle.getBundle(
+//			unbbayes.controller.resources.ControllerResources.class.getName());
+	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.controller.resources.ControllerResources.class.getName());
 	
 	
