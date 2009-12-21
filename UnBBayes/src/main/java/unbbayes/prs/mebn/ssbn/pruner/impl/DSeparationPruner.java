@@ -11,11 +11,10 @@ import java.util.Set;
 import unbbayes.prs.INode;
 import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBN;
-import unbbayes.prs.mebn.ssbn.SSBNNode;
-import unbbayes.prs.mebn.ssbn.SimpleSSBNNode;
 import unbbayes.prs.mebn.ssbn.pruner.IPruner;
 import unbbayes.util.dseparation.IDSeparationUtility;
 import unbbayes.util.dseparation.impl.MSeparationUtility;
+import unbbayes.util.dseparation.impl.MSeparationUtilityIncludingSeparators;
 
 /**
  * @author Shou Matsumoto
@@ -45,7 +44,7 @@ public class DSeparationPruner implements IPruner {
 	 */
 	public static DSeparationPruner newInstance() {
 		DSeparationPruner pruner = new DSeparationPruner();
-		pruner.setDSeparationUtility(MSeparationUtility.newInstance());
+		pruner.setDSeparationUtility(MSeparationUtilityIncludingSeparators.newInstance());
 		return pruner;
 	}
 	

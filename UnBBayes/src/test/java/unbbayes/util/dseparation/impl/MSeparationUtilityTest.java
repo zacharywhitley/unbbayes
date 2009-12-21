@@ -19,7 +19,7 @@ import unbbayes.prs.exception.InvalidParentException;
  */
 public class MSeparationUtilityTest extends TestCase {
 	
-	private MSeparationUtility classUnderTest = null;
+	protected MSeparationUtility classUnderTest = null;
 	
 	/**
 	 * We do not use an instance of Graph here
@@ -27,12 +27,12 @@ public class MSeparationUtilityTest extends TestCase {
 	 * 
 	 * The nodes are identified by its index at this list.
 	 */
-	private List<INode> nodesUnderTest = null;
+	protected List<INode> nodesUnderTest = null;
 	
 	/**
 	 * Temporary representation of non-directed graph
 	 */
-	private Map<INode, Set<INode>> adjacencyMap = null;
+	protected Map<INode, Set<INode>> adjacencyMap = null;
 	
 
 	/**
@@ -113,7 +113,7 @@ public class MSeparationUtilityTest extends TestCase {
 	/**
 	 * Test method for {@link unbbayes.util.dseparation.impl.MSeparationUtility#buildClosedAdjacentNodeMap(java.util.Set)}.
 	 */
-	public final void testBuildClosedAdjacentNodeMap() {
+	public   void testBuildClosedAdjacentNodeMap() {
 		Map<INode, Set<INode>> map = this.adjacencyMap;
 		
 		// test adjacency consistency
@@ -170,7 +170,7 @@ public class MSeparationUtilityTest extends TestCase {
 	/**
 	 * Test method for {@link unbbayes.util.dseparation.impl.MSeparationUtility#makeItMoral(java.util.Map)}.
 	 */
-	public final void testMakeItMoral() {
+	public   void testMakeItMoral() {
 		Map<INode, Set<INode>> map = this.adjacencyMap;
 		
 		try {
@@ -238,7 +238,7 @@ public class MSeparationUtilityTest extends TestCase {
 	/**
 	 * Test method for {@link unbbayes.util.dseparation.impl.MSeparationUtility#getRoutes(unbbayes.prs.INode, unbbayes.prs.INode, java.util.Map)}.
 	 */
-	public final void testGetRoutesINodeINodeMapOfINodeSetOfINode() {
+	public   void testGetRoutesINodeINodeMapOfINodeSetOfINode() {
 		Set<List<INode>> routes = null;
 		
 		// routes from 0 to 5, not moral
@@ -399,7 +399,7 @@ public class MSeparationUtilityTest extends TestCase {
 	/**
 	 * Test method for {@link unbbayes.util.dseparation.impl.MSeparationUtility#getRoutes(unbbayes.prs.INode, unbbayes.prs.INode)}.
 	 */
-	public final void testGetRoutesINodeINode() {
+	public   void testGetRoutesINodeINode() {
 		Set<List<INode>> routes = null;
 		
 		// routes from 0 to 5, directed
@@ -458,7 +458,7 @@ public class MSeparationUtilityTest extends TestCase {
 	/**
 	 * Test method for {@link unbbayes.util.dseparation.impl.MSeparationUtility#getAllAncestors(java.util.Set)}.
 	 */
-	public final void testGetAllAncestors() {
+	public   void testGetAllAncestors() {
 		
 		Set<INode> param = new HashSet<INode>();;
 		
@@ -531,7 +531,7 @@ public class MSeparationUtilityTest extends TestCase {
 	/**
 	 * Test method for {@link unbbayes.util.dseparation.impl.MSeparationUtility#isDSeparated(unbbayes.prs.Graph, java.util.Set, java.util.Set, java.util.Set)}.
 	 */
-	public final void testIsDSeparated() {
+	public   void testIsDSeparated() {
 		
 		// set up sets
 		
@@ -625,7 +625,7 @@ public class MSeparationUtilityTest extends TestCase {
 	/**
 	 * Test method for {@link MSeparationUtility#getAllDSeparatedNodes(Set, Set, Set)}.
 	 */
-	public final void testGetAllDSeparatedNodes() {
+	public void testGetAllDSeparatedNodes() {
 		
 		// set up sets
 		
@@ -705,31 +705,10 @@ public class MSeparationUtilityTest extends TestCase {
 		assertTrue(this.classUnderTest.getAllDSeparatedNodes(set01, set5, new HashSet<INode>()).isEmpty());
 		assertTrue(this.classUnderTest.getAllDSeparatedNodes(set5, set01, new HashSet<INode>()).isEmpty());
 		
-//		// m-separation between 0 and {4,5}
-//		assertTrue(this.classUnderTest.isDSeparated(null, set0, set45, set23));
-//		assertTrue(this.classUnderTest.isDSeparated(null, set45, set0, set23));
-//		assertFalse(this.classUnderTest.isDSeparated(null, set0, set45, set2));
-//		assertFalse(this.classUnderTest.isDSeparated(null, set45, set0, set2));
-//		assertFalse(this.classUnderTest.isDSeparated(null, set0, set45, set3));
-//		assertFalse(this.classUnderTest.isDSeparated(null, set45, set0, set3));	
-//		assertFalse(this.classUnderTest.isDSeparated(null, set0, set45, new HashSet<INode>()));
-//		assertFalse(this.classUnderTest.isDSeparated(null, set45, set0, new HashSet<INode>()));		
-//		
-//		// m-separation between {0,1} and {4,5}
-//		assertTrue(this.classUnderTest.isDSeparated(null, set01, set45, set23));
-//		assertTrue(this.classUnderTest.isDSeparated(null, set45, set01, set23));
-//		assertFalse(this.classUnderTest.isDSeparated(null, set01, set45, set2));
-//		assertFalse(this.classUnderTest.isDSeparated(null, set45, set01, set2));
-//		assertFalse(this.classUnderTest.isDSeparated(null, set01, set45, set3));
-//		assertFalse(this.classUnderTest.isDSeparated(null, set45, set01, set3));
-//		assertFalse(this.classUnderTest.isDSeparated(null, set01, set45, new HashSet<INode>()));
-//		assertFalse(this.classUnderTest.isDSeparated(null, set45, set01, new HashSet<INode>()));
-//		
-//		// m-separation between 2 and 3
-//		assertTrue(this.classUnderTest.isDSeparated(null, set2, set3, set01));
-//		assertTrue(this.classUnderTest.isDSeparated(null, set3, set2, set01));
-//		assertFalse(this.classUnderTest.isDSeparated(null, set2, set3, set45));
-//		assertFalse(this.classUnderTest.isDSeparated(null, set3, set2, set45));
+		
+		
+		
+		
 		
 	}
 	

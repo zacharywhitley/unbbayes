@@ -273,9 +273,9 @@ public class MSeparationUtility implements IDSeparationUtility {
 	 * @param from : a node to start from
 	 * @param setTo : a set of possible destination node. A returning path will contain (only) one node within setTo at the end of path.
 	 * @param closedAdjacentNodeMap : a map indicating all node's adjacency. 
+	 * If set to null, this method will start using {@link INode#getChildren()} to build a directed path.
 	 * @param nodesNotToContain : nodes that a returned path should not contain. The algorithm will ignore
 	 * a path if it contains any node within it.
-	 * If set to null, this method will start using {@link INode#getChildren()} to build a directed path.
 	 * @param maxRoutes : maximum number of routes to obtain.
 	 * @return : a set of all path from "from" to "to". The path is represented as a list containing all
 	 * nodes included in the path. Since it is a list, it stores the visit order as well.
