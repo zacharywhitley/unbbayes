@@ -35,7 +35,7 @@ import unbbayes.util.SetToolkit;
  *@author Michael Onishi
  *@author Rommel Carvalho
  */
-public class ProbabilisticNode extends TreeVariable implements ITabledVariable, java.io.Serializable {
+public class ProbabilisticNode extends TreeVariable implements IRandomVariable, java.io.Serializable {
 			
     /**
 	 * 
@@ -125,7 +125,7 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
      *
      *@return    the CPT (potential table)
      */
-    public PotentialTable getPotentialTable() {
+    public PotentialTable getProbabilityFunction() {
         return tabelaPot;
     }
 
@@ -135,12 +135,12 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
      */
     protected void marginal() {
     	initMarginalList();
-        PotentialTable auxTab = (PotentialTable) cliqueAssociado.getPotentialTable().clone();
+        PotentialTable auxTab = (PotentialTable) ((PotentialTable)cliqueAssociado.getProbabilityFunction()).clone();
         int index = auxTab.indexOfVariable(this);
-        int size = cliqueAssociado.getPotentialTable().variableCount();
+        int size = cliqueAssociado.getProbabilityFunction().variableCount();
         for (int i = 0; i < size; i++) {
             if (i != index) {
-                auxTab.removeVariable(cliqueAssociado.getPotentialTable().getVariableAt(i));
+                auxTab.removeVariable(cliqueAssociado.getProbabilityFunction().getVariableAt(i));
             }
         }
 
@@ -198,7 +198,7 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
         	if (getChildren().get(i).getType() == Node.DECISION_NODE_TYPE || getChildren().get(i).getType() == Node.CONTINUOUS_NODE_TYPE) {
         		continue;
         	}
-       		PotentialTable auxTab = ((ITabledVariable) getChildren().get(i)).getPotentialTable();
+       		PotentialTable auxTab = (PotentialTable)((IRandomVariable) getChildren().get(i)).getProbabilityFunction();
             clones[i] = auxTab.cloneVariables();
             indexes[i] = auxTab.indexOfVariable(this);     
         }
@@ -207,7 +207,7 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
         	if (getChildren().get(i).getType() == Node.DECISION_NODE_TYPE || getChildren().get(i).getType() == Node.CONTINUOUS_NODE_TYPE) {
         		continue;
         	}
-            PotentialTable auxTab = ((ITabledVariable) getChildren().get(i)).getPotentialTable();
+            PotentialTable auxTab = (PotentialTable)((IRandomVariable) getChildren().get(i)).getProbabilityFunction();
             int l = indexes[i];
             List<Node> auxList = clones[i];            
             for (int k = auxList.size() - 1; k >= l; k--) {
@@ -226,7 +226,7 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
         	if (getChildren().get(i).getType() == Node.DECISION_NODE_TYPE || getChildren().get(i).getType() == Node.CONTINUOUS_NODE_TYPE) {
         		continue;
         	}
-            PotentialTable auxTab = ((ITabledVariable) getChildren().get(i)).getPotentialTable();
+            IProbabilityFunction auxTab = ((IRandomVariable) getChildren().get(i)).getProbabilityFunction();
             int l = indexes[i];
             List<Node> auxList = clones[i];         
             for (int k = l; k < auxList.size(); k++) {

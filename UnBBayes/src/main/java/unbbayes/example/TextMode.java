@@ -67,7 +67,7 @@ public class TextMode {
 		auxVP.setDescription(resource.getString("nodeDescription"));
 		auxVP.appendState(resource.getString("stateName0"));
 		auxVP.appendState(resource.getString("stateName1"));
-		PotentialTable auxTabPot = auxVP.getPotentialTable();
+		PotentialTable auxTabPot = auxVP.getProbabilityFunction();
 		auxTabPot.addVariable(auxVP);
 		auxTabPot.addValueAt(0, 0.99f);
 		auxTabPot.addValueAt(1, 0.01f);

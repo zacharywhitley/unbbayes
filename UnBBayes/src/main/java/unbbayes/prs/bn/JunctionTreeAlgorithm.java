@@ -80,6 +80,14 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 	public void setNetwork(Graph g) throws IllegalArgumentException {
 		this.setNet((ProbabilisticNetwork)g);
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#getNetwork()
+	 */
+	public Graph getNetwork() {
+		return this.getNet();
+	}
 
 	/**
 	 * @return the net

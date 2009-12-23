@@ -555,21 +555,21 @@ public class ConstructionController {
 	 *            A LearningNode object.
 	 */
 	private void normalize(LearningNode variable) {
-		for (int c = 0; c < variable.getPotentialTable().tableSize()/* .getDados().size() */; c += variable
+		for (int c = 0; c < variable.getProbabilityFunction().tableSize()/* .getDados().size() */; c += variable
 				.getEstadoTamanho()/* .noEstados() */) {
 			float sum = 0;
 			for (int i = 0; i < variable.getEstadoTamanho(); i++) {
-				sum += variable.getPotentialTable().getValue(c + i);
+				sum += variable.getProbabilityFunction().getValue(c + i);
 			}
 			if (sum == 0) {
 				for (int i = 0; i < variable.getEstadoTamanho()/* .noEstados() */; i++) {
-					variable.getPotentialTable().setValue(c + i,
+					variable.getProbabilityFunction().setValue(c + i,
 							1 / variable.getEstadoTamanho());
 				}
 			} else {
 				for (int i = 0; i < variable.getEstadoTamanho()/* .noEstados() */; i++) {
-					variable.getPotentialTable().setValue(c + i,
-							variable.getPotentialTable().getValue(c + i) / sum);
+					variable.getProbabilityFunction().setValue(c + i,
+							variable.getProbabilityFunction().getValue(c + i) / sum);
 				}
 			}
 		}

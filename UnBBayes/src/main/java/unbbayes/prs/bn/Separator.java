@@ -31,7 +31,7 @@ import unbbayes.prs.id.UtilityTable;
  *
  *@author     Michael e Rommel
  */
-public class Separator implements ITabledVariable, java.io.Serializable {
+public class Separator implements IRandomVariable, java.io.Serializable {
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
@@ -101,7 +101,7 @@ public class Separator implements ITabledVariable, java.io.Serializable {
      *
      *@return    tabela de potencial associada ao separador
      */
-    public PotentialTable getPotentialTable() {
+    public PotentialTable getProbabilityFunction() {
         return tabelaPot;
     }
 

@@ -39,7 +39,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 
-import unbbayes.prs.bn.ITabledVariable;
+import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 
@@ -106,8 +106,8 @@ public class TestUGraphEditor extends JFrame implements WindowStateListener {
 				node
 						.setName("longname-longname-longname-longname-longname-longname-longname-longname");
 				node.setDescription(node.getName());
-				PotentialTable auxTabProb = ((ITabledVariable) node)
-						.getPotentialTable();
+				PotentialTable auxTabProb = (PotentialTable)((IRandomVariable) node)
+						.getProbabilityFunction();
 				auxTabProb.addVariable(node);
 				auxTabProb.setValue(0, 1);
 
@@ -126,8 +126,8 @@ public class TestUGraphEditor extends JFrame implements WindowStateListener {
 				node2.appendState("firstStateProbabilisticName");
 				node2.setName("123456789abcdefghijklmnopqrstuvwxyz");
 				node2.setDescription(node2.getName());
-				PotentialTable auxTabProb2 = ((ITabledVariable) node2)
-						.getPotentialTable();
+				PotentialTable auxTabProb2 =(PotentialTable) ((IRandomVariable) node2)
+						.getProbabilityFunction();
 				auxTabProb2.addVariable(node2);
 				auxTabProb2.setValue(0, 1);
 

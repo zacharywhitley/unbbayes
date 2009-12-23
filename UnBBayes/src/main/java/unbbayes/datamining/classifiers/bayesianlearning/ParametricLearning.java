@@ -26,6 +26,7 @@ import unbbayes.datamining.datamanipulation.Attribute;
 import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.prs.Edge;
+import unbbayes.prs.bn.IProbabilityFunction;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -227,14 +228,14 @@ public ProbabilisticNetwork getProbabilisticNetwork(ArrayList<int[]> pa) throws 
       	{   node.appendState(""+states.get(j));
       	}
       	// Cria��o do Tabela de probabilidades
-      	PotentialTable tab = node.getPotentialTable();
+      	IProbabilityFunction tab = node.getProbabilityFunction();
       	tab.addVariable(node);
 		net.addNode(node);
     }
    	for(int i=0; i<x.length; i++)
     {
     	ProbabilisticNode node = (ProbabilisticNode)net.getNodeAt(i);
-      	PotentialTable tab = node.getPotentialTable();
+      	PotentialTable tab = node.getProbabilityFunction();
       	int[] parents = (int[])pa.get(i);
       	for (int j=0;j<parents.length;j++)
       	{

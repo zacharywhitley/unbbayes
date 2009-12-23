@@ -29,7 +29,7 @@ import unbbayes.prs.Node;
 public abstract class TreeVariable extends Node implements java.io.Serializable {
 
     // Clique que a vari�vel est� associada.
-    protected ITabledVariable cliqueAssociado;
+    protected IRandomVariable cliqueAssociado;
 
     // Armazena marginais e evid�ncias.
     protected float[] marginalList;
@@ -138,7 +138,7 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
      *
      *@return    clique associado
      */
-    protected ITabledVariable getAssociatedClique() {
+    protected IRandomVariable getAssociatedClique() {
         return this.cliqueAssociado;
     }
 
@@ -147,14 +147,14 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
      *
      *@param  clique  clique associado a esta variavel.
      */
-    protected void setAssociatedClique(ITabledVariable clique) {
+    protected void setAssociatedClique(IRandomVariable clique) {
         this.cliqueAssociado = clique;
     }
 	
 
 	protected void updateEvidences() {
 		if (evidence != -1) {						
-			PotentialTable auxTab = cliqueAssociado.getPotentialTable();
+			PotentialTable auxTab = (PotentialTable)cliqueAssociado.getProbabilityFunction();
 			int index = auxTab.indexOfVariable(this);
 			auxTab.computeFactors();
 			updateRecursive(auxTab, 0, 0, index, 0);			

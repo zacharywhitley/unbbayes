@@ -102,7 +102,7 @@ public class ContextFatherSSBNNode {
 		
 		if(!isCptGenerated()){
 			
-			PotentialTable cpt = probNode.getPotentialTable();
+			PotentialTable cpt = probNode.getProbabilityFunction();
 			cpt.addVariable(probNode);
 			
 			float probabilityOfEachState = 1.0f / possibleValues.size(); 

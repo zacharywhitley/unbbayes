@@ -286,7 +286,7 @@ public abstract class AMonteCarloSampling implements IMonteCarloSampling {
 	 */
 	protected double[] getProbabilityMassFunction(int[] sampledStates, List<Integer> parentsIndexes,
 			ProbabilisticNode node) {
-				PotentialTable pt = node.getPotentialTable();
+				PotentialTable pt = node.getProbabilityFunction();
 				int statesSize = node.getStatesSize();
 				int nodeIndex;
 				double[] pmf = new double[statesSize];

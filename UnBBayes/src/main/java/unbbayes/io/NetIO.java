@@ -49,7 +49,7 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ExplanationPhrase;
-import unbbayes.prs.bn.ITabledVariable;
+import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -573,15 +573,16 @@ public class NetIO implements BaseIO {
 		
 		if (st.sval.equals("potential")) {
 			
-			ITabledVariable auxTableVar = null;
+			IRandomVariable auxTableVar = null;
 			PotentialTable auxPotentialTable = null;
 			
 			getNext(st);	// node name
 			Node auxNode1 = net.getNode(st.sval);
 
-			if (auxNode1 instanceof ITabledVariable) {
-				auxTableVar = (ITabledVariable) auxNode1;
-				auxPotentialTable = auxTableVar.getPotentialTable();
+			if (auxNode1 instanceof IRandomVariable) {
+				auxTableVar = (IRandomVariable) auxNode1;
+				// TODO find a way to implement without assumption of potential table
+				auxPotentialTable = (PotentialTable)auxTableVar.getProbabilityFunction();
 				auxPotentialTable.addVariable(auxNode1);
 			}
 
@@ -608,7 +609,7 @@ public class NetIO implements BaseIO {
 			 * mantain consistency in the program.
 			 * Internal pre-requisite.
 			 */
-			if (auxNode1 instanceof ITabledVariable) {
+			if (auxNode1 instanceof IRandomVariable) {
 				int sizeVetor = auxPotentialTable.variableCount() / 2;
 				for (int k = 1; k <= sizeVetor; k++) {
 					Object temp = auxPotentialTable.getVariableAt(k);
@@ -789,7 +790,7 @@ public class NetIO implements BaseIO {
 	protected void loadPotentialDataOrdinal(StreamTokenizer st, Node node)
 								throws LoadException , IOException {
 		
-		PotentialTable auxPotentialTable = ((ITabledVariable)node).getPotentialTable();
+		PotentialTable auxPotentialTable = (PotentialTable)((IRandomVariable)node).getProbabilityFunction();
 		
 		if (node.getType() == Node.DECISION_NODE_TYPE) {
 			throw new LoadException(
@@ -1033,9 +1034,9 @@ public class NetIO implements BaseIO {
 			stream.print(", " + continuous.getCnNormalDistribution().getVariance(0));
 			stream.println(" );");
 		
-		} else if (node instanceof ITabledVariable) {
+		} else if (node instanceof IRandomVariable) {
 			PotentialTable auxTabPot =
-				((ITabledVariable) node).getPotentialTable();
+				(PotentialTable)((IRandomVariable) node).getProbabilityFunction();
 			int sizeVa1 = auxTabPot.variableCount();
 
 			stream.print(" data = ");
@@ -1062,7 +1063,7 @@ public class NetIO implements BaseIO {
 
 				Node auxNo2;
 				for (int c3 = 0; c3 < sizeVa1; c3++) {
-					auxNo2 = auxTabPot.getVariableAt(c3);
+					auxNo2 = (Node)auxTabPot.getVariableAt(c3);
 					celulas *= auxNo2.getStatesSize();
 					if (((c2 + 1) % celulas) == 0) {
 						stream.print(")");

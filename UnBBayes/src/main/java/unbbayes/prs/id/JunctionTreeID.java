@@ -58,7 +58,7 @@ public class JunctionTreeID extends JunctionTree implements java.io.Serializable
         PotentialTable originalSeparatorUtilityTable = (PotentialTable) separator.getUtilityTable().clone();
 
         PotentialTable dummyTable = (PotentialTable) clique2.getUtilityTable().clone();
-        dummyTable.directOpTab(clique2.getPotentialTable(), PotentialTable.PRODUCT_OPERATOR);
+        dummyTable.directOpTab(clique2.getProbabilityFunction(), PotentialTable.PRODUCT_OPERATOR);
         for (int i = 0; i < toDie.size(); i++) {
             dummyTable.removeVariable(toDie.get(i));
         }
@@ -66,7 +66,7 @@ public class JunctionTreeID extends JunctionTree implements java.io.Serializable
         for (int i = separator.getUtilityTable().tableSize()-1; i >= 0; i--) {
             separator.getUtilityTable().setValue(i, dummyTable.getValue(i));
         }
-        separator.getUtilityTable().directOpTab(separator.getPotentialTable(), PotentialTable.DIVISION_OPERATOR);
+        separator.getUtilityTable().directOpTab(separator.getProbabilityFunction(), PotentialTable.DIVISION_OPERATOR);
         dummyTable = (PotentialTable) separator.getUtilityTable().clone();
         dummyTable.directOpTab(originalSeparatorUtilityTable, PotentialTable.MINUS_OPERATOR);
         clique1.getUtilityTable().opTab(dummyTable, PotentialTable.PLUS_OPERATOR);

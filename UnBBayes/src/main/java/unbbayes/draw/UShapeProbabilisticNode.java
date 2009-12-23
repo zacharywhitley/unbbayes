@@ -211,7 +211,7 @@ public class UShapeProbabilisticNode extends UShape
 					/*
 					PotentialTable potTab;
 					
-					potTab = ((ITabledVariable) node).getPotentialTable();
+					potTab = ((IRandomVariable) node).getPotentialTable();
 					stateShape.setMarginal(potTab.getValue(i));
 					//stateShape.setMarginal((float)(1/(float)(size-1))*(float)i);
 					//stateShape.setMarginal(treeVariable.getMarginalAt(i));

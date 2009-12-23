@@ -285,10 +285,10 @@ public class OOBNNodeGraphicalWrapperPointer extends OOBNNodeGraphicalWrapper {
 
 	/**
 	 * @return
-	 * @see unbbayes.prs.bn.ProbabilisticNode#getPotentialTable()
+	 * @see unbbayes.prs.bn.ProbabilisticNode#getProbabilityFunction()
 	 */
-	public PotentialTable getPotentialTable() {
-		return pointsTo.getPotentialTable();
+	public PotentialTable getProbabilityFunction() {
+		return pointsTo.getProbabilityFunction();
 	}
 
 	/**

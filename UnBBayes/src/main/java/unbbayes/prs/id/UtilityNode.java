@@ -25,7 +25,7 @@ import java.awt.Graphics2D;
 import java.util.ResourceBundle;
 
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.ITabledVariable;
+import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
 
 /**
@@ -34,7 +34,7 @@ import unbbayes.prs.bn.PotentialTable;
  *@author Michael Onishi 
  *@author Rommel Carvalho
  */
-public class UtilityNode extends Node implements ITabledVariable, java.io.Serializable {
+public class UtilityNode extends Node implements IRandomVariable, java.io.Serializable {
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
@@ -82,7 +82,7 @@ public class UtilityNode extends Node implements ITabledVariable, java.io.Serial
      *
      *@return    The tabelaPot value
      */
-    public PotentialTable getPotentialTable() {
+    public PotentialTable getProbabilityFunction() {
         return this.utilTable;
     }
 

@@ -205,8 +205,8 @@ public class OOBNToSingleAgentMSBNCompiler implements IOOBNCompiler {
 						if ( this.getMultipleSubNetworkConverter().isIgnorableNode( parentClone ) ) {
 							// since the parent is not persistent and will vanish, this node must store its CPT.
 							// Let's copy it
-							PotentialTable parentCpt = parentClone.getPotentialTable();
-							PotentialTable cpt = probabilisticNode.getPotentialTable();
+							PotentialTable parentCpt = parentClone.getProbabilityFunction();
+							PotentialTable cpt = probabilisticNode.getProbabilityFunction();
 							for (int i = 0; i < cpt.tableSize(); i++) {
 								cpt.setValue(i, parentCpt.getValue(i));	
 							}
@@ -215,7 +215,7 @@ public class OOBNToSingleAgentMSBNCompiler implements IOOBNCompiler {
 							// and thus, it behaves like it's using the CPT from a node defined in another subnetwork (another network section)
 							// which in our case is in the upper instance node. This is what we want.
 							float linearValue = 1f / probabilisticNode.getStatesSize();
-							PotentialTable cpt = probabilisticNode.getPotentialTable();
+							PotentialTable cpt = probabilisticNode.getProbabilityFunction();
 							for (int i = 0; i < cpt.tableSize(); i++) {
 								cpt.setValue(i, linearValue);	
 							}
@@ -308,7 +308,7 @@ public class OOBNToSingleAgentMSBNCompiler implements IOOBNCompiler {
 			// Obtain CPT in order to re-map CPT variables
 			PotentialTable cpt = null;
 			if (cloneNode instanceof ProbabilisticNode) {
-				cpt = ((ProbabilisticNode)cloneNode).getPotentialTable();
+				cpt = ((ProbabilisticNode)cloneNode).getProbabilityFunction();
 				// re-map the node itself before re-mapping parents
 				cpt.setVariableAt(0, cloneNode);	// we assume the node itself was the 1st variable
 			}

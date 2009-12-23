@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.ITabledVariable;
+import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.exception.InvalidParentException;
@@ -563,7 +563,7 @@ public class OOBNNodeGraphicalWrapper extends ProbabilisticNode {
 		
 		upperNode.addInnerNode(node.getWrappedNode());
 		
-		PotentialTable auxTabProb = ((ITabledVariable) node).getPotentialTable();
+		PotentialTable auxTabProb = (PotentialTable)((IRandomVariable) node).getProbabilityFunction();
 		auxTabProb.addVariable(node);
 		
 		// initialize values using default linear values

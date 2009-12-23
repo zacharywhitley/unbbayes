@@ -156,7 +156,7 @@ public class CPTForSSBNNodeGenerator {
 				}
 			}else{
 				ssbnNode.getCompiler().generateCPT(ssbnNode);
-				PotentialTable cpt = ssbnNode.getProbNode().getPotentialTable(); 
+				PotentialTable cpt = ssbnNode.getProbNode().getProbabilityFunction(); 
 				GUIPotentialTable gpt = new GUIPotentialTable(cpt); 
 //				gpt.showTable("Table for Node " + ssbnNode);
 			}
@@ -233,7 +233,7 @@ public class CPTForSSBNNodeGenerator {
 			
 			int sizeCPTOfEntity = 0; 
 			
-			PotentialTable cptResidentNode = ssbnNode.getProbNode().getPotentialTable(); 
+			PotentialTable cptResidentNode = ssbnNode.getProbNode().getProbabilityFunction(); 
 						
 			//Step 2: Build the CPT's for the diverses groups of parents. 
 			int parentPosition = 1; 

@@ -220,7 +220,7 @@ public class NaiveBayes extends DistributionClassifier implements Serializable {
 			node.setPosition(50 + ((numAttributes - 2) * 50), 30);
 		}
 		
-		PotentialTable tab = node.getPotentialTable();
+		PotentialTable tab = node.getProbabilityFunction();
 		tab.addVariable(node);
 		for (int i = 0; i < numValues; i++) {   
 			tab.setValue(i, priors[i]);
@@ -247,7 +247,7 @@ public class NaiveBayes extends DistributionClassifier implements Serializable {
 		}
 
 		/* Cria��o do Tabela de probabilidades */
-		PotentialTable tab = node.getPotentialTable();
+		PotentialTable tab = node.getProbabilityFunction();
 		tab.addVariable(node);
 		node.setPosition(width, 100);
 		width += 100;

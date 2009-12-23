@@ -45,7 +45,7 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ExplanationPhrase;
-import unbbayes.prs.bn.ITabledVariable;
+import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -428,12 +428,12 @@ public class DneIO implements BaseIO {
 	protected void loadParents(StreamTokenizer st, Node node, SingleEntityNetwork net) 
 											throws IOException , LoadException {
 		
-			ITabledVariable auxTableVar = null;
+			IRandomVariable auxTableVar = null;
 			PotentialTable auxPotentialTable = null;
 			
-			if (node instanceof ITabledVariable) {
-				auxTableVar = (ITabledVariable) node;
-				auxPotentialTable = auxTableVar.getPotentialTable();
+			if (node instanceof IRandomVariable) {
+				auxTableVar = (IRandomVariable) node;
+				auxPotentialTable = (PotentialTable)auxTableVar.getProbabilityFunction();
 				auxPotentialTable.addVariable(node);
 			}
 
@@ -454,7 +454,7 @@ public class DneIO implements BaseIO {
 			 * mantain consistency in the program.
 			 * Internal pre-requisite.
 			 */
-			if (node instanceof ITabledVariable) {
+			if (node instanceof IRandomVariable) {
 				int sizeVetor = auxPotentialTable.variableCount() / 2;
 				for (int k = 1; k <= sizeVetor; k++) {
 					Object temp = auxPotentialTable.getVariableAt(k);
@@ -554,7 +554,7 @@ public class DneIO implements BaseIO {
 	protected void loadPotentialDataOrdinal(StreamTokenizer st, Node node)
 								throws LoadException , IOException {
 		
-		PotentialTable auxPotentialTable = ((ITabledVariable)node).getPotentialTable();
+		PotentialTable auxPotentialTable = (PotentialTable)((IRandomVariable)node).getProbabilityFunction();
 		
 		if (node.getType() == Node.DECISION_NODE_TYPE) {
 			throw new LoadException(
@@ -770,9 +770,9 @@ public class DneIO implements BaseIO {
 			stream.print(", " + continuous.getCnNormalDistribution().getVariance(0));
 			stream.println(" );");
 		
-		} else if (node instanceof ITabledVariable) {
+		} else if (node instanceof IRandomVariable) {
 			PotentialTable auxTabPot =
-				((ITabledVariable) node).getPotentialTable();
+				(PotentialTable)((IRandomVariable) node).getProbabilityFunction();
 			int sizeVa1 = auxTabPot.variableCount();
 
 			stream.print(" data = ");
@@ -799,7 +799,7 @@ public class DneIO implements BaseIO {
 
 				Node auxNo2;
 				for (int c3 = 0; c3 < sizeVa1; c3++) {
-					auxNo2 = auxTabPot.getVariableAt(c3);
+					auxNo2 = (Node)auxTabPot.getVariableAt(c3);
 					celulas *= auxNo2.getStatesSize();
 					if (((c2 + 1) % celulas) == 0) {
 						stream.print(")");

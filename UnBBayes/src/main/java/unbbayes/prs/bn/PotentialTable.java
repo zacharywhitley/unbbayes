@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.util.FloatCollection;
 import unbbayes.util.SetToolkit;
@@ -36,7 +37,7 @@ import unbbayes.util.SetToolkit;
  * @author Michael e Rommel
  * @version 21 de Setembro de 2001
  */
-public abstract class PotentialTable implements Cloneable, java.io.Serializable {
+public abstract class PotentialTable implements Cloneable, java.io.Serializable, IProbabilityFunction {
 	public static final int PRODUCT_OPERATOR = 0;
 	public static final int DIVISION_OPERATOR = 1;
 	public static final int PLUS_OPERATOR = 2;
@@ -117,11 +118,11 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 		}
 	}
 
-	/**
-	 * This method has to be called when there is a change in any of the
-	 * variables in this table.
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.IProbabilityFunction#notifyModification()
 	 */
-	public void variableModified() {
+	public void notifyModification() {
 	   modified = true;
 	}
 
@@ -138,16 +139,24 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 		return variableList.indexOf(node);
 	}
 
-	public final int variableCount() {
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.IProbabilityFunction#variableCount()
+	 */
+	public int variableCount() {
 		return variableList.size();
 	}
 
-	public void setVariableAt(int index, Node node) {
-		variableModified();
-		variableList.set(index, node);
+	public void setVariableAt(int index, INode node) {
+		notifyModification();
+		variableList.set(index, (Node)node);
 	}
 
-	public final Node getVariableAt(int index) {
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.IProbabilityFunction#getVariableAt(int)
+	 */
+	public INode getVariableAt(int index) {
 		return variableList.get(index);
 	}
 	
@@ -260,15 +269,12 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 		return dataPT.data[getLinearCoord(coordenadas)];
 	}
 
-	/**
-	 * Insere vari�vel na tabela.
-	 * 
-	 * @param variavel
-	 *            variavel a ser inserida na tabela.
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.IProbabilityFunction#addVariable(unbbayes.prs.Node)
 	 */
-	public void addVariable(Node variavel) {
+	public void addVariable(INode variavel) {
 		/** @todo Reimplementar este m�todo de forma correta. */
-		variableModified();
+		notifyModification();
 		int noEstados = variavel.getStatesSize();
 		int noCelBasica = this.dataPT.size;
 		if (variableList.size() == 0) {
@@ -283,7 +289,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 				}
 			}
 		}
-		variableList.add(variavel);
+		variableList.add((Node)variavel);
 	}
 	
 	/**
@@ -310,14 +316,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 		return variableList.size(); 
 	}
 
-	/**
-	 * Retira a vari�vel da tabela. Utilizado tamb�m para marginaliza��o
-	 * generalizada.
-	 * 
-	 * @param variavel
-	 *            Variavel a ser retirada da tabela.
-	 */
-	public abstract void removeVariable(Node variavel);
+	
 	
 	/**
 	 * Remove the variable of the table. 
@@ -329,6 +328,12 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	 * @param normalize True if is to normalize the cpt after the node remotion
 	 */	
 	public abstract void removeVariable(Node variable, boolean normalize); 
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.IProbabilityFunction#removeVariable(unbbayes.prs.INode)
+	 */
+	public abstract void removeVariable(INode variable);
 	
 	/**
 	 * Returns a new instance of a PotentialTable of the current implemented

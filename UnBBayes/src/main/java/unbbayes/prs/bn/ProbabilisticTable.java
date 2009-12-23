@@ -46,7 +46,7 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 	 *
 	 *@param  variavel  Variavel a ser retirada da tabela.
 	 */
-	public void removeVariable(Node variavel) {
+	public void removeVariable(unbbayes.prs.INode variavel) {
 		computeFactors();
 		int index = variableList.indexOf(variavel);
 		if (variavel.getType() == Node.DECISION_NODE_TYPE) {
@@ -65,7 +65,7 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 //		  sum(variaveis.size()-1, index, 0, 0);
 		  sum(index);
 		}
-		variableModified();
+		notifyModification();
 		variableList.remove(index);
 	}
 
@@ -101,7 +101,7 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 				}
 			}
 		}
-		variableModified();
+		notifyModification();
 		variableList.remove(index);
 	}
 	

@@ -180,7 +180,7 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 				Node nodeToAdd = subnet.getNode(subnetNodeName);
 				if (nodeToAdd == null) {
 					nodeToAdd = ((ProbabilisticNode)pn.getNode(subnetNodeName)).basicClone();
-					((ProbabilisticNode)nodeToAdd).getPotentialTable().addVariable(nodeToAdd);
+					((ProbabilisticNode)nodeToAdd).getProbabilityFunction().addVariable(nodeToAdd);
 					subnet.addNode(nodeToAdd);
 				}
 			}
@@ -207,8 +207,8 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 				ProbabilisticNode node = ((ProbabilisticNode)pn.getNode(clonedNode.getName()));
 				if (isResident) {
 					// If the node is resident, then it has all its parents in the subnetwork, so we just need to clone the CPT
-					PotentialTable cpt = node.getPotentialTable();
-					PotentialTable clonedCpt = ((ProbabilisticNode)clonedNode).getPotentialTable();
+					PotentialTable cpt = node.getProbabilityFunction();
+					PotentialTable clonedCpt = ((ProbabilisticNode)clonedNode).getProbabilityFunction();
 					for (int i = 0; i < clonedCpt.tableSize(); i++) {
 						clonedCpt.setValue(i, cpt.getValue(i));	
 					}
@@ -218,7 +218,7 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 					// and thus, it behaves like it's using the CPT from a node defined in another subnetwork (another network section)
 					// which in our case is in the upper instance node. This is what we want.
 					float linearValue = 1f / clonedNode.getStatesSize();
-					PotentialTable cpt = ((ProbabilisticNode)clonedNode).getPotentialTable();
+					PotentialTable cpt = ((ProbabilisticNode)clonedNode).getProbabilityFunction();
 					for (int i = 0; i < cpt.tableSize(); i++) {
 						cpt.setValue(i, linearValue);	
 					}

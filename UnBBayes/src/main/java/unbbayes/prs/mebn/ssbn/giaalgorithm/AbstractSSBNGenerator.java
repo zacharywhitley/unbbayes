@@ -1077,7 +1077,7 @@ public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 			
 			int sizeCPTOfEntity = 0; 
 			
-			PotentialTable cptResidentNode = ssbnNode.getProbNode().getPotentialTable(); 
+			PotentialTable cptResidentNode = ssbnNode.getProbNode().getProbabilityFunction(); 
 						
 			//Step 2: Construir as tabelas para os diversos grupos de pais
 			int position = 1; 

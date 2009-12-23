@@ -26,6 +26,7 @@ import java.util.List;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.JunctionTree;
+import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.util.SetToolkit;
 
@@ -33,7 +34,7 @@ import unbbayes.util.SetToolkit;
  * SubNetwork of a multi-sectioned network.
  * @author Michael S. Onishi
  */
-public class SubNetwork extends SingleEntityNetwork {
+public class SubNetwork extends ProbabilisticNetwork {
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		

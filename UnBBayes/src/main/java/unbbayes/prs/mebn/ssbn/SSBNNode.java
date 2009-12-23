@@ -1347,8 +1347,8 @@ public class SSBNNode implements INode {
 				this.getProbNode().appendState(entity.getName());
 			}
 		}
-		if (this.getProbNode().getPotentialTable() != null) {
-			this.getProbNode().getPotentialTable().addVariable(this.getProbNode());
+		if (this.getProbNode().getProbabilityFunction() != null) {
+			this.getProbNode().getProbabilityFunction().addVariable(this.getProbNode());
 		}
 	}
 

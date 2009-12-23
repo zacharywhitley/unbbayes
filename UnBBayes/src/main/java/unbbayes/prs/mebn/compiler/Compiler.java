@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.IProbabilityFunction;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.InputNode;
@@ -319,7 +320,7 @@ public class Compiler implements ICompiler {
 		comp.ssbnnode = ssbnnode;
 		if (comp.ssbnnode != null) {
 			if (comp.ssbnnode.getProbNode() != null) {
-				comp.cpt = comp.ssbnnode.getProbNode().getPotentialTable();
+				comp.cpt = comp.ssbnnode.getProbNode().getProbabilityFunction();
 			}			
 		}
 		return comp;
@@ -407,7 +408,7 @@ public class Compiler implements ICompiler {
 		String pseudocode = this.node.getTableFunction();
 		
 		if (this.ssbnnode.getProbNode() != null) {
-			this.setPotentialTable(this.ssbnnode.getProbNode().getPotentialTable());			
+			this.setPotentialTable(this.ssbnnode.getProbNode().getProbabilityFunction());			
 		}
 		
 		this.init(pseudocode);
@@ -469,7 +470,7 @@ public class Compiler implements ICompiler {
 		if (this.text == null || this.tempTable.isEmptyNestedClauses() ) {
 			// Special condition: if pseudocode was not declared, use linear (equal) distribution instead
 			this.generateLinearDistroCPT(this.ssbnnode.getProbNode());
-			return this.ssbnnode.getProbNode().getPotentialTable();
+			return this.ssbnnode.getProbNode().getProbabilityFunction();
 		}
 		
 		// initialization
@@ -500,7 +501,7 @@ public class Compiler implements ICompiler {
 		}
 		
 		// extracting base values
-		this.cpt = this.ssbnnode.getProbNode().getPotentialTable();
+		this.cpt = this.ssbnnode.getProbNode().getProbabilityFunction();
 		
 		ArrayList<SSBNNode> parents = null;
 		try {
@@ -662,7 +663,7 @@ public class Compiler implements ICompiler {
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.compiler.ICompiler#generateCPT()
 	 */
-	protected PotentialTable generateCPT() throws MEBNException {
+	protected IProbabilityFunction generateCPT() throws MEBNException {
 		return this.generateCPT(this.getSSBNNode());
 	}
 
@@ -691,10 +692,10 @@ public class Compiler implements ICompiler {
 	 * only cells w/ 25% value (1/4).
 	 * @param probNode
 	 */
-	public PotentialTable generateLinearDistroCPT(ProbabilisticNode probNode) {
+	public IProbabilityFunction generateLinearDistroCPT(ProbabilisticNode probNode) {
 		float value = 1.0F / probNode.getStatesSize();
-		PotentialTable table = probNode.getPotentialTable();
-		for (int i = 0; i < probNode.getPotentialTable().tableSize(); i++) {
+		PotentialTable table = probNode.getProbabilityFunction();
+		for (int i = 0; i < probNode.getProbabilityFunction().tableSize(); i++) {
 			 // TODO in float operation, since 1/3 + 1/3 + 1/3 might not be 1, implement some precision control
 			 table.setValue(i, value);
 		}
@@ -1930,7 +1931,7 @@ public class Compiler implements ICompiler {
 	/**
 	 * @return the PotentialTable
 	 */
-	protected PotentialTable getPotentialTable() {
+	protected IProbabilityFunction getPotentialTable() {
 		return cpt;
 	}
 

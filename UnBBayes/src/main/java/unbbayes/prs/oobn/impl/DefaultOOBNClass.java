@@ -14,8 +14,8 @@ import unbbayes.gui.oobn.node.OOBNNodeGraphicalWrapper;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.ITabledVariable;
-import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.IProbabilityFunction;
+import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.exception.InvalidParentException;
@@ -263,9 +263,9 @@ public class DefaultOOBNClass extends ProbabilisticNetwork implements IOOBNClass
 		
 		edge.getDestinationNode().addParent(edge.getOriginNode());
 	    edgeList.add(edge);
-	    if (edge.getDestinationNode() instanceof ITabledVariable) {
-			ITabledVariable v2 = (ITabledVariable) edge.getDestinationNode();
-			PotentialTable auxTab = v2.getPotentialTable();
+	    if (edge.getDestinationNode() instanceof IRandomVariable) {
+			IRandomVariable v2 = (IRandomVariable) edge.getDestinationNode();
+			IProbabilityFunction auxTab = v2.getProbabilityFunction();
 			auxTab.addVariable(edge.getOriginNode());
 		}
 	}

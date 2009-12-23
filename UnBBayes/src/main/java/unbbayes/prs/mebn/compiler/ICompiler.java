@@ -20,6 +20,7 @@
  */
 package unbbayes.prs.mebn.compiler;
 
+import unbbayes.prs.bn.IProbabilityFunction;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.compiler.exception.UndeclaredTableException;
@@ -68,6 +69,6 @@ public interface ICompiler {
 	 * only cells w/ 25% value (1/4).
 	 * @param probNode
 	 */
-	public PotentialTable generateLinearDistroCPT(ProbabilisticNode probNode);
+	public IProbabilityFunction generateLinearDistroCPT(ProbabilisticNode probNode);
 	
 }

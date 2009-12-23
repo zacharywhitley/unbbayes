@@ -35,7 +35,7 @@ import unbbayes.prs.id.UtilityTable;
  *@author    Michael e Rommel
  *@version   27 de Junho de 2001
  */
-public class Clique implements ITabledVariable, java.io.Serializable {
+public class Clique implements IRandomVariable, java.io.Serializable {
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;	
@@ -319,7 +319,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
      *
      *@return    tabela de potencial.
      */
-    public PotentialTable getPotentialTable() {
+    public PotentialTable getProbabilityFunction() {
         return potentialTable;
     }
 

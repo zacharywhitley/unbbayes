@@ -20,6 +20,11 @@ public interface IInferenceAlgorithm {
 	 */
 	public void setNetwork(Graph g) throws IllegalArgumentException;
 	
+	/**
+	 * @return Gets the network (graph) treated by this algorithm.
+	 * 
+	 */
+	public Graph getNetwork();
 	
 	
 	/**

@@ -56,7 +56,7 @@ public class NetworkCompilationLogManager extends TextLogManager{
             }
 
             append(resource.getString("potentialTableName"));
-            auxTab = auxClique.getPotentialTable();
+            auxTab = auxClique.getProbabilityFunction();
             int sizeDados = auxTab.tableSize();
             for (int c2 = 0; c2 < sizeDados; c2++) {
                 append(df.format(auxTab.getValue(c2)) + " ");
@@ -86,7 +86,7 @@ public class NetworkCompilationLogManager extends TextLogManager{
                 append(node.getName() + "-");
             }
             append("\n");
-            auxTab = auxSep.getPotentialTable();
+            auxTab = auxSep.getProbabilityFunction();
             if (auxTab != null) {
                 int sizeDados = auxTab.tableSize();
                 for (int c2 = 0; c2 < sizeDados; c2++) {

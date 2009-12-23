@@ -27,7 +27,8 @@ import unbbayes.io.xmlbif.version4.xmlclasses.ObjectFactory;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ExplanationPhrase;
-import unbbayes.prs.bn.ITabledVariable;
+import unbbayes.prs.bn.IProbabilityFunction;
+import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
@@ -149,7 +150,7 @@ public class XMLBIFIO {
 				
 				List ldpi = (ArrayList) dpis.getDPI(); 
 				
-				PotentialTable table = ((ITabledVariable)childNode).getPotentialTable();	
+				PotentialTable table = (PotentialTable)((IRandomVariable)childNode).getProbabilityFunction();	
 				
 				int statesSize = table.getVariableAt(0).getStatesSize();
 				int num = table.tableSize() / statesSize;		
@@ -425,10 +426,10 @@ public class XMLBIFIO {
 			BIFType.NETWORKType.POTENTIALType.POTType.CONDSETType condset = of.createBIFTypeNETWORKTypePOTENTIALTypePOTTypeCONDSETType(); 
 			
 			//CONDLEM
-			PotentialTable table = ((ITabledVariable) node).getPotentialTable();			
+			PotentialTable table = (PotentialTable)((IRandomVariable) node).getProbabilityFunction();			
 			for (int j = 1; j < table.variableCount(); j++) {
 				BIFType.NETWORKType.POTENTIALType.POTType.CONDSETType.CONDLEMType condlen = of.createBIFTypeNETWORKTypePOTENTIALTypePOTTypeCONDSETTypeCONDLEMType();
-				Node parent = table.getVariableAt(j);
+				Node parent = (Node)table.getVariableAt(j);
 				condlen.setNAME(parent.getName());
 				condset.getCONDLEM().add(condlen); 
 			}
@@ -559,7 +560,7 @@ public class XMLBIFIO {
 			}
 		}
 		
-		PotentialTable auxTabPot = node.getPotentialTable();
+		IProbabilityFunction auxTabPot = node.getProbabilityFunction();
 		auxTabPot.addVariable(node);
 		
 		return node; 
@@ -580,7 +581,7 @@ public class XMLBIFIO {
 			node.appendState(statename.getValue()); 
 		}
 		
-		PotentialTable auxTabPot = node.getPotentialTable();
+		IProbabilityFunction auxTabPot = node.getProbabilityFunction();
 		auxTabPot.addVariable(node);
 		
 		return node; 

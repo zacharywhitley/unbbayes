@@ -149,8 +149,14 @@ public class MSBNController {
 		}
 		active.getNetWindowEdition().getBtnCompile().setVisible(false);
 		active.getNetWindowCompilation().getEditMode().setVisible(false);
+		
+		// the line below was added here because I don't know where is the best place
+		// to set up the inference algorithm at MSBN...
+		active.getNetworkController().getInferenceAlgorithm().setNetwork(active.getSingleEntityNetwork());
+		
 		window.getContentPane().add(active.getContentPane(), BorderLayout.CENTER);
 		window.updateUI();
+		
 	}
 	
 	
@@ -223,6 +229,11 @@ public class MSBNController {
 	
 	public void compile() throws Exception {
 		msbn.compile((SubNetwork) active.getSingleEntityNetwork());
+		
+		// the line below was added here because I don't know where is the best place
+		// to set up the inference algorithm at MSBN...
+		active.getNetworkController().getInferenceAlgorithm().setNetwork(active.getSingleEntityNetwork());
+		
 		active.changeToPNCompilationPane();
 		window.changeToTreeView(makeJTree());
 		window.showBtnPanel(MSBNWindow.COMPILED_PANE);

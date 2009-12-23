@@ -57,19 +57,19 @@ public class Link {
 	protected void absorbIn(boolean naOrdem) {
 		Clique c2 = (naOrdem) ? v1 : v0;
 		
-		originalLinkTable = (PotentialTable) clique.getPotentialTable().clone();
+		originalLinkTable = (PotentialTable) clique.getProbabilityFunction().clone();
 				
 		ArrayList<Node> toDie = SetToolkit.clone(c2.getNodes());
 		toDie.removeAll(clique.getNodes());
 		newLinkTable = 
-			(PotentialTable) c2.getPotentialTable().clone();
+			(PotentialTable) c2.getProbabilityFunction().clone();
 			
 		for (int i = toDie.size()-1; i >= 0; i--) {
 			newLinkTable.removeVariable(toDie.get(i));
 		}
 		
-		for (int i = clique.getPotentialTable().tableSize() - 1; i >= 0; i--) {
-			clique.getPotentialTable().setValue(i, newLinkTable.getValue(i));
+		for (int i = clique.getProbabilityFunction().tableSize() - 1; i >= 0; i--) {
+			clique.getProbabilityFunction().setValue(i, newLinkTable.getValue(i));
 		}
 	}
 	
@@ -92,7 +92,7 @@ public class Link {
 				
 		newLinkTable.directOpTab(originalLinkTable, PotentialTable.DIVISION_OPERATOR);
 		
-		c1.getPotentialTable().opTab(newLinkTable, PotentialTable.PRODUCT_OPERATOR);		
+		c1.getProbabilityFunction().opTab(newLinkTable, PotentialTable.PRODUCT_OPERATOR);		
 	}
 	
 	/**

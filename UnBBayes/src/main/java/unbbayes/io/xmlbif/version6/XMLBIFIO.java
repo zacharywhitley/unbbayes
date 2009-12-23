@@ -30,7 +30,8 @@ import unbbayes.io.xmlbif.version6.xmlclasses.XMLBIFType;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ExplanationPhrase;
-import unbbayes.prs.bn.ITabledVariable;
+import unbbayes.prs.bn.IProbabilityFunction;
+import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
@@ -150,7 +151,7 @@ public class XMLBIFIO {
 					
 					List dpiList = cpt.getDependentParentIndex();
 					
-					PotentialTable table = ((ITabledVariable)childNode).getPotentialTable();
+					PotentialTable table = (PotentialTable)((IRandomVariable)childNode).getProbabilityFunction();
 					
 					/*
 					 * Invert the parents in the table, to
@@ -411,16 +412,16 @@ public class XMLBIFIO {
 			}
 			
 			// CPT
-			if (node instanceof ITabledVariable) { 
+			if (node instanceof IRandomVariable) { 
 				
 				XMLBIFType.NetworkType.ConditionalDistributionSetType.ConditionalDistributionType.CPTType cpt = of.createXMLBIFTypeNetworkTypeConditionalDistributionSetTypeConditionalDistributionTypeCPTType();
-				PotentialTable potTable = ((ITabledVariable) node).getPotentialTable();
+				PotentialTable potTable = (PotentialTable)((IRandomVariable) node).getProbabilityFunction();
 				
 				// Add parents in the right order, so the values in the CPT are correct (overwrites the previous parents added).
 				parents = of.createXMLBIFTypeNetworkTypeConditionalDistributionSetTypeConditionalDistributionTypeParentsType();
 				for (int i = 1; i < potTable.variableCount(); i++) {
 					XMLBIFType.NetworkType.ConditionalDistributionSetType.ConditionalDistributionType.ParentsType.ParentType parent = of.createXMLBIFTypeNetworkTypeConditionalDistributionSetTypeConditionalDistributionTypeParentsTypeParentType();
-					Node parentNode = potTable.getVariableAt(i);
+					Node parentNode = (Node)potTable.getVariableAt(i);
 					parent.setIndex(i - 1);
 					parent.setName(parentNode.getName());
 					parents.getParent().add(parent);
@@ -547,8 +548,8 @@ public class XMLBIFIO {
 			}
 		}
 		
-		if (node instanceof ITabledVariable) {
-			PotentialTable potTable = ((ITabledVariable)node).getPotentialTable();
+		if (node instanceof IRandomVariable) {
+			IProbabilityFunction potTable = ((IRandomVariable)node).getProbabilityFunction();
 			potTable.addVariable(node);
 		}
 		

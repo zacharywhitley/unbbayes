@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.bn.ExplanationPhrase;
-import unbbayes.prs.bn.ITabledVariable;
+import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.ArrayMap;
@@ -465,16 +465,16 @@ public abstract class Node implements Serializable,
 	 * there were some modification at this variable's internal structure.
 	 */
 	private void updateTables() {
-		ITabledVariable aux;
-		if (this instanceof ITabledVariable) {
-			aux = (ITabledVariable) this;
-			aux.getPotentialTable().variableModified();
+		IRandomVariable aux;
+		if (this instanceof IRandomVariable) {
+			aux = (IRandomVariable) this;
+			aux.getProbabilityFunction().notifyModification();
 		}
 
 		for (int i = children.size() - 1; i >= 0; i--) {
-			if (children.get(i) instanceof ITabledVariable) {
-				aux = (ITabledVariable) children.get(i);
-				aux.getPotentialTable().variableModified();
+			if (children.get(i) instanceof IRandomVariable) {
+				aux = (IRandomVariable) children.get(i);
+				aux.getProbabilityFunction().notifyModification();
 			}
 		}
 	}

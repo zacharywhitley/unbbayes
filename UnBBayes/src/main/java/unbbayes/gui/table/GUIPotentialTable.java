@@ -51,7 +51,7 @@ public class GUIPotentialTable {
 		int nStates = 1;
 		// Number of variables
 		int nVariables = potentialTable.variableCount();
-		Node node = potentialTable.getVariableAt(0);
+		Node node = (Node)potentialTable.getVariableAt(0);
 		NumberFormat df = NumberFormat.getInstance(Locale.getDefault());
 		df.setMaximumFractionDigits(4);
 
@@ -117,7 +117,7 @@ public class GUIPotentialTable {
 			column[0] = "State";
 			column[1] = "Probability";
 		} else {
-			firtHeaderNode = potentialTable.getVariableAt(1);
+			firtHeaderNode = (Node)potentialTable.getVariableAt(1);
 			/*
 			 * Ex: Here we get the variable "Father 1" and set its name in 
 			 *     the header. 
@@ -242,7 +242,7 @@ public class GUIPotentialTable {
 		// set). It ignores k = 0 (the node itself) and k = 1 (the fist 
 		// father).
 		for (int k = 2; k < nVariables; k++) {
-			Node parent = potentialTable.getVariableAt(k);
+			Node parent = (Node)potentialTable.getVariableAt(k);
 			int nPreviousParentStates = potentialTable.getVariableAt(k-1).getStatesSize();
 			sizeColumn *= nPreviousParentStates;
 			// Set the node name as a header in the first column

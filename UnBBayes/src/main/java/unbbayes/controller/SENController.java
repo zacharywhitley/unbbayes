@@ -41,10 +41,10 @@ import unbbayes.gui.table.GUIPotentialTable;
 import unbbayes.gui.table.ReplaceTextCellEditor;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.ITabledVariable;
+import unbbayes.prs.bn.IProbabilityFunction;
+import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
-import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.exception.InvalidParentException;
@@ -380,8 +380,8 @@ public class SENController {
 		node.setName(resource.getString("probabilisticNodeName")
 				+ singleEntityNetwork.getNodeCount());
 		node.setDescription(node.getName());
-		PotentialTable auxTabProb = ((ITabledVariable) node)
-				.getPotentialTable();
+		PotentialTable auxTabProb = (PotentialTable)(node)
+				.getProbabilityFunction();
 		auxTabProb.addVariable(node);
 		auxTabProb.setValue(0, 1);
 		singleEntityNetwork.addNode(node);
@@ -417,7 +417,7 @@ public class SENController {
 		node.setName(resource.getString("utilityNodeName")
 				+ singleEntityNetwork.getNodeCount());
 		node.setDescription(node.getName());
-		PotentialTable auxTab = ((ITabledVariable) node).getPotentialTable();
+		IProbabilityFunction auxTab = ((IRandomVariable) node).getProbabilityFunction();
 		auxTab.addVariable(node);
 		singleEntityNetwork.addNode(node);
 		
@@ -643,8 +643,8 @@ public class SENController {
 			return table;
 		}
 
-		if (node instanceof ITabledVariable) {
-			potTab = ((ITabledVariable) node).getPotentialTable();
+		if (node instanceof IRandomVariable) {
+			potTab = (PotentialTable)((IRandomVariable) node).getProbabilityFunction();
 
 			table = new GUIPotentialTable(potTab).makeTable();
 
@@ -766,8 +766,8 @@ public class SENController {
 			return table;
 		}
 
-		if (node instanceof ITabledVariable) {
-			potTab = ((ITabledVariable) node).getPotentialTable();
+		if (node instanceof IRandomVariable) {
+			potTab = (PotentialTable)((IRandomVariable) node).getProbabilityFunction();
 
 			int states = 1;
 			variables = potTab.variableCount();
@@ -815,7 +815,7 @@ public class SENController {
 			// put the name of the father and its states' name in the right
 			// place.
 			for (int k = variables - 1, l = 0; k >= 1; k--, l++) {
-				Node variable = potTab.getVariableAt(k);
+				Node variable = (Node)potTab.getVariableAt(k);
 
 				// the number of states is the multiplication of the number of
 				// states of the other fathers above this one.

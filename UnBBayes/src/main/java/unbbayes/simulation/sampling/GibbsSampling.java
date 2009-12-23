@@ -250,6 +250,14 @@ public class GibbsSampling extends MatrixMonteCarloSampling implements IInferenc
 		this.pn = (ProbabilisticNetwork)g;
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#getNetwork()
+	 */
+	public Graph getNetwork() {
+		return this.pn;
+	}
+	
 	
 	/* (non-Javadoc)
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#getDescription()

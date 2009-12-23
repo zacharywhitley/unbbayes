@@ -175,7 +175,7 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
      * @see TTabPor
      */
     public PotentialTable getProbabilidades(){
-        return this.getPotentialTable();
+        return this.getProbabilityFunction();
     }
 
     /**

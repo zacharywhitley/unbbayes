@@ -20,6 +20,7 @@
  */
 package unbbayes.prs.id;
 
+import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
 
@@ -48,7 +49,7 @@ public class UtilityTable extends PotentialTable implements java.io.Serializable
      *
      *@param  variavel  Variavel a ser retirada da tabela.
      */
-    public void removeVariable(Node variavel) {
+    public void removeVariable(INode variavel) {
     	computeFactors();
         int index = variableList.indexOf(variavel);
         if (variavel.getType() == Node.PROBABILISTIC_NODE_TYPE) {
@@ -62,7 +63,7 @@ public class UtilityTable extends PotentialTable implements java.io.Serializable
                 argMax(variableList.size()-1, index, new int[variableList.size()]);
             }
         }
-        variableModified();
+        notifyModification();
         variableList.remove(index);
     }
 

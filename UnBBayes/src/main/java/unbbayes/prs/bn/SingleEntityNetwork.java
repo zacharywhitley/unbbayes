@@ -361,10 +361,10 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 				for (int c2 = 0; c2 < sizeSeparadores; c2++) {
 					auxSep = (Separator) junctionTree.getSeparatorAt(c2);
 					if (auxSep.getNodes().contains(auxNode)
-						&& (auxSep.getPotentialTable().tableSize() < menor)) {
+						&& (auxSep.getProbabilityFunction().tableSize() < menor)) {
 						((ProbabilisticNode) auxNode).setAssociatedClique(
 							auxSep);
-						menor = auxSep.getPotentialTable().tableSize();
+						menor = auxSep.getProbabilityFunction().tableSize();
 					}
 				}
 			}
@@ -374,7 +374,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 				for (int c2 = 0; c2 < sizeCliques; c2++) {
 					auxClique = (Clique) junctionTree.getCliques().get(c2);
 					if (auxClique.getNodes().contains(auxNode)
-						&& (auxClique.getPotentialTable().tableSize() < menor)) {
+						&& (auxClique.getProbabilityFunction().tableSize() < menor)) {
 						if (auxNode.getType()
 							== Node.PROBABILISTIC_NODE_TYPE) {
 							((ProbabilisticNode) auxNode).setAssociatedClique(
@@ -384,7 +384,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 								auxClique);
 							break;
 						}
-						menor = auxClique.getPotentialTable().tableSize();
+						menor = auxClique.getProbabilityFunction().tableSize();
 					}
 				}
 			}
@@ -613,13 +613,13 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	protected void associateCliques() {
 		int min;
 		Node auxNo;
-		PotentialTable auxTabPot, auxUtilTab;
+		IProbabilityFunction auxTabPot, auxUtilTab;
 		Clique auxClique;
 		Clique cliqueMin = null;
 	
 		for (int i = junctionTree.getCliques().size() - 1; i >= 0; i--) {
 			auxClique = (Clique) junctionTree.getCliques().get(i);
-			auxTabPot = auxClique.getPotentialTable();
+			auxTabPot = auxClique.getProbabilityFunction();
 			auxUtilTab = auxClique.getUtilityTable();
 	
 			int sizeNos = auxClique.getNodes().size();
@@ -631,7 +631,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	
 		for (int k = junctionTree.getSeparatorsSize() - 1; k >= 0; k--) {
 			Separator auxSep = (Separator) junctionTree.getSeparatorAt(k);
-			auxTabPot = auxSep.getPotentialTable();
+			auxTabPot = auxSep.getProbabilityFunction();
 			auxUtilTab = auxSep.getUtilityTable();
 			int sizeNos = auxSep.getNodes().size();
 			for (int c = 0; c < sizeNos; c++) {
@@ -653,14 +653,14 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			for (int c = 0; c < sizeCliques; c++) {
 				auxClique = (Clique) junctionTree.getCliques().get(c);
 	
-				if (auxClique.getPotentialTable().tableSize() < min
+				if (auxClique.getProbabilityFunction().tableSize() < min
 					&& auxClique.getNodes().containsAll(auxNo.getParents())) {
 					if (auxNo.getType() == Node.PROBABILISTIC_NODE_TYPE
 						&& !auxClique.getNodes().contains(auxNo)) {
 						continue;
 					}
 					cliqueMin = auxClique;
-					min = cliqueMin.getPotentialTable().tableSize();
+					min = cliqueMin.getProbabilityFunction().tableSize();
 				}
 			}
 	
@@ -1039,7 +1039,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			auxNo = nodeList.get(c);
 			if (auxNo.getType() == Node.PROBABILISTIC_NODE_TYPE) {
 				auxVP = (ProbabilisticNode) auxNo;
-				auxTabPot = (ProbabilisticTable) auxVP.getPotentialTable();
+				auxTabPot = (ProbabilisticTable) auxVP.getProbabilityFunction();
 				auxTabPot.verifyConsistency();
 			}
 		}

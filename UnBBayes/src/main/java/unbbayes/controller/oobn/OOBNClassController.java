@@ -10,7 +10,7 @@ import unbbayes.controller.NetworkController;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.oobn.node.OOBNNodeGraphicalWrapper;
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.ITabledVariable;
+import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
@@ -65,8 +65,8 @@ public class OOBNClassController extends NetworkController {
 		node.setName(resource.getString("probabilisticNodeName")
 				+ this.getNetwork().getNodeCount());
 		node.setDescription(node.getName());
-		PotentialTable auxTabProb = ((ITabledVariable) node)
-				.getPotentialTable();
+		PotentialTable auxTabProb = (PotentialTable)((IRandomVariable) node)
+				.getProbabilityFunction();
 		auxTabProb.addVariable(node);
 		auxTabProb.setValue(0, 1);
 		
@@ -120,8 +120,8 @@ public class OOBNClassController extends NetworkController {
 		node.setDescription(node.getName());
 		
 		// since it is an empty node, no probability is needed, but let's just add it for compatibility
-		PotentialTable auxTabProb = ((ITabledVariable) node)
-				.getPotentialTable();
+		PotentialTable auxTabProb = (PotentialTable)((IRandomVariable) node)
+				.getProbabilityFunction();
 		
 		auxTabProb.addVariable(node);
 		auxTabProb.setValue(0, 1);

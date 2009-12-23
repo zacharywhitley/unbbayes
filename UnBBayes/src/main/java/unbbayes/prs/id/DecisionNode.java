@@ -98,11 +98,11 @@ public class DecisionNode extends TreeVariable implements java.io.Serializable {
     protected void marginal() {
         marginalList = new float[getStatesSize()];
         PotentialTable auxTab = (PotentialTable)((Clique)cliqueAssociado).getUtilityTable().clone();
-        auxTab.directOpTab(cliqueAssociado.getPotentialTable(), PotentialTable.PRODUCT_OPERATOR);
+        auxTab.directOpTab((PotentialTable)cliqueAssociado.getProbabilityFunction(), PotentialTable.PRODUCT_OPERATOR);
         int index = auxTab.indexOfVariable(this);
-        for (int i = 0; i < cliqueAssociado.getPotentialTable().variableCount(); i++) {
+        for (int i = 0; i < cliqueAssociado.getProbabilityFunction().variableCount(); i++) {
             if (i != index) {
-                auxTab.removeVariable(cliqueAssociado.getPotentialTable().getVariableAt(i));
+                auxTab.removeVariable(((PotentialTable)cliqueAssociado.getProbabilityFunction()).getVariableAt(i));
             }
         }
 

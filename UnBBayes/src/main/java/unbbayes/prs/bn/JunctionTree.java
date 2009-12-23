@@ -157,7 +157,7 @@ public class JunctionTree implements java.io.Serializable {
 	}
 	
 	protected void absorb(Clique clique1, Clique clique2) {
-		PotentialTable sepTab = getSeparator(clique1, clique2).getPotentialTable();
+		PotentialTable sepTab = getSeparator(clique1, clique2).getProbabilityFunction();
 		ArrayList<Node> toDie = SetToolkit.clone(clique2.getNodes());
 		
 		for (int i = 0; i < sepTab.variableCount(); i++) {
@@ -165,7 +165,7 @@ public class JunctionTree implements java.io.Serializable {
 		}
 
 		PotentialTable dummyTable =
-			(PotentialTable) clique2.getPotentialTable().clone();
+			(PotentialTable) clique2.getProbabilityFunction().clone();
 			
 		for (int i = 0; i < toDie.size(); i++) {
 			dummyTable.removeVariable(toDie.get(i));
@@ -182,7 +182,7 @@ public class JunctionTree implements java.io.Serializable {
 			originalSeparatorTable,
 			PotentialTable.DIVISION_OPERATOR);
 
-		clique1.getPotentialTable().opTab(dummyTable, PotentialTable.PRODUCT_OPERATOR);
+		clique1.getProbabilityFunction().opTab(dummyTable, PotentialTable.PRODUCT_OPERATOR);
     }
 	
 
@@ -198,7 +198,7 @@ public class JunctionTree implements java.io.Serializable {
 			int sizeCliques = cliques.size();
 			for (int k = 0; k < sizeCliques; k++) {
 				auxClique = cliques.get(k);
-				auxTabPot = auxClique.getPotentialTable();
+				auxTabPot = auxClique.getProbabilityFunction();
 				auxUtilTab = auxClique.getUtilityTable();
 	
 				int tableSize = auxTabPot.tableSize();
@@ -210,7 +210,7 @@ public class JunctionTree implements java.io.Serializable {
 				int sizeAssociados = auxClique.getAssociatedProbabilisticNodes().size();
 				for (int c = 0; c < sizeAssociados; c++) {
 					auxVP = (ProbabilisticNode) auxClique.getAssociatedProbabilisticNodes().get(c);
-					auxTabPot.opTab(auxVP.getPotentialTable(), PotentialTable.PRODUCT_OPERATOR);
+					auxTabPot.opTab(auxVP.getProbabilityFunction(), PotentialTable.PRODUCT_OPERATOR);
 				}
 	
 				tableSize = auxUtilTab.tableSize();
@@ -221,7 +221,7 @@ public class JunctionTree implements java.io.Serializable {
 				sizeAssociados = auxClique.getAssociatedUtilityNodes().size();
 				for (int i = 0; i < sizeAssociados; i++) {
 					utilNode = (UtilityNode) auxClique.getAssociatedUtilityNodes().get(i);
-					auxUtilTab.opTab(utilNode.getPotentialTable(), PotentialTable.PLUS_OPERATOR);
+					auxUtilTab.opTab(utilNode.getProbabilityFunction(), PotentialTable.PLUS_OPERATOR);
 				}
 			}
 	
@@ -229,7 +229,7 @@ public class JunctionTree implements java.io.Serializable {
 			int sizeSeparadores = separators.size();
 			for (int k = 0; k < sizeSeparadores; k++) {
 				auxSep = (Separator) separators.get(k);
-				auxTabPot = auxSep.getPotentialTable();
+				auxTabPot = auxSep.getProbabilityFunction();
 				int sizeDados = auxTabPot.tableSize();
 				for (int c = 0; c < sizeDados; c++) {
 					auxTabPot.setValue(c, 1);
@@ -254,14 +254,14 @@ public class JunctionTree implements java.io.Serializable {
 		int sizeCliques = cliques.size();
 		for (int k = 0; k < sizeCliques; k++) {
 			Clique auxClique = (Clique) cliques.get(k);
-			auxClique.getPotentialTable().restoreData();
+			auxClique.getProbabilityFunction().restoreData();
 			auxClique.getUtilityTable().restoreData();
 		}
 		
 		int sizeSeparadores = separators.size();
 		for (int k = 0; k < sizeSeparadores; k++) {
 			Separator auxSep = (Separator) separators.get(k);
-			auxSep.getPotentialTable().restoreData();
+			auxSep.getProbabilityFunction().restoreData();
 			auxSep.getUtilityTable().restoreData();
 		}
 	}
@@ -270,14 +270,14 @@ public class JunctionTree implements java.io.Serializable {
 		int sizeCliques = cliques.size();
 		for (int k = 0; k < sizeCliques; k++) {
 			Clique auxClique = (Clique) cliques.get(k);
-			auxClique.getPotentialTable().copyData();
+			auxClique.getProbabilityFunction().copyData();
 			auxClique.getUtilityTable().copyData();
 		}
 		
 		int sizeSeparadores = separators.size();
 		for (int k = 0; k < sizeSeparadores; k++) {
 			Separator auxSep = (Separator) separators.get(k);
-			auxSep.getPotentialTable().copyData();
+			auxSep.getProbabilityFunction().copyData();
 			auxSep.getUtilityTable().copyData();
 		}
 	}

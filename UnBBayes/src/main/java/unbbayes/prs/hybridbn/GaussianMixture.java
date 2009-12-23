@@ -386,6 +386,14 @@ public class GaussianMixture implements IInferenceAlgorithm {
 		this.pn.resetEvidences();
 		this.init();
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#getNetwork()
+	 */
+	public Graph getNetwork() {
+		return this.pn;
+	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#getDescription()

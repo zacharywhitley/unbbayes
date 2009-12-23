@@ -27,7 +27,8 @@ import java.util.Map;
 
 import unbbayes.prs.Node.NodeNameChangedEvent;
 import unbbayes.prs.Node.NodeNameChangedListener;
-import unbbayes.prs.bn.ITabledVariable;
+import unbbayes.prs.bn.IProbabilityFunction;
+import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.exception.InvalidParentException;
 
@@ -167,9 +168,9 @@ public class Network implements Graph{
 		edge.getOriginNode().addChild(edge.getDestinationNode());
 		edge.getDestinationNode().addParent(edge.getOriginNode());
 	    edgeList.add(edge);
-	    if (edge.getDestinationNode() instanceof ITabledVariable) {
-			ITabledVariable v2 = (ITabledVariable) edge.getDestinationNode();
-			PotentialTable auxTab = v2.getPotentialTable();
+	    if (edge.getDestinationNode() instanceof IRandomVariable) {
+			IRandomVariable v2 = (IRandomVariable) edge.getDestinationNode();
+			IProbabilityFunction auxTab = v2.getProbabilityFunction();
 			auxTab.addVariable(edge.getOriginNode());
 		}
 	}
@@ -221,15 +222,15 @@ public class Network implements Graph{
 	 */
 	private void removeArc(Edge edge) {
 	    Node auxNo;
-	    ITabledVariable auxTabledVariable;
+	    IRandomVariable auxTabledVariable;
 	    PotentialTable auxPotentialTable;
 	
 	    edgeList.remove(edge);
 	
 	    auxNo = edge.getDestinationNode();
-	    if (auxNo instanceof ITabledVariable) {
-	        auxTabledVariable = (ITabledVariable)auxNo;
-	        auxPotentialTable = auxTabledVariable.getPotentialTable();
+	    if (auxNo instanceof IRandomVariable) {
+	        auxTabledVariable = (IRandomVariable)auxNo;
+	        auxPotentialTable = (PotentialTable)auxTabledVariable.getProbabilityFunction();
 	        auxPotentialTable.removeVariable(edge.getOriginNode(), true);
 	    }
 	}

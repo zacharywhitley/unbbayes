@@ -21,8 +21,14 @@
 package unbbayes.prs.bn;
 
 /**
- * A interface for variables containing tables
+ * A interface for variables containing probability functions
  */
-public interface ITabledVariable {
-    public PotentialTable getPotentialTable();
+public interface IRandomVariable {
+	
+	/**
+	 * A class representing the probability distribution associated to this random variable
+	 * @return a probability function (e.g. probability table for tabled variables)
+	 */
+    public IProbabilityFunction getProbabilityFunction();
+    
 }

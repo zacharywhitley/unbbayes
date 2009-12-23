@@ -25,7 +25,7 @@ import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.prs.bn.ITabledVariable;
+import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
@@ -40,7 +40,7 @@ import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
  */
 
 public class ResidentNode extends MultiEntityNode 
-         implements ITabledVariable {
+         implements IRandomVariable {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -183,9 +183,9 @@ public class ResidentNode extends MultiEntityNode
 	
 	
 	/**
-	 *@see unbbayes.prs.bn.ITabledVariable#getPotentialTable()
+	 *@see unbbayes.prs.bn.IRandomVariable#getProbabilityFunction()
 	 */
-	public PotentialTable getPotentialTable() {
+	public PotentialTable getProbabilityFunction() {
 		return null;
 	}
     

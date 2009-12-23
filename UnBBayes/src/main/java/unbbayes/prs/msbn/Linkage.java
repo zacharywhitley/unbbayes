@@ -154,7 +154,7 @@ public class Linkage {
 		for (int i = linkList.size()-1; i >=0; i--) {
 			Link l = linkList.get(i);
 			Clique c = l.getClique();
-			PotentialTable tab = c.getPotentialTable();
+			PotentialTable tab = c.getProbabilityFunction();
 			for (int j = 0; j < c.getNodes().size(); j++) {
 				tab.addVariable(c.getNodes().get(j));
 			}
@@ -166,7 +166,7 @@ public class Linkage {
 		
 		for (int k = jt.getSeparatorsSize() - 1; k >= 0; k--) {
 			Separator auxSep = (Separator) jt.getSeparatorAt(k);
-			PotentialTable tab = auxSep.getPotentialTable();
+			PotentialTable tab = auxSep.getProbabilityFunction();
 			for (int c = 0; c < auxSep.getNodes().size(); c++) {
 				tab.addVariable(auxSep.getNodes().get(c));
 			}
@@ -262,19 +262,19 @@ public class Linkage {
 	private void removeRedundance() {
 		for (int i = jt.getSeparatorsSize()-1; i >=0; i--) {
 			Separator sep = jt.getSeparatorAt(i);
-			PotentialTable oldRedTab = (PotentialTable) sep.getPotentialTable().clone();
+			PotentialTable oldRedTab = (PotentialTable) sep.getProbabilityFunction().clone();
 			
 			 ArrayList<Node> toDie = SetToolkit.clone(sep.getClique2().getNodes());
 			toDie.removeAll(sep.getNodes());
 			PotentialTable tA =
-				(PotentialTable) sep.getClique2().getPotentialTable().clone();
+				(PotentialTable) sep.getClique2().getProbabilityFunction().clone();
 				
 			for (int j = toDie.size()-1; j >= 0; j--) {
 				tA.removeVariable(toDie.get(i));
 			}
 			
 			for (int j = tA.tableSize()-1; j>=0; j--) {
-				sep.getPotentialTable().setValue(j, tA.getValue(j));								
+				sep.getProbabilityFunction().setValue(j, tA.getValue(j));								
 			}
 			
 			for (int j = linkList.size()-1; j>=0; j--) {
