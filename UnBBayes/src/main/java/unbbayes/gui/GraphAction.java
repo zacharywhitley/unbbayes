@@ -42,6 +42,9 @@ public enum GraphAction {
 		
 		CREATE_DOMAIN_MFRAG, 
 		//by young4
-		SELECT_MANY_OBJECTS
+		SELECT_MANY_OBJECTS,
+		
+		// by shou
+		ADD_PLUGIN_NODE
 	
 }

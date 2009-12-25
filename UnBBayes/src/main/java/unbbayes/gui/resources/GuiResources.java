@@ -176,6 +176,7 @@ public class GuiResources extends ListResourceBundle {
 		{"moreToolTip","Add state"},
 		{"lessToolTip","Remove state"},
 		{"arcToolTip","Insert edge"},
+		{"continuousNodeLabel","Continuous variable"},
 		{"continuousNodeInsertToolTip","Insert continuous variable"},
 		{"probabilisticNodeInsertToolTip","Insert probabilistic variable"},
 		{"decisionNodeInsertToolTip","Insert decision variable"},
@@ -544,6 +545,8 @@ public class GuiResources extends ListResourceBundle {
 //		{"sampleSizeInputTitle", "Sample size"}, 
 		{"algorithmParameters", "Parameters for the algorithm"},
 		{"availableAlgorithms", "Available algorithms"},
+		
+		{"selectNodeType", "Select a type of node"},
 		
 	};
 }

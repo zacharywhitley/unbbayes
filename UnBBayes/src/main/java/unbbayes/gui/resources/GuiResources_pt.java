@@ -177,6 +177,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"moreToolTip","Adicionar estado"},
 		{"lessToolTip","Remover estado"},
 		{"arcToolTip","Inserir Arco"},
+		{"continuousNodeLabel","Variável contínua"},
 		{"continuousNodeInsertToolTip","Inserir variável contínua"},
 		{"probabilisticNodeInsertToolTip","Inserir variável de probabilidade"},
 		{"decisionNodeInsertToolTip","Inserir variavel de decisão"},
@@ -546,6 +547,8 @@ public class GuiResources_pt extends ListResourceBundle {
 
 		{"algorithmParameters", "Parâmetros para o algoritmo"},
 		{"availableAlgorithms", "Algoritmos disponíveis"},
+		
+		{"selectNodeType", "Selecione o tipo de nó"},
 		
 	};
 }

@@ -33,22 +33,28 @@ import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
 import unbbayes.controller.CompilationThread;
+import unbbayes.gui.util.SplitToggleButton;
 import unbbayes.prs.Node;
+import unbbayes.util.Debug;
 
 
 /**
@@ -528,6 +534,8 @@ public class PNEditionPane extends JPanel {
   	    
   	    private final ButtonGroup groupEditionButtons; 
   	    
+  	    private SplitToggleButton btnAddPluginButton;
+  	    
   		public ToolBarEdition(){
   	        
   			super(); 
@@ -555,10 +563,15 @@ public class PNEditionPane extends JPanel {
   	        btnResetCursor.setToolTipText(resource.getString("resetToolTip"));
   	        btnDeleteSelectedItem.setToolTipText(resource.getString("deleteSelectedItemToolTip"));
   	        
+  	        // set of buttons (split buttons) for nodes implemented by plugin
+  	        this.setBtnAddPluginButton(new SplitToggleButton(btnAddContinuousNode, SwingConstants.SOUTH));
+  	        this.getBtnAddPluginButton().setMenu(this.buildAddPluginSplitButtonMenu());
+  	        
   	        groupEditionButtons = new ButtonGroup(); 
   	        groupEditionButtons.add(btnResetCursor);
   	        groupEditionButtons.add(btnAddEdge);
-  	        groupEditionButtons.add(btnAddContinuousNode);
+//  	        groupEditionButtons.add(btnAddContinuousNode);
+  	        groupEditionButtons.add(this.getBtnAddPluginButton().getMainButton());
   	        groupEditionButtons.add(btnAddProbabilisticNode);
   	        groupEditionButtons.add(btnAddDecisionNode);
   	        groupEditionButtons.add(btnAddUtilityNode);
@@ -570,7 +583,8 @@ public class PNEditionPane extends JPanel {
   	        add(btnAddProbabilisticNode); 
   	        add(btnAddDecisionNode); 
   	        add(btnAddUtilityNode); 
-  	        add(btnAddContinuousNode); 
+//  	        add(btnAddContinuousNode); 
+  	        add(this.getBtnAddPluginButton()); 
   	        add(btnAddEdge); 
   	        add(btnDeleteSelectedItem);
   	        //by young2
@@ -636,6 +650,61 @@ public class PNEditionPane extends JPanel {
   	  		});
   		}
 
+  		/**
+  		 * Builds up the menu to be shown (and its action listeners)
+  		 * when a {@link #getBtnAddPluginButton()}'s right side arrow is
+  		 * pressed (which contents should reflect nodes loaded from plugins).
+  		 * @return a JPopupMenu containing all plugin nodes
+  		 */
+		protected JPopupMenu buildAddPluginSplitButtonMenu() {
+			
+			JPopupMenu ret = new JPopupMenu(resource.getString("selectNodeType"));
+			
+			JMenuItem continuousNodeItem = new JMenuItem(resource.getString("continuousNodeLabel"),iconController.getContinousNodeIcon());
+			continuousNodeItem.setToolTipText(resource.getString("continuousNodeInsertToolTip"));
+			continuousNodeItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					getBtnAddPluginButton().setMainButton(getBtnAddContinuousNode());
+					groupEditionButtons.remove(getBtnAddContinuousNode());
+					groupEditionButtons.add(getBtnAddContinuousNode());
+					getBtnAddPluginButton().getMenu().setVisible(false);
+					updateUI();
+					Debug.println(this.getClass(), "Plugin button set to " + getBtnAddPluginButton().getMainButton().getToolTipText());
+				}
+			});
+			
+			ret.add(continuousNodeItem);
+			
+			
+			// This is a stub in order to test
+//			JMenuItem stubItem = new JMenuItem("Stub plugin" , iconController.getBlueNodeIcon());
+//			stubItem.setToolTipText("This is just a stub added in order to test plugin functionality...");
+//			stubItem.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent e) {
+//					JToggleButton stubButton = new JToggleButton(iconController.getBlueNodeIcon());
+//					stubButton.setToolTipText("This is a stub. Do not use it!");
+//					stubButton.addActionListener(new ActionListener() {
+//						public void actionPerformed(ActionEvent e) {
+//							netWindow.getGraphPane().setAction(GraphAction.ADD_PLUGIN_NODE);
+//						}
+//					});
+//					groupEditionButtons.remove(stubButton);
+//					groupEditionButtons.add(stubButton);
+//					getBtnAddPluginButton().setMainButton(stubButton);
+//					getBtnAddPluginButton().getMenu().setVisible(false);
+//					updateUI();
+//					Debug.println(this.getClass(), "Plugin button set to " + getBtnAddPluginButton().getMainButton().getToolTipText());
+//				}
+//			});
+//			
+//			ret.add(stubItem);
+			
+			// TODO create a loop in order to add nodes loaded from plugins
+			Debug.println(this.getClass(), "Plugin aware new node button is not implemented yet");
+			
+			return ret;
+		}
+
 		public JToggleButton getBtnAddEdge() {
 			return btnAddEdge;
 		}
@@ -680,6 +749,24 @@ public class PNEditionPane extends JPanel {
 
 		public ButtonGroup getGroupEditionButtons() {
 			return groupEditionButtons;
+		}
+
+		/**
+		 * This button is a split button which responsible for
+		 * nodes implemented by plugins.
+		 * @return the btnAddPluginButton
+		 */
+		public SplitToggleButton getBtnAddPluginButton() {
+			return btnAddPluginButton;
+		}
+
+		/**
+		 * This button is a split button which responsible for
+		 * nodes implemented by plugins.
+		 * @param btnAddPluginButton the btnAddPluginButton to set
+		 */
+		public void setBtnAddPluginButton(SplitToggleButton btnAddPluginButton) {
+			this.btnAddPluginButton = btnAddPluginButton;
 		}
   	    
   	}
