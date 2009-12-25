@@ -76,7 +76,7 @@ public class OOBNEditionPane extends PNEditionPane {
 	 * @see PNEditionPane
 	 */
 	public void filterUnusedToolBarEditionButtons() {
-		super.getTbEdition().getBtnAddContinuousNode().setVisible(false);
+		super.getTbEdition().getBtnAddPluginButton().setVisible(false);
 		super.getTbEdition().getBtnAddDecisionNode().setVisible(false);
 		super.getTbEdition().getBtnAddUtilityNode().setVisible(false);
 		 
