@@ -261,6 +261,9 @@ public class NetworkController implements KeyListener {
 	 * @param node The table owner.
 	 */
 	public void createTable(Node node) {
+		if (node == null) {
+			return;
+		}
 		if (node.getType() == Node.CONTINUOUS_NODE_TYPE) {
 			createContinuousDistribution((ContinuousNode)node);
 		} else {
@@ -268,6 +271,7 @@ public class NetworkController implements KeyListener {
 		}
 	}
     
+
 	/**
 	 * Creates and shows the panel where the user can edit the 
 	 * continuous node normal distribution.

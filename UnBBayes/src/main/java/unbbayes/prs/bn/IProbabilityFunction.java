@@ -12,7 +12,9 @@ public interface IProbabilityFunction {
 
 	/**
 	 * Inserts a variable into function.
-	 * 
+	 * This is usually called by the program when we insert
+	 * an edge into a node.
+	 * The first variable is usually the owner of the table
 	 * @param variable : variable to be injected.
 	 */
 	public abstract void addVariable(INode variable);

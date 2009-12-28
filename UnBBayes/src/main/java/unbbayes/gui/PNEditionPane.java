@@ -52,9 +52,16 @@ import javax.swing.SwingConstants;
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
 import unbbayes.controller.CompilationThread;
+import unbbayes.draw.UShapeProbabilisticNode;
+import unbbayes.gui.table.extension.IPluginNodeProbabilityFunctionPanel;
 import unbbayes.gui.util.SplitToggleButton;
+import unbbayes.prs.INode;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.util.Debug;
+import unbbayes.util.extension.dto.INodeDataTransferObject;
+import unbbayes.util.extension.dto.impl.NodeDto;
 
 
 /**
@@ -567,6 +574,9 @@ public class PNEditionPane extends JPanel {
   	        this.setBtnAddPluginButton(new SplitToggleButton(btnAddContinuousNode, SwingConstants.SOUTH));
   	        this.getBtnAddPluginButton().setMenu(this.buildAddPluginSplitButtonMenu());
   	        
+  	        // show plugin node's button only if there are 1 or more node types.
+  	        this.getBtnAddPluginButton().setVisible(this.getBtnAddPluginButton().getMenu().getComponentCount() > 0);
+  	        
   	        groupEditionButtons = new ButtonGroup(); 
   	        groupEditionButtons.add(btnResetCursor);
   	        groupEditionButtons.add(btnAddEdge);
@@ -685,6 +695,47 @@ public class PNEditionPane extends JPanel {
 //					stubButton.setToolTipText("This is a stub. Do not use it!");
 //					stubButton.addActionListener(new ActionListener() {
 //						public void actionPerformed(ActionEvent e) {
+//							
+//							INodeDataTransferObject nodeDto = NodeDto.newInstance();
+//							
+//							nodeDto.setIcon(iconController.getBlueNodeIcon());
+//							
+//							Node nodeToAdd = new ProbabilisticNode();
+//							nodeToAdd.appendState("firstStateProbabilisticName");
+//							nodeToAdd.setName("probabilisticNodeName");
+//							nodeToAdd.setDescription(nodeToAdd.getName());
+//							PotentialTable auxTabProb = (PotentialTable)((ProbabilisticNode)nodeToAdd)
+//									.getProbabilityFunction();
+//							auxTabProb.addVariable(nodeToAdd);
+//							auxTabProb.setValue(0, 1);
+//							
+//							nodeDto.setNode(nodeToAdd);
+//							
+//							UShapeProbabilisticNode shape = new UShapeProbabilisticNode(netWindow.getGraphPane(), nodeToAdd, (int) nodeToAdd
+//									.getPosition().x, (int) nodeToAdd.getPosition().y, nodeToAdd
+//									.getWidth(), nodeToAdd.getHeight());
+//							nodeDto.setShape(shape);
+//							
+//							IPluginNodeProbabilityFunctionPanel holder = new IPluginNodeProbabilityFunctionPanel () {
+//								private INode node;
+//								public JPanel getProbabilityFunctionEditionPanel() {
+//									JPanel panel =  new JPanel();
+//									panel.setLayout(new BorderLayout());
+//									panel.add(new JLabel(node.getName()), BorderLayout.NORTH);
+//									return panel;
+//								}
+//								public void setProbabilityFunctionOwner(
+//										INode node) {
+//									this.node = node;
+//								}
+//							};
+//							holder.setProbabilityFunctionOwner(nodeToAdd);
+//							nodeDto.setProbabilityFunctionPanelHolder(holder);
+//							
+//							nodeDto.setCursorIcon(iconController.getContextNodeCursor());
+//							
+//							// caution! set dto before setting action!!
+//							netWindow.getGraphPane().setNodeDataTransferObject(nodeDto);
 //							netWindow.getGraphPane().setAction(GraphAction.ADD_PLUGIN_NODE);
 //						}
 //					});

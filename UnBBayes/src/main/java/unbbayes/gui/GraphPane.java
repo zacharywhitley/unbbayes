@@ -24,6 +24,7 @@ package unbbayes.gui;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -36,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -74,6 +76,7 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.exception.CycleFoundException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
+import unbbayes.util.extension.dto.INodeDataTransferObject;
 
 /**
  * Essa classe � respons�vel por desenhar a rede Bayesiana ou a MFrag na tela.
@@ -126,6 +129,9 @@ public class GraphPane extends UCanvas implements MouseListener,
 	public String PANEMODE_COMPILE = "Compile";
 
 	public String strPaneMode = PANEMODE_NONE;
+	
+	
+	private INodeDataTransferObject nodeDataTransferObject;
 
 	/** Load resource file from this package */
 	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
@@ -636,7 +642,19 @@ public class GraphPane extends UCanvas implements MouseListener,
 
 		}
 			break;
-
+		case ADD_PLUGIN_NODE:
+		{
+			if (this.getNodeDataTransferObject() == null || this.getNodeDataTransferObject().getCursorIcon() == null) {
+				customCursor = new Cursor(Cursor.CROSSHAIR_CURSOR);
+			} else {
+				customCursor = toolkit.createCustomCursor(this.getNodeDataTransferObject().getCursorIcon().getImage(), new Point(0, 0),
+					"Cursor");
+			}
+			setCursor(customCursor);
+			setState(STATE_NONE);
+			this.setShapeStateAll(UShape.STATE_CHANGECURSOR, customCursor);
+		}
+			break;
 		default:
 			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			break;
@@ -955,5 +973,30 @@ public class GraphPane extends UCanvas implements MouseListener,
 							.selectTreeItemByNode(shape.getNode());
 			}
 		}
+	}
+
+	/**
+	 * This object is used by GraphPane in order to temporally
+	 * store all informations about a node loaded by plugins, between
+	 * the moment that a user clicks the "add" button and the moment
+	 * that the node is actually created and inserted into canvas.
+	 * CAUTION: set this before calling {@link #setAction(GraphAction)}
+	 * @return the nodeDataTransferObject
+	 */
+	public INodeDataTransferObject getNodeDataTransferObject() {
+		return nodeDataTransferObject;
+	}
+
+	/**
+	 * This object is used by GraphPane in order to temporally
+	 * store all informations about a node loaded by plugins, between
+	 * the moment that a user clicks the "add" button and the moment
+	 * that the node is actually created and inserted into canvas.
+	 * CAUTION: set this before calling {@link #setAction(GraphAction)}
+	 * @param nodeDataTransferObject the nodeDataTransferObject to set
+	 */
+	public void setNodeDataTransferObject(
+			INodeDataTransferObject nodeDataTransferObject) {
+		this.nodeDataTransferObject = nodeDataTransferObject;
 	}
 }

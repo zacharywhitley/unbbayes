@@ -326,6 +326,8 @@ public class NetworkWindow extends UnBBayesModule {
 	
 	public void setDistributionPane(JPanel distributionPane) {
 		pnEditionPane.setDistributionPane(distributionPane);
+		// moved from SENController#createContinuousDistribution to here because every JPanel-based distribution was needing this
+		setAddRemoveStateButtonVisible(false);
 	}
 
 	/**
