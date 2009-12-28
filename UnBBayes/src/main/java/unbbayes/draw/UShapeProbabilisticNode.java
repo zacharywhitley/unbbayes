@@ -239,7 +239,7 @@ public class UShapeProbabilisticNode extends UShape
 		
 		repaint();
 		
-		getCanvas().onShapeChanged(this);
+//		getCanvas().onShapeChanged(this);
 	}
 	   
 	public void paintComponent(Graphics g) 
@@ -355,19 +355,24 @@ public class UShapeProbabilisticNode extends UShape
 				popup.add(item);
 	     	}
 	     	 
-			item = new JMenuItem(resource.getString("properties"));
-			item.addActionListener
-			(	
-				new ActionListener() 
-				{
-					public void actionPerformed(ActionEvent ae)
-					{   
-						getCanvas().controller.showExplanationProperties((ProbabilisticNode)getNode());
+	     	// the if below was added because it was trying to open "propertuies"
+	     	// even to Continuous Node, which had no implementation of "properties"
+	     	// and was not even a probabilistic node (why?)
+			if (getNode() instanceof ProbabilisticNode) {
+				item = new JMenuItem(resource.getString("properties"));
+				item.addActionListener
+				(	
+					new ActionListener() 
+					{
+						public void actionPerformed(ActionEvent ae)
+						{   
+							getCanvas().controller.showExplanationProperties((ProbabilisticNode)getNode());
+						}
 					}
-				}
-			);
-			
-			popup.add(item);
+				);
+				
+				popup.add(item);
+			}
 			
 	     	
 	       	popup.setEnabled(true);
