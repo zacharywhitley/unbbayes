@@ -97,6 +97,7 @@ import unbbayes.prs.msbn.AbstractMSBN;
 import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.util.ApplicationPropertyHolder;
 import unbbayes.util.Debug;
+import unbbayes.util.GraphLayoutUtil;
 import unbbayes.util.ResourceController;
 
 /**
@@ -1806,7 +1807,7 @@ public class MEBNController  {
 
 		showSSBNGraph = true; 
 		specificSituationBayesianNetwork = probabilisticNetwork;
-
+		
 		try {
 
 			ssbn.compileAndInitializeSSBN();
@@ -1819,18 +1820,10 @@ public class MEBNController  {
 			this.logNodesAndItsProbabilities(ssbn);
 			
 			this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
-
-			Dimension sizeOfGraph = PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(specificSituationBayesianNetwork); 
-			Dimension originalDimension = this.getMebnEditionPane().getNetworkWindow().getGraphPane().getGraphDimension(); 
-
-			if((originalDimension.getHeight() < sizeOfGraph.getHeight()) || 
-					(originalDimension.getWidth() < sizeOfGraph.getWidth())){
-
-				dimensionSSBNGraph = sizeOfGraph; 
-				this.getMebnEditionPane().getNetworkWindow().getGraphPane().setGraphDimension(sizeOfGraph); 
-				this.getMebnEditionPane().getNetworkWindow().getGraphPane().update(); 
-
-			}
+			
+			(new GraphLayoutUtil(specificSituationBayesianNetwork)).doLayout();
+			
+			this.getMebnEditionPane().getNetworkWindow().getGraphPane().update();
 
 		} catch (Exception e) {
 			e.printStackTrace(); 
@@ -1839,6 +1832,10 @@ public class MEBNController  {
 					e.getMessage());
 		}
 		
+//		ssbn.setProbabilisticNetwork(null);
+//		
+//		System.gc();
+//		
 		openMsbnNetwork();
 		
 		mebnEditionPane.setStatus(resource.getString("statusReady")); 
@@ -1854,7 +1851,7 @@ public class MEBNController  {
 		AbstractMSBN msbn = ssbn.getMsbnNetwork();
 		MSBNController controller = new MSBNController((SingleAgentMSBN)msbn);
 		try {
-			controller.compile();
+//			controller.compile();
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(screen, e.getMessage(), "MSBN compilation error", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
