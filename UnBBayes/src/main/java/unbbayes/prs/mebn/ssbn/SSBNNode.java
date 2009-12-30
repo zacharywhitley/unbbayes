@@ -878,11 +878,33 @@ public class SSBNNode implements INode {
 	
 	/**
 	 * Returns the name of the node -> which is the same of resident's and
-	 * its current arguments (entity instances) between parentheses, with no
-	 * spaces. E.g. HarmPotential(ST4,T0) [id = 90] P = true
-	 * where id is the number of this ssbnnode and P is the permanent flag
+	 * its current arguments (entity instances) separated by underscore, with no
+	 * spaces. E.g. HarmPotential_ST4_T0
 	 */
 	public String getName() {
+		
+		String name = new String(this.residentNode.getName());
+		name += "_";
+		for (OVInstance ovi : this.getArguments()) {
+			if (name.charAt(name.length() - 1) != '(') {
+				name += "_";
+			}
+			name += ovi.getEntity().getInstanceName();
+		}
+		name += "";
+		
+		//name +=" [id=" + id + "] P=" + permanent; 
+		
+		return name;
+		
+	}
+	
+	/**
+	 * Returns the name of the node -> which is the same of resident's and
+	 * its current arguments (entity instances) between parentheses, with no
+	 * spaces. E.g. HarmPotential(ST4,T0)
+	 */
+	public String getDescription() {
 		
 		String name = new String(this.residentNode.getName());
 		name += "(";
@@ -1220,9 +1242,8 @@ public class SSBNNode implements INode {
 	
 	private void updateProbabilisticNodeName(){
 		if (this.getProbNode() != null) {
-			String name = getName(); 
-			this.getProbNode().setName(name);
-			this.getProbNode().setDescription(name);
+			this.getProbNode().setName(getName());
+			this.getProbNode().setDescription(getDescription());
 		}
 	}
 	
@@ -1465,15 +1486,6 @@ public class SSBNNode implements INode {
 	 */
 	public List<INode> getChildNodes() {
 		return (List)this.getChildren();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see unbbayes.prs.INode#getDescription()
-	 * 
-	 */
-	public String getDescription() {
-		return this.toString();
 	}
 
 	/**
