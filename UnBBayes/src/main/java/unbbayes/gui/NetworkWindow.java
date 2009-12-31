@@ -61,6 +61,7 @@ import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.util.extension.UnBBayesModule;
 import unbbayes.util.extension.UnBBayesModuleBuilder;
+import unbbayes.util.extension.dto.INodeClassDataTransferObject;
 
 /**
  * Class responsible for representing the network window.
@@ -763,6 +764,28 @@ public class NetworkWindow extends UnBBayesModule {
 		this.dispose();
 		
 		return window;
+	}
+	
+	/**
+	 * This method builds a customized probability distribution panel (e.g. a panel to
+	 * edit a node's probability function, using plugin support).
+	 * Other methods usually calls a method within controller to show a table, but in order
+	 * to avoid dependency inversion at MVC model, I'm implementing this method at view layer.
+	 * @param dto : a data transfer object containing all data needed
+	 * for panel creation
+	 */
+	public void showProbabilityDistributionPanel(
+			INodeClassDataTransferObject dto) {
+		
+		dto.getProbabilityFunctionPanelHolder().setProbabilityFunctionOwner(dto.getNode());
+		this.setDistributionPane(dto.getProbabilityFunctionPanelHolder().getProbabilityFunctionEditionPanel());
+		if (dto.getNode() instanceof Node) {
+			this.setTableOwner((Node)dto.getNode());
+		} else {
+			System.err.println("Node loaded by plugin is not an instance of Node, which may cause undesired behaviors.");
+		}
+		this.getTxtDescription().setText(dto.getNode().getDescription());
+		this.getTxtName().setText(dto.getNode().getName());
 	}
 	
 	

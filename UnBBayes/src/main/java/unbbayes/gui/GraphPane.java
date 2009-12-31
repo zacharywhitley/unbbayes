@@ -66,6 +66,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
+import unbbayes.prs.extension.IPluginNode;
 import unbbayes.prs.hybridbn.ContinuousNode;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
@@ -76,7 +77,8 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.exception.CycleFoundException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
-import unbbayes.util.extension.dto.INodeDataTransferObject;
+import unbbayes.util.Debug;
+import unbbayes.util.extension.dto.INodeClassDataTransferObject;
 
 /**
  * Essa classe � respons�vel por desenhar a rede Bayesiana ou a MFrag na tela.
@@ -131,7 +133,7 @@ public class GraphPane extends UCanvas implements MouseListener,
 	public String strPaneMode = PANEMODE_NONE;
 	
 	
-	private INodeDataTransferObject nodeDataTransferObject;
+	private INodeClassDataTransferObject nodeClassDataTransferObject;
 
 	/** Load resource file from this package */
 	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
@@ -314,6 +316,10 @@ public class GraphPane extends UCanvas implements MouseListener,
 	public void showCPT(Node newNode) {
 		// set new information of node into tree and table viewer
 
+		// the lines below fixes the problem that selecting ContinuousNode was not updating name and description text field
+		this.controller.getScreen().getTxtDescription().setText(newNode.getDescription());
+		this.controller.getScreen().getTxtName().setText(newNode.getName());
+		
 		if (controller != null)
 			if (controller.getGraph() instanceof SingleEntityNetwork) {
 				controller.createTable(newNode);
@@ -477,6 +483,25 @@ public class GraphPane extends UCanvas implements MouseListener,
 				}
 			}
 				break;
+			case ADD_PLUGIN_NODE: {
+				if (!(this.getNodeDataTransferObject().getNode() instanceof Node)) {
+					break;
+				}
+				newNode = (Node)this.getNodeDataTransferObject().getNode();
+				newNode.setPosition(e.getX(), e.getY());
+				this.controller.getNetwork().addNode(newNode);
+				UShape shape = this.getNodeDataTransferObject().getShape();
+				shape.setLocation(
+							(int) newNode.getPosition().x - newNode.getWidth() / 2, 
+							(int) newNode.getPosition().y - newNode.getHeight() / 2
+						);
+				shape.setSize(newNode.getWidth(), newNode.getHeight());
+				shape.setVisible(true);
+				addShape(shape);
+				shape.setState(UShape.STATE_SELECTED, null);
+				this.controller.getScreen().showProbabilityDistributionPanel(this.getNodeDataTransferObject());
+			}
+				break;
 			case NONE: {
 				if (controller != null)
 					controller.unselectAll();
@@ -487,19 +512,21 @@ public class GraphPane extends UCanvas implements MouseListener,
 
 	}
 
+	
+
 	public void mouseReleased(MouseEvent e) {
 		super.mouseReleased(e);
 
 		if (SwingUtilities.isLeftMouseButton(e)) {
-			System.out.println("Left button released.");
+			Debug.println(this.getClass(),"Left button released.");
 		}
 
 		if (SwingUtilities.isMiddleMouseButton(e)) {
-			System.out.println("Middle button released.");
+			Debug.println(this.getClass(),"Middle button released.");
 		}
 
 		if (SwingUtilities.isRightMouseButton(e)) {
-			System.out.println("Right button released.");
+			Debug.println(this.getClass(),"Right button released.");
 
 			if (getPaneMode() == PANEMODE_COMPILE) {
 				resetPopup();
@@ -536,6 +563,19 @@ public class GraphPane extends UCanvas implements MouseListener,
 			return false;
 		}
 
+	}
+	
+	/**
+	 * This is equivalent to {@link #setNodeDataTransferObject(INodeClassDataTransferObject)}
+	 * followed by {@link #setAction(GraphAction)}
+	 * @see #setAction(GraphAction)
+	 * @see #setNodeDataTransferObject(INodeClassDataTransferObject)
+	 * @param action :  The action to be taken.
+	 * @param dto : the data transfer object to set
+	 */
+	public void setAction(GraphAction action, INodeClassDataTransferObject dto) {
+		this.setNodeDataTransferObject(dto);
+		this.setAction(action);
 	}
 
 	/**
@@ -938,6 +978,9 @@ public class GraphPane extends UCanvas implements MouseListener,
 			((UShapeProbabilisticNode) s.getParent()).update(s.getName());
 		} else if (s instanceof UShapeLine) {
 
+		} else if (s.getNode() instanceof IPluginNode) {
+			// TODO fix the plugin shape's double use problem
+			this.controller.getScreen().showProbabilityDistributionPanel(this.getNodeDataTransferObject());
 		} else {
 			showCPT(s.getNode());
 		}
@@ -981,10 +1024,10 @@ public class GraphPane extends UCanvas implements MouseListener,
 	 * the moment that a user clicks the "add" button and the moment
 	 * that the node is actually created and inserted into canvas.
 	 * CAUTION: set this before calling {@link #setAction(GraphAction)}
-	 * @return the nodeDataTransferObject
+	 * @return the nodeClassDataTransferObject
 	 */
-	public INodeDataTransferObject getNodeDataTransferObject() {
-		return nodeDataTransferObject;
+	public INodeClassDataTransferObject getNodeDataTransferObject() {
+		return nodeClassDataTransferObject;
 	}
 
 	/**
@@ -993,10 +1036,10 @@ public class GraphPane extends UCanvas implements MouseListener,
 	 * the moment that a user clicks the "add" button and the moment
 	 * that the node is actually created and inserted into canvas.
 	 * CAUTION: set this before calling {@link #setAction(GraphAction)}
-	 * @param nodeDataTransferObject the nodeDataTransferObject to set
+	 * @param nodeClassDataTransferObject the nodeClassDataTransferObject to set
 	 */
 	public void setNodeDataTransferObject(
-			INodeDataTransferObject nodeDataTransferObject) {
-		this.nodeDataTransferObject = nodeDataTransferObject;
+			INodeClassDataTransferObject nodeClassDataTransferObject) {
+		this.nodeClassDataTransferObject = nodeClassDataTransferObject;
 	}
 }

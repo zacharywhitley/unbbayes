@@ -23,7 +23,7 @@ import unbbayes.prs.INode;
  * @author Shou Matsumoto
  *
  */
-public interface INodeDataTransferObject {
+public interface INodeClassDataTransferObject {
 
 	/**
 	 * Obtains the node being transferred

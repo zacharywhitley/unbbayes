@@ -510,6 +510,7 @@ public class SENController {
 		distributionPane.addCancelButtonActionListener(restoreValuesFromDistributionAL);
 		distributionPane.addParentStateChangeActionListener(restoreValuesFromDistributionAL);
 		
+		
 		// moved into #setDistributionPane(JPanel)
 //		screen.setAddRemoveStateButtonVisible(false);
 	}

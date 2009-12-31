@@ -11,14 +11,14 @@ import javax.swing.ImageIcon;
 import unbbayes.draw.UShape;
 import unbbayes.gui.table.extension.IPluginNodeProbabilityFunctionPanel;
 import unbbayes.prs.INode;
-import unbbayes.util.extension.dto.INodeDataTransferObject;
+import unbbayes.util.extension.dto.INodeClassDataTransferObject;
 
 /**
- * A simple implementation of {@link INodeDataTransferObject}
+ * A simple implementation of {@link INodeClassDataTransferObject}
  * @author Shou Matsumoto
  *
  */
-public class NodeDto implements INodeDataTransferObject {
+public class NodeDto implements INodeClassDataTransferObject {
 
 	private INode node;
 	private UShape shape;
@@ -40,28 +40,28 @@ public class NodeDto implements INodeDataTransferObject {
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.util.extension.dto.INodeDataTransferObject#getIcon()
+	 * @see unbbayes.util.extension.dto.INodeClassDataTransferObject#getIcon()
 	 */
 	public ImageIcon getIcon() {
 		return this.icon;
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.util.extension.dto.INodeDataTransferObject#getNode()
+	 * @see unbbayes.util.extension.dto.INodeClassDataTransferObject#getNode()
 	 */
 	public INode getNode() {
 		return this.node;
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.util.extension.dto.INodeDataTransferObject#getProbabilityFunctionPanelHolder()
+	 * @see unbbayes.util.extension.dto.INodeClassDataTransferObject#getProbabilityFunctionPanelHolder()
 	 */
 	public IPluginNodeProbabilityFunctionPanel getProbabilityFunctionPanelHolder() {
 		return this.panel;
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.util.extension.dto.INodeDataTransferObject#getShape()
+	 * @see unbbayes.util.extension.dto.INodeClassDataTransferObject#getShape()
 	 */
 	public UShape getShape() {
 		return this.shape;
@@ -69,21 +69,21 @@ public class NodeDto implements INodeDataTransferObject {
 
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.util.extension.dto.INodeDataTransferObject#setIcon(javax.swing.ImageIcon)
+	 * @see unbbayes.util.extension.dto.INodeClassDataTransferObject#setIcon(javax.swing.ImageIcon)
 	 */
 	public void setIcon(ImageIcon icon) {
 		this.icon = icon;
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.util.extension.dto.INodeDataTransferObject#setNode(unbbayes.prs.INode)
+	 * @see unbbayes.util.extension.dto.INodeClassDataTransferObject#setNode(unbbayes.prs.INode)
 	 */
 	public void setNode(INode node) {
 		this.node = node;
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.util.extension.dto.INodeDataTransferObject#setProbabilityFunctionPanelHolder(unbbayes.gui.table.extension.IPluginNodeProbabilityFunctionPanel)
+	 * @see unbbayes.util.extension.dto.INodeClassDataTransferObject#setProbabilityFunctionPanelHolder(unbbayes.gui.table.extension.IPluginNodeProbabilityFunctionPanel)
 	 */
 	public void setProbabilityFunctionPanelHolder(
 			IPluginNodeProbabilityFunctionPanel panelHolder) {
@@ -91,7 +91,7 @@ public class NodeDto implements INodeDataTransferObject {
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.util.extension.dto.INodeDataTransferObject#setShape(unbbayes.draw.UShape)
+	 * @see unbbayes.util.extension.dto.INodeClassDataTransferObject#setShape(unbbayes.draw.UShape)
 	 */
 	public void setShape(UShape shape) {
 		this.shape = shape;
@@ -99,7 +99,7 @@ public class NodeDto implements INodeDataTransferObject {
 
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.util.extension.dto.INodeDataTransferObject#getObject(java.lang.String)
+	 * @see unbbayes.util.extension.dto.INodeClassDataTransferObject#getObject(java.lang.String)
 	 */
 	public Object getObject(String key) {
 		return this.map.get(key);
@@ -107,7 +107,7 @@ public class NodeDto implements INodeDataTransferObject {
 
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.util.extension.dto.INodeDataTransferObject#setObject(java.lang.String, java.lang.Object)
+	 * @see unbbayes.util.extension.dto.INodeClassDataTransferObject#setObject(java.lang.String, java.lang.Object)
 	 */
 	public void setObject(String key, Object object) {
 		if (object == null) {
@@ -119,7 +119,7 @@ public class NodeDto implements INodeDataTransferObject {
 
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.util.extension.dto.INodeDataTransferObject#getCursorIcon()
+	 * @see unbbayes.util.extension.dto.INodeClassDataTransferObject#getCursorIcon()
 	 */
 	public ImageIcon getCursorIcon() {
 		return cursorIcon;
@@ -127,7 +127,7 @@ public class NodeDto implements INodeDataTransferObject {
 
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.util.extension.dto.INodeDataTransferObject#setCursorIcon(javax.swing.ImageIcon)
+	 * @see unbbayes.util.extension.dto.INodeClassDataTransferObject#setCursorIcon(javax.swing.ImageIcon)
 	 */
 	public void setCursorIcon(ImageIcon cursorIcon) {
 		this.cursorIcon = cursorIcon;
