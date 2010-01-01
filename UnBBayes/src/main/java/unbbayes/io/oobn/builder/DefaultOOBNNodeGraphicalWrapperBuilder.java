@@ -4,8 +4,8 @@
 package unbbayes.io.oobn.builder;
 
 import unbbayes.gui.oobn.node.OOBNNodeGraphicalWrapper;
-import unbbayes.io.builder.impl.DefaultProbabilisticNodeBuilder;
 import unbbayes.prs.Node;
+import unbbayes.prs.builder.impl.DefaultProbabilisticNodeBuilder;
 import unbbayes.prs.oobn.IOOBNClass;
 import unbbayes.prs.oobn.IOOBNNode;
 import unbbayes.prs.oobn.impl.DefaultOOBNNode;

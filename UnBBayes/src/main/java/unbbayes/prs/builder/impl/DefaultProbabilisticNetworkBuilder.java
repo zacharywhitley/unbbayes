@@ -1,12 +1,12 @@
 /**
  * 
  */
-package unbbayes.io.builder.impl;
+package unbbayes.prs.builder.impl;
 
-import unbbayes.io.builder.INodeBuilder;
-import unbbayes.io.builder.IProbabilisticNetworkBuilder;
 import unbbayes.prs.Network;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.builder.INodeBuilder;
+import unbbayes.prs.builder.IProbabilisticNetworkBuilder;
 
 /**
  * @author Shou Matsumoto

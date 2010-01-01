@@ -4,7 +4,7 @@
 package unbbayes.io.oobn.builder;
 
 import unbbayes.gui.oobn.node.OOBNNodeGraphicalWrapper;
-import unbbayes.io.builder.INodeBuilder;
+import unbbayes.prs.builder.INodeBuilder;
 import unbbayes.prs.oobn.IOOBNClass;
 
 /**

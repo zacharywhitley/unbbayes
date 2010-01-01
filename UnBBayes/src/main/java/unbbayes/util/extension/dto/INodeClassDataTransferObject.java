@@ -5,9 +5,9 @@ package unbbayes.util.extension.dto;
 
 import javax.swing.ImageIcon;
 
-import unbbayes.draw.UShape;
-import unbbayes.gui.table.extension.IPluginNodeProbabilityFunctionPanel;
-import unbbayes.prs.INode;
+import unbbayes.draw.extension.IPluginUShapeBuilder;
+import unbbayes.gui.table.extension.IProbabilityFunctionPanelBuilder;
+import unbbayes.prs.builder.INodeBuilder;
 
 /**
  * This is a general interface for classes implementing
@@ -16,52 +16,52 @@ import unbbayes.prs.INode;
  * architectural layers), associated with nodes
  * loaded from plugin managers (extensions).
  * 
- * It basically carries a node (INode), a shape
- * (UShape), an Icon, and a panel in order to render
+ * It basically carries a node builder, a shape
+ * builder, icons, and a panel in order to render
  * forms to edit probability functions (e.g. probability tables)
  * 
  * @author Shou Matsumoto
  *
  */
-public interface INodeClassDataTransferObject {
+public interface INodeClassDataTransferObject extends IDataTransferObject {
 
 	/**
-	 * Obtains the node being transferred
+	 * Obtains the node builder being transferred
 	 * @return
 	 */
-	public INode getNode();
+	public INodeBuilder getNodeBuilder();
 	
 	/**
-	 * Sets the node being transferred
+	 * Sets the node builder being transferred
 	 * @param node
 	 */
-	public void setNode(INode node);
+	public void setNodeBuilder(INodeBuilder node);
 	
 	/**
-	 * The shape class used to render the node inside the canvas.
+	 * The shape builder used to render the node inside the canvas.
 	 * @return
 	 */
-	public UShape getShape();
+	public IPluginUShapeBuilder getShapeBuilder();
 	
 	/**
-	 * The shape class used to render the node inside the canvas.
+	 * The shape builder used to render the node inside the canvas.
 	 * @param shape
 	 */
-	public void setShape(UShape shape);
+	public void setShapeBuilder(IPluginUShapeBuilder shape);
 	
 	/**
 	 * The object containing a panel used by UnBBayes to visually edit
 	 * the probability function of a node.
 	 * @return
 	 */
-	public IPluginNodeProbabilityFunctionPanel getProbabilityFunctionPanelHolder();
+	public IProbabilityFunctionPanelBuilder getProbabilityFunctionPanelBuilder();
 	
 	/**
 	 * The object containing a panel used by UnBBayes to visually edit
 	 * the probability function of a node.
-	 * @param panelHolder
+	 * @param panelBuilder
 	 */
-	public void setProbabilityFunctionPanelHolder(IPluginNodeProbabilityFunctionPanel panelHolder);
+	public void setProbabilityFunctionPanelBuilder(IProbabilityFunctionPanelBuilder panelBuilder);
 	
 	/**
 	 * The icon of the node.
@@ -95,21 +95,7 @@ public interface INodeClassDataTransferObject {
 	 */
 	public void setCursorIcon(ImageIcon cursorIcon);
 
-	/**
-	 * These methods can be used to store additional parameters into
-	 * this DTO.
-	 * @param key : cannot be null
-	 * @return
-	 */
-	public Object getObject(String key);
 	
-	/**
-	 * These methods can be used to store additional parameters into
-	 * this DTO.
-	 * @param key. Cannot be null
-	 * @param object. If set to null, the key/object pair will be removed
-	 */
-	public void setObject(String key, Object object);
 	
 	
 }

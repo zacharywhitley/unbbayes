@@ -3,7 +3,7 @@
  */
 package unbbayes.io.oobn.builder;
 
-import unbbayes.io.builder.IProbabilisticNetworkBuilder;
+import unbbayes.prs.builder.IProbabilisticNetworkBuilder;
 
 /**
  * Builder for classes and nodes of OOBN module,

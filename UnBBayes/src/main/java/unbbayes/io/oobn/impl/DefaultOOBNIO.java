@@ -20,7 +20,6 @@ import java.util.ResourceBundle;
 
 import unbbayes.gui.oobn.node.OOBNNodeGraphicalWrapper;
 import unbbayes.io.NetIO;
-import unbbayes.io.builder.IProbabilisticNetworkBuilder;
 import unbbayes.io.exception.LoadException;
 import unbbayes.io.exception.oobn.OOBNIOException;
 import unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO;
@@ -32,6 +31,7 @@ import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
+import unbbayes.prs.builder.IProbabilisticNetworkBuilder;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.prs.oobn.IOOBNClass;
@@ -182,13 +182,13 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 	
 	
 	/**
-	 * @see unbbayes.io.NetIO#load(java.io.File, unbbayes.io.builder.IProbabilisticNetworkBuilder)
+	 * @see unbbayes.io.NetIO#load(java.io.File, unbbayes.prs.builder.IProbabilisticNetworkBuilder)
 	 * @param input
 	 * @param networkBuilder
 	 * @return
 	 * @throws LoadException
 	 * @throws IOException
-	 * @see unbbayes.io.NetIO#load(java.io.File, unbbayes.io.builder.IProbabilisticNetworkBuilder)
+	 * @see unbbayes.io.NetIO#load(java.io.File, unbbayes.prs.builder.IProbabilisticNetworkBuilder)
 	 */
 	public DefaultOOBNClass load(File input,
 			IProbabilisticNetworkBuilder networkBuilder) throws LoadException,

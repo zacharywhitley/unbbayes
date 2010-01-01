@@ -4,9 +4,9 @@
 package unbbayes.io.oobn.builder;
 
 
-import unbbayes.io.builder.INodeBuilder;
-import unbbayes.io.builder.impl.DefaultProbabilisticNetworkBuilder;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.builder.INodeBuilder;
+import unbbayes.prs.builder.impl.DefaultProbabilisticNetworkBuilder;
 import unbbayes.prs.oobn.impl.DefaultOOBNClass;
 
 

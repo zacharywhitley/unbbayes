@@ -34,7 +34,9 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.swing.ImageIcon;
@@ -60,7 +62,9 @@ import unbbayes.draw.UShapeProbabilisticNode;
 import unbbayes.draw.UShapeResidentNode;
 import unbbayes.draw.UShapeState;
 import unbbayes.draw.UShapeUtilityNode;
+import unbbayes.draw.extension.IPluginUShape;
 import unbbayes.gui.oobn.node.OOBNNodeGraphicalWrapper;
+import unbbayes.gui.table.extension.IProbabilityFunctionPanelBuilder;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -132,9 +136,12 @@ public class GraphPane extends UCanvas implements MouseListener,
 
 	public String strPaneMode = PANEMODE_NONE;
 	
-	
+	// a dto that temporally holds a plugin node's informations.
 	private INodeClassDataTransferObject nodeClassDataTransferObject;
 
+	// this is a map to store what JPanel builder must be used by a node in order to edit its probability function
+	private Map<Node, IProbabilityFunctionPanelBuilder> nodeToPanelBuilderMap = new HashMap<Node, IProbabilityFunctionPanelBuilder>();
+	
 	/** Load resource file from this package */
 	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.gui.resources.GuiResources.class.getName());
@@ -327,10 +334,10 @@ public class GraphPane extends UCanvas implements MouseListener,
 	}
 
 	/**
-	 * M�todo respons�vel por tratar o evento de clique no bot�o do mouse
+	 * This method is responsible to treat mouse button events
 	 * 
 	 *@param e
-	 *            O <code>MouseEvent</code>
+	 *            <code>MouseEvent</code>
 	 *@see MouseEvent
 	 */
 	public void mouseClicked(MouseEvent e) {
@@ -484,22 +491,48 @@ public class GraphPane extends UCanvas implements MouseListener,
 			}
 				break;
 			case ADD_PLUGIN_NODE: {
-				if (!(this.getNodeDataTransferObject().getNode() instanceof Node)) {
-					break;
-				}
-				newNode = (Node)this.getNodeDataTransferObject().getNode();
+				// build new node
+				newNode = this.getNodeDataTransferObject().getNodeBuilder().buildNode();
 				newNode.setPosition(e.getX(), e.getY());
+				
+				// add new node into network
 				this.controller.getNetwork().addNode(newNode);
-				UShape shape = this.getNodeDataTransferObject().getShape();
-				shape.setLocation(
-							(int) newNode.getPosition().x - newNode.getWidth() / 2, 
-							(int) newNode.getPosition().y - newNode.getHeight() / 2
-						);
-				shape.setSize(newNode.getWidth(), newNode.getHeight());
+				
+				// build a new shape for new node
+				UShape shape = null;
+				try {
+					shape = this.getNodeDataTransferObject().getShapeBuilder().build().getUShape(newNode);
+				} catch (IllegalAccessException e1) {
+					throw new RuntimeException(e1);
+				} catch (InstantiationException e1) {
+					throw new RuntimeException(e1);
+				}
+				shape.setCanvas(this);
 				shape.setVisible(true);
+				
+				// add shape into this pane (canvas)
 				addShape(shape);
+				
+				// set this node/shape as selected
 				shape.setState(UShape.STATE_SELECTED, null);
-				this.controller.getScreen().showProbabilityDistributionPanel(this.getNodeDataTransferObject());
+				
+				shape.update();
+				
+				// notify the probability function panel's builder that a new node is currently "selected" as owner			
+				this.getNodeDataTransferObject().getProbabilityFunctionPanelBuilder().setProbabilityFunctionOwner(newNode);
+				
+				// register the new node and the probability function's panel builder, so that #onShapeChanged(UShape) can
+				// use the correct builder in order to re-build the panel when this node is selected again.
+				// A node basically cannot use a builder different from the original one used at creation time.
+				this.getNodeToPanelBuilderMap().put(
+							newNode, 
+							this.getNodeDataTransferObject().getProbabilityFunctionPanelBuilder()
+						);
+				
+				// display the probability function panel for new node
+				this.controller.getScreen().showProbabilityDistributionPanel(
+							this.getNodeDataTransferObject().getProbabilityFunctionPanelBuilder()
+						);
 			}
 				break;
 			case NONE: {
@@ -978,9 +1011,18 @@ public class GraphPane extends UCanvas implements MouseListener,
 			((UShapeProbabilisticNode) s.getParent()).update(s.getName());
 		} else if (s instanceof UShapeLine) {
 
-		} else if (s.getNode() instanceof IPluginNode) {
-			// TODO fix the plugin shape's double use problem
-			this.controller.getScreen().showProbabilityDistributionPanel(this.getNodeDataTransferObject());
+		} else if ((s instanceof IPluginUShape)
+				|| (s.getNode() instanceof IPluginNode)) {
+			// this is a node inserted by plugin infrastructure
+			
+			// Obtains the correct panel builder for currently selected node
+			// TODO find a better way to couple the node and its builder without messing up the draw/Node/GUI relationship
+			IProbabilityFunctionPanelBuilder builder = this.getNodeToPanelBuilderMap().get(s.getNode());
+			if (builder != null) {
+				// notify the probability function panel that the current owner (node) is different
+				builder.setProbabilityFunctionOwner(s.getNode());
+				this.controller.getScreen().showProbabilityDistributionPanel(builder);
+			}
 		} else {
 			showCPT(s.getNode());
 		}
@@ -1038,8 +1080,31 @@ public class GraphPane extends UCanvas implements MouseListener,
 	 * CAUTION: set this before calling {@link #setAction(GraphAction)}
 	 * @param nodeClassDataTransferObject the nodeClassDataTransferObject to set
 	 */
-	public void setNodeDataTransferObject(
+	protected void setNodeDataTransferObject(
 			INodeClassDataTransferObject nodeClassDataTransferObject) {
 		this.nodeClassDataTransferObject = nodeClassDataTransferObject;
+	}
+
+	/**
+	 * This is a map to store what JPanel builder must be used by a node in order to edit its probability function.
+	 * @return the nodeToPanelBuilderMap
+	 * @see #setAction(GraphAction, INodeClassDataTransferObject)
+	 * @see #mouseClicked(MouseEvent)
+	 * @see #onShapeChanged(UShape)
+	 */
+	public Map<Node, IProbabilityFunctionPanelBuilder> getNodeToPanelBuilderMap() {
+		return nodeToPanelBuilderMap;
+	}
+
+	/**
+	 * This is a map to store what JPanel builder must be used by a node in order to edit its probability function.
+	 * @param nodeToPanelBuilderMap the nodeToPanelBuilderMap to set
+	 * @see #setAction(GraphAction, INodeClassDataTransferObject)
+	 * @see #mouseClicked(MouseEvent)
+	 * @see #onShapeChanged(UShape)
+	 */
+	public void setNodeToPanelBuilderMap(
+			Map<Node, IProbabilityFunctionPanelBuilder> nodeToPanelBuilderMap) {
+		this.nodeToPanelBuilderMap = nodeToPanelBuilderMap;
 	}
 }

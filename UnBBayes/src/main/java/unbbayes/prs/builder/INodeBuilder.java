@@ -1,7 +1,7 @@
 /**
  * 
  */
-package unbbayes.io.builder;
+package unbbayes.prs.builder;
 
 /**
  * 

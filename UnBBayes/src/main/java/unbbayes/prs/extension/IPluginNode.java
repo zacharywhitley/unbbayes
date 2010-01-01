@@ -3,6 +3,9 @@
  */
 package unbbayes.prs.extension;
 
+import unbbayes.prs.INode;
+import unbbayes.prs.Node;
+
 
 
 
@@ -14,6 +17,13 @@ package unbbayes.prs.extension;
  * @author Shou Matsumoto
  *
  */
-public interface IPluginNode  {
+public interface IPluginNode extends INode  {
 
+	/**
+	 * Obtains a {@link Node} representation of this plugin node.
+	 * In other word, this method converts an {@link IPluginNode} into {@link Node}
+	 * @return
+	 */
+	public Node getNode();
+	
 }

@@ -38,8 +38,6 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 
 import unbbayes.gui.HierarchicTree;
-import unbbayes.io.builder.IProbabilisticNetworkBuilder;
-import unbbayes.io.builder.impl.DefaultProbabilisticNetworkBuilder;
 import unbbayes.io.exception.LoadException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
@@ -50,6 +48,8 @@ import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
+import unbbayes.prs.builder.IProbabilisticNetworkBuilder;
+import unbbayes.prs.builder.impl.DefaultProbabilisticNetworkBuilder;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.hybridbn.ContinuousNode;
 import unbbayes.prs.id.DecisionNode;

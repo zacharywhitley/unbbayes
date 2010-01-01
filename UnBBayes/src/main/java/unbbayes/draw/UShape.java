@@ -1389,7 +1389,9 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 	 		node.setSize(getWidth(), getHeight());
 		}
 		
-		getCanvas().onResized(this); 
+		if (this.getCanvas() != null) {
+			getCanvas().onResized(this); 
+		}
 	}
 
 	public void componentShown(ComponentEvent arg0) 

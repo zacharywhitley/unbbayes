@@ -1,11 +1,11 @@
 /**
  * 
  */
-package unbbayes.io.builder.impl;
+package unbbayes.prs.builder.impl;
 
-import unbbayes.io.builder.INodeBuilder;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.builder.INodeBuilder;
 
 /**
  * @author Shou Matsumoto
