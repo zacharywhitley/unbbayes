@@ -310,6 +310,9 @@ public class NetworkWindow extends UnBBayesModule {
 	 * @see JTextField
 	 */
 	public JTextField getTxtDescription() {
+		if (pnEditionPane == null) {
+			return null;
+		}
 		return pnEditionPane.getTxtDescription();
 	}
 
@@ -320,6 +323,9 @@ public class NetworkWindow extends UnBBayesModule {
 	 * @see JTextField
 	 */
 	public JTextField getTxtName() {
+		if (pnEditionPane == null) {
+			return null;
+		}
 		return pnEditionPane.getTxtName();
 	}
 	
