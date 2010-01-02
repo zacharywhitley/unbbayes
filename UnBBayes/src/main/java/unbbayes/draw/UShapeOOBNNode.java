@@ -158,6 +158,7 @@ public class UShapeOOBNNode extends UShape
 	   
 	public void paintComponent(Graphics g) 
 	{
+		
 		super.paintComponent(g); 
 		
 		InitShape();
@@ -210,29 +211,8 @@ public class UShapeOOBNNode extends UShape
 		super.mouseDragged(arg0);
 	}
 
-	/* (non-Javadoc)
-	 * @see unbbayes.draw.UShape#mousePressed(java.awt.event.MouseEvent)
-	 */
-	@Override
-	public void mousePressed(MouseEvent arg0) {
-//		try {
-//			OOBNNodeGraphicalWrapper node = (OOBNNodeGraphicalWrapper)getNode();
-//			
-//			this.describeOOBNNode(node);
-//			
-//			if (node != null) {
-//				if ( node.getWrappedNode().getType() == node.getWrappedNode().TYPE_INSTANCE_INPUT
-//				  || node.getWrappedNode().getType() == node.getWrappedNode().TYPE_INSTANCE_OUTPUT ){
-//					 // I do not want to make inner nodes selectable.
-//					 // so, return without changing status
-//					 return;
-//				}						
-//			}
-//		} catch (Exception t) {
-//			Debug.println(this.getClass(), "You clicked at a non-OOBN node", t);
-//		}
-		super.mousePressed(arg0);
-	}
+	
+
 
 	public void mouseClicked(MouseEvent arg0) 
 	{  
@@ -405,6 +385,8 @@ public class UShapeOOBNNode extends UShape
 			for (IOOBNNode child : node.getWrappedNode().getOOBNChildren()) {
 				Debug.println(this.getClass(), "\t" + child.getName());				
 			}
+			
+			Debug.println(this.getClass(), "State of shape = " + this.getState());
 			
 		} catch (Exception t) {
 			// do nothing

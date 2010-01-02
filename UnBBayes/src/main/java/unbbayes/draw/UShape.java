@@ -739,6 +739,12 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 	
 	public void createResizeBtn() 
 	{  
+		// the below if was added because somehow those shapes were being instantiated more than twice and
+		// they were not being hidden or removed...
+		if (shape1 != null || shape2 != null || shape3 != null || shape4 != null
+				|| shape5 != null || shape6 != null || shape7 != null || shape8 != null) {
+			removeResizeBtn();
+		}
 		shape1 = new UShapeSizeBtn(this, 0,0, Cursor.NW_RESIZE_CURSOR);  
 		shape2 = new UShapeSizeBtn(this, (getWidth()-GAP)/2,0,Cursor.N_RESIZE_CURSOR); 
 		shape3 = new UShapeSizeBtn(this, getWidth()-GAP,0,Cursor.NE_RESIZE_CURSOR);  
