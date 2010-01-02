@@ -322,18 +322,16 @@ public class GraphPane extends UCanvas implements MouseListener,
 
 	public void showCPT(Node newNode) {
 		// set new information of node into tree and table viewer
-
-		// the lines below fixes the problem that selecting ContinuousNode was not updating name and description text field
-		if (this.controller.getScreen() != null) {
-			if (this.controller.getScreen().getTxtName() != null) {
-				this.controller.getScreen().getTxtName().setText(newNode.getName());
-			}
-			if (this.controller.getScreen().getTxtDescription() != null) {
-				this.controller.getScreen().getTxtDescription().setText(newNode.getDescription());
-			}
-		}
-		
 		if (controller != null)
+			// the if below fixes the problem that selecting ContinuousNode was not updating name and description text field
+			if (this.controller.getScreen() != null) {
+				if (this.controller.getScreen().getTxtName() != null) {
+					this.controller.getScreen().getTxtName().setText(newNode.getName());
+				}
+				if (this.controller.getScreen().getTxtDescription() != null) {
+					this.controller.getScreen().getTxtDescription().setText(newNode.getDescription());
+				}
+			}
 			if (controller.getGraph() instanceof SingleEntityNetwork) {
 				controller.createTable(newNode);
 			}
