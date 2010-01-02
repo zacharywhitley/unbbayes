@@ -41,4 +41,12 @@ public class DefaultProbabilisticNodeBuilder implements INodeBuilder {
 		return new ProbabilisticNode();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.builder.INodeBuilder#getNodeClass()
+	 */
+	public Class getNodeClass() {
+		return ProbabilisticNode.class;
+	}
+
 }

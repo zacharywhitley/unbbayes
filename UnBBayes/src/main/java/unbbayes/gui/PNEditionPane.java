@@ -34,6 +34,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -62,6 +63,7 @@ import unbbayes.prs.extension.impl.ProbabilisticNodePluginStub;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.dto.INodeClassDataTransferObject;
 import unbbayes.util.extension.dto.impl.NodeDto;
+import unbbayes.util.extension.node.CorePluginNodeManager;
 
 
 /**
@@ -525,6 +527,15 @@ public class PNEditionPane extends JPanel {
         return this.btnHierarchy;
     }
     
+    /**
+     * This is the toolbar containing buttons in order to edit a network,
+     * such as "new probabilistic node" button, "add edge" button, etc.
+     * 
+     * @version 2010/01/02 - added support for plugin nodes
+     * @author Shou Matsumoto
+     * @see #buildAddPluginSplitButtonMenu()
+     * @see CorePluginNodeManager
+     */
   	public class ToolBarEdition extends JToolBar{
   	    
   		private static final long serialVersionUID = 1L;
@@ -543,7 +554,7 @@ public class PNEditionPane extends JPanel {
   	    
   	    private SplitToggleButton btnAddPluginButton;
   	    
-  		public ToolBarEdition(){
+  	    public ToolBarEdition(){
   	        
   			super(); 
   			setFloatable(false); 
@@ -686,59 +697,16 @@ public class PNEditionPane extends JPanel {
 			
 			ret.add(continuousNodeItem);
 			
-			
+			// load plugin and add buttons into the plugin node's split button
+			for (INodeClassDataTransferObject dto : netWindow.getGraphPane().getPluginNodeManager().getAllLoadedPluginNodes()) {
+				JMenuItem stubItem = new JMenuItem(dto.getName() , ((dto.getIcon()==null)?(iconController.getChangeNodeTypeIcon()):(dto.getIcon())));
+				stubItem.setToolTipText(dto.getDescription());
+				// the action listener below just updates the split button and the button group
+				stubItem.addActionListener(new DtoAwareListItemActionListener(dto));
+				ret.add(stubItem);
+			}
 			// This is a stub in order to test
-//			JMenuItem stubItem = new JMenuItem("Stub plugin" , iconController.getBlueNodeIcon());
-//			stubItem.setToolTipText("This is just a stub added in order to test plugin functionality...");
-//			stubItem.addActionListener(new ActionListener() {
-//				public void actionPerformed(ActionEvent e) {
-//					JToggleButton stubButton = new JToggleButton(iconController.getBlueNodeIcon());
-//					stubButton.setToolTipText("This is a stub. Do not use it!");
-//					stubButton.addActionListener(new ActionListener() {
-//						public void actionPerformed(ActionEvent e) {
-//							INodeClassDataTransferObject nodeDto = NodeDto.newInstance();
-//							nodeDto.setIcon(iconController.getBlueNodeIcon());
-//							ClassInstantiationPluginNodeBuilder builder = new ClassInstantiationPluginNodeBuilder(ProbabilisticNodePluginStub.class);
-//							nodeDto.setNodeBuilder(builder);
-//							ClassInstantiationPluginUShapeBuilder ushapeBuilder = new ClassInstantiationPluginUShapeBuilder(DefaultPluginUShape.class);
-//							nodeDto.setShapeBuilder(ushapeBuilder);
-//							IProbabilityFunctionPanelBuilder panelBuilder = new IProbabilityFunctionPanelBuilder () {
-//								private Node node;
-//								public JPanel buildProbabilityFunctionEditionPanel() {
-//									JPanel panel =  new JPanel();
-//									panel.setLayout(new BorderLayout());
-//									panel.setBorder(new TitledBorder("Informations about this node"));
-//									panel.add(new JLabel("Name"), BorderLayout.WEST);
-//									JLabel field = new JLabel();
-//									if (node != null) {
-//										field.setText(node.getName());
-//									}
-//									panel.add(field, BorderLayout.CENTER);
-//									return panel;
-//								}
-//								public void setProbabilityFunctionOwner(
-//										Node node) {
-//									this.node = node;
-//								}
-//								public Node getProbabilityFunctionOwner() {
-//									return this.node;
-//								}
-//							};
-//							nodeDto.setProbabilityFunctionPanelBuilder(panelBuilder);
-//							nodeDto.setCursorIcon(iconController.getContextNodeCursor());
-//							netWindow.getGraphPane().setAction(GraphAction.ADD_PLUGIN_NODE, nodeDto);
-//						}
-//					});
-//					groupEditionButtons.remove(stubButton);
-//					groupEditionButtons.add(stubButton);
-//					getBtnAddPluginButton().setMainButton(stubButton);
-//					getBtnAddPluginButton().getMenu().setVisible(false);
-//					updateUI();
-//					getBtnAddPluginButton().getMainButton().doClick();
-//					Debug.println(this.getClass(), "Plugin button set to " + getBtnAddPluginButton().getMainButton().getToolTipText());
-//				}
-//			});
-//			ret.add(stubItem);
+			
 			
 			// TODO create a loop in order to add nodes loaded from plugins
 			Debug.println(this.getClass(), "Plugin aware new node button is not implemented yet");
@@ -809,7 +777,47 @@ public class PNEditionPane extends JPanel {
 		public void setBtnAddPluginButton(SplitToggleButton btnAddPluginButton) {
 			this.btnAddPluginButton = btnAddPluginButton;
 		}
-  	    
+		
+		/**
+		 * This is an action listener for a list item, which is listed when
+		 * we press the arrow at the right side of the plugin node's split button.
+		 * @author Shou Matsumoto
+		 *
+		 */
+		protected class DtoAwareListItemActionListener implements ActionListener{
+			private INodeClassDataTransferObject dto;
+			/** Default constructor initializing the dto. @param dto */
+			public DtoAwareListItemActionListener (INodeClassDataTransferObject dto) {
+				this.dto = dto;
+			}
+			public void actionPerformed(ActionEvent e) {
+				// this is the button to be shown when we press the list item
+				JToggleButton button = new JToggleButton(((dto.getIcon()==null)?(iconController.getChangeNodeTypeIcon()):(dto.getIcon())));
+				button.setToolTipText(dto.getDescription());
+				button.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						netWindow.getGraphPane().setAction(GraphAction.ADD_PLUGIN_NODE, dto);
+					}
+				});
+				
+				// update button group, avoiding duplicate buttons. 
+				// This is in order to unselect another button within same group after clicking this new button
+				groupEditionButtons.remove(button);
+				groupEditionButtons.add(button);
+				
+				// change the main button in the split button
+				getBtnAddPluginButton().setMainButton(button);
+				
+				// hide menu, since user has pressed
+				getBtnAddPluginButton().getMenu().setVisible(false);
+				updateUI();
+				
+				// click the button automatically 
+				getBtnAddPluginButton().getMainButton().doClick();
+				
+				Debug.println(this.getClass(), "Plugin button set to " + getBtnAddPluginButton().getMainButton().getToolTipText());
+			}
+		}
   	}
 
 	public ToolBarEdition getTbEdition() {
@@ -836,7 +844,6 @@ public class PNEditionPane extends JPanel {
 	public JScrollPane getJspTable() {
 		return jspTable;
 	}
-	
 	
 	
 

@@ -41,6 +41,14 @@ public class DefaultUtilityNodeBuilder implements INodeBuilder {
 	public Node buildNode() {
 		return new UtilityNode();
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.builder.INodeBuilder#getNodeClass()
+	 */
+	public Class getNodeClass() {
+		return UtilityNode.class;
+	}
 	
 	
 

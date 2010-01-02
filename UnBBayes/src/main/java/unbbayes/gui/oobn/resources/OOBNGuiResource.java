@@ -72,5 +72,8 @@ public class OOBNGuiResource extends ListResourceBundle {
 
 		{"unsupportedGraphFormat" , "This format is not supported by this module/plugin."},
 		
+		{"resizeToFitText" , "Resize to fit text"},
+		{"changeColor" , "Change color"},
+		
 	};
 }

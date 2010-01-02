@@ -95,7 +95,34 @@ public interface INodeClassDataTransferObject extends IDataTransferObject {
 	 */
 	public void setCursorIcon(ImageIcon cursorIcon);
 
+	/**
+	 * Obtains the name of this set of information. This is
+	 * just a simple identifier for users, and may be used as a label
+	 * on buttons.
+	 * @return
+	 */
+	public String getName();
 	
+	/**
+	 * The name of this set of information. This is
+	 * just a simple identifier for users, and may be used as a label
+	 * on buttons.
+	 * @param name
+	 */
+	public void setName(String name);
 	
+	/**
+	 * Obtains a description of this set of information. This is
+	 * just a additional information for users, and may be used as a tool tip text.
+	 * @return
+	 */
+	public String getDescription();
 	
+	/**
+	 * A description of this set of information. This is
+	 * just a additional information for users, and may be used as a tool tip text.
+	 * @param description
+	 */
+	public void setDescription(String description);
+		
 }

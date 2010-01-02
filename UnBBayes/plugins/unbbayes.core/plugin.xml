@@ -71,4 +71,14 @@
     <extension-point id="ResourceBundle">
         <parameter-def id="class"/>
     </extension-point>
+    
+    
+    <extension-point id="PluginNode">
+        <parameter-def id="class"/>
+        <parameter-def id="shapeClass"/>
+        <parameter-def id="name"/>
+		<parameter-def id="description" multiplicity="none-or-one" />
+		<parameter-def id="icon" multiplicity="none-or-one" />
+		<parameter-def id="cursor" multiplicity="none-or-one" />
+    </extension-point>
 </plugin>

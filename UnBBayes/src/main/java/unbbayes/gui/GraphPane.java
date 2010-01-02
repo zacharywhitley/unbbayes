@@ -83,6 +83,7 @@ import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.dto.INodeClassDataTransferObject;
+import unbbayes.util.extension.node.CorePluginNodeManager;
 
 /**
  * Essa classe � respons�vel por desenhar a rede Bayesiana ou a MFrag na tela.
@@ -138,9 +139,10 @@ public class GraphPane extends UCanvas implements MouseListener,
 	
 	// a dto that temporally holds a plugin node's informations.
 	private INodeClassDataTransferObject nodeClassDataTransferObject;
+	
+	// This object manages plugin-loaded nodes.
+	private CorePluginNodeManager pluginNodeManager = CorePluginNodeManager.newInstance();
 
-	// this is a map to store what JPanel builder must be used by a node in order to edit its probability function
-	private Map<Node, IProbabilityFunctionPanelBuilder> nodeToPanelBuilderMap = new HashMap<Node, IProbabilityFunctionPanelBuilder>();
 	
 	/** Load resource file from this package */
 	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
@@ -505,14 +507,12 @@ public class GraphPane extends UCanvas implements MouseListener,
 				// build a new shape for new node
 				UShape shape = null;
 				try {
-					shape = this.getNodeDataTransferObject().getShapeBuilder().build().getUShape(newNode);
+					shape = this.getNodeDataTransferObject().getShapeBuilder().build().getUShape(newNode, this);
 				} catch (IllegalAccessException e1) {
 					throw new RuntimeException(e1);
 				} catch (InstantiationException e1) {
 					throw new RuntimeException(e1);
 				}
-				shape.setCanvas(this);
-				shape.setVisible(true);
 				
 				// add shape into this pane (canvas)
 				addShape(shape);
@@ -524,14 +524,6 @@ public class GraphPane extends UCanvas implements MouseListener,
 				
 				// notify the probability function panel's builder that a new node is currently "selected" as owner			
 				this.getNodeDataTransferObject().getProbabilityFunctionPanelBuilder().setProbabilityFunctionOwner(newNode);
-				
-				// register the new node and the probability function's panel builder, so that #onShapeChanged(UShape) can
-				// use the correct builder in order to re-build the panel when this node is selected again.
-				// A node basically cannot use a builder different from the original one used at creation time.
-				this.getNodeToPanelBuilderMap().put(
-							newNode, 
-							this.getNodeDataTransferObject().getProbabilityFunctionPanelBuilder()
-						);
 				
 				// display the probability function panel for new node
 				this.controller.getScreen().showProbabilityDistributionPanel(
@@ -749,49 +741,74 @@ public class GraphPane extends UCanvas implements MouseListener,
 		return action;
 	}
 
+	/**
+	 * This method literally re-generates the UShape instance for a given newNode parameter.
+	 * This is useful when we temporally destroy a GraphPane's content and want to re-generate
+	 * it again (e.g. compiling a network and showing the compilation pane, and then turning back),
+	 * or loading a network from file.
+	 * @param newNode
+	 */
 	public void createNode(Node newNode) {
+		// TODO stop using if-instanceof structure and start using object binding to a UShape builder.
+		
 		UShape shape = null;
 
-		if (newNode instanceof ContinuousNode) {
-			shape = new UShapeProbabilisticNode(this, newNode, (int) newNode
-					.getPosition().x, (int) newNode.getPosition().y, newNode
-					.getWidth(), newNode.getHeight());
-		} else if (newNode instanceof ProbabilisticNode) {
-			shape = new UShapeProbabilisticNode(this, newNode, (int) newNode
-					.getPosition().x, (int) newNode.getPosition().y, newNode
-					.getWidth(), newNode.getHeight());
-		} else if (newNode instanceof DecisionNode) {
-			shape = new UShapeDecisionNode(this, newNode, (int) newNode
-					.getPosition().x, (int) newNode.getPosition().y, newNode
-					.getWidth(), newNode.getHeight());
-		} else if (newNode instanceof UtilityNode) {
-			shape = new UShapeUtilityNode(this, newNode, (int) newNode
-					.getPosition().x, (int) newNode.getPosition().y, newNode
-					.getWidth(), newNode.getHeight());
-		} else if (newNode instanceof ContextNode) {
-			shape = new UShapeContextNode(this, newNode, (int) newNode
-					.getPosition().x, (int) newNode.getPosition().y, newNode
-					.getWidth(), newNode.getHeight());
-		} else if (newNode instanceof ResidentNode) {
-			shape = new UShapeResidentNode(this, newNode, (int) newNode
-					.getPosition().x, (int) newNode.getPosition().y, newNode
-					.getWidth(), newNode.getHeight());
-		} else if (newNode instanceof InputNode) {
-			shape = new UShapeInputNode(this, newNode, (int) newNode
-					.getPosition().x, (int) newNode.getPosition().y, newNode
-					.getWidth(), newNode.getHeight());
-		} else if (newNode instanceof OrdinaryVariable) {
-			shape = new UShapeOrdinaryVariableNode(this, newNode, (int) newNode
-					.getPosition().x, (int) newNode.getPosition().y, newNode
-					.getWidth(), newNode.getHeight());
-		} else if (newNode instanceof OOBNNodeGraphicalWrapper) {
-			shape = new UShapeOOBNNode(this, newNode, (int) newNode
-					.getPosition().x, (int) newNode.getPosition().y, newNode
-					.getWidth(), newNode.getHeight());
+		if (newNode instanceof IPluginNode) {
+			try {
+				shape = this.getPluginNodeManager().getPluginNodeInformation(newNode.getClass()).getShapeBuilder().build().getUShape(newNode, this);
+			} catch (IllegalAccessException e) {
+				throw new RuntimeException(e);
+			} catch (InstantiationException e) {
+				throw new RuntimeException(e);
+			}
+		} 
+		if (shape == null) {
+			// if we could not find a plugin node, start testing ordinal nodes
+			if (newNode instanceof ContinuousNode) {
+				shape = new UShapeProbabilisticNode(this, newNode, (int) newNode
+						.getPosition().x, (int) newNode.getPosition().y, newNode
+						.getWidth(), newNode.getHeight());
+			} else if (newNode instanceof ProbabilisticNode) {
+				shape = new UShapeProbabilisticNode(this, newNode, (int) newNode
+						.getPosition().x, (int) newNode.getPosition().y, newNode
+						.getWidth(), newNode.getHeight());
+			} else if (newNode instanceof DecisionNode) {
+				shape = new UShapeDecisionNode(this, newNode, (int) newNode
+						.getPosition().x, (int) newNode.getPosition().y, newNode
+						.getWidth(), newNode.getHeight());
+			} else if (newNode instanceof UtilityNode) {
+				shape = new UShapeUtilityNode(this, newNode, (int) newNode
+						.getPosition().x, (int) newNode.getPosition().y, newNode
+						.getWidth(), newNode.getHeight());
+			} else if (newNode instanceof ContextNode) {
+				shape = new UShapeContextNode(this, newNode, (int) newNode
+						.getPosition().x, (int) newNode.getPosition().y, newNode
+						.getWidth(), newNode.getHeight());
+			} else if (newNode instanceof ResidentNode) {
+				shape = new UShapeResidentNode(this, newNode, (int) newNode
+						.getPosition().x, (int) newNode.getPosition().y, newNode
+						.getWidth(), newNode.getHeight());
+			} else if (newNode instanceof InputNode) {
+				shape = new UShapeInputNode(this, newNode, (int) newNode
+						.getPosition().x, (int) newNode.getPosition().y, newNode
+						.getWidth(), newNode.getHeight());
+			} else if (newNode instanceof OrdinaryVariable) {
+				shape = new UShapeOrdinaryVariableNode(this, newNode, (int) newNode
+						.getPosition().x, (int) newNode.getPosition().y, newNode
+						.getWidth(), newNode.getHeight());
+			} else if (newNode instanceof OOBNNodeGraphicalWrapper) {
+				shape = new UShapeOOBNNode(this, newNode, (int) newNode
+						.getPosition().x, (int) newNode.getPosition().y, newNode
+						.getWidth(), newNode.getHeight());
+			}
 		}
 
-		addShape(shape);
-		shape.setState(UShape.STATE_SELECTED, null);
+		try {
+			addShape(shape);
+			shape.setState(UShape.STATE_SELECTED, null);
+		} catch (NullPointerException e) {
+			throw new RuntimeException("Could not find or set a shape for node: " + newNode.getName(),e);
+		}
 	}
 
 	public void compiled(boolean reset, Node selectedNode) {
@@ -869,7 +886,10 @@ public class GraphPane extends UCanvas implements MouseListener,
 			// create node
 			createNode(n);
 
-			if (n instanceof ContinuousNode || n instanceof ProbabilisticNode) {
+			if (n instanceof ContinuousNode 
+					|| n instanceof ProbabilisticNode 
+					|| n instanceof IPluginNode) {
+				
 				shape = getNodeUShape(n);
 
 				if (shape != null) {
@@ -1021,7 +1041,12 @@ public class GraphPane extends UCanvas implements MouseListener,
 			
 			// Obtains the correct panel builder for currently selected node
 			// TODO find a better way to couple the node and its builder without messing up the draw/Node/GUI relationship
-			IProbabilityFunctionPanelBuilder builder = this.getNodeToPanelBuilderMap().get(s.getNode());
+			IProbabilityFunctionPanelBuilder builder = null;
+			try {
+				builder = this.getPluginNodeManager().getPluginNodeInformation(s.getNode().getClass()).getProbabilityFunctionPanelBuilder();
+			} catch (Exception e) {
+				Debug.println(this.getClass(), "Could not restore the node panel builder for " + s.getNode().getName(), e);
+			}
 			if (builder != null) {
 				// notify the probability function panel that the current owner (node) is different
 				builder.setProbabilityFunctionOwner(s.getNode());
@@ -1031,6 +1056,7 @@ public class GraphPane extends UCanvas implements MouseListener,
 			showCPT(s.getNode());
 		}
 	}
+
 
 	public void onShapeDeleted(UShape s) {
 		if (controller == null)
@@ -1090,25 +1116,21 @@ public class GraphPane extends UCanvas implements MouseListener,
 	}
 
 	/**
-	 * This is a map to store what JPanel builder must be used by a node in order to edit its probability function.
-	 * @return the nodeToPanelBuilderMap
-	 * @see #setAction(GraphAction, INodeClassDataTransferObject)
-	 * @see #mouseClicked(MouseEvent)
-	 * @see #onShapeChanged(UShape)
+	 * This object manages plugin-loaded nodes.
+	 * @return the pluginNodeManager
 	 */
-	public Map<Node, IProbabilityFunctionPanelBuilder> getNodeToPanelBuilderMap() {
-		return nodeToPanelBuilderMap;
+	protected CorePluginNodeManager getPluginNodeManager() {
+		return pluginNodeManager;
 	}
 
 	/**
-	 * This is a map to store what JPanel builder must be used by a node in order to edit its probability function.
-	 * @param nodeToPanelBuilderMap the nodeToPanelBuilderMap to set
-	 * @see #setAction(GraphAction, INodeClassDataTransferObject)
-	 * @see #mouseClicked(MouseEvent)
-	 * @see #onShapeChanged(UShape)
+	 * This object manages plugin-loaded nodes.
+	 * @param pluginNodeManager the pluginNodeManager to set
 	 */
-	public void setNodeToPanelBuilderMap(
-			Map<Node, IProbabilityFunctionPanelBuilder> nodeToPanelBuilderMap) {
-		this.nodeToPanelBuilderMap = nodeToPanelBuilderMap;
+	protected void setPluginNodeManager(CorePluginNodeManager pluginNodeManager) {
+		this.pluginNodeManager = pluginNodeManager;
 	}
+
+
+
 }

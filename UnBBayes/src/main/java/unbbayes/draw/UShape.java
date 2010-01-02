@@ -246,12 +246,12 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 	}
 	
 	/**
-	 * 
+	 * Resets the menu and fills it with the "resize" and "color change" menu.
 	 */
-	public void createPopupMenu()
-	{
+	public void createBasicPopupMenu() {
 		popup.removeAll();
-		
+
+		// TODO use resource file for localization
  	    JMenuItem item = new JMenuItem("Resize to fit text");
 		item.addActionListener
 		(	
@@ -276,6 +276,18 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 			}
 		);
 		
+		popup.add(item);
+		popup.add(item1);
+	}
+	
+	/**
+	 * Fills the popup menu with the "align" options and basic options
+	 */
+	public void createPopupMenu()
+	{
+		this.createBasicPopupMenu();
+
+		// TODO use resource file for localization
 		JMenuItem item2 = new JMenuItem("Node Align: Left");
 		item2.addActionListener
 		(	
@@ -325,8 +337,6 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
 			}
 		);
 		  
-		popup.add(item);
-		popup.add(item1);
 		popup.add(item2);
 		popup.add(item3); 
 		popup.add(item4); 

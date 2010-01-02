@@ -25,7 +25,9 @@ public class NodeDto  extends Dto implements INodeClassDataTransferObject {
 	private static final String SHAPE = "shape";
 	private static final String ICON = "icon";
 	private static final String PANEL = "panel";
-	private static final String CURSOR = "CURSOR";
+	private static final String CURSOR = "cursor";
+	private static final String NAME = "name";
+	private static final String DESCRIPTION = "description";
 	
 	/**
 	 * The main constructor is not public. Use {@link #newInstance()} instead.
@@ -122,6 +124,38 @@ public class NodeDto  extends Dto implements INodeClassDataTransferObject {
 	 */
 	public void setShapeBuilder(IPluginUShapeBuilder shape) {
 		this.setObject(SHAPE, shape);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.dto.INodeClassDataTransferObject#getDescription()
+	 */
+	public String getDescription() {
+		return (String)this.getObject(DESCRIPTION).toString();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.dto.INodeClassDataTransferObject#getName()
+	 */
+	public String getName() {
+		return (String)this.getObject(NAME);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.dto.INodeClassDataTransferObject#setDescription(java.lang.String)
+	 */
+	public void setDescription(String description) {
+		this.setObject(DESCRIPTION, description);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.dto.INodeClassDataTransferObject#setName(java.lang.String)
+	 */
+	public void setName(String name) {
+		this.setObject(NAME, name);
 	}
 
 }

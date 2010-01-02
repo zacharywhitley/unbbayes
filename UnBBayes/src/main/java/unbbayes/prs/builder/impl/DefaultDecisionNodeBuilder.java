@@ -43,4 +43,12 @@ public class DefaultDecisionNodeBuilder implements INodeBuilder {
 		return new DecisionNode();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.builder.INodeBuilder#getNodeClass()
+	 */
+	public Class getNodeClass() {
+		return DecisionNode.class;
+	}
+
 }

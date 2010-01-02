@@ -25,6 +25,7 @@ import java.awt.Component;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -42,6 +43,11 @@ import unbbayes.prs.Node;
 import unbbayes.prs.oobn.IOOBNNode;
 import unbbayes.util.Debug;
 
+/**
+ * This shape represents an OOBN node EXCEPT THE INSTANCE NODE ITSELF (but includes the
+ * instence's input and output nodes). The instance node is modeled as UShapeFrame.
+ *
+ */
 public class UShapeOOBNNode extends UShape  
 {       
 	/**
@@ -72,6 +78,9 @@ public class UShapeOOBNNode extends UShape
 	public static final String STYPE_INSTANCE	= "INSTANCE";
 	public static final String STYPE_INSTANCE_OUTPUT = "INSTANCE OUTPUT";
 	public static final String STYPE_INSTANCE_INPUT	 = "INSTANCE INPUT";
+
+	/** How many pixels on width we shall use as an error margin for width comparison */
+	public static final int WIDTH_THRESHOLD = 20;
  
 	public UShapeOOBNNode(UCanvas c, Node pNode, int x, int y, int w, int h)
 	{
@@ -229,33 +238,6 @@ public class UShapeOOBNNode extends UShape
 	{  
 		if (SwingUtilities.isLeftMouseButton(arg0)) 
 	    {
-			if (arg0.getClickCount() == 1 && !arg0.isConsumed()) 
-	        {	        
-		//		switch (this.getAction()) {
-		//		case NONE:
-		//			this.setBMoveNode(true);
-					//setCursor(new Cursor(Cursor.MOVE_CURSOR));
-					try {
-						OOBNNodeGraphicalWrapper node = (OOBNNodeGraphicalWrapper)getNode();
-						
-						this.describeOOBNNode(node);
-						
-						if (node != null) {
-							if ( node.getWrappedNode().getType() == node.getWrappedNode().TYPE_INSTANCE_INPUT
-							  || node.getWrappedNode().getType() == node.getWrappedNode().TYPE_INSTANCE_OUTPUT ){
-								 // I do not want to make inner nodes selectable.
-								 // so, return without changing status
-								 return;
-							}						
-						}
-					} catch (Exception t) {
-						Debug.println(this.getClass(), "You clicked at a non-OOBN node", t);
-					}
-						
-		//		default:
-		//			break;
-		//		}
-	        }
 			
 	        if (arg0.getClickCount() == 2 && !arg0.isConsumed()) 
 	        {
@@ -269,19 +251,17 @@ public class UShapeOOBNNode extends UShape
 	        }
 	    }
 	        
-	    if (SwingUtilities.isMiddleMouseButton(arg0)) 
-	    {
-	          System.out.println("Middle button released.");
-	    }
-	        
 	    if (SwingUtilities.isRightMouseButton(arg0)) 
 	    {
 	       	System.out.println("Right button released.");
+	       	
+	       	setState(STATE_SELECTED, null);
 	       	
 	    	// I'm not using e.isPoputrigger because it seems not to be working on Linux... 
 			this.showNodeTypeChangePopup(arg0.getComponent(), arg0.getX(), arg0.getY());
 				 
 	    }
+//	    super.mouseClicked(arg0);
 	} 
  
 	/**
@@ -355,17 +335,40 @@ public class UShapeOOBNNode extends UShape
 		popup.setToolTipText(resource.getString("OOBNPopupMenuTooltipMessage"));
 	}
 	
-	public void showNodeTypeChangePopup(Component invoker, int x, int y) 
-	{
-		if ((((OOBNNodeGraphicalWrapper)getNode()).getType() & IOOBNNode.TYPE_INSTANCE) == 0) 
-		{
-			createPopupMenu();
+	public void showNodeTypeChangePopup(Component invoker, int x, int y) 	{
+		if ((((OOBNNodeGraphicalWrapper)getNode()).getWrappedNode().getType() & IOOBNNode.TYPE_INSTANCE) == 0) {
+			// create the full menu if this is not an instance node
+			this.createPopupMenu();
 			setUpPopupMenu();
-			popup.setEnabled(true);
-			popup.show(invoker, x, y);
-		}	
+		} else {
+			// create only the fit-text and change color options if this is an instance node
+			this.createBasicPopupMenu();
+		}
+		popup.setEnabled(true);
+		popup.show(invoker, x, y);
 	}
 	
+	
+	
+	/* (non-Javadoc)
+	 * @see unbbayes.draw.UShape#createBasicPopupMenu()
+	 */
+	@Override
+	public void createBasicPopupMenu() {
+		if ((((OOBNNodeGraphicalWrapper)getNode()).getWrappedNode().getType() & IOOBNNode.TYPE_INSTANCE) == 0) {
+			// create the normal menu if this is not an instance node
+			super.createBasicPopupMenu();
+			return;
+		}
+		// create the custom menu otherwise
+		popup.removeAll();
+		
+ 	    JMenuItem item = new JMenuItem(resource.getString("resizeToFitText"));
+		item.addActionListener(new FitOnTextActionListener(this));
+		
+		popup.add(item);
+	}
+
 	/**
 	 * If debug mode is on, this method writes to Debug a description of OOBN node
 	 * @param node
@@ -406,6 +409,106 @@ public class UShapeOOBNNode extends UShape
 		} catch (Exception t) {
 			// do nothing
 		}
+	}
+	
+	/**
+	 * This is an action listener for popup menu, which is aware of what shape 
+	 * to work on
+	 * @author Shou Matsumoto
+	 *
+	 */
+	protected class FitOnTextActionListener implements ActionListener{
+		private UShape shape;
+		
+		public FitOnTextActionListener(UShape shape) {
+			this.shape = shape;
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			
+			// update the shape
+			this.shape.resizeToFitText();
+			this.shape.repaint();
+			
+			// since we may need to resize the upper container (frame) too, let's find it
+			IOOBNNode upperInstanceNode = ((OOBNNodeGraphicalWrapper)this.shape.getNode()).getWrappedNode().getUpperInstanceNode();
+			
+			// lets find the shape bound to the OOBN node
+			UShape upperInstanceShape = null;
+			if (upperInstanceNode != null) {
+				upperInstanceShape = findShapeByOOBNNode(this.shape.getCanvas(), upperInstanceNode);
+			}
+			
+			// let's resize the upper frame
+			if (upperInstanceShape != null) {
+				// fit the width of the upper instance shape if the right side gets out of bound
+				// looks like the inner shapes are using local coordinates...
+				if ( (this.shape.getX() + this.shape.getWidth() + WIDTH_THRESHOLD ) >= upperInstanceShape.getWidth() ) {
+					upperInstanceShape.setNewSize(
+							upperInstanceShape.getX(), 
+							upperInstanceShape.getY(), 
+							(this.shape.getX() + this.shape.getWidth() + WIDTH_THRESHOLD ), 
+							upperInstanceShape.getHeight()
+					); 
+				}
+				upperInstanceShape.repaint();
+			}
+			
+		}
+	}
+	
+	/**
+	 * Find a shape by IOOBNNode. 
+	 * This method was implemented here because the {@link UCanvas#getNodeUShape(Node)} 
+	 * expects that every node extends {@link Node}.
+	 * The search is recursive within inner UShapes.
+	 * @param canvas
+	 * @param node
+	 * @return
+	 */
+	public static UShape findShapeByOOBNNode(UCanvas canvas, IOOBNNode node) {
+		for (Component component : canvas.getComponents()) {
+			UShape shape = (UShape) component;
+			if (shape == null || shape.getNode() == null) {
+				continue;
+			}
+			if (shape.getNode().equals(node)) {
+				// OOBNNodeGraphicalWrapper#equals(...) does the correct delegation to its wrapped node
+				return shape;
+			}
+			UShape recursiveShape = findShapeByOOBNNode(shape, node);
+			if (recursiveShape != null) {
+				return recursiveShape;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Recursive search for node within parent.
+	 * This method was implemented here because the {@link UCanvas#getNodeUShape(Node)} 
+	 * expects that every node extends {@link Node}.
+	 * @param parent
+	 * @param node
+	 * @return
+	 * @see #findShapeByOOBNNode(UCanvas, IOOBNNode)
+	 */
+	protected static UShape findShapeByOOBNNode(UShape parent, IOOBNNode node) {
+		for (Component component : parent.getComponents()) {
+			UShape shape = (UShape) component;
+			if (shape == null || shape.getNode() == null) {
+				continue;
+			}
+			if (shape.getNode().equals(node)) {
+				// OOBNNodeGraphicalWrapper#equals(...) does the correct delegation to its wrapped node
+				return shape;
+			}
+			UShape recursiveShape = findShapeByOOBNNode(shape, node);
+			if (recursiveShape != null) {
+				return recursiveShape;
+			}
+		}
+		return null;
 	}
 	
 }

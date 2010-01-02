@@ -42,4 +42,12 @@ public class DefaultContinuousNodeBuilder implements INodeBuilder {
 		return new ContinuousNode();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.builder.INodeBuilder#getNodeClass()
+	 */
+	public Class getNodeClass() {
+		return ContinuousNode.class;
+	}
+
 }

@@ -6,6 +6,7 @@ package unbbayes.draw.extension.impl;
 import unbbayes.draw.UCanvas;
 import unbbayes.draw.UShape;
 import unbbayes.draw.UShapeDecisionNode;
+import unbbayes.draw.UShapePentagon;
 import unbbayes.draw.extension.IPluginUShape;
 import unbbayes.prs.Node;
 
@@ -14,7 +15,7 @@ import unbbayes.prs.Node;
  * @author Shou Matsumoto
  *
  */
-public class DefaultPluginUShape extends UShapeDecisionNode implements
+public class DefaultPluginUShape extends UShapePentagon implements
 		IPluginUShape {
 
 	/**
@@ -34,13 +35,20 @@ public class DefaultPluginUShape extends UShapeDecisionNode implements
 	 * @param h
 	 */
 	public DefaultPluginUShape(UCanvas c, Node node, int x, int y, int w, int h) {
-		super(c, node, x, y, w, h);
+		super(c, x, y, w, h);
+		if (node != null) {
+			this.setNode(node);
+			this.setLabel(node.getName());
+			this.setName(node.getName());
+		}
 	}
 
-	/* (non-Javadoc)
-	 * @see unbbayes.draw.extension.IPluginUShape#getUShape(unbbayes.prs.Node)
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.draw.extension.IPluginUShape#getUShape(unbbayes.prs.Node, unbbayes.draw.UCanvas)
 	 */
-	public UShape getUShape(Node node) {
+	public UShape getUShape(Node node, UCanvas canvas) {
+		this.setCanvas(canvas);
 		this.setNode(node);
 		this.setLocation(
 				(int) node.getPosition().x - node.getWidth() / 2, 
@@ -48,6 +56,8 @@ public class DefaultPluginUShape extends UShapeDecisionNode implements
 			);
 		this.setSize(node.getWidth(), node.getHeight());
 		this.setName(node.getName());
+		this.setLabel(node.getName());
+		this.setVisible(true);
 		this.updateUI();
 		return this;
 	}

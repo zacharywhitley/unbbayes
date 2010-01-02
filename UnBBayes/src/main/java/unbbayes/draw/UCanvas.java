@@ -139,6 +139,11 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 		return m_state;
 	}
 
+	/**
+	 * Does a linear search for a UShape instance containing a node n
+	 * @param n : node to look for
+	 * @return an instance of UShape representing the parameter n.
+	 */
 	public UShape getNodeUShape(Node n) {
 		int size = this.getComponentCount();
 		for (int i = 0; i < size; i++) {
@@ -149,7 +154,7 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 			if (shapeResult != null)
 				return shapeResult;
 
-			if (shape.getNode() != null && shape.getNode() == n)
+			if (shape.getNode() != null && (shape.getNode() == n || shape.getNode().equals(n)))
 				return shape;
 		}
 
@@ -165,7 +170,7 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 			UShape shape = (UShape) parent.getComponent(i);
 
 			if (shape != null)
-				if (shape.getNode() != null && shape.getNode() == n)
+				if (shape.getNode() != null && (shape.getNode() == n || shape.getNode().equals(n)))
 					return shape;
 		}
 
@@ -256,6 +261,7 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 			}
 		}
 	}
+	
 
 	public void onResizeToFitText() {
 		int n = this.getComponentCount();

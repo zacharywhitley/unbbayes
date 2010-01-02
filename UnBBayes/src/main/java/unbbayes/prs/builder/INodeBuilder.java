@@ -19,4 +19,11 @@ public interface INodeBuilder {
 	 * @return instance of Node
 	 */
 	public unbbayes.prs.Node buildNode();
+	
+	/**
+	 * Obtains the class of the node going to be build
+	 * by the next call of {@link #buildNode()}
+	 * @return
+	 */
+	public Class getNodeClass();
 }

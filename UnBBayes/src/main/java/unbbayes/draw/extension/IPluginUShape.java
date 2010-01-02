@@ -3,6 +3,7 @@
  */
 package unbbayes.draw.extension;
 
+import unbbayes.draw.UCanvas;
 import unbbayes.draw.UShape;
 import unbbayes.prs.Node;
 
@@ -19,8 +20,9 @@ public interface IPluginUShape {
 	 * within a canvas.
 	 * @param node : a node to be drawn into canvas. Some informations
 	 * such as position and width/height would be used.
+	 * @param canvas : canvas where this shape will be painted.
 	 * @return : a instance of UShape
 	 */
-	public UShape getUShape(Node node);
+	public UShape getUShape(Node node, UCanvas canvas);
 	
 }
