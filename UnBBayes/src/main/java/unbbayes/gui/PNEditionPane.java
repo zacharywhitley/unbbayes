@@ -34,7 +34,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -48,21 +47,14 @@ import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
-import javax.swing.border.TitledBorder;
 
 import unbbayes.controller.CompilationThread;
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
-import unbbayes.draw.extension.impl.ClassInstantiationPluginUShapeBuilder;
-import unbbayes.draw.extension.impl.DefaultPluginUShape;
-import unbbayes.gui.table.extension.IProbabilityFunctionPanelBuilder;
 import unbbayes.gui.util.SplitToggleButton;
 import unbbayes.prs.Node;
-import unbbayes.prs.builder.extension.impl.ClassInstantiationPluginNodeBuilder;
-import unbbayes.prs.extension.impl.ProbabilisticNodePluginStub;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.dto.INodeClassDataTransferObject;
-import unbbayes.util.extension.dto.impl.NodeDto;
 import unbbayes.util.extension.node.CorePluginNodeManager;
 
 

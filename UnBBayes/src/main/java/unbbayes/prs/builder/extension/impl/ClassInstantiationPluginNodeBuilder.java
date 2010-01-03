@@ -16,7 +16,7 @@ import unbbayes.prs.extension.IPluginNode;
 public class ClassInstantiationPluginNodeBuilder extends PluginNodeBuilder {
 
 	private static int counter = 0;
-	private static String namePrefix = "PluginNode";
+	private String namePrefix = "PluginNode";
 	
 	private Class clazz;
 	
@@ -73,6 +73,9 @@ public class ClassInstantiationPluginNodeBuilder extends PluginNodeBuilder {
 	 * @param clazz the clazz to set
 	 */
 	public void setNodeClass(Class clazz) {
+		if (!IPluginNode.class.isAssignableFrom(clazz)) {
+			throw new IllegalArgumentException("The class set by setNodeClass(Class) is not a IPluginNode");
+		}
 		this.clazz = clazz;
 	}
 
@@ -93,15 +96,15 @@ public class ClassInstantiationPluginNodeBuilder extends PluginNodeBuilder {
 	/**
 	 * @return the namePrefix
 	 */
-	public static String getNamePrefix() {
+	public String getNamePrefix() {
 		return namePrefix;
 	}
 
 	/**
 	 * @param namePrefix the namePrefix to set
 	 */
-	public static void setNamePrefix(String namePrefix) {
-		ClassInstantiationPluginNodeBuilder.namePrefix = namePrefix;
+	public void setNamePrefix(String namePrefix) {
+		this.namePrefix = namePrefix;
 	}
 
 }

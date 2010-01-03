@@ -1136,7 +1136,24 @@ public class UShape extends JComponent implements ActionListener, FocusListener,
     		shape.sendMessageToFriends( STATE_MOVE );
     	}
 	}
+	
+	
 		
+	/* (non-Javadoc)
+	 * @see java.awt.Component#setBounds(int, int, int, int)
+	 */
+	@Override
+	public void setBounds(int x, int y, int width, int height) {
+		// adapting it in order to stop going "out" of canvas
+		if (x < 0) {
+			x = 0;
+		}
+		if (y < 0) {
+			y = 0;
+		}
+		super.setBounds(x, y, width, height);
+	}
+
 	public Object[] cloneChildren(Object[] children, boolean includeChildren)
 	{
 		Map mapping = new Hashtable();

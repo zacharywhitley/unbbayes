@@ -5,7 +5,8 @@ import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.extension.IPluginNode;
 /**
- * This is just a stub to test plugin nodes
+ * This is just a stub to test plugin nodes.
+ * This is a boolean random variable
  * @author Shou Matsumoto
  *
  */
@@ -14,10 +15,12 @@ public class ProbabilisticNodePluginStub extends ProbabilisticNode implements
 
 	public ProbabilisticNodePluginStub() {
 		super();
-		this.appendState("Stub state");
+		this.appendState("true");
+		this.appendState("false");
 		PotentialTable table = this.getProbabilityFunction();
 		table.addVariable(this);
-		table.setValue(0, 1);
+		table.setValue(0, .5f);
+		table.setValue(1, .5f);
 	}
 	
 	/*
