@@ -66,6 +66,9 @@ public class ClassInstantiationPluginUShapeBuilder implements
 	 * @param pluginUShapeClass the pluginUShapeClass to set
 	 */
 	public void setPluginUShapeClass(Class pluginUShapeClass) {
+		if (!IPluginUShape.class.isAssignableFrom(pluginUShapeClass)) {
+			throw new IllegalArgumentException("this.getPluginUShapeClass() must return an instance of unbbayes.draw.extension.IPluginUShape");
+		}
 		this.pluginUShapeClass = pluginUShapeClass;
 	}
 

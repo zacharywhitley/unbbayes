@@ -3,6 +3,11 @@
  */
 package unbbayes.draw.extension.impl;
 
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+
 import unbbayes.draw.UCanvas;
 import unbbayes.draw.UShape;
 import unbbayes.draw.UShapeDecisionNode;
@@ -61,5 +66,23 @@ public class DefaultPluginUShape extends UShapePentagon implements
 		this.updateUI();
 		return this;
 	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.draw.UShapePentagon#paintComponent(java.awt.Graphics)
+	 */
+	@Override
+	public void paintComponent(Graphics g) {
+		
+		Graphics2D g2 = (Graphics2D) g;
+	 	
+		g2.setPaint( new GradientPaint( getWidth()/2, getHeight(),  getBackColor(), 
+										getWidth()/2, 0, 			Color.white, false));
+		
+		g2.fill(parallelogram);
+		
+ 		super.paintComponent(g);
+	}
+	
+	
 
 }
