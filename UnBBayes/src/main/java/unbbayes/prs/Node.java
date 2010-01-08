@@ -25,7 +25,9 @@ import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.IRandomVariable;
@@ -46,10 +48,16 @@ import unbbayes.util.SerializablePoint2D;
 public abstract class Node implements Serializable, 
                                       Comparable<Node>, INode{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6852804931629660275L;
+	
 	private String description;
 	protected String name;
 	protected String label;
-	private boolean nameIsLabel = true;
+	//TODO ROMMEL - Think if there is a better way to do this
+	protected Map<String, Float> stateValueMap;
 
 	//by young	
 	public static Point DEFAULT_SIZE = new Point(80,60); 
@@ -112,6 +120,7 @@ public abstract class Node implements Serializable,
 		parents = new ArrayList<Node>();
 		children = new ArrayList<Node>();
 		states = new ArrayList<String>();
+		stateValueMap = new HashMap<String, Float>();
 
 		// width
 		size.x = DEFAULT_SIZE.getX();
@@ -209,7 +218,6 @@ public abstract class Node implements Serializable,
 	 */
 	public void setLabel(String label) {
 		this.label = label;
-		nameIsLabel = false;
 	}
 
 	/**
@@ -379,6 +387,32 @@ public abstract class Node implements Serializable,
 		 * nao precisa, pois o array eh criado sempre com o valor 0 for (int j =
 		 * 0; j < i; j++) infoestados[j] = 0;
 		 */
+	}
+	
+	public void setStateValue(String state, float value) {
+		stateValueMap.put(state, value);
+	}
+	
+	public float getStateValue(String state) {
+		return stateValueMap.get(state);
+	}
+	
+	public void clearStateValues() {
+		stateValueMap.clear();
+	}
+	
+	// by young2010
+	/**
+	 * Verifies if the node has a given state.
+	 * @param state The state name to look for.
+	 * @return true if the node has the given state, false otherwise.
+	 */
+	public boolean hasState(String state) {
+		for (int i = 0; i < states.size(); i++) {
+			if (states.get(i).equals(state))
+				return true;
+		}
+		return false;
 	}
 
 	/**

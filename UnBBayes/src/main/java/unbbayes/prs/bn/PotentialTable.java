@@ -138,6 +138,16 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	public final int indexOfVariable(Node node) {
 		return variableList.indexOf(node);
 	}
+	
+	//by young2010
+	public final int indexOfVariable(String nodeName){
+		for(int i = 0; i < variableList.size(); i++){
+			if(variableList.get(i).getName().equals(nodeName) ){
+				return i; 
+			}
+		}
+		return -1;
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -179,6 +189,11 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 
 	public int tableSize() {
 	   return dataPT.size;
+	}
+	
+	// FIXME ROMMEL - THIS SHOULD NOT BE HERE!! FIX BUG REPORTED ABOUT ERROR WHEN REMOVING STATE FROM NODE
+	public void setTableSize(int size) {
+		dataPT.size = size;
 	}
 
 	/**

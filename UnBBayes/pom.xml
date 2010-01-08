@@ -32,9 +32,11 @@
 		<mailingList>
 			<name> Announcements. All messages on this list are also sent to the
 				users list.</name>
-			<subscribe> https://lists.sourceforge.net/lists/listinfo/UnBBayes-announce
+			<subscribe>
+				https://lists.sourceforge.net/lists/listinfo/UnBBayes-announce
 			</subscribe>
-			<unsubscribe> https://lists.sourceforge.net/lists/listinfo/UnBBayes-announce
+			<unsubscribe>
+				https://lists.sourceforge.net/lists/listinfo/UnBBayes-announce
 			</unsubscribe>
 			<post>unbbayes-announce@lists.sourceforge.net
 			</post>
@@ -45,9 +47,11 @@
 		<mailingList>
 			<name> A subscriber-only list for those interested in developing
 				UnBBayes.</name>
-			<subscribe> https://lists.sourceforge.net/lists/listinfo/UnBBayes-developers
+			<subscribe>
+				https://lists.sourceforge.net/lists/listinfo/UnBBayes-developers
 			</subscribe>
-			<unsubscribe> https://lists.sourceforge.net/lists/listinfo/UnBBayes-developers
+			<unsubscribe>
+				https://lists.sourceforge.net/lists/listinfo/UnBBayes-developers
 			</unsubscribe>
 			<post>unbbayes-developers@lists.sourceforge.net
 			</post>
@@ -58,9 +62,11 @@
 		<mailingList>
 			<name> A subscriber-only list for those interested in translating
 				UnBBayes.</name>
-			<subscribe> https://lists.sourceforge.net/lists/listinfo/UnBBayes-translators
+			<subscribe>
+				https://lists.sourceforge.net/lists/listinfo/UnBBayes-translators
 			</subscribe>
-			<unsubscribe> https://lists.sourceforge.net/lists/listinfo/UnBBayes-translators
+			<unsubscribe>
+				https://lists.sourceforge.net/lists/listinfo/UnBBayes-translators
 			</unsubscribe>
 			<post>unbbayes-translators@lists.sourceforge.net
 			</post>
@@ -71,9 +77,11 @@
 		<mailingList>
 			<name> A subscriber-only list for those interested in discussing
 				about UnBBayes.</name>
-			<subscribe> https://lists.sourceforge.net/lists/listinfo/UnBBayes-users
+			<subscribe>
+				https://lists.sourceforge.net/lists/listinfo/UnBBayes-users
 			</subscribe>
-			<unsubscribe> https://lists.sourceforge.net/lists/listinfo/UnBBayes-users
+			<unsubscribe>
+				https://lists.sourceforge.net/lists/listinfo/UnBBayes-users
 			</unsubscribe>
 			<post>unbbayes-users@lists.sourceforge.net
 			</post>
@@ -167,7 +175,8 @@
 		<contributor>
 			<name>Dr. Kathryn Blackmond Laskey</name>
 			<email>klaskey@gmu.edu</email>
-			<url>http://volgenau.gmu.edu/~klaskey</url>
+			<url>http://volgenau.gmu.edu/~klaskey
+			</url>
 			<organization>George Mason University - GMU</organization>
 			<organizationUrl>http://www.gmu.edu
 			</organizationUrl>
@@ -179,7 +188,8 @@
 		<contributor>
 			<name>Dr. Kuo-Chu Chang</name>
 			<email>kchang@gmu.edu</email>
-			<url>http://volgenau.gmu.edu/~kchang</url>
+			<url>http://volgenau.gmu.edu/~kchang
+			</url>
 			<organization>George Mason University - GMU</organization>
 			<organizationUrl>http://www.gmu.edu
 			</organizationUrl>
@@ -270,9 +280,33 @@
 					</packageName>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.antlr</groupId>
+				<artifactId>antlr3-maven-plugin</artifactId>
+				<version>3.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>antlr</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 	<dependencies>
+
+		<dependency>
+			<groupId>org.antlr</groupId>
+			<artifactId>antlr</artifactId>
+			<version>3.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.antlr</groupId>
+			<artifactId>antlr-runtime</artifactId>
+			<version>3.2</version>
+		</dependency>
 
 		<!-- JAVAHELP -->
 		<dependency>
@@ -342,7 +376,7 @@
 			<version>0.5.1</version>
 		</dependency>
 		<!-- JAXME/JAXB -->
-		
+
 		<!-- XALAN -->
 		<dependency>
 			<!--
@@ -469,13 +503,14 @@
 			<version>1.0</version>
 		</dependency>
 		<!-- MIGLAYOUT -->
-		
+
 		<dependency>
 			<!--
-				JPF provides a runtime engine that dynamically discovers and loads "plug-ins". 
-				A plug-in is a structured component that describes itself to JPF using a "manifest". 
-				JPF maintains a registry of available plug-ins and the functions they provide (via extension points and extensions).
-				http://jpf.sourceforge.net/index.html
+				JPF provides a runtime engine that dynamically discovers and loads
+				"plug-ins". A plug-in is a structured component that describes
+				itself to JPF using a "manifest". JPF maintains a registry of
+				available plug-ins and the functions they provide (via extension
+				points and extensions). http://jpf.sourceforge.net/index.html
 			-->
 			<groupId>guess</groupId>
 			<artifactId>jpf</artifactId>

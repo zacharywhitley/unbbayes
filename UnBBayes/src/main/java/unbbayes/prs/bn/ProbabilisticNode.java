@@ -160,6 +160,16 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable, 
     public void appendState(String state) {
         updateState(state, true);
     }
+    
+    //by young2010
+    /**
+     * Remove all, but one, states by removing the last state until there is just one left.
+     */
+	public void removeAllStates() {
+		while (states.size() > 1) {
+			removeLastState();
+		}
+	}
 
     /**
      *  Removes the newest state and updates the affected tables. Overwrites a Node's

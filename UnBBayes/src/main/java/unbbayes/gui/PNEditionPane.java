@@ -21,6 +21,7 @@
 package unbbayes.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -33,6 +34,7 @@ import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -51,6 +53,7 @@ import javax.swing.SwingConstants;
 import unbbayes.controller.CompilationThread;
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
+import unbbayes.cps.gui.CPSController;
 import unbbayes.gui.util.SplitToggleButton;
 import unbbayes.prs.Node;
 import unbbayes.util.Debug;
@@ -427,9 +430,33 @@ public class PNEditionPane extends JPanel {
      */
     public void setTable(JTable table) {
         this.table = table;
+        
+        //young2010 
+        JButton btnCPS   = new JButton("Conditional Probability Script");
+        btnCPS.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) { 
+            	setCursor(new Cursor(Cursor.WAIT_CURSOR)); 
+            	new CPSController(controller, tableOwner);
+                setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            }
+
+        });
+        
         jspTable.setViewportView(table);
-        this.centerPanel.setTopComponent(jspTable);
-        int location = table.getPreferredSize().height + centerPanel.getDividerSize() + 2;
+        
+        JPanel tPanel = new JPanel();
+        tPanel.setLayout(new BoxLayout(tPanel, BoxLayout.Y_AXIS)); 
+        btnCPS.setAlignmentX(Component.LEFT_ALIGNMENT);
+		jspTable.setAlignmentX(Component.LEFT_ALIGNMENT);
+		tPanel.add ( btnCPS ) ;
+		tPanel.add(jspTable);
+
+		 		 
+		//this.centerPanel.setTopComponent(jspTable);
+        this.centerPanel.setTopComponent(tPanel);
+        
+        
+        int location = table.getPreferredSize().height + centerPanel.getDividerSize() + 2 + btnCPS.getPreferredSize().height;
         if (table.getTableHeader() != null) {
         	location += table.getTableHeader().getPreferredSize().height;
         }
