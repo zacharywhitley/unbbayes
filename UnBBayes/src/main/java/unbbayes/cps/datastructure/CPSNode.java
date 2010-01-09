@@ -196,7 +196,7 @@ public class CPSNode extends Node<CPSNodeData> {
     		String str = this.getName();
     		
     		if( this.getValue() != null )
-    		if( !this.getValue().isEmpty() )
+    		if( this.getValue().length() > 0 )
     			str += " = " + this.getValue();
     		
     		return str;
@@ -235,7 +235,7 @@ public class CPSNode extends Node<CPSNodeData> {
     		String str = this.getName();
     		
     		if( this.getValue() != null )
-    		if( !this.getValue().isEmpty() )
+    		if( this.getValue().length() > 0 )
     			str += " = " + this.getValue()+"\n";
     			
     		return str;
