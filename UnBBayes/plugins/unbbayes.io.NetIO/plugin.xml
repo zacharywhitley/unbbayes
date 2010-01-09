@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="unbbayes.io.NetIO" version="1.0.0">
+    <requires>
+        <import plugin-id="unbbayes.util.extension.core"/>
+    </requires>
+    <extension plugin-id="unbbayes.util.extension.core" point-id="PNIO" id="NetIO">
+        <parameter id="class" value="unbbayes.io.NetIO" />
+    </extension>
+</plugin>

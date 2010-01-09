@@ -65,9 +65,10 @@ public class PluginAwareFileExtensionIODelegator extends
 	public static PluginAwareFileExtensionIODelegator newInstance() {
 		PluginAwareFileExtensionIODelegator ret = new PluginAwareFileExtensionIODelegator();
 		ret.setDelegators(new ArrayList<BaseIO>());
-		ret.getDelegators().add(new NetIO());
-		ret.getDelegators().add(new XMLBIFIO());
-		ret.getDelegators().add(new DneIO());
+		// now, the below 3 I/O classes are also loaded as plugins
+//		ret.getDelegators().add(new NetIO());
+//		ret.getDelegators().add(new XMLBIFIO());
+//		ret.getDelegators().add(new DneIO());
 		ret.getDelegators().addAll(ret.loadIOAsPlugins());
 		return ret;
 	}
