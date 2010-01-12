@@ -83,7 +83,7 @@ import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.dto.INodeClassDataTransferObject;
-import unbbayes.util.extension.node.CorePluginNodeManager;
+import unbbayes.util.extension.manager.CorePluginNodeManager;
 
 /**
  * Essa classe � respons�vel por desenhar a rede Bayesiana ou a MFrag na tela.

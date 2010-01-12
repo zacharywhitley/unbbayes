@@ -45,6 +45,9 @@ public class ResourceController {
 	public static ResourceBundle RS_GUI = ResourceController.newInstance().getBundle(
 			GuiResources.class.getName());
 	
+	private UnBBayesPluginContextHolder unbbayesPluginContextHolder = UnBBayesPluginContextHolder.newInstance();
+	
+	
 	//TODO change the name of the repetitives resouces
 	
 //	/**
@@ -107,21 +110,21 @@ public class ResourceController {
     protected synchronized ClassLoader loadPluginClassLoader() {
     	
     	// the below code fixes incidents that happens when this method is called before plugin initialization
-    	if (!UnBBayesPluginContextHolder.isInitialized()) {
+    	if (!this.getUnBBayesPluginContextHolder().isInitialized()) {
     		try {
-				UnBBayesPluginContextHolder.publishPlugins();
+				this.getUnBBayesPluginContextHolder().publishPlugins();
 			} catch (IOException e) {
 				throw new IllegalStateException("Plugin infrastructure is not ready",e);
 			}
     	}
     	
     	// loads the "core" plugin, which is a stub that we use to declare extension points for core
-	    PluginDescriptor core = UnBBayesPluginContextHolder.getPluginManager().getRegistry().getPluginDescriptor(
-	    			UnBBayesPluginContextHolder.getPluginCoreID()
+	    PluginDescriptor core = this.getUnBBayesPluginContextHolder().getPluginManager().getRegistry().getPluginDescriptor(
+	    		this.getUnBBayesPluginContextHolder().getPluginCoreID()
 	    		);
         
 	    // load the resource extension point for PN.
-	    ExtensionPoint point = UnBBayesPluginContextHolder.getPluginManager().getRegistry().getExtensionPoint(
+	    ExtensionPoint point = this.getUnBBayesPluginContextHolder().getPluginManager().getRegistry().getExtensionPoint(
 	    			core.getId(), 
 	    			this.getExtensionPointID()
 	    		);
@@ -132,13 +135,13 @@ public class ResourceController {
     	for (Extension ext : point.getConnectedExtensions()) {
     		PluginDescriptor descr = ext.getDeclaringPluginDescriptor();
     		try {
-				UnBBayesPluginContextHolder.getPluginManager().activatePlugin(descr.getId());
+    			this.getUnBBayesPluginContextHolder().getPluginManager().activatePlugin(descr.getId());
 			} catch (PluginLifecycleException e) {
 				e.printStackTrace();
 				// we could not load this plugin, but we shall continue
 				continue;
 			}
-			ClassLoader loader = UnBBayesPluginContextHolder.getPluginManager().getPluginClassLoader(descr);
+			ClassLoader loader = this.getUnBBayesPluginContextHolder().getPluginManager().getPluginClassLoader(descr);
 			if (loader != null) {
 				ret.getListOfLoaders().add(loader);
 			}
@@ -367,6 +370,21 @@ public class ResourceController {
 			this.getClass().getClassLoader().setPackageAssertionStatus(packageName, enabled);
 		}
 		
+	}
+
+	/**
+	 * @return the unbbayesPluginContextHolder
+	 */
+	public UnBBayesPluginContextHolder getUnBBayesPluginContextHolder() {
+		return unbbayesPluginContextHolder;
+	}
+
+	/**
+	 * @param unbbayesPluginContextHolder the unbbayesPluginContextHolder to set
+	 */
+	public void setUnBBayesPluginContextHolder(
+			UnBBayesPluginContextHolder unbbayesPluginContextHolder) {
+		this.unbbayesPluginContextHolder = unbbayesPluginContextHolder;
 	}
 	 
 }

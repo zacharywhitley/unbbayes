@@ -203,7 +203,7 @@ public class UnBBayesFrame extends JFrame {
 	// Adding plugin support
 	private JToolBar pluginToolBar;
 	private JMenu pluginMenu;
-//	private PluginManager pluginManager;
+	private UnBBayesPluginContextHolder unbbayesPluginContextHolder = UnBBayesPluginContextHolder.newInstance();
 	private String pluginDirectory = "plugins";
 	private String pluginModuleExtensionPoint = "Module";
 	
@@ -982,6 +982,8 @@ public class UnBBayesFrame extends JFrame {
 		reloadPluginsMenuItem.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				loadPlugins();
+				// reloads every plugin managed by UnBBayesPluginContextHolder
+				getUnbbayesPluginContextHolder().notifyReload(UnBBayesFrame.this);
 				repaint();
 			}
 		});
@@ -1054,7 +1056,7 @@ public class UnBBayesFrame extends JFrame {
 		
 		// create plugin manager and load (publish) plugins
 		try {
-			UnBBayesPluginContextHolder.publishPlugins();
+			this.getUnbbayesPluginContextHolder().publishPlugins();
 		} catch (IOException e) {
 			// could not load plugins, but we shall continue
 	        e.printStackTrace();
@@ -1064,18 +1066,18 @@ public class UnBBayesFrame extends JFrame {
 		}
 		
 		// loads the "core" plugin, which is a stub that we use to declare extension points for core
-		PluginDescriptor core = UnBBayesPluginContextHolder.getPluginManager().getRegistry().getPluginDescriptor(
-    			UnBBayesPluginContextHolder.getPluginCoreID()
+		PluginDescriptor core = this.getUnbbayesPluginContextHolder().getPluginManager().getRegistry().getPluginDescriptor(
+				this.getUnbbayesPluginContextHolder().getPluginCoreID()
     		);
 		
 	    // load the extension point for new modules (functionalities).
-	    ExtensionPoint point = UnBBayesPluginContextHolder.getPluginManager().getRegistry().getExtensionPoint(
+	    ExtensionPoint point = this.getUnbbayesPluginContextHolder().getPluginManager().getRegistry().getExtensionPoint(
 	    			core.getId(), 
 	    			this.getPluginModuleExtensionPoint()
 	    		);
 
 	    // create menu/buttons that activates a plugin and stores plugin classes to a list
-	    this.getPluginMap().putAll(this.fillCorePluginMenuAndButtons(UnBBayesPluginContextHolder.getPluginManager(), point));
+	    this.getPluginMap().putAll(this.fillCorePluginMenuAndButtons(this.getUnbbayesPluginContextHolder().getPluginManager(), point));
 	}
 	
 	/**
@@ -1709,5 +1711,20 @@ public class UnBBayesFrame extends JFrame {
 			}
 			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		}
+	}
+
+	/**
+	 * @return the unbbayesPluginContextHolder
+	 */
+	public UnBBayesPluginContextHolder getUnbbayesPluginContextHolder() {
+		return unbbayesPluginContextHolder;
+	}
+
+	/**
+	 * @param unbbayesPluginContextHolder the unbbayesPluginContextHolder to set
+	 */
+	public void setUnbbayesPluginContextHolder(
+			UnBBayesPluginContextHolder unbbayesPluginContextHolder) {
+		this.unbbayesPluginContextHolder = unbbayesPluginContextHolder;
 	}
 }

@@ -1,12 +1,13 @@
 /**
  * 
  */
-package unbbayes.util.extension.node;
+package unbbayes.util.extension.manager;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EventObject;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -32,7 +33,6 @@ import unbbayes.util.ApplicationPropertyHolder;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.dto.INodeClassDataTransferObject;
 import unbbayes.util.extension.dto.impl.NodeDto;
-import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
 
 
 /**
@@ -46,6 +46,8 @@ public class CorePluginNodeManager {
 	
 	// this is a map to store the informations associated to classes extending IPluginNode (which are plugin nodes)
 	private Map<Class, INodeClassDataTransferObject> nodeClassToDtoMap = new HashMap<Class, INodeClassDataTransferObject>();
+	
+	private UnBBayesPluginContextHolder unbbayesPluginContextHolder = UnBBayesPluginContextHolder.newInstance();
 	
 	// ID of the plugin where we can find new node declarations
 	private static String pluginNodeExtensionPointID;
@@ -87,6 +89,17 @@ public class CorePluginNodeManager {
 	 */
 	protected CorePluginNodeManager() {
 		this.setNodeClassToDtoMap(new HashMap<Class, INodeClassDataTransferObject>());
+		
+		// adds a listener to be called when a "reload plugin" event is dispatched
+		this.getUnbbayesPluginContextHolder().addListener(new UnBBayesPluginContextHolder.OnReloadActionListener() {
+			public void onReload(EventObject eventObject) {
+				try {
+					reloadPluginNode();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});
 	}
 	
 	/**
@@ -157,18 +170,18 @@ public class CorePluginNodeManager {
 		this.setNodeClassToDtoMap(new HashMap<Class, INodeClassDataTransferObject>());
 		
 		// we assume the plugins are already published at UnBBayesFrame#loadPlugins(), but let's just be precautious...
-		if (!UnBBayesPluginContextHolder.isInitialized()) {
+		if (!this.getUnbbayesPluginContextHolder().isInitialized()) {
 			// this method may throw a IOException
-			UnBBayesPluginContextHolder.publishPlugins();
+			this.getUnbbayesPluginContextHolder().publishPlugins();
 		}
 
 	    // loads the "core" plugin, which declares general extension points for core 
-	    PluginDescriptor core = UnBBayesPluginContextHolder.getPluginManager().getRegistry().getPluginDescriptor(
-	    			UnBBayesPluginContextHolder.getPluginCoreID()
+	    PluginDescriptor core = this.getUnbbayesPluginContextHolder().getPluginManager().getRegistry().getPluginDescriptor(
+	    		this.getUnbbayesPluginContextHolder().getPluginCoreID()
 	    		);
         
 	    // load the extension point for new nodes.
-	    ExtensionPoint point = UnBBayesPluginContextHolder.getPluginManager().getRegistry().getExtensionPoint(
+	    ExtensionPoint point = this.getUnbbayesPluginContextHolder().getPluginManager().getRegistry().getExtensionPoint(
 	    			core.getId(), this.getPluginNodeExtensionPointID()
 	    		);
     	
@@ -178,7 +191,7 @@ public class CorePluginNodeManager {
             PluginDescriptor descr = ext.getDeclaringPluginDescriptor();
             
             try {
-            	UnBBayesPluginContextHolder.getPluginManager().activatePlugin(descr.getId());
+            	this.getUnbbayesPluginContextHolder().getPluginManager().activatePlugin(descr.getId());
 			} catch (PluginLifecycleException e) {
 				e.printStackTrace();
 				// we could not load this plugin, but we shall continue searching for others
@@ -186,7 +199,7 @@ public class CorePluginNodeManager {
 			}
 			
 			// extracting class loader
-			ClassLoader classLoader = UnBBayesPluginContextHolder.getPluginManager().getPluginClassLoader(descr);
+			ClassLoader classLoader = this.getUnbbayesPluginContextHolder().getPluginManager().getPluginClassLoader(descr);
 			
 			// extracting parameters
 			Parameter classParam = ext.getParameter(PARAMETER_CLASS);
@@ -280,7 +293,7 @@ public class CorePluginNodeManager {
 			ImageIcon cursor = null;
 			if (cursorParam != null) {
 				// cursor was provided. Let's use it
-				URL url = UnBBayesPluginContextHolder.getPluginManager().getPluginClassLoader(ext.getDeclaringPluginDescriptor()).getResource(cursorParam.valueAsString());
+				URL url = this.getUnbbayesPluginContextHolder().getPluginManager().getPluginClassLoader(ext.getDeclaringPluginDescriptor()).getResource(cursorParam.valueAsString());
 				cursor = (url != null) ? new ImageIcon(url) : null;
 			}
 			
@@ -288,7 +301,7 @@ public class CorePluginNodeManager {
 			ImageIcon icon = null;
 			if (iconParam != null) {
 				// cursor was provided. Let's use it
-				URL url = UnBBayesPluginContextHolder.getPluginManager().getPluginClassLoader(ext.getDeclaringPluginDescriptor()).getResource(iconParam.valueAsString());
+				URL url = this.getUnbbayesPluginContextHolder().getPluginManager().getPluginClassLoader(ext.getDeclaringPluginDescriptor()).getResource(iconParam.valueAsString());
 				icon = (url != null) ? new ImageIcon(url) : null;
 			}
 			
@@ -366,6 +379,21 @@ public class CorePluginNodeManager {
 	 */
 	protected void setPluginNodeExtensionPointID(String pluginNodeID) {
 		CorePluginNodeManager.pluginNodeExtensionPointID = pluginNodeID;
+	}
+
+	/**
+	 * @return the unbbayesPluginContextHolder
+	 */
+	public UnBBayesPluginContextHolder getUnbbayesPluginContextHolder() {
+		return unbbayesPluginContextHolder;
+	}
+
+	/**
+	 * @param unbbayesPluginContextHolder the unbbayesPluginContextHolder to set
+	 */
+	public void setUnbbayesPluginContextHolder(
+			UnBBayesPluginContextHolder unbbayesPluginContextHolder) {
+		this.unbbayesPluginContextHolder = unbbayesPluginContextHolder;
 	}
 
 }

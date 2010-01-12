@@ -30,6 +30,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.EventObject;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,7 +59,8 @@ import unbbayes.gui.util.SplitToggleButton;
 import unbbayes.prs.Node;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.dto.INodeClassDataTransferObject;
-import unbbayes.util.extension.node.CorePluginNodeManager;
+import unbbayes.util.extension.manager.CorePluginNodeManager;
+import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
 
 
 /**
@@ -420,7 +422,11 @@ public class PNEditionPane extends JPanel {
     }
     
     public void setDistributionPane(JPanel distributionPane) {
-    	this.centerPanel.setTopComponent(distributionPane);
+    	// the center panel was forced to be a scroll pane since the edition pane may be larger than monitor...
+    	JScrollPane scrollPane = new JScrollPane(distributionPane);
+    	this.centerPanel.setTopComponent(scrollPane);
+    	// since the divider was hiding the new panel, let's set its position at 30% (slightly above)
+    	this.centerPanel.setDividerLocation(.3);
     }
 
     /**
@@ -604,6 +610,13 @@ public class PNEditionPane extends JPanel {
   	        this.setBtnAddPluginButton(new SplitToggleButton(btnAddContinuousNode, SwingConstants.SOUTH));
   	        this.getBtnAddPluginButton().setMenu(this.buildAddPluginSplitButtonMenu());
   	        
+  	        // adding a listener to be called when a "reload plugin" event is dispatched (in order to refresh split button)
+  	        UnBBayesPluginContextHolder.newInstance().addListener(new UnBBayesPluginContextHolder.OnReloadActionListener(){
+				public void onReload(EventObject eventObject) {
+					getBtnAddPluginButton().setMenu(buildAddPluginSplitButtonMenu());
+				}
+  	        });
+  	        
   	        // show plugin node's button only if there are 1 or more node types.
   	        this.getBtnAddPluginButton().setVisible(this.getBtnAddPluginButton().getMenu().getComponentCount() > 0);
   	        
@@ -696,7 +709,7 @@ public class PNEditionPane extends JPanel {
   		 * pressed (which contents should reflect nodes loaded from plugins).
   		 * @return a JPopupMenu containing all plugin nodes
   		 */
-		protected JPopupMenu buildAddPluginSplitButtonMenu() {
+		public JPopupMenu buildAddPluginSplitButtonMenu() {
 			
 			JPopupMenu ret = new JPopupMenu(resource.getString("selectNodeType"));
 			
@@ -724,11 +737,6 @@ public class PNEditionPane extends JPanel {
 				stubItem.addActionListener(new DtoAwareListItemActionListener(dto));
 				ret.add(stubItem);
 			}
-			// This is a stub in order to test
-			
-			
-			// TODO create a loop in order to add nodes loaded from plugins
-			Debug.println(this.getClass(), "Plugin aware new node button is not implemented yet");
 			
 			return ret;
 		}

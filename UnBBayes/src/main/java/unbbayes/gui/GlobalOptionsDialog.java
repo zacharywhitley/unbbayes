@@ -153,7 +153,7 @@ public class GlobalOptionsDialog extends JDialog {
   	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
   			unbbayes.gui.resources.GuiResources.class.getName());
 
-  	
+  	private UnBBayesPluginContextHolder unbbayesPluginContextHolder = UnBBayesPluginContextHolder.newInstance();
 
     /**
      *  Constroi a estrutura da janela que mostra as opcoes globais
@@ -831,7 +831,7 @@ public class GlobalOptionsDialog extends JDialog {
 	 * @return the pluginManager
 	 */
 	public PluginManager getPluginManager() {
-		return UnBBayesPluginContextHolder.getPluginManager();
+		return this.getUnBBayesPluginContextHolder().getPluginManager();
 	}
 
 
@@ -891,6 +891,22 @@ public class GlobalOptionsDialog extends JDialog {
 			component.setVisible(true);
 			GlobalOptionsDialog.this.repaint();
 		}
+	}
+
+
+	/**
+	 * @return the unbbayesPluginContextHolder
+	 */
+	public UnBBayesPluginContextHolder getUnBBayesPluginContextHolder() {
+		return unbbayesPluginContextHolder;
+	}
+
+	/**
+	 * @param unbbayesPluginContextHolder the unbbayesPluginContextHolder to set
+	 */
+	public void setUnBBayesPluginContextHolder(
+			UnBBayesPluginContextHolder unbbayesPluginContextHolder) {
+		this.unbbayesPluginContextHolder = unbbayesPluginContextHolder;
 	}
 }
 

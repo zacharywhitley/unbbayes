@@ -37,6 +37,8 @@ public class PluginAwareFileExtensionIODelegator extends
 	/** The default name of the "class" parameter of PNIO extension point */
 	private String extensionPointClassParam = "class";
 	
+	private UnBBayesPluginContextHolder unbbayesPluginContextHolder = UnBBayesPluginContextHolder.newInstance();
+	
 	/**
 	 * Default constructor is public for plugin support.
 	 * If you want to use this directly as ordinal java class, use {@link #newInstance()} instead.
@@ -85,12 +87,12 @@ public class PluginAwareFileExtensionIODelegator extends
 		Collection<BaseIO> ret = new ArrayList<BaseIO>();
 		
 		// loads the "core" plugin, which is a stub that we use to declare extension points for core
-	    PluginDescriptor core = UnBBayesPluginContextHolder.getPluginManager().getRegistry().getPluginDescriptor(
-	    			UnBBayesPluginContextHolder.getPluginCoreID()
+	    PluginDescriptor core = this.getUnbbayesPluginContextHolder().getPluginManager().getRegistry().getPluginDescriptor(
+	    		this.getUnbbayesPluginContextHolder().getPluginCoreID()
 	    		);
         
 	    // load the IO extension point for PN.
-	    ExtensionPoint point = UnBBayesPluginContextHolder.getPluginManager().getRegistry().getExtensionPoint(
+	    ExtensionPoint point = this.getUnbbayesPluginContextHolder().getPluginManager().getRegistry().getExtensionPoint(
 	    			core.getId(), 
 	    			this.getExtensionPointID()
 	    		);
@@ -100,7 +102,7 @@ public class PluginAwareFileExtensionIODelegator extends
 	    	PluginDescriptor descr = ext.getDeclaringPluginDescriptor();
             
             try {
-				UnBBayesPluginContextHolder.getPluginManager().activatePlugin(descr.getId());
+            	this.getUnbbayesPluginContextHolder().getPluginManager().activatePlugin(descr.getId());
 			} catch (PluginLifecycleException e) {
 				e.printStackTrace();
 				// we could not load this plugin, but we shall continue
@@ -111,7 +113,7 @@ public class PluginAwareFileExtensionIODelegator extends
 			Parameter classParam = ext.getParameter(this.getExtensionPointClassParam());
 			
 			// extracting plugin class 
-			ClassLoader classLoader = UnBBayesPluginContextHolder.getPluginManager().getPluginClassLoader(descr);
+			ClassLoader classLoader = this.getUnbbayesPluginContextHolder().getPluginManager().getPluginClassLoader(descr);
             Class pluginCls = null;	// class for the plugin or its builder (UnBBayesModuleBuilder)
             try {
             	pluginCls = classLoader.loadClass(classParam.valueAsString());
@@ -167,6 +169,21 @@ public class PluginAwareFileExtensionIODelegator extends
 	 */
 	public void setExtensionPointClassParam(String extensionPointClassParam) {
 		this.extensionPointClassParam = extensionPointClassParam;
+	}
+
+	/**
+	 * @return the unbbayesPluginContextHolder
+	 */
+	public UnBBayesPluginContextHolder getUnbbayesPluginContextHolder() {
+		return unbbayesPluginContextHolder;
+	}
+
+	/**
+	 * @param unbbayesPluginContextHolder the unbbayesPluginContextHolder to set
+	 */
+	public void setUnbbayesPluginContextHolder(
+			UnBBayesPluginContextHolder unbbayesPluginContextHolder) {
+		this.unbbayesPluginContextHolder = unbbayesPluginContextHolder;
 	}
 
 }
