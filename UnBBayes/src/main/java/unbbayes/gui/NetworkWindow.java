@@ -336,14 +336,13 @@ public class NetworkWindow extends UnBBayesModule {
 	}
 
 	/**
-	 * Substitui a tabela de probabilidades existente pela desejada.
-	 * 
+	 * Delegates to {@link #getPnEditionPane()#setTable(JTable, Node)}
 	 * @param table
-	 *            a nova tabela (<code>JTable</code>) desejada.
-	 * @see JTable
+	 * @param tableOwner
+	 * @see PNEditionPane#setTable(JTable, Node)
 	 */
-	public void setTable(JTable table) {
-		pnEditionPane.setTable(table);
+	public void setTable(JTable table, Node tableOwner) {
+		pnEditionPane.setTable(table,tableOwner);
 	}
 
 	/**

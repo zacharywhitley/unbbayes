@@ -50,14 +50,14 @@ public class CorePluginNodeManager {
 	private UnBBayesPluginContextHolder unbbayesPluginContextHolder = UnBBayesPluginContextHolder.newInstance();
 	
 	// ID of the plugin where we can find new node declarations
-	private static String pluginNodeExtensionPointID;
-	static {
-		pluginNodeExtensionPointID = ApplicationPropertyHolder.getProperty().getProperty("unbbayes.util.extension.node.CorePluginNodeManager.pluginNodeExtensionPointID");
-		if (pluginNodeExtensionPointID == null) {
-			System.err.println("Error reading PluginNode extension point from application.properties. Using default.");
-			pluginNodeExtensionPointID = "PluginNode";
-		}
-	}
+	private String pluginNodeExtensionPointID;
+//	static {
+//		pluginNodeExtensionPointID = ApplicationPropertyHolder.getProperty().getProperty("unbbayes.util.extension.node.CorePluginNodeManager.pluginNodeExtensionPointID");
+//		if (pluginNodeExtensionPointID == null) {
+//			System.err.println("Error reading PluginNode extension point from application.properties. Using default.");
+//			pluginNodeExtensionPointID = "PluginNode";
+//		}
+//	}
 	
 	/** Name of the extension point parameter for node's class {@link IPluginNode} or its builder {@link PluginNodeBuilder} */
 	public static final String PARAMETER_CLASS = "class";
@@ -90,16 +90,24 @@ public class CorePluginNodeManager {
 	protected CorePluginNodeManager() {
 		this.setNodeClassToDtoMap(new HashMap<Class, INodeClassDataTransferObject>());
 		
+		// loads config from application.properties
+		pluginNodeExtensionPointID = ApplicationPropertyHolder.getProperty().getProperty("unbbayes.util.extension.node.CorePluginNodeManager.pluginNodeExtensionPointID");
+		if (pluginNodeExtensionPointID == null) {
+			System.err.println("Error reading PluginNode extension point from application.properties. Using default.");
+			pluginNodeExtensionPointID = "PluginNode";
+		}
+		
 		// adds a listener to be called when a "reload plugin" event is dispatched
-		this.getUnbbayesPluginContextHolder().addListener(new UnBBayesPluginContextHolder.OnReloadActionListener() {
-			public void onReload(EventObject eventObject) {
-				try {
-					reloadPluginNode();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		});
+//		this.getUnbbayesPluginContextHolder().addListener(new UnBBayesPluginContextHolder.OnReloadActionListener() {
+//			public void onReload(EventObject eventObject) {
+//				try {
+//					reloadPluginNode();
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		});
+		// the above code is done at PNEditionPane#ToolBarEdition() too, so, I'm removing the redundancy
 	}
 	
 	/**
@@ -149,7 +157,7 @@ public class CorePluginNodeManager {
 		if (ret == null) {
 			// retry reloading plugins
 			try {
-				this.reloadPluginNode();	
+				this.reloadPlugin();	
 			} catch (Exception e) {
 				Debug.println(this.getClass(), "Error reloading plugin at getPluginNodeInformation", e);
 			}
@@ -164,7 +172,7 @@ public class CorePluginNodeManager {
 	 * {@link #getPluginNodeInformation(Class)}.
 	 * @throws IOException : when {@link UnBBayesPluginContextHolder#publishPlugins()} fails
 	 */
-	public void reloadPluginNode() throws IOException {
+	public void reloadPlugin() throws IOException {
 		
 		// reset the registered DTOs
 		this.setNodeClassToDtoMap(new HashMap<Class, INodeClassDataTransferObject>());
@@ -182,7 +190,7 @@ public class CorePluginNodeManager {
         
 	    // load the extension point for new nodes.
 	    ExtensionPoint point = this.getUnbbayesPluginContextHolder().getPluginManager().getRegistry().getExtensionPoint(
-	    			core.getId(), this.getPluginNodeExtensionPointID()
+	    			core.getId(), this.getMainExtensionPointID()
 	    		);
     	
 	    // iterate over the connected extension points
@@ -332,23 +340,23 @@ public class CorePluginNodeManager {
 	}
 	
 	/**
-	 * This is equivalent to {@link #reloadPluginNode()}
-	 * @throws IOException : thrown by {@link #reloadPluginNode()} 
-	 * @see #reloadPluginNode()
+	 * This is equivalent to {@link #reloadPlugin()}
+	 * @throws IOException : thrown by {@link #reloadPlugin()} 
+	 * @see #reloadPlugin()
 	 */
-	public void loadPluginNode() throws IOException {
-		this.reloadPluginNode();
+	public void loadPlugin() throws IOException {
+		this.reloadPlugin();
 	}
 	
 	/**
-	 * Calls {@link #reloadPluginNode()} and then returns
+	 * Calls {@link #reloadPlugin()} and then returns
 	 * a set of all loaded plugin node's informations.
 	 * @return a collection of all loaded plugin nodes. A change
 	 * in this collection should not affect the plugin manager's state.
 	 */
 	public Collection<INodeClassDataTransferObject> getAllLoadedPluginNodes() {
 		try {
-			this.reloadPluginNode();
+			this.reloadPlugin();
 		} catch (Exception e) {
 			Debug.println(this.getClass(), "Failed to reload plugin node while getting all loaded plugin nodes", e);
 		}
@@ -368,7 +376,7 @@ public class CorePluginNodeManager {
 	 * the ID of PluginNode extension point.
 	 * @return the pluginNodeExtensionPointID
 	 */
-	protected String getPluginNodeExtensionPointID() {
+	protected String getMainExtensionPointID() {
 		return pluginNodeExtensionPointID;
 	}
 
@@ -377,8 +385,8 @@ public class CorePluginNodeManager {
 	 * the ID of PluginNode extension point.
 	 * @param pluginNodeExtensionPointID the pluginNodeExtensionPointID to set
 	 */
-	protected void setPluginNodeExtensionPointID(String pluginNodeID) {
-		CorePluginNodeManager.pluginNodeExtensionPointID = pluginNodeID;
+	protected void setMainExtensionPointID(String pluginNodeID) {
+		this.pluginNodeExtensionPointID = pluginNodeID;
 	}
 
 	/**

@@ -127,7 +127,7 @@ public class SENController {
 			node.appendState(resource.getString("stateDecisionName")
 					+ node.getStatesSize());
 		}
-		screen.setTable(makeTable(node));
+		screen.setTable(makeTable(node), node);
 	}
 
 	/**
@@ -147,7 +147,7 @@ public class SENController {
 				((ContinuousNode)child).getCnNormalDistribution().refreshParents();
 			}
 		}
-		screen.setTable(makeTable(node));
+		screen.setTable(makeTable(node), node);
 	}
 	
 	/**
@@ -584,8 +584,7 @@ public class SENController {
 	 * @param node The discrete node to create the table pan for.
 	 */
 	public void createDiscreteTable(Node node) {
-		screen.setTableOwner(node);
-		screen.setTable(makeTable(node));
+		screen.setTable(makeTable(node), node);
 		// Show the selected node
 		if (screen.isCompiled()) {
 			for (int i = 0; i < screen.getEvidenceTree().getRowCount(); i++) {

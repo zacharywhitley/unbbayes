@@ -30,14 +30,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.util.EventObject;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -45,20 +46,25 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import unbbayes.controller.CompilationThread;
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
-import unbbayes.cps.gui.CPSController;
+import unbbayes.gui.table.extension.IProbabilityFunctionPanelBuilder;
 import unbbayes.gui.util.SplitToggleButton;
 import unbbayes.prs.Node;
+import unbbayes.prs.builder.INodeBuilder;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.dto.INodeClassDataTransferObject;
+import unbbayes.util.extension.manager.CoreCPFPluginManager;
 import unbbayes.util.extension.manager.CorePluginNodeManager;
 import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
 
@@ -118,6 +124,10 @@ public class PNEditionPane extends JPanel {
     private Matcher matcher;
 
     private final IconController iconController = IconController.getInstance();
+    
+    /** This is a pane to edit conditional probability functions */
+    private JComponent cpfPane;
+    
 
 	/** Load resource file from this package */
   	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
@@ -425,55 +435,150 @@ public class PNEditionPane extends JPanel {
     	// the center panel was forced to be a scroll pane since the edition pane may be larger than monitor...
     	JScrollPane scrollPane = new JScrollPane(distributionPane);
     	this.centerPanel.setTopComponent(scrollPane);
-    	// since the divider was hiding the new panel, let's set its position at 30% (slightly above)
-    	this.centerPanel.setDividerLocation(.3);
+    	
+    	this.fitCPFDividerLocationToComponent(distributionPane);
     }
 
     /**
-     *  Change the shown table to the given one.
-     *
-     *@param table The new table to show.
+     * Resizes (sets the divider location) of the split pane containing 
+     * the current Conditional Probability Function panel
+     * @param distributionPane : panel to fit
      */
-    public void setTable(JTable table) {
-        this.table = table;
-        
-        //young2010 
-        JButton btnCPS   = new JButton(this.resource.getString("editCPS"));
-        btnCPS.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) { 
-            	setCursor(new Cursor(Cursor.WAIT_CURSOR)); 
-            	new CPSController(controller, tableOwner);
-                setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-            }
+    protected void fitCPFDividerLocationToComponent(JComponent distributionPane) {
+    	// ajusting divider's location
+//      int location = table.getPreferredSize().height + centerPanel.getDividerSize() + 2 + btnCPS.getPreferredSize().height;
+        int location = distributionPane.getPreferredSize().height + centerPanel.getDividerSize() + 30;
+        if (distributionPane instanceof JTable) {
+        	if (((JTable)distributionPane).getTableHeader() != null) {
+            	  location += ((JTable)distributionPane).getTableHeader().getPreferredSize().height;
+             }
+        	if (jspTable.getVisibleRect().width < distributionPane.getPreferredSize().width) {
+        		jspTable.createHorizontalScrollBar();
+        		location += jspTable.getHorizontalScrollBar().getHeight() + 2;
+        	}
+        }
+        centerPanel.setDividerLocation(location);
+	}
 
-        });
+	/**
+     *  Change the shown table to the given one.
+     * {@link #setTableOwner(Node)} must be called before this method...
+     * @param table The new table to show.
+     * @param tableOwner : the node owning table
+     */
+    public void setTable(JTable table, Node tableOwner) {
+        
+    	this.table = table;
+        
+        // the below line is for backward compatibility
+        this.setTableOwner(tableOwner);
+        
+        // the below code was moved into unbbayes.cps.gui.extension.CPSPanelBuilder
+        //young2010 
+//        JButton btnCPS   = new JButton(this.resource.getString("editCPS"));
+//        btnCPS.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent ae) { 
+//            	setCursor(new Cursor(Cursor.WAIT_CURSOR)); 
+//            	new CPSController(controller, getTableOwner());
+//                setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+//            }
+//
+//        });
+//        JPanel tPanel = new JPanel();
+//        tPanel.setLayout(new BoxLayout(tPanel, BoxLayout.Y_AXIS)); 
+//        btnCPS.setAlignmentX(Component.LEFT_ALIGNMENT);
+//		tPanel.add ( btnCPS ) ;
         
         jspTable.setViewportView(table);
+        jspTable.setAlignmentX(Component.LEFT_ALIGNMENT);
         
-        JPanel tPanel = new JPanel();
-        tPanel.setLayout(new BoxLayout(tPanel, BoxLayout.Y_AXIS)); 
-        btnCPS.setAlignmentX(Component.LEFT_ALIGNMENT);
-		jspTable.setAlignmentX(Component.LEFT_ALIGNMENT);
-		tPanel.add ( btnCPS ) ;
-		tPanel.add(jspTable);
+        cpfPane = this.buildCPFPaneFromPlugin(tableOwner);
+		
+        // the line below was moved into buildCPFPaneFromPlugin
+//		cpfPane.add(jspTable);
 
 		 		 
 		//this.centerPanel.setTopComponent(jspTable);
-        this.centerPanel.setTopComponent(tPanel);
+        this.centerPanel.setTopComponent(cpfPane);
         
-        
-        int location = table.getPreferredSize().height + centerPanel.getDividerSize() + 2 + btnCPS.getPreferredSize().height;
-        if (table.getTableHeader() != null) {
-        	location += table.getTableHeader().getPreferredSize().height;
-        }
-        if (jspTable.getVisibleRect().width < table.getPreferredSize().width) {
-        	jspTable.createHorizontalScrollBar();
-        	location += jspTable.getHorizontalScrollBar().getHeight() + 2;
-        }
-        centerPanel.setDividerLocation(location);
+        // ajusting divider's locationint location = table.getPreferredSize().height + centerPanel.getDividerSize() + 30;
+        this.fitCPFDividerLocationToComponent(table);
     }
 
-    public Node getTableOwner() {
+    /**
+     * Builds a JTabbedPane containing panels to edit conditional probability functions, from
+     * plugins.
+     * @param tableOwner : owner of the table
+     * @return A JTabbedPane containing all loaded plugins
+     */
+    protected JComponent buildCPFPaneFromPlugin(Node tableOwner) {
+		JTabbedPane ret = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
+		
+		// there is nothing to do if no table owner is set
+		if (tableOwner == null) {
+			return ret;
+		}
+		
+		// initializing pane with the basic discrete node's JTable
+		ret.addTab(
+					this.resource.getString("CPFTableTitle"), 
+					iconController.getTableIcon(), 
+					this.getJspTable(), 
+					this.resource.getString("CPFTableToolTip")
+				);
+		
+		// getting singleton instance of plugin manager
+		CoreCPFPluginManager cpfManager = CoreCPFPluginManager.newInstance();
+		try {
+			cpfManager.loadPlugin();
+		} catch (IOException e) {
+			e.printStackTrace();
+			Debug.println(this.getClass(), "Could not load plugin for CPF pane");
+		}
+		
+		// adding plugin tabs
+		for (INodeClassDataTransferObject dto : cpfManager.getPluginInformation(tableOwner.getClass().getName())) {
+			
+			// extract panel builder
+			IProbabilityFunctionPanelBuilder builder = dto.getProbabilityFunctionPanelBuilder();
+			if (builder == null) {
+				// if no builder is set, there is something wrong... But we just ignore wrong plugins
+				Debug.println(this.getClass(), "A DTO with no panel builder was found for " + tableOwner.toString());
+				continue;
+			}
+			
+			// initialize panel builder
+			builder.setProbabilityFunctionOwner(tableOwner);
+			
+			// add panel as tab
+			try {
+				ret.addTab(
+						dto.getName(), 
+						dto.getIcon(), 
+						new JScrollPane(builder.buildProbabilityFunctionEditionPanel()), 
+						dto.getDescription()
+					);
+			} catch (Exception e) {
+				e.printStackTrace();
+				Debug.println(this.getClass(), "A panel builder is not building panel for " + tableOwner.toString());
+				continue;
+			}
+		}
+		
+		ret.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				try{
+					fitCPFDividerLocationToComponent((JComponent)((JTabbedPane)centerPanel.getTopComponent()).getSelectedComponent());
+				} catch (Exception exc) {
+					exc.printStackTrace();
+				}
+			}
+		});
+		
+		return ret;
+	}
+
+	public Node getTableOwner() {
         return tableOwner;
     }
 
@@ -871,7 +976,23 @@ public class PNEditionPane extends JPanel {
 	public JScrollPane getJspTable() {
 		return jspTable;
 	}
-	
+
+	/**
+	 * This is a pane to edit conditional probability functions
+	 * @return the cpfPane
+	 */
+	public JComponent getCpfPane() {
+		return cpfPane;
+	}
+
+	/**
+	 * This is a pane to edit conditional probability functions
+	 * @param cpfPane the cpfPane to set
+	 */
+	public void setCpfPane(JComponent cpfPane) {
+		this.cpfPane = cpfPane;
+	}
+
 	
 
 }

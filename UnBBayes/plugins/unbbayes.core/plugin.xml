@@ -7,8 +7,9 @@
             <export prefix="*" />
         </library>
     </runtime>
-    <!-- Module extension point. 
+    <!-- Module extension point.
     	 UnBBayes' modules are basically new internal frames which are started when toolbars or menu are chosen.
+    	 Hot plug is enabled.
     	 This extension point must extend unbbayes.util.extension.UnBBayesModule and provide the following informations:
     	 	class: full class name. It must extend unbbayes.util.extension.UnBBayesModule and provide a default constructor
     	 							(a constructor with no parameters) if factoryClass is not provided.
@@ -27,6 +28,7 @@
     </extension-point>
     
     <!-- BN inference algorithm extension point and its option panel. 
+    	 Hot plug is enabled (since it is reloaded at each call for GlobalOptionsDialog).
     	 This extension point is a swing JPanel used as a form in order to fill in some initialization attributes for inference algorithms.
     	 Inference algorithm are basically called during BN compilation.
     	 This extension point must extend unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel and provide the following informations:
@@ -74,6 +76,7 @@
     
     <!-- 
     	 PluginNode extension point. 
+    	 Hot plug is enabled.
     	 This extension point basically declares a new node type for BN module and a set of additional informations
     	 in order to show this node within GUI. Please note that I/O and/or inference algorithms must be implemented 
     	 separately (see PNIO and InferenceAlgorithm extension points) as a dependent plugin, in order to
@@ -122,5 +125,48 @@
 		<parameter-def id="description" multiplicity="none-or-one" />
 		<parameter-def id="icon" multiplicity="none-or-one" />
 		<parameter-def id="cursor" multiplicity="none-or-one" />
+    </extension-point>
+    
+    
+    <!-- 
+    	 ProbabilityFunctionPanel extension point. 
+    	 Hot plug is enabled.
+    	 This extension point is similar to PluginNode extension point. It basically
+    	 declares a set of panelBuilder for nodes that are already incorporated into core
+    	 (e.g. ProbabilisticNode, DecisionNode...),
+    	 so that multiple format of conditional probability function's becomes possible
+    	 for a pre-existing node type.
+    	 Because the node-type is already incorporated into core, less informations
+    	 are needed and data-types are already bound to core's datatypes (so,
+    	 this is less flexible than PluginNode extension point).
+		 Please note that you may need to implement new I/O plugin
+    	 separately (see PNIO extension point) as a dependent plugin, in order to
+    	 make it possible to save the content of any information filled by a user
+    	 inside this special type of probability function declaration (e.g. save
+    	 the script content if a function is declared as scripts).
+    	 
+    	 The arguments are basically:
+    	 	class: class of a node. This parameter is used in order to identify what kind of nodes
+    	 	       can use the panelBuilder. Obviously, if this class does not exist within core, it will
+    	 	       be naturally ignored.
+    	 	           	 	       
+    	 	name: the name of the panel. This is going to be used as a label for the panel
+    	 	
+    	 	panelBuilder: class implementing unbbayes.gui.table.extension.IProbabilityFunctionPanelBuilder. This is basically
+    	 	      a class holding a swing JPanel, displayed to the user in order to edit this node's information, such as
+    	 	      probability distribution functions and other specific details.
+    	 	       
+    	 	description: a brief description of the panel. This is going to be used a tool tip text.
+    	 	       
+    	 	icon: an image (usually gif or png) to be used as an icon. This will be used tab's icons.
+    	 	      if not set, an empty will be used.
+    	 	       
+    -->
+    <extension-point id="ProbabilityFunctionPanel">
+        <parameter-def id="class"/>
+        <parameter-def id="name"/>
+		<parameter-def id="panelBuilder"/>
+		<parameter-def id="description" multiplicity="none-or-one" />
+		<parameter-def id="icon" multiplicity="none-or-one" />
     </extension-point>
 </plugin>

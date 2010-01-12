@@ -331,7 +331,9 @@ public class IconController implements Serializable {
 	
 	protected ImageIcon changeNodeTypeIcon; 
 	
-	
+	protected ImageIcon tableIcon = new ImageIcon(getClass().getResource(
+		"/icons/tableIcon.png"));
+
 	
 	
 	public static IconController getInstance() {
@@ -1717,6 +1719,13 @@ public class IconController implements Serializable {
 			changeNodeTypeIcon = new ImageIcon(getClass().getResource("/icons/change-node-type.gif"));
 			return changeNodeTypeIcon;
 		}
+	}
+
+	/**
+	 * @return the tableIcon
+	 */
+	public ImageIcon getTableIcon() {
+		return tableIcon;
 	}
 	
 	

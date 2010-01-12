@@ -19,6 +19,16 @@ public class CPSController extends CPSDialog{
 	NetworkController controller = null;
 	Node curNode = null;
 	
+	/**
+	 * This constructor was added to the original class because it looked like
+	 * the controller was doing nothing...
+	 * TODO check needs.
+	 * @param n
+	 */
+	public CPSController(Node n){
+		this(null, n);
+	}
+	
 	public CPSController(NetworkController c, Node n){
 		super();  
 		
