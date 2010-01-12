@@ -438,7 +438,7 @@ public class PNEditionPane extends JPanel {
         this.table = table;
         
         //young2010 
-        JButton btnCPS   = new JButton("Conditional Probability Script");
+        JButton btnCPS   = new JButton(this.resource.getString("editCPS"));
         btnCPS.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) { 
             	setCursor(new Cursor(Cursor.WAIT_CURSOR)); 

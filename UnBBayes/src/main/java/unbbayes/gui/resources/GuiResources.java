@@ -548,5 +548,6 @@ public class GuiResources extends ListResourceBundle {
 		
 		{"selectNodeType", "Select a type of node"},
 		
+		{"editCPS", "Open Conditional Probability Script"},
 	};
 }

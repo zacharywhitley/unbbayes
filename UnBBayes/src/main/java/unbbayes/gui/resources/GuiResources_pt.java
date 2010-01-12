@@ -550,5 +550,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		
 		{"selectNodeType", "Selecione o tipo de nó"},
 		
+		{"editCPS", "Abrir script de probabilidade condicional"},
+		
 	};
 }
