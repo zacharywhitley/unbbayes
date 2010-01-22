@@ -447,7 +447,10 @@ public class PNEditionPane extends JPanel {
     protected void fitCPFDividerLocationToComponent(JComponent distributionPane) {
     	// ajusting divider's location
 //      int location = table.getPreferredSize().height + centerPanel.getDividerSize() + 2 + btnCPS.getPreferredSize().height;
-        int location = distributionPane.getPreferredSize().height + centerPanel.getDividerSize() + 30;
+        int location = 60;
+    	if (distributionPane != null) {
+    		location = distributionPane.getPreferredSize().height + centerPanel.getDividerSize() + 30;
+    	}
         if (distributionPane instanceof JTable) {
         	if (((JTable)distributionPane).getTableHeader() != null) {
             	  location += ((JTable)distributionPane).getTableHeader().getPreferredSize().height;
