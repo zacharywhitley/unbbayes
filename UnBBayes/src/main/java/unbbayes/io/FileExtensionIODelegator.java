@@ -141,6 +141,9 @@ public class FileExtensionIODelegator implements BaseIO {
 				}
 			}
 		}
+		if (ret.lastIndexOf(", ") < 0) {
+			return ret;
+		}
 		return ret.substring(0, ret.lastIndexOf(", "));
 	}
 

@@ -8,8 +8,6 @@ import java.util.ResourceBundle;
 
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 
@@ -56,7 +54,9 @@ public class GibbsSamplingOptionPanel extends InferenceAlgorithmOptionPanel {
 		this.getTextField().getDocument().addUndoableEditListener(new UndoableEditListener() {
 			public void undoableEditHappened(UndoableEditEvent e) {
 				try{
-					Integer.parseInt(getTextField().getText());
+					if (getTextField().getText() != null && getTextField().getText().length() > 0) {
+						Integer.parseInt(getTextField().getText());
+					}
 				} catch (Exception exc) {
 					e.getEdit().undo();
 				}
@@ -122,7 +122,19 @@ public class GibbsSamplingOptionPanel extends InferenceAlgorithmOptionPanel {
 	 * @see unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel#commitChanges()
 	 */
 	public void commitChanges() {
-		this.getGibbsAlgorithm().setSampleSize(Integer.parseInt(getTextField().getText()));
+		if (getTextField().getText() == null || getTextField().getText().length() <= 0) {
+			this.getGibbsAlgorithm().setSampleSize(0);
+		} else {
+			this.getGibbsAlgorithm().setSampleSize(Integer.parseInt(getTextField().getText()));
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel#revertChanges()
+	 */
+	public void revertChanges() {
+		this.getTextField().setText(String.valueOf(this.getGibbsAlgorithm().getSampleSize()));
 	}
 
 }

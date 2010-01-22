@@ -59,7 +59,9 @@ public class LikelihoodWeightingOptionPanel extends
 		this.getTextField().getDocument().addUndoableEditListener(new UndoableEditListener() {
 			public void undoableEditHappened(UndoableEditEvent e) {
 				try{
-					Integer.parseInt(getTextField().getText());
+					if (getTextField().getText() != null && (getTextField().getText().length() > 0)) {
+						Integer.parseInt(getTextField().getText());
+					}
 				} catch (Exception exc) {
 					e.getEdit().undo();
 				}
@@ -75,7 +77,11 @@ public class LikelihoodWeightingOptionPanel extends
 	 * @see unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel#commitChanges()
 	 */
 	public void commitChanges() {
-		this.getLikelihoodWeightingInference().setNTrials(Integer.parseInt(getTextField().getText()));
+		if (getTextField().getText() == null || (getTextField().getText().length() <= 0)) {
+			this.getLikelihoodWeightingInference().setNTrials(0);
+		} else {
+			this.getLikelihoodWeightingInference().setNTrials(Integer.parseInt(getTextField().getText()));
+		}
 	}
 
 	/* (non-Javadoc)
@@ -126,6 +132,14 @@ public class LikelihoodWeightingOptionPanel extends
 	 */
 	public void setLabel(JLabel label) {
 		this.label = label;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel#revertChanges()
+	 */
+	public void revertChanges() {
+		this.getTextField().setText(String.valueOf(this.getLikelihoodWeightingInference().getNTrials()));
 	}
 
 }

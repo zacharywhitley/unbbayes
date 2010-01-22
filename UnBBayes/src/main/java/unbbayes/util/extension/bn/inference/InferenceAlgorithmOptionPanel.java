@@ -39,4 +39,9 @@ public abstract class InferenceAlgorithmOptionPanel extends JPanel {
 	 */
 	public abstract void commitChanges();
 	
+	/**
+	 * Revert the changes of the parameters given by the user.
+	 */
+	public abstract void revertChanges();
+	
 }

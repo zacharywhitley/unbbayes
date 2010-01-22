@@ -52,4 +52,12 @@ public class GaussianMixtureOptionPanel extends InferenceAlgorithmOptionPanel {
 		// no change is going to be commited
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel#revertChanges()
+	 */
+	public void revertChanges() {
+		// no changes are done
+	}
+
 }

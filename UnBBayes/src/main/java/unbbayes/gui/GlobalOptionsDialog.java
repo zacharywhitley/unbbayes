@@ -24,7 +24,6 @@ package unbbayes.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.Frame;
@@ -33,13 +32,11 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
+import java.util.EventObject;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Set;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -50,7 +47,6 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
-import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -58,15 +54,12 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.java.plugin.ObjectFactory;
 import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.PluginManager;
-import org.java.plugin.PluginManager.PluginLocation;
 import org.java.plugin.registry.Extension;
 import org.java.plugin.registry.ExtensionPoint;
 import org.java.plugin.registry.PluginDescriptor;
 import org.java.plugin.registry.Extension.Parameter;
-import org.java.plugin.standard.StandardPluginLocation;
 
 import unbbayes.controller.NetworkController;
 import unbbayes.gui.option.GaussianMixtureOptionPanel;
@@ -411,6 +404,13 @@ public class GlobalOptionsDialog extends JDialog {
                     radiusSlider.setValue((int)Node.getWidth()/2);
                     */
                     //by young end
+                    
+                    // reverting changes on algorithm plugins
+                    InferenceAlgorithmOptionPanel selectedAlgorithmOptionPanel = getSelectedAlgorithmOptionPanel();
+                    if (selectedAlgorithmOptionPanel != null) {
+                    	selectedAlgorithmOptionPanel.revertChanges();
+                    }
+                    
                     controller.getSingleEntityNetwork().setCreateLog(createLogBoolean);
                     repaint();
                 }
@@ -422,6 +422,13 @@ public class GlobalOptionsDialog extends JDialog {
         cancel.addActionListener(
             new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
+
+                	// reverting changes on algorithm plugins
+                    InferenceAlgorithmOptionPanel selectedAlgorithmOptionPanel = getSelectedAlgorithmOptionPanel();
+                    if (selectedAlgorithmOptionPanel != null) {
+                    	selectedAlgorithmOptionPanel.revertChanges();
+                    }
+                    
                     setVisible(false);
                     dispose();
                     graph.update();
@@ -508,6 +515,14 @@ public class GlobalOptionsDialog extends JDialog {
 //        algorithmMainPanel.add(algorithmOptionPane, BorderLayout.CENTER);
         algorithmMainPanel.add(algorithmOptionPane);
         
+        // registers the "reload action" to the UnBBayesPluginContextHolder, so that when we press the
+	    // "reload plugin" button, inference algorithm's plugins are reloaded as well
+	    UnBBayesPluginContextHolder.newInstance().addListener(new UnBBayesPluginContextHolder.OnReloadActionListener() {
+			public void onReload(EventObject eventObject) {
+				reloadPlugins();
+			}
+	    });
+        
 		jtp.addTab(resource.getString("colorControllerTab"), controllerColorPanel);
 		jtp.addTab(resource.getString("sizeControllerTab"), controllerSizePanel);
 		jtp.addTab(resource.getString("algorithmTab"), algorithmMainPanel);
@@ -516,6 +531,57 @@ public class GlobalOptionsDialog extends JDialog {
         contentPane.add(confirmationPanel, BorderLayout.SOUTH);
     }
 
+    /**
+     * Reloads plugin algorithms
+     */
+    protected void reloadPlugins() {
+    	// load new algorithms as new map
+    	Map<JRadioButtonMenuItem, InferenceAlgorithmOptionPanel> newMap = loadAlgorithmsAsPlugins();
+
+    	// adding the plugins if they were not already added
+		for (JRadioButtonMenuItem radioItem : newMap.keySet()) {
+			if (!this.isAlreadyLoaded(newMap.get(radioItem))) {
+				// if this plugin was not loaded before, add it
+				this.algorithmGroup.add(radioItem);
+				this.getAlgorithmRadioPanel().add(radioItem);
+			}
+		}
+    }
+    
+    /**
+     * Tells us if the option panel is already loaded as plugin
+     * @param optionPanel
+     * @return 
+     */
+    private boolean isAlreadyLoaded(InferenceAlgorithmOptionPanel optionPanel) {
+    	if (this.getAlgorithmToOptionMap().containsValue(optionPanel)) {
+    		// if the panel instance itself was loaded, return true
+    		return true;
+    	}
+    	// perform class equivalency to determine if an algorithm with same class was already loaded
+    	for (InferenceAlgorithmOptionPanel loadedPanels : this.getAlgorithmToOptionMap().values()) {
+			if (loadedPanels.getClass().equals(optionPanel.getClass())) {
+				// a panel using same class was loaded
+				return true;
+			}
+		}
+    	// this panel was never loaded
+    	return false;
+    }
+    
+    /**
+     * Changes the {@link #getAlgorithmOptionPane()}'s content to
+     * currentOptionPanel.
+     * @param currentOptionPanel
+     */
+    protected void setCurrentAlgorithmOptionPanel(Component currentOptionPanel) {
+    	// clear algorithm scroll pane and refills it with the current option panel
+    	this.getAlgorithmOptionPane().removeAll();
+    	this.getAlgorithmOptionPane().add(currentOptionPanel);
+    	currentOptionPanel.setVisible(true);
+    	this.repaint();
+    }
+    
     /**
      * Use the plugin framework to load algorithms and fill radio button and its option panel
      * @return
@@ -885,11 +951,7 @@ public class GlobalOptionsDialog extends JDialog {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			// clear algorithm scroll pane and refills it with the current option panel
-			GlobalOptionsDialog.this.getAlgorithmOptionPane().removeAll();
-			GlobalOptionsDialog.this.getAlgorithmOptionPane().add(component);
-			component.setVisible(true);
-			GlobalOptionsDialog.this.repaint();
+			setCurrentAlgorithmOptionPanel(this.component);
 		}
 	}
 

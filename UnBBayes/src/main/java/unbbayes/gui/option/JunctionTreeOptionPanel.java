@@ -43,4 +43,12 @@ public class JunctionTreeOptionPanel extends InferenceAlgorithmOptionPanel {
 		this.inferenceAlgorithm = inferenceAlgorithm;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel#revertChanges()
+	 */
+	public void revertChanges() {
+		// nothing to change
+	}
+
 }

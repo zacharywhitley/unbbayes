@@ -28,7 +28,7 @@
     </extension-point>
     
     <!-- BN inference algorithm extension point and its option panel. 
-    	 Hot plug is enabled (since it is reloaded at each call for GlobalOptionsDialog).
+    	 Hot plug is enabled.
     	 This extension point is a swing JPanel used as a form in order to fill in some initialization attributes for inference algorithms.
     	 Inference algorithm are basically called during BN compilation.
     	 This extension point must extend unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel and provide the following informations:
@@ -41,6 +41,7 @@
         <parameter-def id="class"/>
     </extension-point>
      <!-- Probabilistic Network I/O extension point. 
+     	 Hot plug is enabled.
     	 This extension point is basically a set of different classes implementing
     	 unbbayes.io.BaseIO, in order to add new IO functions into basic PN
     	 module. The class must contain a public default constructor (no parameters)

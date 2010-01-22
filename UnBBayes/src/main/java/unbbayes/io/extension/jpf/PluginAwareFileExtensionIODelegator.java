@@ -5,6 +5,7 @@ package unbbayes.io.extension.jpf;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EventObject;
 
 import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.registry.Extension;
@@ -53,6 +54,17 @@ public class PluginAwareFileExtensionIODelegator extends
 	 */
 	public PluginAwareFileExtensionIODelegator() {
 		super();
+		
+		// adding a listener, so that reloading plugins would load new I/O plugins into this object
+		UnBBayesPluginContextHolder.newInstance().addListener(new UnBBayesPluginContextHolder.OnReloadActionListener() {
+			public void onReload(EventObject eventObject) {
+				try {
+					reloadPlugins();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
 	}
 	
 	/**
@@ -73,6 +85,14 @@ public class PluginAwareFileExtensionIODelegator extends
 //		ret.getDelegators().add(new DneIO());
 		ret.getDelegators().addAll(ret.loadIOAsPlugins());
 		return ret;
+	}
+	
+	/**
+	 * Reloads the plugins.
+	 */
+	public void reloadPlugins() {
+		this.setDelegators(new ArrayList<BaseIO>());
+		this.getDelegators().addAll(this.loadIOAsPlugins());
 	}
 	
 	/**
@@ -186,4 +206,5 @@ public class PluginAwareFileExtensionIODelegator extends
 		this.unbbayesPluginContextHolder = unbbayesPluginContextHolder;
 	}
 
+	
 }

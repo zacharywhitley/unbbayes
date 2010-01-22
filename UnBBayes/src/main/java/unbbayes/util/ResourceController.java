@@ -108,46 +108,51 @@ public class ResourceController {
      * @return
      */
     protected synchronized ClassLoader loadPluginClassLoader() {
+    	try {
+    		// the below code fixes incidents that happens when this method is called before plugin initialization
+        	if (!this.getUnBBayesPluginContextHolder().isInitialized()) {
+        		try {
+    				this.getUnBBayesPluginContextHolder().publishPlugins();
+    			} catch (IOException e) {
+    				throw new IllegalStateException("Plugin infrastructure is not ready",e);
+    			}
+        	}
+        	
+        	// loads the "core" plugin, which is a stub that we use to declare extension points for core
+    	    PluginDescriptor core = this.getUnBBayesPluginContextHolder().getPluginManager().getRegistry().getPluginDescriptor(
+    	    		this.getUnBBayesPluginContextHolder().getPluginCoreID()
+    	    		);
+            
+    	    // load the resource extension point for PN.
+    	    ExtensionPoint point = this.getUnBBayesPluginContextHolder().getPluginManager().getRegistry().getExtensionPoint(
+    	    			core.getId(), 
+    	    			this.getExtensionPointID()
+    	    		);
+    	    
+        	
+    	    ListClassLoaderDelegator ret = new ListClassLoaderDelegator(new ArrayList<ClassLoader>());
+    	    
+        	for (Extension ext : point.getConnectedExtensions()) {
+        		PluginDescriptor descr = ext.getDeclaringPluginDescriptor();
+        		try {
+        			this.getUnBBayesPluginContextHolder().getPluginManager().activatePlugin(descr.getId());
+    			} catch (PluginLifecycleException e) {
+    				e.printStackTrace();
+    				// we could not load this plugin, but we shall continue
+    				continue;
+    			}
+    			ClassLoader loader = this.getUnBBayesPluginContextHolder().getPluginManager().getPluginClassLoader(descr);
+    			if (loader != null) {
+    				ret.getListOfLoaders().add(loader);
+    			}
+        	}
+        	
+        	return ret;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return this.getDefaultClassLoader();
+		}
     	
-    	// the below code fixes incidents that happens when this method is called before plugin initialization
-    	if (!this.getUnBBayesPluginContextHolder().isInitialized()) {
-    		try {
-				this.getUnBBayesPluginContextHolder().publishPlugins();
-			} catch (IOException e) {
-				throw new IllegalStateException("Plugin infrastructure is not ready",e);
-			}
-    	}
-    	
-    	// loads the "core" plugin, which is a stub that we use to declare extension points for core
-	    PluginDescriptor core = this.getUnBBayesPluginContextHolder().getPluginManager().getRegistry().getPluginDescriptor(
-	    		this.getUnBBayesPluginContextHolder().getPluginCoreID()
-	    		);
-        
-	    // load the resource extension point for PN.
-	    ExtensionPoint point = this.getUnBBayesPluginContextHolder().getPluginManager().getRegistry().getExtensionPoint(
-	    			core.getId(), 
-	    			this.getExtensionPointID()
-	    		);
-	    
-    	
-	    ListClassLoaderDelegator ret = new ListClassLoaderDelegator(new ArrayList<ClassLoader>());
-	    
-    	for (Extension ext : point.getConnectedExtensions()) {
-    		PluginDescriptor descr = ext.getDeclaringPluginDescriptor();
-    		try {
-    			this.getUnBBayesPluginContextHolder().getPluginManager().activatePlugin(descr.getId());
-			} catch (PluginLifecycleException e) {
-				e.printStackTrace();
-				// we could not load this plugin, but we shall continue
-				continue;
-			}
-			ClassLoader loader = this.getUnBBayesPluginContextHolder().getPluginManager().getPluginClassLoader(descr);
-			if (loader != null) {
-				ret.getListOfLoaders().add(loader);
-			}
-    	}
-    	
-    	return ret;
     }
     
     /**
