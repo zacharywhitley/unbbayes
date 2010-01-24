@@ -109,9 +109,17 @@ public class UnBBayesPluginContextHolder {
 		try {
 	        Set<PluginLocation> locations = new HashSet<PluginLocation>(plugins.length);
 	        for (File file : plugins) {
-				PluginLocation location = StandardPluginLocation.create(file);
-				if (location != null) {
-					locations.add(location);
+				try {
+					PluginLocation location = StandardPluginLocation.create(file);
+					if (location != null) {
+						locations.add(location);
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+					continue;
+				} catch (Error e) {
+					e.printStackTrace();
+					continue;
 				}
 			}
 	        

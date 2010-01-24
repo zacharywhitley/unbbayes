@@ -603,50 +603,58 @@ public class GlobalOptionsDialog extends JDialog {
     	
 	    // iterate over the connected extension points
 	    for (Iterator<Extension> it = point.getConnectedExtensions().iterator(); it.hasNext();) {
-			Extension ext = it.next();
-            PluginDescriptor descr = ext.getDeclaringPluginDescriptor();
-            
-            try {
-            	this.getPluginManager().activatePlugin(descr.getId());
-			} catch (PluginLifecycleException e) {
-				e.printStackTrace();
-				// we could not load this plugin, but we shall continue searching for others
-				continue;
-			}
-			
-			// extracting parameters
-			Parameter classParam = ext.getParameter(PluginCore.PARAMETER_CLASS);
-			
-			// extracting plugin class or builder clas
-			ClassLoader classLoader = this.getPluginManager().getPluginClassLoader(descr);
-            Class pluginClass = null;	// class for the plugin (InferenceAlgorithmOptionPanel)
-            try {
-            	 pluginClass = classLoader.loadClass(classParam.valueAsString());
-			} catch (ClassNotFoundException e1) {
-				e1.printStackTrace();
-				// we could not load this plugin, but we shall continue searching for others
-				continue;
-			}
-			
-            // intantiating plugin object
-	    	InferenceAlgorithmOptionPanel algorithmOptionPanel = null;
-	    	try {
-				algorithmOptionPanel = (InferenceAlgorithmOptionPanel)pluginClass.newInstance();
+			try {
+				Extension ext = it.next();
+	            PluginDescriptor descr = ext.getDeclaringPluginDescriptor();
+	            
+	            try {
+	            	this.getPluginManager().activatePlugin(descr.getId());
+				} catch (PluginLifecycleException e) {
+					e.printStackTrace();
+					// we could not load this plugin, but we shall continue searching for others
+					continue;
+				}
+				
+				// extracting parameters
+				Parameter classParam = ext.getParameter(PluginCore.PARAMETER_CLASS);
+				
+				// extracting plugin class or builder clas
+				ClassLoader classLoader = this.getPluginManager().getPluginClassLoader(descr);
+	            Class pluginClass = null;	// class for the plugin (InferenceAlgorithmOptionPanel)
+	            try {
+	            	 pluginClass = classLoader.loadClass(classParam.valueAsString());
+				} catch (ClassNotFoundException e1) {
+					e1.printStackTrace();
+					// we could not load this plugin, but we shall continue searching for others
+					continue;
+				}
+				
+	            // intantiating plugin object
+		    	InferenceAlgorithmOptionPanel algorithmOptionPanel = null;
+		    	try {
+					algorithmOptionPanel = (InferenceAlgorithmOptionPanel)pluginClass.newInstance();
+				} catch (Exception e) {
+					// OK. we could not load this one, but lets try others.
+					e.printStackTrace();
+					continue;
+				} 
+		    	
+				// creating the radio buttons
+		    	// we assume algorithm equality as class equality (if 2 algorithms uses the same class, we assume they are the same algorithm)
+				JRadioButtonMenuItem radio =  new JRadioButtonMenuItem(algorithmOptionPanel.getInferenceAlgorithm().getName(), 
+						(controller.getInferenceAlgorithm()!= null) && (controller.getInferenceAlgorithm().getClass().equals(algorithmOptionPanel.getInferenceAlgorithm().getClass())));
+				radio.setToolTipText(algorithmOptionPanel.getInferenceAlgorithm().getDescription());
+				
+				
+				// filling the return
+				ret.put(radio, algorithmOptionPanel);
 			} catch (Exception e) {
-				// OK. we could not load this one, but lets try others.
 				e.printStackTrace();
 				continue;
-			} 
-	    	
-			// creating the radio buttons
-	    	// we assume algorithm equality as class equality (if 2 algorithms uses the same class, we assume they are the same algorithm)
-			JRadioButtonMenuItem radio =  new JRadioButtonMenuItem(algorithmOptionPanel.getInferenceAlgorithm().getName(), 
-					(controller.getInferenceAlgorithm()!= null) && (controller.getInferenceAlgorithm().getClass().equals(algorithmOptionPanel.getInferenceAlgorithm().getClass())));
-			radio.setToolTipText(algorithmOptionPanel.getInferenceAlgorithm().getDescription());
-			
-			
-			// filling the return
-			ret.put(radio, algorithmOptionPanel);
+			} catch (Error e) {
+				e.printStackTrace();
+				continue;
+			}
 		}
 	    
 	    // creating action listener for each radio buttons in order to open the option panel when a radio button is choosen

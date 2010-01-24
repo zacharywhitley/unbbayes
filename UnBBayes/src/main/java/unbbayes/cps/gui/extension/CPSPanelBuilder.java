@@ -35,7 +35,7 @@ public class CPSPanelBuilder implements IProbabilityFunctionPanelBuilder {
 	
 	/** Load resource file from this package */
   	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
-  			unbbayes.cps.resources.Resources.class.getName());
+  			unbbayes.cps.resources.Resources.class.getName(), java.util.Locale.getDefault(), CPSPanelBuilder.class.getClassLoader());
 	
 	/**
 	 * The default constructor must be public for plugin compatibility

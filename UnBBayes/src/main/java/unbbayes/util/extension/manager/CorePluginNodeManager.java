@@ -195,147 +195,155 @@ public class CorePluginNodeManager {
     	
 	    // iterate over the connected extension points
 	    for (Iterator<Extension> it = point.getConnectedExtensions().iterator(); it.hasNext();) {
-			Extension ext = it.next();
-            PluginDescriptor descr = ext.getDeclaringPluginDescriptor();
-            
-            try {
-            	this.getUnbbayesPluginContextHolder().getPluginManager().activatePlugin(descr.getId());
-			} catch (PluginLifecycleException e) {
-				e.printStackTrace();
-				// we could not load this plugin, but we shall continue searching for others
-				continue;
-			}
-			
-			// extracting class loader
-			ClassLoader classLoader = this.getUnbbayesPluginContextHolder().getPluginManager().getPluginClassLoader(descr);
-			
-			// extracting parameters
-			Parameter classParam = ext.getParameter(PARAMETER_CLASS);
-			Parameter cursorParam = ext.getParameter(PARAMETER_CURSOR);
-			Parameter descParam = ext.getParameter(PARAMETER_DESCRIPTION);
-			Parameter iconParam = ext.getParameter(PARAMETER_ICON);
-			Parameter nameParam = ext.getParameter(PARAMETER_NAME);
-			Parameter panelParam = ext.getParameter(PARAMETER_PANEL_BUILDER);
-			Parameter shapeParam = ext.getParameter(PARAMETER_SHAPE);
-			
-			// extracting class of the node or its builder
-            Class nodeClass = null;	// class for the node or its builder
-            try {
-            	 nodeClass = classLoader.loadClass(classParam.valueAsString());
-			} catch (ClassNotFoundException e1) {
-				e1.printStackTrace();
-				// we could not load this plugin, but we shall continue searching for others
-				continue;
-			}
-			
-            // generating node or its builder from extracted class
-	    	INodeBuilder nodeBuilder = null;
-	    	try {
-	    		if (INodeBuilder.class.isAssignableFrom(nodeClass)) {
-	    			// the provided node class was a builder itself
-	    			nodeBuilder = (INodeBuilder)nodeClass.newInstance();
-	    		} else {
-	    			// the provided node class was pointing directly to a node, so let's create a default builder
-	    			nodeBuilder = new ClassInstantiationPluginNodeBuilder(nodeClass);
-	    			if (nameParam != null && nameParam.valueAsString() != null && nameParam.valueAsString().length() > 0) {
-	    				// the name of the nodes must contain the nameParam as prefix
-	    				((ClassInstantiationPluginNodeBuilder)nodeBuilder).setNamePrefix(nameParam.valueAsString());
-	    			} else {
-	    				// the name of the nodes contains the class name as prefix
-	    				((ClassInstantiationPluginNodeBuilder)nodeBuilder).setNamePrefix(nodeClass.getName().substring(nodeClass.getName().lastIndexOf('.')));
-	    			}
-	    		}
-			} catch (Exception e) {
-				// OK. we could not load this one, but lets try others.
-				e.printStackTrace();
-				continue;
-			} 
-			
-			// extracting class of the shape or its builder
-            Class shapeClass = null;	// class for the shape or its builder
 			try {
-				shapeClass = classLoader.loadClass(shapeParam.valueAsString());
-			} catch (ClassNotFoundException e1) {
-				e1.printStackTrace();
-				// we could not load this plugin, but we shall continue searching for others
-				continue;
-			}
-			
-			// generating node or its builder from extracted class
-			IPluginUShapeBuilder shapeBuilder = null;
-			try {
-				if (IPluginUShapeBuilder.class.isAssignableFrom(shapeClass)) {
-					// the provided shape class was a builder itself
-					shapeBuilder = (IPluginUShapeBuilder)shapeClass.newInstance();
-				} else {
-					// the provided shape class was pointing directly to a shape, so let's create a default builder
-					shapeBuilder = new ClassInstantiationPluginUShapeBuilder(shapeClass);
+				Extension ext = it.next();
+	            PluginDescriptor descr = ext.getDeclaringPluginDescriptor();
+	            
+	            try {
+	            	this.getUnbbayesPluginContextHolder().getPluginManager().activatePlugin(descr.getId());
+				} catch (PluginLifecycleException e) {
+					e.printStackTrace();
+					// we could not load this plugin, but we shall continue searching for others
+					continue;
 				}
+				
+				// extracting class loader
+				ClassLoader classLoader = this.getUnbbayesPluginContextHolder().getPluginManager().getPluginClassLoader(descr);
+				
+				// extracting parameters
+				Parameter classParam = ext.getParameter(PARAMETER_CLASS);
+				Parameter cursorParam = ext.getParameter(PARAMETER_CURSOR);
+				Parameter descParam = ext.getParameter(PARAMETER_DESCRIPTION);
+				Parameter iconParam = ext.getParameter(PARAMETER_ICON);
+				Parameter nameParam = ext.getParameter(PARAMETER_NAME);
+				Parameter panelParam = ext.getParameter(PARAMETER_PANEL_BUILDER);
+				Parameter shapeParam = ext.getParameter(PARAMETER_SHAPE);
+				
+				// extracting class of the node or its builder
+	            Class nodeClass = null;	// class for the node or its builder
+	            try {
+	            	 nodeClass = classLoader.loadClass(classParam.valueAsString());
+				} catch (ClassNotFoundException e1) {
+					e1.printStackTrace();
+					// we could not load this plugin, but we shall continue searching for others
+					continue;
+				}
+				
+	            // generating node or its builder from extracted class
+		    	INodeBuilder nodeBuilder = null;
+		    	try {
+		    		if (INodeBuilder.class.isAssignableFrom(nodeClass)) {
+		    			// the provided node class was a builder itself
+		    			nodeBuilder = (INodeBuilder)nodeClass.newInstance();
+		    		} else {
+		    			// the provided node class was pointing directly to a node, so let's create a default builder
+		    			nodeBuilder = new ClassInstantiationPluginNodeBuilder(nodeClass);
+		    			if (nameParam != null && nameParam.valueAsString() != null && nameParam.valueAsString().length() > 0) {
+		    				// the name of the nodes must contain the nameParam as prefix
+		    				((ClassInstantiationPluginNodeBuilder)nodeBuilder).setNamePrefix(nameParam.valueAsString());
+		    			} else {
+		    				// the name of the nodes contains the class name as prefix
+		    				((ClassInstantiationPluginNodeBuilder)nodeBuilder).setNamePrefix(nodeClass.getName().substring(nodeClass.getName().lastIndexOf('.')));
+		    			}
+		    		}
+				} catch (Exception e) {
+					// OK. we could not load this one, but lets try others.
+					e.printStackTrace();
+					continue;
+				} 
+				
+				// extracting class of the shape or its builder
+	            Class shapeClass = null;	// class for the shape or its builder
+				try {
+					shapeClass = classLoader.loadClass(shapeParam.valueAsString());
+				} catch (ClassNotFoundException e1) {
+					e1.printStackTrace();
+					// we could not load this plugin, but we shall continue searching for others
+					continue;
+				}
+				
+				// generating node or its builder from extracted class
+				IPluginUShapeBuilder shapeBuilder = null;
+				try {
+					if (IPluginUShapeBuilder.class.isAssignableFrom(shapeClass)) {
+						// the provided shape class was a builder itself
+						shapeBuilder = (IPluginUShapeBuilder)shapeClass.newInstance();
+					} else {
+						// the provided shape class was pointing directly to a shape, so let's create a default builder
+						shapeBuilder = new ClassInstantiationPluginUShapeBuilder(shapeClass);
+					}
+				} catch (Exception e) {
+					// OK. we could not load this one, but lets try others.
+					e.printStackTrace();
+					continue;
+				} 
+				
+				// extracting class for panel builder
+	            Class panelClass = null;	// class for the panel builder
+				try {
+					panelClass = classLoader.loadClass(panelParam.valueAsString());
+				} catch (ClassNotFoundException e1) {
+					e1.printStackTrace();
+					// we could not load this plugin, but we shall continue searching for others
+					continue;
+				}
+				
+				// generating panel builder from extracted class
+				IProbabilityFunctionPanelBuilder panelBuilder = null;
+				try {
+					panelBuilder = (IProbabilityFunctionPanelBuilder)panelClass.newInstance();
+				} catch (Exception e) {
+					// OK. we could not load this one, but lets try others.
+					e.printStackTrace();
+					continue;
+				}
+
+				// extracting cursor 
+				ImageIcon cursor = null;
+				if (cursorParam != null) {
+					// cursor was provided. Let's use it
+					URL url = this.getUnbbayesPluginContextHolder().getPluginManager().getPluginClassLoader(ext.getDeclaringPluginDescriptor()).getResource(cursorParam.valueAsString());
+					cursor = (url != null) ? new ImageIcon(url) : null;
+				}
+				
+				// extracting icon
+				ImageIcon icon = null;
+				if (iconParam != null) {
+					// cursor was provided. Let's use it
+					URL url = this.getUnbbayesPluginContextHolder().getPluginManager().getPluginClassLoader(ext.getDeclaringPluginDescriptor()).getResource(iconParam.valueAsString());
+					icon = (url != null) ? new ImageIcon(url) : null;
+				}
+				
+				
+				/*
+				Parameter descParam = ext.getParameter(PARAMETER_DESCRIPTION);
+				Parameter nameParam = ext.getParameter(PARAMETER_NAME);
+				 */
+				
+		    	
+				// filling the DTO of plugin node
+				INodeClassDataTransferObject nodeDto = NodeDto.newInstance();
+				nodeDto.setIcon(icon);
+				nodeDto.setNodeBuilder(nodeBuilder);
+				nodeDto.setShapeBuilder(shapeBuilder);
+				nodeDto.setProbabilityFunctionPanelBuilder(panelBuilder);
+				nodeDto.setCursorIcon(cursor);
+				if (nameParam != null) {
+					nodeDto.setName(nameParam.valueAsString());
+				}
+				if (descParam != null) {
+					nodeDto.setDescription(descParam.valueAsString());
+				}
+
+				// registering the loaded class and its dto, so that users of CorePluginNodeManager can call them by using getPluginNodeInformation
+				this.registerNodeClass(	nodeDto.getNodeBuilder().getNodeClass(), nodeDto);
 			} catch (Exception e) {
-				// OK. we could not load this one, but lets try others.
 				e.printStackTrace();
 				continue;
-			} 
-			
-			// extracting class for panel builder
-            Class panelClass = null;	// class for the panel builder
-			try {
-				panelClass = classLoader.loadClass(panelParam.valueAsString());
-			} catch (ClassNotFoundException e1) {
-				e1.printStackTrace();
-				// we could not load this plugin, but we shall continue searching for others
-				continue;
-			}
-			
-			// generating panel builder from extracted class
-			IProbabilityFunctionPanelBuilder panelBuilder = null;
-			try {
-				panelBuilder = (IProbabilityFunctionPanelBuilder)panelClass.newInstance();
-			} catch (Exception e) {
-				// OK. we could not load this one, but lets try others.
+			} catch (Error e) {
 				e.printStackTrace();
 				continue;
 			}
-
-			// extracting cursor 
-			ImageIcon cursor = null;
-			if (cursorParam != null) {
-				// cursor was provided. Let's use it
-				URL url = this.getUnbbayesPluginContextHolder().getPluginManager().getPluginClassLoader(ext.getDeclaringPluginDescriptor()).getResource(cursorParam.valueAsString());
-				cursor = (url != null) ? new ImageIcon(url) : null;
-			}
-			
-			// extracting icon
-			ImageIcon icon = null;
-			if (iconParam != null) {
-				// cursor was provided. Let's use it
-				URL url = this.getUnbbayesPluginContextHolder().getPluginManager().getPluginClassLoader(ext.getDeclaringPluginDescriptor()).getResource(iconParam.valueAsString());
-				icon = (url != null) ? new ImageIcon(url) : null;
-			}
-			
-			
-			/*
-			Parameter descParam = ext.getParameter(PARAMETER_DESCRIPTION);
-			Parameter nameParam = ext.getParameter(PARAMETER_NAME);
-			 */
-			
-	    	
-			// filling the DTO of plugin node
-			INodeClassDataTransferObject nodeDto = NodeDto.newInstance();
-			nodeDto.setIcon(icon);
-			nodeDto.setNodeBuilder(nodeBuilder);
-			nodeDto.setShapeBuilder(shapeBuilder);
-			nodeDto.setProbabilityFunctionPanelBuilder(panelBuilder);
-			nodeDto.setCursorIcon(cursor);
-			if (nameParam != null) {
-				nodeDto.setName(nameParam.valueAsString());
-			}
-			if (descParam != null) {
-				nodeDto.setDescription(descParam.valueAsString());
-			}
-
-			// registering the loaded class and its dto, so that users of CorePluginNodeManager can call them by using getPluginNodeInformation
-			this.registerNodeClass(	nodeDto.getNodeBuilder().getNodeClass(), nodeDto);
 		}
 	}
 	

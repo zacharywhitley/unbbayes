@@ -151,6 +151,9 @@ public class ResourceController {
 		} catch (Exception e) {
 			e.printStackTrace();
 			return this.getDefaultClassLoader();
+		} catch (Error e) {
+			e.printStackTrace();
+			return this.getDefaultClassLoader();
 		}
     	
     }

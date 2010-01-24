@@ -1091,78 +1091,86 @@ public class UnBBayesFrame extends JFrame {
 		Map<String,Class> ret = new HashMap<String, Class>();
 		
 		for (Extension ext : point.getConnectedExtensions()) {
-            PluginDescriptor descr = ext.getDeclaringPluginDescriptor();
-            
             try {
-				pluginManager.activatePlugin(descr.getId());
-			} catch (PluginLifecycleException e) {
+            	PluginDescriptor descr = ext.getDeclaringPluginDescriptor();
+                
+                try {
+    				pluginManager.activatePlugin(descr.getId());
+    			} catch (PluginLifecycleException e) {
+    				e.printStackTrace();
+    				// we could not load this plugin, but we shall continue
+    				continue;
+    			}
+    			
+    			// extracting parameters
+    			Parameter nameParam = ext.getParameter(PluginCore.PARAMETER_NAME);
+    			Parameter classParam = ext.getParameter(PluginCore.PARAMETER_CLASS);
+    			Parameter descriptionParam = ext.getParameter(PluginCore.PARAMETER_DESCRIPTION);
+    			Parameter iconParam = ext.getParameter(PluginCore.PARAMETER_ICON);
+    			Parameter builderParam = ext.getParameter(PluginCore.PARAMETER_BUILDER);
+    			
+    			// extracting plugin class or builder clas
+    			ClassLoader classLoader = pluginManager.getPluginClassLoader(descr);
+                Class pluginOrBuilderCls = null;	// class for the plugin or its builder (UnBBayesModuleBuilder)
+                try {
+                	if (builderParam != null) {
+                		pluginOrBuilderCls = classLoader.loadClass(builderParam.valueAsString());
+                	} else {
+                		pluginOrBuilderCls = classLoader.loadClass(classParam.valueAsString());
+                	}
+    			} catch (ClassNotFoundException e1) {
+    				e1.printStackTrace();
+    				continue;
+    			}
+    			
+    			// filling tool bar's button
+    			ImageIcon icon = null;
+    			if (iconParam != null) {
+    				URL iconUrl = pluginManager.getPluginClassLoader(ext.getDeclaringPluginDescriptor()).getResource(iconParam.valueAsString());
+    				icon = (iconUrl != null) ? new ImageIcon(iconUrl) : null;
+    			}
+    			JButton button = new JButton(icon);
+    			button.setToolTipText(descriptionParam.valueAsString());
+    			
+    			// filling menu item
+    			JMenuItem menuItem = new JMenuItem(resource.getString("newPlugin") + nameParam.valueAsString(),icon);
+    			menuItem.setToolTipText(descriptionParam.valueAsString());
+    			
+    			// creating action listener
+    			ActionListener listener = new ActionListenerSupportingConstructorParam(pluginOrBuilderCls) {
+    				public void actionPerformed(ActionEvent e) {
+    					setCursor(new Cursor(Cursor.WAIT_CURSOR));
+    					UnBBayesModule module = null;
+    					try {
+    						module = getUnBBayesModuleByPluginClass((Class)this.getParam());
+    						addWindow(module);
+    						module.setVisible(true);
+    					} catch (InstantiationException e1) {
+    						throw new RuntimeException(e1);
+    					} catch (IllegalAccessException e1) {
+    						throw new RuntimeException(e1);
+    					}
+    					setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    				}
+    			};
+    			
+    			// adding action listener 
+    			button.addActionListener(listener);
+    			menuItem.addActionListener(listener);
+                
+    			// adding tool bar buttons and menu
+    			this.getPluginToolBar().add(button);
+    			this.getPluginMenu().add(menuItem);
+    			
+    			// filling the return
+    			ret.put(nameParam.valueAsString(), pluginOrBuilderCls);
+			} catch (Exception e) {
 				e.printStackTrace();
-				// we could not load this plugin, but we shall continue
+				continue;
+			} catch (Error e) {
+				e.printStackTrace();
 				continue;
 			}
-			
-			// extracting parameters
-			Parameter nameParam = ext.getParameter(PluginCore.PARAMETER_NAME);
-			Parameter classParam = ext.getParameter(PluginCore.PARAMETER_CLASS);
-			Parameter descriptionParam = ext.getParameter(PluginCore.PARAMETER_DESCRIPTION);
-			Parameter iconParam = ext.getParameter(PluginCore.PARAMETER_ICON);
-			Parameter builderParam = ext.getParameter(PluginCore.PARAMETER_BUILDER);
-			
-			// extracting plugin class or builder clas
-			ClassLoader classLoader = pluginManager.getPluginClassLoader(descr);
-            Class pluginOrBuilderCls = null;	// class for the plugin or its builder (UnBBayesModuleBuilder)
-            try {
-            	if (builderParam != null) {
-            		pluginOrBuilderCls = classLoader.loadClass(builderParam.valueAsString());
-            	} else {
-            		pluginOrBuilderCls = classLoader.loadClass(classParam.valueAsString());
-            	}
-			} catch (ClassNotFoundException e1) {
-				e1.printStackTrace();
-				continue;
-			}
-			
-			// filling tool bar's button
-			ImageIcon icon = null;
-			if (iconParam != null) {
-				URL iconUrl = pluginManager.getPluginClassLoader(ext.getDeclaringPluginDescriptor()).getResource(iconParam.valueAsString());
-				icon = (iconUrl != null) ? new ImageIcon(iconUrl) : null;
-			}
-			JButton button = new JButton(icon);
-			button.setToolTipText(descriptionParam.valueAsString());
-			
-			// filling menu item
-			JMenuItem menuItem = new JMenuItem(resource.getString("newPlugin") + nameParam.valueAsString(),icon);
-			menuItem.setToolTipText(descriptionParam.valueAsString());
-			
-			// creating action listener
-			ActionListener listener = new ActionListenerSupportingConstructorParam(pluginOrBuilderCls) {
-				public void actionPerformed(ActionEvent e) {
-					setCursor(new Cursor(Cursor.WAIT_CURSOR));
-					UnBBayesModule module = null;
-					try {
-						module = getUnBBayesModuleByPluginClass((Class)this.getParam());
-						addWindow(module);
-						module.setVisible(true);
-					} catch (InstantiationException e1) {
-						throw new RuntimeException(e1);
-					} catch (IllegalAccessException e1) {
-						throw new RuntimeException(e1);
-					}
-					setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-				}
-			};
-			
-			// adding action listener 
-			button.addActionListener(listener);
-			menuItem.addActionListener(listener);
-            
-			// adding tool bar buttons and menu
-			this.getPluginToolBar().add(button);
-			this.getPluginMenu().add(menuItem);
-			
-			// filling the return
-			ret.put(nameParam.valueAsString(), pluginOrBuilderCls);
 		}
 		
 		// if we have no plugins, we should not show the tool bar or the menu
