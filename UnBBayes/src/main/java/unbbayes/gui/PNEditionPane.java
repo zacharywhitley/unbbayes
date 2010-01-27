@@ -36,6 +36,7 @@ import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -61,7 +62,6 @@ import unbbayes.controller.NetworkController;
 import unbbayes.gui.table.extension.IProbabilityFunctionPanelBuilder;
 import unbbayes.gui.util.SplitToggleButton;
 import unbbayes.prs.Node;
-import unbbayes.prs.builder.INodeBuilder;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.dto.INodeClassDataTransferObject;
 import unbbayes.util.extension.manager.CoreCPFPluginManager;
@@ -718,6 +718,9 @@ public class PNEditionPane extends JPanel {
   	        this.setBtnAddPluginButton(new SplitToggleButton(btnAddContinuousNode, SwingConstants.SOUTH));
   	        this.getBtnAddPluginButton().setMenu(this.buildAddPluginSplitButtonMenu());
   	        
+  	        // ajust size of plugin button
+  	        this.ajustPluginButtonSize();
+  	        
   	        // adding a listener to be called when a "reload plugin" event is dispatched (in order to refresh split button)
   	        UnBBayesPluginContextHolder.newInstance().addListener(new UnBBayesPluginContextHolder.OnReloadActionListener(){
 				public void onReload(EventObject eventObject) {
@@ -811,7 +814,23 @@ public class PNEditionPane extends JPanel {
   	  		});
   		}
 
-  		/**
+  	    /**
+  	     * This method is called at constructor in order to ajust plugin node's
+  	     * split button's size.
+  	     */
+  		protected void ajustPluginButtonSize() {
+  			// adds an horizontal gap at left and right, measuring 5 px each.
+  			// That would need 10px extra for width
+  			this.getBtnAddPluginButton().setPreferredSize(new Dimension(55, this.getBtnAddPluginButton().getHeight()));
+  			this.getBtnAddPluginButton().setSize(this.getBtnAddPluginButton().getPreferredSize());
+  			this.getBtnAddPluginButton().setMaximumSize(this.getBtnAddPluginButton().getPreferredSize());
+  			this.getBtnAddPluginButton().setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+//			this.getBtnAddPluginButton().updateUI();
+//			this.updateUI();
+//			this.repaint();
+		}
+
+		/**
   		 * Builds up the menu to be shown (and its action listeners)
   		 * when a {@link #getBtnAddPluginButton()}'s right side arrow is
   		 * pressed (which contents should reflect nodes loaded from plugins).

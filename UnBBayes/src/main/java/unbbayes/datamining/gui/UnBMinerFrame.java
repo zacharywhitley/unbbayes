@@ -87,7 +87,7 @@ public class UnBMinerFrame extends JFrame {
 
 	private int confidenceLimit = 100;
 
-	private String defaultLanguage = "Portuguese";
+	private String defaultLanguage = "English";
 
 	private String defaultLaf = "Windows";
 
@@ -168,8 +168,49 @@ public class UnBMinerFrame extends JFrame {
 
 	private ActionListener alDiscretize;
 
-	// Construct the frame
+	private JMenu lafMenu;
+
+	private JMenu tbMenu;
+
+	private JMenu viewMenu;
+	
+	private boolean loadLookAndFeelFromINI = true;
+
+	private JCheckBoxMenuItem tbView;
+
+	private JCheckBoxMenuItem tbPreferences;
+
+	private JCheckBoxMenuItem tbWindow;
+
+	private JCheckBoxMenuItem tbHelp;
+
+	private JMenu programMenu;
+
+	private JMenu preferencesMenu;
+
+	private JMenu windowMenu;
+
+	private JMenu helpMenu;
+
+	private JMenuItem optionsItem;
+	
+	private GlobalOptions currentGlobalOption;
+
+	/**
+	 * constructor for the frame
+	 */
 	public UnBMinerFrame() {
+		this(true);
+	}
+	
+	/**
+	 * Constructs the frame telling it not to load look and feel options from INI file
+	 * or to dynamically change look and feel settings.
+	 * @param loadLookAndFeel
+	 */
+	public UnBMinerFrame(boolean loadLookAndFeel) {
+		this.setLoadLookAndFeelChangeable(loadLookAndFeel);
+		
 		openDefaultOptions();
 
 		metalIcon = iconController.getMetalIcon();
@@ -250,7 +291,11 @@ public class UnBMinerFrame extends JFrame {
 		}
 	}
 
-	private void setLnF(String lnfName) {
+	public void setLnF(String lnfName) {
+		if (!isLoadLookAndFeelChangeable()) {
+			// do nothing if we should not change look and feel settings.
+			return;
+		}
 		try {
 			UIManager.setLookAndFeel(lnfName);
 			SwingUtilities.updateComponentTreeUI(this);
@@ -308,11 +353,13 @@ public class UnBMinerFrame extends JFrame {
 		alPreferences = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				setCursor(new Cursor(Cursor.WAIT_CURSOR));
-				GlobalOptions options = new GlobalOptions();
-				options.setDefaultOptions(Options.getInstance()
-						.getNumberStatesAllowed(), Options.getInstance()
-						.getConfidenceLimit(), defaultLanguage, defaultLaf);
-				addWindow(options);
+				if (currentGlobalOption == null) {
+					currentGlobalOption = new GlobalOptions();
+					currentGlobalOption.setDefaultOptions(Options.getInstance()
+							.getNumberStatesAllowed(), Options.getInstance()
+							.getConfidenceLimit(), defaultLanguage, defaultLaf);
+				}
+				addWindow(currentGlobalOption);
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		};
@@ -565,13 +612,13 @@ public class UnBMinerFrame extends JFrame {
 		JMenuBar menu = new JMenuBar();
 
 		// create menus and set their mnemonic
-		JMenu programMenu = new JMenu(resource.getString("selectProgram"));
-		JMenu lafMenu = new JMenu(resource.getString("lookAndFeel"));
-		JMenu viewMenu = new JMenu(resource.getString("view"));
-		JMenu tbMenu = new JMenu(resource.getString("toolsbar"));
-		JMenu preferencesMenu = new JMenu(resource.getString("globalOptions"));
-		JMenu windowMenu = new JMenu(resource.getString("window"));
-		JMenu helpMenu = new JMenu(resource.getString("help"));
+		programMenu = new JMenu(resource.getString("selectProgram"));
+		lafMenu = new JMenu(resource.getString("lookAndFeel"));
+		viewMenu = new JMenu(resource.getString("view"));
+		tbMenu = new JMenu(resource.getString("toolsbar"));
+		preferencesMenu = new JMenu(resource.getString("globalOptions"));
+		windowMenu = new JMenu(resource.getString("window"));
+		helpMenu = new JMenu(resource.getString("help"));
 
 		programMenu.setMnemonic(((Character) resource
 				.getObject("selectMnemonic")).charValue());
@@ -599,7 +646,7 @@ public class UnBMinerFrame extends JFrame {
 				.getString("naiveBayesClassifier")/* , icon */);
 		JMenuItem evaluationItem = new JMenuItem(resource
 				.getString("evaluation")/* , icon */);
-		JMenuItem optionsItem = new JMenuItem(
+		optionsItem = new JMenuItem(
 				resource.getString("preferences"), opcaoglobalIcon);
 		JMenuItem discretizeItem = new JMenuItem("Discretizar");
 		// ///////////
@@ -622,13 +669,13 @@ public class UnBMinerFrame extends JFrame {
 		JMenuItem helpItem = new JMenuItem(resource.getString("helpTopics"),
 				helpIcon);
 
-		JMenuItem tbPreferences = new JCheckBoxMenuItem(resource
+		tbPreferences = new JCheckBoxMenuItem(resource
 				.getString("tbPreferences"), true);
-		JMenuItem tbView = new JCheckBoxMenuItem(resource.getString("tbView"),
+		tbView = new JCheckBoxMenuItem(resource.getString("tbView"),
 				true);
-		JMenuItem tbWindow = new JCheckBoxMenuItem(resource
+		tbWindow = new JCheckBoxMenuItem(resource
 				.getString("tbWindow"), true);
-		JMenuItem tbHelp = new JCheckBoxMenuItem(resource.getString("tbHelp"),
+		tbHelp = new JCheckBoxMenuItem(resource.getString("tbHelp"),
 				true);
 
 		preprocessorItem.setMnemonic(((Character) resource
@@ -793,5 +840,299 @@ public class UnBMinerFrame extends JFrame {
 		button.setIcon(icon);
 		button.setToolTipText(toolTip);
 		button.addActionListener(al);
+	}
+
+	/**
+	 * @return the jtbView
+	 */
+	public JToolBar getJtbView() {
+		return jtbView;
+	}
+
+	/**
+	 * @param jtbView the jtbView to set
+	 */
+	public void setJtbView(JToolBar jtbView) {
+		this.jtbView = jtbView;
+	}
+
+	/**
+	 * @return the jtbPreferences
+	 */
+	public JToolBar getJtbPreferences() {
+		return jtbPreferences;
+	}
+
+	/**
+	 * @param jtbPreferences the jtbPreferences to set
+	 */
+	public void setJtbPreferences(JToolBar jtbPreferences) {
+		this.jtbPreferences = jtbPreferences;
+	}
+
+	/**
+	 * @return the jtbWindow
+	 */
+	public JToolBar getJtbWindow() {
+		return jtbWindow;
+	}
+
+	/**
+	 * @param jtbWindow the jtbWindow to set
+	 */
+	public void setJtbWindow(JToolBar jtbWindow) {
+		this.jtbWindow = jtbWindow;
+	}
+
+	/**
+	 * @return the jtbHelp
+	 */
+	public JToolBar getJtbHelp() {
+		return jtbHelp;
+	}
+
+	/**
+	 * @param jtbHelp the jtbHelp to set
+	 */
+	public void setJtbHelp(JToolBar jtbHelp) {
+		this.jtbHelp = jtbHelp;
+	}
+
+	/**
+	 * @return the lafMenu
+	 */
+	public JMenu getLafMenu() {
+		return lafMenu;
+	}
+
+	/**
+	 * @param lafMenu the lafMenu to set
+	 */
+	public void setLafMenu(JMenu lafMenu) {
+		this.lafMenu = lafMenu;
+	}
+
+	/**
+	 * @return the viewMenu
+	 */
+	public JMenu getViewMenu() {
+		return viewMenu;
+	}
+
+	/**
+	 * @param viewMenu the viewMenu to set
+	 */
+	public void setViewMenu(JMenu viewMenu) {
+		this.viewMenu = viewMenu;
+	}
+
+	/**
+	 * @return the tbMenu
+	 */
+	public JMenu getTbMenu() {
+		return tbMenu;
+	}
+
+	/**
+	 * @param tbMenu the tbMenu to set
+	 */
+	public void setTbMenu(JMenu tbMenu) {
+		this.tbMenu = tbMenu;
+	}
+
+	/**
+	 * @return the loadLookAndFeelFromINI
+	 */
+	public boolean isLoadLookAndFeelChangeable() {
+		return loadLookAndFeelFromINI;
+	}
+
+	/**
+	 * @param loadLookAndFeelFromINI the loadLookAndFeelFromINI to set
+	 */
+	public void setLoadLookAndFeelChangeable(boolean loadLookAndFeelFromINI) {
+		this.loadLookAndFeelFromINI = loadLookAndFeelFromINI;
+	}
+
+	/**
+	 * @return the tbView
+	 */
+	public JCheckBoxMenuItem getTbView() {
+		return tbView;
+	}
+
+	/**
+	 * @param tbView the tbView to set
+	 */
+	public void setTbView(JCheckBoxMenuItem tbView) {
+		this.tbView = tbView;
+	}
+
+	/**
+	 * @return the tbPreferences
+	 */
+	public JCheckBoxMenuItem getTbPreferences() {
+		return tbPreferences;
+	}
+
+	/**
+	 * @param tbPreferences the tbPreferences to set
+	 */
+	public void setTbPreferences(JCheckBoxMenuItem tbPreferences) {
+		this.tbPreferences = tbPreferences;
+	}
+
+	/**
+	 * @return the tbWindow
+	 */
+	public JCheckBoxMenuItem getTbWindow() {
+		return tbWindow;
+	}
+
+	/**
+	 * @param tbWindow the tbWindow to set
+	 */
+	public void setTbWindow(JCheckBoxMenuItem tbWindow) {
+		this.tbWindow = tbWindow;
+	}
+
+	/**
+	 * @return the tbHelp
+	 */
+	public JCheckBoxMenuItem getTbHelp() {
+		return tbHelp;
+	}
+
+	/**
+	 * @param tbHelp the tbHelp to set
+	 */
+	public void setTbHelp(JCheckBoxMenuItem tbHelp) {
+		this.tbHelp = tbHelp;
+	}
+
+	/**
+	 * @return the programMenu
+	 */
+	public JMenu getProgramMenu() {
+		return programMenu;
+	}
+
+	/**
+	 * @param programMenu the programMenu to set
+	 */
+	public void setProgramMenu(JMenu programMenu) {
+		this.programMenu = programMenu;
+	}
+
+	/**
+	 * @return the preferencesMenu
+	 */
+	public JMenu getPreferencesMenu() {
+		return preferencesMenu;
+	}
+
+	/**
+	 * @param preferencesMenu the preferencesMenu to set
+	 */
+	public void setPreferencesMenu(JMenu preferencesMenu) {
+		this.preferencesMenu = preferencesMenu;
+	}
+
+	/**
+	 * @return the windowMenu
+	 */
+	public JMenu getWindowMenu() {
+		return windowMenu;
+	}
+
+	/**
+	 * @param windowMenu the windowMenu to set
+	 */
+	public void setWindowMenu(JMenu windowMenu) {
+		this.windowMenu = windowMenu;
+	}
+
+	/**
+	 * @return the helpMenu
+	 */
+	public JMenu getHelpMenu() {
+		return helpMenu;
+	}
+
+	/**
+	 * @param helpMenu the helpMenu to set
+	 */
+	public void setHelpMenu(JMenu helpMenu) {
+		this.helpMenu = helpMenu;
+	}
+
+	/**
+	 * @return the preferences
+	 */
+	public JButton getPreferences() {
+		return preferences;
+	}
+
+	/**
+	 * @param preferences the preferences to set
+	 */
+	public void setPreferences(JButton preferences) {
+		this.preferences = preferences;
+	}
+
+	/**
+	 * @return the optionsItem
+	 */
+	public JMenuItem getOptionsItem() {
+		return optionsItem;
+	}
+
+	/**
+	 * @param optionsItem the optionsItem to set
+	 */
+	public void setOptionsItem(JMenuItem optionsItem) {
+		this.optionsItem = optionsItem;
+	}
+
+	/**
+	 * @return the alPreferences
+	 */
+	public ActionListener getAlPreferences() {
+		return alPreferences;
+	}
+
+	/**
+	 * @param alPreferences the alPreferences to set
+	 */
+	public void setAlPreferences(ActionListener alPreferences) {
+		this.alPreferences = alPreferences;
+	}
+
+	/**
+	 * @return the defaultLanguage
+	 */
+	public String getDefaultLanguage() {
+		return defaultLanguage;
+	}
+
+	/**
+	 * @param defaultLanguage the defaultLanguage to set
+	 */
+	public void setDefaultLanguage(String defaultLanguage) {
+		this.defaultLanguage = defaultLanguage;
+	}
+
+	/**
+	 * @return the currentGlobalOption
+	 */
+	public GlobalOptions getCurrentGlobalOption() {
+		return currentGlobalOption;
+	}
+
+	/**
+	 * @param currentGlobalOption the currentGlobalOption to set
+	 */
+	public void setCurrentGlobalOption(GlobalOptions currentGlobalOption) {
+		this.currentGlobalOption = currentGlobalOption;
 	}
 }

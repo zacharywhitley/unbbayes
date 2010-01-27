@@ -64,6 +64,9 @@ public abstract class UnBBayesModule extends JInternalFrame implements
 	 * {@link IPersistenceAwareWindow#getIO()} instead.
 	 */
 	public String[] getSupportedFileExtensions(boolean isLoadOnly) {
+		if (this.getIO() == null) {
+			return new String[0];
+		}
 		return this.getIO().getSupportedFileExtensions(isLoadOnly);
 	}
 
@@ -73,6 +76,9 @@ public abstract class UnBBayesModule extends JInternalFrame implements
 	 * {@link IPersistenceAwareWindow#getIO()} instead.
 	 */
 	public String getSupportedFilesDescription(boolean isLoadOnly) {
+		if (this.getIO() == null) {
+			return "";
+		}
 		return this.getIO().getSupportedFilesDescription(isLoadOnly);
 	}
 

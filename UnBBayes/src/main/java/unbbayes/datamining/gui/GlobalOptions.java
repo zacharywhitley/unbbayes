@@ -55,9 +55,9 @@ public class GlobalOptions extends JInternalFrame
   private BorderLayout borderLayout3 = new BorderLayout();
   private BorderLayout borderLayout7 = new BorderLayout();
   private JPanel jPanel6 = new JPanel();
-  private JLabel jLabel3 = new JLabel();
-  private JPanel jPanel5 = new JPanel();
-  private JLabel jLabel2 = new JLabel();
+  private JLabel defaultLanguageLabel = new JLabel();
+  private JPanel defaultLookNFeelLabelPanel = new JPanel();
+  private JLabel defaultLookNFeelLabel = new JLabel();
   private JPanel jPanel4 = new JPanel();
   private JLabel jLabel1 = new JLabel();
   private JPanel jPanel3 = new JPanel();
@@ -69,13 +69,13 @@ public class GlobalOptions extends JInternalFrame
   private GridLayout gridLayout3 = new GridLayout();
   private JPanel jPanel12 = new JPanel();
   private JPanel jPanel13 = new JPanel();
-  private JPanel jPanel14 = new JPanel();
-  private JComboBox jComboBox2 = new JComboBox();
+  private JPanel lookNFeelComboBoxPanel = new JPanel();
+  private JComboBox lookNFeelComboBox = new JComboBox();
   private BorderLayout borderLayout4 = new BorderLayout();
   private JPanel jPanel15 = new JPanel();
   private JPanel jPanel16 = new JPanel();
   private JPanel jPanel17 = new JPanel();
-  private JComboBox jComboBox1 = new JComboBox();
+  private JComboBox defaultLanguageComboBox = new JComboBox();
   private GridLayout gridLayout4 = new GridLayout();
   private BorderLayout borderLayout6 = new BorderLayout();
   private JPanel jPanel18 = new JPanel();
@@ -117,9 +117,9 @@ public class GlobalOptions extends JInternalFrame
     gridLayout2.setVgap(5);
     jPanel7.setLayout(borderLayout7);
     jPanel6.setLayout(gridLayout1);
-    jLabel3.setText("Default Language");
-    jPanel5.setLayout(borderLayout3);
-    jLabel2.setText("Default Look and Feel");
+    defaultLanguageLabel.setText("Default Language");
+    defaultLookNFeelLabelPanel.setLayout(borderLayout3);
+    defaultLookNFeelLabel.setText("Default Look and Feel");
     jPanel4.setLayout(gridLayout3);
     jLabel1.setText("Maximum number of states allowed");
     jPanel3.setLayout(borderLayout5);
@@ -150,7 +150,7 @@ public class GlobalOptions extends JInternalFrame
     });
     gridLayout1.setRows(3);
     gridLayout3.setRows(3);
-    jPanel14.setLayout(borderLayout4);
+    lookNFeelComboBoxPanel.setLayout(borderLayout4);
     gridLayout4.setRows(3);
     jPanel16.setLayout(borderLayout6);
     jLabel4.setText("Minimum amount of instances to show confidence intervals");
@@ -178,35 +178,35 @@ public class GlobalOptions extends JInternalFrame
     jPanel6.add(jPanel22, null);
     jPanel22.add(jTextField2,  BorderLayout.CENTER);
     jPanel6.add(jPanel21, null);
-    jPanel1.add(jPanel5, null);
-    jPanel5.add(jLabel2, BorderLayout.CENTER);
+    jPanel1.add(defaultLookNFeelLabelPanel, null);
+    defaultLookNFeelLabelPanel.add(defaultLookNFeelLabel, BorderLayout.CENTER);
     jPanel1.add(jPanel4, null);
     jPanel4.add(jPanel13, null);
-    jPanel4.add(jPanel14, null);
-    jPanel14.add(jComboBox2, BorderLayout.CENTER);
+    jPanel4.add(lookNFeelComboBoxPanel, null);
+    lookNFeelComboBoxPanel.add(lookNFeelComboBox, BorderLayout.CENTER);
     jPanel4.add(jPanel12, null);
     jPanel1.add(jPanel3, null);
-    jPanel3.add(jLabel3, BorderLayout.CENTER);
+    jPanel3.add(defaultLanguageLabel, BorderLayout.CENTER);
     jPanel1.add(jPanel2, null);
     jPanel2.add(jPanel17, null);
     jPanel2.add(jPanel16, null);
-    jPanel16.add(jComboBox1, BorderLayout.CENTER);
+    jPanel16.add(defaultLanguageComboBox, BorderLayout.CENTER);
     jPanel2.add(jPanel15, null);
     contentPane.add(jPanel8,  BorderLayout.SOUTH);
     jPanel8.add(jButton2, null);
     jPanel8.add(jButton1, null);
-    jComboBox2.addItem("Metal");
-    jComboBox2.addItem("Motif");
-    jComboBox2.addItem("Windows");
-    jComboBox1.addItem("English");
-    jComboBox1.addItem("Portuguese");
+    lookNFeelComboBox.addItem("Metal");
+    lookNFeelComboBox.addItem("Motif");
+    lookNFeelComboBox.addItem("Windows");
+    defaultLanguageComboBox.addItem("English");
+    defaultLanguageComboBox.addItem("Portuguese");
   }
 
   public void setDefaultOptions(int states,int confidence,String language,String laf)
   { jTextField1.setText(""+states);
     jTextField2.setText(""+confidence);
-    jComboBox2.setSelectedItem(laf);
-    jComboBox1.setSelectedItem(language);
+    lookNFeelComboBox.setSelectedItem(laf);
+    defaultLanguageComboBox.setSelectedItem(language);
   }
 
   void jButton2_actionPerformed(ActionEvent e)
@@ -219,8 +219,8 @@ public class GlobalOptions extends JInternalFrame
           pw.println("[data mining]");
           pw.println("Maximum states = "+numStates);
           pw.println("Confidence limit = "+confidenceLimit);
-          pw.println("Language = "+jComboBox1.getSelectedItem().toString());
-          pw.println("Look and Feel = "+jComboBox2.getSelectedItem().toString());
+          pw.println("Language = "+defaultLanguageComboBox.getSelectedItem().toString());
+          pw.println("Look and Feel = "+lookNFeelComboBox.getSelectedItem().toString());
           dispose();
       }
       catch (IOException ioe)
@@ -234,4 +234,88 @@ public class GlobalOptions extends JInternalFrame
   void jButton1_actionPerformed(ActionEvent e)
   {   dispose();
   }
+
+/**
+ * @return the defaultLookNFeelLabelPanel
+ */
+public JPanel getDefaultLookNFeelLabelPanel() {
+	return defaultLookNFeelLabelPanel;
+}
+
+/**
+ * @param defaultLookNFeelLabelPanel the defaultLookNFeelLabelPanel to set
+ */
+public void setDefaultLookNFeelLabelPanel(JPanel defaultLookNFeelLabelPanel) {
+	this.defaultLookNFeelLabelPanel = defaultLookNFeelLabelPanel;
+}
+
+/**
+ * @return the lookNFeelComboBoxPanel
+ */
+public JPanel getLookNFeelComboBoxPanel() {
+	return lookNFeelComboBoxPanel;
+}
+
+/**
+ * @param lookNFeelComboBoxPanel the lookNFeelComboBoxPanel to set
+ */
+public void setLookNFeelComboBoxPanel(JPanel lookNFeelComboBoxPanel) {
+	this.lookNFeelComboBoxPanel = lookNFeelComboBoxPanel;
+}
+
+/**
+ * @return the defaultLanguageLabel
+ */
+public JLabel getDefaultLanguageLabel() {
+	return defaultLanguageLabel;
+}
+
+/**
+ * @param defaultLanguageLabel the defaultLanguageLabel to set
+ */
+public void setDefaultLanguageLabel(JLabel defaultLanguageLabel) {
+	this.defaultLanguageLabel = defaultLanguageLabel;
+}
+
+/**
+ * @return the defaultLanguageComboBox
+ */
+public JComboBox getDefaultLanguageComboBox() {
+	return defaultLanguageComboBox;
+}
+
+/**
+ * @param defaultLanguageComboBox the defaultLanguageComboBox to set
+ */
+public void setDefaultLanguageComboBox(JComboBox defaultLanguageComboBox) {
+	this.defaultLanguageComboBox = defaultLanguageComboBox;
+}
+
+/**
+ * @return the lookNFeelComboBox
+ */
+public JComboBox getLookNFeelComboBox() {
+	return lookNFeelComboBox;
+}
+
+/**
+ * @param lookNFeelComboBox the lookNFeelComboBox to set
+ */
+public void setLookNFeelComboBox(JComboBox lookNFeelComboBox) {
+	this.lookNFeelComboBox = lookNFeelComboBox;
+}
+
+/**
+ * @return the defaultLookNFeelLabel
+ */
+public JLabel getDefaultLookNFeelLabel() {
+	return defaultLookNFeelLabel;
+}
+
+/**
+ * @param defaultLookNFeelLabel the defaultLookNFeelLabel to set
+ */
+public void setDefaultLookNFeelLabel(JLabel defaultLookNFeelLabel) {
+	this.defaultLookNFeelLabel = defaultLookNFeelLabel;
+}
 }

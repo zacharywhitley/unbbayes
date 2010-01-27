@@ -4,21 +4,17 @@
 package unbbayes.gui.util;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
-import javax.swing.ButtonModel;
 import javax.swing.JButton;
 import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
-import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicArrowButton;
 
 /**
@@ -30,7 +26,7 @@ public class SplitToggleButton extends JToggleButton implements ActionListener{
   
 	private static final long serialVersionUID = -7324436021762703938L;
   
-    private JToggleButton mainButton; 
+    private AbstractButton mainButton; 
     private JButton dropDownButton;
     private JPopupMenu dropDownMenu;
     
@@ -68,28 +64,22 @@ public class SplitToggleButton extends JToggleButton implements ActionListener{
    */
   public SplitToggleButton(JToggleButton mainButton, int orientation) {
     super();
-    
+
+    this.dropDownMenu = new JPopupMenu();
     
     this.dropDownButton  = new BasicArrowButton(orientation);
     dropDownButton.addActionListener(this);
     dropDownButton.setPreferredSize(new Dimension(15, 40));
     dropDownButton.setMaximumSize(dropDownButton.getPreferredSize());
 
+    this.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
     this.setBorderPainted(false);
-//    this.dropDownButton.setBorderPainted(false);
-//    this.mainButton.setBorderPainted(false);
 
-//    this.setPreferredSize(new Dimension(75, 34));
-//    this.setMaximumSize(new Dimension(75, 34));
-//    this.setMinimumSize(new Dimension(200, 34));
-
-    this.setPreferredSize(new Dimension(55, 40));
-    this.setMaximumSize(this.getPreferredSize());
+    this.setPreferredSize(new Dimension(45, 30));
+    this.setSize(this.getPreferredSize());
     
-//    this.setBorder(BorderFactory.createEmptyBorder());
     
-    this.setLayout(new BorderLayout());
-//    this.setMargin(new Insets(-3, -3,-3,-3));
+    this.setLayout(new BorderLayout(0,0));
 
     
     this.add(dropDownButton, BorderLayout.EAST);
@@ -116,7 +106,7 @@ public class SplitToggleButton extends JToggleButton implements ActionListener{
    * returns the main (left hand side) button.
    * @return JButton
    */
-  public JToggleButton getMainButton() {
+  public AbstractButton getMainButton() {
     return mainButton;
   }
 
@@ -169,14 +159,16 @@ public class SplitToggleButton extends JToggleButton implements ActionListener{
 	 * @param mainButton the mainButton to set. Must not be null
 	 * @throws NullPointerException if mainButton == null
 	 */
-	public void setMainButton(JToggleButton mainButton) {
+	public void setMainButton(AbstractButton mainButton) {
 		if (this.mainButton != null) {
 			this.remove(this.mainButton);
 		}
 		this.mainButton = mainButton;
-		this.mainButton.setContentAreaFilled(false);
-	    this.add(mainButton, BorderLayout.CENTER);
-	    this.repaint();
+		if (this.mainButton != null) {
+			this.mainButton.setContentAreaFilled(false);
+			this.add(this.mainButton, BorderLayout.CENTER);
+		}
+		this.repaint();
 	}
 	
 	/**

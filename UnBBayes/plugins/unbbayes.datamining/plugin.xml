@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="unbbayes.datamining" version="0.0.1">
+    <requires>
+        <import plugin-id="unbbayes.util.extension.core"/>
+    </requires>
+    <runtime>
+        <library id="unbminer" path="classes/" type="code">
+            <export prefix="*" />
+        </library>
+        <library type="resources" path="icons/" id="icons" />
+    </runtime>
+    <extension plugin-id="unbbayes.util.extension.core" point-id="Module" id="unbminer">
+        <parameter id="class" value="unbbayes.datamining.gui.extension.UnBMinerJPFModule" />
+        <parameter id="name" value="Data Mining Project" />
+        <parameter id="builder" value="unbbayes.datamining.gui.extension.UnBMinerJPFModule" />
+		<parameter id="description" value="UnBBayes Dataminer - UnBMiner" />
+		<parameter id="icon" value="mining.png" />
+    </extension>
+</plugin>

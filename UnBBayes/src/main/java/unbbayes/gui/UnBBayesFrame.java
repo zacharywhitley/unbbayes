@@ -36,18 +36,16 @@ import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.help.HelpSet;
 import javax.help.JHelp;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -65,19 +63,16 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.OceanTheme;
-import javax.xml.bind.JAXBException;
 
-import org.java.plugin.ObjectFactory;
 import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.PluginManager;
-import org.java.plugin.PluginManager.PluginLocation;
 import org.java.plugin.registry.Extension;
 import org.java.plugin.registry.ExtensionPoint;
 import org.java.plugin.registry.PluginDescriptor;
 import org.java.plugin.registry.Extension.Parameter;
-import org.java.plugin.standard.StandardPluginLocation;
 
 import unbbayes.aprendizagem.ConstructionController;
 import unbbayes.aprendizagem.incrementalLearning.ILBridge;
@@ -87,10 +82,8 @@ import unbbayes.controller.IconController;
 import unbbayes.controller.JavaHelperController;
 import unbbayes.controller.MainController;
 import unbbayes.datamining.gui.UnBMinerFrame;
+import unbbayes.gui.util.SplitToggleButton;
 import unbbayes.io.BaseIO;
-import unbbayes.io.exception.LoadException;
-import unbbayes.io.mebn.UbfIO;
-import unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO;
 import unbbayes.metaphor.MetaphorFrame;
 import unbbayes.metaphor.afin.AFINMetaphorFrame;
 import unbbayes.prs.exception.InvalidParentException;
@@ -202,6 +195,7 @@ public class UnBBayesFrame extends JFrame {
 	
 	// Adding plugin support
 	private JToolBar pluginToolBar;
+	private SplitToggleButton pluginSplitButton;
 	private JMenu pluginMenu;
 	private UnBBayesPluginContextHolder unbbayesPluginContextHolder = UnBBayesPluginContextHolder.newInstance();
 	private String pluginDirectory = "plugins";
@@ -833,7 +827,7 @@ public class UnBBayesFrame extends JFrame {
 		JMenuItem iLearningItem = new JMenuItem(resource.getString("ILearningItem"));
 		JMenuItem metaphorItem = new JMenuItem(resource.getString("MetaphorItem"));
 		JMenuItem medicalMetaphorItem = new JMenuItem(resource.getString("MedicalMetaphorItem"));
-		JMenuItem unbMinerItem = new JMenuItem(resource.getString("UnBMinerItem"));
+//		JMenuItem unbMinerItem = new JMenuItem(resource.getString("UnBMinerItem"));
 		
 		learningItem.setMnemonic(resource.getString("learningItemMn").charAt(0));
 		tanItem.setMnemonic(resource.getString("tanItemMn").charAt(0));
@@ -868,7 +862,7 @@ public class UnBBayesFrame extends JFrame {
 		iLearningItem.addActionListener(alIL);
 		metaphorItem.addActionListener(alMetaphor);
 		medicalMetaphorItem.addActionListener(alMedicalMetaphor);
-		unbMinerItem.addActionListener(alUnBMiner);
+//		unbMinerItem.addActionListener(alUnBMiner);
 		cascadeItem.addActionListener(alCascade);
 		tileItem.addActionListener(alTile);
 		
@@ -930,7 +924,7 @@ public class UnBBayesFrame extends JFrame {
 		toolsMenu.add(iLearningItem);
 //		toolsMenu.add(metaphorItem);
 		toolsMenu.add(medicalMetaphorItem);
-		toolsMenu.add(unbMinerItem);
+//		toolsMenu.add(unbMinerItem);
 		
 		samplingMenu.add(logicItem);
 		samplingMenu.add(lwItem);
@@ -956,12 +950,22 @@ public class UnBBayesFrame extends JFrame {
 	 * This method is used whithin {@link #loadPlugins()} in order to instantiate the "Plugin" tool bars.
 	 * It does not actually fill the tool bar, since the plugins must be loaded after the creation of the
 	 * toolbar.
+	 * It is only a initializer. 
+	 * The contents are created at {@link #fillCorePluginMenuAndButtons(PluginManager, ExtensionPoint)}
 	 */
 	protected void createPluginToolBars() {
 		if (pluginToolBar != null) {
 			topPanel.remove(pluginToolBar);
 		}
 		pluginToolBar = new JToolBar();
+		pluginToolBar.setSize(pluginToolBar.getWidth(), jtbFile.getHeight());
+		pluginToolBar.setToolTipText("plugin toolbar");
+		
+		// instantiate new Split button
+		this.setPluginSplitButton(new SplitToggleButton());
+		pluginToolBar.add(this.getPluginSplitButton());
+		this.getPluginSplitButton().setToolTipText("split button");
+		
 		topPanel.add(pluginToolBar);
 	}
 	
@@ -969,6 +973,8 @@ public class UnBBayesFrame extends JFrame {
 	 * This method is used whithin {@link #loadPlugins()} in order to create the "Plugin" menu.
 	 * It does not actually fill the menu with plugins, since the plugins must be loaded after the creation of the
 	 * menu.
+	 * It is only a initializer. 
+	 * The contents are created at {@link #fillCorePluginMenuAndButtons(PluginManager, ExtensionPoint)}
 	 */
 	protected void createPluginMenu(){
 		if (pluginMenu != null) {
@@ -1157,10 +1163,20 @@ public class UnBBayesFrame extends JFrame {
     			// adding action listener 
     			button.addActionListener(listener);
     			menuItem.addActionListener(listener);
-                
-    			// adding tool bar buttons and menu
-    			this.getPluginToolBar().add(button);
+    			
+    			// adding menu item into main menu
     			this.getPluginMenu().add(menuItem);
+
+    			// creating a menu item for split button
+    			JMenuItem splitButtonMenuItem = new JMenuItem(resource.getString("newPlugin") + nameParam.valueAsString(),icon);
+    			splitButtonMenuItem.setToolTipText(descriptionParam.valueAsString());
+    			splitButtonMenuItem.addActionListener(new SplitButtonMenuActionListener(button));
+    			
+    			// adding the plugin button into split button instead of the tool bar itself
+    			this.getPluginSplitButton().getMenu().add(splitButtonMenuItem);
+    			this.getPluginSplitButton().setMainButton(button);
+    			this.getPluginSplitButton().updateUI();
+    			this.getPluginSplitButton().repaint();
     			
     			// filling the return
     			ret.put(nameParam.valueAsString(), pluginOrBuilderCls);
@@ -1527,7 +1543,7 @@ public class UnBBayesFrame extends JFrame {
 				try {
 					UnBBayesModule module = this.getUnBBayesModuleByPluginClass(plugins.get(id));
 					module.setVisible(false);
-					if (module.getIO().supports(file, true)) {
+					if (module.getIO() != null && module.getIO().supports(file, true)) {
 						ret.put(id,module);
 					}
 				} catch (Exception e) {
@@ -1734,5 +1750,58 @@ public class UnBBayesFrame extends JFrame {
 	public void setUnbbayesPluginContextHolder(
 			UnBBayesPluginContextHolder unbbayesPluginContextHolder) {
 		this.unbbayesPluginContextHolder = unbbayesPluginContextHolder;
+	}
+
+	/**
+	 * This is the split button containing buttons to start plugin-based modules.
+	 * This is usually inserted inside {@link #getPluginToolBar()}
+	 * @return the pluginSplitButton
+	 */
+	public SplitToggleButton getPluginSplitButton() {
+		return pluginSplitButton;
+	}
+
+	/**
+	 * This is the split button containing buttons to start plugin-based modules.
+	 * This is usually inserted inside {@link #getPluginToolBar()}
+	 * @param pluginSplitButton the pluginSplitButton to set
+	 */
+	public void setPluginSplitButton(SplitToggleButton pluginSplitButton) {
+		this.pluginSplitButton = pluginSplitButton;
+	}
+	
+	/**
+	 * This is just an action listener for menu items inserted within the {@link UnBBayesFrame#getPluginSplitButton()}
+	 * @author Shou Matsumoto
+	 *
+	 */
+	protected class SplitButtonMenuActionListener implements ActionListener{
+		// the button to be set as the split button's main button, after this action listener is called
+		private JButton mainButton;
+		
+		/**
+		 * Constructor setting the button to be set as main button at {@link #actionPerformed(ActionEvent)}
+		 * @param mainButton : the button to be set as the split button's main button, 
+		 * after this action listener is called
+		 */
+		public SplitButtonMenuActionListener (JButton mainButton) {
+			this.mainButton = mainButton;
+		}
+		/*
+		 * (non-Javadoc)
+		 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+		 */
+		public void actionPerformed(ActionEvent e) {
+			getPluginSplitButton().setMainButton(this.mainButton);
+			getPluginSplitButton().getMenu().setVisible(false);
+			getPluginSplitButton().updateUI();
+			getPluginSplitButton().repaint();
+			getPluginToolBar().updateUI();
+			getPluginToolBar().repaint();
+			
+			// press the button
+			getPluginSplitButton().getMainButton().doClick();
+		}
+		
 	}
 }
