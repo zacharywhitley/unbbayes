@@ -50,7 +50,7 @@ import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 
-import unbbayes.controller.FileController;
+import unbbayes.controller.FileHistoryController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.gui.mebn.ArgumentEditionPane;
@@ -797,7 +797,7 @@ public class MEBNEditionPane extends JPanel {
 	    		public void actionPerformed(ActionEvent ae) {
 	    			setCursor(new Cursor(Cursor.WAIT_CURSOR));
 	    			
-	    			JFileChooser chooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
+	    			JFileChooser chooser = new JFileChooser(FileHistoryController.getInstance().getCurrentDirectory());
 	    			chooser.setMultiSelectionEnabled(false);
 	    			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	    			
@@ -850,7 +850,7 @@ public class MEBNEditionPane extends JPanel {
 			
 			String[] validSufixes = new String[] {PowerLoomKB.FILE_SUFIX};
 			
-			JFileChooser chooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
+			JFileChooser chooser = new JFileChooser(FileHistoryController.getInstance().getCurrentDirectory());
 			chooser.setMultiSelectionEnabled(false);
 			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			
@@ -883,7 +883,7 @@ public class MEBNEditionPane extends JPanel {
 			
 			String[] validSufixes = new String[] {PowerLoomKB.FILE_SUFIX};
 			
-			JFileChooser chooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
+			JFileChooser chooser = new JFileChooser(FileHistoryController.getInstance().getCurrentDirectory());
 			chooser.setMultiSelectionEnabled(false);
 			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			

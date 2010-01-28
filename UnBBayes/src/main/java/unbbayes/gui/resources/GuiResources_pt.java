@@ -294,6 +294,7 @@ public class GuiResources_pt extends ListResourceBundle {
         {"tbTools","Barra de Ferramenta de Ferramentas"},
         {"tbWindow","Barra de Ferramenta de Janela"},
         {"tbHelp","Barra de Ferramenta de Ajuda"},
+        {"tbPlugin","Barra de Ferramenta de Plugins"},
         {"metalItem","Metal"},
         {"motifItem","Motif"},
         {"windowsItem","Windows"},

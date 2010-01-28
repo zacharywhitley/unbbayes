@@ -41,7 +41,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 
-import unbbayes.controller.FileController;
+import unbbayes.controller.FileHistoryController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
 import unbbayes.io.BaseIO;
@@ -242,7 +242,7 @@ public class SSBNCompilationPane extends JPanel {
 			public void actionPerformed(ActionEvent e) {
     			setCursor(new Cursor(Cursor.WAIT_CURSOR));
     			
-    			JFileChooser chooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
+    			JFileChooser chooser = new JFileChooser(FileHistoryController.getInstance().getCurrentDirectory());
     			chooser.setMultiSelectionEnabled(false);
     			chooser
     			.setFileSelectionMode(JFileChooser.FILES_ONLY);

@@ -35,7 +35,7 @@ import javax.swing.TransferHandler;
 import javax.swing.border.TitledBorder;
 
 import unbbayes.controller.ConfigurationsController;
-import unbbayes.controller.FileController;
+import unbbayes.controller.FileHistoryController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MSBNController;
 import unbbayes.controller.oobn.OOBNController;
@@ -99,7 +99,7 @@ public class OOBNWindow extends UnBBayesModule  {
     
     private OOBNController controller = null;
     
-    private FileController fileController = null;
+    private FileHistoryController fileHistoryController = null;
 	
 	/**
 	 * Builds a window to visualize and edit OOBN
@@ -216,7 +216,7 @@ public class OOBNWindow extends UnBBayesModule  {
 		this.newFromFileBtn.setToolTipText(resource.getString("newFromFileToolTip"));
 		
 		// file controller for class loading
-		this.fileController = FileController.getInstance();
+		this.fileHistoryController = FileHistoryController.getInstance();
 	}
 	
 	/**
@@ -447,7 +447,7 @@ public class OOBNWindow extends UnBBayesModule  {
 					public void actionPerformed(ActionEvent ae) {
 						setCursor(new Cursor(Cursor.WAIT_CURSOR));
 						String[] nets = new String[] { "net", "oobn"};
-						JFileChooser chooser = new JFileChooser(fileController.getCurrentDirectory());
+						JFileChooser chooser = new JFileChooser(fileHistoryController.getCurrentDirectory());
 						chooser.setDialogTitle(resource.getString("openClassFromFile")); 
 						chooser.setMultiSelectionEnabled(false);
 						chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -468,7 +468,7 @@ public class OOBNWindow extends UnBBayesModule  {
 								chooser.setVisible(false); 
 								getDesktopPane().repaint(); 
 								File file = chooser.getSelectedFile(); 
-								fileController.setCurrentDirectory(chooser
+								fileHistoryController.setCurrentDirectory(chooser
 										.getCurrentDirectory());
 							    chooser.setVisible(false); 
 							    chooser.setEnabled(false);
@@ -859,18 +859,18 @@ public class OOBNWindow extends UnBBayesModule  {
 
 
 	/**
-	 * @return the fileController
+	 * @return the fileHistoryController
 	 */
-	public FileController getFileController() {
-		return fileController;
+	public FileHistoryController getFileController() {
+		return fileHistoryController;
 	}
 
 
 	/**
-	 * @param fileController the fileController to set
+	 * @param fileHistoryController the fileHistoryController to set
 	 */
-	public void setFileController(FileController fileController) {
-		this.fileController = fileController;
+	public void setFileController(FileHistoryController fileHistoryController) {
+		this.fileHistoryController = fileHistoryController;
 	}
 
 

@@ -35,7 +35,7 @@ import javax.swing.JProgressBar;
 import javax.swing.Timer;
 
 /** This class shows a screen that initializes a loading and shows
- *  it's status for the FileController instance
+ *  it's status for the FileHistoryController instance
  *
  *  @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  *  @version $1.0 $ (07/04/2003)

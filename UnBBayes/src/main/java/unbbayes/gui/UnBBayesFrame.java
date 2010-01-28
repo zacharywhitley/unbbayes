@@ -77,11 +77,10 @@ import org.java.plugin.registry.Extension.Parameter;
 import unbbayes.aprendizagem.ConstructionController;
 import unbbayes.aprendizagem.incrementalLearning.ILBridge;
 import unbbayes.controller.ConfigurationsController;
-import unbbayes.controller.FileController;
+import unbbayes.controller.FileHistoryController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.JavaHelperController;
 import unbbayes.controller.MainController;
-import unbbayes.datamining.gui.UnBMinerFrame;
 import unbbayes.gui.util.SplitToggleButton;
 import unbbayes.io.BaseIO;
 import unbbayes.metaphor.MetaphorFrame;
@@ -169,7 +168,7 @@ public class UnBBayesFrame extends JFrame {
 	private ActionListener alIL;
 	private ActionListener alMetaphor;
 	private ActionListener alMedicalMetaphor;
-	private ActionListener alUnBMiner;
+//	private ActionListener alUnBMiner;
 	private ActionListener alCascade;
 	private ActionListener alTile;
 	private ActionListener alHelp;
@@ -180,7 +179,7 @@ public class UnBBayesFrame extends JFrame {
 	
 
 	private JFileChooser chooser;
-	private FileController fileController;
+	private FileHistoryController fileHistoryController;
 
 	protected IconController iconController = IconController.getInstance();
 
@@ -224,7 +223,7 @@ public class UnBBayesFrame extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		addWindowListener(new ListenerCloserFrame()); 
 		
-		fileController = FileController.getInstance();
+		fileHistoryController = FileHistoryController.getInstance();
 
 		Container contentPane = getContentPane();
 
@@ -346,7 +345,7 @@ public class UnBBayesFrame extends JFrame {
 			public void actionPerformed(ActionEvent ae) {
 				String[] nets = new String[] { "txt" };
 				int classe = 0;
-				chooser = new JFileChooser(fileController.getCurrentDirectory());
+				chooser = new JFileChooser(fileHistoryController.getCurrentDirectory());
 				chooser.setMultiSelectionEnabled(false);
 				chooser.addChoosableFileFilter(new SimpleFileFilter(nets,
 						resource.getString("textFileFilter")));
@@ -354,7 +353,7 @@ public class UnBBayesFrame extends JFrame {
 				File file;
 				if (option == JFileChooser.APPROVE_OPTION) {
 					file = chooser.getSelectedFile();
-					fileController.setCurrentDirectory(chooser
+					fileHistoryController.setCurrentDirectory(chooser
 							.getCurrentDirectory());
 					try {
 						new ConstructionController(file, controller, classe);
@@ -370,7 +369,7 @@ public class UnBBayesFrame extends JFrame {
 			public void actionPerformed(ActionEvent ae) {
 				String[] nets = new String[] { "txt" };
 				int classe = 0;
-				chooser = new JFileChooser(fileController.getCurrentDirectory());
+				chooser = new JFileChooser(fileHistoryController.getCurrentDirectory());
 				chooser.setMultiSelectionEnabled(false);
 				chooser.addChoosableFileFilter(new SimpleFileFilter(nets,
 						resource.getString("textFileFilter")));
@@ -378,7 +377,7 @@ public class UnBBayesFrame extends JFrame {
 				File file;
 				if (option == JFileChooser.APPROVE_OPTION) {
 					file = chooser.getSelectedFile();
-					fileController.setCurrentDirectory(chooser
+					fileHistoryController.setCurrentDirectory(chooser
 							.getCurrentDirectory());
 					try {
 						new ConstructionController(file, controller, classe, true);
@@ -426,7 +425,7 @@ public class UnBBayesFrame extends JFrame {
 					return;
 				}
 
-				chooser = new JFileChooser(fileController.getCurrentDirectory());
+				chooser = new JFileChooser(fileHistoryController.getCurrentDirectory());
 				chooser.setMultiSelectionEnabled(false);
 				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 				chooser.setDialogTitle(dialogueTitle); 
@@ -442,7 +441,7 @@ public class UnBBayesFrame extends JFrame {
 							/*
 							 * if (! name.endsWith(".net")) { file = new
 							 * File(file.getAbsoluteFile() + ".net");
-							 * fileController.setCurrentDirectory(chooser.getCurrentDirectory()); }
+							 * fileHistoryController.setCurrentDirectory(chooser.getCurrentDirectory()); }
 							 */
 						}
 						try {
@@ -484,7 +483,7 @@ public class UnBBayesFrame extends JFrame {
 		alLearn = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				String[] nets = new String[] { "txt" };
-				chooser = new JFileChooser(fileController.getCurrentDirectory());
+				chooser = new JFileChooser(fileHistoryController.getCurrentDirectory());
 				chooser.setMultiSelectionEnabled(false);
 				chooser.addChoosableFileFilter(new SimpleFileFilter(nets,
 						resource.getString("textFileFilter")));
@@ -492,7 +491,7 @@ public class UnBBayesFrame extends JFrame {
 				File file;
 				if (option == JFileChooser.APPROVE_OPTION) {
 					file = chooser.getSelectedFile();
-					fileController.setCurrentDirectory(chooser
+					fileHistoryController.setCurrentDirectory(chooser
 							.getCurrentDirectory());
 					new ConstructionController(file, controller);
 				}
@@ -521,13 +520,13 @@ public class UnBBayesFrame extends JFrame {
 			}
 		};
 		
-		alUnBMiner = new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				UnBMinerFrame frame = new UnBMinerFrame();
-				frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-				frame.setVisible(true);
-			}
-		};
+//		alUnBMiner = new ActionListener() {
+//			public void actionPerformed(ActionEvent ae) {
+//				UnBMinerFrame frame = new UnBMinerFrame();
+//				frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+//				frame.setVisible(true);
+//			}
+//		};
 
 		alLogic = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
@@ -777,6 +776,9 @@ public class UnBBayesFrame extends JFrame {
 		JMenuItem tbHelp = new JCheckBoxMenuItem(resource.getString("tbHelp"),
 				true);
 		
+		// Check box item for plugin toolbar
+		JMenuItem tbPlugin = new JCheckBoxMenuItem(resource.getString("tbPlugin"),
+				true);
 
 		
 		JMenuItem metalItem = new JMenuItem(resource.getString("metalItem"),
@@ -855,6 +857,23 @@ public class UnBBayesFrame extends JFrame {
 		tbTools.addActionListener(alTbTools);
 		tbWindow.addActionListener(alTbWindow);
 		tbHelp.addActionListener(alTbHelp);
+		
+		// action litener for enable/disable option for plugin toolbar
+		tbPlugin.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setCursor(new Cursor(Cursor.WAIT_CURSOR));
+				if (((JCheckBoxMenuItem) e.getSource()).getState()) {
+					topPanel.add(getPluginToolBar());
+				} else {
+					topPanel.remove(getPluginToolBar());
+				}
+				// lay out its subcomponents again after an container has been
+				// added, removed or modified
+				validate();
+				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
+		});
+		
 		metalItem.addActionListener(alMetal);
 		motifItem.addActionListener(alMotif);
 		windowsItem.addActionListener(alHomeSystem);
@@ -913,6 +932,9 @@ public class UnBBayesFrame extends JFrame {
 		tbMenu.add(tbTools);
 		tbMenu.add(tbWindow);
 		tbMenu.add(tbHelp);
+		
+		// Adding the enable/disable option for plugin toolbar
+		tbMenu.add(tbPlugin);
 		
 		viewMenu.add(tbMenu);
 		viewMenu.addSeparator();
@@ -1614,7 +1636,7 @@ public class UnBBayesFrame extends JFrame {
 		 * @see JFileChooser#showOpenDialog(java.awt.Component)
 		 */
 		public File showFileChooser() {
-			chooser = new JFileChooser(fileController.getCurrentDirectory());
+			chooser = new JFileChooser(fileHistoryController.getCurrentDirectory());
 			chooser.setDialogTitle(resource.getString("openTitle")); 
 			chooser.setMultiSelectionEnabled(false);
 			chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
@@ -1649,7 +1671,7 @@ public class UnBBayesFrame extends JFrame {
 			
 			int option = chooser.showOpenDialog(UnBBayesFrame.this);
 			if (option == JFileChooser.APPROVE_OPTION) {
-				fileController.setCurrentDirectory(chooser
+				fileHistoryController.setCurrentDirectory(chooser
 						.getCurrentDirectory());
 				chooser.setVisible(false);
 				chooser.setEnabled(false);

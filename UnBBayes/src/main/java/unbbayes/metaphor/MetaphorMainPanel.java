@@ -42,7 +42,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
-import unbbayes.controller.FileController;
+import unbbayes.controller.FileHistoryController;
 import unbbayes.controller.IconController;
 import unbbayes.gui.FileIcon;
 import unbbayes.gui.SimpleFileFilter;
@@ -212,7 +212,7 @@ public class MetaphorMainPanel extends JPanel
   void openButton_actionPerformed(ActionEvent e)
   {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
       String[] s1 = {"net", "xml"};
-      fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
+      fileChooser = new JFileChooser(FileHistoryController.getInstance().getCurrentDirectory());
       fileChooser.setMultiSelectionEnabled(false);
       //adicionar FileView no FileChooser para desenhar Icones de arquivos
       fileChooser.setFileView(new FileIcon(this));
@@ -221,7 +221,7 @@ public class MetaphorMainPanel extends JPanel
       if (returnVal == JFileChooser.APPROVE_OPTION)
       {   File selectedFile = fileChooser.getSelectedFile();
           openFile(selectedFile);
-          FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
+          FileHistoryController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       }
       setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }

@@ -505,7 +505,7 @@ public class NetworkController implements KeyListener {
      */
     public void saveNetImage() {
         String images[] = { "PNG", "JPG", "GIF", "BMP" };
-        JFileChooser chooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
+        JFileChooser chooser = new JFileChooser(FileHistoryController.getInstance().getCurrentDirectory());
         chooser.setMultiSelectionEnabled(false);
 
         chooser.setFileView(new FileIcon(screen));
@@ -517,7 +517,7 @@ public class NetworkController implements KeyListener {
         	Component comp = screen.getGraphPane().getGraphViewport();
         	File file = new File(chooser.getSelectedFile().getPath());
         	saveComponentAsImage(comp, r.width, r.height, file);
-        	FileController.getInstance().setCurrentDirectory(chooser.getCurrentDirectory());
+        	FileHistoryController.getInstance().setCurrentDirectory(chooser.getCurrentDirectory());
         }
     }
     
@@ -566,7 +566,7 @@ public class NetworkController implements KeyListener {
      */
     public void saveTableImage() {
     	String images[] = { "PNG", "JPG", "GIF", "BMP" };
-        JFileChooser chooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
+        JFileChooser chooser = new JFileChooser(FileHistoryController.getInstance().getCurrentDirectory());
         chooser.setMultiSelectionEnabled(false);
 
         chooser.setFileView(new FileIcon(screen));
@@ -578,7 +578,7 @@ public class NetworkController implements KeyListener {
         	Component comp = screen.getTable();
         	File file = new File(chooser.getSelectedFile().getPath());
         	saveComponentAsImage(comp, comp.getWidth(), comp.getHeight(), file);
-        	FileController.getInstance().setCurrentDirectory(chooser.getCurrentDirectory());
+        	FileHistoryController.getInstance().setCurrentDirectory(chooser.getCurrentDirectory());
         }
     }
 

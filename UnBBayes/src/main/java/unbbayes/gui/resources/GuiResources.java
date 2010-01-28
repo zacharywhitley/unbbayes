@@ -293,6 +293,7 @@ public class GuiResources extends ListResourceBundle {
         {"tbTools","Tools Toolbar"},
         {"tbWindow","Window Toolbar"},
         {"tbHelp","Help Toolbar"},
+        {"tbPlugin","Plugin Toolbar"},
         {"metalItem","Metal"},
         {"motifItem","Motif"},
         {"windowsItem","Windows"},

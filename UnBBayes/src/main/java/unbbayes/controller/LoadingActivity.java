@@ -22,7 +22,7 @@ package unbbayes.controller;
 
 
 /** This class loads the instances in a separate thread for 
- *  the FileController instance
+ *  the FileHistoryController instance
  *
  *  @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  *  @version $1.0 $ (07/04/2003)

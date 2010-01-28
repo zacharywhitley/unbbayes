@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.EventObject;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -100,6 +101,16 @@ public class ResourceController {
      */
     protected ResourceController() {
     	this.setDefaultClassLoader(this.loadPluginClassLoader());
+    	
+    	// Adding pseudo hot plug functionality.
+    	// This is not actually a hot plug, since the already loaded resource files will not be replaced.
+    	UnBBayesPluginContextHolder.newInstance().addListener(new UnBBayesPluginContextHolder.OnReloadActionListener() {
+			public void onReload(EventObject eventObject) {
+				ResourceController.newInstance().setDefaultClassLoader(
+						ResourceController.newInstance().loadPluginClassLoader()
+					);
+			}
+    	});
     }
     
     /**

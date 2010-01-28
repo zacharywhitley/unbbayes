@@ -51,7 +51,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeSelectionModel;
 
-import unbbayes.controller.FileController;
+import unbbayes.controller.FileHistoryController;
 import unbbayes.controller.IconController;
 import unbbayes.gui.AboutPane;
 import unbbayes.gui.FileIcon;
@@ -249,7 +249,7 @@ public class AFINMetaphorMainPanel extends JPanel
   void openButton_actionPerformed(ActionEvent e)
   {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
       String[] s1 = {"net", "xml"};
-      fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
+      fileChooser = new JFileChooser(FileHistoryController.getInstance().getCurrentDirectory());
       fileChooser.setMultiSelectionEnabled(false);
 
       fileChooser.setFileView(new FileIcon(this));
@@ -258,7 +258,7 @@ public class AFINMetaphorMainPanel extends JPanel
       if (returnVal == JFileChooser.APPROVE_OPTION)
       {   File selectedFile = fileChooser.getSelectedFile();
           openFile(selectedFile);
-          FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
+          FileHistoryController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       }
       setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }

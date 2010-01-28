@@ -27,7 +27,7 @@ import java.util.ArrayList;
 
 import javax.swing.JFileChooser;
 
-import unbbayes.controller.FileController;
+import unbbayes.controller.FileHistoryController;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.prs.Node;
 
@@ -89,8 +89,8 @@ public class IOGibbs {
 	
 	private File getFile(){	
 		String[] nets = new String[] { "net", "xml" };
-		FileController fileController = FileController.getInstance();;
-		JFileChooser chooser = new JFileChooser(fileController.getCurrentDirectory());
+		FileHistoryController fileHistoryController = FileHistoryController.getInstance();;
+		JFileChooser chooser = new JFileChooser(fileHistoryController.getCurrentDirectory());
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 		// adicionar FileView no FileChooser para desenhar �cones de

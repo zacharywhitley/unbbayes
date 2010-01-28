@@ -31,7 +31,7 @@ import java.util.List;
 
 import javax.swing.JFileChooser;
 
-import unbbayes.controller.FileController;
+import unbbayes.controller.FileHistoryController;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.BaseIO;
 import unbbayes.io.exception.LoadException;
@@ -100,8 +100,8 @@ public class ILIO {
    }
    
    public File getFile() {
-       FileController fileController = FileController.getInstance();
-       JFileChooser chooser = new JFileChooser(fileController
+       FileHistoryController fileHistoryController = FileHistoryController.getInstance();
+       JFileChooser chooser = new JFileChooser(fileHistoryController
                .getCurrentDirectory());
        chooser.setMultiSelectionEnabled(false);
        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
@@ -119,8 +119,8 @@ public class ILIO {
 	
    public File chooseFile(String[] tipos, String title) {
        try {
-           FileController fileController = FileController.getInstance();            
-           JFileChooser chooser = new JFileChooser(fileController
+           FileHistoryController fileHistoryController = FileHistoryController.getInstance();            
+           JFileChooser chooser = new JFileChooser(fileHistoryController
                    .getCurrentDirectory());
            chooser.setMultiSelectionEnabled(false);
            chooser.addChoosableFileFilter(new SimpleFileFilter(tipos, tipos[0]));
