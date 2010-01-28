@@ -52,7 +52,10 @@
       <directory>plugins</directory>
       <outputDirectory>plugins</outputDirectory>
       <includes>
-        <include>**/*.*</include>
+        <!--  include>**/*.*</include-->
+        <include>unbbayes.core/*.*</include>
+        <include>unbbayes.io.NetIO/*.*</include>
+        <include>unbbayes.io.XMLBIFIO/*.*</include>
       </includes>
     </fileSet>
   </fileSets>

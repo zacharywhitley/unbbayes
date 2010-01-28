@@ -48,7 +48,6 @@ public class ResourceController {
 	private UnBBayesPluginContextHolder unbbayesPluginContextHolder = UnBBayesPluginContextHolder.newInstance();
 	
 	
-	//TODO change the name of the repetitives resouces
 	
 //	/**
 //	 * Reference to unbbayes.prs.mebn.compiler.resources.Resources.
@@ -124,29 +123,31 @@ public class ResourceController {
     	    		);
             
     	    // load the resource extension point for PN.
-    	    ExtensionPoint point = this.getUnBBayesPluginContextHolder().getPluginManager().getRegistry().getExtensionPoint(
-    	    			core.getId(), 
-    	    			this.getExtensionPointID()
-    	    		);
+//    	    ExtensionPoint point = this.getUnBBayesPluginContextHolder().getPluginManager().getRegistry().getExtensionPoint(
+//    	    			core.getId(), 
+//    	    			this.getExtensionPointID()
+//    	    		);
     	    
-        	
+        	// prepare return
     	    ListClassLoaderDelegator ret = new ListClassLoaderDelegator(new ArrayList<ClassLoader>());
-    	    
-        	for (Extension ext : point.getConnectedExtensions()) {
-        		PluginDescriptor descr = ext.getDeclaringPluginDescriptor();
-        		try {
-        			this.getUnBBayesPluginContextHolder().getPluginManager().activatePlugin(descr.getId());
-    			} catch (PluginLifecycleException e) {
-    				e.printStackTrace();
-    				// we could not load this plugin, but we shall continue
-    				continue;
-    			}
-    			ClassLoader loader = this.getUnBBayesPluginContextHolder().getPluginManager().getPluginClassLoader(descr);
-    			if (loader != null) {
-    				ret.getListOfLoaders().add(loader);
-    			}
-        	}
-        	
+
+    	    // iterate over all extension points for core plugin
+    	    for (ExtensionPoint point : core.getExtensionPoints()) {
+    	    	for (Extension ext : point.getConnectedExtensions()) {
+            		PluginDescriptor descr = ext.getDeclaringPluginDescriptor();
+            		try {
+            			this.getUnBBayesPluginContextHolder().getPluginManager().activatePlugin(descr.getId());
+        			} catch (PluginLifecycleException e) {
+        				e.printStackTrace();
+        				// we could not load this plugin, but we shall continue
+        				continue;
+        			}
+        			ClassLoader loader = this.getUnBBayesPluginContextHolder().getPluginManager().getPluginClassLoader(descr);
+        			if (loader != null) {
+        				ret.getListOfLoaders().add(loader);
+        			}
+            	}
+			}
         	return ret;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -157,6 +158,7 @@ public class ResourceController {
 		}
     	
     }
+    
     
     /**
      * @return a singleton instance of this class.
