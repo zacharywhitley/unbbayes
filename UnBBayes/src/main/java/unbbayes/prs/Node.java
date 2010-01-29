@@ -56,8 +56,6 @@ public abstract class Node implements Serializable,
 	private String description;
 	protected String name;
 	protected String label;
-	//TODO ROMMEL - Think if there is a better way to do this
-	protected Map<String, Float> stateValueMap;
 
 	//by young	
 	public static Point DEFAULT_SIZE = new Point(80,60); 
@@ -120,7 +118,6 @@ public abstract class Node implements Serializable,
 		parents = new ArrayList<Node>();
 		children = new ArrayList<Node>();
 		states = new ArrayList<String>();
-		stateValueMap = new HashMap<String, Float>();
 
 		// width
 		size.x = DEFAULT_SIZE.getX();
@@ -387,18 +384,6 @@ public abstract class Node implements Serializable,
 		 * nao precisa, pois o array eh criado sempre com o valor 0 for (int j =
 		 * 0; j < i; j++) infoestados[j] = 0;
 		 */
-	}
-	
-	public void setStateValue(String state, float value) {
-		stateValueMap.put(state, value);
-	}
-	
-	public float getStateValue(String state) {
-		return stateValueMap.get(state);
-	}
-	
-	public void clearStateValues() {
-		stateValueMap.clear();
 	}
 	
 	// by young2010

@@ -4,7 +4,7 @@
 	<groupId>br.unb.cic</groupId>
 	<artifactId>unbbayes</artifactId>
 	<name>UnBBayes</name>
-	<version>3.52.7-BETA</version>
+	<version>4.0.0</version>
 	<url>http://unbbayes.sourceforge.net
 	</url>
 	<licenses>
@@ -280,33 +280,9 @@
 					</packageName>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.antlr</groupId>
-				<artifactId>antlr3-maven-plugin</artifactId>
-				<version>3.2</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>antlr</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 	</build>
 	<dependencies>
-
-		<dependency>
-			<groupId>org.antlr</groupId>
-			<artifactId>antlr</artifactId>
-			<version>3.2</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.antlr</groupId>
-			<artifactId>antlr-runtime</artifactId>
-			<version>3.2</version>
-		</dependency>
 
 		<!-- JAVAHELP -->
 		<dependency>
