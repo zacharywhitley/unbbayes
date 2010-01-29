@@ -45,7 +45,6 @@ import java.util.Set;
 
 import javax.help.HelpSet;
 import javax.help.JHelp;
-import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -63,7 +62,6 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.OceanTheme;
 
@@ -195,7 +193,7 @@ public class UnBBayesFrame extends JFrame {
 	private SplitToggleButton pluginSplitButton;
 	private JMenu pluginMenu;
 	private UnBBayesPluginContextHolder unbbayesPluginContextHolder = UnBBayesPluginContextHolder.newInstance();
-	private String pluginDirectory = "plugins";
+//	private String pluginDirectory = "plugins";
 	private String pluginModuleExtensionPoint = "Module";
 	
 	/** Map: ID -> {@link UnBBayesModule} or {@link UnBBayesModuleBuilder} */
@@ -783,9 +781,9 @@ public class UnBBayesFrame extends JFrame {
 				iconController.getMetalIcon());
 		JMenuItem motifItem = new JMenuItem(resource.getString("motifItem"),
 				iconController.getMotifIcon());
-		JMenuItem windowsItem = new JMenuItem(
+		JMenuItem homeItem = new JMenuItem(
 				resource.getString("windowsItem"), iconController
-						.getWindowsIcon());
+						.getHomeIcon());
 		JMenuItem cascadeItem = new JMenuItem(
 				resource.getString("cascadeItem"), iconController
 						.getCascadeIcon());
@@ -801,7 +799,7 @@ public class UnBBayesFrame extends JFrame {
 		exitItem.setMnemonic(resource.getString("exitItemMn").charAt(0));
 		metalItem.setMnemonic(resource.getString("metalItemMn").charAt(0));
 		motifItem.setMnemonic(resource.getString("motifItemMn").charAt(0));
-		windowsItem.setMnemonic(resource.getString("windowsItemMn").charAt(0));
+		homeItem.setMnemonic(resource.getString("windowsItemMn").charAt(0));
 		cascadeItem.setMnemonic(resource.getString("cascadeItemMn").charAt(0));
 		tileItem.setMnemonic(resource.getString("tileItemMn").charAt(0));
 		helpItem.setMnemonic(resource.getString("helpItemMn").charAt(0));
@@ -874,7 +872,7 @@ public class UnBBayesFrame extends JFrame {
 		
 		metalItem.addActionListener(alMetal);
 		motifItem.addActionListener(alMotif);
-		windowsItem.addActionListener(alHomeSystem);
+		homeItem.addActionListener(alHomeSystem);
 		learningItem.addActionListener(alLearn);
 		iLearningItem.addActionListener(alIL);
 //		metaphorItem.addActionListener(alMetaphor);
@@ -923,7 +921,7 @@ public class UnBBayesFrame extends JFrame {
 		
 		lafMenu.add(metalItem);
 		lafMenu.add(motifItem);
-		lafMenu.add(windowsItem);
+		lafMenu.add(homeItem);
 		
 		tbMenu.add(tbFile);
 		tbMenu.add(tbView);
@@ -1447,14 +1445,14 @@ public class UnBBayesFrame extends JFrame {
 	}
 
 
-	/**
-	 * 
-	 * The directory where UnBBayes will search for plugins.
-	 * @param pluginDirectory the pluginDirectory to set
-	 */
-	public void setPluginDirectory(String pluginDirectory) {
-		this.pluginDirectory = pluginDirectory;
-	}
+//	/**
+//	 * 
+//	 * The directory where UnBBayes will search for plugins.
+//	 * @param pluginDirectory the pluginDirectory to set
+//	 */
+//	public void setPluginDirectory(String pluginDirectory) {
+//		this.pluginDirectory = pluginDirectory;
+//	}
 
 	/**
 	 * The main extension point of the core plugin (Module).
