@@ -83,7 +83,6 @@ import unbbayes.controller.JavaHelperController;
 import unbbayes.controller.MainController;
 import unbbayes.gui.util.SplitToggleButton;
 import unbbayes.io.BaseIO;
-import unbbayes.metaphor.afin.AFINMetaphorFrame;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.simulation.likelihoodweighting.sampling.LikelihoodWeightingSampling;
 import unbbayes.simulation.montecarlo.controller.MCMainController;
@@ -165,7 +164,7 @@ public class UnBBayesFrame extends JFrame {
 	private ActionListener alHomeSystem;
 	private ActionListener alLearn;
 	private ActionListener alIL;
-	private ActionListener alMetaphor;
+//	private ActionListener alMetaphor;
 //	private ActionListener alMedicalMetaphor;
 //	private ActionListener alUnBMiner;
 	private ActionListener alCascade;
@@ -503,13 +502,13 @@ public class UnBBayesFrame extends JFrame {
 			}
 		};
 		
-		alMetaphor = new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				AFINMetaphorFrame frame = new AFINMetaphorFrame(); 
-				frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-				frame.setVisible(true);
-			}
-		};
+//		alMetaphor = new ActionListener() {
+//			public void actionPerformed(ActionEvent ae) {
+//				AFINMetaphorFrame frame = new AFINMetaphorFrame(); 
+//				frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+//				frame.setVisible(true);
+//			}
+//		};
 		
 //		alMedicalMetaphor = new ActionListener() {
 //			public void actionPerformed(ActionEvent ae) {
@@ -878,7 +877,7 @@ public class UnBBayesFrame extends JFrame {
 		windowsItem.addActionListener(alHomeSystem);
 		learningItem.addActionListener(alLearn);
 		iLearningItem.addActionListener(alIL);
-		metaphorItem.addActionListener(alMetaphor);
+//		metaphorItem.addActionListener(alMetaphor);
 //		medicalMetaphorItem.addActionListener(alMedicalMetaphor);
 //		unbMinerItem.addActionListener(alUnBMiner);
 		cascadeItem.addActionListener(alCascade);
