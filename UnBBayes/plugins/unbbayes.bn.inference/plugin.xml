@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <plugin id="unbbayes.bn.inference" version="1.0.0">
+<!-- This is a sample configuration for Inference Algorithm extension -->
     <requires>
         <import plugin-id="unbbayes.util.extension.core"/>
     </requires>

@@ -55,6 +55,8 @@
     </extension-point>
     <!-- 
     	 ResourceBundle extension point. 
+    	 Hot plug is partially implemented (resource bundles already loaded are not replaced, but we
+    	 can load new resource bundles by pressing the "Reload Plugin" option).
     	 This extension point is basically a set of different ResourceBundle, in order to implement
     	 localization (add new languages) using plugins.
     	 The classes must extend java.util.ListResourceBundle, respect package position,
