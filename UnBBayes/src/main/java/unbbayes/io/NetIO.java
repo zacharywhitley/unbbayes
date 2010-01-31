@@ -86,6 +86,8 @@ public class NetIO implements BaseIO {
 	/** Single array containing "net" */
 	public static final String[] SUPPORTED_EXTENSIONS = {"net"};
 	
+	private String name = "NET";
+	
 	/**
 	 *  Loads a NET format file using default node/network builder.
 	 *  In other words, this method returns exactly instances of ProbabilisticNetwork filled
@@ -1148,6 +1150,20 @@ public class NetIO implements BaseIO {
 			return false;
 		}
 		return this.supports(fileExtension, isLoadOnly);
+	}
+
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
 	}
 	
 }

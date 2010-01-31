@@ -823,8 +823,8 @@ public class UnBBayesFrame extends JFrame {
 		JMenuItem lwItem = new JMenuItem(resource.getString("likelihoodWeightingItem"));
 		JMenuItem gibbsItem = new JMenuItem(resource.getString("gibbsItem"));
 		JMenuItem iLearningItem = new JMenuItem(resource.getString("ILearningItem"));
-		JMenuItem metaphorItem = new JMenuItem(resource.getString("MetaphorItem"));
-		JMenuItem medicalMetaphorItem = new JMenuItem(resource.getString("MedicalMetaphorItem"));
+//		JMenuItem metaphorItem = new JMenuItem(resource.getString("MetaphorItem"));
+//		JMenuItem medicalMetaphorItem = new JMenuItem(resource.getString("MedicalMetaphorItem"));
 //		JMenuItem unbMinerItem = new JMenuItem(resource.getString("UnBMinerItem"));
 		
 		learningItem.setMnemonic(resource.getString("learningItemMn").charAt(0));
@@ -941,7 +941,7 @@ public class UnBBayesFrame extends JFrame {
 		toolsMenu.add(banItem);
 		toolsMenu.add(iLearningItem);
 //		toolsMenu.add(metaphorItem);
-		toolsMenu.add(medicalMetaphorItem);
+//		toolsMenu.add(medicalMetaphorItem);
 //		toolsMenu.add(unbMinerItem);
 		
 		samplingMenu.add(logicItem);

@@ -954,11 +954,7 @@ public class OOBNWindow extends UnBBayesModule  {
 	@Override
 	public UnBBayesModule openFile(File file) throws IOException {
 		Graph g = null;
-		try {
-			g = this.getIO().load(file);
-		} catch (LoadException e) {
-			new UBIOException(e);
-		}
+		g = this.getIO().load(file);
 		
 		OOBNController controller = null;
 		try {

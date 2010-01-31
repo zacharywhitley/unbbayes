@@ -8,5 +8,6 @@
     </requires>
     <extension plugin-id="unbbayes.util.extension.core" point-id="PNIO" id="NetIO">
         <parameter id="class" value="unbbayes.io.NetIO" />
+        <parameter id="name" value="NET" />
     </extension>
 </plugin>

@@ -94,5 +94,21 @@ public interface BaseIO {
 	 */
 	public String getSupportedFilesDescription(boolean isLoadOnly);
 	
+	/**
+	 * Sets the name of this I/O component.
+	 * This name may be displayed to a user when there is a need to choose a
+	 * specific I/O class to use.
+	 * @param name
+	 */
+	public void setName(String name);
+	
+	/**
+	 * Gets the name of this I/O component.
+	 * This name may be displayed to a user when there is a need to choose a
+	 * specific I/O class to use.
+	 * @return a name
+	 */
+	public String getName();
+	
    
 }

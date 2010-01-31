@@ -8,5 +8,6 @@
     </requires>
     <extension plugin-id="unbbayes.util.extension.core" point-id="PNIO" id="XMLBIFIO">
         <parameter id="class" value="unbbayes.io.XMLBIFIO" />
+        <parameter id="name" value="XMLBIF Base" />
     </extension>
 </plugin>

@@ -27,37 +27,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
-import javax.swing.JInternalFrame;
 import javax.xml.bind.JAXBException;
 
 import unbbayes.controller.exception.InvalidFileNameException;
 import unbbayes.controller.exception.NoObjectToBeSavedException;
-import unbbayes.controller.oobn.OOBNController;
 import unbbayes.gui.Configurations;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.SplashScreen;
 import unbbayes.gui.UnBBayesFrame;
-import unbbayes.io.BaseIO;
-import unbbayes.io.DneIO;
-import unbbayes.io.NetIO;
-import unbbayes.io.XMLBIFIO;
 import unbbayes.io.configurations.ConfigurationsIO;
 import unbbayes.io.configurations.ConfigurationsIOInputStream;
-import unbbayes.io.exception.LoadException;
-import unbbayes.io.mebn.MebnIO;
-import unbbayes.io.mebn.PrOwlIO;
-import unbbayes.io.mebn.UbfIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
-import unbbayes.io.msbn.impl.DefaultMSBNIO;
-import unbbayes.io.oobn.IObjectOrientedBayesianNetworkIO;
-import unbbayes.io.oobn.impl.DefaultOOBNIO;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
-import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.msbn.SingleAgentMSBN;
-import unbbayes.prs.oobn.IObjectOrientedBayesianNetwork;
-import unbbayes.prs.oobn.impl.ObjectOrientedBayesianNetwork;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.UnBBayesModule;
 import unbbayes.util.extension.builder.MEBNWindowBuilder;
@@ -65,7 +48,6 @@ import unbbayes.util.extension.builder.MSBNWindowBuilder;
 import unbbayes.util.extension.builder.NamedWindowBuilder;
 import unbbayes.util.extension.builder.NetworkWindowBuilder;
 import unbbayes.util.extension.builder.OOBNWindowBuilder;
-import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
 import edu.isi.powerloom.PLI;
 import edu.stanford.smi.protegex.owl.ProtegeOWL;
 
@@ -338,13 +320,8 @@ public class MainController {
 	 */
 	public UnBBayesModule loadNet(final File file, UnBBayesModule moduleToUse) throws IOException {
 		
-//		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));   
 		UnBBayesModule mod = null;
-		try {
-			mod = moduleToUse.openFile(file);
-		} finally {
-//			screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-		}
+		mod = moduleToUse.openFile(file);
 		
 		return mod;
 		

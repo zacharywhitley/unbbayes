@@ -23,6 +23,8 @@ public class DefaultMSBNIO implements IMSBNIO {
 
 	private NetIO delegator;
 	
+	private String name = "Folder for MSBN project";
+	
 	/** Load resource file from this package */
 	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.io.resources.IoResources.class.getName());
@@ -151,6 +153,20 @@ public class DefaultMSBNIO implements IMSBNIO {
 			return false;
 		}
 		return this.supports(fileExtension, isLoadOnly);
+	}
+
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
 	}
 
 

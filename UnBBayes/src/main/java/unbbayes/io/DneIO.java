@@ -82,6 +82,8 @@ public class DneIO implements BaseIO {
 	/** Array with a single element "dne" */
 	public static final String[] SUPPORTED_EXTENSIONS = {"dne"};
 	
+	private String name = "DNE";
+	
 	/**
 	 *  Loads a NET format file using default node/network builder.
 	 *  In other words, this method returns exactly instances of ProbabilisticNetwork filled
@@ -874,6 +876,20 @@ public class DneIO implements BaseIO {
 			return false;
 		}
 		return this.supports(fileExtension, isLoadOnly);
+	}
+
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
 	}
 	
 }

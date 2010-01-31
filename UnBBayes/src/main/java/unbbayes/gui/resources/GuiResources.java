@@ -552,5 +552,9 @@ public class GuiResources extends ListResourceBundle {
 		{"CPFTableTitle", "Table"},
 		{"CPFTableToolTip", "Edit the conditional probability using a table"},
 		
+
+		{"IOConflictTitle", "I/O extension conflict"},
+		{"IOConflictMessage", "More than one I/O component can handle this file extension. Please, choose one."},
+		
 	};
 }

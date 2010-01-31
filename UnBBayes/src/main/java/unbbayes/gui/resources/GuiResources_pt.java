@@ -554,5 +554,8 @@ public class GuiResources_pt extends ListResourceBundle {
 
 		{"CPFTableTitle", "Tabela"},
 		{"CPFTableToolTip", "Editar probabilidade condicional usando tabela"},
+		
+		{"IOConflictTitle", "Conflito de extensão de E/S"},
+		{"IOConflictMessage", "Mais de um componente de E/S é compatível esta extensão de arquivo. Favor, selecionar o desejado."},
 	};
 }

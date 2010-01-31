@@ -8,5 +8,6 @@
     </requires>
     <extension plugin-id="unbbayes.util.extension.core" point-id="PNIO" id="DneIO">
         <parameter id="class" value="unbbayes.io.DneIO" />
+        <parameter id="name" value="DNE" />
     </extension>
 </plugin>

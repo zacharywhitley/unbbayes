@@ -68,6 +68,8 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 	 */
 	private Map<String, IOOBNClass> classNameToClassMap = null;
 	
+	private String name = "3rd generation NET";
+	
 	
 	/** Load resource file from this package */
 	private static ResourceBundle resources = unbbayes.util.ResourceController.newInstance().getBundle(
@@ -888,6 +890,20 @@ public class DefaultOOBNIO extends NetIO implements IObjectOrientedBayesianNetwo
 	 */
 	public String getSupportedFilesDescription(boolean isLoadOnly) {
 		return this.resources.getString("netFileFilterSaveOOBN");
+	}
+
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
 	}
 	
 	

@@ -62,7 +62,7 @@ public class PrOwlIO extends PROWLModelUser implements MebnIO {
 	// list of instance names which are native to pr-owl definition
 	//private Collection<String> untouchableInstanceNames = null;
 	
-	
+	private String name = "Probabilistic Web Ontology Language";
 	
 	
 	public PrOwlIO() {
@@ -348,6 +348,26 @@ public class PrOwlIO extends PROWLModelUser implements MebnIO {
 			return false;
 		}
 		return this.supports(fileExtension, isLoadOnly);
+	}
+
+
+
+
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+
+
+
+
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
 	}
 	
 	

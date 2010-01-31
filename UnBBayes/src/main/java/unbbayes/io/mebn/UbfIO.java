@@ -119,6 +119,8 @@ public class UbfIO implements MebnIO {
 	/** Supported file extensions for loading and savin time (no dots) */
 	public static final String[] SUPPORTED_EXTENSIONS = {FILE_EXTENSION};
 
+	private String name = "UnBBayes Format for MEBN";
+	
 	private UbfIO() {
 		super();
 		this.prowlIO = new PrOwlIO();
@@ -1025,6 +1027,18 @@ public class UbfIO implements MebnIO {
 			return false;
 		}
 		return this.supports(fileExtension, isLoadOnly);
+	}
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
 	}
 	
 

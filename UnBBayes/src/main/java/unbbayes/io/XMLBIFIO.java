@@ -55,6 +55,8 @@ public class XMLBIFIO implements BaseIO{
 	/** Supported file extension with no dots. The value is {"xml"}  */
 	public static final String[] SUPPORTED_EXTENSIONS = {"xml"};
 	
+	private String name = "Core XMLBIF";
+	
 	/**
 	 * Loads a new Probabilistic network from the input file.
 	 * 
@@ -222,6 +224,20 @@ public class XMLBIFIO implements BaseIO{
 			return false;
 		}
 		return this.supports(fileExtension, isLoadOnly);
+	}
+
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
 	}
 	
 //	----------------------------------------------------------------------------------------

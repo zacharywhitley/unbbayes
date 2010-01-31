@@ -49,9 +49,15 @@
     	 adds a pair of IO and Module (IO routines and a whole module in order to treat those files),
     	 but this (PNIO) extension point adds a new IO routine into the basic PN (Probabilistic Network)
     	 module, which is already incorporated into core.
+    	 	Parameters:
+    	 		class: this is the class to implement unbbayes.io.BaseIO. It MUST have a default constructor
+    	 			   with no parameters.
+    	 	    name: this is basically what an user will see when a conflict occurs 
+    	 	          (when more than 1 class can handle a given file).
     -->
     <extension-point id="PNIO">
         <parameter-def id="class"/>
+        <parameter-def id="name"/>
     </extension-point>
     <!-- 
     	 ResourceBundle extension point. 

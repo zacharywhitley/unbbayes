@@ -6,6 +6,7 @@ package unbbayes.io;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import unbbayes.io.exception.LoadException;
@@ -22,8 +23,11 @@ public class FileExtensionIODelegator implements BaseIO {
 
 	private List<BaseIO> delegators;
 	
+	private String name = "Delegator by file extension";
+	
 	/**
-	 * Default constructor is not public. Use {@link #newInstance()} instead
+	 * Default constructor is not public. Use {@link #newInstance()} instead.
+	 * @deprecated
 	 */
 	protected FileExtensionIODelegator() {
 		// TODO Auto-generated constructor stub
@@ -37,6 +41,28 @@ public class FileExtensionIODelegator implements BaseIO {
 		FileExtensionIODelegator ret = PluginAwareFileExtensionIODelegator.newInstance();
 		return ret;
 	}
+	
+	/**
+	 * Since this class is a delegator to another IO class, there can be more
+	 * than one compatible IO for a given file. This method returns all compatible
+	 * IO classes for a given file.
+	 * @param file
+	 * @param use true if it must return the IO classes for loading a file. Use "false" if it
+	 * is for saving a file.
+	 * @return
+	 */
+	public List<BaseIO> getCompatibleIOs(File file, boolean isLoadOnly) {
+		// find all compatible IO classes
+		List<BaseIO> compatibleIOs = new ArrayList<BaseIO>();
+		
+		for (BaseIO io : this.getDelegators()) {
+			if (io.supports(file, isLoadOnly)) {
+				compatibleIOs.add(io);
+			}
+		}
+		
+		return compatibleIOs;
+	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.io.BaseIO#load(java.io.File)
@@ -46,10 +72,15 @@ public class FileExtensionIODelegator implements BaseIO {
 			throw new LoadException();
 		}
 		
-		for (BaseIO io : this.getDelegators()) {
-			if (io.supports(input, true)) {
-				return io.load(input);
-			}
+		// find all compatible IO classes
+		List<BaseIO> compatibleIOs = this.getCompatibleIOs(input, true);
+		
+		if (compatibleIOs.size() == 1) {
+			// there is only one compatible IO. Use it.
+			return compatibleIOs.iterator().next().load(input);
+		} else if (compatibleIOs.size() > 1) {
+			// there were more than 1 compatible IO. This is unexpected.
+			throw new MoreThanOneCompatibleIOException(compatibleIOs);
 		}
 		
 		throw new LoadException();
@@ -63,11 +94,16 @@ public class FileExtensionIODelegator implements BaseIO {
 			throw new IOException();
 		}
 		
-		for (BaseIO io : this.getDelegators()) {
-			if (io.supports(output, false)) {
-				io.save(output, net);
-				return;
-			}
+		// find all compatible IO classes
+		List<BaseIO> compatibleIOs = this.getCompatibleIOs(output, false);
+		
+		if (compatibleIOs.size() == 1) {
+			// there is only one compatible IO. Use it.
+			compatibleIOs.iterator().next().save(output, net);
+			return;
+		} else if (compatibleIOs.size() > 1) {
+			// there were more than 1 compatible IO. This is unexpected.
+			throw new MoreThanOneCompatibleIOException(compatibleIOs);
 		}
 		
 		// if we reach this code, no storing was actually done.
@@ -145,6 +181,78 @@ public class FileExtensionIODelegator implements BaseIO {
 			return ret;
 		}
 		return ret.substring(0, ret.lastIndexOf(", "));
+	}
+	
+	/**
+	 * This is an exception thrown when more than one IO class
+	 * can be used to delegate.
+	 * Callers catching this exception may use {@link #getIOs()} to
+	 * get the available IOs and ask the user to select the desired one.
+	 * @author Shou Matsumoto
+	 *
+	 */
+	public class MoreThanOneCompatibleIOException extends IOException {
+		
+		private static final long serialVersionUID = 2794093384529074900L;
+		private List<BaseIO> ios;
+		
+		/**
+		 * Basic constructor initializing fields
+		 */
+		public MoreThanOneCompatibleIOException(List<BaseIO> ios) {
+			this("More than one plausible I/O was found.", ios);
+		}
+		
+		/**
+		 * Constructor initializing fields and basic message.
+		 * @param message
+		 * @param ios
+		 */
+		public MoreThanOneCompatibleIOException(String message, List<BaseIO> ios) {
+			this(message, null, ios);
+		}
+		
+		/**
+		 * Constructor initializing fields, basic message and its cause (Throwable)
+		 * @param message
+		 * @param t
+		 * @param ios
+		 */
+		public MoreThanOneCompatibleIOException(String message, Throwable t, List<BaseIO> ios) {
+			super(message);
+			this.ios = ios;
+			if (t != null) {
+				this.setStackTrace(t.getStackTrace());
+				this.initCause(t);
+			}
+		}
+		
+		/**
+		 * The available I/O classes plausible for the given extension.
+		 * A code catching this exception may use this to build a list
+		 * for a user to choose the desired I/O class to use.
+		 * @return the ios : a non-null collection.
+		 */
+		public List<BaseIO> getIOs() {
+			if (this.ios == null) {
+				this.ios = new ArrayList<BaseIO>();
+			}
+			return ios;
+		}
+	}
+
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
 	}
 
 }

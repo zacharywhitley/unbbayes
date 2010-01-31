@@ -368,10 +368,7 @@ public class GaussianMixture implements IInferenceAlgorithm {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (LoadException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} 
 		
 		return clone;
 	}

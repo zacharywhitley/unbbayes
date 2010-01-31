@@ -38,6 +38,9 @@ public class PluginAwareFileExtensionIODelegator extends
 	/** The default name of the "class" parameter of PNIO extension point */
 	private String extensionPointClassParam = "class";
 	
+	/** The default name of the "name" parameter of PNIO extension point */
+	private String extensionPointNameParam = "name";
+	
 	private UnBBayesPluginContextHolder unbbayesPluginContextHolder = UnBBayesPluginContextHolder.newInstance();
 	
 	/**
@@ -131,6 +134,7 @@ public class PluginAwareFileExtensionIODelegator extends
 			
 			// extracting parameters
 			Parameter classParam = ext.getParameter(this.getExtensionPointClassParam());
+			Parameter nameParam = ext.getParameter(this.getExtensionPointNameParam());
 			
 			// extracting plugin class 
 			ClassLoader classLoader = this.getUnbbayesPluginContextHolder().getPluginManager().getPluginClassLoader(descr);
@@ -144,7 +148,9 @@ public class PluginAwareFileExtensionIODelegator extends
 			}
 			
 			try {
-				ret.add((BaseIO)pluginCls.newInstance());
+				BaseIO pluginIOObject = (BaseIO)pluginCls.newInstance();
+				pluginIOObject.setName(nameParam.valueAsString());
+				ret.add(pluginIOObject);
 			} catch (Exception e) {
 				e.printStackTrace();
 				continue;
@@ -204,6 +210,20 @@ public class PluginAwareFileExtensionIODelegator extends
 	public void setUnbbayesPluginContextHolder(
 			UnBBayesPluginContextHolder unbbayesPluginContextHolder) {
 		this.unbbayesPluginContextHolder = unbbayesPluginContextHolder;
+	}
+
+	/**
+	 * @return the extensionPointNameParam
+	 */
+	public String getExtensionPointNameParam() {
+		return extensionPointNameParam;
+	}
+
+	/**
+	 * @param extensionPointNameParam the extensionPointNameParam to set
+	 */
+	public void setExtensionPointNameParam(String extensionPointNameParam) {
+		this.extensionPointNameParam = extensionPointNameParam;
 	}
 
 	
