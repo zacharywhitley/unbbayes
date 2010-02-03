@@ -449,7 +449,7 @@ public class PNEditionPane extends JPanel {
 //      int location = table.getPreferredSize().height + centerPanel.getDividerSize() + 2 + btnCPS.getPreferredSize().height;
         int location = 60;
     	if (distributionPane != null) {
-    		location = distributionPane.getPreferredSize().height + centerPanel.getDividerSize() + 30;
+    		location += distributionPane.getPreferredSize().height + centerPanel.getDividerSize();
     	}
         if (distributionPane instanceof JTable) {
         	if (((JTable)distributionPane).getTableHeader() != null) {
