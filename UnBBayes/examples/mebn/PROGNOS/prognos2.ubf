@@ -37,80 +37,74 @@ Color=-5178237
 % Ordinary Variables
 
 
-Node=ship2
-Type=OrdinalVar
-Position=340.0,65.0
-Size=193,60
-Color=-5178237
-
 Node=ship1
 Type=OrdinalVar
 Position=152.0,66.0
 Size=193,60
 Color=-5178237
 
+Node=ship2
+Type=OrdinalVar
+Position=340.0,65.0
+Size=193,60
+Color=-5178237
+
 % MFrag
-MFrag=InContact_MFrag
+MFrag=UnusualRoute_MFrag
 NextOrdinaryVar=3
 
 % Resident nodes
 
 
-Node=HadPhoneContact
+Node=UnusualRoute
 Type=DomainResidentNode
-Position=35.0,337.0
-Size=264,60
+Position=187.0,258.0
+Size=168,60
 Color=-66914
 
-Node=HadEmailContact
+Node=UnusualRouteReport
 Type=DomainResidentNode
-Position=313.0,339.0
-Size=260,60
-Color=-66914
-
-Node=InContact
-Type=DomainResidentNode
-Position=280.0,234.0
-Size=215,60
-Color=-66914
-
-Node=HadMailContact
-Type=DomainResidentNode
-Position=591.0,340.0
-Size=252,60
+Position=167.0,354.0
+Size=207,60
 Color=-66914
 
 % Input nodes
 
 
-Node=IX6
+Node=IX12
 Type=GenerativeInputNode
-Position=276.0,136.0
-Size=222,60
+Position=270.0,153.0
+Size=190,60
+Color=-2302756
+
+Node=IX11
+Type=GenerativeInputNode
+Position=96.0,156.0
+Size=170,60
 Color=-2302756
 
 % Context nodes
 
 
-Node=CX3
+Node=CX9
 Type=ContextNode
-Position=279.0,61.0
-Size=210,60
+Position=150.0,0.0
+Size=178,60
 Color=-5178237
 
 % Ordinary Variables
 
 
-Node=person1
+Node=ship2
 Type=OrdinalVar
-Position=176.0,5.0
-Size=200,60
+Position=293.0,66.0
+Size=169,60
 Color=-5178237
 
-Node=person2
+Node=ship1
 Type=OrdinalVar
-Position=391.0,5.0
-Size=200,60
+Position=100.0,67.0
+Size=169,60
 Color=-5178237
 
 % MFrag
@@ -129,16 +123,16 @@ Color=-66914
 % Input nodes
 
 
-Node=IX3
-Type=GenerativeInputNode
-Position=400.0,156.0
-Size=260,60
-Color=-2302756
-
 Node=IX5
 Type=GenerativeInputNode
 Position=98.0,158.0
 Size=242,60
+Color=-2302756
+
+Node=IX3
+Type=GenerativeInputNode
+Position=400.0,156.0
+Size=260,60
 Color=-2302756
 
 % Context nodes
@@ -153,16 +147,68 @@ Color=-5178237
 % Ordinary Variables
 
 
+Node=ship
+Type=OrdinalVar
+Position=170.0,67.0
+Size=208,60
+Color=-5178237
+
 Node=person
 Type=OrdinalVar
 Position=166.0,9.0
 Size=212,60
 Color=-5178237
 
-Node=ship
+% MFrag
+MFrag=Meeting_MFrag
+NextOrdinaryVar=3
+
+% Resident nodes
+
+
+Node=AreMeeting
+Type=DomainResidentNode
+Position=144.0,269.0
+Size=194,60
+Color=-66914
+
+Node=AreMeetingReport
+Type=DomainResidentNode
+Position=125.0,349.0
+Size=233,60
+Color=-66914
+
+% Input nodes
+
+
+Node=IX10
+Type=GenerativeInputNode
+Position=156.0,169.0
+Size=170,60
+Color=-2302756
+
+% Context nodes
+
+
+Node=CX10
+Type=ContextNode
+Position=152.0,90.0
+Size=178,60
+Color=-5178237
+
+% Ordinary Variables
+
+
+Node=ship1
 Type=OrdinalVar
-Position=170.0,67.0
-Size=208,60
+Position=67.0,18.0
+Size=169,60
+Color=-5178237
+
+Node=ship2
+Type=OrdinalVar
+Position=255.0,18.0
+Size=169,60
 Color=-5178237
 
 % MFrag
@@ -242,28 +288,22 @@ NextOrdinaryVar=3
 % Resident nodes
 
 
-Node=ResponsiveVMS
-Type=DomainResidentNode
-Position=463.0,312.0
-Size=179,60
-Color=-66914
-
-Node=ResponsiveAIS
-Type=DomainResidentNode
-Position=289.0,313.0
-Size=172,60
-Color=-66914
-
-Node=ResponsiveRadar
-Type=DomainResidentNode
-Position=99.0,312.0
-Size=190,60
-Color=-66914
-
 Node=EletronicsNotWorking
 Type=DomainResidentNode
 Position=166.0,168.0
 Size=211,60
+Color=-66914
+
+Node=ResponsiveRadar
+Type=DomainResidentNode
+Position=177.0,308.0
+Size=190,60
+Color=-66914
+
+Node=ResponsiveAIS
+Type=DomainResidentNode
+Position=424.0,312.0
+Size=172,60
 Color=-66914
 
 % Input nodes
@@ -282,6 +322,70 @@ Node=ship1
 Type=OrdinalVar
 Position=293.0,67.0
 Size=193,60
+Color=-5178237
+
+% MFrag
+MFrag=InContact_MFrag
+NextOrdinaryVar=3
+
+% Resident nodes
+
+
+Node=HadPhoneContact
+Type=DomainResidentNode
+Position=35.0,337.0
+Size=264,60
+Color=-66914
+
+Node=HadMailContact
+Type=DomainResidentNode
+Position=591.0,340.0
+Size=252,60
+Color=-66914
+
+Node=HadEmailContact
+Type=DomainResidentNode
+Position=313.0,339.0
+Size=260,60
+Color=-66914
+
+Node=InContact
+Type=DomainResidentNode
+Position=280.0,234.0
+Size=215,60
+Color=-66914
+
+% Input nodes
+
+
+Node=IX6
+Type=GenerativeInputNode
+Position=276.0,136.0
+Size=222,60
+Color=-2302756
+
+% Context nodes
+
+
+Node=CX3
+Type=ContextNode
+Position=279.0,61.0
+Size=210,60
+Color=-5178237
+
+% Ordinary Variables
+
+
+Node=person2
+Type=OrdinalVar
+Position=391.0,5.0
+Size=200,60
+Color=-5178237
+
+Node=person1
+Type=OrdinalVar
+Position=176.0,5.0
+Size=200,60
 Color=-5178237
 
 % MFrag
@@ -322,16 +426,16 @@ Color=-66914
 % Ordinary Variables
 
 
-Node=person
-Type=OrdinalVar
-Position=215.0,10.0
-Size=204,60
-Color=-5178237
-
 Node=ship
 Type=OrdinalVar
 Position=202.0,65.0
 Size=226,60
+Color=-5178237
+
+Node=person
+Type=OrdinalVar
+Position=215.0,10.0
+Size=204,60
 Color=-5178237
 
 % MFrag
@@ -395,116 +499,6 @@ Color=-5178237
 Node=ship1
 Type=OrdinalVar
 Position=84.0,41.0
-Size=169,60
-Color=-5178237
-
-% MFrag
-MFrag=UnusualRoute_MFrag
-NextOrdinaryVar=3
-
-% Resident nodes
-
-
-Node=UnusualRoute
-Type=DomainResidentNode
-Position=187.0,258.0
-Size=168,60
-Color=-66914
-
-Node=UnusualRouteReport
-Type=DomainResidentNode
-Position=167.0,354.0
-Size=207,60
-Color=-66914
-
-% Input nodes
-
-
-Node=IX11
-Type=GenerativeInputNode
-Position=96.0,156.0
-Size=170,60
-Color=-2302756
-
-Node=IX12
-Type=GenerativeInputNode
-Position=270.0,153.0
-Size=190,60
-Color=-2302756
-
-% Context nodes
-
-
-Node=CX9
-Type=ContextNode
-Position=150.0,0.0
-Size=178,60
-Color=-5178237
-
-% Ordinary Variables
-
-
-Node=ship1
-Type=OrdinalVar
-Position=100.0,67.0
-Size=169,60
-Color=-5178237
-
-Node=ship2
-Type=OrdinalVar
-Position=293.0,66.0
-Size=169,60
-Color=-5178237
-
-% MFrag
-MFrag=Meeting_MFrag
-NextOrdinaryVar=3
-
-% Resident nodes
-
-
-Node=areMeeting
-Type=DomainResidentNode
-Position=144.0,269.0
-Size=194,60
-Color=-66914
-
-Node=areMeetingReport
-Type=DomainResidentNode
-Position=125.0,349.0
-Size=233,60
-Color=-66914
-
-% Input nodes
-
-
-Node=IX10
-Type=GenerativeInputNode
-Position=156.0,169.0
-Size=170,60
-Color=-2302756
-
-% Context nodes
-
-
-Node=CX10
-Type=ContextNode
-Position=152.0,90.0
-Size=178,60
-Color=-5178237
-
-% Ordinary Variables
-
-
-Node=ship1
-Type=OrdinalVar
-Position=67.0,18.0
-Size=169,60
-Color=-5178237
-
-Node=ship2
-Type=OrdinalVar
-Position=255.0,18.0
 Size=169,60
 Color=-5178237
 
