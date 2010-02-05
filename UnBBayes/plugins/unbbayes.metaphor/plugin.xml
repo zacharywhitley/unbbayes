@@ -17,5 +17,6 @@
         <parameter id="builder" value="unbbayes.metaphor.extension.MetaphorModule" />
 		<parameter id="description" value="Medical Metaphor Project" />
 		<parameter id="icon" value="open.png" />
+		<parameter id="category" value="tool" />
     </extension>
 </plugin>

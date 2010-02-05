@@ -41,6 +41,7 @@ import unbbayes.simulation.montecarlo.sampling.MatrixMonteCarloSampling;
  *
  */
 // TODO ROMMEL - CREATE ONE SAMPLING THAT USES MAPMCSAMPLING
+// TODO since evaluation classes are using sampling classes, I could not move this sampling class into a plugin folder.
 public class LikelihoodWeightingSampling extends MatrixMonteCarloSampling implements ILikelihoodWeightingSampling {
 	
 	protected List<Node> evidenceNodeList;

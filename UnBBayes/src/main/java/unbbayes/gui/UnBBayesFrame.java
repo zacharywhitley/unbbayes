@@ -36,18 +36,22 @@ import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.help.HelpSet;
 import javax.help.JHelp;
+import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
@@ -56,12 +60,14 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.JPopupMenu.Separator;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.OceanTheme;
 
@@ -82,10 +88,6 @@ import unbbayes.controller.MainController;
 import unbbayes.gui.util.SplitToggleButton;
 import unbbayes.io.BaseIO;
 import unbbayes.prs.exception.InvalidParentException;
-import unbbayes.simulation.likelihoodweighting.sampling.LikelihoodWeightingSampling;
-import unbbayes.simulation.montecarlo.controller.MCMainController;
-import unbbayes.simulation.montecarlo.sampling.MatrixMonteCarloSampling;
-import unbbayes.simulation.sampling.GibbsSampling;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.PluginCore;
 import unbbayes.util.extension.UnBBayesModule;
@@ -103,7 +105,8 @@ import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
  * @author Rommel Novaes Carvalho (rommel.carvalho@gmail.com)
  * @author Michael S. Onishi (mso@gmail.com)
  * @author Laecio Lima dos Santos (laecio@gmail.com)
- * @created 27 de Junho de 2001
+ * @author Shou Matsumoto (cardialfly@yahoo.com)
+ * @created 06/27/2001
  * 
  * @see JFrame
  */
@@ -169,9 +172,9 @@ public class UnBBayesFrame extends JFrame {
 	private ActionListener alTile;
 	private ActionListener alHelp;
 	private ActionListener alAbout;
-	private ActionListener alLogic;
-	private ActionListener alLW;
-	private ActionListener alGibbs;
+//	private ActionListener alLogic;
+//	private ActionListener alLW;
+//	private ActionListener alGibbs;
 	
 
 	private JFileChooser chooser;
@@ -199,8 +202,22 @@ public class UnBBayesFrame extends JFrame {
 	/** Map: ID -> {@link UnBBayesModule} or {@link UnBBayesModuleBuilder} */
 	private Map<String, Class> pluginMap = null;
 	
+	// this is the menu item for reloading a set of plugins at plugin folder
 	private JMenuItem reloadPluginsMenuItem;
 	
+	// these are menus also accessed by plugins
+	private JMenu newMenu;
+	private JMenu toolsMenu;
+	private JMenu samplingMenu;
+	
+	// It maps a module category into a menu
+	private Map<String, List<JComponent>> moduleCategoryToComponentsMap = new HashMap<String, List<JComponent>>();
+
+	private Separator pluginMenuSeparator;
+	
+	private Map<AbstractButton, JComponent> mapOfModuleButtonsNotAtSplitButton = new HashMap<AbstractButton, JComponent>();
+
+	private JToolBar jtbNew;
 
 	/**
 	 * Build the main program frame, adjusting the layouts and building the 
@@ -246,8 +263,53 @@ public class UnBBayesFrame extends JFrame {
 
 		singleton = this;
 		
+		// fills up the moduleCategoryToJMenuMap
+		this.initializeModuleCategoryToJMenuMap();
+		
 		// plugin support
 		this.loadPlugins();
+		
+		// hide menu item if empty
+		updatePluginMenuVisibility();
+	}
+	
+	/**
+	 * Hide plugin menu or tool bar if it is empty
+	 */
+	protected void updatePluginMenuVisibility() {
+		
+		// if we have no plugins, we should not show the tool bar or the menu
+		if ( ( this.getPluginSplitButton().getMenu().getComponents() == null )
+		  || ( this.getPluginSplitButton().getMenu().getComponents().length == 0 ) ) {
+			this.getPluginToolBar().setVisible(false);
+		} else {
+			this.getPluginToolBar().setVisible(true);
+		}
+		
+		if ( ( this.getPluginMenu().getPopupMenu().getComponents() == null )
+		  || ( this.getPluginMenu().getPopupMenu().getComponents().length <= 2 ) ) { // at least "reload and split"
+			this.getPluginMenuSeparator().setVisible(false);
+		} else {
+			this.getPluginMenuSeparator().setVisible(true);
+		}
+		
+		// hide tool if empty
+		if ( ( this.getToolsMenu().getPopupMenu().getComponents() == null ) 
+		  || ( this.getToolsMenu().getPopupMenu().getComponents().length == 0 ) ) {
+			this.getToolsMenu().setVisible(false);
+		} else {
+			this.getToolsMenu().setVisible(true);
+		}
+		
+		// hide sampling if empty
+		if ( ( this.getSamplingMenu().getPopupMenu().getComponents() == null ) 
+		  || ( this.getSamplingMenu().getPopupMenu().getComponents().length == 0 ) ) {
+			this.getSamplingMenu().setVisible(false);
+		} else {
+			this.getSamplingMenu().setVisible(true);
+		}
+		
+		this.repaint();
 	}
 
 	private void setLnF(String lnfName) {
@@ -524,25 +586,25 @@ public class UnBBayesFrame extends JFrame {
 //			}
 //		};
 
-		alLogic = new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				// ControladorPrincipal cp = new ControladorPrincipal();
-				new MCMainController(new MatrixMonteCarloSampling());
-			}
-		};
+//		alLogic = new ActionListener() {
+//			public void actionPerformed(ActionEvent ae) {
+//				// ControladorPrincipal cp = new ControladorPrincipal();
+//				new MCMainController(new MatrixMonteCarloSampling());
+//			}
+//		};
 		
-		alLW = new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				// ControladorPrincipal cp = new ControladorPrincipal();
-				new MCMainController(new LikelihoodWeightingSampling());
-			}
-		};
-
-		alGibbs = new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				new MCMainController(new GibbsSampling());
-			}
-		};
+//		alLW = new ActionListener() {
+//			public void actionPerformed(ActionEvent ae) {
+//				// ControladorPrincipal cp = new ControladorPrincipal();
+//				new MCMainController(new LikelihoodWeightingSampling());
+//			}
+//		};
+//
+//		alGibbs = new ActionListener() {
+//			public void actionPerformed(ActionEvent ae) {
+//				new MCMainController(new GibbsSampling());
+//			}
+//		};
 
 		// create an ActionListener for showing the File Tool Bar
 		alTbFile = new ActionListener() {
@@ -720,9 +782,9 @@ public class UnBBayesFrame extends JFrame {
 		JMenu lafMenu = new JMenu(resource.getString("lafMenu"));
 		JMenu viewMenu = new JMenu(resource.getString("viewMenu"));
 		JMenu tbMenu = new JMenu(resource.getString("tbMenu"));
-		JMenu newMenu = new JMenu(resource.getString("newMenu"));
-		JMenu toolsMenu = new JMenu(resource.getString("toolsMenu"));
-		JMenu samplingMenu = new JMenu(resource.getString("samplingMenu"));
+		newMenu = new JMenu(resource.getString("newMenu"));
+		toolsMenu = new JMenu(resource.getString("toolsMenu"));
+		samplingMenu = new JMenu(resource.getString("samplingMenu"));
 		JMenu windowMenu = new JMenu(resource.getString("windowMenu"));
 		JMenu helpMenu = new JMenu(resource.getString("helpMenu"));
 		
@@ -762,6 +824,8 @@ public class UnBBayesFrame extends JFrame {
 				iconController.getSaveIcon());
 		JMenuItem exitItem = new JMenuItem(resource.getString("exitItem"), 'X');
 		JMenuItem tbFile = new JCheckBoxMenuItem(resource.getString("tbFile"),
+				true);
+		JMenuItem tbNewProject = new JCheckBoxMenuItem(resource.getString("tbNewProject"),
 				true);
 		JMenuItem tbView = new JCheckBoxMenuItem(resource.getString("tbView"),
 				true);
@@ -819,9 +883,9 @@ public class UnBBayesFrame extends JFrame {
 		JMenuItem learningItem = new JMenuItem(resource.getString("learningItem"), iconController.getLearningIcon());
 		JMenuItem tanItem = new JMenuItem(resource.getString("tanItem"));
 		JMenuItem banItem = new JMenuItem(resource.getString("banItem"));
-		JMenuItem logicItem = new JMenuItem(resource.getString("logicItem"));
-		JMenuItem lwItem = new JMenuItem(resource.getString("likelihoodWeightingItem"));
-		JMenuItem gibbsItem = new JMenuItem(resource.getString("gibbsItem"));
+//		JMenuItem logicItem = new JMenuItem(resource.getString("logicItem"));
+//		JMenuItem lwItem = new JMenuItem(resource.getString("likelihoodWeightingItem"));
+//		JMenuItem gibbsItem = new JMenuItem(resource.getString("gibbsItem"));
 		JMenuItem iLearningItem = new JMenuItem(resource.getString("ILearningItem"));
 //		JMenuItem metaphorItem = new JMenuItem(resource.getString("MetaphorItem"));
 //		JMenuItem medicalMetaphorItem = new JMenuItem(resource.getString("MedicalMetaphorItem"));
@@ -832,9 +896,9 @@ public class UnBBayesFrame extends JFrame {
 		banItem.setMnemonic(resource.getString("banItemMn").charAt(0));
 		iLearningItem.setMnemonic(resource.getString("ILearningItemMn").charAt(0));
 		
-		logicItem.setMnemonic(resource.getString("logicItemMn").charAt(0));
-		lwItem.setMnemonic(resource.getString("likelihoodWeightingItemMn").charAt(0));
-		gibbsItem.setMnemonic(resource.getString("gibbsItemMn").charAt(0));
+//		logicItem.setMnemonic(resource.getString("logicItemMn").charAt(0));
+//		lwItem.setMnemonic(resource.getString("likelihoodWeightingItemMn").charAt(0));
+//		gibbsItem.setMnemonic(resource.getString("gibbsItemMn").charAt(0));
 		
 		learningItem.setAccelerator(KeyStroke.getKeyStroke(resource.getString(
 				"learningItemMn").charAt(0), Event.CTRL_MASK, false));
@@ -853,6 +917,20 @@ public class UnBBayesFrame extends JFrame {
 		tbTools.addActionListener(alTbTools);
 		tbWindow.addActionListener(alTbWindow);
 		tbHelp.addActionListener(alTbHelp);
+		tbNewProject.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setCursor(new Cursor(Cursor.WAIT_CURSOR));
+				if (((JCheckBoxMenuItem) e.getSource()).getState()) {
+					topPanel.add(getJtbNew());
+				} else {
+					topPanel.remove(getJtbNew());
+				}
+				// lay out its subcomponents again after an container has been
+				// added, removed or modified
+				validate();
+				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
+		});
 		
 		// action litener for enable/disable option for plugin toolbar
 		tbPlugin.addActionListener(new ActionListener() {
@@ -881,9 +959,9 @@ public class UnBBayesFrame extends JFrame {
 		cascadeItem.addActionListener(alCascade);
 		tileItem.addActionListener(alTile);
 		
-		logicItem.addActionListener(alLogic);
-		lwItem.addActionListener(alLW);
-		gibbsItem.addActionListener(alGibbs);
+//		logicItem.addActionListener(alLogic);
+//		lwItem.addActionListener(alLW);
+//		gibbsItem.addActionListener(alGibbs);
 		
 		helpItem.addActionListener(alHelp);
 		aboutItem.addActionListener(alAbout);
@@ -923,6 +1001,7 @@ public class UnBBayesFrame extends JFrame {
 		lafMenu.add(motifItem);
 		lafMenu.add(homeItem);
 		
+		tbMenu.add(tbNewProject);
 		tbMenu.add(tbFile);
 		tbMenu.add(tbView);
 		tbMenu.add(tbTools);
@@ -944,9 +1023,9 @@ public class UnBBayesFrame extends JFrame {
 //		toolsMenu.add(medicalMetaphorItem);
 //		toolsMenu.add(unbMinerItem);
 		
-		samplingMenu.add(logicItem);
-		samplingMenu.add(lwItem);
-		samplingMenu.add(gibbsItem);
+//		samplingMenu.add(logicItem);
+//		samplingMenu.add(lwItem);
+//		samplingMenu.add(gibbsItem);
 		
 		windowMenu.add(cascadeItem);
 		windowMenu.add(tileItem);
@@ -962,6 +1041,36 @@ public class UnBBayesFrame extends JFrame {
 		
 
 		this.setJMenuBar(menu);
+		
+	}
+	
+	/**
+	 * This method is called inside the constructor in order
+	 * to initialize the map accessible from {@link #getModuleCategoryToComponentsMap()}
+	 * using the default menus ("new", "sampling", "tool" and "plugins")
+	 * @see #getModuleCategoryToComponentsMap()
+	 * @see #setModuleCategoryToComponentsMap(Map).
+	 */
+	protected void initializeModuleCategoryToJMenuMap() {
+		Map<String, List<JComponent>>newMap = new HashMap<String, List<JComponent>>();
+		
+		// filling components for "new" (e.g. "new bn", "new msbn")
+		List<JComponent> componentList = new ArrayList<JComponent>();
+		componentList.add(this.getNewMenu());
+		componentList.add(this.getJtbNew());
+		newMap.put(PluginCore.PARAMETER_CATEGORY_VALUE_BN, componentList);
+		
+		// filling components for "new" (e.g. "new bn", "new msbn")
+		componentList = new ArrayList<JComponent>();
+		componentList.add(this.getSamplingMenu());
+		newMap.put(PluginCore.PARAMETER_CATEGORY_VALUE_SAMPLING, componentList);
+
+		// filling components for "tools" 
+		componentList = new ArrayList<JComponent>();
+		componentList.add(this.getToolsMenu());
+		newMap.put(PluginCore.PARAMETER_CATEGORY_VALUE_TOOL, componentList);
+		
+		this.setModuleCategoryToComponentsMap(newMap);
 	}
 	
 	/**
@@ -1005,8 +1114,14 @@ public class UnBBayesFrame extends JFrame {
 		reloadPluginsMenuItem = new JMenuItem(this.resource.getString("reloadPlugin"));
 		reloadPluginsMenuItem.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
-				loadPlugins();
-				// reloads every plugin managed by UnBBayesPluginContextHolder
+				// reset components
+				createMenu();	//reset menu
+				removePluginButtonsFromOtherComponents(getMapOfModuleButtonsNotAtSplitButton()); // remove buttons from other JTBs
+				initializeModuleCategoryToJMenuMap(); // fills up the moduleCategoryToJMenuMap
+				loadPlugins(); // reload plugins
+				updatePluginMenuVisibility();	// show menus if it is not empty again
+				
+				// reloads every plugin managed by UnBBayesPluginContextHolder by notifying it
 				getUnbbayesPluginContextHolder().notifyReload(UnBBayesFrame.this);
 				repaint();
 			}
@@ -1014,9 +1129,16 @@ public class UnBBayesFrame extends JFrame {
 		reloadPluginsMenuItem.setToolTipText(this.resource.getString("reloadPluginToolTip"));
 		
 		pluginMenu.add(reloadPluginsMenuItem);
-		pluginMenu.addSeparator();
+		
+		pluginMenuSeparator = new JPopupMenu.Separator();
+		pluginMenu.add(pluginMenuSeparator);
 		
 		menu.add(pluginMenu);
+
+		// filling components for "plugins"  (default)
+		List<JComponent> componentList = new ArrayList<JComponent>();
+		componentList.add(pluginMenu);
+		this.getModuleCategoryToComponentsMap().put(PluginCore.PARAMETER_CATEGORY_VALUE_PLUGIN, componentList);
 	}
 	
 	/**
@@ -1077,7 +1199,6 @@ public class UnBBayesFrame extends JFrame {
 		this.createPluginMenu();
 		this.createPluginToolBars();
 		
-		
 		// create plugin manager and load (publish) plugins
 		try {
 			this.getUnbbayesPluginContextHolder().publishPlugins();
@@ -1132,6 +1253,7 @@ public class UnBBayesFrame extends JFrame {
     			Parameter descriptionParam = ext.getParameter(PluginCore.PARAMETER_DESCRIPTION);
     			Parameter iconParam = ext.getParameter(PluginCore.PARAMETER_ICON);
     			Parameter builderParam = ext.getParameter(PluginCore.PARAMETER_BUILDER);
+    			Parameter categoryParam = ext.getParameter(PluginCore.PARAMETER_CATEGORY);
     			
     			// extracting plugin class or builder clas
     			ClassLoader classLoader = pluginManager.getPluginClassLoader(descr);
@@ -1153,11 +1275,18 @@ public class UnBBayesFrame extends JFrame {
     				URL iconUrl = pluginManager.getPluginClassLoader(ext.getDeclaringPluginDescriptor()).getResource(iconParam.valueAsString());
     				icon = (iconUrl != null) ? new ImageIcon(iconUrl) : null;
     			}
+    			
+    			// use default icon if the icon is not found or invalid
+    			if (icon == null) {
+    				icon = IconController.getInstance().getNewIcon();
+    			}
+    			
+    			// instantiate the button
     			JButton button = new JButton(icon);
     			button.setToolTipText(descriptionParam.valueAsString());
     			
     			// filling menu item
-    			JMenuItem menuItem = new JMenuItem(resource.getString("newPlugin") + nameParam.valueAsString(),icon);
+    			JMenuItem menuItem = new JMenuItem(nameParam.valueAsString(),icon);
     			menuItem.setToolTipText(descriptionParam.valueAsString());
     			
     			// creating action listener
@@ -1182,19 +1311,59 @@ public class UnBBayesFrame extends JFrame {
     			button.addActionListener(listener);
     			menuItem.addActionListener(listener);
     			
-    			// adding menu item into main menu
-    			this.getPluginMenu().add(menuItem);
-
-    			// creating a menu item for split button
-    			JMenuItem splitButtonMenuItem = new JMenuItem(resource.getString("newPlugin") + nameParam.valueAsString(),icon);
-    			splitButtonMenuItem.setToolTipText(descriptionParam.valueAsString());
-    			splitButtonMenuItem.addActionListener(new SplitButtonMenuActionListener(button));
+    			// adding menu item into menu, depending on the category of the module
+    			List<JComponent> mappedElements = this.getModuleCategoryToComponentsMap().get(categoryParam.valueAsString());
+    			if (mappedElements == null || mappedElements.isEmpty()) {
+    				// if the mapping was empty because categoryParam.valueAsString() was not found, then use default
+    				if (categoryParam.valueAsString() == null || (categoryParam.valueAsString().length() == 0)) {
+    					mappedElements = new ArrayList<JComponent>();
+    					mappedElements.add(this.getPluginMenu());	// use default plugin menu
+    				} else {
+    					// the module category was not mapped before. Create and Map it.
+    					mappedElements = new ArrayList<JComponent>();
+    					JMenu newMenu = new JMenu(categoryParam.valueAsString());	// create new menu using name
+    					mappedElements.add(newMenu);
+    					this.getMenu().add(newMenu);
+    				}
+    			}
     			
-    			// adding the plugin button into split button instead of the tool bar itself
-    			this.getPluginSplitButton().getMenu().add(splitButtonMenuItem);
-    			this.getPluginSplitButton().setMainButton(button);
-    			this.getPluginSplitButton().updateUI();
-    			this.getPluginSplitButton().repaint();
+    			// flag that tells us if we should add a menu item into the default plugin menu.
+    			boolean addToPluginMenuFlag = true;
+    			
+    			// flag that tell us if we should add a button into default plugin split button
+    			boolean addToSplitButton = true;
+    			
+    			// add menuItem into mapped JComponent
+    			for (JComponent comp : mappedElements) {
+    				if (comp instanceof JMenu) {
+						((JMenu)comp).add(menuItem);
+						addToPluginMenuFlag = false;
+						// OBS. a menu item can be added into only one menu
+					} else {
+						// if we are not adding to a JMenu, add a button instead of menu item
+						comp.add(button);
+						addToSplitButton = false;
+						this.getMapOfModuleButtonsNotAtSplitButton().put(button, comp);
+					}
+				}
+    			
+    			// also, fill plugin menu if flag is on
+    			if (addToPluginMenuFlag) {
+    				this.getPluginMenu().add(menuItem);
+    			}
+    			// fill split button if flag is on
+    			if (addToSplitButton) {
+    				// creating a menu item for split button, only if the flag is on
+        			JMenuItem splitButtonMenuItem = new JMenuItem(nameParam.valueAsString(),icon);
+        			splitButtonMenuItem.setToolTipText(descriptionParam.valueAsString());
+        			splitButtonMenuItem.addActionListener(new SplitButtonMenuActionListener(button));
+        			
+        			// adding the plugin button into split button instead of the tool bar itself
+        			this.getPluginSplitButton().getMenu().add(splitButtonMenuItem);
+        			this.getPluginSplitButton().setMainButton(button);	// the last loaded plugin will be at top
+        			this.getPluginSplitButton().updateUI();
+        			this.getPluginSplitButton().repaint();
+    			}
     			
     			// filling the return
     			ret.put(nameParam.valueAsString(), pluginOrBuilderCls);
@@ -1205,12 +1374,6 @@ public class UnBBayesFrame extends JFrame {
 				e.printStackTrace();
 				continue;
 			}
-		}
-		
-		// if we have no plugins, we should not show the tool bar or the menu
-		if (ret.isEmpty()) {
-			this.getPluginToolBar().setVisible(false);
-//			this.getPluginMenu().setVisible(false);
 		}
 		
 		return ret;
@@ -1248,20 +1411,20 @@ public class UnBBayesFrame extends JFrame {
 
 		createButtons();
 
+		
 		// create tool bars
+		jtbNew = new JToolBar();
 		jtbFile = new JToolBar();
 		jtbView = new JToolBar();
 		jtbTools = new JToolBar();
 		jtbWindow = new JToolBar();
 		jtbHelp = new JToolBar();
-		
-		
 
 		// add their buttons
-		jtbFile.add(newNet);
-		jtbFile.add(newMsbn);
-		jtbFile.add(newMebn);
-		jtbFile.add(newOobn);
+		jtbNew.add(newNet);
+		jtbNew.add(newMsbn);
+		jtbNew.add(newMebn);
+		jtbNew.add(newOobn);
 		jtbFile.add(openNet);
 		jtbFile.add(saveNet);
 		jtbTools.add(learn);
@@ -1273,6 +1436,7 @@ public class UnBBayesFrame extends JFrame {
 		jtbHelp.add(help);
 
 		// add the tool bars to the topPanel
+		topPanel.add(jtbNew);
 		topPanel.add(jtbFile);
 		topPanel.add(jtbView);
 		topPanel.add(jtbTools);
@@ -1280,6 +1444,31 @@ public class UnBBayesFrame extends JFrame {
 		topPanel.add(jtbHelp);
 		
 	}
+	
+	/**
+	 * This method will use map in order to remove all keys from its mapped object.
+	 * In other words, if a button was once added into a jcomponent within map, the 
+	 * button will be removed from the component and the map.
+	 * @param map
+	 */
+	protected void removePluginButtonsFromOtherComponents(Map<AbstractButton, JComponent> map) {
+		
+		// stores removed keys
+		List<AbstractButton> removedKeys = new ArrayList<AbstractButton>();
+
+		// remove all module buttons once added to components
+		for (AbstractButton key : map.keySet()) {
+			JComponent comp = map.get(key);
+			comp.remove(key);
+			removedKeys.add(key);
+		}
+		
+		// remove keys from the map
+		for (AbstractButton key : removedKeys) {
+			map.remove(key);
+		}
+	}
+
 
 	/**
 	 * Create the needed buttons and add their respectinve tool tip.
@@ -1822,4 +2011,107 @@ public class UnBBayesFrame extends JFrame {
 		}
 		
 	}
+
+	/**
+	 * This is a sub menu where functionalities like "new BN" or "new MSBN" resides.
+	 * @return newMenu
+	 */
+	public JMenu getNewMenu() {
+		return newMenu;
+	}
+
+	/**
+	 * This is a menu where tools (e.g. learning modules) resides.
+	 * @return toolsMenu
+	 */
+	public JMenu getToolsMenu() {
+		return toolsMenu;
+	}
+
+	/**
+	 * This is a sub menu where sampling modules resides.
+	 * @return samplingMenu
+	 */
+	public JMenu getSamplingMenu() {
+		return samplingMenu;
+	}
+
+	/**
+	 * @return the jtbFile
+	 */
+	public JToolBar getJtbFile() {
+		return jtbFile;
+	}
+
+	/**
+	 * It maps a module category into a menu
+	 * @return the moduleCategoryToComponentsMap
+	 */
+	public Map<String, List<JComponent>> getModuleCategoryToComponentsMap() {
+		return moduleCategoryToComponentsMap;
+	}
+
+	/**
+	 * It maps a module category into a menu
+	 * @param moduleCategoryToComponentsMap the moduleCategoryToJMenuMap to set
+	 */
+	public void setModuleCategoryToComponentsMap(
+			Map<String, List<JComponent>> moduleCategoryToComponentsMap) {
+		this.moduleCategoryToComponentsMap = moduleCategoryToComponentsMap;
+	}
+
+	/**
+	 * This separator separates the "reload plugin" option from other plugins
+	 * @return the pluginMenuSeparator
+	 */
+	public Separator getPluginMenuSeparator() {
+		return pluginMenuSeparator;
+	}
+
+	/**
+	 * This separator separates the "reload plugin" option from other plugins
+	 * @param pluginMenuSeparator the pluginMenuSeparator to set
+	 */
+	public void setPluginMenuSeparator(Separator pluginMenuSeparator) {
+		this.pluginMenuSeparator = pluginMenuSeparator;
+	}
+
+	/**
+	 * It stores all modules' buttons which was not added into
+	 * the default split button. They need special attention, since
+	 * they are usually situated at other JTB.
+	 * The buttons are mapped to the component where they were added.
+	 * @return the mapOfModuleButtonsNotAtSplitButton
+	 */
+	public Map<AbstractButton, JComponent> getMapOfModuleButtonsNotAtSplitButton() {
+		return mapOfModuleButtonsNotAtSplitButton;
+	}
+
+	/**
+	 * It stores all modules' buttons which was not added into
+	 * the default split button. They need special attention, since
+	 * they are usually situated at other JTB.
+	 * The buttons are mapped to the component where they were added.
+	 * @param mapOfModuleButtonsNotAtSplitButton the mapOfModuleButtonsNotAtSplitButton to set
+	 * @see #getJtbFile()
+	 */
+	public void setMapOfBNModulesAtFileJTB(
+			Map<AbstractButton, JComponent> listOfBNModulesAtFileJTB) {
+		this.mapOfModuleButtonsNotAtSplitButton = listOfBNModulesAtFileJTB;
+	}
+
+	/**
+	 * @return the jtbNew
+	 */
+	public JToolBar getJtbNew() {
+		return jtbNew;
+	}
+
+	/**
+	 * @param jtbNew the jtbNew to set
+	 */
+	public void setJtbNew(JToolBar jtbNew) {
+		this.jtbNew = jtbNew;
+	}
+
 }

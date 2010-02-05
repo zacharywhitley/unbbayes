@@ -63,9 +63,7 @@ import org.java.plugin.registry.Extension.Parameter;
 
 import unbbayes.controller.NetworkController;
 import unbbayes.gui.option.GaussianMixtureOptionPanel;
-import unbbayes.gui.option.GibbsSamplingOptionPanel;
 import unbbayes.gui.option.JunctionTreeOptionPanel;
-import unbbayes.gui.option.LikelihoodWeightingOptionPanel;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.util.extension.PluginCore;
@@ -687,18 +685,18 @@ public class GlobalOptionsDialog extends JDialog {
 		ret.put(radio, algorithmOptionPanel);
 
     	// likelihood weighting
-    	algorithmOptionPanel = new LikelihoodWeightingOptionPanel();
-    	radio = new JRadioButtonMenuItem(algorithmOptionPanel.getInferenceAlgorithm().getName(), 
-				(controller.getInferenceAlgorithm()!= null) && (controller.getInferenceAlgorithm().getClass().equals(algorithmOptionPanel.getInferenceAlgorithm().getClass())));
-		radio.setToolTipText(algorithmOptionPanel.getInferenceAlgorithm().getDescription());
-		ret.put(radio, algorithmOptionPanel);
+//    	algorithmOptionPanel = new LikelihoodWeightingOptionPanel();
+//    	radio = new JRadioButtonMenuItem(algorithmOptionPanel.getInferenceAlgorithm().getName(), 
+//				(controller.getInferenceAlgorithm()!= null) && (controller.getInferenceAlgorithm().getClass().equals(algorithmOptionPanel.getInferenceAlgorithm().getClass())));
+//		radio.setToolTipText(algorithmOptionPanel.getInferenceAlgorithm().getDescription());
+//		ret.put(radio, algorithmOptionPanel);
     	
     	// gibbs
-    	algorithmOptionPanel = new GibbsSamplingOptionPanel();
-    	radio = new JRadioButtonMenuItem(algorithmOptionPanel.getInferenceAlgorithm().getName(), 
-				(controller.getInferenceAlgorithm()!= null) && (controller.getInferenceAlgorithm().getClass().equals(algorithmOptionPanel.getInferenceAlgorithm().getClass())));
-		radio.setToolTipText(algorithmOptionPanel.getInferenceAlgorithm().getDescription());
-		ret.put(radio, algorithmOptionPanel);
+//    	algorithmOptionPanel = new GibbsSamplingOptionPanel();
+//    	radio = new JRadioButtonMenuItem(algorithmOptionPanel.getInferenceAlgorithm().getName(), 
+//				(controller.getInferenceAlgorithm()!= null) && (controller.getInferenceAlgorithm().getClass().equals(algorithmOptionPanel.getInferenceAlgorithm().getClass())));
+//		radio.setToolTipText(algorithmOptionPanel.getInferenceAlgorithm().getDescription());
+//		ret.put(radio, algorithmOptionPanel);
     	
         // gaussian mixture algorithm
     	algorithmOptionPanel = new GaussianMixtureOptionPanel();

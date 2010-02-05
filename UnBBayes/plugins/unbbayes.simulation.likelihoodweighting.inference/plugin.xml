@@ -1,0 +1,26 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- This is a plugin descriptor for Likelihood weighting Sampling and Inference module -->
+<plugin id="unbbayes.simulation.likelihoodweighting.inference" version="1.0.0">
+    <requires>
+        <import plugin-id="unbbayes.util.extension.core"/>
+        <import plugin-id="unbbayes.simulation.montecarlo.sampling"/>
+    </requires>
+    <runtime>
+        <library id="likelihoodWeighting" path="classes/" type="code">
+            <export prefix="*" />
+        </library>
+        <library type="resources" path="icons/" id="icons" />
+    </runtime>
+    <extension plugin-id="unbbayes.util.extension.core" point-id="Module" id="likelihoodWeightingSampling">
+        <parameter id="class" value="unbbayes.simulation.likelihoodweighting.inference.gui.extension.LikelihoodWeightingSamplingModule" />
+        <parameter id="name" value="Likelihood Weighting Sampling" />
+        <parameter id="builder" value="unbbayes.simulation.likelihoodweighting.inference.gui.extension.LikelihoodWeightingSamplingModule" />
+		<parameter id="description" value="Sampling using Likelihood Weighting" />
+		<parameter id="icon" value="sampling.png" />
+		<parameter id="category" value="sampling" />
+    </extension>
+    <extension plugin-id="unbbayes.util.extension.core" point-id="InferenceAlgorithm" id="likelihoodWeightingAlgorithm">
+        <parameter id="class" value="unbbayes.gui.option.LikelihoodWeightingOptionPanel" />
+    </extension>
+</plugin>

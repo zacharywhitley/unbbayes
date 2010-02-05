@@ -53,8 +53,6 @@ import unbbayes.prs.hybridbn.ContinuousNode;
 import unbbayes.prs.hybridbn.GaussianMixture;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
-import unbbayes.simulation.likelihoodweighting.inference.LikelihoodWeightingInference;
-import unbbayes.simulation.sampling.GibbsSampling;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 public class SENController {
@@ -65,9 +63,6 @@ public class SENController {
 
 	private NumberFormat df;
 
-	protected LikelihoodWeightingInference lwInference;
-	
-	protected GibbsSampling gibbsInference;
 	
 	protected GaussianMixture gmInference;
 	
@@ -155,21 +150,6 @@ public class SENController {
 	 */
 	public void initialize() {
 		try {
-			// fixing anti-pattern: avoid using if-then-else and start using method extension.
-//			if (getInferenceAlgorithm() == InferenceAlgorithmEnum.JUNCTION_TREE) {
-//				singleEntityNetwork.initialize();
-//			} else {
-//				if (getInferenceAlgorithm() == InferenceAlgorithmEnum.LIKELIHOOD_WEIGHTING) {
-//					singleEntityNetwork.resetEvidences();
-//					lwInference.run();
-//				} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.GIBBS) {
-//					singleEntityNetwork.resetEvidences();
-//					gibbsInference.run();
-//				} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.GAUSSIAN_MIXTURE) {
-//					singleEntityNetwork.resetEvidences();
-//					gmInference.run();
-//				}
-//			}
 			this.getInferenceAlgorithm().reset();
 			//by young2 (true:update, false:complie)
 			screen.getEvidenceTree().updateTree(true);
@@ -240,94 +220,6 @@ public class SENController {
 		// gone to its default (all expanded).
 		screen.getEvidenceTree().resetTree();
 		
-		// avoiding if-then-else structure and using method overwriting.
-//		if (getInferenceAlgorithm() == InferenceAlgorithmEnum.JUNCTION_TREE) {
-//			if (singleEntityNetwork.isBN() || singleEntityNetwork.isID()) {
-//				try {
-//					((ProbabilisticNetwork) singleEntityNetwork).compile();
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//					JOptionPane.showMessageDialog(null, e.getMessage(), resource
-//							.getString("statusError"), JOptionPane.ERROR_MESSAGE);
-//					screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-//					return false;
-//				}
-//			} else {
-//				JOptionPane.showMessageDialog(null, resource.getString("junctionTreeNotApplicableError"), resource
-//						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
-//				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-//				return false;
-//			}
-//		} if (getInferenceAlgorithm() == InferenceAlgorithmEnum.LIKELIHOOD_WEIGHTING) {
-//			if (singleEntityNetwork.isBN()) {
-//				String sampleSizeText = JOptionPane.showInputDialog(screen, resource.getString("sampleSizeInputMessage"), resource.getString("sampleSizeInputTitle"), JOptionPane.QUESTION_MESSAGE);
-//				// Stop compilation if user cancel operation.
-//				if (sampleSizeText == null) {
-//					return false;
-//				}
-//				int sampleSize = 0;
-//				try {
-//					sampleSize = Integer.parseInt(sampleSizeText);
-//				} catch (NumberFormatException e) {
-//					JOptionPane.showMessageDialog(null, resource.getString("sampleSizeInputError"), resource
-//							.getString("statusError"), JOptionPane.ERROR_MESSAGE);
-//					screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-//					return false;
-//				}
-//				singleEntityNetwork.resetEvidences();
-//				lwInference = new LikelihoodWeightingInference((ProbabilisticNetwork)singleEntityNetwork, sampleSize);
-//				lwInference.run();
-//			} else {
-//				JOptionPane.showMessageDialog(null, resource.getString("likelihoodWeightingNotApplicableError"), resource
-//						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
-//				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-//				return false;
-//			}
-//		} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.GIBBS) {
-//			if (singleEntityNetwork.isBN()) {
-//				String sampleSizeText = JOptionPane.showInputDialog(screen, resource.getString("sampleSizeInputMessage"), resource.getString("sampleSizeInputTitle"), JOptionPane.QUESTION_MESSAGE);
-//				// Stop compilation if user cancel operation.
-//				if (sampleSizeText == null) {
-//					return false;
-//				}
-//				int sampleSize = 0;
-//				try {
-//					sampleSize = Integer.parseInt(sampleSizeText);
-//				} catch (NumberFormatException e) {
-//					JOptionPane.showMessageDialog(null, resource.getString("sampleSizeInputError"), resource
-//							.getString("statusError"), JOptionPane.ERROR_MESSAGE);
-//					screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-//					return false;
-//				}
-//				singleEntityNetwork.resetEvidences();
-//				gibbsInference = new GibbsSampling((ProbabilisticNetwork)singleEntityNetwork, sampleSize);
-//				gibbsInference.run();
-//			} else {
-//				JOptionPane.showMessageDialog(null, resource.getString("likelihoodWeightingNotApplicableError"), resource
-//						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
-//				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-//				return false;
-//			}
-//		} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.GAUSSIAN_MIXTURE) {
-//			if (singleEntityNetwork.isHybridBN()) {
-//				try {
-//					singleEntityNetwork.resetEvidences();
-//					gmInference = new GaussianMixture((ProbabilisticNetwork)singleEntityNetwork);
-//					gmInference.run();
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//					JOptionPane.showMessageDialog(null, e.getMessage(), resource
-//							.getString("statusError"), JOptionPane.ERROR_MESSAGE);
-//					screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-//					return false;
-//				}
-//			} else {
-//				JOptionPane.showMessageDialog(null, resource.getString("continuousInferenceNotApplicableError"), resource
-//						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
-//				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-//				return false;
-//			}
-//		}
 		
 		try {
 			singleEntityNetwork.resetEvidences();

@@ -27,7 +27,12 @@ import java.util.Map;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
-
+/*
+ * TODO : since unbbayes.evaluation package is using 
+ * unbbayes.simulation.montecarlo.sampling package,
+ * we could not refactor these classes as plugins yet (this
+ * is because evaluation has no plugin support yet).
+ */
 /**
  * 
  * Class that implements the Monte Carlo simulation.

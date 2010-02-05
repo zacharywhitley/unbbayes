@@ -28,6 +28,20 @@ public class PluginCore extends Plugin {
 	/** Parameter id for the "builder" parameter: class that instantiates the plugin. @see {@link UnBBayesModuleBuilder} */
 	public static final String PARAMETER_BUILDER = "builder";
 	
+	/** Parameter id for the "category" parameter: what type of module is this plugin. @see {@link UnBBayesModuleBuilder} */
+	public static final String PARAMETER_CATEGORY = "category";
+	
+	/** This is a possible value for the PARAMETER_CATEGORY: "bn". If set to this, the plugin will be considered as a new BN module */
+	public static final String PARAMETER_CATEGORY_VALUE_BN = "bn";
+
+	/** This is a possible value for the PARAMETER_CATEGORY: "tool". If set to this, the plugin will be considered as a new tool */
+	public static final String PARAMETER_CATEGORY_VALUE_TOOL = "tool";
+
+	/** This is a possible value for the PARAMETER_CATEGORY: "sampling". If set to this, the plugin will be considered as a sampling module */
+	public static final String PARAMETER_CATEGORY_VALUE_SAMPLING = "sampling";
+	
+	/** This is a possible value for the PARAMETER_CATEGORY: "sampling". If set to this, the plugin will be considered as a general module */
+	public static final String PARAMETER_CATEGORY_VALUE_PLUGIN = "plugins";
 	
 	/* (non-Javadoc)
 	 * @see org.java.plugin.Plugin#doStart()

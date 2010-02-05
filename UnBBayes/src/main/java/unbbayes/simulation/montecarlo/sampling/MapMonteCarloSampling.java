@@ -20,23 +20,22 @@
  */
 package unbbayes.simulation.montecarlo.sampling;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.JOptionPane;
-
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.simulation.montecarlo.controller.*;
-import unbbayes.util.longtask.ILongTaskProgressObserver;
-import unbbayes.util.longtask.LongTaskProgressChangedEvent;
 
+/*
+ * TODO : since unbbayes.evaluation package is using 
+ * unbbayes.simulation.montecarlo.sampling package,
+ * we could not refactor these classes as plugins yet (this
+ * is because evaluation has no plugin support yet).
+ */
 /**
  * 
  * Class that implements the Monte Carlo simulation.

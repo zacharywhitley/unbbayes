@@ -28,6 +28,12 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.util.longtask.ILongTaskProgressObservable;
 
 //TODO ROMMEL - BREAK INTO DIFFERENT INTERFACES - MC - MCCOMPACT - LW
+/*
+ * TODO : since unbbayes.evaluation package is using 
+ * unbbayes.simulation.montecarlo.sampling package,
+ * we could not refactor these classes as plugins yet (this
+ * is because evaluation has no plugin support yet).
+ */
 public interface IMonteCarloSampling extends ILongTaskProgressObservable {
 	
 	/**

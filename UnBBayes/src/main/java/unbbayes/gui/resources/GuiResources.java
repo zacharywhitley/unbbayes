@@ -288,6 +288,7 @@ public class GuiResources extends ListResourceBundle {
         {"openItem","Open..."},
         {"saveItem","Save as..."},
         {"exitItem","Exit"},
+        {"tbNewProject","New Project Toolbar"},
         {"tbFile","File Toolbar"},
         {"tbView","View Toolbar"},
         {"tbTools","Tools Toolbar"},

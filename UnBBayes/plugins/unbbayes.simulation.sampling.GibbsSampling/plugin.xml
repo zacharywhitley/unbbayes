@@ -1,0 +1,26 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- This is a plugin descriptor for Gibbs Sampling and inference module -->
+<plugin id="unbbayes.simulation.sampling.GibbsSampling" version="1.0.0">
+    <requires>
+        <import plugin-id="unbbayes.util.extension.core"/>
+        <import plugin-id="unbbayes.simulation.montecarlo.sampling"/>
+    </requires>
+    <runtime>
+        <library id="gibbs" path="classes/" type="code">
+            <export prefix="*" />
+        </library>
+        <library type="resources" path="icons/" id="icons" />
+    </runtime>
+    <extension plugin-id="unbbayes.util.extension.core" point-id="Module" id="gibbsSampling">
+        <parameter id="class" value="unbbayes.gui.GibbsSamplingModule" />
+        <parameter id="name" value="Gibbs Sampling" />
+        <parameter id="builder" value="unbbayes.gui.GibbsSamplingModule" />
+		<parameter id="description" value="Sampling using Gibbs" />
+		<parameter id="icon" value="sampling.png" />
+		<parameter id="category" value="sampling" />
+    </extension>
+    <extension plugin-id="unbbayes.util.extension.core" point-id="InferenceAlgorithm" id="gibbsAlgorithm">
+        <parameter id="class" value="unbbayes.gui.option.GibbsSamplingOptionPanel" />
+    </extension>
+</plugin>

@@ -31,6 +31,12 @@ import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.util.longtask.ILongTaskProgressObserver;
 import unbbayes.util.longtask.LongTaskProgressChangedEvent;
 
+/*
+ * TODO : since unbbayes.evaluation package is using 
+ * unbbayes.simulation.montecarlo.sampling package,
+ * we could not refactor these classes as plugins yet (this
+ * is because evaluation has no plugin support yet).
+ */
 public abstract class AMonteCarloSampling implements IMonteCarloSampling {
 	
 	/* LONG TASK BEGIN */

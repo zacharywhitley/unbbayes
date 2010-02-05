@@ -18,5 +18,6 @@
         <parameter id="builder" value="unbbayes.metaphor.afin.extension.jpf.Afin" />
 		<parameter id="description" value="Metaphor for AFIN project" />
 		<parameter id="icon" value="open.png" />
+		<parameter id="category" value="tool" />
     </extension>
 </plugin>
