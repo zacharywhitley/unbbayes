@@ -127,7 +127,9 @@ public class UnBBayesPluginContextHolder {
 	        getPluginManager().publishPlugins(locations.toArray(new PluginLocation[locations.size()]));
 	    } catch (Exception e) {
 	    	throw new UBIOException(e);
-	    }
+	    } catch (Error err) {
+	    	throw new UBIOException(err);
+		}
 	    
 	    // if we published the plugins, they are initialized.
 	    initialized = true;

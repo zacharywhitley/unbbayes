@@ -161,10 +161,10 @@ public class ResourceController {
 			}
         	return ret;
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(this.getClass(), "Exception loading plugin resources", e);
 			return this.getDefaultClassLoader();
 		} catch (Error e) {
-			e.printStackTrace();
+			Debug.println(this.getClass(), "Error loading plugin resources", e);
 			return this.getDefaultClassLoader();
 		}
     	

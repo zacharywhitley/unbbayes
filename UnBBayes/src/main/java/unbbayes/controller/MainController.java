@@ -167,8 +167,12 @@ public class MainController {
 	 */
 	public void newPN() {
 		NamedWindowBuilder builder = new NetworkWindowBuilder();
-		builder.setName(resource.getString("NewPNName"));
-		screen.addWindow(builder.buildUnBBayesModule());
+		if (builder != null) {
+			builder.setName(resource.getString("NewPNName"));
+			if (screen != null) {
+				screen.addWindow(builder.buildUnBBayesModule());
+			}
+		}
 	}
 	
 	/**
@@ -177,8 +181,12 @@ public class MainController {
 	 */
 	public void newMSBN() {
 		NamedWindowBuilder builder = new MSBNWindowBuilder();
-		builder.setName(resource.getString("NewMSBNName"));
-		screen.addWindow(builder.buildUnBBayesModule());
+		if (builder != null) {
+			builder.setName(resource.getString("NewMSBNName"));
+			if (screen != null) {
+				screen.addWindow(builder.buildUnBBayesModule());
+			}
+		}
 	}
 	
 	/**
@@ -187,8 +195,12 @@ public class MainController {
 	 */
 	public void newMEBN() {
 		NamedWindowBuilder builder = new MEBNWindowBuilder();
-		builder.setName(resource.getString("NewMEBNName"));
-		screen.addWindow(builder.buildUnBBayesModule());
+		if (builder != null) {
+			builder.setName(resource.getString("NewMEBNName"));
+			if (screen != null) {
+				screen.addWindow(builder.buildUnBBayesModule());
+			}
+		}
 	}
 	
 	/**
@@ -197,8 +209,12 @@ public class MainController {
 	 */
 	public void newOOBN() {
 		NamedWindowBuilder builder = new OOBNWindowBuilder();
-		builder.setName(resource.getString("NewOOBNName"));
-		screen.addWindow(builder.buildUnBBayesModule());
+		if (builder != null) {
+			builder.setName(resource.getString("NewOOBNName"));
+			if (screen != null) {
+				screen.addWindow(builder.buildUnBBayesModule());
+			}
+		}
 	}
 	
 	/**
