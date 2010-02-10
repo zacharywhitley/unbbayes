@@ -79,7 +79,6 @@ import org.java.plugin.registry.PluginDescriptor;
 import org.java.plugin.registry.Extension.Parameter;
 
 import unbbayes.aprendizagem.ConstructionController;
-import unbbayes.aprendizagem.incrementalLearning.ILBridge;
 import unbbayes.controller.ConfigurationsController;
 import unbbayes.controller.FileHistoryController;
 import unbbayes.controller.IconController;
@@ -164,7 +163,7 @@ public class UnBBayesFrame extends JFrame {
 	private ActionListener alMotif;
 	private ActionListener alHomeSystem;
 	private ActionListener alLearn;
-	private ActionListener alIL;
+//	private ActionListener alIL;
 //	private ActionListener alMetaphor;
 //	private ActionListener alMedicalMetaphor;
 //	private ActionListener alUnBMiner;
@@ -556,11 +555,11 @@ public class UnBBayesFrame extends JFrame {
 			}
 		};
 
-		alIL = new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				new ILBridge(controller);
-			}
-		};
+//		alIL = new ActionListener() {
+//			public void actionPerformed(ActionEvent ae) {
+//				new ILBridge(controller);
+//			}
+//		};
 		
 //		alMetaphor = new ActionListener() {
 //			public void actionPerformed(ActionEvent ae) {
@@ -886,7 +885,7 @@ public class UnBBayesFrame extends JFrame {
 //		JMenuItem logicItem = new JMenuItem(resource.getString("logicItem"));
 //		JMenuItem lwItem = new JMenuItem(resource.getString("likelihoodWeightingItem"));
 //		JMenuItem gibbsItem = new JMenuItem(resource.getString("gibbsItem"));
-		JMenuItem iLearningItem = new JMenuItem(resource.getString("ILearningItem"));
+//		JMenuItem iLearningItem = new JMenuItem(resource.getString("ILearningItem"));
 //		JMenuItem metaphorItem = new JMenuItem(resource.getString("MetaphorItem"));
 //		JMenuItem medicalMetaphorItem = new JMenuItem(resource.getString("MedicalMetaphorItem"));
 //		JMenuItem unbMinerItem = new JMenuItem(resource.getString("UnBMinerItem"));
@@ -894,7 +893,7 @@ public class UnBBayesFrame extends JFrame {
 		learningItem.setMnemonic(resource.getString("learningItemMn").charAt(0));
 		tanItem.setMnemonic(resource.getString("tanItemMn").charAt(0));
 		banItem.setMnemonic(resource.getString("banItemMn").charAt(0));
-		iLearningItem.setMnemonic(resource.getString("ILearningItemMn").charAt(0));
+//		iLearningItem.setMnemonic(resource.getString("ILearningItemMn").charAt(0));
 		
 //		logicItem.setMnemonic(resource.getString("logicItemMn").charAt(0));
 //		lwItem.setMnemonic(resource.getString("likelihoodWeightingItemMn").charAt(0));
@@ -952,7 +951,7 @@ public class UnBBayesFrame extends JFrame {
 		motifItem.addActionListener(alMotif);
 		homeItem.addActionListener(alHomeSystem);
 		learningItem.addActionListener(alLearn);
-		iLearningItem.addActionListener(alIL);
+//		iLearningItem.addActionListener(alIL);
 //		metaphorItem.addActionListener(alMetaphor);
 //		medicalMetaphorItem.addActionListener(alMedicalMetaphor);
 //		unbMinerItem.addActionListener(alUnBMiner);
@@ -1018,7 +1017,7 @@ public class UnBBayesFrame extends JFrame {
 		toolsMenu.add(learningItem);
 		toolsMenu.add(tanItem);
 		toolsMenu.add(banItem);
-		toolsMenu.add(iLearningItem);
+//		toolsMenu.add(iLearningItem);
 //		toolsMenu.add(metaphorItem);
 //		toolsMenu.add(medicalMetaphorItem);
 //		toolsMenu.add(unbMinerItem);
@@ -1389,15 +1388,21 @@ public class UnBBayesFrame extends JFrame {
 	 * @see #addWindow(JInternalFrame)
 	 */
 	public UnBBayesModule getUnBBayesModuleByPluginClass(Class clazz) throws InstantiationException, IllegalAccessException {
+		UnBBayesModule ret = null;
 		if (clazz == null) {
-			return null;
+			return ret;
 		}
 		if (UnBBayesModuleBuilder.class.isAssignableFrom(clazz)) {
 			UnBBayesModuleBuilder builder = (UnBBayesModuleBuilder) clazz.newInstance();
-			return builder.buildUnBBayesModule();
+			ret = builder.buildUnBBayesModule();
 		} else {
-			return (UnBBayesModule) clazz.newInstance();
+			ret = (UnBBayesModule) clazz.newInstance();
 		}
+		// the below code is important, since it tells the module who is its owner, giving access to it.
+		if (ret != null) {
+			ret.setUnbbayesFrame(this);
+		}
+		return ret;
 	}
 	
 	
@@ -2112,6 +2117,20 @@ public class UnBBayesFrame extends JFrame {
 	 */
 	public void setJtbNew(JToolBar jtbNew) {
 		this.jtbNew = jtbNew;
+	}
+
+	/**
+	 * @return the controller
+	 */
+	public MainController getController() {
+		return controller;
+	}
+
+	/**
+	 * @param controller the controller to set
+	 */
+	public void setController(MainController controller) {
+		this.controller = controller;
 	}
 
 }

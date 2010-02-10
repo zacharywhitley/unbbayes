@@ -7,6 +7,7 @@ import java.io.IOException;
 import javax.swing.JInternalFrame;
 
 import unbbayes.gui.IPersistenceAwareWindow;
+import unbbayes.gui.UnBBayesFrame;
 import unbbayes.io.BaseIO;
 
 /**
@@ -19,9 +20,11 @@ public abstract class UnBBayesModule extends JInternalFrame implements
 		IPersistenceAwareWindow {
 	
 	private String moduleID = "UnBBayesModule";
+	
+	private UnBBayesFrame unbbayesFrame;
 
 	/**
-	 * Idem a super("Plugin", true, true, true, true);
+	 * It is equal to super("Plugin", true, true, true, true);
 	 * @see JInternalFrame
 	 * 
 	 */
@@ -95,7 +98,8 @@ public abstract class UnBBayesModule extends JInternalFrame implements
 	 * by getting the I/O class (IPersistenceAwareWindow#getIO()) and 
 	 * checking directly using BaseIO#supportsExtension(String).
 	 * @param file : the file to be opened
-	 * @return the UnBBayesModule which has the new opened graph.
+	 * @return the UnBBayesModule which has the new opened graph. If null, no internal frame 
+	 * will be displayed to user.
 	 * @throws IOException
 	 * @see IPersistenceAwareWindow#getSupportedFileExtensions()
 	 * @see IPersistenceAwareWindow#getIO()
@@ -115,6 +119,24 @@ public abstract class UnBBayesModule extends JInternalFrame implements
 	 */
 	public void setModuleID(String moduleID) {
 		this.moduleID = moduleID;
+	}
+
+	/**
+	 * This is the top frame of UnBBayes, where all inner frames resides.
+	 * By accessing this, you can virtually control everything of UnBBayes' GUI.
+	 * @return the unbbayesFrame
+	 */
+	public UnBBayesFrame getUnbbayesFrame() {
+		return unbbayesFrame;
+	}
+
+	/**
+	 * This is the top frame of UnBBayes, where all inner frames resides.
+	 * By accessing this, you can virtually control everything of UnBBayes' GUI.
+	 * @param unbbayesFrame the unbbayesFrame to set
+	 */
+	public void setUnbbayesFrame(UnBBayesFrame unbbayesFrame) {
+		this.unbbayesFrame = unbbayesFrame;
 	}
 	
 	
