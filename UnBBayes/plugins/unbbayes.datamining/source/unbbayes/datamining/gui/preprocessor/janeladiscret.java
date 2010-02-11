@@ -31,13 +31,13 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import unbbayes.gui.SimpleFileFilter;
+import unbbayes.learning.ConstructionController;
 import unbbayes.prs.Node;
 
 import javax.swing.JLabel;
 import javax.swing.JComboBox;
 import javax.swing.JButton;
 
-import unbbayes.aprendizagem.ConstructionController;
 import unbbayes.controller.FileController;
 import unbbayes.datamining.discretize.dalgo2;
 import javax.swing.JCheckBox;

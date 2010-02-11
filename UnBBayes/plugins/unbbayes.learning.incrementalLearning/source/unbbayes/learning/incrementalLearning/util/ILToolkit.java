@@ -22,7 +22,7 @@ package unbbayes.learning.incrementalLearning.util;
 
 import java.util.ArrayList;
 
-import unbbayes.aprendizagem.LearningToolkit;
+import unbbayes.learning.LearningToolkit;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
 

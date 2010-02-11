@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="unbbayes.util.extension.core" version="1.0.0"
+<plugin id="unbbayes.util.extension.core" version="1.0.1"
     class="unbbayes.util.extension.PluginCore">
     <runtime>
         <library id="core" path="/" type="code">
@@ -15,7 +15,8 @@
     	 							(a constructor with no parameters) if factoryClass is not provided.
     	    builder: a class to instantiate the module. It must implement  unbbayes.util.extension.UnBBayesModuleBuilder.
     	    			  Use this field if "class" cannot provide a plausible default constructor.
-    	 	name: name of the functionality. It must be unique.
+    	 	name: name of the functionality. It must be unique. If null, unbbayes.util.extension.UnBBayesModule#getModuleName() 
+    	 	              or unbbayes.util.extension.UnBBayesModuleBuilder will be used.
     	 	description: tool tip text. Currently, no localization is supported.
     	 	icon: icon (image) to be used at the tool bar's button. 
     	 	category: this is a name read by UnBBayes in order to categorize a module.
@@ -30,7 +31,7 @@
     <extension-point id="Module">
         <parameter-def id="class"/>
         <parameter-def id="builder" multiplicity="none-or-one" />
-        <parameter-def id="name"/>
+        <parameter-def id="name" multiplicity="none-or-one" />
 		<parameter-def id="description" multiplicity="none-or-one" />
 		<parameter-def id="icon" multiplicity="none-or-one" />
 		<parameter-def id="category" multiplicity="none-or-one" />

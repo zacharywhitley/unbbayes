@@ -3,27 +3,17 @@
  */
 package unbbayes.learning.incrementalLearning.gui.extension;
 
-import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.border.TitledBorder;
-
-import unbbayes.aprendizagem.ConstructionController;
-import unbbayes.aprendizagem.ProbabilisticController;
-import unbbayes.controller.IconController;
 import unbbayes.gui.UnBBayesFrame;
 import unbbayes.io.BaseIO;
 import unbbayes.io.OwnerAwareFileExtensionIODelegator;
+import unbbayes.learning.ConstructionController;
+import unbbayes.learning.ProbabilisticController;
 import unbbayes.learning.incrementalLearning.controller.ILController;
 import unbbayes.learning.incrementalLearning.io.ILIO;
 import unbbayes.prs.Graph;
@@ -220,6 +210,10 @@ public class IncrementalLearningModule extends UnBBayesModule implements
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
+		
+		// free
+		unbbayesFrame.getDesktop().remove(this);
+		this.dispose();
 	}
 
 	/*

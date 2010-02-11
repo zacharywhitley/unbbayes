@@ -1,9 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- This is the plugin descriptor for UnBBayes' datamining module (UnBMiner). -->
-<plugin id="unbbayes.datamining" version="0.0.1">
+<plugin id="unbbayes.datamining" version="0.1.0">
     <requires>
         <import plugin-id="unbbayes.util.extension.core"/>
+        <import plugin-id="unbbayes.learning"/>
     </requires>
     <runtime>
         <library id="unbminer" path="classes/" type="code">

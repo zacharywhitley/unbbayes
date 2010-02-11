@@ -24,8 +24,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.aprendizagem.ConstructionController;
-import unbbayes.aprendizagem.ProbabilisticController;
+import unbbayes.learning.ConstructionController;
+import unbbayes.learning.ProbabilisticController;
 import unbbayes.learning.incrementalLearning.controller.ILController;
 import unbbayes.learning.incrementalLearning.io.ILIO;
 import unbbayes.controller.MainController;

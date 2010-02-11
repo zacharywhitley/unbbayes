@@ -4,6 +4,7 @@
 package unbbayes.gui.util;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -12,6 +13,7 @@ import java.awt.event.ActionListener;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
@@ -235,6 +237,56 @@ public class SplitToggleButton extends JToggleButton implements ActionListener{
 		}
 	}
 	
+	/**
+	 * Adds a button to this split button.
+	 * This is equivalent to {@link #setMainButton(AbstractButton)}
+	 * @param mainButton
+	 */
+	public void add(AbstractButton mainButton) {
+		this.setMainButton(mainButton);	
+		this.updateUI();
+	}
 	
+	/**
+	 * Adds a menu item to this split button
+	 * @param menuItem
+	 */
+	public void add(JMenuItem menuItem) {
+		this.getMenu().add(menuItem);
+		this.updateUI();
+	}
+	
+	/**
+	 * Adds a button and a menu item to this split button
+	 * @param mainButton
+	 * @param menuItem
+	 */
+	public void add(AbstractButton mainButton, JMenuItem menuItem) {
+		this.setMainButton(mainButton);	
+		this.getMenu().add(menuItem);
+		this.updateUI();
+	}
+	
+	/**
+	 * Removes a menu item from split button
+	 * @param menuItem
+	 */
+	public void remove(JMenuItem menuItem) {
+		this.getMenu().remove(menuItem);
+		super.remove(menuItem);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see java.awt.Container#remove(java.awt.Component)
+	 */
+	public void remove(Component comp) {
+		// This is a workarownd, since JRE was not doing polymorphism every time
+		if (comp instanceof JMenuItem) {
+			this.remove((JMenuItem)comp);
+		} else {
+			super.remove(comp);
+		}
+	}
 
 }

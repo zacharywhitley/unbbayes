@@ -78,7 +78,6 @@ import org.java.plugin.registry.ExtensionPoint;
 import org.java.plugin.registry.PluginDescriptor;
 import org.java.plugin.registry.Extension.Parameter;
 
-import unbbayes.aprendizagem.ConstructionController;
 import unbbayes.controller.ConfigurationsController;
 import unbbayes.controller.FileHistoryController;
 import unbbayes.controller.IconController;
@@ -132,7 +131,7 @@ public class UnBBayesFrame extends JFrame {
 	private JButton openNet;
 	private JButton saveNet;
 
-	private JButton learn;
+//	private JButton learn;
 	private JButton metal;
 	private JButton motif;
 	private JButton homeSystem;
@@ -146,8 +145,8 @@ public class UnBBayesFrame extends JFrame {
 	private JHelp jHelp;
 	private ActionListener alNewBN;
 	
-	private ActionListener alTAN;
-	private ActionListener alBAN;
+//	private ActionListener alTAN;
+//	private ActionListener alBAN;
 	private ActionListener alNewMSBN;
 	private ActionListener alNewMEBN;
 	private ActionListener alNewOOBN;
@@ -162,7 +161,7 @@ public class UnBBayesFrame extends JFrame {
 	private ActionListener alMetal;
 	private ActionListener alMotif;
 	private ActionListener alHomeSystem;
-	private ActionListener alLearn;
+//	private ActionListener alLearn;
 //	private ActionListener alIL;
 //	private ActionListener alMetaphor;
 //	private ActionListener alMedicalMetaphor;
@@ -209,12 +208,15 @@ public class UnBBayesFrame extends JFrame {
 	private JMenu toolsMenu;
 	private JMenu samplingMenu;
 	
+	// This is a split button for tools
+	private SplitToggleButton toolsSplitButton;
+	
 	// It maps a module category into a menu
 	private Map<String, List<JComponent>> moduleCategoryToComponentsMap = new HashMap<String, List<JComponent>>();
 
 	private Separator pluginMenuSeparator;
 	
-	private Map<AbstractButton, JComponent> mapOfModuleButtonsNotAtSplitButton = new HashMap<AbstractButton, JComponent>();
+	private Map<JComponent, JComponent> mapOfComponentsToBeRemovedAtPluginReload = new HashMap<JComponent, JComponent>();
 
 	private JToolBar jtbNew;
 
@@ -292,12 +294,12 @@ public class UnBBayesFrame extends JFrame {
 			this.getPluginMenuSeparator().setVisible(true);
 		}
 		
-		// hide tool if empty
-		if ( ( this.getToolsMenu().getPopupMenu().getComponents() == null ) 
-		  || ( this.getToolsMenu().getPopupMenu().getComponents().length == 0 ) ) {
-			this.getToolsMenu().setVisible(false);
+		// hide tool JTB if the split button is empty
+		if ( ( this.getToolsSplitButton().getMenu().getComponents() == null )
+		  || ( this.getToolsSplitButton().getMenu().getComponents().length == 0 ) ) {
+			this.getJtbTools().setVisible(false);
 		} else {
-			this.getToolsMenu().setVisible(true);
+			this.getJtbTools().setVisible(true);
 		}
 		
 		// hide sampling if empty
@@ -409,54 +411,54 @@ public class UnBBayesFrame extends JFrame {
 			}
 		};
 
-		alTAN = new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				String[] nets = new String[] { "txt" };
-				int classe = 0;
-				chooser = new JFileChooser(fileHistoryController.getCurrentDirectory());
-				chooser.setMultiSelectionEnabled(false);
-				chooser.addChoosableFileFilter(new SimpleFileFilter(nets,
-						resource.getString("textFileFilter")));
-				int option = chooser.showOpenDialog(UnBBayesFrame.this);
-				File file;
-				if (option == JFileChooser.APPROVE_OPTION) {
-					file = chooser.getSelectedFile();
-					fileHistoryController.setCurrentDirectory(chooser
-							.getCurrentDirectory());
-					try {
-						new ConstructionController(file, controller, classe);
-					} catch (InvalidParentException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-
-			}
-		};		
-		alBAN = new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				String[] nets = new String[] { "txt" };
-				int classe = 0;
-				chooser = new JFileChooser(fileHistoryController.getCurrentDirectory());
-				chooser.setMultiSelectionEnabled(false);
-				chooser.addChoosableFileFilter(new SimpleFileFilter(nets,
-						resource.getString("textFileFilter")));
-				int option = chooser.showOpenDialog(UnBBayesFrame.this);
-				File file;
-				if (option == JFileChooser.APPROVE_OPTION) {
-					file = chooser.getSelectedFile();
-					fileHistoryController.setCurrentDirectory(chooser
-							.getCurrentDirectory());
-					try {
-						new ConstructionController(file, controller, classe, true);
-					} catch (InvalidParentException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-
-			}
-		};
+//		alTAN = new ActionListener() {
+//			public void actionPerformed(ActionEvent ae) {
+//				String[] nets = new String[] { "txt" };
+//				int classe = 0;
+//				chooser = new JFileChooser(fileHistoryController.getCurrentDirectory());
+//				chooser.setMultiSelectionEnabled(false);
+//				chooser.addChoosableFileFilter(new SimpleFileFilter(nets,
+//						resource.getString("textFileFilter")));
+//				int option = chooser.showOpenDialog(UnBBayesFrame.this);
+//				File file;
+//				if (option == JFileChooser.APPROVE_OPTION) {
+//					file = chooser.getSelectedFile();
+//					fileHistoryController.setCurrentDirectory(chooser
+//							.getCurrentDirectory());
+//					try {
+//						new ConstructionController(file, controller, classe);
+//					} catch (InvalidParentException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//				}
+//
+//			}
+//		};		
+//		alBAN = new ActionListener() {
+//			public void actionPerformed(ActionEvent ae) {
+//				String[] nets = new String[] { "txt" };
+//				int classe = 0;
+//				chooser = new JFileChooser(fileHistoryController.getCurrentDirectory());
+//				chooser.setMultiSelectionEnabled(false);
+//				chooser.addChoosableFileFilter(new SimpleFileFilter(nets,
+//						resource.getString("textFileFilter")));
+//				int option = chooser.showOpenDialog(UnBBayesFrame.this);
+//				File file;
+//				if (option == JFileChooser.APPROVE_OPTION) {
+//					file = chooser.getSelectedFile();
+//					fileHistoryController.setCurrentDirectory(chooser
+//							.getCurrentDirectory());
+//					try {
+//						new ConstructionController(file, controller, classe, true);
+//					} catch (InvalidParentException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//				}
+//
+//			}
+//		};
 
 		
 
@@ -548,23 +550,23 @@ public class UnBBayesFrame extends JFrame {
 		};
 
 		// create an ActionListener for opening new window for learning
-		alLearn = new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				String[] nets = new String[] { "txt" };
-				chooser = new JFileChooser(fileHistoryController.getCurrentDirectory());
-				chooser.setMultiSelectionEnabled(false);
-				chooser.addChoosableFileFilter(new SimpleFileFilter(nets,
-						resource.getString("textFileFilter")));
-				int option = chooser.showOpenDialog(UnBBayesFrame.this);
-				File file;
-				if (option == JFileChooser.APPROVE_OPTION) {
-					file = chooser.getSelectedFile();
-					fileHistoryController.setCurrentDirectory(chooser
-							.getCurrentDirectory());
-					new ConstructionController(file, controller);
-				}
-			}
-		};
+//		alLearn = new ActionListener() {
+//			public void actionPerformed(ActionEvent ae) {
+//				String[] nets = new String[] { "txt" };
+//				chooser = new JFileChooser(fileHistoryController.getCurrentDirectory());
+//				chooser.setMultiSelectionEnabled(false);
+//				chooser.addChoosableFileFilter(new SimpleFileFilter(nets,
+//						resource.getString("textFileFilter")));
+//				int option = chooser.showOpenDialog(UnBBayesFrame.this);
+//				File file;
+//				if (option == JFileChooser.APPROVE_OPTION) {
+//					file = chooser.getSelectedFile();
+//					fileHistoryController.setCurrentDirectory(chooser
+//							.getCurrentDirectory());
+//					new ConstructionController(file, controller);
+//				}
+//			}
+//		};
 
 //		alIL = new ActionListener() {
 //			public void actionPerformed(ActionEvent ae) {
@@ -890,9 +892,9 @@ public class UnBBayesFrame extends JFrame {
 
 		
 		//Learning menu itens
-		JMenuItem learningItem = new JMenuItem(resource.getString("learningItem"), iconController.getLearningIcon());
-		JMenuItem tanItem = new JMenuItem(resource.getString("tanItem"));
-		JMenuItem banItem = new JMenuItem(resource.getString("banItem"));
+//		JMenuItem learningItem = new JMenuItem(resource.getString("learningItem"), iconController.getLearningIcon());
+//		JMenuItem tanItem = new JMenuItem(resource.getString("tanItem"));
+//		JMenuItem banItem = new JMenuItem(resource.getString("banItem"));
 //		JMenuItem logicItem = new JMenuItem(resource.getString("logicItem"));
 //		JMenuItem lwItem = new JMenuItem(resource.getString("likelihoodWeightingItem"));
 //		JMenuItem gibbsItem = new JMenuItem(resource.getString("gibbsItem"));
@@ -901,17 +903,17 @@ public class UnBBayesFrame extends JFrame {
 //		JMenuItem medicalMetaphorItem = new JMenuItem(resource.getString("MedicalMetaphorItem"));
 //		JMenuItem unbMinerItem = new JMenuItem(resource.getString("UnBMinerItem"));
 		
-		learningItem.setMnemonic(resource.getString("learningItemMn").charAt(0));
-		tanItem.setMnemonic(resource.getString("tanItemMn").charAt(0));
-		banItem.setMnemonic(resource.getString("banItemMn").charAt(0));
+//		learningItem.setMnemonic(resource.getString("learningItemMn").charAt(0));
+//		tanItem.setMnemonic(resource.getString("tanItemMn").charAt(0));
+//		banItem.setMnemonic(resource.getString("banItemMn").charAt(0));
 //		iLearningItem.setMnemonic(resource.getString("ILearningItemMn").charAt(0));
 		
 //		logicItem.setMnemonic(resource.getString("logicItemMn").charAt(0));
 //		lwItem.setMnemonic(resource.getString("likelihoodWeightingItemMn").charAt(0));
 //		gibbsItem.setMnemonic(resource.getString("gibbsItemMn").charAt(0));
 		
-		learningItem.setAccelerator(KeyStroke.getKeyStroke(resource.getString(
-				"learningItemMn").charAt(0), Event.CTRL_MASK, false));
+//		learningItem.setAccelerator(KeyStroke.getKeyStroke(resource.getString(
+//				"learningItemMn").charAt(0), Event.CTRL_MASK, false));
 		
 
 		// add ActionListener to all menu items
@@ -961,7 +963,7 @@ public class UnBBayesFrame extends JFrame {
 		metalItem.addActionListener(alMetal);
 		motifItem.addActionListener(alMotif);
 		homeItem.addActionListener(alHomeSystem);
-		learningItem.addActionListener(alLearn);
+//		learningItem.addActionListener(alLearn);
 //		iLearningItem.addActionListener(alIL);
 //		metaphorItem.addActionListener(alMetaphor);
 //		medicalMetaphorItem.addActionListener(alMedicalMetaphor);
@@ -978,8 +980,8 @@ public class UnBBayesFrame extends JFrame {
 
 		// add menu items to their respective menu
 		
-		tanItem.addActionListener(alTAN);
-		banItem.addActionListener(alBAN);
+//		tanItem.addActionListener(alTAN);
+//		banItem.addActionListener(alBAN);
 		
 		newMenu.add(newBN);
 		newMenu.add(newMSBN);
@@ -1025,9 +1027,9 @@ public class UnBBayesFrame extends JFrame {
 		viewMenu.addSeparator();
 		viewMenu.add(lafMenu);
 		
-		toolsMenu.add(learningItem);
-		toolsMenu.add(tanItem);
-		toolsMenu.add(banItem);
+//		toolsMenu.add(learningItem);
+//		toolsMenu.add(tanItem);
+//		toolsMenu.add(banItem);
 //		toolsMenu.add(iLearningItem);
 //		toolsMenu.add(metaphorItem);
 //		toolsMenu.add(medicalMetaphorItem);
@@ -1078,6 +1080,7 @@ public class UnBBayesFrame extends JFrame {
 		// filling components for "tools" 
 		componentList = new ArrayList<JComponent>();
 		componentList.add(this.getToolsMenu());
+		componentList.add(this.getToolsSplitButton());
 		newMap.put(PluginCore.PARAMETER_CATEGORY_VALUE_TOOL, componentList);
 		
 		this.setModuleCategoryToComponentsMap(newMap);
@@ -1096,12 +1099,12 @@ public class UnBBayesFrame extends JFrame {
 		}
 		pluginToolBar = new JToolBar();
 		pluginToolBar.setSize(pluginToolBar.getWidth(), jtbFile.getHeight());
-		pluginToolBar.setToolTipText("plugin toolbar");
+		pluginToolBar.setToolTipText(resource.getString("pluginMenu"));
 		
 		// instantiate new Split button
 		this.setPluginSplitButton(new SplitToggleButton());
 		pluginToolBar.add(this.getPluginSplitButton());
-		this.getPluginSplitButton().setToolTipText("split button");
+		this.getPluginSplitButton().setToolTipText(resource.getString("pluginMenu"));
 		
 		topPanel.add(pluginToolBar);
 	}
@@ -1126,7 +1129,7 @@ public class UnBBayesFrame extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				// reset components
 				createMenu();	//reset menu
-				removePluginButtonsFromOtherComponents(getMapOfModuleButtonsNotAtSplitButton()); // remove buttons from other JTBs
+				removePluginButtonsFromOtherComponents(getMapOfComponentsToBeRemovedAtPluginReload()); // remove buttons from other JTBs
 				initializeModuleCategoryToJMenuMap(); // fills up the moduleCategoryToJMenuMap
 				loadPlugins(); // reload plugins
 				updatePluginMenuVisibility();	// show menus if it is not empty again
@@ -1295,8 +1298,20 @@ public class UnBBayesFrame extends JFrame {
     			JButton button = new JButton(icon);
     			button.setToolTipText(descriptionParam.valueAsString());
     			
+    			// extracting the module's name
+    			String moduleName = "";
+    			if (nameParam != null) {
+    				moduleName = nameParam.valueAsString();
+    			} else {
+    				moduleName = getUnBBayesModuleNameByPluginClass(pluginOrBuilderCls);
+    				if (moduleName == null) {
+    					// no name was extracted... Use default...
+						moduleName = "UnBBayesModule";
+					}
+    			}
+    			
     			// filling menu item
-    			JMenuItem menuItem = new JMenuItem(nameParam.valueAsString(),icon);
+    			JMenuItem menuItem = new JMenuItem(moduleName,icon);
     			menuItem.setToolTipText(descriptionParam.valueAsString());
     			
     			// creating action listener
@@ -1348,11 +1363,23 @@ public class UnBBayesFrame extends JFrame {
 						((JMenu)comp).add(menuItem);
 						addToPluginMenuFlag = false;
 						// OBS. a menu item can be added into only one menu
-					} else {
+					} else if (comp instanceof SplitToggleButton) {
+						SplitToggleButton spButton = ((SplitToggleButton)comp);
+						// creating a menu item for a split button
+	        			JMenuItem splitButtonMenuItem = new JMenuItem(moduleName,icon);
+	        			splitButtonMenuItem.setToolTipText(descriptionParam.valueAsString());
+	        			splitButtonMenuItem.addActionListener(new SplitButtonMenuActionListener(spButton, button));
+	        			
+	        			// adding the plugin button into split button instead of the tool bar itself
+	        			spButton.add(button, splitButtonMenuItem);// the last loaded plugin will be at top
+	        			spButton.repaint();		
+						addToSplitButton = false;				
+						this.getMapOfComponentsToBeRemovedAtPluginReload().put(splitButtonMenuItem, spButton);
+    			     } else {
 						// if we are not adding to a JMenu, add a button instead of menu item
 						comp.add(button);
 						addToSplitButton = false;
-						this.getMapOfModuleButtonsNotAtSplitButton().put(button, comp);
+						this.getMapOfComponentsToBeRemovedAtPluginReload().put(button, comp);
 					}
 				}
     			
@@ -1363,19 +1390,17 @@ public class UnBBayesFrame extends JFrame {
     			// fill split button if flag is on
     			if (addToSplitButton) {
     				// creating a menu item for split button, only if the flag is on
-        			JMenuItem splitButtonMenuItem = new JMenuItem(nameParam.valueAsString(),icon);
+        			JMenuItem splitButtonMenuItem = new JMenuItem(moduleName,icon);
         			splitButtonMenuItem.setToolTipText(descriptionParam.valueAsString());
-        			splitButtonMenuItem.addActionListener(new SplitButtonMenuActionListener(button));
+        			splitButtonMenuItem.addActionListener(new SplitButtonMenuActionListener(this.getPluginSplitButton(), button));
         			
         			// adding the plugin button into split button instead of the tool bar itself
-        			this.getPluginSplitButton().getMenu().add(splitButtonMenuItem);
-        			this.getPluginSplitButton().setMainButton(button);	// the last loaded plugin will be at top
-        			this.getPluginSplitButton().updateUI();
+        			this.getPluginSplitButton().add(button, splitButtonMenuItem); // the last loaded plugin will be at top
         			this.getPluginSplitButton().repaint();
     			}
     			
     			// filling the return
-    			ret.put(nameParam.valueAsString(), pluginOrBuilderCls);
+    			ret.put(moduleName, pluginOrBuilderCls);
 			} catch (Exception e) {
 				e.printStackTrace();
 				continue;
@@ -1388,6 +1413,28 @@ public class UnBBayesFrame extends JFrame {
 		return ret;
 	}
 	
+	/**
+	 * Extracts the module's name from its class (the class can be a builder or the module itself).
+	 * Usually, we use {@link UnBBayesModule#getModuleName()} or
+	 * {@link UnBBayesModuleBuilder#getName()} to do so.
+	 * @param pluginOrBuilderCls a class of {@link UnBBayesModule} or {@link UnBBayesModuleBuilder}
+	 * @return name or null if not found
+	 */
+	protected String getUnBBayesModuleNameByPluginClass(
+			Class pluginOrBuilderCls) {
+		try {
+			if (UnBBayesModuleBuilder.class.isAssignableFrom(pluginOrBuilderCls)) {
+				UnBBayesModuleBuilder builder = (UnBBayesModuleBuilder) pluginOrBuilderCls.newInstance();
+				return builder.getName();
+			} else {
+				return ((UnBBayesModule) pluginOrBuilderCls.newInstance()).getName();
+			}
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	/**
 	 * Use the parameter "clazz" in order to instantiate a new UnBBayesModule (in this case, "clazz"
 	 * must provide a default constructor) or as a UnBBayesModuleBuilder (which by 
@@ -1431,6 +1478,11 @@ public class UnBBayesFrame extends JFrame {
 		jtbTools = new JToolBar();
 		jtbWindow = new JToolBar();
 		jtbHelp = new JToolBar();
+		
+		// instantiate tool's Split button
+		this.setToolsSplitButton(new SplitToggleButton());
+		jtbTools.add(this.getToolsSplitButton());
+		this.getToolsSplitButton().setToolTipText(resource.getString("toolsMenu"));
 
 		// add their buttons
 		jtbNew.add(newNet);
@@ -1439,7 +1491,7 @@ public class UnBBayesFrame extends JFrame {
 		jtbNew.add(newOobn);
 		jtbFile.add(openNet);
 		jtbFile.add(saveNet);
-		jtbTools.add(learn);
+//		jtbTools.add(learn);
 		jtbView.add(metal);
 		jtbView.add(motif);
 		jtbView.add(homeSystem);
@@ -1463,20 +1515,20 @@ public class UnBBayesFrame extends JFrame {
 	 * button will be removed from the component and the map.
 	 * @param map
 	 */
-	protected void removePluginButtonsFromOtherComponents(Map<AbstractButton, JComponent> map) {
+	protected void removePluginButtonsFromOtherComponents(Map<JComponent, JComponent> map) {
 		
 		// stores removed keys
-		List<AbstractButton> removedKeys = new ArrayList<AbstractButton>();
+		List<JComponent> removedKeys = new ArrayList<JComponent>();
 
 		// remove all module buttons once added to components
-		for (AbstractButton key : map.keySet()) {
+		for (JComponent key : map.keySet()) {
 			JComponent comp = map.get(key);
 			comp.remove(key);
 			removedKeys.add(key);
 		}
 		
 		// remove keys from the map
-		for (AbstractButton key : removedKeys) {
+		for (JComponent key : removedKeys) {
 			map.remove(key);
 		}
 	}
@@ -1494,7 +1546,7 @@ public class UnBBayesFrame extends JFrame {
 		newOobn = new JButton(iconController.getNewOOBNIcon());
 		openNet = new JButton(iconController.getOpenIcon());
 		saveNet = new JButton(iconController.getSaveIcon());
-		learn = new JButton(iconController.getLearningIcon());
+//		learn = new JButton(iconController.getLearningIcon());
 		metal = new JButton(iconController.getMetalIcon());
 		motif = new JButton(iconController.getMotifIcon());
 		homeSystem = new JButton(iconController.getHomeIcon());
@@ -1510,7 +1562,7 @@ public class UnBBayesFrame extends JFrame {
 		newOobn.setToolTipText(resource.getString("newOobnToolTip"));
 		openNet.setToolTipText(resource.getString("openToolTip"));
 		saveNet.setToolTipText(resource.getString("saveToolTip"));
-		learn.setToolTipText(resource.getString("learningToolTip"));
+//		learn.setToolTipText(resource.getString("learningToolTip"));
 		metal.setToolTipText(resource.getString("metalToolTip"));
 		motif.setToolTipText(resource.getString("motifToolTip"));
 		homeSystem.setToolTipText(resource.getString("homeSystemToolTip"));
@@ -1533,7 +1585,7 @@ public class UnBBayesFrame extends JFrame {
 		metal.addActionListener(alMetal);
 		motif.addActionListener(alMotif);
 		homeSystem.addActionListener(alHomeSystem);
-		learn.addActionListener(alLearn);
+//		learn.addActionListener(alLearn);
 		tile.addActionListener(alTile);
 		cascade.addActionListener(alCascade);
 		help.addActionListener(alHelp);
@@ -1997,29 +2049,30 @@ public class UnBBayesFrame extends JFrame {
 	protected class SplitButtonMenuActionListener implements ActionListener{
 		// the button to be set as the split button's main button, after this action listener is called
 		private JButton mainButton;
+		// the split button to use this action listener
+		private SplitToggleButton splitButton;
 		
 		/**
 		 * Constructor setting the button to be set as main button at {@link #actionPerformed(ActionEvent)}
 		 * @param mainButton : the button to be set as the split button's main button, 
 		 * after this action listener is called
 		 */
-		public SplitButtonMenuActionListener (JButton mainButton) {
+		public SplitButtonMenuActionListener (SplitToggleButton splitButton, JButton mainButton) {
 			this.mainButton = mainButton;
+			this.splitButton = splitButton;
 		}
 		/*
 		 * (non-Javadoc)
 		 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
 		 */
 		public void actionPerformed(ActionEvent e) {
-			getPluginSplitButton().setMainButton(this.mainButton);
-			getPluginSplitButton().getMenu().setVisible(false);
-			getPluginSplitButton().updateUI();
-			getPluginSplitButton().repaint();
-			getPluginToolBar().updateUI();
-			getPluginToolBar().repaint();
+			this.splitButton.setMainButton(this.mainButton);
+			this.splitButton.getMenu().setVisible(false);
+			this.splitButton.updateUI();
+			this.splitButton.repaint();
 			
 			// press the button
-			getPluginSplitButton().getMainButton().doClick();
+			this.splitButton.getMainButton().doClick();
 		}
 		
 	}
@@ -2089,27 +2142,27 @@ public class UnBBayesFrame extends JFrame {
 	}
 
 	/**
-	 * It stores all modules' buttons which was not added into
-	 * the default split button. They need special attention, since
-	 * they are usually situated at other JTB.
+	 * It stores all modules' components which was not added into
+	 * the default plugin split button. They need special attention, since
+	 * they are usually situated at other JTB, and must be removed at plugin reload.
 	 * The buttons are mapped to the component where they were added.
-	 * @return the mapOfModuleButtonsNotAtSplitButton
+	 * @return the mapOfComponentsToBeRemovedAtPluginReload
 	 */
-	public Map<AbstractButton, JComponent> getMapOfModuleButtonsNotAtSplitButton() {
-		return mapOfModuleButtonsNotAtSplitButton;
+	public Map<JComponent, JComponent> getMapOfComponentsToBeRemovedAtPluginReload() {
+		return mapOfComponentsToBeRemovedAtPluginReload;
 	}
 
 	/**
-	 * It stores all modules' buttons which was not added into
-	 * the default split button. They need special attention, since
-	 * they are usually situated at other JTB.
+	 * It stores all modules' components which was not added into
+	 * the default plugin split button. They need special attention, since
+	 * they are usually situated at other JTB, and must be removed at plugin reload.
 	 * The buttons are mapped to the component where they were added.
-	 * @param mapOfModuleButtonsNotAtSplitButton the mapOfModuleButtonsNotAtSplitButton to set
+	 * @param mapOfComponentsToBeRemovedAtPluginReload the mapOfComponentsToBeRemovedAtPluginReload to set
 	 * @see #getJtbFile()
 	 */
-	public void setMapOfBNModulesAtFileJTB(
-			Map<AbstractButton, JComponent> listOfBNModulesAtFileJTB) {
-		this.mapOfModuleButtonsNotAtSplitButton = listOfBNModulesAtFileJTB;
+	public void setMapOfComponentsToBeRemovedAtPluginReload(
+			Map<JComponent, JComponent> listOfBNModulesAtFileJTB) {
+		this.mapOfComponentsToBeRemovedAtPluginReload = listOfBNModulesAtFileJTB;
 	}
 
 	/**
@@ -2152,6 +2205,34 @@ public class UnBBayesFrame extends JFrame {
 	 */
 	public void setDesktop(MDIDesktopPane desktop) {
 		this.desktop = desktop;
+	}
+
+	/**
+	 * @return the jtbTools
+	 */
+	public JToolBar getJtbTools() {
+		return jtbTools;
+	}
+
+	/**
+	 * @param jtbTools the jtbTools to set
+	 */
+	public void setJtbTools(JToolBar jtbTools) {
+		this.jtbTools = jtbTools;
+	}
+
+	/**
+	 * @return the toolsSplitButton
+	 */
+	public SplitToggleButton getToolsSplitButton() {
+		return toolsSplitButton;
+	}
+
+	/**
+	 * @param toolsSplitButton the toolsSplitButton to set
+	 */
+	public void setToolsSplitButton(SplitToggleButton toolsSplitButton) {
+		this.toolsSplitButton = toolsSplitButton;
 	}
 
 }
