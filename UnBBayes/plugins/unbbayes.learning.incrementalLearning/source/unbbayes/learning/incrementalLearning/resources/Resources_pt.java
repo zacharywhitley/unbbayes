@@ -38,6 +38,8 @@ public class Resources_pt extends ListResourceBundle {
 		{"chooseNetworkFile","Selecione o arquivo de rede"},
 		{"chooseFrontierSet","Selecione o conjunto de fronteira."},
 		{"chooseTrainingSet","Selecione o conjunto de treinamento."},
+		{"saveNetworkFile","Armazenar arquivo de rede"},
+		{"saveFrontierSet","Armazenar conjunto de fronteira"},
 
 	};
 

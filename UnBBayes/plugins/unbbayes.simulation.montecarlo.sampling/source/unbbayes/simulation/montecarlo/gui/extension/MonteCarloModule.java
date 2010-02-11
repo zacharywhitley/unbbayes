@@ -3,31 +3,17 @@
  */
 package unbbayes.simulation.montecarlo.gui.extension;
 
-import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.ResourceBundle;
 
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.border.TitledBorder;
-
-import unbbayes.controller.IconController;
+import unbbayes.gui.UnBBayesFrame;
 import unbbayes.io.BaseIO;
-import unbbayes.io.FileExtensionIODelegator;
-import unbbayes.io.NetIO;
-import unbbayes.io.XMLBIFIO;
+import unbbayes.io.OwnerAwareFileExtensionIODelegator;
 import unbbayes.prs.Graph;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.simulation.montecarlo.controller.MCMainController;
 import unbbayes.simulation.montecarlo.sampling.MatrixMonteCarloSampling;
-import unbbayes.util.Debug;
 import unbbayes.util.extension.UnBBayesModule;
 import unbbayes.util.extension.UnBBayesModuleBuilder;
 
@@ -50,55 +36,26 @@ public class MonteCarloModule extends UnBBayesModule implements UnBBayesModuleBu
   	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
   			unbbayes.simulation.montecarlo.resources.MCResources.class.getName());
   	
-  	private JScrollPane scrollPane;
-  	private JLabel buttonPanelLabel;
-  	private JButton button;
-  	private ActionListener buttonActionListener;
 	
 	public MonteCarloModule() {
 		super();
 		
-		this.setLayout(new FlowLayout(FlowLayout.CENTER, 10,5));
-		
 		// setting up the i/o classes used by UnBBayesFrame in order to load a file from the main pane
-		this.io = new MonteCarloFileExtensionIODelegator(this);
+		this.io = new OwnerAwareFileExtensionIODelegator(this);
 		
-		scrollPane = new JScrollPane();
-		scrollPane.setBorder(new TitledBorder(this.resource.getString("mcTitle")));	
-		
-		JPanel contentPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10,5));
-
-		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10,5));
-		buttonPanelLabel = new JLabel(this.resource.getString("selectFile"));
-		buttonPanel.add(buttonPanelLabel);
-		
-		button = new JButton(this.resource.getString("openFile"),
-				IconController.getInstance().getNetFileIcon());
-		buttonPanel.add(button);
-		
-		contentPanel.add(buttonPanel);
-		
-		scrollPane.setViewportView(contentPanel);
-		this.setContentPane(scrollPane);
-		
-		// the button must trigger a monte carlo sampling
-		
-		buttonActionListener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-					lastBuiltMcMainController = new MCMainController(new MatrixMonteCarloSampling());
-				} catch (Exception exc) {
-					Debug.println(this.getClass(), "Exception at MCMainController", exc);
-				} catch (Error err) {
-					err.printStackTrace();
-				}
-			}
-		};
-		button.addActionListener(buttonActionListener);
+		// let this frame to be invisible
+		this.setVisible(false);
 		
 	}
 	
-
+	/*
+	 * (non-Javadoc)
+	 * @see javax.swing.JComponent#setVisible(boolean)
+	 */
+	public void setVisible(boolean visible){
+		// this is a workarount to assure this is always invisible
+		super.setVisible(false);
+	};
 
 	/* (non-Javadoc)
 	 * @see unbbayes.util.extension.UnBBayesModuleBuilder#buildUnBBayesModule()
@@ -106,6 +63,27 @@ public class MonteCarloModule extends UnBBayesModule implements UnBBayesModuleBu
 	public UnBBayesModule buildUnBBayesModule() {
 		return this;
 	}
+	
+	
+	
+	/* (non-Javadoc)
+	 * @see unbbayes.util.extension.UnBBayesModule#setUnbbayesFrame(unbbayes.gui.UnBBayesFrame)
+	 */
+	public void setUnbbayesFrame(UnBBayesFrame unbbayesFrame) {
+		super.setUnbbayesFrame(unbbayesFrame);
+		// this is a workaround in order to start process only when the UnBBayesFrame is set (that means
+		// this module has been added as its internal frame, since this method is called on UnBBayesFrame#add(JUnBBayesModule))
+		try {
+			lastBuiltMcMainController = new MCMainController(new MatrixMonteCarloSampling());
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+		
+		unbbayesFrame.getDesktop().remove(this);
+		this.dispose();
+	}
+
+
 
 	/*
 	 * (non-Javadoc)
@@ -174,49 +152,6 @@ public class MonteCarloModule extends UnBBayesModule implements UnBBayesModuleBu
 		this.io = io;
 	}
 
-	/**
-	 * This is just a {@link FileExtensionIODelegator} with some customization
-	 * (names, content of delegators and its descriptions)
-	 * @author Shou Matsumoto
-	 *
-	 */
-	public class MonteCarloFileExtensionIODelegator extends FileExtensionIODelegator {
-
-		private MonteCarloModule owner;
-		
-		/**
-		 * Default constructor
-		 * @param the {@link MonteCarloModule} owning this IO class. This is used generally
-		 * in order to extract module names.
-		 */
-		public MonteCarloFileExtensionIODelegator(MonteCarloModule module) {
-			super();
-			this.owner = module;
-			// customizing the content of the IO
-			List<BaseIO> delegators = new ArrayList<BaseIO>();
-			delegators.add(new NetIO());
-			delegators.add(new XMLBIFIO());
-			this.setDelegators(delegators);
-		}
-		
-		/*
-		 * (non-Javadoc)
-		 * @see unbbayes.io.FileExtensionIODelegator#getName()
-		 */
-		public String getName() {
-			return this.owner.getName();
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see unbbayes.io.FileExtensionIODelegator#getSupportedFilesDescription(boolean)
-		 */
-		public String getSupportedFilesDescription(boolean isLoadOnly) {
-			String ret = this.getName() + " - " + super.getSupportedFilesDescription(isLoadOnly);
-			return ret;
-		}
-	}
-
 
 	/**
 	 * 
@@ -236,52 +171,4 @@ public class MonteCarloModule extends UnBBayesModule implements UnBBayesModuleBu
 		this.lastBuiltMcMainController = lastBuiltMcMainController;
 	}
 
-	/**
-	 * The main content pane of this internal frame
-	 * @return
-	 */
-	protected JScrollPane getScrollPane() {
-		return scrollPane;
-	}
-
-
-	/**
-	 * 
-	 * @return the label asking user to press the "open file"
-	 * button
-	 */
-	protected JLabel getButtonPanelLabel() {
-		return buttonPanelLabel;
-	}
-
-
-	/**
-	 * 
-	 * @return the "open file" button
-	 */
-	protected JButton getButton() {
-		return button;
-	}
-
-
-	/**
-	 * Getts the current action listener for the "open file"
-	 * button
-	 * @return
-	 */
-	protected ActionListener getButtonActionListener() {
-		return buttonActionListener;
-	}
-
-
-	/**
-	 * Sets the action listener for the main button (the
-	 * "open file" button)
-	 * @param buttonActionListener
-	 */
-	protected void setButtonActionListener(ActionListener buttonActionListener) {
-		this.getButton().removeActionListener(this.buttonActionListener);
-		this.buttonActionListener = buttonActionListener;
-		this.getButton().addActionListener(this.buttonActionListener);
-	}
 }

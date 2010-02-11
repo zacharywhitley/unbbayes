@@ -38,6 +38,8 @@ public class Resources extends ListResourceBundle {
 		{"chooseNetworkFile","Choose the network file"},
 		{"chooseFrontierSet","Choose the frontier set"},
 		{"chooseTrainingSet","Choose the training set"},
+		{"saveNetworkFile","Save the network file"},
+		{"saveFrontierSet","Save the frontier set"},
 
 	};
 

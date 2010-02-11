@@ -3,7 +3,6 @@
  */
 package unbbayes.learning.incrementalLearning.gui.extension;
 
-
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,6 +21,7 @@ import javax.swing.border.TitledBorder;
 import unbbayes.aprendizagem.ConstructionController;
 import unbbayes.aprendizagem.ProbabilisticController;
 import unbbayes.controller.IconController;
+import unbbayes.gui.UnBBayesFrame;
 import unbbayes.io.BaseIO;
 import unbbayes.io.OwnerAwareFileExtensionIODelegator;
 import unbbayes.learning.incrementalLearning.controller.ILController;
@@ -33,131 +33,117 @@ import unbbayes.util.extension.UnBBayesModule;
 import unbbayes.util.extension.UnBBayesModuleBuilder;
 
 /**
- * This class converts the Incremental Learning tool to a UnBBayes module plugin.
- * This code is very similar to unbbayes.learning.incrementalLearning.gui.ILBridge
+ * This class converts the Incremental Learning tool to a UnBBayes module
+ * plugin. This code is very similar to
+ * unbbayes.learning.incrementalLearning.gui.ILBridge
+ * 
  * @author Shou Matsumoto
- *
+ * 
  */
 public class IncrementalLearningModule extends UnBBayesModule implements
 		UnBBayesModuleBuilder {
 
-
 	private BaseIO io;
+
 	private ILIO incrementalLearningIO;
-	
-	private JScrollPane scrollPane;
-  	private JLabel buttonPanelLabel;
-  	private JButton button;
-  	private ActionListener buttonActionListener;
-  	
-  	private ProbabilisticNetwork pn;
-  	
-  	/** Load resource file from this package */
-  	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
-  			unbbayes.learning.incrementalLearning.resources.Resources.class.getName());
-	
+
+	private ProbabilisticNetwork pn;
+
+	private File netFileFromUnBBayesFrame = null;
+
+	/** Load resource file from this package */
+	private static ResourceBundle resource = unbbayes.util.ResourceController
+			.newInstance()
+			.getBundle(
+					unbbayes.learning.incrementalLearning.resources.Resources.class
+							.getName());
+
 	/**
 	 * Default constructor
 	 */
 	public IncrementalLearningModule() {
 		super();
 		this.setName("Incremental Learning");
-		
-		this.setLayout(new FlowLayout(FlowLayout.CENTER, 10,5));
-		
-		// setting up the i/o classes used by UnBBayesFrame in order to load a file from the main pane
+
+		// setting up the i/o classes used by UnBBayesFrame in order to load a
+		// file from the main pane
 		this.io = new OwnerAwareFileExtensionIODelegator(this);
 		this.incrementalLearningIO = new ILIO();
-		
-		scrollPane = new JScrollPane();
-		scrollPane.setBorder(new TitledBorder(this.resource.getString("title")));	
-		
-		JPanel contentPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10,5));
 
-		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10,5));
-		buttonPanelLabel = new JLabel(this.resource.getString("selectFile"));
-		buttonPanel.add(buttonPanelLabel);
-		
-		button = new JButton(this.resource.getString("openFile"),
-				IconController.getInstance().getNetFileIcon());
-		buttonPanel.add(button);
-		
-		contentPanel.add(buttonPanel);
-		
-		scrollPane.setViewportView(contentPanel);
-		this.setContentPane(scrollPane);
-		
-		// the button must trigger a incremental learning
-		
-		buttonActionListener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-					triggerFileChooser(null);
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
-			}
-		};
-		button.addActionListener(buttonActionListener);
+		this.setVisible(false); // this module should not be visible
 	}
-	
+
 	/**
-	 * It just triggers a series of file choosers in order to collect the necessary
-	 * files to start incremental learning
-	 * @param netFile : the network file (containing BN) to use as a starting point. If set to null,
-	 * a filechooser will be used to collect it from user.
+	 * It just triggers a series of file choosers in order to collect the
+	 * necessary files to start incremental learning
+	 * 
+	 * @param netFile :
+	 *            the network file (containing BN) to use as a starting point.
+	 *            If set to null, a filechooser will be used to collect it from
+	 *            user.
 	 * @return : the last file used by the system
 	 */
 	protected File triggerFileChooser(File netFile) {
 		// initial test
 		if (netFile == null) {
-			/* choose the network file*/ 
-			netFile = this.incrementalLearningIO.chooseFile(
-						this.getIO().getSupportedFileExtensions(true), 
-						this.resource.getString("chooseNetworkFile")
-					);
+			/* choose the network file */
+			netFile = this.incrementalLearningIO.chooseFile(this.getIO()
+					.getSupportedFileExtensions(true), this.resource
+					.getString("chooseNetworkFile"));
 		}
-        
-		/* Obtaining the network from netFile*/
-        this.pn = this.incrementalLearningIO.getNet(netFile, this.getIO());        
-        
-        /* Choose another file, containing enough statistic informations */                 
-        netFile = this.incrementalLearningIO.chooseFile(new String[] { "obj" }, this.resource.getString("chooseFrontierSet"));
-        
-        List ssList = new ArrayList();;
-        if (netFile != null) {
-            ssList = this.incrementalLearningIO.getSuficStatistics(netFile);
-        }
-        
-        netFile = this.incrementalLearningIO.chooseFile(new String[] { "txt" }, this.resource.getString("chooseTrainingSet"));
-        ConstructionController constructionController= new ConstructionController(netFile,pn);        
-        
-        try {
-        	Thread.sleep(2000);
+
+		/* Obtaining the network from netFile */
+		this.pn = this.incrementalLearningIO.getNet(netFile, this.getIO());
+
+		/* Choose another file, containing enough statistic informations */
+		netFile = this.incrementalLearningIO.chooseFile(new String[] { "obj" },
+				this.resource.getString("chooseFrontierSet"));
+
+		List ssList = new ArrayList();
+		;
+		if (netFile != null) {
+			ssList = this.incrementalLearningIO.getSuficStatistics(netFile);
+		}
+
+		netFile = this.incrementalLearningIO.chooseFile(new String[] { "txt" },
+				this.resource.getString("chooseTrainingSet"));
+		ConstructionController constructionController = new ConstructionController(
+				netFile, pn);
+
+		try {
+			Thread.sleep(2000);
 		} catch (Throwable e) {
 			Debug.println(this.getClass(), "Pre WAIT interrupted", e);
-		}        
-        ILController ilc = new ILController(pn,ssList,constructionController.getVariables());
-        try {
-        	Thread.sleep(2000);
+		}
+		ILController ilc = new ILController(pn, ssList, constructionController
+				.getVariables());
+		try {
+			Thread.sleep(2000);
 		} catch (Throwable e) {
 			Debug.println(this.getClass(), "Post WAIT interrupted", e);
 		}
-        
-        /*Gives the probability of each node*/        
-        new ProbabilisticController(ilc.getListaVariaveis(),constructionController.getMatrix(),
-        							constructionController.getVector(),constructionController.getCaseNumber(),
-        							this.getUnbbayesFrame().getController(), constructionController.isCompacted());        
-        
-        //paramRecalc();
-        netFile = this.incrementalLearningIO.getFile();
-        this.incrementalLearningIO.makeNetFile(netFile, io, pn);
-        netFile = this.incrementalLearningIO.getFile();
-        this.incrementalLearningIO.makeContFile(ssList, netFile);
-        
-        return netFile;
-	}
 
+		/* Gives the probability of each node */
+		new ProbabilisticController(ilc.getListaVariaveis(),
+				constructionController.getMatrix(), constructionController
+						.getVector(), constructionController.getCaseNumber(),
+				this.getUnbbayesFrame().getController(), constructionController
+						.isCompacted());
+
+		// paramRecalc();
+		// netFile = this.incrementalLearningIO.getFile();
+		netFile = this.incrementalLearningIO.chooseFile(this.getIO()
+				.getSupportedFileExtensions(true), this.resource
+				.getString("saveNetworkFile"));
+		this.incrementalLearningIO.makeNetFile(netFile, this.getIO(), this.pn);
+
+//		File objFile = this.incrementalLearningIO.getFile();
+		File objFile = this.incrementalLearningIO.chooseFile(new String[] { "obj" },
+				this.resource.getString("saveFrontierSet"));
+		this.incrementalLearningIO.makeContFile(ssList, objFile);
+
+		return netFile;
+	}
 
 	/**
 	 * @param title
@@ -168,42 +154,97 @@ public class IncrementalLearningModule extends UnBBayesModule implements
 		this.setName(title);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see unbbayes.util.extension.UnBBayesModule#getModuleName()
 	 */
 	public String getModuleName() {
 		return this.getName();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see unbbayes.util.extension.UnBBayesModule#openFile(java.io.File)
 	 */
 	public UnBBayesModule openFile(File file) throws IOException {
-		this.triggerFileChooser(file);
-		return null;	// show nothing as a internal frame
+		this.setNetFileFromUnBBayesFrame(file);
+		// after some time, #setUnBBayesFrame will be called and file choosers
+		// will be triggered.
+		return this;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see unbbayes.util.extension.UnBBayesModuleBuilder#buildUnBBayesModule()
 	 */
 	public UnBBayesModule buildUnBBayesModule() {
 		return this;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see unbbayes.gui.IPersistenceAwareWindow#getIO()
 	 */
 	public BaseIO getIO() {
 		return this.io;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see unbbayes.gui.IPersistenceAwareWindow#getPersistingGraph()
 	 */
 	public Graph getPersistingGraph() {
 		return this.pn;
 	}
-	
 
-	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see unbbayes.util.extension.UnBBayesModule#setUnbbayesFrame(unbbayes.gui.UnBBayesFrame)
+	 */
+	public void setUnbbayesFrame(UnBBayesFrame unbbayesFrame) {
+		super.setUnbbayesFrame(unbbayesFrame);
+		try {
+			// this is a workaround to trigger file choosers only when we know
+			// UnBBayesFrame is available.
+			if (this.getUnbbayesFrame() != null) {
+				// if openFile was called once, getNetFileFromUnBBayesFrame will
+				// return non-null value.
+				triggerFileChooser(this.getNetFileFromUnBBayesFrame());
+			}
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see javax.swing.JComponent#setVisible(boolean)
+	 */
+	public void setVisible(boolean flag) {
+		// this is allways invisible
+		super.setVisible(false);
+	}
+
+	/**
+	 * @return the netFileFromUnBBayesFrame
+	 */
+	public File getNetFileFromUnBBayesFrame() {
+		return netFileFromUnBBayesFrame;
+	}
+
+	/**
+	 * @param netFileFromUnBBayesFrame
+	 *            the netFileFromUnBBayesFrame to set
+	 */
+	public void setNetFileFromUnBBayesFrame(File netFileFromUnBBayesFrame) {
+		this.netFileFromUnBBayesFrame = netFileFromUnBBayesFrame;
+	}
+
 }

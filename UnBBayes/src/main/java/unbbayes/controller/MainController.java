@@ -171,7 +171,6 @@ public class MainController {
 			builder.setName(resource.getString("NewPNName"));
 			if (screen != null) {
 				UnBBayesModule module = builder.buildUnBBayesModule();
-				module.setUnbbayesFrame(this.screen);
 				screen.addWindow(module);
 			}
 		}
@@ -187,7 +186,6 @@ public class MainController {
 			builder.setName(resource.getString("NewMSBNName"));
 			if (screen != null) {
 				UnBBayesModule module = builder.buildUnBBayesModule();
-				module.setUnbbayesFrame(this.screen);
 				screen.addWindow(module);
 			}
 		}
@@ -203,7 +201,6 @@ public class MainController {
 			builder.setName(resource.getString("NewMEBNName"));
 			if (screen != null) {
 				UnBBayesModule module = builder.buildUnBBayesModule();
-				module.setUnbbayesFrame(this.screen);
 				screen.addWindow(module);
 			}
 		}
@@ -219,7 +216,6 @@ public class MainController {
 			builder.setName(resource.getString("NewOOBNName"));
 			if (screen != null) {
 				UnBBayesModule module = builder.buildUnBBayesModule();
-				module.setUnbbayesFrame(this.screen);
 				screen.addWindow(module);
 			}
 		}

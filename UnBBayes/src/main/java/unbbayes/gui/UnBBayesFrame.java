@@ -356,6 +356,17 @@ public class UnBBayesFrame extends JFrame {
 	public void addWindow(JInternalFrame newWindow) {
 		desktop.add(newWindow);
 	}
+	
+	/**
+	 * Adds a new window/module.
+	 * 
+	 * @param newWindow
+	 *            new module to add.
+	 */
+	public void addWindow(UnBBayesModule newModule) {
+		desktop.add(newModule);
+		newModule.setUnbbayesFrame(this);
+	}
 
 	/**
 	 * Method responsible for creating all ActionListeners needed.
@@ -1296,7 +1307,6 @@ public class UnBBayesFrame extends JFrame {
     					try {
     						module = getUnBBayesModuleByPluginClass((Class)this.getParam());
     						addWindow(module);
-    						module.setVisible(true);
     					} catch (InstantiationException e1) {
     						throw new RuntimeException(e1);
     					} catch (IllegalAccessException e1) {
@@ -1398,10 +1408,7 @@ public class UnBBayesFrame extends JFrame {
 		} else {
 			ret = (UnBBayesModule) clazz.newInstance();
 		}
-		// the below code is important, since it tells the module who is its owner, giving access to it.
-		if (ret != null) {
-			ret.setUnbbayesFrame(this);
-		}
+		
 		return ret;
 	}
 	
@@ -2131,6 +2138,20 @@ public class UnBBayesFrame extends JFrame {
 	 */
 	public void setController(MainController controller) {
 		this.controller = controller;
+	}
+
+	/**
+	 * @return the desktop
+	 */
+	public MDIDesktopPane getDesktop() {
+		return desktop;
+	}
+
+	/**
+	 * @param desktop the desktop to set
+	 */
+	public void setDesktop(MDIDesktopPane desktop) {
+		this.desktop = desktop;
 	}
 
 }
