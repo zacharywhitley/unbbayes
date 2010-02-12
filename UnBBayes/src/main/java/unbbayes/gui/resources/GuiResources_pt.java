@@ -57,10 +57,6 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"fileNETType","Arquivo de Rede Bayesiana NET"},
 		{"fileGenericType","Arquivo Genérico"},
 		
-//		{"netFileFilter","Net (.net, .oobn), XMLBIF (.xml), Netica (.dne), PR-OWL (.owl), UnBBayes file (.ubf)"},
-//		{"netFileFilterLoad","Net (.net), XMLBIF (.xml), Netica (.dne)"},
-//		{"netFileFilterSaveMEBN", "Arquivo UnBBayes(.ubf)"},
-//		{"xmlBIFFileFilter", "XMLBIF (.xml)"},
 		{"allNetFileFilter","Arquivos Compatíveis"},
 		{"powerloomFileFilter","Base de Conhecimento (.plm)"},
 		{"textFileFilter","Text (.txt)"},
@@ -76,7 +72,6 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"newToolTip","Nova rede"},
 		{"newMsbnToolTip", "Nova MSBN"}, 
 		{"newMebnToolTip", "Nova MEBN"}, 
-		{"newOobnToolTip", "Nova OOBN"}, 		
 		{"openToolTip","Abrir rede"},
 		{"saveToolTip","Salvar rede"},
 		{"learningToolTip","Modo de aprendizagem"},
@@ -542,7 +537,6 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"PNModuleName" , "Redes Probabilísticas"},
 		{"MEBNModuleName" , "Redes Bayesianas Multi-Entidade"},
 		{"MSBNModuleName" , "Redes Bayesianas Múltiplas-Seccionadas"},
-		{"OOBNModuleName" , "Redes Bayesianas Orientados a Objeto"},
 		
 
 		{"sampleSizeInputMessage", "Favor entrar com o tamanho da amostragem (número de casos)."},

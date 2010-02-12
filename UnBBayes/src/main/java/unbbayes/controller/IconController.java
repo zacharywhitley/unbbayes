@@ -147,7 +147,6 @@ public class IconController implements Serializable {
 	
 	protected ImageIcon newMEBNIcon; 
 	
-	protected ImageIcon newOOBNIcon; 
 
 	protected ImageIcon informationIcon;
 
@@ -192,7 +191,7 @@ public class IconController implements Serializable {
 
 	protected ImageIcon openModelIcon;
 	
-	protected ImageIcon learningIcon;
+//	protected ImageIcon learningIcon;
 	
 	
 	/* ---------- MEBN Icons -------------- */
@@ -838,14 +837,6 @@ public class IconController implements Serializable {
 		}
 	}	
 	
-	public ImageIcon getNewOOBNIcon() {
-		if (newOOBNIcon != null) {
-			return newOOBNIcon;
-		} else {
-			newOOBNIcon = new ImageIcon(getClass().getResource("/icons/new-oobn.png"));
-			return newOOBNIcon;
-		}
-	}	
 
 	public ImageIcon getLessIcon() {
 		if (lessIcon != null) {
@@ -1091,15 +1082,15 @@ public class IconController implements Serializable {
 		}
 	}
 	
-	public ImageIcon getLearningIcon() {
-		if (learningIcon != null) {
-			return learningIcon;
-		} else {
-			learningIcon = new ImageIcon(getClass().getResource(
-					"/icons/learn.gif"));
-			return learningIcon;
-		}
-	}
+//	public ImageIcon getLearningIcon() {
+//		if (learningIcon != null) {
+//			return learningIcon;
+//		} else {
+//			learningIcon = new ImageIcon(getClass().getResource(
+//					"/icons/learn.gif"));
+//			return learningIcon;
+//		}
+//	}
 	
 	public ImageIcon getGrayBorderBoxIcon() {
 		if (grayBorderIcon != null) {

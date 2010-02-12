@@ -39,7 +39,6 @@ public abstract class UnBBayesModule extends JInternalFrame implements
 	 */
 	public UnBBayesModule(String title) {
 		super(title, true, true, true, true);
-//		this.setVisible(false);
 	}
 	
 
@@ -138,7 +137,13 @@ public abstract class UnBBayesModule extends JInternalFrame implements
 	public void setUnbbayesFrame(UnBBayesFrame unbbayesFrame) {
 		this.unbbayesFrame = unbbayesFrame;
 	}
-	
-	
+
+	/* (non-Javadoc)
+	 * @see java.awt.Component#setName(java.lang.String)
+	 */
+	public void setName(String name) {
+		super.setName(name);
+		this.setTitle(name);
+	}
 	
 }

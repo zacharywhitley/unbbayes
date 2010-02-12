@@ -78,7 +78,6 @@ public class ControllerResources_pt extends ListResourceBundle {
 		{"NewPNName","Nova BN"},
 		{"NewMSBNName","Nova MSBN"},
 		{"NewMEBNName","NovaMEBN"},
-		{"NewOOBNName","NovaOOBN"},
 		
 		{"probabilisticNodeName","C"},
 		{"decisionNodeName","D"},

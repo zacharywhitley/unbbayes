@@ -47,7 +47,6 @@ import java.util.Set;
 
 import javax.help.HelpSet;
 import javax.help.JHelp;
-import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -85,7 +84,6 @@ import unbbayes.controller.JavaHelperController;
 import unbbayes.controller.MainController;
 import unbbayes.gui.util.SplitToggleButton;
 import unbbayes.io.BaseIO;
-import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.PluginCore;
 import unbbayes.util.extension.UnBBayesModule;
@@ -93,7 +91,6 @@ import unbbayes.util.extension.UnBBayesModuleBuilder;
 import unbbayes.util.extension.builder.MEBNWindowBuilder;
 import unbbayes.util.extension.builder.MSBNWindowBuilder;
 import unbbayes.util.extension.builder.NetworkWindowBuilder;
-import unbbayes.util.extension.builder.OOBNWindowBuilder;
 import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
 
 /**
@@ -127,7 +124,7 @@ public class UnBBayesFrame extends JFrame {
 	private JButton newNet;
 	private JButton newMsbn;
 	private JButton newMebn;
-	private JButton newOobn;
+//	private JButton newOobn;
 	private JButton openNet;
 	private JButton saveNet;
 
@@ -149,7 +146,7 @@ public class UnBBayesFrame extends JFrame {
 //	private ActionListener alBAN;
 	private ActionListener alNewMSBN;
 	private ActionListener alNewMEBN;
-	private ActionListener alNewOOBN;
+//	private ActionListener alNewOOBN;
 	private ActionListener alOpen;
 	private ActionListener alSave;
 	private ActionListener alExit;
@@ -265,7 +262,7 @@ public class UnBBayesFrame extends JFrame {
 		singleton = this;
 		
 		// fills up the moduleCategoryToJMenuMap
-		this.initializeModuleCategoryToJMenuMap();
+		this.setModuleCategoryToComponentsMap(this.buildModuleCategoryToComponentsMap());
 		
 		// plugin support
 		this.loadPlugins();
@@ -403,13 +400,13 @@ public class UnBBayesFrame extends JFrame {
 		};
 		
 		// create an ActionListener for opening new window for OOBN
-		alNewOOBN = new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				setCursor(new Cursor(Cursor.WAIT_CURSOR));
-				controller.newOOBN();
-				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-			}
-		};
+//		alNewOOBN = new ActionListener() {
+//			public void actionPerformed(ActionEvent ae) {
+//				setCursor(new Cursor(Cursor.WAIT_CURSOR));
+//				controller.newOOBN();
+//				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+//			}
+//		};
 
 //		alTAN = new ActionListener() {
 //			public void actionPerformed(ActionEvent ae) {
@@ -822,13 +819,13 @@ public class UnBBayesFrame extends JFrame {
 		JMenuItem newMEBN = new JMenuItem(resource.getString("newMEBN"),
 				iconController.getNewIcon());
 		
-		JMenuItem newOOBN = new JMenuItem(resource.getString("newOOBN"),
-				iconController.getNewIcon());
+//		JMenuItem newOOBN = new JMenuItem(resource.getString("newOOBN"),
+//				iconController.getNewIcon());
 
 		newBN.setMnemonic(resource.getString("newBNMn").charAt(0));
 		newMSBN.setMnemonic(resource.getString("newMSBNMn").charAt(0));
 		newMEBN.setMnemonic(resource.getString("newMEBNMn").charAt(0));
-		newOOBN.setMnemonic(resource.getString("newOOBNMn").charAt(0));
+//		newOOBN.setMnemonic(resource.getString("newOOBNMn").charAt(0));
 		
 		JMenuItem openItem = new JMenuItem(resource.getString("openItem"),
 				iconController.getOpenIcon());
@@ -920,7 +917,7 @@ public class UnBBayesFrame extends JFrame {
 		newBN.addActionListener(alNewBN);
 		newMSBN.addActionListener(alNewMSBN);
 		newMEBN.addActionListener(alNewMEBN);
-		newOOBN.addActionListener(alNewOOBN);
+//		newOOBN.addActionListener(alNewOOBN);
 		openItem.addActionListener(alOpen);
 		saveItem.addActionListener(alSave);
 		exitItem.addActionListener(alExit);
@@ -986,7 +983,7 @@ public class UnBBayesFrame extends JFrame {
 		newMenu.add(newBN);
 		newMenu.add(newMSBN);
 		newMenu.add(newMEBN);
-		newMenu.add(newOOBN);
+//		newMenu.add(newOOBN);
 		fileMenu.add(newMenu);
 		fileMenu.add(openItem);
 		fileMenu.add(saveItem);
@@ -1058,12 +1055,14 @@ public class UnBBayesFrame extends JFrame {
 	
 	/**
 	 * This method is called inside the constructor in order
-	 * to initialize the map accessible from {@link #getModuleCategoryToComponentsMap()}
-	 * using the default menus ("new", "sampling", "tool" and "plugins")
+	 * to initialize the map, which is to be stored
+	 * at {@link #getModuleCategoryToComponentsMap()}.
+	 * It uses the default menus ("new", "sampling", "tool" and "plugins")
 	 * @see #getModuleCategoryToComponentsMap()
 	 * @see #setModuleCategoryToComponentsMap(Map).
+	 * @return the builded map. The caller must use this map to set {@link #setModuleCategoryToComponentsMap(Map)}
 	 */
-	protected void initializeModuleCategoryToJMenuMap() {
+	protected Map<String, List<JComponent>> buildModuleCategoryToComponentsMap() {
 		Map<String, List<JComponent>>newMap = new HashMap<String, List<JComponent>>();
 		
 		// filling components for "new" (e.g. "new bn", "new msbn")
@@ -1083,7 +1082,7 @@ public class UnBBayesFrame extends JFrame {
 		componentList.add(this.getToolsSplitButton());
 		newMap.put(PluginCore.PARAMETER_CATEGORY_VALUE_TOOL, componentList);
 		
-		this.setModuleCategoryToComponentsMap(newMap);
+		return newMap;
 	}
 	
 	/**
@@ -1127,16 +1126,7 @@ public class UnBBayesFrame extends JFrame {
 		reloadPluginsMenuItem = new JMenuItem(this.resource.getString("reloadPlugin"));
 		reloadPluginsMenuItem.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
-				// reset components
-				createMenu();	//reset menu
-				removePluginButtonsFromOtherComponents(getMapOfComponentsToBeRemovedAtPluginReload()); // remove buttons from other JTBs
-				initializeModuleCategoryToJMenuMap(); // fills up the moduleCategoryToJMenuMap
-				loadPlugins(); // reload plugins
-				updatePluginMenuVisibility();	// show menus if it is not empty again
-				
-				// reloads every plugin managed by UnBBayesPluginContextHolder by notifying it
-				getUnbbayesPluginContextHolder().notifyReload(UnBBayesFrame.this);
-				repaint();
+				reloadPlugins();
 			}
 		});
 		reloadPluginsMenuItem.setToolTipText(this.resource.getString("reloadPluginToolTip"));
@@ -1152,6 +1142,28 @@ public class UnBBayesFrame extends JFrame {
 		List<JComponent> componentList = new ArrayList<JComponent>();
 		componentList.add(pluginMenu);
 		this.getModuleCategoryToComponentsMap().put(PluginCore.PARAMETER_CATEGORY_VALUE_PLUGIN, componentList);
+	}
+	
+	/**
+	 * This method is called when we press the "reload plugin" menu.
+	 * By overwriting this method, you can customize the plugin's reload action.
+	 * This method basically resets the components obtained from {@link #getMapOfComponentsToBeRemovedAtPluginReload()},
+	 * resets the menu bar, refills the {@link #getModuleCategoryToComponentsMap()},
+	 * reloads plugins, updates the menu's visibility (if no plugin is present, some menus and toolbars are hidden),
+	 * and finally notifies reload action to {@link UnBBayesPluginContextHolder#notifyReload(Object)} using
+	 * this UnBBayesFrame as parameter.
+	 */
+	protected void reloadPlugins() {
+		// reset components
+		this.createMenu();	//reset menu
+		this.removePluginButtonsFromOtherComponents(this.getMapOfComponentsToBeRemovedAtPluginReload()); // remove buttons from other JTBs
+		this.setModuleCategoryToComponentsMap(this.buildModuleCategoryToComponentsMap()); // fills up the moduleCategoryToJMenuMap
+		this.loadPlugins(); // reload plugins
+		this.updatePluginMenuVisibility();	// show menus if it is not empty again
+		
+		// reloads every plugin managed by UnBBayesPluginContextHolder by notifying it
+		this.getUnbbayesPluginContextHolder().notifyReload(this);
+		this.repaint();
 	}
 	
 	/**
@@ -1188,13 +1200,6 @@ public class UnBBayesFrame extends JFrame {
 					+ this.resource.getString("MSBNModuleName"));
 		}
 		
-		// adding OOBN module
-		try{
-			ret.put(this.resource.getString("OOBNModuleName"), OOBNWindowBuilder.class);
-		} catch (Exception e) {
-			throw new RuntimeException(this.resource.getString("moduleLoadingError") 
-					+ this.resource.getString("OOBNModuleName"));
-		}
 		
 		return ret;
 	}
@@ -1322,10 +1327,9 @@ public class UnBBayesFrame extends JFrame {
     					try {
     						module = getUnBBayesModuleByPluginClass((Class)this.getParam());
     						addWindow(module);
-    					} catch (InstantiationException e1) {
-    						throw new RuntimeException(e1);
-    					} catch (IllegalAccessException e1) {
-    						throw new RuntimeException(e1);
+    					} catch (Throwable t) {
+    						setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    						throw new RuntimeException(t);
     					}
     					setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     				}
@@ -1374,11 +1378,15 @@ public class UnBBayesFrame extends JFrame {
 	        			spButton.add(button, splitButtonMenuItem);// the last loaded plugin will be at top
 	        			spButton.repaint();		
 						addToSplitButton = false;				
+						
+						// by storing the component and the container, we can remove them at "reload" operation
 						this.getMapOfComponentsToBeRemovedAtPluginReload().put(splitButtonMenuItem, spButton);
     			     } else {
 						// if we are not adding to a JMenu, add a button instead of menu item
 						comp.add(button);
 						addToSplitButton = false;
+						
+						// by storing the components and its container, we can remove them at "reload" operation
 						this.getMapOfComponentsToBeRemovedAtPluginReload().put(button, comp);
 					}
 				}
@@ -1488,7 +1496,7 @@ public class UnBBayesFrame extends JFrame {
 		jtbNew.add(newNet);
 		jtbNew.add(newMsbn);
 		jtbNew.add(newMebn);
-		jtbNew.add(newOobn);
+//		jtbNew.add(newOobn);
 		jtbFile.add(openNet);
 		jtbFile.add(saveNet);
 //		jtbTools.add(learn);
@@ -1543,7 +1551,7 @@ public class UnBBayesFrame extends JFrame {
 		newNet = new JButton(iconController.getNewBNIcon());
 		newMsbn = new JButton(iconController.getNewMSBNIcon());
 		newMebn = new JButton(iconController.getNewMEBNIcon());
-		newOobn = new JButton(iconController.getNewOOBNIcon());
+//		newOobn = new JButton(iconController.getNewOOBNIcon());
 		openNet = new JButton(iconController.getOpenIcon());
 		saveNet = new JButton(iconController.getSaveIcon());
 //		learn = new JButton(iconController.getLearningIcon());
@@ -1559,7 +1567,6 @@ public class UnBBayesFrame extends JFrame {
 		newNet.setToolTipText(resource.getString("newToolTip"));
 		newMsbn.setToolTipText(resource.getString("newMsbnToolTip"));
 		newMebn.setToolTipText(resource.getString("newMebnToolTip"));
-		newOobn.setToolTipText(resource.getString("newOobnToolTip"));
 		openNet.setToolTipText(resource.getString("openToolTip"));
 		saveNet.setToolTipText(resource.getString("saveToolTip"));
 //		learn.setToolTipText(resource.getString("learningToolTip"));
@@ -1579,7 +1586,7 @@ public class UnBBayesFrame extends JFrame {
 		newNet.addActionListener(alNewBN);
 		newMsbn.addActionListener(alNewMSBN);
 		newMebn.addActionListener(alNewMEBN);
-		newOobn.addActionListener(alNewOOBN);
+//		newOobn.addActionListener(alNewOOBN);
 		openNet.addActionListener(alOpen);
 		saveNet.addActionListener(alSave);
 		metal.addActionListener(alMetal);
@@ -2043,10 +2050,12 @@ public class UnBBayesFrame extends JFrame {
 	
 	/**
 	 * This is just an action listener for menu items inserted within the {@link UnBBayesFrame#getPluginSplitButton()}
+	 * or {@link UnBBayesFrame#getToolsSplitButton()}.
 	 * @author Shou Matsumoto
 	 *
 	 */
 	protected class SplitButtonMenuActionListener implements ActionListener{
+		
 		// the button to be set as the split button's main button, after this action listener is called
 		private JButton mainButton;
 		// the split button to use this action listener
@@ -2061,6 +2070,7 @@ public class UnBBayesFrame extends JFrame {
 			this.mainButton = mainButton;
 			this.splitButton = splitButton;
 		}
+		
 		/*
 		 * (non-Javadoc)
 		 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)

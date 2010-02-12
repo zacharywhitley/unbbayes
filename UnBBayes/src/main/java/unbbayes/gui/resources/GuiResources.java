@@ -540,7 +540,6 @@ public class GuiResources extends ListResourceBundle {
 		{"PNModuleName" , "Probabilistic Network"},
 		{"MEBNModuleName" , "Multi Entity Bayesian Network"},
 		{"MSBNModuleName" , "Multiple Sectioned Bayesian Network"},
-		{"OOBNModuleName" , "Object Oriented Bayesian Network"},
 		
 		
 		{"sampleSizeInputMessage", "Please enter the sample size (number of trials)."},

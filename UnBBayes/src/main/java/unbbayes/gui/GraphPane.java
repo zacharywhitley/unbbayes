@@ -56,14 +56,12 @@ import unbbayes.draw.UShapeContextNode;
 import unbbayes.draw.UShapeDecisionNode;
 import unbbayes.draw.UShapeInputNode;
 import unbbayes.draw.UShapeLine;
-import unbbayes.draw.UShapeOOBNNode;
 import unbbayes.draw.UShapeOrdinaryVariableNode;
 import unbbayes.draw.UShapeProbabilisticNode;
 import unbbayes.draw.UShapeResidentNode;
 import unbbayes.draw.UShapeState;
 import unbbayes.draw.UShapeUtilityNode;
 import unbbayes.draw.extension.IPluginUShape;
-import unbbayes.gui.oobn.node.OOBNNodeGraphicalWrapper;
 import unbbayes.gui.table.extension.IProbabilityFunctionPanelBuilder;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
@@ -749,7 +747,6 @@ public class GraphPane extends UCanvas implements MouseListener,
 	 * @param newNode
 	 */
 	public void createNode(Node newNode) {
-		// TODO stop using if-instanceof structure and start using object binding to a UShape builder.
 		
 		UShape shape = null;
 
@@ -762,6 +759,8 @@ public class GraphPane extends UCanvas implements MouseListener,
 				throw new RuntimeException(e);
 			}
 		} 
+		
+		// TODO stop using if-instanceof structure and start using object binding to a UShape builder.
 		if (shape == null) {
 			// if we could not find a plugin node, start testing ordinal nodes
 			if (newNode instanceof ContinuousNode) {
@@ -796,11 +795,13 @@ public class GraphPane extends UCanvas implements MouseListener,
 				shape = new UShapeOrdinaryVariableNode(this, newNode, (int) newNode
 						.getPosition().x, (int) newNode.getPosition().y, newNode
 						.getWidth(), newNode.getHeight());
-			} else if (newNode instanceof OOBNNodeGraphicalWrapper) {
-				shape = new UShapeOOBNNode(this, newNode, (int) newNode
-						.getPosition().x, (int) newNode.getPosition().y, newNode
-						.getWidth(), newNode.getHeight());
-			}
+			} 
+			// the below code is not necessary anymore, since OOBNGraphPane overwrites this method
+//			else if (newNode instanceof OOBNNodeGraphicalWrapper) {
+//				shape = new UShapeOOBNNode(this, newNode, (int) newNode
+//						.getPosition().x, (int) newNode.getPosition().y, newNode
+//						.getWidth(), newNode.getHeight());
+//			}
 		}
 
 		try {
