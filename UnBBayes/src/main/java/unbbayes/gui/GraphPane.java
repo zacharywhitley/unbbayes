@@ -24,7 +24,6 @@ package unbbayes.gui;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -34,12 +33,9 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
 
-import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -50,6 +46,8 @@ import javax.swing.SwingUtilities;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
+import unbbayes.draw.IEdgeHolderShape;
+import unbbayes.draw.INodeHolderShape;
 import unbbayes.draw.UCanvas;
 import unbbayes.draw.UShape;
 import unbbayes.draw.UShapeContextNode;
@@ -140,6 +138,13 @@ public class GraphPane extends UCanvas implements MouseListener,
 	
 	// This object manages plugin-loaded nodes.
 	private CorePluginNodeManager pluginNodeManager = CorePluginNodeManager.newInstance();
+	
+	/**
+	 * {@link #update()} will set {@link UShapeLine#getUseSelection()} to same value;
+	 * @see #update()
+	 * @see {@link UShapeLine#getUseSelection()} 
+	 */
+	private boolean toUseSelectionForLines = false;
 
 	
 	/** Load resource file from this package */
@@ -213,7 +218,14 @@ public class GraphPane extends UCanvas implements MouseListener,
 	 *@see Edge
 	 */
 	public Object getSelected() {
-		return getSelectedShapesNode();
+		UShape selectedShape = getSelectedShape();
+		if (selectedShape instanceof IEdgeHolderShape) {
+			return ((IEdgeHolderShape)selectedShape).getEdge();
+		}
+		if (selectedShape instanceof INodeHolderShape) {
+			return ((INodeHolderShape)selectedShape).getNode();
+		}
+		return selectedShape;
 	}
 
 	public void updateSelectedNode() {
@@ -322,7 +334,7 @@ public class GraphPane extends UCanvas implements MouseListener,
 
 	public void showCPT(Node newNode) {
 		// set new information of node into tree and table viewer
-		if (controller != null)
+		if (controller != null) {
 			// the if below fixes the problem that selecting ContinuousNode was not updating name and description text field
 			if (this.controller.getScreen() != null) {
 				if (this.controller.getScreen().getTxtName() != null) {
@@ -335,6 +347,7 @@ public class GraphPane extends UCanvas implements MouseListener,
 			if (controller.getGraph() instanceof SingleEntityNetwork) {
 				controller.createTable(newNode);
 			}
+		}
 	}
 
 	/**
@@ -911,7 +924,7 @@ public class GraphPane extends UCanvas implements MouseListener,
 						.getOriginNode()),
 						getNodeUShape(e.getDestinationNode()));
 				line.setEdge(e);
-				line.setUseSelection(false);
+				line.setUseSelection(this.isToUseSelectionForLines());
 				addShape(line);
 			}
 		}
@@ -1130,6 +1143,26 @@ public class GraphPane extends UCanvas implements MouseListener,
 	 */
 	protected void setPluginNodeManager(CorePluginNodeManager pluginNodeManager) {
 		this.pluginNodeManager = pluginNodeManager;
+	}
+
+	/**
+	 * {@link #update()} will set {@link UShapeLine#getUseSelection()} to same value;
+	 * @see #update()
+	 * @see {@link UShapeLine#getUseSelection()} 
+	 * @return the toUseSelectionForLines
+	 */
+	public boolean isToUseSelectionForLines() {
+		return toUseSelectionForLines;
+	}
+
+	/**
+	 * {@link #update()} will set {@link UShapeLine#getUseSelection()} to same value;
+	 * @see #update()
+	 * @see {@link UShapeLine#getUseSelection()} 
+	 * @param toUseSelectionForLines the toUseSelectionForLines to set
+	 */
+	public void setToUseSelectionForLines(boolean toUseSelectionForLines) {
+		this.toUseSelectionForLines = toUseSelectionForLines;
 	}
 
 

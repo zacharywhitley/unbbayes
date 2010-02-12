@@ -17,7 +17,6 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.IProbabilityFunction;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
-import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.oobn.IOOBNClass;
 import unbbayes.prs.oobn.IOOBNNode;

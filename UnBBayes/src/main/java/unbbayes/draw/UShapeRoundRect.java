@@ -24,7 +24,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.RoundRectangle2D;
 
-public class UShapeRoundRect extends UShape  
+public class UShapeRoundRect extends UShape   implements INodeHolderShape
 {     
 	/**
 	 * 

@@ -37,6 +37,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import unbbayes.draw.INodeHolderShape;
 import unbbayes.draw.UCanvas;
 import unbbayes.draw.UShape;
 import unbbayes.draw.UShapeState;
@@ -51,7 +52,7 @@ import unbbayes.util.Debug;
  * instence's input and output nodes). The instance node is modeled as UShapeFrame.
  *
  */
-public class UShapeOOBNNode extends UShape  {       
+public class UShapeOOBNNode extends UShape implements INodeHolderShape  {       
 	/**
 	 * 
 	 */

@@ -40,7 +40,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.TreeVariable;
 
-public class UShapeProbabilisticNode extends UShape  
+public class UShapeProbabilisticNode extends UShape  implements INodeHolderShape
 {       
 	/**
 	 * 
@@ -355,10 +355,10 @@ public class UShapeProbabilisticNode extends UShape
 				popup.add(item);
 	     	}
 	     	 
-	     	// the if below was added because it was trying to open "propertuies"
-	     	// even to Continuous Node, which had no implementation of "properties"
+	     	// the if below was added because it was trying to open "properties"
+	     	// even to Continuous Node or learning nodes, which had no implementation of "properties"
 	     	// and was not even a probabilistic node (why?)
-			if (getNode() instanceof ProbabilisticNode) {
+			if (getNode() instanceof ProbabilisticNode && getCanvas().controller != null) {
 				item = new JMenuItem(resource.getString("properties"));
 				item.addActionListener
 				(	

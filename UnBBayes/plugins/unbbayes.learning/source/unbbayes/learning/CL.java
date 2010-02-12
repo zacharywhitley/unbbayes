@@ -18,39 +18,43 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
 package unbbayes.learning;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
+import unbbayes.prs.exception.InvalidParentException;
 
 /**
  * TAN
  * @version 1.0
- * @author Gabriel Guimarães - aluno de IC 2005-2006
+ * @author Gabriel Guimarï¿½es - aluno de IC 2005-2006
  * @author Marcelo Ladeira - Orientador
  * @author Patricia Marinho
  */
 public class CL extends CBLToolkit{
 	/**
-	 * Variables of the object CL
+	 * Variaveis do objeto CL
 	 */
-	public ArrayList<Node> variaveis;
-	public int classe;
-	public int caseNumber;
-	public int raiz;
-	protected int[][] dataBase;
-    protected int[] vector;
+	public List<Node> variaveis;
+	public int classe;					// index of user-chosen most important node
+	public int caseNumber;				// can be understood as rows of dataBase
+	public int raiz;					// most probable root node, excluding classe
+	protected int[][] dataBase;			// data built from learning data file
+    protected int[] vector;				// punctuation of each element
     protected boolean compacted;
-    protected double [][] matrizinfo;
+    protected double [][] matrizinfo;	// matrix of conditional mutual informations
     public int[] arvore,ramo;
-    public int[] enderecos;
+    public int[] enderecos;				// indexes of "variaveis", excluding classe. Last index is raiz.
     public int[] melhorarvore;
     public double melhorinfo;
     protected int notestado,posicao;
     protected int nvar;
     protected boolean houveciclo;
+    public ArrayList ls;
 	public ConstructionController controller;
 	/**
 	 * Construtor
@@ -61,17 +65,16 @@ public class CL extends CBLToolkit{
 	/*
 	 * Prepara e faz tudo.
 	 */
-	public void preparar( ArrayList<Node> vetordevariaveis, int classei, int numerodecasos, int[] vetor,boolean comp,int[][]dados) {
+	public void preparar(List<Node> vetordevariaveis, int classei, int numerodecasos, int[] vetor,boolean comp,int[][]dados) {
 		int i;
 		//copiar os parametros
 		nvar=vetordevariaveis.size();
 		ramo=new int[nvar];
-		this.variaveis= new ArrayList<Node>();
-		variaveis.ensureCapacity(nvar);
+		this.variaveis=new ArrayList<Node>(nvar);
 		for(i=0;i<nvar;i++)variaveis.add(vetordevariaveis.get(i));
 		classe=classei;
 		caseNumber=numerodecasos;
-		vector=vetor;
+		this.vector=vetor;
 		dataBase=dados;
 		compacted=comp;
 		
@@ -80,7 +83,7 @@ public class CL extends CBLToolkit{
 		desenharede();
 		}
 	/**
-	 * log  base 2
+	 * log na base 2
 	 * @param numero
 	 * @return
 	 */
@@ -88,50 +91,50 @@ public class CL extends CBLToolkit{
         return Math.log(numero)/Math.log(2);
     }
 	/*
-	 * Informação mutua da variavel xk para a xi
+	 * Informaï¿½ï¿½o mutua da variavel xk para a xi
 	 */	
-	public double mutualInformation(LearningNode xi,LearningNode xk){    	
-    	int nt = 0;					// numero total de casos (entrada da base de dados) analisados
-    	int il = 0;    				// estado atualmente analisado do no xi		
-    	int kl = 0;					// estado atualmente analisado do no xk
-    	double im = 0;    			// informação mutua
-    	double pik = 0;
-        int ri = xi.getEstadoTamanho();
-        int rk = xk.getEstadoTamanho();
-        int nik[][] = new int[ri][rk];
-        int ni[] = new int[ri];
-        int nk[] = new int[rk];       
-        int f = 0;
-        double pi, pk;        
-        for(int ic = 0; ic < caseNumber; ic++){    		
-        	f  = compacted?vector[ic]:1;
-        	il = dataBase[ic][xi.getPos()];
-        	kl = dataBase[ic][xk.getPos()];        	        	
-        	nik[il][kl] += f;
-        	ni[il] += f;
-        	nk[kl] += f;    
-        	nt += f;    	
-        }        
-        for(il = 0 ; il < ri; il++){
-        	pi = (1+ni[il])/((double)ri+nt);
-        	for(kl = 0 ; kl < rk; kl++){
-        		pk = (1+nk[kl])/((double)rk+nt);
-        		pik = (1+nik[il][kl])/((double)(ri*rk)+nt);        			
-        		im += pik*(log2(pik) - log2(pi) - log2(pk));
-        	}        		
-        }                
-        return im;    	
-    }
+//	public double mutualInformation(TVariavel xi,TVariavel xk){    	
+//    	int nt = 0;
+//    	int il = 0;    	
+//    	int kl = 0;
+//    	double im = 0;    	
+//    	double pik = 0;
+//        int ri = xi.getEstadoTamanho();
+//        int rk = xk.getEstadoTamanho();
+//        int nik[][] = new int[ri][rk];
+//        int ni[] = new int[ri];
+//        int nk[] = new int[rk];       
+//        int f = 0;
+//        double pi, pk;        
+//        for(int ic = 0; ic < caseNumber; ic++){    		
+//        	f  = compacted?vector[ic]:1;
+//        	il = dataBase[ic][xi.getPos()];
+//        	kl = dataBase[ic][xk.getPos()];        	        	
+//        	nik[il][kl] += f;
+//        	ni[il] += f;
+//        	nk[kl] += f;    
+//        	nt += f;    	
+//        }        
+//        for(il = 0 ; il < ri; il++){
+//        	pi = (1+ni[il])/((double)ri+nt);
+//        	for(kl = 0 ; kl < rk; kl++){
+//        		pk = (1+nk[kl])/((double)rk+nt);
+//        		pik = (1+nik[il][kl])/((double)(ri*rk)+nt);        			
+//        		im += pik*(log2(pik) - log2(pi) - log2(pk));
+//        	}        		
+//        }                
+//        return im;    	
+//    }
 	
 	protected double conditionalMutualInformation(int v1, int v2, int classe){
     	
-		//int qj = getQ(sep);
-		//this.classe = classe;
-		//int qj = classe;
-    	//if(qj == 0 ){
-		  //return mutualInformation((LearningNode)variaveis.get(v1),
-    		//                        (LearningNode)variaveis.get(v2));    		
-    	//}    	;
+//		int qj = getQ(sep);
+//		//this.classe = classe;
+//		//int qj = classe;
+//    	if(qj == 0 ){
+//		  return mutualInformation((TVariavel)variaveis.get(v1),
+//    		                        (TVariavel)variaveis.get(v2));    		
+//    	} 
     	
     	int ri = ((LearningNode)variaveis.get(v1)).getEstadoTamanho();
     	int rk = ((LearningNode)variaveis.get(v2)).getEstadoTamanho();
@@ -187,12 +190,12 @@ public class CL extends CBLToolkit{
     
 	
 	/*
-	 * Cria matriz de informações mutuas
+	 * Cria matriz de informaï¿½ï¿½es mutuas
 	 */	
 	public void calculainformacoes() {
 	for(int i=0;i<nvar;i++){
 	for(int j=0;j<nvar;j++){
-		if (i!=j){matrizinfo[i][j]=conditionalMutualInformation(i, j, classe);
+		if (i!=j){matrizinfo[i][j]=conditionalMutualInformation(i ,j, classe);
 	//	System.out.println(variaveis.get(i).getName()+" e "+variaveis.get(j).getName()+" = "+String.valueOf(matrizinfo[i][j]));
 		}}
 	}
@@ -212,7 +215,7 @@ public class CL extends CBLToolkit{
 					posicao=i;					
 				}}raiz=posicao;	}}
 	/**
-	 * Detects the next valid tree
+	 * Detecta proxima ï¿½rvore vï¿½lida
 	 * @return
 	 */
 	protected boolean proxima(){
@@ -225,7 +228,7 @@ public class CL extends CBLToolkit{
 	
 	return (l!=nvar-3);}
 	/*
-	 * Valida ou não uma Árvore
+	 * Valida ou nï¿½o uma ï¿½rvore
 	 */
 	protected boolean valida_arvore(){
 		int i;
@@ -242,7 +245,7 @@ public class CL extends CBLToolkit{
 		return !houveciclo;
 		}
 	/*
-	 * Soma das informações mutuas entre cada filho e seu pai
+	 * Soma das informaï¿½ï¿½es mutuas entre cada filho e seu pai
 	 */
 	protected double infoatual(){
 		double resultado=0;
@@ -264,7 +267,7 @@ public class CL extends CBLToolkit{
 	
 	
 	/*
-	 * Para verificar ciclos nodeList ramos
+	 * Para verificar ciclos nos ramos
 	 */
 	protected boolean valida_ramo(int no){
 		boolean fim=false;
@@ -287,21 +290,20 @@ public class CL extends CBLToolkit{
 
 	private void desenharede(){
 		for(int i=0;i<nvar;i++){
-//			TODO Is this correct???
-//			variaveis.ClearChildrenFrom(i);
-//			variaveis.ClearParentsFrom(i);
-			variaveis.remove(i);
+			variaveis.get(i).getChildNodes().clear();
+			variaveis.get(i).getParentNodes().clear();
 		}
 		//desenhar a rede
 		int aux=0;
 		for(int i=0;i<nvar;i++){
-		if((i!=classe)&&(i!=raiz)){
-			aux++;
-//			TODO Is this correct???
-//			variaveis.AddParentTo(enderecos[aux],variaveis.get(enderecos[melhorarvore[aux]]));
-//			variaveis.AddChildTo(enderecos[melhorarvore[aux]],variaveis.get(enderecos[aux]));
-			variaveis.add(enderecos[aux],variaveis.get(enderecos[melhorarvore[aux]]));
-			variaveis.add(enderecos[melhorarvore[aux]],variaveis.get(enderecos[aux]));
+			if((i!=classe)&&(i!=raiz)){
+				aux++;
+				try {
+					variaveis.get(enderecos[aux]).addParent(variaveis.get(enderecos[melhorarvore[aux]]));
+					variaveis.get(enderecos[melhorarvore[aux]]).addChild(variaveis.get(enderecos[aux]));
+				} catch (InvalidParentException e) {
+					throw new IllegalArgumentException(e);
+				}
 			}
 		}
 	}

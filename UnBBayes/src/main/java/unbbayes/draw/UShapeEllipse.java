@@ -23,7 +23,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Ellipse2D;
 
-public class UShapeEllipse extends UShape  
+public class UShapeEllipse extends UShape   implements INodeHolderShape
 {       
 	/**
 	 * 

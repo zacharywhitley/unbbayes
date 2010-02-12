@@ -23,7 +23,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.GeneralPath;
 
-public class UShapeDiamond extends UShape  
+public class UShapeDiamond extends UShape   implements INodeHolderShape
 {    
 	/**
 	 * 

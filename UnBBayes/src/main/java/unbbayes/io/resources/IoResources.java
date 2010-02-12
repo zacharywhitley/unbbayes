@@ -31,7 +31,6 @@ import java.util.ListResourceBundle;
  * @version 1.0
  * @since 02/05/2002
  */
-
 public class IoResources extends ListResourceBundle {
 
     /**

@@ -28,7 +28,7 @@ import java.awt.geom.Rectangle2D;
 
 import unbbayes.prs.Node;
 
-public class UShapeDecisionNode extends UShape  
+public class UShapeDecisionNode extends UShape   implements INodeHolderShape
 {       
 	/**
 	 * 

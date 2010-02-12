@@ -24,7 +24,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 
-public class UShapeBox extends UShape  
+public class UShapeBox extends UShape  implements INodeHolderShape
 {     
 	/**
 	 * 

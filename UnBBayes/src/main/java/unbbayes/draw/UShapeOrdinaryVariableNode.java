@@ -28,7 +28,7 @@ import java.awt.geom.GeneralPath;
 
 import unbbayes.prs.Node;
 
-public class UShapeOrdinaryVariableNode extends UShape  
+public class UShapeOrdinaryVariableNode extends UShape   implements INodeHolderShape
 {       
 	/**
 	 * 

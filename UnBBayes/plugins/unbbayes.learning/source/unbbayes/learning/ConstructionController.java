@@ -66,8 +66,9 @@ import unbbayes.prs.exception.InvalidParentException;
 
 public class ConstructionController {
 
-	private ArrayList<Node> variablesVector;
-	private ArrayList<Node> variables;
+	
+	private ArrayList<Node> variablesVector;	// TODO use interface java.util.List instead
+	private ArrayList<Node> variables;	// TODO use interface java.util.List instead
 	private int[] vector;
 	private int[][] matrix;
 	private long caseNumber;
@@ -108,7 +109,7 @@ public class ConstructionController {
 			br = new BufferedReader(isr);
 			StreamTokenizer cols = new StreamTokenizer(br);
 			setColsConstraints(cols);
-			variablesVector = new ArrayList<Node>();
+			variablesVector = new ArrayList<Node>(); 
 			variables = new ArrayList<Node>();
 			makeVariablesVector(cols);
 			new ChooseVariablesWindow(variablesVector);
@@ -282,7 +283,7 @@ public class ConstructionController {
 			// se alguma variavel tem como filho a classe--> retirar!
 			if ((variaveis.get(i).isParentOf(variaveis.get(classex))))
 				//variaveis.RemoveParentFrom(classex, i);
-				variaveis.get(i).getParents().remove(variaveis.get(classex));
+				variaveis.get(i).removeParent(variaveis.get(classex));
 			// se alguma variavel nao tem a classe como pai entao passa a ter
 			if ((!(variaveis.get(i).isChildOf(variaveis.get(classex)))))
 				//variaveis.AddParentTo(i, variaveis.get(classex));
@@ -340,7 +341,7 @@ public class ConstructionController {
 		CL chowliu = new CL();
 		chowliu.preparar(variables, classex, (int) caseNumber, vector,
 				compacted, matrix);
-		variables = chowliu.variaveis;
+		variables = new ArrayList(chowliu.variaveis); // TODO use interface java.util.List instead
 		int i, j;
 		j = variables.size();
 
@@ -355,7 +356,7 @@ public class ConstructionController {
 			// se alguma variavel tem como filho a classe--> retirar!
 			if ((variables.get(i).isParentOf(variables.get(classex))))
 				//variables.RemoveParentFrom(classex, i);
-				variables.get(i).getParents().remove(variables.get(classex));
+				variables.get(i).removeParent(variables.get(classex));
 			// se alguma variavel nao tem a classe como pai entao passa a ter
 			if ((!(variables.get(i).isChildOf(variables.get(classex)))))
 				//variables.AddParentTo(i, variables.get(classex));
@@ -580,6 +581,7 @@ public class ConstructionController {
 	}
 
 	public ArrayList<Node> getVariables() {
+		// TODO use interface java.util.List instead
 		return this.variables;
 	}
 
@@ -596,6 +598,7 @@ public class ConstructionController {
 	}
 
 	public ArrayList<Node> getVariablesVector() {
+		// TODO use interface java.util.List instead
 		return variablesVector;
 	}
 }

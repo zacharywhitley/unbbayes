@@ -78,9 +78,13 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 	 * @param variable  Variable to be removed
 	 * @param normalize True if is to normalize the cpt after the node remotion
 	 */	
-	public void removeVariable(Node variable, boolean normalize){
+	public void removeVariable(unbbayes.prs.INode variable, boolean normalize){
 		computeFactors();
 		int index = variableList.indexOf(variable);
+		if (index < 0) {
+			// variable not found. Ignore it.
+			return;
+		}
 		if (variable.getType() == Node.DECISION_NODE_TYPE) {
 			DecisionNode decision = (DecisionNode) variable;
 			int statesSize = variable.getStatesSize();

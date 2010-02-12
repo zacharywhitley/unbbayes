@@ -207,9 +207,13 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 		for (int i = 0; i < n; i++) {
 			UShape shape = (UShape) this.getComponent(i);
 
-			if (shape.getState() == UShape.STATE_SELECTED
-					&& shape.getNode() != null) {
-				selectedShapes.add(shape);
+			if (shape.getState() == UShape.STATE_SELECTED) {
+				if (shape instanceof INodeHolderShape && (((INodeHolderShape)shape).getNode() != null)) {
+					selectedShapes.add(shape);
+				}
+				if (shape instanceof IEdgeHolderShape && (((IEdgeHolderShape)shape).getEdge() != null)) {
+					selectedShapes.add(shape);
+				}
 			}
 		}
 
@@ -355,8 +359,9 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 	public Node getSelectedShapesNode() {
 		UShape shape = getSelectedShape();
 
-		if (shape != null)
+		if (shape != null) {
 			return shape.getNode();
+		}
 
 		return null;
 	}

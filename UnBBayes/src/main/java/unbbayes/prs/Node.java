@@ -34,6 +34,7 @@ import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.ArrayMap;
+import unbbayes.util.Debug;
 import unbbayes.util.SerializablePoint2D;
 
 /**
@@ -252,6 +253,10 @@ public abstract class Node implements Serializable,
 	}
 	
 	public void addChild(Node child) throws InvalidParentException{
+		if (this.children.contains(child)) {
+			Debug.println(this.getClass(), "Attempt to insert duplicate child: " + child);
+			return;
+		}
 		this.children.add(child);
 	}
 	
@@ -260,6 +265,11 @@ public abstract class Node implements Serializable,
 	}
 	
 	public void addParent(Node parent) throws InvalidParentException{
+		if (this.parents.contains(parent)) {
+			Debug.println(this.getClass(), "Attempt to insert duplicate parent: " + parent);
+			return;
+		}
+
 		this.parents.add(parent);
 	}
 	

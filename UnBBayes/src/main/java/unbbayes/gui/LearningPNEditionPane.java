@@ -1,6 +1,7 @@
  
 package unbbayes.gui;
  
+import java.awt.Component;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
@@ -9,6 +10,8 @@ import java.util.ResourceBundle;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 
+import unbbayes.draw.IEdgeHolderShape;
+import unbbayes.draw.INodeHolderShape;
 import unbbayes.draw.UShape;
 import unbbayes.draw.UShapeLine;
 import unbbayes.draw.UShapeProbabilisticNode;
@@ -30,6 +33,10 @@ public class LearningPNEditionPane extends GraphPane implements MouseListener, M
 	public LearningPNEditionPane(JDialog dlg, ProbabilisticNetwork n) 
 	{    	
 		super(dlg, n);
+		
+		// Force the superclass to use true as a value for UShapeLine#getUseSelection()
+		this.setToUseSelectionForLines(true);	
+		this.update();
 	}
 	
 	public boolean insertEdge(Edge edge) 
@@ -89,7 +96,7 @@ public class LearningPNEditionPane extends GraphPane implements MouseListener, M
 			{
 				UShapeLine line = new UShapeLine(this, getNodeUShape(e.getOriginNode()), getNodeUShape(e.getDestinationNode()) );
 				line.setEdge(e);
-				line.setUseSelection(false);
+				line.setUseSelection(this.isToUseSelectionForLines());
 				addShape( line );
 			}
 		}	
@@ -98,6 +105,7 @@ public class LearningPNEditionPane extends GraphPane implements MouseListener, M
 		setShapeStateAll(UShape.STATE_NONE, null);
 		fitCanvasSizeToAllUShapes();
 	} 
+	
 	   
     public UShapeLine onDrawConnectLineReleased(UShape shapeParent, int x, int y)
     {

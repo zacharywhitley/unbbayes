@@ -68,7 +68,7 @@ public class UtilityTable extends PotentialTable implements java.io.Serializable
     }
 
 	@Override
-	public void removeVariable(Node variable, boolean normalize) {
+	public void removeVariable(INode variable, boolean normalize) {
 		removeVariable(variable); 
 	}
     

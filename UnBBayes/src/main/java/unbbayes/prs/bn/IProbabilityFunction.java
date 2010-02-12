@@ -43,6 +43,18 @@ public interface IProbabilityFunction {
 	public abstract void removeVariable(INode variable);
 	
 	/**
+	 * Remove the variable from this function.
+	 * You should implement general marginalization as well
+	 * 
+	 * @param variable
+	 *            variable to be removed.
+	 * @param update
+	 * 			  this parameter should be set to true/false if an active update to some values of 
+	 * 			  probability function is required (or not).
+	 */
+	public abstract void removeVariable(INode variable, boolean update);
+	
+	/**
 	 * Inserts a variable into position
 	 * @param index : position to insert variable
 	 * @param node : variable to be inserted

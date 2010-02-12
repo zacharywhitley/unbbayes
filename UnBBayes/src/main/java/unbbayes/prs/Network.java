@@ -31,6 +31,7 @@ import unbbayes.prs.bn.IProbabilityFunction;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.exception.InvalidParentException;
+import unbbayes.util.Debug;
 
 public class Network implements Graph{
 
@@ -165,6 +166,11 @@ public class Network implements Graph{
 	 * @throws InvalidParentException 
 	 */
 	public void addEdge(Edge edge) throws InvalidParentException {
+		if (this.getEdges().contains(edge)) {
+			// avoid duplicate edges
+			Debug.println(this.getClass(), "Attempt to insert duplicate edge: " + edge.getOriginNode() + " -> " + edge.getDestinationNode());
+			return;
+		}
 		edge.getOriginNode().addChild(edge.getDestinationNode());
 		edge.getDestinationNode().addParent(edge.getOriginNode());
 	    edgeList.add(edge);

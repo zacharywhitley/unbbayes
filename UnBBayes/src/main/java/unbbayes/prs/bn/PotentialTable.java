@@ -342,7 +342,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 * @param variable  Variable to be removed
 	 * @param normalize True if is to normalize the cpt after the node remotion
 	 */	
-	public abstract void removeVariable(Node variable, boolean normalize); 
+	public abstract void removeVariable(INode variable, boolean normalize); 
 	
 	/*
 	 * (non-Javadoc)

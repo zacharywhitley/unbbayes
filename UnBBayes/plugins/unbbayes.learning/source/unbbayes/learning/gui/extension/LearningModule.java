@@ -16,6 +16,7 @@ import unbbayes.gui.UnBBayesFrame;
 import unbbayes.io.BaseIO;
 import unbbayes.io.OwnerAwareFileExtensionIODelegator;
 import unbbayes.learning.ConstructionController;
+import unbbayes.learning.io.LearningDataSetIO;
 import unbbayes.prs.Graph;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.util.extension.UnBBayesModule;
@@ -49,9 +50,13 @@ public class LearningModule extends UnBBayesModule implements
 		
 		this.setName(this.resource.getString("learningItem"));
 		
-		// setting up the i/o classes used by UnBBayesFrame in order to load a
-		// file from the main pane
+		// setting up the i/o classes used by UnBBayesFrame
+		// This is done in order to notify UnBBayes' core that TXT files must be delegated to this module
 		this.io = new OwnerAwareFileExtensionIODelegator(this);
+		
+		// filling the content of OwnerAwareFileExtensionIODelegator with LearningDataSetIO (a txt-aware IO).
+		((OwnerAwareFileExtensionIODelegator)this.io).getDelegators().clear();
+		((OwnerAwareFileExtensionIODelegator)this.io).getDelegators().add(new LearningDataSetIO());
 
 		this.setVisible(false); // this module should not be visible
 	}
@@ -62,16 +67,16 @@ public class LearningModule extends UnBBayesModule implements
 	 * Please, note that at this point {@link #getUnbbayesFrame()} must
 	 * return a non-null value;
 	 * 
-	 * @param netFile :
-	 *            the network file (containing BN) to use as a starting point.
+	 * @param dataSetFile :
+	 *            the set of data to use as a starting point.
 	 *            If set to null, a filechooser will be used to collect it from
 	 *            user.
 	 * @return : the last file used by the system
 	 */
-	protected File triggerFileChooser(File netFile) {
+	protected File triggerFileChooser(File dataSetFile) {
 		
 		// initial test
-		if (netFile == null) {
+		if (dataSetFile == null) {
 			// retrieve/store file history
 			FileHistoryController fileHistoryController = FileHistoryController.getInstance();
 
@@ -85,7 +90,7 @@ public class LearningModule extends UnBBayesModule implements
 			int option = chooser.showOpenDialog(getUnbbayesFrame());
 			if (option == JFileChooser.APPROVE_OPTION) {
 				// user has chosen a data set
-				netFile = chooser.getSelectedFile();
+				dataSetFile = chooser.getSelectedFile();
 				// store file history
 				fileHistoryController.setCurrentDirectory(chooser.getCurrentDirectory());
 			} else {
@@ -95,9 +100,9 @@ public class LearningModule extends UnBBayesModule implements
 		}
 
 		// trigger learning
-		new ConstructionController(netFile, getUnbbayesFrame().getController());
+		new ConstructionController(dataSetFile, getUnbbayesFrame().getController());
 
-		return netFile;
+		return dataSetFile;
 	}
 
 	/**

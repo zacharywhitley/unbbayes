@@ -239,7 +239,7 @@ public class ResourceController {
 	
 
 	/**
-	 * ID of the extension point, used by plugin loader to load Resource plugins.
+	 * ID of the extension point, used by plugin loader to load Resources plugins.
 	 * The default value is usually "ResourceBundle"
 	 * @return the extensionPointID
 	 */
@@ -248,7 +248,7 @@ public class ResourceController {
 	}
 
 	/**
-	 * ID of the extension point, used by plugin loader to load Resource plugins.
+	 * ID of the extension point, used by plugin loader to load Resources plugins.
 	 * The default value is usually "ResourceBundle"
 	 * @param extensionPointID the extensionPointID to set
 	 */

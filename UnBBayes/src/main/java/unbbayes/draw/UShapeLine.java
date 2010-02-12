@@ -41,7 +41,7 @@ import unbbayes.prs.Node;
 import unbbayes.util.GeometricUtil;
 
 
-public class UShapeLine extends UShape  
+public class UShapeLine extends UShape  implements IEdgeHolderShape
 {    
 	/**
 	 * 
@@ -54,7 +54,7 @@ public class UShapeLine extends UShape
 	protected Point2D.Double pSource;
 	protected Point2D.Double pTarget;
 	protected boolean useSelection;
-	protected int direction = 0;
+	private int direction = 0;
 	protected Edge edge;
 	protected JPopupMenu popupLine = new JPopupMenu();
 	protected GeneralPath parallelogram;
@@ -275,7 +275,7 @@ public class UShapeLine extends UShape
 	  	
  		if( getUseSelection() == true )
  		{
-		  	if( direction != 0 )
+		  	if( this.getDirection() != 0 )
 		  	{
 		  		drawArrow(g2);
 		  	}
@@ -367,10 +367,27 @@ public class UShapeLine extends UShape
 		update();
 	}
  
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.draw.UShape#mousePressed(java.awt.event.MouseEvent)
+	 */
+	public void mousePressed(MouseEvent arg0) {
+		super.mousePressed(arg0);
+		this.getCanvas().setShapeStateAll(STATE_NONE, null);
+		this.setState(STATE_SELECTED, null);
+		this.getCanvas().onShapeChanged(this);
+		this.getCanvas().onSelectionChanged();
+	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.draw.UShape#mouseClicked(java.awt.event.MouseEvent)
+	 */
 	public void mouseClicked(MouseEvent arg0) 
 	{ 
 		System.out.println("Line mouseClicked"); 
+		
+//		this.setState(UShape.STATE_SELECTED, null);
 
 	 	if (SwingUtilities.isLeftMouseButton(arg0)) 
 	    {
@@ -392,13 +409,13 @@ public class UShapeLine extends UShape
 						changeDirection();
 					}*/		
 					
-					if ((direction == 0) || (direction == 1)) {
-			    		direction++;
+					if ((this.getDirection() == 0) || (this.getDirection() == 1)) {
+			    		this.setDirection(this.getDirection() + 1);
 			    		edge.setDirection(true);
 			    		edge.changeDirection();
 			    		changeDirection();
-			    	} else if (direction == 2) {
-			    		direction = 0;
+			    	} else if (this.getDirection() == 2) {
+			    		this.setDirection(0);
 			    		edge.setDirection(false);
 			    		update();
 			    	} 
@@ -411,7 +428,29 @@ public class UShapeLine extends UShape
 	       	System.out.println("Right button released.");
 	        
 	       	popupLine.setEnabled(true);
-	       	popupLine.show(arg0.getComponent(),arg0.getX(),arg0.getY());
+//	       	popupLine.show(arg0.getComponent(),arg0.getX(),arg0.getY());
+	       	popupLine.show(this.getCanvas(),arg0.getX(),arg0.getY());
 	    }
+	}
+
+	/**
+	 * @return the direction
+	 */
+	public int getDirection() {
+		// force sincronization of UShapeLine's direction and edge's direction, since it was not being done at TAN...
+		if (this.edge.hasDirection() == false) {
+			direction = 0;
+		} else {
+			// there is direction, force sincronization
+			direction = 1;
+		} 
+		return direction;
+	}
+
+	/**
+	 * @param direction the direction to set
+	 */
+	public void setDirection(int direction) {
+		this.direction = direction;
 	} 
 }

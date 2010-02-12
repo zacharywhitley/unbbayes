@@ -24,7 +24,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.GeneralPath;
 
-public class UShapePentagon extends UShape  
+public class UShapePentagon extends UShape   implements INodeHolderShape
 {     
 	/**
 	 * 

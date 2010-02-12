@@ -25,6 +25,10 @@ import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 
 import sun.java2d.loops.DrawLine;
+import unbbayes.prs.bn.IProbabilityFunction;
+import unbbayes.prs.bn.IRandomVariable;
+import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.GeometricUtil;
 
 
@@ -88,12 +92,12 @@ public class Edge implements java.io.Serializable {
         this.direction = direction;
     }
   
-    /**
-     *  Modified by Young
-     */
-    public boolean getDirection() {
-        return this.direction;
-    }
+//    /**
+//     *  Modified by Young
+//     */
+//    public boolean getDirection() {
+//        return this.direction;
+//    }
     
     /**
      *  Retorna o primeiro n� associado ao arco.
@@ -128,15 +132,30 @@ public class Edge implements java.io.Serializable {
  	 */   
     public void changeDirection() {
     	// Faz a troca na lista de pais e filhos de node1 e node2
-    	node1.getChildren().remove(node2);
-	    node2.getParents().remove(node1);
-	    node1.getParents().add(node2);
-	    node2.getChildren().add(node1);
+    	node1.removeChild(node2);
+	    node2.removeParent(node1);
+	    try {
+			node1.addParent(node2);
+			node2.addChild(node1);
+		} catch (InvalidParentException e) {
+			throw new IllegalArgumentException(e);
+		}
 	    
 	    // Faz a troca no pr�prio Edge
     	Node aux = node1;
     	node1 = node2;
     	node2 = aux;
+    	
+    	if (node2 instanceof IRandomVariable) {
+			IRandomVariable v2 = (IRandomVariable) node2;
+			IProbabilityFunction auxTab = v2.getProbabilityFunction();
+			auxTab.addVariable(node1);
+		}
+    	 if (node1 instanceof IRandomVariable) {
+    		IRandomVariable auxTabledVariable = (IRandomVariable)node1;
+    		IProbabilityFunction auxPotentialTable = (IProbabilityFunction)auxTabledVariable.getProbabilityFunction();
+    		auxPotentialTable.removeVariable(node2, true);
+ 	    }
     }
        
     /**
@@ -227,6 +246,61 @@ public class Edge implements java.io.Serializable {
 		node2.setPosition(x, y);
 		
 	}
+
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	public boolean equals(Object obj) {
+		
+		// initial assertions
+		if (obj == null) {
+			return false;
+		}
+		if (this == obj) {
+			return true;
+		}
+		
+		boolean ret = false;
+		
+		// we may consider 2 edges are the same if they point to the same nodes
+		if (obj instanceof Edge) {
+			Edge ed = (Edge)obj;
+			if (this.node1 != null && this.node2 != null) {
+				// no node is null
+				ret =  this.node1.equals(ed.node1) && this.node2.equals(ed.node2);
+				
+				// test undirected edge equality as well.
+				if (!ret && !ed.hasDirection() && !this.hasDirection()) {
+					ret = this.node1.equals(ed.node2) && this.node2.equals(ed.node1);
+				}
+			} else if (this.node1 != null) {
+				// node2 is null
+				ret = this.node1.equals(ed.node1) && (ed.node2 == null);
+				
+				// test undirected edge equality as well.
+				if (!ret && !ed.hasDirection() && !this.hasDirection()) {
+					ret = this.node1.equals(ed.node2) && (ed.node1 == null);
+				}
+			} else if (this.node2 != null) {
+				//  node 1 is null
+				ret = (ed.node1 == null) && this.node2.equals(ed.node2);
+				
+				// test undirected edge equality as well.
+				if (!ret && !ed.hasDirection() && !this.hasDirection()) {
+					ret = (ed.node2 == null) && this.node2.equals(ed.node1);
+				}
+			} else {
+				// both nodes are null
+				ret = (ed.node1 == null) && (ed.node2 == null);
+			}
+			
+		}
+		
+		return ret;
+	}
+	
+	
 
 }
 

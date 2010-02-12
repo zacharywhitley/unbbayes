@@ -29,7 +29,7 @@ import java.awt.geom.RoundRectangle2D;
 import unbbayes.prs.Node;
   
 
-public class UShapeResidentNode extends UShape  
+public class UShapeResidentNode extends UShape   implements INodeHolderShape
 {       
 	/**
 	 * 

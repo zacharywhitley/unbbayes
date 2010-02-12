@@ -485,7 +485,7 @@ public class MFrag implements Graph{
 		Node destination = edge.getDestinationNode();
 
 		origin.getChildren().add(edge.getDestinationNode());
-		destination.getParents().add(edge.getOriginNode());
+		destination.addParent(edge.getOriginNode());
 			    
 		edgeList.add(edge);
 
