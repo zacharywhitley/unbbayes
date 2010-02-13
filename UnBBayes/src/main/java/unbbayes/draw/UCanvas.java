@@ -56,7 +56,7 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 
 	UShape rootShape;
 
-	public NetworkController controller;
+	protected NetworkController controller;
 
 	public static final String STATE_NONE = "None";
 
@@ -804,5 +804,19 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 	}
 
 	public void keyTyped(KeyEvent arg0) {
+	}
+
+	/**
+	 * @return the controller
+	 */
+	public NetworkController getController() {
+		return controller;
+	}
+
+	/**
+	 * @param controller the controller to set
+	 */
+	public void setController(NetworkController controller) {
+		this.controller = controller;
 	}
 }

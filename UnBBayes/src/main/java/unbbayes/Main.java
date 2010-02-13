@@ -40,17 +40,18 @@ public class Main {
      *  Starts UnBBayes.
      */
     public static void main(String[] args) {
-    	
-    	// extract -t param, expecting at first place
-    	if (args.length > 0 && args[0].equalsIgnoreCase("-t")) {
-    		String[] newArgs = new String[args.length-1];
-    		System.arraycopy(args, 1, newArgs, 0, newArgs.length);
-    		// start in text mode
-    		TextModeRunner.main(newArgs);    		
-    	} else {
-    		// normal mode
-    		new MainController();
-    	}
+    	// TextModeRunner was moved to MEBN plugin
+//    	// extract -t param, expecting at first place
+//    	if (args.length > 0 && args[0].equalsIgnoreCase("-t")) {
+//    		String[] newArgs = new String[args.length-1];
+//    		System.arraycopy(args, 1, newArgs, 0, newArgs.length);
+//    		// start in text mode
+//    		TextModeRunner.main(newArgs);    		
+//    	} else {
+//    		// normal mode
+//    		new MainController();
+//    	}
+    	new MainController();
     }
     
 }

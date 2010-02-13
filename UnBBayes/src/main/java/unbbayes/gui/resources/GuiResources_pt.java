@@ -71,7 +71,6 @@ public class GuiResources_pt extends ListResourceBundle {
 		//main toll bar tips 		
 		{"newToolTip","Nova rede"},
 		{"newMsbnToolTip", "Nova MSBN"}, 
-		{"newMebnToolTip", "Nova MEBN"}, 
 		{"openToolTip","Abrir rede"},
 		{"saveToolTip","Salvar rede"},
 		{"learningToolTip","Modo de aprendizagem"},
@@ -232,12 +231,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"forallToolTip", "Quantificador 'PARA TODO'"},
 		{"existsToolTip", "Quantificador 'EXISTE'"},	
 		
-		//Menus MEBN
-		{"menuDelete", "Delete"}, 
-		{"menuAddContext", "Adic. Contexto"}, 
-		{"menuAddInput", "Adic. Input"},
-		{"menuAddResident", "Adic. Residente"}, 
-		{"menuAddDomainMFrag", "Adic. MFrag"}, 
+		
 		
 		//Titles for tab panel
 		{"ResidentTabTitle", "Nó Residente"}, 
@@ -279,7 +273,6 @@ public class GuiResources_pt extends ListResourceBundle {
         {"newMenu","Novo..."},
         {"newBN","Nova BN"},
         {"newMSBN","Nova MSBN"},
-        {"newMEBN","Nova MEBN"},
         {"newOOBN","Nova OOBN"},
         {"openItem","Abrir..."},
         {"saveItem","Salvar como..."},
@@ -331,7 +324,6 @@ public class GuiResources_pt extends ListResourceBundle {
         {"aboutItemMn","S"},
         {"newBNMn","B"},
         {"newMSBNMn","M"},
-        {"newMEBNMn","E"},
         {"newOOBNMn","O"},
         
         {"learningItemMn","L"},
@@ -453,9 +445,6 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"CptSaveOK", "Tabela salva com sucesso"},
 		{"CptCompileOK", "Tabela compilada sem erros"},
 		
-		/* Exceptions MEBN */
-		{"withoutMFrag", "Não existe nenhuma MFrag"}, 
-		{"edgeInvalid", "Arco invalido"}, 
 		
 		/* Edition of states */
 		{"insertBooleanStates", "Inserir estados booleanos"}, 
@@ -535,7 +524,6 @@ public class GuiResources_pt extends ListResourceBundle {
 
 		// nomes dos modulos/plugins incorporados no core
 		{"PNModuleName" , "Redes Probabilísticas"},
-		{"MEBNModuleName" , "Redes Bayesianas Multi-Entidade"},
 		{"MSBNModuleName" , "Redes Bayesianas Múltiplas-Seccionadas"},
 		
 

@@ -23,7 +23,6 @@ package unbbayes.gui;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Container;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -53,15 +52,11 @@ import unbbayes.controller.NetworkController;
 import unbbayes.gui.table.extension.IProbabilityFunctionPanelBuilder;
 import unbbayes.io.BaseIO;
 import unbbayes.io.FileExtensionIODelegator;
-import unbbayes.io.exception.LoadException;
-import unbbayes.io.exception.UBIOException;
-import unbbayes.io.mebn.UbfIO;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
-import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.util.extension.UnBBayesModule;
 
 /**
@@ -72,14 +67,14 @@ import unbbayes.util.extension.UnBBayesModule;
  * @author Laecio Lima dos Santos
  * @author Shou Matsumoto
  * 
- * TODO stop using this class as MEBN window (and migrate MEBN specific codes to a new class, say MEBNWindow)
+ * @version 02/13/2010 - MEBN code was moved to unbbayes.gui.mebn.MEBNNetworkWindow
+ * 
  */
 public class NetworkWindow extends UnBBayesModule {
 	
 	// since this implements IPersistenceAwareWindow, let's store them
-	private static final String[] SUPPORTED_FILE_EXTENSIONS = { "net", "xml"};
-	private static final String[] SUPPORTED_FILE_EXTENSIONS_LOAD = { "net", "xml", "dne"};
-	private static final String[] SUPPORTED_FILE_EXTENSIONS_MEBN = { unbbayes.io.mebn.UbfIO.FILE_EXTENSION };
+//	private static final String[] SUPPORTED_FILE_EXTENSIONS = { "net", "xml"};
+//	private static final String[] SUPPORTED_FILE_EXTENSIONS_LOAD = { "net", "xml", "dne"};
 	
 	
 	/** Serialization runtime version number */
@@ -107,17 +102,13 @@ public class NetworkWindow extends UnBBayesModule {
 
 	private PNCompilationPane pnCompilationPane = null;
 
-	private SSBNCompilationPane ssbnCompilationPane = null;
 
 	private HierarchicDefinitionPane hierarchyPanel = null;
 
 	private EditNet editNet = null;
 
-	private MEBNEditionPane mebnEditionPane = null;
 
 	public static final Integer PN_MODE = 0;
-
-	public static final Integer MEBN_MODE = 1;
 
 	private Integer mode = null;
 
@@ -131,12 +122,9 @@ public class NetworkWindow extends UnBBayesModule {
 	
 	private static final String PN_PANE_EVALUATION_PANE = "pnEvaluation";
 
-	private static final String MEBN_PANE_MEBN_EDITION_PANE = "mebnEditionPane";
-
-	private static final String MEBN_PANE_SSBN_COMPILATION_PANE = "ssbnCompilationPane";
 	
-	// variables that identifies a module (BN or MEBN)
 	
+	// variables that identifies a module 
 	private String moduleName;
 
 	/** Load resource file from this package */
@@ -151,6 +139,7 @@ public class NetworkWindow extends UnBBayesModule {
 //		super("", true, true, true, true);
 		super("");		
 		this.setModuleName(this.resource.getString("PNModuleName"));
+		status = new JLabel(resource.getString("statusReadyLabel"));
 	}
 	
 	public NetworkWindow(Network net) {
@@ -171,12 +160,7 @@ public class NetworkWindow extends UnBBayesModule {
 			controller = new NetworkController((SingleEntityNetwork) net, this);
 			this.setModuleName(this.resource.getString("PNModuleName"));
 		} else {
-			controller = new NetworkController(
-					(MultiEntityBayesianNetwork) net, this);
-			mebnEditionPane = controller.getMebnController()
-					.getMebnEditionPane();
-
-			this.setModuleName(this.resource.getString("MEBNModuleName"));
+			throw new IllegalArgumentException("net != SingleEntityNetwork");
 		}
 
 		graphPane = new GraphPane(controller, graphViewport);
@@ -238,15 +222,7 @@ public class NetworkWindow extends UnBBayesModule {
 			pnEditionPane.getCenterPanel().setBottomComponent(jspGraph);
 			card.show(getContentPane(), PN_PANE_PN_EDITION_PANE);
 		} else {
-			mode = NetworkWindow.MEBN_MODE;
-			ssbnCompilationPane = new SSBNCompilationPane();
-			contentPane.add(mebnEditionPane, MEBN_PANE_MEBN_EDITION_PANE);
-			contentPane.add(ssbnCompilationPane,
-					MEBN_PANE_SSBN_COMPILATION_PANE);
-
-			// inicia com a tela de edicao de rede(PNEditionPane)
-			mebnEditionPane.getGraphPanel().setBottomComponent(jspGraph);
-			card.show(getContentPane(), MEBN_PANE_MEBN_EDITION_PANE);
+			throw new IllegalArgumentException("net != SingleEntityNetwork");
 		}
 
 		setVisible(true);
@@ -276,13 +252,8 @@ public class NetworkWindow extends UnBBayesModule {
 	public EvidenceTree getEvidenceTree() {
 		if (pnCompilationPane != null) {
 			return pnCompilationPane.getEvidenceTree();
-		} else {
-			if (ssbnCompilationPane != null) {
-				return ssbnCompilationPane.getEvidenceTree();
-			} else {
-				return null;
-			}
-		}
+		} 
+		return null;
 	}
 
 	/**
@@ -386,15 +357,6 @@ public class NetworkWindow extends UnBBayesModule {
 		return (SingleEntityNetwork) controller.getNetwork();
 	}
 
-	/**
-	 * Retorna a rede probabil_stica <code>(ProbabilisticNetwork)</code>
-	 * 
-	 * @return a rede probabil_stica
-	 * @see ProbabilisticNetwork
-	 */
-	public MultiEntityBayesianNetwork getMultiEntityBayesianNetwork() {
-		return (MultiEntityBayesianNetwork) controller.getNetwork();
-	}
 
 	/**
 	 * Seta o status exibido na barra de status.
@@ -403,10 +365,10 @@ public class NetworkWindow extends UnBBayesModule {
 	 *            mensagem de status.
 	 */
 	public void setStatus(String status) {
-		if (ssbnCompilationPane != null) {
-			ssbnCompilationPane.setStatus(status);
-		} else {
+		if (pnCompilationPane != null) {
 			pnCompilationPane.setStatus(status);
+		}
+		if (pnEditionPane != null) {
 			pnEditionPane.setStatus(status);
 		}
 		this.status.setText(status);
@@ -477,61 +439,9 @@ public class NetworkWindow extends UnBBayesModule {
 
 	}
 
-	/**
-	 * M_todo respons_vel por fazer as altera__es necess_rias para a mudar da
-	 * tela de compila__o para a de edi__o.
-	 */
-	public void changeToMEBNEditionPane() {
+	
 
-		if (mode == NetworkWindow.MEBN_MODE) {
-			//by young
-			//Node.setSize(MultiEntityNode.getDefaultSize().getX(), MultiEntityNode.getDefaultSize().getY());
-			graphPane.addKeyListener(controller);
-
-			controller.getMebnController().setEditionMode();
-			graphPane.resetGraph();
-			// inicia com a tela de edicao de rede(PNEditionPane)
-			mebnEditionPane.getGraphPanel().setBottomComponent(jspGraph);
-			
-			mebnEditionPane.updateToPreferredSize();
-
-			card.show(getContentPane(), MEBN_PANE_MEBN_EDITION_PANE);
-		}
-	}
-
-	/**
-	 * M_todo respons_vel por fazer as altera__es necess_rias para a mudar da
-	 * tela de compila__o para a de edi__o.
-	 */
-	public void changeToSSBNCompilationPane(SingleEntityNetwork ssbn) {
-
-		if (mode == NetworkWindow.MEBN_MODE) {
-			//by young
-			//Node.setSize(Node.getDefaultSize().getX(), Node.getDefaultSize().getY());
-
-			Container contentPane = getContentPane();
-			contentPane.remove(ssbnCompilationPane);
-
-			ssbnCompilationPane = new SSBNCompilationPane(ssbn, this,
-					controller);
-			graphPane.resetGraph();
-			ssbnCompilationPane.getCenterPanel().setRightComponent(jspGraph);
-			ssbnCompilationPane.setStatus(status.getText());
-			ssbnCompilationPane.getEvidenceTree().setRootVisible(true);
-			ssbnCompilationPane.getEvidenceTree().expandRow(0);
-			ssbnCompilationPane.getEvidenceTree().setRootVisible(false);
-			//by young2
-			ssbnCompilationPane.getEvidenceTree().updateTree(true);
-
-			contentPane.add(ssbnCompilationPane,
-					MEBN_PANE_SSBN_COMPILATION_PANE);
-			
-			ssbnCompilationPane.updateToPreferredSize(); 
-			
-			CardLayout layout = (CardLayout) contentPane.getLayout();
-			layout.show(getContentPane(), MEBN_PANE_SSBN_COMPILATION_PANE);
-		}
-	}
+	
 
 	/**
 	 * M_todo respons_vel por fazer as altera__es necess_rias para a mudar da
@@ -591,9 +501,7 @@ public class NetworkWindow extends UnBBayesModule {
 		return this.pnEditionPane;
 	}
 
-	public MEBNEditionPane getMebnEditionPane() {
-		return this.mebnEditionPane;
-	}
+	
 
 	/**
 	 * Retorna a tela de compila__o (<code>PNCompilationPane</code>).
@@ -645,31 +553,6 @@ public class NetworkWindow extends UnBBayesModule {
 		this.mode = mode;
 	}
 
-//	/* (non-Javadoc)
-//	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFileExtensions(boolean)
-//	 */
-//	public String[] getSupportedFileExtensions(boolean isLoadOnly) {
-//		if (this.getMode() == MEBN_MODE) {
-//			return SUPPORTED_FILE_EXTENSIONS_MEBN;
-//		} else if (isLoadOnly) {
-//			return SUPPORTED_FILE_EXTENSIONS_LOAD;
-//		} else {
-//			return SUPPORTED_FILE_EXTENSIONS;
-//		}
-//	}
-//
-//	/* (non-Javadoc)
-//	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFilesDescription(boolean)
-//	 */
-//	public String getSupportedFilesDescription(boolean isLoadOnly) {
-//		if (this.getMode() == MEBN_MODE) {
-//			return resource.getString("netFileFilterSaveMEBN");
-//		} else if (isLoadOnly) {
-//			return resource.getString("netFileFilterLoad");
-//		} else {
-//			return resource.getString("netFileFilterSave");
-//		} 
-//	}
 
 	
 	/* (non-Javadoc)
@@ -749,7 +632,7 @@ public class NetworkWindow extends UnBBayesModule {
 		
 		// a IO that delegates to correct I/O depending on the file extension (NET, DNE and XMLBIF by default)
 		FileExtensionIODelegator ioDelegator = FileExtensionIODelegator.newInstance();
-		ioDelegator.getDelegators().add(UbfIO.getInstance());	// adding UBF compatibility into delegator
+//		ioDelegator.getDelegators().add(UbfIO.getInstance());	// adding UBF compatibility into delegator
 		
 		try {
 			g = ioDelegator.load(file);
@@ -855,6 +738,84 @@ public class NetworkWindow extends UnBBayesModule {
 		this.getTxtDescription().setText(builder.getProbabilityFunctionOwner().getDescription());
 		this.getTxtName().setText(builder.getProbabilityFunctionOwner().getName());
 	}
+
+	/**
+	 * @return the net
+	 */
+	public Network getNet() {
+		return net;
+	}
+
+	/**
+	 * @param net the net to set
+	 */
+	public void setNet(Network net) {
+		this.net = net;
+	}
+
+	/**
+	 * @return the card
+	 */
+	public CardLayout getCardLayout() {
+		return card;
+	}
+
+	/**
+	 * @param card the card to set
+	 */
+	public void setCardLayout(CardLayout card) {
+		this.card = card;
+	}
+
+	/**
+	 * @param graphViewport the graphViewport to set
+	 */
+	public void setGraphViewport(JViewport graphViewport) {
+		this.graphViewport = graphViewport;
+	}
+
+	/**
+	 * @param graphPane the graphPane to set
+	 */
+	public void setGraphPane(GraphPane graphPane) {
+		this.graphPane = graphPane;
+	}
+
+	/**
+	 * @param jspGraph the jspGraph to set
+	 */
+	public void setJspGraph(JScrollPane jspGraph) {
+		this.jspGraph = jspGraph;
+	}
+
+	/**
+	 * @return the bCompiled
+	 */
+	public boolean isBCompiled() {
+		return bCompiled;
+	}
+
+	/**
+	 * @param compiled the bCompiled to set
+	 */
+	public void setBCompiled(boolean compiled) {
+		bCompiled = compiled;
+	}
+
+	/**
+	 * @return the status
+	 */
+	public JLabel getStatus() {
+		return status;
+	}
+
+	/**
+	 * @param status the status to set
+	 */
+	public void setStatus(JLabel status) {
+		this.status = status;
+	}
+
 	
 	
 	

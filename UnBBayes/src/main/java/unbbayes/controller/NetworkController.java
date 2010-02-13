@@ -52,14 +52,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 
-import unbbayes.controller.SENController.InferenceAlgorithmEnum;
 import unbbayes.evaluation.controller.EvaluationController;
 import unbbayes.gui.FileIcon;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.BaseIO;
 import unbbayes.io.FileExtensionIODelegator;
-import unbbayes.io.mebn.UbfIO;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Network;
@@ -68,11 +66,6 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.hybridbn.ContinuousNode;
-import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.exception.CycleFoundException;
-import unbbayes.prs.mebn.exception.MEBNConstructionException;
-import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
-import unbbayes.prs.mebn.ssbn.giaalgorithm.AbstractSSBNGenerator;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 /**
@@ -90,10 +83,9 @@ public class NetworkController implements KeyListener {
 
     private NetworkWindow screen;
     private SingleEntityNetwork singleEntityNetwork;
-    private MultiEntityBayesianNetwork multiEntityBayesianNetwork;
+    
     
     private SENController senController;
-    private MEBNController mebnController;
     
     private BaseIO baseIO;
     
@@ -116,68 +108,12 @@ public class NetworkController implements KeyListener {
     		unbbayes.controller.resources.ControllerResources.class.getName());
     
     
-    /***************** BEGIN CONTROLLING MULTI ENTTITY BAYESIAN NETWORK *********************/
     
     /**
-     *  Constructs a controller for MultiEntityNetwork.
-     *
+     * This is the default constructor, initializing nothing.
+     * This is made protected in order to make it easier to extend.
      */
-    public NetworkController(MultiEntityBayesianNetwork multiEntityBayesianNetwork, NetworkWindow screen) {
-        this.multiEntityBayesianNetwork = multiEntityBayesianNetwork;
-        this.screen = screen;
-        this.mebnController = new MEBNController(multiEntityBayesianNetwork, screen);
-        this.setBaseIO(UbfIO.getInstance());
-    }
-    
-    public void insertDomainMFrag(){
-    	if(mebnController!= null){
-    		try{
-    			mebnController.insertDomainMFrag(); 
-    		} catch (Exception e){
-    			e.printStackTrace(); 
-    		}
-    	}
-    }    
-    
-    /**
-     * Insert a new context node in the MultiEntityBayesianNetwork with 
-     * the standard label and descritpion.
-     *
-     * @param x The x position of the new node.
-     * @param y The y position of the new node.
-     */
-    
-    public Node insertResidentNode(double x, double y) throws MFragDoesNotExistException{
-    	if (mebnController != null)
-    		return mebnController.insertDomainResidentNode(x,y);
-    	return null;
-    }
-        
-    public Node insertInputNode(double x, double y) throws MFragDoesNotExistException{
-    	if (mebnController != null)
-    		return mebnController.insertGenerativeInputNode(x,y);
-    	return null;
-    }
-    
-    public Node insertContextNode(double x, double y) throws MFragDoesNotExistException{
-    	if (mebnController != null)
-				return mebnController.insertContextNode(x,y);
-    	return null;
-    }
-    
-    public MEBNController getMebnController(){
-    	return mebnController; 
-    }
-    
-    public void setResetButtonActive(){
-    	if(mebnController != null){
-    		mebnController.setResetButtonActive(); 
-    	}
-    }
-    
-    /***************** END CONTROLLING MULTI ENTTITY BAYESIAN NETWORK *********************/
-    
-    
+    protected NetworkController() {}
     
     
 
@@ -213,35 +149,15 @@ public class NetworkController implements KeyListener {
      * @return The network being controlled.
      */
     public Network getNetwork() {
-    	if (singleEntityNetwork != null) {
-    		return singleEntityNetwork;
-    	}
-    	if (multiEntityBayesianNetwork != null) {
-    		return multiEntityBayesianNetwork;
-    	}
-    	return null;
+    	return singleEntityNetwork;
     }
     
+    /**
+     * Obtains the network in a Graph format
+     * @return
+     */
     public Graph getGraph(){
-    	
-    	if (singleEntityNetwork != null) {
-    		return singleEntityNetwork;
-    	}
-    	
-    	if (multiEntityBayesianNetwork != null) {
-    		if(!mebnController.isShowSSBNGraph()){
-    			if (multiEntityBayesianNetwork.getCurrentMFrag()!= null){
-    				return multiEntityBayesianNetwork.getCurrentMFrag();
-    			}else{
-    				return multiEntityBayesianNetwork;
-    			}
-    		}
-    		else{
-    			 return mebnController.getSpecificSituationBayesianNetwork();
-    		}
-    	}
-    	
-    	return null;   	
+    	return singleEntityNetwork;
     }
 
     /**
@@ -249,11 +165,6 @@ public class NetworkController implements KeyListener {
      */
     public void initialize() {
     	if (senController != null) senController.initialize();
-    	else{
-    		if(mebnController != null){
-    			 mebnController.initialize(); 
-    		}
-    	}
     }
     
     /**
@@ -305,11 +216,6 @@ public class NetworkController implements KeyListener {
      */
     public void propagate() {
     	if (senController != null) senController.propagate();
-    	else{
-    		if(mebnController != null){
-    			mebnController.propagate();
-    		}
-    	}
     }
 
     /**
@@ -401,12 +307,8 @@ public class NetworkController implements KeyListener {
      *
      * @param edge The new edge to be inserted.
      */
-    public boolean insertEdge(Edge edge) throws MEBNConstructionException, CycleFoundException, Exception{
+    public boolean insertEdge(Edge edge) throws Exception{
     	if (senController != null) return senController.insertEdge(edge); 
-    	else{
-    		if (mebnController!= null) return mebnController.insertEdge(edge); 
-    	}
-    	
     	return false;
     }
     
@@ -435,7 +337,6 @@ public class NetworkController implements KeyListener {
     //by young
     public void deleteSelected(Object selected) {
     	if (senController != null) senController.deleteSelected(selected);
-    	else if (mebnController != null) mebnController.deleteSelected(selected);
     }
     
     /***************** END CONTROLLING BOTH *********************/
@@ -581,22 +482,31 @@ public class NetworkController implements KeyListener {
         	FileHistoryController.getInstance().setCurrentDirectory(chooser.getCurrentDirectory());
         }
     }
+    
+    /**
+     * This method is called inside {@link #showLog()} to retrieve the 
+     * content of LOG. Extend this method in order to customize the log message
+     * (e.g. customize where the log content is stored, and how to retrieve it)
+     * @return a non null string. If {@link #singleEntityNetwork} is null, it returns
+     * an empty string.
+     */
+    protected String getLogContent() {
+    	if (singleEntityNetwork != null) {
+    		return singleEntityNetwork.getLog();
+    	}
+    	return "";
+    }
 
     /**
      *  Show every single step taken during the compilation of the 
      *  SingleEntityNetwork.
      */
     public JDialog showLog() {
-        screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+        this.getScreen().setCursor(new Cursor(Cursor.WAIT_CURSOR));
         final JTextArea texto = new JTextArea();
 
         texto.setEditable(false);
-        if (singleEntityNetwork != null) {
-        	texto.setText(singleEntityNetwork.getLog());
-        } else {
-        	//MEBN
-        	texto.setText(mebnController.getSSBN().getLogManager().getLog());
-        }
+        texto.setText(this.getLogContent());
         
         texto.moveCaretPosition(0);
         texto.setSelectionEnd(0);
@@ -651,24 +561,25 @@ public class NetworkController implements KeyListener {
 
         dialog.getContentPane().add(panel);
         dialog.setTitle(resource.getString("logDialogTitle")); 
-        screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        this.getScreen().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         
         return dialog; 
     }
 
     /**
-     * Warning dialog (only ssbn of mebn)
+     * Open Warning dialog.
+     * Currently, this is only a stub.
      */
     public void openWarningDialog(){
-    	if(multiEntityBayesianNetwork != null){
-    		mebnController.openWarningDialog(); 
-    	}
+    	System.out.println("Not implemented yet");
     }
     
+    /**
+     * Close current warning dialog.
+     * This is a stub yet.
+     */
     public void closeWarningDialog(){
-    	if(multiEntityBayesianNetwork != null){
-    		mebnController.closeWarningDialog(); 
-    	}
+    	System.out.println("Not implemented yet");
     }
     
     
@@ -835,7 +746,7 @@ public class NetworkController implements KeyListener {
      *
      * @param textArea The text area containing the log.
      */
-    private void printLog(final JTextArea textArea) {
+    protected void printLog(final JTextArea textArea) {
         Thread t = new Thread(new Runnable() {
           public void run() {
             PrintText it = new PrintText(textArea,
@@ -920,16 +831,19 @@ public class NetworkController implements KeyListener {
         
     }
     
+    /**
+     * Selects a node
+     * @param node
+     */
     public void selectNode(Node node){
-    	if (multiEntityBayesianNetwork != null){
-    		mebnController.selectNode(node); 
-    	}
+    	System.out.println("Node selection is currently only available for subclasses");
     }
     
+    /**
+     * Unselects all graphical elements
+     */
     public void unselectAll(){
-    	if (multiEntityBayesianNetwork != null){
-    		mebnController.unselectNodes(); 
-    	}    	
+    	System.out.println("Node selection is currently only available for subclasses");
     }
 
 	/**
@@ -950,6 +864,13 @@ public class NetworkController implements KeyListener {
 	 */
 	public void setBaseIO(BaseIO baseIO) {
 		this.baseIO = baseIO;
+	}
+
+	/**
+	 * @param screen the screen to set
+	 */
+	public void setScreen(NetworkWindow screen) {
+		this.screen = screen;
 	}
     
     /****************** END GENERIC METHODS *********************/

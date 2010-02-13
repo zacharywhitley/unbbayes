@@ -57,10 +57,6 @@ public class GuiResources extends ListResourceBundle {
 		{"fileNETType","Baysian Netwotk File NET"},
 		{"fileGenericType","Generic File"},
 		
-//		{"netFileFilter","Net (.net, .oobn), XMLBIF (.xml), Netica (.dne), PR-OWL (.owl), UnBBayes file (.ubf)"},
-//		{"netFileFilterLoad","Net (.net), XMLBIF (.xml), Netica (.dne)"},
-//		{"netFileFilterSaveMEBN", "UnBBayes file (.ubf)"},
-//		{"xmlBIFFileFilter", "XMLBIF (.xml)"},
 		{"allNetFileFilter","All Supported Network Files"},
 		{"powerloomFileFilter","Knowledge Base (.plm)"},
 		{"textFileFilter","Text (.txt)"},
@@ -75,7 +71,6 @@ public class GuiResources extends ListResourceBundle {
 		//main toll bar tips 
 		{"newToolTip","New net"},
 		{"newMsbnToolTip", "New MSBN"}, 
-		{"newMebnToolTip", "New MEBN"}, 
 		{"newOobnToolTip", "New OOBN"}, 
 		{"openToolTip","Open net"},
 		{"saveToolTip","Save net"},
@@ -236,12 +231,7 @@ public class GuiResources extends ListResourceBundle {
 		{"forallToolTip", "'for all' quantifier"},
 		{"existsToolTip", "'exists' quantifier"},		
 		
-		//Menus MEBN
-		{"menuDelete", "Delete"}, 
-		{"menuAddContext", "Add Context"}, 
-		{"menuAddInput", "Add Input"},
-		{"menuAddResident", "Add Resident"}, 
-		{"menuAddDomainMFrag", "Add MFrag"}, 
+		
 		
 		//Titles for tab panel
 		{"ResidentTabTitle", "Resident Node"}, 
@@ -283,7 +273,6 @@ public class GuiResources extends ListResourceBundle {
         {"newMenu","New..."},
         {"newBN", "New BN"},
         {"newMSBN", "New MSBN"},
-        {"newMEBN","New MEBN"},
         {"newOOBN","New OOBN"},
         {"openItem","Open..."},
         {"saveItem","Save as..."},
@@ -335,7 +324,6 @@ public class GuiResources extends ListResourceBundle {
         {"aboutItemMn","A"},
         {"newBNMn","B"},
         {"newMSBNMn","M"},
-        {"newMEBNMn","E"},
         {"newOOBNMn","O"},
         
         {"learningItemMn","L"},
@@ -457,9 +445,6 @@ public class GuiResources extends ListResourceBundle {
 		{"CptSaveOK", "Table save sucessfull"},
 		{"CptCompileOK", "Table compile sucessfull"},
 		
-		/* Exceptions MEBN */
-		{"withoutMFrag", "No MFrag"}, 
-		{"edgeInvalid", "Invalid Edge"}, 
 		
 		/* Edition of states */
 		{"insertBooleanStates", "Insert boolean states"}, 
@@ -538,7 +523,6 @@ public class GuiResources extends ListResourceBundle {
 		
 		// list of modules/plugins which are already incorporated into core
 		{"PNModuleName" , "Probabilistic Network"},
-		{"MEBNModuleName" , "Multi Entity Bayesian Network"},
 		{"MSBNModuleName" , "Multiple Sectioned Bayesian Network"},
 		
 		

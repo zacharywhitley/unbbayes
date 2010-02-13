@@ -3,45 +3,32 @@
  */
 package unbbayes.gui.oobn;
 
-import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.util.ResourceBundle;
 
-import javax.swing.JButton;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.JToolBar;
 import javax.swing.JViewport;
 
-import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
 import unbbayes.controller.oobn.OOBNClassController;
-import unbbayes.controller.oobn.OOBNController;
 import unbbayes.gui.EditNet;
-import unbbayes.gui.GraphAction;
 import unbbayes.gui.GraphPane;
-import unbbayes.gui.HierarchicDefinitionPane;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.PNEditionPane;
-import unbbayes.gui.SSBNCompilationPane;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
-import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.oobn.IOOBNClass;
-import unbbayes.util.Debug;
 
 /**
  * @author Shou Matsumoto
@@ -341,15 +328,6 @@ public class OOBNClassWindow extends NetworkWindow {
 		}
 	}
 
-	/**
-	 * Retorna a rede probabil_stica <code>(ProbabilisticNetwork)</code>
-	 * 
-	 * @return a rede probabil_stica
-	 * @see ProbabilisticNetwork
-	 */
-	public MultiEntityBayesianNetwork getMultiEntityBayesianNetwork() {
-		return (MultiEntityBayesianNetwork) controller.getNetwork();
-	}
 
 	/**
 	 * Seta o status exibido na barra de status.

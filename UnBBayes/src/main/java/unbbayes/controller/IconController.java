@@ -145,7 +145,7 @@ public class IconController implements Serializable {
 	
 	protected ImageIcon newMSBNIcon; 
 	
-	protected ImageIcon newMEBNIcon; 
+//	protected ImageIcon newMEBNIcon; 
 	
 
 	protected ImageIcon informationIcon;
@@ -828,14 +828,6 @@ public class IconController implements Serializable {
 		}
 	}
 	
-	public ImageIcon getNewMEBNIcon() {
-		if (newMEBNIcon != null) {
-			return newMEBNIcon;
-		} else {
-			newMEBNIcon = new ImageIcon(getClass().getResource("/icons/new-mebn.png"));
-			return newMEBNIcon;
-		}
-	}	
 	
 
 	public ImageIcon getLessIcon() {

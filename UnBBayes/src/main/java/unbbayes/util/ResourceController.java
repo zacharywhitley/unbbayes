@@ -15,7 +15,6 @@ import org.java.plugin.registry.Extension;
 import org.java.plugin.registry.ExtensionPoint;
 import org.java.plugin.registry.PluginDescriptor;
 
-import unbbayes.controller.resources.ControllerResources;
 import unbbayes.gui.resources.GuiResources;
 import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
 
@@ -48,33 +47,6 @@ public class ResourceController {
 	
 	private UnBBayesPluginContextHolder unbbayesPluginContextHolder = UnBBayesPluginContextHolder.newInstance();
 	
-	
-	
-//	/**
-//	 * Reference to unbbayes.prs.mebn.compiler.resources.Resources.
-//	 * It calls
-//	 * ResourceController.newInstance().getBundle(unbbayes.prs.mebn.compiler.resources.Resources.class.getName())
-//	 */
-//	public static ResourceBundle RS_COMPILER = ResourceController.newInstance()
-//	.getBundle(unbbayes.prs.mebn.compiler.resources.Resources.class.getName());
-
-//	/** 
-//	 * Call to ResourceController.newInstance().getBundle(unbbayes.prs.mebn.resources.Resources.class.getName())
-//	 */
-//	public static ResourceBundle RS_MEBN = ResourceController.newInstance()
-//	.getBundle(unbbayes.prs.mebn.resources.Resources.class.getName());
-	
-//	/** Call to ResourceController.newInstance().getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName()) */
-//	public static ResourceBundle RS_SSBN = ResourceController.newInstance()
-//	.getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName());
-	
-//	/** Call to ResourceController.newInstance().getBundle(unbbayes.prs.bn.resources.BnResources.class.getName()) */
-//	public static ResourceBundle RS_BN = ResourceController.newInstance()
-//	.getBundle(unbbayes.prs.bn.resources.BnResources.class.getName());
-	
-//	/** Call to ResourceController.newInstance().getBundle(unbbayes.prs.hybridbn.resources.HybridBnResources.class.getName()) */
-//	public static ResourceBundle RS_HYBRID_BN = ResourceController.newInstance()
-//	.getBundle(unbbayes.prs.hybridbn.resources.HybridBnResources.class.getName());
 	
 	
 	

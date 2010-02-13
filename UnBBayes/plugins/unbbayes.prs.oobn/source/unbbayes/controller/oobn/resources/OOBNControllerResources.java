@@ -79,7 +79,6 @@ public class OOBNControllerResources extends ListResourceBundle {
 		//MainController
 		{"NewPNName","New BN"},
 		{"NewMSBNName","New MSBN"},
-		{"NewMEBNName","NewMEBN"},
 		{"NewOOBNName","NewOOBN"},
 		
 		{"probabilisticNodeName","C"},
@@ -111,9 +110,6 @@ public class OOBNControllerResources extends ListResourceBundle {
 		{"of"," of "},
 		{"numberFormatError","The value must be a real number."},
 		
-		/* Exceptions MEBN */
-		{"withoutMFrag", "No MFrag found"}, 
-		{"edgeInvalid", "Invalid Edge"}, 
 
 		{"JAXBExceptionFound", "Sintaxe error..."},
 		
@@ -132,9 +128,8 @@ public class OOBNControllerResources extends ListResourceBundle {
 		
 		/* load/save */
 		{"saveSucess", "File saved"},
-		{"mebnDontExists", "Failed: no active MEBN"}, 
 		{"bnDontExists", "Failed: no active Bayesian Network"},
-		{"mebnDontExists", "Failed: No active MSBN"},
+		{"msbnDontExists", "Failed: No active MSBN"},
 		{"sucess", "Sucess"}, 
 		{"error", "Error"},
 		{"loadHasError", "The file has been loaded with some errors"},

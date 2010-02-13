@@ -38,7 +38,6 @@ import java.util.ResourceBundle;
 
 import javax.swing.JDialog;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JViewport;
@@ -50,13 +49,9 @@ import unbbayes.draw.IEdgeHolderShape;
 import unbbayes.draw.INodeHolderShape;
 import unbbayes.draw.UCanvas;
 import unbbayes.draw.UShape;
-import unbbayes.draw.UShapeContextNode;
 import unbbayes.draw.UShapeDecisionNode;
-import unbbayes.draw.UShapeInputNode;
 import unbbayes.draw.UShapeLine;
-import unbbayes.draw.UShapeOrdinaryVariableNode;
 import unbbayes.draw.UShapeProbabilisticNode;
-import unbbayes.draw.UShapeResidentNode;
 import unbbayes.draw.UShapeState;
 import unbbayes.draw.UShapeUtilityNode;
 import unbbayes.draw.extension.IPluginUShape;
@@ -70,13 +65,6 @@ import unbbayes.prs.extension.IPluginNode;
 import unbbayes.prs.hybridbn.ContinuousNode;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
-import unbbayes.prs.mebn.ContextNode;
-import unbbayes.prs.mebn.InputNode;
-import unbbayes.prs.mebn.OrdinaryVariable;
-import unbbayes.prs.mebn.ResidentNode;
-import unbbayes.prs.mebn.exception.CycleFoundException;
-import unbbayes.prs.mebn.exception.MEBNConstructionException;
-import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.dto.INodeClassDataTransferObject;
 import unbbayes.util.extension.manager.CorePluginNodeManager;
@@ -358,7 +346,7 @@ public class GraphPane extends UCanvas implements MouseListener,
 	 *@see MouseEvent
 	 */
 	public void mouseClicked(MouseEvent e) {
-
+		// TODO stop using direct access to controller as a field, and start using get/set methods
 		if (SwingUtilities.isLeftMouseButton(e)) {
 			Node newNode = null;
 
@@ -416,95 +404,6 @@ public class GraphPane extends UCanvas implements MouseListener,
 				addShape(shape);
 				shape.setState(UShape.STATE_SELECTED, null);
 				showCPT(newNode);
-			}
-				break;
-			case CREATE_DOMAIN_MFRAG: {
-				controller.insertDomainMFrag();
-			}
-				break;
-			case CREATE_CONTEXT_NODE: {
-				try {
-					newNode = controller.insertContextNode(e.getX(), e.getY());
-					UShapeContextNode shape = new UShapeContextNode(this,
-							newNode, (int) newNode.getPosition().x
-									- newNode.getWidth() / 2, (int) newNode
-									.getPosition().y
-									- newNode.getHeight() / 2, newNode
-									.getWidth(), newNode.getHeight());
-					addShape(shape);
-					shape.setState(UShape.STATE_SELECTED, null);
-					controller.selectNode(newNode);
-				} catch (MEBNConstructionException exception) {
-					JOptionPane.showMessageDialog(controller.getScreen()
-							.getMebnEditionPane(), resource
-							.getString("withoutMFrag"), resource
-							.getString("operationError"),
-							JOptionPane.WARNING_MESSAGE);
-				}
-			}
-				break;
-			case CREATE_RESIDENT_NODE: {
-				try {
-					newNode = controller.insertResidentNode(e.getX(), e.getY());
-					UShapeResidentNode shape = new UShapeResidentNode(this,
-							newNode, (int) newNode.getPosition().x
-									- newNode.getWidth() / 2, (int) newNode
-									.getPosition().y
-									- newNode.getHeight() / 2, newNode
-									.getWidth(), newNode.getHeight());
-					addShape(shape);
-					shape.setState(UShape.STATE_SELECTED, null);
-					controller.selectNode(newNode);
-				} catch (MEBNConstructionException exception) {
-					JOptionPane.showMessageDialog(controller.getScreen()
-							.getMebnEditionPane(), resource
-							.getString("withoutMFrag"), resource
-							.getString("operationError"),
-							JOptionPane.WARNING_MESSAGE);
-				}
-			}
-				break;
-			case CREATE_INPUT_NODE: {
-				try {
-					newNode = controller.insertInputNode(e.getX(), e.getY());
-					UShapeInputNode shape = new UShapeInputNode(this, newNode,
-							(int) newNode.getPosition().x - newNode.getWidth()
-									/ 2, (int) newNode.getPosition().y
-									- newNode.getHeight() / 2, newNode
-									.getWidth(), newNode.getHeight());
-					addShape(shape);
-					shape.setState(UShape.STATE_SELECTED, null);
-					controller.selectNode(newNode);
-				} catch (MFragDoesNotExistException exception) {
-					JOptionPane.showMessageDialog(controller.getScreen()
-							.getMebnEditionPane(), resource
-							.getString("withoutMFrag"), resource
-							.getString("operationError"),
-							JOptionPane.WARNING_MESSAGE);
-				}
-			}
-				break;
-			case CREATE_ORDINARYVARIABLE_NODE: {
-				try {
-					newNode = controller.getMebnController()
-							.insertOrdinaryVariable(e.getX(), e.getY());
-					UShapeOrdinaryVariableNode shape = new UShapeOrdinaryVariableNode(
-							this, newNode, (int) newNode.getPosition().x
-									- newNode.getWidth() / 2, (int) newNode
-									.getPosition().y
-									- newNode.getHeight() / 2, newNode
-									.getWidth(), newNode.getHeight());
-					addShape(shape);
-					shape.setState(UShape.STATE_SELECTED, null);
-					controller.selectNode(newNode);
-
-				} catch (MEBNConstructionException exception) {
-					JOptionPane.showMessageDialog(controller.getScreen()
-							.getMebnEditionPane(), resource
-							.getString("withoutMFrag"), resource
-							.getString("operationError"),
-							JOptionPane.WARNING_MESSAGE);
-				}
 			}
 				break;
 			case ADD_PLUGIN_NODE: {
@@ -588,16 +487,6 @@ public class GraphPane extends UCanvas implements MouseListener,
 		// Ask the controller to insert the following edge
 		try {
 			return controller.insertEdge(edge);
-		} catch (MEBNConstructionException me) {
-			JOptionPane.showMessageDialog(controller.getScreen()
-					.getMebnEditionPane(), me.getMessage(), resource
-					.getString("error"), JOptionPane.ERROR_MESSAGE);
-			return false;
-		} catch (CycleFoundException cycle) {
-			JOptionPane.showMessageDialog(controller.getScreen()
-					.getMebnEditionPane(), cycle.getMessage(), resource
-					.getString("error"), JOptionPane.ERROR_MESSAGE);
-			return false;
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
@@ -792,23 +681,25 @@ public class GraphPane extends UCanvas implements MouseListener,
 				shape = new UShapeUtilityNode(this, newNode, (int) newNode
 						.getPosition().x, (int) newNode.getPosition().y, newNode
 						.getWidth(), newNode.getHeight());
-			} else if (newNode instanceof ContextNode) {
-				shape = new UShapeContextNode(this, newNode, (int) newNode
-						.getPosition().x, (int) newNode.getPosition().y, newNode
-						.getWidth(), newNode.getHeight());
-			} else if (newNode instanceof ResidentNode) {
-				shape = new UShapeResidentNode(this, newNode, (int) newNode
-						.getPosition().x, (int) newNode.getPosition().y, newNode
-						.getWidth(), newNode.getHeight());
-			} else if (newNode instanceof InputNode) {
-				shape = new UShapeInputNode(this, newNode, (int) newNode
-						.getPosition().x, (int) newNode.getPosition().y, newNode
-						.getWidth(), newNode.getHeight());
-			} else if (newNode instanceof OrdinaryVariable) {
-				shape = new UShapeOrdinaryVariableNode(this, newNode, (int) newNode
-						.getPosition().x, (int) newNode.getPosition().y, newNode
-						.getWidth(), newNode.getHeight());
-			} 
+			}
+			// the below code is not necessary anymore, since MEBNGraphPane overwrites this method
+//			else if (newNode instanceof ContextNode) {
+//				shape = new UShapeContextNode(this, newNode, (int) newNode
+//						.getPosition().x, (int) newNode.getPosition().y, newNode
+//						.getWidth(), newNode.getHeight());
+//			} else if (newNode instanceof ResidentNode) {
+//				shape = new UShapeResidentNode(this, newNode, (int) newNode
+//						.getPosition().x, (int) newNode.getPosition().y, newNode
+//						.getWidth(), newNode.getHeight());
+//			} else if (newNode instanceof InputNode) {
+//				shape = new UShapeInputNode(this, newNode, (int) newNode
+//						.getPosition().x, (int) newNode.getPosition().y, newNode
+//						.getWidth(), newNode.getHeight());
+//			} else if (newNode instanceof OrdinaryVariable) {
+//				shape = new UShapeOrdinaryVariableNode(this, newNode, (int) newNode
+//						.getPosition().x, (int) newNode.getPosition().y, newNode
+//						.getWidth(), newNode.getHeight());
+//			} 
 			// the below code is not necessary anymore, since OOBNGraphPane overwrites this method
 //			else if (newNode instanceof OOBNNodeGraphicalWrapper) {
 //				shape = new UShapeOOBNNode(this, newNode, (int) newNode
@@ -817,11 +708,13 @@ public class GraphPane extends UCanvas implements MouseListener,
 //			}
 		}
 
-		try {
-			addShape(shape);
-			shape.setState(UShape.STATE_SELECTED, null);
-		} catch (NullPointerException e) {
-			throw new RuntimeException("Could not find or set a shape for node: " + newNode.getName(),e);
+		if (shape != null) {
+			try {
+				addShape(shape);
+				shape.setState(UShape.STATE_SELECTED, null);
+			} catch (NullPointerException e) {
+				throw new RuntimeException("Could not find or set a shape for node: " + newNode.getName(),e);
+			}
 		}
 	}
 

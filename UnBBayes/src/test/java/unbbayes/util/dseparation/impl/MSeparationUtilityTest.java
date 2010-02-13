@@ -54,9 +54,6 @@ public class MSeparationUtilityTest extends TestCase {
 		int numberOfNodes = 6;	// how many nodes there are
 		this.nodesUnderTest = new ArrayList<INode>(numberOfNodes);
 		for (int i = 0; i < numberOfNodes; i++) {
-//			this.nodesUnderTest.add(
-//					SSBNNode.getInstance(new ResidentNode("Node" + i, new MFrag("MFrag" , new MultiEntityBayesianNetwork("MEBN"))))
-//				);
 			this.nodesUnderTest.add(new MSeparationTestNode("Node" + i));
 		}
 		

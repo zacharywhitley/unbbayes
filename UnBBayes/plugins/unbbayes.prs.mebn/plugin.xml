@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- This is the plugin descriptor for UnBBayes' MEBN module. -->
+<plugin id="unbbayes.prs.mebn" version="1.0.0">
+    <requires>
+        <import plugin-id="unbbayes.util.extension.core"/>
+    </requires>
+    <runtime>
+        <library id="mebn" path="classes/" type="code">
+            <export prefix="*" />
+        </library>
+        <library type="resources" path="icons/" id="icons" />
+    </runtime>
+    <extension plugin-id="unbbayes.util.extension.core" point-id="Module" id="MEBN">
+        <parameter id="class" value="unbbayes.gui.mebn.MEBNNetworkWindow" />
+        <parameter id="name" value="MEBN" />
+        <parameter id="builder" value="unbbayes.gui.mebn.extension.MEBNWindowBuilder" />
+		<parameter id="description" value="Multi Entity Bayesian Network" />
+		<parameter id="icon" value="new-mebn.png" />
+		<parameter id="category" value="bn" />
+    </extension>
+</plugin>

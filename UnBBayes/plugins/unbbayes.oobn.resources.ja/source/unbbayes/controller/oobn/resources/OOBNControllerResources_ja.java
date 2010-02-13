@@ -57,7 +57,6 @@ public class OOBNControllerResources_ja extends ListResourceBundle {
 		//MainController
 		{"NewPNName","新規 BN"},
 		{"NewMSBNName","新規 MSBN"},
-		{"NewMEBNName","新規 MEBN"},
 		{"NewOOBNName","新規 OOBN"},
 		
 		{"probabilisticNodeName","C"},
@@ -89,9 +88,6 @@ public class OOBNControllerResources_ja extends ListResourceBundle {
 		{"of"," ／ "},
 		{"numberFormatError","実数値をお願いします."},
 		
-		/* Exceptions MEBN */
-		{"withoutMFrag", "MFragが発見されませんでした"}, 
-		{"edgeInvalid", "不正なエッジです"}, 
 
 		{"JAXBExceptionFound", "不正な文法です..."},
 		
@@ -110,9 +106,8 @@ public class OOBNControllerResources_ja extends ListResourceBundle {
 		
 		/* load/save */
 		{"saveSucess", "ファイルがセーブされました"},
-		{"mebnDontExists", "アクティブなMEBNが存在しません"}, 
 		{"bnDontExists", "アクティブなベイジアンネットワークが存在しません"},
-		{"mebnDontExists", "アクティブなMSBNが存在しません"},
+		{"msbnDontExists", "アクティブなMSBNが存在しません"},
 		{"sucess", "成功"}, 
 		{"error", "エラー"},
 		{"loadHasError", "ファイルの読み込みは完了しましたが、エラーが発生しました"},

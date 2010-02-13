@@ -37,13 +37,11 @@ import unbbayes.gui.SplashScreen;
 import unbbayes.gui.UnBBayesFrame;
 import unbbayes.io.configurations.ConfigurationsIO;
 import unbbayes.io.configurations.ConfigurationsIOInputStream;
-import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.UnBBayesModule;
-import unbbayes.util.extension.builder.MEBNWindowBuilder;
 import unbbayes.util.extension.builder.MSBNWindowBuilder;
 import unbbayes.util.extension.builder.NamedWindowBuilder;
 import unbbayes.util.extension.builder.NetworkWindowBuilder;
@@ -190,20 +188,6 @@ public class MainController {
 		}
 	}
 	
-	/**
-	 * This method is responsible for creating a new MEBN.
-	 *
-	 */
-	public void newMEBN() {
-		NamedWindowBuilder builder = new MEBNWindowBuilder();
-		if (builder != null) {
-			builder.setName(resource.getString("NewMEBNName"));
-			if (screen != null) {
-				UnBBayesModule module = builder.buildUnBBayesModule();
-				screen.addWindow(module);
-			}
-		}
-	}
 	
 	
 	/**
@@ -217,7 +201,7 @@ public class MainController {
 	 * @throws FileNotFoundException 
 	 */
 	public boolean saveNet(File file, UnBBayesModule moduleToUse) throws NoObjectToBeSavedException, 
-	                    IOMebnException, InvalidFileNameException, FileNotFoundException, 
+	                    InvalidFileNameException, FileNotFoundException, 
 	                    IOException, Exception{
 		
 		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));

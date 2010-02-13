@@ -29,8 +29,6 @@ public class AllTests {
 	public static Test suite() {
 		TestSuite suite = new TestSuite("Test suit for unbbayes package");
 		//$JUnit-BEGIN$
-		suite.addTest(unbbayes.controller.AllTests.suite());
-		suite.addTest(unbbayes.io.mebn.AllTests.suite());
 		suite.addTest(unbbayes.prs.AllTests.suite());
 		//$JUnit-END$
 		return suite;
