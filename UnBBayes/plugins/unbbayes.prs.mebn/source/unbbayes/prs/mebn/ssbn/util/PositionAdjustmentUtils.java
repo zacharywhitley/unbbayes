@@ -146,14 +146,17 @@ public class PositionAdjustmentUtils {
 		ProbabilisticNetwork net = null;
 		XMLBIFIO io = new XMLBIFIO();	
 		try {
-          net = io.load(new File(PositionAdjustmentUtils.fileTestLoad));
+          net = (ProbabilisticNetwork)io.load(new File(PositionAdjustmentUtils.fileTestLoad));
 		} catch (LoadException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} 
+		} catch (ClassCastException e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
 		
 		PositionAdjustmentUtils adjustment = new PositionAdjustmentUtils(); 
 		if(net!=null){

@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- This is the plugin descriptor for UnBBayes' MEBN module. -->
+<plugin id="unbbayes.prs.msbn" version="1.0.0">
+    <requires>
+        <import plugin-id="unbbayes.util.extension.core"/>
+    </requires>
+    <runtime>
+        <library id="msbn" path="classes/" type="code">
+            <export prefix="*" />
+        </library>
+        <library type="resources" path="icons/" id="icons" />
+    </runtime>
+    <extension plugin-id="unbbayes.util.extension.core" point-id="Module" id="MSBN">
+        <parameter id="class" value="unbbayes.gui.msbn.MSBNWindow" />
+        <parameter id="name" value="MSBN" />
+        <parameter id="builder" value="unbbayes.gui.msbn.extension.MSBNWindowBuilder" />
+		<parameter id="description" value="Multiple-Sectioned Bayesian Network" />
+		<parameter id="icon" value="new-msbn.png" />
+		<parameter id="category" value="bn" />
+    </extension>
+</plugin>

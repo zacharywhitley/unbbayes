@@ -70,7 +70,6 @@ public class GuiResources extends ListResourceBundle {
 		
 		//main toll bar tips 
 		{"newToolTip","New net"},
-		{"newMsbnToolTip", "New MSBN"}, 
 		{"newOobnToolTip", "New OOBN"}, 
 		{"openToolTip","Open net"},
 		{"saveToolTip","Save net"},
@@ -271,8 +270,7 @@ public class GuiResources extends ListResourceBundle {
         {"windowMenu","Window"},
         {"helpMenu","Help"},
         {"newMenu","New..."},
-        {"newBN", "New BN"},
-        {"newMSBN", "New MSBN"},
+        {"newBN", "BN"},
         {"newOOBN","New OOBN"},
         {"openItem","Open..."},
         {"saveItem","Save as..."},
@@ -323,7 +321,6 @@ public class GuiResources extends ListResourceBundle {
         {"helpItemMn","H"},
         {"aboutItemMn","A"},
         {"newBNMn","B"},
-        {"newMSBNMn","M"},
         {"newOOBNMn","O"},
         
         {"learningItemMn","L"},
@@ -523,7 +520,6 @@ public class GuiResources extends ListResourceBundle {
 		
 		// list of modules/plugins which are already incorporated into core
 		{"PNModuleName" , "Probabilistic Network"},
-		{"MSBNModuleName" , "Multiple Sectioned Bayesian Network"},
 		
 		
 		{"sampleSizeInputMessage", "Please enter the sample size (number of trials)."},

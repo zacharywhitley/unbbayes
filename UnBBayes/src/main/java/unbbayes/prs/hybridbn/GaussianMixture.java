@@ -363,12 +363,15 @@ public class GaussianMixture implements IInferenceAlgorithm {
 			// TODO ROMMEL - change this name to a default one but that will not cause concurrent problems.
 			File file = new File("clone.xml");
 			io.save(file, network);
-			clone = io.load(file);
+			clone = (ProbabilisticNetwork)io.load(file);
 			file.delete();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} 
+		}  catch (ClassCastException e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
 		
 		return clone;
 	}

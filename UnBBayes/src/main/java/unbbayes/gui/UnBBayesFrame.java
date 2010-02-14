@@ -88,7 +88,6 @@ import unbbayes.util.Debug;
 import unbbayes.util.extension.PluginCore;
 import unbbayes.util.extension.UnBBayesModule;
 import unbbayes.util.extension.UnBBayesModuleBuilder;
-import unbbayes.util.extension.builder.MSBNWindowBuilder;
 import unbbayes.util.extension.builder.NetworkWindowBuilder;
 import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
 
@@ -121,7 +120,7 @@ public class UnBBayesFrame extends JFrame {
 	private MainController controller;
 
 	private JButton newNet;
-	private JButton newMsbn;
+//	private JButton newMsbn;
 //	private JButton newMebn;
 //	private JButton newOobn;
 	private JButton openNet;
@@ -143,7 +142,7 @@ public class UnBBayesFrame extends JFrame {
 	
 //	private ActionListener alTAN;
 //	private ActionListener alBAN;
-	private ActionListener alNewMSBN;
+//	private ActionListener alNewMSBN;
 //	private ActionListener alNewMEBN;
 //	private ActionListener alNewOOBN;
 	private ActionListener alOpen;
@@ -381,13 +380,13 @@ public class UnBBayesFrame extends JFrame {
 		};
 
 		// create an ActionListener for opening new window for MSBN
-		alNewMSBN = new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				setCursor(new Cursor(Cursor.WAIT_CURSOR));
-				controller.newMSBN();
-				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-			}
-		};
+//		alNewMSBN = new ActionListener() {
+//			public void actionPerformed(ActionEvent ae) {
+//				setCursor(new Cursor(Cursor.WAIT_CURSOR));
+//				controller.newMSBN();
+//				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+//			}
+//		};
 
 		// create an ActionListener for opening new window for MEBN
 //		alNewMEBN = new ActionListener() {
@@ -812,9 +811,9 @@ public class UnBBayesFrame extends JFrame {
 
 		// create menu items, set their mnemonic and their key accelerator
 		JMenuItem newBN = new JMenuItem(resource.getString("newBN"),
-				iconController.getNewIcon());
-		JMenuItem newMSBN = new JMenuItem(resource.getString("newMSBN"),
-				iconController.getNewIcon());
+				iconController.getNewBNIcon());
+//		JMenuItem newMSBN = new JMenuItem(resource.getString("newMSBN"),
+//				iconController.getNewIcon());
 //		JMenuItem newMEBN = new JMenuItem(resource.getString("newMEBN"),
 //				iconController.getNewIcon());
 		
@@ -822,7 +821,7 @@ public class UnBBayesFrame extends JFrame {
 //				iconController.getNewIcon());
 
 		newBN.setMnemonic(resource.getString("newBNMn").charAt(0));
-		newMSBN.setMnemonic(resource.getString("newMSBNMn").charAt(0));
+//		newMSBN.setMnemonic(resource.getString("newMSBNMn").charAt(0));
 //		newMEBN.setMnemonic(resource.getString("newMEBNMn").charAt(0));
 //		newOOBN.setMnemonic(resource.getString("newOOBNMn").charAt(0));
 		
@@ -914,7 +913,7 @@ public class UnBBayesFrame extends JFrame {
 
 		// add ActionListener to all menu items
 		newBN.addActionListener(alNewBN);
-		newMSBN.addActionListener(alNewMSBN);
+//		newMSBN.addActionListener(alNewMSBN);
 //		newMEBN.addActionListener(alNewMEBN);
 //		newOOBN.addActionListener(alNewOOBN);
 		openItem.addActionListener(alOpen);
@@ -980,7 +979,7 @@ public class UnBBayesFrame extends JFrame {
 //		banItem.addActionListener(alBAN);
 		
 		newMenu.add(newBN);
-		newMenu.add(newMSBN);
+//		newMenu.add(newMSBN);
 //		newMenu.add(newMEBN);
 //		newMenu.add(newOOBN);
 		fileMenu.add(newMenu);
@@ -1169,7 +1168,7 @@ public class UnBBayesFrame extends JFrame {
 	 * Obtains the classes of modules' builders (UnBBayesModuleBuilder) which are part of core implementation of unbbayes.
 	 * Core implementation modules are instances of UnBBayesModule that was not loaded
 	 * by plugin mechanism.
-	 * @return a map of basic modules' classes' builders (or the classes itself): ex. PN, MEBN, OOBN, MSBN.
+	 * @return a map of basic modules' classes' builders (or the classes itself): e.g. PN.
 	 * The keys are the main ID of the plugin/module
 	 */
 	public Map<String, Class> getCoreUnBBayesModulesClasses() {
@@ -1182,16 +1181,6 @@ public class UnBBayesFrame extends JFrame {
 			throw new RuntimeException(this.resource.getString("moduleLoadingError") 
 					+ this.resource.getString("PNModuleName"));
 		}
-		
-		
-		// adding MSBN module
-		try{
-			ret.put(this.resource.getString("MSBNModuleName"), MSBNWindowBuilder.class);
-		} catch (Exception e) {
-			throw new RuntimeException(this.resource.getString("moduleLoadingError") 
-					+ this.resource.getString("MSBNModuleName"));
-		}
-		
 		
 		return ret;
 	}
@@ -1486,7 +1475,7 @@ public class UnBBayesFrame extends JFrame {
 
 		// add their buttons
 		jtbNew.add(newNet);
-		jtbNew.add(newMsbn);
+//		jtbNew.add(newMsbn);
 //		jtbNew.add(newMebn);
 //		jtbNew.add(newOobn);
 		jtbFile.add(openNet);
@@ -1541,7 +1530,7 @@ public class UnBBayesFrame extends JFrame {
 
 		// create the buttons
 		newNet = new JButton(iconController.getNewBNIcon());
-		newMsbn = new JButton(iconController.getNewMSBNIcon());
+//		newMsbn = new JButton(iconController.getNewMSBNIcon());
 //		newMebn = new JButton(iconController.getNewMEBNIcon());
 //		newOobn = new JButton(iconController.getNewOOBNIcon());
 		openNet = new JButton(iconController.getOpenIcon());
@@ -1557,7 +1546,7 @@ public class UnBBayesFrame extends JFrame {
 		// add their tool tip
 		help.setToolTipText(resource.getString("helpToolTip"));
 		newNet.setToolTipText(resource.getString("newToolTip"));
-		newMsbn.setToolTipText(resource.getString("newMsbnToolTip"));
+//		newMsbn.setToolTipText(resource.getString("newMsbnToolTip"));
 //		newMebn.setToolTipText(resource.getString("newMebnToolTip"));
 		openNet.setToolTipText(resource.getString("openToolTip"));
 		saveNet.setToolTipText(resource.getString("saveToolTip"));
@@ -1576,7 +1565,7 @@ public class UnBBayesFrame extends JFrame {
 	public void assignActionListeners() {
 
 		newNet.addActionListener(alNewBN);
-		newMsbn.addActionListener(alNewMSBN);
+//		newMsbn.addActionListener(alNewMSBN);
 //		newMebn.addActionListener(alNewMEBN);
 //		newOobn.addActionListener(alNewOOBN);
 		openNet.addActionListener(alOpen);

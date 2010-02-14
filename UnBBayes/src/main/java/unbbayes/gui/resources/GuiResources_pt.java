@@ -70,7 +70,6 @@ public class GuiResources_pt extends ListResourceBundle {
 		
 		//main toll bar tips 		
 		{"newToolTip","Nova rede"},
-		{"newMsbnToolTip", "Nova MSBN"}, 
 		{"openToolTip","Abrir rede"},
 		{"saveToolTip","Salvar rede"},
 		{"learningToolTip","Modo de aprendizagem"},
@@ -271,8 +270,7 @@ public class GuiResources_pt extends ListResourceBundle {
         {"windowMenu","Janela"},
         {"helpMenu","Ajuda"},
         {"newMenu","Novo..."},
-        {"newBN","Nova BN"},
-        {"newMSBN","Nova MSBN"},
+        {"newBN","BN"},
         {"newOOBN","Nova OOBN"},
         {"openItem","Abrir..."},
         {"saveItem","Salvar como..."},
@@ -323,7 +321,6 @@ public class GuiResources_pt extends ListResourceBundle {
         {"helpItemMn","U"},
         {"aboutItemMn","S"},
         {"newBNMn","B"},
-        {"newMSBNMn","M"},
         {"newOOBNMn","O"},
         
         {"learningItemMn","L"},
@@ -524,7 +521,6 @@ public class GuiResources_pt extends ListResourceBundle {
 
 		// nomes dos modulos/plugins incorporados no core
 		{"PNModuleName" , "Redes Probabilísticas"},
-		{"MSBNModuleName" , "Redes Bayesianas Múltiplas-Seccionadas"},
 		
 
 		{"sampleSizeInputMessage", "Favor entrar com o tamanho da amostragem (número de casos)."},

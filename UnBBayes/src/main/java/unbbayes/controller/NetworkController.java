@@ -57,7 +57,7 @@ import unbbayes.gui.FileIcon;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.BaseIO;
-import unbbayes.io.FileExtensionIODelegator;
+import unbbayes.io.extension.jpf.PluginAwareFileExtensionIODelegator;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Network;
@@ -127,7 +127,7 @@ public class NetworkController implements KeyListener {
         this.singleEntityNetwork = singleEntityNetwork;
         this.screen = screen;
         this.senController = new SENController(singleEntityNetwork, screen);
-        this.setBaseIO(FileExtensionIODelegator.newInstance());
+        this.setBaseIO(PluginAwareFileExtensionIODelegator.newInstance());
     }
     
     public SENController getSENController(){

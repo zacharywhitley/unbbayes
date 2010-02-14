@@ -42,7 +42,6 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.UnBBayesModule;
-import unbbayes.util.extension.builder.MSBNWindowBuilder;
 import unbbayes.util.extension.builder.NamedWindowBuilder;
 import unbbayes.util.extension.builder.NetworkWindowBuilder;
 import edu.isi.powerloom.PLI;
@@ -173,26 +172,12 @@ public class MainController {
 		}
 	}
 	
-	/**
-	 * This method is responsible for creating a new MSBN.
-	 *
-	 */
-	public void newMSBN() {
-		NamedWindowBuilder builder = new MSBNWindowBuilder();
-		if (builder != null) {
-			builder.setName(resource.getString("NewMSBNName"));
-			if (screen != null) {
-				UnBBayesModule module = builder.buildUnBBayesModule();
-				screen.addWindow(module);
-			}
-		}
-	}
 	
 	
 	
 	/**
 	 *  Saves the probabilistic network in both .net and .xml format, depending
-	 *  on the file's extension, or saves the MSBN if the file given is a directory.
+	 *  on the file's extension.
 	 *
 	 * @param file The file where to save the network.
 	 * @param moduleToUse : what module/plugin we shall use in order to store the file
@@ -224,7 +209,7 @@ public class MainController {
 	
 	/**
 	 *  Loads the probabilistic network from both .net and .xml format, depending
-	 *  on the file's extension, or loads the MSBN if the file given is a directory.
+	 *  on the file's extension
 	 * @param file : file to load
 	 * @param moduleToUse : the module/plugin to use in order to load file.
 	 * @return the new created module filled the network described by file

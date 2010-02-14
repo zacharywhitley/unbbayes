@@ -6,7 +6,6 @@ package unbbayes.io;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import unbbayes.io.exception.LoadException;
@@ -30,7 +29,7 @@ public class FileExtensionIODelegator implements BaseIO {
 	 * @deprecated
 	 */
 	protected FileExtensionIODelegator() {
-		// TODO Auto-generated constructor stub
+		this.setDelegators(new ArrayList<BaseIO>());
 	}
 	
 	/**
@@ -38,8 +37,8 @@ public class FileExtensionIODelegator implements BaseIO {
 	 * @return {@link PluginAwareFileExtensionIODelegator}.
 	 */
 	public static FileExtensionIODelegator newInstance() {
-		FileExtensionIODelegator ret = PluginAwareFileExtensionIODelegator.newInstance();
-		return ret;
+//		FileExtensionIODelegator ret = PluginAwareFileExtensionIODelegator.newInstance();
+		return new FileExtensionIODelegator();
 	}
 	
 	/**

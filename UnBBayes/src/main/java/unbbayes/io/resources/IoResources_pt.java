@@ -78,7 +78,5 @@ public class IoResources_pt extends ListResourceBundle {
 		{"WriteReaderFileError", "Erro ao tentar ler ou escrever em arquivo"},
 		{"UnsupportedError", "Esse formato não é suportado."},
 		
-
-		{"netFileFilterSaveMSBN","Selecione uma pasta (MSBN)"},
 	};
 }

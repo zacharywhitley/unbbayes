@@ -22,6 +22,8 @@ package unbbayes.io.exception;
 
 import java.io.IOException;
 
+import javax.xml.bind.JAXBException;
+
 /**
  * Exception class when loading a network.
  * @author Rommel N. Carvalho
@@ -29,16 +31,20 @@ import java.io.IOException;
  * @version 1.0
  */
 
-public class LoadException extends IOException {
+public class LoadException extends UBIOException {
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
 	
-    public LoadException(String a) {
-        super(a);
+    public LoadException(Throwable t) {
+        super(t);
     }
     
     public LoadException(){
-    	super();
+    	this("");
+    };
+    
+    public LoadException(String msg){
+    	super(msg);
     };
 }

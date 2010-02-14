@@ -21,15 +21,10 @@
 package unbbayes.io;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import javax.xml.bind.JAXBException;
-
 import unbbayes.io.exception.LoadException;
-import unbbayes.io.exception.SaveException;
 import unbbayes.prs.Graph;
-import unbbayes.prs.msbn.SingleAgentMSBN;
 
 /**
  *  This is the most basic I/O interface for UnBBayes, which basically loads or stores a Graph from/into a file.

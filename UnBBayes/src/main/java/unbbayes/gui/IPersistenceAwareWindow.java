@@ -10,7 +10,7 @@ import unbbayes.prs.Graph;
 
 /**
  * 
- * Interface for JInternalWindow's subclasses (like NetworkWindow, MSBNWindow and OOBNWindow) 
+ * Interface for JInternalWindow's subclasses (like NetworkWindow) 
  * which are aware of what file extension is to be used and what extensions should be used
  * for file chooser's filter.
  * 

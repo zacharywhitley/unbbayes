@@ -52,6 +52,7 @@ import unbbayes.controller.NetworkController;
 import unbbayes.gui.table.extension.IProbabilityFunctionPanelBuilder;
 import unbbayes.io.BaseIO;
 import unbbayes.io.FileExtensionIODelegator;
+import unbbayes.io.extension.jpf.PluginAwareFileExtensionIODelegator;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
@@ -631,7 +632,7 @@ public class NetworkWindow extends UnBBayesModule {
 		Graph g = null;
 		
 		// a IO that delegates to correct I/O depending on the file extension (NET, DNE and XMLBIF by default)
-		FileExtensionIODelegator ioDelegator = FileExtensionIODelegator.newInstance();
+		FileExtensionIODelegator ioDelegator = PluginAwareFileExtensionIODelegator.newInstance();
 //		ioDelegator.getDelegators().add(UbfIO.getInstance());	// adding UBF compatibility into delegator
 		
 		try {

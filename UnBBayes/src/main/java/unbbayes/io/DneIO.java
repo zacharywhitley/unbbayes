@@ -30,14 +30,7 @@ import java.io.PrintStream;
 import java.io.StreamTokenizer;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
-import java.util.Stack;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreeNode;
-
-import unbbayes.gui.HierarchicTree;
 import unbbayes.io.exception.LoadException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
@@ -50,12 +43,11 @@ import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.builder.IProbabilisticNetworkBuilder;
 import unbbayes.prs.builder.impl.DefaultProbabilisticNetworkBuilder;
+import unbbayes.prs.builder.impl.DefaultProbabilisticNodeBuilder;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.hybridbn.ContinuousNode;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
-import unbbayes.prs.msbn.SingleAgentMSBN;
-import unbbayes.prs.msbn.SubNetwork;
 import unbbayes.util.ArrayMap;
 import unbbayes.util.Debug;
 
@@ -168,53 +160,6 @@ public class DneIO implements BaseIO {
 		stream.close();
 	}
 	
-//	/**
-//	 * TODO create a class for loading/saving MSBN and use delegator pattern to
-//	 * use NetIO routines.
-//	 */
-//	public void saveMSBN(File output, SingleAgentMSBN msbn) throws FileNotFoundException {
-//		if (! output.isDirectory()) {
-//			System.err.println(resource.getString("IsNotDirectoryException"));
-//			return;			
-//		}
-//		
-//		for (int i = msbn.getNetCount()-1; i>=0; i--) {
-//			SingleEntityNetwork net = msbn.getNetAt(i);
-//			File out = new File(output, net.getId() + ".net");
-//			save(out, net);
-//		}
-//	}
-
-//	/**
-//	 * TODO create a class for loading/saving MSBN and use delegator pattern to
-//	 * use NetIO routines.
-//	 */
-//	public SingleAgentMSBN loadMSBN(File input) throws IOException,LoadException {
-//		if (! input.isDirectory()) {
-//			throw new LoadException(resource.getString("IsNotDirectoryException"));
-//		}
-//		
-//		IProbabilisticNetworkBuilder networkBuilder = DefaultProbabilisticNetworkBuilder.newInstance();
-//		
-//		SingleAgentMSBN msbn = new SingleAgentMSBN(input.getName());
-//		
-//		File files[] = input.listFiles();
-//		for (int i = 0; i < files.length; i++) {			
-//			if (files[i].isFile()) {
-//				String fileName = files[i].getName();
-//				int index = fileName.lastIndexOf('.');
-//				if (index < 0) {
-//					throw new RuntimeException();
-//				}
-//				if (fileName.substring(index+1).equalsIgnoreCase("net")) {
-//					SubNetwork net = new SubNetwork(fileName.substring(0, index));
-//					load(files[i], net, networkBuilder);
-//					msbn.addNetwork(net);
-//				}
-//			}
-//		}
-//		return msbn;
-//	}
 	
 	protected void load(File input, SingleEntityNetwork net, IProbabilisticNetworkBuilder networkBuilder) 
 				throws IOException, LoadException {
