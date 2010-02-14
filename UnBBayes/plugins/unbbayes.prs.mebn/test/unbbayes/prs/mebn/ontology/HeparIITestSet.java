@@ -30,6 +30,8 @@ import unbbayes.prs.mebn.ssbn.giaalgorithm.ExplosiveSSBNGenerator;
  * envolve context nodes. 
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
+ * 
+ * TODO use JUnit Framework.
  *
  */
 public class HeparIITestSet  extends TestSet{

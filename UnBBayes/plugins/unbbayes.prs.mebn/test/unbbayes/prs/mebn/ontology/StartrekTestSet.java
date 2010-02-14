@@ -12,6 +12,10 @@ import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.giaalgorithm.ExplosiveSSBNGenerator;
 
+/**
+ * TODO use JUnit Framework.
+ *
+ */
 public class StartrekTestSet extends TestSet{
 
 	//Names of files

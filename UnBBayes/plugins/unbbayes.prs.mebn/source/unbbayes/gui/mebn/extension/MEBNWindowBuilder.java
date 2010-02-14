@@ -30,6 +30,8 @@ public class MEBNWindowBuilder extends NamedWindowBuilder {
 	public UnBBayesModule buildUnBBayesModule() {
 		MEBNNetworkWindow ret = new MEBNNetworkWindow(new MultiEntityBayesianNetwork(this.getName()));
 //		ret.setVisible(false);
+		ret.setModuleName(this.getName());
+		ret.setTitle(this.getName());
 		return ret;
 	}
 	

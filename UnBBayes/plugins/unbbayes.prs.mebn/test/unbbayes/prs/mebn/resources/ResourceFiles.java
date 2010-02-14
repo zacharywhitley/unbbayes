@@ -32,10 +32,10 @@ public class ResourceFiles extends ListResourceBundle {
 		{"StarTrek_PATHTests","examples/mebn/Tests/StarTrekTestSet"}, 
 		{"StarTrek_LogFileName","StarTrekTestSet.log"},
 		
-		{"PathTestDirectory", "src/test/resources/testCases/mebn"}, 
-		{"PathHepparIITestDirectory", "src/test/resources/testCases/mebn/hepparII/results"}, 
+		{"PathTestDirectory", "plugins/unbbayes.prs.mebn/resources/mebn"}, 
+		{"PathHepparIITestDirectory", "plugins/unbbayes.prs.mebn/resources/mebn/hepparII/results"}, 
 		
-		{"HepparIIUBF","src/test/resources/testCases/mebn/hepparII/hepparII.ubf"}
+		{"HepparIIUBF","plugins/unbbayes.prs.mebn/resources/mebn/hepparII/hepparII.ubf"}
 		
 	};
 }

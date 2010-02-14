@@ -29,7 +29,7 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
  * Contains methods for build test set cases for test the ssbn generation process. 
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
- *
+ * TODO use JUnit Framework.
  */
 
 public abstract class TestSet {

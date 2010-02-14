@@ -48,7 +48,7 @@ public class PowerLoomKBTest extends TestCase {
 	private MultiEntityBayesianNetwork mebn = null; 
 	
 	private ResourceBundle resourceFiles = 
-		unbbayes.util.ResourceController.newInstance().getBundle(unbbayes.prs.mebn.resources.ResourceFiles.class.getName());
+		ResourceBundle.getBundle(unbbayes.prs.mebn.resources.ResourceFiles.class.getName());
 	
 	/**
 	 * @param arg0
@@ -73,7 +73,7 @@ public class PowerLoomKBTest extends TestCase {
 	
 		System.out.println("SetUp End");
 		
-//		kb.loadModule(new File("src/test/resources/testCases/mebn/knowledgeBase/KnowledgeBaseWithStarshipZoneST4ver2.plm"), true);
+//		kb.loadModule(new File("plugins/unbbayes.prs.mebn/resources/mebn/knowledgeBase/KnowledgeBaseWithStarshipZoneST4ver2.plm"), true);
 	}
 	
 

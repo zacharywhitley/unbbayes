@@ -43,8 +43,8 @@ public class MEBNControllerTest extends TestCase {
 	private MEBNController controller = null;
 	private MultiEntityBayesianNetwork mebn = null;
 	
-	private String plmFileName = "src/test/resources/testCases/mebn/knowledgeBase/KnowledgeBaseWithStarshipZoneST4ver2.plm";
-	private String owlFileName = "src/test/resources/testCases/mebn/StarTrek.ubf";
+	private String plmFileName = "plugins/unbbayes.prs.mebn/resources/mebn/knowledgeBase/KnowledgeBaseWithStarshipZoneST4ver2.plm";
+	private String owlFileName = "plugins/unbbayes.prs.mebn/resources/mebn/StarTrek.ubf";
 	
 	/**
 	 * @param arg0

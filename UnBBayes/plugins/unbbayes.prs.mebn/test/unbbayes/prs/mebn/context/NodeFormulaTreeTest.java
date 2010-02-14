@@ -25,7 +25,7 @@ public class NodeFormulaTreeTest extends TestCase {
 		super.setUp();
 
 		PrOwlIO io = new PrOwlIO(); 
-		mebn = io.loadMebn(new File("src/test/resources/testCases/mebn/StarTrek.owl"));
+		mebn = io.loadMebn(new File("plugins/unbbayes.prs.mebn/resources/mebn/StarTrek.owl"));
 		
 	}
 
