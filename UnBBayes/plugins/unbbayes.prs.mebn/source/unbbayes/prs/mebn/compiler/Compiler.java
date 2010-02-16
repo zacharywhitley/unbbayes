@@ -306,6 +306,7 @@ public class Compiler implements ICompiler {
 	public static Compiler getInstance(ResidentNode node, SSBNNode ssbnnode) {
 		Compiler comp = null;
 		try {
+			// TODO stop using UnBBayes' global application.properties and start using plugin-specific config
     		if (Boolean.valueOf(ApplicationPropertyHolder.getProperty().get(
     				Compiler.class.getCanonicalName()+".singleton").toString())) {
         		comp = SingletonHolder.INSTANCE;

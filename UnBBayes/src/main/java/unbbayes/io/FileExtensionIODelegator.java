@@ -238,7 +238,55 @@ public class FileExtensionIODelegator implements BaseIO {
 			}
 			return ios;
 		}
+		
 	}
+	
+	/**
+	 * Obtains an array of names from a given list of I/O classes.
+	 * The order of the returned array must be equal to the given list of I/O classes.
+	 * This method is used by {@link #openFile(File)} in order to fill a list
+	 * of I/O component's names, in order to ask users what I/O they prefer to use,
+	 * when multiple options are available. 
+	 * @param ios
+	 * @return array of names.
+	 * @see BaseIO#getName()
+	 * @see #findIOByName(List)
+	 */
+	public static String[] getNamesFromIOs(List<BaseIO> ios) {
+		String[] ret = new String[ios.size()];
+		for (int i = 0; i < ios.size(); i++) {
+			ret[i] = ios.get(i).getName();
+		}
+		return ret;
+	}
+	
+	/**
+	 * Obtains the first I/O class having its {@link BaseIO#getName()} equals
+	 * to the given parameter.
+	 * @param ios
+	 * @param name
+	 * @return null if not found. Returns an instance of BaseIO if found.
+	 * @see BaseIO#getName()
+	 * @see #getNamesFromIOs(List)
+	 */
+	public static BaseIO findIOByName(List<BaseIO> ios, String name) {
+		if (name == null) {
+			// special case: looking for null name
+			for (BaseIO baseIO : ios) {
+				if (baseIO.getName() == null) {
+					return baseIO;
+				}
+			}
+		} else {
+			for (BaseIO baseIO : ios) {
+				if (name.equals(baseIO.getName())) {
+					return baseIO;
+				}
+			}
+		}
+		return null;
+	}
+
 
 	/**
 	 * @return the name

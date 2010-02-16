@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- This is the plugin descriptor for UnBBayes' MEBN module. -->
-<plugin id="unbbayes.prs.mebn" version="1.0.1">
+<plugin id="unbbayes.prs.mebn" version="1.1.0">
     <requires>
         <import plugin-id="unbbayes.util.extension.core"/>
         <import plugin-id="unbbayes.prs.msbn"/>
@@ -12,6 +12,21 @@
         </library>
         <library type="resources" path="icons/" id="icons" />
     </runtime>
+    <!-- Multi-Entity Bayesian Network I/O extension point. 
+     	 Hot plug is enabled.
+    	 This extension point is basically a set of different classes implementing
+    	 unbbayes.io.BaseIO, in order to add new IO functions into this MEBN
+    	 module. The class must contain a public default constructor (no parameters).
+    	 	Parameters:
+    	 		class: this is the class to implement unbbayes.io.BaseIO. It MUST have a default constructor
+    	 			   with no parameters.
+    	 	    name: this is basically what an user will see when a conflict occurs 
+    	 	          (when more than 1 class can handle a given file).
+    -->
+    <extension-point id="MEBNIO">
+        <parameter-def id="class"/>
+        <parameter-def id="name"/>
+    </extension-point>
     <extension plugin-id="unbbayes.util.extension.core" point-id="Module" id="MEBN">
         <parameter id="class" value="unbbayes.gui.mebn.MEBNNetworkWindow" />
         <parameter id="name" value="MEBN" />

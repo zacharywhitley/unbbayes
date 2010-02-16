@@ -638,8 +638,15 @@ public class NetworkWindow extends UnBBayesModule {
 		try {
 			g = ioDelegator.load(file);
 		} catch (FileExtensionIODelegator.MoreThanOneCompatibleIOException e) {
+			// OBS. FileExtensionIODelegator.MoreThanOneCompatibleIOException is managed
+			// differently by load and save. This is because load is done by the module and the
+			// save is done by IO (on load, we are not sure what module to use, but on save we
+			// are sure that we should use the currently active module/window).
+			// Thats why MoreThanOneCompatibleIOException must be treated by modules on load,
+			// but treated by UnBBayesFrame on save.
+			
 			// More than one I/O was found to be compatible. Ask user to select one.
-			String[] possibleValues = this.getNamesFromIOs(e.getIOs());
+			String[] possibleValues = FileExtensionIODelegator.getNamesFromIOs(e.getIOs());
 	    	String selectedValue = (String)JOptionPane.showInputDialog(
 	    			this, 
 	    			resource.getString("IOConflictMessage"), 
@@ -649,7 +656,7 @@ public class NetworkWindow extends UnBBayesModule {
 	    			possibleValues, 
 	    			possibleValues[0]);
 	    	if (selectedValue != null) {
-	    		g = this.findIOByName(e.getIOs(), selectedValue).load(file);
+	    		g = FileExtensionIODelegator.findIOByName(e.getIOs(), selectedValue).load(file);
 	    	} else {
 	    		// user appears to have cancelled
 	    		this.dispose();
@@ -672,51 +679,8 @@ public class NetworkWindow extends UnBBayesModule {
 		return window;
 	}
 	
-	/**
-	 * Obtains the first I/O class having its {@link BaseIO#getName()} equals
-	 * to the given parameter.
-	 * @param ios
-	 * @param name
-	 * @return null if not found. Returns an instance of BaseIO if found.
-	 * @see BaseIO#getName()
-	 * @see #getNamesFromIOs(List)
-	 */
-	protected BaseIO findIOByName(List<BaseIO> ios, String name) {
-		if (name == null) {
-			// special case: looking for null name
-			for (BaseIO baseIO : ios) {
-				if (baseIO.getName() == null) {
-					return baseIO;
-				}
-			}
-		} else {
-			for (BaseIO baseIO : ios) {
-				if (name.equals(baseIO.getName())) {
-					return baseIO;
-				}
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Obtains an array of names from a given list of I/O classes.
-	 * The order of the returned array must be equal to the given list of I/O classes.
-	 * This method is used by {@link #openFile(File)} in order to fill a list
-	 * of I/O component's names, in order to ask users what I/O they prefer to use,
-	 * when multiple options are available. 
-	 * @param ios
-	 * @return array of names.
-	 * @see BaseIO#getName()
-	 * @see #findIOByName(List)
-	 */
-	protected String[] getNamesFromIOs(List<BaseIO> ios) {
-		String[] ret = new String[ios.size()];
-		for (int i = 0; i < ios.size(); i++) {
-			ret[i] = ios.get(i).getName();
-		}
-		return ret;
-	}
+	
+	
 
 	/**
 	 * This method builds a customized probability distribution panel (e.g. a panel to

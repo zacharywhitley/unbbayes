@@ -37,6 +37,7 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 	private static boolean clearSimpleSSBNNodeListAtLPD = false;
 	static{
 		try {
+			// TODO stop using UnBBayes' global application.properties and start using plugin-specific config
 			clearSimpleSSBNNodeListAtLPD = Boolean.valueOf(ApplicationPropertyHolder.getProperty().get(
 					BuilderLocalDistributionImpl.class.getCanonicalName()+".clearSimpleSSBNNodeListAtLPD").toString());
 		} catch (Exception e) {

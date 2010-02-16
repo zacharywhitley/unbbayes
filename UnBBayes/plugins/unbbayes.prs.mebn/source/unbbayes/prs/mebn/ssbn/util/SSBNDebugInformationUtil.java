@@ -29,6 +29,7 @@ public class SSBNDebugInformationUtil {
 	
 	static {
 		try {
+			// TODO stop using UnBBayes' global application.properties and start using plugin-specific config
     		if (!Boolean.valueOf(ApplicationPropertyHolder.getProperty().get(
     				SSBNDebugInformationUtil.class.getCanonicalName()+".enabled").toString())) {
         		enabled = false;

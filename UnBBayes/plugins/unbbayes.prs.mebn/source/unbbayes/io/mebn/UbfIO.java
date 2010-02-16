@@ -121,7 +121,11 @@ public class UbfIO implements MebnIO {
 
 	private String name = "UnBBayes Format for MEBN";
 	
-	private UbfIO() {
+	/**
+	 * This default constructor is made public for plugin support.
+	 * @deprecated use {@link #getInstance()} instead.
+	 */
+	public UbfIO() {
 		super();
 		this.prowlIO = new PrOwlIO();
 		//Debug.setDebug(true);
@@ -1007,7 +1011,11 @@ public class UbfIO implements MebnIO {
 	 * @see unbbayes.io.BaseIO#getSupportedFilesDescription(boolean)
 	 */
 	public String getSupportedFilesDescription(boolean isLoadOnly) {
-		return "UnBBayes File (.ubf)";
+		if (isLoadOnly) {
+			return "UnBBayes File (.ubf), PR-OWL (.owl)";
+		} else {
+			return "UnBBayes File (.ubf)";
+		}
 	}
 	
 	

@@ -22,7 +22,6 @@ package unbbayes.prs.mebn;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -102,6 +101,7 @@ public class MultiEntityBayesianNetwork extends Network {
 		namesUsed = new TreeSet<String>();
 		try {
 			this.setUseStorageImplementor(Boolean.valueOf(
+					// TODO stop using UnBBayes' global application.properties and start using plugin-specific config
 					ApplicationPropertyHolder.getProperty().get(
 							this.getClass().getCanonicalName()+".useStorageImplementor").toString()));
 		} catch (Exception e) {

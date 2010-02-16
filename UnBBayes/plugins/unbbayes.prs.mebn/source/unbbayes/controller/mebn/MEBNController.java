@@ -43,7 +43,9 @@ import unbbayes.gui.mebn.MEBNNetworkWindow;
 import unbbayes.gui.mebn.OVariableEditionPane;
 import unbbayes.gui.mebn.WarningPanel;
 import unbbayes.gui.mebn.cpt.CPTFrame;
+import unbbayes.io.BaseIO;
 import unbbayes.io.exception.UBIOException;
+import unbbayes.io.extension.jpf.PluginAwareFileExtensionIODelegator;
 import unbbayes.io.log.ILogManager;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.prs.Edge;
@@ -213,6 +215,13 @@ public class MEBNController extends NetworkController {
 	private SSBN ssbn = null; 
 	
 	/*-------------------------------------------------------------------------*/
+	/* Extensions                                                              */
+	/*-------------------------------------------------------------------------*/
+	
+	private String mebnIOExtensionPointID = "MEBNIO";
+	private String mebnModulePluginID = "unbbayes.prs.mebn";
+	
+	/*-------------------------------------------------------------------------*/
 	/* Constructors                                                            */
 	/*-------------------------------------------------------------------------*/	
 	
@@ -228,7 +237,9 @@ public class MEBNController extends NetworkController {
 			MEBNNetworkWindow screen) {
 		
 		this.multiEntityBayesianNetwork = multiEntityBayesianNetwork;
-        this.setBaseIO(UbfIO.getInstance());
+		
+		// initialize plugin-aware IO with some attribute customization
+        this.setBaseIO(this.setUpPluginIO());
 
 		this.multiEntityBayesianNetwork = multiEntityBayesianNetwork;
 		this.setScreen(screen);
@@ -243,6 +254,7 @@ public class MEBNController extends NetworkController {
 		
 		
 		try {
+			// TODO stop using UnBBayes' global application.properties and start using plugin-specific config
 			this.setToLogNodesAndProbabilities(Boolean.valueOf(ApplicationPropertyHolder.getProperty().get(
     				this.getClass().getCanonicalName()+".toLogNodesAndProbabilities").toString()));
 		} catch (Exception e) {
@@ -251,7 +263,33 @@ public class MEBNController extends NetworkController {
 		
 	}
 
-	
+	/**
+	 * This method uses {@link #getMebnIOExtensionPointID()} and
+	 * {@link #getMebnModulePluginID()} in order to set up a new instance
+	 * of {@link PluginAwareFileExtensionIODelegator} as MEBN's default
+	 * IO component.
+	 * @return : the generated new IO component.
+	 */
+	protected BaseIO setUpPluginIO() {
+		// instantiate the new IO
+		PluginAwareFileExtensionIODelegator ioDelegator = PluginAwareFileExtensionIODelegator.newInstance(false);
+		
+		// customize the attributes
+		ioDelegator.setCorePluginID(this.getMebnModulePluginID());
+		ioDelegator.setExtensionPointID(this.getMebnIOExtensionPointID());
+		
+		// reload plugins
+		ioDelegator.reloadPlugins();
+		
+		// If no plugin was loaded, add a default IO
+		if (ioDelegator.getDelegators().isEmpty()) {
+			ioDelegator.getDelegators().add(UbfIO.getInstance());
+		}
+		
+		return ioDelegator;
+	}
+
+
 	public void openPanel(ResidentNode node){
 		setCurrentMFrag(node.getMFrag()); 
 		selectNode(node); 
@@ -2217,5 +2255,46 @@ public class MEBNController extends NetworkController {
     		this.unselectNodes(); 
     	}    	
     }
+
+
+	/**
+	 * This ID will be used by {@link PluginAwareFileExtensionIODelegator}
+	 * in order to load the correct extension ID for MEBN's IO.
+	 * @return the mebnIOExtensionPointID
+	 */
+	public String getMebnIOExtensionPointID() {
+		return mebnIOExtensionPointID;
+	}
+
+
+	/**
+	 * This ID will be used by {@link PluginAwareFileExtensionIODelegator}
+	 * in order to load the correct extension ID for MEBN's IO.
+	 * @param mebnIOExtensionPointID the mebnIOExtensionPointID to set
+	 */
+	public void setMebnIOExtensionPointID(String mebnIOExtensionPointID) {
+		this.mebnIOExtensionPointID = mebnIOExtensionPointID;
+	}
+
+
+	/**
+	 * This is the ID of MEBN module.
+	 * It will be used by {@link PluginAwareFileExtensionIODelegator} in order
+	 * to find the correct plugin context.
+	 * @return the mebnModulePluginID
+	 */
+	public String getMebnModulePluginID() {
+		return mebnModulePluginID;
+	}
+
+
+	/**
+	 * It will be used by {@link PluginAwareFileExtensionIODelegator} in order
+	 * to find the correct plugin context.
+	 * @param mebnModulePluginID the mebnModulePluginID to set
+	 */
+	public void setMebnModulePluginID(String mebnModulePluginID) {
+		this.mebnModulePluginID = mebnModulePluginID;
+	}
 	
 }

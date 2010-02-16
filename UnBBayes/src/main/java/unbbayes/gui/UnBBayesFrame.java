@@ -84,6 +84,7 @@ import unbbayes.controller.JavaHelperController;
 import unbbayes.controller.MainController;
 import unbbayes.gui.util.SplitToggleButton;
 import unbbayes.io.BaseIO;
+import unbbayes.io.FileExtensionIODelegator;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.PluginCore;
 import unbbayes.util.extension.UnBBayesModule;
@@ -511,18 +512,55 @@ public class UnBBayesFrame extends JFrame {
 						}
 						try {
 							if(controller.saveNet(file, currentWindow)){
+								// successful
 								JOptionPane.showMessageDialog(UnBBayesFrame.this, 
 										resource.getString("saveSucess"), 
 										resource.getString("sucess"), 
 										JOptionPane.WARNING_MESSAGE); 
 							}
+						} catch (FileExtensionIODelegator.MoreThanOneCompatibleIOException more) {
+							// OBS. FileExtensionIODelegator.MoreThanOneCompatibleIOException is managed
+							// differently by load and save. This is because load is done by the module and the
+							// save is done by IO (on load, we are not sure what module to use, but on save we
+							// are sure that we should use the currently active module/window).
+							// Thats why MoreThanOneCompatibleIOException must be treated by modules on load,
+							// but treated by UnBBayesFrame on save.
+							
+							// More than one I/O was found to be compatible. Ask user to select one.
+							String[] possibleValues = FileExtensionIODelegator.getNamesFromIOs(more.getIOs());
+					    	String selectedValue = (String)JOptionPane.showInputDialog(
+					    			UnBBayesFrame.this, 
+					    			resource.getString("IOConflictMessage"), 
+					    			resource.getString("IOConflictTitle"),
+					    			JOptionPane.INFORMATION_MESSAGE, 
+					    			null,
+					    			possibleValues, 
+					    			possibleValues[0]);
+					    	// if user has selected something, use it to save
+					    	if (selectedValue != null) {
+					    		BaseIO io = FileExtensionIODelegator.findIOByName(more.getIOs(), selectedValue);
+					    		try {
+					    			if(controller.saveNet(file, io, currentWindow.getPersistingGraph())){
+										// save successful
+					    				JOptionPane.showMessageDialog(UnBBayesFrame.this, 
+												resource.getString("saveSucess"), 
+												resource.getString("sucess"), 
+												JOptionPane.WARNING_MESSAGE); 
+									}
+								} catch (Exception e) {
+									e.printStackTrace();
+									JOptionPane.showMessageDialog(UnBBayesFrame.this, 
+											e.getMessage(), 
+											resource.getString("error"), 
+											JOptionPane.ERROR_MESSAGE); 
+								}
+					    	} 
 						} catch (Exception e) {
 							e.printStackTrace();
 							JOptionPane.showMessageDialog(UnBBayesFrame.this, 
 									e.getMessage(), 
 									resource.getString("error"), 
 									JOptionPane.ERROR_MESSAGE); 
-							e.printStackTrace();
 						}
 					}
 				}

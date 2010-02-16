@@ -29,6 +29,11 @@ import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
 public class PluginAwareFileExtensionIODelegator extends
 		FileExtensionIODelegator {
 
+	/**
+	 * This is the ID from where this class will going to find the declared extension points.
+	 */
+	private String corePluginID;
+	
 	/** 
 	 * The default value of the extension point ID expected by the plugin manager 
 	 * in order to find plugins for PN's IO routines.
@@ -58,6 +63,9 @@ public class PluginAwareFileExtensionIODelegator extends
 	public PluginAwareFileExtensionIODelegator() {
 		super();
 		
+		// initializes the default core plugin ID (where we are going to look for extension points)
+		this.setCorePluginID(this.getUnbbayesPluginContextHolder().getPluginCoreID());
+		
 		// adding a listener, so that reloading plugins would load new I/O plugins into this object
 		UnBBayesPluginContextHolder.newInstance().addListener(new UnBBayesPluginContextHolder.OnReloadActionListener() {
 			public void onReload(EventObject eventObject) {
@@ -73,20 +81,28 @@ public class PluginAwareFileExtensionIODelegator extends
 	/**
 	 * Constructor method.
 	 * Initializes the {@link #getDelegators()} using the following IO classes:
-	 * 		- {@link NetIO};
-	 * 		- {@link XMLBIFIO};
-	 * 		- {@link DneIO};
 	 * 		- contents from {@link #loadIOAsPlugins(getExtensionPointID())};
 	 * @return a new instance of PluginAwareFileExtensionIODelegator.
 	 */
 	public static PluginAwareFileExtensionIODelegator newInstance() {
+		return PluginAwareFileExtensionIODelegator.newInstance(true);
+	}
+	
+	/**
+	 * Constructor method.
+	 * @param if true, it loads plugins. If false, it does not load plugins.
+	 * @return a new instance of PluginAwareFileExtensionIODelegator.
+	 */
+	public static PluginAwareFileExtensionIODelegator newInstance(boolean loadPlugins) {
 		PluginAwareFileExtensionIODelegator ret = new PluginAwareFileExtensionIODelegator();
 		ret.setDelegators(new ArrayList<BaseIO>());
 		// now, the below 3 I/O classes are also loaded as plugins
 //		ret.getDelegators().add(new NetIO());
 //		ret.getDelegators().add(new XMLBIFIO());
 //		ret.getDelegators().add(new DneIO());
-		ret.getDelegators().addAll(ret.loadIOAsPlugins());
+		if (loadPlugins) {
+			ret.getDelegators().addAll(ret.loadIOAsPlugins());
+		}
 		return ret;
 	}
 	
@@ -112,7 +128,7 @@ public class PluginAwareFileExtensionIODelegator extends
 		try {
 			// loads the "core" plugin, which is a stub that we use to declare extension points for core
 		    PluginDescriptor core = this.getUnbbayesPluginContextHolder().getPluginManager().getRegistry().getPluginDescriptor(
-		    		this.getUnbbayesPluginContextHolder().getPluginCoreID()
+		    		this.getCorePluginID()
 		    		);
 	        
 		    // load the IO extension point for PN.
@@ -233,6 +249,22 @@ public class PluginAwareFileExtensionIODelegator extends
 	 */
 	public void setExtensionPointNameParam(String extensionPointNameParam) {
 		this.extensionPointNameParam = extensionPointNameParam;
+	}
+
+	/**
+	 * This is the ID from where this class will going to find the declared extension points.
+	 * @return the corePluginID
+	 */
+	public String getCorePluginID() {
+		return corePluginID;
+	}
+
+	/**
+	 * This is the ID from where this class will going to find the declared extension points.
+	 * @param corePluginID the corePluginID to set
+	 */
+	public void setCorePluginID(String corePluginID) {
+		this.corePluginID = corePluginID;
 	}
 
 	

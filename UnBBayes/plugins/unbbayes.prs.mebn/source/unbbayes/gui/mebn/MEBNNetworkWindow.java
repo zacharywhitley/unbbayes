@@ -23,8 +23,8 @@ import unbbayes.controller.ConfigurationsController;
 import unbbayes.controller.mebn.MEBNController;
 import unbbayes.gui.EvidenceTree;
 import unbbayes.gui.NetworkWindow;
+import unbbayes.io.BaseIO;
 import unbbayes.io.FileExtensionIODelegator;
-import unbbayes.io.mebn.UbfIO;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
@@ -220,15 +220,15 @@ public class MEBNNetworkWindow extends NetworkWindow {
 		
 		Graph g = null;
 		
-		// a IO that delegates to correct I/O depending on the file extension (NET, DNE and XMLBIF by default)
-		FileExtensionIODelegator ioDelegator = FileExtensionIODelegator.newInstance();
-		ioDelegator.getDelegators().add(UbfIO.getInstance());	// adding UBF compatibility into delegator
+		// This IO is instantiated at MEBNController' constructor.
+		// Note that NetworkWindow#getIO() actually calls MEBNController#getBaseIO()
+		BaseIO io = this.getIO();
 		
 		try {
-			g = ioDelegator.load(file);
+			g = io.load(file);
 		} catch (FileExtensionIODelegator.MoreThanOneCompatibleIOException e) {
 			// More than one I/O was found to be compatible. Ask user to select one.
-			String[] possibleValues = this.getNamesFromIOs(e.getIOs());
+			String[] possibleValues = FileExtensionIODelegator.getNamesFromIOs(e.getIOs());
 	    	String selectedValue = (String)JOptionPane.showInputDialog(
 	    			this, 
 	    			resource.getString("IOConflictMessage"), 
@@ -238,7 +238,7 @@ public class MEBNNetworkWindow extends NetworkWindow {
 	    			possibleValues, 
 	    			possibleValues[0]);
 	    	if (selectedValue != null) {
-	    		g = this.findIOByName(e.getIOs(), selectedValue).load(file);
+	    		g = FileExtensionIODelegator.findIOByName(e.getIOs(), selectedValue).load(file);
 	    	} else {
 	    		// user appears to have cancelled
 	    		this.dispose();
