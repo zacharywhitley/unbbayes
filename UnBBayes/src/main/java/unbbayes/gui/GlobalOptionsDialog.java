@@ -54,7 +54,6 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.PluginManager;
 import org.java.plugin.registry.Extension;
 import org.java.plugin.registry.ExtensionPoint;
@@ -545,6 +544,9 @@ public class GlobalOptionsDialog extends JDialog {
 				this.getAlgorithmRadioPanel().add(radioItem);
 			}
 		}
+		
+		// update the map (we use putAll because newMap may be smaller than the old one)
+		this.getAlgorithmToOptionMap().putAll(newMap);
     }
     
     /**

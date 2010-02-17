@@ -78,5 +78,22 @@ public class Resources_pt extends GuiResources_pt {
 		{"menuAddResident", "Adic. Residente"}, 
 		{"menuAddDomainMFrag", "Adic. MFrag"}, 
 		
+		// option dialog
+		{"openMEBNOptions", "Abrir Opções para MEBN"}, 
+		{"mebnOptionTitle", "Opções para MEBN"}, 
+		{"kbTab", "Base de Conhecimento"}, 
+		{"kbParameters", "Parâmetros para a base de conhecimento"}, 
+		{"availableKB", "Bases de conhecimento disponíveis"},  
+		{"defaultKB", "Padrão"},  
+		
+		/* PLM file manager */
+		/* TODO transfer it to IO package? */
+		{"FileSaveOK" , "Base de conhecimento armazenado com sucesso"},
+		{"FileLoadOK" , "Base de conhecimento carregado com sucesso"},
+		{"NoSSBN" , "Não há SSBN gerada anteriormente! Modo não disponivel."},
+		{"KBClean" , "Base de conhecimento limpa com sucesso"},
+		{"NotImplemented" , "Funcionalidade ainda não implementada"}, 
+		{"loadedWithErrors" , "Arquivo carregado, mas pode haver falhas"},
+		
 	};
 }

@@ -77,6 +77,23 @@ public class Resources extends GuiResources {
 		{"menuAddResident", "Add Resident"}, 
 		{"menuAddDomainMFrag", "Add MFrag"}, 
 		
+		// option dialog
+		{"openMEBNOptions", "Open MEBN Options"}, 
+		{"mebnOptionTitle", "MEBN Options"}, 
+		{"kbTab", "Knowledge Base"}, 
+		{"kbParameters", "Parameters for the Knowledge Base"}, 
+		{"availableKB", "Available Knowledge Bases"},  
+		{"defaultKB", "Default"},  
+		
+		/* PLM file manager */
+		/* TODO transfer it to IO package? */
+		{"FileSaveOK" , "Knowledge Base was successfully saved"},
+		{"FileLoadOK" , "Knowledge Base was successfully loaded"},
+		{"NoSSBN" , "No previously generated SSBN found."},
+		{"KBClean" , "Knowledge base successfully cleared"},
+		{"NotImplemented" , "Not implemented yet."}, 
+		{"loadedWithErrors" , "File loaded, but some errors may have occurred"},
+		
 	};
 	
 }

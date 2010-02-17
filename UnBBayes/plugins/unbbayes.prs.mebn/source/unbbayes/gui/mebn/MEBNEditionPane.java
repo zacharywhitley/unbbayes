@@ -40,6 +40,7 @@ import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -53,6 +54,7 @@ import javax.swing.JToolBar;
 import unbbayes.controller.FileHistoryController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.mebn.MEBNController;
+import unbbayes.gui.GlobalOptionsDialog;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.gui.mebn.auxiliary.ButtonLabel;
 import unbbayes.gui.mebn.auxiliary.FocusListenerTextField;
@@ -195,6 +197,9 @@ public class MEBNEditionPane extends JPanel {
 
     /* Icon Controller */
     private final IconController iconController = IconController.getInstance();
+    
+    /** This is the options for MEBN */
+    private OptionsDialog mebnOptionsDialog;
 
 	/* Load resource file from this package */
   	private static ResourceBundle resource = ResourceController.newInstance().getBundle(
@@ -734,7 +739,9 @@ public class MEBNEditionPane extends JPanel {
 	    
 	    private JButton btnSaveKB; 
 	    private JButton btnLoadKB; 
-		private JButton btnClearKB; 
+		private JButton btnClearKB;
+
+		private AbstractButton btnMEBNOption; 
 	    
 	    public ToolBarGlobalOptions(){
 	    	
@@ -747,11 +754,15 @@ public class MEBNEditionPane extends JPanel {
 	    	btnLoadKB = new JButton(iconController.getLoadFindingsInstance());
 	    	btnSaveKB = new JButton(iconController.getSaveFindingsInstance());
 	    	
+	    	btnMEBNOption = new JButton(iconController.getGlobalOptionIcon());
+	    	
 	    	btnDoQuery.setToolTipText(resource.getString("executeQueryToolTip"));
 	    	btnTurnToSSBNMode.setToolTipText(resource.getString("turnToSSBNModeToolTip"));
 	    	btnClearKB.setToolTipText(resource.getString("clearKBToolTip"));
 	    	btnLoadKB.setToolTipText(resource.getString("loadKBToolTip"));
 	    	btnSaveKB.setToolTipText(resource.getString("saveKBToolTip"));
+	    	
+	    	btnMEBNOption.setToolTipText(resource.getString("openMEBNOptions"));
 	    	
 	    	btnDoQuery.addActionListener(new ActionListener(){
 	    		
@@ -817,6 +828,19 @@ public class MEBNEditionPane extends JPanel {
 	    		public void actionPerformed(ActionEvent ae) {
 	    			doLoadKnowledgeBase(); 
 	    		}});
+	    	
+	    	btnMEBNOption.addActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent ae) {
+	                setCursor(new Cursor(Cursor.WAIT_CURSOR));
+	                if (mebnOptionsDialog == null) {
+	                	mebnOptionsDialog = new OptionsDialog(netWindow.getUnbbayesFrame(), (MEBNController)netWindow.getController());
+	                }
+	                mebnOptionsDialog.setVisible(true);
+	                netWindow.getGraphPane().update();
+	                setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+	            }
+	        });
 
 	        add(btnDoQuery);
 	        
@@ -830,6 +854,10 @@ public class MEBNEditionPane extends JPanel {
 	        
 	        add(btnTurnToSSBNMode); 
 	        
+	        addSeparator(new Dimension(10, 10)); 
+	        
+	        add(btnMEBNOption);
+	        
 	        setFloatable(false);
 	    }; 
 	    
@@ -840,29 +868,40 @@ public class MEBNEditionPane extends JPanel {
 	    private void doSaveKnowledgeBase(){
 			setCursor(new Cursor(Cursor.WAIT_CURSOR));
 			
-			String[] validSufixes = new String[] {PowerLoomKB.FILE_SUFIX};
-			
-			JFileChooser chooser = new JFileChooser(FileHistoryController.getInstance().getCurrentDirectory());
-			chooser.setMultiSelectionEnabled(false);
-			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-			
-			chooser.addChoosableFileFilter(new SimpleFileFilter(validSufixes,
-					resource.getString("powerloomFileFilter")));
-			
-			int option = chooser.showSaveDialog(null);
-			if (option == JFileChooser.APPROVE_OPTION) {
+			if (mebnController.getKnowledgeBase().supportsLocalFile(false)) {
+				// the currently selected kb supports file saving
+//				String[] validSufixes = new String[] {PowerLoomKB.FILE_SUFIX};
+				String[] validSufixes = mebnController.getKnowledgeBase().getSupportedLocalFileExtension(false);
 				
-				File file = chooser.getSelectedFile();
-				String nameFile = file.getAbsolutePath(); 
-				if(!(nameFile.substring(nameFile.length() - 4).equals("." + PowerLoomKB.FILE_SUFIX))){
-					file = new File(nameFile + "." + PowerLoomKB.FILE_SUFIX); 
+				
+				JFileChooser chooser = new JFileChooser(FileHistoryController.getInstance().getCurrentDirectory());
+				chooser.setMultiSelectionEnabled(false);
+				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+				
+				if (validSufixes != null) {
+					String fileFilterDescription = mebnController.getKnowledgeBase().getSupportedLocalFileDescription(false);
+					if (fileFilterDescription == null) {
+						fileFilterDescription = resource.getString("defaultKB");
+					}
+					chooser.addChoosableFileFilter(new SimpleFileFilter(validSufixes,fileFilterDescription));
 				}
 				
-				if (file != null) {
+				int option = chooser.showSaveDialog(null);
+				if (option == JFileChooser.APPROVE_OPTION) {
+					
+					File file = chooser.getSelectedFile();
+					String nameFile = file.getAbsolutePath(); 
+					if(!(nameFile.substring(nameFile.length() - 4).equals("." + PowerLoomKB.FILE_SUFIX))){
+						file = new File(nameFile + "." + PowerLoomKB.FILE_SUFIX); 
+					}
+					
+					if (file != null) {
 						mebnController.saveFindingsFile(file);
 						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("FileSaveOK"));
+					}
 				}
 			}
+			
 			
 			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	    }
@@ -871,36 +910,74 @@ public class MEBNEditionPane extends JPanel {
 	     * Load a knowledge base
 	     */
 	    private void doLoadKnowledgeBase(){
-			setCursor(new Cursor(Cursor.WAIT_CURSOR));
 			
-			String[] validSufixes = new String[] {PowerLoomKB.FILE_SUFIX};
+	    	setCursor(new Cursor(Cursor.WAIT_CURSOR));
 			
-			JFileChooser chooser = new JFileChooser(FileHistoryController.getInstance().getCurrentDirectory());
-			chooser.setMultiSelectionEnabled(false);
-			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-			
-			chooser.addChoosableFileFilter(new SimpleFileFilter(validSufixes,
-					resource.getString("powerloomFileFilter")));
-			
-			int option = chooser.showOpenDialog(null);
-			if (option == JFileChooser.APPROVE_OPTION) {
-				if (chooser.getSelectedFile() != null) {
-					
-					File file = chooser.getSelectedFile();
-					
-					try {
-						mebnController.loadFindingsFile(file);
-						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("FileLoadOK"));
-					} catch (UBIOException e) {
-						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), e.getMessage());
-					} catch (MEBNException e2) {
-						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), e2.getMessage());
+			if (mebnController.getKnowledgeBase().supportsLocalFile(true)) {
+				
+				// this knowledge base can be used to store local files. Choose a file
+				
+//				String[] validSufixes = new String[] {PowerLoomKB.FILE_SUFIX};
+				String[] validSufixes = mebnController.getKnowledgeBase().getSupportedLocalFileExtension(true);
+				
+				JFileChooser chooser = new JFileChooser(FileHistoryController.getInstance().getCurrentDirectory());
+				chooser.setMultiSelectionEnabled(false);
+				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+				
+				if (validSufixes != null) {
+					String fileFilterDescription = mebnController.getKnowledgeBase().getSupportedLocalFileDescription(true);
+					if (fileFilterDescription == null) {
+						fileFilterDescription = resource.getString("defaultKB");
 					}
+					chooser.addChoosableFileFilter(new SimpleFileFilter(validSufixes,fileFilterDescription));
+				}
+				
+				
+				int option = chooser.showOpenDialog(null);
+				if ( (option == JFileChooser.APPROVE_OPTION) ) {
+					if (chooser.getSelectedFile() != null) {
+						
+						File file = chooser.getSelectedFile();
+						
+						try {
+							mebnController.loadFindingsFile(file);
+							JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("FileLoadOK"));
+						} catch (UBIOException e) {
+							JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), e.getMessage());
+						} catch (MEBNException e2) {
+							JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), e2.getMessage());
+						}
+					}
+				}
+			} else {
+				
+				// this knowledge base cannot be used to store local files. So, lets use null as file.
+				try {
+					mebnController.loadFindingsFile(null);
+					JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("FileLoadOK"));
+				} catch (UBIOException e) {
+					JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), e.getMessage());
+				} catch (MEBNException e2) {
+					JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), e2.getMessage());
 				}
 			}
 			
 			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	    }
+
+		/**
+		 * @return the btnMEBNOption
+		 */
+		public AbstractButton getBtnMEBNOption() {
+			return btnMEBNOption;
+		}
+
+		/**
+		 * @param btnMEBNOption the btnMEBNOption to set
+		 */
+		public void setBtnMEBNOption(AbstractButton btnMEBNOption) {
+			this.btnMEBNOption = btnMEBNOption;
+		}
 	    
 	}
 	
@@ -1606,6 +1683,20 @@ public class MEBNEditionPane extends JPanel {
 		while(abEnumeration.hasMoreElements()){
 			abEnumeration.nextElement().setSelected(false); 
 		}
+	}
+
+	/**
+	 * @return the mebnOptionsDialog
+	 */
+	public OptionsDialog getMebnOptionsDialog() {
+		return mebnOptionsDialog;
+	}
+
+	/**
+	 * @param mebnOptionsDialog the mebnOptionsDialog to set
+	 */
+	public void setMebnOptionsDialog(OptionsDialog mebnOptionsDialog) {
+		this.mebnOptionsDialog = mebnOptionsDialog;
 	}
 
 }

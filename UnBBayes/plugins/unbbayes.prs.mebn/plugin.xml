@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- This is the plugin descriptor for UnBBayes' MEBN module. -->
-<plugin id="unbbayes.prs.mebn" version="1.1.0">
+<plugin id="unbbayes.prs.mebn" version="1.2.0">
     <requires>
         <import plugin-id="unbbayes.util.extension.core"/>
         <import plugin-id="unbbayes.prs.msbn"/>
@@ -27,6 +27,29 @@
         <parameter-def id="class"/>
         <parameter-def id="name"/>
     </extension-point>
+    
+    <!-- Multi-Entity Bayesian Network' Knowledge Base extension point. 
+     	 Hot plug is enabled.
+    	 This extension point is basically a set of different classes implementing
+    	 unbbayes.prs.mebn.kb.extension.IKnowledgeBaseBuilder, in order to add new Knowledge
+    	 Base functions into this MEBN
+    	 module. The class must contain a public default constructor (no parameters).
+    	 	Parameters:
+    	 		class: this is the class to implement unbbayes.prs.mebn.kb.extension.IKnowledgeBaseBuilder. 
+    	 		       It MUST provide a default constructor
+    	 			   with no parameters.
+    	 	    name: this is basically a name to identify a Knowledge Base.
+    	 	    optionPanel : this is a panel to be used as a form to fill attributes for this Knowledge Base.
+    	 	           It MUST implement unbbayes.gui.mebn.extension.kb.IKBOptionPanelBuilder.
+    	 	           It MUST provide a default constructor with no parameters.
+    -->
+    <extension-point id="KnowledgeBase">
+        <parameter-def id="class"/>
+        <parameter-def id="name"/>
+        <parameter-def multiplicity="none-or-one" id="optionPanel"/>
+    </extension-point>
+    
+    
     <extension plugin-id="unbbayes.util.extension.core" point-id="Module" id="MEBN">
         <parameter id="class" value="unbbayes.gui.mebn.MEBNNetworkWindow" />
         <parameter id="name" value="MEBN" />

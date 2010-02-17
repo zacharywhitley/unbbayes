@@ -58,7 +58,6 @@ public class GuiResources extends ListResourceBundle {
 		{"fileGenericType","Generic File"},
 		
 		{"allNetFileFilter","All Supported Network Files"},
-		{"powerloomFileFilter","Knowledge Base (.plm)"},
 		{"textFileFilter","Text (.txt)"},
 		{"fileUntitled","Untitled.txt"},
 		
@@ -454,14 +453,7 @@ public class GuiResources extends ListResourceBundle {
 		{"confirmation", "Confirmation"}, 
 		{"warningDeletStates", "The previous states will be removed. Are you sure you want to proceed with this operation?"},
 		
-		/* PLM file manager */
-		/* TODO transfer it to IO package? */
-		{"FileSaveOK" , "File was successfully saved"},
-		{"FileLoadOK" , "File was successfully loaded"},
-		{"NoSSBN" , "No previously generated SSBN found."},
-		{"KBClean" , "Knowledge base successfully cleared"},
-		{"NotImplemented" , "Not implemented yet."}, 
-		{"loadedWithErrors" , "File loaded, but some errors may have occurred"},
+		
 		
 		/* Aboult pane */
 		{"AboultPane" , "About"},			

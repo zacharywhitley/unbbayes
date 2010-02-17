@@ -1548,12 +1548,18 @@ public class MEBNController extends NetworkController {
 	/* Knowledge Base                                                          */
 	/*-------------------------------------------------------------------------*/
 
-	private KnowledgeBase getKnowledgeBase(){
+	/**
+	 * Obtains the currently used knowledge base
+	 * @return instance of {@link KnowledgeBase}
+	 */
+	public KnowledgeBase getKnowledgeBase(){
 		
 	    if(knowledgeBase == null){
-	    	mebnEditionPane.getGraphPanel().setCursor(new Cursor(Cursor.WAIT_CURSOR)); 
+	    	// if no kb is set, use default.
+	    	// avoid using GUI specific methods at controller
+//	    	mebnEditionPane.getGraphPanel().setCursor(new Cursor(Cursor.WAIT_CURSOR)); 
 	    	knowledgeBase = PowerLoomKB.getNewInstanceKB(); 
-	    	mebnEditionPane.getGraphPanel().setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); 
+//	    	mebnEditionPane.getGraphPanel().setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); 
 	    }
 	    return knowledgeBase; 
 	    
@@ -1641,7 +1647,8 @@ public class MEBNController extends NetworkController {
 
 	public void loadFindingsFile(File file) throws UBIOException, MEBNException{
 		
-		mebnEditionPane.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+		// avoid GUI specific routines
+//		mebnEditionPane.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		
 		mebnEditionPane.setStatus(resource.getString("statusLoadingKB")); 
 		
@@ -1664,7 +1671,8 @@ public class MEBNController extends NetworkController {
 		
 		mebnEditionPane.setStatus(resource.getString("statusReady")); 
 		
-		mebnEditionPane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+		// avoid GUI specific routines
+//		mebnEditionPane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		
 		if (lastException != null) {
 			// commenting below... PowerLoom was throwing stack trace as message...
@@ -2295,6 +2303,24 @@ public class MEBNController extends NetworkController {
 	 */
 	public void setMebnModulePluginID(String mebnModulePluginID) {
 		this.mebnModulePluginID = mebnModulePluginID;
+	}
+	
+	
+	/**
+	 * Sets the current knowledge base and initializes (reset) it.
+	 * @param kb
+	 */
+	public void setKnowledgeBase(KnowledgeBase kb) {
+		this.knowledgeBase = kb;
+		this.resetKnowledgeBase();
+	}
+	
+	/**
+	 * Clears the content of the current knowledge base ({@link #getKnowledgeBase()}),
+	 * and fills it using the currently edited MEBN.
+	 */
+	public void resetKnowledgeBase() {
+		this.createKnowledgeBase();
 	}
 	
 }

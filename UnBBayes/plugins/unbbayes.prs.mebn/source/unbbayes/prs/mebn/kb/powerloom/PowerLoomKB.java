@@ -123,7 +123,7 @@ public class PowerLoomKB implements KnowledgeBase {
 	 * Create a new instance of PowerLoomKB with the given id. The names of 
 	 * modules of this instance is build using the id.  
 	 */
-	private PowerLoomKB(int id) {
+	protected PowerLoomKB(int id) {
 
 		initialize(); 
 		idInstance = id; 
@@ -1428,5 +1428,32 @@ public class PowerLoomKB implements KnowledgeBase {
 		}
 		return resident.getRandomVariableFindingList();
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#supportsLocalFile(boolean)
+	 */
+	public boolean supportsLocalFile(boolean isLoad) {
+		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#getSupportedLocalFileDescription(boolean)
+	 */
+	public String getSupportedLocalFileDescription(boolean isLoad) {
+		return "Power Loom (.plm)";
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#getSupportedLocalFileExtension(boolean)
+	 */
+	public String[] getSupportedLocalFileExtension(boolean isLoad) {
+		String[] ret = {".plm"};
+		return ret;
+	}
+	
+	
 	
 }

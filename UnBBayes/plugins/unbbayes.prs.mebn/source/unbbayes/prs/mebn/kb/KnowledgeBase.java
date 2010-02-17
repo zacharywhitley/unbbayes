@@ -118,7 +118,9 @@ public interface KnowledgeBase {
 	 * @param mebn
 	 *            the MEBN where the findings are defined.
 	 * @param file
-	 *            the file to save the findings.
+	 *            the file to save the findings. 
+	 *            If {@link #supportsLocalFile()} is false, a null value
+	 *            will be passed.
 	 */
 	public void saveFindings(MultiEntityBayesianNetwork mebn, File file);
 
@@ -128,6 +130,8 @@ public interface KnowledgeBase {
 	 * 
 	 * @param file
 	 *            the file that contains the module's definition to be loaded.
+	 *            If {@link #supportsLocalFile()} is false, a null value
+	 *            will be passed.
 	 * @throws UBIOException 
 	 */
 	public void loadModule(File file, boolean findingModule) throws UBIOException;
@@ -250,5 +254,56 @@ public interface KnowledgeBase {
 	 */
 	public void fillFindings(ResidentNode resident); 
 	
+	/**
+	 * This method can be used to tell UnBBayes that a filechooser may be used
+	 * to select a local file and store the knowledge base. If a knowledge base
+	 * does not support local file management (e.g. if a knowledge base only
+	 * supports data base usage), this method must return false and all references
+	 * to {@link File} must be ignored, since it will carry a null value.
+	 * 
+	 * If this method returns false, you may use options obtained from IKBOptionPanelBuilder
+	 * in order to set up a location to save the knowledge base
+	 * 
+	 * @param isLoad : tells if this is loading phase (true) or saving phase (false). 
+	 * This is useful if this knowledge base
+	 * has different support profile for load and save.
+	 * 
+	 * @return : true if this knowledge base can store its information into a local
+	 * file. False otherwise.
+	 */
+	public boolean supportsLocalFile(boolean isLoad);
 	
+	/**
+	 * If {@link #supportsLocalFile()}, then returns an array
+	 * of all supported file formats for this knowledge base.
+	 * This information will be used by UnBBayes for file filters.
+	 * 
+	 * @param isLoad : tells if this is loading phase (true) or saving phase (false). 
+	 * This is useful if this knowledge base
+	 * has different support profile for load and save.
+	 * 
+	 * @return file extensions. (e.g. {"plm", "txt"})
+	 * @see #supportsLocalFile()
+	 * @see #loadModule(File, boolean)
+	 * @see #saveFindings(MultiEntityBayesianNetwork, File)
+	 * @see #getSupportedLocalFileDescription(boolean)
+	 */
+	public String[] getSupportedLocalFileExtension(boolean isLoad);
+	
+	/**
+	 * If {@link #supportsLocalFile()}, then returns a string describing
+	 * the supported file formats obtained from {@link #getSupportedLocalFileExtension(boolean)}.
+	 * This information will be used by UnBBayes for file filters.
+	 * 
+	 * @param isLoad : tells if this is loading phase (true) or saving phase (false). 
+	 * This is useful if this knowledge base
+	 * has different support profile for load and save.
+	 * 
+	 * @return file extensions' description. (e.g. "Power Loom File (.plm)")
+	 * @see #supportsLocalFile()
+	 * @see #getSupportedLocalFileExtension(boolean)
+	 * @see #loadModule(File, boolean)
+	 * @see #saveFindings(MultiEntityBayesianNetwork, File)
+	 */
+	public String getSupportedLocalFileDescription(boolean isLoad);
 }
