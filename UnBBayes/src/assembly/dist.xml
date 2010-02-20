@@ -20,15 +20,8 @@
       </includes>
     </fileSet>
     <fileSet>
-      <directory>examples</directory>
+      <directory>release-examples</directory>
       <outputDirectory>examples</outputDirectory>
-      <includes>
-        <include>**/*.*</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>pr-owl</directory>
-      <outputDirectory>pr-owl</outputDirectory>
       <includes>
         <include>**/*.*</include>
       </includes>
