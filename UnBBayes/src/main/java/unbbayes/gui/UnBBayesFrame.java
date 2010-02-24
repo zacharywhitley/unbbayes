@@ -290,12 +290,18 @@ public class UnBBayesFrame extends JFrame {
 			this.getPluginMenuSeparator().setVisible(true);
 		}
 		
-		// hide tool JTB if the split button is empty
+		// hide tool JTB or menu if the split button is empty
 		if ( ( this.getToolsSplitButton().getMenu().getComponents() == null )
 		  || ( this.getToolsSplitButton().getMenu().getComponents().length == 0 ) ) {
 			this.getJtbTools().setVisible(false);
 		} else {
 			this.getJtbTools().setVisible(true);
+		}
+		if ( ( this.getToolsMenu().getPopupMenu().getComponents() == null )
+		  || ( this.getToolsMenu().getPopupMenu().getComponents().length == 0 ) ) { 
+			this.getToolsMenu().setVisible(false);
+		} else {
+			this.getToolsMenu().setVisible(true);
 		}
 		
 		// hide sampling if empty

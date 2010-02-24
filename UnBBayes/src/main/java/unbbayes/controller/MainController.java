@@ -48,8 +48,6 @@ import unbbayes.util.Debug;
 import unbbayes.util.extension.UnBBayesModule;
 import unbbayes.util.extension.builder.NamedWindowBuilder;
 import unbbayes.util.extension.builder.NetworkWindowBuilder;
-import edu.isi.powerloom.PLI;
-import edu.stanford.smi.protegex.owl.ProtegeOWL;
 
 
 /**
@@ -132,17 +130,18 @@ public class MainController {
 		
 		Debug.println("Init loader Protege"); 
 		
-		//load Protege
-		if(PRE_LOAD_PROTEGE){
-		   ProtegeOWL.createJenaOWLModel();
-		}
-		
-		Debug.println("Init loader Powerloom"); 
-		
-		//load Powerloom
-		if(PRE_LOAD_POWERLOOM){
-		   PLI.initialize();
-		}
+		// Do not eager load MEBN content (which is plugin content)
+//		//load Protege
+//		if(PRE_LOAD_PROTEGE){
+//		   ProtegeOWL.createJenaOWLModel();
+//		}
+//		
+//		Debug.println("Init loader Powerloom"); 
+//		
+//		//load Powerloom
+//		if(PRE_LOAD_POWERLOOM){
+//		   PLI.initialize();
+//		}
 		
 		Debug.println("Finish loader"); 
 		
