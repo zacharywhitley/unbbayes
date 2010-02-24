@@ -199,13 +199,7 @@ public class CorePluginNodeManager {
 				Extension ext = it.next();
 	            PluginDescriptor descr = ext.getDeclaringPluginDescriptor();
 	            
-	            try {
-	            	this.getUnbbayesPluginContextHolder().getPluginManager().activatePlugin(descr.getId());
-				} catch (PluginLifecycleException e) {
-					e.printStackTrace();
-					// we could not load this plugin, but we shall continue searching for others
-					continue;
-				}
+	            this.getUnbbayesPluginContextHolder().getPluginManager().activatePlugin(descr.getId());
 				
 				// extracting class loader
 				ClassLoader classLoader = this.getUnbbayesPluginContextHolder().getPluginManager().getPluginClassLoader(descr);
@@ -221,82 +215,46 @@ public class CorePluginNodeManager {
 				
 				// extracting class of the node or its builder
 	            Class nodeClass = null;	// class for the node or its builder
-	            try {
-	            	 nodeClass = classLoader.loadClass(classParam.valueAsString());
-				} catch (ClassNotFoundException e1) {
-					e1.printStackTrace();
-					// we could not load this plugin, but we shall continue searching for others
-					continue;
-				}
+	            nodeClass = classLoader.loadClass(classParam.valueAsString());
 				
 	            // generating node or its builder from extracted class
 		    	INodeBuilder nodeBuilder = null;
-		    	try {
-		    		if (INodeBuilder.class.isAssignableFrom(nodeClass)) {
-		    			// the provided node class was a builder itself
-		    			nodeBuilder = (INodeBuilder)nodeClass.newInstance();
+		    	if (INodeBuilder.class.isAssignableFrom(nodeClass)) {
+		    		// the provided node class was a builder itself
+		    		nodeBuilder = (INodeBuilder)nodeClass.newInstance();
+		    	} else {
+		    		// the provided node class was pointing directly to a node, so let's create a default builder
+		    		nodeBuilder = new ClassInstantiationPluginNodeBuilder(nodeClass);
+		    		if (nameParam != null && nameParam.valueAsString() != null && nameParam.valueAsString().length() > 0) {
+		    			// the name of the nodes must contain the nameParam as prefix
+		    			((ClassInstantiationPluginNodeBuilder)nodeBuilder).setNamePrefix(nameParam.valueAsString());
 		    		} else {
-		    			// the provided node class was pointing directly to a node, so let's create a default builder
-		    			nodeBuilder = new ClassInstantiationPluginNodeBuilder(nodeClass);
-		    			if (nameParam != null && nameParam.valueAsString() != null && nameParam.valueAsString().length() > 0) {
-		    				// the name of the nodes must contain the nameParam as prefix
-		    				((ClassInstantiationPluginNodeBuilder)nodeBuilder).setNamePrefix(nameParam.valueAsString());
-		    			} else {
-		    				// the name of the nodes contains the class name as prefix
-		    				((ClassInstantiationPluginNodeBuilder)nodeBuilder).setNamePrefix(nodeClass.getName().substring(nodeClass.getName().lastIndexOf('.')));
-		    			}
+		    			// the name of the nodes contains the class name as prefix
+		    			((ClassInstantiationPluginNodeBuilder)nodeBuilder).setNamePrefix(nodeClass.getName().substring(nodeClass.getName().lastIndexOf('.')));
 		    		}
-				} catch (Exception e) {
-					// OK. we could not load this one, but lets try others.
-					e.printStackTrace();
-					continue;
-				} 
+		    	}
 				
 				// extracting class of the shape or its builder
 	            Class shapeClass = null;	// class for the shape or its builder
-				try {
-					shapeClass = classLoader.loadClass(shapeParam.valueAsString());
-				} catch (ClassNotFoundException e1) {
-					e1.printStackTrace();
-					// we could not load this plugin, but we shall continue searching for others
-					continue;
-				}
+	            shapeClass = classLoader.loadClass(shapeParam.valueAsString());
 				
 				// generating node or its builder from extracted class
 				IPluginUShapeBuilder shapeBuilder = null;
-				try {
-					if (IPluginUShapeBuilder.class.isAssignableFrom(shapeClass)) {
-						// the provided shape class was a builder itself
-						shapeBuilder = (IPluginUShapeBuilder)shapeClass.newInstance();
-					} else {
-						// the provided shape class was pointing directly to a shape, so let's create a default builder
-						shapeBuilder = new ClassInstantiationPluginUShapeBuilder(shapeClass);
-					}
-				} catch (Exception e) {
-					// OK. we could not load this one, but lets try others.
-					e.printStackTrace();
-					continue;
-				} 
+				if (IPluginUShapeBuilder.class.isAssignableFrom(shapeClass)) {
+					// the provided shape class was a builder itself
+					shapeBuilder = (IPluginUShapeBuilder)shapeClass.newInstance();
+				} else {
+					// the provided shape class was pointing directly to a shape, so let's create a default builder
+					shapeBuilder = new ClassInstantiationPluginUShapeBuilder(shapeClass);
+				}
 				
 				// extracting class for panel builder
 	            Class panelClass = null;	// class for the panel builder
-				try {
-					panelClass = classLoader.loadClass(panelParam.valueAsString());
-				} catch (ClassNotFoundException e1) {
-					e1.printStackTrace();
-					// we could not load this plugin, but we shall continue searching for others
-					continue;
-				}
+	            panelClass = classLoader.loadClass(panelParam.valueAsString());
 				
 				// generating panel builder from extracted class
 				IProbabilityFunctionPanelBuilder panelBuilder = null;
-				try {
-					panelBuilder = (IProbabilityFunctionPanelBuilder)panelClass.newInstance();
-				} catch (Exception e) {
-					// OK. we could not load this one, but lets try others.
-					e.printStackTrace();
-					continue;
-				}
+				panelBuilder = (IProbabilityFunctionPanelBuilder)panelClass.newInstance();
 
 				// extracting cursor 
 				ImageIcon cursor = null;
@@ -337,10 +295,8 @@ public class CorePluginNodeManager {
 
 				// registering the loaded class and its dto, so that users of CorePluginNodeManager can call them by using getPluginNodeInformation
 				this.registerNodeClass(	nodeDto.getNodeBuilder().getNodeClass(), nodeDto);
-			} catch (Exception e) {
-				e.printStackTrace();
-				continue;
-			} catch (Error e) {
+				
+			} catch (Throwable e) {
 				e.printStackTrace();
 				continue;
 			}

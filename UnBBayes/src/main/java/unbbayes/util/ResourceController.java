@@ -93,11 +93,7 @@ public class ResourceController {
     	try {
     		// the below code fixes incidents that happens when this method is called before plugin initialization
         	if (!this.getUnBBayesPluginContextHolder().isInitialized()) {
-        		try {
-    				this.getUnBBayesPluginContextHolder().publishPlugins();
-    			} catch (IOException e) {
-    				throw new IllegalStateException("Plugin infrastructure is not ready",e);
-    			}
+        		this.getUnBBayesPluginContextHolder().publishPlugins();
         	}
         	
         	// loads the "core" plugin, which is a stub that we use to declare extension points for core
@@ -116,29 +112,35 @@ public class ResourceController {
 
     	    // iterate over all extension points for core plugin
     	    for (ExtensionPoint point : core.getExtensionPoints()) {
-    	    	for (Extension ext : point.getConnectedExtensions()) {
-            		PluginDescriptor descr = ext.getDeclaringPluginDescriptor();
-            		try {
-            			this.getUnBBayesPluginContextHolder().getPluginManager().activatePlugin(descr.getId());
-        			} catch (PluginLifecycleException e) {
-        				e.printStackTrace();
-        				// we could not load this plugin, but we shall continue
-        				continue;
-        			}
-        			ClassLoader loader = this.getUnBBayesPluginContextHolder().getPluginManager().getPluginClassLoader(descr);
-        			if (loader != null) {
-        				ret.getListOfLoaders().add(loader);
-        			}
-            	}
+    	    	try {
+    	    		for (Extension ext : point.getConnectedExtensions()) {
+    	    			PluginDescriptor descr = null;
+        	    		try {
+        	    			descr = ext.getDeclaringPluginDescriptor();
+        	    			this.getUnBBayesPluginContextHolder().getPluginManager().activatePlugin(descr.getId());
+                			ClassLoader loader = this.getUnBBayesPluginContextHolder().getPluginManager().getPluginClassLoader(descr);
+                			if (loader != null) {
+                				ret.getListOfLoaders().add(loader);
+                			}
+    					} catch (Throwable e) {
+    						e.printStackTrace();
+    						continue;
+    					}
+                	}
+				} catch (Throwable e) {
+					e.printStackTrace();
+					continue;
+				}
 			}
+    	    // fill ret with default value if no classloader was used
+    	    if (ret.getListOfLoaders().isEmpty()) {
+    	    	ret.getListOfLoaders().add(this.getClass().getClassLoader());
+    	    }
         	return ret;
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			Debug.println(this.getClass(), "Exception loading plugin resources", e);
 			return this.getDefaultClassLoader();
-		} catch (Error e) {
-			Debug.println(this.getClass(), "Error loading plugin resources", e);
-			return this.getDefaultClassLoader();
-		}
+		} 
     	
     }
     

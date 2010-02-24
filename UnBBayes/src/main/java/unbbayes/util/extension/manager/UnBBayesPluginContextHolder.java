@@ -6,6 +6,7 @@ package unbbayes.util.extension.manager;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EventListener;
 import java.util.EventObject;
 import java.util.HashSet;
@@ -15,6 +16,8 @@ import java.util.Set;
 import org.java.plugin.ObjectFactory;
 import org.java.plugin.PluginManager;
 import org.java.plugin.PluginManager.PluginLocation;
+import org.java.plugin.registry.PluginDescriptor;
+import org.java.plugin.registry.PluginPrerequisite;
 import org.java.plugin.standard.StandardPluginLocation;
 
 import unbbayes.io.exception.UBIOException;
@@ -252,4 +255,33 @@ public class UnBBayesPluginContextHolder {
 		this.pluginManager = pluginManager;
 	}
 
+	/**
+	 * This method checks if a given plugin descriptor is a valid plugin.
+	 * If not valid, it returns a collection containing all plugin IDs
+	 * that caused the descr to fail.
+	 * 
+	 * @param descr : descriptor of the plugin to perform sanity check.
+	 * 
+	 * @return non null collection. This is a collection containing all plugin IDs
+	 * that caused the descr to fail.
+	 */
+	public Collection<String> getErroneousRequisiteID(PluginDescriptor descr) {
+		// prepare return as non-null value
+		Collection<String> ret = new ArrayList<String>();
+		
+		// checking what plugin dependency was erroneous, if something is wrong
+		if (this.getPluginManager().isBadPlugin(descr)) {
+			for (PluginPrerequisite requisite : descr.getPrerequisites()) {
+				try {
+					// TODO avoid this kind of exception driven test
+					this.getPluginManager().getRegistry().getPluginDescriptor(requisite.getPluginId());
+				} catch (Exception e) {
+					ret.add(requisite.getPluginId());
+				}
+			}
+		}
+		
+		return ret;
+	}
+	
 }

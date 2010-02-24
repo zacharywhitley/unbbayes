@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EventObject;
 
-import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.registry.Extension;
 import org.java.plugin.registry.ExtensionPoint;
 import org.java.plugin.registry.PluginDescriptor;
@@ -139,51 +138,35 @@ public class PluginAwareFileExtensionIODelegator extends
 
 			// initializes the extension point and loads IO classes
 		    for (Extension ext : point.getConnectedExtensions()) {
-		    	PluginDescriptor descr = ext.getDeclaringPluginDescriptor();
-	            
-	            try {
-	            	this.getUnbbayesPluginContextHolder().getPluginManager().activatePlugin(descr.getId());
-				} catch (PluginLifecycleException e) {
-					e.printStackTrace();
-					// we could not load this plugin, but we shall continue
-					continue;
-				}
-				
-				// extracting parameters
-				Parameter classParam = ext.getParameter(this.getExtensionPointClassParam());
-				Parameter nameParam = ext.getParameter(this.getExtensionPointNameParam());
-				
-				// extracting plugin class 
-				ClassLoader classLoader = this.getUnbbayesPluginContextHolder().getPluginManager().getPluginClassLoader(descr);
-	            Class pluginCls = null;	// class for the plugin or its builder (UnBBayesModuleBuilder)
-	            try {
-	            	pluginCls = classLoader.loadClass(classParam.valueAsString());
-				} catch (ClassNotFoundException e1) {
-					e1.printStackTrace();
-					continue;
+		    	try {
+		    		PluginDescriptor descr = ext.getDeclaringPluginDescriptor();
+		    		
+			    	this.getUnbbayesPluginContextHolder().getPluginManager().activatePlugin(descr.getId());
+					
+					// extracting parameters
+					Parameter classParam = ext.getParameter(this.getExtensionPointClassParam());
+					Parameter nameParam = ext.getParameter(this.getExtensionPointNameParam());
+					
+					// extracting plugin class 
+					ClassLoader classLoader = this.getUnbbayesPluginContextHolder().getPluginManager().getPluginClassLoader(descr);
+		            Class pluginCls = null;	// class for the plugin or its builder (UnBBayesModuleBuilder)
+		            pluginCls = classLoader.loadClass(classParam.valueAsString());
+					
+		            BaseIO pluginIOObject = (BaseIO)pluginCls.newInstance();
+		            pluginIOObject.setName(nameParam.valueAsString());
+		            ret.add(pluginIOObject);
+		            
+				} catch (Throwable e) {
 					// it is OK to ignore a plugin failure, since it is not fatal.
-				}
-				
-				try {
-					BaseIO pluginIOObject = (BaseIO)pluginCls.newInstance();
-					pluginIOObject.setName(nameParam.valueAsString());
-					ret.add(pluginIOObject);
-				} catch (Exception e) {
 					e.printStackTrace();
-					continue;
-					// it is OK to ignore a plugin failure, since it is not fatal.
-				} catch (Error err) {
-					err.printStackTrace();
 					continue;
 				}
 							
 			}
 		    
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
-		} catch (Error err) {
-			err.printStackTrace();
-		}
+		} 
 		
 		return ret;
 	}
@@ -267,5 +250,6 @@ public class PluginAwareFileExtensionIODelegator extends
 		this.corePluginID = corePluginID;
 	}
 
+	
 	
 }

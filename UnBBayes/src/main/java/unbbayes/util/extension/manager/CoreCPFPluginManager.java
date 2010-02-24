@@ -184,13 +184,7 @@ public class CoreCPFPluginManager  {
 				Extension ext = it.next();
 	            PluginDescriptor descr = ext.getDeclaringPluginDescriptor();
 	            
-	            try {
-	            	this.getUnbbayesPluginContextHolder().getPluginManager().activatePlugin(descr.getId());
-				} catch (PluginLifecycleException e) {
-					e.printStackTrace();
-					// we could not load this plugin, but we shall continue searching for others
-					continue;
-				}
+	            this.getUnbbayesPluginContextHolder().getPluginManager().activatePlugin(descr.getId());
 				
 				// extracting class loader
 				ClassLoader classLoader = this.getUnbbayesPluginContextHolder().getPluginManager().getPluginClassLoader(descr);
@@ -205,23 +199,11 @@ public class CoreCPFPluginManager  {
 				
 				// extracting class for panel builder
 	            Class panelClass = null;	// class for the panel builder
-				try {
-					panelClass = classLoader.loadClass(panelParam.valueAsString());
-				} catch (ClassNotFoundException e1) {
-					e1.printStackTrace();
-					// we could not load this plugin, but we shall continue searching for others
-					continue;
-				}
+	            panelClass = classLoader.loadClass(panelParam.valueAsString());
 				
 				// generating panel builder from extracted class
 				IProbabilityFunctionPanelBuilder panelBuilder = null;
-				try {
-					panelBuilder = (IProbabilityFunctionPanelBuilder)panelClass.newInstance();
-				} catch (Exception e) {
-					// OK. we could not load this one, but lets try others.
-					e.printStackTrace();
-					continue;
-				}
+				panelBuilder = (IProbabilityFunctionPanelBuilder)panelClass.newInstance();
 
 				
 				// extracting icon
@@ -250,13 +232,10 @@ public class CoreCPFPluginManager  {
 					this.getNodeNameToDtoMap().put(classParam.valueAsString(), collection);
 				}
 				collection.add(dto);
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				e.printStackTrace();
 				continue;
-			} catch (Error e) {
-				e.printStackTrace();
-				continue;
-			}
+			} 
 		}
 	}
 

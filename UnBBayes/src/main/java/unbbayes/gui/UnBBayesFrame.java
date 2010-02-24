@@ -1282,13 +1282,7 @@ public class UnBBayesFrame extends JFrame {
             try {
             	PluginDescriptor descr = ext.getDeclaringPluginDescriptor();
                 
-                try {
-    				pluginManager.activatePlugin(descr.getId());
-    			} catch (PluginLifecycleException e) {
-    				e.printStackTrace();
-    				// we could not load this plugin, but we shall continue
-    				continue;
-    			}
+            	pluginManager.activatePlugin(descr.getId());
     			
     			// extracting parameters
     			Parameter nameParam = ext.getParameter(PluginCore.PARAMETER_NAME);
@@ -1301,16 +1295,11 @@ public class UnBBayesFrame extends JFrame {
     			// extracting plugin class or builder clas
     			ClassLoader classLoader = pluginManager.getPluginClassLoader(descr);
                 Class pluginOrBuilderCls = null;	// class for the plugin or its builder (UnBBayesModuleBuilder)
-                try {
-                	if (builderParam != null) {
-                		pluginOrBuilderCls = classLoader.loadClass(builderParam.valueAsString());
-                	} else {
-                		pluginOrBuilderCls = classLoader.loadClass(classParam.valueAsString());
-                	}
-    			} catch (ClassNotFoundException e1) {
-    				e1.printStackTrace();
-    				continue;
-    			}
+                if (builderParam != null) {
+                	pluginOrBuilderCls = classLoader.loadClass(builderParam.valueAsString());
+                } else {
+                	pluginOrBuilderCls = classLoader.loadClass(classParam.valueAsString());
+                }
     			
     			// filling tool bar's button
     			ImageIcon icon = null;
@@ -1434,13 +1423,10 @@ public class UnBBayesFrame extends JFrame {
     			
     			// filling the return
     			ret.put(moduleName, pluginOrBuilderCls);
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				e.printStackTrace();
 				continue;
-			} catch (Error e) {
-				e.printStackTrace();
-				continue;
-			}
+			} 
 		}
 		
 		return ret;
