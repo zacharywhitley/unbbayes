@@ -1,0 +1,43 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- This is a plugin descriptor for general learning module -->
+<plugin id="unbbayes.learning" version="1.1.0">
+    <requires>
+        <import plugin-id="unbbayes.util.extension.core"/>
+    </requires>
+    <runtime>
+    	 <library type="resources" path="icons/" id="learningIcons">
+        	<export prefix="*"/>
+        </library>
+        <!-- It seems that loaders does not work as expected on jar files -->
+        <!-- If you change/add the libraries, change/add these library declaration too -->
+        <library id="unbbayes.learning" path="unbbayes.learning-1.1.0.jar" type="code" />
+    </runtime>
+    
+    <extension plugin-id="unbbayes.util.extension.core" point-id="Module" id="Learning">
+        <parameter id="class" value="unbbayes.learning.gui.extension.LearningModule" />
+        <!-- parameter id="name" value="Learning" / -->
+        <parameter id="builder" value="unbbayes.learning.gui.extension.LearningModule" />
+		<parameter id="description" value="Bayesian Learning Module" />
+		<parameter id="icon" value="learn.gif" />
+		<parameter id="category" value="tool" />
+    </extension>
+    
+    <extension plugin-id="unbbayes.util.extension.core" point-id="Module" id="TAN">
+        <parameter id="class" value="unbbayes.learning.gui.extension.TANModule" />
+        <parameter id="name" value="TAN" />
+        <parameter id="builder" value="unbbayes.learning.gui.extension.TANModule" />
+		<parameter id="description" value="TAN Learning Module" />
+		<parameter id="icon" value="tan.png" />
+		<parameter id="category" value="tool" />
+    </extension>
+    
+    <extension plugin-id="unbbayes.util.extension.core" point-id="Module" id="BAN">
+        <parameter id="class" value="unbbayes.learning.gui.extension.BANModule" />
+        <parameter id="name" value="BAN" />
+        <parameter id="builder" value="unbbayes.learning.gui.extension.BANModule" />
+		<parameter id="description" value="BAN Learning Module" />
+		<parameter id="icon" value="ban.png" />
+		<parameter id="category" value="tool" />
+    </extension>
+</plugin>
