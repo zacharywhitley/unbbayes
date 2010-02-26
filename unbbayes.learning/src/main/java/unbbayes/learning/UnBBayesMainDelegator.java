@@ -1,7 +1,7 @@
 /**
  * 
  */
-package unbbayes;
+package unbbayes.learning;
 
 import java.util.Locale;
 

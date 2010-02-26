@@ -11,7 +11,9 @@
         </library>
         <!-- It seems that loaders does not work as expected on jar files -->
         <!-- If you change/add the libraries, change/add these library declaration too -->
-        <library id="unbbayes.learning" path="unbbayes.learning-1.1.0.jar" type="code" />
+        <library id="unbbayes.learning" path="unbbayes.learning-1.1.0.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
     </runtime>
     
     <extension plugin-id="unbbayes.util.extension.core" point-id="Module" id="Learning">
