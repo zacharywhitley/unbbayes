@@ -25,9 +25,8 @@ import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.IRandomVariable;
@@ -116,8 +115,8 @@ public abstract class Node implements Serializable,
 		description = "";
 		explanationDescription = "";
 		adjacents = new ArrayList<Node>();
-		parents = new ArrayList<Node>();
-		children = new ArrayList<Node>();
+		parents = new SetList<Node>();
+		children = new SetList<Node>();
 		states = new ArrayList<String>();
 
 		// width
@@ -826,7 +825,95 @@ public abstract class Node implements Serializable,
 		this.setParents(new ArrayList(parents));
 	}
 	
-	
-	
+	/**
+	 * This is just an ArrayList which does not allow duplicate elements
+	 * @author Shou Matsumoto
+	 *
+	 */
+	public class SetList<E> extends ArrayList<E> {
+
+		 /**
+	     * Constructs an empty list with an initial capacity of ten.
+	     */
+		public SetList() {
+			super();
+		}
+
+		 /**
+	     * Constructs a list containing the elements of the specified
+	     * collection, in the order they are returned by the collection's
+	     * iterator.  The <tt>ArrayList</tt> instance has an initial capacity of
+	     * 110% the size of the specified collection.
+	     *
+	     * @param c the collection whose elements are to be placed into this list.
+	     * @throws NullPointerException if the specified collection is null.
+	     */
+		public SetList(Collection c) {
+			super(c);
+		}
+
+		 /**
+	     * Constructs an empty list with the specified initial capacity.
+	     *
+	     * @param   initialCapacity   the initial capacity of the list.
+	     * @exception IllegalArgumentException if the specified initial capacity
+	     *            is negative
+	     */
+		public SetList(int initialCapacity) {
+			super(initialCapacity);
+		}
+
+		/* (non-Javadoc)
+		 * @see java.util.ArrayList#add(java.lang.Object)
+		 */
+		@Override
+		public boolean add(E o) {
+			if (this.contains(o)) {
+				return false;
+			}
+			return super.add(o);
+		}
+
+		/* (non-Javadoc)
+		 * @see java.util.ArrayList#add(int, java.lang.Object)
+		 */
+		@Override
+		public void add(int index, E element) {
+			if (this.contains(element)) {
+				return;
+			}
+			super.add(index, element);
+		}
+
+		/* (non-Javadoc)
+		 * @see java.util.ArrayList#addAll(java.util.Collection)
+		 */
+		@Override
+		public boolean addAll(Collection<? extends E> c) {
+			// TODO optimize
+			boolean ret = false;
+			for (E e : c) {
+				ret = this.add(e) || ret;
+			}
+			return ret;
+		}
+
+		/* (non-Javadoc)
+		 * @see java.util.ArrayList#addAll(int, java.util.Collection)
+		 */
+		@Override
+		public boolean addAll(int index, Collection<? extends E> c) {
+			// TODO optimize
+			int addedCount = 0;
+			for (E e : c) {
+				if (!this.contains(e)) {
+					super.add(index + addedCount, e);
+					addedCount++;
+				}
+			}
+			return true;
+		}
+		
+	}
 
 }
