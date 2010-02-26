@@ -213,7 +213,10 @@ public class CL extends CBLToolkit{
 				if(resultado>maiorResultadoAtual){
 					maiorResultadoAtual=resultado;
 					posicao=i;					
-				}}raiz=posicao;	}}
+				}}raiz=posicao;	}
+
+		// TODO set the "raiz" to be different than classe.	
+	}
 	/**
 	 * Detecta proxima ï¿½rvore vï¿½lida
 	 * @return
