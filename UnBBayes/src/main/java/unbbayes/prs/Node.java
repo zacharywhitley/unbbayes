@@ -815,14 +815,14 @@ public abstract class Node implements Serializable,
 	 * @see unbbayes.prs.INode#setChildrenNodeList(java.util.List)
 	 */
 	public void setChildNodes(List<INode> children) {
-		this.setChildren (new ArrayList(children));
+		this.setChildren (new SetList(children));
 	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.INode#setParentNodeList(java.util.List)
 	 */
 	public void setParentNodes(List<INode> parents) {
-		this.setParents(new ArrayList(parents));
+		this.setParents(new SetList(parents));
 	}
 	
 	/**
