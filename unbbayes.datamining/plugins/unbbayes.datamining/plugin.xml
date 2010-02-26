@@ -12,9 +12,15 @@
         </library>
         <!-- It seems that loaders does not work as expected on jar files -->
         <!-- If you change/add the libraries, change/add these library declaration too -->
-        <library id="unbbayes.datamining" path="unbbayes.datamining-1.1.0.jar" type="code" />
-        <library id="miglayout15-swing" path="lib/miglayout15-swing-1.0.jar" type="code" />
-        <library id="plot-1.0" path="lib/plot-1.0.jar" type="code" />
+        <library id="unbbayes.datamining" path="unbbayes.datamining-1.1.0.jar" type="code">
+        	<export prefix="*"/>
+        </library>
+        <library id="miglayout15-swing" path="lib/miglayout15-swing-1.0.jar" type="code">
+        	<export prefix="*"/>
+        </library>
+        <library id="plot-1.0" path="lib/plot-1.0.jar" type="code">
+        	<export prefix="*"/>
+        </library>
     </runtime>
     <extension plugin-id="unbbayes.util.extension.core" point-id="Module" id="unbminer">
         <parameter id="class" value="unbbayes.datamining.gui.extension.UnBMinerJPFModule" />

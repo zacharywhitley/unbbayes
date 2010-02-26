@@ -1,7 +1,7 @@
 /**
  * 
  */
-package unbbayes;
+package unbbayes.datamining;
 
 import java.util.Locale;
 
