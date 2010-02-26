@@ -19,6 +19,8 @@ public class UBIOException extends IOException{
 	public static final String ED_CREATE_FILE = "CreationFileError"; 
 	public static final String ED_READWRITE_FILE = "WriteReaderFileError"; 
 	
+	private String detailMessage = "";
+	
   	private static ResourceBundle resource = null;
   	static {
   		// attempt to gradually restrict ResourceBundle on error
@@ -39,12 +41,22 @@ public class UBIOException extends IOException{
 		}
   	}
 	
-  	public UBIOException(String description){
-		super(resource.getString(description)); 
+  	public UBIOException(String key){
+		super();
+		try {
+			this.detailMessage = resource.getString(key);
+		} catch (Throwable e) {
+			this.detailMessage = key;
+		}
 	}
   	
-	public UBIOException(String description, String object){
-		super(resource.getString(description) + ": " + object); 
+	public UBIOException(String key, String object){
+		super(); 
+		try {
+			this.detailMessage = resource.getString(key) + ": " + object;
+		} catch (Throwable e) {
+			this.detailMessage = key + ": " + object;;
+		}
 	}
 	
 	public UBIOException (Throwable e){
@@ -53,10 +65,20 @@ public class UBIOException extends IOException{
 		this.initCause(e);
 	}
 	
-	public UBIOException (String description, Throwable e){
-		this(description);
+	public UBIOException (String key, Throwable e){
+		this(key);
 		this.setStackTrace(e.getStackTrace());
 		this.initCause(e);
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Throwable#getMessage()
+	 */
+	@Override
+	public String getMessage() {
+		return this.detailMessage;
+	}
+	
+	
 	
 }
