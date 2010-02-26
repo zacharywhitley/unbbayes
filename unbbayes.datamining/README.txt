@@ -22,8 +22,8 @@ mvn install:install-file -DpomFile=pom.xml -Dpackaging=jar -Dfile=unbbayes-4.0.0
 
 
 <If you do not have learning module in your local mvn repository, then execute the below command>
-Go to \plugins>
-mvn install:install-file -DgroupId=br.unb.cic -DartifactId=unbbayes.learning -Dversion=0.0.1 -Dpackaging=jar -Dfile=unbbayes.learning.jar
+Go to \mvn_lib\unbbayes>
+mvn install:install-file -DgroupId=br.unb.cic -DartifactId=unbbayes.learning -Dversion=1.1.0 -Dpackaging=jar -Dfile=unbbayes.learning-1.1.0.jar
 
 
 CREATING A RELEASE
