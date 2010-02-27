@@ -215,7 +215,41 @@ public class CL extends CBLToolkit{
 					posicao=i;					
 				}}raiz=posicao;	}
 
-		// TODO set the "raiz" to be different than classe.	
+		// Caution: sometimes, when matrizinfo's variation is too low, raiz becomes equal to classe.
+		// We shall never allow this to happen, since it is an erroneous condition.
+		if (raiz == classe) {
+			try {
+				// Forcing the "raiz" to be different to "classe".	
+				raiz = calculateAlternativeRootValue(classe, nvar, matrizinfo);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	/**
+	 * This method gives the alternative value of root (raiz).
+	 * This is mostly called when {@link #calculaRaiz()} gives
+	 * root == classValue (raiz == classe), which is an erroneous state.
+	 * @param classValue : the user-chosen most important variable (classe)
+	 * @param totalSize : total number of random variables
+	 * @param informationMatrix : matrix to be used to decide the alternative root value (optional)
+	 * @return : a new value for root (raiz), which is the computed value representing
+	 * the random variable which is the most probable root of a (sub)tree. 
+	 * @see #calculaRaiz()
+	 * @throws IllegalStateException : when a new value could not be computed
+	 */
+	protected int calculateAlternativeRootValue(int classValue, int totalSize,
+			double[][] informationMatrix) throws IllegalStateException {
+		// return the first available variable (we do not need complex evaluation by now).
+		// I do not want to use "random", since 2 executions of same input must return the same configuration
+		for (int i = 0; i < totalSize; i++) {
+			if (i != classValue) {
+				return i;
+			}
+		}
+		throw new IllegalStateException(
+				"The classValue equals to rootValue (classe == raiz) and could not calculate alternative value, because the number of variables is not enough. This is an erroneous situation.");
 	}
 	/**
 	 * Detecta proxima ï¿½rvore vï¿½lida

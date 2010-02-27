@@ -55,7 +55,8 @@ public abstract class LearningToolkit{
              for(int j = 0; j < ri; j++){
                   probability = (float)(1+ arrayNijk[j][i])/(ri+nij);
                   int coord[];
-                  coord = new int[nijLength+1];
+//                  coord = new int[nijLength+1];
+                  coord = new int[instance.size()+1];
                   coord[0] = j;
                   for(int k = 1; k <= instance.size(); k++){
                       coord[k] = ((Integer)instance.get(k-1)).intValue();
