@@ -1,0 +1,26 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- This is a plugin descriptor for Monte Carlo Sampling module -->
+<plugin id="unbbayes.simulation.montecarlo.sampling" version="1.1.0">
+    <requires>
+        <import plugin-id="unbbayes.util.extension.core"/>
+    </requires>
+    <runtime>
+     	<library type="resources" path="icons/" id="icons">
+        	<export prefix="*"/>
+        </library>
+        <!-- It seems that loaders does not work as expected on jar files -->
+        <!-- If you change/add the libraries, change/add these library declaration too -->
+        <library id="unbbayes.simulation.montecarlo.sampling" path="unbbayes.simulation.montecarlo.sampling-1.1.0.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+    </runtime>
+    <extension plugin-id="unbbayes.util.extension.core" point-id="Module" id="montecarlo">
+        <parameter id="class" value="unbbayes.simulation.montecarlo.gui.extension.MonteCarloModule" />
+        <parameter id="name" value="Logic Sampling" />
+        <parameter id="builder" value="unbbayes.simulation.montecarlo.gui.extension.MonteCarloModule" />
+		<parameter id="description" value="Sampling using Matrix Monte Carlo" />
+		<parameter id="icon" value="sampling.png" />
+		<parameter id="category" value="sampling" />
+    </extension>
+</plugin>
