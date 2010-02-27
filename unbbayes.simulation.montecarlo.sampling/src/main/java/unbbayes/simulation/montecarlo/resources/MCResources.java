@@ -48,7 +48,7 @@ public class MCResources extends ListResourceBundle {
 		{"netFileFilter","Net (.net), XMLBIF (.xml)"},
 		{"textFileFilter","Text (.txt)"},
 		
-		{"mcTitle", "Monte Carlo Simulation"},
+		{"mcTitle", "Sampling / Simulation"},
 		{"sampleSizeLbl", "Sample size :"},
 		{"ok", "OK"},
 		
