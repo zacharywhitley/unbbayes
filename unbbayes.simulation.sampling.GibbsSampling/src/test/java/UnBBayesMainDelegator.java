@@ -1,7 +1,4 @@
-/**
- * 
- */
-package unbbayes.simulation.sampling;
+
 
 import java.util.Locale;
 
