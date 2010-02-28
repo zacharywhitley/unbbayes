@@ -1,7 +1,4 @@
-/**
- * 
- */
-package unbbayes.simulation.likelihoodweighting.inference;
+
 
 import java.util.Locale;
 
