@@ -1,7 +1,4 @@
-/**
- * 
- */
-package unbbayes.learning.incrementalLearning;
+
 
 import java.util.Locale;
 
