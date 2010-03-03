@@ -2,7 +2,7 @@
 <project name="UnBBayes">
   <bannerLeft>
     <name>UnBBayes</name>
-    <src>/images/logo.png</src>
+    <src>/images/topBanner-v4.png</src>
     <href>/index.html</href>
   </bannerLeft>
   <body>
@@ -36,4 +36,21 @@
     <menu ref="reports"/>
 
   </body>
+  
+  <poweredBy>
+  
+    <logo name="UnBBayes" href="http://sourceforge.net/projects/unbbayes"
+          img="http://sflogo.sourceforge.net/sflogo.php?group_id=47519&amp;type=12"/>
+  
+    <logo name="Ohloh" href="https://www.ohloh.net/p/unbbayes"
+          img="https://www.ohloh.net/p/unbbayes/widgets/project_partner_badge.gif"/>
+    
+    <logo name="Softpedia" href="http://mac.softpedia.com/progClean/UnBBayes-Clean-41921.html"
+          img="http://mac.softpedia.com/base_img/softpedia_free_award_f.gif"/>
+          
+    <logo name="Maven" href="http://maven.apache.org/"
+          img="http://maven.apache.org/images/logos/maven-feather.png"/>
+          
+  </poweredBy>
+  
 </project>
