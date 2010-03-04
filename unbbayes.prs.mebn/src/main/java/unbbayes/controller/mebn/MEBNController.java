@@ -1060,6 +1060,7 @@ public class MEBNController extends NetworkController {
 	public void updateFormulaActiveContextNode(){
 		String formula = contextNodeActive.updateLabel();
 		mebnEditionPane.setFormula(formula);
+		mebnEditionPane.getNetworkWindow().getGraphPane().update();
 	}
 
 	private void setResidentNodeActive(ResidentNode residentNodeActive){
