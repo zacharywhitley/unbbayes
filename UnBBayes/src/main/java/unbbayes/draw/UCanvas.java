@@ -278,6 +278,8 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 				shape.repaint();
 			}
 		}
+		
+		updateLines();
 	}
 
 	public void onShapeColorChanged(Color c) {
@@ -353,6 +355,8 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 					shape.move(shape.getX(), bottom - shape.getHeight() / 2);
 			}
 		}
+		
+		updateLines();
 
 	}
 
@@ -818,5 +822,20 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 	 */
 	public void setController(NetworkController controller) {
 		this.controller = controller;
+	}
+	
+	//by young 1/23/2010
+	//update all lines 
+	private void updateLines() {
+		int n = this.getComponentCount();
+
+		for (int i = 0; i < n; i++) {
+			UShape shape = (UShape) this.getComponent(i);
+
+			if ((shape instanceof UShapeLine)) {
+				shape.update();
+				shape.repaint();
+			}
+		}
 	}
 }
