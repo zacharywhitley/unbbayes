@@ -832,6 +832,15 @@ public class NetworkController implements KeyListener {
     }
     
     /**
+     * Returns the selected node.
+     * @return the selected node.
+     */
+    public Node getSelectedNode(){
+    	System.out.println("Node selection is currently only available for subclasses");
+    	return null;
+    }
+    
+    /**
      * Selects a node
      * @param node
      */

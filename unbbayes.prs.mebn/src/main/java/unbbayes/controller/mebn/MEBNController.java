@@ -1041,6 +1041,10 @@ public class MEBNController extends NetworkController {
 			}
 		}
 	}
+	
+	public Node getSelectedNode() {
+		return nodeActive;
+	}
 
 	public void unselectNodes(){
 		if(multiEntityBayesianNetwork.getCurrentMFrag() != null){

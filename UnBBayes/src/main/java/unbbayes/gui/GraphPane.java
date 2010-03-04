@@ -841,6 +841,13 @@ public class GraphPane extends UCanvas implements MouseListener,
 		setShapeStateAll(UShape.STATE_NONE, null);
 		fitCanvasSizeToAllUShapes();
 
+		if (controller != null){
+			Node selectedNode = controller.getSelectedNode();
+			if (selectedNode != null) {
+				UShape selectedUshape = this.getNodeUShape(selectedNode);  
+				selectedUshape.setState(UShape.STATE_SELECTED, null);
+			}
+		}
 	}
 
 	public void resetGraph() {
