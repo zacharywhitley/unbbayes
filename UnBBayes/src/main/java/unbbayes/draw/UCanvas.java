@@ -826,7 +826,7 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 	
 	//by young 1/23/2010
 	//update all lines 
-	private void updateLines() {
+	protected void updateLines() {
 		int n = this.getComponentCount();
 
 		for (int i = 0; i < n; i++) {

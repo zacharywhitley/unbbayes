@@ -704,33 +704,6 @@ public class GraphPane extends UCanvas implements MouseListener,
 						.getPosition().x, (int) newNode.getPosition().y,
 						newNode.getWidth(), newNode.getHeight());
 			}
-			// the below code is not necessary anymore, since MEBNGraphPane
-			// overwrites this method
-			// else if (newNode instanceof ContextNode) {
-			// shape = new UShapeContextNode(this, newNode, (int) newNode
-			// .getPosition().x, (int) newNode.getPosition().y, newNode
-			// .getWidth(), newNode.getHeight());
-			// } else if (newNode instanceof ResidentNode) {
-			// shape = new UShapeResidentNode(this, newNode, (int) newNode
-			// .getPosition().x, (int) newNode.getPosition().y, newNode
-			// .getWidth(), newNode.getHeight());
-			// } else if (newNode instanceof InputNode) {
-			// shape = new UShapeInputNode(this, newNode, (int) newNode
-			// .getPosition().x, (int) newNode.getPosition().y, newNode
-			// .getWidth(), newNode.getHeight());
-			// } else if (newNode instanceof OrdinaryVariable) {
-			// shape = new UShapeOrdinaryVariableNode(this, newNode, (int)
-			// newNode
-			// .getPosition().x, (int) newNode.getPosition().y, newNode
-			// .getWidth(), newNode.getHeight());
-			// }
-			// the below code is not necessary anymore, since OOBNGraphPane
-			// overwrites this method
-			// else if (newNode instanceof OOBNNodeGraphicalWrapper) {
-			// shape = new UShapeOOBNNode(this, newNode, (int) newNode
-			// .getPosition().x, (int) newNode.getPosition().y, newNode
-			// .getWidth(), newNode.getHeight());
-			// }
 		}
 
 		if (shape != null) {
@@ -743,6 +716,20 @@ public class GraphPane extends UCanvas implements MouseListener,
 								+ newNode.getName(), e);
 			}
 		}
+	}
+	
+	public void resizeAllToFitText() {
+		int n = this.getComponentCount();
+
+		for (int i = 0; i < n; i++) {
+			UShape shape = (UShape) this.getComponent(i);
+				shape.resizeToFitText();
+				shape.repaint();
+		}
+		
+		updateLines();
+		
+		setShapeStateAll(UShape.STATE_NONE, null);
 	}
 
 	public void compiled(boolean reset, Node selectedNode) {
@@ -804,8 +791,6 @@ public class GraphPane extends UCanvas implements MouseListener,
 
 	public void update() {
 		setPaneMode(PANEMODE_NONE);
-
-		System.out.println("update  = " + iUpdate++ + " ");
 
 		this.removeAll();
 

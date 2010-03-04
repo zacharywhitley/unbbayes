@@ -51,8 +51,6 @@ public class UShapeProbabilisticNode extends UShape  implements INodeHolderShape
 	protected Rectangle2D rect; 
 	protected UShapeState stateShape; 
 	protected int stateHeight = 18;
-	protected int defaultWidth = (int)Node.DEFAULT_SIZE.getX();
-	protected int defaultHeight = (int)Node.DEFAULT_SIZE.getY();
 	protected String finding;
 	
 	
@@ -92,7 +90,7 @@ public class UShapeProbabilisticNode extends UShape  implements INodeHolderShape
 		
 		if( s == STYPE_NONE )
 		{
-			setBounds(getX(), getY(), defaultWidth, defaultHeight);
+			setBounds(getX(), getY(), getWidth(), getHeight());
 			node.setDisplayMode(Node.DISPLAY_MODE_ELLIPSE ); 
 		}
 		else

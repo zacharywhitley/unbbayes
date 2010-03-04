@@ -462,6 +462,7 @@ public class NetworkWindow extends UnBBayesModule {
 
 			//by young
 			graphPane.update();
+			graphPane.resizeAllToFitText();
 			
 			card.show(getContentPane(), "pnEditionPane");
 		}

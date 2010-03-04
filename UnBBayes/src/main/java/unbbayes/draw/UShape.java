@@ -527,7 +527,7 @@ public class UShape extends JComponent implements ActionListener,
 
 		Rectangle rect = getTextRect(strName);
 
-		setNewSize(getX(), getY(), (int) (rect.getWidth() + 50), getHeight());
+		setNewSize(getX(), getY(), (int) (rect.getWidth() + 50), Node.DEFAULT_SIZE.y);
 	}
 
 	public String checkLimitedTextSize(Graphics g, Rectangle rect, String str) {
