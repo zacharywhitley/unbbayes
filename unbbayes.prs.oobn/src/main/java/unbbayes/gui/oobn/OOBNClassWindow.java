@@ -124,11 +124,13 @@ public class OOBNClassWindow extends NetworkWindow {
 	@Override
 	public void setVisible(boolean flag) {
 		super.setVisible(flag);
-		try{
-			graphPane.update();
-		} catch (Exception e) {
-			//Debug.println(this.getClass(), "Could not update graphPane", e);
-		}
+		//by young 1/23/2010
+		//remove this following unusable function
+//		try{
+//			graphPane.update();
+//		} catch (Exception e) {
+//			//Debug.println(this.getClass(), "Could not update graphPane", e);
+//		}
 		
 	}
 

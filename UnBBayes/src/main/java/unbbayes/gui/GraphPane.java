@@ -120,24 +120,27 @@ public class GraphPane extends UCanvas implements MouseListener,
 	public String PANEMODE_COMPILE = "Compile";
 
 	public String strPaneMode = PANEMODE_NONE;
-	
+
 	// a dto that temporally holds a plugin node's informations.
 	private INodeClassDataTransferObject nodeClassDataTransferObject;
-	
+
 	// This object manages plugin-loaded nodes.
-	private CorePluginNodeManager pluginNodeManager = CorePluginNodeManager.newInstance();
-	
+	private CorePluginNodeManager pluginNodeManager = CorePluginNodeManager
+			.newInstance();
+
 	/**
-	 * {@link #update()} will set {@link UShapeLine#getUseSelection()} to same value;
+	 * {@link #update()} will set {@link UShapeLine#getUseSelection()} to same
+	 * value;
+	 * 
 	 * @see #update()
-	 * @see {@link UShapeLine#getUseSelection()} 
+	 * @see {@link UShapeLine#getUseSelection()}
 	 */
 	private boolean toUseSelectionForLines = false;
 
-	
 	/** Load resource file from this package */
-	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
-			unbbayes.gui.resources.GuiResources.class.getName());
+	private static ResourceBundle resource = unbbayes.util.ResourceController
+			.newInstance().getBundle(
+					unbbayes.gui.resources.GuiResources.class.getName());
 
 	public GraphPane(JDialog dlg, ProbabilisticNetwork n) {
 		super();
@@ -208,10 +211,10 @@ public class GraphPane extends UCanvas implements MouseListener,
 	public Object getSelected() {
 		UShape selectedShape = getSelectedShape();
 		if (selectedShape instanceof IEdgeHolderShape) {
-			return ((IEdgeHolderShape)selectedShape).getEdge();
+			return ((IEdgeHolderShape) selectedShape).getEdge();
 		}
 		if (selectedShape instanceof INodeHolderShape) {
-			return ((INodeHolderShape)selectedShape).getNode();
+			return ((INodeHolderShape) selectedShape).getNode();
 		}
 		return selectedShape;
 	}
@@ -323,13 +326,16 @@ public class GraphPane extends UCanvas implements MouseListener,
 	public void showCPT(Node newNode) {
 		// set new information of node into tree and table viewer
 		if (controller != null) {
-			// the if below fixes the problem that selecting ContinuousNode was not updating name and description text field
+			// the if below fixes the problem that selecting ContinuousNode was
+			// not updating name and description text field
 			if (this.controller.getScreen() != null) {
 				if (this.controller.getScreen().getTxtName() != null) {
-					this.controller.getScreen().getTxtName().setText(newNode.getName());
+					this.controller.getScreen().getTxtName().setText(
+							newNode.getName());
 				}
 				if (this.controller.getScreen().getTxtDescription() != null) {
-					this.controller.getScreen().getTxtDescription().setText(newNode.getDescription());
+					this.controller.getScreen().getTxtDescription().setText(
+							newNode.getDescription());
 				}
 			}
 			if (controller.getGraph() instanceof SingleEntityNetwork) {
@@ -346,7 +352,8 @@ public class GraphPane extends UCanvas implements MouseListener,
 	 *@see MouseEvent
 	 */
 	public void mouseClicked(MouseEvent e) {
-		// TODO stop using direct access to controller as a field, and start using get/set methods
+		// TODO stop using direct access to controller as a field, and start
+		// using get/set methods
 		if (SwingUtilities.isLeftMouseButton(e)) {
 			Node newNode = null;
 
@@ -408,37 +415,42 @@ public class GraphPane extends UCanvas implements MouseListener,
 				break;
 			case ADD_PLUGIN_NODE: {
 				// build new node
-				newNode = this.getNodeDataTransferObject().getNodeBuilder().buildNode();
+				newNode = this.getNodeDataTransferObject().getNodeBuilder()
+						.buildNode();
 				newNode.setPosition(e.getX(), e.getY());
-				
+
 				// add new node into network
 				this.controller.getNetwork().addNode(newNode);
-				
+
 				// build a new shape for new node
 				UShape shape = null;
 				try {
-					shape = this.getNodeDataTransferObject().getShapeBuilder().build().getUShape(newNode, this);
+					shape = this.getNodeDataTransferObject().getShapeBuilder()
+							.build().getUShape(newNode, this);
 				} catch (IllegalAccessException e1) {
 					throw new RuntimeException(e1);
 				} catch (InstantiationException e1) {
 					throw new RuntimeException(e1);
 				}
-				
+
 				// add shape into this pane (canvas)
 				addShape(shape);
-				
+
 				// set this node/shape as selected
 				shape.setState(UShape.STATE_SELECTED, null);
-				
+
 				shape.update();
-				
-				// notify the probability function panel's builder that a new node is currently "selected" as owner			
-				this.getNodeDataTransferObject().getProbabilityFunctionPanelBuilder().setProbabilityFunctionOwner(newNode);
-				
+
+				// notify the probability function panel's builder that a new
+				// node is currently "selected" as owner
+				this.getNodeDataTransferObject()
+						.getProbabilityFunctionPanelBuilder()
+						.setProbabilityFunctionOwner(newNode);
+
 				// display the probability function panel for new node
 				this.controller.getScreen().showProbabilityDistributionPanel(
-							this.getNodeDataTransferObject().getProbabilityFunctionPanelBuilder()
-						);
+						this.getNodeDataTransferObject()
+								.getProbabilityFunctionPanelBuilder());
 			}
 				break;
 			case NONE: {
@@ -451,21 +463,19 @@ public class GraphPane extends UCanvas implements MouseListener,
 
 	}
 
-	
-
 	public void mouseReleased(MouseEvent e) {
 		super.mouseReleased(e);
 
 		if (SwingUtilities.isLeftMouseButton(e)) {
-			Debug.println(this.getClass(),"Left button released.");
+			Debug.println(this.getClass(), "Left button released.");
 		}
 
 		if (SwingUtilities.isMiddleMouseButton(e)) {
-			Debug.println(this.getClass(),"Middle button released.");
+			Debug.println(this.getClass(), "Middle button released.");
 		}
 
 		if (SwingUtilities.isRightMouseButton(e)) {
-			Debug.println(this.getClass(),"Right button released.");
+			Debug.println(this.getClass(), "Right button released.");
 
 			if (getPaneMode() == PANEMODE_COMPILE) {
 				resetPopup();
@@ -493,14 +503,18 @@ public class GraphPane extends UCanvas implements MouseListener,
 		}
 
 	}
-	
+
 	/**
-	 * This is equivalent to {@link #setNodeDataTransferObject(INodeClassDataTransferObject)}
-	 * followed by {@link #setAction(GraphAction)}
+	 * This is equivalent to
+	 * {@link #setNodeDataTransferObject(INodeClassDataTransferObject)} followed
+	 * by {@link #setAction(GraphAction)}
+	 * 
 	 * @see #setAction(GraphAction)
 	 * @see #setNodeDataTransferObject(INodeClassDataTransferObject)
-	 * @param action :  The action to be taken.
-	 * @param dto : the data transfer object to set
+	 * @param action
+	 *            : The action to be taken.
+	 * @param dto
+	 *            : the data transfer object to set
 	 */
 	public void setAction(GraphAction action, INodeClassDataTransferObject dto) {
 		this.setNodeDataTransferObject(dto);
@@ -611,13 +625,14 @@ public class GraphPane extends UCanvas implements MouseListener,
 
 		}
 			break;
-		case ADD_PLUGIN_NODE:
-		{
-			if (this.getNodeDataTransferObject() == null || this.getNodeDataTransferObject().getCursorIcon() == null) {
+		case ADD_PLUGIN_NODE: {
+			if (this.getNodeDataTransferObject() == null
+					|| this.getNodeDataTransferObject().getCursorIcon() == null) {
 				customCursor = new Cursor(Cursor.CROSSHAIR_CURSOR);
 			} else {
-				customCursor = toolkit.createCustomCursor(this.getNodeDataTransferObject().getCursorIcon().getImage(), new Point(0, 0),
-					"Cursor");
+				customCursor = toolkit.createCustomCursor(
+						this.getNodeDataTransferObject().getCursorIcon()
+								.getImage(), new Point(0, 0), "Cursor");
 			}
 			setCursor(customCursor);
 			setState(STATE_NONE);
@@ -642,70 +657,80 @@ public class GraphPane extends UCanvas implements MouseListener,
 	}
 
 	/**
-	 * This method literally re-generates the UShape instance for a given newNode parameter.
-	 * This is useful when we temporally destroy a GraphPane's content and want to re-generate
-	 * it again (e.g. compiling a network and showing the compilation pane, and then turning back),
-	 * or loading a network from file.
+	 * This method literally re-generates the UShape instance for a given
+	 * newNode parameter. This is useful when we temporally destroy a
+	 * GraphPane's content and want to re-generate it again (e.g. compiling a
+	 * network and showing the compilation pane, and then turning back), or
+	 * loading a network from file.
+	 * 
 	 * @param newNode
 	 */
 	public void createNode(Node newNode) {
-		
+
 		UShape shape = null;
 
 		if (newNode instanceof IPluginNode) {
 			try {
-				shape = this.getPluginNodeManager().getPluginNodeInformation(newNode.getClass()).getShapeBuilder().build().getUShape(newNode, this);
+				shape = this.getPluginNodeManager().getPluginNodeInformation(
+						newNode.getClass()).getShapeBuilder().build()
+						.getUShape(newNode, this);
 			} catch (IllegalAccessException e) {
 				throw new RuntimeException(e);
 			} catch (InstantiationException e) {
 				throw new RuntimeException(e);
 			}
-		} 
-		
-		// TODO stop using if-instanceof structure and start using object binding to a UShape builder.
+		}
+
+		// TODO stop using if-instanceof structure and start using object
+		// binding to a UShape builder.
 		if (shape == null) {
 			// if we could not find a plugin node, start testing ordinal nodes
 			if (newNode instanceof ContinuousNode) {
-				shape = new UShapeProbabilisticNode(this, newNode, (int) newNode
-						.getPosition().x, (int) newNode.getPosition().y, newNode
-						.getWidth(), newNode.getHeight());
+				shape = new UShapeProbabilisticNode(this, newNode,
+						(int) newNode.getPosition().x, (int) newNode
+								.getPosition().y, newNode.getWidth(), newNode
+								.getHeight());
 			} else if (newNode instanceof ProbabilisticNode) {
-				shape = new UShapeProbabilisticNode(this, newNode, (int) newNode
-						.getPosition().x, (int) newNode.getPosition().y, newNode
-						.getWidth(), newNode.getHeight());
+				shape = new UShapeProbabilisticNode(this, newNode,
+						(int) newNode.getPosition().x, (int) newNode
+								.getPosition().y, newNode.getWidth(), newNode
+								.getHeight());
 			} else if (newNode instanceof DecisionNode) {
 				shape = new UShapeDecisionNode(this, newNode, (int) newNode
-						.getPosition().x, (int) newNode.getPosition().y, newNode
-						.getWidth(), newNode.getHeight());
+						.getPosition().x, (int) newNode.getPosition().y,
+						newNode.getWidth(), newNode.getHeight());
 			} else if (newNode instanceof UtilityNode) {
 				shape = new UShapeUtilityNode(this, newNode, (int) newNode
-						.getPosition().x, (int) newNode.getPosition().y, newNode
-						.getWidth(), newNode.getHeight());
+						.getPosition().x, (int) newNode.getPosition().y,
+						newNode.getWidth(), newNode.getHeight());
 			}
-			// the below code is not necessary anymore, since MEBNGraphPane overwrites this method
-//			else if (newNode instanceof ContextNode) {
-//				shape = new UShapeContextNode(this, newNode, (int) newNode
-//						.getPosition().x, (int) newNode.getPosition().y, newNode
-//						.getWidth(), newNode.getHeight());
-//			} else if (newNode instanceof ResidentNode) {
-//				shape = new UShapeResidentNode(this, newNode, (int) newNode
-//						.getPosition().x, (int) newNode.getPosition().y, newNode
-//						.getWidth(), newNode.getHeight());
-//			} else if (newNode instanceof InputNode) {
-//				shape = new UShapeInputNode(this, newNode, (int) newNode
-//						.getPosition().x, (int) newNode.getPosition().y, newNode
-//						.getWidth(), newNode.getHeight());
-//			} else if (newNode instanceof OrdinaryVariable) {
-//				shape = new UShapeOrdinaryVariableNode(this, newNode, (int) newNode
-//						.getPosition().x, (int) newNode.getPosition().y, newNode
-//						.getWidth(), newNode.getHeight());
-//			} 
-			// the below code is not necessary anymore, since OOBNGraphPane overwrites this method
-//			else if (newNode instanceof OOBNNodeGraphicalWrapper) {
-//				shape = new UShapeOOBNNode(this, newNode, (int) newNode
-//						.getPosition().x, (int) newNode.getPosition().y, newNode
-//						.getWidth(), newNode.getHeight());
-//			}
+			// the below code is not necessary anymore, since MEBNGraphPane
+			// overwrites this method
+			// else if (newNode instanceof ContextNode) {
+			// shape = new UShapeContextNode(this, newNode, (int) newNode
+			// .getPosition().x, (int) newNode.getPosition().y, newNode
+			// .getWidth(), newNode.getHeight());
+			// } else if (newNode instanceof ResidentNode) {
+			// shape = new UShapeResidentNode(this, newNode, (int) newNode
+			// .getPosition().x, (int) newNode.getPosition().y, newNode
+			// .getWidth(), newNode.getHeight());
+			// } else if (newNode instanceof InputNode) {
+			// shape = new UShapeInputNode(this, newNode, (int) newNode
+			// .getPosition().x, (int) newNode.getPosition().y, newNode
+			// .getWidth(), newNode.getHeight());
+			// } else if (newNode instanceof OrdinaryVariable) {
+			// shape = new UShapeOrdinaryVariableNode(this, newNode, (int)
+			// newNode
+			// .getPosition().x, (int) newNode.getPosition().y, newNode
+			// .getWidth(), newNode.getHeight());
+			// }
+			// the below code is not necessary anymore, since OOBNGraphPane
+			// overwrites this method
+			// else if (newNode instanceof OOBNNodeGraphicalWrapper) {
+			// shape = new UShapeOOBNNode(this, newNode, (int) newNode
+			// .getPosition().x, (int) newNode.getPosition().y, newNode
+			// .getWidth(), newNode.getHeight());
+			// }
 		}
 
 		if (shape != null) {
@@ -713,7 +738,9 @@ public class GraphPane extends UCanvas implements MouseListener,
 				addShape(shape);
 				shape.setState(UShape.STATE_SELECTED, null);
 			} catch (NullPointerException e) {
-				throw new RuntimeException("Could not find or set a shape for node: " + newNode.getName(),e);
+				throw new RuntimeException(
+						"Could not find or set a shape for node: "
+								+ newNode.getName(), e);
 			}
 		}
 	}
@@ -756,7 +783,8 @@ public class GraphPane extends UCanvas implements MouseListener,
 						.getOriginNode()),
 						getNodeUShape(e.getDestinationNode()));
 				line.setEdge(e);
-				line.setUseSelection(false);
+				// by young 1/23/2010
+				line.setLearningLineSelection(false);
 				addShape(line);
 			}
 		}
@@ -793,10 +821,9 @@ public class GraphPane extends UCanvas implements MouseListener,
 			// create node
 			createNode(n);
 
-			if (n instanceof ContinuousNode 
-					|| n instanceof ProbabilisticNode 
+			if (n instanceof ContinuousNode || n instanceof ProbabilisticNode
 					|| n instanceof IPluginNode) {
-				
+
 				shape = getNodeUShape(n);
 
 				if (shape != null) {
@@ -817,7 +844,9 @@ public class GraphPane extends UCanvas implements MouseListener,
 						.getOriginNode()),
 						getNodeUShape(e.getDestinationNode()));
 				line.setEdge(e);
-				line.setUseSelection(this.isToUseSelectionForLines());
+				// line.setUseSelection();
+				// by young 1/23/2010
+				line.setLearningLineSelection(this.isToUseSelectionForLines());
 				addShape(line);
 			}
 		}
@@ -924,6 +953,7 @@ public class GraphPane extends UCanvas implements MouseListener,
 			if (e != null) {
 				if (insertEdge(e) == true) {
 					line.setEdge(e);
+					line.setLearningLineSelection(this.isToUseSelectionForLines());
 				} else {
 					delShape(line);
 					repaint();
@@ -945,34 +975,45 @@ public class GraphPane extends UCanvas implements MouseListener,
 		} else if ((s instanceof IPluginUShape)
 				|| (s.getNode() instanceof IPluginNode)) {
 			// this is a node inserted by plugin infrastructure
-			
+
 			// Obtains the correct panel builder for currently selected node
-			// TODO find a better way to couple the node and its builder without messing up the draw/Node/GUI relationship
+			// TODO find a better way to couple the node and its builder without
+			// messing up the draw/Node/GUI relationship
 			IProbabilityFunctionPanelBuilder builder = null;
 			try {
-				builder = this.getPluginNodeManager().getPluginNodeInformation(s.getNode().getClass()).getProbabilityFunctionPanelBuilder();
+				builder = this.getPluginNodeManager().getPluginNodeInformation(
+						s.getNode().getClass())
+						.getProbabilityFunctionPanelBuilder();
 			} catch (Exception e) {
-				Debug.println(this.getClass(), "Could not restore the node panel builder for " + s.getNode().getName(), e);
+				Debug.println(this.getClass(),
+						"Could not restore the node panel builder for "
+								+ s.getNode().getName(), e);
 			}
 			if (builder != null) {
-				// notify the probability function panel that the current owner (node) is different
+				// notify the probability function panel that the current owner
+				// (node) is different
 				builder.setProbabilityFunctionOwner(s.getNode());
-				this.controller.getScreen().showProbabilityDistributionPanel(builder);
+				this.controller.getScreen().showProbabilityDistributionPanel(
+						builder);
 			}
 		} else {
 			showCPT(s.getNode());
 		}
 	}
 
-
 	public void onShapeDeleted(UShape s) {
-		if (controller == null)
-			return;
-
-		if (s instanceof UShapeLine)
-			controller.deleteSelected(((UShapeLine) s).getEdge());
-		else {
-			controller.deleteSelected(s.getNode());
+		if (controller != null) {
+			if (s instanceof UShapeLine)
+				controller.deleteSelected(((UShapeLine) s).getEdge());
+			else {
+				controller.deleteSelected(s.getNode());
+			}
+		} else if (net != null) {
+			if (s instanceof UShapeLine) {
+				net.removeEdge(((UShapeLine) s).getEdge());
+			} else {
+				net.removeNode(s.getNode());
+			}
 		}
 	}
 
@@ -998,11 +1039,12 @@ public class GraphPane extends UCanvas implements MouseListener,
 	}
 
 	/**
-	 * This object is used by GraphPane in order to temporally
-	 * store all informations about a node loaded by plugins, between
-	 * the moment that a user clicks the "add" button and the moment
-	 * that the node is actually created and inserted into canvas.
-	 * CAUTION: set this before calling {@link #setAction(GraphAction)}
+	 * This object is used by GraphPane in order to temporally store all
+	 * informations about a node loaded by plugins, between the moment that a
+	 * user clicks the "add" button and the moment that the node is actually
+	 * created and inserted into canvas. CAUTION: set this before calling
+	 * {@link #setAction(GraphAction)}
+	 * 
 	 * @return the nodeClassDataTransferObject
 	 */
 	public INodeClassDataTransferObject getNodeDataTransferObject() {
@@ -1010,12 +1052,14 @@ public class GraphPane extends UCanvas implements MouseListener,
 	}
 
 	/**
-	 * This object is used by GraphPane in order to temporally
-	 * store all informations about a node loaded by plugins, between
-	 * the moment that a user clicks the "add" button and the moment
-	 * that the node is actually created and inserted into canvas.
-	 * CAUTION: set this before calling {@link #setAction(GraphAction)}
-	 * @param nodeClassDataTransferObject the nodeClassDataTransferObject to set
+	 * This object is used by GraphPane in order to temporally store all
+	 * informations about a node loaded by plugins, between the moment that a
+	 * user clicks the "add" button and the moment that the node is actually
+	 * created and inserted into canvas. CAUTION: set this before calling
+	 * {@link #setAction(GraphAction)}
+	 * 
+	 * @param nodeClassDataTransferObject
+	 *            the nodeClassDataTransferObject to set
 	 */
 	protected void setNodeDataTransferObject(
 			INodeClassDataTransferObject nodeClassDataTransferObject) {
@@ -1024,6 +1068,7 @@ public class GraphPane extends UCanvas implements MouseListener,
 
 	/**
 	 * This object manages plugin-loaded nodes.
+	 * 
 	 * @return the pluginNodeManager
 	 */
 	protected CorePluginNodeManager getPluginNodeManager() {
@@ -1032,16 +1077,20 @@ public class GraphPane extends UCanvas implements MouseListener,
 
 	/**
 	 * This object manages plugin-loaded nodes.
-	 * @param pluginNodeManager the pluginNodeManager to set
+	 * 
+	 * @param pluginNodeManager
+	 *            the pluginNodeManager to set
 	 */
 	protected void setPluginNodeManager(CorePluginNodeManager pluginNodeManager) {
 		this.pluginNodeManager = pluginNodeManager;
 	}
 
 	/**
-	 * {@link #update()} will set {@link UShapeLine#getUseSelection()} to same value;
+	 * {@link #update()} will set {@link UShapeLine#getUseSelection()} to same
+	 * value;
+	 * 
 	 * @see #update()
-	 * @see {@link UShapeLine#getUseSelection()} 
+	 * @see {@link UShapeLine#getUseSelection()}
 	 * @return the toUseSelectionForLines
 	 */
 	public boolean isToUseSelectionForLines() {
@@ -1049,15 +1098,16 @@ public class GraphPane extends UCanvas implements MouseListener,
 	}
 
 	/**
-	 * {@link #update()} will set {@link UShapeLine#getUseSelection()} to same value;
+	 * {@link #update()} will set {@link UShapeLine#getUseSelection()} to same
+	 * value;
+	 * 
 	 * @see #update()
-	 * @see {@link UShapeLine#getUseSelection()} 
-	 * @param toUseSelectionForLines the toUseSelectionForLines to set
+	 * @see {@link UShapeLine#getUseSelection()}
+	 * @param toUseSelectionForLines
+	 *            the toUseSelectionForLines to set
 	 */
 	public void setToUseSelectionForLines(boolean toUseSelectionForLines) {
 		this.toUseSelectionForLines = toUseSelectionForLines;
 	}
-
-
 
 }

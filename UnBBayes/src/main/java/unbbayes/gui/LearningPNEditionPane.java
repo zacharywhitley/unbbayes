@@ -96,7 +96,8 @@ public class LearningPNEditionPane extends GraphPane implements MouseListener, M
 			{
 				UShapeLine line = new UShapeLine(this, getNodeUShape(e.getOriginNode()), getNodeUShape(e.getDestinationNode()) );
 				line.setEdge(e);
-				line.setUseSelection(this.isToUseSelectionForLines());
+				//line.setUseSelection(this.isToUseSelectionForLines());
+				line.setLearningLineSelection(this.isToUseSelectionForLines());
 				addShape( line );
 			}
 		}	
