@@ -9,13 +9,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EventListener;
 import java.util.EventObject;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.java.plugin.ObjectFactory;
 import org.java.plugin.PluginManager;
 import org.java.plugin.PluginManager.PluginLocation;
+import org.java.plugin.registry.Extension;
+import org.java.plugin.registry.ExtensionPoint;
 import org.java.plugin.registry.PluginDescriptor;
 import org.java.plugin.registry.PluginPrerequisite;
 import org.java.plugin.standard.StandardPluginLocation;
@@ -284,4 +288,61 @@ public class UnBBayesPluginContextHolder {
 		return ret;
 	}
 	
+	/**
+	 * This method obtains a map containing an erroneous plugin ID as a key, mapped
+	 * to a set of plugin ID's of the dependencies causing its erroneous state.
+	 * You may use {@link #getPluginManager()}'s methods to extract the plugin
+	 * descriptor from these IDs.
+	 * @return : non-null map from plugin ID to all its erroneous dependencies (also, plugin IDs)
+	 * @throws IOException : when a I/O access or plugin publish cannot be done.
+	 */
+	public Map<String, Set<String>> getErroneousPluginIDDependencyMap() throws IOException {
+		
+		// preparing return
+		Map<String, Set<String>> ret = new HashMap<String, Set<String>>();
+		
+		// the below code fixes incidents that happens when this method is called before plugin initialization
+    	if (!this.isInitialized()) {
+    		this.publishPlugins();
+    	}
+    	
+    	// loads the "core" plugin, which is a stub that we use to declare extension points for core
+	    PluginDescriptor core;
+	    
+	    try {
+	    	core = this.getPluginManager().getRegistry().getPluginDescriptor(
+	    			this.getPluginCoreID()
+	    		);
+		} catch (Throwable t) {
+			// even the core plugin was erroneous... This may be serious, but let's report it as erroneous
+			t.printStackTrace();
+			ret.put(this.getPluginCoreID(), new HashSet<String>());	// assume core does not have dependencies
+			return ret;
+		}
+        
+	    // iterate over all extension points for core plugin
+	    for (ExtensionPoint point : core.getExtensionPoints()) {
+	    	try {
+	    		for (Extension ext : point.getConnectedExtensions()) {
+		    		try {
+		    			PluginDescriptor descriptor = ext.getDeclaringPluginDescriptor();
+		    			if (this.getPluginManager().isBadPlugin(descriptor)) {
+		    				// if erroneous, fill the return map with the bad requisites
+		    				ret.put(descriptor.getId(), new HashSet<String>(this.getErroneousRequisiteID(descriptor)));
+		    			} 
+		    		} catch (Throwable e) {
+		    			e.printStackTrace();
+		    			continue;
+		    		}
+		    	}
+			} catch (Throwable e) {
+				e.printStackTrace();
+				continue;
+			}
+	    	
+	    }
+	    
+	    return ret;
+
+	}
 }

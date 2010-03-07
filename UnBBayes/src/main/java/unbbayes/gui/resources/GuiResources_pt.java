@@ -537,5 +537,12 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"logDialogTitle", "Log do sistema"},
 		{"printException", "Erro ao imprimir"},
 		
+		// plugin dependency logs
+		{"pluginDependencyLogTitle", "Erro de dependência em plugins"},
+		{"pluginDependencyLogKeyMessage", "Não foi possível encontrar as dependências dos plugins abaixo:"},
+		{"pluginDependencyLogID", "ID do plugin: "},
+		{"pluginDependencyLogDependencies", "Dependências não resolvidas:"},
+		{"pluginDependencyLogPleaseCheck", "Por favor, verifique a existência das dependências na sua pasta de plugins."},
+		
 	};
 }

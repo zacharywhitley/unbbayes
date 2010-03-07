@@ -70,7 +70,6 @@ import javax.swing.JPopupMenu.Separator;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.OceanTheme;
 
-import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.PluginManager;
 import org.java.plugin.registry.Extension;
 import org.java.plugin.registry.ExtensionPoint;
@@ -83,6 +82,7 @@ import unbbayes.controller.IconController;
 import unbbayes.controller.JavaHelperController;
 import unbbayes.controller.MainController;
 import unbbayes.gui.util.SplitToggleButton;
+import unbbayes.gui.util.TextAreaDialog;
 import unbbayes.io.BaseIO;
 import unbbayes.io.FileExtensionIODelegator;
 import unbbayes.util.Debug;
@@ -1230,6 +1230,55 @@ public class UnBBayesFrame extends JFrame {
 	}
 	
 	/**
+	 * This method displays a dialog if a
+	 * plugin with dependency error is detected.
+	 */
+	public void showPluginDependencyError() {
+		try {
+			
+			// retrieve erroneous ids and dependencies
+			Map<String, Set<String>> errorMap = this.getUnbbayesPluginContextHolder().getErroneousPluginIDDependencyMap();
+			if (!errorMap.isEmpty()) {
+				// if there are errors, report using text logs
+				TextAreaDialog dialog = new TextAreaDialog(this, this.resource.getString("pluginDependencyLogTitle"), false);
+				
+				// prepare dialog content's header
+				String dialogContent = "=============================================================\n";
+				dialogContent 		+= this.resource.getString("pluginDependencyLogKeyMessage");
+				dialogContent 		+= "\n=============================================================\n";
+				
+				//  build content
+				for (String pluginID : errorMap.keySet()) {
+					dialogContent += "\n\n";
+					dialogContent += "-> " + this.resource.getString("pluginDependencyLogID");
+					dialogContent += " \"" + pluginID + "\"";
+					dialogContent += "\n     " + this.resource.getString("pluginDependencyLogDependencies");
+					for (String dependency : errorMap.get(pluginID)) {
+						dialogContent += "\n\t - \"" + dependency + "\";";
+					}
+					dialogContent += "\n\n";
+				}
+				
+				// footer
+				dialogContent 		+= "\n=============================================================\n";
+				dialogContent 		+= this.resource.getString("pluginDependencyLogPleaseCheck");
+				dialogContent 		+= "\n=============================================================\n";
+				
+				// update dialog's content
+				dialog.setTextContent(dialogContent);
+				
+				// display dialog
+				dialog.pack();
+				dialog.setLocationRelativeTo(this); 
+				dialog.setVisible(true);
+			}
+		} catch (Throwable e) {
+			System.err.println("Could not retrieve plugin dependency errors.");
+			e.printStackTrace();
+		}
+	}
+	
+	/**
 	 * Creates the plugin manager, loads UnBBayes' core plugins using JPF, 
 	 * fills the menu items and tool bar's buttons and their listeners.
 	 */
@@ -1266,6 +1315,9 @@ public class UnBBayesFrame extends JFrame {
 
 	    // create menu/buttons that activates a plugin and stores plugin classes to a list
 	    this.getPluginMap().putAll(this.fillCorePluginMenuAndButtons(this.getUnbbayesPluginContextHolder().getPluginManager(), point));
+	    
+	    // show dependency error if detected:
+	    this.showPluginDependencyError();
 	}
 	
 	/**

@@ -534,5 +534,12 @@ public class GuiResources extends ListResourceBundle {
 		{"closeButtonLabel", "Close the log"},
 		{"logDialogTitle", "System Log"},
 		{"printException", "Error while printing"},
+		
+		// plugin dependency logs
+		{"pluginDependencyLogTitle", "Plugin dependency error"},
+		{"pluginDependencyLogKeyMessage", "Could not solve the following plugins' dependencies:"},
+		{"pluginDependencyLogID", "Plugin ID: "},
+		{"pluginDependencyLogDependencies", "Unsolved dependencies: "},
+		{"pluginDependencyLogPleaseCheck", "Please, add these dependencies into your plugins folder."},
 	};
 }
