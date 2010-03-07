@@ -528,5 +528,11 @@ public class GuiResources extends ListResourceBundle {
 		{"IOConflictTitle", "I/O extension conflict"},
 		{"IOConflictMessage", "More than one I/O component can handle this file extension. Please, choose one."},
 		
+		// log dialogue
+		{"printLogToolTip", "Print this log"},
+		{"previewLogToolTip", "Preview the log"},
+		{"closeButtonLabel", "Close the log"},
+		{"logDialogTitle", "System Log"},
+		{"printException", "Error while printing"},
 	};
 }

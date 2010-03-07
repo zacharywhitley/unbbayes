@@ -99,7 +99,7 @@ public class ControllerResources extends ListResourceBundle {
 		{"printerStatus","Printer Status"},
 		{"initializingPrinter","Initializing printer..."},
 		{"printingPage","Printing page "},
-		{"previewButtonLabel","Preview"},
+		{"previewButtonLabel","Previous"},
 		{"nextButtonLabel","Next"},
 		{"fitToPageButtonLabel","Fit to Page"},
 		{"loading","Loading "},

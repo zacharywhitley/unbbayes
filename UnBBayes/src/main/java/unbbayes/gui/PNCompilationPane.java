@@ -39,6 +39,7 @@ import javax.swing.JTree;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
+import unbbayes.gui.util.TextAreaDialog;
 
 /**
  * <p>Title: UnBBayes</p>
@@ -125,11 +126,12 @@ public class PNCompilationPane extends JPanel {
             public void actionPerformed(ActionEvent ae) {
             	//by young2
                 netWindow.getGraphPane().compiled(false, null);
-                JDialog jd = controller.showLog();
+                TextAreaDialog jd = new TextAreaDialog(netWindow.getUnbbayesFrame(), false);
+                jd.setTextContent(controller.getLog());
                 jd.pack();
-                jd.setVisible(true);
                 jd.setLocationRelativeTo(PNCompilationPane.this); 
-                jd.setAlwaysOnTop(true); 
+//                jd.setAlwaysOnTop(true);
+                jd.setVisible(true);
             }
         });
 

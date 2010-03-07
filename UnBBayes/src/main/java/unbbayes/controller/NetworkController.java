@@ -20,15 +20,10 @@
  */
 package unbbayes.controller;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
@@ -42,13 +37,10 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import javax.imageio.ImageIO;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 
@@ -56,6 +48,7 @@ import unbbayes.evaluation.controller.EvaluationController;
 import unbbayes.gui.FileIcon;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.SimpleFileFilter;
+import unbbayes.gui.util.TextAreaDialog;
 import unbbayes.io.BaseIO;
 import unbbayes.io.extension.jpf.PluginAwareFileExtensionIODelegator;
 import unbbayes.prs.Edge;
@@ -496,73 +489,26 @@ public class NetworkController implements KeyListener {
     	}
     	return "";
     }
+    
+    /**
+     * This is just a delegator to {@link #getLogContent()},
+     * which is a delegator to {@link SingleEntityNetwork#getLog()}.
+     * The visibility of {@link #getLogContent()} was not altered, for
+     * backward compatibility.
+     * @return log content
+     */
+    public String getLog() {
+    	return this.getLogContent();
+    }
 
     /**
      *  Show every single step taken during the compilation of the 
      *  SingleEntityNetwork.
+     *  @deprecated avoid GUI methods in controllers. Use {@link unbbayes.gui.util.TextAreaDialog} instead
      */
     public JDialog showLog() {
-        this.getScreen().setCursor(new Cursor(Cursor.WAIT_CURSOR));
-        final JTextArea texto = new JTextArea();
-
-        texto.setEditable(false);
-        texto.setText(this.getLogContent());
-        
-        texto.moveCaretPosition(0);
-        texto.setSelectionEnd(0);
-
-//            texto.setRows(linhas);
-        texto.setSize(texto.getPreferredSize());
-        texto.append("\n");
-//            arq.close();
-
-        final JDialog dialog = new JDialog();
-        JScrollPane jspTexto = new JScrollPane(texto);
-        jspTexto.setPreferredSize(new Dimension(450, 400));
-
-        IconController iconController = IconController.getInstance();
-        JPanel panel = new JPanel(new BorderLayout());
-        JButton botaoImprimir = new JButton(iconController.getPrintIcon());
-        botaoImprimir.setToolTipText(resource.getString("printLogToolTip"));
-        JButton botaoVisualizar = new JButton(iconController.getVisualizeIcon());
-        botaoVisualizar.setToolTipText(resource.getString("previewLogToolTip"));
-        botaoImprimir.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(ActionEvent ae) {
-                    printLog(texto);
-                }
-            });
-        botaoVisualizar.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(ActionEvent ae) {
-                    previewPrintLog(texto, dialog);
-                }
-            });
-
-        panel.add(jspTexto, BorderLayout.CENTER);
-
-        JPanel topPane = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        topPane.add(botaoImprimir);
-        topPane.add(botaoVisualizar);
-        panel.add(topPane, BorderLayout.NORTH);
-
-        JPanel bottomPane = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JButton botaoOK = new JButton(resource.getString("closeButtonLabel"));
-        botaoOK.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(ActionEvent ae) {
-                    dialog.dispose();
-                }
-            });
-
-
-        bottomPane.add(botaoOK);
-        panel.add(bottomPane, BorderLayout.SOUTH);
-
-        dialog.getContentPane().add(panel);
-        dialog.setTitle(resource.getString("logDialogTitle")); 
-        this.getScreen().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-        
+    	TextAreaDialog dialog = new TextAreaDialog(this.getScreen().getUnbbayesFrame(), false);
+        dialog.setTextContent(this.getLog());
         return dialog; 
     }
 
@@ -585,6 +531,7 @@ public class NetworkController implements KeyListener {
     
     /**
      * Preview the log printing.
+     * @deprecated moved to {@link unbbayes.gui.util.TextAreaDialog}
      */
     public void previewPrintLog(final JTextArea texto, final JDialog dialog) {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -745,6 +692,7 @@ public class NetworkController implements KeyListener {
      * Print the log contained in the given <code>JTextArea</code>.
      *
      * @param textArea The text area containing the log.
+     * @deprecated this method was moved to {@link unbbayes.gui.util.TextAreaDialog}
      */
     protected void printLog(final JTextArea textArea) {
         Thread t = new Thread(new Runnable() {

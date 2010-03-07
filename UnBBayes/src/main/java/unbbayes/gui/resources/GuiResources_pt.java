@@ -529,5 +529,13 @@ public class GuiResources_pt extends ListResourceBundle {
 		
 		{"IOConflictTitle", "Conflito de extensão de E/S"},
 		{"IOConflictMessage", "Mais de um componente de E/S é compatível esta extensão de arquivo. Favor, selecionar o desejado."},
+
+		// log dialogue
+		{"printLogToolTip", "Imprimir log"},
+		{"previewLogToolTip", "Visualizar impressão de log"},
+		{"closeButtonLabel", "Fechar log"},
+		{"logDialogTitle", "Log do sistema"},
+		{"printException", "Erro ao imprimir"},
+		
 	};
 }
