@@ -166,11 +166,12 @@ public class SSBNCompilationPane extends JPanel {
         //mostra o log da rede compilada
         log.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
+            	// TODO stop using deprecated showLog method and start using {@link unbbayes.gui.util.TextAreaDialog} instead, setting the content as controller.getLog()
                 JDialog jd = controller.showLog();
                 jd.pack();
                 jd.setVisible(true);
                 jd.setLocationRelativeTo(SSBNCompilationPane.this); 
-                jd.setAlwaysOnTop(true); 
+//                jd.setAlwaysOnTop(true); 	// no need to set always on top, because a non-modular dialog is being used
                 netWindow.getGraphPane().update();
             }
         });
