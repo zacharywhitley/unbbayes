@@ -16,10 +16,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.java.plugin.ObjectFactory;
+import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.PluginManager;
 import org.java.plugin.PluginManager.PluginLocation;
 import org.java.plugin.registry.Extension;
 import org.java.plugin.registry.ExtensionPoint;
+import org.java.plugin.registry.Identity;
 import org.java.plugin.registry.PluginDescriptor;
 import org.java.plugin.registry.PluginPrerequisite;
 import org.java.plugin.standard.StandardPluginLocation;
@@ -121,10 +123,7 @@ public class UnBBayesPluginContextHolder {
 					if (location != null) {
 						locations.add(location);
 					}
-				} catch (Exception e) {
-					e.printStackTrace();
-					continue;
-				} catch (Error e) {
+				} catch (Throwable e) {
 					e.printStackTrace();
 					continue;
 				}
@@ -132,10 +131,8 @@ public class UnBBayesPluginContextHolder {
 	        
 	        // enable plugin
 	        getPluginManager().publishPlugins(locations.toArray(new PluginLocation[locations.size()]));
-	    } catch (Exception e) {
+	    } catch (Throwable e) {
 	    	throw new UBIOException(e);
-	    } catch (Error err) {
-	    	throw new UBIOException(err);
 		}
 	    
 	    // if we published the plugins, they are initialized.
@@ -283,6 +280,15 @@ public class UnBBayesPluginContextHolder {
 					ret.add(requisite.getPluginId());
 				}
 			}
+		} else if (!this.getPluginManager().isPluginActivated(descr)) {
+			try {
+				// if the plugin was not already activated, activate it and try again.
+				this.getPluginManager().activatePlugin(descr.getId());
+			} catch (PluginLifecycleException e) {
+				// if plugin activation was erroneous, that means the plugin itself was erroneous.
+				// TODO avoid this kind of exception driven test
+				ret.addAll(this.getErroneousRequisiteID(descr));
+			}
 		}
 		
 		return ret;
@@ -297,6 +303,37 @@ public class UnBBayesPluginContextHolder {
 	 * @throws IOException : when a I/O access or plugin publish cannot be done.
 	 */
 	public Map<String, Set<String>> getErroneousPluginIDDependencyMap() throws IOException {
+		// preparing  return
+		Map<String, Set<String>> ret = new HashMap<String, Set<String>>();
+		
+		try {
+	        // iterate over all IDs
+	        for (PluginDescriptor desc : getPluginManager().getRegistry().getPluginDescriptors()) {
+	        	try {
+	        		ret.putAll(this.getErroneousPluginIDDependencyMap(desc.getId()));
+	        	} catch (Throwable e) {
+	    	    	continue;
+	    	    } 
+			}
+	    } catch (Throwable e) {
+	    	e.printStackTrace();
+	    } 
+		
+		return ret;
+	}
+	
+	/**
+	 * This method obtains a map containing an erroneous plugin ID as a key, mapped
+	 * to a set of plugin ID's of the dependencies causing its erroneous state.
+	 * You may use {@link #getPluginManager()}'s methods to extract the plugin
+	 * descriptor from these IDs.
+	 * @param extensionPointPluginID : this is the plugin ID from where this method will look for
+	 * connected extension points. If null, the {@link #getPluginCoreID()} will
+	 * be used. All extension points connected to this extensionPointPluginID will be checked
+	 * @return : non-null map from plugin ID to all its erroneous dependencies (also, plugin IDs)
+	 * @throws IOException : when a I/O access or plugin publish cannot be done.
+	 */
+	public Map<String, Set<String>> getErroneousPluginIDDependencyMap(String extensionPointPluginID) throws IOException {
 		
 		// preparing return
 		Map<String, Set<String>> ret = new HashMap<String, Set<String>>();
@@ -310,9 +347,17 @@ public class UnBBayesPluginContextHolder {
 	    PluginDescriptor core;
 	    
 	    try {
-	    	core = this.getPluginManager().getRegistry().getPluginDescriptor(
-	    			this.getPluginCoreID()
-	    		);
+	    	if (extensionPointPluginID == null) {
+	    		// no ID was informed. Use the default one
+	    		core = this.getPluginManager().getRegistry().getPluginDescriptor(
+	    					this.getPluginCoreID()
+	    				);
+	    	} else {
+	    		// core id was informed. Use it to find connected extension points
+	    		core = this.getPluginManager().getRegistry().getPluginDescriptor(
+	    				extensionPointPluginID
+	    				);
+	    	}
 		} catch (Throwable t) {
 			// even the core plugin was erroneous... This may be serious, but let's report it as erroneous
 			t.printStackTrace();
@@ -326,7 +371,15 @@ public class UnBBayesPluginContextHolder {
 	    		for (Extension ext : point.getConnectedExtensions()) {
 		    		try {
 		    			PluginDescriptor descriptor = ext.getDeclaringPluginDescriptor();
-		    			if (this.getPluginManager().isBadPlugin(descriptor)) {
+		    			if (!this.getPluginManager().isPluginActivated(descriptor)) {
+		    				// if the plugin is not active yet, lets test if it is valid by trying to activate it
+		    				// TODO stop using this kind of exception based test
+		    				try {
+		    					this.getPluginManager().activatePlugin(descriptor.getId());
+							} catch (Throwable e) {
+								ret.put(descriptor.getId(), new HashSet<String>(this.getErroneousRequisiteID(descriptor)));
+							}
+		    			} else if (this.getPluginManager().isBadPlugin(descriptor)) {
 		    				// if erroneous, fill the return map with the bad requisites
 		    				ret.put(descriptor.getId(), new HashSet<String>(this.getErroneousRequisiteID(descriptor)));
 		    			} 
