@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<!-- This is the basic I/O module for MEBN. At least one must be present in order
-     to use I/O for MEBN module -->
+<!-- This is a sample I/O plugin for MEBN.  -->
 <plugin id="unbbayes.io.mebn.UbfIO" version="1.0.0">
     <requires>
         <import plugin-id="unbbayes.prs.mebn"/>

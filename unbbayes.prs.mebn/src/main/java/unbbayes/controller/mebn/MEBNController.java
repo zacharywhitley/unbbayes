@@ -220,6 +220,8 @@ public class MEBNController extends NetworkController {
 	
 	private String mebnIOExtensionPointID = "MEBNIO";
 	private String mebnModulePluginID = "unbbayes.prs.mebn";
+
+	private ISSBNGenerator ssbnGenerator;
 	
 	/*-------------------------------------------------------------------------*/
 	/* Constructors                                                            */
@@ -1603,7 +1605,7 @@ public class MEBNController extends NetworkController {
 		for(ObjectEntityInstance instance: multiEntityBayesianNetwork.getObjectEntityContainer().getListEntityInstances()){
 			 knowledgeBase.insertEntityInstance(instance); 
 		}
-		
+		// TODO use a map instead of cubic search
 		for(MFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
 			for(ResidentNode residentNode : mfrag.getResidentNodeList()){
 				for(RandomVariableFinding finding: residentNode.getRandomVariableFindingList()){
@@ -1831,16 +1833,8 @@ public class MEBNController extends NetworkController {
 		
 	    createKnowledgeBase(); 	
 		
-		LaskeyAlgorithmParameters parameters = new LaskeyAlgorithmParameters(); 
-		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION, "true");
-		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_BUILDER, "true"); 
-		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_PRUNE, "true"); 
-		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION, "true"); 
-	    
-		ISSBNGenerator ssbngenerator = new LaskeySSBNGenerator(parameters);
-		
 		try{
-			ssbn = ssbngenerator.generateSSBN(listQueries, getKnowledgeBase()); 
+			ssbn = this.getSSBNGenerator().generateSSBN(listQueries, getKnowledgeBase()); 
 		}
 		catch(ImplementationRestrictionException e){
 			throw e; 
@@ -1914,6 +1908,34 @@ public class MEBNController extends NetworkController {
 		return specificSituationBayesianNetwork ;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 	}
 	
+	/**
+	 * Obtains the current SSBN generation algorithm used by this controller.
+	 * @return a non-null value, instance of {@link ISSBNGenerator}
+	 * @see #setSSBNGenerator(ISSBNGenerator)
+	 */
+	public ISSBNGenerator getSSBNGenerator() {
+		if (ssbnGenerator == null) {
+			// return a non-null default generator using default settings
+			LaskeyAlgorithmParameters parameters = new LaskeyAlgorithmParameters(); 
+			parameters.setParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION, "true");
+			parameters.setParameterValue(LaskeyAlgorithmParameters.DO_BUILDER, "true"); 
+			parameters.setParameterValue(LaskeyAlgorithmParameters.DO_PRUNE, "true"); 
+			parameters.setParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION, "true"); 
+			ssbnGenerator = new LaskeySSBNGenerator(parameters);
+		}
+		return ssbnGenerator;
+	}
+	
+	/**
+	 * Sets the {@link ISSBNGenerator} to be used as a SSBN generation
+	 * algoritym by this controller.
+	 * @param ssbnGenerator
+	 * @see #getSSBNGenerator()
+	 */
+	public void setSSBNGenerator(ISSBNGenerator ssbnGenerator) {
+		this.ssbnGenerator = ssbnGenerator;
+	}
+ 
 	private void openMsbnNetwork() {
 		AbstractMSBN msbn = ssbn.getMsbnNetwork();
 		MSBNController controller = new MSBNController((SingleAgentMSBN)msbn);

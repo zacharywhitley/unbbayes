@@ -28,10 +28,18 @@ import javax.swing.JTabbedPane;
 import javax.swing.border.TitledBorder;
 
 import unbbayes.controller.mebn.MEBNController;
+import unbbayes.gui.mebn.extension.IPanelBuilder;
 import unbbayes.gui.mebn.extension.kb.IKBOptionPanelBuilder;
+import unbbayes.gui.mebn.extension.ssbn.ISSBNOptionPanelBuilder;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.extension.IKnowledgeBaseBuilder;
 import unbbayes.prs.mebn.kb.extension.jpf.KnowledgeBasePluginManager;
+import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
+import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
+import unbbayes.prs.mebn.ssbn.extension.ISSBNGeneratorBuilder;
+import unbbayes.prs.mebn.ssbn.extension.jpf.SSBNGenerationAlgorithmPluginManager;
+import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeyAlgorithmParameters;
+import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSBNGenerator;
 import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
 
 /**
@@ -74,18 +82,53 @@ public class OptionsDialog extends JDialog {
     
     /** This is the plugin manager to be used by this dialog to load KB plugins */
     private KnowledgeBasePluginManager kbPluginManager = KnowledgeBasePluginManager.getInstance(true);
-    
-    /** Resource file from this package */
-  	private ResourceBundle resource;
   	
-  	/** Stores the last option that the user has chosen */
-  	private JRadioButtonMenuItem lastSelectedOption;
+  	/** Stores the last option that the user has chosen, for kb */
+  	private JRadioButtonMenuItem lastSelectedKBOption;
   	
-  	/** stores the last option that the user has chosen AND confirmed */
-  	private JRadioButtonMenuItem lastConfirmedOption;
+  	/** stores the last option that the user has chosen AND confirmed, for kb */
+  	private JRadioButtonMenuItem lastConfirmedKBOption;
 
   	/** This map stores the default KB information (those not loaded from plugins) */
 	private Map<JRadioButtonMenuItem, IKBOptionPanelBuilder> defaultKbToOptionMap = null;
+	
+	
+	// components for SSBN algorithm configuration
+	
+	
+	/** This is where all KB-related panels resides */
+	private JComponent ssbnMainPanel;
+	
+	/** This is where kb's radio button resides */
+    private JPanel ssbnRadioPanel;
+    
+    /** This group manages all loaded KB */
+    private ButtonGroup ssbnGroup;
+    
+    /** This is where the currently selected KB's options resides */
+	private JPanel ssbnOptionPane;
+	
+	/** This map relates a radio button to what option panel it represents */
+    private Map<JRadioButtonMenuItem, ISSBNOptionPanelBuilder> ssbnToOptionMap = new HashMap<JRadioButtonMenuItem, ISSBNOptionPanelBuilder>();
+    
+    /** This is the plugin manager to be used by this dialog to load KB plugins */
+    private SSBNGenerationAlgorithmPluginManager ssbnPluginManager = SSBNGenerationAlgorithmPluginManager.getInstance(true);
+
+
+  	/** Stores the last option that the user has chosen, for ssbn algorithm */
+  	private JRadioButtonMenuItem lastSelectedSSBNOption;
+  	
+  	/** stores the last option that the user has chosen AND confirmed, for ssbn algorithm */
+	private JRadioButtonMenuItem lastConfirmedSSBNOption;
+	
+	/** This map stores the default KB information (those not loaded from plugins) */
+	private Map<JRadioButtonMenuItem, ISSBNOptionPanelBuilder> defaultSSBNToOptionMap = null;
+	
+	
+	
+
+    /** Resource file from this package */
+  	private ResourceBundle resource;
   	
 	/**
 	 * Constructor initializing fields
@@ -161,6 +204,91 @@ public class OptionsDialog extends JDialog {
         
         // build options for KB
 		this.buildKBOptions();
+		this.buildSSBNGenerationOptions();
+	}
+
+	/**
+	 * Builds the option panels for SSBN generation algorithm.
+	 * This method is called within {@link #buildPanels()}
+	 */
+	protected void buildSSBNGenerationOptions() {
+		ssbnMainPanel            = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        
+        ssbnRadioPanel       = new JPanel(new GridLayout(0,3));
+        ssbnRadioPanel.setBorder(new TitledBorder(this.resource.getString("availableSSBN")));
+        
+        ssbnOptionPane = new JPanel(new BorderLayout());
+        ssbnOptionPane.setBorder(new TitledBorder(this.resource.getString("ssbnParameters")));
+        
+        // set up plugins (ssbn algorithm) and fill map (this map associates radio button, its additional options and ssbn)
+        this.reloadSSBNGeneratorPlugins();
+        
+		// adding radio buttons panel to the top of kb tab
+		ssbnMainPanel.add(new JScrollPane(ssbnRadioPanel));
+		
+
+        // adding the option pane for the selected ssbn.
+        ISSBNOptionPanelBuilder currentOptionPanelBuilder = this.getSelectedSSBNOptionPanel();
+        if (currentOptionPanelBuilder != null) {
+        	Component componentToAdd = currentOptionPanelBuilder.getPanel();
+        	if (componentToAdd != null) {
+        		JScrollPane scrollPane  = new JScrollPane(componentToAdd);
+        		ssbnOptionPane.add(scrollPane, BorderLayout.CENTER);
+        	}
+        }
+        
+        ssbnMainPanel.add(ssbnOptionPane);
+        
+        // registers the "reload action" to the UnBBayesPluginContextHolder, so that when we press the
+	    // "reload plugin" button, ssbn algorithms' plugins are reloaded as well
+	    UnBBayesPluginContextHolder.newInstance().addListener(new UnBBayesPluginContextHolder.OnReloadActionListener() {
+			public void onReload(EventObject eventObject) {
+				reloadSSBNGeneratorPlugins();
+			}
+	    });
+	    
+	    tabPane.addTab(resource.getString("ssbnTab"), ssbnMainPanel);
+	    
+	    // fill algorithm-specific action listeners
+	    
+	    confirm.addActionListener(
+	            new ActionListener() {
+	                public void actionPerformed(ActionEvent e) {
+	                    
+	                    // commit changes (made at each option panel) on KB
+	                	for (ISSBNOptionPanelBuilder builder : getSSBNToOptionMap().values()) {
+	                		if (builder != null) {
+	                			builder.commitChanges();
+		                    }
+						}
+	                	
+	                	// trace what is the last confirmed selection
+	                    lastConfirmedSSBNOption = lastSelectedSSBNOption;
+	                	
+	                	// updating the inference kb referenced by controller
+	                    ISSBNOptionPanelBuilder currentPanel = getSelectedSSBNOptionPanel();
+	                    controller.setSSBNGenerator(currentPanel.getSSBNGenerator());
+	                    
+	                }
+	            });
+	    
+	    cancel.addActionListener(
+	            new ActionListener() {
+	                public void actionPerformed(ActionEvent e) {
+
+	                	// reverting changes on kb plugins
+	                	for (ISSBNOptionPanelBuilder builder : getSSBNToOptionMap().values()) {
+	                		if (builder != null) {
+	                			builder.discardChanges();
+		                    }
+	                	}
+	                	
+	                	// select the last option
+	                	if (lastConfirmedSSBNOption != null) {
+	                		lastConfirmedSSBNOption.doClick();
+	                	}
+	                }
+	            });		
 	}
 
 	/**
@@ -226,7 +354,7 @@ public class OptionsDialog extends JDialog {
 						}
 	                	
 	                	// trace what is the last confirmed selection
-	                    lastConfirmedOption = lastSelectedOption;
+	                    lastConfirmedKBOption = lastSelectedKBOption;
 	                	
 	                	// updating the inference kb referenced by controller
 	                    IKBOptionPanelBuilder currentPanel = getSelectedKBOptionPanel();
@@ -247,15 +375,15 @@ public class OptionsDialog extends JDialog {
 	                	}
 	                	
 	                	// select the last option
-	                	if (lastConfirmedOption != null) {
-	                		lastConfirmedOption.doClick();
+	                	if (lastConfirmedKBOption != null) {
+	                		lastConfirmedKBOption.doClick();
 	                	}
 	                }
 	            });
 	}
 	
 	/**
-     * Obtains the currently selected (by j option radio button) panel for algorithm options
+     * Obtains the currently selected (by j option radio button) panel for KB options
      * @return
      */
     private IKBOptionPanelBuilder getSelectedKBOptionPanel() {
@@ -265,6 +393,22 @@ public class OptionsDialog extends JDialog {
 		for (JRadioButtonMenuItem option : this.getKbToOptionMap().keySet()) {
 			if (option.isSelected()) {
 				return this.getKbToOptionMap().get(option);
+			}
+		}
+		return null;
+	}
+    
+    /**
+     * Obtains the currently selected (by j option radio button) panel for SSBN generation algorithm's options
+     * @return
+     */
+    private ISSBNOptionPanelBuilder getSelectedSSBNOptionPanel() {
+    	if (this.getSSBNToOptionMap() == null) {
+    		return null;
+    	}
+		for (JRadioButtonMenuItem option : this.getSSBNToOptionMap().keySet()) {
+			if (option.isSelected()) {
+				return this.getSSBNToOptionMap().get(option);
 			}
 		}
 		return null;
@@ -299,7 +443,48 @@ public class OptionsDialog extends JDialog {
 				
 				// create new button item using KB's name as its label
 				JRadioButtonMenuItem radioButton = new JRadioButtonMenuItem(kbBuilder.getName());
-				radioButton.addActionListener(new PluginRadioButtonListener(panelBuilder));
+				radioButton.addActionListener(new KBPluginRadioButtonListener(panelBuilder));
+				
+				// fill return
+				ret.put(radioButton, panelBuilder);
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return ret;
+	}
+	
+	
+	/**
+	 * Obtains a map of button item and its panel builder, using {@link #getSSBNPluginManager()}.
+	 * It fills each ISSBNOptionPanelBuilder with the obtained instance of {@link ISSBNGenerator}
+	 * The generated button item is not added to any container yet.
+	 */
+	protected Map<JRadioButtonMenuItem, ISSBNOptionPanelBuilder> loadSSBNGeneratorAsPlugins() {
+
+		Map<JRadioButtonMenuItem, ISSBNOptionPanelBuilder> ret = new HashMap<JRadioButtonMenuItem, ISSBNOptionPanelBuilder>();
+		
+		// refresh plugin
+		this.getSSBNPluginManager().reloadPlugins();
+		
+		// obtains the SSBN generators and its panel builder
+		Map<ISSBNGeneratorBuilder, ISSBNOptionPanelBuilder> ssbnMap = this.getSSBNPluginManager().getSSBNToOptionPanelMap();
+		for (ISSBNGeneratorBuilder ssbnBuilder : ssbnMap.keySet()) {
+			try {
+				// retrieves the panel builder
+				ISSBNOptionPanelBuilder panelBuilder = ssbnMap.get(ssbnBuilder);
+				if (panelBuilder == null) {
+					// if null, use a default implementaion of panel builder
+					panelBuilder = new EmptyOptionPanelBuilder(null);
+				}
+				
+				// tells the panel the correct SSBN to edit
+				panelBuilder.setSSBNGenerator(ssbnBuilder.buildSSBNGenerator());
+				
+				// create new button item using SSBN's name as its label
+				JRadioButtonMenuItem radioButton = new JRadioButtonMenuItem(ssbnBuilder.getName());
+				radioButton.addActionListener(new SSBNPluginRadioButtonListener(panelBuilder));
 				
 				// fill return
 				ret.put(radioButton, panelBuilder);
@@ -323,13 +508,39 @@ public class OptionsDialog extends JDialog {
 			defaultKbToOptionMap = new HashMap<JRadioButtonMenuItem, IKBOptionPanelBuilder>();
 			// fill default kb as PowerLoomKB
 			JRadioButtonMenuItem radioButton = new JRadioButtonMenuItem(this.resource.getString("defaultKB"));
-			EmptyOptionPanelBuilder panelBuilder = new EmptyOptionPanelBuilder(this.controller.getKnowledgeBase());
-			radioButton.addActionListener(new PluginRadioButtonListener(panelBuilder));
-			this.lastConfirmedOption = radioButton;
+			EmptyOptionPanelBuilder panelBuilder = new EmptyOptionPanelBuilder(PowerLoomKB.getNewInstanceKB());
+			radioButton.addActionListener(new KBPluginRadioButtonListener(panelBuilder));
+			this.lastConfirmedKBOption = radioButton;
 			defaultKbToOptionMap.put(radioButton, panelBuilder);
 		}
 		
 		return defaultKbToOptionMap;
+	}
+	
+	/**
+	 * Obtains a collection of all default SSBN generation algorithms (ISSBNGenerator that are not
+	 * loaded from plugins), using the same format expected from {@link #loadSSBNGeneratorAsPlugins()}.
+	 * This method is used in {@link #reloadSSBNGeneratorPlugins()} to initialize components.
+	 * @return : default KB in {@link #loadSSBNGeneratorAsPlugins()} format.
+	 * 
+	 */
+	protected Map<JRadioButtonMenuItem, ISSBNOptionPanelBuilder> buildDefaultSSBNGenerator() {
+		if (defaultSSBNToOptionMap == null) {
+			defaultSSBNToOptionMap = new HashMap<JRadioButtonMenuItem, ISSBNOptionPanelBuilder>();
+			// fill default SSBN algorithm as the laskey algorithm
+			JRadioButtonMenuItem radioButton = new JRadioButtonMenuItem(this.resource.getString("defaultSSBN"));
+			LaskeyAlgorithmParameters parameters = new LaskeyAlgorithmParameters(); 
+			parameters.setParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION, "true");
+			parameters.setParameterValue(LaskeyAlgorithmParameters.DO_BUILDER, "true"); 
+			parameters.setParameterValue(LaskeyAlgorithmParameters.DO_PRUNE, "true"); 
+			parameters.setParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION, "true"); 
+			EmptyOptionPanelBuilder panelBuilder = new EmptyOptionPanelBuilder(new LaskeySSBNGenerator(parameters));
+			radioButton.addActionListener(new SSBNPluginRadioButtonListener(panelBuilder));
+			this.lastConfirmedSSBNOption = radioButton;
+			defaultSSBNToOptionMap.put(radioButton, panelBuilder);
+		}
+		
+		return defaultSSBNToOptionMap;
 	}
 	
 	/**
@@ -347,7 +558,7 @@ public class OptionsDialog extends JDialog {
     	// fill default kb
     	this.getKbToOptionMap().putAll(this.buildDefaultKB());
     	
-    	// load new algorithms as new map
+    	// load new kb as new map
 		this.getKbToOptionMap().putAll(loadKBAsPlugins());
 
     	// reset components
@@ -363,20 +574,58 @@ public class OptionsDialog extends JDialog {
 			// use class equivalency to update the currently selected option
 			if (this.getController().getKnowledgeBase().getClass().equals(this.getKbToOptionMap().get(radioItem).getKB().getClass())) {
 				radioItem.doClick();
-				this.lastConfirmedOption = radioItem;
-				this.lastSelectedOption = radioItem;
+				this.lastConfirmedKBOption = radioItem;
+				this.lastSelectedKBOption = radioItem;
 			}
 		}
 		
     }
     
     /**
-     * Changes the {@link #getAlgorithmOptionPane()}'s content to
+	 * Reloads plugin SSBN generation algorithms.
+	 * Uses {@link #getSSBNPluginManager()} in order to fill 
+	 * the content of {@link #getSSBNToOptionMap()} and content of
+	 * the radio button group.
+	 * {@link #ssbnRadioPanel} must be a non-null value
+     */
+    protected void reloadSSBNGeneratorPlugins() {
+    	
+    	// reset map
+    	this.getSSBNToOptionMap().clear();
+    	
+    	// fill default ssbn generator
+    	this.getSSBNToOptionMap().putAll(this.buildDefaultSSBNGenerator());
+    	
+    	// load new algorithms as new map
+		this.getSSBNToOptionMap().putAll(loadSSBNGeneratorAsPlugins());
+
+    	// reset components
+    	this.setSSBNGroup(new ButtonGroup());
+    	this.getSSBNRadioPanel().removeAll();
+    	
+    	// adding the plugins if they were not already added
+		for (JRadioButtonMenuItem radioItem : this.getSSBNToOptionMap().keySet()) {
+			// if this plugin was not loaded before, add it
+			this.getSSBNGroup().add(radioItem);
+			this.getSSBNRadioPanel().add(radioItem);
+			
+			// use class equivalency to update the currently selected option
+			if (this.getController().getSSBNGenerator().getClass().equals(this.getSSBNToOptionMap().get(radioItem).getSSBNGenerator().getClass())) {
+				radioItem.doClick();
+				this.lastConfirmedSSBNOption = radioItem;
+				this.lastSelectedSSBNOption = radioItem;
+			}
+		}
+		
+    }
+    
+    /**
+     * Changes the {@link #getKbOptionPane()}'s content to
      * currentOptionPanel.
      * @param currentOptionPanel
      */
-    protected void setCurrentAlgorithmOptionPanel(Component currentOptionPanel) {
-    	// clear algorithm scroll pane and refills it with the current option panel
+    protected void setCurrentKBOptionPanel(Component currentOptionPanel) {
+    	// clear kb scroll pane and refills it with the current option panel
     	for (Component comp : this.getKbOptionPane().getComponents()) {
 			comp.setVisible(false);
 		}
@@ -387,6 +636,27 @@ public class OptionsDialog extends JDialog {
     				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     		this.getKbOptionPane().add(scrollPane, BorderLayout.CENTER);
 //    		currentOptionPanel.setVisible(true);
+    		scrollPane.setVisible(true);
+    	}
+    	this.repaint();
+    }
+    
+    /**
+     * Changes the {@link #getSSBNOptionPane()}'s content to
+     * currentOptionPanel.
+     * @param currentOptionPanel
+     */
+    protected void setCurrentSSBNOptionPanel(Component currentOptionPanel) {
+    	// clear ssbn algorithm scroll pane and refills it with the current option panel
+    	for (Component comp : this.getSSBNOptionPane().getComponents()) {
+			comp.setVisible(false);
+		}
+    	this.getSSBNOptionPane().removeAll();
+    	if (currentOptionPanel != null) {
+    		JScrollPane scrollPane  = new JScrollPane(currentOptionPanel, 
+    				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+    				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+    		this.getSSBNOptionPane().add(scrollPane, BorderLayout.CENTER);
     		scrollPane.setVisible(true);
     	}
     	this.repaint();
@@ -551,19 +821,26 @@ public class OptionsDialog extends JDialog {
 	}
 
 	/**
-	 * This is just a simplest implementation of IKBOptionPanelBuilder
-	 * for plugins that does not have a option panel builder
+	 * This is just a simplest implementation of IPanelBuilder
+	 * for plugins that does not have a option panel builder.
+	 * It carries an object and a panel.
+	 * The carried object is a placeholder for {@link #getKB()} (from {@link IKBOptionPanelBuilder})
+	 * or for {@link #getSSBNGenerator()} (from {@link ISSBNOptionPanelBuilder}).
+	 * Be very careful no to use this class as {@link IKBOptionPanelBuilder} and {@link ISSBNOptionPanelBuilder}
+	 * simultaneously, because it can only carry 1 object at a time.
 	 * @author Shou Matsumoto
 	 *
 	 */
-	protected class EmptyOptionPanelBuilder extends JPanel implements IKBOptionPanelBuilder {
-		private KnowledgeBase kb;
-		public EmptyOptionPanelBuilder(KnowledgeBase kb) {this.setKB(kb);}
+	protected class EmptyOptionPanelBuilder extends JPanel implements IKBOptionPanelBuilder, ISSBNOptionPanelBuilder {
+		private Object carriedObject;
+		public EmptyOptionPanelBuilder(Object carriedObject) {this.carriedObject = carriedObject;}
 		public void commitChanges() {}
 		public void discardChanges() {}
-		public KnowledgeBase getKB() {return this.kb;}
 		public JPanel getPanel() {return null;}
-		public void setKB(KnowledgeBase kb) {this.kb = kb;}
+		public KnowledgeBase getKB() {return (KnowledgeBase) carriedObject;}
+		public void setKB(KnowledgeBase kb) {this.carriedObject = kb;}
+		public ISSBNGenerator getSSBNGenerator() {return (ISSBNGenerator)this.carriedObject;}
+		public void setSSBNGenerator(ISSBNGenerator ssbnGenerator) {this.carriedObject = ssbnGenerator;}
 	}
 	
 	/**
@@ -573,15 +850,120 @@ public class OptionsDialog extends JDialog {
 	 * @author Shou Matsumoto
 	 *
 	 */
-	protected class PluginRadioButtonListener implements ActionListener {
-		IKBOptionPanelBuilder builder;
-		public PluginRadioButtonListener(IKBOptionPanelBuilder builder) {
+	protected class KBPluginRadioButtonListener implements ActionListener {
+		IPanelBuilder builder;
+		public KBPluginRadioButtonListener(IPanelBuilder builder) {
 			super();
 			this.builder = builder;
 		}
 		public void actionPerformed(ActionEvent e) {
-			setCurrentAlgorithmOptionPanel(this.builder.getPanel());
-			lastSelectedOption = (JRadioButtonMenuItem)e.getSource();
+			setCurrentKBOptionPanel(this.builder.getPanel());
+			lastSelectedKBOption = (JRadioButtonMenuItem)e.getSource();
 		}
+	}
+	
+	/**
+	 * A component aware listener for Plugin's radio buttons.
+	 * It simply updates OptionsDialog depending on what
+	 * "ssbn generation algorithm" option is called.
+	 * @author Shou Matsumoto
+	 *
+	 */
+	protected class SSBNPluginRadioButtonListener implements ActionListener {
+		IPanelBuilder builder;
+		public SSBNPluginRadioButtonListener(IPanelBuilder builder) {
+			super();
+			this.builder = builder;
+		}
+		public void actionPerformed(ActionEvent e) {
+			setCurrentSSBNOptionPanel(this.builder.getPanel());
+			lastSelectedSSBNOption = (JRadioButtonMenuItem)e.getSource();
+		}
+	}
+
+	/**
+	 * @return the ssbnMainPanel
+	 */
+	public JComponent getSSBNMainPanel() {
+		return ssbnMainPanel;
+	}
+
+	/**
+	 * @param ssbnMainPanel the ssbnMainPanel to set
+	 */
+	public void setSSBNMainPanel(JComponent ssbnMainPanel) {
+		this.ssbnMainPanel = ssbnMainPanel;
+	}
+
+	/**
+	 * @return the ssbnRadioPanel
+	 */
+	public JPanel getSSBNRadioPanel() {
+		return ssbnRadioPanel;
+	}
+
+	/**
+	 * @param ssbnRadioPanel the ssbnRadioPanel to set
+	 */
+	public void setSSBNRadioPanel(JPanel ssbnRadioPanel) {
+		this.ssbnRadioPanel = ssbnRadioPanel;
+	}
+
+	/**
+	 * @return the ssbnGroup
+	 */
+	public ButtonGroup getSSBNGroup() {
+		return ssbnGroup;
+	}
+
+	/**
+	 * @param ssbnGroup the ssbnGroup to set
+	 */
+	public void setSSBNGroup(ButtonGroup ssbnGroup) {
+		this.ssbnGroup = ssbnGroup;
+	}
+
+	/**
+	 * @return the ssbnOptionPane
+	 */
+	public JPanel getSSBNOptionPane() {
+		return ssbnOptionPane;
+	}
+
+	/**
+	 * @param ssbnOptionPane the ssbnOptionPane to set
+	 */
+	public void setSSBNOptionPane(JPanel ssbnOptionPane) {
+		this.ssbnOptionPane = ssbnOptionPane;
+	}
+
+	/**
+	 * @return the ssbnToOptionMap
+	 */
+	public Map<JRadioButtonMenuItem, ISSBNOptionPanelBuilder> getSSBNToOptionMap() {
+		return ssbnToOptionMap;
+	}
+
+	/**
+	 * @param ssbnToOptionMap the ssbnToOptionMap to set
+	 */
+	public void setSSBNToOptionMap(
+			Map<JRadioButtonMenuItem, ISSBNOptionPanelBuilder> ssbnToOptionMap) {
+		this.ssbnToOptionMap = ssbnToOptionMap;
+	}
+
+	/**
+	 * @return the ssbnPluginManager
+	 */
+	public SSBNGenerationAlgorithmPluginManager getSSBNPluginManager() {
+		return ssbnPluginManager;
+	}
+
+	/**
+	 * @param ssbnPluginManager the ssbnPluginManager to set
+	 */
+	public void setSSBNPluginManager(
+			SSBNGenerationAlgorithmPluginManager ssbnPluginManager) {
+		this.ssbnPluginManager = ssbnPluginManager;
 	}
 }

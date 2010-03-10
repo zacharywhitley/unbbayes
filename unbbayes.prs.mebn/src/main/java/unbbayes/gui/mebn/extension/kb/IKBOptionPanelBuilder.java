@@ -5,6 +5,7 @@ package unbbayes.gui.mebn.extension.kb;
 
 import javax.swing.JComponent;
 
+import unbbayes.gui.mebn.extension.IPanelBuilder;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 
 /**
@@ -13,18 +14,8 @@ import unbbayes.prs.mebn.kb.KnowledgeBase;
  * @author Shou Matsumoto
  *
  */
-public interface IKBOptionPanelBuilder {
+public interface IKBOptionPanelBuilder extends IPanelBuilder {
 		
-	/**
-	 * Obtains the panel containing a form to edit
-	 * attributes of the knowledge base set by
-	 * {@link #setKB(KnowledgeBase)}.
-	 * You may consider this method as a builder too.
-	 * 
-	 * @return : a panel for options. If null, it will be ignored.
-	 * @see #setKB(KnowledgeBase)
-	 */
-	public JComponent getPanel();
 	
 	/**
 	 * Commits the changes done at the panel obtained from {@link #getPanel()}.
@@ -38,7 +29,9 @@ public interface IKBOptionPanelBuilder {
 	/**
 	 * Discards the changes done at the panel obtained from {@link #getPanel()}.
 	 * In another words, it resets the values of the attributes of {@link #getPanel()}
+	 * and/or {@link #getKB()}
 	 * @see #getPanel()
+	 * @see #getKB()
 	 */
 	public void discardChanges();
 	

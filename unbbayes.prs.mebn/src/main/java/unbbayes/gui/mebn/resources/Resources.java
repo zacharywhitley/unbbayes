@@ -84,6 +84,10 @@ public class Resources extends GuiResources {
 		{"kbParameters", "Parameters for the Knowledge Base"}, 
 		{"availableKB", "Available Knowledge Bases"},  
 		{"defaultKB", "Default"},  
+		{"availableSSBN", "SSBN generation algorithms"},  
+		{"ssbnParameters", "Parameters for Situation Specific Bayesian Network generation"},
+		{"ssbnTab", "SSBN Algorithm"},
+		{"defaultSSBN", "Default Algorithm"}, 
 		
 		/* PLM file manager */
 		/* TODO transfer it to IO package? */

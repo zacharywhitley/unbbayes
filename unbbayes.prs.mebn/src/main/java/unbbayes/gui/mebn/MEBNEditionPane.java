@@ -890,10 +890,12 @@ public class MEBNEditionPane extends JPanel {
 				if (option == JFileChooser.APPROVE_OPTION) {
 					
 					File file = chooser.getSelectedFile();
-					String nameFile = file.getAbsolutePath(); 
-					if(!(nameFile.substring(nameFile.length() - 4).equals("." + PowerLoomKB.FILE_SUFIX))){
-						file = new File(nameFile + "." + PowerLoomKB.FILE_SUFIX); 
-					}
+					
+					// do not automatically resolve file name
+//					String nameFile = file.getAbsolutePath(); 
+//					if(!(nameFile.substring(nameFile.length() - 4).equals("." + PowerLoomKB.FILE_SUFIX))){
+//						file = new File(nameFile + "." + PowerLoomKB.FILE_SUFIX); 
+//					}
 					
 					if (file != null) {
 						mebnController.saveFindingsFile(file);

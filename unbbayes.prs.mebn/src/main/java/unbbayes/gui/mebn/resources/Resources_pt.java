@@ -85,6 +85,10 @@ public class Resources_pt extends GuiResources_pt {
 		{"kbParameters", "Parâmetros para a base de conhecimento"}, 
 		{"availableKB", "Bases de conhecimento disponíveis"},  
 		{"defaultKB", "Padrão"},  
+		{"availableSSBN", "Algoritmos de geração de SSBN"}, 
+		{"ssbnParameters", "Parâmetros para geração de SSBN"}, 
+		{"ssbnTab", "Algoritmos de SSBN"},
+		{"defaultSSBN", "Algoritmo Padrão"},  
 		
 		/* PLM file manager */
 		/* TODO transfer it to IO package? */

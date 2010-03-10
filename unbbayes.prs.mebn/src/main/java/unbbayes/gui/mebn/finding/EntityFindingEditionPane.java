@@ -60,8 +60,6 @@ import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
 import unbbayes.prs.mebn.exception.DuplicatedNameException;
 import unbbayes.prs.mebn.exception.ReservedWordException;
-import unbbayes.prs.mebn.kb.KnowledgeBase;
-import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 
 /**
  * Pane for the user enter with the entity instances of the MEBN in a 
