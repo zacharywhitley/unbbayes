@@ -67,6 +67,8 @@ public interface KnowledgeBase {
 	
 	/**
 	 * It inserts the entity into KB as a definition.
+	 * This method may be called more than once, so, 
+	 * it must avoid duplicate definition.
 	 * 
 	 * @param entity
 	 *            the entity to insert as a definition.
@@ -76,6 +78,8 @@ public interface KnowledgeBase {
 	/**
 	 * It inserts the resident random variable and its states into KB as a
 	 * definition.
+	 * This method may be called more than once, so, 
+	 * it must avoid duplicate definition.
 	 * 
 	 * @param resident
 	 *            the resident node to insert as a definition.
@@ -85,6 +89,9 @@ public interface KnowledgeBase {
 	/**
 	 * The method is responsible for inserting the entity as a finding into KB.
 	 * 
+	 * This method may be called more than once, so, 
+	 * it must avoid duplicate definition.
+	 * 
 	 * @param entityInstance
 	 *            the entity to insert as finding.
 	 */
@@ -93,6 +100,8 @@ public interface KnowledgeBase {
 	/**
 	 * The method is responsible for inserting the random variable and its
 	 * states as a finding into KB.
+	 * This method may be called more than once, so, 
+	 * it must avoid duplicate definition.
 	 * 
 	 * @param randomVariableFinding
 	 *            the random variable to insert as finding.
@@ -107,7 +116,8 @@ public interface KnowledgeBase {
 	 * @param mebn
 	 *            the MEBN where the concepts are designed.
 	 * @param file
-	 *            the file to save the concepts.
+	 *            the file to save the concepts. If {@link #supportsLocalFile(boolean)} is false, a null
+	 *            value will be passed.
 	 */
 	public void saveGenerativeMTheory(MultiEntityBayesianNetwork mebn, File file);
 

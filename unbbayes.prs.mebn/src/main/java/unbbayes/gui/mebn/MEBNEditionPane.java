@@ -902,6 +902,10 @@ public class MEBNEditionPane extends JPanel {
 						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("FileSaveOK"));
 					}
 				}
+			} else {
+				// call save using a null file. This is just to commit changes on kb for non-file based kb
+				mebnController.saveGenerativeMTheory(null);
+				mebnController.saveFindingsFile(null);
 			}
 			
 			

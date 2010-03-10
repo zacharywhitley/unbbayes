@@ -184,7 +184,8 @@ public class MEBNController extends NetworkController {
 	/*-------------------------------------------------------------------------*/
 	
 	//Save or not files of powerloom
-	private boolean saveDebugFiles = true; 
+	// TODO remove these hard coded debug files, because knowledge base may not be power loom!!!!
+	private boolean saveDebugFiles = false;
 	private static final String NAME_GENERATIVE_FILE = "generative.plm"; 
 	private static final String NAME_FINDING_FILE = "findings.plm"; 
 	
