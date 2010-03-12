@@ -31,6 +31,7 @@ import unbbayes.controller.mebn.MEBNController;
 import unbbayes.gui.mebn.extension.IPanelBuilder;
 import unbbayes.gui.mebn.extension.kb.IKBOptionPanelBuilder;
 import unbbayes.gui.mebn.extension.ssbn.ISSBNOptionPanelBuilder;
+import unbbayes.gui.mebn.extension.ssbn.LaskeyAlgorithmOptionPanelBuilder;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.extension.IKnowledgeBaseBuilder;
 import unbbayes.prs.mebn.kb.extension.jpf.KnowledgeBasePluginManager;
@@ -38,8 +39,6 @@ import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.extension.ISSBNGeneratorBuilder;
 import unbbayes.prs.mebn.ssbn.extension.jpf.SSBNGenerationAlgorithmPluginManager;
-import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeyAlgorithmParameters;
-import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSBNGenerator;
 import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
 
 /**
@@ -508,7 +507,15 @@ public class OptionsDialog extends JDialog {
 			defaultKbToOptionMap = new HashMap<JRadioButtonMenuItem, IKBOptionPanelBuilder>();
 			// fill default kb as PowerLoomKB
 			JRadioButtonMenuItem radioButton = new JRadioButtonMenuItem(this.resource.getString("defaultKB"));
-			EmptyOptionPanelBuilder panelBuilder = new EmptyOptionPanelBuilder(PowerLoomKB.getNewInstanceKB());
+			EmptyOptionPanelBuilder panelBuilder;
+			if (getController().getKnowledgeBase() != null 
+					&& getController().getKnowledgeBase().getClass().equals(PowerLoomKB.class)) {
+				// reuse the same object if the class being used by controller is the same
+				panelBuilder = new EmptyOptionPanelBuilder(getController().getKnowledgeBase());
+			} else {
+				// or else, generate a new power loom kb
+				panelBuilder = new EmptyOptionPanelBuilder(PowerLoomKB.getNewInstanceKB());
+			}
 			radioButton.addActionListener(new KBPluginRadioButtonListener(panelBuilder));
 			this.lastConfirmedKBOption = radioButton;
 			defaultKbToOptionMap.put(radioButton, panelBuilder);
@@ -526,17 +533,20 @@ public class OptionsDialog extends JDialog {
 	 */
 	protected Map<JRadioButtonMenuItem, ISSBNOptionPanelBuilder> buildDefaultSSBNGenerator() {
 		if (defaultSSBNToOptionMap == null) {
+			// initialize map
 			defaultSSBNToOptionMap = new HashMap<JRadioButtonMenuItem, ISSBNOptionPanelBuilder>();
+			
 			// fill default SSBN algorithm as the laskey algorithm
 			JRadioButtonMenuItem radioButton = new JRadioButtonMenuItem(this.resource.getString("defaultSSBN"));
-			LaskeyAlgorithmParameters parameters = new LaskeyAlgorithmParameters(); 
-			parameters.setParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION, "true");
-			parameters.setParameterValue(LaskeyAlgorithmParameters.DO_BUILDER, "true"); 
-			parameters.setParameterValue(LaskeyAlgorithmParameters.DO_PRUNE, "true"); 
-			parameters.setParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION, "true"); 
-			EmptyOptionPanelBuilder panelBuilder = new EmptyOptionPanelBuilder(new LaskeySSBNGenerator(parameters));
+			
+			// add laskey algorithm's option panel
+			ISSBNOptionPanelBuilder panelBuilder = new LaskeyAlgorithmOptionPanelBuilder();
+			
+			// fill action listener for radio button and mark it as the selected one
 			radioButton.addActionListener(new SSBNPluginRadioButtonListener(panelBuilder));
 			this.lastConfirmedSSBNOption = radioButton;
+			
+			// fill map
 			defaultSSBNToOptionMap.put(radioButton, panelBuilder);
 		}
 		

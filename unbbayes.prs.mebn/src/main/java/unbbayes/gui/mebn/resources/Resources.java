@@ -88,6 +88,18 @@ public class Resources extends GuiResources {
 		{"ssbnParameters", "Parameters for Situation Specific Bayesian Network generation"},
 		{"ssbnTab", "SSBN Algorithm"},
 		{"defaultSSBN", "Default Algorithm"}, 
+
+		// SSBN option panel
+		{"initializationCheckBoxLabel" , " Execute initialization phase "},
+		{"buildCheckBoxLabel" , " Execute build phase "},
+		{"pruneCheckBoxLabel" , " Execute graph pruning phase "},
+		{"cptGenerationCheckBoxLabel" , " Execute CPT generation phase "},
+		{"userInteractionCheckBoxLabel" , " Enable interactive mode "},
+		{"pruneConfigurationBorderTitle" , " Pruning options "},
+		{"barrenNodePrunerCheckBoxLabel" , " Prune barren nodes "},
+		{"dseparatedNodePrunerCheckBoxLabel" , " Prune nodes d-separated from queries "},
+		{"mainPanelBorderTitle" , "Choose the functionalities to be enabled"},
+		{"recursiveLimitBorderTitle" , "Recursivity depth limit"},
 		
 		/* PLM file manager */
 		/* TODO transfer it to IO package? */
@@ -97,6 +109,8 @@ public class Resources extends GuiResources {
 		{"KBClean" , "Knowledge base successfully cleared"},
 		{"NotImplemented" , "Not implemented yet."}, 
 		{"loadedWithErrors" , "File loaded, but some errors may have occurred"},
+		
+
 		
 	};
 	

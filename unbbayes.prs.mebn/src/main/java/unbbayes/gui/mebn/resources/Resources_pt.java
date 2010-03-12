@@ -90,6 +90,18 @@ public class Resources_pt extends GuiResources_pt {
 		{"ssbnTab", "Algoritmos de SSBN"},
 		{"defaultSSBN", "Algoritmo Padrão"},  
 		
+		// SSBN option panel
+		{"initializationCheckBoxLabel" , " Executar fase de initialização "},
+		{"buildCheckBoxLabel" , " Executar fase de geração "},
+		{"pruneCheckBoxLabel" , " Executar fase de podagem "},
+		{"cptGenerationCheckBoxLabel" , " Executar fase de geração de CPT "},
+		{"pruneConfigurationBorderTitle" , " Opções de podagem "},
+		{"userInteractionCheckBoxLabel" , " Ativar modo interativo "},
+		{"barrenNodePrunerCheckBoxLabel" , " Podar nós improdutivos "},
+		{"dseparatedNodePrunerCheckBoxLabel" , " Podar nós d-separados do(s) nó(s) principal(is) "},
+		{"mainPanelBorderTitle" , "Selecione as funcionalidades a habilitar"},
+		{"recursiveLimitBorderTitle" , "Limite de profundidade na recursividade"},
+		
 		/* PLM file manager */
 		/* TODO transfer it to IO package? */
 		{"FileSaveOK" , "Base de conhecimento armazenado com sucesso"},
