@@ -4,7 +4,6 @@
 <plugin id="unbbayes.prs.mebn" version="1.4.0">
     <requires>
         <import plugin-id="unbbayes.util.extension.core"/>
-        <import plugin-id="unbbayes.prs.msbn"/>
     </requires>
     <runtime>
         <library type="resources" path="icons/" id="icons">

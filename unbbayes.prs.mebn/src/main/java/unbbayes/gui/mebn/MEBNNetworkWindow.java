@@ -200,7 +200,7 @@ public class MEBNNetworkWindow extends NetworkWindow {
 			ssbnCompilationPane.getEvidenceTree().setRootVisible(false);
 			//by young2
 			ssbnCompilationPane.getEvidenceTree().updateTree(true);
-
+			
 			contentPane.add(ssbnCompilationPane,
 					MEBN_PANE_SSBN_COMPILATION_PANE);
 			

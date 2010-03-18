@@ -32,7 +32,6 @@ import java.util.ResourceBundle;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 
-import unbbayes.controller.MSBNController;
 import unbbayes.controller.NetworkController;
 import unbbayes.controller.exception.InconsistentArgumentException;
 import unbbayes.controller.exception.InvalidOperationException;
@@ -95,8 +94,6 @@ import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeyAlgorithmParameters;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSBNGenerator;
-import unbbayes.prs.msbn.AbstractMSBN;
-import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.util.ApplicationPropertyHolder;
 import unbbayes.util.Debug;
 import unbbayes.util.GraphLayoutUtil;
@@ -1893,12 +1890,9 @@ public class MEBNController extends NetworkController {
 			JOptionPane.showMessageDialog(getScreen(), 
 					e.getMessage());
 		}
-		
-//		ssbn.setProbabilisticNetwork(null);
-//		
-//		System.gc();
-//		
-		openMsbnNetwork();
+
+		// TODO - SHOU and ROMMEL - Find a better way to show MSBN instead of BN - plugin of plugin?
+//		openMsbnNetwork();
 		
 		mebnEditionPane.setStatus(resource.getString("statusReady")); 
 		this.getScreen().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -1937,19 +1931,20 @@ public class MEBNController extends NetworkController {
 		this.ssbnGenerator = ssbnGenerator;
 	}
  
-	private void openMsbnNetwork() {
-		AbstractMSBN msbn = ssbn.getMsbnNetwork();
-		MSBNController controller = new MSBNController((SingleAgentMSBN)msbn);
-		try {
-//			controller.compile();
-		} catch (Exception e) {
-			JOptionPane.showMessageDialog(this.getScreen(), e.getMessage(), "MSBN compilation error", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
-		}
-		this.getScreen().getDesktopPane().add(controller.getPanel());
-		controller.getPanel().setSize(controller.getPanel().getPreferredSize());
-		controller.getPanel().setVisible(true);
-	}
+// TODO - SHOU and ROMMEL - Find a better way to show MSBN instead of BN - plugin of plugin?
+//	private void openMsbnNetwork() {
+//		AbstractMSBN msbn = ssbn.getMsbnNetwork();
+//		MSBNController controller = new MSBNController((SingleAgentMSBN)msbn);
+//		try {
+////			controller.compile();
+//		} catch (Exception e) {
+//			JOptionPane.showMessageDialog(this.getScreen(), e.getMessage(), "MSBN compilation error", JOptionPane.ERROR_MESSAGE);
+//			e.printStackTrace();
+//		}
+//		this.getScreen().getDesktopPane().add(controller.getPanel());
+//		controller.getPanel().setSize(controller.getPanel().getPreferredSize());
+//		controller.getPanel().setVisible(true);
+//	}
 	
 
 	/**
@@ -2050,7 +2045,7 @@ public class MEBNController extends NetworkController {
 	 * @see JOptionPane
 	 */
 	public boolean compileNetwork(ProbabilisticNetwork network) {
-		long ini = System.currentTimeMillis();
+//		long ini = System.currentTimeMillis();
 		this.getScreen().setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		try {
 			network.compile();

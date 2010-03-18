@@ -1,29 +1,15 @@
 package unbbayes.prs.mebn.ssbn;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Set;
 
 import unbbayes.io.log.IdentationLevel;
-import unbbayes.prs.Edge;
-import unbbayes.prs.Node;
-import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
-import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.cptgeneration.CPTForSSBNNodeGenerator;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
-import unbbayes.prs.msbn.SingleAgentMSBN;
-import unbbayes.prs.msbn.SubNetwork;
 import unbbayes.util.ApplicationPropertyHolder;
-import unbbayes.util.GraphLayoutUtil;
 
 public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 
@@ -59,14 +45,13 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 	public void buildLocalDistribution(SSBN ssbn) throws MEBNException, SSBNNodeGeneralException {
 		
 		ProbabilisticNetwork pn; 
-		Map<String, Set<SimpleSSBNNode>> connectedMsbn;
 		SimpleSSBNNode nodeOfQuery;
 		
 		
 		try {
 			// FIXME - Here only one probabilistic network are created... The fix should be
 			//here, creating multiples pn's. 
-			ssbn.getLogManager().printText(level1, false, "[1.1] Separing the disconnected SSBN networks"); 
+			ssbn.getLogManager().printText(level1, false, "[1] Separing the disconnected SSBN networks"); 
 			List<SimpleSSBNNode>[] nodesPerNetworkArray = SimpleSSBNNodeUtils.individualizeDisconnectedNetworks(ssbn.getSimpleSsbnNodeList()); 
 			int netId = 0; 
 			for(List<SimpleSSBNNode> networkNodesList: nodesPerNetworkArray){
@@ -90,6 +75,50 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 			nodesPerNetworkArray = null;
 			ssbn.getLogManager().skipLine(); 
 			
+			// Generating the SSBN network.
+			ssbn.getLogManager().printText(level1, false, "[2] Genering the SSBN network"); 
+			pn =  new ProbabilisticNetwork(this.resource.getString("DefaultNetworkName"));
+			if(listForQuery!=null){
+				List<SSBNNode> listSSBNNode = SimpleSSBNNodeUtils.translateSimpleSSBNNodeListToSSBNNodeList(listForQuery, pn);
+			    ssbn.setSsbnNodeList(listSSBNNode); 
+				ssbn.setProbabilisticNetwork(pn); 
+			}else{
+				List<SSBNNode> listSSBNNode = SimpleSSBNNodeUtils.translateSimpleSSBNNodeListToSSBNNodeList(ssbn.getSimpleSsbnNodeList(), pn);
+			    ssbn.setSsbnNodeList(listSSBNNode); 
+				ssbn.setProbabilisticNetwork(pn); 
+			}
+			ssbn.getLogManager().skipLine(); 
+			
+		} catch (SSBNNodeGeneralException e) {
+			e.printStackTrace();
+			throw e; 
+		} catch (ImplementationRestrictionException e) {
+			//This exception don't should be throw in a correct algorithm. 
+			e.printStackTrace();
+			throw new RuntimeException(e.getMessage()); 
+		} 
+		
+		ssbn.getLogManager().printText(level2, false, "Simple Nodes translated to SSBNNodes"); 
+		
+		// clearing simple ssbn nodes
+		if (clearSimpleSSBNNodeListAtLPD) {
+			ssbn.getSimpleSsbnNodeList().clear();
+			// clearing memory before we continue
+			System.gc();
+		}
+		
+	    CPTForSSBNNodeGenerator build = new CPTForSSBNNodeGenerator(ssbn.getLogManager());
+	    
+	    if(ssbn.getSsbnNodeList().size() > 0){
+			ssbn.getLogManager().printText(level2, false, "Generate CPT for the SSBNNodes");
+	    	build.generateCPTForAllSSBNNodes(ssbn.getSsbnNodeList().get(0));
+	    }else{
+	    	throw new SSBNNodeGeneralException(resource.getString("NotNodeInSSBN")); 
+	    }
+	    
+	
+// TODO - SHOU and ROMMEL - FIND A BETTER DESIGN TO ADD THE SSMSBN GENERATOR
+/*
 			// Converting the pseudo SSBN above into a pseudo MSBN.
 			ssbn.getLogManager().printText(level1, false, "[1.2] Converting the SSBN into a MSBN");
 			Map<String, Set<SimpleSSBNNode>> msbn = SimpleSSBNNodeUtils.convertSsbnIntoMsbn(listForQuery);
@@ -249,6 +278,8 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 		// 4. Set the MSBN network in SSBN class
 		ssbn.setMsbnNetwork(msbnNet);
 		ssbn.getLogManager().skipLine();
+*/
+		
 		
 	}
 

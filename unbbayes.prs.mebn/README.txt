@@ -29,10 +29,6 @@ Go to \mvn_lib\unbbayes>
 mvn install:install-file -DgroupId=guess -DartifactId=jpf -Dversion=1.5 -Dpackaging=jar -Dfile=jpf-1.5.jar
 mvn install:install-file -DpomFile=pom.xml -Dpackaging=jar -Dfile=unbbayes-4.0.0.jar
 
-<If you do not have MSBN module in your local mvn repository, then execute the below command>
-Go to \mvn_lib\unbbayes>
-mvn install:install-file -DgroupId=br.unb.cic -DartifactId=unbbayes.prs.msbn -Dversion=1.1.0 -Dpackaging=jar -Dfile=unbbayes.prs.msbn-1.1.0.jar
-
 
 
 CREATING A RELEASE
