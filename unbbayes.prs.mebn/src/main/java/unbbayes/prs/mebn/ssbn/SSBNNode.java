@@ -35,7 +35,6 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.exception.InvalidParentException;
-import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -91,8 +90,6 @@ public class SSBNNode implements INode {
 	private String strongOVSeparator = ".";	// When creating names for sets of strong OVs, this string/char separates the compound names. Ex. When separator is ".", ovs = {st,z} -> name= "st.z"
 	
 	private boolean cptAlreadyGenerated = false; //Indicate if the cpf already was generated
-	
-	private ICompiler compiler = null;
 	
 	private ContextFatherSSBNNode contextFatherSSBNNode= null;
 	
@@ -1130,18 +1127,29 @@ public class SSBNNode implements INode {
 	}
 
 	/**
+	 * Obtains the compiler to be used by this ssbn node.
+	 * This is just a delegator to {@link #getResident()}.
+	 * @see {@link ResidentNode#getCompiler()}
 	 * @return the current compiler
 	 */
 	public ICompiler getCompiler() {
-		return compiler;
+		if (this.getResident() != null) {
+			return this.getResident().getCompiler();
+		}
+		return null;
 	}
 
 	/**
-	 * Sets which compiler class we should use to parse pseudocode and generate CPT
+	 * Sets which compiler class we should use to parse pseudocode and generate CPT.
+	 * This is just a delegator to {@link #getResident()}
 	 * @param compiler: the compiler to set
+	 * @see {@link ResidentNode#setCompiler(ICompiler)}
 	 */
 	public void setCompiler(ICompiler compiler) {
-		this.compiler = compiler;
+		if (this.getResident() == null) {
+			return;
+		}
+		this.getResident().setCompiler(compiler);
 	}
 
 	/**

@@ -27,6 +27,8 @@ import java.util.List;
 
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.mebn.compiler.Compiler;
+import unbbayes.prs.mebn.compiler.ICompiler;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityConteiner;
@@ -81,9 +83,10 @@ public class ResidentNode extends MultiEntityNode
 	
 	private int typeOfStates = CATEGORY_RV_STATES; 
 	
+	private ICompiler compiler = null;
+	
 	//DON'T USE THIS CONSTRUCTOR! IS ONLY TEMPORARY FOR CLEAR THE TESTS
 	public ResidentNode(){
-		
 	}
 	
 	public ResidentNode(String name, MFrag mFrag){
@@ -103,6 +106,9 @@ public class ResidentNode extends MultiEntityNode
 		updateLabel(); 		
 		//by young
 		setColor(new Color(254, 250, 158));
+		
+		// now, the resident node stores what kind of compiler the user has chosen to compile CPT
+		this.compiler = Compiler.getInstance(this);
 	}
 	
 	
@@ -670,6 +676,24 @@ public class ResidentNode extends MultiEntityNode
 	
 	public String toString() {
 		return name;
+	}
+
+	/**
+	 * Obtains the CPT compiler for this node.
+	 * This compiler will be used by SSBN generation algorithm in order to generate CPTs.
+	 * @return
+	 */
+	public ICompiler getCompiler() {
+		return compiler;
+	}
+
+	/**
+	 * Sets the CPT compiler for this node.
+	 * This compiler will be used by SSBN generation algorithm in order to generate CPTs.
+	 * @param compiler
+	 */
+	public void setCompiler(ICompiler compiler) {
+		this.compiler = compiler;
 	}
 	
 }

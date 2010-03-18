@@ -34,7 +34,6 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Vector;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -51,7 +50,7 @@ import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
-import unbbayes.prs.mebn.compiler.Compiler;
+import unbbayes.prs.mebn.compiler.ICompiler;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.util.ResourceController;
@@ -686,9 +685,11 @@ public class CPTEditionPane extends JPanel{
 			btnCompile.addActionListener(new ActionListener(){
 
 				public void actionPerformed(ActionEvent e) {
-					Compiler compiler = Compiler.getInstance(residentNode); 
+					ICompiler compiler = getResidentNode().getCompiler();
+					
 					try {
-						compiler.parse(cptTextPane.getTableTxt()); 
+						compiler.init(cptTextPane.getTableTxt());
+						compiler.parse(); 
 						JOptionPane.showMessageDialog(mebnController.getCPTDialog(residentNode), 
 								resource.getString("CptCompileOK"), resource.getString("sucess"), 
 								JOptionPane.INFORMATION_MESSAGE);
