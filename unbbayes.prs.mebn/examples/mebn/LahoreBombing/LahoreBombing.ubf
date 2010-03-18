@@ -1,6 +1,6 @@
 % UBF file header
 Version=0.03
-PrOwl="LahoreBombing39.owl"
+PrOwl="LahoreBombing.owl"
 
 % UBF MTheory declaration
 MTheory=LahoreBombing
