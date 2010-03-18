@@ -31,6 +31,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.util.GraphLayoutUtil;
 import unbbayes.util.ResourceController;
 import unbbayes.util.extension.UnBBayesModule;
 
@@ -185,8 +186,6 @@ public class MEBNNetworkWindow extends NetworkWindow {
 	public void changeToSSBNCompilationPane(SingleEntityNetwork ssbn) {
 
 		if (this.getMode()  == MEBN_MODE) {
-			//by young
-			//Node.setSize(Node.getDefaultSize().getX(), Node.getDefaultSize().getY());
 
 			Container contentPane = getContentPane();
 			contentPane.remove(this.getSsbnCompilationPane());
@@ -198,8 +197,12 @@ public class MEBNNetworkWindow extends NetworkWindow {
 			ssbnCompilationPane.getEvidenceTree().setRootVisible(true);
 			ssbnCompilationPane.getEvidenceTree().expandRow(0);
 			ssbnCompilationPane.getEvidenceTree().setRootVisible(false);
-			//by young2
 			ssbnCompilationPane.getEvidenceTree().updateTree(true);
+			
+			(new GraphLayoutUtil(ssbn)).doLayout();
+			
+			ssbnCompilationPane.getEvidenceTree().selectTreeItemByNode(ssbn.getNodeAt(0));
+			this.getGraphPane().compiled(true, ssbn.getNodeAt(0));
 			
 			contentPane.add(ssbnCompilationPane,
 					MEBN_PANE_SSBN_COMPILATION_PANE);

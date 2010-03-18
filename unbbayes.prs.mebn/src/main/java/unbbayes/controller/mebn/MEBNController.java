@@ -1879,10 +1879,6 @@ public class MEBNController extends NetworkController {
 			this.logNodesAndItsProbabilities(ssbn);
 			
 			this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
-			
-			(new GraphLayoutUtil(specificSituationBayesianNetwork)).doLayout();
-			
-			this.getMebnEditionPane().getNetworkWindow().getGraphPane().update();
 
 		} catch (Exception e) {
 			e.printStackTrace(); 
