@@ -1,3 +1,36 @@
+UNBBAYES VERSION 4.0.0
+----------------------------
+FEATURE LIST		
+Number	Request ID	Summary
+1		2930755		Plugin for forms for discrete nodes' conditional functions.
+2		2928791		Convert PN I/O classes into plugins.
+3		2913286		Plugin support for localization.
+4		2913285		Plugin support for creating a new type of node.
+5		2913283		Plugin support for PN Module's IO.
+6		2908367		GUI Split Pane improvements.
+7		2872601		Change text size in Belief Bar.
+
+BUG LIST		
+Number	Request ID	Summary
+1		2950752		Chow-Liu learning algorithm was not working at all.
+2		2950741		We cannot invert edge's direction in Learning modules.
+3		2950738		Edge's popup menu is implemented on code, but not working.
+4		2941111		Context node not updated.
+5		2941107		MEBN node being unselected after change.
+6		2941106		Node size not saved/loaded.
+7		2941104		Node size is not kept as user defined.
+8		2941102		Cannot remove an edge.
+9		2925264		Cannot load plugin within JAR or ZIP.
+10		2924961		The fit to text popup menu does nothing at OOBN's instances.
+11		2922304		Align option is not moving edges.
+12		2922299		ContinuousNode's name&description text field not updated.
+13		2922295		Properties of continuous node.
+14		2918072		Remove separators which are d-separated at ssbn creation.
+15		2916415		Fix StarTrek LPD definitions.
+16		2913241		Error compiling network with utility node.
+17		2910768		Vertexes do not disappear at OOBN module.
+18		2910763		Movable inner oobn nodes.
+
 UNBBAYES VERSION 3.52.7-BETA
 ----------------------------
 FEATURE LIST		

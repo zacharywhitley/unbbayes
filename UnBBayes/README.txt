@@ -50,6 +50,12 @@ CANDIDATES FOR NEXT RELEASE
 ---------------------------
 
 --add--
+ 2955219	plugin dependency resolution	 Open	 2010-02-19	 nobody	 nobody	 5
+ 2927988	Create Conditional Probability Script	 Open	 2010-01-08	rommelnc	rommelnc	 7
+ 2925261	Implement japanese localization	 Open	 2010-01-03	cardialfly	cardialfly	 1
+ 2925260	Convert current modules and functionalities to plugins	 Open	 2010-01-03	cardialfly	cardialfly	 4
+ 2907019	Create an MSBN in SSBN construction	 Open	 2009-12-01	rommelnc	rommelnc	 7
+ 2906481	Load and Save XMLBIF 0.3 format	 Open	 2009-12-01	rommelnc	rommelnc	 5
  2810972	Marginalization	 Open	 2009-06-23	rommelnc	rommelnc	 8
  2718989	Improve performance	 Open	 2009-03-28	rommelnc	rommelnc	 9
  2717798	Implement test case for exact Evaluation	 Open	 2009-03-27	rommelnc	rommelnc	 5
@@ -66,6 +72,18 @@ CANDIDATES FOR NEXT RELEASE
  1907930	Saving "recursive" (entity ordering) information in PR-OWL	 Open	 2008-03-05	 nobody	cardialfly	 5
  1907925	Recursive variable definition in PR-OWL	 Open	 2008-03-05	adelfi23	cardialfly	 8
 --fix--
+ 2963103	Blank error when editing context node formula	 Open	 2010-03-04	rommelnc	rommelnc	 None	 5
+ 2941126	OOBN nodes disappearing	 Open	 2010-01-27	rommelnc	rommelnc	 None	 7
+ 2941125	Duplicated nodes inside OOBN instance node	 Open	 2010-01-27	rommelnc	rommelnc	 None	 7
+ 2941119	Node popup menu item not working	 Open	 2010-01-27	rommelnc	rommelnc	 None	 6
+ 2941116	Nodes going to negative positions	 Open	 2010-01-27	rommelnc	rommelnc	 None	 5
+ 2941115	Problem moving OOBN instance node	 Open	 2010-01-27	rommelnc	rommelnc	 None	 5
+ 2941110	Moving private node outside instance node - OOBN	 Open	 2010-01-27	rommelnc	rommelnc	 None	 6
+ 2927933	Error while removing state	 Open	 2010-01-08	 nobody	rommelnc	 None	 8
+ 2925262	New GUI's popup menu localization/internationalization	 Open	 2010-01-03	 nobody	cardialfly	 None	 3
+ 2913292	Error messages while compiling a BN with several node types	 Open	 2009-12-12	 nobody	cardialfly	 None	 4
+ 2913272	Error compiling a MSBN with 1 section	 Open	 2009-12-12	 nobody	cardialfly	 None	 5
+ 2908370	Error while saving ubf file	 Open	 2009-12-03	laecio_lima	rommelnc	 None	 9
  1975377	Can not edit MTheory name	 Open	 2008-05-27	laecio_lima	rommelnc	 None	 1
  1955808	Problem with the names of the classes of Pr-OWL	 Open	 2008-05-01	 nobody	laecio_lima	 None	 5
  1949115	Cannot instantiate categorical entities	 Open	 2008-04-22	 nobody	cardialfly	 None	 3

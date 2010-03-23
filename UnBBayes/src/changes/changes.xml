@@ -8,6 +8,85 @@
 	</properties>
 	<body>
 	
+		<release version="4.0.0" date="2010-03-23" description="First UnBBayes Plugin Framework release">
+			<action dev="Shou Matsumoto" type="add" issue="2930755">
+				Plugin for forms for discrete nodes' conditional functions.
+			</action>
+			<action dev="Shou Matsumoto" type="add" issue="2928791">
+				Convert PN I/O classes into plugins.
+			</action>
+			<action dev="Shou Matsumoto" type="add" issue="2913286">
+				Plugin support for localization.
+			</action>
+			<action dev="Shou Matsumoto" type="add" issue="2913285">
+				Plugin support for creating a new type of node.
+			</action>
+			<action dev="Shou Matsumoto" type="add" issue="2913283">
+				Plugin support for PN Module's IO.
+			</action>
+			<action dev="Rommel Carvalho" type="add" issue="2908367">
+				GUI Split Pane improvements.
+			</action>
+			<action dev="Rommel Carvalho" type="add" issue="2872601">
+				Change text size in Belief Bar.
+			</action>
+			
+			<action dev="Shou Matsumoto" type="fix" issue="2950752">
+				Chow-Liu learning algorithm was not working at all.
+			</action>
+			<action dev="Shou Matsumoto" type="fix" issue="2950741">
+				We cannot invert edge's direction in Learning modules.
+			</action>
+			<action dev="Shou Matsumoto" type="fix" issue="2950738">
+				Edge's popup menu is implemented on code, but not working.
+			</action>
+			<action dev="Young Park" type="fix" issue="2941111">
+				Context node not updated.
+			</action>
+			<action dev="Young Park" type="fix" issue="2941107">
+				MEBN node being unselected after change.
+			</action>
+			<action dev="Young Park" type="fix" issue="2941106">
+				Node size not saved/loaded.
+			</action>
+			<action dev="Young Park" type="fix" issue="2941104">
+				Node size is not kept as user defined.
+			</action>
+			<action dev="Shou Matsumoto" type="fix" issue="2941102">
+				Cannot remove an edge.
+			</action>
+			<action dev="Shou Matsumoto" type="fix" issue="2925264">
+				Cannot load plugin within JAR or ZIP.
+			</action>
+			<action dev="Shou Matsumoto" type="fix" issue="2924961">
+				The fit to text popup menu does nothing at OOBN's instances.
+			</action>
+			<action dev="Young Park" type="fix" issue="2922304">
+				Align option is not moving edges.
+			</action>
+			<action dev="Shou Matsumoto" type="fix" issue="2922299">
+				ContinuousNode's name&description text field not updated.
+			</action>
+			<action dev="Shou Matsumoto" type="fix" issue="2922295">
+				Properties of continuous node.
+			</action>
+			<action dev="Shou Matsumoto" type="fix" issue="2918072">
+				Remove separators which are d-separated at ssbn creation.
+			</action>
+			<action dev="Rommel Carvalho" type="fix" issue="2916415">
+				Fix StarTrek LPD definitions.
+			</action>
+			<action dev="Shou Matsumoto" type="fix" issue="2913241">
+				Error compiling network with utility node.
+			</action>
+			<action dev="Shou Matsumoto" type="fix" issue="2910768">
+				Vertexes do not disappear at OOBN module.
+			</action>
+			<action dev="Shou Matsumoto" type="fix" issue="2910763">
+				Movable inner oobn nodes.
+			</action>
+		</release>
+	
 		<release version="3.52.7-BETA" date="2009-09-11" description="Fifth UnBBayes-MEBN beta release">
 			<action dev="Rommel Carvalho" type="add" issue="2845145">
 				Show findings in different color in SSBN.
@@ -91,7 +170,7 @@
 			<action dev="Rommel Carvalho" type="fix" issue="2707961">
 				Invert table's variable order in XML-BIF 5 loader.
 			</action>
-			<action dev="Laécio Lima" type="fix" issue="2583323">
+			<action dev="Laecio Lima" type="fix" issue="2583323">
 				Bug in listener of changes in Node name.
 			</action>
 			<action dev="Rommel Carvalho" type="fix" issue="2539903">
