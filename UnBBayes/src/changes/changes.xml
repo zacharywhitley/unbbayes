@@ -65,7 +65,7 @@
 				Align option is not moving edges.
 			</action>
 			<action dev="Shou Matsumoto" type="fix" issue="2922299">
-				ContinuousNode's name&description text field not updated.
+				ContinuousNode's name and description text field not updated.
 			</action>
 			<action dev="Shou Matsumoto" type="fix" issue="2922295">
 				Properties of continuous node.
