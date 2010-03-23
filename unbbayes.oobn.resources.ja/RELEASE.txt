@@ -1,0 +1,9 @@
+UNBBAYES PLUGIN - JAPANESE OOBN RESOURCES VERSION 1.1.0
+----------------------------
+FEATURE LIST		
+Number	Request ID	Summary
+1				.
+
+
+BUG LIST		
+Number	Request ID	Summary

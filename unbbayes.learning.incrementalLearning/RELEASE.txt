@@ -1,0 +1,10 @@
+UNBBAYES PLUGIN - INCREMENTAL LEARNING VERSION 1.2.0
+----------------------------
+FEATURE LIST		
+Number	Request ID	Summary
+1				.
+2				.
+
+
+BUG LIST		
+Number	Request ID	Summary
