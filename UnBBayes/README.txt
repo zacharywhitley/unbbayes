@@ -36,7 +36,9 @@ mvn site:site -Dmaven.test.skip=true
 8. Verify that the created website is correct.
 9. Since we do not know how to add direct html code using the apt format, we have to manually change the
 generated video_tutorial.html file. Replace the code for showing the youtube video by copying from the .apt 
-source file and pasting into the corresponding postion in the .html generated file.
+source file and pasting into the corresponding postion in the .html generated file. Also make sure to 
+change the css file to make the left menu box big enough to fit the powered by images. To make this process 
+easier, there are files already changed on src/site/changes folder.
 10. Deploy the new website. Go to the projects root folder command line and run**:
 mvn site:deploy -Dmaven.test.skip=true
 
