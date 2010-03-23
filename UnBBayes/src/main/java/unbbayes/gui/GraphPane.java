@@ -845,7 +845,9 @@ public class GraphPane extends UCanvas implements MouseListener,
 			Node selectedNode = controller.getSelectedNode();
 			if (selectedNode != null) {
 				UShape selectedUshape = this.getNodeUShape(selectedNode);  
-				selectedUshape.setState(UShape.STATE_SELECTED, null);
+				if (selectedUshape != null) {
+					selectedUshape.setState(UShape.STATE_SELECTED, null);
+				}
 			}
 		}
 	}
