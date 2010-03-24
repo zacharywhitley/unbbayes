@@ -30,9 +30,7 @@
         <p>
           Although the CVS repository is active, we have stopped using it. Therefore, 
           download UnBBayes current code you have to get it from our SVN repository as 
-          explained in the SVN source code menu at http://www.sourceforge.net/projects/UnBBayes. 
-          Our current source code is on a branch /branches/UnBBayesOntologyMaven/UnBBayes.
-          That is the module you have to check out.
+          explained in the SVN source code menu at http://www.sourceforge.net/projects/UnBBayes.
         </p>
       </answer>
     </faq>
@@ -109,9 +107,10 @@
       <question>Can it handle continuous nodes, if so what kind (e.g. Gaussian, log-normal etc)?</question>
       <answer>
         <p>
-           In our last release you are able to only represent the CLG (Gaussian), but we are working on implementing Junction Tree for CLG also. Besides that, we are also developing some distributions (like in Netica), including continuous, instead of just allowing the definition 
-           of CPTs (table entries) as it is done today. For the continuous nodes, the distribution will be 
-           discretized before performing inference (again, like in Netica).
+           In our last release you are able to only represent the CLG (Gaussian), but we are working on implementing Junction 
+           Tree for CLG also. Besides that, we are also developing some distributions (like in Netica), including continuous, 
+           instead of just allowing the definition of CPTs (table entries) as it is done today. For the continuous nodes, 
+           the distribution will be discretized before performing inference (again, like in Netica).
         </p>
       </answer>
     </faq>

@@ -30,6 +30,8 @@
     </menu>
     
     <menu name="Tutorials">
+      <item name="Wiki Tutorial" href="https://sourceforge.net/apps/mediawiki/unbbayes/index.php?title=Visit_the_Tutorial"/>
+      <item name="Presentations" href="presentations.html"/>
       <item name="Video Tutorials" href="video_tutorial.html"/>
     </menu>
     
