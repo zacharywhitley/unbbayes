@@ -54,7 +54,7 @@ public abstract class LearningToolkit{
         int nij;
         int ri = variable.getEstadoTamanho();
         int nijLength  = getQ(variable.getPais());
-        instanceVector  = getInstances(variable.getPais());
+        instanceVector  = getInstancesAsNodes(variable.getPais());
         for(int i = 0; i < nijLength;i++){
              nij = 0;
              for(int j = 0; j < ri ; j++){
@@ -255,8 +255,8 @@ public abstract class LearningToolkit{
 		return index;
 	}
 
-	protected List getStateMissingVector(int[] stateVector, int line, int[] missingVector) {
-		List stateList = new ArrayList();
+	protected List<Integer> getStateMissingVector(int[] stateVector, int line, int[] missingVector) {
+		List<Integer> stateList = new ArrayList<Integer>();
 		for (int i = 0; i < missingVector.length; i++) {
 			if (missingVector[i] == -1) {
 				stateList.add(new Integer(stateVector[i]));
@@ -362,8 +362,45 @@ public abstract class LearningToolkit{
 //    }
 
 	
+	protected List getInstances(List<Integer> list) {
+		List instances = new ArrayList();
+		List listAux = new ArrayList();
+		List array;
+		List arrayAux;
+		if (list.size() == 0) {
+			return instances;
+		}
+		for (int i = 0; i < list.size(); i++) {
+			int tamanho = ((Integer) list.get(i)).intValue();
+			for (int k = 0; k < instances.size(); k++) {
+				array = (List) instances.get(k);
+				for (int h = 0; h < tamanho; h++) {
+					if (h == 0) {
+						array.add(new Integer(h));
+						listAux.add(array);
+					} else {
+						arrayAux = SetToolkit.clone((List) array);
+						arrayAux.remove(array.size() - 1);
+						arrayAux.add(new Integer(h));
+						listAux.add(arrayAux);
+					}
+				}
+			}
+			instances.clear();
+			instances = SetToolkit.clone((List) listAux);
+			listAux.clear();
+			if (instances.size() == 0) {
+				for (int j = 0; j < tamanho; j++) {
+					array = new ArrayList();
+					array.add(new Integer(j));
+					instances.add(array);
+				}
+			}
+		}
+		return instances;
+	}
 	
-    protected List getInstances(List<Node> list){
+    protected List getInstancesAsNodes(List<Node> list){
         List<List<Integer>> instances = new ArrayList<List<Integer>>();
         List<List<Integer>> listAux = new ArrayList<List<Integer>>();;
         LearningNode aux;

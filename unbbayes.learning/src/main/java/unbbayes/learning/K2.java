@@ -77,7 +77,7 @@ public class K2 extends K2Toolkit{
             	}            	
         	}
         } catch(NumberFormatException e){
-        	System.err.println(e.getMessage());        	
+        	e.printStackTrace();
         }                   
     }
 }
