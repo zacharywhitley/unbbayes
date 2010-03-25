@@ -34,9 +34,20 @@ public abstract class LearningToolkit{
 	    protected int[][] dataBase;
 	    protected int[] vector;
 	    protected boolean compacted;
-
-
-	protected void getProbability(int[][] arrayNijk, LearningNode variable){
+	/**
+	 * @deprecated use {@link #getProbability(float[][], LearningNode)} instead
+	 */
+    protected void getProbability(int[][] arrayNijk, LearningNode variable){
+    	float[][] arrayNijkFloat = new float[arrayNijk.length][arrayNijk[0].length];
+    	for (int i = 0; i < arrayNijk.length; i++) {
+			for (int j = 0; j < arrayNijk[i].length; j++) {
+				arrayNijkFloat[i][j] = arrayNijk[i][j];
+			}
+		}
+    	this.getProbability(arrayNijkFloat, variable);
+    }
+    
+	protected void getProbability(float[][] arrayNijk, LearningNode variable){
         List instanceVector;
         List instance = new ArrayList();
         float probability;
@@ -65,69 +76,294 @@ public abstract class LearningToolkit{
              }
         }
     }
+	
+	/**
+	 * 
+	 * @param variable
+	 * @param parents: this is specified as a list of nodes, but this is actually a list
+	 * of {@link LearningNode}
+	 * @return
+	 */
+	protected float[][] getFrequencies(LearningNode variable, List<Node> parents) {
+		float[][] arrayNijk;
+		int position;
+		LearningNode aux;
 
-    protected  int[][] getFrequencies(LearningNode variable, ArrayList<Node> parents){
-        LearningNode aux;
-        int[][] ArrayNijk;
-        int parentsLength;
-        int position;
-        if(parents == null){
-           parents = new ArrayList<Node>();
-        }
-        parentsLength = parents.size();
-        if(parentsLength == 0){
-            ArrayNijk = new int[variable.getEstadoTamanho()][1];
-        }else{
-            ArrayNijk = new int[variable.getEstadoTamanho()][getQ(parents)];
-        }
-        byte positionVector[] = new byte[parentsLength];
-        int maxVector[]      = new int[parentsLength];
-        for (int i = 0; i < parentsLength; i++ ){
-            aux = (LearningNode)parents.get(i);
-            positionVector[i] = (byte)aux.getPos();
-            maxVector[i] = aux.getEstadoTamanho();
+		if (parents == null) {
+			parents = new ArrayList<Node>();
+			arrayNijk = new float[variable.getEstadoTamanho()][1];
+		} else {
+			arrayNijk = new float[variable.getEstadoTamanho()][getQ(parents)];
+		}
 
-        }
-        int positionLength = positionVector.length;
-        int pos = variable.getPos();
-        int index =0;
-        for (int i = 0 ; i < caseNumber ; i++){
-            for (int j = positionLength - 1; j >=0; j-- ){
-                position = positionVector[j];
-                if(j != positionLength -1){
-                    index += dataBase[i][position]*maxVector[j+1];
-                    if(i == 0){
-                        if(maxVector[j] < 0){
-                            System.currentTimeMillis();
-                        }
-                        maxVector[j] *= maxVector[j+1];
-                        
-                    }
-                }else{
-                    index = dataBase[i][position];
-                }
-            }
-            if(parentsLength == 0){
-                if(! compacted){
-                         ArrayNijk[dataBase[i][variable.getPos()]][0]++;
-                    }else{
-                         ArrayNijk[dataBase[i][variable.getPos()]][0] += vector[i];
-                    }
-            }else{
-                  if(! compacted){
-                       ArrayNijk[dataBase[i][pos]][index]++;
-                  }else{                  	
-                  	if(dataBase[i][pos] == -39 || index == -39){
-                  		System.out.println("Break");
-                  	}
-                    ArrayNijk[dataBase[i][pos]][index] += vector[i];
-                  }
-            }
-        }
-        return ArrayNijk;
-    }
+		int parentsLength = parents.size();
+		int stateVector[] = new int[parentsLength];
+		int positionVector[] = new int[parentsLength];
+		int maxVector[] = new int[parentsLength];
 
-    protected List getInstances(ArrayList<Node> list){
+		for (int i = 0; i < parentsLength; i++) {
+			aux = (LearningNode) parents.get(i);
+			positionVector[i] = (byte) aux.getPos();
+			maxVector[i] =  aux.getEstadoTamanho();
+			stateVector[i] = maxVector[i];
+		}
+		
+		/*Posicao da Variável*/
+		int pos = variable.getPos();
+		int index = 0;
+		/*Linhas do arquivo que possuem algum valor faltante ou na variavel ou nos pais dessa*/
+		List linhasFaltantes = new ArrayList();
+
+		for (int i = 0; i < caseNumber; i++) {
+			for (int j = positionVector.length - 1; j >= 0; j--) {
+				position = positionVector[j];
+				if (j != positionVector.length - 1) {
+					index += dataBase[i][position] * maxVector[j + 1];
+					if (i == 0) {
+						maxVector[j] *= maxVector[j + 1];
+					}
+				} else {
+					index = dataBase[i][position];
+				}
+			}
+			if (!isMissingValue(positionVector, pos, i)) {
+				if (parentsLength == 0) {
+					if (!compacted) {
+						arrayNijk[dataBase[i][variable.getPos()]][0]++;
+					} else {
+						arrayNijk[dataBase[i][variable.getPos()]][0] += vector[i];
+					}
+				} else {
+					if (!compacted) {
+						arrayNijk[dataBase[i][pos]][index]++;
+					} else {
+						arrayNijk[dataBase[i][pos]][index] += vector[i];
+					}
+				}
+			} else {
+				linhasFaltantes.add(new Integer(i));
+			}
+		}
+		/*Se existir linhas faltantes*/
+		if (linhasFaltantes.size() > 0) {
+			float[][] arrayNijkMissing = null;
+			int[][] vetorRepeticao = null;
+			if (parentsLength == 0) {
+				arrayNijkMissing = new float[variable.getEstadoTamanho()][1];				
+			} else {
+				arrayNijkMissing = new float[variable.getEstadoTamanho()][getQ(parents)];				
+			}
+			for (int i = 0; i < linhasFaltantes.size(); i++) {
+				int line = ((Integer) linhasFaltantes.get(i)).intValue();
+				/*Array que contem o valor dos pais da variável*/
+				int[] missingVector = getMissingVector(positionVector, line);
+				List stateMissingVector = getStateMissingVector(stateVector, line, missingVector);
+				List instances = getInstances(stateMissingVector);
+				for (int j = 0; j < instances.size(); j++) {
+					List instance = (List) instances.get(j);
+					int cont = 0;
+					int[] completeVector = copy(missingVector);
+					for (int k = 0; k < missingVector.length; k++) {
+						if (missingVector[k] == -1) {
+							completeVector[k] = ((Integer) instance.get(cont)).intValue();
+							cont++;
+						}
+					}
+					int posJ = getJ(stateVector, completeVector);
+					if (dataBase[line][variable.getPos()] == -1) {
+						for (int k = 0; k < variable.getEstadoTamanho(); k++) {							
+							arrayNijkMissing[k][posJ] += (float) 1 / (variable.getEstadoTamanho() * instances.size());
+						}
+					} else {
+						arrayNijkMissing[dataBase[line][variable.getPos()]][posJ] += (float) 1 / instances.size();						
+					}
+
+				}
+				if (instances.size() == 0) {
+					for (int k = 0; k < variable.getEstadoTamanho(); k++) {						
+						arrayNijkMissing[k][0] += (float) 1 / variable.getEstadoTamanho();
+					}
+				}
+			}
+			arrayNijk = getProbability(arrayNijkMissing, arrayNijk, variable);
+		}
+		/*float cont = 0;
+		for(int i = 0 ; i < arrayNijk.length; i++){
+		    for(int j = 0 ; j < arrayNijk[i].length; j++){
+		        cont += arrayNijk[i][j];
+		    }
+		}
+		float fator = this.caseNumber/cont;
+		for(int i = 0 ; i < arrayNijk.length; i++){
+		    for(int j = 0 ; j < arrayNijk[i].length; j++){
+		        arrayNijk[i][j] *= fator;
+		        arrayNijk[i][j] = (float)Math.floor(arrayNijk[i][j]);
+		    }
+		}*/
+		return arrayNijk;
+	}
+
+	protected int[] copy(int[] missingVector) {
+		int[] completeVector = new int[missingVector.length];
+		for (int i = 0; i < missingVector.length; i++) {
+			completeVector[i] = missingVector[i];
+		}
+		return completeVector;
+	}
+
+	protected float[][] getProbability(float[][] arrayNijkMissing, float[][] arrayNijk, LearningNode variable) {
+		double delta = Math.pow(10, -3);
+		float nij;
+		int ri = variable.getEstadoTamanho();
+		float probability = 1 / ri;
+		float initialProbability = 1 / ri;
+		int nijLength = arrayNijk[0].length;
+		float[][] arraySoma = new float[ri][nijLength];
+		float somaMissing = 0;
+		for (int i = 0; i < ri; i++) {
+			for (int j = 0; j < nijLength; j++) {
+				arraySoma[i][j] = arrayNijkMissing[i][j] + arrayNijk[i][j];
+			}
+		}
+		for (int i = 0; i < nijLength; i++) {
+			probability = initialProbability = (float) 1 / ri;
+			nij = 0;
+			somaMissing = 0;
+			for (int j = 0; j < ri; j++) {
+				nij += arraySoma[j][i];
+				somaMissing += arrayNijkMissing[j][i];
+			}
+			do {
+				initialProbability = probability;
+				for (int j = 0; j < ri; j++) {
+					probability = (float) (1 + arraySoma[j][i]) / (ri + nij);
+					arraySoma[j][i] = arrayNijk[j][i] + (somaMissing * probability);
+				}
+			} while (Math.abs(probability - initialProbability) > delta);
+
+		}
+		return arraySoma;
+	}
+
+	protected int getJ(int[] stateVector, int[] completeVector) {
+		int index = 0;
+		int acumulador = 1;
+		for (int i = stateVector.length - 1; i >= 0; i--) {
+			index += completeVector[i] * acumulador;
+			acumulador *= stateVector[i];
+		}
+		return index;
+	}
+
+	protected List getStateMissingVector(int[] stateVector, int line, int[] missingVector) {
+		List stateList = new ArrayList();
+		for (int i = 0; i < missingVector.length; i++) {
+			if (missingVector[i] == -1) {
+				stateList.add(new Integer(stateVector[i]));
+			}
+		}
+		return stateList;
+	}
+
+	/**
+	 * 
+	 * @param posVector
+	 * @param line
+	 * @return int[]
+	 */
+	protected int[] getMissingVector(int[] posVector, int line) {
+		int[] missingVector = new int[posVector.length];
+		for (int i = 0; i < posVector.length; i++) {
+			missingVector[i] = dataBase[line][posVector[i]];
+		}
+		return missingVector;
+	}
+
+	/**
+	 * Verify if is there any missing value on the currenty line of the data base    *
+	 * @param parentPos
+	 * @param variablePos
+	 * @param line
+	 * @return boolean
+	 */
+	protected boolean isMissingValue(int[] parentPos, int variablePos, int line) {
+		/*Se a variável tiver valor faltante*/
+		if (dataBase[line][variablePos] == -1) {
+			return true;
+		}
+		/*Se algum dos pais da variável tiver valor faltante*/
+		for (int i = 0; i < parentPos.length; i++) {
+			if (dataBase[line][parentPos[i]] == -1) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+//    protected  int[][] getFrequencies(LearningNode variable, List<Node> parents){
+//        LearningNode aux;
+//        int[][] ArrayNijk;
+//        int parentsLength;
+//        int position;
+//        if(parents == null){
+//           parents = new ArrayList<Node>();
+//        }
+//        parentsLength = parents.size();
+//        if(parentsLength == 0){
+//            ArrayNijk = new int[variable.getEstadoTamanho()][1];
+//        }else{
+//            ArrayNijk = new int[variable.getEstadoTamanho()][getQ(parents)];
+//        }
+//        byte positionVector[] = new byte[parentsLength];
+//        int maxVector[]      = new int[parentsLength];
+//        for (int i = 0; i < parentsLength; i++ ){
+//            aux = (LearningNode)parents.get(i);
+//            positionVector[i] = (byte)aux.getPos();
+//            maxVector[i] = aux.getEstadoTamanho();
+//
+//        }
+//        int positionLength = positionVector.length;
+//        int pos = variable.getPos();
+//        int index =0;
+//        for (int i = 0 ; i < caseNumber ; i++){
+//            for (int j = positionLength - 1; j >=0; j-- ){
+//                position = positionVector[j];
+//                if(j != positionLength -1){
+//                    index += dataBase[i][position]*maxVector[j+1];
+//                    if(i == 0){
+//                        if(maxVector[j] < 0){
+//                            System.currentTimeMillis();
+//                        }
+//                        maxVector[j] *= maxVector[j+1];
+//                        
+//                    }
+//                }else{
+//                    index = dataBase[i][position];
+//                }
+//            }
+//            if(parentsLength == 0){
+//                if(! compacted){
+//                         ArrayNijk[dataBase[i][variable.getPos()]][0]++;
+//                    }else{
+//                         ArrayNijk[dataBase[i][variable.getPos()]][0] += vector[i];
+//                    }
+//            }else{
+//                  if(! compacted){
+//                       ArrayNijk[dataBase[i][pos]][index]++;
+//                  }else{                  	
+//                  	if(dataBase[i][pos] == -39 || index == -39){
+//                  		System.out.println("Break");
+//                  	}
+//                    ArrayNijk[dataBase[i][pos]][index] += vector[i];
+//                  }
+//            }
+//        }
+//        return ArrayNijk;
+//    }
+
+	
+	
+    protected List getInstances(List<Node> list){
         List<List<Integer>> instances = new ArrayList<List<Integer>>();
         List<List<Integer>> listAux = new ArrayList<List<Integer>>();;
         LearningNode aux;
@@ -145,7 +381,7 @@ public abstract class LearningToolkit{
                         array.add(new Integer(h));
                         listAux.add(array);
                      }else{
-                        arrayAux = (ArrayList<Integer>)SetToolkit.clone((List)array);
+                        arrayAux = (List<Integer>)SetToolkit.clone((List)array);
                         arrayAux.remove(array.size()-1);
                         arrayAux.add(new Integer(h));
                         listAux.add(arrayAux);
@@ -153,7 +389,7 @@ public abstract class LearningToolkit{
                 }
             }
             instances.clear();
-            instances = (ArrayList<List<Integer>>)SetToolkit.clone((List)listAux);
+            instances = (List<List<Integer>>)SetToolkit.clone((List)listAux);
             listAux.clear();
             if(instances.size() == 0){
                  for(int j = 0 ; j < aux.getEstadoTamanho(); j++){
@@ -166,7 +402,7 @@ public abstract class LearningToolkit{
         return instances;
     }
 
-    protected int getQ(ArrayList<Node> list) {
+    protected int getQ(List<Node> list) {
         LearningNode variable;
         int qi = 1;
         if(list != null){

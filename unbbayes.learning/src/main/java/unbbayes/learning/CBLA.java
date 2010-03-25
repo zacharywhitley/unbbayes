@@ -61,7 +61,8 @@ public class CBLA extends CBLToolkit{
 			peace = (int[])es.get(i);
 			esx = (ArrayList)es.clone();
 			esx.remove(i);			
-			if(findWays(peace[0],peace[1],esx).size() == 0
+//			if(findWays(peace[0],peace[1],esx).size() == 0
+			if ( isWays(peace[0],peace[1],esx)
 			    && ! needConnect( peace[0], peace[1],esx, 0)){
 			    	es.remove(i);			    									
 			    	i--;

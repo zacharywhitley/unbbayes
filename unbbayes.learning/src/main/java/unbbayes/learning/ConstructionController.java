@@ -509,14 +509,18 @@ public class ConstructionController {
 							if (!aux.existeEstado(stateName)) {
 								if (!stateName.equals("?")) {
 									aux.adicionaEstado(stateName);
+									missing = false;
 								} else {
 									missing = true;
 								}
+							} else {
+								missing = false;
 							}
 						} else {
 							stateName = String.valueOf(cols.nval);
 							if (!aux.existeEstado(stateName)) {
 								aux.adicionaEstado(stateName);
+								missing = false;
 							}
 						}
 						if (!missing) {
@@ -525,7 +529,6 @@ public class ConstructionController {
 
 						} else {
 							matrix[(int) caseNumber][aux.getPos()] = -1;
-							missing = true;
 						}
 					}
 					cols.nextToken();
@@ -546,7 +549,7 @@ public class ConstructionController {
 		}
 		;
 		/* Tirar isso. So pra debug */
-		System.out.println("NumeroCasos " + caseNumber);
+//		System.out.println("NumeroCasos " + caseNumber);
 	}
 
 	/**

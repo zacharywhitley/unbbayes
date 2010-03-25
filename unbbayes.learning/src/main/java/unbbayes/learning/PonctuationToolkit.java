@@ -37,11 +37,11 @@ public abstract class PonctuationToolkit extends LearningToolkit{
     protected double gMDL(LearningNode variable, ArrayList<Node> parents){
 		double riSum = 0;
 		double qiSum = 0;
-        int  nij  = 0;
-        int  nijk = 0;
+        float  nij  = 0;
+        float  nijk = 0;
         int  ri   = variable.getEstadoTamanho();
         int  qi   = 1;
-        int ArrayNijk[][] = getFrequencies(variable,parents);
+        float ArrayNijk[][] = getFrequencies(variable,parents);
         if (parents != null && parents.size() > 0){
            qi = getQ(parents);
         }
@@ -69,11 +69,11 @@ public abstract class PonctuationToolkit extends LearningToolkit{
        double sSum;
        double tSum;
        double qiSum = 0;              
-       int nij;
-       int nijk;
+       float nij;
+       float nijk;
        int qi = 1;
        int  ri   = variable.getEstadoTamanho();
-       int ArrayNijk[][] = getFrequencies(variable,parents);
+       float ArrayNijk[][] = getFrequencies(variable,parents);
         if (parents != null && parents.size() > 0){
            qi = getQ(parents);
         }
@@ -99,11 +99,11 @@ public abstract class PonctuationToolkit extends LearningToolkit{
        double sSum;
        double tSum;
        double qiSum = 0;              
-       int nij;
-       int nijk;
+       float nij;
+       float nijk;
        int qi = 1;
        int  ri   = variable.getEstadoTamanho();
-       int ArrayNijk[][] = getFrequencies(variable,parents);
+       float ArrayNijk[][] = getFrequencies(variable,parents);
         if (parents != null && parents.size() > 0){
            qi = getQ(parents);
         }
@@ -146,7 +146,7 @@ public abstract class PonctuationToolkit extends LearningToolkit{
        }	 	
    }
    
-   private double fatLog(int n){
+   private double fatLog(float n){
        if( n <= 100){
            return fatorialLog(n);       	
        } else{
@@ -154,7 +154,7 @@ public abstract class PonctuationToolkit extends LearningToolkit{
        }	   	
    }
    
-   private double fatorialLog(int n){
+   private double fatorialLog(float n){
        double f = 0;
        for(int i = 1 ; i <= n ; i++){
        	   f += log(i);       	
@@ -162,7 +162,7 @@ public abstract class PonctuationToolkit extends LearningToolkit{
        return f;
    }
    
-   private double stirlingLog(int n ){
+   private double stirlingLog(float n ){
        return (0.5*log(2*Math.PI) + (n+0.5)*log(n) - n*log(Math.E));	
    }
    

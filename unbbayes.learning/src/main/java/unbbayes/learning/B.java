@@ -76,7 +76,6 @@ public class B extends BToolkit{
         constructGMatrix();                
         IJVector = maxMatrix();
     	while(gMatrix[IJVector[0]][IJVector[1]] > 0){ 
-        	//variable = (LearningNode)variablesVector.get(IJVector[0]);
     		variable = (LearningNode)variablesVector.get(IJVector[0]);
            	parentsAux = variable.getPais();
            	parentsAux.add(variablesVector.get(IJVector[1]));
@@ -92,7 +91,6 @@ public class B extends BToolkit{
            	}
            	for(int i = 0; i < variables.size(); i++){
                 if(gMatrix[IJVector[0]][i] > Double.NEGATIVE_INFINITY){
-                  	//if(isMember((LearningNode)variables.get(i),variable.getPais())){
                 	if(isMember((LearningNode)variables.get(i),variable.getPais())){
                       	gMatrix[IJVector[0]][i] = 0;
                    	} else{

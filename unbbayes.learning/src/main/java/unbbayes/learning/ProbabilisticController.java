@@ -42,7 +42,7 @@ public class ProbabilisticController extends LearningToolkit{
         this.caseNumber = caseNumber;
     	LearningNode variable;
     	int parentsLength;
-    	int[][] arrayNijk;
+    	float[][] arrayNijk;
     	PotentialTable table;
     	//ProbabilisticNetwork net    = controller.makeNetwork(variables);
     	//BaseIO base = new NetIO();
