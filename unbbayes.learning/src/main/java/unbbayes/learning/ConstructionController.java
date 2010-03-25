@@ -37,6 +37,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.exception.InvalidParentException;
+import unbbayes.util.Debug;
 
 /*
  * UnbBayes Copyright (C) 2002 Universidade de Brasília
@@ -383,6 +384,7 @@ public class ConstructionController {
 		cols.wordChars('-', '-');
 		cols.wordChars('0', '9');
 		cols.wordChars('.', '.');
+		cols.wordChars('?', '?');
 		cols.quoteChar('\t');
 		cols.commentChar('%');
 		cols.eolIsSignificant(true);
@@ -491,18 +493,20 @@ public class ConstructionController {
 		String stateName = "";
 		LearningNode aux;
 		try {
+			if (cols.ttype == StreamTokenizer.TT_EOL) {
+				cols.nextToken();
+			}
 			while (cols.ttype != StreamTokenizer.TT_EOF && caseNumber <= rows) {
 				while (cols.ttype != StreamTokenizer.TT_EOL
 						&& position < variablesVector.size()
 						&& caseNumber <= rows) {
 					aux = (LearningNode) variablesVector.get(position);
 					if (aux.getRep()) {
-						/*
-						 * if(cols.nval > 0.0){ vector[(int)caseNumber] =
-						 * (int)cols.nval; }else{
-						 */
-						vector[(int) caseNumber] = Integer.parseInt(cols.sval);
-						// }
+						try {
+							vector[(int)caseNumber] = (int)cols.nval; 
+						} catch (Throwable e) {
+							vector[(int) caseNumber] = Integer.parseInt(cols.sval);
+						}
 					} else if (aux.getParticipa()) {
 						if (cols.sval != null) {
 							stateName = cols.sval;
@@ -524,7 +528,7 @@ public class ConstructionController {
 							}
 						}
 						if (!missing) {
-							matrix[(int) caseNumber][aux.getPos()] = (byte) aux
+							matrix[(int) caseNumber][aux.getPos()] = (int) aux
 									.getEstadoPosicao(stateName);
 
 						} else {
