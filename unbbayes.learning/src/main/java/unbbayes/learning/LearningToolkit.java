@@ -25,6 +25,7 @@ import java.util.List;
 
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
+import unbbayes.prs.bn.PotentialTable;
 import unbbayes.util.SetToolkit;
 
 
@@ -34,6 +35,10 @@ public abstract class LearningToolkit{
 	    protected int[][] dataBase;
 	    protected int[] vector;
 	    protected boolean compacted;
+	    
+	    /** Error margin used in float comparisons */
+		public static final float TABLE_FLOAT_ERROR_MARGIN = 0.0001f;
+		
 	/**
 	 * @deprecated use {@link #getProbability(float[][], LearningNode)} instead
 	 */
@@ -47,6 +52,12 @@ public abstract class LearningToolkit{
     	this.getProbability(arrayNijkFloat, variable);
     }
     
+    /**
+     * This method sets the probability of a given learning node using
+     * an array.
+     * @param arrayNijk
+     * @param variable
+     */
 	protected void getProbability(float[][] arrayNijk, LearningNode variable){
         List instanceVector;
         List instance = new ArrayList();
@@ -74,9 +85,76 @@ public abstract class LearningToolkit{
                   }
                   variable.getProbabilidades().setValue(coord, probability);
              }
+             
+             // ajusting probabilities above or below 100% caused by floating point's precision
+             this.fixTotalProbability(variable);
         }
     }
 	
+	
+	/**
+	 * This method fixes the probability values, if the sum of all possible states
+	 * is not equal to 1.
+	 * The adjustment is usually done by doing the following procedure:
+	 * 		1 - find out the probability sum and get its difference compared to 1;
+	 * 		2 - if there were a difference (the sum was not equal to 1), ajust
+	 * 			the value of the greatest probability (find out what value in the
+	 * 			table has the greatest probability and subtract the difference
+	 * 			from it).
+	 * 		3 - if the difference was positive
+	 * value within the table.
+	 * @param variable
+	 */
+	protected void fixTotalProbability(LearningNode variable) {
+		
+		PotentialTable table = variable.getProbabilityFunction();	// table to be analyzed
+		
+		int lineCounter = variable.getStatesSize();	// total numbers of lines
+		int columnCounter = 1;						// total numbers of columns in this variable's table
+		
+		// calculate the number of columns
+		int parentSize = variable.getParentNodes().size();
+		for (int k = 0; k < parentSize; k++) {
+			columnCounter *= variable.getParents().get(k).getStatesSize();
+		}
+		
+		// verify the sum of all probabilities for each column
+		for (int j = 0; j < columnCounter; j++) {
+			
+			float sum = 0;					// sum
+			float greatestValue = -1.0f;	// greatest probability value of a column
+			int greatestIndex = -1;			// index of the greatest probability value of a column
+			
+			// calculate the sum and update greatest value/index by iterating on lines
+			for (int i = 0; i < lineCounter; i++) {
+				int index = j * lineCounter + i;		// get the index of the next line of the same column
+				float value = table.getValue(index);	// probability value of the current cell
+				sum += value;
+				
+				if (value > greatestValue) {
+					greatestValue = value;
+					greatestIndex = index;
+				}
+			}
+			
+			float offset = 1.0f - sum;
+			if (Math.abs(offset) > TABLE_FLOAT_ERROR_MARGIN) {
+//				Debug.println(this.getClass(), "[" + variable.getName() + "] The sum of all probabilities was not exactly 1: obtained = " + sum + ".");
+				
+				// alter the value of the greatest probability value, using offset
+				float oldValue = table.getValue(greatestIndex);
+				float newValue = oldValue + offset;
+				
+				if (newValue >= 0.0f && newValue <= 1.0f) {
+//					Debug.println(this.getClass(),"Altering value of index " + greatestIndex + " from " + oldValue + " to " + newValue);
+					table.setValue(greatestIndex, newValue);
+				} else {
+					System.err.println("[" + this.getClass()+"] Offset error on index " + greatestIndex + ". Old value = " + oldValue + ", new value = " + newValue);
+				}
+			}
+		}
+	}
+
 	/**
 	 * 
 	 * @param variable

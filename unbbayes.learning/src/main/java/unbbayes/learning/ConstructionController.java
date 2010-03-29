@@ -215,7 +215,7 @@ public class ConstructionController {
 		long time1 = d2.getTime();
 		long resul = time1 - time;
 		/* Efeito de debug */
-		System.out.println("Resultado = " + resul);
+//		System.out.println("Resultado = " + resul);
 		/* Gives the probability of each node */
 		ProbabilisticController probabilisticController = new ProbabilisticController(
 				variables, matrix, vector, caseNumber, controller, compacted);
