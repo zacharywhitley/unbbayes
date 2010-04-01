@@ -51,7 +51,6 @@ import unbbayes.util.ResourceController;
 
 /**
  * @author Mário Henrique Paes Vieira
- * @version 1.0
  */
 public class EvidenceTree extends JTree {
 	
@@ -61,8 +60,11 @@ public class EvidenceTree extends JTree {
 	private SingleEntityNetwork net;
 	private NumberFormat nf;
 	private boolean[] expandedNodes;
+	
+	//Link DefaultMutableTreeNode <-> Node
 	private ArrayMap<Object, Node> objectsMap = new ArrayMap<Object, Node>();
-    protected IconController iconController = IconController.getInstance();
+     
+	protected IconController iconController = IconController.getInstance();
 
     private final NetworkWindow netWindow; 
     
@@ -83,10 +85,10 @@ public class EvidenceTree extends JTree {
 		nf = NumberFormat.getInstance(Locale.US);
 		nf.setMaximumFractionDigits(2);
 
-		// set up node icons
+		// Set up node icons
 		setCellRenderer(new EvidenceTreeCellRenderer());
 
-		//trata os eventos de mouse para a arvore de evidencias
+		// Mouse events for the evidence tree
 		addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
 				int selRow = getRowForLocation(e.getX(), e.getY());
@@ -220,11 +222,7 @@ public class EvidenceTree extends JTree {
 
 	/**
 	 *  Collapses every single nodes from a tree
-	 *
-	 * @param  tree  a <code>JTree</code> representing a BN in a tree format
-	 *
-	 * @since
-	 * @see            JTree
+	 *  
 	 */
 	public void collapseTree() {
 		for (int i = 0; i < getRowCount(); i++) {
@@ -237,12 +235,8 @@ public class EvidenceTree extends JTree {
 	}
 
 	/**
-	 *  Expande todos os nos da arvore desejada.
+	 *  Expand all nodes of the tree
 	 *
-	 * @param  arvore  uma <code>JTree</code> que representa a rede Bayesiana em
-	 *      forma de arvore.
-	 * @since
-	 * @see            JTree
 	 */
 	public void expandTree() {
 		for (int i = 0; i < getRowCount(); i++) {
@@ -272,12 +266,7 @@ public class EvidenceTree extends JTree {
 	}
 
 	/**
-	 *  Atualiza as marginais na arvore desejada.
-	 *
-	 * @param  arvore  uma <code>JTree</code> que representa a arvore a ser
-	 *      atualizada
-	 * @since
-	 * @see            JTree
+	 *  Update the marginals on the tree
 	 */
 	public void updateTree(boolean reset) {
 
@@ -408,9 +397,9 @@ public class EvidenceTree extends JTree {
 	
 
 	/**
-	 * Modifica o formato de numeros
+	 * Modify the numbers format
 	 *
-	 * @param local localidade do formato de numeros.
+	 * @param local local of number's format.
 	 */
 	public void setNumberFormat(Locale local) {
 		nf = NumberFormat.getInstance(local);
@@ -449,9 +438,9 @@ public class EvidenceTree extends JTree {
 	}
 
 	/**
-	 *  Adiciona uma evidencia no estado especificado.
+	 * Add a evidence
 	 *
-	 * @param  caminho  caminho do estado a ser setado para 100%;
+	 * @param  treeNode  path to the state be setted 100%
 	 * @see             TreePath
 	 */
 	private void treeDoubleClick(DefaultMutableTreeNode treeNode) {
@@ -461,7 +450,7 @@ public class EvidenceTree extends JTree {
 		if (obj != null) {
 			TreeVariable node = (TreeVariable) obj;
 
-			//So propaga nos de descricao
+			//Only propage description nodes
 			if (node.getInformationType() == Node.DESCRIPTION_TYPE) {
 				for (int i = 0; i < parent.getChildCount(); i++) {
 					DefaultMutableTreeNode auxNode =
@@ -486,81 +475,83 @@ public class EvidenceTree extends JTree {
 	}
 
 	/**
-	 *  Abre uma nova janela modal para inserir os dados para serem usados no
-	 *  likelihood.
+	 *  Open a new modal window for input the values for the likelihood
 	 *
-	 * @param  caminho  um <code>TreePath <code>dizendo a posicao do mouse.
-	 * @since
-	 * @see             TreePath
+	 * @param  node 
 	 */
 	private void showLikelihood(DefaultMutableTreeNode node) {
-		ProbabilisticNode auxVP = (ProbabilisticNode) objectsMap.get(node);
-		if ((auxVP != null)
-			&& (auxVP.getInformationType() == Node.DESCRIPTION_TYPE)) {
+		
+		ProbabilisticNode auxProbNode = (ProbabilisticNode) objectsMap.get(node);
+		
+		if (   (auxProbNode != null)
+			&& (auxProbNode.getInformationType() == Node.DESCRIPTION_TYPE)) {
+			
+			//Build the panel
 			int i;
 			JPanel panel = new JPanel();
-			JTable table = new JTable(auxVP.getStatesSize(), 2);
-			for (i = 0; i < auxVP.getStatesSize(); i++) {
-				table.setValueAt(auxVP.getStateAt(i), i, 0);
+			JTable table = new JTable(auxProbNode.getStatesSize(), 2); 
+			for (i = 0; i < auxProbNode.getStatesSize(); i++) {
+				table.setValueAt(auxProbNode.getStateAt(i), i, 0);
 				table.setValueAt("100", i, 1);
 			}
-			JLabel label = new JLabel(auxVP.toString());
+			JLabel label = new JLabel(auxProbNode.toString());
 			panel.add(label);
 			panel.add(table);
-			if (JOptionPane
-				.showConfirmDialog(
+			
+			//Ask the user the confirmation
+			if (JOptionPane.showConfirmDialog(
 					this.netWindow.getDesktopPane(),
 					panel,
 					resource.getString("likelihoodName"),
 					JOptionPane.OK_CANCEL_OPTION)
-				== JOptionPane.OK_OPTION) {
+				    == 
+				    JOptionPane.OK_OPTION) {
+				
+		    //Get the original probabilities values
 				DefaultMutableTreeNode auxNode;
 
-				float[] values = new float[auxVP.getStatesSize()];
+				float[] stateProbabilities = new float[auxProbNode.getStatesSize()];
 
 				try {
-					for (i = 0; i < auxVP.getStatesSize(); i++) {
-						values[i] =
-							nf
-								.parse((String) table.getValueAt(i, 1))
-								.floatValue();
+					for (i = 0; i < auxProbNode.getStatesSize(); i++) {
+						stateProbabilities[i] = 
+							nf.parse((String) table.getValueAt(i, 1)).floatValue();
 					}
 				} catch (ParseException e) {
 					System.err.println(e.getMessage());
 					return;
 				}
 
-				double maxValue = values[0];
-				for (i = 1; i < auxVP.getStatesSize(); i++) {
-					if (maxValue < values[i]) {
-						maxValue = values[i];
-					}
+			//Get the total probability 
+				float totalProbability = 0; 
+				for (i = 0; i < auxProbNode.getStatesSize(); i++) {
+					totalProbability += stateProbabilities[i];
 				}
 
-				if (maxValue == 0.0) {
+				if (totalProbability == 0.0) {
 					System.err.println("likelihoodException");
 					return;
 				}
 
-				for (i = 0; i < auxVP.getStatesSize(); i++) {
-					values[i] /= maxValue;
+			//Normalize the probabilities values
+				for (i = 0; i < auxProbNode.getStatesSize(); i++) {
+					stateProbabilities[i] = stateProbabilities[i] / totalProbability;
 				}
 
-				for (i = 0; i < values.length && values[i] == 1; i++);
-				if (i == values.length) {
-					return;
-				}
-
+				auxProbNode.addLikeliHood(stateProbabilities);
+				
+			//Reset text with the values of probabilities 
 				String str;
-				auxVP.addLikeliHood(values);
 				for (i = 0; i < node.getChildCount(); i++) {
 					auxNode = (DefaultMutableTreeNode) node.getChildAt(i);
 					str = (String) auxNode.getUserObject();
 					auxNode.setUserObject(
-						str.substring(0, str.lastIndexOf(':') + 1)
-							+ nf.format(values[i] * 100));
+							str.substring(0, str.lastIndexOf(':') + 1)
+							+ nf.format(stateProbabilities[i] * 100));
 				}
+				
 				((DefaultTreeModel) getModel()).reload(node);
+			
 			}
 		}
 	}
