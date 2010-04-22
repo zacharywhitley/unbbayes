@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  UnBBayes
  *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
  *
@@ -16,7 +16,7 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  */
 package unbbayes.datamining.gui;
 
@@ -41,6 +41,7 @@ import javax.swing.JInternalFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
@@ -60,6 +61,8 @@ import unbbayes.datamining.gui.neuralnetwork.NeuralNetworkController;
 import unbbayes.datamining.gui.preprocessor.PreprocessorMain;
 import unbbayes.datamining.gui.preprocessor.janeladiscret;
 import unbbayes.gui.MDIDesktopPane;
+import unbbayes.gui.UnBBayesFrame;
+import unbbayes.learning.gui.extension.LearningModule;
 
 public class UnBMinerFrame extends JFrame {
 	/** Serialization runtime version number */
@@ -98,7 +101,7 @@ public class UnBMinerFrame extends JFrame {
 	private ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.datamining.gui.resources.GuiResource.class.getName());
 
-	private UnBMinerFrame reference = this;
+//	private UnBMinerFrame reference = this;
 
 	private IconController iconController = IconController.getInstance();
 
@@ -195,6 +198,9 @@ public class UnBMinerFrame extends JFrame {
 	private JMenuItem optionsItem;
 	
 	private GlobalOptions currentGlobalOption;
+	
+	/** If this frame's content pane is included to another frame, this attribute will be a reference to it */
+	private JFrame upperFrame = null;
 
 	/**
 	 * constructor for the frame
@@ -431,9 +437,25 @@ public class UnBMinerFrame extends JFrame {
 		// create an ActionListener for opening new window for Bayesian Learning
 		alBayesianLearning = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				setCursor(new Cursor(Cursor.WAIT_CURSOR));
-				BayesianLearningMain bayesianLearning = new BayesianLearningMain();
-				addWindow(bayesianLearning);
+				try {
+					setCursor(new Cursor(Cursor.WAIT_CURSOR));
+					if ( ( getUpperFrame() != null ) 
+					  && ( getUpperFrame() instanceof UnBBayesFrame ) ) {
+						// delegating to Learning plugin, if UnBMiner was incorporated as plugin
+						LearningModule bayesianLearning = new LearningModule();
+						bayesianLearning.setUnbbayesFrame((UnBBayesFrame)getUpperFrame());
+					} else {
+						// delegating to original BayesianLearningMain
+						// FIXME BayesianLearningMain is not working at all
+						BayesianLearningMain bayesianLearning = new BayesianLearningMain();
+					}
+				} catch (Throwable e) {
+					e.printStackTrace();
+					JOptionPane.showMessageDialog(UnBMinerFrame.this, 
+							e.getMessage(), 
+							"", 
+							JOptionPane.ERROR_MESSAGE); 
+				}
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		};
@@ -565,7 +587,7 @@ public class UnBMinerFrame extends JFrame {
 			public void actionPerformed(ActionEvent ae) {
 				setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				try {
-					JavaHelperController.getInstance().openHelp(reference);
+					JavaHelperController.getInstance().openHelp(UnBMinerFrame.this);
 				} catch (Exception evt) {
 					System.out.println("Error= " + evt.getMessage() + " "
 							+ this.getClass().getName());
@@ -1134,5 +1156,25 @@ public class UnBMinerFrame extends JFrame {
 	 */
 	public void setCurrentGlobalOption(GlobalOptions currentGlobalOption) {
 		this.currentGlobalOption = currentGlobalOption;
+	}
+
+	/**
+	 * If this frame's content pane is included to another frame, this attribute will be a reference to it.
+	 * If set to null, then this frame's content pane is not included to another frame.
+	 * OBS. inserting a frame's content pane into another frame is a way to simulate a frame containing another frame.
+	 * @return
+	 */
+	public JFrame getUpperFrame() {
+		return upperFrame;
+	}
+
+	/**
+	 * If this frame's content pane is included to another frame, this attribute will be a reference to it.
+	 * If set to null, then this frame's content pane is not included to another frame.
+	 * OBS. inserting a frame's content pane into another frame is a way to simulate a frame containing another frame.
+	 * @return
+	 */
+	public void setUpperFrame(JFrame upperFrame) {
+		this.upperFrame = upperFrame;
 	}
 }

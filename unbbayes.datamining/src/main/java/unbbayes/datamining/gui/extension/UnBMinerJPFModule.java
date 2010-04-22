@@ -17,6 +17,7 @@ import javax.swing.UIManager;
 import unbbayes.datamining.datamanipulation.Options;
 import unbbayes.datamining.gui.GlobalOptions;
 import unbbayes.datamining.gui.UnBMinerFrame;
+import unbbayes.gui.UnBBayesFrame;
 import unbbayes.io.BaseIO;
 import unbbayes.prs.Graph;
 import unbbayes.util.Debug;
@@ -132,6 +133,22 @@ public class UnBMinerJPFModule extends UnBBayesModule implements
 		
 		this.setTitle(this.getModuleName());
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.UnBBayesModule#setUnbbayesFrame(unbbayes.gui.UnBBayesFrame)
+	 */
+	public void setUnbbayesFrame(UnBBayesFrame unbbayesFrame) {
+		super.setUnbbayesFrame(unbbayesFrame);
+		try {
+			this.getFrame().setUpperFrame(unbbayesFrame);
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+	}
+
+
+
 
 	/**
 	 * @param title
