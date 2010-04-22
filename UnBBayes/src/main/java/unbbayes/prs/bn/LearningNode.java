@@ -275,11 +275,10 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
     }
 
     /**
-     * M�todo que indica se um estado est� ou n�o presente na
-     * vari�vel
-     * @param nomeEstado - Nome do estado que est� sendo procurado
+     * Method indicating state existence for this node.
+     * @param nomeEstado - Name of the state to look for
      * (<code>String<code>)
-     * @return boolean - Se o estado existe ou n�o
+     * @return boolean - true if exists. False otherwise.
      * @see List
      */
     public boolean existeEstado(String nomeEstado){

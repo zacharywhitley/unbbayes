@@ -104,6 +104,12 @@ public class SetToolkit {
         return result;
     }
 
+    /**
+     * 
+     * @param conjunto
+     * @return
+     * @deprecated do not use this method anymore, because this does not implement type safety
+     */
     public static List clone(Collection conjunto) {
         try {
             Class classe = conjunto.getClass();
