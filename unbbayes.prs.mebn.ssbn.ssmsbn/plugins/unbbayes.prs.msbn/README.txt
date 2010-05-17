@@ -29,8 +29,7 @@ ATTENTION
 ------------------------------
 Some plugins use other plugins. In such case, you must install all dependencies too.
 
-This plugin depends on the following plugins:
-
+This plugin particularly does not have dependencies to other plugins.
 	
 AVALILABILITY
 ------------------------------
