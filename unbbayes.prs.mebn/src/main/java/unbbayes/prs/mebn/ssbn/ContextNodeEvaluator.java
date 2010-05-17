@@ -245,7 +245,7 @@ public class ContextNodeEvaluator {
 		boolean changed = false; 
 		
 		// The idea is in the iteration "i" try to find information about some of 
-		// the unknown ordinary variables. This information is used in the next
+		// the unknown ordinary variable. This information is used in the next
 		// iteration for try to find information about the others ordinary 
 		// variables. This is made until a iteration where nothing information
 		// was found. 
@@ -295,7 +295,7 @@ OUT_LOOP:  for(ContextNode context: cnList){
 			    }else{
 
 			    	try {
-//			    		System.out.println("Tentando avaliar nó de contexto: ");
+//			    		System.out.println("Try evaluate context node: ");
 			    		List<String> result = evalutateSearchContextNode(context, ovInstanceForCnList);
 
 //			    		System.out.println("Result: " + result);
