@@ -797,8 +797,13 @@ public class MFrag implements Graph{
 	}
 	
 	/**
-	 * Get all the context nodes that contains the ordinary variables in the list
+	 * Get all the context nodes that contains ordinary variables in the list
 	 * and related ov's. 
+	 * 
+	 * OVList = set of variables ordinaries 
+	 * CList  = set of context nodes returned
+	 * If C(x,y,z) is a context node and x Pertence OVList then C Pertence CList 
+	 * and y,z Pertence OVList. 
 	 * 
 	 * @param allOVs
 	 * @return
