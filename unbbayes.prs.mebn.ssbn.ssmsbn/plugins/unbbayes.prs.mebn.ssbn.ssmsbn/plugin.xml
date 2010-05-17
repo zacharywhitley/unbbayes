@@ -1,0 +1,111 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- This is the plugin descriptor for UnBBayes' MEBN to msbn converter. -->
+<plugin id="unbbayes.prs.mebn.ssbn.ssmsbn" version="1.0.0">
+    <requires>
+        <import plugin-id="unbbayes.util.extension.core"/>
+        <import plugin-id="unbbayes.prs.mebn"/>
+        <import plugin-id="unbbayes.prs.msbn"/>
+        
+    </requires>
+    <runtime>
+        <library type="resources" path="icons/" id="icons">
+        	<export prefix="*"/>
+        </library>
+        <library type="resources" path="resources/" id="resources">
+        	<!-- This is where pr-owl definitions resides -->
+        	<export prefix="*"/>
+        </library>
+        <!-- It seems that loaders does not work as expected on jar files -->
+        <!-- If you change/add the libraries, change/add these library declaration too -->
+        <library id="unbbayes.prs.mebn" path="unbbayes.prs.mebn.ssbn.ssmsbn-1.0.0.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+        <library id="iri" path="lib/iri-2.4.jar" type="code">
+        	<export prefix="*"/>
+        </library>
+        <library id="jena" path="lib/jena-2.4.jar" type="code">
+        	<export prefix="*"/>
+        </library>
+        <library id="powerloom" path="lib/powerloom-1.0.jar" type="code">
+        	<export prefix="*"/>
+        </library>
+        <library id="stella" path="lib/stella-1.0.jar" type="code">
+        	<export prefix="*"/>
+        </library>
+        <library id="protege" path="lib/protege-3.2.jar" type="code">
+        	<export prefix="*"/>
+        </library>
+        <library id="protege-owl" path="lib/protege-owl-3.2.jar" type="code">
+        	<export prefix="*"/>
+        </library>
+        <library id="xercesImpl" path="lib/xercesImpl-2.8.1.jar" type="code">
+        	<export prefix="*"/>
+        </library>
+    </runtime>
+    <!-- Multi-Entity Bayesian Network I/O extension point. 
+     	 Hot plug is enabled.
+    	 This extension point is basically a set of different classes implementing
+    	 unbbayes.io.BaseIO, in order to add new IO functions into this MEBN
+    	 module. The class must contain a public default constructor (no parameters).
+    	 	Parameters:
+    	 		class: this is the class to implement unbbayes.io.BaseIO. It MUST have a default constructor
+    	 			   with no parameters.
+    	 	    name: this is basically what an user will see when a conflict occurs 
+    	 	          (when more than 1 class can handle a given file).
+    -->
+    <extension-point id="MEBNIO">
+        <parameter-def id="class"/>
+        <parameter-def id="name"/>
+    </extension-point>
+    
+    <!-- Multi-Entity Bayesian Network' Knowledge Base extension point. 
+     	 Hot plug is enabled.
+    	 This extension point is basically a set of different classes implementing
+    	 unbbayes.prs.mebn.kb.extension.IKnowledgeBaseBuilder, in order to add new Knowledge
+    	 Base functions into this MEBN
+    	 module. The class must contain a public default constructor (no parameters).
+    	 	Parameters:
+    	 		class: this is the class to implement unbbayes.prs.mebn.kb.extension.IKnowledgeBaseBuilder. 
+    	 		       It MUST provide a default constructor
+    	 			   with no parameters.
+    	 	    name: this is basically a name to identify a Knowledge Base.
+    	 	    optionPanel : this is a panel to be used as a form to fill attributes for this Knowledge Base.
+    	 	           It MUST implement unbbayes.gui.mebn.extension.kb.IKBOptionPanelBuilder.
+    	 	           It MUST provide a default constructor with no parameters.
+    -->
+    <extension-point id="KnowledgeBase">
+        <parameter-def id="class"/>
+        <parameter-def id="name"/>
+        <parameter-def multiplicity="none-or-one" id="optionPanel"/>
+    </extension-point>
+    
+    <!-- Situation Specific Bayesian Network generation extension point. 
+     	 Hot plug is enabled.
+    	 This extension point is basically a set of different classes implementing
+    	 unbbayes.prs.mebn.ssbn.extension.ISSBNGeneratorBuilder, in order to add new SSBN
+    	 Generation algorithms into this MEBN.
+    	 module. The class must contain a public default constructor (no parameters).
+    	 	Parameters:
+    	 		class: this is a class implementing unbbayes.prs.mebn.ssbn.extension.ISSBNGeneratorBuilder. 
+    	 		       It MUST provide a default constructor with no parameters.
+    	 	    name: this is basically a name to identify a particular SSBN generation algorithm.
+    	 	    optionPanel : this is a panel to be used as a form to fill attributes for this SSBN Algorithm.
+    	 	           It MUST unbbayes.gui.mebn.extension.ssbn.ISSBNOptionPanelBuilder.
+    	 	           It MUST provide a default constructor with no parameters.
+    -->
+    <extension-point id="SSBN">
+        <parameter-def id="class"/>
+        <parameter-def id="name"/>
+        <parameter-def multiplicity="none-or-one" id="optionPanel"/>
+    </extension-point>
+    
+    <extension plugin-id="unbbayes.util.extension.core" point-id="Module" id="MEBN">
+        <parameter id="class" value="unbbayes.gui.mebn.MEBNNetworkWindow" />
+        <parameter id="name" value="MEBN" />
+        <parameter id="builder" value="unbbayes.gui.mebn.extension.MEBNWindowBuilder" />
+		<parameter id="description" value="Multi Entity Bayesian Network" />
+		<parameter id="icon" value="new-mebn.png" />
+		<parameter id="category" value="bn" />
+    </extension>
+</plugin>
