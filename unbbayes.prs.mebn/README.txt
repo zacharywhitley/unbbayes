@@ -11,14 +11,14 @@ the local repository. These jars were not found in common remote repositories.
 
 In the near future, these files shall be in unbbayes's remote project.
 
-Go to \lib\powerloom>
+Go to \mvn_lib\powerloom>
 mvn install:install-file -DgroupId=guess -DartifactId=powerloom -Dversion=1.0 -Dpackaging=jar -Dfile=powerloom.jar
 mvn install:install-file -DgroupId=guess -DartifactId=stella -Dversion=1.0 -Dpackaging=jar -Dfile=stella.jar
 
-Go to \lib\protege>
+Go to \mvn_lib\protege>
 mvn install:install-file -DgroupId=guess -DartifactId=protege -Dversion=3.2 -Dpackaging=jar -Dfile=protege.jar
 
-Go to \lib\protege\edu.stanford.smi.protegex.owl>
+Go to \mvn_lib\protege\edu.stanford.smi.protegex.owl>
 mvn install:install-file -DgroupId=guess -DartifactId=iri -Dversion=2.4 -Dpackaging=jar -Dfile=iri.jar
 mvn install:install-file -DgroupId=guess -DartifactId=jena -Dversion=2.4 -Dpackaging=jar -Dfile=jena.jar
 mvn install:install-file -DgroupId=guess -DartifactId=protege-owl -Dversion=3.2 -Dpackaging=jar -Dfile=protege-owl.jar
