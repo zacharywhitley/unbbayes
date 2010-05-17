@@ -622,7 +622,8 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 	 * @throws InvalidParentException 
 	 */
 	private SSBNNode generateRecursiveUp(SSBNNode currentNode , SSBNNodeList seen, 
-			ProbabilisticNetwork net, MFragInstance mFragInstance, boolean generatedByDownProcessOfOriginNode) throws SSBNNodeGeneralException, 
+			ProbabilisticNetwork net, MFragInstance mFragInstance, 
+			boolean generatedByDownProcessOfOriginNode) throws SSBNNodeGeneralException, 
 			ImplementationRestrictionException, 
 			MEBNException, InvalidParentException {
 
@@ -671,8 +672,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 								generateRecursive(ssbnnode, seen, net, false);
 							}
 						}
-						
-						
+												
 						if(!currentNode.getParents().contains(ssbnnode)){
 							currentNode.addParent(ssbnnode, true);
 						}
