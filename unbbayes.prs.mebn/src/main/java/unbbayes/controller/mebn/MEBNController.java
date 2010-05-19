@@ -32,6 +32,7 @@ import java.util.ResourceBundle;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 
+import unbbayes.controller.INetworkMediator;
 import unbbayes.controller.NetworkController;
 import unbbayes.controller.exception.InconsistentArgumentException;
 import unbbayes.controller.exception.InvalidOperationException;
@@ -85,6 +86,7 @@ import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 import unbbayes.prs.mebn.exception.ReservedWordException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
+import unbbayes.prs.mebn.ssbn.IMediatorAwareSSBNGenerator;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBN;
@@ -111,7 +113,7 @@ import unbbayes.util.GraphLayoutUtil;
  * @version 02/13/2010 - Migrated part of NetworkController's routines to here
  */
 
-public class MEBNController extends NetworkController {
+public class MEBNController extends NetworkController implements IMEBNMediator{
 
 	/** if set to true, this will log every nodes of SSBN and its probability values */
 	private boolean toLogNodesAndProbabilities = true;
@@ -290,6 +292,9 @@ public class MEBNController extends NetworkController {
 	}
 
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#openPanel(unbbayes.prs.mebn.ResidentNode)
+	 */
 	public void openPanel(ResidentNode node){
 		setCurrentMFrag(node.getMFrag()); 
 		selectNode(node); 
@@ -301,28 +306,46 @@ public class MEBNController extends NetworkController {
 	/*                                                                         */
 	/*-------------------------------------------------------------------------*/	
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setResetButtonActive()
+	 */
 	public void setResetButtonActive(){
 		if(mebnEditionPane.getJtbEdition() != null){
 			mebnEditionPane.getJtbEdition().selectBtnResetCursor();
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#getResidentNodeActive()
+	 */
 	public ResidentNode getResidentNodeActive(){
 		return residentNodeActive;
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#getInputNodeActive()
+	 */
 	public InputNode getInputNodeActive(){
 		return inputNodeActive;
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#getContextNodeActive()
+	 */
 	public ContextNode getContextNodeActive(){
 		return contextNodeActive;
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#getNodeActive()
+	 */
 	public Node getNodeActive(){
 		return nodeActive;
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#enableMTheoryEdition()
+	 */
 	public void enableMTheoryEdition(){
 
 		mebnEditionPane.setMTheoryBarActive();
@@ -333,9 +356,8 @@ public class MEBNController extends NetworkController {
 		mebnEditionPane.setDescriptionText(multiEntityBayesianNetwork.getDescription(), DescriptionPane.DESCRIPTION_PANE_MTHEORY); 
 	}
 
-	/**
-	 * Set the name of the MTheory active.
-	 * @param name The new name
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#renameMTheory(java.lang.String)
 	 */
 	public void renameMTheory(String name) throws DuplicatedNameException,
 	                                              ReservedWordException{
@@ -360,24 +382,8 @@ public class MEBNController extends NetworkController {
 		}
 	}
 	
-	/**
-	 * Set the description text of the selected object
-	 * 
-	 * Objects: 
-	 * - MTheory
-	 * - MFrag
-	 * 
-	 * - Resident Node
-	 * - Input Node
-	 * - Context Node
-	 * 
-	 * - Ordinary Variable
-	 * 
-	 * - State
-	 * 
-	 * - Object Entity
-	 * 
-	 * @param text
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setDescriptionTextForSelectedObject(java.lang.String)
 	 */
 	public void setDescriptionTextForSelectedObject(String text){
 		saveDescriptionTextOfPreviousElement(text); 	
@@ -387,16 +393,9 @@ public class MEBNController extends NetworkController {
 	/* Edge                                                                    */
 	/*-------------------------------------------------------------------------*/
 
-    /**
-     *  Connects a parent and its child with an edge. We must fill correctly the lists
-     *  that need updates.
-     *
-     * @param  edge  a <code>TArco</code> which represent an edge to connect
-     * 
-     * @throws MEBNConstructionException : when construction of a MEBN element fails
-     * @throws CycleFoundException : when a resident node's partial order contains cycles
-     * 
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#insertEdge(unbbayes.prs.Edge)
+	 */
 
     public boolean insertEdge(Edge edge) throws  MEBNConstructionException, CycleFoundException {
 
@@ -418,6 +417,9 @@ public class MEBNController extends NetworkController {
 	/* MFrag                                                                    */
 	/*-------------------------------------------------------------------------*/
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#insertDomainMFrag()
+	 */
 	public void insertDomainMFrag() {
 
 		//The name of the MFrag is unique
@@ -453,6 +455,9 @@ public class MEBNController extends NetworkController {
 		mebnEditionPane.setDescriptionText(mFrag.getDescription(), DescriptionPane.DESCRIPTION_PANE_MFRAG); 
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#removeDomainMFrag(unbbayes.prs.mebn.MFrag)
+	 */
 	public void removeDomainMFrag(MFrag domainMFrag) {
 		multiEntityBayesianNetwork.removeDomainMFrag(domainMFrag);
 		multiEntityBayesianNetwork.getNamesUsed().remove(domainMFrag.getName()); 
@@ -471,9 +476,8 @@ public class MEBNController extends NetworkController {
 		}
 	}
 
-	/**
-	 * Set the mFrag how the active MFrag and show its graph. 
-	 * Show the tool bar of edition of the MFrag. 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setCurrentMFrag(unbbayes.prs.mebn.MFrag)
 	 */
 	public void setCurrentMFrag(MFrag mFrag){
 
@@ -518,11 +522,8 @@ public class MEBNController extends NetworkController {
 
 	}	
 	
-	/**
-	 * rename the MFrag and update its name in the title of the graph
-	 * @param mFrag
-	 * @param name
-	 * @throws ReservedWordException 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#renameMFrag(unbbayes.prs.mebn.MFrag, java.lang.String)
 	 */
 	public void renameMFrag(MFrag mFrag, String name) throws DuplicatedNameException, ReservedWordException{
 
@@ -543,6 +544,9 @@ public class MEBNController extends NetworkController {
 
 
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#getCurrentMFrag()
+	 */
 	public MFrag getCurrentMFrag(){
 		return multiEntityBayesianNetwork.getCurrentMFrag();
 	}
@@ -553,6 +557,9 @@ public class MEBNController extends NetworkController {
 	/* Resident Node                                                           */
 	/*-------------------------------------------------------------------------*/
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#insertDomainResidentNode(double, double)
+	 */
 	public ResidentNode insertDomainResidentNode(double x, double y) throws MFragDoesNotExistException {
 		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
 
@@ -603,6 +610,9 @@ public class MEBNController extends NetworkController {
 	    return node;
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#renameDomainResidentNode(unbbayes.prs.mebn.ResidentNode, java.lang.String)
+	 */
 	public void renameDomainResidentNode(ResidentNode resident, String newName)
 	               throws DuplicatedNameException, ReservedWordException{
 
@@ -623,11 +633,8 @@ public class MEBNController extends NetworkController {
 	/* Resident Node: Possible values                                          */
 	/*-------------------------------------------------------------------------*/
 		
-	/**
-	 * Adds a possible value (state) into a resident node...
-	 * @param resident
-	 * @param value
-	 * @throws ReservedWordException 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#addPossibleValue(unbbayes.prs.mebn.ResidentNode, java.lang.String)
 	 */
 	public StateLink addPossibleValue(ResidentNode resident, String nameValue) 
 	                       throws DuplicatedNameException, ReservedWordException{
@@ -643,9 +650,8 @@ public class MEBNController extends NetworkController {
 
 	}
 	
-	/**
-	 * Adds a possible value (state) into a resident node. If the state already
-	 * is a possible value of the resident node, nothing is made. 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#addPossibleValue(unbbayes.prs.mebn.ResidentNode, unbbayes.prs.mebn.entity.CategoricalStateEntity)
 	 */
 	public StateLink addPossibleValue(ResidentNode resident, CategoricalStateEntity state){
 		
@@ -660,6 +666,9 @@ public class MEBNController extends NetworkController {
 		
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#addObjectEntityAsPossibleValue(unbbayes.prs.mebn.ResidentNode, unbbayes.prs.mebn.entity.ObjectEntity)
+	 */
 	public StateLink addObjectEntityAsPossibleValue(ResidentNode resident, ObjectEntity state){
 		
 		StateLink stateLink = null; 
@@ -673,10 +682,8 @@ public class MEBNController extends NetworkController {
 		
 	}
 	
-	/**
-	 * Verifies if a exists a possible value (in the container). 
-	 * @param name
-	 * @return
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#existPossibleValue(java.lang.String)
 	 */
     public boolean existPossibleValue(String name){
 		
@@ -690,10 +697,16 @@ public class MEBNController extends NetworkController {
     	
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setGloballyExclusiveProperty(unbbayes.prs.mebn.entity.StateLink, boolean)
+	 */
 	public void setGloballyExclusiveProperty(StateLink state, boolean value){
 		state.setGloballyExclusive(value); 
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#addBooleanAsPossibleValue(unbbayes.prs.mebn.ResidentNode)
+	 */
 	public void addBooleanAsPossibleValue(ResidentNode resident){
 
 		resident.addPossibleValueLink(multiEntityBayesianNetwork.getBooleanStatesEntityContainer().getTrueStateEntity());
@@ -702,24 +715,31 @@ public class MEBNController extends NetworkController {
 
 	}
 
-	/**
-	 *  Adds a possible value (state) for a resident node...
-	 * @param resident
-	 * @param value
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#removePossibleValue(unbbayes.prs.mebn.ResidentNode, java.lang.String)
 	 */
 	public void removePossibleValue(ResidentNode resident, String nameValue){
 		resident.removePossibleValueByName(nameValue);
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#removeAllPossibleValues(unbbayes.prs.mebn.ResidentNode)
+	 */
 	public void removeAllPossibleValues(ResidentNode resident){
 		resident.removeAllPossibleValues();
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#existsPossibleValue(unbbayes.prs.mebn.ResidentNode, java.lang.String)
+	 */
 	public boolean existsPossibleValue(ResidentNode resident, String nameValue){
 		return resident.existsPossibleValueByName(nameValue);
 	}
 
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setEnableTableEditionView()
+	 */
 	public void setEnableTableEditionView(){
 
 		mebnEditionPane.showTableEditionPane((ResidentNode)this.getResidentNodeActive());
@@ -727,6 +747,9 @@ public class MEBNController extends NetworkController {
 
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setUnableTableEditionView()
+	 */
 	public void setUnableTableEditionView(){
 
 		mebnEditionPane.hideTopComponent();
@@ -739,6 +762,9 @@ public class MEBNController extends NetworkController {
 	/* Input Node                                                              */
 	/*-------------------------------------------------------------------------*/
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#insertGenerativeInputNode(double, double)
+	 */
 	public InputNode insertGenerativeInputNode(double x, double y) throws MFragDoesNotExistException {
 
 		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
@@ -781,13 +807,8 @@ public class MEBNController extends NetworkController {
 		return node;
 	}
 
-	/**
-	 * Set the input node for be a instance of a resident node.
-	 * Update the graph.
-	 *
-	 * @param input
-	 * @param resident
-	 * @throws CycleFoundException
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setInputInstanceOf(unbbayes.prs.mebn.InputNode, unbbayes.prs.mebn.ResidentNode)
 	 */
 	public void setInputInstanceOf(InputNode input, ResidentNode resident) throws CycleFoundException{
 
@@ -797,6 +818,9 @@ public class MEBNController extends NetworkController {
 		mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#updateArgumentsOfObject(java.lang.Object)
+	 */
 	public void updateArgumentsOfObject(Object node){
 
 		if (node instanceof InputNode){
@@ -812,9 +836,8 @@ public class MEBNController extends NetworkController {
 
 	}
 
-	/**
-	 * Update the input intance of atribute (in the view) of the input node for the value current
-	 * @param input The input node active
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#updateInputInstanceOf(unbbayes.prs.mebn.InputNode)
 	 */
 	public void updateInputInstanceOf(InputNode input){
 
@@ -840,6 +863,9 @@ public class MEBNController extends NetworkController {
 	/* Context Node                                                            */
 	/*-------------------------------------------------------------------------*/
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#insertContextNode(double, double)
+	 */
 	public ContextNode insertContextNode(double x, double y) throws MFragDoesNotExistException {
 
 		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
@@ -884,6 +910,9 @@ public class MEBNController extends NetworkController {
 	/* Graph                                                                   */
 	/*-------------------------------------------------------------------------*/
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setActionGraphNone()
+	 */
 	public void setActionGraphNone(){
 	    mebnEditionPane.getNetworkWindow().getGraphPane().setAction(GraphAction.NONE);	
 		if(mebnEditionPane.getJtbEdition()!=null){
@@ -891,6 +920,9 @@ public class MEBNController extends NetworkController {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setActionGraphCreateEdge()
+	 */
 	public void setActionGraphCreateEdge(){
 		if(mebnEditionPane.getJtbEdition()!=null){
 		    mebnEditionPane.getJtbEdition().selectBtnAddEdge(); 
@@ -898,6 +930,9 @@ public class MEBNController extends NetworkController {
 	    mebnEditionPane.getNetworkWindow().getGraphPane().setAction(GraphAction.CREATE_EDGE);	
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setActionGraphCreateContextNode()
+	 */
 	public void setActionGraphCreateContextNode(){
 		if(mebnEditionPane.getJtbEdition()!=null){
 		    mebnEditionPane.getJtbEdition().selectBtnAddContextNode(); 
@@ -905,6 +940,9 @@ public class MEBNController extends NetworkController {
 	    mebnEditionPane.getNetworkWindow().getGraphPane().setAction(GraphAction.CREATE_CONTEXT_NODE);	
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setActionGraphCreateInputNode()
+	 */
 	public void setActionGraphCreateInputNode(){
 		if(mebnEditionPane.getJtbEdition()!=null){
 		    mebnEditionPane.getJtbEdition().selectBtnAddInputNode(); 
@@ -912,6 +950,9 @@ public class MEBNController extends NetworkController {
 	    mebnEditionPane.getNetworkWindow().getGraphPane().setAction(GraphAction.CREATE_INPUT_NODE);	
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setActionGraphCreateResidentNode()
+	 */
 	public void setActionGraphCreateResidentNode(){
 		if(mebnEditionPane.getJtbEdition()!=null){
 		    mebnEditionPane.getJtbEdition().selectBtnAddResidentNode();
@@ -919,6 +960,9 @@ public class MEBNController extends NetworkController {
 	    mebnEditionPane.getNetworkWindow().getGraphPane().setAction(GraphAction.CREATE_RESIDENT_NODE);	
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setActionGraphCreateOrdinaryVariableNode()
+	 */
 	public void setActionGraphCreateOrdinaryVariableNode(){
 		if(mebnEditionPane.getJtbEdition()!=null){
 		    mebnEditionPane.getJtbEdition().selectBtnAddOrdinaryVariable();  
@@ -926,8 +970,8 @@ public class MEBNController extends NetworkController {
 	    mebnEditionPane.getNetworkWindow().getGraphPane().setAction(GraphAction.CREATE_ORDINARYVARIABLE_NODE);	
 	}
 	
-	/**
-	 * Delete the selected item of the graph (a node or a edge)
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#deleteSelectedItem()
 	 */
 	public void deleteSelectedItem(){
 		
@@ -939,6 +983,9 @@ public class MEBNController extends NetworkController {
 	
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#deleteSelected(java.lang.Object)
+	 */
 	public void deleteSelected(Object selected) {
 		if (selected instanceof ContextNode){
 			((ContextNode)selected).delete();
@@ -985,6 +1032,9 @@ public class MEBNController extends NetworkController {
 	/*
 	 * (non-Javadoc)
 	 * @see unbbayes.controller.NetworkController#selectNode(unbbayes.prs.Node)
+	 */
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#selectNode(unbbayes.prs.Node)
 	 */
 	public void selectNode(Node node){
 		
@@ -1042,10 +1092,16 @@ public class MEBNController extends NetworkController {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#getSelectedNode()
+	 */
 	public Node getSelectedNode() {
 		return nodeActive;
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#unselectNodes()
+	 */
 	public void unselectNodes(){
 		if(multiEntityBayesianNetwork.getCurrentMFrag() != null){
 	       mebnEditionPane.setMFragBarActive();
@@ -1057,6 +1113,9 @@ public class MEBNController extends NetworkController {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#updateFormulaActiveContextNode()
+	 */
 	public void updateFormulaActiveContextNode(){
 		String formula = contextNodeActive.updateLabel();
 		mebnEditionPane.setFormula(formula);
@@ -1105,6 +1164,9 @@ public class MEBNController extends NetworkController {
 	/* Ordinary Variable                                                       */
 	/*-------------------------------------------------------------------------*/
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#insertOrdinaryVariable(double, double)
+	 */
 	public OrdinaryVariable insertOrdinaryVariable(double x, double y) throws MFragDoesNotExistException {
 
 		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
@@ -1146,6 +1208,9 @@ public class MEBNController extends NetworkController {
 
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#renameOrdinaryVariable(unbbayes.prs.mebn.OrdinaryVariable, java.lang.String)
+	 */
 	public void renameOrdinaryVariable(OrdinaryVariable ov, String name) 
 	               throws DuplicatedNameException, ReservedWordException{
 		
@@ -1156,6 +1221,9 @@ public class MEBNController extends NetworkController {
 		   mebnEditionPane.getEditOVariableTab().update(); 
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setOrdinaryVariableType(unbbayes.prs.mebn.OrdinaryVariable, unbbayes.prs.mebn.entity.Type)
+	 */
 	public void setOrdinaryVariableType(OrdinaryVariable ov, Type type){
 		   ov.setValueType(type); 
 		   ov.updateLabel(); 
@@ -1166,10 +1234,8 @@ public class MEBNController extends NetworkController {
 		
 	}
 	
-	/**
-	 * Create a ordinary variable and add it in the
-	 * current MFrag (if it is a DomainMFrag).
-	 *
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#addNewOrdinaryVariableInMFrag()
 	 */
 
 	public OrdinaryVariable addNewOrdinaryVariableInMFrag(){
@@ -1199,10 +1265,8 @@ public class MEBNController extends NetworkController {
 
 	}
 
-	/**
-	 * Create a new ordinary variable and add this in the resident
-	 * node active. Add this in the MFrag list of ordinary variables too.
-	 * @return new ordinary variable
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#addNewOrdinaryVariableInResident()
 	 */
 	public OrdinaryVariable addNewOrdinaryVariableInResident() throws OVariableAlreadyExistsInArgumentList,
 	                                                                  ArgumentNodeAlreadySetException{
@@ -1214,9 +1278,8 @@ public class MEBNController extends NetworkController {
 		return ov;
 	}
 
-	/**
-	 * Remove one ordinary variable of the current MFrag.
-	 * @param ov
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#removeOrdinaryVariableOfMFrag(unbbayes.prs.mebn.OrdinaryVariable)
 	 */
 	public void removeOrdinaryVariableOfMFrag(OrdinaryVariable ov){
 
@@ -1225,9 +1288,8 @@ public class MEBNController extends NetworkController {
 
 	}
 
-	/**
-	 * Add one ordinary variable in the list of arguments of the resident node active.
-	 * @param ordinaryVariable ov for add
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#addOrdinaryVariableInResident(unbbayes.prs.mebn.OrdinaryVariable)
 	 */
 	public void addOrdinaryVariableInResident(OrdinaryVariable ordinaryVariable) throws ArgumentNodeAlreadySetException,
 	                                                                                    OVariableAlreadyExistsInArgumentList{
@@ -1238,6 +1300,9 @@ public class MEBNController extends NetworkController {
 
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#removeOrdinaryVariableInResident(unbbayes.prs.mebn.OrdinaryVariable)
+	 */
 	public void removeOrdinaryVariableInResident(OrdinaryVariable ordinaryVariable){
 
 		ResidentNode resident = (ResidentNode) this.getScreen().getGraphPane().getSelected();
@@ -1249,16 +1314,25 @@ public class MEBNController extends NetworkController {
 
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setOVariableSelectedInResidentTree(unbbayes.prs.mebn.OrdinaryVariable)
+	 */
 	public void setOVariableSelectedInResidentTree(OrdinaryVariable oVariableSelected){
 		mebnEditionPane.getEditArgumentsTab().setTxtName(oVariableSelected.getName());
 		mebnEditionPane.getEditArgumentsTab().setTreeResidentActive();
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setOVariableSelectedInMFragTree(unbbayes.prs.mebn.OrdinaryVariable)
+	 */
 	public void setOVariableSelectedInMFragTree(OrdinaryVariable oVariableSelected){
 		mebnEditionPane.getEditArgumentsTab().setTxtName(oVariableSelected.getName());
 		mebnEditionPane.getEditArgumentsTab().setTreeMFragActive();
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#renameOVariableOfResidentTree(java.lang.String)
+	 */
 	@Deprecated
 	public void renameOVariableOfResidentTree(String name) 
 	                 throws DuplicatedNameException, ReservedWordException{
@@ -1272,6 +1346,9 @@ public class MEBNController extends NetworkController {
 		mebnEditionPane.getEditArgumentsTab().update();
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#renameOVariableOfMFragTree(java.lang.String)
+	 */
 	@Deprecated
 	public void renameOVariableOfMFragTree(String name) 
 	               throws DuplicatedNameException, ReservedWordException{
@@ -1284,6 +1361,9 @@ public class MEBNController extends NetworkController {
 		mebnEditionPane.getEditArgumentsTab().update();
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#renameOVariableInArgumentEditionPane(java.lang.String)
+	 */
 	@Deprecated
 	public void renameOVariableInArgumentEditionPane(String name) 
 	                 throws DuplicatedNameException, ReservedWordException{
@@ -1297,6 +1377,9 @@ public class MEBNController extends NetworkController {
 
 	/*---------------------------- Formulas ----------------------------*/
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#selectOVariableInEdit(unbbayes.prs.mebn.OrdinaryVariable)
+	 */
 	public void selectOVariableInEdit(OrdinaryVariable ov){
 	    OVariableEditionPane editionPane = mebnEditionPane.getEditOVariableTab();
 		editionPane.setNameOVariableSelected(ov.getName());
@@ -1310,10 +1393,8 @@ public class MEBNController extends NetworkController {
 	/* Object Entities                                                         */
 	/*-------------------------------------------------------------------------*/
 
-	/**
-	 * Adds a new entity with a name passed as its argument.
-	 * The entity type will be an automatically generated type, based on
-	 * what the user has passed as its argument.
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#createObjectEntity()
 	 */
 	public ObjectEntity createObjectEntity() throws TypeException{
 
@@ -1338,12 +1419,8 @@ public class MEBNController extends NetworkController {
 		return objectEntity;
 	}
 
-	/**
-	 * Rename a object entity. 
-	 * @param entity
-	 * @param name
-	 * @throws TypeAlreadyExistsException
-	 * @throws ReservedWordException 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#renameObjectEntity(unbbayes.prs.mebn.entity.ObjectEntity, java.lang.String)
 	 */
 	public void renameObjectEntity(ObjectEntity entity, String name) 
 	            throws TypeAlreadyExistsException, DuplicatedNameException, ReservedWordException{
@@ -1358,11 +1435,9 @@ public class MEBNController extends NetworkController {
 	}
 	
 	
-    /**
-    * Remove a object entity. 
-    * @param entity
-    * @throws Exception
-    */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#removeObjectEntity(unbbayes.prs.mebn.entity.ObjectEntity)
+	 */
 	public void removeObjectEntity(ObjectEntity entity) throws Exception{
 		multiEntityBayesianNetwork.getObjectEntityContainer().removeEntity(entity);
 		multiEntityBayesianNetwork.getNamesUsed().remove(entity.getName());
@@ -1377,11 +1452,8 @@ public class MEBNController extends NetworkController {
 		mebnEditionPane.getToolBarOVariable().updateListOfTypes(); 
 	}
 
-	/**
-	 * Set the property isOrdereable of the entity
-	 * @param entity
-	 * @param isOrdereable
-	 * @throws ObjectEntityHasInstancesException
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setIsOrdereableObjectEntityProperty(unbbayes.prs.mebn.entity.ObjectEntity, boolean)
 	 */
 	public void setIsOrdereableObjectEntityProperty(ObjectEntity entity, boolean isOrdereable) throws ObjectEntityHasInstancesException{
 		entity.setOrdereable(isOrdereable); 
@@ -1393,14 +1465,8 @@ public class MEBNController extends NetworkController {
 	/* Object Entities Instances                                               */
 	/*-------------------------------------------------------------------------*/
 
-	/**
-	 * Create a new Object Entity Instance of the Object Entity. 
-	 * @param entity
-	 * @param nameInstance
-	 * @throws EntityInstanceAlreadyExistsException
-	 * @throws InvalidOperationException
-	 * @throws DuplicatedNameException
-	 * @throws ReservedWordException 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#createEntityIntance(unbbayes.prs.mebn.entity.ObjectEntity, java.lang.String)
 	 */
 	public void createEntityIntance(ObjectEntity entity, String nameInstance) 
 	throws EntityInstanceAlreadyExistsException, InvalidOperationException, 
@@ -1428,6 +1494,9 @@ public class MEBNController extends NetworkController {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#createEntityIntanceOrdereable(unbbayes.prs.mebn.entity.ObjectEntity, java.lang.String, unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable)
+	 */
 	public void createEntityIntanceOrdereable(ObjectEntity entity, 
 			String nameInstance, ObjectEntityInstanceOrdereable previous) 
 	throws EntityInstanceAlreadyExistsException, InvalidOperationException, 
@@ -1461,6 +1530,9 @@ public class MEBNController extends NetworkController {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#renameEntityIntance(unbbayes.prs.mebn.entity.ObjectEntityInstance, java.lang.String)
+	 */
 	public void renameEntityIntance(ObjectEntityInstance entity, String newName) throws EntityInstanceAlreadyExistsException, 
 																						DuplicatedNameException, ReservedWordException{
 
@@ -1477,21 +1549,33 @@ public class MEBNController extends NetworkController {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#removeEntityInstance(unbbayes.prs.mebn.entity.ObjectEntityInstance)
+	 */
 	public void removeEntityInstance(ObjectEntityInstance entity) {
 		multiEntityBayesianNetwork.getObjectEntityContainer().removeEntityInstance(entity);
 		multiEntityBayesianNetwork.getNamesUsed().remove(entity.getName()); 
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#removeEntityInstanceOrdereable(unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable)
+	 */
 	public void removeEntityInstanceOrdereable(ObjectEntityInstanceOrdereable entity) {
 		ObjectEntityInstanceOrdereable.removeEntityInstanceOrdereableReferences(entity);	
 		multiEntityBayesianNetwork.getObjectEntityContainer().removeEntityInstance(entity);
 		multiEntityBayesianNetwork.getNamesUsed().remove(entity.getName()); 
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#upEntityInstance(unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable)
+	 */
 	public void upEntityInstance(ObjectEntityInstanceOrdereable entity) {
 		ObjectEntityInstanceOrdereable.upEntityInstance(entity);
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#downEntityInstance(unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable)
+	 */
 	public void downEntityInstance(ObjectEntityInstanceOrdereable entity) {
 		ObjectEntityInstanceOrdereable.downEntityInstance(entity);
 	}
@@ -1502,6 +1586,9 @@ public class MEBNController extends NetworkController {
 	/*Findings                                                                 */
 	/*-------------------------------------------------------------------------*/
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#createRandomVariableFinding(unbbayes.prs.mebn.ResidentNode, unbbayes.prs.mebn.entity.ObjectEntityInstance[], unbbayes.prs.mebn.entity.Entity)
+	 */
 	public void createRandomVariableFinding(ResidentNode residentNode, 
 			ObjectEntityInstance[] arguments, Entity state){
 		
@@ -1521,10 +1608,16 @@ public class MEBNController extends NetworkController {
 	/* Edition of CPT's                                                         */
 	/*-------------------------------------------------------------------------*/
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#saveCPT(unbbayes.prs.mebn.ResidentNode, java.lang.String)
+	 */
 	public void saveCPT(ResidentNode residentNode, String cpt){
 		residentNode.setTableFunction(cpt);
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#openCPTDialog(unbbayes.prs.mebn.ResidentNode)
+	 */
 	public void openCPTDialog(ResidentNode residentNode){
 		CPTFrame cptEditionPane = mapCpt.get(residentNode); 
 		if(cptEditionPane == null){
@@ -1536,6 +1629,9 @@ public class MEBNController extends NetworkController {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#closeCPTDialog(unbbayes.prs.mebn.ResidentNode)
+	 */
 	public void closeCPTDialog(ResidentNode residentNode){
 		CPTFrame cptEditionPane = mapCpt.get(residentNode); 
 		if(cptEditionPane != null){
@@ -1544,6 +1640,9 @@ public class MEBNController extends NetworkController {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#getCPTDialog(unbbayes.prs.mebn.ResidentNode)
+	 */
 	public CPTFrame getCPTDialog(ResidentNode residentNode){
 		return mapCpt.get(residentNode); 
 	}
@@ -1553,9 +1652,8 @@ public class MEBNController extends NetworkController {
 	/* Knowledge Base                                                          */
 	/*-------------------------------------------------------------------------*/
 
-	/**
-	 * Obtains the currently used knowledge base
-	 * @return instance of {@link KnowledgeBase}
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#getKnowledgeBase()
 	 */
 	public KnowledgeBase getKnowledgeBase(){
 		
@@ -1617,6 +1715,9 @@ public class MEBNController extends NetworkController {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#clearFindingsIntoGUI()
+	 */
 	public void clearFindingsIntoGUI(){
 		
 		for(MFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
@@ -1627,14 +1728,23 @@ public class MEBNController extends NetworkController {
 		
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#clearKnowledgeBase()
+	 */
 	public void clearKnowledgeBase(){
 		getKnowledgeBase().clearKnowledgeBase();
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#saveGenerativeMTheory(java.io.File)
+	 */
 	public void saveGenerativeMTheory(File file){
 		getKnowledgeBase().saveGenerativeMTheory(getMultiEntityBayesianNetwork(), file);
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#saveFindingsFile(java.io.File)
+	 */
 	public void saveFindingsFile(File file){
 		mebnEditionPane.setStatus(resource.getString("statusSavingKB")); 
 		this.getScreen().setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -1650,6 +1760,9 @@ public class MEBNController extends NetworkController {
 		getKnowledgeBase().saveFindings(getMultiEntityBayesianNetwork(), new File(MEBNController.NAME_FINDING_FILE));
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#loadFindingsFile(java.io.File)
+	 */
 	public void loadFindingsFile(File file) throws UBIOException, MEBNException{
 		
 		// avoid GUI specific routines
@@ -1685,6 +1798,7 @@ public class MEBNController extends NetworkController {
 			throw new MEBNException(resourcePN.getString("loadHasError"));
 		}
 	}
+	
 	
 	private void createKnowledgeBase(){
 		// Must remove unwanted findings entered previously 
@@ -1804,18 +1918,63 @@ public class MEBNController extends NetworkController {
 //		
 //		return specificSituationBayesianNetwork ;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 //	}
+	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#executeQuery(java.util.List)
+	 */
+	public Network executeQuery(List<Query> listQueries)
+										    throws InconsistentArgumentException, 
+										    SSBNNodeGeneralException, 
+										    ImplementationRestrictionException, 
+										    MEBNException, 
+										    OVInstanceFaultException, InvalidParentException {
+		
+		Network ret = null; 
+		
+		mebnEditionPane.setStatus(resource.getString("statusGeneratingSSBN")); 
+		this.getScreen().setCursor(new Cursor(Cursor.WAIT_CURSOR));
+		
+		// use the public method instead
+	    this.resetKnowledgeBase(); 	
+		
+	    if (this.getSSBNGenerator() instanceof IMediatorAwareSSBNGenerator) {
+	    	((IMediatorAwareSSBNGenerator)this.getSSBNGenerator()).setMediator(this);
+	    }
+	    ssbn = this.getSSBNGenerator().generateSSBN(listQueries, getKnowledgeBase()); 
+		
+		ret = ssbn.getNetwork();
 
-	/**
-	 * Execute a query using the Laskey's  
-	 * 
-	 * @param residentNode
-	 * @param arguments
-	 * @return
-	 * @throws InconsistentArgumentException
-	 * @throws ImplementationRestrictionException 
-	 * @throws SSBNNodeGeneralException 
-	 * @throws OVInstanceFaultException 
-	 * @throws InvalidParentException 
+		if (ret instanceof ProbabilisticNetwork) {
+			specificSituationBayesianNetwork = (ProbabilisticNetwork)ret;
+		}
+		
+		try {
+
+			if (ssbn.getWarningList().size() > 0){
+				openWarningDialog(); 	
+			}
+			
+			// logging probabilities of the nodes
+			this.logNodesAndItsProbabilities(ssbn);
+			
+		} catch (Exception e) {
+			e.printStackTrace(); 
+			this.getScreen().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			JOptionPane.showMessageDialog(getScreen(), 
+					e.getMessage());
+		}
+
+		mebnEditionPane.setStatus(resource.getString("statusReady")); 
+		this.getScreen().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+		
+		mebnEditionPane.setStatus(resource.getString("statusReady")); 
+		this.getScreen().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+		
+		return ret ;    
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#executeQueryLaskeyAlgorithm(java.util.List)
 	 */
 	public ProbabilisticNetwork executeQueryLaskeyAlgorithm(List<Query> listQueries)
 	                           throws InconsistentArgumentException, 
@@ -1899,10 +2058,8 @@ public class MEBNController extends NetworkController {
 		return specificSituationBayesianNetwork ;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 	}
 	
-	/**
-	 * Obtains the current SSBN generation algorithm used by this controller.
-	 * @return a non-null value, instance of {@link ISSBNGenerator}
-	 * @see #setSSBNGenerator(ISSBNGenerator)
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#getSSBNGenerator()
 	 */
 	public ISSBNGenerator getSSBNGenerator() {
 		if (ssbnGenerator == null) {
@@ -1917,11 +2074,8 @@ public class MEBNController extends NetworkController {
 		return ssbnGenerator;
 	}
 	
-	/**
-	 * Sets the {@link ISSBNGenerator} to be used as a SSBN generation
-	 * algoritym by this controller.
-	 * @param ssbnGenerator
-	 * @see #getSSBNGenerator()
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setSSBNGenerator(unbbayes.prs.mebn.ssbn.ISSBNGenerator)
 	 */
 	public void setSSBNGenerator(ISSBNGenerator ssbnGenerator) {
 		this.ssbnGenerator = ssbnGenerator;
@@ -1979,6 +2133,9 @@ public class MEBNController extends NetworkController {
 	 * (non-Javadoc)
 	 * @see unbbayes.controller.NetworkController#openWarningDialog()
 	 */
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#openWarningDialog()
+	 */
 	public void openWarningDialog() {
 		if(ssbn != null){
 			
@@ -2008,6 +2165,9 @@ public class MEBNController extends NetworkController {
 	 * (non-Javadoc)
 	 * @see unbbayes.controller.NetworkController#closeWarningDialog()
 	 */
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#closeWarningDialog()
+	 */
 	public void closeWarningDialog(){
 		if(warningDialog != null){
 			warningDialog.dispose();
@@ -2032,13 +2192,8 @@ public class MEBNController extends NetworkController {
 	private static ResourceBundle resourcePN = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.controller.mebn.resources.Resources.class.getName());
 	
-	/**
-	 * Compiles the bayesian network. If there was any problem during compilation, the error
-	 * message will be shown as a <code>JOptionPane</code> .
-	 * 
-	 * @return true if the net was compiled without any problem, false if there was a problem
-	 * @since
-	 * @see JOptionPane
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#compileNetwork(unbbayes.prs.bn.ProbabilisticNetwork)
 	 */
 	public boolean compileNetwork(ProbabilisticNetwork network) {
 //		long ini = System.currentTimeMillis();
@@ -2067,8 +2222,8 @@ public class MEBNController extends NetworkController {
 
 	}
 	
-	/**
-	 * Initializes the junction tree's known facts
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#initialize()
 	 */
 	public void initialize() {
 		try {
@@ -2080,10 +2235,8 @@ public class MEBNController extends NetworkController {
 		}
 	}
 	
-	/**
-	 * Propagates the bayesian network's evidences ( <code>TRP</code> ).
-	 * 
-	 * @since
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#propagate()
 	 */
 	public void propagate() {
 		this.getScreen().setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -2126,6 +2279,9 @@ public class MEBNController extends NetworkController {
 	/**
 	 * @return false if don't have one ssbn pre-generated. True if the mode is change. 
 	 */
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#turnToSSBNMode()
+	 */
 	public boolean turnToSSBNMode(){
 		if(specificSituationBayesianNetwork != null){
 			showSSBNGraph = true; 
@@ -2143,45 +2299,75 @@ public class MEBNController extends NetworkController {
 	/* Get's e Set's                                                           */
 	/*-------------------------------------------------------------------------*/
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#getMultiEntityBayesianNetwork()
+	 */
 	public MultiEntityBayesianNetwork getMultiEntityBayesianNetwork() {
 		return multiEntityBayesianNetwork;
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setMultiEntityBayesianNetwork(unbbayes.prs.mebn.MultiEntityBayesianNetwork)
+	 */
 	public void setMultiEntityBayesianNetwork(
 			MultiEntityBayesianNetwork multiEntityBayesianNetwork) {
 		this.multiEntityBayesianNetwork = multiEntityBayesianNetwork;
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#getMebnEditionPane()
+	 */
 	public MEBNEditionPane getMebnEditionPane() {
 		return mebnEditionPane;
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setMebnEditionPane(unbbayes.gui.mebn.MEBNEditionPane)
+	 */
 	public void setMebnEditionPane(MEBNEditionPane mebnEditionPane) {
 		this.mebnEditionPane = mebnEditionPane;
 	}
 
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#getSpecificSituationBayesianNetwork()
+	 */
 	public ProbabilisticNetwork getSpecificSituationBayesianNetwork() {
 		return specificSituationBayesianNetwork;
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#getSSBN()
+	 */
 	public SSBN getSSBN(){
 		return ssbn; 
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setSpecificSituationBayesianNetwork(unbbayes.prs.bn.ProbabilisticNetwork)
+	 */
 	public void setSpecificSituationBayesianNetwork(
 			ProbabilisticNetwork specificSituationBayesianNetwork) {
 		this.specificSituationBayesianNetwork = specificSituationBayesianNetwork;
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#isShowSSBNGraph()
+	 */
 	public boolean isShowSSBNGraph() {
 		return showSSBNGraph;
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setShowSSBNGraph(boolean)
+	 */
 	public void setShowSSBNGraph(boolean showSSBNGraph) {
 		this.showSSBNGraph = showSSBNGraph;
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setEditionMode()
+	 */
 	public void setEditionMode(){
 		showSSBNGraph = false; 
 	}
@@ -2194,16 +2380,16 @@ public class MEBNController extends NetworkController {
 	}
 
 
-	/**
-	 * @return the toLogNodesAndProbabilities
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#isToLogNodesAndProbabilities()
 	 */
 	public boolean isToLogNodesAndProbabilities() {
 		return toLogNodesAndProbabilities;
 	}
 
 
-	/**
-	 * @param toLogNodesAndProbabilities the toLogNodesAndProbabilities to set
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setToLogNodesAndProbabilities(boolean)
 	 */
 	public void setToLogNodesAndProbabilities(boolean toLogNodesAndProbabilities) {
 		this.toLogNodesAndProbabilities = toLogNodesAndProbabilities;
@@ -2213,22 +2399,17 @@ public class MEBNController extends NetworkController {
 	
 	// Methods for backward-compatibilities
 	
-	 /**
-     * Insert a new resident node in the MultiEntityBayesianNetwork with 
-     * the standard label and descritpion.
-     *
-     * @param x The x position of the new node.
-     * @param y The y position of the new node.
-     * @deprecated use {@link #insertDomainResidentNode(double, double)}
-     */
+	 /* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#insertResidentNode(double, double)
+	 */
     
     public Node insertResidentNode(double x, double y) throws MFragDoesNotExistException{
     	return this.insertDomainResidentNode(x, y);
     }
     
-    /**
-     * @deprecated use {@link #insertGenerativeInputNode(double, double)}
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#insertInputNode(double, double)
+	 */
     public Node insertInputNode(double x, double y) throws MFragDoesNotExistException{
     	return this.insertGenerativeInputNode(x,y);
     }
@@ -2237,6 +2418,9 @@ public class MEBNController extends NetworkController {
     * (non-Javadoc)
     * @see unbbayes.controller.NetworkController#getNetwork()
     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#getNetwork()
+	 */
     public Network getNetwork() {
     	return multiEntityBayesianNetwork;
     }
@@ -2245,6 +2429,9 @@ public class MEBNController extends NetworkController {
      * (non-Javadoc)
      * @see unbbayes.controller.NetworkController#getGraph()
      */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#getGraph()
+	 */
     public Graph getGraph(){
     	if(!this.isShowSSBNGraph()){
     		if (multiEntityBayesianNetwork.getCurrentMFrag()!= null){
@@ -2276,6 +2463,9 @@ public class MEBNController extends NetworkController {
      * (non-Javadoc)
      * @see unbbayes.controller.NetworkController#unselectAll()
      */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#unselectAll()
+	 */
     public void unselectAll(){
     	// as you see, it only unselects nodes
     	if (multiEntityBayesianNetwork != null){
@@ -2284,59 +2474,48 @@ public class MEBNController extends NetworkController {
     }
 
 
-	/**
-	 * This ID will be used by {@link PluginAwareFileExtensionIODelegator}
-	 * in order to load the correct extension ID for MEBN's IO.
-	 * @return the mebnIOExtensionPointID
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#getMebnIOExtensionPointID()
 	 */
 	public String getMebnIOExtensionPointID() {
 		return mebnIOExtensionPointID;
 	}
 
 
-	/**
-	 * This ID will be used by {@link PluginAwareFileExtensionIODelegator}
-	 * in order to load the correct extension ID for MEBN's IO.
-	 * @param mebnIOExtensionPointID the mebnIOExtensionPointID to set
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setMebnIOExtensionPointID(java.lang.String)
 	 */
 	public void setMebnIOExtensionPointID(String mebnIOExtensionPointID) {
 		this.mebnIOExtensionPointID = mebnIOExtensionPointID;
 	}
 
 
-	/**
-	 * This is the ID of MEBN module.
-	 * It will be used by {@link PluginAwareFileExtensionIODelegator} in order
-	 * to find the correct plugin context.
-	 * @return the mebnModulePluginID
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#getMebnModulePluginID()
 	 */
 	public String getMebnModulePluginID() {
 		return mebnModulePluginID;
 	}
 
 
-	/**
-	 * It will be used by {@link PluginAwareFileExtensionIODelegator} in order
-	 * to find the correct plugin context.
-	 * @param mebnModulePluginID the mebnModulePluginID to set
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setMebnModulePluginID(java.lang.String)
 	 */
 	public void setMebnModulePluginID(String mebnModulePluginID) {
 		this.mebnModulePluginID = mebnModulePluginID;
 	}
 	
 	
-	/**
-	 * Sets the current knowledge base and initializes (reset) it.
-	 * @param kb
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setKnowledgeBase(unbbayes.prs.mebn.kb.KnowledgeBase)
 	 */
 	public void setKnowledgeBase(KnowledgeBase kb) {
 		this.knowledgeBase = kb;
 		this.resetKnowledgeBase();
 	}
 	
-	/**
-	 * Clears the content of the current knowledge base ({@link #getKnowledgeBase()}),
-	 * and fills it using the currently edited MEBN.
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#resetKnowledgeBase()
 	 */
 	public void resetKnowledgeBase() {
 		this.createKnowledgeBase();

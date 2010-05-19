@@ -27,6 +27,9 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
 
+import unbbayes.controller.INetworkMediator;
+import unbbayes.controller.mebn.IMEBNMediator;
+import unbbayes.gui.NetworkWindow;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.exception.InvalidParentException;
@@ -73,16 +76,46 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 	public static String queryName = "";
 
 	private List<SSBNNode> findingList; 
+	
+	private INetworkMediator mediator;
 
 	public ExplosiveSSBNGenerator(){
 		super();  
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.mebn.ssbn.ISSBNGenerator#generateSSBN(java.util.List, unbbayes.prs.mebn.kb.KnowledgeBase)
+	 */
 	public SSBN generateSSBN(List<Query> listQueries, 
 			KnowledgeBase kb) throws SSBNNodeGeneralException,
 	ImplementationRestrictionException, MEBNException,
 	OVInstanceFaultException, InvalidParentException {
-		return generateSSBN(listQueries.get(0), kb);
+		SSBN ssbn =  generateSSBN(listQueries.get(0), kb);
+		try {
+			ssbn.compileAndInitializeSSBN();
+			// show on display
+			this.showSSBN(ssbn);
+		} catch (Exception e) {
+			throw new MEBNException(e);
+		}
+		return ssbn;
+	}
+	
+	/**
+	 * Uses mediator to display the SSBN
+	 * @param mediator : MEBNController
+	 * @param  ssbn : the ssbn to show
+	 */
+	protected void showSSBN(SSBN ssbn) {
+		if (this.getMediator() == null) {
+			// if there is no mediator, we cannot go on
+			return;
+		}
+		NetworkWindow window = new NetworkWindow(ssbn.getNetwork());
+		this.getMediator().getScreen().getUnbbayesFrame().addWindow(window);
+//		window.setSize(window.getPreferredSize());
+		window.setVisible(true);
 	}
 
 	/**
@@ -672,7 +705,8 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 								generateRecursive(ssbnnode, seen, net, false);
 							}
 						}
-												
+						
+						
 						if(!currentNode.getParents().contains(ssbnnode)){
 							currentNode.addParent(ssbnnode, true);
 						}
@@ -908,6 +942,21 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 		PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(queryNode.getProbabilisticNetwork()); 
 		SSBNDebugInformationUtil.printNetworkInformation(logManager, queryNode, stepCount, queryName); 
 	}
+
+	
+	public INetworkMediator getMediator() {
+		return mediator;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.mebn.ssbn.IMediatorAwareSSBNGenerator#setMediator(unbbayes.controller.INetworkMediator)
+	 */
+	public void setMediator(INetworkMediator mediator) {
+		this.mediator = mediator;
+	}
+
+	
 
 
 }

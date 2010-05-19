@@ -28,6 +28,7 @@ import java.util.List;
 import unbbayes.io.log.ISSBNLogManager;
 import unbbayes.io.log.SSBNTextLogManager;
 import unbbayes.prs.INode;
+import unbbayes.prs.Network;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
@@ -41,7 +42,7 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
  */
 public class SSBN {
 
-	private ProbabilisticNetwork probabilisticNetwork; 
+	private Network probabilisticNetwork; 
 	
 // TODO - SHOU and ROMMEL - I think we should extend the SSBN and create a SSMSBN that has this property
 //	private SingleAgentMSBN msbnNetwork;
@@ -142,19 +143,28 @@ public class SSBN {
 	}
 	
 	public void reinitializeSSBN() throws Exception{
-	    this.probabilisticNetwork.initialize();
-		addFindings();
-		propagateFindings(); 
+		ProbabilisticNetwork net = this.getProbabilisticNetwork();
+		if (net != null) {
+			net.initialize();
+			addFindings();
+			propagateFindings(); 
+		}
 	}
 	
 	private void compileNetwork() throws Exception{
-		probabilisticNetwork.compile(); 
-		setState(State.COMPILED); 
+		ProbabilisticNetwork net = this.getProbabilisticNetwork();
+		if (net != null) {
+			net.compile(); 
+			setState(State.COMPILED); 
+		}
 	}
 	
 	private void propagateFindings() throws Exception{
-		probabilisticNetwork.updateEvidences();
-		setState(State.FINDINGS_PROPAGATED); 
+		ProbabilisticNetwork net = this.getProbabilisticNetwork();
+		if (net != null) {
+			net.updateEvidences();
+			setState(State.FINDINGS_PROPAGATED); 
+		}
 	}
 	
 	/**
@@ -230,10 +240,39 @@ public class SSBN {
 		return queryList;
 	}
 	
+	/**
+	 * Obtains the Network representation of this SSBN
+	 * @return
+	 */
+	public Network getNetwork() {
+		return this.getProbabilisticNetwork();
+	}
+	
+	/**
+	 * Sets the Network representation of this SSBN
+	 * @param network
+	 */
+	public void setNetwork(Network network) {
+		this.probabilisticNetwork = network;
+	}
+	
+	/**
+	 * Returns {@link #getNetwork()}.
+	 * If {@link #getNetwork()} is not a probabilistic network, then returns null.
+	 * @deprecated use {@link #getNetwork()} instead
+	 */
 	public ProbabilisticNetwork getProbabilisticNetwork() {
-		return probabilisticNetwork;
+		if (this.probabilisticNetwork instanceof ProbabilisticNetwork) {
+			return (ProbabilisticNetwork)probabilisticNetwork;
+		} else {
+			return null;
+		}
 	}
 
+	/**
+	 * @deprecated use {@link #setNetwork(Network)} instead
+	 * @param probabilisticNetwork
+	 */
 	public void setProbabilisticNetwork(ProbabilisticNetwork probabilisticNetwork) {
 		this.probabilisticNetwork = probabilisticNetwork;
 	}

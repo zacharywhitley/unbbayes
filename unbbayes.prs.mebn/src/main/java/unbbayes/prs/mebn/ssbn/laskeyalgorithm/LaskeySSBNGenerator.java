@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import unbbayes.controller.INetworkMediator;
+import unbbayes.controller.mebn.IMEBNMediator;
+import unbbayes.gui.NetworkWindow;
 import unbbayes.io.log.IdentationLevel;
 import unbbayes.prs.INode;
 import unbbayes.prs.exception.InvalidParentException;
@@ -20,6 +23,7 @@ import unbbayes.prs.mebn.ssbn.BuilderLocalDistributionImpl;
 import unbbayes.prs.mebn.ssbn.BuilderStructureImpl;
 import unbbayes.prs.mebn.ssbn.IBuilderLocalDistribution;
 import unbbayes.prs.mebn.ssbn.IBuilderStructure;
+import unbbayes.prs.mebn.ssbn.IMediatorAwareSSBNGenerator;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
@@ -39,9 +43,12 @@ import unbbayes.prs.mebn.ssbn.util.SSBNDebugInformationUtil;
  * Implementation of the Laskey's SSBN Algorithm
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
+ * 
+ * @version 2010-05-19 - refactor to implement IMediatorAwareSSBNGenerator
+ * @author Shou Matsumoto
  */
 
-public class LaskeySSBNGenerator implements ISSBNGenerator{
+public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 	
 	private Parameters parameters; 
 	
@@ -54,6 +61,8 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 	
 	private final boolean addFindings = true;
 	
+	private INetworkMediator mediator;
+	
 	public LaskeySSBNGenerator(LaskeyAlgorithmParameters _parameters){
 		
 		parameters = _parameters; 
@@ -65,7 +74,7 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 	
 	}
 	
-	//Use Strategy design pattern
+	
 	public SSBN generateSSBN(List<Query> queryList, KnowledgeBase knowledgeBase)
 			throws SSBNNodeGeneralException,
 			ImplementationRestrictionException, MEBNException,
@@ -150,7 +159,31 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		
 		this.cleanUpSSBN(ssbn);
 		
+		try {
+			ssbn.compileAndInitializeSSBN();
+		} catch (Exception e) {
+			throw new MEBNException(e);
+		}
+		
+		// show on display
+		this.showSSBN(ssbn);
+		
 		return ssbn;
+	}
+	
+	/**
+	 * Uses mediator to display the SSBN
+	 * @param mediator : MEBNController
+	 * @param  ssbn : the ssbn to show
+	 */
+	protected void showSSBN(SSBN ssbn) {
+		if (this.getMediator() == null) {
+			// if there is no mediator, we cannot go on
+			return;
+		}
+		NetworkWindow window = new NetworkWindow(ssbn.getNetwork());
+		this.getMediator().getScreen().getUnbbayesFrame().addWindow(window);
+		window.setVisible(true);
 	}
 	
 	private void cleanUpSSBN(SSBN ssbn){
@@ -316,6 +349,20 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 	public void setBuildLocalDistribution(
 			IBuilderLocalDistribution buildLocalDistribution) {
 		this.buildLocalDistribution = buildLocalDistribution;
+	}
+
+	
+
+	public INetworkMediator getMediator() {
+		return mediator;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.mebn.ssbn.IMediatorAwareSSBNGenerator#setMediator(unbbayes.controller.INetworkMediator)
+	 */
+	public void setMediator(INetworkMediator mediator) {
+		this.mediator = mediator;
 	}
 	
 }
