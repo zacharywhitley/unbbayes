@@ -72,7 +72,7 @@ import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
  * @version    1.5 2006/09/12
  */
 
-public class NetworkController implements KeyListener {
+public class NetworkController implements KeyListener, INetworkMediator {
 
     private NetworkWindow screen;
     private SingleEntityNetwork singleEntityNetwork;
@@ -83,6 +83,9 @@ public class NetworkController implements KeyListener {
     private BaseIO baseIO;
     
     // TODO ROMMEL - CHANGE THIS!! NEW MODELING!!
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#getInferenceAlgorithm()
+	 */
     public IInferenceAlgorithm getInferenceAlgorithm() {
     	if (senController != null) {
     		return senController.getInferenceAlgorithm();
@@ -90,6 +93,9 @@ public class NetworkController implements KeyListener {
     	return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#setInferenceAlgorithm(unbbayes.util.extension.bn.inference.IInferenceAlgorithm)
+	 */
 	public void setInferenceAlgorithm(IInferenceAlgorithm inferenceAlgorithm) {
 		if (senController != null) {
     		senController.setInferenceAlgorithm(inferenceAlgorithm);
@@ -123,46 +129,44 @@ public class NetworkController implements KeyListener {
         this.setBaseIO(PluginAwareFileExtensionIODelegator.newInstance());
     }
     
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#getSENController()
+	 */
     public SENController getSENController(){
     	return this.senController; 
     }
     
-    /**
-     *  Get the single entity network.
-     *
-     * @return The single entity network.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#getSingleEntityNetwork()
+	 */
     public SingleEntityNetwork getSingleEntityNetwork() {
     	//TODO VERIFICAR SE POSSO RETIRAR ESSE M�TODO!!
         return this.singleEntityNetwork;
     }
     
-    /**
-     * Get the network being controlled.
-     * @return The network being controlled.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#getNetwork()
+	 */
     public Network getNetwork() {
     	return singleEntityNetwork;
     }
     
-    /**
-     * Obtains the network in a Graph format
-     * @return
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#getGraph()
+	 */
     public Graph getGraph(){
     	return singleEntityNetwork;
     }
 
-    /**
-     * Initialize the junction tree beliefs.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#initialize()
+	 */
     public void initialize() {
     	if (senController != null) senController.initialize();
     }
     
-    /**
-	 * Creates and shows the panel to edit the node's table.
-	 * @param node The table owner.
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#createTable(unbbayes.prs.Node)
 	 */
 	public void createTable(Node node) {
 		if (node == null) {
@@ -176,54 +180,46 @@ public class NetworkController implements KeyListener {
 	}
     
 
-	/**
-	 * Creates and shows the panel where the user can edit the 
-	 * continuous node normal distribution.
-	 * @param node The continuous node to create the distribution pane for.
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#createContinuousDistribution(unbbayes.prs.hybridbn.ContinuousNode)
 	 */
 	public void createContinuousDistribution(ContinuousNode node) {
 		if (senController != null) senController.createContinuousDistribution(node);
 	}
 	
-	/**
-	 * Creates and shows the panel where the user can edit the discrete 
-	 * node table.
-	 * @param node The discrete node to create the table pan for.
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#createDiscreteTable(unbbayes.prs.Node)
 	 */
 	public void createDiscreteTable(Node node) {
 		if (senController != null) senController.createDiscreteTable(node);
 	}
 
-    /**
-     * Construct a potential table of the given node.
-     *
-     * @param node The node to get the data for the table.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#makeTable(unbbayes.prs.Node)
+	 */
     public JTable makeTable(final Node node) {
     	if (senController != null) return senController.makeTable(node);
     	return null;
     }
 
-    /**
-     *  Propagate the evidences of the SingleEntityNetwork.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#propagate()
+	 */
     public void propagate() {
     	if (senController != null) senController.propagate();
     }
 
-    /**
-     *  Compile the SingleEntityNetwork.
-     *
-     * @return True if it compiles with no error and false otherwise.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#compileNetwork()
+	 */
     public boolean compileNetwork() {
     	if (senController != null) return senController.compileNetwork();
     	return false;
     }
     
-    /**
-     * Change the GUI to allow PN evaluation.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#evaluateNetwork()
+	 */
     public void evaluateNetwork() {
     	if (singleEntityNetwork != null && singleEntityNetwork instanceof ProbabilisticNetwork) {
     		EvaluationController evaluationController = new EvaluationController((ProbabilisticNetwork)singleEntityNetwork);
@@ -233,59 +229,42 @@ public class NetworkController implements KeyListener {
     	}
     }
 
-    /**
-     * Insert a new continuous node in the SingleEntityNetwork with 
-     * the standard label and description.
-     *
-     * @param x The x position of the new node.
-     * @param y The y position of the new node.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#insertContinuousNode(double, double)
+	 */
     public Node insertContinuousNode(double x, double y) {
     	if (senController != null) return senController.insertContinuousNode(x,y);
     	return null;
     }
 
-    /**
-     * Insert a new probabilistic node in the SingleEntityNetwork with 
-     * the standard label and description.
-     *
-     * @param x The x position of the new node.
-     * @param y The y position of the new node.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#insertProbabilisticNode(double, double)
+	 */
     public Node insertProbabilisticNode(double x, double y) {
     	if (senController != null) return senController.insertProbabilisticNode(x,y);
     	return null;
     }
 
 
-    /**
-     * Insert a new decision node in the SingleEntityNetwork with
-     * the standard label and description.
-     *
-     * @param x The x position of the new node.
-     * @param y The y position of the new node.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#insertDecisionNode(double, double)
+	 */
     public Node insertDecisionNode(double x, double y) {
     	if (senController != null) return senController.insertDecisionNode(x, y);
     	return null;
     }
 
-    /**
-     * Insert a new utility node in the SingleEntityNetwork with
-     * the standard label and description.
-     *
-     * @param x The x position of the new node.
-     * @param y The y position of the new node.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#insertUtilityNode(double, double)
+	 */
     public Node insertUtilityNode(double x, double y) {
     	if (senController != null) return senController.insertUtilityNode(x, y);
     	return null;
     }
 
-    /**
-     * Show the explanation properties for the given node.
-     * @param node The node to show the explanation properties.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#showExplanationProperties(unbbayes.prs.bn.ProbabilisticNode)
+	 */
     public void showExplanationProperties(ProbabilisticNode node) {
     	if (senController != null) senController.showExplanationProperties(node);
     }
@@ -295,38 +274,31 @@ public class NetworkController implements KeyListener {
     
     /***************** BEGIN CONTROLLING BOTH *********************/
     
-    /**
-     * Insert a new edge in the network.
-     *
-     * @param edge The new edge to be inserted.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#insertEdge(unbbayes.prs.Edge)
+	 */
     public boolean insertEdge(Edge edge) throws Exception{
     	if (senController != null) return senController.insertEdge(edge); 
     	return false;
     }
     
-    /**
-     *  Insert a new state for the given node.
-     *
-     * @param node The selected node to insert the new state.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#insertState(unbbayes.prs.Node)
+	 */
     public void insertState(Node node) {
     	if (senController != null) senController.insertState(node);
     }
 
-    /**
-     *  Remove the last state from the given node.
-     *
-     * @param node The selected node to remove the last state.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#removeState(unbbayes.prs.Node)
+	 */
     public void removeState(Node node) {
     	if (senController != null) senController.removeState(node);
     }
 
-    /**
-     * Delete the selected object from the network.
-     * @param selected The selected object to delete.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#deleteSelected(java.lang.Object)
+	 */
     //by young
     public void deleteSelected(Object selected) {
     	if (senController != null) senController.deleteSelected(selected);
@@ -338,24 +310,15 @@ public class NetworkController implements KeyListener {
     
     /****************** BEGIN KEY LISTENER METHODS *********************/
     
-    /**
-     * It does nothing when a key is typed.
-     *
-     * @param e The <code>KeyEvent</code> that is passed from the <code>KeyListener</code>
-     * @see KeyEvent
-     * @see KeyListener
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#keyTyped(java.awt.event.KeyEvent)
+	 */
     public void keyTyped(KeyEvent e) { }
 
 
-    /**
-     *  Delete all selected objects of the network when the key (KeyEvent.VK_DELETE) is
-     *  pressed.
-     *
-     * @param e The <code>KeyEvent</code> that is passed from the <code>KeyListener</code>
-     * @see KeyEvent
-     * @see KeyListener
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#keyPressed(java.awt.event.KeyEvent)
+	 */
     public void keyPressed(KeyEvent e) {
 
     	//by young
@@ -371,13 +334,9 @@ public class NetworkController implements KeyListener {
         screen.getGraphPane().update();*/
     }
     
-    /**
-     * It does nothing when a key is released.
-     *
-     * @param e The <code>KeyEvent</code> that is passed from the <code>KeyListener</code>
-     * @see KeyEvent
-     * @see KeyListener
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#keyReleased(java.awt.event.KeyEvent)
+	 */
     public void keyReleased(KeyEvent e) {
     }
     
@@ -385,18 +344,16 @@ public class NetworkController implements KeyListener {
     
     /****************** BEGIN GENERIC METHODS *********************/
     
-    /**
-     *  Get the network window.
-     *
-     * @return    The network window.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#getScreen()
+	 */
     public NetworkWindow getScreen() {
         return this.screen;
     }
 
-    /**
-     * Save the network image to a file.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#saveNetImage()
+	 */
     public void saveNetImage() {
         String images[] = { "PNG", "JPG", "GIF", "BMP" };
         JFileChooser chooser = new JFileChooser(FileHistoryController.getInstance().getCurrentDirectory());
@@ -455,9 +412,9 @@ public class NetworkController implements KeyListener {
         
     }
 
-    /**
-     * Save the table image to a file.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#saveTableImage()
+	 */
     public void saveTableImage() {
     	String images[] = { "PNG", "JPG", "GIF", "BMP" };
         JFileChooser chooser = new JFileChooser(FileHistoryController.getInstance().getCurrentDirectory());
@@ -490,49 +447,40 @@ public class NetworkController implements KeyListener {
     	return "";
     }
     
-    /**
-     * This is just a delegator to {@link #getLogContent()},
-     * which is a delegator to {@link SingleEntityNetwork#getLog()}.
-     * The visibility of {@link #getLogContent()} was not altered, for
-     * backward compatibility.
-     * @return log content
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#getLog()
+	 */
     public String getLog() {
     	return this.getLogContent();
     }
 
-    /**
-     *  Show every single step taken during the compilation of the 
-     *  SingleEntityNetwork.
-     *  @deprecated avoid GUI methods in controllers. Use {@link unbbayes.gui.util.TextAreaDialog} instead
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#showLog()
+	 */
     public JDialog showLog() {
     	TextAreaDialog dialog = new TextAreaDialog(this.getScreen().getUnbbayesFrame(), false);
         dialog.setTextContent(this.getLog());
         return dialog; 
     }
 
-    /**
-     * Open Warning dialog.
-     * Currently, this is only a stub.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#openWarningDialog()
+	 */
     public void openWarningDialog(){
     	System.out.println("Not implemented yet");
     }
     
-    /**
-     * Close current warning dialog.
-     * This is a stub yet.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#closeWarningDialog()
+	 */
     public void closeWarningDialog(){
     	System.out.println("Not implemented yet");
     }
     
     
-    /**
-     * Preview the log printing.
-     * @deprecated moved to {@link unbbayes.gui.util.TextAreaDialog}
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#previewPrintLog(javax.swing.JTextArea, javax.swing.JDialog)
+	 */
     public void previewPrintLog(final JTextArea texto, final JDialog dialog) {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         Thread t = new Thread(new Runnable() {
@@ -555,9 +503,9 @@ public class NetworkController implements KeyListener {
     }
 
 
-    /**
-     * Preview the table printing.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#previewPrintTable()
+	 */
     public void previewPrintTable() {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         Thread t = new Thread(new Runnable() {
@@ -591,9 +539,9 @@ public class NetworkController implements KeyListener {
     }
 
 
-    /**
-     * Preview the net printing.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#previewPrintNet(javax.swing.JComponent, java.awt.Rectangle)
+	 */
     public void previewPrintNet(final JComponent rede, final Rectangle retangulo) {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         Thread t = new Thread(new Runnable() {
@@ -618,13 +566,9 @@ public class NetworkController implements KeyListener {
     }
 
 
-    /**
-     * Print the given area of the given network.
-     *
-     * @param network A component representing the graphical 
-     * representation of the network to be printed.
-     * @param rectangle The area to be printed.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#printNet(javax.swing.JComponent, java.awt.Rectangle)
+	 */
     public void printNet(final JComponent network, final Rectangle rectangle) {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         Thread t = new Thread(new Runnable() {
@@ -650,9 +594,9 @@ public class NetworkController implements KeyListener {
     }
 
 
-    /**
-     * Print the table.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#printTable()
+	 */
     public void printTable() {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         Thread t = new Thread(new Runnable() {
@@ -713,11 +657,9 @@ public class NetworkController implements KeyListener {
         t.start();
     }
 
-    /**
-     * Method responsible for calculating the network border. If there are
-     * selected objects, the resulting rectangle consider only these objects.
-     * Otherwise, all objects from the network are considered.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#calculateNetRectangle()
+	 */
     public Rectangle calculateNetRectangle() {
     	
     	//by young
@@ -779,52 +721,44 @@ public class NetworkController implements KeyListener {
         
     }
     
-    /**
-     * Returns the selected node.
-     * @return the selected node.
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#getSelectedNode()
+	 */
     public Node getSelectedNode(){
     	System.out.println("Node selection is currently only available for subclasses");
     	return null;
     }
     
-    /**
-     * Selects a node
-     * @param node
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#selectNode(unbbayes.prs.Node)
+	 */
     public void selectNode(Node node){
     	System.out.println("Node selection is currently only available for subclasses");
     }
     
-    /**
-     * Unselects all graphical elements
-     */
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#unselectAll()
+	 */
     public void unselectAll(){
     	System.out.println("Node selection is currently only available for subclasses");
     }
 
-	/**
-	 * This is the class responsible for storing the network controlled by this controller.
-	 * {@link #setBaseIO(BaseIO)} must be set to a correct controller depending to what type of
-	 * network this controller is dealing.
-	 * @return the baseIO
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#getBaseIO()
 	 */
 	public BaseIO getBaseIO() {
 		return baseIO;
 	}
 
-	/**
-	 * This is the class responsible for storing the network controlled by this controller.
-	 * {@link #setBaseIO(BaseIO)} must be set to a correct controller depending to what type of
-	 * network this controller is dealing.
-	 * @param baseIO the baseIO to set
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#setBaseIO(unbbayes.io.BaseIO)
 	 */
 	public void setBaseIO(BaseIO baseIO) {
 		this.baseIO = baseIO;
 	}
 
-	/**
-	 * @param screen the screen to set
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#setScreen(unbbayes.gui.NetworkWindow)
 	 */
 	public void setScreen(NetworkWindow screen) {
 		this.screen = screen;
