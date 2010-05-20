@@ -32,7 +32,6 @@ import java.util.ResourceBundle;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 
-import unbbayes.controller.INetworkMediator;
 import unbbayes.controller.NetworkController;
 import unbbayes.controller.exception.InconsistentArgumentException;
 import unbbayes.controller.exception.InvalidOperationException;
@@ -98,7 +97,6 @@ import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeyAlgorithmParameters;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSBNGenerator;
 import unbbayes.util.ApplicationPropertyHolder;
 import unbbayes.util.Debug;
-import unbbayes.util.GraphLayoutUtil;
 
 /**
  * Controller of the MEBN structure. 
