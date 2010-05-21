@@ -1393,7 +1393,15 @@ public class SSBNNode implements INode {
 	}
 	
 	public void addArgumentsForMFrag(MFrag mFrag, List<OVInstance> listArgumentsOfMFrag){
-	
+		if (mFrag != null 
+				&& mFrag.equals(this.getResident().getMFrag())	// the new mfrag is the same as the resident's one
+				&& !(new HashSet<OVInstance>(this.argumentsResidentMFrag).equals(new HashSet<OVInstance>(listArgumentsOfMFrag)))) {
+			// We are trying to set arguments that are different to the resident's one, but we're using the same mfrag
+			// it indicates that this SSBN node is "immediate recursive" (an input node referencing a resident node within the same mfrag)
+			// we must actively set it as recursive
+			this.setRecursiveOVInstanceList(listArgumentsOfMFrag);
+			return;
+		}
 		argumentsForMFrag.put(mFrag, listArgumentsOfMFrag); 
 	
 	}

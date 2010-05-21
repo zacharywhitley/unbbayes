@@ -186,7 +186,7 @@ public class CPTForSSBNNodeGenerator {
 			
 			ContextFatherSSBNNode contextFather = ssbnNode.getContextFatherSSBNNode();
 			for(LiteralEntityInstance entity: contextFather.getPossibleValues()){
-				mapParentsByEntity.put(entity.getInstanceName(), new ArrayList<SSBNNode>()); 
+				mapParentsByEntity.put(entity.getInstanceName().toUpperCase(), new ArrayList<SSBNNode>()); 
 			}
 			
 			logManager.printText(level3, false, "Node " + ssbnNode + "have context father.");
@@ -227,7 +227,7 @@ public class CPTForSSBNNodeGenerator {
 					generalParents.add(parent); 
 				}else{
 					String entity = parent.getArgumentByOrdinaryVariable(contextFather.getOvProblematic()).getEntity().getInstanceName(); 
-					mapParentsByEntity.get(entity).add(parent); 
+					mapParentsByEntity.get(entity.toUpperCase()).add(parent); 
 				}
 			}
 			
@@ -242,7 +242,7 @@ public class CPTForSSBNNodeGenerator {
 				
 				ArrayList<SSBNNode> parentsForEntityList = new ArrayList<SSBNNode>(); 
 				
-				List<SSBNNode> parentsByEntityList = mapParentsByEntity.get(entity.getInstanceName()); 
+				List<SSBNNode> parentsByEntityList = mapParentsByEntity.get(entity.getInstanceName().toUpperCase()); 
 				
 				parentsForEntityList.addAll(parentsByEntityList); //TODO Sempre na mesma ordem? 
 				
@@ -312,7 +312,7 @@ public class CPTForSSBNNodeGenerator {
 				PotentialTable cptEntity = mapCPTByEntity.get(entity); 
 				
 				//Discover initial position
-				List<SSBNNode> parentsForEntity = mapParentsByEntity.get(entity); 
+				List<SSBNNode> parentsForEntity = mapParentsByEntity.get(entity.toUpperCase()); 
 				
 				ProbabilisticNode pnEntity = parentsForEntity.get(0).getProbNode(); //??
 			

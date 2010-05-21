@@ -314,7 +314,7 @@ public class Compiler implements ICompiler {
         		comp = new Compiler();
         	}
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(Compiler.class, "Using default LPD compiler", e);
 			comp = new Compiler();
 		}
 		comp.setNode(node);

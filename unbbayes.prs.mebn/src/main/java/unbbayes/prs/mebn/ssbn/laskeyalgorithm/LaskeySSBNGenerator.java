@@ -177,13 +177,17 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 	 * @param  ssbn : the ssbn to show
 	 */
 	protected void showSSBN(SSBN ssbn) {
-		if (this.getMediator() == null) {
-			// if there is no mediator, we cannot go on
-			return;
+//		if (this.getMediator() == null) {
+//			// if there is no mediator, we cannot go on
+//			return;
+//		}
+//		NetworkWindow window = new NetworkWindow(ssbn.getNetwork());
+//		this.getMediator().getScreen().getUnbbayesFrame().addWindow(window);
+//		window.setVisible(true);
+		// use the above code to show compiled network in a separate internal frame
+		if (this.getMediator() instanceof IMEBNMediator) {
+			((IMEBNMediator)this.getMediator()).turnToSSBNMode();
 		}
-		NetworkWindow window = new NetworkWindow(ssbn.getNetwork());
-		this.getMediator().getScreen().getUnbbayesFrame().addWindow(window);
-		window.setVisible(true);
 	}
 	
 	private void cleanUpSSBN(SSBN ssbn){
