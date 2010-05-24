@@ -18,30 +18,10 @@
         </library>
         <!-- It seems that loaders does not work as expected on jar files -->
         <!-- If you change/add the libraries, change/add these library declaration too -->
-        <library id="unbbayes.prs.mebn" path="unbbayes.prs.mebn.ssbn.ssmsbn-1.0.0.jar" type="code" >
+        <library id="unbbayes.prs.mebn.ssbn.ssmsbn" path="unbbayes.prs.mebn.ssbn.ssmsbn-1.0.0.jar" type="code" >
         	<export prefix="*"/>
         </library>
-        <library id="iri" path="lib/iri-2.4.jar" type="code">
-        	<export prefix="*"/>
-        </library>
-        <library id="jena" path="lib/jena-2.4.jar" type="code">
-        	<export prefix="*"/>
-        </library>
-        <library id="powerloom" path="lib/powerloom-1.0.jar" type="code">
-        	<export prefix="*"/>
-        </library>
-        <library id="stella" path="lib/stella-1.0.jar" type="code">
-        	<export prefix="*"/>
-        </library>
-        <library id="protege" path="lib/protege-3.2.jar" type="code">
-        	<export prefix="*"/>
-        </library>
-        <library id="protege-owl" path="lib/protege-owl-3.2.jar" type="code">
-        	<export prefix="*"/>
-        </library>
-        <library id="xercesImpl" path="lib/xercesImpl-2.8.1.jar" type="code">
-        	<export prefix="*"/>
-        </library>
+    
     </runtime>
     <!-- Multi-Entity Bayesian Network I/O extension point. 
      	 Hot plug is enabled.
