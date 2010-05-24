@@ -5,6 +5,7 @@ package prs.mebn.ssbn.extension.ssmsbn;
 
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.extension.ISSBNGeneratorBuilder;
+import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSMSBNGenerator;
 
 /**
  * This class uses builder pattern to instanciate an algorithm for multiple 
@@ -17,35 +18,42 @@ import unbbayes.prs.mebn.ssbn.extension.ISSBNGeneratorBuilder;
  */
 public class SSMSBNAlgorithmBuilder implements ISSBNGeneratorBuilder {
 
+	private String name;
+	
+
+
 	/**
 	 * Public default constructor must be public
 	 */
 	public SSMSBNAlgorithmBuilder() {
-		// TODO Auto-generated constructor stub
+		
+		
 	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.ssbn.extension.ISSBNGeneratorBuilder#buildSSBNGenerator()
 	 */
 	public ISSBNGenerator buildSSBNGenerator() throws InstantiationException {
-		// TODO Auto-generated method stub
-		return null;
+		
+		return LaskeySSMSBNGenerator.newInstance(); 
+
 	}
 
-	/* (non-Javadoc)
+	
+	/*
+	 * (non-Javadoc)
 	 * @see unbbayes.prs.mebn.ssbn.extension.ISSBNGeneratorBuilder#getName()
 	 */
 	public String getName() {
-		// TODO Auto-generated method stub
-		return null;
+		return name;
 	}
-
-	/* (non-Javadoc)
+	
+	/*
+	 * (non-Javadoc)
 	 * @see unbbayes.prs.mebn.ssbn.extension.ISSBNGeneratorBuilder#setName(java.lang.String)
 	 */
 	public void setName(String name) {
-		// TODO Auto-generated method stub
-
+		this.name = name;
 	}
 
 }
