@@ -298,12 +298,15 @@ public class ResidentNode extends MultiEntityNode
 	}
 	
 	public void removeInputInstanceFromList(InputNode node){
-		inputInstanceFromList.remove(node);
-		try{
-			node.setInputInstanceOf((ResidentNode)null); 
-		}
-		catch(Exception e){
-			e.printStackTrace(); 
+		if (inputInstanceFromList.remove(node)) {
+			// the following code initiates an infinite loop when inputInstanceFromList does not contain node...
+			// that's why I included a test to avoid such situation...
+			try{
+				node.setInputInstanceOf((ResidentNode)null); 
+			}
+			catch(Exception e){
+				e.printStackTrace(); 
+			}
 		}
 	}		
 	
@@ -681,9 +684,14 @@ public class ResidentNode extends MultiEntityNode
 	/**
 	 * Obtains the CPT compiler for this node.
 	 * This compiler will be used by SSBN generation algorithm in order to generate CPTs.
-	 * @return
+	 * @return a non null value
 	 */
 	public ICompiler getCompiler() {
+		if (this.compiler == null) {
+			ICompiler comp = Compiler.getInstance(this);
+			this.setCompiler(comp);
+			return comp;
+		}
 		return compiler;
 	}
 

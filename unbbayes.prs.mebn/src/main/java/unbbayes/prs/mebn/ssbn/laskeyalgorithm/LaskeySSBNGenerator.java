@@ -186,6 +186,7 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 //		window.setVisible(true);
 		// use the above code to show compiled network in a separate internal frame
 		if (this.getMediator() instanceof IMEBNMediator) {
+			((IMEBNMediator)this.getMediator()).setSpecificSituationBayesianNetwork(ssbn.getProbabilisticNetwork());
 			((IMEBNMediator)this.getMediator()).turnToSSBNMode();
 		}
 	}

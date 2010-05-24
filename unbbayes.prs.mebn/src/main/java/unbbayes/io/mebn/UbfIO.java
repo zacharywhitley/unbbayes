@@ -711,6 +711,7 @@ public class UbfIO implements MebnIO {
 		
 			mebn = this.prowlIO.loadMebn(prowlFile);
 		} catch(Exception e) {
+			e.printStackTrace();
 			throw new IOException(e.getLocalizedMessage() + " : " + this.resource.getString("InvalidProwlScheme"));
 		}
 		

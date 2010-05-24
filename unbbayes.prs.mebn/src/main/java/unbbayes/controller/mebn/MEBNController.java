@@ -1943,6 +1943,7 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		ret = ssbn.getNetwork();
 
 		if (ret instanceof ProbabilisticNetwork) {
+			// TODO remove the need to use the same panel for edition and compilation -> use different JInternalFrames for compiled network
 			specificSituationBayesianNetwork = (ProbabilisticNetwork)ret;
 		}
 		
@@ -1971,8 +1972,9 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		return ret ;    
 	}
 
-	/* (non-Javadoc)
+	/** 
 	 * @see unbbayes.controller.mebn.IMEBNMediator#executeQueryLaskeyAlgorithm(java.util.List)
+	 * @deprecated use {@link #executeQuery(List)} instead
 	 */
 	public ProbabilisticNetwork executeQueryLaskeyAlgorithm(List<Query> listQueries)
 	                           throws InconsistentArgumentException, 
