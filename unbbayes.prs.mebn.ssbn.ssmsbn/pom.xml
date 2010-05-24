@@ -257,13 +257,14 @@
 		</plugins>
 	</build>
 		<dependencies>
-			<!-- This is a plugin project for UnBBayes. Since it uses classes from the core, 
-			     UnBBayes is indeed a dependency -->
+			<!-- This is a plugin project for MEBN plugin of UnBBayes. Since it uses classes from the MEBN plugin, 
+			     MEBN plugin is indeed a dependency. -->
 			<dependency>
 				<groupId>br.unb.cic</groupId>
 				<artifactId>unbbayes.prs.mebn</artifactId>
 				<version>1.5.1</version>
 			</dependency>
+			<!-- This plugin generates a new MSBN, so it has a dependency to MSBN plugin. -->
 			<dependency>
 				<groupId>br.unb.cic</groupId>
 				<artifactId>unbbayes.prs.msbn</artifactId>
