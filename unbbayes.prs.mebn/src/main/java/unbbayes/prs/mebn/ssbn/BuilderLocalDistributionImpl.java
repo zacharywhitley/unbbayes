@@ -34,7 +34,10 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 	private ResourceBundle resource = 
 		unbbayes.util.ResourceController.newInstance().getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName());	
 	
-	private BuilderLocalDistributionImpl(){
+	/***
+	 *We need to have at leat one visible contructor to extend this class.
+	 */
+	protected BuilderLocalDistributionImpl(){
 		
 	}
 	
