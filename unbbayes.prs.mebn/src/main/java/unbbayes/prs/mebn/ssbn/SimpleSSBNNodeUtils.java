@@ -237,6 +237,10 @@ public class SimpleSSBNNodeUtils {
 	 * 
 	 * @param simpleSSBNNodeList List contain the SimpleSSBNNodes, which corresponds to the SSBN. 
 	 * @return A map, where the key is the name of the MSBN subnetwork and the value is the list of simple SSBN nodes in that network. 
+	 *
+	 *@deprecated this method should not be used as an utility method, it was 
+	 *moved to plugin of SSMSBN
+	 *
 	 */
 	public static Map<String, Set<SimpleSSBNNode>> convertSsbnIntoMsbn(
 			List<SimpleSSBNNode> nodeList){
