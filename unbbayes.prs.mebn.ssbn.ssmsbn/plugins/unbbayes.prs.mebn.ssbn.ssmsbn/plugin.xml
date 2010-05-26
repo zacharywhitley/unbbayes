@@ -24,8 +24,8 @@
     
     </runtime>
     
-    <extension plugin-id=" unbbayes.prs.mebn" point-id="SSBN" id="SSMSBN">
-        <parameter id="class" value="unbbayes.prs.mebn.ssbn.extension.SSMSBNBuilder" />
+    <extension plugin-id="unbbayes.prs.mebn" point-id="SSBN" id="SSMSBN">
+        <parameter id="class" value="unbbbayes.prs.mebn.ssbn.extension.ssmsbn.SSMSBNAlgorithmBuilder" />
         <parameter id="name" value="SSMSBN" />
 
     </extension>
