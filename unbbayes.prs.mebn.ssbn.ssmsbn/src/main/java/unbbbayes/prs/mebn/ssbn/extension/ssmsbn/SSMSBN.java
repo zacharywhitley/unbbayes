@@ -3,6 +3,7 @@
  */
 package unbbbayes.prs.mebn.ssbn.extension.ssmsbn;
 
+import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.mebn.ssbn.SSBN;
 
 
@@ -27,5 +28,13 @@ public class SSMSBN extends SSBN {
 		SSMSBN ret = new SSMSBN();
 		return ret;
 	}
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.ssbn.SSBN#getProbabilisticNetwork()
+	 */
+	public ProbabilisticNetwork getProbabilisticNetwork() {
+		ProbabilisticNetwork ret = new ProbabilisticNetwork("A placeholder for SSMSBN.");
+		return ret;
+	}
+	
 
 }
