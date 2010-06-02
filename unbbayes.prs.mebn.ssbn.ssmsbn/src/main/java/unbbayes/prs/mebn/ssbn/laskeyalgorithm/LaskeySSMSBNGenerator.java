@@ -3,6 +3,8 @@
  */
 package unbbayes.prs.mebn.ssbn.laskeyalgorithm;
 
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -42,6 +44,7 @@ import unbbayes.prs.mebn.ssbn.pruner.impl.PruneStructureImpl;
 import unbbayes.prs.mebn.ssbn.util.SSBNDebugInformationUtil;
 import unbbayes.prs.msbn.AbstractMSBN;
 import unbbayes.prs.msbn.SingleAgentMSBN;
+import unbbayes.util.Debug;
 import unbbbayes.prs.mebn.ssbn.extension.ssmsbn.ISSMSBNBuilder;
 import unbbbayes.prs.mebn.ssbn.extension.ssmsbn.SSMSBNBuilder;
 import unbbbayes.prs.mebn.ssbn.extension.ssmsbn.SSMSBNBuilderLocalDistribution;
@@ -71,17 +74,18 @@ public class LaskeySSMSBNGenerator extends LaskeySSBNGenerator {
 	private ISSMSBNBuilder ssmsbnBuilder;
 	
 	/**
-	 * The construtor is procted because we're using fatory method
+	 * The constructor is protected because we're using factory method
 	 * 
 	 * @param parameters
 	 */
 	protected LaskeySSMSBNGenerator(LaskeyAlgorithmParameters parameters) {
 		super(parameters);
+		this.setParameters(parameters);
 		// TODO Auto-generated constructor stub
 	}
 	
 	public static ISSBNGenerator newInstance(){
-		//Initialize Laskey algorithm usign default parameter values
+		//Initialize Laskey algorithm using default parameter values
 		LaskeyAlgorithmParameters param = new LaskeyAlgorithmParameters();
 		param.setParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION, "true");
 		param.setParameterValue(LaskeyAlgorithmParameters.DO_BUILDER, "true"); 
@@ -114,10 +118,9 @@ public class LaskeySSMSBNGenerator extends LaskeySSBNGenerator {
 		this.getMediator().getScreen().getDesktopPane().add(controller.getPanel());
 		controller.getPanel().setSize(controller.getPanel().getPreferredSize());
 		controller.getPanel().setVisible(true);
+		
 	}
 	
-	
-
 	
 	
 	public SSBN generateSSBN(List<Query> queryList, KnowledgeBase knowledgeBase)
@@ -193,14 +196,20 @@ public class LaskeySSMSBNGenerator extends LaskeySSBNGenerator {
 		
 		long time1 = System.currentTimeMillis(); 
 		long deltaTime = time1 - time0; 
-
-		SSBNDebugInformationUtil.printAndSaveCurrentNetwork(ssbn); 
 		
-		ssbn.getLogManager().printBox1Bar(); 
-		ssbn.getLogManager().printBox1(resourceLog.getString("007_ExecutionSucces")); 
-		ssbn.getLogManager().printBox1(resourceLog.getString("009_Time") + ": " + deltaTime + " ms"); 
-		ssbn.getLogManager().printBox1Bar(); 
-		ssbn.getLogManager().skipLine(); 
+		try {
+			SSBNDebugInformationUtil.printAndSaveCurrentNetwork(ssbn); 
+			ssbn.getLogManager().printBox1Bar(); 
+			ssbn.getLogManager().printBox1(resourceLog.getString("007_ExecutionSucces")); 
+			ssbn.getLogManager().printBox1(resourceLog.getString("009_Time") + ": " + deltaTime + " ms"); 
+			ssbn.getLogManager().printBox1Bar(); 
+			ssbn.getLogManager().skipLine();
+
+		} catch (Exception e) {
+			//e.printStackTrace();
+			Debug.println(this.getClass(), "Error printing log", e);
+		}
+		 
 		
 		this.cleanUpSSBN(ssbn);
 		
@@ -218,7 +227,7 @@ public class LaskeySSMSBNGenerator extends LaskeySSBNGenerator {
 	
 
 	
-	private void cleanUpSSBN(SSBN ssbn){
+	protected void cleanUpSSBN(SSBN ssbn){
 		ssbn.getSimpleSsbnNodeList().clear();
 		for (SSBNNode node : ssbn.getSsbnNodeList()) {
 			node.clearArgumentsForMFrag();
@@ -228,7 +237,7 @@ public class LaskeySSMSBNGenerator extends LaskeySSBNGenerator {
 		System.gc();
 	}
 
-	private void printSimpleSSBNNodeList(SSBN ssbn) {
+	protected void printSimpleSSBNNodeList(SSBN ssbn) {
 		for(SimpleSSBNNode node: ssbn.getSimpleSsbnNodeList()){
 			String parentIdList = " ";
 			for(INode nodeParent: node.getParentNodes()){
@@ -348,17 +357,17 @@ public class LaskeySSMSBNGenerator extends LaskeySSBNGenerator {
 	}
 	
 	//Build Structure
-	private void buildStructure(SSBN ssbn) throws ImplementationRestrictionException, SSBNNodeGeneralException{
+	protected void buildStructure(SSBN ssbn) throws ImplementationRestrictionException, SSBNNodeGeneralException{
 		getBuilderStructure().buildStructure(ssbn); 
 	}
 	
 	//Prune Structure
-	private void pruneStruture(SSBN ssbn){
+	protected void pruneStruture(SSBN ssbn){
 		getPruneStructure().pruneStructure(ssbn); 
 	}
 	
 	//Build Local Distribution
-	private void buildLocalDistribution(SSBN ssbn) throws MEBNException, SSBNNodeGeneralException{
+	protected void buildLocalDistribution(SSBN ssbn) throws MEBNException, SSBNNodeGeneralException{
 		getBuildLocalDistribution().buildLocalDistribution(ssbn); 
 	}
 
@@ -413,6 +422,41 @@ public class LaskeySSMSBNGenerator extends LaskeySSBNGenerator {
 	 */
 	public void setSsmsbnBuilder(ISSMSBNBuilder ssmsbn) {
 		this.ssmsbnBuilder = ssmsbn;
+	}
+
+	/**
+	 * @return the parameters
+	 */
+	public Parameters getParameters() {
+		return parameters;
+	}
+
+	/**
+	 * @param parameters the parameters to set
+	 */
+	public void setParameters(Parameters parameters) {
+		this.parameters = parameters;
+	}
+
+	/**
+	 * @return the resourceLog
+	 */
+	public ResourceBundle getResourceLog() {
+		return resourceLog;
+	}
+
+	/**
+	 * @param resourceLog the resourceLog to set
+	 */
+	public void setResourceLog(ResourceBundle resourceLog) {
+		this.resourceLog = resourceLog;
+	}
+
+	/**
+	 * @return the addFindings
+	 */
+	public boolean isAddFindings() {
+		return addFindings;
 	}
 	
 	

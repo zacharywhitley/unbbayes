@@ -225,7 +225,7 @@ public class SSMSBNBuilderLocalDistribution extends
 	    }
 	    
 	    // Generating the MSBN network.
-		ssbn.getLogManager().printText(level1, false, "[3] Genering the MSBN network");
+		ssbn.getLogManager().printText(level1, false, "[3] Generating the MSBN network");
 		SingleAgentMSBN msbnNet = new SingleAgentMSBN(nodeOfQuery.getShortName());
 		
 		// 1. For each subnetwork, create a new SubNetwork and add all nodes from the original PN that are also in the subnetwork

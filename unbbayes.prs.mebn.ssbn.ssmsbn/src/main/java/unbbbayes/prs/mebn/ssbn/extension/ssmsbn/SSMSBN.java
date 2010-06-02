@@ -5,6 +5,7 @@ package unbbbayes.prs.mebn.ssbn.extension.ssmsbn;
 
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.mebn.ssbn.SSBN;
+import unbbayes.util.Debug;
 
 
 /**
@@ -28,13 +29,11 @@ public class SSMSBN extends SSBN {
 		SSMSBN ret = new SSMSBN();
 		return ret;
 	}
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.mebn.ssbn.SSBN#getProbabilisticNetwork()
-	 */
-	public ProbabilisticNetwork getProbabilisticNetwork() {
-		ProbabilisticNetwork ret = new ProbabilisticNetwork("A placeholder for SSMSBN.");
-		return ret;
+	public void compileAndInitializeSSBN() throws Exception{
+		try {
+			super.compileAndInitializeSSBN();
+		} catch (Exception e) {
+			Debug.println(this.getClass(), "Failed to compile and initialize the generated SSMSBN.", e);
+		}
 	}
-	
-
 }
