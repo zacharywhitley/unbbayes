@@ -88,7 +88,7 @@
     	 		       It MUST provide a default constructor with no parameters.
     	 	    name: this is basically a name to identify a particular SSBN generation algorithm.
     	 	    optionPanel : this is a panel to be used as a form to fill attributes for this SSBN Algorithm.
-    	 	           It MUST unbbayes.gui.mebn.extension.ssbn.ISSBNOptionPanelBuilder.
+    	 	           It MUST implement unbbayes.gui.mebn.extension.ssbn.ISSBNOptionPanelBuilder.
     	 	           It MUST provide a default constructor with no parameters.
     -->
     <extension-point id="SSBN">

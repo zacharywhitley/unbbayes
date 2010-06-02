@@ -245,7 +245,7 @@ public class SSBN {
 	 * @return
 	 */
 	public Network getNetwork() {
-		return this.getProbabilisticNetwork();
+		return this.probabilisticNetwork;
 	}
 	
 	/**
