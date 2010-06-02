@@ -15,6 +15,7 @@ public class SSMSBNBuilder implements ISSMSBNBuilder{
 		
 	}
 	/**
+	 * 
 	 * Construction method
 	 * @return SSMSBNBuilder()
 	 */
