@@ -1,7 +1,7 @@
 /**
  * 
  */
-package unbbayes.prs.mebn.ssbn.laskeyalgorithm;
+package unbbayes.prs.mebn.ssbn.extension.ssmsbn.laskeyalgorithm;
 
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -36,6 +36,11 @@ import unbbayes.prs.mebn.ssbn.SimpleSSBNNode;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
+import unbbayes.prs.mebn.ssbn.extension.ssmsbn.ISSMSBNBuilder;
+import unbbayes.prs.mebn.ssbn.extension.ssmsbn.SSMSBNBuilder;
+import unbbayes.prs.mebn.ssbn.extension.ssmsbn.SSMSBNBuilderLocalDistribution;
+import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeyAlgorithmParameters;
+import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSBNGenerator;
 import unbbayes.prs.mebn.ssbn.pruner.IPruneStructure;
 import unbbayes.prs.mebn.ssbn.pruner.IPruner;
 import unbbayes.prs.mebn.ssbn.pruner.impl.BarrenNodePruner;
@@ -45,9 +50,6 @@ import unbbayes.prs.mebn.ssbn.util.SSBNDebugInformationUtil;
 import unbbayes.prs.msbn.AbstractMSBN;
 import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.util.Debug;
-import unbbbayes.prs.mebn.ssbn.extension.ssmsbn.ISSMSBNBuilder;
-import unbbbayes.prs.mebn.ssbn.extension.ssmsbn.SSMSBNBuilder;
-import unbbbayes.prs.mebn.ssbn.extension.ssmsbn.SSMSBNBuilderLocalDistribution;
 
 /**
  * This class implements the algorithm of Dr. Laskey, but resulting in a MSBN
@@ -109,7 +111,7 @@ public class LaskeySSMSBNGenerator extends LaskeySSBNGenerator {
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSBNGenerator#showSSBN(unbbayes.prs.mebn.ssbn.SSBN)
+	 * @see unbbayes.prs.mebn.ssbn.extension.ssmsbn.laskeyalgorithm.LaskeySSBNGenerator#showSSBN(unbbayes.prs.mebn.ssbn.SSBN)
 	 */
 	protected void showSSBN(SSBN ssbn) {
 		AbstractMSBN msbn = (AbstractMSBN)ssbn.getNetwork();

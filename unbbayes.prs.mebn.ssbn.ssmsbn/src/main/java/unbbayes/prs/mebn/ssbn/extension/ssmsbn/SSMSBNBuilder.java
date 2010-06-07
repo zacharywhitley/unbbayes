@@ -1,7 +1,7 @@
 /**
  * 
  */
-package unbbbayes.prs.mebn.ssbn.extension.ssmsbn;
+package unbbayes.prs.mebn.ssbn.extension.ssmsbn;
 
 /**
  * 

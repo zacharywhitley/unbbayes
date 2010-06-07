@@ -1,7 +1,7 @@
 /**
  * 
  */
-package unbbbayes.prs.mebn.ssbn.extension.ssmsbn;
+package unbbayes.prs.mebn.ssbn.extension.ssmsbn;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,8 +27,8 @@ import unbbayes.prs.mebn.ssbn.SimpleSSBNNodeUtils;
 import unbbayes.prs.mebn.ssbn.cptgeneration.CPTForSSBNNodeGenerator;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
+import unbbayes.prs.mebn.ssbn.extension.ssmsbn.laskeyalgorithm.LaskeySSMSBNGenerator;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeyAlgorithmParameters;
-import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSMSBNGenerator;
 import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.prs.msbn.SubNetwork;
 import unbbayes.util.GraphLayoutUtil;

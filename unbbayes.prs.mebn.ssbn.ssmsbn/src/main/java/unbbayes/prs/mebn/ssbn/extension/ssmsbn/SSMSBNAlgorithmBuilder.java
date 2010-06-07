@@ -1,11 +1,11 @@
 /**
  * 
  */
-package unbbbayes.prs.mebn.ssbn.extension.ssmsbn;
+package unbbayes.prs.mebn.ssbn.extension.ssmsbn;
 
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.extension.ISSBNGeneratorBuilder;
-import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSMSBNGenerator;
+import unbbayes.prs.mebn.ssbn.extension.ssmsbn.laskeyalgorithm.LaskeySSMSBNGenerator;
 
 /**
  * This class uses builder pattern to instanciate an algorithm for multiple
