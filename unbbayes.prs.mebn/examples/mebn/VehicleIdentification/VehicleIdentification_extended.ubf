@@ -4,10 +4,10 @@ PrOwl="VehicleIdentification_extended.owl"
 
 % UBF MTheory declaration
 MTheory=VehiclesIdentification_MTheory
-NextMFrag=9
-NextResident=19
-NextInput=12
-NextContext=12
+NextMFrag=13
+NextResident=27
+NextInput=23
+NextContext=24
 NextEntity=1
 
 % UBF MFrags and Nodes declaration
@@ -57,40 +57,25 @@ Color=-5178237
 
 % MFrag
 MFrag=GISReport_MFrag
-NextOrdinaryVar=4
+NextOrdinaryVar=5
 
 % Resident nodes
 
 
 Node=TerrainType
 Type=DomainResidentNode
-Position=193.0,195.0
+Position=191.0,195.0
 Size=154,60
 Color=-66914
 
 Node=GISReport
 Type=DomainResidentNode
-Position=200.0,311.0
+Position=200.0,312.0
 Size=140,60
 Color=-66914
 
-% Input nodes
-
-
-Node=IX10
-Type=GenerativeInputNode
-Position=423.0,196.0
-Size=148,60
-Color=-2302756
-
 % Context nodes
 
-
-Node=CX11
-Type=ContextNode
-Position=355.0,125.0
-Size=231,60
-Color=-5178237
 
 Node=CX1
 Type=ContextNode
@@ -103,7 +88,7 @@ Color=-5178237
 
 Node=obj
 Type=OrdinalVar
-Position=465.0,47.0
+Position=78.0,0.0
 Size=177,60
 Color=-5178237
 
@@ -121,30 +106,54 @@ Color=-5178237
 
 % MFrag
 MFrag=Object_MFrag
-NextOrdinaryVar=5
+NextOrdinaryVar=12
 
 % Resident nodes
 
 
 Node=ObjectType
 Type=DomainResidentNode
-Position=195.0,303.0
+Position=50.0,154.0
 Size=148,60
 Color=-66914
+
+% Input nodes
+
+
+Node=IX19
+Type=GenerativeInputNode
+Position=245.0,155.0
+Size=126,60
+Color=-2302756
+
+% Context nodes
+
+
+Node=CX18
+Type=ContextNode
+Position=39.0,78.0
+Size=173,60
+Color=-5178237
 
 % Ordinary Variables
 
 
+Node=rgn
+Type=OrdinalVar
+Position=228.0,19.0
+Size=170,60
+Color=-5178237
+
 Node=obj
 Type=OrdinalVar
-Position=53.0,36.0
+Position=37.0,19.0
 Size=177,60
 Color=-5178237
 
-Node=rgn
+Node=t
 Type=OrdinalVar
-Position=275.0,37.0
-Size=182,60
+Position=231.0,75.0
+Size=168,60
 Color=-5178237
 
 % MFrag
@@ -162,19 +171,19 @@ Color=-66914
 
 Node=ImageTypeReport
 Type=DomainResidentNode
-Position=271.0,484.0
+Position=269.0,482.0
 Size=200,60
 Color=-66914
 
 Node=ViewAngle
 Type=DomainResidentNode
-Position=559.0,215.0
+Position=557.0,216.0
 Size=154,60
 Color=-66914
 
 Node=ProtrusionReport
 Type=DomainResidentNode
-Position=536.0,361.0
+Position=535.0,361.0
 Size=198,60
 Color=-66914
 
@@ -250,13 +259,13 @@ NextOrdinaryVar=7
 
 Node=MTI
 Type=DomainResidentNode
-Position=259.0,453.0
+Position=300.0,432.0
 Size=111,60
 Color=-66914
 
 Node=Speed
 Type=DomainResidentNode
-Position=250.0,325.0
+Position=290.0,335.0
 Size=132,60
 Color=-66914
 
@@ -265,19 +274,19 @@ Color=-66914
 
 Node=IX7
 Type=GenerativeInputNode
-Position=65.0,325.0
+Position=10.0,235.0
 Size=155,60
 Color=-2302756
 
 Node=IX4
 Type=GenerativeInputNode
-Position=153.0,231.0
+Position=373.0,235.0
 Size=154,60
 Color=-2302756
 
 Node=IX5
 Type=GenerativeInputNode
-Position=320.0,235.0
+Position=196.0,235.0
 Size=148,60
 Color=-2302756
 
@@ -331,48 +340,48 @@ Color=-5178237
 
 % MFrag
 MFrag=Reference_MFrag
-NextOrdinaryVar=6
+NextOrdinaryVar=7
 
 % Resident nodes
 
 
-Node=ReportedObject
+Node=ReportedRegion
 Type=DomainResidentNode
-Position=69.0,272.0
-Size=176,60
+Position=19.0,140.0
+Size=179,60
 Color=-66914
 
 Node=Location
 Type=DomainResidentNode
-Position=365.0,265.0
+Position=215.0,140.0
 Size=145,60
 Color=-66914
 
-Node=ReportedRegion
+Node=ReportedObject
 Type=DomainResidentNode
-Position=76.0,190.0
-Size=179,60
+Position=20.0,225.0
+Size=176,60
 Color=-66914
 
 % Ordinary Variables
 
 
-Node=rpt
+Node=t
 Type=OrdinalVar
-Position=293.0,27.0
-Size=178,60
+Position=18.0,67.0
+Size=181,60
 Color=-5178237
 
 Node=obj
 Type=OrdinalVar
-Position=88.0,21.0
+Position=20.0,6.0
 Size=177,60
 Color=-5178237
 
-Node=t
+Node=rpt
 Type=OrdinalVar
-Position=86.0,82.0
-Size=181,60
+Position=198.0,6.0
+Size=178,60
 Color=-5178237
 
 % Object Entity Instances
