@@ -432,7 +432,7 @@ public class LaskeySSMSBNGenerator extends LaskeySSBNGenerator {
 	}
 
 	/**
-	 * @param parameters the parameters to set
+	 * @param the parameters to set
 	 */
 	public void setParameters(Parameters parameters) {
 		this.parameters = parameters;

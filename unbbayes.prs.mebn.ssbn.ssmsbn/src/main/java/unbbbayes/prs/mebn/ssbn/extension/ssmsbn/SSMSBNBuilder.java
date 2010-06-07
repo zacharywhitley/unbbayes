@@ -24,6 +24,7 @@ public class SSMSBNBuilder implements ISSMSBNBuilder{
 	}
 	/**
 	 * Builder method
+	 * @return instance of SSMSBN
 	 */
 	public SSMSBN buildSSMSBN() {
 		SSMSBN ssmsbn = SSMSBN.newInstance();

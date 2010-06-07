@@ -29,6 +29,12 @@ public class SSMSBN extends SSBN {
 		SSMSBN ret = new SSMSBN();
 		return ret;
 	}
+	/**
+	 * try compile and inicialize SSMSBN.
+	 * catch exception if it fails.
+	 * 
+	 * The exception will only be shown at debug perspective.
+	 */
 	public void compileAndInitializeSSBN() throws Exception{
 		try {
 			super.compileAndInitializeSSBN();
