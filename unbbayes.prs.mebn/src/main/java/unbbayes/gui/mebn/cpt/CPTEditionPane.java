@@ -271,13 +271,14 @@ public class CPTEditionPane extends JPanel{
 							updateStatesList(residentNode);
 							
 							MultiEntityNode node = fatherNodeList.get(selectedIndex); 
-						    if(node instanceof InputNode){
+						    // let's assume node != null.
+							if(node instanceof InputNode){
 						    	List<OrdinaryVariable> listOrdinaryVariable = ((InputNode)node).getOrdinaryVariableList(); 
 						    	updateArgumentsList(listOrdinaryVariable);	
 						    }else{
 						    	List<OrdinaryVariable> listOrdinaryVariable = ((ResidentNode)node).getOrdinaryVariableList(); 
 						    	updateArgumentsList(listOrdinaryVariable);
-						    	if (node == residentNode){
+						    	if (node.equals(getResidentNode())){
 						    		jlArguments.setEnabled(false); 
 						    	}
 						    }
@@ -674,7 +675,7 @@ public class CPTEditionPane extends JPanel{
 
 				public void actionPerformed(ActionEvent e) {
 					mebnController.saveCPT(residentNode, cptTextPane.getTableTxt()); 
-					JOptionPane.showMessageDialog(mebnController.getCPTDialog(residentNode), 
+					JOptionPane.showMessageDialog(mebnController.getCPTEditionFrame(residentNode), 
 							resource.getString("CptSaveOK"), resource.getString("sucess"), 
 							JOptionPane.INFORMATION_MESSAGE);
 					mebnController.openCPTDialog(residentNode); 
@@ -690,7 +691,7 @@ public class CPTEditionPane extends JPanel{
 					try {
 						compiler.init(cptTextPane.getTableTxt());
 						compiler.parse(); 
-						JOptionPane.showMessageDialog(mebnController.getCPTDialog(residentNode), 
+						JOptionPane.showMessageDialog(mebnController.getCPTEditionFrame(residentNode), 
 								resource.getString("CptCompileOK"), resource.getString("sucess"), 
 								JOptionPane.INFORMATION_MESSAGE);
 					} catch (MEBNException e1) {

@@ -181,7 +181,7 @@ public abstract class AbstractSSBNGenerator implements IMediatorAwareSSBNGenerat
 					throw new SSBNNodeGeneralException(e1.getMessage()); 
 				}
 			}else{
-				ssbnNode.getCompiler().generateCPT(ssbnNode);
+				ssbnNode.getCompiler().generateLPD(ssbnNode);
 //				PotentialTable t = ssbnNode.getProbNode().getPotentialTable(); 
 			}
 		}

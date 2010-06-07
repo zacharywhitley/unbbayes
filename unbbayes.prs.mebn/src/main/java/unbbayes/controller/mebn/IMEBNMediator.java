@@ -3,6 +3,7 @@ package unbbayes.controller.mebn;
 import java.io.File;
 import java.util.List;
 
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import unbbayes.controller.INetworkMediator;
@@ -391,6 +392,9 @@ public interface IMEBNMediator extends INetworkMediator  {
 
 	public abstract void closeCPTDialog(ResidentNode residentNode);
 
+	/**
+	 * @deprecated use {@link #getCPTEditionFrame(ResidentNode)} instead.
+	 */
 	public abstract CPTFrame getCPTDialog(ResidentNode residentNode);
 
 	/**
@@ -608,5 +612,12 @@ public interface IMEBNMediator extends INetworkMediator  {
 	 * and fills it using the currently edited MEBN.
 	 */
 	public abstract void resetKnowledgeBase();
+	
+	/**
+	 * Obtains a frame to edit CPT of a resident node.
+	 * @return an instance of a JFrame.
+	 */
+	public abstract JFrame getCPTEditionFrame(ResidentNode residentNode);
+	
 
 }

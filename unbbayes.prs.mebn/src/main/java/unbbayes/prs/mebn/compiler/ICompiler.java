@@ -59,8 +59,20 @@ public interface ICompiler {
 	 * whitten.
 	 * @return a reference to the generated PotentialTable (which also can be accessed from
 	 * the ProbabilisticNode contained inside the ssbnnode).
+	 * @deprecated use {@link #generateLPD(SSBNNode)} instead
 	 */
 	public PotentialTable generateCPT(SSBNNode ssbnnode) throws MEBNException;
+	
+	/**
+	 * generates Local Probability Distribution using a pseudocode.
+	 * @param ssbnnode: a SSBN-generation time node containing informations about a
+	 * resident node having a pseudocode to parse, every parent-child structure previously
+	 * built and a reference to a ProbabilisticNode which the generated CPT should be 
+	 * whitten.
+	 * @return a reference to the generated IProbabilityFunction (which also can be accessed from
+	 * the ProbabilisticNode contained inside the ssbnnode).
+	 */
+	public IProbabilityFunction generateLPD(SSBNNode ssbnnode) throws MEBNException;
 	
 	
 	/**

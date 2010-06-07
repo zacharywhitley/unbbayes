@@ -275,7 +275,11 @@ public class Compiler implements ICompiler {
 	
 	private int originalTextLength = 0;	// stores the length of the original text before deleting extra spaces
 	
-	private Compiler() {
+	/**
+	 * Because at least one constructor must be visible to subclasses in order to allow
+	 * inheritance, we use protected instead of private.
+	 */
+	protected Compiler() {
 		tempTable = new TempTable();
 		originalTextLength = 0;
 		this.cpt = null;
@@ -665,15 +669,28 @@ public class Compiler implements ICompiler {
 	 * @see unbbayes.prs.mebn.compiler.ICompiler#generateCPT()
 	 */
 	protected IProbabilityFunction generateCPT() throws MEBNException {
-		return this.generateCPT(this.getSSBNNode());
+		return this.generateLPD(this.getSSBNNode());
 	}
 
+	
+	/**
+	 * 
+	 * @see unbbayes.prs.mebn.compiler.ICompiler#generateCPT(unbbayes.prs.mebn.ssbn.SSBNNode)
+	 * @deprecated use {@link #generateLPD(SSBNNode)} instead.
+	 */
+	public PotentialTable generateCPT(SSBNNode ssbnnode) throws MEBNException {
+		IProbabilityFunction pf = this.generateLPD(ssbnnode);
+		if (pf instanceof PotentialTable) {
+			return (PotentialTable)pf;
+		}
+		return null;
+	}
 	
 	/**
 	 * this is identical to init(ssbnnode) -> parse() -> getCPT.
 	 *  @return 
 	 */
-	public PotentialTable generateCPT(SSBNNode ssbnnode) throws MEBNException {
+	public IProbabilityFunction generateLPD(SSBNNode ssbnnode) throws MEBNException {
 		System.gc();
 		if (ssbnnode == null) {
 			return null;

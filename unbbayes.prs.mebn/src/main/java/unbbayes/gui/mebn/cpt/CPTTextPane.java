@@ -362,7 +362,7 @@ public class CPTTextPane extends JTextPane{
 	public void insertCardinalityClause(){
 		try {
 			replaceSelection(""); 
-			doc.insertString(positionCaret, "cardinality", styleTable.getFunctionStyle());			
+			doc.insertString(positionCaret, "CARDINALITY", styleTable.getFunctionStyle());			
 			doc.insertString(positionCaret, "(", styleTable.getDefaultStyle());
 			doc.insertString(positionCaret, " op ", styleTable.getDescriptionStyle());
 		    doc.insertString(positionCaret, ")", styleTable.getDefaultStyle());
@@ -415,10 +415,10 @@ public class CPTTextPane extends JTextPane{
 	public void insertMaxClause(){
 		try {
 			replaceSelection(""); 
-			doc.insertString(positionCaret, "max", styleTable.getFunctionStyle());			
+			doc.insertString(positionCaret, "MAX", styleTable.getFunctionStyle());			
 			doc.insertString(positionCaret, "(", styleTable.getDefaultStyle());
 			doc.insertString(positionCaret, " op1 ", styleTable.getDescriptionStyle());
-			doc.insertString(positionCaret, ",", styleTable.getDefaultStyle());
+			doc.insertString(positionCaret, ";", styleTable.getDefaultStyle());
 			doc.insertString(positionCaret, " op2 ", styleTable.getDescriptionStyle());
 			doc.insertString(positionCaret, ")", styleTable.getDefaultStyle());
 				
@@ -432,10 +432,10 @@ public class CPTTextPane extends JTextPane{
 		try {
 			
 			replaceSelection(""); 
-			doc.insertString(positionCaret, "min", styleTable.getFunctionStyle());			
+			doc.insertString(positionCaret, "MIN", styleTable.getFunctionStyle());			
 			doc.insertString(positionCaret, "(", styleTable.getDefaultStyle());
 			doc.insertString(positionCaret, " op1 ", styleTable.getDescriptionStyle());
-			doc.insertString(positionCaret, ",", styleTable.getDefaultStyle());
+			doc.insertString(positionCaret, ";", styleTable.getDefaultStyle());
 			doc.insertString(positionCaret, " op2 ", styleTable.getDescriptionStyle());
 			doc.insertString(positionCaret, ")", styleTable.getDefaultStyle());
 				

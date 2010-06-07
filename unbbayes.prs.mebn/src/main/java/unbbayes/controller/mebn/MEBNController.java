@@ -30,6 +30,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import unbbayes.controller.NetworkController;
@@ -172,8 +173,8 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	/*-------------------------------------------------------------------------*/
 	/* Pools of frames                                                         */
 	/*-------------------------------------------------------------------------*/
-	private HashMap<ResidentNode, CPTFrame> mapCpt = 
-		new HashMap<ResidentNode, CPTFrame>(); 
+	private HashMap<ResidentNode, JFrame> mapCpt = 
+		new HashMap<ResidentNode, JFrame>(); 
 	
 	
 	/*-------------------------------------------------------------------------*/
@@ -1617,7 +1618,7 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	 * @see unbbayes.controller.mebn.IMEBNMediator#openCPTDialog(unbbayes.prs.mebn.ResidentNode)
 	 */
 	public void openCPTDialog(ResidentNode residentNode){
-		CPTFrame cptEditionPane = mapCpt.get(residentNode); 
+		JFrame cptEditionPane = mapCpt.get(residentNode); 
 		if(cptEditionPane == null){
 			cptEditionPane = new CPTFrame(this, residentNode);
 			mapCpt.put(residentNode, cptEditionPane); 
@@ -1631,24 +1632,38 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	 * @see unbbayes.controller.mebn.IMEBNMediator#closeCPTDialog(unbbayes.prs.mebn.ResidentNode)
 	 */
 	public void closeCPTDialog(ResidentNode residentNode){
-		CPTFrame cptEditionPane = mapCpt.get(residentNode); 
+		JFrame cptEditionPane = mapCpt.get(residentNode); 
 		if(cptEditionPane != null){
 			cptEditionPane.dispose(); 
 			mapCpt.remove(residentNode); 
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see unbbayes.controller.mebn.IMEBNMediator#getCPTDialog(unbbayes.prs.mebn.ResidentNode)
+	/**
+	 * Returns a CPTFrame to edit CPT.
+	 * If no instance of CPTFrame is known, it returns null.
+	 * @deprecated use {@link #getCPTEditionFrame(ResidentNode)} instead
 	 */
 	public CPTFrame getCPTDialog(ResidentNode residentNode){
-		return mapCpt.get(residentNode); 
+		JFrame frame = this.getCPTEditionFrame(residentNode);
+		if (frame instanceof CPTFrame) {
+			return (CPTFrame)frame;
+		}
+		return null; 
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#getCPTEditionFrame(unbbayes.prs.mebn.ResidentNode)
+	 */
+	public JFrame getCPTEditionFrame(ResidentNode residentNode) {
+		return mapCpt.get(residentNode);
+	}
 	
 	/*-------------------------------------------------------------------------*/
 	/* Knowledge Base                                                          */
 	/*-------------------------------------------------------------------------*/
+
 
 	/* (non-Javadoc)
 	 * @see unbbayes.controller.mebn.IMEBNMediator#getKnowledgeBase()

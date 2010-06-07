@@ -182,9 +182,16 @@ public class ContextNode extends MultiEntityNode {
     	List<OrdinaryVariable> ret = new ArrayList<OrdinaryVariable>(); 
     	
     	for(OrdinaryVariable ov: variableSet){
-    		
+    		if (ov == null) {
+    			// unfortunatelly, variableSet was containing null values sometimes (the set is non-null, but it contains null)
+    			continue;
+    		}
     		boolean found = false; 
     		for(OVInstance ovInstance: ovInstanceSet){
+    			if (ovInstance == null) {
+        			// unfortunatelly, ovInstanceSet was containing null values sometimes (the set is non-null, but it contains null)
+        			continue;
+        		}
     			if(ov.equals(ovInstance.getOv())){
     				found = true; 
     				continue; 

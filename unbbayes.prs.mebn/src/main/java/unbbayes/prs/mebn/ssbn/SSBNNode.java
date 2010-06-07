@@ -105,7 +105,12 @@ public class SSBNNode implements INode {
 	
 	// Constructors	
 	
-	private SSBNNode (ProbabilisticNetwork pnet, ResidentNode resident , 
+	/**
+	 * At least one constructor must be visible to its subclasses in order to
+	 * allow inheritance. That's why this constructor is protected instead
+	 * of private.
+	 */
+	protected SSBNNode (ProbabilisticNetwork pnet, ResidentNode resident , 
 			ProbabilisticNode probNode) {
 		
 		id = count; 

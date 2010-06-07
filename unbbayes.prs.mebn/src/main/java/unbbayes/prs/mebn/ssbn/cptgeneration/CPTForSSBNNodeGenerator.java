@@ -155,7 +155,7 @@ public class CPTForSSBNNodeGenerator {
 					throw new SSBNNodeGeneralException(e1.getMessage()); 
 				}
 			}else{
-				ssbnNode.getCompiler().generateCPT(ssbnNode);
+				ssbnNode.getCompiler().generateLPD(ssbnNode);
 				PotentialTable cpt = ssbnNode.getProbNode().getProbabilityFunction(); 
 				GUIPotentialTable gpt = new GUIPotentialTable(cpt); 
 //				gpt.showTable("Table for Node " + ssbnNode);
@@ -313,7 +313,11 @@ public class CPTForSSBNNodeGenerator {
 				
 				//Discover initial position
 				List<SSBNNode> parentsForEntity = mapParentsByEntity.get(entity.toUpperCase()); 
-				
+
+				if (parentsForEntity == null || parentsForEntity.size() <= 0) {
+					logManager.printBox1("Warning! No parents for entity " + entity + " was found. Aborting XOR table generation for " + contextFather.getProbNode());
+					break;
+				}
 				ProbabilisticNode pnEntity = parentsForEntity.get(0).getProbNode(); //??
 			
 				int indexEntityInCptResidentNode = cptResidentNode.getVariableIndex(pnEntity) - 1; //the index 0 is the node itself
