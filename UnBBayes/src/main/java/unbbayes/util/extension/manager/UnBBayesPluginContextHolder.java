@@ -203,7 +203,11 @@ public class UnBBayesPluginContextHolder {
 	 */
 	public void notifyReload(Object origin) {
 		for (OnReloadActionListener listener : this.getOnReloadListeners()) {
-			listener.onReload(new EventObject(origin));
+			try{
+				listener.onReload(new EventObject(origin));
+			}catch (Throwable t) {
+				t.printStackTrace();
+			}
 		}
 	}
 	
