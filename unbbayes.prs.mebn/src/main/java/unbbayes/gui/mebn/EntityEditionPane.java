@@ -81,7 +81,7 @@ public class EntityEditionPane extends JPanel{
 	private JPanel jpInformation; 
 
 	private JTextField txtName; 
-	private JTextField txtType; 
+//	private JTextField txtType; 
 	private JCheckBox checkIsOrdereable; 
 	private JButton jbNew; 
 	private JButton jbDelete; 
@@ -140,7 +140,7 @@ public class EntityEditionPane extends JPanel{
 	}
 
 	private void buildJpInformation() {
-		jpInformation = new JPanel(new GridLayout(4, 0)); 
+		jpInformation = new JPanel(new GridLayout(3, 0)); 
 
 		JLabel label; 
 		JToolBar toolBar; 
@@ -167,16 +167,16 @@ public class EntityEditionPane extends JPanel{
 		toolBar.setFloatable(false);
 		jpInformation.add(toolBar);
 
-		toolBar = new JToolBar(); 
-		toolBar.setLayout(new BorderLayout()); 
-		label = new JLabel(resource.getString("typeLabel")); 
-		label.setPreferredSize(new Dimension(50, 5));
-		toolBar.add(label, BorderLayout.LINE_START); 
-		txtType = new JTextField(10);
-		txtType.setEditable(false); 
-		toolBar.add(txtType, BorderLayout.CENTER); 
-		toolBar.setFloatable(false);
-		jpInformation.add(toolBar); 
+//		toolBar = new JToolBar(); 
+//		toolBar.setLayout(new BorderLayout()); 
+//		label = new JLabel(resource.getString("typeLabel")); 
+//		label.setPreferredSize(new Dimension(50, 5));
+//		toolBar.add(label, BorderLayout.LINE_START); 
+//		txtType = new JTextField(10);
+//		txtType.setEditable(false); 
+//		toolBar.add(txtType, BorderLayout.CENTER); 
+//		toolBar.setFloatable(false);
+//		jpInformation.add(toolBar); 
 
 		toolBar = new JToolBar(); 
 		toolBar.setLayout(new BorderLayout()); 
@@ -224,7 +224,7 @@ public class EntityEditionPane extends JPanel{
 							txtName.setEditable(true); 
 							checkIsOrdereable.setEnabled(true); 
 							checkIsOrdereable.setSelected(selected.isOrdereable()); 
-							txtType.setText(selected.getType().getName());
+//							txtType.setText(selected.getType().getName());
 						}
 					}
 				}  	
@@ -251,7 +251,7 @@ public class EntityEditionPane extends JPanel{
 									txtName.setText(selected.getName()); 
 									txtName.setEditable(false); 
 									checkIsOrdereable.setEnabled(false); 
-									txtType.setText(selected.getType().getName());
+//									txtType.setText(selected.getType().getName());
 									update();
 								} catch (DuplicatedNameException e1) {
 									JOptionPane.showMessageDialog(mebnController.getScreen(),
@@ -334,7 +334,7 @@ public class EntityEditionPane extends JPanel{
 					update();  
 
 					jlEntities.setSelectedValue(selected, true); 
-					txtType.setText(selected.getType().getName()); 
+//					txtType.setText(selected.getType().getName()); 
 					txtName.setEditable(true); 
 					checkIsOrdereable.setEnabled(true); 
 					txtName.setText(selected.getName());
@@ -361,7 +361,7 @@ public class EntityEditionPane extends JPanel{
 					}
 					update(); 
 					txtName.setText(" "); 
-					txtType.setText(" "); 
+//					txtType.setText(" "); 
 					txtName.setEditable(false); 
 					checkIsOrdereable.setEnabled(false);
 				}

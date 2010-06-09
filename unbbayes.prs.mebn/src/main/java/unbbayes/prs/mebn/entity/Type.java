@@ -120,7 +120,17 @@ public class Type implements Comparable<Type>{
 	}
 	
 	public String toString(){
-		return name; 
+		String shortName = name;
+		// Used to hide from user the label string used in PR-OWL types
+		if (this == TypeContainer.typeCategoryLabel || this == TypeContainer.typeLabel) {
+			// Category and type have the suffix Label in their type description
+			shortName = shortName.replaceAll("Label", "");
+		} else {
+			// Object entities have types with _label
+			shortName = shortName.replaceAll("_label", "");
+		}
+		
+		return shortName; 
 	}
 	
 	public int compareTo(Type anotherType) {
