@@ -62,7 +62,10 @@ public class Resources_pt extends GuiResources_pt {
 	 */
 	static final Object[][] contents =
 	{	
-		
+
+
+		{"defaultMEBNEditor" , "MTheory"},
+		{"defaultMEBNEditorTip" , "Editor padrão de MTheory"},
 		{"MEBNModuleName" , "Rede Bayesiana Multi-Entidade"},
 		{"newMebnToolTip", "Nova MEBN"}, 
         {"newMEBN","Nova MEBN"},

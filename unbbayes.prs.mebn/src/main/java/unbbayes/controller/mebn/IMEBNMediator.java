@@ -619,5 +619,25 @@ public interface IMEBNMediator extends INetworkMediator  {
 	 */
 	public abstract JFrame getCPTEditionFrame(ResidentNode residentNode);
 	
+	/**
+	 * Obtains an object from key.
+	 * This is useful if you want to use this mediator to pass objects through methods
+	 * (that is, a data transfer object).
+	 * @param key : ID of the objects stored by this mediator
+	 * @return object
+	 * @see #setProperty(String, Object)
+	 */
+	public abstract Object getProperty(String key);
+	
+	/**
+	 * Add a property setting a key.
+	 * This is useful if you want to use this mediator to pass objects through methods
+	 * (that is, a data transfer object).
+	 * @param key : ID of the objects stored by this mediator
+	 * @param obj : object to be stored
+	 * @see #getProperty(String)
+	 */
+	public abstract void setProperty(String key, Object obj);
+
 
 }

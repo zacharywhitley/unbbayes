@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- This is the plugin descriptor for UnBBayes' MEBN module. -->
-<plugin id="unbbayes.prs.mebn" version="1.5.1">
+<plugin id="unbbayes.prs.mebn" version="1.6.0">
     <requires>
         <import plugin-id="unbbayes.util.extension.core"/>
     </requires>
@@ -15,7 +15,7 @@
         </library>
         <!-- It seems that loaders does not work as expected on jar files -->
         <!-- If you change/add the libraries, change/add these library declaration too -->
-        <library id="unbbayes.prs.mebn" path="unbbayes.prs.mebn-1.5.1.jar" type="code" >
+        <library id="unbbayes.prs.mebn" path="unbbayes.prs.mebn-1.6.0.jar" type="code" >
         	<export prefix="*"/>
         </library>
         <library id="iri" path="lib/iri-2.4.jar" type="code">
@@ -95,6 +95,25 @@
         <parameter-def id="class"/>
         <parameter-def id="name"/>
         <parameter-def multiplicity="none-or-one" id="optionPanel"/>
+    </extension-point>
+    
+    <!-- MEBN editor extension point. 
+     	 Hot plug is enabled.
+    	 This extension point is basically a panel to edit a MEBN and its associated objects
+    	 It must implment unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelBuilder, in order to add new panel
+    	 into this MEBN editor. The class must contain a public default constructor (no parameters).
+    	 	Parameters:
+    	 		class: this is a class implementing unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelBuilder. 
+    	 		       It MUST provide a default constructor with no parameters.
+    	 	    name: this is basically a name to identify a particular panel.
+    	 	    icon: this is an icon for the panel built from class.
+    	 	    description: this is basically a tool tip text for a panel.
+    -->
+    <extension-point id="MEBNEditorPanel">
+        <parameter-def id="class"/>
+        <parameter-def multiplicity="none-or-one" id="name"/>
+        <parameter-def multiplicity="none-or-one" id="icon"/>
+        <parameter-def multiplicity="none-or-one" id="description"/>
     </extension-point>
     
     <extension plugin-id="unbbayes.util.extension.core" point-id="Module" id="MEBN">

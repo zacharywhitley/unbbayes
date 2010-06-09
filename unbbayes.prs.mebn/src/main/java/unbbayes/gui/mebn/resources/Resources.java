@@ -61,7 +61,8 @@ public class Resources extends GuiResources {
 	 */
 	static final Object[][] contents =
 	{	
-		
+		{"defaultMEBNEditor" , "MTheory"},
+		{"defaultMEBNEditorTip" , "Default MTheory Editor"},
 		{"MEBNModuleName" , "Multi Entity Bayesian Network"},
 		{"newMebnToolTip", "New MEBN"}, 
         {"newMEBN","New MEBN"},

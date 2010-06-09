@@ -11,18 +11,26 @@ import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.EventObject;
 import java.util.ResourceBundle;
 
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTree;
 import javax.swing.JViewport;
 
 import unbbayes.controller.ConfigurationsController;
+import unbbayes.controller.IconController;
+import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.controller.mebn.MEBNController;
 import unbbayes.gui.EvidenceTree;
 import unbbayes.gui.NetworkWindow;
+import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelPluginManager;
+import unbbayes.gui.mebn.extension.editor.MEBNEditionPanelPluginManager;
+import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelPluginManager.IMEBNEditionPanelPluginComponents;
 import unbbayes.io.BaseIO;
 import unbbayes.io.FileExtensionIODelegator;
 import unbbayes.prs.Graph;
@@ -34,6 +42,7 @@ import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.util.GraphLayoutUtil;
 import unbbayes.util.ResourceController;
 import unbbayes.util.extension.UnBBayesModule;
+import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
 
 /**
  * Codes from NetworkWindow which was dealing  MEBN was migrated into here.
@@ -55,9 +64,15 @@ public class MEBNNetworkWindow extends NetworkWindow {
 	
 	/** The resource is not static, so that hotplug would become easier */
 	private ResourceBundle resource;
+
+	private JPanel mainContentPane;
+
+	private JTabbedPane topTabbedPane;
 	
 //	private static final String[] SUPPORTED_FILE_EXTENSIONS_MEBN = { unbbayes.io.mebn.UbfIO.FILE_EXTENSION };
-	
+
+	/** This is the context for UnBBayes' plugin framework */
+	private IMEBNEditionPanelPluginManager pluginManager = MEBNEditionPanelPluginManager.newInstance(false);	// instantiate, do not initialize
 
 	/**
 	 * Default constructor.
@@ -72,7 +87,10 @@ public class MEBNNetworkWindow extends NetworkWindow {
 	}
 
 	/**
-	 * Initializes a MEBN module using a network as a parameter
+	 * Initializes a MEBN module using a network as a parameter.
+	 * It also adds a listener to call {@link #reloadMEBNEditionTabs()} when
+	 * a "reload plugins" action is triggered by UnBBayes (usually, it happens when
+	 * a user press the "reload plugins" button/menu).
 	 * @param net
 	 */
 	public MEBNNetworkWindow(Network net) {
@@ -86,10 +104,17 @@ public class MEBNNetworkWindow extends NetworkWindow {
 		this.setNet(net); 
 		this.setFileName(null); 
 		
-		Container contentPane = getContentPane();
-		this.setCardLayout(new CardLayout());
-		contentPane.setLayout(this.getCardLayout());
-		setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+		// this is the top level container where all MEBN edition panels (tabs) will be placed
+		this.setTopTabbedPane(new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT));
+		this.getContentPane().add(this.getTopTabbedPane());
+		
+//		Container mainContentPane = getMainContentPane();
+		
+		// this is the default MEBN edition panel
+		this.setCardLayout(new CardLayout());		// the superclass seems to use something about the layout of the main content panel
+		this.setMainContentPane(new JPanel(this.getCardLayout()));
+		this.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+		
 
 		// instancia variaveis de instancia
 		this.setGraphViewport(new JViewport());
@@ -143,17 +168,82 @@ public class MEBNNetworkWindow extends NetworkWindow {
 
 		this.setMode(MEBN_MODE);
 		this.setSsbnCompilationPane(new SSBNCompilationPane());
-		contentPane.add(this.getMebnEditionPane(), MEBN_PANE_MEBN_EDITION_PANE);
-		contentPane.add(this.getSsbnCompilationPane(), MEBN_PANE_SSBN_COMPILATION_PANE);
+		mainContentPane.add(this.getMebnEditionPane(), MEBN_PANE_MEBN_EDITION_PANE);
+		mainContentPane.add(this.getSsbnCompilationPane(), MEBN_PANE_SSBN_COMPILATION_PANE);
 		
 		// inicia com a tela de edicao de rede(PNEditionPane)
 		this.getMebnEditionPane().getGraphPanel().setBottomComponent(this.getJspGraph());
-		this.getCardLayout().show(getContentPane(), MEBN_PANE_MEBN_EDITION_PANE);
+		this.getCardLayout().show(getMainContentPane(), MEBN_PANE_MEBN_EDITION_PANE);
 
 		setVisible(true);
 		this.getGraphPane().update();
+		
+		// add a listener to reload tabs when "reload plugins" button is pressed
+		try {
+			this.getPluginManager().getPluginContextHolder().addListener(new UnBBayesPluginContextHolder.OnReloadActionListener() {
+				public void onReload(EventObject eventObject) {
+					reloadMEBNEditionTabs();	// only reload tabs.
+				}
+			});
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+		
+		// start loading plugins. This method also adds the main content panel to the tabbed panel
+		this.reloadMEBNEditionTabs();
 	}
 	
+	/**
+	 * This method initializes and loads/reloads the tabs for MEBN edition, including plugins.
+	 * It uses the UnBBayes' plugin framework using a context obtained from {@link #getPluginContextHolder()}.
+	 * Usually, this method is called when a "reload plugin" action is triggered. 
+	 * This is implemented as {@link UnBBayesPluginContextHolder.OnReloadActionListener}.
+	 * @see UnBBayesPluginContextHolder
+	 * @see #getPluginContextHolder()
+	 * @see #setPluginContextHolder(UnBBayesPluginContextHolder)
+	 */
+	public void reloadMEBNEditionTabs() {
+
+		// assertions
+		if (this.getTopTabbedPane() == null) {
+			// this is just in case someone has called this method before top tabbed pane is initialized
+			this.setTopTabbedPane(new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT));
+			this.getContentPane().add(this.getTopTabbedPane());
+		}
+		
+		// resets the top pane
+		this.getTopTabbedPane().removeAll();
+		
+		// add the main content pane in the top pane as the default MEBN editor
+		this.getTopTabbedPane().addTab(	
+				 						this.resource.getString("defaultMEBNEditor"), 
+										IconController.getInstance().getMTheoryNodeIcon(), 
+										this.getMainContentPane(), 
+										this.resource.getString("defaultMEBNEditorTip"));
+		
+		try {
+			// actually reload the plugins
+			this.getPluginManager().reloadPlugins();
+			
+			// obtains the result of the above operation and iterate over it
+			for (IMEBNEditionPanelPluginComponents editionPanelPluginComponent : this.getPluginManager().getLoadedComponents()) {
+				try {
+					// add the plugins to tab
+					this.getTopTabbedPane().addTab( editionPanelPluginComponent.getName(),
+													editionPanelPluginComponent.getIcon(), 
+													editionPanelPluginComponent.getPanelBuilder().buildPanel(getMultiEntityBayesianNetwork(), (IMEBNMediator)getController()), 
+													this.resource.getString("defaultMEBNEditorTip"));
+				} catch (Throwable e) {
+					// ignore every errors caused by plugins
+					e.printStackTrace();
+				}
+			}
+		} catch (Throwable t) {
+			// ignore every errors caused by plugins
+			t.printStackTrace();
+		}
+	}
+
 	/**
 	 * This method changes the main screen from compilation pane to edition pane
 	 */
@@ -175,7 +265,7 @@ public class MEBNNetworkWindow extends NetworkWindow {
 			// starts the network edition screen (PNEditionPane)
 			this.getMebnEditionPane().getGraphPanel().setBottomComponent(this.getJspGraph());
 			this.getMebnEditionPane().updateToPreferredSize();
-			this.getCardLayout().show(getContentPane(), MEBN_PANE_MEBN_EDITION_PANE);
+			this.getCardLayout().show(getMainContentPane(), MEBN_PANE_MEBN_EDITION_PANE);
 		}
 	}
 	
@@ -187,8 +277,8 @@ public class MEBNNetworkWindow extends NetworkWindow {
 
 		if (this.getMode()  == MEBN_MODE) {
 
-			Container contentPane = getContentPane();
-			contentPane.remove(this.getSsbnCompilationPane());
+			Container mainContentPane = getMainContentPane();
+			mainContentPane.remove(this.getSsbnCompilationPane());
 
 			this.setSsbnCompilationPane(new SSBNCompilationPane(ssbn, this,this.getController()));
 			this.getGraphPane().resetGraph();
@@ -204,13 +294,13 @@ public class MEBNNetworkWindow extends NetworkWindow {
 			ssbnCompilationPane.getEvidenceTree().selectTreeItemByNode(ssbn.getNodeAt(0));
 			this.getGraphPane().compiled(true, ssbn.getNodeAt(0));
 			
-			contentPane.add(ssbnCompilationPane,
+			mainContentPane.add(ssbnCompilationPane,
 					MEBN_PANE_SSBN_COMPILATION_PANE);
 			
 			ssbnCompilationPane.updateToPreferredSize(); 
 			
-			CardLayout layout = (CardLayout) contentPane.getLayout();
-			layout.show(getContentPane(), MEBN_PANE_SSBN_COMPILATION_PANE);
+			CardLayout layout = (CardLayout) mainContentPane.getLayout();
+			layout.show(getMainContentPane(), MEBN_PANE_SSBN_COMPILATION_PANE);
 		}
 	}
 	
@@ -332,5 +422,58 @@ public class MEBNNetworkWindow extends NetworkWindow {
 	public void setSsbnCompilationPane(SSBNCompilationPane ssbnCompilationPane) {
 		this.ssbnCompilationPane = ssbnCompilationPane;
 	}
+
+	/**
+	 * This is the panel where the default MEBN edition is placed.
+	 * @return the mainContentPane
+	 */
+	public JPanel getMainContentPane() {
+		return mainContentPane;
+	}
+
+	/**
+	 * This is the panel where the default MEBN edition is placed.
+	 * @param mainContentPane the mainContentPane to set
+	 */
+	public void setMainContentPane(JPanel mainContentPane) {
+		this.mainContentPane = mainContentPane;
+	}
+
+	/**
+	 * this is the top level container where all MEBN edition panels (tabs) will be placed
+	 * @return the topTabbedPane
+	 */
+	public JTabbedPane getTopTabbedPane() {
+		return topTabbedPane;
+	}
+
+	/**
+	 * this is the top level container where all MEBN edition panels (tabs) will be placed
+	 * @param topTabbedPane the topTabbedPane to set
+	 */
+	public void setTopTabbedPane(JTabbedPane topTabbedPane) {
+		this.topTabbedPane = topTabbedPane;
+	}
+
+	/**
+	 * This is the manager for MEBN editor panel's plugin framework.
+	 * This is used by {@link #reloadMEBNEditionTabs()} in order to load
+	 * plugins.
+	 * @return the pluginManager
+	 */
+	public IMEBNEditionPanelPluginManager getPluginManager() {
+		return pluginManager;
+	}
+
+	/**
+	 * This is the manager for MEBN editor panel's plugin framework.
+	 * This is used by {@link #reloadMEBNEditionTabs()} in order to load
+	 * plugins.
+	 * @param pluginManager the pluginManager to set
+	 */
+	public void setPluginManager(IMEBNEditionPanelPluginManager pluginManager) {
+		this.pluginManager = pluginManager;
+	}
+
 
 }

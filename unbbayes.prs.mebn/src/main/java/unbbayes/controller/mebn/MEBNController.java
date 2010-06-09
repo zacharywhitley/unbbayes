@@ -27,6 +27,7 @@ import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.swing.JDialog;
@@ -221,6 +222,14 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	private String mebnModulePluginID = "unbbayes.prs.mebn";
 
 	private ISSBNGenerator ssbnGenerator;
+
+	/*-------------------------------------------------------------------------*/
+	/* Data transfer objects                                                   */
+	/*-------------------------------------------------------------------------*/
+	
+	/** This map is used by {@link IMEBNMediator#getProperty(String)} and {@link IMEBNMediator#getProperty(String)#setPropertyMap(Map)} */
+	private Map<String, Object> propertyMap = new HashMap<String, Object>();
+	
 	
 	/*-------------------------------------------------------------------------*/
 	/* Constructors                                                            */
@@ -2535,5 +2544,37 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	public void resetKnowledgeBase() {
 		this.createKnowledgeBase();
 	}
+
+	/**
+	 * This map is used by {@link IMEBNMediator#getProperty(String)} and {@link IMEBNMediator#getProperty(String)#setPropertyMap(Map)}
+	 * @return the propertyMap
+	 */
+	public Map<String, Object> getPropertyMap() {
+		return propertyMap;
+	}
+
+	/**
+	 * This map is used by {@link IMEBNMediator#getProperty(String)} and {@link IMEBNMediator#getProperty(String)#setPropertyMap(Map)}
+	 * @param propertyMap the propertyMap to set
+	 */
+	public void setPropertyMap(Map<String, Object> propertyMap) {
+		this.propertyMap = propertyMap;
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#getProperty(java.lang.String)
+	 */
+	public Object getProperty(String key) {
+		return this.getPropertyMap().get(key);
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setProperty(java.lang.String, java.lang.Object)
+	 */
+	public void setProperty(String key, Object obj) {
+		this.getPropertyMap().put(key, obj);
+	}
+	
+	
 	
 }
