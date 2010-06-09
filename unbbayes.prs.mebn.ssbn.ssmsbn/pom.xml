@@ -110,17 +110,8 @@
 			<organizationUrl>www.gmu.edu</organizationUrl>
 			<timezone>-5</timezone>
 		</developer>
-		<developer>
-			<id>pcosta</id>
-			<name>Dr. Paulo Cesar G. Costa</name>
-			<email>pcosta@gmu.edu</email>
-			<roles>
-				<role>Consultant</role>
-			</roles>
-			<organization>George Mason University - GMU</organization>
-			<organizationUrl>www.gmu.edu</organizationUrl>
-			<timezone>-5</timezone>
-		</developer>
+
+		
 		<developer>
 			<id>laecio</id>
 			<name>Laecio Lima</name>
@@ -132,6 +123,7 @@
 			<organizationUrl>www.unb.br</organizationUrl>
 			<timezone>-3</timezone>
 		</developer>
+		
 		<developer>
 			<id>cardialfly</id>
 			<name>Shou Matsumoto</name>
@@ -143,28 +135,7 @@
 			<organizationUrl>www.unb.br</organizationUrl>
 			<timezone>-3</timezone>
 		</developer>
-		<developer>
-			<id>young</id>
-			<name>Young Park</name>
-			<email>cparkf@gmu.edu</email>
-			<roles>
-				<role>Developer</role>
-			</roles>
-			<organization>George Mason University - GMU</organization>
-			<organizationUrl>www.gmu.edu</organizationUrl>
-			<timezone>-5</timezone>
-		</developer>
-		<developer>
-			<id>aditya</id>
-			<name>Aditya Mugali</name>
-			<email>amugali@gmu.edu</email>
-			<roles>
-				<role>Developer</role>
-			</roles>
-			<organization>George Mason University - GMU</organization>
-			<organizationUrl>www.gmu.edu</organizationUrl>
-			<timezone>-5</timezone>
-		</developer>
+	
 		<developer>
 			<id>rafaelmezzomo</id>
 			<name>Rafael Mezzomo de Souza</name>
@@ -190,6 +161,18 @@
 	</developers>
 	
 	<contributors>
+	
+		<contributor>
+			<name>Dr. Paulo Cesar G. Costa</name>
+			<email>pcosta@gmu.edu</email>
+			<roles>
+				<role>Consultant</role>
+			</roles>
+			<organization>George Mason University - GMU</organization>
+			<organizationUrl>www.gmu.edu</organizationUrl>
+			<timezone>-5</timezone>
+		</contributor>
+		
 		<contributor>
 			<name>Dr. Kathryn Blackmond Laskey</name>
 			<email>klaskey@gmu.edu</email>
@@ -244,7 +227,7 @@
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
 					<descriptors>
-						<descriptor>dist.xml</descriptor>
+						<descriptor> dist.xml</descriptor>
 					</descriptors>
 				</configuration>
 			</plugin>

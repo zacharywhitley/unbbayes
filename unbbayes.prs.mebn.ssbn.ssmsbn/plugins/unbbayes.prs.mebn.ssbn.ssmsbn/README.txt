@@ -1,5 +1,7 @@
 INSTALLING A UNBBAYES' PLUGIN
 ------------------------------
+Abstrac: 3This plugin converts a MEBN to a MSBN
+
 
 This application is a plugin for UnBBayes 
 (http://sourceforge.net/projects/unbbayes/). 
@@ -29,7 +31,7 @@ ATTENTION
 ------------------------------
 Some plugins use other plugins. In such case, you must install all dependencies too.
 
-This plugin depends on the following plugins:
+This plugin depends on the following plugins: unbbayes.prs.mebn and unbbayes.prs.msbn
 
 	
 AVALILABILITY
