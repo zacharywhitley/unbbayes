@@ -349,7 +349,7 @@ public class PowerLoomKB implements KnowledgeBase {
 	 */
 	public void createEntityDefinition(ObjectEntity entity) {
 
-		LogicObject lo = PLI.sCreateConcept(entity.getType().toString(), null,
+		LogicObject lo = PLI.sCreateConcept(entity.getType().getName(), null,
 				moduleGenerativeName, environment);
 		Debug.println(lo.toString());
 
@@ -434,7 +434,7 @@ public class PowerLoomKB implements KnowledgeBase {
 		int i = 0; 
 		for(OrdinaryVariable variable: listVariables){
 			arguments+= "("; 
-			arguments+= "?arg_" + i + " " + variable.getValueType(); 
+			arguments+= "?arg_" + i + " " + variable.getValueType().getName(); 
 			arguments+= ")"; 
 			i++; 
 		}
@@ -492,7 +492,7 @@ public class PowerLoomKB implements KnowledgeBase {
 
 		// (STARSHIP_LABEL ST0)
 		String assertCommand = "(";
-		assertCommand += entityInstance.getInstanceOf().getType().toString()
+		assertCommand += entityInstance.getInstanceOf().getType().getName()
 				+ " ";
 		assertCommand += entityInstance.getName();
 		assertCommand += ")";
@@ -630,7 +630,7 @@ public class PowerLoomKB implements KnowledgeBase {
 		formula+=" all ";
 		
 		//List of variables of retrieve. Only one ordinary variable fault. 
-		formula+="(" + "?" + ovFault.getName() + " " + ovFault.getValueType() + ")"; 
+		formula+="(" + "?" + ovFault.getName() + " " + ovFault.getValueType().getName() + ")"; 
 		
 		//Formula
 		formula+= "(";  
