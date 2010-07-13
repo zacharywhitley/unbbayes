@@ -2,10 +2,14 @@
 <project>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>br.unb.cic</groupId>
-	<artifactId>unbbayes.prs.mebn.ssbn.ssmsbn</artifactId>
+	<artifactId>unbbayes.prs.mebn.ssbn.ssmsbn
+	</artifactId>
 	<name>MEBN to MSBN converter</name>
 	<!-- If you change the below version, -->
-	<!-- change version and library settings on plugin.xml too, because this is included as library -->
+	<!--
+		change version and library settings on plugin.xml too, because this is
+		included as library
+	-->
 	<version>1.0.0</version>
 	<url>http://unbbayes.sourceforge.net
 	</url>
@@ -111,7 +115,7 @@
 			<timezone>-5</timezone>
 		</developer>
 
-		
+
 		<developer>
 			<id>laecio</id>
 			<name>Laecio Lima</name>
@@ -123,7 +127,7 @@
 			<organizationUrl>www.unb.br</organizationUrl>
 			<timezone>-3</timezone>
 		</developer>
-		
+
 		<developer>
 			<id>cardialfly</id>
 			<name>Shou Matsumoto</name>
@@ -135,7 +139,7 @@
 			<organizationUrl>www.unb.br</organizationUrl>
 			<timezone>-3</timezone>
 		</developer>
-	
+
 		<developer>
 			<id>rafaelmezzomo</id>
 			<name>Rafael Mezzomo de Souza</name>
@@ -159,9 +163,9 @@
 			<timezone>-3</timezone>
 		</developer>
 	</developers>
-	
+
 	<contributors>
-	
+
 		<contributor>
 			<name>Dr. Paulo Cesar G. Costa</name>
 			<email>pcosta@gmu.edu</email>
@@ -172,7 +176,7 @@
 			<organizationUrl>www.gmu.edu</organizationUrl>
 			<timezone>-5</timezone>
 		</contributor>
-		
+
 		<contributor>
 			<name>Dr. Kathryn Blackmond Laskey</name>
 			<email>klaskey@gmu.edu</email>
@@ -207,7 +211,8 @@
 		<developerConnection>
 			scm:svn:https://unbbayes.svn.sourceforge.net/svnroot/unbbayes/trunk/unbbayes.datamining
 		</developerConnection>
-		<url>http://unbbayes.svn.sourceforge.net/viewvc/unbbayes/trunk/unbbayes.datamining
+		<url>
+			http://unbbayes.svn.sourceforge.net/viewvc/unbbayes/trunk/unbbayes.datamining
 		</url>
 	</scm>
 	<organization>
@@ -239,22 +244,33 @@
 			</plugin>
 		</plugins>
 	</build>
-		<dependencies>
-			<!-- This is a plugin project for MEBN plugin of UnBBayes. Since it uses classes from the MEBN plugin, 
-			     MEBN plugin is indeed a dependency. -->
-			<dependency>
-				<groupId>br.unb.cic</groupId>
-				<artifactId>unbbayes.prs.mebn</artifactId>
-				<version>1.5.1</version>
-			</dependency>
-			<!-- This plugin generates a new MSBN, so it has a dependency to MSBN plugin. -->
-			<dependency>
-				<groupId>br.unb.cic</groupId>
-				<artifactId>unbbayes.prs.msbn</artifactId>
-				<version>1.1.0</version>
-			</dependency>
-		
-			
+	<dependencies>
+		<!--
+			This is a plugin project for MEBN plugin of UnBBayes. Since it uses
+			classes from the MEBN plugin, MEBN plugin is indeed a dependency.
+		-->
+		<dependency>
+			<groupId>br.unb.cic</groupId>
+			<artifactId>unbbayes.prs.mebn</artifactId>
+			<version>1.5.1</version>
+		</dependency>
+		<!--
+			This plugin generates a new MSBN, so it has a dependency to MSBN
+			plugin.
+		-->
+		<dependency>
+			<groupId>br.unb.cic</groupId>
+			<artifactId>unbbayes.prs.msbn</artifactId>
+			<version>1.1.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>br.unb.cic</groupId>
+			<artifactId>unbbayes</artifactId>
+			<version>4.1.0</version>
+		</dependency>
+
+
 	</dependencies>
 	<reporting>
 		<plugins>
