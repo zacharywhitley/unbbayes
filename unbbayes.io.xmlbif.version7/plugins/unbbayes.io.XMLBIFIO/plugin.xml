@@ -5,9 +5,17 @@
 <plugin id="unbbayes.io.XMLBIFIO" version="2.0.0">
     <requires>
         <import plugin-id="unbbayes.util.extension.core"/>
+        <import plugin-id="edu.gmu.seor.prognos.unbbayesplugin.cps"/>
     </requires>
+    <runtime>
+        <!-- It seems that loaders does not work as expected on jar files -->
+        <!-- If you change/add the libraries, change/add these library declaration too -->
+        <library id="edu.gmu.seor.prognos.unbbayesplugin.cps" path="edu.gmu.seor.prognos.unbbayesplugin.cps-1.0.0.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+    </runtime>
     <extension plugin-id="unbbayes.util.extension.core" point-id="PNIO" id="XMLBIFIO">
         <parameter id="class" value="unbbayes.io.xmlbif.version7.BaseXMLBIFIO" />
-        <parameter id="name" value="XMLBIF Base" />
+        <parameter id="name" value="XMLBIF Version 0.7" />
     </extension>
 </plugin>
