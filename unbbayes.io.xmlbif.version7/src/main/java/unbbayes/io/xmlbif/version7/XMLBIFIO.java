@@ -54,7 +54,7 @@ public class XMLBIFIO {
 		
 		InputSource isource = new InputSource(new FileInputStream(input));
 		
-		JAXBContext context = JAXBContext.newInstance("unbbayes.io.xmlbif.version6.xmlclasses");    	
+		JAXBContext context = JAXBContext.newInstance("unbbayes.io.xmlbif.version7.xmlclasses");    	
 		Unmarshaller unmarshaller = context.createUnmarshaller();
 		
 		unmarshaller.setValidating(true);

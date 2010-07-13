@@ -45,8 +45,9 @@ public class BaseXMLBIFIO implements BaseIO {
 		int index = input.getName().lastIndexOf('.');
 		String id = input.getName().substring(0, index);
 		ProbabilisticNetwork pn = new ProbabilisticNetwork(id);	
-		try { 
-			XMLBIFIO.loadXML(input, pn);
+		try {
+			// Try version 0.7.
+			unbbayes.io.xmlbif.version7.XMLBIFIO.loadXML(input, pn);
 		} catch (Exception e1) {
 			try {
 				// Try version 0.6.
