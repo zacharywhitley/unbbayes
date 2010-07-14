@@ -84,7 +84,12 @@ public class OWLPropertyImportPanelBuilder extends JPanel implements IMEBNEditio
 		this.iconController = new IconController() {
 			public ImageIcon getResidentNodeIcon() {
 				if (residentNodeIcon == null) {
-					residentNodeIcon = new ImageIcon(getClass().getClassLoader().getResource("properties.png"));
+					try {
+						residentNodeIcon = new ImageIcon(getClass().getClassLoader().getResource("properties.png"));
+					} catch (Throwable t) {
+						Debug.println(this.getClass(), t.getMessage(), t);
+						return super.getResidentNodeIcon();
+					}
 				}
 				return residentNodeIcon;
 			}
