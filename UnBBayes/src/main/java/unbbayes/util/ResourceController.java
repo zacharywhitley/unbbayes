@@ -192,6 +192,8 @@ public class ResourceController {
 	 * It calls ResourceBundle.getBundle(baseName, this.getDefaultLocale(), this.getDefaultClassLoader()).
 	 * @param baseName : base name of the class to be loaded.
 	 * @return a instance of ResourceBundle
+	 * @deprecated use {@link #getBundle(String, Locale, ClassLoader)}, because plugins
+	 * cannot work correctly using the default parameters.
 	 */
 	public ResourceBundle getBundle(String baseName) {
 		return ResourceBundle.getBundle(baseName, this.getDefaultLocale(), this.getDefaultClassLoader());
