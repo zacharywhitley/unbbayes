@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>br.unb.cic</groupId>
+	<artifactId>unbbayes.gui.mebn.ontology.protege</artifactId>
+	<name>Protégé Based Ontology Editor</name>
+	<!-- If you change the below version, -->
+	<!-- change version and library settings on plugin.xml too, because this is included as library -->
+	<version>0.0.1</version>
+	<url>http://unbbayes.sourceforge.net
+	</url>
+	<licenses>
+		<license>
+			<name> GNU General Public License, Version 3, 29 June 2007</name>
+			<url>http://www.gnu.org/licenses/gpl-3.0.txt
+			</url>
+			<distribution>manual</distribution>
+		</license>
+	</licenses>
+	<issueManagement>
+		<system>SourceForge Tracker</system>
+		<url>http://sourceforge.net/tracker/?group_id=47519
+		</url>
+	</issueManagement>
+	<inceptionYear>2010</inceptionYear>
+	<mailingLists>
+		<mailingList>
+			<name> Announcements. All messages on this list are also sent to the
+				users list.</name>
+			<subscribe>
+				https://lists.sourceforge.net/lists/listinfo/UnBBayes-announce
+			</subscribe>
+			<unsubscribe>
+				https://lists.sourceforge.net/lists/listinfo/UnBBayes-announce
+			</unsubscribe>
+			<post>unbbayes-announce@lists.sourceforge.net
+			</post>
+			<archive>
+				http://sourceforge.net/mailarchive/forum.php?forum_name=unbbayes-announce
+			</archive>
+		</mailingList>
+		<mailingList>
+			<name> A subscriber-only list for those interested in developing
+				UnBBayes.</name>
+			<subscribe>
+				https://lists.sourceforge.net/lists/listinfo/UnBBayes-developers
+			</subscribe>
+			<unsubscribe>
+				https://lists.sourceforge.net/lists/listinfo/UnBBayes-developers
+			</unsubscribe>
+			<post>unbbayes-developers@lists.sourceforge.net
+			</post>
+			<archive>
+				http://sourceforge.net/mailarchive/forum.php?forum_name=unbbayes-developers
+			</archive>
+		</mailingList>
+		<mailingList>
+			<name> A subscriber-only list for those interested in translating
+				UnBBayes.</name>
+			<subscribe>
+				https://lists.sourceforge.net/lists/listinfo/UnBBayes-translators
+			</subscribe>
+			<unsubscribe>
+				https://lists.sourceforge.net/lists/listinfo/UnBBayes-translators
+			</unsubscribe>
+			<post>unbbayes-translators@lists.sourceforge.net
+			</post>
+			<archive>
+				http://sourceforge.net/mailarchive/forum.php?forum_name=unbbayes-translators
+			</archive>
+		</mailingList>
+		<mailingList>
+			<name> A subscriber-only list for those interested in discussing
+				about UnBBayes.</name>
+			<subscribe>
+				https://lists.sourceforge.net/lists/listinfo/UnBBayes-users
+			</subscribe>
+			<unsubscribe>
+				https://lists.sourceforge.net/lists/listinfo/UnBBayes-users
+			</unsubscribe>
+			<post>unbbayes-users@lists.sourceforge.net
+			</post>
+			<archive>
+				http://sourceforge.net/mailarchive/forum.php?forum_name=unbbayes-users
+			</archive>
+		</mailingList>
+	</mailingLists>
+	<developers>
+		<developer>
+			<id>cardialfly</id>
+			<name>Shou Matsumoto</name>
+			<email>cardialfly@gmail.com</email>
+			<roles>
+				<role>Developer</role>
+			</roles>
+			<organization>University of Brasilia - UnB</organization>
+			<organizationUrl>www.unb.br</organizationUrl>
+			<timezone>-3</timezone>
+		</developer>
+	</developers>
+	<contributors>
+		<contributor>
+			<name>Dr. Marcelo Ladeira</name>
+			<email>mladeira@unb.br</email>
+			<roles>
+				<role>Project Manager</role>
+			</roles>
+			<organization>University of Brasília - UnB</organization>
+			<organizationUrl>www.unb.br</organizationUrl>
+			<timezone>-3</timezone>
+		</contributor>
+		<contributor>
+			<name>Rommel Novaes Carvalho</name>
+			<email>rommel.carvalho@gmail.com</email>
+			<roles>
+				<role>Project Manager</role>
+				<role>Architect</role>
+				<role>Developer</role>
+			</roles>
+			<organization>George Mason University - GMU</organization>
+			<organizationUrl>www.gmu.edu</organizationUrl>
+			<timezone>-5</timezone>
+		</contributor>
+	</contributors>
+	<scm>
+		<connection>
+			scm:svn:https://unbbayes.svn.sourceforge.net/svnroot/unbbayes/trunk/unbbayes.datamining
+		</connection>
+		<developerConnection>
+			scm:svn:https://unbbayes.svn.sourceforge.net/svnroot/unbbayes/trunk/unbbayes.datamining
+		</developerConnection>
+		<url>http://unbbayes.svn.sourceforge.net/viewvc/unbbayes/trunk/unbbayes.datamining
+		</url>
+	</scm>
+	<organization>
+		<name>Universidade de Brasilia - UnB</name>
+		<url>http://www.unb.br</url>
+	</organization>
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptors>
+						<descriptor>dist.xml</descriptor>
+					</descriptors>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-site-plugin</artifactId>
+				<configuration>
+					<locales>en</locales>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+		<dependencies>
+			<!-- This is a plugin project for UnBBayes. Since it uses classes from the core, 
+			     UnBBayes is indeed a dependency -->
+			<dependency>
+				<groupId>br.unb.cic</groupId>
+				<artifactId>unbbayes</artifactId>
+				<version>4.1.0</version>
+			</dependency>
+			
+			<!-- This is a plugin project for unbbayes.prs.mebn -->
+			<dependency>
+				<groupId>br.unb.cic</groupId>
+				<artifactId>unbbayes.prs.mebn</artifactId>
+				<version>1.7.0</version>
+			</dependency>
+			
+	</dependencies>
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId> maven-project-info-reports-plugin</artifactId>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<!-- report>dependencies</report -->
+							<report>project-team</report>
+							<report>mailing-list</report>
+							<report>issue-tracking</report>
+							<report>license</report>
+							<report>scm</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-changes-plugin</artifactId>
+				<inherited>false</inherited>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>changes-report</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+				<configuration>
+					<issueLinkTemplate>http://sourceforge.net/support/tracker.php?aid=%ISSUE%</issueLinkTemplate>
+  				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>changes-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jxr-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<links>
+						<link>
+							http://java.sun.com/j2se/1.5.0/docs/api
+						</link>
+					</links>
+					<aggregate>true</aggregate>
+				</configuration>
+			</plugin>
+		</plugins>
+	</reporting>
+	<distributionManagement>
+		<site>
+  		 	<id>sourceforge.net</id>
+   			<url>scp://shell.sourceforge.net/home/groups/u/un/unbbayes/htdocs</url>
+  		</site>
+	</distributionManagement>
+</project>
