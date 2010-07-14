@@ -190,9 +190,15 @@ public class EntityEditionPane extends JPanel{
 	}
 
 	/**
+	 * Reloads and updates the list of entities.
+	 */
+	public void reloadEntityList(){
+		this.update();
+	}
+	
+	/**
 	 *  update the list of entities 
 	 **/
-
 	private void update(){
 
 		ObjectEntity antSelected = selected; 

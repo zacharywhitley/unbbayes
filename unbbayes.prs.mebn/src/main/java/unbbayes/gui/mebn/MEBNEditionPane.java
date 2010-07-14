@@ -30,6 +30,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Enumeration;
 import java.util.ResourceBundle;
@@ -40,7 +42,6 @@ import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -54,11 +55,11 @@ import javax.swing.JToolBar;
 import unbbayes.controller.FileHistoryController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.mebn.MEBNController;
-import unbbayes.gui.GlobalOptionsDialog;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.gui.mebn.auxiliary.ButtonLabel;
 import unbbayes.gui.mebn.auxiliary.FocusListenerTextField;
 import unbbayes.gui.mebn.auxiliary.MebnToolkit;
+import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelBuilder;
 import unbbayes.gui.mebn.finding.EntityFindingEditionPane;
 import unbbayes.gui.mebn.finding.RandomVariableFindingEdtitionPane;
 import unbbayes.io.exception.UBIOException;
@@ -69,7 +70,6 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.exception.DuplicatedNameException;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.exception.ReservedWordException;
-import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.util.ResourceController;
 
 /**
@@ -404,6 +404,27 @@ public class MEBNEditionPane extends JPanel {
   				setRandonVariableFindingEditionPaneActive();
   			}
   		});
+  		
+
+		// trigger action when we choose a tab to switch between different edition panes (e.g. from plugin to default edition pane)
+		this.addPropertyChangeListener(
+				IMEBNEditionPanelBuilder.MEBN_EDITION_PANEL_CHANGE_PROPERTY, 
+				new PropertyChangeListener() {
+					public void propertyChange(PropertyChangeEvent evt) {
+						try {
+							// update MEBNEditionPane's entity panel (it seems that this is the only one not being updated...)
+							getToolBarOVariable().updateListOfTypes();
+							getToolBarOVariable().updateUI();
+							getToolBarOVariable().repaint();
+							entityEditionPane.reloadEntityList();
+							updateUI();
+							repaint();
+							// add code here to do something when user change tabs
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				});
 
   	}
 
@@ -1703,6 +1724,125 @@ public class MEBNEditionPane extends JPanel {
 	 */
 	public void setMebnOptionsDialog(OptionsDialog mebnOptionsDialog) {
 		this.mebnOptionsDialog = mebnOptionsDialog;
+	}
+
+	/**
+	 * @return the descriptionPane
+	 */
+	public DescriptionPane getDescriptionPane() {
+		return descriptionPane;
+	}
+
+	/**
+	 * @return the mTheoryTreeScroll
+	 */
+	public JScrollPane getMTheoryTreeScroll() {
+		return mTheoryTreeScroll;
+	}
+
+	/**
+	 * @param theoryTreeScroll the mTheoryTreeScroll to set
+	 */
+	public void setMTheoryTreeScroll(JScrollPane theoryTreeScroll) {
+		mTheoryTreeScroll = theoryTreeScroll;
+	}
+
+	/**
+	 * @return the tabsPanel
+	 */
+	public JPanel getTabsPanel() {
+		return tabsPanel;
+	}
+
+	/**
+	 * @param tabsPanel the tabsPanel to set
+	 */
+	public void setTabsPanel(JPanel tabsPanel) {
+		this.tabsPanel = tabsPanel;
+	}
+
+	/**
+	 * @return the jtbTabSelection
+	 */
+	public JToolBar getJtbTabSelection() {
+		return jtbTabSelection;
+	}
+
+	/**
+	 * @param jtbTabSelection the jtbTabSelection to set
+	 */
+	public void setJtbTabSelection(JToolBar jtbTabSelection) {
+		this.jtbTabSelection = jtbTabSelection;
+	}
+
+	/**
+	 * @return the btnTabOptionTree
+	 */
+	public JToggleButton getBtnTabOptionTree() {
+		return btnTabOptionTree;
+	}
+
+	/**
+	 * @return the btnTabOptionOVariable
+	 */
+	public JToggleButton getBtnTabOptionOVariable() {
+		return btnTabOptionOVariable;
+	}
+
+	/**
+	 * @return the btnTabOptionEntity
+	 */
+	public JToggleButton getBtnTabOptionEntity() {
+		return btnTabOptionEntity;
+	}
+
+	/**
+	 * @return the btnTabOptionEntityFinding
+	 */
+	public JToggleButton getBtnTabOptionEntityFinding() {
+		return btnTabOptionEntityFinding;
+	}
+
+	/**
+	 * @return the btnTabOptionNodeFinding
+	 */
+	public JToggleButton getBtnTabOptionNodeFinding() {
+		return btnTabOptionNodeFinding;
+	}
+
+	/**
+	 * @return the topPanel
+	 */
+	public JPanel getTopPanel() {
+		return topPanel;
+	}
+
+	/**
+	 * @return the nodeSelectedToolBar
+	 */
+	public JPanel getNodeSelectedToolBar() {
+		return nodeSelectedToolBar;
+	}
+
+	/**
+	 * @return the cardLayout
+	 */
+	public CardLayout getCardLayout() {
+		return cardLayout;
+	}
+
+	/**
+	 * @return the jpTabSelected
+	 */
+	public JPanel getJpTabSelected() {
+		return jpTabSelected;
+	}
+
+	/**
+	 * @param jpTabSelected the jpTabSelected to set
+	 */
+	public void setJpTabSelected(JPanel jpTabSelected) {
+		this.jpTabSelected = jpTabSelected;
 	}
 
 }

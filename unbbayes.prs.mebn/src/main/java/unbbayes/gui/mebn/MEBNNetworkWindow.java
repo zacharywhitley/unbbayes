@@ -9,6 +9,10 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.EventObject;
@@ -28,6 +32,7 @@ import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.controller.mebn.MEBNController;
 import unbbayes.gui.EvidenceTree;
 import unbbayes.gui.NetworkWindow;
+import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelBuilder;
 import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelPluginManager;
 import unbbayes.gui.mebn.extension.editor.MEBNEditionPanelPluginManager;
 import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelPluginManager.IMEBNEditionPanelPluginComponents;
@@ -106,7 +111,22 @@ public class MEBNNetworkWindow extends NetworkWindow {
 		
 		// this is the top level container where all MEBN edition panels (tabs) will be placed
 		this.setTopTabbedPane(new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT));
+		this.getTopTabbedPane().addMouseListener(new MouseListener() {
+			// notify on tab change (which is tab press event)
+			public void mouseClicked(MouseEvent e) {}
+			public void mouseEntered(MouseEvent e) {}
+			public void mouseExited(MouseEvent e) {}
+			public void mousePressed(MouseEvent e) {
+				getTopTabbedPane().getSelectedComponent().firePropertyChange(
+						IMEBNEditionPanelBuilder.MEBN_EDITION_PANEL_CHANGE_PROPERTY, 
+						-1,	// we must set a invalid value here, because it seems that the values must actually change, in order to trigger a property change event...
+						getTopTabbedPane().getSelectedIndex());
+			}
+			public void mouseReleased(MouseEvent e) {}
+			
+		});
 		this.getContentPane().add(this.getTopTabbedPane());
+		
 		
 //		Container mainContentPane = getMainContentPane();
 		
@@ -114,7 +134,29 @@ public class MEBNNetworkWindow extends NetworkWindow {
 		this.setCardLayout(new CardLayout());		// the superclass seems to use something about the layout of the main content panel
 		this.setMainContentPane(new JPanel(this.getCardLayout()));
 		this.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
-		
+		// trigger action when we choose a tab to switch between different edition panes (e.g. from plugin to default edition pane)
+		this.getMainContentPane().addPropertyChangeListener(
+				IMEBNEditionPanelBuilder.MEBN_EDITION_PANEL_CHANGE_PROPERTY, 
+				new PropertyChangeListener() {
+					public void propertyChange(PropertyChangeEvent evt) {
+						try {
+							// delegate...
+							getMebnEditionPane().firePropertyChange(
+									IMEBNEditionPanelBuilder.MEBN_EDITION_PANEL_CHANGE_PROPERTY, 
+									-1, 
+									getTopTabbedPane().getSelectedIndex());
+							// update graph 
+							getController().getScreen().getGraphPane().resetGraph();
+							
+							// update itself
+							getMainContentPane().updateUI();
+							getMainContentPane().repaint();
+							// add code here to do something when user change tabs
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				});
 
 		// instancia variaveis de instancia
 		this.setGraphViewport(new JViewport());
@@ -128,23 +170,7 @@ public class MEBNNetworkWindow extends NetworkWindow {
 		this.setJspGraph(new JScrollPane(this.getGraphViewport()));
 		
 		this.setBCompiled(false);
-
-		//by young
-		long width = (long)Node.getDefaultSize().getX();
-		long height = (long)Node.getDefaultSize().getY();
 		
-		this.getGraphPane().getGraphViewport().reshape(0, 0,
-				(int) (this.getGraphPane().getBiggestPoint().getX() + width),
-				(int) (this.getGraphPane().getBiggestPoint().getY() + height));
-		
-		this.getGraphPane().getGraphViewport().setViewSize(
-				new Dimension(
-						(int) (this.getGraphPane().getBiggestPoint().getX() + width),
-						(int) (this.getGraphPane().getBiggestPoint().getY() + height)));
-
-		// set the content and size of graphViewport
-		this.getGraphViewport().setView(this.getGraphPane());
-		this.getGraphViewport().setSize(800, 600);
 
 		this.getJspGraph().getHorizontalScrollBar().addAdjustmentListener(
 				new AdjustmentListener() {

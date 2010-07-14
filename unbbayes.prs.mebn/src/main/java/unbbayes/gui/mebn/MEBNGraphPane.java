@@ -3,6 +3,7 @@
  */
 package unbbayes.gui.mebn;
 
+import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.util.ResourceBundle;
 
@@ -60,6 +61,25 @@ public class MEBNGraphPane extends GraphPane {
 		super(controller, graphViewport);
 		this.resource = ResourceController.newInstance().getBundle(
 				unbbayes.gui.mebn.resources.Resources.class.getName());
+		
+		// the following code was migrated from MEBNNetworkWindow to here during refactory
+		
+		//by young
+		long width = (long)Node.getDefaultSize().getX();
+		long height = (long)Node.getDefaultSize().getY();
+		
+		this.getGraphViewport().reshape(0, 0,
+				(int) (this.getBiggestPoint().getX() + width),
+				(int) (this.getBiggestPoint().getY() + height));
+		
+		this.getGraphViewport().setViewSize(
+				new Dimension(
+						(int) (this.getBiggestPoint().getX() + width),
+						(int) (this.getBiggestPoint().getY() + height)));
+
+		// set the content and size of graphViewport
+		this.getGraphViewport().setView(this);
+		this.getGraphViewport().setSize(800, 600);
 	}
 	
 	/**

@@ -248,6 +248,8 @@ public class ToolBarOrdVariable extends JToolBar{
            }
 	    );   
 	    
+	    jcbType.updateUI();
+	    jcbType.repaint();
 	    return jcbType; 
 	}
 	
