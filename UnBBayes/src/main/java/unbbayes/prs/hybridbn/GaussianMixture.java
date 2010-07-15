@@ -231,7 +231,7 @@ public class GaussianMixture implements IInferenceAlgorithm {
 							values[stateIndex] = variableToGetMarginal.getMarginalAt(stateIndex);
 						}
 						variable.initMarginalList();
-						variable.addLikeliHood(values);
+						variable.setMarginalProbabilities(values);
 						
 						// Add its name to the list of already visited nodes.
 						nodeVisitedBeforeMap.put(nodeToGetMarginal.getName(), true);
@@ -302,7 +302,7 @@ public class GaussianMixture implements IInferenceAlgorithm {
 			values[ContinuousNode.MEAN_MARGINAL_INDEX] = (float)weightedMean;
 			values[ContinuousNode.VARIANCE_MARGINAL_INDEX] = (float)weightedVariance;
 			((TreeVariable)node).initMarginalList();
-			((TreeVariable)node).addLikeliHood(values);
+			((TreeVariable)node).setMarginalProbabilities(values);
 		}
 	}
 	

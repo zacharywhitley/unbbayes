@@ -28,19 +28,20 @@ import unbbayes.prs.Node;
  */
 public abstract class TreeVariable extends Node implements java.io.Serializable {
 
-    // Clique que a vari�vel est� associada.
+    // Clique associated to this variable.
     protected IRandomVariable cliqueAssociado;
 
-    // Armazena marginais e evid�ncias.
+    // Store the marginal list (they add to 1).
     protected float[] marginalList;
     
     private float[] marginalCopy;
 
     private int evidence = -1;
+    private boolean hasLikelihood = false;
 
     /**
-     * Tem que ser sobrescrito para atualizar as marginais
-     * que ser�o visualizadas na �rvore da interface.
+     * This method has to be overwritten in order to 
+     * show the correct marginal list in the tree.
      */
     protected abstract void marginal();
     
@@ -49,7 +50,7 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     }
     
     //by young
-	public boolean IsMarginalList() 
+	public boolean isMarginalList() 
 	{  				
 		if( marginalList != null )
 			return true;
@@ -70,10 +71,10 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     }
     
     /**
-     *  Retorna o valor da marginal de determinado �ndice.
+     *  Return the marginal probability associated to a specific index/state.
      *
-     *@param index returna a marginal do estado especificado pelo par�metro <code>index</code>
-     *@return    valor da marginal de determinado �ndice.
+     *@param index the state of the node.
+     *@return the marginal probability associated to the state defined by index.
      */
     public float getMarginalAt(int index) {
 	//by young
@@ -86,9 +87,15 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     void setMarginalAt(int index, float value) {
         marginalList[index] = value;
     }
+    
+    public void setMarginalProbabilities(float marginalProbabilities[]) {
+        for (int i = 0; i < getStatesSize(); i++) {
+            setMarginalAt(i, marginalProbabilities[i]);
+        }
+    }
 
     /**
-     * Limpa o flag de evid�ncia.
+     * Reset the value of the evidence, which by default is -1 when there is no evidence.
      */
     void resetEvidence() {
         evidence = -1;
@@ -96,56 +103,76 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
 
 
     /**
-     * Retorna true se esta vari�vel cont�m alguma evid�ncia e false caso contr�rio.
+     * Returns true if there is evidence associated to the node, false otherwise.
      *
-     * @return true se esta vari�vel cont�m alguma evid�ncia e false caso contr�rio.
+     * @return true if there is evidence associated to the node, false otherwise.
      */
     public boolean hasEvidence() {
         return (evidence != -1);
     }
 
 
+    /**
+     * Returns the index associated to the node that is the evidence of this node.
+     * @return the index associated to the node that is the evidence of this node.
+     */
     public int getEvidence() {
         return evidence;
     }
+    
+    public void resetLikelihood() {
+    	if (hasLikelihood) {
+    		evidence = -1;
+    		hasLikelihood = false;
+    	}
+    }
 
 
     /**
-     * Adiciona um finding (evid�ncia) no estado especificado.
+     * Add the state associated to the given index as the evidence.
      *
-     * @param stateNo �ndice do estado a ser adicionado o finding.
+     * @param stateIndex the index of the state to be set as evidence.
      */
-    public void addFinding(int stateNo) {
+    public void addFinding(int stateIndex) {
         float[] likelihood = new float[getStatesSize()];
-        evidence = stateNo;
-        likelihood[stateNo] = 1;
-        addLikeliHood(likelihood);
+        evidence = stateIndex;
+        likelihood[stateIndex] = 1;
+        setMarginalProbabilities(likelihood);
     }
 
     /**
-     * Adicina um likelihood nesta vari�vel
+     * Add likelihood to the variable. It has to sum up to 1.
      *
-     * @param valores array contendo o likelihood de cada estado da vari�vel.
+     * @param likelihood probabilities associated to every state of this node. They have to sum up to 1. 
      */
-    public void addLikeliHood(float valores[]) {
+    public void addLikeliHood(float likelihood[]) {
+    	hasLikelihood = true;
+    	// Does it matter which state is set as evidence?
+    	// For now we are choosing the one with the highest probability.
+    	float largestProb = likelihood[0];
+    	evidence = 0;
         for (int i = 0; i < getStatesSize(); i++) {
-            setMarginalAt(i, valores[i]);
+            setMarginalAt(i, likelihood[i]);
+            if (likelihood[i] > largestProb) {
+            	largestProb = likelihood[i];
+            	evidence = i;
+            }
         }
     }
 
     /**
-     *  Retorna o clique associado a esta variavel
+     *  Returns the clique associated to this variable.
      *
-     *@return    clique associado
+     *@return the clique associated to this variable.
      */
     protected IRandomVariable getAssociatedClique() {
         return this.cliqueAssociado;
     }
 
     /**
-     *  Associa esta variavel ao clique do parametro.
+     *  Associate this variable to the given clique.
      *
-     *@param  clique  clique associado a esta variavel.
+     *@param  clique the clique to associate to this variable.
      */
     protected void setAssociatedClique(IRandomVariable clique) {
         this.cliqueAssociado = clique;

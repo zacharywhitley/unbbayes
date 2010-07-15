@@ -412,6 +412,15 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			}
 		}
 	}
+	
+	public void resetLikelihoods() {
+		for (Node node : this.getNodesCopy()) {
+			if (node instanceof TreeVariable) {
+				((TreeVariable)node).resetLikelihood();
+				// OBS utility nodes are not tree variables
+			}
+		}
+	}
 
 	/**
 	 * Returns true if this network is a Influence Diagram
@@ -1190,10 +1199,10 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			initialize();
 			throw e;
 		}
-		//        resetEvidences();
 		updateMarginais();
+		resetLikelihoods();
 	}
-
+	
 	/**
 	 * Inicia as cren�as da �rvore de jun��o.
 	 */

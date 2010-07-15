@@ -534,10 +534,12 @@ public class EvidenceTree extends JTree {
 				}
 
 			//Normalize the probabilities values
+				// Also verify the state that has the highest probability
 				for (i = 0; i < auxProbNode.getStatesSize(); i++) {
 					stateProbabilities[i] = stateProbabilities[i] / totalProbability;
 				}
 
+//				auxProbNode.addFinding(1);
 				auxProbNode.addLikeliHood(stateProbabilities);
 				
 			//Reset text with the values of probabilities 
