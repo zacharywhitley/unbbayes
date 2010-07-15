@@ -65,6 +65,7 @@ public class IoResources_pt extends ListResourceBundle {
 		{"nodeName","Nó(s): "},		
 		{"potentialAssociatedHeader","************ Potenciais associados aos cliques **************\n"},
 		{"errorNet","Esse arquivo não está de acordo com a especificação do NET."},
+		{"errorDne","Esse arquivo não está de acordo com a especificação do DNE."},
 		{"LoadException"," Falta 'net'"},
 		{"LoadException2",": Sentença inválida: "},
 		{"LoadException3",": Falta '{'"},

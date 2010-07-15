@@ -62,7 +62,7 @@ public class DneIO implements BaseIO {
 	private static ResourceBundle resource =
 		unbbayes.util.ResourceController.newInstance().getBundle(unbbayes.io.resources.IoResources.class.getName());
 
-	private static final String ERROR_NET = resource.getString("errorNet");
+	private static final String ERROR_NET = resource.getString("errorDne");
 	
 	// since the StreamTokenizer is not counting linenumber depending on the configuration,
 	// let's count it by ourselves
