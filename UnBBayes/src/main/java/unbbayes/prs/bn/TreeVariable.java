@@ -141,9 +141,9 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     }
 
     /**
-     * Add likelihood to the variable. It has to sum up to 1.
+     * Add likelihood to the variable.
      *
-     * @param likelihood probabilities associated to every state of this node. They have to sum up to 1. 
+     * @param likelihood probabilities associated to every state of this node.
      */
     public void addLikeliHood(float likelihood[]) {
     	hasLikelihood = true;
@@ -152,12 +152,17 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     	float largestProb = likelihood[0];
     	evidence = 0;
         for (int i = 0; i < getStatesSize(); i++) {
-            setMarginalAt(i, likelihood[i]);
+//            setMarginalAt(i, likelihood[i]);
             if (likelihood[i] > largestProb) {
             	largestProb = likelihood[i];
             	evidence = i;
             }
         }
+        
+        for (int i = 0; i < getStatesSize(); i++) {
+            setMarginalAt(i, likelihood[i]/largestProb);
+        }
+        
     }
 
     /**
