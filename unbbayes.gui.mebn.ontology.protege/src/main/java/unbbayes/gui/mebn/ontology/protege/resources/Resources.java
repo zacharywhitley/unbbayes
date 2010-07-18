@@ -53,6 +53,10 @@ public class Resources extends unbbayes.gui.mebn.resources.Resources {
 		{"PropertyRemovalTitle" , "Removing selected property"},
 		
 		{"CannotDragNDrop" , "Could not drop to target."},
+		
+
+		{"ChooseOWLPropertyDomain" , "Choose the domain"},
+		{"ChooseOWLPropertyRange" , "Choose the range"},
 	};
 
 }

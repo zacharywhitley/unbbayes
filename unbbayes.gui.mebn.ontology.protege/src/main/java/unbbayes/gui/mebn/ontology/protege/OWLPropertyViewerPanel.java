@@ -28,11 +28,16 @@ import unbbayes.prs.mebn.ontology.protege.OWLPropertyDTO;
 import unbbayes.util.Debug;
 import unbbayes.util.ResourceController;
 import edu.stanford.smi.protegex.owl.model.OWLModel;
+import edu.stanford.smi.protegex.owl.model.OWLNamedClass;
+import edu.stanford.smi.protegex.owl.model.OWLObjectProperty;
 import edu.stanford.smi.protegex.owl.model.RDFProperty;
+import edu.stanford.smi.protegex.owl.model.RDFSNamedClass;
 import edu.stanford.smi.protegex.owl.model.event.ModelAdapter;
 import edu.stanford.smi.protegex.owl.ui.OWLLabeledComponent;
+import edu.stanford.smi.protegex.owl.ui.ProtegeUI;
 import edu.stanford.smi.protegex.owl.ui.ResourceRenderer;
 import edu.stanford.smi.protegex.owl.ui.icons.OWLIcons;
+import edu.stanford.smi.protegex.owl.ui.widget.OWLUI;
 
 /**
  * This panel shows OWL properties
@@ -144,7 +149,19 @@ public class OWLPropertyViewerPanel extends JPanel {
 						// ask the name of new property
 						String name = JOptionPane.showInputDialog(getResource().getString("EnterNameOfNewProperty"));
 						if (name != null && (name.trim().length() > 0)) {
-							getOwlModelHolder().getAdaptee().createRDFProperty(name);
+							// select the domain
+							RDFSNamedClass domain =  ProtegeUI.getSelectionDialogFactory().selectClass(OWLPropertyViewerPanel.this, getOwlModelHolder().getAdaptee(), getResource().getString("ChooseOWLPropertyDomain"));
+							// select the range
+							RDFSNamedClass range =  ProtegeUI.getSelectionDialogFactory().selectClass(OWLPropertyViewerPanel.this, getOwlModelHolder().getAdaptee(), getResource().getString("ChooseOWLPropertyRange"));
+							OWLObjectProperty owlProperty = getOwlModelHolder().getAdaptee().createOWLObjectProperty(name);
+							if (range != null) {
+								// set the range
+								owlProperty.setRange(range);
+							}
+							if (domain != null) {
+								// set the domain
+								owlProperty.setDomain(domain);
+							}
 						} 
 					} catch (Exception exc) {
 						exc.printStackTrace();

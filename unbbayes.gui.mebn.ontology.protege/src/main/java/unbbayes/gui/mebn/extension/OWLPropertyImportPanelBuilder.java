@@ -289,7 +289,8 @@ public class OWLPropertyImportPanelBuilder extends JPanel implements IMEBNEditio
 						RDFProperty property = (RDFProperty) object;	// extracting property
 						
 						// ..it seems that we cannot add a node using an existing name (even for OWL frames' names)...
-						String newNodeName = "_" + property.getName().replace(":", "_");
+//						String newNodeName = property.getName().replace(":", "_");
+						String newNodeName = property.getLocalName();
 						if (getMebn().getNamesUsed().contains(newNodeName)) {
 							// TODO also check OWLModel frame's names...
 							JOptionPane.showMessageDialog(
