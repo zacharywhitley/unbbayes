@@ -305,12 +305,25 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 		
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
 			individualTwo = (OWLIndividual) it.next();
-			Debug.println("hasDomainMFrag: " + individualTwo.getBrowserText()); 
-			domainMFrag = new MFrag(individualTwo.getBrowserText(), mebn); 
+			
+			// remove prefixes from name
+			String name = individualTwo.getBrowserText();
+			if (name.startsWith(SaverPrOwlIO.MFRAG_NAME_PREFIX)) {
+				try {
+					name = name.substring(SaverPrOwlIO.MFRAG_NAME_PREFIX.length());
+				} catch (Exception e) {
+					// We can still try the name with the prefixes.
+					e.printStackTrace();
+				}
+			}
+			Debug.println("hasDomainMFrag: " + name); 
+			domainMFrag = new MFrag(name, mebn); 
 			mebn.addDomainMFrag(domainMFrag); 
+			mebn.getNamesUsed().add(name); 
+			
+			// the mapping still contains the original name (with no prefix removal)
 			mapDomainMFrag.put(individualTwo.getBrowserText(), domainMFrag); 
 			
-			mebn.getNamesUsed().add(individualTwo.getBrowserText()); 
 		}	
  
 	}
@@ -515,10 +528,24 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			instances = individualOne.getPropertyValues(objectProperty); 
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
 				individualTwo = (OWLIndividual) itIn.next();
-				domainResidentNode = new ResidentNode(individualTwo.getBrowserText(), domainMFrag); 
-				mebn.getNamesUsed().add(individualTwo.getBrowserText()); 
+				
+				// remove prefixes from the name
+				String name = individualTwo.getBrowserText();
+				if (name.startsWith(SaverPrOwlIO.RESIDENT_NAME_PREFIX)) {
+					try {
+						name = name.substring(SaverPrOwlIO.RESIDENT_NAME_PREFIX.length());
+					} catch (Exception e) {
+						// ignore, because we can still try the original name
+						e.printStackTrace();
+					}
+				}
+				
+				domainResidentNode = new ResidentNode(name, domainMFrag); 
+				mebn.getNamesUsed().add(name); 
 				
 				domainMFrag.addResidentNode(domainResidentNode); 
+				
+				// the mappings uses the original names (no prefix removal)
 				mapDomainResidentNode.put(individualTwo.getBrowserText(), domainResidentNode); 
 				mapMultiEntityNode.put(individualTwo.getBrowserText(), domainResidentNode); 
 				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 

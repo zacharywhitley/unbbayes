@@ -21,7 +21,6 @@
 package unbbayes.io.mebn;
 
 import java.io.File;
-//import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,7 +58,6 @@ import edu.stanford.smi.protegex.owl.model.OWLIndividual;
 import edu.stanford.smi.protegex.owl.model.OWLModel;
 import edu.stanford.smi.protegex.owl.model.OWLNamedClass;
 import edu.stanford.smi.protegex.owl.model.OWLObjectProperty;
-//import edu.stanford.smi.protegex.owl.repository.impl.LocalFileRepository;
 
 /**
  * Save the MEBN structure in a file pr-owl. 
@@ -69,6 +67,10 @@ import edu.stanford.smi.protegex.owl.model.OWLObjectProperty;
  * 
  * @author Laecio Lima dos Santos
  * @version 1.6 10/28/2007
+ * 
+ * 
+ * @author Shou Matsumoto
+ * @version 07/17/2010 : added prefixes to MFrag and resident names.
  *
  */
 public class SaverPrOwlIO extends PROWLModelUser{
@@ -95,6 +97,11 @@ public class SaverPrOwlIO extends PROWLModelUser{
 	private static final String META_ENTITY_SUFIX = "_Label"; 
 	private static final String DECLARATIVE_DISTRO_SUFIX = "_Table"; 
 	private static final String INNER_SUFIX = "_Inner";
+	
+	/** This is a prefix to be added to MFrag's names to avoid conflicts with other frames. */
+	public static final String MFRAG_NAME_PREFIX = DOMAIN_MFRAG + ".";
+	/** This is a prefix to be added to Resident node's names to avoid conflicts with other frames. */
+	public static final String RESIDENT_NAME_PREFIX = DOMAIN_RESIDENT + ".";
 	
 	private MultiEntityBayesianNetwork mebn; 
 	
@@ -383,7 +390,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
 		for(MFrag domainMFrag: listDomainMFrag){
 			OWLNamedClass domainMFragClass = owlModel.getOWLNamedClass(DOMAIN_MFRAG); 
 			Debug.println("Domain_MFrag = " + domainMFrag.getName());
-			OWLIndividual domainMFragIndividual = domainMFragClass.createOWLIndividual(domainMFrag.getName());
+			OWLIndividual domainMFragIndividual = domainMFragClass.createOWLIndividual(this.MFRAG_NAME_PREFIX + domainMFrag.getName());
 			mapMFrag.put(domainMFrag, domainMFragIndividual); 
 			mTheoryIndividual.addPropertyValue(hasMFragProperty, domainMFragIndividual); 
 			
@@ -396,7 +403,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
 			OWLNamedClass domainResClass = owlModel.getOWLNamedClass(DOMAIN_RESIDENT); 
 			for(ResidentNode residentNode: domainMFrag.getResidentNodeList()){
 				Debug.println("Domain_Res = " + residentNode.getName());	
-				OWLIndividual domainResIndividual = domainResClass.createOWLIndividual(residentNode.getName());
+				OWLIndividual domainResIndividual = domainResClass.createOWLIndividual(this.RESIDENT_NAME_PREFIX + residentNode.getName());
 				domainMFragIndividual.addPropertyValue(hasResidentNodeProperty, domainResIndividual); 	
 				mapDomainResident.put(residentNode, domainResIndividual); 
 				
