@@ -272,7 +272,7 @@ public class XMLBIFIO {
 		xmlBif.setNetwork(network); 
 		
 		
-		JAXBContext context = JAXBContext.newInstance("unbbayes.io.xmlbif.version6.xmlclasses");    	
+		JAXBContext context = JAXBContext.newInstance("unbbayes.io.xmlbif.version7.xmlclasses");    	
 		Marshaller marshaller = context.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_ENCODING, "US-ASCII");
 		marshaller.marshal(xmlBif , arq); 	
