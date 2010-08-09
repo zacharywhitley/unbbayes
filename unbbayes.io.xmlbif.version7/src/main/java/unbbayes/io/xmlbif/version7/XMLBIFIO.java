@@ -220,7 +220,7 @@ public class XMLBIFIO {
 		
 		XMLBIF xmlBif = of.createXMLBIF(); 
 		
-		xmlBif.setVersion(.6);
+		xmlBif.setVersion(.7);
 		
 		/*---------------- HEADER ---------------------*/
 		
@@ -426,6 +426,13 @@ public class XMLBIFIO {
 				
 				XMLBIFType.NetworkType.ConditionalDistributionSetType.ConditionalDistributionType.CPSType cps = of.createXMLBIFTypeNetworkTypeConditionalDistributionSetTypeConditionalDistributionTypeCPSType();
 				cps.setScript(script);
+				
+				conditionalDistribution.setCPS(cps);
+				if (node instanceof ContinuousNode) {
+					conditionalDistribution.setType(DistributionType.CONTINUOUS.toString());
+				} else {
+					conditionalDistribution.setType(DistributionType.DISCRETE.toString());
+				}
 			
 			// CPT
 			} else if (node instanceof IRandomVariable) { 
