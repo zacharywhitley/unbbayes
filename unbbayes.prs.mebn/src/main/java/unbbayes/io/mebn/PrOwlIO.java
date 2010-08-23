@@ -161,7 +161,8 @@ public class PrOwlIO extends PROWLModelUser implements MebnIO {
 		OWLModel lastOWLModel = loader.getLastOWLModel();
 		
 		// minimize on-memory ontology
-		this.clearAllPROWLModel(lastOWLModel);
+		// the below code was postponed until we call routine to save the ontology
+//		this.clearAllPROWLModel(lastOWLModel);
 	
 		mebn.setStorageImplementor(new MEBNStorageImplementorDecorator(lastOWLModel));
 		
@@ -218,11 +219,14 @@ public class PrOwlIO extends PROWLModelUser implements MebnIO {
 		   MEBNStorageImplementorDecorator decorator = (MEBNStorageImplementorDecorator)mebn.getStorageImplementor();
 		   if (decorator != null) {
 			   jenaOWLModel = (JenaOWLModel)(decorator.getAdaptee());
+			   // clear the old pr-owl model, so that we can save it without repeating elements and not to re-insert deleted elements
+			   this.clearAllPROWLModel(((OWLModel)decorator.getAdaptee()));
 		   }
 	   } catch (Exception e) {
 		   e.printStackTrace();
 		   jenaOWLModel = null;
 	   }
+	   
 	   
 	   saver.saveMebn(file, mebn, jenaOWLModel); 
 	   
@@ -230,8 +234,9 @@ public class PrOwlIO extends PROWLModelUser implements MebnIO {
 	   try{
 		   OWLModel model = saver.getLastOWLModel();
 		   // minimize on-memory ontology
-		   this.clearAllPROWLModel(model);
+//		   this.clearAllPROWLModel(model);
 		   this.setOWLModelToUse(model);
+		   mebn.setStorageImplementor(new MEBNStorageImplementorDecorator(model));
 	   } catch (Exception e) {
 		   e.printStackTrace();
 	   }

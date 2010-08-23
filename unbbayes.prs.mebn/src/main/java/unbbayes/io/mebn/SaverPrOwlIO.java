@@ -129,6 +129,9 @@ public class SaverPrOwlIO extends PROWLModelUser{
 			//this.setOWLModelToUse(this.owlModel);   // currently redundant, but extended classes may be not
 			loadPrOwlModel((JenaOWLModel)owlModel); 
 			Debug.println("-> Model pr-owl load sucess ");	
+			// update owl model
+			// the below code was moved to PrOwlIO
+//			mebn.setStorageImplementor(new MEBNStorageImplementorDecorator(owlModel));
 	    } 
 				
 		/* Definitions */
@@ -296,7 +299,12 @@ public class SaverPrOwlIO extends PROWLModelUser{
 		
 		for(CategoricalStateEntity entity: mebn.getCategoricalStatesEntityContainer().getListEntity()){
 			if(entity.getName().equals("absurd")) continue; 
-			OWLIndividual categoricalStateIndividual = categoricalStateClass.createOWLIndividual(entity.getName()); 
+			// check if individual exists
+			OWLIndividual categoricalStateIndividual = owlModel.getOWLIndividual(entity.getName());
+			if (categoricalStateIndividual == null) {
+				// if this is a new individual,　create it
+				categoricalStateIndividual = categoricalStateClass.createOWLIndividual(entity.getName()); 
+			}
 			categoricalStateIndividual.addPropertyValue(hasType, categoryLabel);
 			mapCategoricalStates.put(entity, categoricalStateIndividual); 
 		}
@@ -337,7 +345,12 @@ public class SaverPrOwlIO extends PROWLModelUser{
 		OWLNamedClass entityClass = owlModel.getOWLNamedClass(OBJECT_ENTITY); 
 		
 		for(ObjectEntity entity: mebn.getObjectEntityContainer().getListEntity()){
-			OWLNamedClass newEntityClass = owlModel.createOWLNamedSubclass(entity.getName(), entityClass); 	
+			// check if the entity class exists
+			OWLNamedClass newEntityClass = owlModel.getOWLNamedClass(entity.getName());
+			if (newEntityClass == null) {
+				// if it is a new entity class, create it
+				newEntityClass = owlModel.createOWLNamedSubclass(entity.getName(), entityClass); 	
+			}
 			mapObjectEntityClasses.put(entity, newEntityClass); 
 		}
 	}
@@ -375,7 +388,12 @@ public class SaverPrOwlIO extends PROWLModelUser{
     private void loadMTheory(){
 
 		OWLNamedClass mTheoryClass = owlModel.getOWLNamedClass(MTHEORY); 
-		OWLIndividual mTheoryIndividual = mTheoryClass.createOWLIndividual(mebn.getName()); 
+		// check if individual exists
+		OWLIndividual mTheoryIndividual = owlModel.getOWLIndividual(mebn.getName());
+		if (mTheoryIndividual == null) {
+			// if this individual is new, create it
+			mTheoryIndividual = mTheoryClass.createOWLIndividual(mebn.getName()); 
+		}
 		Debug.println("MTheory = " + mebn.getName());
 		
 		if(mebn.getDescription() != null){
@@ -390,7 +408,12 @@ public class SaverPrOwlIO extends PROWLModelUser{
 		for(MFrag domainMFrag: listDomainMFrag){
 			OWLNamedClass domainMFragClass = owlModel.getOWLNamedClass(DOMAIN_MFRAG); 
 			Debug.println("Domain_MFrag = " + domainMFrag.getName());
-			OWLIndividual domainMFragIndividual = domainMFragClass.createOWLIndividual(this.MFRAG_NAME_PREFIX + domainMFrag.getName());
+			// check if individual exists.
+			OWLIndividual domainMFragIndividual = owlModel.getOWLIndividual(this.MFRAG_NAME_PREFIX + domainMFrag.getName());
+			if (domainMFragIndividual == null) {
+				// if new, create it
+				domainMFragIndividual = domainMFragClass.createOWLIndividual(this.MFRAG_NAME_PREFIX + domainMFrag.getName());
+			}
 			mapMFrag.put(domainMFrag, domainMFragIndividual); 
 			mTheoryIndividual.addPropertyValue(hasMFragProperty, domainMFragIndividual); 
 			
@@ -403,7 +426,12 @@ public class SaverPrOwlIO extends PROWLModelUser{
 			OWLNamedClass domainResClass = owlModel.getOWLNamedClass(DOMAIN_RESIDENT); 
 			for(ResidentNode residentNode: domainMFrag.getResidentNodeList()){
 				Debug.println("Domain_Res = " + residentNode.getName());	
-				OWLIndividual domainResIndividual = domainResClass.createOWLIndividual(this.RESIDENT_NAME_PREFIX + residentNode.getName());
+				// check if individual exists
+				OWLIndividual domainResIndividual = owlModel.getOWLIndividual(this.RESIDENT_NAME_PREFIX + residentNode.getName());
+				if (domainResIndividual == null) {
+					// if new, create it
+					domainResIndividual = domainResClass.createOWLIndividual(this.RESIDENT_NAME_PREFIX + residentNode.getName());
+				}
 				domainMFragIndividual.addPropertyValue(hasResidentNodeProperty, domainResIndividual); 	
 				mapDomainResident.put(residentNode, domainResIndividual); 
 				
@@ -413,8 +441,13 @@ public class SaverPrOwlIO extends PROWLModelUser{
 			OWLObjectProperty hasInputNodeProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasInputNode"); 	
 			OWLNamedClass generativeInputClass = owlModel.getOWLNamedClass(GENERATIVE_INPUT); 
 			for(InputNode inputNode: domainMFrag.getInputNodeList()){
-				Debug.println("Generative_input = " + inputNode.getName());		
-				OWLIndividual generativeInputIndividual = generativeInputClass.createOWLIndividual(inputNode.getName());
+				Debug.println("Generative_input = " + inputNode.getName());
+				// check if individuals exists
+				OWLIndividual generativeInputIndividual = owlModel.getOWLIndividual(inputNode.getName());
+				if (generativeInputIndividual == null) {
+					// if new, create it
+					generativeInputIndividual = generativeInputClass.createOWLIndividual(inputNode.getName());
+				}
 				domainMFragIndividual.addPropertyValue(hasInputNodeProperty, generativeInputIndividual); 		
 				mapGenerativeInput.put(inputNode, generativeInputIndividual); 		
 			}				
@@ -423,7 +456,12 @@ public class SaverPrOwlIO extends PROWLModelUser{
 			OWLObjectProperty hasContextNodeProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasContextNode"); 	
 			OWLNamedClass contextClass = owlModel.getOWLNamedClass(CONTEXT_NODE); 
 			for(ContextNode contextNode: domainMFrag.getContextNodeList()){
-				OWLIndividual contextIndividual = contextClass.createOWLIndividual(contextNode.getName());
+				// check if individuals exist
+				OWLIndividual contextIndividual = owlModel.getOWLIndividual(contextNode.getName());
+				if (contextIndividual == null) {
+					// if new, create it
+					contextIndividual = contextClass.createOWLIndividual(contextNode.getName());
+				}
 				domainMFragIndividual.addPropertyValue(hasContextNodeProperty, contextIndividual); 									
 				mapContext.put(contextNode, contextIndividual); 	
 			}				
@@ -435,9 +473,14 @@ public class SaverPrOwlIO extends PROWLModelUser{
 			
 			for(OrdinaryVariable oVariable: domainMFrag.getOrdinaryVariableList()){
 				// Set variable name as "MFragName.OVName"
-				OWLIndividual oVariableIndividual = oVariableClass.createOWLIndividual(
+				OWLIndividual oVariableIndividual = owlModel.getOWLIndividual(
+						  oVariable.getMFrag().getName() + SCOPE_SEPARATOR
+							+ oVariable.getName() );
+				if (oVariableIndividual == null) {
+					oVariableIndividual = oVariableClass.createOWLIndividual(
 								  oVariable.getMFrag().getName() + SCOPE_SEPARATOR
 								+ oVariable.getName() );
+				}
 				domainMFragIndividual.addPropertyValue(hasOVariableProperty, oVariableIndividual); 		
 				
 				if (oVariable.getValueType() != null){
@@ -511,8 +554,13 @@ public class SaverPrOwlIO extends PROWLModelUser{
     			/* hasProbDist */
     			Debug.println("Verifying probability distros");
     			OWLObjectProperty hasProbDist = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasProbDist");
-    			OWLNamedClass declarativeDist = owlModel.getOWLNamedClass(DECLARATIVE_PROBABILITY_DISTRIBUTION); 
-    			OWLIndividual declarativeDistThisNode = declarativeDist.createOWLIndividual(residentNode.getName() + DECLARATIVE_DISTRO_SUFIX); 
+    			OWLNamedClass declarativeDist = owlModel.getOWLNamedClass(DECLARATIVE_PROBABILITY_DISTRIBUTION);
+    			// check if individual exists
+    			OWLIndividual declarativeDistThisNode = owlModel.getOWLIndividual(residentNode.getName() + DECLARATIVE_DISTRO_SUFIX);
+				if (declarativeDistThisNode == null) {
+					// if new, create it
+					declarativeDistThisNode = declarativeDist.createOWLIndividual(residentNode.getName() + DECLARATIVE_DISTRO_SUFIX); 
+				}
     			OWLDatatypeProperty hasDeclaration = owlModel.getOWLDatatypeProperty("hasDeclaration"); 
     			if(residentNode.getTableFunction() != null){
     				declarativeDistThisNode.addPropertyValue(hasDeclaration, residentNode.getTableFunction()); 
