@@ -169,6 +169,10 @@ public class NetworkWindow extends UnBBayesModule {
 		jspGraph = new JScrollPane(graphViewport);
 		status = new JLabel(resource.getString("statusReadyLabel"));
 		bCompiled = false;
+		
+
+		 // TODO I think the following code must be migrated to GraphPane, including changes on graphViewport (since both are visible to GraphPane)
+		
 		//by young
 		long width = (long)Node.getDefaultSize().getX();
 		long height = (long)Node.getDefaultSize().getY();
