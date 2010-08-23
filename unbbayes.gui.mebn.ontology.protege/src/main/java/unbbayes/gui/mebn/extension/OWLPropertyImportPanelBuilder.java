@@ -103,6 +103,14 @@ public class OWLPropertyImportPanelBuilder extends JPanel implements IMEBNEditio
 	 * @see unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelBuilder#buildPanel(unbbayes.prs.mebn.MultiEntityBayesianNetwork, unbbayes.controller.mebn.IMEBNMediator)
 	 */
 	public JPanel buildPanel(MultiEntityBayesianNetwork mebn, IMEBNMediator mediator) {
+		
+		// we do not need this plugin if mebn is not bound to a owl project
+		if (mebn.getStorageImplementor() == null 
+				|| !(mebn.getStorageImplementor() instanceof MEBNStorageImplementorDecorator)
+				|| ((MEBNStorageImplementorDecorator)mebn.getStorageImplementor()).getAdaptee() == null) {
+			return null;
+		}
+		
 		this.mediator = mediator;
 		this.mebn = mebn;
 		
@@ -175,14 +183,13 @@ public class OWLPropertyImportPanelBuilder extends JPanel implements IMEBNEditio
 		newWindow.getJtbTabSelection().add(this.getBtnTabOptionOWLProperties(), 1);
 		
 		// add a panel to be displayed when the above button is toggled
-		if (this.getMebn() != null && (this.getMebn().getStorageImplementor() instanceof MEBNStorageImplementorDecorator)) {
+		if (this.getMebn() != null && this.getMebn().getStorageImplementor() != null && (this.getMebn().getStorageImplementor() instanceof MEBNStorageImplementorDecorator)) {
 			// show OWL properties hold by MEBN as its storage implementor (usually, MEBN holds who is implementing his storage)
 			newWindow.getJpTabSelected().add(this.getOwlPropertyCardLayoutID(), OWLPropertyViewerPanel.newInstance(this.getMebn()));
 		} else {
 			// this MEBN is not holding an OWL model (this is a new model or it is not an PR-OWL project)
 			newWindow.getJpTabSelected().add(this.getOwlPropertyCardLayoutID(), new JScrollPane(new JLabel(this.getResource().getString("NoOWLModelFound"), SwingConstants.LEFT)));
 		}
-		// TODO Auto-generated method stub
 		
 	}
 
@@ -333,8 +340,6 @@ public class OWLPropertyImportPanelBuilder extends JPanel implements IMEBNEditio
 				return true;
 			}
 		});
-		
-		// TODO Auto-generated method stub
 		
 	}
 

@@ -17,10 +17,31 @@
         	<export prefix="*"/>
         </library>
     </runtime>
-     <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNEditorPanel" id="Protege">
+     <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNEditorPanel" id="Properties2Node">
         <parameter id="class" value="unbbayes.gui.mebn.extension.OWLPropertyImportPanelBuilder" />
         <parameter id="name" value="Property2Node" />
-        <parameter id="icon" value="properties.png" />
+        <parameter id="icon" value="properties2node.png" />
         <parameter id="description" value="Convert OWL properties to MEBN resident node" />
+    </extension>
+    
+     <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNEditorPanel" id="ProtegeClasses">
+        <parameter id="class" value="unbbayes.gui.mebn.extension.ProtegeOWLClassPanelBuilder" />
+        <parameter id="name" value="OWLClasses" />
+        <parameter id="description" value="Edit OWL classes using Protégé editor" />
+        <parameter id="icon" value="class.gif" />
+    </extension>
+    
+     <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNEditorPanel" id="ProtegeProperties">
+        <parameter id="class" value="unbbayes.gui.mebn.extension.ProtegeOWLPropertyPanelBuilder" />
+        <parameter id="name" value="OWLProperties" />
+        <parameter id="icon" value="properties.png" />
+        <parameter id="description" value="Edit OWL properties using Protégé editor" />
+    </extension>
+    
+     <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNEditorPanel" id="ProtegeIndividuals">
+        <parameter id="class" value="unbbayes.gui.mebn.extension.ProtegeOWLIndividualsPanelBuilder" />
+        <parameter id="name" value="OWLIndividuals" />
+        <parameter id="description" value="Edit OWL individuals using Protégé editor" />
+        <parameter id="icon" value="individual.gif" />
     </extension>
 </plugin>
