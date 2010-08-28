@@ -1,0 +1,26 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- This is the plugin descriptor for UnBBayes' PRM module. -->
+<plugin id="unbbayes.prs.prm" version="0.0.1">
+    <requires>
+        <import plugin-id="unbbayes.util.extension.core"/>
+    </requires>
+    <runtime>
+        <library type="resources" path="icons/" id="icons">
+        	<export prefix="*"/>
+        </library>
+        <!-- It seems that loaders does not work as expected on jar files -->
+        <!-- If you change/add the libraries, change/add these library declaration too -->
+        <library id="unbbayes.prs.prm" path="unbbayes.prs.prm-0.0.1.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+    </runtime>
+    <extension plugin-id="unbbayes.util.extension.core" point-id="Module" id="PRM">
+        <parameter id="class" value="unbbayes.gui.prm.PRMWindow" />
+        <parameter id="name" value="PRM" />
+        <parameter id="builder" value="unbbayes.gui.prm.extension.PRMWindowBuilder" />
+		<parameter id="description" value="Probabilistic Relational Model - ALPHA" />
+		<parameter id="icon" value="prmIcon.png" />
+		<parameter id="category" value="bn" />
+    </extension>
+</plugin>
