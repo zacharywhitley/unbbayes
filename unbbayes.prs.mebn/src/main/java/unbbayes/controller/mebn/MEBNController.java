@@ -24,6 +24,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.io.File;
 import java.text.NumberFormat;
+import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -99,6 +100,7 @@ import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeyAlgorithmParameters;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSBNGenerator;
 import unbbayes.util.ApplicationPropertyHolder;
 import unbbayes.util.Debug;
+import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
 
 /**
  * Controller of the MEBN structure. 
@@ -250,6 +252,13 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		
 		// initialize plugin-aware IO with some attribute customization
         this.setBaseIO(this.setUpPluginIO());
+        
+        // adding a listener to reload IO if plugin reload action is triggered
+		UnBBayesPluginContextHolder.newInstance().addListener(new UnBBayesPluginContextHolder.OnReloadActionListener() {
+			public void onReload(EventObject arg0) {
+				setBaseIO(setUpPluginIO());
+			}
+		});
 
 		this.multiEntityBayesianNetwork = multiEntityBayesianNetwork;
 		this.setScreen(screen);
