@@ -44,4 +44,10 @@
         <parameter id="description" value="Edit OWL individuals using Protégé editor" />
         <parameter id="icon" value="individual.gif" />
     </extension>
+    
+    
+    <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNIO" id="DefaultMEBNIO">
+        <parameter id="class" value="unbbayes.io.mebn.UbfIO" />
+        <parameter id="name" value="UnBBayes File" />
+    </extension>
 </plugin>
