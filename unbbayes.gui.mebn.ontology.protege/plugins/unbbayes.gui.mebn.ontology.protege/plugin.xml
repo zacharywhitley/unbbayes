@@ -45,9 +45,11 @@
         <parameter id="icon" value="individual.gif" />
     </extension>
     
-    
+    <!-- Uncomment the following extension point if you are experiencing I/O problems after reloading plugins -->
+    <!-- 
     <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNIO" id="DefaultMEBNIO">
         <parameter id="class" value="unbbayes.io.mebn.UbfIO" />
         <parameter id="name" value="UnBBayes File" />
     </extension>
+     -->
 </plugin>
