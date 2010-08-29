@@ -158,6 +158,11 @@ public class PRMTableGUI extends JTable {
 		// the number of rows is the number of states the node has.
 		int rows = node.getAttributeDescriptor().getStatesSize();
 
+		if (rows == 0) {
+			// no table to render if table is empty
+			return;
+		}
+		
 		// the number of columns is the number of states that we calculated
 		// before plus one that is the column where the parent's names and
 		// the states of the node itself will be placed.
