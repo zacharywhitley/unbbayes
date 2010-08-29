@@ -5,6 +5,7 @@ package unbbayes.controller.prm;
 
 import java.util.Collection;
 
+import unbbayes.io.BaseIO;
 import unbbayes.prs.Graph;
 import unbbayes.prs.prm.IAttributeValue;
 import unbbayes.prs.prm.IPRM;
@@ -57,5 +58,10 @@ public interface IPRMController {
 	 */
 	public Graph compilePRM(IPRM prm, Collection<IAttributeValue> query);
 	
-	
+
+	/**
+	 * Obtains the default IO component (class responsible to store or load PRM projects)
+	 * @return
+	 */
+	public BaseIO getIO();
 }

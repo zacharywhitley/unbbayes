@@ -10,16 +10,17 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
+import unbbayes.controller.ConfigurationsController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.prm.IPRMController;
 import unbbayes.controller.prm.PRMController;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.io.BaseIO;
+import unbbayes.io.FileExtensionIODelegator;
 import unbbayes.prs.Graph;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.prm.IPRM;
@@ -100,6 +101,22 @@ public class PRMWindow extends UnBBayesModule {
 	}
 	
 	/**
+	 * Constructor method using parameters
+	 * @param prm
+	 */
+	public static PRMWindow newInstance(IPRM prm) {
+		// assertion
+		if (prm == null) {
+			return PRMWindow.newInstance();
+		}
+		PRMWindow ret = new PRMWindow();
+		ret.setPrm(prm);
+		ret.initComponents();
+		ret.initListeners();
+		return ret;
+	}
+	
+	/**
 	 * Build up the actual GUI
 	 */
 	protected void initComponents() {
@@ -157,17 +174,53 @@ public class PRMWindow extends UnBBayesModule {
 	 * @see unbbayes.util.extension.UnBBayesModule#openFile(java.io.File)
 	 */
 	public UnBBayesModule openFile(File arg0) throws IOException {
-		// TODO Auto-generated method stub
+		Graph g = null;
 		
-		return null;
+		// This IO is instantiated at PRMController' constructor.
+		BaseIO io = this.getIO();
+		
+		try {
+			g = io.load(arg0);
+		} catch (FileExtensionIODelegator.MoreThanOneCompatibleIOException e) {
+			// More than one I/O was found to be compatible. Ask user to select one.
+			String[] possibleValues = FileExtensionIODelegator.getNamesFromIOs(e.getIOs());
+	    	String selectedValue = (String)JOptionPane.showInputDialog(
+	    			this, 
+	    			"Select I/O handler", 
+	    			"Conflict",
+	    			JOptionPane.INFORMATION_MESSAGE, 
+	    			null,
+	    			possibleValues, 
+	    			possibleValues[0]);
+	    	if (selectedValue != null) {
+	    		g = FileExtensionIODelegator.findIOByName(e.getIOs(), selectedValue).load(arg0);
+	    	} else {
+	    		// user appears to have cancelled
+	    		this.dispose();
+		    	return null;
+	    	}
+		}
+		
+		PRMWindow window = null;
+		
+		try {
+			ConfigurationsController.getInstance().addFileToListRecentFiles(arg0); 
+			window = PRMWindow.newInstance((IPRM)g);	
+			window.setName(arg0.getName().toLowerCase()); 
+		} catch (Exception e) {
+			throw new RuntimeException("Unsupported graph format",e);
+		}
+		
+		// we do not use this current instance. Instead, dispose it and return the new instance of window
+		this.dispose();
+		return window;
 	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.gui.IPersistenceAwareWindow#getIO()
 	 */
 	public BaseIO getIO() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.getController().getIO();
 	}
 
 	/* (non-Javadoc)
@@ -190,6 +243,8 @@ public class PRMWindow extends UnBBayesModule {
 			bnWindow.setVisible(true);
 		}
 	}
+	
+	
 
 	/**
 	 * @return the controller

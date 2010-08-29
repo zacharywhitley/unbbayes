@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- This is the plugin descriptor for UnBBayes' PRM module. -->
+<!-- unbbayes.controller.prm.PRMController references the plugin id and extension point's ids, so, do not change them -->
 <plugin id="unbbayes.prs.prm" version="0.0.1">
     <requires>
         <import plugin-id="unbbayes.util.extension.core"/>
@@ -15,6 +16,22 @@
         	<export prefix="*"/>
         </library>
     </runtime>
+    
+    <!-- Probabilistic Relational Model I/O extension point. 
+     	 Hot plug is enabled.
+    	 This extension point is basically a set of different classes implementing
+    	 unbbayes.io.BaseIO, in order to add new IO functions into this PRM
+    	 module. The class must contain a public default constructor (no parameters).
+    	 	Parameters:
+    	 		class: this is the class to implement unbbayes.io.BaseIO. It MUST have a default constructor
+    	 			   with no parameters.
+    	 	    name: this is basically what an user will see when a conflict occurs 
+    	 	          (when more than 1 class can handle a given file).
+    -->
+    <extension-point id="PRMIO">
+        <parameter-def id="class"/>
+        <parameter-def id="name"/>
+    </extension-point>
     <extension plugin-id="unbbayes.util.extension.core" point-id="Module" id="PRM">
         <parameter id="class" value="unbbayes.gui.prm.PRMWindow" />
         <parameter id="name" value="PRM" />
