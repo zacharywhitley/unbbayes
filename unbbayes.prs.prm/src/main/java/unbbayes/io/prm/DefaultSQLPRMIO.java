@@ -18,6 +18,7 @@ import java.util.List;
 
 import unbbayes.io.exception.LoadException;
 import unbbayes.prs.Graph;
+import unbbayes.prs.prm.AttributeDescriptor;
 import unbbayes.prs.prm.IAttributeDescriptor;
 import unbbayes.prs.prm.IForeignKey;
 import unbbayes.prs.prm.IPRM;
@@ -137,15 +138,16 @@ public class DefaultSQLPRMIO implements IPRMIO {
 				}
 			}
 		}
-		// TODO Auto-generated method stub
 
 		Debug.println(this.getClass(), "CREATE TABLE, out");
-		// TODO Auto-generated method stub
 		
 	}
 	
 	/**
-	 * Handles the column at CREATE TABLE statement
+	 * Handles the column at CREATE TABLE statement.
+	 * It assumes the st is pointing to a "(" (open parenthesis)
+	 * and st is going to point to a ")" (closing parenthesis)
+	 * after execution.
 	 * @param st
 	 * @param prmClass
 	 * @return the generated column
@@ -153,9 +155,60 @@ public class DefaultSQLPRMIO implements IPRMIO {
 	 */
 	protected IAttributeDescriptor handleColumns(StreamTokenizer st, IPRMClass prmClass) throws IOException {
 		Debug.println(this.getClass(), "Handle columns in");
+		
+		IAttributeDescriptor ret = null;
+		
 		while (st.nextToken() != st.TT_EOF) {
-			// TODO Auto-generated method stub
-			if (st.ttype == ',') {
+			if (st.ttype == st.TT_WORD || st.ttype == '"') {
+				// extract attribute
+				ret = AttributeDescriptor.newInstance(prmClass, st.sval);
+				// TODO solve types (currently, only strings are available)
+				if (st.nextToken() == st.TT_WORD) {
+					// solve type
+					if (st.nextToken() == '(') {
+						if (st.nextToken() == st.TT_NUMBER) {
+							// solve size
+							if (st.nextToken() != ')') {
+								// invalid close parentheses
+								System.err.println("Invalid column size format (parentheses not closed). Type = " + st.ttype 
+										+ ", number = " + st.nval 
+										+ ", string = " + st.sval 
+										+ ", char = " + (char)st.ttype
+										+ ", line = " + st.lineno());
+								st.pushBack();
+							}
+						} else {
+							// invalid size
+							System.err.println("Invalid column size format. Type = " + st.ttype 
+									+ ", number = " + st.nval 
+									+ ", string = " + st.sval 
+									+ ", char = " + (char)st.ttype
+									+ ", line = " + st.lineno());
+							st.pushBack();
+						}
+					} else { // this is not a open-parenthesis
+						// no size
+					}
+					// solve mandatory
+					if (st.nextToken() == st.TT_WORD && "not".equalsIgnoreCase(st.sval)) {
+						// this is a mandatory field
+						if (st.nextToken() == st.TT_WORD && "null".equalsIgnoreCase(st.sval)) {
+							ret.setMandatory(true);
+						} else {
+							// invalid mandatory statement
+							System.err.println("Invalid mandatory statement. Type = " + st.ttype 
+									+ ", number = " + st.nval 
+									+ ", string = " + st.sval 
+									+ ", char = " + (char)st.ttype
+									+ ", line = " + st.lineno());
+							st.pushBack();
+						}
+					} else {
+						// this is not a mandatory field
+						st.pushBack();
+					}
+				}
+			} else if (st.ttype == ',') {
 				Debug.println(this.getClass(), "Handling next column");
 				continue;
 			} else if (st.ttype == ')') {
@@ -164,7 +217,7 @@ public class DefaultSQLPRMIO implements IPRMIO {
 			}
 		}
 		Debug.println(this.getClass(), "Handle columns out");
-		return null;
+		return ret;
 	}
 	/**
 	 * Handles the ALTER TABLE statement. It assumes st is pointing
@@ -180,6 +233,52 @@ public class DefaultSQLPRMIO implements IPRMIO {
 		while (st.nextToken() != st.TT_EOF) {
 			if (st.ttype == ';') {
 				break;
+			} else if (st.ttype == st.TT_WORD && "TABLE".equalsIgnoreCase(st.sval)) {
+				// this is alter table command
+				st.nextToken();
+				if (st.ttype == '"' || st.ttype == st.TT_WORD) {
+					// extract table name
+					IPRMClass prmClass = prm.findPRMClassByName(st.sval);
+					if (prmClass != null) {
+						if (st.nextToken() == st.TT_WORD && "ADD".equalsIgnoreCase(st.sval)
+								&& st.nextToken() == st.TT_WORD && "CONSTRAINT".equalsIgnoreCase(st.sval)) {
+							// this is a ADD CONSTRAINT statement
+							// extract constraint name
+							if (st.nextToken() == st.TT_WORD) {
+								String constraintName = st.sval;
+								if (st.nextToken() == st.TT_WORD) {
+									if ("PRIMARY".equalsIgnoreCase(st.sval)) {
+										// handle primary key
+										this.handlePrimaryKey(st, prmClass, constraintName);
+									} else if ("FOREIGN".equalsIgnoreCase(st.sval)) {
+										// handle foreign key
+										this.handleForeignKey(st, prmClass, constraintName);
+									} else if ("CHECK".equalsIgnoreCase(st.sval)) {
+										// handle attribute's possible values
+										this.handleCheck(st, prmClass, constraintName);
+									}
+								}
+							}
+						} else {
+							// invalid add constraint statement
+							System.err.println("Invalid ADD CONSTRAINT command. Type = " + st.ttype 
+									+ ", number = " + st.nval 
+									+ ", string = " + st.sval 
+									+ ", char = " + (char)st.ttype
+									+ ", line = " + st.lineno());
+						}
+					} else {
+						// this is an invalid table name
+						System.err.println("Invalid table name at ALTER TABLE command. Type = " + st.ttype 
+								+ ", number = " + st.nval 
+								+ ", string = " + st.sval 
+								+ ", char = " + (char)st.ttype
+								+ ", line = " + st.lineno());
+						st.pushBack();
+					}
+				} else {
+					st.pushBack();
+				}
 			}
 		}
 		// TODO Auto-generated method stub
@@ -187,6 +286,99 @@ public class DefaultSQLPRMIO implements IPRMIO {
 		Debug.println(this.getClass(), "ALTER TABLE, out");
 	}
 	
+	/**
+	 * Handles the check statement on "alter table add constraint" statement.
+	 * st will point to check command and it will be pointing to the token before the ';' after
+	 * execution.
+	 * @param st
+	 * @param prmClass
+	 * @param constraintName
+	 * @throws IOException 
+	 */
+	protected void handleCheck(StreamTokenizer st, IPRMClass prmClass,
+			String constraintName) throws IOException {
+		// TODO
+		while(st.nextToken() != ';') {
+			
+		}
+		st.pushBack();
+	}
+	
+	/**
+	 * Handles the foreign key statement on "alter table add constraint" statement.
+	 * st will point to "foreign" command and it will be pointing to the token before the ';' after
+	 * execution.
+	 * @param st
+	 * @param prmClass
+	 * @param constraintName
+	 * @throws IOException 
+	 */
+	protected void handleForeignKey(StreamTokenizer st, IPRMClass prmClass,
+			String constraintName) throws IOException {
+		// TODO
+		while(st.nextToken() != ';') {
+			
+		}
+		st.pushBack();
+	}
+	
+	/**
+	 * Handles the primary key statement on "alter table add constraint" statement.
+	 * st will point to "primary" command and it will be pointing to the token before the ';' after
+	 * execution.
+	 * @param st
+	 * @param prmClass
+	 * @param constraintName
+	 * @throws IOException 
+	 */
+	protected void handlePrimaryKey(StreamTokenizer st, IPRMClass prmClass,
+			String constraintName) throws IOException {
+		// TODO Auto-generated method stub
+		if (st.nextToken() == st.TT_WORD && "KEY".equalsIgnoreCase(st.sval)) {
+			if (st.nextToken() == '(') {
+				while(st.nextToken() != st.TT_EOF) {
+					if (st.ttype == '"' || st.ttype == st.TT_WORD) {
+						// set attribute as PK
+						IAttributeDescriptor pk = prmClass.findAttributeDescriptorByName(st.sval);
+						if (pk != null) {
+							// set as PK
+							pk.setPrimaryKey(true);
+							pk.setMandatory(true);
+							if (st.nextToken() != ',') {
+								st.pushBack();	// if the next token is ')', the nest loop will break the loop
+							} else {
+								// there is more PK - the next loop will handle it
+							}
+						} else {
+							// invalid attribute name
+							System.err.println("Invalid PK name found. Type = " + st.ttype 
+									+ ", number = " + st.nval 
+									+ ", string = " + st.sval 
+									+ ", char = " + (char)st.ttype
+									+ ", line = " + st.lineno());
+							return;
+						}
+					} else if (st.ttype == ')') {
+						// end of statement
+						return;
+					} else if (st.ttype == ';') {
+						// invalid - no close parenthesis
+						// by breaking, it will print an error message and push back st
+						break;
+					}
+					
+				}
+				return;	// OK
+			}
+		}
+		// this is an invalid primary key statement
+		System.err.println("Invalid primary key statement. Type = " + st.ttype 
+				+ ", number = " + st.nval 
+				+ ", string = " + st.sval 
+				+ ", char = " + (char)st.ttype
+				+ ", line = " + st.lineno());
+		st.pushBack();
+	}
 	/**
 	 * Handles the INSERT INTO statement. It assumes st is pointing
 	 * to INSERT token. At the end, st is going to be pointing at ';'.
