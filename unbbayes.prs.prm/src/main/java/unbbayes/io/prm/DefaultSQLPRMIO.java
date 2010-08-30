@@ -19,14 +19,17 @@ import java.util.List;
 import unbbayes.io.exception.LoadException;
 import unbbayes.prs.Graph;
 import unbbayes.prs.prm.AttributeDescriptor;
+import unbbayes.prs.prm.AttributeValue;
+import unbbayes.prs.prm.ForeignKey;
 import unbbayes.prs.prm.IAttributeDescriptor;
+import unbbayes.prs.prm.IAttributeValue;
 import unbbayes.prs.prm.IForeignKey;
 import unbbayes.prs.prm.IPRM;
 import unbbayes.prs.prm.IPRMClass;
 import unbbayes.prs.prm.IPRMObject;
 import unbbayes.prs.prm.PRM;
 import unbbayes.prs.prm.PRMClass;
-import unbbayes.util.Debug;
+import unbbayes.prs.prm.PRMObject;
 
 /**
  * @author Shou Matsumoto
@@ -118,8 +121,6 @@ public class DefaultSQLPRMIO implements IPRMIO {
 	 */
 	protected void handleCreateTable(StreamTokenizer st, IPRM prm) throws IOException {
 
-		Debug.println(this.getClass(), "CREATE TABLE, in");
-		
 		while (st.nextToken() != st.TT_EOF) {
 			if (st.ttype == ';') {
 				break;
@@ -139,7 +140,6 @@ public class DefaultSQLPRMIO implements IPRMIO {
 			}
 		}
 
-		Debug.println(this.getClass(), "CREATE TABLE, out");
 		
 	}
 	
@@ -154,7 +154,6 @@ public class DefaultSQLPRMIO implements IPRMIO {
 	 * @throws IOException 
 	 */
 	protected IAttributeDescriptor handleColumns(StreamTokenizer st, IPRMClass prmClass) throws IOException {
-		Debug.println(this.getClass(), "Handle columns in");
 		
 		IAttributeDescriptor ret = null;
 		
@@ -209,14 +208,11 @@ public class DefaultSQLPRMIO implements IPRMIO {
 					}
 				}
 			} else if (st.ttype == ',') {
-				Debug.println(this.getClass(), "Handling next column");
 				continue;
 			} else if (st.ttype == ')') {
-				Debug.println(this.getClass(), "Column over");
 				break;
 			}
 		}
-		Debug.println(this.getClass(), "Handle columns out");
 		return ret;
 	}
 	/**
@@ -227,8 +223,6 @@ public class DefaultSQLPRMIO implements IPRMIO {
 	 * @throws IOException 
 	 */
 	protected void handleAlterTable(StreamTokenizer st, IPRM prm) throws IOException {
-		
-		Debug.println(this.getClass(), "ALTER TABLE, in");
 		
 		while (st.nextToken() != st.TT_EOF) {
 			if (st.ttype == ';') {
@@ -281,14 +275,11 @@ public class DefaultSQLPRMIO implements IPRMIO {
 				}
 			}
 		}
-		// TODO Auto-generated method stub
-
-		Debug.println(this.getClass(), "ALTER TABLE, out");
 	}
 	
 	/**
 	 * Handles the check statement on "alter table add constraint" statement.
-	 * st will point to check command and it will be pointing to the token before the ';' after
+	 * st will point to "check" command and it will be pointing to the token before the ';' after
 	 * execution.
 	 * @param st
 	 * @param prmClass
@@ -297,10 +288,89 @@ public class DefaultSQLPRMIO implements IPRMIO {
 	 */
 	protected void handleCheck(StreamTokenizer st, IPRMClass prmClass,
 			String constraintName) throws IOException {
-		// TODO
-		while(st.nextToken() != ';') {
-			
+
+		if (st.nextToken() == '(') {
+			// extract attribute name
+			st.nextToken();
+			if (st.ttype == '"' || st.ttype == st.TT_WORD) {
+				IAttributeDescriptor attribute = prmClass.findAttributeDescriptorByName(st.sval);
+				if (attribute == null) {
+					// this is an invalid attribute
+					System.err.println("Invalid check statement for attribute. Type = " + st.ttype 
+							+ ", number = " + st.nval 
+							+ ", string = " + st.sval 
+							+ ", char = " + (char)st.ttype
+							+ ", line = " + st.lineno());
+					// go to next statement
+					while (st.nextToken() != st.TT_EOF) {
+						if (st.ttype == ';') {
+							st.pushBack();
+							return;
+						}
+					}
+				}
+				// extract IN statement
+				st.nextToken();
+				if (st.ttype != st.TT_WORD || !"IN".equalsIgnoreCase(st.sval)) {
+					// This is not a "IN" statement. ignore it and go to next statement
+					while (st.nextToken() != st.TT_EOF) {
+						if (st.ttype == ';') {
+							st.pushBack();
+							return;
+						}
+					}
+				}
+				if (st.nextToken() == '(') {
+					while(st.nextToken() != st.TT_EOF) {
+						if (st.ttype == '\'' || st.ttype == st.TT_WORD) {
+							// add possible value
+							attribute.appendState(st.sval);
+							if (st.nextToken() != ',') {
+								st.pushBack();	// if the next token is ')', the nest loop will break the loop
+							} else {
+								// there is more PK - the next loop will handle it
+							}
+						} else if (st.ttype == ')') {
+							// end of statement
+							if (st.nextToken() != ')') {
+								// there must be 2 closing parenthesis
+								System.err.println("There must be 2 closing parenthesis. Type = " + st.ttype 
+										+ ", number = " + st.nval 
+										+ ", string = " + st.sval 
+										+ ", char = " + (char)st.ttype
+										+ ", line = " + st.lineno());
+							}
+							return;
+						} else if (st.ttype == ';') {
+							// invalid - no close parenthesis
+							System.err.println("No closing parenthesis found. Type = " + st.ttype 
+									+ ", number = " + st.nval 
+									+ ", string = " + st.sval 
+									+ ", char = " + (char)st.ttype
+									+ ", line = " + st.lineno());
+							st.pushBack();
+							break;
+						}
+						
+					}
+					return;	// OK
+				}
+				// If the execution reaches this code, this is an invalid "IN" statement. ignore it and go to next statement
+				while (st.nextToken() != st.TT_EOF) {
+					if (st.ttype == ';') {
+						st.pushBack();
+						return;
+					}
+				}
+				
+			}
 		}
+		// this is an invalid check statement
+		System.err.println("Invalid primary key statement. Type = " + st.ttype 
+				+ ", number = " + st.nval 
+				+ ", string = " + st.sval 
+				+ ", char = " + (char)st.ttype
+				+ ", line = " + st.lineno());
 		st.pushBack();
 	}
 	
@@ -315,11 +385,81 @@ public class DefaultSQLPRMIO implements IPRMIO {
 	 */
 	protected void handleForeignKey(StreamTokenizer st, IPRMClass prmClass,
 			String constraintName) throws IOException {
-		// TODO
-		while(st.nextToken() != ';') {
-			
+		// create foreign key
+		IForeignKey fk = ForeignKey.newInstance();
+		fk.setName(constraintName);
+		fk.setClassFrom(prmClass);
+		if (!prmClass.getForeignKeys().contains(fk)) {
+			prmClass.getForeignKeys().add(fk);
 		}
+
+		if (st.nextToken() == st.TT_WORD && "KEY".equalsIgnoreCase(st.sval)) {
+			if (st.nextToken() == '(') {
+				while(st.nextToken() != st.TT_EOF) {
+					if (st.ttype == '"' || st.ttype == st.TT_WORD) {
+						// extract the attribute which is a FK
+						IAttributeDescriptor fkAttribute = prmClass.findAttributeDescriptorByName(st.sval);
+						if (fkAttribute != null) {
+							fk.getKeyAttributesFrom().add(fkAttribute);
+							if (st.nextToken() != ',') {
+								st.pushBack();	// if the next token is ')', the nest loop will break the loop
+							} else {
+								// there is more PK - the next loop will handle it
+							}
+						}
+					} else if (st.ttype == ')') {
+						// references statement
+						if (st.nextToken() == st.TT_WORD && "REFERENCES".equalsIgnoreCase(st.sval)) {
+							st.nextToken();
+							if (st.ttype == '"' || st.ttype == st.TT_WORD) {
+								// extract referenced class
+								IPRMClass prmClassTo = prmClass.getPRM().findPRMClassByName(st.sval);
+								if (prmClassTo != null) {
+									fk.setClassTo(prmClassTo);
+									// extract referenced primary keys
+									while(st.nextToken() != st.TT_EOF) {
+										if (st.ttype == '"' || st.ttype == st.TT_WORD) {
+											// extract the attribute which is a PK
+											IAttributeDescriptor pkAttribute = prmClassTo.findAttributeDescriptorByName(st.sval);
+											if (pkAttribute != null) {
+												fk.getKeyAttributesTo().add(pkAttribute);
+												if (st.nextToken() != ',') {
+													st.pushBack();	// if the next token is ')', the nest loop will break the loop
+												} else {
+													// there is more PK - the next loop will handle it
+												}
+											}
+										} else if (st.ttype == ')') {
+											// end of statement
+											return;
+										} else if (st.ttype == ';') {
+											// invalid - no close parenthesis
+											// by breaking, it will print an error message and push back st
+											break;
+										}
+										
+									}
+								}
+							}
+						}
+					} else if (st.ttype == ';') {
+						// invalid - no close parenthesis
+						// by breaking, it will print an error message and push back st
+						break;
+					}
+					
+				}
+				return;	// OK
+			}
+		}
+		// this is an invalid foreign key statement
+		System.err.println("Invalid foreign key statement. Type = " + st.ttype 
+				+ ", number = " + st.nval 
+				+ ", string = " + st.sval 
+				+ ", char = " + (char)st.ttype
+				+ ", line = " + st.lineno());
 		st.pushBack();
+		prmClass.getForeignKeys().remove(fk);
 	}
 	
 	/**
@@ -333,7 +473,6 @@ public class DefaultSQLPRMIO implements IPRMIO {
 	 */
 	protected void handlePrimaryKey(StreamTokenizer st, IPRMClass prmClass,
 			String constraintName) throws IOException {
-		// TODO Auto-generated method stub
 		if (st.nextToken() == st.TT_WORD && "KEY".equalsIgnoreCase(st.sval)) {
 			if (st.nextToken() == '(') {
 				while(st.nextToken() != st.TT_EOF) {
@@ -344,6 +483,7 @@ public class DefaultSQLPRMIO implements IPRMIO {
 							// set as PK
 							pk.setPrimaryKey(true);
 							pk.setMandatory(true);
+							prmClass.setPrimaryKeyName(constraintName);
 							if (st.nextToken() != ',') {
 								st.pushBack();	// if the next token is ')', the nest loop will break the loop
 							} else {
@@ -387,19 +527,88 @@ public class DefaultSQLPRMIO implements IPRMIO {
 	 * @throws IOException 
 	 */
 	protected void handleInsertInto(StreamTokenizer st, IPRM prm) throws IOException {
-
-		Debug.println(this.getClass(), "INSERT INTO, in");
 		
+		if (st.nextToken() == st.TT_WORD && "INTO".equalsIgnoreCase(st.sval)) {
+			if (st.nextToken() == '"' || st.ttype == st.TT_WORD) {
+				// extract class name
+				IPRMClass prmClass = prm.findPRMClassByName(st.sval);
+				if (prmClass != null) {
+					// prepare PRM Object
+					IPRMObject prmObject = PRMObject.newInstance(prmClass);
+					// store the attribute names in order
+					List<IAttributeDescriptor> attributes = new ArrayList<IAttributeDescriptor>();
+					// read attributes
+					if (st.nextToken() == '(') {
+						while (st.nextToken() != st.TT_EOF) {
+							if (st.ttype == '"' || st.ttype == st.TT_WORD) {
+								// obtain attribute
+								IAttributeDescriptor attribute = prmClass.findAttributeDescriptorByName(st.sval);
+								if (attribute !=  null) {
+									attributes.add(attribute);
+									if (st.nextToken() != ',') {
+										// there is no more attributes
+										st.pushBack();
+									} else {
+										// the next loop will handle the other attribute
+									}
+								} else {
+									System.err.println("Invalid attribute found. Type = " + st.ttype 
+											+ ", number = " + st.nval 
+											+ ", string = " + st.sval 
+											+ ", char = " + (char)st.ttype
+											+ ", line = " + st.lineno());
+								}
+							} else if (st.ttype == ')') {
+								// no more attributes
+								break;
+							} else if (st.ttype == ';') {
+								System.err.println("Unnexpected end of INSERT INTO reached. Type = " + st.ttype 
+										+ ", number = " + st.nval 
+										+ ", string = " + st.sval 
+										+ ", char = " + (char)st.ttype
+										+ ", line = " + st.lineno());
+								return;
+							}
+						}
+						if (st.nextToken() == st.TT_WORD && "VALUES".equalsIgnoreCase(st.sval)) {
+							if (st.nextToken() == '(') {
+								// extract values, by attributes
+								for (IAttributeDescriptor attribute : attributes) {
+									if (st.nextToken() == '\'' || st.ttype ==st.TT_WORD || st.ttype == st.TT_NUMBER) {
+										// add value (it may be a number or a string)
+										IAttributeValue value = AttributeValue.newInstance(prmObject, attribute);
+										value.setValue((st.ttype == st.TT_NUMBER)?(Double.toString(st.nval)):st.sval);
+										st.nextToken();
+										if (st.ttype == ',') {
+											continue;
+										} else if (st.ttype == ')') {
+											// end of statement. Move cursor until we find a ';' and return
+											while (st.nextToken() != st.TT_EOF) {
+												if (st.ttype == ';') {
+													return;
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		// if the execution reaches this code, there is a problem
+		System.err.println("Invalid INSERT INTO found. Type = " + st.ttype 
+				+ ", number = " + st.nval 
+				+ ", string = " + st.sval 
+				+ ", char = " + (char)st.ttype
+				+ ", line = " + st.lineno());
 		while (st.nextToken() != st.TT_EOF) {
 			if (st.ttype == ';') {
 				break;
 			}
 		}
-		// TODO Auto-generated method stub
-
-		Debug.println(this.getClass(), "INSERT INTO, out");
-		// TODO Auto-generated method stub
-		
 	}
 	
 	/**
@@ -453,6 +662,7 @@ public class DefaultSQLPRMIO implements IPRMIO {
 		out.println("/* VERSION = 0.0.1 ORACLE-LIKE */");
 		out.println("/* Non standard UnBBayes-PRM SQL script file. */");
 		out.println("/* This file was generated by UnBBayes-PRM plugin on " + new Date().toString() + " */");
+		out.println("/* You may change the order of the statements, but please, do not change the statements themselves. */");
 		out.println();
 		
 		for (IPRMClass prmClass : prm.getIPRMClasses()) {
@@ -487,9 +697,9 @@ public class DefaultSQLPRMIO implements IPRMIO {
 			
 			// add constraint for PK
 			/*
-			 * ALTER TABLE "table" ADD CONSTRAINT PK_table PRIMARY KEY ("attribute");
+			 * ALTER TABLE "table" ADD CONSTRAINT primaryKeyName PRIMARY KEY ("attribute");
 			 */
-			out.print("ALTER TABLE \"" + prmClass.getName() + "\" ADD CONSTRAINT PK_" + prmClass.getName() + " PRIMARY KEY (");
+			out.print("ALTER TABLE \"" + prmClass.getName() + "\" ADD CONSTRAINT " + prmClass.getPrimaryKeyName() + " PRIMARY KEY (");
 			for (Iterator<String> it = pkNames.iterator() ; it.hasNext() ; ) {
 				String pkName = it.next();
 				out.print("\"" + pkName + "\"");
@@ -523,6 +733,9 @@ public class DefaultSQLPRMIO implements IPRMIO {
 			/*
 			 * ALTER TABLE "table" ADD CONSTRAINT fkname FOREIGN KEY ("foreignKeyAttribute") REFERENCES "table2" ("primaryKeyAttribute");
 			 */
+//			out.println();
+//			out.println("/* Storing foreign keys */");
+//			out.println();
 			for (IForeignKey fk : prmClass.getForeignKeys()) {
 				out.println();
 				out.print("ALTER TABLE \"" 
@@ -561,7 +774,9 @@ public class DefaultSQLPRMIO implements IPRMIO {
 		 * Insert data too
 		 */
 		
-		out.println();
+//		out.println();
+//		out.println("/* Storing data entries */");
+//		out.println();
 		// store data
 		for (IPRMClass prmClass : prm.getIPRMClasses()) {
 			for (IPRMObject prmObject : prmClass.getPRMObjects()) {
