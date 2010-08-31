@@ -13,16 +13,20 @@ import java.io.PrintStream;
 import java.io.StreamTokenizer;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import unbbayes.io.exception.LoadException;
 import unbbayes.prs.Graph;
 import unbbayes.prs.prm.AttributeDescriptor;
 import unbbayes.prs.prm.AttributeValue;
+import unbbayes.prs.prm.DependencyChain;
 import unbbayes.prs.prm.ForeignKey;
 import unbbayes.prs.prm.IAttributeDescriptor;
 import unbbayes.prs.prm.IAttributeValue;
+import unbbayes.prs.prm.IDependencyChain;
 import unbbayes.prs.prm.IForeignKey;
 import unbbayes.prs.prm.IPRM;
 import unbbayes.prs.prm.IPRMClass;
@@ -30,6 +34,8 @@ import unbbayes.prs.prm.IPRMObject;
 import unbbayes.prs.prm.PRM;
 import unbbayes.prs.prm.PRMClass;
 import unbbayes.prs.prm.PRMObject;
+import unbbayes.prs.prm.cpt.AggregateFunctionMode;
+import unbbayes.prs.prm.cpt.IAggregateFunction;
 
 /**
  * @author Shou Matsumoto
@@ -44,6 +50,8 @@ public class DefaultSQLPRMIO implements IPRMIO {
 
 	/** Textual description of supported file extension */
 	public static final String SUPPORTED_FILE_DESCRIPTION = "Non-standard SQL script for UnBBayes' PRM (.sql)";
+	
+	private Map<String, IForeignKey> foreignKeyConstraintMap;
 	
 	/**
 	 * This default constructor is made public for plugin support.
@@ -107,11 +115,217 @@ public class DefaultSQLPRMIO implements IPRMIO {
 			if ( ( st.ttype == st.TT_WORD ) && "INSERT".equalsIgnoreCase(st.sval) ) {
 				this.handleInsertInto(st, prm);
 			}
+			
+			// handle COMMENT ON
+			if ( ( st.ttype == st.TT_WORD ) && "COMMENT".equalsIgnoreCase(st.sval) ) {
+				this.handleCommentOn(st, prm);
+			}
 		}
 		
 		return prm;
 	}
 	
+	/**
+	 * Handles the COMMENT ON statement in order to solve dependencies.
+	 * It assumes st is pointing to COMMENT token. At the end, st is going to be
+	 * pointing at ';'.
+	 * @param st
+	 * @param prm
+	 * @throws IOException 
+	 */
+	protected void handleCommentOn(StreamTokenizer st, IPRM prm) throws IOException {
+		/*
+		 * COMMENT ON COLUMN table.column IS 'class.parent1(mode)[FK1 !FK2], class.parent1(mode)[FK1 !FK2]; { 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 }';
+		 */
+		if (st.nextToken() == st.TT_WORD && "ON".equalsIgnoreCase(st.sval)) {
+			if (st.nextToken() == st.TT_WORD && "COLUMN".equalsIgnoreCase(st.sval)) {
+				if (st.nextToken() == st.TT_WORD) {
+					// extract table name
+					IPRMClass prmClass = prm.findPRMClassByName(st.sval);
+					if (prmClass != null) {
+						// extract column name by reading "." and the name afterwards
+						if (st.nextToken() == '.' && st.nextToken() == st.TT_WORD) {
+							IAttributeDescriptor attributeDescriptor = prmClass.findAttributeDescriptorByName(st.sval);
+							if (attributeDescriptor != null) {
+								// parse IS
+								if (st.nextToken() == st.TT_WORD && "IS".equalsIgnoreCase(st.sval)) {
+									if (st.nextToken() == '\'') {
+										// parse dependency comment
+										this.parseDependencyComment(st.sval, attributeDescriptor);
+									}
+									if (st.nextToken() == ';') {
+										return;
+									} else {
+										// invalid end of statement
+										System.err.println("Invalid end of statement. Type = " + st.ttype 
+												+ ", number = " + st.nval 
+												+ ", string = " + st.sval 
+												+ ", char = " + (char)st.ttype
+												+ ", line = " + st.lineno());
+										// go until the last end of statement
+										while (st.nextToken() != st.TT_EOF) {
+											if (st.ttype == ';') {
+												return;
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					// invalid parent name
+					System.err.println("Invalid parent name. Type = " + st.ttype 
+							+ ", number = " + st.nval 
+							+ ", string = " + st.sval 
+							+ ", char = " + (char)st.ttype
+							+ ", line = " + st.lineno());
+				}
+				
+			}
+		}
+		
+		// invalid comment on statement
+		System.err.println("Invalid COMMENT ON statement. Type = " + st.ttype 
+				+ ", number = " + st.nval 
+				+ ", string = " + st.sval 
+				+ ", char = " + (char)st.ttype
+				+ ", line = " + st.lineno());
+		// move cursor until end of statement
+		while (st.nextToken() != st.TT_EOF) {
+			if (st.ttype == ';') {
+				break;
+			}
+		}
+	}
+	
+	/**
+	 * If the dependency is declared as a comment, this method will parse such comment and
+	 * fill attributeDescriptor
+	 * @param comment
+	 * @param attributeDescriptor
+	 */
+	public void parseDependencyComment(String comment,
+			IAttributeDescriptor attributeDescriptor) {
+		/*
+		 * class.parent1(mode)[FK1 !FK2], class.parent1(mode)[FK1 !FK2]; { 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 }
+		 */
+		try {
+			// split in 2 parts: the dependency declaration [0] and the probability values [1]
+			String[] dependenciesAndProbs = comment.trim().split(";");
+			
+			// solve dependency chain only if there is a dependency
+			if ((dependenciesAndProbs.length >= 1) && (dependenciesAndProbs[0].trim().length() > 0)) {
+				if (dependenciesAndProbs[0].trim().length() > 0) {
+					// split into a single dependency
+					for (String dependencyScript : dependenciesAndProbs[0].trim().split(",")) {
+						// extract dependency informations
+						IPRMClass parentClass = attributeDescriptor.getPRMClass().getPRM().findPRMClassByName(dependencyScript.substring(0, dependencyScript.indexOf('.')).trim());
+						if (parentClass == null) {
+							System.err.println("Could not find parent with name " + dependencyScript.substring(0, dependencyScript.indexOf('.')));
+							continue;
+						}
+						
+						// search the parent attribute
+						IAttributeDescriptor parentAttribute = parentClass.findAttributeDescriptorByName(dependencyScript.substring(dependencyScript.indexOf('.') + 1, dependencyScript.indexOf('(')));
+						if (parentAttribute == null) {
+							System.err.println("Could not find parent with name " + dependencyScript.substring(dependencyScript.indexOf('.') + 1, dependencyScript.indexOf('(')));
+							continue;
+						}
+						
+						// create new dependency chain
+						IDependencyChain dependencyChain = DependencyChain.newInstance();
+						
+						// fill some dependency values
+						dependencyChain.setDependencyFrom(parentAttribute.getPRMDependency());
+						dependencyChain.setDependencyTo(attributeDescriptor.getPRMDependency());
+						
+						// extract aggregate function
+						// we always use Mode if aggregate function is not set to null.
+						// TODO we currently have only "Mode" available. Implement other types of aggregate functions
+						IAggregateFunction defaultAggregateFunction = AggregateFunctionMode.newInstance(dependencyChain);
+						if (dependencyScript.substring(dependencyScript.indexOf('(') + 1 , dependencyScript.indexOf(')')).trim().length() <= 0) {
+							// if there is nothing between '(' and ')', then aggregate function is null and we must reset the aggregate function
+							dependencyChain.setAggregateFunction(null);
+						} else {
+							dependencyChain.setAggregateFunction(defaultAggregateFunction);
+						}
+						
+						// extract content between []
+						String fkListString = dependencyScript.substring(dependencyScript.indexOf('[') + 1, dependencyScript.indexOf(']')).trim();
+						if (fkListString.length() > 0) {
+							// extract foreign key chain (analyze the substring between [])
+							for (String fkName : fkListString.split(" ")) {
+								
+								fkName = fkName.trim();	// I do not want to have extra white spaces
+								
+								boolean isInverse = false;	// we'll use this to mark fk as inverse (one-to-many) afterwards
+								if (fkName.charAt(0) == '!') {
+									// this is an inverse (one to may) fk. Remove the tag (!) and remember to mark it as inverse
+									fkName = fkName.substring(1);
+									isInverse = true;
+								}
+								
+								// search foreign key (these are FKs already handled by handleForeignKey method)
+								IForeignKey fk = this.getForeignKeyConstraintMap().get(fkName);
+								if (fk == null) {
+									throw new IOException("Could not find foreign key. Constraint name: " + fkName);
+								}
+								
+								// add fk to chain
+								dependencyChain.getForeignKeyChain().add(fk);
+								
+								// update "inverse" flag
+								dependencyChain.markAsInverseForeignKey(fk, isInverse);
+							}
+						}
+						
+						// add dependency chain as incoming dependency of child attribute
+						if (!attributeDescriptor.getPRMDependency().getIncomingDependencyChains().contains(dependencyChain)) {
+							attributeDescriptor.getPRMDependency().getIncomingDependencyChains().add(dependencyChain);
+						}
+						// add dependency chain as outgoing dependency of parent attribute
+						if (!parentAttribute.getPRMDependency().getDependencyChains().contains(dependencyChain)) {
+							parentAttribute.getPRMDependency().getDependencyChains().add(dependencyChain);
+						}
+						
+					}
+				}
+			}
+			
+			// solve probability values
+			if ((dependenciesAndProbs.length >= 2) && (dependenciesAndProbs[1].trim().length() > 0)) {
+				
+				
+				// get the string between { and } 
+				String  probabilityListString = dependenciesAndProbs[1].substring(dependenciesAndProbs[1].indexOf('{') + 1, dependenciesAndProbs[1].indexOf('}')).trim();
+				if (probabilityListString.length() > 0) {
+					
+					// use this list to update cpt 
+					// I do not want to use attributeDescriptor.getPRMDependency().getCPT().getTableValues() directly because I do not have prior knowledge of its size
+					// (thus, add(x) may give undesired result)
+					List<Float> tableValues = new ArrayList<Float>();
+					
+					//split it by white space (it will give us an array of numbers as strings)
+					for (String probString :probabilityListString.split(" ")) {
+						probString = probString.trim();	// I do not want extra white spaces
+						try {
+							tableValues.add(Float.parseFloat(probString));
+						} catch (NumberFormatException nfe) {
+							System.err.println("Error setting CPT for " + attributeDescriptor);
+							nfe.printStackTrace();
+						}
+					}
+					
+					// update cpt
+					attributeDescriptor.getPRMDependency().getCPT().setTableValues(tableValues);
+				}
+				
+			}
+		} catch (Exception e) {
+			// just ignore it
+			e.printStackTrace();
+		}
+	}
 	/**
 	 * Handles the CREATE TABLE statement. It assumes st is pointing
 	 * to CREATE token. At the end, st is going to be pointing at ';'.
@@ -237,22 +451,7 @@ public class DefaultSQLPRMIO implements IPRMIO {
 						if (st.nextToken() == st.TT_WORD && "ADD".equalsIgnoreCase(st.sval)
 								&& st.nextToken() == st.TT_WORD && "CONSTRAINT".equalsIgnoreCase(st.sval)) {
 							// this is a ADD CONSTRAINT statement
-							// extract constraint name
-							if (st.nextToken() == st.TT_WORD) {
-								String constraintName = st.sval;
-								if (st.nextToken() == st.TT_WORD) {
-									if ("PRIMARY".equalsIgnoreCase(st.sval)) {
-										// handle primary key
-										this.handlePrimaryKey(st, prmClass, constraintName);
-									} else if ("FOREIGN".equalsIgnoreCase(st.sval)) {
-										// handle foreign key
-										this.handleForeignKey(st, prmClass, constraintName);
-									} else if ("CHECK".equalsIgnoreCase(st.sval)) {
-										// handle attribute's possible values
-										this.handleCheck(st, prmClass, constraintName);
-									}
-								}
-							}
+							this.handleConstraint(st, prmClass);
 						} else {
 							// invalid add constraint statement
 							System.err.println("Invalid ADD CONSTRAINT command. Type = " + st.ttype 
@@ -277,6 +476,41 @@ public class DefaultSQLPRMIO implements IPRMIO {
 		}
 	}
 	
+	/**
+	 * Handles the ADD CONSTRAINT declaration.
+	 * st must be pointing to CONSTRAINT.
+	 * After execution, it will be pointing at ';'
+	 * @param st
+	 * @param prmClass
+	 * @throws IOException 
+	 */
+	protected void handleConstraint(StreamTokenizer st, IPRMClass prmClass) throws IOException {
+		// extract constraint name
+		if (st.nextToken() == st.TT_WORD) {
+			String constraintName = st.sval;
+			if (st.nextToken() == st.TT_WORD) {
+				if ("PRIMARY".equalsIgnoreCase(st.sval)) {
+					// handle primary key
+					this.handlePrimaryKey(st, prmClass, constraintName);
+					return;
+				} else if ("FOREIGN".equalsIgnoreCase(st.sval)) {
+					// handle foreign key
+					this.handleForeignKey(st, prmClass, constraintName);
+					return;
+				} else if ("CHECK".equalsIgnoreCase(st.sval)) {
+					// handle attribute's possible values
+					this.handleCheck(st, prmClass, constraintName);
+					return;
+				}
+			}
+		}
+		// move cursor to next ';'
+		while (st.nextToken() != st.TT_EOF) {
+			if (st.ttype == ';') {
+				break;
+			}
+		}
+	}
 	/**
 	 * Handles the check statement on "alter table add constraint" statement.
 	 * st will point to "check" command and it will be pointing to the token before the ';' after
@@ -378,6 +612,7 @@ public class DefaultSQLPRMIO implements IPRMIO {
 	 * Handles the foreign key statement on "alter table add constraint" statement.
 	 * st will point to "foreign" command and it will be pointing to the token before the ';' after
 	 * execution.
+	 * @return foreign key
 	 * @param st
 	 * @param prmClass
 	 * @param constraintName
@@ -392,7 +627,10 @@ public class DefaultSQLPRMIO implements IPRMIO {
 		if (!prmClass.getForeignKeys().contains(fk)) {
 			prmClass.getForeignKeys().add(fk);
 		}
-
+		
+		// store foreign key into map
+		this.getForeignKeyConstraintMap().put(constraintName, fk);
+		
 		if (st.nextToken() == st.TT_WORD && "KEY".equalsIgnoreCase(st.sval)) {
 			if (st.nextToken() == '(') {
 				while(st.nextToken() != st.TT_EOF) {
@@ -460,6 +698,7 @@ public class DefaultSQLPRMIO implements IPRMIO {
 				+ ", line = " + st.lineno());
 		st.pushBack();
 		prmClass.getForeignKeys().remove(fk);
+		return;
 	}
 	
 	/**
@@ -624,7 +863,7 @@ public class DefaultSQLPRMIO implements IPRMIO {
 			throw new IllegalArgumentException(e);
 		}
 		st.wordChars('A', 'z');
-		st.wordChars('.', '.');
+//		st.wordChars('.', '.');
 		st.wordChars('_', '_');
 		st.whitespaceChars(' ',' ');
 		st.whitespaceChars('\t','\t');
@@ -633,6 +872,7 @@ public class DefaultSQLPRMIO implements IPRMIO {
 		st.eolIsSignificant(false);
 		st.slashStarComments(true);
 //		st.ordinaryChar(';');
+		st.ordinaryChar('.');
 		return st;
 	}
 
@@ -669,8 +909,8 @@ public class DefaultSQLPRMIO implements IPRMIO {
 			// print table
 			/*
 			 * CREATE TABLE "table" (
-			 * 		"attribute1" VARCHAR2(300)
-			 * 		"attribute1" VARCHAR2(300) not null
+			 * 		"attribute1" VARCHAR2(300),
+			 * 		"attribute2" VARCHAR2(300) not null
 			 */
 			
 			out.println();
@@ -763,8 +1003,58 @@ public class DefaultSQLPRMIO implements IPRMIO {
 		}
 		
 		
-		// TODO store dependency as table (2 tables: dependency chain and probability value?)
+		// TODO store dependency as table or comment (2 tables: dependency chain and probability value?)
 
+		out.println();
+		out.println("/* Storing dependencies as in-table comments (this is a temporary solution to be solved in future releases) */");
+		out.println("/* Format: <listOfParents>; {<listOfProbabilities>} */");
+		out.println("/* The <listOfParents> is a comma separated list having the following format: <parentClass>.<parentColumn>(<aggregateFunction>){<listOfForeignKeys>} */");
+		out.println("/* The \".<aggregateFunction>\" is usually \"mode\" (with no double quotes) or white space if none. */");
+		out.println("/* The <listOfForeignKeys> and <listOfProbabilities> are white space separated list. */");
+		out.println("/* The [<listOfProbabilities>] is something like {0.1 0.9 0.9 0.1} */");
+		out.println("/* If a foreign key in <listOfForeignKeys> is written as !<foreignKeyName>, then it will be marked as an inverse foreign key (one-to-many) */");
+		out.println();
+		
+
+		/*
+		 * COMMENT ON COLUMN table.column IS 'class.parent1(mode)[FK1 !FK2], class.parent1(mode)[FK1 !FK2]; { 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 }';
+		 */
+		for (IPRMClass prmClass : prm.getIPRMClasses()) {
+			for (IAttributeDescriptor attributeDescriptor : prmClass.getAttributeDescriptors()) {
+				// only save dependencies if it is a random variable
+				// TODO allow FK and PK as random variables
+				if (attributeDescriptor.isMandatory() || attributeDescriptor.isForeignKey()) {
+					continue;
+				}
+				out.print("COMMENT ON COLUMN " + prmClass.getName() + "." + attributeDescriptor.getName()
+						+ " IS '");
+				// save dependency chain
+				for (Iterator<IDependencyChain> it = attributeDescriptor.getPRMDependency().getIncomingDependencyChains().iterator(); it.hasNext();) {
+					IDependencyChain chain = it.next();
+					out.print(chain.getDependencyFrom().getAttributeDescriptor().getPRMClass().getName() + "." 
+							+ chain.getDependencyFrom().getAttributeDescriptor().getName() + "("
+							+ (chain.getAggregateFunction() == null?"":chain.getAggregateFunction().getName()) + ")"
+							+ "[");
+					// write FKs
+					for (IForeignKey fk : chain.getForeignKeyChain()) {
+						// if FK is inverse, mark it with "!"
+						out.print((chain.isInverseForeignKey(fk)?" !":" ") + fk.getName());
+					}
+					out.print(" ]");
+					if (it.hasNext()) {
+						out.print(" , ");
+					}
+				}
+				out.print(" ; ");
+				// save probabilities
+				out.print(" {");
+				for (Float val : attributeDescriptor.getPRMDependency().getCPT().getTableValues()) {
+					out.print(" " + val.toString());
+				}
+				out.println(" }';");
+			}
+		}
+		
 		/* TODO
 		 * chain:
 		 * 		ID (number PK), chainID (number), columnFrom (string), columnTo (string), isInverse (bool), fkName (string), aggregate(string) 
@@ -829,6 +1119,32 @@ public class DefaultSQLPRMIO implements IPRMIO {
 			}
 		}
 		return false;
+	}
+	
+	/** 
+	 * This is a map from constraint name to foreign keys.
+	 * It will be filled by {@link #handleForeignKey(StreamTokenizer, IPRMClass, String)}
+	 * and used by {@link #parseDependencyComment(String, IAttributeDescriptor)} in order to solve
+	 * Fk names.
+	 * @return the foreignKeyConstraintMap
+	 */
+	public Map<String, IForeignKey> getForeignKeyConstraintMap() {
+		if (this.foreignKeyConstraintMap == null) {
+			this.foreignKeyConstraintMap = new HashMap<String, IForeignKey>();
+		}
+		return foreignKeyConstraintMap;
+	}
+	
+	/**
+	 * This is a map from constraint name to foreign keys.
+	 * It will be filled by {@link #handleForeignKey(StreamTokenizer, IPRMClass, String)}
+	 * and used by {@link #parseDependencyComment(String, IAttributeDescriptor)} in order to solve
+	 * Fk names.
+	 * @param foreignKeyConstraintMap the foreignKeyConstraintMap to set
+	 */
+	public void setForeignKeyConstraintMap(
+			Map<String, IForeignKey> foreignKeyConstraintMap) {
+		this.foreignKeyConstraintMap = foreignKeyConstraintMap;
 	}
 
 }
