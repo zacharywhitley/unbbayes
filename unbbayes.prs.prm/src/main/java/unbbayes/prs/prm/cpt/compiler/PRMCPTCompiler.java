@@ -103,11 +103,23 @@ public class PRMCPTCompiler implements IPRMCPTCompiler {
 						"Could not obtain parent's states map for " 
 						+ probabilityFunctionOwner
 						+  ". Using default...");
-				// add linear distribution
-				columnValues = new ArrayList<Float>();
-				float val = 1.0f / targetRowSize;
-				for (int i = 0; i < targetRowSize; i++) {
-					columnValues.add(val);
+				if (!prmNode.getAttributeDescriptor().isMandatory()) {
+					// use the table provided by user if it exists (if mandatory, usually no table is provided)
+					try {
+						// use a copy (just the needed part) of the original table (list) instead of using the original one directly
+						columnValues = prmCPT.getTableValues().subList(0, targetRowSize);
+					} catch (Exception e) {
+						Debug.println(this.getClass(), "Failed to extract a copy/sublist of user-provided default probability for " 
+								+ prmNode + ". Using the original one instead.", e);
+						columnValues = prmCPT.getTableValues();
+					}
+				} else {
+					// add linear distribution if no value is retrievable
+					columnValues = new ArrayList<Float>();
+					float val = 1.0f / targetRowSize;
+					for (int i = 0; i < targetRowSize; i++) {
+						columnValues.add(val);
+					}
 				}
 			} else {
 				try {

@@ -816,7 +816,10 @@ public class DefaultSQLPRMIO implements IPRMIO {
 									if (st.nextToken() == '\'' || st.ttype ==st.TT_WORD || st.ttype == st.TT_NUMBER) {
 										// add value (it may be a number or a string)
 										IAttributeValue value = AttributeValue.newInstance(prmObject, attribute);
-										value.setValue((st.ttype == st.TT_NUMBER)?(Double.toString(st.nval)):st.sval);
+										if (!(st.ttype == st.TT_WORD && "NULL".equalsIgnoreCase(st.sval))) {
+											// if it is not between single quotes and it is not NULL, then add value
+											value.setValue((st.ttype == st.TT_NUMBER)?(Double.toString(st.nval)):st.sval);
+										}
 										st.nextToken();
 										if (st.ttype == ',') {
 											continue;
@@ -1082,7 +1085,15 @@ public class DefaultSQLPRMIO implements IPRMIO {
 				}
 				out.print(") VALUES (");
 				for (Iterator<IAttributeDescriptor> it = keyList.iterator(); it.hasNext(); ) {
-					out.print("'" + prmObject.getAttributeValueMap().get(it.next()).getValue()+ "'" + (it.hasNext()?", ":""));
+					IAttributeValue value = prmObject.getAttributeValueMap().get(it.next());
+					if (value.getValue() != null) {
+						// insert value as string (using single quote)
+						// TODO add support for other types of data
+						out.print("'" + value.getValue() + "'" + (it.hasNext()?", ":""));
+					} else {
+						// if value == null, insert NULL (with no single quotes)
+						out.print("NULL" + (it.hasNext()?", ":""));
+					}
 				}
 				out.println(");");
 			}

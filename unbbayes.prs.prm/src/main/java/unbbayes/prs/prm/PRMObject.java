@@ -3,7 +3,9 @@
  */
 package unbbayes.prs.prm;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -88,15 +90,34 @@ public class PRMObject implements IPRMObject {
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-		// TODO support multiple PK
-		// string = <ClassName>_<PKValue>
 		try {
+			// render name using PK if this object contains it
+			String pkString = "";
+			for (IAttributeDescriptor attribute : this.getAttributeValueMap().keySet()) {
+				if (attribute.isPrimaryKey()) {
+					IAttributeValue value = this.getAttributeValueMap().get(attribute);
+					if (value != null && value.getValue() != null && (value.getValue().trim().length() > 0)) {
+						pkString += (value.getValue().trim());
+					}
+				}
+			}
+			if (pkString.length() > 0) {
+				return this.getPRMClass().getName()  + "_" + pkString;
+			}
+			// TODO support multiple PK
+			// string = <ClassName>_<PKValue>
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			// no PK found. Use index instead
 			return this.getPRMClass().getName() 
 			+ "_"
 			+ this.getPRMClass().getPRMObjects().indexOf(this);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		// could not extract name. Use default
 		return super.toString();
 	}
 	
