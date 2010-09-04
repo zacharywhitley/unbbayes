@@ -57,6 +57,8 @@ public class Resources extends unbbayes.gui.mebn.resources.Resources {
 
 		{"ChooseOWLPropertyDomain" , "Choose the domain"},
 		{"ChooseOWLPropertyRange" , "Choose the range"},
+		
+		{"CouldNotLoadProtegeOWLWidget" , "Could not load Protégé-OWL widget to render this panel. Check the JAR version."},
 	};
 
 }
