@@ -5,6 +5,7 @@ package unbbayes.gui.mebn;
 
 
 import java.awt.CardLayout;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.AdjustmentEvent;
@@ -254,11 +255,16 @@ public class MEBNNetworkWindow extends NetworkWindow {
 			// obtains the result of the above operation and iterate over it
 			for (IMEBNEditionPanelPluginComponents editionPanelPluginComponent : this.getPluginManager().getLoadedComponents()) {
 				try {
+					Component pluginTab = editionPanelPluginComponent.getPanelBuilder().buildPanel(getMultiEntityBayesianNetwork(), (IMEBNMediator)getController());
+					if (pluginTab == null) {
+						// do not add tab if plugin did not return a panel
+						continue;
+					}
 					// add the plugins to tab
 					this.getTopTabbedPane().addTab( editionPanelPluginComponent.getName(),
 													editionPanelPluginComponent.getIcon(), 
-													editionPanelPluginComponent.getPanelBuilder().buildPanel(getMultiEntityBayesianNetwork(), (IMEBNMediator)getController()), 
-													this.resource.getString("defaultMEBNEditorTip"));
+													pluginTab, 
+													editionPanelPluginComponent.getDescription());
 				} catch (Throwable e) {
 					// ignore every errors caused by plugins
 					e.printStackTrace();
