@@ -970,15 +970,16 @@ public class DefaultSQLPRMIO implements IPRMIO {
 					out.println("));");
 				}
 			}
-			
-			
-			// store FK
-			/*
-			 * ALTER TABLE "table" ADD CONSTRAINT fkname FOREIGN KEY ("foreignKeyAttribute") REFERENCES "table2" ("primaryKeyAttribute");
-			 */
-//			out.println();
-//			out.println("/* Storing foreign keys */");
-//			out.println();
+		}
+		
+		
+		// store FK
+		/*
+		 * ALTER TABLE "table" ADD CONSTRAINT fkname FOREIGN KEY ("foreignKeyAttribute") REFERENCES "table2" ("primaryKeyAttribute");
+		 */
+		out.println();
+		out.println("/* Storing foreign keys */");
+		for (IPRMClass prmClass : prm.getIPRMClasses()) {
 			for (IForeignKey fk : prmClass.getForeignKeys()) {
 				out.println();
 				out.print("ALTER TABLE \"" 
@@ -1004,7 +1005,6 @@ public class DefaultSQLPRMIO implements IPRMIO {
 				out.println(");");
 			}
 		}
-		
 		
 		// TODO store dependency as table or comment (2 tables: dependency chain and probability value?)
 
@@ -1067,9 +1067,9 @@ public class DefaultSQLPRMIO implements IPRMIO {
 		 * Insert data too
 		 */
 		
-//		out.println();
-//		out.println("/* Storing data entries */");
-//		out.println();
+		out.println();
+		out.println("/* Storing data entries */");
+		out.println();
 		// store data
 		for (IPRMClass prmClass : prm.getIPRMClasses()) {
 			for (IPRMObject prmObject : prmClass.getPRMObjects()) {
