@@ -121,7 +121,6 @@ public class DefaultSQLPRMIO implements IPRMIO {
 				this.handleCommentOn(st, prm);
 			}
 		}
-		
 		return prm;
 	}
 	
@@ -1098,6 +1097,7 @@ public class DefaultSQLPRMIO implements IPRMIO {
 				out.println(");");
 			}
 		}
+		out.close();
 	}
 
 	/* (non-Javadoc)
