@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -26,6 +27,7 @@ import unbbayes.gui.MDIDesktopPane;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Network;
+import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.prm.AttributeValue;
 import unbbayes.prs.prm.IAttributeDescriptor;
 import unbbayes.prs.prm.IAttributeValue;
@@ -52,6 +54,7 @@ public class ObjectPanel extends JPanel {
 	private JButton addObjectButton;
 	private JButton removeObjectButton;
 	private JButton compilePRMButton;
+	private JCheckBox showBNCheckBox;
 	
 	/**
 	 * At least one constructor must be visible for subclasses to allow
@@ -115,6 +118,12 @@ public class ObjectPanel extends JPanel {
 		this.setCompilePRMButton(new JButton(this.getIconController().getCompileIcon()));
 		this.getCompilePRMButton().setToolTipText("Compile PRM using selected cell.");
 		this.getObjectDataToolBar().add(this.getCompilePRMButton());
+		
+		// checkbox to show BN after compilation or just show a text message
+		// create new checkbox, but reuse the last one if it exists. Default = true
+		this.setShowBNCheckBox(new JCheckBox("Show generated BN", ((this.getShowBNCheckBox() != null)?(this.getShowBNCheckBox().isSelected()):(true))));
+		this.getShowBNCheckBox().setToolTipText("Display the generated Bayesian Network after compilation. If unchecked, only a message will be displayed");
+		this.getObjectDataToolBar().add(this.getShowBNCheckBox());
 		
 		// build header (name of attributes) of table
 		String[] columns = new String[this.getPrmClass().getAttributeDescriptors().size()];
@@ -396,7 +405,32 @@ public class ObjectPanel extends JPanel {
 							JOptionPane.ERROR_MESSAGE);
 					return;
 				}
-				if ((compiledPRM != null) && (compiledPRM instanceof Network)) {
+				if (!getShowBNCheckBox().isSelected()) {
+					// just show a simple message
+					try {
+						// generate a message containing the probabilities of the queried node (cell)
+						// assume the name of the nodes in compiledPRM is IAttributeValue.toString();
+						// TODO find a better way to retrieve the queried node, instead of using naming conversion
+						TreeVariable result = (TreeVariable)((Network)compiledPRM).getNode(cellDescriptor.toString());
+						String msg = result.getName() + ": \n";
+						for (int i = 0; i < result.getStatesSize(); i++) {
+							msg += "\t" + result.getStateAt(i) + " = " + result.getMarginalAt(i) + ";\n";
+						}
+						JOptionPane.showMessageDialog(
+								ObjectPanel.this, 
+								msg, 
+								"Probability of the queried cell", 
+								JOptionPane.INFORMATION_MESSAGE);
+					} catch (Exception e2) {
+						e2.printStackTrace();
+						JOptionPane.showMessageDialog(
+								ObjectPanel.this,
+								"Could not obtain the query node from generated BN. Try checking the \"show BN\" checkbox.",
+								e2.getMessage(),  
+								JOptionPane.ERROR_MESSAGE);
+					}
+				} else if ((compiledPRM != null) && (compiledPRM instanceof Network)) {
+					// display generated BN
 					NetworkWindow netWindow = new NetworkWindow((Network)compiledPRM);
 					if (getUpperPanel().getPrmWindow().getDesktopPane() instanceof MDIDesktopPane) {
 						((MDIDesktopPane)getUpperPanel().getPrmWindow().getDesktopPane()).add(netWindow);
@@ -563,6 +597,20 @@ public class ObjectPanel extends JPanel {
 	 */
 	public void setCompilePRMButton(JButton compilePRMButton) {
 		this.compilePRMButton = compilePRMButton;
+	}
+
+	/**
+	 * @return the showBNCheckBox
+	 */
+	public JCheckBox getShowBNCheckBox() {
+		return showBNCheckBox;
+	}
+
+	/**
+	 * @param showBNCheckBox the showBNCheckBox to set
+	 */
+	public void setShowBNCheckBox(JCheckBox showBNCheckBox) {
+		this.showBNCheckBox = showBNCheckBox;
 	}
 
 }
