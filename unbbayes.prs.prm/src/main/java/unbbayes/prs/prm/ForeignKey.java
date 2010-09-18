@@ -3,6 +3,7 @@
  */
 package unbbayes.prs.prm;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -21,6 +22,8 @@ public class ForeignKey implements IForeignKey {
 	
 	private IPRMClass classFrom, classTo;
 	
+	private List<IDependencyChain> dependencyChain;
+	
 	/**
 	 *  At least one constructor must be visible for subclasses to
 	 * allow inheritance
@@ -28,6 +31,7 @@ public class ForeignKey implements IForeignKey {
 	protected ForeignKey() {
 		this.keyAttributesFrom = new HashSet<IAttributeDescriptor>();
 		this.keyAttributesTo = new HashSet<IAttributeDescriptor>();
+		this.dependencyChain = new ArrayList<IDependencyChain>();
 	}
 	
 	/**
@@ -57,8 +61,7 @@ public class ForeignKey implements IForeignKey {
 	 * @see unbbayes.prs.prm.IForeignKey#getDependencyChain()
 	 */
 	public List<IDependencyChain> getDependencyChain() {
-		// TODO Auto-generated method stub
-		return null;
+		return dependencyChain;
 	}
 
 	/* (non-Javadoc)
@@ -108,8 +111,7 @@ public class ForeignKey implements IForeignKey {
 	 * @see unbbayes.prs.prm.IForeignKey#setDependencyChain(java.util.List)
 	 */
 	public void setDependencyChain(List<IDependencyChain> dependencyChains) {
-		// TODO Auto-generated method stub
-
+		this.dependencyChain = dependencyChain;
 	}
 
 	/* (non-Javadoc)

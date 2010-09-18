@@ -1891,8 +1891,13 @@ public class ClassPanel extends JPanel {
 			this.setButtonBackFK(new JButton(getIconController().getGoPreviousInstance()));
 			this.getButtonBackFK().setToolTipText("Go back to previous class (disabled in ALPHA)");
 			fkNavigationButtonPanel.add(this.getButtonBackFK());
-			// TODO enable button to go back
-			this.getButtonBackFK().setEnabled(false);
+			if ((getCurrentChain() != null) && (getCurrentChain().getForeignKeyChain() != null) && (!getCurrentChain().getForeignKeyChain().isEmpty())) {
+				// enable "go back" button if chain contains any FK
+				getButtonBackFK().setEnabled(true);
+			} else {
+				// disable "go back" button if no FK is present in chain
+				getButtonBackFK().setEnabled(false);
+			}
 			
 			// split pane containing attributes on left and FKs on right
 			JSplitPane centerSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(targetAttributePanel),new JScrollPane(fkPanel));
@@ -1981,6 +1986,11 @@ public class ClassPanel extends JPanel {
 					// update the target attribute of getCurrentChain() (which is where the dependency is coming "from")
 					getCurrentChain().setDependencyFrom(targetAttribute.getPRMDependency());
 					
+					// enable "go back" button if a FK is present in chain
+					if (!getCurrentChain().getForeignKeyChain().isEmpty()) {
+						getButtonBackFK().setEnabled(true);
+					}
+					
 					// update navigation label 
 					getNavigationLabel().setText(getNavigationLabel().getText() + " > " + targetAttribute.getPRMClass().getName());
 					getNavigationLabel().repaint();
@@ -1993,11 +2003,88 @@ public class ClassPanel extends JPanel {
 					getFkList().updateUI();
 					getFkList().repaint();
 					
-					// TODO ALPHA version does not allow a FK chain above 1 level (it only allows a direct FK chain or its inverse)
-					if (getCurrentChain().getForeignKeyChain().size() >= 1) {
-						getButtonGoFK().setEnabled(false);
-						getButtonGoFK().setToolTipText("ALPHA version allows only 1 level in FK chain.");
+					DependencyChainPanel.this.updateUI();
+					DependencyChainPanel.this.repaint();
+				}
+			});
+			
+			// go back FK button
+			this.getButtonBackFK().addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					
+					// obtain last selected FK (note that the FK chain' order must be from parent to current node, so, use inverse order)
+					IForeignKey selectedFK = null;
+					try {
+						selectedFK = getCurrentChain().getForeignKeyChain().get(0);
+					} catch (Exception e2) {
+						e2.printStackTrace();
+						JOptionPane.showMessageDialog(
+								DependencyChainPanel.this, 
+								"Could not extract foreign key.", 
+								"FK extraction", 
+								JOptionPane.WARNING_MESSAGE);
+						return;
 					}
+										
+					// extract target attribute (usually, they are FKs or PKs of prm classes
+					// TODO allow multiple PK
+					IAttributeDescriptor targetAttribute = null;
+					if (getCurrentChain().isInverseForeignKey(selectedFK)) {
+						// incoming FK -> use to
+						if (selectedFK.getKeyAttributesTo() != null && !selectedFK.getKeyAttributesTo().isEmpty()) {
+							targetAttribute = selectedFK.getKeyAttributesTo().iterator().next();
+						}
+					} else {
+						// outgoing FK -> use from
+						if (selectedFK.getKeyAttributesFrom()!= null && !selectedFK.getKeyAttributesFrom().isEmpty()) {
+							targetAttribute = selectedFK.getKeyAttributesFrom().iterator().next();
+						}
+					}
+					
+					// remove FK from current chain
+					getCurrentChain().markAsInverseForeignKey(selectedFK, false);	// default
+					getCurrentChain().getForeignKeyChain().remove(selectedFK);
+					
+					// remove aggregate function if no remaining inverse foreign key is found
+					boolean noInverseForeignKeyFound = true;
+					for (IForeignKey fk : getCurrentChain().getForeignKeyChain()) {
+						if (getCurrentChain().isInverseForeignKey(fk)) {
+							noInverseForeignKeyFound = false;
+							break;
+						}
+					}
+					if (noInverseForeignKeyFound) {
+						getCurrentChain().setAggregateFunction(null);
+					}
+					
+					// update the target attribute of getCurrentChain() (which is where the dependency is coming "from")
+					getCurrentChain().setDependencyFrom(targetAttribute.getPRMDependency());
+					
+					// update navigation label 
+					try {
+						getNavigationLabel().setText(getNavigationLabel().getText().substring(0, getNavigationLabel().getText().lastIndexOf(" > ") - 1));
+					} catch (Exception e2) {
+						e2.printStackTrace();
+						JOptionPane.showMessageDialog(
+								DependencyChainPanel.this, 
+								"Could not update the navigation bar, but the program can keep running.", 
+								"Internal error", 
+								JOptionPane.WARNING_MESSAGE);
+					}
+					getNavigationLabel().repaint();
+					
+					// disable "go back" button if no FK is present in chain
+					if (getCurrentChain().getForeignKeyChain().isEmpty()) {
+						getButtonBackFK().setEnabled(false);
+					}
+					
+					// update attribute list ((no structure change is needed, because the list model accesses getCurrentChain().getDependencyFrom()))
+					getChainAttributeList().updateUI();
+					getChainAttributeList().repaint();
+					
+					// update fk list ((no structure change is needed, because the list model accesses getCurrentChain().getDependencyFrom()))
+					getFkList().updateUI();
+					getFkList().repaint();
 					
 					DependencyChainPanel.this.updateUI();
 					DependencyChainPanel.this.repaint();

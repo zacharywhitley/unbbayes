@@ -2,7 +2,7 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- This is the plugin descriptor for UnBBayes' PRM module. -->
 <!-- unbbayes.controller.prm.PRMController references the plugin id and extension point's ids, so, do not change them -->
-<plugin id="unbbayes.prs.prm" version="0.0.1">
+<plugin id="unbbayes.prs.prm" version="0.1.1">
     <requires>
         <import plugin-id="unbbayes.util.extension.core"/>
     </requires>
@@ -12,7 +12,7 @@
         </library>
         <!-- It seems that loaders does not work as expected on jar files -->
         <!-- If you change/add the libraries, change/add these library declaration too -->
-        <library id="unbbayes.prs.prm" path="unbbayes.prs.prm-0.0.1.jar" type="code" >
+        <library id="unbbayes.prs.prm" path="unbbayes.prs.prm-0.1.1.jar" type="code" >
         	<export prefix="*"/>
         </library>
     </runtime>
