@@ -18,17 +18,17 @@ import unbbayes.prs.prm.IDependencyChain;
  * @author Shou Matsumoto
  *
  */
-public class AggregateFunctionMin implements IAggregateFunction {
+public class AggregateFunctionMin extends AbstractAggregateFunction {
 
-	private String name = "Min";
-	private IDependencyChain relatedChain;
+	public static final String DEFAULT_NAME = "Min";
+	
 	
 	/**
 	 * A constructor is visible for subclasses in order to allow
 	 * inheritance
 	 */
 	protected AggregateFunctionMin() {
-		// TODO Auto-generated constructor stub
+		this.setName(DEFAULT_NAME);
 	}
 	
 	/**
@@ -38,23 +38,10 @@ public class AggregateFunctionMin implements IAggregateFunction {
 	 */
 	public static AggregateFunctionMin newInstance(IDependencyChain relatedChain) {
 		AggregateFunctionMin ret = new AggregateFunctionMin();
-		ret.relatedChain = relatedChain;
+		ret.setDependencyChain(relatedChain);
 		return ret;
 	}
 
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.prm.cpt.IAggregateFunction#getDependencyChain()
-	 */
-	public IDependencyChain getDependencyChain() {
-		return this.relatedChain;
-	}
-
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.prm.cpt.IAggregateFunction#setDependencyChain(unbbayes.prs.prm.IDependencyChain)
-	 */
-	public void setDependencyChain(IDependencyChain dependencyChain) {
-		this.relatedChain = dependencyChain;
-	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.prm.cpt.IAggregateFunction#evaluate(java.util.List)
@@ -79,18 +66,5 @@ public class AggregateFunctionMin implements IAggregateFunction {
 		return ret;
 	}
 
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.prm.cpt.IAggregateFunction#getName()
-	 */
-	public String getName() {
-		return this.name;
-	}
-
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.prm.cpt.IAggregateFunction#setName(java.lang.String)
-	 */
-	public void setName(String name) {
-		this.name = name;
-	}
 
 }

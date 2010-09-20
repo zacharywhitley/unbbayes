@@ -19,6 +19,7 @@ import java.util.Set;
 import javax.swing.AbstractListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -40,7 +41,10 @@ import unbbayes.prs.prm.IDependencyChain;
 import unbbayes.prs.prm.IForeignKey;
 import unbbayes.prs.prm.IPRMClass;
 import unbbayes.prs.prm.IPRMDependency;
+import unbbayes.prs.prm.cpt.AggregateFunctionMax;
+import unbbayes.prs.prm.cpt.AggregateFunctionMin;
 import unbbayes.prs.prm.cpt.AggregateFunctionMode;
+import unbbayes.prs.prm.cpt.IAggregateFunction;
 import unbbayes.prs.prm.cpt.IPRMCPT;
 
 /**
@@ -1785,8 +1789,7 @@ public class ClassPanel extends JPanel {
 		private JButton buttonGoFK;
 		private JButton buttonBackFK;
 		private JToolBar aggregateFunctionToolbar;
-		private JTextField aggregateFunctionTextField;
-		private BasicArrowButton aggregateFunctionDownArrowButton;
+		private JComboBox aggregateFunctionComboBox;
 		
 		/**
 		 * Fill components and listeners.
@@ -1826,22 +1829,17 @@ public class ClassPanel extends JPanel {
 			this.getAggregateFunctionToolbar().add(aggregateFunctionDropDownListPanel);
 			
 			// a dropdown list to select aggregation function
-			// TODO enable dropdown list, because ALPHA version disables it as default - this is a stub
 			JLabel aggregateFunctionLabel = new JLabel("Aggregation: ");
-			aggregateFunctionLabel.setEnabled(false);
+//			aggregateFunctionLabel.setEnabled(false);
 			aggregateFunctionDropDownListPanel.add(aggregateFunctionLabel);
 			
-			// aggregate function dropdown list (TODO this is a stub)
-			this.setAggregateFunctionTextField(new JTextField("Mode", 8));
-			this.getAggregateFunctionTextField().setEditable(false);
-			this.getAggregateFunctionTextField().setEnabled(false);
-			aggregateFunctionDropDownListPanel.add(this.getAggregateFunctionTextField());
-			
-			// the down arrow button for aggregate function popup menu (TODO this is a stub)
-			this.setAggregateFunctionDownArrowButton(new BasicArrowButton(BasicArrowButton.SOUTH));
-			this.getAggregateFunctionDownArrowButton().setEnabled(false);
-			this.getAggregateFunctionDownArrowButton().setToolTipText("Only \"Mode\" is allowed as aggregation function in ALPHA version.");
-			aggregateFunctionDropDownListPanel.add(this.getAggregateFunctionDownArrowButton());
+			// aggregate function dropdown list
+			this.setAggregateFunctionComboBox(new JComboBox());
+			this.getAggregateFunctionComboBox().addItem(AggregateFunctionMode.newInstance(null));
+			this.getAggregateFunctionComboBox().addItem(AggregateFunctionMin.newInstance(null));
+			this.getAggregateFunctionComboBox().addItem(AggregateFunctionMax.newInstance(null));
+			this.getAggregateFunctionComboBox().setToolTipText("Select a function to aggregate parents of same class.");
+			aggregateFunctionDropDownListPanel.add(this.getAggregateFunctionComboBox());
 			
 			// list containing attributes of currently selected class
 			this.setChainAttributeList(new JList(new AbstractListModel() {
@@ -1979,8 +1977,11 @@ public class ClassPanel extends JPanel {
 					
 					// if FK is an inverse Fk, add selected aggregate function
 					if (isInverseFK) {
-						// TODO use value obtained by getAggregateFunctionTextField() (currently, this is a stub)
-						getCurrentChain().setAggregateFunction(AggregateFunctionMode.newInstance(getCurrentChain()));
+						IAggregateFunction selectedFunction = (IAggregateFunction)getAggregateFunctionComboBox().getSelectedItem();
+						selectedFunction.setDependencyChain(getCurrentChain());
+						getCurrentChain().setAggregateFunction(selectedFunction);
+					} else {
+						getCurrentChain().setAggregateFunction(null);
 					}
 					
 					// update the target attribute of getCurrentChain() (which is where the dependency is coming "from")
@@ -2130,6 +2131,15 @@ public class ClassPanel extends JPanel {
 									JOptionPane.WARNING_MESSAGE);
 							return;
 						}
+					}
+					
+					// update aggregate function to the currently selected by combo box.
+					// it may be up to date, but let's just overwrite to make it sure.
+					if (getCurrentChain().getAggregateFunction() != null) {	
+						// if not null, it is an inverse FK and needs aggregate function.
+						IAggregateFunction selectedFunction = (IAggregateFunction)getAggregateFunctionComboBox().getSelectedItem();
+						selectedFunction.setDependencyChain(getCurrentChain());
+						getCurrentChain().setAggregateFunction(selectedFunction);
 					}
 					
 					// add chain to attribute "from" (which is the parent) as outgoing chain
@@ -2301,33 +2311,19 @@ public class ClassPanel extends JPanel {
 		}
 
 		/**
-		 * @return the aggregateFunctionTextField
+		 * @return the aggregateFunctionComboBox
 		 */
-		public JTextField getAggregateFunctionTextField() {
-			return aggregateFunctionTextField;
+		public JComboBox getAggregateFunctionComboBox() {
+			return aggregateFunctionComboBox;
 		}
 
 		/**
-		 * @param aggregateFunctionTextField the aggregateFunctionTextField to set
+		 * @param aggregateFunctionComboBox the aggregateFunctionComboBox to set
 		 */
-		public void setAggregateFunctionTextField(JTextField aggregateFunctionTextField) {
-			this.aggregateFunctionTextField = aggregateFunctionTextField;
+		public void setAggregateFunctionComboBox(JComboBox aggregateFunctionComboBox) {
+			this.aggregateFunctionComboBox = aggregateFunctionComboBox;
 		}
 
-		/**
-		 * @return the aggregateFunctionDownArrowButton
-		 */
-		public BasicArrowButton getAggregateFunctionDownArrowButton() {
-			return aggregateFunctionDownArrowButton;
-		}
-
-		/**
-		 * @param aggregateFunctionDownArrowButton the aggregateFunctionDownArrowButton to set
-		 */
-		public void setAggregateFunctionDownArrowButton(
-				BasicArrowButton aggregateFunctionDownArrowButton) {
-			this.aggregateFunctionDownArrowButton = aggregateFunctionDownArrowButton;
-		}
 
 		
 	}

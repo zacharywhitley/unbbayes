@@ -34,8 +34,9 @@ import unbbayes.prs.prm.IPRMObject;
 import unbbayes.prs.prm.PRM;
 import unbbayes.prs.prm.PRMClass;
 import unbbayes.prs.prm.PRMObject;
+import unbbayes.prs.prm.cpt.AggregateFunctionMax;
+import unbbayes.prs.prm.cpt.AggregateFunctionMin;
 import unbbayes.prs.prm.cpt.AggregateFunctionMode;
-import unbbayes.prs.prm.cpt.IAggregateFunction;
 
 /**
  * @author Shou Matsumoto
@@ -239,14 +240,23 @@ public class DefaultSQLPRMIO implements IPRMIO {
 						dependencyChain.setDependencyTo(attributeDescriptor.getPRMDependency());
 						
 						// extract aggregate function
-						// we always use Mode if aggregate function is not set to null.
-						// TODO we currently have only "Mode" available. Implement other types of aggregate functions
-						IAggregateFunction defaultAggregateFunction = AggregateFunctionMode.newInstance(dependencyChain);
-						if (dependencyScript.substring(dependencyScript.indexOf('(') + 1 , dependencyScript.indexOf(')')).trim().length() <= 0) {
+						String aggregateFunctionName = dependencyScript.substring(dependencyScript.indexOf('(') + 1 , dependencyScript.indexOf(')')).trim();
+						if (aggregateFunctionName.length() <= 0) {
 							// if there is nothing between '(' and ')', then aggregate function is null and we must reset the aggregate function
 							dependencyChain.setAggregateFunction(null);
+						} else if (aggregateFunctionName.equalsIgnoreCase(AggregateFunctionMode.DEFAULT_NAME)) {
+							dependencyChain.setAggregateFunction(AggregateFunctionMode.newInstance(dependencyChain));
+						} else if (aggregateFunctionName.equalsIgnoreCase(AggregateFunctionMax.DEFAULT_NAME)) {
+							dependencyChain.setAggregateFunction(AggregateFunctionMax.newInstance(dependencyChain));
+						} else if (aggregateFunctionName.equalsIgnoreCase(AggregateFunctionMin.DEFAULT_NAME)) {
+							dependencyChain.setAggregateFunction(AggregateFunctionMin.newInstance(dependencyChain));
 						} else {
-							dependencyChain.setAggregateFunction(defaultAggregateFunction);
+							// Unknown aggregation function... Use default
+							System.err.println(aggregateFunctionName 
+									+ " is an unknown function. Using default (" 
+									+ AggregateFunctionMode.DEFAULT_NAME 
+									+ ") instead.");
+							dependencyChain.setAggregateFunction(AggregateFunctionMode.newInstance(dependencyChain));
 						}
 						
 						// extract content between []

@@ -22,17 +22,17 @@ import unbbayes.prs.prm.IDependencyChain;
  * @author Shou Matsumoto
  *
  */
-public class AggregateFunctionMode implements IAggregateFunction {
+public class AggregateFunctionMode extends AbstractAggregateFunction {
 
-	private String name = "Mode";
-	private IDependencyChain relatedChain;
+	public static final String DEFAULT_NAME = "Mode";
+	
 
 	/**
 	 * A constructor is visible for subclasses in order to allow
 	 * inheritance
 	 */
 	protected AggregateFunctionMode() {
-		// TODO Auto-generated constructor stub
+		this.setName(DEFAULT_NAME);
 	}
 	
 	/**
@@ -42,7 +42,7 @@ public class AggregateFunctionMode implements IAggregateFunction {
 	 */
 	public static AggregateFunctionMode newInstance(IDependencyChain relatedChain) {
 		AggregateFunctionMode ret = new AggregateFunctionMode();
-		ret.relatedChain = relatedChain;
+		ret.setDependencyChain(relatedChain);
 		return ret;
 	}
 
@@ -119,33 +119,6 @@ public class AggregateFunctionMode implements IAggregateFunction {
 		return valueToIAttributeMap.get(mode);
 	}
 
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.prm.cpt.IAggregateFunction#getDependencyChain()
-	 */
-	public IDependencyChain getDependencyChain() {
-		return this.relatedChain;
-	}
-
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.prm.cpt.IAggregateFunction#getName()
-	 */
-	public String getName() {
-		return this.name;
-	}
-
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.prm.cpt.IAggregateFunction#setDependencyChain(unbbayes.prs.prm.IDependencyChain)
-	 */
-	public void setDependencyChain(IDependencyChain dependencyChain) {
-		this.relatedChain = dependencyChain;
-	}
-
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.prm.cpt.IAggregateFunction#setName(java.lang.String)
-	 */
-	public void setName(String name) {
-		this.name = name;
-	}
 	
 
 }

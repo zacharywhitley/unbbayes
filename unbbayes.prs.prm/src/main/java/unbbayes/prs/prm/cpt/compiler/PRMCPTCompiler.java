@@ -19,6 +19,7 @@ import unbbayes.prs.prm.IAttributeValue;
 import unbbayes.prs.prm.IDependencyChain;
 import unbbayes.prs.prm.IPRMDependency;
 import unbbayes.prs.prm.cpt.AggregateFunctionMode;
+import unbbayes.prs.prm.cpt.IAggregateFunction;
 import unbbayes.prs.prm.cpt.IPRMCPT;
 import unbbayes.util.Debug;
 
@@ -177,23 +178,18 @@ public class PRMCPTCompiler implements IPRMCPTCompiler {
 
 
 	/**
-	 * TODO this method assumes ALPHA restriction, which allows only mode as aggregate function and 1 level FK chain. Fix it!
-	 * Fills Map<IPRMDependency, String> used by {@link IPRMCPT#getTableValuesByColumn(Map)}
-	 * @param prmCPT
-	 * @param tableToFill
-	 * @param columnNumber
-	 * @return
+	 * This method translates a column (actually, it only considers what are the considered states of a parent at a given column)
+	 * of the target (the BN being generated) cpt to the original (prm) CPT.
+	 * That is, if the current column (header) is Parent1(of class A)=true, Parent2(of class A)=true, Parent3(of class B) = false; it
+	 * uses agregate functions to translate it to something like A = true, B = false.
+	 * @param prmCPT : table to read
+	 * @param tableToFill : table to write
+	 * @param columnNumber : this is the column of the target (final) cpt
+	 * @return Map<IPRMDependency, String> used by {@link IPRMCPT#getTableValuesByColumn(Map)}
 	 */
 	private Map<IPRMDependency, String> getParentStateMapByTargetCPTColumnNumber(
 			Map<INode, IAttributeValue> parentMap, IPRMCPT prmCPT,
 			PotentialTable tableToFill, int columnNumber) {
-		
-		// ALPHA consistency check - allow only mode as aggregate function
-		for (IDependencyChain depChain : prmCPT.getPRMDependency().getIncomingDependencyChains()) {
-			if (depChain.getAggregateFunction() != null && !(depChain.getAggregateFunction() instanceof AggregateFunctionMode)) {
-				throw new IllegalArgumentException("ALPHA allows only mode as aggregate function.");
-			}
-		}
 		
 		// ALPHA consistency check - allow only 1 dependency chain per parent
 		Set<IPRMDependency> prmDependencySetForALPHACheck = new HashSet<IPRMDependency>();
@@ -209,7 +205,8 @@ public class PRMCPTCompiler implements IPRMCPTCompiler {
 		
 		Map<IPRMDependency, String> ret = new HashMap<IPRMDependency, String>();
 		
-		// a map classifying states of parents by its original IPRMDependency. It uses sample (stub) IAttributeValue (IAttributeValue with only a value)
+		// this is a map translating the states of parentsÅ@(which are string) to those expected by IPRMDependency (IAttributeValue). 
+		// Note: It uses sample (stub) IAttributeValue (IAttributeValue having only necessary field - a value)
 		// TODO fix ALPHA restriction assuming 1 FK to the same class attribute. See dependencyChainSolver
 		Map<IPRMDependency, List<IAttributeValue>> possibleStatesMap = new HashMap<IPRMDependency, List<IAttributeValue>>();
 		
@@ -239,13 +236,58 @@ public class PRMCPTCompiler implements IPRMCPTCompiler {
 			columnMultFactor *= tableToFill.getVariableAt(i).getStatesSize();
 		}
 		
-		// TODO ALPHA restriction: use only mode aggregation function.
-		// NOTE: mode applyed to a single value returns the value itself, so, we may apply aggregate function for direct FK as well
+		// fill the returning values using aggregate function.
 		for (IPRMDependency key : possibleStatesMap.keySet()) {
-			ret.put(key, AggregateFunctionMode.newInstance(null).evaluate(possibleStatesMap.get(key)).getValue());
+			// find out what is the dependency chain (edge) linking current node (the one having the current CPT) to parent (key)
+			IDependencyChain currentChain = findDependencyChainByParent(prmCPT.getPRMDependency() , key);
+			// find out what aggregate function we must use
+			IAggregateFunction aggregateFunctionToUse = currentChain.getAggregateFunction();
+			if (aggregateFunctionToUse == null) { // no aggregation function is needed. Use default.
+				// use default (mode), which can be applied to direct (a non-inverse) FK as well.
+				aggregateFunctionToUse = AggregateFunctionMode.newInstance(null);
+			}
+			ret.put(key, aggregateFunctionToUse.evaluate(possibleStatesMap.get(key)).getValue());
 		}
 		
 		return ret;
+	}
+
+	/**
+	 * This method finds out what dependency chain represents the dependency from myNode to parent.
+	 * 
+	 * @param myNode : child node. IDependencyChain from this node will be evaluated
+	 * @param parent
+	 * @return a {@link IDependencyChain} linking parent to MyNode
+	 */
+	protected IDependencyChain findDependencyChainByParent(
+			IPRMDependency myNode, IPRMDependency parent) {
+		
+		// this is a set to store what dependency chains links parent to myNode. Only 1 is expected (but we want to make it sure)
+		Set<IDependencyChain> matchingDependencies = new HashSet<IDependencyChain>();
+		
+		// iterate over myNode
+		for (IDependencyChain dependencyChain : myNode.getIncomingDependencyChains()) {
+			if (dependencyChain.getDependencyFrom().equals(parent)) {
+				matchingDependencies.add(dependencyChain);
+			}
+			if (!dependencyChain.getDependencyTo().equals(myNode)) {
+				throw new IllegalArgumentException(myNode.getAttributeDescriptor() + " contains a dependency which does not belong to it: " 
+						+ dependencyChain.getDependencyFrom() + " to "
+						+ dependencyChain.getDependencyTo());
+			}
+		}
+		
+		if (matchingDependencies.size() < 1) {
+			// there is no link to parent
+			return null;
+		} else if (matchingDependencies.size() > 1) {
+			// there are more than 1 link to parent: error
+			throw new IllegalArgumentException( matchingDependencies.size() + " links from " + myNode + " to " + parent + " were found.");
+		} else {
+			// there is only 1 link to parent
+			return matchingDependencies.iterator().next();
+		}
+		
 	}
 	
 

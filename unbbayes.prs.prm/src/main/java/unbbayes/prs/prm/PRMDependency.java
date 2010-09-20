@@ -120,6 +120,16 @@ public class PRMDependency implements IPRMDependency {
 		return super.equals(obj);
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		if (this.getAttributeDescriptor() != null) {
+			return this.getAttributeDescriptor().toString();
+		}
+		return super.toString();
+	}
+
 	
 	
 }
