@@ -4,7 +4,7 @@
 	<groupId>br.unb.cic</groupId>
 	<artifactId>unbbayes</artifactId>
 	<name>UnBBayes</name>
-	<version>4.0.0</version>
+	<version>4.1.1</version>
 	<url>http://unbbayes.sourceforge.net
 	</url>
 	<licenses>
@@ -391,6 +391,7 @@
 			providing Unicode and Globalization support for software
 			applications. Necessary for Protege. http://www.icu-project.org/
 		-->
+		<!-- Necessary for Evaluation -->
 		<dependency>
 			<groupId>com.ibm.icu</groupId>
 			<artifactId>icu4j</artifactId>
