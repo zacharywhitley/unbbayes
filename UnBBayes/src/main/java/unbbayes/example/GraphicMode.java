@@ -28,8 +28,10 @@ import java.io.File;
 import java.util.ResourceBundle;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 import unbbayes.io.BaseIO;
@@ -81,6 +83,7 @@ public class GraphicMode {
                     rede = (ProbabilisticNetwork)io.load(new File(nomeArquivo.getText()));
                 } catch (Exception ex) {
                     ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                     System.exit(1);
                 }
 
@@ -103,12 +106,14 @@ public class GraphicMode {
 				} catch (InvalidParentException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
+                    JOptionPane.showMessageDialog(null, e1.getMessage(), "Could not add edge", JOptionPane.WARNING_MESSAGE);
 				}
 
                 try {
                    rede.compile();
                 } catch (Exception ex) {
                    System.out.println(ex.getMessage());
+                   JOptionPane.showMessageDialog(null, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                    System.exit(1);
                 }
 
@@ -120,8 +125,13 @@ public class GraphicMode {
                 try {
                 	rede.updateEvidences();
                 } catch (Exception exc) {
-                	System.out.println(exc.getMessage());               	
+                	System.out.println(exc.getMessage());    
+                    JOptionPane.showMessageDialog(null, exc.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);  
+                    System.exit(1);         	
                 }
+                
+                JOptionPane.showMessageDialog(null, "Net compiled", "Success", JOptionPane.INFORMATION_MESSAGE);
+           
             }
         });
 

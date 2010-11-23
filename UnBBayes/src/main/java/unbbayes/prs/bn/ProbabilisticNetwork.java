@@ -28,7 +28,7 @@ import unbbayes.prs.id.JunctionTreeID;
 import unbbayes.util.SetToolkit;
 
 /**
- *  Representa uma rede probabil�stica.
+ *  Representa uma rede probabil�ｽstica.
  *
  *@author     michael
  *@author     rommel
@@ -42,8 +42,8 @@ public class ProbabilisticNetwork
 			
 	
 	/**
-	 *  Cria uma nova rede probabil�stica. Limpa o arquivo de log e inicializa o
-	 *  vetor da ordem de elimina��o.
+	 *  Cria uma nova rede probabil�ｽstica. Limpa o arquivo de log e inicializa o
+	 *  vetor da ordem de elimina�ｽ�ｽo.
 	 */
 	public ProbabilisticNetwork(String id) {
 		super(id);							
@@ -53,7 +53,7 @@ public class ProbabilisticNetwork
 	
 
 	/**
-	 *  Faz o processo de triangula��o da rede.
+	 *  Faz o processo de triangula�ｽ�ｽo da rede.
 	 */
 	private void triangula() {		
 		Node aux;
@@ -116,15 +116,17 @@ public class ProbabilisticNetwork
 
 
 	/**
-	 * Realiza todos os passos necess�rios para compilar uma rede em �rvore de jun��o. <br><br>
-	 * Realiza os seguintes passos: <br>
-	 * Verifica a consist�ncia. <br>
-	 * Moraliza. <br>
-	 * Triangula. <br>
-	 * Compila �rvore de Jun��o.
+	 * It does all the steps to compile a network using junction tree method.
+	 * The steps are: 
+	 * 1. consistency check; 
+	 * 2. Moralization; 
+	 * 3. Triangulation; 
+	 * 4. Compilation of Junction Tree
+	 * 
 	 * @deprecated use {@link JunctionTreeAlgorithm#run()}
 	 */
 	public void compile() throws Exception {
+		// TODO remove double dispatch (JunctionTreeAlgorithm is calling this method) by migrating this code to JunctionTreeAlgorithm class
 		if (nodeList.size() == 0) {
 			throw new Exception(resource.getString("EmptyNetException"));
 		}

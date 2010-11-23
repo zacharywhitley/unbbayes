@@ -96,8 +96,11 @@ public class NetIO implements BaseIO {
 	public Graph load(File input)
 		throws LoadException, IOException {
 		
+		String id = input.getName();
 		int index = input.getName().lastIndexOf('.');
-		String id = input.getName().substring(0, index);
+		if (index > 0) {
+			id = id.substring(0, index);
+		}
 		
 		// create network using default builder
 		IProbabilisticNetworkBuilder networkBuilder = DefaultProbabilisticNetworkBuilder.newInstance();

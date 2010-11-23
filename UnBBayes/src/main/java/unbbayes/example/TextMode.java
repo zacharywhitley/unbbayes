@@ -56,7 +56,7 @@ public class TextMode {
 
 		try {
 			BaseIO io = new NetIO();
-			rede = (ProbabilisticNetwork)io.load(new File("./examples/asia.net"));
+			rede = (ProbabilisticNetwork)io.load(new File("./examples/bn/net/asia.net"));
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(1);
