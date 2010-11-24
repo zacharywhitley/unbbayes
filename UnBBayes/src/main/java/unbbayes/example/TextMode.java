@@ -22,15 +22,18 @@ package unbbayes.example;
 
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 /**
  * Title: Sample code for using UnBBayes' API at text mode.
@@ -52,34 +55,39 @@ public class TextMode {
 
 	public static void main(String[] args) throws Exception {
 
-		ProbabilisticNetwork rede = null;
+		ProbabilisticNetwork net = null;
 
 		try {
-			BaseIO io = new NetIO();
-			rede = (ProbabilisticNetwork)io.load(new File("./examples/bn/net/asia.net"));
+			BaseIO io = new NetIO(); // open a .net file
+			net = (ProbabilisticNetwork)io.load(new File("./examples/bn/net/asia.net"));
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
 
-		ProbabilisticNode auxVP = new ProbabilisticNode();
-		auxVP.setName(resource.getString("nodeName1"));
-		auxVP.setDescription(resource.getString("nodeDescription"));
-		auxVP.appendState(resource.getString("stateName0"));
-		auxVP.appendState(resource.getString("stateName1"));
-		PotentialTable auxTabPot = auxVP.getProbabilityFunction();
-		auxTabPot.addVariable(auxVP);
-		auxTabPot.addValueAt(0, 0.99f);
-		auxTabPot.addValueAt(1, 0.01f);
-		rede.addNode(auxVP);
+		// adding a new node manually
+		ProbabilisticNode auxProbVariable = new ProbabilisticNode();
+		auxProbVariable.setName(resource.getString("nodeName1"));
+		auxProbVariable.setDescription(resource.getString("nodeDescription"));
+		auxProbVariable.appendState(resource.getString("stateName0"));
+		auxProbVariable.appendState(resource.getString("stateName1"));
+		PotentialTable auxCPT = auxProbVariable.getProbabilityFunction();
+		auxCPT.addVariable(auxProbVariable);
+		auxCPT.addValueAt(0, 0.99f);
+		auxCPT.addValueAt(1, 0.01f);
+		net.addNode(auxProbVariable);
 
-		ProbabilisticNode auxVP2 = (ProbabilisticNode) rede.getNode(resource.getString("nodeName2"));
-		Edge auxArco = new Edge(auxVP, auxVP2);
-		rede.addEdge(auxArco);
+		// adding a new edge manually
+		ProbabilisticNode auxProbVariable2 = (ProbabilisticNode) net.getNode(resource.getString("nodeName2"));
+		Edge auxEdge = new Edge(auxProbVariable, auxProbVariable2);
+		net.addEdge(auxEdge);
 
-		rede.compile();
+		// prepare the algorithm to compile network
+		IInferenceAlgorithm algorithm = new JunctionTreeAlgorithm(net);
+		algorithm.run();
 		
-		List<Node> nodeList = rede.getNodes();
+		// print node's states
+		List<Node> nodeList = net.getNodes();
 		for (Node node : nodeList) {
 			System.out.println(node.getDescription());
 			for (int i = 0; i < node.getStatesSize(); i++) {
@@ -87,6 +95,7 @@ public class TextMode {
 			}
 		}
 		
+		// insert evidence (finding)
 		int indexFirstNode = 0;
 		ProbabilisticNode findingNode = (ProbabilisticNode)nodeList.get(indexFirstNode);
 		int indexFirstState = 0;
@@ -94,12 +103,14 @@ public class TextMode {
 		
 		System.out.println();
 		
+		// propagate evidence
 		try {
-        	rede.updateEvidences();
+        	net.updateEvidences();
         } catch (Exception exc) {
         	System.out.println(exc.getMessage());               	
         }
         
+        //@print updated node's states
 		for (Node node : nodeList) {
 			System.out.println(node.getDescription());
 			for (int i = 0; i < node.getStatesSize(); i++) {

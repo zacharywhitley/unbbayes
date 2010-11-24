@@ -40,6 +40,15 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 	public JunctionTreeAlgorithm() {
 		super();
 	}
+	
+	
+	/**
+	 * Constructor using fields
+	 */
+	public JunctionTreeAlgorithm(ProbabilisticNetwork net) {
+		this();
+		this.setNet(net);
+	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#getDescription()
