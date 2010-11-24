@@ -83,7 +83,8 @@ public class TextMode {
 		net.addEdge(auxEdge);
 
 		// prepare the algorithm to compile network
-		IInferenceAlgorithm algorithm = new JunctionTreeAlgorithm(net);
+		IInferenceAlgorithm algorithm = new JunctionTreeAlgorithm();
+		algorithm.setNetwork(net);
 		algorithm.run();
 		
 		// print node's states
