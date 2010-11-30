@@ -55,8 +55,11 @@
   <dependencySets>
     <dependencySet>
       <outputDirectory>/lib</outputDirectory>
+      <excludes>
+      	<exclude>unbbayes*.jar</exclude>
+      </excludes>
       <unpack>false</unpack>
-      <scope>runtime</scope>
+      <scope>runtime</scope>      
     </dependencySet>
   </dependencySets>
 </assembly>
