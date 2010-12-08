@@ -21,7 +21,6 @@
 package unbbayes.prs.mebn;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,9 +37,8 @@ import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 
 /**
- *
+ * This class represents a resident node.
  */
-
 public class ResidentNode extends MultiEntityNode 
          implements IRandomVariable {
 	
@@ -70,6 +68,14 @@ public class ResidentNode extends MultiEntityNode
 
 	private String tableFunction;
 	
+	/** 
+	 * TODO the possible values (states) of this class does not conform to unbbayes.prs.Node and
+	 * even {@link MultiEntityNode} sometimes,
+	 *  mainly on methods for state (and size) retrieval, because states in unbbayes.prs.Node
+	 *  is represented as string and in this class it is represented as StateLink. Methods
+	 *  updating possibleValueList should also update super.states in order to archive such
+	 *  compatibility or this class should overwrite  methods in Node.
+	 */
 	private List<StateLink> possibleValueList; 
 	
 	//Graphics informations 
@@ -702,6 +708,19 @@ public class ResidentNode extends MultiEntityNode
 	 */
 	public void setCompiler(ICompiler compiler) {
 		this.compiler = compiler;
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.MultiEntityNode#hasPossibleValue(java.lang.String)
+	 */
+	@Override
+	public boolean hasPossibleValue(String stateName) {
+		for(StateLink value : this.getPossibleValueLinkList()){
+			if (value.getState() != null && stateName.equals(value.getState().getName())){
+				return true; 
+			}
+		}
+		return false;
 	}
 	
 }

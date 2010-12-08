@@ -164,8 +164,6 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 	public MultiEntityBayesianNetwork loadMebn(File file) throws 
 													IOException, IOMebnException{
 
-		Debug.setDebug(false); 
-		
 		List<String> listWarnings = new ArrayList<String>(); 
 		
 		updateProgress(0, ""); 

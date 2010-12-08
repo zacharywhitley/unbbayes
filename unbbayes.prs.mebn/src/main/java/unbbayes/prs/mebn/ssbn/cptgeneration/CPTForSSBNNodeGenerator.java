@@ -179,7 +179,6 @@ public class CPTForSSBNNodeGenerator {
 	protected void generateCPTForNodeWithContextFather(SSBNNode ssbnNode) 
 	      throws SSBNNodeGeneralException, MEBNException, InvalidOperationException {
 	
-			Debug.setDebug(false);
 			
 			Map<String, List<SSBNNode>> mapParentsByEntity = new HashMap<String, List<SSBNNode>>(); 
 			Map<String, PotentialTable> mapCPTByEntity = new HashMap<String, PotentialTable>(); 
@@ -400,7 +399,6 @@ public class CPTForSSBNNodeGenerator {
 //			gpt = new GUIPotentialTable(ssbnNode.getProbNode().getPotentialTable()); 
 //			gpt.showTable("Table for Node " + ssbnNode);
 			
-			Debug.setDebug(false);
 			
 			logManager.printText(level3, false,"CPT OK");
 		

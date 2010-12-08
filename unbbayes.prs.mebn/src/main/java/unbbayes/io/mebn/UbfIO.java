@@ -30,6 +30,7 @@ import java.io.PrintStream;
 import java.io.StreamTokenizer;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -47,6 +48,7 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
+import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.entity.exception.ObjectEntityHasInstancesException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 import unbbayes.util.Debug;
@@ -57,8 +59,10 @@ import unbbayes.util.Debug;
  * <p>Copyright: Copyright (c) 2007</p>
  * <p>Company: UnB</p>
  * @author Shou Matsumoto (cardialfly@[yahoo|gmail].com)
- * @version 0.1
- * @since 01/05/2007
+ * @version 0.2
+ * @since 01/05/2007 (version 0.1)
+ * @since 12/08/2010 (version 0.2) - reordering some in-memory MEBN elements (e.g. node's possible values, MFrags, nodes) 
+ * respecting the order declared within the original UBF file.
  * @see unbbayes.io.mebn.IoUbfResources
  */
 public class UbfIO implements MebnIO {
@@ -106,10 +110,11 @@ public class UbfIO implements MebnIO {
 			
 			{"ObjectEntityDeclarator" , "ObjEntity"},
 			{"EntityInstancesDeclarator" , "Instances"},
+			{"PossibleValuesOrder" , "PossibleValuesOrder"},
 	};
 	
 	
-	public static final double ubfVersion = 0.03;
+	public static final double ubfVersion = 0.04;
 	
 	public static final String FILE_EXTENSION = "ubf";
 	
@@ -120,6 +125,8 @@ public class UbfIO implements MebnIO {
 	public static final String[] SUPPORTED_EXTENSIONS = {FILE_EXTENSION};
 
 	private String name = "UnBBayes Format for MEBN";
+	
+	private boolean toUseOrderOfUBFFile = true;
 	
 	/**
 	 * This default constructor is made public for plugin support.
@@ -328,6 +335,8 @@ public class UbfIO implements MebnIO {
 		//System.out.println("Updating MFrag");
 		
 		
+		// this orderingIndex will be used to reorder the mebn elements according to the appearance order in UBF file
+		int mfragOrderingIndex = 0; 
 		while (st.nextToken() != st.TT_EOF) {
 			//System.out.println(">> Read (str)" + st.sval + " from UBF");
 			//System.out.println(">> Read (number)" + st.nval + " from UBF");
@@ -351,12 +360,29 @@ public class UbfIO implements MebnIO {
 						break;
 					}
 				}
+				if (mfrag == null) {
+					//System.out.println("MFrag still not found");
+					continue;
+				} else {
+					if (this.isToUseOrderOfUBFFile()) {
+						// put mfrag to the expected position (orderingIndex)
+						// Note: this code expects that changes on mebn.getMFragList() will influence the order of MFrags in mebn (i.e. getMFragList does not return a copy of the actual list)
+						try {
+							Collections.swap(mebn.getMFragList(), mfragOrderingIndex, mebn.getMFragList().indexOf(mfrag));
+							Debug.println(this.getClass(), 
+									"Swapped MFrag \"" + mfrag.getName() 
+									+ "\" to the position " + mfragOrderingIndex);
+							mfragOrderingIndex++;
+						} catch (Exception e) {
+							Debug.println(this.getClass(), 
+									"Could not place MFrag \"" + mfrag.getName() 
+									+ "\" in the position " + mfragOrderingIndex + ".", e);
+						}
+					}
+				}
 			}
 			
-			if (mfrag == null) {
-				//System.out.println("MFrag still not found");
-				continue;
-			}
+			// by now, mfrag != null
 			
 			if (st.ttype != st.TT_WORD) {
 				continue;
@@ -478,7 +504,13 @@ public class UbfIO implements MebnIO {
 		
 		Node node = null;
 		//System.out.println("Updating Nodes");
-		while (st.nextToken() != st.TT_EOF) {
+		
+		// the following indexes are used to reorder the nodes within the mfrag
+		int residentNodeIndex = 0;
+		int inputNodeIndex = 0;
+		int contextNodeIndex = 0;
+		int ordinaryVariableIndex = 0;
+		while (st.nextToken() != st.TT_EOF ) {
 			//System.out.println(">> Read (str)" + st.sval + " from UBF");
 			//System.out.println(">> Read (number)" + st.nval + " from UBF");
 			if (st.ttype != st.TT_WORD) {
@@ -510,11 +542,54 @@ public class UbfIO implements MebnIO {
 						break;
 					}
 				}
+				if (node == null) {
+					continue;
+				} else {
+					// reorder node by its type
+					if (this.isToUseOrderOfUBFFile()) {
+						if (node instanceof ResidentNode) {
+							try {
+								Collections.swap(mfrag.getResidentNodeList(), residentNodeIndex, mfrag.getResidentNodeList().indexOf(node));
+								Debug.println(this.getClass(), "Swapping resident node " + node.getName() + " to index " + residentNodeIndex);
+								residentNodeIndex++; // we should update index only on success.
+							} catch (Exception e) {
+								Debug.println(this.getClass(), "Could not reorder resident node " + node.getName() + " to index " + residentNodeIndex, e);
+							}
+						} else if (node instanceof InputNode) {
+							try {
+								Collections.swap(mfrag.getInputNodeList(), inputNodeIndex, mfrag.getInputNodeList().indexOf(node));
+								Debug.println(this.getClass(), "Swapping input node " + node.getName() + " to index " + inputNodeIndex);
+								inputNodeIndex++; // we should update index only on success.
+							} catch (Exception e) {
+								Debug.println(this.getClass(), "Could not reorder input node " + node.getName() + " to index " + inputNodeIndex, e);
+							}
+						} else if (node instanceof ContextNode) {
+							try {
+								Collections.swap(mfrag.getContextNodeList(), contextNodeIndex, mfrag.getContextNodeList().indexOf(node));
+								Debug.println(this.getClass(), "Swapping context node " + node.getName() + " to index " + contextNodeIndex);
+								contextNodeIndex++; // we should update index only on success.
+							} catch (Exception e) {
+								Debug.println(this.getClass(), "Could not reorder context node " + node.getName() + " to index " + contextNodeIndex, e);
+							}
+						} else if (node instanceof OrdinaryVariable){
+							try {
+								Collections.swap(mfrag.getOrdinaryVariableList(), ordinaryVariableIndex, mfrag.getOrdinaryVariableList().indexOf(node));
+								Debug.println(this.getClass(), "Swapping ordinary variable " + node.getName() + " to index " + ordinaryVariableIndex);
+								ordinaryVariableIndex++; // we should update index only on success.
+							} catch (Exception e) {
+								Debug.println(this.getClass(), "Could not reorder ordinary variable " + node.getName() + " to index " + ordinaryVariableIndex, e);
+							}
+						} else {
+							Debug.println(this.getClass(), "The type of node is unknown: " + node.getClass().getName());
+						}
+					}
+				}
 			}
 			
-			if (node == null) {
-				continue;
-			}
+			
+			// by now, node != null
+			
+			
 			
 			// TODO verify node type using TypeDeclarator
 			
@@ -578,7 +653,70 @@ public class UbfIO implements MebnIO {
 						}
 						break;
 					}
+			}
+			
+			
+			if (st.ttype != st.TT_WORD) {
+				continue;
+			}
+			// determine the order of possible values
+			if ( this.getToken("PossibleValuesOrder").equals(st.sval)  )  {
+				while (st.nextToken() != st.TT_EOL) {
+					if (st.ttype == st.TT_WORD || st.ttype == st.TT_NUMBER) { // accept numbers as possible values (for future releases)
+						String name = st.sval;
+						// only update resident nodes
+						if (node instanceof ResidentNode) {
+							Debug.println(this.getClass() , "Solving the order of possible values of " + node.getName());
+							
+							ResidentNode resident = (ResidentNode)node;
+							if (!resident.hasPossibleValue(name)) {
+								// we should only add the instances also declared previously in OWL file
+								continue;
+							}
+							
+							try {
+								// solve order of possible values
+								int possibleValueIndex = 0; // this index will be used to order the possible values
+								do { // because the cursor is already at the 1st possible value, we use do-while instead of just while
+									if (st.ttype == st.TT_EOL) {
+										Debug.println(this.getClass() , "End of line found.");
+										break;
+									} else if (st.ttype == st.TT_WORD) {
+										if (this.isToUseOrderOfUBFFile()) {
+											// find the name of the state
+											Debug.println(this.getClass() , "Reordering the possible value: " + st.sval);
+											int oldIndex = resident.getPossibleValueIndex(st.sval);
+											if (oldIndex >= 0 ) {
+												Debug.println(this.getClass() , "Swapping indexes: " + possibleValueIndex + " - " + oldIndex);
+												try {
+													Collections.swap(resident.getPossibleValueLinkList(), possibleValueIndex, oldIndex);
+													possibleValueIndex++; // only update indexes if swap was successful
+												} catch (Exception e) {
+													Debug.println(this.getClass(), "Could not reorder state indexes: " 
+															+ possibleValueIndex
+															+ ", " + oldIndex, e);
+												}
+												Debug.println(this.getClass() , "Altered values: " 
+														+ resident.getPossibleValueLinkList().get(possibleValueIndex).getState().getName()
+														+ ", " 
+														+ resident.getPossibleValueLinkList().get(oldIndex).getState().getName());
+											} else {
+												Debug.println(this.getClass() , "State was not found: " + st.sval);
+											}
+										}
+									}
+								} while (st.nextToken() != st.TT_EOF );
+							} catch(Exception ex){
+								ex.printStackTrace(); 
+							}
+						} else {
+							Debug.println(this.getClass(), node.getName() + " is not a resident node, thus no order is appliable.");
+						}
+					}
 				}
+			}
+			
+			
 				
 		} // while not EOF
 	}
@@ -596,6 +734,19 @@ public class UbfIO implements MebnIO {
 		} else {
 			return this.loadMebn(input);
 		}
+	}
+	
+	/**
+	 * Delegates to load {@link #load(File)} after setting
+	 * {@link #setToUseOrderOfUBFFile(isToUseOrderOfUBFFile)}
+	 * @see unbbayes.io.BaseIO#load(java.io.File)
+	 * @param input the input file in .ubf (or .owl) format
+	 * @param isToUseOrderOfUBFFile if true, the elements in the loaded {@link Graph} will 
+	 * be ordered respecting the appearance order within the UBF file.
+	 */
+	public Graph load(File input, boolean isToUseOrderOfUBFFile) throws LoadException, IOException {
+		this.setToUseOrderOfUBFFile(isToUseOrderOfUBFFile);
+		return this.load(input);
 	}
 	
 	/* (non-Javadoc)
@@ -817,8 +968,8 @@ public class UbfIO implements MebnIO {
 					out.println();
 					out.println(this.getToken("CommentInitiator") + resource.getString("UBFResidentNodes"));
 					out.println();
-					for (Iterator iterator = mfrag.getResidentNodeList().iterator(); iterator.hasNext();) {
-						ResidentNode node = (ResidentNode) iterator.next();
+					for (Iterator<ResidentNode> iterator = mfrag.getResidentNodeList().iterator(); iterator.hasNext();) {
+						ResidentNode node = iterator.next();
 						out.println();				
 						out.println(this.getToken("NodeDeclarator")  
 								+ this.getToken("AttributionSeparator") + node.getName());
@@ -835,8 +986,23 @@ public class UbfIO implements MebnIO {
 						out.println( this.getToken("ColorDeclarator")     
 								+ this.getToken("AttributionSeparator") + node.getColor().getRGB());
 						
-						
 						//out.println(this.getToken("NextArgumentDeclarator") + node.getNumNextArgument());
+						
+						// listing the order of the resident node's possible values
+						out.print( this.getToken("PossibleValuesOrder") + this.getToken("AttributionSeparator"));
+						for (Iterator<StateLink> stateLinkIterator =  node.getPossibleValueLinkList().iterator(); stateLinkIterator.hasNext();) {
+							try {
+								StateLink possibleValue = stateLinkIterator.next();
+								out.print(possibleValue.getState().getName());
+								if (stateLinkIterator.hasNext()) {
+									out.print(this.getToken("ArgumentSeparator"));
+								}
+							} catch (Throwable e) {
+								// the order of the states is not so important, thus we may just continue in case of any error.
+								e.printStackTrace();
+							}
+						}
+						out.println(); // finish listing the order of the possible values with a line feed
 					}
 				}	
 			}
@@ -1048,6 +1214,26 @@ public class UbfIO implements MebnIO {
 	 */
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	/**
+	 * This boolean attribute indicates that this {@link UbfIO} must
+	 * reorder the loaded MEBN elements respecting its appearance order
+	 * in the original UBF file.
+	 * @return the toUseOrderOfUBFFile
+	 */
+	public boolean isToUseOrderOfUBFFile() {
+		return toUseOrderOfUBFFile;
+	}
+	
+	/**
+	 * This boolean attribute indicates that this {@link UbfIO} must
+	 * reorder the loaded MEBN elements respecting its appearance order
+	 * in the original UBF file.
+	 * @param toUseOrderOfUBFFile the toUseOrderOfUBFFile to set
+	 */
+	public void setToUseOrderOfUBFFile(boolean toUseOrderOfUBFFile) {
+		this.toUseOrderOfUBFFile = toUseOrderOfUBFFile;
 	}
 	
 

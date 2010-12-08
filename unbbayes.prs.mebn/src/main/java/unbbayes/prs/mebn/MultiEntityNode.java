@@ -236,7 +236,7 @@ public class MultiEntityNode extends Node {
 	 */
 	public boolean hasPossibleValue(String stateName) {
 		for (Entity entity : possibleValueList) {
-			if (entity.getName().equals(stateName)) {
+			if (stateName.equals(entity.getName())) {
 				return true;
 			}
 		}

@@ -130,7 +130,6 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 	throws SSBNNodeGeneralException, ImplementationRestrictionException, 
 	MEBNException, InvalidParentException {
 
-		Debug.setDebug(true); 
 
 		ssbnNodeList = new SSBNNodeList(); 
 		ssbnNodesMap = new TreeMap<String, SSBNNode>(); 
