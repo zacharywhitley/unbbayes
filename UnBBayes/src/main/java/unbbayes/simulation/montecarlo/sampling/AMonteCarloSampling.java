@@ -343,7 +343,7 @@ public abstract class AMonteCarloSampling implements IMonteCarloSampling {
 	 * each node).
 	 * @return The corresponding linear coordinate.
 	 */
-	public final int getLinearCoord(int multidimensionalCoord[]) {
+	public  int getLinearCoord(int multidimensionalCoord[]) {
 		computeFactors();
 		int coordLinear = 0;
 		int size = samplingNodeOrderQueue.size();
@@ -359,7 +359,7 @@ public abstract class AMonteCarloSampling implements IMonteCarloSampling {
 	 * @param linearCoord The linear coordinate.
 	 * @return The corresponding multidimensional coordinate.
 	 */
-	public final byte[] getMultidimensionalCoord(int linearCoord) {
+	public  byte[] getMultidimensionalCoord(int linearCoord) {
 		computeFactors();
 		int factorI;
 		int size = samplingNodeOrderQueue.size();

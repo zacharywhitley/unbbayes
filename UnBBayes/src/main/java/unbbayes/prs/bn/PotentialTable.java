@@ -32,10 +32,10 @@ import unbbayes.util.SetToolkit;
 
 
 /**
- * Tabela de Potencial.
+ * This is a conditional potential table
  * 
- * @author Michael e Rommel
- * @version 21 de Setembro de 2001
+ * @author Michael, Rommel
+ * @version September, 21th, 2001
  */
 public abstract class PotentialTable implements Cloneable, java.io.Serializable, IProbabilityFunction {
 	public static final int PRODUCT_OPERATOR = 0;
@@ -135,12 +135,12 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 		return SetToolkit.clone(variableList);
 	}
 
-	public final int indexOfVariable(Node node) {
+	public  int indexOfVariable(Node node) {
 		return variableList.indexOf(node);
 	}
 	
 	//by young2010
-	public final int indexOfVariable(String nodeName){
+	public  int indexOfVariable(String nodeName){
 		for(int i = 0; i < variableList.size(); i++){
 			if(variableList.get(i).getName().equals(nodeName) ){
 				return i; 
@@ -170,7 +170,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 		return variableList.get(index);
 	}
 	
-	public final int getVariableIndex(Node variable){
+	public  int getVariableIndex(Node variable){
 		for(int i = 0; i < variableList.size(); i++){
 			if(variableList.get(i) == variable){
 				return i; 
@@ -183,7 +183,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 		dataPT.add(index, value);
 	}
 	
-	public final void removeValueAt(int index) {
+	public  void removeValueAt(int index) {
 		dataPT.remove(index);
 	}
 
@@ -258,37 +258,37 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 * @param value
 	 *            The value to be set in the table.
 	 */
-	public final void setValue(int index, float value) {
+	public  void setValue(int index, float value) {
 		dataPT.data[index] = value;
 	}
 
 	/**
-	 * Retorna o valor da c�lula com o respectivo �ndice.
+	 * It returns the value of a cell identified by an index
 	 * 
 	 * @param index
-	 *            �ndice linear do valor na tabela a ser retornado.
-	 * @return valor na tabela correspondente ao indice linear especificado.
+	 *            linear index of a cell
+	 * @return a value found in the specified cell .
 	 */
-	public final float getValue(int index) {
+	public  float getValue(int index) {
 		return dataPT.data[index];
 	}
 
 	/**
-	 * Retorna o valor na tabela a partir do vetor de coordenadas
+	 * It returns a value in this table from a vector of coordinates.
 	 * 
-	 * @param coordenadas
-	 *            coordenadas do valor a ser pego.
-	 * @return valor na tabela especificada pelas coordenadas.
+	 * @param coordinate
+	 * 			the coordinates of the value to be returned.
+	 * @return a value of a cell specified by coordinate.
 	 */
-	public final float getValue(int[] coordenadas) {
-		return dataPT.data[getLinearCoord(coordenadas)];
+	public  float getValue(int[] coordinate) {
+		return dataPT.data[getLinearCoord(coordinate)];
 	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.IProbabilityFunction#addVariable(unbbayes.prs.Node)
 	 */
 	public void addVariable(INode variavel) {
-		/** @todo Reimplementar este m�todo de forma correta. */
+		/** @TODO reimplement it using correct format. */
 		notifyModification();
 		int noEstados = variavel.getStatesSize();
 		int noCelBasica = this.dataPT.size;
@@ -449,7 +449,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 * each node).
 	 * @return The corresponding linear coordinate.
 	 */
-	public final int getLinearCoord(int multidimensionalCoord[]) {
+	public  int getLinearCoord(int multidimensionalCoord[]) {
 		computeFactors();
 		int coordLinear = 0;
 		int sizeVariaveis = variableList.size();
@@ -489,7 +489,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 * @param linearCoord The linear coordinate.
 	 * @return The corresponding multidimensional coordinate.
 	 */
-	public final int[] getMultidimensionalCoord(int linearCoord) {
+	public  int[] getMultidimensionalCoord(int linearCoord) {
 		computeFactors();
 		int fatorI;
 		int sizeVariaveis = variableList.size();
@@ -512,7 +512,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 * each node).
 	 * @return The corresponding linear coordinate.
 	 */
-	public final int getLinearCoordMarginal(int multidimensionalCoord[]) {
+	public  int getLinearCoordMarginal(int multidimensionalCoord[]) {
 		computeFactorsMarginal();
 		int coordLinear = 0;
 		int sizeVariaveis = variableList.size();
@@ -552,7 +552,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 * @param linearCoord The linear coordinate.
 	 * @return The corresponding multidimensional coordinate.
 	 */
-	public final int[] getMultidimensionalCoordMarginal(int linearCoord) {
+	public  int[] getMultidimensionalCoordMarginal(int linearCoord) {
 		computeFactors();
 		int fatorI;
 		int sizeVariaveis = variableList.size();
@@ -574,7 +574,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 * @param operator
 	 *            operator to use, defined in this class constants.
 	 */
-	public final void directOpTab(PotentialTable tab, int operator) {
+	public  void directOpTab(PotentialTable tab, int operator) {
 		if (tableSize() != tab.tableSize()) {
 			throw new RuntimeException(resource.getString("TableSizeException") + ": " + tableSize() + " " + tab.tableSize());
 		}
@@ -606,15 +606,22 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 
 
 	/**
-	 * Opera tabela do parametro com esta.
+	 * Performs a operation between this table and another
 	 * 
 	 * @param tab
-	 *            tabela a ser operada com esta.
+	 *            the table to be operated with this one.
 	 * @param operator
-	 *            operador a ser utilizado, definido pelas constantes desta
-	 *            classe.
+	 *            an identifier of the operation to be used. 
+	 *            		E.g.
+	 *            {@link PotentialTable#PRODUCT_OPERATOR},
+	 *            {@link PotentialTable#PLUS_OPERATOR},
+	 *            {@link PotentialTable#DIVISION_OPERATOR}
+	 *  @see PotentialTable#PRODUCT_OPERATOR
+	 *  @see PotentialTable#PLUS_OPERATOR
+	 *  @see PotentialTable#DIVISION_OPERATOR
+	 *  
 	 */
-	public final void opTab(PotentialTable tab, int operator) {		
+	public  void opTab(PotentialTable tab, int operator) {		
 		int[] index = new int[variableList.size()];
 		for (int c = variableList.size()-1; c >= 0; c--) {
 			index[c] = tab.variableList.indexOf(variableList.get(c));

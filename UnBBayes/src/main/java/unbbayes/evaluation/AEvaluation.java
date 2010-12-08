@@ -235,7 +235,7 @@ public abstract class AEvaluation implements IEvaluation {
 	 * each node).
 	 * @return The corresponding linear coordinate.
 	 */
-	protected final int getLinearCoord(int multidimensionalCoord[]) {
+	protected  int getLinearCoord(int multidimensionalCoord[]) {
 		computeFactors();
 		int coordLinear = 0;
 		int size = targetNodeList.length + evidenceNodeList.length;
@@ -255,7 +255,7 @@ public abstract class AEvaluation implements IEvaluation {
 	 * each node).
 	 * @return The corresponding evidence linear coordinate.
 	 */
-	protected final int getEvidenceLinearCoord(int multidimensionalCoord[]) {
+	protected  int getEvidenceLinearCoord(int multidimensionalCoord[]) {
 		computeFactors();
 		int coordLinear = 0;
 		int size = targetNodeList.length + evidenceNodeList.length;
@@ -271,7 +271,7 @@ public abstract class AEvaluation implements IEvaluation {
 	 * @param linearCoord The linear coordinate.
 	 * @return The corresponding multidimensional coordinate.
 	 */
-	protected final int[] getMultidimensionalCoord(int linearCoord) {
+	protected  int[] getMultidimensionalCoord(int linearCoord) {
 		computeFactors();
 		int factorI;
 		int size = targetNodeList.length + evidenceNodeList.length;

@@ -222,7 +222,7 @@ public class MemoryEfficientApproximateEvaluation extends AEvaluation {
 	 * @param dim Monte carlo multidimensional coordinate.
 	 * @return The corresponding multidimensional coordinate.
 	 */
-	protected final int[] getMultidimensionalCoord(byte[] dim) {
+	protected int[] getMultidimensionalCoord(byte[] dim) {
 		int size = targetNodeList.length + evidenceNodeList.length;
 		int multidimensionalCoord[] = new int[size];
 		for (int i = 0; i < positionTargetNodeList.length; i++) {

@@ -190,7 +190,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
      *
      *@throws Exception If this network has a cycle.
      */
-    public final void verifyCycles() throws Exception {
+    public void verifyCycles() throws Exception {
     	int nodeSize = nodeList.size();
     	char[] visited = new char[nodeSize];
     	int[] pi = new int[nodeSize];
@@ -235,11 +235,11 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
     
 
     /**
-     *  Verifica a conectividade da rede.
+     * It verifies if the network is connected
      *
-     *  @throws Exception se a rede for disconexa.
+     *  @throws Exception if network is disconnected.
      */
-    public final void verifyConectivity() throws Exception {
+    public void verifyConectivity() throws Exception {
         List<Node> visitados = new ArrayList<Node>(nodeList.size());
         if (nodeList.size() <= 1) {
             return;
@@ -253,7 +253,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
     }
 
     /**
-     * Depth first search to verify conectivity.
+     * Depth first search to verify connectivity.
      */
     private void dfsConnectivity(Node no, List<Node> visitados) {
         visitados.add(no);
@@ -266,7 +266,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
     }
 
 	/**
-	 *  Faz o processo de moraliza��o da rede.
+	 *  Performs moralization of the network.
 	 */
 	protected void moralize() {
 		Node auxNo;

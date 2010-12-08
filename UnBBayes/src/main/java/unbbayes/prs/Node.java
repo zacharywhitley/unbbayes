@@ -354,7 +354,7 @@ public abstract class Node implements Serializable,
 	 * Obtains a list of children.
 	 * @return list of children.
 	 */
-	public final ArrayList<Node> getChildren() {
+	public ArrayList<Node> getChildren() {
 		return children;
 	}
 
@@ -362,7 +362,7 @@ public abstract class Node implements Serializable,
 	 * Obtains a list of parents.
 	 * @return list of parents.
 	 */
-	public final ArrayList<Node> getParents() {
+	public ArrayList<Node> getParents() {
 		return parents;
 	}
 
@@ -458,7 +458,7 @@ public abstract class Node implements Serializable,
 	 * It returns the node's quantity of states.
 	 * @return How many states the node has.
 	 */
-	public final int getStatesSize() {
+	public int getStatesSize() {
 		return states.size();
 	}
 
@@ -468,7 +468,7 @@ public abstract class Node implements Serializable,
 	 *            position of the state to be read.
 	 * @return Name of the state at <code>index</code>
 	 */
-	public final String getStateAt(int index) {
+	public String getStateAt(int index) {
 		return (String) (states.get(index));
 	}
 

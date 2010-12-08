@@ -220,7 +220,7 @@ public class CNNormalDistribution {
 	 * each discrete parent node).
 	 * @return The corresponding linear coordinate.
 	 */
-	public final int getLinearCoord(int multidimensionalCoord[]) {
+	public  int getLinearCoord(int multidimensionalCoord[]) {
 		calculateFactors();
 		int coordLinear = 0;
 		int size = discreteParentList.size();
@@ -236,7 +236,7 @@ public class CNNormalDistribution {
 	 * @param linearCoord The linear coordinate.
 	 * @return The corresponding multidimensional coordinate.
 	 */
-	public final int[] getMultidimensionalCoord(int linearCoord) {
+	public  int[] getMultidimensionalCoord(int linearCoord) {
 		calculateFactors();
 		int factorI;
 		int size = discreteParentList.size();
