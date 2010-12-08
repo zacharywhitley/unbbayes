@@ -1,4 +1,4 @@
-UNBBAYES PLUGIN - DATA MINING VERSION 1.7.1
+UNBBAYES PLUGIN - VERSION 1.7.1
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
