@@ -35,7 +35,7 @@ import unbbayes.datamining.datamanipulation.Utils;
 /**
  * Class for evaluating machine learning classsifiers
  *
- *	@author M�rio Henrique Paes Vieira (mariohpv@bol.com.br)
+ *	@author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
  *	@version $1.0 $ (17/02/2002)
  */
 public class Evaluation implements IProgress {

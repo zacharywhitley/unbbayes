@@ -1,12 +1,10 @@
-UNBBAYES PLUGIN - MEBN VERSION 1.4.0
+UNBBAYES PLUGIN - UNBMINER VERSION 1.1.2
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
-1				.
-2				.
-3				.
-4				.
 
 
 BUG LIST		
 Number	Request ID	Summary
+1					Fixed bug impeding to save naive bayes.
+2					Fixed bug impeding us to evaluate a bayesian network with NET format.

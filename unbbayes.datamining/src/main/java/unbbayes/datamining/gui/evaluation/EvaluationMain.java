@@ -60,6 +60,7 @@ import unbbayes.datamining.classifiers.decisiontree.DecisionTreeLearning;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.gui.FileIcon;
 import unbbayes.gui.SimpleFileFilter;
+import unbbayes.io.NetIO;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 
 public class EvaluationMain extends JInternalFrame
@@ -67,7 +68,7 @@ public class EvaluationMain extends JInternalFrame
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
 	
-	/** Carrega o arquivo de recursos para internacionaliza��o da localidade padr�o */
+	/** Resource file for localization */
 	private ResourceBundle resource;
 	private ImageIcon abrirIcon;
 	private ImageIcon helpIcon;
@@ -293,6 +294,7 @@ public class EvaluationMain extends JInternalFrame
 					BayesianNetwork bayesianNetwork = new BayesianNetwork(net,inst);
 					classifier = bayesianNetwork;
 				} catch (Exception e) {
+					e.printStackTrace();
 					statusBar.setText(e.getMessage());
 					instOK = false;
 				}
@@ -313,7 +315,6 @@ public class EvaluationMain extends JInternalFrame
 			fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
 			fileChooser.setDialogTitle("Open model");
 			fileChooser.setMultiSelectionEnabled(false);
-			//adicionar FileView no FileChooser para desenhar �cones de arquivos
 			fileChooser.setFileView(new FileIcon(EvaluationMain.this));
 			fileChooser.addChoosableFileFilter(new SimpleFileFilter(s2, "Networks (*.net)"));
 			fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "ID3 Models (*.id3)"));
@@ -343,10 +344,11 @@ public class EvaluationMain extends JInternalFrame
 				ObjectInputStream in = new ObjectInputStream(new FileInputStream(f));
 				classifier = (DecisionTreeLearning)in.readObject();
 			} else if (fileName.regionMatches(true,fileName.length() - 4,".net",0,4)) {
-				ObjectInputStream in = new ObjectInputStream(new FileInputStream(f));
-				classifier = (DistributionClassifier)in.readObject();
-//				BaseIO io = new NetIO();
-//				net = io.load(f);
+				// the following code is wrong, so it was commented (the net file is NOT a serialized object)
+//				ObjectInputStream in = new ObjectInputStream(new FileInputStream(f));
+//				classifier = (DistributionClassifier)in.readObject();
+				NetIO io = new NetIO();
+				net = (ProbabilisticNetwork)io.load(f);
 			} else if (fileName.regionMatches(true,fileName.length() - 4,".cnm",0,4)) {
 				ObjectInputStream in = new ObjectInputStream(new FileInputStream(f));
 				classifier = (CombinatorialNeuralModel)in.readObject();

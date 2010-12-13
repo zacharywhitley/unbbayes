@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- This is the plugin descriptor for UnBBayes' datamining module (UnBMiner).-->
-<plugin id="unbbayes.datamining" version="1.1.1">
+<plugin id="unbbayes.datamining" version="1.1.2">
     <requires>
         <import plugin-id="unbbayes.util.extension.core"/>
         <import plugin-id="unbbayes.learning"/>
@@ -12,7 +12,7 @@
         </library>
         <!-- It seems that loaders does not work as expected on jar files -->
         <!-- If you change/add the libraries, change/add these library declaration too -->
-        <library id="unbbayes.datamining" path="unbbayes.datamining-1.1.1.jar" type="code">
+        <library id="unbbayes.datamining" path="unbbayes.datamining-1.1.2.jar" type="code">
         	<export prefix="*"/>
         </library>
         <library id="miglayout15-swing" path="lib/miglayout15-swing-1.0.jar" type="code">

@@ -57,6 +57,7 @@ import unbbayes.gui.FileIcon;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.PNEditionPane;
 import unbbayes.gui.SimpleFileFilter;
+import unbbayes.io.NetIO;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 
 public class NaiveBayesMain extends JInternalFrame
@@ -68,7 +69,7 @@ public class NaiveBayesMain extends JInternalFrame
 	private JPanel contentPane;
 	private BorderLayout borderLayout1 = new BorderLayout();
 	private InstanceSet inst;
-	/** Carrega o arquivo de recursos para internacionaliza��o da localidade padr�o */
+	/** Resource class for localization */
 	private ResourceBundle resource;
 	private ProbabilisticNetwork net;
 	private JToolBar jToolBar1 = new JToolBar();
@@ -295,7 +296,7 @@ public class NaiveBayesMain extends JInternalFrame
 							PNEditionPane edition = netWindow.getNetWindowEdition();
 							edition.getCenterPanel().setBottomComponent(netWindow.getJspGraph());
 
-							// deixa invis�veis alguns bot�es do unbbayes
+							// deixa invis�ｽveis alguns bot�ｽes do unbbayes
 							edition.getBtnAddState().setVisible(false);
 							edition.getBtnRemoveState().setVisible(false);
 							edition.getTbEdition().getBtnAddEdge().setVisible(false);
@@ -330,7 +331,7 @@ public class NaiveBayesMain extends JInternalFrame
 			String[] s2 = {"TXT"};
 			fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
 			fileChooser.setMultiSelectionEnabled(false);
-			//adicionar FileView no FileChooser para desenhar �cones de arquivos
+			//add FileView in FileChooser in order for UnBMiner to draw file icons 
 			fileChooser.setFileView(new FileIcon(this));
 			fileChooser.addChoosableFileFilter(new SimpleFileFilter(s2, "TxtFiles (*.txt)"));
 			fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "ArffFiles (*.arff)"));
@@ -364,7 +365,7 @@ public class NaiveBayesMain extends JInternalFrame
 				}
 				else
 				{
-					statusBar.setText("Opera��o cancelada");
+					statusBar.setText("Cancelled");
 				}
 			}
 			catch (NullPointerException npe)
@@ -386,7 +387,7 @@ public class NaiveBayesMain extends JInternalFrame
 		String[] s2 = {"net"};
 		fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
 		fileChooser.setMultiSelectionEnabled(false);
-		//adicionar FileView no FileChooser para desenhar �cones de arquivos
+		//add FileView in FileChooser in order for UnBMiner to draw file icons
 		fileChooser.setFileView(new FileIcon(NaiveBayesMain.this));
 		fileChooser.addChoosableFileFilter(new SimpleFileFilter(s2, "Networks (*.net)"));
 		int returnVal = fileChooser.showSaveDialog(this);
@@ -398,13 +399,15 @@ public class NaiveBayesMain extends JInternalFrame
 					selectedFile = new File(selectedFile.getAbsolutePath()+".net");
 				}
 
-				ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(selectedFile));
-				out.writeObject(naiveBayes);
-//				BaseIO io = new NetIO();
-//				io.save(selectedFile,net);
+				// the following code will always fail because unbbayes.datamining.datamanipulation.AttributeStats is not serializable, so it was commented
+//				ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(selectedFile));
+//				out.writeObject(naiveBayes);
+				NetIO io = new NetIO();
+				io.save(selectedFile,net);
 				
 				statusBar.setText(resource.getString("saveModel"));
 			} catch (Exception ioe) {
+				ioe.printStackTrace();
 				statusBar.setText(resource.getString("errorWritingFileException")+selectedFile.getName()+" "+ioe.getMessage());
 			}
 			FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
