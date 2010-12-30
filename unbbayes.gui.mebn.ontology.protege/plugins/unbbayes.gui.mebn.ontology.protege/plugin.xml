@@ -1,10 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- This is the plugin descriptor for UnBBayes' PRM module. -->
-<plugin id="unbbayes.gui.mebn.ontology.protege" version="0.0.1">
+<plugin id="unbbayes.gui.mebn.ontology.protege" version="0.1.1">
     <requires>
         <import plugin-id="unbbayes.util.extension.core"/>
-        <import plugin-id="unbbayes.prs.mebn" plugin-version="1.7.0"/>
+        <import plugin-id="unbbayes.prs.mebn" plugin-version="1.7.1"/>
     </requires>
     <runtime>
        	<!-- Because dist.xml creates the resources folder, we must include it -->
@@ -13,7 +13,7 @@
         </library>
         <!-- It seems that loaders does not work as expected on jar files -->
         <!-- If you change/add the libraries, change/add these library declaration too -->
-        <library id="unbbayes.prs.prm" path="unbbayes.gui.mebn.ontology.protege-0.0.1.jar" type="code" >
+        <library id="unbbayes.gui.mebn.ontology.protege" path="unbbayes.gui.mebn.ontology.protege-0.1.1.jar" type="code" >
         	<export prefix="*"/>
         </library>
     </runtime>

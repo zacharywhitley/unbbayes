@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- This is a I/O plugin for manipulating OWL2 ontologies.  -->
+<plugin id="unbbayes.io.mebn.UbfIO2" version="0.0.1">
+    <requires>
+        <import plugin-id="unbbayes.prs.mebn"/>
+    </requires>
+    <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNIO" id="UbfIO2">
+        <parameter id="class" value="unbbayes.io.mebn.UbfIO2" />
+        <parameter id="name" value="UnBBayes File with PR-OWL 2.0" />
+    </extension>
+</plugin>

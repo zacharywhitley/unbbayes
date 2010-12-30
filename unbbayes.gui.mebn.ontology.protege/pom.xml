@@ -6,7 +6,7 @@
 	<name>Protégé Based Ontology Editor</name>
 	<!-- If you change the below version, -->
 	<!-- change version and library settings on plugin.xml too, because this is included as library -->
-	<version>0.0.1</version>
+	<version>0.1.1</version>
 	<url>http://unbbayes.sourceforge.net
 	</url>
 	<licenses>
@@ -174,7 +174,118 @@
 			<dependency>
 				<groupId>br.unb.cic</groupId>
 				<artifactId>unbbayes.prs.mebn</artifactId>
-				<version>1.7.0</version>
+				<version>1.7.1</version>
+			</dependency>
+			
+			<!-- Protege 4.1 (it handles OWL2) -->
+			 <dependency>
+			    <groupId>guess</groupId>
+			    <artifactId>org.protege.common</artifactId>
+			    <version>4.1</version>
+			</dependency>
+			 <dependency>
+			    <groupId>guess</groupId>
+			    <artifactId>org.protege.editor.core.application</artifactId>
+			    <version>4.1</version>
+			</dependency>
+			 <dependency>
+			    <groupId>guess</groupId>
+			    <artifactId>org.protege.ontograf</artifactId>
+			    <version>1.0.1.2010_09_03_0304</version>
+			</dependency>
+			<dependency>
+			    <groupId>guess</groupId>
+			    <artifactId>org.protege.editor.owl</artifactId>
+			    <version>4.1.0.b209_2010_09_03_0303</version>
+			</dependency>
+			
+			<!-- org.protege.editor.owl contains the following JARs, but it seems like a bug is impeding UnBBayes to load it (so, lets add explicit dependency) -->
+			<!-- 
+			<dependency>
+			    <groupId>guess</groupId>
+			    <artifactId>org.protege.owlapi.extensions</artifactId>
+			    <version>1.0.0</version>
+			</dependency>
+			<dependency>
+			    <groupId>guess</groupId>
+			    <artifactId>org.protege.xmlcatalog</artifactId>
+			    <version>1.0.0</version>
+			</dependency>
+			-->
+			
+			<!-- Protege 4.1 depends on apache felix -->
+			<dependency>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>org.apache.felix.main</artifactId>
+				<version>2.0.4</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>org.apache.felix.framework</artifactId>
+				<version>2.0.4</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>org.apache.felix.bundlerepository</artifactId>
+				<version>1.4.2</version>
+			</dependency>
+			
+			<!-- Protege 4.1 depends on eclipse equinox -->
+			<dependency>
+			    <groupId>org.eclipse.equinox</groupId>
+			    <artifactId>org.eclipse.equinox.common</artifactId>
+			    <version>3.6.0.v20100503</version>
+			</dependency>
+			<dependency>
+			    <groupId>org.eclipse.equinox</groupId>
+			    <artifactId>org.eclipse.equinox.registry</artifactId>
+			    <version>3.5.0.v20100503</version>
+			</dependency>
+			 <dependency>
+			    <groupId>guess</groupId>
+			    <artifactId>org.eclipse.equinox.supplement</artifactId>
+			    <version>1.2.0.v20090518</version>
+			</dependency>
+			
+			
+			<!-- Protege 4.1 depends on CO-ODE -->
+			<dependency>
+			    <groupId>guess</groupId>
+			    <artifactId>org.coode.dlquery</artifactId>
+			    <version>1.1.0.2010_09_03_0304</version>
+			</dependency>
+			 <dependency>
+			    <groupId>guess</groupId>
+			    <artifactId>org.coode.owlviz</artifactId>
+			    <version>4.1.1.2010_09_03_0304</version>
+			</dependency>
+			
+			<!-- Protege 4.1 depends on HermiT -->
+			<dependency>
+			    <groupId>guess</groupId>
+			    <artifactId>org.semanticweb.HermiT</artifactId>
+			    <version>1.2.5.927</version>
+			</dependency>
+			
+			<!-- HermiT has the following dependencies -->
+<!-- It is already included in HermiT's JAR
+			<dependency>
+			    <groupId>oqube</groupId>
+			    <artifactId>jautomata-core</artifactId>
+			    <version>2.0-alpha-1</version>
+			</dependency>
+			<dependency>
+			    <groupId>org.apache.ws.commons.axiom</groupId>
+		        <artifactId>axiom</artifactId>
+		        <version>1.2.8</version>
+			</dependency>
+-->
+			 
+			<!-- Protege 4.1 depends on OWLAPI -->
+			<dependency>
+			    <groupId>guess</groupId>
+			    <artifactId>org.semanticweb.owl.owlapi</artifactId>
+			    <version>3.1.0.1602</version>
 			</dependency>
 			
 	</dependencies>
