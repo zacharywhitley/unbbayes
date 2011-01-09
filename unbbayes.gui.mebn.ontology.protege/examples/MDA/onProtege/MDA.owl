@@ -1,0 +1,847 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE rdf:RDF [
+    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY pr-owl "http://www.pr-owl.org/pr-owl.owl#" >
+    <!ENTITY prognos "http://prognos.c4i.gmu.edu/2010/12/" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+]>
+
+
+<rdf:RDF xmlns="&prognos;MDA.owl#"
+     xml:base="&prognos;MDA.owl"
+     xmlns:pr-owl="http://www.pr-owl.org/pr-owl.owl#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:prognos="http://prognos.c4i.gmu.edu/2010/12/">
+    <owl:Ontology rdf:about="&prognos;MDA.owl">
+        <owl:imports rdf:resource="http://www.pr-owl.org/pr-owl.owl"/>
+    </owl:Ontology>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Annotation properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    <owl:AnnotationProperty rdf:about="&rdfs;comment"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#memberOf -->
+
+    <owl:ObjectProperty rdf:about="&prognos;MDA.owl#memberOf">
+        <rdfs:range rdf:resource="&prognos;MDA.owl#Organization"/>
+        <rdfs:domain rdf:resource="&prognos;MDA.owl#Person"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#definesUncertaintyOf -->
+
+    <owl:ObjectProperty rdf:about="&pr-owl;definesUncertaintyOf"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#hasArgument -->
+
+    <owl:ObjectProperty rdf:about="&pr-owl;hasArgument"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#hasMExpression -->
+
+    <owl:ObjectProperty rdf:about="&pr-owl;hasMExpression"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#hasParent -->
+
+    <owl:ObjectProperty rdf:about="&pr-owl;hasParent"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#hasProbDist -->
+
+    <owl:ObjectProperty rdf:about="&pr-owl;hasProbDist"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#isObjectIn -->
+
+    <owl:ObjectProperty rdf:about="&pr-owl;isObjectIn"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#isOrdinaryVariableIn -->
+
+    <owl:ObjectProperty rdf:about="&pr-owl;isOrdinaryVariableIn"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#isResidentNodeIn -->
+
+    <owl:ObjectProperty rdf:about="&pr-owl;isResidentNodeIn"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#isSubjectIn -->
+
+    <owl:ObjectProperty rdf:about="&pr-owl;isSubjectIn"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#isSubsBy -->
+
+    <owl:ObjectProperty rdf:about="&pr-owl;isSubsBy"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#typeOfArgument -->
+
+    <owl:ObjectProperty rdf:about="&pr-owl;typeOfArgument"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#typeOfMExpression -->
+
+    <owl:ObjectProperty rdf:about="&pr-owl;typeOfMExpression"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#hasArgNumber -->
+
+    <owl:DatatypeProperty rdf:about="&pr-owl;hasArgNumber"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#hasDeclaration -->
+
+    <owl:DatatypeProperty rdf:about="&pr-owl;hasDeclaration"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#isRepresentedAs -->
+
+    <owl:DatatypeProperty rdf:about="&pr-owl;isRepresentedAs"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#Organization -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#Organization"/>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#Person -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#Person">
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&prognos;MDA.owl#memberOf"/>
+                <owl:allValuesFrom rdf:resource="&prognos;MDA.owl#Organization"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#Ship -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#Ship"/>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#Terrorist -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#Terrorist">
+        <rdfs:subClassOf rdf:resource="&prognos;MDA.owl#Person"/>
+    </owl:Class>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#TerroristOrganization -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#TerroristOrganization">
+        <rdfs:subClassOf rdf:resource="&prognos;MDA.owl#Organization"/>
+    </owl:Class>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#TerroristPersonMFrag -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#TerroristPersonMFrag">
+        <rdfs:subClassOf rdf:resource="&pr-owl;DomainMFrag"/>
+    </owl:Class>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#TerroristPersonMFrag.memberOfRN -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#TerroristPersonMFrag.memberOfRN">
+        <rdfs:subClassOf rdf:resource="&pr-owl;DomainRN"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasProbDist"/>
+                <owl:hasValue rdf:resource="&prognos;MDA.owl#TerroristPersonMFrag.memberOfRN.LPD"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasMExpression"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#TerroristPersonMFrag.memberOfRN.memberOfMExpression"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;isResidentNodeIn"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#TerroristPersonMFrag"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#TerroristPersonMFrag.memberOfRN.memberOfMExpression -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#TerroristPersonMFrag.memberOfRN.memberOfMExpression">
+        <rdfs:subClassOf rdf:resource="&pr-owl;SimpleMExpression"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasArgument"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#TerroristPersonMFrag.memberOfRN.organization"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasArgument"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#TerroristPersonMFrag.memberOfRN.person"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;typeOfMExpression"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#memberOfRV"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#TerroristPersonMFrag.memberOfRN.organization -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#TerroristPersonMFrag.memberOfRN.organization">
+        <rdfs:subClassOf rdf:resource="&pr-owl;OrdinaryVariableArgument"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasArgNumber"/>
+                <owl:hasValue rdf:datatype="&xsd;integer">2</owl:hasValue>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;typeOfArgument"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#TerroristPersonMFrag.organization"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#TerroristPersonMFrag.memberOfRN.person -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#TerroristPersonMFrag.memberOfRN.person">
+        <rdfs:subClassOf rdf:resource="&pr-owl;OrdinaryVariableArgument"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;typeOfArgument"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#TerroristPersonMFrag.person"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasArgNumber"/>
+                <owl:hasValue rdf:datatype="&xsd;integer">1</owl:hasValue>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#TerroristPersonMFrag.organization -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#TerroristPersonMFrag.organization">
+        <rdfs:subClassOf rdf:resource="&pr-owl;OrdinaryVariable"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;isOrdinaryVariableIn"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#TerroristPersonMFrag"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;isSubsBy"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#Organization"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#TerroristPersonMFrag.person -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#TerroristPersonMFrag.person">
+        <rdfs:subClassOf rdf:resource="&pr-owl;OrdinaryVariable"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;isSubsBy"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#Person"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;isOrdinaryVariableIn"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#TerroristPersonMFrag"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#TerroristPersonMFrag.typeRN1 -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#TerroristPersonMFrag.typeRN1">
+        <rdfs:subClassOf rdf:resource="&pr-owl;DomainRN"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;isResidentNodeIn"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#TerroristPersonMFrag"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasMExpression"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#TerroristPersonMFrag.typeRN1.typeMExpression"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasProbDist"/>
+                <owl:hasValue rdf:resource="&prognos;MDA.owl#TerroristPersonMFrag.typeRN1.LPD"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#TerroristPersonMFrag.typeRN1.Terrorist -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#TerroristPersonMFrag.typeRN1.Terrorist">
+        <rdfs:subClassOf rdf:resource="&pr-owl;ObjectConstantArgument"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;typeOfArgument"/>
+                <owl:hasValue rdf:resource="&prognos;Terrorist"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasArgNumber"/>
+                <owl:hasValue rdf:datatype="&xsd;integer">2</owl:hasValue>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#TerroristPersonMFrag.typeRN1.person -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#TerroristPersonMFrag.typeRN1.person">
+        <rdfs:subClassOf rdf:resource="&pr-owl;OrdinaryVariableArgument"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;typeOfArgument"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#TerroristPersonMFrag.person"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasArgNumber"/>
+                <owl:hasValue rdf:datatype="&xsd;integer">1</owl:hasValue>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#TerroristPersonMFrag.typeRN1.typeMExpression -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#TerroristPersonMFrag.typeRN1.typeMExpression">
+        <rdfs:subClassOf rdf:resource="&pr-owl;SimpleMExpression"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;typeOfMExpression"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#typeRV"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasArgument"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#TerroristPersonMFrag.typeRN1.person"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasArgument"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#TerroristPersonMFrag.typeRN1.Terrorist"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#TerroristPersonMFrag.typeRN2 -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#TerroristPersonMFrag.typeRN2">
+        <rdfs:subClassOf rdf:resource="&pr-owl;DomainRN"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasMExpression"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#TerroristPersonMFrag.typeRN2.typeMExpression"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasParent"/>
+                <owl:allValuesFrom>
+                    <owl:Class>
+                        <owl:unionOf rdf:parseType="Collection">
+                            <rdf:Description rdf:about="&prognos;MDA.owl#TerroristPersonMFrag.memberOfRN"/>
+                            <rdf:Description rdf:about="&prognos;MDA.owl#TerroristPersonMFrag.typeRN1"/>
+                        </owl:unionOf>
+                    </owl:Class>
+                </owl:allValuesFrom>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasProbDist"/>
+                <owl:hasValue rdf:resource="&prognos;MDA.owl#TerroristPersonMFrag.typeRN2.LPD"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;isResidentNodeIn"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#TerroristPersonMFrag"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    <owl:Axiom>
+        <rdfs:comment>I cannot say that I must have some parent, because it might be the case that this could be a root node with no parent at all. However, it is not right to say that these two parents are the only possible parents, since every context node can eventually become a parent. I have to enforce this somehow in the logic.</rdfs:comment>
+        <owl:annotatedSource rdf:resource="&prognos;MDA.owl#TerroristPersonMFrag.typeRN2"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasParent"/>
+                <owl:allValuesFrom>
+                    <owl:Class>
+                        <owl:unionOf rdf:parseType="Collection">
+                            <rdf:Description rdf:about="&prognos;MDA.owl#TerroristPersonMFrag.memberOfRN"/>
+                            <rdf:Description rdf:about="&prognos;MDA.owl#TerroristPersonMFrag.typeRN1"/>
+                        </owl:unionOf>
+                    </owl:Class>
+                </owl:allValuesFrom>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#TerroristPersonMFrag.typeRN2.TerroristOrganization -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#TerroristPersonMFrag.typeRN2.TerroristOrganization">
+        <rdfs:subClassOf rdf:resource="&pr-owl;ObjectConstantArgument"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;typeOfArgument"/>
+                <owl:hasValue rdf:resource="&prognos;TerroristOrganization"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasArgNumber"/>
+                <owl:hasValue rdf:datatype="&xsd;integer">2</owl:hasValue>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#TerroristPersonMFrag.typeRN2.organization -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#TerroristPersonMFrag.typeRN2.organization">
+        <rdfs:subClassOf rdf:resource="&pr-owl;OrdinaryVariableArgument"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasArgNumber"/>
+                <owl:hasValue rdf:datatype="&xsd;integer">1</owl:hasValue>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;typeOfArgument"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#TerroristPersonMFrag.person"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#TerroristPersonMFrag.typeRN2.typeMExpression -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#TerroristPersonMFrag.typeRN2.typeMExpression">
+        <rdfs:subClassOf rdf:resource="&pr-owl;SimpleMExpression"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasArgument"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#TerroristPersonMFrag.typeRN2.organization"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;typeOfMExpression"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#typeRV"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasArgument"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#TerroristPersonMFrag.typeRN2.TerroristOrganization"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#memberOfRV -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#memberOfRV">
+        <rdfs:subClassOf rdf:resource="&pr-owl;BooleanRV"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasArgument"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#memberOfRV.arg1"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;definesUncertaintyOf"/>
+                <owl:hasValue rdf:resource="&prognos;memberOf"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasArgument"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#memberOfRV.arg2"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#memberOfRV.arg1 -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#memberOfRV.arg1">
+        <rdfs:subClassOf rdf:resource="&pr-owl;MappingArgument"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;isSubjectIn"/>
+                <owl:hasValue rdf:resource="&prognos;memberOf"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#memberOfRV.arg2 -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#memberOfRV.arg2">
+        <rdfs:subClassOf rdf:resource="&pr-owl;MappingArgument"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;isObjectIn"/>
+                <owl:hasValue rdf:resource="&prognos;memberOf"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#typeRV -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#typeRV">
+        <rdfs:subClassOf rdf:resource="&pr-owl;BooleanRV"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;definesUncertaintyOf"/>
+                <owl:hasValue rdf:resource="&rdf;type"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasArgument"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#typeRV.arg1"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;hasArgument"/>
+                <owl:onClass rdf:resource="&prognos;MDA.owl#typeRV.arg2"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#typeRV.arg1 -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#typeRV.arg1">
+        <rdfs:subClassOf rdf:resource="&pr-owl;MappingArgument"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;isSubjectIn"/>
+                <owl:hasValue rdf:resource="&rdf;type"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#typeRV.arg2 -->
+
+    <owl:Class rdf:about="&prognos;MDA.owl#typeRV.arg2">
+        <rdfs:subClassOf rdf:resource="&pr-owl;MappingArgument"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl;isObjectIn"/>
+                <owl:hasValue rdf:resource="&rdf;type"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#BooleanRV -->
+
+    <owl:Class rdf:about="&pr-owl;BooleanRV"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#DeclarativeDist -->
+
+    <owl:Class rdf:about="&pr-owl;DeclarativeDist"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#DomainMFrag -->
+
+    <owl:Class rdf:about="&pr-owl;DomainMFrag"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#DomainRN -->
+
+    <owl:Class rdf:about="&pr-owl;DomainRN"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#MappingArgument -->
+
+    <owl:Class rdf:about="&pr-owl;MappingArgument"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#ObjectConstantArgument -->
+
+    <owl:Class rdf:about="&pr-owl;ObjectConstantArgument"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#OrdinaryVariable -->
+
+    <owl:Class rdf:about="&pr-owl;OrdinaryVariable"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#OrdinaryVariableArgument -->
+
+    <owl:Class rdf:about="&pr-owl;OrdinaryVariableArgument"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#SimpleMExpression -->
+
+    <owl:Class rdf:about="&pr-owl;SimpleMExpression"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Individuals
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/Terrorist -->
+
+    <owl:NamedIndividual rdf:about="&prognos;Terrorist"/>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/TerroristOrganization -->
+
+    <owl:NamedIndividual rdf:about="&prognos;TerroristOrganization"/>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/memberOf -->
+
+    <owl:NamedIndividual rdf:about="&prognos;memberOf"/>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#TerroristPersonMFrag.memberOfRN.LPD -->
+
+    <owl:NamedIndividual rdf:about="&prognos;MDA.owl#TerroristPersonMFrag.memberOfRN.LPD">
+        <rdf:type rdf:resource="&pr-owl;DeclarativeDist"/>
+        <pr-owl:isRepresentedAs rdf:datatype="&xsd;string">UnBBayes_MEBN</pr-owl:isRepresentedAs>
+        <pr-owl:hasDeclaration rdf:datatype="&xsd;string">[
+   true = .01,
+   false = .99
+]</pr-owl:hasDeclaration>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#TerroristPersonMFrag.typeRN1.LPD -->
+
+    <owl:NamedIndividual rdf:about="&prognos;MDA.owl#TerroristPersonMFrag.typeRN1.LPD">
+        <rdf:type rdf:resource="&pr-owl;DeclarativeDist"/>
+        <pr-owl:isRepresentedAs rdf:datatype="&xsd;string">UnBBayes_MEBN</pr-owl:isRepresentedAs>
+        <pr-owl:hasDeclaration rdf:datatype="&xsd;string">[
+   true = .001,
+   false = .999
+]</pr-owl:hasDeclaration>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://prognos.c4i.gmu.edu/2010/12/MDA.owl#TerroristPersonMFrag.typeRN2.LPD -->
+
+    <owl:NamedIndividual rdf:about="&prognos;MDA.owl#TerroristPersonMFrag.typeRN2.LPD">
+        <rdf:type rdf:resource="&pr-owl;DeclarativeDist"/>
+        <pr-owl:isRepresentedAs rdf:datatype="&xsd;string">UnBBayes_MEBN</pr-owl:isRepresentedAs>
+        <pr-owl:hasDeclaration rdf:datatype="&xsd;string">if any person have ( typeRN1 = true ) [
+   if any person.org have ( memberOfRN = true ) [
+      true = .9,
+      false = .1
+   ] else [
+      true = .001,
+      false = .999
+   ]
+] else [
+   true = .001,
+   false = .999
+]</pr-owl:hasDeclaration>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl.owl#absurd -->
+
+    <owl:NamedIndividual rdf:about="&pr-owl;absurd"/>
+    
+
+
+    <!-- http://www.w3.org/1999/02/22-rdf-syntax-ns#type -->
+
+    <owl:NamedIndividual rdf:about="&rdf;type"/>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 3.1.0.20069) http://owlapi.sourceforge.net -->
+

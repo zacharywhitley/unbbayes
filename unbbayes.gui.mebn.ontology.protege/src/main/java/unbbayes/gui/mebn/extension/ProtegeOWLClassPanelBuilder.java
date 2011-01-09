@@ -20,12 +20,14 @@ import edu.stanford.smi.protegex.owl.ui.cls.OWLClassesTab;
  */
 public class ProtegeOWLClassPanelBuilder extends JPanel implements IMEBNEditionPanelBuilder {
 
+	
 	/**
 	 * Default constructor must be public to enable plugin support
 	 */
 	public ProtegeOWLClassPanelBuilder() {
-		// TODO Auto-generated constructor stub
+		super();
 	}
+
 
 	/*
 	 * (non-Javadoc)
@@ -33,13 +35,19 @@ public class ProtegeOWLClassPanelBuilder extends JPanel implements IMEBNEditionP
 	 */
 	public JPanel buildPanel(MultiEntityBayesianNetwork mebn,
 			IMEBNMediator mediator) {
-		// we do not need this plugin if mebn is not bound to a owl project
-		if (mebn.getStorageImplementor() == null 
-				|| !(mebn.getStorageImplementor() instanceof MEBNStorageImplementorDecorator)
-				|| ((MEBNStorageImplementorDecorator)mebn.getStorageImplementor()).getAdaptee() == null) {
+		// we do not need this plugin if mebn is not bound to a project
+		if (mebn == null || mebn.getStorageImplementor() == null ) {
 			return null;
 		}
-		return ProtegeOWLTabPanel.newInstance(OWLClassesTab.class.getName(), mebn, mediator);
+		
+		// return the old class editor
+		if ((mebn.getStorageImplementor() instanceof MEBNStorageImplementorDecorator)
+				&& ((MEBNStorageImplementorDecorator)mebn.getStorageImplementor()).getAdaptee() != null) {
+			return ProtegeOWLTabPanel.newInstance(OWLClassesTab.class.getName(), mebn, mediator);
+		}
+		
+		return  null;
 	}
+
 
 }

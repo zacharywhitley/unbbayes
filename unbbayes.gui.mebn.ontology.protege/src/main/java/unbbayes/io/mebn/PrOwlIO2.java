@@ -79,6 +79,8 @@ import unbbayes.util.Debug;
  */
 public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
 	
+	private String prowlOntologyNamespaceURI = "http://www.pr-owl.org/pr-owl.owl";
+	
 	private OWLOntology lastOWLOntology;
 	
 	private LoaderPrOwlIO wrappedLoaderPrOwlIO;
@@ -153,8 +155,20 @@ public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
 	public MultiEntityBayesianNetwork loadMebn(File file) throws IOException,
 			IOMebnException {
 		try {
+			// extract file name without extension
+			String fileNameNoExtension = file.getName();
+			try {
+				fileNameNoExtension = fileNameNoExtension.substring(0 , fileNameNoExtension.lastIndexOf('.'));
+				if ((fileNameNoExtension == null) || (fileNameNoExtension.length() <= 0)) {
+					fileNameNoExtension = file.getName();	// use unmodified file name by default
+				}
+			} catch (Exception e) {
+				Debug.println(this.getClass(), "Could not extract file name with no extension.", e);
+				fileNameNoExtension = file.getName(); // // use unmodified file name by default
+			}
+			
 			// this is a instance of MEBN to be filled. The name will be updated after loadMTheoryAndMFrags
-			MultiEntityBayesianNetwork mebn = new MultiEntityBayesianNetwork(file.getName());
+			MultiEntityBayesianNetwork mebn = new MultiEntityBayesianNetwork(fileNameNoExtension);
 			
 			// the main access point to ontologies is the OWLOntology and OWLOntologyManager (both from OWL API)
 			if (this.getLastOWLOntology()  == null) {
@@ -165,7 +179,13 @@ public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
 			// Start loading ontology. This is template method design pattern.
 
 			// load MTheory. The nameToMFragMap maps a name to a MFrag.
-			this.setMapNameToMFrag(this.loadMTheoryAndMFrags(this.getLastOWLOntology(), mebn));
+			try {
+				this.setMapNameToMFrag(this.loadMTheoryAndMFrags(this.getLastOWLOntology(), mebn));
+			} catch (IOMebnException e) {
+				// the ontology does not contain PR-OWL specific elements. Stop loading PR-OWL and return an empty mebn.
+				e.printStackTrace();
+				return mebn;
+			}
 			
 			// load object entities and fill the mapping of object entities
 			this.setMapLabelToObjectEntity(this.loadObjectEntity(this.getLastOWLOntology(), mebn));
@@ -270,10 +290,11 @@ public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
 	 * @param mebn : the loaded (but incomplete) MEBN object. This is an input and output argument (i.e. its values will be updated)
 	 * @return  a mapping from MFrag's name to a object of MFrag. This is useful to track
 	 * MFrags if the name in ontologies differs from names visible to users. This is a input and output argument
+	 * @throws IOMebnException when the ontology does not contain PR-OWL specific tags.
 	 */
 	protected Map<String, MFrag> loadMTheoryAndMFrags(OWLOntology ontology, MultiEntityBayesianNetwork mebn) throws IOMebnException {
 		
-		PrefixManager prefixManager = this.getDefaultPrefixManager(ontology);
+		PrefixManager prefixManager = this.getDefaultPrefixManager();
 		
 		// prepare the value to return
 		Map<String, MFrag> mapDomainMFrag = new HashMap<String, MFrag>();
@@ -334,7 +355,7 @@ public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
 	 */
 	protected Map<String, Entity> loadObjectEntity(OWLOntology ontology, MultiEntityBayesianNetwork mebn){
 		
-		PrefixManager prefixManager = this.getDefaultPrefixManager(ontology);
+		PrefixManager prefixManager = this.getDefaultPrefixManager();
 		
 		// TODO stop using subclasses of OBJECT_ENTITY and start using subclasses of Thing (except classes from PR-OWL definition)
 		
@@ -378,7 +399,7 @@ public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
 	 */
 	protected Map<String, Type> loadMetaEntitiesClasses(OWLOntology ontology, MultiEntityBayesianNetwork mebn){
 
-		PrefixManager prefixManager = this.getDefaultPrefixManager(ontology);
+		PrefixManager prefixManager = this.getDefaultPrefixManager();
 		
 		// the value to return
 		Map<String, Type> ret = new HashMap<String, Type>();
@@ -418,7 +439,7 @@ public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
 	 */
 	protected Map<String, CategoricalStateEntity> loadCategoricalStateEntity(OWLOntology ontology, MultiEntityBayesianNetwork mebn){
 
-		PrefixManager prefixManager = this.getDefaultPrefixManager(ontology);
+		PrefixManager prefixManager = this.getDefaultPrefixManager();
 		
 		// the returning value
 		Map<String, CategoricalStateEntity> ret = new HashMap<String, CategoricalStateEntity>();
@@ -466,7 +487,7 @@ public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
 	protected Map<String , Entity> loadBooleanStateEntity(OWLOntology ontology, MultiEntityBayesianNetwork mebn){
 		// TODO start using xsd:boolean
 
-		PrefixManager prefixManager = this.getDefaultPrefixManager(ontology);
+		PrefixManager prefixManager = this.getDefaultPrefixManager();
 		
 		// return value
 		Map<String , Entity> ret = new HashMap<String, Entity>();
@@ -534,7 +555,7 @@ public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
 	 */
 	protected Map<String, INode> loadDomainMFragContents(OWLOntology ontology, MultiEntityBayesianNetwork mebn) throws IOMebnException{
 
-		PrefixManager prefixManager = this.getDefaultPrefixManager(ontology);
+		PrefixManager prefixManager = this.getDefaultPrefixManager();
 		
 		// the return value
 		Map<String, INode> mapMultiEntityNode = new HashMap<String, INode>();
@@ -634,7 +655,7 @@ public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
 	 */
 	protected Map<String, BuiltInRV> loadBuiltInRV(OWLOntology ontology, MultiEntityBayesianNetwork mebn) throws IOMebnException{
 
-		PrefixManager prefixManager = this.getDefaultPrefixManager(ontology);
+		PrefixManager prefixManager = this.getDefaultPrefixManager();
 		
 		// return value
 		Map<String, BuiltInRV> ret = new HashMap<String, BuiltInRV>();
@@ -708,7 +729,7 @@ public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
 	protected Map<String, ContextNode> loadContextNode( OWLOntology ontology, MultiEntityBayesianNetwork mebn) 
 														throws IOMebnException {
 
-		PrefixManager prefixManager = this.getDefaultPrefixManager(ontology);
+		PrefixManager prefixManager = this.getDefaultPrefixManager();
 		
 		Map<String, ContextNode> ret = new HashMap<String, ContextNode>();
 		
@@ -817,7 +838,7 @@ public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
 
 		Map<String, ResidentNode> ret = new HashMap<String, ResidentNode>();
 		
-		PrefixManager prefixManager = this.getDefaultPrefixManager(ontology);
+		PrefixManager prefixManager = this.getDefaultPrefixManager();
 		
 		OWLClass domainResidentNodePr = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(DOMAIN_RESIDENT, prefixManager); 
 		
@@ -1020,7 +1041,7 @@ public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
 	 */
 	protected Map<String, InputNode> loadGenerativeInputNode(OWLOntology ontology, MultiEntityBayesianNetwork mebn) throws IOMebnException{
 	    
-		PrefixManager prefixManager = this.getDefaultPrefixManager(ontology);
+		PrefixManager prefixManager = this.getDefaultPrefixManager();
 		
 		Map<String, InputNode> ret = new HashMap<String, InputNode>();
 		
@@ -1114,7 +1135,7 @@ public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
 	 */
 	protected Map<String, OrdinaryVariable> loadOrdinaryVariable(OWLOntology ontology, MultiEntityBayesianNetwork mebn) throws IOMebnException{
 		
-		PrefixManager prefixManager = this.getDefaultPrefixManager(ontology);
+		PrefixManager prefixManager = this.getDefaultPrefixManager();
 		
 		Map<String, OrdinaryVariable> ret = new HashMap<String, OrdinaryVariable>();
 		
@@ -1182,7 +1203,7 @@ public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
 	 */
 	protected Map<String, Argument> loadArgRelationship(OWLOntology ontology, MultiEntityBayesianNetwork mebn) throws IOMebnException{
 
-		PrefixManager prefixManager = this.getDefaultPrefixManager(ontology);
+		PrefixManager prefixManager = this.getDefaultPrefixManager();
 		
 		Map<String, Argument> ret = new HashMap<String, Argument>();
 		
@@ -1321,7 +1342,7 @@ public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
 	 */
 	protected Map<String, Argument> loadSimpleArgRelationship(OWLOntology ontology, MultiEntityBayesianNetwork mebn) throws IOMebnException{
 		
-		PrefixManager prefixManager = this.getDefaultPrefixManager(ontology);
+		PrefixManager prefixManager = this.getDefaultPrefixManager();
 		
 		Map<String, Argument> ret = new HashMap<String, Argument>();
 		
@@ -1393,7 +1414,7 @@ public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
 	 */
 	protected Map<String, ObjectEntityInstance> loadObjectEntityIndividuals(OWLOntology ontology, MultiEntityBayesianNetwork mebn) throws TypeException {
 		
-		PrefixManager prefixManager = this.getDefaultPrefixManager(ontology);
+		PrefixManager prefixManager = this.getDefaultPrefixManager();
 		
 		Map<String, ObjectEntityInstance> ret = new HashMap<String, ObjectEntityInstance>();
 		
@@ -1693,12 +1714,15 @@ public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
 		Set<OWLAnnotation> comments = individual.asOWLNamedIndividual().getAnnotations(ontology, commentProperty);
 	
 		// the comment as a string value
-		String comment = null;
+		String comment = "";
 		
-		// only use the first comment (ignore other comments)
-		if(comments.size() > 0){
-			if(comments.toArray()[0] instanceof String){
-				comment = (String)comments.toArray()[0]; 
+		// concatenate all comments
+		for (OWLAnnotation owlAnnotation : comments) {
+			try {
+				comment += ((OWLLiteral)owlAnnotation.getValue()).getLiteral();
+			} catch (Exception e) {
+				// errors on comments are not fatal
+				e.printStackTrace();
 			}
 		}
 		Debug.println(this.getClass(), "Comment loaded: " + comment + " for individual " + individual);
@@ -1706,20 +1730,50 @@ public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
 	}
 	
 	/**
+	 * @return {@link #getDefaultPrefixManager(null)}
+	 * @see #getDefaultPrefixManager(OWLOntology)
+	 */
+	protected PrefixManager getDefaultPrefixManager() {
+		return this.getDefaultPrefixManager(null);
+	}
+	
+	/**
 	 * Obtains the default prefix manager, which will be used in order to extract classes by name/ID.
+	 * If ontology == null, it uses {@link #getProwlOntologyNamespaceURI()} in order to create the prefix
+	 * (thus, if ontology == null, it returns a PR-OWL ontology prefix).
+	 * @param ontology : ontology being read.
 	 * @return a prefix manager or null if it could not be created
 	 */
 	protected PrefixManager getDefaultPrefixManager(OWLOntology ontology) {
-		try {
-			String defaultPrefix = ontology.getOntologyID().getDefaultDocumentIRI().toString();
+		
+		// use PR-OWL prefix if no ontology was specified
+		if (ontology == null) {
+			// extract the PR-OWL ontology namespaces with '#'
+			String defaultPrefix = this.getProwlOntologyNamespaceURI();
+			if (defaultPrefix == null) {
+				defaultPrefix = "";		// use empty prefix if none was specified
+			}
 			if (!defaultPrefix.endsWith("#")) {
 				defaultPrefix += "#";
 			}
 			PrefixManager prefixManager = new DefaultPrefixManager(defaultPrefix);
 			return prefixManager;
-		} catch (Throwable e) {
-			e.printStackTrace();
+		} else {
+			// read prefix from ontology
+			try {
+				String defaultPrefix = ontology.getOntologyID().getDefaultDocumentIRI().toString();
+				if (!defaultPrefix.endsWith("#")) {
+					defaultPrefix += "#";
+				}
+				PrefixManager prefixManager = new DefaultPrefixManager(defaultPrefix);
+				return prefixManager;
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
 		}
+		
+		
+		// could not extract prefixes at all...
 		return null;
 	}
 	
@@ -2168,5 +2222,21 @@ public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
 	protected void setMapLoadedObjectEntityIndividuals(
 			Map<String, ObjectEntityInstance> mapLoadedObjectEntityIndividuals) {
 		this.mapLoadedObjectEntityIndividuals = mapLoadedObjectEntityIndividuals;
+	}
+
+	/**
+	 * This string identifies the URI of pr-owl elements (http://www.pr-owl.org/pr-owl.owl).
+	 * @return the prowlOntologyNamespaceURI
+	 */
+	protected String getProwlOntologyNamespaceURI() {
+		return prowlOntologyNamespaceURI;
+	}
+
+	/**
+	 * This string identifies the URI of pr-owl elements (http://www.pr-owl.org/pr-owl.owl).
+	 * @param prowlOntologyNamespaceURI the prowlOntologyNamespaceURI to set
+	 */
+	protected void setProwlOntologyNamespaceURI(String prowlOntologyNamespaceURI) {
+		this.prowlOntologyNamespaceURI = prowlOntologyNamespaceURI;
 	}
 }

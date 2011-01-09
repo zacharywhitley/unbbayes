@@ -25,13 +25,21 @@ mvn install:install-file -DgroupId=guess -DartifactId=iri -Dversion=2.4 -Dpackag
 mvn install:install-file -DgroupId=guess -DartifactId=jena -Dversion=2.4 -Dpackaging=jar -Dfile=jena.jar
 mvn install:install-file -DgroupId=guess -DartifactId=protege-owl -Dversion=3.2 -Dpackaging=jar -Dfile=protege-owl.jar
 
-The following JAR is a dependency of protege 4.1
-Go to \mvn_lib\Protege_4.1_beta\bundles>
+The following JARs are dependencies of protege 4.1
+
+Go to \src\main\resources\protege\bin>
+mvn install:install-file -DgroupId=org.apache.felix -DartifactId=org.apache.felix.main -Dversion=2.0.4 -Dpackaging=jar -Dfile=felix.jar
+
+Go to \src\main\resources\protege\bundles>
+mvn install:install-file -DgroupId=org.apache.felix -DartifactId=org.apache.felix.bundlerepository -Dversion=1.4.2 -Dpackaging=jar -Dfile=org.apache.felix.bundlerepository-1.4.2.jar
+mvn install:install-file -DgroupId=guess -DartifactId=org.eclipse.equinox.common -Dversion=3.5.0.v20090520-1800 -Dpackaging=jar -Dfile=org.eclipse.equinox.common.jar
+mvn install:install-file -DgroupId=guess -DartifactId=org.eclipse.equinox.registry -Dversion=3.4.100.v20090520-1800 -Dpackaging=jar -Dfile=org.eclipse.equinox.registry.jar
 mvn install:install-file -DgroupId=guess -DartifactId=org.eclipse.equinox.supplement -Dversion=1.2.0.v20090518 -Dpackaging=jar -Dfile=org.eclipse.equinox.supplement.jar
 mvn install:install-file -DgroupId=guess -DartifactId=org.protege.common -Dversion=4.1 -Dpackaging=jar -Dfile=org.protege.common.jar
 mvn install:install-file -DgroupId=guess -DartifactId=org.protege.editor.core.application -Dversion=4.1 -Dpackaging=jar -Dfile=org.protege.editor.core.application.jar
+mvn install:install-file -DgroupId=guess -DartifactId=org.protege.jaxb -Dversion=1.0.0.2010_10_26_0330 -Dpackaging=jar -Dfile=org.protege.jaxb.jar
 
-Go to \mvn_lib\Protege_4.1_beta\plugins>
+Go to \src\main\resources\protege\plugins>
 mvn install:install-file -DgroupId=guess -DartifactId=org.coode.dlquery -Dversion=1.1.0.2010_09_03_0304 -Dpackaging=jar -Dfile=org.coode.dlquery.jar
 mvn install:install-file -DgroupId=guess -DartifactId=org.coode.owlviz -Dversion=4.1.1.2010_09_03_0304 -Dpackaging=jar -Dfile=org.coode.owlviz.jar
 mvn install:install-file -DgroupId=guess -DartifactId=org.protege.editor.owl -Dversion=4.1.0.b209_2010_09_03_0303 -Dpackaging=jar -Dfile=org.protege.editor.owl.jar
@@ -39,6 +47,13 @@ mvn install:install-file -DgroupId=guess -DartifactId=org.protege.ontograf -Dver
 mvn install:install-file -DgroupId=guess -DartifactId=org.semanticweb.HermiT -Dversion=1.2.5.927 -Dpackaging=jar -Dfile=org.semanticweb.HermiT.jar
 mvn install:install-file -DgroupId=guess -DartifactId=org.semanticweb.owl.owlapi -Dversion=3.1.0.1602 -Dpackaging=jar -Dfile=org.semanticweb.owl.owlapi.jar
 
+Go to \mvn_lib\Protege_4.1_beta\lib>
+mvn install:install-file -DgroupId=com.jgoodies -DartifactId=looks -Dversion=2.2.1 -Dpackaging=jar -Dfile=looks.jar
+mvn install:install-file -DgroupId=guess -DartifactId=org.protege.owlapi.extensions -Dversion=1.0.0 -Dpackaging=jar -Dfile=protege-owlapi-extensions.jar
+mvn install:install-file -DgroupId=guess -DartifactId=org.protege.xmlcatalog -Dversion=1.0.0 -Dpackaging=jar -Dfile=xmlcatalog.jar
+mvn install:install-file -DgroupId=guess -DartifactId=org.onemind.jxp -Dversion=1.2.0 -Dpackaging=jar -Dfile=jxp.jar
+mvn install:install-file -DgroupId=guess -DartifactId=org.coode.mdock -Dversion=1.0.0 -Dpackaging=jar -Dfile=mdock.jar
+mvn install:install-file -DgroupId=guess -DartifactId=org.jdesktop.swingworker -Dversion=1.0.0 -Dpackaging=jar -Dfile=swing-worker.jar
 
 
 The following JAR is a dependency of the UnBBayes core

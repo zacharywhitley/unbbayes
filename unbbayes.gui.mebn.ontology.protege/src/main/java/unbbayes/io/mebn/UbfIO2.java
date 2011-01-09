@@ -441,14 +441,22 @@ public class UbfIO2 extends UbfIO {
 						// Note: this code expects that changes on mebn.getMFragList() will influence the order of MFrags in mebn (i.e. getMFragList does not return a copy of the actual list)
 						try {
 							Collections.swap(mebn.getMFragList(), mfragOrderingIndex, mebn.getMFragList().indexOf(mfrag));
-							Debug.println(this.getClass(), 
-									"Swapped MFrag \"" + mfrag.getName() 
-									+ "\" to the position " + mfragOrderingIndex);
+							try {
+								Debug.println(this.getClass(), 
+										"Swapped MFrag \"" + mfrag.getName() 
+										+ "\" to the position " + mfragOrderingIndex);
+							} catch (Throwable t) {
+								// ignore error in debug class
+							}
 							mfragOrderingIndex++;
 						} catch (Exception e) {
-							Debug.println(this.getClass(), 
-									"Could not place MFrag \"" + mfrag.getName() 
-									+ "\" in the position " + mfragOrderingIndex + ".", e);
+							try {
+								Debug.println(this.getClass(), 
+										"Could not place MFrag \"" + mfrag.getName() 
+										+ "\" in the position " + mfragOrderingIndex + ".", e);
+							} catch (Throwable t) {
+								// ignore error in debug class
+							}
 						}
 					}
 				}
@@ -626,37 +634,37 @@ public class UbfIO2 extends UbfIO {
 						if (node instanceof ResidentNode) {
 							try {
 								Collections.swap(mfrag.getResidentNodeList(), residentNodeIndex, mfrag.getResidentNodeList().indexOf(node));
-								Debug.println(this.getClass(), "Swapping resident node " + node.getName() + " to index " + residentNodeIndex);
 								residentNodeIndex++; // we should update index only on success.
+								Debug.println(this.getClass(), "Swapping resident node " + node + " to index " + residentNodeIndex);
 							} catch (Exception e) {
-								Debug.println(this.getClass(), "Could not reorder resident node " + node.getName() + " to index " + residentNodeIndex, e);
+								Debug.println(this.getClass(), "Could not reorder resident node " + node + " to index " + residentNodeIndex, e);
 							}
 						} else if (node instanceof InputNode) {
 							try {
 								Collections.swap(mfrag.getInputNodeList(), inputNodeIndex, mfrag.getInputNodeList().indexOf(node));
-								Debug.println(this.getClass(), "Swapping input node " + node.getName() + " to index " + inputNodeIndex);
 								inputNodeIndex++; // we should update index only on success.
+								Debug.println(this.getClass(), "Swapping input node " + node + " to index " + inputNodeIndex);
 							} catch (Exception e) {
-								Debug.println(this.getClass(), "Could not reorder input node " + node.getName() + " to index " + inputNodeIndex, e);
+								Debug.println(this.getClass(), "Could not reorder input node " + node + " to index " + inputNodeIndex, e);
 							}
 						} else if (node instanceof ContextNode) {
 							try {
 								Collections.swap(mfrag.getContextNodeList(), contextNodeIndex, mfrag.getContextNodeList().indexOf(node));
-								Debug.println(this.getClass(), "Swapping context node " + node.getName() + " to index " + contextNodeIndex);
 								contextNodeIndex++; // we should update index only on success.
+								Debug.println(this.getClass(), "Swapping context node " + node + " to index " + contextNodeIndex);
 							} catch (Exception e) {
-								Debug.println(this.getClass(), "Could not reorder context node " + node.getName() + " to index " + contextNodeIndex, e);
+								Debug.println(this.getClass(), "Could not reorder context node " + node + " to index " + contextNodeIndex, e);
 							}
 						} else if (node instanceof OrdinaryVariable){
 							try {
 								Collections.swap(mfrag.getOrdinaryVariableList(), ordinaryVariableIndex, mfrag.getOrdinaryVariableList().indexOf(node));
-								Debug.println(this.getClass(), "Swapping ordinary variable " + node.getName() + " to index " + ordinaryVariableIndex);
 								ordinaryVariableIndex++; // we should update index only on success.
+								Debug.println(this.getClass(), "Swapping ordinary variable " + node + " to index " + ordinaryVariableIndex);
 							} catch (Exception e) {
-								Debug.println(this.getClass(), "Could not reorder ordinary variable " + node.getName() + " to index " + ordinaryVariableIndex, e);
+								Debug.println(this.getClass(), "Could not reorder ordinary variable " + node + " to index " + ordinaryVariableIndex, e);
 							}
 						} else {
-							Debug.println(this.getClass(), "The type of node is unknown: " + node.getClass().getName());
+							Debug.println(this.getClass(), "The type of node is unknown: " + node);
 						}
 					}
 				}
@@ -742,7 +750,7 @@ public class UbfIO2 extends UbfIO {
 						String name = st.sval;
 						// only update resident nodes
 						if (node instanceof ResidentNode) {
-							Debug.println(this.getClass() , "Solving the order of possible values of " + node.getName());
+							Debug.println(this.getClass() , "Solving the order of possible values of " + node);
 							
 							ResidentNode resident = (ResidentNode)node;
 							if (!resident.hasPossibleValue(name)) {
@@ -772,10 +780,14 @@ public class UbfIO2 extends UbfIO {
 															+ possibleValueIndex
 															+ ", " + oldIndex, e);
 												}
-												Debug.println(this.getClass() , "Altered values: " 
-														+ resident.getPossibleValueLinkList().get(possibleValueIndex).getState().getName()
-														+ ", " 
-														+ resident.getPossibleValueLinkList().get(oldIndex).getState().getName());
+												try {
+													Debug.println(this.getClass() , "Altered values: " 
+															+ resident.getPossibleValueLinkList().get(possibleValueIndex).getState().getName()
+															+ ", " 
+															+ resident.getPossibleValueLinkList().get(oldIndex).getState().getName());
+												} catch (Throwable t) {
+													// ignore error in debug class
+												}
 											} else {
 												Debug.println(this.getClass() , "State was not found: " + st.sval);
 											}
@@ -786,7 +798,7 @@ public class UbfIO2 extends UbfIO {
 								ex.printStackTrace(); 
 							}
 						} else {
-							Debug.println(this.getClass(), node.getName() + " is not a resident node, thus no order is appliable.");
+							Debug.println(this.getClass(), node + " is not a resident node, thus no order is appliable.");
 						}
 					}
 				}

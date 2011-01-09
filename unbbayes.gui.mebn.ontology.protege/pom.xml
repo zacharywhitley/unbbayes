@@ -167,7 +167,7 @@
 			<dependency>
 				<groupId>br.unb.cic</groupId>
 				<artifactId>unbbayes</artifactId>
-				<version>4.1.0</version>
+				<version>4.2.1</version>
 			</dependency>
 			
 			<!-- This is a plugin project for unbbayes.prs.mebn -->
@@ -188,6 +188,15 @@
 			    <artifactId>org.protege.editor.core.application</artifactId>
 			    <version>4.1</version>
 			</dependency>
+			<!-- Looks like this class solves problems on parsing XML -->
+			<!--
+			<dependency>
+			    <groupId>guess</groupId>
+			    <artifactId>org.protege.jaxb</artifactId>
+			    <version>1.0.0.2010_10_26_0330</version>
+			</dependency>
+			 -->
+			<!-- These are plug-ins for Protege4.1 -->
 			 <dependency>
 			    <groupId>guess</groupId>
 			    <artifactId>org.protege.ontograf</artifactId>
@@ -200,7 +209,6 @@
 			</dependency>
 			
 			<!-- org.protege.editor.owl contains the following JARs, but it seems like a bug is impeding UnBBayes to load it (so, lets add explicit dependency) -->
-			<!-- 
 			<dependency>
 			    <groupId>guess</groupId>
 			    <artifactId>org.protege.owlapi.extensions</artifactId>
@@ -211,7 +219,31 @@
 			    <artifactId>org.protege.xmlcatalog</artifactId>
 			    <version>1.0.0</version>
 			</dependency>
-			-->
+			<dependency>
+			    <groupId>com.jgoodies</groupId>
+			    <artifactId>looks</artifactId>
+			    <version>2.2.1</version>
+			</dependency>
+			<dependency>
+			    <groupId>commons-lang</groupId>
+			    <artifactId>commons-lang</artifactId>
+			    <version>2.2</version>
+			</dependency>
+			<dependency>
+			    <groupId>guess</groupId>
+			    <artifactId>org.onemind.jxp</artifactId>
+			    <version>1.2.0</version>
+			</dependency>
+			<dependency>
+			    <groupId>guess</groupId>
+			    <artifactId>org.coode.mdock</artifactId>
+			    <version>1.0.0</version>
+			</dependency>
+			<dependency>
+			    <groupId>guess</groupId>
+			    <artifactId>org.jdesktop.swingworker</artifactId>
+			    <version>1.0.0</version>
+			</dependency>
 			
 			<!-- Protege 4.1 depends on apache felix -->
 			<dependency>
@@ -219,11 +251,13 @@
 				<artifactId>org.apache.felix.main</artifactId>
 				<version>2.0.4</version>
 			</dependency>
+			<!-- 
 			<dependency>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>org.apache.felix.framework</artifactId>
 				<version>2.0.4</version>
 			</dependency>
+			 -->
 			<dependency>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>org.apache.felix.bundlerepository</artifactId>
@@ -231,6 +265,7 @@
 			</dependency>
 			
 			<!-- Protege 4.1 depends on eclipse equinox -->
+			<!-- 
 			<dependency>
 			    <groupId>org.eclipse.equinox</groupId>
 			    <artifactId>org.eclipse.equinox.common</artifactId>
@@ -240,6 +275,18 @@
 			    <groupId>org.eclipse.equinox</groupId>
 			    <artifactId>org.eclipse.equinox.registry</artifactId>
 			    <version>3.5.0.v20100503</version>
+			</dependency>
+			-->
+			<!-- There is an official equinox repository, but the required version does not match... -->
+			<dependency>
+			    <groupId>guess</groupId>
+			    <artifactId>org.eclipse.equinox.registry</artifactId>
+			    <version>3.4.100.v20090520-1800</version>
+			</dependency>
+			<dependency>
+			    <groupId>guess</groupId>
+			    <artifactId>org.eclipse.equinox.common</artifactId>
+			    <version>3.5.0.v20090520-1800</version>
 			</dependency>
 			 <dependency>
 			    <groupId>guess</groupId>
@@ -288,6 +335,47 @@
 			    <version>3.1.0.1602</version>
 			</dependency>
 			
+			<!-- Protege 4.1 depends on log4j. Usually, there is no need to load log4j if we do not want to use it in the top application (log4j was designed in that way), but
+			     because Protege 4.1 loads log4j using OSGI and OSGI seems to (literally) stop loading classes when it cannot find a dependency (i.e. log4j), it destroys one of the major
+			     advantages of log4j (i.e. the option to disable it just by not loading its jar) -->
+			<!-- 
+			<dependency>
+			    <groupId>log4j</groupId>
+			    <artifactId>log4j</artifactId>
+			    <version>1.2.16</version>
+			</dependency>
+			 -->
+			 <!-- Protege's JAXB to correctly parse XML files -->
+			 <!-- 
+			 <dependency>
+			    <groupId>javax.xml.bind</groupId>
+			    <artifactId>jsr173_api</artifactId>
+			    <version>1.0</version>
+			</dependency>
+			<dependency>
+			    <groupId>com.sun.xml.bind</groupId>
+			    <artifactId>jaxb-impl</artifactId>
+			    <version>2.2.1</version>
+			</dependency>
+			<dependency>
+			    <groupId>javax.xml.bind</groupId>
+			    <artifactId>activation</artifactId>
+			    <version>1.0.2</version>
+			</dependency>
+ 			<dependency>
+			    <groupId>javax.xml.bind</groupId>
+			    <artifactId>jaxb-api</artifactId>
+			    <version>2.2.1</version>
+			</dependency>
+			  -->
+			 <!-- Xalan 2.7.1 from UnBBayes is throwing exceptions when protege's catalogs are parsed... -->
+			 <!--  
+			 <dependency>
+			    <groupId>xalan</groupId>
+			    <artifactId>xalan</artifactId>
+			    <version>2.7.1</version>
+			</dependency>
+			-->
 	</dependencies>
 	<reporting>
 		<plugins>
