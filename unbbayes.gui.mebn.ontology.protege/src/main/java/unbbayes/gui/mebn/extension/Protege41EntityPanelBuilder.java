@@ -76,7 +76,8 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
         {"file.encoding", "utf-8"},
         {"apple.laf.useScreenMenuBar", "true"},
         {"com.apple.mrj.application.growbox.intrudes", "true"},
-		{"swing.defaultlaf", UIManager.getSystemLookAndFeelClassName()}
+		{"swing.defaultlaf", UIManager.getSystemLookAndFeelClassName()},
+		{"javax.xml.transform.TransformerFactory","unbbayes.prs.mebn.ontology.protege.UnBBayesTransformerFactory"}	// force Xalan to use this factory (which is a workaround to solve the "indent-number" bug)
     };
 
 	/** This is the name of the bundle carring the {@link org.protege.editor.core.ProtegeApplication} */
@@ -94,9 +95,10 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
     
     /** These are some known values of {@link #getLaunchProperties()}. These values will be added to {@link #getLaunchProperties()} in {@link #initializeLaunchProperties()} */
     public static final String[][] PROTEGEFRAMEWORKPROPERTIES = { 
-    	{Constants.FRAMEWORK_BUNDLE_PARENT, Constants.FRAMEWORK_BUNDLE_PARENT_FRAMEWORK}, // who is the parent classloader
-        {Constants.FRAMEWORK_BOOTDELEGATION, "sun.*,com.sun.*,apple.*,com.apple.*"}, 
+    	{Constants.FRAMEWORK_BUNDLE_PARENT, Constants.FRAMEWORK_BUNDLE_PARENT_APP}, // who is the parent classloader
+//        {Constants.FRAMEWORK_BOOTDELEGATION, "sun.*,com.sun.*,apple.*,com.apple.*"}, 
 //        {Constants.FRAMEWORK_BOOTDELEGATION, "sun.*,com.sun.*,apple.*,com.apple.*,org.protege.editor.core,org.protege.editor.core.*,org.eclipse.core.internal.*"}, // what packages should be loaded by parent classloader
+        {Constants.FRAMEWORK_BOOTDELEGATION, "*"}, // what packages should be loaded by parent classloader
         {Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, "javax.xml.parsers,org.xml.sax,org.xml.sax.ext,org.xml.sax.helpers,org.apache.log4j"}, // packages automatically exported to OSGi by this application
         {Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT},
 };
@@ -230,7 +232,7 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
 							public void componentResized(ComponentEvent e) {
 								if (e.getComponent() != null) {
 									// resize protege workspace if the panel is resized
-									Dimension d = new Dimension(e.getComponent().getSize().width - 50, e.getComponent().getSize().height- 50);
+									Dimension d = new Dimension(e.getComponent().getSize().width - 10, e.getComponent().getSize().height - 10);
 									view.setSize(d);
 									view.setPreferredSize(d);
 									view.repaint();
@@ -370,14 +372,15 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
 						EditorKit kit = manager.getEditorKitManager().getEditorKits().get(0);
 						JFrame workspaceFrame = manager.getFrame(kit.getWorkspace());
 						Component view = workspaceFrame.getContentPane();
+						workspaceFrame.setVisible(false);
 						// remove view from the protege workspace
 						workspaceFrame.remove(view);
-						workspaceFrame.setContentPane(null);
+						workspaceFrame.setContentPane(new JPanel());
 						// hide frame
-						workspaceFrame.setVisible(false);
-						manager.getEditorKitManager().getWorkspaceManager().removeWorkspace(kit.getWorkspace());
+//						manager.getEditorKitManager().getWorkspaceManager().removeWorkspace(kit.getWorkspace());
+						workspaceFrame.dispose();
 						
-						return view;
+						return kit.getWorkspace();
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -562,6 +565,8 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
     		// simulate command line argument to protege
 			System.setProperty(PlatformArguments.ARG_PROPERTY + 0, uri.toString());
 		}
+    	
+    	
     }
 
 	/**

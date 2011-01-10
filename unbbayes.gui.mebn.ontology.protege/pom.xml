@@ -197,11 +197,13 @@
 			</dependency>
 			 -->
 			<!-- These are plug-ins for Protege4.1 -->
+			<!-- 
 			 <dependency>
 			    <groupId>guess</groupId>
 			    <artifactId>org.protege.ontograf</artifactId>
 			    <version>1.0.1.2010_09_03_0304</version>
 			</dependency>
+			 -->
 			<dependency>
 			    <groupId>guess</groupId>
 			    <artifactId>org.protege.editor.owl</artifactId>
@@ -296,17 +298,21 @@
 			
 			
 			<!-- Protege 4.1 depends on CO-ODE -->
+			<!-- 
 			<dependency>
 			    <groupId>guess</groupId>
 			    <artifactId>org.coode.dlquery</artifactId>
 			    <version>1.1.0.2010_09_03_0304</version>
 			</dependency>
+			 -->
+			<!-- 
 			 <dependency>
 			    <groupId>guess</groupId>
 			    <artifactId>org.coode.owlviz</artifactId>
 			    <version>4.1.1.2010_09_03_0304</version>
 			</dependency>
-			
+			 -->
+			 
 			<!-- Protege 4.1 depends on HermiT -->
 			<dependency>
 			    <groupId>guess</groupId>
@@ -346,7 +352,6 @@
 			</dependency>
 			 -->
 			 <!-- Protege's JAXB to correctly parse XML files -->
-			 <!-- 
 			 <dependency>
 			    <groupId>javax.xml.bind</groupId>
 			    <artifactId>jsr173_api</artifactId>
@@ -367,15 +372,12 @@
 			    <artifactId>jaxb-api</artifactId>
 			    <version>2.2.1</version>
 			</dependency>
-			  -->
 			 <!-- Xalan 2.7.1 from UnBBayes is throwing exceptions when protege's catalogs are parsed... -->
-			 <!--  
 			 <dependency>
 			    <groupId>xalan</groupId>
 			    <artifactId>xalan</artifactId>
 			    <version>2.7.1</version>
 			</dependency>
-			-->
 	</dependencies>
 	<reporting>
 		<plugins>
