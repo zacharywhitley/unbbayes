@@ -19,7 +19,7 @@ public class UnBBayesTransformerFactory extends TransformerFactoryImpl {
 	private Collection<String> ignoredArguments = new HashSet<String>();
 
 	/**
-	 * The default constructor must be public, so that Xalan can correclty instantiate it
+	 * The default constructor must be public, so that Xalan can correctly instantiate it
 	 * using reflection.
 	 * It initializes {@link #getIgnoredArguments()} as "indent-number"
 	 */

@@ -77,7 +77,7 @@ import unbbayes.util.Debug;
  * @author Shou Matsumoto
  *
  */
-public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
+public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntologyUser {
 	
 	private String prowlOntologyNamespaceURI = "http://www.pr-owl.org/pr-owl.owl";
 	
@@ -130,20 +130,20 @@ public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
 	 * It won't initialize complex fields (e.g. resource classes, wrapped classes, etc.).
 	 * @deprecated use {@link #newInstance()} instead
 	 */
-	public PrOwlIO2() {
+	public OWLAPICompatiblePROWL2IO() {
 		super();
 	}
 	
 	/**
-	 * This is the constructor method to be used in order to create new instances of {@link PrOwlIO2}
+	 * This is the constructor method to be used in order to create new instances of {@link OWLAPICompatiblePROWL2IO}
 	 * @return
 	 */
-	public static PrOwlIO2 newInstance() {
-		PrOwlIO2 ret = new PrOwlIO2();
+	public static MebnIO newInstance() {
+		OWLAPICompatiblePROWL2IO ret = new OWLAPICompatiblePROWL2IO();
 		ret.setResource(unbbayes.util.ResourceController.newInstance().getBundle(
 				unbbayes.io.mebn.resources.IoMebnResources.class.getName(),
 				Locale.getDefault(),
-				PrOwlIO2.class.getClassLoader()
+				OWLAPICompatiblePROWL2IO.class.getClassLoader()
 			));
 		ret.setWrappedLoaderPrOwlIO(new LoaderPrOwlIO());
 		return ret;
@@ -1822,7 +1822,7 @@ public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
 
 	
 	/**
-	 * {@link PrOwlIO2} implements delegator design patter without directly extending LoaderPrOwlIO (because of incompatible interfaces).
+	 * {@link OWLAPICompatiblePROWL2IO} implements delegator design patter without directly extending LoaderPrOwlIO (because of incompatible interfaces).
 	 * Some functionalities will be delegated to this wrapped object when necessary (e.g. to extract naming patterns like scope separators, etc.).
 	 * @return the wrappedLoaderPrOwlIO. A new instance will be returned if nothing is specified.
 	 */
@@ -1834,7 +1834,7 @@ public class PrOwlIO2 extends PrOwlIO implements IOWLAPIOntologyUser {
 	}
 
 	/**
-	 * {@link PrOwlIO2} implements delegator design patter without directly extending LoaderPrOwlIO (because of incompatible interfaces).
+	 * {@link OWLAPICompatiblePROWL2IO} implements delegator design patter without directly extending LoaderPrOwlIO (because of incompatible interfaces).
 	 * Some functionalities will be delegated to this wrapped object when necessary (e.g. to extract naming patterns like scope separators, etc.)
 	 * @param wrappedLoaderPrOwlIO the wrappedLoaderPrOwlIO to set
 	 */

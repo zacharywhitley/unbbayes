@@ -60,14 +60,14 @@ import unbbayes.util.Debug;
  * @version 2.0
  * @since 2010, December 24th
  * @see UbfIO
- * @see PrOwlIO2
+ * @see OWLAPICompatiblePROWL2IO
  *
  */
 public class UbfIO2 extends UbfIO {
 
 	private double ubfVersion = 2.0d;
 	
-	private PrOwlIO prowlIO;
+	private MebnIO prowlIO;
 	
 	private String prowlFileExtension = "owl";
 	
@@ -83,7 +83,25 @@ public class UbfIO2 extends UbfIO {
 	 */
 	public UbfIO2() {
 		super();
-		
+		try {
+			this.setResource(unbbayes.util.ResourceController.newInstance().getBundle(
+					unbbayes.io.mebn.resources.IoUbfResources.class.getName(),	// same from superclass
+					Locale.getDefault(),										// use OS locale
+					UbfIO2.class.getClassLoader()							// use plug-in class loader
+			));
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+		try {
+			this.setProwlIO(Protege41CompatiblePROWL2IO.newInstance());		// load PR-OWL ontology using protege
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+		try {
+			this.setName(UbfIO2.class.getSimpleName());	// the name must be different from the superclass
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**
@@ -92,13 +110,6 @@ public class UbfIO2 extends UbfIO {
 	 */
 	public static UbfIO2 getInstance() {
 		UbfIO2 ret = new UbfIO2();
-		ret.setResource(unbbayes.util.ResourceController.newInstance().getBundle(
-				unbbayes.io.mebn.resources.IoUbfResources.class.getName(),	// same from superclass
-				Locale.getDefault(),										// use OS locale
-				UbfIO2.class.getClassLoader()							// use plug-in class loader
-		));
-		ret.setProwlIO(PrOwlIO2.newInstance());		// the default PrOwlIO is PrOwlIO2
-		ret.setName(UbfIO2.class.getSimpleName());	// the name must be different from the superclass
 		return ret;
 	}
 	
@@ -886,9 +897,9 @@ public class UbfIO2 extends UbfIO {
 	/**
 	 * @return the prowlIO . A new instance will be created if none was specified
 	 */
-	public PrOwlIO getProwlIO() {
+	public MebnIO getProwlIO() {
 		if (prowlIO == null) {
-			prowlIO = PrOwlIO2.newInstance();
+			prowlIO = OWLAPICompatiblePROWL2IO.newInstance();
 		}
 		return prowlIO;
 	}
@@ -896,7 +907,7 @@ public class UbfIO2 extends UbfIO {
 	/**
 	 * @param prowlIO the prowlIO to set
 	 */
-	public void setProwlIO(PrOwlIO prowlIO) {
+	public void setProwlIO(MebnIO prowlIO) {
 		this.prowlIO = prowlIO;
 	}
 	
