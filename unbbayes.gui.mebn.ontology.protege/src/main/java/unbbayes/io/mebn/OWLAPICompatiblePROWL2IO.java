@@ -39,11 +39,13 @@ import unbbayes.prs.INode;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.IMEBNFactory;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
+import unbbayes.prs.mebn.PROWL2MEBNFactory;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.ResidentNodePointer;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVAnd;
@@ -122,6 +124,8 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 	private Map<String, Argument> mapFilledSimpleArguments;
 
 	private Map<String, ObjectEntityInstance> mapLoadedObjectEntityIndividuals;
+	
+	private IMEBNFactory mebnFactory;
 
 	/**
 	 * The default constructor is public only because
@@ -145,7 +149,8 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 				Locale.getDefault(),
 				OWLAPICompatiblePROWL2IO.class.getClassLoader()
 			));
-		ret.setWrappedLoaderPrOwlIO(new LoaderPrOwlIO());
+		ret.setWrappedLoaderPrOwlIO(new LoaderPrOwlIO());	 // initialize default
+		ret.setMEBNFactory(PROWL2MEBNFactory.getInstance()); // initialize default
 		return ret;
 	}
 
@@ -168,7 +173,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 			}
 			
 			// this is a instance of MEBN to be filled. The name will be updated after loadMTheoryAndMFrags
-			MultiEntityBayesianNetwork mebn = new MultiEntityBayesianNetwork(fileNameNoExtension);
+			MultiEntityBayesianNetwork mebn = this.getMEBNFactory().createMEBN(fileNameNoExtension);
 			
 			// the main access point to ontologies is the OWLOntology and OWLOntologyManager (both from OWL API)
 			if (this.getLastOWLOntology()  == null) {
@@ -337,7 +342,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 			}
 			// instantiate the MFrag and add it to the MTheory
 			Debug.println(this.getClass(), "hasDomainMFrag: " + name); 
-			MFrag domainMFrag = new MFrag(name, mebn); 
+			MFrag domainMFrag = this.getMEBNFactory().createMFrag(name, mebn); 
 			mebn.addDomainMFrag(domainMFrag); 
 			mebn.getNamesUsed().add(name); 
 			
@@ -589,7 +594,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 					}
 				}
 				// create resident node
-				ResidentNode domainResidentNode = new ResidentNode(name, domainMFrag); 
+				ResidentNode domainResidentNode = this.getMEBNFactory().createResidentNode(name, domainMFrag); 
 				mebn.getNamesUsed().add(name);  // mark name as "used"
 				// add node to mfrag
 				domainMFrag.addResidentNode(domainResidentNode); 
@@ -602,7 +607,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 			objectProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty("hasInputNode", prefixManager); 
 			for (OWLIndividual individualTwo : individualOne.getObjectPropertyValues(objectProperty, ontology)){
 				// instantiate input node
-				InputNode generativeInputNode = new InputNode(this.extractName(ontology, individualTwo.asOWLNamedIndividual()), domainMFrag); 
+				InputNode generativeInputNode = this.getMEBNFactory().createInputNode(this.extractName(ontology, individualTwo.asOWLNamedIndividual()), domainMFrag); 
 				mebn.getNamesUsed().add(this.extractName(ontology, individualTwo.asOWLNamedIndividual())); // mark name as used
 				domainMFrag.addInputNode(generativeInputNode);  	 // add to mfrag
 				mapMultiEntityNode.put(this.extractName(ontology, individualTwo.asOWLNamedIndividual()), generativeInputNode); 				
@@ -612,7 +617,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 			/* -> hasContextNode */
 			objectProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty("hasContextNode", prefixManager); 
 			for (OWLIndividual individualTwo : individualOne.getObjectPropertyValues(objectProperty, ontology)){
-				ContextNode contextNode = new ContextNode(this.extractName(ontology, individualTwo.asOWLNamedIndividual()), domainMFrag); 
+				ContextNode contextNode = this.getMEBNFactory().createContextNode(this.extractName(ontology, individualTwo.asOWLNamedIndividual()), domainMFrag); 
 				mebn.getNamesUsed().add(this.extractName(ontology, individualTwo.asOWLNamedIndividual()));  	// mark name as used
 				domainMFrag.addContextNode(contextNode); 				// add to mfrag
 				mapMultiEntityNode.put(this.extractName(ontology, individualTwo.asOWLNamedIndividual()), contextNode); 				
@@ -634,7 +639,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 					ovName = originalOVName;	// If its impossible to split, then no Scope id was found
 				}
 				// Create instance of OV w/o scope identifier
-				OrdinaryVariable oVariable = new OrdinaryVariable(ovName, mebn.getTypeContainer().getDefaultType(), domainMFrag); 
+				OrdinaryVariable oVariable = this.getMEBNFactory().createOrdinaryVariable(ovName, mebn.getTypeContainer().getDefaultType(), domainMFrag); 
 				domainMFrag.addOrdinaryVariable(oVariable); 
 				// let's map objects w/ scope identifier included
 				mapMultiEntityNode.put(this.extractName(ontology, individualTwo.asOWLNamedIndividual()), oVariable); 
@@ -666,26 +671,8 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 		// iterate on individuals
 		for (OWLIndividual individualOne : builtInPr.getIndividuals(ontology)){
 			String nameBuiltIn = this.extractName(ontology, individualOne.asOWLNamedIndividual());  // this is the name of the built-in RV
-			BuiltInRV builtInRV = null;						  // this variable will hold the instantiated BuiltInRV
-			// lets virtually perform a huge switch-case command... 
-			// TODO find out a more smart way.
-			if (nameBuiltIn.equalsIgnoreCase("and") || nameBuiltIn.endsWith("and")) {
-				builtInRV = new BuiltInRVAnd(); 
-			} else if (nameBuiltIn.equalsIgnoreCase("or") || nameBuiltIn.endsWith("or")) {
-				builtInRV = new BuiltInRVOr(); 
-			} else if (nameBuiltIn.equalsIgnoreCase("equalto") || nameBuiltIn.endsWith("equalto")) {
-				builtInRV = new BuiltInRVEqualTo(); 
-			} else if (nameBuiltIn.equalsIgnoreCase("exists") || nameBuiltIn.endsWith("exists")) {
-				builtInRV = new BuiltInRVExists(); 
-			} else if (nameBuiltIn.equalsIgnoreCase("forall") || nameBuiltIn.endsWith("forall")) {
-				builtInRV = new BuiltInRVForAll(); 
-			} else if (nameBuiltIn.equalsIgnoreCase("not") || nameBuiltIn.endsWith("not")) {
-				builtInRV = new BuiltInRVNot(); 
-			} else if (nameBuiltIn.equalsIgnoreCase("iff") || nameBuiltIn.endsWith("iff")) {
-				builtInRV = new BuiltInRVIff(); 
-			} else if (nameBuiltIn.equalsIgnoreCase("implies") || nameBuiltIn.endsWith("implies")) {
-				builtInRV = new BuiltInRVImplies(); 
-			} else {
+			BuiltInRV builtInRV = this.getMEBNFactory().createBuiltInRV(nameBuiltIn);				// this variable will hold the instantiated BuiltInRV
+			if (builtInRV == null) {
 				Debug.println(this.getClass(), "Unknown builtin RV found: " + individualOne);
 				continue;	// let's just ignore unknown elements...
 			}	
@@ -778,7 +765,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 			/* -> hasArgument */
 			objectProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty("hasArgument", prefixManager); 
 			for (OWLIndividual individualTwo : individualOne.getObjectPropertyValues(objectProperty, ontology) ){
-				Argument argument = new Argument(this.extractName(ontology, individualTwo.asOWLNamedIndividual()), contextNode); 
+				Argument argument = this.getMEBNFactory().createArgument(this.extractName(ontology, individualTwo.asOWLNamedIndividual()), contextNode); 
 				contextNode.addArgument(argument); 
 				this.getMapArgument().put(this.extractName(ontology, individualTwo.asOWLNamedIndividual()), argument); 
 				Debug.println(this.getClass(), "-> " + individualOne + ": " + objectProperty + " = " + individualTwo); 
@@ -872,7 +859,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 			/* -> hasArgument */
 			objectProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty("hasArgument", prefixManager); 
 			for (OWLIndividual individualTwo : individualOne.getObjectPropertyValues(objectProperty, ontology)){
-				Argument argument = new Argument(this.extractName(ontology, individualTwo.asOWLNamedIndividual()), domainResidentNode); 
+				Argument argument = this.getMEBNFactory().createArgument(this.extractName(ontology, individualTwo.asOWLNamedIndividual()), domainResidentNode); 
 				domainResidentNode.addArgument(argument); 
 				this.getMapArgument().put(this.extractName(ontology, individualTwo.asOWLNamedIndividual()), argument); 
 				Debug.println(this.getClass(), "-> " + individualOne + ": " + objectProperty + " = " + individualTwo); 
@@ -885,7 +872,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 				if (mappedParent != null) {
 					if (mappedParent instanceof ResidentNode){
 						ResidentNode aux = (ResidentNode)mappedParent; 
-						Edge auxEdge = new Edge(aux, domainResidentNode);
+						Edge auxEdge = this.getMEBNFactory().createEdge(aux, domainResidentNode);
 						try{
 							mFragOfNode.addEdge(auxEdge); 
 						} catch(Exception e){
@@ -893,7 +880,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 						}
 					} else if (mappedParent instanceof InputNode){
 						InputNode aux = (InputNode)mappedParent;
-						Edge auxEdge = new Edge(aux, domainResidentNode);
+						Edge auxEdge = this.getMEBNFactory().createEdge(aux, domainResidentNode);
 						try{
 							mFragOfNode.addEdge(auxEdge); 
 						} catch(Exception e){
@@ -1097,7 +1084,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 					continue;	// ignore anonymous individuals
 				}
 				String individualTwoName = this.extractName(ontology, individualTwo.asOWLNamedIndividual());
-				Argument argument = new Argument(individualTwoName, generativeInputNode); 
+				Argument argument = this.getMEBNFactory().createArgument(individualTwoName, generativeInputNode); 
 				generativeInputNode.addArgument(argument); 
 				this.getMapArgument().put(individualTwoName, argument); 
 				Debug.println(this.getClass(), "-> " + individualOne + ": " + objectProperty + " = " + individualTwo); 
@@ -1539,7 +1526,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 		NodeFormulaTree nodeFormulaRoot; 
 		NodeFormulaTree nodeFormulaChild; 
 		
-		nodeFormulaRoot = new NodeFormulaTree("formula", EnumType.FORMULA, 	EnumSubType.NOTHING, null);  
+		nodeFormulaRoot = this.getMEBNFactory().createNodeFormulaTree("formula", EnumType.FORMULA, 	EnumSubType.NOTHING, null);  
     	
 		Debug.println("Entrou no build " +  contextNode.getName()); 
 		
@@ -1594,7 +1581,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 									}; 
 			
 			
-			nodeFormulaRoot = new NodeFormulaTree(builtIn.getName(), type, subType, builtIn); 
+			nodeFormulaRoot = this.getMEBNFactory().createNodeFormulaTree(builtIn.getName(), type, subType, builtIn); 
 		    nodeFormulaRoot.setMnemonic(builtIn.getMnemonic()); 
 			
 			List<Argument> argumentList = putArgumentListInOrder(contextNode.getArgumentList()); 
@@ -1602,7 +1589,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 		    for(Argument argument: argumentList){
 		    	if(argument.getOVariable()!= null){
 		    		OrdinaryVariable ov = argument.getOVariable(); 
-		    		nodeFormulaChild = new NodeFormulaTree(ov.getName(), EnumType.OPERAND, EnumSubType.OVARIABLE, ov); 
+		    		nodeFormulaChild = this.getMEBNFactory().createNodeFormulaTree(ov.getName(), EnumType.OPERAND, EnumSubType.OVARIABLE, ov); 
 		    		nodeFormulaRoot.addChild(nodeFormulaChild); 
 		    	}
 		    	else{
@@ -1611,8 +1598,8 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 		    			MultiEntityNode multiEntityNode = argument.getArgumentTerm(); 
 		    			
 		    			if(multiEntityNode instanceof ResidentNode){
-		    				ResidentNodePointer residentNodePointer = new ResidentNodePointer((ResidentNode)multiEntityNode, contextNode); 
-		    				nodeFormulaChild = new NodeFormulaTree(multiEntityNode.getName(), EnumType.OPERAND, EnumSubType.NODE, residentNodePointer); 
+		    				ResidentNodePointer residentNodePointer = this.getMEBNFactory().createResidentNodePointer((ResidentNode)multiEntityNode, contextNode); 
+		    				nodeFormulaChild = this.getMEBNFactory().createNodeFormulaTree(multiEntityNode.getName(), EnumType.OPERAND, EnumSubType.NODE, residentNodePointer); 
 		    				nodeFormulaRoot.addChild(nodeFormulaChild); 
 		    				
 		    				//Adjust the arguments of the resident node 
@@ -1628,7 +1615,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 		    		}
 		    		else{
 						if(argument.getEntityTerm() != null){
-							nodeFormulaChild = new NodeFormulaTree(argument.getEntityTerm().getName(), EnumType.OPERAND, EnumSubType.ENTITY, argument.getEntityTerm());
+							nodeFormulaChild = this.getMEBNFactory().createNodeFormulaTree(argument.getEntityTerm().getName(), EnumType.OPERAND, EnumSubType.ENTITY, argument.getEntityTerm());
 							nodeFormulaRoot.addChild(nodeFormulaChild); 
 						}
 		    		}
@@ -1639,8 +1626,8 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 		}
 		else{
 			if((obj instanceof ResidentNode)){
-				ResidentNodePointer residentNodePointer = new ResidentNodePointer((ResidentNode)obj, contextNode); 
-				nodeFormulaRoot = new NodeFormulaTree(((ResidentNode)obj).getName(), EnumType.OPERAND, EnumSubType.NODE, residentNodePointer); 
+				ResidentNodePointer residentNodePointer = this.getMEBNFactory().createResidentNodePointer((ResidentNode)obj, contextNode); 
+				nodeFormulaRoot = this.getMEBNFactory().createNodeFormulaTree(((ResidentNode)obj).getName(), EnumType.OPERAND, EnumSubType.NODE, residentNodePointer); 
 				
 				List<Argument> argumentList = putArgumentListInOrder(contextNode.getArgumentList()); 
 			  	for(Argument argument: argumentList){
@@ -2238,5 +2225,25 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 	 */
 	protected void setProwlOntologyNamespaceURI(String prowlOntologyNamespaceURI) {
 		this.prowlOntologyNamespaceURI = prowlOntologyNamespaceURI;
+	}
+
+	/**
+	 * This factory instantiates the MEBN elements loaded from an OWL ontology.
+	 * This is useful when the IO class should instantiate subclasses of
+	 * {@link MultiEntityBayesianNetwork}, {@link MFrag}, {@link ResidentNode}, etc.
+	 * @return the mebnFactory
+	 */
+	public IMEBNFactory getMEBNFactory() {
+		return mebnFactory;
+	}
+
+	/**
+	 * This factory instantiates the MEBN elements loaded from an OWL ontology.
+	 * This is useful when the IO class should instantiate subclasses of
+	 * {@link MultiEntityBayesianNetwork}, {@link MFrag}, {@link ResidentNode}, etc.
+	 * @param mebnFactory the mebnFactory to set
+	 */
+	public void setMEBNFactory(IMEBNFactory mebnFactory) {
+		this.mebnFactory = mebnFactory;
 	}
 }

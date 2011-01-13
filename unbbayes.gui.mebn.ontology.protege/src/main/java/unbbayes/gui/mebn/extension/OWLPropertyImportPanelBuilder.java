@@ -47,6 +47,7 @@ import unbbayes.util.ResourceController;
 import edu.stanford.smi.protegex.owl.model.RDFProperty;
 
 /**
+ * Creates a panel to import OWL properties as a new resident node.
  * @author Shou Matsumoto
  *
  */

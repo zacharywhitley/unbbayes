@@ -19,7 +19,7 @@ import edu.stanford.smi.protegex.owl.model.RDFProperty;
  */
 public class OWLPropertyDTO implements Transferable {
 
-	private Collection<RDFProperty> rdfProperties;
+	private Collection rdfProperties;
 	public static final DataFlavor[] DEFAULT_DATA_FLAVORS = {new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType, "OWLPropertyDTO")};
 	
 	/**
@@ -34,7 +34,7 @@ public class OWLPropertyDTO implements Transferable {
 	 * @param rdfProperties
 	 * @return
 	 */
-	public static OWLPropertyDTO newInstance(Collection<RDFProperty> rdfProperties) {
+	public static OWLPropertyDTO newInstance(Collection rdfProperties) {
 		OWLPropertyDTO ret = new OWLPropertyDTO ();
 		ret.setRdfProperties(rdfProperties);
 		return ret;
@@ -73,14 +73,14 @@ public class OWLPropertyDTO implements Transferable {
 	/**
 	 * @return the rdfProperties
 	 */
-	public Collection<RDFProperty> getRdfProperties() {
+	public Collection getRdfProperties() {
 		return rdfProperties;
 	}
 
 	/**
 	 * @param rdfProperties the rdfProperties to set
 	 */
-	public void setRdfProperties(Collection<RDFProperty> rdfProperties) {
+	public void setRdfProperties(Collection rdfProperties) {
 		this.rdfProperties = rdfProperties;
 	}
 

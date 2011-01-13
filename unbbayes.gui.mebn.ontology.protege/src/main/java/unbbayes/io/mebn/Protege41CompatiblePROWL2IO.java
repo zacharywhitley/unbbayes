@@ -12,6 +12,7 @@ import org.protege.editor.owl.OWLEditorKit;
 
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.PROWL2MEBNFactory;
 import unbbayes.prs.mebn.ontology.protege.IBundleLauncher;
 import unbbayes.prs.mebn.ontology.protege.ProtegeBundleLauncher;
 import unbbayes.util.Debug;
@@ -46,6 +47,7 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 				Locale.getDefault(),
 				Protege41CompatiblePROWL2IO.class.getClassLoader()
 			));
+		ret.setMEBNFactory(PROWL2MEBNFactory.getInstance());
 		ret.setWrappedLoaderPrOwlIO(new LoaderPrOwlIO());
 		return ret;
 	}
@@ -55,6 +57,7 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 	 */
 	public MultiEntityBayesianNetwork loadMebn(File file) throws IOException,
 			IOMebnException {
+		System.gc();
 		
 		OWLEditorKit kit = null;	// kit to extract ontology and fill storage implementor (of mebn)
 		
@@ -87,6 +90,7 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 		// load mebn using the super class
 		MultiEntityBayesianNetwork ret =  super.loadMebn(file);
 		
+		
 		// fill mebn with protege's storage implementor if we could load protege previously
 		if (kit != null) {
 			// set storage implementor as the protege's decorator
@@ -102,6 +106,8 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 				t.printStackTrace();
 			}
 		}
+		
+		System.gc();
 		
 		return ret;
 	}

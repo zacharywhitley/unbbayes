@@ -89,6 +89,13 @@
         <parameter id="icon" value="class.gif" />
     </extension>
     
+    <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNEditorPanel" id="OWL2Properties2Node">
+        <parameter id="class" value="unbbayes.gui.mebn.extension.OWL2PropertyImportPanelBuilder" />
+        <parameter id="name" value="OWL2Property2Node" />
+        <parameter id="icon" value="properties2node.png" />
+        <parameter id="description" value="Convert OWL2 properties to MEBN resident nodes" />
+    </extension>
+    
     <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNEditorPanel" id="Properties2Node">
         <parameter id="class" value="unbbayes.gui.mebn.extension.OWLPropertyImportPanelBuilder" />
         <parameter id="name" value="Property2Node" />
