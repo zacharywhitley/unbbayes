@@ -35,6 +35,8 @@ import java.util.ResourceBundle;
 
 import unbbayes.io.exception.LoadException;
 import unbbayes.io.mebn.exceptions.IOMebnException;
+import unbbayes.io.mebn.owlapi.OWLAPICompatiblePROWL2IO;
+import unbbayes.io.mebn.protege.Protege41CompatiblePROWL2IO;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.ContextNode;

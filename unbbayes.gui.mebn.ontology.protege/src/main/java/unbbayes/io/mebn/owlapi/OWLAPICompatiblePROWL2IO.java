@@ -1,7 +1,7 @@
 /**
  * 
  */
-package unbbayes.io.mebn;
+package unbbayes.io.mebn.owlapi;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +33,10 @@ import org.semanticweb.owlapi.util.DefaultPrefixManager;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
 import unbbayes.gui.InternalErrorDialog;
+import unbbayes.io.mebn.LoaderPrOwlIO;
+import unbbayes.io.mebn.MebnIO;
+import unbbayes.io.mebn.PrOwlIO;
+import unbbayes.io.mebn.SaverPrOwlIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.INode;

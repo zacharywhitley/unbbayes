@@ -1,7 +1,7 @@
 /**
  * 
  */
-package unbbayes.io.mebn;
+package unbbayes.io.mebn.owlapi;
 
 import org.semanticweb.owlapi.model.OWLOntology;
 

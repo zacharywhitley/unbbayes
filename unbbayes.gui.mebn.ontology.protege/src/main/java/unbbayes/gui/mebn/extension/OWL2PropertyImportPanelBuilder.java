@@ -36,7 +36,7 @@ import unbbayes.gui.mebn.MEBNNetworkWindow;
 import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelBuilder;
 import unbbayes.gui.mebn.ontology.protege.OWL2PropertyViewerPanel;
-import unbbayes.io.mebn.OWLAPIStorageImplementorDecorator;
+import unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator;
 import unbbayes.prs.INode;
 import unbbayes.prs.mebn.IMEBNFactory;
 import unbbayes.prs.mebn.MFrag;
@@ -72,8 +72,8 @@ public class OWL2PropertyImportPanelBuilder extends OWLPropertyImportPanelBuilde
 		if (mebn == null || mebn.getStorageImplementor() == null ) {
 			return null;
 		}
-		if (!(mebn.getStorageImplementor() instanceof OWLAPIStorageImplementorDecorator)
-				|| ((OWLAPIStorageImplementorDecorator)mebn.getStorageImplementor()).getAdaptee() == null) {
+		if (!(mebn.getStorageImplementor() instanceof IOWLAPIStorageImplementorDecorator)
+				|| ((IOWLAPIStorageImplementorDecorator)mebn.getStorageImplementor()).getAdaptee() == null) {
 			return null;
 		}
 		
@@ -147,7 +147,7 @@ public class OWL2PropertyImportPanelBuilder extends OWLPropertyImportPanelBuilde
 		this.getNewWindow().getJtbTabSelection().add(this.getBtnTabOptionOWLProperties(), 1);
 		
 		// add a panel to be displayed when the above button is toggled
-		if (this.getMebn() != null && this.getMebn().getStorageImplementor() != null && (this.getMebn().getStorageImplementor() instanceof OWLAPIStorageImplementorDecorator)) {
+		if (this.getMebn() != null && this.getMebn().getStorageImplementor() != null && (this.getMebn().getStorageImplementor() instanceof IOWLAPIStorageImplementorDecorator)) {
 			// show OWL properties hold by MEBN as its storage implementor (usually, MEBN holds who is implementing his storage)
 			this.getNewWindow().getJpTabSelected().add(this.getOwlPropertyCardLayoutID(), OWL2PropertyViewerPanel.newInstance(this.getMebn()));
 		} else {

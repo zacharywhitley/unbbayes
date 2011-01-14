@@ -28,8 +28,9 @@ import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 
 import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelBuilder;
-import unbbayes.io.mebn.OWLAPIStorageImplementorDecorator;
-import unbbayes.io.mebn.ProtegeStorageImplementorDecorator;
+import unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator;
+import unbbayes.io.mebn.protege.IProtegeStorageImplementorDecorator;
+import unbbayes.io.mebn.protege.ProtegeStorageImplementorDecorator;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.ontology.protege.IBundleLauncher;
 import unbbayes.prs.mebn.ontology.protege.ProtegeBundleLauncher;
@@ -72,8 +73,8 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
 		if (mebn == null || mebn.getStorageImplementor() == null ) {
 			return null;
 		}
-		if (!(mebn.getStorageImplementor() instanceof OWLAPIStorageImplementorDecorator)
-				|| ((OWLAPIStorageImplementorDecorator)mebn.getStorageImplementor()).getAdaptee() == null) {
+		if (!(mebn.getStorageImplementor() instanceof IOWLAPIStorageImplementorDecorator)
+				|| ((IOWLAPIStorageImplementorDecorator)mebn.getStorageImplementor()).getAdaptee() == null) {
 			return null;
 		}
 		
@@ -86,7 +87,7 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
 //		this.initializeLaunchProperties();
 		
 		// if mebn is carring protege's decorator, then protege is already started up
-		if (!(mebn.getStorageImplementor() instanceof ProtegeStorageImplementorDecorator)) {
+		if (!(mebn.getStorageImplementor() instanceof IProtegeStorageImplementorDecorator)) {
 			// start up protege using osgi, because it was not started yet.
 			try {
 				this.getProtegeBundleLauncher().setDefaultOntolgyURI(this.extractURIFromMEBN(mebn));
@@ -340,15 +341,15 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
 		// if mebn is carring the kit, reuse it
 		if (mebn != null
 				&& mebn.getStorageImplementor() != null
-				&& (mebn.getStorageImplementor() instanceof ProtegeStorageImplementorDecorator)
-				&& ((ProtegeStorageImplementorDecorator)mebn.getStorageImplementor()) != null
-				&& ((ProtegeStorageImplementorDecorator)mebn.getStorageImplementor()).getOWLEditorKit() != null) {
+				&& (mebn.getStorageImplementor() instanceof IProtegeStorageImplementorDecorator)
+				&& ((IProtegeStorageImplementorDecorator)mebn.getStorageImplementor()) != null
+				&& ((IProtegeStorageImplementorDecorator)mebn.getStorageImplementor()).getOWLEditorKit() != null) {
 			try {
-				Debug.println(this.getClass(), "MEBN is already carring an editor kit: " + ((ProtegeStorageImplementorDecorator)mebn.getStorageImplementor()).getOWLEditorKit());
+				Debug.println(this.getClass(), "MEBN is already carring an editor kit: " + ((IProtegeStorageImplementorDecorator)mebn.getStorageImplementor()).getOWLEditorKit());
 			} catch (Throwable e) {
 				e.printStackTrace();
 			}
-			return ((ProtegeStorageImplementorDecorator)mebn.getStorageImplementor()).getOWLEditorKit();
+			return ((IProtegeStorageImplementorDecorator)mebn.getStorageImplementor()).getOWLEditorKit();
 		}
 		
 		// if mebn does not carry an editor kit, use protege manager to extract it
@@ -432,7 +433,7 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
 	protected URI extractURIFromMEBN(MultiEntityBayesianNetwork mebn) {
 		URI ret = null;
 		try {
-			ret = ((OWLAPIStorageImplementorDecorator)mebn.getStorageImplementor()).getAdaptee().getOWLOntologyManager().getOntologyDocumentIRI(((OWLAPIStorageImplementorDecorator)mebn.getStorageImplementor()).getAdaptee()).toURI();
+			ret = ((IOWLAPIStorageImplementorDecorator)mebn.getStorageImplementor()).getAdaptee().getOWLOntologyManager().getOntologyDocumentIRI(((IOWLAPIStorageImplementorDecorator)mebn.getStorageImplementor()).getAdaptee()).toURI();
 		} catch (Exception e) {
 			try {
 				Debug.println(this.getClass(), "Impossible to extract URI from " + mebn, e);

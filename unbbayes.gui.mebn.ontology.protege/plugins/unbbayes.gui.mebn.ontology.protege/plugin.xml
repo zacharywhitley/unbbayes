@@ -5,7 +5,7 @@
 <plugin id="unbbayes.gui.mebn.ontology.protege" version="0.1.1">
     <requires>
         <import plugin-id="unbbayes.util.extension.core"/>
-        <import plugin-id="unbbayes.prs.mebn" plugin-version="1.7.1"/>
+        <import plugin-id="unbbayes.prs.mebn" plugin-version="1.8.1"/>
     </requires>
     <runtime>
        	<!-- Because dist.xml creates the resources folder, we must include it -->
@@ -94,6 +94,27 @@
         <parameter id="name" value="OWL2Property2Node" />
         <parameter id="icon" value="properties2node.png" />
         <parameter id="description" value="Convert OWL2 properties to MEBN resident nodes" />
+    </extension>
+    
+    <!-- Multi-Entity Bayesian Network' Knowledge Base extension point. 
+     	 Hot plug is enabled.
+    	 This extension point is basically a set of different classes implementing
+    	 unbbayes.prs.mebn.kb.extension.IKnowledgeBaseBuilder, in order to add new Knowledge
+    	 Base functions into this MEBN
+    	 module. The class must contain a public default constructor (no parameters).
+    	 	Parameters:
+    	 		class: this is the class to implement unbbayes.prs.mebn.kb.extension.IKnowledgeBaseBuilder. 
+    	 		       It MUST provide a default constructor
+    	 			   with no parameters.
+    	 	    name: this is basically a name to identify a Knowledge Base.
+    	 	    optionPanel : this is a panel to be used as a form to fill attributes for this Knowledge Base.
+    	 	           It MUST implement unbbayes.gui.mebn.extension.kb.IKBOptionPanelBuilder.
+    	 	           It MUST provide a default constructor with no parameters.
+    -->
+    <extension plugin-id="unbbayes.prs.mebn" point-id="KnowledgeBase" id="Protege41Reasoners">
+        <parameter id="class" value="unbbayes.prs.mebn.kb.extension.ontology.protege.OWL2KnowledgeBaseBuilder"/>
+        <parameter id="name" value="Protégé reasoners (for OWL2)"/>
+        <parameter id="optionPanel" value="unbbayes.gui.mebn.extension.kb.protege.OWL2KnowledgeBaseOptionPanelBuilder"/>
     </extension>
     
     <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNEditorPanel" id="Properties2Node">

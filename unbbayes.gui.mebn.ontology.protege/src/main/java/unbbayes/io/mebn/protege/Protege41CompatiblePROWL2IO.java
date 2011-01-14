@@ -1,7 +1,7 @@
 /**
  * 
  */
-package unbbayes.io.mebn;
+package unbbayes.io.mebn.protege;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,7 +10,10 @@ import java.util.Locale;
 import org.protege.editor.core.ProtegeManager;
 import org.protege.editor.owl.OWLEditorKit;
 
+import unbbayes.io.mebn.LoaderPrOwlIO;
+import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
+import unbbayes.io.mebn.owlapi.OWLAPICompatiblePROWL2IO;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.PROWL2MEBNFactory;
 import unbbayes.prs.mebn.ontology.protege.IBundleLauncher;

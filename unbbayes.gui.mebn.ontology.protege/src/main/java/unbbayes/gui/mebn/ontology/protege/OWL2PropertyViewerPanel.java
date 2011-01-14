@@ -27,8 +27,8 @@ import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 import unbbayes.gui.mebn.auxiliary.MebnToolkit;
-import unbbayes.io.mebn.OWLAPIStorageImplementorDecorator;
-import unbbayes.io.mebn.ProtegeStorageImplementorDecorator;
+import unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator;
+import unbbayes.io.mebn.protege.IProtegeStorageImplementorDecorator;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.ontology.protege.OWLPropertyDTO;
 import unbbayes.util.Debug;
@@ -77,7 +77,7 @@ public class OWL2PropertyViewerPanel extends OWLPropertyViewerPanel {
 	 * @see unbbayes.gui.mebn.ontology.protege.OWLPropertyViewerPanel#initComponents()
 	 */
 	protected void initComponents() {
-		OWLOntology owlOntology = ((OWLAPIStorageImplementorDecorator)this.getMebn().getStorageImplementor()).getAdaptee();
+		OWLOntology owlOntology = ((IOWLAPIStorageImplementorDecorator)this.getMebn().getStorageImplementor()).getAdaptee();
 		OWLOntologyManager ontologyManager = owlOntology.getOWLOntologyManager();
 		OWLDataFactory owlModel = ontologyManager.getOWLDataFactory();
 		
@@ -98,7 +98,7 @@ public class OWL2PropertyViewerPanel extends OWLPropertyViewerPanel {
 		this.setPropertyList(new JList(this.getPropertyListModel()));
 		try {
 			// If Protege is loaded, make sure entries are shown up nicely, with icons
-			this.getPropertyList().setCellRenderer(new OWLCellRenderer(((ProtegeStorageImplementorDecorator)this.getMebn().getStorageImplementor()).getOWLEditorKit()));	
+			this.getPropertyList().setCellRenderer(new OWLCellRenderer(((IProtegeStorageImplementorDecorator)this.getMebn().getStorageImplementor()).getOWLEditorKit()));	
 		} catch (Throwable e) {
 			Debug.println(this.getClass(), "Could not set up OWLCellRenderer to show properties nicely.", e);
 		}
@@ -131,7 +131,7 @@ public class OWL2PropertyViewerPanel extends OWLPropertyViewerPanel {
 				}
 			});
 			// add to owl model
-			((OWLAPIStorageImplementorDecorator)getMebn().getStorageImplementor()).getAdaptee().getOWLOntologyManager().addOntologyChangeListener(this.getOWLOntologyChangeListener());
+			((IOWLAPIStorageImplementorDecorator)getMebn().getStorageImplementor()).getAdaptee().getOWLOntologyManager().addOntologyChangeListener(this.getOWLOntologyChangeListener());
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
@@ -176,7 +176,7 @@ public class OWL2PropertyViewerPanel extends OWLPropertyViewerPanel {
 	public void resetComponents() {
 		// remove the old OWLOntologyChangeListener
 		try {
-			((OWLAPIStorageImplementorDecorator)getMebn().getStorageImplementor()).getAdaptee().getOWLOntologyManager().removeOntologyChangeListener(this.getOWLOntologyChangeListener());
+			((IOWLAPIStorageImplementorDecorator)getMebn().getStorageImplementor()).getAdaptee().getOWLOntologyManager().removeOntologyChangeListener(this.getOWLOntologyChangeListener());
 		} catch (Exception e) {
 			// OK, we may have a little memory leak, but the application should work with no much problem
 			e.printStackTrace();
