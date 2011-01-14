@@ -2,8 +2,9 @@ UNBBAYES PLUGIN - VERSION 1.7.1
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
-
+1					Altered the KB builder plugin in order to specify the MEBN to be used.
 
 BUG LIST		
 Number	Request ID	Summary
 1		3132582 	The I/O class for UBF format is now preserving the order of mfrags, nodes and states.
+2		        	Messages coming from some I/O classes were written in Portuguese (even though they were using resource files).

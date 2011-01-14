@@ -159,7 +159,7 @@ public class MultiEntityBayesianNetwork extends Network {
 	}
 	
 	/**
-	 * Return a MFrag with the name if it exists or null otherside. 
+	 * Return a MFrag with the name if it exists or null otherwise. 
 	 */
 	public MFrag getMFragByName(String name){
 		

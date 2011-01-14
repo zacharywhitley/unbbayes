@@ -437,15 +437,32 @@ public class OptionsDialog extends JDialog {
 					panelBuilder = new EmptyOptionPanelBuilder(null);
 				}
 				
-				// tells the panel the correct kb to edit
-				panelBuilder.setKB(kbBuilder.buildKB());
+				boolean isOK = false;
+				try {
+					// tells the panel the correct kb to edit
+					panelBuilder.setKB(kbBuilder.buildKB(this.getController().getMultiEntityBayesianNetwork(), this.getController()));
+					isOK = true;
+				} catch (Throwable e) {
+					e.printStackTrace();
+					System.err.println(kbBuilder.getClass() + ": this plug-in uses old knowledge base class definition. Please, contact the plug-in developer in order to update class definition.");
+//					JOptionPane.showMessageDialog(
+//							OptionsDialog.this, 
+//							resource.getString("moduleLoadingError"), 
+//							e.getMessage(), 
+//							JOptionPane.WARNING_MESSAGE); 
+					panelBuilder.setKB(kbBuilder.buildKB()); // build using old deprecated method (it is OK, although it is not the best way)
+					isOK = true;	
+				}
 				
-				// create new button item using KB's name as its label
-				JRadioButtonMenuItem radioButton = new JRadioButtonMenuItem(kbBuilder.getName());
-				radioButton.addActionListener(new KBPluginRadioButtonListener(panelBuilder));
+				if (isOK) {
+					// create new button item using KB's name as its label
+					JRadioButtonMenuItem radioButton = new JRadioButtonMenuItem(kbBuilder.getName());
+					radioButton.addActionListener(new KBPluginRadioButtonListener(panelBuilder));
+					
+					// fill return
+					ret.put(radioButton, panelBuilder);
+				}
 				
-				// fill return
-				ret.put(radioButton, panelBuilder);
 			} catch (Throwable e) {
 				e.printStackTrace();
 			}

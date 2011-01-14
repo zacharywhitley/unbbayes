@@ -3,6 +3,8 @@
  */
 package unbbayes.prs.mebn.kb.powerloom;
 
+import unbbayes.controller.mebn.IMEBNMediator;
+import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.extension.IKnowledgeBaseBuilder;
 
@@ -26,7 +28,16 @@ public class PowerLoomKBBuilder implements IKnowledgeBaseBuilder {
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.kb.extension.jpf.IKnowledgeBaseBuilder#buildKB()
 	 */
+	@Deprecated
 	public KnowledgeBase buildKB() throws InstantiationException {
+		return this.buildKB(null, null);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.mebn.kb.extension.IKnowledgeBaseBuilder#buildKB(unbbayes.prs.mebn.MultiEntityBayesianNetwork, unbbayes.controller.mebn.IMEBNMediator)
+	 */
+	public KnowledgeBase buildKB(MultiEntityBayesianNetwork mebn, IMEBNMediator mediator) throws InstantiationException {
 		return PowerLoomKB.getNewInstanceKB();
 	}
 
