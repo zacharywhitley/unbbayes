@@ -45,33 +45,31 @@ public class IoMebnResources extends ListResourceBundle {
 		return contents;
 	}
 
-	/*TODO Traduzir */
-	
 	/**
 	 * The resources
 	 */
 	static final Object[][] contents =
 	{		
-		{"MTheoryNotExist", "Nao existe nenhuma MTheory definida no arquivo!"}, 
-		{"ModelCreationError", "Nao foi possivel ler corretamente o arquivo Pr-Owl!"}, 
-		{"DomainMFragNotExistsInMTheory", "MFrag nao existe na MTheory!"}, 
-		{"ContextNodeNotExistsInMTheory", "Context Node nao existe na MTheory!"}, 
-		{"GenerativeInputNodeNotExistsInMTheory", "Generative Input Node nao existe na MTheory!"}, 		
-		{"BuiltInRVNotExistsInMTheory", "Built-In RV nao existe na MTheory"}, 		
-		{"OVariableNotExistsInMTheory", "Ordinary Variable nao existe na MTheory"}, 		
-		{"NodeNotFound", "Node nao encontrado!"}, 		
-		{"ArgumentNotFound", "Argumento nao encontrado!"}, 		
-		{"isOVariableInError", "Propriedade isOVariableIn nao confere!"}, 			
-		{"isArgumentOfError", "Propriedade isArgumentOf nao confere!"}, 					
-		{"ArgumentTermInError", "Conflito na propriedade Argument Term!"}, 			
-		{"ContextNodeNotExistsInMFrag", "ContextNode nao existe na MFrag!"}, 
-		{"DomainResidentNotExistsInMTheory", "Nodo de dominio residente nao existe na MTheory!"}, 
-		{"DomainResidentNotExistsInDomainMFrag", "Nodo domain Resident n�o existe na DomainMFrag"}, 
-		{"GenerativeInputNodeNotExistsInDomainMFrag", "Nodo generative Input nao existe na MTheory"}, 
-		{"CategoricalStateNotFoundException", "Estado n�o encontrado"}, 		
-		{"FileNotFoundException","N�o foi poss�vel abrir o arquivo!"},	
-		{"ErrorReadingFile", "Ocorreu erro ao tentar ler o arquivo"}, 
-		{"BuiltInDontImplemented", "Built-In n�o � implementada no UnBBayes"},	
+		{"MTheoryNotExist", "This file does not contain a MTheory."}, 
+		{"ModelCreationError", "Could not read the PR-OWL file correctly."}, 
+		{"DomainMFragNotExistsInMTheory", "This MTheory does not contain such MFrag."}, 
+		{"ContextNodeNotExistsInMTheory", "This MTheory does not contain such context node."}, 
+		{"GenerativeInputNodeNotExistsInMTheory", "This MTheory does not contain such generative input node."}, 		
+		{"BuiltInRVNotExistsInMTheory", "This MTheory does not contain such Built-In RV."}, 		
+		{"OVariableNotExistsInMTheory", "This MTheory does not contain such Ordinary Variable."}, 		
+		{"NodeNotFound", "The Node was not found."}, 		
+		{"ArgumentNotFound", "The Argument was not found."}, 		
+		{"isOVariableInError", "Inconsistent isOVariableIn property."}, 			
+		{"isArgumentOfError", "Inconsistent isArgumentOf property."}, 					
+		{"ArgumentTermInError", "Conflicting Argument Term."}, 			
+		{"ContextNodeNotExistsInMFrag", "The MFrag does not contain such ContextNode."}, 
+		{"DomainResidentNotExistsInMTheory", "This MTheory does not contain such Domain Resident Node."}, 
+		{"DomainResidentNotExistsInDomainMFrag", "This DomainMFrag does not contain such Domain Resident Node."}, 
+		{"GenerativeInputNodeNotExistsInDomainMFrag", "This MFrag does not contain such Generative Input Node."}, 
+		{"CategoricalStateNotFoundException", "The State was not found."}, 		
+		{"FileNotFoundException","Could not access the file."},	
+		{"ErrorReadingFile", "There was an error reading the file."}, 
+		{"BuiltInDontImplemented", "UnBBayes cannot handle such Built-In node."},	
 		{"NoOVariableContextIdentifier", "No Ordinary Variable scope identifier was found in its name"}	
 	};
 }
