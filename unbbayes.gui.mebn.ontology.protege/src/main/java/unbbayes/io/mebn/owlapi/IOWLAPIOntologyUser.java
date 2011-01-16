@@ -4,6 +4,9 @@
 package unbbayes.io.mebn.owlapi;
 
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.reasoner.OWLReasoner;
+
+import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 
 /**
  * This interface is mainly used by classes which shall have some knowledge about
@@ -11,8 +14,7 @@ import org.semanticweb.owlapi.model.OWLOntology;
  * used by currently running process, but details should be hidden.
  * For example, a MEBN might need to know the last OWL Model Manager used to load an
  * ontology, in order to perform "save current" action; or to store 
- * whole parts of OWL ontology "in-memory" so that, when saving, reusing
- * the stored OWL model allows us to store also the .
+ * whole parts of OWL ontology "in-memory"..
  * @author Shou Matsumoto
  *
  */
@@ -27,5 +29,13 @@ public interface IOWLAPIOntologyUser {
 	 * @param owlModelManager : the last used OWL model manager
 	 */
 	public void setLastOWLOntology(OWLOntology owlModelManager);
+	
+	/**
+	 * Generate a MEBN from a specific ontology instead of a file.
+	 * @param ontology : ontology to be read
+	 * @param reasoner : reasoner to be used in order to extract MEBN elements from ontology
+	 * @return : the instantiated MEBN
+	 */
+	public MultiEntityBayesianNetwork loadMEBNFromOntology(OWLOntology ontology, OWLReasoner reasoner);
 	
 }

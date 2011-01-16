@@ -9,7 +9,11 @@ import java.util.Locale;
 
 import org.protege.editor.core.ProtegeManager;
 import org.protege.editor.owl.OWLEditorKit;
+import org.protege.editor.owl.model.inference.NoOpReasonerInfo;
+import org.protege.editor.owl.model.inference.ProtegeOWLReasonerInfo;
+import org.protege.editor.owl.model.inference.ReasonerStatus;
 
+import unbbayes.io.mebn.IPROWL2ModelUser;
 import unbbayes.io.mebn.LoaderPrOwlIO;
 import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
@@ -29,6 +33,11 @@ import unbbayes.util.Debug;
  */
 public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 
+	private boolean initializeReasoner = true;
+	
+	private long maximumBuzyWaitingCount = 65535;
+	private long sleepTimeWaitingReasonerInitialization = 1000;
+	
 	private IBundleLauncher protegeBundleLauncher;
 	
 	/**
@@ -80,6 +89,45 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 			// indicate the super class to use the ontology loaded by protege
 			this.setLastOWLOntology(kit.getOWLModelManager().getActiveOntology());
 			
+			// force it to use the first reasoner different than "NoOpReasoner" (which in protege is a null object)
+			if (this.isToInitializeReasoner()) {
+				// it will hold the reasoner's ID except the null object (which is an instance of NoOPReasoner, and it's assigned name is "None")
+				String reasonerIDExceptNone = null;
+				for (ProtegeOWLReasonerInfo info : kit.getOWLModelManager().getOWLReasonerManager().getInstalledReasonerFactories()) {
+					if ( ! NoOpReasonerInfo.NULL_REASONER_ID.equals( info.getReasonerId() ) ){
+						// We are now sure that this is not a NULL reasoner.
+						try {
+							kit.getOWLModelManager().getOWLReasonerManager().setCurrentReasonerFactoryId(info.getReasonerId());
+							kit.getOWLModelManager().getOWLReasonerManager().classifyAsynchronously(kit.getOWLModelManager().getOWLReasonerManager().getReasonerPreferences().getPrecomputedInferences());
+							
+							// maybe there would be some synchronization problems, because of protege's asynchronous initialization of reasoners. Let's wait until it becomes ready
+							for (long i = 0; i < this.getMaximumBuzyWaitingCount(); i++) {
+								// TODO Stop using buzy waiting!!!
+								if (ReasonerStatus.INITIALIZED.equals(kit.getOWLModelManager().getOWLReasonerManager().getReasonerStatus())) {
+									// reasoner is ready now
+									break;
+								}
+								Debug.println(this.getClass(), "Waiting for reasoner initialization...");
+								try {
+									// sleep and try reasoner status after
+									Thread.sleep(this.getSleepTimeWaitingReasonerInitialization());
+								} catch (Throwable t) {
+									// a thread sleep should not break normal program flow...
+									t.printStackTrace();
+								}
+							}
+							
+							// the reasoner is finally ready. Set it as the reasoner to use for I/O operation
+							this.setLastOWLReasoner(kit.getModelManager().getReasoner());
+							break;	// let's just use the 1st (non NULL) option and ignore other protege reasoners
+						} catch (Exception e) {
+							e.printStackTrace();
+							continue;
+						}
+					}
+				}
+			}
+			
 			try {
 				Debug.println(this.getClass(), "Ontology loaded by Protege : " + kit.getOWLModelManager().getActiveOntology());
 			} catch (Throwable t) {
@@ -91,7 +139,7 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 		}
 		
 		// load mebn using the super class
-		MultiEntityBayesianNetwork ret =  super.loadMebn(file);
+		MultiEntityBayesianNetwork ret =  super.loadMEBNFromOntology(this.getLastOWLOntology(), null);
 		
 		
 		// fill mebn with protege's storage implementor if we could load protege previously
@@ -132,6 +180,61 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 	 */
 	public void setProtegeBundleLauncher(IBundleLauncher protegeBundleLauncher) {
 		this.protegeBundleLauncher = protegeBundleLauncher;
+	}
+
+	/**
+	 * If true, it will initialize and use the reasoner in order to extract PR-OWL elements from the ontology
+	 * @return the initializeReasoner
+	 */
+	public boolean isToInitializeReasoner() {
+		return initializeReasoner;
+	}
+
+	/**
+	 * If true, it will initialize and use the reasoner in order to extract PR-OWL elements from the ontology
+	 * @param initializeReasoner the initializeReasoner to set
+	 */
+	public void setIsToInitializeReasoner(boolean initializeReasoner) {
+		this.initializeReasoner = initializeReasoner;
+	}
+
+	/**
+	 * This is the maximum time we buzy-wait an uninitialized reasoner until it gets ready.
+	 * @return the maximumBuzyWaitingCount
+	 * @deprecated TODO stop using buzy waiting
+	 */
+	public long getMaximumBuzyWaitingCount() {
+		return maximumBuzyWaitingCount;
+	}
+
+	/**
+	 * This is the maximum time we buzy-wait an uninitialized reasoner until it gets ready.
+	 * @param maximumBuzyWaitingCount the maximumBuzyWaitingCount to set
+	 * @deprecated TODO stop using buzy waiting
+	 */
+	public void setMaximumBuzyWaitingCount(long maximumBuzyWaitingCount) {
+		this.maximumBuzyWaitingCount = maximumBuzyWaitingCount;
+	}
+
+	/**
+	 * This is the argument that will be passed to {@link Thread#sleep(long)} when we have to wait for reasoner initialization
+	 * and reasoner is not ready yet.
+	 * @return the sleepTimeWaitingReasonerInitialization
+	 * @see #getMaximumBuzyWaitingCount()
+	 */
+	public long getSleepTimeWaitingReasonerInitialization() {
+		return sleepTimeWaitingReasonerInitialization;
+	}
+
+	/**
+	 * This is the argument that will be passed to {@link Thread#sleep(long)} when we have to wait for reasoner initialization
+	 * and reasoner is not ready yet.
+	 * @param sleepTimeWaitingReasonerInitialization the sleepTimeWaitingReasonerInitialization to set
+	 * @see #getMaximumBuzyWaitingCount()
+	 */
+	public void setSleepTimeWaitingReasonerInitialization(
+			long sleepTimeWaitingReasonerInitialization) {
+		this.sleepTimeWaitingReasonerInitialization = sleepTimeWaitingReasonerInitialization;
 	}
 	
 	
