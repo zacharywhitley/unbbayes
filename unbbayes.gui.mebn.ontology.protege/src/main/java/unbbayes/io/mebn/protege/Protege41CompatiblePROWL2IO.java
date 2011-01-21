@@ -21,6 +21,7 @@ import unbbayes.io.mebn.owlapi.OWLAPICompatiblePROWL2IO;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.PROWL2MEBNFactory;
 import unbbayes.prs.mebn.ontology.protege.IBundleLauncher;
+import unbbayes.prs.mebn.ontology.protege.OWLClassExpressionParserFacade;
 import unbbayes.prs.mebn.ontology.protege.ProtegeBundleLauncher;
 import unbbayes.util.Debug;
 
@@ -74,7 +75,7 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 		OWLEditorKit kit = null;	// kit to extract ontology and fill storage implementor (of mebn)
 		
 		try {
-			// specify the bundle laucher that the desired URI is from file
+			// specify the bundle laucher that the desired URI is from file (this will set up the system properties and force protege to load this file)
 			this.getProtegeBundleLauncher().setDefaultOntolgyURI(file.toURI());
 			
 			// load ontology using protege
@@ -84,7 +85,27 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 			ProtegeManager manager = (ProtegeManager)this.getProtegeBundleLauncher().getProtegeManager();
 			
 			// obtain the last opened kit (which is the one opened now)
-			kit = (OWLEditorKit)manager.getEditorKitManager().getEditorKits().get(manager.getEditorKitManager().getEditorKitCount() - 1);
+			try {
+				kit = (OWLEditorKit)manager.getEditorKitManager().getEditorKits().get(manager.getEditorKitManager().getEditorKitCount() - 1);
+			}catch (Exception e) {
+				e.printStackTrace();
+				try {
+					if (this.getProtegeBundleLauncher() instanceof ProtegeBundleLauncher) {
+						((ProtegeBundleLauncher)this.getProtegeBundleLauncher()).hideProtegeGUI();
+					}
+				} catch (Exception e2) {
+					e2.printStackTrace();
+				}
+				return null;
+			}
+			
+			// hide protege's frame immediately (this is because the loading process may take so long, and the protege frame may be visible to users during that)
+			try {
+				manager.getFrame(kit.getWorkspace()).setVisible(false);
+			} catch (Throwable t) {
+				t.printStackTrace();
+				// it is OK to ignore, because this frame will be removed from view after the ontology is created.
+			}
 			
 			// indicate the super class to use the ontology loaded by protege
 			this.setLastOWLOntology(kit.getOWLModelManager().getActiveOntology());
@@ -137,6 +158,9 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 			e.printStackTrace();
 			System.err.println("Could not use protege's ontology loader. Using OWLAPI instead...");
 		}
+		
+		// update and initialize the parser of manchester owl syntax expressions (so that owl reasoners can be used for string expressions)
+		this.setOwlClassExpressionParserDelegator(OWLClassExpressionParserFacade.getInstance(kit.getOWLModelManager()));
 		
 		// load mebn using the super class
 		MultiEntityBayesianNetwork ret =  super.loadMEBNFromOntology(this.getLastOWLOntology(), null);

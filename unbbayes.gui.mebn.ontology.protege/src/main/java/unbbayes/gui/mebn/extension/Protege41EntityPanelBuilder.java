@@ -4,8 +4,11 @@
 package unbbayes.gui.mebn.extension;
 
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.lang.reflect.InvocationTargetException;
@@ -13,9 +16,13 @@ import java.net.URI;
 import java.util.List;
 import java.util.Properties;
 
+import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JToolBar;
 
 import org.osgi.framework.Bundle;
 import org.protege.editor.core.ProtegeManager;
@@ -26,6 +33,7 @@ import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.model.OWLWorkspace;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 
+import unbbayes.controller.IconController;
 import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelBuilder;
 import unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator;
@@ -52,6 +60,12 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
 
 	/** This is used in {@link #buildPanel(MultiEntityBayesianNetwork, IMEBNMediator)}. It was modeled as an attribute just because we need it to be visible for inner component listeners (for resize actions) */
 	private Component view;
+
+
+	private JButton synchronizeReasonerButton;
+
+
+	private JButton saveProtegeOntologyButton;
 	
 	
 	
@@ -109,6 +123,8 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
 		try {
 			view = this.extractWorkspace(bundle, mebn, mediator);
 			if (view != null) {
+				this.setLayout(new BorderLayout());
+				
 				// initialize size
 				Dimension size = new Dimension(600,480);
 				view.setPreferredSize(size);
@@ -117,13 +133,17 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
 				// prepare this component
 //						this.setBorder(ComponentFactory.createTitledBorder(mebn.toString()));
 				JScrollPane content = new JScrollPane(view);
-				this.add(content);
+				this.add(content, BorderLayout.CENTER);
+				
+				// create toolbar for useful protege functionalities
+				this.add(this.buildProtegeTools(bundle, mebn, mediator), BorderLayout.NORTH);
+				
 				// listener on resize event
 				this.addComponentListener(new ComponentListener() {
 					public void componentResized(ComponentEvent e) {
 						if (e.getComponent() != null) {
 							// resize protege workspace if the panel is resized
-							Dimension d = new Dimension(e.getComponent().getSize().width - 10, e.getComponent().getSize().height - 10);
+							Dimension d = new Dimension(e.getComponent().getSize().width - 10, e.getComponent().getSize().height - 50);
 							view.setSize(d);
 							view.setPreferredSize(d);
 							view.repaint();
@@ -695,6 +715,103 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
 	 */
 	public void setProtegeBundleLauncher(IBundleLauncher protegeBundleLauncher) {
 		this.protegeBundleLauncher = protegeBundleLauncher;
+	}
+
+
+
+	/**
+	 * Creates a component containing a set of buttons (e.g. tool bar)
+	 * to configure useful protege properties.
+	 * @param bundle
+	 * @param mebn
+	 * @param mediator
+	 * @return
+	 */
+	protected JComponent buildProtegeTools(Bundle bundle, MultiEntityBayesianNetwork mebn, IMEBNMediator mediator) {
+		final JToolBar protegeMenu = new JToolBar("Protégé", JToolBar.HORIZONTAL);
+		
+		final Bundle bundleAux = bundle;
+		final MultiEntityBayesianNetwork mebnAux = mebn;
+		final IMEBNMediator mediatorAux = mediator;
+		// create button to synchronize reasoner
+		this.setSynchronizeReasonerButton(new JButton(IconController.getInstance().getPropagateIcon()));
+		this.getSynchronizeReasonerButton().setToolTipText("Synchronize Reasoner");
+		
+		// add listener to button
+		this.getSynchronizeReasonerButton().addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					EditorKit kit = extractOWLEditorKit(bundleAux, mebnAux, mediatorAux);
+					if (kit instanceof OWLEditorKit) {
+						((OWLEditorKit)kit).getModelManager().getOWLReasonerManager().classifyAsynchronously(((OWLEditorKit)kit).getModelManager().getReasonerPreferences().getPrecomputedInferences());
+					}
+				} catch (Exception e2) {
+					e2.printStackTrace();
+					JOptionPane.showMessageDialog(protegeMenu, e2.getMessage(), "Protégé Error", JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		});
+		
+		// add save button
+		this.setSaveProtegeOntologyButton(new JButton(IconController.getInstance().getSaveFindingsInstance()));
+		this.getSaveProtegeOntologyButton().setToolTipText("Save");
+		
+		// add listener for save button
+		this.getSaveProtegeOntologyButton().addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					if (mebnAux != null
+							&& mebnAux.getStorageImplementor() != null
+							&& (mebnAux.getStorageImplementor() instanceof IOWLAPIStorageImplementorDecorator)) {
+						((IOWLAPIStorageImplementorDecorator)mebnAux.getStorageImplementor()).execute();
+					}
+				} catch (Exception e2) {
+					e2.printStackTrace();
+					JOptionPane.showMessageDialog(protegeMenu, e2.getMessage(), "Protégé Error", JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		});
+		
+		
+		protegeMenu.add(this.getSynchronizeReasonerButton());
+		protegeMenu.add(this.getSaveProtegeOntologyButton());
+		
+		return protegeMenu;
+	}
+
+
+	/**
+	 * @return the synchronizeReasonerButton
+	 */
+	public JButton getSynchronizeReasonerButton() {
+		return synchronizeReasonerButton;
+	}
+
+
+
+	/**
+	 * @param synchronizeReasonerButton the synchronizeReasonerButton to set
+	 */
+	public void setSynchronizeReasonerButton(JButton synchronizeReasonerButton) {
+		this.synchronizeReasonerButton = synchronizeReasonerButton;
+	}
+
+
+
+	/**
+	 * @return the saveProtegeOntologyButton
+	 */
+	public JButton getSaveProtegeOntologyButton() {
+		return saveProtegeOntologyButton;
+	}
+
+
+
+	/**
+	 * @param saveProtegeOntologyButton the saveProtegeOntologyButton to set
+	 */
+	public void setSaveProtegeOntologyButton(JButton saveProtegeOntologyButton) {
+		this.saveProtegeOntologyButton = saveProtegeOntologyButton;
 	}
 
 

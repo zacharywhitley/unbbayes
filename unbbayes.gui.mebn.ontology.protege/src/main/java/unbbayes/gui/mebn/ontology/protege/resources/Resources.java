@@ -35,7 +35,7 @@ public class Resources extends unbbayes.gui.mebn.resources.Resources {
 	 */
 	static final Object[][] contents =
 	{	
-		{"OWLProperties" , "OWL Properties"},
+		{"OWLProperties" , "OWL Property"},
 		{"OWLPropertiesToolTip" , "Show OWL Properties"},
 		{"NoOWLModelFound" , "This MEBN project is not bound to a PR-OWL ontology. Please, save it as a UBF/PR-OWL file and then load it again."},
 
@@ -58,7 +58,14 @@ public class Resources extends unbbayes.gui.mebn.resources.Resources {
 		{"ChooseOWLPropertyDomain" , "Choose the domain"},
 		{"ChooseOWLPropertyRange" , "Choose the range"},
 		
-		{"CouldNotLoadProtegeOWLWidget" , "Could not load Protégé-OWL widget to render this panel. Check the JAR version."},
+		{"CouldNotLoadProtegeOWLWidget" , "Could not load ProtÃ©gÃ©-OWL widget to render this panel. Check the JAR version."},
+		
+		{"DefinesUncertaintyOfToolTip" , "Specify the OWL property that the resident node is defining its uncertainty."},
+		{"DefineUncertaintyOfOWLProperty" , "Create a link from a Resident Node to an OWL Property"},
+		{"DefineUncertaintyOfOWLPropertyToolTip" , "A Resident Node defines the uncertainty of an OWL Property. You can specify it here."},
+		{"DefineUncertaintyOfToolBarToolTip" , "Select another OWL property or just unselect it."},
+		{"SelectOWLPropertyToolTip" , "Select another OWL property."},
+		{"ClearSelectionToolTip" , "Clear the selection."},
 	};
 
 }

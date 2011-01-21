@@ -9,6 +9,8 @@ import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
@@ -35,13 +37,14 @@ import unbbayes.gui.mebn.MEBNGraphPane;
 import unbbayes.gui.mebn.MEBNNetworkWindow;
 import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelBuilder;
+import unbbayes.gui.mebn.ontology.protege.DefinesUncertaintyOfPanel;
 import unbbayes.gui.mebn.ontology.protege.OWL2PropertyViewerPanel;
 import unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator;
 import unbbayes.prs.INode;
-import unbbayes.prs.mebn.IMEBNFactory;
+import unbbayes.prs.mebn.IMEBNElementFactory;
+import unbbayes.prs.mebn.IRIAwareMultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.OWLPropertyAwareResidentNode;
 import unbbayes.prs.mebn.PROWL2MEBNFactory;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.ontology.protege.OWLPropertyDTO;
@@ -54,7 +57,9 @@ import unbbayes.util.Debug;
  */
 public class OWL2PropertyImportPanelBuilder extends OWLPropertyImportPanelBuilder {
 	
-	private IMEBNFactory mebnFactory;
+	private IMEBNElementFactory mebnFactory;
+	private JToggleButton btnTabOptionDefinesUncertaintyOf;
+	private String definesUncertaintyOfCardLayoutID = "DefinesUncertaintyOf";
 
 	/**
 	 * Default constructor with no arguments must be visible for plug-in compatibility.
@@ -155,6 +160,37 @@ public class OWL2PropertyImportPanelBuilder extends OWLPropertyImportPanelBuilde
 			this.getNewWindow().getJpTabSelected().add(this.getOwlPropertyCardLayoutID(), new JScrollPane(new JLabel(this.getResource().getString("NoOWLModelFound"), SwingConstants.LEFT)));
 		}
 		
+		// add another tab button to the left editor (where MTheory tree resides), in order to show what property the currently selected resident node is linked to
+		this.setBtnTabOptionDefinesUncertaintyOf(new JToggleButton(this.getIconController().getYellowNodeIcon()));
+		this.getBtnTabOptionDefinesUncertaintyOf().setBackground(MebnToolkit.getColorTabPanelButton());
+		this.getBtnTabOptionDefinesUncertaintyOf().setToolTipText(this.getResource().getString("DefinesUncertaintyOfToolTip"));
+		
+		// add button to the window
+		this.getNewWindow().getGroupButtonsTabs().add(this.getBtnTabOptionDefinesUncertaintyOf());
+		this.getNewWindow().getJtbTabSelection().add(this.getBtnTabOptionDefinesUncertaintyOf(), 2);
+		
+		// add a panel to be displayed when the above button is toggled
+		if (this.getMebn() != null && this.getMebn().getStorageImplementor() != null && (this.getMebn().getStorageImplementor() instanceof IOWLAPIStorageImplementorDecorator)) {
+			// show OWL properties hold by MEBN as its storage implementor (usually, MEBN holds who is implementing his storage)
+			this.getNewWindow().getJpTabSelected().add(this.getDefinesUncertaintyOfCardLayoutID(), DefinesUncertaintyOfPanel.getInstance(this.getMebn(), this.getMediator()));
+		} else {
+			// this MEBN is not holding an OWL model (this is a new model or it is not an PR-OWL project)
+			this.getNewWindow().getJpTabSelected().add(this.getDefinesUncertaintyOfCardLayoutID(), new JScrollPane(new JLabel(this.getResource().getString("NoOWLModelFound"), SwingConstants.LEFT)));
+		}
+		
+		// hide entity and entity individuals panel from original MEBN editor
+//		try {
+//			// remove object entity tab
+//			this.getMediator().getMebnEditionPane().getJtbTabSelection().remove(this.getMediator().getMebnEditionPane().getBtnTabOptionEntity());
+//		} catch (Exception t) {
+//			t.printStackTrace();
+//		}
+//		try {
+//			// remove object entity individuals panel
+//			this.getMediator().getMebnEditionPane().getJtbTabSelection().remove(this.getMediator().getMebnEditionPane().getBtnTabOptionEntityFinding());
+//		} catch (Exception t) {
+//			t.printStackTrace();
+//		}
 	}
 
 	/* (non-Javadoc)
@@ -167,6 +203,13 @@ public class OWL2PropertyImportPanelBuilder extends OWLPropertyImportPanelBuilde
 		} catch (Throwable t) {
 			Debug.println(this.getClass(), "There was a problem initializing the upper listeners, but we can still go on.", t);
 		}
+		
+		// listener to show the panel to edit the "definesUncertaintyOf" property when a tab changes (toggle button event) is triggered
+		this.getBtnTabOptionDefinesUncertaintyOf().addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				getNewWindow().getCardLayout().show(getNewWindow().getJpTabSelected(), getDefinesUncertaintyOfCardLayoutID());
+			}
+		});
 		
 		// Let's just change the behavior of what happens on drop action from the OWLPropertyViewerPanel
 		this.getGraphPane().setTransferHandler(new TransferHandler() {
@@ -322,24 +365,14 @@ public class OWL2PropertyImportPanelBuilder extends OWLPropertyImportPanelBuilde
 		node.setDescription(node.getName());
 		domainMFrag.addResidentNode(node);
 		
-		if (node instanceof OWLPropertyAwareResidentNode) {
+		// map the node to what property it is defining uncertainty
+		try {
 			IRI iri = this.extractIRIFromProperty(property);
-			((OWLPropertyAwareResidentNode)node).setPropertyIRI(iri);
-			node.setDescription(iri.toString());	// use description to check what is the IRI
-			// TODO load description from RDF comment.
-			try {
-				Debug.println(this.getClass(), "IRI of node " + node + " set to " + iri);
-			} catch (Throwable e) {
-				e.printStackTrace();
-			}
-		} else {
-			try {
-				Debug.println(this.getClass(), "Could not set resident node's IRI in node " + node);
-			} catch (Throwable e) {
-				e.printStackTrace();
-			}
+			IRIAwareMultiEntityBayesianNetwork.addDefineUncertaintyToMEBN(mebn, node, iri);
+			Debug.println(this.getClass(), "IRI of node " + node + " set to " + iri);
+		} catch (Throwable e) {
+			e.printStackTrace();
 		}
-		
 		
 		//Updating panels
 		mediator.getMebnEditionPane().setEditArgumentsTabActive(node);
@@ -405,7 +438,7 @@ public class OWL2PropertyImportPanelBuilder extends OWLPropertyImportPanelBuilde
 	 * This factory will be used in order to instantiate ResidentNode when a drag'n'drop action is performed.
 	 * @return the mebnFactory
 	 */
-	public IMEBNFactory getMebnFactory() {
+	public IMEBNElementFactory getMebnFactory() {
 		return mebnFactory;
 	}
 
@@ -414,8 +447,39 @@ public class OWL2PropertyImportPanelBuilder extends OWLPropertyImportPanelBuilde
 	 * This factory will be used in order to instantiate ResidentNode when a drag'n'drop action is performed
 	 * @param mebnFactory the mebnFactory to set
 	 */
-	public void setMebnFactory(IMEBNFactory mebnFactory) {
+	public void setMebnFactory(IMEBNElementFactory mebnFactory) {
 		this.mebnFactory = mebnFactory;
 	}
+
+	/**
+	 * @return the btnTabOptionDefinesUncertaintyOf
+	 */
+	public JToggleButton getBtnTabOptionDefinesUncertaintyOf() {
+		return btnTabOptionDefinesUncertaintyOf;
+	}
+
+	/**
+	 * @param btnTabOptionDefinesUncertaintyOf the btnTabOptionDefinesUncertaintyOf to set
+	 */
+	public void setBtnTabOptionDefinesUncertaintyOf(
+			JToggleButton btnTabOptionDefinesUncertaintyOf) {
+		this.btnTabOptionDefinesUncertaintyOf = btnTabOptionDefinesUncertaintyOf;
+	}
 	
+	/**
+	 * @return the definesUncertaintyOfCardLayoutID
+	 */
+	public String getDefinesUncertaintyOfCardLayoutID() {
+		return definesUncertaintyOfCardLayoutID;
+	}
+
+
+
+
+	/**
+	 * @param definesUncertaintyOfCardLayoutID the definesUncertaintyOfCardLayoutID to set
+	 */
+	public void setDefinesUncertaintyOfCardLayoutID (String definesUncertaintyOfCardLayoutID) {
+		this.definesUncertaintyOfCardLayoutID = definesUncertaintyOfCardLayoutID;
+	}
 }

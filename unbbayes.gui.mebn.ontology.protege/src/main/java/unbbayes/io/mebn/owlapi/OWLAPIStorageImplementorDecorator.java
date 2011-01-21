@@ -87,13 +87,17 @@ public class OWLAPIStorageImplementorDecorator implements IOWLAPIStorageImplemen
 	 * 
 	 */
 	protected OWLReasoner generateReasoner(OWLOntology ontology, OWLReasonerConfiguration configuration) {
-		if (ontology != null) {
-			OWLReasonerFactory factory = new Reasoner.ReasonerFactory();
-			if (configuration != null) {
-				return factory.createReasoner(ontology, configuration);
-			} else {
-				return factory.createReasoner(ontology);
+		try {
+			if (ontology != null) {
+				OWLReasonerFactory factory = new Reasoner.ReasonerFactory();
+				if (configuration != null) {
+					return factory.createReasoner(ontology, configuration);
+				} else {
+					return factory.createReasoner(ontology);
+				}
 			}
+		}catch (Exception e) {
+			e.printStackTrace();
 		}
 		return null;
 	}

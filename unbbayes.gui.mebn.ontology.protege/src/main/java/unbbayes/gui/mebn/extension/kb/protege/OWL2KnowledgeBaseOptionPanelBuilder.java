@@ -226,6 +226,9 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 	 * @see unbbayes.gui.mebn.extension.kb.IKBOptionPanelBuilder#commitChanges()
 	 */
 	public void commitChanges() {
+
+		System.gc();
+		
 		// initial assertion
 		if (this.getKB() == null
 				|| !(this.getKB() instanceof OWL2KnowledgeBase)) {
@@ -292,6 +295,7 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 					UIManager.getString("OptionPane.messageDialogTitle"), 
 					JOptionPane.ERROR_MESSAGE);
 		}
+		System.gc();
 	}
 
 	/*

@@ -21,7 +21,7 @@ import unbbayes.prs.mebn.entity.Type;
  * @author Shou Matsumoto
  *
  */
-public interface IMEBNFactory {
+public interface IMEBNElementFactory {
 
 	public void setInstantiationProperties(Properties properties);
 	

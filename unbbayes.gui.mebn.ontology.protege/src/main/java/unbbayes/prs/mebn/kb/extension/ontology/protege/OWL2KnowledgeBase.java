@@ -8,12 +8,22 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.coode.owlapi.manchesterowlsyntax.ManchesterOWLSyntaxEditorParser;
+import org.protege.editor.owl.model.OWLModelManager;
+import org.semanticweb.owlapi.model.AddAxiom;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.io.exception.UBIOException;
+import unbbayes.io.mebn.IPROWL2ModelUser;
 import unbbayes.io.mebn.owlapi.OWLAPIStorageImplementorDecorator;
+import unbbayes.io.mebn.protege.ProtegeStorageImplementorDecorator;
 import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.IRIAwareMultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.RandomVariableFinding;
@@ -23,6 +33,8 @@ import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.SearchResult;
+import unbbayes.prs.mebn.ontology.protege.IOWLClassExpressionParserFacade;
+import unbbayes.prs.mebn.ontology.protege.OWLClassExpressionParserFacade;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.util.Debug;
@@ -36,7 +48,7 @@ import unbbayes.util.Debug;
  * @author Shou Matsumoto
  *
  */
-public class OWL2KnowledgeBase implements KnowledgeBase {
+public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionParserFacade, IPROWL2ModelUser {
 
 	private OWLReasoner defaultOWLReasoner;
 	
@@ -44,6 +56,8 @@ public class OWL2KnowledgeBase implements KnowledgeBase {
 	
 	private IMEBNMediator defaultMediator;
 	
+	private IOWLClassExpressionParserFacade owlClassExpressionParserDelegator;
+
 	/**
 	 * The default constructor is only visible in order to allow inheritance
 	 * @deprecated use {@link #getInstance(OWLReasoner, MultiEntityBayesianNetwork, IMEBNMediator)} instead
@@ -79,31 +93,71 @@ public class OWL2KnowledgeBase implements KnowledgeBase {
 	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#clearKnowledgeBase()
 	 */
 	public void clearKnowledgeBase() {
-		// TODO Auto-generated method stub
-
+		Debug.println(this.getClass(), "Ignoring OWL KB clear request.");
 	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#clearFindings()
 	 */
 	public void clearFindings() {
-		// TODO Auto-generated method stub
-
+		Debug.println(this.getClass(), "Ignoring OWL KB clear finding request.");
 	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#createGenerativeKnowledgeBase(unbbayes.prs.mebn.MultiEntityBayesianNetwork)
 	 */
 	public void createGenerativeKnowledgeBase(MultiEntityBayesianNetwork mebn) {
-		// TODO Auto-generated method stub
-
+		this.setDefaultMEBN(mebn);
+		this.setDefaultOWLReasoner(null); // this setting forces the delegation of OWL reasoners
 	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#createEntityDefinition(unbbayes.prs.mebn.entity.ObjectEntity)
 	 */
 	public void createEntityDefinition(ObjectEntity entity) {
-		// TODO Auto-generated method stub
+		// ignore null elements
+		if (entity == null) {
+			try {
+				Debug.println(this.getClass(), "Entity == null");
+			}catch (Throwable t) {
+				t.printStackTrace();
+			}
+			return;
+		}
+		// if no reasoner was found, we cannot do anything...
+		if (this.getDefaultOWLReasoner() == null) {
+			throw new IllegalStateException("A reasoner was called in " + this.getClass().getName() + "#createEntityDefinition(ObjectEntity), but no reasoner was specified.");
+		}
+		// Extract the IRI of the entity
+		IRI iri = null;
+		if (this.getDefaultMEBN() != null 
+				&& this.getDefaultMEBN() instanceof IRIAwareMultiEntityBayesianNetwork) {
+			iri = ((IRIAwareMultiEntityBayesianNetwork)this.getDefaultMEBN()).getIriMap().get(entity);
+		}
+		// create a new IRI if nothing was extracted
+		if (iri == null) {
+			Debug.println(this.getClass(), "No iri found for " + entity.getName() + ". Creating a new one from name.");
+			iri = IRI.create(this.getDefaultOWLReasoner().getRootOntology().getOntologyID().getOntologyIRI().toString() + '#' + entity.getName());
+		}
+		try {
+			Debug.println(this.getClass(), "IRI of entity " + entity + " = " + iri);
+		}catch (Throwable t) {
+			t.printStackTrace();
+		}
+		
+		// create a new OWL class if it does not exist
+		if (!this.getDefaultOWLReasoner().getRootOntology().containsClassInSignature(iri, true)) {
+			// create the new class
+			OWLClass owlClass = this.getDefaultOWLReasoner().getRootOntology().getOWLOntologyManager().getOWLDataFactory().getOWLClass(iri);
+			// extract the owl:Thing class, which will be the only superclass of the new class
+			OWLClass thing = this.getDefaultOWLReasoner().getRootOntology().getOWLOntologyManager().getOWLDataFactory().getOWLThing();
+			// indicate that new class is subclass of owl:Thing
+			OWLAxiom subClassOfThingAxiom = this.getDefaultOWLReasoner().getRootOntology().getOWLOntologyManager().getOWLDataFactory().getOWLSubClassOfAxiom(owlClass, thing);
+			// add new class (add axiom)
+			AddAxiom addAxiom = new AddAxiom(this.getDefaultOWLReasoner().getRootOntology(), subClassOfThingAxiom);
+			// commit changes (it will only update the ontology's java object, not the file)
+			this.getDefaultOWLReasoner().getRootOntology().getOWLOntologyManager().applyChange(addAxiom);
+		}
 
 	}
 
@@ -326,5 +380,77 @@ public class OWL2KnowledgeBase implements KnowledgeBase {
 	public void setDefaultMediator(IMEBNMediator defaultMediator) {
 		this.defaultMediator = defaultMediator;
 	}
+	
+	/**
+	 * If this KB contains a {@link #getDefaultMEBN()} having {@link MultiEntityBayesianNetwork#getStorageImplementor()} an instance of 
+	 * {@link ProtegeStorageImplementorDecorator}, then it will extract an instance of {@link OWLModelManager} (the main access point
+	 * to Protege's classes) from it.
+	 * @return
+	 */
+	public OWLModelManager getOWLModelManager() {
+		try {
+			if (this.getDefaultMEBN() != null
+					&& this.getDefaultMEBN().getStorageImplementor() != null 
+					&& this.getDefaultMEBN().getStorageImplementor() instanceof ProtegeStorageImplementorDecorator) {
+				return ((ProtegeStorageImplementorDecorator)this.getDefaultMEBN().getStorageImplementor()).getOWLEditorKit().getModelManager();
+			}
+		} catch (Throwable t) {
+			// it is OK, because we can try extracting the reasoner when KB methods are called and MEBN is passed as arguments
+			try {
+				Debug.println(this.getClass(), "Could not extract reasoner from mebn " + this.getDefaultMEBN(), t);
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.mebn.ontology.protege.IOWLClassExpressionParserFacade#parseExpression(java.lang.String)
+	 */
+	public OWLClassExpression parseExpression(String expression) {
+		if (this.getOwlClassExpressionParserDelegator() == null) {
+			return null;
+		}
+		return this.getOwlClassExpressionParserDelegator().parseExpression(expression);
+	}
+
+	/**
+	 * It will lazily instantiate OWLClassExpressionParserFacade if none was specified.
+	 * @return the owlClassExpressionParserDelegator
+	 */
+	public IOWLClassExpressionParserFacade getOwlClassExpressionParserDelegator() {
+		if (owlClassExpressionParserDelegator == null) {
+			// instantiate the default OWL expression parser
+			try {
+				// try using protege
+				owlClassExpressionParserDelegator = OWLClassExpressionParserFacade.getInstance(((ProtegeStorageImplementorDecorator)this.getDefaultMEBN().getStorageImplementor()).getOWLEditorKit().getModelManager());
+			} catch (Exception e) {
+				try {
+					Debug.println(this.getClass(), "Could not extract Protege manager for " + this.getDefaultMEBN(), e);
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				try {
+					// OK. Use OWLAPI if protege was not present
+					owlClassExpressionParserDelegator = OWLClassExpressionParserFacade.getInstance(this.getDefaultOWLReasoner().getRootOntology());
+				} catch (Exception e2) {
+					e.printStackTrace();	// trace the first exception
+					throw new IllegalStateException(e2);
+				}
+			}
+		}
+		return owlClassExpressionParserDelegator;
+	}
+
+	/**
+	 * @param owlClassExpressionParserDelegator the owlClassExpressionParserDelegator to set
+	 */
+	public void setOwlClassExpressionParserDelegator(
+			IOWLClassExpressionParserFacade owlClassExpressionParserDelegator) {
+		this.owlClassExpressionParserDelegator = owlClassExpressionParserDelegator;
+	}
+
 
 }

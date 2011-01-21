@@ -3,9 +3,11 @@
  */
 package unbbayes.prs.mebn.ontology.protege;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -15,6 +17,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.swing.JFrame;
 import javax.swing.UIManager;
 
 import org.apache.felix.framework.FrameworkFactory;
@@ -287,7 +290,50 @@ public class ProtegeBundleLauncher implements IBundleLauncher {
     	
     	// add only started bundles
     	this.getLoadedBundles().addAll(startedBundles);
+    	
+    	try {
+    		// force the Protege GUI to be hidden immediately
+    		this.hideProtegeGUI();
+    	} catch (Throwable t) {
+    		t.printStackTrace();
+    		// ignore failure, because it will become hidden anyway after an ontology is loaded.
+    	}
+    	
     	return startedBundles;
+	}
+
+	/**
+	 * Tries to hide the GUI of Protege application.
+	 */
+	public void hideProtegeGUI() {
+		try {
+			Debug.println(this.getClass(), "Attempting to hide protege application's GUI using reflection");
+			// get to the running protege application from the singleton instance of ProtegeManager
+			Object managerObject = this.getProtegeManager();
+			Object protegeApplication = managerObject.getClass().getMethod("getApplication").invoke(managerObject);
+			// once obtained the application, try to access the private field which is the welcome frame (this frame is displayed every time and it is becoming annoying)
+			Field welcomeFrameField = protegeApplication.getClass().getDeclaredField("welcomeFrame");
+			welcomeFrameField.setAccessible(true);	// enable access to field
+			// hide and dispose the old frame
+			Object welcomeFrame = welcomeFrameField.get(protegeApplication);
+			if (welcomeFrame != null 
+					&& welcomeFrame instanceof JFrame) {
+				((JFrame)welcomeFrame).setVisible(false);
+				((JFrame)welcomeFrame).dispose();
+			}
+			// replace it to a frame which is always hidden
+			welcomeFrameField.set(protegeApplication, new JFrame() {
+				public void setVisible(boolean b) {
+					super.setVisible(false);	// it is always invisible!!
+				}
+				protected void frameInit() {
+					super.frameInit();
+					this.setVisible(false);
+				}
+			});
+		} catch (Throwable t) {
+			Debug.println(this.getClass(), "Could not hide Protege GUI using reflection", t);
+		}
 	}
 
 	/* (non-Javadoc)

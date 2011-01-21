@@ -11,7 +11,7 @@ package unbbayes.prs.mebn;
  * @author Shou Matsumoto
  *
  */
-public class PROWL2MEBNFactory extends AbstractMEBNFactory {
+public class PROWL2MEBNFactory extends DefaultMEBNElementFactory {
 	
 	/** This class implements singleton pattern */
 	private static class SingletonHolder {
@@ -30,16 +30,25 @@ public class PROWL2MEBNFactory extends AbstractMEBNFactory {
 	 * Default constructor method.
 	 * @return a singleton instance of this factory
 	 */
-	public static IMEBNFactory getInstance() {
+	public static IMEBNElementFactory getInstance() {
 //		return new PROWL2MEBNFactory();
 		// uncomment the line above and comment the line below in order to stop using singleton pattern
 		return SingletonHolder.INSTANCE;
 	}
 
+//	/* (non-Javadoc)
+//	 * @see unbbayes.prs.mebn.IMEBNElementFactory#createResidentNode(java.lang.String, unbbayes.prs.mebn.MFrag)
+//	 */
+//	public ResidentNode createResidentNode(String name, MFrag mfrag) {
+//		return OWLPropertyAwareResidentNode.getInstance(name, mfrag);
+//	}
+
 	/* (non-Javadoc)
-	 * @see unbbayes.prs.mebn.IMEBNFactory#createResidentNode(java.lang.String, unbbayes.prs.mebn.MFrag)
+	 * @see unbbayes.prs.mebn.DefaultMEBNElementFactory#createMEBN(java.lang.String)
 	 */
-	public ResidentNode createResidentNode(String name, MFrag mfrag) {
-		return OWLPropertyAwareResidentNode.getInstance(name, mfrag);
+	public MultiEntityBayesianNetwork createMEBN(String name) {
+		return IRIAwareMultiEntityBayesianNetwork.getInstance(name);
 	}
+	
+	
 }

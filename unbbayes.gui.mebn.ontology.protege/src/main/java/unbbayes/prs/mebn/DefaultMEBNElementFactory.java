@@ -27,12 +27,12 @@ import unbbayes.prs.mebn.entity.Type;
  * @author Shou Matsumoto
  *
  */
-public abstract class AbstractMEBNFactory implements IMEBNFactory {
+public class DefaultMEBNElementFactory implements IMEBNElementFactory {
 
 	private Properties properties;
 
 	/* (non-Javadoc)
-	 * @see unbbayes.prs.mebn.IMEBNFactory#setInstantiationProperties(java.util.Properties)
+	 * @see unbbayes.prs.mebn.IMEBNElementFactory#setInstantiationProperties(java.util.Properties)
 	 */
 	public void setInstantiationProperties(Properties properties) {
 		this.properties = properties;
@@ -46,49 +46,49 @@ public abstract class AbstractMEBNFactory implements IMEBNFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.prs.mebn.IMEBNFactory#createMEBN(java.lang.String)
+	 * @see unbbayes.prs.mebn.IMEBNElementFactory#createMEBN(java.lang.String)
 	 */
 	public MultiEntityBayesianNetwork createMEBN(String name) {
 		return new MultiEntityBayesianNetwork(name);
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.prs.mebn.IMEBNFactory#createMFrag(java.lang.String, unbbayes.prs.mebn.MultiEntityBayesianNetwork)
+	 * @see unbbayes.prs.mebn.IMEBNElementFactory#createMFrag(java.lang.String, unbbayes.prs.mebn.MultiEntityBayesianNetwork)
 	 */
 	public MFrag createMFrag(String name, MultiEntityBayesianNetwork mebn) {
 		return new MFrag(name, mebn);
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.prs.mebn.IMEBNFactory#createResidentNode(java.lang.String, unbbayes.prs.mebn.MFrag)
+	 * @see unbbayes.prs.mebn.IMEBNElementFactory#createResidentNode(java.lang.String, unbbayes.prs.mebn.MFrag)
 	 */
 	public ResidentNode createResidentNode(String name, MFrag mfrag) {
 		return new ResidentNode(name, mfrag);
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.prs.mebn.IMEBNFactory#createInputNode(java.lang.String, unbbayes.prs.mebn.MFrag)
+	 * @see unbbayes.prs.mebn.IMEBNElementFactory#createInputNode(java.lang.String, unbbayes.prs.mebn.MFrag)
 	 */
 	public InputNode createInputNode(String name, MFrag mfrag) {
 		return new InputNode(name, mfrag);
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.prs.mebn.IMEBNFactory#createContextNode(java.lang.String, unbbayes.prs.mebn.MFrag)
+	 * @see unbbayes.prs.mebn.IMEBNElementFactory#createContextNode(java.lang.String, unbbayes.prs.mebn.MFrag)
 	 */
 	public ContextNode createContextNode(String name, MFrag mfrag) {
 		return new ContextNode(name, mfrag);
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.prs.mebn.IMEBNFactory#createOrdinaryVariable(java.lang.String, unbbayes.prs.mebn.entity.Type, unbbayes.prs.mebn.MFrag)
+	 * @see unbbayes.prs.mebn.IMEBNElementFactory#createOrdinaryVariable(java.lang.String, unbbayes.prs.mebn.entity.Type, unbbayes.prs.mebn.MFrag)
 	 */
 	public OrdinaryVariable createOrdinaryVariable(String name, Type type, MFrag mfrag) {
 		return new OrdinaryVariable(name, type, mfrag);
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.prs.mebn.IMEBNFactory#createBuiltInRV(java.lang.String)
+	 * @see unbbayes.prs.mebn.IMEBNElementFactory#createBuiltInRV(java.lang.String)
 	 */
 	public BuiltInRV createBuiltInRV(String operation) {
 		// lets virtually perform a huge switch-case command... 
@@ -124,14 +124,14 @@ public abstract class AbstractMEBNFactory implements IMEBNFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.prs.mebn.IMEBNFactory#createArgument(java.lang.String, unbbayes.prs.mebn.MultiEntityNode)
+	 * @see unbbayes.prs.mebn.IMEBNElementFactory#createArgument(java.lang.String, unbbayes.prs.mebn.MultiEntityNode)
 	 */
 	public Argument createArgument(String name, MultiEntityNode multiEntityNode) {
 		return new Argument(name, multiEntityNode);
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.prs.mebn.IMEBNFactory#createEdge(unbbayes.prs.INode, unbbayes.prs.INode)
+	 * @see unbbayes.prs.mebn.IMEBNElementFactory#createEdge(unbbayes.prs.INode, unbbayes.prs.INode)
 	 */
 	public Edge createEdge(INode from, INode to) {
 		try {
@@ -143,7 +143,7 @@ public abstract class AbstractMEBNFactory implements IMEBNFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.prs.mebn.IMEBNFactory#createResidentNodePointer(unbbayes.prs.mebn.ResidentNode, unbbayes.prs.INode)
+	 * @see unbbayes.prs.mebn.IMEBNElementFactory#createResidentNodePointer(unbbayes.prs.mebn.ResidentNode, unbbayes.prs.INode)
 	 */
 	public ResidentNodePointer createResidentNodePointer(
 			ResidentNode residentNode, INode node) {
@@ -156,7 +156,7 @@ public abstract class AbstractMEBNFactory implements IMEBNFactory {
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.prs.mebn.IMEBNFactory#createNodeFormulaTree(java.lang.String, unbbayes.prs.mebn.context.EnumType, unbbayes.prs.mebn.context.EnumSubType, java.lang.Object)
+	 * @see unbbayes.prs.mebn.IMEBNElementFactory#createNodeFormulaTree(java.lang.String, unbbayes.prs.mebn.context.EnumType, unbbayes.prs.mebn.context.EnumSubType, java.lang.Object)
 	 */
 	public NodeFormulaTree createNodeFormulaTree(String name, EnumType type, EnumSubType subType, Object nodeVariable) {
 		try {
