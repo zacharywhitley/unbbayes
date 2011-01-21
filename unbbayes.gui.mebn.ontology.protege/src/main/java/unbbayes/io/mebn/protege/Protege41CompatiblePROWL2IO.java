@@ -13,7 +13,7 @@ import org.protege.editor.owl.model.inference.NoOpReasonerInfo;
 import org.protege.editor.owl.model.inference.ProtegeOWLReasonerInfo;
 import org.protege.editor.owl.model.inference.ReasonerStatus;
 
-import unbbayes.io.mebn.IPROWL2ModelUser;
+import unbbayes.io.mebn.DefaultPROWL2ModelUser;
 import unbbayes.io.mebn.LoaderPrOwlIO;
 import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
@@ -60,6 +60,7 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 				Locale.getDefault(),
 				Protege41CompatiblePROWL2IO.class.getClassLoader()
 			));
+		ret.setProwlModelUserDelegator(DefaultPROWL2ModelUser.getInstance());
 		ret.setMEBNFactory(PROWL2MEBNFactory.getInstance());
 		ret.setWrappedLoaderPrOwlIO(new LoaderPrOwlIO());
 		return ret;

@@ -3,6 +3,7 @@
  */
 package unbbayes.io.mebn;
 
+import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.PrefixManager;
 import org.semanticweb.owlapi.util.DefaultPrefixManager;
 
@@ -34,6 +35,13 @@ public interface IPROWL2ModelUser {
 	/** This is a prefix manager for {@value #PROWL2_NAMESPACEURI} */
 	public static final PrefixManager PROWL2_DEFAULTPREFIXMANAGER = new DefaultPrefixManager(PROWL2_NAMESPACEURI + '#');
 	
-	
+	/**
+	 * Obtains the default prefix manager, which will be used in order to extract classes by name/ID.
+	 * If ontology == null, it returns {@link #PROWL2_DEFAULTPREFIXMANAGER} 
+	 * (thus, if ontology == null, it returns a PR-OWL ontology prefix).
+	 * @param ontology : ontology being read.
+	 * @return a prefix manager or null if it could not be created at all
+	 */
+	public PrefixManager getOntologyPrefixManager(OWLOntology ontology);
 	
 }

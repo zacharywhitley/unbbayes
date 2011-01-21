@@ -27,6 +27,7 @@ import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 import unbbayes.gui.mebn.auxiliary.MebnToolkit;
+import unbbayes.io.mebn.MEBNStorageImplementorDecorator;
 import unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator;
 import unbbayes.io.mebn.protege.IProtegeStorageImplementorDecorator;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -209,5 +210,13 @@ public class OWL2PropertyViewerPanel extends OWLPropertyViewerPanel {
 		this.owlOntologyChangeListener = owlOntologyChangeListener;
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.gui.mebn.ontology.protege.OWLPropertyViewerPanel#getOwlModelHolder()
+	 */
+	public MEBNStorageImplementorDecorator getOwlModelHolder() {
+		// this method will not be used anymore.
+		return null;
+	}
 	
 }

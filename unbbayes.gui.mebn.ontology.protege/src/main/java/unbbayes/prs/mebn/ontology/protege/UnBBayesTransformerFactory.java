@@ -10,7 +10,7 @@ import org.apache.xalan.processor.TransformerFactoryImpl;
 
 /**
  * This class extends the apache Xalan in order to stop
- * failing if it encounters a indent-number argument
+ * failing if it finds a indent-number argument
  * @author Shou Matsumoto
  *
  */

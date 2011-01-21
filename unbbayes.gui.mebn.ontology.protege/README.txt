@@ -47,6 +47,7 @@ mvn install:install-file -DgroupId=guess -DartifactId=org.protege.ontograf -Dver
 mvn install:install-file -DgroupId=guess -DartifactId=org.semanticweb.HermiT -Dversion=1.2.5.927 -Dpackaging=jar -Dfile=org.semanticweb.HermiT.jar
 mvn install:install-file -DgroupId=guess -DartifactId=org.semanticweb.owl.owlapi -Dversion=3.1.0.1602 -Dpackaging=jar -Dfile=org.semanticweb.owl.owlapi.jar
 
+The following dependencies are jars within the protege plugins, but because they cannot be read by non-OSGI applications, they must be explicitly included to classpath
 Go to \mvn_lib\Protege_4.1_beta\lib>
 mvn install:install-file -DgroupId=com.jgoodies -DartifactId=looks -Dversion=2.2.1 -Dpackaging=jar -Dfile=looks.jar
 mvn install:install-file -DgroupId=guess -DartifactId=org.protege.owlapi.extensions -Dversion=1.0.0 -Dpackaging=jar -Dfile=protege-owlapi-extensions.jar
@@ -54,6 +55,8 @@ mvn install:install-file -DgroupId=guess -DartifactId=org.protege.xmlcatalog -Dv
 mvn install:install-file -DgroupId=guess -DartifactId=org.onemind.jxp -Dversion=1.2.0 -Dpackaging=jar -Dfile=jxp.jar
 mvn install:install-file -DgroupId=guess -DartifactId=org.coode.mdock -Dversion=1.0.0 -Dpackaging=jar -Dfile=mdock.jar
 mvn install:install-file -DgroupId=guess -DartifactId=org.jdesktop.swingworker -Dversion=1.0.0 -Dpackaging=jar -Dfile=swing-worker.jar
+
+...And just add the other jars in mvn_lib to maven local repository.
 
 
 The following JAR is a dependency of the UnBBayes core

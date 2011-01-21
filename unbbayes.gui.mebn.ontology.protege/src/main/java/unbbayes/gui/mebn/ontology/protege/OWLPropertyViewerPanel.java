@@ -274,7 +274,7 @@ public class OWLPropertyViewerPanel extends JPanel {
 			return (MEBNStorageImplementorDecorator)this.getMebn().getStorageImplementor();
 		} catch (Exception e) {
 			// probably, a nullpointerexception or classcastexception...
-			e.printStackTrace();
+			Debug.println(this.getClass(),"If this is just a nullpointerexception or classcastexception, there is no problem.", e);
 		}
 		return null;
 	}

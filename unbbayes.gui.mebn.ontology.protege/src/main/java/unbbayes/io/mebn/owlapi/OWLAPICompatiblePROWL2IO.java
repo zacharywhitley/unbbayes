@@ -37,10 +37,10 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.PrefixManager;
 import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
-import org.semanticweb.owlapi.util.DefaultPrefixManager;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
 import unbbayes.gui.InternalErrorDialog;
+import unbbayes.io.mebn.DefaultPROWL2ModelUser;
 import unbbayes.io.mebn.IPROWL2ModelUser;
 import unbbayes.io.mebn.LoaderPrOwlIO;
 import unbbayes.io.mebn.MebnIO;
@@ -149,6 +149,8 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 	private IOWLClassExpressionParserFacade owlClassExpressionParserDelegator;
 
 	private Collection<OWLClassExpression> nonPROWLClassesCache = new HashSet<OWLClassExpression>();
+	
+	private IPROWL2ModelUser prowlModelUserDelegator;
 
 	/**
 	 * The default constructor is public only because
@@ -172,6 +174,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 				Locale.getDefault(),
 				OWLAPICompatiblePROWL2IO.class.getClassLoader()
 			));
+		ret.setProwlModelUserDelegator(DefaultPROWL2ModelUser.getInstance());
 		ret.setWrappedLoaderPrOwlIO(new LoaderPrOwlIO());	 // initialize default
 		ret.setMEBNFactory(PROWL2MEBNFactory.getInstance()); // initialize default
 		return ret;
@@ -1560,7 +1563,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 		}
 		
 		// extract current ontology prefix
-		PrefixManager prefixManager = this.getDefaultPrefixManager(ontology);	// this prefix may be different from PR-OWL
+		PrefixManager prefixManager = this.getOntologyPrefixManager(ontology);	// this prefix may be different from PR-OWL
 		
 		// extract property
 		OWLDataProperty definesUncertaintyOfIRI = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataProperty("definesUncertaintyOf", prefixManager);
@@ -2351,51 +2354,18 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 	 * @see #getDefaultPrefixManager(OWLOntology)
 	 */
 	protected PrefixManager getDefaultPrefixManager() {
-		return this.getDefaultPrefixManager(null);
+		return this.getOntologyPrefixManager(null);
 	}
 	
-	/**
-	 * Obtains the default prefix manager, which will be used in order to extract classes by name/ID.
-	 * If ontology == null, it uses {@link #getProwlOntologyNamespaceURI()} in order to create the prefix
-	 * (thus, if ontology == null, it returns a PR-OWL ontology prefix).
-	 * @param ontology : ontology being read.
-	 * @return a prefix manager or null if it could not be created
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.mebn.IPROWL2ModelUser#getOntologyPrefixManager(org.semanticweb.owlapi.model.OWLOntology)
 	 */
-	protected PrefixManager getDefaultPrefixManager(OWLOntology ontology) {
-		
-		// use PR-OWL prefix if no ontology was specified
-		if (ontology == null) {
-			try {
-				// extract the PR-OWL ontology namespaces with '#'
-				String defaultPrefix = this.getProwlOntologyNamespaceURI();
-				if (defaultPrefix != null) {
-					if (!defaultPrefix.endsWith("#")) {
-						defaultPrefix += "#";
-					}
-					PrefixManager prefixManager = new DefaultPrefixManager(defaultPrefix);
-					return prefixManager;
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			// use the PROWL2 default prefix manager if we could not extract manager and ontology == null
-			return PROWL2_DEFAULTPREFIXMANAGER;
-		} else {
-			// read prefix from ontology
-			try {
-				String defaultPrefix = ontology.getOntologyID().getDefaultDocumentIRI().toString();
-				if (!defaultPrefix.endsWith("#")) {
-					defaultPrefix += "#";
-				}
-				PrefixManager prefixManager = new DefaultPrefixManager(defaultPrefix);
-				return prefixManager;
-			} catch (Throwable e) {
-				e.printStackTrace();
-			}
+	public PrefixManager getOntologyPrefixManager(OWLOntology ontology) {
+		// just delegate...
+		if (this.getProwlModelUserDelegator() != null) {
+			return this.getProwlModelUserDelegator().getOntologyPrefixManager(ontology);
 		}
-		
-		
-		// could not extract prefixes at all...
 		return null;
 	}
 	
@@ -2947,5 +2917,22 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 	protected void setNonPROWLClassesCache(
 			Collection<OWLClassExpression> nonPROWLClassesCache) {
 		this.nonPROWLClassesCache = nonPROWLClassesCache;
+	}
+
+	/**
+	 * Calls to {@link IPROWL2ModelUser} will be delegated to this object.
+	 * @return the prowlModelUserDelegator
+	 */
+	public IPROWL2ModelUser getProwlModelUserDelegator() {
+		return prowlModelUserDelegator;
+	}
+
+	/**
+	 * Calls to {@link IPROWL2ModelUser} will be delegated to this object.
+	 * @param prowlModelUserDelegator the prowlModelUserDelegator to set
+	 */
+	public void setProwlModelUserDelegator(
+			IPROWL2ModelUser prowlModelUserDelegator) {
+		this.prowlModelUserDelegator = prowlModelUserDelegator;
 	}
 }
