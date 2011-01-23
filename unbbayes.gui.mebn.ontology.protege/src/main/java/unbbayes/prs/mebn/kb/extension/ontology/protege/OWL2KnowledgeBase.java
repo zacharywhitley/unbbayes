@@ -7,6 +7,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -1200,7 +1201,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	 */
 	public List<String> evaluateSingleSearchContextNodeFormula(ContextNode context, List<OVInstance> ovInstances)throws OVInstanceFaultException {
 		// TODO Auto-generated method stub
-		return null;
+		return new ArrayList<String>();
 	}
 
 	/* (non-Javadoc)
@@ -1218,7 +1219,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	public Map<OrdinaryVariable, List<String>> evaluateMultipleSearchContextNodeFormula(
 			List<ContextNode> contextList, List<OVInstance> ovInstances) {
 		// TODO Auto-generated method stub
-		return null;
+		return new HashMap<OrdinaryVariable, List<String>>();
 	}
 	
 	/* (non-Javadoc)
