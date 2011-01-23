@@ -83,7 +83,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	
 	private IPROWL2ModelUser prowlModelUserDelegator;
 	
-	private long maximumBuzyWaitingCount = 100;
+	private long maximumBuzyWaitingCount = 20;
 	
 	private long sleepTimeWaitingReasonerInitialization = 1000;
 	
@@ -592,6 +592,11 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		// maybe there would be some synchronization problems, because of protege's asynchronous initialization of reasoners. Let's wait until it becomes ready
 		for (long i = 0; i < this.getMaximumBuzyWaitingCount(); i++) {
 			// TODO Stop using buzy waiting!!!
+			if (ReasonerStatus.NO_REASONER_FACTORY_CHOSEN.equals(this.getOWLModelManager().getOWLReasonerManager().getReasonerStatus())) {
+				// reasoner is not chosen...
+				Debug.println(this.getClass(), "No reasoner is chosen.");
+				break;
+			}
 			if (ReasonerStatus.INITIALIZED.equals(this.getOWLModelManager().getOWLReasonerManager().getReasonerStatus())) {
 				// reasoner is ready now
 				break;
@@ -605,6 +610,8 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				t.printStackTrace();
 			}
 		}
+		
+		// TODO reload Object entities to MEBN
 	}
 
 	/* (non-Javadoc)

@@ -32,7 +32,7 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 
 	private boolean initializeReasoner = true;
 	
-	private long maximumBuzyWaitingCount = 65535;
+	private long maximumBuzyWaitingCount = 100;
 	private long sleepTimeWaitingReasonerInitialization = 1000;
 	
 	private IBundleLauncher protegeBundleLauncher;
@@ -111,6 +111,14 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 							// maybe there would be some synchronization problems, because of protege's asynchronous initialization of reasoners. Let's wait until it becomes ready
 							for (long i = 0; i < this.getMaximumBuzyWaitingCount(); i++) {
 								// TODO Stop using buzy waiting!!!
+								if (ReasonerStatus.NO_REASONER_FACTORY_CHOSEN.equals(kit.getOWLModelManager().getOWLReasonerManager().getReasonerStatus())) {
+									// reasoner is not chosen...
+									Debug.println(this.getClass(), "No reasoner is chosen. Trying to reload...");
+									// try reloading again
+									kit.getOWLModelManager().getOWLReasonerManager().setCurrentReasonerFactoryId(info.getReasonerId());
+									kit.getOWLModelManager().getOWLReasonerManager().classifyAsynchronously(kit.getOWLModelManager().getOWLReasonerManager().getReasonerPreferences().getPrecomputedInferences());
+									continue;
+								}
 								if (ReasonerStatus.INITIALIZED.equals(kit.getOWLModelManager().getOWLReasonerManager().getReasonerStatus())) {
 									// reasoner is ready now
 									break;
@@ -149,8 +157,17 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 		// update and initialize the parser of manchester owl syntax expressions (so that owl reasoners can be used for string expressions)
 		this.setOwlClassExpressionParserDelegator(OWLClassExpressionParserFacade.getInstance(kit.getOWLModelManager()));
 		
+		// extract default name
+		String defaultMEBNName = "MEBN";
+		try {
+			defaultMEBNName = this.getLastOWLOntology().getOntologyID().toString();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		// load mebn using the super class
-		MultiEntityBayesianNetwork ret =  super.loadMEBNFromOntology(this.getLastOWLOntology(), null);
+		MultiEntityBayesianNetwork ret = this.getMEBNFactory().createMEBN(defaultMEBNName);	// instantiate using temporary name
+		super.loadMEBNFromOntology(ret, this.getLastOWLOntology(), null);					// populate MEBN including its name
 		
 		
 		// fill mebn with protege's storage implementor if we could load protege previously

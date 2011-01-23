@@ -31,11 +31,11 @@ public interface IOWLAPIOntologyUser {
 	public void setLastOWLOntology(OWLOntology owlModelManager);
 	
 	/**
-	 * Generate a MEBN from a specific ontology instead of a file.
+	 * Populate a MEBN from a specific ontology instead of a file.
+	 * @param mebn : the MEBN to fill
 	 * @param ontology : ontology to be read
 	 * @param reasoner : reasoner to be used in order to extract MEBN elements from ontology
-	 * @return : the instantiated MEBN
 	 */
-	public MultiEntityBayesianNetwork loadMEBNFromOntology(OWLOntology ontology, OWLReasoner reasoner);
+	public void loadMEBNFromOntology(MultiEntityBayesianNetwork mebn, OWLOntology ontology, OWLReasoner reasoner);
 	
 }

@@ -214,7 +214,21 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 				e.printStackTrace();
 			}
 			
-			return this.loadMEBNFromOntology(this.getLastOWLOntology(), this.getLastOWLReasoner());
+			// extract default name
+			String defaultMEBNName = "MEBN";
+			try {
+				defaultMEBNName = this.getLastOWLOntology().getOntologyID().toString();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			// instantiate MEBN
+			MultiEntityBayesianNetwork mebn = this.getMEBNFactory().createMEBN(defaultMEBNName);
+			
+			// populate MEBN
+			this.loadMEBNFromOntology(mebn, this.getLastOWLOntology(), this.getLastOWLReasoner());
+			
+			return mebn;
 			
 		} catch (Exception e) {
 			// if we fail to load OWL2 ontology, lets use the old fashioned way
@@ -225,9 +239,19 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 	
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.io.mebn.owlapi.IOWLAPIOntologyUser#loadMEBNFromOntology(org.semanticweb.owlapi.model.OWLOntology, org.semanticweb.owlapi.reasoner.OWLReasoner)
+	 * @see unbbayes.io.mebn.owlapi.IOWLAPIOntologyUser#loadMEBNFromOntology(unbbayes.prs.mebn.MultiEntityBayesianNetwork, org.semanticweb.owlapi.model.OWLOntology, org.semanticweb.owlapi.reasoner.OWLReasoner)
 	 */
-	public MultiEntityBayesianNetwork loadMEBNFromOntology(OWLOntology ontology, OWLReasoner reasoner) {
+	public void loadMEBNFromOntology(MultiEntityBayesianNetwork mebn, OWLOntology ontology, OWLReasoner reasoner) {
+		// assertion
+		if (mebn == null) {
+			Debug.println(this.getClass(), "There is no MEBN to fill...");
+			return;
+		}
+		
+		if (ontology == null) {
+			Debug.println(this.getClass(), "There is no ontology to load...");
+			return;
+		}
 		
 		// Reset the non-PR-OWL classes extractor (this)
 		this.resetNonPROWLClassExtractor();
@@ -237,15 +261,8 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 			this.setLastOWLReasoner(reasoner);
 		}
 		
-		String defaultMEBNName = "MEBN";
-		try {
-			defaultMEBNName = ontology.getOntologyID().toString();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
 		// this is a instance of MEBN to be filled. The name will be updated after loadMTheoryAndMFrags
-		MultiEntityBayesianNetwork mebn = this.getMEBNFactory().createMEBN(defaultMEBNName);
+//		MultiEntityBayesianNetwork mebn = this.getMEBNFactory().createMEBN(defaultMEBNName);
 		IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, mebn, ontology.getOntologyID().getOntologyIRI());
 		
 		// Start loading ontology. This is template method design pattern.
@@ -256,7 +273,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 		} catch (IOMebnException e) {
 			// the ontology does not contain PR-OWL specific elements. Stop loading PR-OWL and return an empty mebn.
 			e.printStackTrace();
-			return mebn;
+			return;
 		}
 		
 		// load object entities and fill the mapping of object entities
@@ -310,7 +327,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 		// fill the storage implementor of MEBN (a reference to an object that loaded/saved the mebn last time)
 		mebn.setStorageImplementor(OWLAPIStorageImplementorDecorator.newInstance(this.getLastOWLOntology()));
 		
-		return mebn;
+//		return mebn;
 	}
 
 
