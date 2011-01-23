@@ -1,8 +1,9 @@
 /**
  * 
  */
-package unbbayes.io.mebn;
+package unbbayes.io.mebn.owlapi;
 
+import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.PrefixManager;
 import org.semanticweb.owlapi.util.DefaultPrefixManager;
@@ -32,8 +33,8 @@ public interface IPROWL2ModelUser {
 	/** This is the default URI of a PR-OWL2 ontology */
 	public static final String PROWL2_NAMESPACEURI =  "http://www.pr-owl.org/pr-owl.owl";
 	
-	/** This is a prefix manager for {@value #PROWL2_NAMESPACEURI} */
-	public static final PrefixManager PROWL2_DEFAULTPREFIXMANAGER = new DefaultPrefixManager(PROWL2_NAMESPACEURI + '#');
+	/** This is a prefix manager for {@value IPROWL2ModelUser#PROWL2_NAMESPACEURI} */
+	public static final PrefixManager PROWL2_DEFAULTPREFIXMANAGER = new DefaultPrefixManager(IPROWL2ModelUser.PROWL2_NAMESPACEURI + '#');
 	
 	/**
 	 * Obtains the default prefix manager, which will be used in order to extract classes by name/ID.
@@ -43,5 +44,12 @@ public interface IPROWL2ModelUser {
 	 * @return a prefix manager or null if it could not be created at all
 	 */
 	public PrefixManager getOntologyPrefixManager(OWLOntology ontology);
+	
+	/**
+	 * Extracts a user-friendly name from an OWL object
+	 * @param owlObject
+	 * @return
+	 */
+	public String extractName(OWLObject owlObject);
 	
 }

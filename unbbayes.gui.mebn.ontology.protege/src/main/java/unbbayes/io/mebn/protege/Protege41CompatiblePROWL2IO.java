@@ -5,7 +5,6 @@ package unbbayes.io.mebn.protege;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Locale;
 
 import org.protege.editor.core.ProtegeManager;
 import org.protege.editor.owl.OWLEditorKit;
@@ -13,13 +12,10 @@ import org.protege.editor.owl.model.inference.NoOpReasonerInfo;
 import org.protege.editor.owl.model.inference.ProtegeOWLReasonerInfo;
 import org.protege.editor.owl.model.inference.ReasonerStatus;
 
-import unbbayes.io.mebn.DefaultPROWL2ModelUser;
-import unbbayes.io.mebn.LoaderPrOwlIO;
 import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.io.mebn.owlapi.OWLAPICompatiblePROWL2IO;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.PROWL2MEBNFactory;
 import unbbayes.prs.mebn.ontology.protege.IBundleLauncher;
 import unbbayes.prs.mebn.ontology.protege.OWLClassExpressionParserFacade;
 import unbbayes.prs.mebn.ontology.protege.ProtegeBundleLauncher;
@@ -46,7 +42,6 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 	 * @deprecated
 	 */
 	public Protege41CompatiblePROWL2IO() {
-		// TODO Auto-generated constructor stub
 	}
 	
 	/**
@@ -54,16 +49,7 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 	 * @return
 	 */
 	public static MebnIO newInstance() {
-		Protege41CompatiblePROWL2IO ret = new Protege41CompatiblePROWL2IO();
-		ret.setResource(unbbayes.util.ResourceController.newInstance().getBundle(
-				unbbayes.io.mebn.resources.IoMebnResources.class.getName(),
-				Locale.getDefault(),
-				Protege41CompatiblePROWL2IO.class.getClassLoader()
-			));
-		ret.setProwlModelUserDelegator(DefaultPROWL2ModelUser.getInstance());
-		ret.setMEBNFactory(PROWL2MEBNFactory.getInstance());
-		ret.setWrappedLoaderPrOwlIO(new LoaderPrOwlIO());
-		return ret;
+		return new Protege41CompatiblePROWL2IO();
 	}
 
 	/* (non-Javadoc)

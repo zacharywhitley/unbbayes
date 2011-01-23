@@ -40,8 +40,6 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
 import unbbayes.gui.InternalErrorDialog;
-import unbbayes.io.mebn.DefaultPROWL2ModelUser;
-import unbbayes.io.mebn.IPROWL2ModelUser;
 import unbbayes.io.mebn.LoaderPrOwlIO;
 import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.PROWLModelUser;
@@ -96,7 +94,7 @@ import unbbayes.util.Debug;
  * @author Shou Matsumoto
  *
  */
-public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntologyUser, IPROWL2ModelUser, IOWLClassExpressionParserFacade {
+public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntologyUser, IPROWL2ModelUser, IOWLClassExpressionParserFacade, INonPROWLClassExtractor {
 	
 	private String prowlOntologyNamespaceURI = PROWL2_NAMESPACEURI;
 	
@@ -151,6 +149,8 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 	private Collection<OWLClassExpression> nonPROWLClassesCache = new HashSet<OWLClassExpression>();
 	
 	private IPROWL2ModelUser prowlModelUserDelegator;
+	
+	private INonPROWLClassExtractor nonPROWLClassExtractor;
 
 	/**
 	 * The default constructor is public only because
@@ -161,6 +161,11 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 	 */
 	public OWLAPICompatiblePROWL2IO() {
 		super();
+		try {
+			this.initialize();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**
@@ -168,16 +173,22 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 	 * @return
 	 */
 	public static MebnIO newInstance() {
-		OWLAPICompatiblePROWL2IO ret = new OWLAPICompatiblePROWL2IO();
-		ret.setResource(unbbayes.util.ResourceController.newInstance().getBundle(
+		return new OWLAPICompatiblePROWL2IO();
+	}
+	
+	/**
+	 * Initialize default values
+	 */
+	protected void initialize() {
+		this.setResource(unbbayes.util.ResourceController.newInstance().getBundle(
 				unbbayes.io.mebn.resources.IoMebnResources.class.getName(),
 				Locale.getDefault(),
 				OWLAPICompatiblePROWL2IO.class.getClassLoader()
 			));
-		ret.setProwlModelUserDelegator(DefaultPROWL2ModelUser.getInstance());
-		ret.setWrappedLoaderPrOwlIO(new LoaderPrOwlIO());	 // initialize default
-		ret.setMEBNFactory(PROWL2MEBNFactory.getInstance()); // initialize default
-		return ret;
+		this.setNonPROWLClassExtractor(DefaultNonPROWLClassExtractor.getInstance());
+		this.setProwlModelUserDelegator(DefaultPROWL2ModelUser.getInstance());
+		this.setWrappedLoaderPrOwlIO(new LoaderPrOwlIO());	 // initialize default
+		this.setMEBNFactory(PROWL2MEBNFactory.getInstance()); // initialize default
 	}
 
 	/* (non-Javadoc)
@@ -218,8 +229,8 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 	 */
 	public MultiEntityBayesianNetwork loadMEBNFromOntology(OWLOntology ontology, OWLReasoner reasoner) {
 		
-		// clear cache of loaded non-PR-OWL classes
-		this.setNonPROWLClassesCache(new HashSet<OWLClassExpression>());
+		// Reset the non-PR-OWL classes extractor (this)
+		this.resetNonPROWLClassExtractor();
 		
 		// update last owl reasoner
 		if (reasoner != null) {
@@ -318,24 +329,17 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 	 * @param owlEntity : the owlEntity from where we are going to extract a name.
 	 * @return the name extracted from owlEntity.
 	 */
-	public String extractName(OWLOntology ontology, OWLEntity owlEntity) {
+	protected String extractName(OWLOntology ontology, OWLEntity owlEntity) {
 		// TODO remove redundant calls to this method (some methods are calling this method more than once despite only 1 call was really necessary).
-		// assertions
-		if (owlEntity == null) {
-			return null;	// if none was specified, use the ontology ID
-		}
-		String name = owlEntity.toStringID();
-		// the ID is probably in the following format: <URI>#<Name>
-		if (name != null) {
-			try {
-				while (name.contains("#")) {
-					name = name.substring(name.indexOf('#') + 1, name.length());
-				}
-			} catch (Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		return name;
+		return this.extractName(owlEntity);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.mebn.IPROWL2ModelUser#extractName(org.semanticweb.owlapi.model.OWLObject)
+	 */
+	public String extractName(OWLObject owlObject) {
+		return this.getProwlModelUserDelegator().extractName(owlObject);
 	}
 	
 
@@ -678,101 +682,11 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 	}
 	
 	/**
-	 * This method is a facilitator that returns non-PR-OWL classes from an ontology.
-	 * This is useful to obtain classes that do not belong to probabilistic ontology.
-	 * @param ontology
-	 * @return
-	 * @see #getNonPROWLClassesCache() : this is a cache of this method (it contains the last returned value). If
-	 * this value is set to non-null, this method will just return {@link #getNonPROWLClassesCache()}
+	 * Simply delegates to 
+	 * @see unbbayes.io.mebn.owlapi.INonPROWLClassExtractor#getNonPROWLClasses(org.semanticweb.owlapi.model.OWLOntology)
 	 */
-	protected Collection<OWLClassExpression> getNonPROWLClasses(OWLOntology ontology) {
-		
-		// use cache.
-		if (this.getNonPROWLClassesCache() != null && !this.getNonPROWLClassesCache().isEmpty()) {
-			return this.getNonPROWLClassesCache();
-		}
-		
-		// the cache is clear. Reload classes 
-		Collection<OWLClassExpression> ret = new HashSet<OWLClassExpression>();
-		
-		try {
-			// TODO find out a class expression that queries owl:Thing - <PR-OWL classes> (Note: Thing and not(<PR-OWL classes>) returns nothing, because the "not" operation seems to have special meaning)
-			
-			// add all subclasses of thing
-			ret.addAll(this.getOWLSubclasses(ontology.getOWLOntologyManager().getOWLDataFactory().getOWLThing(), ontology));
-			
-			// use PR-OWL namespace (prefix)
-			PrefixManager prefixManager = this.getDefaultPrefixManager();
-			
-			// remove PR-OWL 1 elements (we are removing here because we do not know how to query Thing and not(<PR-OWL classes>) in open-world assumption)
-			// TODO find out a way to query Thing and not(<PR-OWL classes>) in open-world assumption
-			
-			// remove ArgRelationship
-			OWLClass classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(ARGUMENT_RELATIONSHIP, prefixManager);
-			ret.remove(classToRemove);
-			ret.removeAll(this.getOWLSubclasses(classToRemove, ontology));
-			
-			// remove BuiltInRV
-			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(BUILTIN_RV, prefixManager);
-			ret.remove(classToRemove);
-			ret.removeAll(this.getOWLSubclasses(classToRemove, ontology));
-			
-			// remove CondRelationship
-			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(COND_RELATIONSHIP, prefixManager);
-			ret.remove(classToRemove);
-			ret.removeAll(this.getOWLSubclasses(classToRemove, ontology));
-			
-			// remove Entity
-			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass("Entity", prefixManager);
-			ret.remove(classToRemove);
-			ret.removeAll(this.getOWLSubclasses(classToRemove, ontology));
-			
-			// remove Exemplar
-			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(EXEMPLAR, prefixManager);
-			ret.remove(classToRemove);
-			ret.removeAll(this.getOWLSubclasses(classToRemove, ontology));
-			
-			// remove MFrag
-			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(MFRAG, prefixManager);
-			ret.remove(classToRemove);
-			ret.removeAll(this.getOWLSubclasses(classToRemove, ontology));
-			
-			// remove MTheory
-			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.MTHEORY, prefixManager);
-			ret.remove(classToRemove);
-			ret.removeAll(this.getOWLSubclasses(classToRemove, ontology));
-			
-			// remove Node
-			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(NODE, prefixManager);
-			ret.remove(classToRemove);
-			ret.removeAll(this.getOWLSubclasses(classToRemove, ontology));
-			
-			// remove OVariable
-			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROWLModelUser.ORDINARY_VARIABLE, prefixManager);
-			ret.remove(classToRemove);
-			ret.removeAll(this.getOWLSubclasses(classToRemove, ontology));
-//			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.ORDINARY_VARIABLE, prefixManager);
-//			ret.remove(classToRemove);
-//			ret.removeAll(this.getOWLSubclasses(classToRemove, ontology));
-			
-			// remove ProbAssign
-			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROB_ASSIGN, prefixManager);
-			ret.remove(classToRemove);
-			ret.removeAll(this.getOWLSubclasses(classToRemove, ontology));
-			
-			// remove ProbDist
-			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROB_DIST, prefixManager);
-			ret.remove(classToRemove);
-			ret.removeAll(this.getOWLSubclasses(classToRemove, ontology));
-			
-		} catch (Throwable t) {
-			t.printStackTrace();
-		}
-		
-		// update cache
-		this.setNonPROWLClassesCache(ret);
-		
-		return ret;
+	public Collection<OWLClassExpression> getNonPROWLClasses(OWLOntology ontology) {
+		return this.getNonPROWLClassExtractor().getNonPROWLClasses(ontology);
 	}
 
 	/**
@@ -843,9 +757,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 		// the returning value
 		Map<String, CategoricalStateEntity> ret = new HashMap<String, CategoricalStateEntity>();
 		
-		// extract the globally exclusive property
-		OWLObjectProperty globallyExclusiveObjectProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty("isGloballyExclusive", prefixManager);
-
+		
 		// extract the categorical states class
 		OWLClass categoricalStateClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(CATEGORICAL_STATE, prefixManager);
 		
@@ -858,6 +770,9 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 			// TODO make sure that the SSBN algorithm and the save method can handle individuals that are both categorical and object entities
 			categoricalStateIndividuals.addAll(this.getOWLIndividuals(owlClassExpression, ontology));
 		}
+		
+		// extract the globally exclusive property
+		OWLObjectProperty globallyExclusiveObjectProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty("isGloballyExclusive", prefixManager);
 		
 		// extract individuals and iterate
 		for (OWLIndividual owlIndividual : categoricalStateIndividuals){
@@ -1110,13 +1025,31 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 	 * @return a non null collection
 	 */
 	public Collection<OWLIndividual> getObjectPropertyValues(OWLIndividual individual, OWLObjectPropertyExpression property, OWLOntology ontology) {
-		try {
-			if (this.getLastOWLReasoner() != null) {
-				return (Collection)this.getLastOWLReasoner().getObjectPropertyValues(individual.asOWLNamedIndividual(), property).getFlattened();
+//		try {
+//			OWLReasoner reasoner = this.getLastOWLReasoner();
+//			if (reasoner != null) {
+//				// query using expression
+//				String expression = "inverse " + this.extractName(property) + " value " + this.extractName(individual);
+//				Debug.println(this.getClass(), "Expression: " + expression);
+//				return (Collection)reasoner.getInstances(this.parseExpression(expression), false).getFlattened();
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+		if (!property.isAnonymous()
+				&& ontology.containsObjectPropertyInSignature(property.asOWLObjectProperty().getIRI(), true)) {
+			// this ontology has this object property and it is not anonymous
+			try {
+				if (this.getLastOWLReasoner() != null) {
+					return (Collection)this.getLastOWLReasoner().getObjectPropertyValues(individual.asOWLNamedIndividual(), property).getFlattened();
+				}
+				return individual.getObjectPropertyValues(property, ontology);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-			return individual.getObjectPropertyValues(property, ontology);
-		} catch (Exception e) {
-			e.printStackTrace();
+		} else {
+			// unsupported
+			Debug.println(this.getClass(), property + " is either anonymous or not declared as an object property in " + ontology);
 		}
 		return new HashSet<OWLIndividual>();
 	}
@@ -2900,24 +2833,6 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 		return this.getOwlClassExpressionParserDelegator().parseExpression(expression);
 	}
 
-	/**
-	 * This is a cache for {@link #getNonPROWLClasses(OWLOntology)}.
-	 * If this value is null or empty, then {@link #getNonPROWLClasses(OWLOntology)} will reload classes.
-	 * @return the nonPROWLClassesCache
-	 */
-	protected Collection<OWLClassExpression> getNonPROWLClassesCache() {
-		return nonPROWLClassesCache;
-	}
-
-	/**
-	 * This is a cache for {@link #getNonPROWLClasses(OWLOntology)}.
-	 * If this value is null or empty, then {@link #getNonPROWLClasses(OWLOntology)} will reload classes.
-	 * @param nonPROWLClassesCache the nonPROWLClassesCache to set
-	 */
-	protected void setNonPROWLClassesCache(
-			Collection<OWLClassExpression> nonPROWLClassesCache) {
-		this.nonPROWLClassesCache = nonPROWLClassesCache;
-	}
 
 	/**
 	 * Calls to {@link IPROWL2ModelUser} will be delegated to this object.
@@ -2934,5 +2849,32 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 	public void setProwlModelUserDelegator(
 			IPROWL2ModelUser prowlModelUserDelegator) {
 		this.prowlModelUserDelegator = prowlModelUserDelegator;
+	}
+
+	/**
+	 * Calls to {@link #getNonPROWLClasses(OWLOntology)} and {@link #resetNonPROWLClassExtractor()} will be delegated to this object
+	 * @return the nonPROWLClassExtractor
+	 */
+	public INonPROWLClassExtractor getNonPROWLClassExtractor() {
+		return nonPROWLClassExtractor;
+	}
+
+	/**
+	 * Calls to {@link #getNonPROWLClasses(OWLOntology)} and {@link #resetNonPROWLClassExtractor()} will be delegated to this object
+	 * @param nonPROWLClassExtractor the nonPROWLClassExtractor to set
+	 */
+	public void setNonPROWLClassExtractor(
+			INonPROWLClassExtractor nonPROWLClassExtractor) {
+		this.nonPROWLClassExtractor = nonPROWLClassExtractor;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.mebn.owlapi.INonPROWLClassExtractor#resetNonPROWLClassExtractor()
+	 */
+	public void resetNonPROWLClassExtractor() {
+		if (this.getNonPROWLClassExtractor() != null) {
+			this.getNonPROWLClassExtractor().resetNonPROWLClassExtractor();
+		}
 	}
 }
