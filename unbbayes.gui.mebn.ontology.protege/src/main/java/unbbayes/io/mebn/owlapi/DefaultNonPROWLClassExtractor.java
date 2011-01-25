@@ -71,6 +71,11 @@ public class DefaultNonPROWLClassExtractor implements INonPROWLClassExtractor {
 			ret.remove(classToRemove);
 			ret.removeAll(this.getAssertedDescendants(classToRemove, ontology));
 			
+			// remove SimpleArgRelationship (this is because SimpleArgRelationship is not an asserted subclass of argument relationship)
+			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROWLModelUser.SIMPLE_ARGUMENT_RELATIONSHIP, prefixManager);
+			ret.remove(classToRemove);
+			ret.removeAll(this.getAssertedDescendants(classToRemove, ontology));
+			
 			// remove BuiltInRV
 			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROWLModelUser.BUILTIN_RV, prefixManager);
 			ret.remove(classToRemove);

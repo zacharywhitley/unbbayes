@@ -47,6 +47,7 @@ import unbbayes.io.mebn.PrOwlIO;
 import unbbayes.io.mebn.SaverPrOwlIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Edge;
+import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.BuiltInRV;
@@ -336,10 +337,12 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 	 */
 	public void saveMebn(File file, MultiEntityBayesianNetwork mebn)
 			throws IOException, IOMebnException {
-		// TODO Auto-generated method stub
-		super.saveMebn(file, mebn);
+		throw new RuntimeException("Not supported yet");
+//		super.saveMebn(file, mebn);
 	}
 
+	
+	
 	/**
 	 * Extract a simple name from an owl entity. If the ID of an entity is in [URI]#[Name] format, then it will extract the [Name].
 	 * @param ontology : the ontology where the owlEntity belongs.
@@ -553,7 +556,8 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 					// comment the following try-catch and return if you want this method to work even when reasoner detects inconsistencies (unresolvable subclasses)
 					try {
 						// remove the nothing from returned subclasses
-						ret.remove(ontology.getOWLOntologyManager().getOWLDataFactory().getOWLNothing());
+						ret.removeAll(this.getLastOWLReasoner().getUnsatisfiableClasses().getEntities());
+//						ret.remove(ontology.getOWLOntologyManager().getOWLDataFactory().getOWLNothing());
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -585,6 +589,8 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 		try {
 			// remove the nothing from returned subclasses
 			ret.remove(ontology.getOWLOntologyManager().getOWLDataFactory().getOWLNothing());
+			ret.removeAll((ontology.getOWLOntologyManager().getOWLDataFactory().getOWLNothing().getEquivalentClasses(ontology)));
+			ret.removeAll((ontology.getOWLOntologyManager().getOWLDataFactory().getOWLNothing().getSubClasses(ontology)));
 //			ret.remove(ontology.getOWLOntologyManager().getOWLDataFactory().getOWLThing());
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -2265,7 +2271,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 		OWLAnnotationProperty commentProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLAnnotationProperty(OWLRDFVocabulary.RDFS_COMMENT.getIRI());
 		
 		// extracts comments
-		Set<OWLAnnotation> comments = entity.asOWLNamedIndividual().getAnnotations(ontology, commentProperty);
+		Set<OWLAnnotation> comments = entity.getAnnotations(ontology, commentProperty);
 	
 		// the comment as a string value
 		String comment = "";
@@ -2894,4 +2900,41 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 			this.getNonPROWLClassExtractor().resetNonPROWLClassExtractor();
 		}
 	}
+
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.io.mebn.PrOwlIO#save(java.io.File, unbbayes.prs.Graph)
+	 */
+	@Override
+	public void save(File output, Graph net) throws IOException {
+		
+		if (net instanceof MultiEntityBayesianNetwork) {
+			this.saveMebn(output, (MultiEntityBayesianNetwork)net);
+		} else {
+			throw new IOException(net + " is not an instance of MultiEntityBayesianNetwork" );
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.io.mebn.PrOwlIO#getFileExtension()
+	 */
+	@Override
+	public String getFileExtension() {
+		// TODO Auto-generated method stub
+		return super.getFileExtension();
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.io.mebn.PrOwlIO#getSupportedFilesDescription(boolean)
+	 */
+	@Override
+	public String getSupportedFilesDescription(boolean isLoadOnly) {
+		if (!isLoadOnly) {
+			return "";
+		}
+		return super.getSupportedFilesDescription(isLoadOnly);
+	}
+	
+	
 }

@@ -955,4 +955,14 @@ public class UbfIO2 extends UbfIO {
 		this.isToUpdateMEBNName = isToUpdateMEBNName;
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.io.mebn.UbfIO#saveMebn(java.io.File, unbbayes.prs.mebn.MultiEntityBayesianNetwork)
+	 */
+	public void saveMebn(File file, MultiEntityBayesianNetwork mebn)
+			throws IOException, IOMebnException {
+		this.getProwlIO().saveMebn(file, mebn);
+	}
+	
+	
+
 }

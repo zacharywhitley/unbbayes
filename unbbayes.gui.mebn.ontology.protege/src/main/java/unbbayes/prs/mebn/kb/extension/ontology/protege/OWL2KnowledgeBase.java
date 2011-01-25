@@ -50,6 +50,7 @@ import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.RandomVariableFinding;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.StateLink;
@@ -1207,8 +1208,47 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#evaluateSingleSearchContextNodeFormula(unbbayes.prs.mebn.ContextNode, java.util.List)
 	 */
 	public List<String> evaluateSingleSearchContextNodeFormula(ContextNode context, List<OVInstance> ovInstances)throws OVInstanceFaultException {
-		// TODO Auto-generated method stub
-		return new ArrayList<String>();
+
+		// this is the returning value. We use set so that no repetition is returned
+		Set<String> ret = new HashSet<String>();
+		
+		// initial assertion
+		if (context == null) {
+			return new ArrayList<String>(ret);
+		}
+		
+		NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree(); 
+		
+		List<OrdinaryVariable> ovFaultList = context.getOVFaultForOVInstanceSet(ovInstances); 
+		
+		//This implementation treat only the case where have only one search variable
+		if(ovFaultList.size()>1){
+			throw new OVInstanceFaultException(ovFaultList); 
+		}
+		
+		//The search isn't necessary. 
+		if(ovFaultList.size() == 0){
+			return null; 
+		}
+		
+		//The list have only one element
+		OrdinaryVariable ovFault = ovFaultList.get(0); 
+		
+		//Build the retrieve statement. 
+//		formula+=" all ";
+//		
+//		//List of variables of retrieve. Only one ordinary variable fault. 
+//		formula+="(" + "?" + ovFault.getName() + " " + ovFault.getValueType().getName() + ")"; 
+//		
+//		//Formula
+//		formula+= "(";  
+//		formula+= makeOperatorString(formulaTree, ovInstances); 		
+//		formula+= ")"; 
+//		
+//		Debug.println("PowerLoom Formula: " + formula); 
+		
+
+		return new ArrayList<String>(ret);
 	}
 
 	/* (non-Javadoc)
@@ -1223,9 +1263,11 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#evaluateMultipleSearchContextNodeFormula(java.util.List, java.util.List)
 	 */
-	public Map<OrdinaryVariable, List<String>> evaluateMultipleSearchContextNodeFormula(
-			List<ContextNode> contextList, List<OVInstance> ovInstances) {
-		// TODO Auto-generated method stub
+	public Map<OrdinaryVariable, List<String>> evaluateMultipleSearchContextNodeFormula(List<ContextNode> contextList, List<OVInstance> ovInstances) {
+		for (ContextNode context : contextList) {
+			SearchResult ret = this.evaluateSearchContextNodeFormula(context, ovInstances);
+//			ret.
+		}
 		return new HashMap<OrdinaryVariable, List<String>>();
 	}
 	
