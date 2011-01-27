@@ -681,14 +681,28 @@ public class PowerLoomKB implements KnowledgeBase {
 		
 		Debug.println("PowerLoom Formula: " + formula); 
 		
-		PlIterator iterator = PLI.sRetrieve(formula, moduleFindingName, null);
-	    List result = new ArrayList<String>(); 
-	    
-		while(iterator.nextP()){
-			result.add(PLI.getNameInModule(iterator.value, moduleFinding, environment)); 
+		for (int i = 0; i < this.getMaximumQueryAttemptCount(); i++) {
+			try {
+				PlIterator iterator = PLI.sRetrieve(formula, moduleFindingName, null);
+				List result = new ArrayList<String>(); 
+				
+				while(iterator.nextP()){
+					result.add(PLI.getNameInModule(iterator.value, moduleFinding, environment)); 
+				}
+				
+				return result;
+				
+			} catch (Exception e) {
+				Debug.println(this.getClass(), "Could not retrieve from powerloom. Attempting again... Attempt " + i, e);
+				try {
+					Thread.sleep(this.getMaximumQueryAttemptWaitTime());
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				continue;
+			}
 		}
-
-		return result;
+		return new ArrayList<String>();
 	}
 
 	/**
@@ -731,11 +745,30 @@ public class PowerLoomKB implements KnowledgeBase {
 		
 		Debug.println("Evaluate PowerLoom Formula: " + formula); 
 		
-		PlIterator iterator = PLI.sRetrieve(formula, moduleFindingName, null);
+		PlIterator iterator = null;
+		
+		for (int i = 0; i < this.getMaximumQueryAttemptCount(); i++) {
+			try {
+				iterator = PLI.sRetrieve(formula, moduleFindingName, null);
+				break;
+			} catch (Exception e) {
+				Debug.println(this.getClass(), "Could not retrieve from powerloom. Attempting again... Attempt " + i, e);
+				try {
+					Thread.sleep(this.getMaximumQueryAttemptWaitTime());
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				continue;
+			}
+		}
 		
 		SearchResult searchResult; 
-		Debug.println("Result Set Size = " + iterator.length());
-		if(iterator.length() != 0){
+		try {
+			Debug.println("Result Set Size = " + ((iterator==null)?0:iterator.length()));
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		if(iterator != null && iterator.length() != 0){
 			
 			//Create the SearchResult object. 
 			searchResult = new SearchResult(ovFaultArray);
@@ -829,18 +862,32 @@ public class PowerLoomKB implements KnowledgeBase {
 
 		Debug.println("PowerLoom Formula: " + formula); 
 		
-		PlIterator iterator = PLI.sRetrieve(formula, moduleFindingName, null);
-	    
-	    iterator.length();
-	    
-		while(iterator.nextP()){
-			for(int i = 0; i < ovFaultList.size(); i++){	
-				values.get(ovFaultList.get(0)).add(PLI.getNthString(iterator, i, moduleFinding, environment)); 
+		for (int j = 0; j < this.getMaximumQueryAttemptCount(); j++) {
+			try {
+				PlIterator iterator = PLI.sRetrieve(formula, moduleFindingName, null);
+				
+				iterator.length();	// what is this?
+				
+				while(iterator.nextP()){
+					for(int i = 0; i < ovFaultList.size(); i++){	
+						values.get(ovFaultList.get(0)).add(PLI.getNthString(iterator, i, moduleFinding, environment)); 
+					}
+				}
+				
+				return values;
+				
+			} catch (Exception e) {
+				Debug.println(this.getClass(), "Could not retrieve from powerloom. Attempting again... Attempt " + j, e);
+				try {
+					Thread.sleep(this.getMaximumQueryAttemptWaitTime());
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				continue;
 			}
 		}
-
-		return values;
         
+		return values;
 	}
     
     
@@ -905,18 +952,30 @@ public class PowerLoomKB implements KnowledgeBase {
 			
 			finding += " ?x"; 
 			finding+= ")";
-			PlIterator iterator = PLI.sRetrieve(finding, moduleFindingName, environment); 
 			
-			//TODO throw a exception when the search return more than one result...
-			if(iterator.nextP()){
-				String state = PLI.getNthString(iterator, 0, moduleFinding, environment);
-				return randomVariable.getPossibleValueByName(state); 
-			}else{
-				return null; 
-			}	
+			for (int i = 0; i < this.getMaximumQueryAttemptCount(); i++) {
+				try {
+					PlIterator iterator = PLI.sRetrieve(finding, moduleFindingName, environment); 
+					
+					//TODO throw a exception when the search return more than one result...
+					if(iterator.nextP()){
+						String state = PLI.getNthString(iterator, 0, moduleFinding, environment);
+						return randomVariable.getPossibleValueByName(state); 
+					}	
+					return null; 
+				} catch (Exception e) {
+					Debug.println(this.getClass(), "Could not retrieve from powerloom. Attempting again... Attempt " + i, e);
+					try {
+						Thread.sleep(this.getMaximumQueryAttemptWaitTime());
+					} catch (Throwable t) {
+						t.printStackTrace();
+					}
+					continue;
+				}
+			}
 		}
 		
-		
+		return null;
 	}
 	
 	/**
