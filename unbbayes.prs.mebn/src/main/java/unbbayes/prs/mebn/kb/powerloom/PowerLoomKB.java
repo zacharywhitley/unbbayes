@@ -108,6 +108,9 @@ public class PowerLoomKB implements KnowledgeBase {
 
 	private Environment environment = null;
 
+	private int maximumQueryAttemptCount = 3;
+	
+	private long maximumQueryAttemptWaitTime = 500;
 	
 	/* 
 	 * Modules (hierarchy): 
@@ -404,9 +407,23 @@ public class PowerLoomKB implements KnowledgeBase {
 			// definition of the function image
 			String residentStateListName = resident.getName()
 					+ POSSIBLE_STATE_SUFIX;
-			Stella_Object result = PLI.sEvaluate("(defconcept " + residentStateListName
-					+ "(?z) :<=> (member-of ?z ( setof " + setofList + ")))",
-					moduleGenerativeName, environment);
+			Stella_Object result = null;
+			for (int i = 0; i < this.getMaximumQueryAttemptCount(); i++) {
+				try {
+					result=	PLI.sEvaluate("(defconcept " + residentStateListName
+							+ "(?z) :<=> (member-of ?z ( setof " + setofList + ")))",
+							moduleGenerativeName, environment);
+					break;
+				} catch (Exception e) {
+					Debug.println(this.getClass(), "Failed to query powerloom. Attempt " + i, e);
+					try {
+						Thread.sleep(this.getMaximumQueryAttemptWaitTime());
+					} catch (Throwable t) {
+						Debug.println(this.getClass(), "Failed to sleep thread until next powerloom query attemtp.", t);
+					}
+					continue;
+				}
+			}
 
 			if(result == null){
 				System.out.println("Powerloom problem in evaluation of the possible states of the resident node "  + resident);
@@ -439,18 +456,46 @@ public class PowerLoomKB implements KnowledgeBase {
 		}
 
 		if (resident.getTypeOfStates() == ResidentNode.BOOLEAN_RV_STATES) {
-			Stella_Object result = PLI.sEvaluate("(defrelation "
-					+ resident.getName() + " (" + arguments + "))",
-					moduleGenerativeName, null);
+			Stella_Object result = null;
+			for (int j = 0; j < this.getMaximumQueryAttemptCount(); j++) {
+				try {
+					result = PLI.sEvaluate("(defrelation "
+							+ resident.getName() + " (" + arguments + "))",
+							moduleGenerativeName, null);
+					break;
+				} catch (Exception e) {
+					Debug.println(this.getClass(), "Failed to query powerloom. Attempt " + i, e);
+					try {
+						Thread.sleep(this.getMaximumQueryAttemptWaitTime());
+					} catch (Throwable t) {
+						Debug.println(this.getClass(), "Failed to sleep thread until next powerloom query attemtp.", t);
+					}
+					continue;
+				}
+			}
 			if (result != null) {
 				Debug.println(result.toString());
 			}else{
 				System.out.println("Powerloom problem in evaluation of the types of the resident node: " + resident);
 			}
 		} else {
-			Stella_Object result = PLI.sEvaluate("(deffunction "
-					+ resident.getName() + " (" + arguments + range + "))",
-					moduleGenerativeName, null);
+			Stella_Object result = null;
+			for (int j = 0; j < this.getMaximumQueryAttemptCount(); j++) {
+				try {
+					result = PLI.sEvaluate("(deffunction "
+							+ resident.getName() + " (" + arguments + range + "))",
+							moduleGenerativeName, null);
+					break;
+				} catch (Exception e) {
+					Debug.println(this.getClass(), "Failed to query powerloom. Attempt " + i, e);
+					try {
+						Thread.sleep(this.getMaximumQueryAttemptWaitTime());
+					} catch (Throwable t) {
+						Debug.println(this.getClass(), "Failed to sleep thread until next powerloom query attemtp.", t);
+					}
+					continue;
+				}
+			}
 			if(result != null){
 				Debug.println(result.toString());
 			}else{
@@ -1231,7 +1276,20 @@ public class PowerLoomKB implements KnowledgeBase {
 	 * @return the result of execution (console text of PowerLoom)
 	 */
 	public String executeCommand(String command){
-		return PLI.sEvaluate(command, moduleFindingName, null).toString();
+		for (int i = 0; i < this.getMaximumQueryAttemptCount(); i++) {
+			try {
+				return PLI.sEvaluate(command, moduleFindingName, null).toString();
+			} catch (Exception e) {
+				Debug.println(this.getClass(), "Failed to query powerloom. Attempt " + i, e);
+				try {
+					Thread.sleep(this.getMaximumQueryAttemptWaitTime());
+				} catch (Throwable t) {
+					Debug.println(this.getClass(), "Failed to sleep thread until next powerloom query attemtp.", t);
+				}
+				continue;
+			}
+		}
+		return "";
 	}
 	
 	
@@ -1276,7 +1334,21 @@ public class PowerLoomKB implements KnowledgeBase {
 			
 			Debug.println(this.getClass(), "Quering to PLI: " + queryString);
 			
-			Stella_Object sobj = PLI.sEvaluate(queryString, moduleFindingName, environment); 
+			Stella_Object sobj = null;
+			for (int i = 0; i < this.getMaximumQueryAttemptCount(); i++) {
+				try {
+					sobj = PLI.sEvaluate(queryString, moduleFindingName, environment); 
+					break;
+				} catch (Exception e) {
+					Debug.println(this.getClass(), "Failed to query powerloom. Attempt " + i, e);
+					try {
+						Thread.sleep(this.getMaximumQueryAttemptWaitTime());
+					} catch (Throwable t) {
+						Debug.println(this.getClass(), "Failed to sleep thread until next powerloom query attemtp.", t);
+					}
+					continue;
+				}
+			}
 			
 			String result = PLI.getNthString(sobj, 0, this.moduleFinding, this.environment);
 			Debug.println(this.getClass(), "result..." + result + "...count = " + argcount);
@@ -1299,7 +1371,20 @@ public class PowerLoomKB implements KnowledgeBase {
 			String result = null;
 			
 			try{
-				sobj = PLI.sEvaluate(queryString, moduleFindingName, environment); 
+				for (int i = 0; i < this.getMaximumQueryAttemptCount(); i++) {
+					try {
+						sobj = PLI.sEvaluate(queryString, moduleFindingName, environment); 
+						break;
+					} catch (Exception e) {
+						Debug.println(this.getClass(), "Failed to query powerloom. Attempt " + i, e);
+						try {
+							Thread.sleep(this.getMaximumQueryAttemptWaitTime());
+						} catch (Throwable t) {
+							Debug.println(this.getClass(), "Failed to sleep thread until next powerloom query attemtp.", t);
+						}
+						continue;
+					}
+				}
 				if (!sobj.deletedP()) {
 					result = PLI.getNthString(sobj, 0, this.moduleFinding, this.environment);
 				}
@@ -1324,7 +1409,20 @@ public class PowerLoomKB implements KnowledgeBase {
 			queryString += " ) ) ";
 
 			try{
-				sobj = PLI.sEvaluate(queryString, moduleFindingName, environment); 
+				for (int i = 0; i < this.getMaximumQueryAttemptCount(); i++) {
+					try {
+						sobj = PLI.sEvaluate(queryString, moduleFindingName, environment); 
+						break;
+					} catch (Exception e) {
+						Debug.println(this.getClass(), "Failed to query powerloom. Attempt " + i, e);
+						try {
+							Thread.sleep(this.getMaximumQueryAttemptWaitTime());
+						} catch (Throwable t) {
+							Debug.println(this.getClass(), "Failed to sleep thread until next powerloom query attemtp.", t);
+						}
+						continue;
+					}
+				}
 				if (!sobj.deletedP()) {
 					result = PLI.getNthString(sobj, 0, this.moduleFinding, this.environment);
 				}
@@ -1447,6 +1545,52 @@ public class PowerLoomKB implements KnowledgeBase {
 	public String[] getSupportedLocalFileExtension(boolean isLoad) {
 		String[] ret = {".plm"};
 		return ret;
+	}
+
+	/**
+	 * This is the amount of times a query to powerloom will be attempted.
+	 * If this is set to a value greater than 1, then queries will be repeated
+	 * in case of an exception is thrown.
+	 * Do not set this value to 0 or lower, because such values mean no query
+	 * will be performed at all.
+	 * @return the maximumQueryAttemptCount
+	 */
+	public int getMaximumQueryAttemptCount() {
+		return maximumQueryAttemptCount;
+	}
+
+	/**
+	 * This is the amount of times a query to powerloom will be attempted.
+	 * If this is set to a value greater than 1, then queries will be repeated
+	 * in case of an exception is thrown.
+	 * Do not set this value to 0 or lower, because such values mean no query
+	 * will be performed at all.
+	 * @param maximumQueryAttemptCount the maximumQueryAttemptCount to set
+	 */
+	public void setMaximumQueryAttemptCount(int maximumQueryAttemptCount) {
+		this.maximumQueryAttemptCount = maximumQueryAttemptCount;
+	}
+
+	/**
+	 * This is the amount of time in milliseconds to wait when a query
+	 * to powerloom fails and it is going to be tried again.
+	 * @return the maximumQueryAttemptWaitTime
+	 * @see #getMaximumQueryAttemptCount()
+	 * @see Thread#sleep(long)
+	 */
+	public long getMaximumQueryAttemptWaitTime() {
+		return maximumQueryAttemptWaitTime;
+	}
+
+	/**
+	 * This is the amount of time in milliseconds to wait when a query
+	 * to powerloom fails and it is going to be tried again.
+	 * @param maximumQueryAttemptWaitTime the maximumQueryAttemptWaitTime to set
+	 * @see #getMaximumQueryAttemptCount()
+	 * @see Thread#sleep(long)
+	 */
+	public void setMaximumQueryAttemptWaitTime(long maximumQueryAttemptWaitTime) {
+		this.maximumQueryAttemptWaitTime = maximumQueryAttemptWaitTime;
 	}
 	
 	

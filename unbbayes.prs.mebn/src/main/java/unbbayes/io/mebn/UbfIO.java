@@ -696,10 +696,14 @@ public class UbfIO implements MebnIO {
 															+ possibleValueIndex
 															+ ", " + oldIndex, e);
 												}
-												Debug.println(this.getClass() , "Altered values: " 
-														+ resident.getPossibleValueLinkList().get(possibleValueIndex).getState().getName()
-														+ ", " 
-														+ resident.getPossibleValueLinkList().get(oldIndex).getState().getName());
+												try {
+													Debug.println(this.getClass() , "Altered values: " 
+															+ resident.getPossibleValueLinkList().get(possibleValueIndex - 1).getState().getName()
+															+ ", " 
+															+ resident.getPossibleValueLinkList().get(oldIndex).getState().getName());
+												} catch (Throwable t) {
+													t.printStackTrace();
+												}
 											} else {
 												Debug.println(this.getClass() , "State was not found: " + st.sval);
 											}
