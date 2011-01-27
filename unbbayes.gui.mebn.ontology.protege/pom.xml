@@ -174,7 +174,7 @@
 			<dependency>
 				<groupId>br.unb.cic</groupId>
 				<artifactId>unbbayes.prs.mebn</artifactId>
-				<version>1.8.1</version>
+				<version>1.8.2</version>
 			</dependency>
 			
 			<!-- Protege 4.1 (it handles OWL2) -->
@@ -197,13 +197,13 @@
 			</dependency>
 			 -->
 			<!-- These are plug-ins for Protege4.1 -->
-			<!-- 
 			 <dependency>
 			    <groupId>guess</groupId>
 			    <artifactId>org.protege.ontograf</artifactId>
 			    <version>1.0.1.2010_09_03_0304</version>
 			</dependency>
-			 -->
+			
+			<!-- This is themain editor of protege -->
 			<dependency>
 			    <groupId>guess</groupId>
 			    <artifactId>org.protege.editor.owl</artifactId>

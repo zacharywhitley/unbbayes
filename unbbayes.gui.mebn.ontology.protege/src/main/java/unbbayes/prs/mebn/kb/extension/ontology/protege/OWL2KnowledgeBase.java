@@ -5,6 +5,7 @@ package unbbayes.prs.mebn.kb.extension.ontology.protege;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,7 +51,6 @@ import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.RandomVariableFinding;
 import unbbayes.prs.mebn.ResidentNode;
-import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.StateLink;
@@ -1208,47 +1208,29 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#evaluateSingleSearchContextNodeFormula(unbbayes.prs.mebn.ContextNode, java.util.List)
 	 */
 	public List<String> evaluateSingleSearchContextNodeFormula(ContextNode context, List<OVInstance> ovInstances)throws OVInstanceFaultException {
-
-		// this is the returning value. We use set so that no repetition is returned
-		Set<String> ret = new HashSet<String>();
 		
-		// initial assertion
-		if (context == null) {
-			return new ArrayList<String>(ret);
+		// delegate query to another method
+		SearchResult result = this.evaluateSearchContextNodeFormula(context, ovInstances);
+		
+		// prepare list to return
+		List<String> ret = new ArrayList<String>();
+		if (result == null) {
+			return ret;
 		}
 		
-		NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree(); 
-		
-		List<OrdinaryVariable> ovFaultList = context.getOVFaultForOVInstanceSet(ovInstances); 
-		
-		//This implementation treat only the case where have only one search variable
-		if(ovFaultList.size()>1){
-			throw new OVInstanceFaultException(ovFaultList); 
+		// fill list
+		for (String[] values : result.getValuesResultList()) {
+			if (values == null) {
+				continue;
+			}
+			for (int i = 0; i < values.length; i++) {
+				if (values[i] != null) {
+					ret.add(values[i]);
+				}
+			}
 		}
 		
-		//The search isn't necessary. 
-		if(ovFaultList.size() == 0){
-			return null; 
-		}
-		
-		//The list have only one element
-		OrdinaryVariable ovFault = ovFaultList.get(0); 
-		
-		//Build the retrieve statement. 
-//		formula+=" all ";
-//		
-//		//List of variables of retrieve. Only one ordinary variable fault. 
-//		formula+="(" + "?" + ovFault.getName() + " " + ovFault.getValueType().getName() + ")"; 
-//		
-//		//Formula
-//		formula+= "(";  
-//		formula+= makeOperatorString(formulaTree, ovInstances); 		
-//		formula+= ")"; 
-//		
-//		Debug.println("PowerLoom Formula: " + formula); 
-		
-
-		return new ArrayList<String>(ret);
+		return ret;
 	}
 
 	/* (non-Javadoc)
@@ -1264,11 +1246,33 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#evaluateMultipleSearchContextNodeFormula(java.util.List, java.util.List)
 	 */
 	public Map<OrdinaryVariable, List<String>> evaluateMultipleSearchContextNodeFormula(List<ContextNode> contextList, List<OVInstance> ovInstances) {
-		for (ContextNode context : contextList) {
-			SearchResult ret = this.evaluateSearchContextNodeFormula(context, ovInstances);
-//			ret.
+
+		// prepare list to return
+		Map<OrdinaryVariable, List<String>> ret = new HashMap<OrdinaryVariable, List<String>>();
+		
+		// assertion
+		if (contextList == null) {
+			return ret;
 		}
-		return new HashMap<OrdinaryVariable, List<String>>();
+		
+		
+		for (ContextNode context : contextList) {
+			
+			// delegate query to another method
+			SearchResult result = this.evaluateSearchContextNodeFormula(context, ovInstances);
+			if (result == null) {
+				continue;
+			}
+			
+			// fill map
+			OrdinaryVariable[] ovSequence = result.getOrdinaryVariableSequence();
+			List<String[]> valuesResultList =  result.getValuesResultList();
+			for (int i = 0; i < ovSequence.length; i++) {
+				ret.put(ovSequence[i], Arrays.asList(valuesResultList.get(i)));
+			}
+		}
+		
+		return ret;
 	}
 	
 	/* (non-Javadoc)
@@ -1276,7 +1280,6 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	 */
 	public Boolean evaluateContextNodeFormula(ContextNode context, List<OVInstance> ovInstances) {
 		// TODO Auto-generated method stub
-		
 		return true;
 	}
 

@@ -5,7 +5,7 @@
 <plugin id="unbbayes.gui.mebn.ontology.protege" version="1.0.1">
     <requires>
         <import plugin-id="unbbayes.util.extension.core"/>
-        <import plugin-id="unbbayes.prs.mebn" plugin-version="1.8.1"/>
+        <import plugin-id="unbbayes.prs.mebn" plugin-version="1.8.2"/>
     </requires>
     <runtime>
        	<!-- Because dist.xml creates the resources folder, we must include it -->
