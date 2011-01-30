@@ -14,6 +14,7 @@ import unbbayes.util.IBridgeImplementor;
 
 /**
  * This is the default implementor or {@link IProtegeStorageImplementorDecorator}
+ * They carry Protege-specific objects
  *@author Shou Matsumoto
  *
  */

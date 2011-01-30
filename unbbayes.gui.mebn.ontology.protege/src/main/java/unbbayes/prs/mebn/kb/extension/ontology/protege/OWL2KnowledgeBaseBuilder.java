@@ -4,14 +4,10 @@
 package unbbayes.prs.mebn.kb.extension.ontology.protege;
 
 
-import org.semanticweb.owlapi.reasoner.OWLReasoner;
-
 import unbbayes.controller.mebn.IMEBNMediator;
-import unbbayes.io.mebn.owlapi.OWLAPIStorageImplementorDecorator;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.extension.IKnowledgeBaseBuilder;
-import unbbayes.util.Debug;
 
 /**
  * This builder creates a {@link KnowledgeBase} which is an adaptor to {@link org.semanticweb.owlapi.reasoner.OWLReasoner}

@@ -133,9 +133,19 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 								}
 							}
 							
-							// the reasoner is finally ready. Set it as the reasoner to use for I/O operation
-							this.setLastOWLReasoner(kit.getModelManager().getReasoner());
-							break;	// let's just use the 1st (non NULL) option and ignore other protege reasoners
+							// if the reasoner tells the ontology is consistent, use it to load MEBN.
+							if (kit.getModelManager().getReasoner().isConsistent()) {
+								// the reasoner is finally ready. Set it as the reasoner to use for I/O operation
+								this.setLastOWLReasoner(kit.getModelManager().getReasoner());
+								break;	// let's just use the 1st (non NULL) option and ignore other protege reasoners
+							} else {
+								try {
+									Debug.println(this.getClass(), kit.getOWLModelManager().getActiveOntology() + " is an inconsistent ontology.");
+								}catch (Throwable t) {
+									t.printStackTrace();
+								}
+								// we will try another reasoner or we will not use a reasoner to load PR-OWL
+							}
 						} catch (Exception e) {
 							e.printStackTrace();
 							continue;

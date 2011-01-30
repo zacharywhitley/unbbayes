@@ -1,7 +1,7 @@
 /**
  * 
  */
-package unbbayes.gui.mebn.ontology.protege;
+package unbbayes.gui.mebn.extension;
 
 import java.awt.BorderLayout;
 import java.awt.datatransfer.Transferable;
@@ -27,6 +27,7 @@ import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 import unbbayes.gui.mebn.auxiliary.MebnToolkit;
+import unbbayes.gui.mebn.ontology.protege.OWLPropertyViewerPanel;
 import unbbayes.io.mebn.MEBNStorageImplementorDecorator;
 import unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator;
 import unbbayes.io.mebn.protege.IProtegeStorageImplementorDecorator;

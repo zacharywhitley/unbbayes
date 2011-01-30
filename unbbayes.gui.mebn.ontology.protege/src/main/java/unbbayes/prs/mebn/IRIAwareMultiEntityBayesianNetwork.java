@@ -8,7 +8,7 @@ import java.util.Map;
 
 import org.semanticweb.owlapi.model.IRI;
 
-import unbbayes.io.mebn.owlapi.OWLAPIStorageImplementorDecorator;
+import unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator;
 
 /**
  * This is a MEBN containing a map from MEBN elements (e.g. resident nodes, input nodes,
@@ -46,12 +46,12 @@ public class IRIAwareMultiEntityBayesianNetwork extends
 		return new IRIAwareMultiEntityBayesianNetwork(name);
 	}
 
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.mebn.MultiEntityBayesianNetwork#getStorageImplementor()
-	 */
-	public OWLAPIStorageImplementorDecorator getStorageImplementor() {
-		return (OWLAPIStorageImplementorDecorator)super.getStorageImplementor();
-	}
+//	/* (non-Javadoc)
+//	 * @see unbbayes.prs.mebn.MultiEntityBayesianNetwork#getStorageImplementor()
+//	 */
+//	public IOWLAPIStorageImplementorDecorator getStorageImplementor() {
+//		return (IOWLAPIStorageImplementorDecorator)super.getStorageImplementor();
+//	}
 
 	/**
 	 * @return the iriMap
@@ -72,6 +72,7 @@ public class IRIAwareMultiEntityBayesianNetwork extends
 	 * @param mebn
 	 * @param key
 	 * @param value
+	 * @deprecated static method calls should be avoided
 	 */
 	public static void addIRIToMEBN(MultiEntityBayesianNetwork mebn, Object key, IRI value) {
 		if (mebn instanceof IRIAwareMultiEntityBayesianNetwork) {
@@ -87,6 +88,7 @@ public class IRIAwareMultiEntityBayesianNetwork extends
 	 * @param mebn
 	 * @param key
 	 * @return value
+	 * @deprecated static method calls should be avoided
 	 */
 	public static IRI getIRIFromMEBN(MultiEntityBayesianNetwork mebn, Object key) {
 		if (mebn instanceof IRIAwareMultiEntityBayesianNetwork) {

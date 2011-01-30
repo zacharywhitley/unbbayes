@@ -1,7 +1,7 @@
 /**
  * 
  */
-package unbbayes.gui.mebn.ontology.protege;
+package unbbayes.gui.mebn.extension;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -33,7 +33,7 @@ import org.semanticweb.owlapi.model.OWLProperty;
 import unbbayes.controller.IconController;
 import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.gui.mebn.auxiliary.MebnToolkit;
-import unbbayes.io.mebn.owlapi.OWLAPIStorageImplementorDecorator;
+import unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator;
 import unbbayes.prs.INode;
 import unbbayes.prs.mebn.IRIAwareMultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -213,9 +213,9 @@ public class DefinesUncertaintyOfPanel extends JPanel {
 				&& (node instanceof ResidentNode)
 				&& this.getMebn() != null
 				&& this.getMebn().getStorageImplementor() != null
-				&& (this.getMebn().getStorageImplementor() instanceof OWLAPIStorageImplementorDecorator)) {
+				&& (this.getMebn().getStorageImplementor() instanceof IOWLAPIStorageImplementorDecorator)) {
 			
-			OWLOntology ontology = ((OWLAPIStorageImplementorDecorator)this.getMebn().getStorageImplementor()).getAdaptee();
+			OWLOntology ontology = ((IOWLAPIStorageImplementorDecorator)this.getMebn().getStorageImplementor()).getAdaptee();
 			
 			// extract IRI
 			IRI iri = IRIAwareMultiEntityBayesianNetwork.getDefineUncertaintyFromMEBN(this.getMebn(), node);

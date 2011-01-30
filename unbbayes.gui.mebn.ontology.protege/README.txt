@@ -41,9 +41,7 @@ mvn install:install-file -DgroupId=guess -DartifactId=org.protege.jaxb -Dversion
 
 Go to \src\main\resources\protege\plugins>
 mvn install:install-file -DgroupId=guess -DartifactId=org.coode.dlquery -Dversion=1.1.0.2010_09_03_0304 -Dpackaging=jar -Dfile=org.coode.dlquery.jar
-mvn install:install-file -DgroupId=guess -DartifactId=org.coode.owlviz -Dversion=4.1.1.2010_09_03_0304 -Dpackaging=jar -Dfile=org.coode.owlviz.jar
 mvn install:install-file -DgroupId=guess -DartifactId=org.protege.editor.owl -Dversion=4.1.0.b209_2010_09_03_0303 -Dpackaging=jar -Dfile=org.protege.editor.owl.jar
-mvn install:install-file -DgroupId=guess -DartifactId=org.protege.ontograf -Dversion=1.0.1.2010_09_03_0304 -Dpackaging=jar -Dfile=org.protege.ontograf.jar
 mvn install:install-file -DgroupId=guess -DartifactId=org.semanticweb.HermiT -Dversion=1.2.5.927 -Dpackaging=jar -Dfile=org.semanticweb.HermiT.jar
 mvn install:install-file -DgroupId=guess -DartifactId=org.semanticweb.owl.owlapi -Dversion=3.1.0.1602 -Dpackaging=jar -Dfile=org.semanticweb.owl.owlapi.jar
 

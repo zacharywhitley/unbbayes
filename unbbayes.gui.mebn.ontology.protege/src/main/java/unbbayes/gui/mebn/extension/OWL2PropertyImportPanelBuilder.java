@@ -37,8 +37,6 @@ import unbbayes.gui.mebn.MEBNGraphPane;
 import unbbayes.gui.mebn.MEBNNetworkWindow;
 import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelBuilder;
-import unbbayes.gui.mebn.ontology.protege.DefinesUncertaintyOfPanel;
-import unbbayes.gui.mebn.ontology.protege.OWL2PropertyViewerPanel;
 import unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator;
 import unbbayes.prs.INode;
 import unbbayes.prs.mebn.IMEBNElementFactory;
@@ -179,24 +177,24 @@ public class OWL2PropertyImportPanelBuilder extends OWLPropertyImportPanelBuilde
 		}
 		
 		// hide entity, entity individuals and findings panel from original MEBN editor
-		try {
-			// remove object entity tab
-			this.getMediator().getMebnEditionPane().getJtbTabSelection().remove(this.getMediator().getMebnEditionPane().getBtnTabOptionEntity());
-		} catch (Exception t) {
-			t.printStackTrace();
-		}
-		try {
-			// remove object entity individuals panel
-			this.getMediator().getMebnEditionPane().getJtbTabSelection().remove(this.getMediator().getMebnEditionPane().getBtnTabOptionEntityFinding());
-		} catch (Exception t) {
-			t.printStackTrace();
-		}
-		try {
-			// remove finding panel
-			this.getMediator().getMebnEditionPane().getJtbTabSelection().remove(this.getMediator().getMebnEditionPane().getBtnTabOptionNodeFinding());
-		} catch (Exception t) {
-			t.printStackTrace();
-		}
+//		try {
+//			// remove object entity tab
+//			this.getMediator().getMebnEditionPane().getJtbTabSelection().remove(this.getMediator().getMebnEditionPane().getBtnTabOptionEntity());
+//		} catch (Exception t) {
+//			t.printStackTrace();
+//		}
+//		try {
+//			// remove object entity individuals panel
+//			this.getMediator().getMebnEditionPane().getJtbTabSelection().remove(this.getMediator().getMebnEditionPane().getBtnTabOptionEntityFinding());
+//		} catch (Exception t) {
+//			t.printStackTrace();
+//		}
+//		try {
+//			// remove finding panel
+//			this.getMediator().getMebnEditionPane().getJtbTabSelection().remove(this.getMediator().getMebnEditionPane().getBtnTabOptionNodeFinding());
+//		} catch (Exception t) {
+//			t.printStackTrace();
+//		}
 	}
 
 	/* (non-Javadoc)

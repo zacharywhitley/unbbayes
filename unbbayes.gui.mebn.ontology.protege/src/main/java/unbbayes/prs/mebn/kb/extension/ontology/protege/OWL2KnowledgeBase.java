@@ -42,8 +42,8 @@ import unbbayes.io.mebn.PROWLModelUser;
 import unbbayes.io.mebn.owlapi.DefaultNonPROWLClassExtractor;
 import unbbayes.io.mebn.owlapi.DefaultPROWL2ModelUser;
 import unbbayes.io.mebn.owlapi.INonPROWLClassExtractor;
+import unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator;
 import unbbayes.io.mebn.owlapi.IPROWL2ModelUser;
-import unbbayes.io.mebn.owlapi.OWLAPIStorageImplementorDecorator;
 import unbbayes.io.mebn.protege.ProtegeStorageImplementorDecorator;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.IRIAwareMultiEntityBayesianNetwork;
@@ -51,6 +51,12 @@ import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.RandomVariableFinding;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.ResidentNodePointer;
+import unbbayes.prs.mebn.builtInRV.BuiltInRVEqualTo;
+import unbbayes.prs.mebn.builtInRV.BuiltInRVNot;
+import unbbayes.prs.mebn.context.EnumSubType;
+import unbbayes.prs.mebn.context.NodeFormulaTree;
+import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.StateLink;
@@ -789,7 +795,12 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			
 			if (resident.getTypeOfStates() != ResidentNode.BOOLEAN_RV_STATES) {
 				// ternary not supported
-				throw new IllegalArgumentException("This knowledge base cannot handle resident nodes repesenting n-ary relationships with n = 3. Resident node = " + resident); 
+				try {
+					System.err.println("This knowledge base cannot handle resident nodes repesenting n-ary relationships with n = 3. Resident node = " + resident); 
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				return null;
 			}
 			
 			// this is binary relationship, so let's use owl object property
@@ -1236,11 +1247,352 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#evaluateSearchContextNodeFormula(unbbayes.prs.mebn.ContextNode, java.util.List)
 	 */
-	public SearchResult evaluateSearchContextNodeFormula(ContextNode context,
-			List<OVInstance> ovInstances) {
-		// TODO Auto-generated method stub
-		return null;
+	public SearchResult evaluateSearchContextNodeFormula(ContextNode context,List<OVInstance> ovInstances) {
+		// initial assertions
+		if (context == null) {
+			return null;
+		}
+		if (ovInstances == null) {
+			// use empty list instead of null value to represent situations where no known instances are available
+			ovInstances = new ArrayList<OVInstance>();
+		}
+		
+		// extract what ordinary variables we should search (i.e. they do not have values specified in ovInstances)
+		OrdinaryVariable missingOV[] = context.getOVFaultForOVInstanceSet(ovInstances).toArray(
+		                                		   new OrdinaryVariable[context.getOVFaultForOVInstanceSet(ovInstances).size()]); 
+		
+		//The search isn't necessary if there is no variable to search. 
+		if(missingOV.length == 0){
+			return null; 
+		}
+		
+		// extract context node expression
+		NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree(); 
+		
+		// solve context node expression if it can be solved
+		SearchResult ret = new SearchResult(missingOV);
+		// solve formula tree normally (the last "true" means that we want to evaluate "formulaTree" instead of "not formulaTree")
+		if (!this.solveFormulaTree(formulaTree, ovInstances, ret, true)) {	
+			// this kind of expression cannot be solved by this version of knowledge base...
+			// TODO assure this else clause is never called by implementing solveFormulaTree completely...
+			
+			try {
+				System.err.println(context + " cannot be solved by this knowledge base if the unknown variables are " + missingOV + ". We'll retrieve all possible values of the missing variables by their types...");
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+			ret = new SearchResult(missingOV);
+			
+			// extract all individuals for that OV, by type (i.e. the evaluation of the context node is delegated to the upper algorithm, and this method will only extract OVs by type)
+			for (int i = 0; i < missingOV.length; i++) {
+				return null;
+//				try {
+//					List<String> entityIndividuals = this.getEntityByType(missingOV[i].getValueType().getName());
+//					if (entityIndividuals != null && !entityIndividuals.isEmpty()) {
+//						// ret will hold all entity individuals of that type
+//						ret.addResult(entityIndividuals.toArray(new String[entityIndividuals.size()]));
+//					}
+//				} catch (Exception e) {
+//					try {
+//						Debug.println(this.getClass(), "Could not extract all possible values of OV " + missingOV[i], e);
+//					}catch (Throwable t) {
+//						t.printStackTrace();
+//					}
+//				}
+			}
+		}
+		
+		// only return ret if it is valid
+		if (ret == null || ret.getValuesResultList() == null || ret.getValuesResultList().isEmpty()) {
+			return null;
+		} else {
+			return ret;
+		}
 	}
+
+	/**
+	 * This is a recursive method that evaluates formulaTree and fills knownSearchResults. 
+	 * @param formulaTree : the expression to evaluate
+	 * @param knownValues : these are known values of ordinary variables.
+	 * @param knownSearchResults : an Input/Output argument that holds the evaluated values.
+	 * @param isToSolveAsPositiveOperation : if set to false, then "not(formulaTree)" will be evaluated.
+	 * @return false if this kind of expression cannot be solved by this knowledge base. True otherwise.
+	 */
+	protected boolean solveFormulaTree(NodeFormulaTree formulaTree, Collection<OVInstance> knownValues, SearchResult knownSearchResults, boolean isToSolveAsPositiveOperation) {
+		// initial assertion
+		if (formulaTree == null) {
+			// we cannot evaluate a null formula...
+			return false;
+		}
+		try {
+			
+			// convert the array of missing ordinary variables to a list
+			List<OrdinaryVariable> missingOV = new ArrayList<OrdinaryVariable>();
+			if (knownSearchResults.getOrdinaryVariableSequence() != null) {
+				for (int i = 0; i < knownSearchResults.getOrdinaryVariableSequence().length; i++) {
+					missingOV.add(knownSearchResults.getOrdinaryVariableSequence()[i]);
+				}
+			}
+			
+			// this version can only solve the following types of formulas:
+			// 1. ov1 = ov2
+			// 2. not (ov1 = ov2)
+			// 3. booleanNode(<1 or 2 arguments>)
+			// 4. not booleanNode(<1 or 2 arguments>)
+			// 5. ov = nonBooleanNode(<1 argument>)
+			// 6. nonBooleanNode(<1 argument>) = ov
+			// 7. not (ov = nonBooleanNode(<1 argument>))
+			// 8. not (nonBooleanNode(<1 argument>) = ov)
+			// TODO implement other types of formulas.
+			
+			// thus, the top level operand/operator must be equalsTo, not or a node
+			if (!(formulaTree.getNodeVariable() instanceof ResidentNode)
+					&& !(formulaTree.getNodeVariable() instanceof BuiltInRVEqualTo)
+					&& !(formulaTree.getNodeVariable() instanceof BuiltInRVNot)) {
+				return false;
+			}
+			
+			// now, we check if it is one of the 8 possible cases...
+			
+			// 1. ov1 = ov2
+			try {
+				if (formulaTree.getNodeVariable() instanceof BuiltInRVEqualTo
+						&& formulaTree.getChildren().get(0).getSubTypeNode().equals(EnumSubType.OVARIABLE)
+						&& formulaTree.getChildren().get(1).getSubTypeNode().equals(EnumSubType.OVARIABLE)) {
+					// TODO fill knownSearchResults
+					
+					// check which ov is unknown
+					if (missingOV.contains(formulaTree.getChildren().get(0).getNodeVariable())){
+						
+					}
+					
+					return true;
+				}
+			} catch (Exception e) {
+				try {
+					Debug.println(this.getClass(), "Could not check arguments of " + formulaTree, e);
+				} catch (Throwable t) {
+					e.printStackTrace();
+					t.printStackTrace();
+				}
+			}
+			
+			// 3. booleanNode(<1 or 2 arguments>)
+			try {
+				if (formulaTree.getNodeVariable() instanceof ResidentNode		// this is a (resident) node
+						&& (((ResidentNode)formulaTree.getNodeVariable()).getTypeOfStates() == ResidentNode.BOOLEAN_RV_STATES)	// this is a boolean node
+						&& (((ResidentNode)formulaTree.getNodeVariable()).getArgumentList().size() <= 2)) {		// number of aguments
+					// TODO fill knownSearchResults
+					return true;
+				}
+			} catch (Exception e) {
+				try {
+					Debug.println(this.getClass(), "Could not check arguments of " + formulaTree, e);
+				} catch (Throwable t) {
+					e.printStackTrace();
+					t.printStackTrace();
+				}
+			}
+			
+			// 5. ov = nonBooleanNode(<1 argument>)
+			try {
+				if ((formulaTree.getNodeVariable() instanceof BuiltInRVEqualTo)	// =
+						&& formulaTree.getChildren().get(0).getSubTypeNode().equals(EnumSubType.OVARIABLE)	// ov
+						&& (formulaTree.getChildren().get(1).getNodeVariable() instanceof ResidentNodePointer )	// nonBooleanNode
+						&& (((ResidentNodePointer)formulaTree.getChildren().get(1).getNodeVariable()).getResidentNode().getTypeOfStates() != ResidentNode.BOOLEAN_RV_STATES)	// "nonBooleanNode" is not boolean node
+						&& (((ResidentNodePointer)formulaTree.getChildren().get(1).getNodeVariable()).getResidentNode().getArgumentList().size() == 1) ) {	// <1 argument>		
+					
+					// extract the ordinary variable ov
+					OrdinaryVariable ov = (OrdinaryVariable)formulaTree.getChildren().get(0).getNodeVariable();
+					
+					// extract the ordinary variable of the argument (only 1) of nonBooleanNode
+					OrdinaryVariable argumentOV = ((ResidentNodePointer)formulaTree.getChildren().get(1).getNodeVariable()).getResidentNode().getArgumentList().get(0).getOVariable();
+					
+					// extract the object entity related to the type of ov (this is necessary because we cannot directly navigate from OV's type to an Entity...)
+					Entity ovEntity = this.getDefaultMEBN().getObjectEntityContainer().getObjectEntityByType(ov.getValueType());
+					
+					// extract the object entity related to the type of argumentOV (this is necessary because we cannot directly navigate from OV's type to an Entity...)
+					Entity argumentEntity = this.getDefaultMEBN().getObjectEntityContainer().getObjectEntityByType(argumentOV.getValueType());
+					
+					// extract reasoner
+					OWLReasoner reasoner = this.getDefaultOWLReasoner();
+					
+					// extract IRI of the object property related to nonBooleanNode
+					IRI nonBooleanNodeIRI = IRIAwareMultiEntityBayesianNetwork.getDefineUncertaintyFromMEBN(this.getDefaultMEBN(), ((ResidentNodePointer)formulaTree.getChildren().get(1).getNodeVariable()).getResidentNode());
+					if (!reasoner.getRootOntology().containsObjectPropertyInSignature(nonBooleanNodeIRI)) {
+						// this reasoner can only solve findings that has a reference to "definesUncertaintyOf"
+						return false;
+					}
+					
+					// extract the object property
+					OWLObjectProperty nonBooleanNodeProperty = reasoner.getRootOntology().getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(nonBooleanNodeIRI);
+					
+					// expression of the query
+					String expression = "";
+					
+					// extract the possible values of OV if it is unknown
+					Collection<OWLNamedIndividual> individualsOfOV = new HashSet<OWLNamedIndividual>();
+					if (missingOV.contains(ov)) {
+						// extract the possible values of ov
+						expression += ovEntity.getName() + " that (inverse " + this.extractName(nonBooleanNodeProperty) + " some ";
+						if (missingOV.contains(argumentOV)) {
+							// the argument is unknown, so we use the entire OWL class
+							expression += argumentEntity;
+						} else {
+							// use enumerated class of the knownValues
+							expression += "{ ";
+							Iterator<OVInstance> it = knownValues.iterator();
+							for (OVInstance knownValue : knownValues) {
+								if (knownValue.getOv().equals(argumentOV)) {
+									expression += knownValue.getEntity().getInstanceName() + ",";
+								}
+							}
+							// remove the last comma
+							if (expression.endsWith(",")) {
+								expression = expression.substring(0, expression.lastIndexOf(','));
+							}
+							expression += " } )";
+						}
+						
+						individualsOfOV = reasoner.getInstances(this.parseExpression(expression), false).getFlattened();
+					} 
+					
+					// extract the possible values of argumentOV if it is unknown
+					Collection<OWLNamedIndividual> individualsOfArgumentOV = new HashSet<OWLNamedIndividual>();
+					if (missingOV.contains(argumentOV)) {
+						// extract the possible values of argumentOV
+						expression += argumentEntity.getName() + " that ( " + this.extractName(nonBooleanNodeProperty) + " some ";
+						if (missingOV.contains(ov)) {
+							// the ov is unknown, so we use the entire OWL class
+							expression += ovEntity;
+						} else {
+							// use enumerated class of the knownValues
+							expression += "{ ";
+							Iterator<OVInstance> it = knownValues.iterator();
+							for (OVInstance knownValue : knownValues) {
+								if (knownValue.getOv().equals(ov)) {
+									expression += knownValue.getEntity().getInstanceName() + ",";
+								}
+							}
+							// remove the last comma
+							if (expression.endsWith(",")) {
+								expression = expression.substring(0, expression.lastIndexOf(','));
+							}
+							expression += " } )";
+						}
+						
+						individualsOfArgumentOV = reasoner.getInstances(this.parseExpression(expression), false).getFlattened();
+					}
+					
+					// fill knownSearchResults
+
+					// add the query results of ov's possible values to knownSearchResults if the query has returned something
+					if (individualsOfOV != null && !individualsOfOV.isEmpty()) {
+						
+						// extract the names of the returned individuals
+						List<String> values = new ArrayList<String>();
+						for (OWLNamedIndividual individualOfOV : individualsOfOV) {
+							values.add(this.extractName(individualOfOV));
+						}
+						
+						// obtain the index in knownSearchResults where we should add the extracted names
+						int indexOfNewValue = Arrays.asList(knownSearchResults.getOrdinaryVariableSequence()).indexOf(ov);
+						
+						// update knownSearchResults if the index is valid
+						if (indexOfNewValue >= 0) {
+							
+							// make sure knownSearchResults will not throw ArrayIndexOutOfBoundException because knownSearchResults.getValuesResultList() was not initialized
+							while (knownSearchResults.getValuesResultList().size() <= indexOfNewValue) {
+								knownSearchResults.getValuesResultList().add(new String[0]); // fill empty values
+							}
+							
+							knownSearchResults.getValuesResultList().set(indexOfNewValue, values.toArray(new String[values.size()]));
+						}
+					}
+					
+					// add the query results of argumentOV's possible values to knownSearchResults if the query has returned something
+					if (individualsOfArgumentOV != null && !individualsOfArgumentOV.isEmpty()) {
+						
+						// extract the names of the returned individuals
+						List<String> values = new ArrayList<String>();
+						for (OWLNamedIndividual individualOfOV : individualsOfArgumentOV) {
+							values.add(this.extractName(individualOfOV));
+						}
+						
+						// obtain the index in knownSearchResults where we should add the extracted names
+						int indexOfNewValue = Arrays.asList(knownSearchResults.getOrdinaryVariableSequence()).indexOf(argumentOV);
+						
+						// update knownSearchResults if the index is valid
+						if (indexOfNewValue >= 0) {
+							
+							// make sure knownSearchResults will not throw ArrayIndexOutOfBoundException because knownSearchResults.getValuesResultList() was not initialized
+							while (knownSearchResults.getValuesResultList().size() <= indexOfNewValue) {
+								knownSearchResults.getValuesResultList().add(new String[0]); // fill empty values
+							}
+							
+							knownSearchResults.getValuesResultList().set(indexOfNewValue, values.toArray(new String[values.size()]));
+						}
+					}
+					
+					return true;
+				}
+			} catch (Exception e) {
+				try {
+					Debug.println(this.getClass(), "Could not check arguments of " + formulaTree, e);
+				} catch (Throwable t) {
+					e.printStackTrace();
+					t.printStackTrace();
+				}
+			}
+			
+			// 6. nonBooleanNode(<1 argument>) = ov
+			try {
+				if ((formulaTree.getNodeVariable() instanceof BuiltInRVEqualTo)	// =
+						&& formulaTree.getChildren().get(1).getSubTypeNode().equals(EnumSubType.OVARIABLE)	// ov
+						&& (formulaTree.getChildren().get(0).getNodeVariable() instanceof ResidentNodePointer )	// nonBooleanNode
+						&& (((ResidentNodePointer)formulaTree.getChildren().get(0).getNodeVariable()).getResidentNode().getTypeOfStates() != ResidentNode.BOOLEAN_RV_STATES)	// "nonBooleanNode" is not boolean node
+						&& (((ResidentNodePointer)formulaTree.getChildren().get(0).getNodeVariable()).getResidentNode().getArgumentList().size() == 1) ) {	// <1 argument>		
+					// TODO fill knownSearchResults
+					return true;
+				}
+			} catch (Exception e) {
+				try {
+					Debug.println(this.getClass(), "Could not check arguments of " + formulaTree, e);
+				} catch (Throwable t) {
+					e.printStackTrace();
+					t.printStackTrace();
+				}
+			}
+			
+			// the "not" cases can be solved recursively by passing "not isToSolveAsPositiveOperation" as argument
+			try {
+				if (formulaTree.getNodeVariable() instanceof BuiltInRVNot) {
+					// 2. not (ov1 = ov2)
+					// 4. not booleanNode(<1 or 2 arguments>)
+					// 7. not (ov = nonBooleanNode(<1 argument>))
+					// 8. not (nonBooleanNode(<1 argument>) = ov)
+					return this.solveFormulaTree(formulaTree.getChildren().get(0), knownValues, knownSearchResults, !isToSolveAsPositiveOperation);
+				}
+			} catch (Exception e) {
+				try {
+					Debug.println(this.getClass(), "Could not check arguments of " + formulaTree, e);
+				} catch (Throwable t) {
+					e.printStackTrace();
+					t.printStackTrace();
+				}
+			}
+		} catch (Exception e) {
+			try {
+				Debug.println(this.getClass(), formulaTree.toString() + " cannot be solved even when the following ordinary variables are knwon: " + knownValues, e);
+			}catch (Throwable t) {
+				e.printStackTrace();
+				t.printStackTrace();
+			}
+		}
+		
+		return false;
+	}
+
 
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#evaluateMultipleSearchContextNodeFormula(java.util.List, java.util.List)
@@ -1295,8 +1647,8 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			try {
 				if (this.getDefaultMEBN() != null
 						&& this.getDefaultMEBN().getStorageImplementor() != null 
-						&& this.getDefaultMEBN().getStorageImplementor() instanceof OWLAPIStorageImplementorDecorator) {
-					reasoner = ((OWLAPIStorageImplementorDecorator)this.getDefaultMEBN().getStorageImplementor()).getOWLReasoner();
+						&& this.getDefaultMEBN().getStorageImplementor() instanceof IOWLAPIStorageImplementorDecorator) {
+					reasoner = ((IOWLAPIStorageImplementorDecorator)this.getDefaultMEBN().getStorageImplementor()).getOWLReasoner();
 				}
 			} catch (Throwable t) {
 				// it is OK, because we can try extracting the reasoner when KB methods are called and MEBN is passed as arguments
