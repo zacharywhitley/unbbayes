@@ -3,8 +3,6 @@
  */
 package unbbayes.gui.mebn.extension.kb;
 
-import javax.swing.JComponent;
-
 import unbbayes.gui.mebn.extension.IPanelBuilder;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 
