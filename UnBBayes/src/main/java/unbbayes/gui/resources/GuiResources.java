@@ -508,7 +508,7 @@ public class GuiResources extends ListResourceBundle {
 		{"unsupportedGraphFormat" , "This format is not supported by this module/plugin."},
 		{"moduleLoadingError" , "An error has occurred while loading a module/plugin. "},
 		{"moduleConflict" , "There was a conflict between modules/plugins"},
-		{"moduleConflictMessage" , "More than one module/plugin can handle this element. Chosse one."},
+		{"moduleConflictMessage" , "More than one module/plugin can handle this element. Choose one."},
 		
 		// list of modules/plugins which are already incorporated into core
 		{"PNModuleName" , "Probabilistic Network"},
