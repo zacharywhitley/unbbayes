@@ -1976,13 +1976,12 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 		
 		ObjectEntity mebnEntity = null;
 		for (OWLClassExpression subclassExpression : objectEntities) {
-			OWLClass subClass = subclassExpression.asOWLClass();
-			if (subClass == null) {
-				Debug.println(this.getClass(), "Could not convert class expression to class: " + subclassExpression);
+			if (!(subclassExpression instanceof OWLEntity)) {
+				Debug.println(this.getClass(), "Could not convert class expression to entity: " + subclassExpression);
 				continue;	// let's ignore it and keep going on.
 			}
-			mebnEntity = mebn.getObjectEntityContainer().getObjectEntityByName(this.extractName(ontology, subClass));
-			for (OWLIndividual individual : subClass.getIndividuals(ontology)) { 
+			mebnEntity = mebn.getObjectEntityContainer().getObjectEntityByName(this.extractName(ontology, (OWLEntity)subclassExpression));
+			for (OWLIndividual individual : this.getOWLIndividuals(subclassExpression, ontology)) { 
 				if (individual.isNamed()) {
 					// creates a object entity instance and adds it into the mebn entity container
 					try {

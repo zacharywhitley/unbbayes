@@ -58,7 +58,7 @@ public class DefaultNonPROWLClassExtractor implements INonPROWLClassExtractor {
 			// TODO find out a class expression that queries owl:Thing - <PR-OWL classes> (Note: Thing and not(<PR-OWL classes>) returns nothing, because the "not" operation seems to have special meaning)
 			
 			// add all classes (note: looking for all subclasses of owl:Thing is not enough, because some top classes may not be explicitly asserted as subclass of owl:Thing)
-			ret.addAll(ontology.getClassesInSignature());
+			ret.addAll(ontology.getClassesInSignature(true));
 			
 			// use PR-OWL namespace (prefix)
 			PrefixManager prefixManager = IPROWL2ModelUser.PROWL2_DEFAULTPREFIXMANAGER;

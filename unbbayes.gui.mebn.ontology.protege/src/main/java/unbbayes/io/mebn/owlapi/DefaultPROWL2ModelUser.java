@@ -8,6 +8,7 @@ import java.util.HashSet;
 
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLEntity;
+import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.PrefixManager;
@@ -123,6 +124,24 @@ public class DefaultPROWL2ModelUser implements IPROWL2ModelUser {
 				}
 			}
 			return name;
+		}
+		
+		// check if it is literal
+		if (owlObject instanceof OWLLiteral) {
+			
+			// parse the value if its type is known
+			if ( ((OWLLiteral)owlObject).isBoolean() ) {
+				return String.valueOf(((OWLLiteral)owlObject).parseBoolean());
+			} else if ( ((OWLLiteral)owlObject).isInteger() ) {
+				return String.valueOf(((OWLLiteral)owlObject).parseInteger());
+			} else if ( ((OWLLiteral)owlObject).isFloat() ) {
+				return String.valueOf(((OWLLiteral)owlObject).parseFloat());
+			} else if ( ((OWLLiteral)owlObject).isDouble() ) {
+				return String.valueOf(((OWLLiteral)owlObject).parseDouble());
+			} 
+			
+			// this is an unknown literal, then return the literal
+			return String.valueOf(((OWLLiteral)owlObject).getLiteral());
 		}
 		return owlObject.toString();
 	}
