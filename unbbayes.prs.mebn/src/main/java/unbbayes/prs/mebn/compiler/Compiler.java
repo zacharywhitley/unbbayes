@@ -1058,6 +1058,8 @@ public class Compiler implements ICompiler {
 		// Debug.println("SCANED FOR CONDITIONANTS' POSSIBLE STATES");
 		
 		if (token == 'x') {
+			// TODO the name of the possible value may contain caracters like dots, but this method cannot handle such characters
+			
 			// consistency check C09: verify whether conditionant has valid values
 			if (this.node != null) {
 				if (!this.isValidConditionantValue(this.mebn,conditionantName,this.noCaseChangeValue)) {

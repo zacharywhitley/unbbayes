@@ -86,9 +86,10 @@ public class QueryArgumentsPane extends JPanel{
 
 			//Finding elements of the combo box
 			for(ObjectEntityInstance entity: entityList){
-				if(entity.getType().equals(ov.getValueType())){
+				// TODO stop using type equality and start using type compatibility
+//				if(entity.getType().equals(ov.getValueType())){
 					list.add(entity);
-				}
+//				}
 			}
 			
 			argument[i] = new JComboBox(list); 
