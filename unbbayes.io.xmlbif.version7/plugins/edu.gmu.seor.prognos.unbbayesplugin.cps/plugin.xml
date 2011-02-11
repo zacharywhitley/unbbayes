@@ -12,6 +12,7 @@
         <library id="antlr-runtime-3.2" path="lib/antlr-runtime-3.2.jar" type="code"/>
         <library type="resources" path="icons/" id="cps_icons" />
     </runtime>
+    
     <extension plugin-id="unbbayes.util.extension.core" point-id="ProbabilityFunctionPanel" id="cps_ProbabilisticNode">
         <parameter id="class" value="unbbayes.prs.bn.ProbabilisticNode" />
         <parameter id="name" value="Script edition" />
@@ -19,4 +20,19 @@
         <parameter id="description" value="Edit conditional probability function using scripts" />
 		<parameter id="icon" value="new_script.png" />
     </extension>
+    
+    <extension plugin-id="unbbayes.util.extension.core" point-id="InferenceAlgorithm" id="DMPAlgorithm">
+        <parameter id="class" value="edu.gmu.seor.prognos.unbbayesplugin.cps.dmp.DMPOptionPanel" />
+    </extension>
+        
+    <extension plugin-id="unbbayes.util.extension.core" point-id="PluginNode" id="ProbabilisticNodePluginStub">
+        <parameter id="class" value="edu.gmu.seor.prognos.unbbayesplugin.gmmNode.GmmNodePluginStub" />
+        <parameter id="shapeClass" value="edu.gmu.seor.prognos.unbbayesplugin.gmmNode.UShapeGMMNode" />
+        <parameter id="name" value="GMM Node" />
+        <parameter id="panelBuilder" value= "edu.gmu.seor.prognos.unbbayesplugin.gmmNode.GmmStubPanelBuilder" />
+        <parameter id="description" value="GMM node plug in" />
+		<parameter id="icon" value="icon_stub.gif" />
+		<parameter id="cursor" value="cursor_stub.gif" /> 
+    </extension> 
+    
 </plugin>

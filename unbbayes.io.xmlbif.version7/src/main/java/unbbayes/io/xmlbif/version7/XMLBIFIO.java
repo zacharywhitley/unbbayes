@@ -21,6 +21,7 @@ import javax.xml.bind.Unmarshaller;
 import org.xml.sax.InputSource;
 
 import edu.gmu.seor.prognos.unbbayesplugin.cps.CPS;
+import edu.gmu.seor.prognos.unbbayesplugin.gmmNode.GmmNodePluginStub;
 
 import unbbayes.gui.HierarchicTree;
 import unbbayes.io.exception.LoadException;
@@ -153,7 +154,8 @@ public class XMLBIFIO {
 				
 				if (cps != null) {
 					
-					scriptList.setScript(childNode, cps.getScript());
+					// This is a work around to make sure the XML line break string is understood in Java
+					scriptList.setScript(childNode, cps.getScript().replace("&#xD;", "\r\n"));
 				
 				} else if (cpt != null) {
 					
@@ -422,13 +424,16 @@ public class XMLBIFIO {
 			// CPS
 			CPS scriptList = CPS.getInstance();
 			String script = scriptList.getScript(node);
+			// This is a work around to make sure the XML string keeps the line breaks
+			script = script.replace("\r\n", "&#xD;");
+
 			if (script != null) {
 				
 				XMLBIFType.NetworkType.ConditionalDistributionSetType.ConditionalDistributionType.CPSType cps = of.createXMLBIFTypeNetworkTypeConditionalDistributionSetTypeConditionalDistributionTypeCPSType();
 				cps.setScript(script);
 				
 				conditionalDistribution.setCPS(cps);
-				if (node instanceof ContinuousNode) {
+				if (node.getType() == Node.CONTINUOUS_NODE_TYPE) {
 					conditionalDistribution.setType(DistributionType.CONTINUOUS.toString());
 				} else {
 					conditionalDistribution.setType(DistributionType.DISCRETE.toString());
@@ -510,7 +515,8 @@ public class XMLBIFIO {
 		if (nodeType == VariableType.DISCRETEPROBABILISTIC) {
 			node = new ProbabilisticNode();
 		} else if (nodeType == VariableType.CONTINUOUSPROBABILISTIC) { 
-			node = new ContinuousNode();
+//			node = new ContinuousNode();
+			node = new GmmNodePluginStub();
 		} else if (nodeType == VariableType.DECISION) {
 			node = new DecisionNode();
 		} else if (nodeType == VariableType.UTILITY) {

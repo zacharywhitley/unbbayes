@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <project>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>br.unb.cic</groupId>
@@ -265,8 +265,42 @@
 		<dependency>
 			<groupId>br.unb.cic</groupId>
 			<artifactId>unbbayes</artifactId>
-			<version>4.1.0</version>
+			<version>4.2.1</version>
 		</dependency>
+
+
+		<!-- COMMONS-LOGGING -->
+		<!--
+			The Logging package is an ultra-thin bridge between different
+			logging implementations. A library that uses the commons-logging API
+			can be used with any logging implementation at runtime.
+			http://commons.apache.org/logging/
+		-->
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>1.1</version>
+		</dependency>
+		<!-- COMMONS-LOGGING -->
+
+
+
+
+		<dependency>
+			<!--
+				JPF provides a runtime engine that dynamically discovers and loads
+				"plug-ins". A plug-in is a structured component that describes
+				itself to JPF using a "manifest". JPF maintains a registry of
+				available plug-ins and the functions they provide (via extension
+				points and extensions). http://jpf.sourceforge.net/index.html
+			-->
+			<groupId>guess</groupId>
+			<artifactId>jpf</artifactId>
+			<version>1.5</version>
+		</dependency>
+
+
+
 
 		<!--
 			This plugin has a dependency to, prognos.unbbayesplugin.cps plugin
