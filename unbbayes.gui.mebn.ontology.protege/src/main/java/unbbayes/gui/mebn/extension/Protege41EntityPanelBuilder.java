@@ -7,8 +7,7 @@ package unbbayes.gui.mebn.extension;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.GridLayout;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.lang.reflect.InvocationTargetException;
@@ -17,9 +16,8 @@ import java.util.List;
 import java.util.Properties;
 
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
+import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
@@ -33,7 +31,6 @@ import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.model.OWLWorkspace;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 
-import unbbayes.controller.IconController;
 import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelBuilder;
 import unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator;
@@ -136,7 +133,7 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
 				this.add(content, BorderLayout.CENTER);
 				
 				// create toolbar for useful protege functionalities
-				this.add(this.buildProtegeTools(bundle, mebn, mediator), BorderLayout.NORTH);
+//				this.add(this.buildProtegeTools(bundle, mebn, mediator), BorderLayout.NORTH);
 				
 				// listener on resize event
 				this.addComponentListener(new ComponentListener() {
@@ -290,6 +287,28 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
 				// We assume if kit != null then ProtegeManager was called previously and it is a singleton
 				JFrame workspaceFrame = ((ProtegeManager)this.extractProtegeManager(bundle, mebn, mediator)).getFrame(kit.getWorkspace());
 				Component view = workspaceFrame.getContentPane();
+				
+				// extract menu
+				JMenuBar menuBar = workspaceFrame.getJMenuBar();
+				
+//				// convert the menu to a toolbar
+//				JToolBar menuToolBar = new JToolBar("Protege");
+//				menuToolBar.setToolTipText("Menu");
+//				for (int i = 0; i < menuBar.getMenuCount(); i++) {
+//					menuToolBar.add(menuBar.getMenu(i));
+//				}
+				
+				// dispose menu bar
+//				menuBar.setVisible(false);
+//				menuBar.setEnabled(false);
+				
+				// create a panel containing both workspace and the menu bar
+				JPanel workspacePanel = new JPanel(new BorderLayout());
+//				workspacePanel.add(menuToolBar, BorderLayout.NORTH);
+				workspacePanel.add(menuBar, BorderLayout.NORTH);
+				workspacePanel.add(kit.getWorkspace(), BorderLayout.CENTER);
+				
+				// hide the original frame
 				workspaceFrame.setVisible(false);
 				// remove view from the protege workspace
 				workspaceFrame.remove(view);
@@ -299,7 +318,8 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
 //			manager.getEditorKitManager().getWorkspaceManager().removeWorkspace(kit.getWorkspace());
 				workspaceFrame.dispose();
 				
-				return kit.getWorkspace();
+//				return kit.getWorkspace();
+				return workspacePanel;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -719,65 +739,65 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
 
 
 
-	/**
-	 * Creates a component containing a set of buttons (e.g. tool bar)
-	 * to configure useful protege properties.
-	 * @param bundle
-	 * @param mebn
-	 * @param mediator
-	 * @return
-	 */
-	protected JComponent buildProtegeTools(Bundle bundle, MultiEntityBayesianNetwork mebn, IMEBNMediator mediator) {
-		final JToolBar protegeMenu = new JToolBar("Protégé", JToolBar.HORIZONTAL);
-		
-		final Bundle bundleAux = bundle;
-		final MultiEntityBayesianNetwork mebnAux = mebn;
-		final IMEBNMediator mediatorAux = mediator;
-		// create button to synchronize reasoner
-		this.setSynchronizeReasonerButton(new JButton(IconController.getInstance().getPropagateIcon()));
-		this.getSynchronizeReasonerButton().setToolTipText("Synchronize Reasoner");
-		
-		// add listener to button
-		this.getSynchronizeReasonerButton().addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-					EditorKit kit = extractOWLEditorKit(bundleAux, mebnAux, mediatorAux);
-					if (kit instanceof OWLEditorKit) {
-						((OWLEditorKit)kit).getModelManager().getOWLReasonerManager().classifyAsynchronously(((OWLEditorKit)kit).getModelManager().getReasonerPreferences().getPrecomputedInferences());
-					}
-				} catch (Exception e2) {
-					e2.printStackTrace();
-					JOptionPane.showMessageDialog(protegeMenu, e2.getMessage(), "Protégé Error", JOptionPane.ERROR_MESSAGE);
-				}
-			}
-		});
-		
-		// add save button
-		this.setSaveProtegeOntologyButton(new JButton(IconController.getInstance().getSaveFindingsInstance()));
-		this.getSaveProtegeOntologyButton().setToolTipText("Save");
-		
-		// add listener for save button
-		this.getSaveProtegeOntologyButton().addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-					if (mebnAux != null
-							&& mebnAux.getStorageImplementor() != null
-							&& (mebnAux.getStorageImplementor() instanceof IOWLAPIStorageImplementorDecorator)) {
-						((IOWLAPIStorageImplementorDecorator)mebnAux.getStorageImplementor()).execute();
-					}
-				} catch (Exception e2) {
-					e2.printStackTrace();
-					JOptionPane.showMessageDialog(protegeMenu, e2.getMessage(), "Protégé Error", JOptionPane.ERROR_MESSAGE);
-				}
-			}
-		});
-		
-		
-		protegeMenu.add(this.getSynchronizeReasonerButton());
-		protegeMenu.add(this.getSaveProtegeOntologyButton());
-		
-		return protegeMenu;
-	}
+//	/**
+//	 * Creates a component containing a set of buttons (e.g. tool bar)
+//	 * to configure useful protege properties.
+//	 * @param bundle
+//	 * @param mebn
+//	 * @param mediator
+//	 * @return
+//	 */
+//	protected JComponent buildProtegeTools(Bundle bundle, MultiEntityBayesianNetwork mebn, IMEBNMediator mediator) {
+//		final JToolBar protegeMenu = new JToolBar("Protégé", JToolBar.HORIZONTAL);
+//		
+//		final Bundle bundleAux = bundle;
+//		final MultiEntityBayesianNetwork mebnAux = mebn;
+//		final IMEBNMediator mediatorAux = mediator;
+//		// create button to synchronize reasoner
+//		this.setSynchronizeReasonerButton(new JButton(IconController.getInstance().getPropagateIcon()));
+//		this.getSynchronizeReasonerButton().setToolTipText("Synchronize Reasoner");
+//		
+//		// add listener to button
+//		this.getSynchronizeReasonerButton().addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				try {
+//					EditorKit kit = extractOWLEditorKit(bundleAux, mebnAux, mediatorAux);
+//					if (kit instanceof OWLEditorKit) {
+//						((OWLEditorKit)kit).getModelManager().getOWLReasonerManager().classifyAsynchronously(((OWLEditorKit)kit).getModelManager().getReasonerPreferences().getPrecomputedInferences());
+//					}
+//				} catch (Exception e2) {
+//					e2.printStackTrace();
+//					JOptionPane.showMessageDialog(protegeMenu, e2.getMessage(), "Protégé Error", JOptionPane.ERROR_MESSAGE);
+//				}
+//			}
+//		});
+//		
+//		// add save button
+//		this.setSaveProtegeOntologyButton(new JButton(IconController.getInstance().getSaveFindingsInstance()));
+//		this.getSaveProtegeOntologyButton().setToolTipText("Save");
+//		
+//		// add listener for save button
+//		this.getSaveProtegeOntologyButton().addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				try {
+//					if (mebnAux != null
+//							&& mebnAux.getStorageImplementor() != null
+//							&& (mebnAux.getStorageImplementor() instanceof IOWLAPIStorageImplementorDecorator)) {
+//						((IOWLAPIStorageImplementorDecorator)mebnAux.getStorageImplementor()).execute();
+//					}
+//				} catch (Exception e2) {
+//					e2.printStackTrace();
+//					JOptionPane.showMessageDialog(protegeMenu, e2.getMessage(), "Protégé Error", JOptionPane.ERROR_MESSAGE);
+//				}
+//			}
+//		});
+//		
+//		
+//		protegeMenu.add(this.getSynchronizeReasonerButton());
+//		protegeMenu.add(this.getSaveProtegeOntologyButton());
+//		
+//		return protegeMenu;
+//	}
 
 
 	/**

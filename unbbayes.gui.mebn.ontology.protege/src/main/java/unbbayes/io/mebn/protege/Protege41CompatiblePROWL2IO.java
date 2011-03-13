@@ -14,7 +14,7 @@ import org.protege.editor.owl.model.inference.ReasonerStatus;
 
 import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
-import unbbayes.io.mebn.owlapi.OWLAPICompatiblePROWL2IO;
+import unbbayes.io.mebn.owlapi.OWLAPICompatiblePROWLIO;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.ontology.protege.IBundleLauncher;
 import unbbayes.prs.mebn.ontology.protege.OWLClassExpressionParserFacade;
@@ -22,13 +22,13 @@ import unbbayes.prs.mebn.ontology.protege.ProtegeBundleLauncher;
 import unbbayes.util.Debug;
 
 /**
- * This class extends {@link OWLAPICompatiblePROWL2IO} in order
+ * This class extends {@link OWLAPICompatiblePROWLIO} in order
  * to fill {@link MultiEntityBayesianNetwork#getStorageImplementor()}
  * using {@link ProtegeStorageImplementorDecorator}
  * @author Shou Matsumoto
  *
  */
-public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
+public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWLIO {
 
 	private boolean initializeReasoner = true;
 	

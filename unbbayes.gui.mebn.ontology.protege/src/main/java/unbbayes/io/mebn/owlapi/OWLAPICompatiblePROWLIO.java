@@ -33,6 +33,7 @@ import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.PrefixManager;
 import org.semanticweb.owlapi.reasoner.NodeSet;
@@ -95,7 +96,7 @@ import unbbayes.util.Debug;
  * @author Shou Matsumoto
  *
  */
-public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntologyUser, IPROWL2ModelUser, IOWLClassExpressionParserFacade, INonPROWLClassExtractor {
+public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyUser, IPROWL2ModelUser, IOWLClassExpressionParserFacade, INonPROWLClassExtractor {
 	
 	private String prowlOntologyNamespaceURI = PROWL2_NAMESPACEURI;
 	
@@ -160,7 +161,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 	 * It won't initialize complex fields (e.g. resource classes, wrapped classes, etc.).
 	 * @deprecated use {@link #newInstance()} instead
 	 */
-	public OWLAPICompatiblePROWL2IO() {
+	public OWLAPICompatiblePROWLIO() {
 		super();
 		try {
 			this.initialize();
@@ -170,11 +171,11 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 	}
 	
 	/**
-	 * This is the constructor method to be used in order to create new instances of {@link OWLAPICompatiblePROWL2IO}
+	 * This is the constructor method to be used in order to create new instances of {@link OWLAPICompatiblePROWLIO}
 	 * @return
 	 */
 	public static MebnIO newInstance() {
-		return new OWLAPICompatiblePROWL2IO();
+		return new OWLAPICompatiblePROWLIO();
 	}
 	
 	/**
@@ -184,7 +185,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 		this.setResource(unbbayes.util.ResourceController.newInstance().getBundle(
 				unbbayes.io.mebn.resources.IoMebnResources.class.getName(),
 				Locale.getDefault(),
-				OWLAPICompatiblePROWL2IO.class.getClassLoader()
+				OWLAPICompatiblePROWLIO.class.getClassLoader()
 			));
 		this.setNonPROWLClassExtractor(DefaultNonPROWLClassExtractor.getInstance());
 		this.setProwlModelUserDelegator(DefaultPROWL2ModelUser.getInstance());
@@ -197,45 +198,45 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 	 */
 	public MultiEntityBayesianNetwork loadMebn(File file) throws IOException,
 			IOMebnException {
-		try {
-			
-			// the main access point to ontologies is the OWLOntology and OWLOntologyManager (both from OWL API)
-			if (this.getLastOWLOntology()  == null) {
-				// load ontology from file and set as active
+		// the main access point to ontologies is the OWLOntology and OWLOntologyManager (both from OWL API)
+		if (this.getLastOWLOntology()  == null) {
+			// load ontology from file and set as active
+			try {
 				this.setLastOWLOntology(OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(file));
-			}
-			
-			// specify reasoner if it is not set
-			try {
-				if (this.getLastOWLReasoner() == null && this.getLastOWLOntology() != null) {
-					this.setLastOWLReasoner(new Reasoner.ReasonerFactory().createReasoner(this.getLastOWLOntology()));
-					this.getLastOWLReasoner().precomputeInferences();	// initialize
+			} catch (OWLOntologyCreationException e) {
+				if (file != null) {
+					throw new IllegalArgumentException(file.toString(), e);
+				} else {
+					throw new IllegalArgumentException(e);
 				}
-			} catch (Exception e) {
-				e.printStackTrace();
 			}
-			
-			// extract default name
-			String defaultMEBNName = "MEBN";
-			try {
-				defaultMEBNName = this.getLastOWLOntology().getOntologyID().toString();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			
-			// instantiate MEBN
-			MultiEntityBayesianNetwork mebn = this.getMEBNFactory().createMEBN(defaultMEBNName);
-			
-			// populate MEBN
-			this.loadMEBNFromOntology(mebn, this.getLastOWLOntology(), this.getLastOWLReasoner());
-			
-			return mebn;
-			
-		} catch (Exception e) {
-			// if we fail to load OWL2 ontology, lets use the old fashioned way
-			e.printStackTrace();
-			return super.loadMebn(file);
 		}
+		
+		// specify reasoner if it is not set
+		try {
+			if (this.getLastOWLReasoner() == null && this.getLastOWLOntology() != null) {
+				this.setLastOWLReasoner(new Reasoner.ReasonerFactory().createReasoner(this.getLastOWLOntology()));
+				this.getLastOWLReasoner().precomputeInferences();	// initialize
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		// extract default name
+		String defaultMEBNName = "MEBN";
+		try {
+			defaultMEBNName = this.getLastOWLOntology().getOntologyID().toString();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		// instantiate MEBN
+		MultiEntityBayesianNetwork mebn = this.getMEBNFactory().createMEBN(defaultMEBNName);
+		
+		// populate MEBN
+		this.loadMEBNFromOntology(mebn, this.getLastOWLOntology(), this.getLastOWLReasoner());
+		
+		return mebn;
 	}
 	
 	/*
@@ -683,18 +684,23 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 			// It looks like the old loaderPrOwlIO was not solving hasType object property. We are following such decision.
 
 			try{
-				// create object entity
-				ObjectEntity objectEntityMebn = mebn.getObjectEntityContainer().createObjectEntity(this.extractName(ontology, subClass)); 	
-			    mapObjectEntityLabels.put(objectEntityMebn.getType().getName(), objectEntityMebn); 
-
-			    try {
-					IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, objectEntityMebn, subClass.getIRI());
-				} catch (Exception e) {
-					e.printStackTrace();
+				String objectEntityName = this.extractName(ontology, subClass);
+				if (!mebn.getNamesUsed().contains(objectEntityName)) {
+					// create object entity if it is not already used
+					ObjectEntity objectEntityMebn = mebn.getObjectEntityContainer().createObjectEntity(objectEntityName); 	
+					mapObjectEntityLabels.put(objectEntityMebn.getType().getName(), objectEntityMebn); 
+					
+					try {
+						IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, objectEntityMebn, subClass.getIRI());
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					
+					// set the name as "used", in order for UnBBayes to avoid duplicate names.
+					mebn.getNamesUsed().add(objectEntityName); 
+				} else {
+					System.err.println(objectEntityName + " is duplicated.");
 				}
-			    
-			    // set the name as "used", in order for UnBBayes to avoid duplicate names.
-				mebn.getNamesUsed().add(this.extractName(ontology, subClass)); 
 			} catch(Exception e){
 				// perform a exception translation because the method's signature does not allow non-runtime exceptions
 				throw new RuntimeException("ObjectEntity: " + subClass, e);
@@ -2369,7 +2375,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 
 	
 	/**
-	 * {@link OWLAPICompatiblePROWL2IO} implements delegator design patter without directly extending LoaderPrOwlIO (because of incompatible interfaces).
+	 * {@link OWLAPICompatiblePROWLIO} implements delegator design patter without directly extending LoaderPrOwlIO (because of incompatible interfaces).
 	 * Some functionalities will be delegated to this wrapped object when necessary (e.g. to extract naming patterns like scope separators, etc.).
 	 * @return the wrappedLoaderPrOwlIO. A new instance will be returned if nothing is specified.
 	 */
@@ -2381,7 +2387,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 	}
 
 	/**
-	 * {@link OWLAPICompatiblePROWL2IO} implements delegator design patter without directly extending LoaderPrOwlIO (because of incompatible interfaces).
+	 * {@link OWLAPICompatiblePROWLIO} implements delegator design patter without directly extending LoaderPrOwlIO (because of incompatible interfaces).
 	 * Some functionalities will be delegated to this wrapped object when necessary (e.g. to extract naming patterns like scope separators, etc.)
 	 * @param wrappedLoaderPrOwlIO the wrappedLoaderPrOwlIO to set
 	 */

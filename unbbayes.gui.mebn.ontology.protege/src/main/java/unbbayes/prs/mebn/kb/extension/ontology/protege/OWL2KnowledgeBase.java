@@ -1534,7 +1534,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			if (isToAddKnownValuesToSearchResult) {
 				// if we should add the known values to the search result, we should call the constructor of SearchResult
 				// using an array containing both missingOVArray and the OVs of knownValues. So, let's create such array...
-				List<OrdinaryVariable> missingAndKnownOVList = Arrays.asList(missingOVArray);
+				List<OrdinaryVariable> missingAndKnownOVList = new ArrayList<OrdinaryVariable>(Arrays.asList(missingOVArray));
 				// fill with the OVs in knownValues
 				for (OVInstance knownValue : knownValues) {
 					missingAndKnownOVList.add(knownValue.getOv());
@@ -1561,7 +1561,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			OWLReasoner reasoner = this.getDefaultOWLReasoner();
 			
 			// convert the array of missing ordinary variables to a list
-			List<OrdinaryVariable> missingOV = Arrays.asList(knownSearchResults.getOrdinaryVariableSequence());
+			List<OrdinaryVariable> missingOV = new ArrayList<OrdinaryVariable>(Arrays.asList(knownSearchResults.getOrdinaryVariableSequence()));
 			
 			// expression of the query
 			String expression = "";
@@ -1755,7 +1755,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			if (isToAddKnownValuesToSearchResult) {
 				// if we should add the known values to the search result, we should call the constructor of SearchResult
 				// using an array containing both missingOVArray and the OVs of knownValues. So, let's create such array...
-				List<OrdinaryVariable> missingAndKnownOVList = Arrays.asList(missingOVArray);
+				List<OrdinaryVariable> missingAndKnownOVList = new ArrayList<OrdinaryVariable>(Arrays.asList(missingOVArray));
 				// fill with the OVs in knownValues
 				for (OVInstance knownValue : knownValues) {
 					missingAndKnownOVList.add(knownValue.getOv());
@@ -1792,7 +1792,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			OWLObjectProperty nonBooleanNodeProperty = reasoner.getRootOntology().getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(nonBooleanNodeIRI);
 			
 			// convert the array of missing ordinary variables to a list
-			List<OrdinaryVariable> missingOV = Arrays.asList(knownSearchResults.getOrdinaryVariableSequence());
+			List<OrdinaryVariable> missingOV = new ArrayList<OrdinaryVariable>(Arrays.asList(missingOVArray));
 			
 			// expression of the query
 			String expression = "";
@@ -1993,7 +1993,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			OrdinaryVariable[] ovSequence = result.getOrdinaryVariableSequence();
 			List<String[]> valuesResultList =  result.getValuesResultList();
 			for (int i = 0; i < ovSequence.length; i++) {
-				ret.put(ovSequence[i], Arrays.asList(valuesResultList.get(i)));
+				ret.put(ovSequence[i], new ArrayList<String>(Arrays.asList(valuesResultList.get(i))));
 			}
 		}
 		

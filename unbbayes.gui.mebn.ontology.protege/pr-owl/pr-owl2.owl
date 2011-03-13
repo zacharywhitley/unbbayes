@@ -4,23 +4,22 @@
 <!DOCTYPE rdf:RDF [
     <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
     <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY pr-owl2 "http://www.pr-owl.org/pr-owl2.owl#" >
     <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
     <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
 ]>
 
 
-<rdf:RDF xmlns="http://www.pr-owl.org/pr-owl.owl#"
-     xml:base="http://www.pr-owl.org/pr-owl.owl"
+<rdf:RDF xmlns="http://www.pr-owl.org/pr-owl2.owl#"
+     xml:base="http://www.pr-owl.org/pr-owl2.owl"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
-     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-    <owl:Ontology rdf:about="http://www.pr-owl.org/pr-owl.owl">
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:pr-owl2="http://www.pr-owl.org/pr-owl2.owl#">
+    <owl:Ontology rdf:about="http://www.pr-owl.org/pr-owl2.owl">
         <owl:versionInfo rdf:datatype="&xsd;string">2.0</owl:versionInfo>
         <rdfs:comment rdf:datatype="&xsd;string">PR-OWL is an upper ontology to support writing probabilistic ontologies. It is based on Multi-Entity Bayesian Networks (MEBN). More information can be found at www.pr-owl.org.</rdfs:comment>
-        <owl:imports rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
-        <owl:imports rdf:resource="http://www.w3.org/2000/01/rdf-schema#"/>
-        <owl:imports rdf:resource="http://www.w3.org/2002/07/owl"/>
     </owl:Ontology>
     
 
@@ -41,29 +40,6 @@
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
     //
-    // Datatypes
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
-
-    
-
-
-    <!-- http://www.w3.org/2000/01/rdf-schema#Datatype -->
-
-    <rdfs:Datatype rdf:about="&rdfs;Datatype"/>
-    
-
-
-    <!-- http://www.w3.org/2001/XMLSchema#anyType -->
-
-    <rdfs:Datatype rdf:about="&xsd;anyType"/>
-    
-
-
-    <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
     // Object Properties
     //
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -72,27 +48,18 @@
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#definesUncertaintyOf -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#hasArgument -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#definesUncertaintyOf">
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#RandomVariable"/>
-        <rdfs:range rdf:resource="&rdf;Property"/>
-    </owl:ObjectProperty>
-    
-
-
-    <!-- http://www.pr-owl.org/pr-owl.owl#hasArgument -->
-
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#hasArgument">
+    <owl:ObjectProperty rdf:about="&pr-owl2;hasArgument">
         <rdf:type rdf:resource="&owl;InverseFunctionalProperty"/>
         <rdfs:comment rdf:datatype="&xsd;string">This object property is the link between a node in an MFrag and the reified relation that conveys its respective arguments. Note that each instance of a node will have only one argument relashionship, which is defined within that node&#39;s MFrag.
 The inverse of this property is isArgumentOf</rdfs:comment>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#Argument"/>
+        <rdfs:range rdf:resource="&pr-owl2;Argument"/>
         <rdfs:domain>
             <owl:Class>
                 <owl:unionOf rdf:parseType="Collection">
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#RandomVariable"/>
+                    <rdf:Description rdf:about="&pr-owl2;MExpression"/>
+                    <rdf:Description rdf:about="&pr-owl2;RandomVariable"/>
                 </owl:unionOf>
             </owl:Class>
         </rdfs:domain>
@@ -100,114 +67,114 @@ The inverse of this property is isArgumentOf</rdfs:comment>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#hasConditionant -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#hasConditioningState -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#hasConditionant">
+    <owl:ObjectProperty rdf:about="&pr-owl2;hasConditioningState">
         <rdfs:comment rdf:datatype="&xsd;string">Each instance of the class ProbAssign corresponds to the probability assigment for a given state of a RV. This probability assignment is conditioned by the parent RVs of that RV. This object property conveys the list of the states of the parent RV which have influenced that specific probability assignment. Since any MEBN entity can be a state in a RV, this property has MEBNEntity class as its range.
 The inverse property is isConditionantOf</rdfs:comment>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#CondRelationship"/>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#ProbAssign"/>
+        <rdfs:range rdf:resource="&pr-owl2;ConditioningState"/>
+        <rdfs:domain rdf:resource="&pr-owl2;ProbabilityAssignment"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#hasContextNode -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#hasContextNode -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#hasContextNode">
+    <owl:ObjectProperty rdf:about="&pr-owl2;hasContextNode">
         <rdfs:comment rdf:datatype="&xsd;string">This object property links an MFrag to the context nodes being applied to it.
 The inverse property is isContextIn</rdfs:comment>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#ContextNode"/>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#DomainMFrag"/>
-        <rdfs:subPropertyOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasNode"/>
-        <owl:inverseOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#isContextNodeIn"/>
+        <rdfs:range rdf:resource="&pr-owl2;ContextNode"/>
+        <rdfs:domain rdf:resource="&pr-owl2;DomainMFrag"/>
+        <rdfs:subPropertyOf rdf:resource="&pr-owl2;hasNode"/>
+        <owl:inverseOf rdf:resource="&pr-owl2;isContextNodeIn"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#hasExemplar -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#hasExemplar -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#hasExemplar">
+    <owl:ObjectProperty rdf:about="&pr-owl2;hasExemplar">
         <rdfs:comment rdf:datatype="&xsd;string">This object property relates one MFrag with the Exemplar constants (i.e. an individual from class Exemplar) that are defined in that MFrag.
 The inverse of this property is isExemplarIn.</rdfs:comment>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#Exemplar"/>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
+        <rdfs:range rdf:resource="&pr-owl2;Exemplar"/>
+        <rdfs:domain rdf:resource="&pr-owl2;MFrag"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#hasInputNode -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#hasInputNode -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#hasInputNode">
+    <owl:ObjectProperty rdf:about="&pr-owl2;hasInputNode">
         <rdfs:comment rdf:datatype="&xsd;string">This object property links each MFrag with its respective input nodes.
 The inverse property is isInputNodeIn</rdfs:comment>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#InputNode"/>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
-        <rdfs:subPropertyOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasNode"/>
-        <owl:inverseOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#isInputNodeIn"/>
+        <rdfs:range rdf:resource="&pr-owl2;InputNode"/>
+        <rdfs:domain rdf:resource="&pr-owl2;MFrag"/>
+        <rdfs:subPropertyOf rdf:resource="&pr-owl2;hasNode"/>
+        <owl:inverseOf rdf:resource="&pr-owl2;isInputNodeIn"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#hasMExpression -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#hasMExpression -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#hasMExpression">
+    <owl:ObjectProperty rdf:about="&pr-owl2;hasMExpression">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#Node"/>
-        <owl:inverseOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#isMExpressionOf"/>
+        <rdfs:range rdf:resource="&pr-owl2;MExpression"/>
+        <rdfs:domain rdf:resource="&pr-owl2;Node"/>
+        <owl:inverseOf rdf:resource="&pr-owl2;isMExpressionOf"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#hasMFrag -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#hasMFrag -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#hasMFrag">
+    <owl:ObjectProperty rdf:about="&pr-owl2;hasMFrag">
         <rdfs:comment rdf:datatype="&xsd;string">This object property links one MTheory with its respective MFrags. Usually, a probabilistic ontology will have only one MTheory as a means to convey the global joint probability distribution of its random variables. However, MEBN logic allows many possible MTheories to represent a given domain, so it is reasonable to infer that in some circunstances it might be preferable to have one probability ontology being represented by more than one MTheory.
 The inverse property is isMFragOf</rdfs:comment>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#MTheory"/>
-        <owl:inverseOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#isMFragOf"/>
+        <rdfs:range rdf:resource="&pr-owl2;MFrag"/>
+        <rdfs:domain rdf:resource="&pr-owl2;MTheory"/>
+        <owl:inverseOf rdf:resource="&pr-owl2;isMFragOf"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#hasNode -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#hasNode -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#hasNode">
+    <owl:ObjectProperty rdf:about="&pr-owl2;hasNode">
         <rdfs:comment rdf:datatype="&xsd;string">This object property links one MFrag with its nodes.
 The inverse property is isNodeFrom</rdfs:comment>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#Node"/>
+        <rdfs:domain rdf:resource="&pr-owl2;MFrag"/>
+        <rdfs:range rdf:resource="&pr-owl2;Node"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#hasOrdinaryVariable -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#hasOrdinaryVariable -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#hasOrdinaryVariable">
+    <owl:ObjectProperty rdf:about="&pr-owl2;hasOrdinaryVariable">
         <rdf:type rdf:resource="&owl;InverseFunctionalProperty"/>
         <rdfs:comment rdf:datatype="&xsd;string">This inverse functional object property relates one MFrag to its ordinary variables (i.e. individuals from class OVariable hat are related to this MFrag).
 The inverse of this property is isOVariableIn.</rdfs:comment>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#OrdinaryVariable"/>
-        <owl:inverseOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#isOrdinaryVariableIn"/>
+        <rdfs:domain rdf:resource="&pr-owl2;MFrag"/>
+        <rdfs:range rdf:resource="&pr-owl2;OrdinaryVariable"/>
+        <owl:inverseOf rdf:resource="&pr-owl2;isOrdinaryVariableIn"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#hasParent -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#hasParent -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#hasParent">
+    <owl:ObjectProperty rdf:about="&pr-owl2;hasParent">
         <rdfs:comment rdf:datatype="&xsd;string">This object property links a resident node of an MFrag with its respective parent(s), which has(have) to be an individual of either the class Resident or the class Input.
 The inverse property is isParentOf.
 </rdfs:comment>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
-        <owl:inverseOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#isParentOf"/>
+        <rdfs:domain rdf:resource="&pr-owl2;ResidentNode"/>
+        <owl:inverseOf rdf:resource="&pr-owl2;isParentOf"/>
         <rdfs:range>
             <owl:Class>
                 <owl:unionOf rdf:parseType="Collection">
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#InputNode"/>
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
+                    <rdf:Description rdf:about="&pr-owl2;InputNode"/>
+                    <rdf:Description rdf:about="&pr-owl2;ResidentNode"/>
                 </owl:unionOf>
             </owl:Class>
         </rdfs:range>
@@ -215,102 +182,105 @@ The inverse property is isParentOf.
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#hasParentName -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#hasParentName -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#hasParentName">
+    <owl:ObjectProperty rdf:about="&pr-owl2;hasParentName">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
         <rdfs:comment rdf:datatype="&xsd;string">This object property links a CondRelationship to a Node. The reified conditional relationship is used to build PR-OWL Tables. One table usually has many probability assignments (which correspond to cells in a table), and each probability assignment has a set of conditionants. Conditionants are the states of the parents of a node that form a combination where a given probability assignment holds. Each CondRelationship defines a pair parent/state-of-parent, and the hasParentName property defines the parent name of that pair. </rdfs:comment>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#CondRelationship"/>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#Node"/>
+        <rdfs:domain rdf:resource="&pr-owl2;ConditioningState"/>
+        <rdfs:range>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="&pr-owl2;InputNode"/>
+                    <rdf:Description rdf:about="&pr-owl2;ResidentNode"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:range>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#hasParentState -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#hasParentState -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#hasParentState">
+    <owl:ObjectProperty rdf:about="&pr-owl2;hasParentState">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
         <rdfs:comment rdf:datatype="&xsd;string">This object property links a CondRelationship to an Entity. The reified conditional relationship is used to build PR-OWL Tables. One table usually has many probability assignments (which correspond to cells in a table), and each probability assignment has a set of conditionants. Conditionants are the states of the parents of a node that form a combination where a given probability assignment holds. Each CondRelationship defines a pair parent/state-of-parent, and the hasParentState property defines the parent state of that pair.</rdfs:comment>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#CondRelationship"/>
+        <rdfs:domain rdf:resource="&pr-owl2;ConditioningState"/>
         <rdfs:range rdf:resource="&owl;Thing"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#hasPossibleObjectValue -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#hasProbabilityAssignment -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#hasPossibleObjectValue">
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#RandomVariable"/>
-        <owl:inverseOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#isPossibleObjectValueOf"/>
-        <rdfs:range rdf:resource="&owl;Class"/>
-        <rdfs:subPropertyOf rdf:resource="&owl;topObjectProperty"/>
-    </owl:ObjectProperty>
-    
-
-
-    <!-- http://www.pr-owl.org/pr-owl.owl#hasProbAssign -->
-
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#hasProbAssign">
+    <owl:ObjectProperty rdf:about="&pr-owl2;hasProbabilityAssignment">
         <rdf:type rdf:resource="&owl;InverseFunctionalProperty"/>
         <rdfs:comment rdf:datatype="&xsd;string">An PR-OWL table is formed by many individual members of the class ProbAssign, which are cells in that table. This object property relates one PR-OWL table to its respective cells (ProbAssign elements).
 The inverse property is isProbAssignIn.</rdfs:comment>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#PR-OWLTable"/>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#ProbAssign"/>
-        <owl:inverseOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#isProbAssignIn"/>
+        <rdfs:domain rdf:resource="&pr-owl2;PR-OWLTable"/>
+        <rdfs:range rdf:resource="&pr-owl2;ProbabilityAssignment"/>
+        <owl:inverseOf rdf:resource="&pr-owl2;isProbabilityAssignmentIn"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#hasProbDist -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#hasProbabilityDistribution -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#hasProbDist">
+    <owl:ObjectProperty rdf:about="&pr-owl2;hasProbabilityDistribution">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
         <rdfs:comment rdf:datatype="&xsd;string">This object property links a RV to its respective probability distributions, as defined in that RV&#39;s home MFrags. Note that this property is not being defined as functional, implying a polymorphic version of MEBN (where each RV can have different distributions in different MFrags).
 The inverse of this property is isProbDistOf.</rdfs:comment>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#ProbDist"/>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
+        <rdfs:range rdf:resource="&pr-owl2;ProbabilityDistribution"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="&pr-owl2;RandomVariable"/>
+                    <rdf:Description rdf:about="&pr-owl2;ResidentNode"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#hasResidentNode -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#hasResidentNode -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#hasResidentNode">
+    <owl:ObjectProperty rdf:about="&pr-owl2;hasResidentNode">
         <rdfs:comment rdf:datatype="&xsd;string">This object property links an MFrag with its respective resident node(s).
 The inverse property is isResidentNodeIn</rdfs:comment>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
-        <rdfs:subPropertyOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasNode"/>
+        <rdfs:domain rdf:resource="&pr-owl2;MFrag"/>
+        <rdfs:range rdf:resource="&pr-owl2;ResidentNode"/>
+        <rdfs:subPropertyOf rdf:resource="&pr-owl2;hasNode"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#hasStateName -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#hasStateName -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#hasStateName">
+    <owl:ObjectProperty rdf:about="&pr-owl2;hasStateName">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
         <rdfs:comment rdf:datatype="&xsd;string">When a probability distribution is conveyed as an PR-OWL table, each individual cell is represented as an individual of the ProbAssign class. This object property refers to which state of a random variable (i.e. MFrag node) a given probability assignment refers to.
 The property itself is functional, since one state can have only one probability assignment for the configuration listed in each individual of the ProbAssign class.</rdfs:comment>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#ProbAssign"/>
+        <rdfs:domain rdf:resource="&pr-owl2;ProbabilityAssignment"/>
         <rdfs:range rdf:resource="&owl;Thing"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#isArgumentOf -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#isArgumentOf -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#isArgumentOf">
+    <owl:ObjectProperty rdf:about="&pr-owl2;isArgumentOf">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
         <rdfs:comment rdf:datatype="&xsd;string">This object property links an Argument Relationship to its respective Node (i.e. to the individual of class Node that has this ArgRelationship into its argument list).
 The inverse of this property is hasArgument.
 </rdfs:comment>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#Argument"/>
-        <owl:inverseOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasArgument"/>
+        <rdfs:domain rdf:resource="&pr-owl2;Argument"/>
+        <owl:inverseOf rdf:resource="&pr-owl2;hasArgument"/>
         <rdfs:range>
             <owl:Class>
                 <owl:unionOf rdf:parseType="Collection">
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#RandomVariable"/>
+                    <rdf:Description rdf:about="&pr-owl2;MExpression"/>
+                    <rdf:Description rdf:about="&pr-owl2;RandomVariable"/>
                 </owl:unionOf>
             </owl:Class>
         </rdfs:range>
@@ -318,120 +288,111 @@ The inverse of this property is hasArgument.
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#isConditionantOf -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#isConditioningStateOf -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#isConditionantOf">
+    <owl:ObjectProperty rdf:about="&pr-owl2;isConditioningStateOf">
         <rdfs:comment rdf:datatype="&xsd;string">This object property links one possible state of a parent node to the configuration that is conditioning its children state&#39;s probability distribution.
 The inverse property is hasConditionant.</rdfs:comment>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#CondRelationship"/>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#ProbAssign"/>
-        <owl:inverseOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasConditionant"/>
+        <rdfs:domain rdf:resource="&pr-owl2;ConditioningState"/>
+        <rdfs:range rdf:resource="&pr-owl2;ProbabilityAssignment"/>
+        <owl:inverseOf rdf:resource="&pr-owl2;hasConditioningState"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#isContextNodeIn -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#isContextNodeIn -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#isContextNodeIn">
+    <owl:ObjectProperty rdf:about="&pr-owl2;isContextNodeIn">
         <rdfs:comment rdf:datatype="&xsd;string">This object property links one context node to the respective MFrag in which that context node applies.
 The inverse property is hasContext.</rdfs:comment>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#ContextNode"/>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#DomainMFrag"/>
-        <rdfs:subPropertyOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#isNodeIn"/>
+        <rdfs:domain rdf:resource="&pr-owl2;ContextNode"/>
+        <rdfs:range rdf:resource="&pr-owl2;DomainMFrag"/>
+        <rdfs:subPropertyOf rdf:resource="&pr-owl2;isNodeIn"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#isExemplarIn -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#isExemplarIn -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#isExemplarIn">
+    <owl:ObjectProperty rdf:about="&pr-owl2;isExemplarIn">
         <rdfs:comment rdf:datatype="&xsd;string">This object property relates one Skolem constant (i.e. an individual from class Skolem) to the MFrag in which it is defined.
 The inverse of this property is hasSkolem.</rdfs:comment>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#Exemplar"/>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
-        <owl:inverseOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasExemplar"/>
+        <rdfs:domain rdf:resource="&pr-owl2;Exemplar"/>
+        <rdfs:range rdf:resource="&pr-owl2;MFrag"/>
+        <owl:inverseOf rdf:resource="&pr-owl2;hasExemplar"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#isInputNodeIn -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#isInputNodeIn -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#isInputNodeIn">
+    <owl:ObjectProperty rdf:about="&pr-owl2;isInputNodeIn">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
         <rdfs:comment rdf:datatype="&xsd;string">This object property links a node to the MFrags that have it as an input.
 The inverse property is hasInputNode.</rdfs:comment>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#InputNode"/>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
-        <rdfs:subPropertyOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#isNodeIn"/>
+        <rdfs:domain rdf:resource="&pr-owl2;InputNode"/>
+        <rdfs:range rdf:resource="&pr-owl2;MFrag"/>
+        <rdfs:subPropertyOf rdf:resource="&pr-owl2;isNodeIn"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#isMExpressionOf -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#isMExpressionOf -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#isMExpressionOf">
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#Node"/>
+    <owl:ObjectProperty rdf:about="&pr-owl2;isMExpressionOf">
+        <rdfs:domain rdf:resource="&pr-owl2;MExpression"/>
+        <rdfs:range rdf:resource="&pr-owl2;Node"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#isMFragOf -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#isMFragOf -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#isMFragOf">
+    <owl:ObjectProperty rdf:about="&pr-owl2;isMFragOf">
         <rdfs:comment rdf:datatype="&xsd;string">This object property links one MFrag to one or more MTheories (i.e. individuals of class MTheory) that have that MFrag as its component.
 The inverse property is hasMFrag.</rdfs:comment>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#MTheory"/>
+        <rdfs:domain rdf:resource="&pr-owl2;MFrag"/>
+        <rdfs:range rdf:resource="&pr-owl2;MTheory"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#isNodeIn -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#isNodeIn -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#isNodeIn">
+    <owl:ObjectProperty rdf:about="&pr-owl2;isNodeIn">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
         <rdfs:comment rdf:datatype="&xsd;string">This general object property links one node to the MFrag it belongs to.
 The inverse property is hasNode</rdfs:comment>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#Node"/>
-        <owl:inverseOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasNode"/>
+        <rdfs:range rdf:resource="&pr-owl2;MFrag"/>
+        <rdfs:domain rdf:resource="&pr-owl2;Node"/>
+        <owl:inverseOf rdf:resource="&pr-owl2;hasNode"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#isObjectIn -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#isOrdinaryVariableIn -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#isObjectIn">
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#MappingArgument"/>
-        <rdfs:range rdf:resource="&rdf;Property"/>
-    </owl:ObjectProperty>
-    
-
-
-    <!-- http://www.pr-owl.org/pr-owl.owl#isOrdinaryVariableIn -->
-
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#isOrdinaryVariableIn">
+    <owl:ObjectProperty rdf:about="&pr-owl2;isOrdinaryVariableIn">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
         <rdfs:comment rdf:datatype="&xsd;string">This functional object property relates one ordinary variable (i.e. an individual from class OVariable) to its respective MFrag.
 The inverse of this property is hasOVariable.</rdfs:comment>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#OrdinaryVariable"/>
+        <rdfs:range rdf:resource="&pr-owl2;MFrag"/>
+        <rdfs:domain rdf:resource="&pr-owl2;OrdinaryVariable"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#isParentOf -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#isParentOf -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#isParentOf">
+    <owl:ObjectProperty rdf:about="&pr-owl2;isParentOf">
         <rdfs:comment rdf:datatype="&xsd;string">This object property links a resident or input node of an MFrag with its respective children, which are resident nodes in that same MFrag.
 The inverse property is hasParent.</rdfs:comment>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
+        <rdfs:range rdf:resource="&pr-owl2;ResidentNode"/>
         <rdfs:domain>
             <owl:Class>
                 <owl:unionOf rdf:parseType="Collection">
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#InputNode"/>
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
+                    <rdf:Description rdf:about="&pr-owl2;InputNode"/>
+                    <rdf:Description rdf:about="&pr-owl2;ResidentNode"/>
                 </owl:unionOf>
             </owl:Class>
         </rdfs:domain>
@@ -439,95 +400,73 @@ The inverse property is hasParent.</rdfs:comment>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#isPossibleObjectValueOf -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#isPossibleObjectValueOf -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#isPossibleObjectValueOf">
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#RandomVariable"/>
-        <rdfs:domain rdf:resource="&owl;Class"/>
+    <owl:ObjectProperty rdf:about="&pr-owl2;isPossibleObjectValueOf">
+        <rdfs:range rdf:resource="&pr-owl2;RandomVariable"/>
+        <rdfs:domain rdf:resource="&owl;Thing"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#isProbAssignIn -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#isProbabilityAssignmentIn -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#isProbAssignIn">
+    <owl:ObjectProperty rdf:about="&pr-owl2;isProbabilityAssignmentIn">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
         <rdfs:comment rdf:datatype="&xsd;string">This is the inverse of the hasProbAssign object property and links one individual probability assignment to its respective probability distribution table.</rdfs:comment>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#PR-OWLTable"/>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#ProbAssign"/>
+        <rdfs:range rdf:resource="&pr-owl2;PR-OWLTable"/>
+        <rdfs:domain rdf:resource="&pr-owl2;ProbabilityAssignment"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#isProbDistOf -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#isProbabilityDistributionOf -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#isProbDistOf">
+    <owl:ObjectProperty rdf:about="&pr-owl2;isProbabilityDistributionOf">
         <rdfs:comment rdf:datatype="&xsd;string">This object property links a probability distribution to its respective RV (resident node). Note that this property is functional, since each probability distribution in a MFrag defines a unique RV.
 The inverse of this property is hasProbDist.</rdfs:comment>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#ProbDist"/>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
-        <owl:inverseOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasProbDist"/>
+        <rdfs:domain rdf:resource="&pr-owl2;ProbabilityDistribution"/>
+        <owl:inverseOf rdf:resource="&pr-owl2;hasProbabilityDistribution"/>
+        <rdfs:range>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="&pr-owl2;RandomVariable"/>
+                    <rdf:Description rdf:about="&pr-owl2;ResidentNode"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:range>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#isResidentNodeIn -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#isResidentNodeIn -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#isResidentNodeIn">
+    <owl:ObjectProperty rdf:about="&pr-owl2;isResidentNodeIn">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
         <rdfs:comment rdf:datatype="&xsd;string">This object property links an individual of class Node to the MFrag(s) that have this node as a resident node.
 The inverse property is hasResidentNode</rdfs:comment>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
-        <owl:inverseOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasResidentNode"/>
-        <rdfs:subPropertyOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#isNodeIn"/>
+        <rdfs:range rdf:resource="&pr-owl2;MFrag"/>
+        <rdfs:domain rdf:resource="&pr-owl2;ResidentNode"/>
+        <owl:inverseOf rdf:resource="&pr-owl2;hasResidentNode"/>
+        <rdfs:subPropertyOf rdf:resource="&pr-owl2;isNodeIn"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#isSubjectIn -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#isSubjectIn">
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#MappingArgument"/>
-        <rdfs:range rdf:resource="&rdf;Property"/>
-    </owl:ObjectProperty>
-    
-
-
-    <!-- http://www.pr-owl.org/pr-owl.owl#isSubsBy -->
-
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#isSubsBy">
-        <rdf:type rdf:resource="&owl;FunctionalProperty"/>
-        <rdfs:comment rdf:datatype="&xsd;string">This object property links one instance of class OVariable to type of the entity that can substitute it. Each argument of a RV has its expected type defined within the home MFrag of that RV. In PR-OWL, the type restrictions are defined directly through the OVariable using the isSubsBy property. One MFrag can have many OVariables (which can be themselves linked to many SimpleArgRelationships) but each OVariable has a unique type, which is explicitly defined by the type of the entity that can substibute that OVariable.
-This object property is the inverse of subsOVar.</rdfs:comment>
-        <owl:inverseOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#subsVar"/>
-        <rdfs:range rdf:resource="&owl;Thing"/>
-        <rdfs:domain>
-            <owl:Class>
-                <owl:unionOf rdf:parseType="Collection">
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#Exemplar"/>
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#OrdinaryVariable"/>
-                </owl:unionOf>
-            </owl:Class>
-        </rdfs:domain>
-    </owl:ObjectProperty>
-    
-
-
-    <!-- http://www.pr-owl.org/pr-owl.owl#isTypeOfArgumentIn -->
-
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#isTypeOfArgumentIn">
+    <owl:ObjectProperty rdf:about="&pr-owl2;isTypeOfArgumentIn">
         <rdf:type rdf:resource="&owl;InverseFunctionalProperty"/>
         <rdfs:comment rdf:datatype="&xsd;string">This object property links an individual of class OVariable, Resident, Entity, or Skolem to one ArgRelationship(s) that has individual as its argument. Each ArgRelationship can have only one argument, but each individual of those classes can refer to many ArgRelationships.
 The inverse of this property is hasArgTerm.</rdfs:comment>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#Argument"/>
+        <rdfs:range rdf:resource="&pr-owl2;Argument"/>
         <rdfs:domain>
             <owl:Class>
                 <owl:unionOf rdf:parseType="Collection">
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#Exemplar"/>
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#OrdinaryVariable"/>
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#RandomVariable"/>
+                    <rdf:Description rdf:about="&pr-owl2;Exemplar"/>
+                    <rdf:Description rdf:about="&pr-owl2;MExpression"/>
+                    <rdf:Description rdf:about="&pr-owl2;OrdinaryVariable"/>
+                    <rdf:Description rdf:about="&pr-owl2;RandomVariable"/>
                     <rdf:Description rdf:about="&owl;Thing"/>
                 </owl:unionOf>
             </owl:Class>
@@ -536,51 +475,32 @@ The inverse of this property is hasArgTerm.</rdfs:comment>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#isTypeOfMExpression -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#isTypeOfMExpression -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#isTypeOfMExpression">
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
+    <owl:ObjectProperty rdf:about="&pr-owl2;isTypeOfMExpression">
+        <rdfs:range rdf:resource="&pr-owl2;MExpression"/>
+        <rdfs:domain rdf:resource="&pr-owl2;RandomVariable"/>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#subsVar -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#typeOfArgument -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#subsVar">
-        <rdf:type rdf:resource="&owl;InverseFunctionalProperty"/>
-        <rdfs:comment rdf:datatype="&xsd;string">This object property assigns MetaEntity individuals in order to define the type of the substituters for each MFrag ordinary variable.
-Its inverse property is the functional isSubsBy.</rdfs:comment>
-        <rdfs:domain rdf:resource="&owl;Thing"/>
-        <rdfs:range>
-            <owl:Class>
-                <owl:unionOf rdf:parseType="Collection">
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#Exemplar"/>
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#OrdinaryVariable"/>
-                </owl:unionOf>
-            </owl:Class>
-        </rdfs:range>
-    </owl:ObjectProperty>
-    
-
-
-    <!-- http://www.pr-owl.org/pr-owl.owl#typeOfArgument -->
-
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#typeOfArgument">
+    <owl:ObjectProperty rdf:about="&pr-owl2;typeOfArgument">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
         <rdfs:comment rdf:datatype="&xsd;string">This object property links one instance of class ArgRelationship (which is linked to a RV) to an internal variable within the home MFrag where its RV is resident, to a node that is being used as argument in that RV, or to a MEBN entity. 
 This object property is the inverse of isArgTermIn.
 One individual of the class ArgRelationship can have only one RV (since it refers to a specific argument of an RV), and thus can be related to only one OVariable (Simple RV Terms) or one Node (Composite RV Terms), which makes that property a functional one.
 The inverse property is isArgTermIn.</rdfs:comment>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#Argument"/>
-        <owl:inverseOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#isTypeOfArgumentIn"/>
+        <rdfs:domain rdf:resource="&pr-owl2;Argument"/>
+        <owl:inverseOf rdf:resource="&pr-owl2;isTypeOfArgumentIn"/>
         <rdfs:range>
             <owl:Class>
                 <owl:unionOf rdf:parseType="Collection">
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#Exemplar"/>
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#OrdinaryVariable"/>
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#RandomVariable"/>
+                    <rdf:Description rdf:about="&pr-owl2;Exemplar"/>
+                    <rdf:Description rdf:about="&pr-owl2;MExpression"/>
+                    <rdf:Description rdf:about="&pr-owl2;OrdinaryVariable"/>
+                    <rdf:Description rdf:about="&pr-owl2;RandomVariable"/>
                     <rdf:Description rdf:about="&owl;Thing"/>
                 </owl:unionOf>
             </owl:Class>
@@ -589,22 +509,13 @@ The inverse property is isArgTermIn.</rdfs:comment>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#typeOfDataArgument -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#typeOfMExpression -->
 
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#typeOfDataArgument">
+    <owl:ObjectProperty rdf:about="&pr-owl2;typeOfMExpression">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#DataConstantArgument"/>
-    </owl:ObjectProperty>
-    
-
-
-    <!-- http://www.pr-owl.org/pr-owl.owl#typeOfMExpression -->
-
-    <owl:ObjectProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#typeOfMExpression">
-        <rdf:type rdf:resource="&owl;FunctionalProperty"/>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
-        <rdfs:range rdf:resource="http://www.pr-owl.org/pr-owl.owl#RandomVariable"/>
-        <owl:inverseOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#isTypeOfMExpression"/>
+        <rdfs:domain rdf:resource="&pr-owl2;MExpression"/>
+        <rdfs:range rdf:resource="&pr-owl2;RandomVariable"/>
+        <owl:inverseOf rdf:resource="&pr-owl2;isTypeOfMExpression"/>
     </owl:ObjectProperty>
     
 
@@ -626,51 +537,62 @@ The inverse property is isArgTermIn.</rdfs:comment>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#hasArgNumber -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#definesUncertaintyOf -->
 
-    <owl:DatatypeProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#hasArgNumber">
+    <owl:DatatypeProperty rdf:about="&pr-owl2;definesUncertaintyOf">
+        <rdf:type rdf:resource="&owl;FunctionalProperty"/>
+        <rdfs:domain rdf:resource="&pr-owl2;RandomVariable"/>
+        <rdfs:range rdf:resource="&xsd;anyURI"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber -->
+
+    <owl:DatatypeProperty rdf:about="&pr-owl2;hasArgumentNumber">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
         <rdfs:comment rdf:datatype="&xsd;string">This datatype property assigns the argument number of an argument relationship. As an example, if we have a random variable with 3 arguments, it will have three ArgRelatioship reified relations. The first argument of the RV will have the number 1 assigned to its respective hasArgNumber property, the second will have the number 2 assigned and the third will have the number 3 assigned. In short this property keeps track of the ordering between the arguments of an RV.
 The datatype itself is a nonNegativeInteger. We used this instead of a positiveInteger because we wanted zero as a possible value, since we assume that a RV with no arguments means a global RV.</rdfs:comment>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#Argument"/>
+        <rdfs:domain rdf:resource="&pr-owl2;Argument"/>
         <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
     </owl:DatatypeProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#hasDeclaration -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#hasDeclaration -->
 
-    <owl:DatatypeProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#hasDeclaration">
+    <owl:DatatypeProperty rdf:about="&pr-owl2;hasDeclaration">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
         <rdfs:comment rdf:datatype="&xsd;string">This datatype property conveys the declarative probability distributions. Each probability distribution can be expressed in different formats and each format is defined by the datatype property isRepresentedAs. Possible formats include Netica tables, Netica equations, Quiddity formulas, MEBN syntax, and others. However, the declaration itself is stored as a string so parsers are expected to understand how to deal with the specific text format of each declaration.</rdfs:comment>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#DeclarativeDist"/>
+        <rdfs:domain rdf:resource="&pr-owl2;DeclarativeDistribution"/>
         <rdfs:range rdf:resource="&xsd;string"/>
     </owl:DatatypeProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#hasPossibleDataValue -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues -->
 
-    <owl:DatatypeProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#hasPossibleDataValue">
-        <rdfs:range rdf:resource="&rdfs;Datatype"/>
+    <owl:DatatypeProperty rdf:about="&pr-owl2;hasPossibleValues">
+        <rdfs:domain rdf:resource="&pr-owl2;RandomVariable"/>
+        <rdfs:range rdf:resource="&xsd;anyURI"/>
     </owl:DatatypeProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#hasStateProb -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#hasStateProbability -->
 
-    <owl:DatatypeProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#hasStateProb">
+    <owl:DatatypeProperty rdf:about="&pr-owl2;hasStateProbability">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
         <rdfs:comment rdf:datatype="&xsd;string">This datatype property is used to store the actual probability of an individual ProbAssign. Currently, OWL has no support for user defined datatypes, so instead of using owl-p:prob datatype (which includes all decimals between 0 and 1 inclusive) we are using xsd:decimal for compatibility purposes.</rdfs:comment>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#ProbAssign"/>
-        <rdfs:range rdf:resource="&xsd;decimal"/>
+        <rdfs:domain rdf:resource="&pr-owl2;ProbabilityAssignment"/>
+        <rdfs:range rdf:resource="&xsd;float"/>
     </owl:DatatypeProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#hasUID -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#hasUID -->
 
-    <owl:DatatypeProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#hasUID">
+    <owl:DatatypeProperty rdf:about="&pr-owl2;hasUID">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
         <rdfs:comment rdf:datatype="&xsd;string">MEBN logic has the unique naming assumption, which is not assumed in OWL. This property is necessary in order to guarantee that the possible states of a random variable (RV) are mutually exclusive and exhaustive. 
 
@@ -683,35 +605,22 @@ The UID itself is conveyed as a xsd:string, and the hasUID datatype property is 
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#hasVerticalPosition -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#isObjectIn -->
 
-    <owl:DatatypeProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#hasVerticalPosition">
+    <owl:DatatypeProperty rdf:about="&pr-owl2;isObjectIn">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
-        <rdfs:comment rdf:datatype="&xsd;string">This property refers to an optional attribute of a node related with its respective graphical representation. It conveys the absolute vertical position of a node, measured in pixels, within a grid. MEBN includes the graphical representation in its formal definition, thus this property is applicable to all implementations of MEBN logic, including PR-OWL.</rdfs:comment>
-        <owl:versionInfo rdf:datatype="&xsd;string">This property was introduced in version 1.02</owl:versionInfo>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#Node"/>
-        <rdfs:range rdf:resource="&xsd;decimal"/>
+        <rdfs:domain rdf:resource="&pr-owl2;MappingArgument"/>
+        <rdfs:range rdf:resource="&xsd;anyURI"/>
     </owl:DatatypeProperty>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#isDefault -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#isRepresentedAs -->
 
-    <owl:DatatypeProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#isDefault">
-        <rdf:type rdf:resource="&owl;FunctionalProperty"/>
-        <rdfs:comment rdf:datatype="&xsd;string">This datatype property indicates whether a probability distribution is the default probability distribution of a node or not. Default probability distributions for nodes are used when the context nodes of the MFrag containing those nodes are not met.</rdfs:comment>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#ProbDist"/>
-        <rdfs:range rdf:resource="&xsd;boolean"/>
-    </owl:DatatypeProperty>
-    
-
-
-    <!-- http://www.pr-owl.org/pr-owl.owl#isRepresentedAs -->
-
-    <owl:DatatypeProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#isRepresentedAs">
+    <owl:DatatypeProperty rdf:about="&pr-owl2;isRepresentedAs">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
         <rdfs:comment rdf:datatype="&xsd;string">This datatype property defines how a given declarative probability distribution is expressed. Each probability distribution can be expressed in different formats, and each format is defined by this datatype property. Possible formats include Netica tables, Netica equations, Quiddity formulas, MEBN syntax, and others. However, the declaration itself is stored in the hasDeclaration datatype property as a string so parsers will have to know how to deal with the specific text format of each declaration.</rdfs:comment>
-        <rdfs:domain rdf:resource="http://www.pr-owl.org/pr-owl.owl#DeclarativeDist"/>
+        <rdfs:domain rdf:resource="&pr-owl2;DeclarativeDistribution"/>
         <rdfs:range>
             <rdfs:Datatype>
                 <owl:oneOf>
@@ -762,7 +671,13 @@ The UID itself is conveyed as a xsd:string, and the hasUID datatype property is 
                                                                                                             <rdf:Description>
                                                                                                                 <rdf:type rdf:resource="&rdf;List"/>
                                                                                                                 <rdf:first rdf:datatype="&xsd;string">Quiddity_SPI</rdf:first>
-                                                                                                                <rdf:rest rdf:resource="&rdf;nil"/>
+                                                                                                                <rdf:rest>
+                                                                                                                    <rdf:Description>
+                                                                                                                        <rdf:type rdf:resource="&rdf;List"/>
+                                                                                                                        <rdf:first rdf:datatype="&xsd;string">UnBBayes</rdf:first>
+                                                                                                                        <rdf:rest rdf:resource="&rdf;nil"/>
+                                                                                                                    </rdf:Description>
+                                                                                                                </rdf:rest>
                                                                                                             </rdf:Description>
                                                                                                         </rdf:rest>
                                                                                                     </rdf:Description>
@@ -793,9 +708,37 @@ The UID itself is conveyed as a xsd:string, and the hasUID datatype property is 
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#typeOfDataArgument -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#isSubjectIn -->
 
-    <owl:DatatypeProperty rdf:about="http://www.pr-owl.org/pr-owl.owl#typeOfDataArgument">
+    <owl:DatatypeProperty rdf:about="&pr-owl2;isSubjectIn">
+        <rdf:type rdf:resource="&owl;FunctionalProperty"/>
+        <rdfs:domain rdf:resource="&pr-owl2;MappingArgument"/>
+        <rdfs:range rdf:resource="&xsd;anyURI"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl2.owl#isSubstitutedBy -->
+
+    <owl:DatatypeProperty rdf:about="&pr-owl2;isSubstitutedBy">
+        <rdfs:range rdf:resource="&xsd;anyURI"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="&pr-owl2;Exemplar"/>
+                    <rdf:Description rdf:about="&pr-owl2;OrdinaryVariable"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl2.owl#typeOfDataArgument -->
+
+    <owl:DatatypeProperty rdf:about="&pr-owl2;typeOfDataArgument">
+        <rdf:type rdf:resource="&owl;FunctionalProperty"/>
+        <rdfs:domain rdf:resource="&pr-owl2;ConstantArgument"/>
         <rdfs:range rdf:resource="&rdfs;Literal"/>
     </owl:DatatypeProperty>
     
@@ -812,93 +755,67 @@ The UID itself is conveyed as a xsd:string, and the hasUID datatype property is 
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#Absurd -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#Absurd -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#Absurd">
+    <owl:Class rdf:about="&pr-owl2;Absurd">
         <owl:equivalentClass>
             <owl:Class>
                 <owl:oneOf rdf:parseType="Collection">
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#absurd"/>
+                    <rdf:Description rdf:about="&pr-owl2;absurd"/>
                 </owl:oneOf>
             </owl:Class>
         </owl:equivalentClass>
+        <rdfs:subClassOf rdf:resource="&owl;Thing"/>
     </owl:Class>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#And -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#Argument -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#And">
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#LogicalOperatorRV"/>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasArgument"/>
-                <owl:onClass rdf:resource="http://www.pr-owl.org/pr-owl.owl#Argument"/>
-                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">2</owl:qualifiedCardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-    </owl:Class>
-    
-
-
-    <!-- http://www.pr-owl.org/pr-owl.owl#Argument -->
-
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#Argument">
+    <owl:Class rdf:about="&pr-owl2;Argument">
         <rdfs:subClassOf rdf:resource="&owl;Thing"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasArgNumber"/>
-                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-                <owl:onDataRange rdf:resource="&xsd;integer"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isArgumentOf"/>
-                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfArgument"/>
-                <owl:allValuesFrom rdf:resource="&owl;Thing"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfDataArgument"/>
-                <owl:allValuesFrom rdf:resource="&rdfs;Literal"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfArgument"/>
+                <owl:onProperty rdf:resource="&pr-owl2;typeOfArgument"/>
                 <owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfDataArgument"/>
-                <owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasArgNumber"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasArgumentNumber"/>
                 <owl:allValuesFrom rdf:resource="&xsd;integer"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isArgumentOf"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isArgumentOf"/>
                 <owl:allValuesFrom>
                     <owl:Class>
                         <owl:unionOf rdf:parseType="Collection">
-                            <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
-                            <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#RandomVariable"/>
+                            <rdf:Description rdf:about="&pr-owl2;MExpression"/>
+                            <rdf:Description rdf:about="&pr-owl2;RandomVariable"/>
                         </owl:unionOf>
                     </owl:Class>
                 </owl:allValuesFrom>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;isArgumentOf"/>
+                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;typeOfDataArgument"/>
+                <owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;hasArgumentNumber"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="&xsd;integer"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:comment rdf:datatype="&xsd;string">Each generic random variable can have many arguments. Arguments are usually restricted in their type and meaning via the context nodes of an MFrag. In order to model these complex N-ary relations, PR-OWL makes use of the ArgRelationship class, which is a reified relation that conveys the number and order of arguments that each RV expects, it&#39;s type (defined via a link to the OVariable class), and the link to the RV itself.
@@ -907,37 +824,37 @@ MEBN logic has the concept of a simple and a composite random variable term. Sim
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#BooleanMExpression -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#BooleanMExpression -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#BooleanMExpression">
+    <owl:Class rdf:about="&pr-owl2;BooleanMExpression">
         <owl:equivalentClass>
             <owl:Class>
                 <owl:intersectionOf rdf:parseType="Collection">
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
+                    <rdf:Description rdf:about="&pr-owl2;MExpression"/>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfMExpression"/>
-                        <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#BooleanRV"/>
+                        <owl:onProperty rdf:resource="&pr-owl2;typeOfMExpression"/>
+                        <owl:someValuesFrom rdf:resource="&pr-owl2;BooleanRandomVariable"/>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfMExpression"/>
-                        <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#BooleanRV"/>
+                        <owl:onProperty rdf:resource="&pr-owl2;typeOfMExpression"/>
+                        <owl:allValuesFrom rdf:resource="&pr-owl2;BooleanRandomVariable"/>
                     </owl:Restriction>
                 </owl:intersectionOf>
             </owl:Class>
         </owl:equivalentClass>
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
+        <rdfs:subClassOf rdf:resource="&pr-owl2;MExpression"/>
     </owl:Class>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#BooleanRV -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#BooleanRandomVariable -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#BooleanRV">
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#DataRV"/>
+    <owl:Class rdf:about="&pr-owl2;BooleanRandomVariable">
+        <rdfs:subClassOf rdf:resource="&pr-owl2;RandomVariable"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasPossibleDataValue"/>
-                <owl:allValuesFrom rdf:resource="&xsd;boolean"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasPossibleValues"/>
+                <owl:hasValue rdf:datatype="&xsd;anyURI">http://www.w3.org/2001/XMLSchema#boolean</owl:hasValue>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:comment rdf:datatype="&xsd;string">Individuals of this class represent the random variables from MEBN logic&#39;s built-in MFrags: logical connectives, quantifiers, the equality random variable. Likewise their function in MEBN logic, these individuals allow PR-OWL ontologies to represent a rich family of probability distributions over interpretations of first-order logic.
@@ -946,50 +863,53 @@ Note that MEBN&#39;s built-in Indirect Reference MFrag is already represented in
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#CondRelationship -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#ConditioningState -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#CondRelationship">
+    <owl:Class rdf:about="&pr-owl2;ConditioningState">
         <rdfs:subClassOf rdf:resource="&owl;Thing"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasParentName"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#Node"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasParentName"/>
+                <owl:onClass>
+                    <owl:Class>
+                        <owl:unionOf rdf:parseType="Collection">
+                            <rdf:Description rdf:about="&pr-owl2;InputNode"/>
+                            <rdf:Description rdf:about="&pr-owl2;ResidentNode"/>
+                        </owl:unionOf>
+                    </owl:Class>
+                </owl:onClass>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasParentName"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasParentState"/>
                 <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasParentName"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#Node"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isConditioningStateOf"/>
+                <owl:someValuesFrom rdf:resource="&pr-owl2;ProbabilityAssignment"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasParentState"/>
-                <owl:someValuesFrom rdf:resource="&owl;Thing"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isConditionantOf"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#ProbAssign"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasParentState"/>
-                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasParentState"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasParentState"/>
                 <owl:allValuesFrom rdf:resource="&owl;Thing"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;hasParentName"/>
+                <owl:allValuesFrom>
+                    <owl:Class>
+                        <owl:unionOf rdf:parseType="Collection">
+                            <rdf:Description rdf:about="&pr-owl2;InputNode"/>
+                            <rdf:Description rdf:about="&pr-owl2;ResidentNode"/>
+                        </owl:unionOf>
+                    </owl:Class>
+                </owl:allValuesFrom>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:comment rdf:datatype="&xsd;string">The conditional relationship class is a reified property representing a (parent) node and one of its possible states. Individuals of this class are used to built PR-OWL probabilistic distribution tables. Each cell of such a table corresponds to a probability assignment of a possible value of a node given one combination of the states of its parents. Each individual of class CondRelationship represents one parent/state pair, so a probability assigment is conditioned by a set of CondRelationship pairs (one for each parent node).</rdfs:comment>
@@ -997,64 +917,94 @@ Note that MEBN&#39;s built-in Indirect Reference MFrag is already represented in
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#ConstantArgument -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#ConstantArgument -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#ConstantArgument">
-        <owl:equivalentClass>
+    <owl:Class rdf:about="&pr-owl2;ConstantArgument">
+        <rdfs:subClassOf rdf:resource="&pr-owl2;Argument"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;typeOfArgument"/>
+                <owl:allValuesFrom rdf:resource="&owl;Thing"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;typeOfDataArgument"/>
+                <owl:allValuesFrom rdf:resource="&rdfs;Literal"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;isArgumentOf"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;MExpression"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;isArgumentOf"/>
+                <owl:onClass rdf:resource="&pr-owl2;MExpression"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
             <owl:Class>
-                <owl:intersectionOf rdf:parseType="Collection">
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#Argument"/>
+                <owl:unionOf rdf:parseType="Collection">
                     <owl:Class>
-                        <owl:unionOf rdf:parseType="Collection">
+                        <owl:intersectionOf rdf:parseType="Collection">
                             <owl:Restriction>
-                                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfArgument"/>
-                                <owl:onClass rdf:resource="&owl;NamedIndividual"/>
-                                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                                <owl:onProperty rdf:resource="&pr-owl2;typeOfArgument"/>
+                                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">0</owl:cardinality>
                             </owl:Restriction>
                             <owl:Restriction>
-                                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfDataArgument"/>
+                                <owl:onProperty rdf:resource="&pr-owl2;typeOfDataArgument"/>
                                 <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
                             </owl:Restriction>
-                        </owl:unionOf>
+                        </owl:intersectionOf>
                     </owl:Class>
-                </owl:intersectionOf>
+                    <owl:Class>
+                        <owl:intersectionOf rdf:parseType="Collection">
+                            <owl:Restriction>
+                                <owl:onProperty rdf:resource="&pr-owl2;typeOfArgument"/>
+                                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
+                            </owl:Restriction>
+                            <owl:Restriction>
+                                <owl:onProperty rdf:resource="&pr-owl2;typeOfDataArgument"/>
+                                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">0</owl:cardinality>
+                            </owl:Restriction>
+                        </owl:intersectionOf>
+                    </owl:Class>
+                </owl:unionOf>
             </owl:Class>
-        </owl:equivalentClass>
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#Argument"/>
+        </rdfs:subClassOf>
     </owl:Class>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#ContextNode -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#ContextNode -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#ContextNode">
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#Node"/>
+    <owl:Class rdf:about="&pr-owl2;ContextNode">
+        <rdfs:subClassOf rdf:resource="&pr-owl2;Node"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isContextNodeIn"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#DomainMFrag"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasMExpression"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;BooleanMExpression"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isContextNodeIn"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#DomainMFrag"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isContextNodeIn"/>
+                <owl:onClass rdf:resource="&pr-owl2;DomainMFrag"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasMExpression"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#BooleanMExpression"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isContextNodeIn"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;DomainMFrag"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasMExpression"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#BooleanMExpression"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <owl:disjointWith rdf:resource="http://www.pr-owl.org/pr-owl.owl#InputNode"/>
-        <owl:disjointWith rdf:resource="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
+        <owl:disjointWith rdf:resource="&pr-owl2;InputNode"/>
+        <owl:disjointWith rdf:resource="&pr-owl2;ResidentNode"/>
         <rdfs:comment rdf:datatype="&xsd;string">In general, MFrags impose constraints to the type of arguments each of its resident RVs should accept. The individuals of the Context class represent these types of constraints.
 In PR-OWL, the class Context is the only subclass of the Node class that accepts composite RV terms as arguments (that is, uses the complete ArgRelationship instead of the more restricted SimpleArgRelashionship).
 A context node is either satisfiable or not, which means its possible states are instances of  the BooleanRVStates class.
@@ -1063,107 +1013,26 @@ A context node is either satisfiable or not, which means its possible states are
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#DataConstantArgument -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#DeclarativeDistribution -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#DataConstantArgument">
+    <owl:Class rdf:about="&pr-owl2;DeclarativeDistribution">
         <owl:equivalentClass>
             <owl:Class>
                 <owl:intersectionOf rdf:parseType="Collection">
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#ConstantArgument"/>
+                    <rdf:Description rdf:about="&pr-owl2;ProbabilityDistribution"/>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isArgumentOf"/>
-                        <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfDataArgument"/>
-                        <owl:allValuesFrom rdf:resource="&rdfs;Literal"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isArgumentOf"/>
-                        <owl:onClass rdf:resource="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
-                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfArgument"/>
-                        <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">0</owl:cardinality>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfDataArgument"/>
-                        <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
-                    </owl:Restriction>
-                </owl:intersectionOf>
-            </owl:Class>
-        </owl:equivalentClass>
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#ConstantArgument"/>
-    </owl:Class>
-    
-
-
-    <!-- http://www.pr-owl.org/pr-owl.owl#DataRV -->
-
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#DataRV">
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#RandomVariable"/>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#definesUncertaintyOf"/>
-                <owl:onClass rdf:resource="&owl;DatatypeProperty"/>
-                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasPossibleDataValue"/>
-                <owl:someValuesFrom rdf:resource="&xsd;anyType"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#definesUncertaintyOf"/>
-                <owl:allValuesFrom rdf:resource="&owl;DatatypeProperty"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasPossibleDataValue"/>
-                <owl:allValuesFrom rdf:resource="&xsd;anyType"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <owl:disjointWith rdf:resource="http://www.pr-owl.org/pr-owl.owl#ObjectRV"/>
-    </owl:Class>
-    
-
-
-    <!-- http://www.pr-owl.org/pr-owl.owl#DeclarativeDist -->
-
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#DeclarativeDist">
-        <owl:equivalentClass>
-            <owl:Class>
-                <owl:intersectionOf rdf:parseType="Collection">
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#ProbDist"/>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isProbDistOf"/>
-                        <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isProbDistOf"/>
-                        <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isProbDistOf"/>
-                        <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasDeclaration"/>
+                        <owl:onProperty rdf:resource="&pr-owl2;hasDeclaration"/>
                         <owl:minCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minCardinality>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isRepresentedAs"/>
+                        <owl:onProperty rdf:resource="&pr-owl2;isRepresentedAs"/>
                         <owl:minCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minCardinality>
                     </owl:Restriction>
                 </owl:intersectionOf>
             </owl:Class>
         </owl:equivalentClass>
-        <owl:disjointWith rdf:resource="http://www.pr-owl.org/pr-owl.owl#PR-OWLTable"/>
+        <rdfs:subClassOf rdf:resource="&pr-owl2;ProbabilityDistribution"/>
+        <owl:disjointWith rdf:resource="&pr-owl2;PR-OWLTable"/>
         <rdfs:comment rdf:datatype="&xsd;string">A declarative distribution is a distribution that is conveyed via a xsd:string datatype, using a specific format defined in the hasDeclaration datatype property. In order to allow a MEBN algorithm to work, a parser should be able to retrieve the probability distribution information in the format it is stored and then pass that information to the MEBN algorithm in its own proprietaty format.
 Describing a probability distribution is a much more compact and flexible way of conveying it. However, it assumes that an OWL-P parser would understand the format in which the information is stored. PR-OWL tables, on the other hand, convey probability distributions in a more interoperable way, but are not flexible enough to represent complex distributions such as the cases in which a node has multiple possible parents.
 For added compatibility, one probability distribution can be stored in multiple formats (i.e. multiple DeclarativeDist individuals for the same RV).</rdfs:comment>
@@ -1171,52 +1040,46 @@ For added compatibility, one probability distribution can be stored in multiple 
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#DomainMFrag -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#DomainMFrag -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#DomainMFrag">
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
+    <owl:Class rdf:about="&pr-owl2;DomainMFrag">
+        <rdfs:subClassOf rdf:resource="&pr-owl2;MFrag"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasContextNode"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#ContextNode"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasContextNode"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;ContextNode"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <owl:disjointWith rdf:resource="http://www.pr-owl.org/pr-owl.owl#FindingMFrag"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;hasInputNode"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;GenerativeInputNode"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;hasResidentNode"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;DomainResidentNode"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <owl:disjointWith rdf:resource="&pr-owl2;FindingMFrag"/>
         <rdfs:comment rdf:datatype="&xsd;string">Domain MFrags is the subclass of class MFrag that includes all the domain-specific MFrags. It is disjoint with class Finding_MFrag. All generative MFrags created by the ontology engineer (i.e. the domain expert) are members of this class.</rdfs:comment>
     </owl:Class>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#DomainRN -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#DomainResidentNode -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#DomainRN">
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
+    <owl:Class rdf:about="&pr-owl2;DomainResidentNode">
+        <rdfs:subClassOf rdf:resource="&pr-owl2;ResidentNode"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasMExpression"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#SimpleMExpression"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isParentOf"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#DomainRN"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasMExpression"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#SimpleMExpression"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasParent"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasParent"/>
                 <owl:allValuesFrom>
                     <owl:Class>
                         <owl:unionOf rdf:parseType="Collection">
-                            <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#DomainRN"/>
-                            <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#GenerativeIN"/>
+                            <rdf:Description rdf:about="&pr-owl2;DomainResidentNode"/>
+                            <rdf:Description rdf:about="&pr-owl2;GenerativeInputNode"/>
                         </owl:unionOf>
                     </owl:Class>
                 </owl:allValuesFrom>
@@ -1224,67 +1087,60 @@ For added compatibility, one probability distribution can be stored in multiple 
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isResidentNodeIn"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#DomainMFrag"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isParentOf"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;DomainResidentNode"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isResidentNodeIn"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#DomainMFrag"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasMExpression"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;SimpleMExpression"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <owl:disjointWith rdf:resource="http://www.pr-owl.org/pr-owl.owl#FindingRN"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;isResidentNodeIn"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;DomainMFrag"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <owl:disjointWith rdf:resource="&pr-owl2;FindingResidentNode"/>
         <rdfs:comment rdf:datatype="&xsd;string">This is the subclass of class Resident (node) that includes all domain-specific resident nodes. It is disjoint with classes Finding_res and BuiltInRV.</rdfs:comment>
     </owl:Class>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#EqualTo -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#Exemplar -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#EqualTo">
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#LogicalOperatorRV"/>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasArgument"/>
-                <owl:onClass rdf:resource="http://www.pr-owl.org/pr-owl.owl#Argument"/>
-                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">2</owl:qualifiedCardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-    </owl:Class>
-    
-
-
-    <!-- http://www.pr-owl.org/pr-owl.owl#Exemplar -->
-
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#Exemplar">
+    <owl:Class rdf:about="&pr-owl2;Exemplar">
         <owl:equivalentClass>
             <owl:Class>
                 <owl:intersectionOf rdf:parseType="Collection">
                     <rdf:Description rdf:about="&owl;Thing"/>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isExemplarIn"/>
-                        <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
+                        <owl:onProperty rdf:resource="&pr-owl2;isTypeOfArgumentIn"/>
+                        <owl:someValuesFrom rdf:resource="&pr-owl2;ExemplarArgument"/>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isSubsBy"/>
-                        <owl:someValuesFrom rdf:resource="&owl;Thing"/>
+                        <owl:onProperty rdf:resource="&pr-owl2;isExemplarIn"/>
+                        <owl:allValuesFrom rdf:resource="&pr-owl2;MFrag"/>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isTypeOfArgumentIn"/>
-                        <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#ExemplarArgument"/>
+                        <owl:onProperty rdf:resource="&pr-owl2;isTypeOfArgumentIn"/>
+                        <owl:allValuesFrom rdf:resource="&pr-owl2;ExemplarArgument"/>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isExemplarIn"/>
-                        <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
+                        <owl:onProperty rdf:resource="&pr-owl2;isExemplarIn"/>
+                        <owl:onClass rdf:resource="&pr-owl2;MFrag"/>
+                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isSubsBy"/>
-                        <owl:allValuesFrom rdf:resource="&owl;Thing"/>
+                        <owl:onProperty rdf:resource="&pr-owl2;isSubstitutedBy"/>
+                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isTypeOfArgumentIn"/>
-                        <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#ExemplarArgument"/>
+                        <owl:onProperty rdf:resource="&pr-owl2;isSubstitutedBy"/>
+                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                        <owl:onDataRange rdf:resource="&xsd;anyURI"/>
                     </owl:Restriction>
                 </owl:intersectionOf>
             </owl:Class>
@@ -1296,137 +1152,108 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#ExemplarArgument -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#ExemplarArgument -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#ExemplarArgument">
-        <owl:equivalentClass>
-            <owl:Class>
-                <owl:intersectionOf rdf:parseType="Collection">
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#Argument"/>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isArgumentOf"/>
-                        <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfArgument"/>
-                        <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#Exemplar"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isArgumentOf"/>
-                        <owl:onClass rdf:resource="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
-                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfArgument"/>
-                        <owl:onClass rdf:resource="http://www.pr-owl.org/pr-owl.owl#Exemplar"/>
-                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-                    </owl:Restriction>
-                </owl:intersectionOf>
-            </owl:Class>
-        </owl:equivalentClass>
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#Argument"/>
+    <owl:Class rdf:about="&pr-owl2;ExemplarArgument">
+        <rdfs:subClassOf rdf:resource="&pr-owl2;Argument"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfDataArgument"/>
+                <owl:onProperty rdf:resource="&pr-owl2;typeOfDataArgument"/>
                 <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">0</owl:cardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
-    </owl:Class>
-    
-
-
-    <!-- http://www.pr-owl.org/pr-owl.owl#Exists -->
-
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#Exists">
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#QuantifierRV"/>
-    </owl:Class>
-    
-
-
-    <!-- http://www.pr-owl.org/pr-owl.owl#FindingIN -->
-
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#FindingIN">
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#InputNode"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasMExpression"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#BooleanMExpression"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isParentOf"/>
-                <owl:onClass rdf:resource="http://www.pr-owl.org/pr-owl.owl#FindingRN"/>
+                <owl:onProperty rdf:resource="&pr-owl2;typeOfArgument"/>
+                <owl:onClass rdf:resource="&pr-owl2;Exemplar"/>
                 <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isParentOf"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#FindingRN"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isArgumentOf"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;MExpression"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isInputNodeIn"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#FindingMFrag"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isArgumentOf"/>
+                <owl:onClass rdf:resource="&pr-owl2;MExpression"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isInputNodeIn"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#FindingMFrag"/>
+                <owl:onProperty rdf:resource="&pr-owl2;typeOfArgument"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;Exemplar"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasMExpression"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#BooleanMExpression"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <owl:disjointWith rdf:resource="http://www.pr-owl.org/pr-owl.owl#GenerativeIN"/>
     </owl:Class>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#FindingMFrag -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#FindingInputNode -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#FindingMFrag">
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
+    <owl:Class rdf:about="&pr-owl2;FindingInputNode">
+        <rdfs:subClassOf rdf:resource="&pr-owl2;InputNode"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasResidentNode"/>
-                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
+                <owl:onProperty rdf:resource="&pr-owl2;hasMExpression"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;BooleanMExpression"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasResidentNode"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#FindingRN"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isParentOf"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;FindingResidentNode"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasResidentNode"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#FindingRN"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isParentOf"/>
+                <owl:onClass rdf:resource="&pr-owl2;FindingResidentNode"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasInputNode"/>
-                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
+                <owl:onProperty rdf:resource="&pr-owl2;isInputNodeIn"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;FindingMFrag"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <owl:disjointWith rdf:resource="&pr-owl2;GenerativeInputNode"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl2.owl#FindingMFrag -->
+
+    <owl:Class rdf:about="&pr-owl2;FindingMFrag">
+        <rdfs:subClassOf rdf:resource="&pr-owl2;MFrag"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;hasInputNode"/>
+                <owl:onClass rdf:resource="&pr-owl2;FindingInputNode"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasInputNode"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#FindingIN"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasInputNode"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;FindingInputNode"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasInputNode"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#FindingIN"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasResidentNode"/>
+                <owl:onClass rdf:resource="&pr-owl2;FindingResidentNode"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;hasResidentNode"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;FindingResidentNode"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:comment rdf:datatype="&xsd;string">Finding MFrags are used to convey information about findings, which is the default way of entering evidence in a MEBN MTheory so a probabilistic algorithm can be applied to perform inferences regarding the new evidence. They have no context nodes, only one input and one resident node. </rdfs:comment>
@@ -1434,51 +1261,39 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#FindingRN -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#FindingResidentNode -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#FindingRN">
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
+    <owl:Class rdf:about="&pr-owl2;FindingResidentNode">
+        <rdfs:subClassOf rdf:resource="&pr-owl2;ResidentNode"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasParent"/>
-                <owl:onClass rdf:resource="http://www.pr-owl.org/pr-owl.owl#FindingIN"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasParent"/>
+                <owl:onClass rdf:resource="&pr-owl2;FindingInputNode"/>
                 <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasMExpression"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#BooleanMExpression"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isResidentNodeIn"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;FindingMFrag"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isParentOf"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasParent"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;FindingInputNode"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;hasMExpression"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;BooleanMExpression"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;isParentOf"/>
                 <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">0</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasParent"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#FindingIN"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isResidentNodeIn"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#FindingMFrag"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasMExpression"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#BooleanMExpression"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isResidentNodeIn"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#FindingMFrag"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:comment rdf:datatype="&xsd;string">This is the subclass of class Resident (node) that includes all finding nodes. Finding nodes convey new evidence into a probabilistic system via a Finding_MFrag. The class is disjoint with classes Domain_res and BuiltInRV.</rdfs:comment>
@@ -1486,145 +1301,96 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#ForAll -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#GenerativeInputNode -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#ForAll">
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#QuantifierRV"/>
-    </owl:Class>
-    
-
-
-    <!-- http://www.pr-owl.org/pr-owl.owl#GenerativeIN -->
-
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#GenerativeIN">
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#InputNode"/>
+    <owl:Class rdf:about="&pr-owl2;GenerativeInputNode">
+        <rdfs:subClassOf rdf:resource="&pr-owl2;InputNode"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isParentOf"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#DomainRN"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isInputNodeIn"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;DomainMFrag"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isInputNodeIn"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#DomainMFrag"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isInputNodeIn"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#DomainMFrag"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isParentOf"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#DomainRN"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isParentOf"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;DomainResidentNode"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#Iff -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#InputNode -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#Iff">
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#LogicalOperatorRV"/>
+    <owl:Class rdf:about="&pr-owl2;InputNode">
+        <rdfs:subClassOf rdf:resource="&pr-owl2;Node"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasArgument"/>
-                <owl:onClass rdf:resource="http://www.pr-owl.org/pr-owl.owl#Argument"/>
-                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">2</owl:qualifiedCardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-    </owl:Class>
-    
-
-
-    <!-- http://www.pr-owl.org/pr-owl.owl#Implies -->
-
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#Implies">
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#LogicalOperatorRV"/>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasArgument"/>
-                <owl:onClass rdf:resource="http://www.pr-owl.org/pr-owl.owl#Argument"/>
-                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">2</owl:qualifiedCardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-    </owl:Class>
-    
-
-
-    <!-- http://www.pr-owl.org/pr-owl.owl#InputNode -->
-
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#InputNode">
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#Node"/>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isInputNodeIn"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isParentOf"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;ResidentNode"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isParentOf"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isInputNodeIn"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;MFrag"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isInputNodeIn"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isInputNodeIn"/>
+                <owl:onClass rdf:resource="&pr-owl2;MFrag"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isParentOf"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isParentOf"/>
+                <owl:someValuesFrom rdf:resource="&pr-owl2;ResidentNode"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <owl:disjointWith rdf:resource="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
+        <owl:disjointWith rdf:resource="&pr-owl2;ResidentNode"/>
         <rdfs:comment rdf:datatype="&xsd;string">In PR-OWL, an input node is basically a &quot;copy&quot; of a resident node that is used as an input in a given MFrag. Thus, each individual of class Input is linked with an individual of class Resident via the property isInputInstanceOf.</rdfs:comment>
     </owl:Class>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#LogicalOperatorRV -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#LogicalOperator -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#LogicalOperatorRV">
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#BooleanRV"/>
+    <owl:Class rdf:about="&pr-owl2;LogicalOperator">
+        <rdfs:subClassOf rdf:resource="&pr-owl2;BooleanRandomVariable"/>
     </owl:Class>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#MExpression -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#MExpression -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#MExpression">
+    <owl:Class rdf:about="&pr-owl2;MExpression">
         <owl:equivalentClass>
             <owl:Class>
                 <owl:intersectionOf rdf:parseType="Collection">
                     <rdf:Description rdf:about="&owl;Thing"/>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfMExpression"/>
-                        <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#RandomVariable"/>
+                        <owl:onProperty rdf:resource="&pr-owl2;typeOfMExpression"/>
+                        <owl:someValuesFrom rdf:resource="&pr-owl2;RandomVariable"/>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasArgument"/>
+                        <owl:onProperty rdf:resource="&pr-owl2;hasArgument"/>
                         <owl:allValuesFrom>
                             <owl:Class>
                                 <owl:unionOf rdf:parseType="Collection">
-                                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#ConstantArgument"/>
-                                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#ExemplarArgument"/>
-                                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#MExpressionArgument"/>
-                                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#OrdinaryVariableArgument"/>
+                                    <rdf:Description rdf:about="&pr-owl2;ConstantArgument"/>
+                                    <rdf:Description rdf:about="&pr-owl2;ExemplarArgument"/>
+                                    <rdf:Description rdf:about="&pr-owl2;MExpressionArgument"/>
+                                    <rdf:Description rdf:about="&pr-owl2;OrdinaryVariableArgument"/>
                                 </owl:unionOf>
                             </owl:Class>
                         </owl:allValuesFrom>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfMExpression"/>
-                        <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#RandomVariable"/>
+                        <owl:onProperty rdf:resource="&pr-owl2;typeOfMExpression"/>
+                        <owl:allValuesFrom rdf:resource="&pr-owl2;RandomVariable"/>
                     </owl:Restriction>
                 </owl:intersectionOf>
             </owl:Class>
@@ -1633,95 +1399,96 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#MExpressionArgument -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#MExpressionArgument -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#MExpressionArgument">
-        <owl:equivalentClass>
-            <owl:Class>
-                <owl:intersectionOf rdf:parseType="Collection">
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#Argument"/>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isArgumentOf"/>
-                        <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfArgument"/>
-                        <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isArgumentOf"/>
-                        <owl:onClass rdf:resource="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
-                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfArgument"/>
-                        <owl:onClass rdf:resource="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
-                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-                    </owl:Restriction>
-                </owl:intersectionOf>
-            </owl:Class>
-        </owl:equivalentClass>
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#Argument"/>
+    <owl:Class rdf:about="&pr-owl2;MExpressionArgument">
+        <rdfs:subClassOf rdf:resource="&pr-owl2;Argument"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfDataArgument"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isArgumentOf"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;MExpression"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;typeOfDataArgument"/>
                 <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">0</owl:cardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;typeOfArgument"/>
+                <owl:onClass rdf:resource="&pr-owl2;MExpression"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;typeOfArgument"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;MExpression"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;isArgumentOf"/>
+                <owl:onClass rdf:resource="&pr-owl2;MExpression"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
     </owl:Class>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#MFrag -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#MFrag -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#MFrag">
+    <owl:Class rdf:about="&pr-owl2;MFrag">
         <rdfs:subClassOf rdf:resource="&owl;Thing"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isMFragOf"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#MTheory"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isMFragOf"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;MTheory"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasResidentNode"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasOrdinaryVariable"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;OrdinaryVariable"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasExemplar"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#Exemplar"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasNode"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;Node"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasNode"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#Node"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasResidentNode"/>
+                <owl:someValuesFrom rdf:resource="&pr-owl2;ResidentNode"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasResidentNode"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasNode"/>
+                <owl:someValuesFrom rdf:resource="&pr-owl2;Node"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasInputNode"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#InputNode"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasInputNode"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;InputNode"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasNode"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#Node"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasExemplar"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;Exemplar"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasOrdinaryVariable"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#OrdinaryVariable"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasResidentNode"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;ResidentNode"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:comment rdf:datatype="&xsd;string">MEBN Fragments (MFrags) are the basic structure of any MEBN logic model. MFrags represent influences among clusters of related RVs and can portray repeated patters using ordinary variables as placeholders in to which entity identifiers can be substituted. In PR-OWL, each individual the MFrag class represents a MEBN Fragment (MFrag).</rdfs:comment>
@@ -1729,20 +1496,20 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#MTheory -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#MTheory -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#MTheory">
+    <owl:Class rdf:about="&pr-owl2;MTheory">
         <rdfs:subClassOf rdf:resource="&owl;Thing"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasMFrag"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasMFrag"/>
+                <owl:someValuesFrom rdf:resource="&pr-owl2;MFrag"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasMFrag"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasMFrag"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;MFrag"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:comment rdf:datatype="&xsd;string">An MTheory is a collection of MFrags that statisfies consistency constraints ensuring the existence of a unique joint distribution over the random variables mentioned in the MTheory. In PR-OWL, the class MTheory allows a probabilistic ontology to have more than one valid MTheory to represent its RVs, and each individual of that class is basically a list of the MFrags that collectively form that MTheory. In addition, one MFrag can be part of more than one MTheory.</rdfs:comment>
@@ -1750,104 +1517,113 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#MappingArgument -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#MappingArgument -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#MappingArgument">
-        <owl:equivalentClass>
+    <owl:Class rdf:about="&pr-owl2;MappingArgument">
+        <rdfs:subClassOf rdf:resource="&pr-owl2;Argument"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;isSubjectIn"/>
+                <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;typeOfArgument"/>
+                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">0</owl:cardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;isArgumentOf"/>
+                <owl:onClass rdf:resource="&pr-owl2;RandomVariable"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;isArgumentOf"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;RandomVariable"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
             <owl:Class>
-                <owl:intersectionOf rdf:parseType="Collection">
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#Argument"/>
+                <owl:unionOf rdf:parseType="Collection">
                     <owl:Class>
-                        <owl:unionOf rdf:parseType="Collection">
-                            <owl:Class>
-                                <owl:intersectionOf rdf:parseType="Collection">
-                                    <owl:Restriction>
-                                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isObjectIn"/>
-                                        <owl:onClass rdf:resource="&rdf;Property"/>
-                                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">0</owl:qualifiedCardinality>
-                                    </owl:Restriction>
-                                    <owl:Restriction>
-                                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isSubjectIn"/>
-                                        <owl:onClass rdf:resource="&rdf;Property"/>
-                                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-                                    </owl:Restriction>
-                                </owl:intersectionOf>
-                            </owl:Class>
-                            <owl:Class>
-                                <owl:intersectionOf rdf:parseType="Collection">
-                                    <owl:Restriction>
-                                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isObjectIn"/>
-                                        <owl:onClass rdf:resource="&rdf;Property"/>
-                                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-                                    </owl:Restriction>
-                                    <owl:Restriction>
-                                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isSubjectIn"/>
-                                        <owl:onClass rdf:resource="&rdf;Property"/>
-                                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">0</owl:qualifiedCardinality>
-                                    </owl:Restriction>
-                                </owl:intersectionOf>
-                            </owl:Class>
-                        </owl:unionOf>
+                        <owl:intersectionOf rdf:parseType="Collection">
+                            <owl:Restriction>
+                                <owl:onProperty rdf:resource="&pr-owl2;isObjectIn"/>
+                                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">0</owl:qualifiedCardinality>
+                                <owl:onDataRange rdf:resource="&xsd;anyURI"/>
+                            </owl:Restriction>
+                            <owl:Restriction>
+                                <owl:onProperty rdf:resource="&pr-owl2;isSubjectIn"/>
+                                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                                <owl:onDataRange rdf:resource="&xsd;anyURI"/>
+                            </owl:Restriction>
+                        </owl:intersectionOf>
                     </owl:Class>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isArgumentOf"/>
-                        <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#RandomVariable"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isObjectIn"/>
-                        <owl:allValuesFrom rdf:resource="&rdf;Property"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isSubjectIn"/>
-                        <owl:allValuesFrom rdf:resource="&rdf;Property"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isArgumentOf"/>
-                        <owl:onClass rdf:resource="http://www.pr-owl.org/pr-owl.owl#RandomVariable"/>
-                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfArgument"/>
-                        <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">0</owl:cardinality>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfDataArgument"/>
-                        <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">0</owl:cardinality>
-                    </owl:Restriction>
-                </owl:intersectionOf>
+                    <owl:Class>
+                        <owl:intersectionOf rdf:parseType="Collection">
+                            <owl:Restriction>
+                                <owl:onProperty rdf:resource="&pr-owl2;isObjectIn"/>
+                                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                                <owl:onDataRange rdf:resource="&xsd;anyURI"/>
+                            </owl:Restriction>
+                            <owl:Restriction>
+                                <owl:onProperty rdf:resource="&pr-owl2;isSubjectIn"/>
+                                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">0</owl:qualifiedCardinality>
+                                <owl:onDataRange rdf:resource="&xsd;anyURI"/>
+                            </owl:Restriction>
+                        </owl:intersectionOf>
+                    </owl:Class>
+                </owl:unionOf>
             </owl:Class>
-        </owl:equivalentClass>
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#Argument"/>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;isObjectIn"/>
+                <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;typeOfDataArgument"/>
+                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">0</owl:cardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
     </owl:Class>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#Node -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#Node -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#Node">
+    <owl:Class rdf:about="&pr-owl2;Node">
         <rdfs:subClassOf rdf:resource="&owl;Thing"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isNodeIn"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasMExpression"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;MExpression"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasMExpression"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasMExpression"/>
+                <owl:onClass rdf:resource="&pr-owl2;MExpression"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isNodeIn"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isNodeIn"/>
+                <owl:onClass rdf:resource="&pr-owl2;MFrag"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasMExpression"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isNodeIn"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;MFrag"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <owl:versionInfo rdf:datatype="&xsd;string"></owl:versionInfo>
@@ -1856,136 +1632,38 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#Not -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#OrdinaryVariable -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#Not">
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#LogicalOperatorRV"/>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasArgument"/>
-                <owl:onClass rdf:resource="http://www.pr-owl.org/pr-owl.owl#Argument"/>
-                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-    </owl:Class>
-    
-
-
-    <!-- http://www.pr-owl.org/pr-owl.owl#ObjectConstantArgument -->
-
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#ObjectConstantArgument">
-        <owl:equivalentClass>
-            <owl:Class>
-                <owl:intersectionOf rdf:parseType="Collection">
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#ConstantArgument"/>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isArgumentOf"/>
-                        <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfArgument"/>
-                        <owl:allValuesFrom rdf:resource="&owl;NamedIndividual"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isArgumentOf"/>
-                        <owl:onClass rdf:resource="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
-                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfArgument"/>
-                        <owl:onClass rdf:resource="&owl;NamedIndividual"/>
-                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfDataArgument"/>
-                        <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">0</owl:cardinality>
-                    </owl:Restriction>
-                </owl:intersectionOf>
-            </owl:Class>
-        </owl:equivalentClass>
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#ConstantArgument"/>
-    </owl:Class>
-    
-
-
-    <!-- http://www.pr-owl.org/pr-owl.owl#ObjectRV -->
-
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#ObjectRV">
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#RandomVariable"/>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasPossibleObjectValue"/>
-                <owl:allValuesFrom rdf:resource="&owl;Thing"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#definesUncertaintyOf"/>
-                <owl:allValuesFrom rdf:resource="&owl;ObjectProperty"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasPossibleObjectValue"/>
-                <owl:someValuesFrom rdf:resource="&owl;Thing"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#definesUncertaintyOf"/>
-                <owl:onClass rdf:resource="&owl;ObjectProperty"/>
-                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-    </owl:Class>
-    
-
-
-    <!-- http://www.pr-owl.org/pr-owl.owl#Or -->
-
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#Or">
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#LogicalOperatorRV"/>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasArgument"/>
-                <owl:onClass rdf:resource="http://www.pr-owl.org/pr-owl.owl#Argument"/>
-                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">2</owl:qualifiedCardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-    </owl:Class>
-    
-
-
-    <!-- http://www.pr-owl.org/pr-owl.owl#OrdinaryVariable -->
-
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#OrdinaryVariable">
+    <owl:Class rdf:about="&pr-owl2;OrdinaryVariable">
         <owl:equivalentClass>
             <owl:Class>
                 <owl:intersectionOf rdf:parseType="Collection">
                     <rdf:Description rdf:about="&owl;Thing"/>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isOrdinaryVariableIn"/>
-                        <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
+                        <owl:onProperty rdf:resource="&pr-owl2;isTypeOfArgumentIn"/>
+                        <owl:someValuesFrom rdf:resource="&pr-owl2;OrdinaryVariableArgument"/>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isSubsBy"/>
-                        <owl:someValuesFrom rdf:resource="&owl;Thing"/>
+                        <owl:onProperty rdf:resource="&pr-owl2;isOrdinaryVariableIn"/>
+                        <owl:allValuesFrom rdf:resource="&pr-owl2;MFrag"/>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isTypeOfArgumentIn"/>
-                        <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#OrdinaryVariableArgument"/>
+                        <owl:onProperty rdf:resource="&pr-owl2;isTypeOfArgumentIn"/>
+                        <owl:allValuesFrom rdf:resource="&pr-owl2;OrdinaryVariableArgument"/>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isOrdinaryVariableIn"/>
-                        <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
+                        <owl:onProperty rdf:resource="&pr-owl2;isOrdinaryVariableIn"/>
+                        <owl:onClass rdf:resource="&pr-owl2;MFrag"/>
+                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isSubsBy"/>
-                        <owl:allValuesFrom rdf:resource="&owl;Thing"/>
+                        <owl:onProperty rdf:resource="&pr-owl2;isSubstitutedBy"/>
+                        <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isTypeOfArgumentIn"/>
-                        <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#OrdinaryVariableArgument"/>
+                        <owl:onProperty rdf:resource="&pr-owl2;isSubstitutedBy"/>
+                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                        <owl:onDataRange rdf:resource="&xsd;anyURI"/>
                     </owl:Restriction>
                 </owl:intersectionOf>
             </owl:Class>
@@ -1995,77 +1673,60 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#OrdinaryVariableArgument -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#OrdinaryVariableArgument -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#OrdinaryVariableArgument">
-        <owl:equivalentClass>
-            <owl:Class>
-                <owl:intersectionOf rdf:parseType="Collection">
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#Argument"/>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isArgumentOf"/>
-                        <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfArgument"/>
-                        <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#OrdinaryVariable"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isArgumentOf"/>
-                        <owl:onClass rdf:resource="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
-                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfArgument"/>
-                        <owl:onClass rdf:resource="http://www.pr-owl.org/pr-owl.owl#OrdinaryVariable"/>
-                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-                    </owl:Restriction>
-                </owl:intersectionOf>
-            </owl:Class>
-        </owl:equivalentClass>
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#Argument"/>
+    <owl:Class rdf:about="&pr-owl2;OrdinaryVariableArgument">
+        <rdfs:subClassOf rdf:resource="&pr-owl2;Argument"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#typeOfDataArgument"/>
+                <owl:onProperty rdf:resource="&pr-owl2;typeOfArgument"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;OrdinaryVariable"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;isArgumentOf"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;MExpression"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;typeOfDataArgument"/>
                 <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">0</owl:cardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;typeOfArgument"/>
+                <owl:onClass rdf:resource="&pr-owl2;OrdinaryVariable"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;isArgumentOf"/>
+                <owl:onClass rdf:resource="&pr-owl2;MExpression"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#PR-OWLTable -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#PR-OWLTable -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#PR-OWLTable">
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#ProbDist"/>
+    <owl:Class rdf:about="&pr-owl2;PR-OWLTable">
+        <rdfs:subClassOf rdf:resource="&pr-owl2;ProbabilityDistribution"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isProbDistOf"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasProbabilityAssignment"/>
+                <owl:someValuesFrom rdf:resource="&pr-owl2;ProbabilityAssignment"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isProbDistOf"/>
-                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isProbDistOf"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasProbAssign"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#ProbAssign"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasProbAssign"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#ProbAssign"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasProbabilityAssignment"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;ProbabilityAssignment"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:comment rdf:datatype="&xsd;string">An PR-OWL table has all the probability assignments for each state of a RV stored in a xsd:decimal format (future implementations might use the pr-owl:prob format, but currently that means incompatibilities with OWL, which has no support for PR-OWL custom datatypes). 
@@ -2074,44 +1735,33 @@ This format for storing probability distributions cannot represent complex cases
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#ProbAssign -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#ProbabilityAssignment -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#ProbAssign">
+    <owl:Class rdf:about="&pr-owl2;ProbabilityAssignment">
         <rdfs:subClassOf rdf:resource="&owl;Thing"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasStateProb"/>
-                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasConditionant"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#CondRelationship"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasConditionant"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#CondRelationship"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasStateName"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasStateName"/>
                 <owl:allValuesFrom rdf:resource="&owl;Thing"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasStateName"/>
-                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
+                <owl:onProperty rdf:resource="&pr-owl2;hasConditioningState"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;ConditioningState"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasStateName"/>
-                <owl:someValuesFrom rdf:resource="&owl;Thing"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasStateProbability"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="&xsd;float"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;hasStateName"/>
+                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:comment rdf:datatype="&xsd;string">Each cell in an PR-OWL table has a probability assignment for the state of a RV given the states of its parent nodes. Thus, the resulting relationship is N-ary and we opted for representing it via a reified relation (ProbAssign) that includes the name of the state to which the probability is being assigned, the probability value itself, and the list of states of parent nodes (i.e. conditionants) that collectively define the context in which that probability assignment is valid. Also, individuals of the ProbAssign class have an object property that links them with its respective PR-OWL table. </rdfs:comment>
@@ -2119,20 +1769,34 @@ This format for storing probability distributions cannot represent complex cases
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#ProbDist -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#ProbabilityDistribution -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#ProbDist">
+    <owl:Class rdf:about="&pr-owl2;ProbabilityDistribution">
         <rdfs:subClassOf rdf:resource="&owl;Thing"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isProbDistOf"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isProbabilityDistributionOf"/>
+                <owl:someValuesFrom>
+                    <owl:Class>
+                        <owl:unionOf rdf:parseType="Collection">
+                            <rdf:Description rdf:about="&pr-owl2;RandomVariable"/>
+                            <rdf:Description rdf:about="&pr-owl2;ResidentNode"/>
+                        </owl:unionOf>
+                    </owl:Class>
+                </owl:someValuesFrom>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isProbDistOf"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isProbabilityDistributionOf"/>
+                <owl:allValuesFrom>
+                    <owl:Class>
+                        <owl:unionOf rdf:parseType="Collection">
+                            <rdf:Description rdf:about="&pr-owl2;RandomVariable"/>
+                            <rdf:Description rdf:about="&pr-owl2;ResidentNode"/>
+                        </owl:unionOf>
+                    </owl:Class>
+                </owl:allValuesFrom>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:comment rdf:datatype="&xsd;string">This class is meant to represent the probability distributions that are defined in an MFrag to each of its resident nodes (random variables). A probability distribution can be described using a proprietary declarative format, such as a Netica table or a Quiddity function, or via an PR-OWL table (which has probability assigments as its cells).</rdfs:comment>
@@ -2140,91 +1804,71 @@ This format for storing probability distributions cannot represent complex cases
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#QuantifierRV -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#Quantifier -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#QuantifierRV">
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#BooleanRV"/>
+    <owl:Class rdf:about="&pr-owl2;Quantifier">
+        <rdfs:subClassOf rdf:resource="&pr-owl2;BooleanRandomVariable"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl2.owl#RandomVariable -->
+
+    <owl:Class rdf:about="&pr-owl2;RandomVariable">
+        <rdfs:subClassOf rdf:resource="&owl;Thing"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasArgument"/>
-                <owl:onClass rdf:resource="http://www.pr-owl.org/pr-owl.owl#Argument"/>
-                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">2</owl:minQualifiedCardinality>
+                <owl:onProperty rdf:resource="&pr-owl2;hasProbabilityDistribution"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;ProbabilityDistribution"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;hasPossibleValues"/>
+                <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;definesUncertaintyOf"/>
+                <owl:allValuesFrom rdf:resource="&xsd;anyURI"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;hasProbabilityDistribution"/>
+                <owl:onClass rdf:resource="&pr-owl2;ProbabilityDistribution"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;hasPossibleValues"/>
+                <owl:hasValue rdf:datatype="&xsd;anyURI">http://www.pr-owl.org/pr-owl2.owl#Absurd</owl:hasValue>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;hasArgument"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;MappingArgument"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#RandomVariable -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#ResidentNode -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#RandomVariable">
+    <owl:Class rdf:about="&pr-owl2;ResidentNode">
+        <rdfs:subClassOf rdf:resource="&pr-owl2;Node"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasProbDist"/>
-                <owl:onClass rdf:resource="http://www.pr-owl.org/pr-owl.owl#ProbDist"/>
-                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasArgument"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#MappingArgument"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#definesUncertaintyOf"/>
-                <owl:allValuesFrom rdf:resource="&rdf;Property"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#definesUncertaintyOf"/>
-                <owl:onClass rdf:resource="&rdf;Property"/>
-                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasProbDist"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#ProbDist"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasPossibleObjectValue"/>
-                <owl:onClass rdf:resource="http://www.pr-owl.org/pr-owl.owl#Absurd"/>
-                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasArgument"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#MappingArgument"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-    </owl:Class>
-    
-
-
-    <!-- http://www.pr-owl.org/pr-owl.owl#ResidentNode -->
-
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#ResidentNode">
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#Node"/>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isResidentNodeIn"/>
-                <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasParent"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasParent"/>
                 <owl:allValuesFrom>
                     <owl:Class>
                         <owl:unionOf rdf:parseType="Collection">
-                            <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#InputNode"/>
-                            <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
+                            <rdf:Description rdf:about="&pr-owl2;InputNode"/>
+                            <rdf:Description rdf:about="&pr-owl2;ResidentNode"/>
                         </owl:unionOf>
                     </owl:Class>
                 </owl:allValuesFrom>
@@ -2232,27 +1876,34 @@ This format for storing probability distributions cannot represent complex cases
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasProbDist"/>
-                <owl:onClass rdf:resource="http://www.pr-owl.org/pr-owl.owl#ProbDist"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasProbabilityDistribution"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;ProbabilityDistribution"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;isResidentNodeIn"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;MFrag"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;hasProbabilityDistribution"/>
+                <owl:onClass rdf:resource="&pr-owl2;ProbabilityDistribution"/>
                 <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasProbDist"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#ProbDist"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isResidentNodeIn"/>
+                <owl:onClass rdf:resource="&pr-owl2;MFrag"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isResidentNodeIn"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#MFrag"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isParentOf"/>
-                <owl:allValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#ResidentNode"/>
+                <owl:onProperty rdf:resource="&pr-owl2;isParentOf"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2;ResidentNode"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:comment rdf:datatype="&xsd;string">Resident nodes are the random variables that have their respective probability distribution defined in the MFrag.</rdfs:comment>
@@ -2260,20 +1911,20 @@ This format for storing probability distributions cannot represent complex cases
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#SimpleMExpression -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#SimpleMExpression -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl.owl#SimpleMExpression">
+    <owl:Class rdf:about="&pr-owl2;SimpleMExpression">
         <owl:equivalentClass>
             <owl:Class>
                 <owl:intersectionOf rdf:parseType="Collection">
-                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
+                    <rdf:Description rdf:about="&pr-owl2;MExpression"/>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasArgument"/>
+                        <owl:onProperty rdf:resource="&pr-owl2;hasArgument"/>
                         <owl:allValuesFrom>
                             <owl:Class>
                                 <owl:unionOf rdf:parseType="Collection">
-                                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#ConstantArgument"/>
-                                    <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#OrdinaryVariableArgument"/>
+                                    <rdf:Description rdf:about="&pr-owl2;ConstantArgument"/>
+                                    <rdf:Description rdf:about="&pr-owl2;OrdinaryVariableArgument"/>
                                 </owl:unionOf>
                             </owl:Class>
                         </owl:allValuesFrom>
@@ -2281,50 +1932,8 @@ This format for storing probability distributions cannot represent complex cases
                 </owl:intersectionOf>
             </owl:Class>
         </owl:equivalentClass>
-        <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#MExpression"/>
+        <rdfs:subClassOf rdf:resource="&pr-owl2;MExpression"/>
     </owl:Class>
-    
-
-
-    <!-- http://www.w3.org/1999/02/22-rdf-syntax-ns#Property -->
-
-    <owl:Class rdf:about="&rdf;Property"/>
-    
-
-
-    <!-- http://www.w3.org/2000/01/rdf-schema#Datatype -->
-
-    <owl:Class rdf:about="&rdfs;Datatype"/>
-    
-
-
-    <!-- http://www.w3.org/2000/01/rdf-schema#Literal -->
-
-    <owl:Class rdf:about="&rdfs;Literal"/>
-    
-
-
-    <!-- http://www.w3.org/2002/07/owl#Class -->
-
-    <owl:Class rdf:about="&owl;Class"/>
-    
-
-
-    <!-- http://www.w3.org/2002/07/owl#DatatypeProperty -->
-
-    <owl:Class rdf:about="&owl;DatatypeProperty"/>
-    
-
-
-    <!-- http://www.w3.org/2002/07/owl#NamedIndividual -->
-
-    <owl:Class rdf:about="&owl;NamedIndividual"/>
-    
-
-
-    <!-- http://www.w3.org/2002/07/owl#ObjectProperty -->
-
-    <owl:Class rdf:about="&owl;ObjectProperty"/>
     
 
 
@@ -2333,7 +1942,7 @@ This format for storing probability distributions cannot represent complex cases
     <owl:Class rdf:about="&owl;Thing">
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasUID"/>
+                <owl:onProperty rdf:resource="&pr-owl2;hasUID"/>
                 <owl:allValuesFrom rdf:resource="&xsd;string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
@@ -2352,11 +1961,96 @@ This format for storing probability distributions cannot represent complex cases
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl.owl#absurd -->
+    <!-- http://www.pr-owl.org/pr-owl2.owl#absurd -->
 
-    <owl:NamedIndividual rdf:about="http://www.pr-owl.org/pr-owl.owl#absurd">
+    <owl:NamedIndividual rdf:about="&pr-owl2;absurd">
         <rdfs:comment rdf:datatype="&xsd;string">This state is used for the cases in which a truth-value cannot be applied to a random variable (i.e. meaningless, undefined, or contradictory hypotheses).</rdfs:comment>
     </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl2.owl#and -->
+
+    <owl:NamedIndividual rdf:about="&pr-owl2;and">
+        <rdf:type rdf:resource="&pr-owl2;LogicalOperator"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl2.owl#equalTo -->
+
+    <owl:NamedIndividual rdf:about="&pr-owl2;equalTo">
+        <rdf:type rdf:resource="&pr-owl2;LogicalOperator"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl2.owl#exists -->
+
+    <owl:NamedIndividual rdf:about="&pr-owl2;exists">
+        <rdf:type rdf:resource="&pr-owl2;Quantifier"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl2.owl#forAll -->
+
+    <owl:NamedIndividual rdf:about="&pr-owl2;forAll">
+        <rdf:type rdf:resource="&pr-owl2;Quantifier"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl2.owl#iff -->
+
+    <owl:NamedIndividual rdf:about="&pr-owl2;iff">
+        <rdf:type rdf:resource="&pr-owl2;LogicalOperator"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl2.owl#implies -->
+
+    <owl:NamedIndividual rdf:about="&pr-owl2;implies">
+        <rdf:type rdf:resource="&pr-owl2;LogicalOperator"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl2.owl#not -->
+
+    <owl:NamedIndividual rdf:about="&pr-owl2;not">
+        <rdf:type rdf:resource="&pr-owl2;LogicalOperator"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl2.owl#or -->
+
+    <owl:NamedIndividual rdf:about="&pr-owl2;or">
+        <rdf:type rdf:resource="&pr-owl2;LogicalOperator"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // General axioms
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    <rdf:Description>
+        <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
+        <owl:members rdf:parseType="Collection">
+            <rdf:Description rdf:about="&pr-owl2;ConstantArgument"/>
+            <rdf:Description rdf:about="&pr-owl2;ExemplarArgument"/>
+            <rdf:Description rdf:about="&pr-owl2;MExpressionArgument"/>
+            <rdf:Description rdf:about="&pr-owl2;MappingArgument"/>
+            <rdf:Description rdf:about="&pr-owl2;OrdinaryVariableArgument"/>
+        </owl:members>
+    </rdf:Description>
 </rdf:RDF>
 
 

@@ -35,7 +35,7 @@ import java.util.ResourceBundle;
 
 import unbbayes.io.exception.LoadException;
 import unbbayes.io.mebn.exceptions.IOMebnException;
-import unbbayes.io.mebn.owlapi.OWLAPICompatiblePROWL2IO;
+import unbbayes.io.mebn.owlapi.OWLAPICompatiblePROWLIO;
 import unbbayes.io.mebn.protege.Protege41CompatiblePROWL2IO;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
@@ -62,7 +62,7 @@ import unbbayes.util.Debug;
  * @version 2.0
  * @since 2010, December 24th
  * @see UbfIO
- * @see OWLAPICompatiblePROWL2IO
+ * @see OWLAPICompatiblePROWLIO
  *
  */
 public class UbfIO2 extends UbfIO {
@@ -119,16 +119,10 @@ public class UbfIO2 extends UbfIO {
 	 * @see unbbayes.io.BaseIO#load(java.io.File)
 	 */
 	public Graph load(File input) throws LoadException, IOException {
-		try {
-			if (input.getName().toLowerCase().endsWith("."+this.getProwlFileExtension().toLowerCase())) {
-				return this.getProwlIO().loadMebn(input);
-			} else {
-				return this.loadMebn(input);
-			}
-		} catch (Throwable e) {
-			// try the old IO if the new one fails
-			e.printStackTrace();
-			return super.load(input);
+		if (input.getName().toLowerCase().endsWith("."+this.getProwlFileExtension().toLowerCase())) {
+			return this.getProwlIO().loadMebn(input);
+		} else {
+			return this.loadMebn(input);
 		}
 	}
 	
@@ -901,7 +895,7 @@ public class UbfIO2 extends UbfIO {
 	 */
 	public MebnIO getProwlIO() {
 		if (prowlIO == null) {
-			prowlIO = OWLAPICompatiblePROWL2IO.newInstance();
+			prowlIO = OWLAPICompatiblePROWLIO.newInstance();
 		}
 		return prowlIO;
 	}
