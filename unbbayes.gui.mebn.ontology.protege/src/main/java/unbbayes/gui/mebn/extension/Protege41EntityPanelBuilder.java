@@ -7,7 +7,8 @@ package unbbayes.gui.mebn.extension;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.lang.reflect.InvocationTargetException;
@@ -15,12 +16,12 @@ import java.net.URI;
 import java.util.List;
 import java.util.Properties;
 
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JToolBar;
 
 import org.osgi.framework.Bundle;
 import org.protege.editor.core.ProtegeManager;
@@ -59,10 +60,13 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
 	private Component view;
 
 
-	private JButton synchronizeReasonerButton;
+//	private JButton synchronizeReasonerButton;
+//
+//
+//	private JButton saveProtegeOntologyButton;
 
 
-	private JButton saveProtegeOntologyButton;
+	private JMenuItem synchronizeReasonerMenuItem;
 	
 	
 	
@@ -291,20 +295,11 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
 				// extract menu
 				JMenuBar menuBar = workspaceFrame.getJMenuBar();
 				
-//				// convert the menu to a toolbar
-//				JToolBar menuToolBar = new JToolBar("Protege");
-//				menuToolBar.setToolTipText("Menu");
-//				for (int i = 0; i < menuBar.getMenuCount(); i++) {
-//					menuToolBar.add(menuBar.getMenu(i));
-//				}
-				
-				// dispose menu bar
-//				menuBar.setVisible(false);
-//				menuBar.setEnabled(false);
+				// remove some undesired menu items
+				this.removeUndesiredMenuItemFromMenuBar(menuBar, bundle, mebn, mediator);
 				
 				// create a panel containing both workspace and the menu bar
 				JPanel workspacePanel = new JPanel(new BorderLayout());
-//				workspacePanel.add(menuToolBar, BorderLayout.NORTH);
 				workspacePanel.add(menuBar, BorderLayout.NORTH);
 				workspacePanel.add(kit.getWorkspace(), BorderLayout.CENTER);
 				
@@ -368,6 +363,64 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
 		
 //		return view;
 	}
+
+	/**
+	 * It removes some undesired menu items (e.g. the close operation) from menu bar
+	 * @param menuBar : menu bar to be altered
+	 * @param bundle : if null, it assumes that mebn is carrying a reference to {@link OWLModelManager} through {@link MultiEntityBayesianNetwork#getStorageImplementor()}
+	 * @param mebn : the model classes
+	 * @param mediator : gives access to MEBN GUI, I/O and model classes
+	 */
+	protected void removeUndesiredMenuItemFromMenuBar(JMenuBar menuBar, Bundle bundle, MultiEntityBayesianNetwork mebn, IMEBNMediator mediator) {
+		for (int i = 0; i < menuBar.getMenuCount(); i++) {
+			try {
+				if (menuBar.getMenu(i).getText().equalsIgnoreCase("File")) {
+					// remove New..., Open... Open recent, Open from URL..., separator
+					menuBar.getMenu(i).remove(0);
+					menuBar.getMenu(i).remove(0);
+					menuBar.getMenu(i).remove(0);
+					menuBar.getMenu(i).remove(0);
+					menuBar.getMenu(i).remove(0);
+					// remove separator and close
+					menuBar.getMenu(i).remove(10);
+					menuBar.getMenu(i).remove(10);
+					// remove exit and separator
+					menuBar.getMenu(i).remove(menuBar.getMenu(i).getPopupMenu().getComponentCount() - 1);
+					menuBar.getMenu(i).remove(menuBar.getMenu(i).getPopupMenu().getComponentCount() - 1);
+				} else if (menuBar.getMenu(i).getText().equalsIgnoreCase("Reasoner")) {
+					// remove all but
+					menuBar.getMenu(i).removeAll();
+					// add synchronize current reasoner
+					this.setSynchronizeReasonerMenuItem(new JMenuItem("Synchronize Reasoner"));
+					menuBar.getMenu(i).add(this.getSynchronizeReasonerMenuItem());
+					
+					// prepare the parameters for the action listener (they are variables marked as "final")
+					final Bundle bundleAux = bundle;
+					final MultiEntityBayesianNetwork mebnAux = mebn;
+					final IMEBNMediator mediatorAux = mediator;
+					
+					this.getSynchronizeReasonerMenuItem().addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							try {
+								EditorKit kit = extractOWLEditorKit(bundleAux, mebnAux, mediatorAux);
+								if (kit instanceof OWLEditorKit) {
+									((OWLEditorKit)kit).getModelManager().getOWLReasonerManager().classifyAsynchronously(((OWLEditorKit)kit).getModelManager().getReasonerPreferences().getPrecomputedInferences());
+								}
+							} catch (Exception e2) {
+								e2.printStackTrace();
+								JOptionPane.showMessageDialog(Protege41EntityPanelBuilder.this, e2.getMessage(), "Protégé Error", JOptionPane.ERROR_MESSAGE);
+							}
+						}
+					});
+					
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+
 
 	/**
 	 * This method is used in {@link #extractWorkspace(Bundle, MultiEntityBayesianNetwork, IMEBNMediator)}
@@ -800,38 +853,56 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
 //	}
 
 
+//	/**
+//	 * @return the synchronizeReasonerButton
+//	 */
+//	public JButton getSynchronizeReasonerButton() {
+//		return synchronizeReasonerButton;
+//	}
+//
+//
+//
+//	/**
+//	 * @param synchronizeReasonerButton the synchronizeReasonerButton to set
+//	 */
+//	public void setSynchronizeReasonerButton(JButton synchronizeReasonerButton) {
+//		this.synchronizeReasonerButton = synchronizeReasonerButton;
+//	}
+//
+//
+//
+//	/**
+//	 * @return the saveProtegeOntologyButton
+//	 */
+//	public JButton getSaveProtegeOntologyButton() {
+//		return saveProtegeOntologyButton;
+//	}
+
+
+
+//	/**
+//	 * @param saveProtegeOntologyButton the saveProtegeOntologyButton to set
+//	 */
+//	public void setSaveProtegeOntologyButton(JButton saveProtegeOntologyButton) {
+//		this.saveProtegeOntologyButton = saveProtegeOntologyButton;
+//	}
+
+
+
 	/**
-	 * @return the synchronizeReasonerButton
+	 * @return the synchronizeReasonerMenuItem
 	 */
-	public JButton getSynchronizeReasonerButton() {
-		return synchronizeReasonerButton;
+	public JMenuItem getSynchronizeReasonerMenuItem() {
+		return synchronizeReasonerMenuItem;
 	}
 
 
 
 	/**
-	 * @param synchronizeReasonerButton the synchronizeReasonerButton to set
+	 * @param synchronizeReasonerMenuItem the synchronizeReasonerMenuItem to set
 	 */
-	public void setSynchronizeReasonerButton(JButton synchronizeReasonerButton) {
-		this.synchronizeReasonerButton = synchronizeReasonerButton;
-	}
-
-
-
-	/**
-	 * @return the saveProtegeOntologyButton
-	 */
-	public JButton getSaveProtegeOntologyButton() {
-		return saveProtegeOntologyButton;
-	}
-
-
-
-	/**
-	 * @param saveProtegeOntologyButton the saveProtegeOntologyButton to set
-	 */
-	public void setSaveProtegeOntologyButton(JButton saveProtegeOntologyButton) {
-		this.saveProtegeOntologyButton = saveProtegeOntologyButton;
+	public void setSynchronizeReasonerMenuItem(JMenuItem synchronizeReasonerMenuItem) {
+		this.synchronizeReasonerMenuItem = synchronizeReasonerMenuItem;
 	}
 
 
