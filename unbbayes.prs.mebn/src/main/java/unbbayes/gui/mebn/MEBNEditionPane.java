@@ -34,27 +34,33 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Enumeration;
+import java.util.EventObject;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
 
 import unbbayes.controller.FileHistoryController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.mebn.MEBNController;
+import unbbayes.gui.GraphAction;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.gui.mebn.auxiliary.ButtonLabel;
 import unbbayes.gui.mebn.auxiliary.FocusListenerTextField;
@@ -62,6 +68,7 @@ import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelBuilder;
 import unbbayes.gui.mebn.finding.EntityFindingEditionPane;
 import unbbayes.gui.mebn.finding.RandomVariableFindingEdtitionPane;
+import unbbayes.gui.util.SplitToggleButton;
 import unbbayes.io.exception.UBIOException;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.InputNode;
@@ -70,7 +77,10 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.exception.DuplicatedNameException;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.exception.ReservedWordException;
+import unbbayes.util.Debug;
 import unbbayes.util.ResourceController;
+import unbbayes.util.extension.dto.INodeClassDataTransferObject;
+import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
 
 /**
  * Pane for edition of MEBN. This is the main panel of
@@ -1018,6 +1028,8 @@ public class MEBNEditionPane extends JPanel {
   	    private final JToggleButton btnAddEdge;
   	    private final JToggleButton btnAddOrdinaryVariable;
   	    private final JToggleButton btnEditMTheory;
+  	    
+  	    private final SplitToggleButton btnAddPluginNode;
   	  
   	    //by young2
   	    //private final JToggleButton btnSelectObject;
@@ -1033,6 +1045,23 @@ public class MEBNEditionPane extends JPanel {
   	        btnAddResidentNode  = new JToggleButton(iconController.getResidentNodeIcon());
   	        btnAddOrdinaryVariable = new JToggleButton(iconController.getOVariableNodeIcon());
   	        btnAddMFrag		= new JToggleButton(iconController.getMFragIcon());
+  	        
+  	        btnAddPluginNode = new SplitToggleButton("...",SwingConstants.SOUTH);
+  	        btnAddPluginNode.setMenu(this.buildAddPluginSplitButtonMenu());
+  	        // adding a listener to be called when a "reload plugin" event is dispatched (in order to refresh split button)
+  	        UnBBayesPluginContextHolder.newInstance().addListener(new UnBBayesPluginContextHolder.OnReloadActionListener(){
+				public void onReload(EventObject eventObject) {
+					btnAddPluginNode.setMenu(buildAddPluginSplitButtonMenu());
+				}
+  	        });
+  	        
+  	        // ajust size of plugin button
+  	        this.ajustPluginButtonSize(btnAddPluginNode);
+  	        
+  	        // show plugin node's button only if there are 1 or more node types.
+  	        btnAddPluginNode.setVisible(btnAddPluginNode.getMenu().getComponentCount() > 0);
+  	        
+  	        
   	        
   	        //by young2
   	        //btnSelectObject            = new JToggleButton(iconController.getSelectionIcon());
@@ -1060,6 +1089,8 @@ public class MEBNEditionPane extends JPanel {
   	        groupEditionButtons.add(btnAddResidentNode); 
   	        groupEditionButtons.add(btnAddOrdinaryVariable); 
   	        groupEditionButtons.add(btnAddMFrag); 
+  	        
+  	        groupEditionButtons.add(btnAddPluginNode.getMainButton());
   	        //by young2
   	        //groupEditionButtons.add(btnSelectObject); 
   	        groupEditionButtons.add(btnResetCursor); 
@@ -1083,6 +1114,9 @@ public class MEBNEditionPane extends JPanel {
   	        //by young2
   	        //add(btnSelectObject);
   	        //addSeparator();
+  	        
+
+  	        add(btnAddPluginNode);
 
   	        btnResetCursor.addActionListener(new ActionListener(){
   	  			public void actionPerformed(ActionEvent ae){
@@ -1157,6 +1191,90 @@ public class MEBNEditionPane extends JPanel {
   	  		});*/
 
   		}
+
+		 /**
+  	     * This method is called at constructor in order to ajust plugin node's
+  	     * split button's size.
+  	     */
+  		protected void ajustPluginButtonSize(AbstractButton btnAddPluginNode) {
+  			// adds an horizontal gap at left and right, measuring 5 px each.
+  			// That would need 10px extra for width
+  			btnAddPluginNode.setPreferredSize(new Dimension(55, btnAddPluginNode.getHeight()));
+  			btnAddPluginNode.setSize(btnAddPluginNode.getPreferredSize());
+  			btnAddPluginNode.setMaximumSize(btnAddPluginNode.getPreferredSize());
+  			btnAddPluginNode.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
+		}
+
+		/**
+  		 * Builds up the menu to be shown (and its action listeners)
+  		 * when a btnAddPluginNode's right side arrow is
+  		 * pressed (which contents should reflect nodes loaded from plugins).
+  		 * @return a JPopupMenu containing all plugin nodes
+  		 */
+		public JPopupMenu buildAddPluginSplitButtonMenu() {
+			
+			JPopupMenu ret = new JPopupMenu(resource.getString("selectNodeType"));
+			
+			// load plugin and add buttons into the plugin node's split button
+			try {
+				for (INodeClassDataTransferObject dto : getMebnController().getPluginNodeManager().getAllLoadedPluginNodes()) {
+					JMenuItem stubItem = new JMenuItem(dto.getName() , ((dto.getIcon()==null)?(iconController.getChangeNodeTypeIcon()):(dto.getIcon())));
+					stubItem.setToolTipText(dto.getDescription());
+					// the action listener below just updates the split button and the button group
+					stubItem.addActionListener(new DtoAwareListItemActionListener(dto));
+					ret.add(stubItem);
+				}
+			} catch (ClassCastException e) {
+				e.printStackTrace();
+			}
+			
+			return ret;
+		}
+		
+		/**
+		 * This is an action listener for a list item, which is listed when
+		 * we press the arrow at the right side of the plugin node's split button.
+		 * @author Shou Matsumoto
+		 *
+		 */
+		protected class DtoAwareListItemActionListener implements ActionListener{
+			private INodeClassDataTransferObject dto;
+			/** Default constructor initializing the dto. @param dto */
+			public DtoAwareListItemActionListener (INodeClassDataTransferObject dto) {
+				this.dto = dto;
+			}
+			public void actionPerformed(ActionEvent e) {
+				// this is the button to be shown when we press the list item
+				JToggleButton button = new JToggleButton(((dto.getIcon()==null)?(iconController.getChangeNodeTypeIcon()):(dto.getIcon())));
+				button.setToolTipText(dto.getDescription());
+				button.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						netWindow.getGraphPane().setAction(GraphAction.ADD_PLUGIN_NODE, dto);
+					}
+				});
+				
+				// update button group, avoiding duplicate buttons. 
+				// This is in order to unselect another button within same group after clicking this new button
+				groupEditionButtons.remove(button);
+				groupEditionButtons.add(button);
+				
+				// change the main button in the split button
+				btnAddPluginNode.setMainButton(button);
+				
+				// hide menu, since user has pressed
+				btnAddPluginNode.getMenu().setVisible(false);
+				updateUI();
+				
+				// click the button automatically 
+				btnAddPluginNode.getMainButton().doClick();
+				
+				try {
+					Debug.println(this.getClass(), "Plugin button set to " + btnAddPluginNode.getMainButton().getToolTipText());
+				}catch (Throwable t) {
+					t.printStackTrace();
+				}
+			}
+		}
 
 		public void selectBtnResetCursor() {
 			btnResetCursor.setSelected(true); 
@@ -1843,6 +1961,13 @@ public class MEBNEditionPane extends JPanel {
 	 */
 	public void setJpTabSelected(JPanel jpTabSelected) {
 		this.jpTabSelected = jpTabSelected;
+	}
+
+	/**
+	 * @return the mebnController
+	 */
+	public MEBNController getMebnController() {
+		return mebnController;
 	}
 
 }

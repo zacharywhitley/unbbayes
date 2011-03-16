@@ -13,12 +13,14 @@ import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 
 import unbbayes.controller.NetworkController;
+import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.controller.mebn.MEBNController;
 import unbbayes.draw.UShape;
 import unbbayes.draw.UShapeContextNode;
 import unbbayes.draw.UShapeInputNode;
 import unbbayes.draw.UShapeOrdinaryVariableNode;
 import unbbayes.draw.UShapeResidentNode;
+import unbbayes.gui.GraphAction;
 import unbbayes.gui.GraphPane;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
@@ -31,6 +33,7 @@ import unbbayes.prs.mebn.exception.CycleFoundException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
 import unbbayes.util.ResourceController;
+import unbbayes.util.mebn.extension.manager.MEBNPluginNodeManager;
 
 /**
  * This is the graph pane for MEBN module.
@@ -42,6 +45,7 @@ public class MEBNGraphPane extends GraphPane {
 
 	/** The resource is not static, so that hotplug would become easier */
 	private ResourceBundle resource;
+	
 	
 	/**
 	 * @param dlg
@@ -90,7 +94,11 @@ public class MEBNGraphPane extends GraphPane {
 	 *@see MouseEvent
 	 */
 	public void mouseClicked(MouseEvent e) {
-		super.mouseClicked(e);
+		GraphAction action = this.getAction();
+		// do not delegate to superclass if this is a request for plugin node
+		if (!action.equals(GraphAction.ADD_PLUGIN_NODE)) {
+			super.mouseClicked(e);
+		}
 		
 		// following, MEBN specific codes.
 		
@@ -104,7 +112,7 @@ public class MEBNGraphPane extends GraphPane {
 		MEBNController controller = (MEBNController)this.getController();
 		if (SwingUtilities.isLeftMouseButton(e)) {
 			Node newNode = null;
-			switch (getAction()) {
+			switch (action) {
 				case CREATE_DOMAIN_MFRAG: {
 					controller.insertDomainMFrag();
 				}
@@ -199,8 +207,8 @@ public class MEBNGraphPane extends GraphPane {
 					newNode = this.getNodeDataTransferObject().getNodeBuilder().buildNode();
 					newNode.setPosition(e.getX(), e.getY());
 					
-					// add new node into network
-					this.controller.getNetwork().addNode(newNode);
+					// add new node into MFrag
+					controller.getCurrentMFrag().addNode(newNode);
 					
 					// build a new shape for new node
 					UShape shape = null;
@@ -222,11 +230,11 @@ public class MEBNGraphPane extends GraphPane {
 					
 					// notify the probability function panel's builder that a new node is currently "selected" as owner			
 					this.getNodeDataTransferObject().getProbabilityFunctionPanelBuilder().setProbabilityFunctionOwner(newNode);
-					
-					// display the probability function panel for new node
-					this.controller.getScreen().showProbabilityDistributionPanel(
-								this.getNodeDataTransferObject().getProbabilityFunctionPanelBuilder()
-							);
+//					
+//					// display the probability function panel for new node
+//					this.controller.getScreen().showProbabilityDistributionPanel(
+//								this.getNodeDataTransferObject().getProbabilityFunctionPanelBuilder()
+//							);
 				}
 					break;
 				default: {
@@ -305,6 +313,32 @@ public class MEBNGraphPane extends GraphPane {
 			} catch (NullPointerException e) {
 				throw new RuntimeException("Could not find or set a shape for node: " + newNode.getName(),e);
 			}
+		}
+	}
+
+	/**
+	 * 
+	 * delegates to {@link #getController()}
+	 * @deprecated use {@link #getController()} and then {@link IMEBNMediator#getPluginNodeManager()}
+	 */
+	public MEBNPluginNodeManager getPluginNodeManager() {
+		try {
+			return ((IMEBNMediator)this.getController()).getPluginNodeManager();
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
+	 * delegates to {@link #getController()}
+	 * @deprecated use {@link #getController()} and then {@link IMEBNMediator#setPluginNodeManager(MEBNPluginNodeManager)}
+	 */
+	public void setPluginNodeManager(MEBNPluginNodeManager pluginNodeManager) {
+		try {
+			((IMEBNMediator)this.getController()).setPluginNodeManager(pluginNodeManager);
+		} catch (Throwable t) {
+			t.printStackTrace();
 		}
 	}
 

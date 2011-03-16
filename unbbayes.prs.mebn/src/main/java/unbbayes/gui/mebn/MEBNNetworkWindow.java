@@ -7,7 +7,6 @@ package unbbayes.gui.mebn;
 import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseEvent;
@@ -35,13 +34,13 @@ import unbbayes.gui.EvidenceTree;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelBuilder;
 import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelPluginManager;
-import unbbayes.gui.mebn.extension.editor.MEBNEditionPanelPluginManager;
 import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelPluginManager.IMEBNEditionPanelPluginComponents;
+import unbbayes.gui.mebn.extension.editor.MEBNEditionPanelPluginManager;
+import unbbayes.gui.table.extension.IProbabilityFunctionPanelBuilder;
 import unbbayes.io.BaseIO;
 import unbbayes.io.FileExtensionIODelegator;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Network;
-import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -384,6 +383,24 @@ public class MEBNNetworkWindow extends NetworkWindow {
 		// we do not use this current instance. Instead, dispose it and return the new instance of window
 		this.dispose();
 		return window;
+	}
+	
+	/**
+	 * This method is overwritten so that it displays the node editor in MEBN GUI instead of the ordinal BN GUI
+	 * @see unbbayes.gui.NetworkWindow#showProbabilityDistributionPanel(unbbayes.gui.table.extension.IProbabilityFunctionPanelBuilder)
+	 */
+	public void showProbabilityDistributionPanel(IProbabilityFunctionPanelBuilder builder) {
+//		;
+//		this.getController().selectNode(builder.getProbabilityFunctionOwner());
+//		// building the panel using associated node
+//		this.setDistributionPane(builder.buildProbabilityFunctionEditionPanel());
+//		
+//		// the below line is a requisite from inherited code, so, it is not very important for plugin context
+//		this.setTableOwner(builder.getProbabilityFunctionOwner());
+//		
+//		// update the name/description text fields at tool box
+//		this.getTxtDescription().setText(builder.getProbabilityFunctionOwner().getDescription());
+//		this.getTxtName().setText(builder.getProbabilityFunctionOwner().getName());
 	}
 	
 	/**

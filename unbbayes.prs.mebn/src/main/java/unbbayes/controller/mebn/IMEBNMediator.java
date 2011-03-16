@@ -51,6 +51,7 @@ import unbbayes.prs.mebn.ssbn.SSBN;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
+import unbbayes.util.mebn.extension.manager.MEBNPluginNodeManager;
 
 /**
  * This is the extracted interface for MEBNController.
@@ -638,6 +639,20 @@ public interface IMEBNMediator extends INetworkMediator  {
 	 * @see #getProperty(String)
 	 */
 	public abstract void setProperty(String key, Object obj);
+	
+	/**
+	 * This object manages plugin-loaded nodes.
+	 * 
+	 * @return the pluginNodeManager
+	 */
+	public MEBNPluginNodeManager getPluginNodeManager();
+
+	/**
+	 * This object manages plugin-loaded nodes.
+	 * 
+	 * @param the pluginNodeManager
+	 */
+	public void setPluginNodeManager(MEBNPluginNodeManager pluginNodeManager);
 
 
 }

@@ -74,10 +74,10 @@ import com.hp.hpl.jena.util.FileUtils;
 import edu.stanford.smi.protegex.owl.ProtegeOWL;
 import edu.stanford.smi.protegex.owl.jena.JenaOWLModel;
 import edu.stanford.smi.protegex.owl.model.OWLDatatypeProperty;
-import edu.stanford.smi.protegex.owl.model.OWLIndividual;
 import edu.stanford.smi.protegex.owl.model.OWLModel;
 import edu.stanford.smi.protegex.owl.model.OWLNamedClass;
 import edu.stanford.smi.protegex.owl.model.OWLObjectProperty;
+import edu.stanford.smi.protegex.owl.model.RDFIndividual;
 
 /**
  * Make the loader from a file pr-owl for the mebn structure. 
@@ -270,8 +270,8 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
         
 		MFrag domainMFrag; 		
 		
-		OWLIndividual individualOne;
-		OWLIndividual individualTwo; 
+		RDFIndividual individualOne;
+		RDFIndividual individualTwo; 
 		OWLNamedClass owlNamedClass; 	
 		OWLObjectProperty objectProperty; 
 		
@@ -284,7 +284,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			throw new IOMebnException(resource.getString("MTheoryNotExist")); 
 		}
 		
-		individualOne = (OWLIndividual) itAux.next();
+		individualOne = (RDFIndividual) itAux.next();
 		mebn = new MultiEntityBayesianNetwork(individualOne.getBrowserText()); 
 		mebn.getNamesUsed().add(individualOne.getBrowserText()); 
 		
@@ -302,7 +302,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 		instances = individualOne.getPropertyValues(objectProperty); 
 		
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
-			individualTwo = (OWLIndividual) it.next();
+			individualTwo = (RDFIndividual) it.next();
 			
 			// remove prefixes from name
 			String name = individualTwo.getBrowserText();
@@ -326,7 +326,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
  
 	}
 
-	private String getDescription(OWLIndividual individualOne) {
+	private String getDescription(RDFIndividual individualOne) {
 		String comment = null; 
 		Collection comments = individualOne.getComments(); 
 		if(comments.size() > 0){
@@ -344,14 +344,14 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 		
 		OWLNamedClass metaEntityClass; 
 		Collection instances; 
-		OWLIndividual individualOne;
+		RDFIndividual individualOne;
 		
 		metaEntityClass = owlModel.getOWLNamedClass(META_ENTITY);
 		
 		instances = metaEntityClass.getInstances(false); 
 		
-		for (Object owlIndividual : instances){
-			individualOne = (OWLIndividual) owlIndividual; 
+		for (Object RDFIndividual : instances){
+			individualOne = (RDFIndividual) RDFIndividual; 
 			
 			try{
 			    Type type = mebn.getTypeContainer().createType(individualOne.getBrowserText()); 
@@ -411,15 +411,15 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 		OWLNamedClass categoricalStateClass; 
 		Collection instances; 
 		Collection globallyExclusiveObjects; 
-		OWLIndividual individualOne;
+		RDFIndividual individualOne;
 		OWLObjectProperty isGloballyExclusive = (OWLObjectProperty)owlModel.getOWLObjectProperty("isGloballyExclusive"); 	
 
 		categoricalStateClass = owlModel.getOWLNamedClass(CATEGORICAL_STATE);
 		
 		instances = categoricalStateClass.getInstances(false); 
 		
-		for (Object owlIndividual : instances){
-			individualOne = (OWLIndividual) owlIndividual; 
+		for (Object RDFIndividual : instances){
+			individualOne = (RDFIndividual) RDFIndividual; 
 			
 			CategoricalStateEntity state = mebn.getCategoricalStatesEntityContainer().createCategoricalEntity(individualOne.getBrowserText()); 
 
@@ -428,7 +428,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			globallyExclusiveObjects = individualOne.getPropertyValues(isGloballyExclusive); 
 			ArrayList<String> listObjects = new ArrayList<String>(); 
 			for (Object object : globallyExclusiveObjects){
-				OWLIndividual nodeIndividual = (OWLIndividual) object;
+				RDFIndividual nodeIndividual = (RDFIndividual) object;
 				listObjects.add(nodeIndividual.getBrowserText()); 
 
 			}
@@ -445,15 +445,15 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 		OWLNamedClass booleanStateClass; 
 		Collection instances; 
 		Collection globallyExclusiveObjects; 
-		OWLIndividual individualOne;
+		RDFIndividual individualOne;
 		OWLObjectProperty isGloballyExclusive = (OWLObjectProperty)owlModel.getOWLObjectProperty("isGloballyExclusive"); 	
 
 		booleanStateClass = owlModel.getOWLNamedClass(BOOLEAN_STATE);
 		
 		instances = booleanStateClass.getInstances(false); 
 		
-		for (Object owlIndividual : instances){
-			individualOne = (OWLIndividual) owlIndividual; 
+		for (Object RDFIndividual : instances){
+			individualOne = (RDFIndividual) RDFIndividual; 
 			
 			BooleanStateEntity state = null; 
 			
@@ -481,8 +481,12 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 				globallyExclusiveObjects = individualOne.getPropertyValues(isGloballyExclusive); 
 				ArrayList<String> listObjects = new ArrayList<String>(); 
 				for (Object object : globallyExclusiveObjects){
-					OWLIndividual nodeIndividual = (OWLIndividual) object;
-					listObjects.add(nodeIndividual.getBrowserText()); 
+					try {
+						RDFIndividual nodeIndividual = (RDFIndividual) object;
+						listObjects.add(nodeIndividual.getBrowserText()); 
+					} catch (ClassCastException e) {
+						e.printStackTrace();
+					}
 				}
 				
 				mapBooleanStateGloballyObjects.put(state.getName(), listObjects); 
@@ -502,8 +506,8 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 		InputNode generativeInputNode; 
 		BuiltInRV builtInRV;		
 		
-		OWLIndividual individualOne;
-		OWLIndividual individualTwo; 
+		RDFIndividual individualOne;
+		RDFIndividual individualTwo; 
 		OWLNamedClass owlNamedClass; 	
 		OWLObjectProperty objectProperty; 
 		
@@ -511,7 +515,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 		instances = owlNamedClass.getInstances(false); 
 		
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
-			individualOne = (OWLIndividual)it.next();
+			individualOne = (RDFIndividual)it.next();
 			domainMFrag = mapDomainMFrag.get(individualOne.getBrowserText()); 
 			if (domainMFrag == null){
 				throw new IOMebnException(resource.getString("DomainMFragNotExistsInMTheory"), individualOne.getBrowserText()); 
@@ -525,7 +529,16 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasResidentNode"); 
 			instances = individualOne.getPropertyValues(objectProperty); 
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
+				Object itInNext = itIn.next();
+				if (! (itInNext instanceof RDFIndividual)) {
+					try {
+						System.err.println(itInNext + " != RDFIndividual");
+					}catch (Throwable t) {
+						t.printStackTrace();
+					}
+					continue;
+				}
+				individualTwo = (RDFIndividual) itInNext;
 				
 				// remove prefixes from the name
 				String name = individualTwo.getBrowserText();
@@ -553,7 +566,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasInputNode"); 
 			instances = individualOne.getPropertyValues(objectProperty); 	
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
+				individualTwo = (RDFIndividual) itIn.next();
 				generativeInputNode = new InputNode(individualTwo.getBrowserText(), domainMFrag); 
 				mebn.getNamesUsed().add(individualTwo.getBrowserText()); 
 				domainMFrag.addInputNode(generativeInputNode); 
@@ -566,7 +579,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasContextNode"); 
 			instances = individualOne.getPropertyValues(objectProperty); 	
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
+				individualTwo = (RDFIndividual) itIn.next();
 				contextNode = new ContextNode(individualTwo.getBrowserText(), domainMFrag); 
 				mebn.getNamesUsed().add(individualTwo.getBrowserText()); 
 				domainMFrag.addContextNode(contextNode); 
@@ -580,7 +593,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			instances = individualOne.getPropertyValues(objectProperty); 
 			String ovName = null;
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
+				individualTwo = (RDFIndividual) itIn.next();
 				ovName = individualTwo.getBrowserText();	// Name of the OV individual
 				// Remove MFrag name from ovName. MFrag name is a scope identifier
 				try {
@@ -607,8 +620,8 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 		Argument argument;
 		MultiEntityNode multiEntityNode; 	
 		
-		OWLIndividual individualOne;
-		OWLIndividual individualTwo; 	
+		RDFIndividual individualOne;
+		RDFIndividual individualTwo; 	
 		OWLObjectProperty objectProperty; 
 		
 		OWLNamedClass contextNodePr = owlModel.getOWLNamedClass(CONTEXT_NODE); 
@@ -616,7 +629,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 		
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
 			
-			individualOne = (OWLIndividual)it.next();
+			individualOne = (RDFIndividual)it.next();
 			contextNode = mapContextNode.get(individualOne.getBrowserText()); 
 			if (contextNode == null){
 				throw new IOMebnException(resource.getString("ContextNodeNotExistsInMTheory"), individualOne.getBrowserText()); 
@@ -630,7 +643,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isContextNodeIn"); 			
 			instances = individualOne.getPropertyValues(objectProperty); 	
 			itAux = instances.iterator();
-			individualTwo = (OWLIndividual) itAux.next();
+			individualTwo = (RDFIndividual) itAux.next();
 			domainMFrag = mapDomainMFrag.get(individualTwo.getBrowserText()); 
 			if(domainMFrag.containsContextNode(contextNode) == false){
 				throw new IOMebnException(resource.getString("ContextNodeNotExistsInMFrag"), contextNode.getName() + ", " + domainMFrag.getName()); 
@@ -642,7 +655,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isNodeFrom"); 			
 			instances = individualOne.getPropertyValues(objectProperty);		
 			for(Iterator itIn = instances.iterator(); itIn.hasNext();  ){
-				individualTwo = (OWLIndividual) itAux.next();
+				individualTwo = (RDFIndividual) itAux.next();
 				domainMFrag = mapDomainMFrag.get(individualTwo.getBrowserText()); 
 				if(domainMFrag.containsNode(contextNode) == false){
 					throw new IOMebnException(resource.getString("NodeNotExistsInMFrag"), contextNode.getName() + ", " + domainMFrag.getName()); 
@@ -654,7 +667,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 
 			instances = individualOne.getPropertyValues(objectProperty); 	
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();			
+				individualTwo = (RDFIndividual) itIn.next();			
 				argument = new Argument(individualTwo.getBrowserText(), contextNode); 
 				contextNode.addArgument(argument); 
 				mapArgument.put(individualTwo.getBrowserText(), argument); 
@@ -668,7 +681,12 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			itAux = instances.iterator();
 			
 			if(itAux.hasNext() != false){
-				individualTwo = (OWLIndividual) itAux.next();
+				Object itAuxNext = itAux.next();
+				if (! (itAuxNext instanceof RDFIndividual)) {
+					System.err.println(itAuxNext + " != RDFIndividual");
+					continue;
+				}
+				individualTwo = (RDFIndividual) itAuxNext;
 				
 				if(mapBuiltInRV.get(individualTwo.getBrowserText()) != null){
 					mapIsContextInstanceOf.put(contextNode, mapBuiltInRV.get(individualTwo.getBrowserText())); 
@@ -686,7 +704,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			instances = individualOne.getPropertyValues(objectProperty); 	
 			
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
+				individualTwo = (RDFIndividual) itIn.next();
 				contextNode = mapContextNode.get(individualTwo.getBrowserText());
 				if(contextNode == null){
 					throw new IOMebnException(resource.getString("ContextNodeNotExistsInMTheory"), individualTwo.getBrowserText()); 
@@ -708,7 +726,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 				domainMFrag.removeContextNode(contextNode); 
 			
 				for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-					individualTwo = (OWLIndividual) itIn.next();
+					individualTwo = (RDFIndividual) itIn.next();
 					multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText()); 
 					contextNode.addInnerTermFromList(multiEntityNode); 
 					multiEntityNode.addInnerTermOfList(contextNode); 
@@ -736,15 +754,15 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 		InputNode generativeInputNode; 
 		BuiltInRV builtInRV = null;		
 		
-		OWLIndividual individualOne;
-		OWLIndividual individualTwo; 	
+		RDFIndividual individualOne;
+		RDFIndividual individualTwo; 	
 		OWLObjectProperty objectProperty; 
 		
 		OWLNamedClass builtInPr = owlModel.getOWLNamedClass(BUILTIN_RV); 
 		instances = builtInPr.getInstances(false); 
 		
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
-			individualOne = (OWLIndividual)it.next();
+			individualOne = (RDFIndividual)it.next();
 			
 			String nameBuiltIn = individualOne.getBrowserText(); 
 			
@@ -785,7 +803,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 				objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasInputInstance"); 
 				instances = individualOne.getPropertyValues(objectProperty); 	
 				for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-					individualTwo = (OWLIndividual) itIn.next();
+					individualTwo = (RDFIndividual) itIn.next();
 					generativeInputNode = mapGenerativeInputNode.get(individualTwo.getBrowserText());
 					if(generativeInputNode == null){
 						throw new IOMebnException(resource.getString("GenerativeInputNodeNotExistsInMTheory"), individualTwo.getBrowserText()); 
@@ -806,8 +824,8 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 		Argument argument;
 		MultiEntityNode multiEntityNode; 	
 		
-		OWLIndividual individualOne;
-		OWLIndividual individualTwo; 	
+		RDFIndividual individualOne;
+		RDFIndividual individualTwo; 	
 		OWLObjectProperty objectProperty; 	
 		
 		OWLNamedClass domainResidentNodePr = owlModel.getOWLNamedClass(DOMAIN_RESIDENT); 
@@ -816,7 +834,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 		
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
 			
-			individualOne = (OWLIndividual)it.next();
+			individualOne = (RDFIndividual)it.next();
 			domainResidentNode = mapDomainResidentNode.get(individualOne.getBrowserText()); 
 			if (domainResidentNode == null){
 				throw new IOMebnException(resource.getString("DomainResidentNotExistsInMTheory"), individualOne.getBrowserText() ); 
@@ -830,7 +848,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isResidentNodeIn"); 			
 			instances = individualOne.getPropertyValues(objectProperty); 	
 			itAux = instances.iterator();
-			individualTwo = (OWLIndividual) itAux.next();
+			individualTwo = (RDFIndividual) itAux.next();
 			domainMFrag = mapDomainMFrag.get(individualTwo.getBrowserText()); 
 			if(domainMFrag.containsDomainResidentNode(domainResidentNode) == false){
 				throw new IOMebnException(resource.getString("DomainResidentNotExistsInDomainMFrag") ); 
@@ -842,7 +860,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 
 			instances = individualOne.getPropertyValues(objectProperty); 	
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
+				individualTwo = (RDFIndividual) itIn.next();
 				argument = new Argument(individualTwo.getBrowserText(), domainResidentNode); 
 				domainResidentNode.addArgument(argument); 
 				mapArgument.put(individualTwo.getBrowserText(), argument); 
@@ -853,7 +871,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasParent"); 
 			instances = individualOne.getPropertyValues(objectProperty); 	
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
+				individualTwo = (RDFIndividual) itIn.next();
 				if (mapDomainResidentNode.containsKey(individualTwo.getBrowserText())){
 					ResidentNode aux = mapDomainResidentNode.get(individualTwo.getBrowserText()); 
 					
@@ -890,7 +908,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			instances = individualOne.getPropertyValues(objectProperty); 	
 			
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
+				individualTwo = (RDFIndividual) itIn.next();
 				generativeInputNode = mapGenerativeInputNode.get(individualTwo.getBrowserText()); 
 				try{
 				   generativeInputNode.setInputInstanceOf(domainResidentNode); 
@@ -906,7 +924,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			instances = individualOne.getPropertyValues(objectProperty); 	
 			itAux = instances.iterator();			
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
+				individualTwo = (RDFIndividual) itIn.next();
 				multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText()); 
 				domainResidentNode.addInnerTermFromList(multiEntityNode); 
 				multiEntityNode.addInnerTermOfList(domainResidentNode); 
@@ -920,7 +938,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 				instances = individualOne.getPropertyValues(objectProperty); 	
 				itAux = instances.iterator();
 				for (Object instance: instances){
-					individualTwo = (OWLIndividual)instance;
+					individualTwo = (RDFIndividual)instance;
 					String stateName = individualTwo.getBrowserText(); 
 					/* case 1: booleans states */
 					if(stateName.equals("true")){
@@ -1002,7 +1020,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			OWLDatatypeProperty hasDeclaration = owlModel.getOWLDatatypeProperty("hasDeclaration"); 
 			String cpt = null;
 			for (Iterator iter = individualOne.getPropertyValues(hasProbDist).iterator(); iter.hasNext();) {
-				OWLIndividual element = (OWLIndividual) iter.next();
+				RDFIndividual element = (RDFIndividual) iter.next();
 				try {
 					cpt = (String)element.getPropertyValue(hasDeclaration);
 				} catch (Exception e) {
@@ -1025,8 +1043,8 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 		MultiEntityNode multiEntityNode; 
 		BuiltInRV builtInRV;		
 		
-		OWLIndividual individualOne;
-		OWLIndividual individualTwo; 	
+		RDFIndividual individualOne;
+		RDFIndividual individualTwo; 	
 		OWLObjectProperty objectProperty; 		
 		
 		OWLNamedClass inputNodePr = owlModel.getOWLNamedClass(GENERATIVE_INPUT); 
@@ -1034,7 +1052,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 		
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
 			
-			individualOne = (OWLIndividual)it.next();
+			individualOne = (RDFIndividual)it.next();
 			Debug.println("  - Input Node loaded: " + individualOne.getBrowserText()); 			
 			generativeInputNode = mapGenerativeInputNode.get(individualOne.getBrowserText()); 
 			if (generativeInputNode == null){
@@ -1052,7 +1070,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			itAux = instances.iterator();
 			
 			if(itAux.hasNext() != false){
-				individualTwo = (OWLIndividual) itAux.next();
+				individualTwo = (RDFIndividual) itAux.next();
 				
 				if (mapDomainResidentNode.containsKey(individualTwo.getBrowserText())){
 					domainResidentNode = mapDomainResidentNode.get(individualTwo.getBrowserText()); 
@@ -1077,7 +1095,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 
 			instances = individualOne.getPropertyValues(objectProperty); 	
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
+				individualTwo = (RDFIndividual) itIn.next();
 				argument = new Argument(individualTwo.getBrowserText(), generativeInputNode); 
 				generativeInputNode.addArgument(argument); 
 				mapArgument.put(individualTwo.getBrowserText(), argument); 
@@ -1089,7 +1107,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 //			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isParentOf"); 
 //			instances = individualOne.getPropertyValues(objectProperty); 	
 //			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-//				individualTwo = (OWLIndividual) itIn.next();
+//				individualTwo = (RDFIndividual) itIn.next();
 //				domainResidentNode = mapDomainResidentNode.get(individualTwo.getBrowserText());
 //				if(domainResidentNode == null){
 //					throw new IOMebnException(resource.getString("DomainMFragNotExistsInMTheory"),  individualTwo.getBrowserText()); 
@@ -1103,7 +1121,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			instances = individualOne.getPropertyValues(objectProperty); 	
 			itAux = instances.iterator();			
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
+				individualTwo = (RDFIndividual) itIn.next();
 				multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText()); 
 				generativeInputNode.addInnerTermFromList(multiEntityNode); 
 				multiEntityNode.addInnerTermOfList(generativeInputNode); 
@@ -1120,14 +1138,14 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 		MFrag domainMFrag; 
 		OrdinaryVariable oVariable; 		
 		
-		OWLIndividual individualOne;
-		OWLIndividual individualTwo; 
+		RDFIndividual individualOne;
+		RDFIndividual individualTwo; 
 		OWLObjectProperty objectProperty; 
 		
 		OWLNamedClass ordinaryVariablePr = owlModel.getOWLNamedClass(ORDINARY_VARIABLE); 
 		instances = ordinaryVariablePr.getInstances(false); 
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
-			individualOne = (OWLIndividual)it.next();		
+			individualOne = (RDFIndividual)it.next();		
 			oVariable = mapOVariable.get(individualOne.getBrowserText()); 
 			if (oVariable == null){
 				throw new IOMebnException(resource.getString("OVariableNotExistsInMTheory"),  individualOne.getBrowserText()); 
@@ -1140,7 +1158,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isOVariableIn"); 			
 			instances = individualOne.getPropertyValues(objectProperty); 	
 			itAux = instances.iterator();
-			individualTwo = (OWLIndividual) itAux.next();
+			individualTwo = (RDFIndividual) itAux.next();
 			domainMFrag = mapDomainMFrag.get(individualTwo.getBrowserText()); 
 			if(domainMFrag != oVariable.getMFrag()){
 				throw new IOMebnException(resource.getString("isOVariableInError"),  individualOne.getBrowserText()); 
@@ -1153,7 +1171,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			 instances = individualOne.getPropertyValues(objectProperty); 	
 			 itAux = instances.iterator();
 			 if(itAux.hasNext()){
-			     individualTwo = (OWLIndividual) itAux.next();
+			     individualTwo = (RDFIndividual) itAux.next();
 			     Type type = mebn.getTypeContainer().getType(individualTwo.getBrowserText()); 
 			     if (type != null){
 			    	 oVariable.setValueType(type); 
@@ -1180,15 +1198,15 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 		Argument argument;
 		MultiEntityNode multiEntityNode; 	
 		
-		OWLIndividual individualOne;
-		OWLIndividual individualTwo; 	
+		RDFIndividual individualOne;
+		RDFIndividual individualTwo; 	
 		OWLObjectProperty objectProperty; 
 		
 		OWLNamedClass argRelationshipPr = owlModel.getOWLNamedClass(ARGUMENT_RELATIONSHIP); 
 		instances = argRelationshipPr.getInstances(false); 
 		
 		for (Iterator it = instances.iterator(); it.hasNext(); ){	
-			individualOne = (OWLIndividual)it.next();
+			individualOne = (RDFIndividual)it.next();
 			argument = mapArgument.get(individualOne.getBrowserText()); 
 			
 			if (argument == null){
@@ -1200,7 +1218,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			/* -> hasArgTerm  */
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgTerm"); 			
 			
-			individualTwo = (OWLIndividual)individualOne.getPropertyValue(objectProperty); 	
+			individualTwo = (RDFIndividual)individualOne.getPropertyValue(objectProperty); 	
 			
 			if(individualTwo != null){
 				//TODO apenas por enquanto, pois n�o podera ser igual a null no futuro!!!
@@ -1278,7 +1296,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isArgumentOf"); 			
 			instances = individualOne.getPropertyValues(objectProperty); 	
 			itAux = instances.iterator();
-			individualTwo = (OWLIndividual) itAux.next();
+			individualTwo = (RDFIndividual) itAux.next();
 			multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText()); 
 			if (argument.getMultiEntityNode() != multiEntityNode){
 				throw new IOMebnException(resource.getString("isArgumentOfError"),  individualTwo.getBrowserText()); 				   
@@ -1294,14 +1312,14 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 		Argument argument;
 		MultiEntityNode multiEntityNode; 	
 		
-		OWLIndividual individualOne;
-		OWLIndividual individualTwo; 	
+		RDFIndividual individualOne;
+		RDFIndividual individualTwo; 	
 		OWLObjectProperty objectProperty; 		
 		
 		OWLNamedClass argRelationshipPr = owlModel.getOWLNamedClass(SIMPLE_ARGUMENT_RELATIONSHIP); 
 		instances = argRelationshipPr.getInstances(false); 
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
-			individualOne = (OWLIndividual)it.next();
+			individualOne = (RDFIndividual)it.next();
 			argument = mapArgument.get(individualOne.getBrowserText()); 
 			if (argument == null){
 				throw new IOMebnException(resource.getString("ArgumentNotFound"),  individualOne.getBrowserText()); 
@@ -1314,7 +1332,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 			instances = individualOne.getPropertyValues(objectProperty); 	
 			itAux = instances.iterator();
 			if(itAux.hasNext()){
-				individualTwo = (OWLIndividual) itAux.next();
+				individualTwo = (RDFIndividual) itAux.next();
 				
 				oVariable = mapOVariable.get(individualTwo.getBrowserText()); 
 				if (oVariable == null){
@@ -1343,7 +1361,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 //			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isArgumentOf"); 			
 //			instances = individualOne.getPropertyValues(objectProperty); 	
 //			itAux = instances.iterator();
-//			individualTwo = (OWLIndividual) itAux.next();
+//			individualTwo = (RDFIndividual) itAux.next();
 //			multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText()); 
 //			
 //			if(multiEntityNode instanceof ResidentNode){
@@ -1692,7 +1710,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 		for (OWLNamedClass subClass : (Collection<OWLNamedClass>)objectEntityClass.getSubclasses(true)) {
 			 mebnEntity = this.mebn.getObjectEntityContainer().getObjectEntityByName(subClass.getName());
 			// TODO the for below has a dangerous unchecked class cast - solve it using more charming way
-			for (OWLIndividual individual : (Collection<OWLIndividual>)subClass.getInstances(false)) {
+			for (RDFIndividual individual : (Collection<RDFIndividual>)subClass.getInstances(false)) {
 				// creates a object entity instance and adds it into the mebn entity container
 				try {
 					this.mebn.getObjectEntityContainer().addEntityInstance(mebnEntity.addInstance(individual.getName()));

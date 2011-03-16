@@ -101,6 +101,7 @@ import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSBNGenerator;
 import unbbayes.util.ApplicationPropertyHolder;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
+import unbbayes.util.mebn.extension.manager.MEBNPluginNodeManager;
 
 /**
  * Controller of the MEBN structure. 
@@ -231,6 +232,9 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	
 	/** This map is used by {@link IMEBNMediator#getProperty(String)} and {@link IMEBNMediator#getProperty(String)#setPropertyMap(Map)} */
 	private Map<String, Object> propertyMap = new HashMap<String, Object>();
+	
+	// This object manages plugin-loaded nodes.
+	private MEBNPluginNodeManager pluginNodeManager = MEBNPluginNodeManager.newInstance();
 	
 	
 	/*-------------------------------------------------------------------------*/
@@ -1032,11 +1036,13 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 						this.getScreen().getGraphPane().update();
 						mebnEditionPane.setMTheoryTreeActive();
 					}
-					else{
-						if (selected instanceof Edge) {
+					else if (selected instanceof Edge) {
 							MFrag mFragCurrent = multiEntityBayesianNetwork.getCurrentMFrag();
 							mFragCurrent.removeEdge((Edge) selected);
-						}
+					} else if (selected instanceof Node) {
+						// default behavior: delete the unknown type of node (which is probably a plugin node)
+						MFrag mFragCurrent = multiEntityBayesianNetwork.getCurrentMFrag();
+						mFragCurrent.removeNode((Node)selected);
 					}
 				}
 			}
@@ -1046,11 +1052,8 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
 	 * @see unbbayes.controller.NetworkController#selectNode(unbbayes.prs.Node)
-	 */
-	/* (non-Javadoc)
 	 * @see unbbayes.controller.mebn.IMEBNMediator#selectNode(unbbayes.prs.Node)
 	 */
 	public void selectNode(Node node){
@@ -2582,6 +2585,20 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	 */
 	public void setProperty(String key, Object obj) {
 		this.getPropertyMap().put(key, obj);
+	}
+
+	/**
+	 * @return the pluginNodeManager
+	 */
+	public MEBNPluginNodeManager getPluginNodeManager() {
+		return pluginNodeManager;
+	}
+
+	/**
+	 * @param pluginNodeManager the pluginNodeManager to set
+	 */
+	public void setPluginNodeManager(MEBNPluginNodeManager pluginNodeManager) {
+		this.pluginNodeManager = pluginNodeManager;
 	}
 	
 	
