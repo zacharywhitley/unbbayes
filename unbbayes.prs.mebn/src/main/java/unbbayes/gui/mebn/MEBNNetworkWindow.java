@@ -41,9 +41,11 @@ import unbbayes.io.BaseIO;
 import unbbayes.io.FileExtensionIODelegator;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Network;
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.util.Debug;
 import unbbayes.util.GraphLayoutUtil;
 import unbbayes.util.ResourceController;
 import unbbayes.util.extension.UnBBayesModule;
@@ -78,6 +80,9 @@ public class MEBNNetworkWindow extends NetworkWindow {
 
 	/** This is the context for UnBBayes' plugin framework */
 	private IMEBNEditionPanelPluginManager pluginManager = MEBNEditionPanelPluginManager.newInstance(false);	// instantiate, do not initialize
+
+private JScrollPane pluginDistributionScrollPane;
+
 
 	/**
 	 * Default constructor.
@@ -390,17 +395,48 @@ public class MEBNNetworkWindow extends NetworkWindow {
 	 * @see unbbayes.gui.NetworkWindow#showProbabilityDistributionPanel(unbbayes.gui.table.extension.IProbabilityFunctionPanelBuilder)
 	 */
 	public void showProbabilityDistributionPanel(IProbabilityFunctionPanelBuilder builder) {
-//		;
-//		this.getController().selectNode(builder.getProbabilityFunctionOwner());
-//		// building the panel using associated node
-//		this.setDistributionPane(builder.buildProbabilityFunctionEditionPanel());
-//		
-//		// the below line is a requisite from inherited code, so, it is not very important for plugin context
+		// select current  node
+		this.getController().selectNode(builder.getProbabilityFunctionOwner());
+		
+		// building the panel using associated node
+		this.setDistributionPane(builder.buildProbabilityFunctionEditionPanel());
+		
+		// the below line is a requisite from inherited code, so, it is not very important for plugin context
 //		this.setTableOwner(builder.getProbabilityFunctionOwner());
-//		
-//		// update the name/description text fields at tool box
+		
+		// update the name/description text fields at tool box
 //		this.getTxtDescription().setText(builder.getProbabilityFunctionOwner().getDescription());
 //		this.getTxtName().setText(builder.getProbabilityFunctionOwner().getName());
+	}
+	
+	
+	
+	/**
+	 * Displays the distributionPane in the MEBN edition pane.
+	 * This is used mostly by plug-in nodes.
+	 * @param distributionPane
+	 * @see #showProbabilityDistributionPanel(IProbabilityFunctionPanelBuilder)
+	 * @see unbbayes.gui.NetworkWindow#setDistributionPane(javax.swing.JPanel)
+	 */
+	public void setDistributionPane(JPanel distributionPane) {
+		
+		if (this.getPluginDistributionScrollPane() == null) {
+			this.setPluginDistributionScrollPane(new JScrollPane(distributionPane));
+			this.getMebnEditionPane().getJpTabSelected().add("PluginNodeTab", this.getPluginDistributionScrollPane());
+		} else {
+			this.getPluginDistributionScrollPane().setViewportView(distributionPane);
+			this.getPluginDistributionScrollPane().updateUI();
+			this.getPluginDistributionScrollPane().repaint();
+		}
+		
+		for (Component comp : this.getMebnEditionPane().getJpTabSelected().getComponents()) {
+			comp.setVisible(false);
+		}
+		
+		this.getPluginDistributionScrollPane().setVisible(true);
+		
+		this.getMebnEditionPane().getCardLayout().show(this.getMebnEditionPane().getJpTabSelected(), "PluginNodeTab");
+    	
 	}
 	
 	/**
@@ -523,6 +559,24 @@ public class MEBNNetworkWindow extends NetworkWindow {
 	public void setPluginManager(IMEBNEditionPanelPluginManager pluginManager) {
 		this.pluginManager = pluginManager;
 	}
+
+	/**
+	 * This is the last plugin node editor pane created in {@link #setDistributionPane(JPanel)}
+	 * @return the pluginDistributionScrollPane
+	 */
+	public JScrollPane getPluginDistributionScrollPane() {
+		return pluginDistributionScrollPane;
+	}
+
+	/**
+	 * This is the last plugin node editor pane created in {@link #setDistributionPane(JPanel)}
+	 * @param pluginDistributionScrollPane the pluginDistributionScrollPane to set
+	 */
+	public void setPluginDistributionScrollPane(
+			JScrollPane pluginDistributionScrollPane) {
+		this.pluginDistributionScrollPane = pluginDistributionScrollPane;
+	}
+
 
 
 }

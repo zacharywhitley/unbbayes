@@ -112,7 +112,7 @@ public class MEBNGraphPane extends GraphPane {
 		MEBNController controller = (MEBNController)this.getController();
 		if (SwingUtilities.isLeftMouseButton(e)) {
 			Node newNode = null;
-			switch (action) {
+			switch (this.getAction()) {
 				case CREATE_DOMAIN_MFRAG: {
 					controller.insertDomainMFrag();
 				}
@@ -230,11 +230,14 @@ public class MEBNGraphPane extends GraphPane {
 					
 					// notify the probability function panel's builder that a new node is currently "selected" as owner			
 					this.getNodeDataTransferObject().getProbabilityFunctionPanelBuilder().setProbabilityFunctionOwner(newNode);
-//					
-//					// display the probability function panel for new node
-//					this.controller.getScreen().showProbabilityDistributionPanel(
-//								this.getNodeDataTransferObject().getProbabilityFunctionPanelBuilder()
-//							);
+					
+					// we are not using controller.selectNode as the other cases because we are following
+					// the same scheme adopted by BN plugin node, which calls showProbabilityDistributionPanel.
+					// MEBNNetworkWindow overwrites the behavior.
+					// Display the probability function panel for new node
+					this.controller.getScreen().showProbabilityDistributionPanel(
+								this.getNodeDataTransferObject().getProbabilityFunctionPanelBuilder()
+							);
 				}
 					break;
 				default: {
