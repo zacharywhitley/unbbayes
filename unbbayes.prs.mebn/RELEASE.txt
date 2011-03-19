@@ -3,6 +3,7 @@ UNBBAYES PLUGIN - VERSION 1.8.2
 FEATURE LIST		
 Number	Request ID	Summary
 1					Altered the KB builder plugin in order to specify the MEBN to be used.
+2					Added a new extension point to add new types of nodes.
 
 BUG LIST		
 Number	Request ID	Summary

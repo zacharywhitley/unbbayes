@@ -395,8 +395,6 @@ private JScrollPane pluginDistributionScrollPane;
 	 * @see unbbayes.gui.NetworkWindow#showProbabilityDistributionPanel(unbbayes.gui.table.extension.IProbabilityFunctionPanelBuilder)
 	 */
 	public void showProbabilityDistributionPanel(IProbabilityFunctionPanelBuilder builder) {
-		// select current  node
-		this.getController().selectNode(builder.getProbabilityFunctionOwner());
 		
 		// building the panel using associated node
 		this.setDistributionPane(builder.buildProbabilityFunctionEditionPanel());

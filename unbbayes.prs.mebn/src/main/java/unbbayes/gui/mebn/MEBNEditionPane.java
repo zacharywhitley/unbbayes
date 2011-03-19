@@ -746,8 +746,21 @@ public class MEBNEditionPane extends JPanel {
 		return netWindow;
 	}
 	
+	/**
+	 * @see DescriptionPane#setDescriptionText(String, int)
+	 * @param text
+	 * @param type
+	 */
 	public void setDescriptionText(String text, int type){
 		this.descriptionPane.setDescriptionText(text, type); 
+	}
+	/**
+	 * @see DescriptionPane#setDescriptionText(String, ImageIcon)
+	 * @param text
+	 * @param icon
+	 */
+	public void setDescriptionText(String text, ImageIcon icon){
+		this.descriptionPane.setDescriptionText(text, icon); 
 	}
 	
 	public String getDescriptionText(){

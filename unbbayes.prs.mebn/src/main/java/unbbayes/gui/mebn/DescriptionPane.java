@@ -6,7 +6,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.ResourceBundle;
 
-import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -31,12 +31,17 @@ public class DescriptionPane extends JPanel{
   	private static ResourceBundle resource = ResourceController.newInstance().getBundle(
 			unbbayes.gui.mebn.resources.Resources.class.getName());; 
 
-	
+	/** @see #setDescriptionText(String, int)*/
 	public static final int DESCRIPTION_PANE_RESIDENT  = 1; 
+	/** @see #setDescriptionText(String, int)*/
 	public static final int DESCRIPTION_PANE_INPUT =     2; 
+	/** @see #setDescriptionText(String, int)*/
 	public static final int DESCRIPTION_PANE_CONTEXT =   3; 
+	/** @see #setDescriptionText(String, int)*/
 	public static final int DESCRIPTION_PANE_OVARIABLE = 4; 
+	/** @see #setDescriptionText(String, int)*/
 	public static final int DESCRIPTION_PANE_MFRAG =     5; 
+	/** @see #setDescriptionText(String, int)*/
 	public static final int DESCRIPTION_PANE_MTHEORY =   6; 
 
 
@@ -93,40 +98,17 @@ public class DescriptionPane extends JPanel{
 		add(toolBar, BorderLayout.PAGE_START); 
 	}
 
-	public void setDescriptionText(String description, int type){
+	/**
+	 * Changes the text of the description pane and its icon.
+	 * @param description
+	 * @param icon
+	 */
+	public void setDescriptionText(String description, ImageIcon icon) {
 		textArea.setText(description);
-
-		JButton btn = new JButton(); 
-
-		switch (type){
-
-		case DESCRIPTION_PANE_RESIDENT:
-			btn = new JButton(iconController.getResidentNodeIcon()); 
-			break; 
-
-		case DESCRIPTION_PANE_INPUT:
-			btn = new JButton(iconController.getInputNodeIcon()); 
-			break;
-
-		case DESCRIPTION_PANE_CONTEXT:
-			btn = new JButton(iconController.getContextNodeIcon()); 
-			break; 
-
-		case DESCRIPTION_PANE_OVARIABLE:
-			btn = new JButton(iconController.getOVariableNodeIcon()); 
-			break; 
-
-		case DESCRIPTION_PANE_MFRAG:
-			btn = new JButton(iconController.getMFragIcon()); 
-			break; 
-
-		case DESCRIPTION_PANE_MTHEORY:
-			btn = new JButton(iconController.getMTheoryNodeIcon()); 
-			break; 
-
-		default:
-			break; 
+		if (icon == null) {
+			icon =  iconController.getTxtFileIcon();
 		}
+		JButton btn = new JButton(icon); 
 
 		btn.setBackground(Color.WHITE); 
 		btn.setSize(20, 20); 
@@ -139,9 +121,60 @@ public class DescriptionPane extends JPanel{
 		toolBar.add(btn); 
 		toolBar.add(labelDescription); 
 	}
+	
+	/**
+	 * Changes the text of the description pane and its icon, using
+	 * default icons depending on the value of type.
+	 * @param description
+	 * @param type
+	 * @see  #setDescriptionText(String, ImageIcon)}
+	 * 
+	 */
+	public void setDescriptionText(String description, int type){
+		ImageIcon icon = null;
+		
+		switch (type){
+
+		case DESCRIPTION_PANE_RESIDENT:
+			icon = iconController.getResidentNodeIcon(); 
+			break; 
+
+		case DESCRIPTION_PANE_INPUT:
+			icon = iconController.getInputNodeIcon(); 
+			break;
+
+		case DESCRIPTION_PANE_CONTEXT:
+			icon = iconController.getContextNodeIcon(); 
+			break; 
+
+		case DESCRIPTION_PANE_OVARIABLE:
+			icon = iconController.getOVariableNodeIcon(); 
+			break; 
+
+		case DESCRIPTION_PANE_MFRAG:
+			icon = iconController.getMFragIcon(); 
+			break; 
+
+		case DESCRIPTION_PANE_MTHEORY:
+			icon = iconController.getMTheoryNodeIcon(); 
+			break; 
+		default:
+			// icon = null;
+			break; 
+		}
+
+		this.setDescriptionText(description, icon);
+	}
 
 	public String getDescriptionText(){
 		return textArea.getText();
+	}
+
+	/**
+	 * @return the iconController
+	 */
+	public IconController getIconController() {
+		return iconController;
 	}
 
 }

@@ -57,6 +57,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.exception.InvalidParentException;
+import unbbayes.prs.extension.IPluginNode;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.InputNode;
@@ -100,6 +101,7 @@ import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeyAlgorithmParameters;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSBNGenerator;
 import unbbayes.util.ApplicationPropertyHolder;
 import unbbayes.util.Debug;
+import unbbayes.util.extension.dto.INodeClassDataTransferObject;
 import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
 import unbbayes.util.mebn.extension.manager.MEBNPluginNodeManager;
 
@@ -1053,6 +1055,15 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	}
 
 	/**
+	 * This method extends the superclass by specifically handling
+	 * MEBN nodes (it uses instanceof to detect MEBN specific nodes).
+	 * In order to handle plugin nodes, it expects that {@link #getPluginNodeManager()}
+	 * and {@link MEBNPluginNodeManager#getPluginNodeInformation(Class)} with
+	 * node.getClass() as its parameter can retrieve a valid instance of {@link INodeClassDataTransferObject}
+	 * containing a valid value of {@link INodeClassDataTransferObject#getProbabilityFunctionPanelBuilder()}
+	 * for the node (that is, it expects that {@link #getPluginNodeManager()} can retrieve a correct builder
+	 * for a panel to edit the currently selected node).
+	 * @param node.
 	 * @see unbbayes.controller.NetworkController#selectNode(unbbayes.prs.Node)
 	 * @see unbbayes.controller.mebn.IMEBNMediator#selectNode(unbbayes.prs.Node)
 	 */
@@ -1064,33 +1075,36 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		
 		typeElementSelected = TypeElementSelected.NODE; 
 		
-		if (node instanceof ResidentNode){
-			residentNodeActive = (ResidentNode)node;
-			setResidentNodeActive(residentNodeActive);
-		    mebnEditionPane.setDescriptionText(node.getDescription(), DescriptionPane.DESCRIPTION_PANE_RESIDENT); 
-		}
-		else{
-			if(node instanceof InputNode){
+		// TODO stop using if-then-else and use polymorphism instead
+		if (node != null) {
+			if (node instanceof ResidentNode){
+				residentNodeActive = (ResidentNode)node;
+				setResidentNodeActive(residentNodeActive);
+			    mebnEditionPane.setDescriptionText(node.getDescription(), DescriptionPane.DESCRIPTION_PANE_RESIDENT); 
+			} else if(node instanceof InputNode){
 				inputNodeActive = (InputNode)node;
 				setInputNodeActive(inputNodeActive);
-				 mebnEditionPane.setDescriptionText(node.getDescription(), DescriptionPane.DESCRIPTION_PANE_INPUT); 
+				mebnEditionPane.setDescriptionText(node.getDescription(), DescriptionPane.DESCRIPTION_PANE_INPUT); 
+			} else if(node instanceof ContextNode){
+				contextNodeActive = (ContextNode)node;
+			    setContextNodeActive(contextNodeActive);
+			    mebnEditionPane.setDescriptionText(node.getDescription(), DescriptionPane.DESCRIPTION_PANE_CONTEXT); 
+			} else if (node instanceof OrdinaryVariable){
+				ovNodeActive = (OrdinaryVariable)node;
+				setOrdVariableNodeActive((OrdinaryVariable)node);
+				mebnEditionPane.setDescriptionText(node.getDescription(), DescriptionPane.DESCRIPTION_PANE_OVARIABLE); 
+			} else if (node instanceof IPluginNode) {
+				this.getScreen().showProbabilityDistributionPanel(
+						this.getPluginNodeManager().getPluginNodeInformation(node.getClass()).getProbabilityFunctionPanelBuilder()
+				);
+				mebnEditionPane.setDescriptionText(node.getDescription(), null); // null means default icon
+			} else {
+				// unknown node
+				Debug.println(this.getClass(), "Unknown type of node: " + node);
+				mebnEditionPane.setDescriptionText(node.getDescription(), null); // null means default icon
 			}
-			else{
-				if(node instanceof ContextNode){
-					contextNodeActive = (ContextNode)node;
-				    setContextNodeActive(contextNodeActive);
-				    mebnEditionPane.setDescriptionText(node.getDescription(), DescriptionPane.DESCRIPTION_PANE_CONTEXT); 
-				}
-				else{
-					if(node instanceof OrdinaryVariable){
-						ovNodeActive = (OrdinaryVariable)node;
-						setOrdVariableNodeActive((OrdinaryVariable)node);
-						 mebnEditionPane.setDescriptionText(node.getDescription(), DescriptionPane.DESCRIPTION_PANE_OVARIABLE); 
-					}
-				}
-			}
-
 		}
+
 	    mebnEditionPane.showTitleGraph(multiEntityBayesianNetwork.getCurrentMFrag().getName());
 	}
 

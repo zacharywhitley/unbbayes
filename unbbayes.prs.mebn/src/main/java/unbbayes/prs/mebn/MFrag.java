@@ -31,6 +31,7 @@ import java.util.Set;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
+import unbbayes.prs.extension.IPluginNode;
 import unbbayes.prs.mebn.exception.CycleFoundException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.ssbn.OVInstance;
@@ -453,22 +454,23 @@ public class MFrag implements Graph{
 		Node origin = edge.getOriginNode();
 		Node destination = edge.getDestinationNode();
 		
-		if (destination instanceof ResidentNode){
+		if ((origin instanceof IPluginNode) || (destination instanceof IPluginNode)) {
+			// Do not perform sanity check in MFrag if edge is connecting plugin node. 
+			// Let the node itself judge its consistency when parent/child are added to it.
+			this.addEdgeInGraph(edge);
+		} else if (destination instanceof ResidentNode){
 			if (origin instanceof ResidentNode){
 				//Case 1: DomainResidentNode -> DomainResidentNode
 				addEdgeInGraph(edge); 
 			    ((ResidentNode)origin).addResidentNodeChild((ResidentNode)destination); 
+			} else if (origin instanceof InputNode){
+				//Case 2: GenerativeInputNode -> DomainResidentNode 
+				addEdgeInGraph(edge); 
+			   ((InputNode)origin).addResidentNodeChild((ResidentNode)destination);
+			} else {
+				throw new MEBNConstructionException(resource.getString("InvalidEdgeException")); 
 			}
-			else{
-				if (origin instanceof InputNode){
-					//Case 2: GenerativeInputNode -> DomainResidentNode 
-					addEdgeInGraph(edge); 
-				   ((InputNode)origin).addResidentNodeChild((ResidentNode)destination);
-				}
-				else{
-					throw new MEBNConstructionException(resource.getString("InvalidEdgeException")); 
-				}
-			}
+			
 		}
 		else{
 			throw new MEBNConstructionException(resource.getString("InvalidEdgeException"));

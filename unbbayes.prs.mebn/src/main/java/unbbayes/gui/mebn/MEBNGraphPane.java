@@ -207,37 +207,40 @@ public class MEBNGraphPane extends GraphPane {
 					newNode = this.getNodeDataTransferObject().getNodeBuilder().buildNode();
 					newNode.setPosition(e.getX(), e.getY());
 					
-					// add new node into MFrag
-					controller.getCurrentMFrag().addNode(newNode);
-					
-					// build a new shape for new node
-					UShape shape = null;
-					try {
-						shape = this.getNodeDataTransferObject().getShapeBuilder().build().getUShape(newNode, this);
-					} catch (IllegalAccessException e1) {
-						throw new RuntimeException(e1);
-					} catch (InstantiationException e1) {
-						throw new RuntimeException(e1);
+					if (this.getController() instanceof MEBNController) {
+						
+						// add new node into MFrag
+						((MEBNController)this.getController()).getCurrentMFrag().addNode(newNode);
+						
+						// build a new shape for new node
+						UShape shape = null;
+						try {
+							shape = this.getNodeDataTransferObject().getShapeBuilder().build().getUShape(newNode, this);
+						} catch (IllegalAccessException e1) {
+							throw new RuntimeException(e1);
+						} catch (InstantiationException e1) {
+							throw new RuntimeException(e1);
+						}
+						
+						// add shape into this pane (canvas)
+						addShape(shape);
+						
+						// set this node/shape as selected
+						shape.setState(UShape.STATE_SELECTED, null);
+						
+						shape.update();
+						
+						// notify the probability function panel's builder that a new node is currently "selected" as owner			
+						this.getNodeDataTransferObject().getProbabilityFunctionPanelBuilder().setProbabilityFunctionOwner(newNode);
+						
+						// The following method expects that 
+						// controller.getPluginNodeManager().getPluginNodeInformation(this.getNodeDataTransferObject().getProbabilityFunctionPanelBuilder().getProbabilityFunctionOwner().getClass())
+						// which is the same as controller.getPluginNodeManager().getPluginNodeInformation(newNode.getClass())
+						// can retrieve the same values of this.getNodeDataTransferObject()
+						
+						this.getController().selectNode(newNode);
 					}
 					
-					// add shape into this pane (canvas)
-					addShape(shape);
-					
-					// set this node/shape as selected
-					shape.setState(UShape.STATE_SELECTED, null);
-					
-					shape.update();
-					
-					// notify the probability function panel's builder that a new node is currently "selected" as owner			
-					this.getNodeDataTransferObject().getProbabilityFunctionPanelBuilder().setProbabilityFunctionOwner(newNode);
-					
-					// we are not using controller.selectNode as the other cases because we are following
-					// the same scheme adopted by BN plugin node, which calls showProbabilityDistributionPanel.
-					// MEBNNetworkWindow overwrites the behavior.
-					// Display the probability function panel for new node
-					this.controller.getScreen().showProbabilityDistributionPanel(
-								this.getNodeDataTransferObject().getProbabilityFunctionPanelBuilder()
-							);
 				}
 					break;
 				default: {
