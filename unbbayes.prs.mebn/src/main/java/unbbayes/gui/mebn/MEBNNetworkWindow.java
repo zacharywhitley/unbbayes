@@ -5,10 +5,16 @@ package unbbayes.gui.mebn;
 
 
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
@@ -17,12 +23,18 @@ import java.io.File;
 import java.io.IOException;
 import java.util.EventObject;
 import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.JViewport;
 
@@ -32,6 +44,9 @@ import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.controller.mebn.MEBNController;
 import unbbayes.gui.EvidenceTree;
 import unbbayes.gui.NetworkWindow;
+import unbbayes.gui.mebn.auxiliary.ButtonLabel;
+import unbbayes.gui.mebn.auxiliary.FocusListenerTextField;
+import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelBuilder;
 import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelPluginManager;
 import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelPluginManager.IMEBNEditionPanelPluginComponents;
@@ -45,7 +60,6 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.util.Debug;
 import unbbayes.util.GraphLayoutUtil;
 import unbbayes.util.ResourceController;
 import unbbayes.util.extension.UnBBayesModule;
@@ -81,7 +95,13 @@ public class MEBNNetworkWindow extends NetworkWindow {
 	/** This is the context for UnBBayes' plugin framework */
 	private IMEBNEditionPanelPluginManager pluginManager = MEBNEditionPanelPluginManager.newInstance(false);	// instantiate, do not initialize
 
-private JScrollPane pluginDistributionScrollPane;
+	private JScrollPane pluginDistributionScrollPane;
+	
+	private JToolBar pluginDistributionBar;
+	
+	private JButton pluginNodeToolBarButton;
+
+	private JTextField pluginNodeNameTextField;
 
 
 	/**
@@ -399,6 +419,126 @@ private JScrollPane pluginDistributionScrollPane;
 		// building the panel using associated node
 		this.setDistributionPane(builder.buildProbabilityFunctionEditionPanel());
 		
+		// create tool bar to edit the name of the plugin node
+		if (this.getPluginNodeNameToolBar() == null) {
+			
+			// create plugin tool bar (where we edit plugin node's name) if it is not already created
+			this.setPluginNodeNameToolBar(new JToolBar());
+			this.getPluginNodeNameToolBar().setFloatable(false);
+			this.getPluginNodeNameToolBar().setLayout(new GridLayout(1,5));
+			
+			// create the components in the tool bar (this is a button with label)
+			this.setPluginNodeNameToolBarButton(new ButtonLabel(resource.getString("nodeName"), IconController.getInstance().getNodeNodeIcon()));
+	    	this.getPluginNodeNameToolBar().add(this.getPluginNodeNameToolBarButton());
+	    	
+	    	// add listener to the button with label
+	    	final IProbabilityFunctionPanelBuilder paramToListener = builder;	// use a final variable as a parameter for the listener
+	    	this.getPluginNodeNameToolBarButton().addActionListener(new ActionListener()  {
+				public void actionPerformed(ActionEvent e) {
+					showProbabilityDistributionPanel(paramToListener);
+				}
+			});
+	    	
+	    	
+	    	// this is the text field to edit the name
+			this.setPluginNodeNameTextField(new JTextField(builder.getProbabilityFunctionOwner().getName() ,5));
+			this.getPluginNodeNameTextField().setForeground(Color.BLACK);
+	    	// use another tool bar as a container for the text field (this is just to make sure that it looks like the resident nodes' tool bar)
+	    	JToolBar textFieldContainer = new JToolBar();
+      		textFieldContainer.setFloatable(false);
+      		textFieldContainer.add(this.getPluginNodeNameTextField());
+      		this.getPluginNodeNameToolBar().add(textFieldContainer);
+      		
+      		// do some adjustments just to look like the other tool bars
+      		for (int i = 0; i < 3; i++) {
+      			// add disabled buttons
+      			this.getPluginNodeNameToolBar().add(new JButton() {
+      				protected void init(String text, Icon icon) {
+      					super.init(text, icon);
+      					setEnabled(false);
+      				}
+      			});
+			}
+      		
+      		// add listeners to the text field so that it behaves like the resident node's tool bar
+      		this.getPluginNodeNameTextField().addFocusListener(new FocusListenerTextField());
+	    	
+	    	// add a key listener so that it behaves similarly to resident nodes
+      		this.getPluginNodeNameTextField().addKeyListener(new KeyAdapter() {
+      			public void keyPressed(KeyEvent e) {
+      				Node nodeAux = getController().getSelectedNode();
+
+      				if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (getPluginNodeNameTextField().getText().length()>0)) {
+      					try {
+      						String name = getPluginNodeNameTextField().getText(0,getPluginNodeNameTextField().getText().length());
+      						Matcher matcher = Pattern.compile("[a-zA-Z_0-9]*").matcher(name);
+      						if (matcher.matches()) {
+      							// update name
+      							nodeAux.setName(name);
+      							// update the GUI so that it displays the new name
+      							getMebnEditionPane().repaint();
+      							getMebnEditionPane().getNetworkWindow().getGraphPane().update(); 
+      							if (getPluginDistributionScrollPane() != null) {
+      								getPluginDistributionScrollPane().updateUI();
+      								getPluginDistributionScrollPane().repaint();
+      								if (getPluginDistributionScrollPane().getViewport() != null
+      										&& getPluginDistributionScrollPane().getViewport().getView() != null) {
+      									getPluginDistributionScrollPane().getViewport().getView().repaint();
+      								}
+      							} 
+      							
+      						}  else {
+      							getPluginNodeNameTextField().setBackground(MebnToolkit.getColorTextFieldError());
+//      							getPluginNodeNameTextField().setForeground(Color.WHITE);
+      							getPluginNodeNameTextField().selectAll();
+      							JOptionPane.showMessageDialog(MEBNNetworkWindow.this,
+      									resource.getString("nameError"),
+      									resource.getString("nameException"),
+      									JOptionPane.ERROR_MESSAGE);
+      						}
+      					}
+      					catch (javax.swing.text.BadLocationException ble) {
+      						System.out.println(ble.getMessage());
+						} catch (Exception e2) {
+							e2.printStackTrace();
+							JOptionPane.showMessageDialog(MEBNNetworkWindow.this,
+  									e2.getMessage(),
+  									resource.getString("nameError"),
+  									JOptionPane.ERROR_MESSAGE);
+						}
+      				}
+      			}
+
+      			public void keyReleased(KeyEvent e){
+      				try{
+      						String name = getPluginNodeNameTextField().getText(0,getPluginNodeNameTextField().getText().length());
+      						Matcher matcher = Pattern.compile("[a-zA-Z_0-9]*").matcher(name);
+    						if (!matcher.matches()) {
+    							getPluginNodeNameTextField().setBackground(MebnToolkit.getColorTextFieldError());
+//    							getPluginNodeNameTextField().setForeground(Color.WHITE);
+    						}
+    						else{
+    							getPluginNodeNameTextField().setBackground(MebnToolkit.getColorTextFieldSelected());
+    							getPluginNodeNameTextField().setForeground(Color.BLACK);
+    						}
+      				} catch(Exception efd){
+      					efd.printStackTrace();
+      				}
+
+      			}
+      		});
+      		// add the new tool bar as "PluginNodeToolBar" into the card 
+			this.getMebnEditionPane().getNodeSelectedToolBar().add("PluginNodeToolBar", this.getPluginNodeNameToolBar());
+		} else {
+			// reuse the one if already created. Just change the displayed text.
+			this.getPluginNodeNameTextField().setText(builder.getProbabilityFunctionOwner().getName());
+			this.getPluginNodeNameTextField().updateUI();
+			this.getPluginNodeNameTextField().repaint();
+		}
+		
+		// show the plugin name name tool bar
+		this.getMebnEditionPane().getCardLayout().show(this.getMebnEditionPane().getNodeSelectedToolBar(), "PluginNodeToolBar");
+		
 		// the below line is a requisite from inherited code, so, it is not very important for plugin context
 //		this.setTableOwner(builder.getProbabilityFunctionOwner());
 		
@@ -418,6 +558,7 @@ private JScrollPane pluginDistributionScrollPane;
 	 */
 	public void setDistributionPane(JPanel distributionPane) {
 		
+		// create plugin panel if it is not already created
 		if (this.getPluginDistributionScrollPane() == null) {
 			this.setPluginDistributionScrollPane(new JScrollPane(distributionPane));
 			this.getMebnEditionPane().getJpTabSelected().add("PluginNodeTab", this.getPluginDistributionScrollPane());
@@ -427,6 +568,7 @@ private JScrollPane pluginDistributionScrollPane;
 			this.getPluginDistributionScrollPane().repaint();
 		}
 		
+		// hide other components, because it seems that the card layout is not hiding the others
 		for (Component comp : this.getMebnEditionPane().getJpTabSelected().getComponents()) {
 			comp.setVisible(false);
 		}
@@ -434,6 +576,7 @@ private JScrollPane pluginDistributionScrollPane;
 		this.getPluginDistributionScrollPane().setVisible(true);
 		
 		this.getMebnEditionPane().getCardLayout().show(this.getMebnEditionPane().getJpTabSelected(), "PluginNodeTab");
+
     	
 	}
 	
@@ -573,6 +716,57 @@ private JScrollPane pluginDistributionScrollPane;
 	public void setPluginDistributionScrollPane(
 			JScrollPane pluginDistributionScrollPane) {
 		this.pluginDistributionScrollPane = pluginDistributionScrollPane;
+	}
+
+	/**
+	 * This is the toolbar used for changing plugin node name.
+	 * @return the pluginDistributionBar
+	 */
+	public JToolBar getPluginNodeNameToolBar() {
+		return pluginDistributionBar;
+	}
+
+	/**
+	 * This is the toolbar used for changing plugin node name.
+	 * @param pluginDistributionBar the pluginDistributionBar to set
+	 */
+	public void setPluginNodeNameToolBar(JToolBar pluginDistributioBar) {
+		this.pluginDistributionBar = pluginDistributioBar;
+	}
+
+	/**
+	 * This is a button inside {@link #getPluginNodeNameToolBar()}
+	 * @return the pluginNodeToolBarButton
+	 */
+	public JButton getPluginNodeNameToolBarButton() {
+		return pluginNodeToolBarButton;
+	}
+
+	/**
+	 * This is a button inside {@link #getPluginNodeNameToolBar()}
+	 * @param pluginNodeToolBarButton the pluginNodeToolBarButton to set
+	 */
+	public void setPluginNodeNameToolBarButton(
+			JButton pluginNodeToolBarButton) {
+		this.pluginNodeToolBarButton = pluginNodeToolBarButton;
+	}
+
+	/**
+	 * This is a text field to change plugin node name.
+	 * @return the pluginNodeNameTextField
+	 * @see #getPluginNodeNameToolBar()
+	 */
+	public JTextField getPluginNodeNameTextField() {
+		return pluginNodeNameTextField;
+	}
+
+	/**
+	 * This is a text field to change plugin node name.
+	 * @param pluginNodeNameTextField the pluginNodeNameTextField to set
+	 * @see #getPluginNodeNameToolBar()
+	 */
+	public void setPluginNodeNameTextField(JTextField pluginNodeNameTextField) {
+		this.pluginNodeNameTextField = pluginNodeNameTextField;
 	}
 
 

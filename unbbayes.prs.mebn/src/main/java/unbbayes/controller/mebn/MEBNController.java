@@ -1098,10 +1098,12 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 						this.getPluginNodeManager().getPluginNodeInformation(node.getClass()).getProbabilityFunctionPanelBuilder()
 				);
 				mebnEditionPane.setDescriptionText(node.getDescription(), null); // null means default icon
+				this.nodeActive = node;
 			} else {
 				// unknown node
 				Debug.println(this.getClass(), "Unknown type of node: " + node);
 				mebnEditionPane.setDescriptionText(node.getDescription(), null); // null means default icon
+				this.nodeActive = node;
 			}
 		}
 
