@@ -236,11 +236,6 @@
 		<dependencies>
 			<!-- This is a plugin project for UnBBayes. Since it uses classes from the core, 
 			     UnBBayes is indeed a dependency -->
-			<dependency>
-				<groupId>br.unb.cic</groupId>
-				<artifactId>unbbayes</artifactId>
-				<version>4.1.0</version>
-			</dependency>
 			
 		<!-- PROTEGE-OWL -->
 		<!--
@@ -333,7 +328,13 @@
 			<version>2.8.1</version>
 		</dependency>
 			
-	</dependencies>
+		<dependency>
+			<groupId>br.unb.cic</groupId>
+			<artifactId>unbbayes</artifactId>
+			<version>4.2.2</version>
+			<optional>false</optional>
+		</dependency>
+		</dependencies>
 	<reporting>
 		<plugins>
 			<plugin>
