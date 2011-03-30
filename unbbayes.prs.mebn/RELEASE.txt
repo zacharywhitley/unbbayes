@@ -1,4 +1,4 @@
-UNBBAYES PLUGIN - VERSION 1.8.2
+UNBBAYES PLUGIN - VERSION 1.8.4
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
@@ -10,3 +10,5 @@ Number	Request ID	Summary
 1		3132582 	The I/O class for UBF format is now preserving the order of mfrags, nodes and states.
 2		        	Messages coming from some I/O classes were written in Portuguese (even though they were using resource files).
 3		        	Queries to PowerLoom are now attempted more than once in case of failure.
+4		2985473     Reference Uncertainty Error in SSBN.
+5		3260712     SSBN is not saved with correct CPT.
