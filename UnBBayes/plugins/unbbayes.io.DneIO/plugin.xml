@@ -2,7 +2,7 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- This is one of 3 basic I/O modules for the core (PN module). At least one must be present in order
      to use I/O for PN module -->
-<plugin id="unbbayes.io.DneIO" version="1.0.0">
+<plugin id="unbbayes.io.DneIO" version="1.0.1">
     <requires>
         <import plugin-id="unbbayes.util.extension.core"/>
     </requires>

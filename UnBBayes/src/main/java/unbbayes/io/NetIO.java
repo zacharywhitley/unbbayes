@@ -947,7 +947,17 @@ public class NetIO implements BaseIO {
 		if (sizeVa > 0) {
 			stream.print(" |");
 			for (int c2 = 0; c2 < sizeVa; c2++) {
-				Node auxNo2 = (Node) auxParentList.get(c2);
+				Node auxNo2 = null;
+				// If this is a random variable, the order of the parents 
+				// has to follow (be consistent) the order in the CPT
+				if (node instanceof IRandomVariable) {
+					PotentialTable auxTabPot =
+						(PotentialTable)((IRandomVariable) node).getProbabilityFunction();
+					// The order of the parents in the CPT is the inverse of the order it is added
+					auxNo2 = (Node) auxTabPot.getVariableAt(sizeVa - c2);
+				} else {
+					auxNo2 = (Node) auxParentList.get(c2);
+				}
 				stream.print(" " + auxNo2.getName());
 			}
 		}

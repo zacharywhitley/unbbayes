@@ -8,6 +8,23 @@
 	</properties>
 	<body>
 	
+		<release version="4.2.2" date="2011-03-30" description="Second UnBBayes Plugin Framework release">
+			<action dev="Shou Matsumoto" type="add" issue="3132338">
+				The "final" mark in some methods were removed, in order to allow overwriting.
+			</action>
+			<action dev="Shou Matsumoto" type="add" issue="3132338">
+				XXXX have to add it later XXXX.
+			</action>
+			
+			
+			<action dev="Shou Matsumoto" type="fix" issue="3260712">
+				XXXX have to add it later XXXX.
+			</action>
+			<action dev="Rommel Carvalho" type="fix" issue="3260712">
+				SSBN is not saved with correct CPT.
+			</action>
+		</release>
+	
 		<release version="4.0.0" date="2010-03-23" description="First UnBBayes Plugin Framework release">
 			<action dev="Shou Matsumoto" type="add" issue="2930755">
 				Plugin for forms for discrete nodes' conditional functions.

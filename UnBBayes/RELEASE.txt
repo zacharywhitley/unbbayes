@@ -1,4 +1,4 @@
-UNBBAYES VERSION 4.2.1
+UNBBAYES VERSION 4.2.2
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
@@ -7,6 +7,7 @@ Number	Request ID	Summary
 
 BUG LIST		
 Number	Request ID	Summary
+2		3260712 	SSBN is not saved with correct CPT.
 
 
 UNBBAYES VERSION 4.0.0
