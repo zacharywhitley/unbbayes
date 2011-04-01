@@ -2065,7 +2065,7 @@ public class UnBBayesFrame extends JFrame {
 					if (mod != null) {
 						addWindow(mod);
 					}
-				} catch (IOException e) {
+				} catch (Throwable e) {
 					e.printStackTrace();
 					JOptionPane.showMessageDialog(UnBBayesFrame.this, 
 							e.getMessage(), 
