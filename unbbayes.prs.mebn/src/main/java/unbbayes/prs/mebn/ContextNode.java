@@ -31,6 +31,7 @@ import unbbayes.prs.mebn.context.EnumType;
 import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
+import unbbayes.util.Debug;
 
 /**
  * The individual of the ContextNode class represent a type of constraint impose
@@ -374,7 +375,7 @@ public class ContextNode extends MultiEntityNode {
     	try {
     		return formulaTree.getFormulaViewText();
 		} catch (Throwable e) {
-			e.printStackTrace();
+			Debug.println(this.getClass(), "formulaTree == null", e);
 		}
 		return super.toString();
     }

@@ -491,6 +491,11 @@ public class ResidentNode extends MultiEntityNode
 		return typeOfStates;
 	}
 
+	/**
+	 * @deprecated because the type of the states are unpredictable (they are more
+	 * than mere booleans, categoricals and etc.), this kind of subdivision should perish.
+	 * @param typeOfStates
+	 */
 	public void setTypeOfStates(int typeOfStates) {
 		this.typeOfStates = typeOfStates;
 	}
