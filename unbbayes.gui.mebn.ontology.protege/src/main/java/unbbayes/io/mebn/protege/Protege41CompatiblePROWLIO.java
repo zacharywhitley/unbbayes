@@ -1,6 +1,3 @@
-/**
- * 
- */
 package unbbayes.io.mebn.protege;
 
 import java.io.File;
@@ -14,7 +11,7 @@ import org.protege.editor.owl.model.inference.ReasonerStatus;
 
 import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
-import unbbayes.io.mebn.owlapi.OWLAPICompatiblePROWL2IO;
+import unbbayes.io.mebn.owlapi.OWLAPICompatiblePROWLIO;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.ontology.protege.IBundleLauncher;
 import unbbayes.prs.mebn.ontology.protege.OWLClassExpressionParserFacade;
@@ -22,13 +19,13 @@ import unbbayes.prs.mebn.ontology.protege.ProtegeBundleLauncher;
 import unbbayes.util.Debug;
 
 /**
- * This class extends {@link OWLAPICompatiblePROWL2IO} in order
- * to fill {@link MultiEntityBayesianNetwork#getStorageImplementor()}
- * using {@link ProtegeStorageImplementorDecorator}
+ * This class works in a similar way to {@link Protege41CompatiblePROWL2IO}, but
+ * it loads PR-OWL 1 ontologies written in OWL2 language, instead of PR-OWl2 ontologies
+ * in OWL2.
  * @author Shou Matsumoto
  *
  */
-public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
+public class Protege41CompatiblePROWLIO extends OWLAPICompatiblePROWLIO {
 
 	private boolean initializeReasoner = true;
 	
@@ -41,7 +38,7 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 	 * This is public just to enable plug-in compatibility
 	 * @deprecated
 	 */
-	public Protege41CompatiblePROWL2IO() {
+	public Protege41CompatiblePROWLIO() {
 	}
 	
 	/**
@@ -49,7 +46,7 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 	 * @return
 	 */
 	public static MebnIO newInstance() {
-		return new Protege41CompatiblePROWL2IO();
+		return new Protege41CompatiblePROWLIO();
 	}
 
 	/* (non-Javadoc)
@@ -277,5 +274,4 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 	}
 	
 	
-
 }

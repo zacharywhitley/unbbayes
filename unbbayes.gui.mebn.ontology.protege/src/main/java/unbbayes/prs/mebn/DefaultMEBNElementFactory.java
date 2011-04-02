@@ -99,22 +99,22 @@ public class DefaultMEBNElementFactory implements IMEBNElementFactory {
 			if (operation == null || operation.trim().length() <= 0) {
 				return null;
 			}
-			// the name is not empty
-			if (operation.equalsIgnoreCase("and") || operation.endsWith("and")) {
+			// the name is not empty. Use case insensitive comparison
+			if (operation.equalsIgnoreCase("and") || operation.toLowerCase().endsWith("and")) {
 				builtInRV = new BuiltInRVAnd(); 
-			} else if (operation.equalsIgnoreCase("or") || operation.endsWith("or")) {
+			} else if (operation.equalsIgnoreCase("or") || operation.toLowerCase().endsWith("or")) {
 				builtInRV = new BuiltInRVOr(); 
-			} else if (operation.equalsIgnoreCase("equalto") || operation.endsWith("equalto")) {
+			} else if (operation.equalsIgnoreCase("equalTo") || operation.toLowerCase().endsWith("equalto")) {
 				builtInRV = new BuiltInRVEqualTo(); 
-			} else if (operation.equalsIgnoreCase("exists") || operation.endsWith("exists")) {
+			} else if (operation.equalsIgnoreCase("exists") || operation.toLowerCase().endsWith("exists")) {
 				builtInRV = new BuiltInRVExists(); 
-			} else if (operation.equalsIgnoreCase("forall") || operation.endsWith("forall")) {
+			} else if (operation.equalsIgnoreCase("forAll") || operation.toLowerCase().endsWith("forall")) {
 				builtInRV = new BuiltInRVForAll(); 
-			} else if (operation.equalsIgnoreCase("not") || operation.endsWith("not")) {
+			} else if (operation.equalsIgnoreCase("not") || operation.toLowerCase().endsWith("not")) {
 				builtInRV = new BuiltInRVNot(); 
-			} else if (operation.equalsIgnoreCase("iff") || operation.endsWith("iff")) {
+			} else if (operation.equalsIgnoreCase("iff") || operation.toLowerCase().endsWith("iff")) {
 				builtInRV = new BuiltInRVIff(); 
-			} else if (operation.equalsIgnoreCase("implies") || operation.endsWith("implies")) {
+			} else if (operation.equalsIgnoreCase("implies") || operation.toLowerCase().endsWith("implies")) {
 				builtInRV = new BuiltInRVImplies(); 
 			} 
 		} catch (Throwable e) {

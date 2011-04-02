@@ -7,6 +7,7 @@ import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.PrefixManager;
+import org.semanticweb.owlapi.util.DefaultPrefixManager;
 
 import unbbayes.io.mebn.PROWLModelUser;
 import unbbayes.util.Debug;
@@ -17,6 +18,8 @@ import unbbayes.util.Debug;
  *
  */
 public class DefaultNonPROWLClassExtractor implements INonPROWLClassExtractor {
+	
+	private String prowlOntologyNamespaceURI = "http://www.pr-owl.org/pr-owl.owl";
 	
 	private Collection<OWLClassExpression> nonPROWLClassesCache = new HashSet<OWLClassExpression>();
 	
@@ -61,7 +64,7 @@ public class DefaultNonPROWLClassExtractor implements INonPROWLClassExtractor {
 			ret.addAll(ontology.getClassesInSignature(true));
 			
 			// use PR-OWL namespace (prefix)
-			PrefixManager prefixManager = IPROWL2ModelUser.PROWL2_DEFAULTPREFIXMANAGER;
+			PrefixManager prefixManager = new DefaultPrefixManager(this.getProwlOntologyNamespaceURI() + '#');
 			
 			// remove PR-OWL 1 elements (we are removing here because we do not know how to query Thing and not(<PR-OWL classes>) in open-world assumption)
 			// TODO find out a way to query Thing and not(<PR-OWL classes>) in open-world assumption
@@ -136,7 +139,8 @@ public class DefaultNonPROWLClassExtractor implements INonPROWLClassExtractor {
 		// update cache
 		this.setNonPROWLClassesCache(ret);
 		
-		return ret;
+		// do not return ret itself, because it will allow direct access to cache
+		return new HashSet<OWLClassExpression>(ret);
 	}
 
 	/**
@@ -191,5 +195,19 @@ public class DefaultNonPROWLClassExtractor implements INonPROWLClassExtractor {
 	 */
 	public void resetNonPROWLClassExtractor() {
 		this.setNonPROWLClassesCache(null);
+	}
+
+	/**
+	 * @return the prowlOntologyNamespaceURI
+	 */
+	public String getProwlOntologyNamespaceURI() {
+		return prowlOntologyNamespaceURI;
+	}
+
+	/**
+	 * @param prowlOntologyNamespaceURI the prowlOntologyNamespaceURI to set
+	 */
+	public void setProwlOntologyNamespaceURI(String prowlOntologyNamespaceURI) {
+		this.prowlOntologyNamespaceURI = prowlOntologyNamespaceURI;
 	}
 }

@@ -88,7 +88,7 @@ public class DefaultPROWL2ModelUser implements IPROWL2ModelUser {
 	 * The default value is {@link IPROWL2ModelUser#PROWL2_NAMESPACEURI}.
 	 * @return the prowlOntologyNamespaceURI
 	 */
-	protected String getProwlOntologyNamespaceURI() {
+	public String getProwlOntologyNamespaceURI() {
 		return prowlOntologyNamespaceURI;
 	}
 
@@ -97,7 +97,7 @@ public class DefaultPROWL2ModelUser implements IPROWL2ModelUser {
 	 * The default value is {@link IPROWL2ModelUser#PROWL2_NAMESPACEURI}.
 	 * @param prowlOntologyNamespaceURI the prowlOntologyNamespaceURI to set
 	 */
-	protected void setProwlOntologyNamespaceURI(String prowlOntologyNamespaceURI) {
+	public void setProwlOntologyNamespaceURI(String prowlOntologyNamespaceURI) {
 		this.prowlOntologyNamespaceURI = prowlOntologyNamespaceURI;
 	}
 

@@ -25,6 +25,7 @@ import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataProperty;
+import org.semanticweb.owlapi.model.OWLDataPropertyExpression;
 import org.semanticweb.owlapi.model.OWLEntity;
 import org.semanticweb.owlapi.model.OWLIndividual;
 import org.semanticweb.owlapi.model.OWLLiteral;
@@ -188,7 +189,10 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 				OWLAPICompatiblePROWLIO.class.getClassLoader()
 			));
 		this.setNonPROWLClassExtractor(DefaultNonPROWLClassExtractor.getInstance());
-		this.setProwlModelUserDelegator(DefaultPROWL2ModelUser.getInstance());
+		IPROWL2ModelUser modelUser = DefaultPROWL2ModelUser.getInstance();
+		// configure it to use http://www.pr-owl.org/pr-owl.owl as prowl default prefix
+		((DefaultPROWL2ModelUser)modelUser).setProwlOntologyNamespaceURI("http://www.pr-owl.org/pr-owl.owl");
+		this.setProwlModelUserDelegator(modelUser);
 		this.setWrappedLoaderPrOwlIO(new LoaderPrOwlIO());	 // initialize default
 		this.setMEBNFactory(PROWL2MEBNFactory.getInstance()); // initialize default
 	}
@@ -1081,6 +1085,33 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 			Debug.println(this.getClass(), property + " is either anonymous or not declared as an object property in " + ontology);
 		}
 		return new HashSet<OWLIndividual>();
+	}
+	
+	/**
+	 * This method checks if {@link #getLastOWLModel()} != null. If not null, then it will use reasoner to resolve data property values. If
+	 * null, then it will return the asserted values.
+	 * @param individual
+	 * @param property
+	 * @param ontology
+	 * @return a non null collection
+	 */
+	public Collection<OWLLiteral> getDataPropertyValues(OWLIndividual individual, OWLDataPropertyExpression property, OWLOntology ontology) {
+		if (!property.isAnonymous()
+				&& ontology.containsDataPropertyInSignature(property.asOWLDataProperty().getIRI(), true)) {
+			// this ontology has this object property and it is not anonymous
+			try {
+				if (this.getLastOWLReasoner() != null) {
+					return this.getLastOWLReasoner().getDataPropertyValues(individual.asOWLNamedIndividual(), property.asOWLDataProperty());
+				}
+				return individual.getDataPropertyValues(property, ontology);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		} else {
+			// unsupported
+			Debug.println(this.getClass(), property + " is either anonymous or not declared as an data property in " + ontology);
+		}
+		return new HashSet<OWLLiteral>();
 	}
 	
 	/**
@@ -1987,7 +2018,15 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 				continue;	// let's ignore it and keep going on.
 			}
 			mebnEntity = mebn.getObjectEntityContainer().getObjectEntityByName(this.extractName(ontology, (OWLEntity)subclassExpression));
-			for (OWLIndividual individual : this.getOWLIndividuals(subclassExpression, ontology)) { 
+			
+			// The individuals to load are initialized as individuals of non-PR-OWL2 elements.
+			Set<OWLIndividual> individuals = this.getOWLIndividuals(subclassExpression, ontology);	
+			
+			// TODO add non-PR-OWL2 individuals of owl:Thing that were not added yet. Use asserted individuals
+			// TODO load individuals of owl:Thing that was not classified as as any other class
+			
+			// iterate over individuals
+			for (OWLIndividual individual : individuals) { 
 				if (individual.isNamed()) {
 					// creates a object entity instance and adds it into the mebn entity container
 					try {
@@ -2010,6 +2049,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 				}
 			}
 		}
+		
 		return ret;
 	}
 	
@@ -2098,7 +2138,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 	 * 
 	 * @deprecated TODO this method should be moved to {@link ContextNode} in the future.
 	 */
-	private NodeFormulaTree buildFormulaTree(ContextNode contextNode){
+	protected NodeFormulaTree buildFormulaTree(ContextNode contextNode){
 		
 		
 		NodeFormulaTree nodeFormulaRoot; 
@@ -2586,6 +2626,8 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 	 * A mapping from argument name to argument.
 	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntologyManager, OWLOntology, MultiEntityBayesianNetwork)}
 	 * and {@link #loadBuiltInRV(OWLOntologyManager, OWLOntology, MultiEntityBayesianNetwork)}).
+	 * This map is usually updated in {@link #loadGenerativeInputNode(OWLOntology, MultiEntityBayesianNetwork)}, {@link #loadDomainResidentNode(OWLOntology, MultiEntityBayesianNetwork)}
+	 * and {@link #loadContextNode(OWLOntology, MultiEntityBayesianNetwork)}
 	 * @return the mapArgument
 	 */
 	protected Map<String, Argument> getMapArgument() {
@@ -2596,6 +2638,8 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 	 * A mapping from argument name to argument.
 	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntologyManager, OWLOntology, MultiEntityBayesianNetwork)}
 	 * and {@link #loadBuiltInRV(OWLOntologyManager, OWLOntology, MultiEntityBayesianNetwork)}).
+	 * This map is usually updated in {@link #loadGenerativeInputNode(OWLOntology, MultiEntityBayesianNetwork)}, {@link #loadDomainResidentNode(OWLOntology, MultiEntityBayesianNetwork)}
+	 * and {@link #loadContextNode(OWLOntology, MultiEntityBayesianNetwork)}
 	 * @param mapArgument the mapArgument to set
 	 */
 	protected void setMapArgument(Map<String, Argument> mapArgument) {
@@ -2792,6 +2836,9 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 	 * @param prowlOntologyNamespaceURI the prowlOntologyNamespaceURI to set
 	 */
 	public void setProwlOntologyNamespaceURI(String prowlOntologyNamespaceURI) {
+		if (this.getProwlModelUserDelegator() != null) {
+			((DefaultPROWL2ModelUser)this.getProwlModelUserDelegator()).setProwlOntologyNamespaceURI(prowlOntologyNamespaceURI);
+		}
 		this.prowlOntologyNamespaceURI = prowlOntologyNamespaceURI;
 	}
 

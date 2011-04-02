@@ -5,6 +5,10 @@
     <requires>
         <import plugin-id="unbbayes.prs.mebn"/>
     </requires>
+    <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNIO" id="UbfIOForPROWLInOWL2">
+        <parameter id="class" value="unbbayes.io.mebn.UbfIO2ForPROWLInOWL2" />
+        <parameter id="name" value="UnBBayes File with PR-OWL 1 in OWL2" />
+    </extension>
     <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNIO" id="UbfIO2">
         <parameter id="class" value="unbbayes.io.mebn.UbfIO2" />
         <parameter id="name" value="UnBBayes File with PR-OWL 2.0" />
