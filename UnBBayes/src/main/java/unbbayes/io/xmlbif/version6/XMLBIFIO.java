@@ -151,7 +151,7 @@ public class XMLBIFIO {
 						for (int j = 0; j < parentList.size(); j++) {
 							XMLBIFType.NetworkType.ConditionalDistributionSetType.ConditionalDistributionType.ParentsType.ParentType parent = (XMLBIFType.NetworkType.ConditionalDistributionSetType.ConditionalDistributionType.ParentsType.ParentType)parentList.get(j);
 							// Force the change in the parent list order on the CPT to make sure the values in the distribution will be correct.
-							table.setVariableAt(parent.getIndex(), pn.getNode(parent.getName()));
+							table.setVariableAt(parent.getIndex() + 1, pn.getNode(parent.getName()));
 						}
 					}
 					
@@ -412,7 +412,7 @@ public class XMLBIFIO {
 				for (int i = 1; i < potTable.variableCount(); i++) {
 					XMLBIFType.NetworkType.ConditionalDistributionSetType.ConditionalDistributionType.ParentsType.ParentType parent = of.createXMLBIFTypeNetworkTypeConditionalDistributionSetTypeConditionalDistributionTypeParentsTypeParentType();
 					Node parentNode = (Node)potTable.getVariableAt(i);
-					parent.setIndex(i);
+					parent.setIndex(i - 1);
 					parent.setName(parentNode.getName());
 					parents.getParent().add(parent);
 				}
