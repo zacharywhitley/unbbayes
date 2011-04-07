@@ -776,7 +776,9 @@ public class PowerLoomKB implements KnowledgeBase {
 				String[] resultN = new String[ovFaultArray.length];
 				Debug.print("   >"); 
 				for(int i = 0; i < ovFaultArray.length; i++){ 
-					resultN[i] = PLI.getNthString(iterator, i, moduleFinding, environment); 
+//					resultN[i] = PLI.getNthString(iterator, i, moduleFinding, environment);
+					// FIXME This is just a quick fix to avoid weird names like /PL-KERNEL-KB/PL-USER/GENERATIVE_MODULE_1/FINDINGS_MODULE_1/PERSON1
+					resultN[i] = PLI.getNthString(iterator, i, moduleFinding, environment).replace("/PL-KERNEL-KB/PL-USER/GENERATIVE_MODULE_1/FINDINGS_MODULE_1/", "").toLowerCase();
 					Debug.print(" " + resultN[i]);
 				}
 				Debug.println(" <   "); 
