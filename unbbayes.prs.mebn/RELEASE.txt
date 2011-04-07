@@ -1,4 +1,4 @@
-UNBBAYES PLUGIN - VERSION 1.8.4
+UNBBAYES PLUGIN - VERSION 1.8.6
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
