@@ -55,13 +55,14 @@
       <scope>runtime</scope>
       <includes>
       	<!-- Only include MEBN-specific libs - do not include UnBBayes' dependency -->
-        <include>iri*.jar</include>
-        <include>jena*.jar</include>
-        <include>powerloom*.jar</include>
-        <include>stella*.jar</include>
-        <include>protege-owl*.jar</include>
-        <include>protege*.jar</include>
-        <include>xercesImpl*.jar</include>
+      	<!-- The format should be groupId:artificatId -->
+        <include>guess:iri</include>
+        <include>guess:jena</include>
+        <include>guess:powerloom</include>
+        <include>guess:stella</include>
+        <include>guess:protege-owl</include>
+        <include>guess:protege</include>
+        <include>xerces:xercesImpl</include>
       </includes>
     </dependencySet>
   </dependencySets>
