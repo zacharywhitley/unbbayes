@@ -631,7 +631,7 @@ public class UbfIO implements MebnIO {
 								
 								//by young
 								height = Math.max(node.getHeight(), st.nval);
-								System.out.println("Setting node size:" + width + "," + height);
+//								System.out.println("Setting node size:" + width + "," + height);
 								node.setSize(width,height);
 								
 								break;

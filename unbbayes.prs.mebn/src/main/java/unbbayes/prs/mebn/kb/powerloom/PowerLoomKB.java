@@ -383,7 +383,7 @@ public class PowerLoomKB implements KnowledgeBase {
 		
 		String range = ""; 
 		
-		System.out.println("Analising node " + resident);
+		Debug.println("Analising node " + resident);
 		
 		switch(resident.getTypeOfStates()){
 		
@@ -426,9 +426,9 @@ public class PowerLoomKB implements KnowledgeBase {
 			}
 
 			if(result == null){
-				System.out.println("Powerloom problem in evaluation of the possible states of the resident node "  + resident);
+				Debug.println("Powerloom problem in evaluation of the possible states of the resident node "  + resident);
 			}else{
-				System.out.println("Result 1 " + result.toString());
+				Debug.println("Result 1 " + result.toString());
 			}
 			
 			range = "(" + "?range " + residentStateListName + ")";
