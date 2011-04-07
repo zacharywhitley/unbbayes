@@ -57,6 +57,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import unbbayes.prs.Node;
+import unbbayes.util.Debug;
 
 /*
  * CROSSHAIR_CURSOR, DEFAULT_CURSOR, E_RESIZE_CURSOR, HAND_CURSOR, ICONIFIED, MAXIMIZED_BOTH, 
@@ -212,7 +213,7 @@ public class UShape extends JComponent implements ActionListener,
 		setBackColor(Color.white);
 		setStroke(stroke1);
 
-		// System.out.println("create Shape  = " + this.ID + " " + iUpdate++ );
+		// Debug.println("create Shape  = " + this.ID + " " + iUpdate++ );
 
 		if (pNode != null) {
 			setNode(pNode);
@@ -346,8 +347,8 @@ public class UShape extends JComponent implements ActionListener,
 
 		ActionListener okActionListener = new ActionListener() {
 			public void actionPerformed(ActionEvent actionEvent) {
-				System.out.println("OK Button");
-				System.out.println(colorChooser.getColor().toString());
+				Debug.println("OK Button");
+				Debug.println(colorChooser.getColor().toString());
 
 				getCanvas().onShapeColorChanged(colorChooser.getColor());
 				repaint();
@@ -356,7 +357,7 @@ public class UShape extends JComponent implements ActionListener,
 
 		ActionListener cancelActionListener = new ActionListener() {
 			public void actionPerformed(ActionEvent actionEvent) {
-				System.out.println("Cancel Button");
+				Debug.println("Cancel Button");
 			}
 		};
 
@@ -654,7 +655,7 @@ public class UShape extends JComponent implements ActionListener,
 	public void removeTextBox() {
 		if (textInput != null) {
 			setName(textInput.getText());
-			System.out.println(textInput.getText());
+			Debug.println(textInput.getText());
 
 			if (node != null) {
 				node.setName(textInput.getText());
@@ -1176,7 +1177,7 @@ public class UShape extends JComponent implements ActionListener,
 			Rectangle rc = this.getBounds();
 
 			/*
-			 * System.out.println("mouseDragged . " + rc.x + "  " + rc.y + " " +
+			 * Debug.println("mouseDragged . " + rc.x + "  " + rc.y + " " +
 			 * loc.x + "  " + loc.y + " " + pressedPoint.x + "  " + arg0.getX()
 			 * + "  " + pressedPoint.y + "  " + arg0.getY());
 			 */
@@ -1228,7 +1229,7 @@ public class UShape extends JComponent implements ActionListener,
 	public void mouseClicked(MouseEvent arg0) {
 		if (SwingUtilities.isLeftMouseButton(arg0)) {
 			if (arg0.getClickCount() == 2 && !arg0.isConsumed()) {
-				System.out.println("handle double click.");
+				Debug.println("handle double click.");
 
 				arg0.consume();
 
@@ -1237,11 +1238,11 @@ public class UShape extends JComponent implements ActionListener,
 		}
 
 		if (SwingUtilities.isMiddleMouseButton(arg0)) {
-			System.out.println("Middle button released.");
+			Debug.println("Middle button released.");
 		}
 
 		if (SwingUtilities.isRightMouseButton(arg0)) {
-			System.out.println("Right button released.");
+			Debug.println("Right button released.");
 
 			createPopupMenu();
 
@@ -1332,7 +1333,7 @@ public class UShape extends JComponent implements ActionListener,
 
 		// for right mouse button
 		if (SwingUtilities.isRightMouseButton(arg0)) {
-			System.out.println("Right button released.");
+			Debug.println("Right button released.");
 		}
 
 		if (getUseSelection() == false) {
@@ -1347,11 +1348,11 @@ public class UShape extends JComponent implements ActionListener,
 	}
 
 	public void focusGained(FocusEvent arg0) {
-		System.out.println("focusGained");
+		Debug.println("focusGained");
 	}
 
 	public void focusLost(FocusEvent arg0) {
-		System.out.println("focusLost");
+		Debug.println("focusLost");
 
 		removeTextBox();
 	}

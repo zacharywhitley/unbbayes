@@ -47,6 +47,7 @@ import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.util.ArrayMap;
+import unbbayes.util.Debug;
 import unbbayes.util.ResourceController;
 
 /**
@@ -131,7 +132,7 @@ public class EvidenceTree extends JTree {
 						Node newNode = getNodeMap(node);
 						if (newNode != null) {
 						  index = net.getNodeIndex(newNode.getName());
-						  System.out.println(newNode+" "+index);
+						  Debug.println(newNode+" "+index);
 						  expandedNodes[index] = ! expandedNodes[index];
 						}
 						*/
@@ -326,7 +327,7 @@ public class EvidenceTree extends JTree {
 			
 			int statesSize = node.getStatesSize();
 			
-			System.out.println("new tree node "+ treeNode.toString() );
+			Debug.println("new tree node "+ treeNode.toString() );
 			
 			for (int j = 0; j < statesSize; j++) {
 				String label;
@@ -344,7 +345,7 @@ public class EvidenceTree extends JTree {
 				
 				treeNode.add(new DefaultMutableTreeNode(label));
 				
-				System.out.println("new tree node sub "+ label );
+				Debug.println("new tree node sub "+ label );
 			}
 			 
 		}

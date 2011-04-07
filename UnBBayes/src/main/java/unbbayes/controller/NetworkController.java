@@ -59,6 +59,7 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.hybridbn.ContinuousNode;
+import unbbayes.util.Debug;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 /**
@@ -467,14 +468,14 @@ public class NetworkController implements KeyListener, INetworkMediator {
 	 * @see unbbayes.controller.INetworkMediator#openWarningDialog()
 	 */
     public void openWarningDialog(){
-    	System.out.println("Not implemented yet");
+    	Debug.println("Not implemented yet");
     }
     
     /* (non-Javadoc)
 	 * @see unbbayes.controller.INetworkMediator#closeWarningDialog()
 	 */
     public void closeWarningDialog(){
-    	System.out.println("Not implemented yet");
+    	Debug.println("Not implemented yet");
     }
     
     
@@ -725,7 +726,7 @@ public class NetworkController implements KeyListener, INetworkMediator {
 	 * @see unbbayes.controller.INetworkMediator#getSelectedNode()
 	 */
     public Node getSelectedNode(){
-    	System.out.println("Node selection is currently only available for subclasses");
+    	Debug.println("Node selection is currently only available for subclasses");
     	return null;
     }
     
@@ -733,14 +734,14 @@ public class NetworkController implements KeyListener, INetworkMediator {
 	 * @see unbbayes.controller.INetworkMediator#selectNode(unbbayes.prs.Node)
 	 */
     public void selectNode(Node node){
-    	System.out.println("Node selection is currently only available for subclasses");
+    	Debug.println("Node selection is currently only available for subclasses");
     }
     
     /* (non-Javadoc)
 	 * @see unbbayes.controller.INetworkMediator#unselectAll()
 	 */
     public void unselectAll(){
-    	System.out.println("Node selection is currently only available for subclasses");
+    	Debug.println("Node selection is currently only available for subclasses");
     }
 
 	/* (non-Javadoc)
