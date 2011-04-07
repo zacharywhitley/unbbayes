@@ -12,3 +12,4 @@ Number	Request ID	Summary
 3		        	Queries to PowerLoom are now attempted more than once in case of failure.
 4		2985473     Reference Uncertainty Error in SSBN.
 5		3260712     SSBN is not saved with correct CPT.
+6		3278359		Weird entity names at SSBN.
