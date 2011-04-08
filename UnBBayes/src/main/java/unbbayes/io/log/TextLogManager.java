@@ -23,10 +23,9 @@ package unbbayes.io.log;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Properties;
 import java.util.ResourceBundle;
 
-import unbbayes.util.ApplicationPropertyHolder;
+import unbbayes.util.Debug;
 
 /**
  * Responsible for generating network compilation log
@@ -86,7 +85,7 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
     public void append(String text) {
         log.append(text);
         
-        System.out.print(text);
+        Debug.print(text);
     }
 
     public void appendIfTrue(boolean debug, String text) {
@@ -99,7 +98,7 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
         log.append(text);
         log.append("\n");
 
-        System.out.println(text);
+        Debug.println(text);
     }
 
     public void appendlnIfTrue(boolean debug, String text) {
@@ -112,13 +111,13 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
 		
 		for(int i= 0; i < identation; i++){
 			log.append(identationString);
-			System.out.print(" ");
+			Debug.print(" ");
 		}
 		
         log.append(text);
         log.append("\n");
         
-        System.out.println(text);
+        Debug.println(text);
 	}
 
 	public void appendlnIfTrue(int identation, boolean debug, String text) {
