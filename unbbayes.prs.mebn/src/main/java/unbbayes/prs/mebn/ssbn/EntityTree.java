@@ -5,6 +5,7 @@ import java.util.List;
 
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ssbn.exception.MFragContextFailException;
+import unbbayes.util.Debug;
 
 /**
  * The EntityTree guard the configurations of the values of the ordinary variables
@@ -516,9 +517,9 @@ public class EntityTree{
 		
 		for(EntityNode nodeChild : node.getChildren()){
 			for(int i = 0; i < identation; i++){
-				System.out.print("  ");
+				Debug.print("  ");
 			}
-			System.out.println(nodeChild); 
+			Debug.println(nodeChild.toString()); 
 			printNodeChildren(nodeChild, newIdentation); 
 		}
 	}

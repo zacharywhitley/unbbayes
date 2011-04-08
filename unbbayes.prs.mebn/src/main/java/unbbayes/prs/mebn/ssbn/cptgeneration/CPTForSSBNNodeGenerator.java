@@ -372,13 +372,13 @@ public class CPTForSSBNNodeGenerator {
 							for(int rCol = 0; rCol < repColum; rCol++){
 								int positionAuxEntity = positionTableEntityInitial; 
 								for(int k = 0; k < rows; k++){
-//									System.out.println("k=" + k + ";rCol=" + rCol + 
+//									Debug.println("k=" + k + ";rCol=" + rCol + 
 //											";order=" + order + ";rAll=" + rAll + 
 //											" [" + positionTableResident + "] recebe de " 
 //											+ "[" + positionAuxEntity + 
 //											"] o valor = " + cptEntity.getValue(positionAuxEntity));
 									
-//									System.out.print(cptEntity.getValue(positionAuxEntity) + " ");
+//									Debug.print(cptEntity.getValue(positionAuxEntity) + " ");
 									cptResidentNode.setValue(positionTableResident, cptEntity.getValue(positionAuxEntity)); 
 									positionTableResident++; 
 									positionAuxEntity++; 

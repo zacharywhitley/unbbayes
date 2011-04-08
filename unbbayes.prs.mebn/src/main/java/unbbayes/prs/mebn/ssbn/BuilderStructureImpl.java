@@ -22,6 +22,7 @@ import unbbayes.prs.mebn.ssbn.exception.MFragContextFailException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeyAlgorithmParameters;
+import unbbayes.util.Debug;
 
 /**
  * Build the Grand BN. 
@@ -414,19 +415,19 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			JacketNode nodeParent) throws ImplementationRestrictionException, SSBNNodeGeneralException {
 		
 //		if(internalDebug){
-//			System.out.println("[In] CreateParents");
-//			System.out.println("[Arg] Node=" + node.getResidentNode().getName());
-//			System.out.print("[Arg] ovFilledArray = [");
+//			Debug.println("[In] CreateParents");
+//			Debug.println("[Arg] Node=" + node.getResidentNode().getName());
+//			Debug.print("[Arg] ovFilledArray = [");
 //			for(int i = 0; i < ovFilledArray.length; i++){
-//				System.out.print(ovFilledArray[i] + " ");
+//				Debug.print(ovFilledArray[i] + " ");
 //			}
-//			System.out.println("]");
-//			System.out.print("[Arg] entityFilledArray= [");
+//			Debug.println("]");
+//			Debug.print("[Arg] entityFilledArray= [");
 //			for(int i = 0; i < entityFilledArray.length; i++){
-//				System.out.print(entityFilledArray[i].getInstanceName() + " ");
+//				Debug.print(entityFilledArray[i].getInstanceName() + " ");
 //			}
-//			System.out.println("]");
-//			System.out.println("[Arg] inputNodeParent= " + nodeParent.getResidentNode());
+//			Debug.println("]");
+//			Debug.println("[Arg] inputNodeParent= " + nodeParent.getResidentNode());
 //		}
 		
 		level5 = new IdentationLevel(level4); 
@@ -507,7 +508,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		//in the possibleCombinationsForOvFaultList for pass for this loop one time. 
 		for(String[] possibleCombination: possibleCombinationsForOvFaultList){
 			
-//			System.out.println("Combination=" + possibleCombination);
+//			Debug.println("Combination=" + possibleCombination);
 			
 			SimpleSSBNNode newNode = SimpleSSBNNode.getInstance(
 					nodeParent.getResidentNode()); 
@@ -816,12 +817,12 @@ public class BuilderStructureImpl implements IBuilderStructure{
 					//inconsistency. 
 					
 //					notInstanciatedOVList = mFragInstance.getListNotInstanciatedOV(); 
-//					System.out.println("\nOVInstances don't found = " + notInstanciatedOVList.size());
+//					Debug.println("\nOVInstances don't found = " + notInstanciatedOVList.size());
 //					for(OrdinaryVariable ov: notInstanciatedOVList){
-//						System.out.println(ov.getName());
+//						Debug.println(ov.getName());
 //					}
 //					if (notInstanciatedOVList.size() != 0){
-//						System.out.println("Try 2: Use the iteration aproach");
+//						Debug.println("Try 2: Use the iteration aproach");
 //						for(OrdinaryVariable ov: notInstanciatedOVList){
 //							if(interationHelper!=null){
 //								OVInstance ovInstance = interationHelper.getInstanceValueForOVFault(ov);
@@ -906,7 +907,8 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			try {
 				mFragInstance.addOVValuesCombination(ovArray, entityValuesArray);
 			} catch (MFragContextFailException e) {
-				e.printStackTrace(); 
+//				e.printStackTrace(); 
+				Debug.println(this.getClass(), "", e);
 				mFragInstance.setUseDefaultDistribution(true); 
 			}
 		}

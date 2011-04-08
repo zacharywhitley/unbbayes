@@ -476,7 +476,7 @@ public class PowerLoomKB implements KnowledgeBase {
 			if (result != null) {
 				Debug.println(result.toString());
 			}else{
-				System.out.println("Powerloom problem in evaluation of the types of the resident node: " + resident);
+				Debug.println("Powerloom problem in evaluation of the types of the resident node: " + resident);
 			}
 		} else {
 			Stella_Object result = null;
@@ -499,7 +499,7 @@ public class PowerLoomKB implements KnowledgeBase {
 			if(result != null){
 				Debug.println(result.toString());
 			}else{
-				System.out.println("Powerloom problem in evaluation of the types of the resident node: " + resident);
+				Debug.println("Powerloom problem in evaluation of the types of the resident node: " + resident);
 			}
 		}
 		// TODO closed or open world ?
@@ -766,7 +766,8 @@ public class PowerLoomKB implements KnowledgeBase {
 		try {
 			Debug.println("Result Set Size = " + ((iterator==null)?0:iterator.length()));
 		}catch (Exception e) {
-			e.printStackTrace();
+//			e.printStackTrace();
+			Debug.println(this.getClass(), "", e);
 		}
 		if(iterator != null && iterator.length() != 0){
 			
@@ -1450,7 +1451,8 @@ public class PowerLoomKB implements KnowledgeBase {
 					result = PLI.getNthString(sobj, 0, this.moduleFinding, this.environment);
 				}
 			} catch ( Exception e) {
-				e.printStackTrace();
+//				e.printStackTrace();
+				Debug.println(this.getClass(), "", e);
 				return;
 			}
 			
@@ -1488,7 +1490,8 @@ public class PowerLoomKB implements KnowledgeBase {
 					result = PLI.getNthString(sobj, 0, this.moduleFinding, this.environment);
 				}
 			} catch ( Exception e) {
-				e.printStackTrace();
+//				e.printStackTrace();
+				Debug.println(this.getClass(), "", e);
 				return;
 			}
 			Debug.println(this.getClass(), "result..." + result + "...count = " + argcount);
@@ -1546,7 +1549,8 @@ public class PowerLoomKB implements KnowledgeBase {
 					Debug.print(" | " + token);
 					argumentInstances.add(instance);
 				} catch (Exception e) {
-					e.printStackTrace();
+//					e.printStackTrace();
+					Debug.println(this.getClass(), "", e);
 					continue;
 				}
 			}
@@ -1572,7 +1576,8 @@ public class PowerLoomKB implements KnowledgeBase {
 							 resident.getMFrag().getMultiEntityBayesianNetwork());
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+//				e.printStackTrace();
+				Debug.println(this.getClass(), "", e);
 				System.err.println("Error: " + strPLI + " at " + token);
 				continue;
 			}
