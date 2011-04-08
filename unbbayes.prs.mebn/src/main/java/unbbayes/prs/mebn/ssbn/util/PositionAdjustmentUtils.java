@@ -34,6 +34,7 @@ import unbbayes.io.exception.LoadException;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.util.Debug;
 
 public class PositionAdjustmentUtils {
 
@@ -66,7 +67,7 @@ public class PositionAdjustmentUtils {
 		InfoNode infoNode = new InfoNode(pn); 
 		infoNode.setLevel(initialLevel); 
 		infoNetwork.addInfoNode(infoNode); 
-//		System.out.println("InfoNode: " + pn + " Level:" + initialLevel);
+//		Debug.println("InfoNode: " + pn + " Level:" + initialLevel);
 		
 		initialLevel++;
 		for(int i=0; i < pn.getParents().size(); i++){
@@ -92,7 +93,7 @@ public class PositionAdjustmentUtils {
 //		int line = numLinhas - 1; 
 //		
 //		int level = infoNetwork.getNumLevels(); 
-////		System.out.println("Num Levels: " + level);
+////		Debug.println("Num Levels: " + level);
 //		
 //		while(level >= 0){
 //			List<InfoNode> nodesOfLevel = infoNetwork.getInfoNodesOfLevel(level);
@@ -107,7 +108,7 @@ public class PositionAdjustmentUtils {
 		int line = 0; 
 		
 		int level = infoNetwork.getNumLevels(); 
-//		System.out.println("Num Levels: " + level);
+//		Debug.println("Num Levels: " + level);
 		
 		while(level >= 0){
 			List<InfoNode> nodesOfLevel = infoNetwork.getInfoNodesOfLevel(level);
@@ -129,7 +130,7 @@ public class PositionAdjustmentUtils {
 					positionX = (coluna)*sizeSquare.getX() + margin.getX(); 
 					positionY = (linha)*sizeSquare.getY() - (numLinhas - infoNetwork.getNumLevels())*sizeSquare.getY()  + margin.getY();
 					
-//	                System.out.println("Node:" + map[coluna][linha].getPn() + " Map:" + coluna + "," + linha + 
+//	                Debug.println("Node:" + map[coluna][linha].getPn() + " Map:" + coluna + "," + linha + 
 //	                		" Position:" + positionX + "," + positionY);
 					map[coluna][linha].getPn().setPosition(positionX, positionY); 
 				}
@@ -142,7 +143,7 @@ public class PositionAdjustmentUtils {
 	
 	public static void main(String[] arguments){
 		
-		System.out.println("Init");
+		Debug.println("Init");
 		ProbabilisticNetwork net = null;
 		XMLBIFIO io = new XMLBIFIO();	
 		try {
@@ -169,7 +170,7 @@ public class PositionAdjustmentUtils {
 			} 
 		}
 		
-		System.out.println("End");
+		Debug.println("End");
 	}
 	
 private static class InfoNetwork{

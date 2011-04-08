@@ -90,7 +90,7 @@ public class SSBNDebugInformationUtil {
 		
 		File file = new File(nameDirectory + File.separator +  netName  + ".xml");
 		
-		System.out.println("Saved: " + file.getAbsolutePath());
+		Debug.println("Saved: " + file.getAbsolutePath());
 		
 		logManager.appendln("\n"); 
 		logManager.appendln("  |-------------------------------------------------------");
@@ -122,13 +122,15 @@ public class SSBNDebugInformationUtil {
 		try {
 			netIO.save(file, ssbn.getProbabilisticNetwork());
 		} catch (IOException e) {
-			e.printStackTrace();
+//			e.printStackTrace();
+			Debug.println(SSBNDebugInformationUtil.class, "", e);
 		} 
 		
 		try {
 			logManager.writeToDisk(nameDirectory + File.separator +  netName + ".log", false);
 		} catch (IOException e) {
-			e.printStackTrace();
+//			e.printStackTrace();
+			Debug.println(SSBNDebugInformationUtil.class, "", e);
 		}
 	}
 	
@@ -166,7 +168,7 @@ public class SSBNDebugInformationUtil {
 		
 		File file = new File(nameDirectory + File.separator +  netName  + ".xml");
 		
-		System.out.println("Saved: " + file.getAbsolutePath());
+		Debug.println("Saved: " + file.getAbsolutePath());
 		
 		logManager.appendln("\n"); 
 		logManager.appendln("  |-------------------------------------------------------");
