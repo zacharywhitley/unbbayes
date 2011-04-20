@@ -1,0 +1,44 @@
+***instalar***
+Maven
+Plugin do maven  para eclipse  (www.elipse.org.br/m2e)
+Subeclipe (ou outro subversion para eclipse)
+
+
+Dar checkout/update no UnBBayes
+
+
+***Criar um novo projeto maven ***
+ -> Botao direito->new Maven Project
+ 
+***Dar projetc->export de um plugin j‡ pronto (ex: MSBN) para a raiz do seu novo m—dulo e sobrescrever tudo*** 
+
+***Atualizando o seu plugin***
+
+Alterar Pom.xml  /*caso o estevao quiser reusar classes do unbbayes, precisar‡ colocar em dependencias*/
+Alterar dist.xml
+Alterar plugin/seuPlugin/plugin.xml
+
+E apagar tudo que n‹o ir‡ utilizar 
+
+***Para testar se deu certo***
+
+Criar uma nova classe e coloca como superclasse o unbbayes.module, e adicionar o seguinte metodo
+
+
+protected void initComponents(){
+		
+		this.add(new JLabel("Hello Word!"));
+	}
+	
+	/***E chama-lo no construtor****/
+
+	public PomcModule() {
+		try {
+			this.initComponents();
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+		// TODO Auto-generated constructor stub
+	}
+  
+
