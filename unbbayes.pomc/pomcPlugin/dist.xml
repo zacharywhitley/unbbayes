@@ -6,21 +6,21 @@
   <includeBaseDirectory>true</includeBaseDirectory>
   <fileSets>
   	<fileSet>
-      <directory>plugins/unbbayes.pomc/icons</directory>
+      <directory>plugins/unbbayes.umpst/icons</directory>
       <outputDirectory>icons</outputDirectory>
       <includes>
         <include>**/*</include>
       </includes>
     </fileSet>
     <fileSet>
-      <directory>plugins/unbbayes.pomc/</directory>
+      <directory>plugins/unbbayes.umpst/</directory>
       <outputDirectory></outputDirectory>
       <includes>
         <include>plugin.xml</include>
       </includes>
     </fileSet>
     <fileSet>
-      <directory>plugins/unbbayes.pomc/</directory>
+      <directory>plugins/unbbayes.umpst/</directory>
       <outputDirectory></outputDirectory>
       <includes>
         <include>README.txt</include>

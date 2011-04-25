@@ -1,7 +1,7 @@
 /**
  * 
  */
-package unbbayes.gui.pomc;
+package unbbayes.gui.umpst;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +17,7 @@ import unbbayes.util.extension.UnBBayesModule;
  * @author rafaelmezzomo
  *
  */
-public class PomcModule extends UnBBayesModule {
+public class UmpstModule extends UnBBayesModule {
 
 	protected void initComponents(){
 		
@@ -28,7 +28,7 @@ public class PomcModule extends UnBBayesModule {
 	/**
 	 * 
 	 */
-	public PomcModule() {
+	public UmpstModule() {
 		try {
 			this.initComponents();
 		} catch (Throwable t) {
