@@ -3,7 +3,6 @@
  */
 package unbbayes.prs.mebn.ontology.protege;
 
-import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +11,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -60,12 +60,12 @@ public class ProtegeBundleLauncher implements IBundleLauncher {
     
     /** These are some known values of {@link #getLaunchProperties()}. These values will be added to {@link #getLaunchProperties()} in {@link #initializeLaunchProperties()} */
     public static final String[][] PROTEGEFRAMEWORKPROPERTIES = { 
-    	{Constants.FRAMEWORK_BUNDLE_PARENT, Constants.FRAMEWORK_BUNDLE_PARENT_APP}, // who is the parent classloader
+    	{Constants.FRAMEWORK_BUNDLE_PARENT, Constants.FRAMEWORK_BUNDLE_PARENT_FRAMEWORK}, // who is the parent classloader
 //        {Constants.FRAMEWORK_BOOTDELEGATION, "sun.*,com.sun.*,apple.*,com.apple.*"}, 
 //        {Constants.FRAMEWORK_BOOTDELEGATION, "sun.*,com.sun.*,apple.*,com.apple.*,org.protege.editor.core,org.protege.editor.core.*,org.eclipse.core.internal.*"}, // what packages should be loaded by parent classloader
-        {Constants.FRAMEWORK_BOOTDELEGATION, "*"}, // what packages should be loaded by parent classloader
-        {Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, "javax.xml.parsers,org.xml.sax,org.xml.sax.ext,org.xml.sax.helpers,org.apache.log4j"}, // packages automatically exported to OSGi by this application
-        {Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT},
+        {Constants.FRAMEWORK_BOOTDELEGATION, "org.protege.editor.*,org.protege.editor.core.*,org.protege.editor.owl.*,org.protege.editor.owl.model.*,*"}, // what packages should be loaded by parent classloader
+        {Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, "javax.xml.parsers,org.xml.sax,org.xml.sax.ext,org.xml.sax.helpers,org.apache.log4j,org.protege,org.protege.editor,org.protege.editor.core,org.protege.editor.owl,org.protege.editor.owl.model"}, // packages automatically exported to OSGi by this application
+        {Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT}, 
     };
 
     private String[] coreBundleNames = {
@@ -161,8 +161,33 @@ public class ProtegeBundleLauncher implements IBundleLauncher {
 		}
 		
 		// add properties found in build.properties (in the original protege application)
+		Enumeration<URL> osgiImplEnum  = null;
 		try {
-			this.getLaunchProperties().setProperty("protege.osgi", new File(this.getClass().getClassLoader().getResource("protege/bin/felix.jar").toURI()).getCanonicalPath());
+			osgiImplEnum = this.getClass().getClassLoader().getResources("protege/bin/felix.jar");
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		URI uriOfOSGIImplUsedByProtege = null;
+		if (osgiImplEnum != null) {
+			while(osgiImplEnum.hasMoreElements()) {
+				try {
+					URI tempURI = osgiImplEnum.nextElement().toURI();
+					if (!tempURI.isOpaque()) {
+						uriOfOSGIImplUsedByProtege = tempURI;
+						break;
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		try {
+			try{
+				Debug.println(this.getClass(), "Using osgi implementation: " + uriOfOSGIImplUsedByProtege);
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+			this.getLaunchProperties().setProperty("protege.osgi", new File(uriOfOSGIImplUsedByProtege).getCanonicalPath());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -225,6 +250,11 @@ public class ProtegeBundleLauncher implements IBundleLauncher {
 			// try starting OSGI using apache felix (it comes with protege) to create protege's bundle (plug-in) context
 			FrameworkFactory osgifactory = new FrameworkFactory();
 			this.setFramework(osgifactory.newFramework(this.getLaunchProperties()));
+			try {
+				Debug.println(this.getClass(), "OSGI Launch properties: " + this.getLaunchProperties());
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
 			try {
 				if (this.getFramework().getState() == this.getFramework().INSTALLED 
 						|| this.getFramework().getState() == this.getFramework().RESOLVED ) {
@@ -355,17 +385,36 @@ public class ProtegeBundleLauncher implements IBundleLauncher {
 	 */
 	public Object getProtegeManager() {
 		try {
+			try{
+				Debug.println(this.getClass(), "ProtegeManager class loader = " + ProtegeManager.class.getClassLoader());
+				Debug.println(this.getClass(), "ProtegeManager class loader's parent = " + ProtegeManager.class.getClassLoader().getParent());
+				Debug.println(this.getClass(), "This class loader = " + this.getClass().getClassLoader());
+				Debug.println(this.getClass(), "This class loader's parent = " + this.getClass().getClassLoader().getParent());
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
 			if (this.getProtegeBundle() != null) {
 				Debug.println(this.getClass(), "Extracting protege manager using OSGi class loader. Bundle = " + this.getProtegeBundle().getSymbolicName());
 				// ProtegeManager protegeManager = ProtegeManager.getInstance() 
-				return (this.getProtegeBundle().loadClass(ProtegeManager.class.getName()).getMethod("getInstance").invoke(null));
+				
+				Object ret = (this.getProtegeBundle().loadClass(ProtegeManager.class.getName()).getMethod("getInstance").invoke(null));
+				try{
+					Debug.println(this.getClass(), "Protege bundle's class loader = " + this.getProtegeBundle().getClass().getClassLoader());
+					Debug.println(this.getClass(), "Parent class loader of Protege bundle's class loader = " + this.getProtegeBundle().getClass().getClassLoader().getParent());
+					Debug.println(this.getClass(), "Class loader of ProtegeManager loaded from bundle = " + ret.getClass().getClassLoader());
+					Debug.println(this.getClass(), "Parent class loader of ProtegeManager loaded from bundle = " + ret.getClass().getClassLoader().getParent());
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				return ret;
 			} else {
-				System.err.println("Extracting protege manager as a singleton using application class loader. This may cause unsynchronized ontology.");
+				Debug.println("Extracting protege manager as a singleton using application class loader. This may cause unsynchronized ontology.");
 				return ProtegeManager.getInstance();
 			}
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
+		Debug.println("Protege manager is null");
 		return null;
 	}
 

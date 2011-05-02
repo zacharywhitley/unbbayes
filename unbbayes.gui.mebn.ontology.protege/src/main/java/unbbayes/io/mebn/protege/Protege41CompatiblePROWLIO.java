@@ -159,6 +159,7 @@ public class Protege41CompatiblePROWLIO extends OWLAPICompatiblePROWLIO {
 		} catch (Throwable e) {
 			e.printStackTrace();
 			System.err.println("Could not use protege's ontology loader. Using OWLAPI instead...");
+			return super.loadMebn(file);
 		}
 		
 		// update and initialize the parser of manchester owl syntax expressions (so that owl reasoners can be used for string expressions)

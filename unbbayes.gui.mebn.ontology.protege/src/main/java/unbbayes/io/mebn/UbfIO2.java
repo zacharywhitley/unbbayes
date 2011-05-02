@@ -23,9 +23,12 @@ package unbbayes.io.mebn;
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.StreamTokenizer;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -48,6 +51,7 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
+import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.util.Debug;
 
 /**
@@ -72,6 +76,8 @@ public class UbfIO2 extends UbfIO {
 	private MebnIO prowlIO;
 	
 	private String prowlFileExtension = "owl";
+	
+	private String ubfFileExtension = FILE_EXTENSION;
 	
 	private boolean isToUpdateMEBNName = false;
 	
@@ -104,6 +110,7 @@ public class UbfIO2 extends UbfIO {
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
+		
 	}
 	
 	/**
@@ -168,7 +175,7 @@ public class UbfIO2 extends UbfIO {
 		MultiEntityBayesianNetwork mebn = null;	// target mebn
 		
 		// Initially, let's deduce the default owl file name, just in in case we couldn't find it out
-		String owlFilePath = file.getPath().substring(0,file.getPath().lastIndexOf(this.FILE_EXTENSION)) 
+		String owlFilePath = file.getPath().substring(0,file.getPath().lastIndexOf(this.getUBFFileExtension())) 
 						+ this.getProwlFileExtension();
         
 		File prowlFile = null;	// correspondent owl file
@@ -813,6 +820,241 @@ public class UbfIO2 extends UbfIO {
 		} // while not EOF
 	}
 	
+	
+	/* (non-Javadoc)
+	 * @see unbbayes.io.mebn.MebnIO#saveMebn(java.io.File, unbbayes.prs.mebn.MultiEntityBayesianNetwork)
+	 */
+	public void saveMebn(File file, MultiEntityBayesianNetwork mebn)
+			throws IOException, IOMebnException {
+		
+		// Placeholder for Variable type names
+		String varType = null;
+		
+		// Create .owl placeholder
+		String noExtensionFileName = file.getPath().substring(0,file.getPath().lastIndexOf(this.getUBFFileExtension()));
+		File prowlFile = new File(noExtensionFileName + this.getProwlFileExtension());
+		
+		// create output stream for .ubf files
+		PrintStream out = new PrintStream(new FileOutputStream(file));
+		
+		// save .owl
+		try {
+			this.getProwlIO().saveMebn(prowlFile,mebn);
+		} catch(Exception e) {
+			e.printStackTrace();
+			throw new IOException(e.getLocalizedMessage() + " : " + this.resource.getString("UnknownPrOWLError"));
+		}
+		
+		
+		// Extract relative prowlFile URI
+		//File root = new File("root");
+		//URI relativeURI = root.getCanonicalFile().getParentFile().toURI();
+		URI relativeURI = file.getCanonicalFile().getParentFile().toURI();
+		relativeURI = relativeURI.relativize(prowlFile.toURI());
+		
+		
+		// Save .ubf header
+		out.println(this.getToken("CommentInitiator") + resource.getString("UBFFileHeader"));
+		out.println(this.getToken("VersionDeclarator") 
+				  + this.getToken("AttributionSeparator") + this.ubfVersion);
+		out.println(this.getToken("PrOwlFileDeclarator")				  
+				  + this.getToken("AttributionSeparator") 
+				  + this.getToken("Quote")
+				  + relativeURI.getPath()
+				  + this.getToken("Quote") );
+		
+		// Save Mtheory declarations
+		out.println();
+		out.println(this.getToken("CommentInitiator") + resource.getString("UBFMTheory"));
+		out.println(this.getToken("MTheoryDeclarator")  
+				+ this.getToken("AttributionSeparator") +  mebn.getName() );
+		out.println(this.getToken("NextMFragDeclarator")  
+				+ this.getToken("AttributionSeparator") + mebn.getDomainMFragNum() );
+		out.println(this.getToken("NextResidentDeclarator")  
+				+ this.getToken("AttributionSeparator") + mebn.getDomainResidentNodeNum());
+		out.println(this.getToken("NextInputDeclarator")  
+				+ this.getToken("AttributionSeparator") + mebn.getGenerativeInputNodeNum());
+		out.println(this.getToken("NextContextDeclarator")  
+				+ this.getToken("AttributionSeparator") + mebn.getContextNodeNum());
+		out.println(this.getToken("NextEntityDeclarator")  
+				+ this.getToken("AttributionSeparator") + mebn.getEntityNum());
+		
+		
+		
+		//	Save MFrags and Nodes declarations
+		out.println();
+		out.println(this.getToken("CommentInitiator") + resource.getString("UBFMFragsNodes"));
+		for (Iterator iter = mebn.getDomainMFragList().iterator(); iter.hasNext();) {
+			MFrag mfrag = (MFrag) iter.next();
+			out.println();
+			out.println(this.getToken("CommentInitiator") + resource.getString("UBFMFrags"));
+			out.println(this.getToken("MFragDeclarator")  
+					+ this.getToken("AttributionSeparator") + mfrag.getName());
+			out.println(this.getToken("NextOrdinalVarDeclarator")  
+					+ this.getToken("AttributionSeparator") + mfrag.getOrdinaryVariableNum());
+			
+			// Listing Resident nodes
+			if (mfrag.getResidentNodeList() != null) {
+				if (!mfrag.getResidentNodeList().isEmpty()) {
+					out.println();
+					out.println(this.getToken("CommentInitiator") + resource.getString("UBFResidentNodes"));
+					out.println();
+					for (Iterator<ResidentNode> iterator = mfrag.getResidentNodeList().iterator(); iterator.hasNext();) {
+						ResidentNode node = iterator.next();
+						out.println();				
+						out.println(this.getToken("NodeDeclarator")  
+								+ this.getToken("AttributionSeparator") + node.getName());
+						out.println(this.getToken("TypeDeclarator")  
+								+ this.getToken("AttributionSeparator") + this.getToken("DomainResidentType"));
+						out.println( this.getToken("PositionDeclarator")  
+								+ this.getToken("AttributionSeparator") + node.getPosition().getX() 
+								   + this.getToken("ArgumentSeparator")  + node.getPosition().getY());
+						out.println( this.getToken("SizeDeclarator")     
+								+ this.getToken("AttributionSeparator") + node.getWidth()
+								   + this.getToken("ArgumentSeparator") + node.getHeight());
+						
+						//by young
+						out.println( this.getToken("ColorDeclarator")     
+								+ this.getToken("AttributionSeparator") + node.getColor().getRGB());
+						
+						//out.println(this.getToken("NextArgumentDeclarator") + node.getNumNextArgument());
+						
+						// listing the order of the resident node's possible values
+						out.print( this.getToken("PossibleValuesOrder") + this.getToken("AttributionSeparator"));
+						for (Iterator<StateLink> stateLinkIterator =  node.getPossibleValueLinkList().iterator(); stateLinkIterator.hasNext();) {
+							try {
+								StateLink possibleValue = stateLinkIterator.next();
+								out.print(possibleValue.getState().getName());
+								if (stateLinkIterator.hasNext()) {
+									out.print(this.getToken("ArgumentSeparator"));
+								}
+							} catch (Throwable e) {
+								// the order of the states is not so important, thus we may just continue in case of any error.
+								e.printStackTrace();
+							}
+						}
+						out.println(); // finish listing the order of the possible values with a line feed
+					}
+				}	
+			}
+			
+			
+			// Listing Input nodes
+			if (mfrag.getInputNodeList() != null) {
+				if (!mfrag.getInputNodeList().isEmpty()) {
+					out.println();
+					out.println(this.getToken("CommentInitiator") + resource.getString("UBFInputNodes"));
+					out.println();
+					for (Iterator iterator = mfrag.getInputNodeList().iterator(); iterator.hasNext();) {
+						InputNode node = (InputNode) iterator.next();
+						out.println();				
+						out.println(this.getToken("NodeDeclarator")  
+								+ this.getToken("AttributionSeparator") +  node.getName());
+						out.println(this.getToken("TypeDeclarator")  
+								+ this.getToken("AttributionSeparator") +  this.getToken("GenerativeInputType"));
+						out.println( this.getToken("PositionDeclarator")  
+								+ this.getToken("AttributionSeparator") +  node.getPosition().getX() 
+								   + this.getToken("ArgumentSeparator")  + node.getPosition().getY());
+						out.println( this.getToken("SizeDeclarator")     
+								+ this.getToken("AttributionSeparator") +  node.getWidth()
+								   + this.getToken("ArgumentSeparator") + node.getHeight());
+						 
+						//by young
+						out.println( this.getToken("ColorDeclarator")     
+								+ this.getToken("AttributionSeparator") + node.getColor().getRGB());
+					}
+				}
+			}
+			
+			
+			//	 Listing Context nodes
+			if (mfrag.getContextNodeList() != null) {
+				if (!mfrag.getContextNodeList().isEmpty()) {
+					out.println();
+					out.println(this.getToken("CommentInitiator") + resource.getString("UBFContextNodes"));
+					out.println();
+					for (Iterator iterator = mfrag.getContextNodeList().iterator(); iterator.hasNext();) {
+						ContextNode node = (ContextNode) iterator.next();
+						out.println();				
+						out.println(this.getToken("NodeDeclarator")  
+								+ this.getToken("AttributionSeparator") +  node.getName());
+						out.println(this.getToken("TypeDeclarator")  
+								+ this.getToken("AttributionSeparator") +  this.getToken("ContextType"));
+						out.println( this.getToken("PositionDeclarator")  
+								+ this.getToken("AttributionSeparator") +  node.getPosition().getX() 
+								   + this.getToken("ArgumentSeparator")  + node.getPosition().getY());
+						out.println( this.getToken("SizeDeclarator")     
+								+ this.getToken("AttributionSeparator") +  node.getWidth()
+								   + this.getToken("ArgumentSeparator") + node.getHeight());
+						
+						 
+						//by young
+						out.println( this.getToken("ColorDeclarator")     
+								+ this.getToken("AttributionSeparator") + node.getColor().getRGB());
+					}
+				}
+			}
+			
+			
+			//	 Listing Ordinary variables
+			if ( mfrag.getOrdinaryVariableList() != null) {
+				if (!mfrag.getOrdinaryVariableList().isEmpty()) {
+					out.println();
+					out.println(this.getToken("CommentInitiator") + resource.getString("UBFOrdinalVars"));
+					out.println();
+					for (Iterator iterator = mfrag.getOrdinaryVariableList().iterator(); iterator.hasNext();) {
+						OrdinaryVariable node = (OrdinaryVariable) iterator.next();
+						out.println();				
+						out.println(this.getToken("NodeDeclarator")  
+								+ this.getToken("AttributionSeparator") +  node.getName());
+						out.println(this.getToken("TypeDeclarator")  
+								+ this.getToken("AttributionSeparator") +  this.getToken("OrdinalVarType"));
+						out.println( this.getToken("PositionDeclarator")  
+								+ this.getToken("AttributionSeparator") +  node.getPosition().getX() 
+								   + this.getToken("ArgumentSeparator")  + node.getPosition().getY());
+						out.println( this.getToken("SizeDeclarator")     
+								+ this.getToken("AttributionSeparator") +  node.getWidth()
+								   + this.getToken("ArgumentSeparator") + node.getHeight());
+						
+						 
+						//by young
+						out.println( this.getToken("ColorDeclarator")     
+								+ this.getToken("AttributionSeparator") + node.getColor().getRGB());
+					}
+				}
+			}
+			
+			
+		} // for
+		
+		//	Save Object Entity Instance Ordereables declarations
+		out.println();
+		out.println(this.getToken("CommentInitiator") + resource.getString("UBFObjectEntityInstances"));
+		for(ObjectEntity objectEntity: mebn.getObjectEntityContainer().getListEntity()){
+			if(objectEntity.isOrdereable()){ //For this version, only the ordereables instances will be saved. 
+				out.println();
+				out.println(this.getToken("ObjectEntityDeclarator")
+						+ this.getToken("AttributionSeparator") +  objectEntity.getName());
+				out.print(this.getToken("EntityInstancesDeclarator") + this.getToken("AttributionSeparator"));
+				
+				List<ObjectEntityInstanceOrdereable> list = new ArrayList<ObjectEntityInstanceOrdereable>();
+				for(ObjectEntityInstance instance: objectEntity.getInstanceList()){
+					list.add((ObjectEntityInstanceOrdereable)instance);
+				}
+				
+				String instances = ""; 
+				for(ObjectEntityInstance instance: ObjectEntityInstanceOrdereable.ordererList(list)){
+					instances+= instance.getName() + this.getToken("ArgumentSeparator");
+				}
+				//delete argumetn separator. 
+				if(list.size() > 0 ){
+					instances = instances.substring(0, instances.length() - this.getToken("ArgumentSeparator").length());
+				}
+				out.println(instances);
+			}
+		}
+		
+	}
 
 	/**
 	 * This method searches for a {@link ResidentNode}, {@link InputNode}, {@link ContextNode} or {@link OrdinaryVariable}
@@ -949,14 +1191,20 @@ public class UbfIO2 extends UbfIO {
 		this.isToUpdateMEBNName = isToUpdateMEBNName;
 	}
 
-	/* (non-Javadoc)
-	 * @see unbbayes.io.mebn.UbfIO#saveMebn(java.io.File, unbbayes.prs.mebn.MultiEntityBayesianNetwork)
+	/**
+	 * This is the .ubf file extension. Change this if you want this class to start handling other file extensions.
+	 * @return the ubfFileExtension
 	 */
-	public void saveMebn(File file, MultiEntityBayesianNetwork mebn)
-			throws IOException, IOMebnException {
-		this.getProwlIO().saveMebn(file, mebn);
+	public String getUBFFileExtension() {
+		return ubfFileExtension;
 	}
-	
-	
+
+	/**
+	 * This is the .ubf file extension. Change this if you want this class to start handling other file extensions.
+	 * @param ubfFileExtension the ubfFileExtension to set
+	 */
+	public void setUBFFileExtension(String ubfFileExtension) {
+		this.ubfFileExtension = ubfFileExtension;
+	}
 
 }

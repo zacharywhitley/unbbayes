@@ -5,15 +5,20 @@ package unbbayes.io.mebn.protege;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 
+import org.osgi.framework.BundleException;
 import org.protege.editor.core.ProtegeManager;
 import org.protege.editor.owl.OWLEditorKit;
+import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.model.inference.NoOpReasonerInfo;
 import org.protege.editor.owl.model.inference.ProtegeOWLReasonerInfo;
 import org.protege.editor.owl.model.inference.ReasonerStatus;
+import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
+import unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator;
 import unbbayes.io.mebn.owlapi.OWLAPICompatiblePROWL2IO;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.ontology.protege.IBundleLauncher;
@@ -62,96 +67,20 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 		OWLEditorKit kit = null;	// kit to extract ontology and fill storage implementor (of mebn)
 		
 		try {
-			// specify the bundle laucher that the desired URI is from file (this will set up the system properties and force protege to load this file)
-			this.getProtegeBundleLauncher().setDefaultOntolgyURI(file.toURI());
 			
-			// load ontology using protege
-			this.getProtegeBundleLauncher().startProtegeBundles();
-			
-			// obtain manager. We expect it to be an instance of ProtegeManager
-			ProtegeManager manager = (ProtegeManager)this.getProtegeBundleLauncher().getProtegeManager();
-			
-			// obtain the last opened kit (which is the one opened now)
-			try {
-				kit = (OWLEditorKit)manager.getEditorKitManager().getEditorKits().get(manager.getEditorKitManager().getEditorKitCount() - 1);
-			}catch (Exception e) {
-				e.printStackTrace();
-				try {
-					if (this.getProtegeBundleLauncher() instanceof ProtegeBundleLauncher) {
-						((ProtegeBundleLauncher)this.getProtegeBundleLauncher()).hideProtegeGUI();
-					}
-				} catch (Exception e2) {
-					e2.printStackTrace();
-				}
+			kit = this.startProtegeEditorKit(file.toURI());
+			if (kit == null) {
+				System.err.println("Could not open Protege");
 				return null;
-			}
-			
-			// hide protege's frame immediately (this is because the loading process may take so long, and the protege frame may be visible to users during that)
-			try {
-				manager.getFrame(kit.getWorkspace()).setVisible(false);
-			} catch (Throwable t) {
-				t.printStackTrace();
-				// it is OK to ignore, because this frame will be removed from view after the ontology is created.
 			}
 			
 			// indicate the super class to use the ontology loaded by protege
 			this.setLastOWLOntology(kit.getOWLModelManager().getActiveOntology());
-			
-			// force it to use the first reasoner different than "NoOpReasoner" (which in protege is a null object)
-			if (this.isToInitializeReasoner()) {
-				// it will hold the reasoner's ID except the null object (which is an instance of NoOPReasoner, and it's assigned name is "None")
-				String reasonerIDExceptNone = null;
-				for (ProtegeOWLReasonerInfo info : kit.getOWLModelManager().getOWLReasonerManager().getInstalledReasonerFactories()) {
-					if ( ! NoOpReasonerInfo.NULL_REASONER_ID.equals( info.getReasonerId() ) ){
-						// We are now sure that this is not a NULL reasoner.
-						try {
-							kit.getOWLModelManager().getOWLReasonerManager().setCurrentReasonerFactoryId(info.getReasonerId());
-							kit.getOWLModelManager().getOWLReasonerManager().classifyAsynchronously(kit.getOWLModelManager().getOWLReasonerManager().getReasonerPreferences().getPrecomputedInferences());
-							
-							// maybe there would be some synchronization problems, because of protege's asynchronous initialization of reasoners. Let's wait until it becomes ready
-							for (long i = 0; i < this.getMaximumBuzyWaitingCount(); i++) {
-								// TODO Stop using buzy waiting!!!
-								if (ReasonerStatus.NO_REASONER_FACTORY_CHOSEN.equals(kit.getOWLModelManager().getOWLReasonerManager().getReasonerStatus())) {
-									// reasoner is not chosen...
-									Debug.println(this.getClass(), "No reasoner is chosen. Trying to reload...");
-									// try reloading again
-									kit.getOWLModelManager().getOWLReasonerManager().setCurrentReasonerFactoryId(info.getReasonerId());
-									kit.getOWLModelManager().getOWLReasonerManager().classifyAsynchronously(kit.getOWLModelManager().getOWLReasonerManager().getReasonerPreferences().getPrecomputedInferences());
-									continue;
-								}
-								if (ReasonerStatus.INITIALIZED.equals(kit.getOWLModelManager().getOWLReasonerManager().getReasonerStatus())) {
-									// reasoner is ready now
-									break;
-								}
-								Debug.println(this.getClass(), "Waiting for reasoner initialization...");
-								try {
-									// sleep and try reasoner status after
-									Thread.sleep(this.getSleepTimeWaitingReasonerInitialization());
-								} catch (Throwable t) {
-									// a thread sleep should not break normal program flow...
-									t.printStackTrace();
-								}
-							}
-							
-							// if the reasoner tells the ontology is consistent, use it to load MEBN.
-							if (kit.getModelManager().getReasoner().isConsistent()) {
-								// the reasoner is finally ready. Set it as the reasoner to use for I/O operation
-								this.setLastOWLReasoner(kit.getModelManager().getReasoner());
-								break;	// let's just use the 1st (non NULL) option and ignore other protege reasoners
-							} else {
-								try {
-									Debug.println(this.getClass(), kit.getOWLModelManager().getActiveOntology() + " is an inconsistent ontology.");
-								}catch (Throwable t) {
-									t.printStackTrace();
-								}
-								// we will try another reasoner or we will not use a reasoner to load PR-OWL
-							}
-						} catch (Exception e) {
-							e.printStackTrace();
-							continue;
-						}
-					}
-				}
+
+			// Check if reasoner is set up. Set it as the reasoner to use for I/O operation
+			OWLReasoner reasoner = this.setupOWLReasoner(kit.getOWLModelManager());
+			if (reasoner != null) {
+				this.setLastOWLReasoner(reasoner);
 			}
 			
 			try {
@@ -162,6 +91,7 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 		} catch (Throwable e) {
 			e.printStackTrace();
 			System.err.println("Could not use protege's ontology loader. Using OWLAPI instead...");
+			return super.loadMebn(file);
 		}
 		
 		// update and initialize the parser of manchester owl syntax expressions (so that owl reasoners can be used for string expressions)
@@ -200,6 +130,119 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 		System.gc();
 		
 		return ret;
+	}
+
+	/**
+	 * It starts protege and obtains the editor kit (a link to protege GUI and ontology)
+	 * @param uri : the default ontology to be opened by protege. If set to null, it will load nothing
+	 * @return
+	 * @throws BundleException
+	 * @throws IOException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 */
+	protected OWLEditorKit startProtegeEditorKit(URI uri) throws BundleException, IOException, InstantiationException, IllegalAccessException {
+		OWLEditorKit kit = null;
+		
+		// specify the bundle laucher that the desired URI is from file (this will set up the system properties and force protege to load this file)
+		this.getProtegeBundleLauncher().setDefaultOntolgyURI(uri);
+		
+		// load ontology using protege
+		this.getProtegeBundleLauncher().startProtegeBundles();
+		
+		// obtain manager. We expect it to be an instance of ProtegeManager
+		ProtegeManager manager = (ProtegeManager)this.getProtegeBundleLauncher().getProtegeManager();
+		
+		// obtain the last opened kit (which is the one opened now)
+		try {
+			kit = (OWLEditorKit)manager.getEditorKitManager().getEditorKits().get(manager.getEditorKitManager().getEditorKitCount() - 1);
+		}catch (Exception e) {
+			e.printStackTrace();
+			try {
+				if (this.getProtegeBundleLauncher() instanceof ProtegeBundleLauncher) {
+					((ProtegeBundleLauncher)this.getProtegeBundleLauncher()).hideProtegeGUI();
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+			return null;
+		}
+		
+		// hide protege's frame immediately (this is because the loading process may take so long, and the protege frame may be visible to users during that)
+		try {
+			manager.getFrame(kit.getWorkspace()).setVisible(false);
+		} catch (Throwable t) {
+			t.printStackTrace();
+			// it is OK to ignore, because this frame will be removed from view after the ontology is created.
+		}
+		return kit;
+	}
+
+	/**
+	 * This method initializes OWL reasoner from protege bundles.
+	 * If {@link #isToInitializeReasoner()} is false, it will return null.
+	 * It currently uses polling (a loop with a sleep) to check if reasoner is ready.
+	 * {@link #getMaximumBuzyWaitingCount()} is the polling limit.
+	 * @param protegeModelManager : this is a protege's object for general purpose.
+	 * @return : the initialized reasoner or null if it could not be initialized.
+	 */
+	protected OWLReasoner setupOWLReasoner(OWLModelManager protegeModelManager) {
+		// force it to use the first reasoner different than "NoOpReasoner" (which in protege is a null object)
+		if (this.isToInitializeReasoner()) {
+			// it will hold the reasoner's ID except the null object (which is an instance of NoOPReasoner, and it's assigned name is "None")
+			String reasonerIDExceptNone = null;
+			for (ProtegeOWLReasonerInfo info : protegeModelManager.getOWLReasonerManager().getInstalledReasonerFactories()) {
+				if ( ! NoOpReasonerInfo.NULL_REASONER_ID.equals( info.getReasonerId() ) ){
+					// We are now sure that this is not a NULL reasoner.
+					try {
+						protegeModelManager.getOWLReasonerManager().setCurrentReasonerFactoryId(info.getReasonerId());
+						protegeModelManager.getOWLReasonerManager().classifyAsynchronously(protegeModelManager.getOWLReasonerManager().getReasonerPreferences().getPrecomputedInferences());
+						
+						// maybe there would be some synchronization problems, because of protege's asynchronous initialization of reasoners. Let's wait until it becomes ready
+						for (long i = 0; i < this.getMaximumBuzyWaitingCount(); i++) {
+							// TODO Stop using buzy waiting!!!
+							if (ReasonerStatus.NO_REASONER_FACTORY_CHOSEN.equals(protegeModelManager.getOWLReasonerManager().getReasonerStatus())) {
+								// reasoner is not chosen...
+								Debug.println(this.getClass(), "No reasoner is chosen. Trying to reload...");
+								// try reloading again
+								protegeModelManager.getOWLReasonerManager().setCurrentReasonerFactoryId(info.getReasonerId());
+								protegeModelManager.getOWLReasonerManager().classifyAsynchronously(protegeModelManager.getOWLReasonerManager().getReasonerPreferences().getPrecomputedInferences());
+								continue;
+							}
+							if (ReasonerStatus.INITIALIZED.equals(protegeModelManager.getOWLReasonerManager().getReasonerStatus())) {
+								// reasoner is ready now
+								break;
+							}
+							Debug.println(this.getClass(), "Waiting for reasoner initialization...");
+							try {
+								// sleep and try reasoner status after
+								Thread.sleep(this.getSleepTimeWaitingReasonerInitialization());
+							} catch (Throwable t) {
+								// a thread sleep should not break normal program flow...
+								t.printStackTrace();
+							}
+						}
+						
+						// if the reasoner tells the ontology is consistent, use it to load MEBN.
+						if (protegeModelManager.getReasoner().isConsistent()) {
+							// let's just use the 1st (non NULL) option and ignore other protege reasoners
+							return protegeModelManager.getReasoner();
+						} else {
+							try {
+								Debug.println(this.getClass(), protegeModelManager.getActiveOntology() + " is an inconsistent ontology.");
+							}catch (Throwable t) {
+								t.printStackTrace();
+							}
+							// we will try another reasoner or we will not use a reasoner to load PR-OWL
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+						continue;
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -275,6 +318,33 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 			long sleepTimeWaitingReasonerInitialization) {
 		this.sleepTimeWaitingReasonerInitialization = sleepTimeWaitingReasonerInitialization;
 	}
+
+//	/* (non-Javadoc)
+//	 * @see unbbayes.io.mebn.owlapi.OWLAPICompatiblePROWLIO#saveMebn(java.io.File, unbbayes.prs.mebn.MultiEntityBayesianNetwork)
+//	 */
+//	@Override
+//	public void saveMebn(File file, MultiEntityBayesianNetwork mebn) throws IOException, IOMebnException {
+//		// update storage implementor if it is not set
+//		if (mebn.getStorageImplementor() == null || !(mebn.getStorageImplementor() instanceof IOWLAPIStorageImplementorDecorator)) {
+//			try {
+//				// start new protege instance
+//				OWLEditorKit kit = this.startProtegeEditorKit(file.toURI());
+//				// initialize reasoner (to be used)
+//				this.setLastOWLReasoner(this.setupOWLReasoner(kit.getOWLModelManager()));
+//				mebn.setStorageImplementor(ProtegeStorageImplementorDecorator.newInstance(kit));
+//			} catch (BundleException e) {
+//				// perform exception translation to match method signature
+//				throw new IOMebnException(e);
+//			} catch (InstantiationException e) {
+//				// perform exception translation to match method signature
+//				throw new IOMebnException(e);
+//			} catch (IllegalAccessException e) {
+//				// perform exception translation to match method signature
+//				throw new IOMebnException(e);
+//			}
+//		}
+//		super.saveMebn(file, mebn);
+//	}
 	
 	
 

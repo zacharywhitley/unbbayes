@@ -154,6 +154,9 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
 					public void componentMoved(ComponentEvent e) {}
 					public void componentHidden(ComponentEvent e) {}
 				});
+				
+				// hide entities and individuals, because "this" panel will be responsible for those
+				this.hideUnwantedComponents(mediator);	
 				return this;
 				// TODO dispose editor kit when inner frame is closed
 			}
@@ -190,6 +193,33 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
 //		}
 		
 		return null;
+	}
+	
+	/**
+	 * This method hides some unwanted components, like the ones to display currently available entities or individuals
+	 * (because such elements must be edited in the panel built by {@link Protege41EntityPanelBuilder}).
+	 * @param mediator
+	 */
+	protected void hideUnwantedComponents(IMEBNMediator mediator) {
+//		// hide entity, entity individuals and findings panel from original MEBN editor
+//		try {
+//			// remove object entity tab
+//			mediator.getMebnEditionPane().getJtbTabSelection().remove(mediator.getMebnEditionPane().getBtnTabOptionEntity());
+//		} catch (Exception t) {
+//			t.printStackTrace();
+//		}
+//		try {
+//			// remove object entity individuals panel
+//			mediator.getMebnEditionPane().getJtbTabSelection().remove(mediator.getMebnEditionPane().getBtnTabOptionEntityFinding());
+//		} catch (Exception t) {
+//			t.printStackTrace();
+//		}
+//		try {
+//			// remove finding panel
+//			mediator.getMebnEditionPane().getJtbTabSelection().remove(mediator.getMebnEditionPane().getBtnTabOptionNodeFinding());
+//		} catch (Exception t) {
+//			t.printStackTrace();
+//		}
 	}
 	
 	// the following was migrated to ProtegeBundleLauncher
@@ -332,6 +362,7 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
 //		List<EditorKit> listEditorKits = editorKitManager.getEditorKits();
 		List listEditorKits = (List)editorKitManager.getClass().getMethod("getEditorKits").invoke(editorKitManager);
 		
+				
 //		Workspace workspace = listEditorKits.get(0).getWorkspace();
 		Object workspace = bundle.loadClass(EditorKit.class.getName()).getMethod("getWorkspace").invoke(listEditorKits.get(0));
 

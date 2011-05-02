@@ -97,9 +97,9 @@ import unbbayes.util.Debug;
  * @author Shou Matsumoto
  *
  */
-public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyUser, IPROWL2ModelUser, IOWLClassExpressionParserFacade, INonPROWLClassExtractor {
+public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyUser, IOWLClassExpressionParserFacade, INonPROWLClassExtractor {
 	
-	private String prowlOntologyNamespaceURI = PROWL2_NAMESPACEURI;
+	private String prowlOntologyNamespaceURI = PROWLMODELURI; // "http://www.pr-owl.org/pr-owl.owl" is the default
 	
 	private OWLOntology lastOWLOntology;
 	
@@ -154,7 +154,19 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 	private IPROWL2ModelUser prowlModelUserDelegator;
 	
 	private INonPROWLClassExtractor nonPROWLClassExtractor;
+	
+	private String hasResidentNodeObjectPropertyName = "hasResidentNode";
+	private String hasInputNodeObjectPropertyName = "hasInputNode";
+	private String hasContextNodeObjectPropertyName = "hasContextNode";
+	private String hasOVariableObjectPropertyName = "hasOVariable";
+	private String isSubsByObjectPropertyName = "isSubsBy";
+	private String hasArgumentPropertyName = "hasArgument";
+	
+	private String oVariableScopeSeparator = ".";
 
+	private Map<OWLOntology, PrefixManager> ontologyPrefixCache;
+	
+	
 	/**
 	 * The default constructor is public only because
 	 * plug-in infrastructure may require default constructor
@@ -195,6 +207,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 		this.setProwlModelUserDelegator(modelUser);
 		this.setWrappedLoaderPrOwlIO(new LoaderPrOwlIO());	 // initialize default
 		this.setMEBNFactory(PROWL2MEBNFactory.getInstance()); // initialize default
+		this.resetCache();
 	}
 
 	/* (non-Javadoc)
@@ -337,17 +350,11 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 	}
 
 
-	/* (non-Javadoc)
-	 * @see unbbayes.io.mebn.MebnIO#saveMebn(java.io.File, unbbayes.prs.mebn.MultiEntityBayesianNetwork)
-	 */
-	public void saveMebn(File file, MultiEntityBayesianNetwork mebn)
-			throws IOException, IOMebnException {
-		throw new RuntimeException("Not supported yet");
-//		super.saveMebn(file, mebn);
-	}
+	
 
 	
 	
+
 	/**
 	 * Extract a simple name from an owl entity. If the ID of an entity is in [URI]#[Name] format, then it will extract the [Name].
 	 * @param ontology : the ontology where the owlEntity belongs.
@@ -493,7 +500,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 		if (mTheoryObject == null || hasMFragObjectProperty == null) {
 			// assume that if no MTheory was specified, all MFrags belong to the 1 anonymous MTheory
 			// TODO make sure if this is really consistent (no MTheory in a ontology)
-			OWLClass mfragClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.DOMAIN_MFRAG, this.getDefaultPrefixManager());
+			OWLClass mfragClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.DOMAINMFRAG, this.getDefaultPrefixManager());
 			if (!ontology.containsClassInSignature(mfragClass.getIRI(), true)) {
 				// use old
 				mfragClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROWLModelUser.DOMAIN_MFRAG, this.getDefaultPrefixManager());
@@ -524,7 +531,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 			} else {
 				// assume that if no MTheory was specified, all MFrags belong to the 1 anonymous MTheory
 				// TODO make sure if this is really consistent (no MTheory in a ontology)
-				OWLClass mfragClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.DOMAIN_MFRAG, this.getDefaultPrefixManager());
+				OWLClass mfragClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.DOMAINMFRAG, this.getDefaultPrefixManager());
 				if (!ontology.containsClassInSignature(mfragClass.getIRI(),true)) {
 					mfragClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROWLModelUser.DOMAIN_MFRAG, this.getDefaultPrefixManager());
 				}
@@ -720,6 +727,14 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 	 */
 	public Collection<OWLClassExpression> getNonPROWLClasses(OWLOntology ontology) {
 		return this.getNonPROWLClassExtractor().getNonPROWLClasses(ontology);
+	}
+	
+	/**
+	 * Simply delegates to 
+	 * @see unbbayes.io.mebn.owlapi.INonPROWLClassExtractor#getPROWLClasses(org.semanticweb.owlapi.model.OWLOntology)
+	 */
+	public Collection<OWLClassExpression> getPROWLClasses(OWLOntology ontology) {
+		return this.getNonPROWLClassExtractor().getPROWLClasses(ontology);
 	}
 
 	/**
@@ -932,7 +947,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 		Map<String, INode> mapMultiEntityNode = new HashMap<String, INode>();
 		
 		// extract mfrag class
-		OWLClass owlNamedClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.DOMAIN_MFRAG, prefixManager); 
+		OWLClass owlNamedClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.DOMAINMFRAG, prefixManager); 
 		if (!ontology.containsClassInSignature(owlNamedClass.getIRI(),true)) {
 			// use the old PR-OWL definition
 			owlNamedClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROWLModelUser.DOMAIN_MFRAG, prefixManager); 
@@ -953,7 +968,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 				domainMFrag.setDescription(this.getDescription(ontology, individualOne)); 
 				
 				/* -> hasResidentNode */
-				OWLObjectProperty objectProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty("hasResidentNode", prefixManager); 
+				OWLObjectProperty objectProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(this.getHasResidentNodeObjectPropertyName(), prefixManager); 
 //				individualOne.getObjectPropertyValues(objectProperty, ontology)
 				for (OWLIndividual individualTwo : this.getObjectPropertyValues(individualOne, objectProperty, ontology) ){
 					// remove prefixes from the name
@@ -983,7 +998,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 				}	
 				
 				/* -> hasInputNode */
-				objectProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty("hasInputNode", prefixManager); 
+				objectProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(this.getHasInputNodeObjectPropertyName(), prefixManager); 
 				for (OWLIndividual individualTwo : this.getObjectPropertyValues(individualOne, objectProperty, ontology)){
 					// instantiate input node
 					InputNode generativeInputNode = this.getMEBNFactory().createInputNode(this.extractName(ontology, individualTwo.asOWLNamedIndividual()), domainMFrag); 
@@ -1000,7 +1015,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 				}	
 				
 				/* -> hasContextNode */
-				objectProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty("hasContextNode", prefixManager); 
+				objectProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(this.getHasContextNodeObjectPropertyName(), prefixManager); 
 				for (OWLIndividual individualTwo : this.getObjectPropertyValues(individualOne, objectProperty, ontology)){
 					ContextNode contextNode = this.getMEBNFactory().createContextNode(this.extractName(ontology, individualTwo.asOWLNamedIndividual()), domainMFrag); 
 					mebn.getNamesUsed().add(this.extractName(ontology, individualTwo.asOWLNamedIndividual()));  	// mark name as used
@@ -1016,7 +1031,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 				}	
 				
 				/* -> hasOVariable */
-				objectProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty("hasOVariable", prefixManager); 
+				objectProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(this.getHasOVariableObjectPropertyName(), prefixManager); 
 				String ovName = null;
 				for (OWLIndividual individualTwo : this.getObjectPropertyValues(individualOne, objectProperty, ontology)){
 					ovName = this.extractName(ontology, individualTwo.asOWLNamedIndividual());	// Name of the OV individual
@@ -1190,7 +1205,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 		
 		Map<String, ContextNode> ret = new HashMap<String, ContextNode>();
 		
-		OWLClass contextNodePr = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.CONTEXT_NODE, prefixManager); 
+		OWLClass contextNodePr = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.CONTEXTNODE, prefixManager); 
 		if (!ontology.containsClassInSignature(contextNodePr.getIRI(), true)) {
 			// use old definition
 			contextNodePr = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROWLModelUser.CONTEXT_NODE, prefixManager); 
@@ -1238,7 +1253,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 				}
 				
 				/* -> hasArgument */
-				objectProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty("hasArgument", prefixManager); 
+				objectProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(this.getHasArgumentPropertyName(), prefixManager); 
 				for (OWLIndividual individualTwo : this.getObjectPropertyValues(individualOne,objectProperty, ontology) ){
 					Argument argument = this.getMEBNFactory().createArgument(this.extractName(ontology, individualTwo.asOWLNamedIndividual()), contextNode); 
 					contextNode.addArgument(argument); 
@@ -1309,7 +1324,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 		
 		PrefixManager prefixManager = this.getDefaultPrefixManager();
 		
-		OWLClass domainResidentNodePr = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.DOMAIN_RESIDENT, prefixManager); 
+		OWLClass domainResidentNodePr = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.DOMAINRESIDENT, prefixManager); 
 		if (!ontology.containsClassInSignature(domainResidentNodePr.getIRI(), true)) {
 			// use old definition
 			domainResidentNodePr = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROWLModelUser.DOMAIN_RESIDENT, prefixManager); 
@@ -1347,7 +1362,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 				}
 				
 				/* -> hasArgument */
-				objectProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty("hasArgument", prefixManager); 
+				objectProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(this.getHasArgumentPropertyName(), prefixManager); 
 				for (OWLIndividual individualTwo : this.getObjectPropertyValues(individualOne,objectProperty, ontology)){
 					Argument argument = this.getMEBNFactory().createArgument(this.extractName(ontology, individualTwo.asOWLNamedIndividual()), domainResidentNode); 
 					domainResidentNode.addArgument(argument); 
@@ -1610,7 +1625,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 		
 		Map<String, InputNode> ret = new HashMap<String, InputNode>();
 		
-		OWLClass inputNodePr = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.GENERATIVE_INPUT, prefixManager); 
+		OWLClass inputNodePr = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.GENERATIVEINPUT, prefixManager); 
 		if (!ontology.containsClassInSignature(inputNodePr.getIRI(), true)) {
 			inputNodePr = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROWLModelUser.GENERATIVE_INPUT, prefixManager); 
 		}
@@ -1660,7 +1675,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 				}
 				
 				/* -> hasArgument */
-				objectProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty("hasArgument",prefixManager); 
+				objectProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(this.getHasArgumentPropertyName(),prefixManager); 
 				for (OWLIndividual individualTwo : this.getObjectPropertyValues(individualOne,objectProperty, ontology) ){
 					if (!individualTwo.isNamed()) {
 						continue;	// ignore anonymous individuals
@@ -1715,7 +1730,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 		
 		Map<String, OrdinaryVariable> ret = new HashMap<String, OrdinaryVariable>();
 		
-		OWLClass ordinaryVariablePr = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.ORDINARY_VARIABLE, prefixManager); 
+		OWLClass ordinaryVariablePr = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.ORDINARYVARIABLE, prefixManager); 
 		if (!ontology.containsClassInSignature(ordinaryVariablePr.getIRI(), true)) {
 			// use the old definition
 			ordinaryVariablePr = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROWLModelUser.ORDINARY_VARIABLE, prefixManager); 
@@ -1752,7 +1767,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 				
 				/* -> isSubsBy */
 				
-				objectProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty("isSubsBy", prefixManager); 			
+				objectProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(this.getIsSubsByObjectPropertyName(), prefixManager); 			
 				instances = this.getObjectPropertyValues(individualOne,objectProperty, ontology); 	
 				if(!instances.isEmpty()){
 					OWLIndividual individualTwo = instances.iterator().next();
@@ -1994,6 +2009,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 	 * @param mebn : the loaded (but incomplete) MEBN object. This is an input and output argument (i.e. its values will be updated)
 	 * @return a mapping from a name to the loaded individuals.
 	 * @throws IOMebnException
+	 * TODO this methos is not considering hasUID data property yet.
 	 */
 	protected Map<String, ObjectEntityInstance> loadObjectEntityIndividuals(OWLOntology ontology, MultiEntityBayesianNetwork mebn) throws TypeException {
 		
@@ -2358,16 +2374,35 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 		return this.getOntologyPrefixManager(null);
 	}
 	
-	/*
-	 * (non-Javadoc)
+	/**
+	 * This method uses cache (i.e. {@link #getOntologyPrefixCache()} ) to get the prefix manager.
+	 * If {@link #getOntologyPrefixCache()} is set to null, it will not use a cache.
+	 * If prefix manager is not cached, then it will delegate to {@link #getOntologyPrefixManager(OWLOntology)}
+	 * @return the cached prefix manager or the one obtained from {@link #getProwlModelUserDelegator()}
 	 * @see unbbayes.io.mebn.IPROWL2ModelUser#getOntologyPrefixManager(org.semanticweb.owlapi.model.OWLOntology)
 	 */
 	public PrefixManager getOntologyPrefixManager(OWLOntology ontology) {
-		// just delegate...
-		if (this.getProwlModelUserDelegator() != null) {
-			return this.getProwlModelUserDelegator().getOntologyPrefixManager(ontology);
+		// value to return
+		PrefixManager ret = null;
+		// use cache if available
+		if (this.getOntologyPrefixCache() != null ) {
+			ret = this.getOntologyPrefixCache().get(ontology);
+			if (ret != null) {
+				// found in cache. Return immediately
+				return ret;
+			}
 		}
-		return null;
+		// It was not found in cache. Just delegate...
+		if (this.getProwlModelUserDelegator() != null) {
+			ret = this.getProwlModelUserDelegator().getOntologyPrefixManager(ontology);
+			// update cache if cache is available
+			if (this.getOntologyPrefixCache() != null) {
+				this.getOntologyPrefixCache().put(ontology, ret);
+			}
+			// return ret;
+		}
+		
+		return ret;
 	}
 	
 	
@@ -2986,6 +3021,173 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 			return "";
 		}
 		return super.getSupportedFilesDescription(isLoadOnly);
+	}
+	
+	/**
+	 * This method is a facilitator to clear and initialize internal cache.
+	 * @see #getOntologyPrefixCache()
+	 */
+	public void resetCache() {
+		try {
+			this.setOntologyPrefixCache(new HashMap<OWLOntology, PrefixManager>());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * This is the name of a property linking a MFrag to a resident node.
+	 * Default value is {@link IPROWL2ModelUser#HASRESIDENTNODE}, because
+	 * the PR-OWL2 definition and PR-OWL1 definitions are the same.
+	 * @return the hasResidentNodeObjectPropertyName
+	 */
+	public String getHasResidentNodeObjectPropertyName() {
+		return hasResidentNodeObjectPropertyName;
+	}
+
+	/**
+	 * This is the name of a property linking a MFrag to a resident node.
+	 * Default value is {@link IPROWL2ModelUser#HASRESIDENTNODE}, because
+	 * the PR-OWL2 definition and PR-OWL1 definitions are the same.
+	 * @param hasResidentNodeObjectPropertyName the hasResidentNodeObjectPropertyName to set
+	 */
+	public void setHasResidentNodeObjectPropertyName(
+			String hasResidentNodeObjectPropertyName) {
+		this.hasResidentNodeObjectPropertyName = hasResidentNodeObjectPropertyName;
+	}
+
+	/**
+	 * This is the name of a property linking a MFrag to an input node.
+	 * Default value is {@link IPROWL2ModelUser#HASINPUTNODE}, because
+	 * the PR-OWL2 definition and PR-OWL1 definitions are the same.
+	 * @return the hasInputNodeObjectPropertyName
+	 */
+	public String getHasInputNodeObjectPropertyName() {
+		return hasInputNodeObjectPropertyName;
+	}
+
+	/**
+	 * This is the name of a property linking a MFrag to an input node.
+	 * Default value is {@link IPROWL2ModelUser#HASINPUTNODE}, because
+	 * the PR-OWL2 definition and PR-OWL1 definitions are the same.
+	 * @param hasInputNodeObjectPropertyName the hasInputNodeObjectPropertyName to set
+	 */
+	public void setHasInputNodeObjectPropertyName(
+			String hasInputNodeObjectPropertyName) {
+		this.hasInputNodeObjectPropertyName = hasInputNodeObjectPropertyName;
+	}
+
+	/**
+	 * This is the name of a property linking a MFrag to a context node.
+	 * Default value is {@link IPROWL2ModelUser#HASCONTEXTNODE}, because
+	 * the PR-OWL2 definition and PR-OWL1 definitions are the same.
+	 * @return the hasContextNodeObjectPropertyName
+	 */
+	public String getHasContextNodeObjectPropertyName() {
+		return hasContextNodeObjectPropertyName;
+	}
+
+	/**
+	 * This is the name of a property linking a MFrag to a context node.
+	 * Default value is {@link IPROWL2ModelUser#HASCONTEXTNODE}, because
+	 * the PR-OWL2 definition and PR-OWL1 definitions are the same.
+	 * @param hasContextNodeObjectPropertyName the hasContextNodeObjectPropertyName to set
+	 */
+	public void setHasContextNodeObjectPropertyName(
+			String hasContextNodeObjectPropertyName) {
+		this.hasContextNodeObjectPropertyName = hasContextNodeObjectPropertyName;
+	}
+
+	/**
+	 * This is the name of a property linking a MFrag to an ordinary variable.
+	 * Default value is "hasOVariable".
+	 * @return the hasOVariableObjectPropertyName
+	 */
+	public String getHasOVariableObjectPropertyName() {
+		return hasOVariableObjectPropertyName;
+	}
+
+	/**
+	 * This is the name of a property linking a MFrag to an ordinary variable.
+	 * Default value is "hasOVariable".
+	 * @param hasOVariableObjectPropertyName the hasOVariableObjectPropertyName to set
+	 */
+	public void setHasOVariableObjectPropertyName(
+			String hasOVariableObjectPropertyName) {
+		this.hasOVariableObjectPropertyName = hasOVariableObjectPropertyName;
+	}
+
+	/**
+	 * This is the name of a property linking an ordinary variable to its actual value/type.
+	 * Default value is "isSubsBy".
+	 * @return the isSubsByObjectPropertyName
+	 */
+	public String getIsSubsByObjectPropertyName() {
+		return isSubsByObjectPropertyName;
+	}
+
+	/**
+	 * This is the name of a property linking an ordinary variable to its actual value/type.
+	 * Default value is "isSubsBy".
+	 * @param isSubsByObjectPropertyName the isSubsByObjectPropertyName to set
+	 */
+	public void setIsSubsByObjectPropertyName(String isSubsByObjectPropertyName) {
+		this.isSubsByObjectPropertyName = isSubsByObjectPropertyName;
+	}
+
+	/**
+	 * In a PR-OWL ontology, an ordinary variable is saved using the following naming pattern:
+	 * {MFragName}{SEPARATOR}{OVName}.
+	 * This field contains the value of {SEPARATOR}.
+	 * @return the oVariableScopeSeparator
+	 */
+	public String getOVariableScopeSeparator() {
+		return oVariableScopeSeparator;
+	}
+
+	/**
+	 * In a PR-OWL ontology, an ordinary variable is saved using the following naming pattern:
+	 * {MFragName}{SEPARATOR}{OVName}.
+	 * This field contains the value of {SEPARATOR}.
+	 * @param oVariableScopeSeparator the oVariableScopeSeparator to set
+	 */
+	public void setOVariableScopeSeparator(String oVariableScopeSeparator) {
+		this.oVariableScopeSeparator = oVariableScopeSeparator;
+	}
+
+	/**
+	 * This map caches the prefix managers obtainable from {@link #getOntologyPrefixManager(OWLOntology)}.
+	 * @return the ontologyPrefixCache
+	 */
+	protected Map<OWLOntology, PrefixManager> getOntologyPrefixCache() {
+		return ontologyPrefixCache;
+	}
+
+	/**
+	 * This map caches the prefix managers obtainable from {@link #getOntologyPrefixManager(OWLOntology)}.
+	 * @param ontologyPrefixCache the ontologyPrefixCache to set
+	 */
+	protected void setOntologyPrefixCache(
+			Map<OWLOntology, PrefixManager> ontologyPrefixCache) {
+		this.ontologyPrefixCache = ontologyPrefixCache;
+	}
+
+	/**
+	 * This is the name of hasArgument property name.
+	 * The default value is "hasArgument"
+	 * @return the hasArgumentPropertyName
+	 */
+	public String getHasArgumentPropertyName() {
+		return hasArgumentPropertyName;
+	}
+
+	/**
+	 * This is the name of hasArgument property name.
+	 * The default value is "hasArgument"
+	 * @param hasArgumentPropertyName the hasArgumentPropertyName to set
+	 */
+	public void setHasArgumentPropertyName(String hasArgumentPropertyName) {
+		this.hasArgumentPropertyName = hasArgumentPropertyName;
 	}
 	
 	

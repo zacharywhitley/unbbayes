@@ -24,6 +24,16 @@ public interface INonPROWLClassExtractor {
 	 */
 	public Collection<OWLClassExpression> getNonPROWLClasses(OWLOntology ontology);
 	
+
+	/**
+	 * This method does the opposite of {@link #getNonPROWLClasses(OWLOntology)}.
+	 * This method may be helpful, because the open-world assumption of OWL prohibits
+	 * us to obtain PR-OWL classes by querying classes that are not {@link #getNonPROWLClasses(OWLOntology)}.
+	 * @param ontology
+	 * @return
+	 */
+	public Collection<OWLClassExpression> getPROWLClasses(OWLOntology ontology);
+	
 	/**
 	 * This method will reset objects of this interface (e.g. clear caches).
 	 */

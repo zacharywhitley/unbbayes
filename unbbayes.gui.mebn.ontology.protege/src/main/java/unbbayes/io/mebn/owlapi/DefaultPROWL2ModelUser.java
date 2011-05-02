@@ -185,7 +185,7 @@ public class DefaultPROWL2ModelUser implements IPROWL2ModelUser {
 //			ret.removeAll(this.getOWLSubclasses(classToRemove, ontology));
 //			
 //			// remove CondRelationship
-//			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(COND_RELATIONSHIP, prefixManager);
+//			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(CONDRELATIONSHIP, prefixManager);
 //			ret.remove(classToRemove);
 //			ret.removeAll(this.getOWLSubclasses(classToRemove, ontology));
 //			
@@ -218,17 +218,17 @@ public class DefaultPROWL2ModelUser implements IPROWL2ModelUser {
 //			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROWLModelUser.ORDINARY_VARIABLE, prefixManager);
 //			ret.remove(classToRemove);
 //			ret.removeAll(this.getOWLSubclasses(classToRemove, ontology));
-////			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.ORDINARY_VARIABLE, prefixManager);
+////			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.ORDINARYVARIABLE, prefixManager);
 ////			ret.remove(classToRemove);
 ////			ret.removeAll(this.getOWLSubclasses(classToRemove, ontology));
 //			
 //			// remove ProbAssign
-//			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROB_ASSIGN, prefixManager);
+//			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROBABILITYASSIGNMENT, prefixManager);
 //			ret.remove(classToRemove);
 //			ret.removeAll(this.getOWLSubclasses(classToRemove, ontology));
 //			
 //			// remove ProbDist
-//			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROB_DIST, prefixManager);
+//			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROBABILITYDISTRIBUTION, prefixManager);
 //			ret.remove(classToRemove);
 //			ret.removeAll(this.getOWLSubclasses(classToRemove, ontology));
 //			

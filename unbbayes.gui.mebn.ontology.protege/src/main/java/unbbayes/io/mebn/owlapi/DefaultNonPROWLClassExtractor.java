@@ -63,74 +63,10 @@ public class DefaultNonPROWLClassExtractor implements INonPROWLClassExtractor {
 			// add all classes (note: looking for all subclasses of owl:Thing is not enough, because some top classes may not be explicitly asserted as subclass of owl:Thing)
 			ret.addAll(ontology.getClassesInSignature(true));
 			
-			// use PR-OWL namespace (prefix)
-			PrefixManager prefixManager = new DefaultPrefixManager(this.getProwlOntologyNamespaceURI() + '#');
-			
 			// remove PR-OWL 1 elements (we are removing here because we do not know how to query Thing and not(<PR-OWL classes>) in open-world assumption)
 			// TODO find out a way to query Thing and not(<PR-OWL classes>) in open-world assumption
 			
-			// remove ArgRelationship
-			OWLClass classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROWLModelUser.ARGUMENT_RELATIONSHIP, prefixManager);
-			ret.remove(classToRemove);
-			ret.removeAll(this.getAssertedDescendants(classToRemove, ontology));
-			
-			// remove SimpleArgRelationship (this is because SimpleArgRelationship is not an asserted subclass of argument relationship)
-			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROWLModelUser.SIMPLE_ARGUMENT_RELATIONSHIP, prefixManager);
-			ret.remove(classToRemove);
-			ret.removeAll(this.getAssertedDescendants(classToRemove, ontology));
-			
-			// remove BuiltInRV
-			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROWLModelUser.BUILTIN_RV, prefixManager);
-			ret.remove(classToRemove);
-			ret.removeAll(this.getAssertedDescendants(classToRemove, ontology));
-			
-			// remove CondRelationship
-			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.COND_RELATIONSHIP, prefixManager);
-			ret.remove(classToRemove);
-			ret.removeAll(this.getAssertedDescendants(classToRemove, ontology));
-			
-			// remove Entity
-			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass("Entity", prefixManager);
-			ret.remove(classToRemove);
-			ret.removeAll(this.getAssertedDescendants(classToRemove, ontology));
-			
-			// remove Exemplar
-			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.EXEMPLAR, prefixManager);
-			ret.remove(classToRemove);
-			ret.removeAll(this.getAssertedDescendants(classToRemove, ontology));
-			
-			// remove MFrag
-			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.MFRAG, prefixManager);
-			ret.remove(classToRemove);
-			ret.removeAll(this.getAssertedDescendants(classToRemove, ontology));
-			
-			// remove MTheory
-			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.MTHEORY, prefixManager);
-			ret.remove(classToRemove);
-			ret.removeAll(this.getAssertedDescendants(classToRemove, ontology));
-			
-			// remove Node
-			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.NODE, prefixManager);
-			ret.remove(classToRemove);
-			ret.removeAll(this.getAssertedDescendants(classToRemove, ontology));
-			
-			// remove OVariable
-			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROWLModelUser.ORDINARY_VARIABLE, prefixManager);
-			ret.remove(classToRemove);
-			ret.removeAll(this.getAssertedDescendants(classToRemove, ontology));
-//			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.ORDINARY_VARIABLE, prefixManager);
-//			ret.remove(classToRemove);
-//			ret.removeAll(this.getOWLSubclasses(classToRemove, ontology));
-			
-			// remove ProbAssign
-			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.PROB_ASSIGN, prefixManager);
-			ret.remove(classToRemove);
-			ret.removeAll(this.getAssertedDescendants(classToRemove, ontology));
-			
-			// remove ProbDist
-			classToRemove = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.PROB_DIST, prefixManager);
-			ret.remove(classToRemove);
-			ret.removeAll(this.getAssertedDescendants(classToRemove, ontology));
+			ret.removeAll(this.getPROWLClasses(ontology));
 			
 		} catch (Throwable t) {
 			t.printStackTrace();
@@ -209,5 +145,89 @@ public class DefaultNonPROWLClassExtractor implements INonPROWLClassExtractor {
 	 */
 	public void setProwlOntologyNamespaceURI(String prowlOntologyNamespaceURI) {
 		this.prowlOntologyNamespaceURI = prowlOntologyNamespaceURI;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.mebn.owlapi.INonPROWLClassExtractor#getPROWLClasses(org.semanticweb.owlapi.model.OWLOntology)
+	 */
+	public Collection<OWLClassExpression> getPROWLClasses(OWLOntology ontology) {
+		// returning value
+		Collection<OWLClassExpression> ret = new HashSet<OWLClassExpression>();
+		
+		// use PR-OWL namespace (prefix)
+		PrefixManager prefixManager = new DefaultPrefixManager(this.getProwlOntologyNamespaceURI() + '#');
+		
+		// add ArgRelationship
+		OWLClass classToAdd = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROWLModelUser.ARGUMENT_RELATIONSHIP, prefixManager);
+		ret.add(classToAdd);
+		ret.addAll(this.getAssertedDescendants(classToAdd, ontology));
+		
+		// add SimpleArgRelationship (this is because SimpleArgRelationship is not an asserted subclass of argument relationship)
+		classToAdd = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROWLModelUser.SIMPLE_ARGUMENT_RELATIONSHIP, prefixManager);
+		ret.add(classToAdd);
+		ret.addAll(this.getAssertedDescendants(classToAdd, ontology));
+		
+		// add BuiltInRV
+		classToAdd = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROWLModelUser.BUILTIN_RV, prefixManager);
+		ret.add(classToAdd);
+		ret.addAll(this.getAssertedDescendants(classToAdd, ontology));
+		
+		// add CondRelationship
+		classToAdd = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.CONDRELATIONSHIP, prefixManager);
+		ret.add(classToAdd);
+		ret.addAll(this.getAssertedDescendants(classToAdd, ontology));
+		
+		// add Entity
+		classToAdd = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass("Entity", prefixManager);
+		ret.add(classToAdd);
+		ret.addAll(this.getAssertedDescendants(classToAdd, ontology));
+		
+		// add Exemplar
+		classToAdd = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.EXEMPLAR, prefixManager);
+		ret.add(classToAdd);
+		ret.addAll(this.getAssertedDescendants(classToAdd, ontology));
+		
+		// add MFrag
+		classToAdd = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.MFRAG, prefixManager);
+		ret.add(classToAdd);
+		ret.addAll(this.getAssertedDescendants(classToAdd, ontology));
+		
+		// add MTheory
+		classToAdd = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.MTHEORY, prefixManager);
+		ret.add(classToAdd);
+		ret.addAll(this.getAssertedDescendants(classToAdd, ontology));
+		
+		// add Node
+		classToAdd = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.NODE, prefixManager);
+		ret.add(classToAdd);
+		ret.addAll(this.getAssertedDescendants(classToAdd, ontology));
+		
+		// add OVariable
+		classToAdd = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROWLModelUser.ORDINARY_VARIABLE, prefixManager);
+		ret.add(classToAdd);
+		ret.addAll(this.getAssertedDescendants(classToAdd, ontology));
+		
+		// add ProbAssign
+		classToAdd = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.PROBABILITYASSIGNMENT, prefixManager);
+		ret.add(classToAdd);
+		ret.addAll(this.getAssertedDescendants(classToAdd, ontology));
+		
+		// add ProbDist
+		classToAdd = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.PROBABILITYDISTRIBUTION, prefixManager);
+		ret.add(classToAdd);
+		ret.addAll(this.getAssertedDescendants(classToAdd, ontology));
+
+		// add ProbDist
+		classToAdd = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass("ProbDist", prefixManager);
+		ret.add(classToAdd);
+		ret.addAll(this.getAssertedDescendants(classToAdd, ontology));
+		
+		// add ProbAssign
+		classToAdd = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass("ProbAssign", prefixManager);
+		ret.add(classToAdd);
+		ret.addAll(this.getAssertedDescendants(classToAdd, ontology));
+		
+		return ret;
 	}
 }
