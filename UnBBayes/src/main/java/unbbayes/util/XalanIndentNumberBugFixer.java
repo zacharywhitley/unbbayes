@@ -7,8 +7,13 @@ import java.util.HashSet;
 import org.apache.xalan.processor.TransformerFactoryImpl;
 
 /**
- * This class extends the apache Xalan in order to stop
- * failing if it finds a indent-number argument
+ * This class extends the apache Xalan's {@link TransformerFactoryImpl} in order to stop
+ * throwing an exception when it finds the "indent-number" argument.
+ * In order to apply this patch, you must set the "javax.xml.transform.TransformerFactory"
+ * system property to this class. 
+ * E.g. by using the command line argument -Djavax.xml.transform.TransformerFactory=unbbayes.util.XalanIndentNumberBugFixer
+ * or by calling System.setProperty("javax.xml.transform.TransformerFactory", "unbbayes.util.XalanIndentNumberBugFixer");
+ * 
  * @author Shou Matsumoto
  */
 public class XalanIndentNumberBugFixer extends TransformerFactoryImpl {
