@@ -205,6 +205,13 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 //		} catch (Throwable t) {
 //			t.printStackTrace();
 //		}
+		// explicitly initialize prowl2ModelFilePath as "pr-owl/pr-owl2.owl" before initializing IRI mapper
+		try {
+			this.setPROWL2ModelFilePath("pr-owl/pr-owl2.owl");
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+		
 		// initialize IRI mapper, so that requests for PR-OWL2 IRIs is delegated to local files
 		try {
 			// extract local file
@@ -214,7 +221,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 				prowl2DefinitionFile = new File(this.getClass().getClassLoader().getResource(this.getPROWL2ModelFilePath()).toURI());
 			} catch (Exception e1) {
 				try {
-					Debug.println(this.getClass(), e1.getMessage() + " - Could not load pr-owl2 definitions from plug-in resource. Retry using project's root folder...", e1);
+					Debug.println(this.getClass(), e1.getMessage() + " - Could not load pr-owl2 definitions from " + this.getPROWL2ModelFilePath() + " in plug-in's resource folder. Retry using project's root folder...", e1);
 				} catch (Throwable t) {
 					t.printStackTrace();
 				}
@@ -226,7 +233,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 					}
 				} catch (Exception e) {
 					try {
-						Debug.println(this.getClass(), e.getMessage() + " - Could not load pr-owl2 definitions from project's root folder.", e);
+						Debug.println(this.getClass(), e.getMessage() + " - Could not load pr-owl2 definitions from " + this.getPROWL2ModelFilePath() + " in project's root folder.", e);
 					} catch (Throwable t) {
 						t.printStackTrace();
 					}

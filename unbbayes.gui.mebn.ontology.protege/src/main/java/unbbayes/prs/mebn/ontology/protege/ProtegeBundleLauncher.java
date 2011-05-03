@@ -28,7 +28,12 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.launch.Framework;
 import org.protege.editor.core.ProtegeApplication;
 import org.protege.editor.core.ProtegeManager;
+import org.protege.editor.core.editorkit.EditorKit;
 import org.protege.editor.core.platform.PlatformArguments;
+import org.protege.editor.core.ui.workspace.Workspace;
+import org.protege.editor.owl.OWLEditorKit;
+import org.protege.editor.owl.model.OWLModelManager;
+import org.protege.editor.owl.model.OWLWorkspace;
 
 import unbbayes.util.Debug;
 
@@ -51,7 +56,7 @@ public class ProtegeBundleLauncher implements IBundleLauncher {
         {"apple.laf.useScreenMenuBar", "true"},
         {"com.apple.mrj.application.growbox.intrudes", "true"},
 		{"swing.defaultlaf", UIManager.getSystemLookAndFeelClassName()},
-		{"javax.xml.transform.TransformerFactory","unbbayes.prs.mebn.ontology.protege.UnBBayesTransformerFactory"}	// force Xalan to use this factory (which is a workaround to solve the "indent-number" bug)
+//		{"javax.xml.transform.TransformerFactory",UnBBayesTransformerFactory.class.getName()}	// force Xalan to use this factory (which is a workaround to solve the "indent-number" bug)
     };
 
 	/** This is the name of the bundle carring the {@link org.protege.editor.core.ProtegeApplication} */
@@ -144,7 +149,26 @@ public class ProtegeBundleLauncher implements IBundleLauncher {
 			System.setProperty(PlatformArguments.ARG_PROPERTY + 0, this.getDefaultOntolgyURI().toString());
 		}
     	
+    	// verify if the Xalan's ident-number bug fix is set in system property. If not, set it
+    	if (System.getProperty("javax.xml.transform.TransformerFactory") == null
+    			|| System.getProperty("javax.xml.transform.TransformerFactory").trim().length() <= 0) {
+    		try {
+				Debug.println(this.getClass(), "The \"javax.xml.transform.TransformerFactory\" system property is not set. Forcing it to " + unbbayes.util.XalanIndentNumberBugFixer.class.getName());
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+    		try {
+    			System.setProperty("javax.xml.transform.TransformerFactory", unbbayes.util.XalanIndentNumberBugFixer.class.getName());
+    		} catch (Throwable t) {
+    			t.printStackTrace();
+			}
+    	}
     	
+    	try {
+			Debug.println(this.getClass(), "System properties initialized: " + System.getProperties());
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
     }
 	
 	/**
@@ -270,6 +294,13 @@ public class ProtegeBundleLauncher implements IBundleLauncher {
 			throw new IllegalStateException("Could not obtain osgi framework.");
 		}
 		
+		try {
+			// force framework classloader to eager load some classes
+			this.forceFrameworkToLoadClasses();
+		} catch (ClassNotFoundException e) {
+			Debug.println(this.getClass(),"Could not load some classes using framework's classloader. This may leed to unsynchronized classes (e.g. classes with same name but incompatible because of classloaders)" + e.getMessage(), e);
+		}
+		
 		BundleContext context = this.getFramework().getBundleContext();
     	
     	// start loading protege's core bundles (this is a fixed set)
@@ -330,6 +361,24 @@ public class ProtegeBundleLauncher implements IBundleLauncher {
     	}
     	
     	return startedBundles;
+	}
+
+	/**
+	 * Force osgi framework's classloader to load the following classes:
+	 * org.protege.editor.core.ProtegeManager; org.protege.editor.core.editorkit.EditorKit; 
+	 * org.protege.editor.core.ui.workspace.Workspace; org.protege.editor.owl.OWLEditorKit; 
+	 * org.protege.editor.owl.model.OWLModelManager; import org.protege.editor.owl.model.OWLWorkspace;
+	 * unbbayes.prs.mebn.ontology.protege.UnBBayesTransformerFactory;
+	 * @throws ClassNotFoundException
+	 */
+	protected void forceFrameworkToLoadClasses() throws ClassNotFoundException{
+		this.getFramework().getClass().getClassLoader().loadClass(ProtegeManager.class.getName());
+		this.getFramework().getClass().getClassLoader().loadClass(EditorKit.class.getName());
+		this.getFramework().getClass().getClassLoader().loadClass(Workspace.class.getName());
+		this.getFramework().getClass().getClassLoader().loadClass(OWLEditorKit.class.getName());
+		this.getFramework().getClass().getClassLoader().loadClass(OWLModelManager.class.getName());
+		this.getFramework().getClass().getClassLoader().loadClass(OWLWorkspace.class.getName());
+//		this.getFramework().getClass().getClassLoader().loadClass(UnBBayesTransformerFactory.class.getName());
 	}
 
 	/**

@@ -489,19 +489,38 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
 			ProtegeManager manager = (ProtegeManager)this.extractProtegeManager(bundle, mebn, mediator);
 			
 			boolean isOntologyLoaded = false;
-			if (manager.getEditorKitManager().getEditorKits().isEmpty()) {
-				if (manager.loadAndSetupEditorKitFromURI(manager.getEditorKitFactoryPlugins().get(0), this.extractURIFromMEBN(mebn))) {
-					// new ontology loaded from manager.
-					isOntologyLoaded = true;
-				} else {
+			if (manager.getEditorKitManager().getEditorKitCount() <= 0) {
+				try {
+					Debug.println(this.getClass(), "Could not open Protege editor kit using bundle launcher's default ontology URI = " + this.getProtegeBundleLauncher().getDefaultOntolgyURI()
+							+ ". Retry calling ProtegeApplication#editURI(" + this.extractURIFromMEBN(mebn) + ") instead.");
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				// Open ontology (and editor kit) using file. An editor kit will be created "automagically". 
+				try {
+					manager.getApplication().editURI(this.extractURIFromMEBN(mebn));
+				} catch (Exception e) {
 					try {
-						Debug.println(this.getClass(), "Could not load ontology for mebn " + mebn);
+						Debug.println(this.getClass(), "Could not load ontology for mebn " + mebn, e);
 					} catch (Throwable t) {
 						t.printStackTrace();
 					}
 				}
+				// wait for a while
+				try {
+					Thread.sleep(1000);
+				} catch (Throwable t) {
+					t.printStackTrace();
+					// do not interrupt execution just because a waiting time was interrupted
+				}
+				isOntologyLoaded = true;
 			} else {
 				// ontology was loaded previously using System.getProperties() - simulating a protege's command line argument
+				try {
+					Debug.println(this.getClass(), "There were " + manager.getEditorKitManager().getEditorKitCount() + " previously loaded protege's editor kits.");
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
 				isOntologyLoaded = true;
 			}
 			// extract kit if it is already loaded

@@ -62,13 +62,34 @@ public class Protege41CompatiblePROWLIO extends OWLAPICompatiblePROWLIO {
 			// specify the bundle laucher that the desired URI is from file (this will set up the system properties and force protege to load this file)
 			this.getProtegeBundleLauncher().setDefaultOntolgyURI(file.toURI());
 			
+			// NOTE: if the above setting is not enough to open an ontology, we must call "ProtegeManager#getApplication()#editURI(URI)" explicitly
+			
 			// load ontology using protege
 			this.getProtegeBundleLauncher().startProtegeBundles();
 			
 			// obtain manager. We expect it to be an instance of ProtegeManager
 			ProtegeManager manager = (ProtegeManager)this.getProtegeBundleLauncher().getProtegeManager();
 			
-			// obtain the last opened kit (which is the one opened now)
+			// verify if at least one ontology is opened. If no ontology was opened previously, there is no kit (GUI) to display...
+			if (manager.getEditorKitManager().getEditorKitCount() <= 0) {
+				try {
+					Debug.println(this.getClass(), "Could not open Protege editor kit using bundle launcher's default ontology URI = " + this.getProtegeBundleLauncher().getDefaultOntolgyURI()
+							+ ". Retry calling ProtegeApplication#editURI(" + file.toURI() + ") instead.");
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				// Open ontology (and editor kit) using file. An editor kit will be created "automagically". 
+				manager.getApplication().editURI(file.toURI());
+				// wait for a while
+				try {
+					Thread.sleep(getSleepTimeWaitingReasonerInitialization());
+				} catch (Throwable t) {
+					t.printStackTrace();
+					// do not interrupt execution just because a waiting time was interrupted
+				}
+			}
+			
+			// obtain the last opened kit (which is the one opened right now)
 			try {
 				kit = (OWLEditorKit)manager.getEditorKitManager().getEditorKits().get(manager.getEditorKitManager().getEditorKitCount() - 1);
 			}catch (Exception e) {
@@ -149,6 +170,12 @@ public class Protege41CompatiblePROWLIO extends OWLAPICompatiblePROWLIO {
 						}
 					}
 				}
+			} else {
+				try {
+					Debug.println(this.getClass(), "This I/O is configured not to use reasoners to load ontology");
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
 			}
 			
 			try {
@@ -157,8 +184,11 @@ public class Protege41CompatiblePROWLIO extends OWLAPICompatiblePROWLIO {
 				t.printStackTrace();
 			}
 		} catch (Throwable e) {
-			e.printStackTrace();
-			System.err.println("Could not use protege's ontology loader. Using OWLAPI instead...");
+			try {
+				Debug.println(this.getClass(), "Could not use protege's ontology loader. Using OWLAPI instead... " +  e.getMessage(),e);
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
 			return super.loadMebn(file);
 		}
 		

@@ -153,6 +153,29 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 		// obtain manager. We expect it to be an instance of ProtegeManager
 		ProtegeManager manager = (ProtegeManager)this.getProtegeBundleLauncher().getProtegeManager();
 		
+		// verify if at least one ontology is opened. If no ontology was opened previously, there is no kit (GUI) to display...
+		if (manager.getEditorKitManager().getEditorKitCount() <= 0) {
+			try {
+				Debug.println(this.getClass(), "Could not open Protege editor kit using bundle launcher's default ontology URI = " + this.getProtegeBundleLauncher().getDefaultOntolgyURI()
+						+ ". Retry calling ProtegeApplication#editURI(" + uri + ") instead.");
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+			// Open ontology (and editor kit) using file. An editor kit will be created "automagically". 
+			try {
+				manager.getApplication().editURI(uri);
+			} catch (Exception e) {
+				throw new BundleException(this.getResource().getString("FileNotFoundException") + " : " + uri, e);
+			}
+			// wait for a while
+			try {
+				Thread.sleep(getSleepTimeWaitingReasonerInitialization());
+			} catch (Throwable t) {
+				t.printStackTrace();
+				// do not interrupt execution just because a waiting time was interrupted
+			}
+		}
+		
 		// obtain the last opened kit (which is the one opened now)
 		try {
 			kit = (OWLEditorKit)manager.getEditorKitManager().getEditorKits().get(manager.getEditorKitManager().getEditorKitCount() - 1);

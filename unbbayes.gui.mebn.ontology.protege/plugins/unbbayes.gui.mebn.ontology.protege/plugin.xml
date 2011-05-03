@@ -4,7 +4,7 @@
 <!-- This version uses Protege4.1 as a library, but because protege4.1 does not work in non OSGI environments, several adaptations had to be made... -->
 <plugin id="unbbayes.gui.mebn.ontology.protege" version="1.0.1">
     <requires>
-        <import plugin-id="unbbayes.util.extension.core"/>
+        <import plugin-id="unbbayes.util.extension.core" plugin-version="4.2.3" />
         <import plugin-id="unbbayes.prs.mebn" plugin-version="1.8.6"/>
     </requires>
     <runtime>
@@ -26,58 +26,85 @@
         	<export prefix="*"/>
         </library>
         <!-- TODO JPF seems to fail on importing JARs if it is not specifically mentioned (wildcards on folders seems to fail) -->
-        <library id="jxp" path="lib/jxp.jar" type="code" >
+
+        <library id="jxp" path="lib/org.onemind.jxp-1.2.0.jar" type="code" >
         	<export prefix="*"/>
         </library>
-        <library id="looks" path="lib/looks.jar" type="code" >
+        <library id="looks" path="lib/looks-2.2.1.jar" type="code" >
         	<export prefix="*"/>
         </library>
-        <library id="mdock" path="lib/mdock.jar" type="code" >
+        <library id="mdock" path="lib/org.coode.mdock-1.0.0.jar" type="code" >
         	<export prefix="*"/>
         </library>
-        <library id="org.coode.dlquery" path="lib/org.coode.dlquery.jar" type="code" >
+        <library id="org.coode.dlquery" path="lib/org.coode.dlquery-1.1.0.2010_09_03_0304.jar" type="code" >
         	<export prefix="*"/>
         </library>
+<!--
         <library id="org.coode.owlviz" path="lib/org.coode.owlviz.jar" type="code" >
         	<export prefix="*"/>
         </library>
-        <library id="org.eclipse.equinox.supplement" path="lib/org.eclipse.equinox.supplement.jar" type="code" >
+-->
+        <library id="org.eclipse.equinox.supplement" path="lib/org.eclipse.equinox.supplement-1.2.0.v20090518.jar" type="code" >
         	<export prefix="*"/>
         </library>
-        <library id="org.protege.common" path="lib/org.protege.common.jar" type="code" >
+        <library id="org.protege.common" path="lib/org.protege.common-4.1.jar" type="code" >
         	<export prefix="*"/>
         </library>
-        <library id="org.protege.editor.core.application" path="lib/org.protege.editor.core.application.jar" type="code" >
+        <library id="org.protege.editor.core.application" path="lib/org.protege.editor.core.application-4.1.jar" type="code" >
         	<export prefix="*"/>
         </library>
-        <library id="org.protege.editor.owl" path="lib/org.protege.editor.owl.jar" type="code" >
+        <library id="org.protege.editor.owl" path="lib/org.protege.editor.owl-4.1.0.b209_2010_09_03_0303.jar" type="code" >
         	<export prefix="*"/>
         </library>
+<!--
         <library id="org.protege.ontograf" path="lib/org.protege.ontograf.jar" type="code" >
         	<export prefix="*"/>
         </library>
-        <library id="org.semanticweb.HermiT" path="lib/org.semanticweb.HermiT.jar" type="code" >
+-->
+        <library id="org.semanticweb.HermiT" path="lib/org.semanticweb.hermit-1.2.5.927.jar" type="code" >
         	<export prefix="*"/>
         </library>
-        <library id="org.semanticweb.owl.owlapi" path="lib/org.semanticweb.owl.owlapi.jar" type="code" >
+        <library id="org.semanticweb.owl.owlapi" path="lib/org.semanticweb.owl.owlapi-3.1.0.1602.jar" type="code" >
         	<export prefix="*"/>
         </library>
-        <library id="protege-owlapi-extensions" path="lib/protege-owlapi-extensions.jar" type="code" >
+        <library id="protege-owlapi-extensions" path="lib/org.protege.owlapi.extensions-1.0.0.jar" type="code" >
         	<export prefix="*"/>
         </library>
-        <library id="swing-worker" path="lib/swing-worker.jar" type="code" >
+        <library id="swing-worker" path="lib/org.jdesktop.swingworker-1.0.0.jar" type="code" >
         	<export prefix="*"/>
         </library>
-        <library id="xmlcatalog" path="lib/xmlcatalog.jar" type="code" >
+        <library id="xmlcatalog" path="lib/org.protege.xmlcatalog-1.0.0.jar" type="code" >
         	<export prefix="*"/>
         </library>
-        <library id="protegejaxb" path="lib/org.protege.jaxb.jar" type="code" >
+        <library id="jaxb-api" path="lib/jaxb-api-2.2.1.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+        <library id="jaxb-impl" path="lib/jaxb-impl-2.2.1.jar" type="code" >
         	<export prefix="*"/>
         </library>
         <library id="org.eclipse.equinox.common" path="lib/org.eclipse.equinox.common-3.5.0.v20090520-1800.jar" type="code" >
         	<export prefix="*"/>
         </library>
         <library id="org.eclipse.equinox.registry" path="lib/org.eclipse.equinox.registry-3.4.100.v20090520-1800.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+
+        <library id="org.apache.felix.bundlerepository" path="lib/org.apache.felix.bundlerepository-1.4.2.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+        <library id="org.apache.felix.framework" path="lib/org.apache.felix.framework-2.0.4.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+
+        <library id="org.apache.felix.main" path="lib/org.apache.felix.main-2.0.4.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+
+        <library id="org.apache.felix.shell" path="lib/org.apache.felix.shell-1.4.2.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+
+        <library id="org.apache.felix.shell.tui" path="lib/org.apache.felix.shell.tui-1.4.1.jar" type="code" >
         	<export prefix="*"/>
         </library>
     </runtime>

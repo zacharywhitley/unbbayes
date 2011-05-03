@@ -230,6 +230,10 @@ public class UbfIO2 extends UbfIO {
 			throw new IOException(e.getLocalizedMessage() + " : " + this.resource.getString("InvalidProwlScheme"));
 		}
 		
+		if (mebn == null) {
+			throw new IOException(this.getResource().getString("MTheoryConfigError"));
+		}
+		
 		//System.out.println("\n\nLoading UBF config");
 		
 		// trating global data (MTheory)		
