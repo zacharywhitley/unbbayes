@@ -327,7 +327,7 @@ public class ResourceController {
 						return ret;
 					}
 				} catch (Exception e) {
-					Debug.println(this.getClass(), "Error at loadClass", e);
+//					Debug.println(this.getClass(), "Error at loadClass", e);
 					continue;
 				}
 			}

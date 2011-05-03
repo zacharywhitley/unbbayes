@@ -21,6 +21,7 @@
 package unbbayes;
 
 import unbbayes.controller.MainController;
+import unbbayes.util.Debug;
 
 /**
  *  This class starts UnBBayes
@@ -51,6 +52,13 @@ public class Main {
 //    		// normal mode
 //    		new MainController();
 //    	}
+    	// debug mode
+    	for (String arg : args) {
+			if (arg.equalsIgnoreCase("-d")) {
+				Debug.setDebug(true);
+				Debug.println("Debug mode is on.");
+			}
+		}
     	new MainController();
     }
     
