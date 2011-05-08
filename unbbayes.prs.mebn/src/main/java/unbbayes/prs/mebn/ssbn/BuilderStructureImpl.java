@@ -109,6 +109,14 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		
 		while(!notFinishedNodeList.isEmpty()){
 			
+			try {
+				Thread.sleep(1);
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+			
 			ssbn.getLogManager().printText(level1, false, 
 					resourceLog.getString("012_IterationNumber") + " "  + iteration); 
 			

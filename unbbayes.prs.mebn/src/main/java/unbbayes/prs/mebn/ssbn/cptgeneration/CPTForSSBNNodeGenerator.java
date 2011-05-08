@@ -77,6 +77,13 @@ public class CPTForSSBNNodeGenerator {
 			for(SSBNNode parent: parents){
 //				logManager.appendln(level, ">" + parent); 
 				generateCPTForAllSSBNNodes(parent, level + 1); 
+				
+				try {
+					Thread.sleep(1);
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 
 			//------------------2) NODE
@@ -109,6 +116,13 @@ public class CPTForSSBNNodeGenerator {
 			for(SSBNNode child: children){
 //				logManager.appendln(level, ">" + child); 
 				generateCPTForAllSSBNNodes(child, level + 1); 
+				
+				try {
+					Thread.sleep(1);
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 		}
 	}
@@ -214,6 +228,13 @@ public class CPTForSSBNNodeGenerator {
 			// nodes that don't contain. 
 			for(SSBNNode parent: ssbnNode.getParents()){	
 				
+				try {
+					Thread.sleep(1);
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
 				boolean containOVProblematic = false; 
 				for(OrdinaryVariable ov: parent.getOVs()){
 					containOVProblematic = ov.equals(contextFather.getOvProblematic());
@@ -238,6 +259,13 @@ public class CPTForSSBNNodeGenerator {
 			int parentPosition = 1; 
 			
 			for(LiteralEntityInstance entity: contextFather.getPossibleValues()){
+				
+				try {
+					Thread.sleep(1);
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				
 				ArrayList<SSBNNode> parentsForEntityList = new ArrayList<SSBNNode>(); 
 				
@@ -361,6 +389,13 @@ public class CPTForSSBNNodeGenerator {
 				Debug.println("Repitições de tudo = " + repAll);
 				Debug.println("Em Ordem = " + inOrder);
 				
+				try {
+					Thread.sleep(1);
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
 				while(positionTableEntity < cptEntity.tableSize() - 1){
 					int positionTableEntityFinal = -1; 
 					
@@ -382,6 +417,13 @@ public class CPTForSSBNNodeGenerator {
 									cptResidentNode.setValue(positionTableResident, cptEntity.getValue(positionAuxEntity)); 
 									positionTableResident++; 
 									positionAuxEntity++; 
+									
+									try {
+										Thread.sleep(1);
+									} catch (InterruptedException e1) {
+										// TODO Auto-generated catch block
+										e1.printStackTrace();
+									}
 								}
 //								Debug.println("");
 							}
