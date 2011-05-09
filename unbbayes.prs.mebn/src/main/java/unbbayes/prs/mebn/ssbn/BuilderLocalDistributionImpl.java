@@ -61,13 +61,6 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 				ssbn.getLogManager().printText(level2, false, "Network " + netId + ":"); netId++; 
 				for(SimpleSSBNNode node: networkNodesList){
 					ssbn.getLogManager().printText(level3, false, " >" + node);
-					
-					try {
-						Thread.sleep(1);
-					} catch (InterruptedException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
 				}
 			}
 			
