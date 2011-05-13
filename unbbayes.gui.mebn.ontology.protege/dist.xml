@@ -19,9 +19,21 @@
         <include>**/*</include>
       </includes>
     </fileSet>
+    <!-- The following resources were included in test in order to stop being included in the main JAR -->
+    <!-- without reconfiguring eclipse's classpath or maven's default folder's behaviors  -->
   	<fileSet>
-      <directory>src/main/resources</directory>
+      <directory>src/test/resources</directory>
       <outputDirectory>resources</outputDirectory>
+      <includes>
+        <include>class.gif</include>
+        <include>individual.gif</include>
+        <include>properties.png</include>
+        <include>properties2node.png</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>src/test/resources/protege</directory>
+      <outputDirectory>resources/protege</outputDirectory>
       <includes>
         <include>**/*</include>
       </includes>

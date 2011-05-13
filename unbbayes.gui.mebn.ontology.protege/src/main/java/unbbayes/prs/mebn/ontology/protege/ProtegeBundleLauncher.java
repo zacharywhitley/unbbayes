@@ -478,9 +478,18 @@ public class ProtegeBundleLauncher implements IBundleLauncher {
 				// TODO ask protege developers to stop using java.io.File and start using this.getClass().getClassLoader().getResource instead, 
 				pluginDir = new File(this.getClass().getClassLoader().getResource(DEFAULTPROTEGEPLUGINDIR).toURI()).getCanonicalPath();
 			} catch (Throwable e) {
-				e.printStackTrace();
-				// use default value instead
-				pluginDir = DEFAULTPROTEGEPLUGINDIR;
+				try{ 
+					Debug.println(this.getClass(), "Could not load protege plugin directory from resource. Retry on root folder...", e);
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				try {
+					pluginDir = new File(DEFAULTPROTEGEPLUGINDIR).getCanonicalPath();
+				} catch (Exception e2) {
+					e2.printStackTrace();
+					// use default value instead
+					pluginDir = DEFAULTPROTEGEPLUGINDIR;
+				}
 			}
 		}
 		return pluginDir;
