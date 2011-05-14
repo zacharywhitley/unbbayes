@@ -878,7 +878,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
     }       
     
     /**
-     * Save a SimpleArgRelationship without ordinary variable setted. 
+     * Save a SimpleArgRelationship without ordinary variable set. 
      * 
      * @param individual
      * @param name The name of the node that has the argument. 

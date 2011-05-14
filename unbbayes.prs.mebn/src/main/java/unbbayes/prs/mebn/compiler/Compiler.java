@@ -23,6 +23,7 @@ package unbbayes.prs.mebn.compiler;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -1334,6 +1335,20 @@ public class Compiler implements ICompiler {
 				retValue = Float.NaN;
 			} else {
 				retValue += temp.getProbability();
+			}
+		} else {
+			// this is the last assignment. If there are undeclared states, force their values to 0%.
+			// obtain undeclared states = possibleStates - declaredStates
+			Collection<Entity> undeclaredStates = new HashSet<Entity>(possibleStates);
+			undeclaredStates.removeAll(declaredStates);
+			for (Entity entity : undeclaredStates) {
+				if (entity != null) {
+					// add assignment: <undeclared state> = 0.0,
+					this.currentHeader.addCell(new TempTableProbabilityCell(entity, new SimpleProbabilityValue(0.0f)));
+					declaredStates.add(entity);
+				}
+				// we do not need to update retValue (the total probability),
+				// because it would be something like retValue += 0.0 (that is, it will not be altered at all);
 			}
 		}
 		
