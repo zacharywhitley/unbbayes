@@ -123,10 +123,17 @@
         <parameter id="description" value="Convert OWL2 properties to MEBN resident nodes" />
     </extension>
     
-   
-    <extension plugin-id="unbbayes.prs.mebn" point-id="KnowledgeBase" id="Protege41Reasoners">
+    <!-- DL reasoner for PR-OWL1 in OWL2 -->
+    <extension plugin-id="unbbayes.prs.mebn" point-id="KnowledgeBase" id="Protege41Reasoners4PROWL1">
         <parameter id="class" value="unbbayes.prs.mebn.kb.extension.ontology.protege.OWL2KnowledgeBaseBuilder"/>
-        <parameter id="name" value="Protégé reasoners (for OWL2)"/>
+        <parameter id="name" value="Protégé reasoners (for PR-OWL1 in OWL2)"/>
+        <parameter id="optionPanel" value="unbbayes.gui.mebn.extension.kb.protege.OWL2KnowledgeBaseOptionPanelBuilder"/>
+    </extension>
+    
+    <!-- DL reasoner for PR-OWL2 in OWL2 -->
+    <extension plugin-id="unbbayes.prs.mebn" point-id="KnowledgeBase" id="Protege41Reasoners4PROWL2">
+        <parameter id="class" value="unbbayes.prs.mebn.kb.extension.ontology.protege.PROWL2KnowledgeBaseBuilder"/>
+        <parameter id="name" value="Protégé reasoners (for PR-OWL 2)"/>
         <parameter id="optionPanel" value="unbbayes.gui.mebn.extension.kb.protege.OWL2KnowledgeBaseOptionPanelBuilder"/>
     </extension>
     <!-- 
