@@ -1521,7 +1521,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 				for (OWLIndividual element : this.getObjectPropertyValues(individualOne,hasProbDist, ontology)) {
 					String cpt = "";
 					try {
-						Set<OWLLiteral> owlLiterals = element.getDataPropertyValues(hasDeclaration, ontology);
+						Collection<OWLLiteral> owlLiterals = this.getDataPropertyValues(element, hasDeclaration, ontology);
 						if (!owlLiterals.isEmpty()) {
 							cpt = owlLiterals.iterator().next().getLiteral();
 						}
@@ -1578,28 +1578,15 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 		
 		// extract value
 		OWLLiteral value = null;
-		if (this.getLastOWLReasoner() != null) {
-			// get infered values
-			if (owlObject instanceof OWLIndividual) {
-				Collection<OWLLiteral> values = this.getLastOWLReasoner().getDataPropertyValues(((OWLIndividual)owlObject).asOWLNamedIndividual(), definesUncertaintyOfIRI);
-				if (values != null && !values.isEmpty()) {
-					// use only the first value
-					value = values.iterator().next();
-				}
-			} else {
-				// TODO read object as a class
+		// get inferred or asserted values
+		if (owlObject instanceof OWLIndividual) {
+			Collection<OWLLiteral> values = this.getDataPropertyValues((OWLIndividual)owlObject, definesUncertaintyOfIRI, ontology);
+			if (values != null && !values.isEmpty()) {
+				// use only the first value
+				value = values.iterator().next();
 			}
 		} else {
-			// get asserted values
-			if (owlObject instanceof OWLIndividual) {
-				Collection<OWLLiteral> values = ((OWLIndividual)owlObject).getDataPropertyValues(definesUncertaintyOfIRI, ontology);
-				if (values != null && !values.isEmpty()) {
-					// use only the first value
-					value = values.iterator().next();
-				}
-			} else {
-				// TODO read object as a class
-			}
+			// TODO read object as a class
 		}
 		
 		// add value to mebn
@@ -1901,7 +1888,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 			
 			/* has Arg Number */
 			OWLDataProperty hasArgNumber = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataProperty("hasArgNumber", prefixManager);
-			Set<OWLLiteral> literals = individualOne.getDataPropertyValues(hasArgNumber, ontology);
+			Collection<OWLLiteral> literals = this.getDataPropertyValues(individualOne, hasArgNumber, ontology);
 			try {
 				argument.setArgNumber(Integer.parseInt(literals.iterator().next().getLiteral()));
 			} catch (Exception e) {
@@ -1986,7 +1973,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 			/* -> hasArgNumber */
 			
 			OWLDataProperty hasArgNumber = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataProperty("hasArgNumber", prefixManager);
-	        Set<OWLLiteral> owlLiterals = individualOne.getDataPropertyValues(hasArgNumber, ontology);
+	        Collection<OWLLiteral> owlLiterals = this.getDataPropertyValues(individualOne,hasArgNumber, ontology);
 	        try {
 	        	argument.setArgNumber(Integer.parseInt(owlLiterals.iterator().next().getLiteral()));
 	        } catch (Exception e) {
@@ -2093,15 +2080,14 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 					}
 				}
 				if(!find){
-					new InternalErrorDialog(); 
+					throw new IllegalStateException(resident + " has no argument in position " + argNumberActual);
 				}
 				else{
 					try{
 					   resident.addArgument(argumentOfPosition.getOVariable(), false);
 					}
 					catch(Exception e){
-						new InternalErrorDialog(); 
-						e.printStackTrace(); 
+						throw new IllegalStateException(""+resident,e);
 					}
 				}
 				argNumberActual++; 

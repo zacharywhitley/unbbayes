@@ -135,7 +135,8 @@ public interface IPROWL2ModelUser {
 	/**  Name of the data property specifying the possible values of a random variable*/
 	public static final String HASPOSSIBLEVALUES = "hasPossibleValues";
 
-	
+	/**  Name of the data property specifying the owl property related to a random variable in a PR-OWL2 ontology */
+	public static final String DEFINESUNCERTAINTYOF = "definesUncertaintyOf";
 	
 	/**
 	 * Obtains the default prefix manager, which will be used in order to extract classes by name/ID.

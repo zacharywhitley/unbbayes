@@ -1127,7 +1127,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 				for (OWLIndividual element : this.getObjectPropertyValues(residentNodeIndividual,hasProbDist, ontology)) {
 					String cpt = "";
 					try {
-						Set<OWLLiteral> owlLiterals = element.getDataPropertyValues(hasDeclaration, ontology);
+						Collection<OWLLiteral> owlLiterals = this.getDataPropertyValues(element,hasDeclaration, ontology);
 						if (!owlLiterals.isEmpty()) {
 							cpt = owlLiterals.iterator().next().getLiteral();
 						}
@@ -1317,22 +1317,22 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 		PrefixManager prefixManager = this.getDefaultPrefixManager();
 		
 		// extract MExpression property
-		OWLObjectProperty hasMExpression = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty("hasMExpression", prefixManager);
+		OWLObjectProperty hasMExpression = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(HASMEXPRESSION, prefixManager);
 		
 		// extract MExpression
 		for (OWLNamedIndividual mExpression : this.getLastOWLReasoner().getObjectPropertyValues(((OWLIndividual)owlObject).asOWLNamedIndividual(), hasMExpression).getFlattened()) {
 			// extract the object property for type of MExpression 
-			OWLObjectProperty typeOfMExpression = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty("typeOfMExpression", prefixManager);
+			OWLObjectProperty typeOfMExpression = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(TYPEOFMEXPRESSION, prefixManager);
 			
 			// extract the type of the MExpression (this should be a random variable)
 			for (OWLNamedIndividual randomVariable : this.getLastOWLReasoner().getObjectPropertyValues(mExpression, typeOfMExpression).getFlattened()) {
 				// TODO maybe we should check if this is really a randomVariable...
 				
 				// extract definesUncertaintyOfIRI property
-				OWLDataProperty definesUncertaintyOf = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataProperty("definesUncertaintyOf", prefixManager);
+				OWLDataProperty definesUncertaintyOf = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataProperty(DEFINESUNCERTAINTYOF, prefixManager);
 				
 				// extract value from inferred values
-				Collection<OWLLiteral> values = this.getLastOWLReasoner().getDataPropertyValues(randomVariable, definesUncertaintyOf);
+				Collection<OWLLiteral> values = this.getDataPropertyValues(randomVariable, definesUncertaintyOf,ontology);
 				OWLLiteral value = null;
 				if (values != null && !values.isEmpty()) {
 					// use only the first value
@@ -1521,7 +1521,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 			/* -> hasArgumentNumber */
 			
 			OWLDataProperty hasArgNumber = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataProperty("hasArgumentNumber", prefixManager);
-	        Set<OWLLiteral> owlLiterals = ordinaryVariableArgumentIndividual.getDataPropertyValues(hasArgNumber, ontology);
+	        Collection<OWLLiteral> owlLiterals = this.getDataPropertyValues(ordinaryVariableArgumentIndividual,hasArgNumber, ontology);
 	        try {
 	        	// assume there is only 1 value
 	        	argument.setArgNumber(Integer.parseInt(owlLiterals.iterator().next().getLiteral()));
@@ -1731,8 +1731,8 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 			}
 			
 			/* has Arg Number */
-			OWLDataProperty hasArgNumber = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataProperty("hasArgumentNumber", prefixManager);
-			Set<OWLLiteral> literals = mExpressionArgumentIndividual.getDataPropertyValues(hasArgNumber, ontology);
+			OWLDataProperty hasArgNumber = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataProperty(HASARGUMENTNUMBER, prefixManager);
+			Collection<OWLLiteral> literals = this.getDataPropertyValues(mExpressionArgumentIndividual, hasArgNumber, ontology);			
 			try {
 				argument.setArgNumber(Integer.parseInt(literals.iterator().next().getLiteral()));
 			} catch (Exception e) {
@@ -1928,16 +1928,32 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 			mebn.setStorageImplementor(OWLAPIStorageImplementorDecorator.newInstance(ontology));
 		}
 		
+		// do not allow current ontology to use pr-owl (1) URI
+		if (ontology.getOntologyID().getOntologyIRI().toURI().toString().equalsIgnoreCase(OLD_PROWL_NAMESPACEURI)) {
+			try {
+				Debug.println(this.getClass(), ontology + " is using PR-OWL URI as its ontology URI. This is going to be changed, because it may cause some errors.");
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+			OWLOntologyChange updateURI = new SetOntologyID(ontology, new OWLOntologyID(IRI.create(file)));
+			ontology.getOWLOntologyManager().applyChange(updateURI);
+			try {
+				Debug.println(this.getClass(), "Ontology IRI changed to " + ontology);
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+		}
+		
 		// force ontology to delegate requisitions by adding a mapper (usually, it will redirect PR-OWL2 IRIs to a local file)
 		ontology.getOWLOntologyManager().removeIRIMapper(this.getProwl2DefinitionIRIMapper());	// just to avoid duplicate mapper
 		ontology.getOWLOntologyManager().addIRIMapper(this.getProwl2DefinitionIRIMapper());
 
+		
 		// Check if PR-OWL 2 definition is imported.
 		OWLImportsDeclaration importsPROWL2 = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLImportsDeclaration(IRI.create(IPROWL2ModelUser.PROWL2_NAMESPACEURI));
 		if (!ontology.getOWLOntologyManager().getImportsClosure(ontology).contains(ontology.getOWLOntologyManager().getImportedOntology(importsPROWL2))) {
 			// add the import declaration to the ontology.
 			ontology.getOWLOntologyManager().applyChange(new AddImport(ontology, importsPROWL2));
-			
 		}
 		
 		
@@ -1975,22 +1991,6 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 		this.saveDomainResidentNodes(mebn,ontology); 
 		this.saveContextNodes(mebn,ontology); 
 		this.saveGenerativeInputNodes(mebn,ontology); 
-		
-		// do not allow current ontology to use pr-owl (1) URI
-		if (ontology.getOntologyID().getOntologyIRI().toURI().toString().equalsIgnoreCase(OLD_PROWL_NAMESPACEURI)) {
-			try {
-				Debug.println(this.getClass(), ontology + " is using PR-OWL URI as its ontology URI. This is going to be changed, because it may cause some errors.");
-			} catch (Throwable t) {
-				t.printStackTrace();
-			}
-			OWLOntologyChange updateURI = new SetOntologyID(ontology, new OWLOntologyID(IRI.create(file)));
-			ontology.getOWLOntologyManager().applyChange(updateURI);
-			try {
-				Debug.println(this.getClass(), "Ontology IRI changed to " + ontology);
-			} catch (Throwable t) {
-				t.printStackTrace();
-			}
-		}
 		
 		// save the ontology itself as owl xml file
 		try {
@@ -3280,7 +3280,6 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
     			
     			// OBS. comments are already inserted in saveMTheoryAndMFrags
     			
-    			// TODO save the default probability distribution in RandomVariable instead in ResidentNode
     		} 	
     	}
 	}
@@ -3307,6 +3306,8 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
+
+		// TODO save the default probability distribution in RandomVariable instead in ResidentNode
 		
 		PrefixManager prowl2Prefix = this.getDefaultPrefixManager();	// prefix of PR-OWl2 ontology definition
 		PrefixManager currentPrefix = this.getOntologyPrefixManager(ontology);	// prefix of current ontology
@@ -3330,7 +3331,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 		/* Get BooleanRandomVariable class */
 		OWLClass booleanRandomVariableClass = factory.getOWLClass(BOOLEANRANDOMVARIABLE, prowl2Prefix);
 		
-		// get an instance of BooleanRandomVariable. This object will hold the currently evaluated rv
+		// get an instance of RandomVariable. This object will hold the currently evaluated rv
 		OWLIndividual rv = factory.getOWLNamedIndividual(RANDOMVARIABLE_PREFIX + resident.getName(), currentPrefix);
 		// specify that randomVariableClass is the class of rv, if it is not done already
 		if (!ontology.containsIndividualInSignature(rv.asOWLNamedIndividual().getIRI())
@@ -3342,6 +3343,23 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 		}
 		// add rv to cache
 		this.getRandomVariableCache().put(resident, rv);
+		
+		
+		// set definesUncertaintyOf if it is not null or empty
+		if (mebn != null) {
+			IRI owlPropertyIRI = IRIAwareMultiEntityBayesianNetwork.getDefineUncertaintyFromMEBN(mebn, resident);
+			if (owlPropertyIRI != null) {
+				ontology.getOWLOntologyManager().addAxiom(
+						ontology, 
+						factory.getOWLDataPropertyAssertionAxiom(
+								factory.getOWLDataProperty(DEFINESUNCERTAINTYOF, prowl2Prefix), // definesUncertaintyOf
+								rv, // subject
+								factory.getOWLLiteral(owlPropertyIRI.toURI().toString(), OWL2Datatype.XSD_ANY_URI) // literal^anyURI
+						)
+				);
+			}
+		}
+		
 		
 		// iterate over links to possible values
 		for(StateLink stateLink: resident.getPossibleValueLinkList()){
@@ -3384,16 +3402,18 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 					}
 				}
 			} else if(state instanceof BooleanStateEntity){	// boolean
-				
-				// specify that booleanRandomVariableClass is the class of rv, if it is not done already
-				if (!ontology.containsIndividualInSignature(rv.asOWLNamedIndividual().getIRI())
-						|| !rv.getTypes(ontology).contains(booleanRandomVariableClass)) {
-					ontology.getOWLOntologyManager().addAxiom(
-							ontology, 
-							factory.getOWLClassAssertionAxiom(booleanRandomVariableClass, rv)
-					);
+				// ignore the absurd "boolean" state because in PR-OWL2 the "absurd" is not a boolean state anymore and it is an implicit state (so we do not need to explicitly add it to ontology)
+				if (!mebn.getBooleanStatesEntityContainer().getAbsurdStateEntity().equals(state)) {
+					// specify that booleanRandomVariableClass is the class of rv, if it is not done already
+					if (!ontology.containsIndividualInSignature(rv.asOWLNamedIndividual().getIRI())
+							|| !rv.getTypes(ontology).contains(booleanRandomVariableClass)) {
+						ontology.getOWLOntologyManager().addAxiom(
+								ontology, 
+								factory.getOWLClassAssertionAxiom(booleanRandomVariableClass, rv)
+						);
+					}
+					// it is not necessary to specify possible value, because BOOLEANRANDOMVARIABLE adds XSD:boolean automatically
 				}
-				// it is not necessary to specify possible value, because BOOLEANRANDOMVARIABLE adds XSD:boolean automatically
 			}  else {
 				try {
 					Debug.println(this.getClass(), "Error: Invalid State - " + state.getName() + " in resident node " + resident); 
@@ -3897,7 +3917,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 				OWLEntity owlEntity = (OWLEntity) prowlClass;
 				owlEntity.accept(entityRemover);
 				try {
-					Debug.println(this.getClass(), "Warning: " + owlEntity + " was considered a PR-OWL2 class (thus, a MEBN component) and was removed before update.");
+					Debug.println(this.getClass(), "Warning: " + owlEntity + " was considered a PR-OWL class (thus, a MEBN component) and was removed before update.");
 				} catch (Throwable t) {
 					t.printStackTrace();
 				}
