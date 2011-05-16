@@ -8,6 +8,8 @@ import java.io.IOException;
 
 import javax.servlet.jsp.tagext.TryCatchFinally;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 
 import unbbayes.io.BaseIO;
 import unbbayes.prs.Graph;
@@ -18,10 +20,26 @@ import unbbayes.util.extension.UnBBayesModule;
  *
  */
 public class UmpstModule extends UnBBayesModule {
+	
+	private JTabbedPane topTabbedPane;
+	
+	private MenuPanel menuPanel;
+	
+	public MenuPanel getMenuPanel(){
+		if(menuPanel == null){
+			menuPanel = new MenuPanel(this);
+		}
+		return menuPanel;
+	}
 
 	protected void initComponents(){
 		
-		this.add(new JLabel("Hello Word!"));
+		
+		
+		//this.setTopTabbedPane(new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT));
+		
+		
+		this.setContentPane(getMenuPanel());
 	}
 	
 	
@@ -45,7 +63,7 @@ public class UmpstModule extends UnBBayesModule {
 	public String getModuleName() {
 		
 		// TODO Auto-generated method stub
-		return "Pomc";
+		return "umpst";
 	}
 
 	/* (non-Javadoc)
@@ -73,6 +91,23 @@ public class UmpstModule extends UnBBayesModule {
 		
 		//retornar ProjetoPOMC
 		return null;
+	}
+	
+	
+	/**
+	 * this is the top level container where all MEBN edition panels (tabs) will be placed
+	 * @return the topTabbedPane
+	 */
+	public JTabbedPane getTopTabbedPane() {
+		return topTabbedPane;
+	}
+
+	/**
+	 * this is the top level container where all MEBN edition panels (tabs) will be placed
+	 * @param topTabbedPane the topTabbedPane to set
+	 */
+	public void setTopTabbedPane(JTabbedPane topTabbedPane) {
+		this.topTabbedPane = topTabbedPane;
 	}
 
 }

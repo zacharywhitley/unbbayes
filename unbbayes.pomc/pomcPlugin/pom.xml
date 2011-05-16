@@ -2,7 +2,7 @@
 <project>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>br.unb.cic</groupId>
-	<artifactId>unbbayes.umpst</artifactId>
+	<artifactId>unbbayes.model.umpst</artifactId>
 	<name>Uncertainty Modeling Process for Semantic Technologies</name>
 	<!-- If you change the below version, -->
 	<!-- change version and library settings on plugin.xml too, because this is included as library -->
@@ -147,12 +147,12 @@
 	
 	<scm>
 		<connection>
-			scm:svn:https://unbbayes.svn.sourceforge.net/svnroot/unbbayes/trunk/unbbayes.umpst
+			scm:svn:https://unbbayes.svn.sourceforge.net/svnroot/unbbayes/trunk/unbbayes.model.umpst
 		</connection>
 		<developerConnection>
-			scm:svn:https://unbbayes.svn.sourceforge.net/svnroot/unbbayes/trunk/unbbayes.umpst
+			scm:svn:https://unbbayes.svn.sourceforge.net/svnroot/unbbayes/trunk/unbbayes.model.umpst
 		</developerConnection>
-		<url>http://unbbayes.svn.sourceforge.net/viewvc/unbbayes/trunk/unbbayes.umpst
+		<url>http://unbbayes.svn.sourceforge.net/viewvc/unbbayes/trunk/unbbayes.model.umpst
 		</url>
 	</scm>
 	
