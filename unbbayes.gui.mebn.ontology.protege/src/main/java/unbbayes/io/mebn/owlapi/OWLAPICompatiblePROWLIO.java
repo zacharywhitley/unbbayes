@@ -2060,7 +2060,16 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 	/**
 	 * This damn complex mechanism must be executed because the arguments may not
 	 * be inserted into resident nodes in the correct order. Since these changes
-	 * in order may cause input nodes to fail, we must ajust or reorder them.
+	 * in order may cause input nodes to fail, we must adjust or reorder them.
+	 * Additionally, it looks like resident nodes are using {@link ResidentNode#getOrdinaryVariableList()} to manage
+	 * arguments instead of using only {@link ResidentNode#getArgumentList()}. This method synchronizes
+	 * the content of {@link ResidentNode#getOrdinaryVariableList()} and {@link ResidentNode#getArgumentList()} too.
+	 * @deprecated it sounds like a tremendously dirty workaround. Argument's order can be adjusted more consistently
+	 * allocating all arguments first (this is possible by calculating the total quantity of arguments)
+	 * and then filling their contents in order (depending to the value of hasArgumentNumber).
+	 * This method is used in this class only because super classes were doing this in the same way (and we are
+	 * trying to use template methods), but it should be fixed in future releases, because this is extremely
+	 * thread-unsafe and hard to extend.
 	 */
 	protected void ajustArgumentOfNodes(MultiEntityBayesianNetwork mebn){
 		// TODO This is extremely inefficient. Optimize it.

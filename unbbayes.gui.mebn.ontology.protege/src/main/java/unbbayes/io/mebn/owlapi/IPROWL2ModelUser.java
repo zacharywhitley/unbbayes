@@ -46,6 +46,9 @@ public interface IPROWL2ModelUser {
 
 	public static final String ABSURD = "Absurd";
 	public static final String ARGUMENT = "Argument";
+
+	public static final String MAPPINGARGUMENT = "MappingArgument";
+	
 	public static final String CONTEXTNODE = "ContextNode";
 	public static final String DOMAINMFRAG = "DomainMFrag";
 	public static final String DOMAINRESIDENT = "DomainResidentNode";	//
@@ -137,6 +140,10 @@ public interface IPROWL2ModelUser {
 
 	/**  Name of the data property specifying the owl property related to a random variable in a PR-OWL2 ontology */
 	public static final String DEFINESUNCERTAINTYOF = "definesUncertaintyOf";
+	/**  Name of the data property specifying the owl property related to an argument of a random variable in a PR-OWL2 ontology */
+	public static final String ISSUBJECTIN = "isSubjectIn";
+	/**  Name of the data property specifying the owl property related to an argument of a random variable in a PR-OWL2 ontology */
+	public static final String ISOBJECTIN = "isObjectIn";
 	
 	/**
 	 * Obtains the default prefix manager, which will be used in order to extract classes by name/ID.

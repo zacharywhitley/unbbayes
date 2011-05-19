@@ -66,6 +66,13 @@ public class Resources extends unbbayes.gui.mebn.resources.Resources {
 		{"DefineUncertaintyOfToolBarToolTip" , "Select another OWL property or just unselect it."},
 		{"SelectOWLPropertyToolTip" , "Select another OWL property."},
 		{"ClearSelectionToolTip" , "Clear the selection."},
+
+		{"ArgumentMapping" , "Arguments"},
+		{"EditArgumentMapping" , "Map the arguments"},
+		{"EditArgumentMappingToolTip" , "Map the arguments to domains and ranges of OWL properties."},
+		{"NoMappings" , "No mappings"},
+		{"isSubjectOf" , " is SUBJECT in: "},
+		{"isObjectIn" , " is OBJECT in: "},
 	};
 
 }

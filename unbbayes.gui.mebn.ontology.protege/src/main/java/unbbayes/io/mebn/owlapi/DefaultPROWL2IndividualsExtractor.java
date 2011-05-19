@@ -72,10 +72,13 @@ public class DefaultPROWL2IndividualsExtractor implements
 				if (owlClass.getIRI().toString().startsWith(IPROWL2ModelUser.PROWL2_NAMESPACEURI)
 						|| owlClass.getIRI().toString().startsWith(IPROWL2ModelUser.OLD_PROWL_NAMESPACEURI)) {
 					// extract their individuals
-					for (OWLIndividual owlIndividual : owlClass.getIndividuals(ontology)) {
+					for (OWLIndividual owlIndividual : owlClass.getIndividuals(ontology.getOWLOntologyManager().getOntologies())) {
 						try {
+							if (owlIndividual.isAnonymous()) {
+								continue;
+							}
 							// do not add individuals declared in PR-OWL2 definition ontology
-							if (!owlClass.getIRI().toString().startsWith(IPROWL2ModelUser.PROWL2_NAMESPACEURI)) {
+							if (!owlIndividual.asOWLNamedIndividual().getIRI().toString().startsWith(IPROWL2ModelUser.PROWL2_NAMESPACEURI)) {
 								ret.add(owlIndividual);
 							}
 						} catch (Exception e) {

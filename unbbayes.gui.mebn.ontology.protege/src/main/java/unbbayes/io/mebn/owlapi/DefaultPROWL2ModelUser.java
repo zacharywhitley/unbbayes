@@ -112,16 +112,9 @@ public class DefaultPROWL2ModelUser implements IPROWL2ModelUser {
 		}
 		// if this entity has an ID, extract what is after '#'
 		if (owlObject instanceof OWLEntity) {
-			String name = ((OWLEntity)owlObject).toStringID();
-			// the ID is probably in the following format: <URI>#<Name>
-			if (name != null) {
-				try {
-					while (name.contains("#")) {
-						name = name.substring(name.indexOf('#') + 1, name.length());
-					}
-				} catch (Throwable e) {
-					e.printStackTrace();
-				}
+			String name = ((OWLEntity)owlObject).getIRI().getFragment();
+			if (name == null) {
+				return ((OWLEntity)owlObject).toStringID();
 			}
 			return name;
 		}

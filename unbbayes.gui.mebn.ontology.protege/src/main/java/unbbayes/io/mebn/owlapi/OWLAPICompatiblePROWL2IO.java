@@ -84,9 +84,12 @@ import unbbayes.util.Debug;
 
 /**
  * It implements PR-OWL2 support.
- * The methods names may not be very intuitive, but this is because this class
+ * The methods' names may not be very intuitive, but this is because this class
  * follows some naming patterns inherited from {@link unbbayes.io.mebn.PrOwlIO}, {@link unbbayes.io.mebn.SaverPrOwlIO}
- * and {@link unbbayes.io.mebn.LoaderPrOwlIO}
+ * and {@link unbbayes.io.mebn.LoaderPrOwlIO}. 
+ * TODO stop following template methods inherent from {@link unbbayes.io.mebn.PrOwlIO}, {@link unbbayes.io.mebn.SaverPrOwlIO}
+ * and {@link unbbayes.io.mebn.LoaderPrOwlIO}, because their architectures are extremely sensitive to object states, thus
+ * thread-unsafe and hard to extend.
  * @author Shou Matsumoto
  *
  */
@@ -127,6 +130,8 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 	private OWLOntologyIRIMapper prowl2DefinitionIRIMapper;
 	
 	private String prowl2ModelFilePath = "pr-owl/pr-owl2.owl";
+
+	private Map<ResidentNode, OWLIndividual> mappingArgumentCache;
 	
 	/**
 	 * @deprecated
@@ -347,6 +352,9 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 			// load simple arguments
 			this.setMapFilledSimpleArguments(this.loadSimpleArgRelationship(this.getLastOWLOntology(), mebn));
 			
+			// load mappings from MEBN elements to OWL elements
+			this.loadMappingsBetweenMEBNAndOWL(this.getLastOWLOntology(), mebn);
+			
 			// adjust the order of arguments (the appearance order of arguments may not be the correct order). 
 			// TODO this seems to be a magic method and should be avoided. This is only used now because of how ancestor classes were implemented
 			this.ajustArgumentOfNodes(mebn);
@@ -364,6 +372,44 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 		
 	}
 	
+	/**
+	 * This method iterates on {@link #loadLinkFromResidentNodeToOWLProperty(ResidentNode, OWLObject, OWLOntology)}
+	 * for all owl individuals of DomainResidentNode and instances of {@link ResidentNode} in {@link #getMapFilledResidentNodes()}
+	 * @param ontology : the OWL ontology (from OWL API) to be used to build the MEBN.
+	 * @param mebn : the loaded (but incomplete) MEBN object. This is an input and output argument (i.e. its values will be updated)
+	 * @see #getMapFilledResidentNodes()
+	 * @see #loadLinkFromResidentNodeToOWLProperty(ResidentNode, OWLObject, OWLOntology)
+	 */
+	protected void loadMappingsBetweenMEBNAndOWL(OWLOntology ontology, MultiEntityBayesianNetwork mebn) {
+		
+		PrefixManager prefixManager = this.getDefaultPrefixManager();	// this is the PR-OWL2 prefix
+		
+		// extract owl class DomainResidentNode
+		OWLClass owlClassDomainResidentNode = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.DOMAINRESIDENT, prefixManager); 
+		if (!ontology.containsClassInSignature(owlClassDomainResidentNode.getIRI(), true)) {
+			// use old definition
+			owlClassDomainResidentNode = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROWLModelUser.DOMAIN_RESIDENT, prefixManager); 
+		}
+		
+		// iterate on individuals
+		if (owlClassDomainResidentNode != null) {
+			for (OWLIndividual residentNodeIndividual :  this.getOWLIndividuals(owlClassDomainResidentNode, ontology)){
+				ResidentNode resident = this.getMapFilledResidentNodes().get(this.extractName(residentNodeIndividual));
+				if (resident == null) {
+					try {
+						Debug.println(this.getClass(), residentNodeIndividual + " was not previously loaded. This is an error, but we'll try other resident nodes as well.");
+					} catch (Throwable t) {
+						t.printStackTrace();
+					}
+				}
+				// load link
+				this.loadLinkFromResidentNodeToOWLProperty(resident, residentNodeIndividual, ontology);
+			}
+		}
+	}
+
+
+
 	/*
 	 * (non-Javadoc)
 	 * @see unbbayes.io.mebn.owlapi.OWLAPICompatiblePROWLIO#loadMTheoryAndMFrags(org.semanticweb.owlapi.model.OWLOntology, unbbayes.prs.mebn.MultiEntityBayesianNetwork)
@@ -897,9 +943,6 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 				
 				domainResidentNode.setDescription(getDescription(ontology, residentNodeIndividual)); 
 				
-				// create the link from domain resident node to owl property (definesUncertaintyOf)
-				this.loadLinkFromResidentNodeToOWLProperty(domainResidentNode, residentNodeIndividual, ontology);
-				
 				/* -> isResidentNodeIn  */
 				
 				OWLObjectProperty isResidentNodeIn = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty("isResidentNodeIn", prefixManager); 			
@@ -1144,6 +1187,9 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 //					}
 				}
 				
+				// create the link from domain resident node to owl property (definesUncertaintyOf)
+				// unfortunately, we cannot link ArgumentMapping to ResidentNode's Arguments before actually filling the content of arguments (i.e. we should call loadSimpleArgRelationships before this method)
+//				this.loadLinkFromResidentNodeToOWLProperty(domainResidentNode, residentNodeIndividual, ontology);
 				
 				// fill return (extract name again, because the extracted name may be different from the node's name)
 				ret.put(this.extractName(ontology, residentNodeIndividual.asOWLNamedIndividual()), domainResidentNode);
@@ -1281,9 +1327,11 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 		return ret;
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * This method loads the definesUncertaintyOf and MappingArguments (isSubjectIn and isObjectIn).
+	 * It requires that the arguments of resident nodes were filled previously.
 	 * @see unbbayes.io.mebn.owlapi.OWLAPICompatiblePROWLIO#loadLinkFromResidentNodeToOWLProperty(unbbayes.prs.mebn.ResidentNode, org.semanticweb.owlapi.model.OWLObject, org.semanticweb.owlapi.model.OWLOntology)
+	 * @see #loadSimpleArgRelationship(OWLOntology, MultiEntityBayesianNetwork)
 	 */
 	protected void loadLinkFromResidentNodeToOWLProperty(ResidentNode domainResidentNode, OWLObject owlObject,OWLOntology ontology) {
 		if (ontology == null || owlObject == null) {
@@ -1316,20 +1364,23 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 		// extract default prefix (PR-OWL2)
 		PrefixManager prefixManager = this.getDefaultPrefixManager();
 		
+		// extract factory
+		OWLDataFactory factory = ontology.getOWLOntologyManager().getOWLDataFactory();
+		
 		// extract MExpression property
-		OWLObjectProperty hasMExpression = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(HASMEXPRESSION, prefixManager);
+		OWLObjectProperty hasMExpression = factory.getOWLObjectProperty(HASMEXPRESSION, prefixManager);
 		
 		// extract MExpression
-		for (OWLNamedIndividual mExpression : this.getLastOWLReasoner().getObjectPropertyValues(((OWLIndividual)owlObject).asOWLNamedIndividual(), hasMExpression).getFlattened()) {
+		for (OWLIndividual mExpression : this.getObjectPropertyValues(((OWLIndividual)owlObject).asOWLNamedIndividual(), hasMExpression , ontology)) {
 			// extract the object property for type of MExpression 
-			OWLObjectProperty typeOfMExpression = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(TYPEOFMEXPRESSION, prefixManager);
+			OWLObjectProperty typeOfMExpression = factory.getOWLObjectProperty(TYPEOFMEXPRESSION, prefixManager);
 			
 			// extract the type of the MExpression (this should be a random variable)
-			for (OWLNamedIndividual randomVariable : this.getLastOWLReasoner().getObjectPropertyValues(mExpression, typeOfMExpression).getFlattened()) {
+			for (OWLIndividual randomVariable : this.getObjectPropertyValues(mExpression, typeOfMExpression, ontology)) {
 				// TODO maybe we should check if this is really a randomVariable...
 				
 				// extract definesUncertaintyOfIRI property
-				OWLDataProperty definesUncertaintyOf = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataProperty(DEFINESUNCERTAINTYOF, prefixManager);
+				OWLDataProperty definesUncertaintyOf = factory.getOWLDataProperty(DEFINESUNCERTAINTYOF, prefixManager);
 				
 				// extract value from inferred values
 				Collection<OWLLiteral> values = this.getDataPropertyValues(randomVariable, definesUncertaintyOf,ontology);
@@ -1343,17 +1394,90 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 				if (value != null) {
 					// extract IRI
 					String iriString = value.getLiteral();
-					if (iriString != null && (iriString.length() > 0)) {
+					if (iriString != null && (iriString.trim().length() > 0)) {
 						IRIAwareMultiEntityBayesianNetwork.addDefineUncertaintyToMEBN(mebn, domainResidentNode, IRI.create(iriString));
 					}
 				}
+				
+				// extract MappingArguments of RV, so that we can map them to ResidentNode's arguments by using IRIAwareMultiEntityBayesianNetwork
+				for (OWLIndividual arg : this.getObjectPropertyValues(randomVariable, factory.getOWLObjectProperty(HASARGUMENT, prefixManager), ontology)) {
+					
+					// the arguments of resident nodes and random variables are synchronized by argument number (i.e. the order of arguments).
+					int argNumber = -1;	// this variable will store the argumentNumber of arg
+					
+					// extract argNumber from arg
+					Collection<OWLLiteral> argNumberLiterals = this.getDataPropertyValues(arg, factory.getOWLDataProperty(HASARGUMENTNUMBER, prefixManager), ontology);
+					if (argNumberLiterals != null && !argNumberLiterals.isEmpty()) {
+						try {
+							// use only the 1st argument number (PR-OWL2 definition should not allow more than 1 argument number)
+							argNumber = Integer.parseInt(argNumberLiterals.iterator().next().getLiteral());
+						} catch (NumberFormatException e) {
+							try {
+								Debug.println(this.getClass(), e.getMessage() + ". The argument number of " + arg + " could not be converted to an integer.", e);
+								// keep trying other arguments...
+							} catch (Throwable t) {
+								t.printStackTrace();
+							}
+						}
+					}
+					
+					// check argNumber consistency
+					if (argNumber < 1) {	// argNumber should start from 1
+						try {
+							Debug.println(this.getClass(), "The argument " + arg + " of " + randomVariable + " has an invalid argument number " + argNumber);
+						} catch (Throwable t) {
+							t.printStackTrace();
+						}
+						continue;	// keep trying other arguments
+					}
+					
+					// extract argument (from resident node) by argNumber
+					Argument residentNodeArgument = domainResidentNode.getArgumentNumber(argNumber);
+					if (residentNodeArgument == null) {
+						try {
+							Debug.println(this.getClass(), "INCONSISTENT!!! " + domainResidentNode + " has no argument in position " + argNumber 
+									+ ", but its associated RV " + randomVariable + " has " + arg + " in such position. But we'll keep searching other arguments...");
+						} catch (Throwable t) {
+							t.printStackTrace();
+						}
+						continue;	// ignore and try other arguments
+					}
+					
+					// We are not interested in whether arg is a MappingArgument or not. 
+					// Instead, if it has either isSubjectIn or isObjectIn, there is a mapping from an argument to an owl:property
+					
+					// extract symbolic links of isSubjectIn
+					Collection<OWLLiteral> symbolicLinks = this.getDataPropertyValues(arg, factory.getOWLDataProperty(ISSUBJECTIN, prefixManager), ontology);
+					if (symbolicLinks != null ) {
+						for (OWLLiteral link : symbolicLinks) {
+							// extract IRI
+							String iriString = link.getLiteral();
+							if (iriString != null && (iriString.trim().length() > 0)) {
+								IRIAwareMultiEntityBayesianNetwork.addSubjectToMEBN(mebn, residentNodeArgument, IRI.create(iriString));
+							}
+						}
+					}
+					
+					// extract symbolic links of isObjectIn
+					symbolicLinks = this.getDataPropertyValues(arg, factory.getOWLDataProperty(ISOBJECTIN, prefixManager), ontology);
+					if (symbolicLinks != null ) {
+						for (OWLLiteral link : symbolicLinks) {
+							// extract IRI
+							String iriString = link.getLiteral();
+							if (iriString != null && (iriString.trim().length() > 0)) {
+								IRIAwareMultiEntityBayesianNetwork.addObjectToMEBN(mebn, residentNodeArgument, IRI.create(iriString));
+							}
+						}
+					}
+					
+				}
+				
 			}	// for randomVariable
 			
 		}	// for MExpression
 		
 	}
 	
-
 	/*
 	 * (non-Javadoc)
 	 * @see unbbayes.io.mebn.owlapi.OWLAPICompatiblePROWLIO#loadOrdinaryVariable(org.semanticweb.owlapi.model.OWLOntology, unbbayes.prs.mebn.MultiEntityBayesianNetwork)
@@ -1483,7 +1607,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 			
 			String ordinaryVariableArgumentName = this.extractName(ontology, ordinaryVariableArgumentIndividual.asOWLNamedIndividual());
 			
-			// mapArgument is filled in methods that load nodes
+			// mapArgument was previously initialized by some methods that load nodes (like loadDomainResidentNode)
 			Argument argument = this.getMapArgument().get(ordinaryVariableArgumentName); 
 			if (argument == null){
 				// there may be unknown arguments (e.g. arguments of finding nodes or arguments of random variables that has no correspondent Resident Node)
@@ -1510,7 +1634,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 					
 					try{
 						argument.setOVariable(oVariable); 
-						argument.setType(Argument.ORDINARY_VARIABLE); 
+						argument.setType(Argument.ORDINARY_VARIABLE);
 					} catch(Exception e){
 						throw new IOMebnException(this.getResource().getString("ArgumentTermInError"),  "Ordinary Variable = " + ordinaryVariableIndividual); 	
 					}
@@ -1879,7 +2003,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 	 * @see unbbayes.io.mebn.MebnIO#saveMebn(java.io.File, unbbayes.prs.mebn.MultiEntityBayesianNetwork)
 	 */
 	public void saveMebn(File file, MultiEntityBayesianNetwork mebn) throws IOException, IOMebnException {
-		
+		// TODO update IRIAwareMEBN, because user may want to keep editting mebn after save
 		// assertions
 		if (mebn == null ) {
 			throw new IOException(this.getResource().getString("MTheoryNotExist"));
@@ -2032,7 +2156,17 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 			 if (currentOWLEntity != null) {
 				 // create OWL individuals (or reuse them) for each object entity instance found for that entity
 				 for ( ObjectEntityInstance entityInstance : entity.getInstanceList()) {
-					 // extract individuals
+					 // ignore entityInstances that were loaded from this ontology (we are not going to save them twice)
+					 IRI individualIRIOnLoadTime = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(mebn, entityInstance);
+					 if (individualIRIOnLoadTime != null && ontology.containsIndividualInSignature(individualIRIOnLoadTime, true)) {
+						try {
+							Debug.println(this.getClass(), entityInstance + " is already included in " + ontology + ". IRI = " + individualIRIOnLoadTime);
+						} catch (Throwable t) {
+							t.printStackTrace();
+						}
+						continue;
+					 }
+					 // extract/create individuals
 					 individual = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLNamedIndividual(entityInstance.getName(), currentPrefix);
 					 // if it does not exist, create it as an individual of entity
 					 if (!ontology.containsIndividualInSignature(individual.asOWLNamedIndividual().getIRI(), true)) {
@@ -2092,20 +2226,32 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 				// ignore absurd, because it is implicitly added by default
 				continue;
 			} 
-			// get individual
-			OWLIndividual categoricalStateIndividual = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLNamedIndividual(entity.getName(), currentPrefix);
-			// if individual does not exist, create axiom and add it to ontology
-			if (!ontology.containsIndividualInSignature(categoricalStateIndividual.asOWLNamedIndividual().getIRI(), true)) {
-				ontology.getOWLOntologyManager().addAxiom(	// add axiom and commit
-						ontology, // where to add axiom
-						ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClassAssertionAxiom ( // associate individual and its type
-								ontology.getOWLOntologyManager().getOWLDataFactory().getOWLThing(), // class = owl:Thing
-								categoricalStateIndividual	// individual having owl:Thing as its type
-						)
-				);
+			IRI iriWhenLoaded = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(mebn, entity);
+			if (iriWhenLoaded != null && ontology.containsIndividualInSignature(iriWhenLoaded, true)) {
+				try {
+					Debug.println(this.getClass(), "Categorical state " + entity + " is already present in " + ontology
+							+ ", thus it will not be saved again. IRI = " + iriWhenLoaded);
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				// update cache anyway
+				this.getCategoricalStatesCache().put(entity, ontology.getOWLOntologyManager().getOWLDataFactory().getOWLNamedIndividual(iriWhenLoaded)); 
+			} else {
+				// This is a new individual. Get it.
+				OWLIndividual categoricalStateIndividual = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLNamedIndividual(entity.getName(), currentPrefix);
+				// if individual does not exist, create axiom and add it to ontology
+				if (!ontology.containsIndividualInSignature(categoricalStateIndividual.asOWLNamedIndividual().getIRI(), true)) {
+					ontology.getOWLOntologyManager().addAxiom(	// add axiom and commit
+							ontology, // where to add axiom
+							ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClassAssertionAxiom ( // associate individual and its type
+									ontology.getOWLOntologyManager().getOWLDataFactory().getOWLThing(), // class = owl:Thing
+									categoricalStateIndividual	// individual having owl:Thing as its type
+							)
+					);
+				}
+				// update cache
+				this.getCategoricalStatesCache().put(entity, categoricalStateIndividual); 
 			}
-			// update cache
-			this.getCategoricalStatesCache().put(entity, categoricalStateIndividual); 
 		}
 		
 	}
@@ -2116,32 +2262,67 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 	 * @param ontology : object representing OWL ontology, where MEBN data will be filled in.
 	 */
 	protected void saveObjectEntitiesClasses(MultiEntityBayesianNetwork mebn,OWLOntology ontology) {
+		// assertion
+		if (mebn == null || ontology == null) {
+			try {
+				Debug.println(this.getClass(), "Invalid arguments for saveObjectEntitiesClasses: mebn = " + mebn + ", ontology = " + ontology  );
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+			return;
+		}
 		
 		// this is the prefix of this ontology
 		PrefixManager currentPrefix = this.getOntologyPrefixManager(ontology);
 		
+		// extract factory
+		OWLDataFactory factory = ontology.getOWLOntologyManager().getOWLDataFactory();
+		
 		// iterate over entities
-		for(ObjectEntity entity: mebn.getObjectEntityContainer().getListEntity()){
+		for(ObjectEntity entity: mebn.getObjectEntityContainer().getListEntity()) {
+			if (entity == null) {
+				continue;	// ignore null
+			}
+			// check if entity is new or it it was loaded from the current ontology (we do not need to save to this ontology the classes loaded from this ontology)
+			IRI entityIRIWhenLoaded = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(mebn, entity);
+			if (entityIRIWhenLoaded != null && ontology.containsClassInSignature(entityIRIWhenLoaded, true)) {
+				// do not add entity if it is already present in ontology. 
+				try {
+					Debug.println(this.getClass(), entity + " is already in this ontology, so it is not going to be saved again. IRI = " + entityIRIWhenLoaded);
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				// just update cache
+				this.getObjectEntityClassesCache().put(entity, factory.getOWLClass(entityIRIWhenLoaded)); 
+				continue;
+			}
+			
+			// the entity is new and must be saved.
+			
 			// MEBN entities are represented as OWL classes. Get them
 			OWLClass newEntityClass = null;
 			if ("Thing".equalsIgnoreCase(entity.getName())) {
 				// Entity with "Thing" as its name must be considered as an owl:Thing
-				newEntityClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLThing();
+				newEntityClass = factory.getOWLThing();
+				// update cache
+				this.getObjectEntityClassesCache().put(entity, newEntityClass); 
+				continue;
 			} else {
-				newEntityClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(entity.getName(), currentPrefix);
+				newEntityClass = factory.getOWLClass(entity.getName(), currentPrefix);
 			}
 			// check if class exists. If not, create it.
 			if (!ontology.containsClassInSignature(newEntityClass.getIRI(), true)
-					&& !newEntityClass.isOWLThing() ) {
+					&& !newEntityClass.isOWLThing() ) {		// just in case of string comparison failing to detect owl:Thing...
 				// create an axiom explicitly specifying that newEntityClass is an owl:Thing, and commit axiom.
 				ontology.getOWLOntologyManager().addAxiom(	// add axiom and commit
 						ontology, 	// ontology where axiom will be added
-						ontology.getOWLOntologyManager().getOWLDataFactory().getOWLSubClassOfAxiom(	// create "subClassOf" axiom
+						factory.getOWLSubClassOfAxiom(	// create "subClassOf" axiom
 								newEntityClass, 	// subclass
-								ontology.getOWLOntologyManager().getOWLDataFactory().getOWLThing()	// superclass = owl:Thing
+								factory.getOWLThing()	// superclass = owl:Thing
 						)
 				);
 			}
+			
 			// update cache
 			this.getObjectEntityClassesCache().put(entity, newEntityClass); 
 		}
@@ -2771,7 +2952,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 				ontology, 
 				factory.getOWLDataPropertyAssertionAxiom(
 						factory.getOWLDataProperty(HASARGUMENTNUMBER, prowl2Prefix), 
-						mExpressionIndividual,
+						argumentIndividual,
 						argNumber
 				)
 		);
@@ -3137,7 +3318,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
     			OWLIndividual domainResIndividual = this.getDomainResidentCache().get(residentNode);	
     			
     			// solve MExpression. 
-    			// TODO this version assumes that Resident nodes can only have SimpleMExpression, which is not true in a generic PR-OWL2 ontology
+    			// TODO this version assumes that Resident nodes can only have SimpleMExpression, which may not true in a generic MEBN
 //    			OWLClass simpleMExpressionClass = factory.getOWLClass(IPROWL2ModelUser.SIMPLEMEXPRESSION, prowl2Prefix);
     			
     			
@@ -3306,8 +3487,6 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
-
-		// TODO save the default probability distribution in RandomVariable instead in ResidentNode
 		
 		PrefixManager prowl2Prefix = this.getDefaultPrefixManager();	// prefix of PR-OWl2 ontology definition
 		PrefixManager currentPrefix = this.getOntologyPrefixManager(ontology);	// prefix of current ontology
@@ -3345,20 +3524,11 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 		this.getRandomVariableCache().put(resident, rv);
 		
 		
-		// set definesUncertaintyOf if it is not null or empty
-		if (mebn != null) {
-			IRI owlPropertyIRI = IRIAwareMultiEntityBayesianNetwork.getDefineUncertaintyFromMEBN(mebn, resident);
-			if (owlPropertyIRI != null) {
-				ontology.getOWLOntologyManager().addAxiom(
-						ontology, 
-						factory.getOWLDataPropertyAssertionAxiom(
-								factory.getOWLDataProperty(DEFINESUNCERTAINTYOF, prowl2Prefix), // definesUncertaintyOf
-								rv, // subject
-								factory.getOWLLiteral(owlPropertyIRI.toURI().toString(), OWL2Datatype.XSD_ANY_URI) // literal^anyURI
-						)
-				);
-			}
-		}
+		// save the default probability distribution in RandomVariable instead of saving in ResidentNode
+		this.saveRVDefaultProbabilityDistribution(rv, resident, mebn, ontology);
+		
+		// save mappings related to definesUncertaintyOf, isSubjectOf and isObjectOf
+		this.saveMappingBetweenMEBNAndOWL(rv, resident, mebn, ontology);
 		
 		
 		// iterate over links to possible values
@@ -3439,6 +3609,190 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 				break;
 			}
 		}
+	}
+
+	/**
+	 * This method saves the "definesUncertaintyOf", "isSubjectIn" and "isObjectIn" properties.
+	 * This method will fill the contents of {@link #getMappingArgumentCache()}
+	 * @param rvIndividual  : random variable to be updated
+	 * @param resident : node related to random variable
+	 * @param mebn : MEBN containing the resident node
+	 * @param ontology : ontology containing rvIndividual
+	 * @see #saveResidentPossibleValues(OWLIndividual, ResidentNode, MultiEntityBayesianNetwork, OWLOntology)
+	 * @see IPROWL2ModelUser#DEFINESUNCERTAINTYOF
+	 * @see IPROWL2ModelUser#ISSUBJECTIN
+	 * @see IPROWL2ModelUser#ISOBJECTIN
+	 * @see #getMappingArgumentCache()
+	 */
+	protected void saveMappingBetweenMEBNAndOWL(OWLIndividual rvIndividual, ResidentNode resident, MultiEntityBayesianNetwork mebn, OWLOntology ontology) {
+		
+		// assertion
+		if (ontology == null || resident == null || rvIndividual == null) {
+			try {
+				Debug.println(this.getClass(), "Attempted to call \"saveMappingBetweenMEBNAndOWL\" with a null argument: rv = "
+						 + rvIndividual 
+						 + ", resident = " + resident
+						 + ", mebn = " + mebn);
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+			return;
+		}
+		
+		// if mebn == null, extract mebn from resident
+		if (resident.getMFrag() != null) {
+			mebn = resident.getMFrag().getMultiEntityBayesianNetwork();
+		}
+		if (mebn == null) {
+			try {
+				Debug.println(this.getClass(), "Could not extract MEBN in \"saveMappingBetweenMEBNAndOWL\" because argument was null and " 
+						+ resident + " was not connected to a MEBN.");
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+			return;
+		}
+		
+		// extract factory
+		OWLDataFactory factory = ontology.getOWLOntologyManager().getOWLDataFactory();
+		
+		// extract prefix
+		PrefixManager prowl2Prefix = this.getDefaultPrefixManager();	// prefix of prowl2 definitions
+		PrefixManager currentPrefix = this.getOntologyPrefixManager(ontology);	// prefix of current ontology
+		
+		// save definesUncertaintyOf if it exists
+		if (mebn != null) {
+			IRI owlPropertyIRI = IRIAwareMultiEntityBayesianNetwork.getDefineUncertaintyFromMEBN(mebn, resident);
+			if (owlPropertyIRI != null) {
+				ontology.getOWLOntologyManager().addAxiom(
+						ontology, 
+						factory.getOWLDataPropertyAssertionAxiom(
+								factory.getOWLDataProperty(DEFINESUNCERTAINTYOF, prowl2Prefix), // definesUncertaintyOf
+								rvIndividual, // subject
+								factory.getOWLLiteral(owlPropertyIRI.toURI().toString(), OWL2Datatype.XSD_ANY_URI) // literal^anyURI
+						)
+				);
+			}
+		}
+		
+		// iterate on arguments in order to extract mappings from IRIAwareMultiEntityBayesianNetwork
+		for (Argument argument : resident.getArgumentList()) {
+			// Note: we are not inserting arguments in order of argNumber, but argument.getArgNumber() and argumentIndividual->hasArgumentNumber must be the same
+			// check argument and argNumber consistency
+			if (argument == null || argument.getArgNumber() < 1) {
+				try {
+					Debug.println(this.getClass(), "Could not extract argNumber from argument = " + argument + " in node = " + resident
+							+ ", but we'll keep trying to save other MappingArguments.");
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				continue;	// ignore
+			}
+			
+			// create individual of MappingArgument
+			OWLNamedIndividual argumentIndividual = factory.getOWLNamedIndividual(
+					rvIndividual.asOWLNamedIndividual().getIRI().getFragment()
+						+ ARGUMENT_NUMBER_SEPARATOR + argument.getArgNumber(),	// <nameOfRV>_<Number> 
+					currentPrefix
+			);
+			
+			// extract MappingArgument class
+			OWLClass mappingArgumentClass = factory.getOWLClass(MAPPINGARGUMENT, prowl2Prefix);
+			
+			// make sure argumentIndividual is a MappingArgument
+			if (!ontology.containsIndividualInSignature(argumentIndividual.getIRI(), true)
+					|| !argumentIndividual.getTypes(ontology).contains(mappingArgumentClass)) {
+				ontology.getOWLOntologyManager().addAxiom(
+						ontology, 
+						factory.getOWLClassAssertionAxiom(mappingArgumentClass, argumentIndividual)	// typeOf argumentIndividual = MappingArgument
+				);
+			}
+			
+			// set random rvIndividual -> hasArgument -> argumentIndividual
+			ontology.getOWLOntologyManager().addAxiom(
+					ontology, 
+					factory.getOWLObjectPropertyAssertionAxiom(
+							factory.getOWLObjectProperty(HASARGUMENT, prowl2Prefix), 	// hasArgument
+							rvIndividual, 				// subject
+							argumentIndividual			// object
+					)
+			);
+			// set inverse: argumentIndividual -> isArgumentOf -> rvIndividual 
+			ontology.getOWLOntologyManager().addAxiom(
+					ontology, 
+					factory.getOWLObjectPropertyAssertionAxiom(
+							factory.getOWLObjectProperty(ISARGUMENTOF, prowl2Prefix), 	// isArgumentOf
+							argumentIndividual,			// subject
+							rvIndividual 				// object
+					)
+			);
+			
+			// set argumentIndividual -> hasArgumentNumber -> argument.getArgNumber()
+			ontology.getOWLOntologyManager().addAxiom(
+					ontology, 
+					factory.getOWLDataPropertyAssertionAxiom(
+							factory.getOWLDataProperty(HASARGUMENTNUMBER, prowl2Prefix), 	// hasArgumentNumber
+							argumentIndividual,			// subject
+							factory.getOWLLiteral(argument.getArgNumber()) 				// data
+					)
+			);
+			
+			// extract IRI of the mapped owl property (try isObjectIn first)
+			Collection<IRI> mappedIRIs = IRIAwareMultiEntityBayesianNetwork.getIsObjectFromMEBN(mebn, argument);
+			if (mappedIRIs != null) {
+				// we expect that size of mappedIRIs is 1, but we can stil save all of them anyway
+				for (IRI iri : mappedIRIs) {
+					if (iri != null) {
+						ontology.getOWLOntologyManager().addAxiom(
+								ontology, 
+								factory.getOWLDataPropertyAssertionAxiom(
+										factory.getOWLDataProperty(ISOBJECTIN, prowl2Prefix), // isObjectIn
+										argumentIndividual, // subject
+										factory.getOWLLiteral(iri.toURI().toString(), OWL2Datatype.XSD_ANY_URI) // literal^anyURI
+								)
+						);
+					}
+				}
+			}
+			
+			// extract other IRIs of the mapped owl property (now, let's try isSubjectIn)
+			mappedIRIs = IRIAwareMultiEntityBayesianNetwork.getIsSubjectFromMEBN(mebn, argument);
+			if (mappedIRIs != null) {
+				// we expect that size of mappedIRIs is 1, but we can stil save all of them anyway
+				for (IRI iri : mappedIRIs) {
+					if (iri != null) {
+						ontology.getOWLOntologyManager().addAxiom(
+								ontology, 
+								factory.getOWLDataPropertyAssertionAxiom(
+										factory.getOWLDataProperty(ISSUBJECTIN, prowl2Prefix), // isSubjectIn
+										argumentIndividual, // subject
+										factory.getOWLLiteral(iri.toURI().toString(), OWL2Datatype.XSD_ANY_URI) // literal^anyURI
+								)
+						);
+					}
+				}
+			}
+			
+			// add to cache
+			if (this.getMappingArgumentCache() != null) {
+				this.getMappingArgumentCache().put(resident, argumentIndividual);
+			}
+		}
+	}
+
+
+
+	/**
+	 * This method saves the default probability distribution of a random variable.
+	 * @param rvIndividual  : random variable to be updated
+	 * @param resident : node related to random variable
+	 * @param mebn : MEBN containing the resident node
+	 * @param ontology : ontology containing rvIndividual
+	 * @see #saveResidentPossibleValues(OWLIndividual, ResidentNode, MultiEntityBayesianNetwork, OWLOntology)
+	 */
+	protected void saveRVDefaultProbabilityDistribution(OWLIndividual rvIndividual, ResidentNode resident, MultiEntityBayesianNetwork mebn, OWLOntology ontology) {
+		// TODO Auto-generated method stub
+		Debug.println(getClass(), "saveRVDefaultProbabilityDistribution is not implemented yet");
 	}
 
 
@@ -4071,6 +4425,12 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
+		try {
+			// MappingArgument's cache
+			this.setMappingArgumentCache(new HashMap<ResidentNode, OWLIndividual>());
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
 	}
 	
 	
@@ -4382,6 +4742,8 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 	 * This method will be used to fill {@link MultiEntityBayesianNetwork#getCategoricalStatesEntityContainer()}
 	 * using values from {@link #getMapLoadedObjectEntityIndividuals()}. 
 	 * This is done in order to instruct MEBN to consider all object entity individuals as categorical entities as well.
+	 * Note that owl:Thing is considered an entity as well, so direct instances of owl:Thing will also
+	 * be inserted as categorical state entity
 	 * @see OWLAPICompatiblePROWLIO#loadCategoricalStateEntity(OWLOntology, MultiEntityBayesianNetwork)
 	 */
 	protected Map<String, CategoricalStateEntity> loadCategoricalStateEntity(
@@ -4399,7 +4761,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 				IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(
 						mebn, 
 						state, 
-						IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(mebn, instance.getInstanceOf())
+						IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(mebn, instance)
 				);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -4419,6 +4781,29 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 			}
 		}	
 		return ret;
+	}
+
+
+
+	/**
+	 * This is a cache for arguments (individuals of prowl2:MappingArgument) linked indirectly to a resident node
+	 * (i.e. ResidentNode -> RandomVariable -> MappingArgument).
+	 * @return the mappingArgumentCache
+	 */
+	protected Map<ResidentNode, OWLIndividual> getMappingArgumentCache() {
+		return mappingArgumentCache;
+	}
+
+
+
+	/**
+	 * This is a cache for arguments (individuals of prowl2:MappingArgument) linked indirectly to a resident node
+	 * (i.e. ResidentNode -> RandomVariable -> MappingArgument).
+	 * @param mappingArgumentCache the mappingArgumentCache to set
+	 */
+	protected void setMappingArgumentCache(
+			Map<ResidentNode, OWLIndividual> mappingArgumentCache) {
+		this.mappingArgumentCache = mappingArgumentCache;
 	}
 
 
