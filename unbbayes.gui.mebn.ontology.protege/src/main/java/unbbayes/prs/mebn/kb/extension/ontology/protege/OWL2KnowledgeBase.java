@@ -56,6 +56,7 @@ import unbbayes.prs.mebn.builtInRV.BuiltInRVEqualTo;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVNot;
 import unbbayes.prs.mebn.context.EnumSubType;
 import unbbayes.prs.mebn.context.NodeFormulaTree;
+import unbbayes.prs.mebn.entity.CategoricalStateEntity;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
@@ -1097,6 +1098,16 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			// build the expression for reasoner
 			String expression = null;
 			if (TypeContainer.typeCategoryLabel.getName().equalsIgnoreCase(type)) {
+				// priorize in-memory entities
+				if (this.getDefaultMEBN() != null) {
+					for (CategoricalStateEntity catState : this.getDefaultMEBN().getCategoricalStatesEntityContainer().getListEntity()) {
+						ret.add(catState.getName());
+					}
+					if (!ret.isEmpty()) {
+						return new ArrayList<String>(ret);
+					}
+				}
+				// do search if no in-memory categorical entities could be found
 				
 				// the required type is CategoricalRVState. Build expression to extract individuals of CategoricalRVState and non-PR-OWL classes
 				expression = PROWLModelUser.CATEGORICAL_STATE;
