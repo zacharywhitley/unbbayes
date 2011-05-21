@@ -397,11 +397,12 @@ public class ProtegeBundleLauncher implements IBundleLauncher {
 			Object welcomeFrame = welcomeFrameField.get(protegeApplication);
 			if (welcomeFrame != null 
 					&& welcomeFrame instanceof JFrame) {
+				((JFrame)welcomeFrame).setTitle("Do not close");
 				((JFrame)welcomeFrame).setVisible(false);
 				((JFrame)welcomeFrame).dispose();
 			}
 			// replace it to a frame which is always hidden
-			welcomeFrameField.set(protegeApplication, new JFrame() {
+			welcomeFrameField.set(protegeApplication, new JFrame("Do not close") {
 				public void setVisible(boolean b) {
 					super.setVisible(false);	// it is always invisible!!
 				}

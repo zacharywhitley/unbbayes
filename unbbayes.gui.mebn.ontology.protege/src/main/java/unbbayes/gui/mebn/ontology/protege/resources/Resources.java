@@ -71,8 +71,12 @@ public class Resources extends unbbayes.gui.mebn.resources.Resources {
 		{"EditArgumentMapping" , "Map the arguments"},
 		{"EditArgumentMappingToolTip" , "Map the arguments to domains and ranges of OWL properties."},
 		{"NoMappings" , "No mappings"},
-		{"isSubjectOf" , " is SUBJECT in: "},
-		{"isObjectIn" , " is OBJECT in: "},
+		{"isSubjectOf" , " < SUBJECT in > "},
+		{"isObjectIn" , " < OBJECT in > "},
+		{"chooseTypeOfMapping" , "Choose the type of association"},
+		
+		{"invalidSelectedNode" , "The selected node seems to be invalid"},
+		
 	};
 
 }

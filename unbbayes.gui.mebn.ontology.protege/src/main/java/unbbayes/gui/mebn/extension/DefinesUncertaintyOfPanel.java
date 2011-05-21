@@ -5,34 +5,28 @@ package unbbayes.gui.mebn.extension;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.swing.AbstractButton;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 
-import org.protege.editor.owl.ui.OWLIcons;
 import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLProperty;
@@ -40,9 +34,13 @@ import org.semanticweb.owlapi.model.OWLProperty;
 import unbbayes.controller.IconController;
 import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.gui.mebn.auxiliary.MebnToolkit;
+import unbbayes.gui.mebn.ontology.protege.IOWLIconsHolder;
+import unbbayes.gui.mebn.ontology.protege.PropertySelectionDialog;
 import unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator;
 import unbbayes.prs.INode;
 import unbbayes.prs.mebn.Argument;
+import unbbayes.prs.mebn.DefaultMappingArgumentExtractor;
+import unbbayes.prs.mebn.IMappingArgumentExtractor;
 import unbbayes.prs.mebn.IRIAwareMultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.ResidentNode;
@@ -57,13 +55,8 @@ import unbbayes.util.ResourceController;
  * @author Shou Matsumoto
  *
  */
-public class DefinesUncertaintyOfPanel extends JPanel {
+public class DefinesUncertaintyOfPanel extends JPanel implements IOWLIconsHolder, IMappingArgumentExtractor {
 
-	/** Protege-like icon for object properties */
-	public static final Icon OBJECT_PROPERTY_ICON = OWLIcons.getIcon("property.object.png");
-	/** Protege-like icon for data properties */
-    public static final Icon DATA_PROPERTY_ICON = OWLIcons.getIcon("property.data.png");
-	
 	private ResourceBundle resource;
 	
 	private MultiEntityBayesianNetwork mebn;
@@ -81,6 +74,7 @@ public class DefinesUncertaintyOfPanel extends JPanel {
 	private JButton removePropertyButton;
 	private AbstractButton mapArgumentsButton;
 	private JPanel argumentMappingPanel;
+	private IMappingArgumentExtractor mappingArgumentExtractor;
 	
 	
 	/**
@@ -95,6 +89,11 @@ public class DefinesUncertaintyOfPanel extends JPanel {
 					Locale.getDefault(),
 					this.getClass().getClassLoader());
 		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+		try {
+			this.mappingArgumentExtractor = DefaultMappingArgumentExtractor.newInstance();
+		}  catch (Throwable t) {
 			t.printStackTrace();
 		}
 	}
@@ -131,8 +130,13 @@ public class DefinesUncertaintyOfPanel extends JPanel {
 		this.setBorder(MebnToolkit.getBorderForTabPanel(this.getResource().getString("DefineUncertaintyOfOWLProperty")));
 		this.setToolTipText(this.getResource().getString("DefineUncertaintyOfOWLPropertyToolTip"));
 		
-		this.setContentPanel(new JPanel(new GridLayout(0, 1, 10, 10)));
+		this.setContentPanel(new JPanel(new GridLayout(0, 1, 2, 10)));
+//		this.setContentPanel(new JPanel(new FlowLayout()));
 		this.getContentPanel().setBackground(Color.WHITE);
+		
+		JPanel nodeAndPropertyPanel = new JPanel(new GridLayout(0, 1, 2, 10));
+		nodeAndPropertyPanel.setBackground(Color.WHITE);
+		this.getContentPanel().add(nodeAndPropertyPanel);
 		
 		this.add(new JScrollPane(this.getContentPanel()), BorderLayout.CENTER);
 		
@@ -142,8 +146,8 @@ public class DefinesUncertaintyOfPanel extends JPanel {
 				IconController.getInstance().getYellowNodeIcon(), 
 				SwingConstants.CENTER));
 		this.getCurrentlySelectedResidentNodeLabel().setBorder(MebnToolkit.getBorderForTabPanel(this.getResource().getString("ResidentTabTitle")));
-		this.getContentPanel().add(this.getCurrentlySelectedResidentNodeLabel(), BorderLayout.NORTH);
-		
+//		this.getContentPanel().add(this.getCurrentlySelectedResidentNodeLabel());
+		nodeAndPropertyPanel.add(this.getCurrentlySelectedResidentNodeLabel());
 		
 		
 		// set up the label showing the OWL property referenced by the currently selectedÅ@node
@@ -176,19 +180,25 @@ public class DefinesUncertaintyOfPanel extends JPanel {
 			this.getCurrentlySelectedOWLPropertyLabel().setToolTipText(this.getResource().getString("NoSelectedPropertyTitle"));
 		}
 		this.getCurrentlySelectedOWLPropertyLabel().setBorder(MebnToolkit.getBorderForTabPanel(this.getResource().getString("OWLProperties")));
-		this.getContentPanel().add(this.getCurrentlySelectedOWLPropertyLabel());
+//		this.getContentPanel().add(this.getCurrentlySelectedOWLPropertyLabel());
+		nodeAndPropertyPanel.add(this.getCurrentlySelectedOWLPropertyLabel());
 		
-				
 		// set up tool bar to pop up OWL property selector
 //		this.setButtonPanel(new JToolBar(this.getResource().getString("DefineUncertaintyOfOWLProperty"), JToolBar.HORIZONTAL));
 		this.setButtonPanel(new JPanel(new FlowLayout(FlowLayout.CENTER)));
 		this.getButtonPanel().setToolTipText(this.getResource().getString("DefineUncertaintyOfToolBarToolTip"));
-		this.getButtonPanel().setBackground(Color.WHITE);
+//		this.getButtonPanel().setBackground(Color.WHITE);
 		
 		// add button to change the mapping of arguments
 		this.setMapArgumentsButton(new JButton(IconController.getInstance().getArgumentsIcon()));
 		this.getMapArgumentsButton().setToolTipText(this.getResource().getString("EditArgumentMappingToolTip"));
 		this.getButtonPanel().add(this.getMapArgumentsButton());
+		if (owlProperty == null) {
+			// hide mapping button if no property is linked to resident node
+			this.getMapArgumentsButton().setEnabled(false);
+			this.getMapArgumentsButton().setVisible(false);
+		}
+		
 		
 		// add button to change the linked owl property
 		this.setChangePropertyButton(new JButton(IconController.getInstance().getMoreIcon()));
@@ -200,11 +210,11 @@ public class DefinesUncertaintyOfPanel extends JPanel {
 		this.getRemovePropertyButton().setToolTipText(this.getResource().getString("ClearSelectionToolTip"));
 		this.getButtonPanel().add(this.getRemovePropertyButton());
 		
-		// add the toolbar to the panel
-		this.getContentPanel().add(this.getButtonPanel());
+		// add the button panel to the panel
+//		this.getContentPanel().add(this.getButtonPanel());
+		this.add(this.getButtonPanel(), BorderLayout.SOUTH);
 		
 		// prepare panel to show argument mappings
-		
 		this.updateArgumentMappingPanel();
 		
 		System.gc();
@@ -215,9 +225,33 @@ public class DefinesUncertaintyOfPanel extends JPanel {
 	 * {@link #getContentPanel()}
 	 */
 	public void updateArgumentMappingPanel() {
-		// remove old panel
+		
+		// assertions
+		if (this.getMediator() == null) {
+			try {
+				Debug.println(this.getClass(), "updateArgumentMappingPanel was called without setting setMediator(IMediator).");
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+			return;
+		}
+		
+		// check if there is a selected resident node
+		INode selectedNode = this.getMediator().getSelectedNode();
+		if (selectedNode == null || !(selectedNode instanceof ResidentNode)) {
+			return;
+		}
+		
+		// prepare new argument mapping panel (i.e. remove old panel) if there is a selected resident node
 		if (this.getArgumentMappingPanel() != null) {
 			this.getContentPanel().remove(this.getArgumentMappingPanel());
+		}
+
+		// check if node has a definesUncertaintyOf property filled. If not, there is no need to create new argument's mapping
+		OWLProperty owlProperty = this.getOWLPropertyOfSelectedNode();
+		if (owlProperty == null) {
+			// the argument's mapping panel will vanish from GUI, because the old one was removed
+			return;
 		}
 		
 		// add new panel
@@ -227,7 +261,7 @@ public class DefinesUncertaintyOfPanel extends JPanel {
 		this.getContentPanel().add(this.getArgumentMappingPanel());
 		
 		// set up the label showing the OWL property of arguments
-		Map<Argument, Map<OWLProperty, Boolean>> argumentToPropertyToDomainOrRangeMap = this.getOWLPropertiesOfArgumentsOfSelectedNode();
+		Map<Argument, Map<OWLProperty, Integer>> argumentToPropertyToDomainOrRangeMap = this.getOWLPropertiesOfArgumentsOfSelectedNode();
 		if (argumentToPropertyToDomainOrRangeMap != null && !argumentToPropertyToDomainOrRangeMap.isEmpty() ) {
 			// iterate on all mapped arguments
 			for (Argument argument : argumentToPropertyToDomainOrRangeMap.keySet()) {
@@ -235,7 +269,7 @@ public class DefinesUncertaintyOfPanel extends JPanel {
 					continue;	//ignore
 				}
 				// extract mapped properties and whether or not it is a subject.
-				Map<OWLProperty, Boolean> mappedPropertyMap = argumentToPropertyToDomainOrRangeMap.get(argument);
+				Map<OWLProperty, Integer> mappedPropertyMap = argumentToPropertyToDomainOrRangeMap.get(argument);
 				if (mappedPropertyMap == null || mappedPropertyMap.isEmpty()) {
 					continue;	//ignore
 				}
@@ -253,7 +287,9 @@ public class DefinesUncertaintyOfPanel extends JPanel {
 					
 					// fill argument mapping panel with the following information: <argumentOV> <subject of | object of> <property>
 					String labelContent = argument.getOVariable().getName()
-						+ (mappedPropertyMap.get(mappedProperty)?this.getResource().getString("isSubjectOf"):this.getResource().getString("isObjectIn"))
+						+ " \t "
+						+ ((SUBJECT_CODE.equals(mappedPropertyMap.get(mappedProperty)))?this.getResource().getString("isSubjectOf"):this.getResource().getString("isObjectIn"))
+						+ " \t "
 						+  mappedProperty.getIRI().getFragment(); 
 					
 					// change label's icon depending on the property type
@@ -293,8 +329,8 @@ public class DefinesUncertaintyOfPanel extends JPanel {
 	 * @return a mapping from an argument to its OWL property. The last boolean element indicates if the argument
 	 * is a subject of the owl property (true) or object (false).
 	 */
-	protected Map<Argument, Map<OWLProperty, Boolean>> getOWLPropertiesOfArgumentsOfSelectedNode() {
-		Map<Argument, Map<OWLProperty, Boolean>> ret = new HashMap<Argument, Map<OWLProperty,Boolean>>();
+	public Map<Argument, Map<OWLProperty, Integer>> getOWLPropertiesOfArgumentsOfSelectedNode() {
+		Map<Argument, Map<OWLProperty, Integer>> ret = new HashMap<Argument, Map<OWLProperty,Integer>>();
 		
 		// assertion
 		if (this.getMebn() == null || this.getMediator() == null) {
@@ -307,108 +343,21 @@ public class DefinesUncertaintyOfPanel extends JPanel {
 			return ret;
 		}
 		
-		// Ignore nodes that are not resident nodes
-		if (!(selectedNode instanceof ResidentNode)) {
-			try {
-				Debug.println(this.getClass(), selectedNode + " is not a resident node, thus its argument mappings are going to be ignored.");
-			} catch (Throwable t) {
-				t.printStackTrace();
-			}
-			return ret;
-		}
-		
-		// convert to resident node
-		ResidentNode resident = (ResidentNode)selectedNode;
-		
 		// extract owl ontology
 		OWLOntology ontology = null;
 		if (this.getMebn().getStorageImplementor() != null &&  this.getMebn().getStorageImplementor() instanceof IOWLAPIStorageImplementorDecorator) {
 			ontology = ((IOWLAPIStorageImplementorDecorator)this.getMebn().getStorageImplementor()).getAdaptee();
 		}
-
-		// ignore mebn that do not have an associated ontology
-		if (ontology == null) {
-			try {
-				Debug.println(this.getClass(), mebn + " does not contain an OWL2 ontology.");
-			} catch (Throwable t) {
-				t.printStackTrace();
-			}
-			return ret;
-		}
 		
-		// extract owl factory
-		OWLDataFactory factory = ontology.getOWLOntologyManager().getOWLDataFactory();
-		
-		// iterate on arguments
-		List<Argument> argumentList = resident.getArgumentList();
-		if (argumentList != null) {
-			for (Argument argument : argumentList) {
-				// extract IRIs of "subjectFrom" mapping
-				Collection<IRI> iris = IRIAwareMultiEntityBayesianNetwork.getIsSubjectFromMEBN(this.getMebn(), argument);
-				if (iris != null) {
-					// extract properties from IRI
-					for (IRI iri : iris) {
-						// add mapping to ret. If mapping exists, just add another entry
-						Map<OWLProperty, Boolean> mapping = ret.get(argument);
-						if (mapping == null) {
-							mapping = new HashMap<OWLProperty, Boolean>();
-						}
-						// check if iri is an object property or data property
-						if (ontology.containsDataPropertyInSignature(iri, true)) {
-							// this IRI is a data property
-							mapping.put(factory.getOWLDataProperty(iri), true); // true means "add as subject of owl property"
-							try {
-								Debug.println(this.getClass(), argument + " is subject of data property " + iri);
-							} catch (Throwable t) {
-								t.printStackTrace();
-							}
-						} else {
-							// default: this IRI is an object property
-							mapping.put(factory.getOWLObjectProperty(iri), true); // true means "add as subject of owl property"
-							try {
-								Debug.println(this.getClass(), argument + " is subject of object property " + iri);
-							} catch (Throwable t) {
-								t.printStackTrace();
-							}
-						}
-						ret.put(argument, mapping);
-					}
-				}
-				// extract IRIs of "objectOf" mapping
-				iris = IRIAwareMultiEntityBayesianNetwork.getIsObjectFromMEBN(this.getMebn(), argument);
-				if (iris != null) {
-					// extract properties from IRI
-					for (IRI iri : iris) {
-						// add mapping to ret. If mapping exists, just add another entry
-						Map<OWLProperty, Boolean> mapping = ret.get(argument);
-						if (mapping == null) {
-							mapping = new HashMap<OWLProperty, Boolean>();
-						}
-						// check if iri is an object property or data property
-						if (ontology.containsDataPropertyInSignature(iri, true)) {
-							// this IRI is a data property. 
-							mapping.put(factory.getOWLDataProperty(iri), false);	// false means "add as object of owl property"
-							try {
-								Debug.println(this.getClass(), argument + " is object of data property " + iri + ", but we are not checking type consistency yet.");
-							} catch (Throwable t) {
-								t.printStackTrace();
-							}
-						} else {
-							// default: this IRI is an object property
-							mapping.put(factory.getOWLObjectProperty(iri), false);  // false means "add as object of owl property"
-							try {
-								Debug.println(this.getClass(), argument + " is object of of object property " + iri);
-							} catch (Throwable t) {
-								t.printStackTrace();
-							}
-						}
-						ret.put(argument, mapping);
-					}
-				}
-			}
-		}
-		
-		return ret;
+		return this.getOWLPropertiesOfArgumentsOfSelectedNode(selectedNode, this.getMebn(), ontology);
+	}
+	
+	/**
+	 * This method just delegates to {@link #getMappingArgumentExtractor()}
+	 */
+	public Map<Argument, Map<OWLProperty, Integer>> getOWLPropertiesOfArgumentsOfSelectedNode(INode selectedNode, MultiEntityBayesianNetwork mebn, OWLOntology ontology){
+		// delegate
+		return this.getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(selectedNode, this.getMebn(), ontology);
 	}
 
 	/**
@@ -475,17 +424,30 @@ public class DefinesUncertaintyOfPanel extends JPanel {
 				updateLabels();
 			}
 			public void mouseExited(MouseEvent e) {this.mouseEntered(e);} 
-			public void mousePressed(MouseEvent e) {}
+			public void mousePressed(MouseEvent e) {this.mouseEntered(e);}
 			public void mouseReleased(MouseEvent e) {} 
 			public void mouseClicked(MouseEvent e) {}
 		};
-		
-		this.addMouseListener(labelUpdateListener);
-		this.getContentPanel().addMouseListener(labelUpdateListener);
+		// add listener to update labels
+		this.addMouseListener(labelUpdateListener);	// to panel itself
+		this.getContentPanel().addMouseListener(labelUpdateListener);	// to panel itself
+		// the following 2 were included because labels were not being updated when mouse was pointing on these components
+		this.getButtonPanel().addMouseListener(labelUpdateListener);	// to panel containing buttons
+		this.getCurrentlySelectedOWLPropertyLabel().addMouseListener(labelUpdateListener);	// to label of owl property 
 		
 		// listener for the button to clear property selection
 		this.getRemovePropertyButton().addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				int option = JOptionPane.showConfirmDialog(
+						DefinesUncertaintyOfPanel.this, 
+						getResource().getString("PropertyRemovalMessage"), 
+						getResource().getString("PropertyRemovalTitle"), 
+						JOptionPane.YES_NO_OPTION
+				);
+				if (JOptionPane.YES_OPTION != option) {
+					// if option is not YES, do nothing
+					return;
+				}
 				try {
 					ResidentNode selectedNode = (ResidentNode)getSelectedNode();
 					IRIAwareMultiEntityBayesianNetwork.addDefineUncertaintyToMEBN(getMebn(), selectedNode, null);
@@ -527,7 +489,38 @@ public class DefinesUncertaintyOfPanel extends JPanel {
 	 * @return
 	 */
 	protected void showPropertySelectionDialog() {
-		JDialog dialog = new PropertySelectionDialog();
+		final PropertySelectionDialog dialog = PropertySelectionDialog.newInstance(getMebn());
+		
+		// for OK, update myself
+		dialog.getOkButton().addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				OWLProperty selected = dialog.getSelectedValue();
+				if (selected != null) {
+					INode selectedNode = getSelectedNode();
+					if (selectedNode != null
+							&& (selectedNode instanceof ResidentNode)) {
+						IRIAwareMultiEntityBayesianNetwork.addDefineUncertaintyToMEBN(getMebn(), (ResidentNode)selectedNode, ((OWLProperty)selected).getIRI());
+						updateLabels();
+					} else {
+						try {
+							Debug.println(this.getClass(), "The selected node is not a resident node: " + selectedNode);
+						} catch (Throwable t) {
+							t.printStackTrace();
+						}
+					}
+				} else {
+					try {
+						Debug.println(this.getClass(), "The selected property is not an OWL property: " + selected);
+					} catch (Throwable t) {
+						t.printStackTrace();
+					}
+				}
+				dialog.setVisible(false);
+				dialog.dispose();
+			}
+		});
+		
+		dialog.setDefaultCloseOperation(dialog.DISPOSE_ON_CLOSE);
 		dialog.setVisible(true);
 	}
 	
@@ -536,78 +529,17 @@ public class DefinesUncertaintyOfPanel extends JPanel {
 	 * @return
 	 */
 	protected void showArgumentMappingDialog() {
-		JDialog dialog = new JDialog(this.getMediator().getScreen().getUnbbayesFrame(), this.getResource().getString("EditArgumentMapping"), true);
-		dialog.add(ArgumentMappingPanel.newInstance(this.getMebn(), this.getMediator(), this.getMediator().getSelectedNode()));
-		dialog.pack();
-		dialog.setVisible(true);
+		INode selectedNode = getSelectedNode();
+		if (selectedNode != null && selectedNode instanceof ResidentNode) {
+			ArgumentMappingDialog dialog = ArgumentMappingDialog.newInstance(this.getMebn(), this.getMediator(), selectedNode);
+			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			
+			dialog.pack();
+			dialog.setVisible(true);
+		}
 	}
 	
-	/**
-	 * This is a dialog to ask a user to select an OWL property.
-	 * It is reusing {@link OWL2PropertyViewerPanel}
-	 * @author Shou Matsumoto
-	 *
-	 */
-	public class PropertySelectionDialog extends JDialog {
-		private JButton okButton;
-		public PropertySelectionDialog () {
-			super(getMediator().getScreen().getUnbbayesFrame(), getResource().getString("SelectOWLPropertyToolTip"), true);
-			
-			this.getContentPane().setLayout(new BorderLayout());
-			
-			// reuse property list
-			final OWL2PropertyViewerPanel propertyListPanel = (OWL2PropertyViewerPanel)OWL2PropertyViewerPanel.newInstance(getMebn());
-			// disable multiple selection of properties
-			propertyListPanel.getPropertyList().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-			// disable drag and drop
-			propertyListPanel.getPropertyList().setDragEnabled(false);
-			// change text border
-			propertyListPanel.setBorder(MebnToolkit.getBorderForTabPanel(getResource().getString("SelectOWLPropertyToolTip")));
-			// add property list
-			this.getContentPane().add(propertyListPanel, BorderLayout.CENTER);
-			
-			// create the OK button
-			this.setOkButton(new JButton(IconController.getInstance().getMoreIcon()));
-			this.getOkButton().setToolTipText(getResource().getString("DefineUncertaintyOfOWLProperty"));
-			this.getContentPane().add(this.getOkButton(), BorderLayout.SOUTH);
-			
-			// add the action of the button
-			this.getOkButton().addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					Object selected = propertyListPanel.getPropertyList().getSelectedValue();
-					if (selected instanceof OWLProperty) {
-						INode selectedNode = getSelectedNode();
-						if (selectedNode != null
-								&& (selectedNode instanceof ResidentNode)) {
-							IRIAwareMultiEntityBayesianNetwork.addDefineUncertaintyToMEBN(getMebn(), (ResidentNode)selectedNode, ((OWLProperty)selected).getIRI());
-							updateLabels();
-						} else {
-							try {
-								Debug.println(this.getClass(), "The selected node is not a resident node: " + selectedNode);
-							} catch (Throwable t) {
-								t.printStackTrace();
-							}
-						}
-					} else {
-						try {
-							Debug.println(this.getClass(), "The selected property is not an OWL property: " + selected);
-						} catch (Throwable t) {
-							t.printStackTrace();
-						}
-					}
-					PropertySelectionDialog.this.setVisible(false);
-					PropertySelectionDialog.this.dispose();
-				}
-			});
-			
-			Dimension preferredSize = new Dimension(480, 600);
-			this.setPreferredSize(preferredSize);
-			this.setSize(preferredSize);
-			this.pack();
-		}
-		public JButton getOkButton() {return okButton;}
-		public void setOkButton(JButton okButton) {this.okButton = okButton;}
-	}
+	
 	
 	/**
 	 * Update the values of {@link #getCurrentlySelectedOWLPropertyLabel()} and {@link #getCurrentlySelectedResidentNodeLabel()}.
@@ -640,6 +572,23 @@ public class DefinesUncertaintyOfPanel extends JPanel {
 			getCurrentlySelectedOWLPropertyLabel().setIcon(OBJECT_PROPERTY_ICON);
 			getCurrentlySelectedOWLPropertyLabel().setToolTipText(getResource().getString("NoSelectedPropertyTitle"));
 		}
+		
+		// if there is a mapping, update button to edit arguments
+		if (owlProperty != null) {
+			try {
+				Debug.println(this.getClass(), "Enabling mapArgumentsButton");
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+			this.getMapArgumentsButton().setEnabled(true);
+			this.getMapArgumentsButton().setVisible(true);
+		} else {
+			// hide mapping button if no property is linked to resident node
+			this.getMapArgumentsButton().setEnabled(false);
+			this.getMapArgumentsButton().setVisible(false);
+		}
+		this.getMapArgumentsButton().updateUI();
+		this.getMapArgumentsButton().repaint();
 		
 		// repaint the selected node label
 		getCurrentlySelectedResidentNodeLabel().updateUI();
@@ -821,6 +770,25 @@ public class DefinesUncertaintyOfPanel extends JPanel {
 	 */
 	public void setArgumentMappingPanel(JPanel argumentMappingPanel) {
 		this.argumentMappingPanel = argumentMappingPanel;
+	}
+
+	/**
+	 * This object will extract the relationships between arguments of nodes and OWL properties.
+	 * @return the mappingArgumentExtractor
+	 * @see #getOWLPropertiesOfArgumentsOfSelectedNode()
+	 */
+	public IMappingArgumentExtractor getMappingArgumentExtractor() {
+		return mappingArgumentExtractor;
+	}
+
+	/**
+	 * This object will extract the relationships between arguments of nodes and OWL properties.
+	 * @param mappingArgumentExtractor the mappingArgumentExtractor to set
+	 * @see #getOWLPropertiesOfArgumentsOfSelectedNode()
+	 */
+	public void setMappingArgumentExtractor(
+			IMappingArgumentExtractor mappingArgumentExtractor) {
+		this.mappingArgumentExtractor = mappingArgumentExtractor;
 	}
 	
 }
