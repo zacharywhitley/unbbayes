@@ -7,13 +7,13 @@ import java.awt.FlowLayout;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
-public class EntityMainPanel extends IUMPSTPanel{
+public class Entities extends IUMPSTPanel{
 	
 	private JSplitPane splitPane;
 	private TableRequirements menuPanel;
 	private EntitiesSearchPanel requirementsPanel;
 	
-	public EntityMainPanel(UmpstModule janelaPai) {
+	public Entities(UmpstModule janelaPai) {
 		super(janelaPai);
 		this.setLayout(new FlowLayout());
 		this.add(getSplitPane());
@@ -26,7 +26,7 @@ public class EntityMainPanel extends IUMPSTPanel{
 	public JSplitPane getSplitPane() {
 		if(splitPane == null){
 			splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-					getEntityPanel(),getEntityTable());
+					getEntitiesPanel(),getEntitiesTable());
 			splitPane.setDividerLocation(100);
 			splitPane.setPreferredSize(new Dimension(800,600));
 			splitPane.setBackground(new Color(0x4169AA));
@@ -37,7 +37,7 @@ public class EntityMainPanel extends IUMPSTPanel{
 	/**
 	 * @return the menuPanel
 	 */
-	public TableRequirements getEntityTable() {
+	public TableRequirements getEntitiesTable() {
 		if(menuPanel == null ){
 			menuPanel = new TableRequirements(getJanelaPai());
 		}
@@ -47,7 +47,7 @@ public class EntityMainPanel extends IUMPSTPanel{
 	/**
 	 * @return the requirementsPanel
 	 */
-	public EntitiesSearchPanel getEntityPanel() {
+	public EntitiesSearchPanel getEntitiesPanel() {
 		if(requirementsPanel == null ){
 			requirementsPanel = new EntitiesSearchPanel(getJanelaPai());
 			requirementsPanel.setBackground(new Color(0xffffff));

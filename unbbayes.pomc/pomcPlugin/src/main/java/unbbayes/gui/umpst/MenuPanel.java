@@ -39,7 +39,7 @@ public class MenuPanel extends IUMPSTPanel{
 	                "goals,queries and envidences");
 	        tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 	        
-	        JComponent panel2 = new EntityMainPanel(getJanelaPai());
+	        JComponent panel2 = new Entities(getJanelaPai());
 	        tabbedPane.addTab("Entity", icon, panel2,
 	                "entities, atributtes and relationships");
 	        tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
@@ -66,7 +66,7 @@ public class MenuPanel extends IUMPSTPanel{
 	    protected JPanel  createInternalPane (JPanel pane){
 	    	
 	    	this.setLayout(new FlowLayout());
-			this.add(new GoalsPanel(getJanelaPai()));
+			this.add(new GoalsAdd(getJanelaPai(),null));
 	    	
 			return pane;
 	    }

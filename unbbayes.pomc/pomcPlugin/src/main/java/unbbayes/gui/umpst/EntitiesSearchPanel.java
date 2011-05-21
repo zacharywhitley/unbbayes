@@ -45,12 +45,12 @@ import com.ibm.icu.impl.duration.impl.YMDDateFormatter;
 
 public class EntitiesSearchPanel extends IUMPSTPanel {
 	
-	private JLabel labelGoal;
+	private JLabel labelEntity;
 	
 	private JButton buttonSearch;
-	private JButton buttonAddGoal;
+	private JButton buttonAddEntity;
 
-	private JTextField textGoal;
+	private JTextField textEntity;
 	
 
 	
@@ -67,9 +67,9 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 		panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 		panel.setBackground(new Color(0x4169AA));
 		
-		panel.add(getLabelGoal());
+		panel.add(getLabelEntity());
 		panel.add(Box.createRigidArea(new Dimension(0,5)));
-		panel.add(getTextGoal());
+		panel.add(getTextEntity());
 		panel.add(Box.createRigidArea(new Dimension(0,5)));
 		panel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 
@@ -77,7 +77,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 		buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
 		buttonPane.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
 		buttonPane.add(Box.createHorizontalGlue());
-		buttonPane.add(getButtonAddGoal());
+		buttonPane.add(getButtonAddEntity());
 		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
 		buttonPane.add(getButtonSearch());
 		
@@ -91,31 +91,36 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 		}
 
 	/**
-	 * @return the buttonAddGoal
+	 * @return the buttonAddEntity
 	 */
-	public JButton getButtonAddGoal() {
+	public JButton getButtonAddEntity() {
 		
-		if (buttonAddGoal == null){
-			buttonAddGoal = new JButton ("add new entity");
-			buttonAddGoal.setForeground(Color.blue);
-			
+		if (buttonAddEntity == null){
+			buttonAddEntity = new JButton ("add new entity");
+			buttonAddEntity.setForeground(Color.blue);
+			buttonAddEntity.addActionListener(new ActionListener() {
+				
+				public void actionPerformed(ActionEvent e) {
+					alterarJanelaAtual(new EntitiesMainPanel(getJanelaPai()));
+				}
+			});			
 		}
 		
-		return buttonAddGoal;
+		return buttonAddEntity;
 	} 
 	
 	
 	/**
-	 * @return the labelGoal
+	 * @return the labelEntity
 	 */
-	public JLabel getLabelGoal() {
+	public JLabel getLabelEntity() {
 		
-		if(labelGoal == null){
-			labelGoal = new JLabel("Search for a entity: ");
-			labelGoal.setForeground(Color.white);
+		if(labelEntity == null){
+			labelEntity = new JLabel("Search for a entity: ");
+			labelEntity.setForeground(Color.white);
 		}
 		
-		return labelGoal;
+		return labelEntity;
 	}
 
 
@@ -134,15 +139,15 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 
 
 	/**
-	 * @return the textGoal
+	 * @return the textEntity
 	 */
-	public JTextField getTextGoal() {
+	public JTextField getTextEntity() {
 		
-		if (textGoal == null){
-			textGoal = new JTextField(10);
+		if (textEntity == null){
+			textEntity = new JTextField(10);
 		}
 		
-		return textGoal;
+		return textEntity;
 	}
 	
 	

@@ -121,7 +121,7 @@ public class RulesPanel extends IUMPSTPanel {
 			buttonAddRule.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
-					alterarJanelaAtual(new GoalsPanel(getJanelaPai()));
+					alterarJanelaAtual(new GoalsAdd(getJanelaPai(),null));
 				}
 			});
 		}
