@@ -38,7 +38,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 
 
-public class EntitiesPanel extends IUMPSTPanel {
+public class EntitiesAdd extends IUMPSTPanel {
 	
 	
 	private JLabel labelGoal;
@@ -66,7 +66,7 @@ public class EntitiesPanel extends IUMPSTPanel {
 
 
 
-	public EntitiesPanel(UmpstModule janelaPai){
+	public EntitiesAdd(UmpstModule janelaPai){
 		super(janelaPai);
 		setLayout(new GridLayout(0,1));
 		

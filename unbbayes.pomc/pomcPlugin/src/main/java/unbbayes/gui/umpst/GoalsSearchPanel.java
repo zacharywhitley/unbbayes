@@ -41,6 +41,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 
+import unbbayes.controller.umpst.RequirementsController;
+
 import com.ibm.icu.impl.duration.impl.YMDDateFormatter;
 
 public class GoalsSearchPanel extends IUMPSTPanel {

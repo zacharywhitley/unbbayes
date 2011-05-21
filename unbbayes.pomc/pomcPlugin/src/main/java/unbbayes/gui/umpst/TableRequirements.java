@@ -6,9 +6,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+
 
 
 
@@ -73,6 +76,10 @@ public class TableRequirements extends IUMPSTPanel{
 			scrollpanePergunta = new JScrollPane(getTable());
 			scrollpanePergunta.setMinimumSize(new Dimension(300,150));
 			
+			
+		
+		
+			
 	        ButtonColumn buttonColumnEdit = new ButtonColumn(table, 3,iconEdit); 	        
 	        ButtonColumn buttonColumnAdd = new ButtonColumn(table, 4,iconAdd);  	        
 	        ButtonColumn buttonColumnDel = new ButtonColumn(table, 5,iconDel);  
@@ -80,14 +87,14 @@ public class TableRequirements extends IUMPSTPanel{
 	        buttonColumnAdd.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {					
-					alterarJanelaAtual(new GoalsMainPanel(getJanelaPai()));
+					alterarJanelaAtual(new SubgoalMainPanel(getJanelaPai()));
 					System.out.println("clicou no botao");
 					
 				}
-			});
+			}); 
 	        
 		}
-		return scrollpanePergunta;
+		return scrollpanePergunta; 
 	}
 	
 	 

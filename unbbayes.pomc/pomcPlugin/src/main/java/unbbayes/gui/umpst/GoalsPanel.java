@@ -40,6 +40,11 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 
 
+
+import unbbayes.controller.umpst.RequirementsController;
+import unbbayes.model.umpst.requirements.GoalModel;
+
+
 public class GoalsPanel extends IUMPSTPanel {
 	
 	
@@ -65,8 +70,11 @@ public class GoalsPanel extends IUMPSTPanel {
 		buttonSave.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
+				//RequirementsController c = new RequirementsController();
+				//c.createGoal(getTextGoal(),getTextComments(),null);
+				
 				UmpstModule pai = getJanelaPai();
-				alterarJanelaAtual(pai.getMenuPanel());				
+				alterarJanelaAtual(pai.getMenuPanel());	
 			}
 		});
 		
@@ -84,30 +92,14 @@ public class GoalsPanel extends IUMPSTPanel {
 	String[] columnNames = {"ID","Hipotesis","Botao","Edit","Add sub-Hyphotesis","Remove"};
 
 	Object[][] data = {
-			{getLabelGoal(),getLabelDetailedGoal(),"xxx","","",""},
-				{getLabelGoal(),getLabelDetailedGoal(),"xxx","","",""},
-					{getLabelGoal(),getLabelDetailedGoal(),"xxx","","",""},
-					{getLabelGoal(),getLabelDetailedGoal(),"xxx","","",""},
-					{getLabelGoal(),getLabelDetailedGoal(),"xxx","","",""},
-					{getLabelGoal(),getLabelDetailedGoal(),"xxx","","",""},
-					{getLabelGoal(),getLabelDetailedGoal(),"xxx","","",""},
-					{getLabelGoal(),getLabelDetailedGoal(),"xxx","","",""},
-					{getLabelGoal(),getLabelDetailedGoal(),"xxx","","",""},
-					{getLabelGoal(),getLabelDetailedGoal(),"xxx","","",""},
-					{getLabelGoal(),getLabelDetailedGoal(),"xxx","","",""},
-					{getLabelGoal(),getLabelDetailedGoal(),"xxx","","",""},
-					{getLabelGoal(),getLabelDetailedGoal(),"xxx","","",""},
-					{getLabelGoal(),getLabelDetailedGoal(),"xxx","","",""},
-					{getLabelGoal(),getLabelDetailedGoal(),"xxx","","",""},
-					{getLabelGoal(),getLabelDetailedGoal(),"xxx","","",""},
-					{getLabelGoal(),getLabelDetailedGoal(),"xxx","","",""},
-					{getLabelGoal(),getLabelDetailedGoal(),"xxx","","",""},
-					{getLabelGoal(),getLabelDetailedGoal(),"xxx","","",""},
-					{getLabelGoal(),getLabelDetailedGoal(),"xxx","","",""},
-					{getLabelGoal(),getLabelDetailedGoal(),"xxx","","",""},
-					{getLabelGoal(),getLabelDetailedGoal(),"xxx","","",""},
-					{getLabelGoal(),getLabelDetailedGoal(),"xxx","","",""},
-			
+			{getLabelGoal(),getLabelDetailedGoal(),"xxx","testestes","testestes","testestes"},
+			{getLabelGoal(),getLabelDetailedGoal(),"xxx","testestes","testestes","testestes"},
+			{getLabelGoal(),getLabelDetailedGoal(),"xxx","testestes","testestes","testestes"},
+			{getLabelGoal(),getLabelDetailedGoal(),"xxx","testestes","testestes","testestes"},
+			{getLabelGoal(),getLabelDetailedGoal(),"xxx","testestes","testestes","testestes"},
+			{getLabelGoal(),getLabelDetailedGoal(),"xxx","testestes","testestes","testestes"},
+			{getLabelGoal(),getLabelDetailedGoal(),"xxx","testestes","testestes","testestes"},			
+			{getLabelGoal(),getLabelDetailedGoal(),"xxx","testestes","testestes","testestes"},
 
 	};
 	
@@ -134,6 +126,8 @@ public class GoalsPanel extends IUMPSTPanel {
 		if(scrollpanePergunta == null){
 			scrollpanePergunta = new JScrollPane(getTable());
 			scrollpanePergunta.setMinimumSize(new Dimension(300,150));
+			
+			
 			
 	        ButtonColumn buttonColumnEdit = new ButtonColumn(table, 3,iconEdit); 	        
 	        ButtonColumn buttonColumnAdd = new ButtonColumn(table, 4,iconAdd);  
@@ -244,7 +238,12 @@ public class GoalsPanel extends IUMPSTPanel {
 	 */
 	public JTextArea getTextGoal() {
 		if(textGoal == null){
-			textGoal = new JTextArea(5,20);
+			textGoal = new JTextArea(5,20){
+			public String toString() {
+				// TODO Auto-generated method stub
+				return this.getText();
+			}
+			};
 		}
 		return textGoal;
 	}
@@ -264,7 +263,12 @@ public class GoalsPanel extends IUMPSTPanel {
 	 */
 	public JTextArea getTextComments() {
 		if(textComments == null){
-			textComments = new JTextArea(5,20);
+			textComments = new JTextArea(5,20){
+				public String toString() {
+					// TODO Auto-generated method stub
+					return this.getText();
+				}
+				};
 		}
 		return textComments;
 	}
@@ -281,6 +285,8 @@ public class GoalsPanel extends IUMPSTPanel {
 			buttonAddGoal.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
+				
+					
 					UmpstModule pai = getJanelaPai();
 					alterarJanelaAtual(pai.getMenuPanel());
 				}

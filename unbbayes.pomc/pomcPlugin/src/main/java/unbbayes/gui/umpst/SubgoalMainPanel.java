@@ -9,14 +9,14 @@ import javax.swing.JSplitPane;
 
 import unbbayes.model.umpst.requirements.GoalModel;
 
-public class GoalsMainPanel extends IUMPSTPanel{
+public class SubgoalMainPanel extends IUMPSTPanel{
 	
 	private JSplitPane splitPane;
 	private TableRequirements menuPanel;
-	private GoalsAdd goalsPanel;
+	private SubgoalsAdd goalsPanel;
 	GoalModel goal;
 	
-	public GoalsMainPanel(UmpstModule janelaPai) {
+	public SubgoalMainPanel(UmpstModule janelaPai) {
 		super(janelaPai);
 		this.setLayout(new FlowLayout());
 		this.add(getSplitPane());
@@ -50,9 +50,9 @@ public class GoalsMainPanel extends IUMPSTPanel{
 	/**
 	 * @return the GoalAdd Panel
 	 */
-	public GoalsAdd getGoalsPanel() {
+	public SubgoalsAdd getGoalsPanel() {
 		if(goalsPanel == null ){
-			goalsPanel = new GoalsAdd(getJanelaPai(),goal);
+			goalsPanel = new SubgoalsAdd(getJanelaPai(),goal);
 			goalsPanel.setBackground(new Color(0xffffff));
 		}
 		return goalsPanel;
