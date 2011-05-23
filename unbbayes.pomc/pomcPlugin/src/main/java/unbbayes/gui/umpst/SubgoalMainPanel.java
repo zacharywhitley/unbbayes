@@ -6,6 +6,7 @@ import java.awt.FlowLayout;
 
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.table.DefaultTableModel;
 
 import unbbayes.model.umpst.requirements.GoalModel;
 
@@ -42,6 +43,8 @@ public class SubgoalMainPanel extends IUMPSTPanel{
 	 */
 	public TableRequirements getGoalsTable() {
 		if(menuPanel == null ){
+			DefaultTableModel model = new DefaultTableModel();
+
 			menuPanel = new TableRequirements(getJanelaPai());
 		}
 		return menuPanel;

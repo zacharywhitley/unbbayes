@@ -31,7 +31,7 @@ import javax.swing.table.TableCellRenderer;
  */
 public class TableButton extends AbstractCellEditor implements TableCellEditor, TableCellRenderer
 {
-	private static final long serialVersionUID = 5647725208335645741L;
+	//private static final long serialVersionUID = 5647725208335645741L;
 
 	public interface TableButtonPressedHandler
     {

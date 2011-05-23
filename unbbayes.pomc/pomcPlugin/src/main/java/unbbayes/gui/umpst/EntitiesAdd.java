@@ -31,6 +31,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 	private JButton buttonAdd 	     = new JButton();
 	private JButton buttonCancel     = new JButton("Cancel");
 	private JButton buttonAtribute = new JButton(iconAtribute);
+ 
 	
 	private JTextField dateText,authorText;
 	private JTextField entityText,commentsText;

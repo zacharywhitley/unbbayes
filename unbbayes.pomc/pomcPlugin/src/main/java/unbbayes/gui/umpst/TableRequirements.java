@@ -21,12 +21,6 @@ import javax.swing.table.TableColumn;
 
 import unbbayes.model.umpst.requirements.GoalModel;
 
-
-
-
-
-
-
 public class TableRequirements extends IUMPSTPanel{
 	
 	private JTable table;
@@ -58,7 +52,7 @@ public class TableRequirements extends IUMPSTPanel{
     DefaultTableModel model = new DefaultTableModel(data, columnNames);  
 
     
-    public TableRequirements(UmpstModule janelaPai){
+   /* public TableRequirements(UmpstModule janelaPai){
     	super(janelaPai);
     	this.setLayout(new GridLayout(1,0));
     	
@@ -66,24 +60,51 @@ public class TableRequirements extends IUMPSTPanel{
     
     	
     	
-    }
+    }*/
+ 
     
-    
-    public static TableRequirements getInstance(UmpstModule janelaPai) {
-		if(instance == null){
-			instance = new TableRequirements(janelaPai);
-		}
-		return instance;
-	}
+    	  /**private constructors make class extension almost impossible,
+    	that's why this is protected*/
+    	  protected TableRequirements(UmpstModule janelaPai) {
+    		  
+    		    super(janelaPai);
+    	    	this.setLayout(new GridLayout(1,0));
+    	    	
+    	    	this.add(getScrollPanePergunta(model));
+    	  }
+    	  /**
+    	   * SingletonHolder is loaded on the first execution of
+    	TableRequirements.getInstance()
+    	   * or the first access to SingletonHolder.INSTANCE, not before.
+    	   */
+    	  private static class SingletonHolder {
+    	    public static final TableRequirements INSTANCE = new TableRequirements(null);
+    	  }
+    	  public static TableRequirements getInstance(UmpstModule janelaPai,DefaultTableModel tableModel) {
+    	    
+    		System.out.println("entrou no get instance");  
+    		TableRequirements ret = SingletonHolder.INSTANCE;
+    	    ret.setJanelaPai(janelaPai,tableModel);
+    	    return ret;
+    	  }
+    	  
+    	  public void setJanelaPai(UmpstModule janelaPai,DefaultTableModel tableModel){
+    		// super(janelaPai);
+  	    	
+    		  System.out.println("entrou no setJanelaPai");
+    		  this.setLayout(new GridLayout(1,0));
+  	           this.add(getScrollPanePergunta(tableModel));
+    		  
+    	  }
     
    
 	
 	/**
 	 * @return the table
 	 */
-	public JTable getTable() {
+	public JTable getTable(DefaultTableModel tableModel) {
 		
-		table = new JTable(model){  
+		table = new JTable(tableModel){  
             //  Returning the Class of each column will allow different  
             //  renderers to be used based on Class  
             public Class getColumnClass(int column)  {  
@@ -93,9 +114,9 @@ public class TableRequirements extends IUMPSTPanel{
 		return table;
        }
 	
-	public JScrollPane getScrollPanePergunta(){
+	public JScrollPane getScrollPanePergunta(DefaultTableModel model){
 		if(scrollpanePergunta == null){
-			scrollpanePergunta = new JScrollPane(getTable());
+			scrollpanePergunta = new JScrollPane(getTable(model));
 			scrollpanePergunta.setMinimumSize(new Dimension(300,150));
 			
 			TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer()

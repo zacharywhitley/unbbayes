@@ -153,21 +153,22 @@ public class GoalsAdd extends IUMPSTPanel {
 				if( goal == null){
 					GoalModel goal = new GoalModel(goalText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),null);
 					try {
-						/*String[] columnNames = {"Goal","","",""};
+						String[] columnNames = {"Goal","","",""};
 
 				    	Object[][] data ={ 
 				    			{goal.getGoalName(),"","",""},
 				    	};
-					    DefaultTableModel model = new DefaultTableModel(data, columnNames);  
-					    
+				    	
 					    UmpstModule pai = getJanelaPai();
+
+				    	alterarJanelaAtual(pai.getMenuPanel());
+					    DefaultTableModel model = new DefaultTableModel(data, columnNames);  
+					    TableRequirements.getInstance(pai,model);
 					    
-					    TableRequirements.getInstance(pai);*/
-					    
-						
+						System.out.println("adicionou novo goal");
 						JOptionPane.showMessageDialog(null, "Goal successfully added",null, JOptionPane.INFORMATION_MESSAGE);
-						UmpstModule pai = getJanelaPai();
-						alterarJanelaAtual(pai.getMenuPanel());
+						
+						
 					
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating goal", "UnBBayes", JOptionPane.WARNING_MESSAGE);

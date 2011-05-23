@@ -35,7 +35,7 @@ public class AtributeAdd extends IUMPSTPanel {
 	private JButton buttonAdd 	     = new JButton();
 	private JButton buttonCancel     = new JButton("Cancel");
 	private JButton buttonRelationship = new JButton(iconRelationship);
-	private JButton buttonSubAtribute    = new JButton(iconSubAtribute);
+	//private JButton buttonSubAtribute    = new JButton(iconSubAtribute);
 	
 	private JTextField dateText,authorText;
 	private JTextField AtributeText,commentsText;
@@ -133,14 +133,14 @@ public class AtributeAdd extends IUMPSTPanel {
 		
 		GridBagConstraints d = new GridBagConstraints();
 		
-		d.gridx = 0; d.gridy = 8; 
-		add(buttonRelationship,d);
+		//.gridx = 0; d.gridy = 8; 
+		//add(buttonRelationship,d);
 
-		d.gridx = 1; d.gridy = 8; 
-		add(buttonSubAtribute,d);
+		//d.gridx = 1; d.gridy = 8; 
+		//add(buttonSubAtribute,d);
 		
-		buttonRelationship.setToolTipText("Add new Hyphotesis");
-		buttonSubAtribute.setToolTipText("Add new SubAtribute");
+		//buttonRelationship.setToolTipText("Add new Relationship");
+		//buttonSubAtribute.setToolTipText("Add new SubAtribute");
 	
 	}
 	

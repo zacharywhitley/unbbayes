@@ -31,8 +31,8 @@ public class RelationshipAdd extends IUMPSTPanel {
 	
 	private JButton buttonAdd 	     = new JButton();
 	private JButton buttonCancel     = new JButton("Cancel");
-	private JButton buttonHypothesis = new JButton(iconHypothesis);
-	private JButton buttonSubRelationship    = new JButton(iconSubRelationship);
+	//private JButton buttonHypothesis = new JButton(iconHypothesis);
+	//private JButton buttonSubRelationship    = new JButton(iconSubRelationship);
 	
 	private JTextField dateText,authorText;
 	private JTextField RelationshipText,commentsText;
@@ -130,14 +130,14 @@ public class RelationshipAdd extends IUMPSTPanel {
 		
 		GridBagConstraints d = new GridBagConstraints();
 		
-		d.gridx = 0; d.gridy = 8; 
+		/*d.gridx = 0; d.gridy = 8; 
 		add(buttonHypothesis,d);
 
 		d.gridx = 1; d.gridy = 8; 
 		add(buttonSubRelationship,d);
 		
 		buttonHypothesis.setToolTipText("Add new Hyphotesis");
-		buttonSubRelationship.setToolTipText("Add new SubRelationship");
+		buttonSubRelationship.setToolTipText("Add new SubRelationship");*/
 	
 	}
 	

@@ -49,7 +49,9 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 	
 	private JButton buttonSearch;
 	private JButton buttonAddEntity;
-
+	private JButton buttonAddRelationship;
+	
+	
 	private JTextField textEntity;
 	
 
@@ -79,6 +81,8 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 		buttonPane.add(Box.createHorizontalGlue());
 		buttonPane.add(getButtonAddEntity());
 		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
+		buttonPane.add(getButtonRelationship());
+		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
 		buttonPane.add(getButtonSearch());
 		
 
@@ -89,6 +93,22 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 		
 		
 		}
+
+	private Component getButtonRelationship() {
+		if (buttonAddRelationship == null){
+			buttonAddRelationship = new JButton ("add new relationship");
+			buttonAddRelationship.setForeground(Color.blue);
+			buttonAddRelationship.addActionListener(new ActionListener() {
+				
+				public void actionPerformed(ActionEvent e) {
+					alterarJanelaAtual(new RelationshipAdd(getJanelaPai(), null));
+				}
+			});			
+		}
+		
+		return buttonAddRelationship;
+	}
+	
 
 	/**
 	 * @return the buttonAddEntity

@@ -6,6 +6,7 @@ import java.awt.FlowLayout;
 
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.table.DefaultTableModel;
 
 public class EntitiesMainPanel extends IUMPSTPanel{
 	
@@ -39,6 +40,8 @@ public class EntitiesMainPanel extends IUMPSTPanel{
 	 */
 	public TableRequirements getEntityTable() {
 		if(menuPanel == null ){
+			DefaultTableModel model = new DefaultTableModel();
+
 			menuPanel = new TableRequirements(getJanelaPai());
 		}
 		return menuPanel;
