@@ -16,6 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
 
 import unbbayes.model.umpst.requirements.GoalModel;
 
@@ -37,6 +38,9 @@ public class GoalsAdd extends IUMPSTPanel {
 	private JTextField dateText,authorText;
 	private JTextField goalText,commentsText;
 	private GoalModel goal,pai;
+	
+
+
 
 	
 	public GoalsAdd(UmpstModule janelaPai, GoalModel goal){
@@ -149,9 +153,21 @@ public class GoalsAdd extends IUMPSTPanel {
 				if( goal == null){
 					GoalModel goal = new GoalModel(goalText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),null);
 					try {
+						/*String[] columnNames = {"Goal","","",""};
+
+				    	Object[][] data ={ 
+				    			{goal.getGoalName(),"","",""},
+				    	};
+					    DefaultTableModel model = new DefaultTableModel(data, columnNames);  
+					    
+					    UmpstModule pai = getJanelaPai();
+					    
+					    TableRequirements.getInstance(pai);*/
+					    
+						
 						JOptionPane.showMessageDialog(null, "Goal successfully added",null, JOptionPane.INFORMATION_MESSAGE);
 						UmpstModule pai = getJanelaPai();
-						alterarJanelaAtual(pai.getMenuPanel());	
+						alterarJanelaAtual(pai.getMenuPanel());
 					
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating goal", "UnBBayes", JOptionPane.WARNING_MESSAGE);

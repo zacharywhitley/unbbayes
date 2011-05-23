@@ -44,7 +44,7 @@ public class MenuPanel extends IUMPSTPanel{
 	                "entities, atributtes and relationships");
 	        tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 	        
-	        JComponent panel3 = new PainelPrincipal(getJanelaPai());
+	        JComponent panel3 = new Goals(getJanelaPai());
 	        tabbedPane.addTab("Rules", icon, panel3,
 	                "Deterministic or Stochastic");
 	        tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
