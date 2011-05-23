@@ -1,15 +1,16 @@
 package unbbayes.controller.umpst;
 
-import unbbayes.model.umpst.requirements.Goal;
+import unbbayes.model.umpst.requirements.GoalModel;
+
 
 public class RequirementsController {
 	
 	public RequirementsController(){	
 	}
 	
-	public void createGoal(String name, String comments, Goal pai){
+	public void createGoal(String name, String comments, GoalModel pai){
 		
-		Goal goal = new Goal(name,comments,pai);
+		GoalModel goal = new GoalModel(name,comments,comments,comments,pai);
 		
 	}
 	
