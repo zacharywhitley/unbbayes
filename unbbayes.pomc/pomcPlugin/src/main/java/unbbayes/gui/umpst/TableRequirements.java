@@ -69,8 +69,8 @@ public class TableRequirements extends IUMPSTPanel{
     		  
     		    super(janelaPai);
     	    	this.setLayout(new GridLayout(1,0));
-    	    	
-    	    	this.add(getScrollPanePergunta(model));
+    	    	this.add(createScrolltableGoals(model));
+    		    
     	  }
     	  /**
     	   * SingletonHolder is loaded on the first execution of
@@ -78,8 +78,10 @@ public class TableRequirements extends IUMPSTPanel{
     	   * or the first access to SingletonHolder.INSTANCE, not before.
     	   */
     	  private static class SingletonHolder {
-    	    public static final TableRequirements INSTANCE = new TableRequirements(null);
+    		  	public static final TableRequirements INSTANCE = new TableRequirements(null);
     	  }
+    	  
+    	  
     	  public static TableRequirements getInstance(UmpstModule janelaPai,DefaultTableModel tableModel) {
     	    
     		System.out.println("entrou no get instance");  
@@ -93,7 +95,7 @@ public class TableRequirements extends IUMPSTPanel{
   	    	
     		  System.out.println("entrou no setJanelaPai");
     		  this.setLayout(new GridLayout(1,0));
-  	           this.add(getScrollPanePergunta(tableModel));
+  	          this.add(createScrolltableGoals(tableModel));
     		  
     	  }
     
@@ -102,100 +104,97 @@ public class TableRequirements extends IUMPSTPanel{
 	/**
 	 * @return the table
 	 */
-	public JTable getTable(DefaultTableModel tableModel) {
+	public JTable createTable(DefaultTableModel tableModel) {
 		
 		table = new JTable(tableModel){  
+			
             //  Returning the Class of each column will allow different  
             //  renderers to be used based on Class  
             public Class getColumnClass(int column)  {  
                 return getValueAt(0, column).getClass();  
             }  
 		};
+		
+		
+		TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer()
+		{
+			public void customize(JButton button, int row, int column)
+			{
+				button.setIcon(new ImageIcon("images/edit.gif") );
+
+			}
+		});
+
+		TableColumn buttonColumn1 = table.getColumnModel().getColumn(1);
+		buttonColumn1.setMaxWidth(28);
+		buttonColumn1.setCellRenderer(buttonEdit);
+		buttonColumn1.setCellEditor(buttonEdit);
+		
+		buttonEdit.addHandler(new TableButton.TableButtonPressedHandler() {	
+			public void onButtonPress(int row, int column) {
+				//alterarJanelaAtual(new GoalsMainPanel(getJanelaPai()));
+			}
+		});
+		
+		
+		TableButton buttonAdd = new TableButton( new TableButton.TableButtonCustomizer()
+		{
+			public void customize(JButton button, int row, int column)
+			{
+				button.setIcon(new ImageIcon("images/add.gif") );
+
+			}
+		});
+
+		TableColumn buttonColumn2 = table.getColumnModel().getColumn(2);
+		buttonColumn2.setMaxWidth(22);
+		buttonColumn2.setCellRenderer(buttonAdd);
+		buttonColumn2.setCellEditor(buttonAdd);
+		
+		buttonAdd.addHandler(new TableButton.TableButtonPressedHandler() {	
+			public void onButtonPress(int row, int column) {
+				alterarJanelaAtual(new SubgoalMainPanel(getJanelaPai()));
+			}
+		});
+		
+		
+		TableButton buttonDel = new TableButton( new TableButton.TableButtonCustomizer()
+		{
+			public void customize(JButton button, int row, int column)
+			{
+				button.setIcon(new ImageIcon("images/del.gif") );
+
+			}
+		});
+
+		TableColumn buttonColumn3 = table.getColumnModel().getColumn(3);
+		buttonColumn3.setMaxWidth(25);
+		buttonColumn3.setCellRenderer(buttonDel);
+		buttonColumn3.setCellEditor(buttonDel);
+		
+		buttonAdd.addHandler(new TableButton.TableButtonPressedHandler() {	
+			public void onButtonPress(int row, int column) {
+				//alterarJanelaAtual(new GoalsMainPanel(getJanelaPai()));
+			}
+		});
+		
 		return table;
        }
 	
-	public JScrollPane getScrollPanePergunta(DefaultTableModel model){
+	
+	public JScrollPane createScrolltableGoals(DefaultTableModel tableModel){
 		if(scrollpanePergunta == null){
-			scrollpanePergunta = new JScrollPane(getTable(model));
+			scrollpanePergunta = new JScrollPane(createTable(tableModel));
 			scrollpanePergunta.setMinimumSize(new Dimension(300,150));
-			
-			TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer()
-			{
-				public void customize(JButton button, int row, int column)
-				{
-					button.setIcon(new ImageIcon("images/edit.gif") );
-
-				}
-			});
-
-			TableColumn buttonColumn1 = table.getColumnModel().getColumn(1);
-			buttonColumn1.setMaxWidth(28);
-			buttonColumn1.setCellRenderer(buttonEdit);
-			buttonColumn1.setCellEditor(buttonEdit);
-			
-			buttonEdit.addHandler(new TableButton.TableButtonPressedHandler() {	
-				public void onButtonPress(int row, int column) {
-					//alterarJanelaAtual(new GoalsMainPanel(getJanelaPai()));
-				}
-			});
-			
-			
-			TableButton buttonAdd = new TableButton( new TableButton.TableButtonCustomizer()
-			{
-				public void customize(JButton button, int row, int column)
-				{
-					button.setIcon(new ImageIcon("images/add.gif") );
-
-				}
-			});
-
-			TableColumn buttonColumn2 = table.getColumnModel().getColumn(2);
-			buttonColumn2.setMaxWidth(28);
-			buttonColumn2.setCellRenderer(buttonAdd);
-			buttonColumn2.setCellEditor(buttonAdd);
-			
-			buttonAdd.addHandler(new TableButton.TableButtonPressedHandler() {	
-				public void onButtonPress(int row, int column) {
-					alterarJanelaAtual(new SubgoalMainPanel(getJanelaPai()));
-				}
-			});
-			
-			
-			TableButton buttonDel = new TableButton( new TableButton.TableButtonCustomizer()
-			{
-				public void customize(JButton button, int row, int column)
-				{
-					button.setIcon(new ImageIcon("images/del.gif") );
-
-				}
-			});
-
-			TableColumn buttonColumn3 = table.getColumnModel().getColumn(3);
-			buttonColumn3.setMaxWidth(28);
-			buttonColumn3.setCellRenderer(buttonDel);
-			buttonColumn3.setCellEditor(buttonDel);
-			
-			buttonAdd.addHandler(new TableButton.TableButtonPressedHandler() {	
-				public void onButtonPress(int row, int column) {
-					//alterarJanelaAtual(new GoalsMainPanel(getJanelaPai()));
-				}
-			});
-			
-			
-	       /** ButtonColumn buttonColumnEdit = new ButtonColumn(table, 3,iconEdit); 	        
-	        ButtonColumn buttonColumnAdd = new ButtonColumn(table, 4,iconAdd);  	        
-	        ButtonColumn buttonColumnDel = new ButtonColumn(table, 5,iconDel);  
-
-	        buttonColumnAdd.addActionListener(new ActionListener() {
-				
-				public void actionPerformed(ActionEvent e) {					
-					alterarJanelaAtual(new SubgoalMainPanel(getJanelaPai()));
-					System.out.println("clicou no botao");
-					
-				}
-			}); */
-	        
 		}
+		
+		return scrollpanePergunta;
+	}
+	
+	
+	
+	public JScrollPane getScrollPanePergunta(){
+		
 		return scrollpanePergunta; 
 	}
 	

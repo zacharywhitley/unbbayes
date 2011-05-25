@@ -9,12 +9,11 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JTextArea;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
@@ -37,7 +36,7 @@ public class GoalsAdd extends IUMPSTPanel {
 	
 	private JTextField dateText,authorText;
 	private JTextField goalText,commentsText;
-	private GoalModel goal,pai;
+	private GoalModel goal;
 	
 
 
@@ -158,12 +157,24 @@ public class GoalsAdd extends IUMPSTPanel {
 				    	Object[][] data ={ 
 				    			{goal.getGoalName(),"","",""},
 				    	};
-				    	
+				    	System.out.println(goal.getGoalName());
 					    UmpstModule pai = getJanelaPai();
 
-				    	alterarJanelaAtual(pai.getMenuPanel());
+				        
+					    alterarJanelaAtual(pai.getMenuPanel());
 					    DefaultTableModel model = new DefaultTableModel(data, columnNames);  
-					    TableRequirements.getInstance(pai,model);
+					    
+					    TableRequirements goalsTable = pai.getMenuPanel().getRequirementsPane().getGoalsTable();
+					    JTable table = goalsTable.createTable(model);
+					    
+					    
+					    goalsTable.getScrollPanePergunta().setViewportView(table);
+					    goalsTable.getScrollPanePergunta().updateUI();
+					    goalsTable.getScrollPanePergunta().repaint();
+					    goalsTable.updateUI();
+					    goalsTable.repaint();
+					    
+					    TableRequirements.getInstance(pai,model).setJanelaPai(pai,model);
 					    
 						System.out.println("adicionou novo goal");
 						JOptionPane.showMessageDialog(null, "Goal successfully added",null, JOptionPane.INFORMATION_MESSAGE);

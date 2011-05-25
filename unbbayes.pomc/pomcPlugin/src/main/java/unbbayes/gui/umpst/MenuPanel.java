@@ -24,6 +24,7 @@ import java.awt.event.KeyEvent;
 public class MenuPanel extends IUMPSTPanel{
 	
 		JPanel pane;
+		private Goals requirementsPane;
 
 	    public MenuPanel(UmpstModule janelaPai) {
 	        super(new GridLayout(1, 1),janelaPai);
@@ -31,11 +32,10 @@ public class MenuPanel extends IUMPSTPanel{
 	        JTabbedPane tabbedPane = new JTabbedPane();
 	        ImageIcon icon = createImageIcon("images/middle.gif");
 	        
-	        JComponent panel1 = new Goals(getJanelaPai());
-	        panel1.setPreferredSize(new Dimension(410, 500));
+	        requirementsPane = new Goals(getJanelaPai());
+	        requirementsPane.setPreferredSize(new Dimension(410, 500));
 	        
-	        
-	        tabbedPane.addTab("Requirement", icon, new JScrollPane(panel1),
+	        tabbedPane.addTab("Requirement", icon, new JScrollPane(requirementsPane),
 	                "goals,queries and envidences");
 	        tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 	        
@@ -63,7 +63,21 @@ public class MenuPanel extends IUMPSTPanel{
 	        tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 	    }
 	    
-	    protected JPanel  createInternalPane (JPanel pane){
+	    /**
+		 * @return the requirementsPane
+		 */
+		public Goals getRequirementsPane() {
+			return requirementsPane;
+		}
+
+		/**
+		 * @param requirementsPane the requirementsPane to set
+		 */
+		public void setRequirementsPane(Goals requirementsPane) {
+			this.requirementsPane = requirementsPane;
+		}
+
+		protected JPanel  createInternalPane (JPanel pane){
 	    	
 	    	this.setLayout(new FlowLayout());
 			this.add(new GoalsAdd(getJanelaPai(),null));
