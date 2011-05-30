@@ -32,6 +32,8 @@ public class TableGoals extends IUMPSTPanel{
 	
 
 	private static TableGoals instance;
+	private String s;
+	
 	
 	
 	Object[] dataAux = new Object[4];
@@ -56,7 +58,6 @@ public class TableGoals extends IUMPSTPanel{
     		  
     		    super(janelaPai);
     	    	this.setLayout(new GridLayout(1,0));
-    	    	
     	    	
     	    	
     	    	this.add(createScrolltableGoals(columnNames,data));
@@ -93,6 +94,7 @@ public class TableGoals extends IUMPSTPanel{
 	 * @return the table
 	 */
 	public JTable createTable(String[] columnNames,final Object[][] data) {
+		
 
 		DefaultTableModel tableModel = new DefaultTableModel(data, columnNames);
 		table = new JTable(tableModel);
@@ -163,17 +165,50 @@ public class TableGoals extends IUMPSTPanel{
 		buttonColumn3.setCellRenderer(buttonDel);
 		buttonColumn3.setCellEditor(buttonDel);
 		
-		buttonAdd.addHandler(new TableButton.TableButtonPressedHandler() {	
+		buttonDel.addHandler(new TableButton.TableButtonPressedHandler() {	
 			
 			
 			public void onButtonPress(int row, int column) {
 				
-				/*if( JOptionPane.showConfirmDialog(null,"Confirma Remo√ß√£o do contribuinte "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
+				if( JOptionPane.showConfirmDialog(null,"Confirma Remocao do goal "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 							String key = data[row][0].toString();
 							GoalModel goalAux = UMPSTProject.getInstance().getMapGoal().get(key);
 							UMPSTProject.getInstance().getMapGoal().remove(goalAux.getGoalName());
-				}*/
+							
+							
+							 
+							Object[][] dataDel = new Object[UMPSTProject.getInstance().getMapGoal().size()][4];
+							Integer i=0;
+						    
+							Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
+							TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+							
+							for (String chave: sortedKeys){
+						
+								dataDel[i][0] = UMPSTProject.getInstance().getMapGoal().get(chave).getGoalName();
+								dataDel[i][1] = "";
+								dataDel[i][2] = "";
+								dataDel[i][3] = "";
+								i++;
+							}
+							
+							
+							UmpstModule pai = getJanelaPai();
+							 alterarJanelaAtual(pai.getMenuPanel());
+							 
+							 TableGoals goalsTable = pai.getMenuPanel().getRequirementsPane().getGoalsTable();
+							 String[] colunas = {"GoalRR","","",""};
+							 JTable table = createTable(colunas,dataDel);
+							 
+							 getScrollPanePergunta().setViewportView(table);
+							 getScrollPanePergunta().updateUI();
+							 getScrollPanePergunta().repaint();
+							 updateUI();
+							 repaint();
+							   
+			
+				}
 			}
 		});
 		

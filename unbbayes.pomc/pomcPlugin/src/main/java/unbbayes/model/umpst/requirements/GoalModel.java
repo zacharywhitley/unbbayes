@@ -22,6 +22,11 @@ public class GoalModel {
 		this.goalFather = father;
 		this.subgoals = children;
 		this.hypothesis=hypothesis;
+		if ( hypothesis==null ){
+			hypothesis = new ArrayList<HypothesisModel>();
+
+		}
+
 		// TODO Auto-generated constructor stub
 	}
 	

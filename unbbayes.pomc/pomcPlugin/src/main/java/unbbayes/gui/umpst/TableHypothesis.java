@@ -136,7 +136,7 @@ public class TableHypothesis extends IUMPSTPanel{
 		buttonColumn3.setCellRenderer(buttonDel);
 		buttonColumn3.setCellEditor(buttonDel);
 		
-		buttonAdd.addHandler(new TableButton.TableButtonPressedHandler() {	
+		buttonDel.addHandler(new TableButton.TableButtonPressedHandler() {	
 			
 			
 			public void onButtonPress(int row, int column) {
