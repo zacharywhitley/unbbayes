@@ -1,5 +1,5 @@
 /**
- * 
+ * TODO make it compatible with Hermit 1.3.4
  */
 package unbbayes.io.mebn.protege;
 

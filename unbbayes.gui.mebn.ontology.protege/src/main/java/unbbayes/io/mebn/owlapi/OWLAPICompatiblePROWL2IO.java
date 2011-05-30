@@ -97,7 +97,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 	
 	// TODO refactor all direct references to IPROWL2ModelUser as references to fields in this class (using respective getters and setters), so that we can change the expected OWL entity's names at runtime instead of compile/linkage time.
 
-	private Map<OWLIndividual, Set<ResidentNode>> randomVariableNameToResidentNodeSetCache;
+	private Map<OWLIndividual, Set<ResidentNode>> randomVariableIndividualToResidentNodeSetCache;
 	
 	private Map<String, Argument> recursivelyAddedArgumentsOfMExpression;
 	
@@ -1000,11 +1000,11 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 						}
 						
 						// add randomVariableIndividual to cache
-						if (!this.getRandomVariableNameToResidentNodeSetCache().containsKey(randomVariableIndividual)) {
+						if (!this.getRandomVariableIndividualToResidentNodeSetCache().containsKey(randomVariableIndividual)) {
 							// initialize entry
-							this.getRandomVariableNameToResidentNodeSetCache().put(randomVariableIndividual, new HashSet<ResidentNode>());
+							this.getRandomVariableIndividualToResidentNodeSetCache().put(randomVariableIndividual, new HashSet<ResidentNode>());
 						}
-						this.getRandomVariableNameToResidentNodeSetCache().get(randomVariableIndividual).add(domainResidentNode);
+						this.getRandomVariableIndividualToResidentNodeSetCache().get(randomVariableIndividual).add(domainResidentNode);
 						
 						// extract BOOLEANRANDOMVARIABLE so that we can test if this is boolean
 						// This code was added because reasoners like Hermit could not retrieve OWL literals from individuals by solving class axioms
@@ -1261,9 +1261,9 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 					OWLIndividual rvIndividual = auxCollection.iterator().next();// use only the 1st one
 					
 					// check if RV is pointing to a random variable (it may be pointing to severals, but let's just use the 1st)
-					if (this.getRandomVariableNameToResidentNodeSetCache().containsKey(rvIndividual)){
+					if (this.getRandomVariableIndividualToResidentNodeSetCache().containsKey(rvIndividual)){
 						try{
-							ResidentNode domainResidentNode = this.getRandomVariableNameToResidentNodeSetCache().get(rvIndividual).iterator().next(); 
+							ResidentNode domainResidentNode = this.getRandomVariableIndividualToResidentNodeSetCache().get(rvIndividual).iterator().next(); 
 							generativeInputNode.setInputInstanceOf(domainResidentNode); 
 						} catch(Exception e){
 							e.printStackTrace(); 
@@ -1751,12 +1751,42 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 				if(!randomVariables.isEmpty()){
 					// mExpression is supposed to have only 1 type (RandomVariable)
 					OWLIndividual randomVariableIndividual = randomVariables.iterator().next();
-					if(this.getMapBuiltInRV().containsKey(this.extractName(ontology, randomVariableIndividual.asOWLNamedIndividual()))){
-						this.getMapIsContextInstanceOf().put(contextNode, this.getMapBuiltInRV().get(this.extractName(ontology, randomVariableIndividual.asOWLNamedIndividual()))); 
+					String rvName = this.extractName(ontology, randomVariableIndividual.asOWLNamedIndividual());
+					if(this.getMapBuiltInRV().containsKey(rvName)){
+						this.getMapIsContextInstanceOf().put(contextNode, this.getMapBuiltInRV().get(rvName)); 
 					} else {
-						INode auxNode = this.getMapLoadedNodes().get(this.extractName(ontology, randomVariableIndividual.asOWLNamedIndividual()));
-						if(auxNode != null && (auxNode instanceof ResidentNode)){
-							this.getMapIsContextInstanceOf().put(contextNode, auxNode); 
+						// RV is not built in. Find node related to it.
+						Collection<ResidentNode> nodesPointingToRV = this.getRandomVariableIndividualToResidentNodeSetCache().get(randomVariableIndividual);
+						if (nodesPointingToRV == null || nodesPointingToRV.isEmpty()) {
+							// MExpression may be pointing directly to a node instead of RV. This is not a valid PR-OWL2 ontology, but let's add backward compatibility to PR-OWL1 ontologies.
+							INode auxNode = this.getMapLoadedNodes().get(rvName);
+							try {
+								Debug.println(this.getClass(), rvName + " may be a node instead of a RV. Found " + auxNode);
+							}catch (Throwable t) {
+								t.printStackTrace();
+							}
+							if(auxNode != null && (auxNode instanceof ResidentNode)){
+								this.getMapIsContextInstanceOf().put(contextNode, auxNode); 
+							} else {
+								try {
+									Debug.println(this.getClass(), rvName + " was not found at all...");
+								} catch (Throwable t) {
+									t.printStackTrace();
+								}
+							}
+						} else {
+							// use the first one
+							// TODO implement polymorphism
+							INode auxNode = nodesPointingToRV.iterator().next();
+							if(auxNode != null && (auxNode instanceof ResidentNode)){
+								this.getMapIsContextInstanceOf().put(contextNode, auxNode); 
+							} else {
+								try {
+									Debug.println(this.getClass(), rvName + " was not found at all...");
+								} catch (Throwable t) {
+									t.printStackTrace();
+								}
+							}
 						}
 					}
 					
@@ -4421,7 +4451,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 		}
 		try {
 			// initialize built in random variable's cache
-			this.setRandomVariableNameToResidentNodeSetCache(new HashMap<OWLIndividual, Set<ResidentNode>>());
+			this.setRandomVariableIndividualToResidentNodeSetCache(new HashMap<OWLIndividual, Set<ResidentNode>>());
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
@@ -4436,20 +4466,20 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 	
 
 	/**
-	 * @return the randomVariableNameToResidentNodeSetCache
+	 * @return the randomVariableIndividualToResidentNodeSetCache
 	 */
-	protected Map<OWLIndividual, Set<ResidentNode>> getRandomVariableNameToResidentNodeSetCache() {
-		return randomVariableNameToResidentNodeSetCache;
+	protected Map<OWLIndividual, Set<ResidentNode>> getRandomVariableIndividualToResidentNodeSetCache() {
+		return randomVariableIndividualToResidentNodeSetCache;
 	}
 
 
 
 	/**
-	 * @param randomVariableNameToResidentNodeSetCache the randomVariableNameToResidentNodeSetCache to set
+	 * @param randomVariableIndividualToResidentNodeSetCache the randomVariableIndividualToResidentNodeSetCache to set
 	 */
-	protected void setRandomVariableNameToResidentNodeSetCache(
-			Map<OWLIndividual, Set<ResidentNode>> randomVariableNameToResidentNodeSetCache) {
-		this.randomVariableNameToResidentNodeSetCache = randomVariableNameToResidentNodeSetCache;
+	protected void setRandomVariableIndividualToResidentNodeSetCache(
+			Map<OWLIndividual, Set<ResidentNode>> randomVariableIndividualToResidentNodeSetCache) {
+		this.randomVariableIndividualToResidentNodeSetCache = randomVariableIndividualToResidentNodeSetCache;
 	}
 
 
