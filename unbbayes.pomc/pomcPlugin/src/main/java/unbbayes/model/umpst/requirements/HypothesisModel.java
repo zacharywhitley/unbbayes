@@ -1,22 +1,59 @@
 package unbbayes.model.umpst.requirements;
 
+import java.util.ArrayList;
+
 public class HypothesisModel {
 	
 	private String hypothesisName;
 	private String comments;
 	private String author;
 	private String date;
-	private HypothesisModel pai;
+	private GoalModel goalRelated;
+	private HypothesisModel father;
+	private ArrayList<HypothesisModel> children;
 	
-	
-	public HypothesisModel(String hypothesisName, String comments,String author, String date, HypothesisModel pai) {
+	public HypothesisModel(String hypothesisName, String comments,String author, String date,GoalModel goalRelated, HypothesisModel father,ArrayList<HypothesisModel> children) {
 		
 		this.hypothesisName = hypothesisName;
 		this.comments = comments;
 		this.author = author;
 		this.date = date;
-		this.pai = pai;
+		this.father = father;
+		this.children = children;
+		this.goalRelated = goalRelated;
 		// TODO Auto-generated constructor stub
+	}
+
+
+	/**
+	 * @return the goalRelated
+	 */
+	public GoalModel getGoalRelated() {
+		return goalRelated;
+	}
+
+
+	/**
+	 * @param goalRelated the goalRelated to set
+	 */
+	public void setGoalRelated(GoalModel goalRelated) {
+		this.goalRelated = goalRelated;
+	}
+
+
+	/**
+	 * @return the children
+	 */
+	public ArrayList<HypothesisModel> getChildren() {
+		return children;
+	}
+
+
+	/**
+	 * @param children the children to set
+	 */
+	public void setChildren(ArrayList<HypothesisModel> children) {
+		this.children = children;
 	}
 
 
@@ -85,18 +122,18 @@ public class HypothesisModel {
 
 
 	/**
-	 * @return the pai
+	 * @return the father
 	 */
-	public HypothesisModel getPai() {
-		return pai;
+	public HypothesisModel getFather() {
+		return father;
 	}
 
 
 	/**
-	 * @param pai the pai to set
+	 * @param father the father to set
 	 */
-	public void setPai(HypothesisModel pai) {
-		this.pai = pai;
+	public void setFather(HypothesisModel father) {
+		this.father = father;
 	}
 	
 }

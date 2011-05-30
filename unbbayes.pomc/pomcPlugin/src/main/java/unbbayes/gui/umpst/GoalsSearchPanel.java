@@ -2,51 +2,26 @@ package unbbayes.gui.umpst;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Graphics;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.peer.ScrollPanePeer;
-import java.util.EventObject;
-
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.DefaultCellEditor;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRootPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.JToolBar;
-import javax.swing.SwingConstants;
-import javax.swing.UIManager;
-import javax.swing.SpringLayout.Constraints;
-import javax.swing.border.Border;
-import javax.swing.event.CellEditorListener;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableColumn;
 
-import unbbayes.controller.umpst.RequirementsController;
-
-import com.ibm.icu.impl.duration.impl.YMDDateFormatter;
+import unbbayes.model.umpst.requirements.GoalModel;
 
 public class GoalsSearchPanel extends IUMPSTPanel {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	private JLabel labelGoal;
 	
 	private JButton buttonSearch;
@@ -103,13 +78,22 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 			buttonAddGoal.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
-					alterarJanelaAtual(new GoalsMainPanel(getJanelaPai()));
+					alterarJanelaAtual(getGoalsMainPanel(null));
 				}
 			});
 		}
 		
 		return buttonAddGoal;
 	} 
+	
+	
+	public GoalsMainPanel getGoalsMainPanel(GoalModel goal){
+		
+		GoalsMainPanel ret = new GoalsMainPanel(getJanelaPai(),goal,null);
+		
+		return ret;
+		
+	}
 	
 	
 	/**

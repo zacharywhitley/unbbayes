@@ -1,25 +1,107 @@
 package unbbayes.model.umpst.requirements;
 
+import java.util.ArrayList;
+
 public class GoalModel {
 	
 	private String goalName;
 	private String comments;
 	private String author;
 	private String date;
-	private GoalModel pai;
+	private GoalModel goalFather;
+	private ArrayList<GoalModel> subgoals ;
+	private ArrayList<HypothesisModel> hypothesis;
 	
-	
-	public GoalModel(String goalName, String comments,String author, String date, GoalModel pai) {
+	public GoalModel(String goalName, String comments,String author, String date, GoalModel father,ArrayList<GoalModel> children,ArrayList<HypothesisModel> hypothesis) {
+		
 		
 		this.goalName = goalName;
 		this.comments = comments;
 		this.author = author;
 		this.date = date;
-		this.pai = pai;
+		this.goalFather = father;
+		this.subgoals = children;
+		this.hypothesis=hypothesis;
 		// TODO Auto-generated constructor stub
 	}
 	
 	
+	
+
+	
+	
+	/**
+	 * @return the goalFather
+	 */
+	public GoalModel getGoalFather() {
+		return goalFather;
+	}
+
+
+
+
+
+
+	/**
+	 * @param goalFather the goalFather to set
+	 */
+	public void setGoalFather(GoalModel goalFather) {
+		this.goalFather = goalFather;
+	}
+
+
+
+
+
+
+	/**
+	 * @return the subgoals
+	 */
+	public ArrayList<GoalModel> getSubgoals() {
+		return subgoals;
+	}
+
+
+
+
+
+
+	/**
+	 * @param subgoals the subgoals to set
+	 */
+	public void setSubgoals(ArrayList<GoalModel> subgoals) {
+		this.subgoals = subgoals;
+	}
+
+
+
+
+
+
+	/**
+	 * @return the hypothesis
+	 */
+	public ArrayList<HypothesisModel> getHypothesis() {
+		return hypothesis;
+	}
+
+
+
+
+
+
+	/**
+	 * @param hypothesis the hypothesis to set
+	 */
+	public void setHypothesis(ArrayList<HypothesisModel> hypothesis) {
+		this.hypothesis = hypothesis;
+	}
+
+
+
+
+
+
 	/**
 	 * @return the author
 	 */
@@ -63,7 +145,7 @@ public class GoalModel {
 	/**
 	 * @param name the name to set
 	 */
-	public void setGoalName(String goalNname) {
+	public void setGoalName(String goalName) {
 		this.goalName = goalName;
 	}
 
@@ -84,18 +166,5 @@ public class GoalModel {
 	}
 
 
-	/**
-	 * @return the pai
-	 */
-	public GoalModel getPai() {
-		return pai;
-	}
 
-
-	/**
-	 * @param pai the pai to set
-	 */
-	public void setPai(GoalModel pai) {
-		this.pai = pai;
-	}
 }

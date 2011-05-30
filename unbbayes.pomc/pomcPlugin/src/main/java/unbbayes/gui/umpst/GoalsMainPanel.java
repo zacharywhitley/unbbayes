@@ -3,22 +3,26 @@ package unbbayes.gui.umpst;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-
-import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import javax.swing.table.DefaultTableModel;
 
 import unbbayes.model.umpst.requirements.GoalModel;
 
 public class GoalsMainPanel extends IUMPSTPanel{
 	
-	private JSplitPane splitPane;
-	private TableRequirements menuPanel;
-	private GoalsAdd goalsPanel;
-	GoalModel goal;
 	
-	public GoalsMainPanel(UmpstModule janelaPai) {
+	private static final long serialVersionUID = 1L;
+	private JSplitPane splitPane;
+	private TableHypothesis hypothesisPanel;
+	private GoalsAdd goalsPanel;
+	private GoalModel goal,goalFather;
+	
+	
+	public GoalsMainPanel(UmpstModule janelaPai, GoalModel goal, GoalModel goalFather) {
 		super(janelaPai);
+		
+		this.goal=goal;
+		this.goalFather=goalFather;
+		
 		this.setLayout(new FlowLayout());
 		this.add(getSplitPane());
 
@@ -30,7 +34,7 @@ public class GoalsMainPanel extends IUMPSTPanel{
 	public JSplitPane getSplitPane() {
 		if(splitPane == null){
 			splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-					getGoalsPanel(),getGoalsTable());
+					getGoalsPanel(goal),getHypothesisTable());
 			splitPane.setDividerLocation(400);
 			splitPane.setPreferredSize(new Dimension(800,600));
 			splitPane.setBackground(new Color(0x4169AA));
@@ -39,22 +43,21 @@ public class GoalsMainPanel extends IUMPSTPanel{
 	}
 
 	/**
-	 * @return the menuPanel
+	 * @return the hypothesisPanel
 	 */
-	public TableRequirements getGoalsTable() {
-		if(menuPanel == null ){
-			DefaultTableModel model = new DefaultTableModel();
-			menuPanel = new TableRequirements(getJanelaPai());
+	public TableHypothesis getHypothesisTable() {
+		if(hypothesisPanel == null ){
+			hypothesisPanel = new TableHypothesis(getJanelaPai(),goal);
 		}
-		return menuPanel;
+		return hypothesisPanel;
 	}
 
 	/**
 	 * @return the GoalAdd Panel
 	 */
-	public GoalsAdd getGoalsPanel() {
+	public GoalsAdd getGoalsPanel(GoalModel goal) {
 		if(goalsPanel == null ){
-			goalsPanel = new GoalsAdd(getJanelaPai(),goal);
+			goalsPanel = new GoalsAdd(getJanelaPai(),goal,goalFather);
 			goalsPanel.setBackground(new Color(0xffffff));
 		}
 		return goalsPanel;

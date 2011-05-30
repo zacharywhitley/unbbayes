@@ -8,6 +8,9 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -15,13 +18,18 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.table.DefaultTableModel;
 
+import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
+import unbbayes.model.umpst.requirements.HypothesisModel;
 
 
 public class GoalsAdd extends IUMPSTPanel {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private ImageIcon iconHypothesis = createImageIcon("images/hypo.png");
 	private ImageIcon iconSubgoal = createImageIcon("images/sub.png");
 
@@ -37,15 +45,19 @@ public class GoalsAdd extends IUMPSTPanel {
 	private JTextField dateText,authorText;
 	private JTextField goalText,commentsText;
 	private GoalModel goal;
+	private GoalModel goalFather;
+	private ArrayList<GoalModel> goalChildren;
+	private ArrayList<HypothesisModel> hypothesis;
 	
 
 
-
 	
-	public GoalsAdd(UmpstModule janelaPai, GoalModel goal){
+	public GoalsAdd(UmpstModule janelaPai, GoalModel goal, GoalModel goalFather){
 		super(janelaPai);
 		
+		
 		this.goal = goal;
+		this.goalFather = goalFather;
 		this.setLayout(new GridBagLayout());
 		c.fill = GridBagConstraints.HORIZONTAL;
 		labels();
@@ -57,19 +69,13 @@ public class GoalsAdd extends IUMPSTPanel {
 			titulo.setText("Add new Goal");
 			buttonAdd.setText(" Add ");
 		} else {
-			titulo.setText(" Update Goal");
+			titulo.setText(goal.getGoalName());
 			buttonAdd.setText(" Update ");
 			goalText.setText(goal.getGoalName());
 			commentsText.setText(goal.getComments());
 			authorText.setText(goal.getAuthor());
 			dateText.setText(goal.getDate());
-			//pai.setText(getPai().goalName);
 			
-			/*try {
-				ID = modelo.getID( colaborador );
-			} catch (DefaultException e) {
-				JOptionPane.showMessageDialog(null, e.getMsg(), "unbbayes", JOptionPane.WARNING_MESSAGE); 
-			}*/
 		}
 		
 	}
@@ -87,7 +93,14 @@ public class GoalsAdd extends IUMPSTPanel {
 		c.gridx = 0; c.gridy = 5;
 		add( new JLabel("Date: "), c);
 		
-
+		if (goalFather!=null){
+			c.gridx = 0; c.gridy = 6;
+			add( new JLabel("Father Name: "), c);
+			c.gridx = 1; c.gridy = 6;
+			add( new JLabel(goalFather.getGoalName()), c);
+		}
+		
+		
 		GridBagConstraints d = new GridBagConstraints();
 		d.gridx = 0; d.gridy = 0;
 		d.fill = GridBagConstraints.PAGE_START;
@@ -119,6 +132,7 @@ public class GoalsAdd extends IUMPSTPanel {
 		
 		c.gridx = 1; c.gridy = 5;
 		add( dateText, c);
+
 		
 	}
 		
@@ -150,37 +164,12 @@ public class GoalsAdd extends IUMPSTPanel {
 		buttonAdd.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if( goal == null){
-					GoalModel goal = new GoalModel(goalText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),null);
-					try {
-						String[] columnNames = {"Goal","","",""};
-
-				    	Object[][] data ={ 
-				    			{goal.getGoalName(),"","",""},
-				    	};
-				    	System.out.println(goal.getGoalName());
-					    UmpstModule pai = getJanelaPai();
-
-				        
-					    alterarJanelaAtual(pai.getMenuPanel());
-					    DefaultTableModel model = new DefaultTableModel(data, columnNames);  
-					    
-					    TableRequirements goalsTable = pai.getMenuPanel().getRequirementsPane().getGoalsTable();
-					    JTable table = goalsTable.createTable(model);
-					    
-					    
-					    goalsTable.getScrollPanePergunta().setViewportView(table);
-					    goalsTable.getScrollPanePergunta().updateUI();
-					    goalsTable.getScrollPanePergunta().repaint();
-					    goalsTable.updateUI();
-					    goalsTable.repaint();
-					    
-					    TableRequirements.getInstance(pai,model).setJanelaPai(pai,model);
-					    
-						System.out.println("adicionou novo goal");
-						JOptionPane.showMessageDialog(null, "Goal successfully added",null, JOptionPane.INFORMATION_MESSAGE);
-						
-						
 					
+					GoalModel goalAdd = new GoalModel(goalText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),goalFather,goalChildren,null);
+					try {
+						updateTree(goalAdd);
+					  	JOptionPane.showMessageDialog(null, "Goal successfully added",null, JOptionPane.INFORMATION_MESSAGE);
+						
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating goal", "UnBBayes", JOptionPane.WARNING_MESSAGE);
 						UmpstModule pai = getJanelaPai();
@@ -190,15 +179,26 @@ public class GoalsAdd extends IUMPSTPanel {
 				}
 				else{
 					if( JOptionPane.showConfirmDialog(null, "Do you want to update this Goal?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
-						GoalModel goal = new GoalModel(goalText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),null);
+						
+						//UMPSTProject.getInstance().getMapGoal().remove(goal.getGoalName());
+						//GoalModel goalUpdate = new GoalModel(goalText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),goalFather,goalChildren,hypothesis);	
+					
+						goal.setGoalName(goalText.getText());
+						goal.setComments(commentsText.getText());
+						goal.setAuthor(authorText.getText());
+						goal.setDate(dateText.getText());
+						goal.setGoalFather(goalFather);
+						goal.setHypothesis(hypothesis);
+						//goal.setSubgoals(subgoals);
+						
 						try{
-				
-							JOptionPane.showMessageDialog(null, "goal successfully updated", "UnBBayes", JOptionPane.INFORMATION_MESSAGE);
-							UmpstModule pai = getJanelaPai();
-							alterarJanelaAtual(pai.getMenuPanel());	
+							
+							updateTree(goal);
+							JOptionPane.showMessageDialog(null, "Goal successfully updated",null, JOptionPane.INFORMATION_MESSAGE);	
+						
 						}
 						catch (Exception e2) {
-							JOptionPane.showMessageDialog(null,"Error while ulpating goal", "UnBBayes", JOptionPane.WARNING_MESSAGE);
+							JOptionPane.showMessageDialog(null,"Error while updating goal", "UnBBayes", JOptionPane.WARNING_MESSAGE);
 							UmpstModule pai = getJanelaPai();
 							alterarJanelaAtual(pai.getMenuPanel());	
 						}
@@ -216,14 +216,14 @@ public class GoalsAdd extends IUMPSTPanel {
 		
 		buttonHypothesis.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				alterarJanelaAtual(new HypothesisAdd(getJanelaPai()));
+				alterarJanelaAtual(new HypothesisAdd(getJanelaPai(),goal,null,null));
 
 			}
 		});
 		
 		buttonSubgoal.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				alterarJanelaAtual(new SubgoalMainPanel(getJanelaPai()));
+				alterarJanelaAtual(new SubgoalMainPanel(getJanelaPai(),null,goal));
 				System.out.println("entrou no subgoal");
 
 			}
@@ -266,6 +266,43 @@ public class GoalsAdd extends IUMPSTPanel {
             System.err.println("Couldn't find file: " + path);
             return null;
         }
+    }
+    
+    
+    public void updateTree(GoalModel goalUpdate){
+    	String[] columnNames = {"Goal","","",""};
+		
+        /**Adicionando novo goal ao Mapa em memória*/
+	    UMPSTProject.getInstance().getMapGoal().put(goalUpdate.getGoalName(), goalUpdate);	
+	    
+	    
+		Object[][] data = new Object[UMPSTProject.getInstance().getMapGoal().size()][4];
+		Integer i=0;
+	    
+		Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
+		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+		
+		for (String key: sortedKeys){
+	
+			data[i][0] = UMPSTProject.getInstance().getMapGoal().get(key).getGoalName();
+			data[i][1] = "";
+			data[i][2] = "";
+			data[i][3] = "";
+			i++;
+		}
+	    
+   
+	    UmpstModule pai = getJanelaPai();
+	    alterarJanelaAtual(pai.getMenuPanel());
+	    
+	    TableGoals goalsTable = pai.getMenuPanel().getRequirementsPane().getGoalsTable();
+	    JTable table = goalsTable.createTable(columnNames,data);
+	    
+	    goalsTable.getScrollPanePergunta().setViewportView(table);
+	    goalsTable.getScrollPanePergunta().updateUI();
+	    goalsTable.getScrollPanePergunta().repaint();
+	    goalsTable.updateUI();
+	    goalsTable.repaint();
     }
 
 	

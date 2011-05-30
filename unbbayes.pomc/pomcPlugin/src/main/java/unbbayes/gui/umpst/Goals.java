@@ -3,15 +3,16 @@ package unbbayes.gui.umpst;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-
-import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import javax.swing.table.DefaultTableModel;
 
 public class Goals extends IUMPSTPanel{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private JSplitPane splitPane;
-	private TableRequirements menuPanel;
+	private TableGoals menuPanel;
 	private GoalsSearchPanel requirementsPanel;
 	
 	public Goals(UmpstModule janelaPai) {
@@ -38,10 +39,10 @@ public class Goals extends IUMPSTPanel{
 	/**
 	 * @return the menuPanel
 	 */
-	public TableRequirements getGoalsTable() {
+	public TableGoals getGoalsTable() {
 		if(menuPanel == null ){
 
-			menuPanel = new TableRequirements(getJanelaPai());
+			menuPanel = new TableGoals(getJanelaPai());
 		}
 		return menuPanel;
 	}

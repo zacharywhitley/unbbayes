@@ -14,15 +14,17 @@ import javax.swing.JFrame;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.event.KeyEvent;
 
 public class MenuPanel extends IUMPSTPanel{
 	
+		/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 		JPanel pane;
 		private Goals requirementsPane;
 
@@ -80,7 +82,7 @@ public class MenuPanel extends IUMPSTPanel{
 		protected JPanel  createInternalPane (JPanel pane){
 	    	
 	    	this.setLayout(new FlowLayout());
-			this.add(new GoalsAdd(getJanelaPai(),null));
+			this.add(new GoalsAdd(getJanelaPai(),null,null));
 	    	
 			return pane;
 	    }

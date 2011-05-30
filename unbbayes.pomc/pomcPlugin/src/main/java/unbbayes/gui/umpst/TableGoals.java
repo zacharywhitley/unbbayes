@@ -6,11 +6,14 @@ import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -19,15 +22,20 @@ import javax.swing.table.TableColumn;
 
 
 
+import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
 
-public class TableRequirements extends IUMPSTPanel{
+public class TableGoals extends IUMPSTPanel{
 	
 	private JTable table;
 	private JScrollPane scrollpanePergunta;
 	
 
-	private static TableRequirements instance;
+	private static TableGoals instance;
+	
+	
+	Object[] dataAux = new Object[4];
+	Integer i = 0;
 
 	
 	ImageIcon iconAdd = createImageIcon("images/add.gif");
@@ -37,65 +45,45 @@ public class TableRequirements extends IUMPSTPanel{
 	
 	String[] columnNames = {"Goal","","",""};
 
-	Object[][] data = {
-			{"Determinar fraudes em concurso público","","",""},
-			{"Determinar fraudes em concurso público","","",""},
-			{"Determinar fraudes em concurso público","","",""},
-			{"Determinar fraudes em concurso público","","",""},
-			{"Determinar fraudes em concurso público","","",""},
-			{"Determinar fraudes em concurso público","","",""},
-			{"Determinar fraudes em concurso público","","",""},
-			{"Determinar fraudes em concurso público","","",""},	
-	};
+	Object[][] data = {};
 	
 	
-    DefaultTableModel model = new DefaultTableModel(data, columnNames);  
 
-    
-   /* public TableRequirements(UmpstModule janelaPai){
-    	super(janelaPai);
-    	this.setLayout(new GridLayout(1,0));
-    	
-    	this.add(getScrollPanePergunta());
-    
-    	
-    	
-    }*/
  
-    
     	  /**private constructors make class extension almost impossible,
     	that's why this is protected*/
-    	  protected TableRequirements(UmpstModule janelaPai) {
+    	  protected TableGoals(UmpstModule janelaPai) {
     		  
     		    super(janelaPai);
     	    	this.setLayout(new GridLayout(1,0));
-    	    	this.add(createScrolltableGoals(model));
+    	    	
+    	    	
+    	    	
+    	    	this.add(createScrolltableGoals(columnNames,data));
     		    
     	  }
     	  /**
     	   * SingletonHolder is loaded on the first execution of
-    	TableRequirements.getInstance()
+    	TableGoals.getInstance()
     	   * or the first access to SingletonHolder.INSTANCE, not before.
     	   */
     	  private static class SingletonHolder {
-    		  	public static final TableRequirements INSTANCE = new TableRequirements(null);
+    		  	public static final TableGoals INSTANCE = new TableGoals(null);
     	  }
     	  
     	  
-    	  public static TableRequirements getInstance(UmpstModule janelaPai,DefaultTableModel tableModel) {
-    	    
-    		System.out.println("entrou no get instance");  
-    		TableRequirements ret = SingletonHolder.INSTANCE;
-    	    ret.setJanelaPai(janelaPai,tableModel);
+    	  public static TableGoals getInstance(UmpstModule janelaPai,String[] columnNames, Object[][] data) {
+
+    		TableGoals ret = SingletonHolder.INSTANCE;
+    	    ret.setJanelaPai(janelaPai,columnNames,data);
     	    return ret;
     	  }
     	  
-    	  public void setJanelaPai(UmpstModule janelaPai,DefaultTableModel tableModel){
+    	  public void setJanelaPai(UmpstModule janelaPai,String[] columnNames, Object[][] data){
     		// super(janelaPai);
   	    	
-    		  System.out.println("entrou no setJanelaPai");
     		  this.setLayout(new GridLayout(1,0));
-  	          this.add(createScrolltableGoals(tableModel));
+  	          this.add(createScrolltableGoals(columnNames,data));
     		  
     	  }
     
@@ -104,18 +92,11 @@ public class TableRequirements extends IUMPSTPanel{
 	/**
 	 * @return the table
 	 */
-	public JTable createTable(DefaultTableModel tableModel) {
-		
-		table = new JTable(tableModel){  
-			
-            //  Returning the Class of each column will allow different  
-            //  renderers to be used based on Class  
-            public Class getColumnClass(int column)  {  
-                return getValueAt(0, column).getClass();  
-            }  
-		};
-		
-		
+	public JTable createTable(String[] columnNames,final Object[][] data) {
+
+		DefaultTableModel tableModel = new DefaultTableModel(data, columnNames);
+		table = new JTable(tableModel);
+
 		TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer()
 		{
 			public void customize(JButton button, int row, int column)
@@ -132,10 +113,15 @@ public class TableRequirements extends IUMPSTPanel{
 		
 		buttonEdit.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
-				//alterarJanelaAtual(new GoalsMainPanel(getJanelaPai()));
+				
+				String key = data[row][0].toString();
+				GoalModel goalAux = UMPSTProject.getInstance().getMapGoal().get(key);
+				alterarJanelaAtual(new GoalsMainPanel(getJanelaPai(), goalAux, goalAux.getGoalFather() )   );
 			}
 		});
 		
+		
+
 		
 		TableButton buttonAdd = new TableButton( new TableButton.TableButtonCustomizer()
 		{
@@ -153,7 +139,13 @@ public class TableRequirements extends IUMPSTPanel{
 		
 		buttonAdd.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
-				alterarJanelaAtual(new SubgoalMainPanel(getJanelaPai()));
+				String key = data[row][0].toString();
+				GoalModel goalAux = UMPSTProject.getInstance().getMapGoal().get(key);
+				alterarJanelaAtual(new SubgoalMainPanel(getJanelaPai(),null,goalAux));
+				
+				System.out.println("***IMPRIMINDO PAI****");
+				System.out.println(goalAux.getGoalName());
+				
 			}
 		});
 		
@@ -166,15 +158,22 @@ public class TableRequirements extends IUMPSTPanel{
 
 			}
 		});
-
 		TableColumn buttonColumn3 = table.getColumnModel().getColumn(3);
 		buttonColumn3.setMaxWidth(25);
 		buttonColumn3.setCellRenderer(buttonDel);
 		buttonColumn3.setCellEditor(buttonDel);
 		
 		buttonAdd.addHandler(new TableButton.TableButtonPressedHandler() {	
+			
+			
 			public void onButtonPress(int row, int column) {
-				//alterarJanelaAtual(new GoalsMainPanel(getJanelaPai()));
+				
+				/*if( JOptionPane.showConfirmDialog(null,"Confirma Remo√ß√£o do contribuinte "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
+						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
+							String key = data[row][0].toString();
+							GoalModel goalAux = UMPSTProject.getInstance().getMapGoal().get(key);
+							UMPSTProject.getInstance().getMapGoal().remove(goalAux.getGoalName());
+				}*/
 			}
 		});
 		
@@ -182,9 +181,9 @@ public class TableRequirements extends IUMPSTPanel{
        }
 	
 	
-	public JScrollPane createScrolltableGoals(DefaultTableModel tableModel){
+	public JScrollPane createScrolltableGoals(String[] columnNames, Object[][] data){
 		if(scrollpanePergunta == null){
-			scrollpanePergunta = new JScrollPane(createTable(tableModel));
+			scrollpanePergunta = new JScrollPane(createTable(columnNames,data));
 			scrollpanePergunta.setMinimumSize(new Dimension(300,150));
 		}
 		
@@ -210,15 +209,7 @@ public class TableRequirements extends IUMPSTPanel{
         }
     }
     
-    public void updateGoalsTable(GoalModel goal){
-    	String[] columnNames = {"Goal","","",""};
-
-    	Object[][] data ={ 
-    			{goal.getGoalName(),"","",""},
-    	};
-    	
-    	
-    }
+  
 	
 
 }

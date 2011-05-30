@@ -8,6 +8,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -36,13 +37,17 @@ public class SubgoalsAdd extends IUMPSTPanel {
 	
 	private JTextField dateText,authorText;
 	private JTextField goalText,commentsText;
-	private GoalModel goal,pai;
+	private GoalModel goal,goalFather;
+	private ArrayList<GoalModel> goalChildren;
+	private ArrayList<GoalModel> subgoals;
+
 
 	
-	public SubgoalsAdd(UmpstModule janelaPai, GoalModel goal){
+	public SubgoalsAdd(UmpstModule janelaPai, GoalModel goal, GoalModel goalFather){
 		super(janelaPai);
 		
 		this.goal = goal;
+		this.goalFather = goalFather;
 		this.setLayout(new GridBagLayout());
 		c.fill = GridBagConstraints.HORIZONTAL;
 		labels();
@@ -75,6 +80,14 @@ public class SubgoalsAdd extends IUMPSTPanel {
 
 
 	public void labels(){
+		
+		if (goalFather!=null){
+			c.gridx = 0; c.gridy = 1;
+			add( new JLabel("Subgoal of: "), c);
+			c.gridx = 1; c.gridy = 1;
+			add( new JLabel(goalFather.getGoalName()), c);
+		}
+		
 		c.gridx = 0; c.gridy = 2;
 		add( new JLabel("Goal Description: "), c);
 		c.gridx = 0; c.gridy = 3;
@@ -83,6 +96,8 @@ public class SubgoalsAdd extends IUMPSTPanel {
 		add( new JLabel("Author Nome: "), c);
 		c.gridx = 0; c.gridy = 5;
 		add( new JLabel("Date: "), c);
+		
+		
 		
 
 		GridBagConstraints d = new GridBagConstraints();
@@ -147,7 +162,7 @@ public class SubgoalsAdd extends IUMPSTPanel {
 		buttonAdd.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if( goal == null){
-					GoalModel goal = new GoalModel(goalText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),null);
+					GoalModel goal = new GoalModel(goalText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),goalFather,goalChildren,null);
 					try {
 						JOptionPane.showMessageDialog(null, "Subgoal successfully added",null, JOptionPane.INFORMATION_MESSAGE);
 						UmpstModule pai = getJanelaPai();
@@ -162,7 +177,14 @@ public class SubgoalsAdd extends IUMPSTPanel {
 				}
 				else{
 					if( JOptionPane.showConfirmDialog(null, "Do you want to update this Subgoal?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
-						GoalModel goal = new GoalModel(goalText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),null);
+						//GoalModel goal = new GoalModel(goalText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),goalFather,goalChildren,goal.getHypothesis());
+						goal.setGoalName(goalText.getText());
+						goal.setComments(commentsText.getText());
+						goal.setAuthor(authorText.getText());
+						goal.setDate(dateText.getText());
+						goal.setGoalFather(goalFather);
+						
+						
 						try{
 				
 							JOptionPane.showMessageDialog(null, "Subgoal successfully updated", "UnBBayes", JOptionPane.INFORMATION_MESSAGE);
@@ -188,14 +210,14 @@ public class SubgoalsAdd extends IUMPSTPanel {
 		
 		buttonHypothesis.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				alterarJanelaAtual(new HypothesisAdd(getJanelaPai()));
+				alterarJanelaAtual(new HypothesisAdd(getJanelaPai(),goal,null,null));
 
 			}
 		});
 		
 		buttonSubgoal.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				alterarJanelaAtual(new SubgoalMainPanel(getJanelaPai()));
+				alterarJanelaAtual(new SubgoalMainPanel(getJanelaPai(),goal,goalFather));
 
 			}
 		});

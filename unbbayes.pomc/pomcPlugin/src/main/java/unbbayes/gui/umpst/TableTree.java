@@ -65,7 +65,7 @@ public class TableTree extends AbstractCellEditor implements
 			Object value, boolean isSelected, int row, int col) {
 		
 		tree = new JTree();
-		tree.
+		
 
 		/**Criar e retornar todos os filhos do Goal que eu passei*/
 		
