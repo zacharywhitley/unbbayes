@@ -2100,26 +2100,50 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				if (resultOfQuery != null && !resultOfQuery.isEmpty()) {
 					
 					// extract the names of the returned individuals
-					List<String> returnedIndividualNames = new ArrayList<String>();
+//					List<String> returnedIndividualNames = new ArrayList<String>();
+					
+					// perform multiple recursive queries after adding the returned individual as a known value, 
+					// and then concatenate results to this SearchResult
+					SearchResult concatenatedSearchResult = null;
 					for (OWLNamedIndividual individualOfOV : resultOfQuery) {
-						returnedIndividualNames.add(this.extractName(individualOfOV));
-					}
-					
-					// create the updated known value's list (which is the all known values + the result of the query)
-					List<OVInstance> updatedKnownValuesList = new ArrayList<OVInstance>(knownValues);
-					
-					// add the results of the query to the updated list
-					for (String name : returnedIndividualNames) {
-						// the results of the query are individuals of the argument OV
+						
+//						returnedIndividualNames.add(this.extractName(individualOfOV));
+						String name = this.extractName(individualOfOV);
+						
+						// create the updated known value's list (all original known values + result of query)
+						List<OVInstance> updatedKnownValuesList = new ArrayList<OVInstance>(knownValues);
+						
+						// add the results of the query to the updated list
+//						for (String name : returnedIndividualNames) {
+//							// the results of the query are individuals of the argument OV
+//							OVInstance instance = OVInstance.getInstance(argumentOV, LiteralEntityInstance.getInstance(name, argumentEntity.getType()));
+//							if (!updatedKnownValuesList.contains(instance)) {
+//								updatedKnownValuesList.add(instance);	// avoid redundancy
+//							}
+//						}
 						OVInstance instance = OVInstance.getInstance(argumentOV, LiteralEntityInstance.getInstance(name, argumentEntity.getType()));
 						if (!updatedKnownValuesList.contains(instance)) {
 							updatedKnownValuesList.add(instance);	// avoid redundancy
 						}
+
+						// do a recursive query that returns all the values of "ov" (assuming that the argumentOV is known now) and contains the known values in search result
+						// TODO optimize (e.g. avoid recursivity)
+						SearchResult recursiveResult = this.solveFormulaTreeOVEqualsToNonBooleanNode1Argument(treeRepresentingOV, treeRepresentingNonBooleanNode, updatedKnownValuesList, context, isToSolveAsPositiveOperation, true);
+						// concatenate recursiveResult to concatenatedSearchResult
+						if (concatenatedSearchResult == null) {
+							// this is the first time concatenatedSearchResult is updated. Initialize it
+							concatenatedSearchResult = recursiveResult;
+						} else {	// this is not the 1st time concatenatedSearchResult is updated
+							// update content of concatenatedSearchResult using the results of the recursive call
+							for (String[] recursiveResults : recursiveResult.getValuesResultList()) {
+								// CAUTION! the order of OVs in recursiveResult.getValuesResultList() and concatenatedSearchResult.getValuesResultList() are assumed to be the same
+								// TODO reorder recursiveResults before adding it to concatenatedSearchResult, so that the ordering of OVs matches.
+								concatenatedSearchResult.addResult(recursiveResults);
+							}
+						}
 					}
 					
-					// do a recursive query that returns all the values of "ov" (assuming that the argumentOV is known now) and contains the known values in search result
-					return this.solveFormulaTreeOVEqualsToNonBooleanNode1Argument(treeRepresentingOV, treeRepresentingNonBooleanNode, updatedKnownValuesList, context, isToSolveAsPositiveOperation, true);
-					
+					return concatenatedSearchResult;
 				}
 			
 				// no argumentOV uses the OWLProperty in the ontology, so it is obvious that there is no related ov either 
