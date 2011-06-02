@@ -45,6 +45,7 @@ import unbbayes.io.mebn.owlapi.INonPROWLClassExtractor;
 import unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator;
 import unbbayes.io.mebn.owlapi.IPROWL2ModelUser;
 import unbbayes.io.mebn.protege.ProtegeStorageImplementorDecorator;
+import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.IRIAwareMultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -1629,7 +1630,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		try {
 
 			// extract what ordinary variables we should search (i.e. they do not have values specified in ovInstances)
-			OrdinaryVariable missingOV[] = context.getOVFaultForOVInstanceSet(knownValues).toArray(new OrdinaryVariable[context.getOVFaultForOVInstanceSet(knownValues).size()]); 
+//			OrdinaryVariable missingOV[] = context.getOVFaultForOVInstanceSet(knownValues).toArray(new OrdinaryVariable[context.getOVFaultForOVInstanceSet(knownValues).size()]); 
 			
 			// the following types of formulas are the most used ones:
 			// 1. ov1 = ov2
@@ -1643,7 +1644,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			// TODO implement other types of formulas.
 			
 			// thus, the top level operand/operator must be equalsTo, not or a node
-			if (!(formulaTree.getNodeVariable() instanceof ResidentNode)
+			if (!( (formulaTree.getNodeVariable() instanceof ResidentNode) || (formulaTree.getNodeVariable() instanceof ResidentNodePointer))
 					&& !(formulaTree.getNodeVariable() instanceof BuiltInRVEqualTo)
 					&& !(formulaTree.getNodeVariable() instanceof BuiltInRVNot)) {
 				return null;
@@ -1670,15 +1671,22 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			
 			// 3. booleanNode(<1 or 2 arguments>)
 			try {
-				if (formulaTree.getNodeVariable() instanceof ResidentNode		// this is a (resident) node
-						&& (((ResidentNode)formulaTree.getNodeVariable()).getTypeOfStates() == ResidentNode.BOOLEAN_RV_STATES)	// this is a boolean node
-						&& (((ResidentNode)formulaTree.getNodeVariable()).getArgumentList().size() <= 2)) {		// number of aguments
+				if ( (formulaTree.getNodeVariable() instanceof ResidentNodePointer)  		// this is a (resident) node
+						&& (formulaTree.getNodeVariable() != null)
+						&& (((ResidentNodePointer)formulaTree.getNodeVariable()).getResidentNode() != null)
+						&& (((ResidentNodePointer)formulaTree.getNodeVariable()).getResidentNode().getTypeOfStates() == ResidentNode.BOOLEAN_RV_STATES)	// this is a boolean node
+						&& (((ResidentNodePointer)formulaTree.getNodeVariable()).getResidentNode().getArgumentList().size() <= 2)) {		// number of arguments
 					try {
-						System.out.println((isToAddKnownValuesToSearchResult?"":"not") + " booleanNode(<1 or 2 arguments>) is expected to be solved by unbbayes.prs.mebn.kb.KnowledgeBase#evaluateContextNodeFormula(unbbayes.prs.mebn.ContextNode, java.util.List), not by this method (solveFormulaTree)");
+						return this.solveFormulaTreeBooleanNode(formulaTree, knownValues, context, isToSolveAsPositiveOperation, false);
 					} catch (Exception e) {
-						e.printStackTrace();
+						try {
+							Debug.println(this.getClass(), e.getMessage() + ". Could not solve " + formulaTree, e);
+						} catch (Throwable t) {
+							e.printStackTrace();
+							t.printStackTrace();
+						}
+						return null;	
 					}
-					return new SearchResult(missingOV);
 				}
 			} catch (Exception e) {
 				try {
@@ -1697,7 +1705,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 						&& (((ResidentNodePointer)formulaTree.getChildren().get(1).getNodeVariable()).getResidentNode().getTypeOfStates() != ResidentNode.BOOLEAN_RV_STATES)	// "nonBooleanNode" is not boolean node
 						&& (((ResidentNodePointer)formulaTree.getChildren().get(1).getNodeVariable()).getResidentNode().getArgumentList().size() == 1) ) {	// <1 argument>		
 					// solve this format asserting that "ov" is in the left side of the formula (formulaTree.getChildren().get(0) is the "ov")
-					return this.solveFormulaTreeOVEqualsToNonBooleanNode1Argument(formulaTree.getChildren().get(0), formulaTree.getChildren().get(1), knownValues, context, isToSolveAsPositiveOperation, false);
+					return this.solveFormulaTreeOVEqualsToNonBooleanNode(formulaTree.getChildren().get(0), formulaTree.getChildren().get(1), knownValues, context, isToSolveAsPositiveOperation, false);
 				}
 			} catch (Exception e) {
 				try {
@@ -1716,7 +1724,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 						&& (((ResidentNodePointer)formulaTree.getChildren().get(0).getNodeVariable()).getResidentNode().getTypeOfStates() != ResidentNode.BOOLEAN_RV_STATES)	// "nonBooleanNode" is not boolean node
 						&& (((ResidentNodePointer)formulaTree.getChildren().get(0).getNodeVariable()).getResidentNode().getArgumentList().size() == 1) ) {	// <1 argument>		
 					// solve this format asserting that "ov" is in the right side of the formula (formulaTree.getChildren().get(1) is the "ov")
-					return this.solveFormulaTreeOVEqualsToNonBooleanNode1Argument(formulaTree.getChildren().get(1), formulaTree.getChildren().get(0), knownValues, context, isToSolveAsPositiveOperation, false);
+					return this.solveFormulaTreeOVEqualsToNonBooleanNode(formulaTree.getChildren().get(1), formulaTree.getChildren().get(0), knownValues, context, isToSolveAsPositiveOperation, false);
 				}
 			} catch (Exception e) {
 				try {
@@ -1759,17 +1767,497 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 
 	/**
 	 * Solve formulas in the following format:
+	 * booleanNode(<1 or 2 arguments>);
+	 * CAUTION: because OWL reasoners assumes open-world assumption, the "not" operator can retrieve less values than you may expect
+	 * (because unless you explicitly say that "not booleanNode(<1 or 2 arguments>)" is valid, OWL reasoners will not consider that two individuals are different).
+	 * This is called inside {@link #solveFormulaTree(NodeFormulaTree, List, ContextNode, boolean, boolean)}
+	 * @param formulaTreeBooleanNode : this is a subtree of the top formula (which uses composite pattern), and it represents the "booleanNode" in booleanNode(<1 or 2 arguments>);
+	 * @param knownValues : the known OV values (values in this list will not be queried to KB)
+	 * @param isToSolveAsPositiveOperation : if set to false, ov != nonBooleanNode(arg) will be evaluated instead. 
+	 * @param isToAddKnownValuesToSearchResult : if true, the values in knownValues will be added to the returned value.
+	 * @param context : the context node being evaluated
+	 * @return the SearchResult or null if the formula could not be solved by this method.
+	 */
+	protected SearchResult solveFormulaTreeBooleanNode(
+			NodeFormulaTree formulaTreeBooleanNode, List<OVInstance> knownValues,
+			ContextNode context, boolean isToSolveAsPositiveOperation, boolean isToAddKnownValuesToSearchResult) {
+		try {
+			// initial assertion
+			if (knownValues == null) {
+				// consider null and empty in a same manner
+				knownValues = new ArrayList<OVInstance>();
+			}
+			
+			// extract what ordinary variables we should search (i.e. they do not have values specified in ovInstances)
+			OrdinaryVariable missingOVArray[] = context.getOVFaultForOVInstanceSet(knownValues).toArray(
+			                                		   new OrdinaryVariable[context.getOVFaultForOVInstanceSet(knownValues).size()]); 
+			
+			// instantiate a brand-new search result here, so that multiple queries to reasoner can append the results to this object...
+			SearchResult knownSearchResults = null;
+			if (isToAddKnownValuesToSearchResult) {
+				// if we should add the known values to the search result, we should call the constructor of SearchResult
+				// using an array containing both missingOVArray and the OVs of knownValues. So, let's create such array...
+				List<OrdinaryVariable> missingAndKnownOVList = new ArrayList<OrdinaryVariable>(Arrays.asList(missingOVArray));
+				// fill with the OVs in knownValues
+				for (OVInstance knownValue : knownValues) {
+					missingAndKnownOVList.add(knownValue.getOv());
+				}
+				// convert the missingAndKnownOVList to array and instantiate 
+				knownSearchResults = new SearchResult(missingAndKnownOVList.toArray(new OrdinaryVariable[missingAndKnownOVList.size()]));
+			} else {
+				knownSearchResults = new SearchResult(missingOVArray);
+			}
+			
+			// extract the resident node related to formulaTreeBooleanNode
+			ResidentNode booleanResidentNode = ((ResidentNodePointer)formulaTreeBooleanNode.getNodeVariable()).getResidentNode();
+			if (booleanResidentNode == null) {
+				try {
+					Debug.println(this.getClass(), formulaTreeBooleanNode + " should be a boolean node, but it is not related to any node...");
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				return null;
+			}
+			
+			// extract list of arguments from pointed boolean resident node
+			List<Argument> originalArgumentList = booleanResidentNode.getArgumentList();
+			if (originalArgumentList == null) {
+				try {
+					Debug.println(this.getClass(), booleanResidentNode + " has no arguments...");
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				return null;
+			}
+			
+			// assertion: we can only treat boolean nodes with 1 or 2 variables
+			// TODO solve n-ary relationships
+			if (originalArgumentList.size() > 2 || originalArgumentList.size() < 1) {
+				try {
+					Debug.println(this.getClass(), booleanResidentNode + " has " +  originalArgumentList.size() + " arguments. This KB can only handle 1 or 2 arguments.");
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				return null;
+			}
+			
+			// extract the ordinary variable argument1OV (the ov of the 1st argument)
+			// extract by argument number (this is a number starting from 1), because the list of argument may not be in correct order
+			OrdinaryVariable argument1OV = ((ResidentNodePointer)formulaTreeBooleanNode.getNodeVariable()).getArgument(0);// booleanResidentNode.getArgumentNumber(1).getOVariable();
+			
+			// extract the ordinary variable argument1OV (the ov of the 1st argument)
+			OrdinaryVariable argument2OV = null;	// if node have only 1 argument, this value should be set to null
+			// The node may have only 1 argument... Check it
+			if (originalArgumentList.size() > 1) {
+				// extract by argument number (this is a number starting from 1), because the list of argument may not be in correct order
+				argument2OV = ((ResidentNodePointer)formulaTreeBooleanNode.getNodeVariable()).getArgument(1);// booleanResidentNode.getArgumentNumber(2).getOVariable();
+			}
+			
+			// extract the object entity related to the type of argument 1 (this is necessary because we cannot directly navigate from OV's type to an Entity...)
+			Entity argument1Entity = this.getDefaultMEBN().getObjectEntityContainer().getObjectEntityByType(argument1OV.getValueType());
+			
+			// extract the object entity related to the type of argument 2 (this is necessary because we cannot directly navigate from OV's type to an Entity...)
+			Entity argument2Entity = null;
+			if (argument2OV != null) {
+				argument2Entity = this.getDefaultMEBN().getObjectEntityContainer().getObjectEntityByType(argument2OV.getValueType());
+			}
+			
+			// extract reasoner
+			OWLReasoner reasoner = this.getDefaultOWLReasoner();
+			
+			// extract IRI of the object property related to booleanNode
+			IRI booleanNodeIRI = IRIAwareMultiEntityBayesianNetwork.getDefineUncertaintyFromMEBN(this.getDefaultMEBN(),booleanResidentNode);
+			if (booleanNodeIRI == null) {
+				try {
+					Debug.println(this.getClass(), booleanResidentNode + " Has no related OWL property. This KB can only solve findings that has a reference to \"definesUncertaintyOf\"");
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				return null;
+			}
+			
+			// extract the property by checking existence
+			OWLProperty booleanNodeProperty = null;
+			if (reasoner.getRootOntology().containsObjectPropertyInSignature(booleanNodeIRI, true)) {
+				// this is an object property
+				booleanNodeProperty = reasoner.getRootOntology().getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(booleanNodeIRI);
+			} else if (reasoner.getRootOntology().containsDataPropertyInSignature(booleanNodeIRI, true)) {
+				// this is a data property
+				booleanNodeProperty = reasoner.getRootOntology().getOWLOntologyManager().getOWLDataFactory().getOWLDataProperty(booleanNodeIRI);
+			} else {
+				try {
+					Debug.println(this.getClass(), booleanResidentNode + " is related to " + booleanNodeIRI + ", which is not an OWL property.");
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				return null;
+			}
+			
+			
+			// convert the array of missing ordinary variables to a list
+			List<OrdinaryVariable> missingOV = new ArrayList<OrdinaryVariable>(Arrays.asList(missingOVArray));
+			
+			// expression of the query
+			String expression = "";
+			
+			// there are only  possible cases:
+			// case 1 (immediate case). argument2OV is null (booleanNode has only 1 argument) and argument1OV is known. In OWL, this is a boolean data property assertion.
+			// case 2 . argument2OV is null (booleanNode has only 1 argument) and argument1OV is unknown. In OWL, this is a boolean data property assertion.
+			// case 3 (special case). both argument1OV and argument2OV are unknown;
+			// case 4. argument2OV is known and argument1OV is unknown;
+			// case 5. argument1OV is known and argument2OV is unknown;
+			
+			// extract the possible values of OV if it is unknown
+			Collection<OWLNamedIndividual> resultOfQuery = new HashSet<OWLNamedIndividual>();
+			
+			// ov to be queried
+			OrdinaryVariable queryOV = null; // this value may be either argument1OV or argument2OV
+			// ov not to be queried (it is a known value)
+			OrdinaryVariable knownOV = null; // this value may be either ov or argumentOV
+			// entity to be queried
+			Entity queryEntity = null; // this value may be either ovEntity or argumentEntity
+			
+			// check cases 1 and 2
+			if (argument2OV == null) {
+				// booleanNode has only 1 argument - in OWL, this is represented as a (boolean) data property assertion
+				if (!missingOV.contains(argument1OV)) {
+					// case 1 (immediate case). argument2OV is null (booleanNode has only 1 argument) and argument1OV is known
+					
+					// extract the value of argument2OV
+					OVInstance ovInstanceOfArg1 = null;
+					for (OVInstance instance : knownValues) {
+						if (instance.getOv().equals(argument1OV)) {
+							ovInstanceOfArg1 = instance;
+							break;
+						}
+					}
+					// check if it is valid
+					if (ovInstanceOfArg1 == null || ovInstanceOfArg1.getEntity() == null) {
+						try {
+							Debug.println(getClass(), argument2OV + " is not set as \"missing\", but could not find an actual value for it.");
+						} catch (Throwable t) {
+							t.printStackTrace();
+						}
+						return null;
+					}
+					
+					// extract name ovInstanceOfArg2, so that we can build the query
+					String instanceName = ovInstanceOfArg1.getEntity().getInstanceName();
+					if (instanceName == null || instanceName.trim().length() <= 0) {
+						try {
+							Debug.println(getClass(), argument2OV + " is not set as \"missing\", but could not find an actual value for it.");
+						} catch (Throwable t) {
+							t.printStackTrace();
+						}
+						return null;
+					}
+					
+					// the expression is something like "{<instanceName>} that <booleanNodeProperty> value true"
+					expression = "{" + instanceName + "}" 				
+								+ " that " 										
+								+ this.extractName(booleanNodeProperty) 
+								+ " value "
+								+ (isToSolveAsPositiveOperation?"true":"false");
+					
+					// just check if there is a data property assertion. If no, return null. If yes, return knownSearchResults as is
+					if (reasoner.getInstances(this.parseExpression(expression), false).isEmpty()) {
+						return null;	// context node must fail
+					} else {
+						// fill knownSearchResults with known values
+						String[] resultToAdd = new String[knownSearchResults.getOrdinaryVariableSequence().length];
+						for (OVInstance knownValue : knownValues) {
+							// find the index of knownValue.getOv() in knownSearchResults.getOrdinaryVariableSequence(), and set knownValue.getEntity() as the value in that index
+							resultToAdd[Arrays.asList(knownSearchResults.getOrdinaryVariableSequence()).indexOf(knownValue.getOv())] = knownValue.getEntity().getInstanceName();
+						}
+						knownSearchResults.addResult(resultToAdd);
+						return knownSearchResults;	// the context node can be resolved (value = true) with no modification (no search is needed at all)
+					}
+				} else {
+					// case 2 . argument2OV is null (booleanNode has only 1 argument) and argument1OV is unknown
+					// query all individuals having boolean
+					// the expression is something like "<EntityName> that <booleanNodeProperty> value true"
+					expression = argument1Entity.getName() 
+								+ " that " 										
+								+ this.extractName(booleanNodeProperty) 
+								+ " value "
+								+ (isToSolveAsPositiveOperation?"true":"false");
+					// do query
+					return this.buildSearchResultFromExpression(
+								expression, 
+								reasoner, 
+								isToAddKnownValuesToSearchResult, 
+								knownValues, 
+								knownSearchResults.getOrdinaryVariableSequence(), 
+								argument1OV 
+							);
+				}
+			}
+			
+			// there are more than 1 argument. Check if this is an object property
+			if (!booleanNodeProperty.isObjectPropertyExpression()) {
+				try {
+					Debug.println(this.getClass(), booleanResidentNode + " contains more than 1 argument, but " + booleanNodeProperty + " is not an object property...");
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				return null;
+			}
+			
+			// check cases 3, 4, and 5
+			if (missingOV.contains(argument1OV) && missingOV.contains(argument2OV)) {
+				// case 3 (special case). both argument1OV and argument2OV are unknown;
+				// first, query the arguments that is associated to some entity by the owl property
+				// the expression is something like "<OWLClassName> that (<OWLPropertyName> some <OWLClassName>)"
+				expression = argument1Entity.getName() 				
+				+ " that ( " 										
+				+ this.extractName(booleanNodeProperty) 
+				+ " some "
+				+ argument2Entity.getName()
+				+ " ) ";
+				
+				// do query
+				resultOfQuery = reasoner.getInstances(this.parseExpression(expression), false).getFlattened();
+				
+				// Basically, we do recursive call to this method 
+				// adding the resultOfQuery to the known values and then concatenate the results of the recursive calls
+				
+				// add the query results (values of argument 1) to knownSearchResults if the query has returned something
+				if (resultOfQuery != null && !resultOfQuery.isEmpty()) {
+					
+					// extract the names of the returned individuals
+					
+					// perform multiple recursive queries after adding the returned individual as a known value, 
+					// and then concatenate results to this SearchResult
+					SearchResult concatenatedSearchResult = null;
+					for (OWLNamedIndividual individualOfOV : resultOfQuery) {
+						// extract name
+						String name = this.extractName(individualOfOV);
+						
+						// create the updated known value's list (all original known values + result of query)
+						List<OVInstance> updatedKnownValuesList = new ArrayList<OVInstance>(knownValues);
+						
+						// add the results of the query to the updated list
+						OVInstance instance = OVInstance.getInstance(argument1OV, LiteralEntityInstance.getInstance(name, argument1Entity.getType()));
+						if (!updatedKnownValuesList.contains(instance)) {
+							updatedKnownValuesList.add(instance);	// avoid redundancy
+						}
+
+						// do a recursive query that returns all the values of "ov" (assuming that the argumentOV is known now) and contains the known values in search result
+						// TODO optimize (e.g. avoid recursivity)
+						SearchResult recursiveResult = this.solveFormulaTreeBooleanNode(formulaTreeBooleanNode, updatedKnownValuesList, context, isToSolveAsPositiveOperation, true);
+						// concatenate recursiveResult to concatenatedSearchResult
+						if (concatenatedSearchResult == null) {
+							// this is the first time concatenatedSearchResult is updated. Initialize it
+							concatenatedSearchResult = recursiveResult;
+						} else {	// this is not the 1st time concatenatedSearchResult is updated
+							// update content of concatenatedSearchResult using the results of the recursive call
+							for (String[] recursiveResults : recursiveResult.getValuesResultList()) {
+								// CAUTION! the order of OVs in recursiveResult.getValuesResultList() and concatenatedSearchResult.getValuesResultList() are assumed to be the same
+								// TODO reorder recursiveResults before adding it to concatenatedSearchResult, so that the ordering of OVs matches.
+								concatenatedSearchResult.addResult(recursiveResults);
+							}
+						}
+					}
+					
+					return concatenatedSearchResult;
+				}
+			
+				// no argumentOV uses the OWLProperty in the ontology, so it is obvious that there is no related ov either 
+				// (i.e. if there is no domain, there would be no image as well)
+				try {
+					Debug.println(this.getClass(), booleanNodeProperty + " has no individuals in its domain.");
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				return null;
+				
+			} else if (missingOV.contains(argument1OV)) {
+				// case 4. argument2OV is known and argument1OV is unknown;
+				queryOV = argument1OV;	// we must query the argument 1...
+				knownOV = argument2OV;	// based on the value of argument 2 (which is known)
+				queryEntity = argument1Entity;
+			} else {
+				// case 5. argument1OV is known and argument2OV is unknown;
+				queryOV = argument2OV;
+				knownOV = argument1OV;
+				queryEntity = argument2Entity;
+			}
+			
+			// cases 4 and 5 can be evaluated in a similar way.
+			
+			// extract from the "knownValues" the values related to the known ov. Let's keep the order...
+			List<OVInstance> knownOVValues = new ArrayList<OVInstance>();
+			for (OVInstance knownValue : knownValues) {
+				if (knownOV.equals(knownValue.getOv())) {
+					// add all occurrences of knownOV (usually, there is only 1 occurrence, but it is not for sure)
+					knownOVValues.add(knownValue);
+				}
+			}
+			
+			// because the result knownSearchResults must have synchronized indexes in their arrays 
+			// (i.e. knownSearchResults.getOrdinaryVariableSequence()[i] is for knownSearchResults.getValuesResultList().get(x)[i])
+			// we cannot perform 1 query that retrieves all elements with the desired order (because the reasoner returns a set, not a list)
+			// thus, we must query n times (n is the number of argument's known values)
+			for (OVInstance knownValue : knownOVValues) {
+				// extract the possible values of ov. Append "not" to expression if isToSolveAsPositiveOperation == false
+				// the expression is something like "<OWLClassName> that [not] ([inverse] <OWLPropertyName> value <OWLIndividualName>)"
+				expression = queryEntity.getName() 				
+				+ " that " 										
+				+ (isToSolveAsPositiveOperation?" ( ":"not ( ") 
+				// if the query is for the argument, we query the domain of property. If not, we query the image of the property 
+				// (in this case, we use "inverse OWLProperty value knownValue" to tell that the domain of that property must be the knownValue)
+				+ (queryOV.equals(argument1OV)?"":" inverse ")	// if queryOV is the range, then add inverse
+				+ this.extractName(booleanNodeProperty) 
+				+ " value "
+				+ knownValue.getEntity().getInstanceName()
+				+ " ) ";
+				
+				// do query
+				SearchResult auxSearchResult = this.buildSearchResultFromExpression(
+													expression, 	// expression for query
+													reasoner, 		// owl reasoner to use
+													isToAddKnownValuesToSearchResult, 	// if the returned result should also include the known values
+													knownValues, 	// the values (OV and individuals) currently known
+													knownSearchResults.getOrdinaryVariableSequence(),	// the order of OVs in the returned results 
+													queryOV, 	// ov being queried
+													knownValue	// known OV and its value
+												);
+				// append auxSearchResult to knownSearchResults
+				for (String[] result : auxSearchResult.getValuesResultList()) {
+					knownSearchResults.addResult(result);
+				}
+			}
+			
+			return knownSearchResults;
+			
+		} catch (Exception e) {
+			Debug.println(this.getClass(), "This method can only solve expressions like \"[not] ov = nonBooleanNode(arg)\"", e);
+		}
+		
+		return null;
+	}
+
+	/**
+	 * This method is used in methods for querying OV values 
+	 * (e.g. {@link #solveFormulaTreeBooleanNode(NodeFormulaTree, List, ContextNode, boolean, boolean)})
+	 * by using an Manchester-OWL syntax query for querying "queryOV".
+	 * @param expression : Manchester-OWL syntax for querying queryOV 
+	 * @param reasoner : owl reasoner to be used for executing expression 
+	 * @param isToAddKnownValuesToSearchResult : tells whether to add the knownValues to the returned SearchResult
+	 * @param knownValues : values of OVs that are already solved
+	 * @param orderOfOrdinaryVariables : tells the order of ovs in the returned SearchResult
+	 * @param queryOV : the OV to be looked for. The expression must be a query for this OV.
+	 * @param matchingKnownValues : values in knownValues which should match to queryOV. This is necessary in DL queries because
+	 * DL queries usually returns individuals instead of matching individuals (i.e. instead of returning sets like {{Ind1,IndA}; {Ind2,IndB}}, 
+	 * it can only return whether {Ind1, Ind2} or {IndA, IndB} or their combinations. Because of this,
+	 * it is hard to query matching tuples - e.g. pairs. 
+	 * By using this parameter, we can force the values in the returning result to "match" the values in matchingKnownValues. 
+	 * That is, the returned values will virtually represent the following tuples: 
+	 * {{result1,matchingKnownValues[0], matchingKnownValues[1]} ; {result2 ,matchingKnownValues[0],matchingKnownValues[1]} ; ... }.
+	 * Consequently, by iterating on different values of matchingKnownValues, we can simulate/emulate queries that returns "matches" (tuples) instead
+	 * of mere individuals.
+	 * 
+	 * @return SearchResult built from the execution of expression in reasoner
+	 */
+	protected SearchResult buildSearchResultFromExpression(String expression, OWLReasoner reasoner, boolean isToAddKnownValuesToSearchResult,
+			List<OVInstance> knownValues, OrdinaryVariable[] orderOfOrdinaryVariables, OrdinaryVariable queryOV, OVInstance ... matchingKnownValues) {
+		// this variable will be returned
+		SearchResult ret = null;
+		
+		// We assume matchingKnownValues has only 1 or 0 elements, because no n-ary relationship is implemented...
+		// TODO implement n-ary relationship
+		OVInstance knownValue = null;
+		if (matchingKnownValues != null && matchingKnownValues.length > 0) {
+			knownValue = matchingKnownValues[0];	// use only the 1st argument
+		}
+		
+		// extract known OV if knownValue != null
+		OrdinaryVariable knownOV = ((knownValue == null)?null:(knownValue.getOv()));
+		
+		// do query
+		Set<OWLNamedIndividual> resultOfQuery = reasoner.getInstances(this.parseExpression(expression), false).getFlattened();
+		
+		// add the query results of ov's possible values to knownSearchResults if the query has returned something
+		if (resultOfQuery != null && !resultOfQuery.isEmpty()) {
+			// prepare return
+			ret = new SearchResult(orderOfOrdinaryVariables);
+			
+			// extract the names of the returned individuals
+			List<String> returnedIndividualNames = new ArrayList<String>();
+			for (OWLNamedIndividual individualOfOV : resultOfQuery) {
+				returnedIndividualNames.add(this.extractName(individualOfOV));
+			}
+			
+			// make sure knownSearchResults is not null and empty
+//			if (knownSearchResults.getValuesResultList() == null || knownSearchResults.getValuesResultList().size() > 0) {
+//				System.out.println("There is a synchronization problem: the search result should be empty at this moment, but it was filled... It is going to be overwritten.");
+//				return null;
+//			}
+			
+			// obtain the index in knownSearchResults where we should add the extracted names
+			int indexOfNewValue = Arrays.asList(orderOfOrdinaryVariables).indexOf(queryOV);
+			
+			// obtain the index in knownSearchResults where we should add the known values
+			// (this index will be used only if isToAddKnownValuesToSearchResult == true)
+			int indexOfKnownValue = Arrays.asList(orderOfOrdinaryVariables).indexOf(knownOV);	// it must work even when knownOV == null
+			
+			// update knownSearchResults if the index is valid
+			if (indexOfNewValue >= 0) {
+				// create several string arrays. If its index is indexOfNewValue, then its value will be one of the result of query
+				for (String individualName : returnedIndividualNames) {
+					// create array representing the result
+					String[] result = new String[orderOfOrdinaryVariables.length];
+					// fill the result
+					for (int i = 0; i < result.length; i++) {
+						if (i == indexOfNewValue) {
+							// this is the ex. unknown value (ex. because it is known after the query)
+							result[i] = individualName;
+						} else if (isToAddKnownValuesToSearchResult
+								&& i == indexOfKnownValue) {
+							// this is and was a known value. We add it to the result only if isToAddKnownValuesToSearchResult = true
+							result[i] = ((knownValue != null)?knownValue.getEntity().getInstanceName():null);
+							// note that if a known value has no associated "ex." unknown value, it is not added to result[i]
+							// (because in such case, returnedIndividualNames is empty and this loop will not be called at all)
+						} else {
+							// this is an untreated ov. Usually, we can ignore such ovs, but let's fill it with a default value (from knownValues, if it is known)
+							// check if knownSearchResults.getOrdinaryVariableSequence()[i] is in knownValues
+							OVInstance untreatedKnownValue = null;
+							for (OVInstance ovi : knownValues) {
+								if (ovi.getOv().equals(orderOfOrdinaryVariables[i])) {
+									untreatedKnownValue = ovi;
+									break;
+								}
+							}
+							if (untreatedKnownValue != null) {
+								result[i] = untreatedKnownValue.getEntity().getInstanceName();
+							} else {
+								// this is really, really an unknown value...
+								result[i] = null;
+							}
+						}
+					}
+					ret.addResult(result);
+				}
+			}
+		}
+		return ret;
+	}
+
+	/**
+	 * Solve formulas in the following format:
 	 * ov1 = ov2;
 	 * CAUTION: because OWL reasoners assumes open-world assumption, the "not" operator can retrieve less values than you may expect
 	 * (because unless you explicitly say that "not (individual1 = individual2)" is valid, OWL reasoners will not consider that two individuals are different).
+	 * This is called inside {@link #solveFormulaTree(NodeFormulaTree, List, ContextNode, boolean, boolean)}
 	 * @param formulaTreeOV1 : this is a subtree of the top formula (which uses composite pattern), and it represents the "ov1" in ov1 = ov2
 	 * @param formulaTreeOV2 : this is a subtree of the top formula (which uses composite pattern), and it represents the "ov2" in ov1 = ov2
 	 * @param knownValues : the known OV values (values in this list will not be queried to KB)
 	 * @param isToSolveAsPositiveOperation : if set to false, ov != nonBooleanNode(arg) will be evaluated instead. 
 	 * @param isToAddKnownValuesToSearchResult : if true, the values in knownValues will be added to the returned value.
+	 * @param context : the context node being evaluated
 	 * @return the SearchResult or null if the formula could not be solved by this method.
 	 */
-	private SearchResult solveFormulaTreeOV1EqualsOV2( NodeFormulaTree formulaTreeOV1, NodeFormulaTree formulaTreeOV2,
+	protected SearchResult solveFormulaTreeOV1EqualsOV2( NodeFormulaTree formulaTreeOV1, NodeFormulaTree formulaTreeOV2,
 			List<OVInstance> knownValues, ContextNode context,
 			boolean isToSolveAsPositiveOperation, boolean isToAddKnownValuesToSearchResult) {
 
@@ -1831,12 +2319,12 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			Entity queryEntity = null; // this value may be either ov1Entity or ov2Entity
 			
 			// there are 3 possible cases:
-			// case 1. both ov1 and ov2 are unknown;
+			// case 1 (special case). both ov1 and ov2 are unknown;
 			// case 2. only ov1 is unknown;
 			// case 3. only ov2 is unknown;
 		
 			if (missingOV.contains(ov1) && missingOV.contains(ov2)) {
-				// case 1. both ov1 and ov2 are unknown;
+				// case 1 (special case). both ov1 and ov2 are unknown;
 				// first, query the individuals of ov1 that are also of ov2's type
 				// the expression is something like "<OWLClassName> that <OWLClassName>"
 				expression = ov1Entity.getName() 				
@@ -1851,27 +2339,35 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				
 				// add the query results of ov2's possible values to knownSearchResults if the query has returned something
 				if (resultOfQuery != null && !resultOfQuery.isEmpty()) {
-					
-					// extract the names of the returned individuals
-					List<String> returnedIndividualNames = new ArrayList<String>();
+					SearchResult ret = null;	// this variable will contain all results of the iterative recursive queries
+					// iterate on results
 					for (OWLNamedIndividual individualOfOV : resultOfQuery) {
-						returnedIndividualNames.add(this.extractName(individualOfOV));
-					}
-					
-					// create the updated known value's list (which is the all known values + the result of the query)
-					List<OVInstance> updatedKnownValuesList = new ArrayList<OVInstance>(knownValues);
-					
-					// add the results of the query to the updated list
-					for (String name : returnedIndividualNames) {
+						// extract the name of the returned individual
+						String name = this.extractName(individualOfOV);
+						// create the updated known value's list (which is the all original known values + the result of the query)
+						List<OVInstance> updatedKnownValuesList = new ArrayList<OVInstance>(knownValues);
 						// the results of the query are individuals of the ov1
 						OVInstance instance = OVInstance.getInstance(ov1, LiteralEntityInstance.getInstance(name, ov1Entity.getType()));
 						if (!updatedKnownValuesList.contains(instance)) {
 							updatedKnownValuesList.add(instance);	// avoid redundancy
 						}
+						// do a recursive query that returns all the values of "ov2" (assuming that the ov1 is known now) and contains the known values in search result
+						SearchResult recursiveResult = this.solveFormulaTreeOVEqualsToNonBooleanNode(formulaTreeOV1, formulaTreeOV2, updatedKnownValuesList, context, isToSolveAsPositiveOperation, true);
+						// append recursiveResult to ret. 
+						if (ret == null) {
+							// this is the first time we update ret. Initialize it
+							ret = recursiveResult;
+						} else {
+							// We assume recursiveResult.getOrdinaryVariableSequence() and .getOrdinaryVariableSequence() are synchronized
+							// TODO make sure recursiveResult.getOrdinaryVariableSequence() and .getOrdinaryVariableSequence() are synchronized
+							for (String[] valueToAppend : recursiveResult.getValuesResultList()) {
+								// we do not need to check duplicates - there are no duplicates on recursive calls for different values of "knownValues"
+								ret.addResult(valueToAppend);	
+							}
+						}
 					}
 					
-					// do a recursive query that returns all the values of "ov2" (assuming that the ov1 is known now) and contains the known values in search result
-					return this.solveFormulaTreeOVEqualsToNonBooleanNode1Argument(formulaTreeOV1, formulaTreeOV2, updatedKnownValuesList, context, isToSolveAsPositiveOperation, true);
+					return ret;
 					
 				}
 			
@@ -1980,7 +2476,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 									}
 								}
 							}
-							knownSearchResults.getValuesResultList().add(result);
+							knownSearchResults.addResult(result);
 						}
 					}
 				}
@@ -1997,14 +2493,16 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	/**
 	 * This method solves a formula in the following format:
 	 * ov = nonBooleanNode(arg);
+	 * This is called inside {@link #solveFormulaTree(NodeFormulaTree, List, ContextNode, boolean, boolean)}
 	 * @param treeRepresentingOV : this is a subtree of the top formula (which uses composite pattern), and it represents the "ov" in ov = nonBooleanNode(arg)
 	 * @param treeRepresentingNonBooleanNode : this is a subtree of the top formula (which uses composite pattern), and it represents the "nonBooleanNode(arg)" in ov = nonBooleanNode(arg)
 	 * @param knownValues : the known OV values (values in this list will not be queried to KB)
 	 * @param isToSolveAsPositiveOperation : if set to false, ov != nonBooleanNode(arg) will be evaluated instead. 
 	 * @param isToAddKnownValuesToSearchResult : if true, the values in knownValues will be added to the returned value.
+	 * @param context : the context node being evaluated
 	 * @return the SearchResult or null if the formula could not be solved by this method.
 	 */
-	private SearchResult solveFormulaTreeOVEqualsToNonBooleanNode1Argument( NodeFormulaTree treeRepresentingOV, NodeFormulaTree treeRepresentingNonBooleanNode , 
+	protected SearchResult solveFormulaTreeOVEqualsToNonBooleanNode( NodeFormulaTree treeRepresentingOV, NodeFormulaTree treeRepresentingNonBooleanNode , 
 			List<OVInstance> knownValues, ContextNode context, boolean isToSolveAsPositiveOperation, boolean isToAddKnownValuesToSearchResult) {
 		try {
 
@@ -2032,12 +2530,13 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			} else {
 				knownSearchResults = new SearchResult(missingOVArray);
 			}
-			
+			// TODO extract current arguments instead of the pointed argument
 			// extract the ordinary variable ov
 			OrdinaryVariable ov = (OrdinaryVariable)treeRepresentingOV.getNodeVariable();
 			
 			// extract the ordinary variable of the argument (only 1) of nonBooleanNode
-			OrdinaryVariable argumentOV = ((ResidentNodePointer)treeRepresentingNonBooleanNode.getNodeVariable()).getResidentNode().getArgumentList().get(0).getOVariable();
+			// use current OV instead of using an OV from the original Resident Node
+			OrdinaryVariable argumentOV = ((ResidentNodePointer)treeRepresentingNonBooleanNode.getNodeVariable()).getArgument(0); //((ResidentNodePointer)treeRepresentingNonBooleanNode.getNodeVariable()).getResidentNode().getArgumentList().get(0).getOVariable();
 			
 			// extract the object entity related to the type of ov (this is necessary because we cannot directly navigate from OV's type to an Entity...)
 			Entity ovEntity = this.getDefaultMEBN().getObjectEntityContainer().getObjectEntityByType(ov.getValueType());
@@ -2065,7 +2564,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			String expression = "";
 			
 			// there are only 3 possible cases:
-			// case 1. both ov and argumentOV are unknown;
+			// case 1 (special case). both ov and argumentOV are unknown;
 			// case 2. only ov is unknown;
 			// case 3. only argumentOV is unknown;
 			
@@ -2080,7 +2579,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			Entity queryEntity = null; // this value may be either ovEntity or argumentEntity
 			
 			if (missingOV.contains(ov) && missingOV.contains(argumentOV)) {
-				// case 1. both ov and argumentOV are unknown;
+				// case 1 (special case). both ov and argumentOV are unknown;
 				// first, query the arguments that is associated to some entity by the owl property
 				// the expression is something like "<OWLClassName> that (<OWLPropertyName> some <OWLClassName>)"
 				expression = argumentEntity.getName() 				
@@ -2128,7 +2627,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 
 						// do a recursive query that returns all the values of "ov" (assuming that the argumentOV is known now) and contains the known values in search result
 						// TODO optimize (e.g. avoid recursivity)
-						SearchResult recursiveResult = this.solveFormulaTreeOVEqualsToNonBooleanNode1Argument(treeRepresentingOV, treeRepresentingNonBooleanNode, updatedKnownValuesList, context, isToSolveAsPositiveOperation, true);
+						SearchResult recursiveResult = this.solveFormulaTreeOVEqualsToNonBooleanNode(treeRepresentingOV, treeRepresentingNonBooleanNode, updatedKnownValuesList, context, isToSolveAsPositiveOperation, true);
 						// concatenate recursiveResult to concatenatedSearchResult
 						if (concatenatedSearchResult == null) {
 							// this is the first time concatenatedSearchResult is updated. Initialize it
@@ -2256,7 +2755,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 									}
 								}
 							}
-							knownSearchResults.getValuesResultList().add(result);
+							knownSearchResults.addResult(result);
 						}
 					}
 				}
