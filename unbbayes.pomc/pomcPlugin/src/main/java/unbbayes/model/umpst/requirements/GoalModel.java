@@ -1,29 +1,36 @@
 package unbbayes.model.umpst.requirements;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GoalModel {
 	
+	private String id;
 	private String goalName;
 	private String comments;
 	private String author;
 	private String date;
 	private GoalModel goalFather;
-	private ArrayList<GoalModel> subgoals ;
-	private ArrayList<HypothesisModel> hypothesis;
+	private Map<String, GoalModel> subgoals ;
+	private Map<String,HypothesisModel> mapHypothesis;
 	
-	public GoalModel(String goalName, String comments,String author, String date, GoalModel father,ArrayList<GoalModel> children,ArrayList<HypothesisModel> hypothesis) {
+	public GoalModel(String id,String goalName, String comments,String author, 
+			String date, GoalModel father,Map<String,GoalModel> children,Map<String,HypothesisModel> hypothesis) {
 		
-		
+		this.id=id;
 		this.goalName = goalName;
 		this.comments = comments;
 		this.author = author;
 		this.date = date;
 		this.goalFather = father;
 		this.subgoals = children;
-		this.hypothesis=hypothesis;
+		if (children==null){
+			this.setSubgoals(new HashMap<String, GoalModel>());
+		}
+		this.mapHypothesis=hypothesis;
 		if ( hypothesis==null ){
-			hypothesis = new ArrayList<HypothesisModel>();
+			this.setMapHypothesis(new HashMap<String, HypothesisModel>());
 
 		}
 
@@ -35,6 +42,36 @@ public class GoalModel {
 
 	
 	
+
+
+
+
+
+
+	/**
+	 * @return the id
+	 */
+	public String getId() {
+		return id;
+	}
+
+
+
+
+
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(String id) {
+		this.id = id;
+	}
+
+
+
+
+
+
 	/**
 	 * @return the goalFather
 	 */
@@ -62,7 +99,7 @@ public class GoalModel {
 	/**
 	 * @return the subgoals
 	 */
-	public ArrayList<GoalModel> getSubgoals() {
+	public Map<String,GoalModel> getSubgoals() {
 		return subgoals;
 	}
 
@@ -74,7 +111,7 @@ public class GoalModel {
 	/**
 	 * @param subgoals the subgoals to set
 	 */
-	public void setSubgoals(ArrayList<GoalModel> subgoals) {
+	public void setSubgoals(Map<String,GoalModel> subgoals) {
 		this.subgoals = subgoals;
 	}
 
@@ -83,11 +120,18 @@ public class GoalModel {
 
 
 
+
+
+
+
+
+
+
 	/**
-	 * @return the hypothesis
+	 * @return the mapHypothesis
 	 */
-	public ArrayList<HypothesisModel> getHypothesis() {
-		return hypothesis;
+	public Map<String, HypothesisModel> getMapHypothesis() {
+		return mapHypothesis;
 	}
 
 
@@ -96,10 +140,10 @@ public class GoalModel {
 
 
 	/**
-	 * @param hypothesis the hypothesis to set
+	 * @param mapHypothesis the mapHypothesis to set
 	 */
-	public void setHypothesis(ArrayList<HypothesisModel> hypothesis) {
-		this.hypothesis = hypothesis;
+	public void setMapHypothesis(Map<String, HypothesisModel> mapHypothesis) {
+		this.mapHypothesis = mapHypothesis;
 	}
 
 

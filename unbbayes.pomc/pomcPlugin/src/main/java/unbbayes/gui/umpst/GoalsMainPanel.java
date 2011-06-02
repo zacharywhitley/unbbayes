@@ -34,7 +34,7 @@ public class GoalsMainPanel extends IUMPSTPanel{
 	public JSplitPane getSplitPane() {
 		if(splitPane == null){
 			splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-					getGoalsPanel(goal),getHypothesisTable());
+					getGoalsPanel(goal),getHypothesisTable(goal));
 			splitPane.setDividerLocation(400);
 			splitPane.setPreferredSize(new Dimension(800,600));
 			splitPane.setBackground(new Color(0x4169AA));
@@ -45,7 +45,7 @@ public class GoalsMainPanel extends IUMPSTPanel{
 	/**
 	 * @return the hypothesisPanel
 	 */
-	public TableHypothesis getHypothesisTable() {
+	public TableHypothesis getHypothesisTable(GoalModel goal) {
 		if(hypothesisPanel == null ){
 			hypothesisPanel = new TableHypothesis(getJanelaPai(),goal);
 		}

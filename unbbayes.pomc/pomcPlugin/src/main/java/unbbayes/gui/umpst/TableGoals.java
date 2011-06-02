@@ -1,20 +1,13 @@
 package unbbayes.gui.umpst;
 
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Set;
-import java.util.Stack;
 import java.util.TreeSet;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -27,16 +20,17 @@ import unbbayes.model.umpst.requirements.GoalModel;
 
 public class TableGoals extends IUMPSTPanel{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private JTable table;
 	private JScrollPane scrollpanePergunta;
 	
-
-	private static TableGoals instance;
-	private String s;
 	
 	
 	
-	Object[] dataAux = new Object[4];
+	Object[] dataAux = new Object[5];
 	Integer i = 0;
 
 	
@@ -45,7 +39,7 @@ public class TableGoals extends IUMPSTPanel{
 	ImageIcon iconEdit = createImageIcon("images/edit.gif");
 
 	
-	String[] columnNames = {"Goal","","",""};
+	String[] columnNames = {"ID","Goal","","",""};
 
 	Object[][] data = {};
 	
@@ -54,7 +48,7 @@ public class TableGoals extends IUMPSTPanel{
  
     	  /**private constructors make class extension almost impossible,
     	that's why this is protected*/
-    	  protected TableGoals(UmpstModule janelaPai) {
+    	  public TableGoals(UmpstModule janelaPai) {
     		  
     		    super(janelaPai);
     	    	this.setLayout(new GridLayout(1,0));
@@ -63,12 +57,15 @@ public class TableGoals extends IUMPSTPanel{
     	    	this.add(createScrolltableGoals(columnNames,data));
     		    
     	  }
+    	 
+    	  
+    	  
     	  /**
     	   * SingletonHolder is loaded on the first execution of
     	TableGoals.getInstance()
     	   * or the first access to SingletonHolder.INSTANCE, not before.
     	   */
-    	  private static class SingletonHolder {
+    	 private static class SingletonHolder {
     		  	public static final TableGoals INSTANCE = new TableGoals(null);
     	  }
     	  
@@ -108,7 +105,7 @@ public class TableGoals extends IUMPSTPanel{
 			}
 		});
 
-		TableColumn buttonColumn1 = table.getColumnModel().getColumn(1);
+		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length -3);
 		buttonColumn1.setMaxWidth(28);
 		buttonColumn1.setCellRenderer(buttonEdit);
 		buttonColumn1.setCellEditor(buttonEdit);
@@ -134,7 +131,7 @@ public class TableGoals extends IUMPSTPanel{
 			}
 		});
 
-		TableColumn buttonColumn2 = table.getColumnModel().getColumn(2);
+		TableColumn buttonColumn2 = table.getColumnModel().getColumn(columnNames.length-2);
 		buttonColumn2.setMaxWidth(22);
 		buttonColumn2.setCellRenderer(buttonAdd);
 		buttonColumn2.setCellEditor(buttonAdd);
@@ -143,10 +140,7 @@ public class TableGoals extends IUMPSTPanel{
 			public void onButtonPress(int row, int column) {
 				String key = data[row][0].toString();
 				GoalModel goalAux = UMPSTProject.getInstance().getMapGoal().get(key);
-				alterarJanelaAtual(new SubgoalMainPanel(getJanelaPai(),null,goalAux));
-				
-				System.out.println("***IMPRIMINDO PAI****");
-				System.out.println(goalAux.getGoalName());
+				alterarJanelaAtual(new GoalsMainPanel(getJanelaPai(),null,goalAux));
 				
 			}
 		});
@@ -160,7 +154,7 @@ public class TableGoals extends IUMPSTPanel{
 
 			}
 		});
-		TableColumn buttonColumn3 = table.getColumnModel().getColumn(3);
+		TableColumn buttonColumn3 = table.getColumnModel().getColumn(columnNames.length-1);
 		buttonColumn3.setMaxWidth(25);
 		buttonColumn3.setCellRenderer(buttonDel);
 		buttonColumn3.setCellEditor(buttonDel);
@@ -173,23 +167,34 @@ public class TableGoals extends IUMPSTPanel{
 				if( JOptionPane.showConfirmDialog(null,"Confirma Remocao do goal "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 							String key = data[row][0].toString();
-							GoalModel goalAux = UMPSTProject.getInstance().getMapGoal().get(key);
-							UMPSTProject.getInstance().getMapGoal().remove(goalAux.getGoalName());
+							GoalModel goalToBeDeleted = UMPSTProject.getInstance().getMapGoal().get(key);
+							
+							
+							if(goalToBeDeleted.getSubgoals() !=null){
+								int numberSubgoal = goalToBeDeleted.getSubgoals().size();
+								for (int i = 0; i < numberSubgoal; i++) {
+									goalToBeDeleted.getSubgoals().get(goalToBeDeleted.getId()+"."+i).setGoalFather(null);
+									//goalToBeDeleted.getSubgoals().get(goalToBeDeleted.getId()+"."+i).setId("D"+i);
+								}
+							}
+							
+							
+							UMPSTProject.getInstance().getMapGoal().remove(goalToBeDeleted.getId());
 							
 							
 							 
-							Object[][] dataDel = new Object[UMPSTProject.getInstance().getMapGoal().size()][4];
+							Object[][] dataDel = new Object[UMPSTProject.getInstance().getMapGoal().size()][5];
 							Integer i=0;
 						    
 							Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
 							TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 							
 							for (String chave: sortedKeys){
-						
-								dataDel[i][0] = UMPSTProject.getInstance().getMapGoal().get(chave).getGoalName();
-								dataDel[i][1] = "";
+								dataDel[i][0] = UMPSTProject.getInstance().getMapGoal().get(chave).getId();						
+								dataDel[i][1] = UMPSTProject.getInstance().getMapGoal().get(chave).getGoalName();
 								dataDel[i][2] = "";
 								dataDel[i][3] = "";
+								dataDel[i][4] = "";
 								i++;
 							}
 							
@@ -197,8 +202,8 @@ public class TableGoals extends IUMPSTPanel{
 							UmpstModule pai = getJanelaPai();
 							 alterarJanelaAtual(pai.getMenuPanel());
 							 
-							 TableGoals goalsTable = pai.getMenuPanel().getRequirementsPane().getGoalsTable();
-							 String[] colunas = {"GoalRR","","",""};
+							 //TableGoals goalsTable = pai.getMenuPanel().getRequirementsPane().getGoalsTable();
+							 String[] colunas = {"ID","Goal","","",""};
 							 JTable table = createTable(colunas,dataDel);
 							 
 							 getScrollPanePergunta().setViewportView(table);

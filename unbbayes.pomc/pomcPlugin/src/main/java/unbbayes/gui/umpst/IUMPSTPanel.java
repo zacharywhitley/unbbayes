@@ -2,12 +2,15 @@ package unbbayes.gui.umpst;
 
 import java.awt.GridLayout;
 
-import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 
 
 public abstract class IUMPSTPanel extends JPanel {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private UmpstModule janelaPai;
 	
 	public UmpstModule getJanelaPai(){

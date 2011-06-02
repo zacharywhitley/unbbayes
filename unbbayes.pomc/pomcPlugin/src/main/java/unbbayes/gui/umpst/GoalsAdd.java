@@ -9,6 +9,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -47,7 +48,7 @@ public class GoalsAdd extends IUMPSTPanel {
 	private GoalModel goal;
 	private GoalModel goalFather;
 	private ArrayList<GoalModel> goalChildren;
-	private ArrayList<HypothesisModel> hypothesis;
+	private Map<String,HypothesisModel> hypothesis;
 	
 
 
@@ -164,9 +165,37 @@ public class GoalsAdd extends IUMPSTPanel {
 		buttonAdd.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if( goal == null){
+
+					String idAux = "";
 					
-					GoalModel goalAdd = new GoalModel(goalText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),goalFather,goalChildren,null);
+					if (goalFather==null){
+						idAux = UMPSTProject.getInstance().getMapGoal().size()+"";
+					}
+					else{
+						if (goalFather.getSubgoals()!=null){
+							idAux = goalFather.getId()+"."+ goalFather.getSubgoals().size();
+							
+						}
+						else{
+							idAux = goalFather.getId()+".1";
+
+						}
+					}
+					
 					try {
+						
+
+						
+				
+						
+						GoalModel goalAdd = new GoalModel(idAux,goalText.getText(),commentsText.getText(), authorText.getText(), 
+								dateText.getText(),goalFather,null,null);
+						
+						if (goalFather!=null){
+							goalFather.getSubgoals().put(goalAdd.getId(), goalAdd);
+						}
+						
+					    UMPSTProject.getInstance().getMapGoal().put(goalAdd.getId(), goalAdd);	
 						updateTree(goalAdd);
 					  	JOptionPane.showMessageDialog(null, "Goal successfully added",null, JOptionPane.INFORMATION_MESSAGE);
 						
@@ -180,19 +209,28 @@ public class GoalsAdd extends IUMPSTPanel {
 				else{
 					if( JOptionPane.showConfirmDialog(null, "Do you want to update this Goal?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 						
-						//UMPSTProject.getInstance().getMapGoal().remove(goal.getGoalName());
-						//GoalModel goalUpdate = new GoalModel(goalText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),goalFather,goalChildren,hypothesis);	
-					
-						goal.setGoalName(goalText.getText());
-						goal.setComments(commentsText.getText());
-						goal.setAuthor(authorText.getText());
-						goal.setDate(dateText.getText());
-						goal.setGoalFather(goalFather);
-						goal.setHypothesis(hypothesis);
-						//goal.setSubgoals(subgoals);
-						
 						try{
+
+						/*	hypothesis = goal.getMapHypothesis();
+							Map<String, GoalModel> subGoals = goal.getSubgoals();
+							UMPSTProject.getInstance().getMapGoal().remove(goal.getGoalName());
+							GoalModel goalUpdate = new GoalModel(goal.getId(),goalText.getText(),
+									commentsText.getText(), authorText.getText(), dateText.getText(),goalFather,subGoals,hypothesis);	
+								
+											
+							if(hypothesis!=null){
+								goal.getMapHypothesis().putAll(hypothesis);
+							}
+							UMPSTProject.getInstance().getMapGoal().put(goalUpdate.getGoalName(), goalUpdate);
+
+							*/
 							
+							goal.setGoalName(goalText.getText());
+							goal.setComments(commentsText.getText());
+							goal.setAuthor(authorText.getText());
+							goal.setDate(dateText.getText());
+							
+
 							updateTree(goal);
 							JOptionPane.showMessageDialog(null, "Goal successfully updated",null, JOptionPane.INFORMATION_MESSAGE);	
 						
@@ -223,8 +261,7 @@ public class GoalsAdd extends IUMPSTPanel {
 		
 		buttonSubgoal.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				alterarJanelaAtual(new SubgoalMainPanel(getJanelaPai(),null,goal));
-				System.out.println("entrou no subgoal");
+				alterarJanelaAtual(new GoalsMainPanel(getJanelaPai(),null,goal));
 
 			}
 		});
@@ -270,13 +307,12 @@ public class GoalsAdd extends IUMPSTPanel {
     
     
     public void updateTree(GoalModel goalUpdate){
-    	String[] columnNames = {"Goal","","",""};
+    	String[] columnNames = {"ID","Goal","","",""};
 		
         /**Adicionando novo goal ao Mapa em memória*/
-	    UMPSTProject.getInstance().getMapGoal().put(goalUpdate.getGoalName(), goalUpdate);	
 	    
 	    
-		Object[][] data = new Object[UMPSTProject.getInstance().getMapGoal().size()][4];
+		Object[][] data = new Object[UMPSTProject.getInstance().getMapGoal().size()][5];
 		Integer i=0;
 	    
 		Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
@@ -284,10 +320,11 @@ public class GoalsAdd extends IUMPSTPanel {
 		
 		for (String key: sortedKeys){
 	
-			data[i][0] = UMPSTProject.getInstance().getMapGoal().get(key).getGoalName();
-			data[i][1] = "";
+			data[i][0] = UMPSTProject.getInstance().getMapGoal().get(key).getId();
+			data[i][1] = UMPSTProject.getInstance().getMapGoal().get(key).getGoalName();			
 			data[i][2] = "";
 			data[i][3] = "";
+			data[i][4] = "";
 			i++;
 		}
 	    

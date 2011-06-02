@@ -2,8 +2,12 @@ package unbbayes.gui.umpst;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.util.Set;
+import java.util.TreeSet;
+
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -29,9 +33,9 @@ public class TableHypothesis extends IUMPSTPanel{
 	ImageIcon iconEdit = createImageIcon("images/edit.gif");
 
 	
-	String[] columnNames = {"Hypothesis","","",""};
-
+	String[] columnNames = {"id","Hypothesis","","",""};
 	Object[][] data = {};
+
 	
 	
 
@@ -46,17 +50,17 @@ public class TableHypothesis extends IUMPSTPanel{
     	    	this.janelaPaiAux = janelaPai;
     	    	this.goalRelated=goalRelated;
     	    	
-    	    	this.add(createScrolltableHypothesis(data));
+    	    	this.add(createScrolltableHypothesis());
     		    
     	  }
     	
     	  
     	  
-    	  public void setJanelaPai(UmpstModule janelaPai, Object[][] data){
+    	  public void setJanelaPai(UmpstModule janelaPai){
     		// super(janelaPai);
   	    	
     		  this.setLayout(new GridLayout(1,0));
-  	          this.add(createScrolltableHypothesis(data));
+  	          this.add(createScrolltableHypothesis());
     		  
     	  }
     
@@ -65,8 +69,32 @@ public class TableHypothesis extends IUMPSTPanel{
 	/**
 	 * @return the table
 	 */
-	public JTable createTable(final Object[][] data) {
+	public JTable createTable() {
 
+		
+		Integer i=0;
+
+		if (goalRelated!=null){			
+			data = new Object[goalRelated.getMapHypothesis().size()][5];
+
+			
+			Set<String> keys = goalRelated.getMapHypothesis().keySet();
+			TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+			
+			
+			
+			for (String key: sortedKeys){
+		
+				data[i][0] = goalRelated.getMapHypothesis().get(key).getId();
+				data[i][1] = goalRelated.getMapHypothesis().get(key).getHypothesisName();
+				data[i][2] = "";
+				data[i][3] = "";
+				data[i][4] = "";
+				i++;
+			}
+		}
+		
+		
 		DefaultTableModel tableModel = new DefaultTableModel(data, columnNames);
 		table = new JTable(tableModel);
 
@@ -79,7 +107,7 @@ public class TableHypothesis extends IUMPSTPanel{
 			}
 		});
 
-		TableColumn buttonColumn1 = table.getColumnModel().getColumn(1);
+		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length-3);
 		buttonColumn1.setMaxWidth(28);
 		buttonColumn1.setCellRenderer(buttonEdit);
 		buttonColumn1.setCellEditor(buttonEdit);
@@ -87,9 +115,9 @@ public class TableHypothesis extends IUMPSTPanel{
 		buttonEdit.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
 				
-				String key = data[row][0].toString();
-				HypothesisModel hypothesisAux = UMPSTProject.getInstance().getMapHypothesis().get(key);
-				alterarJanelaAtual(new HypothesisAdd(getJanelaPai(), null,hypothesisAux, hypothesisAux.getFather() )   );
+				String hypothesisAdd = data[row][0].toString();
+				HypothesisModel hypothesisAux = goalRelated.getMapHypothesis().get(hypothesisAdd);
+				alterarJanelaAtual(new HypothesisAdd(getJanelaPai(), goalRelated,hypothesisAux, hypothesisAux.getFather() )   );
 			}
 		});
 		
@@ -105,7 +133,7 @@ public class TableHypothesis extends IUMPSTPanel{
 			}
 		});
 
-		TableColumn buttonColumn2 = table.getColumnModel().getColumn(2);
+		TableColumn buttonColumn2 = table.getColumnModel().getColumn(columnNames.length-2);
 		buttonColumn2.setMaxWidth(22);
 		buttonColumn2.setCellRenderer(buttonAdd);
 		buttonColumn2.setCellEditor(buttonAdd);
@@ -113,11 +141,9 @@ public class TableHypothesis extends IUMPSTPanel{
 		buttonAdd.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
 				String key = data[row][0].toString();
-				GoalModel goalAux = UMPSTProject.getInstance().getMapGoal().get(key);
-				alterarJanelaAtual(new SubgoalMainPanel(getJanelaPai(),null,goalAux));
-				
-				System.out.println("***IMPRIMINDO PAI****");
-				System.out.println(goalAux.getGoalName());
+				HypothesisModel hypothesisRelated =  goalRelated.getMapHypothesis().get(key);
+				alterarJanelaAtual(new HypothesisAdd(getJanelaPai(),goalRelated,null,hypothesisRelated));
+			
 				
 			}
 		});
@@ -131,7 +157,7 @@ public class TableHypothesis extends IUMPSTPanel{
 
 			}
 		});
-		TableColumn buttonColumn3 = table.getColumnModel().getColumn(3);
+		TableColumn buttonColumn3 = table.getColumnModel().getColumn(columnNames.length-1);
 		buttonColumn3.setMaxWidth(25);
 		buttonColumn3.setCellRenderer(buttonDel);
 		buttonColumn3.setCellEditor(buttonDel);
@@ -141,12 +167,25 @@ public class TableHypothesis extends IUMPSTPanel{
 			
 			public void onButtonPress(int row, int column) {
 				
-				/*if( JOptionPane.showConfirmDialog(null,"Confirma Remo√ß√£o do contribuinte "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
+				if( JOptionPane.showConfirmDialog(null,"Confirma Remocao do goal "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
+							
 							String key = data[row][0].toString();
-							GoalModel goalAux = UMPSTProject.getInstance().getMapGoal().get(key);
-							UMPSTProject.getInstance().getMapGoal().remove(goalAux.getGoalName());
-				}*/
+							goalRelated.getMapHypothesis().remove(key);
+							
+							UmpstModule pai = getJanelaPai();
+						    alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsMainPanel(goalRelated)	);
+							 
+							 JTable table = createTable();
+							 
+							 getScrollPanePergunta().setViewportView(table);
+							 getScrollPanePergunta().updateUI();
+							 getScrollPanePergunta().repaint();
+							 updateUI();
+							 repaint();
+							   
+			
+				}
 			}
 		});
 		
@@ -154,9 +193,9 @@ public class TableHypothesis extends IUMPSTPanel{
        }
 	
 	
-	public JScrollPane createScrolltableHypothesis( Object[][] data){
+	public JScrollPane createScrolltableHypothesis(){
 		if(scrollpanePergunta == null){
-			scrollpanePergunta = new JScrollPane(createTable(data));
+			scrollpanePergunta = new JScrollPane(createTable());
 			scrollpanePergunta.setMinimumSize(new Dimension(300,150));
 		}
 		

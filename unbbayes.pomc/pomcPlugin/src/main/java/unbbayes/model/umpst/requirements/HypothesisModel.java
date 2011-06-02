@@ -1,27 +1,50 @@
 package unbbayes.model.umpst.requirements;
 
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class HypothesisModel {
 	
+	private String id;
 	private String hypothesisName;
 	private String comments;
 	private String author;
 	private String date;
 	private GoalModel goalRelated;
 	private HypothesisModel father;
-	private ArrayList<HypothesisModel> children;
+	private Map<String,HypothesisModel> mapSubHypothesis;
 	
-	public HypothesisModel(String hypothesisName, String comments,String author, String date,GoalModel goalRelated, HypothesisModel father,ArrayList<HypothesisModel> children) {
+	public HypothesisModel(String id,String hypothesisName, String comments,String author, String date,
+			GoalModel goalRelated, HypothesisModel father,Map<String,HypothesisModel> subHypothesis) {
 		
+		this.id=id;
 		this.hypothesisName = hypothesisName;
 		this.comments = comments;
 		this.author = author;
 		this.date = date;
 		this.father = father;
-		this.children = children;
+		this.mapSubHypothesis = subHypothesis;
+		if(subHypothesis==null){
+			this.setSubHypothesis(new HashMap<String, HypothesisModel>());			
+		}
 		this.goalRelated = goalRelated;
 		// TODO Auto-generated constructor stub
+	}
+
+
+	/**
+	 * @return the id
+	 */
+	public String getId() {
+		return id;
+	}
+
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(String id) {
+		this.id = id;
 	}
 
 
@@ -44,16 +67,16 @@ public class HypothesisModel {
 	/**
 	 * @return the children
 	 */
-	public ArrayList<HypothesisModel> getChildren() {
-		return children;
+	public Map<String,HypothesisModel> getSubHypothesis() {
+		return mapSubHypothesis;
 	}
 
 
 	/**
 	 * @param children the children to set
 	 */
-	public void setChildren(ArrayList<HypothesisModel> children) {
-		this.children = children;
+	public void setSubHypothesis(Map<String,HypothesisModel> subHypothesis) {
+		this.mapSubHypothesis = subHypothesis;
 	}
 
 
