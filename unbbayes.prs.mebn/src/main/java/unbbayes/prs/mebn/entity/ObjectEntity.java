@@ -120,12 +120,12 @@ public class ObjectEntity extends Entity {
 	}
 	
 	public ObjectEntityInstance getInstanceByName(String name){
-		for(ObjectEntityInstance instance: this.listObjectEntityInstance){
-			if(instance.getName().equals(name)){
-				return instance; 
-			}
-		}
-		return null; 
+        for(ObjectEntityInstance instance: this.listObjectEntityInstance){
+                if(instance.getName().equalsIgnoreCase(name)){
+                        return instance;
+                }
+        }
+        return null;
 	}
 	
 	public void removeInstance(ObjectEntityInstance instance) {
