@@ -1,4 +1,4 @@
-UNBBAYES PLUGIN - VERSION 1.8.6
+UNBBAYES PLUGIN - VERSION 1.8.8
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
@@ -13,3 +13,5 @@ Number	Request ID	Summary
 4		2985473     Reference Uncertainty Error in SSBN.
 5		3260712     SSBN is not saved with correct CPT.
 6		3278359		Weird entity names at SSBN.
+7					Changed compiler so that it now considers all undeclared states as having zero percent.
+8		3307484		MEBN cannot compile complex LPD.
