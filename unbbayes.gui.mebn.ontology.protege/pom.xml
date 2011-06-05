@@ -171,11 +171,6 @@
 			</dependency>
 			
 			<!-- This is a plugin project for unbbayes.prs.mebn -->
-			<dependency>
-				<groupId>br.unb.cic</groupId>
-				<artifactId>unbbayes.prs.mebn</artifactId>
-				<version>1.8.7</version>
-			</dependency>
 			
 			<!-- Protege 4.1 (it handles OWL2) -->
 			 <dependency>
@@ -378,7 +373,13 @@
 			    <artifactId>xalan</artifactId>
 			    <version>2.7.1</version>
 			</dependency>
-	</dependencies>
+			 <dependency>
+			 	<groupId>br.unb.cic</groupId>
+			 	<artifactId>unbbayes.prs.mebn</artifactId>
+			 	<version>1.8.8</version>
+			 	<optional>false</optional>
+			 </dependency>
+		</dependencies>
 	<reporting>
 		<plugins>
 			<plugin>
