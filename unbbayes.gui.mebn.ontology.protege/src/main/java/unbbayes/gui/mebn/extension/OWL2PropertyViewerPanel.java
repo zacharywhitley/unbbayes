@@ -5,7 +5,10 @@ package unbbayes.gui.mebn.extension;
 
 import java.awt.BorderLayout;
 import java.awt.datatransfer.Transferable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 
@@ -21,10 +24,12 @@ import org.protege.editor.core.ui.util.ComponentFactory;
 import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLException;
+import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.OWLProperty;
 
 import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.gui.mebn.ontology.protege.OWLPropertyViewerPanel;
@@ -86,13 +91,48 @@ public class OWL2PropertyViewerPanel extends OWLPropertyViewerPanel {
 		// create list data
 		this.setPropertyListModel(new DefaultListModel());
 		
+		// prepare comparator so that we can sort the properties by name
+		Comparator<OWLProperty> owlPropertyNameComparator = new Comparator<OWLProperty>() {
+			public int compare(OWLProperty o1, OWLProperty o2) {
+				try {
+					// compare by the last name, if they are named
+					if (!o1.isAnonymous() && !o2.isAnonymous()) {
+						// both are named properties
+						// case-insensitive comparison to the string after '#' (this is called a "fragment" of an IRI)
+						return o1.getIRI().getFragment().compareToIgnoreCase(o2.getIRI().getFragment());
+					} else if (!o1.isAnonymous()) {
+						// o1 is named and o2 is not named. Consider named properties as lower (comes first) in order
+						return -1;
+					} else if (!o2.isAnonymous()) {
+						// o2 is named and o1 is not named. Consider named properties as lower (comes first) in order
+						return 1;
+					}
+				} catch (Exception e) {
+					try {
+						Debug.println(this.getClass(), "Could not compare " + o1 + " and " + o2 + ": " + e.getMessage(), e);
+					} catch (Throwable t) {
+						// TODO: handle exception
+					}
+				}
+				// default: string comparison 
+				return o1.toString().compareTo(o2.toString());
+			}
+		};
+		
 		// fill list data with object properties (including imports)
-		for (Object property : owlOntology.getObjectPropertiesInSignature(true)) {
+		List<OWLProperty> properties = new ArrayList<OWLProperty>(owlOntology.getObjectPropertiesInSignature(true));
+		Collections.sort(properties, owlPropertyNameComparator);    // sort by name
+		// fill list model with sorted data
+		for (OWLObject property : properties) {
 			this.getPropertyListModel().addElement(property);
 		}
 		
+		
 		// fill list data with data properties (including imports)
-		for (Object property : owlOntology.getDataPropertiesInSignature(true)) {
+		properties = new ArrayList<OWLProperty>(owlOntology.getDataPropertiesInSignature(true));
+		Collections.sort(properties, owlPropertyNameComparator);	// sort by name
+		// fill list model with sorted data
+		for (OWLObject property : properties) {
 			this.getPropertyListModel().addElement(property);
 		}
 		
