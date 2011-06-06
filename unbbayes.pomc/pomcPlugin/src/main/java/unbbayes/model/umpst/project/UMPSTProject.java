@@ -11,16 +11,12 @@
 
 package unbbayes.model.umpst.project;
 
-import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
 import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
-import unbbayes.gui.umpst.TableGoals;
-import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.entities.AtributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.entities.RelationshipModel;
@@ -35,6 +31,9 @@ public class UMPSTProject implements Graph {
 	private java.util.Map<String,EntityModel> mapEntity;
 	private java.util.Map<String,AtributeModel> mapAtribute;
 	private java.util.Map<String,RelationshipModel> mapRelationship;
+	private java.util.Map<String, SearchModelGoal> mapSearchGoal;
+	private java.util.Map<String, SearchModelEntity> mapSearchEntity;
+
 	
 private static UMPSTProject instance = new UMPSTProject();
 
@@ -46,6 +45,10 @@ private static UMPSTProject instance = new UMPSTProject();
 		this.setMapEntity(new HashMap<String, EntityModel>());
 		this.setMapAtribute(new HashMap<String, AtributeModel>());
 		this.setMapRelationship(new HashMap<String, RelationshipModel>());
+		this.setMapSearchGoal(new HashMap<String, SearchModelGoal>());
+		this.setMapSearchEntity(new HashMap<String, SearchModelEntity>());
+		
+		
 	}
 	
 	  
@@ -55,6 +58,55 @@ private static UMPSTProject instance = new UMPSTProject();
 		return instance;
 		
 	}
+	
+	
+
+
+
+	/**
+	 * @return the mapSearchGoal
+	 */
+	public java.util.Map<String, SearchModelGoal> getMapSearchGoal() {
+		return mapSearchGoal;
+	}
+
+
+
+	/**
+	 * @param mapSearchGoal the mapSearchGoal to set
+	 */
+	public void setMapSearchGoal(
+			java.util.Map<String, SearchModelGoal> mapSearchGoal) {
+		this.mapSearchGoal = mapSearchGoal;
+	}
+
+
+
+
+
+
+
+
+
+
+	/**
+	 * @return the mapSearchEntity
+	 */
+	public java.util.Map<String, SearchModelEntity> getMapSearchEntity() {
+		return mapSearchEntity;
+	}
+
+
+
+	/**
+	 * @param mapSearchEntity the mapSearchEntity to set
+	 */
+	public void setMapSearchEntity(
+			java.util.Map<String, SearchModelEntity> mapSearchEntity) {
+		this.mapSearchEntity = mapSearchEntity;
+	}
+
+
 
 	/**
 	 * @return the mapGoal

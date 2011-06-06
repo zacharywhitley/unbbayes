@@ -5,14 +5,18 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Iterator;
+import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 
+import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
 
 public class GoalsSearchPanel extends IUMPSTPanel {
@@ -119,6 +123,14 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 			buttonSearch = new JButton("Search: ");
 			buttonSearch.setForeground(Color.blue);
 		}
+	
+			
+		buttonSearch.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				updateTableGoals();
+			}
+		});
 		
 		return buttonSearch;
 	}
@@ -135,6 +147,40 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 		
 		return textGoal;
 	}
+	
+	public void updateTableGoals(){
+    	String[] columnNames = {"ID","Goal","","",""};
+		Set<GoalModel> aux = UMPSTProject.getInstance().getMapSearchGoal().get(textGoal.getText()).getGoalsRelated();
+		GoalModel goal;
+		Object[][] data = new Object[UMPSTProject.getInstance().getMapSearchGoal().get(textGoal.getText()).getGoalsRelated().size()][5];
+		Integer i=0;
+		
+	    
+    	for (Iterator<GoalModel> it = aux.iterator(); it.hasNext(); ) {
+    	     goal = it.next();  // No downcasting required.
+    	     
+    	 	data[i][0] = goal.getId();
+			data[i][1] = goal.getGoalName();			
+			data[i][2] = "";
+			data[i][3] = "";
+			data[i][4] = "";
+			i++;
+    	}
+    	
+	    
+   
+	    UmpstModule pai = getJanelaPai();
+	    alterarJanelaAtual(pai.getMenuPanel());
+	    
+	    TableGoals goalsTable = pai.getMenuPanel().getRequirementsPane().getGoalsTable();
+	    JTable table = goalsTable.createTable(columnNames,data);
+	    
+	    goalsTable.getScrollPanePergunta().setViewportView(table);
+	    goalsTable.getScrollPanePergunta().updateUI();
+	    goalsTable.getScrollPanePergunta().repaint();
+	    goalsTable.updateUI();
+	    goalsTable.repaint();
+    }
 	
 	
 	

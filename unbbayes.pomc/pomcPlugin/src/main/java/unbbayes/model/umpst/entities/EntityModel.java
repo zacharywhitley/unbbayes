@@ -4,6 +4,7 @@ import unbbayes.model.umpst.requirements.GoalModel;
 
 public class EntityModel {
 	
+	private String id;
 	private String entityName;
 	private String comments;
 	private String author;
@@ -11,14 +12,31 @@ public class EntityModel {
 	private EntityModel pai;
 	
 	
-	public EntityModel(String entityName, String comments,String author, String date, EntityModel pai) {
+	public EntityModel(String id,String entityName, String comments,String author, String date, EntityModel pai) {
 		
+		this.id = id;
 		this.entityName = entityName;
 		this.comments = comments;
 		this.author = author;
 		this.date = date;
 		this.pai = pai;
 		// TODO Auto-generated constructor stub
+	}
+
+
+	/**
+	 * @return the id
+	 */
+	public String getId() {
+		return id;
+	}
+
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(String id) {
+		this.id = id;
 	}
 
 

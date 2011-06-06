@@ -8,8 +8,9 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Map;
+
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -20,9 +21,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 
+import unbbayes.model.umpst.project.SearchModelGoal;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
-import unbbayes.model.umpst.requirements.HypothesisModel;
 
 
 public class GoalsAdd extends IUMPSTPanel {
@@ -47,8 +48,9 @@ public class GoalsAdd extends IUMPSTPanel {
 	private JTextField goalText,commentsText;
 	private GoalModel goal;
 	private GoalModel goalFather;
-	private ArrayList<GoalModel> goalChildren;
-	private Map<String,HypothesisModel> hypothesis;
+
+	//private ArrayList<GoalModel> goalChildren;
+	//private Map<String,HypothesisModel> hypothesis;
 	
 
 
@@ -165,38 +167,11 @@ public class GoalsAdd extends IUMPSTPanel {
 		buttonAdd.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if( goal == null){
-
-					String idAux = "";
-					
-					if (goalFather==null){
-						idAux = UMPSTProject.getInstance().getMapGoal().size()+"";
-					}
-					else{
-						if (goalFather.getSubgoals()!=null){
-							idAux = goalFather.getId()+"."+ goalFather.getSubgoals().size();
-							
-						}
-						else{
-							idAux = goalFather.getId()+".1";
-
-						}
-					}
 					
 					try {
-						
-
-						
-				
-						
-						GoalModel goalAdd = new GoalModel(idAux,goalText.getText(),commentsText.getText(), authorText.getText(), 
-								dateText.getText(),goalFather,null,null);
-						
-						if (goalFather!=null){
-							goalFather.getSubgoals().put(goalAdd.getId(), goalAdd);
-						}
-						
-					    UMPSTProject.getInstance().getMapGoal().put(goalAdd.getId(), goalAdd);	
-						updateTree(goalAdd);
+					    GoalModel goalAdd = updateMapGoal();					    
+					    updateMapSearch(goalAdd);
+						updateTableGoals(goalAdd);
 					  	JOptionPane.showMessageDialog(null, "Goal successfully added",null, JOptionPane.INFORMATION_MESSAGE);
 						
 					} catch (Exception e1) {
@@ -210,28 +185,32 @@ public class GoalsAdd extends IUMPSTPanel {
 					if( JOptionPane.showConfirmDialog(null, "Do you want to update this Goal?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 						
 						try{
+							/**Cleaning Search Map*/
+							Set<GoalModel> aux = new HashSet<GoalModel>();
+							GoalModel goalBeta;
+							String[] strAux=goal.getGoalName().split(" ");
 
-						/*	hypothesis = goal.getMapHypothesis();
-							Map<String, GoalModel> subGoals = goal.getSubgoals();
-							UMPSTProject.getInstance().getMapGoal().remove(goal.getGoalName());
-							GoalModel goalUpdate = new GoalModel(goal.getId(),goalText.getText(),
-									commentsText.getText(), authorText.getText(), dateText.getText(),goalFather,subGoals,hypothesis);	
-								
-											
-							if(hypothesis!=null){
-								goal.getMapHypothesis().putAll(hypothesis);
-							}
-							UMPSTProject.getInstance().getMapGoal().put(goalUpdate.getGoalName(), goalUpdate);
-
-							*/
+						    for (int i = 0; i < strAux.length; i++) {
+					    		if(UMPSTProject.getInstance().getMapSearchGoal().get(strAux[i])!=null){
+					    			UMPSTProject.getInstance().getMapSearchGoal().get(strAux[i]).getGoalsRelated().remove(goal);
+					    			aux = UMPSTProject.getInstance().getMapSearchGoal().get(strAux[i]).getGoalsRelated();
+					    	    	for (Iterator<GoalModel> it = aux.iterator(); it.hasNext(); ) {
+					    	    		goalBeta = it.next();
+					    	   		}
+					    		}
+					    		
+						    	
+						    }
+						    /************/
 							
 							goal.setGoalName(goalText.getText());
 							goal.setComments(commentsText.getText());
 							goal.setAuthor(authorText.getText());
 							goal.setDate(dateText.getText());
 							
-
-							updateTree(goal);
+						
+							updateMapSearch(goal);
+							updateTableGoals(goal);
 							JOptionPane.showMessageDialog(null, "Goal successfully updated",null, JOptionPane.INFORMATION_MESSAGE);	
 						
 						}
@@ -305,12 +284,58 @@ public class GoalsAdd extends IUMPSTPanel {
         }
     }
     
-    
-    public void updateTree(GoalModel goalUpdate){
-    	String[] columnNames = {"ID","Goal","","",""};
+    public GoalModel updateMapGoal(){
+    	String idAux = "";
+    	int intAux;
+    	Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
+		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
-        /**Adicionando novo goal ao Mapa em memória*/
+		
+		
+		if (goalFather==null){
+			
+			if ( UMPSTProject.getInstance().getMapGoal().size()!=0){
+				for (String key: sortedKeys){
+					idAux = UMPSTProject.getInstance().getMapGoal().get(key).getId();
+				}
+				intAux = Integer.parseInt(idAux.substring(0, 1));
+				intAux++;
+				idAux = intAux+"";
+			}
+			else{
+				idAux = 0+"";
+			}
+			
+		}
+		else{
+			if (goalFather.getSubgoals()!=null){
+				idAux = goalFather.getId()+"."+ goalFather.getSubgoals().size();
+				
+			}
+			else{
+				idAux = goalFather.getId()+".1";
+
+			}
+		}
+
+		
+		GoalModel goalAdd = new GoalModel(idAux,goalText.getText(),commentsText.getText(), authorText.getText(), 
+				dateText.getText(),goalFather,null,null);
+		
+		if (goalFather!=null){
+			goalFather.getSubgoals().put(goalAdd.getId(), goalAdd);
+		}
+		
+	    UMPSTProject.getInstance().getMapGoal().put(goalAdd.getId(), goalAdd);	
 	    
+	    return goalAdd;
+    }
+    
+    
+    public void updateTableGoals(GoalModel goalUpdate){
+    	String[] columnNames = {"ID","Goal","","",""};
+    	
+    	
 	    
 		Object[][] data = new Object[UMPSTProject.getInstance().getMapGoal().size()][5];
 		Integer i=0;
@@ -319,7 +344,7 @@ public class GoalsAdd extends IUMPSTPanel {
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		for (String key: sortedKeys){
-	
+			System.out.println("adicionou: "+UMPSTProject.getInstance().getMapGoal().get(key).getGoalName()+" id: " +UMPSTProject.getInstance().getMapGoal().get(key).getId());
 			data[i][0] = UMPSTProject.getInstance().getMapGoal().get(key).getId();
 			data[i][1] = UMPSTProject.getInstance().getMapGoal().get(key).getGoalName();			
 			data[i][2] = "";
@@ -327,7 +352,7 @@ public class GoalsAdd extends IUMPSTPanel {
 			data[i][4] = "";
 			i++;
 		}
-	    
+	    System.out.println("#######");
    
 	    UmpstModule pai = getJanelaPai();
 	    alterarJanelaAtual(pai.getMenuPanel());
@@ -342,6 +367,30 @@ public class GoalsAdd extends IUMPSTPanel {
 	    goalsTable.repaint();
     }
 
-	
+    public void updateMapSearch(GoalModel goalAdd){
+	    /**Upating searchPanel*/
+	    
+	    String[] strAux = {};
+	    strAux = goalAdd.getGoalName().split(" ");
+	    Set<GoalModel> goalSetSearch = new HashSet<GoalModel>();
+
+	    
+	    for (int i = 0; i < strAux.length; i++) {
+	    	if(!strAux[i].equals(" ")){
+	    		if(UMPSTProject.getInstance().getMapSearchGoal().get(strAux[i])==null){
+	    			goalSetSearch.add(goalAdd);
+	    			SearchModelGoal searchModel = new SearchModelGoal(strAux[i], goalSetSearch);
+	    			UMPSTProject.getInstance().getMapSearchGoal().put(searchModel.getKeyWord(), searchModel);
+	    		}
+	    		else{
+	    			UMPSTProject.getInstance().getMapSearchGoal().get(strAux[i]).getGoalsRelated().add(goalAdd);
+	    		}
+	    	}
+	    }
+	    
+		/************/		    
+
+    }
+    
 	
 }

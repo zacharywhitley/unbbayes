@@ -8,14 +8,18 @@ import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.table.DefaultTableModel;
 
+import unbbayes.model.umpst.entities.EntityModel;
+
 public class EntitiesMainPanel extends IUMPSTPanel{
 	
 	private JSplitPane splitPane;
-	private TableGoals menuPanel;
+	private TableEntities tableEntities;
 	private EntitiesAdd entitiesPanel;
+	private EntityModel entity;
 	
-	public EntitiesMainPanel(UmpstModule janelaPai) {
+	public EntitiesMainPanel(UmpstModule janelaPai, EntityModel entity) {
 		super(janelaPai);
+		this.entity=entity;
 		this.setLayout(new FlowLayout());
 		this.add(getSplitPane());
 
@@ -36,15 +40,15 @@ public class EntitiesMainPanel extends IUMPSTPanel{
 	}
 
 	/**
-	 * @return the menuPanel
+	 * @return the tableEntities
 	 */
-	public TableGoals getEntityTable() {
-		if(menuPanel == null ){
+	public TableEntities getEntityTable() {
+		if(tableEntities == null ){
 			DefaultTableModel model = new DefaultTableModel();
 
-			menuPanel = new TableGoals(getJanelaPai());
+			tableEntities = new TableEntities(getJanelaPai());
 		}
-		return menuPanel;
+		return tableEntities;
 	}
 
 	/**
@@ -52,7 +56,7 @@ public class EntitiesMainPanel extends IUMPSTPanel{
 	 */
 	public EntitiesAdd getEntityPanel() {
 		if(entitiesPanel == null ){
-			entitiesPanel = new EntitiesAdd(getJanelaPai(),null);
+			entitiesPanel = new EntitiesAdd(getJanelaPai(),entity);
 			entitiesPanel.setBackground(new Color(0xffffff));
 		}
 		return entitiesPanel;

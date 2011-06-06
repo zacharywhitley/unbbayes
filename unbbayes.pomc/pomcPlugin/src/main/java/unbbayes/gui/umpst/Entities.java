@@ -11,7 +11,7 @@ import javax.swing.table.DefaultTableModel;
 public class Entities extends IUMPSTPanel{
 	
 	private JSplitPane splitPane;
-	private TableGoals menuPanel;
+	private TableEntities menuPanel;
 	private EntitiesSearchPanel requirementsPanel;
 	
 	public Entities(UmpstModule janelaPai) {
@@ -38,11 +38,11 @@ public class Entities extends IUMPSTPanel{
 	/**
 	 * @return the menuPanel
 	 */
-	public TableGoals getEntitiesTable() {
+	public TableEntities getEntitiesTable() {
 		if(menuPanel == null ){
 			DefaultTableModel model = new DefaultTableModel();
 
-			menuPanel = new TableGoals(getJanelaPai());
+			menuPanel = new TableEntities(getJanelaPai());
 		}
 		return menuPanel;
 	}

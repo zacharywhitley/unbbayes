@@ -27,6 +27,7 @@ public class MenuPanel extends IUMPSTPanel{
 	private static final long serialVersionUID = 1L;
 		JPanel pane;
 		private Goals requirementsPane;
+		private Entities entitiesPane;
 
 	    public MenuPanel(UmpstModule janelaPai) {
 	        super(new GridLayout(1, 1),janelaPai);
@@ -41,8 +42,10 @@ public class MenuPanel extends IUMPSTPanel{
 	                "goals,queries and envidences");
 	        tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 	        
-	        JComponent panel2 = new Entities(getJanelaPai());
-	        tabbedPane.addTab("Entity", icon, panel2,
+	        //JComponent panel2 = new Entities(getJanelaPai());
+	        entitiesPane = new Entities(getJanelaPai());
+	        entitiesPane.setPreferredSize(new Dimension(410,500));
+	        tabbedPane.addTab("Entity", icon, entitiesPane,
 	                "entities, atributtes and relationships");
 	        tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 	        
@@ -71,12 +74,29 @@ public class MenuPanel extends IUMPSTPanel{
 		public Goals getRequirementsPane() {
 			return requirementsPane;
 		}
+		
 
 		/**
 		 * @param requirementsPane the requirementsPane to set
 		 */
 		public void setRequirementsPane(Goals requirementsPane) {
 			this.requirementsPane = requirementsPane;
+		}
+		
+		
+
+		/**
+		 * @return the entitiesPane
+		 */
+		public Entities getEntitiesPane() {
+			return entitiesPane;
+		}
+
+		/**
+		 * @param entitiesPane the entitiesPane to set
+		 */
+		public void setEntitiesPane(Entities entitiesPane) {
+			this.entitiesPane = entitiesPane;
 		}
 
 		protected JPanel  createInternalPane (JPanel pane){

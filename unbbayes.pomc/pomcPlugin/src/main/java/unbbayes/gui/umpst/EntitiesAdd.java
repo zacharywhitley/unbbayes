@@ -8,16 +8,25 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import unbbayes.model.umpst.entities.EntityModel;
+import unbbayes.model.umpst.project.SearchModelEntity;
+import unbbayes.model.umpst.project.SearchModelGoal;
+import unbbayes.model.umpst.project.UMPSTProject;
+import unbbayes.model.umpst.requirements.GoalModel;
 
 
 public class EntitiesAdd extends IUMPSTPanel {
@@ -59,7 +68,6 @@ public class EntitiesAdd extends IUMPSTPanel {
 			commentsText.setText(entity.getComments());
 			authorText.setText(entity.getAuthor());
 			dateText.setText(entity.getDate());
-			//pai.setText(getPai().entityName);
 			
 			/*try {
 				ID = modelo.getID( colaborador );
@@ -143,11 +151,12 @@ public class EntitiesAdd extends IUMPSTPanel {
 		buttonAdd.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if( entity == null){
-					EntityModel entity = new EntityModel(entityText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),null);
 					try {
+						EntityModel entityAdd = updateMapGoal();					    
+					    updateMapSearch(entityAdd);
+						updateTableEntities();
 						JOptionPane.showMessageDialog(null, "entity successfully added",null, JOptionPane.INFORMATION_MESSAGE);
-						UmpstModule pai = getJanelaPai();
-						alterarJanelaAtual(pai.getMenuPanel());	
+						
 					
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating entity", "UnBBayes", JOptionPane.WARNING_MESSAGE);
@@ -158,12 +167,38 @@ public class EntitiesAdd extends IUMPSTPanel {
 				}
 				else{
 					if( JOptionPane.showConfirmDialog(null, "Do you want to update this entity?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
-						EntityModel entity = new EntityModel(entityText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),null);
+						//EntityModel entity = new EntityModel(entityText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),null);
 						try{
-				
+							
+							/**Cleaning Search Map*/
+							Set<EntityModel> aux = new HashSet<EntityModel>();
+							EntityModel entityBeta;
+							String[] strAux = entity.getEntityName().split(" ");
+
+						    for (int i = 0; i < strAux.length; i++) {
+					    		if(UMPSTProject.getInstance().getMapSearchEntity().get(strAux[i])!=null){
+					    			UMPSTProject.getInstance().getMapSearchEntity().get(strAux[i]).getEntitiesRelated().remove(entity);
+					    			aux = UMPSTProject.getInstance().getMapSearchEntity().get(strAux[i]).getEntitiesRelated();
+					    	    	for (Iterator<EntityModel> it = aux.iterator(); it.hasNext(); ) {
+					    	    		entityBeta = it.next();
+					    	   		}
+					    		}
+					    		
+						    	
+						    }
+						    /************/
+							
+							entity.setEntityName(entityText.getText());
+							entity.setComments(commentsText.getText());
+							entity.setAuthor(authorText.getText());
+							entity.setDate(dateText.getText());
+							
+							updateMapSearch(entity);
+							updateTableEntities();
+							
 							JOptionPane.showMessageDialog(null, "entity successfully updated", "UnBBayes", JOptionPane.INFORMATION_MESSAGE);
-							UmpstModule pai = getJanelaPai();
-							alterarJanelaAtual(pai.getMenuPanel());	
+						
+							
 						}
 						catch (Exception e2) {
 							JOptionPane.showMessageDialog(null,"Error while ulpating entity", "UnBBayes", JOptionPane.WARNING_MESSAGE);
@@ -226,6 +261,92 @@ public class EntitiesAdd extends IUMPSTPanel {
             System.err.println("Couldn't find file: " + path);
             return null;
         }
+    }
+    
+    public EntityModel updateMapGoal(){
+    	String idAux = "";
+		int intAux = 0;
+     	Set<String> keys = UMPSTProject.getInstance().getMapEntity().keySet();
+		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+		
+		
+					
+			if ( UMPSTProject.getInstance().getMapEntity().size()!=0){
+				for (String key: sortedKeys){
+					idAux = UMPSTProject.getInstance().getMapEntity().get(key).getId();
+				}
+				intAux = Integer.parseInt(idAux.substring(0, 1));
+				intAux++;
+				idAux = intAux+"";
+			}
+			else{
+				idAux = "0";
+			}
+	
+		
+		EntityModel entityAdd = new EntityModel(idAux,entityText.getText(),commentsText.getText(), authorText.getText(), 
+				dateText.getText(),null);
+		
+		
+	    UMPSTProject.getInstance().getMapEntity().put(entityAdd.getId(), entityAdd);	
+	    
+	    return entityAdd;
+    }
+    
+    
+    public void updateTableEntities(){
+    	String[] columnNames = {"ID","Entity","",""};	    
+	    
+		Object[][] data = new Object[UMPSTProject.getInstance().getMapEntity().size()][4];
+		Integer i=0;
+	    
+		Set<String> keys = UMPSTProject.getInstance().getMapEntity().keySet();
+		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+		
+		for (String key: sortedKeys){
+			data[i][0] = UMPSTProject.getInstance().getMapEntity().get(key).getId();
+			data[i][1] = UMPSTProject.getInstance().getMapEntity().get(key).getEntityName();			
+			data[i][2] = "";
+			data[i][3] = "";
+			i++;
+		}
+   
+	    UmpstModule pai = getJanelaPai();
+	    alterarJanelaAtual(pai.getMenuPanel());
+	    
+	    TableEntities entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
+	    JTable table = entitiesTable.createTable(columnNames,data);
+	    
+	    entitiesTable.getScrollPanePergunta().setViewportView(table);
+	    entitiesTable.getScrollPanePergunta().updateUI();
+	    entitiesTable.getScrollPanePergunta().repaint();
+	    entitiesTable.updateUI();
+	    entitiesTable.repaint();
+    }
+
+    public void updateMapSearch(EntityModel entityAdd){
+	    /**Upating searchPanel*/
+	    
+	    String[] strAux = {};
+	    strAux = entityAdd.getEntityName().split(" ");
+	    Set<EntityModel> entitySetSearch = new HashSet<EntityModel>();
+
+	    
+	    for (int i = 0; i < strAux.length; i++) {
+	    	if(!strAux[i].equals(" ")){
+	    		if(UMPSTProject.getInstance().getMapSearchEntity().get(strAux[i])==null){
+	    			entitySetSearch.add(entityAdd);
+	    			SearchModelEntity searchModel = new SearchModelEntity(strAux[i], entitySetSearch);
+	    			UMPSTProject.getInstance().getMapSearchEntity().put(searchModel.getKeyWord(), searchModel);
+	    		}
+	    		else{
+	    			UMPSTProject.getInstance().getMapSearchEntity().get(strAux[i]).getEntitiesRelated().add(entityAdd);
+	    		}
+	    	}
+	    }
+	    
+		/************/		    
+
     }
 
 	

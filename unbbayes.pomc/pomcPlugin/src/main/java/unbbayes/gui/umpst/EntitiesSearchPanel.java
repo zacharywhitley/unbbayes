@@ -15,6 +15,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.peer.ScrollPanePeer;
 import java.util.EventObject;
+import java.util.Iterator;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -40,6 +42,10 @@ import javax.swing.event.CellEditorListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
+
+import unbbayes.model.umpst.entities.EntityModel;
+import unbbayes.model.umpst.project.UMPSTProject;
+import unbbayes.model.umpst.requirements.GoalModel;
 
 import com.ibm.icu.impl.duration.impl.YMDDateFormatter;
 
@@ -121,7 +127,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 			buttonAddEntity.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
-					alterarJanelaAtual(new EntitiesMainPanel(getJanelaPai()));
+					alterarJanelaAtual(new EntitiesMainPanel(getJanelaPai(),null));
 				}
 			});			
 		}
@@ -153,6 +159,12 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 			buttonSearch = new JButton("Search: ");
 			buttonSearch.setForeground(Color.blue);
 		}
+		buttonSearch.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				updateTableEntities();
+			}
+		});
 		
 		return buttonSearch;
 	}
@@ -170,7 +182,38 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 		return textEntity;
 	}
 	
-	
+	public void updateTableEntities(){
+    	String[] columnNames = {"ID","Entity","",""};
+		Set<EntityModel> aux = UMPSTProject.getInstance().getMapSearchEntity().get(textEntity.getText()).getEntitiesRelated();
+		EntityModel entity;
+		Object[][] data = new Object[UMPSTProject.getInstance().getMapSearchEntity().get(textEntity.getText()).getEntitiesRelated().size()][4];
+		Integer i=0;
+		
+	    
+    	for (Iterator<EntityModel> it = aux.iterator(); it.hasNext(); ) {
+    	     entity = it.next();  // No downcasting required.
+    	     
+    	 	data[i][0] = entity.getId();
+			data[i][1] = entity.getEntityName();			
+			data[i][2] = "";
+			data[i][3] = "";
+			i++;
+    	}
+    	
+	    
+   
+	    UmpstModule pai = getJanelaPai();
+	    alterarJanelaAtual(pai.getMenuPanel());
+	    
+	    TableEntities entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
+	    JTable table = entitiesTable.createTable(columnNames,data);
+	    
+	    entitiesTable.getScrollPanePergunta().setViewportView(table);
+	    entitiesTable.getScrollPanePergunta().updateUI();
+	    entitiesTable.getScrollPanePergunta().repaint();
+	    entitiesTable.updateUI();
+	    entitiesTable.repaint();
+    }
 	
 
 }
