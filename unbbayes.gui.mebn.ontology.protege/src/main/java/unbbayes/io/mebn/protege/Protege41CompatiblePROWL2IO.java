@@ -37,8 +37,8 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 
 	private boolean initializeReasoner = true;
 	
-	private long maximumBuzyWaitingCount = 100;
-	private long sleepTimeWaitingReasonerInitialization = 1000;
+	private long maximumBuzyWaitingCount = 150;
+	private long sleepTimeWaitingReasonerInitialization = 2000;
 	
 	private IBundleLauncher protegeBundleLauncher;
 	
@@ -108,7 +108,7 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 		// load mebn using the super class
 		MultiEntityBayesianNetwork ret = this.getMEBNFactory().createMEBN(defaultMEBNName);	// instantiate using temporary name
 		
-		super.loadMEBNFromOntology(ret, this.getLastOWLOntology(), null);					// populate MEBN including its name
+		super.loadMEBNFromOntology(ret, this.getLastOWLOntology(), this.getLastOWLReasoner());					// populate MEBN including its name
 		
 		
 		// fill mebn with protege's storage implementor if we could load protege previously
