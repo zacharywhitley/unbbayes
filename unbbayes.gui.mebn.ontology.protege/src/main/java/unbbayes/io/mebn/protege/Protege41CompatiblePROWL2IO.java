@@ -18,7 +18,6 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
-import unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator;
 import unbbayes.io.mebn.owlapi.OWLAPICompatiblePROWL2IO;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.ontology.protege.IBundleLauncher;
@@ -37,8 +36,8 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 
 	private boolean initializeReasoner = true;
 	
-	private long maximumBuzyWaitingCount = 150;
-	private long sleepTimeWaitingReasonerInitialization = 2000;
+	private long maximumBuzyWaitingCount = 300;
+	private long sleepTimeWaitingReasonerInitialization = 8000;
 	
 	private IBundleLauncher protegeBundleLauncher;
 	
@@ -328,6 +327,7 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 	 * @see #getMaximumBuzyWaitingCount()
 	 */
 	public long getSleepTimeWaitingReasonerInitialization() {
+		System.gc();	// ...just because methods calling this method are "expensive"
 		return sleepTimeWaitingReasonerInitialization;
 	}
 

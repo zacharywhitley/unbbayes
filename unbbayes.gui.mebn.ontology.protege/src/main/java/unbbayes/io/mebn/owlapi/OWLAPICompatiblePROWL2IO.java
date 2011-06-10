@@ -3572,20 +3572,25 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 				// do different behavior depending on the type of state
 				if ( state instanceof CategoricalStateEntity ) {
 					isCategorical = true;
-					// extract categorical state
-					OWLIndividual owlState = this.getCategoricalStatesCache().get(state); 
-					if (owlState == null) {
-						throw new IllegalStateException("getCategoricalStatesCache must be filled before calling this method: saveResidentPossibleValues" );
+					if (!mebn.getBooleanStatesEntityContainer().getAbsurdStateEntity().getName().equalsIgnoreCase(state.getName())) {
+						// this is a "normal" categorical state. Extract it
+						OWLIndividual owlState = this.getCategoricalStatesCache().get(state); 
+						if (owlState == null) {
+							throw new IllegalStateException("getCategoricalStatesCache must be filled before calling this method: saveResidentPossibleValues" );
+						}
+						// fill hasPossibleValues as an URI
+						ontology.getOWLOntologyManager().addAxiom ( // add axiom and commit
+								ontology, 	// where to add axiom
+								factory.getOWLDataPropertyAssertionAxiom(
+										hasPossibleValues, // data property to use
+										rv, // where to add data property
+										factory.getOWLLiteral(owlState.asOWLNamedIndividual().getIRI().toURI().toString(), OWL2Datatype.XSD_ANY_URI)	// URI literal
+								)
+						);
+					} else {
+						// this is a categorical state representing the "absurd" state  
+						// the "absurd" state is implicitly added to all RVs
 					}
-					// fill hasPossibleValues as an URI
-					ontology.getOWLOntologyManager().addAxiom ( // add axiom and commit
-							ontology, 	// where to add axiom
-							factory.getOWLDataPropertyAssertionAxiom(
-									hasPossibleValues, // data property to use
-									rv, // where to add data property
-									factory.getOWLLiteral(owlState.asOWLNamedIndividual().getIRI().toURI().toString(), OWL2Datatype.XSD_ANY_URI)	// URI literal
-							)
-					);
 				} else { // ObjectEntity, thus it points to an unknown quantity of possible values
 					// Extract uri of the owl object being pointed
 					String uriString =  this.getMetaEntityCache().get(((ObjectEntity)state).getType().getName()); 
