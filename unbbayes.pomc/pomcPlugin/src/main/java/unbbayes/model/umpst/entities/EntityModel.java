@@ -1,5 +1,24 @@
 package unbbayes.model.umpst.entities;
 
+import java.awt.Dimension;
+import java.awt.List;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
+import javax.swing.Box;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+
+import unbbayes.gui.umpst.UmpstModule;
+import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
 
 public class EntityModel {
@@ -9,18 +28,82 @@ public class EntityModel {
 	private String comments;
 	private String author;
 	private String date;
-	private EntityModel pai;
+	private EntityModel father;
+	private Map<String,AtributeModel> mapAtributes;
+	private JList backtracking;
 	
 	
-	public EntityModel(String id,String entityName, String comments,String author, String date, EntityModel pai) {
+	public EntityModel(String id,String entityName, String comments,String author, String date, 
+			EntityModel father,Map<String,AtributeModel> mapAtributes, JList backtracking) {
 		
-		this.id = id;
-		this.entityName = entityName;
-		this.comments = comments;
-		this.author = author;
-		this.date = date;
-		this.pai = pai;
+		this.id           = id;
+		this.entityName   = entityName;
+		this.comments     = comments;
+		this.author       = author;
+		this.date         = date;
+		this.father       = father;
+		this.mapAtributes = mapAtributes;
+		if (mapAtributes==null){
+			this.setMapAtributes(new HashMap<String, AtributeModel>());
+		}
+		this.backtracking = backtracking;
+		if (backtracking == null){
+			this.setBacktracking(new JList());
+		}
 		// TODO Auto-generated constructor stub
+	}
+
+
+	
+	/**
+	 * @return the mapAtributes
+	 */
+	public Map<String, AtributeModel> getMapAtributes() {
+		return mapAtributes;
+	}
+
+
+
+	/**
+	 * @param mapAtributes the mapAtributes to set
+	 */
+	public void setMapAtributes(Map<String, AtributeModel> mapAtributes) {
+		this.mapAtributes = mapAtributes;
+	}
+
+
+
+	/**
+	 * @return the father
+	 */
+	public EntityModel getFather() {
+		return father;
+	}
+
+
+	/**
+	 * @param father the father to set
+	 */
+	public void setFather(EntityModel father) {
+		this.father = father;
+	}
+
+
+
+
+	/**
+	 * @return the backtracking
+	 */
+	public JList getBacktracking() {
+		return backtracking;
+	}
+
+
+	/**
+	 * @param backtracking the backtracking to set
+	 */
+	public void setBacktracking(JList backtracking) {
+		this.backtracking = backtracking;
 	}
 
 
@@ -104,20 +187,6 @@ public class EntityModel {
 	}
 
 
-	/**
-	 * @return the pai
-	 */
-	public EntityModel getPai() {
-		return pai;
-	}
-
-
-	/**
-	 * @param pai the pai to set
-	 */
-	public void setPai(EntityModel pai) {
-		this.pai = pai;
-	}
 	
 	
 	

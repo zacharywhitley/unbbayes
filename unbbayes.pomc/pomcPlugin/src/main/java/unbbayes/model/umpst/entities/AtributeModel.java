@@ -1,23 +1,86 @@
 package unbbayes.model.umpst.entities;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import unbbayes.controller.umpst.EnitiesController;
+
 
 public class AtributeModel {
 	
+	private String id;
 	private String atributeName;
 	private String comments;
 	private String author;
 	private String date;
-	private AtributeModel pai;
+	private AtributeModel father;
+	private EntityModel entityRelated;
+	private Map<String, AtributeModel> mapSubAtributes;
 	
 	
-	public AtributeModel(String atributeName, String comments,String author, String date, AtributeModel pai) {
+	public AtributeModel(String id,String atributeName, String comments,String author, String date,EntityModel entityRelated,
+			AtributeModel father,Map<String,AtributeModel> mapSubAtributes) {
 		
+		this.id=id;
 		this.atributeName = atributeName;
 		this.comments = comments;
 		this.author = author;
 		this.date = date;
-		this.pai = pai;
+		this.father = father;
+		this.entityRelated=entityRelated;
+		this.mapSubAtributes=mapSubAtributes;
+		if (mapSubAtributes==null){
+			this.setMapSubAtributes(new HashMap<String, AtributeModel>());
+		}
 		// TODO Auto-generated constructor stub
+	}
+
+
+	/**
+	 * @return the entityRelated
+	 */
+	public EntityModel getEntityRelated() {
+		return entityRelated;
+	}
+
+
+	/**
+	 * @param entityRelated the entityRelated to set
+	 */
+	public void setEntityRelated(EntityModel entityRelated) {
+		this.entityRelated = entityRelated;
+	}
+
+
+	/**
+	 * @return the mapSubAtributes
+	 */
+	public Map<String, AtributeModel> getMapSubAtributes() {
+		return mapSubAtributes;
+	}
+
+
+	/**
+	 * @param mapSubAtributes the mapSubAtributes to set
+	 */
+	public void setMapSubAtributes(Map<String, AtributeModel> mapSubAtributes) {
+		this.mapSubAtributes = mapSubAtributes;
+	}
+
+
+	/**
+	 * @return the id
+	 */
+	public String getId() {
+		return id;
+	}
+
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(String id) {
+		this.id = id;
 	}
 
 
@@ -86,18 +149,18 @@ public class AtributeModel {
 
 
 	/**
-	 * @return the pai
+	 * @return the father
 	 */
-	public AtributeModel getPai() {
-		return pai;
+	public AtributeModel getFather() {
+		return father;
 	}
 
 
 	/**
-	 * @param pai the pai to set
+	 * @param father the father to set
 	 */
-	public void setPai(AtributeModel pai) {
-		this.pai = pai;
+	public void setFather(AtributeModel father) {
+		this.father = father;
 	}
 	
 	

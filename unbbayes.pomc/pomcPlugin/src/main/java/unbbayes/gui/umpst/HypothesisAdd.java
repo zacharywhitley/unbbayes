@@ -153,34 +153,11 @@ public class HypothesisAdd extends IUMPSTPanel {
 		buttonAdd.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if( hypothesis == null){
+				
+
 
 					try {
-						
-						
-						String idAux = "";
-						
-						if (hypothesisFather==null){
-							idAux = goalRelated.getMapHypothesis().size()+"";
-						}
-						else{
-							if (hypothesisFather.getSubHypothesis()!=null){
-								idAux = hypothesisFather.getId()+"."+hypothesisFather.getSubHypothesis().size();
-								
-							}
-							else{
-								idAux = hypothesisFather.getId()+".1";
-
-							}
-						}
-						
-				
-						
-						HypothesisModel hypothesisAdd = new HypothesisModel(idAux,hypothesisText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),goalRelated, hypothesisFather,hypothesisChildren);
-						if (hypothesisFather!=null){
-							hypothesisFather.getSubHypothesis().put(hypothesisAdd.getId(), hypothesisAdd);
-						}
-						goalRelated.getMapHypothesis().put(hypothesisAdd.getId(), hypothesisAdd);
-
+						HypothesisModel hypothesisAdd = updateMapHypothesis();
 						updateTable(hypothesisAdd);
 						JOptionPane.showMessageDialog(null, "hypothesis successfully added",null, JOptionPane.INFORMATION_MESSAGE);
 						
@@ -194,13 +171,12 @@ public class HypothesisAdd extends IUMPSTPanel {
 				}
 				else{
 					if( JOptionPane.showConfirmDialog(null, "Do you want to update this hypothesis?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
-						//HypothesisModel hypothesisUpdate = new HypothesisModel(hypothesisText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),goalRelated,hypothesisFather,hypothesisChildren);
-						hypothesis.setHypothesisName(hypothesisText.getText());
-						hypothesis.setComments(commentsText.getText());
-						hypothesis.setAuthor(authorText.getText());
-						hypothesis.setDate(dateText.getText());
 						
 						try{
+							hypothesis.setHypothesisName(hypothesisText.getText());
+							hypothesis.setComments(commentsText.getText());
+							hypothesis.setAuthor(authorText.getText());
+							hypothesis.setDate(dateText.getText());
 							updateTable(hypothesis);
 							JOptionPane.showMessageDialog(null, "hypothesis successfully updated", "UnBBayes", JOptionPane.INFORMATION_MESSAGE);
 							
@@ -276,6 +252,67 @@ public class HypothesisAdd extends IUMPSTPanel {
 	    hypothesisTable.getScrollPanePergunta().repaint();
 	    hypothesisTable.updateUI();
 	    hypothesisTable.repaint();
+    }
+    
+    public HypothesisModel updateMapHypothesis(){
+    	String idAux = "";
+	
+    	
+    	Set<String> keys = UMPSTProject.getInstance().getMapHypothesis().keySet();
+		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+		//int tamanho = UMPSTProject.getInstance().getMapHypothesis().size()+1;
+		int maior = 0;
+		String idAux2 = "";
+		int intAux;
+		
+		if (hypothesisFather==null){
+			
+			if ( UMPSTProject.getInstance().getMapHypothesis().size()!=0){
+				for (String key: sortedKeys){
+					//tamanho = tamanho - UMPSTProject.getInstance().getMapGoal().get(key).getSubgoals().size();
+					idAux= UMPSTProject.getInstance().getMapHypothesis().get(key).getId();
+					if (idAux.contains(".")){
+						intAux = idAux.indexOf(".");
+						idAux2 = idAux.substring(0, intAux);
+						if (maior<Integer.parseInt(idAux2)){
+							maior = Integer.parseInt(idAux2);
+						}
+					}
+					else{
+						if (maior< Integer.parseInt(idAux)){
+							maior = Integer.parseInt(idAux);
+						}
+					}
+				}
+				maior++;
+				idAux = maior+"";
+			}
+			else{
+				idAux = 1+"";
+			}
+			
+		}
+		else{
+			if (hypothesisFather.getSubHypothesis()!=null){
+				idAux = hypothesisFather.getId()+"."+ (hypothesisFather.getSubHypothesis().size()+1);
+				
+			}
+			else{
+				idAux = hypothesisFather.getId()+".1";
+
+			}
+		}
+		
+
+		
+		HypothesisModel hypothesisAdd = new HypothesisModel(idAux,hypothesisText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),goalRelated, hypothesisFather,hypothesisChildren);
+		if (hypothesisFather!=null){
+			hypothesisFather.getSubHypothesis().put(hypothesisAdd.getId(), hypothesisAdd);
+		}
+		goalRelated.getMapHypothesis().put(hypothesisAdd.getId(), hypothesisAdd);
+		UMPSTProject.getInstance().getMapHypothesis().put(hypothesisAdd.getId(), hypothesisAdd);
+		
+		return hypothesisAdd;
     }
 	
 	

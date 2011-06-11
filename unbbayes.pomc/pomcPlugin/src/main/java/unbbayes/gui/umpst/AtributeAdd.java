@@ -6,12 +6,15 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
@@ -20,7 +23,10 @@ import unbbayes.gui.umpst.MenuPanel;
 import unbbayes.gui.umpst.RelationshipAdd;
 import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.entities.AtributeModel;
+import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.entities.RelationshipModel;
+import unbbayes.model.umpst.project.UMPSTProject;
+import unbbayes.model.umpst.requirements.HypothesisModel;
 
 
 public class AtributeAdd extends IUMPSTPanel {
@@ -39,13 +45,16 @@ public class AtributeAdd extends IUMPSTPanel {
 	
 	private JTextField dateText,authorText;
 	private JTextField AtributeText,commentsText;
-	private AtributeModel Atribute,pai;
-
+	private AtributeModel atribute,atributeFather;
+	private EntityModel entityRelated;
 	
-	public AtributeAdd(UmpstModule janelaPai, AtributeModel Atribute){
+	public AtributeAdd(UmpstModule janelaPai,EntityModel entityRelated, AtributeModel atribute, AtributeModel atributeFather){
 		super(janelaPai);
 		
-		this.Atribute = Atribute;
+		this.entityRelated=entityRelated;
+		this.atribute = atribute;
+		this.atributeFather=atributeFather;
+		
 		this.setLayout(new GridBagLayout());
 		c.fill = GridBagConstraints.HORIZONTAL;
 		labels();
@@ -53,16 +62,16 @@ public class AtributeAdd extends IUMPSTPanel {
 		buttons();
 		listeners();
 
-		if( Atribute == null){
-			titulo.setText("Add new Atribute");
+		if( atribute == null){
+			titulo.setText("Add new atribute");
 			buttonAdd.setText(" Add ");
 		} else {
-			titulo.setText(" Update Atribute");
+			titulo.setText(" Update atribute");
 			buttonAdd.setText(" Update ");
-			AtributeText.setText(Atribute.getAtributeName());
-			commentsText.setText(Atribute.getComments());
-			authorText.setText(Atribute.getAuthor());
-			dateText.setText(Atribute.getDate());
+			AtributeText.setText(atribute.getAtributeName());
+			commentsText.setText(atribute.getComments());
+			authorText.setText(atribute.getAuthor());
+			dateText.setText(atribute.getDate());
 			//pai.setText(getPai().AtributeName);
 			
 			/*try {
@@ -79,7 +88,7 @@ public class AtributeAdd extends IUMPSTPanel {
 
 	public void labels(){
 		c.gridx = 0; c.gridy = 2;
-		add( new JLabel("Atribute Description: "), c);
+		add( new JLabel("atribute Description: "), c);
 		c.gridx = 0; c.gridy = 3;
 		add( new JLabel("Comments: "), c);
 		c.gridx = 0; c.gridy = 4;
@@ -149,31 +158,39 @@ public class AtributeAdd extends IUMPSTPanel {
 		
 		buttonAdd.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if( Atribute == null){
-					AtributeModel Atribute = new AtributeModel(AtributeText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),null);
+				if( atribute == null){
 					try {
-						JOptionPane.showMessageDialog(null, "Atribute successfully added",null, JOptionPane.INFORMATION_MESSAGE);
-						UmpstModule pai = getJanelaPai();
-						alterarJanelaAtual(pai.getMenuPanel());	
+						
+						
+						AtributeModel atributeAdd = updateMapAtribute();
+						updateTable(atributeAdd);
+						
+						
+						JOptionPane.showMessageDialog(null, "atribute successfully added",null, JOptionPane.INFORMATION_MESSAGE);
+						
 					
 					} catch (Exception e1) {
-						JOptionPane.showMessageDialog(null, "Error while creating Atribute", "UnBBayes", JOptionPane.WARNING_MESSAGE);
+						JOptionPane.showMessageDialog(null, "Error while creating atribute", "UnBBayes", JOptionPane.WARNING_MESSAGE);
 						UmpstModule pai = getJanelaPai();
 						alterarJanelaAtual(pai.getMenuPanel());	
 					
 					}
 				}
 				else{
-					if( JOptionPane.showConfirmDialog(null, "Do you want to update this Atribute?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
-						AtributeModel Atribute = new AtributeModel(AtributeText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),null);
+					if( JOptionPane.showConfirmDialog(null, "Do you want to update this atribute?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 						try{
-				
-							JOptionPane.showMessageDialog(null, "Atribute successfully updated", "UnBBayes", JOptionPane.INFORMATION_MESSAGE);
-							UmpstModule pai = getJanelaPai();
-							alterarJanelaAtual(pai.getMenuPanel());	
+							
+							atribute.setAtributeName(AtributeText.getText());
+							atribute.setComments(commentsText.getText());
+							atribute.setAuthor(authorText.getText());
+							atribute.setDate(dateText.getText());
+							
+							updateTable(atribute);
+							JOptionPane.showMessageDialog(null, "atribute successfully updated", "UnBBayes", JOptionPane.INFORMATION_MESSAGE);
+		
 						}
 						catch (Exception e2) {
-							JOptionPane.showMessageDialog(null,"Error while ulpating Atribute", "UnBBayes", JOptionPane.WARNING_MESSAGE);
+							JOptionPane.showMessageDialog(null,"Error while ulpating atribute", "UnBBayes", JOptionPane.WARNING_MESSAGE);
 							UmpstModule pai = getJanelaPai();
 							alterarJanelaAtual(pai.getMenuPanel());	
 						}
@@ -236,6 +253,76 @@ public class AtributeAdd extends IUMPSTPanel {
         }
     }
 
-	
+   public void updateTable(AtributeModel atributeUpdade){
+		
+	    UmpstModule pai = getJanelaPai();
+
+	    TableAtribute atributeTable     = pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entityRelated).getAtributeTable(entityRelated);
+	    JTable table = atributeTable.createTable();
+	    
+	    alterarJanelaAtual(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entityRelated));
+	    
+	    atributeTable.getScrollPanePergunta().setViewportView(table);
+	    atributeTable.getScrollPanePergunta().updateUI();
+	    atributeTable.getScrollPanePergunta().repaint();
+	    atributeTable.updateUI();
+	    atributeTable.repaint();
+    }	
+   
+   public AtributeModel updateMapAtribute(){
+	   String idAux = "";
+	   Set<String> keys = UMPSTProject.getInstance().getMapAtribute().keySet();
+		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+		int maior = 0;
+		String idAux2 = "";
+		int intAux;
+		
+		if (atributeFather==null){
+			
+			if ( UMPSTProject.getInstance().getMapAtribute().size()!=0){
+				for (String key: sortedKeys){
+					//tamanho = tamanho - UMPSTProject.getInstance().getMapGoal().get(key).getSubgoals().size();
+					idAux= UMPSTProject.getInstance().getMapAtribute().get(key).getId();
+					if (idAux.contains(".")){
+						intAux = idAux.indexOf(".");
+						idAux2 = idAux.substring(0, intAux);
+						if (maior<Integer.parseInt(idAux2)){
+							maior = Integer.parseInt(idAux2);
+						}
+					}
+					else{
+						if (maior< Integer.parseInt(idAux)){
+							maior = Integer.parseInt(idAux);
+						}
+					}
+				}
+				maior++;
+				idAux = maior+"";
+			}
+			else{
+				idAux = 1+"";
+			}
+			
+		}
+		else{
+			if (atributeFather.getMapSubAtributes()!=null){
+				idAux = atributeFather.getId()+"."+ (atributeFather.getMapSubAtributes().size()+1);
+				
+			}
+			else{
+				idAux = atributeFather.getId()+".1";
+
+			}
+		}
+		
+		AtributeModel atributeAdd = new AtributeModel(idAux,AtributeText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),entityRelated, atributeFather,null);
+		if (atributeFather!=null){
+			atributeFather.getMapSubAtributes().put(atributeAdd.getId(), atributeAdd);
+		}
+		entityRelated.getMapAtributes().put(atributeAdd.getId(), atributeAdd);
+		UMPSTProject.getInstance().getMapAtribute().put(atributeAdd.getId(), atributeAdd);
+		
+		return atributeAdd;
+   }
 	
 }

@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.BorderFactory;
@@ -150,12 +151,42 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 	
 	public void updateTableGoals(){
     	String[] columnNames = {"ID","Goal","","",""};
+    	
+    	/*String[] palavrasBuscadas = textGoal.getText().split(" ");
+    	int k = 0;
+    	Set<GoalModel> setGoal = null;
+    	
+
+    	GoalModel goalAux;
+    	
+    	for (int i = 0; i < palavrasBuscadas.length; i++) {
+    		
+    		if ( UMPSTProject.getInstance().getMapSearchGoal().get(palavrasBuscadas[i]) != null  ){
+    			
+    			setGoal = UMPSTProject.getInstance().getMapSearchGoal().get(palavrasBuscadas[i]).getGoalsRelated();
+    			
+    	    	for (Iterator<GoalModel> it = setGoal.iterator(); it.hasNext(); ) {
+    	    		goalAux = it.next();
+    	    		if (setGoal.contains(goalAux)){
+    	    			setGoal2.add(goalAux);
+    	    		}
+    	    		setGoal.add(goalAux);
+    	    		
+    	    	}
+
+    			
+    		}
+			
+		}*/
+    	
 		Set<GoalModel> aux = UMPSTProject.getInstance().getMapSearchGoal().get(textGoal.getText()).getGoalsRelated();
 		GoalModel goal;
 		Object[][] data = new Object[UMPSTProject.getInstance().getMapSearchGoal().get(textGoal.getText()).getGoalsRelated().size()][5];
+		//Object[][] data = new Object[setGoal2.size()][5];
+
 		Integer i=0;
 		
-	    
+	   
     	for (Iterator<GoalModel> it = aux.iterator(); it.hasNext(); ) {
     	     goal = it.next();  // No downcasting required.
     	     

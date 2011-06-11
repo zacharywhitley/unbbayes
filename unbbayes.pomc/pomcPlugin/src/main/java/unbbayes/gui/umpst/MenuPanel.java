@@ -36,7 +36,7 @@ public class MenuPanel extends IUMPSTPanel{
 	        ImageIcon icon = createImageIcon("images/middle.gif");
 	        
 	        requirementsPane = new Goals(getJanelaPai());
-	        requirementsPane.setPreferredSize(new Dimension(410, 500));
+	        requirementsPane.setPreferredSize(new Dimension(1000, 500));
 	        
 	        tabbedPane.addTab("Requirement", icon, new JScrollPane(requirementsPane),
 	                "goals,queries and envidences");
@@ -44,7 +44,7 @@ public class MenuPanel extends IUMPSTPanel{
 	        
 	        //JComponent panel2 = new Entities(getJanelaPai());
 	        entitiesPane = new Entities(getJanelaPai());
-	        entitiesPane.setPreferredSize(new Dimension(410,500));
+	        entitiesPane.setPreferredSize(new Dimension(1000,500));
 	        tabbedPane.addTab("Entity", icon, entitiesPane,
 	                "entities, atributtes and relationships");
 	        tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
@@ -54,9 +54,8 @@ public class MenuPanel extends IUMPSTPanel{
 	                "Deterministic or Stochastic");
 	        tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 	        
-	        JComponent panel4 = makeTextPanel(
-	                "Panel #4");
-	        panel4.setPreferredSize(new Dimension(410, 500));
+	        JComponent panel4 = new TrackingPanel(janelaPai);
+	        panel4.setPreferredSize(new Dimension(1000, 500));
 	        tabbedPane.addTab("Group", icon, panel4,
 	                "Grouping");
 	        tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);

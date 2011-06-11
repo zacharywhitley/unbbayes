@@ -2,8 +2,6 @@ package unbbayes.gui.umpst;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -15,60 +13,57 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
-
-
-import unbbayes.model.umpst.project.SearchModelGoal;
+import unbbayes.model.umpst.entities.AtributeModel;
+import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
+import unbbayes.model.umpst.requirements.HypothesisModel;
 
-public class TableGoals extends IUMPSTPanel{
+public class TableAtribute extends IUMPSTPanel{
 	
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 1L;
 	private JTable table;
 	private JScrollPane scrollpanePergunta;
 	
-	
-	
-	
-	//Object[] dataAux = new Object[5];
-	Integer i = 0;
+	private UmpstModule janelaPaiAux; 
+	private EntityModel entityRelated;
 
+	
 	
 	ImageIcon iconAdd = createImageIcon("images/add.gif");
 	ImageIcon iconDel = createImageIcon("images/del.gif");
 	ImageIcon iconEdit = createImageIcon("images/edit.gif");
 
 	
-	String[] columnNames = {"ID","Goal","","",""};
-
+	String[] columnNames = {"id","Hypothesis","","",""};
 	Object[][] data = {};
+
 	
 	
 
  
     	  /**private constructors make class extension almost impossible,
     	that's why this is protected*/
-    	  public TableGoals(UmpstModule janelaPai) {
+    	  protected TableAtribute(UmpstModule janelaPai, EntityModel entityRelated) {
     		  
     		    super(janelaPai);
     	    	this.setLayout(new GridLayout(1,0));
     	    	
+    	    	this.janelaPaiAux = janelaPai;
+    	    	this.entityRelated=entityRelated;
     	    	
-    	    	this.add(createScrolltableGoals(columnNames,data));
+    	    	this.add(createScrolltableHypothesis());
     		    
     	  }
-    	 
-    	  
-    	  
     	
-    	  public void setJanelaPai(UmpstModule janelaPai,String[] columnNames, Object[][] data){
+    	  
+    	  
+    	  public void setJanelaPai(UmpstModule janelaPai){
     		// super(janelaPai);
   	    	
     		  this.setLayout(new GridLayout(1,0));
-  	          this.add(createScrolltableGoals(columnNames,data));
+  	          this.add(createScrolltableHypothesis());
     		  
     	  }
     
@@ -77,9 +72,32 @@ public class TableGoals extends IUMPSTPanel{
 	/**
 	 * @return the table
 	 */
-	public JTable createTable(String[] columnNames,final Object[][] data) {
-		
+	public JTable createTable() {
 
+		
+		Integer i=0;
+
+		if (entityRelated!=null){			
+			data = new Object[entityRelated.getMapAtributes().size()][5];
+
+			
+			Set<String> keys = entityRelated.getMapAtributes().keySet();
+			TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+			
+			
+			
+			for (String key: sortedKeys){
+		
+				data[i][0] = entityRelated.getMapAtributes().get(key).getId();
+				data[i][1] = entityRelated.getMapAtributes().get(key).getAtributeName();
+				data[i][2] = "";
+				data[i][3] = "";
+				data[i][4] = "";
+				i++;
+			}
+		}
+		
+		
 		DefaultTableModel tableModel = new DefaultTableModel(data, columnNames);
 		table = new JTable(tableModel);
 
@@ -92,7 +110,7 @@ public class TableGoals extends IUMPSTPanel{
 			}
 		});
 
-		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length -3);
+		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length-3);
 		buttonColumn1.setMaxWidth(28);
 		buttonColumn1.setCellRenderer(buttonEdit);
 		buttonColumn1.setCellEditor(buttonEdit);
@@ -100,9 +118,9 @@ public class TableGoals extends IUMPSTPanel{
 		buttonEdit.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
 				
-				String key = data[row][0].toString();
-				GoalModel goalAux = UMPSTProject.getInstance().getMapGoal().get(key);
-				alterarJanelaAtual(new GoalsMainPanel(getJanelaPai(), goalAux, goalAux.getGoalFather() )   );
+				String atributeAdd = data[row][0].toString();
+				AtributeModel atributeAux = entityRelated.getMapAtributes().get(atributeAdd);
+				alterarJanelaAtual(new AtributeAdd(getJanelaPai(), entityRelated,atributeAux, atributeAux.getFather() )   );
 			}
 		});
 		
@@ -126,8 +144,9 @@ public class TableGoals extends IUMPSTPanel{
 		buttonAdd.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
 				String key = data[row][0].toString();
-				GoalModel goalAux = UMPSTProject.getInstance().getMapGoal().get(key);
-				alterarJanelaAtual(new GoalsMainPanel(getJanelaPai(),null,goalAux));
+				AtributeModel atributeRelated =  entityRelated.getMapAtributes().get(key);
+				alterarJanelaAtual(new AtributeAdd(getJanelaPai(),entityRelated,null,atributeRelated));
+			
 				
 			}
 		});
@@ -153,50 +172,14 @@ public class TableGoals extends IUMPSTPanel{
 				
 				if( JOptionPane.showConfirmDialog(null,"Confirma Remocao do goal "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
+							
 							String key = data[row][0].toString();
-							GoalModel goalToBeDeleted = UMPSTProject.getInstance().getMapGoal().get(key);
-							
-							/*Updating MapSearch*/
-							deleteFromSearchMap(goalToBeDeleted);
-						
-							
-							
-							
-							if(goalToBeDeleted.getSubgoals() !=null){
-								int numberSubgoal = goalToBeDeleted.getSubgoals().size()+1;
-								for (int i = 1; i < numberSubgoal; i++) {
-									goalToBeDeleted.getSubgoals().get(goalToBeDeleted.getId()+"."+i).setGoalFather(null);
-									//goalToBeDeleted.getSubgoals().get(goalToBeDeleted.getId()+"."+i).setId("D"+i);
-								}
-							}
-							
-							
-							UMPSTProject.getInstance().getMapGoal().remove(goalToBeDeleted.getId());
-							
-							
-							 
-							Object[][] dataDel = new Object[UMPSTProject.getInstance().getMapGoal().size()][5];
-							Integer i=0;
-						    
-							Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
-							TreeSet<String> sortedKeys = new TreeSet<String>(keys);
-							
-							for (String chave: sortedKeys){
-								dataDel[i][0] = UMPSTProject.getInstance().getMapGoal().get(chave).getId();						
-								dataDel[i][1] = UMPSTProject.getInstance().getMapGoal().get(chave).getGoalName();
-								dataDel[i][2] = "";
-								dataDel[i][3] = "";
-								dataDel[i][4] = "";
-								i++;
-							}
-							
+							entityRelated.getMapAtributes().remove(key);
 							
 							UmpstModule pai = getJanelaPai();
-							 alterarJanelaAtual(pai.getMenuPanel());
+						    alterarJanelaAtual(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entityRelated)	);
 							 
-							 //TableGoals goalsTable = pai.getMenuPanel().getRequirementsPane().getGoalsTable();
-							 String[] colunas = {"ID","Goal","","",""};
-							 JTable table = createTable(colunas,dataDel);
+							 JTable table = createTable();
 							 
 							 getScrollPanePergunta().setViewportView(table);
 							 getScrollPanePergunta().updateUI();
@@ -213,9 +196,9 @@ public class TableGoals extends IUMPSTPanel{
        }
 	
 	
-	public JScrollPane createScrolltableGoals(String[] columnNames, Object[][] data){
+	public JScrollPane createScrolltableHypothesis(){
 		if(scrollpanePergunta == null){
-			scrollpanePergunta = new JScrollPane(createTable(columnNames,data));
+			scrollpanePergunta = new JScrollPane(createTable());
 			scrollpanePergunta.setMinimumSize(new Dimension(300,150));
 		}
 		
@@ -242,25 +225,6 @@ public class TableGoals extends IUMPSTPanel{
     }
     
   
-    public void deleteFromSearchMap(GoalModel goalToBeDeleted){
-    	Set<GoalModel> aux = new HashSet<GoalModel>();
-		GoalModel goalBeta;
-		String[] strAux = goalToBeDeleted.getGoalName().split(" ");
-
-	    for (int i = 0; i < strAux.length; i++) {
-    		if(UMPSTProject.getInstance().getMapSearchGoal().get(strAux[i])!=null){
-
-    			UMPSTProject.getInstance().getMapSearchGoal().get(strAux[i]).getGoalsRelated().remove(goalToBeDeleted);
-    			aux = UMPSTProject.getInstance().getMapSearchGoal().get(strAux[i]).getGoalsRelated();
-    	    	for (Iterator<GoalModel> it = aux.iterator(); it.hasNext(); ) {
-    	    		goalBeta = it.next();
-    	   		}
-    		}
-    		
-	    	
-	    }
-    }
-	    
-		/************/
+	
 
 }

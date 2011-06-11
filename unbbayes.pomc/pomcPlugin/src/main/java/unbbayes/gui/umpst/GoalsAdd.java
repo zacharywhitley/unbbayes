@@ -2,7 +2,9 @@ package unbbayes.gui.umpst;
 
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -11,16 +13,25 @@ import java.awt.event.ActionListener;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableModel;
 
+import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.project.SearchModelGoal;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
@@ -36,25 +47,22 @@ public class GoalsAdd extends IUMPSTPanel {
 	private ImageIcon iconSubgoal = createImageIcon("images/sub.png");
 
 	
-	private GridBagConstraints c     = new GridBagConstraints();
+	private GridBagConstraints constraints     = new GridBagConstraints();
 	private JLabel titulo            = new JLabel();
 	
 	private JButton buttonAdd 	     = new JButton();
 	private JButton buttonCancel     = new JButton("Cancel");
-	private JButton buttonHypothesis = new JButton(iconHypothesis);
-	private JButton buttonSubgoal    = new JButton(iconSubgoal);
+	private JButton buttonHypothesis = new JButton("add Hypothesis");
+	private JButton buttonSubgoal    = new JButton("add SubGoal");
 	
 	private JTextField dateText,authorText;
 	private JTextField goalText,commentsText;
 	private GoalModel goal;
 	private GoalModel goalFather;
-
-	//private ArrayList<GoalModel> goalChildren;
-	//private Map<String,HypothesisModel> hypothesis;
+	
+	private TitledBorder bordaDadosComuns = new TitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED));
 	
 
-
-	
 	public GoalsAdd(UmpstModule janelaPai, GoalModel goal, GoalModel goalFather){
 		super(janelaPai);
 		
@@ -62,10 +70,11 @@ public class GoalsAdd extends IUMPSTPanel {
 		this.goal = goal;
 		this.goalFather = goalFather;
 		this.setLayout(new GridBagLayout());
-		c.fill = GridBagConstraints.HORIZONTAL;
-		labels();
-		fields();
-		buttons();
+		constraints.fill = GridBagConstraints.BOTH;
+		constraints.gridx=0; constraints.gridy = 0; constraints.weightx=0.5;constraints.weighty=0.5;	
+		panelText();
+		constraints.gridx=0; constraints.gridy=1;
+		createTraceabilityTable();
 		listeners();
 
 		if( goal == null){
@@ -83,82 +92,84 @@ public class GoalsAdd extends IUMPSTPanel {
 		
 	}
 
-
-
-
-	public void labels(){
-		c.gridx = 0; c.gridy = 2;
-		add( new JLabel("Goal Description: "), c);
-		c.gridx = 0; c.gridy = 3;
-		add( new JLabel("Comments: "), c);
-		c.gridx = 0; c.gridy = 4;
-		add( new JLabel("Author Nome: "), c);
-		c.gridx = 0; c.gridy = 5;
-		add( new JLabel("Date: "), c);
+	public void panelText(){
 		
-		if (goalFather!=null){
-			c.gridx = 0; c.gridy = 6;
-			add( new JLabel("Father Name: "), c);
-			c.gridx = 1; c.gridy = 6;
-			add( new JLabel(goalFather.getGoalName()), c);
-		}
-		
+		GridBagConstraints c = new GridBagConstraints();
+		JPanel panel = new JPanel();
+		panel.setLayout(new GridBagLayout());
 		
 		GridBagConstraints d = new GridBagConstraints();
 		d.gridx = 0; d.gridy = 0;
 		d.fill = GridBagConstraints.PAGE_START;
+		
 		d.gridwidth = 2;
 		d.insets = new Insets(0, 0, 0, 0);
 		titulo.setFont(new Font("Arial", Font.BOLD, 32));
 		titulo.setBackground(new Color(0x4169AA));
-		add( titulo, d);
+		panel.add( titulo, d);
+
+		c.gridx = 0; c.gridy = 2; c.gridwidth=1;
+		panel.add( new JLabel("Goal Description: "), c);
+		c.gridx = 0; c.gridy = 3;c.gridwidth=1;
+		panel.add( new JLabel("Comments: "), c);
+		c.gridx = 0; c.gridy = 4;c.gridwidth=1;
+		panel.add( new JLabel("Author Nome: "), c);
+		c.gridx = 0; c.gridy = 5;c.gridwidth=1;
+		panel.add( new JLabel("Date: "), c);
 		
-	}
-	
-	
-	public void fields(){
+		if (goalFather!=null){
+			c.gridx = 0; c.gridy = 6;c.gridwidth=1;
+			panel.add( new JLabel("Father Name: "), c);
+			c.gridx = 1; c.gridy = 6;c.gridwidth=2;
+			panel.add( new JLabel(goalFather.getGoalName()), c);
+		}
 		
-		goalText = new JTextField(50);
-		commentsText = new JTextField(50);
+		
+		
+	
+			
+		goalText = new JTextField(20);
+		commentsText = new JTextField(20);
 		authorText = new JTextField(20);
-		dateText = new JTextField(10);
+		dateText = new JTextField(20);
  
 
-		c.gridx = 1; c.gridy = 2;
-		add( goalText, c);
+		c.gridx = 1; c.gridy = 2;c.gridwidth=2;
+		panel.add( goalText, c);
 		
-		c.gridx = 1; c.gridy = 3;
-		add( commentsText, c);
+		c.gridx = 1; c.gridy = 3;c.gridwidth=2;
+		panel.add( commentsText, c);c.gridwidth=2;
 		
-		c.gridx = 1; c.gridy = 4;
-		add( authorText, c);
+		c.gridx = 1; c.gridy = 4;c.gridwidth=2;
+		panel.add( authorText, c);c.gridwidth=2;
 		
-		c.gridx = 1; c.gridy = 5;
-		add( dateText, c);
+		c.gridx = 1; c.gridy = 5;c.gridwidth=2;
+		panel.add( dateText, c);c.gridwidth=2;
 
 		
-	}
+			
+		c.gridx = 0; c.gridy = 7; c.gridwidth = 1;
+		panel.add( buttonCancel, c);
 		
+		c.gridx = 1; c.gridy = 7; c.gridwidth = 1;
+		panel.add(buttonHypothesis,c);
+		
+		c.gridx = 2; c.gridy = 7;c.gridwidth=1;
+		panel.add( buttonAdd, c);
 		
 	
-	public void buttons(){
-		
-		c.gridx = 0; c.gridy = 7; c.gridwidth = 1;
-		add( buttonCancel, c);
-		c.gridx = 1; c.gridy = 7;
-		add( buttonAdd, c);
-		
-		GridBagConstraints d = new GridBagConstraints();
-		
-		d.gridx = 0; d.gridy = 8; 
-		add(buttonHypothesis,d);
 
-		d.gridx = 1; d.gridy = 8; 
-		add(buttonSubgoal,d);
+		/*e.gridx = 3; e.gridy = 7; 
+		panel.add(buttonSubgoal,e);*/
 		
 		buttonHypothesis.setToolTipText("Add new Hyphotesis");
 		buttonSubgoal.setToolTipText("Add new Subgoal");
-	
+		
+		/*c.gridx=0; c.gridy = 9; c.gridwidth=4; c.gridheight = 4;c.fill = GridBagConstraints.BOTH;
+		panel.add(createTraceabilityTable(),c);*/
+		
+		panel.setBorder(BorderFactory.createTitledBorder("Goals Details"));
+		add(panel,constraints);
 	}
 	
 	
@@ -211,6 +222,8 @@ public class GoalsAdd extends IUMPSTPanel {
 						
 							updateMapSearch(goal);
 							updateTableGoals(goal);
+					
+							
 							JOptionPane.showMessageDialog(null, "Goal successfully updated",null, JOptionPane.INFORMATION_MESSAGE);	
 						
 						}
@@ -286,30 +299,43 @@ public class GoalsAdd extends IUMPSTPanel {
     
     public GoalModel updateMapGoal(){
     	String idAux = "";
-    	int intAux;
     	Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
-		
-		
+		int tamanho = UMPSTProject.getInstance().getMapGoal().size()+1;
+		int maior = 0;
+		String idAux2 = "";
+		int intAux;
 		
 		if (goalFather==null){
 			
 			if ( UMPSTProject.getInstance().getMapGoal().size()!=0){
 				for (String key: sortedKeys){
-					idAux = UMPSTProject.getInstance().getMapGoal().get(key).getId();
+					//tamanho = tamanho - UMPSTProject.getInstance().getMapGoal().get(key).getSubgoals().size();
+					idAux= UMPSTProject.getInstance().getMapGoal().get(key).getId();
+					if (idAux.contains(".")){
+						intAux = idAux.indexOf(".");
+						idAux2 = idAux.substring(0, intAux);
+						if (maior<Integer.parseInt(idAux2)){
+							maior = Integer.parseInt(idAux2);
+						}
+					}
+					else{
+						if (maior< Integer.parseInt(idAux)){
+							maior = Integer.parseInt(idAux);
+						}
+					}
 				}
-				intAux = Integer.parseInt(idAux.substring(0, 1));
-				intAux++;
-				idAux = intAux+"";
+				maior++;
+				idAux = maior+"";
 			}
 			else{
-				idAux = 0+"";
+				idAux = 1+"";
 			}
 			
 		}
 		else{
 			if (goalFather.getSubgoals()!=null){
-				idAux = goalFather.getId()+"."+ goalFather.getSubgoals().size();
+				idAux = goalFather.getId()+"."+ (goalFather.getSubgoals().size()+1);
 				
 			}
 			else{
@@ -320,7 +346,7 @@ public class GoalsAdd extends IUMPSTPanel {
 
 		
 		GoalModel goalAdd = new GoalModel(idAux,goalText.getText(),commentsText.getText(), authorText.getText(), 
-				dateText.getText(),goalFather,null,null);
+				dateText.getText(),goalFather,null,null,null);
 		
 		if (goalFather!=null){
 			goalFather.getSubgoals().put(goalAdd.getId(), goalAdd);
@@ -344,7 +370,6 @@ public class GoalsAdd extends IUMPSTPanel {
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		for (String key: sortedKeys){
-			System.out.println("adicionou: "+UMPSTProject.getInstance().getMapGoal().get(key).getGoalName()+" id: " +UMPSTProject.getInstance().getMapGoal().get(key).getId());
 			data[i][0] = UMPSTProject.getInstance().getMapGoal().get(key).getId();
 			data[i][1] = UMPSTProject.getInstance().getMapGoal().get(key).getGoalName();			
 			data[i][2] = "";
@@ -352,7 +377,6 @@ public class GoalsAdd extends IUMPSTPanel {
 			data[i][4] = "";
 			i++;
 		}
-	    System.out.println("#######");
    
 	    UmpstModule pai = getJanelaPai();
 	    alterarJanelaAtual(pai.getMenuPanel());
@@ -392,5 +416,59 @@ public class GoalsAdd extends IUMPSTPanel {
 
     }
     
-	
+    public void  createTraceabilityTable() {
+		Object[][] data = new Object[30][3];
+		String[] columnNames = {"Name","Type","Traceability"};
+		int i = 0;
+		
+		if ( (goal!=null)&&(goal.getFowardTrackingEntity() !=null) ){
+			EntityModel entity;
+			Set<EntityModel> aux = goal.getFowardTrackingEntity();
+			
+	    	for (Iterator<EntityModel> it = aux.iterator(); it.hasNext(); ) {
+	    		entity = it.next();
+	    		data[i][0] = entity.getEntityName();
+	    		data[i][1] = "Entity";
+	    		data[i][2] = "Direct";
+	    		i++;
+	    	}
+		}
+
+		if ((goal!=null)&&(goal.getSubgoals()!=null)){
+			Set<String> keys = goal.getSubgoals().keySet();
+			TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+			
+			for (String key: sortedKeys){
+				data[i][0] = goal.getSubgoals().get(key).getGoalName();
+				data[i][1] = "Goals";
+				data[i][2] = "Direct";
+				i++;
+			}
+		}
+    	if ((goal!=null)&&(goal.getMapHypothesis()!=null)){
+    		Set<String> keys = goal.getMapHypothesis().keySet();
+			TreeSet<String> sortedKeys = new TreeSet<String>(keys);	
+			
+			for (String key: sortedKeys){
+				data[i][0] = goal.getMapHypothesis().get(key).getHypothesisName();
+				data[i][1] = "Hypothesis";
+				data[i][2] = "Direct";
+				i++;
+			}    	
+		}
+		
+		DefaultTableModel tableModel = new DefaultTableModel(data, columnNames);
+		JTable table = new JTable(tableModel);
+
+		JScrollPane scrollPane = new JScrollPane(table);
+		
+		scrollPane.setBorder(BorderFactory.createTitledBorder("This Goal Traceability"));
+		
+		add(scrollPane,constraints);
+		
+       }
+    
+    
+
+    	  	
 }

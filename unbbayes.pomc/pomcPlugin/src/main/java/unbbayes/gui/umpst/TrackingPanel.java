@@ -1,28 +1,31 @@
 package unbbayes.gui.umpst;
 
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
+import java.util.Set;
+import java.util.TreeSet;
 import javax.swing.Box;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import javax.swing.JList;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
+import unbbayes.model.umpst.project.UMPSTProject;
 
 public class TrackingPanel extends IUMPSTPanel{
 
-	
-	private JTextArea textArea1;	
-	private JTextArea textArea2;
-	private JButton buttonCopy;
+	private static final long serialVersionUID = 1L;
+	private JButton buttonCopy, buttonDelete;
 	private JButton buttonSave;
 	
-	String demo = "goal1  "+
-	"goal2  "+
-	"hyphotesis1";
 
+	JList list,listAux; 
+	DefaultListModel listModel = new DefaultListModel();
+	DefaultListModel listModelAux = new DefaultListModel();
+
+	
 	public TrackingPanel(UmpstModule janelaPai){
 		super(janelaPai);
     	this.setLayout(new GridLayout(1,0));
@@ -34,11 +37,30 @@ public class TrackingPanel extends IUMPSTPanel{
 	}
 	
 	public Box getTrackingPanel(){
-		//super("text area demo");
 		Box box = Box.createHorizontalBox();
+	
 		
-		textArea1 = new JTextArea(demo,10,15);
-		box.add(new JScrollPane(textArea1));
+				
+		Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
+		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+		
+		for (String key: sortedKeys){
+			listModel.addElement(UMPSTProject.getInstance().getMapGoal().get(key).getGoalName());
+		}
+		
+		
+		
+		list = new JList(listModel); //data has type Object[]
+		
+		list.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		list.setLayoutOrientation(JList.VERTICAL_WRAP);
+		list.setVisibleRowCount(-1);
+		JScrollPane listScroller = new JScrollPane(list);
+		listScroller.setMinimumSize(new Dimension(300,200));
+				
+		box.add(listScroller);
+	
+	
 		
 		buttonCopy = new JButton("copy >>");
 		box.add(buttonCopy);
@@ -46,7 +68,21 @@ public class TrackingPanel extends IUMPSTPanel{
 				new ActionListener() {
 					
 					public void actionPerformed(ActionEvent e) {
-						textArea2.setText(textArea1.getSelectedText());						
+						listModelAux.addElement(list.getSelectedValue());	
+						listModel.removeElement(list.getSelectedValue());
+					}
+				}
+		
+		);
+		
+		buttonDelete = new JButton("<< delete");
+		box.add(buttonDelete);
+		buttonDelete.addActionListener(
+				new ActionListener() {
+					
+					public void actionPerformed(ActionEvent e) {
+						listModel.addElement(listAux.getSelectedValue());	
+						listModelAux.removeElement(listAux.getSelectedValue());
 					}
 				}
 		
@@ -64,9 +100,16 @@ public class TrackingPanel extends IUMPSTPanel{
 				}
 		
 		);		
-		textArea2 = new JTextArea(10,15);
-		textArea2.setEditable(false);
-		box.add(new JScrollPane(textArea2));
+		
+		listAux = new JList(listModelAux);
+		
+		listAux.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		listAux.setLayoutOrientation(JList.VERTICAL_WRAP);
+		listAux.setVisibleRowCount(-1);
+		JScrollPane listScrollerAux = new JScrollPane(listAux);
+		listScrollerAux.setMinimumSize(new Dimension(300,200));
+		box.add(listScrollerAux);
+
 		
 		return box;
 		

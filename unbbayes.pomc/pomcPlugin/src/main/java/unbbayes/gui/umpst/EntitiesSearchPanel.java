@@ -127,7 +127,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 			buttonAddEntity.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
-					alterarJanelaAtual(new EntitiesMainPanel(getJanelaPai(),null));
+					alterarJanelaAtual(getEntitiesMainPanel(null));
 				}
 			});			
 		}
@@ -214,6 +214,14 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 	    entitiesTable.updateUI();
 	    entitiesTable.repaint();
     }
+	
+	public EntitiesMainPanel getEntitiesMainPanel(EntityModel entity){
+		
+		EntitiesMainPanel ret = new EntitiesMainPanel(getJanelaPai(),entity);
+		
+		return ret;
+		
+	}
 	
 
 }

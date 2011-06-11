@@ -11,8 +11,9 @@ public class GoalsMainPanel extends IUMPSTPanel{
 	
 	
 	private static final long serialVersionUID = 1L;
-	private JSplitPane splitPane;
+	private JSplitPane splitPane,splitPaneAux;
 	private TableHypothesis hypothesisPanel;
+	private TraceabilityPanel traceabilityPanel;
 	private GoalsAdd goalsPanel;
 	private GoalModel goal,goalFather;
 	
@@ -33,9 +34,12 @@ public class GoalsMainPanel extends IUMPSTPanel{
 	 */
 	public JSplitPane getSplitPane() {
 		if(splitPane == null){
-			splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+			/*splitPaneAux = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+					getHypothesisTable(goal),getTraceabilityPanel(goal));
+			splitPaneAux.setDividerLocation(0.7);*/
+			splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
 					getGoalsPanel(goal),getHypothesisTable(goal));
-			splitPane.setDividerLocation(400);
+			splitPane.setDividerLocation(500);
 			splitPane.setPreferredSize(new Dimension(800,600));
 			splitPane.setBackground(new Color(0x4169AA));
 		}
@@ -63,5 +67,11 @@ public class GoalsMainPanel extends IUMPSTPanel{
 		return goalsPanel;
 	}
 	
+	public TraceabilityPanel getTraceabilityPanel(GoalModel goal) {
+		if(traceabilityPanel == null ){
+			traceabilityPanel = new TraceabilityPanel(getJanelaPai(),goal);
+		}
+		return traceabilityPanel;
+	}
 	
 }

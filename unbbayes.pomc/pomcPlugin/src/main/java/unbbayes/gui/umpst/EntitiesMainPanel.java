@@ -3,21 +3,22 @@ package unbbayes.gui.umpst;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-
-import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import javax.swing.table.DefaultTableModel;
 
 import unbbayes.model.umpst.entities.EntityModel;
 
 public class EntitiesMainPanel extends IUMPSTPanel{
 	
-	private JSplitPane splitPane;
-	private TableEntities tableEntities;
+
+	private static final long serialVersionUID = 1L;
+	private JSplitPane splitPane, topSplitPane;
+	private TableAtribute tableAtribute;
 	private EntitiesAdd entitiesPanel;
+	private TrackingPanel backtrackingPanel;
 	private EntityModel entity;
 	
 	public EntitiesMainPanel(UmpstModule janelaPai, EntityModel entity) {
+		
 		super(janelaPai);
 		this.entity=entity;
 		this.setLayout(new FlowLayout());
@@ -30,10 +31,12 @@ public class EntitiesMainPanel extends IUMPSTPanel{
 	 */
 	public JSplitPane getSplitPane() {
 		if(splitPane == null){
+			//topSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,getEntityPanel(),getBacktrackingPane());
+			//topSplitPane.setDividerLocation(260);
 			splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-					getEntityPanel(),getEntityTable());
-			splitPane.setDividerLocation(300);
-			splitPane.setPreferredSize(new Dimension(800,600));
+					getEntityPanel(entity),getAtributeTable(entity));
+			splitPane.setDividerLocation(400);
+			splitPane.setPreferredSize(new Dimension(1000,600));
 			splitPane.setBackground(new Color(0x4169AA));
 		}
 		return splitPane;
@@ -42,25 +45,25 @@ public class EntitiesMainPanel extends IUMPSTPanel{
 	/**
 	 * @return the tableEntities
 	 */
-	public TableEntities getEntityTable() {
-		if(tableEntities == null ){
-			DefaultTableModel model = new DefaultTableModel();
-
-			tableEntities = new TableEntities(getJanelaPai());
+	public TableAtribute getAtributeTable(EntityModel entity) {
+		if(tableAtribute == null ){
+			tableAtribute = new TableAtribute(getJanelaPai(),entity);
 		}
-		return tableEntities;
+		return tableAtribute;
 	}
 
 	/**
 	 * @return the entitiesPanel
 	 */
-	public EntitiesAdd getEntityPanel() {
+	public EntitiesAdd getEntityPanel(EntityModel entity) {
 		if(entitiesPanel == null ){
 			entitiesPanel = new EntitiesAdd(getJanelaPai(),entity);
 			entitiesPanel.setBackground(new Color(0xffffff));
 		}
 		return entitiesPanel;
 	}
+	
+	
 	
 	
 }

@@ -2,7 +2,11 @@ package unbbayes.model.umpst.requirements;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+
+import unbbayes.model.umpst.entities.EntityModel;
 
 public class GoalModel {
 	
@@ -14,9 +18,10 @@ public class GoalModel {
 	private GoalModel goalFather;
 	private Map<String, GoalModel> subgoals ;
 	private Map<String,HypothesisModel> mapHypothesis;
+	private Set<EntityModel> fowardTrackingEntity;
 	
 	public GoalModel(String id,String goalName, String comments,String author, 
-			String date, GoalModel father,Map<String,GoalModel> children,Map<String,HypothesisModel> hypothesis) {
+			String date, GoalModel father,Map<String,GoalModel> children,Map<String,HypothesisModel> hypothesis,Set<EntityModel> fowardTrackingEntity) {
 		
 		this.id=id;
 		this.goalName = goalName;
@@ -33,7 +38,10 @@ public class GoalModel {
 			this.setMapHypothesis(new HashMap<String, HypothesisModel>());
 
 		}
-
+		this.fowardTrackingEntity = fowardTrackingEntity;
+		if (fowardTrackingEntity==null){
+			this.setFowardTrackingEntity(new HashSet<EntityModel>());
+		}
 		// TODO Auto-generated constructor stub
 	}
 	
@@ -41,7 +49,25 @@ public class GoalModel {
 	
 
 	
-	
+
+	/**
+	 * @return the fowardTrackingEntity
+	 */
+	public Set<EntityModel> getFowardTrackingEntity() {
+		return fowardTrackingEntity;
+	}
+
+
+
+
+
+
+	/**
+	 * @param fowardTrackingEntity the fowardTrackingEntity to set
+	 */
+	public void setFowardTrackingEntity(Set<EntityModel> fowardTrackingEntity) {
+		this.fowardTrackingEntity = fowardTrackingEntity;
+	}
 
 
 
