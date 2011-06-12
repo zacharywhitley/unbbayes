@@ -376,7 +376,7 @@
 			 <dependency>
 			 	<groupId>br.unb.cic</groupId>
 			 	<artifactId>unbbayes.prs.mebn</artifactId>
-			 	<version>1.9.8</version>
+			 	<version>1.10.8</version>
 			 	<optional>false</optional>
 			 </dependency>
 		</dependencies>
