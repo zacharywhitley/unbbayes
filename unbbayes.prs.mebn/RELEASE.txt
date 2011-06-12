@@ -5,6 +5,7 @@ Number	Request ID	Summary
 1					Altered the KB builder plugin in order to specify the MEBN to be used.
 2					Added a new extension point to add new types of nodes.
 9		3315492		Remove type filtering to allow use of subtypes.
+10		3315504		Save MFrag and SSBN as images.
 
 BUG LIST		
 Number	Request ID	Summary

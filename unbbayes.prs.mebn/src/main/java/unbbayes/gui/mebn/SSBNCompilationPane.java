@@ -83,7 +83,7 @@ public class SSBNCompilationPane extends JPanel {
     private final JButton reset;
     private final JButton printNet;
     private final JButton previewNet;
-    private final JButton saveNetImage;
+    private final JButton btnSaveNetImage;
     private final JButton saveNet;
     private final JButton showWarningDialog; 
     
@@ -112,7 +112,7 @@ public class SSBNCompilationPane extends JPanel {
   	    reset = null;
   	    printNet = null;
   	    previewNet = null;
-  	    saveNetImage = null;
+  	    btnSaveNetImage = null;
   	    saveNet = null; 
   	    network = null; 
   	    showWarningDialog = null; 
@@ -144,7 +144,7 @@ public class SSBNCompilationPane extends JPanel {
         reset             = new JButton(iconController.getInitializeIcon());
         printNet          = new JButton(iconController.getPrintNetIcon());
         previewNet        = new JButton(iconController.getPrintPreviewNetIcon());
-        saveNetImage      = new JButton(iconController.getSaveNetIcon());
+        btnSaveNetImage   = new JButton(iconController.getSaveNetIcon());
         saveNet           = new JButton(iconController.getSaveIcon());
 
         showWarningDialog = new JButton(iconController.getWarningIcon()); 
@@ -159,7 +159,7 @@ public class SSBNCompilationPane extends JPanel {
         saveNet.setToolTipText(resource.getString("saveSSBNToolTip")); 
 //        printNet.setToolTipText(resource.getString("printNetToolTip"));
 //        previewNet.setToolTipText(resource.getString("previewNetToolTip"));
-//        saveNetImage.setToolTipText(resource.getString("saveNetImageToolTip"));
+        btnSaveNetImage.setToolTipText(resource.getString("saveNetImageToolTip"));
         showWarningDialog.setToolTipText(resource.getString("openWarningDialogToolTip")); 
         
         
@@ -233,7 +233,7 @@ public class SSBNCompilationPane extends JPanel {
             }
         });
 
-        saveNetImage.addActionListener(new ActionListener() {
+        btnSaveNetImage.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 controller.saveNetImage();
             }
@@ -320,7 +320,10 @@ public class SSBNCompilationPane extends JPanel {
 
         jtbCompilation.add(editMode);
         jtbCompilation.add(log);
-        jtbCompilation.add(showWarningDialog); 
+        jtbCompilation.add(showWarningDialog);
+        
+        jtbCompilation.addSeparator();
+        jtbCompilation.add(btnSaveNetImage);
         
         jtbCompilation.addSeparator();
         jtbCompilation.add(saveNet);

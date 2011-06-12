@@ -784,6 +784,8 @@ public class MEBNEditionPane extends JPanel {
 	    private JButton btnSaveKB; 
 	    private JButton btnLoadKB; 
 		private JButton btnClearKB;
+		
+		private JButton btnSaveNetImage;
 
 		private AbstractButton btnMEBNOption; 
 	    
@@ -798,6 +800,8 @@ public class MEBNEditionPane extends JPanel {
 	    	btnLoadKB = new JButton(iconController.getLoadFindingsInstance());
 	    	btnSaveKB = new JButton(iconController.getSaveFindingsInstance());
 	    	
+	    	btnSaveNetImage = new JButton(iconController.getSaveNetIcon());
+	    	
 	    	btnMEBNOption = new JButton(iconController.getGlobalOptionIcon());
 	    	
 	    	btnDoQuery.setToolTipText(resource.getString("executeQueryToolTip"));
@@ -805,6 +809,8 @@ public class MEBNEditionPane extends JPanel {
 	    	btnClearKB.setToolTipText(resource.getString("clearKBToolTip"));
 	    	btnLoadKB.setToolTipText(resource.getString("loadKBToolTip"));
 	    	btnSaveKB.setToolTipText(resource.getString("saveKBToolTip"));
+	    	
+	    	btnSaveNetImage.setToolTipText(resource.getString("saveNetImageToolTip"));
 	    	
 	    	btnMEBNOption.setToolTipText(resource.getString("openMEBNOptions"));
 	    	
@@ -873,6 +879,12 @@ public class MEBNEditionPane extends JPanel {
 	    			doLoadKnowledgeBase(); 
 	    		}});
 	    	
+	    	btnSaveNetImage.addActionListener(new ActionListener() {
+	            public void actionPerformed(ActionEvent e) {
+	            	mebnController.saveNetImage();
+	            }
+	        });
+	    	
 	    	btnMEBNOption.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent ae) {
@@ -899,6 +911,10 @@ public class MEBNEditionPane extends JPanel {
 	        add(btnTurnToSSBNMode); 
 	        
 	        addSeparator(new Dimension(10, 10)); 
+	        
+	        add(btnSaveNetImage);
+	        
+	        addSeparator(new Dimension(10, 10));
 	        
 	        add(btnMEBNOption);
 	        
