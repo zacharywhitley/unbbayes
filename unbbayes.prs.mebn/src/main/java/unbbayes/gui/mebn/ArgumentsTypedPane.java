@@ -45,10 +45,10 @@ import unbbayes.prs.mebn.ResidentNodePointer;
 import unbbayes.prs.mebn.exception.OVDontIsOfTypeExpected;
 
 /**
- * Painel utilizado para se selecionar quais vari�veis ordin�rias
- * irao preencher cada um dos argumentos. � criada uma combo box
- * referente a cada argumento a ser preenchido, e nesta s�o listadas
- * todas as variaveis ordin�rias que s�o do tipo esperado. 
+ * Painel utilizado para se selecionar quais variaveis ordinarias
+ * irao preencher cada um dos argumentos. E criada uma combo box
+ * referente a cada argumento a ser preenchido, e nesta sao listadas
+ * todas as variaveis ordinarias que sao do tipo esperado. 
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  * @version 1.0 06/28/07
@@ -67,7 +67,7 @@ public class ArgumentsTypedPane extends JPanel{
 	
 	/**
 	 * 
-	 * Notas: o painel � criado baseando-se na estrutura atual do n� residente
+	 * Notas: o painel e criado baseando-se na estrutura atual do no residente
 	 * ao qual o ResidentNodePointer aponta. 
 	 * 
 	 * @param _node Node that have this pointer (GenerativeInputNode or ContextNode)
@@ -127,9 +127,11 @@ public class ArgumentsTypedPane extends JPanel{
 			//Verificacao de quais ov deverao entrar na JComboBox
 			for(OrdinaryVariable ov: ovList){
 				
-				if(ov.getValueType().equals(pointer.getTypeOfArgument(i))){
+				// FIXME: This if should also verify if the OV is a subclass of the expected class.
+				// For now I will remove this condition to verify if the rest works as expected.
+//				if(ov.getValueType().equals(pointer.getTypeOfArgument(i))){
 					list.add(ov); 
-				}
+//				}
 				
 			}
 			
