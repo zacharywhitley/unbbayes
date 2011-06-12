@@ -370,6 +370,8 @@ public class NetworkController implements KeyListener, INetworkMediator {
         	File file = new File(chooser.getSelectedFile().getPath());
         	saveComponentAsImage(comp, r.width, r.height, file);
         	FileHistoryController.getInstance().setCurrentDirectory(chooser.getCurrentDirectory());
+        	
+        	JOptionPane.showMessageDialog(screen, resource.getString("saveSucess"));
         }
     }
     
@@ -431,6 +433,8 @@ public class NetworkController implements KeyListener, INetworkMediator {
         	File file = new File(chooser.getSelectedFile().getPath());
         	saveComponentAsImage(comp, comp.getWidth(), comp.getHeight(), file);
         	FileHistoryController.getInstance().setCurrentDirectory(chooser.getCurrentDirectory());
+        	
+        	JOptionPane.showMessageDialog(screen, resource.getString("saveSucess"));
         }
     }
     
