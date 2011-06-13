@@ -1,4 +1,4 @@
-UNBBAYES VERSION 4.2.2
+UNBBAYES VERSION 4.3.3
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
@@ -9,6 +9,7 @@ Number	Request ID	Summary
 BUG LIST		
 Number	Request ID	Summary
 2		3260712 	SSBN is not saved with correct CPT.
+3					Added a patch to fix a bug caused by Xalan when a XML file with an attribute called ident-number is requested. Because this is a generic bug, it was migrated from unbbayes.gui.mebn.protege to here.
 
 
 UNBBAYES VERSION 4.0.0
