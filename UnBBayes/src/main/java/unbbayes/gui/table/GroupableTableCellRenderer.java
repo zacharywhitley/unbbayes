@@ -40,6 +40,9 @@ public class GroupableTableCellRenderer extends DefaultTableCellRenderer {
 	private static final long serialVersionUID = -3785644336203425095L;
 	private Color foregroundColor = Color.WHITE;
 	private Color backgroundColor = Color.BLUE;
+	private Color selectionForegroundColor = Color.WHITE;
+	private Color selectionBackgroundColor = Color.BLUE;
+	
 	
 	public GroupableTableCellRenderer() {
 		
@@ -64,8 +67,15 @@ public class GroupableTableCellRenderer extends DefaultTableCellRenderer {
 			boolean selected, boolean focused, int row, int column) {
 		JTableHeader header = table.getTableHeader();
 		if (header != null) {
-			setForeground(foregroundColor);
-			setBackground(backgroundColor);
+			if (selected) {
+				setForeground(selectionForegroundColor);
+				setBackground(selectionBackgroundColor);
+			} else {
+				setForeground(foregroundColor);
+				setBackground(backgroundColor);
+			}
+			
+			
 		}
 		setHorizontalAlignment(SwingConstants.CENTER);
 		setText(value != null ? value.toString() : " ");

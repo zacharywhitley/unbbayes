@@ -201,6 +201,7 @@ public class GUIPotentialTable {
 		DefaultTableModel model = new DefaultTableModel();
 		model.setDataVector(data, column);
 		table = new JTable();
+		
 		// Setup to allow grouping the header.
 		table.setColumnModel(new GroupableTableColumnModel());
 		table.setTableHeader(new GroupableTableHeader(

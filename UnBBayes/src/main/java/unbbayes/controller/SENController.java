@@ -560,6 +560,10 @@ public class SENController {
 			potTab = (PotentialTable)((IRandomVariable) node).getProbabilityFunction();
 
 			table = new GUIPotentialTable(potTab).makeTable();
+			
+			// Allow the selection of a single cell
+			table.setCellSelectionEnabled(true);
+			table.setRowSelectionAllowed(true);
 
 		} else {
 			// decision

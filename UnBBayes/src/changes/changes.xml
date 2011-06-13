@@ -8,7 +8,7 @@
 	</properties>
 	<body>
 	
-		<release version="4.4.3" date="2011-06-30" description="Second UnBBayes Plugin Framework release">
+		<release version="4.5.3" date="2011-06-30" description="Second UnBBayes Plugin Framework release">
 			<action dev="Shou Matsumoto" type="add" issue="3132338">
 				The "final" mark in some methods were removed, in order to allow overwriting.
 			</action>
@@ -20,6 +20,9 @@
 			</action>
 			<action dev="Rommel Carvalho" type="add" issue="3315588">
 				Allow to remove evidence from node.
+			</action>
+			<action dev="Rommel Carvalho" type="add" issue="3315761">
+				Allow the selection of a single cell - CPT.
 			</action>
 			
 			
