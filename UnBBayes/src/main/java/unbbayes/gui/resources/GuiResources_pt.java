@@ -442,6 +442,8 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"CptSaveOK", "Tabela salva com sucesso"},
 		{"CptCompileOK", "Tabela compilada sem erros"},
 		
+		{"apply", "Aplicar"},
+		
 		
 		/* Edition of states */
 		{"insertBooleanStates", "Inserir estados booleanos"}, 

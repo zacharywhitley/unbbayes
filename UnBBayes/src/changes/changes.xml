@@ -8,7 +8,7 @@
 	</properties>
 	<body>
 	
-		<release version="4.8.3" date="2011-06-30" description="Second UnBBayes Plugin Framework release">
+		<release version="4.9.3" date="2011-06-30" description="Second UnBBayes Plugin Framework release">
 			<action dev="Shou Matsumoto" type="add" issue="3132338">
 				The "final" mark in some methods were removed, in order to allow overwriting.
 			</action>
@@ -32,6 +32,9 @@
 			</action>
 			<action dev="Rommel Carvalho" type="add" issue="3314852">
 				Remove Color Controller & Size Controller.
+			</action>
+			<action dev="Rommel Carvalho" type="add" issue="3314838">
+				Auto complete probability tables.
 			</action>
 			
 			

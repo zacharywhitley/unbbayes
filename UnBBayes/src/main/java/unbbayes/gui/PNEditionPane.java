@@ -32,13 +32,18 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.EventObject;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -62,6 +67,12 @@ import unbbayes.controller.NetworkController;
 import unbbayes.gui.table.extension.IProbabilityFunctionPanelBuilder;
 import unbbayes.gui.util.SplitToggleButton;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.IRandomVariable;
+import unbbayes.prs.bn.ProbabilisticTable;
+import unbbayes.prs.bn.cpt.ITableFunction;
+import unbbayes.prs.bn.cpt.impl.FillUniformTableFunction;
+import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
+import unbbayes.prs.bn.cpt.impl.UniformTableFunction;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.dto.INodeClassDataTransferObject;
 import unbbayes.util.extension.manager.CoreCPFPluginManager;
@@ -183,7 +194,7 @@ public class PNEditionPane extends JPanel {
         btnGlobalOption.setToolTipText(resource.getString("globalOptionTitle"));
         btnHierarchy.setToolTipText(resource.getString("hierarchyToolTip"));
 
-        //ao clicar no bot�o btnGlobalOption, mostra-se o menu para escolha das op��es
+        //ao clicar no botao btnGlobalOption, mostra-se o menu para escolha das opcoes
         btnGlobalOption.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -196,7 +207,7 @@ public class PNEditionPane extends JPanel {
             }
         });
 
-        //ao clicar no bot�o btnHierarchy, chama-se a tela para defini��o de hierarquia
+        //ao clicar no botao btnHierarchy, chama-se a tela para definicao de hierarquia
         btnHierarchy.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 netWindow.changeToHierarchy();
@@ -248,7 +259,7 @@ public class PNEditionPane extends JPanel {
         });
 
 
-        // listener respons�vel pela atualiza��o do texo da descri��o do n�
+        // listener responsavel pela atualizacao do texo da descricao do no
         txtDescription.addKeyListener(new KeyAdapter() {
           public void keyPressed(KeyEvent e) {
             Object selected = netWindow.getGraphPane().getSelected();
@@ -277,8 +288,8 @@ public class PNEditionPane extends JPanel {
           }
         });
 
-        //ao clicar no bot�o btnRemoveState, chama-se o metodo removerEstado do controller
-        //para que esse remova um estado do n�
+        //ao clicar no botao btnRemoveState, chama-se o metodo removerEstado do controller
+        //para que esse remova um estado do no
         btnRemoveState.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent ae) {
             if (netWindow.getGraphPane().getSelected() instanceof Node) {
@@ -287,8 +298,8 @@ public class PNEditionPane extends JPanel {
           }
         });
 
-        //ao clicar no bot�o btnRemoveState, chama-se o metodo inserirEstado do controller
-        //para que esse insira um novo estado no n�
+        //ao clicar no botao btnRemoveState, chama-se o metodo inserirEstado do controller
+        //para que esse insira um novo estado no no
         btnAddState.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent ae) {
             if (netWindow.getGraphPane().getSelected() instanceof Node) {
@@ -339,7 +350,7 @@ public class PNEditionPane extends JPanel {
             }
         });
 
-        //colocar bot�es e controladores do look-and-feel no toolbar e esse no topPanel
+        //colocar botoes e controladores do look-and-feel no toolbar e esse no topPanel
         jtbEdition.add(btnPrintNet);
         jtbEdition.add(btnPreviewNet);
         jtbEdition.add(btnSaveNetImage);
@@ -418,9 +429,9 @@ public class PNEditionPane extends JPanel {
     }
 
     /**
-     *  Retorna o text field da descri��o do n�.
+     *  Retorna o text field da descricao do no.
      *
-     *@return    retorna a txtDescri��o (<code>JTextField</code>)
+     *@return    retorna a txtDescricao (<code>JTextField</code>)
      *@see       JTextField
      */
     public JTextField getTxtDescription() {
@@ -526,7 +537,7 @@ public class PNEditionPane extends JPanel {
 		ret.addTab(
 					this.resource.getString("CPFTableTitle"), 
 					iconController.getTableIcon(), 
-					this.getJspTable(), 
+					this.getCPTPane(), 
 					this.resource.getString("CPFTableToolTip")
 				);
 		
@@ -580,6 +591,58 @@ public class PNEditionPane extends JPanel {
 		
 		return ret;
 	}
+    
+    private int selectedFunction = 0;
+    
+    public JPanel getCPTPane() {
+    	final JPanel pane = new JPanel(new BorderLayout());
+    	// Only add the combo box with table functions for nodes with probabilistic tables
+    	if (getTableOwner() instanceof IRandomVariable) {
+    		if (((IRandomVariable) getTableOwner()).getProbabilityFunction() instanceof ProbabilisticTable) {
+    			final ProbabilisticTable table = (ProbabilisticTable)((IRandomVariable) getTableOwner()).getProbabilityFunction();
+    			
+    			// TODO Add an extension point to allow the implementation of new functions as plugins
+    			// Add existing functions to combo box
+    			Set<ITableFunction> functions = new TreeSet<ITableFunction>();
+    			ITableFunction function = new NormalizeTableFunction();
+    			functions.add(function);
+    			function = new UniformTableFunction();
+    			functions.add(function);
+    			function = new FillUniformTableFunction();
+    			functions.add(function);
+    			
+    			// Create the combo box based on the list of functions
+    			final JComboBox cmbFunction = new JComboBox(functions.toArray());
+    			cmbFunction.setSelectedIndex(selectedFunction);
+    			
+    			JButton btnRun = new JButton(resource.getString("apply"));
+    			
+    			// Run function on selected table
+    			btnRun.addActionListener(new ActionListener() {
+    				public void actionPerformed(ActionEvent e) {
+    					// Store selected function
+    					selectedFunction = cmbFunction.getSelectedIndex();
+    					// Apply selected function
+    					((ITableFunction)cmbFunction.getSelectedItem()).applyFunction(table);
+    					// Update the change made to the table
+    					PNEditionPane.this.netWindow.getController().createTable(getTableOwner());
+    				}
+    			});
+    			
+    			JPanel functionPane = new JPanel();
+    			
+    			functionPane.add(cmbFunction);
+    			functionPane.add(btnRun);
+    			
+    			pane.add(functionPane, BorderLayout.WEST);
+    			
+    		}
+    	} 
+    	
+    	pane.add(getJspTable(), BorderLayout.CENTER);
+    	
+    	return pane;
+    }
 
 	public Node getTableOwner() {
         return tableOwner;

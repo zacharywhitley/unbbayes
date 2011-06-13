@@ -1,4 +1,4 @@
-UNBBAYES VERSION 4.8.3
+UNBBAYES VERSION 4.9.3
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
@@ -9,6 +9,7 @@ Number	Request ID	Summary
 6		3315773		Allow copy and paste between CPT and Excel.
 7		3314854		Remove Continuous Node.
 8		3314852		Remove Color Controller & Size Controller.
+9		3314838		Auto complete probability tables.
 
 
 BUG LIST		
