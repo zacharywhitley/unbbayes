@@ -68,6 +68,9 @@ public class ControllerResources extends ListResourceBundle {
 		{"firstStateDecisionName","Action 0"},
 		{"nodeName","Node: "},
 		
+		// Error message
+		{"noNodeSelectedError","A node must be selected."},
+		
 		//Barra de status
 		{"statusLoadingKB","Loading knowledge base..."},
 		{"statusSavingKB","Loading knowledge base..."},

@@ -148,6 +148,8 @@ public class IconController implements Serializable {
 	protected ImageIcon informationIcon;
 
 	protected ImageIcon initializeIcon;
+	
+	protected ImageIcon removeEvidenceIcon;
 
 	protected ImageIcon ellipsisIcon;
 
@@ -863,6 +865,16 @@ public class IconController implements Serializable {
 			initializeIcon = new ImageIcon(getClass().getResource(
 					"/icons/initialize.gif"));
 			return initializeIcon;
+		}
+	}
+	
+	public ImageIcon getRemoveEvidenceIcon() {
+		if (removeEvidenceIcon != null) {
+			return removeEvidenceIcon;
+		} else {
+			removeEvidenceIcon = new ImageIcon(getClass().getResource(
+					"/icons/removeEvidence.gif"));
+			return removeEvidenceIcon;
 		}
 	}
 

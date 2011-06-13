@@ -78,6 +78,7 @@ public class NetworkController implements KeyListener, INetworkMediator {
     private NetworkWindow screen;
     private SingleEntityNetwork singleEntityNetwork;
     
+    private Node selectedNode;
     
     private SENController senController;
     
@@ -164,6 +165,13 @@ public class NetworkController implements KeyListener, INetworkMediator {
 	 */
     public void initialize() {
     	if (senController != null) senController.initialize();
+    }
+    
+    /* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#removeEvidence(unbbayes.prs.Node)
+	 */
+    public void removeEvidence(Node node) {
+    	if (senController != null) senController.removeEvidence(node);
     }
     
     /* (non-Javadoc)
@@ -726,26 +734,16 @@ public class NetworkController implements KeyListener, INetworkMediator {
         
     }
     
-    /* (non-Javadoc)
-	 * @see unbbayes.controller.INetworkMediator#getSelectedNode()
-	 */
     public Node getSelectedNode(){
-    	Debug.println("Node selection is currently only available for subclasses");
-    	return null;
+    	return selectedNode;
     }
-    
-    /* (non-Javadoc)
-	 * @see unbbayes.controller.INetworkMediator#selectNode(unbbayes.prs.Node)
-	 */
+	
     public void selectNode(Node node){
-    	Debug.println("Node selection is currently only available for subclasses");
+    	this.selectedNode = node;
     }
     
-    /* (non-Javadoc)
-	 * @see unbbayes.controller.INetworkMediator#unselectAll()
-	 */
     public void unselectAll(){
-    	Debug.println("Node selection is currently only available for subclasses");
+    	this.selectedNode = null;
     }
 
 	/* (non-Javadoc)

@@ -97,7 +97,7 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     /**
      * Reset the value of the evidence, which by default is -1 when there is no evidence.
      */
-    void resetEvidence() {
+    public void resetEvidence() {
         evidence = -1;
     }
 

@@ -49,12 +49,14 @@ import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
+import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.hybridbn.CNNormalDistribution;
 import unbbayes.prs.hybridbn.ContinuousNode;
 import unbbayes.prs.hybridbn.GaussianMixture;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
+import unbbayes.util.Debug;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 public class SENController {
@@ -159,7 +161,29 @@ public class SENController {
 			e.printStackTrace();
 		}
 	}
-
+	
+	/**
+	 * Reset the belief of the selected node.
+	 */
+	public void removeEvidence(Node node) {
+		try {
+			if (node != null) {
+				if (node instanceof TreeVariable) {
+					TreeVariable n = (TreeVariable)node;
+	        		n.resetLikelihood();
+	        		n.resetEvidence();
+	        		propagate();
+	        	}
+				screen.getEvidenceTree().updateTree(true);
+			} else {
+				JOptionPane.showMessageDialog(screen, resource.getString("noNodeSelectedError"), resource
+						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * Propagates the network's evidences.
 	 */
@@ -172,8 +196,8 @@ public class SENController {
 			// Save the list of evidence entered
 			Map<String, Integer> evidenceMap = new HashMap<String, Integer>();
 			for (Node n : singleEntityNetwork.getNodes()) {
-				if (n instanceof ProbabilisticNode) {
-					ProbabilisticNode node = (ProbabilisticNode)n;
+				if (n instanceof TreeVariable) {
+					TreeVariable node = (TreeVariable)n;
 					if (node.hasEvidence()) {
 						evidenceMap.put(node.getName(), node.getEvidence());
 					}
@@ -183,7 +207,7 @@ public class SENController {
 			this.getInferenceAlgorithm().reset();
 			// Enter the list of evidence again
 			for (String name : evidenceMap.keySet()) {
-				((ProbabilisticNode)singleEntityNetwork.getNode(name)).addFinding(evidenceMap.get(name));
+				((TreeVariable)singleEntityNetwork.getNode(name)).addFinding(evidenceMap.get(name));
 			}
 			// Finally propage evidence
 			this.getInferenceAlgorithm().propagate();

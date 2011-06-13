@@ -157,6 +157,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"editToolTip","Retornar ao modo de edição"},
 		{"logToolTip","Informações sobre a compilação (Log)"},
 		{"resetBeliefsToolTip","Reiniciar as crenças"},
+		{"removeEvidenceToolTip","Remove evidência do nó selecionado"},
 		{"printNetToolTip","Imprimir o grafo"},
 		{"previewNetToolTip","Visualizar a impressão do grafo"},
 		{"saveNetImageToolTip","Salvar o grafo como imagem"},

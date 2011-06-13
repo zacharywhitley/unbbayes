@@ -4,6 +4,7 @@ FEATURE LIST
 Number	Request ID	Summary
 1		3132338 	The "final" mark in some methods were removed, in order to allow overwriting.
 3		3314855		Auto reset / recompile when evidence changed.
+4		3315588		Allow to remove evidence from node.
 
 
 BUG LIST		

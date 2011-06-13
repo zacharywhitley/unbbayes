@@ -60,6 +60,11 @@ public interface INetworkMediator {
 	 * Initialize the junction tree beliefs.
 	 */
 	public abstract void initialize();
+	
+	/**
+	 * Reset the belief of the selected node.
+	 */
+	public abstract void removeEvidence(Node node);
 
 	/**
 	 * Creates and shows the panel to edit the node's table.

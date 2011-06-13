@@ -40,6 +40,7 @@ import javax.swing.JTree;
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
 import unbbayes.gui.util.TextAreaDialog;
+import unbbayes.prs.bn.ProbabilisticNode;
 
 /**
  * <p>Title: UnBBayes</p>
@@ -72,6 +73,7 @@ public class PNCompilationPane extends JPanel {
     private final JButton editMode;
     private final JButton log;
     private final JButton reset;
+    private final JButton removeEvidence;
     private final JButton printNet;
     private final JButton previewNet;
     private final JButton saveNetImage;
@@ -105,6 +107,7 @@ public class PNCompilationPane extends JPanel {
         editMode          = new JButton(iconController.getEditIcon());
         log               = new JButton(iconController.getInformationIcon());
         reset             = new JButton(iconController.getInitializeIcon());
+        removeEvidence    = new JButton(iconController.getRemoveEvidenceIcon());
         printNet          = new JButton(iconController.getPrintNetIcon());
         previewNet        = new JButton(iconController.getPrintPreviewNetIcon());
         saveNetImage      = new JButton(iconController.getSaveNetIcon());
@@ -117,6 +120,7 @@ public class PNCompilationPane extends JPanel {
         editMode.setToolTipText(resource.getString("editToolTip"));
         log.setToolTipText(resource.getString("logToolTip"));
         reset.setToolTipText(resource.getString("resetBeliefsToolTip"));
+        removeEvidence.setToolTipText(resource.getString("resetBeliefsToolTip"));
         printNet.setToolTipText(resource.getString("printNetToolTip"));
         previewNet.setToolTipText(resource.getString("previewNetToolTip"));
         saveNetImage.setToolTipText(resource.getString("saveNetImageToolTip"));
@@ -139,6 +143,13 @@ public class PNCompilationPane extends JPanel {
         reset.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 controller.initialize();
+            }
+        });
+        
+        // Remove the finding of the selected node
+        removeEvidence.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+            	controller.removeEvidence(controller.getSelectedNode());
             }
         });
 
@@ -214,6 +225,7 @@ public class PNCompilationPane extends JPanel {
         jtbCompilation.add(editMode);
         jtbCompilation.add(log);
         jtbCompilation.add(reset);
+        jtbCompilation.add(removeEvidence);
 
         topPanel.add(jtbCompilation);
 
