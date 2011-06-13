@@ -25,8 +25,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.swing.JOptionPane;
@@ -165,31 +167,25 @@ public class SENController {
 		//by young4
 		boolean bReset = false;
 		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-		// avoiding if-then-else and using method overwriting.
-//		if (getInferenceAlgorithm() == InferenceAlgorithmEnum.JUNCTION_TREE) {
-//			boolean temLikeliHood = false;
-//			try {
-//				singleEntityNetwork.updateEvidences();
-//				if (!temLikeliHood) {
-//					screen.setStatus(resource
-//							.getString("statusEvidenceProbabilistic")
-//							+ df.format(singleEntityNetwork.PET() * 100.0));
-//				}
-//			} catch (Exception e) {
-//				JOptionPane.showMessageDialog(screen, e.getMessage(), resource
-//						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
-//				bReset = true;
-//			}
-//		} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.LIKELIHOOD_WEIGHTING) {
-//			lwInference.run();
-//		} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.GIBBS) {
-//			gibbsInference.run();
-//		} else if (getInferenceAlgorithm() == InferenceAlgorithmEnum.GAUSSIAN_MIXTURE) {
-//			// TODO ROMMEL - Implement propagation
-//			JOptionPane.showMessageDialog(screen, "Not yet implemented!", resource
-//					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
-//		}
 		try {
+			// The change bellow is to adhere to feature request #3314855
+			// Save the list of evidence entered
+			Map<String, Integer> evidenceMap = new HashMap<String, Integer>();
+			for (Node n : singleEntityNetwork.getNodes()) {
+				if (n instanceof ProbabilisticNode) {
+					ProbabilisticNode node = (ProbabilisticNode)n;
+					if (node.hasEvidence()) {
+						evidenceMap.put(node.getName(), node.getEvidence());
+					}
+				}
+			}
+			// Reset evidence in order to allow changes in node which already had a different evidence set
+			this.getInferenceAlgorithm().reset();
+			// Enter the list of evidence again
+			for (String name : evidenceMap.keySet()) {
+				((ProbabilisticNode)singleEntityNetwork.getNode(name)).addFinding(evidenceMap.get(name));
+			}
+			// Finally propage evidence
 			this.getInferenceAlgorithm().propagate();
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(screen, e.getMessage(), resource
