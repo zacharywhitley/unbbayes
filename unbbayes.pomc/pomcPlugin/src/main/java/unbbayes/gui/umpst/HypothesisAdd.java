@@ -66,7 +66,12 @@ public class HypothesisAdd extends IUMPSTPanel {
 		listeners();
 
 		if( hypothesis == null){
-			titulo.setText("Add new Hyphetesis");
+			if (hypothesisFather!=null){
+				titulo.setText("Add new Sub-Hyphetesis");
+			}
+			else{
+				titulo.setText("Add new Hyphetesis");
+			}
 			buttonAdd.setText(" Add ");
 		} else {
 			titulo.setText(" Update hyphotesis");

@@ -32,6 +32,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 
 import unbbayes.model.umpst.entities.EntityModel;
+import unbbayes.model.umpst.groups.GroupsModel;
 import unbbayes.model.umpst.project.SearchModelGoal;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
@@ -78,7 +79,12 @@ public class GoalsAdd extends IUMPSTPanel {
 		listeners();
 
 		if( goal == null){
-			titulo.setText("Add new Goal");
+			if (goalFather!=null){
+				titulo.setText("Add new Sub-Goal");
+			}
+			else{
+				titulo.setText("Add new Goal");
+			}
 			buttonAdd.setText(" Add ");
 		} else {
 			titulo.setText(goal.getGoalName());
@@ -456,6 +462,20 @@ public class GoalsAdd extends IUMPSTPanel {
 				i++;
 			}    	
 		}
+    	
+    	if ( (goal!=null)&&(goal.getFowardTrackingGroups() !=null) ){
+			GroupsModel group;
+			Set<GroupsModel> aux = goal.getFowardTrackingGroups();
+			
+	    	for (Iterator<GroupsModel> it = aux.iterator(); it.hasNext(); ) {
+	    		group = it.next();
+	    		data[i][0] = group.getGroupName();
+	    		data[i][1] = "Group";
+	    		data[i][2] = "Direct";
+	    		i++;
+	    	}
+		}
+
 		
 		DefaultTableModel tableModel = new DefaultTableModel(data, columnNames);
 		JTable table = new JTable(tableModel);

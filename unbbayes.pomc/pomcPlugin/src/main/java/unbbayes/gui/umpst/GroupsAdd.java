@@ -165,7 +165,7 @@ public class GroupsAdd extends IUMPSTPanel {
 						GroupsModel groupAdd = updateMapGroups();					    
 					    updateMapSearch(groupAdd);
 					    updateBacktracking(groupAdd);
-						updateTableEntities();
+						updateTableGroups();
 						JOptionPane.showMessageDialog(null, "group successfully added",null, JOptionPane.INFORMATION_MESSAGE);
 						
 					
@@ -206,7 +206,7 @@ public class GroupsAdd extends IUMPSTPanel {
 							
 							updateMapSearch(group);
 							updateBacktracking(group);
-							updateTableEntities();
+							updateTableGroups();
 							
 							JOptionPane.showMessageDialog(null, "group successfully updated", "UnBBayes", JOptionPane.INFORMATION_MESSAGE);
 						
@@ -295,18 +295,18 @@ public class GroupsAdd extends IUMPSTPanel {
     }
     
     
-    public void updateTableEntities(){
-    	String[] columnNames = {"ID","Entity","",""};	    
+    public void updateTableGroups(){
+    	String[] columnNames = {"ID","Group","",""};	    
 	    
-		Object[][] data = new Object[UMPSTProject.getInstance().getMapEntity().size()][4];
+		Object[][] data = new Object[UMPSTProject.getInstance().getMapGroups().size()][4];
 		Integer i=0;
 	    
-		Set<String> keys = UMPSTProject.getInstance().getMapEntity().keySet();
+		Set<String> keys = UMPSTProject.getInstance().getMapGroups().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		for (String key: sortedKeys){
-			data[i][0] = UMPSTProject.getInstance().getMapEntity().get(key).getId();
-			data[i][1] = UMPSTProject.getInstance().getMapEntity().get(key).getEntityName();			
+			data[i][0] = UMPSTProject.getInstance().getMapGroups().get(key).getId();
+			data[i][1] = UMPSTProject.getInstance().getMapGroups().get(key).getGroupName();			
 			data[i][2] = "";
 			data[i][3] = "";
 			i++;
@@ -315,14 +315,14 @@ public class GroupsAdd extends IUMPSTPanel {
 	    UmpstModule pai = getJanelaPai();
 	    alterarJanelaAtual(pai.getMenuPanel());
 	    
-	    TableEntities entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
-	    JTable table = entitiesTable.createTable(columnNames,data);
+	    TableGroups groupTable = pai.getMenuPanel().getGroupsPane().getGroupsTable();
+	    JTable table = groupTable.createTable(columnNames,data);
 	    
-	    entitiesTable.getScrollPanePergunta().setViewportView(table);
-	    entitiesTable.getScrollPanePergunta().updateUI();
-	    entitiesTable.getScrollPanePergunta().repaint();
-	    entitiesTable.updateUI();
-	    entitiesTable.repaint();
+	    groupTable.getScrollPanePergunta().setViewportView(table);
+	    groupTable.getScrollPanePergunta().updateUI();
+	    groupTable.getScrollPanePergunta().repaint();
+	    groupTable.updateUI();
+	    groupTable.repaint();
     }
 
     public void updateMapSearch(GroupsModel groupAdd){
