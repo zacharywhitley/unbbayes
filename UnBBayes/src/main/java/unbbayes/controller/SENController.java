@@ -39,6 +39,7 @@ import javax.swing.event.TableModelListener;
 import unbbayes.gui.ExplanationProperties;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.continuous.ContinuousNormalDistributionPane;
+import unbbayes.gui.table.ExcelAdapter;
 import unbbayes.gui.table.GUIPotentialTable;
 import unbbayes.gui.table.ReplaceTextCellEditor;
 import unbbayes.prs.Edge;
@@ -561,7 +562,10 @@ public class SENController {
 
 			table = new GUIPotentialTable(potTab).makeTable();
 			
-			// Allow the selection of a single cell
+			// (feature:3315773) Allow copy/paste between JTable and Excel
+			new ExcelAdapter(table);
+			
+			// (feature:3315761) Allow the selection of a single cell
 			table.setCellSelectionEnabled(true);
 			table.setRowSelectionAllowed(true);
 

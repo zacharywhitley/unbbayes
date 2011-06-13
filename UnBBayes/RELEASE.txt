@@ -6,6 +6,7 @@ Number	Request ID	Summary
 3		3314855		Auto reset / recompile when evidence changed.
 4		3315588		Allow to remove evidence from node.
 5		3315761		Allow the selection of a single cell - CPT.
+6		3315773		Allow copy and paste between CPT and Excel.
 
 
 BUG LIST		

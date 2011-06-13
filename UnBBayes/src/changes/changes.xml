@@ -24,6 +24,9 @@
 			<action dev="Rommel Carvalho" type="add" issue="3315761">
 				Allow the selection of a single cell - CPT.
 			</action>
+			<action dev="Rommel Carvalho" type="add" issue="3315773">
+				Allow copy and paste between CPT and Excel.
+			</action>
 			
 			
 			<action dev="Shou Matsumoto" type="fix" issue="">
