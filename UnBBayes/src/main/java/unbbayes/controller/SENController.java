@@ -639,6 +639,8 @@ public class SENController {
 			
 		// Shows the caret while editing cell.
 		table.setSurrendersFocusOnKeystroke(true);
+		
+		
 
 		return table;
 	}

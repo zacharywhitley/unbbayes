@@ -85,7 +85,7 @@ public class ExcelAdapter implements ActionListener {
 					if (j < numcols - 1)
 						sbf.append("\t");
 				}
-				sbf.append("\r\n");
+				sbf.append(System.getProperty("line.separator"));
 			}
 			stsel = new StringSelection(sbf.toString());
 			system = Toolkit.getDefaultToolkit().getSystemClipboard();

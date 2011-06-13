@@ -29,7 +29,8 @@ public class ReplaceTextCellEditor extends DefaultCellEditor {
 				String text = textField.getText();
 				// If it is the same, just select it all.
 				if (previousValue.equals(text)) {
-					textField.selectAll();
+					cancelCellEditing();
+//					textField.selectAll();
 				// If it is different than what it had before, than just replace the 
 				// previous value by the new value typed (text - previousValue). 
 				// Because text = previousValue + newValueTyped.
