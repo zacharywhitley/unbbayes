@@ -22,6 +22,12 @@ package unbbayes.prs.hybridbn;
 
 import unbbayes.util.ProbabilityMath;
 
+/**
+ * 
+ * @author Rommel Carvalho (rommel.carvalho@gmail.com)
+ * @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+ * now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
+ */
 public class NormalDistribution {
 	
 	private double mean;

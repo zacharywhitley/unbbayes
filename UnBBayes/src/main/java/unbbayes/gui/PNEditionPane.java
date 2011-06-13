@@ -675,7 +675,9 @@ public class PNEditionPane extends JPanel {
 		
   		private final JToggleButton btnResetCursor; 
 		private final JToggleButton btnAddEdge;
-  	    private final JToggleButton btnAddContinuousNode;
+		// @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+		// now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
+//  	    private final JToggleButton btnAddContinuousNode;
   	    private final JToggleButton btnAddProbabilisticNode;
   	    private final JToggleButton btnAddDecisionNode;
   	    private final JToggleButton btnAddUtilityNode;
@@ -695,9 +697,9 @@ public class PNEditionPane extends JPanel {
   	        btnAddProbabilisticNode  = new JToggleButton(iconController.getEllipsisIcon());
   	        btnAddDecisionNode       = new JToggleButton(iconController.getDecisionNodeIcon());
   	        btnAddUtilityNode        = new JToggleButton(iconController.getUtilityNodeIcon());
-  	        // TODO CHANGE THE CONTINUOUS ICON!
-  	        //by young3
-  	        btnAddContinuousNode     = new JToggleButton(iconController.getContinousNodeIcon());
+  	        // @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+  			// now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
+//  	        btnAddContinuousNode     = new JToggleButton(iconController.getContinousNodeIcon());
   	        btnAddEdge               = new JToggleButton(iconController.getEdgeIcon());
      	    //by young2
   	        //btnSelectObject          = new JToggleButton(iconController.getSelectionIcon());
@@ -705,7 +707,9 @@ public class PNEditionPane extends JPanel {
   	        btnDeleteSelectedItem = new JToggleButton(iconController.getEditDelete());
   			
   			btnAddEdge.setToolTipText(resource.getString("arcToolTip"));
-  	        btnAddContinuousNode.setToolTipText(resource.getString("continuousNodeInsertToolTip"));
+  			// @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+  			// now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
+//  	        btnAddContinuousNode.setToolTipText(resource.getString("continuousNodeInsertToolTip"));
   	        btnAddProbabilisticNode.setToolTipText(resource.getString("probabilisticNodeInsertToolTip"));
   	        btnAddDecisionNode.setToolTipText(resource.getString("decisionNodeInsertToolTip"));
   	        btnAddUtilityNode.setToolTipText(resource.getString("utilityNodeInsertToolTip"));;
@@ -715,7 +719,10 @@ public class PNEditionPane extends JPanel {
   	        btnDeleteSelectedItem.setToolTipText(resource.getString("deleteSelectedItemToolTip"));
   	        
   	        // set of buttons (split buttons) for nodes implemented by plugin
-  	        this.setBtnAddPluginButton(new SplitToggleButton(btnAddContinuousNode, SwingConstants.SOUTH));
+  	        // @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+  			// now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
+//  	        this.setBtnAddPluginButton(new SplitToggleButton(btnAddContinuousNode, SwingConstants.SOUTH));
+  	        this.setBtnAddPluginButton(new SplitToggleButton());
   	        this.getBtnAddPluginButton().setMenu(this.buildAddPluginSplitButtonMenu());
   	        
   	        // ajust size of plugin button
@@ -767,12 +774,14 @@ public class PNEditionPane extends JPanel {
   	            }
   	        });
   	        
+  	        // @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+  			// now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
   	        // Creates a continuous node
-  	        btnAddContinuousNode.addActionListener(new ActionListener() {
-  	            public void actionPerformed(ActionEvent ae) {
-  	            	netWindow.getGraphPane().setAction(GraphAction.CREATE_CONTINUOUS_NODE);
-  	            }
-  	        });
+//  	        btnAddContinuousNode.addActionListener(new ActionListener() {
+//  	            public void actionPerformed(ActionEvent ae) {
+//  	            	netWindow.getGraphPane().setAction(GraphAction.CREATE_CONTINUOUS_NODE);
+//  	            }
+//  	        });
 
   	        //ao clicar no bot�o node setamos as vari�veis booleanas e os estados dos but�es
   	        btnAddProbabilisticNode.addActionListener(new ActionListener() {
@@ -840,21 +849,23 @@ public class PNEditionPane extends JPanel {
 			
 			JPopupMenu ret = new JPopupMenu(resource.getString("selectNodeType"));
 			
-			JMenuItem continuousNodeItem = new JMenuItem(resource.getString("continuousNodeLabel"),iconController.getContinousNodeIcon());
-			continuousNodeItem.setToolTipText(resource.getString("continuousNodeInsertToolTip"));
-			continuousNodeItem.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					getBtnAddPluginButton().setMainButton(getBtnAddContinuousNode());
-					groupEditionButtons.remove(getBtnAddContinuousNode());
-					groupEditionButtons.add(getBtnAddContinuousNode());
-					getBtnAddPluginButton().getMenu().setVisible(false);
-					updateUI();
-					getBtnAddPluginButton().getMainButton().doClick();
-					Debug.println(this.getClass(), "Plugin button set to " + getBtnAddPluginButton().getMainButton().getToolTipText());
-				}
-			});
-			
-			ret.add(continuousNodeItem);
+			// @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+			// now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
+//			JMenuItem continuousNodeItem = new JMenuItem(resource.getString("continuousNodeLabel"),iconController.getContinousNodeIcon());
+//			continuousNodeItem.setToolTipText(resource.getString("continuousNodeInsertToolTip"));
+//			continuousNodeItem.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent e) {
+//					getBtnAddPluginButton().setMainButton(getBtnAddContinuousNode());
+//					groupEditionButtons.remove(getBtnAddContinuousNode());
+//					groupEditionButtons.add(getBtnAddContinuousNode());
+//					getBtnAddPluginButton().getMenu().setVisible(false);
+//					updateUI();
+//					getBtnAddPluginButton().getMainButton().doClick();
+//					Debug.println(this.getClass(), "Plugin button set to " + getBtnAddPluginButton().getMainButton().getToolTipText());
+//				}
+//			});
+//			
+//			ret.add(continuousNodeItem);
 			
 			// load plugin and add buttons into the plugin node's split button
 			for (INodeClassDataTransferObject dto : netWindow.getGraphPane().getPluginNodeManager().getAllLoadedPluginNodes()) {
@@ -872,9 +883,11 @@ public class PNEditionPane extends JPanel {
 			return btnAddEdge;
 		}
 
-		public JToggleButton getBtnAddContinuousNode() {
-			return btnAddContinuousNode;
-		}
+		// @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+		// now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
+//		public JToggleButton getBtnAddContinuousNode() {
+//			return btnAddContinuousNode;
+//		}
 
 		public JToggleButton getBtnAddProbabilisticNode() {
 			return btnAddProbabilisticNode;

@@ -685,11 +685,13 @@ public class GlobalOptionsDialog extends JDialog {
 //		ret.put(radio, algorithmOptionPanel);
     	
         // gaussian mixture algorithm
-    	algorithmOptionPanel = new GaussianMixtureOptionPanel();
-    	radio = new JRadioButtonMenuItem(algorithmOptionPanel.getInferenceAlgorithm().getName(), 
-				(controller.getInferenceAlgorithm()!= null) && (controller.getInferenceAlgorithm().getClass().equals(algorithmOptionPanel.getInferenceAlgorithm().getClass())));
-		radio.setToolTipText(algorithmOptionPanel.getInferenceAlgorithm().getDescription());
-		ret.put(radio, algorithmOptionPanel);
+//		@deprecated Continuous node is no longer supported in UnBBayes core. It has 
+//		now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
+//    	algorithmOptionPanel = new GaussianMixtureOptionPanel();
+//    	radio = new JRadioButtonMenuItem(algorithmOptionPanel.getInferenceAlgorithm().getName(), 
+//				(controller.getInferenceAlgorithm()!= null) && (controller.getInferenceAlgorithm().getClass().equals(algorithmOptionPanel.getInferenceAlgorithm().getClass())));
+//		radio.setToolTipText(algorithmOptionPanel.getInferenceAlgorithm().getDescription());
+//		ret.put(radio, algorithmOptionPanel);
         
 		return ret;
 	}

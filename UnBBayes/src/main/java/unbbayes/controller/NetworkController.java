@@ -192,6 +192,10 @@ public class NetworkController implements KeyListener, INetworkMediator {
 	/* (non-Javadoc)
 	 * @see unbbayes.controller.INetworkMediator#createContinuousDistribution(unbbayes.prs.hybridbn.ContinuousNode)
 	 */
+	/**
+	 * @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+	 * now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
+	 */
 	public void createContinuousDistribution(ContinuousNode node) {
 		if (senController != null) senController.createContinuousDistribution(node);
 	}

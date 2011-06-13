@@ -7,6 +7,7 @@ Number	Request ID	Summary
 4		3315588		Allow to remove evidence from node.
 5		3315761		Allow the selection of a single cell - CPT.
 6		3315773		Allow copy and paste between CPT and Excel.
+7		3314854		Remove Continuous Node.
 
 
 BUG LIST		

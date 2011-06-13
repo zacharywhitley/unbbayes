@@ -27,6 +27,9 @@
 			<action dev="Rommel Carvalho" type="add" issue="3315773">
 				Allow copy and paste between CPT and Excel.
 			</action>
+			<action dev="Rommel Carvalho" type="add" issue="3314854">
+				Remove Continuous Node.
+			</action>
 			
 			
 			<action dev="Shou Matsumoto" type="fix" issue="">

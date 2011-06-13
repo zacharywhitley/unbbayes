@@ -32,6 +32,10 @@ import unbbayes.util.ResourceController;
 
 // FIXME We have to refactor the Node inheritance to separate discrete from continuous and other messy things!
 // FIXME GATO no continuous node
+/**
+ * @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+ * now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
+ */
 public class ContinuousNode extends TreeVariable implements Serializable {
 	
 	public final static int MEAN_MARGINAL_INDEX = 0;

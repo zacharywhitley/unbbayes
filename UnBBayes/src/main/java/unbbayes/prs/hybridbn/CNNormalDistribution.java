@@ -29,7 +29,8 @@ import unbbayes.util.SortUtil;
 /**
  * This class represents the continuous node normal distribution. 
  * @author Rommel Carvalho (rommel.carvalho@gmail.com)
- *
+ * @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+ * now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
  */
 public class CNNormalDistribution {
 	

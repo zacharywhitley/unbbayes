@@ -37,6 +37,8 @@ public interface IProbabilisticNetworkBuilder {
 	/**
 	 * Obtains the NodeBuilder to generate subclasses of ContinuousNode
 	 * @return a Node builder to be used
+	 * @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+	 * now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
 	 */
 	public INodeBuilder getContinuousNodeBuilder();
 	
@@ -61,6 +63,8 @@ public interface IProbabilisticNetworkBuilder {
 	/**
 	 * Setter for builder of ContinuousNode
 	 * @param builder
+	 * @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+	 * now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
 	 */
 	public void setContinuousNodeBuilder(INodeBuilder builder);
 	

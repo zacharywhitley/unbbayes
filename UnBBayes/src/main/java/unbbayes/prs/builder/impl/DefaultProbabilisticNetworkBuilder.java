@@ -32,6 +32,8 @@ public class DefaultProbabilisticNetworkBuilder implements
 	
 	/**
 	 * Builder for continuous nodes
+	 * @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+	 * now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
 	 */
 	private INodeBuilder continuousNodeBuilder = null;
 	
@@ -44,7 +46,7 @@ public class DefaultProbabilisticNetworkBuilder implements
 		this.probabilisticNodeBuilder = DefaultProbabilisticNodeBuilder.newInstance();
 		this.decisionNodeBuilder = DefaultDecisionNodeBuilder.newInstance();
 		this.utilityNodeBuilder = DefaultUtilityNodeBuilder.newInstance();	
-		this.continuousNodeBuilder = DefaultContinuousNodeBuilder.newInstance();
+//		this.continuousNodeBuilder = DefaultContinuousNodeBuilder.newInstance();
 	}
 	
 	/**
@@ -138,12 +140,20 @@ public class DefaultProbabilisticNetworkBuilder implements
 	/* (non-Javadoc)
 	 * @see unbbayes.io.builder.IProbabilisticNetworkBuilder#getContinuousNodeBuilder()
 	 */
+	/**
+	 * @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+	 * now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
+	 */
 	public INodeBuilder getContinuousNodeBuilder() {
 		return this.continuousNodeBuilder;
 	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.io.builder.IProbabilisticNetworkBuilder#setContinuousNodeBuilder(unbbayes.io.builder.INodeBuilder)
+	 */
+	/**
+	 * @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+	 * now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
 	 */
 	public void setContinuousNodeBuilder(INodeBuilder builder) {
 		this.continuousNodeBuilder = builder;

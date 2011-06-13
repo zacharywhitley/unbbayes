@@ -26,12 +26,10 @@ import java.util.ListResourceBundle;
 /**
  * <p>Title: UnBBayes</p>
  * <p>Description: Resources file for unbbayes.prs.hybridbn package. Localization = english.</p>
- * <p>Copyright: Copyright (c) 2001</p>
  * <p>Company: UnB</p>
  * @author Rommel Novaes Carvalho (rommel.carvalho@gmail.com)
- * @author Michael Onishi
- * @version 1.0
- * @since 02/05/2002
+ * @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+ * now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
  */
 
 public class HybridBnResources extends ListResourceBundle {

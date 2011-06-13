@@ -68,9 +68,6 @@ public class SENController {
 
 	private NumberFormat df;
 
-	
-	protected GaussianMixture gmInference;
-	
 	public enum InferenceAlgorithmEnum {
     	JUNCTION_TREE,
     	LIKELIHOOD_WEIGHTING,
@@ -268,6 +265,8 @@ public class SENController {
 	 * Inserts the desired node inside the network creating default state, symbol and description
 	 * @param x The x position.
 	 * @param y The y position. 
+	 * @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+	 * now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
 	 */
 	public Node insertContinuousNode(double x, double y) {
 		ContinuousNode node = new ContinuousNode();
@@ -373,6 +372,8 @@ public class SENController {
 	 * Creates and shows the panel where the user can edit the 
 	 * continuous node normal distribution.
 	 * @param node The continuous node to create the distribution p`ane for.
+	 * @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+	 * now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
 	 */
 	public void createContinuousDistribution(final ContinuousNode node) {
 		// Separate continuous from discrete parent nodes

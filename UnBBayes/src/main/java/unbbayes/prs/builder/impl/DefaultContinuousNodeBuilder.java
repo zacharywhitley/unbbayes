@@ -10,7 +10,8 @@ import unbbayes.prs.hybridbn.ContinuousNode;
 
 /**
  * @author Shou Matsumoto
- *
+ * @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+ * now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
  */
 public class DefaultContinuousNodeBuilder implements INodeBuilder {
 

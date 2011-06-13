@@ -482,6 +482,8 @@ public class NetIO implements BaseIO {
 	 * @param networkBuilder
 	 * @throws IOException
 	 * @throws LoadException
+	 * @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+	 * now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
 	 */
 	protected void loadContinuousNodeDeclaration (StreamTokenizer st, SingleEntityNetwork net, IProbabilisticNetworkBuilder networkBuilder)
 										throws IOException , LoadException{

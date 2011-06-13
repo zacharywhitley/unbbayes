@@ -44,7 +44,8 @@ import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
  * The propagation is not yet implemented.
  * 
  * @author Rommel Carvalho
- *
+ * @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+ * now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
  */
 public class GaussianMixture implements IInferenceAlgorithm {
 	

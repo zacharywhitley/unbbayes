@@ -12,7 +12,8 @@ import unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel;
  * Gaussian mixture does not require paramater initialization, so
  * this panel is a empty panel.
  * @author Shou Matsumoto
- *
+ * @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+ * now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
  */
 public class GaussianMixtureOptionPanel extends InferenceAlgorithmOptionPanel {
 	

@@ -76,6 +76,8 @@ public interface INetworkMediator {
 	 * Creates and shows the panel where the user can edit the 
 	 * continuous node normal distribution.
 	 * @param node The continuous node to create the distribution pane for.
+	 * @deprecated Continuous node is no longer supported in UnBBayes core. It has 
+	 * now been replaced by the CPS plugin available at http://sourceforge.net/projects/prognos/.
 	 */
 	public abstract void createContinuousDistribution(ContinuousNode node);
 
