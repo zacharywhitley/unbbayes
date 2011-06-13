@@ -15,6 +15,9 @@
 			<action dev="Shou Matsumoto" type="add" issue="3132338">
 				XXXX have to add it later XXXX.
 			</action>
+			<action dev="Rommel Carvalho" type="add" issue="3314855">
+				Auto reset / recompile when evidence changed.
+			</action>
 			
 			
 			<action dev="Shou Matsumoto" type="fix" issue="3260712">
