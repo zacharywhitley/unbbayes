@@ -188,7 +188,7 @@ public class PNEditionPane extends JPanel {
             public void actionPerformed(ActionEvent ae) {
                 setCursor(new Cursor(Cursor.WAIT_CURSOR));
                 if (go == null) {
-                	go = new GlobalOptionsDialog(netWindow.getGraphPane(), controller);
+                	go = new GlobalOptionsDialog(controller);
                 }
                 go.setVisible(true);
                 netWindow.getGraphPane().update();

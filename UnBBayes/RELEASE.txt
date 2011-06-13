@@ -1,4 +1,4 @@
-UNBBAYES VERSION 4.3.3
+UNBBAYES VERSION 4.8.3
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
@@ -8,6 +8,7 @@ Number	Request ID	Summary
 5		3315761		Allow the selection of a single cell - CPT.
 6		3315773		Allow copy and paste between CPT and Excel.
 7		3314854		Remove Continuous Node.
+8		3314852		Remove Color Controller & Size Controller.
 
 
 BUG LIST		
