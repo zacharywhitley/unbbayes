@@ -2,6 +2,8 @@ package unbbayes.gui.umpst;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -13,57 +15,52 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
-import unbbayes.model.umpst.entities.AtributeModel;
-import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.project.UMPSTProject;
-import unbbayes.model.umpst.requirements.GoalModel;
-import unbbayes.model.umpst.requirements.HypothesisModel;
+import unbbayes.model.umpst.rules.RulesModel;
 
-public class TableAtribute extends IUMPSTPanel{
+public class TableRules extends IUMPSTPanel{
 	
-
+	/**
+	 * 
+	 */
 	private static final long serialVersionUID = 1L;
 	private JTable table;
 	private JScrollPane scrollpanePergunta;
 	
-	private UmpstModule janelaPaiAux; 
-	private EntityModel entityRelated;
-
 	
+	
+	
+	Object[] dataAux = new Object[4];
+	Integer i = 0;
+
 	
 	ImageIcon iconAdd = createImageIcon("images/add.gif");
 	ImageIcon iconDel = createImageIcon("images/del.gif");
-	ImageIcon iconEdit = createImageIcon("images/edit.gif");
 
 	
-	String[] columnNames = {"id","Atribute","","",""};
+	String[] columnNames = {"ID","Rule","",""};
+
 	Object[][] data = {};
-
 	
 	
-
- 
-    	  /**private constructors make class extension almost impossible,
-    	that's why this is protected*/
-    	  protected TableAtribute(UmpstModule janelaPai, EntityModel entityRelated) {
+    	  public TableRules(UmpstModule janelaPai) {
     		  
     		    super(janelaPai);
     	    	this.setLayout(new GridLayout(1,0));
     	    	
-    	    	this.janelaPaiAux = janelaPai;
-    	    	this.entityRelated=entityRelated;
     	    	
-    	    	this.add(createScrolltableAtribute());
+    	    	this.add(createScrolltableRules(columnNames,data));
     		    
     	  }
-    	
+    	 
     	  
+   
     	  
-    	  public void setJanelaPai(UmpstModule janelaPai){
+    	  public void setJanelaPai(UmpstModule janelaPai,String[] columnNames, Object[][] data){
     		// super(janelaPai);
   	    	
     		  this.setLayout(new GridLayout(1,0));
-  	          this.add(createScrolltableAtribute());
+  	          this.add(createScrolltableRules(columnNames,data));
     		  
     	  }
     
@@ -72,32 +69,9 @@ public class TableAtribute extends IUMPSTPanel{
 	/**
 	 * @return the table
 	 */
-	public JTable createTable() {
+	public JTable createTable(String[] columnNames,final Object[][] data) {
+		
 
-		
-		Integer i=0;
-
-		if (entityRelated!=null){			
-			data = new Object[entityRelated.getMapAtributes().size()][5];
-
-			
-			Set<String> keys = entityRelated.getMapAtributes().keySet();
-			TreeSet<String> sortedKeys = new TreeSet<String>(keys);
-			
-			
-			
-			for (String key: sortedKeys){
-		
-				data[i][0] = entityRelated.getMapAtributes().get(key).getId();
-				data[i][1] = entityRelated.getMapAtributes().get(key).getAtributeName();
-				data[i][2] = "";
-				data[i][3] = "";
-				data[i][4] = "";
-				i++;
-			}
-		}
-		
-		
 		DefaultTableModel tableModel = new DefaultTableModel(data, columnNames);
 		table = new JTable(tableModel);
 
@@ -110,7 +84,7 @@ public class TableAtribute extends IUMPSTPanel{
 			}
 		});
 
-		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length-3);
+		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length -2);
 		buttonColumn1.setMaxWidth(28);
 		buttonColumn1.setCellRenderer(buttonEdit);
 		buttonColumn1.setCellEditor(buttonEdit);
@@ -118,40 +92,14 @@ public class TableAtribute extends IUMPSTPanel{
 		buttonEdit.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
 				
-				String atributeAdd = data[row][0].toString();
-				AtributeModel atributeAux = entityRelated.getMapAtributes().get(atributeAdd);
-				alterarJanelaAtual(new AtributeAdd(getJanelaPai(), entityRelated,atributeAux, atributeAux.getFather() )   );
-			}
-		});
-		
-		
-
-		
-		TableButton buttonAdd = new TableButton( new TableButton.TableButtonCustomizer()
-		{
-			public void customize(JButton button, int row, int column)
-			{
-				button.setIcon(new ImageIcon("images/add.gif") );
-
-			}
-		});
-
-		TableColumn buttonColumn2 = table.getColumnModel().getColumn(columnNames.length-2);
-		buttonColumn2.setMaxWidth(22);
-		buttonColumn2.setCellRenderer(buttonAdd);
-		buttonColumn2.setCellEditor(buttonAdd);
-		
-		buttonAdd.addHandler(new TableButton.TableButtonPressedHandler() {	
-			public void onButtonPress(int row, int column) {
 				String key = data[row][0].toString();
-				AtributeModel atributeRelated =  entityRelated.getMapAtributes().get(key);
-				alterarJanelaAtual(new AtributeAdd(getJanelaPai(),entityRelated,null,atributeRelated));
-			
-				
+				RulesModel ruleAux = UMPSTProject.getInstance().getMapRules().get(key);
+				alterarJanelaAtual(new RulesAdd(getJanelaPai(), ruleAux )   );
 			}
 		});
 		
 		
+
 		TableButton buttonDel = new TableButton( new TableButton.TableButtonCustomizer()
 		{
 			public void customize(JButton button, int row, int column)
@@ -170,16 +118,40 @@ public class TableAtribute extends IUMPSTPanel{
 			
 			public void onButtonPress(int row, int column) {
 				
-				if( JOptionPane.showConfirmDialog(null,"Confirma Remocao do goal "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
+				if( JOptionPane.showConfirmDialog(null,"Confirm delete of rule "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
-							
 							String key = data[row][0].toString();
-							entityRelated.getMapAtributes().remove(key);
+							RulesModel ruleToBeDeleted = UMPSTProject.getInstance().getMapRules().get(key);
+							
+							/*Updating MapSearch*/
+							deleteFromSearchMap(ruleToBeDeleted);
+	
+							
+							
+							UMPSTProject.getInstance().getMapRules().remove(ruleToBeDeleted.getId());
+							
+							
+							 
+							Object[][] dataDel = new Object[UMPSTProject.getInstance().getMapRules().size()][4];
+							Integer i=0;
+						    
+							Set<String> keys = UMPSTProject.getInstance().getMapRules().keySet();
+							TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+							
+							for (String chave: sortedKeys){
+								dataDel[i][0] = UMPSTProject.getInstance().getMapRules().get(chave).getId();						
+								dataDel[i][1] = UMPSTProject.getInstance().getMapRules().get(chave).getRulesName();
+								dataDel[i][2] = "";
+								dataDel[i][3] = "";
+								i++;
+							}
+							
 							
 							UmpstModule pai = getJanelaPai();
-						    alterarJanelaAtual(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entityRelated)	);
+							 alterarJanelaAtual(pai.getMenuPanel());
 							 
-							 JTable table = createTable();
+							 String[] colunas = {"ID","Rule","",""};
+							 JTable table = createTable(colunas,dataDel);
 							 
 							 getScrollPanePergunta().setViewportView(table);
 							 getScrollPanePergunta().updateUI();
@@ -196,9 +168,9 @@ public class TableAtribute extends IUMPSTPanel{
        }
 	
 	
-	public JScrollPane createScrolltableAtribute(){
+	public JScrollPane createScrolltableRules(String[] columnNames, Object[][] data){
 		if(scrollpanePergunta == null){
-			scrollpanePergunta = new JScrollPane(createTable());
+			scrollpanePergunta = new JScrollPane(createTable(columnNames,data));
 			scrollpanePergunta.setMinimumSize(new Dimension(300,150));
 		}
 		
@@ -225,6 +197,24 @@ public class TableAtribute extends IUMPSTPanel{
     }
     
   
-	
+    public void deleteFromSearchMap(RulesModel ruleToBeDeleted){
+    	Set<RulesModel> aux = new HashSet<RulesModel>();
+		RulesModel rulesBeta;
+		String[] strAux= ruleToBeDeleted.getRulesName().split(" ");
+
+	    for (int i = 0; i < strAux.length; i++) {
+    		if(UMPSTProject.getInstance().getMapSearchRules().get(strAux[i])!=null){
+    			UMPSTProject.getInstance().getMapSearchRules().get(strAux[i]).getRulesRelated().remove(ruleToBeDeleted);
+    			aux = UMPSTProject.getInstance().getMapSearchRules().get(strAux[i]).getRulesRelated();   
+    	    	for (Iterator<RulesModel> it = aux.iterator(); it.hasNext(); ) {
+    	    		rulesBeta = it.next();
+    	   		}
+    		}
+    		
+	    	
+	    }
+    }
+	    
+		/************/
 
 }

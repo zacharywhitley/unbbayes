@@ -305,7 +305,8 @@ public class HypothesisAdd extends IUMPSTPanel {
 		
 
 		
-		HypothesisModel hypothesisAdd = new HypothesisModel(idAux,hypothesisText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),goalRelated, hypothesisFather,hypothesisChildren);
+		HypothesisModel hypothesisAdd = new HypothesisModel(idAux,hypothesisText.getText(),commentsText.getText(), 
+				authorText.getText(), dateText.getText(),goalRelated, hypothesisFather,hypothesisChildren,null,null);
 		if (hypothesisFather!=null){
 			hypothesisFather.getSubHypothesis().put(hypothesisAdd.getId(), hypothesisAdd);
 		}

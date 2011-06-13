@@ -33,9 +33,9 @@ public class EntitiesMainPanel extends IUMPSTPanel{
 		if(splitPane == null){
 			//topSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,getEntityPanel(),getBacktrackingPane());
 			//topSplitPane.setDividerLocation(260);
-			splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+			splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
 					getEntityPanel(entity),getAtributeTable(entity));
-			splitPane.setDividerLocation(400);
+			splitPane.setDividerLocation(650);
 			splitPane.setPreferredSize(new Dimension(1000,600));
 			splitPane.setBackground(new Color(0x4169AA));
 		}

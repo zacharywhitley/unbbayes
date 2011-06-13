@@ -28,6 +28,8 @@ public class MenuPanel extends IUMPSTPanel{
 		JPanel pane;
 		private Goals requirementsPane;
 		private Entities entitiesPane;
+		private Rules rulesPane;
+		private Groups groupsPane;
 
 	    public MenuPanel(UmpstModule janelaPai) {
 	        super(new GridLayout(1, 1),janelaPai);
@@ -42,21 +44,21 @@ public class MenuPanel extends IUMPSTPanel{
 	                "goals,queries and envidences");
 	        tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 	        
-	        //JComponent panel2 = new Entities(getJanelaPai());
 	        entitiesPane = new Entities(getJanelaPai());
 	        entitiesPane.setPreferredSize(new Dimension(1000,500));
 	        tabbedPane.addTab("Entity", icon, entitiesPane,
 	                "entities, atributtes and relationships");
 	        tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
-	        
-	        JComponent panel3 = new Goals(getJanelaPai());
-	        tabbedPane.addTab("Rules", icon, panel3,
+
+	        rulesPane = new Rules(getJanelaPai());
+	        rulesPane.setPreferredSize(new Dimension(1000,500));	        
+	        tabbedPane.addTab("Rules", icon, rulesPane,
 	                "Deterministic or Stochastic");
 	        tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 	        
-	        JComponent panel4 = new TrackingPanel(janelaPai);
-	        panel4.setPreferredSize(new Dimension(1000, 500));
-	        tabbedPane.addTab("Group", icon, panel4,
+	        groupsPane = new Groups(getJanelaPai());
+	        groupsPane.setPreferredSize(new Dimension(1000,500));
+	        tabbedPane.addTab("Group", icon, groupsPane,
 	                "Grouping");
 	        tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);
 	        
@@ -67,7 +69,50 @@ public class MenuPanel extends IUMPSTPanel{
 	        tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 	    }
 	    
+	    
+	    
+	    
 	    /**
+		 * @return the groupsPane
+		 */
+		public Groups getGroupsPane() {
+			return groupsPane;
+		}
+
+
+
+
+		/**
+		 * @param groupsPane the groupsPane to set
+		 */
+		public void setGroupsPane(Groups groupsPane) {
+			this.groupsPane = groupsPane;
+		}
+
+
+
+
+		/**
+		 * @return the rulesPane
+		 */
+		public Rules getRulesPane() {
+			return rulesPane;
+		}
+
+
+
+
+		/**
+		 * @param rulesPane the rulesPane to set
+		 */
+		public void setRulesPane(Rules rulesPane) {
+			this.rulesPane = rulesPane;
+		}
+
+
+
+
+		/**
 		 * @return the requirementsPane
 		 */
 		public Goals getRequirementsPane() {

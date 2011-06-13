@@ -346,7 +346,7 @@ public class GoalsAdd extends IUMPSTPanel {
 
 		
 		GoalModel goalAdd = new GoalModel(idAux,goalText.getText(),commentsText.getText(), authorText.getText(), 
-				dateText.getText(),goalFather,null,null,null);
+				dateText.getText(),goalFather,null,null,null,null);
 		
 		if (goalFather!=null){
 			goalFather.getSubgoals().put(goalAdd.getId(), goalAdd);

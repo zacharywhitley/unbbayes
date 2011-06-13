@@ -20,6 +20,7 @@ import javax.swing.ListSelectionModel;
 import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
+import unbbayes.model.umpst.rules.RulesModel;
 
 public class EntityModel {
 	
@@ -31,10 +32,11 @@ public class EntityModel {
 	private EntityModel father;
 	private Map<String,AtributeModel> mapAtributes;
 	private JList backtracking;
-	
+	private JList backtrackingHypothesis;
+	private Set<RulesModel> fowardTrackingRules;
 	
 	public EntityModel(String id,String entityName, String comments,String author, String date, 
-			EntityModel father,Map<String,AtributeModel> mapAtributes, JList backtracking) {
+			EntityModel father,Map<String,AtributeModel> mapAtributes, JList backtracking,JList backtrackingHypothesis, Set<RulesModel> fowardTrackingRules) {
 		
 		this.id           = id;
 		this.entityName   = entityName;
@@ -50,11 +52,51 @@ public class EntityModel {
 		if (backtracking == null){
 			this.setBacktracking(new JList());
 		}
-		// TODO Auto-generated constructor stub
+		this.backtrackingHypothesis=backtrackingHypothesis;
+		this.fowardTrackingRules=fowardTrackingRules;
+		if(fowardTrackingRules==null){
+			this.setFowardTrackingRules(new HashSet<RulesModel>());
+		}
 	}
 
 
 	
+	/**
+	 * @return the backtrackingHypothesis
+	 */
+	public JList getBacktrackingHypothesis() {
+		return backtrackingHypothesis;
+	}
+
+
+
+	/**
+	 * @param backtrackingHypothesis the backtrackingHypothesis to set
+	 */
+	public void setBacktrackingHypothesis(JList backtrackingHypothesis) {
+		this.backtrackingHypothesis = backtrackingHypothesis;
+	}
+
+
+
+	/**
+	 * @return the fowardTrackingRules
+	 */
+	public Set<RulesModel> getFowardTrackingRules() {
+		return fowardTrackingRules;
+	}
+
+
+
+	/**
+	 * @param fowardTrackingRules the fowardTrackingRules to set
+	 */
+	public void setFowardTrackingRules(Set<RulesModel> fowardTrackingRules) {
+		this.fowardTrackingRules = fowardTrackingRules;
+	}
+
+
+
 	/**
 	 * @return the mapAtributes
 	 */

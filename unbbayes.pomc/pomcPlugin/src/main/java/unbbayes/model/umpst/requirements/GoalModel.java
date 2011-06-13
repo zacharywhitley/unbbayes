@@ -1,12 +1,12 @@
 package unbbayes.model.umpst.requirements;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import unbbayes.model.umpst.entities.EntityModel;
+import unbbayes.model.umpst.groups.GroupsModel;
 
 public class GoalModel {
 	
@@ -19,9 +19,11 @@ public class GoalModel {
 	private Map<String, GoalModel> subgoals ;
 	private Map<String,HypothesisModel> mapHypothesis;
 	private Set<EntityModel> fowardTrackingEntity;
+	private Set<GroupsModel> fowardTrackingGroups;
 	
 	public GoalModel(String id,String goalName, String comments,String author, 
-			String date, GoalModel father,Map<String,GoalModel> children,Map<String,HypothesisModel> hypothesis,Set<EntityModel> fowardTrackingEntity) {
+			String date, GoalModel father,Map<String,GoalModel> children,Map<String,HypothesisModel> hypothesis,
+			Set<EntityModel> fowardTrackingEntity,Set<GroupsModel> fowardTrackingGroups ) {
 		
 		this.id=id;
 		this.goalName = goalName;
@@ -42,13 +44,40 @@ public class GoalModel {
 		if (fowardTrackingEntity==null){
 			this.setFowardTrackingEntity(new HashSet<EntityModel>());
 		}
-		// TODO Auto-generated constructor stub
+		this.fowardTrackingGroups = fowardTrackingGroups;
+		if (fowardTrackingGroups==null){
+			this.setFowardTrackingGroups(new HashSet<GroupsModel>());
+		}
 	}
 	
 	
 	
 
 	
+
+	/**
+	 * @return the fowardTrackingGroups
+	 */
+	public Set<GroupsModel> getFowardTrackingGroups() {
+		return fowardTrackingGroups;
+	}
+
+
+
+
+
+
+	/**
+	 * @param fowardTrackingGroups the fowardTrackingGroups to set
+	 */
+	public void setFowardTrackingGroups(Set<GroupsModel> fowardTrackingGroups) {
+		this.fowardTrackingGroups = fowardTrackingGroups;
+	}
+
+
+
+
+
 
 	/**
 	 * @return the fowardTrackingEntity

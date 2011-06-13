@@ -20,8 +20,10 @@ import unbbayes.prs.Node;
 import unbbayes.model.umpst.entities.AtributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.entities.RelationshipModel;
+import unbbayes.model.umpst.groups.GroupsModel;
 import unbbayes.model.umpst.requirements.GoalModel;
 import unbbayes.model.umpst.requirements.HypothesisModel;
+import unbbayes.model.umpst.rules.RulesModel;
  
 
 public class UMPSTProject implements Graph {
@@ -31,8 +33,12 @@ public class UMPSTProject implements Graph {
 	private java.util.Map<String,EntityModel> mapEntity;
 	private java.util.Map<String,AtributeModel> mapAtribute;
 	private java.util.Map<String,RelationshipModel> mapRelationship;
+	private java.util.Map<String, RulesModel> mapRules;
+	private java.util.Map<String, GroupsModel> mapGroups;
 	private java.util.Map<String, SearchModelGoal> mapSearchGoal;
 	private java.util.Map<String, SearchModelEntity> mapSearchEntity;
+	private java.util.Map<String, SearchModelRules> mapSearchRules;
+	private java.util.Map<String, SearchModelGroup> mapSearchGroups;
 
 	
 private static UMPSTProject instance = new UMPSTProject();
@@ -45,8 +51,12 @@ private static UMPSTProject instance = new UMPSTProject();
 		this.setMapEntity(new HashMap<String, EntityModel>());
 		this.setMapAtribute(new HashMap<String, AtributeModel>());
 		this.setMapRelationship(new HashMap<String, RelationshipModel>());
+		this.setMapRules(new HashMap<String, RulesModel>());
+		this.setMapGroups(new HashMap<String, GroupsModel>());
 		this.setMapSearchGoal(new HashMap<String, SearchModelGoal>());
 		this.setMapSearchEntity(new HashMap<String, SearchModelEntity>());
+		this.setMapSearchRules(new HashMap<String, SearchModelRules>());
+		this.setMapSearchGroups(new HashMap<String, SearchModelGroup>());
 		
 		
 	}
@@ -60,6 +70,80 @@ private static UMPSTProject instance = new UMPSTProject();
 	}
 	
 	
+
+
+
+	/**
+	 * @return the mapGroups
+	 */
+	public java.util.Map<String, GroupsModel> getMapGroups() {
+		return mapGroups;
+	}
+
+
+
+	/**
+	 * @param mapGroups the mapGroups to set
+	 */
+	public void setMapGroups(java.util.Map<String, GroupsModel> mapGroups) {
+		this.mapGroups = mapGroups;
+	}
+
+
+
+	/**
+	 * @return the mapSearchGroups
+	 */
+	public java.util.Map<String, SearchModelGroup> getMapSearchGroups() {
+		return mapSearchGroups;
+	}
+
+
+
+	/**
+	 * @param mapSearchGroups the mapSearchGroups to set
+	 */
+	public void setMapSearchGroups(
+			java.util.Map<String, SearchModelGroup> mapSearchGroups) {
+		this.mapSearchGroups = mapSearchGroups;
+	}
+
+
+
+	/**
+	 * @return the mapRules
+	 */
+	public java.util.Map<String, RulesModel> getMapRules() {
+		return mapRules;
+	}
+
+
+
+	/**
+	 * @param mapRules the mapRules to set
+	 */
+	public void setMapRules(java.util.Map<String, RulesModel> mapRules) {
+		this.mapRules = mapRules;
+	}
+
+
+
+	/**
+	 * @return the mapSearchRules
+	 */
+	public java.util.Map<String, SearchModelRules> getMapSearchRules() {
+		return mapSearchRules;
+	}
+
+
+
+	/**
+	 * @param mapSearchRules the mapSearchRules to set
+	 */
+	public void setMapSearchRules(
+			java.util.Map<String, SearchModelRules> mapSearchRules) {
+		this.mapSearchRules = mapSearchRules;
+	}
 
 
 

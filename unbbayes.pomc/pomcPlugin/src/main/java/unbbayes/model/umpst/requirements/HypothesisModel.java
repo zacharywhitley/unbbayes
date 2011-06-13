@@ -1,7 +1,12 @@
 package unbbayes.model.umpst.requirements;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+
+import unbbayes.model.umpst.entities.EntityModel;
+import unbbayes.model.umpst.groups.GroupsModel;
 
 public class HypothesisModel {
 	
@@ -13,9 +18,13 @@ public class HypothesisModel {
 	private GoalModel goalRelated;
 	private HypothesisModel father;
 	private Map<String,HypothesisModel> mapSubHypothesis;
+	private Set<EntityModel> fowardTrackingEntity;
+	private Set<GroupsModel> fowardTrackingGroups;
+
 	
-	public HypothesisModel(String id,String hypothesisName, String comments,String author, String date,
-			GoalModel goalRelated, HypothesisModel father,Map<String,HypothesisModel> subHypothesis) {
+	public HypothesisModel(String id,String hypothesisName, String comments,String author, String date,GoalModel goalRelated, 
+			HypothesisModel father,Map<String,HypothesisModel> subHypothesis,Set<EntityModel> fowardTrackingEntity,
+			 Set<GroupsModel> fowardTrackingGroups) {
 		
 		this.id=id;
 		this.hypothesisName = hypothesisName;
@@ -25,10 +34,68 @@ public class HypothesisModel {
 		this.father = father;
 		this.mapSubHypothesis = subHypothesis;
 		if(subHypothesis==null){
-			this.setSubHypothesis(new HashMap<String, HypothesisModel>());			
+			this.setMapSubHypothesis(new HashMap<String, HypothesisModel>());			
 		}
 		this.goalRelated = goalRelated;
-		// TODO Auto-generated constructor stub
+		this.fowardTrackingEntity=fowardTrackingEntity;
+		if (fowardTrackingEntity==null){
+			this.setFowardTrackingEntity(new HashSet<EntityModel>());
+		}
+		this.fowardTrackingGroups = fowardTrackingGroups;
+		if (fowardTrackingGroups==null){
+			this.setFowardTrackingGroups(new HashSet<GroupsModel>());
+		}
+	}
+
+
+	
+	/**
+	 * @return the fowardTrackingGroups
+	 */
+	public Set<GroupsModel> getFowardTrackingGroups() {
+		return fowardTrackingGroups;
+	}
+
+
+
+	/**
+	 * @param fowardTrackingGroups the fowardTrackingGroups to set
+	 */
+	public void setFowardTrackingGroups(Set<GroupsModel> fowardTrackingGroups) {
+		this.fowardTrackingGroups = fowardTrackingGroups;
+	}
+
+
+
+	/**
+	 * @return the mapSubHypothesis
+	 */
+	public Map<String, HypothesisModel> getMapSubHypothesis() {
+		return mapSubHypothesis;
+	}
+
+
+	/**
+	 * @param mapSubHypothesis the mapSubHypothesis to set
+	 */
+	public void setMapSubHypothesis(Map<String, HypothesisModel> mapSubHypothesis) {
+		this.mapSubHypothesis = mapSubHypothesis;
+	}
+
+
+	/**
+	 * @return the fowardTrackingEntity
+	 */
+	public Set<EntityModel> getFowardTrackingEntity() {
+		return fowardTrackingEntity;
+	}
+
+
+	/**
+	 * @param fowardTrackingEntity the fowardTrackingEntity to set
+	 */
+	public void setFowardTrackingEntity(Set<EntityModel> fowardTrackingEntity) {
+		this.fowardTrackingEntity = fowardTrackingEntity;
 	}
 
 

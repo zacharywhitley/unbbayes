@@ -34,13 +34,15 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.Border;
 
 import unbbayes.model.umpst.entities.EntityModel;
+import unbbayes.model.umpst.groups.GroupsModel;
 import unbbayes.model.umpst.project.SearchModelEntity;
 import unbbayes.model.umpst.project.SearchModelGoal;
+import unbbayes.model.umpst.project.SearchModelGroup;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
 
 
-public class EntitiesAdd extends IUMPSTPanel {
+public class GroupsAdd extends IUMPSTPanel {
 	
 	private ImageIcon iconAtribute = createImageIcon("images/hypo.png");
 
@@ -50,28 +52,27 @@ public class EntitiesAdd extends IUMPSTPanel {
 	
 	private JButton buttonAdd 	     = new JButton();
 	private JButton buttonCancel     = new JButton("Cancel");
-	private JButton buttonAtribute = new JButton("atribute");
  
 	
 	private JTextField dateText,authorText;
 	private JTextField entityText,commentsText;
-	private EntityModel entity;
+	private GroupsModel group;
 
 	private static final long serialVersionUID = 1L;
 	
-	private JList list,listAux; 
-    private DefaultListModel listModel = new DefaultListModel();
-	private DefaultListModel listModelAux = new DefaultListModel();
+	private JList listEntities,listEntitiesAux; 
+    private DefaultListModel listEntityModel = new DefaultListModel();
+	private DefaultListModel listEntityModelAux = new DefaultListModel();
 	
 	private JList listHypothesis,listHypothesisAux; 
     private DefaultListModel listHypothesisModel = new DefaultListModel();
 	private DefaultListModel listHypothesisModelAux = new DefaultListModel();
 	
 	
-	public EntitiesAdd(UmpstModule janelaPai, EntityModel entity){
+	public GroupsAdd(UmpstModule janelaPai, GroupsModel group){
 		super(janelaPai);
 		
-		this.entity = entity;
+		this.group = group;
 		this.setLayout(new GridBagLayout());
 		constraint.fill = GridBagConstraints.BOTH;
 		constraint.gridx=0;constraint.gridy=0;constraint.weightx=0.5;constraint.weighty=0.4;
@@ -82,16 +83,16 @@ public class EntitiesAdd extends IUMPSTPanel {
 		getTrackingPanelHypothesis();
 		listeners();
 
-		if( entity == null){
-			titulo.setText("Add new entity");
+		if( group == null){
+			titulo.setText("Add new group");
 			buttonAdd.setText(" Add ");
 		} else {
-			titulo.setText(entity.getEntityName());
+			titulo.setText(group.getGroupName());
 			buttonAdd.setText(" Update ");
-			entityText.setText(entity.getEntityName());
-			commentsText.setText(entity.getComments());
-			authorText.setText(entity.getAuthor());
-			dateText.setText(entity.getDate());
+			entityText.setText(group.getGroupName());
+			commentsText.setText(group.getComments());
+			authorText.setText(group.getAuthor());
+			dateText.setText(group.getDate());
 		}
 		
 	}
@@ -141,11 +142,9 @@ public class EntitiesAdd extends IUMPSTPanel {
 		
 		c.gridx = 0; c.gridy = 6; c.gridwidth = 1;
 		panel.add( buttonCancel, c);
-		c.gridx = 1; c.gridy = 6; c.gridwidth = 1;
-		panel.add( buttonAtribute, c);
-		buttonAtribute.setToolTipText("Add new Atribute");
+	
 		
-		c.gridx = 2; c.gridy = 6; c.gridwidth = 1;
+		c.gridx = 1; c.gridy = 6; c.gridwidth = 1;
 		panel.add(buttonAdd,c);
 		
 		panel.setBorder(BorderFactory.createTitledBorder("Rule's details"));
@@ -161,38 +160,38 @@ public class EntitiesAdd extends IUMPSTPanel {
 		
 		buttonAdd.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if( entity == null){
+				if( group == null){
 					try {
-						EntityModel entityAdd = updateMaEntity();					    
-					    updateMapSearch(entityAdd);
-					    updateBacktracking(entityAdd);
+						GroupsModel groupAdd = updateMapGroups();					    
+					    updateMapSearch(groupAdd);
+					    updateBacktracking(groupAdd);
 						updateTableEntities();
-						JOptionPane.showMessageDialog(null, "entity successfully added",null, JOptionPane.INFORMATION_MESSAGE);
+						JOptionPane.showMessageDialog(null, "group successfully added",null, JOptionPane.INFORMATION_MESSAGE);
 						
 					
 					} catch (Exception e1) {
-						JOptionPane.showMessageDialog(null, "Error while creating entity", "UnBBayes", JOptionPane.WARNING_MESSAGE);
+						JOptionPane.showMessageDialog(null, "Error while creating group", "UnBBayes", JOptionPane.WARNING_MESSAGE);
 						UmpstModule pai = getJanelaPai();
 						alterarJanelaAtual(pai.getMenuPanel());	
 					
 					}
 				}
 				else{
-					if( JOptionPane.showConfirmDialog(null, "Do you want to update this entity?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
-						//EntityModel entity = new EntityModel(entityText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),null);
+					if( JOptionPane.showConfirmDialog(null, "Do you want to update this group?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
+						//EntityModel group = new EntityModel(entityText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),null);
 						try{
 							
 							/**Cleaning Search Map*/
-							Set<EntityModel> aux = new HashSet<EntityModel>();
-							EntityModel entityBeta;
-							String[] strAux = entity.getEntityName().split(" ");
+							Set<GroupsModel> aux = new HashSet<GroupsModel>();
+							GroupsModel groupBeta;
+							String[] strAux = group.getGroupName().split(" ");
 
 						    for (int i = 0; i < strAux.length; i++) {
-					    		if(UMPSTProject.getInstance().getMapSearchEntity().get(strAux[i])!=null){
-					    			UMPSTProject.getInstance().getMapSearchEntity().get(strAux[i]).getEntitiesRelated().remove(entity);
-					    			aux = UMPSTProject.getInstance().getMapSearchEntity().get(strAux[i]).getEntitiesRelated();
-					    	    	for (Iterator<EntityModel> it = aux.iterator(); it.hasNext(); ) {
-					    	    		entityBeta = it.next();
+					    		if(UMPSTProject.getInstance().getMapSearchGroups().get(strAux[i])!=null){
+					    			UMPSTProject.getInstance().getMapSearchGroups().get(strAux[i]).getRelatedGroups().remove(group);
+					    			aux = UMPSTProject.getInstance().getMapSearchGroups().get(strAux[i]).getRelatedGroups();
+					    	    	for (Iterator<GroupsModel> it = aux.iterator(); it.hasNext(); ) {
+					    	    		groupBeta = it.next();
 					    	   		}
 					    		}
 					    		
@@ -200,21 +199,21 @@ public class EntitiesAdd extends IUMPSTPanel {
 						    }
 						    /************/
 							
-							entity.setEntityName(entityText.getText());
-							entity.setComments(commentsText.getText());
-							entity.setAuthor(authorText.getText());
-							entity.setDate(dateText.getText());
+							group.setGroupName(entityText.getText());
+							group.setComments(commentsText.getText());
+							group.setAuthor(authorText.getText());
+							group.setDate(dateText.getText());
 							
-							updateMapSearch(entity);
-							updateBacktracking(entity);
+							updateMapSearch(group);
+							updateBacktracking(group);
 							updateTableEntities();
 							
-							JOptionPane.showMessageDialog(null, "entity successfully updated", "UnBBayes", JOptionPane.INFORMATION_MESSAGE);
+							JOptionPane.showMessageDialog(null, "group successfully updated", "UnBBayes", JOptionPane.INFORMATION_MESSAGE);
 						
 							
 						}
 						catch (Exception e2) {
-							JOptionPane.showMessageDialog(null,"Error while ulpating entity", "UnBBayes", JOptionPane.WARNING_MESSAGE);
+							JOptionPane.showMessageDialog(null,"Error while ulpating group", "UnBBayes", JOptionPane.WARNING_MESSAGE);
 							UmpstModule pai = getJanelaPai();
 							alterarJanelaAtual(pai.getMenuPanel());	
 						}
@@ -230,12 +229,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 			}
 		});
 		
-		buttonAtribute.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				alterarJanelaAtual(new AtributeAdd(getJanelaPai(), entity, null, null));
-
-			}
-		});
+	
 		
 		
 		entityText.addActionListener(new ActionListener() {
@@ -276,14 +270,14 @@ public class EntitiesAdd extends IUMPSTPanel {
         }
     }
     
-    public EntityModel updateMaEntity(){
+    public GroupsModel updateMapGroups(){
     	String idAux = "";
 		int intAux = 0;
-		int tamanho = UMPSTProject.getInstance().getMapEntity().size()+1;
+		int tamanho = UMPSTProject.getInstance().getMapGroups().size()+1;
 		
 		
 					
-			if ( UMPSTProject.getInstance().getMapEntity().size()!=0){
+			if ( UMPSTProject.getInstance().getMapGroups().size()!=0){
 				idAux = tamanho+"";
 			}
 			else{
@@ -291,13 +285,13 @@ public class EntitiesAdd extends IUMPSTPanel {
 			}
 	
 		
-		EntityModel entityAdd = new EntityModel(idAux,entityText.getText(),commentsText.getText(), authorText.getText(), 
-				dateText.getText(),null,null,null,null,null);
+		GroupsModel groupAdd = new GroupsModel(idAux,entityText.getText(),commentsText.getText(), authorText.getText(), 
+				dateText.getText(),null,null);
 		
 		
-	    UMPSTProject.getInstance().getMapEntity().put(entityAdd.getId(), entityAdd);	
+	    UMPSTProject.getInstance().getMapGroups().put(groupAdd.getId(), groupAdd);	
 	    
-	    return entityAdd;
+	    return groupAdd;
     }
     
     
@@ -331,23 +325,23 @@ public class EntitiesAdd extends IUMPSTPanel {
 	    entitiesTable.repaint();
     }
 
-    public void updateMapSearch(EntityModel entityAdd){
+    public void updateMapSearch(GroupsModel groupAdd){
 	    /**Upating searchPanel*/
 	    
 	    String[] strAux = {};
-	    strAux = entityAdd.getEntityName().split(" ");
-	    Set<EntityModel> entitySetSearch = new HashSet<EntityModel>();
+	    strAux = groupAdd.getGroupName().split(" ");
+	    Set<GroupsModel> groupSetSearch = new HashSet<GroupsModel>();
 
 	    
 	    for (int i = 0; i < strAux.length; i++) {
 	    	if(!strAux[i].equals(" ")){
-	    		if(UMPSTProject.getInstance().getMapSearchEntity().get(strAux[i])==null){
-	    			entitySetSearch.add(entityAdd);
-	    			SearchModelEntity searchModel = new SearchModelEntity(strAux[i], entitySetSearch);
-	    			UMPSTProject.getInstance().getMapSearchEntity().put(searchModel.getKeyWord(), searchModel);
+	    		if(UMPSTProject.getInstance().getMapSearchGroups().get(strAux[i])==null){
+	    			groupSetSearch.add(groupAdd);
+	    			SearchModelGroup searchModel = new SearchModelGroup(strAux[i], groupSetSearch);
+	    			UMPSTProject.getInstance().getMapSearchGroups().put(searchModel.getKeyWord(), searchModel);
 	    		}
 	    		else{
-	    			UMPSTProject.getInstance().getMapSearchEntity().get(strAux[i]).getEntitiesRelated().add(entityAdd);
+	    			UMPSTProject.getInstance().getMapSearchGroups().get(strAux[i]).getRelatedGroups().add(groupAdd);
 	    		}
 	    	}
 	    }
@@ -369,34 +363,34 @@ public class EntitiesAdd extends IUMPSTPanel {
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		for (String key: sortedKeys){
-			listModel.addElement(UMPSTProject.getInstance().getMapGoal().get(key).getGoalName());
+			listEntityModel.addElement(UMPSTProject.getInstance().getMapGoal().get(key).getGoalName());
 		}
 		
 		
 		/**This IF is responsable to update the first JList with all requirements elemente MINUS those 
 		 * who are already registred as backtracking.
 		 * */
-		if (entity!=null){
-			listAux = entity.getBacktracking();
-			for (int i = 0; i < listAux.getModel().getSize();i++) {
-				listModelAux.addElement((listAux.getModel().getElementAt(i)));
-				if (listModel.contains(listAux.getModel().getElementAt(i))){
-					listModel.remove(listModel.indexOf(listAux.getModel().getElementAt(i)));
+		if (group!=null){
+			listEntitiesAux = group.getBacktrackingGoal();
+			for (int i = 0; i < listEntitiesAux.getModel().getSize();i++) {
+				listEntityModelAux.addElement((listEntitiesAux.getModel().getElementAt(i)));
+				if (listEntityModel.contains(listEntitiesAux.getModel().getElementAt(i))){
+					listEntityModel.remove(listEntityModel.indexOf(listEntitiesAux.getModel().getElementAt(i)));
 				}
 			}
 			
 		}
 		
-		list = new JList(listModel); //data has type Object[]
-		list.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-		list.setLayoutOrientation(JList.VERTICAL_WRAP);
-		list.setVisibleRowCount(-1);
+		listEntities = new JList(listEntityModel); //data has type Object[]
+		listEntities.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		listEntities.setLayoutOrientation(JList.VERTICAL_WRAP);
+		listEntities.setVisibleRowCount(-1);
 		
 		
 		
 		
 
-		JScrollPane listScroller = new JScrollPane(list);
+		JScrollPane listScroller = new JScrollPane(listEntities);
 		listScroller.setMinimumSize(new Dimension(300,200));
 				
 		box.add(listScroller);
@@ -409,8 +403,8 @@ public class EntitiesAdd extends IUMPSTPanel {
 				new ActionListener() {
 					
 					public void actionPerformed(ActionEvent e) {
-						listModelAux.addElement(list.getSelectedValue());	
-						listModel.removeElement(list.getSelectedValue());
+						listEntityModelAux.addElement(listEntities.getSelectedValue());	
+						listEntityModel.removeElement(listEntities.getSelectedValue());
 
 					}
 				}
@@ -423,20 +417,20 @@ public class EntitiesAdd extends IUMPSTPanel {
 				new ActionListener() {
 					
 					public void actionPerformed(ActionEvent e) {
-						listModel.addElement(listAux.getSelectedValue());	
-						listModelAux.removeElement(listAux.getSelectedValue());
+						listEntityModel.addElement(listEntitiesAux.getSelectedValue());	
+						listEntityModelAux.removeElement(listEntitiesAux.getSelectedValue());
 					}
 				}
 		
 		);	
 		
-		listAux = new JList(listModelAux);
+		listEntitiesAux = new JList(listEntityModelAux);
 
-		listAux.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-		listAux.setLayoutOrientation(JList.VERTICAL_WRAP);
-		listAux.setVisibleRowCount(-1);
+		listEntitiesAux.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		listEntitiesAux.setLayoutOrientation(JList.VERTICAL_WRAP);
+		listEntitiesAux.setVisibleRowCount(-1);
 	
-		JScrollPane listScrollerAux = new JScrollPane(listAux);
+		JScrollPane listScrollerAux = new JScrollPane(listEntitiesAux);
 		listScrollerAux.setMinimumSize(new Dimension(300,200));
 		box.add(listScrollerAux);
 				
@@ -462,8 +456,8 @@ public class EntitiesAdd extends IUMPSTPanel {
 		/**This IF is responsable to update the first JList with all requirements elemente MINUS those 
 		 * who are already registred as backtracking.
 		 * */
-		if (entity!=null){
-			listHypothesisAux = entity.getBacktrackingHypothesis();
+		if (group!=null){
+			listHypothesisAux = group.getBacktrackingHypothesis();
 			for (int i = 0; i < listHypothesisAux.getModel().getSize();i++) {
 				listHypothesisModelAux.addElement((listHypothesisAux.getModel().getElementAt(i)));
 				if (listHypothesisModel.contains(listHypothesisAux.getModel().getElementAt(i))){
@@ -534,24 +528,24 @@ public class EntitiesAdd extends IUMPSTPanel {
 	
 	
 	
-	public void updateBacktracking(EntityModel entity){
+	public void updateBacktracking(GroupsModel group){
 		String keyWord = "";
 		Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		
 		
-		if (listAux !=null){
-			for (int i = 0; i < listAux.getModel().getSize();i++) {
-				keyWord = listAux.getModel().getElementAt(i).toString();
+		if (listEntitiesAux !=null){
+			for (int i = 0; i < listEntitiesAux.getModel().getSize();i++) {
+				keyWord = listEntitiesAux.getModel().getElementAt(i).toString();
 				for (String key: sortedKeys){
 					if (keyWord.equals( UMPSTProject.getInstance().getMapGoal().get(key).getGoalName()) ){
-						UMPSTProject.getInstance().getMapGoal().get(key).getFowardTrackingEntity().add(entity);
+						UMPSTProject.getInstance().getMapGoal().get(key).getFowardTrackingGroups().add(group);
 					}			
 				
 				}
 			}
-			entity.setBacktracking(listAux);
+			group.setBacktrackingGoal(listEntitiesAux);
 
 		}
 		
@@ -560,12 +554,12 @@ public class EntitiesAdd extends IUMPSTPanel {
 				keyWord = listHypothesisAux.getModel().getElementAt(i).toString();
 				for (String key: sortedKeys){
 					if (keyWord.equals( UMPSTProject.getInstance().getMapHypothesis().get(key).getHypothesisName()) ){
-						UMPSTProject.getInstance().getMapHypothesis().get(key).getFowardTrackingEntity().add(entity);
+						UMPSTProject.getInstance().getMapHypothesis().get(key).getFowardTrackingGroups().add(group);
 					}			
 				
 				}
 			}
-			entity.setBacktrackingHypothesis(listHypothesisAux);
+			group.setBacktrackingHypothesis(listHypothesisAux);
 
 		}
 		
