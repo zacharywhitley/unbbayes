@@ -8,7 +8,7 @@
 	</properties>
 	<body>
 	
-		<release version="4.9.3" date="2011-06-13" description="Second UnBBayes Plugin Framework release">
+		<release version="4.9.4" date="2011-06-14" description="Second UnBBayes Plugin Framework release">
 			<action dev="Shou Matsumoto" type="add" issue="3316013">
 				Refactor SSBN generation algorithm.
 			</action>
@@ -46,6 +46,9 @@
 			</action>
 			<action dev="Shou Matsumoto" type="fix" issue="3316012">
 				Bug caused by Xalan.
+			</action>
+			<action dev="Rommel Carvalho" type="fix" issue="3316012">
+				Likelihood lost when new likelihood/evidence is entered.
 			</action>
 		</release>
 	

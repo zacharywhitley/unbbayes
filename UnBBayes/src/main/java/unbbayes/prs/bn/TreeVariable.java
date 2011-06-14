@@ -126,6 +126,10 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     		hasLikelihood = false;
     	}
     }
+    
+    public boolean hasLikelihood() {
+    	return hasLikelihood;
+    }
 
 
     /**
