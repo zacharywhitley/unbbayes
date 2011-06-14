@@ -8,12 +8,12 @@
 	</properties>
 	<body>
 	
-		<release version="4.9.3" date="2011-06-30" description="Second UnBBayes Plugin Framework release">
-			<action dev="Shou Matsumoto" type="add" issue="3132338">
-				The "final" mark in some methods were removed, in order to allow overwriting.
+		<release version="4.9.3" date="2011-06-13" description="Second UnBBayes Plugin Framework release">
+			<action dev="Shou Matsumoto" type="add" issue="3316013">
+				Refactor SSBN generation algorithm.
 			</action>
 			<action dev="Shou Matsumoto" type="add" issue="3132338">
-				XXXX have to add it later XXXX.
+				The "final" mark in some methods were removed, in order to allow overwriting.
 			</action>
 			<action dev="Rommel Carvalho" type="add" issue="3314855">
 				Auto reset / recompile when evidence changed.
@@ -38,14 +38,14 @@
 			</action>
 			
 			
-			<action dev="Shou Matsumoto" type="fix" issue="">
-				XXXX have to add it later XXXX.
+			<action dev="Shou Matsumoto" type="fix" issue="3030178">
+				Wrong message for Dne IO.
 			</action>
 			<action dev="Rommel Carvalho" type="fix" issue="3260712">
 				SSBN is not saved with correct CPT.
 			</action>
-			<action dev="Shou Matsumoto" type="fix" issue="">
-				Added a patch to fix a bug caused by Xalan when a XML file with an attribute called ident-number is requested. Because this is a generic bug, it was migrated from unbbayes.gui.mebn.protege to here.
+			<action dev="Shou Matsumoto" type="fix" issue="3316012">
+				Bug caused by Xalan.
 			</action>
 		</release>
 	

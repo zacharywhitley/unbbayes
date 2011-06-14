@@ -2,7 +2,8 @@ UNBBAYES VERSION 4.9.3
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
-1		3132338 	The "final" mark in some methods were removed, in order to allow overwriting.
+1		3316013		Refactor SSBN generation algorithm.
+2		3132338 	The "final" mark in some methods were removed, in order to allow overwriting.
 3		3314855		Auto reset / recompile when evidence changed.
 4		3315588		Allow to remove evidence from node.
 5		3315761		Allow the selection of a single cell - CPT.
@@ -14,8 +15,9 @@ Number	Request ID	Summary
 
 BUG LIST		
 Number	Request ID	Summary
+1		3030178		Wrong message for Dne IO.
 2		3260712 	SSBN is not saved with correct CPT.
-3					Added a patch to fix a bug caused by Xalan when a XML file with an attribute called ident-number is requested. Because this is a generic bug, it was migrated from unbbayes.gui.mebn.protege to here.
+3		3316012		Bug caused by Xalan.
 
 
 UNBBAYES VERSION 4.0.0
