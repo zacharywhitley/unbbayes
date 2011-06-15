@@ -1,6 +1,6 @@
 /*
  *  UnBBayes
- *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *  Copyright (C) 2002, 2008, 2011 Universidade de Brasilia - http://www.unb.br
  *
  *  This file is part of UnBBayes.
  *
@@ -20,8 +20,10 @@
  */
 package unbbayes.controller.mebn;
 
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.io.File;
 import java.text.NumberFormat;
 import java.util.EventObject;
@@ -32,13 +34,18 @@ import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import unbbayes.controller.FileHistoryController;
 import unbbayes.controller.NetworkController;
 import unbbayes.controller.exception.InconsistentArgumentException;
 import unbbayes.controller.exception.InvalidOperationException;
+import unbbayes.gui.FileIcon;
 import unbbayes.gui.GraphAction;
+import unbbayes.gui.GraphPane;
+import unbbayes.gui.SimpleFileFilter;
 import unbbayes.gui.mebn.DescriptionPane;
 import unbbayes.gui.mebn.MEBNEditionPane;
 import unbbayes.gui.mebn.MEBNNetworkWindow;
@@ -116,6 +123,9 @@ import unbbayes.util.mebn.extension.manager.MEBNPluginNodeManager;
  * 
  * @author Shou Matsumoto
  * @version 02/13/2010 - Migrated part of NetworkController's routines to here
+ * 
+ * @author Rommel Carvalho (rommel.carvalho@gmail.com)
+ * @version 2.0 06/18/2011 - (feature:3317031) Added turnToMTheoryMode
  */
 
 public class MEBNController extends NetworkController implements IMEBNMediator{
@@ -2322,11 +2332,28 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	 *-------------------------------------------------------------------------/
 	
 	
-	
-	
-	
-	
-	
+	/* (non-Javadoc)
+	 * @see unbbayes.controller.INetworkMediator#saveNetImage()
+	 */
+    public void saveNetImage(GraphPane pane) {
+        String images[] = { "PNG", "JPG", "GIF", "BMP" };
+        JFileChooser chooser = new JFileChooser(FileHistoryController.getInstance().getCurrentDirectory());
+        chooser.setMultiSelectionEnabled(false);
+
+        chooser.setFileView(new FileIcon(getScreen()));
+        chooser.addChoosableFileFilter(new SimpleFileFilter( images, resource.getString("imageFileFilter")));
+
+        int opcao = chooser.showSaveDialog(getScreen());
+        if (opcao == JFileChooser.APPROVE_OPTION) {
+        	Rectangle r = new Rectangle(0, 0, (int)pane.getBiggestPoint().x, (int)pane.getBiggestPoint().y);
+        	Component comp = pane.getGraphViewport();
+        	File file = new File(chooser.getSelectedFile().getPath());
+        	saveComponentAsImage(comp, r.width, r.height, file);
+        	FileHistoryController.getInstance().setCurrentDirectory(chooser.getCurrentDirectory());
+        	
+        	JOptionPane.showMessageDialog(getScreen(), resource.getString("saveSucess"));
+        }
+    }
 	
 	/**
 	 * @return false if don't have one ssbn pre-generated. True if the mode is change. 
@@ -2338,6 +2365,24 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		if(specificSituationBayesianNetwork != null){
 			showSSBNGraph = true; 
 			this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);			
+			this.getMebnEditionPane().getNetworkWindow().getGraphPane().setGraphDimension(dimensionSSBNGraph); 
+			this.getMebnEditionPane().getNetworkWindow().getGraphPane().update(); 
+			return true;  
+		}else{
+			return false;
+		}
+	}
+	
+	/**
+	 * Changes to MTheory view.
+	 * 
+	 * @return false if there is no MTheory to show, and true if the mode is 
+	 * successfuly changed.
+	 */
+	public boolean turnToMTheoryMode(){
+		if(multiEntityBayesianNetwork != null){
+//			showSSBNGraph = true; 
+			this.getMebnEditionPane().getNetworkWindow().changeToMTheoryPane();			
 			this.getMebnEditionPane().getNetworkWindow().getGraphPane().setGraphDimension(dimensionSSBNGraph); 
 			this.getMebnEditionPane().getNetworkWindow().getGraphPane().update(); 
 			return true;  

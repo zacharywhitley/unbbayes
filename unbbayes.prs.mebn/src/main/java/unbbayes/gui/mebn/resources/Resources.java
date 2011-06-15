@@ -1,6 +1,6 @@
 /*
  *  UnBBayes
- *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *  Copyright (C) 2002, 2008, 2011 Universidade de Brasilia - http://www.unb.br
  *
  *  This file is part of UnBBayes.
  *
@@ -32,6 +32,9 @@ import unbbayes.gui.resources.GuiResources;
  * @author Shou Matsumoto
  * @version 1.0
  * @since 02/13/2010
+ * 
+ * @author Rommel Carvalho (rommel.carvalho@gmail.com)
+ * @version 1.0 06/18/2011 - (feature:3317031) Added turnToMTheoryViewModeToolTip
  * 
  * TODO gradually move mebn-specific resources from {@link GuiResources} to here.
  */
@@ -110,6 +113,14 @@ public class Resources extends GuiResources {
 		{"KBClean" , "Knowledge base successfully cleared"},
 		{"NotImplemented" , "Not implemented yet."}, 
 		{"loadedWithErrors" , "File loaded, but some errors may have occurred"},
+		
+		// MTheory view mode
+		{"turnToMTheoryViewModeToolTip" , "See MTheory"},
+		{"showTitleBorder" , "Show Title Border"},
+		{"showBodyBorder" , "Show Body Border"},
+		{"showRoundBorder" , "Show Round Border"},
+		
+		
 		
 
 		

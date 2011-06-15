@@ -1,3 +1,23 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008, 2011 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.controller.mebn;
 
 import java.io.File;
@@ -58,6 +78,9 @@ import unbbayes.util.mebn.extension.manager.MEBNPluginNodeManager;
  * This is a Mediator design pattern since almost all communication is managed using
  * this.
  * @author Shou Matsumoto
+ * 
+ * @author Rommel Carvalho (rommel.carvalho@gmail.com)
+ * @version 2.0 06/18/2011 - (feature:3317031) Added turnToMTheoryMode
  *
  */
 public interface IMEBNMediator extends INetworkMediator  {
@@ -503,6 +526,8 @@ public interface IMEBNMediator extends INetworkMediator  {
 	 * @return false if don't have one ssbn pre-generated. True if the mode is change. 
 	 */
 	public abstract boolean turnToSSBNMode();
+	
+	public abstract boolean turnToMTheoryMode();
 
 	public abstract MultiEntityBayesianNetwork getMultiEntityBayesianNetwork();
 

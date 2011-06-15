@@ -1,4 +1,4 @@
-UNBBAYES PLUGIN - VERSION 1.8.8
+UNBBAYES PLUGIN - VERSION 1.11.8
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
@@ -6,6 +6,7 @@ Number	Request ID	Summary
 2					Added a new extension point to add new types of nodes.
 9		3315492		Remove type filtering to allow use of subtypes.
 10		3315504		Save MFrag and SSBN as images.
+11		3317031		Panel with MTheory view.
 
 BUG LIST		
 Number	Request ID	Summary

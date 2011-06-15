@@ -1,5 +1,22 @@
-/**
- * 
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008, 2011 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
 package unbbayes.gui.mebn;
 
@@ -49,8 +66,8 @@ import unbbayes.gui.mebn.auxiliary.FocusListenerTextField;
 import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelBuilder;
 import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelPluginManager;
-import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelPluginManager.IMEBNEditionPanelPluginComponents;
 import unbbayes.gui.mebn.extension.editor.MEBNEditionPanelPluginManager;
+import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelPluginManager.IMEBNEditionPanelPluginComponents;
 import unbbayes.gui.table.extension.IProbabilityFunctionPanelBuilder;
 import unbbayes.io.BaseIO;
 import unbbayes.io.FileExtensionIODelegator;
@@ -69,6 +86,10 @@ import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
  * Codes from NetworkWindow which was dealing  MEBN was migrated into here.
  * This class represents a MEBN module, by also extending UnBBayesModule.
  * @author Shou Matsumoto
+ * @version 1.0
+ * 
+ * @author Rommel Carvalho (rommel.carvalho@gmail.com)
+ * @version 2.0 06/18/2011 - (feature:3317031) Included MTheory view
  *
  */
 public class MEBNNetworkWindow extends NetworkWindow {
@@ -79,9 +100,13 @@ public class MEBNNetworkWindow extends NetworkWindow {
 
 	private static final String MEBN_PANE_SSBN_COMPILATION_PANE = "ssbnCompilationPane";
 	
+	private static final String MEBN_PANE_MTHEORY_VIEW_PANE = "mtheoryViewPane";
+	
 	private MEBNEditionPane mebnEditionPane = null;
 
 	private SSBNCompilationPane ssbnCompilationPane = null;
+	
+	private MTheoryViewPane mtheoryViewPane = null;
 	
 	/** The resource is not static, so that hotplug would become easier */
 	private ResourceBundle resource;
@@ -221,6 +246,7 @@ public class MEBNNetworkWindow extends NetworkWindow {
 		this.setSsbnCompilationPane(new SSBNCompilationPane());
 		mainContentPane.add(this.getMebnEditionPane(), MEBN_PANE_MEBN_EDITION_PANE);
 		mainContentPane.add(this.getSsbnCompilationPane(), MEBN_PANE_SSBN_COMPILATION_PANE);
+		mainContentPane.add(this.getSsbnCompilationPane(), MEBN_PANE_MTHEORY_VIEW_PANE);
 		
 		// inicia com a tela de edicao de rede(PNEditionPane)
 		this.getMebnEditionPane().getGraphPanel().setBottomComponent(this.getJspGraph());
@@ -357,6 +383,35 @@ public class MEBNNetworkWindow extends NetworkWindow {
 			
 			CardLayout layout = (CardLayout) mainContentPane.getLayout();
 			layout.show(getMainContentPane(), MEBN_PANE_SSBN_COMPILATION_PANE);
+		}
+	}
+	
+	/**
+	 * This method changes the main screen from edition pane to 
+	 * MTheory pane
+	 */
+	public void changeToMTheoryPane() {
+
+		if (this.getMode()  == MEBN_MODE) {
+			
+			try{
+			
+				if (mtheoryViewPane == null) {
+					mtheoryViewPane = new MTheoryViewPane(this, (MEBNController)this.getController());
+					
+					mainContentPane.add(mtheoryViewPane, MEBN_PANE_MTHEORY_VIEW_PANE);
+				} else {
+					mtheoryViewPane.getGraphPane().update();
+					mtheoryViewPane.refreshMTheoryTree();
+				}
+				
+				((MEBNController)this.getController()).setEditionMode();
+				
+				this.getCardLayout().show(getMainContentPane(), MEBN_PANE_MTHEORY_VIEW_PANE);
+			
+			} catch (ClassCastException e) {
+				throw new IllegalArgumentException("The controller of this network window must be set to MEBNController", e);
+			}
 		}
 	}
 	
@@ -647,6 +702,20 @@ public class MEBNNetworkWindow extends NetworkWindow {
 	 */
 	public void setSsbnCompilationPane(SSBNCompilationPane ssbnCompilationPane) {
 		this.ssbnCompilationPane = ssbnCompilationPane;
+	}
+	
+	/**
+	 * @return the mtheoryViewPane
+	 */
+	public MTheoryViewPane getMtheoryViewPane() {
+		return mtheoryViewPane;
+	}
+
+	/**
+	 * @param mtheoryViewPane the mtheoryViewPane to set
+	 */
+	public void setMtheoryViewPane(MTheoryViewPane mtheoryViewPane) {
+		this.mtheoryViewPane = mtheoryViewPane;
 	}
 
 	/**

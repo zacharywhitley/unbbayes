@@ -1,6 +1,6 @@
 /*
  *  UnBBayes
- *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *  Copyright (C) 2002, 2008, 2011 Universidade de Brasilia - http://www.unb.br
  *
  *  This file is part of UnBBayes.
  *
@@ -58,7 +58,7 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 
 import unbbayes.controller.FileHistoryController;
-import unbbayes.controller.IconController;
+import unbbayes.controller.mebn.IconController;
 import unbbayes.controller.mebn.MEBNController;
 import unbbayes.gui.GraphAction;
 import unbbayes.gui.SimpleFileFilter;
@@ -88,8 +88,11 @@ import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
  * are inside this panel.
  *
  *  @author Laecio Lima dos Santos
- *  @author Rommel N. Carvalho
  *  @version 1.0 06/08/07
+ *  
+ *  @author Rommel Carvalho (rommel.carvalho@gmail.com)
+ * @version 2.0 06/18/2011 - (feature:3317031) Included MTheory view
+ *  
  */
 
 public class MEBNEditionPane extends JPanel {
@@ -781,6 +784,8 @@ public class MEBNEditionPane extends JPanel {
 	    
 	    private JButton btnTurnToSSBNMode; 
 	    
+	    private JButton btnTurnToMTheoryMode;
+	    
 	    private JButton btnSaveKB; 
 	    private JButton btnLoadKB; 
 		private JButton btnClearKB;
@@ -795,6 +800,7 @@ public class MEBNEditionPane extends JPanel {
 	    	
 	    	btnDoQuery = new JButton(iconController.getCompileIcon());
 	    	btnTurnToSSBNMode = new JButton(iconController.getSsbnIcon()); 
+	    	btnTurnToMTheoryMode = new JButton(iconController.getMTheoryViewIcon());
 	    	btnClearKB = new JButton(iconController.getEditDelete()); 
 
 	    	btnLoadKB = new JButton(iconController.getLoadFindingsInstance());
@@ -806,6 +812,7 @@ public class MEBNEditionPane extends JPanel {
 	    	
 	    	btnDoQuery.setToolTipText(resource.getString("executeQueryToolTip"));
 	    	btnTurnToSSBNMode.setToolTipText(resource.getString("turnToSSBNModeToolTip"));
+	    	btnTurnToMTheoryMode.setToolTipText(resource.getString("turnToMTheoryViewModeToolTip"));
 	    	btnClearKB.setToolTipText(resource.getString("clearKBToolTip"));
 	    	btnLoadKB.setToolTipText(resource.getString("loadKBToolTip"));
 	    	btnSaveKB.setToolTipText(resource.getString("saveKBToolTip"));
@@ -829,6 +836,16 @@ public class MEBNEditionPane extends JPanel {
 
 				public void actionPerformed(ActionEvent e) {
 					if(!mebnController.turnToSSBNMode()){
+						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("NoSSBN"));
+					}
+				}
+	    		
+	    	});
+	    	
+	    	btnTurnToMTheoryMode.addActionListener(new ActionListener(){
+
+				public void actionPerformed(ActionEvent e) {
+					if(!mebnController.turnToMTheoryMode()){
 						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("NoSSBN"));
 					}
 				}
@@ -909,6 +926,7 @@ public class MEBNEditionPane extends JPanel {
 	        addSeparator(new Dimension(10, 10)); 
 	        
 	        add(btnTurnToSSBNMode); 
+	        add(btnTurnToMTheoryMode); 
 	        
 	        addSeparator(new Dimension(10, 10)); 
 	        
