@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" ?>
 <helpset>
 	
 <title>Ajuda do JAVA UnBBayes</title>
@@ -9,15 +9,15 @@
 	</maps>
 	
 	<view>
-		<name>Tabela de Conte&uacute;do</name>
-		<label>Conte&uacute;do do JAVA UnBBayes</label>
+		<name>Tabela de Conteudo</name>
+		<label>Conteudo do JAVA UnBBayes</label>
 		<type>javax.help.TOCView</type>
 		<data>JUnBBayestoc.xml</data>
 	</view>
 
 	<view>
-		<name>&Iacute;ndice</name>
-		<label>&Iacute;ndice do JAVA UnBBayes</label>
+		<name>Indice</name>
+		<label>Indice do JAVA UnBBayes</label>
 		<type>javax.help.IndexView</type>
 		<data>JUnBBayesind.xml</data>
 	</view>
