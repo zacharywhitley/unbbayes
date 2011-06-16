@@ -164,11 +164,6 @@
 		<dependencies>
 			<!-- This is a plugin project for UnBBayes. Since it uses classes from the core, 
 			     UnBBayes is indeed a dependency -->
-			<dependency>
-				<groupId>br.unb.cic</groupId>
-				<artifactId>unbbayes</artifactId>
-				<version>4.2.3</version>
-			</dependency>
 			
 			<!-- This is a plugin project for unbbayes.prs.mebn -->
 			
@@ -375,8 +370,14 @@
 			</dependency>
 			 <dependency>
 			 	<groupId>br.unb.cic</groupId>
+			 	<artifactId>unbbayes</artifactId>
+			 	<version>4.10.4</version>
+			 	<optional>false</optional>
+			 </dependency>
+			 <dependency>
+			 	<groupId>br.unb.cic</groupId>
 			 	<artifactId>unbbayes.prs.mebn</artifactId>
-			 	<version>1.10.8</version>
+			 	<version>1.11.9</version>
 			 	<optional>false</optional>
 			 </dependency>
 		</dependencies>
