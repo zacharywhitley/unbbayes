@@ -92,6 +92,50 @@ public class TestUGraphEditor extends JFrame implements WindowStateListener {
 
 		// Add Listener
 		JButton btn;
+		
+		btn = addButton(buttonPanel, "Create MFrag");
+		btn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				UShape frame = new UShapeFrame(m_Canvas, new ProbabilisticNode(), 50, 50, 100, 100);
+
+				ProbabilisticNode node = new ProbabilisticNode();
+				node.setPosition(50, 50);
+				node.appendState("State1");
+				node.appendState("State2");
+				node.appendState("State3");
+				node.appendState("State4");
+				node.setName("longname-longname-longname-longname-longname-longname-longname-longname");
+				node.setDescription(node.getName());
+
+				UShapeProbabilisticNode shape = new UShapeProbabilisticNode(
+						m_Canvas, (ProbabilisticNode) node, (int) node
+								.getPosition().x
+								- node.getWidth() / 2,
+						(int) node.getPosition().y - node.getHeight() / 2, node
+								.getWidth(), node.getHeight());
+				frame.add(shape);
+//				m_Canvas.addShape(shape);
+//				shape.setShapeType(UShapeProbabilisticNode.STYPE_BAR);
+
+				ProbabilisticNode node2 = new ProbabilisticNode();
+				node2.setPosition(160, 80);
+				node2.appendState("firstStateProbabilisticName");
+				node2.setName("123456789abcdefghijklmnopqrstuvwxyz");
+				node2.setDescription(node2.getName());
+
+				UShapeProbabilisticNode shape2 = new UShapeProbabilisticNode(
+						m_Canvas, (ProbabilisticNode) node2, (int) node2
+								.getPosition().x
+								- node2.getWidth() / 2, (int) node2
+								.getPosition().y
+								- node2.getHeight() / 2, node2.getWidth(),
+						node2.getHeight());
+				frame.add(shape2);
+//				m_Canvas.addShape(shape2);
+				
+				m_Canvas.addShape(frame);
+			}
+		});
 
 		btn = addButton(buttonPanel, "Create ProbabilisticNode");
 		btn.addActionListener(new ActionListener() {
