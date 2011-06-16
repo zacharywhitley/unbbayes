@@ -20,14 +20,15 @@
  */
 package unbbayes.controller;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.PrinterException;
 import java.io.File;
@@ -61,6 +62,8 @@ import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.hybridbn.ContinuousNode;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
+import unbbayes.util.graphics.DropShadowDemo;
+import unbbayes.util.graphics.Transparency;
 
 /**
  * This class is responsible for delegating instructions that is going to be 
@@ -388,13 +391,55 @@ public class NetworkController implements KeyListener, INetworkMediator {
     }
     
     protected void saveComponentAsImage(Component comp, int width, int height, File file) {
-    	BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    	BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
         Graphics2D g2d = bufferedImage.createGraphics();
-
         comp.paint(g2d);
         g2d.dispose();
-        RenderedImage rendImage = bufferedImage;
+        
+        int option = JOptionPane.showConfirmDialog(screen, resource.getString("useTransparencyMessage"), resource.getString("useTransparencyTitle"), JOptionPane.YES_NO_OPTION);
+        
+        if (option == JOptionPane.YES_OPTION) {
+	        // Make the image transparent
+//	        Image image = Transparency.transformColorToTransparency(bufferedImage, new Color(250, 250, 255), Color.WHITE);
+        	Image image = Transparency.transformColorToTransparency(bufferedImage, Color.WHITE, Color.WHITE);
+	        bufferedImage = Transparency.imageToBufferedImage(image, bufferedImage.getWidth(), bufferedImage.getHeight());
+        }
+        
+        option = JOptionPane.showConfirmDialog(screen, resource.getString("useShadowMessage"), resource.getString("useShadowTitle"), JOptionPane.YES_NO_OPTION);
+        
+        if (option == JOptionPane.YES_OPTION) {
+        	boolean askAgain = false;
+        	String answer;
+        	int size = 2;
+        	do {
+	        	try {
+	        		answer = JOptionPane.showInputDialog(screen, resource.getString("shadowSizeInputMessage"));
+	        		size = Integer.parseInt(answer);
+	        		askAgain = false;
+	        	} catch (NumberFormatException e) {
+	        		JOptionPane.showMessageDialog(screen, resource.getString("shadowSizeInputErrorMessage"), resource.getString("shadowSizeInputErrorTitle"), JOptionPane.ERROR_MESSAGE);
+	        		askAgain = true;
+	        	}
+        	} while (askAgain);
+            
+            float opacity = .5f;
+            do {
+	            try {
+	            	answer = JOptionPane.showInputDialog(screen, resource.getString("shadowOpacityInputMessage"));
+	            	opacity = Float.parseFloat(answer);
+	            	askAgain = false;
+	            	if (opacity < 0 || opacity > 1) {
+	            		JOptionPane.showMessageDialog(screen, resource.getString("shadowOpacityInputErrorMessage"), resource.getString("shadowOpacityInputErrorTitle"), JOptionPane.ERROR_MESSAGE);
+	            		askAgain = true;
+	            	}
+	            } catch (NumberFormatException e) {
+	        		JOptionPane.showMessageDialog(screen, resource.getString("shadowOpacityInputErrorMessage"), resource.getString("shadowOpacityInputErrorTitle"), JOptionPane.ERROR_MESSAGE);
+	        		askAgain = true;
+	        	}
+            } while (askAgain);
+            bufferedImage = DropShadowDemo.addDropShadow(bufferedImage, size, opacity);
+        }
         
         boolean wrongName = false;
 
@@ -403,13 +448,13 @@ public class NetworkController implements KeyListener, INetworkMediator {
         	String fileExt = fileName.substring(fileName.length() - 3);
         	try {
     	        if (fileExt.equalsIgnoreCase("png")) {
-    				ImageIO.write(rendImage, "png", file);
+    				ImageIO.write(bufferedImage, "png", file);
     	        } else if (fileExt.equalsIgnoreCase("jpg")) {
-    	        	ImageIO.write(rendImage, "jpg", file);
+    	        	ImageIO.write(bufferedImage, "jpg", file);
     	        } else if (fileExt.equalsIgnoreCase("gif")) {
-    	        	ImageIO.write(rendImage, "gif", file);
+    	        	ImageIO.write(bufferedImage, "gif", file);
     	        } else if (fileExt.equalsIgnoreCase("bmp")) {
-    	        	ImageIO.write(rendImage, "bmp", file);
+    	        	ImageIO.write(bufferedImage, "bmp", file);
     	        } else {
     	        	wrongName = true;
     	        }
@@ -529,16 +574,14 @@ public class NetworkController implements KeyListener, INetworkMediator {
           public void run() {
             List<JTable> tabelas = new ArrayList<JTable>();
             List<Object> donos = new ArrayList<Object>();
-            List temp = screen.getGraphPane().getSelectedGroup();
+            List<Node> temp = screen.getGraphPane().getSelectedGroup();
             if (temp.size() == 0) {
                tabelas.add(screen.getTable());
                donos.add(screen.getTableOwner());
             }  else {
                 for (int i = 0; i< temp.size(); i++) {
-                    if (temp.get(i) instanceof Node) {
-                        donos.add(((Node)temp.get(i)).toString());
-                        tabelas.add(makeTable((Node)temp.get(i)));
-                    }
+                    donos.add(((Node)temp.get(i)).toString());
+                    tabelas.add(makeTable((Node)temp.get(i)));
                 }
             }
 
@@ -620,16 +663,14 @@ public class NetworkController implements KeyListener, INetworkMediator {
           public void run() {
             List<JTable> tabelas = new ArrayList<JTable>();
             List<Object> donos = new ArrayList<Object>();
-            List temp = screen.getGraphPane().getSelectedGroup();
+            List<Node> temp = screen.getGraphPane().getSelectedGroup();
             if (temp.size() == 0) {
                tabelas.add(screen.getTable());
                donos.add(screen.getTableOwner());
             }  else {
                 for (int i = 0; i< temp.size(); i++) {
-                    if (temp.get(i) instanceof Node) {
-                        donos.add(((Node)temp.get(i)).toString());
-                        tabelas.add(makeTable((Node)temp.get(i)));
-                    }
+                    donos.add(((Node)temp.get(i)).toString());
+                    tabelas.add(makeTable((Node)temp.get(i)));
                 }
             }
             PrintTable impressora = new PrintTable(tabelas, donos, new PageFormat());

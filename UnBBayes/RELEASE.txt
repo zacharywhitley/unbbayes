@@ -1,3 +1,14 @@
+UNBBAYES VERSION 4.10.4
+----------------------------
+FEATURE LIST		
+Number	Request ID	Summary
+10		3317552		Add transparency and shadow when saving graph.
+
+
+BUG LIST		
+Number	Request ID	Summary
+
+
 UNBBAYES VERSION 4.9.4
 ----------------------------
 FEATURE LIST		

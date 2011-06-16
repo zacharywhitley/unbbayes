@@ -5,63 +5,69 @@ net
      tree = "(Positive X-ray?,Has bronchitis,Dyspnoea?,Visit to Asia?,Smoker?,Has lung cancer,Has tuberculosis,Tuberculosis or cancer)";
      UnBBayes_Color_Probabilistic_Description = "-256";
      UnBBayes_Color_Probabilistic_Explanation = "-16711936";
-     UnBBayes_Color_Utility = "-16711681";
-     UnBBayes_Color_Decision = "-14336";
 }
 
 node X
 {
      label = "Positive X-ray?";
-     position = (28 29);
+     position = (27 404);
+     color = (-256);
      states = ("yes" "no");
 }
 
 node B
 {
      label = "Has bronchitis";
-     position = (400 200);
+     position = (716 151);
+     color = (-256);
      states = ("yes" "no");
 }
 
 node D
 {
      label = "Dyspnoea?";
-     position = (250 35);
+     position = (507 404);
+     color = (-256);
      states = ("yes" "no");
 }
 
 node A
 {
      label = "Visit to Asia?";
-     position = (35 301);
+     position = (27 21);
+     color = (-256);
      states = ("yes" "no");
 }
 
 node S
 {
      label = "Smoker?";
-     position = (299 301);
+     position = (530 21);
+     color = (-256);
      states = ("yes" "no");
 }
 
 node L
 {
      label = "Has lung cancer";
-     position = (200 200);
+     position = (390 151);
+     color = (-256);
      states = ("yes" "no");
 }
 
 node T
 {
      label = "Has tuberculosis";
-     position = (35 200);
+     position = (27 151);
+     color = (-256);
      states = ("yes" "no");
 }
 
 node E
 {
      label = "Tuberculosis or cancer";
-     position = (99 101);
+     position = (255 278);
+     color = (-256);
      states = ("yes" "no");
 }
 

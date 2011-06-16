@@ -156,7 +156,19 @@ public class ControllerResources extends ListResourceBundle {
 			"network or an influence diagram. Please choose another algorithm."},
 			
 		// file managing	
-		{"cannotHandleFileFormat", "This module cannot handle this file format."}
+		{"cannotHandleFileFormat", "This module cannot handle this file format."},
+		
+		// Saving graph as image
+		{"useTransparencyTitle", "Transparency"},
+		{"useTransparencyMessage", "Do you want transparency?"},
+		{"useShadowTitle", "Shadow"},
+		{"useShadowMessage", "Do you want shadow?"},
+		{"shadowSizeInputMessage", "Please, enter shadow's size.\n(It must be an integer)"},
+		{"shadowSizeInputErrorTitle", "Shadow Size Error"},
+		{"shadowSizeInputErrorMessage", "Input must be an integer."},
+		{"shadowOpacityInputMessage", "Please, enter shadow's opacity.\n(It must be a number between 0 and 1)"},
+		{"shadowOpacityInputErrorTitle", "Shadow Opacity Error"},
+		{"shadowOpacityInputErrorMessage", "Input must be a number between 0 and 1."},
 				
 		
 	};

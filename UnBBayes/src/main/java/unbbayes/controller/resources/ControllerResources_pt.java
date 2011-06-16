@@ -159,6 +159,19 @@ public class ControllerResources_pt extends ListResourceBundle {
 			"outro algoritmo."},
 
 		// file managing	
-		{"cannotHandleFileFormat", "Este módulo não pode tratar este tipo de arquivo."}
+		{"cannotHandleFileFormat", "Este módulo não pode tratar este tipo de arquivo."},
+		
+		// Saving graph as image
+		{"useTransparencyTitle", "Transparência"},
+		{"useTransparencyMessage", "Você deseja usar transparência?"},
+		{"useShadowTitle", "Sombra"},
+		{"useShadowMessage", "Você deseja usar sombra?"},
+		{"shadowSizeInputMessage", "Favor entrar com tamanho da sombra.\n(Tem que ser um número inteiro)"},
+		{"shadowSizeInputErrorTitle", "Erro com Tamanho da Sombra"},
+		{"shadowSizeInputErrorMessage", "O valor tem que ser um número inteiro."},
+		{"shadowOpacityInputMessage", "Favor entrar com opacidade.\n(Tem que ser um número entre 0 e 1)"},
+		{"shadowOpacityInputErrorTitle", "Erro com Opacidade da Sombra"},
+		{"shadowOpacityInputErrorMessage", "O valor tem que ser um número entre 0 e 1."},
+		
 	};
 }
