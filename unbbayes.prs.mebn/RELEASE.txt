@@ -1,4 +1,4 @@
-UNBBAYES PLUGIN - VERSION 1.11.9
+UNBBAYES MEBN PLUGIN - VERSION 1.11.9
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
