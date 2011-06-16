@@ -259,7 +259,28 @@ public class MTheoryGraphPane extends GraphPane {
 	 */
 	public void paintComponent(Graphics g) {
 		Graphics2D g2 = (Graphics2D)g;
+//		RenderingHints rh = new RenderingHints(
+//			RenderingHints.KEY_TEXT_ANTIALIASING,
+//			RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+//		g2.setRenderingHints(rh);
+//		rh = new RenderingHints(
+//			RenderingHints.KEY_ALPHA_INTERPOLATION,
+//			RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+//		g2.setRenderingHints(rh);
+//		rh = new RenderingHints(
+//				RenderingHints.KEY_COLOR_RENDERING,
+//				RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+//		g2.setRenderingHints(rh);
+//		rh = new RenderingHints(
+//				RenderingHints.KEY_RENDERING,
+//				RenderingHints.VALUE_RENDER_QUALITY);
+//		g2.setRenderingHints(rh);
+//		rh = new RenderingHints(
+//				RenderingHints.KEY_TEXT_ANTIALIASING,
+//				RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+//		g2.setRenderingHints(rh);
 		g2.scale(scale, scale);
+		
 		super.paintComponent(g2);
 	}
 	
