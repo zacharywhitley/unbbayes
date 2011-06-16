@@ -7,9 +7,10 @@ Number	Request ID	Summary
 
 BUG LIST		
 Number	Request ID	Summary
+4		3316285		Likelihood lost when new likelihood/evidence is entered.
 
 
-UNBBAYES VERSION 4.9.4
+UNBBAYES VERSION 4.9.3
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
@@ -29,7 +30,6 @@ Number	Request ID	Summary
 1		3030178		Wrong message for Dne IO.
 2		3260712 	SSBN is not saved with correct CPT.
 3		3316012		Bug caused by Xalan.
-4		3316285		Likelihood lost when new likelihood/evidence is entered.
 
 
 UNBBAYES VERSION 4.0.0
