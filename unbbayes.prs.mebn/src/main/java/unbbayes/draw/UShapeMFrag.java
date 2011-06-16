@@ -53,7 +53,7 @@ public class UShapeMFrag extends UShape implements INodeHolderShape {
 	public boolean showRoundBorder = true;
 	public boolean showBodyBorder = true;
 	
-	protected BasicStroke thinStroke = new BasicStroke(3.0f);
+	protected BasicStroke thinStroke = new BasicStroke(1.0f);
 	protected BasicStroke thickStroke = new BasicStroke(3.0f);
 	
 	public void setShowAll(boolean show) {
