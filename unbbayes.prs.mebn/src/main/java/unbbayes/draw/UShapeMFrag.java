@@ -20,6 +20,7 @@
  */
 package unbbayes.draw;
 
+import java.awt.BasicStroke;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -51,6 +52,9 @@ public class UShapeMFrag extends UShape implements INodeHolderShape {
 	public boolean showTitleBorder = true;
 	public boolean showRoundBorder = true;
 	public boolean showBodyBorder = true;
+	
+	protected BasicStroke thinStroke = new BasicStroke(3.0f);
+	protected BasicStroke thickStroke = new BasicStroke(3.0f);
 	
 	public void setShowAll(boolean show) {
 		showTitleBorder = show;
@@ -93,7 +97,7 @@ public class UShapeMFrag extends UShape implements INodeHolderShape {
 		InitShape();
 
 		Graphics2D g2 = (Graphics2D) g;
-		g2.setStroke(stroke3);
+		g2.setStroke(thickStroke);
 		if (showBodyBorder) {
 			if (showRoundBorder) {
 				g2.draw(roundRect);
@@ -104,9 +108,8 @@ public class UShapeMFrag extends UShape implements INodeHolderShape {
 		if (showTitleBorder) {
 			g2.draw(lineTitle);
 		}
-		setFont(font6);
 		drawText(g, rectTitle);
-		g2.setStroke(stroke1);
+		g2.setStroke(thinStroke);
 		
 	}
 
