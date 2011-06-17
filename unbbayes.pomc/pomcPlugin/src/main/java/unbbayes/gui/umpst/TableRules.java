@@ -94,7 +94,7 @@ public class TableRules extends IUMPSTPanel{
 				
 				String key = data[row][0].toString();
 				RulesModel ruleAux = UMPSTProject.getInstance().getMapRules().get(key);
-				alterarJanelaAtual(new RulesAdd(getJanelaPai(), ruleAux )   );
+				alterarJanelaAtual(new RulesAdd(getFatherPanel(), ruleAux )   );
 			}
 		});
 		
@@ -118,7 +118,7 @@ public class TableRules extends IUMPSTPanel{
 			
 			public void onButtonPress(int row, int column) {
 				
-				if( JOptionPane.showConfirmDialog(null,"Confirm delete of rule "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
+				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete rule "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 							String key = data[row][0].toString();
 							RulesModel ruleToBeDeleted = UMPSTProject.getInstance().getMapRules().get(key);
@@ -147,7 +147,7 @@ public class TableRules extends IUMPSTPanel{
 							}
 							
 							
-							UmpstModule pai = getJanelaPai();
+							UmpstModule pai = getFatherPanel();
 							 alterarJanelaAtual(pai.getMenuPanel());
 							 
 							 String[] colunas = {"ID","Rule","",""};

@@ -92,7 +92,7 @@ public class AtributeAdd extends IUMPSTPanel {
 		c.gridx = 0; c.gridy = 3;
 		add( new JLabel("Comments: "), c);
 		c.gridx = 0; c.gridy = 4;
-		add( new JLabel("Author Nome: "), c);
+		add( new JLabel("Author Name: "), c);
 		c.gridx = 0; c.gridy = 5;
 		add( new JLabel("Date: "), c);
 		
@@ -171,7 +171,7 @@ public class AtributeAdd extends IUMPSTPanel {
 					
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating atribute", "UnBBayes", JOptionPane.WARNING_MESSAGE);
-						UmpstModule pai = getJanelaPai();
+						UmpstModule pai = getFatherPanel();
 						alterarJanelaAtual(pai.getMenuPanel());	
 					
 					}
@@ -191,7 +191,7 @@ public class AtributeAdd extends IUMPSTPanel {
 						}
 						catch (Exception e2) {
 							JOptionPane.showMessageDialog(null,"Error while ulpating atribute", "UnBBayes", JOptionPane.WARNING_MESSAGE);
-							UmpstModule pai = getJanelaPai();
+							UmpstModule pai = getFatherPanel();
 							alterarJanelaAtual(pai.getMenuPanel());	
 						}
 					}
@@ -201,14 +201,14 @@ public class AtributeAdd extends IUMPSTPanel {
 
 		buttonCancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				UmpstModule pai = getJanelaPai();
+				UmpstModule pai = getFatherPanel();
 				alterarJanelaAtual(pai.getMenuPanel());	
 			}
 		});
 		
 		buttonRelationship.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				alterarJanelaAtual(new RelationshipAdd(getJanelaPai(), null));
+				alterarJanelaAtual(new RelationshipAdd(getFatherPanel(), null));
 
 			}
 		});
@@ -255,7 +255,7 @@ public class AtributeAdd extends IUMPSTPanel {
 
    public void updateTable(AtributeModel atributeUpdade){
 		
-	    UmpstModule pai = getJanelaPai();
+	    UmpstModule pai = getFatherPanel();
 
 	    TableAtribute atributeTable     = pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entityRelated).getAtributeTable(entityRelated);
 	    JTable table = atributeTable.createTable();

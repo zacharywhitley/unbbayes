@@ -94,7 +94,7 @@ public class TrackingPanel extends IUMPSTPanel{
 				new ActionListener() {
 					
 					public void actionPerformed(ActionEvent e) {
-						UmpstModule pai = getJanelaPai();
+						UmpstModule pai = getFatherPanel();
 						alterarJanelaAtual(pai.getMenuPanel());
 					}
 				}

@@ -8,11 +8,14 @@ import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeSet;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -30,7 +33,7 @@ public class RulesSearch extends IUMPSTPanel {
 	private JLabel labelRule;
 	
 	private JButton buttonSearch;
-	private JButton buttonAddRule;
+	private JButton buttonAddRule,buttonCancel;
 
 	private JTextField textRule;
 	
@@ -59,9 +62,14 @@ public class RulesSearch extends IUMPSTPanel {
 		buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
 		buttonPane.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
 		buttonPane.add(Box.createHorizontalGlue());
-		buttonPane.add(getButtonAddRule());
-		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
 		buttonPane.add(getButtonSearch());
+
+		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
+		buttonPane.add(getButtonCancel());
+
+		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
+		buttonPane.add(getButtonAddRule());
+
 		
 
 		
@@ -94,7 +102,7 @@ public class RulesSearch extends IUMPSTPanel {
 	
 	public RulesAdd getRulesAdd(RulesModel rule){
 		
-		RulesAdd ret = new RulesAdd(getJanelaPai(),rule);
+		RulesAdd ret = new RulesAdd(getFatherPanel(),rule);
 		
 		return ret;
 		
@@ -129,13 +137,38 @@ public class RulesSearch extends IUMPSTPanel {
 		buttonSearch.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				updateTableRules();
+				if (!textRule.getText().equals("")){
+					updateTableRules();
+				}
+				else{
+					JOptionPane.showMessageDialog(null, "Seach is empty!");
+				}
+
 			}
 		});
 		
 		return buttonSearch;
 	}
 
+	/**
+	 * @return the buttonCancel
+	 */
+	public JButton getButtonCancel() {
+		
+		if (buttonCancel == null){
+			buttonCancel = new JButton ("cancel search");
+			buttonCancel.setForeground(Color.blue);
+			buttonCancel.addActionListener(new ActionListener() {
+				
+				public void actionPerformed(ActionEvent e) {
+					textRule.setText("");
+					returnTableRules();
+				}
+			});
+		}
+		
+		return buttonCancel;
+	} 
 
 	/**
 	 * @return the textRule
@@ -173,7 +206,7 @@ public class RulesSearch extends IUMPSTPanel {
     	
 	    
    
-	    UmpstModule pai = getJanelaPai();
+	    UmpstModule pai = getFatherPanel();
 	    alterarJanelaAtual(pai.getMenuPanel());
 	    
 	    TableRules rulesTable = pai.getMenuPanel().getRulesPane().getRulesTable();
@@ -185,6 +218,38 @@ public class RulesSearch extends IUMPSTPanel {
 	    rulesTable.updateUI();
 	    rulesTable.repaint();
     }
+	
+	   public void returnTableRules(){
+	    	String[] columnNames = {"ID","Rule","",""};
+	    	
+	    	
+		    
+			Object[][] data = new Object[UMPSTProject.getInstance().getMapRules().size()][4];
+			Integer i=0;
+		    
+			Set<String> keys = UMPSTProject.getInstance().getMapRules().keySet();
+			TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+			
+			for (String key: sortedKeys){
+				data[i][0] = UMPSTProject.getInstance().getMapRules().get(key).getId();
+				data[i][1] = UMPSTProject.getInstance().getMapRules().get(key).getRulesName();			
+				data[i][2] = "";
+				data[i][3] = "";
+				i++;
+			}
+	   
+		    UmpstModule pai = getFatherPanel();
+		    alterarJanelaAtual(pai.getMenuPanel());
+		    
+		    TableRules rulesTable = pai.getMenuPanel().getRulesPane().getRulesTable();
+		    JTable table = rulesTable.createTable(columnNames,data);
+		    
+		    rulesTable.getScrollPanePergunta().setViewportView(table);
+		    rulesTable.getScrollPanePergunta().updateUI();
+		    rulesTable.getScrollPanePergunta().repaint();
+		    rulesTable.updateUI();
+		    rulesTable.repaint();
+	    }
 	
 	
 	

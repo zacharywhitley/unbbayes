@@ -150,12 +150,12 @@ public class RelationshipAdd extends IUMPSTPanel {
 					RelationshipModel Relationship = new RelationshipModel(RelationshipText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),null);
 					try {
 						JOptionPane.showMessageDialog(null, "Relationship successfully added",null, JOptionPane.INFORMATION_MESSAGE);
-						UmpstModule pai = getJanelaPai();
+						UmpstModule pai = getFatherPanel();
 						alterarJanelaAtual(pai.getMenuPanel());	
 					
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating Relationship", "UnBBayes", JOptionPane.WARNING_MESSAGE);
-						UmpstModule pai = getJanelaPai();
+						UmpstModule pai = getFatherPanel();
 						alterarJanelaAtual(pai.getMenuPanel());	
 					
 					}
@@ -166,12 +166,12 @@ public class RelationshipAdd extends IUMPSTPanel {
 						try{
 				
 							JOptionPane.showMessageDialog(null, "Relationship successfully updated", "UnBBayes", JOptionPane.INFORMATION_MESSAGE);
-							UmpstModule pai = getJanelaPai();
+							UmpstModule pai = getFatherPanel();
 							alterarJanelaAtual(pai.getMenuPanel());	
 						}
 						catch (Exception e2) {
 							JOptionPane.showMessageDialog(null,"Error while ulpating Relationship", "UnBBayes", JOptionPane.WARNING_MESSAGE);
-							UmpstModule pai = getJanelaPai();
+							UmpstModule pai = getFatherPanel();
 							alterarJanelaAtual(pai.getMenuPanel());	
 						}
 					}
@@ -181,7 +181,7 @@ public class RelationshipAdd extends IUMPSTPanel {
 
 		buttonCancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				UmpstModule pai = getJanelaPai();
+				UmpstModule pai = getFatherPanel();
 				alterarJanelaAtual(pai.getMenuPanel());	
 			}
 		});

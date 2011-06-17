@@ -47,7 +47,7 @@ public class EntitiesMainPanel extends IUMPSTPanel{
 	 */
 	public TableAtribute getAtributeTable(EntityModel entity) {
 		if(tableAtribute == null ){
-			tableAtribute = new TableAtribute(getJanelaPai(),entity);
+			tableAtribute = new TableAtribute(getFatherPanel(),entity);
 		}
 		return tableAtribute;
 	}
@@ -57,7 +57,7 @@ public class EntitiesMainPanel extends IUMPSTPanel{
 	 */
 	public EntitiesAdd getEntityPanel(EntityModel entity) {
 		if(entitiesPanel == null ){
-			entitiesPanel = new EntitiesAdd(getJanelaPai(),entity);
+			entitiesPanel = new EntitiesAdd(getFatherPanel(),entity);
 			entitiesPanel.setBackground(new Color(0xffffff));
 		}
 		return entitiesPanel;

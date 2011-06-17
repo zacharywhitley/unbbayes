@@ -3,6 +3,7 @@
  */
 package unbbayes.gui.umpst;
 
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 
@@ -37,7 +38,6 @@ public class UmpstModule extends UnBBayesModule {
 		
 		
 		//this.setTopTabbedPane(new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT));
-		
 		
 		this.setContentPane(getMenuPanel());
 	}

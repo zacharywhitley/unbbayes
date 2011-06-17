@@ -87,7 +87,7 @@ public class RulesAdd extends IUMPSTPanel {
 			titulo.setText("Add new Rule");
 			buttonAdd.setText(" Add ");
 		} else {
-			titulo.setText(rule.getRulesName());
+			titulo.setText("Update Rule");
 			buttonAdd.setText(" Update ");
 			ruleText.setText(rule.getRulesName());
 			typeText.setText(rule.getRuleType());
@@ -123,7 +123,7 @@ public class RulesAdd extends IUMPSTPanel {
 		c.gridx = 0; c.gridy = 4;c.gridwidth=1;
 		panel.add( new JLabel("Comments: "), c);
 		c.gridx = 0; c.gridy = 5;c.gridwidth=1;
-		panel.add( new JLabel("Author Nome: "), c);
+		panel.add( new JLabel("Author Name: "), c);
 		c.gridx = 0; c.gridy = 6;c.gridwidth=1;
 		panel.add( new JLabel("Date: "), c);
 		
@@ -180,7 +180,7 @@ public class RulesAdd extends IUMPSTPanel {
 						
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating rule", "UnBBayes", JOptionPane.WARNING_MESSAGE);
-						UmpstModule pai = getJanelaPai();
+						UmpstModule pai = getFatherPanel();
 						alterarJanelaAtual(pai.getMenuPanel());	
 					
 					}
@@ -224,7 +224,7 @@ public class RulesAdd extends IUMPSTPanel {
 						}
 						catch (Exception e2) {
 							JOptionPane.showMessageDialog(null,"Error while updating rule", "UnBBayes", JOptionPane.WARNING_MESSAGE);
-							UmpstModule pai = getJanelaPai();
+							UmpstModule pai = getFatherPanel();
 							alterarJanelaAtual(pai.getMenuPanel());	
 						}
 					}
@@ -234,7 +234,7 @@ public class RulesAdd extends IUMPSTPanel {
 
 		buttonCancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				UmpstModule pai = getJanelaPai();
+				UmpstModule pai = getFatherPanel();
 				alterarJanelaAtual(pai.getMenuPanel());	
 			}
 		});
@@ -318,7 +318,7 @@ public class RulesAdd extends IUMPSTPanel {
 
 		
 		RulesModel rulesAdd = new RulesModel(idAux,ruleText.getText(),typeText.getText(), 
-				commentsText.getText(), authorText.getText(), dateText.getText(),null);
+				commentsText.getText(), authorText.getText(), dateText.getText(),null,null);
 		
 		
 		
@@ -347,7 +347,7 @@ public class RulesAdd extends IUMPSTPanel {
 			i++;
 		}
    
-	    UmpstModule pai = getJanelaPai();
+	    UmpstModule pai = getFatherPanel();
 	    alterarJanelaAtual(pai.getMenuPanel());
 	    
 	    TableRules rulesTable = pai.getMenuPanel().getRulesPane().getRulesTable();

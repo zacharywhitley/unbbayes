@@ -17,6 +17,7 @@ import java.awt.peer.ScrollPanePeer;
 import java.util.EventObject;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -54,7 +55,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 	private JLabel labelEntity;
 	
 	private JButton buttonSearch;
-	private JButton buttonAddEntity;
+	private JButton buttonAddEntity,buttonCancel;
 	private JButton buttonAddRelationship;
 	
 	
@@ -85,11 +86,13 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 		buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
 		buttonPane.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
 		buttonPane.add(Box.createHorizontalGlue());
-		buttonPane.add(getButtonAddEntity());
+		buttonPane.add(getButtonSearch());
+		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
+		buttonPane.add(getButtonCancel());
 		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
 		buttonPane.add(getButtonRelationship());
 		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
-		buttonPane.add(getButtonSearch());
+		buttonPane.add(getButtonAddEntity());
 		
 
 		
@@ -107,7 +110,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 			buttonAddRelationship.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
-					alterarJanelaAtual(new RelationshipAdd(getJanelaPai(), null));
+					alterarJanelaAtual(new RelationshipAdd(getFatherPanel(), null));
 				}
 			});			
 		}
@@ -133,6 +136,26 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 		}
 		
 		return buttonAddEntity;
+	} 
+	
+	/**
+	 * @return the buttonCancel
+	 */
+	public JButton getButtonCancel() {
+		
+		if (buttonCancel == null){
+			buttonCancel = new JButton ("cancel search");
+			buttonCancel.setForeground(Color.blue);
+			buttonCancel.addActionListener(new ActionListener() {
+				
+				public void actionPerformed(ActionEvent e) {
+					textEntity.setText("");
+					returnTableEntities();
+				}
+			});
+		}
+		
+		return buttonCancel;
 	} 
 	
 	
@@ -162,7 +185,12 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 		buttonSearch.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				updateTableEntities();
+				if (!textEntity.getText().equals("")){
+					updateTableEntities();
+				}
+				else{
+					JOptionPane.showMessageDialog(null, "Seach is empty!");
+				}
 			}
 		});
 		
@@ -202,7 +230,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
     	
 	    
    
-	    UmpstModule pai = getJanelaPai();
+	    UmpstModule pai = getFatherPanel();
 	    alterarJanelaAtual(pai.getMenuPanel());
 	    
 	    TableEntities entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
@@ -215,9 +243,40 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 	    entitiesTable.repaint();
     }
 	
+	
+	   public void returnTableEntities(){
+	    	String[] columnNames = {"ID","Entity","",""};	    
+		    
+			Object[][] data = new Object[UMPSTProject.getInstance().getMapEntity().size()][4];
+			Integer i=0;
+		    
+			Set<String> keys = UMPSTProject.getInstance().getMapEntity().keySet();
+			TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+			
+			for (String key: sortedKeys){
+				data[i][0] = UMPSTProject.getInstance().getMapEntity().get(key).getId();
+				data[i][1] = UMPSTProject.getInstance().getMapEntity().get(key).getEntityName();			
+				data[i][2] = "";
+				data[i][3] = "";
+				i++;
+			}
+	   
+		    UmpstModule pai = getFatherPanel();
+		    alterarJanelaAtual(pai.getMenuPanel());
+		    
+		    TableEntities entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
+		    JTable table = entitiesTable.createTable(columnNames,data);
+		    
+		    entitiesTable.getScrollPanePergunta().setViewportView(table);
+		    entitiesTable.getScrollPanePergunta().updateUI();
+		    entitiesTable.getScrollPanePergunta().repaint();
+		    entitiesTable.updateUI();
+		    entitiesTable.repaint();
+	    }
+	
 	public EntitiesMainPanel getEntitiesMainPanel(EntityModel entity){
 		
-		EntitiesMainPanel ret = new EntitiesMainPanel(getJanelaPai(),entity);
+		EntitiesMainPanel ret = new EntitiesMainPanel(getFatherPanel(),entity);
 		
 		return ret;
 		

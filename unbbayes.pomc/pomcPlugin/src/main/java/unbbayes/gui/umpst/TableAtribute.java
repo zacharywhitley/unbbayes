@@ -120,7 +120,7 @@ public class TableAtribute extends IUMPSTPanel{
 				
 				String atributeAdd = data[row][0].toString();
 				AtributeModel atributeAux = entityRelated.getMapAtributes().get(atributeAdd);
-				alterarJanelaAtual(new AtributeAdd(getJanelaPai(), entityRelated,atributeAux, atributeAux.getFather() )   );
+				alterarJanelaAtual(new AtributeAdd(getFatherPanel(), entityRelated,atributeAux, atributeAux.getFather() )   );
 			}
 		});
 		
@@ -145,7 +145,7 @@ public class TableAtribute extends IUMPSTPanel{
 			public void onButtonPress(int row, int column) {
 				String key = data[row][0].toString();
 				AtributeModel atributeRelated =  entityRelated.getMapAtributes().get(key);
-				alterarJanelaAtual(new AtributeAdd(getJanelaPai(),entityRelated,null,atributeRelated));
+				alterarJanelaAtual(new AtributeAdd(getFatherPanel(),entityRelated,null,atributeRelated));
 			
 				
 			}
@@ -176,7 +176,7 @@ public class TableAtribute extends IUMPSTPanel{
 							String key = data[row][0].toString();
 							entityRelated.getMapAtributes().remove(key);
 							
-							UmpstModule pai = getJanelaPai();
+							UmpstModule pai = getFatherPanel();
 						    alterarJanelaAtual(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entityRelated)	);
 							 
 							 JTable table = createTable();

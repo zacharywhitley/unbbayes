@@ -42,7 +42,7 @@ public class Rules extends IUMPSTPanel{
 	public TableRules getRulesTable() {
 		if(rulesPanel == null ){
 
-			rulesPanel = new TableRules(getJanelaPai());
+			rulesPanel = new TableRules(getFatherPanel());
 		}
 		return rulesPanel;
 	}
@@ -52,7 +52,7 @@ public class Rules extends IUMPSTPanel{
 	 */
 	public RulesSearch getGoalsPanel() {
 		if(rulesSearch == null ){
-			rulesSearch = new RulesSearch(getJanelaPai());
+			rulesSearch = new RulesSearch(getFatherPanel());
 			rulesSearch.setBackground(new Color(0xffffff));
 		}
 		return rulesSearch;

@@ -14,61 +14,55 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
-
-
-
-import unbbayes.model.umpst.project.SearchModelGoal;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
+import unbbayes.model.umpst.requirements.HypothesisModel;
 
-public class TableGoals extends IUMPSTPanel{
+public class TableSubGoals extends IUMPSTPanel{
 	
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 1L;
 	private JTable table;
 	private JScrollPane scrollpanePergunta;
 	
-	
-	
-	
-	//Object[] dataAux = new Object[5];
-	Integer i = 0;
+	private UmpstModule janelaPaiAux; 
+	private GoalModel goalRelated;
 
+	
 	
 	ImageIcon iconAdd = createImageIcon("images/add.gif");
 	ImageIcon iconDel = createImageIcon("images/del.gif");
 	ImageIcon iconEdit = createImageIcon("images/edit.gif");
 
 	
-	String[] columnNames = {"ID","Goal","","",""};
-
+	String[] columnNames = {"id","Hypothesis","","",""};
 	Object[][] data = {};
+
 	
 	
 
  
     	  /**private constructors make class extension almost impossible,
     	that's why this is protected*/
-    	  public TableGoals(UmpstModule janelaPai) {
+    	  protected TableSubGoals(UmpstModule janelaPai, GoalModel goalRelated) {
     		  
     		    super(janelaPai);
     	    	this.setLayout(new GridLayout(1,0));
     	    	
+    	    	this.janelaPaiAux = janelaPai;
+    	    	this.goalRelated=goalRelated;
     	    	
-    	    	this.add(createScrolltableGoals(columnNames,data));
+    	    	this.add(createScrolltableHypothesis());
     		    
     	  }
-    	 
-    	  
-    	  
     	
-    	  public void setJanelaPai(UmpstModule janelaPai,String[] columnNames, Object[][] data){
+    	  
+    	  
+    	  public void setJanelaPai(UmpstModule janelaPai){
     		// super(janelaPai);
   	    	
     		  this.setLayout(new GridLayout(1,0));
-  	          this.add(createScrolltableGoals(columnNames,data));
+  	          this.add(createScrolltableHypothesis());
     		  
     	  }
     
@@ -77,9 +71,32 @@ public class TableGoals extends IUMPSTPanel{
 	/**
 	 * @return the table
 	 */
-	public JTable createTable(String[] columnNames,final Object[][] data) {
-		
+	public JTable createTable() {
 
+		
+		Integer i=0;
+
+		if (goalRelated!=null){			
+			data = new Object[goalRelated.getSubgoals().size()][5];
+
+			
+			Set<String> keys = goalRelated.getSubgoals().keySet();
+			TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+			
+			
+			
+			for (String key: sortedKeys){
+		
+				data[i][0] = goalRelated.getSubgoals().get(key).getId();
+				data[i][1] = goalRelated.getSubgoals().get(key).getGoalName();
+				data[i][2] = "";
+				data[i][3] = "";
+				data[i][4] = "";
+				i++;
+			}
+		}
+		
+		
 		DefaultTableModel tableModel = new DefaultTableModel(data, columnNames);
 		table = new JTable(tableModel);
 
@@ -92,7 +109,7 @@ public class TableGoals extends IUMPSTPanel{
 			}
 		});
 
-		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length -3);
+		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length-3);
 		buttonColumn1.setMaxWidth(28);
 		buttonColumn1.setCellRenderer(buttonEdit);
 		buttonColumn1.setCellEditor(buttonEdit);
@@ -102,7 +119,7 @@ public class TableGoals extends IUMPSTPanel{
 				
 				String key = data[row][0].toString();
 				GoalModel goalAux = UMPSTProject.getInstance().getMapGoal().get(key);
-				alterarJanelaAtual(new GoalsAdd(getFatherPanel(), goalAux, goalAux.getGoalFather() )   );
+				alterarJanelaAtual(new SubgoalsAdd(getFatherPanel(), goalAux, goalAux.getGoalFather() )   );
 			}
 		});
 		
@@ -127,8 +144,7 @@ public class TableGoals extends IUMPSTPanel{
 			public void onButtonPress(int row, int column) {
 				String key = data[row][0].toString();
 				GoalModel goalAux = UMPSTProject.getInstance().getMapGoal().get(key);
-				alterarJanelaAtual(new GoalsAdd(getFatherPanel(),null,goalAux));
-				
+				alterarJanelaAtual(new SubgoalsAdd(getFatherPanel(),null,goalAux));	
 			}
 		});
 		
@@ -151,67 +167,55 @@ public class TableGoals extends IUMPSTPanel{
 			
 			public void onButtonPress(int row, int column) {
 				
-				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete goal "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
+				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete the goal: "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
-							String key = data[row][0].toString();
-							GoalModel goalToBeDeleted = UMPSTProject.getInstance().getMapGoal().get(key);
 							
-							if (goalToBeDeleted.getGoalFather()!=null){
-								goalToBeDeleted.getGoalFather().getSubgoals().remove(goalToBeDeleted.getId());
-							}
+						String key = data[row][0].toString();
+						GoalModel goalToBeDeleted = UMPSTProject.getInstance().getMapGoal().get(key);
 
-							/*Updating MapSearch*/
-							deleteFromSearchMap(goalToBeDeleted);
+						goalRelated.getSubgoals().remove(key);
+						UMPSTProject.getInstance().getMapHypothesis().remove(key);
 
-							
-							
-							
-							if(goalToBeDeleted.getSubgoals() !=null){
-								int numberSubgoal = goalToBeDeleted.getSubgoals().size()+1;
-								for (int i = 1; i < numberSubgoal; i++) {
-									if (goalToBeDeleted.getSubgoals().get(goalToBeDeleted.getId()+"."+i).getGoalFather()!=null){
-										goalToBeDeleted.getSubgoals().get(goalToBeDeleted.getId()+"."+i).getGoalFather().getSubgoals().remove(goalToBeDeleted.getId());
-									}
-									
-									goalToBeDeleted.getSubgoals().get(goalToBeDeleted.getId()+"."+i).setGoalFather(null);
-									//goalToBeDeleted.getSubgoals().get(goalToBeDeleted.getId()+"."+i).setId("D"+i);
-								}
-							}
-							
-							UMPSTProject.getInstance().getMapGoal().remove(goalToBeDeleted.getId());
-							
-							
-							 
-							Object[][] dataDel = new Object[UMPSTProject.getInstance().getMapGoal().size()][5];
-							Integer i=0;
-						    
-							Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
-							TreeSet<String> sortedKeys = new TreeSet<String>(keys);
-							
-							for (String chave: sortedKeys){
-								dataDel[i][0] = UMPSTProject.getInstance().getMapGoal().get(chave).getId();						
-								dataDel[i][1] = UMPSTProject.getInstance().getMapGoal().get(chave).getGoalName();
-								dataDel[i][2] = "";
-								dataDel[i][3] = "";
-								dataDel[i][4] = "";
-								i++;
-							}
-							
-							 //TableGoals goalsTable = pai.getMenuPanel().getRequirementsPane().getGoalsTable();
-							 String[] colunas = {"ID","Goal","","",""};
-							 JTable table = createTable(colunas,dataDel);
-							
-							UmpstModule pai = getFatherPanel();
-							 alterarJanelaAtual(pai.getMenuPanel());
-							 
 						
-							 
-							 getScrollPanePergunta().setViewportView(table);
-							 getScrollPanePergunta().updateUI();
-							 getScrollPanePergunta().repaint();
-							 updateUI();
-							 repaint();
-							   
+						/*Updating MapSearch*/
+						deleteFromSearchMap(goalToBeDeleted);
+
+						
+						
+						
+						if(goalToBeDeleted.getSubgoals() !=null){
+							int numberSubgoal = goalToBeDeleted.getSubgoals().size()+1;
+							for (int i = 1; i < numberSubgoal; i++) {
+								if (goalToBeDeleted.getSubgoals().get(goalToBeDeleted.getId()+"."+i).getGoalFather()!=null){
+									goalToBeDeleted.getSubgoals().get(goalToBeDeleted.getId()+"."+i).getGoalFather().getSubgoals().remove(goalToBeDeleted.getId());
+								}
+								
+								goalToBeDeleted.getSubgoals().get(goalToBeDeleted.getId()+"."+i).setGoalFather(null);
+								//goalToBeDeleted.getSubgoals().get(goalToBeDeleted.getId()+"."+i).setId("D"+i);
+							}
+						}
+						
+						
+						UMPSTProject.getInstance().getMapGoal().remove(key);
+						
+						Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
+						TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+						
+						for (String keyAux: sortedKeys){
+							UMPSTProject.getInstance().getMapGoal().get(keyAux).getSubgoals().remove(key);
+						}
+						
+						UmpstModule pai = getFatherPanel();
+					    alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated)	);
+						 
+						 JTable table = createTable();
+						 
+						 getScrollPanePergunta().setViewportView(table);
+						 getScrollPanePergunta().updateUI();
+						 getScrollPanePergunta().repaint();
+						 updateUI();
+						 repaint();
+						   
 			
 				}
 			}
@@ -221,9 +225,9 @@ public class TableGoals extends IUMPSTPanel{
        }
 	
 	
-	public JScrollPane createScrolltableGoals(String[] columnNames, Object[][] data){
+	public JScrollPane createScrolltableHypothesis(){
 		if(scrollpanePergunta == null){
-			scrollpanePergunta = new JScrollPane(createTable(columnNames,data));
+			scrollpanePergunta = new JScrollPane(createTable());
 			scrollpanePergunta.setMinimumSize(new Dimension(300,150));
 		}
 		
@@ -250,6 +254,7 @@ public class TableGoals extends IUMPSTPanel{
     }
     
   
+	
     public void deleteFromSearchMap(GoalModel goalToBeDeleted){
     	Set<GoalModel> aux = new HashSet<GoalModel>();
 		GoalModel goalBeta;
@@ -268,7 +273,5 @@ public class TableGoals extends IUMPSTPanel{
 	    	
 	    }
     }
-	    
-		/************/
 
 }

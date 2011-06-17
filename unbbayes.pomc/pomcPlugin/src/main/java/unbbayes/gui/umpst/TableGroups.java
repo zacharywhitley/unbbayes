@@ -95,7 +95,7 @@ public class TableGroups extends IUMPSTPanel{
 				
 				String key = data[row][0].toString();
 				GroupsModel groupAux = UMPSTProject.getInstance().getMapGroups().get(key);
-				alterarJanelaAtual(new GroupsAdd(getJanelaPai(), groupAux )   );
+				alterarJanelaAtual(new GroupsAdd(getFatherPanel(), groupAux )   );
 			}
 		});
 		
@@ -119,7 +119,7 @@ public class TableGroups extends IUMPSTPanel{
 			
 			public void onButtonPress(int row, int column) {
 				
-				if( JOptionPane.showConfirmDialog(null,"Confirm delete of rule "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
+				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete Group "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 							String key = data[row][0].toString();
 							GroupsModel groupToBeDeleted = UMPSTProject.getInstance().getMapGroups().get(key);
@@ -148,7 +148,7 @@ public class TableGroups extends IUMPSTPanel{
 							}
 							
 							
-							UmpstModule pai = getJanelaPai();
+							UmpstModule pai = getFatherPanel();
 							 alterarJanelaAtual(pai.getMenuPanel());
 							 
 							 String[] colunas = {"ID","Group","",""};

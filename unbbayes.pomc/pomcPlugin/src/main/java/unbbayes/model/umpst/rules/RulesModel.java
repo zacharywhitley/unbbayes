@@ -1,6 +1,11 @@
 package unbbayes.model.umpst.rules;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.swing.JList;
+
+import unbbayes.model.umpst.groups.GroupsModel;
 
 
 public class RulesModel {
@@ -12,10 +17,12 @@ public class RulesModel {
 	private String author;
 	private String date;
 	private JList backtracking;
+	private Set<GroupsModel> fowardTrackingGroups;
+	
 
 	
 	public RulesModel(String id,String rulesName,String ruleType, String comments,
-			String author, String date, JList backtracking) {
+			String author, String date, JList backtracking,Set<GroupsModel> fowardTrackingGroups) {
 		
 		this.id=id;
 		this.rulesName = rulesName;
@@ -26,9 +33,29 @@ public class RulesModel {
 		if (backtracking==null){
 			this.setBacktracking(new JList());
 		}
+		this.fowardTrackingGroups=fowardTrackingGroups;
+		if (fowardTrackingGroups==null){
+			this.setFowardTrackingGroups(new HashSet<GroupsModel>());
+		}
 	}
 
 	
+	/**
+	 * @return the fowardTrackingGroups
+	 */
+	public Set<GroupsModel> getFowardTrackingGroups() {
+		return fowardTrackingGroups;
+	}
+
+
+	/**
+	 * @param fowardTrackingGroups the fowardTrackingGroups to set
+	 */
+	public void setFowardTrackingGroups(Set<GroupsModel> fowardTrackingGroups) {
+		this.fowardTrackingGroups = fowardTrackingGroups;
+	}
+
+
 	/**
 	 * @return the backtracking
 	 */

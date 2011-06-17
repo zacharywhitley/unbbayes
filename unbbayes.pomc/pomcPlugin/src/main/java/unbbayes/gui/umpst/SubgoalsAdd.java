@@ -2,7 +2,9 @@ package unbbayes.gui.umpst;
 
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -11,19 +13,22 @@ import java.awt.event.ActionListener;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 
 import unbbayes.model.umpst.entities.EntityModel;
@@ -31,19 +36,16 @@ import unbbayes.model.umpst.groups.GroupsModel;
 import unbbayes.model.umpst.project.SearchModelGoal;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
-import unbbayes.model.umpst.requirements.HypothesisModel;
-import unbbayes.model.umpst.rules.RulesModel;
 
 
-public class GoalsAdd extends IUMPSTPanel {
+public class SubgoalsAdd extends IUMPSTPanel {
 	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-
-
-	private  JComboBox hypothesisVinculationList;
+	private ImageIcon iconHypothesis = createImageIcon("images/hypo.png");
+	private ImageIcon iconSubgoal = createImageIcon("images/sub.png");
 
 	
 	private GridBagConstraints constraints     = new GridBagConstraints();
@@ -53,16 +55,18 @@ public class GoalsAdd extends IUMPSTPanel {
 	private JButton buttonCancel     = new JButton("Cancel");
 	private JButton buttonHypothesis = new JButton("add Hypothesis");
 	private JButton buttonSubgoal    = new JButton("add SubGoal");
-	private JButton buttonBack		 = new JButton("Return");
+	private JButton buttonBack   = new JButton("return");
+
 	
 	private JTextField dateText,authorText;
 	private JTextField goalText,commentsText;
 	private GoalModel goal;
 	private GoalModel goalFather;
 	
+	private TitledBorder bordaDadosComuns = new TitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED));
 	
 
-	public GoalsAdd(UmpstModule janelaPai, GoalModel goal, GoalModel goalFather){
+	public SubgoalsAdd(UmpstModule janelaPai, GoalModel goal, GoalModel goalFather){
 		super(janelaPai);
 		
 		
@@ -86,15 +90,10 @@ public class GoalsAdd extends IUMPSTPanel {
 		listeners();
 
 		if( goal == null){
-			if (goalFather!=null){
-				titulo.setText("Add new Sub-Goal");
-			}
-			else{
-				titulo.setText("Add new Goal");
-			}
+			titulo.setText("Add new Subgoal");
 			buttonAdd.setText(" Add ");
 		} else {
-			titulo.setText("Update Goal");
+			titulo.setText("Update Subgoal");
 			buttonAdd.setText(" Update ");
 			goalText.setText(goal.getGoalName());
 			commentsText.setText(goal.getComments());
@@ -163,25 +162,31 @@ public class GoalsAdd extends IUMPSTPanel {
 			
 		c.gridx = 0; c.gridy = 7; c.gridwidth = 1;
 		panel.add( buttonCancel, c);
+		c.gridx = 1; c.gridy = 7; c.gridwidth = 1;
+		panel.add( buttonBack, c);
 		
+		/*if (goal!=null){
+			c.gridx = 0; c.gridy = 8; c.gridwidth = 1;
+			panel.add(buttonHypothesis,c);
+		}*/
 		
 		c.gridx = 2; c.gridy = 7;c.gridwidth=1;
 		panel.add( buttonAdd, c);
 		
-		
-		
 	
 
+		//c.gridx = 1; c.gridy = 8; 
+		//panel.add(buttonSubgoal,c);
 		
 		buttonHypothesis.setToolTipText("Add new Hyphotesis");
 		buttonSubgoal.setToolTipText("Add new Subgoal");
+		buttonBack.setToolTipText("Return to previous goal ");
 		buttonCancel.setToolTipText("Return to main panel");
-		buttonBack.setToolTipText("Return to previous goal");
 		
 		/*c.gridx=0; c.gridy = 9; c.gridwidth=4; c.gridheight = 4;c.fill = GridBagConstraints.BOTH;
 		panel.add(createTraceabilityTable(),c);*/
 		
-		panel.setBorder(BorderFactory.createTitledBorder("Goals Details"));
+		panel.setBorder(BorderFactory.createTitledBorder("Subgoals Details"));
 		add(panel,constraints);
 	}
 	
@@ -194,24 +199,24 @@ public class GoalsAdd extends IUMPSTPanel {
 					
 					try {
 						if (goalText.getText().equals("")){
-							JOptionPane.showMessageDialog(null, "Goals details are empty!");
+							JOptionPane.showMessageDialog(null, "Subgoals details are empty!");
 						}
 						else{
 						    GoalModel goalAdd = updateMapGoal();					    
 						    updateMapSearch(goalAdd);
 							updateTableGoals(goalAdd);
-						  	JOptionPane.showMessageDialog(null, "Goal successfully added",null, JOptionPane.INFORMATION_MESSAGE);
+						  	JOptionPane.showMessageDialog(null, "Subgoal successfully added",null, JOptionPane.INFORMATION_MESSAGE);
 						}
 						
 					} catch (Exception e1) {
-						JOptionPane.showMessageDialog(null, "Error while creating goal", "UnBBayes", JOptionPane.WARNING_MESSAGE);
+						JOptionPane.showMessageDialog(null, "Error while creating subgoal", "UnBBayes", JOptionPane.WARNING_MESSAGE);
 						UmpstModule pai = getFatherPanel();
 						alterarJanelaAtual(pai.getMenuPanel());	
 					
 					}
 				}
 				else{
-					if( JOptionPane.showConfirmDialog(null, "Do you want to update this Goal?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
+					if( JOptionPane.showConfirmDialog(null, "Do you want to update this Subgoal?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 						
 						try{
 							/**Cleaning Search Map*/
@@ -255,20 +260,23 @@ public class GoalsAdd extends IUMPSTPanel {
 			}
 		});
 
-	  
-		
-		buttonCancel.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				UmpstModule pai = getFatherPanel();
-				updateTableGoals(goal);
-				//alterarJanelaAtual(pai.getMenuPanel());	
-			}
-		});
 		buttonBack.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				UmpstModule pai = getFatherPanel();
-				alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalFather)	);	
+				/*if(goal.getGoalFather()!=null){
+					alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goal.getGoalFather())	);	
+				}
+				else{*/
+					alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalFather)	);	
 				
+			}
+		});
+		
+		buttonCancel.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				UmpstModule pai = getFatherPanel();
+				alterarJanelaAtual(pai.getMenuPanel());
 			}
 		});
 		
@@ -419,7 +427,7 @@ public class GoalsAdd extends IUMPSTPanel {
 		}
    
 	    UmpstModule pai = getFatherPanel();
-	    alterarJanelaAtual(pai.getMenuPanel());
+	    alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalFather));
 	    
 	    TableGoals goalsTable = pai.getMenuPanel().getRequirementsPane().getGoalsTable();
 	    JTable table = goalsTable.createTable(columnNames,data);
@@ -444,11 +452,7 @@ public class GoalsAdd extends IUMPSTPanel {
  	    
  	    GridBagConstraints c = new GridBagConstraints();
  		if(goal!=null){
- 			
-			c.gridx = 0; c.gridy = 0;c.gridwidth=1;
-			panel.add(vinculateHypothesis() , c);
- 			
- 			c.gridx = 1; c.gridy = 0; c.gridwidth=1;
+ 			c.gridx = 0; c.gridy = 0; c.gridwidth=1;
  			panel.add(buttonHypothesis,c);
  		}
  	    c.fill = GridBagConstraints.BOTH;
@@ -561,110 +565,21 @@ public class GoalsAdd extends IUMPSTPanel {
     }
     
     public void  createTraceabilityTable() {
-		
+		Object[][] data = new Object[30][2];
+		String[] columnNames = {"Name","Type"};
 		int i = 0;
-
-    	
-    	if ( (goal!=null)&&(goal.getFowardTrackingEntity() !=null) ){
-			EntityModel entity;
-			Set<EntityModel> aux = goal.getFowardTrackingEntity();
-			
-	    	for (Iterator<EntityModel> it = aux.iterator(); it.hasNext(); ) {
-	    		entity = it.next();
-	    		if (entity.getFowardTrackingRules()!=null){
-	    			Set<RulesModel> auxRules = entity.getFowardTrackingRules();
-	    			RulesModel rule;
-	    	    	for (Iterator<RulesModel> itRules = auxRules.iterator(); it.hasNext(); ) {
-	    	    		rule = itRules.next();
-	    	    		i++;
-	    	    	}
-	    		}
-	    		if (entity.getFowardTrackingGroups()!=null){
-	    			Set<GroupsModel> auxGroups = entity.getFowardTrackingGroups();
-	    			GroupsModel group;
-	    	    	for (Iterator<GroupsModel> itGroups = auxGroups.iterator(); it.hasNext(); ) {
-	    	    		group = itGroups.next();
-	    	    		i++;
-	    	    	}
-	    		}
-	    		i++;
-	    	}
-		}
-
-		if ((goal!=null)&&(goal.getSubgoals()!=null)){
-			Set<String> keys = goal.getSubgoals().keySet();
-			TreeSet<String> sortedKeys = new TreeSet<String>(keys);
-			
-			for (String key: sortedKeys){
-				
-				i++;
-			}
-		}
-    	if ((goal!=null)&&(goal.getMapHypothesis()!=null)){
-    		Set<String> keys = goal.getMapHypothesis().keySet();
-			TreeSet<String> sortedKeys = new TreeSet<String>(keys);	
-			
-			for (String key: sortedKeys){
-				
-				i++;
-			}    	
-		}
-    	
-    	if ( (goal!=null)&&(goal.getFowardTrackingGroups() !=null) ){
-			GroupsModel group;
-			Set<GroupsModel> aux = goal.getFowardTrackingGroups();
-			
-	    	for (Iterator<GroupsModel> it = aux.iterator(); it.hasNext(); ) {
-	    		group = it.next();
-	 
-	    		i++;
-	    	}
-		}
-    	
-    	
-    	Object[][] data = new Object[i+1][3];
-    	
-		String[] columnNames = {"Name","Type","Traceability"};
-		i=0;
 		
-
-    	if ( (goal!=null)&&(goal.getFowardTrackingEntity() !=null) ){
+		if ( (goal!=null)&&(goal.getFowardTrackingEntity() !=null) ){
 			EntityModel entity;
 			Set<EntityModel> aux = goal.getFowardTrackingEntity();
 			
 	    	for (Iterator<EntityModel> it = aux.iterator(); it.hasNext(); ) {
 	    		entity = it.next();
-	    		if (entity.getFowardTrackingRules()!=null){
-	    			Set<RulesModel> auxRules = entity.getFowardTrackingRules();
-	    			RulesModel rule;
-	    	    	for (Iterator<RulesModel> itRules = auxRules.iterator(); it.hasNext(); ) {
-	    	    		rule = itRules.next();
-	    	    		data[i][0] = rule.getRulesName();
-	    	    		data[i][1] = "Rule";
-	    	    		data[i][2] = "Indirect";
-	    	    		i++;
-	    	    	}
-	    		}
-	    		if (entity.getFowardTrackingGroups()!=null){
-	    			Set<GroupsModel> auxGroups = entity.getFowardTrackingGroups();
-	    			GroupsModel group;
-	    	    	for (Iterator<GroupsModel> itGroups = auxGroups.iterator(); it.hasNext(); ) {
-	    	    		group = itGroups.next();
-	    	    		data[i][0] = group.getGroupName();
-	    	    		data[i][1] = "Group";
-	    	    		data[i][2] = "Indirect";
-	    	    		i++;
-	    	    	}
-	    		}
 	    		data[i][0] = entity.getEntityName();
 	    		data[i][1] = "Entity";
-	    		data[i][2] = "Direct";
-
 	    		i++;
 	    	}
 		}
-		
-		
 
 		if ((goal!=null)&&(goal.getSubgoals()!=null)){
 			Set<String> keys = goal.getSubgoals().keySet();
@@ -673,7 +588,6 @@ public class GoalsAdd extends IUMPSTPanel {
 			for (String key: sortedKeys){
 				data[i][0] = goal.getSubgoals().get(key).getGoalName();
 				data[i][1] = "Goals";
-	    		data[i][2] = "Direct";
 				i++;
 			}
 		}
@@ -684,7 +598,6 @@ public class GoalsAdd extends IUMPSTPanel {
 			for (String key: sortedKeys){
 				data[i][0] = goal.getMapHypothesis().get(key).getHypothesisName();
 				data[i][1] = "Hypothesis";
-	    		data[i][2] = "Direct";
 				i++;
 			}    	
 		}
@@ -714,120 +627,7 @@ public class GoalsAdd extends IUMPSTPanel {
 		
        }
     
-    	
-    	public JComboBox vinculateHypothesis(){
+    
 
-    	    Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
-			TreeSet<String> sortedKeys = new TreeSet<String>(keys);	
-			
-			Set<String> keysHypo;
-			TreeSet<String> sortedKeysHypo;
-			GoalModel goalAux;
-			int i=0;
-			/**This is only to found the number of other hypothesis existents in order to create 
-			 *     	    String[] allOtherHypothesis = new String[i];
-			 * */
-			for (String key: sortedKeys){
-				if(UMPSTProject.getInstance().getMapGoal().get(key)!=goal){
-					if(UMPSTProject.getInstance().getMapGoal().get(key).getMapHypothesis()!=null){
-						
-						goalAux = UMPSTProject.getInstance().getMapGoal().get(key);
-						keysHypo = goalAux.getMapHypothesis().keySet();
-						sortedKeysHypo = new TreeSet<String>(keysHypo);	
-						
-						for (String keyHypo : sortedKeysHypo){
-							/**Testing if the hypothesis is already in this goal*/
-							if ( goal.getMapHypothesis().get(goalAux.getMapHypothesis().get(keyHypo).getId())==null )
-								i++;
-						}
-
-					}
-				}
-			}   
-			
-    	    String[] allOtherHypothesis = new String[i];
-
-			 i=0;
-			for (String key: sortedKeys){
-				if(UMPSTProject.getInstance().getMapGoal().get(key)!=goal){
-					if(UMPSTProject.getInstance().getMapGoal().get(key).getMapHypothesis()!=null){
-						
-						goalAux = UMPSTProject.getInstance().getMapGoal().get(key);
-						keysHypo = goalAux.getMapHypothesis().keySet();
-						sortedKeysHypo = new TreeSet<String>(keysHypo);	
-						
-						for (String keyHypo : sortedKeysHypo){
-								if ( goal.getMapHypothesis().get(goalAux.getMapHypothesis().get(keyHypo).getId()) == null ){
-								allOtherHypothesis[i] = goalAux.getMapHypothesis().get(keyHypo).getHypothesisName();
-								i++;
-							}
-						}
-
-					}
-				}
-			} 
-    	    
-			
-    		hypothesisVinculationList = new JComboBox(allOtherHypothesis);
-    		hypothesisVinculationList.addActionListener(new ActionListener() {
-    				
-    				public void actionPerformed(ActionEvent e) {
-    					//JOptionPane.showMessageDialog(null, "selecionou "+petList.getSelectedIndex());
-    					addVinculateHypothesis((String) hypothesisVinculationList.getSelectedItem());
-    				}
-    			});
-    		
-    		return hypothesisVinculationList;
-    		
-    	}
-    	
-    	public void addVinculateHypothesis(String hypothesisRelated){
-    		
-    		 Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
- 			TreeSet<String> sortedKeys = new TreeSet<String>(keys);	
- 			
- 			Set<String> keysHypo;
- 			TreeSet<String> sortedKeysHypo;
- 			GoalModel goalAux;
- 			int i=0;
- 			Boolean achou = false;
- 		
- 			for (String key: sortedKeys){
- 				if(UMPSTProject.getInstance().getMapGoal().get(key).getMapHypothesis()!=null){	
-					keysHypo = UMPSTProject.getInstance().getMapGoal().get(key).getMapHypothesis().keySet();
-					sortedKeysHypo = new TreeSet<String>(keysHypo);
-					for(String keyAux : sortedKeysHypo){
-						if (UMPSTProject.getInstance().getMapGoal().get(key).getMapHypothesis().get(keyAux).getHypothesisName()==hypothesisRelated){
-							updateMapHypothesis(UMPSTProject.getInstance().getMapGoal().get(key).getMapHypothesis().get(keyAux));
-							achou=true;
-							break;
-						}
-					}
- 				}
- 				if (achou){
- 					break;
- 				}
- 			}  
-    		
-    	}
-    	
-    	 public void updateMapHypothesis(HypothesisModel hypothesisVinculated){
-    	    	
-    			goal.getMapHypothesis().put(hypothesisVinculated.getId(), hypothesisVinculated);
-    			if (hypothesisVinculated.getMapSubHypothesis()!=null){
-    				 Set<String> keys = hypothesisVinculated.getMapSubHypothesis().keySet();
-    		 		 TreeSet<String> sortedKeys = new TreeSet<String>(keys);	
-    		 		 HypothesisModel hypothesis;
-		 			for (String key: sortedKeys){
-		 				hypothesis = hypothesisVinculated.getMapSubHypothesis().get(key);
-		 				goal.getMapHypothesis().put(hypothesis.getId(),hypothesis);
-		 			}
-
-    			}
-    			//PRECISO ATUALIZAR O GOAL RELATED DA HIPOTESE QUE ESTA NO MAPA GERAL
-    			
-    			UmpstModule pai = getFatherPanel();
-    		    alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goal));    			
-    	}
-    		
+    	  	
 }

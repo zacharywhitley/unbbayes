@@ -119,7 +119,7 @@ public class TableEntities extends IUMPSTPanel{
 				
 				String key = data[row][0].toString();
 				EntityModel entityAux = UMPSTProject.getInstance().getMapEntity().get(key);
-				alterarJanelaAtual(new EntitiesMainPanel(getJanelaPai(), entityAux )   );
+				alterarJanelaAtual(new EntitiesMainPanel(getFatherPanel(), entityAux )   );
 			}
 		});
 		
@@ -145,7 +145,7 @@ public class TableEntities extends IUMPSTPanel{
 			
 			public void onButtonPress(int row, int column) {
 				
-				if( JOptionPane.showConfirmDialog(null,"Confirm delete of entity "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
+				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete entity "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 							String key = data[row][0].toString();
 							EntityModel entityToBeDeleted = UMPSTProject.getInstance().getMapEntity().get(key);
@@ -174,7 +174,7 @@ public class TableEntities extends IUMPSTPanel{
 							}
 							
 							
-							UmpstModule pai = getJanelaPai();
+							UmpstModule pai = getFatherPanel();
 							 alterarJanelaAtual(pai.getMenuPanel());
 							 
 							 //TableGoals goalsTable = pai.getMenuPanel().getRequirementsPane().getGoalsTable();

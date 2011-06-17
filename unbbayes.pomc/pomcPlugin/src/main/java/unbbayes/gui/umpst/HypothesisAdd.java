@@ -10,16 +10,27 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.BrokenBarrierException;
+
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
 
+import unbbayes.model.umpst.entities.EntityModel;
+import unbbayes.model.umpst.groups.GroupsModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
 import unbbayes.model.umpst.requirements.HypothesisModel;
@@ -32,16 +43,18 @@ public class HypothesisAdd extends IUMPSTPanel {
 	 */
 	private static final long serialVersionUID = 1L;
 
+	private  JComboBox hypothesisVinculationList;
 
 	private ImageIcon iconSubhypothesis = createImageIcon("images/sub.png");
 
 	
 	private GridBagConstraints c     = new GridBagConstraints();
+	private GridBagConstraints constraints = new GridBagConstraints();
 	private JLabel titulo            = new JLabel();
 	
 	private JButton buttonAdd 	     = new JButton();
 	private JButton buttonCancel     = new JButton("Cancel");
-	private JButton buttonSubhypothesis    = new JButton(iconSubhypothesis);
+	private JButton buttonSubhypothesis    = new JButton("add new subhypothesis");
 	
 	private JTextField dateText,authorText;
 	private JTextField hypothesisText,commentsText;
@@ -59,10 +72,13 @@ public class HypothesisAdd extends IUMPSTPanel {
 		this.goalRelated = goalRelated;
 		
 		this.setLayout(new GridBagLayout());
-		c.fill = GridBagConstraints.HORIZONTAL;
-		labels();
-		fields();
-		buttons();
+		constraints.fill = GridBagConstraints.BOTH;
+		constraints.gridx=0; constraints.gridy = 0; constraints.weightx=0.5;constraints.weighty=0.5;	
+		textPanel();
+		constraints.gridx=0; constraints.gridy = 1; constraints.weightx=0.5;constraints.weighty=0.5;	
+		createSubhypothesisTable();
+		constraints.gridx=1; constraints.gridy =0; constraints.weightx=0.5;constraints.weighty=0.5;	
+		add(createTraceabilityTable(),constraints);
 		listeners();
 
 		if( hypothesis == null){
@@ -85,18 +101,19 @@ public class HypothesisAdd extends IUMPSTPanel {
 		
 	}
 
-
-
-
-	public void labels(){
+	public void textPanel(){
+		
+		JPanel panel = new JPanel();
+		panel.setLayout(new GridBagLayout());
+		
 		c.gridx = 0; c.gridy = 2;
-		add( new JLabel("Hypothesis Description: "), c);
+		panel.add( new JLabel("Hypothesis Description: "), c);
 		c.gridx = 0; c.gridy = 3;
-		add( new JLabel("Comments: "), c);
+		panel.add( new JLabel("Comments: "), c);
 		c.gridx = 0; c.gridy = 4;
-		add( new JLabel("Author Nome: "), c);
+		panel.add( new JLabel("Author Name: "), c);
 		c.gridx = 0; c.gridy = 5;
-		add( new JLabel("Date: "), c);
+		panel.add( new JLabel("Date: "), c);
 		
 
 		GridBagConstraints d = new GridBagConstraints();
@@ -106,50 +123,50 @@ public class HypothesisAdd extends IUMPSTPanel {
 		d.insets = new Insets(0, 0, 0, 0);
 		titulo.setFont(new Font("Arial", Font.BOLD, 32));
 		titulo.setBackground(new Color(0x4169AA));
-		add( titulo, d);
+		panel.add( titulo, d);
 		
-	}
-	
-	
-	public void fields(){
-		
-		hypothesisText = new JTextField(50);
-		commentsText = new JTextField(50);
-		authorText = new JTextField(20);
-		dateText = new JTextField(10);
+			
+		hypothesisText = new JTextField(20);
+		commentsText   = new JTextField(20);
+		authorText     = new JTextField(20);
+		dateText       = new JTextField(20);
  
 
 		c.gridx = 1; c.gridy = 2;
-		add( hypothesisText, c);
+		panel.add( hypothesisText, c);
 		
 		c.gridx = 1; c.gridy = 3;
-		add( commentsText, c);
+		panel.add( commentsText, c);
 		
 		c.gridx = 1; c.gridy = 4;
-		add( authorText, c);
+		panel.add( authorText, c);
 		
 		c.gridx = 1; c.gridy = 5;
-		add( dateText, c);
+		panel.add( dateText, c);
 		
-	}
-		
-		
-	
-	public void buttons(){
-		
+			
 		c.gridx = 0; c.gridy = 7; c.gridwidth = 1;
-		add( buttonCancel, c);
+		panel.add( buttonCancel, c);
 		c.gridx = 1; c.gridy = 7;
-		add( buttonAdd, c);
-		
-		GridBagConstraints d = new GridBagConstraints();
-		
-
-		d.gridx = 0; d.gridy = 8; 
-		add(buttonSubhypothesis,d);
-		
+		panel.add( buttonAdd, c);
+				
+		buttonAdd.setToolTipText("save this hypothesis");
 		buttonSubhypothesis.setToolTipText("Add new Sub-hypothesis");
+		buttonCancel.setToolTipText("return to the previous panel");
+		
+		panel.setBorder(BorderFactory.createTitledBorder("Hypothesis`s details"));
+		
+		
+		/*JPanel panelTraceSubhypo = new JPanel();
+	    panel.setLayout(new GridBagLayout());
+	    GridBagConstraints e = new GridBagConstraints();
+	    e.fill =  GridBagConstraints.BOTH;
+		e.gridx=0; e.gridy = 0; e.weightx=0.6;e.weighty=0.5;	
+		panelTraceSubhypo.add(panel,e);
+		e.gridx=1; e.gridy = 0; e.weightx=0.4;e.weighty=0.5;
+		panelTraceSubhypo.add(createTraceabilityTable(),e);*/
 	
+		add(panel,constraints);
 	}
 	
 	
@@ -169,7 +186,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 					
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating hypothesis", "UnBBayes", JOptionPane.WARNING_MESSAGE);
-						UmpstModule pai = getJanelaPai();
+						UmpstModule pai = getFatherPanel();
 						alterarJanelaAtual(pai.getMenuPanel());	
 					
 					}
@@ -182,13 +199,19 @@ public class HypothesisAdd extends IUMPSTPanel {
 							hypothesis.setComments(commentsText.getText());
 							hypothesis.setAuthor(authorText.getText());
 							hypothesis.setDate(dateText.getText());
+							/**Updating this hypothesis in MapHypothesis*/
+							UMPSTProject.getInstance().getMapHypothesis().get(hypothesis.getId()).setHypothesisName(hypothesis.getHypothesisName());
+							UMPSTProject.getInstance().getMapHypothesis().get(hypothesis.getId()).setComments(hypothesis.getComments());
+							UMPSTProject.getInstance().getMapHypothesis().get(hypothesis.getId()).setAuthor(hypothesis.getAuthor());
+							UMPSTProject.getInstance().getMapHypothesis().get(hypothesis.getId()).setDate(hypothesis.getDate());
+							
 							updateTable(hypothesis);
 							JOptionPane.showMessageDialog(null, "hypothesis successfully updated", "UnBBayes", JOptionPane.INFORMATION_MESSAGE);
 							
 						}
 						catch (Exception e2) {
 							JOptionPane.showMessageDialog(null,"Error while ulpating hypothesis", "UnBBayes", JOptionPane.WARNING_MESSAGE);
-							UmpstModule pai = getJanelaPai();
+							UmpstModule pai = getFatherPanel();
 							alterarJanelaAtual(pai.getMenuPanel());	
 						}
 					}
@@ -198,8 +221,16 @@ public class HypothesisAdd extends IUMPSTPanel {
 
 		buttonCancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				UmpstModule pai = getJanelaPai();
-			    alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsMainPanel(goalRelated)	);
+				UmpstModule pai = getFatherPanel();
+			    alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated)	);
+			}
+		});
+		
+		buttonSubhypothesis.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				UmpstModule pai = getFatherPanel();
+			    alterarJanelaAtual(new HypothesisAdd(pai, goalRelated, null, hypothesis));				
 			}
 		});
 
@@ -244,10 +275,11 @@ public class HypothesisAdd extends IUMPSTPanel {
     
     public void updateTable(HypothesisModel hypothesisUpdate){
 		
-	    UmpstModule pai = getJanelaPai();
+	    UmpstModule pai = getFatherPanel();
+	    alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated));
 
 	    
-	    TableHypothesis hypothesisTable = pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsMainPanel(goalRelated).getHypothesisTable(goalRelated);
+	   /* TableHypothesis hypothesisTable = pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsMainPanel(goalRelated).getHypothesisTable(goalRelated);
 	    JTable table = hypothesisTable.createTable();
 	    
 	    alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsMainPanel(goalRelated)	);
@@ -256,7 +288,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 	    hypothesisTable.getScrollPanePergunta().updateUI();
 	    hypothesisTable.getScrollPanePergunta().repaint();
 	    hypothesisTable.updateUI();
-	    hypothesisTable.repaint();
+	    hypothesisTable.repaint();*/
     }
     
     public HypothesisModel updateMapHypothesis(){
@@ -308,18 +340,254 @@ public class HypothesisAdd extends IUMPSTPanel {
 			}
 		}
 		
-
+		Set<GoalModel> setGoalRelated = new HashSet<GoalModel>();
+		setGoalRelated.add(goalRelated);
+		
 		
 		HypothesisModel hypothesisAdd = new HypothesisModel(idAux,hypothesisText.getText(),commentsText.getText(), 
-				authorText.getText(), dateText.getText(),goalRelated, hypothesisFather,hypothesisChildren,null,null);
+				authorText.getText(), dateText.getText(),setGoalRelated, hypothesisFather,hypothesisChildren,null,null);
 		if (hypothesisFather!=null){
-			hypothesisFather.getSubHypothesis().put(hypothesisAdd.getId(), hypothesisAdd);
+			HypothesisModel aux = hypothesisAdd.getFather();
+			while (aux!=null){
+				aux.getMapSubHypothesis().put(hypothesisAdd.getId(),hypothesisAdd);
+				UMPSTProject.getInstance().getMapHypothesis().get(aux.getId()).getMapSubHypothesis().put(hypothesisAdd.getId(),hypothesisAdd);
+				if (aux.getFather()!=null){
+					aux = aux.getFather();
+				}
+				else{
+					aux=null;
+				}
+			}
+			//hypothesisFather.getSubHypothesis().put(hypothesisAdd.getId(), hypothesisAdd);
 		}
 		goalRelated.getMapHypothesis().put(hypothesisAdd.getId(), hypothesisAdd);
 		UMPSTProject.getInstance().getMapHypothesis().put(hypothesisAdd.getId(), hypothesisAdd);
 		
 		return hypothesisAdd;
     }
+    
+ public void createSubhypothesisTable(){
+    	
+	    TableSubhypothesis subhypothesisTable = new TableSubhypothesis(getFatherPanel(),goalRelated,hypothesis);
+	    JTable table = subhypothesisTable.createTable();
+	    JScrollPane scrollPane = new JScrollPane(table);
+
+	    
+	    JPanel panel = new JPanel();
+	    panel.setLayout(new GridBagLayout());
+	    
+	    GridBagConstraints c = new GridBagConstraints();
+		
+	    if (hypothesis!=null){
+	    	c.gridx = 1; c.gridy = 0; c.gridwidth=1;
+	    	panel.add(buttonSubhypothesis,c);
+	    }
+		
+	    c.fill = GridBagConstraints.BOTH;
+	    c.gridx=0;c.gridy=1;c.weightx=0.9;c.weighty=0.9;c.gridwidth=6;
+	    
+	    panel.add(scrollPane,c);
+	    panel.setBorder(BorderFactory.createTitledBorder("List of Subhypothesis"));
+
+	   
+	    add(panel,constraints);
+
+    }
+
+ public JScrollPane  createTraceabilityTable() {
+		
+		int i = 0;
+		JPanel panel = new JPanel();
+ 	
+		if ( (hypothesis!=null)&&(hypothesis.getFowardTrackingEntity() !=null) ){
+			EntityModel entity;
+			Set<EntityModel> aux = hypothesis.getFowardTrackingEntity();
+			
+	    	for (Iterator<EntityModel> it = aux.iterator(); it.hasNext(); ) {
+	    		entity = it.next();
+	    		
+	    		i++;
+	    	}
+		}
+
+		if ((hypothesis!=null)&&(hypothesis.getMapSubHypothesis()!=null)){
+			Set<String> keys = hypothesis.getMapSubHypothesis().keySet();
+			TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+			
+			for (String key: sortedKeys){
+				
+				i++;
+			}
+		}
+ 	
+		if ( (hypothesis!=null)&&(hypothesis.getFowardTrackingGroups() !=null) ){
+			GroupsModel group;
+			Set<GroupsModel> aux = hypothesis.getFowardTrackingGroups();
+			
+	    	for (Iterator<GroupsModel> it = aux.iterator(); it.hasNext(); ) {
+	    		group = it.next();
+	 
+	    		i++;
+	    	}
+		}
+ 	
+ 	
+		Object[][] data = new Object[i+1][2];
+ 	
+		String[] columnNames = {"Name","Type"};
+		i=0;
+		
+		if ( (hypothesis!=null)&&(hypothesis.getFowardTrackingEntity() !=null) ){
+			EntityModel entity;
+			Set<EntityModel> aux = hypothesis.getFowardTrackingEntity();
+			
+	    	for (Iterator<EntityModel> it = aux.iterator(); it.hasNext(); ) {
+	    		entity = it.next();
+	    		data[i][0] = entity.getEntityName();
+	    		data[i][1] = "Entity";
+	    		i++;
+	    	}
+		}
+
+		if ((hypothesis!=null)&&(hypothesis.getMapSubHypothesis()!=null)){
+			Set<String> keys = hypothesis.getMapSubHypothesis().keySet();
+			TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+			
+			for (String key: sortedKeys){
+				data[i][0] = hypothesis.getMapSubHypothesis().get(key).getHypothesisName();
+				data[i][1] = "Hypothesis";
+				i++;
+			}
+		}
+		
+ 	
+		if ( (hypothesis!=null)&&(hypothesis.getFowardTrackingGroups() !=null) ){
+			GroupsModel group;
+			Set<GroupsModel> aux = hypothesis.getFowardTrackingGroups();
+			
+	    	for (Iterator<GroupsModel> it = aux.iterator(); it.hasNext(); ) {
+	    		group = it.next();
+	    		data[i][0] = group.getGroupName();
+	    		data[i][1] = "Group";
+	    		i++;
+	    	}
+		}
+
+		
+		DefaultTableModel tableModel = new DefaultTableModel(data, columnNames);
+		JTable table = new JTable(tableModel);
+
+		JScrollPane scrollPane = new JScrollPane(table);
+		
+		scrollPane.setBorder(BorderFactory.createTitledBorder("This Hypothesis Traceability"));
+		
+		return scrollPane;
+    }
+ 
+ public JComboBox vinculateHypothesis(){
+
+	    Set<String> keys = UMPSTProject.getInstance().getMapHypothesis().keySet();
+		TreeSet<String> sortedKeys = new TreeSet<String>(keys);	
+		
+		Set<String> keysHypo;
+		TreeSet<String> sortedKeysHypo;
+		HypothesisModel goalAux;
+		int i=0;
+		/**This is only to found the number of other hypothesis existents in order to create 
+		 *     	    String[] allOtherHypothesis = new String[i];
+		 * */
+		for (String key: sortedKeys){
+			if(UMPSTProject.getInstance().getMapHypothesis().get(key) != hypothesis){
+				if(UMPSTProject.getInstance().getMapHypothesis().get(key).getMapSubHypothesis()!=null){
+					
+					goalAux = UMPSTProject.getInstance().getMapHypothesis().get(key);
+					keysHypo = goalAux.getMapSubHypothesis().keySet();
+					sortedKeysHypo = new TreeSet<String>(keysHypo);	
+					
+					for (String keyHypo : sortedKeysHypo){
+						/**Testing if the hypothesis is already in this hypothesis*/
+						if ( hypothesis.getMapSubHypothesis().get(goalAux.getMapSubHypothesis().get(keyHypo).getId())==null )
+							i++;
+					}
+
+				}
+			}
+		}   
+		
+	    String[] allOtherHypothesis = new String[i];
+
+		 i=0;
+		 
+		 for (String key: sortedKeys){
+				if(UMPSTProject.getInstance().getMapHypothesis().get(key) != hypothesis){
+					if(UMPSTProject.getInstance().getMapHypothesis().get(key).getMapSubHypothesis()!=null){
+						
+						goalAux = UMPSTProject.getInstance().getMapHypothesis().get(key);
+						keysHypo = goalAux.getMapSubHypothesis().keySet();
+						sortedKeysHypo = new TreeSet<String>(keysHypo);	
+						
+						for (String keyHypo : sortedKeysHypo){
+							/**Testing if the hypothesis is already in this hypothesis*/
+							if ( hypothesis.getMapSubHypothesis().get(goalAux.getMapSubHypothesis().get(keyHypo).getId())==null )
+								allOtherHypothesis[i] = goalAux.getMapSubHypothesis().get(keyHypo).getHypothesisName();
+								i++;
+						}
+
+					}
+				}
+			}
+		
+		
+		hypothesisVinculationList = new JComboBox(allOtherHypothesis);
+		hypothesisVinculationList.addActionListener(new ActionListener() {
+				
+				public void actionPerformed(ActionEvent e) {
+					//JOptionPane.showMessageDialog(null, "selecionou "+petList.getSelectedIndex());
+					addVinculateHypothesis((String) hypothesisVinculationList.getSelectedItem());
+				}
+			});
+		
+		return hypothesisVinculationList;
+		
+	}
 	
+	public void addVinculateHypothesis(String hypothesisRelated){
+		
+		 Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
+		TreeSet<String> sortedKeys = new TreeSet<String>(keys);	
+		
+		Set<String> keysHypo;
+		TreeSet<String> sortedKeysHypo;
+		GoalModel goalAux;
+		int i=0;
+		Boolean achou = false;
+	
+		for (String key: sortedKeys){
+			if(UMPSTProject.getInstance().getMapGoal().get(key).getMapHypothesis()!=null){	
+				keysHypo = UMPSTProject.getInstance().getMapGoal().get(key).getMapHypothesis().keySet();
+				sortedKeysHypo = new TreeSet<String>(keysHypo);
+				for(String keyAux : sortedKeysHypo){
+					if (UMPSTProject.getInstance().getMapGoal().get(key).getMapHypothesis().get(keyAux).getHypothesisName()==hypothesisRelated){
+						updateMapHypothesis(UMPSTProject.getInstance().getMapGoal().get(key).getMapHypothesis().get(keyAux));
+						achou=true;
+						break;
+					}
+				}
+			}
+			if (achou){
+				break;
+			}
+		}  
+		
+	}
+	
+	 public void updateMapHypothesis(HypothesisModel hypothesisVinculated){
+	    	
+			hypothesis.getMapSubHypothesis().put(hypothesisVinculated.getId(), hypothesisVinculated);
+			
+			UmpstModule pai = getFatherPanel();
+		    alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated));    			
+	}
+ 
 	
 }

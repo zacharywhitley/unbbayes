@@ -7,11 +7,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeSet;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -29,7 +32,7 @@ public class GroupsSearch extends IUMPSTPanel {
 	private JLabel labelGroup;
 	
 	private JButton buttonSearch;
-	private JButton buttonAddGroup;
+	private JButton buttonAddGroup,buttonCancel;
 
 	private JTextField textGroup;
 	
@@ -58,10 +61,12 @@ public class GroupsSearch extends IUMPSTPanel {
 		buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
 		buttonPane.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
 		buttonPane.add(Box.createHorizontalGlue());
-		buttonPane.add(getButtonAddGroup());
-		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
 		buttonPane.add(getButtonSearch());
-		
+		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
+		buttonPane.add(getButtonCancel());
+		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
+		buttonPane.add(getButtonAddGroup());
+
 
 		
 		this.add(panel, BorderLayout.CENTER);
@@ -90,10 +95,31 @@ public class GroupsSearch extends IUMPSTPanel {
 		return buttonAddGroup;
 	} 
 	
+
+	/**
+	 * @return the buttonCancel
+	 */
+	public JButton getButtonCancel() {
+		
+		if (buttonCancel == null){
+			buttonCancel = new JButton ("cancel search");
+			buttonCancel.setForeground(Color.blue);
+			buttonCancel.addActionListener(new ActionListener() {
+				
+				public void actionPerformed(ActionEvent e) {
+					textGroup.setText("");
+					returnTableGroups();
+				}
+			});
+		}
+		
+		return buttonCancel;
+	}
+	
 	
 	public GroupsAdd getGroupsAdd(GroupsModel group){
 		
-		GroupsAdd ret = new GroupsAdd(getJanelaPai(),group);
+		GroupsAdd ret = new GroupsAdd(getFatherPanel(),group);
 		
 		return ret;
 		
@@ -128,7 +154,13 @@ public class GroupsSearch extends IUMPSTPanel {
 		buttonSearch.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				updateTableGroups();
+				if(!textGroup.getText().equals("")){
+					updateTableGroups();
+				}
+				else{
+					JOptionPane.showMessageDialog(null, "Seach is empty!");
+				}
+
 			}
 		});
 		
@@ -172,7 +204,7 @@ public class GroupsSearch extends IUMPSTPanel {
     	
 	    
    
-	    UmpstModule pai = getJanelaPai();
+	    UmpstModule pai = getFatherPanel();
 	    alterarJanelaAtual(pai.getMenuPanel());
 	    
 	    TableGroups groupsTable = pai.getMenuPanel().getGroupsPane().getGroupsTable();
@@ -186,6 +218,35 @@ public class GroupsSearch extends IUMPSTPanel {
     }
 	
 	
-	
+	 
+    public void returnTableGroups(){
+    	String[] columnNames = {"ID","Group","",""};	    
+	    
+		Object[][] data = new Object[UMPSTProject.getInstance().getMapGroups().size()][4];
+		Integer i=0;
+	    
+		Set<String> keys = UMPSTProject.getInstance().getMapGroups().keySet();
+		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+		
+		for (String key: sortedKeys){
+			data[i][0] = UMPSTProject.getInstance().getMapGroups().get(key).getId();
+			data[i][1] = UMPSTProject.getInstance().getMapGroups().get(key).getGroupName();			
+			data[i][2] = "";
+			data[i][3] = "";
+			i++;
+		}
+   
+	    UmpstModule pai = getFatherPanel();
+	    alterarJanelaAtual(pai.getMenuPanel());
+	    
+	    TableGroups groupTable = pai.getMenuPanel().getGroupsPane().getGroupsTable();
+	    JTable table = groupTable.createTable(columnNames,data);
+	    
+	    groupTable.getScrollPanePergunta().setViewportView(table);
+	    groupTable.getScrollPanePergunta().updateUI();
+	    groupTable.getScrollPanePergunta().repaint();
+	    groupTable.updateUI();
+	    groupTable.repaint();
+    }	
 
 }

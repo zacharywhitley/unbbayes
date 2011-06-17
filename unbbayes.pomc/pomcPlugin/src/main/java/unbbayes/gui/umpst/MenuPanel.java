@@ -37,26 +37,26 @@ public class MenuPanel extends IUMPSTPanel{
 	        JTabbedPane tabbedPane = new JTabbedPane();
 	        ImageIcon icon = createImageIcon("images/middle.gif");
 	        
-	        requirementsPane = new Goals(getJanelaPai());
+	        requirementsPane = new Goals(getFatherPanel());
 	        requirementsPane.setPreferredSize(new Dimension(1000, 500));
 	        
 	        tabbedPane.addTab("Requirement", icon, new JScrollPane(requirementsPane),
 	                "goals,queries and envidences");
 	        tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 	        
-	        entitiesPane = new Entities(getJanelaPai());
+	        entitiesPane = new Entities(getFatherPanel());
 	        entitiesPane.setPreferredSize(new Dimension(1000,500));
 	        tabbedPane.addTab("Entity", icon, entitiesPane,
 	                "entities, atributtes and relationships");
 	        tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 
-	        rulesPane = new Rules(getJanelaPai());
+	        rulesPane = new Rules(getFatherPanel());
 	        rulesPane.setPreferredSize(new Dimension(1000,500));	        
 	        tabbedPane.addTab("Rules", icon, rulesPane,
 	                "Deterministic or Stochastic");
 	        tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 	        
-	        groupsPane = new Groups(getJanelaPai());
+	        groupsPane = new Groups(getFatherPanel());
 	        groupsPane.setPreferredSize(new Dimension(1000,500));
 	        tabbedPane.addTab("Group", icon, groupsPane,
 	                "Grouping");
@@ -146,7 +146,7 @@ public class MenuPanel extends IUMPSTPanel{
 		protected JPanel  createInternalPane (JPanel pane){
 	    	
 	    	this.setLayout(new FlowLayout());
-			this.add(new GoalsAdd(getJanelaPai(),null,null));
+			this.add(new GoalsAdd(getFatherPanel(),null,null));
 	    	
 			return pane;
 	    }

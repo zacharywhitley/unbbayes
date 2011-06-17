@@ -18,6 +18,7 @@ import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -86,7 +87,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 			titulo.setText("Add new entity");
 			buttonAdd.setText(" Add ");
 		} else {
-			titulo.setText(entity.getEntityName());
+			titulo.setText("Update Entity");
 			buttonAdd.setText(" Update ");
 			entityText.setText(entity.getEntityName());
 			commentsText.setText(entity.getComments());
@@ -106,7 +107,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 		c.gridx = 0; c.gridy = 3;c.gridwidth = 1;
 		panel.add( new JLabel("Comments: "), c);
 		c.gridx = 0; c.gridy = 4;c.gridwidth = 1;
-		panel.add( new JLabel("Author Nome: "), c);
+		panel.add( new JLabel("Author Name: "), c);
 		c.gridx = 0; c.gridy = 5;c.gridwidth = 1;
 		panel.add( new JLabel("Date: "), c);
 		
@@ -138,15 +139,20 @@ public class EntitiesAdd extends IUMPSTPanel {
 		c.gridx = 1; c.gridy = 5;c.gridwidth = 2;
 		panel.add( dateText, c);
 		
+		Box box = Box.createHorizontalBox();
+		box.add(buttonCancel);
+		box.add(buttonAtribute);
+		box.add(buttonAdd);
 		
-		c.gridx = 0; c.gridy = 6; c.gridwidth = 1;
+		c.gridx = 2; c.gridy = 6; c.gridwidth = 2;
+		panel.add(box,c);
+		/*
 		panel.add( buttonCancel, c);
 		c.gridx = 1; c.gridy = 6; c.gridwidth = 1;
 		panel.add( buttonAtribute, c);
 		buttonAtribute.setToolTipText("Add new Atribute");
-		
 		c.gridx = 2; c.gridy = 6; c.gridwidth = 1;
-		panel.add(buttonAdd,c);
+		panel.add(buttonAdd,c);*/
 		
 		panel.setBorder(BorderFactory.createTitledBorder("Rule's details"));
 		
@@ -172,7 +178,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 					
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating entity", "UnBBayes", JOptionPane.WARNING_MESSAGE);
-						UmpstModule pai = getJanelaPai();
+						UmpstModule pai = getFatherPanel();
 						alterarJanelaAtual(pai.getMenuPanel());	
 					
 					}
@@ -215,7 +221,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 						}
 						catch (Exception e2) {
 							JOptionPane.showMessageDialog(null,"Error while ulpating entity", "UnBBayes", JOptionPane.WARNING_MESSAGE);
-							UmpstModule pai = getJanelaPai();
+							UmpstModule pai = getFatherPanel();
 							alterarJanelaAtual(pai.getMenuPanel());	
 						}
 					}
@@ -225,14 +231,14 @@ public class EntitiesAdd extends IUMPSTPanel {
 
 		buttonCancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				UmpstModule pai = getJanelaPai();
+				UmpstModule pai = getFatherPanel();
 				alterarJanelaAtual(pai.getMenuPanel());	
 			}
 		});
 		
 		buttonAtribute.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				alterarJanelaAtual(new AtributeAdd(getJanelaPai(), entity, null, null));
+				alterarJanelaAtual(new AtributeAdd(getFatherPanel(), entity, null, null));
 
 			}
 		});
@@ -292,7 +298,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 	
 		
 		EntityModel entityAdd = new EntityModel(idAux,entityText.getText(),commentsText.getText(), authorText.getText(), 
-				dateText.getText(),null,null,null,null,null);
+				dateText.getText(),null,null,null,null,null,null);
 		
 		
 	    UMPSTProject.getInstance().getMapEntity().put(entityAdd.getId(), entityAdd);	
@@ -318,7 +324,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 			i++;
 		}
    
-	    UmpstModule pai = getJanelaPai();
+	    UmpstModule pai = getFatherPanel();
 	    alterarJanelaAtual(pai.getMenuPanel());
 	    
 	    TableEntities entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
@@ -361,7 +367,6 @@ public class EntitiesAdd extends IUMPSTPanel {
 		JButton buttonCopy, buttonDelete;
 
 		Box box = Box.createHorizontalBox();
-		JPanel panelTracking = new JPanel();
 
 	
 		

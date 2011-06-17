@@ -18,6 +18,7 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 
 import unbbayes.gui.umpst.UmpstModule;
+import unbbayes.model.umpst.groups.GroupsModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
 import unbbayes.model.umpst.rules.RulesModel;
@@ -34,9 +35,11 @@ public class EntityModel {
 	private JList backtracking;
 	private JList backtrackingHypothesis;
 	private Set<RulesModel> fowardTrackingRules;
+	private Set<GroupsModel> fowardTrackingGroups;
 	
 	public EntityModel(String id,String entityName, String comments,String author, String date, 
-			EntityModel father,Map<String,AtributeModel> mapAtributes, JList backtracking,JList backtrackingHypothesis, Set<RulesModel> fowardTrackingRules) {
+			EntityModel father,Map<String,AtributeModel> mapAtributes, JList backtracking,JList backtrackingHypothesis, 
+			Set<RulesModel> fowardTrackingRules, Set<GroupsModel> fowardTrackingGroups) {
 		
 		this.id           = id;
 		this.entityName   = entityName;
@@ -57,10 +60,32 @@ public class EntityModel {
 		if(fowardTrackingRules==null){
 			this.setFowardTrackingRules(new HashSet<RulesModel>());
 		}
+		this.fowardTrackingGroups=fowardTrackingGroups;
+		if (fowardTrackingGroups==null){
+			this.setFowardTrackingGroups(new HashSet<GroupsModel>());
+		}
 	}
 
 
 	
+	/**
+	 * @return the fowardTrackingGroups
+	 */
+	public Set<GroupsModel> getFowardTrackingGroups() {
+		return fowardTrackingGroups;
+	}
+
+
+
+	/**
+	 * @param fowardTrackingGroups the fowardTrackingGroups to set
+	 */
+	public void setFowardTrackingGroups(Set<GroupsModel> fowardTrackingGroups) {
+		this.fowardTrackingGroups = fowardTrackingGroups;
+	}
+
+
+
 	/**
 	 * @return the backtrackingHypothesis
 	 */

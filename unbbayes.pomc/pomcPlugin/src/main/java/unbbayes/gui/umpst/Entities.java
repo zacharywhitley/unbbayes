@@ -42,7 +42,7 @@ public class Entities extends IUMPSTPanel{
 		if(menuPanel == null ){
 			DefaultTableModel model = new DefaultTableModel();
 
-			menuPanel = new TableEntities(getJanelaPai());
+			menuPanel = new TableEntities(getFatherPanel());
 		}
 		return menuPanel;
 	}
@@ -52,7 +52,7 @@ public class Entities extends IUMPSTPanel{
 	 */
 	public EntitiesSearchPanel getEntitiesPanel() {
 		if(requirementsPanel == null ){
-			requirementsPanel = new EntitiesSearchPanel(getJanelaPai());
+			requirementsPanel = new EntitiesSearchPanel(getFatherPanel());
 			requirementsPanel.setBackground(new Color(0xffffff));
 		}
 		return requirementsPanel;

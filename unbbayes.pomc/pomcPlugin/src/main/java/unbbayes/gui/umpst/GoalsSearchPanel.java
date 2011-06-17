@@ -8,11 +8,14 @@ import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeSet;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -30,7 +33,7 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 	private JLabel labelGoal;
 	
 	private JButton buttonSearch;
-	private JButton buttonAddGoal;
+	private JButton buttonAddGoal,buttonCancel;
 
 	private JTextField textGoal;
 	
@@ -59,9 +62,13 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 		buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
 		buttonPane.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
 		buttonPane.add(Box.createHorizontalGlue());
-		buttonPane.add(getButtonAddGoal());
-		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
 		buttonPane.add(getButtonSearch());
+		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
+		buttonPane.add(getButtonCancel());
+		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
+		buttonPane.add(getButtonAddGoal());
+
+
 		
 
 		
@@ -73,6 +80,26 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 		}
 
 	/**
+	 * @return the buttonCancel
+	 */
+	public JButton getButtonCancel() {
+		
+		if (buttonCancel == null){
+			buttonCancel = new JButton ("cancel search");
+			buttonCancel.setForeground(Color.blue);
+			buttonCancel.addActionListener(new ActionListener() {
+				
+				public void actionPerformed(ActionEvent e) {
+					textGoal.setText("");
+					returnTableGoals();
+				}
+			});
+		}
+		
+		return buttonCancel;
+	} 
+	
+	/**
 	 * @return the buttonAddGoal
 	 */
 	public JButton getButtonAddGoal() {
@@ -83,7 +110,7 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 			buttonAddGoal.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
-					alterarJanelaAtual(getGoalsMainPanel(null));
+					alterarJanelaAtual(getGoalsAdd(null));
 				}
 			});
 		}
@@ -91,14 +118,21 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 		return buttonAddGoal;
 	} 
 	
+	public GoalsAdd getGoalsAdd(GoalModel goal){
+		
+		GoalsAdd ret = new GoalsAdd(getFatherPanel(),goal,null);
+		
+		return ret;
+		
+	}
 	
-	public GoalsMainPanel getGoalsMainPanel(GoalModel goal){
+	/*public GoalsMainPanel getGoalsMainPanel(GoalModel goal){
 		
 		GoalsMainPanel ret = new GoalsMainPanel(getJanelaPai(),goal,null);
 		
 		return ret;
 		
-	}
+	}/*
 	
 	
 	/**
@@ -129,7 +163,19 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 		buttonSearch.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				updateTableGoals();
+				if (!textGoal.getText().equals("")){
+					if( UMPSTProject.getInstance().getMapSearchGoal().get(textGoal.getText()) == null) {
+						JOptionPane.showMessageDialog(null,"Goal "+textGoal.getText()+" not found!!");
+
+					}
+					else{
+						JOptionPane.showMessageDialog(null,"Goal "+textGoal.getText()+" found! Updating table: ");
+						updateTableGoals();
+					}
+				}
+				else{
+					JOptionPane.showMessageDialog(null, "Search is empty!");
+				}
 			}
 		});
 		
@@ -152,32 +198,6 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 	public void updateTableGoals(){
     	String[] columnNames = {"ID","Goal","","",""};
     	
-    	/*String[] palavrasBuscadas = textGoal.getText().split(" ");
-    	int k = 0;
-    	Set<GoalModel> setGoal = null;
-    	
-
-    	GoalModel goalAux;
-    	
-    	for (int i = 0; i < palavrasBuscadas.length; i++) {
-    		
-    		if ( UMPSTProject.getInstance().getMapSearchGoal().get(palavrasBuscadas[i]) != null  ){
-    			
-    			setGoal = UMPSTProject.getInstance().getMapSearchGoal().get(palavrasBuscadas[i]).getGoalsRelated();
-    			
-    	    	for (Iterator<GoalModel> it = setGoal.iterator(); it.hasNext(); ) {
-    	    		goalAux = it.next();
-    	    		if (setGoal.contains(goalAux)){
-    	    			setGoal2.add(goalAux);
-    	    		}
-    	    		setGoal.add(goalAux);
-    	    		
-    	    	}
-
-    			
-    		}
-			
-		}*/
     	
 		Set<GoalModel> aux = UMPSTProject.getInstance().getMapSearchGoal().get(textGoal.getText()).getGoalsRelated();
 		GoalModel goal;
@@ -200,7 +220,7 @@ public class GoalsSearchPanel extends IUMPSTPanel {
     	
 	    
    
-	    UmpstModule pai = getJanelaPai();
+	    UmpstModule pai = getFatherPanel();
 	    alterarJanelaAtual(pai.getMenuPanel());
 	    
 	    TableGoals goalsTable = pai.getMenuPanel().getRequirementsPane().getGoalsTable();
@@ -213,7 +233,38 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 	    goalsTable.repaint();
     }
 	
-	
+	 public void returnTableGoals(){
+	    	String[] columnNames = {"ID","Goal","","",""};
+	    	
+	    	
+		    
+			Object[][] data = new Object[UMPSTProject.getInstance().getMapGoal().size()][5];
+			Integer i=0;
+		    
+			Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
+			TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+			
+			for (String key: sortedKeys){
+				data[i][0] = UMPSTProject.getInstance().getMapGoal().get(key).getId();
+				data[i][1] = UMPSTProject.getInstance().getMapGoal().get(key).getGoalName();			
+				data[i][2] = "";
+				data[i][3] = "";
+				data[i][4] = "";
+				i++;
+			}
+	   
+		    UmpstModule pai = getFatherPanel();
+		    alterarJanelaAtual(pai.getMenuPanel());
+		    
+		    TableGoals goalsTable = pai.getMenuPanel().getRequirementsPane().getGoalsTable();
+		    JTable table = goalsTable.createTable(columnNames,data);
+		    
+		    goalsTable.getScrollPanePergunta().setViewportView(table);
+		    goalsTable.getScrollPanePergunta().updateUI();
+		    goalsTable.getScrollPanePergunta().repaint();
+		    goalsTable.updateUI();
+		    goalsTable.repaint();
+	    }
 	
 
 }

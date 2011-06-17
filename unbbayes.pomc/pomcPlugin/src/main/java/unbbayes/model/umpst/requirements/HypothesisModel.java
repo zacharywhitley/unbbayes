@@ -15,14 +15,14 @@ public class HypothesisModel {
 	private String comments;
 	private String author;
 	private String date;
-	private GoalModel goalRelated;
+	private Set<GoalModel> goalRelated;
 	private HypothesisModel father;
 	private Map<String,HypothesisModel> mapSubHypothesis;
 	private Set<EntityModel> fowardTrackingEntity;
 	private Set<GroupsModel> fowardTrackingGroups;
 
 	
-	public HypothesisModel(String id,String hypothesisName, String comments,String author, String date,GoalModel goalRelated, 
+	public HypothesisModel(String id,String hypothesisName, String comments,String author, String date,Set<GoalModel> goalRelated, 
 			HypothesisModel father,Map<String,HypothesisModel> subHypothesis,Set<EntityModel> fowardTrackingEntity,
 			 Set<GroupsModel> fowardTrackingGroups) {
 		
@@ -118,7 +118,7 @@ public class HypothesisModel {
 	/**
 	 * @return the goalRelated
 	 */
-	public GoalModel getGoalRelated() {
+	public Set<GoalModel> getGoalRelated() {
 		return goalRelated;
 	}
 
@@ -126,7 +126,7 @@ public class HypothesisModel {
 	/**
 	 * @param goalRelated the goalRelated to set
 	 */
-	public void setGoalRelated(GoalModel goalRelated) {
+	public void setGoalRelated(Set<GoalModel> goalRelated) {
 		this.goalRelated = goalRelated;
 	}
 

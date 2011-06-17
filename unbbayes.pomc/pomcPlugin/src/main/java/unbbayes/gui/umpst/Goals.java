@@ -42,7 +42,7 @@ public class Goals extends IUMPSTPanel{
 	public TableGoals getGoalsTable() {
 		if(menuPanel == null ){
 
-			menuPanel = new TableGoals(getJanelaPai());
+			menuPanel = new TableGoals(getFatherPanel());
 		}
 		return menuPanel;
 	}
@@ -52,7 +52,7 @@ public class Goals extends IUMPSTPanel{
 	 */
 	public GoalsSearchPanel getGoalsPanel() {
 		if(requirementsPanel == null ){
-			requirementsPanel = new GoalsSearchPanel(getJanelaPai());
+			requirementsPanel = new GoalsSearchPanel(getFatherPanel());
 			requirementsPanel.setBackground(new Color(0xffffff));
 		}
 		return requirementsPanel;

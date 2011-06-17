@@ -2,8 +2,6 @@ package unbbayes.gui.umpst;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -18,7 +16,7 @@ import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
 import unbbayes.model.umpst.requirements.HypothesisModel;
 
-public class TableHypothesis extends IUMPSTPanel{
+public class TableSubhypothesis extends IUMPSTPanel{
 	
 
 	private static final long serialVersionUID = 1L;
@@ -27,9 +25,8 @@ public class TableHypothesis extends IUMPSTPanel{
 	
 	private UmpstModule janelaPaiAux; 
 	private GoalModel goalRelated;
-
-	private Set<String> keys = new HashSet<String>();
-	private TreeSet<String> sortedKeys = new TreeSet<String>();
+	private HypothesisModel hypothesisRelated;
+	
 	
 	ImageIcon iconAdd = createImageIcon("images/add.gif");
 	ImageIcon iconDel = createImageIcon("images/del.gif");
@@ -45,13 +42,14 @@ public class TableHypothesis extends IUMPSTPanel{
  
     	  /**private constructors make class extension almost impossible,
     	that's why this is protected*/
-    	  protected TableHypothesis(UmpstModule janelaPai, GoalModel goalRelated) {
+    	  protected TableSubhypothesis(UmpstModule janelaPai, GoalModel goalRelated,HypothesisModel hypothesisRelated) {
     		  
     		    super(janelaPai);
     	    	this.setLayout(new GridLayout(1,0));
     	    	
     	    	this.janelaPaiAux = janelaPai;
     	    	this.goalRelated=goalRelated;
+    	    	this.hypothesisRelated=hypothesisRelated;
     	    	
     	    	this.add(createScrolltableHypothesis());
     		    
@@ -77,33 +75,23 @@ public class TableHypothesis extends IUMPSTPanel{
 		
 		Integer i=0;
 
-		if (goalRelated!=null){			
+		if (hypothesisRelated!=null){			
+			data = new Object[hypothesisRelated.getMapSubHypothesis().size()][5];
 
-			HypothesisModel hypothesis;
-			//Set<String> keys = goalRelated.getMapHypothesis().keySet();
-			 keys = UMPSTProject.getInstance().getMapHypothesis().keySet();
-			 sortedKeys = new TreeSet<String>(keys);
-			for (String key: sortedKeys){
-				hypothesis = UMPSTProject.getInstance().getMapHypothesis().get(key);
-				if (hypothesis.getGoalRelated().contains(goalRelated)){
-					i++;
-				}
-			}
 			
-			data = new Object[i][5];
-			 keys = UMPSTProject.getInstance().getMapHypothesis().keySet();
-			 sortedKeys = new TreeSet<String>(keys);
-			i=0;
+			Set<String> keys = hypothesisRelated.getMapSubHypothesis().keySet();
+			TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+			
+			
+			
 			for (String key: sortedKeys){
-				hypothesis = UMPSTProject.getInstance().getMapHypothesis().get(key);
-				if (hypothesis.getGoalRelated().contains(goalRelated)){
-					data[i][0] = hypothesis.getId();
-					data[i][1] = hypothesis.getHypothesisName();
-					data[i][2] = "";
-					data[i][3] = "";
-					data[i][4] = "";
-					i++;
-				}
+		
+				data[i][0] = hypothesisRelated.getMapSubHypothesis().get(key).getId();
+				data[i][1] = hypothesisRelated.getMapSubHypothesis().get(key).getHypothesisName();
+				data[i][2] = "";
+				data[i][3] = "";
+				data[i][4] = "";
+				i++;
 			}
 		}
 		
@@ -129,7 +117,7 @@ public class TableHypothesis extends IUMPSTPanel{
 			public void onButtonPress(int row, int column) {
 				
 				String hypothesisAdd = data[row][0].toString();
-				HypothesisModel hypothesisAux = goalRelated.getMapHypothesis().get(hypothesisAdd);
+				HypothesisModel hypothesisAux = hypothesisRelated.getMapSubHypothesis().get(hypothesisAdd);
 				alterarJanelaAtual(new HypothesisAdd(getFatherPanel(), goalRelated,hypothesisAux, hypothesisAux.getFather() )   );
 			}
 		});
@@ -154,8 +142,8 @@ public class TableHypothesis extends IUMPSTPanel{
 		buttonAdd.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
 				String key = data[row][0].toString();
-				HypothesisModel hypothesisRelated =  goalRelated.getMapHypothesis().get(key);
-				alterarJanelaAtual(new HypothesisAdd(getFatherPanel(),goalRelated,null,hypothesisRelated));
+				HypothesisModel hypothesis =  hypothesisRelated.getMapSubHypothesis().get(key);
+				alterarJanelaAtual(new HypothesisAdd(getFatherPanel(),goalRelated,null,hypothesis));
 			
 				
 			}
@@ -185,13 +173,9 @@ public class TableHypothesis extends IUMPSTPanel{
 							
 							String key = data[row][0].toString();
 							goalRelated.getMapHypothesis().remove(key);
-							UMPSTProject.getInstance().getMapHypothesis().get(key).getGoalRelated().remove(goalRelated);
-							
-							if (UMPSTProject.getInstance().getMapHypothesis().get(key).getGoalRelated()==null){
-								UMPSTProject.getInstance().getMapHypothesis().remove(key);
-							}
+							hypothesisRelated.getMapSubHypothesis().remove(key);
+							//UMPSTProject.getInstance().getMapHypothesis().remove(key);
 
-							
 							UmpstModule pai = getFatherPanel();
 						    alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated)	);
 							 
@@ -241,5 +225,6 @@ public class TableHypothesis extends IUMPSTPanel{
     }
     
   
+	
 
 }

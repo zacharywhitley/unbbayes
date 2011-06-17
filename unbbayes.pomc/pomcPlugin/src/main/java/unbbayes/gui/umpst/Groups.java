@@ -42,7 +42,7 @@ public class Groups extends IUMPSTPanel{
 	public TableGroups getGroupsTable() {
 		if(groupsPanel == null ){
 
-			groupsPanel = new TableGroups(getJanelaPai());
+			groupsPanel = new TableGroups(getFatherPanel());
 		}
 		return groupsPanel;
 	}
@@ -52,7 +52,7 @@ public class Groups extends IUMPSTPanel{
 	 */
 	public GroupsSearch getGroupsPanel() {
 		if(groupsSearch == null ){
-			groupsSearch = new GroupsSearch(getJanelaPai());
+			groupsSearch = new GroupsSearch(getFatherPanel());
 			groupsSearch.setBackground(new Color(0xffffff));
 		}
 		return groupsSearch;

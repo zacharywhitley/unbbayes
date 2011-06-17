@@ -11,25 +11,25 @@ public abstract class IUMPSTPanel extends JPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private UmpstModule janelaPai;
+	private UmpstModule fatherPanel;
 	
-	public UmpstModule getJanelaPai(){
-		return janelaPai;
+	public UmpstModule getFatherPanel(){
+		return fatherPanel;
 	}
 	
 	public void alterarJanelaAtual(JPanel painel){
-		getJanelaPai().setContentPane(painel);
-		getJanelaPai().paintComponents(getJanelaPai().getGraphics());
+		getFatherPanel().setContentPane(painel);
+		getFatherPanel().paintComponents(getFatherPanel().getGraphics());
 	}
 	
-	public IUMPSTPanel(UmpstModule janelaPai) {
+	public IUMPSTPanel(UmpstModule fatherPanel) {
 		// TODO Auto-generated constructor stub
-		this.janelaPai = janelaPai;
+		this.fatherPanel = fatherPanel;
 	}
 
-	public IUMPSTPanel(GridLayout gridLayout, UmpstModule janelaPai) {
+	public IUMPSTPanel(GridLayout gridLayout, UmpstModule fatherPanel) {
 		super(gridLayout);
-		this.janelaPai = janelaPai;
+		this.fatherPanel = fatherPanel;
 	}
 
 }

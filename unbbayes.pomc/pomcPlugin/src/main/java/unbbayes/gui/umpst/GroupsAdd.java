@@ -87,7 +87,7 @@ public class GroupsAdd extends IUMPSTPanel {
 			titulo.setText("Add new group");
 			buttonAdd.setText(" Add ");
 		} else {
-			titulo.setText(group.getGroupName());
+			titulo.setText("Update Group");
 			buttonAdd.setText(" Update ");
 			entityText.setText(group.getGroupName());
 			commentsText.setText(group.getComments());
@@ -107,7 +107,7 @@ public class GroupsAdd extends IUMPSTPanel {
 		c.gridx = 0; c.gridy = 3;c.gridwidth = 1;
 		panel.add( new JLabel("Comments: "), c);
 		c.gridx = 0; c.gridy = 4;c.gridwidth = 1;
-		panel.add( new JLabel("Author Nome: "), c);
+		panel.add( new JLabel("Author Name: "), c);
 		c.gridx = 0; c.gridy = 5;c.gridwidth = 1;
 		panel.add( new JLabel("Date: "), c);
 		
@@ -171,7 +171,7 @@ public class GroupsAdd extends IUMPSTPanel {
 					
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating group", "UnBBayes", JOptionPane.WARNING_MESSAGE);
-						UmpstModule pai = getJanelaPai();
+						UmpstModule pai = getFatherPanel();
 						alterarJanelaAtual(pai.getMenuPanel());	
 					
 					}
@@ -214,7 +214,7 @@ public class GroupsAdd extends IUMPSTPanel {
 						}
 						catch (Exception e2) {
 							JOptionPane.showMessageDialog(null,"Error while ulpating group", "UnBBayes", JOptionPane.WARNING_MESSAGE);
-							UmpstModule pai = getJanelaPai();
+							UmpstModule pai = getFatherPanel();
 							alterarJanelaAtual(pai.getMenuPanel());	
 						}
 					}
@@ -224,7 +224,7 @@ public class GroupsAdd extends IUMPSTPanel {
 
 		buttonCancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				UmpstModule pai = getJanelaPai();
+				UmpstModule pai = getFatherPanel();
 				alterarJanelaAtual(pai.getMenuPanel());	
 			}
 		});
@@ -312,7 +312,7 @@ public class GroupsAdd extends IUMPSTPanel {
 			i++;
 		}
    
-	    UmpstModule pai = getJanelaPai();
+	    UmpstModule pai = getFatherPanel();
 	    alterarJanelaAtual(pai.getMenuPanel());
 	    
 	    TableGroups groupTable = pai.getMenuPanel().getGroupsPane().getGroupsTable();
