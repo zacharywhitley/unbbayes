@@ -4,8 +4,8 @@
 <!-- This version uses Protege4.1 as a library, but because protege4.1 does not work in non OSGI environments, several adaptations had to be made... -->
 <plugin id="unbbayes.gui.mebn.ontology.protege" version="1.0.1">
     <requires>
-        <import plugin-id="unbbayes.util.extension.core" plugin-version="4.2.3" />
-        <import plugin-id="unbbayes.prs.mebn" plugin-version="1.9.8"/>
+        <import plugin-id="unbbayes.util.extension.core" plugin-version="4.10.4" />
+        <import plugin-id="unbbayes.prs.mebn" plugin-version="1.11.9"/>
     </requires>
     <runtime>
        	<!-- Because dist.xml creates the resources folder, we must include it -->
