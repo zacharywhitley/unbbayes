@@ -9,6 +9,7 @@ import java.util.TreeSet;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -119,7 +120,7 @@ public class TableEntities extends IUMPSTPanel{
 				
 				String key = data[row][0].toString();
 				EntityModel entityAux = UMPSTProject.getInstance().getMapEntity().get(key);
-				alterarJanelaAtual(new EntitiesMainPanel(getFatherPanel(), entityAux )   );
+				alterarJanelaAtual(new EntitiesAdd(getFatherPanel(), entityAux )   );
 			}
 		});
 		
@@ -153,7 +154,26 @@ public class TableEntities extends IUMPSTPanel{
 							/*Updating MapSearch*/
 							deleteFromSearchMap(entityToBeDeleted);
 	
-							
+							/*Updating goalRelated foward tracking*/
+							if (entityToBeDeleted.getBacktracking()!=null){
+								JList list = entityToBeDeleted.getBacktracking();
+								list.getModel().getElementAt(i);
+								list.getModel().getSize();
+								
+								for (int i = 0; i < list.getModel().getSize(); i++) {
+									Set<String> keysGoals = UMPSTProject.getInstance().getMapGoal().keySet();
+									TreeSet<String> sortedKeysGoals = new TreeSet<String>(keysGoals);
+									for (String keyGoal : sortedKeysGoals){
+										if (list.getModel().getElementAt(i).equals(UMPSTProject.getInstance().getMapGoal().get(keyGoal).getGoalName()));{
+											UMPSTProject.getInstance().getMapGoal().get(keyGoal).getFowardTrackingEntity().remove(entityToBeDeleted);
+										}
+											
+									}
+								}
+								
+								
+								
+							}
 							
 							UMPSTProject.getInstance().getMapEntity().remove(entityToBeDeleted.getId());
 							

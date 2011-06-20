@@ -33,12 +33,15 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.Border;
+import javax.swing.table.DefaultTableModel;
 
 import unbbayes.model.umpst.entities.EntityModel;
+import unbbayes.model.umpst.entities.RelationshipModel;
 import unbbayes.model.umpst.project.SearchModelEntity;
 import unbbayes.model.umpst.project.SearchModelGoal;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
+import unbbayes.model.umpst.rules.RulesModel;
 
 
 public class EntitiesAdd extends IUMPSTPanel {
@@ -75,12 +78,29 @@ public class EntitiesAdd extends IUMPSTPanel {
 		this.entity = entity;
 		this.setLayout(new GridBagLayout());
 		constraint.fill = GridBagConstraints.BOTH;
-		constraint.gridx=0;constraint.gridy=0;constraint.weightx=0.5;constraint.weighty=0.4;
+		constraint.gridx=0;constraint.gridy=0;constraint.weightx=0.5;constraint.weighty=0.5;
 		panelText();
-		constraint.gridx=0;constraint.gridy=1;constraint.weightx=0.5;constraint.weighty=0.3;
-		getTrackingPanel();
-		constraint.gridx=0;constraint.gridy=2;constraint.weightx=0.5;constraint.weighty=0.3;
-		getTrackingPanelHypothesis();
+		
+		
+		
+		GridBagConstraints c     = new GridBagConstraints();
+		JPanel panelBacktracking = new JPanel();
+		panelBacktracking.setLayout(new GridBagLayout());
+		c.fill = GridBagConstraints.BOTH;
+		c.gridx=0;c.gridy=0;c.weightx=0.5;c.weighty=0.5;
+		panelBacktracking.add(getBacktrackingPanel(),c);
+		c.gridx=0;c.gridy=1;c.weightx=0.5;c.weighty=0.5;
+		panelBacktracking.add(getBackrackingPanelHypothesis(),c);
+		
+		constraint.gridx=0;constraint.gridy=1;constraint.weightx=0.5;constraint.weighty=0.5;
+		add(panelBacktracking,constraint);
+		
+		
+		
+		constraint.gridx=1;constraint.gridy=1;constraint.weightx=0.5;constraint.weighty=0.5;
+		createAtributeTable();
+		constraint.gridx=1;constraint.gridy=0;constraint.weightx=0.5;constraint.weighty=0.5;
+		createTraceabilityTable();
 		listeners();
 
 		if( entity == null){
@@ -141,7 +161,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 		
 		Box box = Box.createHorizontalBox();
 		box.add(buttonCancel);
-		box.add(buttonAtribute);
+		//box.add(buttonAtribute);
 		box.add(buttonAdd);
 		
 		c.gridx = 2; c.gridy = 6; c.gridwidth = 2;
@@ -169,12 +189,19 @@ public class EntitiesAdd extends IUMPSTPanel {
 			public void actionPerformed(ActionEvent e) {
 				if( entity == null){
 					try {
-						EntityModel entityAdd = updateMaEntity();					    
-					    updateMapSearch(entityAdd);
-					    updateBacktracking(entityAdd);
-						updateTableEntities();
-						JOptionPane.showMessageDialog(null, "entity successfully added",null, JOptionPane.INFORMATION_MESSAGE);
 						
+						if (entityText.getText().equals("")){
+							JOptionPane.showMessageDialog(null, "Entity details are empty!");
+						}
+						else{
+						
+						
+							EntityModel entityAdd = updateMaEntity();					    
+						    updateMapSearch(entityAdd);
+						    updateBacktracking(entityAdd);
+							updateTableEntities();
+							JOptionPane.showMessageDialog(null, "entity successfully added",null, JOptionPane.INFORMATION_MESSAGE);
+						}
 					
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating entity", "UnBBayes", JOptionPane.WARNING_MESSAGE);
@@ -186,8 +213,12 @@ public class EntitiesAdd extends IUMPSTPanel {
 				else{
 					if( JOptionPane.showConfirmDialog(null, "Do you want to update this entity?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 						//EntityModel entity = new EntityModel(entityText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),null);
+						
+						
+						
 						try{
 							
+
 							/**Cleaning Search Map*/
 							Set<EntityModel> aux = new HashSet<EntityModel>();
 							EntityModel entityBeta;
@@ -298,7 +329,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 	
 		
 		EntityModel entityAdd = new EntityModel(idAux,entityText.getText(),commentsText.getText(), authorText.getText(), 
-				dateText.getText(),null,null,null,null,null,null);
+				dateText.getText(),null,null,null,null,null,null,null);
 		
 		
 	    UMPSTProject.getInstance().getMapEntity().put(entityAdd.getId(), entityAdd);	
@@ -363,7 +394,7 @@ public class EntitiesAdd extends IUMPSTPanel {
     }
 
 
-	public  void getTrackingPanel(){
+	public Box getBacktrackingPanel(){
 		JButton buttonCopy, buttonDelete;
 
 		Box box = Box.createHorizontalBox();
@@ -402,7 +433,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 		
 
 		JScrollPane listScroller = new JScrollPane(list);
-		listScroller.setMinimumSize(new Dimension(300,200));
+		listScroller.setMinimumSize(new Dimension(100,150));
 				
 		box.add(listScroller);
 	
@@ -442,16 +473,17 @@ public class EntitiesAdd extends IUMPSTPanel {
 		listAux.setVisibleRowCount(-1);
 	
 		JScrollPane listScrollerAux = new JScrollPane(listAux);
-		listScrollerAux.setMinimumSize(new Dimension(300,200));
+		listScrollerAux.setMinimumSize(new Dimension(100,150));
 		box.add(listScrollerAux);
 				
 		box.setBorder(BorderFactory.createTitledBorder("Adding backtracking from Goals"));
 		
-		add(box,constraint);
+		return box;
+		//add(box,constraint);
 		
 	}
 	
-	public  void getTrackingPanelHypothesis(){
+	public  Box getBackrackingPanelHypothesis(){
 		Box box = Box.createHorizontalBox();
 		JButton buttonCopy, buttonDelete;
 
@@ -488,7 +520,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 		
 
 		JScrollPane listHypothesisScroller = new JScrollPane(listHypothesis);
-		listHypothesisScroller.setMinimumSize(new Dimension(300,200));
+		listHypothesisScroller.setMinimumSize(new Dimension(100,150));
 				
 		box.add(listHypothesisScroller);
 	
@@ -528,12 +560,13 @@ public class EntitiesAdd extends IUMPSTPanel {
 		listHypothesisAux.setVisibleRowCount(-1);
 	
 		JScrollPane listHypothesisScrollerAux = new JScrollPane(listHypothesisAux);
-		listHypothesisScrollerAux.setMinimumSize(new Dimension(300,200));
+		listHypothesisScrollerAux.setMinimumSize(new Dimension(100,150));
 		box.add(listHypothesisScrollerAux);
 				
 		box.setBorder(BorderFactory.createTitledBorder("Adding backtracking from Hypothesis"));
 		
-		add(box,constraint);
+		return box;
+		//add(box,constraint);
 		
 	}
 	
@@ -564,15 +597,138 @@ public class EntitiesAdd extends IUMPSTPanel {
 			for (int i = 0; i < listHypothesisAux.getModel().getSize();i++) {
 				keyWord = listHypothesisAux.getModel().getElementAt(i).toString();
 				for (String key: sortedKeys){
-					if (keyWord.equals( UMPSTProject.getInstance().getMapHypothesis().get(key).getHypothesisName()) ){
-						UMPSTProject.getInstance().getMapHypothesis().get(key).getFowardTrackingEntity().add(entity);
-					}			
+					if ( UMPSTProject.getInstance().getMapHypothesis().get(key)!=null){
+						if (keyWord.equals( UMPSTProject.getInstance().getMapHypothesis().get(key).getHypothesisName()) ){
+							UMPSTProject.getInstance().getMapHypothesis().get(key).getFowardTrackingEntity().add(entity);
+						}	
+					}
 				
 				}
 			}
 			entity.setBacktrackingHypothesis(listHypothesisAux);
 
 		}
+		
+	}
+	
+	public void createAtributeTable(){
+    	
+	    TableAtribute atributesTable = new TableAtribute(getFatherPanel(),entity);
+	    JTable table = atributesTable.createTable();
+	    JScrollPane scrollPane = new JScrollPane(table);
+
+	    
+	    JPanel panel = new JPanel();
+	    panel.setLayout(new GridBagLayout());
+	    
+	    GridBagConstraints c = new GridBagConstraints();
+		
+	    if (entity!=null){
+	    	c.gridx = 1; c.gridy = 0; c.gridwidth=1;
+	    	panel.add(buttonAtribute,c);
+	    	
+	    }
+		
+	    c.fill = GridBagConstraints.BOTH;
+	    c.gridx=0;c.gridy=1;c.weightx=0.9;c.weighty=0.9;c.gridwidth=6;
+	    
+	    panel.add(scrollPane,c);
+	    panel.setBorder(BorderFactory.createTitledBorder("List of Atributes"));
+
+	   
+	    add(panel,constraint);
+
+    }
+	
+	
+	public void createTraceabilityTable(){
+		
+		int i = 0;
+		String[] columns = {"Name", "Type"};
+		
+		if ( (entity!=null) && (entity.getMapAtributes()!=null) ){
+		
+			Set<String> keys = entity.getMapAtributes().keySet();
+			TreeSet<String> sortedString = new TreeSet<String>(keys);
+			
+			for (String key : sortedString){
+				i++;
+			}
+		}
+		
+		if ((entity!=null)&&(entity.getFowardTrackingRules()!=null)){
+			
+			Set<RulesModel> aux = entity.getFowardTrackingRules();
+			RulesModel rule;
+	    	for (Iterator<RulesModel> it = aux.iterator(); it.hasNext(); ) {
+	    		rule = it.next();
+	    		i++;
+	    	}
+
+		}
+		
+		if ((entity!=null)&&(entity.getFowardTrackingRelationship()!=null)){
+			Set<RelationshipModel> aux = entity.getFowardTrackingRelationship();
+			RelationshipModel relationship;
+	    	for (Iterator<RelationshipModel> it = aux.iterator(); it.hasNext(); ) {
+	    		relationship = it.next();
+	    		i++;
+	    	}
+
+			
+		}
+		
+		Object[][] data = new Object[i+1][2];
+		i=0;
+		
+		if ( (entity!=null) && (entity.getMapAtributes()!=null) ){
+			
+			Set<String> keys = entity.getMapAtributes().keySet();
+			TreeSet<String> sortedString = new TreeSet<String>(keys);
+			
+			for (String key : sortedString){
+				data[i][0] = entity.getMapAtributes().get(key).getAtributeName();
+				data[i][1] = "Atribute";
+				i++;
+			}
+		}
+		
+		if ((entity!=null)&&(entity.getFowardTrackingRules()!=null)){
+			
+			Set<RulesModel> aux = entity.getFowardTrackingRules();
+			RulesModel rule;
+	    	for (Iterator<RulesModel> it = aux.iterator(); it.hasNext(); ) {
+	    		rule = it.next();
+	    		data[i][0] = rule.getRulesName();
+	    		data[i][1] = "Rule";
+	    		i++;
+	    	}
+
+		}
+		
+		if ((entity!=null)&&(entity.getFowardTrackingRelationship()!=null)){
+			Set<RelationshipModel> aux = entity.getFowardTrackingRelationship();
+			RelationshipModel relationship;
+	    	for (Iterator<RelationshipModel> it = aux.iterator(); it.hasNext(); ) {
+	    		relationship = it.next();
+	    		data[i][0] = relationship.getRelationshipName();
+	    		data[i][1] = "Relationship";
+	    		i++;
+	    	}
+
+			
+		}
+		
+		
+		DefaultTableModel model = new DefaultTableModel(data, columns);
+		JTable table = new JTable(model);
+		
+		JScrollPane scrollPane = new JScrollPane(table);
+		scrollPane.setBorder(BorderFactory.createTitledBorder("This entity traceability"));
+		
+		add(scrollPane,constraint);
+		
+		
 		
 	}
 	

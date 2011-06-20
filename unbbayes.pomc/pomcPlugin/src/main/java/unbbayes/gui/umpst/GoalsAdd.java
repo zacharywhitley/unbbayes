@@ -26,7 +26,9 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
+import unbbayes.model.umpst.entities.AtributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
+import unbbayes.model.umpst.entities.RelationshipModel;
 import unbbayes.model.umpst.groups.GroupsModel;
 import unbbayes.model.umpst.project.SearchModelGoal;
 import unbbayes.model.umpst.project.UMPSTProject;
@@ -574,15 +576,34 @@ public class GoalsAdd extends IUMPSTPanel {
 	    		if (entity.getFowardTrackingRules()!=null){
 	    			Set<RulesModel> auxRules = entity.getFowardTrackingRules();
 	    			RulesModel rule;
-	    	    	for (Iterator<RulesModel> itRules = auxRules.iterator(); it.hasNext(); ) {
+	    	    	for (Iterator<RulesModel> itRules = auxRules.iterator(); itRules.hasNext(); ) {
 	    	    		rule = itRules.next();
 	    	    		i++;
 	    	    	}
 	    		}
+	    		
+	    		if (entity.getMapAtributes()!=null){
+	    			Set<String> keysAtribute = entity.getMapAtributes().keySet();
+	    			TreeSet<String> sortedKeysAtribute = new TreeSet<String>(keysAtribute);
+	    			AtributeModel atribute;
+	    			for(String keyAtribute : sortedKeysAtribute){
+	    				i++;
+	    			}
+	    		}
+	    		
+	    		if (entity.getFowardTrackingRelationship()!=null){
+	    			Set<RelationshipModel> auxRelationship = entity.getFowardTrackingRelationship();
+	    			RelationshipModel relationship;
+	    	    	for (Iterator<RelationshipModel> itRelationship = auxRelationship.iterator(); itRelationship.hasNext(); ) {
+	    	    		relationship = itRelationship.next();
+	    	    		i++;
+	    	    	}
+	    		}
+	    	
 	    		if (entity.getFowardTrackingGroups()!=null){
 	    			Set<GroupsModel> auxGroups = entity.getFowardTrackingGroups();
 	    			GroupsModel group;
-	    	    	for (Iterator<GroupsModel> itGroups = auxGroups.iterator(); it.hasNext(); ) {
+	    	    	for (Iterator<GroupsModel> itGroups = auxGroups.iterator(); itGroups.hasNext(); ) {
 	    	    		group = itGroups.next();
 	    	    		i++;
 	    	    	}
@@ -634,10 +655,15 @@ public class GoalsAdd extends IUMPSTPanel {
 			
 	    	for (Iterator<EntityModel> it = aux.iterator(); it.hasNext(); ) {
 	    		entity = it.next();
+	    		data[i][0] = entity.getEntityName();
+	    		data[i][1] = "Entity";
+	    		data[i][2] = "Direct";
+
+	    		i++;
 	    		if (entity.getFowardTrackingRules()!=null){
 	    			Set<RulesModel> auxRules = entity.getFowardTrackingRules();
 	    			RulesModel rule;
-	    	    	for (Iterator<RulesModel> itRules = auxRules.iterator(); it.hasNext(); ) {
+	    	    	for (Iterator<RulesModel> itRules = auxRules.iterator(); itRules.hasNext(); ) {
 	    	    		rule = itRules.next();
 	    	    		data[i][0] = rule.getRulesName();
 	    	    		data[i][1] = "Rule";
@@ -645,10 +671,34 @@ public class GoalsAdd extends IUMPSTPanel {
 	    	    		i++;
 	    	    	}
 	    		}
+	    		
+	    		if (entity.getMapAtributes()!=null){
+	    			Set<String> keysAtribute = entity.getMapAtributes().keySet();
+	    			TreeSet<String> sortedKeysAtribute = new TreeSet<String>(keysAtribute);
+	    			AtributeModel atribute;
+	    			for(String keyAtribute : sortedKeysAtribute){
+	    				data[i][0] = entity.getMapAtributes().get(keyAtribute).getAtributeName();
+	    	    		data[i][1] = "Atribute";
+	    	    		data[i][2] = "Indirect";
+	    				i++;
+	    			}
+	    		}
+	    		
+	    		if (entity.getFowardTrackingRelationship()!=null){
+	    			Set<RelationshipModel> auxRelationship = entity.getFowardTrackingRelationship();
+	    			RelationshipModel relationship;
+	    	    	for (Iterator<RelationshipModel> itRelationship = auxRelationship.iterator(); itRelationship.hasNext(); ) {
+	    	    		relationship = itRelationship.next();
+	    	    		data[i][0] = relationship.getRelationshipName();
+	    	    		data[i][1] = "Relationship";
+	    	    		data[i][2] = "Indirect";
+	    	    		i++;
+	    	    	}
+	    		}
 	    		if (entity.getFowardTrackingGroups()!=null){
 	    			Set<GroupsModel> auxGroups = entity.getFowardTrackingGroups();
 	    			GroupsModel group;
-	    	    	for (Iterator<GroupsModel> itGroups = auxGroups.iterator(); it.hasNext(); ) {
+	    	    	for (Iterator<GroupsModel> itGroups = auxGroups.iterator(); itGroups.hasNext(); ) {
 	    	    		group = itGroups.next();
 	    	    		data[i][0] = group.getGroupName();
 	    	    		data[i][1] = "Group";
@@ -656,11 +706,7 @@ public class GoalsAdd extends IUMPSTPanel {
 	    	    		i++;
 	    	    	}
 	    		}
-	    		data[i][0] = entity.getEntityName();
-	    		data[i][1] = "Entity";
-	    		data[i][2] = "Direct";
-
-	    		i++;
+	    		
 	    	}
 		}
 		
@@ -813,14 +859,20 @@ public class GoalsAdd extends IUMPSTPanel {
     	
     	 public void updateMapHypothesis(HypothesisModel hypothesisVinculated){
     	    	
+    		 	/**Toda vez deve atualizar que agora essa hipotese tem outro pai e o goal relacionado agora tem outra hipotese*/
+    		 	UMPSTProject.getInstance().getMapHypothesis().get(hypothesisVinculated.getId()).getGoalRelated().add(goal);
     			goal.getMapHypothesis().put(hypothesisVinculated.getId(), hypothesisVinculated);
+    			
     			if (hypothesisVinculated.getMapSubHypothesis()!=null){
     				 Set<String> keys = hypothesisVinculated.getMapSubHypothesis().keySet();
     		 		 TreeSet<String> sortedKeys = new TreeSet<String>(keys);	
     		 		 HypothesisModel hypothesis;
 		 			for (String key: sortedKeys){
 		 				hypothesis = hypothesisVinculated.getMapSubHypothesis().get(key);
+		 				
+		    		 	UMPSTProject.getInstance().getMapHypothesis().get(hypothesis.getId()).getGoalRelated().add(goal);
 		 				goal.getMapHypothesis().put(hypothesis.getId(),hypothesis);
+
 		 			}
 
     			}

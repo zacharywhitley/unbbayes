@@ -12,10 +12,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+
+import unbbayes.model.umpst.entities.RelationshipModel;
+import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
 import unbbayes.model.umpst.requirements.HypothesisModel;
 
-public class TableSubhypothesis extends IUMPSTPanel{
+public class TableRelationship extends IUMPSTPanel{
 	
 
 	private static final long serialVersionUID = 1L;
@@ -23,16 +26,13 @@ public class TableSubhypothesis extends IUMPSTPanel{
 	private JScrollPane scrollpanePergunta;
 	
 	private UmpstModule janelaPaiAux; 
-	private GoalModel goalRelated;
-	private HypothesisModel hypothesisRelated;
-	
 	
 	ImageIcon iconAdd = createImageIcon("images/add.gif");
 	ImageIcon iconDel = createImageIcon("images/del.gif");
 	ImageIcon iconEdit = createImageIcon("images/edit.gif");
 
 	
-	String[] columnNames = {"id","Hypothesis","","",""};
+	String[] columnNames = {"id","Hypothesis","",""};
 	Object[][] data = {};
 
 	
@@ -41,14 +41,12 @@ public class TableSubhypothesis extends IUMPSTPanel{
  
     	  /**private constructors make class extension almost impossible,
     	that's why this is protected*/
-    	  protected TableSubhypothesis(UmpstModule janelaPai, GoalModel goalRelated,HypothesisModel hypothesisRelated) {
+    	  protected TableRelationship(UmpstModule janelaPai) {
     		  
     		    super(janelaPai);
     	    	this.setLayout(new GridLayout(1,0));
     	    	
     	    	this.janelaPaiAux = janelaPai;
-    	    	this.goalRelated=goalRelated;
-    	    	this.hypothesisRelated=hypothesisRelated;
     	    	
     	    	this.add(createScrolltableHypothesis());
     		    
@@ -74,22 +72,21 @@ public class TableSubhypothesis extends IUMPSTPanel{
 		
 		Integer i=0;
 
-		if (hypothesisRelated!=null){			
-			data = new Object[hypothesisRelated.getMapSubHypothesis().size()][5];
+		if (UMPSTProject.getInstance().getMapRelationship()!=null){			
+			data = new Object[UMPSTProject.getInstance().getMapRelationship().size()][5];
 
 			
-			Set<String> keys = hypothesisRelated.getMapSubHypothesis().keySet();
+			Set<String> keys = UMPSTProject.getInstance().getMapRelationship().keySet();
 			TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 			
 			
 			
 			for (String key: sortedKeys){
 		
-				data[i][0] = hypothesisRelated.getMapSubHypothesis().get(key).getId();
-				data[i][1] = hypothesisRelated.getMapSubHypothesis().get(key).getHypothesisName();
+				data[i][0] =UMPSTProject.getInstance().getMapRelationship().get(key).getId();
+				data[i][1] = UMPSTProject.getInstance().getMapRelationship().get(key).getRelationshipName();
 				data[i][2] = "";
 				data[i][3] = "";
-				data[i][4] = "";
 				i++;
 			}
 		}
@@ -107,7 +104,7 @@ public class TableSubhypothesis extends IUMPSTPanel{
 			}
 		});
 
-		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length-3);
+		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length-2);
 		buttonColumn1.setMaxWidth(28);
 		buttonColumn1.setCellRenderer(buttonEdit);
 		buttonColumn1.setCellEditor(buttonEdit);
@@ -115,15 +112,15 @@ public class TableSubhypothesis extends IUMPSTPanel{
 		buttonEdit.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
 				
-				String hypothesisAdd = data[row][0].toString();
-				HypothesisModel hypothesisAux = hypothesisRelated.getMapSubHypothesis().get(hypothesisAdd);
-				alterarJanelaAtual(new HypothesisAdd(getFatherPanel(), goalRelated,hypothesisAux, hypothesisAux.getFather() )   );
+				String relationshipAdd = data[row][0].toString();
+				RelationshipModel relationshipAux = UMPSTProject.getInstance().getMapRelationship().get(relationshipAdd);
+				alterarJanelaAtual(new RelationshipAdd(getFatherPanel(), relationshipAux )   );
 			}
 		});
 		
 		
 
-		
+		/*
 		TableButton buttonAdd = new TableButton( new TableButton.TableButtonCustomizer()
 		{
 			public void customize(JButton button, int row, int column)
@@ -146,7 +143,7 @@ public class TableSubhypothesis extends IUMPSTPanel{
 			
 				
 			}
-		});
+		});*/
 		
 		
 		TableButton buttonDel = new TableButton( new TableButton.TableButtonCustomizer()
@@ -167,16 +164,14 @@ public class TableSubhypothesis extends IUMPSTPanel{
 			
 			public void onButtonPress(int row, int column) {
 				
-				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete Hypothesis "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
+				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete Relationship "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 							
 							String key = data[row][0].toString();
-							goalRelated.getMapHypothesis().remove(key);
-							hypothesisRelated.getMapSubHypothesis().remove(key);
-							//UMPSTProject.getInstance().getMapHypothesis().remove(key);
+							UMPSTProject.getInstance().getMapRelationship().remove(key);
 
 							UmpstModule pai = getFatherPanel();
-						    alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated)	);
+						    alterarJanelaAtual(pai.getMenuPanel().getEntitiesPane());
 							 
 							 JTable table = createTable();
 							 

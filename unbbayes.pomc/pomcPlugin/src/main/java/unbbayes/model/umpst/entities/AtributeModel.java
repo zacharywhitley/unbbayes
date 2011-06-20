@@ -2,8 +2,7 @@ package unbbayes.model.umpst.entities;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import unbbayes.controller.umpst.EnitiesController;
+import java.util.Set;
 
 
 public class AtributeModel {
@@ -16,10 +15,11 @@ public class AtributeModel {
 	private AtributeModel father;
 	private EntityModel entityRelated;
 	private Map<String, AtributeModel> mapSubAtributes;
+	private Set<RelationshipModel> fowardTrackingRelationship;
 	
 	
 	public AtributeModel(String id,String atributeName, String comments,String author, String date,EntityModel entityRelated,
-			AtributeModel father,Map<String,AtributeModel> mapSubAtributes) {
+			AtributeModel father,Map<String,AtributeModel> mapSubAtributes,Set<RelationshipModel> fowardTrackingRelationship) {
 		
 		this.id=id;
 		this.atributeName = atributeName;
@@ -32,8 +32,38 @@ public class AtributeModel {
 		if (mapSubAtributes==null){
 			this.setMapSubAtributes(new HashMap<String, AtributeModel>());
 		}
-		// TODO Auto-generated constructor stub
+		this.fowardTrackingRelationship=fowardTrackingRelationship;
+		if(fowardTrackingRelationship==null){
+			this.setFowardTrackingRelationship(new java.util.HashSet<RelationshipModel>());
+		}
 	}
+
+	
+
+
+	/**
+	 * @return the fowardTrackingRelationship
+	 */
+	public Set<RelationshipModel> getFowardTrackingRelationship() {
+		return fowardTrackingRelationship;
+	}
+
+
+
+
+
+
+	/**
+	 * @param fowardTrackingRelationship the fowardTrackingRelationship to set
+	 */
+	public void setFowardTrackingRelationship(
+			Set<RelationshipModel> fowardTrackingRelationship) {
+		this.fowardTrackingRelationship = fowardTrackingRelationship;
+	}
+
+
+
+
 
 
 	/**

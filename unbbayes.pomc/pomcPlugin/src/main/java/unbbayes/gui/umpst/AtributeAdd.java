@@ -160,14 +160,16 @@ public class AtributeAdd extends IUMPSTPanel {
 			public void actionPerformed(ActionEvent e) {
 				if( atribute == null){
 					try {
-						
-						
+						if (AtributeText.getText().equals("")){
+							JOptionPane.showMessageDialog(null, "Rule's name is empty!");
+						}
+						else{
 						AtributeModel atributeAdd = updateMapAtribute();
 						updateTable(atributeAdd);
 						
 						
 						JOptionPane.showMessageDialog(null, "atribute successfully added",null, JOptionPane.INFORMATION_MESSAGE);
-						
+						}
 					
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating atribute", "UnBBayes", JOptionPane.WARNING_MESSAGE);
@@ -256,7 +258,9 @@ public class AtributeAdd extends IUMPSTPanel {
    public void updateTable(AtributeModel atributeUpdade){
 		
 	    UmpstModule pai = getFatherPanel();
+	    alterarJanelaAtual(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entityRelated));
 
+	    /*
 	    TableAtribute atributeTable     = pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entityRelated).getAtributeTable(entityRelated);
 	    JTable table = atributeTable.createTable();
 	    
@@ -266,7 +270,7 @@ public class AtributeAdd extends IUMPSTPanel {
 	    atributeTable.getScrollPanePergunta().updateUI();
 	    atributeTable.getScrollPanePergunta().repaint();
 	    atributeTable.updateUI();
-	    atributeTable.repaint();
+	    atributeTable.repaint();*/
     }	
    
    public AtributeModel updateMapAtribute(){
@@ -315,7 +319,7 @@ public class AtributeAdd extends IUMPSTPanel {
 			}
 		}
 		
-		AtributeModel atributeAdd = new AtributeModel(idAux,AtributeText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),entityRelated, atributeFather,null);
+		AtributeModel atributeAdd = new AtributeModel(idAux,AtributeText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),entityRelated, atributeFather,null,null);
 		if (atributeFather!=null){
 			atributeFather.getMapSubAtributes().put(atributeAdd.getId(), atributeAdd);
 		}

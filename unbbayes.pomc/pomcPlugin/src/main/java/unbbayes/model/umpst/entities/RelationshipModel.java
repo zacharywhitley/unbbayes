@@ -1,7 +1,103 @@
 package unbbayes.model.umpst.entities;
 
+import java.util.Set;
+
+import javax.swing.JList;
+
+import org.hsqldb.lib.HashSet;
+
 public class RelationshipModel {
 	
+	String id;
+	private String comments;
+	private String author;
+	private String date;
+	private RelationshipModel father;
+	private JList backtrackingEntity;
+	private JList backtrackingAtribute;
+
+	
+	public RelationshipModel(String id,String relationshipName, String comments,String author, String date, RelationshipModel father,
+			JList backtrackingEntity, JList backtrackingAtribute) {
+		
+		this.id=id;
+		this.relationshipName = relationshipName;
+		this.comments = comments;
+		this.author = author;
+		this.date = date;
+		this.father = father;
+		this.backtrackingAtribute=backtrackingAtribute;
+		if(backtrackingAtribute==null){
+			this.setBacktrackingAtribute(new JList());
+		}
+		this.backtrackingEntity=backtrackingEntity;
+		if(backtrackingEntity==null){
+			this.setBacktrackingEntity(new JList());
+		}
+		// TODO Auto-generated constructor stub
+	}
+	
+	
+	
+
+
+	/**
+	 * @return the id
+	 */
+	public String getId() {
+		return id;
+	}
+
+
+
+
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(String id) {
+		this.id = id;
+	}
+
+
+
+
+
+	/**
+	 * @return the backtrackingEntity
+	 */
+	public JList getBacktrackingEntity() {
+		return backtrackingEntity;
+	}
+
+
+	/**
+	 * @param backtrackingEntity the backtrackingEntity to set
+	 */
+	public void setBacktrackingEntity(JList backtrackingEntity) {
+		this.backtrackingEntity = backtrackingEntity;
+	}
+
+
+	/**
+	 * @return the backtrackingAtribute
+	 */
+	public JList getBacktrackingAtribute() {
+		return backtrackingAtribute;
+	}
+
+
+	/**
+	 * @param backtrackingAtribute the backtrackingAtribute to set
+	 */
+	public void setBacktrackingAtribute(JList backtrackingAtribute) {
+		this.backtrackingAtribute = backtrackingAtribute;
+	}
+
+
+
+
+
 	private String relationshipName;
 	/**
 	 * @return the relationshipName
@@ -68,37 +164,20 @@ public class RelationshipModel {
 
 
 	/**
-	 * @return the pai
+	 * @return the father
 	 */
 	public RelationshipModel getPai() {
-		return pai;
+		return father;
 	}
 
 
 	/**
-	 * @param pai the pai to set
+	 * @param father the father to set
 	 */
 	public void setPai(RelationshipModel pai) {
-		this.pai = pai;
+		this.father = pai;
 	}
 
-
-	private String comments;
-	private String author;
-	private String date;
-	private RelationshipModel pai;
-	
-	
-	public RelationshipModel(String relationshipName, String comments,String author, String date, RelationshipModel pai) {
-		
-		this.relationshipName = relationshipName;
-		this.comments = comments;
-		this.author = author;
-		this.date = date;
-		this.pai = pai;
-		// TODO Auto-generated constructor stub
-	}
-	
 	
 	
 }

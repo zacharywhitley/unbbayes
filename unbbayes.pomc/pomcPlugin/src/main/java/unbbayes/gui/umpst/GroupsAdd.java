@@ -55,7 +55,7 @@ public class GroupsAdd extends IUMPSTPanel {
  
 	
 	private JTextField dateText,authorText;
-	private JTextField entityText,commentsText;
+	private JTextField groupText,commentsText;
 	private GroupsModel group;
 
 	private static final long serialVersionUID = 1L;
@@ -89,7 +89,7 @@ public class GroupsAdd extends IUMPSTPanel {
 		} else {
 			titulo.setText("Update Group");
 			buttonAdd.setText(" Update ");
-			entityText.setText(group.getGroupName());
+			groupText.setText(group.getGroupName());
 			commentsText.setText(group.getComments());
 			authorText.setText(group.getAuthor());
 			dateText.setText(group.getDate());
@@ -121,14 +121,14 @@ public class GroupsAdd extends IUMPSTPanel {
 		titulo.setBackground(new Color(0x4169AA));
 		panel.add( titulo, d);
 				
-		entityText = new JTextField(20);
+		groupText = new JTextField(20);
 		commentsText = new JTextField(20);
 		authorText = new JTextField(20);
 		dateText = new JTextField(20);
  
 
 		c.gridx = 1; c.gridy = 2;c.gridwidth = 2;
-		panel.add( entityText, c);
+		panel.add( groupText, c);
 		
 		c.gridx = 1; c.gridy = 3;c.gridwidth = 2;
 		panel.add( commentsText, c);
@@ -162,12 +162,16 @@ public class GroupsAdd extends IUMPSTPanel {
 			public void actionPerformed(ActionEvent e) {
 				if( group == null){
 					try {
+						if (groupText.getText().equals("")){
+							JOptionPane.showMessageDialog(null, "Group's name is empty!");
+						}
+						else{
 						GroupsModel groupAdd = updateMapGroups();					    
 					    updateMapSearch(groupAdd);
 					    updateBacktracking(groupAdd);
 						updateTableGroups();
 						JOptionPane.showMessageDialog(null, "group successfully added",null, JOptionPane.INFORMATION_MESSAGE);
-						
+						}
 					
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating group", "UnBBayes", JOptionPane.WARNING_MESSAGE);
@@ -178,7 +182,7 @@ public class GroupsAdd extends IUMPSTPanel {
 				}
 				else{
 					if( JOptionPane.showConfirmDialog(null, "Do you want to update this group?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
-						//EntityModel group = new EntityModel(entityText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),null);
+						//EntityModel group = new EntityModel(groupText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),null);
 						try{
 							
 							/**Cleaning Search Map*/
@@ -199,7 +203,7 @@ public class GroupsAdd extends IUMPSTPanel {
 						    }
 						    /************/
 							
-							group.setGroupName(entityText.getText());
+							group.setGroupName(groupText.getText());
 							group.setComments(commentsText.getText());
 							group.setAuthor(authorText.getText());
 							group.setDate(dateText.getText());
@@ -232,7 +236,7 @@ public class GroupsAdd extends IUMPSTPanel {
 	
 		
 		
-		entityText.addActionListener(new ActionListener() {
+		groupText.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				commentsText.requestFocus();
 			}
@@ -285,7 +289,7 @@ public class GroupsAdd extends IUMPSTPanel {
 			}
 	
 		
-		GroupsModel groupAdd = new GroupsModel(idAux,entityText.getText(),commentsText.getText(), authorText.getText(), 
+		GroupsModel groupAdd = new GroupsModel(idAux,groupText.getText(),commentsText.getText(), authorText.getText(), 
 				dateText.getText(),null,null);
 		
 		

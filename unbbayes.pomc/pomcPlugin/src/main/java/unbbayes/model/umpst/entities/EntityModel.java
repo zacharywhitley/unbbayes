@@ -36,10 +36,12 @@ public class EntityModel {
 	private JList backtrackingHypothesis;
 	private Set<RulesModel> fowardTrackingRules;
 	private Set<GroupsModel> fowardTrackingGroups;
+	private Set<RelationshipModel> fowardTrackingRelationship;
+
 	
 	public EntityModel(String id,String entityName, String comments,String author, String date, 
 			EntityModel father,Map<String,AtributeModel> mapAtributes, JList backtracking,JList backtrackingHypothesis, 
-			Set<RulesModel> fowardTrackingRules, Set<GroupsModel> fowardTrackingGroups) {
+			Set<RulesModel> fowardTrackingRules, Set<GroupsModel> fowardTrackingGroups,Set<RelationshipModel> fowardTrackingRelationship) {
 		
 		this.id           = id;
 		this.entityName   = entityName;
@@ -64,10 +66,42 @@ public class EntityModel {
 		if (fowardTrackingGroups==null){
 			this.setFowardTrackingGroups(new HashSet<GroupsModel>());
 		}
+		
+		this.fowardTrackingRelationship=fowardTrackingRelationship;
+		if(fowardTrackingRelationship==null){
+			this.setFowardTrackingRelationship(new HashSet<RelationshipModel>());
+		}
 	}
 
 
 	
+
+
+	/**
+	 * @return the fowardTrackingRelationship
+	 */
+	public Set<RelationshipModel> getFowardTrackingRelationship() {
+		return fowardTrackingRelationship;
+	}
+
+
+
+
+
+
+	/**
+	 * @param fowardTrackingRelationship the fowardTrackingRelationship to set
+	 */
+	public void setFowardTrackingRelationship(
+			Set<RelationshipModel> fowardTrackingRelationship) {
+		this.fowardTrackingRelationship = fowardTrackingRelationship;
+	}
+
+
+
+
+
+
 	/**
 	 * @return the fowardTrackingGroups
 	 */

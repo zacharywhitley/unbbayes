@@ -105,7 +105,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 
 	private Component getButtonRelationship() {
 		if (buttonAddRelationship == null){
-			buttonAddRelationship = new JButton ("add new relationship");
+			buttonAddRelationship = new JButton ("Relationship panel");
 			buttonAddRelationship.setForeground(Color.blue);
 			buttonAddRelationship.addActionListener(new ActionListener() {
 				
@@ -274,9 +274,9 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 		    entitiesTable.repaint();
 	    }
 	
-	public EntitiesMainPanel getEntitiesMainPanel(EntityModel entity){
+	public EntitiesAdd getEntitiesMainPanel(EntityModel entity){
 		
-		EntitiesMainPanel ret = new EntitiesMainPanel(getFatherPanel(),entity);
+		EntitiesAdd ret = new EntitiesAdd(getFatherPanel(),entity);
 		
 		return ret;
 		

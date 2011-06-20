@@ -119,7 +119,7 @@ public class RulesAdd extends IUMPSTPanel {
 		c.gridx = 0; c.gridy = 2; c.gridwidth=1;
 		panel.add( new JLabel("Rule Description: "), c);
 		c.gridx = 0; c.gridy = 3; c.gridwidth=1;
-		panel.add(new JLabel("Rule Type"));
+		panel.add(new JLabel("Rule Type"),c);
 		c.gridx = 0; c.gridy = 4;c.gridwidth=1;
 		panel.add( new JLabel("Comments: "), c);
 		c.gridx = 0; c.gridy = 5;c.gridwidth=1;
@@ -172,11 +172,16 @@ public class RulesAdd extends IUMPSTPanel {
 				if( rule == null){
 					
 					try {
-					    RulesModel ruleAdd = updateMapRules();					    
-					    updateMapSearch(ruleAdd);
-					    updateBacktracking(ruleAdd);
-						updateTableRules();
-					  	JOptionPane.showMessageDialog(null, "Rule successfully added",null, JOptionPane.INFORMATION_MESSAGE);
+						if (ruleText.getText().equals("")){
+							JOptionPane.showMessageDialog(null, "Rule's name is empty");
+						}
+						else{
+						    RulesModel ruleAdd = updateMapRules();					    
+						    updateMapSearch(ruleAdd);
+						    updateBacktracking(ruleAdd);
+							updateTableRules();
+						  	JOptionPane.showMessageDialog(null, "Rule successfully added",null, JOptionPane.INFORMATION_MESSAGE);
+						}
 						
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating rule", "UnBBayes", JOptionPane.WARNING_MESSAGE);
