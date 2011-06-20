@@ -44,7 +44,8 @@ public class AtributeAdd extends IUMPSTPanel {
 	//private JButton buttonSubAtribute    = new JButton(iconSubAtribute);
 	
 	private JTextField dateText,authorText;
-	private JTextField AtributeText,commentsText;
+	private JTextField AtributeText;
+	private JTextArea commentsText;
 	private AtributeModel atribute,atributeFather;
 	private EntityModel entityRelated;
 	
@@ -89,11 +90,11 @@ public class AtributeAdd extends IUMPSTPanel {
 	public void labels(){
 		c.gridx = 0; c.gridy = 2;
 		add( new JLabel("atribute Description: "), c);
-		c.gridx = 0; c.gridy = 3;
-		add( new JLabel("Comments: "), c);
-		c.gridx = 0; c.gridy = 4;
-		add( new JLabel("Author Name: "), c);
 		c.gridx = 0; c.gridy = 5;
+		add( new JLabel("Comments: "), c);
+		c.gridx = 0; c.gridy = 3;
+		add( new JLabel("Author Name: "), c);
+		c.gridx = 0; c.gridy = 4;
 		add( new JLabel("Date: "), c);
 		
 
@@ -111,10 +112,10 @@ public class AtributeAdd extends IUMPSTPanel {
 	
 	public void fields(){
 		
-		AtributeText = new JTextField(50);
-		commentsText = new JTextField(50);
+		AtributeText = new JTextField(20);
+		commentsText = new JTextArea(5,21);
 		authorText = new JTextField(20);
-		dateText = new JTextField(10);
+		dateText = new JTextField(20);
  
 
 		c.gridx = 1; c.gridy = 2;
@@ -226,11 +227,11 @@ public class AtributeAdd extends IUMPSTPanel {
 			}
 		});
 		
-		commentsText.addActionListener(new ActionListener() {
+		/*commentsText.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				authorText.requestFocus();
 			}
-		});
+		});*/
 		
 		authorText.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {

@@ -29,6 +29,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.Border;
@@ -56,7 +57,8 @@ public class RulesAdd extends IUMPSTPanel {
 	private JButton buttonCancel     = new JButton("Cancel");
 	
 	private JTextField dateText,authorText;
-	private JTextField ruleText,commentsText,typeText;
+	private JTextField ruleText,typeText;
+	private JTextArea commentsText;
 	private RulesModel rule;
 	private JButton buttonCopy, buttonDelete;
 
@@ -121,17 +123,17 @@ public class RulesAdd extends IUMPSTPanel {
 		c.gridx = 0; c.gridy = 3; c.gridwidth=1;
 		panel.add(new JLabel("Rule Type"),c);
 		c.gridx = 0; c.gridy = 4;c.gridwidth=1;
-		panel.add( new JLabel("Comments: "), c);
-		c.gridx = 0; c.gridy = 5;c.gridwidth=1;
 		panel.add( new JLabel("Author Name: "), c);
-		c.gridx = 0; c.gridy = 6;c.gridwidth=1;
+		c.gridx = 0; c.gridy = 5;c.gridwidth=1;
 		panel.add( new JLabel("Date: "), c);
+		c.gridx = 0; c.gridy = 6;c.gridwidth=1;
+		panel.add( new JLabel("Comments: "), c);
 		
 		
 			
 		ruleText = new JTextField(20);
 		typeText = new JTextField(20);
-		commentsText = new JTextField(20);
+		commentsText = new JTextArea(5,21);
 		authorText = new JTextField(20);
 		dateText = new JTextField(20);
  
@@ -253,11 +255,11 @@ public class RulesAdd extends IUMPSTPanel {
 			}
 		});
 		
-		commentsText.addActionListener(new ActionListener() {
+		/*commentsText.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				authorText.requestFocus();
 			}
-		});
+		});*/
 		
 		authorText.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {

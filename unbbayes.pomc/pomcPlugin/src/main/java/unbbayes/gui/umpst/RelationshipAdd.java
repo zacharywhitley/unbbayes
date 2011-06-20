@@ -48,7 +48,8 @@ public class RelationshipAdd extends IUMPSTPanel {
 	//private JButton buttonSubRelationship    = new JButton(iconSubRelationship);
 	
 	private JTextField dateText,authorText;
-	private JTextField RelationshipText,commentsText;
+	private JTextField RelationshipText;
+	private JTextArea commentsText;
 	private RelationshipModel relationship,pai;
 	
 	private JList list,listAux; 
@@ -114,11 +115,11 @@ public class RelationshipAdd extends IUMPSTPanel {
 		
 		c.gridx = 0; c.gridy = 2;
 		panel.add( new JLabel("relationship Description: "), c);
-		c.gridx = 0; c.gridy = 3;
-		panel.add( new JLabel("Comments: "), c);
-		c.gridx = 0; c.gridy = 4;
-		panel.add( new JLabel("Author Nome: "), c);
 		c.gridx = 0; c.gridy = 5;
+		panel.add( new JLabel("Comments: "), c);
+		c.gridx = 0; c.gridy = 3;
+		panel.add( new JLabel("Author Nome: "), c);
+		c.gridx = 0; c.gridy = 4;
 		panel.add( new JLabel("Date: "), c);
 		
 
@@ -136,7 +137,7 @@ public class RelationshipAdd extends IUMPSTPanel {
 	
 		
 		RelationshipText = new JTextField(20);
-		commentsText = new JTextField(20);
+		commentsText = new JTextArea(5,21);
 		authorText = new JTextField(20);
 		dateText = new JTextField(20);
  
@@ -232,11 +233,11 @@ public class RelationshipAdd extends IUMPSTPanel {
 			}
 		});
 		
-		commentsText.addActionListener(new ActionListener() {
+/*		commentsText.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				authorText.requestFocus();
 			}
-		});
+		});*/
 		
 		authorText.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {

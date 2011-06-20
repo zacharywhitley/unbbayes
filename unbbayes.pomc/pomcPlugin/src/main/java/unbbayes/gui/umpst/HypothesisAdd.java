@@ -26,6 +26,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
@@ -57,7 +58,8 @@ public class HypothesisAdd extends IUMPSTPanel {
 	private JButton buttonSubhypothesis    = new JButton("add new subhypothesis");
 	
 	private JTextField dateText,authorText;
-	private JTextField hypothesisText,commentsText;
+	private JTextField hypothesisText;
+	private JTextArea commentsText;
 	private HypothesisModel hypothesis,hypothesisFather;
 	private Map<String,HypothesisModel> hypothesisChildren;
 	private GoalModel goalRelated;
@@ -108,13 +110,13 @@ public class HypothesisAdd extends IUMPSTPanel {
 		
 		c.gridx = 0; c.gridy = 2;
 		panel.add( new JLabel("Hypothesis Description: "), c);
+
 		c.gridx = 0; c.gridy = 3;
-		panel.add( new JLabel("Comments: "), c);
-		c.gridx = 0; c.gridy = 4;
 		panel.add( new JLabel("Author Name: "), c);
-		c.gridx = 0; c.gridy = 5;
+		c.gridx = 0; c.gridy = 4;
 		panel.add( new JLabel("Date: "), c);
-		
+		c.gridx = 0; c.gridy = 5;
+		panel.add( new JLabel("Comments: "), c);
 
 		GridBagConstraints d = new GridBagConstraints();
 		d.gridx = 0; d.gridy = 0;
@@ -127,7 +129,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 		
 			
 		hypothesisText = new JTextField(20);
-		commentsText   = new JTextField(20);
+		commentsText   = new JTextArea(5,21);
 		authorText     = new JTextField(20);
 		dateText       = new JTextField(20);
  
@@ -136,13 +138,13 @@ public class HypothesisAdd extends IUMPSTPanel {
 		panel.add( hypothesisText, c);
 		
 		c.gridx = 1; c.gridy = 3;
-		panel.add( commentsText, c);
-		
-		c.gridx = 1; c.gridy = 4;
 		panel.add( authorText, c);
 		
-		c.gridx = 1; c.gridy = 5;
+		c.gridx = 1; c.gridy = 4;
 		panel.add( dateText, c);
+		
+		c.gridx = 1; c.gridy = 5;
+		panel.add( commentsText, c);
 		
 			
 		c.gridx = 0; c.gridy = 7; c.gridwidth = 1;
@@ -239,12 +241,12 @@ public class HypothesisAdd extends IUMPSTPanel {
 				commentsText.requestFocus();
 			}
 		});
-		
+	/*	
 		commentsText.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				authorText.requestFocus();
 			}
-		});
+		});*/
 		
 		authorText.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {

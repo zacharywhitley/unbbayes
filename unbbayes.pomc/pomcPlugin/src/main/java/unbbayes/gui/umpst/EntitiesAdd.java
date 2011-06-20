@@ -58,7 +58,8 @@ public class EntitiesAdd extends IUMPSTPanel {
  
 	
 	private JTextField dateText,authorText;
-	private JTextField entityText,commentsText;
+	private JTextField entityText;
+	private JTextArea commentsText;
 	private EntityModel entity;
 
 	private static final long serialVersionUID = 1L;
@@ -124,11 +125,11 @@ public class EntitiesAdd extends IUMPSTPanel {
 		
 		c.gridx = 0; c.gridy = 2;c.gridwidth = 1;
 		panel.add( new JLabel("Entity Description: "), c);
-		c.gridx = 0; c.gridy = 3;c.gridwidth = 1;
-		panel.add( new JLabel("Comments: "), c);
-		c.gridx = 0; c.gridy = 4;c.gridwidth = 1;
-		panel.add( new JLabel("Author Name: "), c);
 		c.gridx = 0; c.gridy = 5;c.gridwidth = 1;
+		panel.add( new JLabel("Comments: "), c);
+		c.gridx = 0; c.gridy = 3;c.gridwidth = 1;
+		panel.add( new JLabel("Author Name: "), c);
+		c.gridx = 0; c.gridy = 4;c.gridwidth = 1;
 		panel.add( new JLabel("Date: "), c);
 		
 
@@ -142,7 +143,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 		panel.add( titulo, d);
 				
 		entityText = new JTextField(20);
-		commentsText = new JTextField(20);
+		commentsText = new JTextArea(5,21);
 		authorText = new JTextField(20);
 		dateText = new JTextField(20);
  
@@ -284,11 +285,11 @@ public class EntitiesAdd extends IUMPSTPanel {
 			}
 		});
 		
-		commentsText.addActionListener(new ActionListener() {
+		/*commentsText.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				authorText.requestFocus();
 			}
-		});
+		});*/
 		
 		authorText.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
