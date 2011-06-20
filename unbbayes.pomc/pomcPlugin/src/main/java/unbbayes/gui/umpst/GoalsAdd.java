@@ -174,7 +174,7 @@ public class GoalsAdd extends IUMPSTPanel {
 		
 	
 
-		
+		buttonAdd.setToolTipText("Save this goal");
 		buttonHypothesis.setToolTipText("Add new Hyphotesis");
 		buttonSubgoal.setToolTipText("Add new Subgoal");
 		buttonCancel.setToolTipText("Return to main panel");

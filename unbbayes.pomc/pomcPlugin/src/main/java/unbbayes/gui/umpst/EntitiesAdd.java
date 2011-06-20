@@ -164,6 +164,9 @@ public class EntitiesAdd extends IUMPSTPanel {
 		//box.add(buttonAtribute);
 		box.add(buttonAdd);
 		
+		buttonAdd.setToolTipText("Save this entity");
+		buttonCancel.setToolTipText("Cancel and return to main panel");
+		
 		c.gridx = 2; c.gridy = 6; c.gridwidth = 2;
 		panel.add(box,c);
 		/*
@@ -626,6 +629,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 	    if (entity!=null){
 	    	c.gridx = 1; c.gridy = 0; c.gridwidth=1;
 	    	panel.add(buttonAtribute,c);
+	    	buttonAtribute.setToolTipText("Add new atribute to entity");
 	    	
 	    }
 		

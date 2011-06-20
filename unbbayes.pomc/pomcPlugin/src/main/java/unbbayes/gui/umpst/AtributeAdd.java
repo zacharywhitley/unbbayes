@@ -140,6 +140,9 @@ public class AtributeAdd extends IUMPSTPanel {
 		c.gridx = 1; c.gridy = 7;
 		add( buttonAdd, c);
 		
+		buttonCancel.setToolTipText("Cancel and return to entity Panel");
+		buttonAdd.setToolTipText("Save this atribute");
+		
 		GridBagConstraints d = new GridBagConstraints();
 		
 		//.gridx = 0; d.gridy = 8; 

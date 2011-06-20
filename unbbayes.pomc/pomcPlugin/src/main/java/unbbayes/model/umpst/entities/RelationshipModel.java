@@ -8,7 +8,7 @@ import org.hsqldb.lib.HashSet;
 
 public class RelationshipModel {
 	
-	String id;
+	private String id;
 	private String comments;
 	private String author;
 	private String date;
