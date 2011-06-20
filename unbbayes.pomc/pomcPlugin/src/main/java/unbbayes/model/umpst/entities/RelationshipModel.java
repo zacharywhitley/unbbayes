@@ -1,10 +1,8 @@
 package unbbayes.model.umpst.entities;
 
-import java.util.Set;
 
 import javax.swing.JList;
 
-import org.hsqldb.lib.HashSet;
 
 public class RelationshipModel {
 	
