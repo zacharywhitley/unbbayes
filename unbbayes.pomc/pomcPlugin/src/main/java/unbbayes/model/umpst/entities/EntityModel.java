@@ -30,7 +30,6 @@ public class EntityModel {
 	private String comments;
 	private String author;
 	private String date;
-	private EntityModel father;
 	private Map<String,AtributeModel> mapAtributes;
 	private JList backtracking;
 	private JList backtrackingHypothesis;
@@ -40,7 +39,7 @@ public class EntityModel {
 
 	
 	public EntityModel(String id,String entityName, String comments,String author, String date, 
-			EntityModel father,Map<String,AtributeModel> mapAtributes, JList backtracking,JList backtrackingHypothesis, 
+			Map<String,AtributeModel> mapAtributes, JList backtracking,JList backtrackingHypothesis, 
 			Set<RulesModel> fowardTrackingRules, Set<GroupsModel> fowardTrackingGroups,Set<RelationshipModel> fowardTrackingRelationship) {
 		
 		this.id           = id;
@@ -48,7 +47,6 @@ public class EntityModel {
 		this.comments     = comments;
 		this.author       = author;
 		this.date         = date;
-		this.father       = father;
 		this.mapAtributes = mapAtributes;
 		if (mapAtributes==null){
 			this.setMapAtributes(new HashMap<String, AtributeModel>());
@@ -172,22 +170,6 @@ public class EntityModel {
 		this.mapAtributes = mapAtributes;
 	}
 
-
-
-	/**
-	 * @return the father
-	 */
-	public EntityModel getFather() {
-		return father;
-	}
-
-
-	/**
-	 * @param father the father to set
-	 */
-	public void setFather(EntityModel father) {
-		this.father = father;
-	}
 
 
 

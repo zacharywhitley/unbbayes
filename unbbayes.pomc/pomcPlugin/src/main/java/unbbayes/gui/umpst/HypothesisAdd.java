@@ -181,10 +181,15 @@ public class HypothesisAdd extends IUMPSTPanel {
 
 
 					try {
+						
+						if (hypothesisText.getText()==null){
+							JOptionPane.showMessageDialog(null, "Hypothesis name is empty!");
+						}
+						else{
 						HypothesisModel hypothesisAdd = updateMapHypothesis();
 						updateTable(hypothesisAdd);
 						JOptionPane.showMessageDialog(null, "hypothesis successfully added",null, JOptionPane.INFORMATION_MESSAGE);
-						
+						}
 					
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating hypothesis", "UnBBayes", JOptionPane.WARNING_MESSAGE);
@@ -363,7 +368,8 @@ public class HypothesisAdd extends IUMPSTPanel {
 			}
 			//hypothesisFather.getSubHypothesis().put(hypothesisAdd.getId(), hypothesisAdd);
 		}
-		/**TALVEZ AQUI DE PAU POIS ELE CRIOU O HYPOTHESISADD COM O O GOALREALTED ACIMA. POREM SO AGORA ELE ADICIONA NO GOALRELATE.HYPOTHESES ESSA HIPOSES*/
+		/**TALVEZ AQUI DE PAU POIS ELE CRIOU O HYPOTHESISADD COM O O GOALREALTED ACIMA.
+		 *  POREM SO AGORA ELE ADICIONA NO GOALRELATE.HYPOTHESES ESSA HIPOSES*/
 		goalRelated.getMapHypothesis().put(hypothesisAdd.getId(), hypothesisAdd);
 		UMPSTProject.getInstance().getMapHypothesis().put(hypothesisAdd.getId(), hypothesisAdd);
 		

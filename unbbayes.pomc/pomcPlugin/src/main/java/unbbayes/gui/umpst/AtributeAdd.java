@@ -9,38 +9,40 @@ import java.awt.event.ActionListener;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.swing.Icon;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import unbbayes.gui.umpst.IUMPSTPanel;
 import unbbayes.gui.umpst.MenuPanel;
-import unbbayes.gui.umpst.RelationshipAdd;
 import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.entities.AtributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
-import unbbayes.model.umpst.entities.RelationshipModel;
 import unbbayes.model.umpst.project.UMPSTProject;
-import unbbayes.model.umpst.requirements.HypothesisModel;
 
 
 public class AtributeAdd extends IUMPSTPanel {
 	
-	private ImageIcon iconRelationship = createImageIcon("images/hypo.png");
-	private ImageIcon iconSubAtribute = createImageIcon("images/sub.png");
+
 
 	
-	private GridBagConstraints c     = new GridBagConstraints();
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private GridBagConstraints constraints     = new GridBagConstraints();
 	private JLabel titulo            = new JLabel();
 	
 	private JButton buttonAdd 	     = new JButton();
 	private JButton buttonCancel     = new JButton("Cancel");
-	private JButton buttonRelationship = new JButton(iconRelationship);
+	private JButton buttonSubatribute = new JButton("Add Sub-Atribute");
 	//private JButton buttonSubAtribute    = new JButton(iconSubAtribute);
 	
 	private JTextField dateText,authorText;
@@ -57,14 +59,20 @@ public class AtributeAdd extends IUMPSTPanel {
 		this.atributeFather=atributeFather;
 		
 		this.setLayout(new GridBagLayout());
-		c.fill = GridBagConstraints.HORIZONTAL;
-		labels();
-		fields();
-		buttons();
+		constraints.fill = GridBagConstraints.BOTH;
+		constraints.gridx=0; constraints.gridy = 0; constraints.weightx=0.5;constraints.weighty=0.5;	
+		textPanel();
+		constraints.gridx=0; constraints.gridy = 1; constraints.weightx=0.5;constraints.weighty=0.5;	
+		createSubAtributeTable();
 		listeners();
 
 		if( atribute == null){
-			titulo.setText("Add new atribute");
+			if (atributeFather==null){
+				titulo.setText("Add new atribute");
+			}
+			else{
+				titulo.setText("Add new sub=atribute");
+			}
 			buttonAdd.setText(" Add ");
 		} else {
 			titulo.setText(" Update atribute");
@@ -87,15 +95,20 @@ public class AtributeAdd extends IUMPSTPanel {
 
 
 
-	public void labels(){
+	public void textPanel(){
+		GridBagConstraints c = new GridBagConstraints();
+		JPanel panel = new JPanel();
+		panel.setLayout(new GridBagLayout());
+		
+
 		c.gridx = 0; c.gridy = 2;
-		add( new JLabel("atribute Description: "), c);
-		c.gridx = 0; c.gridy = 5;
-		add( new JLabel("Comments: "), c);
+		panel.add( new JLabel("atribute Description: "), c);
 		c.gridx = 0; c.gridy = 3;
-		add( new JLabel("Author Name: "), c);
+		panel.add( new JLabel("Author Name: "), c);
 		c.gridx = 0; c.gridy = 4;
-		add( new JLabel("Date: "), c);
+		panel.add( new JLabel("Date: "), c);
+		c.gridx = 0; c.gridy = 5;
+		panel.add( new JLabel("Comments: "), c);
 		
 
 		GridBagConstraints d = new GridBagConstraints();
@@ -105,12 +118,11 @@ public class AtributeAdd extends IUMPSTPanel {
 		d.insets = new Insets(0, 0, 0, 0);
 		titulo.setFont(new Font("Arial", Font.BOLD, 32));
 		titulo.setBackground(new Color(0x4169AA));
-		add( titulo, d);
+		panel.add( titulo, d);
 		
-	}
+
 	
 	
-	public void fields(){
 		
 		AtributeText = new JTextField(20);
 		commentsText = new JTextArea(5,21);
@@ -119,32 +131,29 @@ public class AtributeAdd extends IUMPSTPanel {
  
 
 		c.gridx = 1; c.gridy = 2;
-		add( AtributeText, c);
+		panel.add( AtributeText, c);
 		
 		c.gridx = 1; c.gridy = 3;
-		add( commentsText, c);
+		panel.add( authorText, c);
 		
 		c.gridx = 1; c.gridy = 4;
-		add( authorText, c);
+		panel.add( dateText, c);
 		
 		c.gridx = 1; c.gridy = 5;
-		add( dateText, c);
+		panel.add( commentsText, c);
 		
-	}
-		
-		
-	
-	public void buttons(){
 		
 		c.gridx = 0; c.gridy = 7; c.gridwidth = 1;
-		add( buttonCancel, c);
+		panel.add( buttonCancel, c);
 		c.gridx = 1; c.gridy = 7;
-		add( buttonAdd, c);
+		panel.add( buttonAdd, c);
 		
 		buttonCancel.setToolTipText("Cancel and return to entity Panel");
 		buttonAdd.setToolTipText("Save this atribute");
 		
-		GridBagConstraints d = new GridBagConstraints();
+		
+		panel.setBorder(BorderFactory.createTitledBorder("Atribute details"));
+		add(panel,constraints);
 		
 		//.gridx = 0; d.gridy = 8; 
 		//add(buttonRelationship,d);
@@ -212,9 +221,9 @@ public class AtributeAdd extends IUMPSTPanel {
 			}
 		});
 		
-		buttonRelationship.addActionListener(new ActionListener() {
+		buttonSubatribute.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				alterarJanelaAtual(new RelationshipAdd(getFatherPanel(), null));
+				alterarJanelaAtual(new AtributeAdd(getFatherPanel(), entityRelated,null,atribute));
 
 			}
 		});
@@ -287,7 +296,7 @@ public class AtributeAdd extends IUMPSTPanel {
 		
 		if (atributeFather==null){
 			
-			if ( UMPSTProject.getInstance().getMapAtribute().size()!=0){
+			if ( UMPSTProject.getInstance().getMapAtribute().size()>0){
 				for (String key: sortedKeys){
 					//tamanho = tamanho - UMPSTProject.getInstance().getMapGoal().get(key).getSubgoals().size();
 					idAux= UMPSTProject.getInstance().getMapAtribute().get(key).getId();
@@ -331,6 +340,36 @@ public class AtributeAdd extends IUMPSTPanel {
 		UMPSTProject.getInstance().getMapAtribute().put(atributeAdd.getId(), atributeAdd);
 		
 		return atributeAdd;
+   }
+   
+   
+   public void createSubAtributeTable(){
+   	
+	    TableSubatribute subatributeTable = new TableSubatribute(getFatherPanel(),entityRelated,atribute);
+	    JTable table = subatributeTable.createTable();
+	    JScrollPane scrollPane = new JScrollPane(table);
+
+	    
+	    JPanel panel = new JPanel();
+	    panel.setLayout(new GridBagLayout());
+	    
+	    GridBagConstraints c = new GridBagConstraints();
+		
+	    if (atribute!=null){
+	    	c.gridx = 1; c.gridy = 0; c.gridwidth=1;
+	    	panel.add(buttonSubatribute,c);
+	   
+	    }
+		
+	    c.fill = GridBagConstraints.BOTH;
+	    c.gridx=0;c.gridy=1;c.weightx=0.9;c.weighty=0.9;c.gridwidth=6;
+	    
+	    panel.add(scrollPane,c);
+	    panel.setBorder(BorderFactory.createTitledBorder("List of Subatributes"));
+
+	   
+	    add(panel,constraints);
+
    }
 	
 }

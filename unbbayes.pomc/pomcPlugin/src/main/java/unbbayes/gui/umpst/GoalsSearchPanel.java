@@ -5,6 +5,16 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
@@ -34,7 +44,7 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 	
 	private JButton buttonSearch;
 	private JButton buttonAddGoal,buttonCancel;
-
+	private JButton buttonSave,buttonLoad;
 	private JTextField textGoal;
 	
 
@@ -67,7 +77,10 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 		buttonPane.add(getButtonCancel());
 		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
 		buttonPane.add(getButtonAddGoal());
-
+		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
+		buttonPane.add(getButtonSave());
+		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
+		buttonPane.add(getButtonLoad());
 
 		
 
@@ -78,6 +91,51 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 		
 		
 		}
+	
+	
+
+	/**
+	 * @return the buttonSave
+	 */
+	public JButton getButtonSave() {
+		
+		if (buttonSave==null){
+			buttonSave = new JButton("save file");
+			buttonSave.addActionListener(new ActionListener() {
+				
+				public void actionPerformed(ActionEvent e) {
+					try {
+						saveUbf();
+					} catch (FileNotFoundException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+			});
+		}
+		return buttonSave;
+	}
+
+
+
+	/**
+	 * @return the buttonLoad
+	 */
+	public JButton getButtonLoad() {
+		if(buttonLoad==null){
+			buttonLoad = new JButton("load file");
+			buttonLoad.addActionListener(new ActionListener() {
+				
+				public void actionPerformed(ActionEvent e) {
+					loadUbf();
+					
+				}
+			});
+		}
+		return buttonLoad;
+	}
+
+
 
 	/**
 	 * @return the buttonCancel
@@ -149,6 +207,7 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 	}
 
 
+	
 	/**
 	 * @return the buttonSearch
 	 */
@@ -265,6 +324,136 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 		    goalsTable.updateUI();
 		    goalsTable.repaint();
 	    }
+	 
+	 public void saveUbf() throws FileNotFoundException{
+			
+			File file = new File("images/file.ump");
+			String numberSubgoals;
+			PrintStream printStream = new PrintStream(new FileOutputStream(file));
+			
+			Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
+			TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+			printStream.println("Number of goals in the map:");
+			printStream.println(UMPSTProject.getInstance().getMapGoal().size());
+			
+			printStream.println("All goals cadastred in the map:");
+			for (String key : sortedKeys){
+				printStream.println(UMPSTProject.getInstance().getMapGoal().get(key).getId());
+			}
+			printStream.println("********************");						
+			printStream.println("Goals details:");			
+			for (String key : sortedKeys){
+				printStream.println(UMPSTProject.getInstance().getMapGoal().get(key).getId());
+				printStream.println(UMPSTProject.getInstance().getMapGoal().get(key).getGoalName());
+				printStream.println(UMPSTProject.getInstance().getMapGoal().get(key).getAuthor());
+				printStream.println(UMPSTProject.getInstance().getMapGoal().get(key).getDate());
+				printStream.println(UMPSTProject.getInstance().getMapGoal().get(key).getComments());
+				if (UMPSTProject.getInstance().getMapGoal().get(key).getGoalFather()==null){
+					printStream.println("null");
+				}
+				else{
+					printStream.println(UMPSTProject.getInstance().getMapGoal().get(key).getGoalFather().getId());	
+				}
+				printStream.println("Number of subgoals");
+				if (UMPSTProject.getInstance().getMapGoal().get(key).getSubgoals().size()>0){
+					printStream.println(UMPSTProject.getInstance().getMapGoal().get(key).getSubgoals().size());
+					Set<String> keysSub = UMPSTProject.getInstance().getMapGoal().get(key).getSubgoals().keySet();
+					TreeSet<String> sortedKeysSub = new TreeSet<String>(keysSub);
+					for (String keySub : sortedKeysSub){
+						printStream.println(UMPSTProject.getInstance().getMapGoal().get(key).getSubgoals().get(keySub).getId());
+					}
+				}
+				else{
+					printStream.println("null");
+				}
+
+			}
+			
+		}
+	 
+	 
+	 	public  void loadUbf() {
+
+		    File file = new File("images/file.ump");
+		    FileInputStream fis = null;
+		    BufferedInputStream bis = null;
+		    BufferedReader bufferReader = null;
+		    String st;
+		    
+		    try {
+		      fis = new FileInputStream(file);
+
+		      // Here BufferedInputStream is added for fast reading.
+		      bis = new BufferedInputStream(fis);
+		      bufferReader = new BufferedReader(new InputStreamReader(fis));
+		      GoalModel goal;
+		      // dis.available() returns 0 if the file does not have more lines.
+		      
+		      String lixo = bufferReader.readLine();  //"Number of goals in the map:"
+		      int tamanho = Integer.parseInt(bufferReader.readLine());;
+		      lixo = bufferReader.readLine(); //All goals in the map
+		      
+		      String id,goalName,author,date,comments,idFather, numberSubgoals;
+		      int numberIntSubgoals;
+		      
+		      
+		      for (int i = 0; i < tamanho; i++) {
+		    	  	id = bufferReader.readLine();
+		    	  	goal = new GoalModel(id, "","", "", "" , null, null, null, null, null);
+		    	  	UMPSTProject.getInstance().getMapGoal().put(goal.getId(), goal);
+			  }
+		      
+		      lixo = bufferReader.readLine(); //************
+		      lixo = bufferReader.readLine(); //goals detail's
+		      
+		      for (int i = 0; i < tamanho; i++) {
+		    	  	id = bufferReader.readLine();
+		    	  	goalName = bufferReader.readLine();
+		    	  	author = bufferReader.readLine();
+		    	  	date = bufferReader.readLine();
+		    	  	comments =bufferReader.readLine();
+		    	  	idFather = bufferReader.readLine();
+		    	  	lixo = bufferReader.readLine();
+		    	  	numberSubgoals = bufferReader.readLine();
+		    	  	
+		    	  	goal = UMPSTProject.getInstance().getMapGoal().get(id);
+		    	  	goal.setGoalName(goalName);
+		    	  	goal.setAuthor(author);
+		    	  	goal.setDate(date);
+		    	  	goal.setComments(comments);
+		    	  	
+		    	  	if (!idFather.equals("null")){
+		    	 
+		    	  		goal.setGoalFather(UMPSTProject.getInstance().getMapGoal().get(idFather));
+		    	  	}
+		    	  	
+		    	  	if (!numberSubgoals.equals("null")){
+		    	  		numberIntSubgoals = Integer.parseInt(numberSubgoals);
+		    	  		GoalModel subgoal;
+		    	  		String idSubgoal;
+		    	  		for (int j = 0; j < numberIntSubgoals; j++) {
+		    	  			idSubgoal = bufferReader.readLine();
+							subgoal = UMPSTProject.getInstance().getMapGoal().get(idSubgoal);
+							goal.getSubgoals().put(subgoal.getId(), subgoal);
+							
+						}
+		    	  	}
+			}
+		      // this statement reads the line from the file and print it to
+		        // the console.
+		      
+
+		      // dispose all the resources after using them.
+		      fis.close();
+		      bis.close();
+		      bufferReader.close();
+
+		    } catch (FileNotFoundException e) {
+		      e.printStackTrace();
+		    } catch (IOException e) {
+		      e.printStackTrace();
+		    }
+		  }
 	
 
 }

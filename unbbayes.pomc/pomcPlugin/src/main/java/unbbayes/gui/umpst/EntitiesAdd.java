@@ -46,7 +46,6 @@ import unbbayes.model.umpst.rules.RulesModel;
 
 public class EntitiesAdd extends IUMPSTPanel {
 	
-	private ImageIcon iconAtribute = createImageIcon("images/hypo.png");
 
 	
 	private GridBagConstraints constraint     = new GridBagConstraints();
@@ -59,7 +58,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 	
 	private JTextField dateText,authorText;
 	private JTextField entityText;
-	private JTextArea commentsText;
+	private JTextField commentsText;
 	private EntityModel entity;
 
 	private static final long serialVersionUID = 1L;
@@ -125,12 +124,12 @@ public class EntitiesAdd extends IUMPSTPanel {
 		
 		c.gridx = 0; c.gridy = 2;c.gridwidth = 1;
 		panel.add( new JLabel("Entity Description: "), c);
-		c.gridx = 0; c.gridy = 5;c.gridwidth = 1;
-		panel.add( new JLabel("Comments: "), c);
 		c.gridx = 0; c.gridy = 3;c.gridwidth = 1;
 		panel.add( new JLabel("Author Name: "), c);
 		c.gridx = 0; c.gridy = 4;c.gridwidth = 1;
 		panel.add( new JLabel("Date: "), c);
+		c.gridx = 0; c.gridy = 5;c.gridwidth = 1;
+		panel.add( new JLabel("Comments: "), c);
 		
 
 		GridBagConstraints d = new GridBagConstraints();
@@ -143,7 +142,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 		panel.add( titulo, d);
 				
 		entityText = new JTextField(20);
-		commentsText = new JTextArea(5,21);
+		commentsText = new JTextField(20);
 		authorText = new JTextField(20);
 		dateText = new JTextField(20);
  
@@ -152,13 +151,13 @@ public class EntitiesAdd extends IUMPSTPanel {
 		panel.add( entityText, c);
 		
 		c.gridx = 1; c.gridy = 3;c.gridwidth = 2;
-		panel.add( commentsText, c);
-		
-		c.gridx = 1; c.gridy = 4;c.gridwidth = 2;
 		panel.add( authorText, c);
 		
-		c.gridx = 1; c.gridy = 5;c.gridwidth = 2;
+		c.gridx = 1; c.gridy = 4;c.gridwidth = 2;
 		panel.add( dateText, c);
+		
+		c.gridx = 1; c.gridy = 5;c.gridwidth = 2;
+		panel.add( commentsText, c);
 		
 		Box box = Box.createHorizontalBox();
 		box.add(buttonCancel);
@@ -333,7 +332,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 	
 		
 		EntityModel entityAdd = new EntityModel(idAux,entityText.getText(),commentsText.getText(), authorText.getText(), 
-				dateText.getText(),null,null,null,null,null,null,null);
+				dateText.getText(),null,null,null,null,null,null);
 		
 		
 	    UMPSTProject.getInstance().getMapEntity().put(entityAdd.getId(), entityAdd);	

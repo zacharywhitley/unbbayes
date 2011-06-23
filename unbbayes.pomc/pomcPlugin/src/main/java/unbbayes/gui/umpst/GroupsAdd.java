@@ -44,7 +44,6 @@ import unbbayes.model.umpst.requirements.GoalModel;
 
 public class GroupsAdd extends IUMPSTPanel {
 	
-	private ImageIcon iconAtribute = createImageIcon("images/hypo.png");
 
 	
 	private GridBagConstraints constraint     = new GridBagConstraints();
@@ -132,14 +131,13 @@ public class GroupsAdd extends IUMPSTPanel {
 		panel.add( groupText, c);
 		
 		c.gridx = 1; c.gridy = 3;c.gridwidth = 2;
-		panel.add( commentsText, c);
-		
-		c.gridx = 1; c.gridy = 4;c.gridwidth = 2;
 		panel.add( authorText, c);
 		
-		c.gridx = 1; c.gridy = 5;c.gridwidth = 2;
+		c.gridx = 1; c.gridy = 4;c.gridwidth = 2;
 		panel.add( dateText, c);
 		
+		c.gridx = 1; c.gridy = 5;c.gridwidth = 2;
+		panel.add( commentsText, c);
 		
 		c.gridx = 0; c.gridy = 6; c.gridwidth = 1;
 		panel.add( buttonCancel, c);

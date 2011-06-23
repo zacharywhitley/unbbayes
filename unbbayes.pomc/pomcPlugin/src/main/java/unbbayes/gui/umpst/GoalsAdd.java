@@ -8,7 +8,12 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 
+import java.text.ParseException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -18,6 +23,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -26,6 +32,7 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.MaskFormatter;
 
 import unbbayes.model.umpst.entities.AtributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
@@ -57,6 +64,7 @@ public class GoalsAdd extends IUMPSTPanel {
 	private JButton buttonHypothesis = new JButton("add Hypothesis");
 	private JButton buttonSubgoal    = new JButton("add SubGoal");
 	private JButton buttonBack		 = new JButton("Return");
+	private JButton buttonFile		 = new JButton("Save on File");
 	
 	private JTextField dateText,authorText;
 	private JTextField goalText;
@@ -64,7 +72,8 @@ public class GoalsAdd extends IUMPSTPanel {
 	private GoalModel goal;
 	private GoalModel goalFather;
 	
-	
+	MaskFormatter mascaraData;
+
 
 	public GoalsAdd(UmpstModule janelaPai, GoalModel goal, GoalModel goalFather){
 		super(janelaPai);
@@ -149,7 +158,6 @@ public class GoalsAdd extends IUMPSTPanel {
 		goalText = new JTextField(20);
 		commentsText = new JTextArea(5,21);
 		authorText = new JTextField(20);
-		dateText = new JTextField(20);
  
 
 		c.gridx = 1; c.gridy = 2;c.gridwidth=2;
@@ -160,8 +168,22 @@ public class GoalsAdd extends IUMPSTPanel {
 		c.gridx = 1; c.gridy = 3;c.gridwidth=2;
 		panel.add( authorText, c);c.gridwidth=2;
 		
+		try {
+			mascaraData = new MaskFormatter ("##/##/####");
+			
+			mascaraData.setPlaceholderCharacter('_');
+			
+		}
+		catch (ParseException pe) { 
+			pe.printStackTrace();
+		}
+		dateText = new JFormattedTextField(mascaraData);
+
+		
 		c.gridx = 1; c.gridy = 4;c.gridwidth=2;
 		panel.add( dateText, c);c.gridwidth=2;
+		
+	
 		
 		c.gridx = 1; c.gridy = 5;c.gridwidth=2;
 		panel.add( commentsText, c);c.gridwidth=2;
@@ -173,7 +195,7 @@ public class GoalsAdd extends IUMPSTPanel {
 		
 		c.gridx = 1; c.gridy = 7;c.gridwidth=1;
 		panel.add( buttonAdd, c);
-		
+
 		
 		
 	
@@ -261,7 +283,7 @@ public class GoalsAdd extends IUMPSTPanel {
 			}
 		});
 
-	  
+	
 		
 		buttonCancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -885,5 +907,6 @@ public class GoalsAdd extends IUMPSTPanel {
     			UmpstModule pai = getFatherPanel();
     		    alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goal));    			
     	}
+    	 
     		
 }
