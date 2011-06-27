@@ -492,9 +492,7 @@ public class GoalsAdd extends IUMPSTPanel {
  			
  			c.gridx = 1; c.gridy = 0; c.gridwidth=1;
  			panel.add(buttonHypothesis,c);
- 			
- 			c.gridx = 2; c.gridy = 0; c.gridwidth=1;
- 			panel.add(vinculateGoal(),c);
+ 		
  		}
  	    c.fill = GridBagConstraints.BOTH;
  	    c.gridx=0;c.gridy=1;c.weightx=0.9;c.weighty=0.9;c.gridwidth=6;
@@ -524,6 +522,9 @@ public class GoalsAdd extends IUMPSTPanel {
 	    if (goal!=null){
 	    	c.gridx = 0; c.gridy = 0; c.gridwidth=1;
 	    	panel.add(buttonSubgoal,c);
+	    	c.gridx = 1; c.gridy = 0; c.gridwidth=1;
+	    	panel.add(vinculateGoal(),c);
+	    	
 	    }
 		
 	    c.fill = GridBagConstraints.BOTH;
