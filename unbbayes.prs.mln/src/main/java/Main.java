@@ -48,24 +48,6 @@ public class Main extends JFrame {
 	
 
 	public static void main(String[] args) throws SQLException, ParseException {
-		Main.getInstance().setVisible(true);
-		
-//		UIMan.println("*** Welcome to mine " + Config.product_name + "!");
-//		CommandOptions options = UIMan.parseCommand(args);
-//		if(options == null){
-//			return;
-//		}
-//		if(!options.isDLearningMode){
-//			// INFERENCE
-//			if(!options.disablePartition){
-//				new PartInfer().run(options);
-//			}else{
-//				new NonPartInfer().run(options);
-//			}
-//		}else{
-//			//LEARNING
-//			DNLearner l = new DNLearner();
-//			l.run(options);
-//		}
+		Main.getInstance().setVisible(true);		
 	}	
 }

@@ -1,0 +1,4 @@
+Friends(A,B)
+Friends(B,A)
+Smokes(A)
+Cancer(B)

@@ -3,6 +3,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.management.ManagementFactory;
+import java.net.UnknownHostException;
 import java.sql.SQLException;
 
 import javax.swing.JButton;
@@ -13,7 +15,6 @@ import javax.swing.JTextField;
 
 import tuffy.learn.DNLearner;
 import tuffy.main.NonPartInfer;
-import tuffy.main.PartInfer;
 import tuffy.parse.CommandOptions;
 import tuffy.util.Config;
 
@@ -55,7 +56,7 @@ public class Janela extends JPanel{
 
 	private void labels() {
 		c.gridx = 0; c.gridy = 0;
-		this.add(new JLabel("ComboBox"), c);
+		this.add(new JLabel("ComboBox local"), c);
 		
 		c.gridx = 0; c.gridy = 1;
 		this.add(new JLabel("Arquivo MLN"), c);
@@ -104,6 +105,7 @@ public class Janela extends JPanel{
 		//jB.addActionListener
 		inferButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				
 				String args = "-marginal -i samples/smoke/prog.mln -e samples/smoke/evidence.db " +
 						"-queryFile samples/smoke/query.db -r out.txt";
 				String[] argsArray;
@@ -111,17 +113,40 @@ public class Janela extends JPanel{
 				for (final String arg : argsArray){
 					System.out.println(arg);
 				}
+				System.out.println("\nresultado da combobox: \n" + jCB.getSelectedItem());
 				
 				System.out.println("*** Welcome to mine " + Config.product_name + "!");
 //				CommandOptions options = NewUI.parseCommand(argsArray);
 				CommandOptions options = new CommandOptions();
-				Config.db_url = "tuffydb";
-				System.out.println(arqMLN.getText());
+				Config.db_url = "jdbc:postgresql://localhost:5432/tuffydb";
+				Config.db_username = "tuffer";
+				Config.db_password = "strongPasswoRd";
+				String pid = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
+				String user = System.getProperty("user.name").toLowerCase().replaceAll("\\W", "_");
+				String machine = null;
+				try {
+					machine = java.net.InetAddress.getLocalHost().getHostName().toLowerCase().replaceAll("\\W", "_");
+				} catch (UnknownHostException e2) {
+					e2.printStackTrace();
+				}
+				System.out.println(machine);
+				
+				String prod = Config.product_line;
+				Config.db_schema += prod + "_" + machine + "_" + user + "_" + pid;
+				
+				if(jCB.getSelectedItem().equals("Marginal")){
+					options.marginal = true;
+				}
+				if(jCB.getSelectedItem().equals("Dual")){
+					options.dual = true;
+				}
 				options.fprog = arqMLN.getText();
 				options.fevid = arqEvd.getText();
 				options.fquery = arqQry.getText();
 				options.fout = arqOut.getText();
+				
 				if(!options.isDLearningMode){
+					System.out.println("disablePartition" + options.disablePartition);
 					// INFERENCE
 					if(!options.disablePartition){
 						new NewPartInfer().run(options);

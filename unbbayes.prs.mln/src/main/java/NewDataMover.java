@@ -49,6 +49,37 @@ public class NewDataMover extends DataMover{
 		return line;
 	}
 	
+	public void dumpTruthToFile(String relAtoms, String fout){
+		HashMap<Integer,String> cmap = db.loadIdSymbolMapFromTable();
+		try {
+			String sql;
+			BufferedWriter bufferedWriter = FileMan.getBufferedWriterMaybeGZ(fout);
+			for(Predicate p : mln.getAllPred()) {
+				if(p.isImmutable()){
+					sql = "SELECT * FROM " + p.getRelName() +
+					" WHERE club=3 AND truth";
+				}else{
+					sql = "SELECT * FROM " + p.getRelName() + " pt " + 
+					" WHERE (pt.club=3 OR pt.club=1) AND ( pt.truth OR " +
+					" pt.id IN (SELECT tupleID FROM " + relAtoms + " ra " +
+					" WHERE ra.truth AND ra.predID = " + p.getID() +
+					") )" +
+					" ORDER BY " + StringMan.commaList(p.getArgs());
+				}
+				ResultSet rs = db.query(sql);
+				while(rs.next()) {
+					String satom = atomToString(p, rs, cmap);
+					bufferedWriter.append(satom + "\n");
+					System.out.println(satom + "\n");
+				}
+				rs.close();
+			}
+			bufferedWriter.close();
+		} catch (Exception e) {
+			ExceptionMan.handle(e);
+		}
+	}
+	
 	public void dumpProbsToFile(String relAtoms, String fout){
 		BufferedWriter bufferedWriter = FileMan.getBufferedWriterMaybeGZ(fout);
 		HashMap<Integer,String> cmap = db.loadIdSymbolMapFromTable();
