@@ -114,7 +114,7 @@ public class TableRelationship extends IUMPSTPanel{
 				
 				String relationshipAdd = data[row][0].toString();
 				RelationshipModel relationshipAux = UMPSTProject.getInstance().getMapRelationship().get(relationshipAdd);
-				alterarJanelaAtual(new RelationshipAdd(getFatherPanel(), relationshipAux )   );
+				changePanel(new RelationshipAdd(getFatherPanel(), relationshipAux )   );
 			}
 		});
 		
@@ -171,7 +171,7 @@ public class TableRelationship extends IUMPSTPanel{
 							UMPSTProject.getInstance().getMapRelationship().remove(key);
 
 							UmpstModule pai = getFatherPanel();
-						    alterarJanelaAtual(pai.getMenuPanel().getEntitiesPane());
+						    changePanel(pai.getMenuPanel().getEntitiesPane());
 							 
 							 JTable table = createTable();
 							 
@@ -209,7 +209,7 @@ public class TableRelationship extends IUMPSTPanel{
 	 
     /** Returns an ImageIcon, or null if the path was invalid. */
     protected static ImageIcon createImageIcon(String path) {
-        java.net.URL imgURL = MenuPanel.class.getResource(path);
+        java.net.URL imgURL = MainPanel.class.getResource(path);
         if (imgURL != null) {
             return new ImageIcon(imgURL);
         } else {

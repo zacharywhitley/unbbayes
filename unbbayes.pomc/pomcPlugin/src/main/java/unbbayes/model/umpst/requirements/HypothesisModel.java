@@ -15,8 +15,8 @@ public class HypothesisModel {
 	private String comments;
 	private String author;
 	private String date;
-	private Set<GoalModel> goalRelated;
 	private HypothesisModel father;
+	private Set<GoalModel> goalRelated;
 	private Map<String,HypothesisModel> mapSubHypothesis;
 	private Set<EntityModel> fowardTrackingEntity;
 	private Set<GroupsModel> fowardTrackingGroups;
@@ -37,6 +37,9 @@ public class HypothesisModel {
 			this.setMapSubHypothesis(new HashMap<String, HypothesisModel>());			
 		}
 		this.goalRelated = goalRelated;
+		if(goalRelated==null){
+			this.setGoalRelated(new HashSet<GoalModel>());
+		}
 		this.fowardTrackingEntity=fowardTrackingEntity;
 		if (fowardTrackingEntity==null){
 			this.setFowardTrackingEntity(new HashSet<EntityModel>());

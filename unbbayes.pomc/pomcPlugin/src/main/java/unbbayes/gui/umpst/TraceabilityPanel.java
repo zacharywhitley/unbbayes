@@ -119,7 +119,7 @@ public class TraceabilityPanel extends IUMPSTPanel{
 	 
     /** Returns an ImageIcon, or null if the path was invalid. */
     protected static ImageIcon createImageIcon(String path) {
-        java.net.URL imgURL = MenuPanel.class.getResource(path);
+        java.net.URL imgURL = MainPanel.class.getResource(path);
         if (imgURL != null) {
             return new ImageIcon(imgURL);
         } else {

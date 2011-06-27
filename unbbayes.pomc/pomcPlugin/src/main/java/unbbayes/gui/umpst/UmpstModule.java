@@ -24,11 +24,11 @@ public class UmpstModule extends UnBBayesModule {
 	
 	private JTabbedPane topTabbedPane;
 	
-	private MenuPanel menuPanel;
+	private MainPanel menuPanel;
 	
-	public MenuPanel getMenuPanel(){
+	public MainPanel getMenuPanel(){
 		if(menuPanel == null){
-			menuPanel = new MenuPanel(this);
+			menuPanel = new MainPanel(this);
 		}
 		return menuPanel;
 	}

@@ -91,7 +91,7 @@ public class RulesSearch extends IUMPSTPanel {
 			buttonAddRule.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
-					alterarJanelaAtual(getRulesAdd(null));
+					changePanel(getRulesAdd(null));
 				}
 			});
 		}
@@ -207,7 +207,7 @@ public class RulesSearch extends IUMPSTPanel {
 	    
    
 	    UmpstModule pai = getFatherPanel();
-	    alterarJanelaAtual(pai.getMenuPanel());
+	    changePanel(pai.getMenuPanel());
 	    
 	    TableRules rulesTable = pai.getMenuPanel().getRulesPane().getRulesTable();
 	    JTable table = rulesTable.createTable(columnNames,data);
@@ -239,7 +239,7 @@ public class RulesSearch extends IUMPSTPanel {
 			}
 	   
 		    UmpstModule pai = getFatherPanel();
-		    alterarJanelaAtual(pai.getMenuPanel());
+		    changePanel(pai.getMenuPanel());
 		    
 		    TableRules rulesTable = pai.getMenuPanel().getRulesPane().getRulesTable();
 		    JTable table = rulesTable.createTable(columnNames,data);

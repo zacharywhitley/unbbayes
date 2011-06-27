@@ -211,7 +211,7 @@ public class SubgoalsAdd extends IUMPSTPanel {
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating subgoal", "UnBBayes", JOptionPane.WARNING_MESSAGE);
 						UmpstModule pai = getFatherPanel();
-						alterarJanelaAtual(pai.getMenuPanel());	
+						changePanel(pai.getMenuPanel());	
 					
 					}
 				}
@@ -253,7 +253,7 @@ public class SubgoalsAdd extends IUMPSTPanel {
 						catch (Exception e2) {
 							JOptionPane.showMessageDialog(null,"Error while updating goal", "UnBBayes", JOptionPane.WARNING_MESSAGE);
 							UmpstModule pai = getFatherPanel();
-							alterarJanelaAtual(pai.getMenuPanel());	
+							changePanel(pai.getMenuPanel());	
 						}
 					}
 				}
@@ -267,7 +267,7 @@ public class SubgoalsAdd extends IUMPSTPanel {
 					alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goal.getGoalFather())	);	
 				}
 				else{*/
-					alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalFather)	);	
+					changePanel(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalFather)	);	
 				
 			}
 		});
@@ -276,20 +276,20 @@ public class SubgoalsAdd extends IUMPSTPanel {
 			
 			public void actionPerformed(ActionEvent e) {
 				UmpstModule pai = getFatherPanel();
-				alterarJanelaAtual(pai.getMenuPanel());
+				changePanel(pai.getMenuPanel());
 			}
 		});
 		
 		buttonHypothesis.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				alterarJanelaAtual(new HypothesisAdd(getFatherPanel(),goal,null,null));
+				changePanel(new HypothesisAdd(getFatherPanel(),goal,null,null));
 
 			}
 		});
 		
 		buttonSubgoal.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				alterarJanelaAtual(new SubgoalsAdd(getFatherPanel(),null,goal));
+				changePanel(new SubgoalsAdd(getFatherPanel(),null,goal));
 
 			}
 		});
@@ -324,7 +324,7 @@ public class SubgoalsAdd extends IUMPSTPanel {
 	
 	/** Returns an ImageIcon, or null if the path was invalid. */
     protected static ImageIcon createImageIcon(String path) {
-        java.net.URL imgURL = MenuPanel.class.getResource(path);
+        java.net.URL imgURL = MainPanel.class.getResource(path);
         if (imgURL != null) {
             return new ImageIcon(imgURL);
         } else {
@@ -382,7 +382,7 @@ public class SubgoalsAdd extends IUMPSTPanel {
 
 		
 		GoalModel goalAdd = new GoalModel(idAux,goalText.getText(),commentsText.getText(), authorText.getText(), 
-				dateText.getText(),goalFather,null,null,null,null);
+				dateText.getText(),goalFather,null,null,null,null,null);
 		
 		if (goalFather!=null){
 			
@@ -427,7 +427,7 @@ public class SubgoalsAdd extends IUMPSTPanel {
 		}
    
 	    UmpstModule pai = getFatherPanel();
-	    alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalFather));
+	    changePanel(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalFather));
 	    
 	    TableGoals goalsTable = pai.getMenuPanel().getRequirementsPane().getGoalsTable();
 	    JTable table = goalsTable.createTable(columnNames,data);

@@ -1,10 +1,16 @@
 package unbbayes.gui.umpst;
 
 /*
- * TabbedPaneDemo.java requires one additional file:
+ * TabbedPaneDemo.java requires one additional loadedFile:
  *   images/middle.gif.
  */
 
+import javax.swing.JFileChooser;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.ImageIcon;
@@ -14,12 +20,22 @@ import javax.swing.JFrame;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+
+import unbbayes.io.umpst.FileLoad;
+import unbbayes.io.umpst.FileSave;
+
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileNotFoundException;
 
-public class MenuPanel extends IUMPSTPanel{
+public class MainPanel extends IUMPSTPanel{
 	
 		/**
 	 * 
@@ -30,8 +46,13 @@ public class MenuPanel extends IUMPSTPanel{
 		private Entities entitiesPane;
 		private Rules rulesPane;
 		private Groups groupsPane;
+		private File loadedFile;
+		private File newFile;
+		private static final String  FILE_EXTENSION = "ump";
+		private String fileExtension;
+		private FileFilter filter;
 
-	    public MenuPanel(UmpstModule janelaPai) {
+	    public MainPanel(UmpstModule janelaPai) {
 	        super(new GridLayout(1, 1),janelaPai);
 	        
 	        JTabbedPane tabbedPane = new JTabbedPane();
@@ -62,15 +83,107 @@ public class MenuPanel extends IUMPSTPanel{
 	                "Grouping");
 	        tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);
 	        
+	        
+	        JMenu fileMenu = new JMenu("File");
+	        fileMenu.setMnemonic('f');
+	        
+	        
+	        JMenuItem loadItem = new JMenuItem("Open existent");
+	        loadItem.setMnemonic('o');
+	        fileMenu.add(loadItem);
+	        
+	        loadItem.addActionListener(new ActionListener() {
+				
+				public void actionPerformed(ActionEvent e) {
+									
+					JFileChooser fc = new JFileChooser();
+					 // restringe a amostra a diretorios apenas
+                    fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+				    fc.setCurrentDirectory (new File ("."));
+
+                    int res = fc.showOpenDialog(null);
+                    
+                    if(res == JFileChooser.APPROVE_OPTION){
+                        loadedFile = fc.getSelectedFile();
+                    }
+                 
+                    int index = loadedFile.getName().lastIndexOf(".");
+        			if (index >= 0) {
+        				fileExtension = loadedFile.getName().substring(index + 1);
+        			}
+					
+        			if (fileExtension.equals(FILE_EXTENSION)){
+        				FileLoad io = new FileLoad();
+						io.loadUbf(loadedFile);
+						GoalsSearchPanel goalPanel = new GoalsSearchPanel(getFatherPanel());
+						goalPanel.returnTableGoals();
+                    }
+        			else{
+        				JOptionPane.showMessageDialog(null, "This file format is not suported. Try .ump");
+        			}
+				}
+			});
+	        
+	        JMenuItem saveItem = new JMenuItem("Save");
+	        saveItem.setMnemonic('s');
+	        fileMenu.add(saveItem);
+	        
+	  
+	        
+	        JMenuBar bar = new JMenuBar();
+	        bar.add(fileMenu);
+	        
+	        saveItem.addActionListener(new ActionListener() {
+				
+				public void actionPerformed(ActionEvent e) {
+					FileSave io = new FileSave();
+					JFileChooser fc =  new JFileChooser();  
+				    fc.setCurrentDirectory (new File ("."));
+				   // fc.setSelectedFile (newFile);
+				    
+				    
+				    
+				    int res = fc.showSaveDialog(null);
+				    
+
+				    if(res == JFileChooser.APPROVE_OPTION){
+                        newFile = fc.getSelectedFile();
+                    }
+				    
+				    
+					if (newFile!=null)	{
+						try {
+							io.saveUbf(newFile);
+							JOptionPane.showMessageDialog(null, "file saved");
+						} catch (FileNotFoundException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+					else {
+						JOptionPane.showMessageDialog(null, "Error while creating saving file");
+					}
+					
+				}
+			});
+	        
+	        JPanel panel = new JPanel();
+	        panel.setLayout(new BorderLayout());
+	        panel.add(bar,BorderLayout.PAGE_START);
+	        panel.add(tabbedPane,BorderLayout.CENTER);
+	        
 	        //Add the tabbed pane to this panel.
-	        add(tabbedPane);
+	        add(panel);
 	        
 	        //The following line enables to use scrolling tabs.
 	        tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 	    }
 	    
 	    
-	    
+		 
+		 public String getFileExtension() {
+				return this.FILE_EXTENSION;
+			}
 	    
 	    /**
 		 * @return the groupsPane
@@ -162,11 +275,11 @@ public class MenuPanel extends IUMPSTPanel{
 	    
 	    /** Returns an ImageIcon, or null if the path was invalid. */
 	    protected static ImageIcon createImageIcon(String path) {
-	        java.net.URL imgURL = MenuPanel.class.getResource(path);
+	        java.net.URL imgURL = MainPanel.class.getResource(path);
 	        if (imgURL != null) {
 	            return new ImageIcon(imgURL);
 	        } else {
-	            System.err.println("Couldn't find file: " + path);
+	            System.err.println("Couldn't find loadedFile: " + path);
 	            return null;
 	        }
 	    }
@@ -182,7 +295,7 @@ public class MenuPanel extends IUMPSTPanel{
 	        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	        
 	        //Add content to the window.
-	        //frame.add(new MenuPanel(getJanelaPai()), BorderLayout.CENTER);
+	        //frame.add(new MainPanel(getJanelaPai()), BorderLayout.CENTER);
 	        
 	        //Display the window.
 	        frame.pack();

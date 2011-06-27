@@ -120,7 +120,7 @@ public class TableEntities extends IUMPSTPanel{
 				
 				String key = data[row][0].toString();
 				EntityModel entityAux = UMPSTProject.getInstance().getMapEntity().get(key);
-				alterarJanelaAtual(new EntitiesAdd(getFatherPanel(), entityAux )   );
+				changePanel(new EntitiesAdd(getFatherPanel(), entityAux )   );
 			}
 		});
 		
@@ -195,7 +195,7 @@ public class TableEntities extends IUMPSTPanel{
 							
 							
 							UmpstModule pai = getFatherPanel();
-							 alterarJanelaAtual(pai.getMenuPanel());
+							 changePanel(pai.getMenuPanel());
 							 
 							 //TableGoals goalsTable = pai.getMenuPanel().getRequirementsPane().getGoalsTable();
 							 String[] colunas = {"ID","Entity","",""};
@@ -235,7 +235,7 @@ public class TableEntities extends IUMPSTPanel{
 	 
     /** Returns an ImageIcon, or null if the path was invalid. */
     protected static ImageIcon createImageIcon(String path) {
-        java.net.URL imgURL = MenuPanel.class.getResource(path);
+        java.net.URL imgURL = MainPanel.class.getResource(path);
         if (imgURL != null) {
             return new ImageIcon(imgURL);
         } else {

@@ -175,7 +175,7 @@ public class GroupsAdd extends IUMPSTPanel {
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating group", "UnBBayes", JOptionPane.WARNING_MESSAGE);
 						UmpstModule pai = getFatherPanel();
-						alterarJanelaAtual(pai.getMenuPanel());	
+						changePanel(pai.getMenuPanel());	
 					
 					}
 				}
@@ -218,7 +218,7 @@ public class GroupsAdd extends IUMPSTPanel {
 						catch (Exception e2) {
 							JOptionPane.showMessageDialog(null,"Error while ulpating group", "UnBBayes", JOptionPane.WARNING_MESSAGE);
 							UmpstModule pai = getFatherPanel();
-							alterarJanelaAtual(pai.getMenuPanel());	
+							changePanel(pai.getMenuPanel());	
 						}
 					}
 				}
@@ -228,7 +228,7 @@ public class GroupsAdd extends IUMPSTPanel {
 		buttonCancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				UmpstModule pai = getFatherPanel();
-				alterarJanelaAtual(pai.getMenuPanel());	
+				changePanel(pai.getMenuPanel());	
 			}
 		});
 		
@@ -264,7 +264,7 @@ public class GroupsAdd extends IUMPSTPanel {
 	
 	/** Returns an ImageIcon, or null if the path was invalid. */
     protected static ImageIcon createImageIcon(String path) {
-        java.net.URL imgURL = MenuPanel.class.getResource(path);
+        java.net.URL imgURL = MainPanel.class.getResource(path);
         if (imgURL != null) {
             return new ImageIcon(imgURL);
         } else {
@@ -316,7 +316,7 @@ public class GroupsAdd extends IUMPSTPanel {
 		}
    
 	    UmpstModule pai = getFatherPanel();
-	    alterarJanelaAtual(pai.getMenuPanel());
+	    changePanel(pai.getMenuPanel());
 	    
 	    TableGroups groupTable = pai.getMenuPanel().getGroupsPane().getGroupsTable();
 	    JTable table = groupTable.createTable(columnNames,data);

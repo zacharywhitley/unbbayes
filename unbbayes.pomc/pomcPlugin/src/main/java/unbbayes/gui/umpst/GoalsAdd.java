@@ -53,7 +53,8 @@ public class GoalsAdd extends IUMPSTPanel {
 	private static final long serialVersionUID = 1L;
 
 
-	private  JComboBox hypothesisVinculationList;
+	private  JComboBox hypothesisVinculationList = new JComboBox();
+	private  JComboBox goalVinculationList = new JComboBox();
 
 	
 	private GridBagConstraints constraints     = new GridBagConstraints();
@@ -64,7 +65,6 @@ public class GoalsAdd extends IUMPSTPanel {
 	private JButton buttonHypothesis = new JButton("add Hypothesis");
 	private JButton buttonSubgoal    = new JButton("add SubGoal");
 	private JButton buttonBack		 = new JButton("Return");
-	private JButton buttonFile		 = new JButton("Save on File");
 	
 	private JTextField dateText,authorText;
 	private JTextField goalText;
@@ -234,7 +234,7 @@ public class GoalsAdd extends IUMPSTPanel {
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating goal", "UnBBayes", JOptionPane.WARNING_MESSAGE);
 						UmpstModule pai = getFatherPanel();
-						alterarJanelaAtual(pai.getMenuPanel());	
+						changePanel(pai.getMenuPanel());	
 					
 					}
 				}
@@ -276,14 +276,28 @@ public class GoalsAdd extends IUMPSTPanel {
 						catch (Exception e2) {
 							JOptionPane.showMessageDialog(null,"Error while updating goal", "UnBBayes", JOptionPane.WARNING_MESSAGE);
 							UmpstModule pai = getFatherPanel();
-							alterarJanelaAtual(pai.getMenuPanel());	
+							changePanel(pai.getMenuPanel());	
 						}
 					}
 				}
 			}
 		});
 
-	
+		hypothesisVinculationList.addActionListener(new ActionListener() {
+			
+    		public void actionPerformed(ActionEvent e) {
+    					//JOptionPane.showMessageDialog(null, "selecionou "+petList.getSelectedIndex());
+    					addVinculateHypothesis((String) hypothesisVinculationList.getSelectedItem());
+    				}
+    			});
+		
+		goalVinculationList.addActionListener(new ActionListener() {
+				
+				public void actionPerformed(ActionEvent e) {
+					//JOptionPane.showMessageDialog(null, "selecionou "+petList.getSelectedIndex());
+					addVinculateGoal((String) goalVinculationList.getSelectedItem());
+				}
+			});
 		
 		buttonCancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -295,21 +309,21 @@ public class GoalsAdd extends IUMPSTPanel {
 		buttonBack.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				UmpstModule pai = getFatherPanel();
-				alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalFather)	);	
+				changePanel(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalFather)	);	
 				
 			}
 		});
 		
 		buttonHypothesis.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				alterarJanelaAtual(new HypothesisAdd(getFatherPanel(),goal,null,null));
+				changePanel(new HypothesisAdd(getFatherPanel(),goal,null,null));
 
 			}
 		});
 		
 		buttonSubgoal.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				alterarJanelaAtual(new SubgoalsAdd(getFatherPanel(),null,goal));
+				changePanel(new SubgoalsAdd(getFatherPanel(),null,goal));
 
 			}
 		});
@@ -344,7 +358,7 @@ public class GoalsAdd extends IUMPSTPanel {
 	
 	/** Returns an ImageIcon, or null if the path was invalid. */
     protected static ImageIcon createImageIcon(String path) {
-        java.net.URL imgURL = MenuPanel.class.getResource(path);
+        java.net.URL imgURL = MainPanel.class.getResource(path);
         if (imgURL != null) {
             return new ImageIcon(imgURL);
         } else {
@@ -402,7 +416,7 @@ public class GoalsAdd extends IUMPSTPanel {
 
 		
 		GoalModel goalAdd = new GoalModel(idAux,goalText.getText(),commentsText.getText(), authorText.getText(), 
-				dateText.getText(),goalFather,null,null,null,null);
+				dateText.getText(),goalFather,null,null,null,null,null);
 		
 		if (goalFather!=null){
 			
@@ -447,7 +461,7 @@ public class GoalsAdd extends IUMPSTPanel {
 		}
    
 	    UmpstModule pai = getFatherPanel();
-	    alterarJanelaAtual(pai.getMenuPanel());
+	    changePanel(pai.getMenuPanel());
 	    
 	    TableGoals goalsTable = pai.getMenuPanel().getRequirementsPane().getGoalsTable();
 	    JTable table = goalsTable.createTable(columnNames,data);
@@ -478,6 +492,9 @@ public class GoalsAdd extends IUMPSTPanel {
  			
  			c.gridx = 1; c.gridy = 0; c.gridwidth=1;
  			panel.add(buttonHypothesis,c);
+ 			
+ 			c.gridx = 2; c.gridy = 0; c.gridwidth=1;
+ 			panel.add(vinculateGoal(),c);
  		}
  	    c.fill = GridBagConstraints.BOTH;
  	    c.gridx=0;c.gridy=1;c.weightx=0.9;c.weighty=0.9;c.gridwidth=6;
@@ -490,53 +507,7 @@ public class GoalsAdd extends IUMPSTPanel {
     
     public void createSubgoalsTable(){
     	
-		/*Integer i=0;
-		Integer j=0;
-	    
-		Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
-		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
-		for (String key: sortedKeys){
-			
-			if(UMPSTProject.getInstance().getMapGoal().get(key).getId().startsWith(goal.getId()+".")){
-	
-				i++;
-			}
-			
-		
-		}
-    	Object[][] data = new Object[i][5];
-
-		for (String key: sortedKeys){
-			
-			if(UMPSTProject.getInstance().getMapGoal().get(key).getId().startsWith(goal.getId()+".")){
-				data[j][0] = UMPSTProject.getInstance().getMapGoal().get(key).getId();
-				data[j][1] = UMPSTProject.getInstance().getMapGoal().get(key).getGoalName();			
-				data[j][2] = "";
-				data[j][3] = "";
-				data[j][4] = "";
-				j++;
-			}
-			
-		
-		}*/
-    	
-	    /*
-		Object[][] data = new Object[goal.getSubgoals().size()][5];
-		Integer i=0;
-	    
-		Set<String> keys = goal.getSubgoals().keySet();
-		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
-		
-		for (String key: sortedKeys){
-			data[i][0] = goal.getSubgoals().get(key).getId();
-			data[i][1] = goal.getSubgoals().get(key).getGoalName();			
-			data[i][2] = "";
-			data[i][3] = "";
-			data[i][4] = "";
-			i++;
-		}*/
-   
 	    
 	    TableSubGoals subgoalsTable = new TableSubGoals(getFatherPanel(),goal);
 	    JTable table = subgoalsTable.createTable();
@@ -841,13 +812,7 @@ public class GoalsAdd extends IUMPSTPanel {
     	    
 			
     		hypothesisVinculationList = new JComboBox(allOtherHypothesis);
-    		hypothesisVinculationList.addActionListener(new ActionListener() {
-    				
-    				public void actionPerformed(ActionEvent e) {
-    					//JOptionPane.showMessageDialog(null, "selecionou "+petList.getSelectedIndex());
-    					addVinculateHypothesis((String) hypothesisVinculationList.getSelectedItem());
-    				}
-    			});
+    		
     		
     		return hypothesisVinculationList;
     		
@@ -905,8 +870,113 @@ public class GoalsAdd extends IUMPSTPanel {
     			//PRECISO ATUALIZAR O GOAL RELATED DA HIPOTESE QUE ESTA NO MAPA GERAL
     			
     			UmpstModule pai = getFatherPanel();
-    		    alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goal));    			
+    		    changePanel(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goal));    			
     	}
+    	 
+    	 
+    	 
+    	 public JComboBox vinculateGoal(){
+
+     	    Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
+ 			TreeSet<String> sortedKeys = new TreeSet<String>(keys);	
+ 			
+ 			Set<String> keysSubgoals;
+ 			TreeSet<String> sortedKeysSubgoal;
+ 			GoalModel goalAux;
+ 			int i=0;
+ 			/**This is only to found the number of other hypothesis existents in order to create 
+ 			 *     	    String[] allOtherHypothesis = new String[i];
+ 			 * */
+ 			for (String key: sortedKeys){
+ 				if(UMPSTProject.getInstance().getMapGoal().get(key)!=goal){
+ 					
+					if(goal.getSubgoals().size()>0){
+ 						
+						if (goal.getSubgoals().get(UMPSTProject.getInstance().getMapGoal().get(key).getId())==null){
+ 							i++;
+ 						}
+ 						
+						
+						/*goalAux = UMPSTProject.getInstance().getMapGoal().get(key);
+ 						keysSubgoals = goalAux.getSubgoals().keySet();
+ 						sortedKeysSubgoal = new TreeSet<String>(keysSubgoals);	
+ 						
+ 						for (String keysubgoals : sortedKeysSubgoal){
+ 							if ( goal.getSubgoals().get(goalAux.getSubgoals().get(keysubgoals).getId())==null )
+ 								i++;
+ 						}
+						*/
+ 					}
+					else{
+						i++;	
+
+					}
+
+ 					
+ 				}
+ 			}   
+ 			
+     	    String[] allOtherGoals = new String[i];
+
+ 			 i=0;
+ 		 
+ 			for (String key: sortedKeys){
+ 				if(UMPSTProject.getInstance().getMapGoal().get(key)!=goal){
+ 				
+ 					if(goal.getSubgoals().size()>0){
+ 						if (goal.getSubgoals().get(UMPSTProject.getInstance().getMapGoal().get(key).getId())==null){
+							allOtherGoals[i] = UMPSTProject.getInstance().getMapGoal().get(key).getGoalName();
+ 							i++;
+ 						}
+ 					}
+ 					else{
+ 						allOtherGoals[i] = UMPSTProject.getInstance().getMapGoal().get(key).getGoalName();
+						i++;
+ 					}
+ 				}
+ 			}
+     	    
+
+     		goalVinculationList = new JComboBox(allOtherGoals);
+     	
+     		
+     		return goalVinculationList;
+     		
+     	}
+     	
+     	public void addVinculateGoal(String goalRelated){
+     		
+     		 Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
+  			TreeSet<String> sortedKeys = new TreeSet<String>(keys);	
+  			
+  			Set<String> keysHypo;
+  			TreeSet<String> sortedKeysHypo;
+  			GoalModel goalAux;
+  			int i=0;
+  			Boolean achou = false;
+  		
+  			for (String key: sortedKeys){
+  				if(UMPSTProject.getInstance().getMapGoal().get(key).getGoalName().equals(goalRelated)){	
+  					updateMapGoalVinculate(UMPSTProject.getInstance().getMapGoal().get(key));
+ 					break;
+  				}
+ 				
+  			}  
+     		
+     	}
+    	 
+    	 
+    	 public void updateMapGoalVinculate(GoalModel goalVinculated){
+ 	    	
+ 		 	/**Toda vez deve atualizar que agora essa hipotese tem outro pai e o goal relacionado agora tem outra hipotese*/
+ 		 	UMPSTProject.getInstance().getMapGoal().get(goalVinculated.getId()).getGoalsRelated().add(goal);
+ 			goal.getSubgoals().put(goalVinculated.getId(), goalVinculated);
+ 			
+ 			
+ 			
+ 			UmpstModule pai = getFatherPanel();
+ 		    changePanel(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goal));    			
+ 	}
     	 
     		
 }

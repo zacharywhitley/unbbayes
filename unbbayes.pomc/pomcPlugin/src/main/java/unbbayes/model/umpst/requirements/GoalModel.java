@@ -20,10 +20,11 @@ public class GoalModel {
 	private Map<String,HypothesisModel> mapHypothesis;
 	private Set<EntityModel> fowardTrackingEntity;
 	private Set<GroupsModel> fowardTrackingGroups;
+	private Set<GoalModel> goalsRelated;
 	
 	public GoalModel(String id,String goalName, String comments,String author, 
 			String date, GoalModel father,Map<String,GoalModel> children,Map<String,HypothesisModel> hypothesis,
-			Set<EntityModel> fowardTrackingEntity,Set<GroupsModel> fowardTrackingGroups ) {
+			Set<EntityModel> fowardTrackingEntity,Set<GroupsModel> fowardTrackingGroups,Set<GoalModel> goalsRelated) {
 		
 		this.id=id;
 		this.goalName = goalName;
@@ -48,12 +49,42 @@ public class GoalModel {
 		if (fowardTrackingGroups==null){
 			this.setFowardTrackingGroups(new HashSet<GroupsModel>());
 		}
+		
+		this.goalsRelated=goalsRelated;
+		if (goalsRelated==null){
+			this.setGoalsRelated(new HashSet<GoalModel>());
+		}
+	
+		
 	}
 	
-	
-	
 
-	
+
+
+
+	/**
+	 * @return the goalsRelated
+	 */
+	public Set<GoalModel> getGoalsRelated() {
+		return goalsRelated;
+	}
+
+
+
+
+
+
+	/**
+	 * @param goalsRelated the goalsRelated to set
+	 */
+	public void setGoalsRelated(Set<GoalModel> goalsRelated) {
+		this.goalsRelated = goalsRelated;
+	}
+
+
+
+
+
 
 	/**
 	 * @return the fowardTrackingGroups

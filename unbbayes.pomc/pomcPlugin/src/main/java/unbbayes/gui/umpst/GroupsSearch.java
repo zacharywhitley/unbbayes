@@ -87,7 +87,7 @@ public class GroupsSearch extends IUMPSTPanel {
 			buttonAddGroup.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
-					alterarJanelaAtual(getGroupsAdd(null));
+					changePanel(getGroupsAdd(null));
 				}
 			});
 		}
@@ -205,7 +205,7 @@ public class GroupsSearch extends IUMPSTPanel {
 	    
    
 	    UmpstModule pai = getFatherPanel();
-	    alterarJanelaAtual(pai.getMenuPanel());
+	    changePanel(pai.getMenuPanel());
 	    
 	    TableGroups groupsTable = pai.getMenuPanel().getGroupsPane().getGroupsTable();
 	    JTable table = groupsTable.createTable(columnNames,data);
@@ -237,7 +237,7 @@ public class GroupsSearch extends IUMPSTPanel {
 		}
    
 	    UmpstModule pai = getFatherPanel();
-	    alterarJanelaAtual(pai.getMenuPanel());
+	    changePanel(pai.getMenuPanel());
 	    
 	    TableGroups groupTable = pai.getMenuPanel().getGroupsPane().getGroupsTable();
 	    JTable table = groupTable.createTable(columnNames,data);

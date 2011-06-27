@@ -102,7 +102,7 @@ public class TableGoals extends IUMPSTPanel{
 				
 				String key = data[row][0].toString();
 				GoalModel goalAux = UMPSTProject.getInstance().getMapGoal().get(key);
-				alterarJanelaAtual(new GoalsAdd(getFatherPanel(), goalAux, goalAux.getGoalFather() )   );
+				changePanel(new GoalsAdd(getFatherPanel(), goalAux, goalAux.getGoalFather() )   );
 			}
 		});
 		
@@ -127,7 +127,7 @@ public class TableGoals extends IUMPSTPanel{
 			public void onButtonPress(int row, int column) {
 				String key = data[row][0].toString();
 				GoalModel goalAux = UMPSTProject.getInstance().getMapGoal().get(key);
-				alterarJanelaAtual(new GoalsAdd(getFatherPanel(),null,goalAux));
+				changePanel(new GoalsAdd(getFatherPanel(),null,goalAux));
 				
 			}
 		});
@@ -167,7 +167,7 @@ public class TableGoals extends IUMPSTPanel{
 							
 							
 							if(goalToBeDeleted.getSubgoals() !=null){
-								int numberSubgoal = goalToBeDeleted.getSubgoals().size()+1;
+								int numberSubgoal = goalToBeDeleted.getSubgoals().size();
 								for (int i = 1; i < numberSubgoal; i++) {
 									if (goalToBeDeleted.getSubgoals().get(goalToBeDeleted.getId()+"."+i).getGoalFather()!=null){
 										goalToBeDeleted.getSubgoals().get(goalToBeDeleted.getId()+"."+i).getGoalFather().getSubgoals().remove(goalToBeDeleted.getId());
@@ -202,7 +202,7 @@ public class TableGoals extends IUMPSTPanel{
 							 JTable table = createTable(colunas,dataDel);
 							
 							UmpstModule pai = getFatherPanel();
-							 alterarJanelaAtual(pai.getMenuPanel());
+							 changePanel(pai.getMenuPanel());
 							 
 						
 							 
@@ -240,7 +240,7 @@ public class TableGoals extends IUMPSTPanel{
 	 
     /** Returns an ImageIcon, or null if the path was invalid. */
     protected static ImageIcon createImageIcon(String path) {
-        java.net.URL imgURL = MenuPanel.class.getResource(path);
+        java.net.URL imgURL = MainPanel.class.getResource(path);
         if (imgURL != null) {
             return new ImageIcon(imgURL);
         } else {

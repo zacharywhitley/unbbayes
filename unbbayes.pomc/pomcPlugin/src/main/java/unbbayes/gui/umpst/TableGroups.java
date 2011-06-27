@@ -95,7 +95,7 @@ public class TableGroups extends IUMPSTPanel{
 				
 				String key = data[row][0].toString();
 				GroupsModel groupAux = UMPSTProject.getInstance().getMapGroups().get(key);
-				alterarJanelaAtual(new GroupsAdd(getFatherPanel(), groupAux )   );
+				changePanel(new GroupsAdd(getFatherPanel(), groupAux )   );
 			}
 		});
 		
@@ -149,7 +149,7 @@ public class TableGroups extends IUMPSTPanel{
 							
 							
 							UmpstModule pai = getFatherPanel();
-							 alterarJanelaAtual(pai.getMenuPanel());
+							 changePanel(pai.getMenuPanel());
 							 
 							 String[] colunas = {"ID","Group","",""};
 							 JTable table = createTable(colunas,dataDel);
@@ -188,7 +188,7 @@ public class TableGroups extends IUMPSTPanel{
 	 
     /** Returns an ImageIcon, or null if the path was invalid. */
     protected static ImageIcon createImageIcon(String path) {
-        java.net.URL imgURL = MenuPanel.class.getResource(path);
+        java.net.URL imgURL = MainPanel.class.getResource(path);
         if (imgURL != null) {
             return new ImageIcon(imgURL);
         } else {

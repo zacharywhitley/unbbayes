@@ -27,9 +27,9 @@ public class EntityModel {
 	
 	private String id;
 	private String entityName;
-	private String comments;
 	private String author;
 	private String date;
+	private String comments;
 	private Map<String,AtributeModel> mapAtributes;
 	private JList backtracking;
 	private JList backtrackingHypothesis;
@@ -56,6 +56,10 @@ public class EntityModel {
 			this.setBacktracking(new JList());
 		}
 		this.backtrackingHypothesis=backtrackingHypothesis;
+		if(backtrackingHypothesis==null){
+			this.setBacktrackingHypothesis(new JList());
+		}
+
 		this.fowardTrackingRules=fowardTrackingRules;
 		if(fowardTrackingRules==null){
 			this.setFowardTrackingRules(new HashSet<RulesModel>());

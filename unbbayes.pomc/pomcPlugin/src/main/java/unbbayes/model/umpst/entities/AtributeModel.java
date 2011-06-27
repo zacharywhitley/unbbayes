@@ -1,6 +1,7 @@
 package unbbayes.model.umpst.entities;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,12 +14,12 @@ public class AtributeModel {
 	private String author;
 	private String date;
 	private AtributeModel father;
-	private EntityModel entityRelated;
+	private Set<EntityModel> entityRelated;
 	private Map<String, AtributeModel> mapSubAtributes;
 	private Set<RelationshipModel> fowardTrackingRelationship;
 	
 	
-	public AtributeModel(String id,String atributeName, String comments,String author, String date,EntityModel entityRelated,
+	public AtributeModel(String id,String atributeName, String comments,String author, String date,Set<EntityModel> entityRelated,
 			AtributeModel father,Map<String,AtributeModel> mapSubAtributes,Set<RelationshipModel> fowardTrackingRelationship) {
 		
 		this.id=id;
@@ -28,6 +29,9 @@ public class AtributeModel {
 		this.date = date;
 		this.father = father;
 		this.entityRelated=entityRelated;
+		if(entityRelated==null){
+			this.setEntityRelated(new HashSet<EntityModel>());
+		}
 		this.mapSubAtributes=mapSubAtributes;
 		if (mapSubAtributes==null){
 			this.setMapSubAtributes(new HashMap<String, AtributeModel>());
@@ -69,7 +73,7 @@ public class AtributeModel {
 	/**
 	 * @return the entityRelated
 	 */
-	public EntityModel getEntityRelated() {
+	public Set<EntityModel> getEntityRelated() {
 		return entityRelated;
 	}
 
@@ -77,7 +81,7 @@ public class AtributeModel {
 	/**
 	 * @param entityRelated the entityRelated to set
 	 */
-	public void setEntityRelated(EntityModel entityRelated) {
+	public void setEntityRelated(Set<EntityModel> entityRelated) {
 		this.entityRelated = entityRelated;
 	}
 

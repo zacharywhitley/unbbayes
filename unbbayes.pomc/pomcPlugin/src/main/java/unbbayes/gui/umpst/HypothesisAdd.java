@@ -194,7 +194,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating hypothesis", "UnBBayes", JOptionPane.WARNING_MESSAGE);
 						UmpstModule pai = getFatherPanel();
-						alterarJanelaAtual(pai.getMenuPanel());	
+						changePanel(pai.getMenuPanel());	
 					
 					}
 				}
@@ -219,7 +219,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 						catch (Exception e2) {
 							JOptionPane.showMessageDialog(null,"Error while ulpating hypothesis", "UnBBayes", JOptionPane.WARNING_MESSAGE);
 							UmpstModule pai = getFatherPanel();
-							alterarJanelaAtual(pai.getMenuPanel());	
+							changePanel(pai.getMenuPanel());	
 						}
 					}
 				}
@@ -229,7 +229,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 		buttonCancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				UmpstModule pai = getFatherPanel();
-			    alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated)	);
+			    changePanel(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated)	);
 			}
 		});
 		
@@ -237,7 +237,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 			
 			public void actionPerformed(ActionEvent e) {
 				UmpstModule pai = getFatherPanel();
-			    alterarJanelaAtual(new HypothesisAdd(pai, goalRelated, null, hypothesis));				
+			    changePanel(new HypothesisAdd(pai, goalRelated, null, hypothesis));				
 			}
 		});
 
@@ -270,7 +270,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 	
 	/** Returns an ImageIcon, or null if the path was invalid. */
     protected static ImageIcon createImageIcon(String path) {
-        java.net.URL imgURL = MenuPanel.class.getResource(path);
+        java.net.URL imgURL = MainPanel.class.getResource(path);
         if (imgURL != null) {
             return new ImageIcon(imgURL);
         } else {
@@ -283,7 +283,7 @@ public class HypothesisAdd extends IUMPSTPanel {
     public void updateTable(HypothesisModel hypothesisUpdate){
 		
 	    UmpstModule pai = getFatherPanel();
-	    alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated));
+	    changePanel(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated));
 
 	    
 	   /* TableHypothesis hypothesisTable = pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsMainPanel(goalRelated).getHypothesisTable(goalRelated);
@@ -539,9 +539,10 @@ public class HypothesisAdd extends IUMPSTPanel {
 						
 						for (String keyHypo : sortedKeysHypo){
 							/**Testing if the hypothesis is already in this goal*/
-							if ((UMPSTProject.getInstance().getMapHypothesis().get(hypothesis.getMapSubHypothesis().get(keyHypo).getId()) ) == null )
+							if ((UMPSTProject.getInstance().getMapHypothesis().get(hypothesis.getMapSubHypothesis().get(keyHypo).getId()) ) == null ){
 								allOtherHypothesis[i] = UMPSTProject.getInstance().getMapHypothesis().get(key).getMapSubHypothesis().get(keyHypo).getHypothesisName();
 								i++;
+							}
 						}
 
 					}
@@ -610,7 +611,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 			//PRECISO ATUALIZAR O GOAL RELATED DA HIPOTESE QUE ESTA NO MAPA GERAL
 			
 			UmpstModule pai = getFatherPanel();
-		    alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated));    			
+		    changePanel(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated));    			
 	}
 
 	

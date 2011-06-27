@@ -17,7 +17,7 @@ public abstract class IUMPSTPanel extends JPanel {
 		return fatherPanel;
 	}
 	
-	public void alterarJanelaAtual(JPanel painel){
+	public void changePanel(JPanel painel){
 		getFatherPanel().setContentPane(painel);
 		getFatherPanel().paintComponents(getFatherPanel().getGraphics());
 	}

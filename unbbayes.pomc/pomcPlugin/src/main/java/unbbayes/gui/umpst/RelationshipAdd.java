@@ -115,13 +115,12 @@ public class RelationshipAdd extends IUMPSTPanel {
 		
 		c.gridx = 0; c.gridy = 2;
 		panel.add( new JLabel("relationship Description: "), c);
-		c.gridx = 0; c.gridy = 5;
-		panel.add( new JLabel("Comments: "), c);
 		c.gridx = 0; c.gridy = 3;
 		panel.add( new JLabel("Author Nome: "), c);
 		c.gridx = 0; c.gridy = 4;
 		panel.add( new JLabel("Date: "), c);
-		
+		c.gridx = 0; c.gridy = 5;
+		panel.add( new JLabel("Comments: "), c);
 
 		GridBagConstraints d = new GridBagConstraints();
 		d.gridx = 0; d.gridy = 0;
@@ -144,15 +143,15 @@ public class RelationshipAdd extends IUMPSTPanel {
 
 		c.gridx = 1; c.gridy = 2;
 		panel.add( RelationshipText, c);
-		
 		c.gridx = 1; c.gridy = 3;
-		panel.add( commentsText, c);
-		
-		c.gridx = 1; c.gridy = 4;
 		panel.add( authorText, c);
 		
-		c.gridx = 1; c.gridy = 5;
+		c.gridx = 1; c.gridy = 4;
 		panel.add( dateText, c);
+		
+		c.gridx = 1; c.gridy = 5;
+		panel.add( commentsText, c);
+		
 		
 	
 			
@@ -184,13 +183,13 @@ public class RelationshipAdd extends IUMPSTPanel {
 							updateBacktracking(relationshipAdd);
 							JOptionPane.showMessageDialog(null, "relationship successfully added",null, JOptionPane.INFORMATION_MESSAGE);
 							UmpstModule father = getFatherPanel();
-						    alterarJanelaAtual(father.getMenuPanel());
+						    changePanel(father.getMenuPanel());
 						}
 					
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating relationship", "UnBBayes", JOptionPane.WARNING_MESSAGE);
 						UmpstModule pai = getFatherPanel();
-						alterarJanelaAtual(pai.getMenuPanel());	
+						changePanel(pai.getMenuPanel());	
 					
 					}
 				}
@@ -207,12 +206,12 @@ public class RelationshipAdd extends IUMPSTPanel {
 							
 							JOptionPane.showMessageDialog(null, "relationship successfully updated", "UnBBayes", JOptionPane.INFORMATION_MESSAGE);
 							UmpstModule pai = getFatherPanel();
-							alterarJanelaAtual(pai.getMenuPanel());	
+							changePanel(pai.getMenuPanel());	
 						}
 						catch (Exception e2) {
 							JOptionPane.showMessageDialog(null,"Error while ulpating relationship", "UnBBayes", JOptionPane.WARNING_MESSAGE);
 							UmpstModule pai = getFatherPanel();
-							alterarJanelaAtual(pai.getMenuPanel());	
+							changePanel(pai.getMenuPanel());	
 						}
 					}
 				}
@@ -222,7 +221,7 @@ public class RelationshipAdd extends IUMPSTPanel {
 		buttonCancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				UmpstModule pai = getFatherPanel();
-				alterarJanelaAtual(pai.getMenuPanel());	
+				changePanel(pai.getMenuPanel());	
 			}
 		});
 		
@@ -282,7 +281,7 @@ public class RelationshipAdd extends IUMPSTPanel {
 	
 	/** Returns an ImageIcon, or null if the path was invalid. */
     protected static ImageIcon createImageIcon(String path) {
-        java.net.URL imgURL = MenuPanel.class.getResource(path);
+        java.net.URL imgURL = MainPanel.class.getResource(path);
         if (imgURL != null) {
             return new ImageIcon(imgURL);
         } else {

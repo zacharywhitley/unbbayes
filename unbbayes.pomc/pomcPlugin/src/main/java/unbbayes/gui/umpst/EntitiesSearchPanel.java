@@ -110,7 +110,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 			buttonAddRelationship.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
-					alterarJanelaAtual(new RelationshipAdd(getFatherPanel(), null));
+					changePanel(new RelationshipAdd(getFatherPanel(), null));
 				}
 			});			
 		}
@@ -130,7 +130,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 			buttonAddEntity.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
-					alterarJanelaAtual(getEntitiesMainPanel(null));
+					changePanel(getEntitiesMainPanel(null));
 				}
 			});			
 		}
@@ -231,7 +231,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 	    
    
 	    UmpstModule pai = getFatherPanel();
-	    alterarJanelaAtual(pai.getMenuPanel());
+	    changePanel(pai.getMenuPanel());
 	    
 	    TableEntities entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
 	    JTable table = entitiesTable.createTable(columnNames,data);
@@ -262,7 +262,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 			}
 	   
 		    UmpstModule pai = getFatherPanel();
-		    alterarJanelaAtual(pai.getMenuPanel());
+		    changePanel(pai.getMenuPanel());
 		    
 		    TableEntities entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
 		    JTable table = entitiesTable.createTable(columnNames,data);

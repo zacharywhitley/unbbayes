@@ -1,0 +1,110 @@
+Number of goals cadastred
+4
+IDs of all goals
+1
+1.1
+1.1.1
+2
+Number of hypothesis cadastred
+2
+IDs of all hypothesis
+1
+1.1
+Number of entites cadastred
+2
+IDs of all entities
+1
+2
+Number of Groups cadastred
+2
+IDs of all groups
+1
+2
+********************
+Goals details:
+1
+g1
+
+__/__/____
+
+null
+Number of subgoals
+2
+Subgoals IDs:
+1.1
+1.1.1
+Number of hypothesis of this goal
+2
+Hypothesis of this goal:
+1
+1.1
+Number of entities related with this goal
+2
+Entity's traceability of this goal
+2
+1
+Number of groups related with this goal
+2
+group's traceability of this goal
+2
+1
+####
+1.1
+g1.1
+
+__/__/____
+
+1
+Number of subgoals
+1
+Subgoals IDs:
+1.1.1
+Number of hypothesis of this goal
+2
+Hypothesis of this goal:
+1
+1.1
+Number of entities related with this goal
+0
+Number of groups related with this goal
+0
+####
+1.1.1
+g1.1.1
+
+__/__/____
+
+1.1
+Number of subgoals
+0
+Number of hypothesis of this goal
+0
+Number of entities related with this goal
+0
+Number of groups related with this goal
+0
+####
+2
+g2
+
+__/__/____
+
+null
+Number of subgoals
+0
+Number of hypothesis of this goal
+0
+Number of entities related with this goal
+0
+Number of groups related with this goal
+0
+####
+****************
+Hypothesis Details
+1
+
+
+
+
+null
+Number of goals related

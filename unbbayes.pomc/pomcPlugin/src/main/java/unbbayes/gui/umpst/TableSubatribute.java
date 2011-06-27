@@ -120,7 +120,7 @@ public class TableSubatribute extends IUMPSTPanel{
 				
 				String atributeAdd = data[row][0].toString();
 				AtributeModel atributeAux = atributeRelated.getMapSubAtributes().get(atributeAdd);
-				alterarJanelaAtual(new AtributeAdd(getFatherPanel(), entityRelated,atributeAux, atributeAux.getFather() )   );
+				changePanel(new AtributeAdd(getFatherPanel(), entityRelated,atributeAux, atributeAux.getFather() )   );
 			}
 		});
 		
@@ -145,7 +145,7 @@ public class TableSubatribute extends IUMPSTPanel{
 			public void onButtonPress(int row, int column) {
 				String key = data[row][0].toString();
 				AtributeModel atribute =  atributeRelated.getMapSubAtributes().get(key);
-				alterarJanelaAtual(new AtributeAdd(getFatherPanel(),entityRelated,null,atribute));
+				changePanel(new AtributeAdd(getFatherPanel(),entityRelated,null,atribute));
 			
 				
 			}
@@ -179,7 +179,7 @@ public class TableSubatribute extends IUMPSTPanel{
 							//UMPSTProject.getInstance().getMapHypothesis().remove(key);
 
 							UmpstModule pai = getFatherPanel();
-						    alterarJanelaAtual(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entityRelated) );
+						    changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entityRelated) );
 							 
 							 JTable table = createTable();
 							 
@@ -217,7 +217,7 @@ public class TableSubatribute extends IUMPSTPanel{
 	 
     /** Returns an ImageIcon, or null if the path was invalid. */
     protected static ImageIcon createImageIcon(String path) {
-        java.net.URL imgURL = MenuPanel.class.getResource(path);
+        java.net.URL imgURL = MainPanel.class.getResource(path);
         if (imgURL != null) {
             return new ImageIcon(imgURL);
         } else {

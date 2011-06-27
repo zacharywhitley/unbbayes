@@ -6,6 +6,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -21,7 +22,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import unbbayes.gui.umpst.IUMPSTPanel;
-import unbbayes.gui.umpst.MenuPanel;
+import unbbayes.gui.umpst.MainPanel;
 import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.entities.AtributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
@@ -187,7 +188,7 @@ public class AtributeAdd extends IUMPSTPanel {
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating atribute", "UnBBayes", JOptionPane.WARNING_MESSAGE);
 						UmpstModule pai = getFatherPanel();
-						alterarJanelaAtual(pai.getMenuPanel());	
+						changePanel(pai.getMenuPanel());	
 					
 					}
 				}
@@ -207,7 +208,7 @@ public class AtributeAdd extends IUMPSTPanel {
 						catch (Exception e2) {
 							JOptionPane.showMessageDialog(null,"Error while ulpating atribute", "UnBBayes", JOptionPane.WARNING_MESSAGE);
 							UmpstModule pai = getFatherPanel();
-							alterarJanelaAtual(pai.getMenuPanel());	
+							changePanel(pai.getMenuPanel());	
 						}
 					}
 				}
@@ -217,13 +218,13 @@ public class AtributeAdd extends IUMPSTPanel {
 		buttonCancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				UmpstModule pai = getFatherPanel();
-				alterarJanelaAtual(pai.getMenuPanel());	
+				changePanel(pai.getMenuPanel());	
 			}
 		});
 		
 		buttonSubatribute.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				alterarJanelaAtual(new AtributeAdd(getFatherPanel(), entityRelated,null,atribute));
+				changePanel(new AtributeAdd(getFatherPanel(), entityRelated,null,atribute));
 
 			}
 		});
@@ -259,7 +260,7 @@ public class AtributeAdd extends IUMPSTPanel {
 	
 	/** Returns an ImageIcon, or null if the path was invalid. */
     protected static ImageIcon createImageIcon(String path) {
-        java.net.URL imgURL = MenuPanel.class.getResource(path);
+        java.net.URL imgURL = MainPanel.class.getResource(path);
         if (imgURL != null) {
             return new ImageIcon(imgURL);
         } else {
@@ -271,7 +272,7 @@ public class AtributeAdd extends IUMPSTPanel {
    public void updateTable(AtributeModel atributeUpdade){
 		
 	    UmpstModule pai = getFatherPanel();
-	    alterarJanelaAtual(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entityRelated));
+	    changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entityRelated));
 
 	    /*
 	    TableAtribute atributeTable     = pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entityRelated).getAtributeTable(entityRelated);
@@ -332,7 +333,11 @@ public class AtributeAdd extends IUMPSTPanel {
 			}
 		}
 		
-		AtributeModel atributeAdd = new AtributeModel(idAux,AtributeText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),entityRelated, atributeFather,null,null);
+		Set<EntityModel> setEntityRelated = new HashSet<EntityModel>();
+		setEntityRelated.add(entityRelated);
+		
+		
+		AtributeModel atributeAdd = new AtributeModel(idAux,AtributeText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),setEntityRelated, atributeFather,null,null);
 		if (atributeFather!=null){
 			atributeFather.getMapSubAtributes().put(atributeAdd.getId(), atributeAdd);
 		}
@@ -358,6 +363,8 @@ public class AtributeAdd extends IUMPSTPanel {
 	    if (atribute!=null){
 	    	c.gridx = 1; c.gridy = 0; c.gridwidth=1;
 	    	panel.add(buttonSubatribute,c);
+	    	
+	    	
 	   
 	    }
 		

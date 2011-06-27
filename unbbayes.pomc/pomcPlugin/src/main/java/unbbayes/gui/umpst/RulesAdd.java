@@ -145,14 +145,13 @@ public class RulesAdd extends IUMPSTPanel {
 		panel.add( typeText, c);
 		
 		c.gridx = 1; c.gridy = 4;c.gridwidth=2;
-		panel.add( commentsText, c);c.gridwidth=2;
-		
-		c.gridx = 1; c.gridy = 5;c.gridwidth=2;
 		panel.add( authorText, c);c.gridwidth=2;
 		
-		c.gridx = 1; c.gridy = 6;c.gridwidth=2;
+		c.gridx = 1; c.gridy = 5;c.gridwidth=2;
 		panel.add( dateText, c);c.gridwidth=2;
 
+		c.gridx = 1; c.gridy = 6;c.gridwidth=2;
+		panel.add( commentsText, c);c.gridwidth=2;
 		
 			
 		c.gridx = 0; c.gridy = 7; c.gridwidth = 1;
@@ -188,7 +187,7 @@ public class RulesAdd extends IUMPSTPanel {
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating rule", "UnBBayes", JOptionPane.WARNING_MESSAGE);
 						UmpstModule pai = getFatherPanel();
-						alterarJanelaAtual(pai.getMenuPanel());	
+						changePanel(pai.getMenuPanel());	
 					
 					}
 				}
@@ -232,7 +231,7 @@ public class RulesAdd extends IUMPSTPanel {
 						catch (Exception e2) {
 							JOptionPane.showMessageDialog(null,"Error while updating rule", "UnBBayes", JOptionPane.WARNING_MESSAGE);
 							UmpstModule pai = getFatherPanel();
-							alterarJanelaAtual(pai.getMenuPanel());	
+							changePanel(pai.getMenuPanel());	
 						}
 					}
 				}
@@ -242,7 +241,7 @@ public class RulesAdd extends IUMPSTPanel {
 		buttonCancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				UmpstModule pai = getFatherPanel();
-				alterarJanelaAtual(pai.getMenuPanel());	
+				changePanel(pai.getMenuPanel());	
 			}
 		});
 		
@@ -278,7 +277,7 @@ public class RulesAdd extends IUMPSTPanel {
 	
 	/** Returns an ImageIcon, or null if the path was invalid. */
     protected static ImageIcon createImageIcon(String path) {
-        java.net.URL imgURL = MenuPanel.class.getResource(path);
+        java.net.URL imgURL = MainPanel.class.getResource(path);
         if (imgURL != null) {
             return new ImageIcon(imgURL);
         } else {
@@ -355,7 +354,7 @@ public class RulesAdd extends IUMPSTPanel {
 		}
    
 	    UmpstModule pai = getFatherPanel();
-	    alterarJanelaAtual(pai.getMenuPanel());
+	    changePanel(pai.getMenuPanel());
 	    
 	    TableRules rulesTable = pai.getMenuPanel().getRulesPane().getRulesTable();
 	    JTable table = rulesTable.createTable(columnNames,data);

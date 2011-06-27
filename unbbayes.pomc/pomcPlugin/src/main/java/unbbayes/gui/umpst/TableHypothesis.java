@@ -192,7 +192,7 @@ public class TableHypothesis extends IUMPSTPanel{
 				
 				String hypothesisAdd = data[row][0].toString();
 				HypothesisModel hypothesisAux = goalRelated.getMapHypothesis().get(hypothesisAdd);
-				alterarJanelaAtual(new HypothesisAdd(getFatherPanel(), goalRelated,hypothesisAux, hypothesisAux.getFather() )   );
+				changePanel(new HypothesisAdd(getFatherPanel(), goalRelated,hypothesisAux, hypothesisAux.getFather() )   );
 			}
 		});
 		
@@ -217,7 +217,7 @@ public class TableHypothesis extends IUMPSTPanel{
 			public void onButtonPress(int row, int column) {
 				String key = data[row][0].toString();
 				HypothesisModel hypothesisRelated =  goalRelated.getMapHypothesis().get(key);
-				alterarJanelaAtual(new HypothesisAdd(getFatherPanel(),goalRelated,null,hypothesisRelated));
+				changePanel(new HypothesisAdd(getFatherPanel(),goalRelated,null,hypothesisRelated));
 			
 				
 			}
@@ -286,7 +286,7 @@ public class TableHypothesis extends IUMPSTPanel{
 
 							
 							UmpstModule pai = getFatherPanel();
-						    alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated)	);
+						    changePanel(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated)	);
 							 
 							 JTable table = createTable();
 							 
@@ -324,7 +324,7 @@ public class TableHypothesis extends IUMPSTPanel{
 	 
     /** Returns an ImageIcon, or null if the path was invalid. */
     protected static ImageIcon createImageIcon(String path) {
-        java.net.URL imgURL = MenuPanel.class.getResource(path);
+        java.net.URL imgURL = MainPanel.class.getResource(path);
         if (imgURL != null) {
             return new ImageIcon(imgURL);
         } else {

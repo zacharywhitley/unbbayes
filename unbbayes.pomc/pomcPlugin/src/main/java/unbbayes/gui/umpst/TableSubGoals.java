@@ -119,7 +119,7 @@ public class TableSubGoals extends IUMPSTPanel{
 				
 				String key = data[row][0].toString();
 				GoalModel goalAux = UMPSTProject.getInstance().getMapGoal().get(key);
-				alterarJanelaAtual(new SubgoalsAdd(getFatherPanel(), goalAux, goalAux.getGoalFather() )   );
+				changePanel(new SubgoalsAdd(getFatherPanel(), goalAux, goalAux.getGoalFather() )   );
 			}
 		});
 		
@@ -144,7 +144,7 @@ public class TableSubGoals extends IUMPSTPanel{
 			public void onButtonPress(int row, int column) {
 				String key = data[row][0].toString();
 				GoalModel goalAux = UMPSTProject.getInstance().getMapGoal().get(key);
-				alterarJanelaAtual(new SubgoalsAdd(getFatherPanel(),null,goalAux));	
+				changePanel(new SubgoalsAdd(getFatherPanel(),null,goalAux));	
 			}
 		});
 		
@@ -206,7 +206,7 @@ public class TableSubGoals extends IUMPSTPanel{
 						}
 						
 						UmpstModule pai = getFatherPanel();
-					    alterarJanelaAtual(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated)	);
+					    changePanel(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated)	);
 						 
 						 JTable table = createTable();
 						 
@@ -244,7 +244,7 @@ public class TableSubGoals extends IUMPSTPanel{
 	 
     /** Returns an ImageIcon, or null if the path was invalid. */
     protected static ImageIcon createImageIcon(String path) {
-        java.net.URL imgURL = MenuPanel.class.getResource(path);
+        java.net.URL imgURL = MainPanel.class.getResource(path);
         if (imgURL != null) {
             return new ImageIcon(imgURL);
         } else {
