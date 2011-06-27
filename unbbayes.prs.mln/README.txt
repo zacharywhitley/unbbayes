@@ -13,6 +13,7 @@ In the near future, these files shall be in unbbayes's remote project.
 
 Go to \lib>
 mvn install:install-file -DgroupId=guess -DartifactId=tuffy -Dversion=0.3 -Dpackaging=jar -Dfile=tuffy-0.3.jar
+mvn install:install-file -DgroupId=guess -DartifactId=commons-lang3 -Dversion=3.0 -Dpackaging=jar -Dfile=commons-lang3-3.0-beta.jar
 
 CREATING A RELEASE
 -------------------

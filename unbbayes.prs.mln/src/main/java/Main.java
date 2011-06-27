@@ -13,6 +13,7 @@ public class Main extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private static Main instance;
 	private Janela janela = null;
+	private Popup popup = null;
 	
 	public Main () {
 		super();
@@ -27,6 +28,7 @@ public class Main extends JFrame {
 		this.setTitle("Tuffy-UnBBayes");
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setContentPane(getJanela());
+		this.setContentPane(getPopup());
 	}
 
 
@@ -37,6 +39,13 @@ public class Main extends JFrame {
 		return janela;
 	}
 
+	public Popup getPopup() {
+		if (popup == null) {
+			popup = new Popup();
+		}
+		return popup;
+	}
+	
 
 	private static Main getInstance() {
 		if (instance == null) {
