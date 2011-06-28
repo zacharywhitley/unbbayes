@@ -22,6 +22,7 @@ import javax.swing.TransferHandler;
 
 import org.protege.editor.core.ui.util.ComponentFactory;
 import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
+import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLException;
 import org.semanticweb.owlapi.model.OWLObject;
@@ -30,6 +31,7 @@ import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLProperty;
+import org.semanticweb.owlapi.model.RemoveAxiom;
 
 import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.gui.mebn.ontology.protege.OWLPropertyViewerPanel;
@@ -168,8 +170,24 @@ public class OWL2PropertyViewerPanel extends OWLPropertyViewerPanel {
 			// create a listener that reloads this panel if an ontology change happens
 			this.setOWLOntologyChangeListener(new OWLOntologyChangeListener() {
 				public void ontologiesChanged(List<? extends OWLOntologyChange> changes) throws OWLException {
-					Debug.println(this.getClass(), "Reset OWL2PropertyViewerPanel");
-					resetComponents();
+					// look for changes on owl properties
+					for (OWLOntologyChange change : changes) {
+						// reset component only when something was added or removed from ontology (renaming is not supported)
+						if ((change instanceof AddAxiom)
+								|| change instanceof RemoveAxiom) {
+							// reset component only if data properties or object properties were changed
+							if ( ( change.getAxiom().getDataPropertiesInSignature() == null 
+									|| change.getAxiom().getDataPropertiesInSignature().isEmpty() )
+								&& ( change.getAxiom().getObjectPropertiesInSignature() == null 
+									|| change.getAxiom().getObjectPropertiesInSignature().isEmpty()) ) {
+								continue;
+							} else {
+								Debug.println(this.getClass(), "Reset OWL2PropertyViewerPanel");
+								resetComponents();
+								break;
+							}
+						}
+					}
 				}
 			});
 			// add to owl model

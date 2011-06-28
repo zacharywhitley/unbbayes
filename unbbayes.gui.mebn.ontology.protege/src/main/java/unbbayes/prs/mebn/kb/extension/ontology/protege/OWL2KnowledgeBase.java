@@ -24,12 +24,15 @@ import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLDataProperty;
+import org.semanticweb.owlapi.model.OWLException;
 import org.semanticweb.owlapi.model.OWLIndividual;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
+import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.model.OWLProperty;
 import org.semanticweb.owlapi.model.PrefixManager;
@@ -84,6 +87,8 @@ import unbbayes.util.Debug;
  */
 public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionParserFacade, IPROWL2ModelUser {
 
+	private List<IClearKBCommand> clearKBCommandList = new ArrayList<OWL2KnowledgeBase.IClearKBCommand>();
+	
 	private OWLReasoner defaultOWLReasoner;
 	
 	private MultiEntityBayesianNetwork defaultMEBN;
@@ -109,6 +114,12 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	private Map<String, List<String>> typeToIndividualsCache;
 
 	private Map<ResidentNode, Collection<RandomVariableFinding>> residentNodeFindingCache;
+
+	private boolean isToResetCache = true;
+
+	private Map<String, OWLClassExpression> expressionCache;
+
+	private Map<ContextNode, Map<Collection<OVInstance>, SearchResult>> searchContextCache;
 
 	/**
 	 * The default constructor is only visible in order to allow inheritance
@@ -143,6 +154,26 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	 * Initialize default values
 	 */
 	protected void initialize() {
+		// initialize some commands to be executed on clearKnowledgeBase()
+		// add getNonPROWLClassExtractor().resetNonPROWLClassExtractor() to the commands to be executed on clearKnowledgeBase()
+		this.getClearKBCommandList().add(new IClearKBCommand() {
+			public void doCommand() {
+				if (getNonPROWLClassExtractor() != null) {
+					// clear the non-prowl class extractor.
+					getNonPROWLClassExtractor().resetNonPROWLClassExtractor();
+				}
+			}
+			public void undoCommand() {Debug.println(this.getClass(), "There is no undo for resetNonPROWLClassExtractor()");}
+		});
+		
+		// add resetCache() to the commands to be executed on clearKnowledgeBase()
+		this.getClearKBCommandList().add(new IClearKBCommand() {
+			public void doCommand() {
+				resetCache();
+			}
+			public void undoCommand() {Debug.println(this.getClass(), "There is no undo for resetCache();");}
+		});
+		
 		this.setProwlModelUserDelegator(DefaultPROWL2ModelUser.getInstance());
 		this.setNonPROWLClassExtractor(DefaultNonPROWLClassExtractor.getInstance());
 		this.resetCache();
@@ -159,11 +190,16 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#clearKnowledgeBase()
 	 */
 	public void clearKnowledgeBase() {
-		if (this.getNonPROWLClassExtractor() != null) {
-			// clear the non-prowl class extractor.
-			this.getNonPROWLClassExtractor().resetNonPROWLClassExtractor();
+		// execute commands inserted from other classes (they are inserted as instances of IClearKBCommand)
+		if (this.getClearKBCommandList() != null) {
+			for (IClearKBCommand command : this.getClearKBCommandList()) {
+				try {
+					command.doCommand();
+				} catch (Exception e) {
+					Debug.println(this.getClass(), e.getMessage(), e);
+				}
+			}
 		}
-		this.resetCache();
 	}
 
 	/* (non-Javadoc)
@@ -261,6 +297,10 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	 * Use this method if you find out that the cache contains old elements that should be removed.
 	 */
 	public void resetCache() {
+		if (!isToResetCache()) {
+			Debug.println(this.getClass(), "isToResetCache == false. Ignoring request for resetting cache.");
+			return;
+		}
 		try {
 			this.setResidentNodeCache(new HashMap<ResidentNode, IRI>());
 		} catch (Throwable t) {
@@ -286,6 +326,22 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
+		try {
+			// disable cache for owl class expressions
+			this.setExpressionCache(null);
+//			this.setExpressionCache(new HashMap<String, OWLClassExpression>());
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+		try {
+			this.setSearchContextCache(new HashMap<ContextNode, Map<Collection<OVInstance>,SearchResult>>());
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+		
+		// disable cache reset. Re-Enable it only when explicitly stated
+		// Note: setDefaultMEBN sets a listener that invokes setIsToResetCache(true) when ontology is changed
+		this.setIsToResetCache(false);
 	}
 
 	/* (non-Javadoc)
@@ -679,6 +735,16 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		
 		// TODO maybe we could call the I/O classes to actually reload the probabilistic part from the currently edited ontology (in order to provide a mean to edit the probabilistic part using the deterministic editor as well)
 		
+		// do nothing if it is already ok and not out of sync
+		if (this.getOWLModelManager().getOWLReasonerManager().getReasonerStatus().equals(ReasonerStatus.INITIALIZED)) {
+			try {
+				Debug.println(this.getClass(), ReasonerStatus.INITIALIZED.getDescription());
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+			return;
+		}
+		
 		// reload reasoner
 		this.getOWLModelManager().getOWLReasonerManager().classifyAsynchronously(this.getOWLModelManager().getReasonerPreferences().getPrecomputedInferences());
 		
@@ -763,14 +829,22 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			Map<Collection<OVInstance>, StateLink> cachedFindings = this.getFindingCache().get(resident);
 			if (cachedFindings != null) {
 				// there is a finding for resident, but the arguments may be different. Check if there is a finding for that arguments
-				StateLink valueOfFinding = cachedFindings.get(listArguments);
-				if (valueOfFinding != null) {
+				Object valueOfFinding = this.getValueFromMapWithCollectionAsKey(cachedFindings, listArguments);
+				if (valueOfFinding instanceof NullObject) {
+					try {
+						Debug.println(getClass(), resident + " is cached and its value is null");
+					} catch (Throwable t) {
+						t.printStackTrace();
+					}
+					return null;
+				}
+				if (valueOfFinding != null && (valueOfFinding instanceof StateLink)) {
 					try {
 						Debug.println(this.getClass(), "The finding " + resident + " ( " + listArguments + " ) = " + valueOfFinding + " is cached already.");
 					} catch (Throwable t) {
 						t.printStackTrace();
 					}
-					return valueOfFinding;
+					return (StateLink)valueOfFinding;
 				}
 			}
 		}
@@ -863,7 +937,6 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 									if (this.getFindingCache() != null) {
 										Map<Collection<OVInstance>, StateLink> cachedFindings = this.getFindingCache().get(resident);
 										if (cachedFindings == null) {
-											// resident have had no findings until now
 											cachedFindings = new HashMap<Collection<OVInstance>, StateLink>();
 										}
 										cachedFindings.put(listArguments, link);
@@ -905,7 +978,6 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 								if (this.getFindingCache() != null) {
 									Map<Collection<OVInstance>, StateLink> cachedFindings = this.getFindingCache().get(resident);
 									if (cachedFindings == null) {
-										// resident have had no findings until now
 										cachedFindings = new HashMap<Collection<OVInstance>, StateLink>();
 									}
 									cachedFindings.put(listArguments, link);
@@ -935,7 +1007,6 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				if (this.getFindingCache() != null) {
 					Map<Collection<OVInstance>, StateLink> cachedFindings = this.getFindingCache().get(resident);
 					if (cachedFindings == null) {
-						// resident have had no findings until now
 						cachedFindings = new HashMap<Collection<OVInstance>, StateLink>();
 					}
 					cachedFindings.put(listArguments, null);
@@ -975,7 +1046,6 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					if (this.getFindingCache() != null) {
 						Map<Collection<OVInstance>, StateLink> cachedFindings = this.getFindingCache().get(resident);
 						if (cachedFindings == null) {
-							// resident have had no findings until now
 							cachedFindings = new HashMap<Collection<OVInstance>, StateLink>();
 						}
 						cachedFindings.put(listArguments, link);
@@ -1005,7 +1075,6 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					if (this.getFindingCache() != null) {
 						Map<Collection<OVInstance>, StateLink> cachedFindings = this.getFindingCache().get(resident);
 						if (cachedFindings == null) {
-							// resident have had no findings until now
 							cachedFindings = new HashMap<Collection<OVInstance>, StateLink>();
 						}
 						cachedFindings.put(listArguments, link);
@@ -1031,7 +1100,6 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		if (this.getFindingCache() != null) {
 			Map<Collection<OVInstance>, StateLink> cachedFindings = this.getFindingCache().get(resident);
 			if (cachedFindings == null) {
-				// resident have had no findings until now
 				cachedFindings = new HashMap<Collection<OVInstance>, StateLink>();
 			}
 			cachedFindings.put(listArguments, null);
@@ -1246,14 +1314,14 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 						// add finding
 						resident.addRandomVariableFinding(finding);
 						// cache
-						if (this.getResidentNodeFindingCache() != null) {
-							Collection<RandomVariableFinding> findings = this.getResidentNodeFindingCache().get(resident);
-							if (findings == null) {
-								findings = new HashSet<RandomVariableFinding>();
-							}
-							findings.add(finding);
-							this.getResidentNodeFindingCache().put(resident, findings);
-						}
+//						if (this.getResidentNodeFindingCache() != null) {
+//							Collection<RandomVariableFinding> findings = this.getResidentNodeFindingCache().get(resident);
+//							if (findings == null) {
+//								findings = new HashSet<RandomVariableFinding>();
+//							}
+//							findings.add(finding);
+//							this.getResidentNodeFindingCache().put(resident, findings);
+//						}
 					} catch (Exception e) {
 						e.printStackTrace();
 						// keep going on
@@ -1281,14 +1349,14 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 						// add finding
 						resident.addRandomVariableFinding(finding);
 						// cache
-						if (this.getResidentNodeFindingCache() != null) {
-							Collection<RandomVariableFinding> findings = this.getResidentNodeFindingCache().get(resident);
-							if (findings == null) {
-								findings = new HashSet<RandomVariableFinding>();
-							}
-							findings.add(finding);
-							this.getResidentNodeFindingCache().put(resident, findings);
-						}
+//						if (this.getResidentNodeFindingCache() != null) {
+//							Collection<RandomVariableFinding> findings = this.getResidentNodeFindingCache().get(resident);
+//							if (findings == null) {
+//								findings = new HashSet<RandomVariableFinding>();
+//							}
+//							findings.add(finding);
+//							this.getResidentNodeFindingCache().put(resident, findings);
+//						}
 					} catch (Exception e) {
 						e.printStackTrace();
 						// keep going on
@@ -1325,14 +1393,14 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 								// add finding
 								resident.addRandomVariableFinding(finding);
 								// cache
-								if (this.getResidentNodeFindingCache() != null) {
-									Collection<RandomVariableFinding> findings = this.getResidentNodeFindingCache().get(resident);
-									if (findings == null) {
-										findings = new HashSet<RandomVariableFinding>();
-									}
-									findings.add(finding);
-									this.getResidentNodeFindingCache().put(resident, findings);
-								}
+//								if (this.getResidentNodeFindingCache() != null) {
+//									Collection<RandomVariableFinding> findings = this.getResidentNodeFindingCache().get(resident);
+//									if (findings == null) {
+//										findings = new HashSet<RandomVariableFinding>();
+//									}
+//									findings.add(finding);
+//									this.getResidentNodeFindingCache().put(resident, findings);
+//								}
 							} catch (Exception e) {
 								e.printStackTrace();
 								// keep going on
@@ -1374,14 +1442,14 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 								// add finding
 								resident.addRandomVariableFinding(finding);
 								// cache
-								if (this.getResidentNodeFindingCache() != null) {
-									Collection<RandomVariableFinding> findings = this.getResidentNodeFindingCache().get(resident);
-									if (findings == null) {
-										findings = new HashSet<RandomVariableFinding>();
-									}
-									findings.add(finding);
-									this.getResidentNodeFindingCache().put(resident, findings);
-								}
+//								if (this.getResidentNodeFindingCache() != null) {
+//									Collection<RandomVariableFinding> findings = this.getResidentNodeFindingCache().get(resident);
+//									if (findings == null) {
+//										findings = new HashSet<RandomVariableFinding>();
+//									}
+//									findings.add(finding);
+//									this.getResidentNodeFindingCache().put(resident, findings);
+//								}
 							} catch (Exception e) {
 								e.printStackTrace();
 								// keep going on
@@ -1434,14 +1502,14 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 							// add finding
 							resident.addRandomVariableFinding(finding);
 							// cache
-							if (this.getResidentNodeFindingCache() != null) {
-								Collection<RandomVariableFinding> findings = this.getResidentNodeFindingCache().get(resident);
-								if (findings == null) {
-									findings = new HashSet<RandomVariableFinding>();
-								}
-								findings.add(finding);
-								this.getResidentNodeFindingCache().put(resident, findings);
-							}
+//							if (this.getResidentNodeFindingCache() != null) {
+//								Collection<RandomVariableFinding> findings = this.getResidentNodeFindingCache().get(resident);
+//								if (findings == null) {
+//									findings = new HashSet<RandomVariableFinding>();
+//								}
+//								findings.add(finding);
+//								this.getResidentNodeFindingCache().put(resident, findings);
+//							}
 						} catch (Exception e) {
 							e.printStackTrace();
 							// keep going on
@@ -1463,6 +1531,21 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			Debug.println(this.getClass(), resident + " has a format that is not supported by this knowledge base.");
 		}
 
+		// cache everything
+		if (this.getResidentNodeFindingCache() != null) {
+			Collection<RandomVariableFinding> findings = new HashSet<RandomVariableFinding>();
+			for (RandomVariableFinding finding : resident.getRandomVariableFindingList()) {
+				findings.add(finding);
+			}
+			try {
+				Debug.println(getClass(), "Caching findings for " + resident + ": " + findings);
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+			// this should cache empty collections as well (it will cache a notification that "nothing was found")
+			this.getResidentNodeFindingCache().put(resident, findings);
+		}
+		
 	}
 	
 	/**
@@ -1559,6 +1642,28 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			ovInstances = new ArrayList<OVInstance>();
 		}
 		
+		// check cache
+		if (this.getSearchContextCache() != null && this.getSearchContextCache().containsKey(context)) {
+			Map<Collection<OVInstance>, SearchResult> cache = this.getSearchContextCache().get(context);
+			Object val = this.getValueFromMapWithCollectionAsKey(cache,ovInstances);
+			if (val instanceof NullObject) {
+				try {
+					Debug.println(getClass(), context + " is cached and its search result is null");
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				return null;
+			}
+			if (val != null && (val instanceof SearchResult)) {
+				try {
+					Debug.println(getClass(), context + " is cached.");
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				return (SearchResult)val;
+			}
+		}
+		
 		// extract context node expression
 		NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree(); 
 		
@@ -1588,12 +1693,67 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		
 		// only return ret if it is valid
 		if (ret == null || ret.getValuesResultList() == null || ret.getValuesResultList().isEmpty()) {
+			// fill cache
+			if (this.getSearchContextCache() != null) {
+				Map<Collection<OVInstance>, SearchResult> cache = this.getSearchContextCache().get(context);
+				if (cache == null) {
+					cache = new HashMap<Collection<OVInstance>, SearchResult>();
+				}
+				cache.put(ovInstances, null);
+				this.getSearchContextCache().put(context, cache);
+			}
 			return null;
 		} else {
+			// fill cache
+			if (this.getSearchContextCache() != null) {
+				Map<Collection<OVInstance>, SearchResult> cache = this.getSearchContextCache().get(context);
+				if (cache == null) {
+					cache = new HashMap<Collection<OVInstance>, SearchResult>();
+				}
+				cache.put(ovInstances, ret);
+				this.getSearchContextCache().put(context, cache);
+			}
 			return ret;
 		}
 	}
 
+	/**
+	 * This is the {@link Map#containsKey(Object)} method for a map having a collection as its keys.
+	 * This is implemented because most maps relies on hash values for {@link Map#containsKey(Object)},
+	 * which fails when key is a collection.
+	 * This method uses the {@link Collection}{@link #equals(Object)} instead
+	 * and does a linear search.
+	 * @param map
+	 * @param key
+	 * @return null if key was not found. {@link OWL2KnowledgeBase.NullObject} if key was found and value was null.
+	 * Value if the value was found.
+	 */
+	private Object getValueFromMapWithCollectionAsKey(Map map, Collection key) {
+		for (Object obj : map.keySet()) {
+			if (key.equals(obj)) {
+				Object val = map.get(obj);
+				// return a null object if key was found but value is null
+				return ((val==null)?NullObject.getInstance():val);
+			}
+		}
+		return null;	// key not found
+	}
+	
+	/**
+	 * This is an object representing a null value.
+	 * This is used by {@link OWL2KnowledgeBase#getValueFromMapWithCollectionAsKey(Map, Collection)}
+	 * in order to distinguish a null value from a key which was not found.
+	 * @author Shou Matsumoto
+	 *
+	 */
+	protected static class NullObject {
+		private static final NullObject INSTANCE = new NullObject();
+		private NullObject(){}
+		public static NullObject getInstance() {return INSTANCE;}
+		public String toString() {return "null";}
+	}
+
+	
 	/**
 	 * This is a recursive method that evaluates formulaTree and fills knownSearchResults. 
 	 * @param formulaTree : the expression to evaluate
@@ -2837,6 +2997,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			}
 			// if reasoner is not available, use the one extracted from MEBN
 			Debug.println(this.getClass(), "Extracted reasoner from MEBN: " + reasoner);
+			this.setDefaultOWLReasoner(reasoner);
 			return reasoner;
 		}
 		return defaultOWLReasoner;
@@ -2878,6 +3039,22 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	 */
 	public void setDefaultMEBN(MultiEntityBayesianNetwork defaultMEBN) {
 		this.defaultMEBN = defaultMEBN;
+		
+		// add listener that enables KB to reset cache if ontology was previously changed
+		if (defaultMEBN != null
+				&& ( getDefaultMEBN().getStorageImplementor() instanceof IOWLAPIStorageImplementorDecorator)) {
+			try {
+				((IOWLAPIStorageImplementorDecorator)getDefaultMEBN().getStorageImplementor()).getAdaptee().getOWLOntologyManager().addOntologyChangeListener(new OWLOntologyChangeListener() {
+					public void ontologiesChanged(List<? extends OWLOntologyChange> changes)
+							throws OWLException {
+						// tell to reset cache on next request
+						setIsToResetCache(true);
+					}
+				});
+			} catch (Exception e) {
+				Debug.println(getClass(), e.getMessage(), e);
+			}
+		}
 	}
 
 
@@ -2927,10 +3104,30 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	 * @see unbbayes.prs.mebn.ontology.protege.IOWLClassExpressionParserFacade#parseExpression(java.lang.String)
 	 */
 	public OWLClassExpression parseExpression(String expression) {
+		// check cache
+		if (this.getExpressionCache() != null 
+				&& this.getExpressionCache().containsKey(expression)) {
+			try {
+				Debug.println(getClass(), expression + " is in cache.");
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+			return this.getExpressionCache().get(expression);
+		}
 		if (this.getOwlClassExpressionParserDelegator() == null) {
 			return null;
 		}
-		return this.getOwlClassExpressionParserDelegator().parseExpression(expression);
+		OWLClassExpression ret = this.getOwlClassExpressionParserDelegator().parseExpression(expression);
+		// put to cache
+		if (this.getExpressionCache() != null) {
+			try {
+				Debug.println(getClass(), "Inserting " + expression + " to cache of expressions.");
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+			this.getExpressionCache().put(expression, ret);
+		}
+		return ret;
 	}
 
 	/**
@@ -3162,5 +3359,123 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			Map<ResidentNode, Collection<RandomVariableFinding>> residentNodeFindingCache) {
 		this.residentNodeFindingCache = residentNodeFindingCache;
 	}
+	
+	/**
+	 * Individuals of this class represents methods to be invoked when {@link OWL2KnowledgeBase#clearKnowledgeBase()}
+	 * is invoked.
+	 * @author Shou Matsumoto
+	 * @see {@link OWL2KnowledgeBase#getClearKBCommandList()}
+	 *
+	 */
+	public interface IClearKBCommand{
+		public void doCommand();
+		public void undoCommand();
+	}
 
+	/**
+	 * This is a list of commmands to be executed by {@link #clearKnowledgeBase()}
+	 * @return the clearKBCommandList
+	 * @see #clearKnowledgeBase()
+	 */
+	public List<IClearKBCommand> getClearKBCommandList() {
+		return clearKBCommandList;
+	}
+
+	/**
+	 * This is a list of commmands to be executed by {@link #clearKnowledgeBase()}
+	 * @param clearKBCommandList the clearKBCommandList to set
+	 * @see #clearKnowledgeBase()
+	 */
+	public void setClearKBCommandList(List<IClearKBCommand> clearKBCommandList ) {
+		
+		this.clearKBCommandList = clearKBCommandList;
+	}
+	
+	/**
+	 * This method just calls {@link IClearKBCommand#undoCommand()} for all commands in
+	 * {@link #getClearKBCommandList()}
+	 */
+	public void undoClearKnowledgeBase() {
+		if (this.getClearKBCommandList() != null) {
+			for (IClearKBCommand command : this.getClearKBCommandList()) {
+				try {
+					command.undoCommand();
+				} catch (Exception e) {
+					Debug.println(this.getClass(), e.getMessage(), e);
+				}
+			}
+		}
+	}
+	
+//	/**
+//	 * This method adds a new commmand to be executed by {@link #clearKnowledgeBase()}
+//	 * @param command
+//	 * @see #clearKnowledgeBase()
+//	 * @see #getClearKBCommandList()
+//	 */
+//	public void addClearKBCommand(IClearKBCommand command) {
+//		if (this.getClearKBCommandList() == null) {
+//			this.setClearKBCommandList(new ArrayList<OWL2KnowledgeBase.IClearKBCommand>());
+//		}
+//		this.getClearKBCommandList().add(command);
+//	}
+
+	/**
+	 * If set to false, calls to {@link #resetCache()} will be ignored.
+	 * {@link #setDefaultMEBN(MultiEntityBayesianNetwork)} will set a listener to invoke 
+	 * {@link #setIsToResetCache(true)} when ontology is changed.
+	 * @return the isToResetCache
+	 */
+	public boolean isToResetCache() {
+		return isToResetCache;
+	}
+
+	/**
+	 * If set to false, calls to {@link #resetCache()} will be ignored.
+	 * {@link #setDefaultMEBN(MultiEntityBayesianNetwork)} will set a listener to invoke 
+	 * {@link #setIsToResetCache(true)} when ontology is changed.
+	 * @param isToResetCache the isToResetCache to set
+	 */
+	public void setIsToResetCache(boolean isToResetCache) {
+		try {
+			Debug.println(getClass(),  "Requests for resetting cache is " + (isToResetCache?"enabled":"blocked"));
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+		this.isToResetCache = isToResetCache;
+	}
+
+	/**
+	 * This is a cache for {@link #parseExpression(String)}.
+	 * @return the expressionCache
+	 */
+	public Map<String, OWLClassExpression> getExpressionCache() {
+		return expressionCache;
+	}
+
+	/**
+	 * This is a cache for {@link #parseExpression(String)}
+	 * @param expressionCache the expressionCache to set
+	 */
+	public void setExpressionCache(Map<String, OWLClassExpression> expressionCache) {
+		this.expressionCache = expressionCache;
+	}
+
+	/**
+	 * This is a cache for {@link #evaluateSearchContextNodeFormula(ContextNode, List)}
+	 * @return the searchContextCache
+	 */
+	public Map<ContextNode, Map<Collection<OVInstance>, SearchResult>> getSearchContextCache() {
+		return searchContextCache;
+	}
+
+	/**
+	 * This is a cache for {@link #evaluateSearchContextNodeFormula(ContextNode, List)}
+	 * @param searchContextCache the searchContextCache to set
+	 */
+	public void setSearchContextCache(
+			Map<ContextNode, Map<Collection<OVInstance>, SearchResult>> searchContextCache) {
+		this.searchContextCache = searchContextCache;
+	}
+	
 }

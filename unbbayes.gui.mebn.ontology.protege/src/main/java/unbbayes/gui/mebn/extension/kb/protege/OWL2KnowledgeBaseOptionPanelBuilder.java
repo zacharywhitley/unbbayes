@@ -28,6 +28,7 @@ import org.protege.editor.owl.model.inference.ProtegeOWLReasonerInfo;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import unbbayes.controller.IconController;
+import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.gui.mebn.extension.kb.IKBOptionPanelBuilder;
 import unbbayes.io.mebn.protege.ProtegeStorageImplementorDecorator;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -48,6 +49,8 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 	private JPanel owlAPIReasonerOptionPanel;
 	private JPanel protege41ReasonerOptionPanel;
 	private JLabel owlAPIReasonerLabel;
+	
+	
 //	private JRadioButtonMenuItem previouslySelectedReasonerItem;
 	
 	/**
@@ -226,7 +229,12 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 	 * @see unbbayes.gui.mebn.extension.kb.IKBOptionPanelBuilder#commitChanges()
 	 */
 	public void commitChanges() {
-
+		// force KB to reset (undo) its "clear" commands
+		if (this.getKB() instanceof OWL2KnowledgeBase) {
+			OWL2KnowledgeBase owl2KnowledgeBase = (OWL2KnowledgeBase) this.getKB();
+			owl2KnowledgeBase.undoClearKnowledgeBase();
+		}
+		
 		System.gc();
 		
 		// initial assertion
@@ -312,7 +320,38 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 	 * @see unbbayes.gui.mebn.extension.kb.IKBOptionPanelBuilder#setKB(unbbayes.prs.mebn.kb.KnowledgeBase)
 	 */
 	public void setKB(KnowledgeBase kb) {
+		if (this.kb == kb) {
+			// no change. Do nothing
+			return;
+		}
 		this.kb = kb;
+		// initialize set of routines to hide EntityPanel, EntityInstancePanel and FindingPanel when this KB is selected
+		// usually, this KB is selected when its "clear" method is called
+		// TODO find out another way KB can detect what KB is currently selected
+		// we must hide such panels because they are elements to be editted by Protege 4.1 panel
+		if (this.getKB()  instanceof OWL2KnowledgeBase) {
+			OWL2KnowledgeBase owl2KnowledgeBase = (OWL2KnowledgeBase) this.getKB();
+			// update commands if it exists
+			if (owl2KnowledgeBase.getClearKBCommandList() != null) {
+				// this will act like a parameter for the commands
+				final IMEBNMediator mediator = owl2KnowledgeBase.getDefaultMediator();
+				// disable/enable entity panel, individuals panel and finding panel
+				owl2KnowledgeBase.getClearKBCommandList().add(new OWL2KnowledgeBase.IClearKBCommand() {
+					public void doCommand() {
+						mediator.getMebnEditionPane().getBtnTabOptionEntity().setEnabled(false);
+						mediator.getMebnEditionPane().getBtnTabOptionEntityFinding().setEnabled(false);
+						mediator.getMebnEditionPane().getBtnTabOptionNodeFinding().setEnabled(false);
+						mediator.getMebnEditionPane().getBtnTabOptionTree().doClick(); // change view to MTheoryTree
+					}
+					public void undoCommand() {
+						mediator.getMebnEditionPane().getBtnTabOptionEntity().setEnabled(true);
+						mediator.getMebnEditionPane().getBtnTabOptionEntityFinding().setEnabled(true);
+						mediator.getMebnEditionPane().getBtnTabOptionNodeFinding().setEnabled(true);
+					}
+				});
+			}
+		}
+		
 		this.updateUI();
 	}
 
@@ -423,6 +462,8 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 	public void setOWLAPIReasonerLabel(JLabel oWLAPIReasonerLabel) {
 		owlAPIReasonerLabel = oWLAPIReasonerLabel;
 	}
+
+	
 
 //	/**
 //	 * @return the previouslySelectedReasonerItem

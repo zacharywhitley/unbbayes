@@ -202,24 +202,24 @@ public class Protege41EntityPanelBuilder extends JPanel implements IMEBNEditionP
 	 */
 	protected void hideUnwantedComponents(IMEBNMediator mediator) {
 		// hide entity, entity individuals and findings panel from original MEBN editor
-		try {
-			// remove object entity tab
-			mediator.getMebnEditionPane().getJtbTabSelection().remove(mediator.getMebnEditionPane().getBtnTabOptionEntity());
-		} catch (Exception t) {
-			t.printStackTrace();
-		}
-		try {
-			// remove object entity individuals panel
-			mediator.getMebnEditionPane().getJtbTabSelection().remove(mediator.getMebnEditionPane().getBtnTabOptionEntityFinding());
-		} catch (Exception t) {
-			t.printStackTrace();
-		}
-		try {
-			// remove finding panel
-			mediator.getMebnEditionPane().getJtbTabSelection().remove(mediator.getMebnEditionPane().getBtnTabOptionNodeFinding());
-		} catch (Exception t) {
-			t.printStackTrace();
-		}
+//		try {
+//			// remove object entity tab
+//			mediator.getMebnEditionPane().getJtbTabSelection().remove(mediator.getMebnEditionPane().getBtnTabOptionEntity());
+//		} catch (Exception t) {
+//			t.printStackTrace();
+//		}
+//		try {
+//			// remove object entity individuals panel
+//			mediator.getMebnEditionPane().getJtbTabSelection().remove(mediator.getMebnEditionPane().getBtnTabOptionEntityFinding());
+//		} catch (Exception t) {
+//			t.printStackTrace();
+//		}
+//		try {
+//			// remove finding panel
+//			mediator.getMebnEditionPane().getJtbTabSelection().remove(mediator.getMebnEditionPane().getBtnTabOptionNodeFinding());
+//		} catch (Exception t) {
+//			t.printStackTrace();
+//		}
 	}
 	
 	// the following was migrated to ProtegeBundleLauncher
