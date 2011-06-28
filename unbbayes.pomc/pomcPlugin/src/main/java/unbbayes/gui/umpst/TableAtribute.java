@@ -281,7 +281,7 @@ public class TableAtribute extends IUMPSTPanel{
 								Set<String> keysSubAtribute = entityRelated.getMapAtributes().get(key).getMapSubAtributes().keySet();
 								TreeSet<String> sortedkeysSubAtribute = new TreeSet<String>(keysSubAtribute);
 								for (String keySubHypo : sortedkeysSubAtribute){
-									entityRelated.getMapAtributes().get(key).getMapSubAtributes().get(keySubHypo).getFather().setFather(null);
+									entityRelated.getMapAtributes().get(key).getMapSubAtributes().get(keySubHypo).setFather(null);
 								}
 							}
 
@@ -291,7 +291,7 @@ public class TableAtribute extends IUMPSTPanel{
 								Set<String> keysSubAtribute = UMPSTProject.getInstance().getMapAtribute().get(key).getMapSubAtributes().keySet();
 								TreeSet<String> sortedkeysSubHypo = new TreeSet<String>(keysSubAtribute);
 								for (String keySubHypo : sortedkeysSubHypo){
-									UMPSTProject.getInstance().getMapAtribute().get(key).getMapSubAtributes().get(keySubHypo).getFather().setFather(null);
+									UMPSTProject.getInstance().getMapAtribute().get(key).getMapSubAtributes().get(keySubHypo).setFather(null);
 								}
 							}
 							

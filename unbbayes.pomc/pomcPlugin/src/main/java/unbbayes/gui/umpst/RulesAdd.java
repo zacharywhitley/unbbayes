@@ -324,7 +324,7 @@ public class RulesAdd extends IUMPSTPanel {
 
 		
 		RulesModel rulesAdd = new RulesModel(idAux,ruleText.getText(),typeText.getText(), 
-				commentsText.getText(), authorText.getText(), dateText.getText(),null,null);
+				commentsText.getText(), authorText.getText(), dateText.getText(),null,null, null, null);
 		
 		
 		

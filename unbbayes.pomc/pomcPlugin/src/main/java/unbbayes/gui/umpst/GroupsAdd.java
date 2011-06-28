@@ -275,7 +275,6 @@ public class GroupsAdd extends IUMPSTPanel {
     
     public GroupsModel updateMapGroups(){
     	String idAux = "";
-		int intAux = 0;
 		int tamanho = UMPSTProject.getInstance().getMapGroups().size()+1;
 		
 		
@@ -289,7 +288,7 @@ public class GroupsAdd extends IUMPSTPanel {
 	
 		
 		GroupsModel groupAdd = new GroupsModel(idAux,groupText.getText(),commentsText.getText(), authorText.getText(), 
-				dateText.getText(),null,null);
+				dateText.getText(),null,null, null, null, null, null);
 		
 		
 	    UMPSTProject.getInstance().getMapGroups().put(groupAdd.getId(), groupAdd);	
@@ -358,7 +357,6 @@ public class GroupsAdd extends IUMPSTPanel {
 		JButton buttonCopy, buttonDelete;
 
 		Box box = Box.createHorizontalBox();
-		JPanel panelTracking = new JPanel();
 
 	
 		

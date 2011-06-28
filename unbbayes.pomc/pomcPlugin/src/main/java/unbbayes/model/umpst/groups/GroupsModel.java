@@ -14,9 +14,14 @@ public class GroupsModel {
 	String date;
 	JList backtrackingGoal;
 	JList backtrackingHypothesis;
+	JList backtrackingEntities;
+	JList backtrackingAtributes;
+	JList backtrackingRelationship;
+	JList backtrackingRules;
 	
 	public GroupsModel(String id,String groupName,String comments,String author,String date, JList backtrackingGoal,
-			JList backtrackingHypothesis ){
+			JList backtrackingHypothesis,JList backtrackingEntities,JList backtrackingAtributes,JList backtrackingRelationship,
+			JList backtrackingRules ){
 		this.id=id;
 		this.groupName=groupName;
 		this.comments=comments;
@@ -31,7 +36,98 @@ public class GroupsModel {
 			this.setBacktrackingHypothesis(new JList());
 		}
 		
+		this.backtrackingEntities=backtrackingEntities;
+		if (backtrackingEntities==null){
+			this.setBacktrackingEntities(new JList());
+		}
+		this.backtrackingAtributes=backtrackingAtributes;
+		if (backtrackingAtributes==null){
+			this.setBacktrackingAtributes(new JList());
+		}
+		this.backtrackingRelationship=backtrackingRelationship;
+		if (backtrackingRelationship==null){
+			this.setBacktrackingRelationship(new JList());
+		}
+		this.backtrackingRules=backtrackingRules;
+		if (backtrackingRules==null){
+			this.setBacktrackingRules(new JList());
+		}
+		
 	}
+
+	
+	
+	/**
+	 * @return the backtrackingEntities
+	 */
+	public JList getBacktrackingEntities() {
+		return backtrackingEntities;
+	}
+
+
+
+	/**
+	 * @param backtrackingEntities the backtrackingEntities to set
+	 */
+	public void setBacktrackingEntities(JList backtrackingEntities) {
+		this.backtrackingEntities = backtrackingEntities;
+	}
+
+
+
+	/**
+	 * @return the backtrackingAtributes
+	 */
+	public JList getBacktrackingAtributes() {
+		return backtrackingAtributes;
+	}
+
+
+
+	/**
+	 * @param backtrackingAtributes the backtrackingAtributes to set
+	 */
+	public void setBacktrackingAtributes(JList backtrackingAtributes) {
+		this.backtrackingAtributes = backtrackingAtributes;
+	}
+
+
+
+	/**
+	 * @return the backtrackingRelationship
+	 */
+	public JList getBacktrackingRelationship() {
+		return backtrackingRelationship;
+	}
+
+
+
+	/**
+	 * @param backtrackingRelationship the backtrackingRelationship to set
+	 */
+	public void setBacktrackingRelationship(JList backtrackingRelationship) {
+		this.backtrackingRelationship = backtrackingRelationship;
+	}
+
+
+
+	/**
+	 * @return the backtrackingRules
+	 */
+	public JList getBacktrackingRules() {
+		return backtrackingRules;
+	}
+
+
+
+	/**
+	 * @param backtrackingRules the backtrackingRules to set
+	 */
+	public void setBacktrackingRules(JList backtrackingRules) {
+		this.backtrackingRules = backtrackingRules;
+	}
+
+
 
 	/**
 	 * @return the backtrackingGoal

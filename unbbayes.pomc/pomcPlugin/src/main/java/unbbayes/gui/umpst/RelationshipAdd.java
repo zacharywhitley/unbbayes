@@ -11,11 +11,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Set;
 import java.util.TreeSet;
-
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.DefaultListModel;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -27,18 +25,18 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-
-import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.entities.RelationshipModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 
 
 public class RelationshipAdd extends IUMPSTPanel {
 	
-	private ImageIcon iconHypothesis = createImageIcon("images/hypo.png");
-	private ImageIcon iconSubRelationship = createImageIcon("images/sub.png");
 
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private GridBagConstraints constraint     = new GridBagConstraints();
 	private JLabel titulo            = new JLabel();
 	
@@ -50,7 +48,7 @@ public class RelationshipAdd extends IUMPSTPanel {
 	private JTextField dateText,authorText;
 	private JTextField RelationshipText;
 	private JTextArea commentsText;
-	private RelationshipModel relationship,pai;
+	private RelationshipModel relationship;
 	
 	private JList list,listAux; 
     private DefaultListModel listModel = new DefaultListModel();
@@ -255,7 +253,6 @@ public class RelationshipAdd extends IUMPSTPanel {
 	
 	  public RelationshipModel updateMapRelationship(){
 	    	String idAux = "";
-			int intAux = 0;
 			int tamanho = UMPSTProject.getInstance().getMapRelationship().size()+1;
 			
 
@@ -269,7 +266,8 @@ public class RelationshipAdd extends IUMPSTPanel {
 				}
 		
 			
-			RelationshipModel relatiionshipAdd = new RelationshipModel(idAux,RelationshipText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),null,null,null);
+			RelationshipModel relatiionshipAdd = new RelationshipModel(idAux,RelationshipText.getText(),commentsText.getText(), 
+					authorText.getText(), dateText.getText(),null,null,null, null,null,null);
 			
 			
 		    UMPSTProject.getInstance().getMapRelationship().put(relatiionshipAdd.getId(), relatiionshipAdd);	

@@ -5,6 +5,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import unbbayes.model.umpst.groups.GroupsModel;
+import unbbayes.model.umpst.rules.RulesModel;
+
 
 public class AtributeModel {
 	
@@ -17,10 +20,12 @@ public class AtributeModel {
 	private Set<EntityModel> entityRelated;
 	private Map<String, AtributeModel> mapSubAtributes;
 	private Set<RelationshipModel> fowardTrackingRelationship;
-	
+	private Set<RulesModel> fowardTrackingRules;
+	private Set<GroupsModel> fowardTrackingGroups;
 	
 	public AtributeModel(String id,String atributeName, String comments,String author, String date,Set<EntityModel> entityRelated,
-			AtributeModel father,Map<String,AtributeModel> mapSubAtributes,Set<RelationshipModel> fowardTrackingRelationship) {
+			AtributeModel father,Map<String,AtributeModel> mapSubAtributes,Set<RelationshipModel> fowardTrackingRelationship,
+			Set<RulesModel> fowardTrackingRules , Set<GroupsModel> fowardTrackingGroups) {
 		
 		this.id=id;
 		this.atributeName = atributeName;
@@ -40,9 +45,57 @@ public class AtributeModel {
 		if(fowardTrackingRelationship==null){
 			this.setFowardTrackingRelationship(new java.util.HashSet<RelationshipModel>());
 		}
+		this.fowardTrackingRules=fowardTrackingRules;
+		if(fowardTrackingRules==null){
+			this.setFowardTrackingRules(new HashSet<RulesModel>());
+		}
+		this.fowardTrackingGroups=fowardTrackingGroups;
+		if(fowardTrackingGroups==null){
+			this.setFowardTrackingGroups(new HashSet<GroupsModel>());
+		}
 	}
 
 	
+
+
+	/**
+	 * @return the fowardTrackingRules
+	 */
+	public Set<RulesModel> getFowardTrackingRules() {
+		return fowardTrackingRules;
+	}
+
+
+
+
+	/**
+	 * @param fowardTrackingRules the fowardTrackingRules to set
+	 */
+	public void setFowardTrackingRules(Set<RulesModel> fowardTrackingRules) {
+		this.fowardTrackingRules = fowardTrackingRules;
+	}
+
+
+
+
+	/**
+	 * @return the fowardTrackingGroups
+	 */
+	public Set<GroupsModel> getFowardTrackingGroups() {
+		return fowardTrackingGroups;
+	}
+
+
+
+
+	/**
+	 * @param fowardTrackingGroups the fowardTrackingGroups to set
+	 */
+	public void setFowardTrackingGroups(Set<GroupsModel> fowardTrackingGroups) {
+		this.fowardTrackingGroups = fowardTrackingGroups;
+	}
+
+
 
 
 	/**

@@ -72,7 +72,7 @@ public class AtributeAdd extends IUMPSTPanel {
 				titulo.setText("Add new atribute");
 			}
 			else{
-				titulo.setText("Add new sub=atribute");
+				titulo.setText("Add new subatribute");
 			}
 			buttonAdd.setText(" Add ");
 		} else {
@@ -337,7 +337,7 @@ public class AtributeAdd extends IUMPSTPanel {
 		setEntityRelated.add(entityRelated);
 		
 		
-		AtributeModel atributeAdd = new AtributeModel(idAux,AtributeText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),setEntityRelated, atributeFather,null,null);
+		AtributeModel atributeAdd = new AtributeModel(idAux,AtributeText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),setEntityRelated, atributeFather,null,null,null,null);
 		if (atributeFather!=null){
 			atributeFather.getMapSubAtributes().put(atributeAdd.getId(), atributeAdd);
 		}

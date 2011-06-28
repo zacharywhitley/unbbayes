@@ -13,26 +13,37 @@ public class RulesModel {
 	private String id;
 	private String rulesName;
 	private String ruleType;
-	private String comments;
 	private String author;
 	private String date;
-	private JList backtracking;
+	private String comments;
+	private JList backtrackingEntity;
+	private JList backtrackingAtribute;
+	private JList backtrackingRelationship;	
 	private Set<GroupsModel> fowardTrackingGroups;
 	
 
 	
-	public RulesModel(String id,String rulesName,String ruleType, String comments,
-			String author, String date, JList backtracking,Set<GroupsModel> fowardTrackingGroups) {
+	public RulesModel(String id,String rulesName,String ruleType, String comments,String author, String date, 
+			JList backtracking,Set<GroupsModel> fowardTrackingGroups,JList backtrackingAtribute, JList backtrackingRelationship) {
 		
 		this.id=id;
 		this.rulesName = rulesName;
 		this.comments = comments;
 		this.author = author;
 		this.date = date;
-		this.backtracking = backtracking;
+		this.backtrackingEntity = backtracking;
 		if (backtracking==null){
 			this.setBacktracking(new JList());
 		}
+		this.backtrackingAtribute=backtrackingAtribute;
+		if(backtrackingAtribute==null){
+			this.setBacktrackingAtribute(new JList());
+		}
+		this.backtrackingRelationship=backtrackingRelationship;
+		if(backtrackingRelationship==null){
+			this.setBacktrackingRelationship(new JList());
+		}
+		
 		this.fowardTrackingGroups=fowardTrackingGroups;
 		if (fowardTrackingGroups==null){
 			this.setFowardTrackingGroups(new HashSet<GroupsModel>());
@@ -40,6 +51,38 @@ public class RulesModel {
 	}
 
 	
+	/**
+	 * @return the backtrackingAtribute
+	 */
+	public JList getBacktrackingAtribute() {
+		return backtrackingAtribute;
+	}
+
+
+	/**
+	 * @param backtrackingAtribute the backtrackingAtribute to set
+	 */
+	public void setBacktrackingAtribute(JList backtrackingAtribute) {
+		this.backtrackingAtribute = backtrackingAtribute;
+	}
+
+
+	/**
+	 * @return the backtrackingRelationship
+	 */
+	public JList getBacktrackingRelationship() {
+		return backtrackingRelationship;
+	}
+
+
+	/**
+	 * @param backtrackingRelationship the backtrackingRelationship to set
+	 */
+	public void setBacktrackingRelationship(JList backtrackingRelationship) {
+		this.backtrackingRelationship = backtrackingRelationship;
+	}
+
+
 	/**
 	 * @return the fowardTrackingGroups
 	 */
@@ -57,18 +100,18 @@ public class RulesModel {
 
 
 	/**
-	 * @return the backtracking
+	 * @return the backtrackingEntity
 	 */
 	public JList getBacktracking() {
-		return backtracking;
+		return backtrackingEntity;
 	}
 
 
 	/**
-	 * @param backtracking the backtracking to set
+	 * @param backtrackingEntity the backtrackingEntity to set
 	 */
 	public void setBacktracking(JList backtracking) {
-		this.backtracking = backtracking;
+		this.backtrackingEntity = backtracking;
 	}
 
 
