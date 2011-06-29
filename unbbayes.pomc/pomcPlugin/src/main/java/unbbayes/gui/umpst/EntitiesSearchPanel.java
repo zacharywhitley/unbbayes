@@ -130,7 +130,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 			buttonAddEntity.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
-					changePanel(getEntitiesMainPanel(null));
+					changePanel(getEntitiesPanel(null));
 				}
 			});			
 		}
@@ -274,7 +274,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 		    entitiesTable.repaint();
 	    }
 	
-	public EntitiesAdd getEntitiesMainPanel(EntityModel entity){
+	public EntitiesAdd getEntitiesPanel(EntityModel entity){
 		
 		EntitiesAdd ret = new EntitiesAdd(getFatherPanel(),entity);
 		

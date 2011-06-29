@@ -41,6 +41,7 @@ public class UMPSTProject implements Graph {
 	private java.util.Map<String, SearchModelGroup> mapSearchGroups;
 
 	
+	
 private static UMPSTProject instance = new UMPSTProject();
 
 	

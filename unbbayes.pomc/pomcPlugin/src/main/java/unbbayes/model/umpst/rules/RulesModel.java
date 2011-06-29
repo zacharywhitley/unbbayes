@@ -28,6 +28,7 @@ public class RulesModel {
 		
 		this.id=id;
 		this.rulesName = rulesName;
+		this.ruleType = ruleType;
 		this.comments = comments;
 		this.author = author;
 		this.date = date;

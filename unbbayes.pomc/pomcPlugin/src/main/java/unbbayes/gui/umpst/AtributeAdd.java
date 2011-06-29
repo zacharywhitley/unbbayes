@@ -272,7 +272,7 @@ public class AtributeAdd extends IUMPSTPanel {
    public void updateTable(AtributeModel atributeUpdade){
 		
 	    UmpstModule pai = getFatherPanel();
-	    changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entityRelated));
+	    changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesPanel(entityRelated));
 
 	    /*
 	    TableAtribute atributeTable     = pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entityRelated).getAtributeTable(entityRelated);

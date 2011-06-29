@@ -179,7 +179,7 @@ public class TableSubatribute extends IUMPSTPanel{
 							//UMPSTProject.getInstance().getMapHypothesis().remove(key);
 
 							UmpstModule pai = getFatherPanel();
-						    changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entityRelated) );
+						    changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesPanel(entityRelated) );
 							 
 							 JTable table = createTable();
 							 

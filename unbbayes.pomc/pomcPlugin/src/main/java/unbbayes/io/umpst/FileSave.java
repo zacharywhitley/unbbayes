@@ -265,9 +265,9 @@ public class FileSave {
 			printStream.println("END OF RULE");
 		}
 			
-			/*-- Rules details --*/			
+/*-- relationship details --*/			
 			printStream.println("****************");			
-			printStream.println("Rules Details");
+			printStream.println("relationshp Details");
 			
 			Set<String> keysRelationship = UMPSTProject.getInstance().getMapRelationship().keySet();
 			TreeSet<String> sortedKeyRelationship = new TreeSet<String>(keysRelationship);

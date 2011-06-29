@@ -8,10 +8,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
+
 
 import java.text.ParseException;
 import java.util.HashSet;
@@ -178,6 +175,7 @@ public class GoalsAdd extends IUMPSTPanel {
 			pe.printStackTrace();
 		}
 		dateText = new JFormattedTextField(mascaraData);
+		dateText.setColumns(20);
 
 		
 		c.gridx = 1; c.gridy = 4;c.gridwidth=2;

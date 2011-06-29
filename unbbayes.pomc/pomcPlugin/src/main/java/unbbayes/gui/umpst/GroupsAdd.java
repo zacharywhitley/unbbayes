@@ -22,6 +22,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -32,6 +33,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.Border;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.groups.GroupsModel;
@@ -51,6 +54,9 @@ public class GroupsAdd extends IUMPSTPanel {
 	
 	private JButton buttonAdd 	     = new JButton();
 	private JButton buttonCancel     = new JButton("Cancel");
+	private JButton buttonBackEntities = new JButton("Add entity backtracking ");
+	private JButton buttonBackAtributes = new JButton("Add atribute backtracking");
+	private JButton buttonBackRelationship = new JButton("Add relationship backtracking");
  
 	
 	private JTextField dateText,authorText;
@@ -60,13 +66,14 @@ public class GroupsAdd extends IUMPSTPanel {
 
 	private static final long serialVersionUID = 1L;
 	
-	private JList listEntities,listEntitiesAux; 
-    private DefaultListModel listEntityModel = new DefaultListModel();
-	private DefaultListModel listEntityModelAux = new DefaultListModel();
-	
-	private JList listHypothesis,listHypothesisAux; 
-    private DefaultListModel listHypothesisModel = new DefaultListModel();
-	private DefaultListModel listHypothesisModelAux = new DefaultListModel();
+	private JList list,listAux, listAtributeAux, listRelationshipAux; 
+	private DefaultListModel listModel = new DefaultListModel();
+	private DefaultListModel listModelAux = new DefaultListModel();
+	private DefaultListModel listModelAtrAux = new DefaultListModel();
+	private DefaultListModel listModelRltAux = new DefaultListModel();
+
+	private Object[][] dataBacktracking = {};
+	private Object[][] dataFrame = {};
 	
 	
 	public GroupsAdd(UmpstModule janelaPai, GroupsModel group){
@@ -75,12 +82,11 @@ public class GroupsAdd extends IUMPSTPanel {
 		this.group = group;
 		this.setLayout(new GridBagLayout());
 		constraint.fill = GridBagConstraints.BOTH;
-		constraint.gridx=0;constraint.gridy=0;constraint.weightx=0.5;constraint.weighty=0.4;
+		constraint.gridx=0;constraint.gridy=0;constraint.weightx=0.5;constraint.weighty=0.3;
 		panelText();
-		constraint.gridx=0;constraint.gridy=1;constraint.weightx=0.5;constraint.weighty=0.3;
-		getTrackingPanel();
-		constraint.gridx=0;constraint.gridy=2;constraint.weightx=0.5;constraint.weighty=0.3;
-		getTrackingPanelHypothesis();
+		constraint.gridx=0;constraint.gridy=1;constraint.weightx=0.5;constraint.weighty=0.7;
+		add(getBacktrackingPanel(),constraint);
+		
 		listeners();
 
 		if( group == null){
@@ -146,7 +152,7 @@ public class GroupsAdd extends IUMPSTPanel {
 		c.gridx = 1; c.gridy = 6; c.gridwidth = 1;
 		panel.add(buttonAdd,c);
 		
-		panel.setBorder(BorderFactory.createTitledBorder("Rule's details"));
+		panel.setBorder(BorderFactory.createTitledBorder("group's details"));
 		
 		add(panel,constraint);
 	
@@ -167,7 +173,6 @@ public class GroupsAdd extends IUMPSTPanel {
 						else{
 						GroupsModel groupAdd = updateMapGroups();					    
 					    updateMapSearch(groupAdd);
-					    updateBacktracking(groupAdd);
 						updateTableGroups();
 						JOptionPane.showMessageDialog(null, "group successfully added",null, JOptionPane.INFORMATION_MESSAGE);
 						}
@@ -208,7 +213,6 @@ public class GroupsAdd extends IUMPSTPanel {
 							group.setDate(dateText.getText());
 							
 							updateMapSearch(group);
-							updateBacktracking(group);
 							updateTableGroups();
 							
 							JOptionPane.showMessageDialog(null, "group successfully updated", "UnBBayes", JOptionPane.INFORMATION_MESSAGE);
@@ -225,6 +229,27 @@ public class GroupsAdd extends IUMPSTPanel {
 			}
 		});
 
+		buttonBackRelationship.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				createFrameRelationship();				
+			}
+		});
+		
+		buttonBackAtributes.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				createFrameAtributes();				
+			}
+		});
+		
+		buttonBackEntities.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				createFrame();				
+			}
+		});
+		
 		buttonCancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				UmpstModule pai = getFatherPanel();
@@ -353,218 +378,414 @@ public class GroupsAdd extends IUMPSTPanel {
     }
 
 
-	public  void getTrackingPanel(){
-		JButton buttonCopy, buttonDelete;
-
-		Box box = Box.createHorizontalBox();
-
 	
+	public JPanel getBacktrackingPanel(){
 		
-		Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
-		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
-		
-		for (String key: sortedKeys){
-			listEntityModel.addElement(UMPSTProject.getInstance().getMapGoal().get(key).getGoalName());
-		}
-		
-		
-		/**This IF is responsable to update the first JList with all requirements elemente MINUS those 
-		 * who are already registred as backtracking.
-		 * */
-		if (group!=null){
-			listEntitiesAux = group.getBacktrackingGoal();
-			for (int i = 0; i < listEntitiesAux.getModel().getSize();i++) {
-				listEntityModelAux.addElement((listEntitiesAux.getModel().getElementAt(i)));
-				if (listEntityModel.contains(listEntitiesAux.getModel().getElementAt(i))){
-					listEntityModel.remove(listEntityModel.indexOf(listEntitiesAux.getModel().getElementAt(i)));
-				}
+		JPanel panel = new JPanel();
+		JScrollPane scrollPane = new JScrollPane();
+		if(group!=null){
+			listAux = group.getBacktrackingEntities();
+			for (int i = 0; i < listAux.getModel().getSize();i++) {
+				listModelAux.addElement((listAux.getModel().getElementAt(i)));
 			}
 			
+			listAtributeAux = group.getBacktrackingAtributes();
+
+			for (int i = 0; i < listAtributeAux.getModel().getSize();i++) {
+				listModelAtrAux.addElement((listAtributeAux.getModel().getElementAt(i)));
+			}
+			
+			listRelationshipAux = group.getBacktrackingRelationship();
+
+			for (int i = 0; i < listRelationshipAux.getModel().getSize();i++) {
+				listModelRltAux.addElement((listRelationshipAux.getModel().getElementAt(i)));
+			}
+			
+			listAux = new JList(listModelAux);
+			listAtributeAux= new JList(listModelAtrAux);
+			listRelationshipAux = new JList(listModelRltAux);
+			
+			dataBacktracking = new Object[listAux.getModel().getSize()+listAtributeAux.getModel().getSize()+listRelationshipAux.getModel().getSize()][3];
+			
+			int i;
+			for (i = 0; i < listAux.getModel().getSize(); i++) {
+				dataBacktracking[i][0] = listAux.getModel().getElementAt(i);
+				dataBacktracking[i][1] = "Entity";
+				dataBacktracking[i][2] = "";
+	
+			}
+			int j;
+			for (j = 0; j < listAtributeAux.getModel().getSize(); j++) {
+				dataBacktracking[j+i][0] = listAtributeAux.getModel().getElementAt(j);
+				dataBacktracking[j+i][1] = "Atribute";
+				dataBacktracking[j+i][2] = "";
+	
+			}
+			int k;
+			for (k = 0; k < listRelationshipAux.getModel().getSize(); k++) {
+				dataBacktracking[k+j+i][0] = listRelationshipAux.getModel().getElementAt(k);
+				dataBacktracking[k+j+i][1] = "Relationship";
+				dataBacktracking[k+j+i][2] = "";
+	
+			}
+			
+			
+			
+			String[] columns = {"Name","Type",""};
+			DefaultTableModel model = new DefaultTableModel(dataBacktracking,columns);
+			JTable table = new JTable(model);
+			
+			TableButton buttonDel = new TableButton( new TableButton.TableButtonCustomizer()
+			{
+				public void customize(JButton button, int row, int column)
+				{
+					button.setIcon(new ImageIcon("images/del.gif") );
+
+				}
+			});
+
+			TableColumn buttonColumn1 = table.getColumnModel().getColumn(columns.length-1);
+			
+			buttonColumn1.setMaxWidth(28);
+			buttonColumn1.setCellRenderer(buttonDel);
+			buttonColumn1.setCellEditor(buttonDel);
+			
+			buttonDel.addHandler(new TableButton.TableButtonPressedHandler() {	
+				public void onButtonPress(int row, int column) {
+					if (row<listAux.getModel().getSize()){
+						String key = dataBacktracking[row][0].toString();
+						listModelAux.remove(listModelAux.indexOf(key));
+						listAux = new JList(listModelAux);
+						group.setBacktrackingEntities(listAux);
+					}
+					else{
+						if (row<(listAux.getModel().getSize()+listAtributeAux.getModel().getSize())){
+							String keyAtr = dataBacktracking[row][0].toString();
+							listModelAtrAux.remove(listModelAtrAux.indexOf(keyAtr));
+							listAtributeAux = new JList(listModelAtrAux);
+							group.setBacktrackingAtributes(listAtributeAux);
+						}
+						else{
+							String keyAtr = dataBacktracking[row][0].toString();
+							listModelRltAux.remove(listModelRltAux.indexOf(keyAtr));
+							listRelationshipAux = new JList(listModelRltAux);
+							group.setBacktrackingRelationship(listRelationshipAux);
+						}
+					}
+					UmpstModule father = getFatherPanel();
+				    changePanel(father.getMenuPanel().getGroupsPane().getGroupsPanel().getGroupsAdd(group));
+				}
+			});
+			
+			panel = new JPanel();
+		    panel.setLayout(new GridBagLayout());
+		    
+		    GridBagConstraints c = new GridBagConstraints();
+			
+		    if (group!=null){
+		    	c.gridx = 0; c.gridy = 0; c.gridwidth=1;
+		    	panel.add(buttonBackEntities,c);
+		    	buttonBackEntities.setToolTipText("Add backtracking from entities");
+		    	
+		    	c.gridx = 1; c.gridy = 0; c.gridwidth=1;
+		    	panel.add(buttonBackAtributes,c);
+		    	buttonBackAtributes.setToolTipText("Add backtracking from atributes");
+		    	
+		    	c.gridx = 2; c.gridy = 0; c.gridwidth=1;
+		    	panel.add(buttonBackRelationship,c);
+		    	buttonBackRelationship.setToolTipText("Add backtracking from relationship");
+		    }
+			
+		    c.fill = GridBagConstraints.BOTH;
+		    c.gridx=0;c.gridy=1;c.weightx=0.9;c.weighty=0.9;c.gridwidth=6;
+			
+			 scrollPane = new JScrollPane(table);
+			 
+			 panel.add(scrollPane,c);
 		}
 		
-		listEntities = new JList(listEntityModel); //data has type Object[]
-		listEntities.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-		listEntities.setLayoutOrientation(JList.VERTICAL_WRAP);
-		listEntities.setVisibleRowCount(-1);
-		
-		
-		
-		
-
-		JScrollPane listScroller = new JScrollPane(listEntities);
-		listScroller.setMinimumSize(new Dimension(300,200));
-				
-		box.add(listScroller);
-	
-	
-		
-		buttonCopy = new JButton("copy >>");
-		box.add(buttonCopy);
-		buttonCopy.addActionListener(
-				new ActionListener() {
-					
-					public void actionPerformed(ActionEvent e) {
-						listEntityModelAux.addElement(listEntities.getSelectedValue());	
-						listEntityModel.removeElement(listEntities.getSelectedValue());
-
-					}
-				}
-		
-		);
-		
-		buttonDelete = new JButton("<< delete");
-		box.add(buttonDelete);
-		buttonDelete.addActionListener(
-				new ActionListener() {
-					
-					public void actionPerformed(ActionEvent e) {
-						listEntityModel.addElement(listEntitiesAux.getSelectedValue());	
-						listEntityModelAux.removeElement(listEntitiesAux.getSelectedValue());
-					}
-				}
-		
-		);	
-		
-		listEntitiesAux = new JList(listEntityModelAux);
-
-		listEntitiesAux.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-		listEntitiesAux.setLayoutOrientation(JList.VERTICAL_WRAP);
-		listEntitiesAux.setVisibleRowCount(-1);
-	
-		JScrollPane listScrollerAux = new JScrollPane(listEntitiesAux);
-		listScrollerAux.setMinimumSize(new Dimension(300,200));
-		box.add(listScrollerAux);
-				
-		box.setBorder(BorderFactory.createTitledBorder("Adding backtracking from Goals"));
-		
-		add(box,constraint);
+		return panel;
+		//add(box,constraint);
 		
 	}
 	
-	public  void getTrackingPanelHypothesis(){
-		Box box = Box.createHorizontalBox();
-		JButton buttonCopy, buttonDelete;
-
-		
-		Set<String> keys = UMPSTProject.getInstance().getMapHypothesis().keySet();
-		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
-		
-		for (String key: sortedKeys){
-			listHypothesisModel.addElement(UMPSTProject.getInstance().getMapHypothesis().get(key).getHypothesisName());
-		}
-		
-		
-		/**This IF is responsable to update the first JList with all requirements elemente MINUS those 
-		 * who are already registred as backtracking.
-		 * */
-		if (group!=null){
-			listHypothesisAux = group.getBacktrackingHypothesis();
-			for (int i = 0; i < listHypothesisAux.getModel().getSize();i++) {
-				listHypothesisModelAux.addElement((listHypothesisAux.getModel().getElementAt(i)));
-				if (listHypothesisModel.contains(listHypothesisAux.getModel().getElementAt(i))){
-					listHypothesisModel.remove(listHypothesisModel.indexOf(listHypothesisAux.getModel().getElementAt(i)));
-				}
-			}
-			
-		}
-		
-		listHypothesis = new JList(listHypothesisModel); //data has type Object[]
-		listHypothesis.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-		listHypothesis.setLayoutOrientation(JList.VERTICAL_WRAP);
-		listHypothesis.setVisibleRowCount(-1);
-		
-		
-		
-		
-
-		JScrollPane listHypothesisScroller = new JScrollPane(listHypothesis);
-		listHypothesisScroller.setMinimumSize(new Dimension(300,200));
-				
-		box.add(listHypothesisScroller);
-	
-	
-		
-		buttonCopy = new JButton("copy >>");
-		box.add(buttonCopy);
-		buttonCopy.addActionListener(
-				new ActionListener() {
-					
-					public void actionPerformed(ActionEvent e) {
-						listHypothesisModelAux.addElement(listHypothesis.getSelectedValue());	
-						listHypothesisModel.removeElement(listHypothesis.getSelectedValue());
-
-					}
-				}
-		
-		);
-		
-		buttonDelete = new JButton("<< delete");
-		box.add(buttonDelete);
-		buttonDelete.addActionListener(
-				new ActionListener() {
-					
-					public void actionPerformed(ActionEvent e) {
-						listHypothesisModel.addElement(listHypothesisAux.getSelectedValue());	
-						listHypothesisModelAux.removeElement(listHypothesisAux.getSelectedValue());
-					}
-				}
-		
-		);	
-		
-		listHypothesisAux = new JList(listHypothesisModelAux);
-
-		listHypothesisAux.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-		listHypothesisAux.setLayoutOrientation(JList.VERTICAL_WRAP);
-		listHypothesisAux.setVisibleRowCount(-1);
-	
-		JScrollPane listHypothesisScrollerAux = new JScrollPane(listHypothesisAux);
-		listHypothesisScrollerAux.setMinimumSize(new Dimension(300,200));
-		box.add(listHypothesisScrollerAux);
-				
-		box.setBorder(BorderFactory.createTitledBorder("Adding backtracking from Hypothesis"));
-		
-		add(box,constraint);
-		
-	}
-	
-	
-	
-	public void updateBacktracking(GroupsModel group){
+	/*public void updateBacktracking(groupsModel group){
 		String keyWord = "";
-		Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
+		Set<String> keys = UMPSTProject.getInstance().getMapEntity().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		
 		
-		if (listEntitiesAux !=null){
-			for (int i = 0; i < listEntitiesAux.getModel().getSize();i++) {
-				keyWord = listEntitiesAux.getModel().getElementAt(i).toString();
+		if (listAux !=null){
+			for (int i = 0; i < listAux.getModel().getSize();i++) {
+				keyWord = listAux.getModel().getElementAt(i).toString();
 				for (String key: sortedKeys){
-					if (keyWord.equals( UMPSTProject.getInstance().getMapGoal().get(key).getGoalName()) ){
-						UMPSTProject.getInstance().getMapGoal().get(key).getFowardTrackingGroups().add(group);
+					if (keyWord.equals( UMPSTProject.getInstance().getMapEntity().get(key).getEntityName()) ){
+						UMPSTProject.getInstance().getMapEntity().get(key).getFowardTrackinggroups().add(group);
 					}			
 				
 				}
 			}
-			group.setBacktrackingGoal(listEntitiesAux);
+			group.setBacktracking(listAux);
 
 		}
 		
-		if (listHypothesisAux !=null){
-			for (int i = 0; i < listHypothesisAux.getModel().getSize();i++) {
-				keyWord = listHypothesisAux.getModel().getElementAt(i).toString();
-				for (String key: sortedKeys){
-					if (keyWord.equals( UMPSTProject.getInstance().getMapHypothesis().get(key).getHypothesisName()) ){
-						UMPSTProject.getInstance().getMapHypothesis().get(key).getFowardTrackingGroups().add(group);
-					}			
-				
-				}
+	}*/
+	
+    public void createFrame(){
+		
+		JFrame frame = new JFrame("Adding Backtracking from entities");
+		JPanel panel = new JPanel();
+		panel.setLayout(new GridBagLayout());
+		GridBagConstraints c = new GridBagConstraints();
+		
+		
+		String[] columnNames = {"ID","Entity",""};
+    	
+		dataFrame = new Object[UMPSTProject.getInstance().getMapEntity().size()][3];
+
+	    
+		Integer i=0;
+	    
+		Set<String> keys = UMPSTProject.getInstance().getMapEntity().keySet();
+		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+		
+		for (String key: sortedKeys){
+			dataFrame[i][0] = UMPSTProject.getInstance().getMapEntity().get(key).getId();
+			dataFrame[i][1] = UMPSTProject.getInstance().getMapEntity().get(key).getEntityName();			
+			dataFrame[i][2] = "";
+			i++;
+		}
+		
+		
+		
+		DefaultTableModel model = new DefaultTableModel(dataFrame,columnNames);
+		JTable table = new JTable(model);
+		
+		TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer()
+		{
+			public void customize(JButton button, int row, int column)
+			{
+				button.setIcon(new ImageIcon("images/add.gif") );
+
 			}
-			group.setBacktrackingHypothesis(listHypothesisAux);
+		});
 
+		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length-1);
+		buttonColumn1.setMaxWidth(28);
+		buttonColumn1.setCellRenderer(buttonEdit);
+		buttonColumn1.setCellEditor(buttonEdit);
+		
+		buttonEdit.addHandler(new TableButton.TableButtonPressedHandler() {	
+			public void onButtonPress(int row, int column) {
+				
+				String key = dataFrame[row][1].toString();
+				list = group.getBacktrackingEntities();
+				
+				listModel.addElement(key);
+				list = new JList(listModel);
+				group.setBacktrackingEntities(list);
+				
+				Set<String> keys = UMPSTProject.getInstance().getMapEntity().keySet();
+				TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+				for (String keyAux : sortedKeys){
+					if (UMPSTProject.getInstance().getMapEntity().get(keyAux).getEntityName().equals(key)){
+						UMPSTProject.getInstance().getMapEntity().get(keyAux).getFowardTrackingGroups().add(group);
+					}
+				}
+					
+				
+				UmpstModule father = getFatherPanel();
+			    changePanel(father.getMenuPanel().getGroupsPane().getGroupsPanel().getGroupsAdd(group));
+				
+			}
+		});
+		
+		
+		
+		JScrollPane scroll = new JScrollPane(table);
+
+		c.gridx=0;c.gridy=0;c.weightx=0.5;c.weighty=0.5;  c.fill = GridBagConstraints.BOTH;
+		panel.add(scroll,c);
+		panel.setPreferredSize(new Dimension(400,200));
+		
+		frame.add(panel);
+		
+		frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		frame.setSize(300,200);
+		frame.setVisible(true);
+		
+	}	
+
+	public void createFrameAtributes(){
+		
+		JFrame frame = new JFrame("Adding Backtracking from atributes");
+		JPanel panel = new JPanel();
+		panel.setLayout(new GridBagLayout());
+		GridBagConstraints c = new GridBagConstraints();
+		
+		
+		String[] columnNames = {"ID","Atribute",""};
+		
+		dataFrame = new Object[UMPSTProject.getInstance().getMapAtribute().size()][3];
+	
+	    
+		Integer i=0;
+	    
+		Set<String> keys = UMPSTProject.getInstance().getMapAtribute().keySet();
+		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+		
+		for (String key: sortedKeys){
+			dataFrame[i][0] = UMPSTProject.getInstance().getMapAtribute().get(key).getId();
+			dataFrame[i][1] = UMPSTProject.getInstance().getMapAtribute().get(key).getAtributeName();			
+			dataFrame[i][2] = "";
+			i++;
 		}
 		
-	}
+		
+		
+		DefaultTableModel model = new DefaultTableModel(dataFrame,columnNames);
+		JTable table = new JTable(model);
+		
+		TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer()
+		{
+			public void customize(JButton button, int row, int column)
+			{
+				button.setIcon(new ImageIcon("images/add.gif") );
+	
+			}
+		});
+	
+		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length-1);
+		buttonColumn1.setMaxWidth(28);
+		buttonColumn1.setCellRenderer(buttonEdit);
+		buttonColumn1.setCellEditor(buttonEdit);
+		
+		buttonEdit.addHandler(new TableButton.TableButtonPressedHandler() {	
+			public void onButtonPress(int row, int column) {
+				
+				String key = dataFrame[row][1].toString();
+				list = group.getBacktrackingAtributes();
+				
+				listModel.addElement(key);
+				list = new JList(listModel);
+				group.setBacktrackingAtributes(list);
+				
+				Set<String> keys = UMPSTProject.getInstance().getMapAtribute().keySet();
+				TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+				for (String keyAux : sortedKeys){
+					if (UMPSTProject.getInstance().getMapAtribute().get(keyAux).getAtributeName().equals(key)){
+						UMPSTProject.getInstance().getMapAtribute().get(keyAux).getFowardTrackingGroups().add(group);
+					}
+				}
+					
+				
+				UmpstModule father = getFatherPanel();
+			    changePanel(father.getMenuPanel().getGroupsPane().getGroupsPanel().getGroupsAdd(group));
+				
+			}
+		});
+		
+		
+		
+		JScrollPane scroll = new JScrollPane(table);
+	
+		c.gridx=0;c.gridy=0;c.weightx=0.5;c.weighty=0.5;  c.fill = GridBagConstraints.BOTH;
+		panel.add(scroll,c);
+		panel.setPreferredSize(new Dimension(400,200));
+		
+		frame.add(panel);
+		
+		frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		frame.setSize(300,200);
+		frame.setVisible(true);
+		
+	}	
+
+	public void createFrameRelationship(){
+		
+		JFrame frame = new JFrame("Adding Backtracking from relationship");
+		JPanel panel = new JPanel();
+		panel.setLayout(new GridBagLayout());
+		GridBagConstraints c = new GridBagConstraints();
+		
+		
+		String[] columnNames = {"ID","Relationship",""};
+		
+		dataFrame = new Object[UMPSTProject.getInstance().getMapRelationship().size()][3];
+	
+	    
+		Integer i=0;
+	    
+		Set<String> keys = UMPSTProject.getInstance().getMapRelationship().keySet();
+		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+		
+		for (String key: sortedKeys){
+			dataFrame[i][0] = UMPSTProject.getInstance().getMapRelationship().get(key).getId();
+			dataFrame[i][1] = UMPSTProject.getInstance().getMapRelationship().get(key).getRelationshipName();			
+			dataFrame[i][2] = "";
+			i++;
+		}
+		
+		
+		
+		DefaultTableModel model = new DefaultTableModel(dataFrame,columnNames);
+		JTable table = new JTable(model);
+		
+		TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer()
+		{
+			public void customize(JButton button, int row, int column)
+			{
+				button.setIcon(new ImageIcon("images/add.gif") );
+	
+			}
+		});
+	
+		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length-1);
+		buttonColumn1.setMaxWidth(28);
+		buttonColumn1.setCellRenderer(buttonEdit);
+		buttonColumn1.setCellEditor(buttonEdit);
+		
+		buttonEdit.addHandler(new TableButton.TableButtonPressedHandler() {	
+			public void onButtonPress(int row, int column) {
+				
+				String key = dataFrame[row][1].toString();
+				list = group.getBacktrackingRelationship();
+				
+				listModel.addElement(key);
+				list = new JList(listModel);
+				group.setBacktrackingRelationship(list);
+				
+				Set<String> keys = UMPSTProject.getInstance().getMapRelationship().keySet();
+				TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+				for (String keyAux : sortedKeys){
+					if (UMPSTProject.getInstance().getMapRelationship().get(keyAux).getRelationshipName().equals(key)){
+						UMPSTProject.getInstance().getMapRelationship().get(keyAux).getFowardtrackingGroups().add(group);
+					}
+				}
+					
+				
+				UmpstModule father = getFatherPanel();
+			    changePanel(father.getMenuPanel().getGroupsPane().getGroupsPanel().getGroupsAdd(group));
+				
+			}
+		});
+		
+		
+		
+		JScrollPane scroll = new JScrollPane(table);
+	
+		c.gridx=0;c.gridy=0;c.weightx=0.5;c.weighty=0.5;  c.fill = GridBagConstraints.BOTH;
+		panel.add(scroll,c);
+		panel.setPreferredSize(new Dimension(400,200));
+		
+		frame.add(panel);
+		
+		frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		frame.setSize(300,200);
+		frame.setVisible(true);
+		
+	}	
 	
 	
 }

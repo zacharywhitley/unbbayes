@@ -28,7 +28,7 @@ public class Rules extends IUMPSTPanel{
 	public JSplitPane getSplitPane() {
 		if(splitPane == null){
 			splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-					getGoalsPanel(),getRulesTable());
+					getRulesPanel(),getRulesTable());
 			splitPane.setDividerLocation(100);
 			splitPane.setPreferredSize(new Dimension(800,600));
 			splitPane.setBackground(new Color(0x4169AA));
@@ -50,7 +50,7 @@ public class Rules extends IUMPSTPanel{
 	/**
 	 * @return the rulesSearch
 	 */
-	public RulesSearch getGoalsPanel() {
+	public RulesSearch getRulesPanel() {
 		if(rulesSearch == null ){
 			rulesSearch = new RulesSearch(getFatherPanel());
 			rulesSearch.setBackground(new Color(0xffffff));

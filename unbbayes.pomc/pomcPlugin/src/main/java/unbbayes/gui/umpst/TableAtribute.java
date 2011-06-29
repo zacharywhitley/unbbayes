@@ -316,7 +316,7 @@ public class TableAtribute extends IUMPSTPanel{
 							
 							
 							UmpstModule pai = getFatherPanel();
-						    changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entityRelated)	);
+						    changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesPanel(entityRelated)	);
 							 
 							 JTable table = createTable();
 							 

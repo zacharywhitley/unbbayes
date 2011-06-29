@@ -439,29 +439,9 @@ public class EntitiesAdd extends IUMPSTPanel {
 
 
 	public JPanel getBacktrackingPanel(){
-		
-		Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
-		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
-		
+				
 		JPanel panel = new JPanel();
 	
-		/*for (String key: sortedKeys){
-			listModel.addElement(UMPSTProject.getInstance().getMapGoal().get(key).getGoalName());
-		}
-		
-		
-		if (entity!=null){
-			listAux = entity.getBacktracking();
-			for (int i = 0; i < listAux.getModel().getSize();i++) {
-				listModelAux.addElement((listAux.getModel().getElementAt(i)));
-				if (listModel.contains(listAux.getModel().getElementAt(i))){
-					listModel.remove(listModel.indexOf(listAux.getModel().getElementAt(i)));
-				}
-			}
-			
-		}*/
-		
-		//list = new JList(listModel); //data has type Object[]
 		JScrollPane scrollPane = new JScrollPane();
 		if(entity!=null){
 			listAux = entity.getBacktracking();
@@ -504,7 +484,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 					entity.setBacktracking(listAux);
 					
 					UmpstModule pai = getFatherPanel();
-				    changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entity));
+				    changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesPanel(entity));
 				}
 			});
 			
@@ -578,7 +558,7 @@ public JPanel getBacktrackingHypothesis(){
 					entity.setBacktrackingHypothesis(listHypothesisAux);
 					
 					UmpstModule pai = getFatherPanel();
-				    changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entity));
+				    changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesPanel(entity));
 				}
 			});
 			
@@ -892,7 +872,7 @@ public JPanel getBacktrackingHypothesis(){
 			//PRECISO ATUALIZAR O GOAL RELATED DA HIPOTESE QUE ESTA NO MAPA GERAL
 			
 			UmpstModule pai = getFatherPanel();
-		    changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entity));    			
+		    changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesPanel(entity));    			
 	}
 	 
 	public void createFrame(){
@@ -960,7 +940,7 @@ public JPanel getBacktrackingHypothesis(){
 				
 				
 				UmpstModule pai = getFatherPanel();
-			    changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entity));
+			    changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesPanel(entity));
 				
 			}
 		});
@@ -1085,7 +1065,7 @@ public void createFrameHypo(){
 				}*/
 				
 				UmpstModule pai = getFatherPanel();
-			    changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entity));
+			    changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesPanel(entity));
 				
 			    
 
