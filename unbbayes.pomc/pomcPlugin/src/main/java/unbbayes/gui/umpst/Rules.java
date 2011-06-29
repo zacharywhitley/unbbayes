@@ -5,18 +5,24 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import javax.swing.JSplitPane;
 
+import unbbayes.model.umpst.project.UMPSTProject;
+
 public class Rules extends IUMPSTPanel{
 	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+		
 	private JSplitPane splitPane;
 	private TableRules rulesPanel;
 	private RulesSearch rulesSearch;
 	
-	public Rules(UmpstModule janelaPai) {
+	public Rules(UmpstModule janelaPai,UMPSTProject umpstProject) {
 		super(janelaPai);
+		
+		this.setUmpstProject(umpstProject);
+		
 		this.setLayout(new FlowLayout());
 		this.add(getSplitPane());
 
@@ -42,7 +48,7 @@ public class Rules extends IUMPSTPanel{
 	public TableRules getRulesTable() {
 		if(rulesPanel == null ){
 
-			rulesPanel = new TableRules(getFatherPanel());
+			rulesPanel = new TableRules(getFatherPanel(),getUmpstProject());
 		}
 		return rulesPanel;
 	}
@@ -52,7 +58,7 @@ public class Rules extends IUMPSTPanel{
 	 */
 	public RulesSearch getRulesPanel() {
 		if(rulesSearch == null ){
-			rulesSearch = new RulesSearch(getFatherPanel());
+			rulesSearch = new RulesSearch(getFatherPanel(),getUmpstProject());
 			rulesSearch.setBackground(new Color(0xffffff));
 		}
 		return rulesSearch;

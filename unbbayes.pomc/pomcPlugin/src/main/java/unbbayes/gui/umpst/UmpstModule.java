@@ -13,6 +13,7 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
 import unbbayes.io.BaseIO;
+import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.prs.Graph;
 import unbbayes.util.extension.UnBBayesModule;
 
@@ -23,12 +24,13 @@ import unbbayes.util.extension.UnBBayesModule;
 public class UmpstModule extends UnBBayesModule {
 	
 	private JTabbedPane topTabbedPane;
+	private UMPSTProject umpstProject;
 	
 	private MainPanel menuPanel;
 	
 	public MainPanel getMenuPanel(){
 		if(menuPanel == null){
-			menuPanel = new MainPanel(this);
+			menuPanel = new MainPanel(this,getUmpstProject());
 		}
 		return menuPanel;
 	}
@@ -110,4 +112,23 @@ public class UmpstModule extends UnBBayesModule {
 		this.topTabbedPane = topTabbedPane;
 	}
 
+	/**
+	 * @return the umpstProject
+	 */
+	public UMPSTProject getUmpstProject() {
+		if(umpstProject==null){
+			this.umpstProject = UMPSTProject.newInstance();
+		}
+		return umpstProject;
+	}
+
+	/**
+	 * @param umpstProject the umpstProject to set
+	 */
+	public void setUmpstProject(UMPSTProject umpstProject) {
+		this.umpstProject = umpstProject;
+	}
+
+	
+	
 }

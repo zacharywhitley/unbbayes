@@ -29,6 +29,7 @@ public class TableEntities extends IUMPSTPanel{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+		
 	private JTable table;
 	private JScrollPane scrollpanePergunta;
 	
@@ -53,9 +54,12 @@ public class TableEntities extends IUMPSTPanel{
  
     	  /**private constructors make class extension almost impossible,
     	that's why this is protected*/
-    	  public TableEntities(UmpstModule janelaPai) {
+    	  public TableEntities(UmpstModule janelaPai, UMPSTProject umpstProject) {
     		  
     		    super(janelaPai);
+    		    
+    		    this.setUmpstProject(umpstProject);
+    		    
     	    	this.setLayout(new GridLayout(1,0));
     	    	
     	    	
@@ -63,24 +67,6 @@ public class TableEntities extends IUMPSTPanel{
     		    
     	  }
     	 
-    	  
-    	  
-    	  /**
-    	   * SingletonHolder is loaded on the first execution of
-    	TableGoals.getInstance()
-    	   * or the first access to SingletonHolder.INSTANCE, not before.
-    	   */
-    	 private static class SingletonHolder {
-    		  	public static final TableGoals INSTANCE = new TableGoals(null);
-    	  }
-    	  
-    	  
-    	  public static TableGoals getInstance(UmpstModule janelaPai,String[] columnNames, Object[][] data) {
-
-    		TableGoals ret = SingletonHolder.INSTANCE;
-    	    ret.setJanelaPai(janelaPai,columnNames,data);
-    	    return ret;
-    	  }
     	  
     	  public void setJanelaPai(UmpstModule janelaPai,String[] columnNames, Object[][] data){
     		// super(janelaPai);
@@ -119,8 +105,8 @@ public class TableEntities extends IUMPSTPanel{
 			public void onButtonPress(int row, int column) {
 				
 				String key = data[row][0].toString();
-				EntityModel entityAux = UMPSTProject.getInstance().getMapEntity().get(key);
-				changePanel(new EntitiesAdd(getFatherPanel(), entityAux )   );
+				EntityModel entityAux = getUmpstProject().getMapEntity().get(key);
+				changePanel(new EntitiesAdd(getFatherPanel(),getUmpstProject(), entityAux )   );
 			}
 		});
 		
@@ -149,7 +135,7 @@ public class TableEntities extends IUMPSTPanel{
 				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete entity "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 							String key = data[row][0].toString();
-							EntityModel entityToBeDeleted = UMPSTProject.getInstance().getMapEntity().get(key);
+							EntityModel entityToBeDeleted = getUmpstProject().getMapEntity().get(key);
 							
 							/*Updating MapSearch*/
 							deleteFromSearchMap(entityToBeDeleted);
@@ -161,11 +147,11 @@ public class TableEntities extends IUMPSTPanel{
 								list.getModel().getSize();
 								
 								for (int i = 0; i < list.getModel().getSize(); i++) {
-									Set<String> keysGoals = UMPSTProject.getInstance().getMapGoal().keySet();
+									Set<String> keysGoals = getUmpstProject().getMapGoal().keySet();
 									TreeSet<String> sortedKeysGoals = new TreeSet<String>(keysGoals);
 									for (String keyGoal : sortedKeysGoals){
-										if (list.getModel().getElementAt(i).equals(UMPSTProject.getInstance().getMapGoal().get(keyGoal).getGoalName()));{
-											UMPSTProject.getInstance().getMapGoal().get(keyGoal).getFowardTrackingEntity().remove(entityToBeDeleted);
+										if (list.getModel().getElementAt(i).equals(getUmpstProject().getMapGoal().get(keyGoal).getGoalName()));{
+											getUmpstProject().getMapGoal().get(keyGoal).getFowardTrackingEntity().remove(entityToBeDeleted);
 										}
 											
 									}
@@ -175,19 +161,19 @@ public class TableEntities extends IUMPSTPanel{
 								
 							}
 							
-							UMPSTProject.getInstance().getMapEntity().remove(entityToBeDeleted.getId());
+							getUmpstProject().getMapEntity().remove(entityToBeDeleted.getId());
 							
 							
 							 
-							Object[][] dataDel = new Object[UMPSTProject.getInstance().getMapEntity().size()][4];
+							Object[][] dataDel = new Object[getUmpstProject().getMapEntity().size()][4];
 							Integer i=0;
 						    
-							Set<String> keys = UMPSTProject.getInstance().getMapEntity().keySet();
+							Set<String> keys = getUmpstProject().getMapEntity().keySet();
 							TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 							
 							for (String chave: sortedKeys){
-								dataDel[i][0] = UMPSTProject.getInstance().getMapEntity().get(chave).getId();						
-								dataDel[i][1] = UMPSTProject.getInstance().getMapEntity().get(chave).getEntityName();
+								dataDel[i][0] = getUmpstProject().getMapEntity().get(chave).getId();						
+								dataDel[i][1] = getUmpstProject().getMapEntity().get(chave).getEntityName();
 								dataDel[i][2] = "";
 								dataDel[i][3] = "";
 								i++;
@@ -251,9 +237,9 @@ public class TableEntities extends IUMPSTPanel{
 		String[] strAux= entityToBeDeleted.getEntityName().split(" ");
 
 	    for (int i = 0; i < strAux.length; i++) {
-    		if(UMPSTProject.getInstance().getMapSearchEntity().get(strAux[i])!=null){
-    			UMPSTProject.getInstance().getMapSearchEntity().get(strAux[i]).getEntitiesRelated().remove(entityToBeDeleted);
-    			aux = UMPSTProject.getInstance().getMapSearchEntity().get(strAux[i]).getEntitiesRelated();   
+    		if(getUmpstProject().getMapSearchEntity().get(strAux[i])!=null){
+    			getUmpstProject().getMapSearchEntity().get(strAux[i]).getEntitiesRelated().remove(entityToBeDeleted);
+    			aux = getUmpstProject().getMapSearchEntity().get(strAux[i]).getEntitiesRelated();   
     	    	for (Iterator<EntityModel> it = aux.iterator(); it.hasNext(); ) {
     	    		entityBeta = it.next();
     	   		}

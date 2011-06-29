@@ -5,18 +5,25 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import javax.swing.JSplitPane;
 
+import unbbayes.model.umpst.project.UMPSTProject;
+
 public class Goals extends IUMPSTPanel{
 	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+		
 	private JSplitPane splitPane;
 	private TableGoals menuPanel;
 	private GoalsSearchPanel requirementsPanel;
 	
-	public Goals(UmpstModule janelaPai) {
+	public Goals(UmpstModule janelaPai,UMPSTProject umpstProject) {
 		super(janelaPai);
+		
+		this.setUmpstProject(umpstProject);
+		
+		
 		this.setLayout(new FlowLayout());
 		this.add(getSplitPane());
 
@@ -42,7 +49,7 @@ public class Goals extends IUMPSTPanel{
 	public TableGoals getGoalsTable() {
 		if(menuPanel == null ){
 
-			menuPanel = new TableGoals(getFatherPanel());
+			menuPanel = new TableGoals(getFatherPanel(),getUmpstProject());
 		}
 		return menuPanel;
 	}
@@ -52,7 +59,7 @@ public class Goals extends IUMPSTPanel{
 	 */
 	public GoalsSearchPanel getGoalsPanel() {
 		if(requirementsPanel == null ){
-			requirementsPanel = new GoalsSearchPanel(getFatherPanel());
+			requirementsPanel = new GoalsSearchPanel(getFatherPanel(),getUmpstProject());
 			requirementsPanel.setBackground(new Color(0xffffff));
 		}
 		return requirementsPanel;

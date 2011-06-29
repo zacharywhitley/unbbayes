@@ -59,9 +59,9 @@ public class RelationshipAdd extends IUMPSTPanel {
 	private DefaultListModel listAtributeModelAux = new DefaultListModel();
 
 	
-	public RelationshipAdd(UmpstModule janelaPai, RelationshipModel relationship){
+	public RelationshipAdd(UmpstModule janelaPai,UMPSTProject umpstProject, RelationshipModel relationship){
 		super(janelaPai);
-		
+		this.setUmpstProject(umpstProject);
 		this.relationship = relationship;
 		this.setLayout(new GridBagLayout());
 		constraint.fill = GridBagConstraints.HORIZONTAL;
@@ -253,12 +253,12 @@ public class RelationshipAdd extends IUMPSTPanel {
 	
 	  public RelationshipModel updateMapRelationship(){
 	    	String idAux = "";
-			int tamanho = UMPSTProject.getInstance().getMapRelationship().size()+1;
+			int tamanho = getUmpstProject().getMapRelationship().size()+1;
 			
 
 			
 						
-				if ( UMPSTProject.getInstance().getMapRelationship().size()!=0){
+				if ( getUmpstProject().getMapRelationship().size()!=0){
 					idAux = tamanho+"";
 				}
 				else{
@@ -270,7 +270,7 @@ public class RelationshipAdd extends IUMPSTPanel {
 					authorText.getText(), dateText.getText(),null,null,null, null,null,null);
 			
 			
-		    UMPSTProject.getInstance().getMapRelationship().put(relatiionshipAdd.getId(), relatiionshipAdd);	
+		    getUmpstProject().getMapRelationship().put(relatiionshipAdd.getId(), relatiionshipAdd);	
 		    
 		    return relatiionshipAdd;
 	    }
@@ -293,11 +293,11 @@ public class RelationshipAdd extends IUMPSTPanel {
 		JButton buttonCopy, buttonDelete;
 
 		
-		Set<String> keys = UMPSTProject.getInstance().getMapEntity().keySet();
+		Set<String> keys = getUmpstProject().getMapEntity().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		for (String key: sortedKeys){
-			listModel.addElement(UMPSTProject.getInstance().getMapEntity().get(key).getEntityName());
+			listModel.addElement(getUmpstProject().getMapEntity().get(key).getEntityName());
 		}
 		
 		
@@ -381,11 +381,11 @@ public class RelationshipAdd extends IUMPSTPanel {
 		JButton buttonCopy, buttonDelete;
 
 		
-		Set<String> keys = UMPSTProject.getInstance().getMapAtribute().keySet();
+		Set<String> keys = getUmpstProject().getMapAtribute().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		for (String key: sortedKeys){
-			listAtributeModel.addElement(UMPSTProject.getInstance().getMapAtribute().get(key).getAtributeName());
+			listAtributeModel.addElement(getUmpstProject().getMapAtribute().get(key).getAtributeName());
 		}
 		
 		
@@ -466,7 +466,7 @@ public class RelationshipAdd extends IUMPSTPanel {
 	
 	public void updateBacktracking(RelationshipModel relationship){
 		String keyWord = "";
-		Set<String> keys = UMPSTProject.getInstance().getMapEntity().keySet();
+		Set<String> keys = getUmpstProject().getMapEntity().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		
@@ -475,8 +475,8 @@ public class RelationshipAdd extends IUMPSTPanel {
 			for (int i = 0; i < listAux.getModel().getSize();i++) {
 				keyWord = listAux.getModel().getElementAt(i).toString();
 				for (String key: sortedKeys){
-					if (keyWord.equals( UMPSTProject.getInstance().getMapEntity().get(key).getEntityName()) ){
-						UMPSTProject.getInstance().getMapEntity().get(key).getFowardTrackingRelationship().add(relationship);
+					if (keyWord.equals( getUmpstProject().getMapEntity().get(key).getEntityName()) ){
+						getUmpstProject().getMapEntity().get(key).getFowardTrackingRelationship().add(relationship);
 					}			
 				
 				}
@@ -489,9 +489,9 @@ public class RelationshipAdd extends IUMPSTPanel {
 			for (int i = 0; i < listAtributeAux.getModel().getSize();i++) {
 				keyWord = listAtributeAux.getModel().getElementAt(i).toString();
 				for (String key: sortedKeys){
-					if ( UMPSTProject.getInstance().getMapHypothesis().get(key)!=null){
-						if (keyWord.equals( UMPSTProject.getInstance().getMapHypothesis().get(key).getHypothesisName()) ){
-							UMPSTProject.getInstance().getMapAtribute().get(key).getFowardTrackingRelationship().add(relationship);
+					if ( getUmpstProject().getMapHypothesis().get(key)!=null){
+						if (keyWord.equals( getUmpstProject().getMapHypothesis().get(key).getHypothesisName()) ){
+							getUmpstProject().getMapAtribute().get(key).getFowardTrackingRelationship().add(relationship);
 						}	
 					}
 				
@@ -506,7 +506,7 @@ public class RelationshipAdd extends IUMPSTPanel {
 	
 	 public void createRelationshipTable(){
 	    	
-		    TableRelationship relationshipTable = new TableRelationship(getFatherPanel());
+		    TableRelationship relationshipTable = new TableRelationship(getFatherPanel(),getUmpstProject());
 		    JTable table = relationshipTable.createTable();
 		    JScrollPane scrollPane = new JScrollPane(table);
 

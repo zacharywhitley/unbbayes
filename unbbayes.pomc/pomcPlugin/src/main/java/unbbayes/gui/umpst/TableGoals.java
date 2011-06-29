@@ -27,6 +27,7 @@ public class TableGoals extends IUMPSTPanel{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+		
 	private JTable table;
 	private JScrollPane scrollpanePergunta;
 	
@@ -51,12 +52,13 @@ public class TableGoals extends IUMPSTPanel{
  
     	  /**private constructors make class extension almost impossible,
     	that's why this is protected*/
-    	  public TableGoals(UmpstModule janelaPai) {
+    	  public TableGoals(UmpstModule janelaPai, UMPSTProject umpstProject) {
     		  
     		    super(janelaPai);
+    		    
+    		    this.setUmpstProject(umpstProject);
+    		    
     	    	this.setLayout(new GridLayout(1,0));
-    	    	
-    	    	
     	    	this.add(createScrolltableGoals(columnNames,data));
     		    
     	  }
@@ -101,8 +103,8 @@ public class TableGoals extends IUMPSTPanel{
 			public void onButtonPress(int row, int column) {
 				
 				String key = data[row][0].toString();
-				GoalModel goalAux = UMPSTProject.getInstance().getMapGoal().get(key);
-				changePanel(new GoalsAdd(getFatherPanel(), goalAux, goalAux.getGoalFather() )   );
+				GoalModel goalAux = getUmpstProject().getMapGoal().get(key);
+				changePanel(new GoalsAdd(getFatherPanel(),getUmpstProject(), goalAux, goalAux.getGoalFather() )   );
 			}
 		});
 		
@@ -126,8 +128,8 @@ public class TableGoals extends IUMPSTPanel{
 		buttonAdd.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
 				String key = data[row][0].toString();
-				GoalModel goalAux = UMPSTProject.getInstance().getMapGoal().get(key);
-				changePanel(new GoalsAdd(getFatherPanel(),null,goalAux));
+				GoalModel goalAux = getUmpstProject().getMapGoal().get(key);
+				changePanel(new GoalsAdd(getFatherPanel(),getUmpstProject(),null,goalAux));
 				
 			}
 		});
@@ -154,7 +156,7 @@ public class TableGoals extends IUMPSTPanel{
 				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete goal "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 							String key = data[row][0].toString();
-							GoalModel goalToBeDeleted = UMPSTProject.getInstance().getMapGoal().get(key);
+							GoalModel goalToBeDeleted = getUmpstProject().getMapGoal().get(key);
 							
 							if (goalToBeDeleted.getGoalFather()!=null){
 								goalToBeDeleted.getGoalFather().getSubgoals().remove(goalToBeDeleted.getId());
@@ -178,19 +180,19 @@ public class TableGoals extends IUMPSTPanel{
 								}
 							}
 							
-							UMPSTProject.getInstance().getMapGoal().remove(goalToBeDeleted.getId());
+							getUmpstProject().getMapGoal().remove(goalToBeDeleted.getId());
 							
 							
 							 
-							Object[][] dataDel = new Object[UMPSTProject.getInstance().getMapGoal().size()][5];
+							Object[][] dataDel = new Object[getUmpstProject().getMapGoal().size()][5];
 							Integer i=0;
 						    
-							Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
+							Set<String> keys = getUmpstProject().getMapGoal().keySet();
 							TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 							
 							for (String chave: sortedKeys){
-								dataDel[i][0] = UMPSTProject.getInstance().getMapGoal().get(chave).getId();						
-								dataDel[i][1] = UMPSTProject.getInstance().getMapGoal().get(chave).getGoalName();
+								dataDel[i][0] = getUmpstProject().getMapGoal().get(chave).getId();						
+								dataDel[i][1] = getUmpstProject().getMapGoal().get(chave).getGoalName();
 								dataDel[i][2] = "";
 								dataDel[i][3] = "";
 								dataDel[i][4] = "";
@@ -256,10 +258,10 @@ public class TableGoals extends IUMPSTPanel{
 		String[] strAux = goalToBeDeleted.getGoalName().split(" ");
 
 	    for (int i = 0; i < strAux.length; i++) {
-    		if(UMPSTProject.getInstance().getMapSearchGoal().get(strAux[i])!=null){
+    		if(getUmpstProject().getMapSearchGoal().get(strAux[i])!=null){
 
-    			UMPSTProject.getInstance().getMapSearchGoal().get(strAux[i]).getGoalsRelated().remove(goalToBeDeleted);
-    			aux = UMPSTProject.getInstance().getMapSearchGoal().get(strAux[i]).getGoalsRelated();
+    			getUmpstProject().getMapSearchGoal().get(strAux[i]).getGoalsRelated().remove(goalToBeDeleted);
+    			aux = getUmpstProject().getMapSearchGoal().get(strAux[i]).getGoalsRelated();
     	    	for (Iterator<GoalModel> it = aux.iterator(); it.hasNext(); ) {
     	    		goalBeta = it.next();
     	   		}

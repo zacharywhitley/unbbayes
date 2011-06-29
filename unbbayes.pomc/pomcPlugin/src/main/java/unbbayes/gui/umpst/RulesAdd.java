@@ -52,7 +52,7 @@ public class RulesAdd extends IUMPSTPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	
+		
 	private GridBagConstraints constraints     = new GridBagConstraints();
 	private JLabel titulo            = new JLabel();
 	
@@ -81,9 +81,10 @@ public class RulesAdd extends IUMPSTPanel {
 	private Object[][] dataFrame = {};
 
 	
-	public RulesAdd(UmpstModule janelaPai, RulesModel rule){
+	public RulesAdd(UmpstModule janelaPai,UMPSTProject umpstProject, RulesModel rule){
 		super(janelaPai);
 		
+		this.setUmpstProject(umpstProject);
 		
 		this.rule = rule;
 		this.setLayout(new GridBagLayout());
@@ -132,31 +133,31 @@ public class RulesAdd extends IUMPSTPanel {
 
 		c.gridx = 0; c.gridy = 2; c.gridwidth=1;
 		panel.add( new JLabel("Rule Description: "), c);
-		//c.gridx = 0; c.gridy = 3; c.gridwidth=1;
-		//panel.add(new JLabel("Rule Type"),c);
-		c.gridx = 0; c.gridy = 3;c.gridwidth=1;
-		panel.add( new JLabel("Author Name: "), c);
+		c.gridx = 0; c.gridy = 3; c.gridwidth=1;
+		panel.add(new JLabel("Rule Type"),c);
 		c.gridx = 0; c.gridy = 4;c.gridwidth=1;
-		panel.add( new JLabel("Date: "), c);
+		panel.add( new JLabel("Author Name: "), c);
 		c.gridx = 0; c.gridy = 5;c.gridwidth=1;
+		panel.add( new JLabel("Date: "), c);
+		c.gridx = 0; c.gridy = 6;c.gridwidth=1;
 		panel.add( new JLabel("Comments: "), c);
 		
 		
 			
 		ruleText = new JTextField(20);
-		//typeText = new JTextField(20);
+		typeText = new JTextField(20);
 		commentsText = new JTextArea(5,21);
 		authorText = new JTextField(20);
 		dateText = new JTextField(20);
  
-		String[] rulesTypes = {"","Deterministic","Stochastic"};
-		ruleTypeText = new JComboBox(rulesTypes);
+		//String[] rulesTypes = {"","Deterministic","Stochastic"};
+		//ruleTypeText = new JComboBox(rulesTypes);
 
 		c.gridx = 1; c.gridy = 2;c.gridwidth=2;
 		panel.add( ruleText, c);
 		
-		c.gridx = 3; c.gridy = 2;c.gridwidth=2;
-		panel.add( ruleTypeText, c);
+		c.gridx = 1; c.gridy = 3;c.gridwidth=2;
+		panel.add( typeText, c);
 		
 		c.gridx = 1; c.gridy = 4;c.gridwidth=2;
 		panel.add( authorText, c);c.gridwidth=2;
@@ -215,9 +216,9 @@ public class RulesAdd extends IUMPSTPanel {
 							String[] strAux=rule.getRulesName().split(" ");
 
 						    for (int i = 0; i < strAux.length; i++) {
-					    		if(UMPSTProject.getInstance().getMapSearchRules().get(strAux[i])!=null){
-					    			UMPSTProject.getInstance().getMapSearchRules().get(strAux[i]).getRulesRelated().remove(rule);
-					    			aux = UMPSTProject.getInstance().getMapSearchRules().get(strAux[i]).getRulesRelated();
+					    		if(getUmpstProject().getMapSearchRules().get(strAux[i])!=null){
+					    			getUmpstProject().getMapSearchRules().get(strAux[i]).getRulesRelated().remove(rule);
+					    			aux = getUmpstProject().getMapSearchRules().get(strAux[i]).getRulesRelated();
 					    	    	for (Iterator<RulesModel> it = aux.iterator(); it.hasNext(); ) {
 					    	    		rulesBeta = it.next();
 					    	   		}
@@ -323,17 +324,17 @@ public class RulesAdd extends IUMPSTPanel {
     
     public RulesModel updateMapRules(){
     	String idAux = "";
-    	Set<String> keys = UMPSTProject.getInstance().getMapRules().keySet();
+    	Set<String> keys = getUmpstProject().getMapRules().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
-		int tamanho = UMPSTProject.getInstance().getMapRules().size()+1;
+		int tamanho = getUmpstProject().getMapRules().size()+1;
 		int maior = 0;
 		String idAux2 = "";
 		int intAux;
 		
 			
-		if ( UMPSTProject.getInstance().getMapRules().size()!=0){
+		if ( getUmpstProject().getMapRules().size()!=0){
 			for (String key: sortedKeys){
-				idAux= UMPSTProject.getInstance().getMapRules().get(key).getId();
+				idAux= getUmpstProject().getMapRules().get(key).getId();
 				if (idAux.contains(".")){
 					intAux = idAux.indexOf(".");
 					idAux2 = idAux.substring(0, intAux);
@@ -363,7 +364,7 @@ public class RulesAdd extends IUMPSTPanel {
 		
 		
 		
-	    UMPSTProject.getInstance().getMapRules().put(rulesAdd.getId(), rulesAdd);	
+	    getUmpstProject().getMapRules().put(rulesAdd.getId(), rulesAdd);	
 	    
 	    return rulesAdd;
     }
@@ -374,15 +375,15 @@ public class RulesAdd extends IUMPSTPanel {
     	
     	
 	    
-		Object[][] data = new Object[UMPSTProject.getInstance().getMapRules().size()][4];
+		Object[][] data = new Object[getUmpstProject().getMapRules().size()][4];
 		Integer i=0;
 	    
-		Set<String> keys = UMPSTProject.getInstance().getMapRules().keySet();
+		Set<String> keys = getUmpstProject().getMapRules().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		for (String key: sortedKeys){
-			data[i][0] = UMPSTProject.getInstance().getMapRules().get(key).getId();
-			data[i][1] = UMPSTProject.getInstance().getMapRules().get(key).getRulesName();			
+			data[i][0] = getUmpstProject().getMapRules().get(key).getId();
+			data[i][1] = getUmpstProject().getMapRules().get(key).getRulesName();			
 			data[i][2] = "";
 			data[i][3] = "";
 			i++;
@@ -411,13 +412,13 @@ public class RulesAdd extends IUMPSTPanel {
 	    
 	    for (int i = 0; i < strAux.length; i++) {
 	    	if(!strAux[i].equals(" ")){
-	    		if(UMPSTProject.getInstance().getMapSearchRules().get(strAux[i])==null){
+	    		if(getUmpstProject().getMapSearchRules().get(strAux[i])==null){
 	    			ruleSetSearch.add(ruleAdd);
 	    			SearchModelRules searchModel = new SearchModelRules(strAux[i], ruleSetSearch);
-	    			UMPSTProject.getInstance().getMapSearchRules().put(searchModel.getKeyWord(), searchModel);
+	    			getUmpstProject().getMapSearchRules().put(searchModel.getKeyWord(), searchModel);
 	    		}
 	    		else{
-	    			UMPSTProject.getInstance().getMapSearchRules().get(strAux[i]).getRulesRelated().add(ruleAdd);
+	    			getUmpstProject().getMapSearchRules().get(strAux[i]).getRulesRelated().add(ruleAdd);
 	    		}
 	    	}
 	    }
@@ -428,11 +429,11 @@ public class RulesAdd extends IUMPSTPanel {
     
     public void getTrackingPanel(){
 		Box box = Box.createHorizontalBox();
-		Set<String> keys = UMPSTProject.getInstance().getMapEntity().keySet();
+		Set<String> keys = getUmpstProject().getMapEntity().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		for (String key: sortedKeys){
-			listModel.addElement(UMPSTProject.getInstance().getMapEntity().get(key).getEntityName());
+			listModel.addElement(getUmpstProject().getMapEntity().get(key).getEntityName());
 		}
 		
 		
@@ -640,7 +641,7 @@ public class RulesAdd extends IUMPSTPanel {
 	
 	/*public void updateBacktracking(RulesModel rule){
 		String keyWord = "";
-		Set<String> keys = UMPSTProject.getInstance().getMapEntity().keySet();
+		Set<String> keys = getUmpstProject().getMapEntity().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		
@@ -649,8 +650,8 @@ public class RulesAdd extends IUMPSTPanel {
 			for (int i = 0; i < listAux.getModel().getSize();i++) {
 				keyWord = listAux.getModel().getElementAt(i).toString();
 				for (String key: sortedKeys){
-					if (keyWord.equals( UMPSTProject.getInstance().getMapEntity().get(key).getEntityName()) ){
-						UMPSTProject.getInstance().getMapEntity().get(key).getFowardTrackingRules().add(rule);
+					if (keyWord.equals( getUmpstProject().getMapEntity().get(key).getEntityName()) ){
+						getUmpstProject().getMapEntity().get(key).getFowardTrackingRules().add(rule);
 					}			
 				
 				}
@@ -671,17 +672,17 @@ public class RulesAdd extends IUMPSTPanel {
 		
 		String[] columnNames = {"ID","Entity",""};
     	
-		dataFrame = new Object[UMPSTProject.getInstance().getMapEntity().size()][3];
+		dataFrame = new Object[getUmpstProject().getMapEntity().size()][3];
 
 	    
 		Integer i=0;
 	    
-		Set<String> keys = UMPSTProject.getInstance().getMapEntity().keySet();
+		Set<String> keys = getUmpstProject().getMapEntity().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		for (String key: sortedKeys){
-			dataFrame[i][0] = UMPSTProject.getInstance().getMapEntity().get(key).getId();
-			dataFrame[i][1] = UMPSTProject.getInstance().getMapEntity().get(key).getEntityName();			
+			dataFrame[i][0] = getUmpstProject().getMapEntity().get(key).getId();
+			dataFrame[i][1] = getUmpstProject().getMapEntity().get(key).getEntityName();			
 			dataFrame[i][2] = "";
 			i++;
 		}
@@ -715,11 +716,11 @@ public class RulesAdd extends IUMPSTPanel {
 				list = new JList(listModel);
 				rule.setBacktracking(list);
 				
-				Set<String> keys = UMPSTProject.getInstance().getMapEntity().keySet();
+				Set<String> keys = getUmpstProject().getMapEntity().keySet();
 				TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 				for (String keyAux : sortedKeys){
-					if (UMPSTProject.getInstance().getMapEntity().get(keyAux).getEntityName().equals(key)){
-						UMPSTProject.getInstance().getMapEntity().get(keyAux).getFowardTrackingRules().add(rule);
+					if (getUmpstProject().getMapEntity().get(keyAux).getEntityName().equals(key)){
+						getUmpstProject().getMapEntity().get(keyAux).getFowardTrackingRules().add(rule);
 					}
 				}
 					
@@ -756,17 +757,17 @@ public class RulesAdd extends IUMPSTPanel {
 		
 		String[] columnNames = {"ID","Atribute",""};
 		
-		dataFrame = new Object[UMPSTProject.getInstance().getMapAtribute().size()][3];
+		dataFrame = new Object[getUmpstProject().getMapAtribute().size()][3];
 	
 	    
 		Integer i=0;
 	    
-		Set<String> keys = UMPSTProject.getInstance().getMapAtribute().keySet();
+		Set<String> keys = getUmpstProject().getMapAtribute().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		for (String key: sortedKeys){
-			dataFrame[i][0] = UMPSTProject.getInstance().getMapAtribute().get(key).getId();
-			dataFrame[i][1] = UMPSTProject.getInstance().getMapAtribute().get(key).getAtributeName();			
+			dataFrame[i][0] = getUmpstProject().getMapAtribute().get(key).getId();
+			dataFrame[i][1] = getUmpstProject().getMapAtribute().get(key).getAtributeName();			
 			dataFrame[i][2] = "";
 			i++;
 		}
@@ -800,11 +801,11 @@ public class RulesAdd extends IUMPSTPanel {
 				list = new JList(listModel);
 				rule.setBacktrackingAtribute(list);
 				
-				Set<String> keys = UMPSTProject.getInstance().getMapAtribute().keySet();
+				Set<String> keys = getUmpstProject().getMapAtribute().keySet();
 				TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 				for (String keyAux : sortedKeys){
-					if (UMPSTProject.getInstance().getMapAtribute().get(keyAux).getAtributeName().equals(key)){
-						UMPSTProject.getInstance().getMapAtribute().get(keyAux).getFowardTrackingRules().add(rule);
+					if (getUmpstProject().getMapAtribute().get(keyAux).getAtributeName().equals(key)){
+						getUmpstProject().getMapAtribute().get(keyAux).getFowardTrackingRules().add(rule);
 					}
 				}
 					
@@ -841,17 +842,17 @@ public class RulesAdd extends IUMPSTPanel {
 		
 		String[] columnNames = {"ID","Relationship",""};
 		
-		dataFrame = new Object[UMPSTProject.getInstance().getMapRelationship().size()][3];
+		dataFrame = new Object[getUmpstProject().getMapRelationship().size()][3];
 	
 	    
 		Integer i=0;
 	    
-		Set<String> keys = UMPSTProject.getInstance().getMapRelationship().keySet();
+		Set<String> keys = getUmpstProject().getMapRelationship().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		for (String key: sortedKeys){
-			dataFrame[i][0] = UMPSTProject.getInstance().getMapRelationship().get(key).getId();
-			dataFrame[i][1] = UMPSTProject.getInstance().getMapRelationship().get(key).getRelationshipName();			
+			dataFrame[i][0] = getUmpstProject().getMapRelationship().get(key).getId();
+			dataFrame[i][1] = getUmpstProject().getMapRelationship().get(key).getRelationshipName();			
 			dataFrame[i][2] = "";
 			i++;
 		}
@@ -885,11 +886,11 @@ public class RulesAdd extends IUMPSTPanel {
 				list = new JList(listModel);
 				rule.setBacktrackingRelationship(list);
 				
-				Set<String> keys = UMPSTProject.getInstance().getMapRelationship().keySet();
+				Set<String> keys = getUmpstProject().getMapRelationship().keySet();
 				TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 				for (String keyAux : sortedKeys){
-					if (UMPSTProject.getInstance().getMapRelationship().get(keyAux).getRelationshipName().equals(key)){
-						UMPSTProject.getInstance().getMapRelationship().get(keyAux).getFowardtrackingRules().add(rule);
+					if (getUmpstProject().getMapRelationship().get(keyAux).getRelationshipName().equals(key)){
+						getUmpstProject().getMapRelationship().get(keyAux).getFowardtrackingRules().add(rule);
 					}
 				}
 					

@@ -5,18 +5,24 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import javax.swing.JSplitPane;
 
+import unbbayes.model.umpst.project.UMPSTProject;
+
 public class Groups extends IUMPSTPanel{
 	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+		
 	private JSplitPane splitPane;
 	private TableGroups groupsPanel;
 	private GroupsSearch groupsSearch;
 	
-	public Groups(UmpstModule janelaPai) {
+	public Groups(UmpstModule janelaPai,UMPSTProject umpstProject) {
 		super(janelaPai);
+		
+		this.setUmpstProject(umpstProject);
+		
 		this.setLayout(new FlowLayout());
 		this.add(getSplitPane());
 
@@ -42,7 +48,7 @@ public class Groups extends IUMPSTPanel{
 	public TableGroups getGroupsTable() {
 		if(groupsPanel == null ){
 
-			groupsPanel = new TableGroups(getFatherPanel());
+			groupsPanel = new TableGroups(getFatherPanel(),getUmpstProject());
 		}
 		return groupsPanel;
 	}
@@ -52,7 +58,7 @@ public class Groups extends IUMPSTPanel{
 	 */
 	public GroupsSearch getGroupsPanel() {
 		if(groupsSearch == null ){
-			groupsSearch = new GroupsSearch(getFatherPanel());
+			groupsSearch = new GroupsSearch(getFatherPanel(),getUmpstProject());
 			groupsSearch.setBackground(new Color(0xffffff));
 		}
 		return groupsSearch;

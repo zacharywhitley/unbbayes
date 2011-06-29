@@ -1,5 +1,6 @@
 package unbbayes.io.umpst;
 
+import java.awt.GridBagConstraints;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -28,7 +29,7 @@ public class FileLoad {
     private RelationshipModel relationship;
     private RulesModel rule;
 	
-	public  void loadUbf(File file) {
+	public  UMPSTProject loadUbf(File file,UMPSTProject umpstProject) {
 
 		
 		
@@ -56,7 +57,7 @@ public class FileLoad {
 	      for (int i = 0; i < numberGoals; i++) {
 	    	  	id = bufferReader.readLine();
 	    	  	goal = new GoalModel(id, "","", "", "" , null, null, null, null, null,null );
-	    	  	UMPSTProject.getInstance().getMapGoal().put(goal.getId(), goal);
+	    	  	umpstProject.getMapGoal().put(goal.getId(), goal);
 		  }
 	      
 	        bufferReader.readLine();//Number of hypothesis cadastred
@@ -67,7 +68,7 @@ public class FileLoad {
 	      for (int i = 0; i < numberHypothesis; i++) {
 	    	  id = bufferReader.readLine();
 	    	  hypothesis = new HypothesisModel(id, "", "", "", "", null, null, null, null, null);
-	    	  UMPSTProject.getInstance().getMapHypothesis().put(hypothesis.getId(), hypothesis);
+	    	  umpstProject.getMapHypothesis().put(hypothesis.getId(), hypothesis);
 	      }
 	      
 	        bufferReader.readLine(); //Number of entites cadastred
@@ -78,7 +79,7 @@ public class FileLoad {
 	      for (int i = 0; i < numberEntities; i++) {
 	    	  id = bufferReader.readLine();
 	    	  entity = new EntityModel(id, "", "", "", "", null, null, null, null, null, null);
-	    	  UMPSTProject.getInstance().getMapEntity().put(entity.getId(), entity);
+	    	  umpstProject.getMapEntity().put(entity.getId(), entity);
 	    	  
 	      }
 	      
@@ -90,7 +91,7 @@ public class FileLoad {
 	      for (int i = 0; i < numberAtributes; i++) {
 	    	  id = bufferReader.readLine();
 	    	  atribute = new AtributeModel(id, "", "", "", "", null, null, null, null,null,null);
-	    	  UMPSTProject.getInstance().getMapAtribute().put(atribute.getId(), atribute);
+	    	  umpstProject.getMapAtribute().put(atribute.getId(), atribute);
 	    	  
 	      }
 	      
@@ -102,7 +103,7 @@ public class FileLoad {
 	      for (int i = 0; i < numberRelationship; i++) {
 	    	  id = bufferReader.readLine();
 	    	  relationship = new RelationshipModel(id, "", "", "", "", null, null, null, null, null, null);
-	    	  UMPSTProject.getInstance().getMapRelationship().put(relationship.getId(), relationship);
+	    	  umpstProject.getMapRelationship().put(relationship.getId(), relationship);
 	    	  
 	      }
 	      
@@ -114,7 +115,7 @@ public class FileLoad {
 	      for (int i = 0; i < numberRules; i++) {
 	    	  id = bufferReader.readLine();
 	    	  rule = new RulesModel(id, "", "", "", "","", null, null, null, null);
-	    	  UMPSTProject.getInstance().getMapRules().put(rule.getId(), rule);
+	    	  umpstProject.getMapRules().put(rule.getId(), rule);
 	    	  
 	      }
 	      
@@ -126,7 +127,7 @@ public class FileLoad {
 	      for (int i = 0; i < numberGroups; i++) {
 	    	  id = bufferReader.readLine(); 
 	    	  group = new GroupsModel(id, "", "", "", "", null, null, null, null, null, null);
-	    	  UMPSTProject.getInstance().getMapGroups().put(group.getId(), group);
+	    	  umpstProject.getMapGroups().put(group.getId(), group);
 	      }
 	      
 /*--Groups details--*/	      
@@ -134,14 +135,14 @@ public class FileLoad {
 	      bufferReader.readLine(); //************
 	      bufferReader.readLine(); //Groups detail's
 	      
-	      for (int i = 0; i < numberRules; i++) {
+	      for (int i = 0; i < numberGroups; i++) {
 	    	  	id = bufferReader.readLine();
 	    	  	String groupName = bufferReader.readLine();
 	    	  	author = bufferReader.readLine();
 	    	  	date = bufferReader.readLine();
 	    	  	comments =bufferReader.readLine();
 	    	  	
-	    	  	group = UMPSTProject.getInstance().getMapGroups().get(id);
+	    	  	group = umpstProject.getMapGroups().get(id);
 	    	  	group.setGroupName(groupName);
 	    	  	group.setAuthor(author);
 	    	  	group.setDate(date);
@@ -251,7 +252,7 @@ public class FileLoad {
 	    	  	date = bufferReader.readLine();
 	    	  	comments =bufferReader.readLine();
 	    	  	
-	    	  	rule = UMPSTProject.getInstance().getMapRules().get(id);
+	    	  	rule = umpstProject.getMapRules().get(id);
 	    	  	rule.setRulesName(ruleName);
 	    	  	rule.setRuleType(ruleType);
 	    	  	rule.setAuthor(author);
@@ -305,7 +306,7 @@ public class FileLoad {
 	    	  		bufferReader.readLine();// Fowardtracking groups of this rule
 	    	  		for (int j = 0; j < numberRulesRelated; j++) {
 						String idGroupRelated = bufferReader.readLine();
-						rule.getFowardTrackingGroups().add(UMPSTProject.getInstance().getMapGroups().get(idGroupRelated));
+						rule.getFowardTrackingGroups().add(umpstProject.getMapGroups().get(idGroupRelated));
 					}
 	    	  		
 	    	  	}
@@ -325,7 +326,7 @@ public class FileLoad {
 	    	  	date = bufferReader.readLine();
 	    	  	comments =bufferReader.readLine();
 	    	  	
-	    	  	relationship = UMPSTProject.getInstance().getMapRelationship().get(id);
+	    	  	relationship = umpstProject.getMapRelationship().get(id);
 	    	  	relationship.setRelationshipName(relationshipName);
 	    	  	relationship.setAuthor(author);
 	    	  	relationship.setDate(date);
@@ -394,7 +395,7 @@ public class FileLoad {
 	    	  		bufferReader.readLine();// Fowardtracking rules of this atribute
 	    	  		for (int j = 0; j < numberRulesRelated; j++) {
 						String idRuleRelated = bufferReader.readLine();
-						relationship.getFowardtrackingRules().add(UMPSTProject.getInstance().getMapRules().get(idRuleRelated));
+						relationship.getFowardtrackingRules().add(umpstProject.getMapRules().get(idRuleRelated));
 					}
 	    	  		
 	    	  	}
@@ -406,7 +407,7 @@ public class FileLoad {
 	    	  		bufferReader.readLine();// Fowardtracking groups of this atribute
 	    	  		for (int j = 0; j < numberGroupsRelated; j++) {
 						String idGroupRelated = bufferReader.readLine();
-						relationship.getFowardtrackingGroups().add(UMPSTProject.getInstance().getMapGroups().get(idGroupRelated));
+						relationship.getFowardtrackingGroups().add(umpstProject.getMapGroups().get(idGroupRelated));
 					}
 	    	  		
 	    	  	}	
@@ -425,7 +426,7 @@ public class FileLoad {
 	    	  	date = bufferReader.readLine();
 	    	  	comments =bufferReader.readLine();
 	    	  	
-	    	  	atribute = UMPSTProject.getInstance().getMapAtribute().get(id);
+	    	  	atribute = umpstProject.getMapAtribute().get(id);
 	    	  	atribute.setAtributeName(atributeName);
 	    	  	atribute.setAuthor(author);
 	    	  	atribute.setDate(date);
@@ -435,7 +436,7 @@ public class FileLoad {
 	    	  	
 	    	  	if (!idFather.equals("null")){
 	   	    	 
-	    	  		goal.setGoalFather(UMPSTProject.getInstance().getMapGoal().get(idFather));
+	    	  		goal.setGoalFather(umpstProject.getMapGoal().get(idFather));
 	    	  	}
 	    /*--Entities related with wach atribute--*/	  	
 	    	  	bufferReader.readLine();//Number of entitiesRelated
@@ -444,7 +445,7 @@ public class FileLoad {
 	    	  		bufferReader.readLine();//Entities related with this atribute
 	    	  		for (int j = 0; j < numberEntRelated; j++) {
 						String idEntRelated = bufferReader.readLine();
-						atribute.getEntityRelated().add(UMPSTProject.getInstance().getMapEntity().get(idEntRelated));
+						atribute.getEntityRelated().add(umpstProject.getMapEntity().get(idEntRelated));
 					}	    	  		
 	    	  		
 	    	  	}
@@ -455,7 +456,7 @@ public class FileLoad {
 	    	  		bufferReader.readLine();//Sub-atributes of this atribut
 	    	  		for (int j = 0; j < numberSubAtributes; j++) {
 						String idSubAtribute = bufferReader.readLine();
-						atribute.getMapSubAtributes().put(idSubAtribute, UMPSTProject.getInstance().getMapAtribute().get(idSubAtribute));
+						atribute.getMapSubAtributes().put(idSubAtribute, umpstProject.getMapAtribute().get(idSubAtribute));
 					}
 	    	  	}
 	    /*--Fowardtracking relationship--*/	  	
@@ -465,7 +466,7 @@ public class FileLoad {
 	    	  		bufferReader.readLine();// Fowardtracking relationship of this atribute
 	    	  		for (int j = 0; j < numberRelationshipRelated; j++) {
 						String idRelRelated = bufferReader.readLine();
-						atribute.getFowardTrackingRelationship().add(UMPSTProject.getInstance().getMapRelationship().get(idRelRelated));
+						atribute.getFowardTrackingRelationship().add(umpstProject.getMapRelationship().get(idRelRelated));
 					}
 	    	  		
 	    	  	}
@@ -476,7 +477,7 @@ public class FileLoad {
 	    	  		bufferReader.readLine();// Fowardtracking rules of this atribute
 	    	  		for (int j = 0; j < numberRulesRelated; j++) {
 						String idRuleRelated = bufferReader.readLine();
-						atribute.getFowardTrackingRules().add(UMPSTProject.getInstance().getMapRules().get(idRuleRelated));
+						atribute.getFowardTrackingRules().add(umpstProject.getMapRules().get(idRuleRelated));
 					}
 	    	  		
 	    	  	}
@@ -487,7 +488,7 @@ public class FileLoad {
 	    	  		bufferReader.readLine();// Fowardtracking groups of this atribute
 	    	  		for (int j = 0; j < numberGroupsRelated; j++) {
 						String idGroupRelated = bufferReader.readLine();
-						atribute.getFowardTrackingGroups().add(UMPSTProject.getInstance().getMapGroups().get(idGroupRelated));
+						atribute.getFowardTrackingGroups().add(umpstProject.getMapGroups().get(idGroupRelated));
 					}
 	    	  		
 	    	  	}
@@ -505,7 +506,7 @@ public class FileLoad {
 	    	  	date = bufferReader.readLine();
 	    	  	comments =bufferReader.readLine();
 	    	  	
-	    	  	entity = UMPSTProject.getInstance().getMapEntity().get(id);
+	    	  	entity = umpstProject.getMapEntity().get(id);
 	    	  	entity.setEntityName(entityName);
 	    	  	entity.setAuthor(author);
 	    	  	entity.setDate(date);
@@ -519,7 +520,7 @@ public class FileLoad {
 	    	  		bufferReader.readLine();//atributes of this entity
 	    	  		for (int j = 0; j < numberAtributesEnt; j++) {
 	    	  			String idAtrEnt = bufferReader.readLine();
-	    	  			entity.getMapAtributes().put(idAtrEnt, UMPSTProject.getInstance().getMapAtribute().get(idAtrEnt));
+	    	  			entity.getMapAtributes().put(idAtrEnt, umpstProject.getMapAtribute().get(idAtrEnt));
 						
 					}
 	    	  	}
@@ -554,7 +555,7 @@ public class FileLoad {
 	    	  		bufferReader.readLine();//Fowartracking from rules of this entity
 	    	  		for (int j = 0; j < numberFwRules; j++) {
 						String idFwRule = bufferReader.readLine();
-						entity.getFowardTrackingRules().add(UMPSTProject.getInstance().getMapRules().get(idFwRule));
+						entity.getFowardTrackingRules().add(umpstProject.getMapRules().get(idFwRule));
 					}
 	    	  	}
 	/*-- Listing fowardtracking groups of each entity--*/	
@@ -564,7 +565,7 @@ public class FileLoad {
 	    	  		bufferReader.readLine();//Fowardtracking from groups of this entity
 	    	  		for (int j = 0; j < numberFwGroups; j++) {
 						String idFwGroup = bufferReader.readLine();
-						entity.getFowardTrackingGroups().add(UMPSTProject.getInstance().getMapGroups().get(idFwGroup));
+						entity.getFowardTrackingGroups().add(umpstProject.getMapGroups().get(idFwGroup));
 					}
 	    	  	}
 	/*--Listing fowardtracking relationship of each entity--*/	
@@ -574,7 +575,7 @@ public class FileLoad {
 	    	  		bufferReader.readLine();//Fowardtracking from relationship of this entity
 	    	  		for (int j = 0; j < numberFwRelationship; j++) {
 	    	  			String idFwRelationship = bufferReader.readLine();
-	    	  			entity.getFowardTrackingRelationship().add(UMPSTProject.getInstance().getMapRelationship().get(idFwRelationship));
+	    	  			entity.getFowardTrackingRelationship().add(umpstProject.getMapRelationship().get(idFwRelationship));
 						
 					}
 	    	  	}
@@ -594,7 +595,7 @@ public class FileLoad {
 	    	  	comments =bufferReader.readLine();
 	    	  	idFather = bufferReader.readLine();
 	    	  	
-	    	  	hypothesis = UMPSTProject.getInstance().getMapHypothesis().get(id);
+	    	  	hypothesis = umpstProject.getMapHypothesis().get(id);
 	    	  	hypothesis.setHypothesisName(hypothesisName);
 	    	  	hypothesis.setAuthor(author);
 	    	  	hypothesis.setDate(date);
@@ -602,7 +603,7 @@ public class FileLoad {
 	    	  	
 	    	  	if (!idFather.equals("null")){
 	    	 
-	    	  		hypothesis.setFather(UMPSTProject.getInstance().getMapHypothesis().get(idFather));
+	    	  		hypothesis.setFather(umpstProject.getMapHypothesis().get(idFather));
 	    	  	}
 	/*-- Adding goals related --*/    	  	
 	    	  	bufferReader.readLine(); //number of goals related
@@ -611,7 +612,7 @@ public class FileLoad {
 	    	  		bufferReader.readLine(); //Goals related with this hypothesis
 	    	  		for (int j = 0; j < numberGoalsRelated; j++) {
 	    	  			String idGoalRelated = bufferReader.readLine();
-	    	  			hypothesis.getGoalRelated().add(UMPSTProject.getInstance().getMapGoal().get(idGoalRelated));
+	    	  			hypothesis.getGoalRelated().add(umpstProject.getMapGoal().get(idGoalRelated));
 					}
 	    	  	}
 	/*--Adding sub-hypothesis--*/  
@@ -621,7 +622,7 @@ public class FileLoad {
 	    	  		bufferReader.readLine();// Subhypothesis of this hypothesis
 	    	  		for (int j = 0; j < numberSubHypothesis; j++) {
 						String idSubHypothesis = bufferReader.readLine();
-						hypothesis.getMapSubHypothesis().put(idSubHypothesis, UMPSTProject.getInstance().getMapHypothesis().get(idSubHypothesis));
+						hypothesis.getMapSubHypothesis().put(idSubHypothesis, umpstProject.getMapHypothesis().get(idSubHypothesis));
 					}
 	    	  	}
 	/*--Adding fowardtracking entity--*/
@@ -631,7 +632,7 @@ public class FileLoad {
 	    	  		bufferReader.readLine();//Foward tracking entity of this hypothesis
 	    	  		for (int j = 0; j < numberFwEntity; j++) {
 	    	  			String idFwEntity = bufferReader.readLine();
-	    	  			hypothesis.getFowardTrackingEntity().add(UMPSTProject.getInstance().getMapEntity().get(idFwEntity));
+	    	  			hypothesis.getFowardTrackingEntity().add(umpstProject.getMapEntity().get(idFwEntity));
 	    	  		}
 	    	  	}
 	/*-- Adding foward tracking groups --*/    	  
@@ -641,7 +642,7 @@ public class FileLoad {
 	    	  		bufferReader.readLine();//Foward tracking groups of this hypothesis
 	    	  		for (int j = 0; j < numberFwGroups; j++) {
 						String idFwGroup = bufferReader.readLine();
-						hypothesis.getFowardTrackingGroups().add(UMPSTProject.getInstance().getMapGroups().get(idFwGroup));
+						hypothesis.getFowardTrackingGroups().add(umpstProject.getMapGroups().get(idFwGroup));
 					}
 	    	  	}
 	    	  	
@@ -661,7 +662,7 @@ public class FileLoad {
 	    	  	comments =bufferReader.readLine();
 	    	  	idFather = bufferReader.readLine();
 	    	  	
-	    	  	goal = UMPSTProject.getInstance().getMapGoal().get(id);
+	    	  	goal = umpstProject.getMapGoal().get(id);
 	    	  	goal.setGoalName(goalName);
 	    	  	goal.setAuthor(author);
 	    	  	goal.setDate(date);
@@ -669,7 +670,7 @@ public class FileLoad {
 	    	  	
 	    	  	if (!idFather.equals("null")){
 	    	 
-	    	  		goal.setGoalFather(UMPSTProject.getInstance().getMapGoal().get(idFather));
+	    	  		goal.setGoalFather(umpstProject.getMapGoal().get(idFather));
 	    	  	}
 	    	  	
 	    	  	  bufferReader.readLine();//Number of subgoals
@@ -680,7 +681,7 @@ public class FileLoad {
 	    	  		GoalModel subgoal;
 	    	  		for (int j = 0; j < numberSubgoals; j++) {
 	    	  			id = bufferReader.readLine();
-						subgoal = UMPSTProject.getInstance().getMapGoal().get(id);
+						subgoal = umpstProject.getMapGoal().get(id);
 						goal.getSubgoals().put(subgoal.getId(), subgoal);
 						
 					}
@@ -693,7 +694,7 @@ public class FileLoad {
 	    	  		HypothesisModel hypoRelated;
 	    	  		for (int j = 0; j < numberHypothesisGoal; j++) {
 	    	  			id = bufferReader.readLine();
-	    	  			hypoRelated = UMPSTProject.getInstance().getMapHypothesis().get(id);
+	    	  			hypoRelated = umpstProject.getMapHypothesis().get(id);
 	    	  			goal.getMapHypothesis().put(hypoRelated.getId(), hypoRelated);
 						
 					}
@@ -706,7 +707,7 @@ public class FileLoad {
 	    	  		EntityModel entRelated;
 	    	  		for (int j = 0; j < numberEntGoal; j++) {
 	    	  			id = bufferReader.readLine();
-		    	  		entRelated = UMPSTProject.getInstance().getMapEntity().get(id);
+		    	  		entRelated = umpstProject.getMapEntity().get(id);
 		    	  		goal.getFowardTrackingEntity().add(entRelated);
 					}
 
@@ -719,7 +720,7 @@ public class FileLoad {
 	    	  		GroupsModel groupRelated;
 	    	  		for (int j = 0; j < numberGroupGoal; j++) {
 	    	  			id = bufferReader.readLine();
-	    	  			groupRelated = UMPSTProject.getInstance().getMapGroups().get(id);
+	    	  			groupRelated = umpstProject.getMapGroups().get(id);
 	    	  			goal.getFowardTrackingGroups().add(groupRelated);
 						
 					}
@@ -741,7 +742,8 @@ public class FileLoad {
 	    } catch (IOException e) {
 	      e.printStackTrace();
 	    }
+	    
+	    return umpstProject;
 	  }
-
 
 }

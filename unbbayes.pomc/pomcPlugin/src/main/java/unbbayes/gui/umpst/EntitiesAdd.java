@@ -54,6 +54,7 @@ import unbbayes.model.umpst.rules.RulesModel;
 
 public class EntitiesAdd extends IUMPSTPanel {
 	
+	
 	private Object[][] dataFrame ;
 	private Object[][] dataFrameHypo ;
 	private Object[][] dataBacktracking ;
@@ -86,8 +87,10 @@ public class EntitiesAdd extends IUMPSTPanel {
 	private DefaultListModel listHypothesisModelAux = new DefaultListModel();
 	
 	
-	public EntitiesAdd(UmpstModule janelaPai, EntityModel entity){
+	public EntitiesAdd(UmpstModule janelaPai,UMPSTProject umpstProject, EntityModel entity){
 		super(janelaPai);
+		
+		this.setUmpstProject(umpstProject);
 		
 		this.entity = entity;
 		this.setLayout(new GridBagLayout());
@@ -244,9 +247,9 @@ public class EntitiesAdd extends IUMPSTPanel {
 							String[] strAux = entity.getEntityName().split(" ");
 
 						    for (int i = 0; i < strAux.length; i++) {
-					    		if(UMPSTProject.getInstance().getMapSearchEntity().get(strAux[i])!=null){
-					    			UMPSTProject.getInstance().getMapSearchEntity().get(strAux[i]).getEntitiesRelated().remove(entity);
-					    			aux = UMPSTProject.getInstance().getMapSearchEntity().get(strAux[i]).getEntitiesRelated();
+					    		if(getUmpstProject().getMapSearchEntity().get(strAux[i])!=null){
+					    			getUmpstProject().getMapSearchEntity().get(strAux[i]).getEntitiesRelated().remove(entity);
+					    			aux = getUmpstProject().getMapSearchEntity().get(strAux[i]).getEntitiesRelated();
 					    	    	for (Iterator<EntityModel> it = aux.iterator(); it.hasNext(); ) {
 					    	    		entityBeta = it.next();
 					    	   		}
@@ -313,7 +316,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 		
 		buttonAtribute.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				changePanel(new AtributeAdd(getFatherPanel(), entity, null, null));
+				changePanel(new AtributeAdd(getFatherPanel(),getUmpstProject(), entity, null, null));
 
 			}
 		});
@@ -360,11 +363,11 @@ public class EntitiesAdd extends IUMPSTPanel {
     public EntityModel updateMaEntity(){
     	String idAux = "";
 		int intAux = 0;
-		int tamanho = UMPSTProject.getInstance().getMapEntity().size()+1;
+		int tamanho = getUmpstProject().getMapEntity().size()+1;
 		
 		
 					
-			if ( UMPSTProject.getInstance().getMapEntity().size()!=0){
+			if ( getUmpstProject().getMapEntity().size()!=0){
 				idAux = tamanho+"";
 			}
 			else{
@@ -376,7 +379,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 				dateText.getText(),null,null,null,null,null,null);
 		
 		
-	    UMPSTProject.getInstance().getMapEntity().put(entityAdd.getId(), entityAdd);	
+	    getUmpstProject().getMapEntity().put(entityAdd.getId(), entityAdd);	
 	    
 	    return entityAdd;
     }
@@ -385,15 +388,15 @@ public class EntitiesAdd extends IUMPSTPanel {
     public void updateTableEntities(){
     	String[] columnNames = {"ID","Entity","",""};	    
 	    
-		Object[][] data = new Object[UMPSTProject.getInstance().getMapEntity().size()][4];
+		Object[][] data = new Object[getUmpstProject().getMapEntity().size()][4];
 		Integer i=0;
 	    
-		Set<String> keys = UMPSTProject.getInstance().getMapEntity().keySet();
+		Set<String> keys = getUmpstProject().getMapEntity().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		for (String key: sortedKeys){
-			data[i][0] = UMPSTProject.getInstance().getMapEntity().get(key).getId();
-			data[i][1] = UMPSTProject.getInstance().getMapEntity().get(key).getEntityName();			
+			data[i][0] = getUmpstProject().getMapEntity().get(key).getId();
+			data[i][1] = getUmpstProject().getMapEntity().get(key).getEntityName();			
 			data[i][2] = "";
 			data[i][3] = "";
 			i++;
@@ -422,13 +425,13 @@ public class EntitiesAdd extends IUMPSTPanel {
 	    
 	    for (int i = 0; i < strAux.length; i++) {
 	    	if(!strAux[i].equals(" ")){
-	    		if(UMPSTProject.getInstance().getMapSearchEntity().get(strAux[i])==null){
+	    		if(getUmpstProject().getMapSearchEntity().get(strAux[i])==null){
 	    			entitySetSearch.add(entityAdd);
 	    			SearchModelEntity searchModel = new SearchModelEntity(strAux[i], entitySetSearch);
-	    			UMPSTProject.getInstance().getMapSearchEntity().put(searchModel.getKeyWord(), searchModel);
+	    			getUmpstProject().getMapSearchEntity().put(searchModel.getKeyWord(), searchModel);
 	    		}
 	    		else{
-	    			UMPSTProject.getInstance().getMapSearchEntity().get(strAux[i]).getEntitiesRelated().add(entityAdd);
+	    			getUmpstProject().getMapSearchEntity().get(strAux[i]).getEntitiesRelated().add(entityAdd);
 	    		}
 	    	}
 	    }
@@ -591,7 +594,7 @@ public JPanel getBacktrackingHypothesis(){
 	
 	/**public void updateBacktracking(EntityModel entity){
 		String keyWord = "";
-		Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
+		Set<String> keys = getUmpstProject().getMapGoal().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		
@@ -600,8 +603,8 @@ public JPanel getBacktrackingHypothesis(){
 			for (int i = 0; i < list.getModel().getSize();i++) {
 				keyWord = list.getModel().getElementAt(i).toString();
 				for (String key: sortedKeys){
-					if (keyWord.equals( UMPSTProject.getInstance().getMapGoal().get(key).getGoalName()) ){
-						UMPSTProject.getInstance().getMapGoal().get(key).getFowardTrackingEntity().add(entity);
+					if (keyWord.equals( getUmpstProject().getMapGoal().get(key).getGoalName()) ){
+						getUmpstProject().getMapGoal().get(key).getFowardTrackingEntity().add(entity);
 					}			
 				
 				}
@@ -614,9 +617,9 @@ public JPanel getBacktrackingHypothesis(){
 			for (int i = 0; i < listHypothesis.getModel().getSize();i++) {
 				keyWord = listHypothesis.getModel().getElementAt(i).toString();
 				for (String key: sortedKeys){
-					if ( UMPSTProject.getInstance().getMapHypothesis().get(key)!=null){
-						if (keyWord.equals( UMPSTProject.getInstance().getMapHypothesis().get(key).getHypothesisName()) ){
-							UMPSTProject.getInstance().getMapHypothesis().get(key).getFowardTrackingEntity().add(entity);
+					if ( getUmpstProject().getMapHypothesis().get(key)!=null){
+						if (keyWord.equals( getUmpstProject().getMapHypothesis().get(key).getHypothesisName()) ){
+							getUmpstProject().getMapHypothesis().get(key).getFowardTrackingEntity().add(entity);
 						}	
 					}
 				
@@ -630,7 +633,7 @@ public JPanel getBacktrackingHypothesis(){
 	
 	public void createAtributeTable(){
     	
-	    TableAtribute atributesTable = new TableAtribute(getFatherPanel(),entity);
+	    TableAtribute atributesTable = new TableAtribute(getFatherPanel(),getUmpstProject(),entity);
 	    JTable table = atributesTable.createTable();
 	    JScrollPane scrollPane = new JScrollPane(table);
 
@@ -757,7 +760,7 @@ public JPanel getBacktrackingHypothesis(){
  	
 	public JComboBox vinculateAtribute(){
 
-	    Set<String> keys = UMPSTProject.getInstance().getMapEntity().keySet();
+	    Set<String> keys = getUmpstProject().getMapEntity().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);	
 		
 		Set<String> keysAtribute;
@@ -768,10 +771,10 @@ public JPanel getBacktrackingHypothesis(){
 		 *     	    String[] allOtherHypothesis = new String[i];
 		 * */
 		for (String key: sortedKeys){
-			if(UMPSTProject.getInstance().getMapEntity().get(key)!=entity){
-				if(UMPSTProject.getInstance().getMapEntity().get(key).getMapAtributes()!=null){
+			if(getUmpstProject().getMapEntity().get(key)!=entity){
+				if(getUmpstProject().getMapEntity().get(key).getMapAtributes()!=null){
 					
-					entityAux = UMPSTProject.getInstance().getMapEntity().get(key);
+					entityAux = getUmpstProject().getMapEntity().get(key);
 					keysAtribute = entityAux.getMapAtributes().keySet();
 					sortedKeysAtribute = new TreeSet<String>(keysAtribute);	
 					
@@ -791,10 +794,10 @@ public JPanel getBacktrackingHypothesis(){
 		 
 		 
 		 for (String key: sortedKeys){
-				if(UMPSTProject.getInstance().getMapEntity().get(key)!=entity){
-					if(UMPSTProject.getInstance().getMapEntity().get(key).getMapAtributes()!=null){
+				if(getUmpstProject().getMapEntity().get(key)!=entity){
+					if(getUmpstProject().getMapEntity().get(key).getMapAtributes()!=null){
 						
-						entityAux = UMPSTProject.getInstance().getMapEntity().get(key);
+						entityAux = getUmpstProject().getMapEntity().get(key);
 						keysAtribute = entityAux.getMapAtributes().keySet();
 						sortedKeysAtribute = new TreeSet<String>(keysAtribute);	
 						
@@ -823,7 +826,7 @@ public JPanel getBacktrackingHypothesis(){
 	
 	public void addVinculateAtribute(String atributeRelated){
 		
-		 Set<String> keys = UMPSTProject.getInstance().getMapEntity().keySet();
+		 Set<String> keys = getUmpstProject().getMapEntity().keySet();
 			TreeSet<String> sortedKeys = new TreeSet<String>(keys);	
 			
 			Set<String> keysAtribute;
@@ -832,12 +835,12 @@ public JPanel getBacktrackingHypothesis(){
 			Boolean achou = false;
 		
 			for (String key: sortedKeys){
-				if(UMPSTProject.getInstance().getMapEntity().get(key).getMapAtributes()!=null){	
-				keysAtribute = UMPSTProject.getInstance().getMapEntity().get(key).getMapAtributes().keySet();
+				if(getUmpstProject().getMapEntity().get(key).getMapAtributes()!=null){	
+				keysAtribute = getUmpstProject().getMapEntity().get(key).getMapAtributes().keySet();
 				sortedKeysAtribute = new TreeSet<String>(keysAtribute);
 				for(String keyAux : sortedKeysAtribute){
-					if (UMPSTProject.getInstance().getMapEntity().get(key).getMapAtributes().get(keyAux).getAtributeName().equals(atributeRelated)){
-						updateMapAtribute(UMPSTProject.getInstance().getMapEntity().get(key).getMapAtributes().get(keyAux));
+					if (getUmpstProject().getMapEntity().get(key).getMapAtributes().get(keyAux).getAtributeName().equals(atributeRelated)){
+						updateMapAtribute(getUmpstProject().getMapEntity().get(key).getMapAtributes().get(keyAux));
 						achou=true;
 						break;
 					}
@@ -853,7 +856,7 @@ public JPanel getBacktrackingHypothesis(){
 	 public void updateMapAtribute(AtributeModel atributeVinculated){
 	    	
 		 	/**Toda vez deve atualizar que agora essa hipotese tem outro pai e o goal relacionado agora tem outra hipotese*/
-		 	UMPSTProject.getInstance().getMapAtribute().get(atributeVinculated.getId()).getEntityRelated().add(entity);
+		 	getUmpstProject().getMapAtribute().get(atributeVinculated.getId()).getEntityRelated().add(entity);
 			entity.getMapAtributes().put(atributeVinculated.getId(), atributeVinculated);
 			
 			if (atributeVinculated.getMapSubAtributes()!=null){
@@ -863,7 +866,7 @@ public JPanel getBacktrackingHypothesis(){
 	 			for (String key: sortedKeys){
 	 				atribute = atributeVinculated.getMapSubAtributes().get(key);
 	 				
-	    		 	UMPSTProject.getInstance().getMapAtribute().get(atribute.getId()).getEntityRelated().add(entity);
+	    		 	getUmpstProject().getMapAtribute().get(atribute.getId()).getEntityRelated().add(entity);
 	 				entity.getMapAtributes().put(atribute.getId(),atribute);
 
 	 			}
@@ -885,17 +888,17 @@ public JPanel getBacktrackingHypothesis(){
 		
 		String[] columnNames = {"ID","Goal",""};
     	
-		dataFrame = new Object[UMPSTProject.getInstance().getMapGoal().size()][3];
+		dataFrame = new Object[getUmpstProject().getMapGoal().size()][3];
 
 	    
 		Integer i=0;
 	    
-		Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
+		Set<String> keys = getUmpstProject().getMapGoal().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		for (String key: sortedKeys){
-			dataFrame[i][0] = UMPSTProject.getInstance().getMapGoal().get(key).getId();
-			dataFrame[i][1] = UMPSTProject.getInstance().getMapGoal().get(key).getGoalName();			
+			dataFrame[i][0] = getUmpstProject().getMapGoal().get(key).getId();
+			dataFrame[i][1] = getUmpstProject().getMapGoal().get(key).getGoalName();			
 			dataFrame[i][2] = "";
 			i++;
 		}
@@ -929,11 +932,11 @@ public JPanel getBacktrackingHypothesis(){
 				list = new JList(listModel);
 				entity.setBacktracking(list);
 				
-				Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
+				Set<String> keys = getUmpstProject().getMapGoal().keySet();
 				TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 				for (String keyAux : sortedKeys){
-					if (UMPSTProject.getInstance().getMapGoal().get(keyAux).getGoalName().equals(key)){
-						UMPSTProject.getInstance().getMapGoal().get(keyAux).getFowardTrackingEntity().add(entity);
+					if (getUmpstProject().getMapGoal().get(keyAux).getGoalName().equals(key)){
+						getUmpstProject().getMapGoal().get(keyAux).getFowardTrackingEntity().add(entity);
 					}
 				}
 					
@@ -971,16 +974,16 @@ public void createFrameHypo(){
 		
 		String[] columnNames = {"Hypothesis",""};
     	
-		dataFrameHypo = new Object[UMPSTProject.getInstance().getMapHypothesis().size()][2];
+		dataFrameHypo = new Object[getUmpstProject().getMapHypothesis().size()][2];
 
 	    
 		Integer i=0;
 	    
-		Set<String> keys = UMPSTProject.getInstance().getMapHypothesis().keySet();
+		Set<String> keys = getUmpstProject().getMapHypothesis().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		/**for (String KeyA : sortedKeys){
-			listHypothesisModel.addElement(UMPSTProject.getInstance().getMapHypothesis().get(KeyA).getHypothesisName());
+			listHypothesisModel.addElement(getUmpstProject().getMapHypothesis().get(KeyA).getHypothesisName());
 		}
 		
 		if (entity!=null){
@@ -1003,7 +1006,7 @@ public void createFrameHypo(){
 
 		
 		for (String key: sortedKeys){
-			dataFrameHypo[i][0] = UMPSTProject.getInstance().getMapHypothesis().get(key).getHypothesisName();			
+			dataFrameHypo[i][0] = getUmpstProject().getMapHypothesis().get(key).getHypothesisName();			
 			dataFrameHypo[i][1] = "";
 			i++;
 		}
@@ -1037,11 +1040,11 @@ public void createFrameHypo(){
 				listHypothesis = new JList(listHypothesisModel);
 				entity.setBacktrackingHypothesis(listHypothesis);
 				
-				Set<String> keys = UMPSTProject.getInstance().getMapHypothesis().keySet();
+				Set<String> keys = getUmpstProject().getMapHypothesis().keySet();
 				TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 				for (String keyAux : sortedKeys){
-					if (UMPSTProject.getInstance().getMapHypothesis().get(keyAux).getHypothesisName().equals(key)){
-						UMPSTProject.getInstance().getMapHypothesis().get(keyAux).getFowardTrackingEntity().add(entity);
+					if (getUmpstProject().getMapHypothesis().get(keyAux).getHypothesisName().equals(key)){
+						getUmpstProject().getMapHypothesis().get(keyAux).getFowardTrackingEntity().add(entity);
 					}
 				}
 				
@@ -1056,11 +1059,11 @@ public void createFrameHypo(){
 				listHypothesis = new JList(listHypothesisModel);
 				entity.setBacktrackingHypothesis(listHypothesis);
 				
-				Set<String> keys = UMPSTProject.getInstance().getMapHypothesis().keySet();
+				Set<String> keys = getUmpstProject().getMapHypothesis().keySet();
 				TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 				for (String keyAux : sortedKeys){
-					if (UMPSTProject.getInstance().getMapHypothesis().get(keyAux).getHypothesisName().equals(key)){
-						UMPSTProject.getInstance().getMapHypothesis().get(keyAux).getFowardTrackingEntity().add(entity);
+					if (getUmpstProject().getMapHypothesis().get(keyAux).getHypothesisName().equals(key)){
+						getUmpstProject().getMapHypothesis().get(keyAux).getFowardTrackingEntity().add(entity);
 					}
 				}*/
 				

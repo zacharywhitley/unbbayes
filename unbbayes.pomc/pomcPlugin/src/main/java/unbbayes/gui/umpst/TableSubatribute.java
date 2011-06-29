@@ -15,6 +15,7 @@ import javax.swing.table.TableColumn;
 
 import unbbayes.model.umpst.entities.AtributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
+import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
 import unbbayes.model.umpst.requirements.HypothesisModel;
 
@@ -120,7 +121,7 @@ public class TableSubatribute extends IUMPSTPanel{
 				
 				String atributeAdd = data[row][0].toString();
 				AtributeModel atributeAux = atributeRelated.getMapSubAtributes().get(atributeAdd);
-				changePanel(new AtributeAdd(getFatherPanel(), entityRelated,atributeAux, atributeAux.getFather() )   );
+				changePanel(new AtributeAdd(getFatherPanel(),getUmpstProject(), entityRelated,atributeAux, atributeAux.getFather() )   );
 			}
 		});
 		
@@ -145,7 +146,7 @@ public class TableSubatribute extends IUMPSTPanel{
 			public void onButtonPress(int row, int column) {
 				String key = data[row][0].toString();
 				AtributeModel atribute =  atributeRelated.getMapSubAtributes().get(key);
-				changePanel(new AtributeAdd(getFatherPanel(),entityRelated,null,atribute));
+				changePanel(new AtributeAdd(getFatherPanel(),getUmpstProject(),entityRelated,null,atribute));
 			
 				
 			}
@@ -170,7 +171,7 @@ public class TableSubatribute extends IUMPSTPanel{
 			
 			public void onButtonPress(int row, int column) {
 				
-				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete Hypothesis "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
+				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete atribute "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 							
 							String key = data[row][0].toString();

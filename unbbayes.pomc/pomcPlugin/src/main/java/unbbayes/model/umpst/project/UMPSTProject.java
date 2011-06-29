@@ -42,7 +42,7 @@ public class UMPSTProject implements Graph {
 
 	
 	
-private static UMPSTProject instance = new UMPSTProject();
+//private static UMPSTProject instance = new UMPSTProject();
 
 	
 	
@@ -62,13 +62,29 @@ private static UMPSTProject instance = new UMPSTProject();
 		
 	}
 	
-	  
+
 	
-	public static  UMPSTProject getInstance(){
+	  
+	static UMPSTProject umpstProject;
+	public static UMPSTProject  newInstance() {
+		  
+		  return (new UMPSTProject());
+	}
+	
+	public void setUMPSTProject(UMPSTProject umpstProject) {
+		UMPSTProject.umpstProject = umpstProject;
+	}
+	
+	public UMPSTProject getUMPSTProject() {
+		return UMPSTProject.umpstProject;
+	}
+	
+	
+	/*public static  UMPSTProject getInstance(){
 	
 		return instance;
 		
-	}
+	}*/
 	
 	
 

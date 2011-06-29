@@ -46,9 +46,7 @@ import unbbayes.model.umpst.requirements.GoalModel;
 
 
 public class GroupsAdd extends IUMPSTPanel {
-	
-
-	
+		
 	private GridBagConstraints constraint     = new GridBagConstraints();
 	private JLabel titulo            = new JLabel();
 	
@@ -76,8 +74,10 @@ public class GroupsAdd extends IUMPSTPanel {
 	private Object[][] dataFrame = {};
 	
 	
-	public GroupsAdd(UmpstModule janelaPai, GroupsModel group){
+	public GroupsAdd(UmpstModule janelaPai,UMPSTProject umpstProject, GroupsModel group){
 		super(janelaPai);
+		
+		this.setUmpstProject(umpstProject);
 		
 		this.group = group;
 		this.setLayout(new GridBagLayout());
@@ -195,9 +195,9 @@ public class GroupsAdd extends IUMPSTPanel {
 							String[] strAux = group.getGroupName().split(" ");
 
 						    for (int i = 0; i < strAux.length; i++) {
-					    		if(UMPSTProject.getInstance().getMapSearchGroups().get(strAux[i])!=null){
-					    			UMPSTProject.getInstance().getMapSearchGroups().get(strAux[i]).getRelatedGroups().remove(group);
-					    			aux = UMPSTProject.getInstance().getMapSearchGroups().get(strAux[i]).getRelatedGroups();
+					    		if(getUmpstProject().getMapSearchGroups().get(strAux[i])!=null){
+					    			getUmpstProject().getMapSearchGroups().get(strAux[i]).getRelatedGroups().remove(group);
+					    			aux = getUmpstProject().getMapSearchGroups().get(strAux[i]).getRelatedGroups();
 					    	    	for (Iterator<GroupsModel> it = aux.iterator(); it.hasNext(); ) {
 					    	    		groupBeta = it.next();
 					    	   		}
@@ -300,11 +300,11 @@ public class GroupsAdd extends IUMPSTPanel {
     
     public GroupsModel updateMapGroups(){
     	String idAux = "";
-		int tamanho = UMPSTProject.getInstance().getMapGroups().size()+1;
+		int tamanho = getUmpstProject().getMapGroups().size()+1;
 		
 		
 					
-			if ( UMPSTProject.getInstance().getMapGroups().size()!=0){
+			if ( getUmpstProject().getMapGroups().size()!=0){
 				idAux = tamanho+"";
 			}
 			else{
@@ -316,7 +316,7 @@ public class GroupsAdd extends IUMPSTPanel {
 				dateText.getText(),null,null, null, null, null, null);
 		
 		
-	    UMPSTProject.getInstance().getMapGroups().put(groupAdd.getId(), groupAdd);	
+	    getUmpstProject().getMapGroups().put(groupAdd.getId(), groupAdd);	
 	    
 	    return groupAdd;
     }
@@ -325,15 +325,15 @@ public class GroupsAdd extends IUMPSTPanel {
     public void updateTableGroups(){
     	String[] columnNames = {"ID","Group","",""};	    
 	    
-		Object[][] data = new Object[UMPSTProject.getInstance().getMapGroups().size()][4];
+		Object[][] data = new Object[getUmpstProject().getMapGroups().size()][4];
 		Integer i=0;
 	    
-		Set<String> keys = UMPSTProject.getInstance().getMapGroups().keySet();
+		Set<String> keys = getUmpstProject().getMapGroups().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		for (String key: sortedKeys){
-			data[i][0] = UMPSTProject.getInstance().getMapGroups().get(key).getId();
-			data[i][1] = UMPSTProject.getInstance().getMapGroups().get(key).getGroupName();			
+			data[i][0] = getUmpstProject().getMapGroups().get(key).getId();
+			data[i][1] = getUmpstProject().getMapGroups().get(key).getGroupName();			
 			data[i][2] = "";
 			data[i][3] = "";
 			i++;
@@ -362,13 +362,13 @@ public class GroupsAdd extends IUMPSTPanel {
 	    
 	    for (int i = 0; i < strAux.length; i++) {
 	    	if(!strAux[i].equals(" ")){
-	    		if(UMPSTProject.getInstance().getMapSearchGroups().get(strAux[i])==null){
+	    		if(getUmpstProject().getMapSearchGroups().get(strAux[i])==null){
 	    			groupSetSearch.add(groupAdd);
 	    			SearchModelGroup searchModel = new SearchModelGroup(strAux[i], groupSetSearch);
-	    			UMPSTProject.getInstance().getMapSearchGroups().put(searchModel.getKeyWord(), searchModel);
+	    			getUmpstProject().getMapSearchGroups().put(searchModel.getKeyWord(), searchModel);
 	    		}
 	    		else{
-	    			UMPSTProject.getInstance().getMapSearchGroups().get(strAux[i]).getRelatedGroups().add(groupAdd);
+	    			getUmpstProject().getMapSearchGroups().get(strAux[i]).getRelatedGroups().add(groupAdd);
 	    		}
 	    	}
 	    }
@@ -511,7 +511,7 @@ public class GroupsAdd extends IUMPSTPanel {
 	
 	/*public void updateBacktracking(groupsModel group){
 		String keyWord = "";
-		Set<String> keys = UMPSTProject.getInstance().getMapEntity().keySet();
+		Set<String> keys = getUmpstProject().getMapEntity().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		
@@ -520,8 +520,8 @@ public class GroupsAdd extends IUMPSTPanel {
 			for (int i = 0; i < listAux.getModel().getSize();i++) {
 				keyWord = listAux.getModel().getElementAt(i).toString();
 				for (String key: sortedKeys){
-					if (keyWord.equals( UMPSTProject.getInstance().getMapEntity().get(key).getEntityName()) ){
-						UMPSTProject.getInstance().getMapEntity().get(key).getFowardTrackinggroups().add(group);
+					if (keyWord.equals( getUmpstProject().getMapEntity().get(key).getEntityName()) ){
+						getUmpstProject().getMapEntity().get(key).getFowardTrackinggroups().add(group);
 					}			
 				
 				}
@@ -542,17 +542,17 @@ public class GroupsAdd extends IUMPSTPanel {
 		
 		String[] columnNames = {"ID","Entity",""};
     	
-		dataFrame = new Object[UMPSTProject.getInstance().getMapEntity().size()][3];
+		dataFrame = new Object[getUmpstProject().getMapEntity().size()][3];
 
 	    
 		Integer i=0;
 	    
-		Set<String> keys = UMPSTProject.getInstance().getMapEntity().keySet();
+		Set<String> keys = getUmpstProject().getMapEntity().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		for (String key: sortedKeys){
-			dataFrame[i][0] = UMPSTProject.getInstance().getMapEntity().get(key).getId();
-			dataFrame[i][1] = UMPSTProject.getInstance().getMapEntity().get(key).getEntityName();			
+			dataFrame[i][0] = getUmpstProject().getMapEntity().get(key).getId();
+			dataFrame[i][1] = getUmpstProject().getMapEntity().get(key).getEntityName();			
 			dataFrame[i][2] = "";
 			i++;
 		}
@@ -586,11 +586,11 @@ public class GroupsAdd extends IUMPSTPanel {
 				list = new JList(listModel);
 				group.setBacktrackingEntities(list);
 				
-				Set<String> keys = UMPSTProject.getInstance().getMapEntity().keySet();
+				Set<String> keys = getUmpstProject().getMapEntity().keySet();
 				TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 				for (String keyAux : sortedKeys){
-					if (UMPSTProject.getInstance().getMapEntity().get(keyAux).getEntityName().equals(key)){
-						UMPSTProject.getInstance().getMapEntity().get(keyAux).getFowardTrackingGroups().add(group);
+					if (getUmpstProject().getMapEntity().get(keyAux).getEntityName().equals(key)){
+						getUmpstProject().getMapEntity().get(keyAux).getFowardTrackingGroups().add(group);
 					}
 				}
 					
@@ -627,17 +627,17 @@ public class GroupsAdd extends IUMPSTPanel {
 		
 		String[] columnNames = {"ID","Atribute",""};
 		
-		dataFrame = new Object[UMPSTProject.getInstance().getMapAtribute().size()][3];
+		dataFrame = new Object[getUmpstProject().getMapAtribute().size()][3];
 	
 	    
 		Integer i=0;
 	    
-		Set<String> keys = UMPSTProject.getInstance().getMapAtribute().keySet();
+		Set<String> keys = getUmpstProject().getMapAtribute().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		for (String key: sortedKeys){
-			dataFrame[i][0] = UMPSTProject.getInstance().getMapAtribute().get(key).getId();
-			dataFrame[i][1] = UMPSTProject.getInstance().getMapAtribute().get(key).getAtributeName();			
+			dataFrame[i][0] = getUmpstProject().getMapAtribute().get(key).getId();
+			dataFrame[i][1] = getUmpstProject().getMapAtribute().get(key).getAtributeName();			
 			dataFrame[i][2] = "";
 			i++;
 		}
@@ -671,11 +671,11 @@ public class GroupsAdd extends IUMPSTPanel {
 				list = new JList(listModel);
 				group.setBacktrackingAtributes(list);
 				
-				Set<String> keys = UMPSTProject.getInstance().getMapAtribute().keySet();
+				Set<String> keys = getUmpstProject().getMapAtribute().keySet();
 				TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 				for (String keyAux : sortedKeys){
-					if (UMPSTProject.getInstance().getMapAtribute().get(keyAux).getAtributeName().equals(key)){
-						UMPSTProject.getInstance().getMapAtribute().get(keyAux).getFowardTrackingGroups().add(group);
+					if (getUmpstProject().getMapAtribute().get(keyAux).getAtributeName().equals(key)){
+						getUmpstProject().getMapAtribute().get(keyAux).getFowardTrackingGroups().add(group);
 					}
 				}
 					
@@ -712,17 +712,17 @@ public class GroupsAdd extends IUMPSTPanel {
 		
 		String[] columnNames = {"ID","Relationship",""};
 		
-		dataFrame = new Object[UMPSTProject.getInstance().getMapRelationship().size()][3];
+		dataFrame = new Object[getUmpstProject().getMapRelationship().size()][3];
 	
 	    
 		Integer i=0;
 	    
-		Set<String> keys = UMPSTProject.getInstance().getMapRelationship().keySet();
+		Set<String> keys = getUmpstProject().getMapRelationship().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		for (String key: sortedKeys){
-			dataFrame[i][0] = UMPSTProject.getInstance().getMapRelationship().get(key).getId();
-			dataFrame[i][1] = UMPSTProject.getInstance().getMapRelationship().get(key).getRelationshipName();			
+			dataFrame[i][0] = getUmpstProject().getMapRelationship().get(key).getId();
+			dataFrame[i][1] = getUmpstProject().getMapRelationship().get(key).getRelationshipName();			
 			dataFrame[i][2] = "";
 			i++;
 		}
@@ -756,11 +756,11 @@ public class GroupsAdd extends IUMPSTPanel {
 				list = new JList(listModel);
 				group.setBacktrackingRelationship(list);
 				
-				Set<String> keys = UMPSTProject.getInstance().getMapRelationship().keySet();
+				Set<String> keys = getUmpstProject().getMapRelationship().keySet();
 				TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 				for (String keyAux : sortedKeys){
-					if (UMPSTProject.getInstance().getMapRelationship().get(keyAux).getRelationshipName().equals(key)){
-						UMPSTProject.getInstance().getMapRelationship().get(keyAux).getFowardtrackingGroups().add(group);
+					if (getUmpstProject().getMapRelationship().get(keyAux).getRelationshipName().equals(key)){
+						getUmpstProject().getMapRelationship().get(keyAux).getFowardtrackingGroups().add(group);
 					}
 				}
 					

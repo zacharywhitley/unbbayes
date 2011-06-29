@@ -1,6 +1,7 @@
 package unbbayes.gui.umpst;
 
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -26,8 +27,9 @@ public class TrackingPanel extends IUMPSTPanel{
 	DefaultListModel listModelAux = new DefaultListModel();
 
 	
-	public TrackingPanel(UmpstModule janelaPai){
+	public TrackingPanel(UmpstModule janelaPai,UMPSTProject umpstProject){
 		super(janelaPai);
+		this.setUmpstProject(umpstProject);
     	this.setLayout(new GridLayout(1,0));
     	
     	this.add(getTrackingPanel());
@@ -41,11 +43,11 @@ public class TrackingPanel extends IUMPSTPanel{
 	
 		
 				
-		Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
+		Set<String> keys = getUmpstProject().getMapGoal().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		for (String key: sortedKeys){
-			listModel.addElement(UMPSTProject.getInstance().getMapGoal().get(key).getGoalName());
+			listModel.addElement(getUmpstProject().getMapGoal().get(key).getGoalName());
 		}
 		
 		

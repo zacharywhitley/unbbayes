@@ -52,9 +52,9 @@ public class AtributeAdd extends IUMPSTPanel {
 	private AtributeModel atribute,atributeFather;
 	private EntityModel entityRelated;
 	
-	public AtributeAdd(UmpstModule janelaPai,EntityModel entityRelated, AtributeModel atribute, AtributeModel atributeFather){
+	public AtributeAdd(UmpstModule janelaPai,UMPSTProject umpstProject,EntityModel entityRelated, AtributeModel atribute, AtributeModel atributeFather){
 		super(janelaPai);
-		
+		this.setUmpstProject(umpstProject);
 		this.entityRelated=entityRelated;
 		this.atribute = atribute;
 		this.atributeFather=atributeFather;
@@ -224,7 +224,7 @@ public class AtributeAdd extends IUMPSTPanel {
 		
 		buttonSubatribute.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				changePanel(new AtributeAdd(getFatherPanel(), entityRelated,null,atribute));
+				changePanel(new AtributeAdd(getFatherPanel(),getUmpstProject(), entityRelated,null,atribute));
 
 			}
 		});
@@ -289,7 +289,7 @@ public class AtributeAdd extends IUMPSTPanel {
    
    public AtributeModel updateMapAtribute(){
 	   String idAux = "";
-	   Set<String> keys = UMPSTProject.getInstance().getMapAtribute().keySet();
+	   Set<String> keys = getUmpstProject().getMapAtribute().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		int maior = 0;
 		String idAux2 = "";
@@ -297,10 +297,10 @@ public class AtributeAdd extends IUMPSTPanel {
 		
 		if (atributeFather==null){
 			
-			if ( UMPSTProject.getInstance().getMapAtribute().size()>0){
+			if ( getUmpstProject().getMapAtribute().size()>0){
 				for (String key: sortedKeys){
-					//tamanho = tamanho - UMPSTProject.getInstance().getMapGoal().get(key).getSubgoals().size();
-					idAux= UMPSTProject.getInstance().getMapAtribute().get(key).getId();
+					//tamanho = tamanho - getUmpstProject().getMapGoal().get(key).getSubgoals().size();
+					idAux= getUmpstProject().getMapAtribute().get(key).getId();
 					if (idAux.contains(".")){
 						intAux = idAux.indexOf(".");
 						idAux2 = idAux.substring(0, intAux);
@@ -342,7 +342,7 @@ public class AtributeAdd extends IUMPSTPanel {
 			atributeFather.getMapSubAtributes().put(atributeAdd.getId(), atributeAdd);
 		}
 		entityRelated.getMapAtributes().put(atributeAdd.getId(), atributeAdd);
-		UMPSTProject.getInstance().getMapAtribute().put(atributeAdd.getId(), atributeAdd);
+		getUmpstProject().getMapAtribute().put(atributeAdd.getId(), atributeAdd);
 		
 		return atributeAdd;
    }

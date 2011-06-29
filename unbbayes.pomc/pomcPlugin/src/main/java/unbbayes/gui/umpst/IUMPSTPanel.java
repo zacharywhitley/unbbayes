@@ -4,6 +4,8 @@ import java.awt.GridLayout;
 
 import javax.swing.JPanel;
 
+import unbbayes.model.umpst.project.UMPSTProject;
+
 
 public abstract class IUMPSTPanel extends JPanel {
 	
@@ -12,6 +14,8 @@ public abstract class IUMPSTPanel extends JPanel {
 	 */
 	private static final long serialVersionUID = 1L;
 	private UmpstModule fatherPanel;
+	private UMPSTProject umpstProject ;
+
 	
 	public UmpstModule getFatherPanel(){
 		return fatherPanel;
@@ -31,5 +35,22 @@ public abstract class IUMPSTPanel extends JPanel {
 		super(gridLayout);
 		this.fatherPanel = fatherPanel;
 	}
+		
+
+	/**
+	 * @return the umpstProject
+	 */
+	public UMPSTProject getUmpstProject() {
+		return umpstProject;
+	}
+
+	/**
+	 * @param umpstProject the umpstProject to set
+	 */
+	public void setUmpstProject(UMPSTProject umpstProject) {
+		this.umpstProject = umpstProject;
+	}
+	
+	
 
 }

@@ -117,7 +117,7 @@ public class TableSubhypothesis extends IUMPSTPanel{
 				
 				String hypothesisAdd = data[row][0].toString();
 				HypothesisModel hypothesisAux = hypothesisRelated.getMapSubHypothesis().get(hypothesisAdd);
-				changePanel(new HypothesisAdd(getFatherPanel(), goalRelated,hypothesisAux, hypothesisAux.getFather() )   );
+				changePanel(new HypothesisAdd(getFatherPanel(),getUmpstProject(), goalRelated,hypothesisAux, hypothesisAux.getFather() )   );
 			}
 		});
 		
@@ -142,7 +142,7 @@ public class TableSubhypothesis extends IUMPSTPanel{
 			public void onButtonPress(int row, int column) {
 				String key = data[row][0].toString();
 				HypothesisModel hypothesis =  hypothesisRelated.getMapSubHypothesis().get(key);
-				changePanel(new HypothesisAdd(getFatherPanel(),goalRelated,null,hypothesis));
+				changePanel(new HypothesisAdd(getFatherPanel(),getUmpstProject(),goalRelated,null,hypothesis));
 			
 				
 			}

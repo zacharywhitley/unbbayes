@@ -51,22 +51,21 @@ import unbbayes.model.umpst.requirements.GoalModel;
 import com.ibm.icu.impl.duration.impl.YMDDateFormatter;
 
 public class EntitiesSearchPanel extends IUMPSTPanel {
-	
+		
 	private JLabel labelEntity;
-	
 	private JButton buttonSearch;
 	private JButton buttonAddEntity,buttonCancel;
 	private JButton buttonAddRelationship;
-	
-	
 	private JTextField textEntity;
 	
 
 	
 	
 	
-	public EntitiesSearchPanel(UmpstModule janelaPai){
+	public EntitiesSearchPanel(UmpstModule janelaPai,UMPSTProject umpstProject){
 		super(janelaPai);
+		
+		this.setUmpstProject(umpstProject);
 		
 		this.setLayout(new BorderLayout());
 		//GridBagConstraints constraints = new  GridBagConstraints();
@@ -110,7 +109,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 			buttonAddRelationship.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
-					changePanel(new RelationshipAdd(getFatherPanel(), null));
+					changePanel(new RelationshipAdd(getFatherPanel(),getUmpstProject(), null));
 				}
 			});			
 		}
@@ -212,9 +211,9 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 	
 	public void updateTableEntities(){
     	String[] columnNames = {"ID","Entity","",""};
-		Set<EntityModel> aux = UMPSTProject.getInstance().getMapSearchEntity().get(textEntity.getText()).getEntitiesRelated();
+		Set<EntityModel> aux = getUmpstProject().getMapSearchEntity().get(textEntity.getText()).getEntitiesRelated();
 		EntityModel entity;
-		Object[][] data = new Object[UMPSTProject.getInstance().getMapSearchEntity().get(textEntity.getText()).getEntitiesRelated().size()][4];
+		Object[][] data = new Object[getUmpstProject().getMapSearchEntity().get(textEntity.getText()).getEntitiesRelated().size()][4];
 		Integer i=0;
 		
 	    
@@ -247,15 +246,15 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 	   public void returnTableEntities(){
 	    	String[] columnNames = {"ID","Entity","",""};	    
 		    
-			Object[][] data = new Object[UMPSTProject.getInstance().getMapEntity().size()][4];
+			Object[][] data = new Object[getUmpstProject().getMapEntity().size()][4];
 			Integer i=0;
 		    
-			Set<String> keys = UMPSTProject.getInstance().getMapEntity().keySet();
+			Set<String> keys = getUmpstProject().getMapEntity().keySet();
 			TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 			
 			for (String key: sortedKeys){
-				data[i][0] = UMPSTProject.getInstance().getMapEntity().get(key).getId();
-				data[i][1] = UMPSTProject.getInstance().getMapEntity().get(key).getEntityName();			
+				data[i][0] = getUmpstProject().getMapEntity().get(key).getId();
+				data[i][1] = getUmpstProject().getMapEntity().get(key).getEntityName();			
 				data[i][2] = "";
 				data[i][3] = "";
 				i++;
@@ -276,7 +275,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 	
 	public EntitiesAdd getEntitiesPanel(EntityModel entity){
 		
-		EntitiesAdd ret = new EntitiesAdd(getFatherPanel(),entity);
+		EntitiesAdd ret = new EntitiesAdd(getFatherPanel(),getUmpstProject(),entity);
 		
 		return ret;
 		

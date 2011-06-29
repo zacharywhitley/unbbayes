@@ -8,14 +8,17 @@ import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.table.DefaultTableModel;
 
+import unbbayes.model.umpst.project.UMPSTProject;
+
 public class Entities extends IUMPSTPanel{
 	
 	private JSplitPane splitPane;
 	private TableEntities menuPanel;
 	private EntitiesSearchPanel requirementsPanel;
 	
-	public Entities(UmpstModule janelaPai) {
+	public Entities(UmpstModule janelaPai, UMPSTProject umpstProject) {
 		super(janelaPai);
+		this.setUmpstProject(umpstProject);
 		this.setLayout(new FlowLayout());
 		this.add(getSplitPane());
 
@@ -42,7 +45,7 @@ public class Entities extends IUMPSTPanel{
 		if(menuPanel == null ){
 			DefaultTableModel model = new DefaultTableModel();
 
-			menuPanel = new TableEntities(getFatherPanel());
+			menuPanel = new TableEntities(getFatherPanel(),getUmpstProject());
 		}
 		return menuPanel;
 	}
@@ -52,7 +55,7 @@ public class Entities extends IUMPSTPanel{
 	 */
 	public EntitiesSearchPanel getEntitiesPanel() {
 		if(requirementsPanel == null ){
-			requirementsPanel = new EntitiesSearchPanel(getFatherPanel());
+			requirementsPanel = new EntitiesSearchPanel(getFatherPanel(),getUmpstProject());
 			requirementsPanel.setBackground(new Color(0xffffff));
 		}
 		return requirementsPanel;

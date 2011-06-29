@@ -43,9 +43,10 @@ public class TableRules extends IUMPSTPanel{
 	Object[][] data = {};
 	
 	
-    	  public TableRules(UmpstModule janelaPai) {
+    	  public TableRules(UmpstModule janelaPai,UMPSTProject umpstProject) {
     		  
     		    super(janelaPai);
+    		    this.setUmpstProject(umpstProject);
     	    	this.setLayout(new GridLayout(1,0));
     	    	
     	    	
@@ -93,8 +94,8 @@ public class TableRules extends IUMPSTPanel{
 			public void onButtonPress(int row, int column) {
 				
 				String key = data[row][0].toString();
-				RulesModel ruleAux = UMPSTProject.getInstance().getMapRules().get(key);
-				changePanel(new RulesAdd(getFatherPanel(), ruleAux )   );
+				RulesModel ruleAux = getUmpstProject().getMapRules().get(key);
+				changePanel(new RulesAdd(getFatherPanel(),getUmpstProject(), ruleAux )   );
 			}
 		});
 		
@@ -121,26 +122,26 @@ public class TableRules extends IUMPSTPanel{
 				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete rule "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 							String key = data[row][0].toString();
-							RulesModel ruleToBeDeleted = UMPSTProject.getInstance().getMapRules().get(key);
+							RulesModel ruleToBeDeleted = getUmpstProject().getMapRules().get(key);
 							
 							/*Updating MapSearch*/
 							deleteFromSearchMap(ruleToBeDeleted);
 	
 							
 							
-							UMPSTProject.getInstance().getMapRules().remove(ruleToBeDeleted.getId());
+							getUmpstProject().getMapRules().remove(ruleToBeDeleted.getId());
 							
 							
 							 
-							Object[][] dataDel = new Object[UMPSTProject.getInstance().getMapRules().size()][4];
+							Object[][] dataDel = new Object[getUmpstProject().getMapRules().size()][4];
 							Integer i=0;
 						    
-							Set<String> keys = UMPSTProject.getInstance().getMapRules().keySet();
+							Set<String> keys = getUmpstProject().getMapRules().keySet();
 							TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 							
 							for (String chave: sortedKeys){
-								dataDel[i][0] = UMPSTProject.getInstance().getMapRules().get(chave).getId();						
-								dataDel[i][1] = UMPSTProject.getInstance().getMapRules().get(chave).getRulesName();
+								dataDel[i][0] = getUmpstProject().getMapRules().get(chave).getId();						
+								dataDel[i][1] = getUmpstProject().getMapRules().get(chave).getRulesName();
 								dataDel[i][2] = "";
 								dataDel[i][3] = "";
 								i++;
@@ -203,9 +204,9 @@ public class TableRules extends IUMPSTPanel{
 		String[] strAux= ruleToBeDeleted.getRulesName().split(" ");
 
 	    for (int i = 0; i < strAux.length; i++) {
-    		if(UMPSTProject.getInstance().getMapSearchRules().get(strAux[i])!=null){
-    			UMPSTProject.getInstance().getMapSearchRules().get(strAux[i]).getRulesRelated().remove(ruleToBeDeleted);
-    			aux = UMPSTProject.getInstance().getMapSearchRules().get(strAux[i]).getRulesRelated();   
+    		if(getUmpstProject().getMapSearchRules().get(strAux[i])!=null){
+    			getUmpstProject().getMapSearchRules().get(strAux[i]).getRulesRelated().remove(ruleToBeDeleted);
+    			aux = getUmpstProject().getMapSearchRules().get(strAux[i]).getRulesRelated();   
     	    	for (Iterator<RulesModel> it = aux.iterator(); it.hasNext(); ) {
     	    		rulesBeta = it.next();
     	   		}

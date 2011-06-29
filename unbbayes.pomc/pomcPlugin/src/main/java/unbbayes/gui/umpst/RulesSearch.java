@@ -29,20 +29,20 @@ public class RulesSearch extends IUMPSTPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-
-	private JLabel labelRule;
 	
+	private JLabel labelRule;
 	private JButton buttonSearch;
 	private JButton buttonAddRule,buttonCancel;
-
 	private JTextField textRule;
 	
 
 	
 	
 	
-	public RulesSearch(UmpstModule janelaPai){
+	public RulesSearch(UmpstModule janelaPai,UMPSTProject umpstProject){
 		super(janelaPai);
+		
+		this.setUmpstProject(umpstProject);
 		
 		this.setLayout(new BorderLayout());
 		//GridBagConstraints constraints = new  GridBagConstraints();
@@ -102,7 +102,7 @@ public class RulesSearch extends IUMPSTPanel {
 	
 	public RulesAdd getRulesAdd(RulesModel rule){
 		
-		RulesAdd ret = new RulesAdd(getFatherPanel(),rule);
+		RulesAdd ret = new RulesAdd(getFatherPanel(),getUmpstProject(),rule);
 		
 		return ret;
 		
@@ -187,9 +187,9 @@ public class RulesSearch extends IUMPSTPanel {
     	
     	
     	
-		Set<RulesModel> aux = UMPSTProject.getInstance().getMapSearchRules().get(textRule.getText()).getRulesRelated();
+		Set<RulesModel> aux = getUmpstProject().getMapSearchRules().get(textRule.getText()).getRulesRelated();
 		RulesModel rule;
-		Object[][] data = new Object[UMPSTProject.getInstance().getMapSearchRules().get(textRule.getText()).getRulesRelated().size()][4];
+		Object[][] data = new Object[getUmpstProject().getMapSearchRules().get(textRule.getText()).getRulesRelated().size()][4];
 
 		Integer i=0;
 		
@@ -224,15 +224,15 @@ public class RulesSearch extends IUMPSTPanel {
 	    	
 	    	
 		    
-			Object[][] data = new Object[UMPSTProject.getInstance().getMapRules().size()][4];
+			Object[][] data = new Object[getUmpstProject().getMapRules().size()][4];
 			Integer i=0;
 		    
-			Set<String> keys = UMPSTProject.getInstance().getMapRules().keySet();
+			Set<String> keys = getUmpstProject().getMapRules().keySet();
 			TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 			
 			for (String key: sortedKeys){
-				data[i][0] = UMPSTProject.getInstance().getMapRules().get(key).getId();
-				data[i][1] = UMPSTProject.getInstance().getMapRules().get(key).getRulesName();			
+				data[i][0] = getUmpstProject().getMapRules().get(key).getId();
+				data[i][1] = getUmpstProject().getMapRules().get(key).getRulesName();			
 				data[i][2] = "";
 				data[i][3] = "";
 				i++;

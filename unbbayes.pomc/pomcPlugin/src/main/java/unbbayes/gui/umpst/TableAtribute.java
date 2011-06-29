@@ -53,9 +53,10 @@ public class TableAtribute extends IUMPSTPanel{
  
     	  /**private constructors make class extension almost impossible,
     	that's why this is protected*/
-    	  protected TableAtribute(UmpstModule janelaPai, EntityModel entityRelated) {
+    	  protected TableAtribute(UmpstModule janelaPai,UMPSTProject umpstProject, EntityModel entityRelated) {
     		  
     		    super(janelaPai);
+    		    this.setUmpstProject(umpstProject);
     	    	this.setLayout(new GridLayout(1,0));
     	    	
     	    	this.janelaPaiAux = janelaPai;
@@ -85,12 +86,12 @@ public class TableAtribute extends IUMPSTPanel{
 		int i = 0;
 		
 		if (entityRelated!=null){			
-			keys = UMPSTProject.getInstance().getMapAtribute().keySet();
+			keys = getUmpstProject().getMapAtribute().keySet();
 			sortedKeys = new TreeSet<String>(keys);
 			set = new HashSet<AtributeModel>();
 			
 			for (String key: sortedKeys){
-				atribute = UMPSTProject.getInstance().getMapAtribute().get(key);
+				atribute = getUmpstProject().getMapAtribute().get(key);
 				if (atribute.getEntityRelated().contains(entityRelated)){
 					if (!set.contains(atribute)){
 						i++;
@@ -123,18 +124,18 @@ public class TableAtribute extends IUMPSTPanel{
 		
 		data = new Object[i][5];
 
-		keys = UMPSTProject.getInstance().getMapAtribute().keySet();
+		keys = getUmpstProject().getMapAtribute().keySet();
 		sortedKeys = new TreeSet<String>(keys);
 		i=0;
 		setAux = new HashSet<AtributeModel>();
 		
 		if (entityRelated!=null){			
-			keys = UMPSTProject.getInstance().getMapAtribute().keySet();
+			keys = getUmpstProject().getMapAtribute().keySet();
 			sortedKeys = new TreeSet<String>(keys);
 			set = new HashSet<AtributeModel>();
 			
 			for (String key: sortedKeys){
-				atribute = UMPSTProject.getInstance().getMapAtribute().get(key);
+				atribute = getUmpstProject().getMapAtribute().get(key);
 				if (atribute.getEntityRelated().contains(entityRelated)){
 					if (!set.contains(atribute)){
 						data[i][0] = atribute.getId();
@@ -222,7 +223,7 @@ public class TableAtribute extends IUMPSTPanel{
 				
 				String atributeAdd = data[row][0].toString();
 				AtributeModel atributeAux = entityRelated.getMapAtributes().get(atributeAdd);
-				changePanel(new AtributeAdd(getFatherPanel(), entityRelated,atributeAux, atributeAux.getFather() )   );
+				changePanel(new AtributeAdd(getFatherPanel(),getUmpstProject(), entityRelated,atributeAux, atributeAux.getFather() )   );
 			}
 		});
 		
@@ -247,7 +248,7 @@ public class TableAtribute extends IUMPSTPanel{
 			public void onButtonPress(int row, int column) {
 				String key = data[row][0].toString();
 				AtributeModel atributeRelated =  entityRelated.getMapAtributes().get(key);
-				changePanel(new AtributeAdd(getFatherPanel(),entityRelated,null,atributeRelated));
+				changePanel(new AtributeAdd(getFatherPanel(),getUmpstProject(),entityRelated,null,atributeRelated));
 			
 				
 			}
@@ -286,12 +287,12 @@ public class TableAtribute extends IUMPSTPanel{
 							}
 
 							
-							if(UMPSTProject.getInstance().getMapAtribute().get(key).getMapSubAtributes().size()>0){
+							if(getUmpstProject().getMapAtribute().get(key).getMapSubAtributes().size()>0){
 								
-								Set<String> keysSubAtribute = UMPSTProject.getInstance().getMapAtribute().get(key).getMapSubAtributes().keySet();
+								Set<String> keysSubAtribute = getUmpstProject().getMapAtribute().get(key).getMapSubAtributes().keySet();
 								TreeSet<String> sortedkeysSubHypo = new TreeSet<String>(keysSubAtribute);
 								for (String keySubHypo : sortedkeysSubHypo){
-									UMPSTProject.getInstance().getMapAtribute().get(key).getMapSubAtributes().get(keySubHypo).setFather(null);
+									getUmpstProject().getMapAtribute().get(key).getMapSubAtributes().get(keySubHypo).setFather(null);
 								}
 							}
 							
@@ -300,17 +301,17 @@ public class TableAtribute extends IUMPSTPanel{
 									entityRelated.getMapAtributes().get(key).getFather().getMapSubAtributes().remove(key);
 							}
 							
-							if (UMPSTProject.getInstance().getMapAtribute().get(key).getFather()!=null){
-								if(UMPSTProject.getInstance().getMapAtribute().get(key).getFather().getMapSubAtributes().size()>0)
-									UMPSTProject.getInstance().getMapAtribute().get(key).getFather().getMapSubAtributes().remove(key);
+							if (getUmpstProject().getMapAtribute().get(key).getFather()!=null){
+								if(getUmpstProject().getMapAtribute().get(key).getFather().getMapSubAtributes().size()>0)
+									getUmpstProject().getMapAtribute().get(key).getFather().getMapSubAtributes().remove(key);
 							}
 							
 							entityRelated.getMapAtributes().remove(key);
-							UMPSTProject.getInstance().getMapAtribute().get(key).getEntityRelated().remove(entityRelated);
+							getUmpstProject().getMapAtribute().get(key).getEntityRelated().remove(entityRelated);
 
 							
-							if (UMPSTProject.getInstance().getMapAtribute().get(key).getEntityRelated().size()==0){
-								UMPSTProject.getInstance().getMapAtribute().remove(key);
+							if (getUmpstProject().getMapAtribute().get(key).getEntityRelated().size()==0){
+								getUmpstProject().getMapAtribute().remove(key);
 							}
 
 							

@@ -1,6 +1,7 @@
 package unbbayes.gui.umpst;
 
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
 import java.awt.GridLayout;
 import java.util.Set;
 import java.util.TreeSet;
@@ -41,9 +42,10 @@ public class TableRelationship extends IUMPSTPanel{
  
     	  /**private constructors make class extension almost impossible,
     	that's why this is protected*/
-    	  protected TableRelationship(UmpstModule janelaPai) {
+    	  protected TableRelationship(UmpstModule janelaPai,UMPSTProject umpstProject) {
     		  
     		    super(janelaPai);
+    		    this.setUmpstProject(umpstProject);
     	    	this.setLayout(new GridLayout(1,0));
     	    	
     	    	this.janelaPaiAux = janelaPai;
@@ -72,19 +74,19 @@ public class TableRelationship extends IUMPSTPanel{
 		
 		Integer i=0;
 
-		if (UMPSTProject.getInstance().getMapRelationship()!=null){			
-			data = new Object[UMPSTProject.getInstance().getMapRelationship().size()][5];
+		if (getUmpstProject().getMapRelationship()!=null){			
+			data = new Object[getUmpstProject().getMapRelationship().size()][5];
 
 			
-			Set<String> keys = UMPSTProject.getInstance().getMapRelationship().keySet();
+			Set<String> keys = getUmpstProject().getMapRelationship().keySet();
 			TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 			
 			
 			
 			for (String key: sortedKeys){
 		
-				data[i][0] =UMPSTProject.getInstance().getMapRelationship().get(key).getId();
-				data[i][1] = UMPSTProject.getInstance().getMapRelationship().get(key).getRelationshipName();
+				data[i][0] =getUmpstProject().getMapRelationship().get(key).getId();
+				data[i][1] = getUmpstProject().getMapRelationship().get(key).getRelationshipName();
 				data[i][2] = "";
 				data[i][3] = "";
 				i++;
@@ -113,8 +115,8 @@ public class TableRelationship extends IUMPSTPanel{
 			public void onButtonPress(int row, int column) {
 				
 				String relationshipAdd = data[row][0].toString();
-				RelationshipModel relationshipAux = UMPSTProject.getInstance().getMapRelationship().get(relationshipAdd);
-				changePanel(new RelationshipAdd(getFatherPanel(), relationshipAux )   );
+				RelationshipModel relationshipAux = getUmpstProject().getMapRelationship().get(relationshipAdd);
+				changePanel(new RelationshipAdd(getFatherPanel(),getUmpstProject(), relationshipAux )   );
 			}
 		});
 		
@@ -168,7 +170,7 @@ public class TableRelationship extends IUMPSTPanel{
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 							
 							String key = data[row][0].toString();
-							UMPSTProject.getInstance().getMapRelationship().remove(key);
+							getUmpstProject().getMapRelationship().remove(key);
 
 							UmpstModule pai = getFatherPanel();
 						    changePanel(pai.getMenuPanel().getEntitiesPane());

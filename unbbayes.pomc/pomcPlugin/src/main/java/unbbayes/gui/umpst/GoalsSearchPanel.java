@@ -28,9 +28,8 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-
-	private JLabel labelGoal;
 	
+	private JLabel labelGoal;
 	private JButton buttonSearch;
 	private JButton buttonAddGoal,buttonCancel;
 	private JTextField textGoal;
@@ -39,8 +38,11 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 	
 	
 	
-	public GoalsSearchPanel(UmpstModule janelaPai){
+	public GoalsSearchPanel(UmpstModule janelaPai, UMPSTProject umpstProject){
 		super(janelaPai);
+		
+		this.setUmpstProject(umpstProject);
+		
 		
 		this.setLayout(new BorderLayout());
 		//GridBagConstraints constraints = new  GridBagConstraints();
@@ -122,7 +124,7 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 	
 	public GoalsAdd getGoalsAdd(GoalModel goal){
 		
-		GoalsAdd ret = new GoalsAdd(getFatherPanel(),goal,null);
+		GoalsAdd ret = new GoalsAdd(getFatherPanel(),getUmpstProject(),goal,null);
 		
 		return ret;
 		
@@ -167,7 +169,7 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 			
 			public void actionPerformed(ActionEvent e) {
 				if (!textGoal.getText().equals("")){
-					if( UMPSTProject.getInstance().getMapSearchGoal().get(textGoal.getText()) == null) {
+					if( getUmpstProject().getMapSearchGoal().get(textGoal.getText()) == null) {
 						JOptionPane.showMessageDialog(null,"Goal "+textGoal.getText()+" not found!!");
 
 					}
@@ -202,9 +204,9 @@ public class GoalsSearchPanel extends IUMPSTPanel {
     	String[] columnNames = {"ID","Goal","","",""};
     	
     	
-		Set<GoalModel> aux = UMPSTProject.getInstance().getMapSearchGoal().get(textGoal.getText()).getGoalsRelated();
+		Set<GoalModel> aux = getUmpstProject().getMapSearchGoal().get(textGoal.getText()).getGoalsRelated();
 		GoalModel goal;
-		Object[][] data = new Object[UMPSTProject.getInstance().getMapSearchGoal().get(textGoal.getText()).getGoalsRelated().size()][5];
+		Object[][] data = new Object[getUmpstProject().getMapSearchGoal().get(textGoal.getText()).getGoalsRelated().size()][5];
 		//Object[][] data = new Object[setGoal2.size()][5];
 
 		Integer i=0;
@@ -241,15 +243,15 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 	    	
 	    	
 		    
-			Object[][] data = new Object[UMPSTProject.getInstance().getMapGoal().size()][5];
+			Object[][] data = new Object[getUmpstProject().getMapGoal().size()][5];
 			Integer i=0;
 		    
-			Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
+			Set<String> keys = getUmpstProject().getMapGoal().keySet();
 			TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 			
 			for (String key: sortedKeys){
-				data[i][0] = UMPSTProject.getInstance().getMapGoal().get(key).getId();
-				data[i][1] = UMPSTProject.getInstance().getMapGoal().get(key).getGoalName();			
+				data[i][0] = getUmpstProject().getMapGoal().get(key).getId();
+				data[i][1] = getUmpstProject().getMapGoal().get(key).getGoalName();			
 				data[i][2] = "";
 				data[i][3] = "";
 				data[i][4] = "";

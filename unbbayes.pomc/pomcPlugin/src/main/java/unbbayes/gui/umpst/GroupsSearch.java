@@ -28,9 +28,8 @@ public class GroupsSearch extends IUMPSTPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-
-	private JLabel labelGroup;
 	
+	private JLabel labelGroup;
 	private JButton buttonSearch;
 	private JButton buttonAddGroup,buttonCancel;
 
@@ -40,8 +39,10 @@ public class GroupsSearch extends IUMPSTPanel {
 	
 	
 	
-	public GroupsSearch(UmpstModule janelaPai){
+	public GroupsSearch(UmpstModule janelaPai,UMPSTProject umpstProject){
 		super(janelaPai);
+		
+		this.setUmpstProject(umpstProject);
 		
 		this.setLayout(new BorderLayout());
 		//GridBagConstraints constraints = new  GridBagConstraints();
@@ -119,7 +120,7 @@ public class GroupsSearch extends IUMPSTPanel {
 	
 	public GroupsAdd getGroupsAdd(GroupsModel group){
 		
-		GroupsAdd ret = new GroupsAdd(getFatherPanel(),group);
+		GroupsAdd ret = new GroupsAdd(getFatherPanel(),getUmpstProject(),group);
 		
 		return ret;
 		
@@ -185,9 +186,9 @@ public class GroupsSearch extends IUMPSTPanel {
     	
     	
     	
-		Set<GroupsModel> aux = UMPSTProject.getInstance().getMapSearchGroups().get(textGroup.getText()).getRelatedGroups();
+		Set<GroupsModel> aux = getUmpstProject().getMapSearchGroups().get(textGroup.getText()).getRelatedGroups();
 		GroupsModel group;
-		Object[][] data = new Object[UMPSTProject.getInstance().getMapSearchGroups().get(textGroup.getText()).getRelatedGroups().size()][4];
+		Object[][] data = new Object[getUmpstProject().getMapSearchGroups().get(textGroup.getText()).getRelatedGroups().size()][4];
 
 		Integer i=0;
 		
@@ -222,15 +223,15 @@ public class GroupsSearch extends IUMPSTPanel {
     public void returnTableGroups(){
     	String[] columnNames = {"ID","Group","",""};	    
 	    
-		Object[][] data = new Object[UMPSTProject.getInstance().getMapGroups().size()][4];
+		Object[][] data = new Object[getUmpstProject().getMapGroups().size()][4];
 		Integer i=0;
 	    
-		Set<String> keys = UMPSTProject.getInstance().getMapGroups().keySet();
+		Set<String> keys = getUmpstProject().getMapGroups().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		for (String key: sortedKeys){
-			data[i][0] = UMPSTProject.getInstance().getMapGroups().get(key).getId();
-			data[i][1] = UMPSTProject.getInstance().getMapGroups().get(key).getGroupName();			
+			data[i][0] = getUmpstProject().getMapGroups().get(key).getId();
+			data[i][1] = getUmpstProject().getMapGroups().get(key).getGroupName();			
 			data[i][2] = "";
 			data[i][3] = "";
 			i++;

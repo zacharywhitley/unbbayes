@@ -43,7 +43,6 @@ public class HypothesisAdd extends IUMPSTPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-
 	private  JComboBox hypothesisVinculationList;
 
 	private ImageIcon iconSubhypothesis = createImageIcon("images/sub.png");
@@ -66,9 +65,10 @@ public class HypothesisAdd extends IUMPSTPanel {
 
 
 	
-	public HypothesisAdd(UmpstModule janelaPai,GoalModel goalRelated, HypothesisModel hypothesis, HypothesisModel hypothesisFather){
+	public HypothesisAdd(UmpstModule janelaPai,UMPSTProject umpstProject,GoalModel goalRelated, HypothesisModel hypothesis, HypothesisModel hypothesisFather){
 		super(janelaPai);
 		
+		this.setUmpstProject(umpstProject);
 		this.hypothesis = hypothesis;
 		this.hypothesisFather = hypothesisFather;
 		this.goalRelated = goalRelated;
@@ -207,10 +207,10 @@ public class HypothesisAdd extends IUMPSTPanel {
 							hypothesis.setAuthor(authorText.getText());
 							hypothesis.setDate(dateText.getText());
 							/**Updating this hypothesis in MapHypothesis*/
-							UMPSTProject.getInstance().getMapHypothesis().get(hypothesis.getId()).setHypothesisName(hypothesis.getHypothesisName());
-							UMPSTProject.getInstance().getMapHypothesis().get(hypothesis.getId()).setComments(hypothesis.getComments());
-							UMPSTProject.getInstance().getMapHypothesis().get(hypothesis.getId()).setAuthor(hypothesis.getAuthor());
-							UMPSTProject.getInstance().getMapHypothesis().get(hypothesis.getId()).setDate(hypothesis.getDate());
+							getUmpstProject().getMapHypothesis().get(hypothesis.getId()).setHypothesisName(hypothesis.getHypothesisName());
+							getUmpstProject().getMapHypothesis().get(hypothesis.getId()).setComments(hypothesis.getComments());
+							getUmpstProject().getMapHypothesis().get(hypothesis.getId()).setAuthor(hypothesis.getAuthor());
+							getUmpstProject().getMapHypothesis().get(hypothesis.getId()).setDate(hypothesis.getDate());
 							
 							updateTable(hypothesis);
 							JOptionPane.showMessageDialog(null, "hypothesis successfully updated", "UnBBayes", JOptionPane.INFORMATION_MESSAGE);
@@ -236,8 +236,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 		buttonSubhypothesis.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				UmpstModule pai = getFatherPanel();
-			    changePanel(new HypothesisAdd(pai, goalRelated, null, hypothesis));				
+			    changePanel(new HypothesisAdd(getFatherPanel(),getUmpstProject(), goalRelated, null, hypothesis));				
 			}
 		});
 
@@ -283,7 +282,7 @@ public class HypothesisAdd extends IUMPSTPanel {
     public void updateTable(HypothesisModel hypothesisUpdate){
 		
 	    UmpstModule pai = getFatherPanel();
-	    changePanel(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated));
+	    changePanel(getFatherPanel().getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated));
 
 	    
 	   /* TableHypothesis hypothesisTable = pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsMainPanel(goalRelated).getHypothesisTable(goalRelated);
@@ -302,19 +301,19 @@ public class HypothesisAdd extends IUMPSTPanel {
     	String idAux = "";
 	
     	
-    	Set<String> keys = UMPSTProject.getInstance().getMapHypothesis().keySet();
+    	Set<String> keys = getUmpstProject().getMapHypothesis().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
-		//int tamanho = UMPSTProject.getInstance().getMapHypothesis().size()+1;
+		//int tamanho = getUmpstProject().getMapHypothesis().size()+1;
 		int maior = 0;
 		String idAux2 = "";
 		int intAux;
 		
 		if (hypothesisFather==null){
 			
-			if ( UMPSTProject.getInstance().getMapHypothesis().size() > 0){
+			if ( getUmpstProject().getMapHypothesis().size() > 0){
 				for (String key: sortedKeys){
-					//tamanho = tamanho - UMPSTProject.getInstance().getMapGoal().get(key).getSubgoals().size();
-					idAux= UMPSTProject.getInstance().getMapHypothesis().get(key).getId();
+					//tamanho = tamanho - getUmpstProject().getMapGoal().get(key).getSubgoals().size();
+					idAux= getUmpstProject().getMapHypothesis().get(key).getId();
 					if (idAux.contains(".")){
 						intAux = idAux.indexOf(".");
 						idAux2 = idAux.substring(0, intAux);
@@ -358,7 +357,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 			HypothesisModel aux = hypothesisAdd.getFather();
 			while (aux!=null){
 				aux.getMapSubHypothesis().put(hypothesisAdd.getId(),hypothesisAdd);
-				UMPSTProject.getInstance().getMapHypothesis().get(aux.getId()).getMapSubHypothesis().put(hypothesisAdd.getId(),hypothesisAdd);
+				getUmpstProject().getMapHypothesis().get(aux.getId()).getMapSubHypothesis().put(hypothesisAdd.getId(),hypothesisAdd);
 				if (aux.getFather()!=null){
 					aux = aux.getFather();
 				}
@@ -371,7 +370,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 		/**TALVEZ AQUI DE PAU POIS ELE CRIOU O HYPOTHESISADD COM O O GOALREALTED ACIMA.
 		 *  POREM SO AGORA ELE ADICIONA NO GOALRELATE.HYPOTHESES ESSA HIPOSES*/
 		goalRelated.getMapHypothesis().put(hypothesisAdd.getId(), hypothesisAdd);
-		UMPSTProject.getInstance().getMapHypothesis().put(hypothesisAdd.getId(), hypothesisAdd);
+		getUmpstProject().getMapHypothesis().put(hypothesisAdd.getId(), hypothesisAdd);
 		
 		return hypothesisAdd;
     }
@@ -499,7 +498,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 
 	public JComboBox vinculateHypothesis(){
 
-	    Set<String> keys = UMPSTProject.getInstance().getMapHypothesis().keySet();
+	    Set<String> keys = getUmpstProject().getMapHypothesis().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);	
 		
 		Set<String> keysHypo;
@@ -510,7 +509,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 		 *     	    String[] allOtherHypothesis = new String[i];
 		 * */
 		for (String key: sortedKeys){
-			if(UMPSTProject.getInstance().getMapHypothesis().get(key)!=hypothesis){
+			if(getUmpstProject().getMapHypothesis().get(key)!=hypothesis){
 				if(hypothesis.getMapSubHypothesis().size()>0){
 					
 					keysHypo = hypothesis.getMapSubHypothesis().keySet();
@@ -518,7 +517,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 					
 					for (String keyHypo : sortedKeysHypo){
 						/**Testing if the hypothesis is already in this goal*/
-						if ((UMPSTProject.getInstance().getMapHypothesis().get(hypothesis.getMapSubHypothesis().get(keyHypo).getId()) ) == null )
+						if ((getUmpstProject().getMapHypothesis().get(hypothesis.getMapSubHypothesis().get(keyHypo).getId()) ) == null )
 							i++;
 					}
 
@@ -531,7 +530,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 
 		 i=0;
 			for (String key: sortedKeys){
-				if(UMPSTProject.getInstance().getMapHypothesis().get(key)!=hypothesis){
+				if(getUmpstProject().getMapHypothesis().get(key)!=hypothesis){
 					if(hypothesis.getMapSubHypothesis().size()>0){
 						
 						keysHypo = hypothesis.getMapSubHypothesis().keySet();
@@ -539,14 +538,14 @@ public class HypothesisAdd extends IUMPSTPanel {
 						
 						for (String keyHypo : sortedKeysHypo){
 							/**Testing if the hypothesis is already in this goal*/
-							if ((UMPSTProject.getInstance().getMapHypothesis().get(hypothesis.getMapSubHypothesis().get(keyHypo).getId()) ) == null ){
-								allOtherHypothesis[i] = UMPSTProject.getInstance().getMapHypothesis().get(key).getMapSubHypothesis().get(keyHypo).getHypothesisName();
+							if ((getUmpstProject().getMapHypothesis().get(hypothesis.getMapSubHypothesis().get(keyHypo).getId()) ) == null ){
+								allOtherHypothesis[i] = getUmpstProject().getMapHypothesis().get(key).getMapSubHypothesis().get(keyHypo).getHypothesisName();
 								i++;
 							}
 						}
 
 					}
-					allOtherHypothesis[i] = UMPSTProject.getInstance().getMapHypothesis().get(key).getHypothesisName();
+					allOtherHypothesis[i] = getUmpstProject().getMapHypothesis().get(key).getHypothesisName();
 					i++;
 				}
 			}
@@ -567,16 +566,16 @@ public class HypothesisAdd extends IUMPSTPanel {
 	
 	public void addVinculateHypothesis(String hypothesisRelated){
 		
-		 Set<String> keys = UMPSTProject.getInstance().getMapGoal().keySet();
+		 Set<String> keys = getUmpstProject().getMapGoal().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);	
 
 		Boolean achou = false;
 	
 		for (String key: sortedKeys){
-			if(UMPSTProject.getInstance().getMapHypothesis().get(key) !=null){	
+			if(getUmpstProject().getMapHypothesis().get(key) !=null){	
 				
-				if (UMPSTProject.getInstance().getMapHypothesis().get(key).getHypothesisName().equals(hypothesisRelated)){
-					updateMapHypothesis(UMPSTProject.getInstance().getMapHypothesis().get(key));
+				if (getUmpstProject().getMapHypothesis().get(key).getHypothesisName().equals(hypothesisRelated)){
+					updateMapHypothesis(getUmpstProject().getMapHypothesis().get(key));
 					achou=true;
 					break;
 				}
@@ -592,7 +591,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 	 public void updateMapHypothesis(HypothesisModel hypothesisVinculated){
 	    	
 		 	/**Toda vez deve atualizar que agora essa hipotese tem outro pai e o goal relacionado agora tem outra hipotese*/
-		 	UMPSTProject.getInstance().getMapHypothesis().get(hypothesisVinculated.getId()).getGoalRelated().add(goalRelated);
+		 	getUmpstProject().getMapHypothesis().get(hypothesisVinculated.getId()).getGoalRelated().add(goalRelated);
 		 	hypothesis.getMapSubHypothesis().put(hypothesisVinculated.getId(),hypothesisVinculated);
 			
 			if (hypothesisVinculated.getMapSubHypothesis()!=null){
@@ -602,7 +601,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 	 			for (String key: sortedKeys){
 	 				hypothesisAux = hypothesisVinculated.getMapSubHypothesis().get(key);
 	 				
-	    		 	UMPSTProject.getInstance().getMapHypothesis().get(hypothesisAux.getId()).getGoalRelated().add(goalRelated);
+	    		 	getUmpstProject().getMapHypothesis().get(hypothesisAux.getId()).getGoalRelated().add(goalRelated);
 	    		 	hypothesis.getMapSubHypothesis().put(hypothesisAux.getId(),hypothesisAux);
 
 	 			}

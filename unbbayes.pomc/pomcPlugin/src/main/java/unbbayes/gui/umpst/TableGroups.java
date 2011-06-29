@@ -25,6 +25,7 @@ public class TableGroups extends IUMPSTPanel{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+		
 	private JTable table;
 	private JScrollPane scrollpanePergunta;
 	
@@ -44,9 +45,10 @@ public class TableGroups extends IUMPSTPanel{
 	Object[][] data = {};
 	
 	
-    	  public TableGroups(UmpstModule janelaPai) {
+    	  public TableGroups(UmpstModule janelaPai,UMPSTProject umpstProject) {
     		  
     		    super(janelaPai);
+    		    this.setUmpstProject(umpstProject);
     	    	this.setLayout(new GridLayout(1,0));
     	    	
     	    	
@@ -94,8 +96,8 @@ public class TableGroups extends IUMPSTPanel{
 			public void onButtonPress(int row, int column) {
 				
 				String key = data[row][0].toString();
-				GroupsModel groupAux = UMPSTProject.getInstance().getMapGroups().get(key);
-				changePanel(new GroupsAdd(getFatherPanel(), groupAux )   );
+				GroupsModel groupAux = getUmpstProject().getMapGroups().get(key);
+				changePanel(new GroupsAdd(getFatherPanel(),getUmpstProject(), groupAux )   );
 			}
 		});
 		
@@ -122,26 +124,26 @@ public class TableGroups extends IUMPSTPanel{
 				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete Group "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 							String key = data[row][0].toString();
-							GroupsModel groupToBeDeleted = UMPSTProject.getInstance().getMapGroups().get(key);
+							GroupsModel groupToBeDeleted = getUmpstProject().getMapGroups().get(key);
 							
 							/*Updating MapSearch*/
 							deleteFromSearchMap(groupToBeDeleted);
 	
 							
 							
-							UMPSTProject.getInstance().getMapRules().remove(groupToBeDeleted.getId());
+							getUmpstProject().getMapRules().remove(groupToBeDeleted.getId());
 							
 							
 							 
-							Object[][] dataDel = new Object[UMPSTProject.getInstance().getMapGroups().size()][4];
+							Object[][] dataDel = new Object[getUmpstProject().getMapGroups().size()][4];
 							Integer i=0;
 						    
-							Set<String> keys = UMPSTProject.getInstance().getMapGroups().keySet();
+							Set<String> keys = getUmpstProject().getMapGroups().keySet();
 							TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 							
 							for (String chave: sortedKeys){
-								dataDel[i][0] = UMPSTProject.getInstance().getMapGroups().get(chave).getId();						
-								dataDel[i][1] = UMPSTProject.getInstance().getMapGroups().get(chave).getGroupName();
+								dataDel[i][0] = getUmpstProject().getMapGroups().get(chave).getId();						
+								dataDel[i][1] = getUmpstProject().getMapGroups().get(chave).getGroupName();
 								dataDel[i][2] = "";
 								dataDel[i][3] = "";
 								i++;
@@ -204,9 +206,9 @@ public class TableGroups extends IUMPSTPanel{
 		String[] strAux= groupToBeDeleted.getGroupName().split(" ");
 
 	    for (int i = 0; i < strAux.length; i++) {
-    		if(UMPSTProject.getInstance().getMapSearchGroups().get(strAux[i])!=null){
-    			UMPSTProject.getInstance().getMapSearchGroups().get(strAux[i]).getRelatedGroups().remove(groupToBeDeleted);
-    			aux = UMPSTProject.getInstance().getMapSearchGroups().get(strAux[i]).getRelatedGroups();   
+    		if(getUmpstProject().getMapSearchGroups().get(strAux[i])!=null){
+    			getUmpstProject().getMapSearchGroups().get(strAux[i]).getRelatedGroups().remove(groupToBeDeleted);
+    			aux = getUmpstProject().getMapSearchGroups().get(strAux[i]).getRelatedGroups();   
     	    	for (Iterator<GroupsModel> it = aux.iterator(); it.hasNext(); ) {
     	    		groupBeta = it.next();
     	   		}

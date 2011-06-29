@@ -23,6 +23,7 @@ import javax.swing.UIManager;
 
 import unbbayes.io.umpst.FileLoad;
 import unbbayes.io.umpst.FileSave;
+import unbbayes.model.umpst.project.UMPSTProject;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -41,7 +42,9 @@ public class MainPanel extends IUMPSTPanel{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-		JPanel pane;
+	
+		//private UMPSTProject umpstProject;
+	
 		private Goals requirementsPane;
 		private Entities entitiesPane;
 		private Rules rulesPane;
@@ -50,34 +53,37 @@ public class MainPanel extends IUMPSTPanel{
 		private File newFile;
 		private static final String  FILE_EXTENSION = "ump";
 		private String fileExtension;
-		private FileFilter filter;
 
-	    public MainPanel(UmpstModule janelaPai) {
+	    public MainPanel(UmpstModule janelaPai,UMPSTProject umpstProject) {	    	
 	        super(new GridLayout(1, 1),janelaPai);
+	        
+	    	this.setUmpstProject(umpstProject);
+	    	
+
 	        
 	        JTabbedPane tabbedPane = new JTabbedPane();
 	        ImageIcon icon = createImageIcon("images/middle.gif");
 	        
-	        requirementsPane = new Goals(getFatherPanel());
+	        requirementsPane = new Goals(getFatherPanel(),umpstProject);
 	        requirementsPane.setPreferredSize(new Dimension(1000, 500));
 	        
 	        tabbedPane.addTab("Requirement", icon, new JScrollPane(requirementsPane),
 	                "goals,queries and envidences");
 	        tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 	        
-	        entitiesPane = new Entities(getFatherPanel());
+	        entitiesPane = new Entities(getFatherPanel(),getUmpstProject());
 	        entitiesPane.setPreferredSize(new Dimension(1000,500));
 	        tabbedPane.addTab("Entity", icon, entitiesPane,
 	                "entities, atributtes and relationships");
 	        tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 
-	        rulesPane = new Rules(getFatherPanel());
+	        rulesPane = new Rules(getFatherPanel(),umpstProject);
 	        rulesPane.setPreferredSize(new Dimension(1000,500));	        
 	        tabbedPane.addTab("Rules", icon, rulesPane,
 	                "Deterministic or Stochastic");
 	        tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 	        
-	        groupsPane = new Groups(getFatherPanel());
+	        groupsPane = new Groups(getFatherPanel(),umpstProject);
 	        groupsPane.setPreferredSize(new Dimension(1000,500));
 	        tabbedPane.addTab("Group", icon, groupsPane,
 	                "Grouping");
@@ -114,8 +120,8 @@ public class MainPanel extends IUMPSTPanel{
 					
         			if (fileExtension.equals(FILE_EXTENSION)){
         				FileLoad io = new FileLoad();
-						io.loadUbf(loadedFile);
-						GoalsSearchPanel goalPanel = new GoalsSearchPanel(getFatherPanel());
+						setUmpstProject(io.loadUbf(loadedFile,getUmpstProject())) ;
+						GoalsSearchPanel goalPanel = new GoalsSearchPanel(getFatherPanel(),getUmpstProject());
 						goalPanel.returnTableGoals();
                     }
         			else{
@@ -154,7 +160,7 @@ public class MainPanel extends IUMPSTPanel{
 				    
 					if (newFile!=null)	{
 						try {
-							io.saveUbf(newFile);
+							io.saveUbf(newFile,getUmpstProject());
 							JOptionPane.showMessageDialog(null, "file saved");
 						} catch (FileNotFoundException e1) {
 							// TODO Auto-generated catch block
@@ -260,7 +266,7 @@ public class MainPanel extends IUMPSTPanel{
 		protected JPanel  createInternalPane (JPanel pane){
 	    	
 	    	this.setLayout(new FlowLayout());
-			this.add(new GoalsAdd(getFatherPanel(),null,null));
+			this.add(new GoalsAdd(getFatherPanel(),getUmpstProject(),null,null));
 	    	
 			return pane;
 	    }
