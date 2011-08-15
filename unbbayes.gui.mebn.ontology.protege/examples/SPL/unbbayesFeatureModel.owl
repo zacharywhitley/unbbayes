@@ -26,13 +26,7 @@
         <Literal datatypeIRI="&xsd;string">This ontology represents the feature model of the UnBBayes Software Product Line. It models features (in most cases, a feature can be mapped directly to a plug-in) and relationships (e.g. mutual exclusion, dependences, inclusion). Reasoning in this model can be performed in order for users to check feature consistency of a particular configuration.</Literal>
     </Annotation>
     <Declaration>
-        <Class IRI="#CPTPlugin"/>
-    </Declaration>
-    <Declaration>
         <Class IRI="#Configuration"/>
-    </Declaration>
-    <Declaration>
-        <Class IRI="#EditorPanelPlugin"/>
     </Declaration>
     <Declaration>
         <Class IRI="#FeatureModel"/>
@@ -41,49 +35,10 @@
         <Class IRI="#FeatureRules"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#FeatureType"/>
-    </Declaration>
-    <Declaration>
         <Class IRI="#Features"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#IOPlugin"/>
-    </Declaration>
-    <Declaration>
-        <Class IRI="#InferenceAlgorithmPlugin"/>
-    </Declaration>
-    <Declaration>
-        <Class IRI="#KnowledgeBasePlugin"/>
-    </Declaration>
-    <Declaration>
-        <Class IRI="#MEBNIOPlugin"/>
-    </Declaration>
-    <Declaration>
-        <Class IRI="#MEBNPlugin"/>
-    </Declaration>
-    <Declaration>
         <Class IRI="#Main"/>
-    </Declaration>
-    <Declaration>
-        <Class IRI="#ModulePlugin"/>
-    </Declaration>
-    <Declaration>
-        <Class IRI="#OOBNPlugin"/>
-    </Declaration>
-    <Declaration>
-        <Class IRI="#Plugin"/>
-    </Declaration>
-    <Declaration>
-        <Class IRI="#Program"/>
-    </Declaration>
-    <Declaration>
-        <Class IRI="#Resource"/>
-    </Declaration>
-    <Declaration>
-        <Class IRI="#ResourcePlugin"/>
-    </Declaration>
-    <Declaration>
-        <Class IRI="#SSBNGeneratorPlugin"/>
     </Declaration>
     <Declaration>
         <Class IRI="#UnBBayesDefaultRelease"/>
@@ -242,9 +197,6 @@
         <ObjectProperty IRI="#equals"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#equalsCompatibleProperty"/>
-    </Declaration>
-    <Declaration>
         <ObjectProperty IRI="#hasFeature"/>
     </Declaration>
     <Declaration>
@@ -323,9 +275,6 @@
         <ObjectProperty IRI="#has_unbbayes.simulation.sampling.GibbsSampling"/>
     </Declaration>
     <Declaration>
-        <DataProperty IRI="#hasName"/>
-    </Declaration>
-    <Declaration>
         <DataProperty IRI="#hasPluginURL"/>
     </Declaration>
     <Declaration>
@@ -353,6 +302,9 @@
         <NamedIndividual IRI="#unbbayes.gui.mebn.ontology.protege_sample"/>
     </Declaration>
     <Declaration>
+        <NamedIndividual IRI="#unbbayes.io.DneIO_sample"/>
+    </Declaration>
+    <Declaration>
         <NamedIndividual IRI="#unbbayes.io.NetIO_sample"/>
     </Declaration>
     <Declaration>
@@ -370,13 +322,6 @@
     <Declaration>
         <NamedIndividual IRI="#unbbayes.prs.msbn_sample"/>
     </Declaration>
-    <EquivalentClasses>
-        <Class IRI="#MEBNPlugin"/>
-        <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#hasFeature"/>
-            <Class IRI="#unbbayes.prs.mebn"/>
-        </ObjectSomeValuesFrom>
-    </EquivalentClasses>
     <EquivalentClasses>
         <Class IRI="#Main"/>
         <Class IRI="#unbbayes.core"/>
@@ -713,23 +658,11 @@
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <SubClassOf>
-        <Class IRI="#CPTPlugin"/>
-        <Class IRI="#Plugin"/>
-    </SubClassOf>
-    <SubClassOf>
         <Class IRI="#Configuration"/>
         <Class IRI="#FeatureModel"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#EditorPanelPlugin"/>
-        <Class IRI="#MEBNPlugin"/>
-    </SubClassOf>
-    <SubClassOf>
         <Class IRI="#FeatureRules"/>
-        <Class IRI="#FeatureModel"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#FeatureType"/>
         <Class IRI="#FeatureModel"/>
     </SubClassOf>
     <SubClassOf>
@@ -737,72 +670,8 @@
         <Class IRI="#FeatureModel"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#IOPlugin"/>
-        <Class IRI="#Plugin"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#InferenceAlgorithmPlugin"/>
-        <Class IRI="#Plugin"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#KnowledgeBasePlugin"/>
-        <Class IRI="#MEBNPlugin"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#MEBNIOPlugin"/>
-        <Class IRI="#IOPlugin"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#MEBNIOPlugin"/>
-        <Class IRI="#MEBNPlugin"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#MEBNPlugin"/>
-        <Class IRI="#Plugin"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#Main"/>
-        <Class IRI="#Program"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#ModulePlugin"/>
-        <Class IRI="#Plugin"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#OOBNPlugin"/>
-        <Class IRI="#Plugin"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#Plugin"/>
-        <Class IRI="#Program"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#Program"/>
-        <Class IRI="#FeatureType"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#Resource"/>
-        <Class IRI="#FeatureType"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#ResourcePlugin"/>
-        <Class IRI="#Plugin"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#ResourcePlugin"/>
-        <Class IRI="#Resource"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#SSBNGeneratorPlugin"/>
-        <Class IRI="#MEBNPlugin"/>
-    </SubClassOf>
-    <SubClassOf>
         <Class IRI="#UnBBayesDefaultRelease"/>
         <Class IRI="#Configuration"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#edu.gmu.seor.prognos.unbbayesplugin.cps"/>
-        <Class IRI="#CPTPlugin"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#edu.gmu.seor.prognos.unbbayesplugin.cps"/>
@@ -829,10 +698,6 @@
     <SubClassOf>
         <Class IRI="#unbbayes.core"/>
         <Class IRI="#Features"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#unbbayes.core"/>
-        <Class IRI="#Plugin"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#unbbayes.core"/>
@@ -868,10 +733,6 @@
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#unbbayes.datamining"/>
-        <Class IRI="#ModulePlugin"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#unbbayes.datamining"/>
         <ObjectHasValue>
             <ObjectProperty IRI="#equals"/>
             <NamedIndividual IRI="#unbbayes.datamining_sample"/>
@@ -890,15 +751,7 @@
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#unbbayes.gui.mebn.ontology.protege"/>
-        <Class IRI="#EditorPanelPlugin"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#unbbayes.gui.mebn.ontology.protege"/>
         <Class IRI="#Features"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#unbbayes.gui.mebn.ontology.protege.2"/>
-        <Class IRI="#EditorPanelPlugin"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#unbbayes.gui.mebn.ontology.protege.2"/>
@@ -939,7 +792,10 @@
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#unbbayes.io.DneIO"/>
-        <Class IRI="#IOPlugin"/>
+        <ObjectHasValue>
+            <ObjectProperty IRI="#equals"/>
+            <NamedIndividual IRI="#unbbayes.io.DneIO_sample"/>
+        </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#unbbayes.io.DneIO_Rule"/>
@@ -955,10 +811,6 @@
     <SubClassOf>
         <Class IRI="#unbbayes.io.NetIO"/>
         <Class IRI="#Features"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#unbbayes.io.NetIO"/>
-        <Class IRI="#IOPlugin"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#unbbayes.io.NetIO"/>
@@ -984,10 +836,6 @@
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#unbbayes.io.XMLBIFIO"/>
-        <Class IRI="#IOPlugin"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#unbbayes.io.XMLBIFIO"/>
         <ObjectHasValue>
             <ObjectProperty IRI="#equals"/>
             <NamedIndividual IRI="#unbbayes.io.XMLBIFIO_sample"/>
@@ -1009,16 +857,8 @@
         <Class IRI="#Features"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.mebn.UbfIO"/>
-        <Class IRI="#MEBNIOPlugin"/>
-    </SubClassOf>
-    <SubClassOf>
         <Class IRI="#unbbayes.io.mebn.UbfIO2"/>
         <Class IRI="#Features"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#unbbayes.io.mebn.UbfIO2"/>
-        <Class IRI="#MEBNIOPlugin"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#unbbayes.io.mebn.UbfIO2"/>
@@ -1054,10 +894,6 @@
         <Class IRI="#Features"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.xmlbif.version7"/>
-        <Class IRI="#IOPlugin"/>
-    </SubClassOf>
-    <SubClassOf>
         <Class IRI="#unbbayes.io.xmlbif.version7_Rule"/>
         <Class IRI="#FeatureRules"/>
     </SubClassOf>
@@ -1081,10 +917,6 @@
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#unbbayes.learning"/>
-        <Class IRI="#ModulePlugin"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#unbbayes.learning"/>
         <ObjectHasValue>
             <ObjectProperty IRI="#equals"/>
             <NamedIndividual IRI="#unbbayes.learning_sample"/>
@@ -1093,10 +925,6 @@
     <SubClassOf>
         <Class IRI="#unbbayes.learning.incrementalLearning"/>
         <Class IRI="#Features"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#unbbayes.learning.incrementalLearning"/>
-        <Class IRI="#ModulePlugin"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#unbbayes.learning.incrementalLearning_Rule"/>
@@ -1125,16 +953,8 @@
         <Class IRI="#Features"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.metaphor"/>
-        <Class IRI="#ModulePlugin"/>
-    </SubClassOf>
-    <SubClassOf>
         <Class IRI="#unbbayes.metaphor.afin"/>
         <Class IRI="#Features"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#unbbayes.metaphor.afin"/>
-        <Class IRI="#ModulePlugin"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#unbbayes.metaphor.afin_Rule"/>
@@ -1161,14 +981,6 @@
     <SubClassOf>
         <Class IRI="#unbbayes.oobn.resources.ja"/>
         <Class IRI="#Features"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#unbbayes.oobn.resources.ja"/>
-        <Class IRI="#OOBNPlugin"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#unbbayes.oobn.resources.ja"/>
-        <Class IRI="#ResourcePlugin"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#unbbayes.oobn.resources.ja_Rule"/>
@@ -1187,10 +999,6 @@
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#unbbayes.prs.mebn"/>
-        <Class IRI="#ModulePlugin"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#unbbayes.prs.mebn"/>
         <ObjectHasValue>
             <ObjectProperty IRI="#equals"/>
             <NamedIndividual IRI="#unbbayes.prs.mebn_sample"/>
@@ -1201,10 +1009,6 @@
         <Class IRI="#Features"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.mebn.kb.powerloom"/>
-        <Class IRI="#KnowledgeBasePlugin"/>
-    </SubClassOf>
-    <SubClassOf>
         <Class IRI="#unbbayes.prs.mebn.kb.powerloom_Rule"/>
         <Class IRI="#FeatureRules"/>
     </SubClassOf>
@@ -1218,10 +1022,6 @@
     <SubClassOf>
         <Class IRI="#unbbayes.prs.mebn.ssbn.ssmsbn"/>
         <Class IRI="#Features"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#unbbayes.prs.mebn.ssbn.ssmsbn"/>
-        <Class IRI="#SSBNGeneratorPlugin"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#unbbayes.prs.mebn.ssbn.ssmsbn_Rule"/>
@@ -1257,10 +1057,6 @@
         <Class IRI="#Features"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.msbn"/>
-        <Class IRI="#ModulePlugin"/>
-    </SubClassOf>
-    <SubClassOf>
         <Class IRI="#unbbayes.prs.msbn_Rule"/>
         <Class IRI="#FeatureRules"/>
     </SubClassOf>
@@ -1274,10 +1070,6 @@
     <SubClassOf>
         <Class IRI="#unbbayes.prs.oobn"/>
         <Class IRI="#Features"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#unbbayes.prs.oobn"/>
-        <Class IRI="#ModulePlugin"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#unbbayes.prs.oobn_Rule"/>
@@ -1295,10 +1087,6 @@
         <Class IRI="#Features"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.prm"/>
-        <Class IRI="#ModulePlugin"/>
-    </SubClassOf>
-    <SubClassOf>
         <Class IRI="#unbbayes.prs.prm_Rule"/>
         <Class IRI="#FeatureRules"/>
     </SubClassOf>
@@ -1312,14 +1100,6 @@
     <SubClassOf>
         <Class IRI="#unbbayes.simulation.likelihoodweighting.inference"/>
         <Class IRI="#Features"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#unbbayes.simulation.likelihoodweighting.inference"/>
-        <Class IRI="#InferenceAlgorithmPlugin"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#unbbayes.simulation.likelihoodweighting.inference"/>
-        <Class IRI="#ModulePlugin"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#unbbayes.simulation.likelihoodweighting.inference_Rule"/>
@@ -1337,10 +1117,6 @@
         <Class IRI="#Features"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.simulation.montecarlo.sampling"/>
-        <Class IRI="#ModulePlugin"/>
-    </SubClassOf>
-    <SubClassOf>
         <Class IRI="#unbbayes.simulation.montecarlo.sampling_Rule"/>
         <Class IRI="#FeatureRules"/>
     </SubClassOf>
@@ -1354,14 +1130,6 @@
     <SubClassOf>
         <Class IRI="#unbbayes.simulation.sampling.GibbsSampling"/>
         <Class IRI="#Features"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#unbbayes.simulation.sampling.GibbsSampling"/>
-        <Class IRI="#InferenceAlgorithmPlugin"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#unbbayes.simulation.sampling.GibbsSampling"/>
-        <Class IRI="#ModulePlugin"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#unbbayes.simulation.sampling.GibbsSampling_Rule"/>
@@ -1434,6 +1202,10 @@
         <NamedIndividual IRI="#unbbayes.gui.mebn.ontology.protege_sample"/>
     </ClassAssertion>
     <ClassAssertion>
+        <Class IRI="#unbbayes.io.DneIO"/>
+        <NamedIndividual IRI="#unbbayes.io.DneIO_sample"/>
+    </ClassAssertion>
+    <ClassAssertion>
         <Class IRI="#unbbayes.io.NetIO"/>
         <NamedIndividual IRI="#unbbayes.io.NetIO_sample"/>
     </ClassAssertion>
@@ -1462,11 +1234,6 @@
         <NamedIndividual IRI="#unbbayes.datamining_sample"/>
     </SameIndividual>
     <DataPropertyAssertion>
-        <DataProperty IRI="#hasName"/>
-        <NamedIndividual IRI="#UBFIO2"/>
-        <Literal datatypeIRI="&xsd;string">UBFIO2</Literal>
-    </DataPropertyAssertion>
-    <DataPropertyAssertion>
         <DataProperty IRI="#hasPluginURL"/>
         <NamedIndividual IRI="#UBFIO2"/>
         <Literal datatypeIRI="&xsd;string">http://www.sourceforge.net/download/UBFIO.zip</Literal>
@@ -1477,29 +1244,14 @@
         <Literal datatypeIRI="&xsd;string">http://www.sourceforge.net/prognos/download/CPS.zip</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
-        <DataProperty IRI="#hasName"/>
-        <NamedIndividual IRI="#unbbayes.core_sample"/>
-        <Literal datatypeIRI="&xsd;string">UnBBayes</Literal>
-    </DataPropertyAssertion>
-    <DataPropertyAssertion>
         <DataProperty IRI="#hasPluginURL"/>
         <NamedIndividual IRI="#unbbayes.core_sample"/>
         <Literal datatypeIRI="&xsd;string">http://www.sourceforge.net/unbbayes/download/UnBBayes.zip</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
-        <DataProperty IRI="#hasName"/>
-        <NamedIndividual IRI="#unbbayes.datamining_sample"/>
-        <Literal datatypeIRI="&xsd;string">UnBMiner</Literal>
-    </DataPropertyAssertion>
-    <DataPropertyAssertion>
         <DataProperty IRI="#hasPluginURL"/>
         <NamedIndividual IRI="#unbbayes.datamining_sample"/>
         <Literal datatypeIRI="&xsd;string">http://www.sourceforge.net/unbbayes/download/UnBMiner.zip</Literal>
-    </DataPropertyAssertion>
-    <DataPropertyAssertion>
-        <DataProperty IRI="#hasName"/>
-        <NamedIndividual IRI="#unbbayes.gui.mebn.ontology.protege.2_sample"/>
-        <Literal datatypeIRI="&xsd;string">Protege 4.1 ontology Editor for OWL2 and PR-OWL2 languages</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="#hasPluginURL"/>
@@ -1510,11 +1262,6 @@
         <DataProperty IRI="#hasPluginURL"/>
         <NamedIndividual IRI="#unbbayes.gui.mebn.ontology.protege_sample"/>
         <Literal datatypeIRI="&xsd;string">http://www.sourceforge.net/unbbayes/download/protegeGUIOLD.zip</Literal>
-    </DataPropertyAssertion>
-    <DataPropertyAssertion>
-        <DataProperty IRI="#hasName"/>
-        <NamedIndividual IRI="#unbbayes.io.NetIO_sample"/>
-        <Literal datatypeIRI="&xsd;string">Hugin IO Format</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="#hasPluginURL"/>
@@ -1532,11 +1279,6 @@
         <Literal datatypeIRI="&xsd;string">http://www.sourceforge.net/unbbayes/download/IncrementalLearning.zip</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
-        <DataProperty IRI="#hasName"/>
-        <NamedIndividual IRI="#unbbayes.learning_sample"/>
-        <Literal datatypeIRI="&xsd;string">Aprendizagem</Literal>
-    </DataPropertyAssertion>
-    <DataPropertyAssertion>
         <DataProperty IRI="#hasPluginURL"/>
         <NamedIndividual IRI="#unbbayes.learning_sample"/>
         <Literal datatypeIRI="&xsd;string">http://www.sourceforge.net/unbbayes/download/unbbayes.learning.zip</Literal>
@@ -1547,22 +1289,17 @@
         <Literal datatypeIRI="&xsd;string">http://www.sourceforge.net/unbbayes/download/UnBBayes-MEBN.zip</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
-        <DataProperty IRI="#hasName"/>
-        <NamedIndividual IRI="#unbbayes.prs.msbn_sample"/>
-        <Literal datatypeIRI="&xsd;string">MSBN</Literal>
-    </DataPropertyAssertion>
-    <DataPropertyAssertion>
         <DataProperty IRI="#hasPluginURL"/>
         <NamedIndividual IRI="#unbbayes.prs.msbn_sample"/>
         <Literal datatypeIRI="&xsd;string">http://www.sourceforge.net/unbbayes/download/unbbayes.prs.msbn.zip</Literal>
     </DataPropertyAssertion>
     <SubObjectPropertyOf>
         <ObjectProperty IRI="#equals"/>
-        <ObjectProperty IRI="#equalsCompatibleProperty"/>
+        <ObjectProperty abbreviatedIRI="owl:topObjectProperty"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
         <ObjectProperty IRI="#hasFeature"/>
-        <ObjectProperty IRI="#equalsCompatibleProperty"/>
+        <ObjectProperty abbreviatedIRI="owl:topObjectProperty"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
         <ObjectProperty IRI="#has_edu.gmu.seor.prognos.unbbayesplugin.cps"/>
@@ -1773,21 +1510,6 @@
         <ObjectProperty IRI="#has_unbbayes.simulation.sampling.GibbsSampling"/>
         <Class IRI="#unbbayes.simulation.sampling.GibbsSampling"/>
     </ObjectPropertyRange>
-    <SubObjectPropertyOf>
-        <ObjectPropertyChain>
-            <ObjectProperty IRI="#equals"/>
-            <ObjectProperty IRI="#equalsCompatibleProperty"/>
-        </ObjectPropertyChain>
-        <ObjectProperty IRI="#equalsCompatibleProperty"/>
-    </SubObjectPropertyOf>
-    <DataPropertyDomain>
-        <DataProperty IRI="#hasName"/>
-        <Class IRI="#Features"/>
-    </DataPropertyDomain>
-    <DataPropertyRange>
-        <DataProperty IRI="#hasName"/>
-        <Datatype abbreviatedIRI="xsd:string"/>
-    </DataPropertyRange>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
         <IRI>#Configuration</IRI>
@@ -1817,18 +1539,8 @@ Available online at www.sciencedirect.com, 20 January 2007</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
-        <IRI>#FeatureType</IRI>
-        <Literal datatypeIRI="&xsd;string">This class was created for documentation purpose, and helps classifying the features into different kinds of artifacts (e.g. plugins, resources, documentations, etc.)</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
-        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
         <IRI>#Features</IRI>
         <Literal datatypeIRI="&xsd;string">This class represents the actual features present in the feature model. Rules applyed to these features are specified in FeatureRule classes</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
-        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
-        <IRI>#Plugin</IRI>
-        <Literal datatypeIRI="&xsd;string">Subclasses of this class will represent available extension points.</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
@@ -1837,19 +1549,8 @@ Available online at www.sciencedirect.com, 20 January 2007</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
-        <IRI>#equalsCompatibleProperty</IRI>
-        <Literal datatypeIRI="&xsd;string">Sub properties of this property will provide the following feature:
-X-&gt;equals-&gt;Y and Y-&gt;SUBPROPERTY-&gt;Z then X-&gt;SUBPROPERTY-&gt;Z</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
-        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
         <IRI>#hasFeature</IRI>
         <Literal datatypeIRI="&xsd;string">Subproperties of this property represents that a given owl entity (e.g. a system configuration) has a given feature in its configuration.</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
-        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
-        <IRI>#hasName</IRI>
-        <Literal datatypeIRI="&xsd;string">This is the name of a feature</Literal>
     </AnnotationAssertion>
 </Ontology>
 

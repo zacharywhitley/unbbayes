@@ -45,7 +45,7 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 	 * This is public just to enable plug-in compatibility
 	 * @deprecated
 	 */
-	public Protege41CompatiblePROWL2IO() {
+	protected Protege41CompatiblePROWL2IO() {
 	}
 	
 	/**
@@ -107,7 +107,12 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 		// load mebn using the super class
 		MultiEntityBayesianNetwork ret = this.getMEBNFactory().createMEBN(defaultMEBNName);	// instantiate using temporary name
 		
-		super.loadMEBNFromOntology(ret, this.getLastOWLOntology(), this.getLastOWLReasoner());					// populate MEBN including its name
+		try {
+			super.loadMEBNFromOntology(ret, this.getLastOWLOntology(), this.getLastOWLReasoner());					// populate MEBN including its name
+		} catch (RuntimeException e) {
+			e.printStackTrace();
+			Debug.println(getClass(), "Could not load MTheory, but since we loaded the ontology, we will display it...");
+		}
 		
 		
 		// fill mebn with protege's storage implementor if we could load protege previously

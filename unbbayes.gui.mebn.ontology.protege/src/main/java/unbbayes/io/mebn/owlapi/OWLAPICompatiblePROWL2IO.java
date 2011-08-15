@@ -136,7 +136,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 	/**
 	 * @deprecated
 	 */
-	public OWLAPICompatiblePROWL2IO() {
+	protected OWLAPICompatiblePROWL2IO() {
 		super();
 		try {
 			this.initialize();

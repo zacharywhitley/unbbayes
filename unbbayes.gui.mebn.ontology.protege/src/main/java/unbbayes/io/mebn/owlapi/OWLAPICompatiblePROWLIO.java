@@ -2033,6 +2033,20 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 				if (individual.isNamed()) {
 					// creates a object entity instance and adds it into the mebn entity container
 					try {
+						// do not add individual if it was already added.
+						// TODO use UID instead of individual IRI
+						if (mebn instanceof IRIAwareMultiEntityBayesianNetwork) {
+							if (((IRIAwareMultiEntityBayesianNetwork) mebn).getIriMap().containsValue(individual.asOWLNamedIndividual().getIRI())) {
+								// the individual was previously added to MEBN
+								try {
+									Debug.println(getClass(), individual + " is already in " + mebn);
+								} catch (Throwable t) {
+									t.printStackTrace();
+								}
+								continue;
+							}
+						}
+
 						String individualName = this.extractName(ontology, individual.asOWLNamedIndividual());
 						ObjectEntityInstance addedInstance = mebnEntity.addInstance(individualName);
 						mebn.getObjectEntityContainer().addEntityInstance(addedInstance);
