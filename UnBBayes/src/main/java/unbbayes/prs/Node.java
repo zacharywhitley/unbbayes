@@ -167,9 +167,6 @@ public abstract class Node implements Serializable,
 			}
 		}
 			
-		/*
-		 * else { throw new Exception("Valor de infroma��o inv�lido"); }
-		 */
 	}
 
 	public void addExplanationPhrase(ExplanationPhrase explanationPhrase) {
@@ -179,7 +176,7 @@ public abstract class Node implements Serializable,
 	public ExplanationPhrase getExplanationPhrase(String node) throws Exception {
 		ExplanationPhrase ep = phrasesMap.get(node);
 		if (ep == null) {
-			throw new Exception("N� n�o encontrado.");
+			throw new Exception("Node was not found.");
 		} else {
 			return (ExplanationPhrase) ep;
 		}
@@ -302,11 +299,9 @@ public abstract class Node implements Serializable,
 	}
 
 	/**
-	 * Modifica a descri��o da explana��o do n�.
 	 * Modifies the description of the explanation of the node.
-	 * @param texto
+	 * @param text
 	 * 			A text representing the node's explanation's description.
-	 *            descri��o da explana��o do n�.
 	 */
 	public void setExplanationDescription(String text) {
 		this.explanationDescription = text;
@@ -761,6 +756,7 @@ public abstract class Node implements Serializable,
 		}
 	}
 
+	// TODO create listener to propagate events
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.INode#addChildNode(unbbayes.prs.INode)
 	 */
@@ -768,6 +764,7 @@ public abstract class Node implements Serializable,
 		this.addChild((Node)child);
 	}
 
+	// TODO create listener to propagate events
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.INode#addParentNode(unbbayes.prs.INode)
 	 */
