@@ -33,8 +33,8 @@ public final class FloatCollection implements java.io.Serializable {
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
 	
-	public static final int DEFAULT_SIZE = 30;
-
+	public static final int DEFAULT_SIZE = 50;
+	
     public float data[];
     public int size;
     
@@ -65,10 +65,11 @@ public final class FloatCollection implements java.io.Serializable {
         int oldCapacity = data.length;
         if (minCapacity > oldCapacity) {
             float oldData[] = data;
-            int newCapacity = (oldCapacity * 3)/2 + 1;
-            if (newCapacity < minCapacity) {
-               newCapacity = minCapacity;
-            }
+            int newCapacity = (minCapacity * 3)/2 + 1;
+//            int newCapacity = (oldCapacity * 3)/2 + 1;
+//            if (newCapacity < minCapacity) {
+//               newCapacity = minCapacity;
+//            }
             data = new float[newCapacity];
             System.arraycopy(oldData, 0, data, 0, size);
         }
