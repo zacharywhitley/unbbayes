@@ -60,47 +60,47 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
   	protected boolean firstInitialization;
   	
   	/**
-	 * N�s de decis�o utilizado no processo de transforma��o.
+  	 * Decision nodes used during the transformation process
 	 */
 	protected ArrayList<Node> decisionNodes;
 	
 	protected double radius;
 
     /**
-	 * Faz o processamento do log de compila��o.
+     * Processes compilation log
 	 */
 	protected NetworkCompilationLogManager logManager;
 
 	/**
-	 *  Lista de edgeList utilizada no processo de transforma��o.
+	 * A list of edges used during transformation process
 	 */
 	protected List<Edge> arcosMarkov;
 	
 	/**
-	 * Indica se o log deve ser criado ou n�o.
+	 * Indicates whether log should be created or not
 	 */
 	protected boolean createLog;
            
     /**
-	 *  Ordem de elimina��o dos n�s.
+     * Order of node elminination
 	 */
 	protected ArrayList<Node> oe;
 
 	/**
-	 * C�pia dos n�s sem os n�s de utilidade. Utilizado no processo
-	 * de transforma��o.
+	 * Copy of nodes without utility nodes. This is used during transformation
+	 * process.
 	 */
 	protected ArrayList<Node> copiaNos;
 	
 	protected List<Edge> copiaArcos;
 
 	/**
-	 *  Armazena handle do objeto �rvore de Jun��o associado ao Grafo.
+	 * Points to junction tree related to the graph.
 	 */
 	protected JunctionTree junctionTree;	
     
     /**
-     *  Constr�i um novo grafo sem n�s nem edgeList.
+     * Creates a new graph with no nodes or edges.
      */
     public SingleEntityNetwork(String name) {
     	super(name);
@@ -175,7 +175,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 
 
     /**
-     *  Destr�i a lista de adjacentes de cada n� do grafo.
+     * For each node in the graph, destroys the list of their adjacent nodes.
      */
     protected void clearAdjacents() {
     	int size = nodeList.size();
@@ -282,7 +282,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 		arcosMarkov.clear();
 		copiaArcos = (ArrayList<Edge>)SetToolkit.clone(edgeList);
 	
-		//retira os edgeList de informa��o
+		// remove the list of edges for information
 		int sizeArcos = copiaArcos.size() - 1;
 		for (int i = sizeArcos; i >= 0; i--) {
 			auxArco = copiaArcos.get(i);
@@ -335,7 +335,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  Monta �rvore de jun��o a partir do grafo.
+	 * Builds junction tree from graph.
 	 */
 	protected void compileJT(JunctionTree jt) throws Exception {
 		int menor;
@@ -375,8 +375,10 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 					auxClique = (Clique) junctionTree.getCliques().get(c2);
 					if (auxClique.getNodes().contains(auxNode)
 						&& (auxClique.getProbabilityFunction().tableSize() < menor)) {
-						if (auxNode.getType()
-							== Node.PROBABILISTIC_NODE_TYPE) {
+						// the following code was changed because typechecking should be done in class level instead of checking int values
+						//						if (auxNode.getType()
+//							== Node.PROBABILISTIC_NODE_TYPE) {
+						if (auxNode instanceof ProbabilisticNode) {
 							((ProbabilisticNode) auxNode).setAssociatedClique(
 								auxClique);
 						} else {
@@ -480,7 +482,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  Faz o processo de identifica��o dos Cliques
+	 * Identifies cliques
 	 */
 	protected void cliques() {
 		int i;
@@ -540,7 +542,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 * Ordena os n�s dos cliques e dos separadores de acordo com a ordem de elimina��o.
+	 * Order nodes (of cliques) and separators accourding to the elimination order.
 	 */
 	protected void sortCliqueNodes() {
 		List listaCliques = junctionTree.getCliques();
@@ -616,8 +618,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  Faz a associa��o dos N�s a um �nico clique com menos espa�o de est. que
-	 *  contenha sua fam�lia
+	 * Associates the nodes to a unique clique, with less space for states, which contains its family.
 	 */
 	protected void associateCliques() {
 		int min;
@@ -672,17 +673,23 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 					min = cliqueMin.getProbabilityFunction().tableSize();
 				}
 			}
-	
-			if (auxNo.getType() == Node.PROBABILISTIC_NODE_TYPE) {
+			// perform class check instead of int check
+			if (auxNo instanceof ProbabilisticNode) {
 				cliqueMin.getAssociatedProbabilisticNodes().add(auxNo);
 			} else {
 				cliqueMin.getAssociatedUtilityNodes().add(auxNo);
 			}
+			// 
+//			if (auxNo.getType() == Node.PROBABILISTIC_NODE_TYPE) {
+//				cliqueMin.getAssociatedProbabilisticNodes().add(auxNo);
+//			} else if () {
+//				cliqueMin.getAssociatedUtilityNodes().add(auxNo);
+//			}
 		}
 	}
 
 	/**
-	 *  Faz o processo de constitui��o da �rvore de jun��o - Frank Jensen
+	 *  Builds the junction tree  - Frank Jensen
 	 */
 	protected void arvoreForte() {
 		int ndx;
@@ -705,7 +712,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 				auxClique = (Clique) junctionTree.getCliques().get(i);
 				listaNos = SetToolkit.clone(auxClique.getNodes());
 	
-				//calcula o �ndice
+				//calculate index
 				while ((ndx = getCliqueIndex(listaNos, alpha)) <= 0
 					&& listaNos.size() > 1);
 				if (ndx < 0) {
@@ -761,7 +768,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  SUB-FUN��O do m�todo arvoreForte
+	 * Sub-method of strong-tree method
 	 */
 	protected int getCliqueIndex(ArrayList<Node> listaNos, ArrayList<Node> alpha) {
 		int ndx;
@@ -771,7 +778,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 		ArrayList<Node> auxList = null;
 		ArrayList<Node> vizinhos;
 	
-		// pega o n� de �ndice m�ximo na ordem alpha (inverso da ordem de elimini��o)
+		// gets the maximum index node using alpha order (inverse of elimination order)
 		mx = -1;
 		int sizeNos = listaNos.size();
 		for (int i = 0; i < sizeNos; i++) {
@@ -783,10 +790,10 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			}
 		}
 	
-		// Retira esse n� do clique
+		// remove node from clique
 		listaNos.remove(noMax);
 	
-		// Monta uma lista de vizinhos do clique
+		// Build list of neighbors of clique
 		auxNo = listaNos.get(0);
 		vizinhos = SetToolkit.clone(auxNo.getAdjacents());
 		int sizeNos1 = listaNos.size();
@@ -813,13 +820,14 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  Sub-rotina do m�todo triangula.
-	 *  Elimina os n�s do grafo utilizando a heur�stica do peso m�nimo.
-	 *  Primeiramente elimina os n�s cujos adjacentes est�o ligados dois a dois.
-	 *  Depois se ainda houver n�s no grafo, elimina-os aplicando a heur�stica
-	 *  do peso m�nimo.
+	 * Sub-routine for {@link ProbabilisticNetwork#triangula()}.
+	 * It eliminates the nodes in the graph by using minimum weight heuristics.
+	 * First, it eliminates nodes whose adjacent nodes are pairwise connected.
+	 * After that, if there are more nodes in the graph, it eliminates them using the
+	 * minimum weight heuristic.
 	 *
-	 * @param  auxNos  Vetor de n�s.
+	 * @param  auxNos  collection of nodes.
+	 * 
 	 */
 	protected boolean minimumWeightElimination(ArrayList<Node> auxNos) {
 		boolean algum;
@@ -832,7 +840,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 				Node auxNo = auxNos.get(i);
 	
 				if (cordas(auxNo)) {
-					//N�o tem cordas necess�rias:teste pr�ximo.
+					//N�ｽo tem cordas necess�ｽrias:teste pr�ｽximo.
 					continue;
 				}
 	
@@ -853,7 +861,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 		}
 	
 		if (auxNos.size() > 0) {
-			Node auxNo = weight(auxNos); //auxNo: clique de peso m�nimo.
+			Node auxNo = weight(auxNos); //auxNo: clique de peso m�ｽnimo.
 			oe.add(auxNo);
 			if (createLog) {
 				logManager.append(
@@ -867,11 +875,11 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  SUB-FUN��O do procedimento triangula que elimina n� e reduz o grafo. Inclui
-	 *  cordas necess�rias para eliminar n�. Retira-o e aos adjacentes.
+	 *  SUB-FUN�ｽ�ｽO do procedimento triangula que elimina n�ｽ e reduz o grafo. Inclui
+	 *  cordas necess�ｽrias para eliminar n�ｽ. Retira-o e aos adjacentes.
 	 *
-	 *@param  no      n� a ser eliminado
-	 *@param  auxNos  lista de n�s
+	 *@param  no      n�ｽ a ser eliminado
+	 *@param  auxNos  lista de n�ｽs
 	 */
 	private void elimine(Node no, ArrayList<Node> auxNos) {	
 		for (int i = no.getAdjacents().size()-1; i > 0; i--) {
@@ -907,10 +915,10 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  SUB-FUN��O do m�todo pesoMinimo que utiliza a her�stica do peso m�nimo.
+	 *  SUB-FUN�ｽ�ｽO do m�ｽtodo pesoMinimo que utiliza a her�ｽstica do peso m�ｽnimo.
 	 *
-	 * @param  auxNos  n�s.
-	 * @return         n� cujo conjunto formado por adjacentes possui peso m�nimo.
+	 * @param  auxNos  n�ｽs.
+	 * @return         n�ｽ cujo conjunto formado por adjacentes possui peso m�ｽnimo.
 	 */
 	private Node weight(ArrayList<Node> auxNos) {
 		Node v;
@@ -939,11 +947,11 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  SUB-FUN��O do m�todo triangula.
+	 *  SUB-FUN�ｽ�ｽO do m�ｽtodo triangula.
 	 *
-	 *@param  no  n�.
+	 *@param  no  n�ｽ.
 	 *@return     true - caso haja necessidade de inserir corda para poder eliminar
-	 *      o n�. false - caso contr�rio.
+	 *      o n�ｽ. false - caso contr�ｽrio.
 	 */
 	private boolean cordas(Node no) {
 		if (no.getAdjacents().size() < 2) {
@@ -965,8 +973,8 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	
 	
 	/**
-	 *  Verifica integridade como grafo direcionado ac�clico / conexo e coes�o.
-	 *  Com a sa�da � poss�vel saber quais erros especificamente ocorreram caso algum ocorra.
+	 * Verifies integrity as a connected coherent directed acyclic graph.
+	 * The output specifies what kinds of errors were detected, if any.
 	 */
 	protected void verifyConsistency() throws Exception {
 		if (nodeList.size() != 0) {
@@ -1034,8 +1042,8 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  SUB-FUN��O do m�todo verificaConsist�ncia que verifica a consistencia
-	 *  das tabelas de potenciais dos n�s do grafo.
+	 * Sub-method of {@link #verifyConsistency()}.
+	 * This method verifies consistency of conditional probabilistic tables.
 	 */
 	protected void verifyPotentialTables() throws Exception {
 		ProbabilisticTable auxTabPot;
@@ -1055,8 +1063,8 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  SUB-FUN��O do m�todo verificaConsist�ncia que verifica se todos os
-	 *  n�s de utilidade n�o cont�m filhos.
+	 * Sub method of {@link #verifyConsistency()}.
+	 * This method asserts no utility nodes have children.
 	 */
 	protected void verifyUtility() throws Exception {
 		Node aux;
@@ -1075,9 +1083,9 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  SUB-FUN��O do m�todo verificaConsist�ncia que verifica se
-	 *  existe uma ordena��o total das decis�es. Isto �, se existe
-	 *  um caminho orientado entre as decis�es.
+	 * Sub method of {@link #verifyConsistency()}.
+	 * This method checks if decision nodes follow a linear (total) order.
+	 * That is, if there is a directed path through decision nodes.
 	 */
 	protected void sortDecisions() throws Exception {
 		decisionNodes = new ArrayList<Node>();
@@ -1183,8 +1191,8 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  Chama o m�todo da �rvore de jun��o para atualizar evid�ncias.
-	 *  @return             consist�ncia da �rvore atualizada.
+	 * Calls the junction tree method in order to update evidences.
+	 *  @throws Exception : the message will contain any consistency error.
 	 */
 	public void updateEvidences() throws Exception {
 		int sizeNos = copiaNos.size();
@@ -1204,7 +1212,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 	
 	/**
-	 * Inicia as cren�as da �rvore de jun��o.
+	 * Initialize the believes of a junction tree.
 	 */
 	public void initialize() throws Exception {
 		resetEvidences();
@@ -1241,9 +1249,9 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  Retorna a probabilidade estimada total da �rvore de jun��o associada.
-	 *
-	 *@return    probabilidade estimada total da �rvore de jun��o associada.
+	 * @return the total estimated probability of the related
+	 * junction tree (PET stands for "Probabilidade Estimada Total", which means
+	 *  total estimated probability)
 	 */
 	public float PET() {
 		return junctionTree.getN();
