@@ -13,6 +13,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.io.OWLXMLOntologyFormat;
@@ -2042,6 +2044,17 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 			throw new IOException(this.getResource().getString("ErrorReadingFile") + " : file == null");
 		}
 		
+		// check mebn name consistency
+		if (mebn.getName() == null ) {
+			throw new IllegalArgumentException("Invalid name: null");
+		}
+		
+		// use matcher to check format
+		Matcher matcher = Pattern.compile("[a-zA-Z_0-9]*").matcher(mebn.getName());
+		if (!matcher.matches()) {
+			throw new IllegalArgumentException("Invalid name: " + mebn.getName());
+		}
+		
 		// ontology where MEBN will be stored
 		OWLOntology ontology = null;
 		
@@ -3467,6 +3480,14 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
     			// get individual of DeclarativeDist
     			OWLIndividual declarativeDistThisNode = factory.getOWLNamedIndividual(residentNode.getName() + DECLARATIVE_DISTRO_SUFIX, prowl2Prefix);
     			
+    			// remove individual if it exists, because we want to overwrite an existing one, instead of reusing all distributions
+    			if (ontology.containsIndividualInSignature(declarativeDistThisNode.asOWLNamedIndividual().getIRI(), true)) {
+    				OWLEntityRemover remover = new OWLEntityRemover(ontology.getOWLOntologyManager(), Collections.singleton(ontology));
+    				declarativeDistThisNode.asOWLNamedIndividual().accept(remover);
+    				ontology.getOWLOntologyManager().applyChanges(remover.getChanges());
+    				declarativeDistThisNode = factory.getOWLNamedIndividual(residentNode.getName() + DECLARATIVE_DISTRO_SUFIX, prowl2Prefix);
+    			}
+    			
     			// add axiom forcing that declarativeDistThisNode has declarativeDist as its type
     			ontology.getOWLOntologyManager().addAxiom(
     					ontology, 
@@ -3568,7 +3589,10 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 			// solve link
 			Entity state = stateLink.getState(); 
 			if( ( state instanceof CategoricalStateEntity ) || (state instanceof ObjectEntity)){ 
-
+				if (mebn.getBooleanStatesEntityContainer().getAbsurdStateEntity().equals(state)) {
+					// the "absurd" state is implicitly added to all RVs, so we do not have to add it
+					continue;
+				}
 				// do different behavior depending on the type of state
 				if ( state instanceof CategoricalStateEntity ) {
 					isCategorical = true;
@@ -4245,7 +4269,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 									isSubsByProperty, 
 									oVariableIndividual, 
 									ontology.getOWLOntologyManager().getOWLDataFactory().getOWLLiteral(
-											this.getMetaEntityCache().get(oVariable.getValueType().getName()), 
+											( (this.getMetaEntityCache().get(oVariable.getValueType().getName()) == null)?this.extractName(ontology.getOWLOntologyManager().getOWLDataFactory().getOWLThing()):(this.getMetaEntityCache().get(oVariable.getValueType().getName())) ) , 
 											OWL2Datatype.XSD_ANY_URI
 									)
 								)

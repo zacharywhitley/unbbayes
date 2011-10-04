@@ -14,6 +14,8 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.PrefixManager;
 import org.semanticweb.owlapi.util.DefaultPrefixManager;
 
+import unbbayes.util.Debug;
+
 
 /**
  * This is a default implementation of {@link IPROWL2ModelUser}
@@ -135,6 +137,21 @@ public class DefaultPROWL2ModelUser implements IPROWL2ModelUser {
 			
 			// this is an unknown literal, then return the literal
 			return String.valueOf(((OWLLiteral)owlObject).getLiteral());
+		}
+		
+		if (owlObject instanceof OWLOntology) {
+			// extract the file name of the ontology (without the .owl extension)
+			String name = null;
+			try {
+				name = ((OWLOntology)owlObject).getOntologyID().getDefaultDocumentIRI().toString();
+				name = name.substring(name.lastIndexOf("/")+1, ((name.lastIndexOf(".") < 0)?name.length():name.lastIndexOf(".")));
+			} catch (Exception e) {
+				Debug.println(getClass(), e.getMessage(), e);
+			}
+			if (name == null) {
+				return ((OWLEntity)owlObject).toStringID();
+			}
+			return name;
 		}
 		return owlObject.toString();
 	}

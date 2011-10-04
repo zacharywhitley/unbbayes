@@ -99,7 +99,8 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 		// extract default name
 		String defaultMEBNName = "MEBN";
 		try {
-			defaultMEBNName = this.getLastOWLOntology().getOntologyID().toString();
+			defaultMEBNName = this.extractName(this.getLastOWLOntology());
+//			defaultMEBNName = this.getLastOWLOntology().getOntologyID().getOntologyIRI().getFragment();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -215,6 +215,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 	 */
 	public MultiEntityBayesianNetwork loadMebn(File file) throws IOException,
 			IOMebnException {
+		System.gc();
 		// the main access point to ontologies is the OWLOntology and OWLOntologyManager (both from OWL API)
 		if (this.getLastOWLOntology()  == null) {
 			// load ontology from file and set as active
@@ -2305,7 +2306,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 	 * @deprecated TODO this method should be moved to {@link ContextNode} in the future.
 	 */
 	private List<Argument> putArgumentListInOrder(List<Argument> argumentListOriginal){
-		
+		System.gc();
 	    ArrayList<Argument> argumentList = new ArrayList<Argument>(); 
 	    int i = 1; /* number of the actual argument */
 	    while(argumentListOriginal.size() > 0){
