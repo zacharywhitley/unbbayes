@@ -216,7 +216,9 @@ public class MEBNEditionPane extends JPanel {
 
 	/* Load resource file from this package */
   	private static ResourceBundle resource = ResourceController.newInstance().getBundle(
-			unbbayes.gui.mebn.resources.Resources.class.getName());; 
+			unbbayes.gui.mebn.resources.Resources.class.getName());
+
+	private JSplitPane jspTabSelectedAndDescription;; 
 
   	public MEBNEditionPane(MEBNNetworkWindow _netWindow,
             MEBNController _controller) {
@@ -357,8 +359,13 @@ public class MEBNEditionPane extends JPanel {
         /*------------------- Left panel ---------------------*/
 
         tabsPanel.add(BorderLayout.NORTH, jtbTabSelection);
-        tabsPanel.add(BorderLayout.CENTER, jpTabSelected);
-        tabsPanel.add(BorderLayout.SOUTH, descriptionPane);
+
+//        tabsPanel.add(BorderLayout.CENTER, jpTabSelected);
+//        tabsPanel.add(BorderLayout.SOUTH, descriptionPane);
+        // the following code substitutes the above two lines
+        setJspTabSelectedAndDescription(new JSplitPane(JSplitPane.VERTICAL_SPLIT, jpTabSelected, descriptionPane));
+        tabsPanel.add(BorderLayout.CENTER, getJspTabSelectedAndDescription());
+        
         tabsPanel.add(BorderLayout.EAST, jtbEdition);
 
         
@@ -2015,6 +2022,21 @@ public class MEBNEditionPane extends JPanel {
 	 */
 	public MEBNController getMebnController() {
 		return mebnController;
+	}
+
+	/**
+	 * @param jspTabSelectedAndDescription the jspTabSelectedAndDescription to set
+	 */
+	public void setJspTabSelectedAndDescription(
+			JSplitPane jspTabSelectedAndDescription) {
+		this.jspTabSelectedAndDescription = jspTabSelectedAndDescription;
+	}
+
+	/**
+	 * @return the jspTabSelectedAndDescription
+	 */
+	public JSplitPane getJspTabSelectedAndDescription() {
+		return jspTabSelectedAndDescription;
 	}
 
 }

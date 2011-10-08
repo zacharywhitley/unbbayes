@@ -23,6 +23,7 @@ package unbbayes.prs.mebn.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.prs.mebn.IMultiEntityNode;
 import unbbayes.prs.mebn.MultiEntityNode;
 
 /**
@@ -81,11 +82,11 @@ public abstract class Entity{
 	 * @param node
 	 *            The node to be removed.
 	 */
-	public void removeNodeFromListIsPossibleValueOf(MultiEntityNode node) {
+	public void removeNodeFromListIsPossibleValueOf(IMultiEntityNode node) {
 		listIsPossibleValueOf.remove(node);
 	}
 	
-	public boolean isPossibleValueOf(MultiEntityNode node) {
+	public boolean isPossibleValueOf(IMultiEntityNode node) {
 		return listIsPossibleValueOf.contains(node);
 	}
 	

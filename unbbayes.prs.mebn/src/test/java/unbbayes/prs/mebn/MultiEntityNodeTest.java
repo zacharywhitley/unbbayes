@@ -82,7 +82,7 @@ public class MultiEntityNodeTest extends TestCase {
 		mfrag.addResidentNode((ResidentNode)resident);
 		
 		
-		MultiEntityNode context1 = new ContextNode("context_st_t",mfrag);
+		IMultiEntityNode context1 = new ContextNode("context_st_t",mfrag);
 		arg =  new Argument("arg1",context1);
 		arg.setArgNumber(1);
 		try{
@@ -102,7 +102,7 @@ public class MultiEntityNodeTest extends TestCase {
 		
 		mfrag.addContextNode((ContextNode)context1);
 		
-		MultiEntityNode context2 = new ContextNode("context_resident_st_t",mfrag);
+		IMultiEntityNode context2 = new ContextNode("context_resident_st_t",mfrag);
 		arg =  new Argument("arg1",context2);
 		arg.setArgNumber(1);
 		try{

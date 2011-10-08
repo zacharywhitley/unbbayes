@@ -143,13 +143,13 @@ public class MFrag implements Graph{
 		
 		nodeList.clear();
 		
-		for (MultiEntityNode node : residentNodeList) {
+		for (IMultiEntityNode node : residentNodeList) {
 			node.removeFromMFrag();
 		}
 		residentNodeList = new ArrayList<ResidentNode>();
 				
 		
-		for (MultiEntityNode node : inputNodeList) {
+		for (IMultiEntityNode node : inputNodeList) {
 			node.removeFromMFrag();
 		}
 		
@@ -164,7 +164,7 @@ public class MFrag implements Graph{
 		
 		//TODO cuidado!!! analisar se a classe mae realmente esta deletando estes nodos!!! 
 		
-		for (MultiEntityNode node : contextNodeList) {
+		for (IMultiEntityNode node : contextNodeList) {
 			node.removeFromMFrag();
 		}
 		contextNodeList = new ArrayList<ContextNode>();

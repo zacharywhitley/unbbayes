@@ -1087,7 +1087,13 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		
 		// TODO stop using if-then-else and use polymorphism instead
 		if (node != null) {
-			if (node instanceof ResidentNode){
+			if (node instanceof IPluginNode) {
+				this.getScreen().showProbabilityDistributionPanel(
+						this.getPluginNodeManager().getPluginNodeInformation(node.getClass()).getProbabilityFunctionPanelBuilder()
+				);
+				mebnEditionPane.setDescriptionText(node.getDescription(), null); // null means default icon
+				this.nodeActive = node;
+			} else if (node instanceof ResidentNode){
 				residentNodeActive = (ResidentNode)node;
 				setResidentNodeActive(residentNodeActive);
 			    mebnEditionPane.setDescriptionText(node.getDescription(), DescriptionPane.DESCRIPTION_PANE_RESIDENT); 
@@ -1103,12 +1109,6 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 				ovNodeActive = (OrdinaryVariable)node;
 				setOrdVariableNodeActive((OrdinaryVariable)node);
 				mebnEditionPane.setDescriptionText(node.getDescription(), DescriptionPane.DESCRIPTION_PANE_OVARIABLE); 
-			} else if (node instanceof IPluginNode) {
-				this.getScreen().showProbabilityDistributionPanel(
-						this.getPluginNodeManager().getPluginNodeInformation(node.getClass()).getProbabilityFunctionPanelBuilder()
-				);
-				mebnEditionPane.setDescriptionText(node.getDescription(), null); // null means default icon
-				this.nodeActive = node;
 			} else {
 				// unknown node
 				Debug.println(this.getClass(), "Unknown type of node: " + node);

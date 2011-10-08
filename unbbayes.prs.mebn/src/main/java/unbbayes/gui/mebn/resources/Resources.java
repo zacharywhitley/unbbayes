@@ -72,7 +72,7 @@ public class Resources extends GuiResources {
         {"newMEBNMn","E"},
 
 		/* Exceptions MEBN */
-		{"withoutMFrag", "No MFrag"}, 
+		{"withoutMFrag", "No MFrag Found"}, 
 		
 		//Menus MEBN
 		{"menuDelete", "Delete"}, 

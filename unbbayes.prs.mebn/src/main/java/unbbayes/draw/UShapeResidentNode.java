@@ -36,7 +36,7 @@ public class UShapeResidentNode extends UShape   implements INodeHolderShape
 	 */
 	private static final long serialVersionUID = -3577145414171234382L;
 	
-	protected RoundRectangle2D roundRect;
+	private RoundRectangle2D roundRect;
 	
 	public UShapeResidentNode(UCanvas c, Node pNode, int x, int y, int w, int h)
 	{
@@ -58,7 +58,7 @@ public class UShapeResidentNode extends UShape   implements INodeHolderShape
 	
 	public void InitShape() 
 	{
-		roundRect = new RoundRectangle2D.Double(GAP ,GAP,getWidth()-GAP*2-1,getHeight()-GAP*2-1, getHeight()/2,getHeight()/2 );
+		setRoundRect(new RoundRectangle2D.Double(GAP ,GAP,getWidth()-GAP*2-1,getHeight()-GAP*2-1, getHeight()/2,getHeight()/2 ));
 	} 
 	 
 	public void paintComponent(Graphics g) 
@@ -73,9 +73,9 @@ public class UShapeResidentNode extends UShape   implements INodeHolderShape
 										getWidth()/2, 0, 			Color.white, false));
 		
 	   
-		g2.fill(roundRect);
+		g2.fill(getRoundRect());
 	 	g2.setPaint(Color.black);
- 		g2.draw(roundRect);
+ 		g2.draw(getRoundRect());
  		
  		g2.setPaint(Color.black);
  		drawText(g);
@@ -84,7 +84,21 @@ public class UShapeResidentNode extends UShape   implements INodeHolderShape
 	
 	public boolean contain(double x, double y) 
 	{
-		return roundRect.contains((double)(x-getGlobalX()), (double)(y-getGlobalY()));
+		return getRoundRect().contains((double)(x-getGlobalX()), (double)(y-getGlobalY()));
+	}
+
+	/**
+	 * @param roundRect the roundRect to set
+	 */
+	public void setRoundRect(RoundRectangle2D roundRect) {
+		this.roundRect = roundRect;
+	}
+
+	/**
+	 * @return the roundRect
+	 */
+	public RoundRectangle2D getRoundRect() {
+		return roundRect;
 	}
 }
 

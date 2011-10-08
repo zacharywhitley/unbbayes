@@ -46,6 +46,7 @@ import javax.swing.JTextField;
 
 import unbbayes.controller.mebn.MEBNController;
 import unbbayes.gui.mebn.auxiliary.MebnToolkit;
+import unbbayes.prs.mebn.IMultiEntityNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -270,7 +271,7 @@ public class CPTEditionPane extends JPanel{
 							ResidentNode residentNode = residentNodeAuxList.get(selectedIndex); 
 							updateStatesList(residentNode);
 							
-							MultiEntityNode node = fatherNodeList.get(selectedIndex); 
+							IMultiEntityNode node = fatherNodeList.get(selectedIndex); 
 						    // let's assume node != null.
 							if(node instanceof InputNode){
 						    	List<OrdinaryVariable> listOrdinaryVariable = ((InputNode)node).getOrdinaryVariableList(); 

@@ -31,7 +31,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.util.SerializablePoint2D;
 
-public class MultiEntityNode extends Node {
+public class MultiEntityNode extends Node implements IMultiEntityNode {
  
 	private static final long serialVersionUID = -5435895970322752281L;
 
@@ -68,9 +68,8 @@ public class MultiEntityNode extends Node {
 		possibleValueList = new ArrayList<Entity>(); 
 	}
 	
-	/**
-	 * It returns the node's type. Not used for this node.
-	 * @see Node#getType()
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IMultiEntityNode#getType()
 	 */
 	// Please, avoid using @Override annotation, since it makes interface extraction (refactor) very difficult,
 	// because it supposes a inherited method is declared always inside a class, 
@@ -81,6 +80,9 @@ public class MultiEntityNode extends Node {
 		return 0;
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IMultiEntityNode#getMFrag()
+	 */
 	public MFrag getMFrag(){
 		return mFrag; 
 	}
@@ -114,39 +116,52 @@ public class MultiEntityNode extends Node {
     	return new Point(100,20);
     }
 	
-	/**
-	 * Method responsible for removing this node from its MFrag.
-	 *
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IMultiEntityNode#removeFromMFrag()
 	 */
 	public void removeFromMFrag() {
 		mFrag = null;
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IMultiEntityNode#addArgument(unbbayes.prs.mebn.Argument)
+	 */
 	public void addArgument(Argument arg){
 		argumentList.add(arg); 
 	}
 	
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IMultiEntityNode#removeArgument(unbbayes.prs.mebn.Argument)
+	 */
 	public void removeArgument(Argument arg){
 		argumentList.remove(arg); 
 	}
     
 
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IMultiEntityNode#addInnerTermOfList(unbbayes.prs.mebn.MultiEntityNode)
+	 */
 	public void addInnerTermOfList(MultiEntityNode instance){
 		innerTermOfList.add(instance); 
 	}	
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IMultiEntityNode#addInnerTermFromList(unbbayes.prs.mebn.MultiEntityNode)
+	 */
 	public void addInnerTermFromList(MultiEntityNode instance){
 		innerTermFromList.add(instance); 
 	}	
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IMultiEntityNode#addPossibleValue(unbbayes.prs.mebn.entity.Entity)
+	 */
 	public void addPossibleValue(Entity possibleValue){
 		possibleValueList.add(possibleValue); 
 	}
 	
-	/**
-	 * Remove the possible value with the name 
-	 * @param possibleValue name of the possible value
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IMultiEntityNode#removePossibleValueByName(java.lang.String)
 	 */
 	public void removePossibleValueByName(String possibleValue){
 		
@@ -158,18 +173,15 @@ public class MultiEntityNode extends Node {
 		}
 	}
 	
-	/**
-	 * Remove all possible values of the node
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IMultiEntityNode#removeAllPossibleValues()
 	 */
 	public void removeAllPossibleValues(){
 		possibleValueList.clear(); 
 	}
 	
-	/**
-	 * Verifies if the possible value is on the list of possible values
-	 * of the node. 
-	 * @param possibleValue name of the possible value
-	 * @return true if it is present or false otherside
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IMultiEntityNode#existsPossibleValueByName(java.lang.String)
 	 */
 	public boolean existsPossibleValueByName(String possibleValue){
 		
@@ -182,13 +194,15 @@ public class MultiEntityNode extends Node {
 		return false; 
 	}	
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IMultiEntityNode#getArgumentList()
+	 */
 	public List<Argument> getArgumentList(){
 		return argumentList; 
 	}
 	
-	/**
-	 * @param argNumber Number of the argument to be recover
-	 * @return the argument or null if don't have a argument with the specific number
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IMultiEntityNode#getArgumentNumber(int)
 	 */
 	public Argument getArgumentNumber(int argNumber){
 		for(Argument argument: argumentList){
@@ -199,40 +213,36 @@ public class MultiEntityNode extends Node {
 		return null; 
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IMultiEntityNode#getInnerTermOfList()
+	 */
 	public List<MultiEntityNode> getInnerTermOfList(){
 		return innerTermOfList; 
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IMultiEntityNode#getInnerTermFromList()
+	 */
 	public List<MultiEntityNode> getInnerTermFromList(){
 		return innerTermFromList; 
 	}		
 	
-	/**
-	 * !!!Maybe dead code!!!
-	 * It should be avoided. Use DomainResidentNode.getPossibleValueLinkList
-	 * whenever possible.
-	 * @return a list which elements were added by MultiEntityNode.addPossibleValue(value)... It
-	 * obviously doesn't contain entity instances (since they are dead codes)
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IMultiEntityNode#getPossibleValueList()
 	 */
 	public List<Entity> getPossibleValueList(){
 		return possibleValueList; 
 	}
 	
-	/**
-	 * Verify if the entity is a state of the node 
-	 * Warning: the search will be for the entity and not for the
-	 * name of entity.
-	 * @param entity The entity 
-	 * @return true if the entity is a state, false otherside
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IMultiEntityNode#hasPossibleValue(unbbayes.prs.mebn.entity.Entity)
 	 */
 	public boolean hasPossibleValue(Entity entity) {
 		return possibleValueList.contains(entity);
 	}
 	
-	/**
-	 * Verify if the node has a state with the name
-	 * @param stateName Name of state
-	 * @return true if have a state with the name, false otherside
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IMultiEntityNode#hasPossibleValue(java.lang.String)
 	 */
 	public boolean hasPossibleValue(String stateName) {
 		for (Entity entity : possibleValueList) {
@@ -243,11 +253,8 @@ public class MultiEntityNode extends Node {
 		return false;
 	}
 	
-	/**
-	 * This method is responsible for returning the index where this state is 
-	 * located.
-	 * @param stateName State's name desired to know the index.
-	 * @return Returns the state position, index. -1 if the state is not found.
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IMultiEntityNode#getPossibleValueIndex(java.lang.String)
 	 */
 	public int getPossibleValueIndex(String stateName) {
 		int index = 0;
@@ -261,10 +268,8 @@ public class MultiEntityNode extends Node {
 	}
 	
 	
-	/**
-	 * 
-	 * @param ovs Set of OrdinaryVariables to be searched inside its arguments.
-	 * @return True if all OVs within "ovs" are used as argument. False otherwise.
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IMultiEntityNode#hasAllOVs(unbbayes.prs.mebn.OrdinaryVariable)
 	 */
 	public boolean hasAllOVs(OrdinaryVariable...ovs) {
 		boolean found = false;
@@ -308,9 +313,8 @@ public class MultiEntityNode extends Node {
 		return alreadyCountedOVs;
 	}
 	
-	/**
-	 * 
-	 * @return how many different ovs appear inside this node, including inner nodes.
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IMultiEntityNode#getAllOVCount()
 	 */
 	public int getAllOVCount() {
 		Collection<OrdinaryVariable> ovs = new ArrayList<OrdinaryVariable>();
@@ -319,9 +323,8 @@ public class MultiEntityNode extends Node {
 	}
 	
 	
-	/**
-	 * Counts how many simple arg relationships are present within ArgumentList
-	 * @return
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IMultiEntityNode#getSimpleArgRelationshipCount()
 	 */
 	public int getSimpleArgRelationshipCount() {
 		int ret = 0;
@@ -333,10 +336,8 @@ public class MultiEntityNode extends Node {
 		return ret;
 	}
 	
-	/**
-	 * Returns the node's size (x,y) where x = width and y = height.
-	 * 
-	 * @return The node's size.
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IMultiEntityNode#getSize()
 	 */
 	//by young
 	public Point2D.Double getSize() {

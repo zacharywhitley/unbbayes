@@ -97,16 +97,16 @@ public class ResidentNode extends MultiEntityNode
 	
 	public ResidentNode(String name, MFrag mFrag){
 		super(); 
-		listPointers = new ArrayList<ResidentNodePointer>(); 
-		ordinaryVariableList = new ArrayList<OrdinaryVariable>(); 
-        this.mFrag = mFrag; 
+		setListPointers(new ArrayList<ResidentNodePointer>()); 
+		setOrdinaryVariableList(new ArrayList<OrdinaryVariable>()); 
+        this.setMFrag(mFrag); 
 		
-		inputInstanceFromList = new ArrayList<InputNode>(); 
-		parentInputNodeList = new ArrayList<InputNode>();
-		residentNodeFatherList = new ArrayList<ResidentNode>();	
-		residentNodeChildList = new ArrayList<ResidentNode>();	
-		randomVariableFindingList = new ArrayList<RandomVariableFinding>(); 
-		possibleValueList = new ArrayList<StateLink>(); 
+		setInputInstanceFromList(new ArrayList<InputNode>()); 
+		setParentInputNodeList(new ArrayList<InputNode>());
+		setResidentNodeFatherList(new ArrayList<ResidentNode>());	
+		setResidentNodeChildList(new ArrayList<ResidentNode>());	
+		setRandomVariableFindingList(new ArrayList<RandomVariableFinding>()); 
+		setPossibleValueLinkList(new ArrayList<StateLink>()); 
 		
 		setName(name); 
 		updateLabel(); 		
@@ -174,7 +174,7 @@ public class ResidentNode extends MultiEntityNode
     	
     	/* referencias a este label */
     	
-    	for(InputNode inputNode: inputInstanceFromList){
+    	for(InputNode inputNode: getInputInstanceFromList()){
     		inputNode.updateLabel(); 
     	}
     	
@@ -226,11 +226,11 @@ public class ResidentNode extends MultiEntityNode
 	}
 	
     public void addResidentNodePointer(ResidentNodePointer pointer){
-		listPointers.add(pointer); 
+		getListPointers().add(pointer); 
 	}
 	
 	public void removeResidentNodePointer(ResidentNodePointer pointer){
-		listPointers.remove(pointer); 
+		getListPointers().remove(pointer); 
 	}
 	
 	/**
@@ -240,7 +240,7 @@ public class ResidentNode extends MultiEntityNode
 	 */
 	
 	public void addResidentNodeChild(ResidentNode node){
-		residentNodeChildList.add(node); 
+		getResidentNodeChildList().add(node); 
 		node.addResidentNodeFather(this); 
 	}		
 	
@@ -249,7 +249,7 @@ public class ResidentNode extends MultiEntityNode
 	 * @param father
 	 */
 	private void addResidentNodeFather(ResidentNode father){
-		residentNodeFatherList.add(father);
+		getResidentNodeFatherList().add(father);
 	}
 	
 	/**
@@ -258,11 +258,11 @@ public class ResidentNode extends MultiEntityNode
 	 * @param father
 	 */
 	protected void addInputNodeFather(InputNode father){
-		parentInputNodeList.add(father); 
+		getParentInputNodesList().add(father); 
 	}	 
 	
 	protected void addInputInstanceFromList(InputNode instance){
-		inputInstanceFromList.add(instance);
+		getInputInstanceFromList().add(instance);
 	}
 	
 
@@ -271,7 +271,7 @@ public class ResidentNode extends MultiEntityNode
 	}
 	
 	public List<InputNode> getParentInputNodesList(){
-		return this.parentInputNodeList; 
+		return this.parentInputNodeList;
 	}	
 	
 	public List<ResidentNode> getResidentNodeChildList(){
@@ -286,11 +286,11 @@ public class ResidentNode extends MultiEntityNode
 	 * Don't use this method! Use removeResidentNodeChildList
 	 */
 	private void removeResidentNodeFather(ResidentNode node){
-		residentNodeFatherList.remove(node); 
+		getResidentNodeFatherList().remove(node); 
 	}
 	
 	protected void removeInputNodeFatherList(InputNode node){
-		parentInputNodeList.remove(node); 
+		getParentInputNodesList().remove(node); 
 	}	
 	
 	/**
@@ -299,12 +299,12 @@ public class ResidentNode extends MultiEntityNode
 	 * @param node
 	 */
 	public void removeResidentNodeChildList(ResidentNode node){
-		residentNodeChildList.remove(node);
+		getResidentNodeChildList().remove(node);
 		node.removeResidentNodeFather(this); 
 	}
 	
 	public void removeInputInstanceFromList(InputNode node){
-		if (inputInstanceFromList.remove(node)) {
+		if (getInputInstanceFromList().remove(node)) {
 			// the following code initiates an infinite loop when inputInstanceFromList does not contain node...
 			// that's why I included a test to avoid such situation...
 			try{
@@ -322,19 +322,19 @@ public class ResidentNode extends MultiEntityNode
 	 */
 	
 	public void addRandomVariableFinding(RandomVariableFinding finding){
-		randomVariableFindingList.add(finding); 
+		getRandomVariableFindingList().add(finding); 
 	}
 	
 	public void removeRandomVariableFinding(RandomVariableFinding finding){
-		randomVariableFindingList.remove(finding); 
+		getRandomVariableFindingList().remove(finding); 
 	}
 	
 	public boolean containsRandomVariableFinding(RandomVariableFinding finding){
-		return randomVariableFindingList.contains(finding); 
+		return getRandomVariableFindingList().contains(finding); 
 	}
 	
 	public void cleanRandomVariableFindingList(){
-		randomVariableFindingList.clear(); 
+		getRandomVariableFindingList().clear(); 
 	}
 	
 	public List<RandomVariableFinding> getRandomVariableFindingList() {
@@ -362,13 +362,13 @@ public class ResidentNode extends MultiEntityNode
 	public void addArgument(OrdinaryVariable ov, boolean addArgument) throws ArgumentNodeAlreadySetException, 
 	OVariableAlreadyExistsInArgumentList{
 		
-		if(ordinaryVariableList.contains(ov)){
+		if(getOrdinaryVariableList().contains(ov)){
 			throw new OVariableAlreadyExistsInArgumentList(); 
 		}
 		else{
-			int position = ordinaryVariableList.size();
+			int position = getOrdinaryVariableList().size();
 			
-			ordinaryVariableList.add(ov); 
+			getOrdinaryVariableList().add(ov); 
 			ov.addIsOVariableOfList(this); 
 			
 			//update the argument list
@@ -379,7 +379,7 @@ public class ResidentNode extends MultiEntityNode
 				this.addArgument(argument); 
 			}
 			
-			for(InputNode inputNode: inputInstanceFromList){
+			for(InputNode inputNode: getInputInstanceFromList()){
 				inputNode.updateResidentNodePointer(); 
 			}
 			
@@ -389,7 +389,7 @@ public class ResidentNode extends MultiEntityNode
 	
 	public void removeArgument(OrdinaryVariable ov){
 		
-		ordinaryVariableList.remove(ov);
+		getOrdinaryVariableList().remove(ov);
 
 		int indexOfArgumentRemoved = 0; 
 		for(Argument argument: super.getArgumentList()){
@@ -418,7 +418,7 @@ public class ResidentNode extends MultiEntityNode
 	 * @return
 	 */
 	public boolean containsArgument(OrdinaryVariable ov){
-		return ordinaryVariableList.contains(ov); 
+		return getOrdinaryVariableList().contains(ov); 
 	}
 	
 	public List<OrdinaryVariable> getOrdinaryVariableList(){
@@ -426,7 +426,7 @@ public class ResidentNode extends MultiEntityNode
 	}
 
 	public OrdinaryVariable getOrdinaryVariableByName(String name){
-		for(OrdinaryVariable ov: ordinaryVariableList){
+		for(OrdinaryVariable ov: getOrdinaryVariableList()){
 			if(ov.getName().equals(name)){
 				return ov; 
 			}
@@ -440,8 +440,8 @@ public class ResidentNode extends MultiEntityNode
 	 * @return indice or -1 if the ov don't is an argument. 
 	 */
 	public int getOrdinaryVariableIndex(OrdinaryVariable ov){
-		for(int i= 0; i < ordinaryVariableList.size(); i++){
-			if(ordinaryVariableList.get(i).equals(ov)){
+		for(int i= 0; i < getOrdinaryVariableList().size(); i++){
+			if(getOrdinaryVariableList().get(i).equals(ov)){
 				return i; 
 			}
 		}
@@ -456,10 +456,10 @@ public class ResidentNode extends MultiEntityNode
 	 */
 	public OrdinaryVariable getOrdinaryVariableByIndex(int index){
 		
-		if((index < 0 )||(index > ordinaryVariableList.size())){
+		if((index < 0 )||(index > getOrdinaryVariableList().size())){
 			return null; 
 		}else{
-			return ordinaryVariableList.get(index); 
+			return getOrdinaryVariableList().get(index); 
 		}
 		
 	}
@@ -586,8 +586,21 @@ public class ResidentNode extends MultiEntityNode
 		return null;
 	}
 	
+	/**
+	 * getter for possibleValueList
+	 * @return
+	 */
 	public List<StateLink> getPossibleValueLinkList(){
 		return possibleValueList; 
+	}
+	
+	/**
+	 * setter for possibleValueList.
+	 * @param possibleValueList
+	 * @see #getPossibleValueLinkList()
+	 */
+	protected void setPossibleValueLinkList(List<StateLink> possibleValueList){
+		this.possibleValueList = possibleValueList ; 
 	}
 	
 	/* (non-Javadoc)
@@ -660,31 +673,31 @@ public class ResidentNode extends MultiEntityNode
 	 */
 	public void delete(){
 		
-		while(!ordinaryVariableList.isEmpty()){
-			ordinaryVariableList.remove(0).removeIsOVariableOfList(this); 
+		while(!getOrdinaryVariableList().isEmpty()){
+			getOrdinaryVariableList().remove(0).removeIsOVariableOfList(this); 
 		}
 		
-		while(!inputInstanceFromList.isEmpty()){
-			inputInstanceFromList.remove(0).setInputInstanceOf(); 
+		while(!getInputInstanceFromList().isEmpty()){
+			getInputInstanceFromList().remove(0).setInputInstanceOf(); 
 		}
 		
-		while(!parentInputNodeList.isEmpty()){
-			parentInputNodeList.remove(0).removeResidentNodeChild(this); 
+		while(!getParentInputNodesList().isEmpty()){
+			getParentInputNodesList().remove(0).removeResidentNodeChild(this); 
 		}
 		
-		while(!residentNodeFatherList.isEmpty()){
-			ResidentNode father = residentNodeFatherList.get(0); 
+		while(!getResidentNodeFatherList().isEmpty()){
+			ResidentNode father = getResidentNodeFatherList().get(0); 
 			father.removeResidentNodeChildList(this); 
-			mFrag.removeEdgeByNodes(father, this);
+			getMFrag().removeEdgeByNodes(father, this);
 		}
 		
-		while(!residentNodeChildList.isEmpty()){
-			ResidentNode child = residentNodeChildList.get(0); 
+		while(!getResidentNodeChildList().isEmpty()){
+			ResidentNode child = getResidentNodeChildList().get(0); 
 			this.removeResidentNodeChildList(child);
-			mFrag.removeEdgeByNodes(this, child); 
+			getMFrag().removeEdgeByNodes(this, child); 
 		}
 		
-		mFrag.removeResidentNode(this); 
+		getMFrag().removeResidentNode(this); 
 		
 	}
 	
@@ -726,6 +739,72 @@ public class ResidentNode extends MultiEntityNode
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * @param listPointers the listPointers to set
+	 */
+	protected void setListPointers(List<ResidentNodePointer> listPointers) {
+		this.listPointers = listPointers;
+	}
+
+	/**
+	 * @return the listPointers
+	 */
+	protected List<ResidentNodePointer> getListPointers() {
+		return listPointers;
+	}
+
+	/**
+	 * @param ordinaryVariableList the ordinaryVariableList to set
+	 */
+	protected void setOrdinaryVariableList(List<OrdinaryVariable> ordinaryVariableList) {
+		this.ordinaryVariableList = ordinaryVariableList;
+	}
+
+	/**
+	 * @param mFrag the mFrag to set
+	 */
+	protected void setMFrag(MFrag mFrag) {
+		this.mFrag = mFrag;
+	}
+
+
+	/**
+	 * @param inputInstanceFromList the inputInstanceFromList to set
+	 */
+	protected void setInputInstanceFromList(List<InputNode> inputInstanceFromList) {
+		this.inputInstanceFromList = inputInstanceFromList;
+	}
+
+	/**
+	 * @param parentInputNodeList the parentInputNodeList to set
+	 */
+	protected void setParentInputNodeList(List<InputNode> parentInputNodeList) {
+		this.parentInputNodeList = parentInputNodeList;
+	}
+
+
+	/**
+	 * @param residentNodeFatherList the residentNodeFatherList to set
+	 */
+	protected void setResidentNodeFatherList(List<ResidentNode> residentNodeFatherList) {
+		this.residentNodeFatherList = residentNodeFatherList;
+	}
+
+	/**
+	 * @param residentNodeChildList the residentNodeChildList to set
+	 */
+	protected void setResidentNodeChildList(List<ResidentNode> residentNodeChildList) {
+		this.residentNodeChildList = residentNodeChildList;
+	}
+
+	/**
+	 * @param randomVariableFindingList the randomVariableFindingList to set
+	 */
+	protected void setRandomVariableFindingList(
+			List<RandomVariableFinding> randomVariableFindingList) {
+		this.randomVariableFindingList = randomVariableFindingList;
 	}
 	
 }

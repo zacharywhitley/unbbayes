@@ -43,10 +43,10 @@ import unbbayes.controller.IconController;
 import unbbayes.controller.mebn.MEBNController;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.IMultiEntityNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.util.ArrayMap;
 import unbbayes.util.ResourceController;
@@ -391,7 +391,7 @@ public class MTheoryTree extends JTree {
 					}
 				}
 				else{
-					if (nodeLeaf instanceof MultiEntityNode){
+					if (nodeLeaf instanceof IMultiEntityNode){
 						if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
 							
 							popupNode.setEnabled(true);

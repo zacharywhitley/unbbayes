@@ -26,12 +26,15 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.IMultiEntityNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.exception.CycleFoundException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
+import unbbayes.prs.mebn.extension.IMEBNPluginNode;
+import unbbayes.util.Debug;
 import unbbayes.util.ResourceController;
 import unbbayes.util.mebn.extension.manager.MEBNPluginNodeManager;
 
@@ -208,9 +211,41 @@ public class MEBNGraphPane extends GraphPane {
 					newNode.setPosition(e.getX(), e.getY());
 					
 					if (this.getController() instanceof MEBNController) {
+						if (((MEBNController)this.getController()).getCurrentMFrag() != null) {
+							// update mediator if it is a MEBN plugin node
+							if (newNode instanceof IMEBNPluginNode) {
+								IMEBNPluginNode pluginNode = (IMEBNPluginNode) newNode;
+								try {
+									pluginNode.setMediator(((MEBNController)this.getController()));
+								}catch (Exception exc) {
+									Debug.println(this.getClass(), pluginNode + " is not a Plugin Node, but we'll keep running the program.", exc);
+								}
+							}
+							// add new node into MFrag
+							((MEBNController)this.getController()).getCurrentMFrag().addNode(newNode);
+						} else {
+							JOptionPane.showMessageDialog(
+									((MEBNNetworkWindow)controller.getScreen()), 
+									resource.getString("withoutMFrag"), 
+									resource.getString("operationError"),
+									JOptionPane.WARNING_MESSAGE);
+							return;
+						}
 						
-						// add new node into MFrag
-						((MEBNController)this.getController()).getCurrentMFrag().addNode(newNode);
+						// notify node that it was added to a mfrag
+						if (newNode instanceof IMEBNPluginNode) {
+							IMEBNPluginNode pluginNode = (IMEBNPluginNode) newNode;
+							try {
+								pluginNode.onAddToMFrag(((MEBNController)this.getController()).getCurrentMFrag());
+							} catch (MFragDoesNotExistException e1) {
+								e1.printStackTrace();
+								JOptionPane.showMessageDialog(
+										((MEBNNetworkWindow)controller.getScreen()), 
+										resource.getString("withoutMFrag"), 
+										resource.getString("operationError"),
+										JOptionPane.WARNING_MESSAGE);
+							}
+						}
 						
 						// build a new shape for new node
 						UShape shape = null;
@@ -221,6 +256,9 @@ public class MEBNGraphPane extends GraphPane {
 						} catch (InstantiationException e1) {
 							throw new RuntimeException(e1);
 						}
+						shape.setNode(newNode);
+						shape.setCanvas(this);
+						shape.setLocation((int)(newNode.getPosition().getX()), (int)(newNode.getPosition().getY()));
 						
 						// add shape into this pane (canvas)
 						addShape(shape);
@@ -288,13 +326,37 @@ public class MEBNGraphPane extends GraphPane {
 	public void createNode(Node newNode) {
 
 		// create nodes from superclass (ordinal nodes). 
-		// Actually, I don't think it's necessary, but let's just be loyal to the original code (from GraphPane)...
-		super.createNode(newNode);
+		// It may look like the following code is useless, but it is going to execute something after mebn is compiled
+		// (because SSBN contains only normal bn nodes, and they must be rendered by a Shape class here).
+		if (!(newNode instanceof IMultiEntityNode)) {
+			// this code must only be executed when we are sure it is not a MEBN node, because nodes both compatible with BN & MEBN (e.g. plugin nodes) 
+			// causes duplicate shapes in canvas.
+			super.createNode(newNode);
+		}
+		
 		
 		// create MEBN-specific nodes 
 		// TODO stop using if-instanceof structure and start using object binding to a UShape builder.
 		UShape shape = null;
-		if (newNode instanceof ContextNode) {
+		if (newNode instanceof IMEBNPluginNode) {
+			try {
+				shape = this.getPluginNodeManager().getPluginNodeInformation(
+						newNode.getClass()).getShapeBuilder().build()
+						.getUShape(newNode, this);
+			} catch (IllegalAccessException e) {
+				throw new RuntimeException(e);
+			} catch (InstantiationException e) {
+				throw new RuntimeException(e);
+			}
+			if (shape != null) {
+				shape.setBounds(
+						(int)newNode.getPosition().getX(), 
+						(int)newNode.getPosition().getY(), 
+						newNode.getWidth(), 
+						newNode.getHeight()
+					);
+			}
+		} else if (newNode instanceof ContextNode) {
 			shape = new UShapeContextNode(this, newNode, (int) newNode
 					.getPosition().x, (int) newNode.getPosition().y, newNode
 					.getWidth(), newNode.getHeight());
@@ -325,7 +387,8 @@ public class MEBNGraphPane extends GraphPane {
 	/**
 	 * 
 	 * delegates to {@link #getController()}
-	 * @deprecated use {@link #getController()} and then {@link IMEBNMediator#getPluginNodeManager()}
+	 * @see {@link #getController()}
+	 * @see {@link IMEBNMediator#getPluginNodeManager()}
 	 */
 	public MEBNPluginNodeManager getPluginNodeManager() {
 		try {
@@ -346,6 +409,20 @@ public class MEBNGraphPane extends GraphPane {
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
+	}
+
+	/**
+	 * @return the resource
+	 */
+	public ResourceBundle getResource() {
+		return resource;
+	}
+
+	/**
+	 * @param resource the resource to set
+	 */
+	public void setResource(ResourceBundle resource) {
+		this.resource = resource;
 	}
 
 }

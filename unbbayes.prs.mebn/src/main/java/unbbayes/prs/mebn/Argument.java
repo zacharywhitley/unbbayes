@@ -38,7 +38,7 @@ public class Argument {
 	
 	private String name; 
  
-	private MultiEntityNode multiEntityNode; 
+	private IMultiEntityNode multiEntityNode; 
 	
 	private int argNumber; 
 
@@ -56,7 +56,7 @@ public class Argument {
 	 * @param name The name of the Argument
 	 * @param multiEntityNode The node where the argument is in.
 	 */	
-	public Argument(String name, MultiEntityNode multiEntityNode){
+	public Argument(String name, IMultiEntityNode multiEntityNode){
 		
 		this.name = name; 
 		this.multiEntityNode = multiEntityNode; 
@@ -100,7 +100,7 @@ public class Argument {
 		
 	}	
 	
-	public MultiEntityNode getMultiEntityNode(){
+	public IMultiEntityNode getMultiEntityNode(){
 		return multiEntityNode; 
 	}
 	

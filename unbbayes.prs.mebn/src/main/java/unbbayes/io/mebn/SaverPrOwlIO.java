@@ -31,6 +31,7 @@ import java.util.ResourceBundle;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.IMultiEntityNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -1097,7 +1098,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
 	 * @param individual The individual owl for the node
 	 * @param node The node that have the possible values
 	 */
-	private void saveContextPossibleValues(OWLIndividual individual, MultiEntityNode node){
+	private void saveContextPossibleValues(OWLIndividual individual, IMultiEntityNode node){
 		/*has possible values */
 		OWLObjectProperty hasPossibleValuesProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasPossibleValues"); 	
 		for(Entity possibleValue: node.getPossibleValueList()){

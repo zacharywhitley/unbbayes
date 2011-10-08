@@ -28,9 +28,9 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.IMultiEntityNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
-import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.context.EnumSubType;
@@ -142,7 +142,7 @@ public class ContextNodeEvaluator {
 	}
 	
 	//Note: don't observes the transitivity in context nodes. 
-	private boolean evaluateRelatedContextNodes (MultiEntityNode multiEntityNode, 
+	private boolean evaluateRelatedContextNodes (IMultiEntityNode multiEntityNode, 
 			List<OVInstance> ovInstances, MFragInstance mFragInstance, List<OrdinaryVariable> ovList) throws OVInstanceFaultException{
 
 		// We assume if MFrag is already set to use Default, then some context

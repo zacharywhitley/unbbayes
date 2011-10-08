@@ -36,6 +36,7 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.IMultiEntityNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -1310,7 +1311,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 		
 		OrdinaryVariable oVariable = null; 
 		Argument argument;
-		MultiEntityNode multiEntityNode; 	
+		IMultiEntityNode multiEntityNode; 	
 		
 		RDFIndividual individualOne;
 		RDFIndividual individualTwo; 	
