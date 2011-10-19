@@ -754,8 +754,12 @@ public class GraphPane extends UCanvas implements MouseListener,
 			if (n instanceof ContinuousNode || n instanceof ProbabilisticNode) {
 
 				shape = getNodeUShape(n);
-				shape.shapeTypeChange(UShapeProbabilisticNode.STYPE_BAR);
-				shape.setState(UShape.STATE_RESIZED, null);
+				if (shape != null) {
+					shape.shapeTypeChange(UShapeProbabilisticNode.STYPE_BAR);
+					shape.setState(UShape.STATE_RESIZED, null);
+				} else {
+					Debug.println(getClass(), "Warning. Could not extract shape from getNodeUShape(" + n +")");
+				}
 			}
 
 		}

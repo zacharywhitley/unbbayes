@@ -27,6 +27,7 @@ import java.util.ResourceBundle;
 
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
+import unbbayes.util.Debug;
 import unbbayes.util.FloatCollection;
 import unbbayes.util.SetToolkit;
 
@@ -86,6 +87,8 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 * marginal data.
 	 */
 	protected int[] factorsMarginal;
+	
+	private ISumOperation sumOperation;
 
 	/**
 	 * Initialize data and variables.
@@ -96,6 +99,12 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 		dataCopy = new FloatCollection();
 		dataMarginal = new FloatCollection();
 		variableList = new ArrayList<Node>();
+		
+		try{
+			this.setSumOperation(new SumOperation());
+		} catch (Exception e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
 	}
 	
 	/**
@@ -398,7 +407,11 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 		if (control == -1) {
 			// concentrate the sum on the first cell. 
 			int linearCoordDestination = coord - base;
-			float value = dataPT.data[linearCoordDestination] + dataPT.data[coord];
+			if (this.getSumOperation() == null) {
+				// ensure the operation exists
+				this.setSumOperation(new SumOperation());
+			}
+			float value = this.getSumOperation().operate(dataPT.data[linearCoordDestination], dataPT.data[coord]);
 			dataPT.data[linearCoordDestination] = value;
 			marked[coord] = true;
 			return;
@@ -415,6 +428,62 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 			for (int i = node.getStatesSize()-1; i >= 0; i--) {
 				sumAux(control-1, index, coord + i*factorsPT[control], base, marked);
 			}
+		}
+	}
+	
+	/**
+	 * Objects of this interface will be used by an internal method of {@link PotentialTable#sum(int)} 
+	 * ({@link PotentialTable#sumAux(int, int, int, int, boolean[])}) as the main operation.
+	 * The default must be + (the "add") for {@link PotentialTable#sum(int)} to implement
+	 * literally the sum operation.
+	 * 
+	 * Creating new implementations of this object may be useful for changing the {@link PotentialTable#sum(int)}
+	 * to perform a comparison (max or min) instead of a sum.
+	 * @author Shou Matsumoto
+	 *
+	 */
+	public interface ISumOperation {
+		/**
+		 * Perform an operation between 2 arguments
+		 * @param arg1
+		 * @param arg2
+		 * @return
+		 */
+		float operate(float arg1, float arg2);
+	}
+	
+	/**
+	 * This is the default implementation of {@link ISumOperation}.
+	 * By using this, {@link PotentialTable#sum(int)} behaves in the same
+	 * manner it was behaving before Oct. 14, 2011.
+	 * @author Shou Matsumoto
+	 *
+	 */
+	public class SumOperation implements ISumOperation {
+		/*
+		 * (non-Javadoc)
+		 * @see unbbayes.prs.bn.PotentialTable.ISumOperation#operate(float, float)
+		 */
+		@Override
+		public float operate(float arg1, float arg2) {
+			return arg1 + arg2;
+		}
+		
+	}
+	
+	/**
+	 * Implementation of {@link ISumOperation} whose {@link #operate(float, float)}
+	 * returns the grater of its arguments.
+	 * This is useful for implementing MPE inference algorithm on junction trees.
+	 * @author Shou Matsumoto
+	 *
+	 */
+	public class MaxOperation implements ISumOperation {
+		/**
+		 * Returns the value which is grater
+		 */
+		public float operate(float arg1, float arg2) {
+			return ((arg1>arg2)?arg1:arg2);
 		}
 	}
 	
@@ -693,6 +762,29 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 				fastOpTabDiv(c+1, linearA + i*factorsPT[c] , linearB + i*tab.factorsPT[index[c]], index, tab);
 			}
 		}
+	}
+
+	/**
+	 * This is the operation performed in {@link #sum(int)}.
+	 * By changing this, you can dynamically customize the behavior of
+	 * {@link #sum(int)} (actually, {@link #sumAux(int, int, int, int, boolean[])}
+	 * is the impacted method).
+	 * @param sumOperation the sumOperation to set
+	 * @see ISumOperation
+	 */
+	public void setSumOperation(ISumOperation sumOperation) {
+		this.sumOperation = sumOperation;
+	}
+
+	/**
+	 * This is the operation performed in {@link #sum(int)}.
+	 * By changing this, you can dynamically customize the behavior of
+	 * {@link #sum(int)} (actually, {@link #sumAux(int, int, int, int, boolean[])}
+	 * is the impacted method).
+	 * @return the sumOperation
+	 */
+	public ISumOperation getSumOperation() {
+		return sumOperation;
 	}
 	
 	

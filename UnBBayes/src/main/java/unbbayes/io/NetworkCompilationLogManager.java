@@ -7,7 +7,7 @@ import java.util.List;
 import unbbayes.io.log.TextLogManager;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.Clique;
-import unbbayes.prs.bn.JunctionTree;
+import unbbayes.prs.bn.IJunctionTree;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.Separator;
 
@@ -32,7 +32,7 @@ public class NetworkCompilationLogManager extends TextLogManager{
 //        append(resource.getString("logHeader"));
     }
 	
-    public void finishLog(JunctionTree tree, ArrayList<Node> nodes) {
+    public void finishLog(IJunctionTree tree, ArrayList<Node> nodes) {
     	if (!this.isEnabled()) {
     		return;
     	}

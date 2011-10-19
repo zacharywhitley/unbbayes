@@ -96,8 +96,9 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 
 	/**
 	 * Points to junction tree related to the graph.
+	 * @deprecated use {@link #getJunctionTree()} or {@link #setJunctionTree(JunctionTree)} instead.
 	 */
-	protected JunctionTree junctionTree;	
+	protected IJunctionTree junctionTree;	
     
     /**
      * Creates a new graph with no nodes or edges.
@@ -337,7 +338,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	/**
 	 * Builds junction tree from graph.
 	 */
-	protected void compileJT(JunctionTree jt) throws Exception {
+	protected void compileJT(IJunctionTree jt) throws Exception {
 		int menor;
 		Clique auxClique;
 		Separator auxSep;
@@ -1255,6 +1256,22 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	 */
 	public float PET() {
 		return junctionTree.getN();
+	}
+
+
+	/**
+	 * @return the junctionTree
+	 */
+	public IJunctionTree getJunctionTree() {
+		return junctionTree;
+	}
+
+
+	/**
+	 * @param junctionTree the junctionTree to set
+	 */
+	public  void setJunctionTree(IJunctionTree junctionTree) {
+		this.junctionTree = junctionTree;
 	}
 }
 

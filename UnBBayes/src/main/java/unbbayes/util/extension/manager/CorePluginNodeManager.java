@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EventObject;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,11 +14,10 @@ import java.util.Map;
 
 import javax.swing.ImageIcon;
 
-import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.registry.Extension;
+import org.java.plugin.registry.Extension.Parameter;
 import org.java.plugin.registry.ExtensionPoint;
 import org.java.plugin.registry.PluginDescriptor;
-import org.java.plugin.registry.Extension.Parameter;
 
 import unbbayes.draw.extension.IPluginUShape;
 import unbbayes.draw.extension.IPluginUShapeBuilder;
@@ -47,7 +45,7 @@ public class CorePluginNodeManager {
 	// this is a map to store the informations associated to classes extending IPluginNode (which are plugin nodes)
 	private Map<Class, INodeClassDataTransferObject> nodeClassToDtoMap = new HashMap<Class, INodeClassDataTransferObject>();
 	
-	private UnBBayesPluginContextHolder unbbayesPluginContextHolder = UnBBayesPluginContextHolder.newInstance();
+	private UnBBayesPluginContextHolder unbbayesPluginContextHolder;
 	
 	// ID of the plugin where we can find new node declarations
 	private String pluginNodeExtensionPointID;
@@ -58,6 +56,9 @@ public class CorePluginNodeManager {
 //			pluginNodeExtensionPointID = "PluginNode";
 //		}
 //	}
+
+	// this is the ID of the plugin defining the extension point for plugin nodes (usually, this is the "core" plugin)
+	private String mainPluginID;
 	
 	/** Name of the extension point parameter for node's class {@link IPluginNode} or its builder {@link PluginNodeBuilder} */
 	public static final String PARAMETER_CLASS = "class";
@@ -89,13 +90,28 @@ public class CorePluginNodeManager {
 	 */
 	protected CorePluginNodeManager() {
 		this.setNodeClassToDtoMap(new HashMap<Class, INodeClassDataTransferObject>());
-		
+		this.setUnbbayesPluginContextHolder(UnBBayesPluginContextHolder.newInstance());
 		// loads config from application.properties
-		pluginNodeExtensionPointID = ApplicationPropertyHolder.getProperty().getProperty("unbbayes.util.extension.node.CorePluginNodeManager.pluginNodeExtensionPointID");
-		if (pluginNodeExtensionPointID == null) {
-			System.err.println("Error reading PluginNode extension point from application.properties. Using default.");
-			pluginNodeExtensionPointID = "PluginNode";
+		
+		// name of the basic plugin (the plugin declaring the extension point)
+		this.setMainPluginID(ApplicationPropertyHolder.getProperty().getProperty("unbbayes.util.extension.node.CorePluginNodeManager.mainPluginID"));
+		if (this.getMainExtensionPointID() == null) {
+			System.err.println("Error reading base plugin name from application.properties. Use core.");
+			this.setMainExtensionPointID(this.getUnbbayesPluginContextHolder().getPluginCoreID());
 		}
+		
+		// name of the extension point
+		this.setMainExtensionPointID(ApplicationPropertyHolder.getProperty().getProperty("unbbayes.util.extension.node.CorePluginNodeManager.mainExtensionPointID"));
+		if (this.getMainExtensionPointID() == null) {
+			System.err.println("Error reading PluginNode extension point from application.properties. Loading from deprecated property unbbayes.util.extension.node.CorePluginNodeManager.pluginNodeExtensionPointID.");
+			// the following property name is deprecated, but still valid
+			this.setMainExtensionPointID(ApplicationPropertyHolder.getProperty().getProperty("unbbayes.util.extension.node.CorePluginNodeManager.pluginNodeExtensionPointID"));
+		}
+		if (this.getMainExtensionPointID() == null) {
+			System.err.println("Error reading PluginNode extension point from application.properties. Using default: PluginNode.");
+			this.setMainExtensionPointID("PluginNode");
+		}
+		
 		
 		// adds a listener to be called when a "reload plugin" event is dispatched
 //		this.getUnbbayesPluginContextHolder().addListener(new UnBBayesPluginContextHolder.OnReloadActionListener() {
@@ -183,14 +199,16 @@ public class CorePluginNodeManager {
 			this.getUnbbayesPluginContextHolder().publishPlugins();
 		}
 
-	    // loads the "core" plugin, which declares general extension points for core 
-	    PluginDescriptor core = this.getUnbbayesPluginContextHolder().getPluginManager().getRegistry().getPluginDescriptor(
-	    		this.getUnbbayesPluginContextHolder().getPluginCoreID()
+	    // loads the the plugin declaring an extension point (in this case, it is the "core" plugin), which declares general extension points for core 
+	    PluginDescriptor pluginDeclaringExtensionPoint = this.getUnbbayesPluginContextHolder().getPluginManager().getRegistry().getPluginDescriptor(
+//	    		this.getUnbbayesPluginContextHolder().getPluginCoreID()
+	    		this.getMainPluginID()
 	    		);
         
 	    // load the extension point for new nodes.
 	    ExtensionPoint point = this.getUnbbayesPluginContextHolder().getPluginManager().getRegistry().getExtensionPoint(
-	    			core.getId(), this.getMainExtensionPointID()
+	    			pluginDeclaringExtensionPoint.getId(), 
+	    			this.getMainExtensionPointID()
 	    		);
     	
 	    // iterate over the connected extension points
@@ -340,7 +358,7 @@ public class CorePluginNodeManager {
 	 * the ID of PluginNode extension point.
 	 * @return the pluginNodeExtensionPointID
 	 */
-	protected String getMainExtensionPointID() {
+	public String getMainExtensionPointID() {
 		return pluginNodeExtensionPointID;
 	}
 
@@ -349,7 +367,7 @@ public class CorePluginNodeManager {
 	 * the ID of PluginNode extension point.
 	 * @param pluginNodeExtensionPointID the pluginNodeExtensionPointID to set
 	 */
-	protected void setMainExtensionPointID(String pluginNodeID) {
+	public void setMainExtensionPointID(String pluginNodeID) {
 		this.pluginNodeExtensionPointID = pluginNodeID;
 	}
 
@@ -366,6 +384,20 @@ public class CorePluginNodeManager {
 	public void setUnbbayesPluginContextHolder(
 			UnBBayesPluginContextHolder unbbayesPluginContextHolder) {
 		this.unbbayesPluginContextHolder = unbbayesPluginContextHolder;
+	}
+
+	/**
+	 * @return the mainPluginID
+	 */
+	public String getMainPluginID() {
+		return mainPluginID;
+	}
+
+	/**
+	 * @param mainPluginID the mainPluginID to set
+	 */
+	public void setMainPluginID(String mainPluginID) {
+		this.mainPluginID = mainPluginID;
 	}
 
 }

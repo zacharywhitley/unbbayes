@@ -202,7 +202,8 @@ public class UnBBayesPluginContextHolder {
 	 * @param origin : object that originated the notify event.
 	 */
 	public void notifyReload(Object origin) {
-		for (OnReloadActionListener listener : this.getOnReloadListeners()) {
+		// iterate on a copy of on reload listeners, so that we can avoid concurrent modification
+		for (OnReloadActionListener listener : new ArrayList<UnBBayesPluginContextHolder.OnReloadActionListener>(this.getOnReloadListeners())) {
 			try{
 				listener.onReload(new EventObject(origin));
 			}catch (Throwable t) {

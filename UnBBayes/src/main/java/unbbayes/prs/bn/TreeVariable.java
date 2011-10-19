@@ -84,7 +84,7 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     //by young end
     }
 
-    void setMarginalAt(int index, float value) {
+    public void setMarginalAt(int index, float value) {
         marginalList[index] = value;
     }
     

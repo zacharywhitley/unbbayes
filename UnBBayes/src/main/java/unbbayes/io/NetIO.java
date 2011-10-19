@@ -1062,11 +1062,12 @@ public class NetIO implements BaseIO {
 				+ (int) node.getPosition().getY()
 				+ ");");
 		
+		// the following code was generating an invalid file (hugin cannot open it)
 		//by young
-		stream.println(
-				"     color = ("
-					+ (int)node.getColor().getRGB()
-					+ ");");
+//		stream.println(
+//				"     color = ("
+//					+ (int)node.getColor().getRGB()
+//					+ ");");
 		//by young end
 	}
 

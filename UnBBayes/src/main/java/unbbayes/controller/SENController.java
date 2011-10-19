@@ -78,6 +78,8 @@ public class SENController {
     // TODO ROMMEL - CHANGE THIS!! NEW MODELING!!
 	private IInferenceAlgorithm inferenceAlgorithm = new JunctionTreeAlgorithm();
 
+	private int counterForNodeName = 0;
+
 	public IInferenceAlgorithm getInferenceAlgorithm() {
 		return inferenceAlgorithm;
 	}
@@ -308,7 +310,7 @@ public class SENController {
 		node.setPosition(x, y);
 		node.appendState(resource.getString("firstStateProbabilisticName"));
 		node.setName(resource.getString("probabilisticNodeName")
-				+ singleEntityNetwork.getNodeCount());
+				+ getCounterForNodeName());
 		node.setDescription(node.getName());
 		PotentialTable auxTabProb = (PotentialTable)(node)
 				.getProbabilityFunction();
@@ -316,6 +318,7 @@ public class SENController {
 		auxTabProb.setValue(0, 1);
 		singleEntityNetwork.addNode(node);
 		
+		this.setCounterForNodeName(getCounterForNodeName() + 1);
 		return node;
 	}
 
@@ -329,10 +332,11 @@ public class SENController {
 		node.setPosition(x, y);
 		node.appendState(resource.getString("firstStateDecisionName"));
 		node.setName(resource.getString("decisionNodeName")
-				+ singleEntityNetwork.getNodeCount());
+				+ getCounterForNodeName());
 		node.setDescription(node.getName());
 		singleEntityNetwork.addNode(node);
-		
+
+		this.setCounterForNodeName(getCounterForNodeName() + 1);
 		return node;
 	}
 
@@ -345,12 +349,13 @@ public class SENController {
 		UtilityNode node = new UtilityNode();
 		node.setPosition(x, y);
 		node.setName(resource.getString("utilityNodeName")
-				+ singleEntityNetwork.getNodeCount());
+				+ getCounterForNodeName());
 		node.setDescription(node.getName());
 		IProbabilityFunction auxTab = ((IRandomVariable) node).getProbabilityFunction();
 		auxTab.addVariable(node);
 		singleEntityNetwork.addNode(node);
-		
+
+		this.setCounterForNodeName(getCounterForNodeName() + 1);
 		return node;
 	}
 
@@ -863,6 +868,26 @@ public class SENController {
 		explanation.setProbabilisticNode(node);
 		explanation.setVisible(true);
 		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+	}
+
+	/**
+	 * This counter is used by {@link #insertProbabilisticNode(double, double)},
+	 * {@link #insertDecisionNode(double, double)} and {@link #insertUtilityNode(double, double)}
+	 * as a suffix of the name.
+	 * @return the counterForNodeName
+	 */
+	public int getCounterForNodeName() {
+		return counterForNodeName;
+	}
+
+	/**
+	 * This counter is used by {@link #insertProbabilisticNode(double, double)},
+	 * {@link #insertDecisionNode(double, double)} and {@link #insertUtilityNode(double, double)}
+	 * as a suffix of the name.
+	 * @param counterForNodeName the counterForNodeName to set
+	 */
+	public void setCounterForNodeName(int counterForNodeName) {
+		this.counterForNodeName = counterForNodeName;
 	}
 
 }

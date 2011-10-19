@@ -33,7 +33,7 @@ import unbbayes.util.SetToolkit;
  *@author     Michael
  *@author     Rommel
  */
-public class JunctionTree implements java.io.Serializable {
+public class JunctionTree implements java.io.Serializable, IJunctionTree {
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
@@ -71,41 +71,51 @@ public class JunctionTree implements java.io.Serializable {
 		cliques = new ArrayList<Clique>();
 	}
 
-	/**
-	 * Retorna a probabidade total estimada
-	 *
-	 * @return probabilidade total estimada
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.IJunctionTree#getN()
 	 */
+	@Override
 	public float getN() {
 		return n;
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.IJunctionTree#addSeparator(unbbayes.prs.bn.Separator)
+	 */
+	@Override
 	public void addSeparator(Separator sep) {
 		separators.add(sep);
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.IJunctionTree#getSeparatorsSize()
+	 */
+	@Override
 	public int getSeparatorsSize() {
 		return separators.size();
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.IJunctionTree#getSeparatorAt(int)
+	 */
+	@Override
 	public Separator getSeparatorAt(int index) {
 		return separators.get(index);
 	}
 
-	/**
-	 *  Retorna o List com os cliques associados.
-	 *
-	 *@return    Vetor com os cliques associados.
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.IJunctionTree#getCliques()
 	 */
+	@Override
 	public List<Clique> getCliques() {
 		return cliques;
 	}
 	
 
-	/**
-	 *  Verifica a consist�ncia global.
-	 *  Aplica o algoritmo Colete seguido do Distribua no clique raiz da �rvore.
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.IJunctionTree#consistency()
 	 */
+	@Override
 	public void consistency() throws Exception {
 		n = 1;
 		Clique raiz = cliques.get(0);
@@ -186,9 +196,10 @@ public class JunctionTree implements java.io.Serializable {
     }
 	
 
-	/**
-	 *  Inicia cren�as da �rvore.
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.IJunctionTree#initBeliefs()
 	 */
+	@Override
 	public void initBeliefs() throws Exception {
 		if (! initialized) {
 			Clique auxClique;
@@ -282,13 +293,10 @@ public class JunctionTree implements java.io.Serializable {
 		}
 	}
 
-	/**
-	 * Returns the Separator associated with these Cliques, assuming no orientation.
-	 *
-	 * @param clique1 Clique 1
-	 * @param clique2 Clique 2
-	 * @return The separator associated with these Cliques or null if this separator doesn't exist.
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.IJunctionTree#getSeparator(unbbayes.prs.bn.Clique, unbbayes.prs.bn.Clique)
 	 */
+	@Override
 	public Separator getSeparator(Clique clique1, Clique clique2) {
 		int sizeSeparadores = separators.size();
 		for (int indSep = 0; indSep < sizeSeparadores; indSep++) {

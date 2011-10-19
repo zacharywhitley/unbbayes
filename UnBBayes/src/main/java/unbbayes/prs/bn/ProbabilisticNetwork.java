@@ -39,7 +39,8 @@ public class ProbabilisticNetwork
 
 	  /** Serialization runtime version number */
 	  private static final long serialVersionUID = 0;
-			
+	
+	private IJunctionTreeBuilder junctionTreeBuilder = new DefaultJunctionTreeBuilder();
 	
 	/**
 	 *  Cria uma nova rede probabil�ｽstica. Limpa o arquivo de log e inicializa o
@@ -137,11 +138,30 @@ public class ProbabilisticNetwork
 		moralize();
 		triangula();		
 		
-		if (isID()) {
-			compileJT(new JunctionTreeID());
-		} else {
-			compileJT(new JunctionTree());
+		if (getJunctionTreeBuilder() == null) {
+			// initialize it if not initialized yet
+			setJunctionTreeBuilder(new DefaultJunctionTreeBuilder());
 		}
+		
+		compileJT(this.getJunctionTreeBuilder().buildJunctionTree(this));
+	}
+
+
+	/**
+	 * This is used in {@link #compile()} to generate instances of {@link JunctionTree}
+	 * @return the junctionTreeBuilder
+	 */
+	public IJunctionTreeBuilder getJunctionTreeBuilder() {
+		return junctionTreeBuilder;
+	}
+
+
+	/**
+	 * This is used in {@link #compile()} to generate instances of {@link JunctionTree}
+	 * @param junctionTreeBuilder the junctionTreeBuilder to set
+	 */
+	public void setJunctionTreeBuilder(IJunctionTreeBuilder junctionTreeBuilder) {
+		this.junctionTreeBuilder = junctionTreeBuilder;
 	}
 
 }
