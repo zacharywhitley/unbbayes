@@ -461,12 +461,12 @@ public class MFrag implements Graph{
 		} else if (destination instanceof ResidentNode){
 			if (origin instanceof ResidentNode){
 				//Case 1: DomainResidentNode -> DomainResidentNode
-				addEdgeInGraph(edge); 
 			    ((ResidentNode)origin).addResidentNodeChild((ResidentNode)destination); 
+			    addEdgeInGraph(edge); 
 			} else if (origin instanceof InputNode){
 				//Case 2: GenerativeInputNode -> DomainResidentNode 
-				addEdgeInGraph(edge); 
 			   ((InputNode)origin).addResidentNodeChild((ResidentNode)destination);
+			   addEdgeInGraph(edge); 
 			} else {
 				throw new MEBNConstructionException(resource.getString("InvalidEdgeException")); 
 			}
@@ -486,7 +486,7 @@ public class MFrag implements Graph{
 		Node origin = edge.getOriginNode();
 		Node destination = edge.getDestinationNode();
 
-		origin.getChildren().add(edge.getDestinationNode());
+		origin.addChildNode(edge.getDestinationNode());
 		destination.addParent(edge.getOriginNode());
 			    
 		edgeList.add(edge);
