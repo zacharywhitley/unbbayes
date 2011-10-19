@@ -464,7 +464,6 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 		 * (non-Javadoc)
 		 * @see unbbayes.prs.bn.PotentialTable.ISumOperation#operate(float, float)
 		 */
-		@Override
 		public float operate(float arg1, float arg2) {
 			return arg1 + arg2;
 		}

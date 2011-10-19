@@ -74,7 +74,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.IJunctionTree#getN()
 	 */
-	@Override
+	
 	public float getN() {
 		return n;
 	}
@@ -82,7 +82,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.IJunctionTree#addSeparator(unbbayes.prs.bn.Separator)
 	 */
-	@Override
+	
 	public void addSeparator(Separator sep) {
 		separators.add(sep);
 	}
@@ -90,7 +90,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.IJunctionTree#getSeparatorsSize()
 	 */
-	@Override
+	
 	public int getSeparatorsSize() {
 		return separators.size();
 	}
@@ -98,7 +98,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.IJunctionTree#getSeparatorAt(int)
 	 */
-	@Override
+	
 	public Separator getSeparatorAt(int index) {
 		return separators.get(index);
 	}
@@ -106,7 +106,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.IJunctionTree#getCliques()
 	 */
-	@Override
+	
 	public List<Clique> getCliques() {
 		return cliques;
 	}
@@ -115,7 +115,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.IJunctionTree#consistency()
 	 */
-	@Override
+	
 	public void consistency() throws Exception {
 		n = 1;
 		Clique raiz = cliques.get(0);
@@ -199,7 +199,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.IJunctionTree#initBeliefs()
 	 */
-	@Override
+	
 	public void initBeliefs() throws Exception {
 		if (! initialized) {
 			Clique auxClique;
@@ -296,7 +296,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.IJunctionTree#getSeparator(unbbayes.prs.bn.Clique, unbbayes.prs.bn.Clique)
 	 */
-	@Override
+	
 	public Separator getSeparator(Clique clique1, Clique clique2) {
 		int sizeSeparadores = separators.size();
 		for (int indSep = 0; indSep < sizeSeparadores; indSep++) {
