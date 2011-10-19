@@ -32,6 +32,7 @@ import unbbayes.prs.mebn.entity.CategoricalStatesEntityContainer;
 import unbbayes.prs.mebn.entity.ObjectEntityConteiner;
 import unbbayes.prs.mebn.entity.TypeContainer;
 import unbbayes.util.ApplicationPropertyHolder;
+import unbbayes.util.Debug;
 import unbbayes.util.IBridgeImplementor;
 
 /**
@@ -105,7 +106,7 @@ public class MultiEntityBayesianNetwork extends Network {
 					ApplicationPropertyHolder.getProperty().get(
 							this.getClass().getCanonicalName()+".useStorageImplementor").toString()));
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Failed to load storage implementor configuration from application.properties. Using default.", e);
 		}
 	}
 	

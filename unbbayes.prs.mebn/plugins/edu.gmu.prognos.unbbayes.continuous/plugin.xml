@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- This is a stub plugin for new nodes in MEBN.  -->
+<plugin id="edu.gmu.prognos.unbbayes.continuous" version="0.0.1">
+    <requires>
+        <import plugin-id="unbbayes.prs.mebn" plugin-version="1.12.9"/>
+    </requires>
+    <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNPluginNode" id="StubStubStubaaaaaaaaaaaaaaaa">
+        <parameter id="class" value="unbbayes.gui.mebn.extension.node.ContinuousResidentNode" />
+        <parameter id="name" value="Strange node" />
+        <parameter id="shapeClass" value="unbbayes.gui.mebn.extension.node.UShapeContinuousResidentNode"/>
+		<parameter id="panelBuilder" value="unbbayes.gui.mebn.extension.node.ContinuousResidentNodePanelBuilder"/>
+		<parameter id="description" value="StubStubStubaaaaaaaaaaaaaaaa" />
+		<parameter id="icon" value="none-or-one" />
+		<parameter id="cursor" value="none-or-one" />
+    </extension>
+</plugin>
