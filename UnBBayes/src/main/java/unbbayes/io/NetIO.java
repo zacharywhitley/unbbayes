@@ -244,7 +244,7 @@ public class NetIO implements BaseIO {
 			} else if (c == ',') {
 			} else {
 				StringBuffer newWord = new StringBuffer();
-				while ((c != '(') && (c != ')') && (c != ',')) {
+				while ((c != '(') && (c != ')') && (c != ',') && (i < sb.length())) {
 					newWord.append(c);
 					i++;
 					c = sb.charAt(i);

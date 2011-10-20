@@ -64,7 +64,7 @@ public class JunctionTreeMPEAlgorithm extends JunctionTreeAlgorithm {
 				TreeVariable nodeWithMarginal = (TreeVariable) node;
 				
 				// these vars store the probability of the most probable state of this node 
-				float greatestMarginal = 0f;
+				float greatestMarginal = Float.MIN_VALUE;
 				for (int i = 0; i < nodeWithMarginal.getStatesSize(); i++) {
 					// extract "marginals"
 					float currentMarginal = nodeWithMarginal.getMarginalAt(i);
@@ -77,10 +77,14 @@ public class JunctionTreeMPEAlgorithm extends JunctionTreeAlgorithm {
 				// this is equivalent to finding the value of X inthe following proportional equation:
 				//		greatestMarginal = 100% :  currentMarginal = X
 				//	(thus, X = 100%*currentMarginal/greatestMarginal)
-				for (int i = 0; i < nodeWithMarginal.getStatesSize(); i++) {
-					// if nodeWithMarginal.getMarginalAt(i) == greatestMarginal, then it sets to 1 (100%).
-					// if not, it sets to X = 100%*currentMarginal/greatestMarginal (100% = 1)
-					nodeWithMarginal.setMarginalAt(i, nodeWithMarginal.getMarginalAt(i)/greatestMarginal);
+				if (greatestMarginal > 0) {
+					for (int i = 0; i < nodeWithMarginal.getStatesSize(); i++) {
+						// if nodeWithMarginal.getMarginalAt(i) == greatestMarginal, then it sets to 1 (100%).
+						// if not, it sets to X = 100%*currentMarginal/greatestMarginal (100% = 1)
+						nodeWithMarginal.setMarginalAt(i, nodeWithMarginal.getMarginalAt(i)/greatestMarginal);
+					}
+				} else {
+					throw new IllegalStateException("MPE = 0");
 				}
 			}
 		}

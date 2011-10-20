@@ -51,38 +51,41 @@ public class JunctionTreeLPEAlgorithm extends JunctionTreeAlgorithm {
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#propagate()
 	 */
-	@Override
 	public void propagate() {
 		super.propagate();
 		// convert the most probable state ("marginal" value) to 100%
 		// and change other states proportionally
-//		for (Node node : this.getNetwork().getNodes()) {
-//			// only consider nodes with a value in the JTree at the left side of BN compilation pane
-//			// (UnBBayes calls this a "marginal")
-//			if (node instanceof TreeVariable) {
-//				TreeVariable nodeWithMarginal = (TreeVariable) node;
-//				
-//				// these vars store the probability of the most probable state of this node 
-//				float greatestMarginal = 0f;
-//				for (int i = 0; i < nodeWithMarginal.getStatesSize(); i++) {
-//					// extract "marginals"
-//					float currentMarginal = 1.0f - nodeWithMarginal.getMarginalAt(i);	// use complement (1 - prob) to consider least probable values
-//					if (currentMarginal > greatestMarginal) {
-//						greatestMarginal = currentMarginal;
-//					}
-//				}
-//				
-//				// use greatestMarginal to set probability of most probable state to 1 and alter others proportionally
-//				// this is equivalent to finding the value of X inthe following proportional equation:
-//				//		greatestMarginal = 100% :  currentMarginal = X
-//				//	(thus, X = 100%*currentMarginal/greatestMarginal)
-//				for (int i = 0; i < nodeWithMarginal.getStatesSize(); i++) {
-//					// if nodeWithMarginal.getMarginalAt(i) == greatestMarginal, then it sets to 1 (100%).
-//					// if not, it sets to X = 100%*currentMarginal/greatestMarginal (100% = 1)
-//					nodeWithMarginal.setMarginalAt(i, (1.0f - nodeWithMarginal.getMarginalAt(i))/greatestMarginal);
-//				}
-//			}
-//		}
+		for (Node node : this.getNetwork().getNodes()) {
+			// only consider nodes with a value in the JTree at the left side of BN compilation pane
+			// (UnBBayes calls this a "marginal")
+			if (node instanceof TreeVariable) {
+				TreeVariable nodeWithMarginal = (TreeVariable) node;
+				
+				// these vars store the probability of the most probable state of this node 
+				float minimum = Float.MAX_VALUE;
+				int indexOfMinimum = -1;
+				for (int i = 0; i < nodeWithMarginal.getStatesSize(); i++) {
+					// extract "marginals"
+					float currentMarginal = nodeWithMarginal.getMarginalAt(i);	// use complement (1 - prob) to consider least probable values
+					if (currentMarginal < minimum) {
+						minimum = currentMarginal;
+						indexOfMinimum = i;
+					}
+				}
+				
+				// use greatestMarginal to set probability of least probable state to 1 and others to 0
+				if (indexOfMinimum >= 0) {	// if found
+					// set everything to zero
+					for (int i = 0; i < nodeWithMarginal.getStatesSize(); i++) {
+						nodeWithMarginal.setMarginalAt(i, 0);
+					}
+					// set minimum to 1
+					nodeWithMarginal.setMarginalAt(indexOfMinimum, 1);
+				} else {
+					throw new IllegalStateException("LPE not found.");
+				}
+			}
+		}
 	}
 
 	/* (non-Javadoc)
