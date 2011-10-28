@@ -3,6 +3,10 @@
  */
 package unbbayes.prs.bn.inference.extension;
 
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+import unbbayes.controller.INetworkMediator;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.DefaultJunctionTreeBuilder;
 import unbbayes.prs.bn.IJunctionTreeBuilder;
@@ -16,6 +20,13 @@ import unbbayes.prs.bn.TreeVariable;
  */
 public class JunctionTreeLPEAlgorithm extends JunctionTreeAlgorithm {
 
+	private INetworkMediator mediator;
+	
+	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
+			unbbayes.controller.resources.ControllerResources.class.getName(),
+			Locale.getDefault(),
+			JunctionTreeMPEAlgorithm.class.getClassLoader());
+	
 	/**
 	 * 
 	 */
@@ -53,6 +64,13 @@ public class JunctionTreeLPEAlgorithm extends JunctionTreeAlgorithm {
 	 */
 	public void propagate() {
 		super.propagate();
+		if (this.getMediator() != null) {
+			// if we have access to the controller, update status label
+			float totalEstimateProb = this.getNet().PET();
+			this.getMediator().getScreen().setStatus(this.getResource()
+					.getString("statusEvidenceProbabilistic")
+					+ (totalEstimateProb * 100.0));
+		}
 		// convert the most probable state ("marginal" value) to 100%
 		// and change other states proportionally
 		for (Node node : this.getNetwork().getNodes()) {
@@ -102,6 +120,34 @@ public class JunctionTreeLPEAlgorithm extends JunctionTreeAlgorithm {
 	@Override
 	public String getName() {
 		return "Junction Tree Least PE";
+	}
+
+	/**
+	 * @return the mediator
+	 */
+	public INetworkMediator getMediator() {
+		return mediator;
+	}
+
+	/**
+	 * @param mediator the mediator to set
+	 */
+	public void setMediator(INetworkMediator mediator) {
+		this.mediator = mediator;
+	}
+
+	/**
+	 * @return the resource
+	 */
+	public static ResourceBundle getResource() {
+		return resource;
+	}
+
+	/**
+	 * @param resource the resource to set
+	 */
+	public static void setResource(ResourceBundle resource) {
+		JunctionTreeLPEAlgorithm.resource = resource;
 	}
 
 	

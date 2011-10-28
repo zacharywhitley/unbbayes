@@ -22,13 +22,10 @@ package unbbayes.gui;
 
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.Frame;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -41,30 +38,22 @@ import java.util.ResourceBundle;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JColorChooser;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
-import javax.swing.JSlider;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.java.plugin.PluginManager;
 import org.java.plugin.registry.Extension;
+import org.java.plugin.registry.Extension.Parameter;
 import org.java.plugin.registry.ExtensionPoint;
 import org.java.plugin.registry.PluginDescriptor;
-import org.java.plugin.registry.Extension.Parameter;
 
 import unbbayes.controller.NetworkController;
-import unbbayes.gui.option.GaussianMixtureOptionPanel;
 import unbbayes.gui.option.JunctionTreeOptionPanel;
-import unbbayes.prs.Node;
-import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.PluginCore;
 import unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel;
@@ -330,6 +319,9 @@ public class GlobalOptionsDialog extends JDialog {
     	            // intantiating plugin object
     		    	InferenceAlgorithmOptionPanel algorithmOptionPanel = null;
     		    	algorithmOptionPanel = (InferenceAlgorithmOptionPanel)pluginClass.newInstance();
+    		    	
+    		    	// update mediator of algorithmOptionPanel
+    		    	algorithmOptionPanel.setMediator(controller);
     		    	
     				// creating the radio buttons
     		    	// we assume algorithm equality as class equality (if 2 algorithms uses the same class, we assume they are the same algorithm)

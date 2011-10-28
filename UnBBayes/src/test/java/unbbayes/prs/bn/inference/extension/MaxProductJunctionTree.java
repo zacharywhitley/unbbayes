@@ -73,22 +73,22 @@ public class MaxProductJunctionTree extends JunctionTree {
 		clique1.getProbabilityFunction().opTab(dummyTable, PotentialTable.PRODUCT_OPERATOR);
 	}
 
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.bn.JunctionTree#coleteEvidencia(unbbayes.prs.bn.Clique)
-	 */
-	protected void coleteEvidencia(Clique clique) throws Exception {
-		Clique auxClique;
-		int sizeFilhos = clique.getChildrenSize();
-		for (int c = 0; c < sizeFilhos; c++) {
-			auxClique = clique.getChildAt(c);
-			if (auxClique.getChildrenSize() != 0) {
-				this.coleteEvidencia(auxClique);
-			}
-			
-			absorb(clique, auxClique);
-		}
-		// do not normalize
-	}
+//	/* (non-Javadoc)
+//	 * @see unbbayes.prs.bn.JunctionTree#coleteEvidencia(unbbayes.prs.bn.Clique)
+//	 */
+//	protected void coleteEvidencia(Clique clique) throws Exception {
+//		Clique auxClique;
+//		int sizeFilhos = clique.getChildrenSize();
+//		for (int c = 0; c < sizeFilhos; c++) {
+//			auxClique = clique.getChildAt(c);
+//			if (auxClique.getChildrenSize() != 0) {
+//				this.coleteEvidencia(auxClique);
+//			}
+//			
+//			absorb(clique, auxClique);
+//		}
+//		// do not normalize
+//	}
 
 //	/* (non-Javadoc)
 //	 * @see unbbayes.prs.bn.JunctionTree#distributeEvidences(unbbayes.prs.bn.Clique)

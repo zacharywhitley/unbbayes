@@ -17,8 +17,12 @@ public class JunctionTreeMPEOptionPanel extends JunctionTreeOptionPanel {
 	 */
 	public JunctionTreeMPEOptionPanel() {
 		super();
-		this.setInferenceAlgorithm(new JunctionTreeMPEAlgorithm());
+		JunctionTreeMPEAlgorithm algorithmToSet = new JunctionTreeMPEAlgorithm();
+		algorithmToSet.setOptionPanel(this);
+		this.setInferenceAlgorithm(algorithmToSet);
 		this.setName("JunctionTreeMPE");
 	}
 
+	
+	
 }
