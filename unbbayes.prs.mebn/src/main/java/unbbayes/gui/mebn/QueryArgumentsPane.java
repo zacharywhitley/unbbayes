@@ -34,8 +34,8 @@ import javax.swing.JToolBar;
 
 import unbbayes.controller.mebn.MEBNController;
 import unbbayes.gui.ParcialStateException;
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
-import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 
@@ -50,12 +50,12 @@ import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 public class QueryArgumentsPane extends JPanel{
 	
 	private MEBNController mebnController; 
-	private ResidentNode node; 
+	private IResidentNode node; 
 	
 	private JComboBox argument[]; 
 	
 	
-	public QueryArgumentsPane(ResidentNode node, MEBNController mebnController){
+	public QueryArgumentsPane(IResidentNode node, MEBNController mebnController){
 		
 		super(); 
 		

@@ -67,6 +67,7 @@ import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.extension.IPluginNode;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -740,7 +741,7 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	/* (non-Javadoc)
 	 * @see unbbayes.controller.mebn.IMEBNMediator#addBooleanAsPossibleValue(unbbayes.prs.mebn.ResidentNode)
 	 */
-	public void addBooleanAsPossibleValue(ResidentNode resident){
+	public void addBooleanAsPossibleValue(IResidentNode resident){
 
 		resident.addPossibleValueLink(multiEntityBayesianNetwork.getBooleanStatesEntityContainer().getTrueStateEntity());
 		resident.addPossibleValueLink(multiEntityBayesianNetwork.getBooleanStatesEntityContainer().getFalseStateEntity());
@@ -751,21 +752,21 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	/* (non-Javadoc)
 	 * @see unbbayes.controller.mebn.IMEBNMediator#removePossibleValue(unbbayes.prs.mebn.ResidentNode, java.lang.String)
 	 */
-	public void removePossibleValue(ResidentNode resident, String nameValue){
+	public void removePossibleValue(IResidentNode resident, String nameValue){
 		resident.removePossibleValueByName(nameValue);
 	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.controller.mebn.IMEBNMediator#removeAllPossibleValues(unbbayes.prs.mebn.ResidentNode)
 	 */
-	public void removeAllPossibleValues(ResidentNode resident){
+	public void removeAllPossibleValues(IResidentNode resident){
 		resident.removeAllPossibleValues();
 	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.controller.mebn.IMEBNMediator#existsPossibleValue(unbbayes.prs.mebn.ResidentNode, java.lang.String)
 	 */
-	public boolean existsPossibleValue(ResidentNode resident, String nameValue){
+	public boolean existsPossibleValue(IResidentNode resident, String nameValue){
 		return resident.existsPossibleValueByName(nameValue);
 	}
 
@@ -880,7 +881,7 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 			mebnEditionPane.setTxtInputOf("");
 		}
 		else{
-			if (target instanceof ResidentNode){
+			if (target instanceof IResidentNode){
 				mebnEditionPane.setTxtInputOf(((ResidentNode)target).getName());
 			}
 		}
@@ -1028,8 +1029,8 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		}
 		else{
 
-			if (selected instanceof ResidentNode){
-				((ResidentNode)selected).delete();
+			if (selected instanceof IResidentNode){
+				((IResidentNode)selected).delete();
 				multiEntityBayesianNetwork.getNamesUsed().remove(((ResidentNode)selected).getName()); 
 				mebnEditionPane.getMTheoryTree().removeNode((Node)selected);
 				mebnEditionPane.setMTheoryTreeActive();
@@ -1093,7 +1094,7 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 				);
 				mebnEditionPane.setDescriptionText(node.getDescription(), null); // null means default icon
 				this.nodeActive = node;
-			} else if (node instanceof ResidentNode){
+			} else if (node instanceof IResidentNode){
 				residentNodeActive = (ResidentNode)node;
 				setResidentNodeActive(residentNodeActive);
 			    mebnEditionPane.setDescriptionText(node.getDescription(), DescriptionPane.DESCRIPTION_PANE_RESIDENT); 
@@ -1657,7 +1658,7 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	/* (non-Javadoc)
 	 * @see unbbayes.controller.mebn.IMEBNMediator#saveCPT(unbbayes.prs.mebn.ResidentNode, java.lang.String)
 	 */
-	public void saveCPT(ResidentNode residentNode, String cpt){
+	public void saveCPT(IResidentNode residentNode, String cpt){
 		residentNode.setTableFunction(cpt);
 	}
 	
@@ -1763,7 +1764,7 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		}
 		// TODO use a map instead of cubic search
 		for(MFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
-			for(ResidentNode residentNode : mfrag.getResidentNodeList()){
+			for(IResidentNode residentNode : mfrag.getResidentNodeList()){
 				for(RandomVariableFinding finding: residentNode.getRandomVariableFindingList()){
 					knowledgeBase.insertRandomVariableFinding(finding); 
 				}
@@ -1781,7 +1782,7 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	public void clearFindingsIntoGUI(){
 		
 		for(MFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
-			for(ResidentNode residentNode : mfrag.getResidentNodeList()){
+			for(IResidentNode residentNode : mfrag.getResidentNodeList()){
 				residentNode.cleanRandomVariableFindingList(); 
 			}
 		}

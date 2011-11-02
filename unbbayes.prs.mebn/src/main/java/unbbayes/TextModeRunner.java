@@ -12,6 +12,7 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.Argument;
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -72,7 +73,7 @@ public class TextModeRunner {
 		}
 		
 		for(MFrag mfrag: mebn.getDomainMFragList()){
-			for(ResidentNode residentNode : mfrag.getResidentNodeList()){
+			for(IResidentNode residentNode : mfrag.getResidentNodeList()){
 				for(RandomVariableFinding finding: residentNode.getRandomVariableFindingList()){
 					knowledgeBase.insertRandomVariableFinding(finding); 
 				}

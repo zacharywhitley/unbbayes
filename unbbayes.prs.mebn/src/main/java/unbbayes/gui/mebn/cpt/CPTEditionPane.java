@@ -47,6 +47,7 @@ import javax.swing.JTextField;
 import unbbayes.controller.mebn.MEBNController;
 import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.prs.mebn.IMultiEntityNode;
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -232,7 +233,7 @@ public class CPTEditionPane extends JPanel{
 			inputNodeList = residentNode.getParentInputNodesList(); 
 			for(InputNode inputNode: inputNodeList){
 				Object father = inputNode.getInputInstanceOf();
-				if (father instanceof ResidentNode){
+				if (father instanceof IResidentNode){
 					residentNodeAuxList.add((ResidentNode)father); 
 					fatherNodeList.add(inputNode); 
 				}
@@ -268,7 +269,7 @@ public class CPTEditionPane extends JPanel{
 						if ((e.getModifiers() == MouseEvent.BUTTON1_MASK) && (e.getClickCount() == 1)){
 							jlArguments.setEnabled(true); 
 							int selectedIndex = jlFathers.getSelectedIndex(); 
-							ResidentNode residentNode = residentNodeAuxList.get(selectedIndex); 
+							IResidentNode residentNode = residentNodeAuxList.get(selectedIndex); 
 							updateStatesList(residentNode);
 							
 							IMultiEntityNode node = fatherNodeList.get(selectedIndex); 
@@ -277,7 +278,7 @@ public class CPTEditionPane extends JPanel{
 						    	List<OrdinaryVariable> listOrdinaryVariable = ((InputNode)node).getOrdinaryVariableList(); 
 						    	updateArgumentsList(listOrdinaryVariable);	
 						    }else{
-						    	List<OrdinaryVariable> listOrdinaryVariable = ((ResidentNode)node).getOrdinaryVariableList(); 
+						    	List<OrdinaryVariable> listOrdinaryVariable = ((IResidentNode)node).getOrdinaryVariableList(); 
 						    	updateArgumentsList(listOrdinaryVariable);
 						    	if (node.equals(getResidentNode())){
 						    		jlArguments.setEnabled(false); 
@@ -340,7 +341,7 @@ public class CPTEditionPane extends JPanel{
 			
 		}
 
-		private void updateStatesList(ResidentNode resident){
+		private void updateStatesList(IResidentNode resident){
 
 			List<Entity> listStates = resident.getPossibleValueList(); 
 

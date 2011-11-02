@@ -32,6 +32,7 @@ import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.IMultiEntityNode;
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -583,7 +584,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
 	 * @param residentNodeIndividual Individual that is the node in the PowerLoom structure. 
 	 * @param node Resident Node of the MEBN structure
 	 */
-	private void loadResidentPossibleValues(OWLIndividual residentNodeIndividual, ResidentNode node){
+	private void loadResidentPossibleValues(OWLIndividual residentNodeIndividual, IResidentNode node){
 
 		/* categoricalRVStates */
 		
@@ -670,7 +671,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
     			
     			/* has Argument */
     			if (generativeInputNode.getInputInstanceOf() != null){
-    				if(generativeInputNode.getInputInstanceOf() instanceof ResidentNode){
+    				if(generativeInputNode.getInputInstanceOf() instanceof IResidentNode){
     					ResidentNodePointer pointer = generativeInputNode.getResidentNodePointer(); 
     					OrdinaryVariable[] ovArray = pointer.getOrdinaryVariableArray(); 
     					for(int i = 0; i < ovArray.length; i++){
@@ -689,8 +690,8 @@ public class SaverPrOwlIO extends PROWLModelUser{
     			/* has Possible Values */
     			
     			if (generativeInputNode.getInputInstanceOf() != null){
-    				if(generativeInputNode.getInputInstanceOf() instanceof ResidentNode){
-    					ResidentNode residentNode = (ResidentNode)generativeInputNode.getInputInstanceOf(); 
+    				if(generativeInputNode.getInputInstanceOf() instanceof IResidentNode){
+    					IResidentNode residentNode = (IResidentNode)generativeInputNode.getInputInstanceOf(); 
     					for(Entity state: residentNode.getPossibleValueList()){
     						loadInputPossibleValues(generativeInputNodeIndividual, residentNode); 
     					}
@@ -719,7 +720,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
 	 * @param nodeIndividual
 	 * @param node
 	 */
-	private void loadInputPossibleValues(OWLIndividual nodeIndividual, ResidentNode node){
+	private void loadInputPossibleValues(OWLIndividual nodeIndividual, IResidentNode node){
 
 		/* categoricalRVStates */
 		//OWLNamedClass categoricalRVStatesClass = owlModel.getOWLNamedClass(CATEGORICAL_STATE); 
@@ -939,7 +940,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
 		
 		//Save the possible values
 		//saveHasPossibleValueProperty(innerContextNode, argument.getResidentNode()); 
-		loadResidentPossibleValues(innerContextNode, (ResidentNode)argument.getResidentNode()); 
+		loadResidentPossibleValues(innerContextNode, (IResidentNode)argument.getResidentNode()); 
 		
         //Save the arguments
 		OrdinaryVariable[] oVariableArray = argument.getOrdinaryVariableArray(); 

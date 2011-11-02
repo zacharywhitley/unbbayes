@@ -38,8 +38,8 @@ import javax.swing.JToolBar;
 
 import unbbayes.controller.mebn.MEBNController;
 import unbbayes.gui.ParcialStateException;
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
-import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.BooleanStatesEntityContainer;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
@@ -62,7 +62,7 @@ import unbbayes.util.ResourceController;
 public class FindingArgumentPane extends JPanel{
 	
 	private MEBNController mebnController; 
-	private ResidentNode node; 
+	private IResidentNode node; 
 	
 	private JComboBox states; 
 	private JComboBox argument[]; 
@@ -72,7 +72,7 @@ public class FindingArgumentPane extends JPanel{
 	ResourceBundle resource = ResourceController.newInstance().getBundle(
 			unbbayes.gui.mebn.resources.Resources.class.getName());; 
 	
-	public FindingArgumentPane(ResidentNode node, MEBNController mebnController){
+	public FindingArgumentPane(IResidentNode node, MEBNController mebnController){
 		
 		super(); 
 		
@@ -144,7 +144,7 @@ public class FindingArgumentPane extends JPanel{
 		 * */
 		
 		switch(node.getTypeOfStates()){
-		case ResidentNode.BOOLEAN_RV_STATES:
+		case IResidentNode.BOOLEAN_RV_STATES:
 			btnLabelType = new JButton(resource.getString("booleanLabel")); 
 			// please, note that creating an evidence indicating "Absurd" has no sense at this moment
 			List<StateLink> values = new ArrayList<StateLink>(node.getPossibleValueLinkList());
@@ -159,11 +159,11 @@ public class FindingArgumentPane extends JPanel{
 			//states = new JComboBox(node.getPossibleValueLinkList().toArray()); 
 			states = new JComboBox(values.toArray()); 
 			break; 
-		case ResidentNode.CATEGORY_RV_STATES:
+		case IResidentNode.CATEGORY_RV_STATES:
 			btnLabelType = new JButton(resource.getString("categoricalLabel")); 
 			states = new JComboBox(node.getPossibleValueLinkList().toArray()); 
 			break; 
-		case ResidentNode.OBJECT_ENTITY:
+		case IResidentNode.OBJECT_ENTITY:
 			StateLink link = node.getPossibleValueLinkList().get(0); 
 			ObjectEntity objectEntity = (ObjectEntity)link.getState();
 			btnLabelType = new JButton(objectEntity.getName());
@@ -201,10 +201,10 @@ public class FindingArgumentPane extends JPanel{
 	
 	public Entity getState(){
 		switch(node.getTypeOfStates()){
-		case ResidentNode.BOOLEAN_RV_STATES:
-		case ResidentNode.CATEGORY_RV_STATES:
+		case IResidentNode.BOOLEAN_RV_STATES:
+		case IResidentNode.CATEGORY_RV_STATES:
 			return ((StateLink)(states.getSelectedItem())).getState(); 
-		case ResidentNode.OBJECT_ENTITY:
+		case IResidentNode.OBJECT_ENTITY:
 			return (ObjectEntityInstance)states.getSelectedItem(); 
 		default:
 		    return null;  	

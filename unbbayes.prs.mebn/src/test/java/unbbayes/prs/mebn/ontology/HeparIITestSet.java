@@ -8,6 +8,7 @@ import java.util.ResourceBundle;
 import unbbayes.io.log.ILogManager;
 import unbbayes.io.log.TextLogManager;
 import unbbayes.io.mebn.UbfIO;
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.RandomVariableFinding;
@@ -297,7 +298,7 @@ public class HeparIITestSet  extends TestSet{
 		
 		if(findingList != null){
 			for(RandomVariableFinding finding: findingList){
-				ResidentNode node = finding.getNode(); 
+				IResidentNode node = finding.getNode(); 
 				node.addRandomVariableFinding(finding); 
 				kb.insertRandomVariableFinding(finding); 
 			}
@@ -312,7 +313,7 @@ public class HeparIITestSet  extends TestSet{
 	
 	private void clearRandomVariableFinding(){
 		for(MFrag mFrag: mebn.getMFragList()){
-			for(ResidentNode resident: mFrag.getResidentNodeList()){
+			for(IResidentNode resident: mFrag.getResidentNodeList()){
 				resident.cleanRandomVariableFindingList(); 
 			}
 		}

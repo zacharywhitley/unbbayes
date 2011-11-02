@@ -39,6 +39,7 @@ import javax.swing.tree.TreePath;
 import unbbayes.controller.IconController;
 import unbbayes.controller.mebn.MEBNController;
 import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -206,7 +207,7 @@ public class InputInstanceOfTree extends JTree{
 
 				if (obj != null) {
 					
-					if (obj instanceof ResidentNode){ 
+					if (obj instanceof IResidentNode){ 
 						setIcon(yellowNodeIcon);
 						}			
 					else{

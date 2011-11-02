@@ -40,6 +40,7 @@ import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -547,7 +548,7 @@ public class UbfIO implements MebnIO {
 				} else {
 					// reorder node by its type
 					if (this.isToUseOrderOfUBFFile()) {
-						if (node instanceof ResidentNode) {
+						if (node instanceof IResidentNode) {
 							try {
 								Collections.swap(mfrag.getResidentNodeList(), residentNodeIndex, mfrag.getResidentNodeList().indexOf(node));
 								Debug.println(this.getClass(), "Swapping resident node " + node.getName() + " to index " + residentNodeIndex);
@@ -665,10 +666,10 @@ public class UbfIO implements MebnIO {
 					if (st.ttype == st.TT_WORD || st.ttype == st.TT_NUMBER) { // accept numbers as possible values (for future releases)
 						String name = st.sval;
 						// only update resident nodes
-						if (node instanceof ResidentNode) {
+						if (node instanceof IResidentNode) {
 							Debug.println(this.getClass() , "Solving the order of possible values of " + node.getName());
 							
-							ResidentNode resident = (ResidentNode)node;
+							IResidentNode resident = (IResidentNode)node;
 							if (!resident.hasPossibleValue(name)) {
 								// we should only add the instances also declared previously in OWL file
 								continue;

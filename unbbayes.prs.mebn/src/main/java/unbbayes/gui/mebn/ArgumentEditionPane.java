@@ -43,6 +43,7 @@ import javax.swing.JToolBar;
 import unbbayes.controller.IconController;
 import unbbayes.controller.mebn.MEBNController;
 import unbbayes.gui.mebn.auxiliary.MebnToolkit;
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
@@ -87,7 +88,7 @@ public class ArgumentEditionPane extends JPanel{
 	
 	MEBNController mebnController; 
 	MFrag mFrag; 
-	ResidentNode residentNode; 
+	IResidentNode residentNode; 
 	
 	JButton btnNew; 
 	JButton btnDel; 	

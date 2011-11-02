@@ -40,6 +40,7 @@ import unbbayes.io.exception.UBIOException;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -387,7 +388,7 @@ public class PowerLoomKB implements KnowledgeBase {
 		
 		switch(resident.getTypeOfStates()){
 		
-		case ResidentNode.OBJECT_ENTITY:
+		case IResidentNode.OBJECT_ENTITY:
 
 			if (!resident.getPossibleValueLinkList().isEmpty()) {
 				String type = resident.getPossibleValueLinkList().get(0)
@@ -397,7 +398,7 @@ public class PowerLoomKB implements KnowledgeBase {
 
 			break;
 
-		case ResidentNode.CATEGORY_RV_STATES:
+		case IResidentNode.CATEGORY_RV_STATES:
 
 			String setofList = "";
 			for (StateLink state : links) {
@@ -455,7 +456,7 @@ public class PowerLoomKB implements KnowledgeBase {
 			i++; 
 		}
 
-		if (resident.getTypeOfStates() == ResidentNode.BOOLEAN_RV_STATES) {
+		if (resident.getTypeOfStates() == IResidentNode.BOOLEAN_RV_STATES) {
 			Stella_Object result = null;
 			for (int j = 0; j < this.getMaximumQueryAttemptCount(); j++) {
 				try {
@@ -560,7 +561,7 @@ public class PowerLoomKB implements KnowledgeBase {
 		
 		String finding = "";
 		
-		if(randonVariableFinding.getNode().getTypeOfStates() == ResidentNode.BOOLEAN_RV_STATES){
+		if(randonVariableFinding.getNode().getTypeOfStates() == IResidentNode.BOOLEAN_RV_STATES){
 		
 			finding+= "(";
 			if(randonVariableFinding.getState().getName().equals("false")){
@@ -921,7 +922,7 @@ public class PowerLoomKB implements KnowledgeBase {
 		
 		String finding = "";
 		
-		if(randomVariable.getTypeOfStates() == ResidentNode.BOOLEAN_RV_STATES){
+		if(randomVariable.getTypeOfStates() == IResidentNode.BOOLEAN_RV_STATES){
 			finding+= randomVariable.getName() + " ";
 			for(OVInstance argument: listArguments){
 				finding+= " " + argument.getEntity().getInstanceName(); 
@@ -1381,7 +1382,7 @@ public class PowerLoomKB implements KnowledgeBase {
 		
 		String queryString = "";
 		int argcount = 0;
-		if(resident.getTypeOfStates() != ResidentNode.BOOLEAN_RV_STATES){
+		if(resident.getTypeOfStates() != IResidentNode.BOOLEAN_RV_STATES){
 			
 			// filling ordinary
 			

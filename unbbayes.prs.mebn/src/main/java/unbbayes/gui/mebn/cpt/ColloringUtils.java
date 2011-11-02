@@ -25,6 +25,7 @@ import java.util.List;
 
 import javax.swing.text.StyledDocument;
 
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
@@ -43,9 +44,9 @@ public class ColloringUtils {
 	
 	private StyleTable styleTable; 
 	
-	private ResidentNode residentNode; 
+	private IResidentNode residentNode; 
 	
-	public ColloringUtils(ResidentNode _residentNode, StyleTable _styleTable){
+	public ColloringUtils(IResidentNode _residentNode, StyleTable _styleTable){
 		residentNode = _residentNode; 
 		styleTable = _styleTable;  
 		buildAuxiliaryLists(); 
@@ -277,7 +278,7 @@ public class ColloringUtils {
 		
 		for(ResidentNode resident : residentNode.getResidentNodeFatherList()){
 			fatherList.add(resident.getName());
-			ResidentNode domainResidentNode = resident; 
+			IResidentNode domainResidentNode = resident; 
 			
 			for(StateLink state: domainResidentNode.getPossibleValueLinkList()){
 				statesFatherList.add(state.getState().getName()); 
@@ -285,7 +286,7 @@ public class ColloringUtils {
 		}
 		
 		for(InputNode input : residentNode.getParentInputNodesList()){
-			if(input.getInputInstanceOf() instanceof ResidentNode){
+			if(input.getInputInstanceOf() instanceof IResidentNode){
 				ResidentNode resident = (ResidentNode)input.getInputInstanceOf(); 
 				
 				if(resident != null){

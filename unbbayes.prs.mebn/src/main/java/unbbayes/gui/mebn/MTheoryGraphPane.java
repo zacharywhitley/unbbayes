@@ -42,12 +42,12 @@ import unbbayes.gui.GraphPane;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MFragNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
-import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.util.ResourceController;
 
 /**
@@ -165,7 +165,7 @@ public class MTheoryGraphPane extends GraphPane {
 				shape = new UShapeContextNode(this, newNode, (int) newNode
 						.getPosition().x, y, newNode
 						.getWidth(), newNode.getHeight());
-			} else if (newNode instanceof ResidentNode) {
+			} else if (newNode instanceof IResidentNode) {
 				shape = new UShapeResidentNode(this, newNode, (int) newNode
 						.getPosition().x, y, newNode
 						.getWidth(), newNode.getHeight());

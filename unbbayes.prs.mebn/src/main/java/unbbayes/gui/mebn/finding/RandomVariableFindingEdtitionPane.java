@@ -48,6 +48,7 @@ import unbbayes.controller.mebn.MEBNController;
 import unbbayes.gui.ParcialStateException;
 import unbbayes.gui.mebn.auxiliary.ListCellRenderer;
 import unbbayes.gui.mebn.util.OrganizerUtils;
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.RandomVariableFinding;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.Entity;
@@ -80,7 +81,7 @@ public class RandomVariableFindingEdtitionPane extends JPanel {
   	private static final String EDITION_PANE = "EditionPane"; 
   	
   	private RandomVariableFinding instanceSelected = null; 
-  	private ResidentNode residentSelected = null; 
+  	private IResidentNode residentSelected = null; 
 	private boolean editingInstance = false; //user adding a new instance or only editing a instance previous created. 
 	
   	private JPanel upperPanel; 
@@ -107,7 +108,7 @@ public class RandomVariableFindingEdtitionPane extends JPanel {
 		this.add(downPanel, BorderLayout.PAGE_END); 
 	}
 	
-	public void showRandomVariableInstanceListPane(ResidentNode node){
+	public void showRandomVariableInstanceListPane(IResidentNode node){
 		downPanel.removeAll(); 
 		randomVariableInstanceListPane = new RandomVariableInstanceListPane(node); 
 		downPanel.add(randomVariableInstanceListPane, BorderLayout.CENTER); 
@@ -165,9 +166,9 @@ public class RandomVariableFindingEdtitionPane extends JPanel {
 		                	if(jlistResident.getSelectedValue() != null){
 		                		editingInstance = false; 
 		                		btnRemoveInstance.setEnabled(false); 
-		                    	residentSelected = (ResidentNode)(
+		                    	residentSelected = (IResidentNode)(
 		                    			((ResidentNodeJacket)jlistResident.getSelectedValue()).getResidentNode());  
-		                    	showRandomVariableInstanceListPane((ResidentNode)(
+		                    	showRandomVariableInstanceListPane((IResidentNode)(
 		                    			((ResidentNodeJacket)jlistResident.getSelectedValue()).getResidentNode()));
 		                	}
 		                }
@@ -226,9 +227,9 @@ public class RandomVariableFindingEdtitionPane extends JPanel {
         
         class ResidentNodeJacket{
         	
-        	private ResidentNode resident; 
+        	private IResidentNode resident; 
         	
-        	public ResidentNodeJacket(ResidentNode resident){
+        	public ResidentNodeJacket(IResidentNode resident){
         		this.resident = resident; 
         	}
         	
@@ -237,7 +238,7 @@ public class RandomVariableFindingEdtitionPane extends JPanel {
         		" (" + resident.getRandomVariableFindingList().size() + ")" + "</font></style>"; 
         	}
         	
-        	public ResidentNode getResidentNode(){
+        	public IResidentNode getResidentNode(){
         		return resident; 
         	}
         	
@@ -353,7 +354,7 @@ public class RandomVariableFindingEdtitionPane extends JPanel {
 	 */
 	private class RandomVariableInstanceListPane extends JPanel{
 		
-		private ResidentNode residentNode; 
+		private IResidentNode residentNode; 
 		
 		private JList jlistFindings; 
 		private JScrollPane scrollListObjectEntity; 
@@ -373,7 +374,7 @@ public class RandomVariableFindingEdtitionPane extends JPanel {
         
 		}
 		
-        public RandomVariableInstanceListPane(ResidentNode residentNode){
+        public RandomVariableInstanceListPane(IResidentNode residentNode){
         	
         	super(new BorderLayout()); 
         	

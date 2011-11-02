@@ -35,6 +35,7 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -608,7 +609,7 @@ public abstract class AbstractSSBNGenerator implements IMediatorAwareSSBNGenerat
 		return testSSBNNode;
 	}
 	
-	protected List<OVInstance> filterArgumentsForNode(Collection<OVInstance> ovInstanceList, ResidentNode node) {
+	protected List<OVInstance> filterArgumentsForNode(Collection<OVInstance> ovInstanceList, IResidentNode node) {
 	
 		List<OVInstance> ret = new ArrayList<OVInstance>(); 
 		
@@ -845,7 +846,7 @@ public abstract class AbstractSSBNGenerator implements IMediatorAwareSSBNGenerat
 	 * Evaluate only the context nodes for what have ordinary variables instances
 	 * for all the ordinary variables present (ordinal context nodes). 
 	 */
-	protected boolean evaluateRelatedContextNodes (ResidentNode residentNode, 
+	protected boolean evaluateRelatedContextNodes (IResidentNode residentNode, 
 			List<OVInstance> ovInstances) throws OVInstanceFaultException{
 		return evaluatedRelatedContextNodes(residentNode.getMFrag(), ovInstances, 
 				residentNode.getOrdinaryVariableList()); 
@@ -1013,7 +1014,7 @@ public abstract class AbstractSSBNGenerator implements IMediatorAwareSSBNGenerat
 	}
 	
 	protected OVInstance getListArgumentsOfInputVariableInOriginalMFrag(InputNode inputNode, OVInstance ovInstanceInputMFrag){
-		ResidentNode residentNode = inputNode.getResidentNodePointer().getResidentNode(); 
+		IResidentNode residentNode = inputNode.getResidentNodePointer().getResidentNode(); 
 		OrdinaryVariable ovInputMFrag = ovInstanceInputMFrag.getOv(); 
 		int index = inputNode.getResidentNodePointer().getOrdinaryVariableIndex(ovInputMFrag);
 		if(index > -1){

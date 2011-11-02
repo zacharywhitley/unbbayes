@@ -55,6 +55,7 @@ import javax.swing.text.BadLocationException;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.mebn.MEBNController;
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.BooleanStateEntity;
 import unbbayes.prs.mebn.entity.CategoricalStateEntity;
@@ -250,7 +251,7 @@ public class PossibleValuesEditionPane extends JPanel {
 				Object[] list = (Object[])listAllStates.getSelectedValues(); 
 				
 				if (!(residentNode.getPossibleValueLinkList().isEmpty())
-						&& (residentNode.getTypeOfStates() != ResidentNode.CATEGORY_RV_STATES)) {
+						&& (residentNode.getTypeOfStates() != IResidentNode.CATEGORY_RV_STATES)) {
 					int answer = JOptionPane.showConfirmDialog(
 							mebnController.getMebnEditionPane(),
 							resource.getString("warningDeletStates"),
@@ -259,7 +260,7 @@ public class PossibleValuesEditionPane extends JPanel {
 					if (answer == JOptionPane.YES_OPTION) {
 						mebnController
 						.removeAllPossibleValues(residentNode);
-						residentNode.setTypeOfStates(ResidentNode.CATEGORY_RV_STATES);	
+						residentNode.setTypeOfStates(IResidentNode.CATEGORY_RV_STATES);	
 					}
 					else{
 						return; 					
@@ -386,18 +387,18 @@ public class PossibleValuesEditionPane extends JPanel {
 			add(PANEL_BOOLEAN_STATES, panelBooleanStates);
 
 			switch (residentNode.getTypeOfStates()) {
-			case ResidentNode.OBJECT_ENTITY:
+			case IResidentNode.OBJECT_ENTITY:
 				cardLayout.show(this, PANEL_OBJECT_STATES);
-				selectedPanel = ResidentNode.OBJECT_ENTITY;
+				selectedPanel = IResidentNode.OBJECT_ENTITY;
 				
 				break;
-			case ResidentNode.CATEGORY_RV_STATES:
+			case IResidentNode.CATEGORY_RV_STATES:
 				cardLayout.show(this, PANEL_CATEGORY_STATES);
-				selectedPanel = ResidentNode.CATEGORY_RV_STATES;
+				selectedPanel = IResidentNode.CATEGORY_RV_STATES;
 				break;
-			case ResidentNode.BOOLEAN_RV_STATES:
+			case IResidentNode.BOOLEAN_RV_STATES:
 				cardLayout.show(this, PANEL_BOOLEAN_STATES);
-				selectedPanel = ResidentNode.BOOLEAN_RV_STATES;
+				selectedPanel = IResidentNode.BOOLEAN_RV_STATES;
 				break;
 			}
 
@@ -547,7 +548,7 @@ public class PossibleValuesEditionPane extends JPanel {
 					}else{
 						if (!residentNode.existsPossibleValueByName(nameValue)){
 							if (!(residentNode.getPossibleValueLinkList().isEmpty())
-									&& (residentNode.getTypeOfStates() != ResidentNode.CATEGORY_RV_STATES)) {
+									&& (residentNode.getTypeOfStates() != IResidentNode.CATEGORY_RV_STATES)) {
 								int answer = JOptionPane.showConfirmDialog(
 										mebnController.getMebnEditionPane(),
 										resource.getString("warningDeletStates"),
@@ -563,7 +564,7 @@ public class PossibleValuesEditionPane extends JPanel {
 
 										stateLink.setGloballyExclusive(checkGloballyExclusive.isSelected());
 										residentNode
-										.setTypeOfStates(ResidentNode.CATEGORY_RV_STATES);
+										.setTypeOfStates(IResidentNode.CATEGORY_RV_STATES);
 										
 									} catch (DuplicatedNameException e) {
 		  	  							JOptionPane.showMessageDialog(mebnController.getScreen(),
@@ -697,7 +698,7 @@ public class PossibleValuesEditionPane extends JPanel {
 								StateLink link = mebnController.addObjectEntityAsPossibleValue(residentNode, (ObjectEntity)comboEntities.getSelectedItem()); 
 								mebnController.setGloballyExclusiveProperty(link, checkGloballyExclusive.isSelected()); 
 								
-								residentNode.setTypeOfStates(ResidentNode.OBJECT_ENTITY);
+								residentNode.setTypeOfStates(IResidentNode.OBJECT_ENTITY);
 								listStatesPanel.update();
 							}
 						} else {
@@ -705,7 +706,7 @@ public class PossibleValuesEditionPane extends JPanel {
 							mebnController.setGloballyExclusiveProperty(link, checkGloballyExclusive.isSelected()); 
 							
 							residentNode
-									.setTypeOfStates(ResidentNode.OBJECT_ENTITY);
+									.setTypeOfStates(IResidentNode.OBJECT_ENTITY);
 							listStatesPanel.update();
 						}
 
@@ -799,13 +800,13 @@ public class PossibleValuesEditionPane extends JPanel {
 							mebnController
 									.addBooleanAsPossibleValue(residentNode);
 							residentNode
-									.setTypeOfStates(ResidentNode.BOOLEAN_RV_STATES);
+									.setTypeOfStates(IResidentNode.BOOLEAN_RV_STATES);
 							listStatesPanel.update();
 						}
 					} else {
 						mebnController.addBooleanAsPossibleValue(residentNode);
 						residentNode
-								.setTypeOfStates(ResidentNode.BOOLEAN_RV_STATES);
+								.setTypeOfStates(IResidentNode.BOOLEAN_RV_STATES);
 						listStatesPanel.update();
 					}
 
@@ -906,13 +907,13 @@ public class PossibleValuesEditionPane extends JPanel {
 					cellHasFocus);
 
 			switch (residentNode.getTypeOfStates()) {
-			case ResidentNode.OBJECT_ENTITY:
+			case IResidentNode.OBJECT_ENTITY:
 				setIcon(iconObjectState);
 				break;
-			case ResidentNode.CATEGORY_RV_STATES:
+			case IResidentNode.CATEGORY_RV_STATES:
 				setIcon(iconCategoryState);
 				break;
-			case ResidentNode.BOOLEAN_RV_STATES:
+			case IResidentNode.BOOLEAN_RV_STATES:
 				setIcon(iconBooleanState);
 				break;
 			}

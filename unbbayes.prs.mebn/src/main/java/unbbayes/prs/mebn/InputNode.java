@@ -88,7 +88,7 @@ public class InputNode extends MultiEntityNode {
 		Object inputInstanceOf = getInputInstanceOf();
 		
 		if(inputInstanceOf != null){
-			if(inputInstanceOf instanceof ResidentNode){
+			if(inputInstanceOf instanceof IResidentNode){
 				ResidentNodePointer pointer = getResidentNodePointer();
 			
 				

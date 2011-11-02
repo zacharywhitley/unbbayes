@@ -36,6 +36,7 @@ import javax.swing.tree.TreePath;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.mebn.MEBNController;
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
@@ -54,7 +55,7 @@ public class ResidentOVariableTree extends JTree{
     
 	private ArrayMap<Object, OrdinaryVariable> ordinaryVariableMap = new ArrayMap<Object, OrdinaryVariable>();
     private List<OrdinaryVariable> ordinaryVariableList = new ArrayList<OrdinaryVariable>();
-    private ResidentNode residentNodeActive; 
+    private IResidentNode residentNodeActive; 
 	
     private OrdinaryVariable oVariableSelected = null; 
     

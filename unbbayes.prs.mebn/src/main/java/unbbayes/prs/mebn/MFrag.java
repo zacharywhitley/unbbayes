@@ -411,8 +411,8 @@ public class MFrag implements Graph{
 	    edgeList.remove(arco);	
 	    
 	    /* mebn strucutre */
-	    if(origin instanceof ResidentNode){
-	    		((ResidentNode)origin).removeResidentNodeChildList((ResidentNode)destination); 
+	    if(origin instanceof IResidentNode){
+	    		((IResidentNode)origin).removeResidentNodeChildList((ResidentNode)destination); 
 	    }
 	    else{ //input
 	    	((InputNode)origin).removeResidentNodeChild((ResidentNode)destination); 
@@ -458,10 +458,10 @@ public class MFrag implements Graph{
 			// Do not perform sanity check in MFrag if edge is connecting plugin node. 
 			// Let the node itself judge its consistency when parent/child are added to it.
 			this.addEdgeInGraph(edge);
-		} else if (destination instanceof ResidentNode){
-			if (origin instanceof ResidentNode){
+		} else if (destination instanceof IResidentNode){
+			if (origin instanceof IResidentNode){
 				//Case 1: DomainResidentNode -> DomainResidentNode
-			    ((ResidentNode)origin).addResidentNodeChild((ResidentNode)destination); 
+			    ((IResidentNode)origin).addResidentNodeChild((ResidentNode)destination); 
 			    addEdgeInGraph(edge); 
 			} else if (origin instanceof InputNode){
 				//Case 2: GenerativeInputNode -> DomainResidentNode 

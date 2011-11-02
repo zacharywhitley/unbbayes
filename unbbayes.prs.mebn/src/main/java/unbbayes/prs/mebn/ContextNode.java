@@ -255,7 +255,7 @@ public class ContextNode extends MultiEntityNode {
 		return false; 
 	}
 	
-	public ResidentNode getNodeSearch(Collection<OVInstance> ovInstanceList) throws InvalidContextNodeFormulaException{
+	public IResidentNode getNodeSearch(Collection<OVInstance> ovInstanceList) throws InvalidContextNodeFormulaException{
 		if(!isFormulaComplexValida(ovInstanceList)){
 			throw new InvalidContextNodeFormulaException(); 
 		}else{

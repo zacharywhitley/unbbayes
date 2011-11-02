@@ -44,7 +44,7 @@ public class RandomVariableQuery {
 		return arguments;
 	}
 
-	public ResidentNode getNode() {
+	public IResidentNode getNode() {
 		return node;
 	}
 

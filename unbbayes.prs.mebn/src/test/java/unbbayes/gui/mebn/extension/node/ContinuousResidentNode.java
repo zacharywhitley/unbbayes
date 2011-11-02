@@ -5,9 +5,11 @@ package unbbayes.gui.mebn.extension.node;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.ResourceBundle;
 
 import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.prs.Node;
+import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -28,6 +30,10 @@ public class ContinuousResidentNode extends ResidentNode implements
 		IMEBNPluginNode {
 
 	private IMEBNMediator mediator;
+	
+	/** Load resource file from this package */
+  	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
+  			unbbayes.prs.mebn.resources.Resources.class.getName());  		
 	
 	/**
 	 * If you want this constructor to be a non-public constructor, you must provide
@@ -101,12 +107,40 @@ public class ContinuousResidentNode extends ResidentNode implements
 			throw new MFragDoesNotExistException();
 		}
 	}
+	
+	
 
 	/**
 	 * @return the mediator
 	 */
 	public IMEBNMediator getMediator() {
 		return mediator;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.Node#addChild(unbbayes.prs.Node)
+	 */
+	public void addChild(Node node) throws InvalidParentException  {
+		if (this.getClass().isAssignableFrom(node.getClass())) {
+			super.addChild(node);
+		} else {
+			throw new InvalidParentException(this.getResource().getString("InvalidEdgeException"));
+		}
+	}
+
+	/**
+	 * @return the resource
+	 */
+	public static ResourceBundle getResource() {
+		return resource;
+	}
+
+	/**
+	 * @param resource the resource to set
+	 */
+	public static void setResource(ResourceBundle resource) {
+		ContinuousResidentNode.resource = resource;
 	}
 
 }

@@ -27,9 +27,9 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.IMultiEntityNode;
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
-import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.exception.CycleFoundException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
@@ -360,7 +360,7 @@ public class MEBNGraphPane extends GraphPane {
 			shape = new UShapeContextNode(this, newNode, (int) newNode
 					.getPosition().x, (int) newNode.getPosition().y, newNode
 					.getWidth(), newNode.getHeight());
-		} else if (newNode instanceof ResidentNode) {
+		} else if (newNode instanceof IResidentNode) {
 			shape = new UShapeResidentNode(this, newNode, (int) newNode
 					.getPosition().x, (int) newNode.getPosition().y, newNode
 					.getWidth(), newNode.getHeight());

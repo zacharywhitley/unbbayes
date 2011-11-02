@@ -40,6 +40,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -89,7 +90,7 @@ public interface IMEBNMediator extends INetworkMediator  {
 
 	public abstract void setResetButtonActive();
 
-	public abstract ResidentNode getResidentNodeActive();
+	public abstract IResidentNode getResidentNodeActive();
 
 	public abstract InputNode getInputNodeActive();
 
@@ -162,7 +163,7 @@ public interface IMEBNMediator extends INetworkMediator  {
 
 	public abstract MFrag getCurrentMFrag();
 
-	public abstract ResidentNode insertDomainResidentNode(double x, double y)
+	public abstract IResidentNode insertDomainResidentNode(double x, double y)
 			throws MFragDoesNotExistException;
 
 	public abstract void renameDomainResidentNode(ResidentNode resident,
@@ -199,19 +200,19 @@ public interface IMEBNMediator extends INetworkMediator  {
 	public abstract void setGloballyExclusiveProperty(StateLink state,
 			boolean value);
 
-	public abstract void addBooleanAsPossibleValue(ResidentNode resident);
+	public abstract void addBooleanAsPossibleValue(IResidentNode resident);
 
 	/**
 	 *  Adds a possible value (state) for a resident node...
 	 * @param resident
 	 * @param value
 	 */
-	public abstract void removePossibleValue(ResidentNode resident,
+	public abstract void removePossibleValue(IResidentNode resident,
 			String nameValue);
 
-	public abstract void removeAllPossibleValues(ResidentNode resident);
+	public abstract void removeAllPossibleValues(IResidentNode resident);
 
-	public abstract boolean existsPossibleValue(ResidentNode resident,
+	public abstract boolean existsPossibleValue(IResidentNode resident,
 			String nameValue);
 
 	public abstract void setEnableTableEditionView();
@@ -410,7 +411,7 @@ public interface IMEBNMediator extends INetworkMediator  {
 	public abstract void createRandomVariableFinding(ResidentNode residentNode,
 			ObjectEntityInstance[] arguments, Entity state);
 
-	public abstract void saveCPT(ResidentNode residentNode, String cpt);
+	public abstract void saveCPT(IResidentNode residentNode, String cpt);
 
 	public abstract void openCPTDialog(ResidentNode residentNode);
 

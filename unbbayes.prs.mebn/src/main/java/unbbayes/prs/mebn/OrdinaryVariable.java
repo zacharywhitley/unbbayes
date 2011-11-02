@@ -122,8 +122,8 @@ public class OrdinaryVariable extends Node{
 		this.name = name; 
 	
 	    for(Node node: isOVariableOfList){
-	    	if(node instanceof ResidentNode){
-	    		((ResidentNode)node).updateLabel(); 
+	    	if(node instanceof IResidentNode){
+	    		((IResidentNode)node).updateLabel(); 
 	    	}
 	    }
 	}
@@ -193,8 +193,8 @@ public class OrdinaryVariable extends Node{
 	    type.removeUserObject(this); 
 	    
 	    for(Node node: isOVariableOfList){
-	    	if(node instanceof ResidentNode){
-	    		((ResidentNode) node).removeArgument(this); 
+	    	if(node instanceof IResidentNode){
+	    		((IResidentNode) node).removeArgument(this); 
 	    	}else{
 	    		if(node instanceof InputNode){
 	    			

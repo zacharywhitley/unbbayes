@@ -33,6 +33,7 @@ import unbbayes.gui.NetworkWindow;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.exception.InvalidParentException;
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
@@ -276,7 +277,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 		logManager.appendln("[D]" + currentNode + ": -------------EVALUATING NODE BELOW: " 
 				+ currentNode.getName() + "--------------\n"); 
 
-		ResidentNode residentNode = currentNode.getResident(); 
+		IResidentNode residentNode = currentNode.getResident(); 
 
 		//Check if the recursive call count is over and make the increment. 
 		if (this.recursiveCallCount > this.recursiveCallLimit) {

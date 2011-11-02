@@ -33,6 +33,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.IProbabilityFunction;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -1826,9 +1827,9 @@ public class Compiler implements ICompiler {
 			return false;
 		}
 		//// Debug.println("Conditionant node found: " + conditionant.getName());
-		if ( conditionant instanceof ResidentNode) {
+		if ( conditionant instanceof IResidentNode) {
 			// Debug.println("IS MULTIENTITYNODE");
-			return ((ResidentNode)conditionant).getPossibleValueByName(conditionantValue) != null;
+			return ((IResidentNode)conditionant).getPossibleValueByName(conditionantValue) != null;
 		} else {
 			// Debug.println("Conditionant is not a resident node");
 		}

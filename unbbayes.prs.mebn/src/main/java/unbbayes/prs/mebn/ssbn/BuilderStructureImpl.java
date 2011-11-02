@@ -8,6 +8,7 @@ import java.util.ResourceBundle;
 import unbbayes.io.log.IdentationLevel;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
@@ -261,7 +262,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		
 		//--- 1) Evaluate if the node is a finding. 
 		
-		ResidentNode resident = node.getResidentNode(); 
+		IResidentNode resident = node.getResidentNode(); 
 		
 		List<OVInstance> argumentList = new ArrayList<OVInstance>(); 
 		

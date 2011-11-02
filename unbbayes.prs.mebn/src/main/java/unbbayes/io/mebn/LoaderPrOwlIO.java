@@ -37,6 +37,7 @@ import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.IMultiEntityNode;
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -950,7 +951,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 						}else{
 							link.setGloballyExclusive(false); 
 						}
-						domainResidentNode.setTypeOfStates(ResidentNode.BOOLEAN_RV_STATES); 
+						domainResidentNode.setTypeOfStates(IResidentNode.BOOLEAN_RV_STATES); 
 					}
 					else{
 						if(stateName.equals("false")){
@@ -961,7 +962,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 							}else{
 								link.setGloballyExclusive(false); 
 							}
-							domainResidentNode.setTypeOfStates(ResidentNode.BOOLEAN_RV_STATES); 
+							domainResidentNode.setTypeOfStates(IResidentNode.BOOLEAN_RV_STATES); 
 						}
 						else{
 							if(stateName.equals("absurd")){
@@ -972,7 +973,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 								}else{
 									link.setGloballyExclusive(false); 
 								}
-								domainResidentNode.setTypeOfStates(ResidentNode.BOOLEAN_RV_STATES);
+								domainResidentNode.setTypeOfStates(IResidentNode.BOOLEAN_RV_STATES);
 							}
 							else{
 								if(mapTypes.get(stateName) != null){
@@ -986,7 +987,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 //									}else{
 //										link.setGloballyExclusive(false); 
 //									}
-									domainResidentNode.setTypeOfStates(ResidentNode.OBJECT_ENTITY);
+									domainResidentNode.setTypeOfStates(IResidentNode.OBJECT_ENTITY);
 								
 								}
 								else{
@@ -1001,7 +1002,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 										}else{
 											link.setGloballyExclusive(false); 
 										}
-										domainResidentNode.setTypeOfStates(ResidentNode.CATEGORY_RV_STATES);
+										domainResidentNode.setTypeOfStates(IResidentNode.CATEGORY_RV_STATES);
 									} catch (CategoricalStateDoesNotExistException e) {
 										// TODO Auto-generated catch block
 										e.printStackTrace();
@@ -1233,7 +1234,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 				
 				if ((multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText())) != null){
 					try{
-						if (multiEntityNode instanceof ResidentNode){
+						if (multiEntityNode instanceof IResidentNode){
 							argument.setArgumentTerm(multiEntityNode);
 					        argument.setType(Argument.RESIDENT_NODE);  
 						}else{
@@ -1429,7 +1430,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 		
 		for(InputNode input: mapGenerativeInputNode.values()){
 			
-			if(input.getInputInstanceOf() instanceof ResidentNode){
+			if(input.getInputInstanceOf() instanceof IResidentNode){
 				input.updateResidentNodePointer(); 
 				for(Argument argument: input.getArgumentList()){
 					try{
@@ -1543,7 +1544,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 		    			
 		    			MultiEntityNode multiEntityNode = argument.getArgumentTerm(); 
 		    			
-		    			if(multiEntityNode instanceof ResidentNode){
+		    			if(multiEntityNode instanceof IResidentNode){
 		    				ResidentNodePointer residentNodePointer = new ResidentNodePointer((ResidentNode)multiEntityNode, contextNode); 
 		    				nodeFormulaChild = new NodeFormulaTree(multiEntityNode.getName(), EnumType.OPERAND, EnumSubType.NODE, residentNodePointer); 
 		    				nodeFormulaRoot.addChild(nodeFormulaChild); 
@@ -1571,7 +1572,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements ILongTaskProgressOb
 		    
 		}
 		else{
-			if((obj instanceof ResidentNode)){
+			if((obj instanceof IResidentNode)){
 				ResidentNodePointer residentNodePointer = new ResidentNodePointer((ResidentNode)obj, contextNode); 
 				nodeFormulaRoot = new NodeFormulaTree(((ResidentNode)obj).getName(), EnumType.OPERAND, EnumSubType.NODE, residentNodePointer); 
 				

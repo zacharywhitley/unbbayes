@@ -24,9 +24,9 @@ package unbbayes.prs.mebn.ssbn;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
-import unbbayes.prs.mebn.ResidentNode;
 
 /**
  * A warning is a situation that don't stop the evaluation of the SSBN algorithm. 
@@ -117,8 +117,8 @@ public class SSBNWarning {
 			
 		case OV_FAULT_RESIDENT_CHILD:
 			if(arguments.length > 0){
-				explanation.append("Input Node in MFrag:" + ((ResidentNode)arguments[0]).getMFrag() + "\n");
-				explanation.append("Resident Node Child:" + ((ResidentNode)arguments[0]));
+				explanation.append("Input Node in MFrag:" + ((IResidentNode)arguments[0]).getMFrag() + "\n");
+				explanation.append("Resident Node Child:" + ((IResidentNode)arguments[0]));
 			}
 			break; 		
 			

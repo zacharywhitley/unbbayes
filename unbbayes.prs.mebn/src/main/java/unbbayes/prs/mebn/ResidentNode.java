@@ -40,7 +40,7 @@ import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
  * This class represents a resident node.
  */
 public class ResidentNode extends MultiEntityNode 
-         implements IRandomVariable {
+         implements IRandomVariable, IResidentNode {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -82,10 +82,6 @@ public class ResidentNode extends MultiEntityNode
 	
 	private static Color color = new Color(254, 250, 158); 	
 	
-	
-	public static final int OBJECT_ENTITY = 0; 
-	public static final int CATEGORY_RV_STATES = 1; 
-	public static final int BOOLEAN_RV_STATES = 2; 
 	
 	private int typeOfStates = CATEGORY_RV_STATES; 
 	
@@ -142,13 +138,8 @@ public class ResidentNode extends MultiEntityNode
  //       color = new Color(c);
   //  }	
     
-	/**
-	 * Update the label of this node. 
-	 * The label is: 
-	 *    LABEL := "name" "(" LIST_ARGS ")"
-	 *    LIST_ARGS:= NAME_ARG "," LIST_ARGS | VAZIO 
-	 *    
-	 *  update too the copies of this labels in input nodes. 
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#updateLabel()
 	 */
 	
 	//by young
@@ -182,6 +173,9 @@ public class ResidentNode extends MultiEntityNode
     	
     }
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#setName(java.lang.String)
+	 */
 	public void setName(String name){
 		
 		super.setName(name); 
@@ -194,8 +188,8 @@ public class ResidentNode extends MultiEntityNode
 	
 	
 	
-	/**
-	 *@see unbbayes.prs.bn.IRandomVariable#getProbabilityFunction()
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#getProbabilityFunction()
 	 */
 	public PotentialTable getProbabilityFunction() {
 		return null;
@@ -207,10 +201,16 @@ public class ResidentNode extends MultiEntityNode
 	
 	//------------------------ SETS E GETS ----------------------------------
 
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#getMFrag()
+	 */
 	public MFrag getMFrag(){
 		return mFrag; 
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#getTableFunction()
+	 */
 	public String getTableFunction(){
 		return tableFunction; 
 	}
@@ -221,22 +221,29 @@ public class ResidentNode extends MultiEntityNode
 	
 	//------------------------ LISTS ----------------------------------
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#setTableFunction(java.lang.String)
+	 */
 	public void setTableFunction(String table){
 		tableFunction = table;
 	}
 	
+    /* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#addResidentNodePointer(unbbayes.prs.mebn.ResidentNodePointer)
+	 */
     public void addResidentNodePointer(ResidentNodePointer pointer){
 		getListPointers().add(pointer); 
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#removeResidentNodePointer(unbbayes.prs.mebn.ResidentNodePointer)
+	 */
 	public void removeResidentNodePointer(ResidentNodePointer pointer){
 		getListPointers().remove(pointer); 
 	}
 	
-	/**
-	 * Add a node in the list of childs resident nodes of this node. In the node 
-	 * child add this node in the list of fathers resident nodes.  
-	 * @param node: the node that is child of this. 
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#addResidentNodeChild(unbbayes.prs.mebn.ResidentNode)
 	 */
 	
 	public void addResidentNodeChild(ResidentNode node){
@@ -266,18 +273,30 @@ public class ResidentNode extends MultiEntityNode
 	}
 	
 
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#getResidentNodeFatherList()
+	 */
 	public List<ResidentNode> getResidentNodeFatherList(){
 		return this.residentNodeFatherList; 
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#getParentInputNodesList()
+	 */
 	public List<InputNode> getParentInputNodesList(){
 		return this.parentInputNodeList;
 	}	
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#getResidentNodeChildList()
+	 */
 	public List<ResidentNode> getResidentNodeChildList(){
 		return this.residentNodeChildList; 
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#getInputInstanceFromList()
+	 */
 	public List<InputNode> getInputInstanceFromList(){
 		return this.inputInstanceFromList; 
 	}	
@@ -293,16 +312,17 @@ public class ResidentNode extends MultiEntityNode
 		getParentInputNodesList().remove(node); 
 	}	
 	
-	/**
-	 * Remove a node of the list of childs of this node. 
-	 * 
-	 * @param node
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#removeResidentNodeChildList(unbbayes.prs.mebn.ResidentNode)
 	 */
 	public void removeResidentNodeChildList(ResidentNode node){
 		getResidentNodeChildList().remove(node);
 		node.removeResidentNodeFather(this); 
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#removeInputInstanceFromList(unbbayes.prs.mebn.InputNode)
+	 */
 	public void removeInputInstanceFromList(InputNode node){
 		if (getInputInstanceFromList().remove(node)) {
 			// the following code initiates an infinite loop when inputInstanceFromList does not contain node...
@@ -321,22 +341,37 @@ public class ResidentNode extends MultiEntityNode
 	 * FINDINGS METHODS
 	 */
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#addRandomVariableFinding(unbbayes.prs.mebn.RandomVariableFinding)
+	 */
 	public void addRandomVariableFinding(RandomVariableFinding finding){
 		getRandomVariableFindingList().add(finding); 
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#removeRandomVariableFinding(unbbayes.prs.mebn.RandomVariableFinding)
+	 */
 	public void removeRandomVariableFinding(RandomVariableFinding finding){
 		getRandomVariableFindingList().remove(finding); 
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#containsRandomVariableFinding(unbbayes.prs.mebn.RandomVariableFinding)
+	 */
 	public boolean containsRandomVariableFinding(RandomVariableFinding finding){
 		return getRandomVariableFindingList().contains(finding); 
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#cleanRandomVariableFindingList()
+	 */
 	public void cleanRandomVariableFindingList(){
 		getRandomVariableFindingList().clear(); 
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#getRandomVariableFindingList()
+	 */
 	public List<RandomVariableFinding> getRandomVariableFindingList() {
 		return randomVariableFindingList;
 	}
@@ -346,18 +381,8 @@ public class ResidentNode extends MultiEntityNode
 	
 	/*-------------------------- ARGUMENTS ----------------------------------*/
 	
-	/**
-	 * Add a ov in the list of arguments in this resident node
-	 * 
-	 * @param ov
-	 * 
-	 * @param addArgument true if a Argument object shoud be create for the ov. 
-	 *        Otherside the method addArgumenet(Argument) should to be called 
-	 *        for mantain the consistency of the structure. 
-	 * 
-	 * @throws ArgumentNodeAlreadySetException
-	 * 
-	 * @throws OVariableAlreadyExistsInArgumentList
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#addArgument(unbbayes.prs.mebn.OrdinaryVariable, boolean)
 	 */
 	public void addArgument(OrdinaryVariable ov, boolean addArgument) throws ArgumentNodeAlreadySetException, 
 	OVariableAlreadyExistsInArgumentList{
@@ -387,6 +412,9 @@ public class ResidentNode extends MultiEntityNode
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#removeArgument(unbbayes.prs.mebn.OrdinaryVariable)
+	 */
 	public void removeArgument(OrdinaryVariable ov){
 		
 		getOrdinaryVariableList().remove(ov);
@@ -412,19 +440,23 @@ public class ResidentNode extends MultiEntityNode
 		updateLabel(); 
 	}
 	
-	/**
-	 * 
-	 * @param ov
-	 * @return
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#containsArgument(unbbayes.prs.mebn.OrdinaryVariable)
 	 */
 	public boolean containsArgument(OrdinaryVariable ov){
 		return getOrdinaryVariableList().contains(ov); 
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#getOrdinaryVariableList()
+	 */
 	public List<OrdinaryVariable> getOrdinaryVariableList(){
 		return ordinaryVariableList; 
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#getOrdinaryVariableByName(java.lang.String)
+	 */
 	public OrdinaryVariable getOrdinaryVariableByName(String name){
 		for(OrdinaryVariable ov: getOrdinaryVariableList()){
 			if(ov.getName().equals(name)){
@@ -434,10 +466,8 @@ public class ResidentNode extends MultiEntityNode
 		return null; 
 	}
 	
-	/**
-	 * 
-	 * @param ov
-	 * @return indice or -1 if the ov don't is an argument. 
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#getOrdinaryVariableIndex(unbbayes.prs.mebn.OrdinaryVariable)
 	 */
 	public int getOrdinaryVariableIndex(OrdinaryVariable ov){
 		for(int i= 0; i < getOrdinaryVariableList().size(); i++){
@@ -448,11 +478,8 @@ public class ResidentNode extends MultiEntityNode
 		return -1; 
 	}
 	
-	/**
-	 * Recover the ordinary variable in the index position, or null if the 
-	 * position don't exists. 
-	 * 
-	 * @param index Index of the ordinary variable to recover
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#getOrdinaryVariableByIndex(int)
 	 */
 	public OrdinaryVariable getOrdinaryVariableByIndex(int index){
 		
@@ -464,8 +491,8 @@ public class ResidentNode extends MultiEntityNode
 		
 	}
 	
-	/**
-	 * @return A list with all the ordinary variables ordereables present in this node.
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#getOrdinaryVariablesOrdereables()
 	 */
 	public List<OrdinaryVariable> getOrdinaryVariablesOrdereables(){
 		
@@ -487,23 +514,23 @@ public class ResidentNode extends MultiEntityNode
 	
 	/*-------------------------- STATES ----------------------------------*/
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#getTypeOfStates()
+	 */
 	public int getTypeOfStates() {
 		return typeOfStates;
 	}
 
-	/**
-	 * @deprecated because the type of the states are unpredictable (they are more
-	 * than mere booleans, categoricals and etc.), this kind of subdivision should perish.
-	 * @param typeOfStates
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#setTypeOfStates(int)
 	 */
 	public void setTypeOfStates(int typeOfStates) {
 		this.typeOfStates = typeOfStates;
 	}
 	
 	
-	/**
-	 * Add a possible value to the list of possible values of
-	 * the domain resident node. 
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#addPossibleValueLink(unbbayes.prs.mebn.entity.Entity)
 	 */
 	public StateLink addPossibleValueLink(Entity possibleValue){
 		StateLink value = new StateLink(possibleValue); 
@@ -513,9 +540,8 @@ public class ResidentNode extends MultiEntityNode
 		// to make compatible w/ MultiEntityNode.possibleValueList...
 	}
 	
-	/**
-	 * Remove the possible value with the name 
-	 * @param possibleValue name of the possible value
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#removePossibleValueByName(java.lang.String)
 	 */
 	public void removePossibleValueByName(String possibleValue){
 		
@@ -527,18 +553,15 @@ public class ResidentNode extends MultiEntityNode
 		}
 	}
 	
-	/**
-	 * Remove all possible values of the node
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#removeAllPossibleValues()
 	 */
 	public void removeAllPossibleValues(){
 		possibleValueList.clear(); 
 	}
 	
-	/**
-	 * Verifies if the possible value is on the list of possible values
-	 * of the node. 
-	 * @param possibleValue name of the possible value
-	 * @return true if it is present or false otherside
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#existsPossibleValueByName(java.lang.String)
 	 */
 	public boolean existsPossibleValueByName(String possibleValue){
 		
@@ -551,12 +574,8 @@ public class ResidentNode extends MultiEntityNode
 		return false; 
 	}	
 	
-	/**
-	 * Verify if the entity is a state of the node 
-	 * Warning: the search will be for the entity and not for the
-	 * name of entity.
-	 * @param entity The entity 
-	 * @return true if the entity is a state, false otherside
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#hasPossibleValue(unbbayes.prs.mebn.entity.Entity)
 	 */
 	public boolean hasPossibleValue(Entity entity) {
 		for(StateLink value : possibleValueList){
@@ -567,9 +586,8 @@ public class ResidentNode extends MultiEntityNode
 		return false;
 	}
 	
-	/**
-	 * Return the possible value of the residente node with the name
-	 * (return null if don't exist a possible value with this name)
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#getPossibleValueByName(java.lang.String)
 	 */
 	public StateLink getPossibleValueByName(String possibleValue){
 		for(Entity value : this.getPossibleValueListIncludingEntityInstances()){
@@ -586,9 +604,8 @@ public class ResidentNode extends MultiEntityNode
 		return null;
 	}
 	
-	/**
-	 * getter for possibleValueList
-	 * @return
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#getPossibleValueLinkList()
 	 */
 	public List<StateLink> getPossibleValueLinkList(){
 		return possibleValueList; 
@@ -606,6 +623,9 @@ public class ResidentNode extends MultiEntityNode
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.MultiEntityNode#getPossibleValueList()
 	 */
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#getPossibleValueList()
+	 */
 	@Override
 	public List<Entity> getPossibleValueList() {
 		// TODO optimize this
@@ -618,12 +638,8 @@ public class ResidentNode extends MultiEntityNode
 	
 	
 	
-    /** 
-	 * Overrides unbbayes.prs.mebn.MultiEntityNode#getPossibleValueIndex(java.lang.String),
-	 * but also considers the entity instances (calls 
-	 * unbbayes.prs.mebn.DomainResidentNode#getPossibleValueListIncludingEntityInstances() internally.
-	 * @see unbbayes.prs.mebn.MultiEntityNode#getPossibleValueIndex(java.lang.String)
-	 * @see unbbayes.prs.mebn.DomainResidentNode#getPossibleValueListIncludingEntityInstances()
+    /* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#getPossibleValueIndex(java.lang.String)
 	 */
 	@Override
 	public int getPossibleValueIndex(String stateName) {
@@ -638,13 +654,8 @@ public class ResidentNode extends MultiEntityNode
 	}
 
 	
-	/**
-	 * This is identical to unbbayes.prs.mebn.DomainResidentNode#getPossibleValueList() but
-	 * the returned list also includes the entity instances from object entities.
-	 * This would be useful when retrieving instances on SSBN generation step.
-	 * @return a list containing entities and, when instances are present, those instances. When
-	 * retrieving instances, the ObjectEntity itself (the instance container) is not retrieved
-	 * @see unbbayes.prs.mebn.DomainResidentNode#getPossibleValueList()
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#getPossibleValueListIncludingEntityInstances()
 	 */
 	public List<Entity> getPossibleValueListIncludingEntityInstances() {
 		List<Entity> ret = new ArrayList<Entity>();
@@ -664,12 +675,8 @@ public class ResidentNode extends MultiEntityNode
 	
 	/*-------------------------- GENERAL METHODS ----------------------------------*/
 	
-	/**
-	 * Delete the extern references for this node
-	 * 
-	 * - Ordinary Variables
-	 * - Fathers nodes (and edges) 
-     * - Child nodes (and edges)
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#delete()
 	 */
 	public void delete(){
 		
@@ -701,14 +708,15 @@ public class ResidentNode extends MultiEntityNode
 		
 	}
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#toString()
+	 */
 	public String toString() {
 		return name;
 	}
 
-	/**
-	 * Obtains the CPT compiler for this node.
-	 * This compiler will be used by SSBN generation algorithm in order to generate CPTs.
-	 * @return a non null value
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#getCompiler()
 	 */
 	public ICompiler getCompiler() {
 		if (this.compiler == null) {
@@ -719,10 +727,8 @@ public class ResidentNode extends MultiEntityNode
 		return compiler;
 	}
 
-	/**
-	 * Sets the CPT compiler for this node.
-	 * This compiler will be used by SSBN generation algorithm in order to generate CPTs.
-	 * @param compiler
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#setCompiler(unbbayes.prs.mebn.compiler.ICompiler)
 	 */
 	public void setCompiler(ICompiler compiler) {
 		this.compiler = compiler;
@@ -730,6 +736,9 @@ public class ResidentNode extends MultiEntityNode
 
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.MultiEntityNode#hasPossibleValue(java.lang.String)
+	 */
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.IResidentNode#hasPossibleValue(java.lang.String)
 	 */
 	@Override
 	public boolean hasPossibleValue(String stateName) {

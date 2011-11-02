@@ -25,9 +25,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
-import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
 /**
@@ -110,7 +110,7 @@ public class SSBNNodeJacket{
 		       " Resident[" + ovInstancesOfResidentMFrag + "]";
 	}
 	
-	public void addArgument(ResidentNode residentNode, InputNode inputNode, 
+	public void addArgument(IResidentNode residentNode, InputNode inputNode, 
 			OVInstance ovInstanceResidentMFrag){
 		
 		OrdinaryVariable ovResidentMFrag = ovInstanceResidentMFrag.getOv(); 
@@ -133,7 +133,7 @@ public class SSBNNodeJacket{
 	public void addArgument(InputNode inputNode, OVInstance ovInstanceInputMFrag) 
 	            throws SSBNNodeGeneralException {
 		
-		ResidentNode residentNode = inputNode.getResidentNodePointer().getResidentNode(); 
+		IResidentNode residentNode = inputNode.getResidentNodePointer().getResidentNode(); 
 		OrdinaryVariable ovInputMFrag = ovInstanceInputMFrag.getOv(); 
 		int index = inputNode.getResidentNodePointer().getOrdinaryVariableIndex(ovInputMFrag);
 		if(index > -1){
