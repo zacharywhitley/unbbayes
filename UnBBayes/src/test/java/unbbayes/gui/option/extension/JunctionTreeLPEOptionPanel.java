@@ -16,7 +16,7 @@ public class JunctionTreeLPEOptionPanel extends JunctionTreeMPEOptionPanel {
 	 */
 	public JunctionTreeLPEOptionPanel() {
 		JunctionTreeLPEAlgorithm algToSet = new JunctionTreeLPEAlgorithm();
-		algToSet.setMediator(this.getMediator());
+		algToSet.setOptionPanel(this);
 		this.setInferenceAlgorithm(algToSet);
 		this.setName("JunctionTreeLPE");
 	}

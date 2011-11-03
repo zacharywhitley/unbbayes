@@ -321,7 +321,17 @@ public class GlobalOptionsDialog extends JDialog {
     		    	algorithmOptionPanel = (InferenceAlgorithmOptionPanel)pluginClass.newInstance();
     		    	
     		    	// update mediator of algorithmOptionPanel
-    		    	algorithmOptionPanel.setMediator(controller);
+    		    	try {
+    		    		algorithmOptionPanel.setMediator(controller);
+    		    	}catch (Throwable e) {
+    		    		e.printStackTrace();
+						try {
+							Debug.println(this.getClass(), "Could not set mediator for " + algorithmOptionPanel, e);
+						}catch (Throwable t) {
+							t.printStackTrace();
+							// TODO: handle exception
+						}
+					}
     		    	
     				// creating the radio buttons
     		    	// we assume algorithm equality as class equality (if 2 algorithms uses the same class, we assume they are the same algorithm)
@@ -365,6 +375,16 @@ public class GlobalOptionsDialog extends JDialog {
     	
     	// junction tree
     	algorithmOptionPanel = new JunctionTreeOptionPanel();
+    	try {
+    		algorithmOptionPanel.setMediator(controller);
+    	} catch (Throwable e) {
+    		e.printStackTrace();
+    		try {
+				Debug.println(getClass(), "Failed to set mediator for " + algorithmRadioPanel, e);
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+		}
     	radio = new JRadioButtonMenuItem(algorithmOptionPanel.getInferenceAlgorithm().getName(), 
 				(controller.getInferenceAlgorithm()!= null) && (controller.getInferenceAlgorithm().getClass().equals(algorithmOptionPanel.getInferenceAlgorithm().getClass())));
 		radio.setToolTipText(algorithmOptionPanel.getInferenceAlgorithm().getDescription());

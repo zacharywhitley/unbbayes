@@ -3,10 +3,13 @@
  */
 package unbbayes.prs.bn;
 
+import java.util.Locale;
 import java.util.ResourceBundle;
 
+import unbbayes.controller.INetworkMediator;
 import unbbayes.prs.Graph;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
+import unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel;
 
 /**
  * Class for junction tree compiling algorithm.
@@ -21,8 +24,14 @@ import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
  */
 public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 	
+	private static ResourceBundle generalResource = unbbayes.util.ResourceController.newInstance().getBundle(
+			unbbayes.controller.resources.ControllerResources.class.getName(),
+			Locale.getDefault(),
+			JunctionTreeAlgorithm.class.getClassLoader());
+	
 	private ProbabilisticNetwork net;
 	
+	private InferenceAlgorithmOptionPanel optionPanel;
 
 	/** Load resource file from util */
   	private static ResourceBundle utilResource = unbbayes.util.ResourceController.newInstance().getBundle(
@@ -119,6 +128,11 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 	public void reset() {
 		try {
 			this.getNet().initialize();
+			if (this.getMediator() != null) {
+				// if we have access to the controller, update status label
+				float totalEstimateProb = this.getNet().PET();
+				this.getMediator().getScreen().setStatus(this.getResource().getString("statusReady"));
+			}
 		} catch (Exception e) {
 			throw new IllegalStateException(e);
 		}
@@ -130,11 +144,59 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 	public void propagate() {
 		try {
 			this.getNet().updateEvidences();
+			if (this.getMediator() != null) {
+				// if we have access to the controller, update status label
+				float totalEstimateProb = this.getNet().PET();
+				this.getMediator().getScreen().setStatus(this.getResource()
+						.getString("statusEvidenceProbabilistic")
+						+ (totalEstimateProb * 100.0) + "%");
+			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
+
+	/**
+	 * This is the option panel related to this algorithm
+	 * @return the optionPanel
+	 */
+	public InferenceAlgorithmOptionPanel getOptionPanel() {
+		return optionPanel;
+	}
+
+
+	/**
+	 * This is the option panel related to this algorithm
+	 * @param optionPanel the optionPanel to set
+	 */
+	public void setOptionPanel(InferenceAlgorithmOptionPanel optionPanel) {
+		this.optionPanel = optionPanel;
+	}
+
+	/**
+	 * @return the mediator
+	 */
+	public INetworkMediator getMediator() {
+		if (this.getOptionPanel() != null) {
+			return this.getOptionPanel().getMediator();
+		}
+		return null;
+	}
+	
+	/**
+	 * @return the resource
+	 */
+	public static ResourceBundle getResource() {
+		return generalResource;
+	}
+
+	/**
+	 * @param resource the resource to set
+	 */
+	public static void setResource(ResourceBundle resource) {
+		JunctionTreeAlgorithm.generalResource = resource;
+	}
 	
 	
 }

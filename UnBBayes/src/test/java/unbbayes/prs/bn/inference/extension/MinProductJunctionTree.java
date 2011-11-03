@@ -78,9 +78,9 @@ public class MinProductJunctionTree extends MaxProductJunctionTree {
 		 * @return (arg1 < arg2)?arg1:arg2
 		 */
 		public float operate(float arg1, float arg2) {
-			if (arg2 <= 0f) {
+			if (arg2 <= 0.0f) {
 				return arg1;
-			} else if (arg1 <= 0f) {
+			} else if (arg1 <= 0.0f) {
 				return arg2;
 			} else {
 				return (arg1 < arg2)?(arg1):(arg2);

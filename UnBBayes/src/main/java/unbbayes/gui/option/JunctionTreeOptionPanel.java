@@ -19,7 +19,9 @@ public class JunctionTreeOptionPanel extends InferenceAlgorithmOptionPanel {
 	
 	public JunctionTreeOptionPanel() {
 		super();
-		this.setInferenceAlgorithm(new JunctionTreeAlgorithm());
+		JunctionTreeAlgorithm alg = new JunctionTreeAlgorithm();
+		alg.setOptionPanel(this);
+		this.setInferenceAlgorithm(alg);
 	}
 
 	/* (non-Javadoc)
