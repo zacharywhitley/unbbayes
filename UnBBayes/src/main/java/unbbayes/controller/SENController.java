@@ -230,6 +230,7 @@ public class SENController {
 			// Finally propage evidence
 			this.getInferenceAlgorithm().propagate();
 		} catch (Exception e) {
+			e.printStackTrace();
 			JOptionPane.showMessageDialog(screen, e.getMessage(), resource
 					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
 			bReset = true;
