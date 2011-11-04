@@ -18,7 +18,7 @@ import unbbayes.util.SetToolkit;
  * @author Shou Matsumoto
  *
  */
-public class MaxProductJunctionTree extends JunctionTree {
+public class MaxProductJunctionTree extends JunctionTree implements ISumOperationAwareJunctionTree {
 
 	private PotentialTable.ISumOperation maxOperation;
 
@@ -32,7 +32,6 @@ public class MaxProductJunctionTree extends JunctionTree {
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.JunctionTree#absorb(unbbayes.prs.bn.Clique, unbbayes.prs.bn.Clique)
 	 */
-	@Override
 	protected void absorb(Clique clique1, Clique clique2) {
 		// table of separator
 		PotentialTable sepTab = getSeparator(clique1, clique2).getProbabilityFunction();
@@ -117,27 +116,17 @@ public class MaxProductJunctionTree extends JunctionTree {
 		this.setMaxOperation(backup);
 	}
 
-	/**
-	 * This operator is used in {@link #absorb(Clique, Clique)}
-	 * to substitute the sum (marginal) operation. The
-	 * sum (marginal) operation is used by {@link PotentialTable#getSumOperation()}.
-	 * @param maxOperation the maxOperation to set
-	 * @see PotentialTable#getSumOperation()
-	 * @see PotentialTable#setSumOperation(unbbayes.prs.bn.PotentialTable.ISumOperation)
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.ISumOperationAwareJunctionTree#setMaxOperation(unbbayes.prs.bn.PotentialTable.ISumOperation)
 	 */
-	protected void setMaxOperation(PotentialTable.ISumOperation maxOperation) {
+	public void setMaxOperation(PotentialTable.ISumOperation maxOperation) {
 		this.maxOperation = maxOperation;
 	}
 
-	/**
-	 * This operator is used in {@link #absorb(Clique, Clique)}
-	 * to substitute the sum (marginal) operation. The
-	 * sum (marginal) operation is used by {@link PotentialTable#getSumOperation()}.
-	 * @return the maxOperation
-	 * @see PotentialTable#getSumOperation()
-	 * @see PotentialTable#setSumOperation(unbbayes.prs.bn.PotentialTable.ISumOperation)
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.ISumOperationAwareJunctionTree#getMaxOperation()
 	 */
-	protected PotentialTable.ISumOperation getMaxOperation() {
+	public PotentialTable.ISumOperation getMaxOperation() {
 		return maxOperation;
 	}
 

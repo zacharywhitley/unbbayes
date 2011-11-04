@@ -4,18 +4,23 @@
 package unbbayes.prs.bn.inference.extension;
 
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import unbbayes.prs.Graph;
+import unbbayes.prs.INode;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.CliqueExtractor;
 import unbbayes.prs.bn.DefaultJunctionTreeBuilder;
+import unbbayes.prs.bn.IJunctionTree;
 import unbbayes.prs.bn.IJunctionTreeBuilder;
+import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
+import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.TreeVariable;
+import unbbayes.util.Debug;
 
 /**
  * This algorithm is a Juction tree algorithm for MPE.
@@ -27,11 +32,13 @@ public class JunctionTreeMPEAlgorithm extends JunctionTreeAlgorithm {
 	
 	private boolean isToCalculateProbOfNonMPE = false;
 	
+	private IJunctionTreeBuilder defaultJunctionTreeBuilder;
+	
 	/**
 	 * 
 	 */
 	public JunctionTreeMPEAlgorithm() {
-		// TODO Auto-generated constructor stub
+		this(null);
 	}
 
 	/**
@@ -39,18 +46,21 @@ public class JunctionTreeMPEAlgorithm extends JunctionTreeAlgorithm {
 	 */
 	public JunctionTreeMPEAlgorithm(ProbabilisticNetwork net) {
 		super(net);
-		// TODO Auto-generated constructor stub
+		try {
+			this.setDefaultJunctionTreeBuilder(new DefaultJunctionTreeBuilder(MaxProductJunctionTree.class));
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#run()
 	 */
-	@Override
 	public void run() throws IllegalStateException {
 		if (this.getNet() != null) {
 			IJunctionTreeBuilder backup = this.getNet().getJunctionTreeBuilder();	// store previous JT builder
 			// indicate the network (consequently, the superclass) to use MaxProductJunctionTree instead of default junction tree.
-			this.getNet().setJunctionTreeBuilder(new DefaultJunctionTreeBuilder(MaxProductJunctionTree.class));
+			this.getNet().setJunctionTreeBuilder(this.getDefaultJunctionTreeBuilder());
 			super.run();	// run with new JT builder
 			this.getNet().setJunctionTreeBuilder(backup);	// revert change
 		} else {
@@ -62,11 +72,93 @@ public class JunctionTreeMPEAlgorithm extends JunctionTreeAlgorithm {
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#propagate()
 	 */
-	@Override
 	public void propagate() {
 		super.propagate();
+		this.updateMarginals(this.getNetwork());
 		this.markMPEAs100Percent(this.getNetwork(), this.isToCalculateProbOfNonMPE());
 	}
+	
+	/**
+	 * This method customizes {@link SingleEntityNetwork#updateMarginais()},
+	 * which is protected and thus not visible from this class.
+	 * The modification disables marginalization by sum and enables a max product
+	 * instead
+	 * @param graph
+	 */
+	protected void updateMarginals(Graph graph) {
+		for (Node node : graph.getNodes()) {
+			/* Check if the node represents a numeric attribute */
+			if (node.getStatesSize() == 0) {
+				/* 
+				 * The node represents a numeric attribute which has no
+				 * potential table. Just skip it.
+				 */
+				continue;
+			}
+			if (node instanceof TreeVariable) {
+				TreeVariable treeVariable = (TreeVariable) node;
+				this.updateMarginal(treeVariable);
+			}
+		}
+	}
+	
+	/**
+	 * Updates the marginal of a node.
+	 * This method customizes {@link TreeVariable#marginal()}, which is not visible.
+	 * The modification allows 
+	 * @param node
+	 */
+	protected void updateMarginal(INode node) {
+		if (node instanceof ProbabilisticNode) {
+			ProbabilisticNode probabilisticNode = (ProbabilisticNode) node;
+			
+			// ensure marginal list is initialized
+			probabilisticNode.initMarginalList();
+			
+			// obtain clique where node belongs and the probability distribution
+			IRandomVariable relatedClique = (new CliqueExtractor(probabilisticNode)).getAssociatedClique();
+			PotentialTable auxTab = (PotentialTable) ((PotentialTable)relatedClique.getProbabilityFunction()).clone();
+			
+			// iterate over nodes in clique and start doing "max-marginalization"
+			int index = auxTab.indexOfVariable(probabilisticNode);
+			for (int i = 0; i < relatedClique.getProbabilityFunction().variableCount(); i++) {
+				if (i != index) {
+					// extract operation of the default junction tree
+					IJunctionTree jt;
+					try {
+						jt = this.getDefaultJunctionTreeBuilder().buildJunctionTree(getNetwork());
+					} catch (InstantiationException e) {
+						throw new IllegalStateException("Could not extract junction tree from builder", e);
+					} catch (IllegalAccessException e) {
+						throw new IllegalStateException("Could not extract junction tree from builder", e);
+					}
+					if ((jt != null) 
+							&& (jt instanceof ISumOperationAwareJunctionTree)) {
+						ISumOperationAwareJunctionTree tree = (ISumOperationAwareJunctionTree) jt;
+						
+						PotentialTable.ISumOperation backupOp = auxTab.getSumOperation();	// backup real op
+						auxTab.setSumOperation(tree.getMaxOperation());	// substitute op w/ operator for comparison (max) instead of sum (marginal)
+						// remove maxout (this will automatically marginalize)
+						auxTab.removeVariable(relatedClique.getProbabilityFunction().getVariableAt(i));
+						auxTab.setSumOperation(backupOp);	// restore previous op
+					} else {
+						try {
+							Debug.println(this.getClass(), "Unknown junction tree: " + jt);
+						} catch (Throwable e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+			
+			// the table will contain the marginals. Copy values.
+			for (int i = 0; i < auxTab.tableSize(); i++) {
+				probabilisticNode.setMarginalAt(i, auxTab.getValue(i));
+			}
+		}
+	}
+	
+	
 
 	/**
 	 * convert the most probable state ("marginal" value) to 100%
@@ -208,6 +300,28 @@ public class JunctionTreeMPEAlgorithm extends JunctionTreeAlgorithm {
 	 */
 	public void setToCalculateProbOfNonMPE(boolean isToCalculateProbOfNonMPE) {
 		this.isToCalculateProbOfNonMPE = isToCalculateProbOfNonMPE;
+	}
+
+	/**
+	 * This builder will be passed to {@link #getNet()} during execution of {@link #run()},
+	 * so that the {@link SingleEntityNetwork#compileJT(IJunctionTree)} can use the correct 
+	 * junction tree.
+	 * 
+	 * @return the defaultJunctionTreeBuilder
+	 */
+	public IJunctionTreeBuilder getDefaultJunctionTreeBuilder() {
+		return defaultJunctionTreeBuilder;
+	}
+
+	/**
+	 * This builder will be passed to {@link #getNet()} during execution of {@link #run()},
+	 * so that the {@link SingleEntityNetwork#compileJT(IJunctionTree)} can use the correct 
+	 * junction tree.
+	 * @param defaultJunctionTreeBuilder the defaultJunctionTreeBuilder to set
+	 */
+	public void setDefaultJunctionTreeBuilder(
+			IJunctionTreeBuilder defaultJunctionTreeBuilder) {
+		this.defaultJunctionTreeBuilder = defaultJunctionTreeBuilder;
 	}
 
 	

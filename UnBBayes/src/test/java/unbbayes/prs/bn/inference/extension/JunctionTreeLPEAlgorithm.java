@@ -21,22 +21,14 @@ import unbbayes.prs.bn.TreeVariable;
  * @author Shou Matsumoto
  *
  */
-public class JunctionTreeLPEAlgorithm extends JunctionTreeAlgorithm {
+public class JunctionTreeLPEAlgorithm extends JunctionTreeMPEAlgorithm {
 
 
-	private boolean isToCalculateProbOfNonLPE = false;
-
-	
-	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
-			unbbayes.controller.resources.ControllerResources.class.getName(),
-			Locale.getDefault(),
-			JunctionTreeLPEAlgorithm.class.getClassLoader());
-	
 	/**
 	 * 
 	 */
 	public JunctionTreeLPEAlgorithm() {
-		// TODO Auto-generated constructor stub
+		this(null);
 	}
 
 	/**
@@ -44,34 +36,14 @@ public class JunctionTreeLPEAlgorithm extends JunctionTreeAlgorithm {
 	 */
 	public JunctionTreeLPEAlgorithm(ProbabilisticNetwork net) {
 		super(net);
-		// TODO Auto-generated constructor stub
-	}
-	
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#run()
-	 */
-	@Override
-	public void run() throws IllegalStateException {
-		if (this.getNet() != null) {
-			IJunctionTreeBuilder backup = this.getNet().getJunctionTreeBuilder();	// store previous JT builder
-			// indicate the network (consequently, the superclass) to use MaxProductJunctionTree instead of default junction tree.
-			this.getNet().setJunctionTreeBuilder(new DefaultJunctionTreeBuilder(MinProductJunctionTree.class));
-			super.run();	// run with new JT builder
-			this.getNet().setJunctionTreeBuilder(backup);	// revert change
-		} else {
-			// run anyway
-			super.run();
+		// initialize default junction tree with a min-product operator
+		try{
+			this.setDefaultJunctionTreeBuilder(new DefaultJunctionTreeBuilder(MinProductJunctionTree.class));
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
-
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#propagate()
-	 */
-	public void propagate() {
-		super.propagate();
-		this.markLPEAs100Percent(this.getNetwork(), this.isToCalculateProbOfNonLPE());
-		
-	}
+	
 
 	/**
 	 * convert the least probable state ("marginal" value) to 100%
@@ -83,7 +55,7 @@ public class JunctionTreeLPEAlgorithm extends JunctionTreeAlgorithm {
 	 * 		Posterior (most possible is set to 100%): least possible state = 100%, other state = 30/70%
 	 * 
 	 */
-	protected void markLPEAs100Percent(Graph network, boolean isToCalculateRelativeProb) {
+	protected void markMPEAs100Percent(Graph network, boolean isToCalculateRelativeProb) {
 		// The change bellow is to adhere to feature request #3314855
 		// Save the list of evidence entered
 		Map<String, Integer> evidenceMap = new HashMap<String, Integer>();
@@ -177,7 +149,6 @@ public class JunctionTreeLPEAlgorithm extends JunctionTreeAlgorithm {
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#getDescription()
 	 */
-	@Override
 	public String getDescription() {
 		return "Most Probable Explanation with Junction Tree";
 	}
@@ -188,45 +159,6 @@ public class JunctionTreeLPEAlgorithm extends JunctionTreeAlgorithm {
 	 */
 	public String getName() {
 		return "Junction Tree Least PE";
-	}
-
-	
-
-
-	/**
-	 * @return the resource
-	 */
-	public static ResourceBundle getResource() {
-		return resource;
-	}
-
-	/**
-	 * @param resource the resource to set
-	 */
-	public static void setResource(ResourceBundle resource) {
-		JunctionTreeLPEAlgorithm.resource = resource;
-	}
-
-	/**
-	 * If this is true, then {@link #markLPEAs100Percent(Graph, boolean)}
-	 *  will try to calculate
-	 * the probability of the states that is not part of LPE as well.
-	 * Caution: the joint probability may not be consistent if this is set to true.
-	 * @return the isToCalculateProbOfNonLPE
-	 */
-	public boolean isToCalculateProbOfNonLPE() {
-		return isToCalculateProbOfNonLPE;
-	}
-
-	/**
-	 * If this is true, then {@link #markLPEAs100Percent(Graph, boolean)}
-	 *  will try to calculate
-	 * the probability of the states that is not part of LPE as well.
-	 * Caution: the joint probability may not be consistent if this is set to true.
-	 * @param isToCalculateProbOfNonLPE the isToCalculateProbOfNonLPE to set
-	 */
-	public void setToCalculateProbOfNonLPE(boolean isToCalculateProbOfNonLPE) {
-		this.isToCalculateProbOfNonLPE = isToCalculateProbOfNonLPE;
 	}
 
 	
