@@ -165,7 +165,7 @@ public class Janela extends JPanel{
 		loadPanel.add(new JLabel("Evidency File"), c);
 		
 		c.gridx = 0; c.gridy = 2;
-		loadPanel.add(new JLabel("Query File"), c);
+		loadPanel.add(new JLabel("Query"), c);
 
 		c.gridx = 0; c.gridy = 0;
 		ParametersPanel.add(new JLabel("Closed World Predicates"), c);
