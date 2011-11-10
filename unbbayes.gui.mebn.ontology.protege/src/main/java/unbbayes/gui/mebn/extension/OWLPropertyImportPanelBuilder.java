@@ -39,8 +39,8 @@ import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelBuilder;
 import unbbayes.gui.mebn.ontology.protege.OWLPropertyViewerPanel;
 import unbbayes.io.mebn.MEBNStorageImplementorDecorator;
+import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.ontology.protege.OWLPropertyDTO;
 import unbbayes.util.Debug;
 import unbbayes.util.ResourceController;
@@ -314,7 +314,7 @@ public class OWLPropertyImportPanelBuilder extends JPanel implements IMEBNEditio
 						double yPos = (((Math.random()<.5)?-1:1) * (randomRange * Math.random())) + location.getY();
 						
 						// create node
-						ResidentNode newNode = getMediator().insertDomainResidentNode(xPos, yPos);
+						IResidentNode newNode = getMediator().insertDomainResidentNode(xPos, yPos);
 						newNode.setName(newNodeName);
 						getMebn().getNamesUsed().add(newNodeName);
 						

@@ -1798,7 +1798,9 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			// 3. booleanNode(<1 or 2 arguments>)
 			// 4. not booleanNode(<1 or 2 arguments>)
 			// 5. ov = nonBooleanNode(<1 argument>)
+			// 5.1. const = nonBooleanNode(<1 argument>)
 			// 6. nonBooleanNode(<1 argument>) = ov
+			// 6.1. nonBooleanNode(<1 argument>) = const
 			// 7. not (ov = nonBooleanNode(<1 argument>))
 			// 8. not (nonBooleanNode(<1 argument>) = ov)
 			// TODO implement other types of formulas.
@@ -1858,9 +1860,10 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			}
 			
 			// 5. ov = nonBooleanNode(<1 argument>)
+			// 5.1. const = nonBooleanNode(<1 argument>)
 			try {
 				if ((formulaTree.getNodeVariable() instanceof BuiltInRVEqualTo)	// =
-						&& formulaTree.getChildren().get(0).getSubTypeNode().equals(EnumSubType.OVARIABLE)	// ov
+						&& (formulaTree.getChildren().get(0).getSubTypeNode().equals(EnumSubType.OVARIABLE) || formulaTree.getChildren().get(0).getSubTypeNode().equals(EnumSubType.ENTITY))	// ov || const
 						&& (formulaTree.getChildren().get(1).getNodeVariable() instanceof ResidentNodePointer )	// nonBooleanNode
 						&& (((ResidentNodePointer)formulaTree.getChildren().get(1).getNodeVariable()).getResidentNode().getTypeOfStates() != ResidentNode.BOOLEAN_RV_STATES)	// "nonBooleanNode" is not boolean node
 						&& (((ResidentNodePointer)formulaTree.getChildren().get(1).getNodeVariable()).getResidentNode().getArgumentList().size() == 1) ) {	// <1 argument>		
@@ -1875,11 +1878,13 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					t.printStackTrace();
 				}
 			}
+
 			
 			// 6. nonBooleanNode(<1 argument>) = ov
+			// 6.1. nonBooleanNode(<1 argument>) = const
 			try {
 				if ((formulaTree.getNodeVariable() instanceof BuiltInRVEqualTo)	// =
-						&& formulaTree.getChildren().get(1).getSubTypeNode().equals(EnumSubType.OVARIABLE)	// ov
+						&& ( formulaTree.getChildren().get(1).getSubTypeNode().equals(EnumSubType.OVARIABLE) || formulaTree.getChildren().get(1).getSubTypeNode().equals(EnumSubType.ENTITY))	// ov || const
 						&& (formulaTree.getChildren().get(0).getNodeVariable() instanceof ResidentNodePointer )	// nonBooleanNode
 						&& (((ResidentNodePointer)formulaTree.getChildren().get(0).getNodeVariable()).getResidentNode().getTypeOfStates() != ResidentNode.BOOLEAN_RV_STATES)	// "nonBooleanNode" is not boolean node
 						&& (((ResidentNodePointer)formulaTree.getChildren().get(0).getNodeVariable()).getResidentNode().getArgumentList().size() == 1) ) {	// <1 argument>		
@@ -1894,6 +1899,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					t.printStackTrace();
 				}
 			}
+			
 			
 			// the "not" cases can be solved recursively by passing "not isToSolveAsPositiveOperation" as argument
 			try {
@@ -2652,9 +2658,9 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 
 	/**
 	 * This method solves a formula in the following format:
-	 * ov = nonBooleanNode(arg);
+	 * ov = nonBooleanNode(arg); or CONSTANT = nonBooleanNode(arg);
 	 * This is called inside {@link #solveFormulaTree(NodeFormulaTree, List, ContextNode, boolean, boolean)}
-	 * @param treeRepresentingOV : this is a subtree of the top formula (which uses composite pattern), and it represents the "ov" in ov = nonBooleanNode(arg)
+	 * @param treeRepresentingOVOrConstant : this is a subtree of the top formula (which uses composite pattern), and it represents the "ov" in ov = nonBooleanNode(arg)
 	 * @param treeRepresentingNonBooleanNode : this is a subtree of the top formula (which uses composite pattern), and it represents the "nonBooleanNode(arg)" in ov = nonBooleanNode(arg)
 	 * @param knownValues : the known OV values (values in this list will not be queried to KB)
 	 * @param isToSolveAsPositiveOperation : if set to false, ov != nonBooleanNode(arg) will be evaluated instead. 
@@ -2662,7 +2668,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	 * @param context : the context node being evaluated
 	 * @return the SearchResult or null if the formula could not be solved by this method.
 	 */
-	protected SearchResult solveFormulaTreeOVEqualsToNonBooleanNode( NodeFormulaTree treeRepresentingOV, NodeFormulaTree treeRepresentingNonBooleanNode , 
+	protected SearchResult solveFormulaTreeOVEqualsToNonBooleanNode( NodeFormulaTree treeRepresentingOVOrConstant, NodeFormulaTree treeRepresentingNonBooleanNode , 
 			List<OVInstance> knownValues, ContextNode context, boolean isToSolveAsPositiveOperation, boolean isToAddKnownValuesToSearchResult) {
 		try {
 
@@ -2692,14 +2698,23 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			}
 			// TODO extract current arguments instead of the pointed argument
 			// extract the ordinary variable ov
-			OrdinaryVariable ov = (OrdinaryVariable)treeRepresentingOV.getNodeVariable();
+			OrdinaryVariable ov = null;
+			if (treeRepresentingOVOrConstant.getNodeVariable() instanceof OrdinaryVariable) {
+				ov = (OrdinaryVariable)treeRepresentingOVOrConstant.getNodeVariable();
+			} 
 			
 			// extract the ordinary variable of the argument (only 1) of nonBooleanNode
 			// use current OV instead of using an OV from the original Resident Node
 			OrdinaryVariable argumentOV = ((ResidentNodePointer)treeRepresentingNonBooleanNode.getNodeVariable()).getArgument(0); //((ResidentNodePointer)treeRepresentingNonBooleanNode.getNodeVariable()).getResidentNode().getArgumentList().get(0).getOVariable();
 			
 			// extract the object entity related to the type of ov (this is necessary because we cannot directly navigate from OV's type to an Entity...)
-			Entity ovEntity = this.getDefaultMEBN().getObjectEntityContainer().getObjectEntityByType(ov.getValueType());
+			Entity ovEntity = null;
+			if (ov != null) {
+				ovEntity = this.getDefaultMEBN().getObjectEntityContainer().getObjectEntityByType(ov.getValueType());
+			} else {
+				// this should be a constant
+				ovEntity = (ObjectEntityInstance)treeRepresentingOVOrConstant.getNodeVariable();
+			}
 			
 			// extract the object entity related to the type of argumentOV (this is necessary because we cannot directly navigate from OV's type to an Entity...)
 			Entity argumentEntity = this.getDefaultMEBN().getObjectEntityContainer().getObjectEntityByType(argumentOV.getValueType());
@@ -2738,7 +2753,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			// entity to be queried
 			Entity queryEntity = null; // this value may be either ovEntity or argumentEntity
 			
-			if (missingOV.contains(ov) && missingOV.contains(argumentOV)) {
+			if (ov != null && missingOV.contains(ov) && missingOV.contains(argumentOV)) {
 				// case 1 (special case). both ov and argumentOV are unknown;
 				// first, query the arguments that is associated to some entity by the owl property
 				// the expression is something like "<OWLClassName> that (<OWLPropertyName> some <OWLClassName>)"
@@ -2787,7 +2802,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 
 						// do a recursive query that returns all the values of "ov" (assuming that the argumentOV is known now) and contains the known values in search result
 						// TODO optimize (e.g. avoid recursivity)
-						SearchResult recursiveResult = this.solveFormulaTreeOVEqualsToNonBooleanNode(treeRepresentingOV, treeRepresentingNonBooleanNode, updatedKnownValuesList, context, isToSolveAsPositiveOperation, true);
+						SearchResult recursiveResult = this.solveFormulaTreeOVEqualsToNonBooleanNode(treeRepresentingOVOrConstant, treeRepresentingNonBooleanNode, updatedKnownValuesList, context, isToSolveAsPositiveOperation, true);
 						// concatenate recursiveResult to concatenatedSearchResult
 						if (concatenatedSearchResult == null) {
 							// this is the first time concatenatedSearchResult is updated. Initialize it
@@ -2826,10 +2841,16 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			
 			// extract from the "knownValues" the values related to the unknown ov. Let's keep the order...
 			List<OVInstance> knownOVValues = new ArrayList<OVInstance>();
-			for (OVInstance knownValue : knownValues) {
-				if (knownOV.equals(knownValue.getOv())) {
-					knownOVValues.add(knownValue);
+			if (knownOV != null) {
+				for (OVInstance knownValue : knownValues) {
+					if (knownOV.equals(knownValue.getOv())) {
+						knownOVValues.add(knownValue);
+					}
 				}
+			} else {
+				// add to known values a constant
+				// TODO stop using this translation from ObjectEntityInstance to OVInstance
+				knownOVValues.add(OVInstance.getInstance(null, LiteralEntityInstance.getInstance(ovEntity.getName(), ovEntity.getType())));
 			}
 			
 			// because the result knownSearchResults must have synchronized indexes in their arrays 

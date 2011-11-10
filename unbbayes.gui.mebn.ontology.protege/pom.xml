@@ -6,7 +6,7 @@
 	<name>Protégé Based Ontology Editor</name>
 	<!-- If you change the below version, -->
 	<!-- change version and library settings on plugin.xml too, because this is included as library -->
-	<version>0.1.1</version>
+	<version>1.1.1</version>
 	<url>http://unbbayes.sourceforge.net
 	</url>
 	<licenses>
@@ -164,8 +164,18 @@
 		<dependencies>
 			<!-- This is a plugin project for UnBBayes. Since it uses classes from the core, 
 			     UnBBayes is indeed a dependency -->
+			<dependency>
+				<groupId>br.unb.cic</groupId>
+				<artifactId>unbbayes</artifactId>
+				<version>4.11.4</version>
+			</dependency>
 			
 			<!-- This is a plugin project for unbbayes.prs.mebn -->
+			<dependency>
+				<groupId>br.unb.cic</groupId>
+				<artifactId>unbbayes.prs.mebn</artifactId>
+				<version>1.13.10</version>
+			</dependency>
 			
 			<!-- Protege 4.1 (it handles OWL2) -->
 			 <dependency>
@@ -368,19 +378,7 @@
 			    <artifactId>xalan</artifactId>
 			    <version>2.7.1</version>
 			</dependency>
-			 <dependency>
-			 	<groupId>br.unb.cic</groupId>
-			 	<artifactId>unbbayes</artifactId>
-			 	<version>4.10.4</version>
-			 	<optional>false</optional>
-			 </dependency>
-			 <dependency>
-			 	<groupId>br.unb.cic</groupId>
-			 	<artifactId>unbbayes.prs.mebn</artifactId>
-			 	<version>1.11.9</version>
-			 	<optional>false</optional>
-			 </dependency>
-		</dependencies>
+	</dependencies>
 	<reporting>
 		<plugins>
 			<plugin>

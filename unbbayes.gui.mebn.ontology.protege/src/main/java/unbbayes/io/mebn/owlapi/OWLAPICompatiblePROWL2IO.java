@@ -27,6 +27,7 @@ import org.semanticweb.owlapi.model.OWLClassAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLDataProperty;
+import org.semanticweb.owlapi.model.OWLDataPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLDatatype;
 import org.semanticweb.owlapi.model.OWLEntity;
 import org.semanticweb.owlapi.model.OWLImportsDeclaration;
@@ -3582,15 +3583,35 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 		this.saveMappingBetweenMEBNAndOWL(rv, resident, mebn, ontology);
 		
 		
+		// prepare a set of data property axioms (hasPossibleValues) to remove (so that we do not have to check if the old ones should be removed or not)
+		Set<OWLDataPropertyAssertionAxiom> axiomsToRemove = new HashSet<OWLDataPropertyAssertionAxiom>();
+		for (OWLDataPropertyAssertionAxiom axiom : ontology.getDataPropertyAssertionAxioms(rv)) {
+			if (hasPossibleValues.getIRI().equals(axiom.getProperty().asOWLDataProperty().getIRI())) {
+				axiomsToRemove.add(axiom);
+			}
+		}
+		
+		// remove the axioms
+		if (!axiomsToRemove.isEmpty()) {
+			ontology.getOWLOntologyManager().applyChanges(ontology.getOWLOntologyManager().removeAxioms(ontology, axiomsToRemove));
+		}
+		
+		
 		// iterate over links to possible values
 		for(StateLink stateLink: resident.getPossibleValueLinkList()){
 			boolean isCategorical = false;	// if it is using categorical entity, set it to true
 			
 			// solve link
 			Entity state = stateLink.getState(); 
-			if( ( state instanceof CategoricalStateEntity ) || (state instanceof ObjectEntity)){ 
+			
+			// ignore the absurd "boolean" state because in PR-OWL2 the "absurd" is not a boolean state anymore and it is an implicit state (so we do not need to explicitly add it to ontology)
+			if (mebn.getBooleanStatesEntityContainer().getAbsurdStateEntity().equals(state)) {
+				// the "absurd" state is implicitly added to all RVs
+				continue;
+			}
+			
+			if( ( state instanceof CategoricalStateEntity ) || (state instanceof ObjectEntity)){
 				if (mebn.getBooleanStatesEntityContainer().getAbsurdStateEntity().equals(state)) {
-					// the "absurd" state is implicitly added to all RVs, so we do not have to add it
 					continue;
 				}
 				// do different behavior depending on the type of state
@@ -3631,18 +3652,15 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 					}
 				}
 			} else if(state instanceof BooleanStateEntity){	// boolean
-				// ignore the absurd "boolean" state because in PR-OWL2 the "absurd" is not a boolean state anymore and it is an implicit state (so we do not need to explicitly add it to ontology)
-				if (!mebn.getBooleanStatesEntityContainer().getAbsurdStateEntity().equals(state)) {
-					// specify that booleanRandomVariableClass is the class of rv, if it is not done already
-					if (!ontology.containsIndividualInSignature(rv.asOWLNamedIndividual().getIRI())
-							|| !rv.getTypes(ontology).contains(booleanRandomVariableClass)) {
-						ontology.getOWLOntologyManager().addAxiom(
-								ontology, 
-								factory.getOWLClassAssertionAxiom(booleanRandomVariableClass, rv)
-						);
-					}
-					// it is not necessary to specify possible value, because BOOLEANRANDOMVARIABLE adds XSD:boolean automatically
+				// specify that booleanRandomVariableClass is the class of rv, if it is not done already
+				if (!ontology.containsIndividualInSignature(rv.asOWLNamedIndividual().getIRI())
+						|| !rv.getTypes(ontology).contains(booleanRandomVariableClass)) {
+					ontology.getOWLOntologyManager().addAxiom(
+							ontology, 
+							factory.getOWLClassAssertionAxiom(booleanRandomVariableClass, rv)
+					);
 				}
+				// it is not necessary to specify possible value, because BOOLEANRANDOMVARIABLE adds XSD:boolean automatically
 			}  else {
 				try {
 					Debug.println(this.getClass(), "Error: Invalid State - " + state.getName() + " in resident node " + resident); 
@@ -3652,22 +3670,22 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 				continue;	// ignore and go on
 			}
 			
-			// link rv to mExpressionIndividual using typeOfMExpression
-			ontology.getOWLOntologyManager().addAxiom(
-					ontology, 
-					factory.getOWLObjectPropertyAssertionAxiom(typeOfMExpression, mExpressionIndividual, rv)
-			);
-			// link mExpressionIndividual to rv  using isTypeOfMExpression (inverse of typeOfMExpression)
-			ontology.getOWLOntologyManager().addAxiom(
-					ontology, 
-					factory.getOWLObjectPropertyAssertionAxiom(isTypeOfMExpression, rv, mExpressionIndividual)
-			);
-			
 			if (!isCategorical) {
-				// OBS. we break the loop because this version does not allow mixed types of states in a single node
+				// OBS. we break the loop because this version does not allow mixed types of states in a single node (except categorical or absurd)
 				break;
 			}
 		}
+		
+		// link rv to mExpressionIndividual using typeOfMExpression
+		ontology.getOWLOntologyManager().addAxiom(
+				ontology, 
+				factory.getOWLObjectPropertyAssertionAxiom(typeOfMExpression, mExpressionIndividual, rv)
+		);
+		// link mExpressionIndividual to rv  using isTypeOfMExpression (inverse of typeOfMExpression)
+		ontology.getOWLOntologyManager().addAxiom(
+				ontology, 
+				factory.getOWLObjectPropertyAssertionAxiom(isTypeOfMExpression, rv, mExpressionIndividual)
+		);
 	}
 
 	/**
