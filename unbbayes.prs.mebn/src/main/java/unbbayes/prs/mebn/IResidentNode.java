@@ -2,6 +2,7 @@ package unbbayes.prs.mebn;
 
 import java.util.List;
 
+import unbbayes.prs.INode;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.mebn.compiler.ICompiler;
 import unbbayes.prs.mebn.entity.Entity;
@@ -9,7 +10,7 @@ import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 
-public interface IResidentNode {
+public interface IResidentNode extends INode {
 
 	public static final int OBJECT_ENTITY = 0;
 	public static final int CATEGORY_RV_STATES = 1;
@@ -237,5 +238,6 @@ public interface IResidentNode {
 	 * @see unbbayes.prs.mebn.MultiEntityNode#hasPossibleValue(java.lang.String)
 	 */
 	public boolean hasPossibleValue(String stateName);
+
 
 }

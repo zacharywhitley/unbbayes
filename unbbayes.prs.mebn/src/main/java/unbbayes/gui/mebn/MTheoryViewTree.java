@@ -272,7 +272,9 @@ public class MTheoryViewTree extends JTree {
 			String stringValue = tree.convertValueToText(value, isSelected,
 					expanded, leaf, row, hasFocus);
 			setEnabled(tree.isEnabled());
-			check.setSelected(((CheckNode) value).isSelected());
+			if (value instanceof CheckNode) {
+				check.setSelected(((CheckNode) value).isSelected());
+			}
 			label.setFont(tree.getFont());
 			label.setText(stringValue);
 			label.setSelected(isSelected);

@@ -41,6 +41,13 @@
       </includes>
     </fileSet>
     <fileSet>
+      <directory>plugins/unbbayes.io.mebn.UbfIO/</directory>
+      <outputDirectory>../unbbayes.io.mebn.UbfIO/</outputDirectory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+    </fileSet>
+    <fileSet>
       <directory>target/</directory>
       <outputDirectory></outputDirectory>
       <includes>
