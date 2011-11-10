@@ -1,3 +1,13 @@
+UNBBAYES VERSION 4.11.4
+----------------------------
+FEATURE LIST		
+Number	Request ID	Summary
+11		3412527		Change FloatCollection's resizing algorithm
+
+Also, some major refactoring were performed.
+
+
+
 UNBBAYES VERSION 4.10.4
 ----------------------------
 FEATURE LIST		
