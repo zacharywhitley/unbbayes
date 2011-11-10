@@ -30,7 +30,7 @@ import unbbayes.util.Debug;
 public class JunctionTreeMPEAlgorithm extends JunctionTreeAlgorithm {
 
 	
-	private boolean isToCalculateProbOfNonMPE = false;
+	private boolean isToCalculateProbOfNonMPE = true;
 	
 	private IJunctionTreeBuilder defaultJunctionTreeBuilder;
 	
@@ -62,6 +62,7 @@ public class JunctionTreeMPEAlgorithm extends JunctionTreeAlgorithm {
 			// indicate the network (consequently, the superclass) to use MaxProductJunctionTree instead of default junction tree.
 			this.getNet().setJunctionTreeBuilder(this.getDefaultJunctionTreeBuilder());
 			super.run();	// run with new JT builder
+			this.propagate();
 			this.getNet().setJunctionTreeBuilder(backup);	// revert change
 		} else {
 			// run anyway
@@ -222,9 +223,8 @@ public class JunctionTreeMPEAlgorithm extends JunctionTreeAlgorithm {
 						// if not, it sets to X = 100%*currentMarginal/greatestMarginal (100% = 1)
 						nodeWithMarginal.setMarginalAt(i, nodeWithMarginal.getMarginalAt(i)/greatestMarginal);
 					}
-				} else {
-					evidenceMap.put(nodeWithMarginal.getName(), index);
 				}
+				evidenceMap.put(nodeWithMarginal.getName(), index);
 			}
 		}
 		// recalculate joint probability

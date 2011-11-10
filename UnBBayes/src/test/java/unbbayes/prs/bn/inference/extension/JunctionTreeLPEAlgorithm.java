@@ -4,15 +4,11 @@
 package unbbayes.prs.bn.inference.extension;
 
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.DefaultJunctionTreeBuilder;
-import unbbayes.prs.bn.IJunctionTreeBuilder;
-import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.TreeVariable;
@@ -98,14 +94,22 @@ public class JunctionTreeLPEAlgorithm extends JunctionTreeMPEAlgorithm {
 				}
 				
 				if (isToCalculateRelativeProb) {
-					// use greatestMarginal to set probability of most probable state to 1 and alter others proportionally
-					// this is equivalent to finding the value of X inthe following proportional equation:
-					//		greatestMarginal = 100% :  currentMarginal = X
-					//	(thus, X = 100%*currentMarginal/greatestMarginal)
-					for (int i = 0; i < nodeWithMarginal.getStatesSize(); i++) {
-						// if nodeWithMarginal.getMarginalAt(i) == greatestMarginal, then it sets to 1 (100%).
-						// if not, it sets to X = 100%*currentMarginal/greatestMarginal (100% = 1)
-						nodeWithMarginal.setMarginalAt(i, nodeWithMarginal.getMarginalAt(i)/smallestMarginal);
+					if (!nodeWithMarginal.hasEvidence()) {
+						// use greatestMarginal to set probability of most probable state to 1 and alter others proportionally
+						// this is equivalent to finding the value of X inthe following proportional equation:
+						//		greatestMarginal = 100% :  currentMarginal = X
+						//	(thus, X = 100%*currentMarginal/greatestMarginal)
+						for (int i = 0; i < nodeWithMarginal.getStatesSize(); i++) {
+							// if nodeWithMarginal.getMarginalAt(i) == greatestMarginal, then it sets to 1 (100%).
+							// if not, it sets to X = 100%*currentMarginal/greatestMarginal (100% = 1)
+							nodeWithMarginal.setMarginalAt(i, (1.0f - nodeWithMarginal.getMarginalAt(i)) / (1.0f - smallestMarginal));
+						}
+					} else {
+						nodeWithMarginal.setMarginalAt(nodeWithMarginal.getEvidence(), 1.0f);
+					}
+					if (this.getMediator() != null) {
+						// if we have access to the controller, update status label
+						this.getMediator().getScreen().setStatus(this.getResource().getString("okButtonLabel"));
 					}
 				} else {
 					evidenceMap.put(nodeWithMarginal.getName(), index);
@@ -146,11 +150,12 @@ public class JunctionTreeLPEAlgorithm extends JunctionTreeMPEAlgorithm {
 		}
 	}
 	
+	
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#getDescription()
 	 */
 	public String getDescription() {
-		return "Most Probable Explanation with Junction Tree";
+		return "Least Probable Explanation with Junction Tree";
 	}
 
 	/*
@@ -159,6 +164,14 @@ public class JunctionTreeLPEAlgorithm extends JunctionTreeMPEAlgorithm {
 	 */
 	public String getName() {
 		return "Junction Tree Least PE";
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#reset()
+	 */
+	public void reset() {
+		super.reset();
+		this.propagate();
 	}
 
 	

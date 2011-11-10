@@ -98,23 +98,22 @@ public class MaxProductJunctionTree extends JunctionTree implements ISumOperatio
 //		super.distributeEvidences(clique);
 //	}
 
-	/**
-	 * This method was overridden because
-	 * we need to use {@link PotentialTable.SumOperation} as {@link #getMaxOperation()}
-	 * in {@link #absorb(Clique, Clique)} (which is called
-	 * indirectly by this method) during belief initialization.
-	 * @see unbbayes.prs.bn.JunctionTree#initBeliefs()
-	 */
-	@Override
-	public void initBeliefs() throws Exception {
-		// backup previous one
-		PotentialTable.ISumOperation backup = this.getMaxOperation();
-		// use PotentialTable.SumOperation instead of the backup
-		this.setMaxOperation(new ProbabilisticTable().new SumOperation());
-		super.initBeliefs();
-		// restore pervious one
-		this.setMaxOperation(backup);
-	}
+//	/**
+//	 * This method was overridden because
+//	 * we need to use {@link PotentialTable.SumOperation} as {@link #getMaxOperation()}
+//	 * in {@link #absorb(Clique, Clique)} (which is called
+//	 * indirectly by this method) during belief initialization.
+//	 * @see unbbayes.prs.bn.JunctionTree#initBeliefs()
+//	 */
+//	public void initBeliefs() throws Exception {
+//		// backup previous one
+//		PotentialTable.ISumOperation backup = this.getMaxOperation();
+//		// use PotentialTable.SumOperation instead of the backup
+//		this.setMaxOperation(new ProbabilisticTable().new SumOperation());
+//		super.initBeliefs();
+//		// restore pervious one
+//		this.setMaxOperation(backup);
+//	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.inference.extension.ISumOperationAwareJunctionTree#setMaxOperation(unbbayes.prs.bn.PotentialTable.ISumOperation)
