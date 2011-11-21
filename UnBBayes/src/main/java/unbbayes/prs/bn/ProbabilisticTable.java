@@ -42,9 +42,9 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 	}
 
 	/**
-	 *  Retira a vari�vel da tabela. Utilizado tamb�m para marginaliza��o generalizada.
+	 *  Remove variable from table. This method can also be used for general marginalization.
 	 *
-	 *@param  variavel  Variavel a ser retirada da tabela.
+	 *@param  variavel : variable to be removed from table.
 	 */
 	public void removeVariable(unbbayes.prs.INode variavel) {
 		computeFactors();
@@ -97,8 +97,8 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 				}
 			}
 		} else {
-			sum(index);
 			if(normalize){
+				sum(index);
 				int statesSize = variable.getStatesSize();
 				for (int i = dataPT.size-1; i >= 0; i--) {
 					dataPT.data[i] = dataPT.data[i] / statesSize;
@@ -110,10 +110,10 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 	}
 	
 	/**
-	 *  Verifica a consist�ncia das probabilidades da tabela.
+	 *  Check the consistency of the property of this table.
 	 *
-	 * @throws Exception se a tabela n�o soma 100 para todos os estados fixada
-	 *				   qualquer configura��o de estados dos pais.
+	 * @throws Exception if table sums up to 100% for the states
+	 *				   given parent's states.
 	 */
 	public void verifyConsistency() throws Exception {
 		Node auxNo = variableList.get(0);

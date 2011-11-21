@@ -1,9 +1,8 @@
 package unbbayes.prs.bn.inference.extension;
 
-import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.PotentialTable;
 
-public interface ISumOperationAwareJunctionTree {
+public interface IPropagationOperationHolder {
 
 	/**
 	 * This operator is used in {@link #absorb(Clique, Clique)}

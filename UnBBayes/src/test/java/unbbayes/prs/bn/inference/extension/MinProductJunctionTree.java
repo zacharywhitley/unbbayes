@@ -3,6 +3,8 @@
  */
 package unbbayes.prs.bn.inference.extension;
 
+import java.util.Comparator;
+
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.PotentialTable;
 
@@ -16,6 +18,24 @@ public class MinProductJunctionTree extends MaxProductJunctionTree {
 
 	public MinProductJunctionTree() {
 		setMaxOperation(new MinOperation());
+		try {
+			// add the comparator (it is the inverse of the superclass' comparator - i.e. instead of max, return min)
+			this.setTableExplanationComparator(new Comparator() {
+				public int compare(Object o1, Object o2) {
+					// ignore zeros
+					if (Float.compare((Float)o1, 0.0f) == 0) {
+						return -1;
+					}
+					if (Float.compare((Float)o2, 0.0f) == 0) {
+						return 1;
+					}
+					// compare inverting the order (so that it returns the inverse of "normal" compare)
+					return Float.compare((Float)o2, (Float)o1);
+				}
+			});
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
 	}
 	
 	

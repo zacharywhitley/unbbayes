@@ -14,7 +14,9 @@
     <extension plugin-id="unbbayes.util.extension.core" point-id="InferenceAlgorithm" id="MinProductJunctionTree">
         <parameter id="class" value="unbbayes.gui.option.extension.JunctionTreeLPEOptionPanel" />
     </extension>
+    <!--
     <extension plugin-id="unbbayes.util.extension.core" point-id="InferenceAlgorithm" id="MinProductComplementJunctionTree">
         <parameter id="class" value="unbbayes.gui.option.extension.JunctionTreeLPEComplementOptionPanel" />
     </extension>
+    -->
 </plugin>

@@ -134,8 +134,8 @@ public class JunctionTreeMPEAlgorithm extends JunctionTreeAlgorithm {
 						throw new IllegalStateException("Could not extract junction tree from builder", e);
 					}
 					if ((jt != null) 
-							&& (jt instanceof ISumOperationAwareJunctionTree)) {
-						ISumOperationAwareJunctionTree tree = (ISumOperationAwareJunctionTree) jt;
+							&& (jt instanceof IPropagationOperationHolder)) {
+						IPropagationOperationHolder tree = (IPropagationOperationHolder) jt;
 						
 						PotentialTable.ISumOperation backupOp = auxTab.getSumOperation();	// backup real op
 						auxTab.setSumOperation(tree.getMaxOperation());	// substitute op w/ operator for comparison (max) instead of sum (marginal)
