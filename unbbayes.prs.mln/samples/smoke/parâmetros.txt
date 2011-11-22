@@ -1,0 +1,4 @@
+options.qualquer;Especifica os predicados de mundo fechado. Separado por vírgula.;Boolean;
+options.cwaPreds;Especifica os predicados de mundo fechado. Separado por vírgula.;String;
+options.maxTries;Número máximo de tentativas no WalkSAT.;Integer;1
+options.maxFlips;Número máximo de inversões por tentativa.;Float;100

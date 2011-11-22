@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -83,6 +84,8 @@ public class Janela extends JPanel{
 	private JButton EvdSaveButton = null;
 	private JButton QrySaveButton = null;
 	
+	ArrayList<Parameter> parameters = new ArrayList<Parameter>();
+	
 	private File loadedFile = null;
 	
 	private String result = "";
@@ -102,6 +105,8 @@ public class Janela extends JPanel{
 //		c.fill = GridBagConstraints.HORIZONTAL;
 //		c.insets = new Insets(10, 10, 10, 10);
 		
+		readConfiguration();
+		parametersTable();
 		paineis();
 		labels();
 		fields();
@@ -192,6 +197,53 @@ public class Janela extends JPanel{
 		ParametersPanel.add(cwPreds, c);
 		c.gridwidth = 1;
 	}
+	
+	private void readConfiguration(){
+		try {
+//	        BufferedReader in = new BufferedReader(new FileReader(arqMLN.getText()));
+//	        System.out.println("arqMLN: " + arqMLN.getText() + "MLNFile: " + MLNFile);
+	    	BufferedReader in = new BufferedReader(new FileReader("samples/smoke/parâmetros.txt"));
+	    	String[] lineParam;
+	    	String line = "";
+	    	String comment = "//";
+	    	while (in.ready()) {
+	    		Parameter parameter = new Parameter();
+	    		line = in.readLine();
+	    		lineParam = line.split(";", 4);
+
+	    		parameter.setAttribute(lineParam[0]);
+				parameter.setDescription(lineParam[1]);
+				parameter.setType(lineParam[2]);
+				parameter.setDefaultValue(lineParam[3]);
+				
+				parameters.add(parameter);
+				
+	    	}
+	    	in.close();
+	    } catch (IOException ex) {
+	    }
+	}
+	
+	private void parametersTable(){
+		for (Parameter param : parameters) {
+			System.out.println(param.getAttribute());
+			System.out.println(param.getDescription());
+			if(param.getType().equals("String")){
+				System.out.println("[estrutura <->]");
+			}
+			if(param.getType().equals("Integer")){
+				System.out.println("[campo numérico]");
+			}
+			if(param.getType().equals("Float")){
+				System.out.println("[campo numérico]");
+			}
+			if(param.getType().equals("Boolean")){
+				System.out.println("[checkbox]");
+			}
+			System.out.println(param.getDefaultValue());
+			System.out.println("---------------------------------------");
+		}
+	}		
 	
 	private void comboboxes() {
 		c.gridwidth = 4;
@@ -418,6 +470,7 @@ public class Janela extends JPanel{
             		loadedFile = fc.getSelectedFile();
             		System.out.println(loadedFile);
             		MLNFile = loadedFile.toString();
+            		System.out.println(MLNFile);
             		if(MLNFile != ""){
             			inferButton.setEnabled(true);
             		}
