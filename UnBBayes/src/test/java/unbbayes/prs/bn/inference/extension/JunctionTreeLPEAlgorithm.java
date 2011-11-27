@@ -189,7 +189,7 @@ public class JunctionTreeLPEAlgorithm extends JunctionTreeMPEAlgorithm {
 							// use wrapper to extract the log manager and update network log.
 							new SingleEntityNetworkWrapper(singleEntityNetwork).getLogManager().append(explMessage);
 							// show network log (click the "show log" button)
-							this.getMediator().getScreen().getNetWindowCompilation().getLog().doClick();
+//							this.getMediator().getScreen().getNetWindowCompilation().getLog().doClick();
 						} catch (Exception e) {
 							try {
 								Debug.println(getClass(), "Could not update log" ,e);

@@ -9,7 +9,7 @@ import java.util.Map;
 import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.CliqueExtractor;
+import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.DefaultJunctionTreeBuilder;
 import unbbayes.prs.bn.IJunctionTree;
 import unbbayes.prs.bn.IJunctionTreeBuilder;
@@ -106,7 +106,6 @@ public class JunctionTreeMPEAlgorithm extends JunctionTreeAlgorithm {
 	/**
 	 * Updates the marginal of a node.
 	 * This method customizes {@link TreeVariable#marginal()}, which is not visible.
-	 * The modification allows 
 	 * @param node
 	 */
 	protected void updateMarginal(INode node) {
@@ -115,9 +114,21 @@ public class JunctionTreeMPEAlgorithm extends JunctionTreeAlgorithm {
 			
 			// ensure marginal list is initialized
 			probabilisticNode.initMarginalList();
-			
 			// obtain clique where node belongs and the probability distribution
-			IRandomVariable relatedClique = (new CliqueExtractor(probabilisticNode)).getAssociatedClique();
+			IRandomVariable relatedClique = null;
+			try {
+				for (Clique clique : ((SingleEntityNetwork)getNet()).getJunctionTree().getCliques()) {
+					if (clique.getAssociatedProbabilisticNodes().contains(probabilisticNode)) {
+						relatedClique = clique;
+						break;
+					}
+				}
+			} catch (Exception e) {
+				throw new IllegalStateException("Could not extract clique from " + probabilisticNode + " in network " + getNet(), e);
+			}
+			if (relatedClique == null) {
+				throw new IllegalStateException("Could not extract clique from " + probabilisticNode + " in network " + getNet());
+			}
 			PotentialTable auxTab = (PotentialTable) ((PotentialTable)relatedClique.getProbabilityFunction()).clone();
 			
 			// iterate over nodes in clique and start doing "max-marginalization"
