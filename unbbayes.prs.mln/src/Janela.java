@@ -213,7 +213,10 @@ public class Janela extends JPanel{
 
 	    		parameter.setAttribute(lineParam[0]);
 				parameter.setDescription(lineParam[1]);
-				parameter.setType(lineParam[2]);
+				if (lineParam[2].equals("String")) parameter.setVariableType(Parameter.VariableType.String);
+				else if (lineParam[2].equals("Integer")) parameter.setVariableType(Parameter.VariableType.Integer);
+				else if (lineParam[2].equals("Float")) parameter.setVariableType(Parameter.VariableType.Float);
+				else if (lineParam[2].equals("Boolean")) parameter.setVariableType(Parameter.VariableType.Boolean);
 				parameter.setDefaultValue(lineParam[3]);
 				
 				parameters.add(parameter);
@@ -225,19 +228,21 @@ public class Janela extends JPanel{
 	}
 	
 	private void parametersTable(){
+		
+		
 		for (Parameter param : parameters) {
 			System.out.println(param.getAttribute());
 			System.out.println(param.getDescription());
-			if(param.getType().equals("String")){
+			if(param.getVariableType().equals(Parameter.VariableType.String)){
 				System.out.println("[estrutura <->]");
 			}
-			if(param.getType().equals("Integer")){
+			if(param.getVariableType().equals(Parameter.VariableType.Integer)){
 				System.out.println("[campo numérico]");
 			}
-			if(param.getType().equals("Float")){
+			if(param.getVariableType().equals(Parameter.VariableType.Float)){
 				System.out.println("[campo numérico]");
 			}
-			if(param.getType().equals("Boolean")){
+			if(param.getVariableType().equals(Parameter.VariableType.Boolean)){
 				System.out.println("[checkbox]");
 			}
 			System.out.println(param.getDefaultValue());
