@@ -95,9 +95,9 @@ public class CorePluginNodeManager {
 		
 		// name of the basic plugin (the plugin declaring the extension point)
 		this.setMainPluginID(ApplicationPropertyHolder.getProperty().getProperty("unbbayes.util.extension.node.CorePluginNodeManager.mainPluginID"));
-		if (this.getMainExtensionPointID() == null) {
+		if (this.getMainPluginID() == null) {
 			System.err.println("Error reading base plugin name from application.properties. Use core.");
-			this.setMainExtensionPointID(this.getUnbbayesPluginContextHolder().getPluginCoreID());
+			this.setMainPluginID(this.getUnbbayesPluginContextHolder().getPluginCoreID());
 		}
 		
 		// name of the extension point
