@@ -3,7 +3,7 @@
 <!-- This is a plugin descriptor for Inference module -->
 <plugin id="unbbayes.prs.bn.inference.extension.MinProductJunctionTree" version="0.0.1">
     <requires>
-        <import plugin-id="unbbayes.util.extension.core" plugin-version="4.11.4"/>
+        <import plugin-id="unbbayes.util.extension.core" plugin-version="4.11.5"/>
         <import plugin-id="unbbayes.prs.bn.inference.extension.MaxProductJunctionTree"/>
     </requires>
     <runtime>

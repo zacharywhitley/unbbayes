@@ -1273,5 +1273,21 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	public  void setJunctionTree(IJunctionTree junctionTree) {
 		this.junctionTree = junctionTree;
 	}
+
+
+	/**
+	 * @return the logManager
+	 */
+	public NetworkCompilationLogManager getLogManager() {
+		return logManager;
+	}
+
+
+	/**
+	 * @param logManager the logManager to set
+	 */
+	public void setLogManager(NetworkCompilationLogManager logManager) {
+		this.logManager = logManager;
+	}
 }
 

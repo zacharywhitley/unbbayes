@@ -12,7 +12,6 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.DefaultJunctionTreeBuilder;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
-import unbbayes.prs.bn.SingleEntityNetworkWrapper;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel;
@@ -187,7 +186,7 @@ public class JunctionTreeLPEAlgorithm extends JunctionTreeMPEAlgorithm {
 						this.getMediator().getScreen().setStatus(simpleMessage);
 						try {
 							// use wrapper to extract the log manager and update network log.
-							new SingleEntityNetworkWrapper(singleEntityNetwork).getLogManager().append(explMessage);
+							singleEntityNetwork.getLogManager().append(explMessage);
 							// show network log (click the "show log" button)
 //							this.getMediator().getScreen().getNetWindowCompilation().getLog().doClick();
 						} catch (Exception e) {
