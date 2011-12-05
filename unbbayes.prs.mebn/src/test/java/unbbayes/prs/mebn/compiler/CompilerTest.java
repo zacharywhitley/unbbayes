@@ -497,7 +497,6 @@ public class CompilerTest extends TestCase {
 			fail(e.getMessage());
 		}
 		
-		assertNotNull(tableParser.getTempTable());
 		
 	}
 	
@@ -538,7 +537,6 @@ public class CompilerTest extends TestCase {
 			fail(e.getMessage());
 		}
 		
-		assertNotNull(tableParser.getTempTable());
 		
 	}
 	

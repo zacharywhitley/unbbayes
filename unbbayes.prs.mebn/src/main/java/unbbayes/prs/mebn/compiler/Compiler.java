@@ -3342,12 +3342,6 @@ public class Compiler implements ICompiler {
 		}
 	}
 
-	/**
-	 * @return the tempTable
-	 */
-	protected TempTable getTempTable() {
-		return tempTable;
-	}
 
 
 	/**

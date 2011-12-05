@@ -88,6 +88,37 @@ import edu.isi.stella.Stella_Object;
  *
  */
 public class PowerLoomKB implements KnowledgeBase {
+	/*
+	 * TODO
+	 * Functions
+	 *	This illustrates another point: A PowerLoom relation is by default “multi-valued”, which in the case of a binary relation means that a single first value can be mapped by the relation to more than one second value. In the present case, our model permits a company entity to have more than one company-name. If a (binary) relation always maps its first argument to exactly one value (i.e., if it it “single-valued”) we can specify it as a function instead of a relation. For example, we can use a function to indicate the number of employees for a company:
+	 *	
+	 *	 	
+	 *	(deffunction number-of-employees ((?c company)) :-> (?n INTEGER))
+	 *	When defining a function, all arguments but the last appear just as they do for a relation. The last argument (and its type) appears by itself following the keyword :->. Defining a single-valued relation as a function allows us to refer to it using a functional syntax within a logical sentence, as in the following:
+	 *	
+	 *	 	
+	 *	(assert (= (number-of-employees ACME-cleaners) 8))
+	 *	(assert (= (number-of-employees megasoft) 10000))
+	 *	The functional syntax often results in shorter expressions than equivalents that use relational syntax. For example to retrieve all companies with fewer than 50 employees, we can simply write:
+	 *	
+	 *	 	
+	 *	(retrieve all (and (company ?x) (< (number-of-employees ?x) 50)))
+	 *	⇒
+	 *	There is 1 solution:
+	 *	  #1: ?X=ACME-CLEANERS
+	 *	Using the syntax for relations, the same query would require the introduction of an existential quantifier, as in:
+	 *	
+	 *	 	
+	 *	(retrieve all (and (company ?x) 
+	 *	                   (exists ?n
+	 *	                     (and (number-of-employees ?x ?n)
+	 *	                          (< ?n 50)))))
+	 *	⇒
+	 *	There is 1 solution:
+	 *	  #1: ?X=ACME-CLEANERS
+	 *	To repeat ourselves slightly, Powerloom allows users the choice of using either relational or functional syntax when using a function in predicate position. For example, if f is a function, then the expressions (f ?x ?y) and (= (f ?x) ?y) are equivalent.
+	 */
 
 	public static final String FILE_SUFIX = "plm"; 
 	

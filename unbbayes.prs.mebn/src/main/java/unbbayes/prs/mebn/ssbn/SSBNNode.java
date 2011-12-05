@@ -1102,7 +1102,9 @@ public class SSBNNode implements INode {
 		
 		if (this.probabilisticNode != null) {
 			updateProbabilisticNodeName(); 
-			this.getProbabilisticNetwork().addNode(this.probabilisticNode);
+			if (!this.getProbabilisticNetwork().getNodes().contains(this.probabilisticNode)) {
+				this.getProbabilisticNetwork().addNode(this.probabilisticNode);
+			}
 		}
 	}
 

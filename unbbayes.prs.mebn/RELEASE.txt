@@ -1,3 +1,16 @@
+UNBBAYES MEBN PLUGIN - VERSION 1.13.10
+----------------------------
+FEATURE LIST		
+Number  Request ID      Summary
+12      3317532 MEBN    MEBN new type of node extension point(update)
+13      3432350 MEBN    Create an interface representing resident node
+
+Also performed some minor refactoring.
+
+BUG LIST		
+Number	Request ID	Summary
+10		3435816	MEBN Nullpointer exception when application.properties is invalid.
+
 UNBBAYES MEBN PLUGIN - VERSION 1.11.9
 ----------------------------
 FEATURE LIST		
