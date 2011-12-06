@@ -94,11 +94,11 @@ public class SaverPrOwlIO extends PROWLModelUser{
 	private JenaOWLModel owlModel = null;	
 	
 	/* Constants */
-	private static final String SCOPE_SEPARATOR = ".";
-	private static final String NUMBER_SEPARATOR = "_"; 
-	private static final String META_ENTITY_SUFIX = "_Label"; 
-	private static final String DECLARATIVE_DISTRO_SUFIX = "_Table"; 
-	private static final String INNER_SUFIX = "_Inner";
+	public static final String SCOPE_SEPARATOR = ".";
+	public static final String NUMBER_SEPARATOR = "_"; 
+	public static final String META_ENTITY_SUFIX = "_Label"; 
+	public static final String DECLARATIVE_DISTRO_SUFIX = "_Table"; 
+	public static final String INNER_SUFIX = "_Inner";
 	
 	/** This is a prefix to be added to MFrag's names to avoid conflicts with other frames. */
 	public static final String MFRAG_NAME_PREFIX = DOMAIN_MFRAG + ".";
@@ -108,7 +108,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
 	private MultiEntityBayesianNetwork mebn; 
 	
 	/** Load resource file from this package */
-	private final ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
+	private ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.io.mebn.resources.IoMebnResources.class.getName());
 	
 
@@ -138,25 +138,25 @@ public class SaverPrOwlIO extends PROWLModelUser{
 				
 		/* Definitions */
 	
-		loadMetaEntities();
-		loadObjectEntitiesClasses(); 
-		loadBooleanRVStates(); 
-		loadCategoricalStates(); 
-		loadBuiltInRV();  
+		saveMetaEntities();
+		saveObjectEntitiesClasses(); 
+		saveBooleanRVStates(); 
+		saveCategoricalStates(); 
+		saveBuiltInRV();  
 		
 		Debug.println("-> Definitions load sucess ");
 		
 		/* MTheory */
 		
-		loadMTheory(); 
+		saveMTheory(); 
 		Debug.println("-> MTheory load sucess ");
-		loadDomainResidentNodes(); 
+		saveDomainResidentNodes(); 
 		Debug.println("-> Domain Resident Nodes load sucess ");		
-		loadContextNode(); 
+		saveContextNode(); 
 		Debug.println("-> Context Node load sucess ");		
-		loadGenerativeInputNode(); 
+		saveGenerativeInputNode(); 
 		Debug.println("-> Generative Input Node load sucess ");		
-		loadEntityIndividuals();
+		saveEntityIndividuals();
 		Debug.println("-> Entity Individuals load sucess ");		
 		
 		clearAuxiliaryLists(); 
@@ -203,8 +203,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
 	 * - hasUID
 	 * - hasType (isTypeOf)
 	 */
-	
-	private void loadMetaEntities(){
+	protected void saveMetaEntities(){
 
 		ArrayList<String> metaEntitiesDefault = new ArrayList<String>(); 
 		OWLNamedClass metaEntityClass = owlModel.getOWLNamedClass(META_ENTITY); 
@@ -257,8 +256,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
 	 * Maps
 	 * - mapBooleanStatesEntity
 	 */
-	
-	private void loadBooleanRVStates(){
+	protected void saveBooleanRVStates(){
 		
 		OWLNamedClass booleanRVStates = owlModel.getOWLNamedClass(BOOLEAN_STATE); 
 	
@@ -293,7 +291,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
 	 * - hasType
 	 * 
 	 */
-	private void loadCategoricalStates(){
+	protected void saveCategoricalStates(){
 		OWLNamedClass categoricalStateClass = owlModel.getOWLNamedClass(CATEGORICAL_STATE); 
 		
 		OWLObjectProperty hasType = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasType"); 	
@@ -322,7 +320,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
 	 * Properties
 	 * - 
 	 */
-	private void loadBuiltInRV(){
+	protected void saveBuiltInRV(){
 
 		OWLNamedClass builtInPr = owlModel.getOWLNamedClass(BUILTIN_RV); 
 		
@@ -341,7 +339,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
 	 * - ObjectEntity
 	 * 		
 	 */
-	private void loadObjectEntitiesClasses(){
+	protected void saveObjectEntitiesClasses(){
 		
 		//OWLNamedClass entityClass = owlModel.getOWLNamedClass("ObjectEntity"); 
 		OWLNamedClass entityClass = owlModel.getOWLNamedClass(OBJECT_ENTITY); 
@@ -387,7 +385,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
 	 * - isSubsBy
 	 * x hasExemplar
 	 */
-    private void loadMTheory(){
+    protected void saveMTheory(){
 
 		OWLNamedClass mTheoryClass = owlModel.getOWLNamedClass(MTHEORY); 
 		// check if individual exists
@@ -509,8 +507,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
 	 * - hasProbDist
 	 * - hasDeclaration
 	 */
-    
-    private void loadDomainResidentNodes(){
+    protected void saveDomainResidentNodes(){
     	
     	for(MFrag mfrag : mebn.getDomainMFragList()){
     		for (ResidentNode residentNode: mfrag.getResidentNodeList()){  
@@ -541,7 +538,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
     			
     			/* has possible values */
     			Debug.println("Verifying possible values");
-    			loadResidentPossibleValues(domainResIndividual, residentNode); 	        
+    			saveResidentPossibleValues(domainResIndividual, residentNode); 	        
     			
     			/* has Input Instance */
     			Debug.println("Verifying input instances");
@@ -584,7 +581,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
 	 * @param residentNodeIndividual Individual that is the node in the PowerLoom structure. 
 	 * @param node Resident Node of the MEBN structure
 	 */
-	private void loadResidentPossibleValues(OWLIndividual residentNodeIndividual, IResidentNode node){
+	protected void saveResidentPossibleValues(OWLIndividual residentNodeIndividual, IResidentNode node){
 
 		/* categoricalRVStates */
 		
@@ -641,7 +638,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
      * @param name The name of the node where this is a argument
      * @param argNumber The number of this argument in the list of arguments of the node.
      */
-    private void saveSimpleArgRelationship(OrdinaryVariable argument, OWLIndividual individual, String name, int argNumber){
+    protected void saveSimpleArgRelationship(OrdinaryVariable argument, OWLIndividual individual, String name, int argNumber){
     	
     	OWLObjectProperty hasArgumentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 	
 		OWLNamedClass argumentClass = owlModel.getOWLNamedClass(SIMPLE_ARGUMENT_RELATIONSHIP); 
@@ -663,7 +660,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
     /**
      * Pre-conditions: run after loadDomainResidentNode. 
      */
-    private void loadGenerativeInputNode(){
+    protected void saveGenerativeInputNode(){
     	
     	for(MFrag mfrag : mebn.getDomainMFragList()){
     		for (InputNode generativeInputNode: mfrag.getInputNodeList()){  
@@ -693,7 +690,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
     				if(generativeInputNode.getInputInstanceOf() instanceof IResidentNode){
     					IResidentNode residentNode = (IResidentNode)generativeInputNode.getInputInstanceOf(); 
     					for(Entity state: residentNode.getPossibleValueList()){
-    						loadInputPossibleValues(generativeInputNodeIndividual, residentNode); 
+    						saveInputPossibleValues(generativeInputNodeIndividual, residentNode); 
     					}
     				}
     				else{
@@ -720,7 +717,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
 	 * @param nodeIndividual
 	 * @param node
 	 */
-	private void loadInputPossibleValues(OWLIndividual nodeIndividual, IResidentNode node){
+	protected void saveInputPossibleValues(OWLIndividual nodeIndividual, IResidentNode node){
 
 		/* categoricalRVStates */
 		//OWLNamedClass categoricalRVStatesClass = owlModel.getOWLNamedClass(CATEGORICAL_STATE); 
@@ -754,7 +751,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
     /**
      * Load the context nodes from the MEBN structure for the PR-OWL structure. 
      */
-    private void loadContextNode(){
+    protected void saveContextNode(){
     	
     	for(MFrag mfrag: mebn.getDomainMFragList()){
     		for (ContextNode contextNode: mfrag.getContextNodeList()){
@@ -762,7 +759,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
     			OWLIndividual contextNodeIndividual = mapContext.get(contextNode);	
     			NodeFormulaTree formulaNode = contextNode.getFormulaTree(); 
     			if (formulaNode != null){
-    				loadContextNodeFormula(formulaNode, contextNodeIndividual, contextNode); 
+    				saveContextNodeFormula(formulaNode, contextNodeIndividual, contextNode); 
     			}		
     			saveContextPossibleValues(contextNodeIndividual, contextNode);
     			
@@ -790,7 +787,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
      * @param name Name of the node
      * @param argNumber
      */
-    private void saveCategoricalStateArgRelationship(CategoricalStateEntity argument, OWLIndividual individual, String name, int argNumber){
+    protected void saveCategoricalStateArgRelationship(CategoricalStateEntity argument, OWLIndividual individual, String name, int argNumber){
     	
     	OWLObjectProperty hasArgumentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 	
 		OWLNamedClass argumentClass = owlModel.getOWLNamedClass(ARGUMENT_RELATIONSHIP); 
@@ -824,7 +821,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
      * @param name Name of the node
      * @param argNumber
      */
-    private void saveBooleanArgRelationship(BooleanStateEntity argument, OWLIndividual individual, String name, int argNumber){
+    protected void saveBooleanArgRelationship(BooleanStateEntity argument, OWLIndividual individual, String name, int argNumber){
     	
     	OWLObjectProperty hasArgumentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 	
 		OWLNamedClass argumentClass = owlModel.getOWLNamedClass(ARGUMENT_RELATIONSHIP); 
@@ -849,7 +846,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
      * @param argNumber
      * @param root
      */
-    private void saveBuiltInArgRelationship(OWLIndividual individual, MultiEntityNode node, int argNumber, NodeFormulaTree root){
+    protected void saveBuiltInArgRelationship(OWLIndividual individual, MultiEntityNode node, int argNumber, NodeFormulaTree root){
     	
     	OWLObjectProperty hasArgumentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 	
 		OWLNamedClass argumentClass = owlModel.getOWLNamedClass(ARGUMENT_RELATIONSHIP); 
@@ -872,7 +869,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
 		OWLObjectProperty isContextNodeIn = (OWLObjectProperty)owlModel.getOWLObjectProperty("isContextNodeIn"); 	
 		innerContextNode.addPropertyValue(isContextNodeIn, mapMFrag.get(node.getMFrag())); 
 		
-		loadContextNodeFormula(root, innerContextNode, contextAux); 
+		saveContextNodeFormula(root, innerContextNode, contextAux); 
 		
 		OWLObjectProperty hasArgTerm = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgTerm"); 
 		argumentIndividual.addPropertyValue(hasArgTerm, innerContextNode); 
@@ -886,7 +883,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
      * @param name The name of the node that has the argument. 
      * @param argNumber
      */
-    private void saveEmptySimpleArgRelationship(OWLIndividual individual, String name, int argNumber){
+    protected void saveEmptySimpleArgRelationship(OWLIndividual individual, String name, int argNumber){
     	
     	OWLObjectProperty hasArgumentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 	
 		OWLNamedClass argumentClass = owlModel.getOWLNamedClass(SIMPLE_ARGUMENT_RELATIONSHIP); 
@@ -916,7 +913,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
      * @param node The name of the node where this is a argument
      * @param argNumber The number of this argument in the list of arguments of the node.
      */
-    private void saveResidentNodeArgRelationship(ResidentNodePointer argument, OWLIndividual individual, MultiEntityNode node, int argNumber){
+    protected void saveResidentNodeArgRelationship(ResidentNodePointer argument, OWLIndividual individual, MultiEntityNode node, int argNumber){
     	
     	OWLObjectProperty hasArgumentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 	
 		OWLNamedClass argumentClass = owlModel.getOWLNamedClass(ARGUMENT_RELATIONSHIP); 
@@ -940,7 +937,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
 		
 		//Save the possible values
 		//saveHasPossibleValueProperty(innerContextNode, argument.getResidentNode()); 
-		loadResidentPossibleValues(innerContextNode, (IResidentNode)argument.getResidentNode()); 
+		saveResidentPossibleValues(innerContextNode, (IResidentNode)argument.getResidentNode()); 
 		
         //Save the arguments
 		OrdinaryVariable[] oVariableArray = argument.getOrdinaryVariableArray(); 
@@ -965,7 +962,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
      * @param contextNodeIndividual Protege individual for the context node
      * @param contextNode Context node from the MEBN structure
      */
-    private void loadContextNodeFormula(NodeFormulaTree _formulaNode, OWLIndividual contextNodeIndividual, ContextNode contextNode){
+    protected void saveContextNodeFormula(NodeFormulaTree _formulaNode, OWLIndividual contextNodeIndividual, ContextNode contextNode){
     	
     	NodeFormulaTree formulaNode = _formulaNode; 
     	
@@ -1073,7 +1070,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
 				contextNodeIndividual.addPropertyValue(isContextInstanceOf, mapDomainResident.get(pointer.getResidentNode())); 
 				
 				//Save the possible values
-				loadResidentPossibleValues(contextNodeIndividual, pointer.getResidentNode()); 
+				saveResidentPossibleValues(contextNodeIndividual, pointer.getResidentNode()); 
 				
 		        //Save the arguments
 				OrdinaryVariable[] oVariableArray = pointer.getOrdinaryVariableArray(); 
@@ -1099,7 +1096,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
 	 * @param individual The individual owl for the node
 	 * @param node The node that have the possible values
 	 */
-	private void saveContextPossibleValues(OWLIndividual individual, IMultiEntityNode node){
+	protected void saveContextPossibleValues(OWLIndividual individual, IMultiEntityNode node){
 		/*has possible values */
 		OWLObjectProperty hasPossibleValuesProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasPossibleValues"); 	
 		for(Entity possibleValue: node.getPossibleValueList()){
@@ -1111,7 +1108,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
 		}
 	}
 	
-	private void clearAuxiliaryLists(){
+	protected void clearAuxiliaryLists(){
 		
 		for(ContextNode context: auxContextNodeList){
 			context.delete(); 
@@ -1128,9 +1125,9 @@ public class SaverPrOwlIO extends PROWLModelUser{
 	 *  
 	 *  Currently, it does some redundant data access (since other methods already
 	 *  accesses those data), but correcting it would be a major
-	 *  refactoring work to solve this problem.
+	 *  refactor work to solve this problem.
 	 */
-	private void loadEntityIndividuals() {
+	protected void saveEntityIndividuals() {
 		OWLIndividual individual = null;
 		OWLNamedClass currentOWLEntity = null;
 		// extracts all entities found inside this MTheory
@@ -1168,6 +1165,237 @@ public class SaverPrOwlIO extends PROWLModelUser{
 			return;
 		}
 		this.owlModel = jenamodel;
+	}
+
+
+	/**
+	 * @return the mapBuiltInOwlIndividual
+	 */
+	protected HashMap<String, OWLIndividual> getMapBuiltInOwlIndividual() {
+		return mapBuiltInOwlIndividual;
+	}
+
+
+	/**
+	 * @param mapBuiltInOwlIndividual the mapBuiltInOwlIndividual to set
+	 */
+	protected void setMapBuiltInOwlIndividual(
+			HashMap<String, OWLIndividual> mapBuiltInOwlIndividual) {
+		this.mapBuiltInOwlIndividual = mapBuiltInOwlIndividual;
+	}
+
+
+	/**
+	 * @return the mapMetaEntity
+	 */
+	protected HashMap<String, OWLIndividual> getMapMetaEntity() {
+		return mapMetaEntity;
+	}
+
+
+	/**
+	 * @param mapMetaEntity the mapMetaEntity to set
+	 */
+	protected void setMapMetaEntity(HashMap<String, OWLIndividual> mapMetaEntity) {
+		this.mapMetaEntity = mapMetaEntity;
+	}
+
+
+	/**
+	 * @return the mapCategoricalStates
+	 */
+	protected HashMap<Entity, OWLIndividual> getMapCategoricalStates() {
+		return mapCategoricalStates;
+	}
+
+
+	/**
+	 * @param mapCategoricalStates the mapCategoricalStates to set
+	 */
+	protected void setMapCategoricalStates(
+			HashMap<Entity, OWLIndividual> mapCategoricalStates) {
+		this.mapCategoricalStates = mapCategoricalStates;
+	}
+
+
+	/**
+	 * @return the mapObjectEntityClasses
+	 */
+	protected HashMap<ObjectEntity, OWLNamedClass> getMapObjectEntityClasses() {
+		return mapObjectEntityClasses;
+	}
+
+
+	/**
+	 * @param mapObjectEntityClasses the mapObjectEntityClasses to set
+	 */
+	protected void setMapObjectEntityClasses(
+			HashMap<ObjectEntity, OWLNamedClass> mapObjectEntityClasses) {
+		this.mapObjectEntityClasses = mapObjectEntityClasses;
+	}
+
+
+	/**
+	 * @return the mapBooleanStatesEntity
+	 */
+	protected HashMap<BooleanStateEntity, OWLIndividual> getMapBooleanStatesEntity() {
+		return mapBooleanStatesEntity;
+	}
+
+
+	/**
+	 * @param mapBooleanStatesEntity the mapBooleanStatesEntity to set
+	 */
+	protected void setMapBooleanStatesEntity(
+			HashMap<BooleanStateEntity, OWLIndividual> mapBooleanStatesEntity) {
+		this.mapBooleanStatesEntity = mapBooleanStatesEntity;
+	}
+
+
+	/**
+	 * @return the mapMFrag
+	 */
+	protected HashMap<MFrag, OWLIndividual> getMapMFrag() {
+		return mapMFrag;
+	}
+
+
+	/**
+	 * @param mapMFrag the mapMFrag to set
+	 */
+	protected void setMapMFrag(HashMap<MFrag, OWLIndividual> mapMFrag) {
+		this.mapMFrag = mapMFrag;
+	}
+
+
+	/**
+	 * @return the mapOrdinaryVariable
+	 */
+	protected HashMap<OrdinaryVariable, OWLIndividual> getMapOrdinaryVariable() {
+		return mapOrdinaryVariable;
+	}
+
+
+	/**
+	 * @param mapOrdinaryVariable the mapOrdinaryVariable to set
+	 */
+	protected void setMapOrdinaryVariable(
+			HashMap<OrdinaryVariable, OWLIndividual> mapOrdinaryVariable) {
+		this.mapOrdinaryVariable = mapOrdinaryVariable;
+	}
+
+
+	/**
+	 * @return the mapContext
+	 */
+	protected HashMap<ContextNode, OWLIndividual> getMapContext() {
+		return mapContext;
+	}
+
+
+	/**
+	 * @param mapContext the mapContext to set
+	 */
+	protected void setMapContext(HashMap<ContextNode, OWLIndividual> mapContext) {
+		this.mapContext = mapContext;
+	}
+
+
+	/**
+	 * @return the mapGenerativeInput
+	 */
+	protected HashMap<InputNode, OWLIndividual> getMapGenerativeInput() {
+		return mapGenerativeInput;
+	}
+
+
+	/**
+	 * @param mapGenerativeInput the mapGenerativeInput to set
+	 */
+	protected void setMapGenerativeInput(
+			HashMap<InputNode, OWLIndividual> mapGenerativeInput) {
+		this.mapGenerativeInput = mapGenerativeInput;
+	}
+
+
+	/**
+	 * @return the mapDomainResident
+	 */
+	protected HashMap<ResidentNode, OWLIndividual> getMapDomainResident() {
+		return mapDomainResident;
+	}
+
+
+	/**
+	 * @param mapDomainResident the mapDomainResident to set
+	 */
+	protected void setMapDomainResident(
+			HashMap<ResidentNode, OWLIndividual> mapDomainResident) {
+		this.mapDomainResident = mapDomainResident;
+	}
+
+
+	/**
+	 * @return the auxContextNodeList
+	 */
+	protected ArrayList<ContextNode> getAuxContextNodeList() {
+		return auxContextNodeList;
+	}
+
+
+	/**
+	 * @param auxContextNodeList the auxContextNodeList to set
+	 */
+	protected void setAuxContextNodeList(ArrayList<ContextNode> auxContextNodeList) {
+		this.auxContextNodeList = auxContextNodeList;
+	}
+
+
+	/**
+	 * @return the owlModel
+	 */
+	protected JenaOWLModel getOwlModel() {
+		return owlModel;
+	}
+
+
+	/**
+	 * @param owlModel the owlModel to set
+	 */
+	protected void setOwlModel(JenaOWLModel owlModel) {
+		this.owlModel = owlModel;
+	}
+
+
+	/**
+	 * @return the mebn
+	 */
+	protected MultiEntityBayesianNetwork getMebn() {
+		return mebn;
+	}
+
+
+	/**
+	 * @param mebn the mebn to set
+	 */
+	protected void setMebn(MultiEntityBayesianNetwork mebn) {
+		this.mebn = mebn;
+	}
+
+
+	/**
+	 * @return the resource
+	 */
+	public ResourceBundle getResource() {
+		return resource;
+	}
+
+
+	/**
+	 * @param resource the resource to set
+	 */
+	public void setResource(ResourceBundle resource) {
+		this.resource = resource;
 	}
 	
 	
