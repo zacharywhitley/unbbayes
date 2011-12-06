@@ -63,6 +63,8 @@ public class PrOwlIO extends PROWLModelUser implements MebnIO {
 	//private Collection<String> untouchableInstanceNames = null;
 	
 	private String name = "Probabilistic Web Ontology Language";
+
+	private SaverPrOwlIO saver = new SaverPrOwlIO();
 	
 	
 	public PrOwlIO() {
@@ -212,7 +214,6 @@ public class PrOwlIO extends PROWLModelUser implements MebnIO {
 	 */
 	
 	public void saveMebn(File file, MultiEntityBayesianNetwork mebn) throws IOException, IOMebnException{
-	   SaverPrOwlIO saver = new SaverPrOwlIO();
 	   
 	   JenaOWLModel jenaOWLModel = null;
 	   try{
@@ -375,6 +376,56 @@ public class PrOwlIO extends PROWLModelUser implements MebnIO {
 	 */
 	public void setName(String name) {
 		this.name = name;
+	}
+
+
+
+
+	/**
+	 * @return the lastOwlModel
+	 */
+	public OWLModel getLastOwlModel() {
+		return lastOwlModel;
+	}
+
+
+
+
+	/**
+	 * @param lastOwlModel the lastOwlModel to set
+	 */
+	public void setLastOwlModel(OWLModel lastOwlModel) {
+		this.lastOwlModel = lastOwlModel;
+	}
+
+
+
+
+	/**
+	 * @param loader the loader to set
+	 */
+	public void setLoader(LoaderPrOwlIO loader) {
+		this.loader = loader;
+	}
+
+
+
+
+	/**
+	 * @return the saver
+	 */
+	public SaverPrOwlIO getSaver() {
+		return saver;
+	}
+
+
+
+
+	/**
+	 * @param saver the saver to set
+	 */
+	public void setSaver(SaverPrOwlIO saver) {
+		this.saver = saver;
 	}
 	
 	

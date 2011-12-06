@@ -73,7 +73,7 @@ public class UbfIO implements MebnIO {
 	private ResourceBundle resource = 
 		unbbayes.util.ResourceController.newInstance().getBundle(unbbayes.io.mebn.resources.IoUbfResources.class.getName());	
 	
-	private PrOwlIO prowlIO = null;	// stores files w/ .owl extension
+	private MebnIO prowlIO = null;	// stores files w/ .owl extension
 		
 	
 	private String[][] tokens = { // tokens used for .ubf file construction
@@ -1239,6 +1239,30 @@ public class UbfIO implements MebnIO {
 	 */
 	public void setToUseOrderOfUBFFile(boolean toUseOrderOfUBFFile) {
 		this.toUseOrderOfUBFFile = toUseOrderOfUBFFile;
+	}
+	/**
+	 * @return the prowlIO
+	 */
+	public MebnIO getProwlIO() {
+		return prowlIO;
+	}
+	/**
+	 * @param prowlIO the prowlIO to set
+	 */
+	public void setProwlIO(MebnIO prowlIO) {
+		this.prowlIO = prowlIO;
+	}
+	/**
+	 * @return the tokens
+	 */
+	public String[][] getTokens() {
+		return tokens;
+	}
+	/**
+	 * @param tokens the tokens to set
+	 */
+	public void setTokens(String[][] tokens) {
+		this.tokens = tokens;
 	}
 	
 
