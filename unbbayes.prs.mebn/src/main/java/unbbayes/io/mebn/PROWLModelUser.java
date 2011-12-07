@@ -94,6 +94,9 @@ public abstract class PROWLModelUser implements IProtegeOWLModelUser {
 		InputStream inputStreamOwl; 
 		try{
 			inputStreamOwl = this.getClass().getClassLoader().getResourceAsStream(PROWLMODELFILE);
+			if (inputStreamOwl == null) {
+				inputStreamOwl = new FileInputStream(PROWLMODELFILE);
+			}
 			owlModel.load(inputStreamOwl, FileUtils.langXMLAbbrev);   
 		} catch (Exception e){
 			Debug.println(this.getClass(), "Could not load pr-owl definitions from resource. Retry...", e);
