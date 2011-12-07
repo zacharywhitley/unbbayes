@@ -80,7 +80,7 @@ public class PrOwlIO extends PROWLModelUser implements MebnIO {
 	 * non-prowl ontology remains kept.
 	 * @param model
 	 */
-	private void clearAllPROWLOntologyIndividuals(JenaOWLModel model) {
+	protected void clearAllPROWLOntologyIndividuals(JenaOWLModel model) {
 		Collection<OWLIndividual> individuals = null;
 		Collection<String> untouchableIndividuals = this.getNamesOfAllModifiedLabels();
 		
@@ -112,7 +112,7 @@ public class PrOwlIO extends PROWLModelUser implements MebnIO {
 	 * removes ObjectEntity's individuals and classes
 	 * @param model
 	 */
-	private void clearAllObjectEntity(JenaOWLModel model) {
+	protected void clearAllObjectEntity(JenaOWLModel model) {
 		Collection<OWLNamedClass> subclasses = null;
 		OWLNamedClass objectEntity;
 		

@@ -26,6 +26,7 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.io.File;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
@@ -95,6 +96,7 @@ import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 import unbbayes.prs.mebn.exception.ReservedWordException;
+import unbbayes.prs.mebn.extension.IMEBNPluginNode;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.prs.mebn.ssbn.IMediatorAwareSSBNGenerator;
@@ -295,6 +297,30 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
     				this.getClass().getCanonicalName()+".toLogNodesAndProbabilities").toString()));
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+		
+		// update mediator of plugin nodes
+		if (this.multiEntityBayesianNetwork != null) {
+			try {
+				for (MFrag mfrag : multiEntityBayesianNetwork.getMFragList()) {
+					try {
+						for (Node node : mfrag.getNodes()) {
+							try {
+								if (node instanceof IMEBNPluginNode) {
+									IMEBNPluginNode pluginNode = (IMEBNPluginNode) node;
+									pluginNode.setMediator(this);
+								}
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 		
 	}
