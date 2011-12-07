@@ -26,7 +26,6 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.io.File;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
@@ -380,6 +379,14 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	 */
 	public ResidentNode getResidentNodeActive(){
 		return residentNodeActive;
+	}
+	
+	public IResidentNode getActiveResidentNode() {
+		return this.getResidentNodeActive();
+	}
+	
+	public void setActiveResidentNode(IResidentNode activeNode) {
+		this.residentNodeActive = (ResidentNode)activeNode;
 	}
 
 	/* (non-Javadoc)

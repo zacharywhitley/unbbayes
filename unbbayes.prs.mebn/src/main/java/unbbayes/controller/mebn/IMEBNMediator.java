@@ -90,6 +90,10 @@ public interface IMEBNMediator extends INetworkMediator  {
 
 	public abstract void setResetButtonActive();
 
+	/**
+	 * @deprecated use {@link #getActiveResidentNode()} instead
+	 * @see  #getActiveResidentNode()
+	 */
 	public abstract IResidentNode getResidentNodeActive();
 
 	public abstract InputNode getInputNodeActive();
@@ -680,5 +684,17 @@ public interface IMEBNMediator extends INetworkMediator  {
 	 */
 	public void setPluginNodeManager(MEBNPluginNodeManager pluginNodeManager);
 
+	/**
+	 * 
+	 * @return the resident node currently selected in canvas
+	 */
+	public IResidentNode getActiveResidentNode();
+	
+	/**
+	 * @param activeNode : the resident node currently selected in canvas.
+	 * This method is just a setter, so use this method only if you want to 
+	 * force some controller codes to point to a new active node.
+	 */
+	public void setActiveResidentNode(IResidentNode activeNode);
 
 }
