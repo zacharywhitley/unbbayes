@@ -17,7 +17,9 @@ import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -86,10 +88,15 @@ public class Janela extends JPanel{
 	private JButton MLNSaveButton = null;
 	private JButton EvdSaveButton = null;
 	private JButton QrySaveButton = null;
+	private JButton paramApplyButton = null;
+	private JButton paramSaveButton = null;
 	
 	ArrayList<Parameter> parameters = new ArrayList<Parameter>();
+	Map <String, Parameter> parameterMap = new HashMap<String, Parameter>();
+	Map <String, JComponent> parameterGuiMap = new HashMap<String, JComponent>();
 	
 	private File loadedFile = null;
+	private File confFile = null;
 	
 	private String result = "";
 	
@@ -246,9 +253,14 @@ public class Janela extends JPanel{
 			System.out.println("---------------------------------------");
 		}
 		
-		Map <String, Parameter> parameterMap = new HashMap<String, Parameter>();
-		Map <String, JComponent> parameterGuiMap = new HashMap<String, JComponent>();
 		int x = 0, y = 0;
+		c.gridx = x; c.gridy = y;
+		parametersPanel.add(new JLabel("Parameter"), c);
+		c.gridx = ++x;
+		parametersPanel.add(new JLabel("Description"), c);
+		c.gridx = ++x;
+		parametersPanel.add(new JLabel("Value"), c);
+		x = 0; y++;
 		
 		for (Parameter param : parameters) {
 			parameterMap.put(param.getAttribute(), param);
@@ -277,6 +289,16 @@ public class Janela extends JPanel{
 			}
 			x = 0; y++;
 		}
+		
+		c.gridx = 2; c.gridy = y;
+		paramApplyButton = getJButton("Apply");
+		paramApplyButton.setEnabled(true);
+		parametersPanel.add(paramApplyButton, c);
+		
+		c.gridx = 3; c.gridy = y;
+		paramSaveButton = getJButton("Save");
+		paramSaveButton.setEnabled(true);
+		parametersPanel.add(paramSaveButton, c);
 		
 //		String[] columns = new String[]{"Parameter", "Attribute", "Description", "Value"};
 //		System.out.println(columns);
@@ -549,6 +571,30 @@ public class Janela extends JPanel{
 			        out.close();
 			    } catch (IOException ex) {
 			    }
+			}
+		});
+		
+		paramApplyButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+			}
+		});
+		
+		paramSaveButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					BufferedWriter out = new BufferedWriter(new FileWriter(confFile));
+//					out.write(jTA_MLN.getText());
+					Set s = parameterMap.entrySet();
+					Iterator it = s.iterator();
+					
+					while(it.hasNext()){
+						Map.Entry m = (Map.Entry)it.next();
+					}
+						
+					out.close();
+				} catch (IOException ex) {
+				}
 			}
 		});
 	}
