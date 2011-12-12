@@ -46,7 +46,7 @@ public class Janela extends JPanel{
 	private JSplitPane splitPaneV2 = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 	private JPanel inferPanel = new JPanel();
 	private JPanel loadPanel = new JPanel();
-	private JPanel ParametersPanel = new JPanel();
+	private JPanel parametersPanel = new JPanel();
 	private JTabbedPane tabbedPane1 = new JTabbedPane();
 	private JTabbedPane tabbedPane2= new JTabbedPane();
 	
@@ -54,7 +54,7 @@ public class Janela extends JPanel{
 	private JTextField arqEvd = null;
 	private JTextField arqQry = null;
 	private JTextField arqOut = null;
-	private JTextField cwPreds = null;
+	private JTextField cwaPreds = null;
 	
 	private String MLNFile = "";
 	
@@ -105,11 +105,12 @@ public class Janela extends JPanel{
 //		c.fill = GridBagConstraints.HORIZONTAL;
 //		c.insets = new Insets(10, 10, 10, 10);
 		
-		readConfiguration();
-		parametersTable();
 		paineis();
 		labels();
 		fields();
+		readConfiguration();
+		parametersTable();
+		parameters();
 		simpleTree();
 		scrollPane();
 		comboboxes();
@@ -124,10 +125,13 @@ public class Janela extends JPanel{
 		this.setPreferredSize(new Dimension(1000,800));
 		loadPanel.setLayout(new GridBagLayout());
 		inferPanel.setLayout(new GridBagLayout());
+		parametersPanel.setLayout(new GridBagLayout());
+		
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.insets = new Insets(10, 10, 10, 10);
 		c2.fill = GridBagConstraints.HORIZONTAL;
 		c2.insets = new Insets(10, 10, 10, 10);
+		
 		
 		splitPaneH.setMaximumSize(new Dimension(900,700));
 		
@@ -172,8 +176,6 @@ public class Janela extends JPanel{
 		c.gridx = 0; c.gridy = 2;
 		loadPanel.add(new JLabel("Query"), c);
 
-		c.gridx = 0; c.gridy = 0;
-		ParametersPanel.add(new JLabel("Closed World Predicates"), c);
 	}
 	
 	private void fields() {
@@ -191,11 +193,6 @@ public class Janela extends JPanel{
 		loadPanel.add(arqQry, c);
 		c.gridwidth = 1;
 
-		// Parameters
-		c.gridx = 1; c.gridy = 0;
-		cwPreds = getJTextField(cwPreds, "");
-		ParametersPanel.add(cwPreds, c);
-		c.gridwidth = 1;
 	}
 	
 	private void readConfiguration(){
@@ -209,15 +206,16 @@ public class Janela extends JPanel{
 	    	while (in.ready()) {
 	    		Parameter parameter = new Parameter();
 	    		line = in.readLine();
-	    		lineParam = line.split(";", 4);
+	    		lineParam = line.split(";", 5);
 
-	    		parameter.setAttribute(lineParam[0]);
-				parameter.setDescription(lineParam[1]);
-				if (lineParam[2].equals("String")) parameter.setVariableType(Parameter.VariableType.String);
-				else if (lineParam[2].equals("Integer")) parameter.setVariableType(Parameter.VariableType.Integer);
-				else if (lineParam[2].equals("Float")) parameter.setVariableType(Parameter.VariableType.Float);
-				else if (lineParam[2].equals("Boolean")) parameter.setVariableType(Parameter.VariableType.Boolean);
-				parameter.setDefaultValue(lineParam[3]);
+	    		parameter.setLabel(lineParam[0]);
+	    		parameter.setAttribute(lineParam[1]);
+				parameter.setDescription(lineParam[2]);
+				if (lineParam[3].equals("String")) parameter.setVariableType(Parameter.VariableType.String);
+				else if (lineParam[3].equals("Integer")) parameter.setVariableType(Parameter.VariableType.Integer);
+				else if (lineParam[3].equals("Float")) parameter.setVariableType(Parameter.VariableType.Float);
+				else if (lineParam[3].equals("Boolean")) parameter.setVariableType(Parameter.VariableType.Boolean);
+				parameter.setDefaultValue(lineParam[4]);
 				
 				parameters.add(parameter);
 				
@@ -228,7 +226,6 @@ public class Janela extends JPanel{
 	}
 	
 	private void parametersTable(){
-		
 		
 		for (Parameter param : parameters) {
 			System.out.println(param.getAttribute());
@@ -248,6 +245,37 @@ public class Janela extends JPanel{
 			System.out.println(param.getDefaultValue());
 			System.out.println("---------------------------------------");
 		}
+		
+		int x = 0, y = 0;
+		for (Parameter param : parameters) {
+			c.gridx = x; c.gridy = y;
+			System.out.println(c.gridy);
+			parametersPanel.add(new JLabel(param.getLabel()), c);
+			c.gridx = ++x; 
+			parametersPanel.add(new JLabel(param.getDescription()), c);
+			c.gridx = ++x; 
+			if(param.getVariableType().equals(Parameter.VariableType.String)){
+				c.gridx = x; c.gridy = y;
+				cwaPreds = getJTextField(cwaPreds, "");
+				parametersPanel.add(cwaPreds, c);
+			}
+			if(param.getVariableType().equals(Parameter.VariableType.Integer)){
+				System.out.println("[campo numérico]");
+			}
+			if(param.getVariableType().equals(Parameter.VariableType.Float)){
+				System.out.println("[campo numérico]");
+			}
+			if(param.getVariableType().equals(Parameter.VariableType.Boolean)){
+				System.out.println("[checkbox]");
+			}
+			System.out.println(param.getDefaultValue());
+			System.out.println("---------------------------------------");
+			x = 0; y++;
+		}
+		
+		String[] columns = new String[]{"Parameter", "Attribute", "Description", "Value"};
+		System.out.println(columns);
+//		columns = {"a","b","c","d"};
 	}		
 	
 	private void comboboxes() {
@@ -260,7 +288,7 @@ public class Janela extends JPanel{
 	private void checkboxes() {
 		jCheckCw2 = getCheckBox(jCheckCw2, "outro");
 		c.gridx = 0; c.gridy = 1;
-		ParametersPanel.add(jCheckCw2, c);
+		parametersPanel.add(jCheckCw2, c);
 	}
 	
 	private void scrollPane() {
@@ -288,7 +316,7 @@ public class Janela extends JPanel{
 		c.gridheight = 7;
 		c.gridwidth = 4;
 		//jSPParameters = getJScrollPane(jTA_Parameters);
-		inferPanel.add(ParametersPanel, c);
+		inferPanel.add(parametersPanel, c);
 		c.gridheight = 1;
 		c.gridwidth = 1;
 		
@@ -311,7 +339,15 @@ public class Janela extends JPanel{
 	}
 	
 	private void parameters(){
+		// labels
+//		c.gridx = 0; c.gridy = 0;
+//		ParametersPanel.add(new JLabel("Closed World Predicates"), c);
 		
+		// Fields
+//		c.gridx = 1; c.gridy = 0;
+//		cwPreds = getJTextField(cwPreds, "");
+//		ParametersPanel.add(cwPreds, c);
+//		c.gridwidth = 1;
 	}
 	
 	private void buttons() {
@@ -360,7 +396,7 @@ public class Janela extends JPanel{
 		tabbedPane2.addTab("mln", null, jSPMLNLoad, "mln");
 		tabbedPane2.setMnemonicAt(0, KeyEvent.VK_4);
 		
-		tabbedPane2.addTab("Parameters", null, ParametersPanel, "parameters");
+		tabbedPane2.addTab("Parameters", null, parametersPanel, "parameters");
 		tabbedPane2.setMnemonicAt(0, KeyEvent.VK_5);
 		
 		c.gridx = 0; c.gridy = 5;
@@ -426,8 +462,8 @@ public class Janela extends JPanel{
 				String prod = Config.product_line;
 				Config.db_schema += prod + "_" + machine + "_" + user + "_" + pid;
 				
-				if(!cwPreds.getText().equals("")){
-					options.cwaPreds = cwPreds.getText();
+				if(!cwaPreds.getText().equals("")){
+					options.cwaPreds = cwaPreds.getText();
 				}
 				if(jCB.getSelectedItem().equals("Marginal")){
 					options.marginal = true;

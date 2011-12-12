@@ -1,5 +1,6 @@
 public class Parameter {
 
+	private String label = "";
 	private String attribute = "";
 	private String description = "";
 	private VariableType variableType;
@@ -12,6 +13,12 @@ public class Parameter {
 		Float
 	}
 	
+	public String getLabel() {
+		return label;
+	}
+	public void setLabel(String label) {
+		this.label = label;
+	}
 	public String getDescription() {
 		return description;
 	}
