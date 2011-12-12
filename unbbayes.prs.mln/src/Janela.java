@@ -16,10 +16,13 @@ import java.lang.management.ManagementFactory;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -55,13 +58,13 @@ public class Janela extends JPanel{
 	private JTextField arqQry = null;
 	private JTextField arqOut = null;
 	private JTextField cwaPreds = null;
+	private JTextField textField = null;
 	
 	private String MLNFile = "";
 	
 	private JComboBox jCB = null;
 	
-	private JCheckBox jCheckCw = null;
-	private JCheckBox jCheckCw2 = null;
+	private JCheckBox checkBox = null;
 	
 	private JScrollPane jSP = null;
 	private JScrollPane jSPinfer = null;
@@ -197,12 +200,9 @@ public class Janela extends JPanel{
 	
 	private void readConfiguration(){
 		try {
-//	        BufferedReader in = new BufferedReader(new FileReader(arqMLN.getText()));
-//	        System.out.println("arqMLN: " + arqMLN.getText() + "MLNFile: " + MLNFile);
 	    	BufferedReader in = new BufferedReader(new FileReader("samples/smoke/parâmetros.txt"));
 	    	String[] lineParam;
 	    	String line = "";
-	    	String comment = "//";
 	    	while (in.ready()) {
 	    		Parameter parameter = new Parameter();
 	    		line = in.readLine();
@@ -246,35 +246,40 @@ public class Janela extends JPanel{
 			System.out.println("---------------------------------------");
 		}
 		
+		Map <String, Parameter> parameterMap = new HashMap<String, Parameter>();
+		Map <String, JComponent> parameterGuiMap = new HashMap<String, JComponent>();
 		int x = 0, y = 0;
+		
 		for (Parameter param : parameters) {
+			parameterMap.put(param.getAttribute(), param);
+			
 			c.gridx = x; c.gridy = y;
-			System.out.println(c.gridy);
 			parametersPanel.add(new JLabel(param.getLabel()), c);
 			c.gridx = ++x; 
 			parametersPanel.add(new JLabel(param.getDescription()), c);
 			c.gridx = ++x; 
-			if(param.getVariableType().equals(Parameter.VariableType.String)){
-				c.gridx = x; c.gridy = y;
-				cwaPreds = getJTextField(cwaPreds, "");
-				parametersPanel.add(cwaPreds, c);
+			if((param.getVariableType().equals(Parameter.VariableType.String))
+					|| (param.getVariableType().equals(Parameter.VariableType.Integer))
+					|| (param.getVariableType().equals(Parameter.VariableType.Float))){
+				System.out.println("passou aqui");
+				textField = null;
+				textField = getJTextField(textField, param.getDefaultValue());
+				parameterGuiMap.put(param.getAttribute(), textField);
+				parametersPanel.add(textField, c);
 			}
-			if(param.getVariableType().equals(Parameter.VariableType.Integer)){
-				System.out.println("[campo numérico]");
+			else if(param.getVariableType().equals(Parameter.VariableType.Boolean)){
+				if(param.getDefaultValue().equals("true")){
+					checkBox = getJCheckBox(checkBox, true);
+				}
+				else checkBox = getJCheckBox(checkBox, false);
+				parameterGuiMap.put(param.getAttribute(), checkBox);
+				parametersPanel.add(checkBox, c);
 			}
-			if(param.getVariableType().equals(Parameter.VariableType.Float)){
-				System.out.println("[campo numérico]");
-			}
-			if(param.getVariableType().equals(Parameter.VariableType.Boolean)){
-				System.out.println("[checkbox]");
-			}
-			System.out.println(param.getDefaultValue());
-			System.out.println("---------------------------------------");
 			x = 0; y++;
 		}
 		
-		String[] columns = new String[]{"Parameter", "Attribute", "Description", "Value"};
-		System.out.println(columns);
+//		String[] columns = new String[]{"Parameter", "Attribute", "Description", "Value"};
+//		System.out.println(columns);
 //		columns = {"a","b","c","d"};
 	}		
 	
@@ -284,13 +289,7 @@ public class Janela extends JPanel{
 		inferPanel.add(getComboBox(), c);
 		c.gridwidth = 1;
 	}
-	
-	private void checkboxes() {
-		jCheckCw2 = getCheckBox(jCheckCw2, "outro");
-		c.gridx = 0; c.gridy = 1;
-		parametersPanel.add(jCheckCw2, c);
-	}
-	
+		
 	private void scrollPane() {
 		jTAInfer = getJTextArea(jTAInfer);
 		c.gridx = 1; c.gridy = 5;
@@ -300,17 +299,6 @@ public class Janela extends JPanel{
 		inferPanel.add(jSPinfer, c);
 		c.gridheight = 1;
 		c.gridwidth = 1;
-
-		jTA_Parameters = getJTextArea(jTA_Parameters);
-		jCheckCw = getCheckBox(jCheckCw, "Closed World");
-		jCheckCw2 = getCheckBox(jCheckCw2, "outro");
-		
-		
-//		c2.gridx = 0; c.gridy = 0;
-//		ParametersPanel.add(jCheckCw, c);
-//		c.gridx = 0; c.gridy = 2;
-//		ParametersPanel.add(jCheckCw2, c);
-//		inferPanel.add(ParametersPanel, c);
 
 		c.gridx = 1; c.gridy = 5;
 		c.gridheight = 7;
@@ -599,11 +587,11 @@ public class Janela extends JPanel{
 		return jCB;
 	}
 
-	private JCheckBox getCheckBox(JCheckBox jCheckBox, String text) {
+	private JCheckBox getJCheckBox(JCheckBox jCheckBox, Boolean value) {
 		if (jCheckBox == null) {
 			jCheckBox = new JCheckBox();
 			
-			jCheckBox.setText(text);
+			jCheckBox.setSelected(value);
 		}
 		return jCheckBox;
 	}
