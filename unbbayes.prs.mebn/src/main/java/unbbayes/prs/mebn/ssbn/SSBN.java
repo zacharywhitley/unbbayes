@@ -66,7 +66,8 @@ public class SSBN {
 	//Parameters for the SSBN generation
 	private Parameters parameters; 
 	
-	private enum State{
+	/** This is the possible values for {@link SSBN#getState()} and {@link SSBN#setState(State)} */
+	public enum State{
 		INITIAL, 
 		COMPILED, 
 		WITH_FINDINGS, 
