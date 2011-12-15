@@ -175,6 +175,19 @@ public class TextModeRunner {
 		
 		ResidentNode residentNode = mebn.getDomainResidentNode(nameOfResidentNodeInQuery);
 		if (residentNode == null) {
+			// node may not be in a list of domain resident node.
+			for (MFrag mfrag : mebn.getMFragList()) {
+				for (Node node : mfrag.getNodes()) {
+					nameOfResidentNodeInQuery.equalsIgnoreCase(node.getName());
+					residentNode = (ResidentNode)node;
+					break;
+				}
+				if (residentNode != null) {
+					break;
+				}
+			}
+		}
+		if (residentNode == null) {
 			return null;
 		}
 		
