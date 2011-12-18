@@ -1,0 +1,4 @@
+options.maxTries = 100
+options.qualquer = true
+options.maxFlips = 100
+options.cwaPreds = 23

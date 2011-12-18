@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.swing.JButton;
@@ -63,6 +64,7 @@ public class Janela extends JPanel{
 	private JTextField textField = null;
 	
 	private String MLNFile = "";
+	private String confFile = "paramConfig.txt";
 	
 	private JComboBox jCB = null;
 	
@@ -96,7 +98,6 @@ public class Janela extends JPanel{
 	Map <String, JComponent> parameterGuiMap = new HashMap<String, JComponent>();
 	
 	private File loadedFile = null;
-	private File confFile = null;
 	
 	private String result = "";
 	
@@ -273,7 +274,7 @@ public class Janela extends JPanel{
 			if((param.getVariableType().equals(Parameter.VariableType.String))
 					|| (param.getVariableType().equals(Parameter.VariableType.Integer))
 					|| (param.getVariableType().equals(Parameter.VariableType.Float))){
-				System.out.println("passou aqui");
+				
 				textField = null;
 				textField = getJTextField(textField, param.getDefaultValue());
 				parameterGuiMap.put(param.getAttribute(), textField);
@@ -576,7 +577,7 @@ public class Janela extends JPanel{
 		
 		paramApplyButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+				System.out.println("aplicou");
 			}
 		});
 		
@@ -584,12 +585,42 @@ public class Janela extends JPanel{
 			public void actionPerformed(ActionEvent e) {
 				try {
 					BufferedWriter out = new BufferedWriter(new FileWriter(confFile));
-//					out.write(jTA_MLN.getText());
-					Set s = parameterMap.entrySet();
-					Iterator it = s.iterator();
+//					out.write("Escreveu");
+					Set<Map.Entry<String,Parameter>> sParam = parameterMap.entrySet();
+					Iterator itParam = sParam.iterator();
+					System.out.println(sParam.getClass());
 					
-					while(it.hasNext()){
-						Map.Entry m = (Map.Entry)it.next();
+					Set<Map.Entry<String,JComponent>> sGui = parameterGuiMap.entrySet();
+					Iterator itGui = sGui.iterator();
+					System.out.println(sGui.getClass());
+					
+					while(itParam.hasNext()){
+						Map.Entry mParam = (Map.Entry)itParam.next();
+						System.out.println("mParam -> "+mParam.getKey());
+						while(itGui.hasNext()){
+							Map.Entry mGui = (Map.Entry)itGui.next();
+							System.out.println("paramKey "+mParam.getKey()+", GuiKey "+mGui.getKey());
+							if(mParam.getKey().equals(mGui.getKey())){
+								System.out.println("entrou");
+								Parameter param =  ((Entry<String,Parameter>) mParam).getValue();
+								if(mGui.getValue().getClass().equals(textField.getClass())){
+									JTextField value = ((Entry<String,JTextField>) mGui).getValue();
+									out.write(param.getAttribute()+" = "+value.getText()+"\n");
+								}
+								else if(mGui.getValue().getClass().equals(checkBox.getClass())){
+									JCheckBox value = ((Entry<String,JCheckBox>) mGui).getValue();
+									out.write(param.getAttribute()+" = "+value.isSelected()+"\n");
+								}
+								else System.out.println(mGui.getValue().getClass());
+								System.out.println("passou");
+								/*TODO Não estou conseguindo obter o valor do JComponent que está
+								 * no Map. ele não aceita, por exemplo o value.getText().
+								 * Como eu pego esse valor? */
+								//value.get
+								//out.write(mParam.getValue()+" = "+mGui.getValue());
+							}
+						}
+						itGui = sGui.iterator();
 					}
 						
 					out.close();
