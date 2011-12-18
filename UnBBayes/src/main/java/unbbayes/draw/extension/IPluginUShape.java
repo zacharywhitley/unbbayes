@@ -3,6 +3,7 @@
  */
 package unbbayes.draw.extension;
 
+import unbbayes.draw.INodeHolderShape;
 import unbbayes.draw.UCanvas;
 import unbbayes.draw.UShape;
 import unbbayes.prs.Node;
@@ -13,7 +14,7 @@ import unbbayes.prs.Node;
  * @author Shou Matsumoto
  *
  */
-public interface IPluginUShape {
+public interface IPluginUShape extends INodeHolderShape {
 
 	/**
 	 * Obtains an UShape in order to draw a node
