@@ -133,7 +133,7 @@ public class Janela extends JPanel{
 	private void paineis(){
 		
 		this.setLayout(new BorderLayout());
-		this.setPreferredSize(new Dimension(1000,800));
+		this.setPreferredSize(new Dimension(1200,800));
 		loadPanel.setLayout(new GridBagLayout());
 		inferPanel.setLayout(new GridBagLayout());
 		parametersPanel.setLayout(new GridBagLayout());
@@ -144,7 +144,7 @@ public class Janela extends JPanel{
 		c2.insets = new Insets(10, 10, 10, 10);
 		
 		
-		splitPaneH.setMaximumSize(new Dimension(900,700));
+		splitPaneH.setMinimumSize(new Dimension(1200,1000));
 		
 		c.gridx = 0; c.gridy = 0;
 		add(splitPaneH, BorderLayout.CENTER);
@@ -212,21 +212,23 @@ public class Janela extends JPanel{
 	    	String[] lineParam;
 	    	String line = "";
 	    	while (in.ready()) {
-	    		Parameter parameter = new Parameter();
 	    		line = in.readLine();
-	    		lineParam = line.split(";", 5);
-
-	    		parameter.setLabel(lineParam[0]);
-	    		parameter.setAttribute(lineParam[1]);
-				parameter.setDescription(lineParam[2]);
-				if (lineParam[3].equals("String")) parameter.setVariableType(Parameter.VariableType.String);
-				else if (lineParam[3].equals("Integer")) parameter.setVariableType(Parameter.VariableType.Integer);
-				else if (lineParam[3].equals("Float")) parameter.setVariableType(Parameter.VariableType.Float);
-				else if (lineParam[3].equals("Boolean")) parameter.setVariableType(Parameter.VariableType.Boolean);
-				parameter.setDefaultValue(lineParam[4]);
-				
-				parameters.add(parameter);
-				
+	    		if(line.substring(0, 2).equals("//"));
+	    		else{
+	    			Parameter parameter = new Parameter();
+		    		lineParam = line.split(";", 5);
+	
+		    		parameter.setLabel(lineParam[0]);
+		    		parameter.setAttribute(lineParam[1]);
+					parameter.setDescription(lineParam[2]);
+					if (lineParam[3].equals("String")) parameter.setVariableType(Parameter.VariableType.String);
+					else if (lineParam[3].equals("Integer")) parameter.setVariableType(Parameter.VariableType.Integer);
+					else if (lineParam[3].equals("Float")) parameter.setVariableType(Parameter.VariableType.Float);
+					else if (lineParam[3].equals("Boolean")) parameter.setVariableType(Parameter.VariableType.Boolean);
+					parameter.setDefaultValue(lineParam[4]);
+					
+					parameters.add(parameter);
+	    		}
 	    	}
 	    	in.close();
 	    } catch (IOException ex) {
@@ -281,6 +283,7 @@ public class Janela extends JPanel{
 				parametersPanel.add(textField, c);
 			}
 			else if(param.getVariableType().equals(Parameter.VariableType.Boolean)){
+				checkBox = null;
 				if(param.getDefaultValue().equals("true")){
 					checkBox = getJCheckBox(checkBox, true);
 				}
@@ -318,7 +321,7 @@ public class Janela extends JPanel{
 		c.gridx = 1; c.gridy = 5;
 		c.gridheight = 7;
 		c.gridwidth = 4;
-		jSPinfer = getJScrollPane(jTAInfer);
+		jSPinfer = getJScrollPaneTA(jTAInfer);
 		inferPanel.add(jSPinfer, c);
 		c.gridheight = 1;
 		c.gridwidth = 1;
@@ -326,8 +329,8 @@ public class Janela extends JPanel{
 		c.gridx = 1; c.gridy = 5;
 		c.gridheight = 7;
 		c.gridwidth = 4;
-		//jSPParameters = getJScrollPane(jTA_Parameters);
-		inferPanel.add(parametersPanel, c);
+		jSPParameters = getJScrollPanePanel(parametersPanel);
+		inferPanel.add(jSPParameters, c);
 		c.gridheight = 1;
 		c.gridwidth = 1;
 		
@@ -335,7 +338,7 @@ public class Janela extends JPanel{
 		c.gridx = 0; c.gridy = 2;
 		c.gridheight = 7;
 		c.gridwidth = 5;
-		jSPMLNLoad = getJScrollPane(jTA_MLN);
+		jSPMLNLoad = getJScrollPaneTA(jTA_MLN);
 		loadPanel.add(jSPMLNLoad, c);
 		c.gridheight = 1;
 		
@@ -343,7 +346,7 @@ public class Janela extends JPanel{
 		c.gridx = 0; c.gridy = 9;
 		c.gridheight = 7;
 		c.gridwidth = 5;
-		jSPMLNTree = getJScrollPane(jTA_Tree);
+		jSPMLNTree = getJScrollPaneTA(jTA_Tree);
 		loadPanel.add(jSPMLNTree, c);
 		c.gridheight = 1;
 		c.gridwidth = 1;
@@ -407,7 +410,7 @@ public class Janela extends JPanel{
 		tabbedPane2.addTab("mln", null, jSPMLNLoad, "mln");
 		tabbedPane2.setMnemonicAt(0, KeyEvent.VK_4);
 		
-		tabbedPane2.addTab("Parameters", null, parametersPanel, "parameters");
+		tabbedPane2.addTab("Parameters", null, jSPParameters, "parameters");
 		tabbedPane2.setMnemonicAt(0, KeyEvent.VK_5);
 		
 		c.gridx = 0; c.gridy = 5;
@@ -473,9 +476,9 @@ public class Janela extends JPanel{
 				String prod = Config.product_line;
 				Config.db_schema += prod + "_" + machine + "_" + user + "_" + pid;
 				
-				if(!cwaPreds.getText().equals("")){
-					options.cwaPreds = cwaPreds.getText();
-				}
+//				if(!cwaPreds.getText().equals("")){
+//					options.cwaPreds = cwaPreds.getText();
+//				}
 				if(jCB.getSelectedItem().equals("Marginal")){
 					options.marginal = true;
 				}
@@ -646,8 +649,15 @@ public class Janela extends JPanel{
 		return jTA;
 	}
 	
-	public JScrollPane getJScrollPane(JTextArea jTA) {
+	public JScrollPane getJScrollPaneTA(JTextArea jTA) {
 		jSP = new JScrollPane(getJTextArea(jTA));
+		jSP.setPreferredSize(new Dimension(250,180));
+		
+		return jSP;
+	}
+	
+	public JScrollPane getJScrollPanePanel(JPanel jPanel) {
+		jSP = new JScrollPane(jPanel);
 		jSP.setPreferredSize(new Dimension(250,180));
 		
 		return jSP;

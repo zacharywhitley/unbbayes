@@ -1,4 +1,12 @@
-Closed World predicates;options.cwaPreds;Especifica os predicados de mundo fechado. Separado por vírgula.;String;
-Qualquer;options.qualquer;Especifica os predicados de mundo fechado. Separado por vírgula.;Boolean;true
+Activate all;activateAll;Mark all unknown atoms as active during grounding.;Boolean;
+Closed World predicates;cwaPreds;Especifica os predicados de mundo fechado. Separado por vírgula.;String;
+Qualquer;qualquer;Especifica os predicados de mundo fechado. Separado por vírgula.;Boolean;true
 Max number of Tries;options.maxTries;Número máximo de tentativas no WalkSAT.;Integer;100
 Max number of Flips;options.maxFlips;Número máximo de inversões por tentativa.;Float;100
+Max number of Flips;options.m;Número máximo de inversões por tentativa.;Float;100
+Max number of Flips;options.ma;Número máximo de inversões por tentativa.;Float;100
+Max number of Flips;options.max;Número máximo de inversões por tentativa.;Float;100
+Max number of Flips;options.maxF;Número máximo de inversões por tentativa.;Float;100
+Max number of Flips;options.maxFl;Número máximo de inversões por tentativa.;Float;100
+Max number of Flips;options.maxFli;Número máximo de inversões por tentativa.;Float;100
+Max number of Flips;options.maxFlip;Número máximo de inversões por tentativa.;Float;100
