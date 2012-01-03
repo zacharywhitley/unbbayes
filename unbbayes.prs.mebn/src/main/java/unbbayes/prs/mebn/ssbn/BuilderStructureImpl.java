@@ -54,7 +54,8 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	IdentationLevel level5; 
 	IdentationLevel level6; 
 	
-	private BuilderStructureImpl(){
+	/**@deprecated use {@link #newInstance()} instead*/
+	protected BuilderStructureImpl(){
 		
 	}
 	

@@ -12,6 +12,7 @@ import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.Entity;
+import unbbayes.util.Debug;
 
 /**
  * A SimpleSSBNNode is a node used in the construction of the grand SSBN. This only 
@@ -115,25 +116,44 @@ public class SimpleSSBNNode implements INode {
 
 	@Override
 	public String toString(){
-		String ret = residentNode.getName(); 
-
-		ret+="(";
-		for(int i = 0; i < ovArray.length; i++){
-			ret+= "(";
-			ret+= ovArray[i].getName();
-			ret+= ","; 
-			ret+= entityArray[i].getInstanceName(); 
-			ret+= ")"; 
+		try {
+			String ret = "";
+			
+			try {
+				ret += residentNode.getName(); 
+			} catch (Exception e) {
+				Debug.println(getClass(), e.getMessage(), e);
+			}
+			
+			ret+="(";
+			try {
+				for(int i = 0; i < ovArray.length; i++){
+					ret+= "(";
+					ret+= ovArray[i].getName();
+					ret+= ","; 
+					ret+= entityArray[i].getInstanceName(); 
+					ret+= ")"; 
+				}
+			} catch (Exception e) {
+				Debug.println(getClass(), e.getMessage(), e);
+			}
+			ret+=")";
+			
+			if(state != null){
+				try {
+					ret+= "=" + state.getName() + " [F] ";
+				} catch (Exception e) {
+					Debug.println(getClass(), e.getMessage(), e);
+				}
+			}
+			
+			ret+="[" + id + "]"; 
+			
+			return ret;  
+		} catch (Exception e) {
+			Debug.println(getClass(), e.getMessage(), e);
 		}
-		ret+=")";
-
-		if(state != null){
-			ret+= "=" + state.getName() + " [F] ";
-		}
-		
-		ret+="[" + id + "]"; 
-
-		return ret;  
+		return super.toString();
 	}
 	
 	public String getShortName(){

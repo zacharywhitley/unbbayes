@@ -419,15 +419,16 @@ public class PowerLoomKB implements KnowledgeBase {
 		
 		switch(resident.getTypeOfStates()){
 		
-		case IResidentNode.OBJECT_ENTITY:
-
-			if (!resident.getPossibleValueLinkList().isEmpty()) {
-				String type = resident.getPossibleValueLinkList().get(0)
-						.getState().getType().getName();
-				range = "(" + "?range " + type + ")";
-			}
-
-			break;
+		// this is now a default case
+//		case IResidentNode.OBJECT_ENTITY:
+//
+//			if (!resident.getPossibleValueLinkList().isEmpty()) {
+//				String type = resident.getPossibleValueLinkList().get(0)
+//						.getState().getType().getName();
+//				range = "(" + "?range " + type + ")";
+//			}
+//
+//			break;
 
 		case IResidentNode.CATEGORY_RV_STATES:
 
@@ -472,7 +473,13 @@ public class PowerLoomKB implements KnowledgeBase {
 		// range = "(" + "?range " + "Boolean" + ")";
 		//			
 		// break;
-
+			default: //case IResidentNode.OBJECT_ENTITY or anything else:
+				if (!resident.getPossibleValueLinkList().isEmpty()) {
+					String type = resident.getPossibleValueLinkList().get(0)
+							.getState().getType().getName();
+					range = "(" + "?range " + type + ")";
+				}
+			break;
 		}
 		
 		/* Step 2: define the resident node with its arguments */

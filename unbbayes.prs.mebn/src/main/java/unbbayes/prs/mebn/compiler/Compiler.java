@@ -1772,8 +1772,8 @@ public class Compiler implements ICompiler {
 	 */
 	public void setNode(ResidentNode node) {
 		this.node = node;
-		if (this.node != null) {
-			this.mebn = node.getMFrag().getMultiEntityBayesianNetwork();
+		if (this.node != null && this.node.getMFrag() != null) {
+			this.mebn = this.node.getMFrag().getMultiEntityBayesianNetwork();
 		}
 	}
 	
