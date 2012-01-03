@@ -3,11 +3,21 @@
  */
 package unbbayes.prs.bn;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import unbbayes.controller.INetworkMediator;
+import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
+import unbbayes.prs.INode;
+import unbbayes.prs.Node;
+import unbbayes.util.Debug;
+import unbbayes.util.SetToolkit;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 import unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel;
 
@@ -32,6 +42,8 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 	private ProbabilisticNetwork net;
 	
 	private InferenceAlgorithmOptionPanel optionPanel;
+	
+	private IJunctionTreeBuilder junctionTreeBuilder = new DefaultJunctionTreeBuilder();
 
 	/** Load resource file from util */
   	private static ResourceBundle utilResource = unbbayes.util.ResourceController.newInstance().getBundle(
@@ -41,16 +53,249 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
   	/** Load resource file from this package */
   	protected static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
   			unbbayes.prs.bn.resources.BnResources.class.getName());
+
+	private List<IJunctionTreeCommand> verifyConsistencyCommandList;
   	
+	private List<INode> sortedDecisionNodes = new ArrayList<INode>();
+
+	private List<Edge> markovArc = new ArrayList<Edge>();
+
+	private List<Edge> markovArcCpy = new ArrayList<Edge>();
   	
 	/**
 	 * Default constructor for plugin support
 	 */
 	public JunctionTreeAlgorithm() {
 		super();
+		// initialize commands for checkConsistency
+		this.setVerifyConsistencyCommandList(this.initConsistencyCommandList());
 	}
 	
+	/**
+	 * @return Instantiates and initializes a list which can be used by
+	 * {@link #getVerifyConsistencyCommandList()}.
+	 */
+	protected List<IJunctionTreeCommand> initConsistencyCommandList() {
+		List<IJunctionTreeCommand> ret = new ArrayList<JunctionTreeAlgorithm.IJunctionTreeCommand>();
+		
+		// initialization
+		ret.add(new IJunctionTreeCommand() {
+			public void undoAction(IInferenceAlgorithm algorithm, Graph graph) throws UndoableJTCommandException {throw new UndoableJTCommandException();}
+			public void doAction(IInferenceAlgorithm algorithm, Graph graph) {
+				if (graph instanceof ProbabilisticNetwork) {
+					ProbabilisticNetwork net = (ProbabilisticNetwork) graph;
+					if (net.getNodeIndexes() == null) {
+						net.setNodeIndexes(new HashMap<String, Integer>());
+					} else {
+						net.getNodeIndexes().clear();
+					}
+					for (int i = net.getNodes().size()-1; i>=0; i--) {
+						net.getNodeIndexes().put(net.getNodes().get(i).getName(), new Integer(i));				
+					}
+				}
+			}
+		});
+		
+		// check utility nodes
+		ret.add(new IJunctionTreeCommand() {
+			public void undoAction(IInferenceAlgorithm algorithm, Graph graph) throws UndoableJTCommandException {throw new UndoableJTCommandException();}
+			public void doAction(IInferenceAlgorithm algorithm, Graph graph) {
+				try {
+					verifyUtility(graph);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
+		});
+		
+		// check cycles
+		ret.add(new IJunctionTreeCommand() {
+			public void undoAction(IInferenceAlgorithm algorithm, Graph graph) throws UndoableJTCommandException {throw new UndoableJTCommandException();}
+			public void doAction(IInferenceAlgorithm algorithm, Graph graph) {
+				if (graph instanceof ProbabilisticNetwork) {
+					ProbabilisticNetwork net = (ProbabilisticNetwork) graph;
+					try {
+						net.verifyCycles();
+					} catch (Exception e) {
+						throw new RuntimeException(e);
+					}
+				}
+			}
+		});
+		
+		// check connective
+		ret.add(new IJunctionTreeCommand() {
+			public void undoAction(IInferenceAlgorithm algorithm, Graph graph) throws UndoableJTCommandException {throw new UndoableJTCommandException();}
+			public void doAction(IInferenceAlgorithm algorithm, Graph graph) {
+				if (graph instanceof ProbabilisticNetwork) {
+					ProbabilisticNetwork net = (ProbabilisticNetwork) graph;
+					try {
+						net.verifyConectivity();
+					} catch (Exception e) {
+						throw new RuntimeException(e);
+					}
+				}
+			}
+		});
+		
+		// verify CPT consistency
+		ret.add(new IJunctionTreeCommand() {
+			public void undoAction(IInferenceAlgorithm algorithm, Graph graph) throws UndoableJTCommandException {throw new UndoableJTCommandException();}
+			public void doAction(IInferenceAlgorithm algorithm, Graph graph) {
+				try {
+					verifyPotentialTables(graph);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
+		});
+		
+		// check decision node consistency and fill list of decision nodes
+		ret.add(new IJunctionTreeCommand() {
+			public void undoAction(IInferenceAlgorithm algorithm, Graph graph) throws UndoableJTCommandException {throw new UndoableJTCommandException();}
+			public void doAction(IInferenceAlgorithm algorithm, Graph graph) {
+				try {
+					sortDecisionNodes(graph);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
+		});
+		
+		return ret;
+	}
+
+
+	/**
+	 * This method will initialize {@link #getSortedDecisionNodes()}
+	 * @param graph
+	 * @throws Exception 
+	 */
+	protected void sortDecisionNodes(Graph graph) throws Exception {
+
+		if (!(graph instanceof ProbabilisticNetwork)) {
+			return;
+		}
+		
+		ProbabilisticNetwork net = (ProbabilisticNetwork) graph;
+		
+		List<Node> nodeList = net.getNodes();
+		
+		// reset decision nodes
+		this.setSortedDecisionNodes(new ArrayList<INode>());
+		List<INode> decisionNodes = this.getSortedDecisionNodes();
+		
+		int sizeNos = nodeList.size();
+		for (int i = 0; i < sizeNos; i++) {
+			if (nodeList.get(i).getType() == Node.DECISION_NODE_TYPE) {
+				decisionNodes.add(nodeList.get(i));
+			}
+		}
 	
+		ArrayList<Node> fila = new ArrayList<Node>();
+		fila.ensureCapacity(nodeList.size()); 
+		Node aux, aux2, aux3;
+	
+		int sizeDecisao = decisionNodes.size();
+		for (int i = 0; i < sizeDecisao; i++) {
+			boolean visitados[] = new boolean[nodeList.size()];
+			aux = (Node) decisionNodes.get(i);
+			fila.clear();
+			fila.add(aux);
+	
+			while (fila.size() != 0) {
+				aux2 = fila.remove(0);
+				visitados[nodeList.indexOf(aux2)] = true;
+	
+				int sizeFilhos = aux2.getChildren().size();
+				for (int k = 0; k < sizeFilhos; k++) {
+					aux3 = (Node) aux2.getChildren().get(k);
+					if (!visitados[nodeList.indexOf(aux3)]) {
+						if (aux3.getType() == Node.DECISION_NODE_TYPE
+							&& !aux.getAdjacents().contains(aux3)) {
+							aux.getAdjacents().add(aux3);
+						}
+						fila.add(aux3);
+					}
+				}
+			}
+		}
+	
+		boolean hasSwap = true;
+		while (hasSwap) {
+			hasSwap = false;
+			for (int i = 0; i < decisionNodes.size() - 1; i++) {
+				Node node1 = (Node) decisionNodes.get(i);
+				Node node2 = (Node) decisionNodes.get(i + 1);
+				try {
+					node1 = (Node) decisionNodes.get(i);
+					node2 = (Node) decisionNodes.get(i + 1);
+				} catch (ClassCastException e) {
+					try {
+						Debug.println(getClass(), e.getMessage(), e);
+					} catch (Throwable t) {
+						t.printStackTrace();
+					}
+					continue;
+				}
+				if (node1 != null
+						&& node2 != null
+						&& (node1.getAdjacents().size() < node2.getAdjacents().size())) {
+					decisionNodes.set(i + 1, node1);
+					decisionNodes.set(i, node2);
+					hasSwap = true;
+				}
+			}
+		}
+	
+		for (int i = 0; i < decisionNodes.size(); i++) {
+			try {
+				aux = (Node) decisionNodes.get(i);
+			} catch (ClassCastException e) {
+				try {
+					Debug.println(getClass(), e.getMessage(), e);
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				continue;
+			}
+			if (aux != null
+					&& ( aux.getAdjacents().size() != decisionNodes.size() - i - 1) ) {
+				throw new Exception(resource.getString("DecisionOrderException"));
+			}
+		}
+	
+		for (Node node : nodeList) {
+			node.clearAdjacents();
+		}
+	}
+
+	/**
+	 * This method is used in {@link #verifyConsistency(ProbabilisticNetwork)}
+	 * in order to check consistency of conditional probability tables
+	 * @param graph
+	 * @throws Exception 
+	 */
+	protected void verifyPotentialTables(Graph graph) throws Exception {
+		if (graph instanceof ProbabilisticNetwork) {
+			ProbabilisticNetwork net = (ProbabilisticNetwork) graph;
+			ProbabilisticTable auxTabPot;
+			int c;
+			Node auxNo;
+			ProbabilisticNode auxVP;
+			
+			int sizeNos = net.getNodeCount();
+			for (c = 0; c < sizeNos; c++) {
+				auxNo = net.getNodes().get(c);
+				if (auxNo.getType() == Node.PROBABILISTIC_NODE_TYPE) {
+					auxVP = (ProbabilisticNode) auxNo;
+					auxTabPot = (ProbabilisticTable) auxVP.getProbabilityFunction();
+					auxTabPot.verifyConsistency();
+				}
+			}
+		}
+	}
+
 	/**
 	 * Constructor using fields
 	 */
@@ -84,13 +329,384 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		try {
 			// TODO gradually migrate all compile routines to here
 			this.getNet().compile();
+//			if (this.getNet().getNodeCount() == 0) {
+//				throw new Exception(resource.getString("EmptyNetException"));
+//			}
+//			if (this.getNet().isCreateLog()) {
+//				this.getNet().getLogManager().reset();
+//			}
+//			this.verifyConsistency(this.getNet());
+//			this.moralize(this.getNet());
+//			this.triangularize(this.getNet());		
+//			
+//			this.getNet().compileJT(this.getJunctionTreeBuilder().buildJunctionTree(this.getNet()));
 		} catch (Exception e) {
 			throw new IllegalStateException(e);
 		}
 	}
 	
-    
-    
+    /**
+     * Performs moralization (for each node, link its parents with arcs) of the network.
+     * @param net
+     */
+    protected void moralize(ProbabilisticNetwork net) {
+		Node auxNo;
+		Node auxPai1;
+		Node auxPai2;
+		Edge auxArco;
+		
+		// reset adjacency info
+		for (Node node : net.getNodes()) {
+			node.clearAdjacents();
+		}
+	
+		if (net.isCreateLog()) {
+			net.getLogManager().append(resource.getString("moralizeLabel"));
+		}
+		getMarkovArc().clear();
+		setMarkovArcCpy((List<Edge>)SetToolkit.clone(net.getEdges()));
+	
+		// remove the list of edges for information
+		int sizeArcos = getMarkovArcCpy().size() - 1;
+		for (int i = sizeArcos; i >= 0; i--) {
+			auxArco = getMarkovArcCpy().get(i);
+			if (auxArco.getDestinationNode().getType()
+				== Node.DECISION_NODE_TYPE) {
+				getMarkovArcCpy().remove(i);
+			}
+		}
+	
+		int sizeNos = net.getNodes().size();
+		for (int n = 0; n < sizeNos; n++) {
+			auxNo = net.getNodes().get(n);
+			if (!(auxNo.getType() == Node.DECISION_NODE_TYPE)
+				&& auxNo.getParents().size() > 1) {
+				int sizePais = auxNo.getParents().size();
+				for (int j = 0; j < sizePais - 1; j++) {
+					auxPai1 = auxNo.getParents().get(j);
+					for (int k = j + 1; k < sizePais; k++) {
+						auxPai2 = auxNo.getParents().get(k);
+						if ((net.hasEdge(auxPai1, auxPai2,  getMarkovArcCpy()) == -1)
+							&& (net.hasEdge(auxPai1, auxPai2, getMarkovArc()) == -1)) {
+							auxArco = new Edge(auxPai1, auxPai2);
+							if (net.isCreateLog()) {
+								net.getLogManager().append(
+									auxPai1.getName()
+										+ " - "
+										+ auxPai2.getName()
+										+ "\n");
+							}
+							getMarkovArc().add(auxArco);
+						}
+					}
+				}
+			}
+		}
+		
+		makeAdjacents(net);
+		
+		if (net.isCreateLog()) {
+			net.getLogManager().append("\n");
+		}
+	}
+
+	/**
+     * Starts the triangularization process of the junction tree algorithm
+     * @param net
+     */
+	protected void triangularize(ProbabilisticNetwork net) {
+
+		Node aux;
+		List<Node> auxNodes;
+		List<Node> nodeList = net.getNodes();
+
+		if (net.isCreateLog()) {
+			net.getLogManager().append(resource.getString("triangulateLabel"));
+		}
+		auxNodes = SetToolkit.clone(nodeList);
+		
+		// remove utility nodes from auxNodes
+		Set<Node> nodesToRemove = new HashSet<Node>();
+		for (Node node : auxNodes) {
+			if (node.getType() == Node.UTILITY_NODE_TYPE) {
+				nodesToRemove.add(node);
+			}
+		}
+		auxNodes.removeAll(nodesToRemove);
+		
+		// reset copy of nodes
+		net.getNodesCopy().clear();
+		List<Node> copiaNos = net.getNodesCopy();
+		
+		List<INode> decisionNodes = getSortedDecisionNodes();
+		
+		// initialize copy of nodes
+		copiaNos = SetToolkit.clone(auxNodes);
+		int sizeDecisao = decisionNodes.size();
+		for (int i = 0; i < sizeDecisao; i++) {
+			aux = (Node) decisionNodes.get(i);
+			auxNodes.remove(aux);
+			auxNodes.removeAll(aux.getParentNodes());
+		}
+
+		net.setNodeEliminationOrder(new ArrayList<Node>(copiaNos.size()));
+		List<Node> oe = net.getNodeEliminationOrder();
+
+		while (minimumWeightElimination(auxNodes, net));
+
+		//        int index;
+		for (int i = decisionNodes.size() - 1; i >= 0; i--) {
+			aux = (Node) decisionNodes.get(i);
+			oe.add(aux);
+			int sizeAdjacentes = aux.getAdjacents().size();
+			for (int j = 0; j < sizeAdjacentes; j++) {
+				Node v = aux.getAdjacents().get(j);
+				v.getAdjacents().remove(aux);
+			}
+			if (net.isCreateLog()) {
+				net.getLogManager().append(
+					"\t" + oe.size() + " " + aux.getName() + "\n");
+			}
+
+			auxNodes = SetToolkit.clone(aux.getParents());
+			auxNodes.removeAll(decisionNodes);
+			auxNodes.removeAll(oe);
+			for (int j = 0; j < i; j++) {
+				Node decision = (Node) decisionNodes.get(j);
+				auxNodes.removeAll(decision.getParents());
+			}
+
+			while (minimumWeightElimination(auxNodes, net)) ;
+		}
+		
+		makeAdjacents(net);
+	}
+
+	/**
+	 * Sets up node adjacency 
+	 * @param net
+	 */
+	protected void makeAdjacents(ProbabilisticNetwork net) {
+		// resets the adjacency information
+    	for (Node node : net.getNodes()) {
+			node.clearAdjacents();
+		}
+    	for (int z = markovArc.size() - 1; z >= 0; z--) {
+			Edge auxArco = markovArc.get(z);
+			auxArco.getOriginNode().getAdjacents().add(
+				auxArco.getDestinationNode());
+			auxArco.getDestinationNode().getAdjacents().add(
+				auxArco.getOriginNode());
+		}
+    	
+    	List<Edge> markovArcCpy = this.getMarkovArcCpy();
+    	for (int z = markovArcCpy.size() - 1; z >= 0; z--) {
+			Edge auxArco = markovArcCpy.get(z);
+			if (auxArco.getDestinationNode().getType()
+				== Node.UTILITY_NODE_TYPE) {
+				markovArcCpy.remove(z);
+			} else {
+				auxArco.getOriginNode().getAdjacents().add(
+					auxArco.getDestinationNode());
+				auxArco.getDestinationNode().getAdjacents().add(
+					auxArco.getOriginNode());
+			}
+		}
+    }
+
+	/**
+	 * Sub-routine for {@link #triangularize(ProbabilisticNetwork)}.
+	 * It eliminates the nodes in the graph by using minimum weight heuristics.
+	 * First, it eliminates nodes whose adjacent nodes are pairwise connected.
+	 * After that, if there are more nodes in the graph, it eliminates them using the
+	 * minimum weight heuristic.
+	 *
+	 * @param  nodes  collection of nodes.
+	 * 
+	 */
+	protected boolean minimumWeightElimination(List<Node> nodes, ProbabilisticNetwork net) {
+		boolean hasSome 	= true;
+		
+		while (hasSome) {
+			hasSome = false;
+	
+			for (int i = nodes.size() - 1; i >= 0; i--) {
+				Node auxNode = nodes.get(i);
+	
+				if (isNeedingMoreArc(auxNode, net)) {
+					continue;
+				}
+	
+				for (int j = auxNode.getAdjacents().size() - 1; j >= 0; j--) {
+					Node v = auxNode.getAdjacents().get(j);
+					//boolean removed = v.getAdjacents().remove(auxNo);				
+					//assert removed;
+					v.getAdjacents().remove(auxNode);
+				}
+				nodes.remove(auxNode);
+				hasSome = true;
+				net.getNodeEliminationOrder().add(auxNode);
+				if (net.isCreateLog()) {
+					net.getLogManager().append(
+						"\t" + net.getNodeEliminationOrder().size() + " " + auxNode.getName() + "\n");
+				}
+			}
+		}
+	
+		if (nodes.size() > 0) {
+			Node auxNo = weight(nodes); //auxNo: clique de peso m�ｽnimo.
+			net.getNodeEliminationOrder().add(auxNo);
+			if (net.isCreateLog()) {
+				net.getLogManager().append(
+					"\t" + net.getNodeEliminationOrder().size() + " " + auxNo.getName() + "\n");
+			}
+			eliminateNode(auxNo, nodes, net); //Elimine no e reduza grafo.
+			return true;
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Method used inside {@link #triangularize(ProbabilisticNetwork)}
+	 * in order to use the minimum weight heuristic.
+	 *
+	 * @param  nodes  available nodes
+	 * @return   a node having the set of adjacent nodes
+	 * with a minimum weight
+	 */
+	private Node weight(List<Node> nodes) {
+		Node v;
+		Node auxNode;
+		double p;
+	
+		Node noMin = null;
+		double pmin = Double.MAX_VALUE;
+
+		for (int i = nodes.size()-1; i >= 0; i--) {
+			auxNode = nodes.get(i);
+			p = Math.log(auxNode.getStatesSize());
+	
+			for (int j = auxNode.getAdjacents().size()-1; j >= 0; j--) {
+				v = auxNode.getAdjacents().get(j);
+				p += Math.log(v.getStatesSize());
+			}
+			if (p < pmin) {
+				pmin = p;
+				noMin = auxNode;
+			}
+		}
+		
+//		assert noMin != null;
+		return noMin;
+	}
+	
+	/**
+	 * Method used inside {@link #triangularize(ProbabilisticNetwork)}
+	 * in order to eliminate nodes and reduce the graph.
+	 * It includes necessary arcs in order to do so.
+	 * 
+	 *@param  node      node to be eliminated
+	 *@param  nodes  available nodes
+	 *
+	 */
+	private void eliminateNode(Node node, List<Node> nodes, ProbabilisticNetwork net) {	
+		for (int i = node.getAdjacents().size()-1; i > 0; i--) {
+			Node auxNode1 = node.getAdjacents().get(i);
+	
+			for (int j = i - 1; j >= 0; j--) {
+				Node auxNode2 = node.getAdjacents().get(j);
+				if (! auxNode2.getAdjacents().contains(auxNode1)) {
+					Edge auxArco = new Edge(auxNode1, auxNode2);
+					if (net.isCreateLog()) {
+						net.getLogManager().append(
+							auxNode1.getName()
+								+ resource.getString("linkedName")
+								+ auxNode2.getName()
+								+ "\n");
+					}
+					getMarkovArc().add(auxArco);
+					auxNode1.getAdjacents().add(auxNode2);
+					auxNode2.getAdjacents().add(auxNode1);			
+					
+//					System.out.println(auxArco);
+				}
+			}
+		}
+	
+		for (int i = node.getAdjacents().size() - 1; i >= 0; i--) {
+			Node auxNo1 = node.getAdjacents().get(i);
+			//boolean removed = auxNo1.getAdjacents().remove(no);
+			//assert removed;
+			auxNo1.getAdjacents().remove(node);
+		}
+		nodes.remove(node);
+	}
+
+	/**
+	 * This method is used inside {@link #triangularize(ProbabilisticNetwork)}
+	 * in order to verify whether we need to insert another arc in order
+	 * to eliminate a node.
+	 * @param auxNo
+	 * @return
+	 */
+	protected boolean isNeedingMoreArc(Node node, ProbabilisticNetwork net) {
+		if (node.getAdjacents().size() < 2) {
+			return false;
+		}
+	
+		for (int i = node.getAdjacents().size()-1; i > 0; i--) {
+			Node auxNo1 = node.getAdjacents().get(i);
+	
+			for (int j = i - 1; j >=0; j--) {
+				Node auxNo2 = node.getAdjacents().get(j);
+				if (! auxNo2.getAdjacents().contains(auxNo1)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Checks the consistency of junction tree and network.
+	 * @param net
+	 * @see #run()
+	 */
+	protected void verifyConsistency(Graph net) {
+		if (this.getVerifyConsistencyCommandList() != null) {
+			for (IJunctionTreeCommand command : this.getVerifyConsistencyCommandList()) {
+				command.doAction(this, net);
+			}
+		}
+	}
+
+
+	/**
+	 * Template method for {@link #verifyConsistency(ProbabilisticNetwork)}
+	 * @param net
+	 * @throws Exception 
+	 */
+	protected void verifyUtility(Graph graph) throws Exception {
+		if (graph instanceof ProbabilisticNetwork) {
+			ProbabilisticNetwork net = (ProbabilisticNetwork) graph;
+			
+			Node aux;
+			
+			int sizeNos = net.getNodeCount();
+			for (int i = 0; i < sizeNos; i++) {
+				aux = (Node) net.getNodes().get(i);
+				if (aux.getType() == Node.UTILITY_NODE_TYPE
+						&& aux.getChildren().size() != 0) {
+					throw new Exception(
+							resource.getString("variableName")
+							+ aux
+							+ resource.getString("hasChildName"));
+				}
+			}
+		}
+	}
+
 
 	/* (non-Javadoc)
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#setNetwork(unbbayes.prs.Graph)
@@ -197,6 +813,130 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 	public static void setResource(ResourceBundle resource) {
 		JunctionTreeAlgorithm.generalResource = resource;
 	}
+
+
+	/**
+	 * @return the junctionTreeBuilder
+	 */
+	public IJunctionTreeBuilder getJunctionTreeBuilder() {
+		return junctionTreeBuilder;
+	}
+
+
+	/**
+	 * @param junctionTreeBuilder the junctionTreeBuilder to set
+	 */
+	public void setJunctionTreeBuilder(IJunctionTreeBuilder junctionTreeBuilder) {
+		this.junctionTreeBuilder = junctionTreeBuilder;
+	}
+	
+	/**
+	 * Commands to be executed in {@link #verifyConsistency(ProbabilisticNetwork)}
+	 * @return the verifyConsistencyCommandList
+	 */
+	public List<IJunctionTreeCommand> getVerifyConsistencyCommandList() {
+		return verifyConsistencyCommandList;
+	}
+
+
+	/**
+	 * Commands to be executed in {@link #verifyConsistency(ProbabilisticNetwork)}
+	 * @param verifyConsistencyCommandList the verifyConsistencyCommandList to set
+	 */
+	public void setVerifyConsistencyCommandList(
+			List<IJunctionTreeCommand> verifyConsistencyCommandList) {
+		this.verifyConsistencyCommandList = verifyConsistencyCommandList;
+	}
+	
+
+	/**
+	 * This method is used in {@link #sortDecisionNodes(Graph)} and {@link #triangularize(ProbabilisticNetwork)} 
+	 * in order to trace decision nodes and its order.
+	 * 
+	 * @return the sortedDecisionNodes
+	 */
+	public List<INode> getSortedDecisionNodes() {
+		return sortedDecisionNodes;
+	}
+
+	/**
+	 * This method is used in {@link #sortDecisionNodes(Graph)} and {@link #triangularize(ProbabilisticNetwork)} 
+	 * in order to trace decision nodes and its order.
+	 * 
+	 * @param sortedDecisionNodes the sortedDecisionNodes to set
+	 */
+	public void setSortedDecisionNodes(List<INode> orderedDecisionNodes) {
+		this.sortedDecisionNodes = orderedDecisionNodes;
+	}
+
+	
+	/**
+	 * Objects of this interface represents methods that will be executed by {@link JunctionTreeAlgorithm}
+	 * in some methods, like {@link JunctionTreeAlgorithm#verifyConsistency(ProbabilisticNetwork)}
+	 * @author Shou Matsumoto
+	 *
+	 */
+	public interface IJunctionTreeCommand {
+		/**
+		 * Main method of command design pattern
+		 * @param algorithm
+		 * @param graph
+		 */
+		public void doAction(IInferenceAlgorithm algorithm, Graph graph);
+		
+		/**
+		 * If possible, this method will revert the {@link #doAction(IJunctionTree, IInferenceAlgorithm, Graph)}
+		 * @param algorithm
+		 * @param graph
+		 * @throws UndoableJTCommandException when {@link #doAction(IJunctionTree, IInferenceAlgorithm, Graph)} is not undoable
+		 */
+		public void undoAction(IInferenceAlgorithm algorithm, Graph graph) throws UndoableJTCommandException;
+	}
+	
+	/** This exception is thrown by {@link IJunctionTreeCommand#undoAction(IJunctionTree, IInferenceAlgorithm, Graph)} if command is not undoable */
+	public class UndoableJTCommandException extends Exception {
+		/** @see Exception#Exception() */
+		public UndoableJTCommandException() {super();}
+		/** @see Exception#Exception(String, Throwable) */
+		public UndoableJTCommandException(String message, Throwable cause) {super(message, cause);}
+		/** @see Exception#Exception(String) */
+		public UndoableJTCommandException(String message) {super(message);}
+		/** @see Exception#Exception(Throwable) */
+		public UndoableJTCommandException(Throwable cause) {super(cause);}
+	}
+
+	/**
+	 * This is the edges of a moralized bayesian network
+	 * @see JunctionTreeAlgorithm#moralize(ProbabilisticNetwork)
+	 * @return the markovArc
+	 */
+	public List<Edge> getMarkovArc() {
+		return markovArc;
+	}
+
+	/**
+	 * This is the edges of a moralized bayesian network
+	 * @see JunctionTreeAlgorithm#moralize(ProbabilisticNetwork)
+	 * @param markovArc the markovArc to set
+	 */
+	public void setMarkovArc(List<Edge> markovArc) {
+		this.markovArc = markovArc;
+	}
+
+	/**
+	 * @return the markovArcCpy
+	 */
+	public List<Edge> getMarkovArcCpy() {
+		return markovArcCpy;
+	}
+
+	/**
+	 * @param markovArcCpy the markovArcCpy to set
+	 */
+	public void setMarkovArcCpy(List<Edge> markovArcCpy) {
+		this.markovArcCpy = markovArcCpy;
+	}
+
 	
 	
 }

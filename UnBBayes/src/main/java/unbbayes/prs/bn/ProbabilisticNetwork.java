@@ -28,7 +28,7 @@ import unbbayes.prs.id.JunctionTreeID;
 import unbbayes.util.SetToolkit;
 
 /**
- *  Representa uma rede probabil�ｽstica.
+ *  It represents a probabilistic network
  *
  *@author     michael
  *@author     rommel
@@ -43,18 +43,19 @@ public class ProbabilisticNetwork
 	private IJunctionTreeBuilder junctionTreeBuilder = new DefaultJunctionTreeBuilder();
 	
 	/**
-	 *  Cria uma nova rede probabil�ｽstica. Limpa o arquivo de log e inicializa o
-	 *  vetor da ordem de elimina�ｽ�ｽo.
+	 * Creates a new probabilistic network. Clears log file and initializes the vector of node elimination.
+	 * @see #getNodeEliminationOrder()
 	 */
 	public ProbabilisticNetwork(String id) {
 		super(id);							
-		oe = new ArrayList<Node>();
+		nodeEliminationOrder = new ArrayList<Node>();
 		firstInitialization = true;
 	}
 	
 
 	/**
-	 *  Faz o processo de triangula�ｽ�ｽo da rede.
+	 *  Do the triangularization process
+	 *  @deprecated use {@link JunctionTreeAlgorithm#triangularize(ProbabilisticNetwork)}
 	 */
 	private void triangula() {		
 		Node aux;
@@ -73,7 +74,7 @@ public class ProbabilisticNetwork
 			auxNos.removeAll(aux.getParents());
 		}
 
-		oe = new ArrayList<Node>(copiaNos.size());
+		nodeEliminationOrder = new ArrayList<Node>(copiaNos.size());
 
 		while (minimumWeightElimination(auxNos))
 			;
@@ -81,7 +82,7 @@ public class ProbabilisticNetwork
 		//        int index;
 		for (int i = decisionNodes.size() - 1; i >= 0; i--) {
 			aux = decisionNodes.get(i);
-			oe.add(aux);
+			nodeEliminationOrder.add(aux);
 			int sizeAdjacentes = aux.getAdjacents().size();
 			for (int j = 0; j < sizeAdjacentes; j++) {
 				Node v = aux.getAdjacents().get(j);
@@ -89,12 +90,12 @@ public class ProbabilisticNetwork
 			}
 			if (createLog) {
 				logManager.append(
-					"\t" + oe.size() + " " + aux.getName() + "\n");
+					"\t" + nodeEliminationOrder.size() + " " + aux.getName() + "\n");
 			}
 
 			auxNos = SetToolkit.clone(aux.getParents());
 			auxNos.removeAll(decisionNodes);
-			auxNos.removeAll(oe);
+			auxNos.removeAll(nodeEliminationOrder);
 			for (int j = 0; j < i; j++) {
 				Node decision = decisionNodes.get(j);
 				auxNos.removeAll(decision.getParents());

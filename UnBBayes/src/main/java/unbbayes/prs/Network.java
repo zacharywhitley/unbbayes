@@ -266,7 +266,7 @@ public class Network implements Graph{
 		return hasEdge(no1, no2, edgeList);
 	}
 
-	protected int hasEdge(Node no1, Node no2, List<Edge> vetArcos) {
+	public int hasEdge(Node no1, Node no2, List<Edge> vetArcos) {
 		if (no1 == no2) {
 			return 1;
 		}

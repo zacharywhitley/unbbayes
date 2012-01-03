@@ -84,7 +84,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
     /**
      * Order of node elminination
 	 */
-	protected ArrayList<Node> oe;
+	protected ArrayList<Node> nodeEliminationOrder;
 
 	/**
 	 * Copy of nodes without utility nodes. This is used during transformation
@@ -498,14 +498,14 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 		int sizeNos = copiaNos.size();
 		for (i = 0; i < sizeNos; i++) {
 			auxNo = copiaNos.get(i);
-			e = oe.indexOf(auxNo);
+			e = nodeEliminationOrder.indexOf(auxNo);
 			auxClique = new Clique();
 			auxClique.getNodes().add(auxNo);
 	
 			int sizeAdjacentes = auxNo.getAdjacents().size();
 			for (j = 0; j < sizeAdjacentes; j++) {
 				auxNo2 = auxNo.getAdjacents().get(j);
-				if (oe.indexOf(auxNo2) > e) {
+				if (nodeEliminationOrder.indexOf(auxNo2) > e) {
 					auxClique.getNodes().add(auxNo2);
 				}
 			}
@@ -558,7 +558,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 					Node node1 = nosClique.get(i);
 					Node node2 = nosClique.get(i + 1);
 					if (isID) {
-						if (oe.indexOf(node1) > oe.indexOf(node2)) {
+						if (nodeEliminationOrder.indexOf(node1) > nodeEliminationOrder.indexOf(node2)) {
 							nosClique.set(i + 1, node1);
 							nosClique.set(i, node2);
 							haTroca = true;
@@ -703,8 +703,8 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 		Separator sep;
 		ArrayList<Node> alpha = new ArrayList<Node>();
 	
-		for (int i = oe.size() - 1; i >= 0; i--) {
-			alpha.add(oe.get(i));
+		for (int i = nodeEliminationOrder.size() - 1; i >= 0; i--) {
+			alpha.add(nodeEliminationOrder.get(i));
 		}
 	
 		if (copiaNos.size() > 1) {
@@ -828,7 +828,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	 * minimum weight heuristic.
 	 *
 	 * @param  auxNos  collection of nodes.
-	 * 
+	 * @deprecated use {@link JunctionTreeAlgorithm#minimumWeightElimination(List, ProbabilisticNetwork)}
 	 */
 	protected boolean minimumWeightElimination(ArrayList<Node> auxNos) {
 		boolean algum;
@@ -853,20 +853,20 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 				}
 				auxNos.remove(auxNo);
 				algum = true;
-				oe.add(auxNo);
+				nodeEliminationOrder.add(auxNo);
 				if (createLog) {
 					logManager.append(
-						"\t" + oe.size() + " " + auxNo.getName() + "\n");
+						"\t" + nodeEliminationOrder.size() + " " + auxNo.getName() + "\n");
 				}
 			}
 		}
 	
 		if (auxNos.size() > 0) {
 			Node auxNo = weight(auxNos); //auxNo: clique de peso m�ｽnimo.
-			oe.add(auxNo);
+			nodeEliminationOrder.add(auxNo);
 			if (createLog) {
 				logManager.append(
-					"\t" + oe.size() + " " + auxNo.getName() + "\n");
+					"\t" + nodeEliminationOrder.size() + " " + auxNo.getName() + "\n");
 			}
 			elimine(auxNo, auxNos); //Elimine no e reduza grafo.
 			return true;
@@ -1045,6 +1045,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	/**
 	 * Sub-method of {@link #verifyConsistency()}.
 	 * This method verifies consistency of conditional probabilistic tables.
+	 * @deprecated use {@link JunctionTreeAlgorithm#verifyPotentialTables(unbbayes.prs.Graph)} instead
 	 */
 	protected void verifyPotentialTables() throws Exception {
 		ProbabilisticTable auxTabPot;
@@ -1066,6 +1067,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	/**
 	 * Sub method of {@link #verifyConsistency()}.
 	 * This method asserts no utility nodes have children.
+	 * @deprecated use {@link JunctionTreeAlgorithm#verifyUtility(ProbabilisticNetwork)} instead
 	 */
 	protected void verifyUtility() throws Exception {
 		Node aux;
@@ -1288,6 +1290,22 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	 */
 	public void setLogManager(NetworkCompilationLogManager logManager) {
 		this.logManager = logManager;
+	}
+
+
+	/**
+	 * @return the nodeEliminationOrder
+	 */
+	public ArrayList<Node> getNodeEliminationOrder() {
+		return nodeEliminationOrder;
+	}
+
+
+	/**
+	 * @param nodeEliminationOrder the nodeEliminationOrder to set
+	 */
+	public void setNodeEliminationOrder(ArrayList<Node> nodeEliminationOrder) {
+		this.nodeEliminationOrder = nodeEliminationOrder;
 	}
 }
 
