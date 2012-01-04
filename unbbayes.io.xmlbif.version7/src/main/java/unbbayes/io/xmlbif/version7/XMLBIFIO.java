@@ -424,10 +424,10 @@ public class XMLBIFIO {
 			// CPS
 			CPS scriptList = CPS.getInstance();
 			String script = scriptList.getScript(node);
-			// This is a work around to make sure the XML string keeps the line breaks
-			script = script.replace("\r\n", "&#xD;");
 
 			if (script != null) {
+				// This is a work around to make sure the XML string keeps the line breaks
+				script = script.replace("\r\n", "&#xD;");
 				
 				XMLBIFType.NetworkType.ConditionalDistributionSetType.ConditionalDistributionType.CPSType cps = of.createXMLBIFTypeNetworkTypeConditionalDistributionSetTypeConditionalDistributionTypeCPSType();
 				cps.setScript(script);
