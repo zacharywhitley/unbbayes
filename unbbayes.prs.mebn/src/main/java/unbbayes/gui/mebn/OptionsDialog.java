@@ -123,7 +123,8 @@ public class OptionsDialog extends JDialog {
 	/** This map stores the default KB information (those not loaded from plugins) */
 	private Map<JRadioButtonMenuItem, ISSBNOptionPanelBuilder> defaultSSBNToOptionMap = null;
 	
-	
+	/** This is the default position of split pane's divider (between the panel w/ radio buttons and the configuration panels) */
+	public static final int DEFAULT_DIVIDER_LOCATION = 60;
 	
 
     /** Resource file from this package */
@@ -212,6 +213,7 @@ public class OptionsDialog extends JDialog {
 	 */
 	protected void buildSSBNGenerationOptions() {
 		ssbnMainPanel            = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+		((JSplitPane)ssbnMainPanel).setDividerLocation(DEFAULT_DIVIDER_LOCATION);
         
         ssbnRadioPanel       = new JPanel(new GridLayout(0,3));
         ssbnRadioPanel.setBorder(new TitledBorder(this.resource.getString("availableSSBN")));
@@ -297,6 +299,7 @@ public class OptionsDialog extends JDialog {
 	protected void buildKBOptions() {
 		
         kbMainPanel            = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        ((JSplitPane)kbMainPanel).setDividerLocation(DEFAULT_DIVIDER_LOCATION);
         
         kbRadioPanel       = new JPanel(new GridLayout(0,3));
         kbRadioPanel.setBorder(new TitledBorder(this.resource.getString("availableKB")));
