@@ -113,15 +113,15 @@ public class NetworkWindow extends UnBBayesModule {
 
 	private Integer mode = null;
 
-	private static final String PN_PANE_PN_EDITION_PANE = "pnEditionPane";
+	public static final String PN_PANE_PN_EDITION_PANE = "pnEditionPane";
 
-	private static final String PN_PANE_PN_EDIT_NET = "editNet";
+	public static final String PN_PANE_PN_EDIT_NET = "editNet";
 
-	private static final String PN_PANE_PN_COMPILATION_PANE = "pnCompilationPane";
+	public static final String PN_PANE_PN_COMPILATION_PANE = "pnCompilationPane";
 
-	private static final String PN_PANE_HIERARCHY_PANE = "hierarchy";
+	public static final String PN_PANE_HIERARCHY_PANE = "hierarchy";
 	
-	private static final String PN_PANE_EVALUATION_PANE = "pnEvaluation";
+	public static final String PN_PANE_EVALUATION_PANE = "pnEvaluation";
 
 	
 	
