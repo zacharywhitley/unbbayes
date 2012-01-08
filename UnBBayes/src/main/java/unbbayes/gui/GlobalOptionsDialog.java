@@ -40,6 +40,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSplitPane;
@@ -146,10 +147,18 @@ public class GlobalOptionsDialog extends JDialog {
                     // commit changes (made at each option panel) on inference algorithm
                     InferenceAlgorithmOptionPanel currentPanel = getSelectedAlgorithmOptionPanel();
                     if (currentPanel != null) {
-                    	currentPanel.commitChanges();
-                    	
-                    	// updating the inference algorithm referenced by controller
-                        controller.setInferenceAlgorithm(currentPanel.getInferenceAlgorithm());
+                        try {
+                        	currentPanel.commitChanges();
+                        	
+                        	// updating the inference algorithm referenced by controller
+                        	controller.setInferenceAlgorithm(currentPanel.getInferenceAlgorithm());
+                    	} catch (Exception exc) {
+                    		exc.printStackTrace();
+							JOptionPane.showMessageDialog(GlobalOptionsDialog.this, 
+									resource.getString("operationFail") + ": " + exc.getMessage(), 
+									resource.getString("error"), 
+									JOptionPane.ERROR_MESSAGE); 
+						}
                     }
                     
                     setVisible(false);
@@ -166,7 +175,15 @@ public class GlobalOptionsDialog extends JDialog {
                     // reverting changes on algorithm plugins
                     InferenceAlgorithmOptionPanel selectedAlgorithmOptionPanel = getSelectedAlgorithmOptionPanel();
                     if (selectedAlgorithmOptionPanel != null) {
-                    	selectedAlgorithmOptionPanel.revertChanges();
+                    	try {
+                    		selectedAlgorithmOptionPanel.revertChanges();
+                    	} catch (Exception exc) {
+                    		exc.printStackTrace();
+							JOptionPane.showMessageDialog(GlobalOptionsDialog.this, 
+									resource.getString("operationFail") + ": " + exc.getMessage(), 
+									resource.getString("error"), 
+									JOptionPane.ERROR_MESSAGE); 
+						}
                     }
                     
                     controller.getSingleEntityNetwork().setCreateLog(createLogBoolean);
@@ -184,7 +201,15 @@ public class GlobalOptionsDialog extends JDialog {
                 	// reverting changes on algorithm plugins
                     InferenceAlgorithmOptionPanel selectedAlgorithmOptionPanel = getSelectedAlgorithmOptionPanel();
                     if (selectedAlgorithmOptionPanel != null) {
-                    	selectedAlgorithmOptionPanel.revertChanges();
+                    	try {
+                    		selectedAlgorithmOptionPanel.revertChanges();
+                    	} catch (Exception exc) {
+                    		exc.printStackTrace();
+							JOptionPane.showMessageDialog(GlobalOptionsDialog.this, 
+									resource.getString("operationFail") + ": " + exc.getMessage(), 
+									resource.getString("error"), 
+									JOptionPane.ERROR_MESSAGE); 
+						}
                     }
                     
                     setVisible(false);

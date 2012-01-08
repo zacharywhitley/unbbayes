@@ -19,6 +19,7 @@ import unbbayes.prs.Node;
 import unbbayes.util.Debug;
 import unbbayes.util.SetToolkit;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
+import unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener;
 import unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel;
 
 /**
@@ -61,6 +62,8 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 	private List<Edge> markovArc = new ArrayList<Edge>();
 
 	private List<Edge> markovArcCpy = new ArrayList<Edge>();
+
+	private List<IInferenceAlgorithmListener> inferenceAlgorithmListeners = new ArrayList<IInferenceAlgorithmListener>();
   	
 	/**
 	 * Default constructor for plugin support
@@ -322,6 +325,9 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#run()
 	 */
 	public void run() throws IllegalStateException {
+		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
+			listener.onBeforeRun(this);
+		}
 		if (this.getNet() == null
 				|| this.getNet().getNodes().size() == 0) {
 			throw new IllegalStateException(resource.getString("EmptyNetException"));
@@ -342,6 +348,9 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 //			this.getNet().compileJT(this.getJunctionTreeBuilder().buildJunctionTree(this.getNet()));
 		} catch (Exception e) {
 			throw new IllegalStateException(e);
+		}
+		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
+			listener.onAfterRun(this);
 		}
 	}
 	
@@ -742,6 +751,9 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#reset()
 	 */
 	public void reset() {
+		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
+			listener.onBeforeReset(this);
+		}
 		try {
 			this.getNet().initialize();
 			if (this.getMediator() != null) {
@@ -752,12 +764,18 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		} catch (Exception e) {
 			throw new IllegalStateException(e);
 		}
+		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
+			listener.onAfterReset(this);
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#propagate()
 	 */
 	public void propagate() {
+		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
+			listener.onBeforePropagate(this);
+		}
 		try {
 			this.getNet().updateEvidences();
 			if (this.getMediator() != null) {
@@ -769,6 +787,10 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
+		}
+
+		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
+			listener.onAfterPropagate(this);
 		}
 	}
 
@@ -935,6 +957,46 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 	 */
 	public void setMarkovArcCpy(List<Edge> markovArcCpy) {
 		this.markovArcCpy = markovArcCpy;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#addInferencceAlgorithmListener(unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener)
+	 */
+	public void addInferencceAlgorithmListener(
+			IInferenceAlgorithmListener listener) {
+		this.getInferenceAlgorithmListeners().add(listener);
+	}
+
+	/**
+	 * @return the inferenceAlgorithmListeners
+	 */
+	public List<IInferenceAlgorithmListener> getInferenceAlgorithmListeners() {
+		return inferenceAlgorithmListeners;
+	}
+
+	/**
+	 * @param inferenceAlgorithmListeners the inferenceAlgorithmListeners to set
+	 */
+	public void setInferenceAlgorithmListeners(
+			List<IInferenceAlgorithmListener> inferenceAlgorithmListeners) {
+		this.inferenceAlgorithmListeners = inferenceAlgorithmListeners;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#removeInferencceAlgorithmListener(unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener)
+	 */
+	public void removeInferencceAlgorithmListener(IInferenceAlgorithmListener listener) {
+		if (listener == null) {
+			if (this.getInferenceAlgorithmListeners() == null) {
+				this.setInferenceAlgorithmListeners(new ArrayList<IInferenceAlgorithmListener>());
+			} else {
+				this.getInferenceAlgorithmListeners().clear();
+			}
+		} else if (this.getInferenceAlgorithmListeners() != null) {
+			this.getInferenceAlgorithmListeners().remove(listener);
+		}
 	}
 
 	

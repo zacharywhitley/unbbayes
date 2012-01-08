@@ -59,4 +59,21 @@ public interface IInferenceAlgorithm {
 	 */
 	public void propagate();
 	
+	/**
+	 * This method adds a listener which will be executed before/after
+	 * {@link #run()}, {@link #propagate()} or {@link #reset()}.
+	 * Use them if you want GUI method to be executed before/after
+	 * inference algorithm methods.
+	 * @param listener
+	 */
+	public void addInferencceAlgorithmListener(IInferenceAlgorithmListener listener);
+	
+	/**
+	 * This method removes a listener which will be executed before/after
+	 * {@link #run()}, {@link #propagate()} or {@link #reset()}.
+	 * Use them if you want GUI method to be executed before/after
+	 * inference algorithm methods.
+	 * @param listener : if set to null, the implementation should clear the listeners.
+	 */
+	public void removeInferencceAlgorithmListener(IInferenceAlgorithmListener listener);
 }
