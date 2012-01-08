@@ -885,6 +885,7 @@ public class UbfIO implements MebnIO {
 		try {
 			this.updateMFrag(st,mebn);
 		} catch (Exception e) {
+			e.printStackTrace();
 			System.err.println(e.getLocalizedMessage() + " : "
 					+ resource.getString("MFragConfigError"));
 		}

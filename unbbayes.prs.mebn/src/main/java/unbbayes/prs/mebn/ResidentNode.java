@@ -536,8 +536,14 @@ public class ResidentNode extends MultiEntityNode
 		StateLink value = new StateLink(possibleValue); 
 		possibleValueList.add(value);
 		return value; 
-		// TODO override addPossibleValue() or call super.addPossibleValue(possibleValue) in order
-		// to make compatible w/ MultiEntityNode.possibleValueList...
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.mebn.MultiEntityNode#addPossibleValue(unbbayes.prs.mebn.entity.Entity)
+	 */
+	public void addPossibleValue(Entity possibleValue){
+		this.addPossibleValueLink(possibleValue);
 	}
 	
 	/* (non-Javadoc)
