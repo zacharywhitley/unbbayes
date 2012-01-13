@@ -248,6 +248,7 @@ public class UbfIO2 extends UbfIO {
 		try {
 			this.updateMFrag(st,mebn);
 		} catch (Exception e) {
+			e.printStackTrace();
 			System.err.println(e.getLocalizedMessage() + " : "
 					+ this.getResource().getString("MFragConfigError"));
 		}
