@@ -45,7 +45,9 @@ public class SSBNDebugInformationUtil {
 			return;
 		}
 		PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(ssbn.getProbabilisticNetwork()); 
-		SSBNDebugInformationUtil.printNetworkInformation(ssbn.getLogManager(), ssbn); 
+		if (ssbn.getLogManager() != null) {
+			SSBNDebugInformationUtil.printNetworkInformation(ssbn.getLogManager(), ssbn); 
+		}
 	}
 	
 	/**

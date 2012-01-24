@@ -56,4 +56,16 @@ public interface ISSBNGenerator {
 			                         MEBNException, 
 			                         OVInstanceFaultException, 
 			                         InvalidParentException;
+	
+	/**
+	 * Indicates whether a log using {@link SSBN#getLogManager()} should be used or not.
+	 * @param isEnabled
+	 */
+	public void setLogEnabled(boolean isEnabled);
+	
+	/**
+	 * Indicates whether a log using {@link SSBN#getLogManager()} should be used or not.
+	 * @return
+	 */
+	public boolean isLogEnabled();
 }

@@ -85,6 +85,8 @@ public class MFrag implements Graph{
 	 */
 	private boolean isUsingDefaultCPT = false;
 
+	private Map<String, Object> properties = new HashMap<String, Object>();
+
 	/** Load resource file from this package */
   	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
   			unbbayes.prs.mebn.resources.Resources.class.getName());  		
@@ -933,6 +935,52 @@ public class MFrag implements Graph{
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.Graph#addProperty(java.lang.String, java.lang.Object)
+	 */
+	public void addProperty(String name, Object value) {
+		this.getProperties().put(name, value);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.Graph#removeProperty(java.lang.String)
+	 */
+	public void removeProperty(String name) {
+		this.getProperties().remove(name);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.Graph#clearProperty()
+	 */
+	public void clearProperty() {
+		this.getProperties().clear();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.Graph#getProperty(java.lang.String)
+	 */
+	public Object getProperty(String name) {
+		return this.getProperties().get(name);
+	}
+
+	/**
+	 * @return the properties
+	 */
+	public Map<String, Object> getProperties() {
+		return properties ;
+	}
+
+	/**
+	 * @param properties the properties to set
+	 */
+	public void setProperties(Map<String, Object> properties) {
+		this.properties = properties;
 	}
 
 }

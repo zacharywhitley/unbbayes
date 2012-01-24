@@ -21,6 +21,7 @@
 
 package unbbayes.prs.mebn.ssbn.giaalgorithm;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -47,11 +48,8 @@ import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.ssbn.ContextFatherSSBNNode;
 import unbbayes.prs.mebn.ssbn.ContextNodeEvaluator;
 import unbbayes.prs.mebn.ssbn.IMediatorAwareSSBNGenerator;
-import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
-import unbbayes.prs.mebn.ssbn.Query;
-import unbbayes.prs.mebn.ssbn.SSBN;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.prs.mebn.ssbn.SSBNNodeJacket;
 import unbbayes.prs.mebn.ssbn.SSBNNodeList;
@@ -1328,6 +1326,39 @@ public abstract class AbstractSSBNGenerator implements IMediatorAwareSSBNGenerat
 
 	public void setContextNodeAvaliator(ContextNodeEvaluator contextNodeAvaliator) {
 		this.contextNodeAvaliator = contextNodeAvaliator;
+	}
+
+	/**
+	 * @return the isLogEnabled
+	 */
+	public boolean isLogEnabled() {
+		return (logManager != null && (logManager instanceof TextLogManager));
+	}
+
+	/**
+	 * @param isLogEnabled the isLogEnabled to set
+	 */
+	public void setLogEnabled(boolean isLogEnabled) {
+		if (isLogEnabled() == isLogEnabled) {
+			// no change
+			return;
+		}
+		// change
+		if (isLogEnabled) {
+			logManager = new TextLogManager();
+		} else {
+			logManager = new ILogManager() {
+				public void writeToDisk(String fileName, boolean append) throws IOException {}
+				public String getLog() {return "";}
+				public void clear() {}
+				public void appendln(String text) {}
+				public void appendSpecialTitle(String text) {}
+				public void appendSeparator() {}
+				public void appendSectionTitle(String text) {}
+				public void append(String text) {}
+				public void addTitle(String text) {}
+			};
+		}
 	}
 	
 

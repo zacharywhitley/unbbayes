@@ -2,6 +2,7 @@
 
 import java.util.Locale;
 
+import unbbayes.prs.mebn.ssbn.util.SSBNDebugInformationUtil;
 import unbbayes.util.Debug;
 
 /**
@@ -26,8 +27,9 @@ public class UnBBayesMainDelegator {
 	public static void main(String[] args) {
 		// change default locale
 		Locale.setDefault(new Locale("en"));
-		// enable debug mode 
-		Debug.setDebug(true);
+		// enable debug mode
+		SSBNDebugInformationUtil.setEnabled(false);
+		Debug.setDebug(false);
 		// delegate to UnBBayes
 		unbbayes.Main.main(args);
 	}

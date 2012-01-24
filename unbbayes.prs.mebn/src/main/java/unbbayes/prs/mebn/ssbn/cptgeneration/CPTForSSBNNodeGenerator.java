@@ -27,7 +27,7 @@ import unbbayes.util.Debug;
  */
 public class CPTForSSBNNodeGenerator {
 
-	public ISSBNLogManager logManager; 
+	private ISSBNLogManager logManager; 
 	
 	IdentationLevel level1 = new IdentationLevel(null); 
 	IdentationLevel level2 = new IdentationLevel(level1); 
@@ -90,11 +90,15 @@ public class CPTForSSBNNodeGenerator {
 			generateCPT(root);
 			}
 			catch (MEBNException e) {
-				logManager.printText(level3, false,"ERROR IN THE CPT EVALUATION OF NODE " + root.getName());
+				if (logManager != null) {
+					logManager.printText(level3, false,"ERROR IN THE CPT EVALUATION OF NODE " + root.getName());
+				}
 				throw e; 
 			}
 			catch (SSBNNodeGeneralException e) {
-				logManager.printText(level3, false,"ERROR IN THE CPT EVALUATION OF NODE " + root.getName());
+				if (logManager != null) {
+					logManager.printText(level3, false,"ERROR IN THE CPT EVALUATION OF NODE " + root.getName());
+				}
 				throw e; 
 			}
 			
@@ -136,10 +140,12 @@ public class CPTForSSBNNodeGenerator {
 			parent.turnArgumentsForMFrag(ssbnNode.getResident().getMFrag()); 
 		}
 		
-		logManager.printText(level2, false,"Generate CPT for node " + ssbnNode.getUniqueName()); 
-		logManager.printText(level3, false,"Parents:"); 
-		for(SSBNNode parent: ssbnNode.getParents()){
-			logManager.printText(level4, false, parent.toString()); 
+		if (logManager != null) {
+			logManager.printText(level2, false,"Generate CPT for node " + ssbnNode.getUniqueName()); 
+			logManager.printText(level3, false,"Parents:"); 
+			for(SSBNNode parent: ssbnNode.getParents()){
+				logManager.printText(level4, false, parent.toString()); 
+			}
 		}
 //		logManager.appendln("Init"); 
 		
@@ -147,12 +153,15 @@ public class CPTForSSBNNodeGenerator {
 			//Generate the cpt of the context father ssbnnode
 			if(ssbnNode.getContextFatherSSBNNode()!=null){ 
 				try {
-					logManager.printText(level3, false, " Context Parent Node: " + ssbnNode.getContextFatherSSBNNode()); 
+					if (logManager != null) {
+						logManager.printText(level3, false, " Context Parent Node: " + ssbnNode.getContextFatherSSBNNode()); 
+					}
 					generateCPTForNodeWithContextFather(ssbnNode);
 				} catch (InvalidOperationException e1) {
-					logManager.printText(level3, false, "ERROR IN THE CPT EVALUATION OF NODE " + ssbnNode.getName()); 
-					e1.printStackTrace();
-					throw new SSBNNodeGeneralException(e1.getMessage()); 
+					if (logManager != null) {
+						logManager.printText(level3, false, "ERROR IN THE CPT EVALUATION OF NODE " + ssbnNode.getName()); 
+					}
+					throw new SSBNNodeGeneralException("ERROR IN THE CPT EVALUATION OF NODE " + ssbnNode ,e1); 
 				}
 			}else{
 				ssbnNode.getCompiler().generateLPD(ssbnNode);
@@ -162,7 +171,9 @@ public class CPTForSSBNNodeGenerator {
 			}
 		}
 		
-		logManager.printText(level3, false,"Generated"); 
+		if (logManager != null) {
+			logManager.printText(level3, false,"Generated"); 
+		}
 //		logManager.appendln("End");
 		
 	}
@@ -188,14 +199,16 @@ public class CPTForSSBNNodeGenerator {
 				mapParentsByEntity.put(entity.getInstanceName().toUpperCase(), new ArrayList<SSBNNode>()); 
 			}
 			
-			logManager.printText(level3, false, "Node " + ssbnNode + "have context father.");
-//			logManager.appendln("Parents:");
-//			for(SSBNNode parent: ssbnNode.getParents()){
-//				logManager.appendln("  " + parent);
-//			}
-			logManager.printText(level3, false," OV Problematic = " + contextFather.getOvProblematic().getName() 
-					+ " " + contextFather.getOvProblematic().getMFrag().getName() 
-					+ contextFather.getOvProblematic().getValueType().getName());
+			if (logManager != null) {
+				logManager.printText(level3, false, "Node " + ssbnNode + "have context father.");
+	//			logManager.appendln("Parents:");
+	//			for(SSBNNode parent: ssbnNode.getParents()){
+	//				logManager.appendln("  " + parent);
+	//			}
+				logManager.printText(level3, false," OV Problematic = " + contextFather.getOvProblematic().getName() 
+						+ " " + contextFather.getOvProblematic().getMFrag().getName() 
+						+ contextFather.getOvProblematic().getValueType().getName());
+			}
 			
 
 			//Step 0: Generate the context node CPT. 
@@ -314,7 +327,9 @@ public class CPTForSSBNNodeGenerator {
 				List<SSBNNode> parentsForEntity = mapParentsByEntity.get(entity.toUpperCase()); 
 
 				if (parentsForEntity == null || parentsForEntity.size() <= 0) {
-					logManager.printBox1("Warning! No parents for entity " + entity + " was found. Aborting XOR table generation for " + contextFather.getProbNode());
+					if (logManager != null) {
+						logManager.printBox1("Warning! No parents for entity " + entity + " was found. Aborting XOR table generation for " + contextFather.getProbNode());
+					}
 					break;
 				}
 				ProbabilisticNode pnEntity = parentsForEntity.get(0).getProbNode(); //??
@@ -400,8 +415,24 @@ public class CPTForSSBNNodeGenerator {
 //			gpt.showTable("Table for Node " + ssbnNode);
 			
 			
-			logManager.printText(level3, false,"CPT OK");
+			if (logManager != null) {
+				logManager.printText(level3, false,"CPT OK");
+			}
 		
+	}
+
+	/**
+	 * @return the logManager
+	 */
+	public ISSBNLogManager getLogManager() {
+		return logManager;
+	}
+
+	/**
+	 * @param logManager the logManager to set
+	 */
+	public void setLogManager(ISSBNLogManager logManager) {
+		this.logManager = logManager;
 	}
 	
 }

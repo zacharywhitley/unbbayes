@@ -666,13 +666,12 @@ public class ResidentNode extends MultiEntityNode
 	public List<Entity> getPossibleValueListIncludingEntityInstances() {
 		List<Entity> ret = new ArrayList<Entity>();
 		for (StateLink link : this.possibleValueList) {
-			if (link.getState() instanceof ObjectEntity) {
+			Entity state = link.getState();
+			if (state instanceof ObjectEntity) {
 				// TODO the above "instanceof" is a serious indication of a refactoring necessity
-				for (ObjectEntityInstance instance : ((ObjectEntity)link.getState()).getInstanceList()) {
-					ret.add(instance);
-				}
+				ret.addAll(((ObjectEntity)state).getInstanceList());
 			} else {
-				ret.add(link.getState());
+				ret.add(state);
 			}
 		}
 		return ret;

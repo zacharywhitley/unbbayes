@@ -89,7 +89,7 @@ public class SimpleSSBNNode implements INode {
 	@Override
 	public boolean equals(Object obj) {
 
-		boolean result = true; 
+//		boolean result = true; 
 		
 		if(! (obj instanceof SimpleSSBNNode)){
 			return false;
@@ -101,16 +101,13 @@ public class SimpleSSBNNode implements INode {
 			
 			for(int i = 0; i < entityArray.length; i++){
 				if(!entityArray[i].equals(ssbnNode.entityArray[i])){
-					result = false; 
-					break; 
+					return false; 
 				}
 			}
-			
-		}else{
-			result = false; 
-		}
+			return true;
+		} 
 		
-		return result; 
+		return false; 
 		
 	}
 

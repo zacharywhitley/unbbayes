@@ -1719,15 +1719,17 @@ public class Compiler implements ICompiler {
 	}
 
 	private boolean isAlpha(final char c) {
-		if ((c >= 'a') && (c <= 'z'))
-			return true; // lowercase
-		if ((c >= 'A') && (c <= 'Z'))
-			return true; // uppercase
-		if (c == '_') {
-			return true; // underscore
-		}
+//		if ((c >= 'a') && (c <= 'z'))
+//			return true; // lowercase
+//		if ((c >= 'A') && (c <= 'Z'))
+//			return true; // uppercase
+//		if (c == '_') {
+//			return true; // underscore
+//		}
 		
-		return false;
+		return ((c >= 'a') && (c <= 'z'))
+					|| ((c >= 'A') && (c <= 'Z'))
+					|| (c == '_');
 	}
 
 	private boolean isAlphaNumeric(final char c) {

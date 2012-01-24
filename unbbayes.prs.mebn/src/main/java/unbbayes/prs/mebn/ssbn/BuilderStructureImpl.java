@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import unbbayes.io.log.ISSBNLogManager;
 import unbbayes.io.log.IdentationLevel;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.ContextNode;
@@ -106,13 +107,18 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		int iteration = 0; 
 		
 	    level1 =  new IdentationLevel(null); 
-		
-		ssbn.getLogManager().skipLine(); 
+	    
+	    ISSBNLogManager logManager = ssbn.getLogManager();
+	    if (logManager != null) {
+			logManager.skipLine(); 
+	    }
 		
 		while(!notFinishedNodeList.isEmpty()){
 			
-			ssbn.getLogManager().printText(level1, false, 
+			if (logManager != null) {
+				logManager.printText(level1, false, 
 					resourceLog.getString("012_IterationNumber") + " "  + iteration); 
+			}
 			
 			for(SimpleSSBNNode node: notFinishedNodeList){
 		        try {
@@ -129,18 +135,24 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			//update the not finished list
 			notFinishedNodeList.clear();
 
-			ssbn.getLogManager().skipLine(); 
-			ssbn.getLogManager().printText(level1, false, 
+			if (logManager != null) {
+				logManager.skipLine(); 
+				logManager.printText(level1, false, 
 					resourceLog.getString("013_NotFinishedNodesList") + ": ");
+			}
 			
 			for(SimpleSSBNNode node: ssbn.getSimpleSsbnNodeList()){
 				if(!node.isFinished()){
-					ssbn.getLogManager().printText(level1, false, " - " + node.toString()); 
+					if (logManager != null) {
+						logManager.printText(level1, false, " - " + node.toString());
+					}
 					notFinishedNodeList.add(node); 
 				}
 			}
 			
-			ssbn.getLogManager().skipLine(); 
+			if (logManager != null) {
+				logManager.skipLine(); 
+			}
 			iteration++; 
 			
 		}
@@ -159,7 +171,11 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		level2 = new IdentationLevel(level1); 
 		thisLevel2 = level2; 
 		
-		ssbn.getLogManager().printText(level2, false, "Evaluate unfinished node" + ": " + node);
+		ISSBNLogManager logManager = ssbn.getLogManager();
+		
+		if (logManager != null) {
+			logManager.printText(level2, false, "Evaluate unfinished node" + ": " + node);
+		}
 		
 		//Note: In this implementation don't is averiguated if already have a equal MFragInstance. 
 		
@@ -183,9 +199,10 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		
 		node.setFinished(true);
 		
-		ssbn.getLogManager().printText(thisLevel2, true, "Unfinished node = " + node + " setted true");
-		ssbn.getLogManager().skipLine(); 
-		
+		if (logManager != null) {
+			logManager.printText(thisLevel2, true, "Unfinished node = " + node + " setted true");
+			logManager.skipLine(); 
+		}
 	}
 	
 	/**
@@ -199,7 +216,10 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	private void evaluateMFragInstance(MFragInstance mFragInstance, SimpleSSBNNode ssbnNode) 
 	      throws ImplementationRestrictionException, SSBNNodeGeneralException{
 		
-		ssbn.getLogManager().printText(level2, true, "Evaluate MFragInstance" + mFragInstance); 
+		ISSBNLogManager logManager = ssbn.getLogManager();
+		if (logManager != null) {
+			logManager.printText(level2, true, "Evaluate MFragInstance" + mFragInstance); 
+		}
 		
 		// 1) Test if the MFragInstance already was evaluated
 		if(mFragInstance.isEvaluated()){
@@ -212,7 +232,9 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	    // 2) Evaluate MFragInstance context
 		try {
 			level3 = new IdentationLevel(level2); 
-			ssbn.getLogManager().printText(level3, true, "Evaluate MFrag Context Nodes");
+			if (logManager != null) {
+				logManager.printText(level3, true, "Evaluate MFrag Context Nodes");
+			}
 			evaluateMFragContextNodes(mFragInstance);
 			
 		} catch (ImplementationRestrictionException e) {
@@ -228,7 +250,9 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		
 		// 3) Create the nodes of the MFragInstance
 		level3 = new IdentationLevel(level2); 
-		ssbn.getLogManager().printText(level3, true, "Create the nodes of MFrag ");		
+		if (logManager != null) {
+			logManager.printText(level3, true, "Create the nodes of MFrag ");
+		}
 		evaluateNodeInMFragInstance(mFragInstance, ssbnNode);	
 		
 	}	
@@ -257,7 +281,10 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	       throws ImplementationRestrictionException, SSBNNodeGeneralException{
 		
 		level4 = new IdentationLevel(level3); 
-		ssbn.getLogManager().printText(level4, false, "Create parents of node " + node);
+		ISSBNLogManager logManager = ssbn.getLogManager();
+		if (logManager != null) {
+			logManager.printText(level4, false, "Create parents of node " + node);
+		}
 		
 		node.setMFragInstance(mFragInstance); 
 		
@@ -287,9 +314,10 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			node.setState(exactValue.getState());
 			ssbn.addFindingToTheFindingList(node); 
 			
-			ssbn.getLogManager().printText(level4, false, " -> Node " + node + 
-					" setted how a finding. Exact Value = " + exactValue.getState());
-			
+			if (logManager != null) {
+				logManager.printText(level4, false, " -> Node " + node + 
+					" set as a finding. Exact Value = " + exactValue);
+			}
 		}
 		
 		
@@ -299,7 +327,9 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		//the parents isn't possible
 		if(mFragInstance.isUseDefaultDistribution()){
 			
-			ssbn.getLogManager().printText(level4, false, " -> Node can't be evaluated: mfrag using default distribution");
+			if (logManager != null) {
+				logManager.printText(level4, false, " -> Node can't be evaluated: mfrag using default distribution");
+			}
 			return; 
 		
 		}
@@ -307,19 +337,26 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		OrdinaryVariable[] ovFilledArray = node.getOvArray(); 
 		LiteralEntityInstance[] entityFilledArray = node.getEntityArray(); 
 	
-		ssbn.getLogManager().printText(level4, false, " 1) Evaluate the resident node parents");
+		if (logManager != null) {
+			logManager.printText(level4, false, " 1) Evaluate the resident node parents");
+		}
 		
 		for(ResidentNode residentNodeParent: resident.getResidentNodeFatherList()){
 			
 			List<SimpleSSBNNode> createdNodesList = createParents(node, 
 					ovFilledArray, entityFilledArray, residentNodeParent);
 			
-			ssbn.getLogManager().printText(level4, false, "Resident parents generates from the resident node " + 
+			if (logManager != null) {
+				logManager.printText(level4, false, "Resident parents generates from the resident node " + 
 					residentNodeParent);
+			}
 			
 			int count = 0; 
 			for(SimpleSSBNNode newNode: createdNodesList){
-				ssbn.getLogManager().printText(level4, false, "Evaluate " + count + " - "+ newNode); 
+				if (logManager != null) {
+					logManager.printText(level4, false, "Evaluate " + count + " - "+ newNode);
+				}
+				
 				count= count + 1 ; 
 				evaluateNodeInMFragInstance(mFragInstance, newNode); 
 			}
@@ -327,12 +364,17 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		}
 		
 		//---- 3) Create the parents of node from the input nodes
-		ssbn.getLogManager().printText(level4, false, " 2) Evaluate the input node parents");
+		if (logManager != null) {
+			logManager.printText(level4, false, " 2) Evaluate the input node parents");
+		}
+		
 		for(InputNode inputNodeParent: resident.getParentInputNodesList()){
 			
 			if(inputNodeParent.getResidentNodePointer().getResidentNode().equals(resident)){
 				//Special case: the recursivity.
-				ssbn.getLogManager().printText(level4, false, " Recursivity treatment: " + resident);
+				if (logManager != null) {
+					logManager.printText(level4, false, " Recursivity treatment: " + resident);
+				}
 				
 				SimpleSSBNNode newNode = createRecursiveParents(node, ovFilledArray, 
 						entityFilledArray, inputNodeParent);
@@ -349,7 +391,9 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		}
 		
 		node.setFinished(true); 
-		ssbn.getLogManager().printText(level4, false, "Node " + node + " setted finished");
+		if (logManager != null) {
+			logManager.printText(level4, false, "Node " + node + " setted finished");
+		}
 
 		mFragInstance.setEvaluated(true); 
 	}
@@ -554,13 +598,17 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			ssbnCreatedList.add(newNode); 
 		}
 		
+		ISSBNLogManager logManager = ssbn.getLogManager();
+		
 		//Add the context node parent if it exists
 		if( contextParentsCount > 0 ){
 			
 			for(SimpleContextNodeFatherSSBNNode contextParent : contextNodeFatherList){
-				ssbn.getLogManager().printText(level5, false, 
+				if (logManager != null) {
+					logManager.printText(level5, false, 
 						node + " is child of the contextNode " + 
 						contextParent.getContextNode().toString());
+				}
 				
 				node.addContextParent(contextParent); 
 			}
@@ -625,7 +673,9 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		if(prev != null){
 
 			level5 = new IdentationLevel(level4); 
-			ssbn.getLogManager().printText(level5, false, "Previous node = " + prev + " (" + objectEntityInstanceOrdereable + ")");
+			if (ssbn.getLogManager() != null) {
+				ssbn.getLogManager().printText(level5, false, "Previous node = " + prev + " (" + objectEntityInstanceOrdereable + ")");
+			}
 			
 			LiteralEntityInstance ovOrdereablePreviusValue = 
 				LiteralEntityInstance.getInstance(prev.getName(), ovOrdereable.getValueType());
@@ -680,7 +730,9 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		
 		if(parent == testNode){
 			numberNodes++; 
-			ssbn.getLogManager().printText(level5, false, "Created new node: " + parent);
+			if (ssbn.getLogManager() != null) {
+				ssbn.getLogManager().printText(level5, false, "Created new node: " + parent);
+			}
 		}
 		
 		try {
@@ -729,11 +781,16 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		//Consider that the only ordinary variables filled are the alread know OV
 		List<OVInstance> ovInstances = mFragInstance.getOVInstanceList(); 
 		
-		ssbn.getLogManager().printText(level4, false, "1) Loop for evaluate context nodes.");
+		ISSBNLogManager logManager = ssbn.getLogManager();
+		if (logManager != null) {
+			logManager.printText(level4, false, "1) Loop for evaluate context nodes.");
+		}
 		
 		for(ContextNode contextNode: mFragInstance.getContextNodeList()){
 			
-			ssbn.getLogManager().printText(level4, false, "Context Node: " + contextNode);
+			if (logManager != null) {
+				logManager.printText(level4, false, "Context Node: " + contextNode);
+			}
 			
 			//---> 1) Verify if the context node is soluted only with the know arguments. 
 			List<OrdinaryVariable> ovInstancesFault = contextNode.getOVFaultForOVInstanceSet(ovInstances); 
@@ -741,39 +798,52 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			level5 = new IdentationLevel(level4); 
 			if(ovInstancesFault.size() == 0){
 				
-				ssbn.getLogManager().printText(level5, false, "All ov's of the context node are setted"); 
+				if (logManager != null) {
+					logManager.printText(level5, false, "All ov's of the context node are setted");
+				}
+				
 				boolean result = kb.evaluateContextNodeFormula(contextNode, ovInstances);
 				if(result){
 					mFragInstance.setStateEvaluationOfContextNode(contextNode, 
 							ContextNodeEvaluationState.EVALUATION_OK); 
-					ssbn.getLogManager().printText(level5, false, "Node evaluated OK");	
+					if (logManager != null) {
+						logManager.printText(level5, false, "Node evaluated OK");
+					}
+					
 					continue; 
 				}else{
 					mFragInstance.setStateEvaluationOfContextNode(contextNode, 
 							ContextNodeEvaluationState.EVALUATION_FAIL);
 					mFragInstance.setUseDefaultDistribution(true); 
-					ssbn.getLogManager().printText(level5, false, "Node evaluated FALSE"); 
+					if (logManager != null) {
+						logManager.printText(level5, false, "Node evaluated FALSE");
+					}
 					continue; //The MFragInstance continue to be evaluated only
 					          //to show to the user a network more complete. 
 				}
 			}else{
 			
-				ssbn.getLogManager().printText(level5, false, "Some ov's of the context node aren't filled");
-				
-				ssbn.getLogManager().printText(level5, false, "Try 1: Use the search strategy");
+				if (logManager != null) {
+					logManager.printText(level5, false, "Some ov's of the context node aren't filled");
+					logManager.printText(level5, false, "Try 1: Use the search strategy");
+				}
 				
 				//---> 2) Use the Entity Tree Strategy. 
 				SearchResult searchResult = kb.evaluateSearchContextNodeFormula(contextNode, ovInstances); 
 
 				if(searchResult!= null){  
 
-					ssbn.getLogManager().printText(level5, false, "Search Result: ");
-					for(String[] result: searchResult.getValuesResultList()){
-						String resultOv = " > "; 
-						for(int i = 0; i < result.length; i++){
-							resultOv += result[i] + " "; 
+					if (logManager != null) {
+						logManager.printText(level5, false, "Search Result: ");
+						for(String[] result: searchResult.getValuesResultList()){
+							String resultOv = " > "; 
+							for(int i = 0; i < result.length; i++){
+								resultOv += result[i] + " "; 
+							}
+							if (logManager != null) {
+								logManager.printText(level5, false, resultOv);
+							}
 						}
-						ssbn.getLogManager().printText(level5, false, resultOv); 
 					}
 					
 					//Result valid results: Add the result to the tree of result.
@@ -785,7 +855,9 @@ public class BuilderStructureImpl implements IBuilderStructure{
 
 						mFragInstance.setStateEvaluationOfContextNode(contextNode, ContextNodeEvaluationState.EVALUATION_OK); 
 						
-						ssbn.getLogManager().printText(level5, false, "Node evaluated OK");
+						if (logManager != null) {
+							logManager.printText(level5, false, "Node evaluated OK");
+						}
 						
 					} catch (MFragContextFailException e) {
 						
@@ -793,7 +865,9 @@ public class BuilderStructureImpl implements IBuilderStructure{
 						
 						mFragInstance.setStateEvaluationOfContextNode(contextNode, ContextNodeEvaluationState.EVALUATION_FAIL); 
 						mFragInstance.setUseDefaultDistribution(true); 
-						ssbn.getLogManager().printText(level5, false,"Context Node FAIL: use the default distribution");
+						if (logManager != null) {
+							logManager.printText(level5, false,"Context Node FAIL: use the default distribution");
+						}
 						
 						//Here, the context node fail adding the values for a ordinary variable
 						//fault. This fail impossibilite the evaluation of the rest of the MFragInstance, 
@@ -836,9 +910,11 @@ public class BuilderStructureImpl implements IBuilderStructure{
 //					}
 
 					//---> 4) Use the uncertainty Strategy. 
-					ssbn.getLogManager().printText(level5, false, 
+					if (logManager != null) {
+						logManager.printText(level5, false, 
 							"Try 2: Use the uncertain reference strategy");
-
+					}
+					
 					//Utilized only in the specific case z = RandomVariable(x), 
 					//where z is the unknow variable. (Should have only one unknow variable)
 					
@@ -855,13 +931,17 @@ public class BuilderStructureImpl implements IBuilderStructure{
 						}
 						catch(ImplementationRestrictionException e){
 							mFragInstance.setUseDefaultDistribution(true); 
-							ssbn.getLogManager().printText(level5, false, "Fail: " + e.getMessage());
+							if (logManager != null) {
+								logManager.printText(level5, false, "Fail: " + e.getMessage());
+							}
 						}
 					}
 					
 					//--> 5) Nothing more to try... context fail
-					ssbn.getLogManager().printText(level4, false,"Still ov fault... nothing more to do. " +
+					if (logManager != null) {
+						logManager.printText(level4, false,"Still ov fault... nothing more to do. " +
 							"Use default distribution");
+					}
 					mFragInstance.setStateEvaluationOfContextNode(contextNode, 
 							ContextNodeEvaluationState.EVALUATION_FAIL); 
 					mFragInstance.setUseDefaultDistribution(true);
@@ -873,7 +953,9 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		}
 		
 		
-		ssbn.getLogManager().printText(level4, false,"2) Loop for evaluate the IsA nodes"); 
+		if (logManager != null) {
+			logManager.printText(level4, false,"2) Loop for evaluate the IsA nodes"); 
+		}
 		
 		//Return a list of ordinary variables of the MFrag that don't are evaluated yet. 
 		List<OrdinaryVariable> ovDontFoundYetList = new ArrayList<OrdinaryVariable>(); 
@@ -888,12 +970,16 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			//no context node about this ov... the value is unknown, we should 
 			//consider all the possible values. Note the use of the Closed Word
 			//Asspetion. 
-			ssbn.getLogManager().printText(level4, false,"Evaluate IsA for OV " + ov.getName());
+			if (logManager != null) {
+				logManager.printText(level4, false,"Evaluate IsA for OV " + ov.getName());
+			}
 			
 			List<String> possibleValues = kb.getEntityByType(ov.getValueType().getName()); 
 			
-			for(String possibleValue: possibleValues){
-				ssbn.getLogManager().printText(level4, false, "  > " + possibleValue);
+			if (logManager != null) {
+				for(String possibleValue: possibleValues){
+					logManager.printText(level4, false, "  > " + possibleValue);
+				}
 			}
 			
 			String possibleValuesArray[] = possibleValues.toArray(new String[possibleValues.size()]); 
@@ -916,17 +1002,19 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		}
 		
 		List<String[]> possibleCombinationsList = mFragInstance.recoverAllCombinationsEntitiesPossibles(); 
-		ssbn.getLogManager().printBox3Bar(level4); 
-		ssbn.getLogManager().printBox3(level4, 0, "Result of evalation of the context nodes (Possible combinations): ");
-		for(String[] possibleCombination : possibleCombinationsList){
-			String ordinaryVariableComb = " > ";
-			for(String ordinaryVariableValue: possibleCombination){
-				ordinaryVariableComb += " " + ordinaryVariableValue;
+		if (logManager != null) {
+			logManager.printBox3Bar(level4);
+			logManager.printBox3(level4, 0, "Result of evalation of the context nodes (Possible combinations): ");
+			for(String[] possibleCombination : possibleCombinationsList){
+				String ordinaryVariableComb = " > ";
+				for(String ordinaryVariableValue: possibleCombination){
+					ordinaryVariableComb += " " + ordinaryVariableValue;
+				}
+				ordinaryVariableComb += " < ";
+				logManager.printBox3(level4, 1, ordinaryVariableComb);
 			}
-			ordinaryVariableComb += " < ";
-			ssbn.getLogManager().printBox3(level4, 1, ordinaryVariableComb); 
+			logManager.printBox3Bar(level4);
 		}
-		ssbn.getLogManager().printBox3Bar(level4); 
 		
 		//Return mFragInstance with the ordinary variables filled. 
 		return mFragInstance; 

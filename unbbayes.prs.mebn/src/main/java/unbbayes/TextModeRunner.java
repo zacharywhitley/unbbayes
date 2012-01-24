@@ -32,6 +32,7 @@ import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeyAlgorithmParameters;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSBNGenerator;
+import unbbayes.prs.mebn.ssbn.util.SSBNDebugInformationUtil;
 
 /**
  * This class runs UnBBayes in text-mode
@@ -49,6 +50,12 @@ import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSBNGenerator;
  */
 public class TextModeRunner {
 	
+	private boolean isLogEnabled = false;
+	
+	public TextModeRunner() {
+		super();
+	}
+
 	/**
 	 * Startups knowledge base
 	 * @param knowledgeBase
@@ -88,6 +95,9 @@ public class TextModeRunner {
 	 * @param ssbn
 	 */
 	public void logNodesAndItsProbabilities(SSBN ssbn) {
+		if (!this.isLogEnabled()) {
+			return;
+		}
 		ILogManager logManager = ssbn.getLogManager();
 		ProbabilisticNetwork probabilisticNetwork = ssbn.getProbabilisticNetwork();
 		if (logManager != null && probabilisticNetwork != null && probabilisticNetwork.getNodes() != null) {
@@ -140,6 +150,7 @@ public class TextModeRunner {
 		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION, "true"); 
 	    
 		ISSBNGenerator ssbngenerator = new LaskeySSBNGenerator(parameters);
+		ssbngenerator.setLogEnabled(this.isLogEnabled());
 		
 		SSBN ssbn = ssbngenerator.generateSSBN(listQueries, knowledgeBase); 
 		
@@ -301,6 +312,21 @@ public class TextModeRunner {
 			e.printStackTrace();
 		}
 		
+	}
+
+	/**
+	 * @return the isLogEnabled
+	 */
+	public boolean isLogEnabled() {
+		return isLogEnabled;
+	}
+
+	/**
+	 * @param isLogEnabled the isLogEnabled to set
+	 */
+	public void setLogEnabled(boolean isLogEnabled) {
+		SSBNDebugInformationUtil.setEnabled(isLogEnabled);
+		this.isLogEnabled = isLogEnabled;
 	}
 
 	

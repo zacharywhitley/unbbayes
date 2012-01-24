@@ -6,7 +6,7 @@ import java.util.ResourceBundle;
 
 import unbbayes.controller.INetworkMediator;
 import unbbayes.controller.mebn.IMEBNMediator;
-import unbbayes.gui.NetworkWindow;
+import unbbayes.io.log.ISSBNLogManager;
 import unbbayes.io.log.IdentationLevel;
 import unbbayes.prs.INode;
 import unbbayes.prs.exception.InvalidParentException;
@@ -24,7 +24,6 @@ import unbbayes.prs.mebn.ssbn.BuilderStructureImpl;
 import unbbayes.prs.mebn.ssbn.IBuilderLocalDistribution;
 import unbbayes.prs.mebn.ssbn.IBuilderStructure;
 import unbbayes.prs.mebn.ssbn.IMediatorAwareSSBNGenerator;
-import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.Parameters;
@@ -49,6 +48,8 @@ import unbbayes.prs.mebn.ssbn.util.SSBNDebugInformationUtil;
  */
 
 public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
+	
+	private boolean isLogEnabled = true;
 	
 	private Parameters parameters; 
 	
@@ -90,72 +91,86 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 			ssbn.setParameters(parameters); 
 		}
 		
+		ISSBNLogManager logManager = null;
+		if (ssbn != null) {
+			logManager = ssbn.getLogManager();
+		}
+		
 		//Step 2: 
 		if(Boolean.valueOf(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_BUILDER))){
 			
-			ssbn.getLogManager().skipLine(); 
-			ssbn.getLogManager().printText(null, false, resourceLog.getString("004_Step2_BuildingGrandBN")); 
-			ssbn.getLogManager().skipLine(); 
+			if (logManager != null) {
+				logManager.skipLine(); 
+				logManager.printText(null, false, resourceLog.getString("004_Step2_BuildingGrandBN")); 
+				logManager.skipLine(); 
+			}
 			
 			buildStructure(ssbn); 
 			
-			ssbn.getLogManager().printText(null, false, resourceLog.getString("010_StepFinished")); 
+			if (logManager != null) {
+				logManager.printText(null, false, resourceLog.getString("010_StepFinished")); 
+				logManager.skipLine(); 
+				logManager.printBox2Bar(); 
+				logManager.printBox2("List of nodes: "); 
+				printSimpleSSBNNodeList(ssbn); 
+				logManager.printBox2Bar(); 
+				logManager.skipLine(); 
+				logManager.printSectionSeparation(); 
+			}
 			
-			ssbn.getLogManager().skipLine(); 
-			ssbn.getLogManager().printBox2Bar(); 
-			ssbn.getLogManager().printBox2("List of nodes: "); 
-			printSimpleSSBNNodeList(ssbn); 
-			ssbn.getLogManager().printBox2Bar(); 
-			
-			ssbn.getLogManager().skipLine(); 
-			ssbn.getLogManager().printSectionSeparation(); 
 		}
 		
 		//Step 3: 
 		if(Boolean.valueOf(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_PRUNE))){
 			
-			ssbn.getLogManager().skipLine(); 
-			ssbn.getLogManager().printText(null, false, resourceLog.getString("005_Step3_PruneGrandBN")); 
-			ssbn.getLogManager().skipLine(); 
+			if (logManager != null) {
+				logManager.skipLine();
+				logManager.printText(null, false, resourceLog.getString("005_Step3_PruneGrandBN")); 
+				logManager.skipLine(); 
+			}
 			
 			pruneStruture(ssbn); 
 			
-			ssbn.getLogManager().printText(null, false, resourceLog.getString("010_StepFinished")); 
-			
-			ssbn.getLogManager().skipLine(); 
-			ssbn.getLogManager().printBox2Bar(); 
-			ssbn.getLogManager().printBox2("List of nodes: "); 
-			printSimpleSSBNNodeList(ssbn); 
-			ssbn.getLogManager().printBox2Bar(); 
-
-			ssbn.getLogManager().skipLine(); 
-			ssbn.getLogManager().printSectionSeparation(); 
+			if (logManager != null) {
+				logManager.printText(null, false, resourceLog.getString("010_StepFinished")); 
+				logManager.skipLine(); 
+				logManager.printBox2Bar(); 
+				logManager.printBox2("List of nodes: "); 
+				printSimpleSSBNNodeList(ssbn); 
+				logManager.printBox2Bar(); 
+				logManager.skipLine(); 
+				logManager.printSectionSeparation(); 
+			}
 		}
 		
 		//Step 4: 
 		if(Boolean.valueOf(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION))){
 			
-			ssbn.getLogManager().skipLine(); 
-			ssbn.getLogManager().printText(null, false, resourceLog.getString("006_Step4_BuildCPT")); 
-			ssbn.getLogManager().skipLine(); 
+			if (logManager != null) {
+				logManager.skipLine();
+				logManager.printText(null, false, resourceLog.getString("006_Step4_BuildCPT")); 
+				logManager.skipLine(); 
+			}
 			
 			buildLocalDistribution(ssbn);
-			ssbn.getLogManager().printText(null, false, resourceLog.getString("010_StepFinished")); 
-			
-			ssbn.getLogManager().skipLine(); 
-			ssbn.getLogManager().printSectionSeparation();
+			if (logManager != null) {
+				logManager.printText(null, false, resourceLog.getString("010_StepFinished")); 
+				logManager.skipLine(); 
+				logManager.printSectionSeparation();
+			}
 		}
 		
-		long time1 = System.currentTimeMillis(); 
-		long deltaTime = time1 - time0; 
-
-		SSBNDebugInformationUtil.printAndSaveCurrentNetwork(ssbn); 
 		
-		ssbn.getLogManager().printBox1Bar(); 
-		ssbn.getLogManager().printBox1(resourceLog.getString("007_ExecutionSucces")); 
-		ssbn.getLogManager().printBox1(resourceLog.getString("009_Time") + ": " + deltaTime + " ms"); 
-		ssbn.getLogManager().printBox1Bar(); 
-		ssbn.getLogManager().skipLine(); 
+		if (logManager != null) {
+			long time1 = System.currentTimeMillis(); 
+			long deltaTime = time1 - time0; 
+			SSBNDebugInformationUtil.printAndSaveCurrentNetwork(ssbn); 
+			logManager.printBox1Bar();
+			logManager.printBox1(resourceLog.getString("007_ExecutionSucces")); 
+			logManager.printBox1(resourceLog.getString("009_Time") + ": " + deltaTime + " ms"); 
+			logManager.printBox1Bar(); 
+			logManager.skipLine(); 
+		}
 		
 		this.cleanUpSSBN(ssbn);
 		
@@ -202,15 +217,18 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 	}
 
 	private void printSimpleSSBNNodeList(SSBN ssbn) {
-		for(SimpleSSBNNode node: ssbn.getSimpleSsbnNodeList()){
-			String parentIdList = " ";
-			for(INode nodeParent: node.getParentNodes()){
-			      parentIdList+= ((SimpleSSBNNode)nodeParent).getId() + " "; 
+		ISSBNLogManager logManager = ssbn.getLogManager();
+		if (logManager != null) {
+			for(SimpleSSBNNode node: ssbn.getSimpleSsbnNodeList()){
+				String parentIdList = " ";
+				for(INode nodeParent: node.getParentNodes()){
+					parentIdList+= ((SimpleSSBNNode)nodeParent).getId() + " "; 
+				}
+				logManager.printBox2(
+						"   - " + node.toString() + " Parents = [" + parentIdList +"]");
 			}
-			ssbn.getLogManager().printBox2(
-					"   - " + node.toString() + " Parents = [" + parentIdList +"]");
+			logManager.appendln("");
 		}
-		ssbn.getLogManager().appendln("");
 	}
 	
 	//Initialization
@@ -218,24 +236,30 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 	private SSBN initialization(List<Query> queryList, KnowledgeBase knowledgeBase){
 		
 		SSBN ssbn = new SSBN(); 
+		if (!this.isLogEnabled()) {
+			ssbn.setLogManager(null);
+		}
 		
 		MultiEntityBayesianNetwork mebn = null; 
 
 		//log
-		ssbn.getLogManager().printBox1Bar(); 
-		ssbn.getLogManager().printBox1(resourceLog.getString("001_Title")); 
-		ssbn.getLogManager().printBox1("Queries:"); 
-		for(int i = 0; i < queryList.size(); i++){
-			ssbn.getLogManager().printBox1("    (" + i + ") " + queryList.get(i).toString()); 
+		ISSBNLogManager logManager = ssbn.getLogManager();
+		if (logManager != null) {
+			logManager.printBox1Bar(); 
+			logManager.printBox1(resourceLog.getString("001_Title")); 
+			logManager.printBox1("Queries:"); 
+			for(int i = 0; i < queryList.size(); i++){
+				logManager.printBox1("    (" + i + ") " + queryList.get(i).toString()); 
+			}
+			logManager.printBox1(resourceLog.getString("002_Algorithm") + ": " + 
+					resourceLog.getString("002_001_LaskeyAlgorithm")); 
+			logManager.printBox1Bar(); 
+			
+			logManager.skipLine(); 
+			logManager.printText(null, false, resourceLog.getString("003_Step1_Initialization")); 
+			logManager.skipLine(); 
+			
 		}
-		ssbn.getLogManager().printBox1(resourceLog.getString("002_Algorithm") + ": " + 
-				                       resourceLog.getString("002_001_LaskeyAlgorithm")); 
-		ssbn.getLogManager().printBox1Bar(); 
-		
-		ssbn.getLogManager().skipLine(); 
-		ssbn.getLogManager().printText(null, false, resourceLog.getString("003_Step1_Initialization")); 
-		ssbn.getLogManager().skipLine(); 
-		
 		ssbn.setKnowledgeBase(knowledgeBase); 
 		
 		//We assume that all the queries is referent to the same MEBN
@@ -247,9 +271,10 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 		
 		//Add queries to the list of nodes
 		IdentationLevel in1 = new IdentationLevel(in); 
-		ssbn.getLogManager().printText(in1, true, 
+		if (logManager != null) {
+			logManager.printText(in1, true, 
 				resourceLog.getString("011_BuildingSSBNForQueries")); 
-		
+		}
 		for(Query query: queryList){
 			SimpleSSBNNode ssbnNode = SimpleSSBNNode.getInstance(query.getResidentNode()); 
 			query.setSSBNNode(ssbnNode); 
@@ -262,26 +287,30 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 			ssbn.addSSBNNodeIfItDontAdded(ssbnNode);
 			ssbn.addQueryToTheQueryList(query); 
 			
-			ssbn.getLogManager().printText(in1, false, " - " + ssbnNode); 
-			
+			if (logManager != null) {
+				logManager.printText(in1, false, " - " + ssbnNode); 
+			}
 			                                                                    
 		}
 		
-		ssbn.getLogManager().skipLine(); 
-		
+		if (logManager != null) {
+			logManager.skipLine(); 
+		}
 		//Add findings to the list of nodes
 		
 		if(addFindings){
 			in1 = new IdentationLevel(in); 
-			ssbn.getLogManager().printText(in1, true, 
+			if (logManager != null) {
+				logManager.printText(in1, true, 
 					resourceLog.getString("012_BuildingSSBNForFindings")); 
-
+			}
 			for(MFrag mFrag: mebn.getMFragList()){
 				for(ResidentNode residentNode: mFrag.getResidentNodeList()){
 					for(RandomVariableFinding finding: residentNode.getRandomVariableFindingList()){
 						
-						ssbn.getLogManager().printText(in1, false, " - " + finding); 
-						
+						if (logManager != null) {
+							logManager.printText(in1, false, " - " + finding); 
+						}
 						ObjectEntityInstance arguments[] = finding.getArguments(); 
 						List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
 						for(int i = 0; i < arguments.length ; i++){
@@ -306,12 +335,12 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 			}
 		}
 		
-		ssbn.getLogManager().skipLine(); 
-		ssbn.getLogManager().printText(null, false, resourceLog.getString("010_StepFinished")); 
-		
-		ssbn.getLogManager().skipLine(); 
-		ssbn.getLogManager().printSectionSeparation(); 
-		
+		if (logManager != null) {
+			logManager.skipLine(); 
+			logManager.printText(null, false, resourceLog.getString("010_StepFinished")); 
+			logManager.skipLine(); 
+			logManager.printSectionSeparation(); 
+		}
 		return ssbn; 
 		
 	}
@@ -368,6 +397,22 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 	 */
 	public void setMediator(INetworkMediator mediator) {
 		this.mediator = mediator;
+	}
+
+
+	/**
+	 * @return the isLogEnabled
+	 */
+	public boolean isLogEnabled() {
+		return isLogEnabled;
+	}
+
+
+	/**
+	 * @param isLogEnabled the isLogEnabled to set
+	 */
+	public void setLogEnabled(boolean isLogEnabled) {
+		this.isLogEnabled = isLogEnabled;
 	}
 	
 }
