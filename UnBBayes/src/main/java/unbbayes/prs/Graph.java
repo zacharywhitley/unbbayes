@@ -20,59 +20,54 @@
  */
 package unbbayes.prs;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /** 
- * Interface for a graph building of Node's and Edge's
+ * Interface for a graph constituting of Nodes and Edges
  */
-
 public interface Graph {
 
 		/**
-		 *  Retorna os edgeList do grafo.
+		 *  This is a list of edges in this graph
 		 *
-		 *@return    edgeList do grafo.
+		 *@return    edgeList .
 		 */
 		public List<Edge> getEdges();
 
 		/**
-		 *  Retorna os n�s do grafo.
-		 *
-		 *@return    n�s do grafo.
-		 * 
-		 * @todo Eliminar esse metodo! eh utilizado na classe NetWindow
+		 *  The nodes in this graph.
+		 *@return   nodes
 		 */
-		public ArrayList<Node> getNodes();
+		public List<Node> getNodes();
 
 		/**
-		 *  Returna o n�mero de vari�veis da rede.
-		 *
-		 *@return    n�mero de vari�veis da rede.
+		 *  This is the quantity of nodes in this graph.
+		 *  @see List#size()
+		 *@return    quantity of nodes in this graph.
 		 */
 		public int getNodeCount();
 
 
 		/**
-		 *  Retira do grafo o arco especificado.
+		 *  Removes the specified edge from graph
 		 *
-		 *@param  arco  arco a ser retirado.
+		 *@param edge : edge/arc to be removed.
 		 */
-		public void removeEdge(Edge arco) ;
+		public void removeEdge(Edge edge) ;
 
 		/**
-		 *  Adiciona novo n� ao grafo.
-		 *
-		 *@param  no  n� a ser inserido.
+		 *  Add node to graph.
+		 *  This method is supposedly safer than calling
+		 *  {@link #getNodes()} and then {@link List#add(Object)}.
+		 * @param  node  : node to be inserted.
 		 */
-		public void addNode(Node no);
+		public void addNode(Node node);
 
 		/**
-		 *  Adiciona o arco � rede.
-		 *
-		 *@param  arco  arco a ser inserido.
+		 *  Inserts edge/arc to graph
+		 *@param  arc : edge/arc to be inserted
 		 */
-		public void addEdge(Edge arco) throws Exception;
+		public void addEdge(Edge arc) throws Exception;
 
 		/**
 		 *  Remove n� do grafo.
@@ -82,12 +77,50 @@ public interface Graph {
 		public void removeNode(Node elemento);
 
 		/**
-		 *  Verifica exist�ncia de determinado arco.
-		 *
-		 *@param  no1  n� origem.
-		 *@param  no2  n� destino.
-		 *@return      posi��o do arco no vetor ou -1 caso n�o exista tal arco.
+		 * Checks whether an arc/edge connecting two nodes exists.
+		 * @param  node1 : origin.
+		 * @param  node2  : destination.
+		 * @return position of the inserted arc in {@link #getEdges()}, or a negative
+		 * value if edge is not present.
 		 */
-		public int hasEdge(Node no1, Node no2);
+		public int hasEdge(Node node1, Node node2);
+		
+		/**
+		 * This method can be used to represent a generic attribute.
+		 * @param name
+		 * @param value
+		 * @see #removeProperty(String)
+		 * @see #clearProperty()
+		 * @see #getProperty(String)
+		 */
+		public void addProperty(String name, Object value);
+		
+		/**
+		 * Remove a generic property by name.
+		 * @param name
+		 * @see #addProperty(String, Object)
+		 * @see #clearProperty()
+		 * @see #getProperty(String)
+		 */
+		public void removeProperty(String name);
+		
+		/**
+		 * Clear all the generic attributes.
+		 * @see #addProperty(String, Object)
+		 * @see #removeProperty(String)
+		 * @see #getProperty(String)
+		 */
+		public void clearProperty();
+		
+		/**
+		 * This method can be used to represent a generic attribute.
+		 * The behavior when name == null is unspecified.
+		 * @param name
+		 * @return
+		 * @see #addProperty(String, Object)
+		 * @see #removeProperty(String)
+		 * @see #clearProperty()
+		 */
+		public Object getProperty(String name);
 
 }

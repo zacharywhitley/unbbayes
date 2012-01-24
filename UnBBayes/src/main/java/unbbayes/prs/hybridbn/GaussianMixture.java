@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import unbbayes.controller.INetworkMediator;
 import unbbayes.io.XMLBIFIO;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
@@ -54,6 +55,8 @@ public class GaussianMixture implements IInferenceAlgorithm {
 	protected List<Node> nodeOrderQueue;
 	private List<Node> discreteNodeList;
 	private List<Node> continuousNodeList;
+	
+	private INetworkMediator mediator;
 	
 	private List<IInferenceAlgorithmListener> inferenceAlgorithmListeners = new ArrayList<IInferenceAlgorithmListener>();
   	
@@ -487,6 +490,20 @@ public class GaussianMixture implements IInferenceAlgorithm {
 		} else if (this.getInferenceAlgorithmListeners() != null) {
 			this.getInferenceAlgorithmListeners().remove(listener);
 		}
+	}
+
+	/**
+	 * @return the mediator
+	 */
+	public INetworkMediator getMediator() {
+		return mediator;
+	}
+
+	/**
+	 * @param mediator the mediator to set
+	 */
+	public void setMediator(INetworkMediator mediator) {
+		this.mediator = mediator;
 	}
 	
 }

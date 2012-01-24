@@ -547,17 +547,19 @@ public abstract class Node implements Serializable,
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	public boolean equals(Object obj) {
-		
+		// immediate cases
 		if (obj == this) {
 			return true;
+		} else if (obj == null) {
+			return false;
 		}
+//		
+//		if((obj != null)&&(obj instanceof Node)){
+//		   Node node = (Node) obj;
+//		   return (node.name.equals(this.name));
+//		}
 		
-		if((obj != null)&&(obj instanceof Node)){
-		   Node node = (Node) obj;
-		   return (node.name.equals(this.name));
-		}
-		
-		return false; //obj == null && this != null 
+		return ((obj instanceof Node) && ((Node) obj).name.equals(this.name)); //obj == null && this != null 
 		
 	}
 

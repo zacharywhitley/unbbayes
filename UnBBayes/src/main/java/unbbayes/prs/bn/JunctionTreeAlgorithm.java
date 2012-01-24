@@ -65,6 +65,7 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 
 	private List<IInferenceAlgorithmListener> inferenceAlgorithmListeners = new ArrayList<IInferenceAlgorithmListener>();
   	
+
 	/**
 	 * Default constructor for plugin support
 	 */
@@ -997,6 +998,18 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		} else if (this.getInferenceAlgorithmListeners() != null) {
 			this.getInferenceAlgorithmListeners().remove(listener);
 		}
+	}
+
+	/**
+	 * @param mediator the mediator to set
+	 */
+	public void setMediator(INetworkMediator mediator) {
+		if (!mediator.equals(this.getMediator())) {
+			throw new IllegalArgumentException("Change the mediator from the option panel instead of from algorithm");
+		}
+//		if (this.getOptionPanel() != null) {
+//			this.getOptionPanel().setMediator(mediator);
+//		}
 	}
 
 	

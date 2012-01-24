@@ -94,7 +94,7 @@ public class GraphPane extends UCanvas implements MouseListener,
 	// TODO Substituir essa lista de n�s por generics como est� acima com a
 	// lista de Edge. Fazer isso em todo lugar que for necess�rio, at� que se
 	// possa exluir o NodeList
-	public ArrayList<Node> nodeList;
+	public List<Node> nodeList;
 
 	public List<Node> selectedGroup;
 

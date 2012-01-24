@@ -21,6 +21,7 @@
 package unbbayes.gui;
 
 import java.awt.Component;
+import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -57,6 +58,7 @@ import unbbayes.controller.IconController;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.util.ArrayMap;
+import unbbayes.util.Debug;
 
 /**
  * @author Mário Henrique Paes Vieira
@@ -93,10 +95,14 @@ public class HierarchicTree extends JTree implements DropTargetListener,
 		setCellRenderer(new HierarchicTreeCellRenderer());
 
 		// initializes the DropTarget and DragSource.
-		dropTarget = new DropTarget(this, this);
-		dragSource = new DragSource();
-		dragSource.createDefaultDragGestureRecognizer(this,
-				DnDConstants.ACTION_MOVE, this);
+		try {
+			dropTarget = new DropTarget(this, this);
+			dragSource = new DragSource();
+			dragSource.createDefaultDragGestureRecognizer(this,
+					DnDConstants.ACTION_MOVE, this);
+		} catch (HeadlessException e) {
+			Debug.println(getClass(), e.getMessage() + ": no GUI was found.", e);
+		}
 
 		// initializes other features
 		this.setRootVisible(false);

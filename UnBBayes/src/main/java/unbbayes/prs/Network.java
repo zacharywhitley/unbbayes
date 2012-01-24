@@ -35,6 +35,8 @@ import unbbayes.util.Debug;
 
 public class Network implements Graph{
 
+	private Map<String, Object> properties = new HashMap<String, Object>();
+	
 	protected String id;
 	protected String name;
 	
@@ -359,6 +361,52 @@ public class Network implements Graph{
 	 */
 	public void setNodeIndexes(Map<String, Integer> nodeIndexes) {
 		this.nodeIndexes = nodeIndexes;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.Graph#addProperty(java.lang.String, java.lang.Object)
+	 */
+	public void addProperty(String name, Object value) {
+		this.getProperties().put(name, value);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.Graph#removeProperty(java.lang.String)
+	 */
+	public void removeProperty(String name) {
+		this.getProperties().remove(name);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.Graph#clearProperty()
+	 */
+	public void clearProperty() {
+		this.getProperties().clear();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.Graph#getProperty(java.lang.String)
+	 */
+	public Object getProperty(String name) {
+		return this.getProperties().get(name);
+	}
+
+	/**
+	 * @return the properties
+	 */
+	public Map<String, Object> getProperties() {
+		return properties;
+	}
+
+	/**
+	 * @param properties the properties to set
+	 */
+	public void setProperties(Map<String, Object> properties) {
+		this.properties = properties;
 	}
 
 }

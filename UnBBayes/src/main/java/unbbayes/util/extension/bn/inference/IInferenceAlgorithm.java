@@ -1,6 +1,7 @@
 
 package unbbayes.util.extension.bn.inference;
 
+import unbbayes.controller.INetworkMediator;
 import unbbayes.prs.Graph;
 
 /**
@@ -76,4 +77,16 @@ public interface IInferenceAlgorithm {
 	 * @param listener : if set to null, the implementation should clear the listeners.
 	 */
 	public void removeInferencceAlgorithmListener(IInferenceAlgorithmListener listener);
+	
+	/**
+	 * This is a link to main controller.
+	 * @param mediator
+	 */
+	public void setMediator(INetworkMediator mediator);
+	
+	/**
+	 * This is a link to main controller.
+	 * @return
+	 */
+	public INetworkMediator getMediator();
 }

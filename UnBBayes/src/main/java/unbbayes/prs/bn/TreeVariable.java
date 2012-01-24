@@ -174,7 +174,7 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
      *
      *@return the clique associated to this variable.
      */
-    protected IRandomVariable getAssociatedClique() {
+    public IRandomVariable getAssociatedClique() {
         return this.cliqueAssociado;
     }
 
@@ -183,7 +183,7 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
      *
      *@param  clique the clique to associate to this variable.
      */
-    protected void setAssociatedClique(IRandomVariable clique) {
+    public void setAssociatedClique(IRandomVariable clique) {
         this.cliqueAssociado = clique;
     }
 	
