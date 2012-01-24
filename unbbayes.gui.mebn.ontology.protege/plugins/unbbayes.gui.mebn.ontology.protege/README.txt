@@ -29,7 +29,7 @@ ATTENTION
 ------------------------------
 Some plugins use other plugins. In such case, you must install all dependencies too.
 
-- unbbayes.prs.mebn-1.6.0
+- unbbayes.prs.mebn-1.13-10
 	
 AVALILABILITY
 ------------------------------
