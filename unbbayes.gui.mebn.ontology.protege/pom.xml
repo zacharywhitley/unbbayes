@@ -174,7 +174,7 @@
 			<dependency>
 				<groupId>br.unb.cic</groupId>
 				<artifactId>unbbayes.prs.mebn</artifactId>
-				<version>1.13.10</version>
+				<version>1.13.11</version>
 			</dependency>
 			
 			<!-- Protege 4.1 (it handles OWL2) -->
