@@ -3,8 +3,9 @@
  */
 package unbbayes.prs.bn.inference.extension;
 
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.Map;
+import java.util.TreeMap;
 
 import unbbayes.controller.INetworkMediator;
 import unbbayes.prs.Graph;
@@ -12,23 +13,42 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener;
 
 /**
+ * The pseudocode implemented by this algorithm is:<br/>
+ * <br/> Assume {A}
+ * <br/> Choose var V and value v
+ * <br/> 			P(V|A)
+ * <br/> Calc w = {E(S|A,V=vj); E(S|A,V!=vj)} (calculate if your A is consistent to what you bet previously - you may be accidentally assuming things that you believe that will not happen, given previous bets)
+ * <br/> Calc limits for v+|A -> L+; v-|A -> L-
+ * <br/> User selects P(vi) in [Li-, Li+]
+ * <br/> Update P
+ * <br/> Update Q
+ * <br/> Update E(assets) (networth)
+ * <br/> 			Person i, value j
  * @author Shou Matsumoto
  *
  */
 public class AssetAwareInferenceAlgorithm implements IInferenceAlgorithm {
 
+	private Comparator<Clique> cliqueComparator = new Comparator<Clique>() {
+		public int compare(Clique c1, Clique c2) {
+			return c1.toString().compareTo(c2.toString());
+		}
+	};
+	
 	private IInferenceAlgorithm delegator;
+	
 	
 	/** 
 	 * Name of the property in {@link Graph#getProperty(String)} which manages current assets. 
-	 * The content is a Map<Clique, PotentialTable>, which maps a node to its clique-wise asset table (an asset table for all nodes in the same clique). 
+	 * The content is a Map<Clique, PotentialTable>, which maps a node to its clique-wise asset table (an asset table for all nodes in the same clique).
 	 */
-	public static final String CURRENT_ASSETS_PROPERTY = AssetAwareInferenceAlgorithm.class + ".currentAssetMap";
+	public static final String CURRENT_ASSETS_PROPERTY = AssetAwareInferenceAlgorithm.class.getName() + ".currentAssetMap";
 
 //	/** 
 //	 * Name of the property in {@link Graph#getProperty(String)} which manages assets prior to {@link #propagate()}. 
@@ -41,13 +61,13 @@ public class AssetAwareInferenceAlgorithm implements IInferenceAlgorithm {
 	 * Name of the property in {@link Graph#getProperty(String)} which manages assets prior to {@link #propagate()}. 
 	 * The content is a Map<Clique, PotentialTable>, which maps a node to its clique-wise probability table (probabilities for all nodes in the same clique).
 	 */
-	public static final String LAST_PROBABILITY_PROPERTY = AssetAwareInferenceAlgorithm.class + ".lastProbabilityMap";
+	public static final String LAST_PROBABILITY_PROPERTY = AssetAwareInferenceAlgorithm.class.getName() + ".lastProbabilityMap";
 	
 	/** 
 	 * Name of the property in {@link Graph#getProperty(String)} which manages assets during first call of {@link #run()}. 
 	 * The content is a Map<Clique, PotentialTable>, which maps a node to its clique-wise asset table (an asset table for all nodes in the same clique). 
 	 */
-	public static final String INITIAL_ASSETS_PROPERTY = AssetAwareInferenceAlgorithm.class + ".initialAssetMap";
+	public static final String INITIAL_ASSETS_PROPERTY = AssetAwareInferenceAlgorithm.class.getName() + ".initialAssetMap";
 	
 	private float defaultInitialAssetQuantity = 1000.0f;
 	
@@ -65,7 +85,7 @@ public class AssetAwareInferenceAlgorithm implements IInferenceAlgorithm {
 		return ret;
 	}
 	
-
+	
 	/**
 	 *  Resets the assets given information in {@link #getNetwork()} and {@link Graph#getProperty(String)}.
 	 * See {@link #CURRENT_ASSETS_PROPERTY} for the name of the graph property which manages the information in {@link #getNetwork()}
@@ -101,7 +121,7 @@ public class AssetAwareInferenceAlgorithm implements IInferenceAlgorithm {
 		if (property == null
 				|| ( (property instanceof Map) && ((Map)property).isEmpty() ) ) {
 			// init property
-			property = new HashMap<Clique, PotentialTable>();
+			property = new TreeMap<Clique, PotentialTable>(this.getCliqueComparator());
 			
 			// we only have access to cliques from nodes
 			for (Node node : this.getNetwork().getNodes()) {
@@ -135,7 +155,7 @@ public class AssetAwareInferenceAlgorithm implements IInferenceAlgorithm {
 		// copy content of current assets to initial assets
 		if (property instanceof Map) {
 			Map<Clique, PotentialTable> currentAssets = (Map<Clique, PotentialTable>)property;
-			Map<Clique, PotentialTable> initialAssets = new HashMap<Clique, PotentialTable>();
+			Map<Clique, PotentialTable> initialAssets = new TreeMap<Clique, PotentialTable>(this.getCliqueComparator());
 			
 			// fill initial assets with the content of current assets. Use different objects, so that changes on the current assets will not change the initial assets
 			for (Clique key : currentAssets.keySet()) {
@@ -182,7 +202,7 @@ public class AssetAwareInferenceAlgorithm implements IInferenceAlgorithm {
 			if (currentProbabilities == null || previousProbabilities == null || assetTable == null
 					|| ( assetTable.tableSize() != currentProbabilities.tableSize() )
 					|| ( assetTable.tableSize() != previousProbabilities.tableSize() )) {
-				throw new IllegalStateException("The contents of properties \"" + LAST_PROBABILITY_PROPERTY + "\" (which is a potential table) and \"" 
+				throw new IllegalStateException("The contents of properties \n\"" + LAST_PROBABILITY_PROPERTY + "\" (which is a potential table) and \n\"" 
 						+ CURRENT_ASSETS_PROPERTY + "\" (which is an asset table) in " + this.getNetwork() + " are not synchronized by the clique " + clique);
 			}
 			
@@ -206,7 +226,7 @@ public class AssetAwareInferenceAlgorithm implements IInferenceAlgorithm {
 			throw new NullPointerException(this.getClass() + "#updateLastProbabilityPropery() was called without setting the network to a non-null value." );
 		}
 		// property value to set
-		Map<Clique, PotentialTable> property = new HashMap<Clique, PotentialTable>();
+		Map<Clique, PotentialTable> property = new TreeMap<Clique, PotentialTable>(this.getCliqueComparator());
 		
 		// we only have access to clique from nodes
 		for (Node node : this.getNetwork().getNodes()) {
@@ -286,8 +306,48 @@ public class AssetAwareInferenceAlgorithm implements IInferenceAlgorithm {
 		this.updateLastProbabilityPropery();
 		this.getDelegator().propagate();
 		this.updateAssets();
+		this.printAssets();
 	}
 	
+	
+	public void printAssets() {
+		
+		Graph g = this.getNetwork();
+		if (g != null && (g instanceof SingleEntityNetwork)) {
+			SingleEntityNetwork singleEntityNetwork = (SingleEntityNetwork) g;
+			
+			
+			// extract assets
+			Object prop = this.getNetwork().getProperty(CURRENT_ASSETS_PROPERTY);
+			if (prop == null || !(prop instanceof Map)) {
+				throw new IllegalStateException("The property " + CURRENT_ASSETS_PROPERTY + " of " 
+						+ singleEntityNetwork 
+						+ " is neither set nor it is not a Map<Clique, PotentialTable>).");
+			}
+			Map<Clique, PotentialTable> currentAssetsMap = (Map<Clique, PotentialTable>) prop;
+
+			// initialize message to print
+			String explMessage = "\n \n Assets: \n \n";
+			
+			// print assets for each node in each clique
+			for (Clique clique : currentAssetsMap.keySet()) {
+				explMessage += "Clique {" + clique + "}:\n \t \t";
+				PotentialTable assetTable = currentAssetsMap.get(clique);
+				PotentialTable probTable = clique.getProbabilityFunction();
+				for (int i = 0; i < assetTable.tableSize(); i++) {
+					explMessage +=  
+//						assetTable.getVariableAt(varIndex) 
+//						+ " = " + assetTable.getVariableAt(varIndex).getStateAt(stateIndex++) + " : "
+//						+ 
+						assetTable.getValue(i) + " (" + probTable.getValue(i)*100 + "%)" + "\n \t \t";
+				}
+				explMessage += "\n\n";
+			}
+			
+			singleEntityNetwork.getLogManager().append(explMessage);
+		}
+	}
+
 	/* (non-Javadoc)
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#addInferencceAlgorithmListener(unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener)
 	 */
@@ -351,6 +411,32 @@ public class AssetAwareInferenceAlgorithm implements IInferenceAlgorithm {
 	 */
 	public void setDefaultInitialAssetQuantity(float defaultInitialAssetQuantity) {
 		this.defaultInitialAssetQuantity = defaultInitialAssetQuantity;
+	}
+
+	/**
+	 * This {@link Comparator} comparates cliques within the properties {@link #CURRENT_ASSETS_PROPERTY},
+	 * {@link #LAST_PROBABILITY_PROPERTY}, and {@link #INITIAL_ASSETS_PROPERTY}
+	 * of {@link #getNetwork()} {@link Graph#getProperty(String)}.
+	 * Because those properties are Map<Clique, PotentialTable> (particularly, a {@link TreeMap}),
+	 * a {@link Comparator} is used to determine whether two objects are representing the same
+	 * clique.
+	 * @return the cliqueComparator
+	 */
+	public Comparator<Clique> getCliqueComparator() {
+		return cliqueComparator;
+	}
+
+	/**
+	 * This {@link Comparator} comparates cliques within the properties {@link #CURRENT_ASSETS_PROPERTY},
+	 * {@link #LAST_PROBABILITY_PROPERTY}, and {@link #INITIAL_ASSETS_PROPERTY}
+	 * of {@link #getNetwork()} {@link Graph#getProperty(String)}.
+	 * Because those properties are Map<Clique, PotentialTable> (particularly, a {@link TreeMap}),
+	 * a {@link Comparator} is used to determine whether two objects are representing the same
+	 * clique.
+	 * @param cliqueComparator the cliqueComparator to set
+	 */
+	public void setCliqueComparator(Comparator<Clique> cliqueComparator) {
+		this.cliqueComparator = cliqueComparator;
 	}
 
 }
