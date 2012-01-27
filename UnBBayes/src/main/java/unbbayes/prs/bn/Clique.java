@@ -315,13 +315,12 @@ public class Clique implements IRandomVariable, java.io.Serializable {
     }
 
     /**
-     *  Retorna a tabela de potencial.
-     *
-     *@return    tabela de potencial.
+     *@return  the potential table
      */
     public PotentialTable getProbabilityFunction() {
         return potentialTable;
     }
+    
 
     /**
      *  Retorna a tabela de utilidade associada ao clique.

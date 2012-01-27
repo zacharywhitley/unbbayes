@@ -11,6 +11,8 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
 
+import javax.swing.JPanel;
+
 import unbbayes.controller.INetworkMediator;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
@@ -347,6 +349,20 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 //			this.triangularize(this.getNet());		
 //			
 //			this.getNet().compileJT(this.getJunctionTreeBuilder().buildJunctionTree(this.getNet()));
+			
+			// TODO migrate these GUI code to the plugin infrastructure
+			if (this.getMediator() != null) {
+				JPanel component = this.getMediator().getScreen().getNetWindowCompilation();
+				if (component == null) {
+					throw new NullPointerException("No compilation pane for " + this.getName() + " could be obtained.");
+				}
+				// avoid duplicate
+				this.getMediator().getScreen().getContentPane().remove(component);
+				this.getMediator().getScreen().getCardLayout().removeLayoutComponent(component);
+				
+				this.getMediator().getScreen().getContentPane().add(component, this.getMediator().getScreen().PN_PANE_PN_COMPILATION_PANE);
+				this.getMediator().getScreen().getCardLayout().addLayoutComponent(component, this.getMediator().getScreen().PN_PANE_PN_COMPILATION_PANE);
+			}
 		} catch (Exception e) {
 			throw new IllegalStateException(e);
 		}
@@ -793,6 +809,116 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
 			listener.onAfterPropagate(this);
 		}
+	}
+
+	/**
+	 * Add a virtual node with 2 states.
+	 * The new virtual node is just a child of parentNode (which must have 2 states as well).
+	 * This method is based on page 9 of the paper "Soft Evidential Update for Probabilistic Multiagent Systems"
+	 * @author Alexandre Martins
+	 * TODO incorporate in {@link #propagate()} and allow multiple states.
+	 */
+	public void addVirtualNode(SingleEntityNetwork net, Node parentNode, float evidenceValueState0, float evidenceValueState1, int evidenceStateIndex) throws Exception {
+		//no virtual, para propagacao da evidencia incerta
+		ProbabilisticNode virtualNode = new ProbabilisticNode();
+		//V de virtual
+		virtualNode.setName("V"+parentNode.getName());
+		virtualNode.setDescription("Virtual "+parentNode.getDescription());
+		//adiciono os mesmos estados presentes no no pai
+		virtualNode.appendState(parentNode.getStateAt(0) );
+		virtualNode.appendState(parentNode.getStateAt(1));
+		net.addNode(virtualNode);
+		
+		//crio a tabela de potencial do no virtual
+		PotentialTable virtualNodeCPT = virtualNode.getProbabilityFunction();
+		virtualNodeCPT.addVariable(virtualNode);
+		net.addEdge(new Edge(parentNode,virtualNode));
+		//a tabela de variaveis e setada com valores 1, visto que ela nao sera necessaria durante o processo,
+		//pois a tabela de potencial do clique virtual sera calculada diretamente pelos valores fornecidos
+		virtualNodeCPT.setValue(0, 1);
+		virtualNodeCPT.setValue(1, 1);
+		virtualNodeCPT.setValue(2, 1);
+		virtualNodeCPT.setValue(3, 1);
+		
+		//crio o clique virtual
+		Clique auxClique = new Clique();
+		auxClique.getNodes().add(virtualNode);
+		auxClique.getNodes().add(parentNode);
+		auxClique.getProbabilityFunction().addVariable(virtualNode);
+		auxClique.getProbabilityFunction().addVariable(parentNode);
+		
+		//a tabela de variaveis do clique virtual contem as variaveis na seguinte sequencia: noPai,noV
+		//como apenas a variavel noV recebera o finding, interessam, a cada finding, apenas as posicoes 0 e 2(em caso do finding for para o estado 0) 
+		//ou as posicoes 1 e 3(em caso do finding for para o estado 1). As posicoes que nao interessam sao setadas da mesma forma que as que interessam, 
+		//porem elas serao zeradas apos o finging, nao influenciando em nada
+		auxClique.getProbabilityFunction().setValue(0, evidenceValueState0);
+		auxClique.getProbabilityFunction().setValue(1, evidenceValueState0);
+		auxClique.getProbabilityFunction().setValue(2, evidenceValueState1);
+		auxClique.getProbabilityFunction().setValue(3, evidenceValueState1);
+		
+		IJunctionTree junctionTree = net.getJunctionTree();
+		
+		junctionTree.getCliques().add(auxClique);
+		
+		//busco o menor clique que contenha o no pai (e que nao contenha o no virtual, ou seja, ele nao seleciona o clique que acabou de ser criado)
+		//para ser utilizado na criacao do separador
+		int smallestSize = Integer.MAX_VALUE;
+		Clique smallestClique = null;
+		Clique clique;
+		for (int c2 = 0; c2 < junctionTree.getCliques().size(); c2++) {
+			clique = (Clique) junctionTree.getCliques().get(c2);
+			if (clique.getNodes().contains(parentNode) && !clique.getNodes().contains(virtualNode) && (clique.getProbabilityFunction().tableSize() < smallestSize)) {
+				smallestClique = clique;
+				smallestSize = auxClique.getProbabilityFunction().tableSize();
+			}
+		}
+		
+		//crio o separador entre o clique pai e o virtual
+		Separator sep = new Separator(smallestClique , auxClique);
+		ArrayList<Node> node = new ArrayList<Node>();
+		node.add(parentNode);
+		sep.setNodes(node);
+		sep.getProbabilityFunction().addVariable(parentNode);
+		//seto os valores para 1
+		sep.getProbabilityFunction().setValue(0, 1f);
+		sep.getProbabilityFunction().setValue(1, 1f);
+		junctionTree.addSeparator(sep);
+
+		//marginalizo a variavel pai do clique que esta associado a ela
+		//o menor clique selecionado acima tambem poderia ser utilizado para essa marginalizacao
+		//nao utilizei o clique associado na criacao do separador pois ele pode ser um separador
+		IRandomVariable parentClique = ((ProbabilisticNode)parentNode).getAssociatedClique();
+		PotentialTable auxTab = (PotentialTable) ((PotentialTable)parentClique.getProbabilityFunction()).clone();
+        int index = auxTab.indexOfVariable(parentNode);
+        int size = parentClique.getProbabilityFunction().variableCount();
+        for (int i = 0; i < size; i++) {
+            if (i != index) {
+            	auxTab.removeVariable(parentClique.getProbabilityFunction().getVariableAt(i));
+            }
+        }
+        //faz o mesmo que a passagem de mensagens entre o clique pai e o virtual durante as fases de coleta e distribui
+        //durante a passagem de mensagem do clique virtual para o clique pai(coleta),a
+        //tab. de potencial do clique pai nao sera alterada,podendo essa etapa ser desconsiderada
+        //atualizo as probabilidades da tabela de potencial do no virtual com os valores q foram marginalizados(distribui)
+        //preferi fazer as fases coleta e distribui nesse momento, economizando na passagem de mensagens pela rede
+        (auxClique.getProbabilityFunction()).opTab(auxTab, PotentialTable.PRODUCT_OPERATOR);
+        int tableSize = auxTab.tableSize();
+        //atualizo as probabilidades da tabela de potencial do separador com os valores q foram marginalizados(distribui)
+        for (int i = 0; i < tableSize; i++) {
+        	sep.getProbabilityFunction().setValue(i, auxTab.getValue(i));
+    	}
+				
+		//necessario para que o novo no seje utilizado no processo de update(metodo updateEvidences)
+		net.resetNodesCopy();
+		//associo o novo no ao novo clique, para posterior busca do clique associado ao no
+		auxClique.getAssociatedProbabilisticNodes().add(virtualNode);
+		//associo o novo clique ao novo no, para fins de marginalizacao
+		virtualNode.setAssociatedClique(auxClique);
+		//inicio a variavel que ira receber os valores da marginalizacao, caso nao seja inicializada, lanca NullPointerException
+		virtualNode.initMarginalList();
+		//adiciona a evidencia no no correspondente
+		virtualNode.addFinding(evidenceStateIndex);
+		
 	}
 
 
