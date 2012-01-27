@@ -75,6 +75,50 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		super();
 		// initialize commands for checkConsistency
 		this.setVerifyConsistencyCommandList(this.initConsistencyCommandList());
+		this.getInferenceAlgorithmListeners().add(new IInferenceAlgorithmListener() {
+			public void onBeforeRun(IInferenceAlgorithm algorithm) {
+				if (algorithm == null) {
+					Debug.println(getClass(), "Algorithm == null");
+					return;
+				}
+				if ((algorithm.getNetwork() != null) && algorithm.getNetwork().getNodes() != null) {
+					for (Node node : algorithm.getNetwork().getNodes()) {
+						if (node.getType() == node.CONTINUOUS_NODE_TYPE) {
+							// TODO use resource file instead
+							throw new IllegalArgumentException(algorithm.getName() + " cannot handle continuous nodes, like \n\n\"" + node
+									+ "\". \n\n Please, go to the Global Options and choose another inference algorithm.");
+						}
+					}
+				}
+			}
+			public void onBeforeReset(IInferenceAlgorithm algorithm) {}
+			public void onBeforePropagate(IInferenceAlgorithm algorithm) {}
+			public void onAfterRun(IInferenceAlgorithm algorithm) {}
+			public void onAfterReset(IInferenceAlgorithm algorithm) {}
+			public void onAfterPropagate(IInferenceAlgorithm algorithm) {
+				if (algorithm == null) {
+					Debug.println(getClass(), "Algorithm == null");
+					return;
+				}
+				if ((algorithm.getNetwork() != null) && (algorithm.getNetwork() instanceof SingleEntityNetwork)) {
+					SingleEntityNetwork network = (SingleEntityNetwork) algorithm.getNetwork();
+					if (network.getJunctionTree() != null) {
+						for (Clique clique : network.getJunctionTree().getCliques()) {
+							try {
+								clique.normalize();
+								for (Node node : clique.getAssociatedProbabilisticNodes()) {
+									if (node instanceof TreeVariable) {
+										((TreeVariable) node).updateMarginal();
+									}
+								}
+							} catch (Exception e) {
+								throw new RuntimeException(e);
+							}
+						}
+					}
+				}
+			}
+		});
 	}
 	
 	/**
@@ -580,7 +624,7 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		}
 	
 		if (nodes.size() > 0) {
-			Node auxNo = weight(nodes); //auxNo: clique de peso m�ｽnimo.
+			Node auxNo = weight(nodes); //auxNo: clique de peso m�ｽ�ｽnimo.
 			net.getNodeEliminationOrder().add(auxNo);
 			if (net.isCreateLog()) {
 				net.getLogManager().append(

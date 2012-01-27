@@ -249,6 +249,10 @@ public abstract class Node implements Serializable,
 	}
 	
 	public void addChild(Node child) throws InvalidParentException{
+		if (child == null) {
+			Debug.println(this.getClass(), "Attempt to insert null child");
+			return;
+		}
 		if (this.children.contains(child)) {
 			Debug.println(this.getClass(), "Attempt to insert duplicate child: " + child);
 			return;

@@ -1002,7 +1002,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 				sb.append('\n' + e.getMessage());
 			}
 			try {
-				verifyConectivity();
+//				verifyConectivity();
 			} catch (Exception e) {
 				erro = true;
 				sb.append('\n' + e.getMessage());

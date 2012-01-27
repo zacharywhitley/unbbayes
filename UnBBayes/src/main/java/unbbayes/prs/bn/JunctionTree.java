@@ -25,6 +25,7 @@ import java.util.List;
 
 import unbbayes.prs.Node;
 import unbbayes.prs.id.UtilityNode;
+import unbbayes.util.Debug;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -169,7 +170,10 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	protected void absorb(Clique clique1, Clique clique2) {
 		PotentialTable sepTab = getSeparator(clique1, clique2).getProbabilityFunction();
 		ArrayList<Node> toDie = SetToolkit.clone(clique2.getNodes());
-		
+		if (sepTab.tableSize() <= 0) {
+			Debug.println(getClass(), clique1 + " and " + clique2 + " are disconnected.");
+			return;
+		}
 		for (int i = 0; i < sepTab.variableCount(); i++) {
 			toDie.remove(sepTab.getVariableAt(i));			
 		}

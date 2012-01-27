@@ -40,10 +40,17 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     private boolean hasLikelihood = false;
 
     /**
+     * @deprecated use {@link #updateMarginal()} instead
+     */
+    protected abstract void marginal();
+    
+    /**
      * This method has to be overwritten in order to 
      * show the correct marginal list in the tree.
      */
-    protected abstract void marginal();
+    public void updateMarginal() {
+    	this.marginal();
+    }
     
     public void initMarginalList() {
     	marginalList = new float[getStatesSize()];
