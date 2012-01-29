@@ -62,6 +62,8 @@ import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.StateLink;
+import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
+import unbbayes.prs.mebn.entity.exception.TypeException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.SearchResult;
 import unbbayes.prs.mebn.ssbn.OVInstance;
@@ -91,7 +93,7 @@ public class PowerLoomKB implements KnowledgeBase {
 	/*
 	 * TODO
 	 * Functions
-	 *	This illustrates another point: A PowerLoom relation is by default “multi-valued”, which in the case of a binary relation means that a single first value can be mapped by the relation to more than one second value. In the present case, our model permits a company entity to have more than one company-name. If a (binary) relation always maps its first argument to exactly one value (i.e., if it it “single-valued”) we can specify it as a function instead of a relation. For example, we can use a function to indicate the number of employees for a company:
+	 *	This illustrates another point: A PowerLoom relation is by default "multi-valued" which in the case of a binary relation means that a single first value can be mapped by the relation to more than one second value. In the present case, our model permits a company entity to have more than one company-name. If a (binary) relation always maps its first argument to exactly one value (i.e., if it it 窶徭ingle-valued窶� we can specify it as a function instead of a relation. For example, we can use a function to indicate the number of employees for a company:
 	 *	
 	 *	 	
 	 *	(deffunction number-of-employees ((?c company)) :-> (?n INTEGER))
@@ -104,7 +106,7 @@ public class PowerLoomKB implements KnowledgeBase {
 	 *	
 	 *	 	
 	 *	(retrieve all (and (company ?x) (< (number-of-employees ?x) 50)))
-	 *	⇒
+	 *	->
 	 *	There is 1 solution:
 	 *	  #1: ?X=ACME-CLEANERS
 	 *	Using the syntax for relations, the same query would require the introduction of an existential quantifier, as in:
@@ -114,7 +116,7 @@ public class PowerLoomKB implements KnowledgeBase {
 	 *	                   (exists ?n
 	 *	                     (and (number-of-employees ?x ?n)
 	 *	                          (< ?n 50)))))
-	 *	⇒
+	 *	->
 	 *	There is 1 solution:
 	 *	  #1: ?X=ACME-CLEANERS
 	 *	To repeat ourselves slightly, Powerloom allows users the choice of using either relational or functional syntax when using a function in predicate position. For example, if f is a function, then the expressions (f ?x ?y) and (= (f ?x) ?y) are equivalent.
@@ -641,7 +643,7 @@ public class PowerLoomKB implements KnowledgeBase {
 
 	/**
 	 * Syntax example: 
-	 * ( Â¬ IsOwnStarship(st) ) for UnBBaes syntax 
+	 * ( NOT IsOwnStarship(st) ) for UnBBaes syntax 
 	 * (NOT( IsOwnStarship ST4 ) ) for PowerLoom syntax
 	 * 
 	 * @see KnowledgeBase
@@ -1586,10 +1588,14 @@ public class PowerLoomKB implements KnowledgeBase {
 				try {
 					ObjectEntityInstance instance = resident.getMFrag().getMultiEntityBayesianNetwork().getObjectEntityContainer().getEntityInstanceByName(token);
 					Debug.print(" | " + token);
+					if (instance == null) {
+						// the KB is using an instance which is not represented in memory yet. Create new instance in memory!
+						instance = createEntityInstanceByArgIndex(resident, i, token);
+					}
 					argumentInstances.add(instance);
 				} catch (Exception e) {
 //					e.printStackTrace();
-					Debug.println(this.getClass(), "", e);
+					Debug.println(this.getClass(), e.getMessage(), e);
 					continue;
 				}
 			}
@@ -1609,9 +1615,17 @@ public class PowerLoomKB implements KnowledgeBase {
 							  resident.getPossibleValueByName(String.valueOf(boolValue)).getState() ,
 							  resident.getMFrag().getMultiEntityBayesianNetwork());
 				} else {
+					StateLink possibleValueStateLink = resident.getPossibleValueByName(possibleValue);
+					Entity possibleValueEntity = null;
+					if (possibleValueStateLink != null) {
+						possibleValueEntity = possibleValueStateLink.getState();
+					} else {
+						// KB contains a possible value which is not present in memory yet. Create in-memory representation
+						possibleValueEntity = createPossibleValueEntityInstanceOfNode(resident, possibleValue);
+					}
 					finding = new RandomVariableFinding(resident , 
 							 argumentInstances.toArray(new ObjectEntityInstance[argumentInstances.size()]) , 
-							 resident.getPossibleValueByName(possibleValue).getState() ,
+							 possibleValueEntity ,
 							 resident.getMFrag().getMultiEntityBayesianNetwork());
 				}
 			} catch (Exception e) {
@@ -1625,6 +1639,73 @@ public class PowerLoomKB implements KnowledgeBase {
 			resident.addRandomVariableFinding(finding);
 		}
 		return resident.getRandomVariableFindingList();
+	}
+
+	/**
+	 * Create an entity instance of name "name" compatible with the possible value of "resident".
+	 * Caution: it does not check whether the instance already exists.
+	 * @param resident : the type must be an object entity
+	 * @param name
+	 * @return a new instance of object entity ({@link ObjectEntityInstance}). 
+	 */
+	protected Entity createPossibleValueEntityInstanceOfNode(
+			ResidentNode resident, String name) {
+		if (resident.getTypeOfStates() != resident.OBJECT_ENTITY) {
+			throw new IllegalArgumentException("Expected type of node " + resident + " is Object Entity.");
+		}
+		if (name == null) {
+			name = "NULL";
+		}
+		try {
+			MultiEntityBayesianNetwork mebn = resident.getMFrag().getMultiEntityBayesianNetwork();
+			// extract entity
+			ObjectEntity entity = (ObjectEntity)resident.getPossibleValueLinkList().get(0).getState();
+			if (entity.isValidInstanceName(name)) {
+				ObjectEntityInstance instance = entity.addInstance(name);
+				mebn.getObjectEntityContainer().addEntityInstance(instance);
+				if (!mebn.getNamesUsed().contains(name)) {
+					mebn.getNamesUsed().add(name); 
+				}
+				return instance;
+			} else {
+				Debug.println(getClass(), name + " is not valid as a possible state of " + resident);
+			}
+		} catch(Exception e){
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		return null;
+	}
+
+	/**
+	 * Create an entity instance of name "name" compatible with the "index"'th argument of "resident".
+	 * Caution: it does not check whether the instance already exists.
+	 * @param resident
+	 * @param index
+	 * @param name
+	 * @return a new instance of object entity.
+	 */
+	protected ObjectEntityInstance createEntityInstanceByArgIndex(
+			ResidentNode resident, int index, String name) {
+		if (name == null) {
+			name = "NULL";
+		}
+		MultiEntityBayesianNetwork mebn = resident.getMFrag().getMultiEntityBayesianNetwork();
+		// extract entity
+		ObjectEntity entity = mebn.getObjectEntityContainer().getObjectEntityByType(
+				resident.getOrdinaryVariableByIndex(index).getValueType());
+		try {
+			ObjectEntityInstance instance = entity.addInstance(name);
+			mebn.getObjectEntityContainer().addEntityInstance(instance);
+			if (!mebn.getNamesUsed().contains(name)) {
+				mebn.getNamesUsed().add(name); 
+			}
+			return instance;
+		} catch (TypeException e1) {
+			e1.printStackTrace();
+		} catch(EntityInstanceAlreadyExistsException e){
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	/*

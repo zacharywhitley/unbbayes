@@ -32,8 +32,6 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -146,8 +144,9 @@ public class EntityFindingEditionPane extends JPanel {
 		private final JLabel labelType = new JLabel(resource.getString("typeLabel")); 
 		private final JLabel labelName = new JLabel(resource.getString("nameLabel")); 
 		
-	    private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9]*");
-	    private Matcher matcher;	
+		// the following attributes were migrated to Entity
+//	    private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9]*");
+//	    private Matcher matcher;	
 		
 		public ObjectEntityInstancePane(){
 
@@ -168,8 +167,8 @@ public class EntityFindingEditionPane extends JPanel {
 	  						&& (nameObjectEntity.getText().length()>0)) {
 	  					try {
 	  						String nameValue = nameObjectEntity.getText(0,nameObjectEntity.getText().length());
-	  						matcher = wordPattern.matcher(nameValue);
-	  						if (matcher.matches()) {
+	  						
+	  						if ((selected != null) && ((ObjectEntity) selected).isValidInstanceName(nameValue)) {
 	  							addOrEditInstance(); 
 	  						}  else {
 	  							nameObjectEntity.setBackground(MebnToolkit.getColorTextFieldError()); 
@@ -190,8 +189,7 @@ public class EntityFindingEditionPane extends JPanel {
 	  			public void keyReleased(KeyEvent e){
 	  				try{
 	                    String name = nameObjectEntity.getText(0,nameObjectEntity.getText().length());
-							matcher = wordPattern.matcher(name);
-							if (!matcher.matches()) {
+							if ((selected == null) || !((ObjectEntity) selected).isValidInstanceName(name)) {
 								nameObjectEntity.setBackground(MebnToolkit.getColorTextFieldError()); 
 								nameObjectEntity.setForeground(Color.WHITE); 
 							}
@@ -270,7 +268,7 @@ public class EntityFindingEditionPane extends JPanel {
 			
 			
 			//Validations
-			if(!(validName(nameObjectEntity.getText()))){
+			if(!(validName(nameObjectEntity.getText(),(ObjectEntity) selected))){
 				JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), 
 						resource.getString("nameException"),
 						resource.getString("error"), 
@@ -424,13 +422,14 @@ public class EntityFindingEditionPane extends JPanel {
 			}
 		}
 		
-		public boolean validName(String name){
-				matcher = wordPattern.matcher(name);
-				if (matcher.matches()) {
-					return true; 
-				}else{
-					return false; 
-				}
+		public boolean validName(String name, Entity selected){
+				return selected.isValidInstanceName(name);
+//				matcher = wordPattern.matcher(name);
+//				if (matcher.matches()) {
+//					return true; 
+//				}else{
+//					return false; 
+//				}
 		}
 		
 	}

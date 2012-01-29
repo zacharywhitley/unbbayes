@@ -364,7 +364,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements
 
 				mebn.getNamesUsed().add(individualOne.getBrowserText());
 			} catch (TypeAlreadyExistsException exception) {
-				// OK... lembre-se que os tipos basicos já existem...
+				// OK...  remember that basic types already exist...
 			}
 
 			Debug.println("Meta Entity Loaded: "
@@ -1398,8 +1398,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements
 					.getPropertyValue(objectProperty);
 
 			if (individualTwo != null) {
-				// TODO apenas por enquanto, pois n�o podera ser igual a null no
-				// futuro!!!
+				// TODO if null, then the ontology is supposedly inconsistent
 
 				/*
 				 * check: - node - entity //don't checked in this version -
@@ -1601,12 +1600,13 @@ public class LoaderPrOwlIO extends PROWLModelUser implements
 		}
 	}
 
-	/*
-	 * Este mecanismo complexo eh necessario para que os argumentos sejam
-	 * inseridos no noh residente na mesma ordem em que foram salvos, permitindo
-	 * manter a liga��o com os respectivos argumentos dos nos inputs instancias
-	 * destes... Eh ineficiente... merece uma atencao para otimiza��o posterior.
-	 * (ps.: Funciona!)
+	/**
+	 * This complex mechanism is necessary in order for the arguments of
+	 * the resident nodes to be inserted in the same ordering as when it
+	 * was previously stored. This is useful for synchronizing the
+	 * arguments with input nodes.
+	 * This is not very inefficient though.
+	 * TODO make it more efficient
 	 */
 	protected void ajustArgumentOfNodes() {
 
@@ -1687,9 +1687,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements
 
 		Debug.println("Entrou no build " + contextNode.getName());
 
-		/*
-		 * a raiz sera setada como o builtIn do qual o contextnode � instancia.
-		 */
+		//The root is set as the builtIn in which contextnode was instantiated
 
 		Object obj = mapIsContextInstanceOf.get(contextNode);
 
@@ -1936,8 +1934,21 @@ public class LoaderPrOwlIO extends PROWLModelUser implements
 				// creates a object entity instance and adds it into the mebn
 				// entity container
 				try {
+					String individualName = individual.getName();
+					try {
+						if (!mebnEntity.isValidInstanceName(individualName)) {
+							// individual name is not valid. Try using UID instead
+							String uid = individual.getPropertyValueLiteral(owlModel.getOWLDatatypeProperty("hasUID")).getString();
+							// remove the ! from UID
+							if (uid != null && (uid.trim().length() > 0)) {
+								individualName = uid.substring(uid.lastIndexOf("!") + 1);
+							}
+						}
+					} catch (Exception e) {
+						Debug.println(getClass(), e.getMessage(), e);
+					}
 					this.mebn.getObjectEntityContainer().addEntityInstance(
-							mebnEntity.addInstance(individual.getName()));
+							mebnEntity.addInstance(individualName));
 				} catch (EntityInstanceAlreadyExistsException eiaee) {
 					// Duplicated instance/individuals are not a major problem
 					// for now

@@ -22,9 +22,11 @@ package unbbayes.prs.mebn.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import unbbayes.prs.mebn.IMultiEntityNode;
 import unbbayes.prs.mebn.MultiEntityNode;
+import unbbayes.util.Debug;
 
 /**
  * This class represents the MEBN theory entity. MEBN logic treats the world as
@@ -43,7 +45,12 @@ public abstract class Entity{
 	protected Type type;
 
 	private List<MultiEntityNode> listIsPossibleValueOf = new ArrayList<MultiEntityNode>();
-
+	
+	/** Default name pattern for {@link INameChecker#isValidName(String)} */
+	public static final Pattern DEFAULT_INSTANCE_NAME_PATTERN = Pattern.compile("[a-zA-Z_0-9]*");
+	
+	private List<INameChecker> instanceNameCheckChainOfResponsibility = new ArrayList<Entity.INameChecker>();
+	
 	/**
 	 * Create a new Entity. 
 	 * @param _container
@@ -53,6 +60,11 @@ public abstract class Entity{
 	protected Entity(String _name, Type _type){
 		name = _name; 
 		type = _type; 
+		this.getInstanceNameCheckChainOfResponsibility().add(new INameChecker() {
+			public boolean isValidName(String name) {
+				return DEFAULT_INSTANCE_NAME_PATTERN.matcher(name).matches();
+			}
+		});
 	}
 	
 
@@ -111,5 +123,67 @@ public abstract class Entity{
 		return name; 
 	}
 	
+	/**
+	 * @param instanceName : name to check validity
+	 * @return true if the given instanceName matches {@link #getInstanceNamePattern()}.
+	 * False otherwise.
+	 * @see #getInstanceNameCheckChainOfResponsibility()
+	 */
+	public boolean isValidInstanceName (String instanceName) {
+		try {
+			// do boolean AND operation (i.e. return false on first occurrence of "false")
+			for (INameChecker check : this.getInstanceNameCheckChainOfResponsibility()) {
+				if (!check.isValidName(instanceName)) {
+					return false;
+				}
+			}
+			// all check returned true
+			// Note: if the chain of responsibility is empty, no check is done, and it will return true.
+			return true;
+		} catch (Exception e) {
+			// exception is considered as a "false"
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		return false;
+	}
 
+
+	
+
+	/**
+	 * Objects implementing this interface will adhere to
+	 * chain of responsibility design pattern in order for {@link #isValidName()}
+	 * to check whether an instance name is valid or not.
+	 */
+	public interface INameChecker {
+		/**
+		 * @return true if the name is valid
+		 */
+		public boolean isValidName(String name);
+	}
+
+
+	/**
+	 * The content of this list will be executed in {@link #isValidInstanceName(String)}
+	 * in order to check whether a name is valid as an instance of this entity.
+	 * If this list contains more than 1 object, they will be aggregated with boolean AND
+	 * operation.
+	 * @return the instanceNameCheckChainOfResponsibility
+	 */
+	public List<INameChecker> getInstanceNameCheckChainOfResponsibility() {
+		return instanceNameCheckChainOfResponsibility;
+	}
+
+
+	/**
+	 * The content of this list will be executed in {@link #isValidInstanceName(String)}
+	 * in order to check whether a name is valid as an instance of this entity.
+	 * If this list contains more than 1 object, they will be aggregated with boolean AND
+	 * operation.
+	 * @param instanceNameCheckChainOfResponsibility the instanceNameCheckChainOfResponsibility to set
+	 */
+	public void setInstanceNameCheckChainOfResponsibility(
+			List<INameChecker> instanceNameCheckerChainOfResponsibility) {
+		this.instanceNameCheckChainOfResponsibility = instanceNameCheckerChainOfResponsibility;
+	}
 }
