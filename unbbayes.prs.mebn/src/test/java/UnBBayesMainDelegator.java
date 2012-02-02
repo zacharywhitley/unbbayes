@@ -29,7 +29,7 @@ public class UnBBayesMainDelegator {
 		Locale.setDefault(new Locale("en"));
 		// enable debug mode
 		SSBNDebugInformationUtil.setEnabled(false);
-		Debug.setDebug(false);
+		Debug.setDebug(true);
 		// delegate to UnBBayes
 		unbbayes.Main.main(args);
 	}

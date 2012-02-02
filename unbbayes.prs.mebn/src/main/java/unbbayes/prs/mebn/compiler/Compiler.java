@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.IProbabilityFunction;
 import unbbayes.prs.bn.PotentialTable;
@@ -197,6 +198,10 @@ import unbbayes.util.Debug;
 
 
 public class Compiler implements ICompiler {
+	
+
+
+	private Map<String, Map<Collection<INode>, float[]>> nameToParentProbValuesCache = new HashMap<String, Map<Collection<INode>, float[]>>();
 
 	/**
      * SingletonHolder is loaded on the first execution of Singleton.getInstance() 
@@ -457,7 +462,7 @@ public class Compiler implements ICompiler {
 											InstanceException{
 		
 		// try to clean garbage before starting an expensive method like this one
-		System.gc();
+//		System.gc();
 		
 		// initial tests
 		if (this.ssbnnode == null) {
@@ -478,6 +483,29 @@ public class Compiler implements ICompiler {
 			// Special condition: if pseudocode was not declared, use linear (equal) distribution instead
 			this.generateLinearDistroCPT(this.ssbnnode.getProbNode());
 			return this.ssbnnode.getProbNode().getProbabilityFunction();
+		}
+		
+		// check cache
+		Map<Collection<INode>, float[]> cache = this.getNameToParentProbValuesCache().get(this.ssbnnode.getProbNode().getName());
+		try {
+			if (cache != null) {
+				for (Collection<INode> parents : cache.keySet()) {
+					if (parents.size() == this.ssbnnode.getParents().size() 
+							&& parents.containsAll(this.ssbnnode.getParents())){
+						// cache and current have the same parents
+						this.cpt = this.ssbnnode.getProbNode().getProbabilityFunction();
+						// populate column
+						float[] value = cache.get(parents);
+						for (int i = 0; i < this.cpt.tableSize(); i++) {
+							this.cpt.setValue(i, value[i]);
+						}
+						return this.cpt;
+					}
+				}
+			}
+		} catch (Exception e) {
+			// ignore
+			Debug.println(getClass(), e.getMessage(), e);
 		}
 		
 		// initialization
@@ -606,8 +634,6 @@ public class Compiler implements ICompiler {
 			}
 			
 			
-			
-			
 			// populate column
 			for (int j = 0; j < possibleValues.size() ; j++) {
 				float value = -1.0f;
@@ -625,7 +651,7 @@ public class Compiler implements ICompiler {
 				if ((value < 0) || (value > 1)) {
 					throw new InvalidProbabilityRangeException();
 				}
-				this.cpt.setValue(i+j, value);
+				this.cpt.setValue(i+j, value );
 			}
 			
 		}	// while i < this.cpt.tableSize()
@@ -648,6 +674,14 @@ public class Compiler implements ICompiler {
 				Debug.println(this.getClass(), parent.toString(), e);
 			}
 		}
+		
+		// prepare to fill cache
+		if (cache == null) {
+			cache = new HashMap<Collection<INode>, float[]>();
+			this.getNameToParentProbValuesCache().put(this.ssbnnode.getProbNode().getName(), cache);
+		}
+		// fill cache
+		cache.put((Collection)this.ssbnnode.getParents(), this.cpt.getValues());
 		
 		return this.cpt;
 	}
@@ -3361,6 +3395,23 @@ public class Compiler implements ICompiler {
 	 */
 	public static void setSingleton(Boolean singleton) {
 		Compiler.singleton = singleton;
+	}
+
+
+	/**
+	 * @return the nameToParentProbValuesCache
+	 */
+	public Map<String, Map<Collection<INode>, float[]>> getNameToParentProbValuesCache() {
+		return nameToParentProbValuesCache;
+	}
+
+
+	/**
+	 * @param nameToParentProbValuesCache the nameToParentProbValuesCache to set
+	 */
+	public void setNameToParentProbValuesCache(
+			Map<String, Map<Collection<INode>, float[]>> nameToParentProbValuesCache) {
+		this.nameToParentProbValuesCache = nameToParentProbValuesCache;
 	}
 
 
