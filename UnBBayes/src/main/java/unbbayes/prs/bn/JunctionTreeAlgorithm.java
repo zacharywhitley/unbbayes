@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -76,43 +77,112 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		// initialize commands for checkConsistency
 		this.setVerifyConsistencyCommandList(this.initConsistencyCommandList());
 		this.getInferenceAlgorithmListeners().add(new IInferenceAlgorithmListener() {
+			private Map<String, Float[]> likelihoodMap;
+
 			public void onBeforeRun(IInferenceAlgorithm algorithm) {
 				if (algorithm == null) {
 					Debug.println(getClass(), "Algorithm == null");
 					return;
 				}
-				if ((algorithm.getNetwork() != null) && algorithm.getNetwork().getNodes() != null) {
-					for (Node node : algorithm.getNetwork().getNodes()) {
-						if (node.getType() == node.CONTINUOUS_NODE_TYPE) {
-							// TODO use resource file instead
-							throw new IllegalArgumentException(algorithm.getName() + " cannot handle continuous nodes, like \n\n\"" + node
-									+ "\". \n\n Please, go to the Global Options and choose another inference algorithm.");
-						}
+				if ((algorithm.getNetwork() != null) && ( algorithm.getNetwork() instanceof SingleEntityNetwork)) {
+					SingleEntityNetwork net = (SingleEntityNetwork)algorithm.getNetwork();
+					
+					if (net.isHybridBN()) {
+						// TODO use resource file instead
+						throw new IllegalArgumentException(
+									algorithm.getName() 
+									+ " cannot handle continuous nodes. \n\n Please, go to the Global Options and choose another inference algorithm."
+								);
 					}
 				}
 			}
 			public void onBeforeReset(IInferenceAlgorithm algorithm) {}
-			public void onBeforePropagate(IInferenceAlgorithm algorithm) {}
+			
+			/**
+			 * Store findings and reset network before propagation, so that we can
+			 * overwrite previous findings if we add new findings to nodes
+			 * already having findings.
+			 */
+			public void onBeforePropagate(IInferenceAlgorithm algorithm) {
+				// The change bellow is to adhere to feature request #3314855
+				// Save the list of evidence entered
+				Map<String, Integer> evidenceMap = new HashMap<String, Integer>();
+				likelihoodMap = new HashMap<String, Float[]>();
+				
+				if ((algorithm.getNetwork() != null) && ( algorithm.getNetwork() instanceof SingleEntityNetwork)) {
+					SingleEntityNetwork net = (SingleEntityNetwork)algorithm.getNetwork();
+					for (Node n : net.getNodes()) {
+						if (n instanceof TreeVariable) {
+							TreeVariable node = (TreeVariable)n;
+							if (node.hasEvidence()) {
+								if (node.hasLikelihood()) {
+									Float[] likelihood = new Float[node.getStatesSize()];
+									for (int i = 0; i < node.getStatesSize(); i++) {
+										likelihood[i] = node.getMarginalAt(i);
+									}
+									likelihoodMap.put(node.getName(), likelihood);
+								} else {
+									evidenceMap.put(node.getName(), node.getEvidence());
+								}
+							}
+						}
+					}
+					// Reset evidence in order to allow changes in node which already had a different evidence set
+					algorithm.reset();
+					// Enter the list of evidence again
+					for (String name : evidenceMap.keySet()) {
+						((TreeVariable)net.getNode(name)).addFinding(evidenceMap.get(name));
+					}
+					// Enter the likelihood also to fix bug #3316285
+					if (algorithm instanceof JunctionTreeAlgorithm) {
+						JunctionTreeAlgorithm jt = (JunctionTreeAlgorithm) algorithm;
+						for (String name : likelihoodMap.keySet()) {
+							float[] likelihood = new float[likelihoodMap.get(name).length];
+							for (int i = 0; i < likelihood.length; i++) {
+								likelihood[i] = likelihoodMap.get(name)[i];
+							}
+							TreeVariable var = ((TreeVariable)net.getNode(name));
+							try {
+								var.addLikeliHood(likelihood);
+//								jt.addVirtualNode(net, var, likelihood);
+							} catch (Exception e) {
+								throw new RuntimeException(e);
+							}
+						}
+					}
+				}
+					
+				// Finally propagate evidence
+			}
 			public void onAfterRun(IInferenceAlgorithm algorithm) {}
 			public void onAfterReset(IInferenceAlgorithm algorithm) {}
+			
+			/**
+			 * Guarantee that each clique is normalized, if the network is disconnected
+			 */
 			public void onAfterPropagate(IInferenceAlgorithm algorithm) {
 				if (algorithm == null) {
 					Debug.println(getClass(), "Algorithm == null");
 					return;
 				}
+				
 				if ((algorithm.getNetwork() != null) && (algorithm.getNetwork() instanceof SingleEntityNetwork)) {
 					SingleEntityNetwork network = (SingleEntityNetwork) algorithm.getNetwork();
-					if (network.getJunctionTree() != null) {
-						for (Clique clique : network.getJunctionTree().getCliques()) {
-							try {
-								clique.normalize();
-								for (Node node : clique.getAssociatedProbabilisticNodes()) {
-									if (node instanceof TreeVariable) {
-										((TreeVariable) node).updateMarginal();
+					if (!network.isConnected()) {
+						// network is disconnected.
+						if (network.getJunctionTree() != null) {
+							// extract all cliques and normalize them
+							for (Clique clique : network.getJunctionTree().getCliques()) {
+								try {
+									clique.normalize();
+									for (Node node : clique.getAssociatedProbabilisticNodes()) {
+										if (node instanceof TreeVariable) {
+											((TreeVariable) node).updateMarginal();
+										}
 									}
+								} catch (Exception e) {
+									throw new RuntimeException(e);
 								}
-							} catch (Exception e) {
-								throw new RuntimeException(e);
 							}
 						}
 					}
@@ -862,7 +932,10 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 	 * @author Alexandre Martins
 	 * TODO incorporate in {@link #propagate()} and allow multiple states.
 	 */
-	public void addVirtualNode(SingleEntityNetwork net, Node parentNode, float evidenceValueState0, float evidenceValueState1, int evidenceStateIndex) throws Exception {
+	public void addVirtualNode(SingleEntityNetwork net, Node parentNode, float[] likelihood) throws Exception {
+		if (parentNode.getStatesSize() != 2) {
+			throw new IllegalArgumentException("Virtual evidence is supported for nodes with only 2 states.");
+		}
 		//no virtual, para propagacao da evidencia incerta
 		ProbabilisticNode virtualNode = new ProbabilisticNode();
 		//V de virtual
@@ -871,6 +944,8 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		//adiciono os mesmos estados presentes no no pai
 		virtualNode.appendState(parentNode.getStateAt(0) );
 		virtualNode.appendState(parentNode.getStateAt(1));
+		
+		
 		net.addNode(virtualNode);
 		
 		//crio a tabela de potencial do no virtual
@@ -879,10 +954,11 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		net.addEdge(new Edge(parentNode,virtualNode));
 		//a tabela de variaveis e setada com valores 1, visto que ela nao sera necessaria durante o processo,
 		//pois a tabela de potencial do clique virtual sera calculada diretamente pelos valores fornecidos
-		virtualNodeCPT.setValue(0, 1);
-		virtualNodeCPT.setValue(1, 1);
-		virtualNodeCPT.setValue(2, 1);
-		virtualNodeCPT.setValue(3, 1);
+		virtualNodeCPT.setValue(0, .5f);
+		virtualNodeCPT.setValue(1, .5f);
+		virtualNodeCPT.setValue(2, .5f);
+		virtualNodeCPT.setValue(3, .5f);
+		
 		
 		//crio o clique virtual
 		Clique auxClique = new Clique();
@@ -895,10 +971,12 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		//como apenas a variavel noV recebera o finding, interessam, a cada finding, apenas as posicoes 0 e 2(em caso do finding for para o estado 0) 
 		//ou as posicoes 1 e 3(em caso do finding for para o estado 1). As posicoes que nao interessam sao setadas da mesma forma que as que interessam, 
 		//porem elas serao zeradas apos o finging, nao influenciando em nada
-		auxClique.getProbabilityFunction().setValue(0, evidenceValueState0);
-		auxClique.getProbabilityFunction().setValue(1, evidenceValueState0);
-		auxClique.getProbabilityFunction().setValue(2, evidenceValueState1);
-		auxClique.getProbabilityFunction().setValue(3, evidenceValueState1);
+		auxClique.getProbabilityFunction().setValue(0, likelihood[0]);
+		auxClique.getProbabilityFunction().setValue(1, likelihood[0]);
+		auxClique.getProbabilityFunction().setValue(2, likelihood[1]);
+		auxClique.getProbabilityFunction().setValue(3, likelihood[1]);
+		
+//		((TreeVariable)parentNode).restoreMarginal();
 		
 		IJunctionTree junctionTree = net.getJunctionTree();
 		
@@ -931,7 +1009,20 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		//marginalizo a variavel pai do clique que esta associado a ela
 		//o menor clique selecionado acima tambem poderia ser utilizado para essa marginalizacao
 		//nao utilizei o clique associado na criacao do separador pois ele pode ser um separador
-		IRandomVariable parentClique = ((ProbabilisticNode)parentNode).getAssociatedClique();
+		// lets use the previously used clique if the obtained associated clique is actually a separator
+		IRandomVariable parentClique = smallestClique;
+		if (parentClique instanceof Separator) {
+			Separator separator = (Separator) parentClique;
+			// smallestClique must not be a clique, 
+			// for instance, there is no way smallestClique is a separator, 
+			// because it was extracted from junctionTree.getCliques(), which can return only cliques.
+			// But I'd like to make sure it is a  clique
+			if (separator.getClique1().getNodes().size() <= separator.getClique2().getNodes().size()) {
+				parentClique = separator.getClique1();
+			} else {
+				parentClique = separator.getClique2();
+			}
+		}
 		PotentialTable auxTab = (PotentialTable) ((PotentialTable)parentClique.getProbabilityFunction()).clone();
         int index = auxTab.indexOfVariable(parentNode);
         int size = parentClique.getProbabilityFunction().variableCount();
@@ -960,8 +1051,14 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		virtualNode.setAssociatedClique(auxClique);
 		//inicio a variavel que ira receber os valores da marginalizacao, caso nao seja inicializada, lanca NullPointerException
 		virtualNode.initMarginalList();
-		//adiciona a evidencia no no correspondente
-		virtualNode.addFinding(evidenceStateIndex);
+
+		if(likelihood[0] >= 0.5){
+			virtualNode.addFinding(0);
+		} else {
+			virtualNode.addFinding(1);
+		}
+		
+		virtualNode.copyMarginal();
 		
 	}
 

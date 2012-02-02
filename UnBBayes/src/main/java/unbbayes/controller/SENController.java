@@ -192,42 +192,43 @@ public class SENController {
 		boolean bReset = false;
 		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		try {
-			// The change bellow is to adhere to feature request #3314855
-			// Save the list of evidence entered
-			Map<String, Integer> evidenceMap = new HashMap<String, Integer>();
-			// Mapping likelihood also to fix bug #3316285
-			Map<String, Float[]> likelihoodMap = new HashMap<String, Float[]>();
-			for (Node n : singleEntityNetwork.getNodes()) {
-				if (n instanceof TreeVariable) {
-					TreeVariable node = (TreeVariable)n;
-					if (node.hasEvidence()) {
-						if (node.hasLikelihood()) {
-							Float[] likelihood = new Float[node.getStatesSize()];
-							for (int i = 0; i < node.getStatesSize(); i++) {
-					            likelihood[i] = node.getMarginalAt(i);
-					        }
-							likelihoodMap.put(node.getName(), likelihood);
-						} else {
-							evidenceMap.put(node.getName(), node.getEvidence());
-						}
-					}
-				}
-			}
-			// Reset evidence in order to allow changes in node which already had a different evidence set
-			this.getInferenceAlgorithm().reset();
-			// Enter the list of evidence again
-			for (String name : evidenceMap.keySet()) {
-				((TreeVariable)singleEntityNetwork.getNode(name)).addFinding(evidenceMap.get(name));
-			}
-			// Enter the likelihood also to fix bug #3316285
-			for (String name : likelihoodMap.keySet()) {
-				float[] likelihood = new float[likelihoodMap.get(name).length];
-				for (int i = 0; i < likelihood.length; i++) {
-					likelihood[i] = likelihoodMap.get(name)[i];
-				}
-				((TreeVariable)singleEntityNetwork.getNode(name)).addLikeliHood(likelihood);
-			}
-			// Finally propage evidence
+			// the following code was migrated to subclasses of IInferenceAlgorithm, particularly to the method #propagate()
+//			// The change bellow is to adhere to feature request #3314855
+//			// Save the list of evidence entered
+//			Map<String, Integer> evidenceMap = new HashMap<String, Integer>();
+//			// Mapping likelihood also to fix bug #3316285
+//			Map<String, Float[]> likelihoodMap = new HashMap<String, Float[]>();
+//			for (Node n : singleEntityNetwork.getNodes()) {
+//				if (n instanceof TreeVariable) {
+//					TreeVariable node = (TreeVariable)n;
+//					if (node.hasEvidence()) {
+//						if (node.hasLikelihood()) {
+//							Float[] likelihood = new Float[node.getStatesSize()];
+//							for (int i = 0; i < node.getStatesSize(); i++) {
+//					            likelihood[i] = node.getMarginalAt(i);
+//					        }
+//							likelihoodMap.put(node.getName(), likelihood);
+//						} else {
+//							evidenceMap.put(node.getName(), node.getEvidence());
+//						}
+//					}
+//				}
+//			}
+//			// Reset evidence in order to allow changes in node which already had a different evidence set
+//			this.getInferenceAlgorithm().reset();
+//			// Enter the list of evidence again
+//			for (String name : evidenceMap.keySet()) {
+//				((TreeVariable)singleEntityNetwork.getNode(name)).addFinding(evidenceMap.get(name));
+//			}
+//			// Enter the likelihood also to fix bug #3316285
+//			for (String name : likelihoodMap.keySet()) {
+//				float[] likelihood = new float[likelihoodMap.get(name).length];
+//				for (int i = 0; i < likelihood.length; i++) {
+//					likelihood[i] = likelihoodMap.get(name)[i];
+//				}
+//				((TreeVariable)singleEntityNetwork.getNode(name)).addLikeliHood(likelihood);
+//			}
+//			// Finally propage evidence
 			this.getInferenceAlgorithm().propagate();
 		} catch (Exception e) {
 			e.printStackTrace();

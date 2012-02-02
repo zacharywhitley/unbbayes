@@ -66,13 +66,13 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
 	}
    //by young end
 	
-    void copyMarginal() {
+    public void copyMarginal() {
     	int size = marginalList.length;
     	marginalCopy = new float[size];
     	System.arraycopy(marginalList, 0, marginalCopy, 0, size);
     }
     
-    void restoreMarginal() {
+    public void restoreMarginal() {
     	int size = marginalList.length;
     	System.arraycopy(marginalCopy, 0, marginalList, 0, size);
     }
@@ -161,6 +161,7 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     	// Does it matter which state is set as evidence?
     	// For now we are choosing the one with the highest probability.
     	float largestProb = likelihood[0];
+//    	float sumLikelihood = 0;
     	evidence = 0;
         for (int i = 0; i < getStatesSize(); i++) {
 //            setMarginalAt(i, likelihood[i]);
@@ -168,10 +169,12 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
             	largestProb = likelihood[i];
             	evidence = i;
             }
+//            sumLikelihood += likelihood[i];
         }
         
         for (int i = 0; i < getStatesSize(); i++) {
             setMarginalAt(i, likelihood[i]/largestProb);
+//            setMarginalAt(i, likelihood[i]/sumLikelihood);
         }
         
     }

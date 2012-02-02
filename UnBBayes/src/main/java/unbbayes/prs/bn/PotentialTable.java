@@ -281,6 +281,16 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	public  float getValue(int index) {
 		return dataPT.data[index];
 	}
+	
+	/**
+	 * It returns all values you can get from {@link #getValue(int)}.
+	 * Be careful when you modify these values, because it will modify the 
+	 * original values as well.
+	 * @return
+	 */
+	public float[] getValues() {
+		return dataPT.data;
+	}
 
 	/**
 	 * It returns a value in this table from a vector of coordinates.
