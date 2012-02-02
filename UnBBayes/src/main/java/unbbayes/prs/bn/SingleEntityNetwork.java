@@ -190,6 +190,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
      *  Verify if this network has cycle.
      *
      *@throws Exception If this network has a cycle.
+     *@deprecated use {@link #hasCycle()} instead.
      */
     public void verifyCycles() throws Exception {
     	int nodeSize = nodeList.size();
@@ -199,6 +200,20 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
     	for (int i = 0; i < nodeSize; i++) {
     		dfsCycle(i, visited, pi);
     	}
+    }
+    
+    /**
+     * @return true if network has a cycle. False otherwise.
+     */
+    public boolean hasCycle() {
+    	// TODO migrate the verifyCycles code to here and remove verifyCycles.
+    	try {
+			this.verifyCycles();
+    		return false;
+		} catch (Exception e) {
+			// TODO: stop using exception-driven methods (exceptions should not be used as test conditions)
+			return true;
+		}
     }
     
     /**
@@ -239,6 +254,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
      * It verifies if the network is connected
      *
      *  @throws Exception if network is disconnected.
+     *  @deprecated use {@link #isConnected()} instead.
      */
     public void verifyConectivity() throws Exception {
         List<Node> visitados = new ArrayList<Node>(nodeList.size());
@@ -251,6 +267,20 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
         if (visitados.size() != nodeList.size()) {
             throw new Exception(resource.getString("DisconectedNetException"));
         }
+    }
+    
+    /**
+     * @return true if network is fully connected (all nodes has at least one path to each other). False otherwise.
+     */
+    public boolean isConnected() {
+    	try {
+    		// TODO migrate code of verifyConectivity to here and remove verifyConectivity method.
+    		this.verifyConectivity();
+			return true;
+		} catch (Exception e) {
+			// TODO: stop using exception-driven methods (exceptions should not be used as test conditions)
+			return false;
+		}
     }
 
     /**
@@ -712,7 +742,9 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			for (int i = 0; i < sizeCliques; i++) {
 				auxClique = (Clique) junctionTree.getCliques().get(i);
 				listaNos = SetToolkit.clone(auxClique.getNodes());
-	
+				if (listaNos.size() <= 1) {
+					break;
+				}
 				//calculate index
 				while ((ndx = getCliqueIndex(listaNos, alpha)) <= 0
 					&& listaNos.size() > 1);
@@ -974,8 +1006,9 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	
 	
 	/**
-	 * Verifies integrity as a connected coherent directed acyclic graph.
+	 * Verifies integrity as a coherent directed acyclic graph.
 	 * The output specifies what kinds of errors were detected, if any.
+	 * TODO stop using exception-driven code (exceptions should not be used as test conditions)
 	 */
 	protected void verifyConsistency() throws Exception {
 		if (nodeList.size() != 0) {
@@ -1001,12 +1034,13 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 				erro = true;
 				sb.append('\n' + e.getMessage());
 			}
-			try {
+			// disconnected networks should be OK now if we are using instances of JunctionTreeAlgorithm (because it normalizes each disconnected clique after propagation)
+//			try {
 //				verifyConectivity();
-			} catch (Exception e) {
-				erro = true;
-				sb.append('\n' + e.getMessage());
-			}
+//			} catch (Exception e) {
+//				erro = true;
+//				sb.append('\n' + e.getMessage());
+//			}
 			try {
 				verifyPotentialTables();
 			} catch (Exception e) {
@@ -1063,7 +1097,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			}
 		}
 	}
-
+	
 	/**
 	 * Sub method of {@link #verifyConsistency()}.
 	 * This method asserts no utility nodes have children.
