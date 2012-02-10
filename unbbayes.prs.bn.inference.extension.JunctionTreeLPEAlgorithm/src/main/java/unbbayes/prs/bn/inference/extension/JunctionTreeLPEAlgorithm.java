@@ -228,7 +228,7 @@ public class JunctionTreeLPEAlgorithm extends JunctionTreeMPEAlgorithm {
 		super.reset();
 		InferenceAlgorithmOptionPanel bkp = this.getOptionPanel();	// backup the option panel
 		this.setOptionPanel(null);	// setting option panel to null disables access to GUI (so, log will be disabled)
-		this.propagate();	// propagate with log disabled
+//		this.propagate();	// propagate with log disabled
 		this.setOptionPanel(bkp);	// restore backup
 	}
 
