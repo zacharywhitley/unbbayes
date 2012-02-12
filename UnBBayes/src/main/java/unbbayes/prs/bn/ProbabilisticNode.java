@@ -66,12 +66,14 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable, 
     }
     
     /**
-     *  Copia as caracter�sticas principais para o n� desejado
-     *@param raio raio do n�.
-     *@return c�pia do n�
+     * Copies the main features to a new node.
+     *@param radius : the radius of the node. This is used in order
+     * to calculate the new position of the new node, so that
+     * it does not overlap the old node's postition.
+     *@return  copy of the node
      */
-    public ProbabilisticNode clone(double raio) {
-    	// TODO Rever esse m�todo para n�o precisar do raio.
+    public ProbabilisticNode clone(double radius) {
+    	// TODO Check whether we can eliminate radius
         ProbabilisticNode no = new ProbabilisticNode();
 
         for (int i = 0; i < getStatesSize(); i++) {
@@ -79,7 +81,7 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable, 
         }
 		ProbabilisticNode.setDescriptionColor(ProbabilisticNode.getDescriptionColor().getRGB());
 		ProbabilisticNode.setExplanationColor(ProbabilisticNode.getExplanationColor().getRGB());
-        no.setPosition(this.getPosition().getX() + 1.3 * raio, this.getPosition().getY() + 1.3 * raio);
+        no.setPosition(this.getPosition().getX() + 1.3 * radius, this.getPosition().getY() + 1.3 * radius);
         no.setName(resource.getString("copyName") + this.getName());
         no.setDescription(resource.getString("copyName") + this.getDescription());
         no.tabelaPot = (ProbabilisticTable)this.tabelaPot.clone();
@@ -145,8 +147,12 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable, 
         }
 
         int tableSize = auxTab.tableSize();
-        for (int i = 0; i < tableSize; i++) {
-            marginalList[i] = auxTab.getValue(i);
+        if (marginalList.length <= 0 && tableSize > 0) {
+        	throw new IllegalStateException("Inconsistent quantity of marginal states. This may be caused by a node with no state.");
+        } else {
+        	for (int i = 0; i < tableSize; i++) {
+        		marginalList[i] = auxTab.getValue(i);
+        	}
         }
     }
 
