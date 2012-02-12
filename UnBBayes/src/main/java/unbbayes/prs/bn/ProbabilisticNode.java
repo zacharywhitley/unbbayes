@@ -21,7 +21,6 @@
 package unbbayes.prs.bn;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -148,7 +147,8 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable, 
 
         int tableSize = auxTab.tableSize();
         if (marginalList.length <= 0 && tableSize > 0) {
-        	throw new IllegalStateException("Inconsistent quantity of marginal states. This may be caused by a node with no state.");
+        	// TODO use resource files instead
+        	throw new IllegalStateException("Inconsistent quantity of marginal states. This may be caused by a node which cannot be handled by the selected algorithm.");
         } else {
         	for (int i = 0; i < tableSize; i++) {
         		marginalList[i] = auxTab.getValue(i);
