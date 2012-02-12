@@ -2,6 +2,8 @@ package unbbayes;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import unbbayes.controller.exception.InconsistentArgumentException;
@@ -33,6 +35,7 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeyAlgorithmParameters;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSBNGenerator;
 import unbbayes.prs.mebn.ssbn.util.SSBNDebugInformationUtil;
+import unbbayes.util.Debug;
 
 /**
  * This class runs UnBBayes in text-mode
@@ -172,76 +175,123 @@ public class TextModeRunner {
 	}
 	
 	/**
-	 * Entry point for laskey algorithm
+	 * Entry point for laskey algorithm.
 	 * @param mebn
 	 * @param kb
 	 * @param nameOfResidentNodeInQuery
 	 * @param argValuesInOrder
 	 * @return
 	 * @throws Exception
+	 * @deprecated use {@link #callLaskeyAlgorithm(MultiEntityBayesianNetwork, KnowledgeBase, Collection)} with a collection
+	 * with only 1 entry.
+	 * with a map with 1 key instead.
 	 */
 	public ProbabilisticNetwork callLaskeyAlgorithm(MultiEntityBayesianNetwork mebn,
 			KnowledgeBase kb,
 			String nameOfResidentNodeInQuery, String...argValuesInOrder ) throws Exception {
 		
-		ResidentNode residentNode = mebn.getDomainResidentNode(nameOfResidentNodeInQuery);
-		if (residentNode == null) {
-			// node may not be in a list of domain resident node.
-			for (MFrag mfrag : mebn.getMFragList()) {
-				for (Node node : mfrag.getNodes()) {
-					nameOfResidentNodeInQuery.equalsIgnoreCase(node.getName());
-					residentNode = (ResidentNode)node;
-					break;
-				}
-				if (residentNode != null) {
-					break;
-				}
-			}
-		}
-		if (residentNode == null) {
+		// call the other method using a list with only 1 query entry
+		return this.callLaskeyAlgorithm(mebn, kb, Collections.singletonList(new QueryNodeNameAndArguments(nameOfResidentNodeInQuery, argValuesInOrder)));
+	}
+		 
+	
+	/**
+	 * Entry point for laskey algorithm (w/ multiple query support)
+	 * @param mebn
+	 * @param kb
+	 * @param queryNodeNameAndParameters	: a collection consisting of tuples: name of the node and all arguments
+	 * are lists of arguments.
+	 * @return a bayesian network.
+	 * @throws Exception
+	 */
+	public ProbabilisticNetwork callLaskeyAlgorithm(MultiEntityBayesianNetwork mebn,
+			KnowledgeBase kb,	Collection<QueryNodeNameAndArguments> queryNodeNamesAndParameters) throws Exception {
+		
+		// initial assetions
+		if (queryNodeNamesAndParameters == null || queryNodeNamesAndParameters.isEmpty()) {
 			return null;
 		}
 		
-		// creating ObjectEntityInstance - arguments
-		ObjectEntityInstance[] arguments = new ObjectEntityInstance[argValuesInOrder.length];
-		for (int i = 0; i < argValuesInOrder.length; i++) {
-			ObjectEntity oe = mebn.getObjectEntityContainer().getObjectEntityByType(residentNode.getOrdinaryVariableList().get(i).getValueType());
-			arguments[i] = new ObjectEntityInstance(argValuesInOrder[i],oe);
-		}
+		// this list will contain the queries
+		List<Query> queryList = new ArrayList<Query>();
 		
-        //ALG2
-		List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
-		
-		
-		List<Argument> arglist = residentNode.getArgumentList();
-		
-		if (arglist.size() != arguments.length) {
-			throw new InconsistentArgumentException();
-		}
-		
-		for (int i = 1; i <= arguments.length; i++) {
-
-			//TODO It has to get in the right order. For some reason in argList, 
-			// sometimes the second argument comes first
-			for (Argument argument : arglist) {
-				if (argument.getArgNumber() == i) {
-					OrdinaryVariable ov = argument.getOVariable(); 
-					OVInstance ovInstance = OVInstance.getInstance(
-							ov, 
-							LiteralEntityInstance.getInstance(arguments[i-1].getName(), ov.getValueType()));
-					ovInstanceList.add(ovInstance); 
-					break;
+		// extract resident nodes from the names in the keys of queryNodeNameAndParameters
+		for (QueryNodeNameAndArguments queryInfo : queryNodeNamesAndParameters) {
+			ResidentNode residentNode = mebn.getDomainResidentNode(queryInfo.getNodeName());
+			if (residentNode == null) {
+				try {
+					Debug.println(getClass(), queryInfo.getNodeName() + " is not in the list of domain resident nodes. Now searching contents of MFrags...");
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				// node may not be in a list of domain resident node.
+				for (MFrag mfrag : mebn.getMFragList()) {
+					for (Node node : mfrag.getNodes()) {
+						queryInfo.getNodeName().equalsIgnoreCase(node.getName());
+						residentNode = (ResidentNode)node;
+						break;
+					}
+					if (residentNode != null) {
+						break;
+					}
 				}
 			}
-
-
+			if (residentNode == null) {
+				// could not find the resident node.@Just ignore
+				try {
+					Debug.println(getClass(), "Could not find resident node " + queryInfo.getNodeName());
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				continue;
+			}
+			
+			// creating ObjectEntityInstance (i.e. arguments)
+			ObjectEntityInstance[] arguments = new ObjectEntityInstance[queryInfo.getArguments().length];
+			for (int i = 0; i < queryInfo.getArguments().length; i++) {
+				ObjectEntity oe = mebn.getObjectEntityContainer().getObjectEntityByType(residentNode.getOrdinaryVariableList().get(i).getValueType());
+				arguments[i] = new ObjectEntityInstance(queryInfo.getArguments()[i],oe);
+			}
+			
+			//ALG2
+			List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
+			
+			
+			List<Argument> arglist = residentNode.getArgumentList();
+			
+			if (arglist.size() != arguments.length) {
+				throw new InconsistentArgumentException();
+			}
+			
+			for (int i = 1; i <= arguments.length; i++) {
+				
+				//TODO It has to get in the right order. For some reason in argList, 
+				// sometimes the second argument comes first
+				for (Argument argument : arglist) {
+					if (argument.getArgNumber() == i) {
+						OrdinaryVariable ov = argument.getOVariable(); 
+						OVInstance ovInstance = OVInstance.getInstance(
+								ov, 
+								LiteralEntityInstance.getInstance(arguments[i-1].getName(), ov.getValueType()));
+						ovInstanceList.add(ovInstance); 
+						break;
+					}
+				}
+				
+				
+			}
+			
+			Query query = new Query(residentNode, ovInstanceList); 
+			
+			queryList.add(query); 
 		}
 		
-		Query query = new Query(residentNode, ovInstanceList); 
 		
-		List<Query> queryList = new ArrayList<Query>();
-		queryList.add(query); 
-
+		if (queryList.isEmpty()) {
+			// no query 
+			return null;
+		}
+		
 		return this.executeQueryLaskeyAlgorithm(queryList,kb,mebn);
         
 	}
@@ -264,6 +314,41 @@ public class TextModeRunner {
 			 }
 		}
 		return knowledgeBase;
+	}
+	
+	/**
+	 * This is just a very simple representation of a query (name of a resident node and
+	 * instances of its arguments) using only Strings.
+	 * @author Shou Matsumoto
+	 *
+	 */
+	public class QueryNodeNameAndArguments {
+		private final String nodeName;
+		private final String[] arguments;
+		
+		/** Constructor initializing fields
+		 * @param nodeName	: name of the node to query
+		 * @param arguments	: arguments of the node to query
+		 */
+		public QueryNodeNameAndArguments(String nodeName, String... arguments) {
+			super();
+			this.nodeName = nodeName;
+			this.arguments = arguments;
+		}
+
+		/**
+		 * @return the nodeName
+		 */
+		public String getNodeName() {
+			return nodeName;
+		}
+
+		/**
+		 * @return the arguments
+		 */
+		public String[] getArguments() {
+			return arguments;
+		}
 	}
 
 	/**

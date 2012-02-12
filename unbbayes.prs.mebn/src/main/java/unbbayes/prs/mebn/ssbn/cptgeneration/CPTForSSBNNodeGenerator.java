@@ -15,6 +15,7 @@ import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.ContextFatherSSBNNode;
 import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
+import unbbayes.prs.mebn.ssbn.SSBN;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.prs.mebn.ssbn.exception.InvalidOperationException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
@@ -45,9 +46,9 @@ public class CPTForSSBNNodeGenerator {
 	 * findingsDown and child of root.
 	 *  
 	 * @param root
-	 * @param findingsDown
 	 * @throws MEBNException
 	 * @throws SSBNNodeGeneralException 
+	 * @deprecated use {@link #generateCPTForAllSSBNNodes(SSBN)} instead.
 	 */
 	public void generateCPTForAllSSBNNodes(SSBNNode root) throws MEBNException, SSBNNodeGeneralException{
 		generateCPTForAllSSBNNodes(root, 0);
@@ -433,6 +434,33 @@ public class CPTForSSBNNodeGenerator {
 	 */
 	public void setLogManager(ISSBNLogManager logManager) {
 		this.logManager = logManager;
+	}
+
+	
+	/**
+	 * It generates CPTs for all {@link SSBNNode} in a {@link SSBN}.
+	 * A {@link SSBNNode} returning true for {@link SSBNNode#isCptAlreadyGenerated()}
+	 * will be ignored.
+	 * @param ssbn
+	 * @throws MEBNException
+	 * @throws SSBNNodeGeneralException
+	 */
+	public void generateCPTForAllSSBNNodes(SSBN ssbn)throws MEBNException, SSBNNodeGeneralException{
+		// initial assertion
+		if (ssbn == null) {
+			return;
+		}
+		// iterate over all nodes
+		for (SSBNNode root : ssbn.getSsbnNodeList()) {
+			if(root.isCptAlreadyGenerated()){
+				// ignore nodes returning true for isCptAlreadyGenerated
+				continue; 
+			}else{
+				generateCPT(root);
+				// set flag to ignore next time
+				root.setCptAlreadyGenerated(true); 
+			}
+		}
 	}
 	
 }
