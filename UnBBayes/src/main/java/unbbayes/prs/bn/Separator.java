@@ -27,9 +27,10 @@ import unbbayes.prs.Node;
 import unbbayes.prs.id.UtilityTable;
 
 /**
- *  Representa um separador na �rvore de Jun��o (JunctionTree) entre cliques.
+ * It represents a separator between cliques in a junction tree.
  *
- *@author     Michael e Rommel
+ *@author     Michael
+ *@author     Rommel
  */
 public class Separator implements IRandomVariable, java.io.Serializable {
 
@@ -40,14 +41,8 @@ public class Separator implements IRandomVariable, java.io.Serializable {
     private PotentialTable utilityTable;
     private ArrayList<Node> nos;
 
-    /**
-     *  Guarda o primeiro clique, quando h� orienta��o assume sem�ntica como origem.
-     */
     private Clique clique1;
 
-    /**
-     *  Guarda o segundo clique, quando h� orienta��o assume sem�ntica como destino.
-     */
     private Clique clique2;
     
     private Separator() {
@@ -87,28 +82,22 @@ public class Separator implements IRandomVariable, java.io.Serializable {
 
 
     /**
-     *  Insere uma nova lista de n�s clusterizados.
-     *
-     *@param  nodeList  lista de n�s clusterizados.
+     *@param  nodeList list of clusterized nodes
      */
-    public void setNodes(ArrayList<Node> nos) {
-        this.nos = nos;
+    public void setNodes(ArrayList<Node> nodeList) {
+        this.nos = nodeList;
     }
 
 
     /**
-     *  Retorna a tabela de potencial associada ao separador.
-     *
-     *@return    tabela de potencial associada ao separador
+     *@return    potential table associated with the separator.
      */
     public PotentialTable getProbabilityFunction() {
         return tabelaPot;
     }
 
     /**
-     *  Retorna a tabela de utilidade associada ao separador.
-     *
-     *@return    tabela de utilidade associada ao separador
+     *@return    utility table associated with the separator
      */
     public PotentialTable getUtilityTable() {
         return utilityTable;
@@ -116,9 +105,7 @@ public class Separator implements IRandomVariable, java.io.Serializable {
 
 
     /**
-     *  Retorna a lista de n�s clusterizados.
-     *
-     *@return    n�s clusterizados
+     *@return    List of clusterized nodes.
      */
     public ArrayList<Node> getNodes() {
         return nos;
@@ -126,9 +113,9 @@ public class Separator implements IRandomVariable, java.io.Serializable {
 
 
     /**
-     *  Retorna o primeiro n�.
+     *  Returns the first (origin) clique
      *
-     *@return    n� 1
+     *@return    node 1
      */
     public Clique getClique1() {
         return clique1;
@@ -136,13 +123,24 @@ public class Separator implements IRandomVariable, java.io.Serializable {
 
 
     /**
-     *  Retorna o segundo n�.
+     *  Returns the second (destination) clique.
      *
-     *@return    n� 2
+     *@return    node 2
      */
     public Clique getClique2() {
         return clique2;
     }
 
+    
+    /**
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		for (int j = nos.size()-1; j>=0;j--) {
+			sb.append(nos.get(j) + " ");				
+		}
+		return sb.toString();
+	}
 }
 
