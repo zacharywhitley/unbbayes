@@ -331,4 +331,18 @@ public class PNCompilationPane extends JPanel {
 	public JButton getSaveNetImage() {
 		return this.saveNetImage;
 	}
+
+	/**
+	 * @return the jtbCompilation
+	 */
+	public JToolBar getJtbCompilation() {
+		return jtbCompilation;
+	}
+
+	/**
+	 * @return the topPanel
+	 */
+	public JPanel getTopPanel() {
+		return topPanel;
+	}
 }
