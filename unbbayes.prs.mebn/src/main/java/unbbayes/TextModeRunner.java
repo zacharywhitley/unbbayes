@@ -54,9 +54,17 @@ import unbbayes.util.Debug;
 public class TextModeRunner {
 	
 	private boolean isLogEnabled = false;
+	private ISSBNGenerator ssbngenerator;
 	
 	public TextModeRunner() {
 		super();
+		LaskeyAlgorithmParameters parameters = new LaskeyAlgorithmParameters(); 
+		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION, "true");
+		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_BUILDER, "true"); 
+		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_PRUNE, "true"); 
+		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION, "true"); 
+	    
+		ssbngenerator = new LaskeySSBNGenerator(parameters);
 	}
 
 	/**
@@ -146,16 +154,10 @@ public class TextModeRunner {
 		
 	    knowledgeBase = createKnowledgeBase(knowledgeBase, mebn); 	
 		
-		LaskeyAlgorithmParameters parameters = new LaskeyAlgorithmParameters(); 
-		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION, "true");
-		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_BUILDER, "true"); 
-		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_PRUNE, "true"); 
-		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION, "true"); 
-	    
-		ISSBNGenerator ssbngenerator = new LaskeySSBNGenerator(parameters);
-		ssbngenerator.setLogEnabled(this.isLogEnabled());
 		
-		SSBN ssbn = ssbngenerator.generateSSBN(listQueries, knowledgeBase); 
+		getSSBNgenerator().setLogEnabled(this.isLogEnabled());
+		
+		SSBN ssbn = getSSBNgenerator().generateSSBN(listQueries, knowledgeBase); 
 		
 		
 		probabilisticNetwork = ssbn.getProbabilisticNetwork();
@@ -174,6 +176,14 @@ public class TextModeRunner {
 		return specificSituationBayesianNetwork ;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 	}
 	
+	public ISSBNGenerator getSSBNgenerator() {
+		return ssbngenerator;
+	}
+
+	public void setSSBNgenerator(ISSBNGenerator ssbngenerator) {
+		this.ssbngenerator = ssbngenerator;
+	}
+
 	/**
 	 * Entry point for laskey algorithm.
 	 * @param mebn
@@ -237,7 +247,7 @@ public class TextModeRunner {
 				}
 			}
 			if (residentNode == null) {
-				// could not find the resident node.Å@Just ignore
+				// could not find the resident node.ÔøΩ@Just ignore
 				try {
 					Debug.println(getClass(), "Could not find resident node " + queryInfo.getNodeName());
 				} catch (Throwable t) {
