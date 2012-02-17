@@ -4,6 +4,8 @@
 package unbbayes.prs.bn;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -67,8 +69,16 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 	private List<Edge> markovArcCpy = new ArrayList<Edge>();
 
 	private List<IInferenceAlgorithmListener> inferenceAlgorithmListeners = new ArrayList<IInferenceAlgorithmListener>();
-  	
 
+	private String virtualNodePrefix = "";
+
+	private Collection<INode> virtualNodes = new HashSet<INode>();
+
+	private float virtualNodePositionRandomness = 500;
+  	
+	private ILikelihoodExtractor likelihoodExtractor = LikelihoodExtractor.newInstance();
+	
+	
 	/**
 	 * Default constructor for plugin support
 	 */
@@ -76,6 +86,8 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		super();
 		// initialize commands for checkConsistency
 		this.setVerifyConsistencyCommandList(this.initConsistencyCommandList());
+		
+		// add dynamically changeable behavior (i.e. routines that are not "mandatory", so it is interesting to be able to disable them when needed)
 		this.getInferenceAlgorithmListeners().add(new IInferenceAlgorithmListener() {
 			private Map<String, Float[]> likelihoodMap;
 
@@ -116,9 +128,15 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 							TreeVariable node = (TreeVariable)n;
 							if (node.hasEvidence()) {
 								if (node.hasLikelihood()) {
-									Float[] likelihood = new Float[node.getStatesSize()];
-									for (int i = 0; i < node.getStatesSize(); i++) {
-										likelihood[i] = node.getMarginalAt(i);
+//									Float[] likelihood = new Float[node.getStatesSize()];
+//									for (int i = 0; i < node.getStatesSize(); i++) {
+//										likelihood[i] = node.getMarginalAt(i);
+//									}
+//									likelihoodMap.put(node.getName(), likelihood);
+
+									Float[] likelihood = new Float[node.getLikelihood().length];
+									for (int i = 0; i < likelihood.length; i++) {
+										likelihood[i] = node.getLikelihood()[i];
 									}
 									likelihoodMap.put(node.getName(), likelihood);
 								} else {
@@ -144,7 +162,7 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 							TreeVariable var = ((TreeVariable)net.getNode(name));
 							try {
 								var.addLikeliHood(likelihood);
-//								jt.addVirtualNode(net, var, likelihood);
+								jt.addVirtualNode((List)Collections.singletonList(var));
 							} catch (Exception e) {
 								throw new RuntimeException(e);
 							}
@@ -927,139 +945,183 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 
 	/**
 	 * Add a virtual node with 2 states.
-	 * The new virtual node is just a child of parentNode (which must have 2 states as well).
-	 * This method is based on page 9 of the paper "Soft Evidential Update for Probabilistic Multiagent Systems"
+	 * The new virtual node is just a child of parentNode.
+	 * It assumes parentNodes are all within {@link #getNet()}
+	 * and {@link #getLikelihoodExtractor()} can extract the likelihood from parentNodes.
+	 * @param parentNodes	: all nodes to add virtual evidence. Usually, this is a list with 1 element, but if you want to add
+	 * conditional soft evidence, then the first node of this list will be the node whose soft evidence will be added, and the other
+	 * nodes are the nodes assumed to be true in the condicional evidence.
+	 * @throws Exception
+	 * @author Shou Matsumoto
 	 * @author Alexandre Martins
-	 * TODO incorporate in {@link #propagate()} and allow multiple states.
 	 */
-	public void addVirtualNode(SingleEntityNetwork net, Node parentNode, float[] likelihood) throws Exception {
-		if (parentNode.getStatesSize() != 2) {
-			throw new IllegalArgumentException("Virtual evidence is supported for nodes with only 2 states.");
-		}
-		//no virtual, para propagacao da evidencia incerta
-		ProbabilisticNode virtualNode = new ProbabilisticNode();
-		//V de virtual
-		virtualNode.setName("V"+parentNode.getName());
-		virtualNode.setDescription("Virtual "+parentNode.getDescription());
-		//adiciono os mesmos estados presentes no no pai
-		virtualNode.appendState(parentNode.getStateAt(0) );
-		virtualNode.appendState(parentNode.getStateAt(1));
+	public void addVirtualNode(List<Node> parentNodes) throws Exception {
 		
+		// assertion
+		if (parentNodes == null || parentNodes.size() <= 0) {
+			throw new IllegalArgumentException("parentNodes == null");
+		}
+		
+		// extract network
+		SingleEntityNetwork net = this.getNet();
+		if (net == null) {
+			throw new IllegalStateException("Network == null");
+		}
+		
+		// extract likelihood value from extractor
+		float[] likelihood = this.getLikelihoodExtractor().extractLikelihoodRatio((List)parentNodes);
+		// reset any finding of the main parent (the parent with the likelihood evidence)
+		((TreeVariable)parentNodes.get(0)).resetLikelihood();
+		
+		// this is going to be the virtual node for propagation of likelihood evidence
+		ProbabilisticNode virtualNode = new ProbabilisticNode();
+
+		// set the position of the virtual node to be close to the node (1st element of the list) that we are adding evidence
+		java.awt.geom.Point2D.Double position = parentNodes.get(0).getPosition();
+		virtualNode.setPosition(position.getX() + virtualNodePositionRandomness*Math.random(), position.getY() + virtualNodePositionRandomness *Math.random());
+		
+		// generate name of virtual node
+		String newName = getVirtualNodePrefix();
+		for (Node node : parentNodes) {
+			newName += node.getName();
+		}
+		// append the likelihood value to the name of the node
+		for (float f : likelihood) {
+			newName += "_" + f;
+		}
+		if (net.getNodeIndex(newName) >= 0) {
+			// guarantee a unique name
+			for (int i = 1; i < Integer.MAX_VALUE; i++) { // We assume Integer.MAX_VALUE is enough...
+				if (net.getNodeIndex(newName + "_" + i) < 0) {
+					// Supposedly, there is no node with the same name. Use it
+					newName = newName + "_" + i;
+					break;
+				}
+			}
+		}
+		virtualNode.setName(newName);
+		
+		// we need to add only 2 states (one will be set as a finding)
+		virtualNode.appendState(this.getResource().getString("likelihoodName"));
+		virtualNode.appendState(this.getResource().getString("dummyState"));
 		
 		net.addNode(virtualNode);
 		
-		//crio a tabela de potencial do no virtual
+		// init potential table for virtual node
 		PotentialTable virtualNodeCPT = virtualNode.getProbabilityFunction();
-		virtualNodeCPT.addVariable(virtualNode);
-		net.addEdge(new Edge(parentNode,virtualNode));
-		//a tabela de variaveis e setada com valores 1, visto que ela nao sera necessaria durante o processo,
-		//pois a tabela de potencial do clique virtual sera calculada diretamente pelos valores fornecidos
-		virtualNodeCPT.setValue(0, .5f);
-		virtualNodeCPT.setValue(1, .5f);
-		virtualNodeCPT.setValue(2, .5f);
-		virtualNodeCPT.setValue(3, .5f);
+		if (virtualNodeCPT.getVariablesSize() <= 0) {
+			// if virtualNode itself is not registered as a variable in virtualNodeCPT, add it  
+			virtualNodeCPT.addVariable(virtualNode);
+		}
 		
+		// add edge from parentNodes to the virtual node
+		for (Node parentNode : parentNodes) {
+			net.addEdge(new Edge((Node) parentNode,virtualNode));
+		}
 		
-		//crio o clique virtual
+		/*
+		 * Fill virtualNodeCPT like the following table:
+		 * 
+		 * 				Parent2State0		Parent2State0		Parent2State0		
+		 * 				ParentState0		ParentState1		ParentState2	...
+		 * virtState1	likelihood[0]		likelihood[1]		likelihood[2]
+		 * virtState2	1-likelihood[0]		1-likelihood[1]		1-likelihood[2]
+		 * 
+		 * 
+		 */
+		try {
+			for (int i = 0; i < virtualNodeCPT.tableSize()/2; i++) {
+				virtualNodeCPT.setValue(2*i, likelihood[i]);
+				virtualNodeCPT.setValue(2*i+1, 1-likelihood[i]);
+			}
+		} catch (ArrayIndexOutOfBoundsException e) {
+			throw new IllegalArgumentException(this.getResource().getString("sizeOfLikelihoodException") + this.getResource().getString("expectedSize") + virtualNodeCPT.tableSize()/2 , e);
+		}
+		
+		// create clique for the virtual node and parents
 		Clique auxClique = new Clique();
 		auxClique.getNodes().add(virtualNode);
-		auxClique.getNodes().add(parentNode);
+		auxClique.getNodes().addAll(parentNodes);
 		auxClique.getProbabilityFunction().addVariable(virtualNode);
-		auxClique.getProbabilityFunction().addVariable(parentNode);
+		for (Node parentNode : parentNodes) {
+			auxClique.getProbabilityFunction().addVariable(parentNode);
+		}
 		
-		//a tabela de variaveis do clique virtual contem as variaveis na seguinte sequencia: noPai,noV
-		//como apenas a variavel noV recebera o finding, interessam, a cada finding, apenas as posicoes 0 e 2(em caso do finding for para o estado 0) 
-		//ou as posicoes 1 e 3(em caso do finding for para o estado 1). As posicoes que nao interessam sao setadas da mesma forma que as que interessam, 
-		//porem elas serao zeradas apos o finging, nao influenciando em nada
-		auxClique.getProbabilityFunction().setValue(0, likelihood[0]);
-		auxClique.getProbabilityFunction().setValue(1, likelihood[0]);
-		auxClique.getProbabilityFunction().setValue(2, likelihood[1]);
-		auxClique.getProbabilityFunction().setValue(3, likelihood[1]);
-		
-//		((TreeVariable)parentNode).restoreMarginal();
-		
+		// add clique to junction tree, so that the algorithm can handle the clique correctly
 		IJunctionTree junctionTree = net.getJunctionTree();
-		
 		junctionTree.getCliques().add(auxClique);
 		
-		//busco o menor clique que contenha o no pai (e que nao contenha o no virtual, ou seja, ele nao seleciona o clique que acabou de ser criado)
-		//para ser utilizado na criacao do separador
+		// find the smallest clique containing all the parents
 		int smallestSize = Integer.MAX_VALUE;
 		Clique smallestClique = null;
-		Clique clique;
-		for (int c2 = 0; c2 < junctionTree.getCliques().size(); c2++) {
-			clique = (Clique) junctionTree.getCliques().get(c2);
-			if (clique.getNodes().contains(parentNode) && !clique.getNodes().contains(virtualNode) && (clique.getProbabilityFunction().tableSize() < smallestSize)) {
+		for (Clique clique : junctionTree.getCliques()) {
+			if (clique.getNodes().containsAll(parentNodes) && !clique.getNodes().contains(virtualNode) && (clique.getProbabilityFunction().tableSize() < smallestSize)) {
 				smallestClique = clique;
 				smallestSize = auxClique.getProbabilityFunction().tableSize();
 			}
 		}
 		
-		//crio o separador entre o clique pai e o virtual
-		Separator sep = new Separator(smallestClique , auxClique);
-		ArrayList<Node> node = new ArrayList<Node>();
-		node.add(parentNode);
-		sep.setNodes(node);
-		sep.getProbabilityFunction().addVariable(parentNode);
-		//seto os valores para 1
-		sep.getProbabilityFunction().setValue(0, 1f);
-		sep.getProbabilityFunction().setValue(1, 1f);
-		junctionTree.addSeparator(sep);
-
-		//marginalizo a variavel pai do clique que esta associado a ela
-		//o menor clique selecionado acima tambem poderia ser utilizado para essa marginalizacao
-		//nao utilizei o clique associado na criacao do separador pois ele pode ser um separador
-		// lets use the previously used clique if the obtained associated clique is actually a separator
-		IRandomVariable parentClique = smallestClique;
-		if (parentClique instanceof Separator) {
-			Separator separator = (Separator) parentClique;
-			// smallestClique must not be a clique, 
-			// for instance, there is no way smallestClique is a separator, 
-			// because it was extracted from junctionTree.getCliques(), which can return only cliques.
-			// But I'd like to make sure it is a  clique
-			if (separator.getClique1().getNodes().size() <= separator.getClique2().getNodes().size()) {
-				parentClique = separator.getClique1();
-			} else {
-				parentClique = separator.getClique2();
-			}
-		}
-		PotentialTable auxTab = (PotentialTable) ((PotentialTable)parentClique.getProbabilityFunction()).clone();
-        int index = auxTab.indexOfVariable(parentNode);
-        int size = parentClique.getProbabilityFunction().variableCount();
-        for (int i = 0; i < size; i++) {
-            if (i != index) {
-            	auxTab.removeVariable(parentClique.getProbabilityFunction().getVariableAt(i));
-            }
-        }
-        //faz o mesmo que a passagem de mensagens entre o clique pai e o virtual durante as fases de coleta e distribui
-        //durante a passagem de mensagem do clique virtual para o clique pai(coleta),a
-        //tab. de potencial do clique pai nao sera alterada,podendo essa etapa ser desconsiderada
-        //atualizo as probabilidades da tabela de potencial do no virtual com os valores q foram marginalizados(distribui)
-        //preferi fazer as fases coleta e distribui nesse momento, economizando na passagem de mensagens pela rede
-        (auxClique.getProbabilityFunction()).opTab(auxTab, PotentialTable.PRODUCT_OPERATOR);
-        int tableSize = auxTab.tableSize();
-        //atualizo as probabilidades da tabela de potencial do separador com os valores q foram marginalizados(distribui)
-        for (int i = 0; i < tableSize; i++) {
-        	sep.getProbabilityFunction().setValue(i, auxTab.getValue(i));
-    	}
-				
-		//necessario para que o novo no seje utilizado no processo de update(metodo updateEvidences)
-		net.resetNodesCopy();
-		//associo o novo no ao novo clique, para posterior busca do clique associado ao no
-		auxClique.getAssociatedProbabilisticNodes().add(virtualNode);
-		//associo o novo clique ao novo no, para fins de marginalizacao
-		virtualNode.setAssociatedClique(auxClique);
-		//inicio a variavel que ira receber os valores da marginalizacao, caso nao seja inicializada, lanca NullPointerException
-		virtualNode.initMarginalList();
-
-		if(likelihood[0] >= 0.5){
-			virtualNode.addFinding(0);
-		} else {
-			virtualNode.addFinding(1);
+		// if could not find smallest clique, the arguments are inconsistent
+		if (smallestClique == null) {
+			throw new IllegalArgumentException(this.getResource().getString("noCliqueForNodes") + parentNodes);
 		}
 		
+		// create separator between the clique of parent nodes and virtual node (the separator should contain all parents)
+		Separator sep = new Separator(smallestClique , auxClique);
+		sep.setNodes(new ArrayList<Node>(parentNodes));
+		for (Node parentNode : parentNodes) {
+			sep.getProbabilityFunction().addVariable(parentNode);
+		}
+		junctionTree.addSeparator(sep);
+		
+		// just to guarantee that the network is fresh
+		net.resetNodesCopy();
+		
+		// now, let's link the nodes with the cliques
+		auxClique.getAssociatedProbabilisticNodes().add(virtualNode);
+		virtualNode.setAssociatedClique(auxClique);
+		
+		// this is not necessary for ProbabilisticNode, but other types of nodes may need explicit initialization of the marginals
+		virtualNode.initMarginalList();
+		
+		// initialize the probabilities of clique and separator
+		net.getJunctionTree().initBelief(auxClique);
+		net.getJunctionTree().initBelief(sep);	// this one sets all separator potentials to 1
+		
+		// propagation (make sure the probabilities of the new clique and separator becomes globally consistent)
+		junctionTree.consistency();
+		
+		// store the potentials after propagation, so that the "reset" will restore these values
+		auxClique.getProbabilityFunction().copyData();	
+		sep.getProbabilityFunction().copyData();
+		
+		// update the marginal values (we only updated clique/separator potentials, thus, the marginals still have the old values if we do not update)
+		virtualNode.updateMarginal();
 		virtualNode.copyMarginal();
 		
+		// set finding always to the first state (because the second state is just a dummy state)
+		virtualNode.addFinding(0);
+
+
+		// register new virtual node (so that it can be removed later)
+		this.getVirtualNodes().add(virtualNode);
+		
+	}
+	
+	/**
+	 * This method just removes all virtual nodes created in {@link #addVirtualNode(List)}
+	 * from {@link #getNetwork()} by accessing #getVirtualNodes().
+	 * #getVirtualNodes() will be cleared after execution of this method. 
+	 * Caution: this method does not remove the cliques and separators
+	 * created by {@link #addVirtualNode(List)}.
+	 */
+	public void clearVirtualNodes() {
+		for (INode node : getVirtualNodes()) {
+			if (node instanceof Node) {
+				getNetwork().removeNode((Node) node);
+			}
+		}
+		getVirtualNodes().clear();
 	}
 
 
@@ -1277,6 +1339,89 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 //		if (this.getOptionPanel() != null) {
 //			this.getOptionPanel().setMediator(mediator);
 //		}
+	}
+
+	/**
+	 * This is going to be a prefix for names of virtual nodes
+	 * created by {@link #addVirtualNode(SingleEntityNetwork, Node, float[])}
+	 * @return the virtualNodePrefix
+	 */
+	public String getVirtualNodePrefix() {
+		return virtualNodePrefix;
+	}
+
+	/**
+	 * This is going to be a prefix for names of virtual nodes
+	 * created by {@link #addVirtualNode(SingleEntityNetwork, Node, float[])}
+	 * @param virtualNodePrefix the virtualNodePrefix to set
+	 */
+	public void setVirtualNodePrefix(String virtualNodePrefix) {
+		this.virtualNodePrefix = virtualNodePrefix;
+	}
+
+	/**
+	 * Stores all virtual nodes created in {@link #addVirtualNode(SingleEntityNetwork, Node, float[])}
+	 * @return the virtualNodes
+	 */
+	public Collection<INode> getVirtualNodes() {
+		return virtualNodes;
+	}
+
+	/**
+	 * Stores all virtual nodes created in {@link #addVirtualNode(SingleEntityNetwork, Node, float[])}
+	 * @param virtualNodes the virtualNodes to set
+	 */
+	public void setVirtualNodes(Collection<INode> virtualNodes) {
+		this.virtualNodes = virtualNodes;
+	}
+
+	/**
+	 * @return
+	 * Given that {@link #addVirtualNode(SingleEntityNetwork, List, float[])} will
+	 * create a virtual node close to the node which we are 
+	 * adding the soft/likelihood evidence, this method returns the maximum distance
+	 * from such node (which we add the evidence) to the virtual node.
+	 * @see #addVirtualNode(SingleEntityNetwork, List, float[])
+	 */
+	public float getVirtualNodePositionRandomness() {
+		return virtualNodePositionRandomness;
+	}
+
+	/**
+	 * 
+	 * Given that {@link #addVirtualNode(SingleEntityNetwork, List, float[])} will
+	 * create a virtual node close to the node which we are 
+	 * adding the soft/likelihood evidence, this method returns the maximum distance
+	 * from such node (which we add the evidence) to the virtual node.
+	 * @see #addVirtualNode(SingleEntityNetwork, List, float[])
+	 * @param virtualNodePositionRandomness the virtualNodePositionRandomness to set
+	 */
+	public void setVirtualNodePositionRandomness(float virtualNodePositionRandomness) {
+		this.virtualNodePositionRandomness = virtualNodePositionRandomness;
+	}
+
+	/**
+	 * This object is used in {@link #addVirtualNode(List)} in order
+	 * to extract the likelihood ratio from a list of nodes.
+	 * Change this object if you want it to extract
+	 * likelihood ratio in a different manner, or you want the likelihood ratio
+	 * to be transformed before it is used in {@link #addVirtualNode(List)}.
+	 * @param likelihoodExtractor the likelihoodExtractor to set
+	 */
+	public void setLikelihoodExtractor(ILikelihoodExtractor likelihoodExtractor) {
+		this.likelihoodExtractor = likelihoodExtractor;
+	}
+
+	/**
+	 * This object is used in {@link #addVirtualNode(List)} in order
+	 * to extract the likelihood ratio from a list of nodes.
+	 * Change this object if you want it to extract
+	 * likelihood ratio in a different manner, or you want the likelihood ratio
+	 * to be transformed before it is used in {@link #addVirtualNode(List)}.
+	 * @return the likelihoodExtractor
+	 */
+	public ILikelihoodExtractor getLikelihoodExtractor() {
+		return likelihoodExtractor;
 	}
 
 	

@@ -37,7 +37,9 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     private float[] marginalCopy;
 
     private int evidence = -1;
-    private boolean hasLikelihood = false;
+//    private boolean hasLikelihood = false;
+
+	private float[] likelihood = null;
 
     /**
      * @deprecated use {@link #updateMarginal()} instead
@@ -128,14 +130,19 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     }
     
     public void resetLikelihood() {
-    	if (hasLikelihood) {
+//    	if (hasLikelihood) {
+//    		evidence = -1;
+//    		hasLikelihood = false;
+//    	}
+    	if (hasLikelihood()) {
     		evidence = -1;
-    		hasLikelihood = false;
+    		likelihood = null;
     	}
     }
     
     public boolean hasLikelihood() {
-    	return hasLikelihood;
+//    	return hasLikelihood;
+    	return likelihood != null;
     }
 
 
@@ -145,10 +152,14 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
      * @param stateIndex the index of the state to be set as evidence.
      */
     public void addFinding(int stateIndex) {
-        float[] likelihood = new float[getStatesSize()];
+//        float[] likelihood = new float[getStatesSize()];
+//        likelihood[stateIndex] = 1;
+//        setMarginalProbabilities(likelihood);
         evidence = stateIndex;
-        likelihood[stateIndex] = 1;
-        setMarginalProbabilities(likelihood);
+        for (int i = 0; i < getStatesSize(); i++) {
+        	// set marginal to 1 if stateindex == i; 0 otherwise.
+			setMarginalAt(i, ((i==stateIndex)?1:0) );
+		}
     }
 
     /**
@@ -157,25 +168,31 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
      * @param likelihood probabilities associated to every state of this node.
      */
     public void addLikeliHood(float likelihood[]) {
-    	hasLikelihood = true;
-    	// Does it matter which state is set as evidence?
-    	// For now we are choosing the one with the highest probability.
-    	float largestProb = likelihood[0];
-//    	float sumLikelihood = 0;
-    	evidence = 0;
-        for (int i = 0; i < getStatesSize(); i++) {
+    	
+    	this.likelihood = likelihood;
+    	if (hasLikelihood()) {
+    		evidence = 0;
+    	}
+    	
+//    	hasLikelihood = true;
+//    	 Does it matter which state is set as evidence?
+//    	 For now we are choosing the one with the highest probability.
+//    	float largestProb = likelihood[0];
+////    	float sumLikelihood = 0;
+//    	evidence = 0;
+//        for (int i = 0; i < getStatesSize(); i++) {
 //            setMarginalAt(i, likelihood[i]);
-            if (likelihood[i] > largestProb) {
-            	largestProb = likelihood[i];
-            	evidence = i;
-            }
-//            sumLikelihood += likelihood[i];
-        }
-        
-        for (int i = 0; i < getStatesSize(); i++) {
-            setMarginalAt(i, likelihood[i]/largestProb);
-//            setMarginalAt(i, likelihood[i]/sumLikelihood);
-        }
+//            if (likelihood[i] > largestProb) {
+//            	largestProb = likelihood[i];
+//            	evidence = i;
+//            }
+////            sumLikelihood += likelihood[i];
+//        }
+//        
+////        for (int i = 0; i < getStatesSize(); i++) {
+////            setMarginalAt(i, likelihood[i]/largestProb);
+////            setMarginalAt(i, likelihood[i]/sumLikelihood);
+////        }
         
     }
 
@@ -223,5 +240,20 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     		}
     	}
     }
+
+	/**
+	 * @return the likelihood of a likelihood evidence
+	 */
+	public float[] getLikelihood() {
+		return likelihood;
+	}
+
+	/**
+	 * This is the same of {@link #addLikeliHood(float[])}
+	 * @param likelihood the likelihood to set
+	 */
+	public void setLikelihood(float[] likelihood) {
+		this.addLikeliHood(likelihood);
+	}
 	
 }

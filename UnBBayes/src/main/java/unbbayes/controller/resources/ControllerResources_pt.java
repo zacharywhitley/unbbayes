@@ -27,7 +27,10 @@ import java.util.ListResourceBundle;
  * <p>Description: Arquivo de recurso para o pacote unbbayes.controller. Localization = portuguese.</p>
  * <p>Copyright: Copyright (c) 2001</p>
  * <p>Company: UnB</p>
- * @author Rommel Novaes Carvalho, Michael Onishi
+ * @author Rommel Novaes Carvalho
+ * @author Michael Onishi
+ * @author Shou Matsumoto
+ * @author Laecio
  * @version 1.0
  * @since 05/04/2002
  */
@@ -173,5 +176,10 @@ public class ControllerResources_pt extends ListResourceBundle {
 		{"shadowOpacityInputErrorTitle", "Erro com Opacidade da Sombra"},
 		{"shadowOpacityInputErrorMessage", "O valor tem que ser um número entre 0 e 1."},
 		
+		
+		{"sizeOfLikelihoodException","O tamanho do vetor de likelihood deve ser suficiente para preencher o potencial de um dos estados no nó virtual. "},
+		{"expectedSize","Tamanho esperado: "},
+		{"noCliqueForNodes","Nenhum clique foi encontrado para os seguintes nós: "},
+		{"dummyState","Dummy"},
 	};
 }

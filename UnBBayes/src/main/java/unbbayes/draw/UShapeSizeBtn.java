@@ -61,7 +61,9 @@ public class UShapeSizeBtn extends UShape implements MouseMotionListener, MouseL
         Graphics2D g2 = (Graphics2D)g;
   
         g2.setPaint( new GradientPaint(getWidth()/2, 0, Color.white, getWidth()/2,getHeight()-1, Color.blue, false));
-        g2.fill(ellipse);
+        if (ellipse != null) {
+        	g2.fill(ellipse);
+        }
 	}
 	   
 	public Rectangle getDraggedRect(int x, int y) 

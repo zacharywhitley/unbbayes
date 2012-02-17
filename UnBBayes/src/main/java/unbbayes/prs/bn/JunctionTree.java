@@ -213,48 +213,14 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 			int sizeCliques = cliques.size();
 			for (int k = 0; k < sizeCliques; k++) {
 				auxClique = cliques.get(k);
-				auxTabPot = auxClique.getProbabilityFunction();
-				auxUtilTab = auxClique.getUtilityTable();
-	
-				int tableSize = auxTabPot.tableSize();
-				for (int c = 0; c < tableSize; c++) {
-					auxTabPot.setValue(c, 1);
-				}
-	
-				ProbabilisticNode auxVP;
-				int sizeAssociados = auxClique.getAssociatedProbabilisticNodes().size();
-				for (int c = 0; c < sizeAssociados; c++) {
-					auxVP = (ProbabilisticNode) auxClique.getAssociatedProbabilisticNodes().get(c);
-					auxTabPot.opTab(auxVP.getProbabilityFunction(), PotentialTable.PRODUCT_OPERATOR);
-				}
-	
-				tableSize = auxUtilTab.tableSize();
-				for (int i = 0; i < tableSize; i++) {
-					auxUtilTab.setValue(i, 0);
-				}
-				UtilityNode utilNode;
-				sizeAssociados = auxClique.getAssociatedUtilityNodes().size();
-				for (int i = 0; i < sizeAssociados; i++) {
-					utilNode = (UtilityNode) auxClique.getAssociatedUtilityNodes().get(i);
-					auxUtilTab.opTab(utilNode.getProbabilityFunction(), PotentialTable.PLUS_OPERATOR);
-				}
+				this.initBelief(auxClique);
 			}
 	
 			Separator auxSep;
 			int sizeSeparadores = separators.size();
 			for (int k = 0; k < sizeSeparadores; k++) {
 				auxSep = (Separator) separators.get(k);
-				auxTabPot = auxSep.getProbabilityFunction();
-				int sizeDados = auxTabPot.tableSize();
-				for (int c = 0; c < sizeDados; c++) {
-					auxTabPot.setValue(c, 1);
-				}
-	
-				auxUtilTab = auxSep.getUtilityTable();
-				sizeDados = auxUtilTab.tableSize();
-				for (int i = 0; i < sizeDados; i++) {
-					auxUtilTab.setValue(i, 0);
-				}
+				this.initBelief(auxSep);
 			}
 			
 			consistency();
@@ -265,6 +231,77 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		}
 	}
 	
+	/**
+	 * Initializes the probability potential of a random variable. Particularly, it
+	 * initializes potentials of either a {@link Separator} or a {@link Clique}
+	 * @param rv
+	 * @see #initBelief(Separator)
+	 * @see #initBelief(Clique)
+	 */
+	public void initBelief(IRandomVariable rv) {
+		if (rv instanceof Clique) {
+			this.initBelief((Clique)rv);
+			return;
+		} else if (rv instanceof Separator) {
+			this.initBelief((Separator)rv);
+			return;
+		}
+		throw new IllegalArgumentException(rv + " != " + Clique.class.getName() + " && " + rv + " != " + Separator.class.getName());
+	}
+	
+	/**
+	 * Initializes the probability potential of a separator
+	 * @param auxSep
+	 */
+	public void initBelief(Separator auxSep) {
+		// initialize table related to probabilistic nodes
+		PotentialTable auxTabPot = auxSep.getProbabilityFunction();
+		int sizeDados = auxTabPot.tableSize();
+		for (int c = 0; c < sizeDados; c++) {
+			auxTabPot.setValue(c, 1);
+		}
+
+		// initialize table related to utility nodes
+		PotentialTable auxUtilTab = auxSep.getUtilityTable();
+		sizeDados = auxUtilTab.tableSize();
+		for (int i = 0; i < sizeDados; i++) {
+			auxUtilTab.setValue(i, 0);
+		}
+		
+	}
+
+	/**
+	 * Initializes the probability potential of a clique
+	 * @param clique
+	 */
+	public void initBelief(Clique clique) {
+		PotentialTable auxTabPot = clique.getProbabilityFunction();
+		PotentialTable auxUtilTab = clique.getUtilityTable();
+
+		int tableSize = auxTabPot.tableSize();
+		for (int c = 0; c < tableSize; c++) {
+			auxTabPot.setValue(c, 1);
+		}
+
+		ProbabilisticNode auxVP;
+		int sizeAssociados = clique.getAssociatedProbabilisticNodes().size();
+		for (int c = 0; c < sizeAssociados; c++) {
+			auxVP = (ProbabilisticNode) clique.getAssociatedProbabilisticNodes().get(c);
+			auxTabPot.opTab(auxVP.getProbabilityFunction(), PotentialTable.PRODUCT_OPERATOR);
+		}
+
+		tableSize = auxUtilTab.tableSize();
+		for (int i = 0; i < tableSize; i++) {
+			auxUtilTab.setValue(i, 0);
+		}
+		UtilityNode utilNode;
+		sizeAssociados = clique.getAssociatedUtilityNodes().size();
+		for (int i = 0; i < sizeAssociados; i++) {
+			utilNode = (UtilityNode) clique.getAssociatedUtilityNodes().get(i);
+			auxUtilTab.opTab(utilNode.getProbabilityFunction(), PotentialTable.PLUS_OPERATOR);
+		}
+	}
+
 	private void restoreTableData() {
 		int sizeCliques = cliques.size();
 		for (int k = 0; k < sizeCliques; k++) {

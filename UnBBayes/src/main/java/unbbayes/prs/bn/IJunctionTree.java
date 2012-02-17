@@ -46,5 +46,12 @@ public interface IJunctionTree {
 	 * @return The separator associated with these Cliques or null if this separator doesn't exist.
 	 */
 	public abstract Separator getSeparator(Clique clique1, Clique clique2);
+	
+	/**
+	 * Initializes the probability potential of a random variable. Particularly, it
+	 * initializes potentials of either a {@link Separator} or a {@link Clique}
+	 * @param rv
+	 */
+	public void initBelief(IRandomVariable rv);
 
 }

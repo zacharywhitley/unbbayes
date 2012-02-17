@@ -27,7 +27,10 @@ import java.util.ListResourceBundle;
  * <p>Description: Resources file for unbbayes.controller package. Localization = english.</p>
  * <p>Copyright: Copyright (c) 2001</p>
  * <p>Company: UnB</p>
- * @author Rommel Novaes Carvalho, Michael Onishi
+ * @author Rommel Novaes Carvalho
+ * @author Michael Onishi
+ * @author Shou Matsumoto
+ * @author Laecio
  * @version 1.0
  * @since 05/04/2002
  */
@@ -170,6 +173,10 @@ public class ControllerResources extends ListResourceBundle {
 		{"shadowOpacityInputErrorTitle", "Shadow Opacity Error"},
 		{"shadowOpacityInputErrorMessage", "Input must be a number between 0 and 1."},
 				
-		
+		{"sizeOfLikelihoodException","The size of likelihood must be sufficient for filling the potentials of one of the states of the virtual evidence. "},
+		{"expectedSize","Expected size: "},
+		{"noCliqueForNodes","No clique was found for the following nodes: "},
+		{"dummyState","DummyState"},
 	};
+	
 }
