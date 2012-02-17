@@ -74,39 +74,34 @@ public class Network implements Graph{
 	}
 
 	/**
-	 *  Retorna os edgeList do grafo.
-	 *
-	 *@return    edgeList do grafo.
+	 *@return    the list of all edges. Caution: a modification in this list
+	 * WILL affect the original network.
 	 */
 	public List<Edge> getEdges() {
 	    return this.edgeList;
 	}
 
 	/**
-	 *  Retorna os n�s do grafo.
-	 *
-	 *@return    n�s do grafo.
-	 * 
-	 * @todo Eliminar esse metodo! eh utilizado na classe NetWindow
+	 *@return  all nodes in the graph.
 	 */
 	public ArrayList<Node> getNodes() {
 	    return this.nodeList;
 	}
 
 	/**
-	 *  Returna o n�mero de vari�veis da rede.
-	 *
-	 *@return    n�mero de vari�veis da rede.
+	 * This is equivalent to calling {@link #getNodes()}
+	 * and then {@link ArrayList#size()}
+	 *@return    how many nodes this network contains.
 	 */
 	public int getNodeCount() {
 		return nodeList.size();
 	}
 
 	/**
-	 *  Retorna o n� do grafo com o respectivo �ndice.
-	 *
-	 *@param  index  �ndice do n�.
-	 *@return	n� com respectivo �ndice no List.
+	 * Returns a node in this network given an index.
+	 * @param  index : the index of the node to retrieve
+	 * @return	equivalent to calling {@link #getNodes()}
+	 * and then {@link ArrayList#get(int)}.
 	 */
 	public Node getNodeAt(int index) {
 	    return nodeList.get(index);
@@ -127,6 +122,7 @@ public class Network implements Graph{
 	/**
 	 * Return the index for the node with the given name.
 	 * @return the index for the node with the given name.
+	 * it will return a negative value if it was not found.
 	 */
 	public int getNodeIndex(String name) {
 		Integer index = nodeIndexes.get(name);
@@ -258,11 +254,11 @@ public class Network implements Graph{
 	}
 
 	/**
-	 *  Verifica exist�ncia de determinado arco.
+	 *  Verifica exist�ｽncia de determinado arco.
 	 *
-	 *@param  no1  n� origem.
-	 *@param  no2  n� destino.
-	 *@return      posi��o do arco no vetor ou -1 caso n�o exista tal arco.
+	 *@param  no1  n�ｽ origem.
+	 *@param  no2  n�ｽ destino.
+	 *@return      posi�ｽ�ｽo do arco no vetor ou -1 caso n�ｽo exista tal arco.
 	 */
 	public int hasEdge(Node no1, Node no2) {
 		return hasEdge(no1, no2, edgeList);
@@ -288,10 +284,10 @@ public class Network implements Graph{
 	}
 	
 	/**
-	 * Retorna o arco entre dois nós caso ele exista
+	 * Retorna o arco entre dois nﾃｳs caso ele exista
 	 * 
-	 * @param no1 Nó origem
-	 * @param no2 Nó destino
+	 * @param no1 Nﾃｳ origem
+	 * @param no2 Nﾃｳ destino
 	 * @return o arco entre no1 e no 2 caso ele exista ou null cc. 
 	 */
 	public Edge getEdge(Node no1, Node no2){
