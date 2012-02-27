@@ -294,6 +294,26 @@ public class GUIPotentialTable {
 		}
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		
+		// the following code was migrated from SEN controller to here
+		// (feature:3315773) Allow copy/paste between JTable and Excel
+		new ExcelAdapter(table);
+		
+		// (feature:3315761) Allow the selection of a single cell
+		table.setCellSelectionEnabled(true);
+		table.setRowSelectionAllowed(true);
+		
+		
+
+		// Change the text cell editor to replace text instead of appending it for all columns.
+		ReplaceTextCellEditor cellEditor = new ReplaceTextCellEditor();
+		for (int i = 0; i < table.getColumnModel().getColumnCount(); i++) {
+			table.getColumnModel().getColumn(i).setCellEditor(cellEditor);
+		}
+		
+
+		// Shows the caret while editing cell.
+		table.setSurrendersFocusOnKeystroke(true);
+		
 		return table;
 	}
 
@@ -305,10 +325,10 @@ public class GUIPotentialTable {
 	public void showTable(String title) {
 		JDialog diag = new JDialog();
 		diag.getContentPane().add(new JScrollPane(makeTable()));
-		diag.pack();
-		diag.setVisible(true);
 		diag.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		diag.setTitle(title);
+		diag.pack();
+		diag.setVisible(true);
 	}
 
 }

@@ -3,9 +3,14 @@
  */
 package unbbayes.prs.bn;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
+import unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor;
+import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
+import unbbayes.util.Debug;
 
 /**
  * This is the implementation of {@link ILikelihoodExtractor} to be used
@@ -16,6 +21,8 @@ import unbbayes.prs.INode;
  *
  */
 public class JeffreyRuleLikelihoodExtractor implements ILikelihoodExtractor {
+	
+	private IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = InCliqueConditionalProbabilityExtractor.newInstance();
 
 	/**
 	 * Default constructor is protected in order to at least allow inheritance.
@@ -44,32 +51,40 @@ public class JeffreyRuleLikelihoodExtractor implements ILikelihoodExtractor {
 	 * TODO change this method so that it can calculate the likelihood ratio for
 	 * a conditional evidence (when nodes has more than 1 element)
 	 */
-	public float[] extractLikelihoodRatio(List<INode> nodes) {
-		if (nodes == null || nodes.size() <= 0) {
+	public float[] extractLikelihoodRatio(Graph graph, INode node) {
+		if (node == null) {
 			throw new IllegalArgumentException("nodes == null || nodes.isEmpty()");
 		}
-		// TODO support conditional soft evidence
-		if (nodes.size() > 1) {
-			throw new IllegalArgumentException("nodes.size() == " + nodes.size() + " not supported");
-		}
+		
+		TreeVariable mainNode = (TreeVariable)node;
+		
+//		if (mainNode.getLikelihoodParents() != null && !mainNode.getLikelihoodParents().isEmpty()) {
+//			throw new IllegalArgumentException("Conditional soft evidence not supported yet");
+//		}
 		
 		// extract the main node
-		TreeVariable mainNode = (TreeVariable)nodes.get(0);
 		
 		// this is the probability user expects
 		float expectedProbability[] = mainNode.getLikelihood();
 		
 		// this is the ratio. 
-		float ratio[] = new float[mainNode.getStatesSize()];
+		float ratio[] = new float[expectedProbability.length];
 		
-		// Note: expectedProbability.length == mainNode.getStatesSize() == ratio.length == mainNode.marginalList.length
+		// Note: expectedProbability.length == ratio.length == length of a line in the CPT
 		
 		float total = 0;	// this value will be used to normalize ratio
+		
+		// prepare current probability distribution (just the marginal probability, if this is not a conditional soft evidence)
+		float[] currentProbability = this.getCurrentProbability(graph, mainNode);
+		if (currentProbability == null) {
+			// TODO use resource files
+			throw new RuntimeException("Could not extract current probability from " + node + " in " + graph);
+		}
 		
 		// calculate ratio
 		for (int i = 0; i < ratio.length; i++) {
 			// The actual probability can be retrieved from the main node's marginal
-			ratio[i] = expectedProbability[i] / mainNode.getMarginalAt(i);
+			ratio[i] = expectedProbability[i] / currentProbability[i];
 			total += ratio[i];
 		}
 		
@@ -79,6 +94,81 @@ public class JeffreyRuleLikelihoodExtractor implements ILikelihoodExtractor {
 		}
 		
 		return ratio;
+	}
+	
+	/**
+	 * Overwrite this method if you want {@link #extractLikelihoodRatio(Graph, INode)} to obtain current probability in 
+	 * a different manner
+	 * @param graph : graph containing node
+	 * @param node : node containing the likelihood
+	 * @return : the current probability values. If this is not a conditional soft evidence, then the value is built based on {@link TreeVariable#getMarginalAt(int)}.
+	 * Note that this value will be used to fill the first row in a virtual node's CPT, so the size of this return value is:
+	 * - if this is an unconditional evidence, then node.getStatesSize()
+	 * - if this is a conditional evidence, then it is the productory of the quantity of states of all nodes 
+	 * (i.e. node.stateSize() * node.getLikelihoodParents().get(0).stateSize() * node.getLikelihoodParents().get(1).stateSize() * ...).
+	 * It will return null if {@link #getConditionalProbabilityExtractor()} could not be used to build the current conditional probability distribution.
+	 * @see #extractLikelihoodParents(Graph, INode) : this is called in order to get node.getLikelihoodParents().
+	 */
+	protected float[] getCurrentProbability(Graph graph, TreeVariable node) {
+		float[] ret = null;	// value to return
+		
+		if (node.getLikelihoodParents() == null || node.getLikelihoodParents().isEmpty()) {
+			ret = new float[node.getStatesSize()];
+			for (int i = 0; i < ret.length; i++) {
+				ret[i] = node.getMarginalAt(i);
+			}
+		} else {
+			IProbabilityFunction table = this.getConditionalProbabilityExtractor().buildCondicionalProbability(node, this.extractLikelihoodParents(graph, node), graph, null);
+			if (table instanceof PotentialTable) {
+				PotentialTable potTable = (PotentialTable) table;
+				ret = new float[potTable.tableSize()];
+				for (int i = 0; i < ret.length; i++) {
+					ret[i] = potTable.getValue(i);
+				}
+			}
+		}
+		
+		return ret;
+//		throw new RuntimeException("!(table instanceof PotentialTable)");
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.ILikelihoodExtractor#extractLikelihoodParents(unbbayes.prs.Graph, unbbayes.prs.INode)
+	 */
+	public List<INode> extractLikelihoodParents(Graph graph, INode node) {
+		List<INode> ret = null;
+		try {
+			ret = ((TreeVariable)node).getLikelihoodParents();
+		} catch (ClassCastException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		if (ret == null) {
+			// return empty list instead of null
+			ret = new ArrayList<INode>();
+		}
+		return ret;
+	}
+
+	/**
+	 * This object is used in {@link #getCurrentProbability(int, Graph, TreeVariable)} in order
+	 * to obtain what is the current probability distribution of the network, so that a ratio
+	 * can be calculated between the current values and desired values.
+	 * @param conditionalProbabilityExtractor the conditionalProbabilityExtractor to set
+	 */
+	public void setConditionalProbabilityExtractor(
+			IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor) {
+		this.conditionalProbabilityExtractor = conditionalProbabilityExtractor;
+	}
+
+	/**
+	 * This object is used in {@link #getCurrentProbability(int, Graph, TreeVariable)} in order
+	 * to obtain what is the current probability distribution of the network, so that a ratio
+	 * can be calculated between the current values and desired values.
+	 * @return the conditionalProbabilityExtractor
+	 */
+	public IArbitraryConditionalProbabilityExtractor getConditionalProbabilityExtractor() {
+		return conditionalProbabilityExtractor;
 	}
 
 }

@@ -11,7 +11,10 @@ import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 
 import unbbayes.controller.INetworkMediator;
+import unbbayes.gui.ILikelihoodEvidenceDialogBuilder;
+import unbbayes.gui.LikelihoodEvidenceDialogBuilder;
 import unbbayes.gui.PNCompilationPane;
+import unbbayes.gui.SoftEvidenceDialogBuilder;
 import unbbayes.prs.bn.ILikelihoodExtractor;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
@@ -39,6 +42,10 @@ public class JunctionTreeOptionPanel extends InferenceAlgorithmOptionPanel {
 	private ILikelihoodExtractor softEvidenceLikelihoodExtractor = JeffreyRuleLikelihoodExtractor.newInstance();
 	
 	private ILikelihoodExtractor likelihoodEvidenceLikelihoodExtractor = LikelihoodExtractor.newInstance();
+
+	private ILikelihoodEvidenceDialogBuilder likelihoodEvidenceDialogBuilder = new LikelihoodEvidenceDialogBuilder();
+
+	private ILikelihoodEvidenceDialogBuilder softEvidenceDialogBuilder = new SoftEvidenceDialogBuilder();
 	
 	
 	public JunctionTreeOptionPanel() {
@@ -134,8 +141,15 @@ public class JunctionTreeOptionPanel extends InferenceAlgorithmOptionPanel {
 			JunctionTreeAlgorithm junctionTreeAlgorithm = (JunctionTreeAlgorithm) getInferenceAlgorithm();
 			if (this.getUseSoftEvidenceCheckBox().isSelected()) {
 				junctionTreeAlgorithm.setLikelihoodExtractor(this.getSoftEvidenceLikelihoodExtractor());
-			} else
-				junctionTreeAlgorithm.setLikelihoodExtractor(this.getLikelihoodEvidenceLikelihoodExtractor()); {
+				if (getMediator() != null) {
+					getMediator().getScreen().getEvidenceTree().setLikelihoodEvidenceDialogBuilder(getSoftEvidenceDialogBuilder());
+				}
+
+			} else {
+				junctionTreeAlgorithm.setLikelihoodExtractor(this.getLikelihoodEvidenceLikelihoodExtractor()); 
+				if (getMediator() != null) {
+					getMediator().getScreen().getEvidenceTree().setLikelihoodEvidenceDialogBuilder(getLikelihoodEvidenceDialogBuilder());
+				}
 			}
 		}
 	}
@@ -267,6 +281,39 @@ public class JunctionTreeOptionPanel extends InferenceAlgorithmOptionPanel {
 	 */
 	public ILikelihoodExtractor getLikelihoodEvidenceLikelihoodExtractor() {
 		return likelihoodEvidenceLikelihoodExtractor;
+	}
+
+
+	/**
+	 * @param likelihoodEvidenceDialogBuilder the likelihoodEvidenceDialogBuilder to set
+	 */
+	public void setLikelihoodEvidenceDialogBuilder(
+			ILikelihoodEvidenceDialogBuilder likelihoodEvidenceDialogBuilder) {
+		this.likelihoodEvidenceDialogBuilder = likelihoodEvidenceDialogBuilder;
+	}
+
+
+	/**
+	 * @return the likelihoodEvidenceDialogBuilder
+	 */
+	public ILikelihoodEvidenceDialogBuilder getLikelihoodEvidenceDialogBuilder() {
+		return likelihoodEvidenceDialogBuilder;
+	}
+
+
+	/**
+	 * @param softEvidenceDialogBuilder the softEvidenceDialogBuilder to set
+	 */
+	public void setSoftEvidenceDialogBuilder(ILikelihoodEvidenceDialogBuilder softEvidenceDialogBuilder) {
+		this.softEvidenceDialogBuilder = softEvidenceDialogBuilder;
+	}
+
+
+	/**
+	 * @return the softEvidenceDialogBuilder
+	 */
+	public ILikelihoodEvidenceDialogBuilder getSoftEvidenceDialogBuilder() {
+		return softEvidenceDialogBuilder;
 	}
 
 }

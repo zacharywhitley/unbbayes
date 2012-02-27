@@ -5,7 +5,6 @@ package unbbayes.prs.bn;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -72,9 +71,9 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 
 	private String virtualNodePrefix = "";
 
-	private Collection<INode> virtualNodes = new HashSet<INode>();
+	private Map<INode,Collection<IRandomVariable>> virtualNodesToCliquesAndSeparatorsMap = new HashMap<INode,Collection<IRandomVariable>>();
 
-	private float virtualNodePositionRandomness = 500;
+	private float virtualNodePositionRandomness = 400;
   	
 	private ILikelihoodExtractor likelihoodExtractor = LikelihoodExtractor.newInstance();
 	
@@ -89,7 +88,7 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		
 		// add dynamically changeable behavior (i.e. routines that are not "mandatory", so it is interesting to be able to disable them when needed)
 		this.getInferenceAlgorithmListeners().add(new IInferenceAlgorithmListener() {
-			private Map<String, Float[]> likelihoodMap;
+//			private Map<String, Float[]> likelihoodMap;
 
 			public void onBeforeRun(IInferenceAlgorithm algorithm) {
 				if (algorithm == null) {
@@ -119,11 +118,11 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 				// The change bellow is to adhere to feature request #3314855
 				// Save the list of evidence entered
 				Map<String, Integer> evidenceMap = new HashMap<String, Integer>();
-				likelihoodMap = new HashMap<String, Float[]>();
+//				likelihoodMap = new HashMap<String, Float[]>();
 				
 				if ((algorithm.getNetwork() != null) && ( algorithm.getNetwork() instanceof SingleEntityNetwork)) {
 					SingleEntityNetwork net = (SingleEntityNetwork)algorithm.getNetwork();
-					for (Node n : net.getNodes()) {
+					for (Node n : new ArrayList<Node>(net.getNodes())) {	// iterate in a new list, because net.getNodes may suffer concurrent changes because of virtual nodes.
 						if (n instanceof TreeVariable) {
 							TreeVariable node = (TreeVariable)n;
 							if (node.hasEvidence()) {
@@ -134,12 +133,31 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 //									}
 //									likelihoodMap.put(node.getName(), likelihood);
 
-									Float[] likelihood = new Float[node.getLikelihood().length];
-									for (int i = 0; i < likelihood.length; i++) {
-										likelihood[i] = node.getLikelihood()[i];
+//									Float[] likelihood = new Float[node.getLikelihood().length];
+//									for (int i = 0; i < likelihood.length; i++) {
+//										likelihood[i] = node.getLikelihood()[i];
+//									}
+//									likelihoodMap.put(node.getName(), likelihood);
+									// the following code was added here because we need current marginal to calculate soft evidence
+									if (algorithm instanceof JunctionTreeAlgorithm) {
+										JunctionTreeAlgorithm jt = (JunctionTreeAlgorithm) algorithm;
+										// Enter the likelihood as virtual nodes
+										try {
+											// prepare list of nodes to add soft/likelihood evidence
+											List<INode> evidenceNodes = new ArrayList<INode>();
+											evidenceNodes.add(node);	// the main node is the one carrying the likelihood ratio
+											// if conditional soft evidence, add all condition nodes (if non-conditional, then this will add an empty list)
+											evidenceNodes.addAll(jt.getLikelihoodExtractor().extractLikelihoodParents(getNetwork(), node));
+											// create the virtual node
+											INode virtual = jt.addVirtualNode(getNetwork(), evidenceNodes);
+											// store the hard evidence of the new virtual node, so that it can be retrieved after reset
+											evidenceMap.put(virtual.getName(), ((TreeVariable) virtual).getEvidence());
+										} catch (Exception e) {
+											throw new RuntimeException(e);
+										}
 									}
-									likelihoodMap.put(node.getName(), likelihood);
 								} else {
+									// store hard evidence, so that it can be retrieved after reset
 									evidenceMap.put(node.getName(), node.getEvidence());
 								}
 							}
@@ -151,23 +169,32 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 					for (String name : evidenceMap.keySet()) {
 						((TreeVariable)net.getNode(name)).addFinding(evidenceMap.get(name));
 					}
-					// Enter the likelihood also to fix bug #3316285
-					if (algorithm instanceof JunctionTreeAlgorithm) {
-						JunctionTreeAlgorithm jt = (JunctionTreeAlgorithm) algorithm;
-						for (String name : likelihoodMap.keySet()) {
-							float[] likelihood = new float[likelihoodMap.get(name).length];
-							for (int i = 0; i < likelihood.length; i++) {
-								likelihood[i] = likelihoodMap.get(name)[i];
-							}
-							TreeVariable var = ((TreeVariable)net.getNode(name));
-							try {
-								var.addLikeliHood(likelihood);
-								jt.addVirtualNode((List)Collections.singletonList(var));
-							} catch (Exception e) {
-								throw new RuntimeException(e);
-							}
-						}
-					}
+					// the following code is not necessary anymore, because likelihood evidences are now virtual nodes and hard evidences 
+					// (so, we only need to store hard evidences)
+//					// Enter the likelihood as virtual nodes
+//					if (algorithm instanceof JunctionTreeAlgorithm) {
+//						JunctionTreeAlgorithm jt = (JunctionTreeAlgorithm) algorithm;
+//						for (String name : likelihoodMap.keySet()) {
+//							float[] likelihood = new float[likelihoodMap.get(name).length];
+//							for (int i = 0; i < likelihood.length; i++) {
+//								likelihood[i] = likelihoodMap.get(name)[i];
+//							}
+//							TreeVariable var = ((TreeVariable)net.getNode(name));
+//							try {
+//								// restore likelihood
+//								var.addLikeliHood(likelihood);
+//								// prepare list of nodes to add soft/likelihood evidence
+//								List<INode> evidenceNodes = new ArrayList<INode>();
+//								evidenceNodes.add(var);	// the main node is the one carrying the likelihood ratio
+//								// if conditional soft evidence, add all condition nodes (if non-conditional, then this will add an empty list)
+//								evidenceNodes.addAll(jt.getLikelihoodExtractor().extractLikelihoodParents(getNetwork(), var));
+//								// create the virtual node
+//								jt.addVirtualNode(getNetwork(), evidenceNodes);
+//							} catch (Exception e) {
+//								throw new RuntimeException(e);
+//							}
+//						}
+//					}
 				}
 					
 				// Finally propagate evidence
@@ -947,15 +974,25 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 	 * Add a virtual node with 2 states.
 	 * The new virtual node is just a child of parentNode.
 	 * It assumes parentNodes are all within {@link #getNet()}
-	 * and {@link #getLikelihoodExtractor()} can extract the likelihood from parentNodes.
-	 * @param parentNodes	: all nodes to add virtual evidence. Usually, this is a list with 1 element, but if you want to add
+	 * and {@link #getLikelihoodExtractor()} can extract the likelihood from parentNodes.<br/>
+	 * It will fill the table of the virtual node as follows:<br/>
+	 * <var>
+	 * 				Parent2State0		Parent2State0		Parent2State0		<br/>
+	 * 				ParentState0		ParentState1		ParentState2	... <br/>
+	 * virtState1	likelihood[0]		likelihood[1]		likelihood[2]		<br/>
+	 * virtState2	1-likelihood[0]		1-likelihood[1]		1-likelihood[2]		<br/>
+	 * <var/>
+	 * @param parentNodes	: all nodes to become parents of the virtual evidence. Usually, this is a list with 1 element, but if you want to add
 	 * conditional soft evidence, then the first node of this list will be the node whose soft evidence will be added, and the other
-	 * nodes are the nodes assumed to be true in the condicional evidence.
+	 * nodes are the nodes assumed to be true in the condicional evidence. The first node in this list will be the main parent of
+	 * the new virtual node.
+	 * @param graph : the network containing parentNodes
+	 * @return the generated virtual node
 	 * @throws Exception
 	 * @author Shou Matsumoto
 	 * @author Alexandre Martins
 	 */
-	public void addVirtualNode(List<Node> parentNodes) throws Exception {
+	public INode addVirtualNode(Graph graph, List<INode> parentNodes) throws Exception {
 		
 		// assertion
 		if (parentNodes == null || parentNodes.size() <= 0) {
@@ -969,7 +1006,7 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		}
 		
 		// extract likelihood value from extractor
-		float[] likelihood = this.getLikelihoodExtractor().extractLikelihoodRatio((List)parentNodes);
+		float[] likelihood = this.getLikelihoodExtractor().extractLikelihoodRatio(graph, parentNodes.get(0));
 		// reset any finding of the main parent (the parent with the likelihood evidence)
 		((TreeVariable)parentNodes.get(0)).resetLikelihood();
 		
@@ -977,12 +1014,12 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		ProbabilisticNode virtualNode = new ProbabilisticNode();
 
 		// set the position of the virtual node to be close to the node (1st element of the list) that we are adding evidence
-		java.awt.geom.Point2D.Double position = parentNodes.get(0).getPosition();
+		java.awt.geom.Point2D.Double position = ((Node)parentNodes.get(0)).getPosition();
 		virtualNode.setPosition(position.getX() + virtualNodePositionRandomness*Math.random(), position.getY() + virtualNodePositionRandomness *Math.random());
 		
 		// generate name of virtual node
 		String newName = getVirtualNodePrefix();
-		for (Node node : parentNodes) {
+		for (INode node : parentNodes) {
 			newName += node.getName();
 		}
 		// append the likelihood value to the name of the node
@@ -1015,7 +1052,7 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		}
 		
 		// add edge from parentNodes to the virtual node
-		for (Node parentNode : parentNodes) {
+		for (INode parentNode : parentNodes) {
 			net.addEdge(new Edge((Node) parentNode,virtualNode));
 		}
 		
@@ -1039,61 +1076,61 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		}
 		
 		// create clique for the virtual node and parents
-		Clique auxClique = new Clique();
-		auxClique.getNodes().add(virtualNode);
-		auxClique.getNodes().addAll(parentNodes);
-		auxClique.getProbabilityFunction().addVariable(virtualNode);
-		for (Node parentNode : parentNodes) {
-			auxClique.getProbabilityFunction().addVariable(parentNode);
+		Clique cliqueOfVirtualNode = new Clique();
+		cliqueOfVirtualNode.getNodes().add(virtualNode);
+		cliqueOfVirtualNode.getNodes().addAll((Collection)parentNodes);
+		cliqueOfVirtualNode.getProbabilityFunction().addVariable(virtualNode);
+		for (INode parentNode : parentNodes) {
+			cliqueOfVirtualNode.getProbabilityFunction().addVariable(parentNode);
 		}
 		
 		// add clique to junction tree, so that the algorithm can handle the clique correctly
 		IJunctionTree junctionTree = net.getJunctionTree();
-		junctionTree.getCliques().add(auxClique);
+		junctionTree.getCliques().add(cliqueOfVirtualNode);
 		
 		// find the smallest clique containing all the parents
 		int smallestSize = Integer.MAX_VALUE;
-		Clique smallestClique = null;
+		Clique smallestCliqueContainingAllParents = null;
 		for (Clique clique : junctionTree.getCliques()) {
 			if (clique.getNodes().containsAll(parentNodes) && !clique.getNodes().contains(virtualNode) && (clique.getProbabilityFunction().tableSize() < smallestSize)) {
-				smallestClique = clique;
-				smallestSize = auxClique.getProbabilityFunction().tableSize();
+				smallestCliqueContainingAllParents = clique;
+				smallestSize = cliqueOfVirtualNode.getProbabilityFunction().tableSize();
 			}
 		}
 		
 		// if could not find smallest clique, the arguments are inconsistent
-		if (smallestClique == null) {
+		if (smallestCliqueContainingAllParents == null) {
 			throw new IllegalArgumentException(this.getResource().getString("noCliqueForNodes") + parentNodes);
 		}
 		
 		// create separator between the clique of parent nodes and virtual node (the separator should contain all parents)
-		Separator sep = new Separator(smallestClique , auxClique);
-		sep.setNodes(new ArrayList<Node>(parentNodes));
-		for (Node parentNode : parentNodes) {
-			sep.getProbabilityFunction().addVariable(parentNode);
+		Separator separatorOfVirtualCliqueAndParents = new Separator(smallestCliqueContainingAllParents , cliqueOfVirtualNode);
+		separatorOfVirtualCliqueAndParents.setNodes(new ArrayList<Node>((Collection)parentNodes));
+		for (INode parentNode : parentNodes) {
+			separatorOfVirtualCliqueAndParents.getProbabilityFunction().addVariable(parentNode);
 		}
-		junctionTree.addSeparator(sep);
+		junctionTree.addSeparator(separatorOfVirtualCliqueAndParents);
 		
 		// just to guarantee that the network is fresh
 		net.resetNodesCopy();
 		
 		// now, let's link the nodes with the cliques
-		auxClique.getAssociatedProbabilisticNodes().add(virtualNode);
-		virtualNode.setAssociatedClique(auxClique);
+		cliqueOfVirtualNode.getAssociatedProbabilisticNodes().add(virtualNode);
+		virtualNode.setAssociatedClique(cliqueOfVirtualNode);
 		
 		// this is not necessary for ProbabilisticNode, but other types of nodes may need explicit initialization of the marginals
 		virtualNode.initMarginalList();
 		
 		// initialize the probabilities of clique and separator
-		net.getJunctionTree().initBelief(auxClique);
-		net.getJunctionTree().initBelief(sep);	// this one sets all separator potentials to 1
+		net.getJunctionTree().initBelief(cliqueOfVirtualNode);
+		net.getJunctionTree().initBelief(separatorOfVirtualCliqueAndParents);	// this one sets all separator potentials to 1
 		
 		// propagation (make sure the probabilities of the new clique and separator becomes globally consistent)
 		junctionTree.consistency();
 		
 		// store the potentials after propagation, so that the "reset" will restore these values
-		auxClique.getProbabilityFunction().copyData();	
-		sep.getProbabilityFunction().copyData();
+		cliqueOfVirtualNode.getProbabilityFunction().copyData();	
+		separatorOfVirtualCliqueAndParents.getProbabilityFunction().copyData();
 		
 		// update the marginal values (we only updated clique/separator potentials, thus, the marginals still have the old values if we do not update)
 		virtualNode.updateMarginal();
@@ -1102,10 +1139,15 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		// set finding always to the first state (because the second state is just a dummy state)
 		virtualNode.addFinding(0);
 
-
-		// register new virtual node (so that it can be removed later)
-		this.getVirtualNodes().add(virtualNode);
+		// prepare a collection containing the clique of virtual node and respective separator, so that we can store them and delete them from JT when prompted
+		Set<IRandomVariable> sepAndCliqueSet = new HashSet<IRandomVariable>();
+		sepAndCliqueSet.add(cliqueOfVirtualNode);
+		sepAndCliqueSet.add(separatorOfVirtualCliqueAndParents);
 		
+		// register new virtual node (so that it can be removed later)
+		this.getVirtualNodesToCliquesAndSeparatorsMap().put(virtualNode, sepAndCliqueSet);
+		
+		return virtualNode;
 	}
 	
 	/**
@@ -1116,12 +1158,16 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 	 * created by {@link #addVirtualNode(List)}.
 	 */
 	public void clearVirtualNodes() {
-		for (INode node : getVirtualNodes()) {
-			if (node instanceof Node) {
-				getNetwork().removeNode((Node) node);
+		for (INode virtualNode : getVirtualNodesToCliquesAndSeparatorsMap().keySet()) {
+			getNetwork().removeNode((Node) virtualNode);
+			
+			// remove clique/separator from junction tree
+			for (IRandomVariable cliqueOrSep : getVirtualNodesToCliquesAndSeparatorsMap().get(virtualNode)) {
+				this.getNet().getJunctionTree().getCliques().remove(cliqueOrSep);
+				this.getNet().getJunctionTree().getSeparators().remove(cliqueOrSep);
 			}
 		}
-		getVirtualNodes().clear();
+		getVirtualNodesToCliquesAndSeparatorsMap().clear();
 	}
 
 
@@ -1360,19 +1406,23 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 	}
 
 	/**
-	 * Stores all virtual nodes created in {@link #addVirtualNode(SingleEntityNetwork, Node, float[])}
-	 * @return the virtualNodes
+	 * This is a map whose the keys are storing all virtual nodes created in {@link #addVirtualNode(SingleEntityNetwork, Node, float[])},
+	 * and the values are storing all cliques and separators created in {@link #addVirtualNode(SingleEntityNetwork, Node, float[])}.
+	 * This map is used in {@link #clearVirtualNodes()} in order to revert all changes related to virtual nodes.
+	 * @return the virtualNodesToCliquesAndSeparatorsMap
 	 */
-	public Collection<INode> getVirtualNodes() {
-		return virtualNodes;
+	public Map<INode,Collection<IRandomVariable>> getVirtualNodesToCliquesAndSeparatorsMap() {
+		return virtualNodesToCliquesAndSeparatorsMap;
 	}
 
 	/**
-	 * Stores all virtual nodes created in {@link #addVirtualNode(SingleEntityNetwork, Node, float[])}
-	 * @param virtualNodes the virtualNodes to set
+	 * This is a map whose the keys are storing all virtual nodes created in {@link #addVirtualNode(SingleEntityNetwork, Node, float[])},
+	 * and the values are storing all cliques and separators created in {@link #addVirtualNode(SingleEntityNetwork, Node, float[])}.
+	 * This map is used in {@link #clearVirtualNodes()} in order to revert all changes related to virtual nodes.
+	 * @param virtualNodesToCliquesAndSeparatorsMap the virtualNodesToCliquesAndSeparatorsMap to set
 	 */
-	public void setVirtualNodes(Collection<INode> virtualNodes) {
-		this.virtualNodes = virtualNodes;
+	public void setVirtualNodesToCliquesAndSeparatorsMap(Map<INode,Collection<IRandomVariable>> virtualNodes) {
+		this.virtualNodesToCliquesAndSeparatorsMap = virtualNodes;
 	}
 
 	/**

@@ -547,5 +547,8 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"pluginDependencyLogDependencies", "Dependências não resolvidas:"},
 		{"pluginDependencyLogPleaseCheck", "Por favor, verifique a existência das dependências na sua pasta de plugins."},
 		
+
+		{"addNodeInConditionalEvidence","Adiciona nós do mesmo clique como novas condições de uma evidência condicional"},
+		{"removeNodeInConditionalEvidence","Remove última condição"},
 	};
 }

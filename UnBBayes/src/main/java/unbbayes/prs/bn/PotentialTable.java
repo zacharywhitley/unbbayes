@@ -796,5 +796,78 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 		return sumOperation;
 	}
 	
+	/**
+	 * Recursively accesses the cells of the CPT and updates its values using
+	 * the values in marginalList.
+	 * This is used by {@link #updateEvidences(float[], int)}.
+	 * Overwrite this method if you need {@link #updateEvidences(float[], int)} to change
+	 * its behavior.
+	 * It assumes {@link #computeFactors()} was run prior to this method.
+	 * @param marginalList
+	 * @param c
+	 * @param linear
+	 * @param index
+	 * @param state
+	 */
+	protected void updateRecursive(float[] marginalList, int c, int linear, int index, int state) {
+    	if (c >= this.variableList.size()) {
+    		this.dataPT.data[linear] *= marginalList[state];
+    		return;    		    		
+    	}
+    	
+    	if (index == c) {
+    		for (int i = this.variableList.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
+	    		updateRecursive(marginalList, c+1, linear + i*this.factorsPT[c] , index, i);
+    		}
+    	} else {
+	    	for (int i = this.variableList.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
+	    		updateRecursive(marginalList, c+1, linear + i*this.factorsPT[c] , index, state);
+    		}
+    	}
+    }
+
+	/**
+	 * Given a node identified by an index, updates its values
+	 * using an array of float.
+	 * For a probabilistic CPT, this method shall multiply the cells
+	 * of the CPT related to the variable in index using the 
+	 * values in marginalList. This can be used for implementing
+	 * hard evidence.
+	 * @param marginalList : values for updating
+	 * @param index : index of the node related to the cells to update.
+	 * The node can be obtained by calling {@link #getVariableAt(int)}
+	 */
+	public void updateEvidences(float[] marginalList, int index) {
+		this.computeFactors();
+		this.updateRecursive(marginalList, 0, 0, index, 0);
+	}
+	
+	/**
+	 * Default implementation of normalization.
+	 * It normalizes current content of table (the sum is going to be 1).
+	 * @return normalization factor (sum of the cells of this table); if table is already normalized, this is 1.
+	 * @throws IllegalStateException : when an inconsistency or underflow is found
+	 * TODO migrate this method to ProbabilisticTable
+	 */
+	public float normalize()  {
+        float n = 0;
+        float valor;
+
+        int sizeDados = this.tableSize();
+        for (int c = 0; c < sizeDados; c++) {
+            n += this.getValue(c);
+        }
+        if (Math.abs(n - 1.0) > 0.001) {
+            for (int c = 0; c < sizeDados; c++) {
+                valor = this.getValue(c);
+                if (n == 0.0) {
+                    throw new IllegalStateException(resource.getString("InconsistencyUnderflowException"));
+                }
+                valor /= n;
+                this.setValue(c, valor);
+            }
+        }
+        return n;
+    }
 	
 }

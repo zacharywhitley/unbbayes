@@ -147,6 +147,7 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 			}
 		}
 	}
+	
 
 	/**
 	 * Returns a new instance of a ProbabilisticTable. Implements the abstract method from PotentialTable.

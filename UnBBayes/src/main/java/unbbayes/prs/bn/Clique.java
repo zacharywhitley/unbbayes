@@ -116,7 +116,7 @@ public class Clique implements IRandomVariable, java.io.Serializable {
         }
 
         if (decisoes.size() == 0) {
-            return normalizeBN();
+            return potentialTable.normalize();
         }
 
         int index[] = new int[decisoes.size()];
@@ -128,26 +128,7 @@ public class Clique implements IRandomVariable, java.io.Serializable {
         return 0;
     }
 
-    private float normalizeBN() throws Exception {
-        float n = 0;
-        float valor;
-
-        int sizeDados = potentialTable.tableSize();
-        for (int c = 0; c < sizeDados; c++) {
-            n += potentialTable.getValue(c);
-        }
-        if (Math.abs(n - 1.0) > 0.001) {
-            for (int c = 0; c < sizeDados; c++) {
-                valor = potentialTable.getValue(c);
-                if (n == 0.0) {
-                    throw new Exception(resource.getString("InconsistencyUnderflowException"));
-                }
-                valor /= n;
-                potentialTable.setValue(c, valor);
-            }
-        }
-        return n;
-    }
+    
 
 
     private void normalizeID (int control,

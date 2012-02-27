@@ -3,8 +3,10 @@
  */
 package unbbayes.prs.bn;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
 import unbbayes.util.Debug;
 
@@ -37,13 +39,31 @@ public class LikelihoodExtractor implements ILikelihoodExtractor {
 	 * is a {@link TreeVariable}.
 	 * @see unbbayes.prs.bn.ILikelihoodExtractor#extractLikelihoodRatio(java.util.List)
 	 */
-	public float[] extractLikelihoodRatio(List<INode> nodes) {
+	public float[] extractLikelihoodRatio(Graph graph, INode node) {
 		try {
-			return ((TreeVariable)nodes.get(0)).getLikelihood();
+			return ((TreeVariable)node).getLikelihood();
 		}catch (Exception e) {
 			Debug.println(getClass(), e.getMessage(),e);
 		}
 		return null;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.ILikelihoodExtractor#extractLikelihoodParents(unbbayes.prs.Graph, unbbayes.prs.INode)
+	 */
+	public List<INode> extractLikelihoodParents(Graph graph, INode node) {
+		List<INode> ret = null;
+		try {
+			ret = ((TreeVariable)node).getLikelihoodParents();
+		} catch (ClassCastException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		if (ret == null) {
+			// return empty list instead of null
+			ret = new ArrayList<INode>();
+		}
+		return ret;
 	}
 
 }

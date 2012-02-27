@@ -21,20 +21,18 @@
 package unbbayes.gui;
 
 import java.awt.Component;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.NumberFormat;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTable;
+import javax.swing.JDialog;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -74,7 +72,9 @@ public class EvidenceTree extends JTree {
 	//by young
 	public String strTextOutputMode;
 	public static final String TEXTOUTPUTMODEMODE_USE_NAME		= "UseName";
-	public static final String TEXTOUTPUTMODEMODE_USE_DESC		= "UseDescription"; 
+	public static final String TEXTOUTPUTMODEMODE_USE_DESC		= "UseDescription";
+
+	private ILikelihoodEvidenceDialogBuilder likelihoodEvidenceDialogBuilder = new LikelihoodEvidenceDialogBuilder(); 
 	
 		
 	public EvidenceTree(SingleEntityNetwork sen, final NetworkWindow netWindow) {
@@ -480,82 +480,112 @@ public class EvidenceTree extends JTree {
 	 *
 	 * @param  node 
 	 */
-	private void showLikelihood(DefaultMutableTreeNode node) {
+	private void showLikelihood(final DefaultMutableTreeNode node) {
 		
-		ProbabilisticNode auxProbNode = (ProbabilisticNode) objectsMap.get(node);
+		final ProbabilisticNode auxProbNode = (ProbabilisticNode) objectsMap.get(node);
 		
 		if (   (auxProbNode != null)
 			&& (auxProbNode.getInformationType() == Node.DESCRIPTION_TYPE)) {
 			
-			//Build the panel
-			int i;
-			JPanel panel = new JPanel();
-			JTable table = new JTable(auxProbNode.getStatesSize(), 2); 
-			for (i = 0; i < auxProbNode.getStatesSize(); i++) {
-				table.setValueAt(auxProbNode.getStateAt(i), i, 0);
-				table.setValueAt("100", i, 1);
-			}
-			JLabel label = new JLabel(auxProbNode.toString());
-			panel.add(label);
-			panel.add(table);
+			// build panel
+			JDialog likelihoodDialog = this.getLikelihoodEvidenceDialogBuilder().buildDialog(net, auxProbNode, this.netWindow.getGraphPane());
+			likelihoodDialog.setLocationRelativeTo(null);	//place at the center
+			likelihoodDialog.pack();
 			
-			//Ask the user the confirmation
-			if (JOptionPane.showConfirmDialog(
-					this.netWindow.getDesktopPane(),
-					panel,
-					resource.getString("likelihoodName"),
-					JOptionPane.OK_CANCEL_OPTION)
-				    == 
-				    JOptionPane.OK_OPTION) {
-				
-		    //Get the original probabilities values
-				DefaultMutableTreeNode auxNode;
-
-				float[] stateProbabilities = new float[auxProbNode.getStatesSize()];
-
-				try {
-					for (i = 0; i < auxProbNode.getStatesSize(); i++) {
-						stateProbabilities[i] = 
-							nf.parse((String) table.getValueAt(i, 1)).floatValue();
+			// add listener to update marginal when prompted
+			likelihoodDialog.addComponentListener(new ComponentListener() {
+				public void componentShown(ComponentEvent e) {}
+				public void componentResized(ComponentEvent e) {}
+				public void componentMoved(ComponentEvent e) {}
+				public void componentHidden(ComponentEvent e) {
+					if (auxProbNode.hasLikelihood()) {
+						//Reset text with the values of probabilities 
+						for (int i = 0; i < node.getChildCount(); i++) {
+							DefaultMutableTreeNode auxNode = (DefaultMutableTreeNode) node.getChildAt(i);
+							String str = (String) auxNode.getUserObject();
+							auxNode.setUserObject(
+									str.substring(0, str.lastIndexOf(':') + 1)
+									+ nf.format(auxProbNode.getLikelihood()[i] * 100));
+						}
+						
+						((DefaultTreeModel) getModel()).reload(node);
 					}
-				} catch (ParseException e) {
-					System.err.println(e.getMessage());
-					return;
 				}
-
-			//Get the total probability 
-				float totalProbability = 0; 
-				for (i = 0; i < auxProbNode.getStatesSize(); i++) {
-					totalProbability += stateProbabilities[i];
-				}
-
-				if (totalProbability == 0.0) {
-					System.err.println("likelihoodException");
-					return;
-				}
-
-			//Normalize the probabilities values
-				// Also verify the state that has the highest probability
-				for (i = 0; i < auxProbNode.getStatesSize(); i++) {
-					stateProbabilities[i] = stateProbabilities[i] / totalProbability;
-				}
-
-//				auxProbNode.addFinding(1);
-				auxProbNode.addLikeliHood(stateProbabilities);
-				
-			//Reset text with the values of probabilities 
-				String str;
-				for (i = 0; i < node.getChildCount(); i++) {
-					auxNode = (DefaultMutableTreeNode) node.getChildAt(i);
-					str = (String) auxNode.getUserObject();
-					auxNode.setUserObject(
-							str.substring(0, str.lastIndexOf(':') + 1)
-							+ nf.format(stateProbabilities[i] * 100));
-				}
-				
-				((DefaultTreeModel) getModel()).reload(node);
+			});
 			
-			}
+			likelihoodDialog.setVisible(true);
+			
+
+			
+			
+//			int i;
+//			JPanel panel = new JPanel();
+//			JTable table = new JTable(auxProbNode.getStatesSize(), 2); 
+//			for (i = 0; i < auxProbNode.getStatesSize(); i++) {
+//				table.setValueAt(auxProbNode.getStateAt(i), i, 0);
+//				table.setValueAt("100", i, 1);
+//			}
+//			JLabel label = new JLabel(auxProbNode.toString());
+//			panel.add(label);
+//			panel.add(table);
+//			
+//			//Ask the user the confirmation
+//			int option = JOptionPane.showConfirmDialog(
+////					this.netWindow.getDesktopPane(),
+//					this.netWindow,
+//					panel,
+//					resource.getString("likelihoodName"),
+//					JOptionPane.OK_CANCEL_OPTION);
+//			
+//			// commit changes
+//			if (option == JOptionPane.OK_OPTION) {
+//				//Get the original probabilities values
+//				DefaultMutableTreeNode auxNode;
+//				
+//				float[] stateProbabilities = new float[auxProbNode.getStatesSize()];
+//				
+//				try {
+//					for (i = 0; i < auxProbNode.getStatesSize(); i++) {
+//						stateProbabilities[i] = 
+//							nf.parse((String) table.getValueAt(i, 1)).floatValue();
+//					}
+//				} catch (ParseException e) {
+//					System.err.println(e.getMessage());
+//					return;
+//				}
+//				
+//				//Get the total probability 
+//				float totalProbability = 0; 
+//				for (i = 0; i < auxProbNode.getStatesSize(); i++) {
+//					totalProbability += stateProbabilities[i];
+//				}
+//				
+//				if (totalProbability == 0.0) {
+//					System.err.println("likelihoodException");
+//					return;
+//				}
+//				
+//				//Normalize the probabilities values
+//				// Also verify the state that has the highest probability
+//				for (i = 0; i < auxProbNode.getStatesSize(); i++) {
+//					stateProbabilities[i] = stateProbabilities[i] / totalProbability;
+//				}
+//				
+//				
+//				//Reset text with the values of probabilities 
+//				String str;
+//				for (i = 0; i < node.getChildCount(); i++) {
+//					auxNode = (DefaultMutableTreeNode) node.getChildAt(i);
+//					str = (String) auxNode.getUserObject();
+//					auxNode.setUserObject(
+//							str.substring(0, str.lastIndexOf(':') + 1)
+//							+ nf.format(stateProbabilities[i] * 100));
+//				}
+//				
+////				auxProbNode.addFinding(1);
+//				auxProbNode.addLikeliHood(stateProbabilities);
+//				((DefaultTreeModel) getModel()).reload(node);
+//			}
 		}
 	}
 
@@ -565,5 +595,24 @@ public class EvidenceTree extends JTree {
 			return (Node) obj;
 		}
 		return null;
+	}
+
+	/**
+	 * This object is used by {@link #showLikelihood(DefaultMutableTreeNode)} in order to display a dialogue
+	 * to a user in order to insert likelihood evidence.
+	 * @param likelihoodEvidenceDialogBuilder the likelihoodEvidenceDialogBuilder to set
+	 */
+	public void setLikelihoodEvidenceDialogBuilder(
+			ILikelihoodEvidenceDialogBuilder likelihoodEvidenceDialogBuilder) {
+		this.likelihoodEvidenceDialogBuilder = likelihoodEvidenceDialogBuilder;
+	}
+
+	/**
+	 * This object is used by {@link #showLikelihood(DefaultMutableTreeNode)} in order to display a dialogue
+	 * to a user in order to insert likelihood evidence.
+	 * @return the likelihoodEvidenceDialogBuilder
+	 */
+	public ILikelihoodEvidenceDialogBuilder getLikelihoodEvidenceDialogBuilder() {
+		return likelihoodEvidenceDialogBuilder;
 	}
 }

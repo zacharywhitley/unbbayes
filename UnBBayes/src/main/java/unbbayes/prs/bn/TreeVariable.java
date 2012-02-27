@@ -20,6 +20,10 @@
  */
 package unbbayes.prs.bn;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 
 /**
@@ -40,6 +44,8 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
 //    private boolean hasLikelihood = false;
 
 	private float[] likelihood = null;
+	
+	private List<INode> likelihoodParents = new ArrayList<INode>();
 
     /**
      * @deprecated use {@link #updateMarginal()} instead
@@ -108,6 +114,7 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
      */
     public void resetEvidence() {
         evidence = -1;
+        this.resetLikelihood();
     }
 
 
@@ -137,9 +144,16 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     	if (hasLikelihood()) {
     		evidence = -1;
     		likelihood = null;
+    		if (this.getLikelihoodParents() != null) {
+    			this.getLikelihoodParents().clear();
+    		}
     	}
     }
     
+    /**
+     * @return true if there is a likelihood evidence set to this node.
+     * False otherwise.
+     */
     public boolean hasLikelihood() {
 //    	return hasLikelihood;
     	return likelihood != null;
@@ -161,15 +175,27 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
 			setMarginalAt(i, ((i==stateIndex)?1:0) );
 		}
     }
+    
+    /**
+     * This is the same of {@link #addLikeliHood(float[], null)}
+     * @param likelihood
+     * @see #addLikeliHood(float[], List)
+     */
+    public void addLikeliHood(float likelihood[]) {
+    	this.addLikeliHood(likelihood, null);
+    }
 
     /**
      * Add likelihood to the variable.
      *
-     * @param likelihood probabilities associated to every state of this node.
+     * @param likelihood : the likelihood ratio.
+     * @param dependencies : if the likelihood is a function of other variables, add
+     * such variables to this list.
+     * @see #setLikelihoodParents(List)
      */
-    public void addLikeliHood(float likelihood[]) {
-    	
+    public void addLikeliHood(float likelihood[], List<INode> dependencies) {
     	this.likelihood = likelihood;
+    	this.setLikelihoodParents(dependencies);
     	if (hasLikelihood()) {
     		evidence = 0;
     	}
@@ -214,32 +240,37 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
         this.cliqueAssociado = clique;
     }
 	
-
+    /**
+     * It currently delegates to {@link PotentialTable#updateEvidences(float[], int)}
+     */
 	protected void updateEvidences() {
 		if (evidence != -1) {						
 			PotentialTable auxTab = (PotentialTable)cliqueAssociado.getProbabilityFunction();
 			int index = auxTab.indexOfVariable(this);
-			auxTab.computeFactors();
-			updateRecursive(auxTab, 0, 0, index, 0);			
+			// the following 2 lines were migrated to PotentialTable.updateEvidences
+//			auxTab.computeFactors();
+//			updateRecursive(auxTab, 0, 0, index, 0);			
+			auxTab.updateEvidences(marginalList, index);
 		}
 	}
 	
-	private void updateRecursive(PotentialTable tab, int c, int linear, int index, int state) {
-    	if (c >= tab.variableList.size()) {
-    		tab.dataPT.data[linear] *= marginalList[state];
-    		return;    		    		
-    	}
-    	
-    	if (index == c) {
-    		for (int i = tab.variableList.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
-	    		updateRecursive(tab, c+1, linear + i*tab.factorsPT[c] , index, i);
-    		}
-    	} else {
-	    	for (int i = tab.variableList.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
-	    		updateRecursive(tab, c+1, linear + i*tab.factorsPT[c] , index, state);
-    		}
-    	}
-    }
+	// the following method was migrated to PotentialTable
+//	private void updateRecursive(PotentialTable tab, int c, int linear, int index, int state) {
+//    	if (c >= tab.variableList.size()) {
+//    		tab.dataPT.data[linear] *= marginalList[state];
+//    		return;    		    		
+//    	}
+//    	
+//    	if (index == c) {
+//    		for (int i = tab.variableList.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
+//	    		updateRecursive(tab, c+1, linear + i*tab.factorsPT[c] , index, i);
+//    		}
+//    	} else {
+//	    	for (int i = tab.variableList.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
+//	    		updateRecursive(tab, c+1, linear + i*tab.factorsPT[c] , index, state);
+//    		}
+//    	}
+//    }
 
 	/**
 	 * @return the likelihood of a likelihood evidence
@@ -248,12 +279,50 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
 		return likelihood;
 	}
 
+//	/**
+//	 * This is the same of {@link #addLikeliHood(float[])}
+//	 * @param likelihood the likelihood to set
+//	 */
+//	public void setLikelihood(float[] likelihood) {
+//		this.addLikeliHood(likelihood);
+//	}
+
 	/**
-	 * This is the same of {@link #addLikeliHood(float[])}
-	 * @param likelihood the likelihood to set
+	 * This list is related to {@link #getLikelihood()}. If the likelihood
+	 * is conditional (i.e. if it depends to a state of other variables),
+	 * then this list must store such variables, in the order compatible
+	 * with {@link #getLikelihood()}.
+	 * @see JunctionTreeAlgorithm#addVirtualNode(List)
+	 * @see JeffreyRuleLikelihoodExtractor
+	 * @see  #addLikeliHood(float[], List)
+	 * @return the likelihoodParents
 	 */
-	public void setLikelihood(float[] likelihood) {
-		this.addLikeliHood(likelihood);
+	public List<INode> getLikelihoodParents() {
+		return likelihoodParents;
+	}
+
+	/**
+	 * This list is related to {@link #getLikelihood()}. If the likelihood
+	 * is conditional (i.e. if it depends to a state of other variables),
+	 * then this list must store such variables, in the order compatible
+	 * with {@link #getLikelihood()}.
+	 * @see JunctionTreeAlgorithm#addVirtualNode(List)
+	 * @see JeffreyRuleLikelihoodExtractor
+	 *  @see  #addLikeliHood(float[], List)
+	 * @param likelihoodParents the likelihoodParents to set. Setting this to null will call {@link List#clear()}
+	 */
+	protected void setLikelihoodParents(List<INode> likelihoodParents) {
+		if (likelihoodParents != null) {
+			this.likelihoodParents = likelihoodParents;
+		} else {
+			// this is trying to set to null
+			if (this.likelihoodParents != null) {
+				this.likelihoodParents.clear();
+			} else {
+				this.likelihoodParents = new ArrayList<INode>();
+			} 
+		}
+		
 	}
 	
 }

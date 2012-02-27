@@ -351,7 +351,7 @@ public class GuiResources extends ListResourceBundle {
         {"addSelectedStatesTip", "Add selected states"}, 
         
         /* Input Panel */
-        {"inputOf", "Origem node"}, 
+        {"inputOf", "Origin node"}, 
         
         /* Arguments Typed Pane */
         {"nodeLabel", "Node"}, 
@@ -544,5 +544,9 @@ public class GuiResources extends ListResourceBundle {
 		{"pluginDependencyLogID", "Plugin ID: "},
 		{"pluginDependencyLogDependencies", "Unsolved dependencies: "},
 		{"pluginDependencyLogPleaseCheck", "Please, add these dependencies into your plugins folder."},
+		
+		{"addNodeInConditionalEvidence","Add other nodes in the clique as an assumption in a conditional soft evidence"},
+		{"removeNodeInConditionalEvidence","Delete last condition"},
+		
 	};
 }

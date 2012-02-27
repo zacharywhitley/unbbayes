@@ -588,12 +588,13 @@ public class SENController {
 
 			table = new GUIPotentialTable(potTab).makeTable();
 			
-			// (feature:3315773) Allow copy/paste between JTable and Excel
-			new ExcelAdapter(table);
-			
-			// (feature:3315761) Allow the selection of a single cell
-			table.setCellSelectionEnabled(true);
-			table.setRowSelectionAllowed(true);
+			// the following was migrated to GUIPotentialTable(potTab).makeTable()
+//			// (feature:3315773) Allow copy/paste between JTable and Excel
+//			new ExcelAdapter(table);
+//			
+//			// (feature:3315761) Allow the selection of a single cell
+//			table.setCellSelectionEnabled(true);
+//			table.setRowSelectionAllowed(true);
 
 		} else {
 			// decision
@@ -615,6 +616,17 @@ public class SENController {
 			
 			table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 			table.setTableHeader(null);
+			
+
+			// Change the text cell editor to replace text instead of appending it for all columns.
+			ReplaceTextCellEditor cellEditor = new ReplaceTextCellEditor();
+			for (int i = 0; i < table.getColumnModel().getColumnCount(); i++) {
+				table.getColumnModel().getColumn(i).setCellEditor(cellEditor);
+			}
+			
+
+			// Shows the caret while editing cell.
+			table.setSurrendersFocusOnKeystroke(true);
 
 		}
 		// TODO MIGRATE TO A DIFFERENT CLASS - GUI.TABLE.PROBABILISTICTABLEMODEL
@@ -656,14 +668,7 @@ public class SENController {
 			}
 		});
 		
-		// Change the text cell editor to replace text instead of appending it for all columns.
-		ReplaceTextCellEditor cellEditor = new ReplaceTextCellEditor();
-		for (int i = 0; i < table.getColumnModel().getColumnCount(); i++) {
-			table.getColumnModel().getColumn(i).setCellEditor(cellEditor);
-		}
 			
-		// Shows the caret while editing cell.
-		table.setSurrendersFocusOnKeystroke(true);
 		
 		
 

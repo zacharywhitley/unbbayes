@@ -1,0 +1,67 @@
+net
+{
+     node_size = (40 40);
+     name = "DEF_samplenet";
+     tree = "(C0,,Virt,G)";
+     UnBBayes_Color_Probabilistic_Description = "-256";
+     UnBBayes_Color_Probabilistic_Explanation = "-16711936";
+}
+
+node F
+{
+     label = "";
+     position = (275 35);
+     states = ("f1" "f2" "f3");
+}
+
+node E
+{
+     label = "";
+     position = (5 156);
+     states = ("e1" "e2" "e3");
+}
+
+node D
+{
+     label = "";
+     position = (9 34);
+     states = ("d1" "d2" "d3");
+}
+
+node G
+{
+     label = "G";
+     position = (546 36);
+     states = ("g1" "g2" "g3");
+}
+
+potential (F | G D)
+{
+ data = ((( 0.7 0.2 0.1 )
+( 0.05 0.9 0.05 )
+( 0.1 0.3 0.6 ))
+(( 0.1 0.2 0.7 )
+( 0.05 0.9 0.05 )
+( 0.6 0.3 0.1 ))
+(( 0.4 0.2 0.4 )
+( 0.05 0.9 0.05 )
+( 0.35000002 0.3 0.35000002 )));
+}
+
+potential (E | D)
+{
+ data = (( 0.1 0.2 0.7 )
+( 0.05 0.9 0.05 )
+( 0.5 0.4 0.1 ));
+}
+
+potential (D)
+{
+ data = ( 0.5 0.3 0.2 );
+}
+
+potential (G)
+{
+ data = ( 0.33333334 0.33333334 0.33333334 );
+}
+

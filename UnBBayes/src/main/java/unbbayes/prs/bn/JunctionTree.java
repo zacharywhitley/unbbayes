@@ -29,8 +29,7 @@ import unbbayes.util.Debug;
 import unbbayes.util.SetToolkit;
 
 /**
- *  Classe que representa uma �rvore de Jun��o para Redes Bayesianas.
- *
+ * This class represents a junction tree for Bayes Nets.
  *@author     Michael
  *@author     Rommel
  */
@@ -42,14 +41,9 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	
 	private boolean initialized;
 
-	/**
-	 *  Probabilidade total estimada.
-	 */
-	private float n;
+	private float totalEstimatedProb;
 
-	/**
-	 *  Lista de Cliques Associados.
-	 */
+	
 	private List<Clique> cliques;
 
 	/**
@@ -57,78 +51,77 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	 */
 	private List<Separator> separators;
 
-	/**
-	 * Coordenadas pr�-calculadas para otimiza��o
-	 * no m�todo absorve.
-	 */
-	private int coordSep[][][];
+//	/**
+//	 * Pre-calculated coordinates for optimizing the method absorb
+//	 */
+//	private int coordSep[][][];
 
 	/**
-	 *  Contr�i uma nova �rvore de jun��o. Inicializa a lista de separadores e
-	 *  cliques.
+	 * Default constructor for juction tree. It initializes the list {@link #getCliques()}
+	 * and the separators obtainable from {@link #getSeparator(Clique, Clique)},
+	 * {@link #getSeparatorAt(int)}, {@link #getSeparatorsSize()}
 	 */
 	public JunctionTree() {
 		separators = new ArrayList<Separator>();
 		cliques = new ArrayList<Clique>();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see unbbayes.prs.bn.IJunctionTree#getN()
 	 */
-	
 	public float getN() {
-		return n;
+		return totalEstimatedProb;
 	}
 	
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see unbbayes.prs.bn.IJunctionTree#addSeparator(unbbayes.prs.bn.Separator)
 	 */
-	
 	public void addSeparator(Separator sep) {
 		separators.add(sep);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see unbbayes.prs.bn.IJunctionTree#getSeparatorsSize()
 	 */
-	
 	public int getSeparatorsSize() {
 		return separators.size();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see unbbayes.prs.bn.IJunctionTree#getSeparatorAt(int)
 	 */
-	
 	public Separator getSeparatorAt(int index) {
 		return separators.get(index);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see unbbayes.prs.bn.IJunctionTree#getCliques()
 	 */
-	
 	public List<Clique> getCliques() {
 		return cliques;
 	}
 	
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see unbbayes.prs.bn.IJunctionTree#consistency()
 	 */
-	
 	public void consistency() throws Exception {
-		n = 1;
+		totalEstimatedProb = 1;
 		Clique raiz = cliques.get(0);
 		coleteEvidencia(raiz);
 		distributeEvidences(raiz);
 	}
 
 	/**
-	 *  Processa a coleta de evid�ncias.
-	 *
+	 * Processes the collection of evidences.
+	 * It absorbs child cliques.
 	 *@param  clique  clique.
-	 *@return         sucesso da coleta de evid�ncias.
 	 */
 	protected void coleteEvidencia(Clique clique) throws Exception {
 		Clique auxClique;
@@ -144,12 +137,12 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 			absorb(clique, auxClique);
 		}
 
-		n *= clique.normalize();
+		totalEstimatedProb *= clique.normalize();
 	}
 
 	/**
-	 *  Processa a distribui��o de evid�ncias.
-	 *
+	 * Processes the distribution of evidences.
+	 * It distributes potentials to child cliques
 	 *@param  clique  clique.
 	 */
 	protected void distributeEvidences(Clique clique) {
@@ -167,6 +160,11 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		}
 	}
 	
+	/**
+	 * Propagates the probabilities from clique2 to clique1.
+	 * @param clique1
+	 * @param clique2
+	 */
 	protected void absorb(Clique clique1, Clique clique2) {
 		PotentialTable sepTab = getSeparator(clique1, clique2).getProbabilityFunction();
 		ArrayList<Node> toDie = SetToolkit.clone(clique2.getNodes());
@@ -199,11 +197,10 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		clique1.getProbabilityFunction().opTab(dummyTable, PotentialTable.PRODUCT_OPERATOR);
     }
 	
-
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see unbbayes.prs.bn.IJunctionTree#initBeliefs()
 	 */
-	
 	public void initBeliefs() throws Exception {
 		if (! initialized) {
 			Clique auxClique;
@@ -334,10 +331,10 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see unbbayes.prs.bn.IJunctionTree#getSeparator(unbbayes.prs.bn.Clique, unbbayes.prs.bn.Clique)
 	 */
-	
 	public Separator getSeparator(Clique clique1, Clique clique2) {
 		int sizeSeparadores = separators.size();
 		for (int indSep = 0; indSep < sizeSeparadores; indSep++) {
@@ -349,4 +346,27 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		}
 		return null;
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.IJunctionTree#getSeparators()
+	 */
+	public List<Separator> getSeparators() {
+		return separators;
+	}
+
+	/**
+	 * @param separators the separators to set
+	 */
+	public void setSeparators(List<Separator> separators) {
+		this.separators = separators;
+	}
+
+//	/*
+//	 * (non-Javadoc)
+//	 * @see unbbayes.prs.bn.IJunctionTree#removeSeparator(unbbayes.prs.bn.Separator)
+//	 */
+//	public void removeSeparator(Separator sep) {
+//		this.separators.remove(sep);
+//	}
 }
