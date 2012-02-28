@@ -696,5 +696,17 @@ public interface IMEBNMediator extends INetworkMediator  {
 	 * force some controller codes to point to a new active node.
 	 */
 	public void setActiveResidentNode(IResidentNode activeNode);
+	
+	/**
+	 * If this is false, {@link #turnToSSBNMode()} will return always false.
+	 * @return the isToTurnToSSBNMode
+	 */
+	public boolean isToTurnToSSBNMode();
+
+	/**
+	 * If this is false, {@link #turnToSSBNMode()} will return always false.
+	 * @param isToTurnToSSBNMode the isToTurnToSSBNMode to set
+	 */
+	public void setToTurnToSSBNMode(boolean isToTurnToSSBNMode);
 
 }

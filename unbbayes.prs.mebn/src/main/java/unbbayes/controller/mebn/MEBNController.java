@@ -249,6 +249,8 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	
 	// This object manages plugin-loaded nodes.
 	private MEBNPluginNodeManager pluginNodeManager = MEBNPluginNodeManager.newInstance();
+
+	private boolean isToTurnToSSBNMode = true;
 	
 	
 	/*-------------------------------------------------------------------------*/
@@ -754,7 +756,7 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	 */
     public boolean existPossibleValue(String name){
 		
-    	//TODO uma versão decente...
+    	//TODO uma versﾃ｣o decente...
 		try {
 			multiEntityBayesianNetwork.getCategoricalStatesEntityContainer().getCategoricalState(name);
 			return true; 
@@ -2036,28 +2038,30 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	    }
 	    ssbn = this.getSSBNGenerator().generateSSBN(listQueries, getKnowledgeBase()); 
 		
-		ret = ssbn.getNetwork();
-
-		if (ret instanceof ProbabilisticNetwork) {
-			// TODO remove the need to use the same panel for edition and compilation -> use different JInternalFrames for compiled network
-			specificSituationBayesianNetwork = (ProbabilisticNetwork)ret;
-		}
-		
-		try {
-
-			if (ssbn.getWarningList().size() > 0){
-				openWarningDialog(); 	
+		if (ssbn != null) {
+			ret = ssbn.getNetwork();
+			if (ret != null && (ret instanceof ProbabilisticNetwork)) {
+				// TODO remove the need to use the same panel for edition and compilation -> use different JInternalFrames for compiled network
+				specificSituationBayesianNetwork = (ProbabilisticNetwork)ret;
 			}
 			
-			// logging probabilities of the nodes
-			this.logNodesAndItsProbabilities(ssbn);
-			
-		} catch (Exception e) {
-			e.printStackTrace(); 
-			this.getScreen().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-			JOptionPane.showMessageDialog(getScreen(), 
-					e.getMessage());
+			try {
+				
+				if (ssbn.getWarningList().size() > 0){
+					openWarningDialog(); 	
+				}
+				
+				// logging probabilities of the nodes
+				this.logNodesAndItsProbabilities(ssbn);
+				
+			} catch (Exception e) {
+				e.printStackTrace(); 
+				this.getScreen().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				JOptionPane.showMessageDialog(getScreen(), 
+						e.getMessage());
+			}
 		}
+
 
 		mebnEditionPane.setStatus(resource.getString("statusReady")); 
 		this.getScreen().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -2276,12 +2280,12 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	
 	
 	/*--------------------------------------------------------------------------
-	 * ATENÇÃO: ESTES MÉTODOS SÃO CÓPIAS DOS MÉTODOS PRESENTES EM SENCONTROLLER...
-	 * DEVIDO A FALTA DE TEMPO, AO INVÉS DE FAZER UM REFACTORY PARA COLOCÁLOS NO
+	 * ATENﾃ�グ: ESTES Mﾃ欝ODOS Sﾃグ Cﾃ撤IAS DOS Mﾃ欝ODOS PRESENTES EM SENCONTROLLER...
+	 * DEVIDO A FALTA DE TEMPO, AO INVﾃ唄 DE FAZER UM REFACTORY PARA COLOCﾃ´OS NO
 	 * NETWORKCONTROLLER, DEIXANDO ACESSIVEL AO SENCONTROLLER E AO MEBNCONTROLLER, 
-	 * VOU APENAS ADAPTÁLOS AQUI PARA O USO NO MEBNCONTROLLER... MAS DEPOIS ISTO
-	 * NECESSITARÁ DE UM REFACTORY PARA MANTER AS BOAS PRÁTICAS DA PROGRAMAÇÃO 
-	 * E PARA FACILITAR A MANUTENÇÃO. (laecio santos)
+	 * VOU APENAS ADAPTﾃ´OS AQUI PARA O USO NO MEBNCONTROLLER... MAS DEPOIS ISTO
+	 * NECESSITARﾃ�DE UM REFACTORY PARA MANTER AS BOAS PRﾃゝICAS DA PROGRAMAﾃ�グ 
+	 * E PARA FACILITAR A MANUTENﾃ�グ. (laecio santos)
 	 *--------------------------------------------------------------------------/
 	
 		/** Load resource file from this package */
@@ -2304,8 +2308,8 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 			return false;
 		}
 
-		/* isto será feito dentro do changeToSSBNCompilationPane */
-//		screen.getEvidenceTree().updateTree();  hehe... ainda não temos uma evidence tree... sorry!
+		/* isto serﾃ｡ feito dentro do changeToSSBNCompilationPane */
+//		screen.getEvidenceTree().updateTree();  hehe... ainda nﾃ｣o temos uma evidence tree... sorry!
 		
 
 		this.getScreen().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -2362,7 +2366,7 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	
 	
 	/*--------------------------------------------------------------------------
-	 * FIM DOS MÉTODOS CÓPIA
+	 * FIM DOS Mﾃ欝ODOS Cﾃ撤IA
 	 *-------------------------------------------------------------------------/
 	
 	
@@ -2396,15 +2400,18 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	 * @see unbbayes.controller.mebn.IMEBNMediator#turnToSSBNMode()
 	 */
 	public boolean turnToSSBNMode(){
-		if(specificSituationBayesianNetwork != null){
-			showSSBNGraph = true; 
-			this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);			
-			this.getMebnEditionPane().getNetworkWindow().getGraphPane().setGraphDimension(dimensionSSBNGraph); 
-			this.getMebnEditionPane().getNetworkWindow().getGraphPane().update(); 
-			return true;  
-		}else{
-			return false;
+		if (isToTurnToSSBNMode ) {
+			if(specificSituationBayesianNetwork != null){
+				showSSBNGraph = true; 
+				this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);			
+				this.getMebnEditionPane().getNetworkWindow().getGraphPane().setGraphDimension(dimensionSSBNGraph); 
+				this.getMebnEditionPane().getNetworkWindow().getGraphPane().update(); 
+				return true;  
+			}else{
+				return false;
+			}
 		}
+		return false;
 	}
 	
 	/**
@@ -2694,6 +2701,22 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	 */
 	public void setPluginNodeManager(MEBNPluginNodeManager pluginNodeManager) {
 		this.pluginNodeManager = pluginNodeManager;
+	}
+
+	/**
+	 * If this is false, {@link #turnToSSBNMode()} will return always false.
+	 * @return the isToTurnToSSBNMode
+	 */
+	public boolean isToTurnToSSBNMode() {
+		return isToTurnToSSBNMode;
+	}
+
+	/**
+	 * If this is false, {@link #turnToSSBNMode()} will return always false.
+	 * @param isToTurnToSSBNMode the isToTurnToSSBNMode to set
+	 */
+	public void setToTurnToSSBNMode(boolean isToTurnToSSBNMode) {
+		this.isToTurnToSSBNMode = isToTurnToSSBNMode;
 	}
 	
 	

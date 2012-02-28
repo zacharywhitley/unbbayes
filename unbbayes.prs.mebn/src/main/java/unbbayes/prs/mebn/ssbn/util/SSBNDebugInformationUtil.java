@@ -44,7 +44,8 @@ public class SSBNDebugInformationUtil {
 		if (!enabled) {
 			return;
 		}
-		PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(ssbn.getProbabilisticNetwork()); 
+		// the following line was migrated to LaskeySSBNGenerator, because this is not related to debug info.
+//		PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(ssbn.getProbabilisticNetwork()); 
 		if (ssbn.getLogManager() != null) {
 			SSBNDebugInformationUtil.printNetworkInformation(ssbn.getLogManager(), ssbn); 
 		}

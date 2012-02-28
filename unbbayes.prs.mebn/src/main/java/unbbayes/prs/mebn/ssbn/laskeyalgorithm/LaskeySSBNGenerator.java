@@ -36,7 +36,9 @@ import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.prs.mebn.ssbn.pruner.IPruneStructure;
 import unbbayes.prs.mebn.ssbn.pruner.impl.PruneStructureImpl;
+import unbbayes.prs.mebn.ssbn.util.PositionAdjustmentUtils;
 import unbbayes.prs.mebn.ssbn.util.SSBNDebugInformationUtil;
+import unbbayes.util.Debug;
 
 /**
  * Implementation of the Laskey's SSBN Algorithm
@@ -160,6 +162,12 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 			}
 		}
 		
+		// adjust position of nodes
+		try {
+			PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(ssbn.getProbabilisticNetwork());
+		} catch (Exception e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
 		
 		if (logManager != null) {
 			long time1 = System.currentTimeMillis(); 
@@ -202,6 +210,7 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 		// use the above code to show compiled network in a separate internal frame
 		if (this.getMediator() instanceof IMEBNMediator) {
 			((IMEBNMediator)this.getMediator()).setSpecificSituationBayesianNetwork(ssbn.getProbabilisticNetwork());
+			((IMEBNMediator)this.getMediator()).setToTurnToSSBNMode(true);	// if this is false, ((IMEBNMediator)this.getMediator()).turnToSSBNMode() will not work
 			((IMEBNMediator)this.getMediator()).turnToSSBNMode();
 		}
 	}

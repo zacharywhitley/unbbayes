@@ -295,9 +295,9 @@ public class CPTForSSBNNodeGenerator {
 			
 				//TODO remove the parents of the tempNode because it is added to the list
 				//of child nodes of the other node!!!
-				for(SSBNNode parent: parentsForEntityList){
+//				for(SSBNNode parent: parentsForEntityList){
 //					tempNode.removeParentNode(parent); 
-				}
+//				}
 			}			
 			
 			//Reajust the position of the context node

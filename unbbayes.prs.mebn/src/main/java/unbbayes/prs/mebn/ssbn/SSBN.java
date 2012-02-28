@@ -136,6 +136,7 @@ public class SSBN {
 	 * 
 	 * After this, the network is ready to show to the user
 	 * @throws Exception 
+	 * @deprecated : network compilation shall be performed by the {@link ISSBNGenerator}, not by SSBN
 	 */
 	public void compileAndInitializeSSBN() throws Exception{
 		compileNetwork(); 
