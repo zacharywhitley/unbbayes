@@ -439,8 +439,8 @@ public class GuiResources extends ListResourceBundle {
 		{"argumentCPT", "Arguments"},
 		{"statesCPT", "States"},
 		
-		{"CptSaveOK", "Table save sucessfull"},
-		{"CptCompileOK", "Table compile sucessfull"},
+		{"CptSaveOK", "Table successfully saved"},
+		{"CptCompileOK", "Table successfully compiled"},
 		
 		{"apply", "Apply"},
 		
