@@ -30,10 +30,11 @@ import unbbayes.prs.id.UtilityTable;
 
 
 /**
- *  Classe que representa um Clique na �rvore de Jun��o (JunctionTree).
+ * Class representing a clique in a junction tree
  *
- *@author    Michael e Rommel
- *@version   27 de Junho de 2001
+ *@author Michael
+ *@author Rommel
+ *@version  06/27/2001
  */
 public class Clique implements IRandomVariable, java.io.Serializable {
 
@@ -45,17 +46,17 @@ public class Clique implements IRandomVariable, java.io.Serializable {
   			unbbayes.prs.bn.resources.BnResources.class.getName());
 
     /**
-     *  Identifica unicamente o n�.
+     *  Identifica unicamente o no.
      */
     private int index;
 
     /**
-     *  Refer�ncia para o clique pai.
+     *  Referencia para o clique pai.
      */
     private Clique parent;
 
     /**
-     *  Lista de n�s filhos.
+     *  Lista de nos filhos.
      */
     private List<Clique> children;
 
@@ -70,24 +71,24 @@ public class Clique implements IRandomVariable, java.io.Serializable {
     private PotentialTable utilityTable;    
 
     /**
-     *  Lista de N�s Clusterizados.
+     *  Lista de Nos Clusterizados.
      */
     private ArrayList<Node> nos;
 
     /**
-     *  Lista de N�s Probabil�sticos associados ao Clique.
+     *  Lista de N�s Probabilisticos associados ao Clique.
      */
     private ArrayList<Node> nosAssociados;
 
     /**
-     *  Lista de N�s de Utilidade associados ao Clique.
+     *  Lista de Nos de Utilidade associados ao Clique.
      */
     private ArrayList<Node> associatedUtilNodes;    
 
 
     /**
-     *  Constr�i um novo clique. Inicializa o vetor de filhos, de n�s clusterizados
-     *  e de n�s associados. Inicializa o status associado para false.
+     * Creates a new clique. Initializes array of children, array of cluster
+     * nodes, and associated nodes. The association status is set to false.
      */
     public Clique() {
         children = new ArrayList<Clique>();
@@ -100,10 +101,9 @@ public class Clique implements IRandomVariable, java.io.Serializable {
     
 
     /**
-     *  Normaliza um clique da �rvore.
+     * Normalizes a clique in a junction tree.
      *
-     *@param  ok      vetor boolean de tamanho 1 para passar parametro por refer�ncia.
-     *@return         constante de normaliza��o.
+     *@return       normalization ratio
      */
     public float normalize() throws Exception {
         boolean fixo[] = new boolean[nos.size()];
@@ -203,28 +203,28 @@ public class Clique implements IRandomVariable, java.io.Serializable {
 
 
     /**
-     *  Seta o pai deste clique
+     * The parent of this clique
      *
-     *@param  pai  o pai do clique
+     *@param  parent : the parent clique to set
      */
-    public void setParent(Clique pai) {
-        this.parent = pai;
+    public void setParent(Clique parent) {
+        this.parent = parent;
     }
 
 
     /**
-     * Retorna o �ndice associado ao clique.
-     *
-     * @return �ndice associado ao clique.
+     * @return an index associated with this clique. This value may also be used as a multple-value flag
+     * @see #getAssociatedProbabilisticNodes()
+     * @see #getAssociatedUtilityNodes()
      */
     public int getIndex() {
         return index;
     }
 
     /**
-     * Muda o �ndice do clique.
-     *
-     * @param indice frag que indica o status de associa��o
+     * @param index or flat indicating the status of association
+     * @see #getAssociatedProbabilisticNodes()
+     * @see #getAssociatedUtilityNodes()
      */
     public void setIndex(int indice) {
         this.index = indice;
@@ -232,18 +232,15 @@ public class Clique implements IRandomVariable, java.io.Serializable {
 
 
     /**
-     *  Retorna o tamanho da lista de  filhos.
-     *
-     *@return    vetor de filhos.
+     *@return    size of the array of children cliques.
      */
     public int getChildrenSize() {
         return children.size();
     }
 
     /**
-     *  Adiciona um filho no final da lista de filhos.
-     *
-     *@param  child filho a ser inserido.
+     * Add a child clique to this clique.
+     *@param  a clique to add into the end of the array.
      */
     public void addChild(Clique child) {
         children.add(child);
@@ -258,9 +255,8 @@ public class Clique implements IRandomVariable, java.io.Serializable {
     }
 
     /**
-     *  Retorna o filho na posi��o especificada.
-     *
-     *@return    filho na posi��o especificada
+     * @param index: index of a child clique
+     *@return    child clique in a given index
      */
     public Clique getChildAt(int index) {
         return children.get(index);
@@ -268,9 +264,7 @@ public class Clique implements IRandomVariable, java.io.Serializable {
 
 
     /**
-     *  Retorna o vetor de n�s clusterizados.
-     *
-     *@return    vetor de n�s clusterizados.
+     *@return    list of vetor cluster nodes.
      */
     public ArrayList<Node> getNodes() {
         return nos;
@@ -278,18 +272,14 @@ public class Clique implements IRandomVariable, java.io.Serializable {
 
 
     /**
-     *  Retorna o vetor de n�s probabil�sticos associados.
-     *
-     *@return    vetor de n�s probabil�sticos associados.
+     *@return    list of associated probabilistic nodes (probabilistic nodes linked to this clique)
      */
     public ArrayList<Node> getAssociatedProbabilisticNodes() {
         return nosAssociados;
     }
 
     /**
-     *  Retorna o vetor de n�s de utilidade associados.
-     *
-     *@return    vetor de n�s de utilidade associados.
+     *@return   list of associated utility nodes (utility nodes linked to this clique)
      */
     public ArrayList<Node> getAssociatedUtilityNodes() {
         return associatedUtilNodes;
@@ -304,9 +294,7 @@ public class Clique implements IRandomVariable, java.io.Serializable {
     
 
     /**
-     *  Retorna a tabela de utilidade associada ao clique.
-     *
-     *@return    tabela de utilidade associada ao clique
+     *@return    obtains the utility function of this clique.
      */
     public PotentialTable getUtilityTable() {
         return utilityTable;
