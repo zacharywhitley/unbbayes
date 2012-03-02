@@ -33,6 +33,7 @@ import java.util.ResourceBundle;
 
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -481,112 +482,129 @@ public class EvidenceTree extends JTree {
 	 * @param  node 
 	 */
 	private void showLikelihood(final DefaultMutableTreeNode node) {
-		
-		final ProbabilisticNode auxProbNode = (ProbabilisticNode) objectsMap.get(node);
-		
-		if (   (auxProbNode != null)
-			&& (auxProbNode.getInformationType() == Node.DESCRIPTION_TYPE)) {
+		try {
+			final ProbabilisticNode auxProbNode = (ProbabilisticNode) objectsMap.get(node);
 			
-			// build panel
-			JDialog likelihoodDialog = this.getLikelihoodEvidenceDialogBuilder().buildDialog(net, auxProbNode, this.netWindow.getGraphPane());
-			likelihoodDialog.setLocationRelativeTo(null);	//place at the center
-			likelihoodDialog.pack();
-			
-			// add listener to update marginal when prompted
-			likelihoodDialog.addComponentListener(new ComponentListener() {
-				public void componentShown(ComponentEvent e) {}
-				public void componentResized(ComponentEvent e) {}
-				public void componentMoved(ComponentEvent e) {}
-				public void componentHidden(ComponentEvent e) {
-					if (auxProbNode.hasLikelihood()) {
-						//Reset text with the values of probabilities 
-						for (int i = 0; i < node.getChildCount(); i++) {
-							DefaultMutableTreeNode auxNode = (DefaultMutableTreeNode) node.getChildAt(i);
-							String str = (String) auxNode.getUserObject();
-							auxNode.setUserObject(
-									str.substring(0, str.lastIndexOf(':') + 1)
-									+ nf.format(auxProbNode.getLikelihood()[i] * 100));
+			if (   (auxProbNode != null)
+				&& (auxProbNode.getInformationType() == Node.DESCRIPTION_TYPE)) {
+				
+				// build panel
+				JDialog likelihoodDialog = this.getLikelihoodEvidenceDialogBuilder().buildDialog(net, auxProbNode, this.netWindow.getGraphPane());
+				likelihoodDialog.setLocationRelativeTo(null);	//place at the center
+				likelihoodDialog.pack();
+				
+				// add listener to update marginal when prompted
+				likelihoodDialog.addComponentListener(new ComponentListener() {
+					public void componentShown(ComponentEvent e) {}
+					public void componentResized(ComponentEvent e) {}
+					public void componentMoved(ComponentEvent e) {}
+					public void componentHidden(ComponentEvent e) {
+						if (auxProbNode.hasLikelihood()) {
+							//Reset text with the values of probabilities 
+							if (auxProbNode.getLikelihood().length == node.getChildCount()) {
+								// Unconditional evidence 
+								for (int i = 0; i < node.getChildCount(); i++) {
+									DefaultMutableTreeNode auxNode = (DefaultMutableTreeNode) node.getChildAt(i);
+									String str = (String) auxNode.getUserObject();
+									auxNode.setUserObject(
+											str.substring(0, str.lastIndexOf(':') + 1)
+											+ nf.format(auxProbNode.getLikelihood()[i] * 100));
+								}
+							} else {
+								// conditional evidence
+								for (int i = 0; i < node.getChildCount(); i++) {
+									DefaultMutableTreeNode auxNode = (DefaultMutableTreeNode) node.getChildAt(i);
+									String str = (String) auxNode.getUserObject();
+									auxNode.setUserObject(
+											str.substring(0, str.lastIndexOf(':') + 1)
+											+ "*");
+								}
+							}
+							
+							((DefaultTreeModel) getModel()).reload(node);
 						}
-						
-						((DefaultTreeModel) getModel()).reload(node);
 					}
-				}
-			});
-			
-			likelihoodDialog.setVisible(true);
-			
+				});
+				
+				likelihoodDialog.setVisible(true);
+				
 
-			
-			
-//			int i;
-//			JPanel panel = new JPanel();
-//			JTable table = new JTable(auxProbNode.getStatesSize(), 2); 
-//			for (i = 0; i < auxProbNode.getStatesSize(); i++) {
-//				table.setValueAt(auxProbNode.getStateAt(i), i, 0);
-//				table.setValueAt("100", i, 1);
-//			}
-//			JLabel label = new JLabel(auxProbNode.toString());
-//			panel.add(label);
-//			panel.add(table);
-//			
-//			//Ask the user the confirmation
-//			int option = JOptionPane.showConfirmDialog(
-////					this.netWindow.getDesktopPane(),
-//					this.netWindow,
-//					panel,
-//					resource.getString("likelihoodName"),
-//					JOptionPane.OK_CANCEL_OPTION);
-//			
-//			// commit changes
-//			if (option == JOptionPane.OK_OPTION) {
-//				//Get the original probabilities values
-//				DefaultMutableTreeNode auxNode;
+				
+				
+//				int i;
+//				JPanel panel = new JPanel();
+//				JTable table = new JTable(auxProbNode.getStatesSize(), 2); 
+//				for (i = 0; i < auxProbNode.getStatesSize(); i++) {
+//					table.setValueAt(auxProbNode.getStateAt(i), i, 0);
+//					table.setValueAt("100", i, 1);
+//				}
+//				JLabel label = new JLabel(auxProbNode.toString());
+//				panel.add(label);
+//				panel.add(table);
 //				
-//				float[] stateProbabilities = new float[auxProbNode.getStatesSize()];
+//				//Ask the user the confirmation
+//				int option = JOptionPane.showConfirmDialog(
+////						this.netWindow.getDesktopPane(),
+//						this.netWindow,
+//						panel,
+//						resource.getString("likelihoodName"),
+//						JOptionPane.OK_CANCEL_OPTION);
 //				
-//				try {
-//					for (i = 0; i < auxProbNode.getStatesSize(); i++) {
-//						stateProbabilities[i] = 
-//							nf.parse((String) table.getValueAt(i, 1)).floatValue();
+//				// commit changes
+//				if (option == JOptionPane.OK_OPTION) {
+//					//Get the original probabilities values
+//					DefaultMutableTreeNode auxNode;
+//					
+//					float[] stateProbabilities = new float[auxProbNode.getStatesSize()];
+//					
+//					try {
+//						for (i = 0; i < auxProbNode.getStatesSize(); i++) {
+//							stateProbabilities[i] = 
+//								nf.parse((String) table.getValueAt(i, 1)).floatValue();
+//						}
+//					} catch (ParseException e) {
+//						System.err.println(e.getMessage());
+//						return;
 //					}
-//				} catch (ParseException e) {
-//					System.err.println(e.getMessage());
-//					return;
+//					
+//					//Get the total probability 
+//					float totalProbability = 0; 
+//					for (i = 0; i < auxProbNode.getStatesSize(); i++) {
+//						totalProbability += stateProbabilities[i];
+//					}
+//					
+//					if (totalProbability == 0.0) {
+//						System.err.println("likelihoodException");
+//						return;
+//					}
+//					
+//					//Normalize the probabilities values
+//					// Also verify the state that has the highest probability
+//					for (i = 0; i < auxProbNode.getStatesSize(); i++) {
+//						stateProbabilities[i] = stateProbabilities[i] / totalProbability;
+//					}
+//					
+//					
+//					//Reset text with the values of probabilities 
+//					String str;
+//					for (i = 0; i < node.getChildCount(); i++) {
+//						auxNode = (DefaultMutableTreeNode) node.getChildAt(i);
+//						str = (String) auxNode.getUserObject();
+//						auxNode.setUserObject(
+//								str.substring(0, str.lastIndexOf(':') + 1)
+//								+ nf.format(stateProbabilities[i] * 100));
+//					}
+//					
+////					auxProbNode.addFinding(1);
+//					auxProbNode.addLikeliHood(stateProbabilities);
+//					((DefaultTreeModel) getModel()).reload(node);
 //				}
-//				
-//				//Get the total probability 
-//				float totalProbability = 0; 
-//				for (i = 0; i < auxProbNode.getStatesSize(); i++) {
-//					totalProbability += stateProbabilities[i];
-//				}
-//				
-//				if (totalProbability == 0.0) {
-//					System.err.println("likelihoodException");
-//					return;
-//				}
-//				
-//				//Normalize the probabilities values
-//				// Also verify the state that has the highest probability
-//				for (i = 0; i < auxProbNode.getStatesSize(); i++) {
-//					stateProbabilities[i] = stateProbabilities[i] / totalProbability;
-//				}
-//				
-//				
-//				//Reset text with the values of probabilities 
-//				String str;
-//				for (i = 0; i < node.getChildCount(); i++) {
-//					auxNode = (DefaultMutableTreeNode) node.getChildAt(i);
-//					str = (String) auxNode.getUserObject();
-//					auxNode.setUserObject(
-//							str.substring(0, str.lastIndexOf(':') + 1)
-//							+ nf.format(stateProbabilities[i] * 100));
-//				}
-//				
-////				auxProbNode.addFinding(1);
-//				auxProbNode.addLikeliHood(stateProbabilities);
-//				((DefaultTreeModel) getModel()).reload(node);
-//			}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(this, e.getMessage(), resource.getString("error"), JOptionPane.WARNING_MESSAGE);
 		}
+		
 	}
 
 	public Node getNodeMap(DefaultMutableTreeNode node) {

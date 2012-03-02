@@ -72,7 +72,6 @@ public class JeffreyRuleLikelihoodExtractor implements ILikelihoodExtractor {
 		
 		// Note: expectedProbability.length == ratio.length == length of a line in the CPT
 		
-		float total = 0;	// this value will be used to normalize ratio
 		
 		// prepare current probability distribution (just the marginal probability, if this is not a conditional soft evidence)
 		float[] currentProbability = this.getCurrentProbability(graph, mainNode);
@@ -81,16 +80,45 @@ public class JeffreyRuleLikelihoodExtractor implements ILikelihoodExtractor {
 			throw new RuntimeException("Could not extract current probability from " + node + " in " + graph);
 		}
 		
+		float total = 0;	// this value will be used to normalize ratio
 		// calculate ratio
 		for (int i = 0; i < ratio.length; i++) {
 			// The actual probability can be retrieved from the main node's marginal
 			ratio[i] = expectedProbability[i] / currentProbability[i];
 			total += ratio[i];
-		}
-		
-		// normalize ratio
-		for (int i = 0; i < ratio.length; i++) {
-			ratio[i] /= total;
+			
+			/*
+			 * We shall normalize probs of states of main node.
+			 * E.g. for P(A|B), then the main node is A. Suppose states of A = {a1, a2} and B = {b1, b2}, then we shall normalize like the following:
+			 * 
+			 * Original "table" (the actual vector is unidimensional, though)
+			 * ---------------
+			 * |    |b1  | b2 |
+			 * ----------------
+			 * |a1  |.9	 | 99 |
+			 * |a2  |.5	 | 13 |
+			 * ----------------
+			 * ----------------
+			 * |Tot |1.4 | 112|
+			 * ----------------
+			 * 
+			 * Normalized
+			 * ----------------------
+			 * |    |b1     | b2     |
+			 * ----------------------
+			 * |a1  |.9/1.4 | 99/112 |
+			 * |a2  |.5/1.4 | 13/112 |
+			 * ----------------------
+			 */
+			if (((i+1) % node.getStatesSize()) == 0) {
+				// i+1 is pointing to first element on the column (thus, i is the last element in the column). Normalize
+				for (int j = i-(node.getStatesSize()-1); j <= i; j++) {
+					// normalize the last "n" ratio (n is the quantity of states of the main node - i.e. the number of lines in the table)
+					ratio[j] /= total;
+				}
+				// reset total, because total is for 1 column (the next column will have different total)
+				total = 0;
+			}
 		}
 		
 		return ratio;

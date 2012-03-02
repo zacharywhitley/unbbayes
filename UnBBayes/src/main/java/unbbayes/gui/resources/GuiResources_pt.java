@@ -550,5 +550,8 @@ public class GuiResources_pt extends ListResourceBundle {
 
 		{"addNodeInConditionalEvidence","Adiciona nós do mesmo clique como novas condições de uma evidência condicional"},
 		{"removeNodeInConditionalEvidence","Remove última condição"},
+		
+		{"addConditionsSoftEvidence","Condições: "},
+		{"softEvidence","Altere probabilidades para editar evidência"},
 	};
 }

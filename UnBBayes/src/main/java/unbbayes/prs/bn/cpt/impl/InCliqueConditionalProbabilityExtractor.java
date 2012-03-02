@@ -4,8 +4,10 @@
 package unbbayes.prs.bn.cpt.impl;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
@@ -61,6 +63,19 @@ public class InCliqueConditionalProbabilityExtractor implements
 			parentNodes = new ArrayList<INode>();
 		}
 		
+		// this implementation does not allow a node conditioned to itself, or the conditions to contain the same node twice. Check it by finding duplicates
+		if (!parentNodes.isEmpty()) {
+			Set<INode> setToCheckDuplicates = new HashSet<INode>();
+			setToCheckDuplicates.add(mainNode);
+			for (INode condition : parentNodes) {
+				if (setToCheckDuplicates.contains(condition)) {
+					// TODO use resource files
+					throw new IllegalArgumentException(condition + " is a duplicate condition for " + mainNode);
+				}
+				setToCheckDuplicates.add(condition);
+			}
+		}
+		
 		ProbabilisticTable ret = new ProbabilisticTable();
 		ret.addVariable(mainNode);
 		
@@ -90,12 +105,17 @@ public class InCliqueConditionalProbabilityExtractor implements
 			}
 		}
 		if (clique == null) {
+			// TODO use resource files
 			// there is no clique with mainNode and parentNodes simultaneously
-			String message = "Clique {" + mainNode;
+//			String message = "Clique {" + mainNode;
+//			for (INode node : parentNodes) {
+//				message += ", " + node;
+//			}
+//			message += "} == null";
+			String message = "No clique containing the following nodes simultaneously:\n " + mainNode;
 			for (INode node : parentNodes) {
 				message += ", " + node;
 			}
-			message += "} == null";
 			throw new IllegalArgumentException(message);
 		}
 		

@@ -547,6 +547,7 @@ public class GuiResources extends ListResourceBundle {
 		
 		{"addNodeInConditionalEvidence","Add other nodes in the clique as an assumption in a conditional soft evidence"},
 		{"removeNodeInConditionalEvidence","Delete last condition"},
-		
+		{"addConditionsSoftEvidence","Conditions: "},
+		{"softEvidence","Change probabilities to edit soft evidence"},
 	};
 }

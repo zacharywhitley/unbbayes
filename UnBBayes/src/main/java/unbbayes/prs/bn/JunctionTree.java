@@ -204,8 +204,6 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	public void initBeliefs() throws Exception {
 		if (! initialized) {
 			Clique auxClique;
-			PotentialTable auxTabPot;
-			PotentialTable auxUtilTab;
 	
 			int sizeCliques = cliques.size();
 			for (int k = 0; k < sizeCliques; k++) {

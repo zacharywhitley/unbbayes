@@ -25,18 +25,27 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.ResourceBundle;
 
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 
+import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
+import unbbayes.util.Debug;
 
 public class GUIPotentialTable {
 	
 	private PotentialTable potentialTable;
+	
+	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
+			unbbayes.controller.resources.ControllerResources.class.getName(), Locale.getDefault(), GUIPotentialTable.class.getClassLoader());
 	
 	public GUIPotentialTable(PotentialTable potentialTable) {
 		this.potentialTable = potentialTable;
@@ -314,6 +323,8 @@ public class GUIPotentialTable {
 		// Shows the caret while editing cell.
 		table.setSurrendersFocusOnKeystroke(true);
 		
+		this.fillWithDefaultTableChangeListener(table);
+		
 		return table;
 	}
 
@@ -329,6 +340,81 @@ public class GUIPotentialTable {
 		diag.setTitle(title);
 		diag.pack();
 		diag.setVisible(true);
+	}
+	
+	/**
+	 * This method is called in {@link #makeTable()} to fill the JTable with a default
+	 * table change listener, which is to change the values of {@link #getPotentialTable()}.
+	 * @param table
+	 */
+	public void fillWithDefaultTableChangeListener(final JTable table) {
+		table.getModel().addTableModelListener(new TableModelListener() {
+			public void tableChanged(TableModelEvent e) {
+				if (getPotentialTable() == null || getPotentialTable().getVariablesSize() <= 0) {
+					Debug.println("No probabilistic table found");
+					return;
+				}
+				// extract first 
+				INode node = getPotentialTable().getVariableAt(0);
+				// Change state name or reset to its previous value.
+				if (e.getColumn() == 0) {
+					if (!table.getValueAt(e.getLastRow(), e.getColumn()).toString().trim().equals("")) {
+						node.setStateAt(table.getValueAt(e.getLastRow(),
+								e.getColumn()).toString(), e.getLastRow()
+								- (table.getRowCount() - node.getStatesSize()));
+					} else {
+						table.revalidate();
+						table.setValueAt(node.getStateAt(e.getLastRow()
+								- (table.getRowCount() - node.getStatesSize())), e.getLastRow(),
+								e.getColumn());
+					}
+				// Change the CPT cell or reset to its previous value.
+				} else if (getPotentialTable() != null) {
+					String valueText = table.getValueAt(e.getLastRow(),
+							e.getColumn()).toString().replace(',', '.');
+					try {
+						float value = Float.parseFloat(valueText);
+						getPotentialTable().setValue((e.getColumn() - 1) * node.getStatesSize() + e.getLastRow(), value);
+					} catch (NumberFormatException nfe) {
+						// Just shows the error message if the value is not empty.
+						if (!valueText.trim().equals("")) {
+							JOptionPane.showMessageDialog(null, 
+									getResource().getString("numberFormatError"), 
+									getResource().getString("error"),
+									JOptionPane.ERROR_MESSAGE);
+						}
+						table.revalidate();
+						table.setValueAt(""
+								+ getPotentialTable().getValue((e.getColumn() - 1) * node.getStatesSize() + e.getLastRow()),
+								e.getLastRow(), e.getColumn());
+					}
+				}
+			}
+		});
+	}
+	/**
+	 * @return the resource
+	 */
+	public static ResourceBundle getResource() {
+		return resource;
+	}
+	/**
+	 * @param resource the resource to set
+	 */
+	public static void setResource(ResourceBundle resource) {
+		GUIPotentialTable.resource = resource;
+	}
+	/**
+	 * @return the potentialTable
+	 */
+	public PotentialTable getPotentialTable() {
+		return potentialTable;
+	}
+	/**
+	 * @param potentialTable the potentialTable to set
+	 */
+	public void setPotentialTable(PotentialTable potentialTable) {
+		this.potentialTable = potentialTable;
 	}
 
 }

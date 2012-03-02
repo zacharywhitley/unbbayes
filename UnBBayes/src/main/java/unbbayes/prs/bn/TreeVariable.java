@@ -143,10 +143,10 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
 //    	}
     	if (hasLikelihood()) {
     		evidence = -1;
-    		likelihood = null;
-    		if (this.getLikelihoodParents() != null) {
-    			this.getLikelihoodParents().clear();
-    		}
+    	}
+    	likelihood = null;
+    	if (this.getLikelihoodParents() != null) {
+    		this.getLikelihoodParents().clear();
     	}
     }
     

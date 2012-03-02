@@ -69,7 +69,7 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 
 	private List<IInferenceAlgorithmListener> inferenceAlgorithmListeners = new ArrayList<IInferenceAlgorithmListener>();
 
-	private String virtualNodePrefix = "";
+	private String virtualNodePrefix = "V_";
 
 	private Map<INode,Collection<IRandomVariable>> virtualNodesToCliquesAndSeparatorsMap = new HashMap<INode,Collection<IRandomVariable>>();
 
@@ -1023,8 +1023,10 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 			newName += node.getName();
 		}
 		// append the likelihood value to the name of the node
-		for (float f : likelihood) {
-			newName += "_" + f;
+		if (likelihood.length <= parentNodes.get(0).getStatesSize()) {
+			for (float f : likelihood) {
+				newName += "_" + f;
+			}
 		}
 		if (net.getNodeIndex(newName) >= 0) {
 			// guarantee a unique name
@@ -1075,18 +1077,8 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 			throw new IllegalArgumentException(this.getResource().getString("sizeOfLikelihoodException") + this.getResource().getString("expectedSize") + virtualNodeCPT.tableSize()/2 , e);
 		}
 		
-		// create clique for the virtual node and parents
-		Clique cliqueOfVirtualNode = new Clique();
-		cliqueOfVirtualNode.getNodes().add(virtualNode);
-		cliqueOfVirtualNode.getNodes().addAll((Collection)parentNodes);
-		cliqueOfVirtualNode.getProbabilityFunction().addVariable(virtualNode);
-		for (INode parentNode : parentNodes) {
-			cliqueOfVirtualNode.getProbabilityFunction().addVariable(parentNode);
-		}
-		
-		// add clique to junction tree, so that the algorithm can handle the clique correctly
+		// prepare junction tree so that we can manipulate cliques
 		IJunctionTree junctionTree = net.getJunctionTree();
-		junctionTree.getCliques().add(cliqueOfVirtualNode);
 		
 		// find the smallest clique containing all the parents
 		int smallestSize = Integer.MAX_VALUE;
@@ -1094,7 +1086,7 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		for (Clique clique : junctionTree.getCliques()) {
 			if (clique.getNodes().containsAll(parentNodes) && !clique.getNodes().contains(virtualNode) && (clique.getProbabilityFunction().tableSize() < smallestSize)) {
 				smallestCliqueContainingAllParents = clique;
-				smallestSize = cliqueOfVirtualNode.getProbabilityFunction().tableSize();
+				smallestSize = clique.getProbabilityFunction().tableSize();
 			}
 		}
 		
@@ -1103,10 +1095,30 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 			throw new IllegalArgumentException(this.getResource().getString("noCliqueForNodes") + parentNodes);
 		}
 		
+		// reorder parent nodes, so that the order matches the nodes in smallestCliqueContainingAllParents.
+		List<INode> orderedParentNodes = new ArrayList<INode>();
+		for (INode parent : smallestCliqueContainingAllParents.getNodes()) {
+			if (parentNodes.contains(parent)) {
+				orderedParentNodes.add(parent);
+			}
+		}
+		
+		// create clique for the virtual node and parents
+		Clique cliqueOfVirtualNode = new Clique();
+		cliqueOfVirtualNode.getNodes().add(virtualNode);
+		cliqueOfVirtualNode.getNodes().addAll((List)orderedParentNodes);
+		cliqueOfVirtualNode.getProbabilityFunction().addVariable(virtualNode);
+		for (INode parentNode : orderedParentNodes) {
+			cliqueOfVirtualNode.getProbabilityFunction().addVariable(parentNode);
+		}
+		
+		// add clique to junction tree, so that the algorithm can handle the clique correctly
+		junctionTree.getCliques().add(cliqueOfVirtualNode);
+		
 		// create separator between the clique of parent nodes and virtual node (the separator should contain all parents)
 		Separator separatorOfVirtualCliqueAndParents = new Separator(smallestCliqueContainingAllParents , cliqueOfVirtualNode);
-		separatorOfVirtualCliqueAndParents.setNodes(new ArrayList<Node>((Collection)parentNodes));
-		for (INode parentNode : parentNodes) {
+		separatorOfVirtualCliqueAndParents.setNodes(new ArrayList<Node>((List)orderedParentNodes));
+		for (INode parentNode : orderedParentNodes) {
 			separatorOfVirtualCliqueAndParents.getProbabilityFunction().addVariable(parentNode);
 		}
 		junctionTree.addSeparator(separatorOfVirtualCliqueAndParents);
@@ -1121,9 +1133,14 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		// this is not necessary for ProbabilisticNode, but other types of nodes may need explicit initialization of the marginals
 		virtualNode.initMarginalList();
 		
+		
 		// initialize the probabilities of clique and separator
 		net.getJunctionTree().initBelief(cliqueOfVirtualNode);
 		net.getJunctionTree().initBelief(separatorOfVirtualCliqueAndParents);	// this one sets all separator potentials to 1
+		
+//		cliqueOfVirtualNode.normalize();
+//		((JunctionTree) junctionTree).absorb(cliqueOfVirtualNode, smallestCliqueContainingAllParents);
+//		cliqueOfVirtualNode.normalize();
 		
 		// propagation (make sure the probabilities of the new clique and separator becomes globally consistent)
 		junctionTree.consistency();

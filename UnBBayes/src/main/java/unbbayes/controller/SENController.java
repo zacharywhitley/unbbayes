@@ -628,45 +628,62 @@ public class SENController {
 			// Shows the caret while editing cell.
 			table.setSurrendersFocusOnKeystroke(true);
 
-		}
-		// TODO MIGRATE TO A DIFFERENT CLASS - GUI.TABLE.PROBABILISTICTABLEMODEL
-		table.getModel().addTableModelListener(new TableModelListener() {
-			public void tableChanged(TableModelEvent e) {
-				// Change state name or reset to its previous value.
-				if (e.getColumn() == 0) {
-					if (!table.getValueAt(e.getLastRow(), e.getColumn()).toString().trim().equals("")) {
-						node.setStateAt(table.getValueAt(e.getLastRow(),
-								e.getColumn()).toString(), e.getLastRow()
-								- (table.getRowCount() - node.getStatesSize()));
-					} else {
-						table.revalidate();
-						table.setValueAt(node.getStateAt(e.getLastRow()
-								- (table.getRowCount() - node.getStatesSize())), e.getLastRow(),
-								e.getColumn());
-					}
-				// Change the CPT cell or reset to its previous value.
-				} else if (potTab != null) {
-					String valueText = table.getValueAt(e.getLastRow(),
-							e.getColumn()).toString().replace(',', '.');
-					try {
-						float value = Float.parseFloat(valueText);
-						potTab.setValue((e.getColumn() - 1) * node.getStatesSize() + e.getLastRow(), value);
-					} catch (NumberFormatException nfe) {
-						// Just shows the error message if the value is not empty.
-						if (!valueText.trim().equals("")) {
-							JOptionPane.showMessageDialog(null, 
-									resource.getString("numberFormatError"), 
-									resource.getString("error"),
-									JOptionPane.ERROR_MESSAGE);
+			// listener to change state name or reset to its previous value.
+			table.getModel().addTableModelListener(new TableModelListener() {
+				public void tableChanged(TableModelEvent e) {
+					if (e.getColumn() == 0) {
+						if (!table.getValueAt(e.getLastRow(), e.getColumn()).toString().trim().equals("")) {
+							node.setStateAt(table.getValueAt(e.getLastRow(),
+									e.getColumn()).toString(), e.getLastRow()
+									- (table.getRowCount() - node.getStatesSize()));
+						} else {
+							table.revalidate();
+							table.setValueAt(node.getStateAt(e.getLastRow()
+									- (table.getRowCount() - node.getStatesSize())), e.getLastRow(),
+									e.getColumn());
 						}
-						table.revalidate();
-						table.setValueAt(""
-								+ potTab.getValue((e.getColumn() - 1) * node.getStatesSize() + e.getLastRow()),
-								e.getLastRow(), e.getColumn());
-					}
+					} 
 				}
-			}
-		});
+			});
+		}
+		// migrated to GUIPotentialTable
+//		table.getModel().addTableModelListener(new TableModelListener() {
+//			public void tableChanged(TableModelEvent e) {
+//				// Change state name or reset to its previous value.
+//				if (e.getColumn() == 0) {
+//					if (!table.getValueAt(e.getLastRow(), e.getColumn()).toString().trim().equals("")) {
+//						node.setStateAt(table.getValueAt(e.getLastRow(),
+//								e.getColumn()).toString(), e.getLastRow()
+//								- (table.getRowCount() - node.getStatesSize()));
+//					} else {
+//						table.revalidate();
+//						table.setValueAt(node.getStateAt(e.getLastRow()
+//								- (table.getRowCount() - node.getStatesSize())), e.getLastRow(),
+//								e.getColumn());
+//					}
+//				// Change the CPT cell or reset to its previous value.
+//				} else if (potTab != null) {
+//					String valueText = table.getValueAt(e.getLastRow(),
+//							e.getColumn()).toString().replace(',', '.');
+//					try {
+//						float value = Float.parseFloat(valueText);
+//						potTab.setValue((e.getColumn() - 1) * node.getStatesSize() + e.getLastRow(), value);
+//					} catch (NumberFormatException nfe) {
+//						// Just shows the error message if the value is not empty.
+//						if (!valueText.trim().equals("")) {
+//							JOptionPane.showMessageDialog(null, 
+//									resource.getString("numberFormatError"), 
+//									resource.getString("error"),
+//									JOptionPane.ERROR_MESSAGE);
+//						}
+//						table.revalidate();
+//						table.setValueAt(""
+//								+ potTab.getValue((e.getColumn() - 1) * node.getStatesSize() + e.getLastRow()),
+//								e.getLastRow(), e.getColumn());
+//					}
+//				}
+//			}
+//		});
 		
 			
 		

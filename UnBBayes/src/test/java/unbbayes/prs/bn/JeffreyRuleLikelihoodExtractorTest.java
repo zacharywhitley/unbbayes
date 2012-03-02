@@ -99,6 +99,11 @@ public class JeffreyRuleLikelihoodExtractorTest extends TestCase {
 		likelihood[0] = .1f;
 		likelihood[1] = .1f;
 		likelihood[2] = .8f;
+		
+		// change P(F|D=d3,G=g3) from {0.35, 0.3, 0.35} to {0.8, 0.1, 0.1}
+		likelihood[likelihood.length - 3] = .8f;
+		likelihood[likelihood.length - 2] = .1f;
+		likelihood[likelihood.length - 1] = .1f;
 			
 		// fill likelihood
 		nodeF.addLikeliHood(likelihood, expected);
@@ -114,15 +119,14 @@ public class JeffreyRuleLikelihoodExtractorTest extends TestCase {
 		assertNotNull(ratio);
 		assertEquals(27, ratio.length);
 		
-		float[] expectedRatio = new float[]{0.0044f,  0.0153f,  0.2451f,  0.0306f,  0.0306f,  0.0306f,  0.0306f,  0.0306f,  0.0306f,  0.0306f,  0.0306f,  0.0306f,  0.0306f,  0.0306f,  0.0306f,  0.0306f,  0.0306f,  0.0306f,  0.0306f,  0.0306f,  0.0306f,  0.0306f,  0.0306f,  0.0306f,  0.0306f,  0.0306f,  0.0306f};
-		
+		float[] expectedRatio = new float[]{0.01652893f, 0.05785124f, 0.92561983f, 0.33333333f, 0.33333333f, 0.33333333f, 0.33333333f, 0.33333333f, 0.33333333f, 0.33333333f, 0.33333333f, 0.33333333f, 0.33333333f, 0.33333333f, 0.33333333f, 0.33333333f, 0.33333333f, 0.33333333f, 0.33333333f, 0.33333333f, 0.33333333f, 0.33333333f, 0.33333333f, 0.33333333f, 0.78688525f, 0.11475410f, 0.09836066f};
 		
 		for (int i = 0; i < expectedRatio.length; i++) {
 //			assertEquals("On index " + i + ", expected = " + expectedRatio[i] + "; obtained = " + ratio[i], 
 //					expectedRatio[i] , ratio[i]);
 			
 			assertTrue("On index " + i + ", expected = " + expectedRatio[i] + "; obtained = " + ratio[i], 
-					expectedRatio[i]-0.0005 < ratio[i] && ratio[i] < expectedRatio[i]+0.0005);
+					expectedRatio[i]-0.00005 < ratio[i] && ratio[i] < expectedRatio[i]+0.00005);
 		}
 		
 	}
