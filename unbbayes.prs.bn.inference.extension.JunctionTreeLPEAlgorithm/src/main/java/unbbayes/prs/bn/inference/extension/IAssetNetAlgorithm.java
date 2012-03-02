@@ -46,8 +46,7 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm{
 	 * @return an asset network
 	 * @throws InvalidParentException 
 	 */
-	public Graph createAssetNetFromProbabilisticNet(
-			ProbabilisticNetwork relatedProbabilisticNetwork)
+	public Graph createAssetNetFromProbabilisticNet(ProbabilisticNetwork relatedProbabilisticNetwork)
 			throws InvalidParentException;
 
 }

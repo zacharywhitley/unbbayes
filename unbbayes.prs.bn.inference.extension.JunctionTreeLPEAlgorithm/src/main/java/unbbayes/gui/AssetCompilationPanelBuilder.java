@@ -37,6 +37,9 @@ import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
  */
 public class AssetCompilationPanelBuilder implements ICompilationPanelBuilder {
 	
+	private String userManagementTabTitle = "User Management";
+	private String probabilityTabTitle = "Probability";
+	
 	private Map<String,Graph> userToassetNetMap = new HashMap<String,Graph>();
 
 	private PNCompilationPane compilationPane;
@@ -73,11 +76,11 @@ public class AssetCompilationPanelBuilder implements ICompilationPanelBuilder {
 		this.setMainScrollPane(new JScrollPane(this.getMainTabPane()));	
 		
 		this.setControllPanel(new ControlPanel());
-		this.getMainTabPane().add(new JScrollPane(getControllPanel()), "User Management");
+		this.getMainTabPane().add(new JScrollPane(getControllPanel()), this.getUserManagementTabTitle());
 		
 		
 		this.setCompilationPane(mediator.getScreen().getNetWindowCompilation());
-		this.getMainTabPane().add(getCompilationPane(), "Probability");
+		this.getMainTabPane().add(getCompilationPane(), getProbabilityTabTitle());
 		
 //		try {
 //			this.addAssetNetToTab(getAlgorithm().createAssetNetFromProbabilisticNet(getAlgorithm().getRelatedProbabilisticNetwork()), "User 1");
@@ -89,14 +92,28 @@ public class AssetCompilationPanelBuilder implements ICompilationPanelBuilder {
 
 	protected void initListeners() {
 		tabChangeListener = new ChangeListener() {
+			
+
 			public void stateChanged(ChangeEvent e) {
 				Debug.println(getClass(), "View changed to user " + getMainTabPane().getTitleAt(getMainTabPane().getSelectedIndex()));
-				// if selected tab is a user tab, then update evidence tree
 				if (getUserToassetNetMap().containsKey(getMainTabPane().getTitleAt(getMainTabPane().getSelectedIndex()))
 						&& (getMainTabPane().getSelectedComponent() instanceof PNCompilationPane) ) {
+					// if selected tab is a user tab, then update evidence tree
 					PNCompilationPane assetPane = (PNCompilationPane) getMainTabPane().getSelectedComponent();
 					assetPane.getEvidenceTree().updateTree(true);
-				} else if (getMainTabPane().getSelectedComponent().equals(getControllPanel())) {
+					
+					// update currently selected user
+					Graph graph = getUserToassetNetMap().get(getMainTabPane().getTitleAt(getMainTabPane().getSelectedIndex()));
+					try {
+						getAlgorithm().setAssetNetwork((AssetNetwork) graph);
+					}catch (Exception exc) {
+						exc.printStackTrace();
+						JOptionPane.showMessageDialog(getMainTabPane(), "Could not switch user to " 
+								+ getMainTabPane().getTitleAt(getMainTabPane().getSelectedIndex())
+								+ ": " + exc.getMessage());
+					}
+				} else if (getMainTabPane().getTitleAt(getMainTabPane().getSelectedIndex()).equals(getUserManagementTabTitle())) {
+					// update currently selected user label
 					getControllPanel().getCurrentlySelectedUserLabel().setText(getAlgorithm().getAssetNetwork().getName());
 					getControllPanel().getCurrentlySelectedUserLabel().updateUI();
 					getControllPanel().getCurrentlySelectedUserLabel().repaint();
@@ -273,6 +290,12 @@ public class AssetCompilationPanelBuilder implements ICompilationPanelBuilder {
 				}
 			});
 			
+			userNameTextField.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					addUserButton.doClick();
+				}
+			});
+			
 			returnEditModeButton = new JButton(IconController.getInstance().getEditIcon());
 			returnEditModeButton.setToolTipText("Return to BN edit mode");
 //			this.add(returnEditModeButton);
@@ -336,6 +359,34 @@ public class AssetCompilationPanelBuilder implements ICompilationPanelBuilder {
 	 */
 	public void setUserToassetNetMap(Map<String, Graph> userToassetNetMap) {
 		this.userToassetNetMap = userToassetNetMap;
+	}
+
+	/**
+	 * @return the userManagementTabTitle
+	 */
+	public String getUserManagementTabTitle() {
+		return userManagementTabTitle;
+	}
+
+	/**
+	 * @param userManagementTabTitle the userManagementTabTitle to set
+	 */
+	public void setUserManagementTabTitle(String userManagementTabTitle) {
+		this.userManagementTabTitle = userManagementTabTitle;
+	}
+
+	/**
+	 * @return the probabilityTabTitle
+	 */
+	public String getProbabilityTabTitle() {
+		return probabilityTabTitle;
+	}
+
+	/**
+	 * @param probabilityTabTitle the probabilityTabTitle to set
+	 */
+	public void setProbabilityTabTitle(String probabilityTabTitle) {
+		this.probabilityTabTitle = probabilityTabTitle;
 	}
 	
 }

@@ -12,7 +12,9 @@ import unbbayes.controller.INetworkMediator;
 import unbbayes.gui.AssetCompilationPanelBuilder;
 import unbbayes.prs.Graph;
 import unbbayes.prs.bn.AssetNetwork;
+import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.bn.ProbabilisticNetworkFilter;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
@@ -336,6 +338,11 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	public Graph createAssetNetFromProbabilisticNet(
 			ProbabilisticNetwork relatedProbabilisticNetwork)
 			throws InvalidParentException {
+		if (getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			JunctionTreeAlgorithm junctionTreeAlgorithm = (JunctionTreeAlgorithm) getProbabilityPropagationDelegator();
+			// create asset net without dummy (virtual) nodes
+			return this.getAssetPropagationDelegator().createAssetNetFromProbabilisticNet(new ProbabilisticNetworkFilter(relatedProbabilisticNetwork, junctionTreeAlgorithm.getVirtualNodesToCliquesAndSeparatorsMap().keySet()));
+		}
 		return this.getAssetPropagationDelegator().createAssetNetFromProbabilisticNet(relatedProbabilisticNetwork);
 	}
 

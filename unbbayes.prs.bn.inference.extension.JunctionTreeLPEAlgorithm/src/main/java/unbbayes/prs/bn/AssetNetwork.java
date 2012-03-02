@@ -3,9 +3,10 @@
  */
 package unbbayes.prs.bn;
 
-import java.util.ArrayList;
+import java.util.Collection;
 
 import unbbayes.prs.Edge;
+import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
@@ -31,6 +32,7 @@ public class AssetNetwork extends SingleEntityNetwork {
 	 * Default constructor method initializing network.
 	 * This method calls {@link #setRelatedNetwork(ProbabilisticNetwork)}, which instantiates asset nodes and edges.
 	 * @param relatedNetwork : probabilistic network containing the probability distribution of this asset network
+	 * @param nodesToIgnore 
 	 * @return a network of assets having the same structure of relatedNetwork
 	 * @throws InvalidParentException : if relatedNetwork contains invalid edges
 	 */
@@ -53,6 +55,7 @@ public class AssetNetwork extends SingleEntityNetwork {
 	 * and instantiates asset nodes and edges according to nodes/edges in relatedNetwork. It only considers instances of {@link ProbabilisticNode}
 	 * in the relatedNetwork. It does not copy cliques/separators, because some algorithms may not use cliques/separators.
 	 * @param relatedNetwork the relatedNetwork to set
+	 * @param nodesToIgnore 
 	 * @throws InvalidParentException if relatedNetwork contains invalid edges
 	 */
 	public void setRelatedNetwork(ProbabilisticNetwork relatedNetwork) throws InvalidParentException {

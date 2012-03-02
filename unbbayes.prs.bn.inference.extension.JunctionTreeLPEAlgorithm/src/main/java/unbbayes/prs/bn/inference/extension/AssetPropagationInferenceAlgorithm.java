@@ -216,8 +216,6 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm {
 			PotentialTable assetTable = (PotentialTable) assetCliqueOrSeparator.getProbabilityFunction();
 			
 			
-			// extract previous probability (i.e. prior to propagation) values from network property
-			PotentialTable previousProbabilities = ((Map<IRandomVariable, PotentialTable>) this.getNetwork().getProperty(LAST_PROBABILITY_PROPERTY)).get(assetCliqueOrSeparator);
 			
 			// extract probabilistic node related to asset node (they have the same name)
 			// Note: if it is not a probabilistic node, then it means that there is an asset node created for non-probabilistic node (this is unexpected)
@@ -225,6 +223,9 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm {
 			
 			// extract current probability values from prob node's clique. We assume we are using table-based representation (PotentialTable)
 			PotentialTable currentProbabilities = (PotentialTable) probNode.getAssociatedClique().getProbabilityFunction();
+			
+			// extract previous probability (i.e. prior to propagation) values from network property
+			PotentialTable previousProbabilities = ((Map<IRandomVariable, PotentialTable>) this.getNetwork().getProperty(LAST_PROBABILITY_PROPERTY)).get(probNode.getAssociatedClique());
 			
 			// assertion: tables must be non-null and have same size
 			if (currentProbabilities == null || previousProbabilities == null || assetTable == null
@@ -341,10 +342,11 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm {
 		this.relatedProbabilisticNetwork = relatedProbabilisticNetwork;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#createAssetNetFromProbabilisticNet(unbbayes.prs.bn.ProbabilisticNetwork)
 	 */
-	public Graph createAssetNetFromProbabilisticNet(ProbabilisticNetwork relatedProbabilisticNetwork) throws InvalidParentException {
+	public Graph createAssetNetFromProbabilisticNet(ProbabilisticNetwork relatedProbabilisticNetwork)throws InvalidParentException{
 		// assertion
 		if (relatedProbabilisticNetwork == null) {
 //			throw new NullPointerException("relatedProbabilisticNetwork == null" );
@@ -364,22 +366,53 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm {
 
 			// copy cliques
 			for (Clique origClique : relatedProbabilisticNetwork.getJunctionTree().getCliques()) {
+				
 				Clique newClique = new Clique();
-				for (Node node : origClique.getAssociatedProbabilisticNodes()) {
-					Node assetNode = ret.getNode(node.getName());	// extract associated node, because they are related by name
-					newClique.getAssociatedProbabilisticNodes().add(assetNode);
-				}
+				
+				boolean hasInvalidNode = false;	// this will be true if a clique contains a node not in AssetNetwork.
 				for (Node node : origClique.getNodes()) {
 					Node assetNode = ret.getNode(node.getName());	// extract associated node, because they are related by name
+					if (assetNode == null) {
+						hasInvalidNode = true;
+						break;
+					}
 					newClique.getNodes().add(assetNode);
 				}
+				if (hasInvalidNode) {
+					// the original clique has a node not present in the asset net
+					continue;
+				}
+				
+				// origClique.getNodes() and origClique.getAssociatedProbabilisticNodes() may be different... Copy both separately. 
+				for (Node node : origClique.getAssociatedProbabilisticNodes()) {
+					Node assetNode = ret.getNode(node.getName());	// extract associated node, because they are related by name
+					if (assetNode == null) {
+						hasInvalidNode = true;
+						break;
+					}
+					newClique.getAssociatedProbabilisticNodes().add(assetNode);
+				}
+				if (hasInvalidNode) {
+					// the original clique has a node not present in the asset net
+					continue;
+				}
+				
 				newClique.setIndex(origClique.getIndex());
 				
 				// copy clique potential variables
 				PotentialTable origPotential = origClique.getProbabilityFunction();
 				PotentialTable assetPotential = newClique.getProbabilityFunction();
 				for (int i = 0; i < origPotential.getVariablesSize(); i++) {
-					assetPotential.addVariable(ret.getNode(origPotential.getVariableAt(i).getName()));
+					Node assetNode = ret.getNode(origPotential.getVariableAt(i).getName());
+					if (assetNode == null) {
+						hasInvalidNode = true;
+						break;
+					}
+					assetPotential.addVariable(assetNode);
+				}
+				if (hasInvalidNode) {
+					// the original clique has a node not present in the asset net
+					continue;
 				}
 				
 				// fills the values of assets with default values
@@ -395,7 +428,10 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm {
 			
 			// copy relationship of cliques (separators)
 			for (int i = 0; i < relatedProbabilisticNetwork.getJunctionTree().getSeparatorsSize(); i++) {
+				
 				Separator origSeparator = relatedProbabilisticNetwork.getJunctionTree().getSeparatorAt(i);
+				
+				boolean hasInvalidNode = false;	// this will be true if a clique contains a node not in AssetNetwork.
 				
 				// extract the cliques related to the two cliques that the origSeparator connects
 				Clique assetClique1 = (Clique) originalCliqueToAssetCliqueMap.get(origSeparator.getClique1());
@@ -414,14 +450,31 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm {
 				// fill the separator's node list
 				for (Node origNode : origSeparator.getNodes()) {
 					Node assetNode = ret.getNode(origNode.getName());	// assets and prob nodes have same node names.
+					if (assetNode == null) {
+						hasInvalidNode = true;
+						break;
+					}
 					newSeparator.getNodes().add(assetNode);
+				}
+				if (hasInvalidNode) {
+					// the original clique has a node not present in the asset net
+					continue;
 				}
 				
 				// copy separator potential variables
 				PotentialTable origPotential = origSeparator.getProbabilityFunction();
 				PotentialTable assetPotential = newSeparator.getProbabilityFunction();
 				for (int j = 0; j < origPotential.getVariablesSize(); j++) {
-					assetPotential.addVariable(ret.getNode(origPotential.getVariableAt(i).getName()));
+					Node assetNode = ret.getNode(origPotential.getVariableAt(j).getName());
+					if (assetNode == null) {
+						hasInvalidNode = true;
+						break;
+					}
+					assetPotential.addVariable(assetNode);
+				}
+				if (hasInvalidNode) {
+					// the original clique has a node not present in the asset net
+					continue;
 				}
 				
 				// fills the values of assets with default values
