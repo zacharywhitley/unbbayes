@@ -11,6 +11,7 @@ import java.util.TreeMap;
 
 import unbbayes.controller.INetworkMediator;
 import unbbayes.prs.Graph;
+import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
 import unbbayes.prs.bn.AssetNode;
@@ -40,6 +41,14 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm {
 	 */
 	public static final String LAST_PROBABILITY_PROPERTY = AssetPropagationInferenceAlgorithm.class.getName() + ".lastProbabilityMap";
 	
+	/** 
+	 * Name of the property in {@link Graph#getProperty(String)} which manages the links from cliques/separators in the probabilistic network
+	 * (i.e. {@link #getRelatedProbabilisticNetwork()})
+	 * to cliques/separators in the asset network (i.e. {@link #getNetwork()}). 
+	 * Cliques/separators in the asset networks were all created from cliques/separators
+	 * in the probabilistic network in {@link #setRelatedProbabilisticNetwork(ProbabilisticNetwork)}.
+	 */
+	public static final String ORIGINALCLIQUE_TO_ASSETCLIQUE_MAP_PROPERTY = AssetPropagationInferenceAlgorithm.class.getName() + ".originalCliqueToAssetCliqueMap";
 
 	private List<IInferenceAlgorithmListener> inferenceAlgorithmListener = new ArrayList<IInferenceAlgorithmListener>();
 	
@@ -51,7 +60,7 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm {
 	
 	private INetworkMediator mediator;
 
-	private Map<IRandomVariable, IRandomVariable> originalCliqueToAssetCliqueMap;
+//	private Map<IRandomVariable, IRandomVariable> originalCliqueToAssetCliqueMap;
 	
 	private Comparator<IRandomVariable> randomVariableComparator = new Comparator<IRandomVariable>() {
 		public int compare(IRandomVariable v1, IRandomVariable v2) {
@@ -362,7 +371,7 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm {
 			JunctionTree jt = new JunctionTree();
 			ret.setJunctionTree(jt);
 			
-			originalCliqueToAssetCliqueMap = new TreeMap<IRandomVariable, IRandomVariable>(this.getRandomVariableComparator());
+			setOriginalCliqueToAssetCliqueMap(ret, new TreeMap<IRandomVariable, IRandomVariable>(this.getRandomVariableComparator()));
 
 			// copy cliques
 			for (Clique origClique : relatedProbabilisticNetwork.getJunctionTree().getCliques()) {
@@ -422,7 +431,7 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm {
 				// NOTE: this is ignoring utility table and nodes
 				
 				jt.getCliques().add(newClique);
-				originalCliqueToAssetCliqueMap.put(origClique, newClique);
+				getOriginalCliqueToAssetCliqueMap(ret).put(origClique, newClique);
 				
 			}
 			
@@ -434,8 +443,8 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm {
 				boolean hasInvalidNode = false;	// this will be true if a clique contains a node not in AssetNetwork.
 				
 				// extract the cliques related to the two cliques that the origSeparator connects
-				Clique assetClique1 = (Clique) originalCliqueToAssetCliqueMap.get(origSeparator.getClique1());
-				Clique assetClique2 = (Clique) originalCliqueToAssetCliqueMap.get(origSeparator.getClique2());
+				Clique assetClique1 = (Clique) getOriginalCliqueToAssetCliqueMap(ret).get(origSeparator.getClique1());
+				Clique assetClique2 = (Clique) getOriginalCliqueToAssetCliqueMap(ret).get(origSeparator.getClique2());
 				if (assetClique1 == null || assetClique2 == null) {
 					try {
 						Debug.println(getClass(), "Could not create separator between " + assetClique1 + " and " + assetClique2);
@@ -483,7 +492,7 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm {
 				
 				// NOTE: this is ignoring utility table and nodes
 				jt.addSeparator(newSeparator);
-				originalCliqueToAssetCliqueMap.put(origSeparator, newSeparator);
+				getOriginalCliqueToAssetCliqueMap(ret).put(origSeparator, newSeparator);
 			}
 			
 			// copy relationship between cliques/separator and nodes
@@ -497,7 +506,7 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm {
 					}
 					continue;
 				}
-				assetNode.setAssociatedClique(originalCliqueToAssetCliqueMap.get(((TreeVariable)origNode).getAssociatedClique()));
+				assetNode.setAssociatedClique(getOriginalCliqueToAssetCliqueMap(ret).get(((TreeVariable)origNode).getAssociatedClique()));
 				
 				// force marginal to have some value
 				assetNode.updateMarginal();
@@ -585,18 +594,48 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm {
 	}
 
 	/**
-	 * @return the originalCliqueToAssetCliqueMap
+	 * Calls {@link #getOriginalCliqueToAssetCliqueMap(Network)}.
+	 * @return a mapping between cliques/separators in {@link #getRelatedProbabilisticNetwork()} to cliques/separators in {@link #getAssetNetwork()}.
 	 */
 	public Map<IRandomVariable, IRandomVariable> getOriginalCliqueToAssetCliqueMap() {
-		return originalCliqueToAssetCliqueMap;
+		return this.getOriginalCliqueToAssetCliqueMap(getAssetNetwork());
+	}
+	
+	/**
+	 * It loads the property {@link #ORIGINALCLIQUE_TO_ASSETCLIQUE_MAP_PROPERTY} from
+	 * the network assetNet, which is supposedly a mapping from cliques/separators of probabilities to cliques/separators of assets.
+	 * @param assetNet : the network where the mapping (property {@link #ORIGINALCLIQUE_TO_ASSETCLIQUE_MAP_PROPERTY}) is stored.
+	 * @return the map linking cliques from {@link #getRelatedProbabilisticNetwork()} to
+	 * cliques in assetNet.
+	 */
+	protected Map<IRandomVariable, IRandomVariable> getOriginalCliqueToAssetCliqueMap(Network assetNet) {
+		try {
+			return (Map<IRandomVariable, IRandomVariable>) assetNet.getProperty(ORIGINALCLIQUE_TO_ASSETCLIQUE_MAP_PROPERTY);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+
+	/**
+	 * Calls {@link #setOriginalCliqueToAssetCliqueMap(Network, Map)} using {@link #getAssetNetwork()} as a parameter
+	 * @param originalCliqueToAssetCliqueMap
+	 */
+	public void setOriginalCliqueToAssetCliqueMap(Map<IRandomVariable, IRandomVariable> originalCliqueToAssetCliqueMap) {
+		this.setOriginalCliqueToAssetCliqueMap(getAssetNetwork(), originalCliqueToAssetCliqueMap);
 	}
 
 	/**
-	 * @param originalCliqueToAssetCliqueMap the originalCliqueToAssetCliqueMap to set
+	 * It stores originalCliqueToAssetCliqueMap into the property {@link #ORIGINALCLIQUE_TO_ASSETCLIQUE_MAP_PROPERTY} of
+	 * the network assetNet, which is supposedly .
+	 * @param assetNet :  the network where the mapping is going to be stored.
+	 * @param originalCliqueToAssetCliqueMap : a mapping from cliques/separators of probabilities to cliques/separators of assetNet.
 	 */
-	public void setOriginalCliqueToAssetCliqueMap(
-			Map<IRandomVariable, IRandomVariable> originalCliqueToAssetCliqueMap) {
-		this.originalCliqueToAssetCliqueMap = originalCliqueToAssetCliqueMap;
+	protected void setOriginalCliqueToAssetCliqueMap(Network assetNet, Map<IRandomVariable, IRandomVariable> originalCliqueToAssetCliqueMap) {
+		if (assetNet != null) {
+			assetNet.addProperty(ORIGINALCLIQUE_TO_ASSETCLIQUE_MAP_PROPERTY, originalCliqueToAssetCliqueMap);
+		}
 	}
 	
 	/**
