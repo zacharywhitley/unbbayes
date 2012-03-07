@@ -24,13 +24,16 @@ public class JunctionTreeLPEAlgorithm extends JunctionTreeMPEAlgorithm {
 
 
 	/**
-	 * 
+	 * Default constructor is public just to allow the plugin infrastructure to
+	 * instantiate this class easily. However, use {@link #JunctionTreeLPEAlgorithm(ProbabilisticNetwork)}
+	 * when possible.
 	 */
 	public JunctionTreeLPEAlgorithm() {
 		this(null);
 	}
 
 	/**
+	 * Constructor initializing fields.
 	 * @param net
 	 */
 	public JunctionTreeLPEAlgorithm(ProbabilisticNetwork net) {
@@ -221,16 +224,16 @@ public class JunctionTreeLPEAlgorithm extends JunctionTreeMPEAlgorithm {
 		return "Junction Tree Least PE";
 	}
 
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#reset()
-	 */
-	public void reset() {
-		super.reset();
-		InferenceAlgorithmOptionPanel bkp = this.getOptionPanel();	// backup the option panel
-		this.setOptionPanel(null);	// setting option panel to null disables access to GUI (so, log will be disabled)
+//	/* (non-Javadoc)
+//	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#reset()
+//	 */
+//	public void reset() {
+//		super.reset();
+//		InferenceAlgorithmOptionPanel bkp = this.getOptionPanel();	// backup the option panel
+//		this.setOptionPanel(null);	// setting option panel to null disables access to GUI (so, log will be disabled)
 //		this.propagate();	// propagate with log disabled
-		this.setOptionPanel(bkp);	// restore backup
-	}
+//		this.setOptionPanel(bkp);	// restore backup
+//	}
 
 	
 }

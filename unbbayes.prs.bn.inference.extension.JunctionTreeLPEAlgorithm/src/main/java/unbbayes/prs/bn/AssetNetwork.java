@@ -3,20 +3,23 @@
  */
 package unbbayes.prs.bn;
 
-import java.util.Collection;
-
 import unbbayes.prs.Edge;
-import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
 
 
 /**
+ * This class represents a network of assets instead of probabilities.
+ * It is not conceptually a probabilistic network, but it is extending 
+ * {@link ProbabilisticNetwork} just for class compatibility (i.e.
+ * just to make sure algorithms like {@link unbbayes.prs.bn.inference.extension.JunctionTreeLPEAlgorithm}
+ * works for assets as well).
+ * 
  * @author Shou Matsumoto
  *
  */
-public class AssetNetwork extends SingleEntityNetwork {
+public class AssetNetwork extends ProbabilisticNetwork {
 	
 	private ProbabilisticNetwork relatedNetwork;
 

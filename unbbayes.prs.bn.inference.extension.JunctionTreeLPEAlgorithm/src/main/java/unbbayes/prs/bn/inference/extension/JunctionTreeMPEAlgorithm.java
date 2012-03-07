@@ -17,7 +17,6 @@ import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
-import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.util.Debug;
@@ -96,10 +95,7 @@ public class JunctionTreeMPEAlgorithm extends JunctionTreeAlgorithm {
 				 */
 				continue;
 			}
-			if (node instanceof TreeVariable) {
-				TreeVariable treeVariable = (TreeVariable) node;
-				this.updateMarginal(treeVariable);
-			}
+			this.updateMarginal(node);
 		}
 	}
 	
@@ -109,30 +105,30 @@ public class JunctionTreeMPEAlgorithm extends JunctionTreeAlgorithm {
 	 * @param node
 	 */
 	protected void updateMarginal(INode node) {
-		if (node instanceof ProbabilisticNode) {
-			ProbabilisticNode probabilisticNode = (ProbabilisticNode) node;
+		if ((node != null) && (node instanceof TreeVariable)) {
+			TreeVariable treeVariable = (TreeVariable) node;
 			
 			// ensure marginal list is initialized
-			probabilisticNode.initMarginalList();
+			treeVariable.initMarginalList();
 			// obtain clique where node belongs and the probability distribution
 			IRandomVariable relatedClique = null;
 			try {
 				for (Clique clique : ((SingleEntityNetwork)getNet()).getJunctionTree().getCliques()) {
-					if (clique.getAssociatedProbabilisticNodes().contains(probabilisticNode)) {
+					if (clique.getAssociatedProbabilisticNodes().contains(treeVariable)) {
 						relatedClique = clique;
 						break;
 					}
 				}
 			} catch (Exception e) {
-				throw new IllegalStateException("Could not extract clique from " + probabilisticNode + " in network " + getNet(), e);
+				throw new IllegalStateException("Could not extract clique from " + treeVariable + " in network " + getNet(), e);
 			}
 			if (relatedClique == null) {
-				throw new IllegalStateException("Could not extract clique from " + probabilisticNode + " in network " + getNet());
+				throw new IllegalStateException("Could not extract clique from " + treeVariable + " in network " + getNet());
 			}
 			PotentialTable auxTab = (PotentialTable) ((PotentialTable)relatedClique.getProbabilityFunction()).clone();
 			
 			// iterate over nodes in clique and start doing "max-marginalization"
-			int index = auxTab.indexOfVariable(probabilisticNode);
+			int index = auxTab.indexOfVariable(treeVariable);
 			for (int i = 0; i < relatedClique.getProbabilityFunction().variableCount(); i++) {
 				if (i != index) {
 					// extract operation of the default junction tree
@@ -165,7 +161,7 @@ public class JunctionTreeMPEAlgorithm extends JunctionTreeAlgorithm {
 			
 			// the table will contain the marginals. Copy values.
 			for (int i = 0; i < auxTab.tableSize(); i++) {
-				probabilisticNode.setMarginalAt(i, auxTab.getValue(i));
+				treeVariable.setMarginalAt(i, auxTab.getValue(i));
 			}
 		}
 	}

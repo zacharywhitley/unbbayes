@@ -4,16 +4,16 @@
 package unbbayes.gui.option;
 
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 
 import unbbayes.controller.INetworkMediator;
 import unbbayes.gui.ILikelihoodEvidenceDialogBuilder;
 import unbbayes.gui.LikelihoodEvidenceDialogBuilder;
-import unbbayes.gui.PNCompilationPane;
+import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.SoftEvidenceDialogBuilder;
 import unbbayes.prs.bn.ILikelihoodExtractor;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
@@ -33,7 +33,7 @@ public class JunctionTreeOptionPanel extends InferenceAlgorithmOptionPanel {
 	
 	private IInferenceAlgorithm inferenceAlgorithm;
 
-	private ActionListener clearVirtualNodesActionListener;
+	private AncestorListener clearVirtualNodesAncestorListener;
 
 	private JCheckBox removeVirtualNodeCheckBox;
 
@@ -63,10 +63,10 @@ public class JunctionTreeOptionPanel extends InferenceAlgorithmOptionPanel {
 		
 		// verify if checkbox for removing virtual nodes should be checked
 		boolean isSelected = false;
-		// verify if the button to return to edit mode contains the action listener to remove all virtual nodes
+		// verify if the edit panel contains the listener to remove all virtual nodes
 		try {
-			for (ActionListener al : this.getMediator().getScreen().getNetWindowCompilation().getEditMode().getActionListeners()) {
-				if (al.equals(getClearVirtualNodesActionListener())) {
+			for (AncestorListener listener : this.getMediator().getScreen().getNetWindowEdition().getAncestorListeners()) {
+				if (listener.equals(getClearVirtualNodesAncestorListener())) {
 					isSelected = true;
 					break;
 				}
@@ -95,12 +95,18 @@ public class JunctionTreeOptionPanel extends InferenceAlgorithmOptionPanel {
 
 	protected void initListeners() {
 		// listener to remove all virtual nodes when returning to edit mode
-		setClearVirtualNodesActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+		setClearVirtualNodesAncestorListener(new AncestorListener() {
+			public void ancestorRemoved(AncestorEvent event) {}
+			public void ancestorMoved(AncestorEvent event) {}
+			/**
+			 * This is called when the card layout sets the edit mode pane visible
+			 */
+			public void ancestorAdded(AncestorEvent event) {
 				if (getInferenceAlgorithm() instanceof JunctionTreeAlgorithm) {
 					JunctionTreeAlgorithm junctionTreeAlgorithm = (JunctionTreeAlgorithm) getInferenceAlgorithm();
 					try {
 						junctionTreeAlgorithm.clearVirtualNodes();
+						getMediator().getScreen().changeToPNEditionPane();
 					} catch (Exception t) {
 						t.printStackTrace();
 						// TODO use resources
@@ -123,16 +129,16 @@ public class JunctionTreeOptionPanel extends InferenceAlgorithmOptionPanel {
 	 */
 	public void commitChanges() {
 		// remove listener that removes all virtual nodes from network
-		if (this.getMediator() != null && this.getClearVirtualNodesActionListener() != null) {
+		if (this.getMediator() != null && this.getClearVirtualNodesAncestorListener() != null) {
 			// remove listener from old module
-			this.getMediator().getScreen().getNetWindowCompilation().getEditMode().removeActionListener(this.getClearVirtualNodesActionListener());
+			this.getMediator().getScreen().getNetWindowEdition().removeAncestorListener(this.getClearVirtualNodesAncestorListener());
 		}
 		// add again if the check box for removing virtual nodes is checked
 		if (this.getRemoveVirtualNodeCheckBox().isSelected()) {
 			// remove and add listener again
-			if (this.getMediator() != null && this.getClearVirtualNodesActionListener() != null) {
+			if (this.getMediator() != null && this.getClearVirtualNodesAncestorListener() != null) {
 				// remove listener from old module
-				this.getMediator().getScreen().getNetWindowCompilation().getEditMode().addActionListener(this.getClearVirtualNodesActionListener());
+				this.getMediator().getScreen().getNetWindowEdition().addAncestorListener(this.getClearVirtualNodesAncestorListener());
 			}
 		}
 		
@@ -177,36 +183,41 @@ public class JunctionTreeOptionPanel extends InferenceAlgorithmOptionPanel {
 	}
 
 	/**
-	 * Besides changing the mediator, it adds an action listener so that {@link JunctionTreeAlgorithm#clearVirtualNodes()}
-	 * is called when {@link PNCompilationPane#getEditMode()} is pressed (i.e. all virtual nodes are cleared when
+	 * Besides changing the mediator, it adds an ancestor listener so that {@link JunctionTreeAlgorithm#clearVirtualNodes()}
+	 * is called when {@link NetworkWindow#getNetWindowEdition()} gets active (i.e. all virtual nodes are cleared when
 	 * returning to edit mode).
 	 * @see unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel#setMediator(unbbayes.controller.INetworkMediator)
 	 */
 	public void setMediator(INetworkMediator mediator) {
-		if (this.getMediator() != null && this.getClearVirtualNodesActionListener() != null) {
+		if (this.getMediator() != null && this.getClearVirtualNodesAncestorListener() != null) {
 			// remove listener from old module
-			this.getMediator().getScreen().getNetWindowCompilation().getEditMode().removeActionListener(this.getClearVirtualNodesActionListener());
+			this.getMediator().getScreen().getNetWindowEdition().removeAncestorListener(this.getClearVirtualNodesAncestorListener());
 		}
 		super.setMediator(mediator);
-		if (this.getMediator() != null && this.getClearVirtualNodesActionListener() != null) {
+		if (this.getMediator() != null && this.getClearVirtualNodesAncestorListener() != null) {
 			// update listener and add listener to new module
-			this.getMediator().getScreen().getNetWindowCompilation().getEditMode().addActionListener(this.getClearVirtualNodesActionListener());
+			this.getMediator().getScreen().getNetWindowEdition().addAncestorListener(this.getClearVirtualNodesAncestorListener());
 		}
 	}
 
 	/**
-	 * @return the clearVirtualNodesActionListener
+	 * This ancestor listener is going to be added to {@link NetworkWindow#getNetWindowEdition()}, accessible from {@link #getMediator()},
+	 * when {@link #getRemoveVirtualNodeCheckBox()} is checked and {@link #commitChanges()} is called. 
+	 * This is basically for removing virtual nodes from network when GUI switches to edit mode.
+	 * @return the clearVirtualNodesAncestorListener
 	 */
-	public ActionListener getClearVirtualNodesActionListener() {
-		return clearVirtualNodesActionListener;
+	public AncestorListener getClearVirtualNodesAncestorListener() {
+		return clearVirtualNodesAncestorListener;
 	}
 
 	/**
-	 * @param clearVirtualNodesActionListener the clearVirtualNodesActionListener to set
+	 * This ancestor listener is going to be added to {@link NetworkWindow#getNetWindowEdition()}, accessible from {@link #getMediator()},
+	 * when {@link #getRemoveVirtualNodeCheckBox()} is checked and {@link #commitChanges()} is called. 
+	 * This is basically for removing virtual nodes from network when GUI switches to edit mode.
+	 * @param clearVirtualNodesAncestorListener the clearVirtualNodesAncestorListener to set
 	 */
-	public void setClearVirtualNodesActionListener(
-			ActionListener clearVirtualNodesActionListener) {
-		this.clearVirtualNodesActionListener = clearVirtualNodesActionListener;
+	public void setClearVirtualNodesAncestorListener(AncestorListener clearVirtualNodesAncestorListener) {
+		this.clearVirtualNodesAncestorListener = clearVirtualNodesAncestorListener;
 	}
 
 

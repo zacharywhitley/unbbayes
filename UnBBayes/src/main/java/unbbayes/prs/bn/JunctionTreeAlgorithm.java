@@ -1171,8 +1171,6 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 	 * This method just removes all virtual nodes created in {@link #addVirtualNode(List)}
 	 * from {@link #getNetwork()} by accessing #getVirtualNodes().
 	 * #getVirtualNodes() will be cleared after execution of this method. 
-	 * Caution: this method does not remove the cliques and separators
-	 * created by {@link #addVirtualNode(List)}.
 	 */
 	public void clearVirtualNodes() {
 		for (INode virtualNode : getVirtualNodesToCliquesAndSeparatorsMap().keySet()) {

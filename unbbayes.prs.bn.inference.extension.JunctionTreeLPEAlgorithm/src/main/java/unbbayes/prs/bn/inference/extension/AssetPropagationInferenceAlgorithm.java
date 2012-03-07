@@ -32,7 +32,7 @@ import unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener;
  * @author Shou Matsumoto
  *
  */
-public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm {
+public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm  {
 	
 	/** 
 	 * Name of the property in {@link Graph#getProperty(String)} which manages assets prior to {@link #propagate()}. 
