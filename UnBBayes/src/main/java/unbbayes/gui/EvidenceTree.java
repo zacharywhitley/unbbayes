@@ -452,8 +452,8 @@ public class EvidenceTree extends JTree {
 		if (obj != null) {
 			TreeVariable node = (TreeVariable) obj;
 
-			//Only propage description nodes
-			if (node.getInformationType() == Node.DESCRIPTION_TYPE) {
+			//Only propagate description nodes
+			if ((node.getInformationType() == Node.DESCRIPTION_TYPE) || (node.getInformationType() == Node.EXPLANATION_TYPE)) {
 				for (int i = 0; i < parent.getChildCount(); i++) {
 					DefaultMutableTreeNode auxNode =
 						(DefaultMutableTreeNode) parent.getChildAt(i);
