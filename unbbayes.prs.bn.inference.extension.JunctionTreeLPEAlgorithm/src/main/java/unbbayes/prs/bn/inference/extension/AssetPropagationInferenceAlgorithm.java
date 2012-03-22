@@ -355,7 +355,7 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm  {
 	 * (non-Javadoc)
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#createAssetNetFromProbabilisticNet(unbbayes.prs.bn.ProbabilisticNetwork)
 	 */
-	public Graph createAssetNetFromProbabilisticNet(ProbabilisticNetwork relatedProbabilisticNetwork)throws InvalidParentException{
+	public AssetNetwork createAssetNetFromProbabilisticNet(ProbabilisticNetwork relatedProbabilisticNetwork)throws InvalidParentException{
 		// assertion
 		if (relatedProbabilisticNetwork == null) {
 //			throw new NullPointerException("relatedProbabilisticNetwork == null" );
@@ -571,8 +571,8 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm  {
 		// print probabilities and assets for each node in each clique
 		for (Clique probClique : this.getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
 			try {
-				explMessage += "Clique {" + probClique + "}:\n \t \t";
 				PotentialTable assetTable = (PotentialTable) this.getOriginalCliqueToAssetCliqueMap().get(probClique).getProbabilityFunction();
+				explMessage += "Clique {" + probClique + "}:\n \t \t";
 				PotentialTable probTable = probClique.getProbabilityFunction();
 				for (int i = 0; i < assetTable.tableSize(); i++) {
 					explMessage +=  

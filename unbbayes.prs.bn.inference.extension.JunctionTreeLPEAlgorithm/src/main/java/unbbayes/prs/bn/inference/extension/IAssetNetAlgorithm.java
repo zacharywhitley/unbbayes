@@ -1,6 +1,5 @@
 package unbbayes.prs.bn.inference.extension;
 
-import unbbayes.prs.Graph;
 import unbbayes.prs.bn.AssetNetwork;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.exception.InvalidParentException;
@@ -46,7 +45,7 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm{
 	 * @return an asset network
 	 * @throws InvalidParentException 
 	 */
-	public Graph createAssetNetFromProbabilisticNet(ProbabilisticNetwork relatedProbabilisticNetwork)
+	public AssetNetwork createAssetNetFromProbabilisticNet(ProbabilisticNetwork relatedProbabilisticNetwork)
 			throws InvalidParentException;
 
 }

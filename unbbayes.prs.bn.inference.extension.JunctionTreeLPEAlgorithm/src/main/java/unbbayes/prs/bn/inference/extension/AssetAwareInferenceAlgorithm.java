@@ -335,7 +335,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 * (non-Javadoc)
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#createAssetNetFromProbabilisticNet(unbbayes.prs.bn.ProbabilisticNetwork)
 	 */
-	public Graph createAssetNetFromProbabilisticNet(
+	public AssetNetwork createAssetNetFromProbabilisticNet(
 			ProbabilisticNetwork relatedProbabilisticNetwork)
 			throws InvalidParentException {
 		if (getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
