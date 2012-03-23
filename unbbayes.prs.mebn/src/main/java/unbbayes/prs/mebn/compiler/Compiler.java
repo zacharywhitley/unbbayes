@@ -369,11 +369,17 @@ public class Compiler implements ICompiler {
 //		}
 //	}
 	
-	/* Compiler's initialization */
-	/* (non-Javadoc)
+	/**
+	 * Compiler's initialization.
+	 * Calling this method also resets cache used in {@link #generateLPD(SSBNNode)}.
 	 * @see unbbayes.prs.mebn.compiler.AbstractCompiler#init(java.lang.String)
 	 */
 	public void init(String text) {
+		// clear cache, because it is not the same script anymore
+		if (this.getNameToParentProbValuesCache() != null) {
+			this.getNameToParentProbValuesCache().clear();
+		}
+		
 		this.originalTextLength = 0;
 		if (text == null) {
 			this.originalTextLength = 0;
@@ -484,29 +490,30 @@ public class Compiler implements ICompiler {
 			this.generateLinearDistroCPT(this.ssbnnode.getProbNode());
 			return this.ssbnnode.getProbNode().getProbabilityFunction();
 		}
-		
-		// check cache
-		Map<Collection<INode>, float[]> cache = this.getNameToParentProbValuesCache().get(this.ssbnnode.getProbNode().getName());
-		try {
-			if (cache != null) {
-				for (Collection<INode> parents : cache.keySet()) {
-					if (parents.size() == this.ssbnnode.getParents().size() 
-							&& parents.containsAll(this.ssbnnode.getParents())){
-						// cache and current have the same parents
-						this.cpt = this.ssbnnode.getProbNode().getProbabilityFunction();
-						// populate column
-						float[] value = cache.get(parents);
-						for (int i = 0; i < this.cpt.tableSize(); i++) {
-							this.cpt.setValue(i, value[i]);
-						}
-						return this.cpt;
-					}
-				}
-			}
-		} catch (Exception e) {
-			// ignore
-			Debug.println(getClass(), e.getMessage(), e);
-		}
+
+		// moved to generateLPD, before initializing and parsing LPD script again
+//		// check cache
+//		Map<Collection<INode>, float[]> cache = this.getNameToParentProbValuesCache().get(this.ssbnnode.getProbNode().getName());
+//		try {
+//			if (cache != null) {
+//				for (Collection<INode> parents : cache.keySet()) {
+//					if (parents.size() == this.ssbnnode.getParents().size() 
+//							&& parents.containsAll(this.ssbnnode.getParents())){
+//						// cache and current have the same parents
+//						this.cpt = this.ssbnnode.getProbNode().getProbabilityFunction();
+//						// populate column
+//						float[] value = cache.get(parents);
+//						for (int i = 0; i < this.cpt.tableSize(); i++) {
+//							this.cpt.setValue(i, value[i]);
+//						}
+//						return this.cpt;
+//					}
+//				}
+//			}
+//		} catch (Exception e) {
+//			// ignore
+//			Debug.println(getClass(), e.getMessage(), e);
+//		}
 		
 		// initialization
 		
@@ -675,13 +682,14 @@ public class Compiler implements ICompiler {
 			}
 		}
 		
-		// prepare to fill cache
-		if (cache == null) {
-			cache = new HashMap<Collection<INode>, float[]>();
-			this.getNameToParentProbValuesCache().put(this.ssbnnode.getProbNode().getName(), cache);
-		}
-		// fill cache
-		cache.put((Collection)this.ssbnnode.getParents(), this.cpt.getValues());
+		// migrated to generateLPD
+//		// prepare to fill cache
+//		if (cache == null) {
+//			cache = new HashMap<Collection<INode>, float[]>();
+//			this.getNameToParentProbValuesCache().put(this.ssbnnode.getProbNode().getName(), cache);
+//		}
+//		// fill cache
+//		cache.put((Collection)this.ssbnnode.getParents(), this.cpt.getValues());
 		
 		return this.cpt;
 	}
@@ -728,15 +736,51 @@ public class Compiler implements ICompiler {
 	 */
 	public IProbabilityFunction generateLPD(SSBNNode ssbnnode) throws MEBNException {
 		System.gc();
-		if (ssbnnode == null) {
+		if (ssbnnode == null || ssbnnode.getProbNode() == null) {
 			return null;
 		}
 //		if (ssbnnode.isFinding()) {
 //			return null;
 //		}
+		
+		// check content of cache
+		Map<Collection<INode>, float[]> cache = null;
+		try {
+			cache = this.getNameToParentProbValuesCache().get(ssbnnode.getProbNode().getName());
+			if (cache != null) {
+				for (Collection<INode> parents : cache.keySet()) {
+					if (parents.size() == ssbnnode.getParents().size() 
+							&& parents.containsAll(ssbnnode.getParents())){
+						// cache and current have the same parents
+						PotentialTable cpt  = ssbnnode.getProbNode().getProbabilityFunction();
+						// populate cpt with cached value
+						float[] value = cache.get(parents);
+						for (int i = 0; i < cpt.tableSize(); i++) {
+							cpt.setValue(i, value[i]);
+						}
+						return cpt;
+					}
+				}
+			}
+		} catch (Exception e) {
+			// ignore
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		
+		// actually compile pseudo code and obtain cpt
 		this.init(ssbnnode);
 		this.parse();
-		return getCPT();
+		PotentialTable cpt = getCPT();
+		
+		// prepare to fill cache
+		if (cache == null) {
+			cache = new HashMap<Collection<INode>, float[]>();
+			this.getNameToParentProbValuesCache().put(ssbnnode.getProbNode().getName(), cache);
+		}
+		// fill cache
+		cache.put((Collection)ssbnnode.getParents(), cpt.getValues());
+		
+		return cpt;
 	}
 	
 	
