@@ -174,7 +174,7 @@ public class PowerLoomKB implements KnowledgeBase {
 		moduleFinding = PLI.createModule(moduleFindingName, moduleGenerative,
 				           CASE_SENSITIVE);
 
-		Debug.println("Modules creating sucessfull:");
+		Debug.println("Modules created successfully:");
 		Debug.println(moduleGenerative.moduleFullName);
 		Debug.println(moduleFinding.moduleFullName);
 		
