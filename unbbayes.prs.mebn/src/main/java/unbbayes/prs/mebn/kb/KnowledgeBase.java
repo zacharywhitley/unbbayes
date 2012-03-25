@@ -142,6 +142,8 @@ public interface KnowledgeBase {
 	 *            the file that contains the module's definition to be loaded.
 	 *            If {@link #supportsLocalFile()} is false, a null value
 	 *            will be passed.
+	 * @param findingModule if set to false, this method should load generative
+	 * modules (i.e. rules instead of findings).
 	 * @throws UBIOException 
 	 */
 	public void loadModule(File file, boolean findingModule) throws UBIOException;
