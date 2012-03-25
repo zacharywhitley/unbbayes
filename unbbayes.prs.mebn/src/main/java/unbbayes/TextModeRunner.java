@@ -1,6 +1,7 @@
 package unbbayes;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -8,7 +9,9 @@ import java.util.List;
 
 import unbbayes.controller.exception.InconsistentArgumentException;
 import unbbayes.io.log.ILogManager;
+import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.UbfIO;
+import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -315,6 +318,64 @@ public class TextModeRunner {
 			 }
 		}
 		return knowledgeBase;
+	}
+	
+	/**
+	 * It saves the content of kb into the file.
+	 * This method basically clears the knowledge base (in order to remove any old knowledge),
+	 * refills the knowledge base using information in mebn, and then saves it to file.
+	 * @param file : file to store knowledge base
+	 * @param kb : knowledge base to save
+	 * @param mebn : the MTheory whose the knowledge base knows about.
+	 */
+	public void saveKnowledgeBase(File file, KnowledgeBase kb, MultiEntityBayesianNetwork mebn) {
+		
+		// reset KB in order to clear any garbage (e.g. old, logically deleted data)
+		kb.clearKnowledgeBase();
+		
+		// refill knowledge base with entities 
+		for(ObjectEntity entity: mebn.getObjectEntityContainer().getListEntity()){
+			kb.createEntityDefinition(entity);
+		}
+
+		// refill knowledge base with resident node definitions
+		for(MFrag mfrag: mebn.getDomainMFragList()){
+			for(ResidentNode resident: mfrag.getResidentNodeList()){
+				kb.createRandomVariableDefinition(resident);
+			}
+		}
+		
+		// refill knowledge base with instances of entities
+		for(ObjectEntityInstance instance: mebn.getObjectEntityContainer().getListEntityInstances()){
+			kb.insertEntityInstance(instance); 
+		}
+		
+		// refill knowledge base with findings about resident nodes
+		// TODO use a map instead of cubic search
+		for(MFrag mfrag: mebn.getDomainMFragList()){
+			for(IResidentNode residentNode : mfrag.getResidentNodeList()){
+				for(RandomVariableFinding finding: residentNode.getRandomVariableFindingList()){
+					kb.insertRandomVariableFinding(finding); 
+				}
+			}
+		}
+		
+		// finally, save the kb
+		kb.saveFindings(mebn, file);
+	}
+	
+	/**
+	 * Saves a MTheory into a file by using an I/O class.
+	 * @param file : the file to save mebn
+	 * @param io : the I/O class to be used in order to save mebn
+	 * @param mebn : MTheory to be saved.
+	 * @throws IOMebnException : if any inconsistency is found in mebn or io which 
+	 * impedes storing mebn.
+	 * @throws IOException : generic I/O exception. This is usually not related to
+	 * MultiEntityBayesianNetwork logic or format consistency.
+	 */
+	public void saveMEBN(File file, MebnIO io, MultiEntityBayesianNetwork mebn) throws IOMebnException, IOException {
+		io.saveMebn(file, mebn);
 	}
 	
 	/**
