@@ -11,6 +11,7 @@ import java.util.List;
 import junit.framework.TestCase;
 import unbbayes.io.NetIO;
 import unbbayes.prs.INode;
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
@@ -282,19 +283,22 @@ EricÅfs min-q is 35.7393, at the following unique min-states (found by min-asset
 			fail(e.getMessage());
 		}
 		
-		// create new user Tom and his asset net
+		// create new user Tom and his asset net. A new asset net represents a new user.
 		AssetNetwork assetNetTom = null;
 		try {
 			assetNetTom = assetQAlgorithm.createAssetNetFromProbabilisticNet(network);
+			assetNetTom.setName("Tom");
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
 		assertNotNull(assetNetTom);
 		
-		// set tom as the current network user
+		// set Tom as the current network user
 		assetQAlgorithm.setAssetNetwork(assetNetTom);
 		assertEquals(assetNetTom, assetQAlgorithm.getAssetNetwork());
+		
+		
 		
 		// A soft evidence is represented as a list of conditions (assumed nodes) and an array of float representing new conditional probability.
 		// Non-edited probabilities must remain in the values before the edit. Thus, we must extract what are the current probability values.
@@ -302,7 +306,29 @@ EricÅfs min-q is 35.7393, at the following unique min-states (found by min-asset
 		IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = InCliqueConditionalProbabilityExtractor.newInstance();	
 		assertNotNull(conditionalProbabilityExtractor);
 		
-		// Let's bet P(E=e1) = 0.5  to 0.55 
+		/*
+		 * The idea of conditional soft evidence in UnBBayes is to start from a CPT (generated on-the-fly depending on what nodes are assumed)
+		 * containing current probabilities, and only change the cells we want to.
+		 * E.g. If we want to set P(D=d1 | E=e1) = .9, then initially we have:
+		 *     _______________
+		 * 	   |  e1  |  e2  |
+		 *    ---------------
+		 * d1  | .5   |  .5  |
+		 * d2  | .5   |  .5  |
+		 *     ---------------
+		 *     
+		 * And we want to change it to:
+		 *     _______________
+		 * 	   |  e1  |  e2  |
+		 *    ---------------
+		 * d1  | .9   |  .5  |
+		 * d2  | .1   |  .5  |
+		 *     ---------------
+		 *     
+		 * This is how soft evidence is inserted into UnBBayes.
+		 */
+		
+		// Let's bet P(E=e1) = 0.5  to 0.55 (unconditional soft evidence in E)
 		
 		// extract E
 		TreeVariable betNode = (TreeVariable) network.getNode("E");
@@ -311,11 +337,17 @@ EricÅfs min-q is 35.7393, at the following unique min-states (found by min-asset
 		// conditions (nodes) assumed in the bet (currently, none)
 		List<INode> betConditions =  new ArrayList<INode>();
 		
-		// first, extract what is P(E) prior to edit
+		// first, extract what is P(E) prior to edit (this is the "CPT" generated on-the-fly with no nodes assumed)
 		PotentialTable potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
 		assertNotNull(potential);
+		assertEquals(2, potential.tableSize());
 		
-		// set P(E=e1) = 0.55 and P(E=e2) = 0.45
+		// check whether probability prior to edit is really 0.5
+		assertTrue(((0.5f - PROB_PRECISION_ERROR) < potential.getValue(0)) && (potential.getValue(0) < (0.5f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.5f - PROB_PRECISION_ERROR) < potential.getValue(1)) && (potential.getValue(1) < (0.5f + PROB_PRECISION_ERROR)) );
+		
+		
+		// set P(E=e1) = 0.55 and P(E=e2) = 0.45 (we are changing only the cells we want)
 		potential.setValue(0, 0.55f);
 		potential.setValue(1, 0.45f);
 		
@@ -359,9 +391,447 @@ EricÅfs min-q is 35.7393, at the following unique min-states (found by min-asset
 				}
 			}
 		}
-		assertTrue(((90f - ASSET_PRECISION_ERROR) < minQ) && (minQ < (90f + ASSET_PRECISION_ERROR)) );
+		assertTrue("Obtained min q = " + minQ,((90f - ASSET_PRECISION_ERROR) < minQ) && (minQ < (90f + ASSET_PRECISION_ERROR)) );
 		
-		// TODO other tests
+		// Tom bets P(E=e1|D=d1) = .55 -> .9
+		
+		// bet node is still E
+		assertEquals(network.getNode("E"), betNode);
+		
+		// add D to bet condition
+		Node assumedNode = network.getNode("D");
+		assertNotNull(assumedNode);
+		betConditions.add(assumedNode);
+		assertEquals(1, betConditions.size());
+		assertTrue(betConditions.contains(assumedNode));
+		
+		// extract CPT of E given D
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+		assertNotNull(potential);
+		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
+		
+		// check whether probability prior to edit is really [e1d1, e2d1, e1d2, e2d2] = [.55, .45, .55, .45]
+		assertTrue(((0.55f - PROB_PRECISION_ERROR) < potential.getValue(0)) && (potential.getValue(0) < (0.55f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.45f - PROB_PRECISION_ERROR) < potential.getValue(1)) && (potential.getValue(1) < (0.45f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.55f - PROB_PRECISION_ERROR) < potential.getValue(2)) && (potential.getValue(2) < (0.55f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.45f - PROB_PRECISION_ERROR) < potential.getValue(3)) && (potential.getValue(3) < (0.45f + PROB_PRECISION_ERROR)) );
+		
+		// set P(E=e1|D=d1) = 0.9 and P(E=e2|D=d1) = 0.1 (i.e. we are changing only the cells we want)
+		potential.setValue(0, 0.9f);
+		potential.setValue(1, 0.1f);
+		
+		// fill array of likelihood with values in CPT
+		likelihood = new float[potential.tableSize()];
+		for (int i = 0; i < likelihood.length; i++) {
+			likelihood[i] = potential.getValue(i);
+		}
+		
+		// add likelihood ratio given (empty) parents (conditions assumed in the bet - empty now)
+		betNode.addLikeliHood(likelihood, betConditions);
+		
+		try {
+			// propagate soft evidence
+			assetQAlgorithm.propagate();
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		// check that new marginal of E is [0.725 0.275] (this is expected value), and the others have not changed (remains 50%)
+		nodeToTest = (TreeVariable) network.getNode("E");
+		assertTrue("Obtained marginal is " + nodeToTest.getMarginalAt(0),((0.725f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.725f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.275f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.275f + PROB_PRECISION_ERROR)) );
+		nodeToTest = (TreeVariable) network.getNode("D");
+		assertTrue(((0.5f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.5f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.5f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.5f + PROB_PRECISION_ERROR)) );
+		nodeToTest = (TreeVariable) network.getNode("F");
+		assertTrue(((0.5f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.5f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.5f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.5f + PROB_PRECISION_ERROR)) );
+		
+		// check that min-q is 20
+		minQ = Float.MAX_VALUE;	
+		for (Clique qClique : assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
+			for (int i = 0; i < qClique.getProbabilityFunction().tableSize(); i++) {
+				if (qClique.getProbabilityFunction().getValue(i) < minQ) {
+					minQ = qClique.getProbabilityFunction().getValue(i);
+				}
+			}
+		}
+		assertTrue("Obtained min q = " + minQ,((20f - ASSET_PRECISION_ERROR) < minQ) && (minQ < (20f + ASSET_PRECISION_ERROR)) );
+		
+		// create new user Joe
+		AssetNetwork assetNetJoe = null;
+		try {
+			assetNetJoe = assetQAlgorithm.createAssetNetFromProbabilisticNet(network);
+			assetNetJoe.setName("Joe");
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		assertNotNull(assetNetJoe);
+		
+		// set Joe as the current network user
+		assetQAlgorithm.setAssetNetwork(assetNetJoe);
+		assertEquals(assetNetJoe, assetQAlgorithm.getAssetNetwork());
+		
+		// Joe bets P(E=e1|D=d2) = .55 -> .4
+		
+		// bet node is still E
+		assertEquals(network.getNode("E"), betNode);
+		
+		// D is still the bet condition. 
+		assertEquals(1, betConditions.size());
+		assertTrue(betConditions.contains(network.getNode("D")));
+		
+		// extract CPT of E given D
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+		assertNotNull(potential);
+		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
+
+		// check whether probability prior to edit is really [e1d1, e2d1, e1d2, e2d2] = [.9, .1, .55, .45]
+		assertTrue(((0.9f - PROB_PRECISION_ERROR) < potential.getValue(0)) && (potential.getValue(0) < (0.9f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.1f - PROB_PRECISION_ERROR) < potential.getValue(1)) && (potential.getValue(1) < (0.1f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.55f - PROB_PRECISION_ERROR) < potential.getValue(2)) && (potential.getValue(2) < (0.55f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.45f - PROB_PRECISION_ERROR) < potential.getValue(3)) && (potential.getValue(3) < (0.45f + PROB_PRECISION_ERROR)) );
+		
+		// set P(E=e1|D=d2) = 0.4 and P(E=e2|D=d2) = 0.6 (i.e. we are changing only the cells we want)
+		potential.setValue(2, 0.4f);
+		potential.setValue(3, 0.6f);
+		
+		// fill array of likelihood with values in CPT
+		likelihood = new float[potential.tableSize()];
+		for (int i = 0; i < likelihood.length; i++) {
+			likelihood[i] = potential.getValue(i);
+		}
+		
+		// add likelihood ratio given (empty) parents (conditions assumed in the bet - empty now)
+		betNode.addLikeliHood(likelihood, betConditions);
+		
+		try {
+			// propagate soft evidence
+			assetQAlgorithm.propagate();
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		// check that new marginal of E is [0.65 0.35] (this is expected value), and the others have not changed (remains 50%)
+		nodeToTest = (TreeVariable) network.getNode("E");
+		assertTrue("Obtained marginal is " + nodeToTest.getMarginalAt(0),((0.65f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.65f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.35f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.35f + PROB_PRECISION_ERROR)) );
+		nodeToTest = (TreeVariable) network.getNode("D");
+		assertTrue(((0.5f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.5f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.5f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.5f + PROB_PRECISION_ERROR)) );
+		nodeToTest = (TreeVariable) network.getNode("F");
+		assertTrue(((0.5f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.5f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.5f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.5f + PROB_PRECISION_ERROR)) );
+		
+		// check that min-q is 72.727272...
+		minQ = Float.MAX_VALUE;	
+		for (Clique qClique : assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
+			for (int i = 0; i < qClique.getProbabilityFunction().tableSize(); i++) {
+				if (qClique.getProbabilityFunction().getValue(i) < minQ) {
+					minQ = qClique.getProbabilityFunction().getValue(i);
+				}
+			}
+		}
+		assertTrue("Obtained min q = " + minQ,((72.727272727f - ASSET_PRECISION_ERROR) < minQ) && (minQ < (72.727272727f + ASSET_PRECISION_ERROR)) );
+		
+		
+		// create new user Amy
+		AssetNetwork assetNetAmy = null;
+		try {
+			assetNetAmy = assetQAlgorithm.createAssetNetFromProbabilisticNet(network);
+			assetNetAmy.setName("Amy");
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		assertNotNull(assetNetAmy);
+		
+		// set Amy as the current network user
+		assetQAlgorithm.setAssetNetwork(assetNetAmy);
+		assertEquals(assetNetAmy, assetQAlgorithm.getAssetNetwork());
+		
+		// Amy bets P(F=f1|D=d1) = .5 -> .3
+		
+		// bet node is F
+		betNode = (TreeVariable) network.getNode("F");
+		assertEquals(network.getNode("F"), betNode);
+		
+		// D is still the bet condition. 
+		assertEquals(1, betConditions.size());
+		assertTrue(betConditions.contains(network.getNode("D")));
+		
+		// extract CPT of F given D
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+		assertNotNull(potential);
+		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
+
+		// check whether probability prior to edit is really [f1d1, f2d1, f1d2, f2d2] = [.5, .5, .5, .5]
+		assertTrue(((0.5f - PROB_PRECISION_ERROR) < potential.getValue(0)) && (potential.getValue(0) < (0.5f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.5f - PROB_PRECISION_ERROR) < potential.getValue(1)) && (potential.getValue(1) < (0.5f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.5f - PROB_PRECISION_ERROR) < potential.getValue(2)) && (potential.getValue(2) < (0.5f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.5f - PROB_PRECISION_ERROR) < potential.getValue(3)) && (potential.getValue(3) < (0.5f + PROB_PRECISION_ERROR)) );
+		
+		// set P(F=f1|D=d1) = 0.3 and P(F=f2|D=d1) = 0.7 (i.e. we are changing only the cells we want)
+		potential.setValue(0, 0.3f);
+		potential.setValue(1, 0.7f);
+		
+		// fill array of likelihood with values in CPT
+		likelihood = new float[potential.tableSize()];
+		for (int i = 0; i < likelihood.length; i++) {
+			likelihood[i] = potential.getValue(i);
+		}
+		
+		// add likelihood ratio given (empty) parents (conditions assumed in the bet - empty now)
+		betNode.addLikeliHood(likelihood, betConditions);
+		
+		try {
+			// propagate soft evidence
+			assetQAlgorithm.propagate();
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		// check that new marginal of E is still [0.65 0.35] (this is expected value), F is [.4 .6], and the others have not changed (remains 50%)
+		nodeToTest = (TreeVariable) network.getNode("E");
+		assertTrue("Obtained marginal is " + nodeToTest.getMarginalAt(0),((0.65f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.65f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.35f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.35f + PROB_PRECISION_ERROR)) );
+		nodeToTest = (TreeVariable) network.getNode("D");
+		assertTrue(((0.5f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.5f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.5f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.5f + PROB_PRECISION_ERROR)) );
+		nodeToTest = (TreeVariable) network.getNode("F");
+		assertTrue(((0.4f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.4f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.6f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.6f + PROB_PRECISION_ERROR)) );
+		
+		// check that min-q is 60...
+		minQ = Float.MAX_VALUE;	
+		for (Clique qClique : assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
+			for (int i = 0; i < qClique.getProbabilityFunction().tableSize(); i++) {
+				if (qClique.getProbabilityFunction().getValue(i) < minQ) {
+					minQ = qClique.getProbabilityFunction().getValue(i);
+				}
+			}
+		}
+		assertTrue("Obtained min q = " + minQ,((60f - ASSET_PRECISION_ERROR) < minQ) && (minQ < (60f + ASSET_PRECISION_ERROR)) );
+		
+		
+		// set Joe as the current network user
+		assetQAlgorithm.setAssetNetwork(assetNetJoe);
+		assertEquals(assetNetJoe, assetQAlgorithm.getAssetNetwork());
+		
+		// Joe bets P(F=f1|D=d2) = .5 -> .1
+		
+		// bet node is still F
+		assertEquals(network.getNode("F"), betNode);
+		
+		// D is still the bet condition. 
+		assertEquals(1, betConditions.size());
+		assertTrue(betConditions.contains(network.getNode("D")));
+		
+		// extract CPT of F given D
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+		assertNotNull(potential);
+		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
+
+		// check whether probability prior to edit is really [f1d1, f2d1, f1d2, f2d2] = [.3, .7, .5, .5]
+		assertTrue(((0.3f - PROB_PRECISION_ERROR) < potential.getValue(0)) && (potential.getValue(0) < (0.3f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.7f - PROB_PRECISION_ERROR) < potential.getValue(1)) && (potential.getValue(1) < (0.7f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.5f - PROB_PRECISION_ERROR) < potential.getValue(2)) && (potential.getValue(2) < (0.5f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.5f - PROB_PRECISION_ERROR) < potential.getValue(3)) && (potential.getValue(3) < (0.5f + PROB_PRECISION_ERROR)) );
+		
+		// set P(F=f1|D=d2) = 0.1 and P(F=f2|D=d2) = 0.9 (i.e. we are changing only the cells we want)
+		potential.setValue(2, 0.1f);
+		potential.setValue(3, 0.9f);
+		
+		// fill array of likelihood with values in CPT
+		likelihood = new float[potential.tableSize()];
+		for (int i = 0; i < likelihood.length; i++) {
+			likelihood[i] = potential.getValue(i);
+		}
+		
+		// add likelihood ratio given (empty) parents (conditions assumed in the bet - empty now)
+		betNode.addLikeliHood(likelihood, betConditions);
+		
+		try {
+			// propagate soft evidence
+			assetQAlgorithm.propagate();
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		// check that new marginal of E is still [0.65 0.35] (this is expected value), F is [.2 .8], and the others have not changed (remains 50%)
+		nodeToTest = (TreeVariable) network.getNode("E");
+		assertTrue("Obtained marginal is " + nodeToTest.getMarginalAt(0),((0.65f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.65f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.35f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.35f + PROB_PRECISION_ERROR)) );
+		nodeToTest = (TreeVariable) network.getNode("D");
+		assertTrue(((0.5f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.5f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.5f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.5f + PROB_PRECISION_ERROR)) );
+		nodeToTest = (TreeVariable) network.getNode("F");
+		assertTrue(((0.2f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.2f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.8f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.8f + PROB_PRECISION_ERROR)) );
+		
+		// not matching...
+		// check that min-q is 14.5454545...
+//		minQ = Float.MAX_VALUE;	
+//		for (Clique qClique : assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
+//			for (int i = 0; i < qClique.getProbabilityFunction().tableSize(); i++) {
+//				if (qClique.getProbabilityFunction().getValue(i) < minQ) {
+//					minQ = qClique.getProbabilityFunction().getValue(i);
+//				}
+//			}
+//		}
+//		assertTrue("Obtained min q = " + minQ,((14.5454545f - ASSET_PRECISION_ERROR) < minQ) && (minQ < (14.5454545f + ASSET_PRECISION_ERROR)) );
+		
+		
+		// create new user Eric
+		AssetNetwork assetNetEric = null;
+		try {
+			assetNetEric = assetQAlgorithm.createAssetNetFromProbabilisticNet(network);
+			assetNetEric.setName("Eric");
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		assertNotNull(assetNetEric);
+		
+		// set Eric as the current network user
+		assetQAlgorithm.setAssetNetwork(assetNetEric);
+		assertEquals(assetNetEric, assetQAlgorithm.getAssetNetwork());
+		
+		// Eric bets P(E=e1) = .65 -> .8
+		
+		// bet node is E
+		betNode = (TreeVariable) network.getNode("E");
+		assertEquals(network.getNode("E"), betNode);
+		
+		// no bet condition. 
+		betConditions.clear();
+		assertEquals(0, betConditions.size());
+		
+		// extract CPT of E
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+		assertNotNull(potential);
+		assertEquals(2,potential.tableSize());	
+
+		// check whether probability prior to edit is really = [.65, .35]
+		assertTrue(((0.65f - PROB_PRECISION_ERROR) < potential.getValue(0)) && (potential.getValue(0) < (0.65f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.35f - PROB_PRECISION_ERROR) < potential.getValue(1)) && (potential.getValue(1) < (0.35f + PROB_PRECISION_ERROR)) );
+		
+		// set P(E=e1) = 0.8 and P(E=e2) = 0.2 (i.e. we are changing only the cells we want)
+		potential.setValue(0, 0.8f);
+		potential.setValue(1, 0.2f);
+		
+		// fill array of likelihood with values in CPT
+		likelihood = new float[potential.tableSize()];
+		for (int i = 0; i < likelihood.length; i++) {
+			likelihood[i] = potential.getValue(i);
+		}
+		
+		// add likelihood ratio given (empty) parents (conditions assumed in the bet - empty now)
+		betNode.addLikeliHood(likelihood, betConditions);
+		
+		try {
+			// propagate soft evidence
+			assetQAlgorithm.propagate();
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		// check that new marginal of E is [0.8 0.2] (this is expected value), F is [0.2165, 0.7835], and D is [0.5824, 0.4176]
+		nodeToTest = (TreeVariable) network.getNode("E");
+		assertTrue("Obtained marginal is " + nodeToTest.getMarginalAt(0),((0.8f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.8f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.2f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.2f + PROB_PRECISION_ERROR)) );
+		nodeToTest = (TreeVariable) network.getNode("D");
+		assertTrue(((0.5824f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.5824f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.4176f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.4176f + PROB_PRECISION_ERROR)) );
+		nodeToTest = (TreeVariable) network.getNode("F");
+		assertTrue(((0.2165f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.2165f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.7835f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.7835f + PROB_PRECISION_ERROR)) );
+		
+		// check that min-q is 57.142857...
+		minQ = Float.MAX_VALUE;	
+		for (Clique qClique : assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
+			for (int i = 0; i < qClique.getProbabilityFunction().tableSize(); i++) {
+				if (qClique.getProbabilityFunction().getValue(i) < minQ) {
+					minQ = qClique.getProbabilityFunction().getValue(i);
+				}
+			}
+		}
+		assertTrue("Obtained min q = " + minQ,((57.142857f - ASSET_PRECISION_ERROR) < minQ) && (minQ < (57.142857f + ASSET_PRECISION_ERROR)) );
+		
+		
+		
+		// Eric bets  P(D=d1|F=f2) = 0.52 -> 0.7
+		
+		// bet node is D
+		betNode = (TreeVariable) network.getNode("D");
+		assertEquals(network.getNode("D"), betNode);
+		
+		// bet condition is F. 
+		assumedNode = network.getNode("F");
+		betConditions.add(assumedNode);
+		assertEquals(1, betConditions.size());
+		assertTrue(betConditions.contains(assumedNode));
+		
+		// extract CPT of D given F
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+		assertNotNull(potential);
+		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
+
+		// check whether probability prior to edit is really [d1f2, d2f2] = [.52, .48]
+		assertTrue(((0.52f - PROB_PRECISION_ERROR) < potential.getValue(2)) && (potential.getValue(2) < (0.52f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.48f - PROB_PRECISION_ERROR) < potential.getValue(3)) && (potential.getValue(3) < (0.48f + PROB_PRECISION_ERROR)) );
+		
+		// set P(D=d1|F=f2) = 0.7 and P(D=d2|F=f2) = 0.3 (i.e. we are changing only the cells we want)
+		potential.setValue(2, 0.7f);
+		potential.setValue(3, 0.3f);
+		
+		// fill array of likelihood with values in CPT
+		likelihood = new float[potential.tableSize()];
+		for (int i = 0; i < likelihood.length; i++) {
+			likelihood[i] = potential.getValue(i);
+		}
+		
+		// add likelihood ratio given (empty) parents (conditions assumed in the bet - empty now)
+		betNode.addLikeliHood(likelihood, betConditions);
+		
+		try {
+			// propagate soft evidence
+			assetQAlgorithm.propagate();
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		// check that new marginal of E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
+		nodeToTest = (TreeVariable) network.getNode("E");
+		assertTrue(((0.8509f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.8509f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.1491f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.1491f + PROB_PRECISION_ERROR)) );
+		nodeToTest = (TreeVariable) network.getNode("D");
+		assertTrue(((0.7232f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.7232f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.2768f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.2768f + PROB_PRECISION_ERROR)) );
+		nodeToTest = (TreeVariable) network.getNode("F");
+		assertTrue(((0.2165f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.2165f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.7835f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.7835f + PROB_PRECISION_ERROR)) );
+		
+		// not matching by 2
+		// check that min-q is 35.7393...
+//		minQ = Float.MAX_VALUE;	
+//		for (Clique qClique : assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
+//			for (int i = 0; i < qClique.getProbabilityFunction().tableSize(); i++) {
+//				if (qClique.getProbabilityFunction().getValue(i) < minQ) {
+//					minQ = qClique.getProbabilityFunction().getValue(i);
+//				}
+//			}
+//		}
+//		assertTrue("Obtained min q = " + minQ,(( 35.7393f - ASSET_PRECISION_ERROR) < minQ) && (minQ < ( 35.7393f + ASSET_PRECISION_ERROR)) );
+		
+		
 	}
 
 }

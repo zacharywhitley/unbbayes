@@ -571,8 +571,8 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm  {
 		// print probabilities and assets for each node in each clique
 		for (Clique probClique : this.getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
 			try {
-				PotentialTable assetTable = (PotentialTable) this.getOriginalCliqueToAssetCliqueMap().get(probClique).getProbabilityFunction();
 				explMessage += "Clique {" + probClique + "}:\n \t \t";
+				PotentialTable assetTable = (PotentialTable) this.getOriginalCliqueToAssetCliqueMap().get(probClique).getProbabilityFunction();
 				PotentialTable probTable = probClique.getProbabilityFunction();
 				for (int i = 0; i < assetTable.tableSize(); i++) {
 					explMessage +=  
@@ -583,7 +583,7 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm  {
 				}
 				
 			} catch (Exception e) {
-				e.printStackTrace();
+				Debug.println(getClass(), e.getMessage(), e);
 				explMessage += " failed to obtain values: " + e.getMessage();
 			}
 			explMessage += "\n\n";

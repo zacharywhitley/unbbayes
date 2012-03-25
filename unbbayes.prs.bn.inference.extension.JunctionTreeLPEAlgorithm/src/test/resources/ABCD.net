@@ -2,6 +2,7 @@ net
 {
      node_size = (0 0);
      name = "New BN";
+     tree = "(A,C,B,D)";
      UnBBayes_Color_Probabilistic_Description = "-256";
      UnBBayes_Color_Probabilistic_Explanation = "-16711936";
 }
@@ -51,9 +52,11 @@ potential (B | A)
 ( 0.5 0.5 ));
 }
 
-potential (D | B)
+potential (D | A B)
 {
- data = (( 0.5 0.5 )
-( 0.5 0.5 ));
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
 }
 
