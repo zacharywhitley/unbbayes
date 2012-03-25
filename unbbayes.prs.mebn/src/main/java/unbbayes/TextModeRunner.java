@@ -8,8 +8,8 @@ import java.util.Collections;
 import java.util.List;
 
 import unbbayes.controller.exception.InconsistentArgumentException;
+import unbbayes.io.BaseIO;
 import unbbayes.io.log.ILogManager;
-import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Node;
@@ -71,10 +71,11 @@ public class TextModeRunner {
 	}
 
 	/**
-	 * Startups knowledge base
-	 * @param knowledgeBase
-	 * @param mebn
-	 * @return
+	 * Startups knowledge base.
+	 * This method basically imports data from mebn to knowledgeBase
+	 * @param knowledgeBase : knowledge base to export data into
+	 * @param mebn : MTheory containing data to export to knowledgeBase
+	 * @return knowledgeBase
 	 */
 	public KnowledgeBase createKnowledgeBase(KnowledgeBase knowledgeBase, MultiEntityBayesianNetwork mebn){
 		// Must remove unwanted findings entered previously 
@@ -301,10 +302,12 @@ public class TextModeRunner {
 	}
 	
 	/**
-	 * Starts populating the findings
-	 * @param mebn
-	 * @param knowledgeBase
-	 * @return
+	 * Starts populating the findings.
+	 * This is the opposite of {@link #createKnowledgeBase(KnowledgeBase, MultiEntityBayesianNetwork)}.
+	 * That is, from knowledgeBase, populate some findings in mebn.
+	 * @param mebn : resident nodes in this object will be populated with findings in knowledgeBase
+	 * @param knowledgeBase : findings will be read from here.
+	 * @return knowledgeBase
 	 */
 	public KnowledgeBase fillFindings(MultiEntityBayesianNetwork mebn,
 			KnowledgeBase knowledgeBase) {
@@ -316,6 +319,27 @@ public class TextModeRunner {
 				 e.printStackTrace();
 				 continue;
 			 }
+		}
+		return knowledgeBase;
+	}
+	
+	/**
+	 * Clears content of knowledgeBase and findings in mebn.
+	 * @param mebn : resident nodes whose findings are going to be cleared
+	 * @param knowledgeBase : knowledgeBase to be cleared
+	 * @return knowledgeBase
+	 */
+	public KnowledgeBase clearKnowledgeBase(MultiEntityBayesianNetwork mebn,
+			KnowledgeBase knowledgeBase) {
+		knowledgeBase.clearKnowledgeBase();
+		if (mebn != null) {
+			for (MFrag mfrag : mebn.getMFragList()) {
+				if (mfrag != null) {
+					for (ResidentNode resident : mfrag.getResidentNodeList()) {
+						resident.cleanRandomVariableFindingList();
+					}
+				}
+			}
 		}
 		return knowledgeBase;
 	}
@@ -374,8 +398,8 @@ public class TextModeRunner {
 	 * @throws IOException : generic I/O exception. This is usually not related to
 	 * MultiEntityBayesianNetwork logic or format consistency.
 	 */
-	public void saveMEBN(File file, MebnIO io, MultiEntityBayesianNetwork mebn) throws IOMebnException, IOException {
-		io.saveMebn(file, mebn);
+	public void saveMEBN(File file, BaseIO io, MultiEntityBayesianNetwork mebn) throws IOMebnException, IOException {
+		io.save(file, mebn);
 	}
 	
 	/**
