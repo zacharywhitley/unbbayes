@@ -201,7 +201,7 @@ public class Compiler implements ICompiler {
 	
 
 
-	private Map<String, Map<Collection<INode>, float[]>> nameToParentProbValuesCache = new HashMap<String, Map<Collection<INode>, float[]>>();
+	private Map<String, Map<Collection<INode>, IProbabilityFunction>> nameToParentProbValuesCache = new HashMap<String, Map<Collection<INode>, IProbabilityFunction>>();
 
 	/**
      * SingletonHolder is loaded on the first execution of Singleton.getInstance() 
@@ -373,6 +373,7 @@ public class Compiler implements ICompiler {
 	 * Compiler's initialization.
 	 * Calling this method also resets cache used in {@link #generateLPD(SSBNNode)}.
 	 * @see unbbayes.prs.mebn.compiler.AbstractCompiler#init(java.lang.String)
+	 * @see #getNameToParentProbValuesCache()
 	 */
 	public void init(String text) {
 		// clear cache, because it is not the same script anymore
@@ -732,7 +733,10 @@ public class Compiler implements ICompiler {
 	
 	/**
 	 * this is identical to init(ssbnnode) -> parse() -> getCPT.
-	 *  @return 
+	 * It will use cache if CPT was cached previously.
+	 *  @return the generated LPD
+	 *  @see #getCachedLPD(SSBNNode)
+	 *  @see #putCPTToCache(SSBNNode, PotentialTable)
 	 */
 	public IProbabilityFunction generateLPD(SSBNNode ssbnnode) throws MEBNException {
 		System.gc();
@@ -744,27 +748,19 @@ public class Compiler implements ICompiler {
 //		}
 		
 		// check content of cache
-		Map<Collection<INode>, float[]> cache = null;
-		try {
-			cache = this.getNameToParentProbValuesCache().get(ssbnnode.getProbNode().getName());
-			if (cache != null) {
-				for (Collection<INode> parents : cache.keySet()) {
-					if (parents.size() == ssbnnode.getParents().size() 
-							&& parents.containsAll(ssbnnode.getParents())){
-						// cache and current have the same parents
-						PotentialTable cpt  = ssbnnode.getProbNode().getProbabilityFunction();
-						// populate cpt with cached value
-						float[] value = cache.get(parents);
-						for (int i = 0; i < cpt.tableSize(); i++) {
-							cpt.setValue(i, value[i]);
-						}
-						return cpt;
-					}
+		IProbabilityFunction cachedLPD = this.getCachedLPD(ssbnnode);
+		if (cachedLPD != null) {
+			if (cachedLPD instanceof PotentialTable) {
+				PotentialTable cachedCPT = (PotentialTable) cachedLPD;
+				// copy only the content (values), because the variables (parent and current nodes) are not actually the same instances compared to the previous time this method was called
+				PotentialTable cpt  = ssbnnode.getProbNode().getProbabilityFunction();
+				for (int i = 0; i < cpt.tableSize(); i++) {
+					cpt.setValue(i, cachedCPT.getValue(i));
 				}
+				return cpt;
+			} else {
+				Debug.println(getClass(), "Compiler is not returning a PotentialTable. Cache may not be usable, thus we are not using cache.");
 			}
-		} catch (Exception e) {
-			// ignore
-			Debug.println(getClass(), e.getMessage(), e);
 		}
 		
 		// actually compile pseudo code and obtain cpt
@@ -772,18 +768,72 @@ public class Compiler implements ICompiler {
 		this.parse();
 		PotentialTable cpt = getCPT();
 		
-		// prepare to fill cache
-		if (cache == null) {
-			cache = new HashMap<Collection<INode>, float[]>();
-			this.getNameToParentProbValuesCache().put(ssbnnode.getProbNode().getName(), cache);
-		}
-		// fill cache
-		cache.put((Collection)ssbnnode.getParents(), cpt.getValues());
+		this.putCPTToCache(ssbnnode, cpt);
 		
 		return cpt;
 	}
 	
-	
+	/**
+	 * Inserts an entry into cache of cpts by node.
+	 * @param ssbnnode : this is going to be the key of the cache. 
+	 * More technically, the name of this node and all its parents {@link SSBNNode#getParents()} are going to be
+	 * used as the key.
+	 * @param cpt : content (probability distribution) of this CPT is going to be the cached value
+	 * @see #getNameToParentProbValuesCache() 
+	 * @see #generateLPD(SSBNNode) 
+	 * @see #init(String)
+	 */
+	protected void putCPTToCache(SSBNNode ssbnnode, IProbabilityFunction cpt) {
+		// initial assertion
+		if (ssbnnode == null || ssbnnode.getProbNode() == null || cpt == null) {
+			return;
+		}
+		
+		// prepare to fill cache
+		if (this.getNameToParentProbValuesCache() == null) {
+			this.setNameToParentProbValuesCache(new HashMap<String, Map<Collection<INode>,IProbabilityFunction>>());
+		}
+		
+		Map<Collection<INode>, IProbabilityFunction> cache = this.getNameToParentProbValuesCache().get(ssbnnode.getProbNode().getName());
+		if (cache == null) {
+			cache = new HashMap<Collection<INode>, IProbabilityFunction>();
+			this.getNameToParentProbValuesCache().put(ssbnnode.getProbNode().getName(), cache);
+		}
+		// fill cache
+		cache.put((Collection)ssbnnode.getParents(), cpt);
+	}
+
+	/**
+	 * Obtains a CPT from cache.
+	 * @param ssbnnode : this is the key of the cache.
+	 * More technically, the name of this node and all its parents {@link SSBNNode#getParents()} are going to be
+	 * used as the key.
+	 * @return : cached cpt or null if the key was not found.
+	 * @see #getNameToParentProbValuesCache() 
+	 * @see #generateLPD(SSBNNode)  
+	 * @see #init(String)
+	 */
+	protected IProbabilityFunction getCachedLPD(SSBNNode ssbnnode) {
+		try {
+			Map<Collection<INode>, IProbabilityFunction> cache = this.getNameToParentProbValuesCache().get(ssbnnode.getProbNode().getName());
+			if (cache != null) {
+				for (Collection<INode> parents : cache.keySet()) {
+					if (parents.size() == ssbnnode.getParents().size() 
+							&& parents.containsAll(ssbnnode.getParents())){	// cache and current have the same parents
+						// cached value
+						IProbabilityFunction cachedLPD = cache.get(parents);
+						return cachedLPD;
+					}
+				}
+			}
+		} catch (Exception e) {
+			// do nothing
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		return null;
+	}
+
+
 	/**
 	 * This method just fills the node's probabilistic tables w/ equal values.
 	 * For instance, if a node has 4 possible values, then the table will contain
@@ -3443,18 +3493,20 @@ public class Compiler implements ICompiler {
 
 
 	/**
+	 * This is a datastructure to store cache of CPTs used in {@link #generateLPD(SSBNNode)}
 	 * @return the nameToParentProbValuesCache
 	 */
-	public Map<String, Map<Collection<INode>, float[]>> getNameToParentProbValuesCache() {
+	public Map<String, Map<Collection<INode>, IProbabilityFunction>> getNameToParentProbValuesCache() {
 		return nameToParentProbValuesCache;
 	}
 
 
 	/**
+	 * This is a datastructure to store cache of CPTs used in {@link #generateLPD(SSBNNode)}
 	 * @param nameToParentProbValuesCache the nameToParentProbValuesCache to set
 	 */
 	public void setNameToParentProbValuesCache(
-			Map<String, Map<Collection<INode>, float[]>> nameToParentProbValuesCache) {
+			Map<String, Map<Collection<INode>, IProbabilityFunction>> nameToParentProbValuesCache) {
 		this.nameToParentProbValuesCache = nameToParentProbValuesCache;
 	}
 
