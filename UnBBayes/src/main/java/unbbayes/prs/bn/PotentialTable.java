@@ -270,6 +270,16 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	public  void setValue(int index, float value) {
 		dataPT.data[index] = value;
 	}
+	
+	/**
+	 * Equivalent to {@link #setValue(int, float)}, but for all
+	 * possible indexes.
+	 * @param index
+	 * @param values
+	 */
+	public  void setValues(float values[]) {
+		System.arraycopy(values, 0, dataPT.data, 0, values.length);
+	}
 
 	/**
 	 * It returns the value of a cell identified by an index

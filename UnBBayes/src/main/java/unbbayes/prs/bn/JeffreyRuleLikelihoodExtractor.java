@@ -67,7 +67,7 @@ public class JeffreyRuleLikelihoodExtractor implements ILikelihoodExtractor {
 		// this is the probability user expects
 		float expectedProbability[] = mainNode.getLikelihood();
 		
-		// this is the ratio. 
+		// this is going to be the ratio. 
 		float ratio[] = new float[expectedProbability.length];
 		
 		// Note: expectedProbability.length == ratio.length == length of a line in the CPT
@@ -99,26 +99,32 @@ public class JeffreyRuleLikelihoodExtractor implements ILikelihoodExtractor {
 			 * |a2  |.5	 | 13 |
 			 * ----------------
 			 * ----------------
-			 * |Tot |1.4 | 112|
+			 * |Tot |113.4    |
 			 * ----------------
 			 * 
 			 * Normalized
 			 * ----------------------
-			 * |    |b1     | b2     |
-			 * ----------------------
-			 * |a1  |.9/1.4 | 99/112 |
-			 * |a2  |.5/1.4 | 13/112 |
-			 * ----------------------
+			 * |    |b1       |   b2     |
+			 * --------------------------
+			 * |a1  |.9/113.4 | 99/113.4 |
+			 * |a2  |.5/113.4 | 13/113.4 |
+			 * --------------------------
 			 */
-			if (((i+1) % node.getStatesSize()) == 0) {
-				// i+1 is pointing to first element on the column (thus, i is the last element in the column). Normalize
-				for (int j = i-(node.getStatesSize()-1); j <= i; j++) {
-					// normalize the last "n" ratio (n is the quantity of states of the main node - i.e. the number of lines in the table)
-					ratio[j] /= total;
-				}
-				// reset total, because total is for 1 column (the next column will have different total)
-				total = 0;
-			}
+			// the following code is only necessary if we want to normalize by column, not by the whole table.
+//			if (((i+1) % node.getStatesSize()) == 0) {
+//				// i+1 is pointing to first element on the column (thus, i is the last element in the column). Normalize
+//				for (int j = i-(node.getStatesSize()-1); j <= i; j++) {
+//					// normalize the last "n" ratio (n is the quantity of states of the main node - i.e. the number of lines in the table)
+//					ratio[j] /= total;
+//				}
+//				// reset total, because total is for 1 column (the next column will have different total)
+//				total = 0;
+//			}
+		}
+		
+		// normalize ratio
+		for (int i = 0; i < ratio.length; i++) {
+			ratio[i] /= total;
 		}
 		
 		return ratio;

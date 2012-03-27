@@ -81,6 +81,9 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     }
     
     public void restoreMarginal() {
+    	if (marginalCopy == null) {
+    		return;
+    	}
     	int size = marginalList.length;
     	System.arraycopy(marginalCopy, 0, marginalList, 0, size);
     }
@@ -190,12 +193,14 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
      *
      * @param likelihood : the likelihood ratio.
      * @param dependencies : if the likelihood is a function of other variables, add
-     * such variables to this list.
+     * such variables to this list. A copy of the list will be stored in this {@link TreeVariable}. Hence,
+     * you should access {@link #getLikelihoodParents()} to modify its content, or {@link #resetLikelihood()}
+     * to clear its content.
      * @see #setLikelihoodParents(List)
      */
-    public void addLikeliHood(float likelihood[], List<INode> dependencies) {
+    public void addLikeliHood(float likelihood[], final List<INode> dependencies) {
     	this.likelihood = likelihood;
-    	this.setLikelihoodParents(dependencies);
+    	this.setLikelihoodParents(new ArrayList<INode>(dependencies));
     	if (hasLikelihood()) {
     		evidence = 0;
     	}
