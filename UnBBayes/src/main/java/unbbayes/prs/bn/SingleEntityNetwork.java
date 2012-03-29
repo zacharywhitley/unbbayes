@@ -1232,7 +1232,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	 *  @throws Exception : the message will contain any consistency error.
 	 */
 	public void updateEvidences() throws Exception {
-		int sizeNos = copiaNos.size();
+		int sizeNos = this.getNodesCopy().size();
 		for (int c = 0; c < sizeNos; c++) {
 			TreeVariable node = (TreeVariable) copiaNos.get(c);
 			node.updateEvidences();
