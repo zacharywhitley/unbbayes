@@ -5,17 +5,28 @@ package unbbayes.prs.bn.inference.extension;
 
 import java.util.Comparator;
 
-import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.PotentialTable;
 
 /**
+ * This is the junction tree to be used by algorithms implementing least probable explanation.
  * This class behaves the same way of {@link MaxProductJunctionTree},
- * but uses min product operation instead of {@link PotentialTable.MaxOperation}
+ * but uses {@link MinOperation} instead of {@link PotentialTable.MaxOperation},
+ * so that minimum values are propagated instead of maximum values.
  * @author Shou Matsumoto
- *
+ * @see JunctionTreeLPEAlgorithm
+ * @see MinOperation
  */
 public class MinProductJunctionTree extends MaxProductJunctionTree {
 
+	/**
+	 * This is the junction tree to be used by algorithms implementing least probable explanation.
+	 * This class behaves the same way of {@link MaxProductJunctionTree},
+	 * but uses {@link MinOperation} instead of {@link PotentialTable.MaxOperation},
+	 * so that minimum values are propagated instead of maximum values.
+	 * @see JunctionTreeLPEAlgorithm
+	 * @see MinOperation
+	 * @see #setMaxOperation(unbbayes.prs.bn.PotentialTable.ISumOperation)
+	 */
 	public MinProductJunctionTree() {
 		setMaxOperation(new MinOperation());
 		try {

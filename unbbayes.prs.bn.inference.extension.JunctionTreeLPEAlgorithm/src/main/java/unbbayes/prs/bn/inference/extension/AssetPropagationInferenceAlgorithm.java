@@ -3,9 +3,7 @@
  */
 package unbbayes.prs.bn.inference.extension;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -16,8 +14,8 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
 import unbbayes.prs.bn.AssetNode;
 import unbbayes.prs.bn.Clique;
+import unbbayes.prs.bn.DefaultJunctionTreeBuilder;
 import unbbayes.prs.bn.IRandomVariable;
-import unbbayes.prs.bn.JunctionTree;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -32,7 +30,7 @@ import unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener;
  * @author Shou Matsumoto
  *
  */
-public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm  {
+public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm implements IAssetNetAlgorithm  {
 	
 	/** 
 	 * Name of the property in {@link Graph#getProperty(String)} which manages assets prior to {@link #propagate()}. 
@@ -50,10 +48,6 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm  {
 	 */
 	public static final String ORIGINALCLIQUE_TO_ASSETCLIQUE_MAP_PROPERTY = AssetPropagationInferenceAlgorithm.class.getName() + ".originalCliqueToAssetCliqueMap";
 
-	private List<IInferenceAlgorithmListener> inferenceAlgorithmListener = new ArrayList<IInferenceAlgorithmListener>();
-	
-	private AssetNetwork network;
-	
 	private ProbabilisticNetwork relatedProbabilisticNetwork;
 	
 	private float defaultInitialAssetQuantity = 1000.0f;
@@ -105,6 +99,11 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm  {
 	public static AssetPropagationInferenceAlgorithm getInstance(ProbabilisticNetwork relatedProbabilisticNetwork) throws IllegalArgumentException, InvalidParentException {
 		AssetPropagationInferenceAlgorithm ret = new AssetPropagationInferenceAlgorithm();
 		ret.setRelatedProbabilisticNetwork(relatedProbabilisticNetwork);
+		// this is a builder to create instances of MinProductJunctionTree. 
+		ret.setDefaultJunctionTreeBuilder(new DefaultJunctionTreeBuilder(MinProductJunctionTree.class));
+		
+		// initialize listener to be called after propagation, to log asset net
+		ret.getInferenceAlgorithmListeners().clear();
 		ret.addInferencceAlgorithmListener(new IInferenceAlgorithmListener() {
 			public void onBeforeRun(IInferenceAlgorithm algorithm) {}
 			public void onBeforeReset(IInferenceAlgorithm algorithm) {}
@@ -124,32 +123,18 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm  {
 		return ret;
 	}
 
-	/**
-	 * This is the asset network. It must be an instance of {@link AssetNetwork}
-	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#setNetwork(unbbayes.prs.Graph)
-	 */
-	public void setNetwork(Graph network) throws IllegalArgumentException {
-		this.network = (AssetNetwork) network;
-	}
 
-	/**
-	 * This is the asset network
-	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#getNetwork()
-	 */
-	public AssetNetwork getNetwork() {
-		return network;
-	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#run()
 	 */
 	public void run() throws IllegalStateException {
-		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListener()) {
+		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
 			listener.onBeforeRun(this);
 		}
 
 		
-		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListener()) {
+		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
 			listener.onAfterRun(this);
 		}
 	}
@@ -172,21 +157,21 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm  {
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#reset()
 	 */
 	public void reset() {
-		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListener()) {
+		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
 			listener.onBeforeReset(this);
 		}
 		
 		// reset all clique potentials
-		for (Clique clique : this.getNetwork().getJunctionTree().getCliques()) {
+		for (Clique clique : this.getAssetNetwork().getJunctionTree().getCliques()) {
 			clique.getProbabilityFunction().restoreData();
 		}
 		// reset all separator potential
 		// TODO check whether this is really necessary, because looks like we are not using the separator distributions in the #propagate()
-		for (int i = 0; i < this.getNetwork().getJunctionTree().getSeparatorsSize(); i++) {
-			this.getNetwork().getJunctionTree().getSeparatorAt(i).getProbabilityFunction().restoreData();
+		for (int i = 0; i < this.getAssetNetwork().getJunctionTree().getSeparatorsSize(); i++) {
+			this.getAssetNetwork().getJunctionTree().getSeparatorAt(i).getProbabilityFunction().restoreData();
 		}
 		
-		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListener()) {
+		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
 			listener.onAfterReset(this);
 		}
 	}
@@ -198,7 +183,7 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm  {
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#propagate()
 	 */
 	public void propagate() {
-		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListener()) {
+		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
 			listener.onBeforePropagate(this);
 		}
 
@@ -255,10 +240,17 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm  {
 			((TreeVariable)assetNode).updateMarginal();
 		}
 		
-		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListener()) {
+		// do min calibration (propagate minimum q-values)
+		// it assumes that the junction tree used by this algorithm is a MinProductJunctionTree, and normalization is disabled
+		// createAssetNetFromProbabilisticNet is supposed to instantiate MinProductJunctionTree and disable its normalization
+		super.propagate();
+		
+		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
 			listener.onAfterPropagate(this);
 		}
 	}
+	
+	
 	
 	/**
 	 * This method forces the algorithm to store the current probabilities of the {@link #getRelatedProbabilisticNetwork()},
@@ -294,21 +286,6 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm  {
 		this.getNetwork().addProperty(LAST_PROBABILITY_PROPERTY, property);
 	}
 
-	/* (non-Javadoc)
-	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#addInferencceAlgorithmListener(unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener)
-	 */
-	public void addInferencceAlgorithmListener(
-			IInferenceAlgorithmListener listener) {
-		this.getInferenceAlgorithmListener().add(listener);
-	}
-
-	/* (non-Javadoc)
-	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#removeInferencceAlgorithmListener(unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener)
-	 */
-	public void removeInferencceAlgorithmListener(
-			IInferenceAlgorithmListener listener) {
-		this.getInferenceAlgorithmListener().remove(listener);
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -368,7 +345,17 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm  {
 		// copy/fill clique
 		if (relatedProbabilisticNetwork.getJunctionTree() != null) {
 			// prepare JT, which is a data format to store cliques and separators
-			JunctionTree jt = new JunctionTree();
+			// use min-product junction tree, so that we can use Least Probable explanation algorithm for obtaining min-q values when we call propagate()
+			MinProductJunctionTree jt = null;
+			try {
+				jt = (MinProductJunctionTree) getDefaultJunctionTreeBuilder().buildJunctionTree(ret);
+				// do not normalize q-table (q-tables are not bound to 1, like probabilities)
+				jt.setToNormalize(false);	
+			} catch (Exception e) {
+				throw new RuntimeException("Could not instantiate junction tree for Least Probable Explanation algorithm", e);
+			}	
+			
+			// the junction tree of this asset net
 			ret.setJunctionTree(jt);
 			
 			setOriginalCliqueToAssetCliqueMap(ret, new TreeMap<IRandomVariable, IRandomVariable>(this.getRandomVariableComparator()));
@@ -531,20 +518,20 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm  {
 		assetCliquePotential.copyData();
 	}
 
-	/**
-	 * @return the inferenceAlgorithmListener
-	 */
-	public List<IInferenceAlgorithmListener> getInferenceAlgorithmListener() {
-		return inferenceAlgorithmListener;
-	}
-
-	/**
-	 * @param inferenceAlgorithmListener the inferenceAlgorithmListener to set
-	 */
-	public void setInferenceAlgorithmListener(
-			List<IInferenceAlgorithmListener> inferenceAlgorithmListener) {
-		this.inferenceAlgorithmListener = inferenceAlgorithmListener;
-	}
+//	/**
+//	 * @return the inferenceAlgorithmListener
+//	 */
+//	public List<IInferenceAlgorithmListener> getInferenceAlgorithmListener() {
+//		return inferenceAlgorithmListener;
+//	}
+//
+//	/**
+//	 * @param inferenceAlgorithmListener the inferenceAlgorithmListener to set
+//	 */
+//	public void setInferenceAlgorithmListener(
+//			List<IInferenceAlgorithmListener> inferenceAlgorithmListener) {
+//		this.inferenceAlgorithmListener = inferenceAlgorithmListener;
+//	}
 
 	/**
 	 * @return the defaultInitialAssetQuantity
@@ -566,7 +553,7 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm  {
 	public void logAssets() {
 		
 		// initialize message to print
-		String explMessage = "\n \n Assets ( "+ getNetwork().getName() + "): \n \n";
+		String explMessage = "\n \n "+ getNetwork() + ": \n \n";
 		
 		// print probabilities and assets for each node in each clique
 		for (Clique probClique : this.getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
@@ -590,7 +577,7 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm  {
 		}
 		
 		this.getRelatedProbabilisticNetwork().getLogManager().append(explMessage);
-		this.getNetwork().getLogManager().append(explMessage);
+		this.getAssetNetwork().getLogManager().append(explMessage);
 	}
 
 	/**
@@ -676,7 +663,19 @@ public class AssetPropagationInferenceAlgorithm implements IAssetNetAlgorithm  {
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#getAssetNetwork()
 	 */
 	public AssetNetwork getAssetNetwork() {
-		return this.getNetwork();
+		try {
+			return (AssetNetwork) this.getNetwork();
+		} catch (ClassCastException e) {
+			Debug.println(getClass(), this.getNetwork() + ": " + e.getMessage(), e);
+		}
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.JunctionTreeLPEAlgorithm#markMPEAs100Percent(unbbayes.prs.Graph, boolean)
+	 */
+	protected void markMPEAs100Percent(Graph network, boolean isToCalculateRelativeProb) {
+		// do nothing
 	}
 
 //	/**

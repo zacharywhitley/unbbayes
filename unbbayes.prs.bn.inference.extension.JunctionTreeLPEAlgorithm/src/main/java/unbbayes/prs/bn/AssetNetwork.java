@@ -115,5 +115,13 @@ public class AssetNetwork extends ProbabilisticNetwork {
 		
 	}
 
+	/**
+	 * This method will always return false, because AssetNetwork will never contain
+	 * utility nodes or decision nodes.
+	 */
+	public boolean isID() {
+		return false;
+	}
+
 
 }

@@ -11,10 +11,15 @@ import javax.swing.JComponent;
 import unbbayes.controller.INetworkMediator;
 import unbbayes.gui.AssetCompilationPanelBuilder;
 import unbbayes.prs.Graph;
+import unbbayes.prs.INode;
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
+import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNetworkFilter;
+import unbbayes.prs.bn.SingleEntityNetwork;
+import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
@@ -106,7 +111,8 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	
 
 
-	/* (non-Javadoc)
+	/**
+	 * This will set the probabilistic network (the one used in {@link #getProbabilityPropagationDelegator()}).
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#setNetwork(unbbayes.prs.Graph)
 	 */
 	public void setNetwork(Graph g) throws IllegalArgumentException {
@@ -119,7 +125,8 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 //		}
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * this will return the probabilitstic network obtainable {@link #getProbabilityPropagationDelegator()}
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#getNetwork()
 	 */
 	public Graph getNetwork() {
@@ -241,12 +248,132 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	}
 
 	/**
-	 * Requests to this class not related to assets will be delegated
-	 * to this object.
-	 * @param probabilityPropagationDelegator the probabilityPropagationDelegator to set
+	 * 
+	 * @param delegator
 	 */
 	public void setProbabilityPropagationDelegator(IInferenceAlgorithm delegator) {
 		this.probabilityPropagationDelegator = delegator;
+	}
+	
+	/**
+	 * Requests to this class not related to assets will be delegated
+	 * to this object.
+	 * This method also uses {@link IInferenceAlgorithm#removeInferencceAlgorithmListener(IInferenceAlgorithmListener)}
+	 * and {@link IInferenceAlgorithm#addInferencceAlgorithmListener(IInferenceAlgorithmListener)} in order
+	 * to adjust the behavior of the algorithm.
+	 * Particularly, this method will remove the old listeners and add a new one which is similar to the one added by
+	 * {@link JunctionTreeAlgorithm#JunctionTreeAlgorithm(ProbabilisticNetwork)}, but does not
+	 * reset the network each time a {@link IInferenceAlgorithm#propagate()} is called.
+	 * By doing this, we cannot overwrite hard evidences anymore (i.e. we cannot add a hard evidence to one state, and then
+	 * add another hard evidence to another state - which is 0% now because of the previous hard evidence), 
+	 * but in the other hand, deleting a virtual node should behave like incorporating the soft/likelihood evidence
+	 * into the clique. This is done by implementing {@link IInferenceAlgorithmListener#onBeforePropagate(IInferenceAlgorithm)} properly.
+	 * It also guarantees that disconnected cliques are normalized after propagation (by using {@link IInferenceAlgorithmListener#onAfterPropagate(IInferenceAlgorithm)})
+	 * It also checks whether the network is hybrid (which cannot be handled by this algorithm). 
+	 * If so, it will throw an {@link IllegalArgumentException} on {@link IInferenceAlgorithmListener#onBeforeRun(IInferenceAlgorithm)}.
+	 * @param probabilityPropagationDelegator the probabilityPropagationDelegator to set
+	 */
+	public void setProbabilityPropagationDelegator(JunctionTreeAlgorithm delegator) {
+		this.probabilityPropagationDelegator = delegator;
+		if (this.probabilityPropagationDelegator != null) {
+			// calling removeInferencceAlgorithmListener with null is supposed to remove all listeners...
+			this.probabilityPropagationDelegator.removeInferencceAlgorithmListener(null);
+			
+			// add dynamically changeable behavior (i.e. routines that are not "mandatory", so it is interesting to be able to disable them when needed)
+			this.probabilityPropagationDelegator.addInferencceAlgorithmListener(new IInferenceAlgorithmListener() {
+				public void onBeforeRun(IInferenceAlgorithm algorithm) {
+					if (algorithm == null) {
+						Debug.println(getClass(), "Algorithm == null");
+						return;
+					}
+					if ((algorithm.getNetwork() != null) && ( algorithm.getNetwork() instanceof SingleEntityNetwork)) {
+						SingleEntityNetwork net = (SingleEntityNetwork)algorithm.getNetwork();
+						
+						if (net.isHybridBN()) {
+							// TODO use resource file instead
+							throw new IllegalArgumentException(
+										algorithm.getName() 
+										+ " cannot handle continuous nodes. \n\n Please, go to the Global Options and choose another inference algorithm."
+									);
+						}
+					}
+				}
+				public void onBeforeReset(IInferenceAlgorithm algorithm) {}
+				
+				/**
+				 * Add virtual nodes.
+				 * This code was added here (before propagation) because we need current marginal (i.e. prior probabilities) to calculate likelihood ratio of soft evidence by using
+				 * Jeffrey's rule.
+				 */
+				public void onBeforePropagate(IInferenceAlgorithm algorithm) {
+					// we will iterate on all nodes and check whether they have soft/likelihood evidences. If so, create virtual nodes
+					if ((algorithm.getNetwork() != null) && ( algorithm.getNetwork() instanceof SingleEntityNetwork)) {
+						SingleEntityNetwork net = (SingleEntityNetwork)algorithm.getNetwork();
+						// iterate in a new list, because net.getNodes may suffer concurrent changes because of virtual nodes.
+						for (Node n : new ArrayList<Node>(net.getNodes())) {	
+							if (n instanceof TreeVariable) {
+								TreeVariable node = (TreeVariable)n;
+								if (node.hasEvidence()) {
+									if (node.hasLikelihood()) {
+										if (algorithm instanceof JunctionTreeAlgorithm) {
+											JunctionTreeAlgorithm jt = (JunctionTreeAlgorithm) algorithm;
+											// Enter the likelihood as virtual nodes
+											try {
+												// prepare list of nodes to add soft/likelihood evidence
+												List<INode> evidenceNodes = new ArrayList<INode>();
+												evidenceNodes.add(node);	// the main node is the one carrying the likelihood ratio
+												// if conditional soft evidence, add all condition nodes (if non-conditional, then this will add an empty list)
+												evidenceNodes.addAll(jt.getLikelihoodExtractor().extractLikelihoodParents(getNetwork(), node));
+												// create the virtual node
+												jt.addVirtualNode(getNetwork(), evidenceNodes);
+											} catch (Exception e) {
+												throw new RuntimeException(e);
+											}
+										}
+									} 
+								}
+							}
+						}
+					}
+						
+					// Finally propagate evidence
+				}
+				public void onAfterRun(IInferenceAlgorithm algorithm) {}
+				public void onAfterReset(IInferenceAlgorithm algorithm) {}
+				
+				/**
+				 * Guarantee that each clique is normalized, if the network is disconnected
+				 */
+				public void onAfterPropagate(IInferenceAlgorithm algorithm) {
+					if (algorithm == null) {
+						Debug.println(getClass(), "Algorithm == null");
+						return;
+					}
+					
+					if ((algorithm.getNetwork() != null) && (algorithm.getNetwork() instanceof SingleEntityNetwork)) {
+						SingleEntityNetwork network = (SingleEntityNetwork) algorithm.getNetwork();
+						if (!network.isConnected()) {
+							// network is disconnected.
+							if (network.getJunctionTree() != null) {
+								// extract all cliques and normalize them
+								for (Clique clique : network.getJunctionTree().getCliques()) {
+									try {
+										clique.normalize();
+										for (Node node : clique.getAssociatedProbabilisticNodes()) {
+											if (node instanceof TreeVariable) {
+												((TreeVariable) node).updateMarginal();
+											}
+										}
+									} catch (Exception e) {
+										throw new RuntimeException(e);
+									}
+								}
+							}
+						}
+					}
+				}
+			});
+		}
 	}
 
 	/*

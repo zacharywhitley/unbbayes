@@ -155,12 +155,14 @@ public class JunctionTreeMPEAlgorithm extends JunctionTreeAlgorithm {
 						} catch (Throwable e) {
 							e.printStackTrace();
 						}
+						// remove variable using default operation
+						auxTab.removeVariable(relatedClique.getProbabilityFunction().getVariableAt(i));
 					}
 				}
 			}
 			
 			// the table will contain the marginals. Copy values.
-			for (int i = 0; i < auxTab.tableSize(); i++) {
+			for (int i = 0; i < treeVariable.getStatesSize(); i++) {
 				treeVariable.setMarginalAt(i, auxTab.getValue(i));
 			}
 		}

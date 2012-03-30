@@ -31,6 +31,8 @@ public class MaxProductJunctionTree extends JunctionTree implements IPropagation
 
 	private Comparator tableExplanationComparator;
 	
+	private boolean isToNormalize = true;
+	
 	/**
 	 * Default constructor
 	 */
@@ -46,6 +48,8 @@ public class MaxProductJunctionTree extends JunctionTree implements IPropagation
 			t.printStackTrace();
 		}
 	}
+	
+	
 
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.JunctionTree#absorb(unbbayes.prs.bn.Clique, unbbayes.prs.bn.Clique)
@@ -239,6 +243,54 @@ public class MaxProductJunctionTree extends JunctionTree implements IPropagation
 	 */
 	public void setTableExplanationComparator(Comparator tableExplanationComparator) {
 		this.tableExplanationComparator = tableExplanationComparator;
+	}
+
+
+
+	/**
+	 * If set to true, {@link #coleteEvidencia(Clique)} will normalize clique potential table.
+	 * If false, {@link #coleteEvidencia(Clique)} will not normalize clique potential table.
+	 * @return the isToNormalize
+	 */
+	public boolean isToNormalize() {
+		return isToNormalize;
+	}
+
+
+
+	/**
+	 * If set to true, {@link #coleteEvidencia(Clique)} will normalize clique potential table.
+	 * If false, {@link #coleteEvidencia(Clique)} will not normalize clique potential table.
+	 * @param isToNormalize the isToNormalize to set
+	 */
+	public void setToNormalize(boolean isToNormalize) {
+		this.isToNormalize = isToNormalize;
+	}
+
+
+
+	/**
+	 * This is the same of the superclass's method. However,
+	 * if {@link #isToNormalize()} is false, it will not normalize the clique table.
+	 * @see unbbayes.prs.bn.JunctionTree#coleteEvidencia(unbbayes.prs.bn.Clique)
+	 */
+	protected void coleteEvidencia(Clique clique) throws Exception {
+		if (isToNormalize()) {
+			super.coleteEvidencia(clique);
+			return;
+		} else {
+			// this is the same of super.coleteEvidencia(clique), but without normalizing clique pot
+			Clique auxClique;
+			int sizeFilhos = clique.getChildrenSize();
+			for (int c = 0; c < sizeFilhos; c++) {
+				auxClique = clique.getChildAt(c);
+				if (auxClique.getChildrenSize() != 0) {
+					this.coleteEvidencia(auxClique);
+				}
+				
+				absorb(clique, auxClique);
+			}
+		}
 	}
 
 	
