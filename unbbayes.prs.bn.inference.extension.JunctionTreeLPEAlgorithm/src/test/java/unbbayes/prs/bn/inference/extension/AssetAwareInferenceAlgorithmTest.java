@@ -71,171 +71,171 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 	 * V  											<br/>
 	 * E											<br/>
 	 * 
-	 * The sequence is:
-	 * 
-	 * There are two cliques {D, E}, and {D, F}, initial asset tables have q-value as 100 in every cell. 
-	 *	Current marginal probabilities are:
-	 *	Variables    D             E              F 
-	 *	Marginals   [0.5 0.5]   [0.5 0.5]   [0.5 0.5]
-	 *	
-	 *	Trade-1: Tom would like to make a bet on E=e1, that has current probability as 0.5. First of all, we need to calculate TomÅfs edit limit (in this case, there is no assumption): 
-	 *	Given E=e1, min-q1 = 100
-	 *	Given E~=e1, min-q2 = 100
-	 *	From Equation (1), edit interval is [0.005, 0.995]. 
-	 *	- Verification successful: after substituting the limits into edit, we do get min-q to be 1. 
-	 *	
-	 *	Trading sequence: 
-	 *	Tom1:	P(E=e1) = 0.5  to 0.55 (current)
-	 *	
-	 *	Variables   D              E                   F 
-	 *	Marginals   [0.5 0.5]   [0.55 0.45]   [0.5 0.5]
-	 *	
-	 *	TomÅfs min-q is 90, at the following 4 min-states (found by min-asset-propagation): 
-	 *	     D    E    F
-	 *	     1     2     1
-	 *	     1     2     2
-	 *	     2     2     1
-	 *	     2     2     2
-	 *	
-	 *	
-	 *	Trade-2: Now Tom would like to make another conditional bet on E=e1 given D=d1 (current P(E=e1|D=d1) = 0.55). Again, let us calculate his edit limits first (in this case, we have assumed variable D=d1). And note that TomÅfs asset tables are not the initial ones any more, but updated from last trade he did, now: 
-	 *	Given E=e1, and D=d1, min-q1 = 110
-	 *	Given E~=e1, and D=d1, min-q2 = 90
-	 *	From Equation (1), edit interval is [0.005, 0.995]
-	 *	- Verification successful: after substituting the limits into edit, we do get min-q to be 1. 
-	 *	
-	 *	Trading sequence: 
-	 *	Tom1:	P(E=e1) = 0.5  to 0.55
-	 *	Tom2:	P(E=e1|D=d1) = 0.55 to 0.9 (current)
-	 *	Variables   D              E                   F 
-	 *	Marginals   [0.5 0.5]   [0.725 0.275]   [0.5 0.5]
-	 *	
-	 *	TomÅfs min-q is 20, at the following two min-states (found by min-asset-propagation): 
-	 *	     D    E    F
-	 *	     1     2    1
-	 *	     1     2    2
-	 *	
-	 *	
-	 *	Trade-3: Joe came and intended to make a bet on E=e1 given D=d2 (current P(E=e1|D=d2) is 0.55). This will be his first edit, so he has initial asset tables before his trade. 
-	 *	Edit limit:
-	 *	Given E=e1, and D=d2, min-q1 = 100
-	 *	Given E~=e1, and D=d2, min-q2 = 100
-	 *	From Equation (1), edit interval is [0.0055, 0.9955]
-	 *	- Verification successful: after substituting the limits into edit, we do get min-q to be 1. 
-	 *	
-	 *	Trading sequence: 
-	 *	Tom1:	P(E=e1) = 0.5  to 0.55
-	 *	Tom2:	P(E=e1|D=d1) = 0.55 to 0.9 
-	 *	Joe1:	P(E=e1|D=d2) = 0.55 to 0.4 (current) 
-	 *	  
-	 *	Variables   D              E                   F 
-	 *	Marginals   [0.5 0.5]   [0.65 0.35]   [0.5 0.5]
-	 *	
-	 *	JoeÅfs min-q is 72.72727272727..., at the following two min-states (found by min-asset-propagation): 
-	 *	     D    E    F
-	 *	     2     1    1
-	 *	     2     1    2
-	 *	
-	 *	
-	 *	Trade-4: Now Amy is interested in changing P(F=f1|D=d1), which is currently 0.5. It will be her first edit, so she also has initial asset tables before the trade. 
-	 *	Edit limit:
-	 *	Given F=f1, and D=d1, min-q1 = 100
-	 *	Given F~=f1, and D=d1, min-q2 = 100
- 	 *	From Equation (1), edit interval is [0.005, 0.995]
-	 *	- Verification successful: after substituting the limits into edit, we do get min-q to be 1. 
-	 *	
-	 *	Trading sequence: 
-	 *	Tom1:	P(E=e1) = 0.5  to 0.55
-	 *	Tom2:	P(E=e1|D=d1) = 0.55 to 0.9 
-	 *	Joe1:	P(E=e1|D=d2) = 0.55 to 0.4 
-	 *	Amy1:	P(F=f1|D=d1) = 0.5 to 0.3 (current)
-	 *	  
-	 *	Variables   D              E                   F 
-	 *	Marginals   [0.5 0.5]   [0.65 0.35]   [0.4 0.6]
-	 *	
-	 *	AmyÅfs min-q is 60, at the following two min-states (found by min-asset-propagation): 
-	 *	     D    E    F
-	 *	     1     1    1
-	 *	     1     2    1
-	 *	
-	 *	
-	 *	Trade-5: Joe would like to trade again on P(F=f1|D=d2), which is currently 0.5. 
-	 *	Edit limit:
-	 *	Given F=f1, and D=d2, min-q1 = 72.727272727
-	 *	Given F~=f1, and D=d2, min-q2 = 72.727272727
-	 *	From Equation (1), edit interval is [0.006875, 0.993125]
-	 *	- Verification successful: after substituting the limits into edit, we do get min-q to be 1. 
-	 *	
-	 *	Trading sequence: 
-	 *	Tom1:	P(E=e1) = 0.5  to 0.55
-	 *	Tom2:	P(E=e1|D=d1) = 0.55 to 0.9 
-	 *	Joe1:	P(E=e1|D=d2) = 0.55 to 0.4 
-	 *	Amy1:	P(F=f1|D=d1) = 0.5 to 0.3 
-	 *	Joe2:	P(F=f1|D=d2) = 0.5 to 0.1
-	 *	  
-	 *	Variables   D              E                   F 
-	 *	Marginals   [0.5 0.5]   [0.65 0.35]   [0.2 0.8]
-	 *	
-	 *	AmyÅfs min-q is 14.54545454546, at the following unique min-states (found by min-asset-propagation): 
-	 *	     D    E    F
-	 *	     2     1    1
-	 *	
-	 *	At this point, the model DEF reaches the status that has the same CPTs as the starting CPTs for the experimental model DEF we used in our AAAI 2012 paper. 
-	 *	
-	 *	From now on, we run test cases described in the paper. 
-	 *	
-	 *	Trade-6: Eric would like to trade on P(E=e1), which is currently 0.65. 
-	 *	To decide long or short, S(E=e1) = 10, S(E~=e1)=10, no difference because this will be EricÅfs first trade.
-	 *	Edit limit:
-	 *	Given F=f1, and D=d2, min-q1 = 100
-	 *	Given F~=f1, and D=d2, min-q2 = 100
-	 *	From Equation (1), edit interval is [0.0065, 0.9965]
-	 *	- Verification successful: after substituting the limits into edit, we do get min-q to be 1. 
-	 *	
-	 *	Trading sequence: 
-	 *	Tom1:	P(E=e1) = 0.5  to 0.55
-	 *	Tom2:	P(E=e1|D=d1) = 0.55 to 0.9 
-	 *	Joe1:	P(E=e1|D=d2) = 0.55 to 0.4 
-	 *	Amy1:	P(F=f1|D=d1) = 0.5 to 0.3 
-	 *	Joe2:	P(F=f1|D=d2) = 0.5 to 0.1
-	 *	Eric1:	P(E=e1) = 0.65 to 0.8 (current)
-	 *	  
-	 *	Variables   D              E                   F 
-	 *	Marginals   [0.5824, 0.4176]   [0.8, 0.2]   [0.2165, 0.7835]
-	 *	
-	 *	EricÅfs expected score is S=10.1177.
-	 *	EricÅfs min-q is 57.142857, at the following two min-states (found by min-asset-propagation): 
-	 *	     D    E    F
-	 *	     2     2    1
-	 *	     2     2    2
-	 *	
-	 *	
-	 *	Trade-7: Eric would like to make another edit. This time, he is interested on changing P(D=d1|F=f2), which is currently 0.52. 
-	 *	To decide long or short, S(D=d1, F=f2) = 10.36915, S(D~=d1, F=f2)=9.7669.
-	 *	Edit limit:
-	 *	Given D=d1, and F=f2 , min-q1 = 57.142857
-	 *	Given D~=d1, and F=f2, min-q2 = 57.142857
-	 *	From Equation (1), edit interval is [0.0091059, 0.9916058]
-	 *	- Verification successful: after substituting the limits into edit, we do get min-q to be 1. 
-	 *	
-	 *	Trading sequence: 
-	 *	Tom1:	P(E=e1) = 0.5  to 0.55
-	 *	Tom2:	P(E=e1|D=d1) = 0.55 to 0.9 
-	 *	Joe1:	P(E=e1|D=d2) = 0.55 to 0.4 
-	 *	Amy1:	P(F=f1|D=d1) = 0.5 to 0.3 
-	 *	Joe2:	P(F=f1|D=d2) = 0.5 to 0.1
-	 *	Eric1:	P(E=e1) = 0.65 to 0.8 
-	 *	Eric2:	P(D=d1|F=f2) = 0.52 to 0.7 (current)
-	 *	  
-	 *	Variables   D                            E                             F 
-	 *	Marginals   [0.7232, 0.2768]   [0.8509, 0.1491]   [0.2165, 0.7835]
-	 *	
-	 *	EricÅfs expected score is now 10.31615. 
-	 *	EricÅfs min-q is 35.7393, at the following unique min-states (found by min-asset-propagation): 
-	 *	     D    E    F
-	 *	     2     2    2
-	 * 
-	 */
+	 * The sequence is:<br/>
+	 * <br/>
+	 * There are two cliques {D, E}, and {D, F}, initial asset tables have q-value as 100 in every cell. <br/>
+	 *	Current marginal probabilities are:	<br/>
+	 *	Variables    D             E              F	<br/> 
+	 *	Marginals   [0.5 0.5]   [0.5 0.5]   [0.5 0.5]	<br/>
+	 *	<br/>	
+	 *	Trade-1: Tom would like to make a bet on E=e1, that has current probability as 0.5. First of all, we need to calculate TomÅfs edit limit (in this case, there is no assumption):	<br/> 
+	 *	Given E=e1, min-q1 = 100	<br/>
+	 *	Given E~=e1, min-q2 = 100	<br/>
+	 *	From Equation (1), edit interval is [0.005, 0.995].	<br/> 
+	 *	- Verification successful: after substituting the limits into edit, we do get min-q to be 1.	<br/> 
+	 *	<br/>	
+	 *	Trading sequence:	<br/> 
+	 *	Tom1:	P(E=e1) = 0.5  to 0.55 (current)	<br/>
+	 *	<br/>	
+	 *	Variables   D              E                   F	<br/> 
+	 *	Marginals   [0.5 0.5]   [0.55 0.45]   [0.5 0.5]	<br/>
+	 *	<br/>	
+	 *	TomÅfs min-q is 90, at the following 4 min-states (found by min-asset-propagation):	<br/> 
+	 *	     D    E    F	<br/>
+	 *	     1     2     1	<br/>
+	 *	     1     2     2	<br/>
+	 *	     2     2     1	<br/>
+	 *	     2     2     2	<br/>
+	 *	<br/>	
+	 *	<br/>	
+	 *	Trade-2: Now Tom would like to make another conditional bet on E=e1 given D=d1 (current P(E=e1|D=d1) = 0.55). Again, let us calculate his edit limits first (in this case, we have assumed variable D=d1). And note that TomÅfs asset tables are not the initial ones any more, but updated from last trade he did, now:	<br/> 
+	 *	Given E=e1, and D=d1, min-q1 = 110	<br/>
+	 *	Given E~=e1, and D=d1, min-q2 = 90	<br/>
+	 *	From Equation (1), edit interval is [0.005, 0.995]	<br/>
+	 *	- Verification successful: after substituting the limits into edit, we do get min-q to be 1.	<br/> 
+	 *	<br/>	
+	 *	Trading sequence:	<br/> 
+	 *	Tom1:	P(E=e1) = 0.5  to 0.55	<br/>
+	 *	Tom2:	P(E=e1|D=d1) = 0.55 to 0.9 (current)	<br/>
+	 *	Variables   D              E                   F	<br/> 
+	 *	Marginals   [0.5 0.5]   [0.725 0.275]   [0.5 0.5]	<br/>
+	 *	<br/>	
+	 *	TomÅfs min-q is 20, at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	     D    E    F	<br/>
+	 *	     1     2    1	<br/>
+	 *	     1     2    2	<br/>
+	 *	<br/>	
+	 *	<br/>	
+	 *	Trade-3: Joe came and intended to make a bet on E=e1 given D=d2 (current P(E=e1|D=d2) is 0.55). This will be his first edit, so he has initial asset tables before his trade.	<br/> 
+	 *	Edit limit:	<br/>
+	 *	Given E=e1, and D=d2, min-q1 = 100	<br/>
+	 *	Given E~=e1, and D=d2, min-q2 = 100	<br/>
+	 *	From Equation (1), edit interval is [0.0055, 0.9955]	<br/>
+	 *	- Verification successful: after substituting the limits into edit, we do get min-q to be 1.	<br/> 
+	 *	<br/>	
+	 *	Trading sequence:	<br/> 
+	 *	Tom1:	P(E=e1) = 0.5  to 0.55	<br/>
+	 *	Tom2:	P(E=e1|D=d1) = 0.55 to 0.9	<br/> 
+	 *	Joe1:	P(E=e1|D=d2) = 0.55 to 0.4 (current)	<br/> 
+	 *	<br/>	  
+	 *	Variables   D              E                   F	<br/> 
+	 *	Marginals   [0.5 0.5]   [0.65 0.35]   [0.5 0.5]	<br/>
+	 *	<br/>	
+	 *	JoeÅfs min-q is 72.72727272727..., at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	     D    E    F	<br/>
+	 *	     2     1    1	<br/>
+	 *	     2     1    2	<br/>
+	 *	<br/>	
+	 *	<br/>	
+	 *	Trade-4: Now Amy is interested in changing P(F=f1|D=d1), which is currently 0.5. It will be her first edit, so she also has initial asset tables before the trade.	<br/> 
+	 *	Edit limit:	<br/>
+	 *	Given F=f1, and D=d1, min-q1 = 100	<br/>
+	 *	Given F~=f1, and D=d1, min-q2 = 100	<br/>
+ 	 *	From Equation (1), edit interval is [0.005, 0.995]	<br/>
+	 *	- Verification successful: after substituting the limits into edit, we do get min-q to be 1.	<br/> 
+	 *	<br/>	
+	 *	Trading sequence:	<br/> 
+	 *	Tom1:	P(E=e1) = 0.5  to 0.55	<br/>
+	 *	Tom2:	P(E=e1|D=d1) = 0.55 to 0.9	<br/> 
+	 *	Joe1:	P(E=e1|D=d2) = 0.55 to 0.4	<br/> 
+	 *	Amy1:	P(F=f1|D=d1) = 0.5 to 0.3 (current)	<br/>
+	 *	<br/>	  
+	 *	Variables   D              E                   F	<br/> 
+	 *	Marginals   [0.5 0.5]   [0.65 0.35]   [0.4 0.6]	<br/>
+	 *	<br/>	
+	 *	AmyÅfs min-q is 60, at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	     D    E    F	<br/>
+	 *	     1     1    1	<br/>
+	 *	     1     2    1	<br/>
+	 *	<br/>	
+	 *	<br/>	
+	 *	Trade-5: Joe would like to trade again on P(F=f1|D=d2), which is currently 0.5.	<br/> 
+	 *	Edit limit:	<br/>
+	 *	Given F=f1, and D=d2, min-q1 = 72.727272727	<br/>
+	 *	Given F~=f1, and D=d2, min-q2 = 72.727272727	<br/>
+	 *	From Equation (1), edit interval is [0.006875, 0.993125]	<br/>
+	 *	- Verification successful: after substituting the limits into edit, we do get min-q to be 1.	<br/> 
+	 *	<br/>	
+	 *	Trading sequence:	<br/> 
+	 *	Tom1:	P(E=e1) = 0.5  to 0.55	<br/>
+	 *	Tom2:	P(E=e1|D=d1) = 0.55 to 0.9	<br/> 
+	 *	Joe1:	P(E=e1|D=d2) = 0.55 to 0.4	<br/> 
+	 *	Amy1:	P(F=f1|D=d1) = 0.5 to 0.3	<br/> 
+	 *	Joe2:	P(F=f1|D=d2) = 0.5 to 0.1	<br/>
+	 *	<br/>	  
+	 *	Variables   D              E                   F	<br/> 
+	 *	Marginals   [0.5 0.5]   [0.65 0.35]   [0.2 0.8]	<br/>
+	 *	<br/>	
+	 *	AmyÅfs min-q is 14.54545454546, at the following unique min-states (found by min-asset-propagation):	<br/> 
+	 *	     D    E    F	<br/>
+	 *	     2     1    1	<br/>
+	 *	<br/>	
+	 *	At this point, the model DEF reaches the status that has the same CPTs as the starting CPTs for the experimental model DEF we used in our AAAI 2012 paper.	<br/> 
+	 *	<br/>	
+	 *	From now on, we run test cases described in the paper.	<br/> 
+	 *	<br/>	
+	 *	Trade-6: Eric would like to trade on P(E=e1), which is currently 0.65.	<br/> 
+	 *	To decide long or short, S(E=e1) = 10, S(E~=e1)=10, no difference because this will be EricÅfs first trade.	<br/>
+	 *	Edit limit:	<br/>
+	 *	Given F=f1, and D=d2, min-q1 = 100	<br/>
+	 *	Given F~=f1, and D=d2, min-q2 = 100	<br/>
+	 *	From Equation (1), edit interval is [0.0065, 0.9965]	<br/>
+	 *	- Verification successful: after substituting the limits into edit, we do get min-q to be 1.	<br/> 
+	 *	<br/>	
+	 *	Trading sequence:	<br/> 
+	 *	Tom1:	P(E=e1) = 0.5  to 0.55	<br/>
+	 *	Tom2:	P(E=e1|D=d1) = 0.55 to 0.9	<br/> 
+	 *	Joe1:	P(E=e1|D=d2) = 0.55 to 0.4	<br/> 
+	 *	Amy1:	P(F=f1|D=d1) = 0.5 to 0.3	<br/> 
+	 *	Joe2:	P(F=f1|D=d2) = 0.5 to 0.1	<br/>
+	 *	Eric1:	P(E=e1) = 0.65 to 0.8 (current)	<br/>
+	 *	<br/>	  
+	 *	Variables   D              E                   F	<br/> 
+	 *	Marginals   [0.5824, 0.4176]   [0.8, 0.2]   [0.2165, 0.7835]	<br/>
+	 *	<br/>	
+	 *	EricÅfs expected score is S=10.1177.	<br/>
+	 *	EricÅfs min-q is 57.142857, at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	     D    E    F	<br/>
+	 *	     2     2    1	<br/>
+	 *	     2     2    2	<br/>
+	 *	<br/>	
+	 *	<br/>	
+	 *	Trade-7: Eric would like to make another edit. This time, he is interested on changing P(D=d1|F=f2), which is currently 0.52.	<br/> 
+	 *	To decide long or short, S(D=d1, F=f2) = 10.36915, S(D~=d1, F=f2)=9.7669.	<br/>
+	 *	Edit limit:	<br/>
+	 *	Given D=d1, and F=f2 , min-q1 = 57.142857	<br/>
+	 *	Given D~=d1, and F=f2, min-q2 = 57.142857	<br/>
+	 *	From Equation (1), edit interval is [0.0091059, 0.9916058]	<br/>
+	 *	- Verification successful: after substituting the limits into edit, we do get min-q to be 1.	<br/> 
+	 *	<br/>	
+	 *	Trading sequence:	<br/> 
+	 *	Tom1:	P(E=e1) = 0.5  to 0.55	<br/>
+	 *	Tom2:	P(E=e1|D=d1) = 0.55 to 0.9	<br/> 
+	 *	Joe1:	P(E=e1|D=d2) = 0.55 to 0.4	<br/> 
+	 *	Amy1:	P(F=f1|D=d1) = 0.5 to 0.3	<br/> 
+	 *	Joe2:	P(F=f1|D=d2) = 0.5 to 0.1	<br/>
+	 *	Eric1:	P(E=e1) = 0.65 to 0.8	<br/> 
+	 *	Eric2:	P(D=d1|F=f2) = 0.52 to 0.7 (current)	<br/>
+	 *	<br/>	  
+	 *	Variables   D                            E                             F	<br/> 
+	 *	Marginals   [0.7232, 0.2768]   [0.8509, 0.1491]   [0.2165, 0.7835]	<br/>
+	 *	<br/>	
+	 *	EricÅfs expected score is now 10.31615.	<br/> 
+	 *	EricÅfs min-q is 35.7393, at the following unique min-states (found by min-asset-propagation):	<br/> 
+	 *	     D    E    F	<br/>
+	 *	     2     2    2	<br/>
+	 *	<br/> 
+	 */	
 	public final void testDEFNet() {
 		
 		// load DEF network
