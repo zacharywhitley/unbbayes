@@ -754,9 +754,7 @@ public class Compiler implements ICompiler {
 				PotentialTable cachedCPT = (PotentialTable) cachedLPD;
 				// copy only the content (values), because the variables (parent and current nodes) are not actually the same instances compared to the previous time this method was called
 				PotentialTable cpt  = ssbnnode.getProbNode().getProbabilityFunction();
-				for (int i = 0; i < cpt.tableSize(); i++) {
-					cpt.setValue(i, cachedCPT.getValue(i));
-				}
+				cpt.setValues(cachedCPT.getValues());
 				return cpt;
 			} else {
 				Debug.println(getClass(), "Compiler is not returning a PotentialTable. Cache may not be usable, thus we are not using cache.");
