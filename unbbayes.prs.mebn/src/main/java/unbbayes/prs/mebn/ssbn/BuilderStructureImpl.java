@@ -90,8 +90,18 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		this.ssbn = _ssbn; 
 		this.kb = ssbn.getKnowledgeBase(); 
 		
-		this.maxNumberNodes = Long.valueOf(
-				ssbn.getParameters().getParameterValue(LaskeyAlgorithmParameters.NUMBER_NODES_LIMIT)); 
+		try {
+			this.maxNumberNodes = Long.valueOf(
+					ssbn.getParameters().getParameterValue(LaskeyAlgorithmParameters.NUMBER_NODES_LIMIT)); 
+		} catch (Exception e) {
+			// ignore (use default value)
+			Debug.println(getClass(), "Failed to extract parameter NUMBER_NODES_LIMIT", e);
+		}
+		
+		// reset current quantity of generated nodes.
+		// CAUTION: failing to reset this value will cause the algorithm to stop working after some quantity of executions,
+		// because numberNodes is an attribute instead of local variable.
+		numberNodes = 0;
 		
 		for(SimpleSSBNNode node: ssbn.getSimpleSsbnNodeList()){
 			notFinishedNodeList.add(node);
