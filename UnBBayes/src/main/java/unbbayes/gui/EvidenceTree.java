@@ -108,8 +108,15 @@ public class EvidenceTree extends JTree {
 							(DefaultMutableTreeNode) node.getParent());
 					} else if (
 						e.getClickCount() == 2
-							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-						treeDoubleClick(node);
+							&& (e.getModifiers() & MouseEvent.BUTTON1_MASK) != 0) {
+						// if ctrl is pressed, then negative finding (an evidence "NOT" in the clicked state)
+						if (((e.getModifiers() & MouseEvent.CTRL_MASK) != 0) || ((e.getModifiers() & MouseEvent.CTRL_DOWN_MASK) != 0)) {
+							// "NOT" (negative) evidence
+							treeDoubleClick(node, true);
+						} else {
+							// normal evidence
+							treeDoubleClick(node, false);
+						}
 						//by young
 						Node newNode = getNodeMap(node);
 						netWindow.getGraphPane().compiled(false, newNode);
@@ -391,7 +398,7 @@ public class EvidenceTree extends JTree {
 			int n = parent.getIndex(auxNode);
 			if( node.getStateAt(n) == stateName )
 			{
-				treeDoubleClick( auxNode );
+				treeDoubleClick( auxNode , false);	// false means that this is not a "negative" evidence (i.e. this is a normal evidence)
 				return;
 			}			
 		}
@@ -442,32 +449,33 @@ public class EvidenceTree extends JTree {
 	/**
 	 * Add a evidence
 	 *
-	 * @param  treeNode  path to the state be setted 100%
+	 * @param  treeNode  path to the state be set as evidence
+	 * @param isNegativeEvidence : if set to true, all states except for the state in treeNode will be considered as a evidence (i.e. the treeNode
+	 * will be considered as a "negative" evidence - an evidence about probability "NOT" in the given state).
 	 * @see             TreePath
 	 */
-	private void treeDoubleClick(DefaultMutableTreeNode treeNode) {
+	private void treeDoubleClick(DefaultMutableTreeNode treeNode, boolean isNegativeEvidence) {
 		DefaultMutableTreeNode parent =
 			(DefaultMutableTreeNode) ((treeNode).getParent());
 		Object obj = objectsMap.get((DefaultMutableTreeNode) parent);
 		if (obj != null) {
 			TreeVariable node = (TreeVariable) obj;
 
-			//Only propagate description nodes
 			if ((node.getInformationType() == Node.DESCRIPTION_TYPE) || (node.getInformationType() == Node.EXPLANATION_TYPE)) {
 				for (int i = 0; i < parent.getChildCount(); i++) {
 					DefaultMutableTreeNode auxNode =
 						(DefaultMutableTreeNode) parent.getChildAt(i);
-					auxNode.setUserObject(node.getStateAt(i) + ": 0");
+					auxNode.setUserObject(node.getStateAt(i) + (isNegativeEvidence?": 100":": 0"));
 				}
 
 				if (node.getType() == Node.PROBABILISTIC_NODE_TYPE) {
 					treeNode.setUserObject(						
-						node.getStateAt(parent.getIndex(treeNode)) + ": 100");
+						node.getStateAt(parent.getIndex(treeNode)) + (isNegativeEvidence?": 0":": 100"));
 				} else {
 					treeNode.setUserObject(
 						node.getStateAt(parent.getIndex(treeNode)) + ": **");
 				}
-				node.addFinding(parent.getIndex(treeNode));
+				node.addFinding(parent.getIndex(treeNode), isNegativeEvidence);
 				((DefaultTreeModel) getModel()).reload(parent);
 				
 				//by young

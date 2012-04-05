@@ -118,7 +118,8 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 				// The change bellow is to adhere to feature request #3314855
 				// Save the list of evidence entered
 				Map<String, Integer> evidenceMap = new HashMap<String, Integer>();
-//				likelihoodMap = new HashMap<String, Float[]>();
+				Set<String> negativeEvidenceNodeNames = new HashSet<String>();	// name of nodes in evidenceMap whose evidences are negative (indicate evidence NOT in a given state)
+				Map<String, float[]> likelihoodMap = new HashMap<String, float[]>();	// backup plan for cases when we could not create virtual nodes
 				
 				if ((algorithm.getNetwork() != null) && ( algorithm.getNetwork() instanceof SingleEntityNetwork)) {
 					SingleEntityNetwork net = (SingleEntityNetwork)algorithm.getNetwork();
@@ -149,16 +150,32 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 											// if conditional soft evidence, add all condition nodes (if non-conditional, then this will add an empty list)
 											evidenceNodes.addAll(jt.getLikelihoodExtractor().extractLikelihoodParents(getNetwork(), node));
 											// create the virtual node
-											INode virtual = jt.addVirtualNode(getNetwork(), evidenceNodes);
-											// store the hard evidence of the new virtual node, so that it can be retrieved after reset
-											evidenceMap.put(virtual.getName(), ((TreeVariable) virtual).getEvidence());
+											INode virtual = null;
+											try {
+												virtual = jt.addVirtualNode(getNetwork(), evidenceNodes);
+												// store the hard evidence of the new virtual node, so that it can be retrieved after reset
+												// hard evidence of virtual node is never a "NOT" evidence (evidence is always about a given particular state, and never about values "NOT" in a given state)
+												evidenceMap.put(virtual.getName(), ((TreeVariable) virtual).getEvidence());
+											} catch (Exception e) {
+												Debug.println(getClass(), "Could not create virtual node for " + node, e);
+												// backup plan: use old routine (although it is not entirely correct)
+												// backup the likelihood values
+												likelihoodMap.put(node.getName(), node.getLikelihood());
+												// putting in evidenceMap will mark this node as evidence (no matter what kind of evidence it is actually)
+												evidenceMap.put(node.getName(), 0);	
+											}
 										} catch (Exception e) {
 											throw new RuntimeException(e);
 										}
 									}
 								} else {
 									// store hard evidence, so that it can be retrieved after reset
-									evidenceMap.put(node.getName(), node.getEvidence());
+									int evidenceIndex = node.getEvidence();
+									if (node.getMarginalAt(evidenceIndex) == 0) {
+										// this is a "NOT" evidence (evidence about "NOT" in a given state)
+										negativeEvidenceNodeNames.add(node.getName());
+									}
+									evidenceMap.put(node.getName(), evidenceIndex);
 								}
 							}
 						}
@@ -167,8 +184,16 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 					algorithm.reset();
 					// Enter the list of evidence again
 					for (String name : evidenceMap.keySet()) {
-						((TreeVariable)net.getNode(name)).addFinding(evidenceMap.get(name));
+						// if name is in negativeEvidenceNodeNames, add as negative finding. Add as normal finding otherwise
+						((TreeVariable)net.getNode(name)).addFinding(evidenceMap.get(name), negativeEvidenceNodeNames.contains(name));
+
+						if (likelihoodMap.containsKey(name)) {
+							// if name is in likelihoodMap, this was a likelihood/soft evidence with no virtual node (the virtual node has failed)
+							// so, use old routine for likelihood evidence
+							((TreeVariable)net.getNode(name)).setMarginalProbabilities(likelihoodMap.get(name));
+						}
 					}
+					
 					// the following code is not necessary anymore, because likelihood evidences are now virtual nodes and hard evidences 
 					// (so, we only need to store hard evidences)
 //					// Enter the likelihood as virtual nodes
@@ -1003,6 +1028,10 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		SingleEntityNetwork net = this.getNet();
 		if (net == null) {
 			throw new IllegalStateException("Network == null");
+		}
+		
+		if (net.isID()) {
+			throw new IllegalArgumentException("Virtual nodes for influence diagrams not supported yet.");
 		}
 		
 		// extract likelihood value from extractor

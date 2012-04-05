@@ -200,7 +200,7 @@ public class LikelihoodEvidenceDialogBuilder implements ILikelihoodEvidenceDialo
 		 * @see java.awt.event.ComponentListener#componentHidden(java.awt.event.ComponentEvent)
 		 */
 		public void componentHidden(ComponentEvent e) {
-			if (optPane.getValue().equals(JOptionPane.OK_OPTION)) {
+			if (optPane.getValue()!= null && optPane.getValue().equals(JOptionPane.OK_OPTION)) {
 				// commit changes
 				
 				//Get the original probabilities values

@@ -1125,6 +1125,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	 * That is, if there is a directed path through decision nodes.
 	 */
 	protected void sortDecisions() throws Exception {
+		clearAdjacents();
 		decisionNodes = new ArrayList<Node>();
 		int sizeNos = nodeList.size();
 		for (int i = 0; i < sizeNos; i++) {

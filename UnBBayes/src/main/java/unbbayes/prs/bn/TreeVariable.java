@@ -169,13 +169,25 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
      * @param stateIndex the index of the state to be set as evidence.
      */
     public void addFinding(int stateIndex) {
+    	this.addFinding(stateIndex, false);
+    }
+    
+    /**
+     * Add the state associated to the given index as the evidence.
+     *
+     * @param stateIndex the index of the state to be set as evidence.
+     * @param isNegative: if set to true, the evidence will have the meaning
+     * "NOT in the state identified by index stateIndex"
+     */
+    public void addFinding(int stateIndex, boolean isNegative) {
 //        float[] likelihood = new float[getStatesSize()];
 //        likelihood[stateIndex] = 1;
 //        setMarginalProbabilities(likelihood);
         evidence = stateIndex;
         for (int i = 0; i < getStatesSize(); i++) {
-        	// set marginal to 1 if stateindex == i; 0 otherwise.
-			setMarginalAt(i, ((i==stateIndex)?1:0) );
+        	// if not isNegative, set marginal to 1 if stateindex == i; 0 otherwise.
+        	// if isNegative, set marginal to 0 if stateindex == i; 1 otherwise.
+			setMarginalAt(i, ((i==stateIndex)?(isNegative?0:1):(isNegative?1:0)) );
 		}
     }
     
@@ -200,7 +212,11 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
      */
     public void addLikeliHood(float likelihood[], final List<INode> dependencies) {
     	this.likelihood = likelihood;
-    	this.setLikelihoodParents(new ArrayList<INode>(dependencies));
+    	if (dependencies != null) {
+    		this.setLikelihoodParents(new ArrayList<INode>(dependencies));
+    	} else {
+    		this.setLikelihoodParents(new ArrayList<INode>());
+    	}
     	if (hasLikelihood()) {
     		evidence = 0;
     	}

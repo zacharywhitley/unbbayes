@@ -30,6 +30,7 @@ import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticTable;
+import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor;
 import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
@@ -104,6 +105,13 @@ public class SoftEvidenceDialogBuilder extends LikelihoodEvidenceDialogBuilder {
 	 * @see unbbayes.gui.LikelihoodEvidenceDialogBuilder#buildDialog(unbbayes.prs.Graph, unbbayes.prs.INode, java.awt.Component)
 	 */
 	public JDialog buildDialog(final Graph graph, final INode nodeToAddLikelihood, final Component owner) {
+		
+		if (graph instanceof SingleEntityNetwork) {
+			SingleEntityNetwork singleEntityNetwork = (SingleEntityNetwork) graph;
+			if (singleEntityNetwork.isID()) {
+				throw new IllegalArgumentException("Soft evidence for Influence Diagram is not supported yet.");
+			}
+		}
 		
 		// the dialog itself
 		JDialog ret = null;
