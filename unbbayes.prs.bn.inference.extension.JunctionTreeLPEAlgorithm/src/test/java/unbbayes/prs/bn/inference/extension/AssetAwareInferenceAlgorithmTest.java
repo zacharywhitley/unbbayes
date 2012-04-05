@@ -270,6 +270,8 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		AssetAwareInferenceAlgorithm assetQAlgorithm = (AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm);
 		assertNotNull(assetQAlgorithm);
 		
+		assetQAlgorithm.setToPropagateForGlobalConsistency(true);
+		
 		// set the default asset q quantity of all clique cells to 100
 		assetQAlgorithm.setDefaultInitialAssetQuantity(100);
 		

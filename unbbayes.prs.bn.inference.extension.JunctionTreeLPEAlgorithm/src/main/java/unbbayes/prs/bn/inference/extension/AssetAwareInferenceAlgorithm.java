@@ -140,7 +140,12 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListener()) {
 			listener.onBeforeRun(this);
 		}
-		
+		if (getNetwork() == null) {
+			throw new NullPointerException("No Bayes Net to compile.");
+		}
+		if (getNetwork() instanceof SingleEntityNetwork && ((SingleEntityNetwork) getNetwork()).isID()) {
+			throw new IllegalStateException(this.getName() + " does not support Influence Diagrams.");
+		}
 		this.getProbabilityPropagationDelegator().run();
 //		try {
 //			this.getAssetPropagationDelegator().setRelatedProbabilisticNetwork((ProbabilisticNetwork) this.getProbabilityPropagationDelegator().getNetwork());
@@ -499,6 +504,32 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 */
 	public AssetNetwork getAssetNetwork() {
 		return this.getAssetPropagationDelegator().getAssetNetwork();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#isToPropagateForGlobalConsistency()
+	 */
+	public boolean isToPropagateForGlobalConsistency() {
+		try {
+			return this.getAssetPropagationDelegator().isToPropagateForGlobalConsistency();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setToPropagateForGlobalConsistency(boolean)
+	 */
+	public void setToPropagateForGlobalConsistency(
+			boolean isToPropagateForGlobalConsistency) {
+		try {
+			this.getAssetPropagationDelegator().setToPropagateForGlobalConsistency(isToPropagateForGlobalConsistency);
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 

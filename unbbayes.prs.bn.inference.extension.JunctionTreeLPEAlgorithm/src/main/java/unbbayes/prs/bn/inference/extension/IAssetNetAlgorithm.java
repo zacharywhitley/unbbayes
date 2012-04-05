@@ -47,5 +47,17 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm{
 	 */
 	public AssetNetwork createAssetNetFromProbabilisticNet(ProbabilisticNetwork relatedProbabilisticNetwork)
 			throws InvalidParentException;
+	
+	/**
+	 * If set to true, min-propagation junction tree algorithm will be called. False otherwise.
+	 * @return the isToPropagateForGlobalConsistency
+	 */
+	public boolean isToPropagateForGlobalConsistency();
+
+	/**
+	 * If set to true, min-propagation junction tree algorithm will be called. False otherwise.
+	 * @param isToPropagateForGlobalConsistency the isToPropagateForGlobalConsistency to set
+	 */
+	public void setToPropagateForGlobalConsistency(boolean isToPropagateForGlobalConsistency);
 
 }

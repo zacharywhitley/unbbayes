@@ -18,7 +18,6 @@ import unbbayes.prs.bn.DefaultJunctionTreeBuilder;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
-import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.Separator;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.exception.InvalidParentException;
@@ -53,6 +52,9 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	private float defaultInitialAssetQuantity = 1000.0f;
 	
 	private INetworkMediator mediator;
+	
+
+	private boolean isToPropagateForGlobalConsistency = true;
 
 //	private Map<IRandomVariable, IRandomVariable> originalCliqueToAssetCliqueMap;
 	
@@ -61,6 +63,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			return v1.toString().compareTo(v2.toString());
 		}
 	};
+
 
 //	private AssetAwareInferenceAlgorithm assetAwareInferenceAlgorithm;
 	
@@ -153,8 +156,11 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		return "Algorithm to propagate assets given another probabilistic network with same topology.";
 	}
 
-	/* (non-Javadoc)
-	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#reset()
+	/**
+	 * Different from the other implementations, this reset will fill the q-tables
+	 * with values obtained by propagating min-q values through the cliques, like
+	 * the values obtainable from {@link #propagate()} when
+	 * {@link #isToPropagateForGlobalConsistency()} == true.
 	 */
 	public void reset() {
 		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
@@ -198,10 +204,10 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 //		 the assets to be updated
 //		Map<Clique, PotentialTable> currentAssetsMap = (Map<Clique, PotentialTable>) this.getNetwork().getProperty(CURRENT_ASSETS_PROPERTY);
 		
-		for (Node assetNode : getNetwork().getNodes()) {
+		for (IRandomVariable origCliqueOrSeparator : getOriginalCliqueToAssetCliqueMap().keySet()) {
 			
 			// extract clique related to the asset node
-			IRandomVariable assetCliqueOrSeparator = ((TreeVariable)assetNode).getAssociatedClique();
+			IRandomVariable assetCliqueOrSeparator = getOriginalCliqueToAssetCliqueMap().get(origCliqueOrSeparator);
 			if (assetCliqueOrSeparator == null) {
 				continue;	//ignore null entry
 			}
@@ -210,24 +216,22 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			PotentialTable assetTable = (PotentialTable) assetCliqueOrSeparator.getProbabilityFunction();
 			
 			
-			
-			// extract probabilistic node related to asset node (they have the same name)
-			// Note: if it is not a probabilistic node, then it means that there is an asset node created for non-probabilistic node (this is unexpected)
-			ProbabilisticNode probNode = (ProbabilisticNode) getRelatedProbabilisticNetwork().getNode(assetNode.getName());
+//			// extract probabilistic node related to asset node (they have the same name)
+//			// Note: if it is not a probabilistic node, then it means that there is an asset node created for non-probabilistic node (this is unexpected)
+//			ProbabilisticNode probNode = (ProbabilisticNode) getRelatedProbabilisticNetwork().getNode(assetNode.getName());
 			
 			// extract current probability values from prob node's clique. We assume we are using table-based representation (PotentialTable)
-			PotentialTable currentProbabilities = (PotentialTable) probNode.getAssociatedClique().getProbabilityFunction();
+			PotentialTable currentProbabilities = (PotentialTable) origCliqueOrSeparator.getProbabilityFunction();
 			
 			// extract previous probability (i.e. prior to propagation) values from network property
-			PotentialTable previousProbabilities = ((Map<IRandomVariable, PotentialTable>) this.getNetwork().getProperty(LAST_PROBABILITY_PROPERTY)).get(probNode.getAssociatedClique());
+			PotentialTable previousProbabilities = ((Map<IRandomVariable, PotentialTable>) this.getNetwork().getProperty(LAST_PROBABILITY_PROPERTY)).get(origCliqueOrSeparator);
 			
 			// assertion: tables must be non-null and have same size
 			if (currentProbabilities == null || previousProbabilities == null || assetTable == null
 					|| ( assetTable.tableSize() != currentProbabilities.tableSize() )
 					|| ( assetTable.tableSize() != previousProbabilities.tableSize() )) {
-				throw new IllegalStateException("The assets and probabilities of " + assetNode 
-						+ " are not synchronized. The asset is related to clique/separator " + assetCliqueOrSeparator
-						+ " and the probability is related to clique/separator " + probNode.getAssociatedClique());
+				throw new IllegalStateException("The assets and probabilities of asset clique/separator " + assetCliqueOrSeparator 
+						+ " are not synchronized with probability clique/separator " + origCliqueOrSeparator);
 			}
 			
 			// perform clique-wise update of asset values using a ratio
@@ -236,14 +240,20 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 				assetTable.setValue(i, assetTable.getValue(i) * ( currentProbabilities.getValue(i) / previousProbabilities.getValue(i) ) );
 			}
 			
-			// update marginal of asset node
-			((TreeVariable)assetNode).updateMarginal();
+			// update marginal of asset nodes
+			for (int i = 0; i < assetTable.getVariablesSize(); i++) {
+				((TreeVariable)assetTable.getVariableAt(i)).updateMarginal();
+			}
+			
+			// save the propagated values 
 		}
 		
 		// do min calibration (propagate minimum q-values)
 		// it assumes that the junction tree used by this algorithm is a MinProductJunctionTree, and normalization is disabled
 		// createAssetNetFromProbabilisticNet is supposed to instantiate MinProductJunctionTree and disable its normalization
-		super.propagate();
+		if (isToPropagateForGlobalConsistency()) {
+			super.propagate();
+		}
 		
 		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
 			listener.onAfterPropagate(this);
@@ -676,6 +686,23 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 */
 	protected void markMPEAs100Percent(Graph network, boolean isToCalculateRelativeProb) {
 		// do nothing
+	}
+
+	/**
+	 * If set to true, min-propagation junction tree algorithm will be called. False otherwise.
+	 * @return the isToPropagateForGlobalConsistency
+	 */
+	public boolean isToPropagateForGlobalConsistency() {
+		return isToPropagateForGlobalConsistency;
+	}
+
+	/**
+	 * If set to true, min-propagation junction tree algorithm will be called. False otherwise.
+	 * @param isToPropagateForGlobalConsistency the isToPropagateForGlobalConsistency to set
+	 */
+	public void setToPropagateForGlobalConsistency(
+			boolean isToPropagateForGlobalConsistency) {
+		this.isToPropagateForGlobalConsistency = isToPropagateForGlobalConsistency;
 	}
 
 //	/**
