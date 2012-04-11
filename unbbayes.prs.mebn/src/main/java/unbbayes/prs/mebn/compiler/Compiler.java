@@ -585,17 +585,41 @@ public class Compiler implements ICompiler {
 			//	clears and initializes map
 			map = new HashMap<String, List<EntityAndArguments>>();
 			for (SSBNNode ssbnnode : parents) {
-			  if (!map.containsKey(ssbnnode.getResident().getName())) {
-				  map.put(ssbnnode.getResident().getName(), new ArrayList<EntityAndArguments>());
-			  }
+				if (ssbnnode.getResident().isToLimitQuantityOfParentsInstances()) {
+					// do not add nodes in the chain which limits the max quantity of parents.
+					// this is because such parents must be considered as instances of the other parent
+					continue;
+				}
+			    if (!map.containsKey(ssbnnode.getResident().getName())) {
+				    map.put(ssbnnode.getResident().getName(), new ArrayList<EntityAndArguments>());
+			    }
 			}
 			
 			
 			// fill map at this loop. Note that parents.size, currentIteratorValue.size, and
 			// valueCombinationiterators are the same
 			for (int j = 0; j < parents.size(); j++) {
-				EntityAndArguments val = new EntityAndArguments(currentIteratorValue.get(j),new ArrayList<OVInstance>(parents.get(j).getArguments()));
-				map.get(parents.get(j).getResident().getName()).add(val);
+				SSBNNode parentSSBNNode = parents.get(j);
+				EntityAndArguments val = new EntityAndArguments(currentIteratorValue.get(j),new ArrayList<OVInstance>(parentSSBNNode.getArguments()));
+				// val will be added to map using following key
+				String key = parentSSBNNode.getResident().getName();
+				if (parentSSBNNode.getResident().isToLimitQuantityOfParentsInstances()) {
+					// nodes in the chain which limits the max quantity of parents has special meaning:
+					// such parents must be considered as instances of another parent, although it points to another resident node
+					// in order to simulate such behavior, we adjust the content of map
+					if (j != 0) {
+						// if this is not the first parent, use the first parent as the "another" parent
+						key = parents.get(0).getResident().getName();
+					} else if ( (parents.size() - 1) != j ) {
+						// use the last element instead, because the special parent is the first parent
+						key = parents.get((parents.size() - 1)).getResident().getName();
+					} else {
+						// there is only 1 parent, and the parent is a node in the chain which limits the max quantity of parents.
+						// this is an error, because such chain must contain at least 2 nodes: the dynamically generated node, and one of the original parent.
+						throw new IllegalStateException("Node " + getSSBNNode() + " has only 1 parent (" + parents.get(j) + "), but the parent has isToLimitQuantityOfParentsInstances() == true.");
+					}
+				}
+				map.get(key).add(val);
 			}
 			
 			
@@ -760,7 +784,6 @@ public class Compiler implements ICompiler {
 				Debug.println(getClass(), "Compiler is not returning a PotentialTable. Cache may not be usable, thus we are not using cache.");
 			}
 		}
-		
 		// actually compile pseudo code and obtain cpt
 		this.init(ssbnnode);
 		this.parse();
@@ -2581,8 +2604,6 @@ public class Compiler implements ICompiler {
 				}
 			}
 			
-						
-			
 			//	evaluate (True,Alpha), (False,Alpha), (True,Beta), (False,Beta)...
 			boolean hasMoreCombination = true;
 			// expressionWasEvaluated checks if boolean header was once evaluated. If not, all condicionants were invalid (in that case, return false)
@@ -2605,6 +2626,8 @@ public class Compiler implements ICompiler {
 						this.increaseValidParentSetCount();
 					}
 					expressionWasEvaluated = true; // there was a valid header, so, the return value is valid
+				} else {
+					Debug.println(getClass(), "isSameOVsameEntity returned false for node " + getNode());
 				}
 				
 				// update leaf's evaluation variables
@@ -3468,6 +3491,13 @@ public class Compiler implements ICompiler {
 			this.entity = entity;
 			this.arguments = arguments;
 		}
+		/* (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		public String toString() {
+			return "Entity: " + this.entity + ". arguments = " + this.arguments;
+		}
+		
 	}
 
 

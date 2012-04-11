@@ -15,6 +15,7 @@ import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
+import unbbayes.util.Debug;
 
 /**
  * Auxiliary methods for treatment of the SimpleSSBNNode and conversion this for
@@ -158,7 +159,11 @@ public class SimpleSSBNNodeUtils {
 				}
 				
 			}
-			
+			if (simple.isNodeInAVirualChain()) {
+				// change the name of chain nodes
+				ssbnNode.getProbNode().setName("Chain"+ simple.getStepsForChainNodeToReachMainNode() + "_" + ssbnNode.getProbNode().getName());
+				Debug.println(ssbnNode.getProbNode().getName());
+			}
 			simple.setProbNode(ssbnNode.getProbNode());
 		}
 		

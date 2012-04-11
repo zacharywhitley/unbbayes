@@ -31,7 +31,6 @@ import unbbayes.prs.mebn.compiler.ICompiler;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityConteiner;
-import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
@@ -41,6 +40,8 @@ import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
  */
 public class ResidentNode extends MultiEntityNode 
          implements IRandomVariable, IResidentNode {
+	
+	private boolean isToLimitQuantityOfParentsInstances = false;
 	
 	private static final long serialVersionUID = 1L;
 
@@ -819,6 +820,63 @@ public class ResidentNode extends MultiEntityNode
 	protected void setRandomVariableFindingList(
 			List<RandomVariableFinding> randomVariableFindingList) {
 		this.randomVariableFindingList = randomVariableFindingList;
+	}
+
+	/**
+	 * @return 
+	 * If this value is true, the following behavior will happen at the SSBN generator. <br/>
+	 * If a node is going to have too many parents, and the LPD of node can be represented as a chain like the following network: <br/>
+	 * Suppose E is a boolean OR: <br/>
+	 * Parents: A B C D	<br/>
+	 * Child: E                  <br/>
+	 *                      <br/>
+	 * It may be represented as:<br/>
+	 *  <br/>
+	 * A B <br/>
+	 * | / <br/>
+	 * Y C <br/>
+	 * | / <br/>
+	 * X D <br/>
+	 * | / <br/>
+	 * E <br/>
+	 *              <br/><br/>
+	 * Note: X and Y have the same LPD of E (they are also boolean OR) <br/>
+	 * <br/>                                    
+	 * This value indicates the maximum quantity of parents for nodes
+	 * E, X and Y in the above example.
+	 */
+	public boolean isToLimitQuantityOfParentsInstances() {
+		return isToLimitQuantityOfParentsInstances;
+	}
+
+	/**
+	 * @param isToLimit : 
+	 * If this value is true, the following behavior will happen at the SSBN generator. <br/>
+	 * If a node is going to have too many parents, and the LPD of node can be represented as a chain like the following network: <br/>
+	 * Suppose E is a boolean OR: <br/>
+	 * Parents: A B C D	<br/>
+	 * Child: E                  <br/>
+	 *                      <br/>
+	 * It may be represented as:<br/>
+	 *  <br/>
+	 * A B <br/>
+	 * | / <br/>
+	 * Y C <br/>
+	 * | / <br/>
+	 * X D <br/>
+	 * | / <br/>
+	 * E <br/>
+	 *              <br/><br/>
+	 * Note: X and Y have the same LPD of E (they are also boolean OR) <br/>
+	 * <br/>                                    
+	 * This value indicates the maximum quantity of parents for nodes
+	 * E, X and Y in the above example.
+	 */
+	public void setToLimitQuantityOfParentsInstances(boolean isToLimit) {
+		if (isToLimit && this.getPossibleValueByName("true") == null) {
+			throw new IllegalStateException("Limitation on quantity of parents available only for boolean nodes.");
+		}
+		this.isToLimitQuantityOfParentsInstances = isToLimit;
 	}
 	
 }

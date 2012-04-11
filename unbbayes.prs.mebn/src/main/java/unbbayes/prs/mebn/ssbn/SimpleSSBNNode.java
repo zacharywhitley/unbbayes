@@ -47,8 +47,9 @@ public class SimpleSSBNNode implements INode {
 	private boolean defaultDistribution = false; 
 	private boolean evaluatedForHomeMFrag = false; 
 	
+	private int stepsForChainNodeToReachMainNode = 0;	// values <= 0 indicate that this node does not belong to a chain
 	
-	private SimpleSSBNNode(ResidentNode residentNode){
+	protected SimpleSSBNNode(ResidentNode residentNode){
 		
 		id = this.ssbnNodeCount; 
 		this.ssbnNodeCount++; 
@@ -90,12 +91,21 @@ public class SimpleSSBNNode implements INode {
 	public boolean equals(Object obj) {
 
 //		boolean result = true; 
-		
+		if (obj == null) {
+			// impossible for this object to be null and call equals without throwing nullpointerexception
+			return false;
+		}
 		if(! (obj instanceof SimpleSSBNNode)){
 			return false;
 		}
 		
 		SimpleSSBNNode ssbnNode = (SimpleSSBNNode)obj;
+		
+		if (this.getStepsForChainNodeToReachMainNode() != ssbnNode.getStepsForChainNodeToReachMainNode()) {
+			// if they represent different levels in a chain of nodes for limiting the quantity of parents per node,
+			// obviously they are not the same nodes
+			return false;
+		}
 		
 		if(ssbnNode.getResidentNode().equals(this.getResidentNode())){
 			
@@ -114,7 +124,7 @@ public class SimpleSSBNNode implements INode {
 	@Override
 	public String toString(){
 		try {
-			String ret = "";
+			String ret = isNodeInAVirualChain()?("Chain" + getStepsForChainNodeToReachMainNode() + "_"):"";
 			
 			try {
 				ret += residentNode.getName(); 
@@ -455,6 +465,87 @@ public class SimpleSSBNNode implements INode {
 	
 	public int getId(){
 		return id; 
+	}
+
+	/**
+	 * @return  whether {@link #getStepsForChainNodeToReachMainNode()} > 0.
+	 * If true, this node is a "virtual" node created just for the chain (it does not add semantics to the model, it
+	 * was just for limiting the number of parents per each node). In another words, suppose E is a boolean OR: <br/>
+	 * Parents: A B C D	<br/>
+	 * Child: E                  <br/>
+	 * ...If the chain is:
+	 * <br/>
+	 *  <br/>
+	 * A B <br/>
+	 * | / <br/>
+	 * Y C <br/>
+	 * | / <br/>
+	 * X D <br/>
+	 * | / <br/>
+	 * E <br/>
+	 *              <br/><br/>
+	 * Then nodes X and Y will return true (because they were created just for limiting the quantity of parents
+	 * to 2). All other nodes will return false.
+	 * @see #getStepsForChainNodeToReachMainNode()
+	 */
+	public boolean isNodeInAVirualChain() {
+		return this.getStepsForChainNodeToReachMainNode() > 0;
+	}
+
+	/**
+	 * @return 
+	 * If a node is going to have too many parents, and the LPD of node can be represented as a chain like the following network: <br/>
+	 * Suppose E is a boolean OR: <br/>
+	 * Parents: A B C D	<br/>
+	 * Child: E                  <br/>
+	 *                      <br/>
+	 * It may be represented as:<br/>
+	 *  <br/>
+	 * A B <br/>
+	 * | / <br/>
+	 * Y C <br/>
+	 * | / <br/>
+	 * X D <br/>
+	 * | / <br/>
+	 * E <br/>
+	 *              <br/><br/>
+	 * Note: X and Y have the same LPD of E (they are also boolean OR) <br/>
+	 * <br/>                                    
+	 * This value represents the number of steps needed to reach the oringinal node which forced the algorithm to create a chain 
+	 * (in this case, it is node E).
+	 * For example, node E needs 0 steps to reach E. X needs 1 to reach E, and Y needs 2 to reach E.
+	 * @see #isNodeInAVirualChain()
+	 */
+	public int getStepsForChainNodeToReachMainNode() {
+		return stepsForChainNodeToReachMainNode;
+	}
+
+	/**
+	 * If a node is going to have too many parents, and the LPD of node can be represented as a chain like the following network: <br/>
+	 * Suppose E is a boolean OR: <br/>
+	 * Parents: A B C D	<br/>
+	 * Child: E                  <br/>
+	 *                      <br/>
+	 * It may be represented as:<br/>
+	 *  <br/>
+	 * A B <br/>
+	 * | / <br/>
+	 * Y C <br/>
+	 * | / <br/>
+	 * X D <br/>
+	 * | / <br/>
+	 * E <br/>
+	 *              <br/><br/>
+	 * Note: X and Y have the same LPD of E (they are also boolean OR) <br/>
+	 * <br/>                                    
+	 * This value represents the number of steps needed to reach the oringinal node which forced the algorithm to create a chain 
+	 * (in this case, it is node E).
+	 * For example, node E needs 0 steps to reach E. X needs 1 to reach E, and Y needs 2 to reach E.
+	 * @param stepsForChainNodeToReachMainNode the stepsForChainNodeToReachMainNode to set
+	 */
+	public void setStepsForChainNodeToReachMainNode(
+			int stepsForChainNodeToReachMainNode) {
+		this.stepsForChainNodeToReachMainNode = stepsForChainNodeToReachMainNode;
 	}
 
 	

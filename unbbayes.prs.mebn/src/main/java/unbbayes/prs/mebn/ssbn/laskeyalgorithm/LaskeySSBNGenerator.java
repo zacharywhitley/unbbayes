@@ -182,6 +182,15 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 		
 		this.cleanUpSSBN(ssbn);
 		
+		if (ssbn.getNetwork().getNodeCount() != ssbn.getNetwork().getNodeIndexes().keySet().size()) {
+			// inconsistency on the quantity of indexed nodes and actual nodes
+			// force synchronization
+			ssbn.getNetwork().getNodeIndexes().clear();
+			for (int i = 0; i < ssbn.getNetwork().getNodes().size(); i++) {
+				ssbn.getNetwork().getNodeIndexes().put(ssbn.getNetwork().getNodes().get(i).getName(), i);
+			}
+		}
+		
 		try {
 			ssbn.compileAndInitializeSSBN();
 		} catch (Exception e) {
