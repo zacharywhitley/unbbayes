@@ -297,7 +297,9 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 * Be careful when you modify these values, because it will modify the 
 	 * original values as well.
 	 * @return
+	 * @deprecated use {@link #getValue(int)} instead;
 	 */
+	@Deprecated
 	public float[] getValues() {
 		return dataPT.data;
 	}
