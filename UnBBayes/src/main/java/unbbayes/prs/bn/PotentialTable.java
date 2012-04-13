@@ -112,8 +112,10 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 */
 	public void copyData() {
 		int dataSize = dataPT.size;
+		dataCopy.ensureCapacity(dataSize);
+		dataCopy.size = dataSize;
 		for (int i = 0; i < dataSize; i++) {
-			dataCopy.add(dataPT.data[i]);
+			dataCopy.data[i] = dataPT.data[i];
 		}
 	}
 	

@@ -5,6 +5,7 @@ package unbbayes.prs.bn.inference.extension;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JComponent;
 
@@ -14,8 +15,10 @@ import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
+import unbbayes.prs.bn.AssetNode;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
+import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNetworkFilter;
 import unbbayes.prs.bn.SingleEntityNetwork;
@@ -49,7 +52,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	
 	private IInferenceAlgorithm probabilityPropagationDelegator;
 
-	private AssetPropagationInferenceAlgorithm assetPropagationDelegator;
+	private IAssetNetAlgorithm assetPropagationDelegator;
 	
 	
 	/** 
@@ -84,7 +87,13 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 */
 	public static IInferenceAlgorithm getInstance(IInferenceAlgorithm probabilityDelegator) {
 		AssetAwareInferenceAlgorithm ret = new AssetAwareInferenceAlgorithm();
-		ret.setProbabilityPropagationDelegator(probabilityDelegator);
+		// for some reason, polymorphism is not working so properly...
+		if (probabilityDelegator instanceof JunctionTreeAlgorithm) {
+			// call explicitly
+			ret.setProbabilityPropagationDelegator((JunctionTreeAlgorithm)probabilityDelegator);
+		} else {
+			ret.setProbabilityPropagationDelegator(probabilityDelegator);
+		}
 		try {
 			ret.setAssetPropagationDelegator(AssetPropagationInferenceAlgorithm.getInstance((ProbabilisticNetwork) probabilityDelegator.getNetwork()));
 		} catch (Exception e) {
@@ -212,7 +221,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		}
 		
 		// store the probability before the propagation, so that we can calculate the ratio
-		this.getAssetPropagationDelegator().updateProbabilityPriorToPropagation();
+		this.updateProbabilityPriorToPropagation();
 		// propagate probability
 		this.getProbabilityPropagationDelegator().propagate();
 		// calculate ratio and propagate assets
@@ -257,6 +266,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 * @param delegator
 	 */
 	public void setProbabilityPropagationDelegator(IInferenceAlgorithm delegator) {
+		// TODO check why polymorphism is not working
 		this.probabilityPropagationDelegator = delegator;
 	}
 	
@@ -348,6 +358,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 				
 				/**
 				 * Guarantee that each clique is normalized, if the network is disconnected
+				 * and clear virtual nodes
 				 */
 				public void onAfterPropagate(IInferenceAlgorithm algorithm) {
 					if (algorithm == null) {
@@ -355,6 +366,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 						return;
 					}
 					
+					// Guarantee that each clique is normalized, if the network is disconnected
 					if ((algorithm.getNetwork() != null) && (algorithm.getNetwork() instanceof SingleEntityNetwork)) {
 						SingleEntityNetwork network = (SingleEntityNetwork) algorithm.getNetwork();
 						if (!network.isConnected()) {
@@ -376,9 +388,112 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 							}
 						}
 					}
+					
+					// clear virtual nodes if this is using junction tree algorithm or algorithms related to it
+					if (algorithm instanceof JunctionTreeAlgorithm) {
+						((JunctionTreeAlgorithm) algorithm).clearVirtualNodes();						
+					} else if (algorithm instanceof AssetAwareInferenceAlgorithm) {
+						// extract algorithm responsible for updating probabilities
+						IInferenceAlgorithm probAlgorithm = ((AssetAwareInferenceAlgorithm)algorithm).getProbabilityPropagationDelegator();
+						if (probAlgorithm instanceof JunctionTreeAlgorithm) {
+							((JunctionTreeAlgorithm) probAlgorithm).clearVirtualNodes();		
+						}
+					}
 				}
 			});
 		}
+	}
+
+	/**
+	 * Caution: this method assumes that the nodes in the asset net {@link #getAssetNetwork()} are synchronized with the nodes in the cpt
+	 * by names (i.e. for each node in cpt, there is a node in {@link #getAssetNetwork()} with the same name).
+	 * 
+	 * @param cpt : a CPT representing the conditional probability P(Target | Assumptions), or simply P(T|A) (A is a set of nodes).
+	 * {@link unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor#buildCondicionalProbability(INode, List, Graph, IInferenceAlgorithm)}
+	 * can dynamically create such CPT. {@link IProbabilityFunction#getVariableAt(0)} is assumed to be the target variable.
+	 * 
+	 * @param indexInCPT : index of the cell in the CPT (condProb) to calculate allowed interval of edit. For example, suppose
+	 * target boolean random variable T and assumption boolean random variable A. Also suppose 
+	 * P(T | A) = [P(T=false|A=false), P(T=false|A=true), P(T=true|A=false), P(T=true|A=true)] = [.2, .8, .4, .6].
+	 * Then, indexInCondProb == 0 is a reference to P(T=false|A=false) = .2, hence this method will calculate the allowed interval of 
+	 * edit for P(T=false|A=false). Similarly, indexInCondProb == 3 is a reference to P(T=true|A=true) = .6, 
+	 * and this method will calculate the allowed interval of edit for P(T=true|A=true).
+	 * 
+	 * @return the array [ P(T=t|A=a)/m1 ; 1- (1 - P(T=t|A=a))/m2 ], whose index 0 is the lower bound of allowed edit (probability that guarantees that
+	 * the min-q will never become below 1), and index 1 is the respective upper bound. 
+	 * In this formula, the value m1 is the min-q assuming T=t and A=a, and m2 is the min-q
+	 * assuming T!=t and A=a.
+	 * 
+	 * @see #runMinPropagation()
+	 * @see #calculateExplanation(List)
+	 * @see #undoMinPropagation()
+	 */
+	public float[] calculateIntervalOfAllowedEdit(PotentialTable cpt, int indexInCPT) {
+		// initial assertions
+		if (cpt == null) {
+			throw new NullPointerException(getClass().getName()+"#calculateIntervalOfAllowedEdit(null," + indexInCPT + ")");
+		}
+		if (indexInCPT < 0 || indexInCPT >= cpt.tableSize()) {
+			// cpt.getMultidimensionalCoord may enter in infinite loop if we do not throw exception here.
+			throw new ArrayIndexOutOfBoundsException(indexInCPT);
+		}
+		
+		// extract asset nodes related to the nodes in cpt. Supposedly, they have same names.
+		List<AssetNode> assetNodes = new ArrayList<AssetNode>();	// use list, because the order is important (e.g. 1st node is always the target)
+		for (int i = 0; i < cpt.getVariablesSize(); i++) {
+			INode probNode = cpt.getVariableAt(i);
+			INode assetNode = this.getAssetNetwork().getNode(probNode.getName());
+			if (assetNode == null || !(assetNode instanceof AssetNode)) {
+				throw new IllegalArgumentException(probNode + " has no respective asset node: " + assetNode);
+			}
+			// at this point, assetNode is an instance of AssetNode
+			assetNodes.add((AssetNode)assetNode);
+		}
+		
+		// indexInCondProb is the index of the CPT represented as a 1 dimensional array. Translate it to indexes of states of nodes.
+		int[] indexesOfStatesOfNodes = cpt.getMultidimensionalCoord(indexInCPT);
+		
+		// assume T=t and A=a (A is actually a set of all nodes in cpt which are not T)
+		for (int i = 0; i < assetNodes.size(); i++) {
+			// coord[0] has the state of T (the target node). coord[1] has the state of first node of A (assumption nodes), and so on
+			assetNodes.get(i).addFinding(indexesOfStatesOfNodes[i]);
+		}
+		
+		// obtain m1, which is the min-q value assuming  T=t and A=a
+		this.runMinPropagation();
+		float minQValue = this.calculateExplanation(new ArrayList<Map<INode,Integer>>());	// this is m1
+		this.undoMinPropagation();	// revert changes in the asset tables
+		
+		// assume T!=t and A=a
+		assetNodes.get(0).addFinding(indexesOfStatesOfNodes[0], true);	// negative evidence to T = t (which is always the first node in cpt)
+		for (int i = 1; i < assetNodes.size(); i++) { // all other evidences are ordinal evidences
+			// coord[0] has the state of T (the target node). coord[1] has the state of first node of A (assumption nodes), and so on
+			assetNodes.get(i).addFinding(indexesOfStatesOfNodes[i]);
+		}
+		
+		// obtain m2, which is the min-q value assuming  T!=t and A=a
+		this.runMinPropagation();
+		float minQValueAssumingNotTarget = this.calculateExplanation(new ArrayList<Map<INode,Integer>>());	// this is m2
+		this.undoMinPropagation();	// revert changes in the asset tables
+		
+		// clear all findings explicitly.
+		for (int i = 0; i < assetNodes.size(); i++) {
+			assetNodes.get(i).resetEvidence();
+		}
+		
+		// extract value P(T=t|A=a) 
+		float prob = cpt.getValue(indexInCPT);
+		
+		// this will be the value to return
+		float[] ret = new float[2];
+		
+		// P(T=t|A=a)/m1  
+		ret[0] = prob/minQValue;
+		
+		// 1 - (1-P(T=t|A=a))/m2
+		ret[1] = 1-((1 - prob)/minQValueAssumingNotTarget);
+		
+		return ret;
 	}
 
 	/*
@@ -403,7 +518,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	/**
 	 * @return the assetPropagationDelegator
 	 */
-	public AssetPropagationInferenceAlgorithm getAssetPropagationDelegator() {
+	public IAssetNetAlgorithm getAssetPropagationDelegator() {
 		return assetPropagationDelegator;
 	}
 
@@ -411,7 +526,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 * @param assetPropagationDelegator the assetPropagationDelegator to set
 	 */
 	public void setAssetPropagationDelegator(
-			AssetPropagationInferenceAlgorithm assetPropagationDelegator) {
+			IAssetNetAlgorithm assetPropagationDelegator) {
 		this.assetPropagationDelegator = assetPropagationDelegator;
 	}
 
@@ -506,8 +621,8 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		return this.getAssetPropagationDelegator().getAssetNetwork();
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Delegates to {@link #getAssetPropagationDelegator()}
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#isToPropagateForGlobalConsistency()
 	 */
 	public boolean isToPropagateForGlobalConsistency() {
@@ -519,8 +634,8 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		return false;
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Delegates to {@link #getAssetPropagationDelegator()}
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setToPropagateForGlobalConsistency(boolean)
 	 */
 	public void setToPropagateForGlobalConsistency(
@@ -534,7 +649,70 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 
 
 	
+	/**
+	 * This method only delegates to {@link #getAssetPropagationDelegator()}
+	 * @see IAssetNetAlgorithm#calculateExplanation(List)
+	 * @see AssetPropagationInferenceAlgorithm#calculateExplanation(List)
+	 * @see IExplanationJunctionTree#calculateExplanation(Graph, IInferenceAlgorithm)
+	 */
+	public float calculateExplanation( List<Map<INode, Integer>> inputOutpuArgumentForExplanation){
+		if (this.getAssetPropagationDelegator() == null) {
+			return Float.NaN;
+		}
+		if (inputOutpuArgumentForExplanation == null) {
+			inputOutpuArgumentForExplanation = new ArrayList<Map<INode,Integer>>();
+		}
+		return this.getAssetPropagationDelegator().calculateExplanation(inputOutpuArgumentForExplanation);
+	}
 
+	/**
+	 * Delegates to {@link #getAssetPropagationDelegator()}
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#isToUpdateSeparators()
+	 */
+	public boolean isToUpdateSeparators() {
+		try {
+			return this.getAssetPropagationDelegator().isToUpdateSeparators();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	/**
+	 * Delegates to {@link #getAssetPropagationDelegator()}
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setToUpdateSeparators(boolean)
+	 */
+	public void setToUpdateSeparators(boolean isToPropagateForGlobalConsistency) {
+		try {
+			this.getAssetPropagationDelegator().setToUpdateSeparators(isToPropagateForGlobalConsistency);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Delegates to {@link #getAssetPropagationDelegator()}.
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#runMinPropagation()
+	 */
+	public void runMinPropagation() {
+		this.getAssetPropagationDelegator().runMinPropagation();
+	}
+
+	/**
+	 * Delegates to {@link #getAssetPropagationDelegator()}.
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#undoMinPropagation()
+	 */
+	public void undoMinPropagation() {
+		this.getAssetPropagationDelegator().undoMinPropagation();
+	}
+
+	/**
+	 * Delegates to {@link #getAssetPropagationDelegator()}.
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#updateProbabilityPriorToPropagation()
+	 */
+	public void updateProbabilityPriorToPropagation() {
+		this.getAssetPropagationDelegator().updateProbabilityPriorToPropagation();
+	}
 	
 	
 }

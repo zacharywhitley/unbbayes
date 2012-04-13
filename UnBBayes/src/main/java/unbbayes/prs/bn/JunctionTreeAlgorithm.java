@@ -1207,6 +1207,11 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 			
 			// remove clique/separator from junction tree
 			for (IRandomVariable cliqueOrSep : getVirtualNodesToCliquesAndSeparatorsMap().get(virtualNode)) {
+				if (cliqueOrSep instanceof Clique) {
+					// remove this clique from parent
+					Clique clique = (Clique) cliqueOrSep;
+					clique.getParent().removeChild(clique);
+				}
 				this.getNet().getJunctionTree().getCliques().remove(cliqueOrSep);
 				this.getNet().getJunctionTree().getSeparators().remove(cliqueOrSep);
 			}

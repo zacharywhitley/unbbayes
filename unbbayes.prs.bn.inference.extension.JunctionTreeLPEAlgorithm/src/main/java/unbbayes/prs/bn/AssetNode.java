@@ -42,24 +42,29 @@ public class AssetNode extends DecisionNode {
     * @see unbbayes.prs.id.DecisionNode#marginal()
     */
     protected void marginal() {
-    	initMarginalList();
-        PotentialTable auxTab = (PotentialTable) ((PotentialTable)getAssociatedClique().getProbabilityFunction()).clone();
-        int index = auxTab.indexOfVariable(this);
-        int size = getAssociatedClique().getProbabilityFunction().variableCount();
-        for (int i = 0; i < size; i++) {
-            if (i != index) {
-                auxTab.removeVariable(getAssociatedClique().getProbabilityFunction().getVariableAt(i));
-            }
-        }
-
-        int tableSize = auxTab.tableSize();
-        if (tableSize > marginalList.length) {
-        	Debug.println(getClass(), "There is some inconsistency. Maybe there is some node with no state at all.");
-        } else {
-        	for (int i = 0; i < tableSize; i++) {
-        		marginalList[i] = auxTab.getValue(i);
-        	}
-        }
+    	initMarginalList();	// at least make sure marginal list is not null
+    	return;	// asset nodes has no semantics for marginals
+//    	for (int i = 0; i < marginalList.length; i++) {
+//    		marginalList[i] = 1;
+//    	}
+//    	return;
+//        PotentialTable auxTab = (PotentialTable) ((PotentialTable)getAssociatedClique().getProbabilityFunction()).clone();
+//        int index = auxTab.indexOfVariable(this);
+//        int size = getAssociatedClique().getProbabilityFunction().variableCount();
+//        for (int i = 0; i < size; i++) {
+//            if (i != index) {
+//                auxTab.removeVariable(getAssociatedClique().getProbabilityFunction().getVariableAt(i));
+//            }
+//        }
+//
+//        int tableSize = auxTab.tableSize();
+//        if (tableSize > marginalList.length) {
+//        	Debug.println(getClass(), "There is some inconsistency. Maybe there is some node with no state at all.");
+//        } else {
+//        	for (int i = 0; i < tableSize; i++) {
+//        		marginalList[i] = auxTab.getValue(i);
+//        	}
+//        }
     }
 
 

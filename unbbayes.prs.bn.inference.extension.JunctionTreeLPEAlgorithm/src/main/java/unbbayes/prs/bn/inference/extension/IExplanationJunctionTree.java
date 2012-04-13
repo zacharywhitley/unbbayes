@@ -3,6 +3,7 @@
  */
 package unbbayes.prs.bn.inference.extension;
 
+import java.util.List;
 import java.util.Map;
 
 import unbbayes.prs.Graph;
@@ -14,17 +15,21 @@ import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
  * for explanation problems (i.e. obtaining a set of states which
  * is most likely to happen given evidences).
  * @author Shou Matsumoto
+ * @deprecated : these methods will be migrated to {@link IInferenceAlgorithm}
  *
  */
+@Deprecated
 public interface IExplanationJunctionTree {
 
 	/**
 	 * @param graph : the graph containing the nodes to be analyzed. It is assumed that 
 	 * the graph was already compiled by algorithm
 	 * @param algorithm : the algorithm which has compiled the graph.
-	 * @return nodes and indexes of most probable states. The state can be retrieved by calling {@link INode#getStateAt(int)}
+	 * @return maps indicating nodes and indexes of most probable states. The state can be retrieved by calling {@link INode#getStateAt(int)}
+	 * Since the explanation may not be unique (there may be several equivalent explanations), the returned value
+	 * is a set.
 	 */
-	public Map<INode, Integer> calculateExplanation(Graph graph, IInferenceAlgorithm algorithm);
+	public List<Map<INode, Integer>> calculateExplanation(Graph graph, IInferenceAlgorithm algorithm);
 	
 	/**
 	 * 

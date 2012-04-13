@@ -1,11 +1,21 @@
 package unbbayes.prs.bn.inference.extension;
 
+import java.util.List;
+import java.util.Map;
+
+import unbbayes.prs.Graph;
+import unbbayes.prs.INode;
 import unbbayes.prs.bn.AssetNetwork;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
-public interface IAssetNetAlgorithm extends IInferenceAlgorithm{
+/**
+ * Common interface for the algorithms related to assets
+ * @author Shou Matsumoto
+ *
+ */
+public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 
 	/**
 	 * Delegates to {@link IInferenceAlgorithm#getNetwork()} from the algorithm
@@ -49,6 +59,16 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm{
 			throws InvalidParentException;
 	
 	/**
+	 * Run only the min propagation algorithm, which will propagate the minimum q values between the q-tables.
+	 */
+	public void runMinPropagation();
+	
+	/**
+	 * Reverts the change of {@link #runMinPropagation()}
+	 */
+	public void undoMinPropagation();
+	
+	/**
 	 * If set to true, min-propagation junction tree algorithm will be called. False otherwise.
 	 * @return the isToPropagateForGlobalConsistency
 	 */
@@ -59,5 +79,47 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm{
 	 * @param isToPropagateForGlobalConsistency the isToPropagateForGlobalConsistency to set
 	 */
 	public void setToPropagateForGlobalConsistency(boolean isToPropagateForGlobalConsistency);
+	
+
+	/**
+	 * If set to false, the q-values of separators will not be updated.
+	 * @return the isToPropagateForGlobalConsistency
+	 */
+	public boolean isToUpdateSeparators();
+
+	/**
+	 * 
+	 * If set to false, the q-values of separators will not be updated.
+	 * @param isToPropagateForGlobalConsistency the isToPropagateForGlobalConsistency to set
+	 */
+	public void setToUpdateSeparators(boolean isToPropagateForGlobalConsistency);
+	
+	/**
+	 * This method forces the algorithm to store the current probabilities of the {@link #getRelatedProbabilisticNetwork()},
+	 * so that it can be used posteriorly by {@link #propagate()} in order to to calculate the ratio of the change of probability 
+	 * between the current (probability when {@link #propagate()} was called) one and the last (probability when this method was called) one.
+	 * Those values are stored in the network property {@link #LAST_PROBABILITY_PROPERTY} of {@link #getNetwork()}, which is retrievable from {@link Graph#getProperty(String)}.
+	 */
+	public void updateProbabilityPriorToPropagation();
+	
+	/**
+	 * @return the defaultInitialAssetQuantity : values assumed by the cells of q-tables when algorithm starts.
+	 */
+	public float getDefaultInitialAssetQuantity();
+	
+	/**
+	 * @param defaultInitialAssetQuantity : values assumed by the cells of q-tables when algorithm starts.
+	 */
+	public void setDefaultInitialAssetQuantity(float defaultInitialAssetQuantity);
+	
+	/**
+	 * @return the value of explanation (i.e. min-q value).
+	 * @param inputOutpuArgumentForExplanation : this is an input and output argument which will be filled with the states corresponding to the returned value (i.e. this is the min-q states).
+	 * This collection of maps indicates nodes and indexes of most probable states. The state can be retrieved by calling {@link INode#getStateAt(int)}
+	 * Since the explanation may not be unique (there may be several equivalent explanations), the returned value
+	 * is a set.
+	 * @see IExplanationJunctionTree#calculateExplanation(Graph, IInferenceAlgorithm)
+	 */
+	public float calculateExplanation( List<Map<INode, Integer>> inputOutpuArgumentForExplanation);
 
 }

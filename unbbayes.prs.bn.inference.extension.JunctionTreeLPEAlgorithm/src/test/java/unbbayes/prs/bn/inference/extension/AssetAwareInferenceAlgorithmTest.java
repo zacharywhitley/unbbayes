@@ -7,13 +7,13 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import junit.framework.TestCase;
 import unbbayes.io.NetIO;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
-import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
@@ -30,10 +30,10 @@ import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
 public class AssetAwareInferenceAlgorithmTest extends TestCase {
 	
 	/** If two probability values are within an interval of + or - this value, then it is considered to be equalÅ@*/
-	private static final float PROB_PRECISION_ERROR = 0.005f;
+	private static final float PROB_PRECISION_ERROR = 0.0005f;
 
 	/** If two asset q values are within an interval of + or - this value, then it is considered to be equalÅ@*/
-	private static final float ASSET_PRECISION_ERROR = 0.5f;
+	private static final float ASSET_PRECISION_ERROR = 0.05f;
 
 	/**
 	 * @param name
@@ -176,7 +176,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.65 0.35]   [0.2 0.8]	<br/>
 	 *	<br/>	
-	 *	AmyÅfs min-q is 14.54545454546, at the following unique min-states (found by min-asset-propagation):	<br/> 
+	 *	JoeÅfs min-q is 14.54545454546, at the following unique min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     2     1    1	<br/>
 	 *	<br/>	
@@ -270,7 +270,8 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		AssetAwareInferenceAlgorithm assetQAlgorithm = (AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm);
 		assertNotNull(assetQAlgorithm);
 		
-		assetQAlgorithm.setToPropagateForGlobalConsistency(true);
+//		assetQAlgorithm.setToPropagateForGlobalConsistency(false);
+//		assetQAlgorithm.setToUpdateSeparators(false);
 		
 		// set the default asset q quantity of all clique cells to 100
 		assetQAlgorithm.setDefaultInitialAssetQuantity(100);
@@ -346,6 +347,12 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(((0.5f - PROB_PRECISION_ERROR) < potential.getValue(0)) && (potential.getValue(0) < (0.5f + PROB_PRECISION_ERROR)) );
 		assertTrue(((0.5f - PROB_PRECISION_ERROR) < potential.getValue(1)) && (potential.getValue(1) < (0.5f + PROB_PRECISION_ERROR)) );
 		
+		// edit interval of P(E=e1) should be [0.005, 0.995]
+		float editInterval[] = assetQAlgorithm.calculateIntervalOfAllowedEdit(potential, 0);
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.length);
+		assertTrue("Lower: " + editInterval[0], ((0.005f - PROB_PRECISION_ERROR) < editInterval[0]) && (editInterval[0] < (0.005f + PROB_PRECISION_ERROR)) );
+		assertTrue("Upper: " + editInterval[1], ((0.995f - PROB_PRECISION_ERROR) < editInterval[1]) && (editInterval[1] < (0.995f + PROB_PRECISION_ERROR)) );
 		
 		// set P(E=e1) = 0.55 and P(E=e2) = 0.45 (we are changing only the cells we want)
 		potential.setValue(0, 0.55f);
@@ -384,16 +391,31 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(((0.5f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.5f + PROB_PRECISION_ERROR)) );
 		assertTrue(((0.5f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.5f + PROB_PRECISION_ERROR)) );
 		
+		// check that LPE contains e2 and any values for D and F
+		
+		// prepare argument, which is input and output at the same moment
+		List<Map<INode, Integer>> inOutArgLPE = new ArrayList<Map<INode,Integer>>();
+		float minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		
+		Map<INode, Integer> lpes = inOutArgLPE.get(0);
+		assertNotNull(lpes);
+		assertTrue(lpes.size() == 3);
+		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("E")).intValue());	// index 1 has state e2
+		
 		// check that min-q is 90
-		float minQ = Float.MAX_VALUE;	
-		for (Clique qClique : assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
-			for (int i = 0; i < qClique.getProbabilityFunction().tableSize(); i++) {
-				if (qClique.getProbabilityFunction().getValue(i) < minQ) {
-					minQ = qClique.getProbabilityFunction().getValue(i);
-				}
-			}
-		}
+//		float minQ = Float.MAX_VALUE;	
+//		for (Clique qClique : assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
+//			for (int i = 0; i < qClique.getProbabilityFunction().tableSize(); i++) {
+//				if (qClique.getProbabilityFunction().getValue(i) < minQ) {
+//					minQ = qClique.getProbabilityFunction().getValue(i);
+//				}
+//			}
+//		}
 		assertTrue("Obtained min q = " + minQ,((90f - ASSET_PRECISION_ERROR) < minQ) && (minQ < (90f + ASSET_PRECISION_ERROR)) );
+		
+		
+		// undo only the min propagation (we do not need the min q values anymore, and next q-calculations must use q values prior to min propagation)
+		assetQAlgorithm.undoMinPropagation();
 		
 		// Tom bets P(E=e1|D=d1) = .55 -> .9
 		
@@ -417,6 +439,16 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(((0.45f - PROB_PRECISION_ERROR) < potential.getValue(1)) && (potential.getValue(1) < (0.45f + PROB_PRECISION_ERROR)) );
 		assertTrue(((0.55f - PROB_PRECISION_ERROR) < potential.getValue(2)) && (potential.getValue(2) < (0.55f + PROB_PRECISION_ERROR)) );
 		assertTrue(((0.45f - PROB_PRECISION_ERROR) < potential.getValue(3)) && (potential.getValue(3) < (0.45f + PROB_PRECISION_ERROR)) );
+		
+		
+		// edit interval of P(E=e1|D=d1) should be [0.005, 0.995]
+		editInterval = assetQAlgorithm.calculateIntervalOfAllowedEdit(potential, 0);	// 0 is the index of e1,d1
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.length);
+		assertTrue("Lower: " + editInterval[0], ((0.005f - PROB_PRECISION_ERROR) < editInterval[0]) && (editInterval[0] < (0.005f + PROB_PRECISION_ERROR)) );
+		assertTrue("Upper: " + editInterval[1], ((0.995f - PROB_PRECISION_ERROR) < editInterval[1]) && (editInterval[1] < (0.995f + PROB_PRECISION_ERROR)) );
+		
+		
 		
 		// set P(E=e1|D=d1) = 0.9 and P(E=e2|D=d1) = 0.1 (i.e. we are changing only the cells we want)
 		potential.setValue(0, 0.9f);
@@ -452,16 +484,32 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(((0.5f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.5f + PROB_PRECISION_ERROR)) );
 		assertTrue(((0.5f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.5f + PROB_PRECISION_ERROR)) );
 		
+		
+		// check that LPE contains d1, e2 and any value F
+		
+		// prepare argument, which is input and output at the same moment
+		inOutArgLPE.clear();
+		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		
+		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
+		assertNotNull(lpes);
+		assertTrue(lpes.size() == 3);
+		assertEquals(0, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("D")).intValue());	// index 0 has state d1
+		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("E")).intValue());	// index 1 has state e2
+		
 		// check that min-q is 20
-		minQ = Float.MAX_VALUE;	
-		for (Clique qClique : assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
-			for (int i = 0; i < qClique.getProbabilityFunction().tableSize(); i++) {
-				if (qClique.getProbabilityFunction().getValue(i) < minQ) {
-					minQ = qClique.getProbabilityFunction().getValue(i);
-				}
-			}
-		}
+//		minQ = Float.MAX_VALUE;	
+//		for (Clique qClique : assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
+//			for (int i = 0; i < qClique.getProbabilityFunction().tableSize(); i++) {
+//				if (qClique.getProbabilityFunction().getValue(i) < minQ) {
+//					minQ = qClique.getProbabilityFunction().getValue(i);
+//				}
+//			}
+//		}
 		assertTrue("Obtained min q = " + minQ,((20f - ASSET_PRECISION_ERROR) < minQ) && (minQ < (20f + ASSET_PRECISION_ERROR)) );
+
+		// undo only the min propagation (we do not need the min q values anymore, and next q-calculations must use q values prior to min propagation)
+		assetQAlgorithm.undoMinPropagation();
 		
 		// create new user Joe
 		AssetNetwork assetNetJoe = null;
@@ -498,6 +546,15 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(((0.55f - PROB_PRECISION_ERROR) < potential.getValue(2)) && (potential.getValue(2) < (0.55f + PROB_PRECISION_ERROR)) );
 		assertTrue(((0.45f - PROB_PRECISION_ERROR) < potential.getValue(3)) && (potential.getValue(3) < (0.45f + PROB_PRECISION_ERROR)) );
 		
+
+		// edit interval of P(E=e1|D=d2) should be [0.0055, 0.9955]
+		editInterval = assetQAlgorithm.calculateIntervalOfAllowedEdit(potential, 2);	// 2 is the index of e1,d2
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.length);
+		assertTrue("Lower: " + editInterval[0], ((0.0055f - PROB_PRECISION_ERROR) < editInterval[0]) && (editInterval[0] < (0.0055f + PROB_PRECISION_ERROR)) );
+		assertTrue("Upper: " + editInterval[1], ((0.9955f - PROB_PRECISION_ERROR) < editInterval[1]) && (editInterval[1] < (0.9955f + PROB_PRECISION_ERROR)) );
+		
+		
 		// set P(E=e1|D=d2) = 0.4 and P(E=e2|D=d2) = 0.6 (i.e. we are changing only the cells we want)
 		potential.setValue(2, 0.4f);
 		potential.setValue(3, 0.6f);
@@ -512,6 +569,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		betNode.addLikeliHood(likelihood, betConditions);
 		
 		try {
+//			assetQAlgorithm.setToPropagateForGlobalConsistency(true);
 			// propagate soft evidence
 			assetQAlgorithm.propagate();
 			System.out.println(network.getLog());
@@ -532,17 +590,33 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(((0.5f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.5f + PROB_PRECISION_ERROR)) );
 		assertTrue(((0.5f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.5f + PROB_PRECISION_ERROR)) );
 		
-		// check that min-q is 72.727272...
-		minQ = Float.MAX_VALUE;	
-		for (Clique qClique : assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
-			for (int i = 0; i < qClique.getProbabilityFunction().tableSize(); i++) {
-				if (qClique.getProbabilityFunction().getValue(i) < minQ) {
-					minQ = qClique.getProbabilityFunction().getValue(i);
-				}
-			}
-		}
-		assertTrue("Obtained min q = " + minQ,((72.727272727f - ASSET_PRECISION_ERROR) < minQ) && (minQ < (72.727272727f + ASSET_PRECISION_ERROR)) );
 		
+
+		// check that LPE contains d2, e1 and any value F
+
+		// prepare argument, which is input and output at the same moment
+		inOutArgLPE.clear();
+		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		
+		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
+		assertNotNull(lpes);
+		assertTrue(lpes.size() == 3);
+		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("D")).intValue());	
+		assertEquals(0, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("E")).intValue());
+		
+		// check that min-q is 72.727272...
+//		minQ = Float.MAX_VALUE;	
+//		for (Clique qClique : assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
+//			for (int i = 0; i < qClique.getProbabilityFunction().tableSize(); i++) {
+//				if (qClique.getProbabilityFunction().getValue(i) < minQ) {
+//					minQ = qClique.getProbabilityFunction().getValue(i);
+//				}
+//			}
+//		}
+		assertTrue("Obtained min q = " + minQ,((72.727272727f - ASSET_PRECISION_ERROR) < minQ) && (minQ < (72.727272727f + ASSET_PRECISION_ERROR)) );
+
+		// undo only the min propagation (we do not need the min q values anymore, and next q-calculations must use q values prior to min propagation)
+		assetQAlgorithm.undoMinPropagation();
 		
 		// create new user Amy
 		AssetNetwork assetNetAmy = null;
@@ -580,6 +654,15 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(((0.5f - PROB_PRECISION_ERROR) < potential.getValue(2)) && (potential.getValue(2) < (0.5f + PROB_PRECISION_ERROR)) );
 		assertTrue(((0.5f - PROB_PRECISION_ERROR) < potential.getValue(3)) && (potential.getValue(3) < (0.5f + PROB_PRECISION_ERROR)) );
 		
+
+		// edit interval of P(F=f1|D=d1) should be [0.005, 0.995]
+		editInterval = assetQAlgorithm.calculateIntervalOfAllowedEdit(potential, 0);	// 0 is the index of f1,d1
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.length);
+		assertTrue("Lower: " + editInterval[0], ((0.005f - PROB_PRECISION_ERROR) < editInterval[0]) && (editInterval[0] < (0.005f + PROB_PRECISION_ERROR)) );
+		assertTrue("Upper: " + editInterval[1], ((0.995f - PROB_PRECISION_ERROR) < editInterval[1]) && (editInterval[1] < (0.995f + PROB_PRECISION_ERROR)) );
+		
+		
 		// set P(F=f1|D=d1) = 0.3 and P(F=f2|D=d1) = 0.7 (i.e. we are changing only the cells we want)
 		potential.setValue(0, 0.3f);
 		potential.setValue(1, 0.7f);
@@ -614,16 +697,33 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(((0.4f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.4f + PROB_PRECISION_ERROR)) );
 		assertTrue(((0.6f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.6f + PROB_PRECISION_ERROR)) );
 		
+		
+
+		// check that LPE contains d1, f1 and any value E
+
+		// prepare argument, which is input and output at the same moment
+		inOutArgLPE.clear();
+		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		
+		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
+		assertNotNull(lpes);
+		assertTrue(lpes.size() == 3);
+		assertEquals(0, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("D")).intValue());	
+		assertEquals(0, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("F")).intValue());
+		
 		// check that min-q is 60...
-		minQ = Float.MAX_VALUE;	
-		for (Clique qClique : assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
-			for (int i = 0; i < qClique.getProbabilityFunction().tableSize(); i++) {
-				if (qClique.getProbabilityFunction().getValue(i) < minQ) {
-					minQ = qClique.getProbabilityFunction().getValue(i);
-				}
-			}
-		}
+//		minQ = Float.MAX_VALUE;	
+//		for (Clique qClique : assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
+//			for (int i = 0; i < qClique.getProbabilityFunction().tableSize(); i++) {
+//				if (qClique.getProbabilityFunction().getValue(i) < minQ) {
+//					minQ = qClique.getProbabilityFunction().getValue(i);
+//				}
+//			}
+//		}
 		assertTrue("Obtained min q = " + minQ,((60f - ASSET_PRECISION_ERROR) < minQ) && (minQ < (60f + ASSET_PRECISION_ERROR)) );
+
+		// undo only the min propagation (we do not need the min q values anymore, and next q-calculations must use q values prior to min propagation)
+		assetQAlgorithm.undoMinPropagation();
 		
 		
 		// set Joe as the current network user
@@ -650,6 +750,15 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(((0.5f - PROB_PRECISION_ERROR) < potential.getValue(2)) && (potential.getValue(2) < (0.5f + PROB_PRECISION_ERROR)) );
 		assertTrue(((0.5f - PROB_PRECISION_ERROR) < potential.getValue(3)) && (potential.getValue(3) < (0.5f + PROB_PRECISION_ERROR)) );
 		
+
+		// edit interval of P(F=f1|D=d2) should be [0.006875, 0.993125]
+		editInterval = assetQAlgorithm.calculateIntervalOfAllowedEdit(potential, 2);	// 2 is the index of f1,d2
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.length);
+		assertTrue("Lower: " + editInterval[0], ((0.006875f - PROB_PRECISION_ERROR) < editInterval[0]) && (editInterval[0] < (0.006875f + PROB_PRECISION_ERROR)) );
+		assertTrue("Upper: " + editInterval[1], ((0.993125f - PROB_PRECISION_ERROR) < editInterval[1]) && (editInterval[1] < (0.993125f + PROB_PRECISION_ERROR)) );
+		
+		
 		// set P(F=f1|D=d2) = 0.1 and P(F=f2|D=d2) = 0.9 (i.e. we are changing only the cells we want)
 		potential.setValue(2, 0.1f);
 		potential.setValue(3, 0.9f);
@@ -664,6 +773,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		betNode.addLikeliHood(likelihood, betConditions);
 		
 		try {
+//			assetQAlgorithm.setToPropagateForGlobalConsistency(false);
 			// propagate soft evidence
 			assetQAlgorithm.propagate();
 			System.out.println(network.getLog());
@@ -684,16 +794,34 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(((0.2f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.2f + PROB_PRECISION_ERROR)) );
 		assertTrue(((0.8f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.8f + PROB_PRECISION_ERROR)) );
 		
+		
+
+		// check that LPE contains d2, e1, f1
+
+		// prepare argument, which is input and output at the same moment
+		inOutArgLPE.clear();
+		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		
+		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
+		assertNotNull(lpes);
+		assertTrue(lpes.size() == 3);
+		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("D")).intValue());
+		assertEquals(0, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("E")).intValue());	
+		assertEquals(0, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("F")).intValue());
+		
 		// check that min-q is 14.5454545...
-		minQ = Float.MAX_VALUE;	
-		for (Clique qClique : assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
-			for (int i = 0; i < qClique.getProbabilityFunction().tableSize(); i++) {
-				if (qClique.getProbabilityFunction().getValue(i) < minQ) {
-					minQ = qClique.getProbabilityFunction().getValue(i);
-				}
-			}
-		}
+//		minQ = Float.MAX_VALUE;	
+//		for (Clique qClique : assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
+//			for (int i = 0; i < qClique.getProbabilityFunction().tableSize(); i++) {
+//				if (qClique.getProbabilityFunction().getValue(i) < minQ) {
+//					minQ = qClique.getProbabilityFunction().getValue(i);
+//				}
+//			}
+//		} 
 		assertTrue("Obtained min q = " + minQ,((14.5454545f - ASSET_PRECISION_ERROR) < minQ) && (minQ < (14.5454545f + ASSET_PRECISION_ERROR)) );
+
+		// undo only the min propagation (we do not need the min q values anymore, and next q-calculations must use q values prior to min propagation)
+		assetQAlgorithm.undoMinPropagation();
 		
 		
 		// create new user Eric
@@ -730,6 +858,15 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(((0.65f - PROB_PRECISION_ERROR) < potential.getValue(0)) && (potential.getValue(0) < (0.65f + PROB_PRECISION_ERROR)) );
 		assertTrue(((0.35f - PROB_PRECISION_ERROR) < potential.getValue(1)) && (potential.getValue(1) < (0.35f + PROB_PRECISION_ERROR)) );
 		
+
+		// edit interval of P(E=e1) should be [0.0065, 0.9965]
+		editInterval = assetQAlgorithm.calculateIntervalOfAllowedEdit(potential, 0);	// 0 is the index of e1
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.length);
+		assertTrue("Lower: " + editInterval[0], ((0.0065 - PROB_PRECISION_ERROR) < editInterval[0]) && (editInterval[0] < (0.0065 + PROB_PRECISION_ERROR)) );
+		assertTrue("Upper: " + editInterval[1], ((0.9965 - PROB_PRECISION_ERROR) < editInterval[1]) && (editInterval[1] < (0.9965 + PROB_PRECISION_ERROR)) );
+		
+		
 		// set P(E=e1) = 0.8 and P(E=e2) = 0.2 (i.e. we are changing only the cells we want)
 		potential.setValue(0, 0.8f);
 		potential.setValue(1, 0.2f);
@@ -764,17 +901,35 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(((0.2165f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.2165f + PROB_PRECISION_ERROR)) );
 		assertTrue(((0.7835f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.7835f + PROB_PRECISION_ERROR)) );
 		
-		// check that min-q is 57.142857...
-		minQ = Float.MAX_VALUE;	
-		for (Clique qClique : assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
-			for (int i = 0; i < qClique.getProbabilityFunction().tableSize(); i++) {
-				if (qClique.getProbabilityFunction().getValue(i) < minQ) {
-					minQ = qClique.getProbabilityFunction().getValue(i);
-				}
-			}
-		}
-		assertTrue("Obtained min q = " + minQ,((57.142857f - ASSET_PRECISION_ERROR) < minQ) && (minQ < (57.142857f + ASSET_PRECISION_ERROR)) );
 		
+
+		// check that LPE contains e2 and any D or F
+
+
+		// prepare argument, which is input and output at the same moment
+		inOutArgLPE.clear();
+		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		
+		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
+		assertNotNull(lpes);
+		assertTrue(lpes.size() == 3);
+		// TODO the test case indicates that d1 is not LPE... Check if it is true.
+//		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("D")).intValue());	
+		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("E")).intValue());
+		
+		// check that min-q is 57.142857...
+//		minQ = Float.MAX_VALUE;	
+//		for (Clique qClique : assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
+//			for (int i = 0; i < qClique.getProbabilityFunction().tableSize(); i++) {
+//				if (qClique.getProbabilityFunction().getValue(i) < minQ) {
+//					minQ = qClique.getProbabilityFunction().getValue(i);
+//				}
+//			}
+//		}
+		assertTrue("Obtained min q = " + minQ,((57.142857f - ASSET_PRECISION_ERROR) < minQ) && (minQ < (57.142857f + ASSET_PRECISION_ERROR)) );
+
+		// undo only the min propagation (we do not need the min q values anymore, and next q-calculations must use q values prior to min propagation)
+		assetQAlgorithm.undoMinPropagation();
 		
 		
 		// Eric bets  P(D=d1|F=f2) = 0.52 -> 0.7
@@ -797,6 +952,15 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		// check whether probability prior to edit is really [d1f2, d2f2] = [.52, .48]
 		assertTrue(((0.52f - PROB_PRECISION_ERROR) < potential.getValue(2)) && (potential.getValue(2) < (0.52f + PROB_PRECISION_ERROR)) );
 		assertTrue(((0.48f - PROB_PRECISION_ERROR) < potential.getValue(3)) && (potential.getValue(3) < (0.48f + PROB_PRECISION_ERROR)) );
+		
+
+		// edit interval of P(D=d1|F=f2) should be [0.0091059, 0.9916058]
+		editInterval = assetQAlgorithm.calculateIntervalOfAllowedEdit(potential, 2);	// 2 is the index of d1 f2
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.length);
+		assertTrue("Lower: " + editInterval[0], ((0.0091059 - PROB_PRECISION_ERROR) < editInterval[0]) && (editInterval[0] < (0.0091059 + PROB_PRECISION_ERROR)) );
+		assertTrue("Upper: " + editInterval[1], ((0.9916058 - PROB_PRECISION_ERROR) < editInterval[1]) && (editInterval[1] < (0.9916058 + PROB_PRECISION_ERROR)) );
+		
 		
 		// set P(D=d1|F=f2) = 0.7 and P(D=d2|F=f2) = 0.3 (i.e. we are changing only the cells we want)
 		potential.setValue(2, 0.7f);
@@ -832,16 +996,34 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(((0.2165f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.2165f + PROB_PRECISION_ERROR)) );
 		assertTrue(((0.7835f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.7835f + PROB_PRECISION_ERROR)) );
 		
+		
+		// check that LPE is d2, e2 and f2
+
+		// prepare argument, which is input and output at the same moment
+		inOutArgLPE.clear();
+		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		
+		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
+		assertNotNull(lpes);
+		assertTrue(lpes.size() == 3);
+		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("D")).intValue());	
+		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("E")).intValue());	
+		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("F")).intValue());	
+		
 		// check that min-q is 35.7393...
-		minQ = Float.MAX_VALUE;	
-		for (Clique qClique : assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
-			for (int i = 0; i < qClique.getProbabilityFunction().tableSize(); i++) {
-				if (qClique.getProbabilityFunction().getValue(i) < minQ) {
-					minQ = qClique.getProbabilityFunction().getValue(i);
-				}
-			}
-		}
+//		minQ = Float.MAX_VALUE;	
+//		for (Clique qClique : assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
+//			for (int i = 0; i < qClique.getProbabilityFunction().tableSize(); i++) {
+//				if (qClique.getProbabilityFunction().getValue(i) < minQ) {
+//					minQ = qClique.getProbabilityFunction().getValue(i);
+//				}
+//			}
+//		}
 		assertTrue("Obtained min q = " + minQ,(( 35.7393f - ASSET_PRECISION_ERROR) < minQ) && (minQ < ( 35.7393f + ASSET_PRECISION_ERROR)) );
+
+		// undo only the min propagation (we do not need the min q values anymore, and next q-calculations must use q values prior to min propagation)
+		assetQAlgorithm.undoMinPropagation();
+		
 		
 		
 	}

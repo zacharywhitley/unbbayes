@@ -14,7 +14,6 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.util.Debug;
-import unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel;
 
 /**
  * @author Shou Matsumoto
@@ -139,7 +138,7 @@ public class JunctionTreeLPEAlgorithm extends JunctionTreeMPEAlgorithm {
 				if (singleEntityNetwork.getJunctionTree() instanceof IExplanationJunctionTree) {
 					jt = (IExplanationJunctionTree) singleEntityNetwork.getJunctionTree();
 				}
-				Map<INode, Integer> explanation = jt.calculateExplanation(singleEntityNetwork, this);
+				Map<INode, Integer> explanation = jt.calculateExplanation(singleEntityNetwork, this).iterator().next();
 				
 				if (!isToCalculateRelativeProb) {
 					// Reset evidence in order to allow changes in node which already had a different evidence set

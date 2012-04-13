@@ -6,6 +6,7 @@ package unbbayes.prs.bn.inference.extension;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import unbbayes.prs.Graph;
@@ -155,9 +156,12 @@ public class MaxProductJunctionTree extends JunctionTree implements IPropagation
 	 * (non-Javadoc)
 	 * @see unbbayes.prs.bn.inference.extension.IExplanationJunctionTree#calculateExplanation(unbbayes.prs.Graph, unbbayes.util.extension.bn.inference.IInferenceAlgorithm)
 	 */
-	public Map<INode, Integer> calculateExplanation(Graph graph,
+	public List<Map<INode, Integer>> calculateExplanation(Graph graph,
 			IInferenceAlgorithm algorithm) {
-		Map<INode, Integer> ret = new HashMap<INode, Integer>();
+		// TODO return more than 1 MPE
+		System.err.println("Current version returns only 1 MPE");
+		Map<INode, Integer> stateMap = new HashMap<INode, Integer>();
+		Map<INode, Float> valueMap = new HashMap<INode, Float>();
 		for (Clique clique : this.getCliques()) {
 			PotentialTable table = clique.getProbabilityFunction();
 			if (table.tableSize() <= 0) {
@@ -165,9 +169,11 @@ public class MaxProductJunctionTree extends JunctionTree implements IPropagation
 			}
 			// find index of the maximum value in clique
 			int indexOfMaximumInClique = 0;
+			float valueOfMaximumInClique = Float.NaN;
 			for (int i = 1; i < table.tableSize(); i++) {
 				if (this.getTableExplanationComparator().compare(table.getValue(i), table.getValue(indexOfMaximumInClique)) > 0) {
 					indexOfMaximumInClique = i;
+					valueOfMaximumInClique = table.getValue(i);
 				}
 			}
 			// the indexes of the states can be obtained from the index of the linearized table by doing the following operation:
@@ -197,15 +203,23 @@ public class MaxProductJunctionTree extends JunctionTree implements IPropagation
 				int indexOfMPEOfNthNode = (indexOfMaximumInClique / prodNumberOfStatesPrevNodes) % numberOfStates;
 //				String state = node.getStateAt(indexOfMPEOfNthNode);
 				// add to states if it was not already added
-				if (!ret.containsKey(node)) {
+				if (!stateMap.containsKey(node)) {
 					// this is the first time we add this entry. Add it
-					ret.put(node, indexOfMPEOfNthNode);
+					stateMap.put(node, indexOfMPEOfNthNode);
+					valueMap.put(node, valueOfMaximumInClique);
 				} else {
-					// check consistency (max state must be unique between cliques)
-					if (!ret.get(node).equals(indexOfMPEOfNthNode)) {
+					// check consistency (max state should be unique between cliques)
+					if (!stateMap.get(node).equals(indexOfMPEOfNthNode)) {
+						if (this.getTableExplanationComparator().compare(valueMap.get(node), valueOfMaximumInClique) < 0) {
+							// new value is greater. Update
+							stateMap.put(node, indexOfMPEOfNthNode);
+							valueMap.put(node, valueOfMaximumInClique);
+						}
+//						throw new IllegalStateException( "Obtained states differ between cliques (clique inconsistency)... The current clique is: " 
+//								+ clique + "; previous state: " + stateMap.get(node) + "; index of state found in current clique: " + indexOfMPEOfNthNode);
 						try {
 							Debug.println(getClass(), "Obtained states differ between cliques (clique inconsistency)... The current clique is: " 
-									+ clique + "; previous state: " + ret.get(node) + "; index of state found in current clique: " + indexOfMPEOfNthNode);
+									+ clique + "; node is " + node + "; previous state: " + stateMap.get(node) + "; index of state found in current clique: " + indexOfMPEOfNthNode);
 						} catch (Throwable t) {
 							t.printStackTrace();
 						}
@@ -214,6 +228,9 @@ public class MaxProductJunctionTree extends JunctionTree implements IPropagation
 				prodNumberOfStatesPrevNodes *= numberOfStates;
 			}
 		}
+		
+		List<Map<INode, Integer>> ret = new ArrayList<Map<INode,Integer>>();
+		ret.add(stateMap);
 		return ret;
 	}
 
