@@ -370,17 +370,25 @@ public class Compiler implements ICompiler {
 //	}
 	
 	/**
-	 * Compiler's initialization.
-	 * Calling this method also resets cache used in {@link #generateLPD(SSBNNode)}.
-	 * @see unbbayes.prs.mebn.compiler.AbstractCompiler#init(java.lang.String)
-	 * @see #getNameToParentProbValuesCache()
+	 * This method just calls {@link #init(text, true)}.
+	 * @see #init(String, boolean)
 	 */
 	public void init(String text) {
-		// clear cache, because it is not the same script anymore
-		if (this.getNameToParentProbValuesCache() != null) {
-			this.getNameToParentProbValuesCache().clear();
+		this.init(text, true);
+	}
+	
+	/**
+	 * Compiler's initialization.
+	 * @param isToResetCache : if this parameter is true, 
+	 * this method also resets cache used in {@link #generateLPD(SSBNNode)}.
+	 * @see unbbayes.prs.mebn.compiler.AbstractCompiler#init(java.lang.String)
+	 * @see #getNameToParentProbValuesCache()
+	 * @see #clearCache()
+	 */
+	public void init(String text, boolean isToResetCache) {
+		if (isToResetCache) {
+			this.clearCache();
 		}
-		
 		this.originalTextLength = 0;
 		if (text == null) {
 			this.originalTextLength = 0;
@@ -429,8 +437,8 @@ public class Compiler implements ICompiler {
 		if (this.ssbnnode.getProbNode() != null) {
 			this.setPotentialTable(this.ssbnnode.getProbNode().getProbabilityFunction());			
 		}
-		
-		this.init(pseudocode);
+		// do not clar cache
+		this.init(pseudocode, false);
 	}
 
 	/* (non-Javadoc)
@@ -731,6 +739,7 @@ public class Compiler implements ICompiler {
 		this.ssbnnode = null;
 		this.text = null;
 		this.value = null;
+		this.clearCache();
 		System.gc();
 	}
 	
@@ -3536,6 +3545,21 @@ public class Compiler implements ICompiler {
 	public void setNameToParentProbValuesCache(
 			Map<String, Map<Collection<INode>, IProbabilityFunction>> nameToParentProbValuesCache) {
 		this.nameToParentProbValuesCache = nameToParentProbValuesCache;
+	}
+
+
+	/**
+	 * This method clears all pre-cached compiled values of this compiler. 
+	 * Use this method to guarantee that {@link #generateLPD(SSBNNode)} re-compiles
+	 * LPD script (e.g. when the LPD script has been changed).
+	 * It just removes the content of {@link #getNameToParentProbValuesCache()}.
+	 * @see unbbayes.prs.mebn.compiler.ICompiler#clearCache()
+	 */
+	public void clearCache() {
+		if (this.getNameToParentProbValuesCache() != null) {
+			this.getNameToParentProbValuesCache().clear();
+			System.gc();
+		}
 	}
 
 
