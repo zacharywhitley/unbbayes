@@ -61,8 +61,10 @@ public class BarrenNodePrunerTest extends TestCase {
 		 *            |
 		 *            v
 		 *           node7
+		 *           
+		 *    node8   finding2
 		 *     
-		 *    Nodes 4, 6 and 7 are to be pruned
+		 *    Nodes 4, 6, 7, 8 and finding2 are to be pruned
 		 */
 		
 		MultiEntityBayesianNetwork mebn = new MultiEntityBayesianNetwork("mebn");
@@ -148,7 +150,18 @@ public class BarrenNodePrunerTest extends TestCase {
 		this.ssbn.getFindingList().add(node);
 		this.nodesNotToPrune.add(node);
 
-	
+		// isolated nodes
+		
+		resident = new ResidentNode("node8",mfrag);
+		node = SimpleSSBNNode.getInstance(resident);
+		this.ssbn.addSSBNNode(node);
+		this.nodesToPrune.add(node);
+		
+		resident = new ResidentNode("finding2",mfrag);
+		node = SimpleSSBNNode.getInstance(resident);
+		this.ssbn.addSSBNNode(node);
+		this.ssbn.getFindingList().add(node);
+		this.nodesToPrune.add(node);
 	}
 
 	/* (non-Javadoc)

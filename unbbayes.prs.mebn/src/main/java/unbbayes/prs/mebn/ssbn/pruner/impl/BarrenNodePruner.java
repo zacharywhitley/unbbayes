@@ -5,7 +5,6 @@ package unbbayes.prs.mebn.ssbn.pruner.impl;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import unbbayes.prs.INode;
@@ -19,6 +18,7 @@ import unbbayes.util.dseparation.impl.MSeparationUtility;
  * @author Shou Matsumoto
  * Prunes a node using barren node concept.
  * A barren node is a node which has no query or finding node as its descendant.
+ * It also removes all isolated findings (findings that has no parents or children)
  */
 public class BarrenNodePruner implements IPruner {
 
@@ -43,8 +43,18 @@ public class BarrenNodePruner implements IPruner {
 	public void prune(SSBN ssbn) {
 		MSeparationUtility utility = MSeparationUtility.newInstance();
 		
-		// extract finding's ancestors and findings themselves
-		Set<INode> ancestors = new HashSet(ssbn.getFindingList());
+		// Set which will contain findings and their ancestors (parents and parents of parents and so on)
+		Set<INode> ancestors = new HashSet<INode>();
+		
+		// extract findings, but ignore "isolated" findings (findings with no parents or children)
+		for (INode finding : ssbn.getFindingList()) {
+			if (finding.getParentNodes().size() > 0
+					|| finding.getChildNodes().size() > 0) {
+				ancestors.add(finding);
+			}
+		}
+		
+		// add all ancestors of the findings
 		ancestors.addAll(utility.getAllAncestors(ancestors));
 
 		// extract queries' ancestors and queries themselves
