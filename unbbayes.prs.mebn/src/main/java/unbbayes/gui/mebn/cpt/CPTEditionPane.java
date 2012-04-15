@@ -689,7 +689,7 @@ public class CPTEditionPane extends JPanel{
 
 				public void actionPerformed(ActionEvent e) {
 					ICompiler compiler = getResidentNode().getCompiler();
-					
+					// use getResidentNode().setToLimitQuantityOfParentsInstances(true); to enable chain
 					try {
 						compiler.init(cptTextPane.getTableTxt());
 						compiler.parse(); 

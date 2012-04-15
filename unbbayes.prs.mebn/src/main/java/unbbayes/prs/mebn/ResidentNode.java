@@ -227,6 +227,9 @@ public class ResidentNode extends MultiEntityNode
 	 */
 	public void setTableFunction(String table){
 		tableFunction = table;
+		if (this.getCompiler() != null) {
+			this.getCompiler().init(tableFunction);
+		}
 	}
 	
     /* (non-Javadoc)

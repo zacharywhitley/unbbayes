@@ -77,7 +77,7 @@ public class SSBNNode implements INode {
 	private Map<MFrag, List<OVInstance>> argumentsForMFrag; 
 	
 	
-	private Collection<SSBNNode> parents = null;
+	private List<SSBNNode> parents = null;
 	private Collection<SSBNNode> children = null; 
 	
 	private Collection<Entity> actualValues = null; // this is the possible values of this node at that moment 
@@ -1068,7 +1068,7 @@ public class SSBNNode implements INode {
 	/**
 	 * @return the parents
 	 */
-	public Collection<SSBNNode> getParents() {
+	public List<SSBNNode> getParents() {
 		return parents;
 	}
 
@@ -1076,7 +1076,7 @@ public class SSBNNode implements INode {
 	 * This method sets a parent without checking structure consistency. Be careful when using this.
 	 * @param parents the parents to set
 	 */
-	public void setParents(Collection<SSBNNode> parents) {
+	public void setParents(List<SSBNNode> parents) {
 		this.parents = parents;
 	}
 

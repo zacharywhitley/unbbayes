@@ -22,12 +22,14 @@ package unbbayes.prs.mebn.compiler;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.TreeMap;
 
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
@@ -199,9 +201,25 @@ import unbbayes.util.Debug;
 
 public class Compiler implements ICompiler {
 	
+	private Comparator<List<INode>> cacheParentsComparator = new Comparator<List<INode>>() {
+		public int compare(List<INode> o1, List<INode> o2) {
+			if (o1.size() > o2.size()) {
+				return 1;
+			} else if (o1.size() < o2.size()) {
+				return -1;
+			} else {
+				for (int i = 0; i < o1.size(); i++) {
+					int compared = o1.get(i).getName().compareTo(o2.get(i).getName());
+					if (compared != 0) {
+						return compared;
+					}
+				}
+			}
+			return 0;
+		}
+	};
 
-
-	private Map<String, Map<Collection<INode>, IProbabilityFunction>> nameToParentProbValuesCache = new HashMap<String, Map<Collection<INode>, IProbabilityFunction>>();
+	private Map<String, Map<List<INode>, IProbabilityFunction>> nameToParentProbValuesCache = new HashMap<String, Map<List<INode>, IProbabilityFunction>>();
 
 	/**
      * SingletonHolder is loaded on the first execution of Singleton.getInstance() 
@@ -576,7 +594,13 @@ public class Compiler implements ICompiler {
 		// this iterators helps us combine parents' possible values
 		// e.g. (True,Alpha), (True,Beta), (False,Alpha), (False,Beta).
 		List<Iterator<Entity>> valueCombinationIterators = new ArrayList<Iterator<Entity>>();
+		// variable which stores nodes not belonging to chain generated when getResident().isToLimitQuantityOfParentsInstances() == true
+		// TODO guarantee that nodes in the chain contains the same states of the other (non-chain) node.
+//		SSBNNode nodeNotInChain = null;		
 		for (SSBNNode ssbnnode : parents) {
+//			if (nodeNotInChain == null && ssbnnode.getResident().isToLimitQuantityOfParentsInstances()) {
+//				nodeNotInChain = ssbnnode;
+//			}
 			valueCombinationIterators.add(ssbnnode.getActualValues().iterator());
 		}
 		
@@ -608,7 +632,6 @@ public class Compiler implements ICompiler {
 			// valueCombinationiterators are the same
 			for (int j = 0; j < parents.size(); j++) {
 				SSBNNode parentSSBNNode = parents.get(j);
-				EntityAndArguments val = new EntityAndArguments(currentIteratorValue.get(j),new ArrayList<OVInstance>(parentSSBNNode.getArguments()));
 				// val will be added to map using following key
 				String key = parentSSBNNode.getResident().getName();
 				if (parentSSBNNode.getResident().isToLimitQuantityOfParentsInstances()) {
@@ -627,6 +650,7 @@ public class Compiler implements ICompiler {
 						throw new IllegalStateException("Node " + getSSBNNode() + " has only 1 parent (" + parents.get(j) + "), but the parent has isToLimitQuantityOfParentsInstances() == true.");
 					}
 				}
+				EntityAndArguments val = new EntityAndArguments(currentIteratorValue.get(j),new ArrayList<OVInstance>(parentSSBNNode.getArguments()));
 				map.get(key).add(val);
 			}
 			
@@ -772,7 +796,7 @@ public class Compiler implements ICompiler {
 	 *  @see #putCPTToCache(SSBNNode, PotentialTable)
 	 */
 	public IProbabilityFunction generateLPD(SSBNNode ssbnnode) throws MEBNException {
-		System.gc();
+//		System.gc();
 		if (ssbnnode == null || ssbnnode.getProbNode() == null) {
 			return null;
 		}
@@ -821,16 +845,16 @@ public class Compiler implements ICompiler {
 		
 		// prepare to fill cache
 		if (this.getNameToParentProbValuesCache() == null) {
-			this.setNameToParentProbValuesCache(new HashMap<String, Map<Collection<INode>,IProbabilityFunction>>());
+			this.setNameToParentProbValuesCache(new HashMap<String, Map<List<INode>,IProbabilityFunction>>());
 		}
 		
-		Map<Collection<INode>, IProbabilityFunction> cache = this.getNameToParentProbValuesCache().get(ssbnnode.getProbNode().getName());
+		Map<List<INode>, IProbabilityFunction> cache = this.getNameToParentProbValuesCache().get(ssbnnode.getProbNode().getName());
 		if (cache == null) {
-			cache = new HashMap<Collection<INode>, IProbabilityFunction>();
+			cache = new TreeMap<List<INode>, IProbabilityFunction>(this.getCacheParentsComparator());
 			this.getNameToParentProbValuesCache().put(ssbnnode.getProbNode().getName(), cache);
 		}
 		// fill cache
-		cache.put((Collection)ssbnnode.getParents(), cpt);
+		cache.put(ssbnnode.getParentNodes(), cpt);
 	}
 
 	/**
@@ -845,16 +869,21 @@ public class Compiler implements ICompiler {
 	 */
 	protected IProbabilityFunction getCachedLPD(SSBNNode ssbnnode) {
 		try {
-			Map<Collection<INode>, IProbabilityFunction> cache = this.getNameToParentProbValuesCache().get(ssbnnode.getProbNode().getName());
+			Map<List<INode>, IProbabilityFunction> cache = this.getNameToParentProbValuesCache().get(ssbnnode.getProbNode().getName());
 			if (cache != null) {
-				for (Collection<INode> parents : cache.keySet()) {
-					if (parents.size() == ssbnnode.getParents().size() 
-							&& parents.containsAll(ssbnnode.getParents())){	// cache and current have the same parents
-						// cached value
-						IProbabilityFunction cachedLPD = cache.get(parents);
-						return cachedLPD;
-					}
+				// cached value
+				IProbabilityFunction cachedLPD = cache.get(ssbnnode.getParents());
+				if (cachedLPD != null) {
+					return cachedLPD;
 				}
+//				for (Collection<INode> parents : cache.keySet()) {
+//					if (parents.size() == ssbnnode.getParents().size() 
+//							&& parents.containsAll(ssbnnode.getParents())){	// cache and current have the same parents
+//						// cached value
+//						IProbabilityFunction cachedLPD = cache.get(parents);
+//						return cachedLPD;
+//					}
+//				}
 			}
 		} catch (Exception e) {
 			// do nothing
@@ -3533,7 +3562,7 @@ public class Compiler implements ICompiler {
 	 * This is a datastructure to store cache of CPTs used in {@link #generateLPD(SSBNNode)}
 	 * @return the nameToParentProbValuesCache
 	 */
-	public Map<String, Map<Collection<INode>, IProbabilityFunction>> getNameToParentProbValuesCache() {
+	public Map<String, Map<List<INode>, IProbabilityFunction>> getNameToParentProbValuesCache() {
 		return nameToParentProbValuesCache;
 	}
 
@@ -3543,7 +3572,7 @@ public class Compiler implements ICompiler {
 	 * @param nameToParentProbValuesCache the nameToParentProbValuesCache to set
 	 */
 	public void setNameToParentProbValuesCache(
-			Map<String, Map<Collection<INode>, IProbabilityFunction>> nameToParentProbValuesCache) {
+			Map<String, Map<List<INode>, IProbabilityFunction>> nameToParentProbValuesCache) {
 		this.nameToParentProbValuesCache = nameToParentProbValuesCache;
 	}
 
@@ -3558,8 +3587,28 @@ public class Compiler implements ICompiler {
 	public void clearCache() {
 		if (this.getNameToParentProbValuesCache() != null) {
 			this.getNameToParentProbValuesCache().clear();
-			System.gc();
+//			System.gc();
 		}
+	}
+
+
+	/**
+	 * Comparator used for {@link TreeMap}, which are the values in {@link #getNameToParentProbValuesCache()}
+	 * @return the cacheParentsComparator
+	 */
+	public Comparator<List<INode>> getCacheParentsComparator() {
+		return cacheParentsComparator;
+	}
+
+
+	/**
+	 * *
+	 * Comparator used for {@link TreeMap}, which are the values in {@link #getNameToParentProbValuesCache()}
+	 * @param cacheParentsComparator the cacheParentsComparator to set
+	 */
+	public void setCacheParentsComparator(
+			Comparator<List<INode>> cacheParentsComparator) {
+		this.cacheParentsComparator = cacheParentsComparator;
 	}
 
 
