@@ -1,0 +1,2300 @@
+net
+{
+     node_size = (0 0);
+     name = "DAGGRE.csv";
+     UnBBayes_Color_Probabilistic_Description = "-256";
+     UnBBayes_Color_Probabilistic_Explanation = "-16711936";
+}
+
+node 45
+{
+     label = "";
+     position = (611 659);
+     states = ("false" "true");
+}
+
+node 46
+{
+     label = "";
+     position = (239 810);
+     states = ("false" "true");
+}
+
+node 6
+{
+     label = "";
+     position = (367 704);
+     states = ("false" "true");
+}
+
+node 41
+{
+     label = "";
+     position = (110 675);
+     states = ("false" "true");
+}
+
+node 42
+{
+     label = "";
+     position = (1091 90);
+     states = ("false" "true");
+}
+
+node 1
+{
+     label = "";
+     position = (496 1007);
+     states = ("false" "true");
+}
+
+node 7
+{
+     label = "";
+     position = (394 1113);
+     states = ("false" "true");
+}
+
+node 62
+{
+     label = "";
+     position = (667 239);
+     states = ("false" "true");
+}
+
+node 55
+{
+     label = "";
+     position = (871 890);
+     states = ("false" "true");
+}
+
+node 47
+{
+     label = "";
+     position = (641 1107);
+     states = ("false" "true");
+}
+
+node 12
+{
+     label = "";
+     position = (314 838);
+     states = ("false" "true");
+}
+
+node 75
+{
+     label = "";
+     position = (562 698);
+     states = ("false" "true");
+}
+
+node 26
+{
+     label = "";
+     position = (574 341);
+     states = ("false" "true");
+}
+
+node 54
+{
+     label = "";
+     position = (818 947);
+     states = ("false" "true");
+}
+
+node 20
+{
+     label = "";
+     position = (1054 467);
+     states = ("false" "true");
+}
+
+node 23
+{
+     label = "";
+     position = (370 230);
+     states = ("false" "true");
+}
+
+node 13
+{
+     label = "";
+     position = (775 43);
+     states = ("false" "true");
+}
+
+node 2
+{
+     label = "";
+     position = (528 86);
+     states = ("false" "true");
+}
+
+node 64
+{
+     label = "";
+     position = (57 1119);
+     states = ("false" "true");
+}
+
+node 63
+{
+     label = "";
+     position = (702 624);
+     states = ("false" "true");
+}
+
+node 15
+{
+     label = "";
+     position = (871 37);
+     states = ("false" "true");
+}
+
+node 69
+{
+     label = "";
+     position = (424 646);
+     states = ("false" "true");
+}
+
+node 9
+{
+     label = "";
+     position = (1027 1078);
+     states = ("false" "true");
+}
+
+node 10
+{
+     label = "";
+     position = (950 931);
+     states = ("false" "true");
+}
+
+node 11
+{
+     label = "";
+     position = (234 457);
+     states = ("false" "true");
+}
+
+node 77
+{
+     label = "";
+     position = (657 205);
+     states = ("false" "true");
+}
+
+node 25
+{
+     label = "";
+     position = (683 886);
+     states = ("false" "true");
+}
+
+node 61
+{
+     label = "";
+     position = (465 575);
+     states = ("false" "true");
+}
+
+node 19
+{
+     label = "";
+     position = (694 826);
+     states = ("false" "true");
+}
+
+node 32
+{
+     label = "";
+     position = (251 1078);
+     states = ("false" "true");
+}
+
+node 56
+{
+     label = "";
+     position = (263 1076);
+     states = ("false" "true");
+}
+
+node 44
+{
+     label = "";
+     position = (1122 1032);
+     states = ("false" "true");
+}
+
+node 66
+{
+     label = "";
+     position = (279 727);
+     states = ("false" "true");
+}
+
+node 58
+{
+     label = "";
+     position = (1047 339);
+     states = ("false" "true");
+}
+
+node 65
+{
+     label = "";
+     position = (551 536);
+     states = ("false" "true");
+}
+
+node 72
+{
+     label = "";
+     position = (748 154);
+     states = ("false" "true");
+}
+
+node 73
+{
+     label = "";
+     position = (394 1057);
+     states = ("false" "true");
+}
+
+node 4
+{
+     label = "";
+     position = (83 591);
+     states = ("false" "true");
+}
+
+node 28
+{
+     label = "";
+     position = (880 94);
+     states = ("false" "true");
+}
+
+node 24
+{
+     label = "";
+     position = (1082 1020);
+     states = ("false" "true");
+}
+
+node 71
+{
+     label = "";
+     position = (868 96);
+     states = ("false" "true");
+}
+
+node 21
+{
+     label = "";
+     position = (475 523);
+     states = ("false" "true");
+}
+
+node 22
+{
+     label = "";
+     position = (278 319);
+     states = ("false" "true");
+}
+
+node 36
+{
+     label = "";
+     position = (114 121);
+     states = ("false" "true");
+}
+
+node 3
+{
+     label = "";
+     position = (302 541);
+     states = ("false" "true");
+}
+
+node 5
+{
+     label = "";
+     position = (690 238);
+     states = ("false" "true");
+}
+
+node 33
+{
+     label = "";
+     position = (470 932);
+     states = ("false" "true");
+}
+
+node 8
+{
+     label = "";
+     position = (898 261);
+     states = ("false" "true");
+}
+
+node 14
+{
+     label = "";
+     position = (200 318);
+     states = ("false" "true");
+}
+
+node 59
+{
+     label = "";
+     position = (198 891);
+     states = ("false" "true");
+}
+
+node 49
+{
+     label = "";
+     position = (938 732);
+     states = ("false" "true");
+}
+
+node 78
+{
+     label = "";
+     position = (610 983);
+     states = ("false" "true");
+}
+
+node 60
+{
+     label = "";
+     position = (925 1050);
+     states = ("false" "true");
+}
+
+node 40
+{
+     label = "";
+     position = (410 410);
+     states = ("false" "true");
+}
+
+node 70
+{
+     label = "";
+     position = (475 555);
+     states = ("false" "true");
+}
+
+node 31
+{
+     label = "";
+     position = (535 861);
+     states = ("false" "true");
+}
+
+node 27
+{
+     label = "";
+     position = (381 575);
+     states = ("false" "true");
+}
+
+node 30
+{
+     label = "";
+     position = (651 924);
+     states = ("false" "true");
+}
+
+node 68
+{
+     label = "";
+     position = (551 589);
+     states = ("false" "true");
+}
+
+node 16
+{
+     label = "";
+     position = (451 156);
+     states = ("false" "true");
+}
+
+node 17
+{
+     label = "";
+     position = (384 614);
+     states = ("false" "true");
+}
+
+node 34
+{
+     label = "";
+     position = (762 792);
+     states = ("false" "true");
+}
+
+node 48
+{
+     label = "";
+     position = (120 1149);
+     states = ("false" "true");
+}
+
+node 35
+{
+     label = "";
+     position = (297 429);
+     states = ("false" "true");
+}
+
+node 51
+{
+     label = "";
+     position = (921 63);
+     states = ("false" "true");
+}
+
+node 37
+{
+     label = "";
+     position = (760 649);
+     states = ("false" "true");
+}
+
+node 67
+{
+     label = "";
+     position = (162 524);
+     states = ("false" "true");
+}
+
+node 38
+{
+     label = "";
+     position = (1111 661);
+     states = ("false" "true");
+}
+
+node 57
+{
+     label = "";
+     position = (315 60);
+     states = ("false" "true");
+}
+
+node 18
+{
+     label = "";
+     position = (78 993);
+     states = ("false" "true");
+}
+
+node 76
+{
+     label = "";
+     position = (41 370);
+     states = ("false" "true");
+}
+
+node 52
+{
+     label = "";
+     position = (826 50);
+     states = ("false" "true");
+}
+
+node 29
+{
+     label = "";
+     position = (282 56);
+     states = ("false" "true");
+}
+
+node 53
+{
+     label = "";
+     position = (590 876);
+     states = ("false" "true");
+}
+
+node 74
+{
+     label = "";
+     position = (386 480);
+     states = ("false" "true");
+}
+
+node 39
+{
+     label = "";
+     position = (226 1013);
+     states = ("false" "true");
+}
+
+node 50
+{
+     label = "";
+     position = (504 458);
+     states = ("false" "true");
+}
+
+node 43
+{
+     label = "";
+     position = (283 191);
+     states = ("false" "true");
+}
+
+node 79
+{
+     label = "";
+     position = (133 314);
+     states = ("false" "true");
+}
+
+node 87
+{
+     label = "";
+     position = (746 862);
+     states = ("false" "true");
+}
+
+node 80
+{
+     label = "";
+     position = (925 828);
+     states = ("false" "true");
+}
+
+node 81
+{
+     label = "";
+     position = (1103 1127);
+     states = ("false" "true");
+}
+
+node 88
+{
+     label = "";
+     position = (564 736);
+     states = ("false" "true");
+}
+
+node 82
+{
+     label = "";
+     position = (887 190);
+     states = ("false" "true");
+}
+
+node 83
+{
+     label = "";
+     position = (296 38);
+     states = ("false" "true");
+}
+
+node 85
+{
+     label = "";
+     position = (950 1028);
+     states = ("false" "true");
+}
+
+node 89
+{
+     label = "";
+     position = (1115 1141);
+     states = ("false" "true");
+}
+
+node 84
+{
+     label = "";
+     position = (611 317);
+     states = ("false" "true");
+}
+
+node 86
+{
+     label = "";
+     position = (924 937);
+     states = ("false" "true");
+}
+
+node 104
+{
+     label = "";
+     position = (261 977);
+     states = ("false" "true");
+}
+
+node 102
+{
+     label = "";
+     position = (549 126);
+     states = ("false" "true");
+}
+
+node 90
+{
+     label = "";
+     position = (1016 805);
+     states = ("false" "true");
+}
+
+node 92
+{
+     label = "";
+     position = (684 230);
+     states = ("false" "true");
+}
+
+node 97
+{
+     label = "";
+     position = (322 534);
+     states = ("false" "true");
+}
+
+node 100
+{
+     label = "";
+     position = (347 88);
+     states = ("false" "true");
+}
+
+node 91
+{
+     label = "";
+     position = (208 750);
+     states = ("false" "true");
+}
+
+node 98
+{
+     label = "";
+     position = (382 901);
+     states = ("false" "true");
+}
+
+node 99
+{
+     label = "";
+     position = (884 237);
+     states = ("false" "true");
+}
+
+node 96
+{
+     label = "";
+     position = (1025 200);
+     states = ("false" "true");
+}
+
+node 93
+{
+     label = "";
+     position = (758 897);
+     states = ("false" "true");
+}
+
+node 103
+{
+     label = "";
+     position = (194 326);
+     states = ("false" "true");
+}
+
+node 95
+{
+     label = "";
+     position = (987 410);
+     states = ("false" "true");
+}
+
+node 94
+{
+     label = "";
+     position = (1086 556);
+     states = ("false" "true");
+}
+
+node 105
+{
+     label = "";
+     position = (433 328);
+     states = ("false" "true");
+}
+
+node 108
+{
+     label = "";
+     position = (559 1077);
+     states = ("false" "true");
+}
+
+node 110
+{
+     label = "";
+     position = (392 785);
+     states = ("false" "true");
+}
+
+node 109
+{
+     label = "";
+     position = (903 344);
+     states = ("false" "true");
+}
+
+node 113
+{
+     label = "";
+     position = (790 787);
+     states = ("false" "true");
+}
+
+node 111
+{
+     label = "";
+     position = (630 624);
+     states = ("false" "true");
+}
+
+node 106
+{
+     label = "";
+     position = (724 948);
+     states = ("false" "true");
+}
+
+node 112
+{
+     label = "";
+     position = (922 709);
+     states = ("false" "true");
+}
+
+node 115
+{
+     label = "";
+     position = (670 971);
+     states = ("false" "true");
+}
+
+node 116
+{
+     label = "";
+     position = (912 1152);
+     states = ("false" "true");
+}
+
+node 117
+{
+     label = "";
+     position = (822 116);
+     states = ("false" "true");
+}
+
+node 120
+{
+     label = "";
+     position = (272 290);
+     states = ("false" "true");
+}
+
+node 107
+{
+     label = "";
+     position = (684 555);
+     states = ("false" "true");
+}
+
+node 119
+{
+     label = "";
+     position = (816 619);
+     states = ("false" "true");
+}
+
+node 127
+{
+     label = "";
+     position = (767 922);
+     states = ("false" "true");
+}
+
+node 126
+{
+     label = "";
+     position = (555 286);
+     states = ("false" "true");
+}
+
+node 124
+{
+     label = "";
+     position = (500 974);
+     states = ("false" "true");
+}
+
+node 125
+{
+     label = "";
+     position = (846 961);
+     states = ("false" "true");
+}
+
+node 122
+{
+     label = "";
+     position = (874 774);
+     states = ("false" "true");
+}
+
+node 132
+{
+     label = "";
+     position = (422 936);
+     states = ("false" "true");
+}
+
+node 131
+{
+     label = "";
+     position = (525 374);
+     states = ("false" "true");
+}
+
+node 123
+{
+     label = "";
+     position = (1030 396);
+     states = ("false" "true");
+}
+
+node 129
+{
+     label = "";
+     position = (686 705);
+     states = ("false" "true");
+}
+
+node 121
+{
+     label = "";
+     position = (455 70);
+     states = ("false" "true");
+}
+
+node 128
+{
+     label = "";
+     position = (115 326);
+     states = ("false" "true");
+}
+
+node 130
+{
+     label = "";
+     position = (503 312);
+     states = ("false" "true");
+}
+
+node 133
+{
+     label = "";
+     position = (1034 382);
+     states = ("false" "true");
+}
+
+node 137
+{
+     label = "";
+     position = (840 127);
+     states = ("false" "true");
+}
+
+node 135
+{
+     label = "";
+     position = (700 229);
+     states = ("false" "true");
+}
+
+node 139
+{
+     label = "";
+     position = (1083 844);
+     states = ("false" "true");
+}
+
+node 140
+{
+     label = "";
+     position = (739 567);
+     states = ("false" "true");
+}
+
+node 134
+{
+     label = "";
+     position = (1099 1008);
+     states = ("false" "true");
+}
+
+node 138
+{
+     label = "";
+     position = (1131 439);
+     states = ("false" "true");
+}
+
+node 136
+{
+     label = "";
+     position = (373 683);
+     states = ("false" "true");
+}
+
+node 145
+{
+     label = "";
+     position = (396 490);
+     states = ("false" "true");
+}
+
+node 146
+{
+     label = "";
+     position = (1166 1108);
+     states = ("false" "true");
+}
+
+node 142
+{
+     label = "";
+     position = (744 948);
+     states = ("false" "true");
+}
+
+node 141
+{
+     label = "";
+     position = (1122 163);
+     states = ("false" "true");
+}
+
+node 144
+{
+     label = "";
+     position = (954 113);
+     states = ("false" "true");
+}
+
+node 153
+{
+     label = "";
+     position = (855 767);
+     states = ("false" "true");
+}
+
+node 152
+{
+     label = "";
+     position = (1045 980);
+     states = ("false" "true");
+}
+
+node 147
+{
+     label = "";
+     position = (284 723);
+     states = ("false" "true");
+}
+
+node 149
+{
+     label = "";
+     position = (829 820);
+     states = ("false" "true");
+}
+
+node 148
+{
+     label = "";
+     position = (1145 1062);
+     states = ("false" "true");
+}
+
+node 151
+{
+     label = "";
+     position = (469 395);
+     states = ("false" "true");
+}
+
+node 150
+{
+     label = "";
+     position = (573 155);
+     states = ("false" "true");
+}
+
+node 154
+{
+     label = "";
+     position = (927 620);
+     states = ("false" "true");
+}
+
+node 143
+{
+     label = "";
+     position = (459 227);
+     states = ("false" "true");
+}
+
+node 156
+{
+     label = "";
+     position = (145 463);
+     states = ("false" "true");
+}
+
+node 157
+{
+     label = "";
+     position = (1026 1117);
+     states = ("false" "true");
+}
+
+node 158
+{
+     label = "";
+     position = (784 879);
+     states = ("false" "true");
+}
+
+node 159
+{
+     label = "";
+     position = (166 750);
+     states = ("false" "true");
+}
+
+node 161
+{
+     label = "";
+     position = (1148 341);
+     states = ("false" "true");
+}
+
+node 155
+{
+     label = "";
+     position = (231 1091);
+     states = ("false" "true");
+}
+
+node 160
+{
+     label = "";
+     position = (907 118);
+     states = ("false" "true");
+}
+
+node 163
+{
+     label = "";
+     position = (952 764);
+     states = ("false" "true");
+}
+
+node 162
+{
+     label = "";
+     position = (529 392);
+     states = ("false" "true");
+}
+
+node 164
+{
+     label = "";
+     position = (1096 236);
+     states = ("false" "true");
+}
+
+node 165
+{
+     label = "";
+     position = (799 890);
+     states = ("false" "true");
+}
+
+node 166
+{
+     label = "";
+     position = (767 548);
+     states = ("false" "true");
+}
+
+node 168
+{
+     label = "";
+     position = (955 792);
+     states = ("false" "true");
+}
+
+node 181
+{
+     label = "";
+     position = (496 995);
+     states = ("false" "true");
+}
+
+node 175
+{
+     label = "";
+     position = (465 306);
+     states = ("false" "true");
+}
+
+node 170
+{
+     label = "";
+     position = (909 417);
+     states = ("false" "true");
+}
+
+node 169
+{
+     label = "";
+     position = (949 472);
+     states = ("false" "true");
+}
+
+node 177
+{
+     label = "";
+     position = (54 36);
+     states = ("false" "true");
+}
+
+node 171
+{
+     label = "";
+     position = (435 158);
+     states = ("false" "true");
+}
+
+node 180
+{
+     label = "";
+     position = (639 579);
+     states = ("false" "true");
+}
+
+node 173
+{
+     label = "";
+     position = (431 599);
+     states = ("false" "true");
+}
+
+node 179
+{
+     label = "";
+     position = (507 1062);
+     states = ("false" "true");
+}
+
+node 174
+{
+     label = "";
+     position = (635 172);
+     states = ("false" "true");
+}
+
+node 178
+{
+     label = "";
+     position = (359 1099);
+     states = ("false" "true");
+}
+
+node 172
+{
+     label = "";
+     position = (583 654);
+     states = ("false" "true");
+}
+
+node 176
+{
+     label = "";
+     position = (1059 1118);
+     states = ("false" "true");
+}
+
+node 190
+{
+     label = "";
+     position = (289 573);
+     states = ("false" "true");
+}
+
+node 186
+{
+     label = "";
+     position = (232 1038);
+     states = ("false" "true");
+}
+
+node 185
+{
+     label = "";
+     position = (150 93);
+     states = ("false" "true");
+}
+
+node 184
+{
+     label = "";
+     position = (822 844);
+     states = ("false" "true");
+}
+
+node 187
+{
+     label = "";
+     position = (1024 854);
+     states = ("false" "true");
+}
+
+node 182
+{
+     label = "";
+     position = (679 188);
+     states = ("false" "true");
+}
+
+node 189
+{
+     label = "";
+     position = (313 1105);
+     states = ("false" "true");
+}
+
+node 183
+{
+     label = "";
+     position = (120 517);
+     states = ("false" "true");
+}
+
+node 193
+{
+     label = "";
+     position = (822 1087);
+     states = ("false" "true");
+}
+
+node 192
+{
+     label = "";
+     position = (772 671);
+     states = ("false" "true");
+}
+
+node 191
+{
+     label = "";
+     position = (1019 640);
+     states = ("false" "true");
+}
+
+node 194
+{
+     label = "";
+     position = (849 314);
+     states = ("false" "true");
+}
+
+node 195
+{
+     label = "";
+     position = (465 216);
+     states = ("false" "true");
+}
+
+node 196
+{
+     label = "";
+     position = (805 680);
+     states = ("false" "true");
+}
+
+potential (45)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (46)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (6)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (41)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (42)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (1)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (7)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (62)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (55)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (47)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (12)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (75)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (26)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (54)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (20)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (23)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (13)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (2)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (64)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (63)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (15)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (69)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (9)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (10)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (11)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (77)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (25)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (61)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (19)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (32)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (56)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (44)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (66)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (58)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (65)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (72)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (73)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (4)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (28)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (24)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (71)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (21)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (22)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (36)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (3)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (5)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (33)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (8)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (14)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (59)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (49)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (78)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (60)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (40)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (70)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (31)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (27)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (30)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (68)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (16)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (17)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (34)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (48)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (35)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (51)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (37)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (67)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (38)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (57)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (18)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (76)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (52)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (29)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (53)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (74)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (39)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (50)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (43)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (79)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (87)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (80)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (81)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (88)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (82)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (83)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (85)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (89)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (84)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (86)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (104)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (102)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (90)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (92)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (97)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (100)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (91)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (98)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (99)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (96)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (93)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (103)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (95)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (94)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (105)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (108)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (110)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (109)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (113)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (111)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (106)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (112)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (115)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (116)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (117)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (120)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (107)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (119)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (127)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (126)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (124)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (125)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (122)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (132)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (131)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (123)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (129)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (121)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (128)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (130)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (133)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (137)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (135)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (139)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (140)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (134)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (138)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (136)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (145)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (146)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (142)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (141)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (144)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (153)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (152)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (147)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (149)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (148)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (151)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (150)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (154)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (143)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (156)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (157)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (158)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (159)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (161)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (155)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (160)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (163)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (162)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (164)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (165)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (166)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (168)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (181)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (175)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (170)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (169)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (177)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (171)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (180)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (173)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (179)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (174)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (178)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (172)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (176)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (190)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (186)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (185)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (184)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (187)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (182)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (189)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (183)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (193)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (192)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (191)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (194)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (195)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (196)
+{
+ data = ( 0.5 0.5 );
+}
+

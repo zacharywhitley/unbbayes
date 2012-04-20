@@ -16,7 +16,8 @@ Go to \mvn_lib\unbbayes>
 mvn install:install-file -DgroupId=guess -DartifactId=jpf -Dversion=1.5 -Dpackaging=jar -Dfile=jpf-1.5.jar
 mvn install:install-file -DpomFile=pom.xml -Dpackaging=jar -Dfile=unbbayes.jar
 
-
+Go to \mvn_lib\opencsv>
+mvn install:install-file -DpomFile=pom.xml -Dpackaging=jar -Dfile=opencsv-2.3.jar
 
 CREATING A RELEASE
 -------------------
