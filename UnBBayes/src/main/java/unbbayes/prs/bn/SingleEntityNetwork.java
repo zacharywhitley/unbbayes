@@ -1242,7 +1242,13 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 		try {
 			junctionTree.consistency();
 		} catch (Exception e) {
-			initialize();
+			try {
+				initialize();
+			} catch (Exception e2) {
+				// added this catch, because if an exception is thrown at initialize(), 
+				// the exception e will be lost.
+				e2.printStackTrace();
+			}
 			throw e;
 		}
 		updateMarginais();
