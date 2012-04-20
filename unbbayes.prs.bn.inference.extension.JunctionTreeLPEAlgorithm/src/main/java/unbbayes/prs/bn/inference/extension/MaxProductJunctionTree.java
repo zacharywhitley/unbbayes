@@ -60,6 +60,10 @@ public class MaxProductJunctionTree extends JunctionTree implements IPropagation
 		PotentialTable sepTab = getSeparator(clique1, clique2).getProbabilityFunction();
 		// who are going to be removed 
 		ArrayList<Node> maxOut = SetToolkit.clone(clique2.getNodes());
+		if (sepTab.tableSize() <= 0) {
+			// cliques are disconnected (they are separated subnets of a disconnected network)
+			return;	// there is nothing to propagate
+		}
 		
 		// variables in the separator are not going to be removed, so remove from maxOut
 		for (int i = 0; i < sepTab.variableCount(); i++) {
