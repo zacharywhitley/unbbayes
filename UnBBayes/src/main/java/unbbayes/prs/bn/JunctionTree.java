@@ -166,10 +166,15 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	 * @param clique2
 	 */
 	protected void absorb(Clique clique1, Clique clique2) {
-		PotentialTable sepTab = getSeparator(clique1, clique2).getProbabilityFunction();
+		Separator sep = getSeparator(clique1, clique2);
+		if (sep == null) {
+			Debug.println(getClass(), clique1 + " and " + clique2 + " are disconnected.");
+			return;
+		}
+		PotentialTable sepTab = sep.getProbabilityFunction();
 		ArrayList<Node> toDie = SetToolkit.clone(clique2.getNodes());
 		if (sepTab.tableSize() <= 0) {
-			Debug.println(getClass(), clique1 + " and " + clique2 + " are disconnected.");
+			Debug.println(getClass(), clique1 + " and " + clique2 + " has empty separator.");
 			return;
 		}
 		for (int i = 0; i < sepTab.variableCount(); i++) {

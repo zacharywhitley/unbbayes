@@ -383,6 +383,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 		this.associateCliques();
 		junctionTree.initBeliefs();
 	
+		// TODO why this is being called here instead in this.associateCliques()?
 		int sizeNos = copiaNos.size();
 		for (int c = 0; c < sizeNos; c++) {
 			Node auxNode = copiaNos.get(c);
@@ -742,9 +743,10 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			for (int i = 0; i < sizeCliques; i++) {
 				auxClique = (Clique) junctionTree.getCliques().get(i);
 				listaNos = SetToolkit.clone(auxClique.getNodes());
-				if (listaNos.size() <= 1) {
-					break;
-				}
+				// now, there may be disconnected nodes
+//				if (listaNos.size() <= 1) {
+//					break;
+//				}
 				//calculate index
 				while ((ndx = getCliqueIndex(listaNos, alpha)) <= 0
 					&& listaNos.size() > 1);
@@ -825,6 +827,9 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	
 		// remove node from clique
 		listaNos.remove(noMax);
+		if (listaNos.isEmpty()) {
+			return mx;
+		}
 	
 		// Build list of neighbors of clique
 		auxNo = listaNos.get(0);
