@@ -62,6 +62,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	private boolean isToPropagateForGlobalConsistency = true;
 
 	private boolean isToUpdateSeparators = true;
+	
+	private boolean isToUpdateOnlyEditClique = true;
 
 //	private Map<IRandomVariable, IRandomVariable> originalCliqueToAssetCliqueMap;
 	
@@ -963,6 +965,20 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 */
 	public boolean isToLogAssets() {
 		return isToLogAssets;
+	}
+
+	/**
+	 * @return the isToUpdateOnlyEditClique
+	 */
+	public boolean isToUpdateOnlyEditClique() {
+		return isToUpdateOnlyEditClique;
+	}
+
+	/**
+	 * @param isToUpdateOnlyEditClique the isToUpdateOnlyEditClique to set
+	 */
+	public void setToUpdateOnlyEditClique(boolean isToUpdateOnlyEditClique) {
+		this.isToUpdateOnlyEditClique = isToUpdateOnlyEditClique;
 	}
 
 	

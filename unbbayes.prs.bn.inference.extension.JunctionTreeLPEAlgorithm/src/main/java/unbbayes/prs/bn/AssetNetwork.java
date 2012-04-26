@@ -35,16 +35,19 @@ public class AssetNetwork extends ProbabilisticNetwork {
 	 * Default constructor method initializing network.
 	 * This method calls {@link #setRelatedNetwork(ProbabilisticNetwork)}, which instantiates asset nodes and edges.
 	 * @param relatedNetwork : probabilistic network containing the probability distribution of this asset network
-	 * @param nodesToIgnore 
 	 * @return a network of assets having the same structure of relatedNetwork
 	 * @throws InvalidParentException : if relatedNetwork contains invalid edges
 	 */
 	public static AssetNetwork getInstance(ProbabilisticNetwork relatedNetwork) throws InvalidParentException {
 		AssetNetwork ret = new AssetNetwork();
 		ret.setRelatedNetwork(relatedNetwork);
-		ret.setName("Asssets of " + relatedNetwork.getName());
+		if (relatedNetwork != null) {
+			ret.setName("Asssets of " + relatedNetwork.getName());
+		}
 		return ret;
 	}
+
+	
 
 	/**
 	 * @return the relatedNetwork
@@ -52,16 +55,16 @@ public class AssetNetwork extends ProbabilisticNetwork {
 	public ProbabilisticNetwork getRelatedNetwork() {
 		return relatedNetwork;
 	}
-
+	
+	
 	/**
 	 * This method sets the relatedNetwork (probabilistic network w/ the probabilities of the assets of this network)
 	 * and instantiates asset nodes and edges according to nodes/edges in relatedNetwork. It only considers instances of {@link ProbabilisticNode}
 	 * in the relatedNetwork. It does not copy cliques/separators, because some algorithms may not use cliques/separators.
 	 * @param relatedNetwork the relatedNetwork to set
-	 * @param nodesToIgnore 
 	 * @throws InvalidParentException if relatedNetwork contains invalid edges
 	 */
-	public void setRelatedNetwork(ProbabilisticNetwork relatedNetwork) throws InvalidParentException {
+	public void setRelatedNetwork(ProbabilisticNetwork relatedNetwork)  throws InvalidParentException  {
 		if (this.relatedNetwork == null
 				|| !this.relatedNetwork.equals(relatedNetwork)) {
 //			// stores which node has originated the corresponding asset node
@@ -84,6 +87,7 @@ public class AssetNetwork extends ProbabilisticNetwork {
 					for (int i = 0; i < node.getStatesSize(); i++) {
 						assetNode.appendState(node.getStateAt(i));
 					}
+					assetNode.initMarginalList();	// guarantee that marginal list is initialized
 					this.addNode(assetNode);
 //					nodeToAssetMap.put(node, assetNode);
 				}

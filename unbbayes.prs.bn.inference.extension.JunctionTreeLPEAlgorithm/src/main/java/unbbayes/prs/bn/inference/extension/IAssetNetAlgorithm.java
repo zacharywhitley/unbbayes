@@ -51,7 +51,7 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 * This method generates a network of assets with the same nodes and network topology of
 	 * relatedProbabilisticNetwork, and initializes the assets using the
 	 * values obtained from {@link #getDefaultInitialAssetQuantity()}.
-	 * @param relatedProbabilisticNetwork
+	 * @param relatedProbabilisticNetwork : the bayesian network to be based on
 	 * @return an asset network
 	 * @throws InvalidParentException 
 	 */

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package unbbayes.io;
+package edu.gmu.ace.daggre.io;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -15,6 +15,7 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 import junit.framework.TestResult;
+import unbbayes.io.NetIO;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
@@ -27,7 +28,7 @@ import au.com.bytecode.opencsv.CSVReader;
  * @author Shou Matsumoto
  *
  */
-public class DAGGREQuestionsReaderTest extends TestCase {
+public class DAGGREQuestionsReaderDriver extends TestCase {
 
 //	private static final File csvFile = new File("examples/DAGGRE.csv");
 	
@@ -56,7 +57,7 @@ public class DAGGREQuestionsReaderTest extends TestCase {
 	/**
 	 * @param name
 	 */
-	public DAGGREQuestionsReaderTest(String name) {
+	public DAGGREQuestionsReaderDriver(String name) {
 		super(name);
 	}
 
@@ -298,7 +299,7 @@ public class DAGGREQuestionsReaderTest extends TestCase {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		DAGGREQuestionsReaderTest test = new DAGGREQuestionsReaderTest("testCSVReading");
+		DAGGREQuestionsReaderDriver test = new DAGGREQuestionsReaderDriver("testCSVReading");
 		TestResult result = test.run();
 		if (!result.wasSuccessful()) {
 			System.err.println("Error on test: " + test);

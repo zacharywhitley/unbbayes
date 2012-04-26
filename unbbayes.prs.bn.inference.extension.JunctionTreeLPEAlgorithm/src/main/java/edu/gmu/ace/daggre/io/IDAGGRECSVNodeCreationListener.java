@@ -1,7 +1,7 @@
 /**
  * 
  */
-package unbbayes.io;
+package edu.gmu.ace.daggre.io;
 
 import java.util.List;
 

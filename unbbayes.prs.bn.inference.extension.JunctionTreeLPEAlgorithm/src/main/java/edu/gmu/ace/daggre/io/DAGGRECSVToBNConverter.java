@@ -1,7 +1,7 @@
 /**
  * 
  */
-package unbbayes.io;
+package edu.gmu.ace.daggre.io;
 
 import java.io.File;
 import java.io.FileReader;
@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.io.BaseIO;
 import unbbayes.io.exception.LoadException;
 import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
