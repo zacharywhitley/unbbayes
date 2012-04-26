@@ -14,6 +14,7 @@ import unbbayes.io.exception.UBIOException;
 import unbbayes.prs.Graph;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
+import unbbayes.util.Debug;
 
 /** 
  * Manipulates I/O of XMLBIF file format for version 0.7. Main addition to this version is 
@@ -51,17 +52,17 @@ public class BaseXMLBIFIO implements BaseIO {
 		} catch (Exception e1) {
 			try {
 				// Try version 0.6.
-				// e.printStackTrace();
+				Debug.println(getClass(), e1.getMessage(), e1);
 				unbbayes.io.xmlbif.version6.XMLBIFIO.loadXML(input, pn);
 			} catch (Exception e2) {
 				try {
 					// Try version 0.5.
-					// e.printStackTrace();
+					Debug.println(getClass(), e1.getMessage(), e2);
 					unbbayes.io.xmlbif.version5.XMLBIFIO.loadXML(input, pn);
 				} catch (Exception e3) {
 					try {
 						// Try version 0.4.
-						// e2.printStackTrace();
+						Debug.println(getClass(), e1.getMessage(), e3);
 						unbbayes.io.xmlbif.version4.XMLBIFIO.loadXML(input, pn);
 					} catch (Exception e4) {
 						e3.printStackTrace();
