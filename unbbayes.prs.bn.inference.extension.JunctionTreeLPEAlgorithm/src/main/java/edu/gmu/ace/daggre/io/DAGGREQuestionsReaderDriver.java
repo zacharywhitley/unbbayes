@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
+import junit.framework.TestFailure;
 import junit.framework.TestResult;
 import unbbayes.io.NetIO;
 import unbbayes.prs.Node;
@@ -303,10 +304,10 @@ public class DAGGREQuestionsReaderDriver extends TestCase {
 		TestResult result = test.run();
 		if (!result.wasSuccessful()) {
 			System.err.println("Error on test: " + test);
-//			while (result.failures().hasMoreElements()) {
-//				TestFailure failure = (TestFailure) result.failures().nextElement();
-//				System.err.println(failure.exceptionMessage());
-//			}
+			while (result.failures().hasMoreElements()) {
+				TestFailure failure = (TestFailure) result.failures().nextElement();
+				System.err.println(failure.toString());
+			}
 		} else {
 			System.out.println("Success.");
 		}
