@@ -53,6 +53,11 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	private IInferenceAlgorithm probabilityPropagationDelegator;
 
 	private IAssetNetAlgorithm assetPropagationDelegator;
+
+
+
+
+	private boolean isToUpdateAssets = true;
 	
 	
 	/** 
@@ -220,12 +225,17 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 			listener.onBeforePropagate(this);
 		}
 		
-		// store the probability before the propagation, so that we can calculate the ratio
-		this.updateProbabilityPriorToPropagation();
+		if (isToUpdateAssets()) {
+			// store the probability before the propagation, so that we can calculate the ratio
+			this.updateProbabilityPriorToPropagation();
+		}
 		// propagate probability
 		this.getProbabilityPropagationDelegator().propagate();
-		// calculate ratio and propagate assets
-		this.getAssetPropagationDelegator().propagate();
+		
+		if (isToUpdateAssets()) {
+			// calculate ratio and propagate assets
+			this.getAssetPropagationDelegator().propagate();
+		}
 		
 		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListener()) {
 			listener.onAfterPropagate(this);
@@ -714,5 +724,34 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		this.getAssetPropagationDelegator().updateProbabilityPriorToPropagation();
 	}
 	
-	
+	/**
+	 * deletages to {@link #getAssetPropagationDelegator()}
+	 * @param isToLogAssets the isToLogAssets to set
+	 */
+	public void setToLogAssets(boolean isToLogAssets) {
+		getAssetPropagationDelegator().setToLogAssets(isToLogAssets);
+	}
+
+	/**
+	 * 
+	 * deletages to {@link #getAssetPropagationDelegator()}
+	 * @return the isToLogAssets
+	 */
+	public boolean isToLogAssets() {
+		return getAssetPropagationDelegator().isToLogAssets();
+	}
+
+	/**
+	 * @param isToUpdateAssets the isToUpdateAssets to set
+	 */
+	public void setToUpdateAssets(boolean isToUpdateAssets) {
+		this.isToUpdateAssets = isToUpdateAssets;
+	}
+
+	/**
+	 * @return the isToUpdateAssets
+	 */
+	public boolean isToUpdateAssets() {
+		return isToUpdateAssets;
+	}
 }

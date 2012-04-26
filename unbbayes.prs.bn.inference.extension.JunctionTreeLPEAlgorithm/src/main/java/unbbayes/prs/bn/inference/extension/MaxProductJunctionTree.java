@@ -16,6 +16,7 @@ import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JunctionTree;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticTable;
+import unbbayes.prs.bn.Separator;
 import unbbayes.util.Debug;
 import unbbayes.util.SetToolkit;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
@@ -56,8 +57,13 @@ public class MaxProductJunctionTree extends JunctionTree implements IPropagation
 	 * @see unbbayes.prs.bn.JunctionTree#absorb(unbbayes.prs.bn.Clique, unbbayes.prs.bn.Clique)
 	 */
 	protected void absorb(Clique clique1, Clique clique2) {
+		Separator sep = getSeparator(clique1, clique2);
+		if (sep == null) {
+			// cliques are disconnected (they are separated subnets of a disconnected network)
+			return;
+		}
 		// table of separator
-		PotentialTable sepTab = getSeparator(clique1, clique2).getProbabilityFunction();
+		PotentialTable sepTab = sep.getProbabilityFunction();
 		// who are going to be removed 
 		ArrayList<Node> maxOut = SetToolkit.clone(clique2.getNodes());
 		if (sepTab.tableSize() <= 0) {

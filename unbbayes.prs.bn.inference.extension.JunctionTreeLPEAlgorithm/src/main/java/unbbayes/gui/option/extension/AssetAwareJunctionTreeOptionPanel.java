@@ -32,7 +32,9 @@ public class AssetAwareJunctionTreeOptionPanel extends JunctionTreeOptionPanel {
 		// Instantiate an AssetAwareInferenceAlgorithm which works like a JunctionTreeAlgorithm
 		JunctionTreeAlgorithm delegator = new JunctionTreeAlgorithm();
 		delegator.setOptionPanel(this);
-		this.setInferenceAlgorithm(AssetAwareInferenceAlgorithm.getInstance(delegator));
+		AssetAwareInferenceAlgorithm alg = (AssetAwareInferenceAlgorithm)AssetAwareInferenceAlgorithm.getInstance(delegator);
+		alg.setToLogAssets(true);	// enable log
+		this.setInferenceAlgorithm(alg);
 		this.setName("Asset Propagation Algorithm");
 		// the following are already called by super()
 //		this.initComponents();

@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import junit.framework.TestCase;
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -25,10 +26,18 @@ public class DAGGREQuestionsReaderTest extends TestCase {
 //	private static final File csvFile = new File("examples/DAGGRE.csv");
 	
 	/**How many times to iterate test on the same file, in order to avoid background process to impact on time*/
-	private static int ITERATION = 5;
+	private static int ITERATION = 5;//5;
 	
 	/** If two probability values are within an interval of + or - this value, then it is considered to be equalÅ@*/
 	private static final float PROB_PRECISION_ERROR = 0.0005f;
+
+	private boolean isToTestProbValues = false;
+
+	private boolean isToPropagateEvidence = true;
+	
+	private boolean isToUpdateAssets = false;
+	
+	private boolean isToCreateUserAssetNets = false;
 	
 
 //	private File netFile = new File(csvFile.getParent(),"DAGGRE1.net");
@@ -78,7 +87,8 @@ public class DAGGREQuestionsReaderTest extends TestCase {
 		assertTrue(csvFile.exists());
 		
 		// do the test for these files
-		File[] netFilesToTest = {new File(csvFile.getParent(),"DAGGRE1.net"), new File(csvFile.getParent(),"DAGGRE5p5.net") };
+//		File[] netFilesToTest = {new File(csvFile.getParent(),"DAGGRE1.net"), new File(csvFile.getParent(),"DAGGRE5p5.net") };
+		File[] netFilesToTest = {new File(csvFile.getParent(),"DAGGRE5p5.net"), new File(csvFile.getParent(),"DAGGRE1.net")  };
 		for (File netFile : netFilesToTest) {
 			
 			// assert existence of files
@@ -90,7 +100,8 @@ public class DAGGREQuestionsReaderTest extends TestCase {
 				
 				// instantiate this here, so that we use a clean reader at each iteration
 				DAGGREQuestionReader daggreQuestionReader = new DAGGREQuestionReader();
-				daggreQuestionReader.setToPropagate(false);
+				daggreQuestionReader.setToPropagate(isToPropagateEvidence);
+				daggreQuestionReader.setToCreateUserAssetNet(isToCreateUserAssetNets);
 				
 				long startTime = System.currentTimeMillis();	// for counting the time to load network file
 				
@@ -122,14 +133,27 @@ public class DAGGREQuestionsReaderTest extends TestCase {
 				AssetAwareInferenceAlgorithm algorithm = (AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm);
 				assertNotNull(algorithm);
 				algorithm.setToPropagateForGlobalConsistency(false);	// do not calculate LPE
+				algorithm.setToUpdateAssets(isToUpdateAssets);
+				
+				for (Node node : algorithm.getProbabilityPropagationDelegator().getNetwork().getNodes()) {
+					float sum = (((TreeVariable)node).getMarginalAt(0) + ((TreeVariable)node).getMarginalAt(1));	// sum must be 1 (with some margin for imprecision)
+					assertTrue(node.getName() + ", sum = " + sum, ((0 - PROB_PRECISION_ERROR) < sum) && (sum < (0 + PROB_PRECISION_ERROR)) );
+				}
 				
 				startTime = System.currentTimeMillis();	// for counting the time to compile network
+				
 				
 				// compile network
 				algorithm.run();
 				
 				System.out.println("Iteration " + i 
 						+ ", time to compile network = " + (System.currentTimeMillis() - startTime) + " ms.");
+				if (isToTestProbValues) {
+					for (Node node : algorithm.getProbabilityPropagationDelegator().getNetwork().getNodes()) {
+						float sum = (((TreeVariable)node).getMarginalAt(0) + ((TreeVariable)node).getMarginalAt(1));	// sum must be 1 (with some margin for imprecision)
+						assertTrue(node.getName() + ", sum = " + sum, ((1 - PROB_PRECISION_ERROR) < sum) && (sum < (1 + PROB_PRECISION_ERROR)) );
+					}
+				}
 				
 				startTime = System.currentTimeMillis();	// for counting the time to load csv and edit net
 				
@@ -148,7 +172,9 @@ public class DAGGREQuestionsReaderTest extends TestCase {
 					fail(e.getMessage());
 				}
 				assertTrue(processedEdits > 0);
-				assertFalse(userMap.isEmpty());
+				if (isToCreateUserAssetNets) {
+					assertFalse(userMap.isEmpty());
+				}
 				
 				System.out.println("Iteration " + i 
 						+ ", loaded csv = " + csvFile.getName() 
@@ -156,36 +182,40 @@ public class DAGGREQuestionsReaderTest extends TestCase {
 						+ ", time to process = " + (System.currentTimeMillis() - startTime) + " ms, number of users = "
 						+ userMap.size());
 				
-				
-				System.out.println("\n**** Probabilities, file = " + netFile.getName() + ", iteration "+ i +" ****");
-				
-				// assuming that the name of the nodes are the question IDs (and ids are integers), convert the name of nodes (string) to integers
-				List<Integer> sortedQuestionIDList = new ArrayList<Integer>();
-				for (String key : net.getNodeIndexes().keySet()) {
-					sortedQuestionIDList.add(Integer.valueOf(key));
+				if(isToTestProbValues) {
+					System.out.println("\n**** Probabilities, file = " + netFile.getName() + ", iteration "+ i +" ****");
+					
+					// assuming that the name of the nodes are the question IDs (and ids are integers), convert the name of nodes (string) to integers
+					List<Integer> sortedQuestionIDList = new ArrayList<Integer>();
+					for (String key : net.getNodeIndexes().keySet()) {
+						sortedQuestionIDList.add(Integer.valueOf(key));
+					}
+					
+					// print probability of each network, in order
+					Collections.sort(sortedQuestionIDList);
+					for (Integer id : sortedQuestionIDList) {
+						assertTrue(id.toString(),id >= 0);
+						
+						// extract node from question id, still assuming that name of nodes are ids
+						TreeVariable node = (TreeVariable)net.getNode(id.toString());	
+						
+						// print prob
+						System.out.println(node.getName() + " [false,true] = [" + node.getMarginalAt(0) + " , "+ node.getMarginalAt(1) + "]");
+						
+						// prob value assertions, assuming that questions are boolean variables whose states are [false, true]
+						if (isToTestProbValues){
+							assertEquals("false", node.getStateAt(0));
+							assertEquals("true", node.getStateAt(1));
+							assertTrue(id + ", false = " + node.getMarginalAt(0), node.getMarginalAt(0) >= 0);
+							assertTrue(id + ", true = " + node.getMarginalAt(1), node.getMarginalAt(1) >= 0);
+							float sum = (node.getMarginalAt(0) + node.getMarginalAt(1));	// sum must be 1 (with some margin for imprecision)
+							assertTrue(id + ", sum = " + sum, ((1 - PROB_PRECISION_ERROR) < sum) && (sum < (1 + PROB_PRECISION_ERROR)) );
+						}
+						
+					}
+					System.out.println("\n***********************\n\n");
+					
 				}
-				
-				// print probability of each network, in order
-				Collections.sort(sortedQuestionIDList);
-				for (Integer id : sortedQuestionIDList) {
-					assertTrue(id.toString(),id >= 0);
-					
-					// extract node from question id, still assuming that name of nodes are ids
-					TreeVariable node = (TreeVariable)net.getNode(id.toString());	
-					
-					// prob value assertions, assuming that questions are boolean variables whose states are [false, true]
-					assertEquals("false", node.getStateAt(0));
-					assertEquals("true", node.getStateAt(1));
-					assertTrue(id + ", false = " + node.getMarginalAt(0), node.getMarginalAt(0) >= 0);
-					assertTrue(id + ", true = " + node.getMarginalAt(1), node.getMarginalAt(1) >= 0);
-					float sum = (node.getMarginalAt(0) + node.getMarginalAt(1));	// sum must be 1 (with some margin for imprecision)
-					assertTrue(id + ", sum = " + sum, ((1 - PROB_PRECISION_ERROR) < sum) && (sum < (1 + PROB_PRECISION_ERROR)) );
-					
-					// print prob
-					System.out.println(node.getName() + " [false,true] = [" + node.getMarginalAt(0) + " , "+ node.getMarginalAt(1) + "]");
-				}
-				System.out.println("\n***********************\n\n");
-				
 				// TODO check if we should print the q-tables as well
 			}
 		}

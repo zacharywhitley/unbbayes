@@ -33,6 +33,7 @@ import au.com.bytecode.opencsv.CSVReader;
 public class DAGGREQuestionReader  {
 
 	private boolean isToPropagate = true;
+	private boolean isToCreateUserAssetNet = true;;
 
 	/**
 	 * @param name
@@ -83,7 +84,7 @@ public class DAGGREQuestionReader  {
 		// A soft evidence is represented as a list of conditions (assumed nodes) and an array of float representing new conditional probability.
 		// Non-edited probabilities must remain in the values before the edit. Thus, we must extract what are the current probability values.
 		// this object extracts conditional probability of any nodes in same clique (it assumes prob network was compiled using junction tree algorithm)
-		IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = InCliqueConditionalProbabilityExtractor.newInstance();	
+//		IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = InCliqueConditionalProbabilityExtractor.newInstance();	
 		
 		// iterate on csv
 		CSVReader reader = new CSVReader(new FileReader(csv));	// classes of open csv
@@ -116,17 +117,26 @@ public class DAGGREQuestionReader  {
 	        	continue;	
 	        }
 	        
-	        // extract user (or user's asset's q network)
-	        AssetNetwork userAssetNet = usersMap.get(userID);
-	        if (userAssetNet == null) {
-	        	// create user's asset network and store to user map
-	        	userAssetNet = algorithm.createAssetNetFromProbabilisticNet(net);
-	        	usersMap.put(userID, userAssetNet);
+	        AssetNetwork userAssetNet = null;
+	        if (isToCreateUserAssetNet()) {
+	        	// extract user (or user's asset's q network)
+	        	userAssetNet = usersMap.get(userID);
+	        	if (userAssetNet == null) {
+	        		// create user's asset network and store to user map
+	        		userAssetNet = algorithm.createAssetNetFromProbabilisticNet(net);
+	        		usersMap.put(userID, userAssetNet);
+	        	}
 	        }
 	        
 	        if (isToPropagate()){
 	        	// set this user as current user
-	        	algorithm.setAssetNetwork(userAssetNet);
+	        	if (isToCreateUserAssetNet()) {
+	        		if (userAssetNet != null) {
+	        			algorithm.setAssetNetwork(userAssetNet);
+	        		} else {
+	        			Debug.println(getClass(), "Could not find/generate asset net for user " + userID);
+	        		}
+	        	}
 	        	
 	        	// at this moment, node is a TreeVariable
 	        	TreeVariable betNode = (TreeVariable) node;
@@ -166,12 +176,17 @@ public class DAGGREQuestionReader  {
 	        	// propagate soft evidence
 	        	algorithm.propagate();
 	        }
-			
+//	        System.out.println(lineCounter + "," + node.getName() + " ; [" + ((TreeVariable) node).getMarginalAt(0) + " , "+ ((TreeVariable) node).getMarginalAt(1) + "]");
+//	        if (((TreeVariable) node).getMarginalAt(0) > .5) {
+//	        	System.out.println(lineCounter + " ; [" + ((TreeVariable) node).getMarginalAt(0) + " , "+ ((TreeVariable) node).getMarginalAt(1) + "]");
+//	        }
 	    }
 		return lineCounter;
 	}
 
 	/**
+	 * If true, {@link #load(File, ProbabilisticNetwork, AssetAwareInferenceAlgorithm, Map)} will
+	 * call {@link AssetAwareInferenceAlgorithm#propagate()}.
 	 * @param isToPropagate the isToPropagate to set
 	 */
 	public void setToPropagate(boolean isToPropagate) {
@@ -179,10 +194,30 @@ public class DAGGREQuestionReader  {
 	}
 
 	/**
+	 * If true, {@link #load(File, ProbabilisticNetwork, AssetAwareInferenceAlgorithm, Map)} will
+	 * call {@link AssetAwareInferenceAlgorithm#propagate()}.
 	 * @return the isToPropagate
 	 */
 	public boolean isToPropagate() {
 		return isToPropagate;
+	}
+
+	/**
+	 * If true, the map parameter of {@link #load(File, ProbabilisticNetwork, AssetAwareInferenceAlgorithm, Map)}
+	 * will be filled with new values (i.e. new user asset nets).
+	 * @param isToCreateUserAssetNet the isToCreateUserAssetNet to set
+	 */
+	public void setToCreateUserAssetNet(boolean isToCreateUserAssetNet) {
+		this.isToCreateUserAssetNet = isToCreateUserAssetNet;
+	}
+
+	/**
+	 * If true, the map parameter of {@link #load(File, ProbabilisticNetwork, AssetAwareInferenceAlgorithm, Map)}
+	 * will be filled with new values (i.e. new user asset nets).
+	 * @return the isToCreateUserAssetNet
+	 */
+	public boolean isToCreateUserAssetNet() {
+		return isToCreateUserAssetNet;
 	}
 	
 

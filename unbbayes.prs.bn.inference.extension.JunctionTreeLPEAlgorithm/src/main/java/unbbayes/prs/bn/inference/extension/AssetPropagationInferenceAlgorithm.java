@@ -85,6 +85,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		}
 	};
 
+	private boolean isToLogAssets = false;
+
 
 //	private AssetAwareInferenceAlgorithm assetAwareInferenceAlgorithm;
 	
@@ -390,6 +392,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			ret.setJunctionTree(jt);
 			
 			setOriginalCliqueToAssetCliqueMap(ret, new TreeMap<IRandomVariable, IRandomVariable>(this.getRandomVariableComparator()));
+//			setOriginalCliqueToAssetCliqueMap(ret, new HashMap<IRandomVariable, IRandomVariable>());
 
 			// copy cliques
 			for (Clique origClique : relatedProbabilisticNetwork.getJunctionTree().getCliques()) {
@@ -582,7 +585,9 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 * Prints the assets to the log panel
 	 */
 	public void logAssets() {
-		
+		if (!isToLogAssets()) {
+			return;
+		}
 		// initialize message to print
 		String explMessage = "\n \n "+ getNetwork() + ": \n \n";
 		
@@ -940,6 +945,24 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 */
 	protected void updateMarginals(Graph graph) {
 		//  do nothing, because marginals are not important for asset nodes
+	}
+
+	/**
+	 * If this is false, {@link #logAssets()} will
+	 * not generate logs.
+	 * @param isToLogAssets the isToLogAssets to set
+	 */
+	public void setToLogAssets(boolean isToLogAssets) {
+		this.isToLogAssets = isToLogAssets;
+	}
+
+	/**
+	 * If this is false, {@link #logAssets()} will
+	 * not generate logs.
+	 * @return the isToLogAssets
+	 */
+	public boolean isToLogAssets() {
+		return isToLogAssets;
 	}
 
 	

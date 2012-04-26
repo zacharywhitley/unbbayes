@@ -122,4 +122,17 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 */
 	public float calculateExplanation( List<Map<INode, Integer>> inputOutpuArgumentForExplanation);
 
+	
+	/**
+	 * If this is false, log is disabled.
+	 * @param isToLogAssets the isToLogAssets to set
+	 */
+	public void setToLogAssets(boolean isToLogAssets);
+
+	/**
+	 * 
+	 * If this is false, log is disabled.
+	 * @return the isToLogAssets
+	 */
+	public boolean isToLogAssets();
 }

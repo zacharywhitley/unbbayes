@@ -1,0 +1,384 @@
+<?xml version='1.0' encoding='US-ASCII'?>
+<xbifns:XMLBIF version="0.6" xmlns:xbifns="http://unbbayes.sourceforge.net/xml/XMLBIF_0_6.xsd">
+  <xbifns:header>
+    <xbifns:version>1.0</xbifns:version>
+    <xbifns:name>Greek_Exit_Draft_3-18-2012</xbifns:name>
+    <xbifns:creator>UnBBayes</xbifns:creator>
+  </xbifns:header>
+  <xbifns:staticProperty>
+    <xbifns:nodeSize>0</xbifns:nodeSize>
+    <xbifns:nodeFontSize>0</xbifns:nodeFontSize>
+    <xbifns:colorUtilityNode>0</xbifns:colorUtilityNode>
+    <xbifns:colorDecisionNode>0</xbifns:colorDecisionNode>
+    <xbifns:colorDiscreteProbabilisticNode>0</xbifns:colorDiscreteProbabilisticNode>
+    <xbifns:colorContinuousProbilisticNode>0</xbifns:colorContinuousProbilisticNode>
+    <xbifns:colorExplanationNode>0</xbifns:colorExplanationNode>
+  </xbifns:staticProperty>
+  <xbifns:hierarchy>
+    <xbifns:root name="root">
+      <xbifns:level name="Germany uses political and economic influence to keep Greece in EU"/>
+      <xbifns:level name="Greek Election Results"/>
+      <xbifns:level name="Greek Govt chooses to withdraw"/>
+      <xbifns:level name="DAGGRE Now"/>
+      <xbifns:level name="DAGGRE Prev"/>
+      <xbifns:level name="Other Poll or Market"/>
+      <xbifns:level name="EU Votes to Eject Greece"/>
+      <xbifns:level name="Will Greece exit the EU?"/>
+      <xbifns:level name="Social pressures from German population will force Greece to exit"/>
+      <xbifns:level name="Alternative legal propositions to keep Greece in te EU"/>
+      <xbifns:level name="C0"/>
+      <xbifns:level name="Others"/>
+      <xbifns:level name="C1"/>
+      <xbifns:level name="C2"/>
+      <xbifns:level name="C3"/>
+    </xbifns:root>
+  </xbifns:hierarchy>
+  <xbifns:network>
+    <xbifns:variables>
+      <xbifns:variable rgbColor="-256" height="86.0" width="250.0" yPos="191" xPos="119" type="DiscreteProbabilistic" name="Germany">
+        <xbifns:description>Germany uses political and economic influence to keep Greece in EU</xbifns:description>
+        <xbifns:state name="True"/>
+        <xbifns:state name="False"/>
+      </xbifns:variable>
+      <xbifns:variable rgbColor="-256" height="158.0" width="250.0" yPos="72" xPos="759" type="DiscreteProbabilistic" name="Elections">
+        <xbifns:description>Greek Election Results</xbifns:description>
+        <xbifns:state name="New_Democracy"/>
+        <xbifns:state name="Socialst"/>
+        <xbifns:state name="Communist"/>
+        <xbifns:state name="Popular_Orthodox_Rally"/>
+        <xbifns:state name="Coalition_of_Radical_Left"/>
+        <xbifns:state name="Democratic_Left"/>
+      </xbifns:variable>
+      <xbifns:variable rgbColor="-256" height="86.0" width="250.0" yPos="385" xPos="549" type="DiscreteProbabilistic" name="Withraw">
+        <xbifns:description>Greek Govt chooses to withdraw</xbifns:description>
+        <xbifns:state name="True"/>
+        <xbifns:state name="False"/>
+      </xbifns:variable>
+      <xbifns:variable rgbColor="-256" height="158.0" width="250.0" yPos="286" xPos="858" type="DiscreteProbabilistic" name="E2">
+        <xbifns:description>DAGGRE Now</xbifns:description>
+        <xbifns:state name="New_Democracy"/>
+        <xbifns:state name="Socialst"/>
+        <xbifns:state name="Communist"/>
+        <xbifns:state name="Popular_Orthodox_Rally"/>
+        <xbifns:state name="Coalition_of_Radical_Left"/>
+        <xbifns:state name="Democratic_Left"/>
+      </xbifns:variable>
+      <xbifns:variable rgbColor="-256" height="158.0" width="250.0" yPos="430" xPos="859" type="DiscreteProbabilistic" name="E3">
+        <xbifns:description>DAGGRE Prev</xbifns:description>
+        <xbifns:state name="New_Democracy"/>
+        <xbifns:state name="Socialst"/>
+        <xbifns:state name="Communist"/>
+        <xbifns:state name="Popular_Orthodox_Rally"/>
+        <xbifns:state name="Coalition_of_Radical_Left"/>
+        <xbifns:state name="Democratic_Left"/>
+      </xbifns:variable>
+      <xbifns:variable rgbColor="-256" height="158.0" width="250.0" yPos="576" xPos="857" type="DiscreteProbabilistic" name="E1">
+        <xbifns:description>Other Poll or Market</xbifns:description>
+        <xbifns:state name="New_Democracy"/>
+        <xbifns:state name="Socialst"/>
+        <xbifns:state name="Communist"/>
+        <xbifns:state name="Popular_Orthodox_Rally"/>
+        <xbifns:state name="Coalition_of_Radical_Left"/>
+        <xbifns:state name="Democratic_Left"/>
+      </xbifns:variable>
+      <xbifns:variable rgbColor="-256" height="86.0" width="250.0" yPos="379" xPos="284" type="DiscreteProbabilistic" name="Ejected">
+        <xbifns:description>EU Votes to Eject Greece</xbifns:description>
+        <xbifns:state name="True"/>
+        <xbifns:state name="False"/>
+      </xbifns:variable>
+      <xbifns:variable rgbColor="-256" height="86.0" width="250.0" yPos="511" xPos="420" type="DiscreteProbabilistic" name="Core">
+        <xbifns:description>Will Greece exit the EU?</xbifns:description>
+        <xbifns:state name="True"/>
+        <xbifns:state name="False"/>
+      </xbifns:variable>
+      <xbifns:variable rgbColor="-256" height="86.0" width="250.0" yPos="189" xPos="402" type="DiscreteProbabilistic" name="Others">
+        <xbifns:description>Others</xbifns:description>
+        <xbifns:state name="True"/>
+        <xbifns:state name="False"/>
+      </xbifns:variable>
+      <xbifns:variable rgbColor="-256" height="86.0" width="250.0" yPos="414" xPos="2" type="DiscreteProbabilistic" name="G1">
+        <xbifns:description>C1</xbifns:description>
+        <xbifns:state name="True"/>
+        <xbifns:state name="False"/>
+      </xbifns:variable>
+      <xbifns:variable rgbColor="-256" height="86.0" width="250.0" yPos="487" xPos="0" type="DiscreteProbabilistic" name="G2">
+        <xbifns:description>C2</xbifns:description>
+        <xbifns:state name="True"/>
+        <xbifns:state name="False"/>
+      </xbifns:variable>
+      <xbifns:variable rgbColor="-256" height="86.0" width="250.0" yPos="559" xPos="3" type="DiscreteProbabilistic" name="G3">
+        <xbifns:description>C3</xbifns:description>
+        <xbifns:state name="True"/>
+        <xbifns:state name="False"/>
+      </xbifns:variable>
+    </xbifns:variables>
+    <xbifns:structure>
+      <xbifns:edge child="Withraw" parent="Elections"/>
+      <xbifns:edge child="E2" parent="Elections"/>
+      <xbifns:edge child="E3" parent="Elections"/>
+      <xbifns:edge child="E1" parent="Elections"/>
+      <xbifns:edge child="Core" parent="Ejected"/>
+      <xbifns:edge child="Core" parent="Withraw"/>
+      <xbifns:edge child="Ejected" parent="Germany"/>
+      <xbifns:edge child="Others" parent="Germany"/>
+      <xbifns:edge child="Ejected" parent="Others"/>
+      <xbifns:edge child="G1" parent="Germany"/>
+      <xbifns:edge child="G2" parent="Germany"/>
+      <xbifns:edge child="G3" parent="Germany"/>
+    </xbifns:structure>
+    <xbifns:conditionalDistributionSet>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="Germany"/>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.800000011920929</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.20000000298023224</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="Elections"/>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.25</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="3">0.23000000417232513</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="4">0.12999999523162842</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="5">0.15000000596046448</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="Withraw"/>
+        <xbifns:parents>
+          <xbifns:parent index="0" name="Elections"/>
+        </xbifns:parents>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.5</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.5</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.5</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="3">0.5</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="4">0.5</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="5">0.5</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="6">0.5</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="7">0.5</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="8">0.5</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="9">0.5</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="10">0.5</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="11">0.5</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="E2"/>
+        <xbifns:parents>
+          <xbifns:parent index="0" name="Elections"/>
+        </xbifns:parents>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.25</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="3">0.23000000417232513</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="4">0.12999999523162842</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="5">0.15000000596046448</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="6">0.25</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="7">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="8">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="9">0.23000000417232513</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="10">0.12999999523162842</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="11">0.15000000596046448</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="12">0.25</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="13">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="14">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="15">0.23000000417232513</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="16">0.12999999523162842</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="17">0.15000000596046448</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="18">0.25</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="19">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="20">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="21">0.23000000417232513</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="22">0.12999999523162842</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="23">0.15000000596046448</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="24">0.25</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="25">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="26">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="27">0.23000000417232513</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="28">0.12999999523162842</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="29">0.15000000596046448</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="30">0.25</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="31">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="32">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="33">0.23000000417232513</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="34">0.12999999523162842</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="35">0.15000000596046448</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="E3"/>
+        <xbifns:parents>
+          <xbifns:parent index="0" name="Elections"/>
+        </xbifns:parents>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.25</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="3">0.23000000417232513</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="4">0.12999999523162842</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="5">0.15000000596046448</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="6">0.25</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="7">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="8">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="9">0.23000000417232513</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="10">0.12999999523162842</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="11">0.15000000596046448</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="12">0.25</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="13">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="14">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="15">0.23000000417232513</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="16">0.12999999523162842</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="17">0.15000000596046448</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="18">0.25</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="19">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="20">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="21">0.23000000417232513</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="22">0.12999999523162842</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="23">0.15000000596046448</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="24">0.25</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="25">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="26">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="27">0.23000000417232513</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="28">0.12999999523162842</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="29">0.15000000596046448</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="30">0.25</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="31">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="32">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="33">0.23000000417232513</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="34">0.12999999523162842</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="35">0.15000000596046448</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="E1"/>
+        <xbifns:parents>
+          <xbifns:parent index="0" name="Elections"/>
+        </xbifns:parents>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.25</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="3">0.23000000417232513</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="4">0.12999999523162842</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="5">0.15000000596046448</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="6">0.25</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="7">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="8">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="9">0.23000000417232513</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="10">0.12999999523162842</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="11">0.15000000596046448</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="12">0.25</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="13">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="14">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="15">0.23000000417232513</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="16">0.12999999523162842</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="17">0.15000000596046448</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="18">0.25</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="19">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="20">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="21">0.23000000417232513</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="22">0.12999999523162842</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="23">0.15000000596046448</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="24">0.25</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="25">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="26">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="27">0.23000000417232513</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="28">0.12999999523162842</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="29">0.15000000596046448</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="30">0.25</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="31">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="32">0.11999999731779099</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="33">0.23000000417232513</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="34">0.12999999523162842</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="35">0.15000000596046448</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="Ejected"/>
+        <xbifns:parents>
+          <xbifns:parent index="0" name="Germany"/>
+          <xbifns:parent index="1" name="Others"/>
+        </xbifns:parents>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">1.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">1.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="3">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="4">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="5">1.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="6">1.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="7">0.0</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="Core"/>
+        <xbifns:parents>
+          <xbifns:parent index="0" name="Withraw"/>
+          <xbifns:parent index="1" name="Ejected"/>
+        </xbifns:parents>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">1.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">1.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="3">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="4">1.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="5">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="6">0.0</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="7">1.0</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="Others"/>
+        <xbifns:parents>
+          <xbifns:parent index="0" name="Germany"/>
+        </xbifns:parents>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.699999988079071</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.30000001192092896</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.30000001192092896</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="3">0.699999988079071</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="G1"/>
+        <xbifns:parents>
+          <xbifns:parent index="0" name="Germany"/>
+        </xbifns:parents>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.800000011920929</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.20000000298023224</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.800000011920929</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="3">0.20000000298023224</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="G2"/>
+        <xbifns:parents>
+          <xbifns:parent index="0" name="Germany"/>
+        </xbifns:parents>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.800000011920929</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.20000000298023224</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.800000011920929</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="3">0.20000000298023224</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="G3"/>
+        <xbifns:parents>
+          <xbifns:parent index="0" name="Germany"/>
+        </xbifns:parents>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.800000011920929</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.20000000298023224</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.800000011920929</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="3">0.20000000298023224</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+    </xbifns:conditionalDistributionSet>
+  </xbifns:network>
+</xbifns:XMLBIF>
