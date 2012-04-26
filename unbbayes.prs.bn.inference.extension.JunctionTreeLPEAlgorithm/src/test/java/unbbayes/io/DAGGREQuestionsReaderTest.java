@@ -4,18 +4,24 @@
 package unbbayes.io;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import junit.framework.TestCase;
+import junit.framework.TestResult;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
+import au.com.bytecode.opencsv.CSVReader;
 
 /**
  * @author Shou Matsumoto
@@ -26,18 +32,20 @@ public class DAGGREQuestionsReaderTest extends TestCase {
 //	private static final File csvFile = new File("examples/DAGGRE.csv");
 	
 	/**How many times to iterate test on the same file, in order to avoid background process to impact on time*/
-	private static int ITERATION = 5;//5;
+	private int maxIterations = 5;//5;
 	
 	/** If two probability values are within an interval of + or - this value, then it is considered to be equalÅ@*/
-	private static final float PROB_PRECISION_ERROR = 0.0005f;
+	private float probPrecisionError = 0.0005f;
 
-	private boolean isToTestProbValues = false;
+	private boolean isToTestProbValues = true;
 
-	private boolean isToPropagateEvidence = true;
+	private boolean isToPropagateEvidence = false;
 	
 	private boolean isToUpdateAssets = false;
 	
 	private boolean isToCreateUserAssetNets = false;
+
+	private boolean isToPrintProbabilityValues = false;
 	
 
 //	private File netFile = new File(csvFile.getParent(),"DAGGRE1.net");
@@ -89,19 +97,38 @@ public class DAGGREQuestionsReaderTest extends TestCase {
 		// do the test for these files
 //		File[] netFilesToTest = {new File(csvFile.getParent(),"DAGGRE1.net"), new File(csvFile.getParent(),"DAGGRE5p5.net") };
 		File[] netFilesToTest = {new File(csvFile.getParent(),"DAGGRE5p5.net"), new File(csvFile.getParent(),"DAGGRE1.net")  };
-		for (File netFile : netFilesToTest) {
+		
+		// config of values of isToTestProbValues, isToPropagateEvidence, isToUpdateAssets, isToCreateUserAssetNets, isToPrintProbabilityValues respectively;
+		boolean[][]	config = {{true, true, true, true, false}, {true, false, false, false, false}};
+		
+		
+		for (int currentFileIndex = 0; currentFileIndex < netFilesToTest.length; currentFileIndex++) {
+			File netFile = netFilesToTest[currentFileIndex];
+			// change config
+			isToTestProbValues = config[currentFileIndex][0];
+			isToPropagateEvidence = config[currentFileIndex][1];
+			isToUpdateAssets = config[currentFileIndex][2];
+			isToCreateUserAssetNets = config[currentFileIndex][3];
+			isToPrintProbabilityValues = config[currentFileIndex][4];
 			
 			// assert existence of files
 			assertNotNull(netFile);
 			assertTrue(netFile.exists());
 			
-			// iterate ITERATION time, because background process can change execution time.
-			for (int i = 0; i < ITERATION; i++) {
+			// iterate maxIterations time, because background process can change execution time.
+			for (int currentIteration = 0; currentIteration < maxIterations; currentIteration++) {
 				
-				// instantiate this here, so that we use a clean reader at each iteration
+				// instantiate this here, so that we use a clean reader at each maxIterations
 				DAGGREQuestionReader daggreQuestionReader = new DAGGREQuestionReader();
 				daggreQuestionReader.setToPropagate(isToPropagateEvidence);
 				daggreQuestionReader.setToCreateUserAssetNet(isToCreateUserAssetNets);
+				
+				System.gc();
+				try {
+					Thread.sleep(2000);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
 				
 				long startTime = System.currentTimeMillis();	// for counting the time to load network file
 				
@@ -113,7 +140,7 @@ public class DAGGREQuestionsReaderTest extends TestCase {
 					e.printStackTrace();
 					fail (e.getMessage());
 				}
-				System.out.println("Iteration " + i 
+				System.out.println("Iteration " + currentIteration 
 						+ ", loaded network = " 
 						+ netFile.getName() 
 						+ ", time to load network = " + (System.currentTimeMillis() - startTime) + " ms, size of network = "
@@ -137,21 +164,31 @@ public class DAGGREQuestionsReaderTest extends TestCase {
 				
 				for (Node node : algorithm.getProbabilityPropagationDelegator().getNetwork().getNodes()) {
 					float sum = (((TreeVariable)node).getMarginalAt(0) + ((TreeVariable)node).getMarginalAt(1));	// sum must be 1 (with some margin for imprecision)
-					assertTrue(node.getName() + ", sum = " + sum, ((0 - PROB_PRECISION_ERROR) < sum) && (sum < (0 + PROB_PRECISION_ERROR)) );
+					assertTrue(node.getName() + ", sum = " + sum, ((0 - probPrecisionError) < sum) && (sum < (0 + probPrecisionError)) );
 				}
 				
 				startTime = System.currentTimeMillis();	// for counting the time to compile network
 				
 				
 				// compile network
-				algorithm.run();
+				if (isToPropagateEvidence) {
+					algorithm.run();
+				} else {
+					// force nodes to start with a marginal list.
+					for (Node n : net.getNodes()) {
+						TreeVariable tv = (TreeVariable) n;
+						tv.initMarginalList();
+						tv.setMarginalAt(0, .5f);
+						tv.setMarginalAt(1, .5f);
+					}
+				}
 				
-				System.out.println("Iteration " + i 
+				System.out.println("Iteration " + currentIteration 
 						+ ", time to compile network = " + (System.currentTimeMillis() - startTime) + " ms.");
 				if (isToTestProbValues) {
 					for (Node node : algorithm.getProbabilityPropagationDelegator().getNetwork().getNodes()) {
 						float sum = (((TreeVariable)node).getMarginalAt(0) + ((TreeVariable)node).getMarginalAt(1));	// sum must be 1 (with some margin for imprecision)
-						assertTrue(node.getName() + ", sum = " + sum, ((1 - PROB_PRECISION_ERROR) < sum) && (sum < (1 + PROB_PRECISION_ERROR)) );
+						assertTrue(node.getName() + ", sum = " + sum, ((1 - probPrecisionError) < sum) && (sum < (1 + probPrecisionError)) );
 					}
 				}
 				
@@ -176,14 +213,40 @@ public class DAGGREQuestionsReaderTest extends TestCase {
 					assertFalse(userMap.isEmpty());
 				}
 				
-				System.out.println("Iteration " + i 
+				System.out.println("Iteration " + currentIteration 
 						+ ", loaded csv = " + csvFile.getName() 
 						+ ", processed edits = " + processedEdits
 						+ ", time to process = " + (System.currentTimeMillis() - startTime) + " ms, number of users = "
-						+ userMap.size());
+						+ userMap.size()
+						+ ", used memory = " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) + " bytes.");
 				
 				if(isToTestProbValues) {
-					System.out.println("\n**** Probabilities, file = " + netFile.getName() + ", iteration "+ i +" ****");
+					// collect last edits
+					CSVReader reader = null;
+					try {
+						reader = new CSVReader(new FileReader(csvFile)); // classes of open csv
+					} catch (FileNotFoundException e) {
+						fail(e.getMessage());
+						e.printStackTrace();
+					}	
+					String [] nextLine;	// the line read
+					Map<Integer, Float> lastEditMap = new HashMap<Integer, Float>();
+					try {
+						while ((nextLine = reader.readNext()) != null) {
+							// csv is assumed to be ordered by time, so the last edit comes last
+							lastEditMap.put(Integer.valueOf(
+									nextLine[0]), 				//1st element is the question ID
+									Float.valueOf(nextLine[3])	//3rd element is the prob value
+								);
+						}
+					} catch (IOException e) {
+						e.printStackTrace();
+						fail(e.getMessage());
+					}
+					
+					if (isToPrintProbabilityValues) {
+						System.out.println("\n**** Probabilities, file = " + netFile.getName() + ", maxIterations "+ currentIteration +" ****");
+					}
 					
 					// assuming that the name of the nodes are the question IDs (and ids are integers), convert the name of nodes (string) to integers
 					List<Integer> sortedQuestionIDList = new ArrayList<Integer>();
@@ -200,7 +263,9 @@ public class DAGGREQuestionsReaderTest extends TestCase {
 						TreeVariable node = (TreeVariable)net.getNode(id.toString());	
 						
 						// print prob
-						System.out.println(node.getName() + " [false,true] = [" + node.getMarginalAt(0) + " , "+ node.getMarginalAt(1) + "]");
+						if (isToPrintProbabilityValues) {
+							System.out.println(node.getName() + " [false,true] = [" + node.getMarginalAt(0) + " , "+ node.getMarginalAt(1) + "]");
+						}
 						
 						// prob value assertions, assuming that questions are boolean variables whose states are [false, true]
 						if (isToTestProbValues){
@@ -208,12 +273,16 @@ public class DAGGREQuestionsReaderTest extends TestCase {
 							assertEquals("true", node.getStateAt(1));
 							assertTrue(id + ", false = " + node.getMarginalAt(0), node.getMarginalAt(0) >= 0);
 							assertTrue(id + ", true = " + node.getMarginalAt(1), node.getMarginalAt(1) >= 0);
+							assertTrue(id + ", false = " + node.getMarginalAt(0), (((1-lastEditMap.get(id)) - probPrecisionError) < node.getMarginalAt(0)) && (node.getMarginalAt(0) < ((1-lastEditMap.get(id)) + probPrecisionError)));
+							assertTrue(id + ", true = " + node.getMarginalAt(1), ((lastEditMap.get(id) - probPrecisionError) < node.getMarginalAt(1)) && (node.getMarginalAt(1) < (lastEditMap.get(id) + probPrecisionError)));
 							float sum = (node.getMarginalAt(0) + node.getMarginalAt(1));	// sum must be 1 (with some margin for imprecision)
-							assertTrue(id + ", sum = " + sum, ((1 - PROB_PRECISION_ERROR) < sum) && (sum < (1 + PROB_PRECISION_ERROR)) );
+							assertTrue(id + ", sum = " + sum, ((1 - probPrecisionError) < sum) && (sum < (1 + probPrecisionError)) );
 						}
 						
 					}
-					System.out.println("\n***********************\n\n");
+					if (isToPrintProbabilityValues) {
+						System.out.println("\n***********************\n\n");
+					}
 					
 				}
 				// TODO check if we should print the q-tables as well
@@ -224,11 +293,22 @@ public class DAGGREQuestionsReaderTest extends TestCase {
 	
 	
 
-//	/**
-//	 * Execute this method only for printing the results without calling JUnit's assertions.
-//	 * @param args
-//	 */
-//	public static void main(String[] args) {
-//	}
+	/**
+	 * Execute this method only for printing the results without calling JUnit's assertions.
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		DAGGREQuestionsReaderTest test = new DAGGREQuestionsReaderTest("testCSVReading");
+		TestResult result = test.run();
+		if (!result.wasSuccessful()) {
+			System.err.println("Error on test: " + test);
+//			while (result.failures().hasMoreElements()) {
+//				TestFailure failure = (TestFailure) result.failures().nextElement();
+//				System.err.println(failure.exceptionMessage());
+//			}
+		} else {
+			System.out.println("Success.");
+		}
+	}
 	
 }

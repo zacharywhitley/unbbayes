@@ -12,12 +12,11 @@ import java.util.Map;
 
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
+import unbbayes.prs.bn.AssetNode;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;
-import unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor;
-import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
@@ -33,7 +32,7 @@ import au.com.bytecode.opencsv.CSVReader;
 public class DAGGREQuestionReader  {
 
 	private boolean isToPropagate = true;
-	private boolean isToCreateUserAssetNet = true;;
+	private boolean isToCreateUserAssetNet = true;
 
 	/**
 	 * @param name
@@ -100,32 +99,36 @@ public class DAGGREQuestionReader  {
 	        // TODO what if probTrue is not the probability of question to be true?
 	        
 	        // check consistency of probTrue
-	        if (probTrue < 0 || probTrue > 1) {
-	        	Debug.println(getClass(), "Warning: user " + userID + " bet " + probTrue + " on question " + id);
-	        	//ignore this edit
-	        	lineCounter--;
-	        	continue;	
+	        if (probTrue <= 0 || probTrue >= 1) {
+	        	throw new IllegalStateException("User " + userID + " bet " + probTrue + " on question " + id);
+//	        	Debug.println(getClass(), "Warning: user " + userID + " bet " + probTrue + " on question " + id);
+//	        	//ignore this edit
+//	        	lineCounter--;
+//	        	continue;	
 	        }
 	        
 	        // extract node (the node user is making a bet) related to question id
 	        Node node = net.getNode(id.toString());
 	        if (!(node instanceof TreeVariable)) {
 	        	// cannot use likelihood/soft evidence for this node
-	        	Debug.println(getClass(), node + " is not a TreeVariable. We cannot add likelihood/soft evidence to this node.");
-	        	//ignore this edit
-	        	lineCounter--;
-	        	continue;	
+	        	throw new IllegalStateException(node + " is not a TreeVariable. We cannot add likelihood/soft evidence to this node.");
+//	        	Debug.println(getClass(), node + " is not a TreeVariable. We cannot add likelihood/soft evidence to this node.");
+//	        	//ignore this edit
+//	        	lineCounter--;
+//	        	continue;	
 	        }
 	        
-	        AssetNetwork userAssetNet = null;
-	        if (isToCreateUserAssetNet()) {
-	        	// extract user (or user's asset's q network)
-	        	userAssetNet = usersMap.get(userID);
-	        	if (userAssetNet == null) {
-	        		// create user's asset network and store to user map
+	        // extract user (or user's asset's q network)
+	        AssetNetwork userAssetNet = usersMap.get(userID);
+	        if (userAssetNet == null) {
+	        	if (isToCreateUserAssetNet()) {
+	        		// create user's asset network with cliques and store to user map
 	        		userAssetNet = algorithm.createAssetNetFromProbabilisticNet(net);
-	        		usersMap.put(userID, userAssetNet);
+	        	} else {
+	        		// store only asset network without cliques
+	        		userAssetNet = AssetNetwork.getInstance(algorithm.getRelatedProbabilisticNetwork());
 	        	}
+	        	usersMap.put(userID, userAssetNet);
 	        }
 	        
 	        if (isToPropagate()){
@@ -175,6 +178,23 @@ public class DAGGREQuestionReader  {
 	        	
 	        	// propagate soft evidence
 	        	algorithm.propagate();
+	        } else {
+	        	// just update marginals
+	        	// at this moment, node is a TreeVariable
+	        	TreeVariable betNode = (TreeVariable) node;
+	        	// previous marginals
+	        	float prevTrue = betNode.getMarginalAt(1);
+	        	betNode.setMarginalAt(0, 1-probTrue);
+	        	betNode.setMarginalAt(1, probTrue);
+	        	
+	        	// extract asset node and update only its marginal
+	        	Node assetNode = userAssetNet.getNode(id.toString());
+	        	if (assetNode != null && (assetNode instanceof AssetNode)) {
+	        		// update marginal of asset node using the ratio of change in probability
+					AssetNode asset = (AssetNode) assetNode;
+	        		asset.setMarginalAt(0, asset.getMarginalAt(0) * ((1-prevTrue) / (1-probTrue)));
+	        		asset.setMarginalAt(1, asset.getMarginalAt(1) * (prevTrue / probTrue));
+	        	}
 	        }
 //	        System.out.println(lineCounter + "," + node.getName() + " ; [" + ((TreeVariable) node).getMarginalAt(0) + " , "+ ((TreeVariable) node).getMarginalAt(1) + "]");
 //	        if (((TreeVariable) node).getMarginalAt(0) > .5) {
