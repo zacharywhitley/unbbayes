@@ -134,7 +134,11 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 			
 //			Separator sep = getSeparator(clique, auxClique); 
 //			clique.absorb(auxClique, sep.getPotentialTable());
-			absorb(clique, auxClique);
+			if (auxClique.getProbabilityFunction().getVariablesSize() > 1) {
+				absorb(clique, auxClique);
+			} else {
+				// a clique with only 1 variable is equivalent to a BN with only 1 node (there is no prob dist at all), so no need to propagate
+			}
 		}
 
 		totalEstimatedProb *= clique.normalize();
@@ -153,7 +157,11 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 			
 //			Separator sep = getSeparator(clique, auxClique); 
 //			auxClique.absorb(clique, sep.getPotentialTable());
-			absorb(auxClique, clique);
+			if (auxClique.getProbabilityFunction().getVariablesSize() > 1) {
+				absorb(auxClique, clique);
+			} else {
+				// a clique with only 1 variable is equivalent to a BN with only 1 node (there is no prob dist at all), so no need to propagate
+			}
 			if (auxClique.getChildrenSize() != 0) {
 				distributeEvidences(auxClique);
 			}
