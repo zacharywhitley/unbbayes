@@ -10,7 +10,7 @@
     <runtime>
         <!-- It seems that loaders does not work as expected on jar files -->
         <!-- If you change/add the libraries, change/add these library declaration too -->
-        <library id="edu.gmu.seor.prognos.unbbayesplugin.cps" path="edu.gmu.seor.prognos.unbbayesplugin.cps-1.0.0.jar" type="code" >
+        <library id="unbbayes.io.xmlbif.version7" path="unbbayes.io.xmlbif.version7-1.0.0" type="code" >
         	<export prefix="*"/>
         </library>
     </runtime>
