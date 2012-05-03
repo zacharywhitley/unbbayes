@@ -307,6 +307,12 @@ public class DAGGREQuestionsReaderDriver extends TestCase {
 			while (result.failures().hasMoreElements()) {
 				TestFailure failure = (TestFailure) result.failures().nextElement();
 				System.err.println(failure.toString());
+				failure.thrownException().printStackTrace();
+			}
+			while (result.errors().hasMoreElements()) {
+				TestFailure failure = (TestFailure) result.errors().nextElement();
+				System.err.println(failure.toString());
+				failure.thrownException().printStackTrace();
 			}
 		} else {
 			System.out.println("Success.");

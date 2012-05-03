@@ -74,18 +74,74 @@ public class DAGGRECSVToBNConverterTest extends TestCase {
 			public long getNumberOfNewNodesToBeGeneratedBeforeCall() {
 				return 5;
 			}
+			/**
+			 * Generate a network like the following:
+			 * <br/>
+			 * 1	<br/>
+			 * | \	<br/>
+			 * V V	<br/>
+			 * 2->5	<br/>
+			 * | \	<br/>
+			 * V V	<br/>
+			 * 3 4	<br/>
+			 * <br/>
+			 * If there is not enough nodes, then:
+			 * 
+			 */
 			public void doCommand(Graph graph, List<INode> lastNodesCreated) {
-				for (int i = 0; i < lastNodesCreated.size() - 1; i++) {
-					for (int j = i+1; j < lastNodesCreated.size(); j++) {
-						if (Math.random() <= .7 ) {
-							Edge edge = new Edge((Node)lastNodesCreated.get(i), (Node)lastNodesCreated.get(j));
-							try {
-								graph.addEdge(edge);
-							} catch (Exception e) {
-								throw new RuntimeException(e);
-							}
-						}
-					}
+				if (lastNodesCreated.size() <= 1) {
+					// nothing to connect
+					return;
+				}
+				// there are at least 2 nodes from now on
+				// add edge 1->2
+				Edge edge = new Edge((Node)lastNodesCreated.get(0), (Node)lastNodesCreated.get(1));
+				try {
+					graph.addEdge(edge);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+				if (lastNodesCreated.size() == 2) {
+					// impossible to add more edges 
+					return;
+				}
+				// add edge 1->5 (1->4 or 1->3 if less than 5 nodes)
+				edge = new Edge((Node)lastNodesCreated.get(0), (Node)lastNodesCreated.get(lastNodesCreated.size()-1));
+				try {
+					graph.addEdge(edge);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+				// add edge 2->5 (2->4 or 2->3 if less than 5 nodes)
+				edge = new Edge((Node)lastNodesCreated.get(1), (Node)lastNodesCreated.get(lastNodesCreated.size()-1));
+				try {
+					graph.addEdge(edge);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+				if (lastNodesCreated.size() == 3) {
+					// impossible to add more edges 
+					return;
+				}
+				
+				// add edge 2->3
+				edge = new Edge((Node)lastNodesCreated.get(1), (Node)lastNodesCreated.get(2));
+				try {
+					graph.addEdge(edge);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+				if (lastNodesCreated.size() == 4) {
+					// impossible to add more edges 
+					return;
+				}
+				
+				// add edge 2->4
+				edge = new Edge((Node)lastNodesCreated.get(1), (Node)lastNodesCreated.get(3));
+				try {
+					graph.addEdge(edge);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
 				}
 			}
 		});

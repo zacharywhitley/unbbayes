@@ -96,8 +96,13 @@ public class DAGGRECSVToBNConverter implements BaseIO {
 	        		}
 	        	}
 	        }
-	        
 	    }
+		if (newNodeCommand != null && !lastNodes.isEmpty()) {
+			// the quantity of lines in the csv was not a multiple of newNodeCommand.getNumberOfNewNodesToBeGeneratedBeforeCall().
+			// call for the last few nodes.
+			newNodeCommand.doCommand(ret, lastNodes);
+			lastNodes.clear();
+		}
 	    
 		return ret;
 	}
