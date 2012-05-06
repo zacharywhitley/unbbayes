@@ -21,11 +21,15 @@
 package unbbayes.prs.bn;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import unbbayes.prs.Node;
 import unbbayes.prs.id.UtilityNode;
-import unbbayes.util.Debug;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -47,9 +51,10 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	private List<Clique> cliques;
 
 	/**
-	 *  Lista de Separadores Associados.
+	 *  List of Associated separatorsMap.
 	 */
-	private List<Separator> separators;
+	private Set<Separator> separators = new HashSet<Separator>();
+	private Map<Clique, Set<Separator>> separatorsMap = new HashMap<Clique, Set<Separator>>();
 
 //	/**
 //	 * Pre-calculated coordinates for optimizing the method absorb
@@ -58,11 +63,11 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 
 	/**
 	 * Default constructor for juction tree. It initializes the list {@link #getCliques()}
-	 * and the separators obtainable from {@link #getSeparator(Clique, Clique)},
+	 * and the separatorsMap obtainable from {@link #getSeparator(Clique, Clique)},
 	 * {@link #getSeparatorAt(int)}, {@link #getSeparatorsSize()}
 	 */
 	public JunctionTree() {
-		separators = new ArrayList<Separator>();
+//		separatorsMap = new ArrayList<Separator>();
 		cliques = new ArrayList<Clique>();
 	}
 
@@ -80,23 +85,39 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	 */
 	public void addSeparator(Separator sep) {
 		separators.add(sep);
+		Set<Separator> seps = separatorsMap.get(sep.getClique1());
+		if (seps == null) {
+			seps = new HashSet<Separator>();
+			seps.add(sep);
+			separatorsMap.put(sep.getClique1(), seps);
+		} else {
+			seps.add(sep);
+		}
+		seps = separatorsMap.get(sep.getClique2());
+		if (seps == null) {
+			seps = new HashSet<Separator>();
+			seps.add(sep);
+			separatorsMap.put(sep.getClique2(), seps);
+		} else {
+			seps.add(sep);
+		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see unbbayes.prs.bn.IJunctionTree#getSeparatorsSize()
-	 */
-	public int getSeparatorsSize() {
-		return separators.size();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see unbbayes.prs.bn.IJunctionTree#getSeparatorAt(int)
-	 */
-	public Separator getSeparatorAt(int index) {
-		return separators.get(index);
-	}
+//	/**
+//	 * (non-Javadoc)
+//	 * @see unbbayes.prs.bn.IJunctionTree#getSeparatorsSize()
+//	 */
+//	public int getSeparatorsSize() {
+//		return separatorsMap.size();
+//	}
+//
+//	/*
+//	 * (non-Javadoc)
+//	 * @see unbbayes.prs.bn.IJunctionTree#getSeparatorAt(int)
+//	 */
+//	public Separator getSeparatorAt(int index) {
+//		return separatorsMap.get(index);
+//	}
 
 	/*
 	 * (non-Javadoc)
@@ -176,13 +197,13 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	protected void absorb(Clique clique1, Clique clique2) {
 		Separator sep = getSeparator(clique1, clique2);
 		if (sep == null) {
-			Debug.println(getClass(), clique1 + " and " + clique2 + " are disconnected.");
+//			Debug.println(getClass(), clique1 + " and " + clique2 + " are disconnected.");
 			return;
 		}
 		PotentialTable sepTab = sep.getProbabilityFunction();
 		ArrayList<Node> toDie = SetToolkit.clone(clique2.getNodes());
 		if (sepTab.tableSize() <= 0) {
-			Debug.println(getClass(), clique1 + " and " + clique2 + " has empty separator.");
+//			Debug.println(getClass(), clique1 + " and " + clique2 + " has empty separator.");
 			return;
 		}
 		for (int i = 0; i < sepTab.variableCount(); i++) {
@@ -224,10 +245,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 				this.initBelief(auxClique);
 			}
 	
-			Separator auxSep;
-			int sizeSeparadores = separators.size();
-			for (int k = 0; k < sizeSeparadores; k++) {
-				auxSep = (Separator) separators.get(k);
+			for (Separator auxSep : getSeparators()) {
 				this.initBelief(auxSep);
 			}
 			
@@ -318,9 +336,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 			auxClique.getUtilityTable().restoreData();
 		}
 		
-		int sizeSeparadores = separators.size();
-		for (int k = 0; k < sizeSeparadores; k++) {
-			Separator auxSep = (Separator) separators.get(k);
+		for (Separator auxSep : getSeparators()) {
 			auxSep.getProbabilityFunction().restoreData();
 			auxSep.getUtilityTable().restoreData();
 		}
@@ -334,9 +350,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 			auxClique.getUtilityTable().copyData();
 		}
 		
-		int sizeSeparadores = separators.size();
-		for (int k = 0; k < sizeSeparadores; k++) {
-			Separator auxSep = (Separator) separators.get(k);
+		for (Separator auxSep : getSeparators()) {
 			auxSep.getProbabilityFunction().copyData();
 			auxSep.getUtilityTable().copyData();
 		}
@@ -347,14 +361,30 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	 * @see unbbayes.prs.bn.IJunctionTree#getSeparator(unbbayes.prs.bn.Clique, unbbayes.prs.bn.Clique)
 	 */
 	public Separator getSeparator(Clique clique1, Clique clique2) {
-		int sizeSeparadores = separators.size();
-		for (int indSep = 0; indSep < sizeSeparadores; indSep++) {
-			Separator separator = (Separator) separators.get(indSep);
-			if (((separator.getClique1() == clique1) && (separator.getClique2() == clique2))
-				|| ((separator.getClique2() == clique1) && (separator.getClique1() == clique2))) {
-				return separator;
+		Set<Separator> seps = separatorsMap.get(clique1);
+		if (seps != null) {
+			for (Separator separator : seps) {
+				if (separator.getClique2().equals(clique2) || separator.getClique1().equals(clique2)) {
+					return separator;
+				}
 			}
 		}
+//		seps = separatorsMap.get(clique2);
+//		if (seps != null) {
+//			for (Separator separator : seps) {
+//				if (separator.getClique2().equals(clique1)) {
+//					return separator;
+//				}
+//			}
+//		}
+//		int sizeSeparadores = separatorsMap.size();
+//		for (int indSep = 0; indSep < sizeSeparadores; indSep++) {
+//			Separator separator = (Separator) separatorsMap.get(indSep);
+//			if (((separator.getClique1() == clique1) && (separator.getClique2() == clique2))
+//				|| ((separator.getClique2() == clique1) && (separator.getClique1() == clique2))) {
+//				return separator;
+//			}
+//		}
 		return null;
 	}
 
@@ -362,16 +392,16 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	 * (non-Javadoc)
 	 * @see unbbayes.prs.bn.IJunctionTree#getSeparators()
 	 */
-	public List<Separator> getSeparators() {
+	public Collection<Separator> getSeparators() {
 		return separators;
 	}
 
-	/**
-	 * @param separators the separators to set
-	 */
-	public void setSeparators(List<Separator> separators) {
-		this.separators = separators;
-	}
+//	/**
+//	 * @param separatorsMap the separatorsMap to set
+//	 */
+//	public void setSeparators(List<Separator> separatorsMap) {
+//		this.separators = separatorsMap;
+//	}
 
 //	/*
 //	 * (non-Javadoc)

@@ -40,7 +40,6 @@ public class NetworkCompilationLogManager extends TextLogManager{
         Clique auxClique;
         Node node;
         PotentialTable auxTab;
-        Separator auxSep;
 
         DecimalFormat df = new DecimalFormat();
         append(resource.getString("cliqueHeader"));
@@ -73,10 +72,8 @@ public class NetworkCompilationLogManager extends TextLogManager{
 
         append(resource.getString("separatorHeader"));
 
-        int sizeseparators = tree.getSeparatorsSize();
-        for (int c = 0; c < sizeseparators; c++) {
-            auxSep = tree.getSeparatorAt(c);
-            append(resource.getString("separatorName") + c + " ");
+        for (Separator auxSep : tree.getSeparators()) {
+            append(resource.getString("separatorName") + auxSep + " ");
             append(resource.getString("betweenName") + clicks.indexOf(auxSep.getClique1()) + 
             		resource.getString("andName") + clicks.indexOf(auxSep.getClique2()) + "\n");
             append(resource.getString("nodeName"));

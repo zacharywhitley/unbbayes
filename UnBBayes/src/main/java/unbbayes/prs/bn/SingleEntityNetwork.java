@@ -371,7 +371,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	protected void compileJT(IJunctionTree jt) throws Exception {
 		int menor;
 		Clique auxClique;
-		Separator auxSep;
+//		Separator auxSep;
 	
 		resetEvidences();
 		
@@ -389,13 +389,12 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			Node auxNode = copiaNos.get(c);
 			menor = Integer.MAX_VALUE;
 			if (auxNode.getType() == Node.PROBABILISTIC_NODE_TYPE) {
-				int sizeSeparadores = junctionTree.getSeparatorsSize();
-				for (int c2 = 0; c2 < sizeSeparadores; c2++) {
-					auxSep = (Separator) junctionTree.getSeparatorAt(c2);
+//				int sizeSeparadores = junctionTree.getSeparatorsSize();
+				for (Separator auxSep : junctionTree.getSeparators()) {
 					if (auxSep.getNodes().contains(auxNode)
-						&& (auxSep.getProbabilityFunction().tableSize() < menor)) {
+							&& (auxSep.getProbabilityFunction().tableSize() < menor)) {
 						((ProbabilisticNode) auxNode).setAssociatedClique(
-							auxSep);
+								auxSep);
 						menor = auxSep.getProbabilityFunction().tableSize();
 					}
 				}
@@ -605,8 +604,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			}
 		}
 	
-		for (int k = junctionTree.getSeparatorsSize() - 1; k >= 0; k--) {
-			Separator separator = (Separator) junctionTree.getSeparatorAt(k);
+		for (Separator separator : junctionTree.getSeparators()) {
 			ArrayList<Node> nosSeparator = separator.getNodes();
 			boolean haTroca = true;
 			while (haTroca) {
@@ -625,7 +623,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 						nosSeparator.set(i, node2);
 						haTroca = true;
 					}
-					*/
+					 */
 				}
 			}
 		}
@@ -671,8 +669,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			}
 		}
 	
-		for (int k = junctionTree.getSeparatorsSize() - 1; k >= 0; k--) {
-			Separator auxSep = (Separator) junctionTree.getSeparatorAt(k);
+		for (Separator auxSep : junctionTree.getSeparators()) {
 			auxTabPot = auxSep.getProbabilityFunction();
 			auxUtilTab = auxSep.getUtilityTable();
 			int sizeNos = auxSep.getNodes().size();

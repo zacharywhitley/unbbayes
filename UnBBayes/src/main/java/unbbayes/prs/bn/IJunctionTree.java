@@ -1,5 +1,6 @@
 package unbbayes.prs.bn;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -21,19 +22,19 @@ public interface IJunctionTree {
 	 */
 	public abstract void addSeparator(Separator sep);
 
-	/**
-	 * The current size of the collection of separators stored in this
-	 * junction tree.
-	 * @return
-	 */
-	public abstract int getSeparatorsSize();
+//	/**
+//	 * The current size of the collection of separators stored in this
+//	 * junction tree.
+//	 * @return
+//	 */
+//	public abstract int getSeparatorsSize();
 
-	/**
-	 * Obtains the separator in a given index.
-	 * @param index
-	 * @return
-	 */
-	public abstract Separator getSeparatorAt(int index);
+//	/**
+//	 * Obtains the separator in a given index.
+//	 * @param index
+//	 * @return
+//	 */
+//	public abstract Separator getSeparatorAt(int index);
 	
 	/**
 	 *@return    list with associated cliques
@@ -43,7 +44,7 @@ public interface IJunctionTree {
 	/**
 	 * @return list with associated separators
 	 */
-	public abstract List<Separator> getSeparators();
+	public abstract Collection<Separator> getSeparators();
 
 	/**
 	 *  Verifies global consistency.

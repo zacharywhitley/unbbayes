@@ -393,7 +393,11 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	public abstract PotentialTable newInstance();
 
 	protected void sum(int index) {
-		boolean marked[]  = new boolean[dataPT.size];		
+		boolean marked[]  = new boolean[dataPT.size];	
+		if ( sumOperation == null) {
+			// ensure the operation exists
+			sumOperation = new SumOperation();
+		}
 		sumAux(variableList.size() - 1, index, 0, 0, marked);
 		
 		int j = 0;
@@ -431,11 +435,8 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 		if (control == -1) {
 			// concentrate the sum on the first cell. 
 			int linearCoordDestination = coord - base;
-			if (this.getSumOperation() == null) {
-				// ensure the operation exists
-				this.setSumOperation(new SumOperation());
-			}
-			float value = this.getSumOperation().operate(dataPT.data[linearCoordDestination], dataPT.data[coord]);
+			
+			float value = sumOperation.operate(dataPT.data[linearCoordDestination], dataPT.data[coord]);
 			dataPT.data[linearCoordDestination] = value;
 			marked[coord] = true;
 			return;
