@@ -74,7 +74,12 @@ public class CategoricalStatesEntityContainer {
 		listEntity.remove(entity);
 		
 	}
-	
+	/**
+	 * Searches a categorical state entity by name/
+	 * @param name
+	 * @return CategoricalStateEntity
+	 * @throws CategoricalStateDoesNotExistException : thrown if there is no CategoricalStateEntity with the provided name.
+	 */
 	public CategoricalStateEntity getCategoricalState(String name) 
 	                         throws CategoricalStateDoesNotExistException{
 		
