@@ -39,6 +39,7 @@ import javax.swing.SwingUtilities;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.TreeVariable;
+import unbbayes.util.Debug;
 
 public class UShapeProbabilisticNode extends UShape  implements INodeHolderShape
 {       
@@ -304,12 +305,12 @@ public class UShapeProbabilisticNode extends UShape  implements INodeHolderShape
 	        
 	    if (SwingUtilities.isMiddleMouseButton(arg0)) 
 	    {
-	          System.out.println("Middle button released.");
+	    	Debug.println("Middle button released.");
 	    }
 	        
 	    if (SwingUtilities.isRightMouseButton(arg0)) 
 	    {
-	       	System.out.println("Right button released.");
+	    	Debug.println("Right button released.");
 	       	
 	       	createPopupMenu();
 	       	

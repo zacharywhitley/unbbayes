@@ -33,6 +33,7 @@ import javax.swing.JToolBar;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
+import unbbayes.util.Debug;
 
 
 /**
@@ -100,7 +101,7 @@ public class EditNet extends JPanel {
 
         compile.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-            	System.out.println("i came to edit net \n");
+            	Debug.println("i came to edit net \n");
                 if (! controller.compileNetwork()) {
                     return;
                 }

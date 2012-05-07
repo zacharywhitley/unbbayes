@@ -36,6 +36,7 @@ import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
 import unbbayes.util.ArrayMap;
+import unbbayes.util.Debug;
 
 public class XMLBIFIO {
 	
@@ -655,7 +656,7 @@ public class XMLBIFIO {
 		
 		DefaultMutableTreeNode root = new DefaultMutableTreeNode(rootXML.getNAME()); //rootXML.getNAME()
 		
-		System.out.println("rootXML.getNAME()" + rootXML.getNAME()); 
+		Debug.println("rootXML.getNAME()" + rootXML.getNAME()); 
 		
 		DefaultMutableTreeNode atualNode = root;
 		

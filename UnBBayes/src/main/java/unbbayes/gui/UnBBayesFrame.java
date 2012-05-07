@@ -794,8 +794,6 @@ public class UnBBayesFrame extends JFrame {
 				try {
 					JavaHelperController.getInstance().openHelp(singleton);
 				} catch (Exception evt) {
-					System.out.println("Error= " + evt.getMessage() + " "
-							+ this.getClass().getName());
 					evt.printStackTrace();
 				}
 			}

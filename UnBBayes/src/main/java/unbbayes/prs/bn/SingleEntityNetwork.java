@@ -37,6 +37,7 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.id.DecisionNode;
+import unbbayes.util.Debug;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -642,7 +643,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			System.err.println(ioe.getMessage());
 		}
 		System.out.println(
-			"GERACAO DO ARQUIVO LOG em "
+			"Log file generated in "
 				+ (System.currentTimeMillis() - in)
 				+ " ms");
 	}
@@ -935,7 +936,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 					auxNo1.getAdjacents().add(auxNo2);
 					auxNo2.getAdjacents().add(auxNo1);			
 					
-					System.out.println(auxArco);
+					Debug.println(""+auxArco);
 				}
 			}
 		}

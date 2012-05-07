@@ -27,6 +27,7 @@ import java.util.ResourceBundle;
 import unbbayes.prs.Node;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityTable;
+import unbbayes.util.Debug;
 
 
 /**
@@ -140,8 +141,10 @@ public class Clique implements IRandomVariable, java.io.Serializable {
         if (control == decisoes.size()) {
             float soma = sum(0, fixo, coord);
             if (soma == 0.0) {
-            	for (int k = 0; k < decisoes.size(); k++) {
-					System.out.println(decisoes.get(k) + " - " + decisoes.get(k).getStateAt(coord[index[k]]));
+            	if (Debug.isDebugMode()) {
+            		for (int k = 0; k < decisoes.size(); k++) {
+            			Debug.println(decisoes.get(k) + " - " + decisoes.get(k).getStateAt(coord[index[k]]));
+            		}
             	}
             	return;
 //                throw new Exception(resource.getString("InconsistencyUnderflowException"));

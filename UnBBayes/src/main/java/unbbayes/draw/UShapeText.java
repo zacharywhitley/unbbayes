@@ -31,6 +31,8 @@ import java.awt.geom.Rectangle2D;
 
 import javax.swing.JTextField;
 
+import unbbayes.util.Debug;
+
 public class UShapeText extends UShape  
 {     
 	/**
@@ -77,7 +79,7 @@ public class UShapeText extends UShape
 	      private void printIt(String title, KeyEvent keyEvent) {
 	        int keyCode = keyEvent.getKeyCode();
 	        String keyText = KeyEvent.getKeyText(keyCode);
-	        System.out.println(title + " : " + keyText + " / " + keyEvent.getKeyChar());
+	        Debug.println(title + " : " + keyText + " / " + keyEvent.getKeyChar());
 	      }
 	    };
 	    
