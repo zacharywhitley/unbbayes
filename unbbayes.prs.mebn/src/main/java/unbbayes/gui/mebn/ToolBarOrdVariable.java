@@ -137,7 +137,7 @@ public class ToolBarOrdVariable extends JToolBar{
   						}
   					}
   					catch (javax.swing.text.BadLocationException ble) {
-  						System.out.println(ble.getMessage());
+  						ble.printStackTrace();
   					}
   				}
   			}

@@ -553,7 +553,7 @@ public class MEBNNetworkWindow extends NetworkWindow {
       						}
       					}
       					catch (javax.swing.text.BadLocationException ble) {
-      						System.out.println(ble.getMessage());
+      						ble.printStackTrace();
 						} catch (Exception e2) {
 							e2.printStackTrace();
 							JOptionPane.showMessageDialog(MEBNNetworkWindow.this,

@@ -153,7 +153,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements
 	// private static final String META_ENTITY = "MetaEntity";
 
 	public void cancel() {
-		System.out.println("Stop");
+		Debug.println("Stop");
 	}
 
 	/**

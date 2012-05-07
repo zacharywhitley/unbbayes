@@ -1424,7 +1424,7 @@ public class MEBNEditionPane extends JPanel {
   	  						}
   	  					}
   	  					catch (javax.swing.text.BadLocationException ble) {
-  	  						System.out.println(ble.getMessage());
+  	  						ble.printStackTrace();
   	  					}
   	  				}
   	  			}
@@ -1516,7 +1516,7 @@ public class MEBNEditionPane extends JPanel {
       						}
       					}
       					catch (javax.swing.text.BadLocationException ble) {
-      						System.out.println(ble.getMessage());
+      						ble.printStackTrace();
       					}
       				}
       			}
@@ -1700,7 +1700,7 @@ public class MEBNEditionPane extends JPanel {
       						}
       					}
       					catch (javax.swing.text.BadLocationException ble) {
-      						System.out.println(ble.getMessage());
+      						ble.printStackTrace();
       					} catch (DuplicatedNameException dne) {
     							JOptionPane.showMessageDialog(netWindow,
     	  									resource.getString("nameAlreadyExists"),

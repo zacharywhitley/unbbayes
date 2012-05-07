@@ -44,6 +44,7 @@ import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.entity.Type;
+import unbbayes.util.Debug;
 
 /** 
  * Pane for edition of the ordinary variables of one MFrag. 
@@ -234,7 +235,7 @@ public class OVariableEditionPane extends JPanel {
   						}
   					}
   					catch (javax.swing.text.BadLocationException ble) {
-  						System.out.println(ble.getMessage());
+  						ble.printStackTrace();
   					}
   				}
   			}
@@ -245,7 +246,7 @@ public class OVariableEditionPane extends JPanel {
         	   public void actionPerformed(ActionEvent e){
         		   
 	    	        Type typeName = (Type)jcbType.getSelectedItem();
-					System.out.println("item selected = " + typeName); 
+					Debug.println("item selected = " + typeName); 
 	    	        
 					if(treeMFrag.getOVariableActive() != null){
 						treeMFrag.getOVariableActive().setValueType(typeName); 

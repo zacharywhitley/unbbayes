@@ -617,7 +617,7 @@ public class PossibleValuesEditionPane extends JPanel {
 				listStatesPanel.update();
 				
 			} catch (javax.swing.text.BadLocationException ble) {
-				System.out.println(ble.getMessage());
+				ble.printStackTrace();
 			}
 		}
 

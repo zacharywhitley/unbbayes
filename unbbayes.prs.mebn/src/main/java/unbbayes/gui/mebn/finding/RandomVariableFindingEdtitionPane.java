@@ -53,6 +53,7 @@ import unbbayes.prs.mebn.RandomVariableFinding;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
+import unbbayes.util.Debug;
 
 /**
  * Pane for edition of instances of the random variables (resident nodes). 
@@ -151,7 +152,7 @@ public class RandomVariableFindingEdtitionPane extends JPanel {
 						mebnController.getMultiEntityBayesianNetwork()); 
 			
 			for(ResidentNode node: listResident){
-				System.out.println(node);
+				Debug.println(""+node);
 				listModel.addElement(new ResidentNodeJacket(node));
 			}
 			
