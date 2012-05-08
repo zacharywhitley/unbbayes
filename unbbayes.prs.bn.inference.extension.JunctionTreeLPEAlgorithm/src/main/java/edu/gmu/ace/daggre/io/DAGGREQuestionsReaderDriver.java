@@ -49,6 +49,15 @@ public class DAGGREQuestionsReaderDriver extends TestCase {
 
 	private boolean isToPrintProbabilityValues = false;
 	
+	private File csvFile = new File("examples/DAGGRE.csv");;
+
+	private File[] netFilesToTest = new File[] {new File(csvFile.getParent(),"DAGGRE1.net"), new File(csvFile.getParent(),"DAGGRE5p5.net")  };
+	
+	/**config of values of isToTestProbValues, isToPropagateEvidence, isToUpdateAssets, isToCreateUserAssetNets, isToPrintProbabilityValues respectively;*/
+	private boolean[][] configs = new boolean[][] {{false, false, false, false, false}, {false, true, false, false, false}};
+
+
+	
 
 //	private File netFile = new File(csvFile.getParent(),"DAGGRE1.net");
 //
@@ -92,26 +101,18 @@ public class DAGGREQuestionsReaderDriver extends TestCase {
 	 */
 	public void testCSVReading() {
 
-		File csvFile = new File("examples/DAGGRE.csv");
 		assertNotNull(csvFile);
 		assertTrue(csvFile.exists());
-		
-		// do the test for these files
-//		File[] netFilesToTest = {new File(csvFile.getParent(),"DAGGRE1.net"), new File(csvFile.getParent(),"DAGGRE5p5.net") };
-		File[] netFilesToTest = {new File(csvFile.getParent(),"DAGGRE5p5.net"), new File(csvFile.getParent(),"DAGGRE1.net")  };
-		
-		// config of values of isToTestProbValues, isToPropagateEvidence, isToUpdateAssets, isToCreateUserAssetNets, isToPrintProbabilityValues respectively;
-		boolean[][]	config = {{true, true, true, true, false}, {true, false, false, false, false}};
 		
 		
 		for (int currentFileIndex = 0; currentFileIndex < netFilesToTest.length; currentFileIndex++) {
 			File netFile = netFilesToTest[currentFileIndex];
 			// change config
-			isToTestProbValues = config[currentFileIndex][0];
-			isToPropagateEvidence = config[currentFileIndex][1];
-			isToUpdateAssets = config[currentFileIndex][2];
-			isToCreateUserAssetNets = config[currentFileIndex][3];
-			isToPrintProbabilityValues = config[currentFileIndex][4];
+			isToTestProbValues = configs[currentFileIndex][0];
+			isToPropagateEvidence = configs[currentFileIndex][1];
+			isToUpdateAssets = configs[currentFileIndex][2];
+			isToCreateUserAssetNets = configs[currentFileIndex][3];
+			isToPrintProbabilityValues = configs[currentFileIndex][4];
 			
 			// assert existence of files
 			assertNotNull(netFile);
@@ -119,20 +120,20 @@ public class DAGGREQuestionsReaderDriver extends TestCase {
 			
 			// iterate maxIterations time, because background process can change execution time.
 			for (int currentIteration = 0; currentIteration < maxIterations; currentIteration++) {
+				System.gc();
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+				
+				long startTime = System.currentTimeMillis();	// for counting the time to load network file
 				
 				// instantiate this here, so that we use a clean reader at each maxIterations
 				DAGGREQuestionReader daggreQuestionReader = new DAGGREQuestionReader();
 				daggreQuestionReader.setToPropagate(isToPropagateEvidence);
 				daggreQuestionReader.setToCreateUserAssetNet(isToCreateUserAssetNets);
 				
-				System.gc();
-				try {
-					Thread.sleep(2000);
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-				}
-				
-				long startTime = System.currentTimeMillis();	// for counting the time to load network file
 				
 				// load base network (disconnected network)
 				ProbabilisticNetwork net = null;
@@ -160,6 +161,7 @@ public class DAGGREQuestionsReaderDriver extends TestCase {
 				
 				// main algorithm
 				AssetAwareInferenceAlgorithm algorithm = (AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm);
+				algorithm.setToUpdateOnlyEditClique(true);
 				assertNotNull(algorithm);
 				algorithm.setToPropagateForGlobalConsistency(false);	// do not calculate LPE
 				algorithm.setToUpdateAssets(isToUpdateAssets);
@@ -275,8 +277,12 @@ public class DAGGREQuestionsReaderDriver extends TestCase {
 							assertEquals("true", node.getStateAt(1));
 							assertTrue(id + ", false = " + node.getMarginalAt(0), node.getMarginalAt(0) >= 0);
 							assertTrue(id + ", true = " + node.getMarginalAt(1), node.getMarginalAt(1) >= 0);
-							assertTrue(id + ", false = " + node.getMarginalAt(0), (((1-lastEditMap.get(id)) - probPrecisionError) < node.getMarginalAt(0)) && (node.getMarginalAt(0) < ((1-lastEditMap.get(id)) + probPrecisionError)));
-							assertTrue(id + ", true = " + node.getMarginalAt(1), ((lastEditMap.get(id) - probPrecisionError) < node.getMarginalAt(1)) && (node.getMarginalAt(1) < (lastEditMap.get(id) + probPrecisionError)));
+							if (lastEditMap.get(id) != null) {
+								assertTrue(id + ", false = " + node.getMarginalAt(0), (((1-lastEditMap.get(id)) - probPrecisionError) < node.getMarginalAt(0)) && (node.getMarginalAt(0) < ((1-lastEditMap.get(id)) + probPrecisionError)));
+								assertTrue(id + ", true = " + node.getMarginalAt(1), ((lastEditMap.get(id) - probPrecisionError) < node.getMarginalAt(1)) && (node.getMarginalAt(1) < (lastEditMap.get(id) + probPrecisionError)));
+							} else {
+								System.err.println("Node " + id + " was never editted...");
+							}
 							float sum = (node.getMarginalAt(0) + node.getMarginalAt(1));	// sum must be 1 (with some margin for imprecision)
 							assertTrue(id + ", sum = " + sum, ((1 - probPrecisionError) < sum) && (sum < (1 + probPrecisionError)) );
 						}
@@ -297,10 +303,21 @@ public class DAGGREQuestionsReaderDriver extends TestCase {
 
 	/**
 	 * Execute this method only for printing the results without calling JUnit's assertions.
-	 * @param args
+	 * @param args:<br/> 
+	 * {{isToTestProbValues, isToPropagateEvidence, isToUpdateAssets, isToCreateUserAssetNets, isToPrintProbabilityValues} , <br/>
+	 * {isToTestProbValues, isToPropagateEvidence, isToUpdateAssets, isToCreateUserAssetNets, isToPrintProbabilityValues}}
 	 */
 	public static void main(String[] args) {
 		DAGGREQuestionsReaderDriver test = new DAGGREQuestionsReaderDriver("testCSVReading");
+		
+		if (args.length == (test.getNetFilesToTests().length * 5) ) {	// 10 by default
+			boolean[][] configs = new boolean[2][5];
+			for (int i = 0; i < args.length; i++) {
+				configs[i/5][i%5] = Boolean.parseBoolean(args[i]);
+			}
+			test.setConfigs(configs);
+		}
+		
 		TestResult result = test.run();
 		if (!result.wasSuccessful()) {
 			System.err.println("Error on test: " + test);
@@ -317,6 +334,34 @@ public class DAGGREQuestionsReaderDriver extends TestCase {
 		} else {
 			System.out.println("Success.");
 		}
+	}
+
+	/**
+	 * @return the netFilesToTest
+	 */
+	public File[] getNetFilesToTests() {
+		return netFilesToTest;
+	}
+
+	/**
+	 * @param netFilesToTest the netFilesToTest to set
+	 */
+	public void setNetFilesToTests(File[] netFilesToTests) {
+		this.netFilesToTest = netFilesToTests;
+	}
+
+	/**
+	 * @return the configs
+	 */
+	public boolean[][] getConfigs() {
+		return configs;
+	}
+
+	/**
+	 * @param configs the configs to set
+	 */
+	public void setConfigs(boolean[][] configs) {
+		this.configs = configs;
 	}
 	
 }

@@ -131,9 +131,9 @@ public class DAGGREQuestionReader  {
 	        	usersMap.put(userID, userAssetNet);
 	        }
 	        
-	        if (isToPropagate()){
+	        if (isToPropagate){
 	        	// set this user as current user
-	        	if (isToCreateUserAssetNet()) {
+	        	if (isToCreateUserAssetNet) {
 	        		if (userAssetNet != null) {
 	        			algorithm.setAssetNetwork(userAssetNet);
 	        		} else {
