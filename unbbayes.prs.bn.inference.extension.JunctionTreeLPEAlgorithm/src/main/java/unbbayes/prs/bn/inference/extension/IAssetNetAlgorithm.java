@@ -135,4 +135,14 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 * @return the isToLogAssets
 	 */
 	public boolean isToLogAssets();
+	
+	/**
+	 * @return true if {@link #propagate()} should only update altered clique.
+	 */
+	public boolean isToUpdateOnlyEditClique() ;
+
+	/**
+	 * @param isToUpdateOnlyEditClique : true if {@link #propagate()} should only update altered clique.
+	 */
+	public void setToUpdateOnlyEditClique(boolean isToUpdateOnlyEditClique);
 }

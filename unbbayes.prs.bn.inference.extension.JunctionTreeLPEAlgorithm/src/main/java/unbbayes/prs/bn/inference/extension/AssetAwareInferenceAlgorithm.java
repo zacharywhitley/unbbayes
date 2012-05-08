@@ -47,7 +47,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	
 	private List<IInferenceAlgorithmListener> inferenceAlgorithmListener = new ArrayList<IInferenceAlgorithmListener>();
 	
-
+	private boolean isToNormalizeDisconnectedNets = false;
 	
 	
 	private IInferenceAlgorithm probabilityPropagationDelegator;
@@ -306,6 +306,8 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 			
 			// add dynamically changeable behavior (i.e. routines that are not "mandatory", so it is interesting to be able to disable them when needed)
 			this.probabilityPropagationDelegator.addInferencceAlgorithmListener(new IInferenceAlgorithmListener() {
+				
+
 				public void onBeforeRun(IInferenceAlgorithm algorithm) {
 					if (algorithm == null) {
 						Debug.println(getClass(), "Algorithm == null");
@@ -379,7 +381,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 					// Guarantee that each clique is normalized, if the network is disconnected
 					if ((algorithm.getNetwork() != null) && (algorithm.getNetwork() instanceof SingleEntityNetwork)) {
 						SingleEntityNetwork network = (SingleEntityNetwork) algorithm.getNetwork();
-						if (!network.isConnected()) {
+						if (isToNormalizeDisconnectedNets() && !network.isConnected()) {
 							// network is disconnected.
 							if (network.getJunctionTree() != null) {
 								// extract all cliques and normalize them
@@ -410,6 +412,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 						}
 					}
 				}
+				
 			});
 		}
 	}
@@ -753,4 +756,32 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	public boolean isToUpdateAssets() {
 		return isToUpdateAssets;
 	}
+
+	/**
+	 * Delegates to {@link #getAssetPropagationDelegator()}
+	 */
+	public boolean isToUpdateOnlyEditClique() {
+		return this.getAssetPropagationDelegator().isToUpdateOnlyEditClique();
+	}
+
+	/**
+	 * Delegates to {@link #getAssetPropagationDelegator()}
+	 */
+	public void setToUpdateOnlyEditClique(boolean isToUpdateOnlyEditClique) {
+		this.getAssetPropagationDelegator().setToUpdateOnlyEditClique(isToUpdateOnlyEditClique);
+	}
+	
+	/**
+	 * @param isToNormalizeDisconnectedNets the isToNormalizeDisconnectedNets to set
+	 */
+	public void setToNormalizeDisconnectedNets(
+			boolean isToNormalizeDisconnectedNets) {
+		this.isToNormalizeDisconnectedNets = isToNormalizeDisconnectedNets;
+	}
+	/**
+	 * @return the isToNormalizeDisconnectedNets
+	 */
+	public boolean isToNormalizeDisconnectedNets() {
+		return isToNormalizeDisconnectedNets;
+}
 }

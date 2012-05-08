@@ -62,10 +62,7 @@ public class MinProductJunctionTreeComplement extends MaxProductJunctionTree {
 				}
 			}
 	
-			Separator auxSep;
-			int sizeSeparadores = this.getSeparatorsSize();
-			for (int k = 0; k < sizeSeparadores; k++) {
-				auxSep = (Separator) this.getSeparatorAt(k);
+			for (Separator auxSep : getSeparators()) {
 				auxTabPot = auxSep.getProbabilityFunction();
 				int sizeDados = auxTabPot.tableSize();
 				for (int c = 0; c < sizeDados; c++) {
@@ -117,9 +114,7 @@ public class MinProductJunctionTreeComplement extends MaxProductJunctionTree {
 			auxClique.getUtilityTable().copyData();
 		}
 		
-		int sizeSeparadores = this.getSeparatorsSize();
-		for (int k = 0; k < sizeSeparadores; k++) {
-			Separator auxSep = (Separator) this.getSeparatorAt(k);
+		for (Separator auxSep : getSeparators()) {
 			auxSep.getProbabilityFunction().copyData();
 			auxSep.getUtilityTable().copyData();
 		}
@@ -133,9 +128,7 @@ public class MinProductJunctionTreeComplement extends MaxProductJunctionTree {
 			auxClique.getUtilityTable().restoreData();
 		}
 		
-		int sizeSeparadores = this.getSeparatorsSize();
-		for (int k = 0; k < sizeSeparadores; k++) {
-			Separator auxSep = (Separator) this.getSeparatorAt(k);
+		for (Separator auxSep : getSeparators()) {
 			auxSep.getProbabilityFunction().restoreData();
 			auxSep.getUtilityTable().restoreData();
 		}

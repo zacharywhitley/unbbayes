@@ -307,11 +307,8 @@ public class MaxProductJunctionTree extends JunctionTree implements IPropagation
 			return;
 		} else {
 			// this is the same of super.coleteEvidencia(clique), but without normalizing clique pot
-			Clique auxClique;
-			int sizeFilhos = clique.getChildrenSize();
-			for (int c = 0; c < sizeFilhos; c++) {
-				auxClique = clique.getChildAt(c);
-				if (auxClique.getChildrenSize() != 0) {
+			for (Clique auxClique : clique.getChildren()) {
+				if (!auxClique.getChildren().isEmpty()) {
 					this.coleteEvidencia(auxClique);
 				}
 				

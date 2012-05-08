@@ -6,8 +6,10 @@ package unbbayes.prs.bn.inference.extension;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import unbbayes.controller.INetworkMediator;
@@ -63,7 +65,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 
 	private boolean isToUpdateSeparators = true;
 	
-	private boolean isToUpdateOnlyEditClique = true;
+	private boolean isToUpdateOnlyEditClique = false;
 
 //	private Map<IRandomVariable, IRandomVariable> originalCliqueToAssetCliqueMap;
 	
@@ -88,6 +90,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	};
 
 	private boolean isToLogAssets = false;
+
+	private IRandomVariable editCliqueOrSeparator;
 
 
 //	private AssetAwareInferenceAlgorithm assetAwareInferenceAlgorithm;
@@ -194,8 +198,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			this.initAssetPotential(clique.getProbabilityFunction());
 		}
 		
-		for (int i = 0; i < this.getAssetNetwork().getJunctionTree().getSeparatorsSize(); i++) {
-			this.initAssetPotential(this.getAssetNetwork().getJunctionTree().getSeparatorAt(i).getProbabilityFunction());
+		for (Separator sep : this.getAssetNetwork().getJunctionTree().getSeparators()) {
+			this.initAssetPotential(sep.getProbabilityFunction());
 		}
 		
 		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
@@ -225,9 +229,17 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 //		 the assets to be updated
 //		Map<Clique, PotentialTable> currentAssetsMap = (Map<Clique, PotentialTable>) this.getNetwork().getProperty(CURRENT_ASSETS_PROPERTY);
 		
-		for (IRandomVariable origCliqueOrSeparator : getOriginalCliqueToAssetCliqueMap().keySet()) {
-			
-			// extract clique related to the asset node
+		// cliques/separators to update
+		Set<IRandomVariable> cliquesOrSepsToUpdate = new HashSet<IRandomVariable>();
+		if (isToUpdateOnlyEditClique()) {
+			// update only the edited clique
+			cliquesOrSepsToUpdate.add(getEditCliqueOrSeparator());
+		} else {
+			// update all cliques
+			cliquesOrSepsToUpdate.addAll(getOriginalCliqueToAssetCliqueMap().keySet());
+		}
+		for (IRandomVariable origCliqueOrSeparator : cliquesOrSepsToUpdate) {
+			// extract clique related to the asset 
 			IRandomVariable assetCliqueOrSeparator = getOriginalCliqueToAssetCliqueMap().get(origCliqueOrSeparator);
 			if (assetCliqueOrSeparator == null) {
 				continue;	//ignore null entry
@@ -302,6 +314,25 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		}
 		// property value to set
 		Map<IRandomVariable, PotentialTable> property = new TreeMap<IRandomVariable, PotentialTable>(this.getRandomVariableComparator());
+		
+		if (isToUpdateOnlyEditClique()) {
+			for (Node node : getRelatedProbabilisticNetwork().getNodes()) {
+				if (node instanceof TreeVariable) {
+					TreeVariable treeVar = (TreeVariable) node;
+					if (treeVar.hasLikelihood()) {
+						setEditCliqueOrSeparator(treeVar.getAssociatedClique());
+						// TODO do not assume only 1 edit per propagation
+						break;
+					}
+				}
+			}
+			// fill property with clones, so that changes on the original tables won't affect the property
+			PotentialTable table = (PotentialTable) ((PotentialTable) getEditCliqueOrSeparator().getProbabilityFunction()).clone();
+			property.put(getEditCliqueOrSeparator(), table); // update property
+			// overwrite asset network property
+			this.getNetwork().addProperty(LAST_PROBABILITY_PROPERTY, property);
+			return;
+		}
 		
 		// iterate on cliques
 		for (Clique clique : this.getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
@@ -459,10 +490,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			}
 			
 			// copy relationship of cliques (separators)
-			for (int i = 0; i < relatedProbabilisticNetwork.getJunctionTree().getSeparatorsSize(); i++) {
-				
-				Separator origSeparator = relatedProbabilisticNetwork.getJunctionTree().getSeparatorAt(i);
-				
+			for (Separator origSeparator : relatedProbabilisticNetwork.getJunctionTree().getSeparators()) {
 				boolean hasInvalidNode = false;	// this will be true if a clique contains a node not in AssetNetwork.
 				
 				// extract the cliques related to the two cliques that the origSeparator connects
@@ -891,8 +919,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			clique.getProbabilityFunction().copyData();
 		}
 		// "store" all separator potential, so that it can be restored later
-		for (int i = 0; i < this.getAssetNetwork().getJunctionTree().getSeparatorsSize(); i++) {
-			this.getAssetNetwork().getJunctionTree().getSeparatorAt(i).getProbabilityFunction().copyData();
+		for (Separator sep : this.getAssetNetwork().getJunctionTree().getSeparators()) {
+			sep.getProbabilityFunction().copyData();
 		}
 		
 		// disable listeners of propagate() temporary, because this is not the official "propagation" service offered by this class
@@ -917,8 +945,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			clique.getProbabilityFunction().restoreData();
 		}
 		// "reset" all separator potential
-		for (int i = 0; i < this.getAssetNetwork().getJunctionTree().getSeparatorsSize(); i++) {
-			this.getAssetNetwork().getJunctionTree().getSeparatorAt(i).getProbabilityFunction().restoreData();
+		for (Separator sep : this.getAssetNetwork().getJunctionTree().getSeparators()) {
+			sep.getProbabilityFunction().restoreData();
 		}
 	}
 	
@@ -979,6 +1007,20 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 */
 	public void setToUpdateOnlyEditClique(boolean isToUpdateOnlyEditClique) {
 		this.isToUpdateOnlyEditClique = isToUpdateOnlyEditClique;
+	}
+
+	/**
+	 * @param editCliquesOrSeparators the editCliquesOrSeparators to set
+	 */
+	protected void setEditCliqueOrSeparator(IRandomVariable editCliqueOrSeparator) {
+		this.editCliqueOrSeparator = editCliqueOrSeparator;
+	}
+
+	/**
+	 * @return the editCliquesOrSeparators
+	 */
+	protected IRandomVariable getEditCliqueOrSeparator() {
+		return editCliqueOrSeparator;
 	}
 
 	
