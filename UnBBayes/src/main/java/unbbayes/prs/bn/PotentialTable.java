@@ -348,12 +348,13 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 			// the table will be expanded to this size
 			int newTableSize = numStatesOfNewVar * dataPT.size;
 			// remember old values, because we are going to copy them into newer cells
+			int oldSize = dataPT.size;	// Unfortunately, dataPT.size can be different from dataPT.data.length
 			float[] oldValues = dataPT.data;
 			dataPT.size = newTableSize;
 			dataPT.data = new float[newTableSize];
 			// duplicate the cells
 			for (int i = 0; i < numStatesOfNewVar; i++) {
-				System.arraycopy(oldValues, 0, dataPT.data, i*oldValues.length, oldValues.length);
+				System.arraycopy(oldValues, 0, dataPT.data, i*oldSize, oldSize);
 			}
 			
 			// the above code substitutes the following code, because dataPT.add is quite slow...
