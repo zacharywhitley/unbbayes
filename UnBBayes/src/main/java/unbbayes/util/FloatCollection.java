@@ -62,10 +62,15 @@ public final class FloatCollection implements java.io.Serializable {
      * @param   minCapacity   the desired minimum capacity.
      */
     public final void ensureCapacity(int minCapacity) {
-        int oldCapacity = data.length;
-        if (minCapacity > oldCapacity) {
+        if (minCapacity > data.length) {
+        	// some recent profiling indicates that for 200+ nodes, the time for running garbage collect here
+        	// costs more than the overhead of calling System.arraycopy multiple times...
+        	// hence, we should minimize allocating more than we need, instead of doing pre-allocation
             float oldData[] = data;
-            int newCapacity = (minCapacity * 3)/2 + 1;
+            int newCapacity = minCapacity;
+            // the following is the old code
+//            int newCapacity = (minCapacity * 3)/2 + 1;
+            // the following code is even older
 //            int newCapacity = (oldCapacity * 3)/2 + 1;
 //            if (newCapacity < minCapacity) {
 //               newCapacity = minCapacity;

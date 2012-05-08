@@ -145,11 +145,8 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	 *@param  clique  clique.
 	 */
 	protected void coleteEvidencia(Clique clique) throws Exception {
-		Clique auxClique;
-		int sizeFilhos = clique.getChildrenSize();
-		for (int c = 0; c < sizeFilhos; c++) {
-			auxClique = clique.getChildAt(c);
-			if (auxClique.getChildrenSize() != 0) {
+		for (Clique auxClique : clique.getChildren()) {
+			if (!auxClique.getChildren().isEmpty()) {
 				this.coleteEvidencia(auxClique);
 			}
 			
@@ -171,10 +168,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	 *@param  clique  clique.
 	 */
 	protected void distributeEvidences(Clique clique) {
-		Clique auxClique;
-		int sizeFilhos = clique.getChildrenSize();
-		for (int c = 0; c < sizeFilhos; c++) {
-			auxClique = clique.getChildAt(c);
+		for (Clique auxClique : clique.getChildren()) {
 			
 //			Separator sep = getSeparator(clique, auxClique); 
 //			auxClique.absorb(clique, sep.getPotentialTable());
@@ -183,7 +177,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 			} else {
 				// a clique with only 1 variable is equivalent to a BN with only 1 node (there is no prob dist at all), so no need to propagate
 			}
-			if (auxClique.getChildrenSize() != 0) {
+			if (!auxClique.getChildren().isEmpty()) {
 				distributeEvidences(auxClique);
 			}
 		}

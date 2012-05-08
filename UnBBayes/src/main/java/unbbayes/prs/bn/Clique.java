@@ -236,6 +236,7 @@ public class Clique implements IRandomVariable, java.io.Serializable {
 
     /**
      *@return    size of the array of children cliques.
+     *@deprecated : call {@link #getChildren()} instead
      */
     public int getChildrenSize() {
         return children.size();
@@ -260,6 +261,7 @@ public class Clique implements IRandomVariable, java.io.Serializable {
     /**
      * @param index: index of a child clique
      *@return    child clique in a given index
+     *@deprecated call {@link #getChildren()} instead
      */
     public Clique getChildAt(int index) {
         return children.get(index);
@@ -319,6 +321,22 @@ public class Clique implements IRandomVariable, java.io.Serializable {
 			sb.append(nos.get(j) + " ");				
 		}
 		return sb.toString();
+	}
+
+
+	/**
+	 * @return the children
+	 */
+	public List<Clique> getChildren() {
+		return children;
+	}
+
+
+	/**
+	 * @param children the children to set
+	 */
+	public void setChildren(List<Clique> children) {
+		this.children = children;
 	}
 
 }

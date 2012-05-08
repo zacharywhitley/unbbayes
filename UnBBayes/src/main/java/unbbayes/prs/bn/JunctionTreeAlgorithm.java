@@ -1172,7 +1172,8 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 //		cliqueOfVirtualNode.normalize();
 		
 		// propagation (make sure the probabilities of the new clique and separator becomes globally consistent)
-		junctionTree.consistency();
+//		junctionTree.consistency();
+		// the above propagation doesn't seem to be necessary
 		
 		// store the potentials after propagation, so that the "reset" will restore these values
 		cliqueOfVirtualNode.getProbabilityFunction().copyData();	

@@ -779,7 +779,11 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			for (int i = 1; i < sizeCliques1; i++) {
 				auxClique = (Clique) junctionTree.getCliques().get(i);
 				inter = SetToolkit.intersection(auxClique.getNodes(), uni);
-	
+//				if (inter.isEmpty() ) {
+//					// if network is disconnected, there may be empty intersections. Do not create separator for them
+//					Debug.println(getClass(), auxClique + " has no intersection with " + uni);
+//					continue;
+//				}
 				for (int j = 0; j < i; j++) {
 					auxClique2 = (Clique) junctionTree.getCliques().get(j);
 	

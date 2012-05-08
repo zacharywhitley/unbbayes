@@ -111,12 +111,15 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 * Creates a copy of the data from the table.
 	 */
 	public void copyData() {
-		int dataSize = dataPT.size;
-		dataCopy.ensureCapacity(dataSize);
-		dataCopy.size = dataSize;
-		for (int i = 0; i < dataSize; i++) {
-			dataCopy.data[i] = dataPT.data[i];
-		}
+		dataCopy.size = dataPT.size;
+		dataCopy.data = new float[dataPT.size];
+		System.arraycopy(dataPT.data, 0, dataCopy.data, 0, dataPT.size);
+//		int dataSize = dataPT.size;
+//		dataCopy.ensureCapacity(dataSize);
+//		dataCopy.size = dataSize;
+//		for (int i = 0; i < dataSize; i++) {
+//			dataCopy.data[i] = dataPT.data[i];
+//		}
 	}
 	
 	/**
@@ -214,11 +217,16 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 */
 	public Object clone() {
 		PotentialTable auxTab = newInstance();
-		auxTab.variableList = SetToolkit.clone(variableList);
-		int sizeDados = dataPT.size;
-		for (int c = 0; c < sizeDados; c++) {
-			auxTab.dataPT.add(dataPT.data[c]);
-		}
+		// perform fast arraylist copy
+		auxTab.variableList = new ArrayList<Node>(variableList);
+		// perform fast array copy
+		auxTab.dataPT.size = dataPT.size;
+		auxTab.dataPT.data = new float[dataPT.size];
+		System.arraycopy(dataPT.data, 0, auxTab.dataPT.data, 0, dataPT.size);
+//		int sizeDados = dataPT.size;
+//		for (int c = 0; c < sizeDados; c++) {
+//			auxTab.dataPT.add(dataPT.data[c]);
+//		}
 		return auxTab;
 	}
 	
@@ -320,24 +328,44 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.IProbabilityFunction#addVariable(unbbayes.prs.Node)
 	 */
-	public void addVariable(INode variavel) {
+	public void addVariable(INode newVariable) {
 		/** @TODO reimplement it using correct format. */
 		notifyModification();
-		int noEstados = variavel.getStatesSize();
-		int noCelBasica = this.dataPT.size;
+		int numStatesOfNewVar = newVariable.getStatesSize();
+//		int previousTableSize = this.dataPT.size;
 		if (variableList.size() == 0) {
-			for (int i = 0; i < noEstados; i++) {
-				dataPT.add(0);
+			// this is the first time we add a variable to this CPT. Initialize with zeros
+			dataPT.size = numStatesOfNewVar;
+			dataPT.data = new float[numStatesOfNewVar];
+			for (int i = 0; i < numStatesOfNewVar; i++) {
+				dataPT.data[i] = 0;	
 			}
+			// the above code substutes the following code, because dataPT.add(0) was quite slow...
+//			for (int i = 0; i < noEstados; i++) {
+//				dataPT.add(0);
+//			}
 		} else {
-			while (noEstados > 1) {
-				noEstados--;
-				for (int i = 0; i < noCelBasica; i++) {
-					dataPT.add(dataPT.data[i]);
-				}
+			// the table will be expanded to this size
+			int newTableSize = numStatesOfNewVar * dataPT.size;
+			// remember old values, because we are going to copy them into newer cells
+			float[] oldValues = dataPT.data;
+			dataPT.size = newTableSize;
+			dataPT.data = new float[newTableSize];
+			// duplicate the cells
+			for (int i = 0; i < numStatesOfNewVar; i++) {
+				System.arraycopy(oldValues, 0, dataPT.data, i*oldValues.length, oldValues.length);
 			}
+			
+			// the above code substitutes the following code, because dataPT.add is quite slow...
+			
+//			while (numStatesOfNewVar > 1) {
+//				numStatesOfNewVar--;
+//				for (int i = 0; i < previousTableSize; i++) {
+//					dataPT.add(dataPT.data[i]);
+//				}
+//			}
 		}
-		variableList.add((Node)variavel);
+		variableList.add((Node)newVariable);
 	}
 	
 	/**
@@ -415,7 +443,6 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	/**
 	 * Auxiliary method for sum().
 	 * Recursively sums all the values of the variable with the index specified. 
-	 * 
 	 * @param control
 	 *            Control index for the recursion. Call with the value
 	 *            'variaveis.size - 1'
@@ -430,6 +457,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 * @param marked
 	 * 			  The removed cells will be marked as 'true'.
 	 *            Call with an array of falses.
+	 * TODO convert this to a non-recursive fast method.
 	 */
 	private void sumAux(int control, int index, int coord, int base, boolean[] marked) {
 		if (control == -1) {
@@ -757,6 +785,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	}
 
 	private void fastOpTabProd(int c, int linearA, int linearB, int index[], PotentialTable tab) {
+		// TODO stop using slow, recursive method
 		if (c >= variableList.size()) {
 			dataPT.data[linearA] *= tab.dataPT.data[linearB];
 			return;						

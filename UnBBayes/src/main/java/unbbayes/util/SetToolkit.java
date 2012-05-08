@@ -124,9 +124,7 @@ public class SetToolkit {
     }
     
     public static ArrayList<Node> clone(ArrayList<Node> conjunto) {
-    	ArrayList<Node> result = new ArrayList<Node>();
-    	result.addAll(conjunto);
-    	return result;
+    	return new ArrayList<Node>(conjunto);
     }
 }
 
