@@ -1262,6 +1262,14 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		JunctionTreeAlgorithm.generalResource = resource;
 	}
 
+	/**
+	 * Extract the junction tree from network.
+	 * @return
+	 * @see SingleEntityNetwork#getJunctionTree()
+	 */
+	public IJunctionTree getJunctionTree() {
+		return getNet().getJunctionTree();
+	}
 
 	/**
 	 * @return the junctionTreeBuilder

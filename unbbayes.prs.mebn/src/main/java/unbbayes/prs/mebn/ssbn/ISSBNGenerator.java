@@ -68,4 +68,10 @@ public interface ISSBNGenerator {
 	 * @return
 	 */
 	public boolean isLogEnabled();
+	
+	/**
+	 * @return a number indicating how many iterations the last call of {@link #generateSSBN(List, KnowledgeBase)}
+	 * did. This is just an indicator of performance for algorithms based on iterations.
+	 */
+	public int getLastIterationCount();
 }

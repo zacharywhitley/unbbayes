@@ -433,4 +433,13 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 		this.isLogEnabled = isLogEnabled;
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.mebn.ssbn.ISSBNGenerator#getLastIterationCount()
+	 */
+	public int getLastIterationCount() {
+		// not a iterative method, so it is just 1 iteration
+		return 1;
+	}
+	
 }
