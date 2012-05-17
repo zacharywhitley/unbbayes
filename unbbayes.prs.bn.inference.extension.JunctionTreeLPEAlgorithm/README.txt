@@ -12,9 +12,20 @@ the local repository. These jars were not found in common remote repositories.
 In the near future, these files shall be in unbbayes's remote project.
 
 <If you do not have UnBBayes in your local mvn repository, then execute the below command>
+
+(Recommended procedure)
+-Checkout UnBBayes project from Subversion (<https://unbbayes.svn.sourceforge.net/svnroot/unbbayes/trunk/UnBBayes>)
+to the current eclipse workspace, and then configure m2e plugin to "enable workspace resolution"
+
+(alternative procedure)
+Get the newest UnBBayes' JAR file and run the following command.
+Substitute <UnBBayes Jar File> to the actual file name you have.
+mvn install:install-file -DgroupId=br.unb.cic -DartifactId=unbbayes -Dversion=4.11.5 -Dpackaging=jar -Dfile=<UnBBayes Jar File>
+
 Go to \mvn_lib\unbbayes>
 mvn install:install-file -DgroupId=guess -DartifactId=jpf -Dversion=1.5 -Dpackaging=jar -Dfile=jpf-1.5.jar
-mvn install:install-file -DpomFile=pom.xml -Dpackaging=jar -Dfile=unbbayes.jar
+
+
 
 Go to \mvn_lib\opencsv>
 mvn install:install-file -DpomFile=pom.xml -Dpackaging=jar -Dfile=opencsv-2.3.jar
