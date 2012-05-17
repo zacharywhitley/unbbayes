@@ -90,6 +90,7 @@ public class DAGGREQuestionReader  {
 		String [] nextLine;	// the line read
 		long lineCounter = 0;	// how many lines were read
 		for (lineCounter = 0; (nextLine = reader.readNext()) != null ; lineCounter++) {
+			long timestamp = System.currentTimeMillis();
 	        
 			// nextLine[] is an array of values from the line
 			// extract columns of interest
@@ -200,6 +201,7 @@ public class DAGGREQuestionReader  {
 //	        if (((TreeVariable) node).getMarginalAt(0) > .5) {
 //	        	System.out.println(lineCounter + " ; [" + ((TreeVariable) node).getMarginalAt(0) + " , "+ ((TreeVariable) node).getMarginalAt(1) + "]");
 //	        }
+	        System.out.println("Time to process line " + lineCounter + " of " + csv.getName() +": " + (System.currentTimeMillis() - timestamp) + "ms.");
 	    }
 		return lineCounter;
 	}

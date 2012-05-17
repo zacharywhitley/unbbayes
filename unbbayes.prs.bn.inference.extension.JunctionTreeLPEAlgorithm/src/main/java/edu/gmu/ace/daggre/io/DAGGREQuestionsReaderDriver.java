@@ -9,9 +9,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import junit.framework.TestCase;
 import junit.framework.TestFailure;
@@ -19,6 +22,7 @@ import junit.framework.TestResult;
 import unbbayes.io.NetIO;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
+import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;
@@ -30,6 +34,8 @@ import au.com.bytecode.opencsv.CSVReader;
  *
  */
 public class DAGGREQuestionsReaderDriver extends TestCase {
+
+	public static final int CONFIG_SIZE = 6;
 
 //	private static final File csvFile = new File("examples/DAGGRE.csv");
 	
@@ -49,12 +55,18 @@ public class DAGGREQuestionsReaderDriver extends TestCase {
 
 	private boolean isToPrintProbabilityValues = false;
 	
+	private boolean isToObtainCliqueSizes = true;
+	
 	private File csvFile = new File("examples/DAGGRE.csv");;
 
 	private File[] netFilesToTest = new File[] {new File(csvFile.getParent(),"DAGGRE1.net"), new File(csvFile.getParent(),"DAGGRE5p5.net")  };
 	
-	/**config of values of isToTestProbValues, isToPropagateEvidence, isToUpdateAssets, isToCreateUserAssetNets, isToPrintProbabilityValues respectively;*/
-	private boolean[][] configs = new boolean[][] {{false, false, false, false, false}, {false, true, false, false, false}};
+	/**
+	 * config of values of isToTestProbValues, isToPropagateEvidence, isToUpdateAssets, isToCreateUserAssetNets, isToPrintProbabilityValues, isToObtainCliqueSizes respectively;
+	 * must match the size {@link #CONFIG_SIZE}
+	 */
+	private boolean[][] configs = new boolean[][] {{false, false, false, false, false, false}, {false, true, false, false, false, true}};
+
 
 
 	
@@ -107,12 +119,15 @@ public class DAGGREQuestionsReaderDriver extends TestCase {
 		
 		for (int currentFileIndex = 0; currentFileIndex < netFilesToTest.length; currentFileIndex++) {
 			File netFile = netFilesToTest[currentFileIndex];
-			// change config
-			isToTestProbValues = configs[currentFileIndex][0];
-			isToPropagateEvidence = configs[currentFileIndex][1];
-			isToUpdateAssets = configs[currentFileIndex][2];
-			isToCreateUserAssetNets = configs[currentFileIndex][3];
-			isToPrintProbabilityValues = configs[currentFileIndex][4];
+			if (configs.length > 0) {
+				// change config
+				isToTestProbValues = (configs[0].length > 0)?configs[currentFileIndex][0]:false;
+				isToPropagateEvidence = (configs[0].length > 1)?configs[currentFileIndex][1]:false;
+				isToUpdateAssets = (configs[0].length > 2)?configs[currentFileIndex][2]:false;
+				isToCreateUserAssetNets = (configs[0].length > 3)?configs[currentFileIndex][3]:false;
+				isToPrintProbabilityValues = (configs[0].length > 4)?configs[currentFileIndex][4]:false;
+				isToObtainCliqueSizes = (configs[0].length > 5)?configs[currentFileIndex][5]:false;
+			}
 			
 			// assert existence of files
 			assertNotNull(netFile);
@@ -177,6 +192,38 @@ public class DAGGREQuestionsReaderDriver extends TestCase {
 				// compile network
 				if (isToPropagateEvidence) {
 					algorithm.run();
+					// obtain the quantity of cliques and their sizes
+					if (isToObtainCliqueSizes) {
+						// mapping from clique size (in our case, it is the quantity of variables in the clique, because nodes are assumed to be boolean) to cliques with such size
+						HashMap<Integer, Set<Clique>> sizeToCliquesMap = new HashMap<Integer, Set<Clique>>();
+						// iterate over all cliques and fill mapping
+						for (Clique clique : junctionTreeAlgorithm.getJunctionTree().getCliques()) {
+							// extract size of clique
+							Integer sizeOfClique = clique.getProbabilityFunction().getVariablesSize();
+							// see if it is mapped
+							Set<Clique> cliquesWithThisSize = sizeToCliquesMap.get(sizeOfClique);
+							if (cliquesWithThisSize == null) {
+								// not mapped yet. Create object to fill mapping
+								cliquesWithThisSize = new HashSet<Clique>();
+							}
+							// add current clique to the mapping
+							cliquesWithThisSize.add(clique);
+							// fill mapping
+							sizeToCliquesMap.put(sizeOfClique, cliquesWithThisSize);
+						}
+						// prepare list of keys of sizeToCliquesMap (i.e. sizes of cliques), so that we can order it afterward
+						List<Integer> cliqueSizeList = new ArrayList<Integer>(sizeToCliquesMap.keySet());
+						Collections.sort(cliqueSizeList, new Comparator<Integer>() {
+							/** comparator for sorting the clique size in inverse (i.e. descending) order */
+							public int compare(Integer o1, Integer o2) {
+								return o2.compareTo(o1);	// just do inverse comparison
+							}
+						});
+						for (Integer cliqueSize : cliqueSizeList) {
+							// for now, just print the sizes
+							System.out.println("Quantities of cliques with size " + cliqueSize + ": " + sizeToCliquesMap.get(cliqueSize).size());
+						}
+					}
 				} else {
 					// force nodes to start with a marginal list.
 					for (Node n : net.getNodes()) {
@@ -305,15 +352,15 @@ public class DAGGREQuestionsReaderDriver extends TestCase {
 	 * Execute this method only for printing the results without calling JUnit's assertions.
 	 * @param args:<br/> 
 	 * {{isToTestProbValues, isToPropagateEvidence, isToUpdateAssets, isToCreateUserAssetNets, isToPrintProbabilityValues} , <br/>
-	 * {isToTestProbValues, isToPropagateEvidence, isToUpdateAssets, isToCreateUserAssetNets, isToPrintProbabilityValues}}
+	 * {isToTestProbValues, isToPropagateEvidence, isToUpdateAssets, isToCreateUserAssetNets, isToPrintProbabilityValues, isToObtainCliqueSizes}}
 	 */
 	public static void main(String[] args) {
 		DAGGREQuestionsReaderDriver test = new DAGGREQuestionsReaderDriver("testCSVReading");
 		
 		if (args.length == (test.getNetFilesToTests().length * 5) ) {	// 10 by default
-			boolean[][] configs = new boolean[2][5];
+			boolean[][] configs = new boolean[2][CONFIG_SIZE];
 			for (int i = 0; i < args.length; i++) {
-				configs[i/5][i%5] = Boolean.parseBoolean(args[i]);
+				configs[i/CONFIG_SIZE][i%CONFIG_SIZE] = Boolean.parseBoolean(args[i]);
 			}
 			test.setConfigs(configs);
 		}
