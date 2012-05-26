@@ -183,6 +183,9 @@ public class DneIO implements BaseIO {
 		// start treating body
 		while (getNext(st) != StreamTokenizer.TT_EOF) {
 			
+			// if declaration is "visual" type, treat it
+			this.loadVisualDeclaration(st, net, networkBuilder);
+			
 			// if declaration is "node" type, treat it
 			this.loadNodeDeclaration(st, net, networkBuilder);
 			
@@ -199,19 +202,30 @@ public class DneIO implements BaseIO {
 		
 	}	
 
+	
+
 	protected int getNext(StreamTokenizer st) throws IOException {
 		do {
 			st.nextToken();
 			if (st.ttype == StreamTokenizer.TT_EOL) {
 				this.lineno++;
 			}
+			// force the following chars to be treated as ordinal chars, no matter what is the config of the st
 			if (st.ttype == ';') {
 				st.sval = ";";
+			}
+			if (st.ttype == '}') {
+				st.sval = "}";
+			}
+			if (st.ttype == '{') {
+				st.sval = "{";
 			}
 		} while (
 			(st.ttype != StreamTokenizer.TT_WORD)
 				&& (st.ttype != '"')
 				&& (st.ttype != ';')
+				&& (st.ttype != '{')
+				&& (st.ttype != '}')
 				&& (st.ttype != StreamTokenizer.TT_EOF));
 		return st.ttype;
 	}
@@ -256,6 +270,8 @@ public class DneIO implements BaseIO {
 		st.wordChars('%', '%');
 		st.ordinaryChars('(', ')');
 		st.ordinaryChar(';');
+		st.ordinaryChar('{');
+		st.ordinaryChar('}');
 		st.eolIsSignificant(false);
 		st.quoteChar('"');
 		st.slashSlashComments(true);
@@ -323,6 +339,66 @@ public class DneIO implements BaseIO {
 	}
 	
 	/**
+	 * This method handles the "VISUAL" declaration of a DNE file.
+	 * @param st : tokenizer responsible for reading the DNE file
+	 * @param net :  the network to be filled
+	 * @param networkBuilder : builder for generating new nodes or networks. This may be used by subclasses extending this method in order
+	 * to create new nodes/networks whenever necessary.
+	 * @throws IOException 
+	 */
+	protected void loadVisualDeclaration(StreamTokenizer st, SingleEntityNetwork net, IProbabilisticNetworkBuilder networkBuilder) throws IOException {
+		if (st.sval.equals("visual")) {
+			// read name (identificator) of the "visual" declaration block, but ignore it
+			if (this.getNext(st) != st.TT_WORD) {
+				throw new LoadException(
+						ERROR_NET
+						+ " l."
+						+ ((st.lineno() < this.lineno)?this.lineno:st.lineno())
+						+ resource.getString("LoadException3"));
+			}
+			// read block initiator "{"
+			this.getNext(st);
+			if (!st.sval.equals("{")) {
+				throw new LoadException(
+						ERROR_NET
+						+ " l."
+						+ ((st.lineno() < this.lineno)?this.lineno:st.lineno())
+						+ resource.getString("LoadException3"));
+			}
+			// start reading visual content
+			while (this.getNext(st) != st.TT_EOF) {
+				// TODO actually reflect it into UnBBayes config, like node colors, etc
+				if (st.sval.equals("}")) {
+					// end of visual content
+					// expect end of declaration ";"
+					if (this.getNext(st) == ';') {
+						// end of "visual" block
+						break;
+					} else {
+						throw new LoadException(
+								ERROR_NET
+								+ " l."
+								+ ((st.lineno() < this.lineno)?this.lineno:st.lineno())
+								+ resource.getString("LoadException3"));
+					}
+				} else if (st.sval.equals("{")) {
+					// This is beginning of an inner block. Read content until we find end of inner block, but ignore contents
+					// TODO do not ignore content of inner "visual" block
+					while(this.getNext(st) != st.TT_EOF) {
+						// caution: this if-clause assumes the second term of AND expression is only evaluated if the first is true (this is the default in java)
+						if (st.sval.equals("}") && this.getNext(st) == ';') {	
+							// end of inner block: "}" followed by ";"
+							break;
+						}
+					}
+				} else {
+					// ignore reserved words and declarations in "<attribute> = <value>;" format
+				}
+			}
+		}
+	}
+	
+	/**
 	 * If the current declaration is of type "node" (or "decision" or "utility"), loads
 	 * that node (creating new instances using networkBuilder) and adds it to net.
 	 * If declaration is not "node" (or "decision" or "utility"), it will not move the
@@ -345,13 +421,11 @@ public class DneIO implements BaseIO {
 				auxNode.setName(st.sval);
 				getNext(st);
 				if (st.sval.equals("{")) {
-					boolean discrete = true;
+//					boolean discrete = true;
 					getNext(st);
 					isDiscreteNode = true;
-					while (!st.sval.equals("}")) {
-						this.loadNodeDeclarationBody(st, auxNode, net);
-					}
-					net.addNode(auxNode);
+					this.loadNodeDeclarationBody(st, auxNode, net);
+					
 				} else {
 					throw new LoadException(
 						ERROR_NET
@@ -418,75 +492,90 @@ public class DneIO implements BaseIO {
 	}
 	
 	/**
-	 * Reads inside the node declaration.
+	 * Reads inside the node declaration and add node to net when necessary.
 	 * 			node {[READS THIS CONTENT]}
 	 * @param st
 	 * @param node: node to be filled
+	 * @param net : network where node will be inserted.
 	 * @throws IOException
 	 */
 	protected void loadNodeDeclarationBody(StreamTokenizer st , Node node, SingleEntityNetwork net) throws IOException, LoadException {
-		if (st.sval.equals("title")) {
-			getNext(st);
-			node.setDescription(st.sval);
-			getNext(st);
-		} else if (st.sval.equals("discrete")) {
-			getNext(st);
-			isDiscreteNode = st.sval.equals("TRUE");
-			getNext(st);
-		// If discrete
-		} else if (st.sval.equals("states")) {
-			while (getNext(st) != ';') {
-				node.appendState(st.sval);
-			}
-		// If continuous, but in a discrete way
-		} else if (st.sval.equals("levels")) {
-			getNext(st);
-			if (!isDiscreteNode) {
-				String stateBeginValue = st.sval;
-				while (getNext(st) != ';') {
-					node.appendState(stateBeginValue + "To" + st.sval);
-					stateBeginValue = st.sval;
-				}
-			} else {
-				do {
-					node.appendState(st.sval);
-				} while (getNext(st) != ';');
-			}
-		} else if (st.sval.equals("parents")) {
-			loadParents(st, node, net);
-		} else if (st.sval.equals("probs")) {
-			loadPotentialDataOrdinal(st, node);
-		} else if (st.sval.equals("visual")) {
-			getNext(st); // The name of the visual
-			getNext(st);
-			if (st.sval.equals("{")) {
+		boolean isConstantNode = false;	// if true, this node is a constant (i.e. do not represent random variable)
+		while (!st.sval.equals("}")) {
+			if (st.sval.equals("title")) {
 				getNext(st);
-				while (!st.sval.equals("}")) {
-					if (st.sval.equals("center")) {
-						getNext(st);
-						int x = Integer.parseInt(st.sval);
-						if (x <= 0) {
-							x = Node.getDefaultWidth();
-						}
-						getNext(st);
-						int y = Integer.parseInt(st.sval);
-						if (y <= 0) {
-							y = Node.getDefaultHeight();
-						}
-						node.setPosition(x, y);
-					}
-					getNext(st);
+				node.setDescription(st.sval);
+				getNext(st);
+			} else if (st.sval.equals("discrete")) {
+				getNext(st);
+				isDiscreteNode = st.sval.equals("TRUE");
+				getNext(st);
+				// If discrete
+			} else if (st.sval.equals("states")) {
+				while (getNext(st) != ';') {
+					node.appendState(st.sval);
 				}
+				// If continuous, but in a discrete way
+			} else if (st.sval.equals("levels")) {
+				getNext(st);
+				if (!isDiscreteNode) {
+					String stateBeginValue = st.sval;
+					while (getNext(st) != ';') {
+						node.appendState(stateBeginValue + "To" + st.sval);
+						stateBeginValue = st.sval;
+					}
+				} else {
+					do {
+						node.appendState(st.sval);
+					} while (getNext(st) != ';');
+				}
+			} else if (st.sval.equals("parents")) {
+				loadParents(st, node, net);
+			} else if (st.sval.equals("probs")) {
+				loadPotentialDataOrdinal(st, node);
+			} else if (st.sval.equals("visual")) {
+				getNext(st); // The name of the visual
+				getNext(st);
+				if (st.sval.equals("{")) {
+					getNext(st);
+					while (!st.sval.equals("}")) {
+						if (st.sval.equals("center")) {
+							getNext(st);
+							int x = Integer.parseInt(st.sval);
+							if (x <= 0) {
+								x = Node.getDefaultWidth();
+							}
+							getNext(st);
+							int y = Integer.parseInt(st.sval);
+							if (y <= 0) {
+								y = Node.getDefaultHeight();
+							}
+							node.setPosition(x, y);
+						}
+						getNext(st);
+					}
+				} else {
+					throw new LoadException(
+							ERROR_NET
+							+ " l."
+							+ ((st.lineno() < this.lineno)?this.lineno:st.lineno())
+							+ resource.getString("LoadException3"));
+				}
+			} else if (st.sval.equals("kind")) {
+				this.getNext(st);// read "=" and then the kind of node (e.g. CONSTANT, NATURE, etc.)
+				isConstantNode = st.sval.equalsIgnoreCase("CONSTANT");
+				this.getNext(st);
 			} else {
-				throw new LoadException(
-					ERROR_NET
-						+ " l."
-						+ ((st.lineno() < this.lineno)?this.lineno:st.lineno())
-						+ resource.getString("LoadException3"));
+				// Ignore for now...
+				// TODO treat other types of attributes
+				getNext(st);
 			}
-		} else {
-			// Ignore for now...
-			getNext(st);
+		}
+		if (!isConstantNode) {
+			// add only random variables ("constants" are not handled by the GUI anyway)
+			// UnBBayes can represent "constants" by creating random variables with only 1 possible value, 
+			// but it is still radically considered as a "variable".
+			net.addNode(node);
 		}
 	}
 	
@@ -512,13 +601,63 @@ public class DneIO implements BaseIO {
 		}
 
 		int nDim = 0;
+		
+//		boolean hasImposs = false;	// true indicates that the potential declaration contains "@imposs".
 		while (getNext(st) != ';') {
+			float value = Float.NaN;
+//			if (st.sval.equalsIgnoreCase("imposs")) {
+//				hasImposs = true;
+//			} else {
+				try {
+					value = Float.parseFloat(st.sval);
+				} catch (NumberFormatException e) {
+					// ignore number format
+					Debug.println(getClass(), e.getMessage() ,e);
+				}
+//			}
 			auxPotentialTable.setValue(
 				nDim++,
-				Float.parseFloat(st.sval));
+				value);
 			
 		}
+		
+		// represent "@imposs" of a DNE file as an additional state "absurd"
+//		if (hasImposs) {
+//			String absurd = "ABSURD";	// this will be the name of the special state representing @imposs
+//			if (this.hasState(node, absurd)) {
+//				// make sure uniqueness of state by adding a number as suffix
+//				for (int i = 0; i < Integer.MAX_VALUE; i++) {
+//					if (!this.hasState(node, absurd + i)) {
+//						// the name of the state will be "absurd<number>"
+//						absurd += i;
+//						break;
+//					}
+//				}
+//			}
+//			// add state to node
+//			node.appendState(absurd);
+//			// fill CPT
+//			for (int i = 0; i < node.getStatesSize(); i++) {
+//				if (node.getStateAt(i).equalsIgnoreCase("absurd")) {
+//					stateSuffix
+//				}
+//			}
+//		}
 	}
+	
+//	/**
+//	 * @return : true if node has state
+//	 * @param node : node to look for state
+//	 * @param state : name of the state to look for
+//	 */
+//	private boolean hasState(Node node, String state) {
+//		for (int i = 0; i < node.getStatesSize(); i++) {
+//			if (node.getStateAt(i).equalsIgnoreCase(state)) {
+//				return true;
+//			}
+//		}
+//		return false;
+//	}
 	
 	/**
 	 * Fills the PrintStream with net{} header, starting with "net {" declaration and closing with "}"

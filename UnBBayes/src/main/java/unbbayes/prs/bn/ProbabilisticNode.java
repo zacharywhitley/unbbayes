@@ -227,7 +227,34 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable, 
             int l = indexes[i];
             List<Node> auxList = clones[i];            
             for (int k = auxList.size() - 1; k >= l; k--) {
-                auxTab.removeVariable(auxList.get(k));
+            	// TODO fix the marginalization which is happening here
+//            	ISumOperation operationBkp = null;
+//            	if (isInsertion) {
+//            		if (auxTab instanceof ProbabilisticTable) {
+//            			// backup old marginalization operation and overwrite with something different
+//						ProbabilisticTable pt = (ProbabilisticTable) auxTab;
+//						operationBkp = pt.getSumOperation();
+//						pt.setSumOperation(new ISumOperation() {
+//							public float operate(float arg1, float arg2) {
+//								// TODO Auto-generated method stub
+//								return 0;
+//							}
+//						});
+//            		}
+//            		// remove var, so that it is added again after the state is updated
+//            		auxTab.removeVariable(auxList.get(k));
+//            		//re-enable marginalization of auxTab.removeVariable(auxList.get(k));
+//            		if (isInsertion) {
+//            			if (auxTab instanceof ProbabilisticTable) {
+//            				// restore backed up operation
+//            				ProbabilisticTable pt = (ProbabilisticTable) auxTab;
+//            				pt.setSumOperation(operationBkp);
+//            			}
+//            		}
+//            	} else {
+            		// remove var, so that it is added again after the state is updated
+            		auxTab.removeVariable(auxList.get(k));
+//            	}
             }
         }
         
