@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Properties;
 
 import unbbayes.prs.bn.AssetNetwork;
-import unbbayes.prs.bn.Clique;
-import unbbayes.prs.bn.JunctionTree;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 
 /**
@@ -40,20 +38,6 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
  *
  */
 public interface DAGGREUnBBayesFacade {
-	
-//	/**
-//	 * @return This object stores default system properties of the markov engine.
-//	 * Classes implementing this interface may use these properties to set
-//	 * default values of some attributes not specified in this interface, during the initialization.
-//	 */
-//	public Properties getDefaultProperties();
-//	
-//	/**
-//	 * @param properties : this object stores default system properties of the markov engine.
-//	 * Classes implementing this interface may use these properties to set
-//	 * default values of some attributes not specified in this interface.
-//	 */
-//	public void setDefaultProperties(Properties properties);
 	
 	/**
 	 * Assets are managed by a data structure known as the asset tables
