@@ -1,301 +1,295 @@
 <?xml version='1.0' encoding='US-ASCII'?>
-<mstns:BIF VERSION="0" xmlns:mstns="http://localhost/xml/model.xsd">
-  <mstns:HEADER>
-    <mstns:NAME>learned net</mstns:NAME>
-    <mstns:VERSION>1</mstns:VERSION>
-    <mstns:CREATOR>UnBBayes</mstns:CREATOR>
-  </mstns:HEADER>
-  <mstns:STATICPROPERTY>
-    <mstns:NODESIZE>0</mstns:NODESIZE>
-    <mstns:NODEFONTSIZE>0</mstns:NODEFONTSIZE>
-    <mstns:COLORUTILITY>-16711681</mstns:COLORUTILITY>
-    <mstns:COLORDECISION>-14336</mstns:COLORDECISION>
-    <mstns:COLORPROBDESCRIPTION>-256</mstns:COLORPROBDESCRIPTION>
-    <mstns:COLORPROBEXPLANATION>-16711936</mstns:COLORPROBEXPLANATION>
-  </mstns:STATICPROPERTY>
-  <mstns:HIERARCHY>
-    <mstns:ROOT NAME="Variveis de Informao">
-      <mstns:LEVEL NAME="Identifica&#231;&#227;o Humana"/>
-    </mstns:ROOT>
-    <mstns:ROOT NAME="Identifica&#231;&#227;o Humana">
-      <mstns:LEVEL NAME="Face"/>
-      <mstns:LEVEL NAME="Faixa et&#225;ria do indiv&#237;duo"/>
-    </mstns:ROOT>
-    <mstns:ROOT NAME="Face">
-      <mstns:LEVEL NAME="Mento"/>
-      <mstns:LEVEL NAME="Proemin&#234;ncia da glabela"/>
-      <mstns:LEVEL NAME="Inclina&#231;&#227;o fronte"/>
-      <mstns:LEVEL NAME="Forma dos incisivos superiores"/>
-      <mstns:LEVEL NAME="Caracter&#237;stica da &#243;rbita"/>
-    </mstns:ROOT>
-    <mstns:ROOT NAME="Mento">
-      <mstns:LEVEL NAME="Arredondamento do mento"/>
-      <mstns:LEVEL NAME="Proemin&#234;ncia do mento"/>
-    </mstns:ROOT>
-  </mstns:HIERARCHY>
-  <mstns:NETWORK>
-    <mstns:VARIABLES>
-      <mstns:VAR YPOS="79" XPOS="413" TYPE="discrete" NAME="FaixaEtaria">
-        <mstns:LABEL>Faixa et&#225;ria do indiv&#237;duo</mstns:LABEL>
-        <mstns:STATENAME>Adulto</mstns:STATENAME>
-        <mstns:STATENAME>PosPuberal</mstns:STATENAME>
-        <mstns:STATENAME>Velho</mstns:STATENAME>
-        <mstns:METAPHORE>
-          <mstns:DESCRIPTION>Separa&#231;&#227;o de idade do indiv&#237;duo.
-Os intervalos, em idade, s&#227;o:
+<xbifns:XMLBIF version="0.6" xmlns:xbifns="http://unbbayes.sourceforge.net/xml/XMLBIF_0_6.xsd">
+  <xbifns:header>
+    <xbifns:version>1.0</xbifns:version>
+    <xbifns:name>learned net</xbifns:name>
+    <xbifns:creator>UnBBayes</xbifns:creator>
+  </xbifns:header>
+  <xbifns:staticProperty>
+    <xbifns:nodeSize>0</xbifns:nodeSize>
+    <xbifns:nodeFontSize>0</xbifns:nodeFontSize>
+    <xbifns:colorUtilityNode>0</xbifns:colorUtilityNode>
+    <xbifns:colorDecisionNode>0</xbifns:colorDecisionNode>
+    <xbifns:colorDiscreteProbabilisticNode>0</xbifns:colorDiscreteProbabilisticNode>
+    <xbifns:colorContinuousProbilisticNode>0</xbifns:colorContinuousProbilisticNode>
+    <xbifns:colorExplanationNode>0</xbifns:colorExplanationNode>
+  </xbifns:staticProperty>
+  <xbifns:hierarchy>
+    <xbifns:root name="Variveis de Informao">
+      <xbifns:level name="Identifica&#231;&#227;o Humana"/>
+    </xbifns:root>
+    <xbifns:root name="Identifica&#231;&#227;o Humana">
+      <xbifns:level name="Face"/>
+      <xbifns:level name="Faixa et&#225;ria do indiv&#237;duo"/>
+    </xbifns:root>
+    <xbifns:root name="Face">
+      <xbifns:level name="Mento"/>
+      <xbifns:level name="Proemin&#234;ncia da glabela"/>
+      <xbifns:level name="Inclina&#231;&#227;o fronte"/>
+      <xbifns:level name="Forma dos incisivos superiores"/>
+      <xbifns:level name="Caracter&#237;stica da &#243;rbita"/>
+    </xbifns:root>
+    <xbifns:root name="Mento">
+      <xbifns:level name="Arredondamento do mento"/>
+      <xbifns:level name="Proemin&#234;ncia do mento"/>
+    </xbifns:root>
+  </xbifns:hierarchy>
+  <xbifns:network>
+    <xbifns:variables>
+      <xbifns:variable rgbColor="-16711936" height="60.0" width="80.0" yPos="79" xPos="413" type="DiscreteProbabilistic" name="AgeGroup">
+        <xbifns:description>Age group of individual</xbifns:description>
+        <xbifns:state name="Adult"/>
+        <xbifns:state name="PostPubertal"/>
+        <xbifns:state name="Elderly"/>
+        <xbifns:metaphore>
+          <xbifns:description>This variable represents the interval of the age of an individual.
+The intervals (in years) are:
 
-Pos-puberal = [16 , 21)
-Adulto = [21-60)
-Velho = [60..)</mstns:DESCRIPTION>
-          <mstns:COMPLEMENTARY>
-            <mstns:NAME>Sexo do indiv&#237;duo</mstns:NAME>
-            <mstns:COMMENTS>Acredita-se que quanto mais jovem o indiv&#237;duo, mas marca&#231;&#227;o "feminina" este ter&#225;.</mstns:COMMENTS>
-          </mstns:COMPLEMENTARY>
-        </mstns:METAPHORE>
-      </mstns:VAR>
-      <mstns:VAR YPOS="27" XPOS="231" TYPE="discrete" NAME="sexo">
-        <mstns:LABEL>Sexo do indiv&#237;duo</mstns:LABEL>
-        <mstns:STATENAME>Feminino</mstns:STATENAME>
-        <mstns:STATENAME>Masculino</mstns:STATENAME>
-        <mstns:METAPHORE>
-          <mstns:DESCRIPTION>Sexo do indiv&#237;duo.</mstns:DESCRIPTION>
-          <mstns:TRIGGER>
-            <mstns:NAME>Proemin&#234;ncia da glabela</mstns:NAME>
-            <mstns:COMMENTS>A mulher possui glabela mais aplanada, lisa e pouco delimitada.</mstns:COMMENTS>
-          </mstns:TRIGGER>
-          <mstns:EXCLUDENT>
-            <mstns:NAME>Faixa et&#225;ria do indiv&#237;duo</mstns:NAME>
-            <mstns:COMMENTS>A faixa et&#225;ria do indiv&#237;duo somente atua indiretamente com a determina&#231;&#227;o do sexo.
-Quanto mais jovem, os cr&#226;nios aparentam ter menos "marcas" determinantes.</mstns:COMMENTS>
-          </mstns:EXCLUDENT>
-          <mstns:ESSENCIAL>
-            <mstns:NAME>Inclina&#231;&#227;o fronte</mstns:NAME>
-            <mstns:COMMENTS>Acredita-se que quanto mais inclinado a fronte, 
-maior &#233; a chance do indiv&#237;duo ser masculino.</mstns:COMMENTS>
-          </mstns:ESSENCIAL>
-          <mstns:COMPLEMENTARY>
-            <mstns:NAME>Caracter&#237;stica da &#243;rbita</mstns:NAME>
-            <mstns:COMMENTS>Acredita-se que o homem tenha &#243;rbitas mais angulosas.
-As mulheres possuem &#243;rbitas mais redondas.</mstns:COMMENTS>
-          </mstns:COMPLEMENTARY>
-          <mstns:NA>
-            <mstns:NAME>Forma dos incisivos superiores</mstns:NAME>
-            <mstns:COMMENTS/>
-          </mstns:NA>
-        </mstns:METAPHORE>
-      </mstns:VAR>
-      <mstns:VAR YPOS="74" XPOS="100" TYPE="discrete" NAME="glabela">
-        <mstns:LABEL>Proemin&#234;ncia da glabela</mstns:LABEL>
-        <mstns:STATENAME>NaoProeminente</mstns:STATENAME>
-        <mstns:STATENAME>Proeminente</mstns:STATENAME>
-        <mstns:METAPHORE>
-          <mstns:DESCRIPTION>Espa&#231;o entre as sobrancelhas.</mstns:DESCRIPTION>
-        </mstns:METAPHORE>
-      </mstns:VAR>
-      <mstns:VAR YPOS="203" XPOS="69" TYPE="discrete" NAME="fronte">
-        <mstns:LABEL>Inclina&#231;&#227;o fronte</mstns:LABEL>
-        <mstns:STATENAME>Vertical</mstns:STATENAME>
-        <mstns:STATENAME>Inclinada</mstns:STATENAME>
-        <mstns:METAPHORE>
-          <mstns:DESCRIPTION>Parte front&#225;ria do cr&#226;nio. Testa.</mstns:DESCRIPTION>
-        </mstns:METAPHORE>
-      </mstns:VAR>
-      <mstns:VAR YPOS="208" XPOS="131" TYPE="discrete" NAME="incisivos">
-        <mstns:LABEL>Forma dos incisivos superiores</mstns:LABEL>
-        <mstns:STATENAME>Quadrado</mstns:STATENAME>
-        <mstns:STATENAME>Redondo</mstns:STATENAME>
-        <mstns:METAPHORE>
-          <mstns:DESCRIPTION>Formato dos incisivos superiores.
+Post-pubertal = [16, 21)
+Adult = [21-60)
+Elderly = [60 ..)</xbifns:description>
+          <xbifns:explanation evidenceType="Complementary" evidence="Sexo do indiv&#237;duo">
+            <xbifns:comments>Acredita-se que quanto mais jovem o indiv&#237;duo, mas marca&#231;&#227;o "feminina" este ter&#225;.</xbifns:comments>
+          </xbifns:explanation>
+        </xbifns:metaphore>
+      </xbifns:variable>
+      <xbifns:variable rgbColor="-16711936" height="60.0" width="80.0" yPos="27" xPos="231" type="DiscreteProbabilistic" name="gender">
+        <xbifns:description>Gender of an individual</xbifns:description>
+        <xbifns:state name="female"/>
+        <xbifns:state name="male"/>
+        <xbifns:metaphore>
+          <xbifns:description>This is the gender of an individual (either male or female)</xbifns:description>
+          <xbifns:explanation evidenceType="Complementary" evidence="Caracter&#237;stica da &#243;rbita">
+            <xbifns:comments>Acredita-se que o homem tenha &#243;rbitas mais angulosas.
+As mulheres possuem &#243;rbitas mais redondas.</xbifns:comments>
+          </xbifns:explanation>
+          <xbifns:explanation evidenceType="Exclusive" evidence="Faixa et&#225;ria do indiv&#237;duo">
+            <xbifns:comments>A faixa et&#225;ria do indiv&#237;duo somente atua indiretamente com a determina&#231;&#227;o do sexo.
+Quanto mais jovem, os cr&#226;nios aparentam ter menos "marcas" determinantes.</xbifns:comments>
+          </xbifns:explanation>
+          <xbifns:explanation evidenceType="Necessary" evidence="Inclina&#231;&#227;o fronte">
+            <xbifns:comments>Acredita-se que quanto mais inclinado a fronte, 
+maior &#233; a chance do indiv&#237;duo ser masculino.</xbifns:comments>
+          </xbifns:explanation>
+          <xbifns:explanation evidenceType="Trigger" evidence="Proemin&#234;ncia da glabela">
+            <xbifns:comments>A mulher possui glabela mais aplanada, lisa e pouco delimitada.</xbifns:comments>
+          </xbifns:explanation>
+          <xbifns:explanation evidenceType="NA" evidence="Forma dos incisivos superiores">
+            <xbifns:comments/>
+          </xbifns:explanation>
+        </xbifns:metaphore>
+      </xbifns:variable>
+      <xbifns:variable rgbColor="-16711936" height="60.0" width="80.0" yPos="74" xPos="100" type="DiscreteProbabilistic" name="glabella">
+        <xbifns:description>Prominence, or salience of the glabella</xbifns:description>
+        <xbifns:state name="nonSalient"/>
+        <xbifns:state name="salient"/>
+        <xbifns:metaphore>
+          <xbifns:description>The smooth area between the eyebrows just above the nose.</xbifns:description>
+        </xbifns:metaphore>
+      </xbifns:variable>
+      <xbifns:variable rgbColor="-16711936" height="60.0" width="80.0" yPos="199" xPos="42" type="DiscreteProbabilistic" name="forehead">
+        <xbifns:description>Inclination of the forehead</xbifns:description>
+        <xbifns:state name="Vertical"/>
+        <xbifns:state name="Inclined"/>
+        <xbifns:metaphore>
+          <xbifns:description>This is the frontal part of the skull.</xbifns:description>
+        </xbifns:metaphore>
+      </xbifns:variable>
+      <xbifns:variable rgbColor="-16711936" height="60.0" width="80.0" yPos="208" xPos="131" type="DiscreteProbabilistic" name="incisivos">
+        <xbifns:description>Forma dos incisivos superiores</xbifns:description>
+        <xbifns:state name="Quadrado"/>
+        <xbifns:state name="Redondo"/>
+        <xbifns:metaphore>
+          <xbifns:description>Formato dos incisivos superiores.
 
 Os incisivos s&#227;o os dentes que cortam alimentos, situados na parte
-anterior dos dois maxilares.</mstns:DESCRIPTION>
-        </mstns:METAPHORE>
-      </mstns:VAR>
-      <mstns:VAR YPOS="217" XPOS="221" TYPE="discrete" NAME="Arredondamento">
-        <mstns:LABEL>Arredondamento do mento</mstns:LABEL>
-        <mstns:STATENAME>Arredondado</mstns:STATENAME>
-        <mstns:STATENAME>Quadrado</mstns:STATENAME>
-        <mstns:METAPHORE>
-          <mstns:DESCRIPTION>Arredondamento do mento.
+anterior dos dois maxilares.</xbifns:description>
+        </xbifns:metaphore>
+      </xbifns:variable>
+      <xbifns:variable rgbColor="-16711936" height="60.0" width="80.0" yPos="217" xPos="221" type="DiscreteProbabilistic" name="Arredondamento">
+        <xbifns:description>Arredondamento do mento</xbifns:description>
+        <xbifns:state name="Arredondado"/>
+        <xbifns:state name="Quadrado"/>
+        <xbifns:metaphore>
+          <xbifns:description>Arredondamento do mento.
 
 O mento &#233; a parte inferior e m&#233;dia da face, abaixo do l&#225;bio inferior; comumente
-conhecido como queixo.</mstns:DESCRIPTION>
-        </mstns:METAPHORE>
-      </mstns:VAR>
-      <mstns:VAR YPOS="211" XPOS="322" TYPE="discrete" NAME="Proeminencia">
-        <mstns:LABEL>Proemin&#234;ncia do mento</mstns:LABEL>
-        <mstns:STATENAME>Discreto</mstns:STATENAME>
-        <mstns:STATENAME>Proeminente</mstns:STATENAME>
-        <mstns:METAPHORE>
-          <mstns:DESCRIPTION>Proemin&#234;ncia do mento.
+conhecido como queixo.</xbifns:description>
+        </xbifns:metaphore>
+      </xbifns:variable>
+      <xbifns:variable rgbColor="-16711936" height="60.0" width="80.0" yPos="211" xPos="322" type="DiscreteProbabilistic" name="Proeminencia">
+        <xbifns:description>Proemin&#234;ncia do mento</xbifns:description>
+        <xbifns:state name="Discreto"/>
+        <xbifns:state name="Proeminente"/>
+        <xbifns:metaphore>
+          <xbifns:description>Proemin&#234;ncia do mento.
 
 O mento &#233; a parte inferior e m&#233;dia da face, abaixo do l&#225;bio inferior; comumente
-conhecido como queixo.</mstns:DESCRIPTION>
-        </mstns:METAPHORE>
-      </mstns:VAR>
-      <mstns:VAR YPOS="199" XPOS="410" TYPE="discrete" NAME="orbita">
-        <mstns:LABEL>Caracter&#237;stica da &#243;rbita</mstns:LABEL>
-        <mstns:STATENAME>Angulosa</mstns:STATENAME>
-        <mstns:STATENAME>Redonda</mstns:STATENAME>
-        <mstns:METAPHORE>
-          <mstns:DESCRIPTION>Cavidade ocular.</mstns:DESCRIPTION>
-        </mstns:METAPHORE>
-      </mstns:VAR>
-    </mstns:VARIABLES>
-    <mstns:STRUCTURE>
-      <mstns:ARC CHILD="FaixaEtaria" PARENT="sexo"/>
-      <mstns:ARC CHILD="FaixaEtaria" PARENT="glabela"/>
-      <mstns:ARC CHILD="glabela" PARENT="sexo"/>
-      <mstns:ARC CHILD="fronte" PARENT="sexo"/>
-      <mstns:ARC CHILD="fronte" PARENT="glabela"/>
-      <mstns:ARC CHILD="incisivos" PARENT="sexo"/>
-      <mstns:ARC CHILD="incisivos" PARENT="FaixaEtaria"/>
-      <mstns:ARC CHILD="Arredondamento" PARENT="sexo"/>
-      <mstns:ARC CHILD="Arredondamento" PARENT="FaixaEtaria"/>
-      <mstns:ARC CHILD="Proeminencia" PARENT="sexo"/>
-      <mstns:ARC CHILD="Proeminencia" PARENT="FaixaEtaria"/>
-      <mstns:ARC CHILD="orbita" PARENT="sexo"/>
-      <mstns:ARC CHILD="orbita" PARENT="glabela"/>
-    </mstns:STRUCTURE>
-    <mstns:POTENTIAL>
-      <mstns:POT>
-        <mstns:PRIVATE NAME="FaixaEtaria"/>
-        <mstns:CONDSET>
-          <mstns:CONDLEM NAME="sexo"/>
-          <mstns:CONDLEM NAME="glabela"/>
-        </mstns:CONDSET>
-        <mstns:DPIS>
-          <mstns:DPI INDEXES="0">0.7852194</mstns:DPI>
-          <mstns:DPI INDEXES="0">0.16628176</mstns:DPI>
-          <mstns:DPI INDEXES="0">0.048498847</mstns:DPI>
-          <mstns:DPI INDEXES="1">0.7</mstns:DPI>
-          <mstns:DPI INDEXES="1">0.2</mstns:DPI>
-          <mstns:DPI INDEXES="1">0.1</mstns:DPI>
-          <mstns:DPI INDEXES="2">0.7080292</mstns:DPI>
-          <mstns:DPI INDEXES="2">0.18978103</mstns:DPI>
-          <mstns:DPI INDEXES="2">0.10218978</mstns:DPI>
-          <mstns:DPI INDEXES="3">0.77260274</mstns:DPI>
-          <mstns:DPI INDEXES="3">0.16712329</mstns:DPI>
-          <mstns:DPI INDEXES="3">0.06027397</mstns:DPI>
-        </mstns:DPIS>
-      </mstns:POT>
-      <mstns:POT>
-        <mstns:PRIVATE NAME="sexo"/>
-        <mstns:CONDSET/>
-        <mstns:DPIS>
-          <mstns:DPI INDEXES="0">0.4684492</mstns:DPI>
-          <mstns:DPI INDEXES="0">0.5315508</mstns:DPI>
-        </mstns:DPIS>
-      </mstns:POT>
-      <mstns:POT>
-        <mstns:PRIVATE NAME="glabela"/>
-        <mstns:CONDSET>
-          <mstns:CONDLEM NAME="sexo"/>
-        </mstns:CONDSET>
-        <mstns:DPIS>
-          <mstns:DPI INDEXES="0">0.9817768</mstns:DPI>
-          <mstns:DPI INDEXES="0">0.018223235</mstns:DPI>
-          <mstns:DPI INDEXES="1">0.27108434</mstns:DPI>
-          <mstns:DPI INDEXES="1">0.7289157</mstns:DPI>
-        </mstns:DPIS>
-      </mstns:POT>
-      <mstns:POT>
-        <mstns:PRIVATE NAME="fronte"/>
-        <mstns:CONDSET>
-          <mstns:CONDLEM NAME="sexo"/>
-          <mstns:CONDLEM NAME="glabela"/>
-        </mstns:CONDSET>
-        <mstns:DPIS>
-          <mstns:DPI INDEXES="0">0.5300926</mstns:DPI>
-          <mstns:DPI INDEXES="0">0.4699074</mstns:DPI>
-          <mstns:DPI INDEXES="1">0.44444445</mstns:DPI>
-          <mstns:DPI INDEXES="1">0.5555556</mstns:DPI>
-          <mstns:DPI INDEXES="2">0.05882353</mstns:DPI>
-          <mstns:DPI INDEXES="2">0.9411765</mstns:DPI>
-          <mstns:DPI INDEXES="3">0.54395604</mstns:DPI>
-          <mstns:DPI INDEXES="3">0.45604396</mstns:DPI>
-        </mstns:DPIS>
-      </mstns:POT>
-      <mstns:POT>
-        <mstns:PRIVATE NAME="incisivos"/>
-        <mstns:CONDSET>
-          <mstns:CONDLEM NAME="sexo"/>
-          <mstns:CONDLEM NAME="FaixaEtaria"/>
-        </mstns:CONDSET>
-        <mstns:DPIS>
-          <mstns:DPI INDEXES="0">0.28818443</mstns:DPI>
-          <mstns:DPI INDEXES="0">0.71181554</mstns:DPI>
-          <mstns:DPI INDEXES="1">0.3783784</mstns:DPI>
-          <mstns:DPI INDEXES="1">0.6216216</mstns:DPI>
-          <mstns:DPI INDEXES="2">0.95454544</mstns:DPI>
-          <mstns:DPI INDEXES="2">0.045454547</mstns:DPI>
-          <mstns:DPI INDEXES="3">0.8390501</mstns:DPI>
-          <mstns:DPI INDEXES="3">0.16094987</mstns:DPI>
-          <mstns:DPI INDEXES="4">0.74712646</mstns:DPI>
-          <mstns:DPI INDEXES="4">0.25287357</mstns:DPI>
-          <mstns:DPI INDEXES="5">0.9722222</mstns:DPI>
-          <mstns:DPI INDEXES="5">0.027777778</mstns:DPI>
-        </mstns:DPIS>
-      </mstns:POT>
-      <mstns:POT>
-        <mstns:PRIVATE NAME="Arredondamento"/>
-        <mstns:CONDSET>
-          <mstns:CONDLEM NAME="sexo"/>
-          <mstns:CONDLEM NAME="FaixaEtaria"/>
-        </mstns:CONDSET>
-        <mstns:DPIS>
-          <mstns:DPI INDEXES="0">0.55043226</mstns:DPI>
-          <mstns:DPI INDEXES="0">0.44956774</mstns:DPI>
-          <mstns:DPI INDEXES="1">0.6081081</mstns:DPI>
-          <mstns:DPI INDEXES="1">0.3918919</mstns:DPI>
-          <mstns:DPI INDEXES="2">0.22727273</mstns:DPI>
-          <mstns:DPI INDEXES="2">0.77272725</mstns:DPI>
-          <mstns:DPI INDEXES="3">0.43271768</mstns:DPI>
-          <mstns:DPI INDEXES="3">0.5672823</mstns:DPI>
-          <mstns:DPI INDEXES="4">0.44827586</mstns:DPI>
-          <mstns:DPI INDEXES="4">0.55172414</mstns:DPI>
-          <mstns:DPI INDEXES="5">0.33333334</mstns:DPI>
-          <mstns:DPI INDEXES="5">0.6666667</mstns:DPI>
-        </mstns:DPIS>
-      </mstns:POT>
-      <mstns:POT>
-        <mstns:PRIVATE NAME="Proeminencia"/>
-        <mstns:CONDSET>
-          <mstns:CONDLEM NAME="sexo"/>
-          <mstns:CONDLEM NAME="FaixaEtaria"/>
-        </mstns:CONDSET>
-        <mstns:DPIS>
-          <mstns:DPI INDEXES="0">0.52161384</mstns:DPI>
-          <mstns:DPI INDEXES="0">0.47838616</mstns:DPI>
-          <mstns:DPI INDEXES="1">0.7972973</mstns:DPI>
-          <mstns:DPI INDEXES="1">0.2027027</mstns:DPI>
-          <mstns:DPI INDEXES="2">0.72727275</mstns:DPI>
-          <mstns:DPI INDEXES="2">0.27272728</mstns:DPI>
-          <mstns:DPI INDEXES="3">0.30079156</mstns:DPI>
-          <mstns:DPI INDEXES="3">0.69920844</mstns:DPI>
-          <mstns:DPI INDEXES="4">0.40229884</mstns:DPI>
-          <mstns:DPI INDEXES="4">0.59770113</mstns:DPI>
-          <mstns:DPI INDEXES="5">0.7222222</mstns:DPI>
-          <mstns:DPI INDEXES="5">0.2777778</mstns:DPI>
-        </mstns:DPIS>
-      </mstns:POT>
-      <mstns:POT>
-        <mstns:PRIVATE NAME="orbita"/>
-        <mstns:CONDSET>
-          <mstns:CONDLEM NAME="sexo"/>
-          <mstns:CONDLEM NAME="glabela"/>
-        </mstns:CONDSET>
-        <mstns:DPIS>
-          <mstns:DPI INDEXES="0">0.4074074</mstns:DPI>
-          <mstns:DPI INDEXES="0">0.5925926</mstns:DPI>
-          <mstns:DPI INDEXES="1">0.22222222</mstns:DPI>
-          <mstns:DPI INDEXES="1">0.7777778</mstns:DPI>
-          <mstns:DPI INDEXES="2">0.7132353</mstns:DPI>
-          <mstns:DPI INDEXES="2">0.2867647</mstns:DPI>
-          <mstns:DPI INDEXES="3">0.5521978</mstns:DPI>
-          <mstns:DPI INDEXES="3">0.4478022</mstns:DPI>
-        </mstns:DPIS>
-      </mstns:POT>
-    </mstns:POTENTIAL>
-  </mstns:NETWORK>
-</mstns:BIF>
+conhecido como queixo.</xbifns:description>
+        </xbifns:metaphore>
+      </xbifns:variable>
+      <xbifns:variable rgbColor="-16711936" height="60.0" width="80.0" yPos="199" xPos="410" type="DiscreteProbabilistic" name="orbita">
+        <xbifns:description>Caracter&#237;stica da &#243;rbita</xbifns:description>
+        <xbifns:state name="Angulosa"/>
+        <xbifns:state name="Redonda"/>
+        <xbifns:metaphore>
+          <xbifns:description>Cavidade ocular.</xbifns:description>
+        </xbifns:metaphore>
+      </xbifns:variable>
+    </xbifns:variables>
+    <xbifns:structure>
+      <xbifns:edge child="AgeGroup" parent="gender"/>
+      <xbifns:edge child="AgeGroup" parent="glabella"/>
+      <xbifns:edge child="glabella" parent="gender"/>
+      <xbifns:edge child="forehead" parent="gender"/>
+      <xbifns:edge child="forehead" parent="glabella"/>
+      <xbifns:edge child="incisivos" parent="gender"/>
+      <xbifns:edge child="incisivos" parent="AgeGroup"/>
+      <xbifns:edge child="Arredondamento" parent="gender"/>
+      <xbifns:edge child="Arredondamento" parent="AgeGroup"/>
+      <xbifns:edge child="Proeminencia" parent="gender"/>
+      <xbifns:edge child="Proeminencia" parent="AgeGroup"/>
+      <xbifns:edge child="orbita" parent="gender"/>
+      <xbifns:edge child="orbita" parent="glabella"/>
+    </xbifns:structure>
+    <xbifns:conditionalDistributionSet>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="AgeGroup"/>
+        <xbifns:parents>
+          <xbifns:parent index="0" name="gender"/>
+          <xbifns:parent index="1" name="glabella"/>
+        </xbifns:parents>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.7852193713188171</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.16628175973892212</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.04849884659051895</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="3">0.699999988079071</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="4">0.20000000298023224</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="5">0.10000000149011612</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="6">0.7080292105674744</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="7">0.18978102505207062</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="8">0.10218977928161621</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="9">0.7726027369499207</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="10">0.16712328791618347</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="11">0.060273971408605576</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="gender"/>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.468449205160141</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.5315508246421814</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="glabella"/>
+        <xbifns:parents>
+          <xbifns:parent index="0" name="gender"/>
+        </xbifns:parents>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.981776773929596</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.0182232353836298</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.27108433842658997</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="3">0.7289156913757324</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="forehead"/>
+        <xbifns:parents>
+          <xbifns:parent index="0" name="gender"/>
+          <xbifns:parent index="1" name="glabella"/>
+        </xbifns:parents>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.5300925970077515</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.46990740299224854</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.4444444477558136</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="3">0.5555555820465088</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="4">0.05882352963089943</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="5">0.9411764740943909</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="6">0.5439560413360596</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="7">0.45604395866394043</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="incisivos"/>
+        <xbifns:parents>
+          <xbifns:parent index="0" name="gender"/>
+          <xbifns:parent index="1" name="AgeGroup"/>
+        </xbifns:parents>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.28818443417549133</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.7118155360221863</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.37837839126586914</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="3">0.6216216087341309</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="4">0.9545454382896423</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="5">0.04545454680919647</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="6">0.8390501141548157</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="7">0.16094987094402313</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="8">0.7471264600753784</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="9">0.25287356972694397</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="10">0.9722222089767456</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="11">0.02777777798473835</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="Arredondamento"/>
+        <xbifns:parents>
+          <xbifns:parent index="0" name="gender"/>
+          <xbifns:parent index="1" name="AgeGroup"/>
+        </xbifns:parents>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.5504322648048401</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.4495677351951599</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.6081081032752991</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="3">0.3918918967247009</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="4">0.22727273404598236</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="5">0.7727272510528564</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="6">0.4327176809310913</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="7">0.5672823190689087</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="8">0.4482758641242981</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="9">0.5517241358757019</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="10">0.3333333432674408</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="11">0.6666666865348816</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="Proeminencia"/>
+        <xbifns:parents>
+          <xbifns:parent index="0" name="gender"/>
+          <xbifns:parent index="1" name="AgeGroup"/>
+        </xbifns:parents>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.5216138362884521</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.47838616371154785</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.7972972989082336</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="3">0.20270270109176636</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="4">0.7272727489471436</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="5">0.27272728085517883</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="6">0.30079156160354614</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="7">0.6992084383964539</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="8">0.40229883790016174</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="9">0.5977011322975159</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="10">0.7222222089767456</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="11">0.2777777910232544</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+      <xbifns:conditionalDistribution type="Discrete">
+        <xbifns:owner name="orbita"/>
+        <xbifns:parents>
+          <xbifns:parent index="0" name="gender"/>
+          <xbifns:parent index="1" name="glabella"/>
+        </xbifns:parents>
+        <xbifns:CPT>
+          <xbifns:dependentParentIndex index="0">0.40740740299224854</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="1">0.5925925970077515</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="2">0.2222222238779068</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="3">0.7777777910232544</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="4">0.7132353186607361</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="5">0.2867647111415863</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="6">0.5521978139877319</xbifns:dependentParentIndex>
+          <xbifns:dependentParentIndex index="7">0.44780218601226807</xbifns:dependentParentIndex>
+        </xbifns:CPT>
+      </xbifns:conditionalDistribution>
+    </xbifns:conditionalDistributionSet>
+  </xbifns:network>
+</xbifns:XMLBIF>

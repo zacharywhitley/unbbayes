@@ -75,6 +75,8 @@ public class DneIO implements BaseIO {
 	public static final String[] SUPPORTED_EXTENSIONS = {"dne"};
 	
 	private String name = "DNE";
+
+	private boolean isToUseAbsurdState = false;
 	
 	/**
 	 *  Loads a NET format file using default node/network builder.
@@ -89,15 +91,8 @@ public class DneIO implements BaseIO {
 	public ProbabilisticNetwork load(File input)
 		throws LoadException, IOException {
 		
-		int index = input.getName().lastIndexOf('.');
-		String id = input.getName().substring(0, index);
-		
 		// create network using default builder
-		IProbabilisticNetworkBuilder networkBuilder = DefaultProbabilisticNetworkBuilder.newInstance();
-		
-		ProbabilisticNetwork net = networkBuilder.buildNetwork(id);
-		
-		load(input, net, networkBuilder);
+		ProbabilisticNetwork net = this.load(input, DefaultProbabilisticNetworkBuilder.newInstance());
 		return net;		
 	}
 	
@@ -120,7 +115,23 @@ public class DneIO implements BaseIO {
 		int index = input.getName().lastIndexOf('.');
 		String id = input.getName().substring(0, index);
 		ProbabilisticNetwork net = networkBuilder.buildNetwork(id);
-		load(input, net, networkBuilder);
+		
+		try {
+			load(input, net, networkBuilder);
+		} catch (HasImpossProbDeclarationException impossException) {
+			// there is a cpt with @imposs. Retry using isToUseAbsurdState() == true
+			boolean backup = isToUseAbsurdState();	// backup original value
+			setToUseAbsurdState(true);				// force this class to append an "absurd" state to all nodes
+			try {
+				net = networkBuilder.buildNetwork(id);	// guarantee that old network is discarded
+				this.load(input, net, networkBuilder);	// reload network using new config
+			} catch (Exception e) {
+				setToUseAbsurdState(backup);			// restore backup
+				throw new IOException(e);
+			} 
+			// I'm not using the "finally" in order to restore backup, because for some reason JRE (not created by Sun) was not executing it
+			setToUseAbsurdState(backup);			// restore backup
+		}
 		return net;		
 	}
 
@@ -515,6 +526,21 @@ public class DneIO implements BaseIO {
 				while (getNext(st) != ';') {
 					node.appendState(st.sval);
 				}
+				if (isToUseAbsurdState()) {
+					// all nodes should have the absurd state
+					String absurdState = "absurd";
+					// guarantee uniqueness of the name of the state
+					if (this.indexOfState(node, absurdState) >= 0) {
+						// append a numeric suffix to "absurd" in order to become unique
+						for (int i = 0; i < Integer.MAX_VALUE; i++) {
+							if (this.indexOfState(node, absurdState + i) < 0) {
+								absurdState += i;
+								break;
+							}
+						}
+					}
+					node.appendState(absurdState);
+				}
 				// If continuous, but in a discrete way
 			} else if (st.sval.equals("levels")) {
 				getNext(st);
@@ -533,6 +559,8 @@ public class DneIO implements BaseIO {
 				loadParents(st, node, net);
 			} else if (st.sval.equals("probs")) {
 				loadPotentialDataOrdinal(st, node);
+			} else if (st.sval.equals("functable")) {
+				loadPotentialDataFuncTable(st, node);
 			} else if (st.sval.equals("visual")) {
 				getNext(st); // The name of the visual
 				getNext(st);
@@ -602,62 +630,183 @@ public class DneIO implements BaseIO {
 
 		int nDim = 0;
 		
-//		boolean hasImposs = false;	// true indicates that the potential declaration contains "@imposs".
+		float probSum = 0f;			// sum of a column in cpt (the sum is usually 1, except for cpts having tags instead of numbers, like "@imposs").
 		while (getNext(st) != ';') {
-			float value = Float.NaN;
-//			if (st.sval.equalsIgnoreCase("imposs")) {
-//				hasImposs = true;
-//			} else {
+			float value = Float.NaN;	// Float.NaN will represent any unknown value
+			if (st.sval.equalsIgnoreCase("imposs")) {
+				if (!isToUseAbsurdState()) {
+					// cannot represent @Imposs without using the absurd state.
+					throw new HasImpossProbDeclarationException(
+							ERROR_NET
+							+ " l."
+							+ ((st.lineno() < this.lineno)?this.lineno:st.lineno())
+							+ resource.getString("LoadException4"));
+				}
+				// @Imposs is represented in unbbayes as absurd with 100% probability and all other states with 0% probability
+				value = 0; 
+			} else {
 				try {
 					value = Float.parseFloat(st.sval);
 				} catch (NumberFormatException e) {
 					// ignore number format
 					Debug.println(getClass(), e.getMessage() ,e);
 				}
-//			}
+			}
+			/*
+			 * if isToUseAbsurdState() == true, the following routine should fill the cpt as the following example:
+			 * 
+			 * CPT in the dmp file (note: t = true, f = false, I = @Imposs):
+			 * 
+			 * 		t		t		f		f
+			 * 		t		f		t		f
+			 * 	t	.1		.2		I		.4
+			 * 	f	.9		.8		I		.6
+			 * 
+			 * CPT in UnBBayes (note: "a" represents the "absurd" state):
+			 * 
+			 * 		t		t		t		f		f		f		a		a		a
+			 * 		t		f		a		t		f		a		t		f		a
+			 * t	.1		.2		0		0		.4		0		0		0		0
+			 * f	.9		.8		0		0		.6		0		0		0		0
+			 * a	0		0		1		1		0		1		1		1		1
+			 * 
+			 * The basic rules for filling the CPT in unbbayes were: 
+			 * 	1 - if parent state is "absurd", then the probability of "absurd" is 100% for this node
+			 * 	2 - if the dmp is using @imposs as the probability value, then the probability of absurd is 100% for this node
+			 */
+			// NOTE: we are assuming that all nodes contain at least 1 state other than the absurd
 			auxPotentialTable.setValue(
-				nDim++,
-				value);
+					nDim++,
+					value);
+			probSum += value;	// update the sum of probability of that column
 			
+			// if the absurd state is present, then each node has 1 additional state, so we should increment nDim properly
+			if (isAbsurdStateLinearCoord(auxPotentialTable, nDim, false)) {
+				// only the main node (i.e. auxPotentialTable.getVariableAt(0)) is in absurd state
+				// prob of being absurd is 1 - sum of other cells in the same column 
+				// if we find @imposs, which is considered to be 0%, absurd becomes 100%
+				auxPotentialTable.setValue(
+						nDim++,
+						1 - probSum);
+				probSum = 0f;	// reset probSum
+			}
+			while (isAbsurdStateLinearCoord(auxPotentialTable, nDim, true)) {
+				// this is a column in which a parent is in absurd state. Fill all values with 0 except for the last column (main node := absurd), which will be 1.
+				auxPotentialTable.setValue(nDim++,0);	// again, we are assuming that all nodes contain at least 1 state other than the absurd
+				if (auxPotentialTable.getMultidimensionalCoord(nDim)[0] == auxPotentialTable.getVariableAt(0).getStatesSize() - 1) {
+					// in this column, the main node is in absurd state. This is supposedly the last cell in the column
+					auxPotentialTable.setValue(nDim++,1);
+				}
+			}
 		}
-		
-		// represent "@imposs" of a DNE file as an additional state "absurd"
-//		if (hasImposs) {
-//			String absurd = "ABSURD";	// this will be the name of the special state representing @imposs
-//			if (this.hasState(node, absurd)) {
-//				// make sure uniqueness of state by adding a number as suffix
-//				for (int i = 0; i < Integer.MAX_VALUE; i++) {
-//					if (!this.hasState(node, absurd + i)) {
-//						// the name of the state will be "absurd<number>"
-//						absurd += i;
-//						break;
-//					}
-//				}
-//			}
-//			// add state to node
-//			node.appendState(absurd);
-//			// fill CPT
-//			for (int i = 0; i < node.getStatesSize(); i++) {
-//				if (node.getStateAt(i).equalsIgnoreCase("absurd")) {
-//					stateSuffix
-//				}
-//			}
-//		}
 	}
 	
-//	/**
-//	 * @return : true if node has state
-//	 * @param node : node to look for state
-//	 * @param state : name of the state to look for
-//	 */
-//	private boolean hasState(Node node, String state) {
-//		for (int i = 0; i < node.getStatesSize(); i++) {
-//			if (node.getStateAt(i).equalsIgnoreCase(state)) {
-//				return true;
-//			}
-//		}
-//		return false;
-//	}
+	/**
+	 * Loads potential declaration's content assuming it is declaring
+	 * deterministic declaration (i.e. only 1 and 0)
+	 * @param st
+	 * @param node
+	 * @throws LoadException
+	 * @throws IOException
+	 */
+	protected void loadPotentialDataFuncTable(StreamTokenizer st, Node node)
+								throws LoadException , IOException {
+		
+		PotentialTable auxPotentialTable = (PotentialTable)((IRandomVariable)node).getProbabilityFunction();
+		
+		if (node.getType() == Node.DECISION_NODE_TYPE) {
+			throw new LoadException(
+				ERROR_NET
+					+ " l."
+					+ ((st.lineno() < this.lineno)?this.lineno:st.lineno())
+					+ resource.getString("LoadException4"));
+		}
+
+		int cptIndex = 0;
+		while (getNext(st) != ';') {
+			// extract the index of the state to set to 1
+			int indexOfStateToSetTo1 = indexOfState(node, st.sval);
+			if (indexOfStateToSetTo1 < 0) {
+				throw new IOException(node + " does not have state " + st.sval);
+			}
+			
+			// convert cptIndex to multi-dimensional coordinate (so that we can use indexOfStateToSetTo1 directly)
+			int[] multidimensionalCoord = auxPotentialTable.getMultidimensionalCoord(cptIndex);
+			
+			// make the state of main node (i.e. auxPotentialTable.getVariableAt(0)) to point to indexOfStateToSetTo1
+			multidimensionalCoord[0] = indexOfStateToSetTo1;
+			
+			// set the cell (of the CPT) of that state to 1. Note: by default, all other cells are supposedly 0.
+			auxPotentialTable.setValue(auxPotentialTable.getLinearCoord(multidimensionalCoord), 1);
+			
+			// move multidimensionalCoord to the end of the column, convert to linear coordinate and increment 1, so that we reach first cell of next column.
+			multidimensionalCoord[0] = auxPotentialTable.getVariableAt(0).getStatesSize()-1;
+			cptIndex = auxPotentialTable.getLinearCoord(multidimensionalCoord) + 1;
+			
+			// the next iteration will update next column of the cpt
+			
+			// make sure that columns with the parents in "absurd" state are filled consistently
+			while (isAbsurdStateLinearCoord(auxPotentialTable, cptIndex, true)) {
+				// this is a column in which a parent is in absurd state. Fill all values with 0 except for the last column (main node := absurd), which will be 1.
+				auxPotentialTable.setValue(cptIndex++,0);	// again, we are assuming that all nodes contain at least 1 state other than the absurd
+				if (auxPotentialTable.getMultidimensionalCoord(cptIndex)[0] == auxPotentialTable.getVariableAt(0).getStatesSize() - 1) {
+					// in this column, the main node is in absurd state. This is supposedly the last cell in the column
+					auxPotentialTable.setValue(cptIndex++,1);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * This method is used in {@link #loadPotentialDataOrdinal(StreamTokenizer, Node)}
+	 * in order to verify if the current cell of the CPT is representing the probability for the
+	 * "absurd" state of some variable in the CPT.
+	 * @param table : table being analyzed. If null, the method will return false
+	 * (there is no way it is in absurd state, if there is no table to analyze).
+	 * @param linearCoord : the linear coordinate of the values in table
+	 * @param isToIgnoreMainNode : if true, the node {@link PotentialTable#getVariableAt(0)} of the argument "table" will be ignored.
+	 * @return true if linearCoord is pointing to any absurd state. The absurd state is always
+	 * the last state of a node if {@link #isToUseAbsurdState()} is true.
+	 */
+	protected boolean isAbsurdStateLinearCoord(PotentialTable table, int linearCoord, boolean isToIgnoreMainNode) {
+		// initial assertions
+		if (!isToUseAbsurdState()) {
+			// automatically false, because the absurd state is supposedly absent if isToUseAbsurdState() == false
+			return false;
+		}
+		if (table == null) {
+			// consider that there is no way it is in absurd state, if there is no table to analyze.
+			return false;
+		}
+		
+		// turn the linear coordinate into a multi-dimensional coordinate
+		int[] multidimensionalCoord = table.getMultidimensionalCoord(linearCoord);
+
+		// if isToIgnoreMainNode == true, start from variable 1 instead of variable 0 (i.e. do not consider the index 0, which is the main node).
+		for (int i = (isToIgnoreMainNode?1:0); i < table.getVariablesSize(); i++) {
+			// check that multidimensionalCoord of the current variable is pointing to the last state (i.e. absurd state)
+			if (multidimensionalCoord[i] == table.getVariableAt(i).getStatesSize()-1) {
+				// if at least 1 node is in the absurd state (last state of that node), then return true
+				return true;
+			}
+		}
+		// no node in the coordinate is pointing to the last state
+		return false;
+	}
+	
+	/**
+	 * @return : the index of the state. -1 if not present
+	 * @param node : node to look for state
+	 * @param state : name of the state to look for
+	 */
+	private int indexOfState(Node node, String state) {
+		for (int i = 0; i < node.getStatesSize(); i++) {
+			if (node.getStateAt(i).equalsIgnoreCase(state)) {
+				return i;
+			}
+		}
+		return -1;
+	}
 	
 	/**
 	 * Fills the PrintStream with net{} header, starting with "net {" declaration and closing with "}"
@@ -976,4 +1125,47 @@ public class DneIO implements BaseIO {
 		this.name = name;
 	}
 	
+	/**
+	 * If true, {@link #loadNodeDeclarationBody(StreamTokenizer, Node, SingleEntityNetwork)}
+	 * will automatically add the "absurd" state to all nodes, to consistently
+	 * represent impossible probability distribution (e.g. the @Absurd
+	 * tag in {@link #loadPotentialDataOrdinal(StreamTokenizer, Node)}).
+	 * @param isToUseAbsurdState the isToUseAbsurdState to set
+	 */
+	public void setToUseAbsurdState(boolean isToUseAbsurdState) {
+		this.isToUseAbsurdState = isToUseAbsurdState;
+	}
+
+	/**
+	 * If true, {@link #loadNodeDeclarationBody(StreamTokenizer, Node, SingleEntityNetwork)}
+	 * will automatically add the "absurd" state to all nodes, to consistently
+	 * represent impossible probability distribution (e.g. the @Absurd
+	 * tag in {@link #loadPotentialDataOrdinal(StreamTokenizer, Node)}).
+	 * @return the isToUseAbsurdState
+	 */
+	public boolean isToUseAbsurdState() {
+		return isToUseAbsurdState;
+	}
+
+	/**
+	 * This is just a subclass of IOException
+	 * thrown when {@link DneIO#loadPotentialDataOrdinal(StreamTokenizer, Node)}
+	 * detects a @Imposs tag
+	 * @author Shou Matsumoto
+	 */
+	public class HasImpossProbDeclarationException extends IOException {
+		private static final long serialVersionUID = 5193370925842884205L;
+		public HasImpossProbDeclarationException() {
+			super();
+		}
+		public HasImpossProbDeclarationException(String message, Throwable cause) {
+			super(message, cause);
+		}
+		public HasImpossProbDeclarationException(String message) {
+			super(message);
+		}
+		public HasImpossProbDeclarationException(Throwable cause) {
+			super(cause);
+		}
+	}
 }
