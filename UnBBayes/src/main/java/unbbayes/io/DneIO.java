@@ -1082,7 +1082,7 @@ public class DneIO implements BaseIO {
 	 * @see unbbayes.io.BaseIO#getSupportedFileExtensions(boolean)
 	 */
 	public String[] getSupportedFileExtensions(boolean isLoadOnly) {
-		return SUPPORTED_EXTENSIONS;
+		return isLoadOnly?SUPPORTED_EXTENSIONS:null;
 	}
 
 	/*
@@ -1090,7 +1090,7 @@ public class DneIO implements BaseIO {
 	 * @see unbbayes.io.BaseIO#getSupportedFilesDescription(boolean)
 	 */
 	public String getSupportedFilesDescription(boolean isLoadOnly) {
-		return "Netica (.dne)";
+		return isLoadOnly?"Netica (.dne)":null;
 	}
 	
 	/*

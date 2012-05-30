@@ -133,7 +133,7 @@ public class LibDAIFactorGraphIO implements BaseIO {
 	public String[] getSupportedFileExtensions(boolean isLoadOnly) {
 		if (isLoadOnly) {
 			// loading is not supported
-			return new String[0];
+			return null;
 		}
 		return SUPPORTED_EXTENSIONS;
 	}
@@ -143,7 +143,7 @@ public class LibDAIFactorGraphIO implements BaseIO {
 	 * @see unbbayes.io.BaseIO#getSupportedFilesDescription(boolean)
 	 */
 	public String getSupportedFilesDescription(boolean isLoadOnly) {
-		return "LibDAI's factor graph (.fg)";
+		return isLoadOnly?null:"LibDAI's factor graph (.fg)";
 	}
 
 	/*
