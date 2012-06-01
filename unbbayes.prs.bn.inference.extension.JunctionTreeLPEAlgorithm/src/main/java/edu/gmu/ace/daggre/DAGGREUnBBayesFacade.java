@@ -3,15 +3,26 @@ package edu.gmu.ace.daggre;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import unbbayes.prs.bn.AssetNetwork;
+import unbbayes.prs.bn.Clique;
+import unbbayes.prs.bn.JunctionTree;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 
 /**
  * This is an interface with methods for accessing 
  * functionalities related to the Markov engine
  * of DAGGRE project. 
+ * <br/><br/>
+ * 
+ * The objective of this interface is to provide a simplified way of accessing the UnBBayes' features
+ * related to DAGGRE project (i.e. bayesian network management, soft evidences, and asset management), and
+ * to encapsulate the complex data structure related to the bayesian network and asset tables (i.e.
+ * instead of "seeing" the complex classes, access thoese functionalities by only using primitive datatypes and
+ * standard classes).
+ * <br/><br/>
  * 
  * Basically, this interface provides
  * methods for initializing a bayesian network and associated
@@ -27,12 +38,17 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
  * - Compute long/short position <br/>
  * - Compute edit limits <br/>
  * - Compute compute min-q value (or, alternatively, compute min asset value)<br/>
- * - Compute expected asset value<br/><br/>
+ * - Compute expected asset value
+ * <br/><br/>
  * 
  * This interface also provides some methods for accessing the Bayesian Network data structure
  * and asset tables using only default types provided by the JRE, 
  * such as primary data types (e.g. int, float, String) and java Collections framework
  * (e.g. {@link java.util.List}).
+ * <br/><br/>
+ * 
+ * As a general rule, methods using parameters int networkID, and long userID should
+ * lock access to the shared bayesian network and user's asset network respectively.
  * 
  * @author Shou Matsumoto
  *
@@ -137,16 +153,29 @@ public interface DAGGREUnBBayesFacade {
 	 */
 	public int loadNetworkFromFile(File networkFile) throws IOException;
 	
+	public int createNewNetwork( Map<Long, String> questionIDAndDescription, Map<Long, List<String>> questionIDToChoices,  Map<Long, List<Long>> dependencyMapping, Map<Long, List<Float>> cpd, Properties properties) throws IllegalArgumentException;
+	
+	
 	/**
-	 * Disposes the network loaded by {@link #loadNetworkFromFile(File)}.
+	 * Disposes the network loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map)}.
 	 * This method only guarantees that the network identified by networkID will be
 	 * removed from the datastructure which manages the loaded networks (e.g. remove
 	 * the entry from a hash table).
 	 * The network may be removed from the heap after the next garbage collection.
-	 * @param networkID : the ID of the network to be disposed. This value is the one previously returned by {@link #loadNetworkFromFile(File)}.
+	 * @param networkID : the ID of the network to be disposed. This value is the one previously returned by {@link #loadNetworkFromFile(File)}
+	 * or by {@link #createNewNetwork(Map, Map, Map, Map, Properties)}.
+	 * @param properties : this object stores system properties of the markov engine.
+	 * Classes implementing this interface may use these properties to set
+	 * values of some attributes/parameters not explicitly declared in this interface.
+	 * For instance, by adding a property {purge = false}, the network
+	 * will be reset, but not removed from the hash table.
 	 * @throws RuntimeException if the network could not be disposed.
 	 */
-	public void disposeLoadedNetwork(int networkID) throws RuntimeException;
+	public void disposeLoadedNetwork(int networkID, Properties properties) throws RuntimeException;
+	
+
+	public long createNewUser(int networkID, Properties properties);
+	
 	
 	/**
 	 * This method implements the feature for estimating whether a user is in a long or short position.
@@ -170,7 +199,7 @@ public interface DAGGREUnBBayesFacade {
 	 * @param userID : the ID of the current user. Users shall be managed by a hash table. If a new user is identified, the new user shall be automatically
 	 * created.
 	 * 
-	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)}, which contains the question (random variable) "T" and
+	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)}, which contains the question (random variable) "T" and
 	 * assumption "A"  of the example.
 	 * 
 	 * @param questionID : the id of the question to be edited (i.e. the random variable "T"  in the example)
@@ -188,7 +217,7 @@ public interface DAGGREUnBBayesFacade {
 	 * 
 	 * @return true if user is in a "long" state for that question (given assumptions). False otherwise.
 	 * 
-	 * @throws IllegalStateException when the network identified by networkID was not in a valid state (e.g. it was not loaded by {@link #loadNetworkFromFile(File)}),
+	 * @throws IllegalStateException when the network identified by networkID was not in a valid state (e.g. it was not loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)}),
 	 * or a new user (i.e. set of asset cliques and separators) could not be created automatically.
 	 * 
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
@@ -236,7 +265,7 @@ public interface DAGGREUnBBayesFacade {
 	 * @param userID : the ID of the current user. Users shall be managed by a hash table. If a new user is identified, the new user shall be automatically
 	 * created.
 	 * 
-	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)}, which contains the question (random variable) "T" and
+	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)}, which contains the question (random variable) "T" and
 	 * assumption "A"  of the example.
 	 * 
 	 * @param questionID : the id of the question to be edited (i.e. the random variable "T"  in the example)
@@ -256,7 +285,7 @@ public interface DAGGREUnBBayesFacade {
 	 * 
 	 * @return an array with size 2, representing respectively the upper and lower bounds for the edit.
 	 * 
-	 * @throws IllegalStateException when the network identified by networkID was not in a valid state (e.g. it was not loaded by {@link #loadNetworkFromFile(File)}),
+	 * @throws IllegalStateException when the network identified by networkID was not in a valid state (e.g. it was not loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)}),
 	 * or a new user (i.e. set of asset cliques and separators) could not be created automatically.
 	 * 
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
@@ -292,7 +321,7 @@ public interface DAGGREUnBBayesFacade {
 	 * @param userID : the ID of the current user. Users shall be managed by a hash table. If a new user is identified, the new user shall be automatically
 	 * created.
 	 * 
-	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)}, which contains the question (random variable) "T" and
+	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)}, which contains the question (random variable) "T" and
 	 * assumption "A"  of the example.
 	 * 
 	 * @param questionID : the id of the question to be edited (i.e. the random variable "T"  in the example)
@@ -333,44 +362,82 @@ public interface DAGGREUnBBayesFacade {
 	 * Classes implementing this interface may use these properties to set
 	 * values of some attributes/parameters not explicitly declared in this interface.
 	 * 
-	 * @param isPreview : if true, then all other methods related to networkID and userID (i.e. the bayesian network and the asset tables)
-	 * will reference to copied objects instead of the original objects. Call {@link #undoPreview(long, Properties)} in order
-	 * to start using the original objects again.
-	 * 
-	 * @throws IllegalStateException when the network identified by networkID was not in a valid state (e.g. it was not loaded by {@link #loadNetworkFromFile(File)})
+	 * @throws IllegalStateException when the network identified by networkID was not in a valid state (e.g. it was not loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)})
 	 * or a new user (i.e. set of asset cliques and separators) could not be created automatically.
 	 * 
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
 	 */
-	public void addTrade(int networkID, long userID, long questionID, List<Float> oldValues, List<Float> newValues, List<Integer> assumptionIDs, List<Integer> assumedStates, boolean isPreview, Properties properties) throws IllegalStateException, IllegalArgumentException;
+	public void addTrade(int networkID, long userID, long questionID, List<Float> oldValues, List<Float> newValues, List<Integer> assumptionIDs, List<Integer> assumedStates, Properties properties) throws IllegalStateException, IllegalArgumentException;
 	
 	/**
-	 * Discards the copied bayesian network and asset tables generated by {@link #addTrade(int, long, long, List, List, List, List, boolean, Properties)} 
-	 * when the argument "isPreview" was set to true.
-	 * This method is necessary because calling {@link #addTrade(int, long, long, List, List, List, List, boolean, Properties)}
-	 * with isPreview=true will cause all other methods related to the bayesian network and asset tables to start referencing to a copied
-	 * objects instead of the original objects. This method will discard the copies and turn back to the original objects.
+	 * This method implements the feature for estimating the effects of a trade (i.e. what are
+	 * the estimated score and cash after an edit).
+	 *   
+	 * The basic functionality of this method is basically identical to the one in {@link #addTrade(int, long, long, List, List, List, List, Properties)}.
+	 * However, The bayesian network and the user's asset tables shall remain unchanged.
+	 * 
 	 * @param userID : the ID of the current user. Users shall be managed by a hash table. If a new user is identified, the new user shall be automatically
 	 * created.
+	 * 
+	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)}, which contains the question (random variable) "T" and
+	 * assumption "A"  of the example.
+	 * 
+	 * @param questionID : the id of the question to be edited (i.e. the random variable "T"  in the example)
+	 * 
+	 * @param oldValues :  this is a list (ordered collection) representing the probability values before the edit. 
+	 * For example, suppose T is the target question (i.e. a random variable) with states t1 and t2, and A1 and A2 are assumptions with states (a11, a12), and (a21 , a22) respectively.
+	 * Then, the list must be filled as follows:<br/>
+	 * index 0 - P(T=t1 | A1=a11, A2=a21)<br/>
+	 * index 1 - P(T=t2 | A1=a11, A2=a21)<br/>
+	 * index 2 - P(T=t1 | A1=a12, A2=a21)<br/>
+	 * index 3 - P(T=t2 | A1=a12, A2=a21)<br/>
+	 * index 4 - P(T=t1 | A1=a11, A2=a22)<br/>
+	 * index 5 - P(T=t2 | A1=a11, A2=a22)<br/>
+	 * index 6 - P(T=t1 | A1=a12, A2=a22)<br/>
+	 * index 7 - P(T=t2 | A1=a12, A2=a22)<br/>
+	 * 
+	 * 
+	 * @param newValues : similarly to oldValues, this is a list (ordered collection) representing the probability values after the edit. 
+	 * For example, suppose T is the target question (i.e. a random variable) with states t1 and t2, and A1 and A2 are assumptions with states (a11, a12), and (a21 , a22) respectively.
+	 * Then, the list must be filled as follows:<br/>
+	 * index 0 - P(T=t1 | A1=a11, A2=a21)<br/>
+	 * index 1 - P(T=t2 | A1=a11, A2=a21)<br/>
+	 * index 2 - P(T=t1 | A1=a12, A2=a21)<br/>
+	 * index 3 - P(T=t2 | A1=a12, A2=a21)<br/>
+	 * index 4 - P(T=t1 | A1=a11, A2=a22)<br/>
+	 * index 5 - P(T=t2 | A1=a11, A2=a22)<br/>
+	 * index 6 - P(T=t1 | A1=a12, A2=a22)<br/>
+	 * index 7 - P(T=t2 | A1=a12, A2=a22)<br/>
+	 * 
+	 * @param assumptionIDs : list (ordered collection) representing the IDs of the questions to be assumed in this edit. The order is important,
+	 * because the ordering in this list will be used in order to identify the correct indexes in "oldValues" and "newValues".
+	 * 
+	 * @param assumedStates : this is not necessary if oldValues and newValues contains full data (all cells of the conditional probability distribution),
+	 * however, classes implementing this method may provide special treatment when this parameter is non-null. By default, implementations will ignore this parameter,
+	 * so null should be passed.
+	 * 
 	 * @param properties : this object stores system properties of the markov engine.
 	 * Classes implementing this interface may use these properties to set
 	 * values of some attributes/parameters not explicitly declared in this interface.
-	 * @throws IllegalStateException if it was not possible to revert the changes
-	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent user).
+	 * 
+	 * @throws IllegalStateException when the network identified by networkID was not in a valid state (e.g. it was not loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)})
+	 * or a new user (i.e. set of asset cliques and separators) could not be created automatically.
+	 * 
+	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
 	 */
-	public void undoPreview(long userID, Properties properties) throws IllegalStateException, IllegalArgumentException;;
+	public Map<String, Double> previewTrade(int networkID, long userID, long questionID, List<Float> oldValues, List<Float> newValues, List<Integer> assumptionIDs, List<Integer> assumedStates, Properties properties) throws IllegalStateException, IllegalArgumentException;
 	
 	// Resolve Question
 	
 	/**
 	 * This method sets a question as "resolved" (it virtually removes a question from the bayesian network, after performing some auxiliary operations).
-	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)}.
+	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)}.
 	 * @param questionID : the id of the question to be resolved.
 	 * @param choice : the index of the value (state) of the question identified by the questionID (i.e. the resolved question).
 	 * @param properties : this object stores system properties of the markov engine.
 	 * Classes implementing this interface may use these properties to set
 	 * values of some attributes/parameters not explicitly declared in this interface.
-	 * @throws IllegalStateException when the network identified by networkID was not in a valid state (e.g. it was not loaded by {@link #loadNetworkFromFile(File)}).
+	 * @throws IllegalStateException when the network identified by networkID was not in a valid state (e.g. it was not loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)}).
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state).
 	 */
 	public void resolveQuestion(int networkID, long questionID, int choice, Properties properties) throws IllegalStateException, IllegalArgumentException;
@@ -382,7 +449,7 @@ public interface DAGGREUnBBayesFacade {
 	 * Implementations may require reinitialization of the bayesian network in order to guarantee efficiency,
 	 * because uncontrolled inclusion of nodes in implementations based on junction trees may cause 
 	 * the tree to become either too huge, sparse, or generate huge cliques.
-	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)} where the new question should be added. 
+	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)} where the new question should be added. 
 	 * @param name : brief name of the question. This is going to be an internal identifier of a node in the bayesian network.
 	 * @param description : brief description of the question. This is like a comment, and may be ignored.
 	 * @param states : the possible choices of the new question (i.e. the states of a random variable). If it is a boolean question,
@@ -408,7 +475,7 @@ public interface DAGGREUnBBayesFacade {
 	 * Classes implementing this interface may use these properties to set
 	 * values of some attributes/parameters not explicitly declared in this interface.
 	 * @return the ID of the new question.
-	 * @throws IllegalStateException when the network identified by networkID was not in a valid state (e.g. it was not loaded by {@link #loadNetworkFromFile(File)}).
+	 * @throws IllegalStateException when the network identified by networkID was not in a valid state (e.g. it was not loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)}).
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. name or description was invalid).
 	 */
 	public long addQuestion(int networkID, String name, String description, List<String> states, List<Long> assumptiveQuestionIDs, List<Float> cpd, Properties properties) throws IllegalStateException, IllegalArgumentException;
@@ -417,7 +484,7 @@ public interface DAGGREUnBBayesFacade {
 	 * This method adds a new direct dependency (i.e. an edge between nodes in a bayesian network).
 	 * Note that this method may require
 	 * recompilation of the bayesian network (i.e. may need to generate a new junction tree).
-	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)}, where the new edge will be added.
+	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)}, where the new edge will be added.
 	 * @param questionID : the id of the random variable (question) to become the child node.
 	 * @param assumptiveQuestionIDs : ids of the random variables (questions) to become the parent nodes (i.e. the dependencies).
 	 * 
@@ -436,7 +503,7 @@ public interface DAGGREUnBBayesFacade {
 	 * @param properties : this object stores system properties of the markov engine.
 	 * Classes implementing this interface may use these properties to set
 	 * values of some attributes/parameters not explicitly declared in this interface.
-	 * @throws IllegalStateException when the network identified by networkID was not in a valid state (e.g. it was not loaded by {@link #loadNetworkFromFile(File)}).
+	 * @throws IllegalStateException when the network identified by networkID was not in a valid state (e.g. it was not loaded by {@link #loadNetworkFromFile(File)}  or {@link #createNewNetwork(Map, Map, Map, Map, Properties)})
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
 	public void addAssumptiveQuestionLink(int networkID, long questionID, List<Long> assumptiveQuestionIDs, List<Float> cpd, Properties properties) throws IllegalStateException, IllegalArgumentException;
@@ -445,20 +512,20 @@ public interface DAGGREUnBBayesFacade {
 	 * Obtains the ids of the questions that are potential assumptions of a given question. 
 	 * This method is necessary when the algorithm implemented by a class implementing this interface requires some restrictions 
 	 * on the assumptions (e.g. the assumptions should be in a same clique).
-	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)}.
+	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)}.
 	 * @param questionID : the id of the random variable (question) to be analyzed.
 	 * @param properties : this object stores system properties of the markov engine.
 	 * Classes implementing this interface may use these properties to set
 	 * values of some attributes/parameters not explicitly declared in this interface.
 	 * @return a list (ordered collection) of ids of the random variables (i.e. questions) that can be potential assumptions of a trade.
-	 * @throws IllegalStateException when the network identified by networkID was not in a valid state (e.g. it was not loaded by {@link #loadNetworkFromFile(File)}).
+	 * @throws IllegalStateException when the network identified by networkID was not in a valid state (e.g. it was not loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)}).
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 * @see #addTrade(int, long, long, List, List, List, List, Properties)
 	 */
 	public List<Long> getPossibleQuestionAssumptions(int networkID, long questionID, Properties properties) throws IllegalStateException, IllegalArgumentException;
 	
 	/**
-	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)}.
+	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)}.
 	 * @param questionID : the id of the random variable (question) to be analyzed.
 	 * @param properties : this object stores system properties of the markov engine.
 	 * Classes implementing this interface may use these properties to set
@@ -468,7 +535,7 @@ public interface DAGGREUnBBayesFacade {
 	public boolean isMulti(int networkID, long questionID, Properties properties);
 	
 	/**
-	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)}.
+	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)}.
 	 * @param questionID : the id of the random variable (question) to be analyzed.
 	 * @param properties : this object stores system properties of the markov engine.
 	 * Classes implementing this interface may use these properties to set
@@ -488,6 +555,10 @@ public interface DAGGREUnBBayesFacade {
 	 * @param properties : this object stores system properties of the markov engine.
 	 * Classes implementing this interface may use these properties to set
 	 * values of some attributes/parameters not explicitly declared in this interface.
+	 * Implementations of this method may set the property {assyncrhonous = true} to
+	 * trigger fast cash calculation algorithm, and do polling to repeatedly call this method
+	 * to obtain more detailed values. Setting property {assyncrhonous = false} or property {abort = true}
+	 * should stop fast cash calculation algorithm.
 	 * @return the minimum asset value obtained by executing a min calibration algorithm in the asset tables.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 * @see #getCurrentLogBase()
@@ -499,6 +570,27 @@ public interface DAGGREUnBBayesFacade {
 	 * Modifies the contents of all cells in the asset table in order to guarantee
 	 * that the min asset returned by {@link #getCash(long, Properties)} is set
 	 * to the value specified by the argument "value".
+	 * <br/> <br/>
+	 * How to use:
+	 * <br/><br/>
+	 * Example1 : the current min asset of a user (i.e. cash returned by {@link #getCash(long, Properties)}) is 80, and we want to update it to 100.
+	 * Then, a call to {@link #setCash(long, Properties, float)} with value = 100 will multiply all cells of the asset table by 100/80, guaranteeing
+	 * that the new cash is 100, and the expected asssets are updated proportionally.
+	 * <br/> <br/>
+	 * Example 2 : suppose we want to adjust the assets of an existing user as if the base (i.e {@link #getDefaultInitialQTableValue()})
+	 * was 125 instead of 100 (i.e. a user was created {@link #getDefaultInitialQTableValue()} == 100, but due to changes in policy, new users
+	 * are going to start from 125, and the assets of old users must be updated as if it has started from 125 instead of 100). In such case,
+	 * we can use the following formula in order to estimate the value to be passed to {@link #setCash(long, float, Properties)}: 7
+	 * <br/> <br/>
+	 * oldCash + delta * oldCash/oldBase = newCash
+	 * <br/> <br/>
+	 * "oldCash" is the value returned by {@link #getCash(long, Properties)};
+	 * "delta" is the difference between the new base and old base (in our example, it is 125-100 = 25);
+	 * "oldBase" is the old value of {@link #getDefaultInitialQTableValue()} (it is 100 in our case)
+	 * "newCash" is the value to be passed to {@link #setCash(long, float, Properties)}.
+	 * <br/>
+	 * 
+	 * <br/> <br/>
 	 * @param userID : the ID of the owner of the asset table.
 	 * @param value : the minimum asset value to set
 	 * @param properties : this object stores system properties of the markov engine.
@@ -509,9 +601,7 @@ public interface DAGGREUnBBayesFacade {
 	 * @see #getCurrentLogBase()
 	 * @see #getCurrentCurrencyConstant()
 	 */
-	public void setCash(long userID, Properties properties, float value) throws IllegalArgumentException;
-	
-	// TODO check the differences between set_cash and adjust_cash
+	public void setCash(long userID, float value, Properties properties) throws IllegalArgumentException;
 	
 	/**
 	 * Obtains the q-table of a user. 
@@ -537,7 +627,7 @@ public interface DAGGREUnBBayesFacade {
 	/**
 	 * Obtains the object representing the network identified by networkID.
 	 * Note: this is one of the methods that uses a complex data type (i.e. a class) instead of primitive types. 
-	 * @param networkID :  id of the network loaded by {@link #loadNetworkFromFile(File)}.
+	 * @param networkID :  id of the network loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)}.
 	 * @param properties : this object stores system properties of the markov engine.
 	 * Classes implementing this interface may use these properties to set
 	 * values of some attributes/parameters not explicitly declared in this interface.
@@ -572,7 +662,7 @@ public interface DAGGREUnBBayesFacade {
 
 	/**
 	 * Obtains the expected assets (probability * asset).
-	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)}.
+	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)}.
 	 * @param userID : the ID of the owner of the asset table.
 	 * @param assumptionIDs : (optional) list (ordered collection) of question IDs assumed when obtaining the estimated assets. If specified,
 	 * the questions (i.e. random variables) with these IDs will be assumed to be in the states specified in the argument "assumedStates".
@@ -582,7 +672,7 @@ public interface DAGGREUnBBayesFacade {
 	 * Classes implementing this interface may use these properties to set
 	 * values of some attributes/parameters not explicitly declared in this interface.
 	 * @return the expected assets.
-	 * @throws IllegalStateException when the network identified by networkID was not in a valid state (e.g. it was not loaded by {@link #loadNetworkFromFile(File)}),
+	 * @throws IllegalStateException when the network identified by networkID was not in a valid state (e.g. it was not loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)}),
 	 * or a new user (i.e. set of asset cliques and separators) could not be created automatically.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
 	 */
@@ -595,7 +685,7 @@ public interface DAGGREUnBBayesFacade {
 	 * Obtains the probability of a question (i.e. random variable) given assumptions.
 	 * The order is important for identifying the states (i.e. 1st value is for the 1st state, and so on).
 	 * If the full info about the bayesian network is needed, use {@link #getBayesianNetwork(long, Properties)} instead.
-	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)}.
+	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)}.
 	 * @param questionID : id of the question to obtain probability.
 	 * @param assumptionIDs : (optional) list (ordered collection) of question IDs assumed when obtaining the estimated assets. If specified,
 	 * the questions (i.e. random variables) with these IDs will be assumed to be in the states specified in the argument "assumedStates".
@@ -604,19 +694,19 @@ public interface DAGGREUnBBayesFacade {
 	 * @param properties : this object stores system properties of the markov engine.
 	 * Classes implementing this interface may use these properties to set
 	 * values of some attributes/parameters not explicitly declared in this interface.
-	 * @throws IllegalStateException when the network identified by networkID was not in a valid state (e.g. it was not loaded by {@link #loadNetworkFromFile(File)}),
+	 * @throws IllegalStateException when the network identified by networkID was not in a valid state (e.g. it was not loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)}),
 	 * or a new user (i.e. set of asset cliques and separators) could not be created automatically.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
 	 */
 	public List<Float> getProbList(long networkID, long questionID, List<Long> assumptionIDs, List<Integer> assumedStates, Properties properties) throws IllegalStateException, IllegalArgumentException;
     
 	
-	// TODO how to compute trade balance from asset tables?
+	// TODO what is a trade balance?
 
 	/**
 	 * @return 
 	 * Computed Balance amount to remove involvement in a trade
-	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)}.
+	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)}.
 	 * @param userID
 	 * @param questionID : id of the question to obtain probability.
 	 * @param assumptionIDs : (optional) list (ordered collection) of question IDs assumed when obtaining the estimated assets. If specified,
@@ -626,11 +716,11 @@ public interface DAGGREUnBBayesFacade {
 	 * @param properties : this object stores system properties of the markov engine.
 	 * Classes implementing this interface may use these properties to set
 	 * values of some attributes/parameters not explicitly declared in this interface.
-	 * @throws IllegalStateException when the network identified by networkID was not in a valid state (e.g. it was not loaded by {@link #loadNetworkFromFile(File)}),
+	 * @throws IllegalStateException when the network identified by networkID was not in a valid state (e.g. it was not loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)}),
 	 * or a new user (i.e. set of asset cliques and separators) could not be created automatically.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
 	 */
 	public float computeTradeBalance(long networkID, long userID, long questionID, List<Long> assumptionIDs, List<Integer> assumedStates, Properties properties) throws IllegalStateException, IllegalArgumentException; 
 	
-	// TODO what is "Asset changes calculations"? What can make the assets to change (and need calculation), besides a trade?
+	
 }
