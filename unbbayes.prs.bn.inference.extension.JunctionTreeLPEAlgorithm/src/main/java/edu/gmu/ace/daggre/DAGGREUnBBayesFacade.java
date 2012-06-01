@@ -153,6 +153,35 @@ public interface DAGGREUnBBayesFacade {
 	 */
 	public int loadNetworkFromFile(File networkFile) throws IOException;
 	
+	/**
+	 * Creates a new network from a network structure specification.
+	 * @param questionIDAndDescription : a mapping from question ID (Long) to a brief description. The description is going to be used internally
+	 * as the "name" of the random variable.
+	 * @param questionIDToChoices : mapping between a question ID (Long) and its states (choices of the question). The order
+	 * of the elements in the list will determine which values in cpd are related to which states.
+	 * @param dependencyMapping : a mapping between the question ID (Long) and a list of its parents (dependencies). The order of
+	 * the elements in the list will determine which values in cpd are related to which parents.
+	 * 
+	 * @param cpd : a mapping from the question ID (Long) to a list representing the conditional probability distribution (probabilities of
+	 * a question - random variable - given its dependencies).
+	 *  
+	 * The order of the elements in the list are determined by the ordering of the lists in questionIDToChoices and dependencyMapping.
+	 * For example, suppose T is the target random variable with question ID = 1; with states t1 and t2, and A1 and A2 are dependencies with states (a11, a12), and (a21 , a22) respectively.
+	 * Then, cpd shall contain a mapping from key 1 (the question ID) to a list filled in the following way:<br/>
+	 * index 0 - P(T=t1 | A1=a11, A2=a21)<br/>
+	 * index 1 - P(T=t2 | A1=a11, A2=a21)<br/>
+	 * index 2 - P(T=t1 | A1=a12, A2=a21)<br/>
+	 * index 3 - P(T=t2 | A1=a12, A2=a21)<br/>
+	 * index 4 - P(T=t1 | A1=a11, A2=a22)<br/>
+	 * index 5 - P(T=t2 | A1=a11, A2=a22)<br/>
+	 * index 6 - P(T=t1 | A1=a12, A2=a22)<br/>
+	 * index 7 - P(T=t2 | A1=a12, A2=a22)<br/>
+	 * @param properties : this object stores system properties of the markov engine.
+	 * Classes implementing this interface may use these properties to set
+	 * values of some attributes/parameters not explicitly declared in this interface.
+	 * @return a handler ID which will be used by other methods in this interface in order to identify the loaded network.
+	 * @throws IllegalArgumentException
+	 */
 	public int createNewNetwork( Map<Long, String> questionIDAndDescription, Map<Long, List<String>> questionIDToChoices,  Map<Long, List<Long>> dependencyMapping, Map<Long, List<Float>> cpd, Properties properties) throws IllegalArgumentException;
 	
 	
@@ -174,7 +203,22 @@ public interface DAGGREUnBBayesFacade {
 	public void disposeLoadedNetwork(int networkID, Properties properties) throws RuntimeException;
 	
 
-	public long createNewUser(int networkID, Properties properties);
+	/**
+	 * Instantiates and a new asset network (a data structure representing a user and
+	 * the assets table) and puts it in a hash table for future reference.
+	 * @param networkID :  the network in which the asset network (user + asset tables)
+	 * will be based on. The asset network will manage the assets for the questions present in this network.
+	 * @param userID : optional (may be set to null) - this is the desired ID for the user. If set to null,
+	 * this method will return an automatically generated user ID.
+	 * @param properties : this object stores system properties of the markov engine.
+	 * Classes implementing this interface may use these properties to set
+	 * values of some attributes/parameters not explicitly declared in this interface.
+	 * For instance, setting the property {defaultInitialQTableValue = X} will be equivalent
+	 * to calling {@link #setDefaultInitialQTableValue(float)} with the value X as its argument,
+	 * and then {@link #createNewUser(int, Long, Properties)} with properties = null.
+	 * @return the ID of the new user (value of userID, or generated automatically if userID == null).
+	 */
+	public long createNewUser(int networkID, Long userID, Properties properties);
 	
 	
 	/**
@@ -703,24 +747,4 @@ public interface DAGGREUnBBayesFacade {
 	
 	// TODO what is a trade balance?
 
-	/**
-	 * @return 
-	 * Computed Balance amount to remove involvement in a trade
-	 * @param networkID : id of the network loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)}.
-	 * @param userID
-	 * @param questionID : id of the question to obtain probability.
-	 * @param assumptionIDs : (optional) list (ordered collection) of question IDs assumed when obtaining the estimated assets. If specified,
-	 * the questions (i.e. random variables) with these IDs will be assumed to be in the states specified in the argument "assumedStates".
-	 * @param assumedStates : (mandatory if assumptionIDs is specified - must have the same size of assumptionIDs) indexes
-	 * of states (i.e. choices - if boolean, then it is either 0 or 1) of assumptionIDs to be assumed.
-	 * @param properties : this object stores system properties of the markov engine.
-	 * Classes implementing this interface may use these properties to set
-	 * values of some attributes/parameters not explicitly declared in this interface.
-	 * @throws IllegalStateException when the network identified by networkID was not in a valid state (e.g. it was not loaded by {@link #loadNetworkFromFile(File)} or {@link #createNewNetwork(Map, Map, Map, Map, Properties)}),
-	 * or a new user (i.e. set of asset cliques and separators) could not be created automatically.
-	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
-	 */
-	public float computeTradeBalance(long networkID, long userID, long questionID, List<Long> assumptionIDs, List<Integer> assumedStates, Properties properties) throws IllegalStateException, IllegalArgumentException; 
-	
-	
 }
