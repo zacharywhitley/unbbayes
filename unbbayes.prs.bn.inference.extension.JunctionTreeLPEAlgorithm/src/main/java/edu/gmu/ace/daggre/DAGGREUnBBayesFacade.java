@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import unbbayes.prs.bn.AssetNetwork;
+
 
 
 /**
@@ -820,7 +820,7 @@ public interface DAGGREUnBBayesFacade {
 	
 	/**
 	 * Obtains the q-table of a user. This method encapsulates {@link #assetsCommittedByUser(long, Properties)}
-	 * and offers a way to access assets without using the {@link AssetNetwork} class.
+	 * and offers a way to access assets without using the {@link unbbayes.prs.bn.AssetNetwork} class.
 	 * Basically, questionID and assumptionIDs
 	 * 
 	 * 
@@ -885,8 +885,5 @@ public interface DAGGREUnBBayesFacade {
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
 	 */
 	public List<Float> getProbList(long networkID, long questionID, List<Long> assumptionIDs, List<Integer> assumedStates, Properties properties) throws IllegalStateException, IllegalArgumentException;
-    
-	
-	// TODO what is a trade balance and split?
 
 }
