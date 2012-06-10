@@ -78,92 +78,6 @@ public interface MarkovEngineInterface {
 	 */
 	public boolean commitNetworkActions(long transactionKey) throws IllegalArgumentException;
 	
-	/**
-	 * Assets are managed by a data structure known as the asset tables
-	 * (they are clique-tables containing non-normalized float values).
-	 * When an asset table is instantiated (i.e. when a new user is created,
-	 * and then a new asset table is created for that user), each
-	 * cell of the asset table should be filled with default (uniform) values initially.
-	 * <br/><br/>
-	 * Note: the assets (S-values) and q-values (values actually stored in
-	 * the tables) are related with a logarithm relationship
-	 * S = b*log(q). So, the values in the asset tables may not actually be
-	 * the values of assets directly.
-	 * @return the value to be filled into each cell of the q-tables when the tables are initialized.
-	 */
-	public float getDefaultInitialQTableValue();
-	
-
-	/**
-	 * Assets are managed by a data structure known as the asset tables
-	 * (they are clique-tables containing non-normalized float values).
-	 * When an asset table is instantiated (i.e. when a new user is created,
-	 * and then a new asset table is created for that user), each
-	 * cell of the asset table should be filled with default (uniform) values initially.
-	 * <br/><br/>
-	 * Note: the assets (S-values) and q-values (values actually stored in
-	 * asset tables) are related with a logarithm relationship
-	 * S = b*log(q). So, the values in the asset tables may not actually be
-	 * the values of assets directly.
-	 * @param defaultValue : the value to be filled into each cell of the q-tables when the tables are initialized.
-	 */
-	public void setDefaultInitialQTableValue(float defaultValue);
-	
-	/**
-	 * Assets (S-values) and q-values (values actually stored in
-	 * asset tables) are related with a logarithm relationship
-	 * S = b*log(q) with log being a logarithm function of some basis. 
-	 * @return the base of the current logarithm function used
-	 * for converting q-values to assets.
-	 * @see #setCurrentLogBase(double)
-	 * @see #getCurrentCurrencyConstant()
-	 * @see #setCurrentCurrencyConstant(double)
-	 * @see #getCash(long, Properties)
-	 */
-	public double getCurrentLogBase();
-	
-	/**
-	 * Assets (S-values) and q-values (values actually stored in
-	 * asset tables) are related with a logarithm relationship
-	 * S = b*log(q), with log being a logarithm function of some base. 
-	 * @param base : the base of the current logarithm function used
-	 * for converting q-values to assets.
-	 * @see #getCurrentLogBase()
-	 * @see #getCurrentCurrencyConstant()
-	 * @see #setCurrentCurrencyConstant(double)
-	 * @see #getCash(long, Properties)
-	 */
-	public void setCurrentLogBase(double base);
-	
-	/**
-	 *  Assets (S-values) and q-values (values actually stored in
-	 * asset tables) are related with a logarithm relationship
-	 * S = b*log(q), with b being a constant for defining the "unit
-	 * of currency" (more precisely, this constant defines how sensitive
-	 * is the assets).
-	 * @return the current value of b, the "unit of currency""
-	 * @see #getCurrentLogBase()
-	 * @see #setCurrentLogBase(double)
-	 * @see #setCurrentCurrencyConstant(double)
-	 * @see #getCash(long, Properties)
-	 */
-	public double getCurrentCurrencyConstant();
-	
-
-	/**
-	 *  Assets (S-values) and q-values (values actually stored in
-	 * asset tables) are related with a logarithm relationship
-	 * S = b*log(q), with b being a constant for defining the "unit
-	 * of currency" (more precisely, this constant defines how sensitive
-	 * is the assets).
-	 * @param b the current value of b to set, the "unit of currency""
-	 * @see #getCurrentLogBase()
-	 * @see #setCurrentLogBase(double)
-	 * @see #getCurrentCurrencyConstant()
-	 * @see #getCash(long, Properties)
-	 */
-	public void setCurrentCurrencyConstant(double b);
-	
 
 	/**
 	 * This method adds a new question (i.e. a new node in a bayesian network).
@@ -228,12 +142,11 @@ public interface MarkovEngineInterface {
 	 * @param occurredWhen : implementations of this interface may use this timestamp to store a history of modifications.
 	 * @param userId : the ID of the owner of the asset table.
 	 * @param assets : the minimum asset value to be added into the current value (negative values will decrease the current value)
-	 * @param isToAllowNegativeAssets : if true, assets are allowed to be negative. False if assets should never
-	 * go below zero.
+	 * @param description : a brief description of what this change of cash mean.
 	 * @return true if operation was successful.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
-	public boolean addCash(long transactionKey, Date occurredWhen, long userId, float assets, boolean isToAllowNegativeAssets) throws IllegalArgumentException;
+	public boolean addCash(long transactionKey, Date occurredWhen, long userId, float assets, String description) throws IllegalArgumentException;
 	
 	/**
 	 * This function will add a specific trade to the system. 
@@ -262,8 +175,8 @@ public interface MarkovEngineInterface {
 	 * @param transactionKey : key returned by {@link #startNetworkActions()}
 	 * @param occurredWhen : implementations of this interface may use this timestamp to store a history of modifications.
 	 * @param tradeId : revert and history functions can refer to specific trade actions easier, by refering to this id.
-	 * @param userID : the ID of the user (i.e. owner of the assets).
-	 * @param questionID : the id of the question to be edited (i.e. the random variable "T"  in the example)
+	 * @param userId : the ID of the user (i.e. owner of the assets).
+	 * @param questionId : the id of the question to be edited (i.e. the random variable "T"  in the example)
 	 * @param oldValues :  this is a list (ordered collection) representing the probability values before the edit. 
 	 * For example, suppose T is the target question (i.e. a random variable) with states t1 and t2, and A1 and A2 are assumptions with states (a11, a12), and (a21 , a22) respectively.
 	 * Then, the list must be filled as follows:<br/>
@@ -287,18 +200,18 @@ public interface MarkovEngineInterface {
 	 * index 5 - P(T=t2 | A1=a11, A2=a22)<br/>
 	 * index 6 - P(T=t1 | A1=a12, A2=a22)<br/>
 	 * index 7 - P(T=t2 | A1=a12, A2=a22)<br/>
-	 * @param assumptionIDs : list (ordered collection) representing the IDs of the questions to be assumed in this edit. The order is important,
+	 * @param assumptionIds : list (ordered collection) representing the IDs of the questions to be assumed in this edit. The order is important,
 	 * because the ordering in this list will be used in order to identify the correct indexes in "oldValues" and "newValues".
 	 * @param assumedStates : this is not necessary if oldValues and newValues contains full data (all cells of the conditional probability distribution),
 	 * however, classes implementing this method may provide special treatment when this parameter is non-null. By default, implementations will ignore this parameter,
 	 * so null should be passed.
-	 * @param isToAllowNegative : If true (default is False), then checks for sufficient assets should be bypassed and we allow 
+	 * @param allowNegative : If true (default is False), then checks for sufficient assets should be bypassed and we allow 
 	 * the user to go into the hole
 	 * @return the assets per state changed, if the user has sufficient assets 
 	 * (as the values returned by {@link #getAssetsIfStates(int, long, long, int, List, List, Properties)}).
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
-	public List<Float> addTrade(long transactionKey, Date occurredWhen, long tradeId, long userID, long questionID, List<Float> oldValues, List<Float> newValues, List<Long> assumptionIDs, List<Integer> assumedStates,  Boolean isToAllowNegative) throws IllegalArgumentException;
+	public List<Float> addTrade(long transactionKey, Date occurredWhen, long tradeId, long userId, long questionId, List<Float> oldValues, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates,  Boolean allowNegative) throws IllegalArgumentException;
 
 	/**
 	 * This function will settle a specific question.
@@ -374,7 +287,7 @@ public interface MarkovEngineInterface {
 	 * @return list of any possible assumptions that can be made on the question
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
-	public List<Long> getPossibleQuestionAssumptions(long questionId, List<Long>assumptiveQuestions) throws IllegalArgumentException;
+	public List<Long> getPossibleQuestionAssumptions(long questionId, List<Long>assumptionIds) throws IllegalArgumentException;
 	
 	/**
 	 * This method implements the feature for estimating whether a user is in a long or short position.
@@ -516,7 +429,7 @@ public interface MarkovEngineInterface {
 	 * If questionId is set to null, then TOTAL current expected value portion of across all questions given a set of assumptions.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
 	 */
-	public float scoreUserEv(long userId, Long questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	public float scoreUserQuestionEv(long userId, Long questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
 	 * THIS IS NOT REQUIRED BUT MAY BE A GOOD IDEA TO PROVIDE FOR EFFICIENCY AS A OPTIMIZED OPERATION
@@ -620,5 +533,15 @@ public interface MarkovEngineInterface {
 	 * @see {@link QuestionEvent}
 	 */
 	public List<QuestionEvent> getQuestionHistory (Long questionID, List<Long> assumptionIDs, List<Integer> assumedStates) throws IllegalArgumentException;
-	
+
+	/**
+	 * This function will return an ordered list of score details 
+	 * (ScoreDetail, a <amount, description> pair that explain how the current score of a user was determined). 
+	 * @param userId
+	 * @param assumptionIds
+	 * @param assumedStates
+	 * @return
+	 * @throws IllegalArgumentException
+	 */
+	public List<ScoreDetail> getScoreDetails(long userId, List<Integer> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 }
