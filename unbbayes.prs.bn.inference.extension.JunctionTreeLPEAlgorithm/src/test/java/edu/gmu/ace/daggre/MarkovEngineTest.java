@@ -3,13 +3,20 @@
  */
 package edu.gmu.ace.daggre;
 
+import java.util.Date;
+
 import junit.framework.TestCase;
+import unbbayes.prs.bn.ProbabilisticNetwork;
 
 /**
  * @author Shou Matsumoto
  *
  */
 public class MarkovEngineTest extends TestCase {
+	
+	private static final int THREAD_NUM = 1000;	// quantity of threads to use in order to test multi-thread behavior
+
+	private MarkovEngineImpl engine = new MarkovEngineImpl();
 
 	/**
 	 * @param name
@@ -23,6 +30,7 @@ public class MarkovEngineTest extends TestCase {
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
+		engine.initialize();
 	}
 
 	/* (non-Javadoc)
@@ -32,32 +40,113 @@ public class MarkovEngineTest extends TestCase {
 		super.tearDown();
 	}
 
-	/**
-	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#initialize()}.
-	 */
-	public final void testInitialize() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#startNetworkActions()}.
-	 */
-	public final void testStartNetworkActions() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#commitNetworkActions(long)}.
-	 */
-	public final void testCommitNetworkActions() {
-		fail("Not yet implemented"); // TODO
+	/** This was created just to run addQuestion in multiple threads and same transaction*/
+	private class AddQuestionThread extends Thread{
+		private final long questionID;
+		private Long transactionKey;
+		public AddQuestionThread(Long transactionKey, long questionID) {
+			super();
+			this.questionID = questionID;
+			this.transactionKey = transactionKey;
+		}
+		public void run() {
+			boolean isToCommitTransaction = false;
+			if (transactionKey == null) {
+				// if no transaction key was provided, 
+				// we shall test several threads in several transactions
+				transactionKey = engine.startNetworkActions();
+				isToCommitTransaction = true;
+			}
+			engine.addQuestion(
+					transactionKey, 
+					new Date(), 
+					questionID, 
+					2 + (int)(5*Math.random()), 
+					null
+				);
+			if (isToCommitTransaction) {
+				// transactionKey was null -> several threads + several transactions case
+				engine.commitNetworkActions(transactionKey);
+			}
+		}
 	}
 
 	/**
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#addQuestion(long, java.util.Date, long, int, java.util.List)}.
 	 */
 	public final void testAddQuestion() {
-		fail("Not yet implemented"); // TODO
+		// initial assertion
+		assertNotNull(engine.getInferenceAlgorithm().getNetwork());
+		
+		// no nodes in network.
+		assertEquals(0, engine.getInferenceAlgorithm().getNetwork().getNodeCount());
+		
+		// case 1 : several threads in 1 transaction
+		
+		// start transaction
+		long transactionKey = engine.startNetworkActions();
+		
+		// run addQuestion in THREAD_NUM threads
+		Thread[] threads = new AddQuestionThread[THREAD_NUM];
+        for (int i = 0; i < THREAD_NUM; i++) {
+            threads[i] = new AddQuestionThread(transactionKey, i);
+            threads[i].start();
+        }
+        
+        // wait until the threads are finished
+        for (int i = 0; i < THREAD_NUM; i++) {
+            try {
+                threads[i].join();
+            } catch (InterruptedException e) {
+            	e.printStackTrace();
+                fail(e.getMessage());
+            }
+        }
+		
+        // commit transaction
+		engine.commitNetworkActions(transactionKey);
+		
+		// check if network contains THREAD_NUM nodes 
+		assertEquals(THREAD_NUM, engine.getInferenceAlgorithm().getNetwork().getNodeCount());
+		
+		// check if network contains nodes with ID from 0 to THREAD_NUM-1
+		for (int i = 0; i < THREAD_NUM; i++) {
+			assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode(Integer.toString(i)));
+		}
+		
+		// reset engine
+		engine.initialize();
+		assertNotNull(engine.getInferenceAlgorithm().getNetwork());
+		assertEquals(0, engine.getInferenceAlgorithm().getNetwork().getNodeCount());
+		
+		
+		// case 2 : several transactions, several threads.
+		// run addQuestion in THREAD_NUM threads
+		threads = new AddQuestionThread[THREAD_NUM];
+        for (int i = 0; i < THREAD_NUM; i++) {
+        	// by passing null as transactionKey, AddQuestionThread will call startNetworkActions and commitNetworkActions for each thread
+            threads[i] = new AddQuestionThread(null, i);
+            threads[i].start();
+        }
+        
+        // wait until the threads are finished
+        for (int i = 0; i < THREAD_NUM; i++) {
+            try {
+                threads[i].join();
+            } catch (InterruptedException e) {
+            	e.printStackTrace();
+                fail(e.getMessage());
+            }
+        }
+        
+     	// check if network contains THREAD_NUM nodes 
+		assertEquals(THREAD_NUM, engine.getInferenceAlgorithm().getNetwork().getNodeCount());
+		
+		// check if network contains nodes with ID from 0 to THREAD_NUM-1
+		for (int i = 0; i < THREAD_NUM; i++) {
+			assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode(Integer.toString(i)));
+		}
+		
 	}
 
 	/**

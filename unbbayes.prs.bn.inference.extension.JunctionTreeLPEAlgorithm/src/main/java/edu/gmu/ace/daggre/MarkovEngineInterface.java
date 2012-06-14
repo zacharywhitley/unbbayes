@@ -64,17 +64,33 @@ public interface MarkovEngineInterface {
 	
 	/**
 	 * This function assumes that a series of time sequenced actions that may modify the network are expected to be made. 
+	 * Any method using a transactionKey will be called between this method and {@link #commitNetworkActions(long)}.
 	 * @return transactionKey to indicate a transaction that these sets of operations are in. 
-	 * The transactionKey is needed to support multiple front-ends that may be operating to modify the network
+	 * The transactionKey is needed to support multiple front-ends that may be operating to modify the network.
+	 * @see #addCash(long, Date, long, float, String)
+	 * @see #addQuestion(long, Date, long, int, List)
+	 * @see #addQuestionAssumption(long, Date, long, long, List)
+	 * @see #addTrade(long, Date, long, long, long, List, List, List, List, Boolean)
+	 * @see #commitNetworkActions(long)
+	 * @see #resolveQuestion(long, Date, long, int)
+	 * @see #revertTrade(long, Date, Long, Long)
 	 */
 	public long startNetworkActions();
 	
 	/**
 	 * This function notifies the MarkovEngine that the series of actions begun with startNetworkActions is completed.
 	 * Implementations of this method shall be synchronized.
+	 * Any method using a transactionKey will be called between {@link #startNetworkActions()} and this method.
 	 * @param transactionKey : key returned by {@link #startNetworkActions()}
 	 * @return True if operation was successful
 	 * @throws IllegalArgumentException when transactionKey was invalid.
+	 * @see #addCash(long, Date, long, float, String)
+	 * @see #addQuestion(long, Date, long, int, List)
+	 * @see #addQuestionAssumption(long, Date, long, long, List)
+	 * @see #addTrade(long, Date, long, long, long, List, List, List, List, Boolean)
+	 * @see #startNetworkActions()
+	 * @see #resolveQuestion(long, Date, long, int)
+	 * @see #revertTrade(long, Date, Long, Long)
 	 */
 	public boolean commitNetworkActions(long transactionKey) throws IllegalArgumentException;
 	
@@ -112,9 +128,12 @@ public interface MarkovEngineInterface {
 	 * @param transactionKey : key returned by {@link #startNetworkActions()}
 	 * @param occurredWhen : implementations of this interface may use this timestamp to store a history of modifications.
 	 * @param sourceQuestionId : id of the child
-	 * @param assumptiveQuestionId : id of the parent
-	 * @param cpd : If a null/empty cpd is passed, values will be set by uniform distribution. <br/>
-	 * this is a list (ordered collection) representing the conditional probability distribution after the edit. 
+	 * @param assumptiveQuestionIds : ids of the parents. If cpd is set to null, then these questions will be ADDED as parents of sourceQuestionId.
+	 * If cpd is non-null, then these parents will SUBSTITUTE the old parents.
+	 * @param cpd : If a null/empty cpd is passed, values will be set by uniform distribution, and assumptiveQuestionIds will
+	 * be ADDED as parents of sourceQuestionId. If non-null, then assumptiveQuestionIds will SUBSTITUTE the old parents of sourceQuestionId.
+	 * <br/>
+	 * This is a list (ordered collection) representing the conditional probability distribution after the edit. 
 	 * For example, suppose T is the target random variable (i.e. question identified by questionID) with states t1 and t2, and A1 and A2 are assumptions with states (a11, a12), and (a21 , a22) respectively.
 	 * Then, the list must be filled as follows:<br/>
 	 * index 0 - P(T=t1 | A1=a11, A2=a21)<br/>
@@ -128,7 +147,7 @@ public interface MarkovEngineInterface {
 	 * @return true if operation was successful
 	 * @throws IllegalArgumentException
 	 */
-	public boolean addQuestionAssumption(long transactionKey, Date occurredWhen, long sourceQuestionId, long assumptiveQuestionId,  List<Float> cpd) throws IllegalArgumentException;
+	public boolean addQuestionAssumption(long transactionKey, Date occurredWhen, long sourceQuestionId, List<Long> assumptiveQuestionIds,  List<Float> cpd) throws IllegalArgumentException;
 	
 	/**
 	 * This function will add EXTERNAL cash to a specific userId. 
@@ -230,6 +249,9 @@ public interface MarkovEngineInterface {
 	 * The exact definition of undo will vary. 
 	 * It may be either to creating matching trades that invert the previous ones or just to return all assets expended to all users.
 	 * Implementations of this method shall be synchronized.
+	 * <br/>
+	 * CAUTION: this method may require reboot of all data structures (i.e. bayesian network and ), so this 
+	 * method is expected to be VERY slow. Users of this interface shall try to minimize calls to this method.
 	 * @param transactionKey : key returned by {@link #startNetworkActions()}
 	 * @param occurredWhen : implementations of this interface may use this timestamp to store a history of modifications.
 	 * @param startingTradeId : all trades with ID greater or equal to this id will be reverted.
