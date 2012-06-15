@@ -23,7 +23,11 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
  */
 public class MarkovEngineTest extends TestCase {
 	
-	private static final int THREAD_NUM = 100;	// quantity of threads to use in order to test multi-thread behavior
+	private static final int THREAD_NUM = 75;	// quantity of threads to use in order to test multi-thread behavior
+
+	public static final int MAX_NETWIDTH = 3;
+	public static final int MAX_STATES = 5;
+	public static final int MIN_STATES = 2;
 
 	private MarkovEngineImpl engine = new MarkovEngineImpl();
 
@@ -70,7 +74,7 @@ public class MarkovEngineTest extends TestCase {
 					transactionKey, 
 					new Date(), 
 					questionID, 
-					2 + (int)(5*Math.random()), 
+					Math.max(MIN_STATES, Math.min(1 + (int)(MAX_STATES*Math.random()), MAX_STATES)), // between MIN_STATES and MAX_STATES 
 					null
 				);
 			if (isToCommitTransaction) {
@@ -235,7 +239,7 @@ public class MarkovEngineTest extends TestCase {
 										transactionKey, 
 										new Date(), 
 										nodeID, 
-										2 + (int)(5*Math.random()), 
+										Math.max(MIN_STATES, Math.min(1 + (int)(MAX_STATES*Math.random()), MAX_STATES)), // between MIN_STATES and MAX_STATES
 										null
 								);
 								generatedNodes.add(nodeID);
@@ -264,7 +268,7 @@ public class MarkovEngineTest extends TestCase {
 											parents.add(destination);
 										} while (parents.isEmpty() || (Math.random() < .7));
 										// limit the max quantity of parents to 5
-										if (parentNumCounters.get(child) + parents.size() > 5) {
+										if (parentNumCounters.get(child) + parents.size() > MAX_NETWIDTH) {
 											continue;
 										}
 										// origin should will always be smaller than anything in destination

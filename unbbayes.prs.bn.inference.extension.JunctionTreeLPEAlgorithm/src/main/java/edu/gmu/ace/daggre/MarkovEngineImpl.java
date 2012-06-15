@@ -138,7 +138,19 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			this.whenCreated = whenCreated;
 		}
 		public void execute() {
-			// TODO rebuild BN
+			// rebuild BN
+			synchronized (getInferenceAlgorithm()) {
+				// make sure no one is using the probabilistic network yet.
+				ProbabilisticNetwork net = (ProbabilisticNetwork) getInferenceAlgorithm().getNetwork();
+				synchronized (net) {
+					// reset
+//					getInferenceAlgorithm().reset();
+					// recompile
+					if (net.getNodeCount() > 0) {
+						getInferenceAlgorithm().run();
+					}
+				}
+			}
 			// TODO rebuild all user asset nets
 			// TODO redo all trades using the history
 			// Note: if we are rebooting the system, the history is supposedly empty
