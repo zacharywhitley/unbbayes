@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import unbbayes.prs.Node.NodeNameChangedEvent;
 import unbbayes.prs.Node.NodeNameChangedListener;
@@ -57,7 +58,7 @@ public class Network implements Graph{
 		this.id = this.name = name;
 		nodeList = new ArrayList<Node>();
         edgeList = new ArrayList<Edge>();
-        nodeIndexes = new HashMap<String,Integer>();
+        nodeIndexes = new ConcurrentHashMap<String,Integer>();	// concurrent hash maps are thread safe
         
         // Event responsible for updating the index for the node that just changed its name.
         nodeNameChangedListener = new NodeNameChangedListener() {
@@ -65,8 +66,10 @@ public class Network implements Graph{
         		Integer index = nodeIndexes.get(event.getOldName());
         		
         		if(index!=null){
-        			nodeIndexes.remove(event.getOldName());
-        			nodeIndexes.put(event.getNewName(), index);
+        			synchronized (nodeIndexes) {
+        				nodeIndexes.remove(event.getOldName());
+        				nodeIndexes.put(event.getNewName(), index);
+					}
         		}
         		
         	}
@@ -254,18 +257,18 @@ public class Network implements Graph{
 	}
 
 	/**
-	 *  Verifica exist�ｽncia de determinado arco.
+	 *  Verifies existence of an edge.
 	 *
-	 *@param  no1  n�ｽ origem.
-	 *@param  no2  n�ｽ destino.
-	 *@return      posi�ｽ�ｽo do arco no vetor ou -1 caso n�ｽo exista tal arco.
+	 *@param  node1  : origin node
+	 *@param  node2  : destination node
+	 *@return      index of the edge in {@link #getEdges()}, or -1 if it does not exist.
 	 */
-	public int hasEdge(Node no1, Node no2) {
-		return hasEdge(no1, no2, edgeList);
+	public int hasEdge(Node node1, Node node2) {
+		return hasEdge(node1, node2, edgeList);
 	}
 
-	public int hasEdge(Node no1, Node no2, List<Edge> vetArcos) {
-		if (no1 == no2) {
+	public int hasEdge(Node node1, Node node2, List<Edge> vetArcos) {
+		if (node1 == node2) {
 			return 1;
 		}
 	
@@ -273,10 +276,10 @@ public class Network implements Graph{
 		Edge auxA;
 		for (int i = 0; i < sizeArcos; i++) {
 			auxA = (Edge) vetArcos.get(i);
-			if ((auxA.getOriginNode() == no1)
-				&& (auxA.getDestinationNode() == no2)
-				|| (auxA.getOriginNode() == no2)
-				&& (auxA.getDestinationNode() == no1)) {
+			if ((auxA.getOriginNode() == node1)
+				&& (auxA.getDestinationNode() == node2)
+				|| (auxA.getOriginNode() == node2)
+				&& (auxA.getDestinationNode() == node1)) {
 				return i;
 			}
 		}
