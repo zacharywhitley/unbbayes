@@ -175,6 +175,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		if (initProbs != null && !initProbs.isEmpty()) {
 			float sum = 0;
 			for (Float prob : initProbs) {
+				if (prob < 0) {
+					throw new IllegalArgumentException("Negative probability declaration found: " + prob);
+				}
 				sum += prob;
 			}
 			// check if sum of initProbs is 1 (with error margin)
@@ -339,59 +342,124 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	public boolean addQuestionAssumption(long transactionKey, Date occurredWhen, long sourceQuestionId, List<Long> assumptiveQuestionIds,  List<Float> cpd) throws IllegalArgumentException {
 		
 		// initial assertions
-		
-		// check existence of child
-		Node child = ((ProbabilisticNetwork)getInferenceAlgorithm().getNetwork()).getNode(Long.toString(sourceQuestionId));
-		if (child == null) {
-			// child node does not exist
-			throw new IllegalArgumentException("Question ID " + sourceQuestionId + " does not exist.");
-		}
-		// check existence of parents
-		int expectedSizeOfCPD = child.getStatesSize();	// this var will keep track of expected size of cpd if it is non-null && non-empty
-		for (Long assumptiveQuestionId : assumptiveQuestionIds) {
-			Node parent = ((ProbabilisticNetwork)getInferenceAlgorithm().getNetwork()).getNode(Long.toString(assumptiveQuestionId));
-			
-			if (parent == null) {
-				// parent node does not exist
-				throw new IllegalArgumentException("Question ID " + assumptiveQuestionId + " does not exist.");
-			}
-			
-		}
-		// check size of cpd
-		if (cpd != null 
-				&& !cpd.isEmpty()
-				&& cpd.size() != expectedSizeOfCPD) {
-			// size of cpd is inconsistent
-			throw new IllegalArgumentException("Expected size of cpd is "+ expectedSizeOfCPD + ", but was " + cpd.size());
-		}
-		
-		
-		// obtain the list which stores the actions in order and check if it was initialized
 		List<NetworkAction> actions = this.getNetworkActionsMap().get(transactionKey);
 		if (actions == null) {
 			// startNetworkAction should have been called.
 			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
 		}
-		// instantiate the action object for adding a question
-		AddQuestionAssumptionNetworkAction newAction = new AddQuestionAssumptionNetworkAction(transactionKey, occurredWhen, sourceQuestionId, assumptiveQuestionIds, cpd);
 		
-		// let's add action to the managed list. Prepare index of where in actions we should add newAction
-		int indexOfFirstActionCreatedAfterNewAction = 0;	// this will point to the first action created after occurredWhen
+		if (assumptiveQuestionIds == null || assumptiveQuestionIds.isEmpty()) {
+			throw new IllegalArgumentException("addQuestionAssumption must provide some questions");
+		}
 		
-		// Make sure the action list is ordered by the date. Insert new action to a correct position when necessary.
-		for (; indexOfFirstActionCreatedAfterNewAction < actions.size(); indexOfFirstActionCreatedAfterNewAction++) {
-			if (actions.get(indexOfFirstActionCreatedAfterNewAction).getWhenCreated().after(occurredWhen)) {
-				break;
+		int childNodeStateSize = -1;	// this var stores the quantity of states of the node identified by sourceQuestionId.
+		
+		// check existence of child
+		Node child = ((ProbabilisticNetwork)getInferenceAlgorithm().getNetwork()).getNode(Long.toString(sourceQuestionId));
+		if (child == null) {
+			// child node does not exist. Check if there was some previous transaction adding such node
+			synchronized (actions) {
+				for (NetworkAction networkAction : actions) {
+					if (networkAction instanceof AddQuestionNetworkAction) {
+						AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
+						if (addQuestionNetworkAction.getQuestionId() == sourceQuestionId) {
+							childNodeStateSize = addQuestionNetworkAction.getNumberStates();
+							break;
+						}
+					}
+				}
+			}
+			if (childNodeStateSize < 0) {	
+				// if negative, then expectedSizeOfCPD was not updated, so sourceQuestionId was not found in last loop
+				throw new IllegalArgumentException("Question ID " + sourceQuestionId + " does not exist.");
+			}
+		} else {
+			// initialize the value of expectedSizeOfCPD using the number of states of future owner of the cpd
+			childNodeStateSize = child.getStatesSize();
+		}
+		
+		// this var will store the correct size of cpd. If negative, owner of the cpd was not found.
+		int expectedSizeOfCPD = childNodeStateSize;
+		
+		// check existence of parents
+		for (Long assumptiveQuestionId : assumptiveQuestionIds) {
+			Node parent = ((ProbabilisticNetwork)getInferenceAlgorithm().getNetwork()).getNode(Long.toString(assumptiveQuestionId));
+			if (parent == null) {
+				// parent node does not exist. Check if there was some previous transaction adding such node
+				synchronized (actions) {
+					boolean hasFound = false;
+					for (NetworkAction networkAction : actions) {
+						if (networkAction instanceof AddQuestionNetworkAction) {
+							AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
+							if (addQuestionNetworkAction.getQuestionId() == assumptiveQuestionId) {
+								// size of cpd = MULT (<quantity of states of child and parents>).
+								expectedSizeOfCPD *= addQuestionNetworkAction.getNumberStates();
+								hasFound = true;
+								break;
+							}
+						}
+					}
+					if (!hasFound) {	
+						// parent was not found
+						throw new IllegalArgumentException("Question ID " + assumptiveQuestionId + " does not exist.");
+					}
+				}
+			} else{
+				// size of cpd = MULT (<quantity of states of child and parents>).
+				expectedSizeOfCPD *= parent.getStatesSize();
+			}
+			
+		}
+		
+		// check consistency of size of cpd
+		if (cpd != null && !cpd.isEmpty()){
+			if (cpd.size() != expectedSizeOfCPD) {
+				// size of cpd is inconsistent
+				throw new IllegalArgumentException("Expected size of cpd of question " + sourceQuestionId + " is "+ expectedSizeOfCPD + ", but was " + cpd.size());
+			}
+			// check value consistency
+			float sum = 0;
+			int counter = 0;	// counter in which possible values are mod childNodeStateSize
+			for (Float probability : cpd) {
+				if (probability < 0) {
+					throw new IllegalArgumentException("Negative probability declaration found: " + probability);
+				}
+				sum += probability;
+				counter++;
+				if (counter >= childNodeStateSize) {
+					// check if sum of conditional probability given current state of parents is 1
+					if (!(((1 - getProbabilityErrorMargin()) < sum) && (sum < (1 + getProbabilityErrorMargin())))) {
+						throw new IllegalArgumentException("Inconsistent prior probability: " + sum);
+					}
+					counter = 0;
+					sum = 0;
+				}
 			}
 		}
 		
-		// add newAction into actions
-		if (indexOfFirstActionCreatedAfterNewAction < 0) {
-			// there is no action created after the new action. Add at the end.
-			actions.add(newAction);
-		} else {
-			// insert new action at the correct position
-			actions.add(indexOfFirstActionCreatedAfterNewAction, newAction);
+		
+		// instantiate the action object for adding the edge
+		AddQuestionAssumptionNetworkAction newAction = new AddQuestionAssumptionNetworkAction(transactionKey, occurredWhen, sourceQuestionId, assumptiveQuestionIds, cpd);
+		
+		// let's add action to the managed list. 
+		synchronized (actions) {
+			// Prepare index of where in actions we should add newAction
+			int indexOfFirstActionCreatedAfterNewAction = 0;	// this will point to the first action created after occurredWhen
+			// Make sure the action list is ordered by the date. Insert new action to a correct position when necessary.
+			for (; indexOfFirstActionCreatedAfterNewAction < actions.size(); indexOfFirstActionCreatedAfterNewAction++) {
+				if (actions.get(indexOfFirstActionCreatedAfterNewAction).getWhenCreated().after(occurredWhen)) {
+					break;
+				}
+			}
+			
+			// add newAction into actions
+			if (indexOfFirstActionCreatedAfterNewAction < 0) {
+				// there is no action created after the new action. Add at the end.
+				actions.add(newAction);
+			} else {
+				// insert new action at the correct position
+				actions.add(indexOfFirstActionCreatedAfterNewAction, newAction);
+			}
 		}
 		
 		return true;
@@ -435,8 +503,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			synchronized (network) {
 				child = (ProbabilisticNode) network.getNode(Long.toString(sourceQuestionId));
 				
-				// if cpd is empty, then we shall substitute the old edges going to child. So, delete all of them first.
-				if (cpd == null || cpd.isEmpty()) {
+				// if cpd is non-empty, then we shall substitute the old edges going to child. So, delete all of them first.
+				if (cpd != null && !cpd.isEmpty()) {
 					Set<Edge> edgesToRemove = new HashSet<Edge>();
 					for (Edge edge : network.getEdges()) {
 						if (edge.getDestinationNode().equals(child)) {
