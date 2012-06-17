@@ -5,7 +5,9 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import unbbayes.prs.Edge;
@@ -893,11 +895,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#addTrade(long, java.util.Date, long, long, long, java.util.List, java.util.List, java.util.List, java.util.List, java.lang.Boolean)
 	 */
-	public List<Float> addTrade(long transactionKey, Date occurredWhen,
-			long tradeId, long userId, long questionId, List<Float> oldValues,
-			List<Float> newValues, List<Long> assumptionIds,
-			List<Integer> assumedStates, Boolean allowNegative)
-			throws IllegalArgumentException {
+	public List<Float> addTrade(long transactionKey, Date occurredWhen, UUID tradeUUID, long userId, long questionId, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates,  Boolean allowNegative) throws IllegalArgumentException{
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Not implemented yet.");
 	}
@@ -914,9 +912,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#revertTrade(long, java.util.Date, java.lang.Long, java.lang.Long)
 	 */
-	public boolean revertTrade(long transactionKey, Date occurredWhen,
-			Long startingTradeId, Long questionId)
-			throws IllegalArgumentException {
+	public boolean revertTrade(long transactionKey, Date occurredWhen,  Date tradesStartingWhen, Long questionId) throws IllegalArgumentException {
 		// TODO Auto-generated method stub
 
 		throw new UnsupportedOperationException("Not implemented yet.");
@@ -932,16 +928,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getProbsList(java.util.List, java.util.List, java.util.List)
-	 */
-	public List<List<Float>> getProbsList(List<Long> questionIds,
-			List<Long> assumptionIds, List<Integer> assumedStates)
-			throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-
-		throw new UnsupportedOperationException("Not implemented yet.");
-	}
 
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getPossibleQuestionAssumptions(long, java.util.List)
@@ -1018,27 +1004,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		return getScoreFromQValues(ret);
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#assetsCommittedByUserQuestion(long, long, java.util.List, java.util.List)
-	 */
-	public float assetsCommittedByUserQuestion(long userId, long questionId,
-			List<Long> assumptionIds, List<Integer> assumedStates)
-			throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-
-		throw new UnsupportedOperationException("Not implemented yet.");
-	}
-
-	/* (non-Javadoc)
-	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#assetsCommittedByUserQuestions(long, java.util.List, java.util.List, java.util.List)
-	 */
-	public List<Float> assetsCommittedByUserQuestions(long userId,
-			List<Long> questionId, List<Long> assumptionIds,
-			List<Integer> assumedStates) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-
-		throw new UnsupportedOperationException("Not implemented yet.");
-	}
 
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#scoreUserQuestionEv(long, java.lang.Long, java.util.List, java.util.List)
@@ -1049,12 +1014,29 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Not implemented yet.");
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#scoreUserQuestionEvStates(long, long, java.util.List, java.util.List)
+	 */
+	public List<Float> scoreUserQuestionEvStates(long userId, long questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not implemented yet.");
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#scoreUserEv(long, java.util.List, java.util.List)
+	 */
+	public float scoreUserEv(long userId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not implemented yet.");
+	}
 
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#scoreUser(java.util.List, java.util.List, java.util.List)
 	 */
-	public float scoreUser(List<Long> userIds, List<Long> assumptionIds,
-			List<Integer> assumedStates) throws IllegalArgumentException {
+	public float scoreUser(long userId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Not implemented yet.");
 	}
@@ -1062,8 +1044,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#previewTrade(long, long, java.util.List, java.util.List, java.util.List, java.util.List)
 	 */
-	public List<Float> previewTrade(long userID, long questionID,
-			List<Float> oldValues, List<Float> newValues,
+	public List<Float> previewTrade(long userID, long questionID,List<Float> newValues,
 			List<Integer> assumptionIDs, List<Integer> assumedStates)
 			throws IllegalArgumentException {
 		// TODO Auto-generated method stub
@@ -1090,12 +1071,20 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getScoreSummary(long, java.util.List, java.util.List)
+	 */
+	public List<Properties> getScoreSummary(long userId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not implemented yet.");
+	}
+	
+	/*
+	 * (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getScoreDetails(long, java.util.List, java.util.List)
 	 */
-	public List<ScoreDetail> getScoreDetails(long userId,
-			List<Integer> assumptionIds, List<Integer> assumedStates)
-			throws IllegalArgumentException {
+	public List<Properties> getScoreDetails(long userId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Not implemented yet.");
 	}

@@ -4,6 +4,7 @@
 package edu.gmu.ace.daggre;
 
 import java.util.Date;
+import java.util.UUID;
 
 /**
  * @author Shou Matsumoto
@@ -37,7 +38,7 @@ public class QuestionEventImpl implements QuestionEvent {
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.QuestionEvent#getTradeId()
 	 */
-	public Long getTradeId() {
+	public UUID getTradeId() {
 		// TODO Auto-generated method stub
 		return null;
 	}

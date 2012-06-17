@@ -3,6 +3,7 @@ package edu.gmu.ace.daggre;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 
 
 
@@ -193,22 +194,11 @@ public interface MarkovEngineInterface {
 	 * 
 	 * @param transactionKey : key returned by {@link #startNetworkActions()}
 	 * @param occurredWhen : implementations of this interface may use this timestamp to store a history of modifications.
-	 * @param tradeId : revert and history functions can refer to specific trade actions easier, by refering to this id.
+	 * @param tradeUUID : revert and history functions can refer to specific trade actions easier, by referring to this UUID.
 	 * @param userId : the ID of the user (i.e. owner of the assets).
 	 * @param questionId : the id of the question to be edited (i.e. the random variable "T"  in the example)
-	 * @param oldValues :  this is a list (ordered collection) representing the probability values before the edit. 
-	 * For example, suppose T is the target question (i.e. a random variable) with states t1 and t2, and A1 and A2 are assumptions with states (a11, a12), and (a21 , a22) respectively.
-	 * Then, the list must be filled as follows:<br/>
-	 * index 0 - P(T=t1 | A1=a11, A2=a21)<br/>
-	 * index 1 - P(T=t2 | A1=a11, A2=a21)<br/>
-	 * index 2 - P(T=t1 | A1=a12, A2=a21)<br/>
-	 * index 3 - P(T=t2 | A1=a12, A2=a21)<br/>
-	 * index 4 - P(T=t1 | A1=a11, A2=a22)<br/>
-	 * index 5 - P(T=t2 | A1=a11, A2=a22)<br/>
-	 * index 6 - P(T=t1 | A1=a12, A2=a22)<br/>
-	 * index 7 - P(T=t2 | A1=a12, A2=a22)<br/>
 	 * 
-	 * @param newValues : similarly to oldValues, this is a list (ordered collection) representing the probability values after the edit. 
+	 * @param newValues : this is a list (ordered collection) representing the probability values after the edit. 
 	 * For example, suppose T is the target question (i.e. a random variable) with states t1 and t2, and A1 and A2 are assumptions with states (a11, a12), and (a21 , a22) respectively.
 	 * Then, the list must be filled as follows:<br/>
 	 * index 0 - P(T=t1 | A1=a11, A2=a21)<br/>
@@ -220,8 +210,8 @@ public interface MarkovEngineInterface {
 	 * index 6 - P(T=t1 | A1=a12, A2=a22)<br/>
 	 * index 7 - P(T=t2 | A1=a12, A2=a22)<br/>
 	 * @param assumptionIds : list (ordered collection) representing the IDs of the questions to be assumed in this edit. The order is important,
-	 * because the ordering in this list will be used in order to identify the correct indexes in "oldValues" and "newValues".
-	 * @param assumedStates : this is not necessary if oldValues and newValues contains full data (all cells of the conditional probability distribution),
+	 * because the ordering in this list will be used in order to identify the correct indexes in "newValues".
+	 * @param assumedStates : this is not necessary if newValues contains full data (all cells of the conditional probability distribution),
 	 * however, classes implementing this method may provide special treatment when this parameter is non-null. By default, implementations will ignore this parameter,
 	 * so null should be passed.
 	 * @param allowNegative : If true (default is False), then checks for sufficient assets should be bypassed and we allow 
@@ -230,7 +220,7 @@ public interface MarkovEngineInterface {
 	 * (as the values returned by {@link #getAssetsIfStates(int, long, long, int, List, List, Properties)}).
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
-	public List<Float> addTrade(long transactionKey, Date occurredWhen, long tradeId, long userId, long questionId, List<Float> oldValues, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates,  Boolean allowNegative) throws IllegalArgumentException;
+	public List<Float> addTrade(long transactionKey, Date occurredWhen, UUID tradeUUID, long userId, long questionId, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates,  Boolean allowNegative) throws IllegalArgumentException;
 
 	/**
 	 * This function will settle a specific question.
@@ -254,12 +244,12 @@ public interface MarkovEngineInterface {
 	 * method is expected to be VERY slow. Users of this interface shall try to minimize calls to this method.
 	 * @param transactionKey : key returned by {@link #startNetworkActions()}
 	 * @param occurredWhen : implementations of this interface may use this timestamp to store a history of modifications.
-	 * @param startingTradeId : all trades with ID greater or equal to this id will be reverted.
+	 * @param tradesStartingWhen : all trades with date greater or equal to this id will be reverted.
 	 * @param questionID : the id of the question to be reverted.
 	 * @return true if successful.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
-	public boolean revertTrade(long transactionKey, Date occurredWhen, Long startingTradeId, Long questionId) throws IllegalArgumentException;
+	public boolean revertTrade(long transactionKey, Date occurredWhen,  Date tradesStartingWhen, Long questionId) throws IllegalArgumentException;
 	
 	/**
 	 * Returns probability across a list of states for a question given assumptions.
@@ -278,24 +268,6 @@ public interface MarkovEngineInterface {
 	 */
 	public List<Float> getProbList(long questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
-	/**
-	 * Returns probability across a list of states for a list of questions given assumptions.
-	 * This method is NOT expected to block other threads from accessing the probability values (except for 
-	 * methods changing the values of such probabilities), because
-	 * this will supposedly be one of the bottlenecks (in a sense that it is likely to be
-	 * the most called method) when integrated with DAGGRE main system.
-	 * THIS IS NOT REQUIRED BUT MAY BE A GOOD IDEA TO PROVIDE FOR EFFICIENCY AS A OPTIMIZED OPERATION.
-	 * @param questionIds : ids of the questions to obtain probability.
-	 * @param assumptionIds: (optional) list (ordered collection) of question IDs assumed when obtaining the estimated assets. If specified,
-	 * the questions (i.e. random variables) with these IDs will be assumed to be in the states specified in the argument "assumedStates".
-	 * @param assumedStates : (mandatory if assumptionIDs is specified - must have the same size of assumptionIDs) indexes
-	 * of states (i.e. choices - if boolean, then it is either 0 or 1) of assumptionIDs to be assumed.
-	 * @return the probabilities of the questions (i.e. random variables) given assumptions.
-	 * The order is important for identifying the questions and respective states (i.e. 1st value is for the 1st question and 1st state, 
-	 * 2nd value is for the 1st question and 2nd state, and so on).
-	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
-	 */
-	public List<List<Float>> getProbsList(List<Long> questionIds, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
 	 * Obtains the ids of the questions that are potential assumptions of a given question. 
@@ -414,34 +386,9 @@ public interface MarkovEngineInterface {
 	public float getCash(long userId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
-	 * @param userID : the ID of the user (owner of the assets).
-	 * @param questionID :  the ID of the question to be considered.
-	 * @param assumptionIDs : list (ordered collection) of question IDs assumed when obtaining the assets.
-	 * @param assumedStates : indexes of the states of the questions specified in assumptionIDs. If it does not have the same size of assumptionIDs,
-	 * MIN(assumptionIDs.size(), assumedStates.size()) shall be considered. 
-	 * @return asset committed to a specific question given a set of assumptions.
-	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
-	 */
-	public float assetsCommittedByUserQuestion(long userId, long questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
-	
-	/**
-	 * THIS IS NOT REQUIRED BUT MAY BE A GOOD IDEA TO PROVIDE FOR EFFICIENCY AS A OPTIMIZED OPERATION.
-	 * @param userID : the ID of the user (owner of the assets).
-	 * @param questionIDs :  the IDs of the questions to be considered.
-	 * @param assumptionIDs : list (ordered collection) of question IDs assumed when obtaining the assets.
-	 * @param assumedStates : indexes of the states of the questions specified in assumptionIDs. If it does not have the same size of assumptionIDs,
-	 * MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
-	 * @return assets committed to each questions, given a set of assumptions. The order is relevant, because such ordering
-	 * can be used to identify which value is associated to which state of which question 
-	 * (e.g. 1st value is for the 1st question and 1st question, 2nd value is for 1st question and 2nd state, and so on).
-	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
-	 */
-	public List<Float> assetsCommittedByUserQuestions(long userId, List<Long> questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
-	
-	/**
 	 * Obtains the expected assets (probability * asset).
 	 * @param userId : the ID of the user (owner of the assets).
-	 * @param questionId :  the ID of the question to be considered. 
+	 * @param questionId :  the ID of the question to be considered. If set to null, this method shall be equivalent to {@link #scoreUserEv(long, List, List)}.
 	 * @param assumptionIds : (optional) list (ordered collection) of question IDs assumed when obtaining the estimated assets. If specified,
 	 * the questions (i.e. random variables) with these IDs will be assumed to be in the states specified in the argument "assumedStates".
 	 * @param assumedStates : (mandatory if assumptionIDs is specified - must have the same size of assumptionIDs) indexes
@@ -454,8 +401,35 @@ public interface MarkovEngineInterface {
 	public float scoreUserQuestionEv(long userId, Long questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
+	 * @param userId : the ID of the user (owner of the assets).
+	 * @param questionId :  the ID of the question to be considered. 
+	 * @param assumptionIds : (optional) list (ordered collection) of question IDs assumed when obtaining the estimated assets. If specified,
+	 * the questions (i.e. random variables) with these IDs will be assumed to be in the states specified in the argument "assumedStates".
+	 * @param assumedStates : (mandatory if assumptionIDs is specified - must have the same size of assumptionIDs) indexes
+	 * of states (i.e. choices - if boolean, then it is either 0 or 1) of assumptionIDs to be assumed.
+	 * If it does not have the same size of assumptionIDs, MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
+	 * @return a list of score expectations for each possible choice that could result. This is p(state)*user_assets(state).
+	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
+	 */
+	public List<Float> scoreUserQuestionEvStates(long userId, long questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	
+	/**
+	 * THIS IS NOT REQUIRED BUT MAY BE A GOOD IDEA TO PROVIDE FOR EFFICIENCY AS A OPTIMIZED OPERATION.
+	 * @param userId : the ID of the user (owner of the assets).
+	 * @param assumptionIds : (optional) list (ordered collection) of question IDs assumed when obtaining the estimated assets. If specified,
+	 * the questions (i.e. random variables) with these IDs will be assumed to be in the states specified in the argument "assumedStates".
+	 * @param assumedStates : (mandatory if assumptionIDs is specified - must have the same size of assumptionIDs) indexes
+	 * of states (i.e. choices - if boolean, then it is either 0 or 1) of assumptionIDs to be assumed.
+	 * If it does not have the same size of assumptionIDs, MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
+	 * @return TOTAL current expected value portion of across all questions given a set of assumptions.
+	 * @throws IllegalArgumentException
+	 * @see {@link #scoreUserQuestionEv(long, Long, List, List)}
+	 */
+	public float scoreUserEv(long userId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	
+	/**
 	 * THIS IS NOT REQUIRED BUT MAY BE A GOOD IDEA TO PROVIDE FOR EFFICIENCY AS A OPTIMIZED OPERATION
-	 * @param userIds : the ID of the users (owners of the assets).
+	 * @param userId : the ID of the user (owner of the assets).
 	 * @param assumptionIds : (optional) list (ordered collection) of question IDs assumed when obtaining the estimated assets. If specified,
 	 * the questions (i.e. random variables) with these IDs will be assumed to be in the states specified in the argument "assumedStates".
 	 * @param assumedStates : (mandatory if assumptionIDs is specified - must have the same size of assumptionIDs) indexes
@@ -464,26 +438,14 @@ public interface MarkovEngineInterface {
 	 * @return TOTAL user score (expected_value + cash) across all questions given a set of assumptions.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
 	 */
-	public float scoreUser(List<Long> userIds, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	public float scoreUser(long userId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
 	 * This function will return the affect (assets per state) of this trade similar to the addTrade function,
 	 * but is a proposed what-if (non-binding) calculation only that does not impact the network.
 	 * @param userID : the ID of the user (i.e. owner of the assets).
 	 * @param questionID : the id of the question to be edited (i.e. the random variable "T"  in the example)
-	 * @param oldValues :  this is a list (ordered collection) representing the probability values before the edit. 
-	 * For example, suppose T is the target question (i.e. a random variable) with states t1 and t2, and A1 and A2 are assumptions with states (a11, a12), and (a21 , a22) respectively.
-	 * Then, the list must be filled as follows:<br/>
-	 * index 0 - P(T=t1 | A1=a11, A2=a21)<br/>
-	 * index 1 - P(T=t2 | A1=a11, A2=a21)<br/>
-	 * index 2 - P(T=t1 | A1=a12, A2=a21)<br/>
-	 * index 3 - P(T=t2 | A1=a12, A2=a21)<br/>
-	 * index 4 - P(T=t1 | A1=a11, A2=a22)<br/>
-	 * index 5 - P(T=t2 | A1=a11, A2=a22)<br/>
-	 * index 6 - P(T=t1 | A1=a12, A2=a22)<br/>
-	 * index 7 - P(T=t2 | A1=a12, A2=a22)<br/>
-	 * 
-	 * @param newValues : similarly to oldValues, this is a list (ordered collection) representing the probability values after the edit. 
+	 * @param newValues : this is a list (ordered collection) representing the probability values after the edit. 
 	 * For example, suppose T is the target question (i.e. a random variable) with states t1 and t2, and A1 and A2 are assumptions with states (a11, a12), and (a21 , a22) respectively.
 	 * Then, the list must be filled as follows:<br/>
 	 * index 0 - P(T=t1 | A1=a11, A2=a21)<br/>
@@ -495,8 +457,8 @@ public interface MarkovEngineInterface {
 	 * index 6 - P(T=t1 | A1=a12, A2=a22)<br/>
 	 * index 7 - P(T=t2 | A1=a12, A2=a22)<br/>
 	 * @param assumptionIDs : list (ordered collection) representing the IDs of the questions to be assumed in this edit. The order is important,
-	 * because the ordering in this list will be used in order to identify the correct indexes in "oldValues" and "newValues".
-	 * @param assumedStates : this is not necessary if oldValues and newValues contains full data (all cells of the conditional probability distribution),
+	 * because the ordering in this list will be used in order to identify the correct indexes in "newValues".
+	 * @param assumedStates : this is not necessary if newValues contains full data (all cells of the conditional probability distribution),
 	 * however, classes implementing this method may provide special treatment when this parameter is non-null. By default, implementations will ignore this parameter,
 	 * so null should be passed.
 	 * If it does not have the same size of assumptionIDs,Å@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
@@ -504,7 +466,7 @@ public interface MarkovEngineInterface {
 	 * (as the values returned by {@link #getAssetsIfStates(int, long, long, int, List, List, Properties)}).
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
-	public List<Float> previewTrade(long userID, long questionID, List<Float> oldValues, List<Float> newValues, List<Integer> assumptionIDs, List<Integer> assumedStates) throws IllegalArgumentException;
+	public List<Float> previewTrade(long userID, long questionID, List<Float> newValues, List<Integer> assumptionIDs, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
 	 * This method will determine the states of a balancing trade which would minimize impact once the question is resolved
@@ -512,8 +474,8 @@ public interface MarkovEngineInterface {
 	 * @param userID: the ID of the user (i.e. owner of the assets).
 	 * @param questionID : the id of the question to be balanced.
 	 * @param assumptionIDs : list (ordered collection) representing the IDs of the questions to be assumed in this edit. The order is important,
-	 * because the ordering in this list will be used in order to identify the correct indexes in "oldValues" and "newValues".
-	 * @param assumedStates : this is not necessary if oldValues and newValues contains full data (all cells of the conditional probability distribution),
+	 * because the ordering in this list will be used in order to identify the correct indexes in "newValues".
+	 * @param assumedStates : this is not necessary if newValues contains full data (all cells of the conditional probability distribution),
 	 * however, classes implementing this method may provide special treatment when this parameter is non-null. By default, implementations will ignore this parameter,
 	 * so null should be passed.
 	 * If it does not have the same size of assumptionIDs,Å@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered. 
@@ -551,19 +513,28 @@ public interface MarkovEngineInterface {
 	 * @param assumedStates : filter for the history. Only histories related to assumptions with these states will be returned.
 	 * If it does not have the same size of assumptionIDs,Å@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
 	 * @return the sequence of events.
-	 * @throws IllegalArgumentException
+	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 * @see {@link QuestionEvent}
 	 */
 	public List<QuestionEvent> getQuestionHistory (Long questionID, List<Long> assumptionIDs, List<Integer> assumedStates) throws IllegalArgumentException;
 
+
 	/**
-	 * This function will return an ordered list of score details 
-	 * (ScoreDetail, a <amount, description> pair that explain how the current score of a user was determined). 
-	 * @param userId
-	 * @param assumptionIds
-	 * @param assumedStates
-	 * @return
-	 * @throws IllegalArgumentException
+	 * @param userId : ID of the user to be considered.
+	 * @param assumptionIds : assumptions to be considered in obtaining the summary
+	 * @param assumedStates : states of the assumptions. The order must be synchronized with assumptionIds.
+	 * @return ordered list of score details (properties dictionary with parameters to display TBD) that shows a summary view of how the current score of a user was determined. 
+	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
-	public List<ScoreDetail> getScoreDetails(long userId, List<Integer> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	public List<Properties> getScoreSummary(long userId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	
+	/**
+	 * @param userId : ID of the user to be considered.
+	 * @param assumptionIds : assumptions to be considered in obtaining the summary
+	 * @param assumedStates : states of the assumptions. The order must be synchronized with assumptionIds.
+	 * @return ordered list of score details (properties dictionary with parameters to display TBD) 
+	 * that provides a detailed view of how the current score of a user was determined. 
+	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
+	 */
+	public List<Properties> getScoreDetails(long userId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 }

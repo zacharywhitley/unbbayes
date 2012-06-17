@@ -2,6 +2,7 @@
 package edu.gmu.ace.daggre;
 
 import java.util.Date;
+import java.util.UUID;
 
 /**
  * This class represents an entry in the history of
@@ -25,5 +26,5 @@ public interface QuestionEvent {
 	 * @return the ID which can uniquely identify a trade 
 	 * @see MarkovEngineInterface#addTrade(long, Date, long, long, long, java.util.List, java.util.List, java.util.List, java.util.List, Boolean)
 	 */
-	Long getTradeId();
+	UUID getTradeId();
 }
