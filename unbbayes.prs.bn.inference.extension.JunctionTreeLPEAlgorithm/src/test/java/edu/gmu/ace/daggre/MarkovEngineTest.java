@@ -15,7 +15,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import junit.framework.TestCase;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.bn.ProbabilisticNode;
 
 /**
  * @author Shou Matsumoto
@@ -28,8 +30,11 @@ public class MarkovEngineTest extends TestCase {
 	public static final int MAX_NETWIDTH = 3;
 	public static final int MAX_STATES = 5;
 	public static final int MIN_STATES = 2;
+	
+	/** Error margin used when comparing 2 float numbers */
+	public static final float FLOAT_ERROR_MARGIN = 0.0001f;
 
-	private MarkovEngineImpl engine = new MarkovEngineImpl();
+	private MarkovEngineImpl engine = (MarkovEngineImpl) MarkovEngineImpl.getInstance();
 
 	/**
 	 * @param name
@@ -400,7 +405,7 @@ public class MarkovEngineTest extends TestCase {
             }
         }
         
-     // check if network contains all nodes and edges
+        // check if network contains all nodes and edges
 		assertEquals(generatedNodes.size(), engine.getInferenceAlgorithm().getNetwork().getNodeCount());
 		assertEquals(generatedEdges.size(), engine.getInferenceAlgorithm().getNetwork().getEdges().size());
 		for (Long nodeID : generatedNodes) {
@@ -420,7 +425,202 @@ public class MarkovEngineTest extends TestCase {
 		
 		// case 3 : edges being substituted
 		
+		// reset engine
+		engine.initialize();
+		assertNotNull(engine.getInferenceAlgorithm().getNetwork());
+		assertEquals(0, engine.getInferenceAlgorithm().getNetwork().getNodeCount());
 		
+		
+		/*
+		 * Create following net
+		 *  0<-1
+		 *  ^
+		 *  |
+		 *  2
+		 */
+		transactionKey = engine.startNetworkActions();
+		engine.addQuestion(transactionKey, new Date(), 0, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 1, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 2, 2, null);
+		List<Long> assumptiveQuestionIds = new ArrayList<Long>();
+		assumptiveQuestionIds.add((long) 1);
+		assumptiveQuestionIds.add((long) 2);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0, assumptiveQuestionIds, null);
+		engine.commitNetworkActions(transactionKey);
+		// check network structure consistency
+		assertEquals(3, engine.getInferenceAlgorithm().getNetwork().getNodeCount());
+		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0"));
+		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("1"));
+		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("2"));
+		assertEquals(2,((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0").getParents().size());
+		assertEquals(0,((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("1").getParents().size());
+		assertEquals(0,((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("2").getParents().size());
+		assertEquals(2, engine.getInferenceAlgorithm().getNetwork().getEdges().size());
+		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).hasEdge(
+				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("1"), 
+				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0"))
+			);
+		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).hasEdge(
+				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("2"), 
+				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0"))
+			);
+		// check cpt
+		for (Node node : engine.getInferenceAlgorithm().getNetwork().getNodes()) {
+			PotentialTable cpt = ((ProbabilisticNode)node).getProbabilityFunction();
+			for (int i = 0; i < cpt.tableSize(); i++) {
+				assertEquals("Node " + node + ", index " + i, .5, cpt.getValue(i), FLOAT_ERROR_MARGIN);
+			}
+		}
+		
+		/*
+		 * Modify to following net
+		 *  0<-1
+		 *  |
+		 *  V
+		 *  2
+		 */
+		transactionKey = engine.startNetworkActions();
+		// delete edge 2->0 (leave only 1 -> 0)
+		assumptiveQuestionIds = new ArrayList<Long>();
+		assumptiveQuestionIds.add((long) 1);
+		List<Float> cpd = new ArrayList<Float>();
+		cpd.add(.8f);
+		cpd.add(.2f);
+		cpd.add(.1f);
+		cpd.add(.9f);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0, assumptiveQuestionIds, cpd);	// let 1->0 substitute the old edges
+		
+		// add edge 0 -> 2
+		assumptiveQuestionIds = new ArrayList<Long>();
+		assumptiveQuestionIds.add((long) 0);
+		engine.addQuestionAssumption(transactionKey, new Date(), 2, assumptiveQuestionIds, cpd);
+		
+		engine.commitNetworkActions(transactionKey);
+		// check network structure consistency
+		assertEquals(3, engine.getInferenceAlgorithm().getNetwork().getNodeCount());
+		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0"));
+		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("1"));
+		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("2"));
+		assertEquals(1,((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0").getParents().size());
+		assertEquals(0,((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("1").getParents().size());
+		assertEquals(1,((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("2").getParents().size());
+		assertEquals(2, engine.getInferenceAlgorithm().getNetwork().getEdges().size());
+		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).hasEdge(
+				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("1"), 
+				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0"))
+			);
+		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).hasEdge(
+				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0"), 
+				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("2"))
+			);
+		// check cpts of each node
+		ProbabilisticNode nodeToTest = (ProbabilisticNode) ((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0");
+		PotentialTable cpt = nodeToTest.getProbabilityFunction();
+		assertEquals(4, cpt.tableSize());
+		assertEquals(.8f, cpt.getValue(0), FLOAT_ERROR_MARGIN);
+		assertEquals(.2f, cpt.getValue(1), FLOAT_ERROR_MARGIN);
+		assertEquals(.1f, cpt.getValue(2), FLOAT_ERROR_MARGIN);
+		assertEquals(.9f, cpt.getValue(3), FLOAT_ERROR_MARGIN);
+		nodeToTest = (ProbabilisticNode) ((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("1");
+		cpt = nodeToTest.getProbabilityFunction();
+		assertEquals(2, cpt.tableSize());
+		assertEquals(.5f, cpt.getValue(0), FLOAT_ERROR_MARGIN);
+		assertEquals(.5f, cpt.getValue(1), FLOAT_ERROR_MARGIN);
+		nodeToTest = (ProbabilisticNode) ((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("2");
+		cpt = nodeToTest.getProbabilityFunction();
+		assertEquals(4, cpt.tableSize());
+		assertEquals(.8f, cpt.getValue(0), FLOAT_ERROR_MARGIN);
+		assertEquals(.2f, cpt.getValue(1), FLOAT_ERROR_MARGIN);
+		assertEquals(.1f, cpt.getValue(2), FLOAT_ERROR_MARGIN);
+		assertEquals(.9f, cpt.getValue(3), FLOAT_ERROR_MARGIN);
+		
+		
+		
+		// case 3 : edges being substituted in same transaction
+		
+		engine.initialize();
+		assertNotNull(engine.getInferenceAlgorithm().getNetwork());
+		assertEquals(0, engine.getInferenceAlgorithm().getNetwork().getNodeCount());
+		
+		transactionKey = engine.startNetworkActions();
+		
+		/*
+		 * Create following net
+		 *  0<-1
+		 *  ^
+		 *  |
+		 *  2
+		 */
+		engine.addQuestion(transactionKey, new Date(), 0, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 1, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 2, 2, null);
+		assumptiveQuestionIds = new ArrayList<Long>();
+		assumptiveQuestionIds.add((long) 1);
+		assumptiveQuestionIds.add((long) 2);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0, assumptiveQuestionIds, null);
+		
+		/*
+		 * Modify to following net
+		 *  0<-1
+		 *  |
+		 *  V
+		 *  2
+		 */
+		// delete edge 2->0 (leave only 1 -> 0)
+		assumptiveQuestionIds = new ArrayList<Long>();
+		assumptiveQuestionIds.add((long) 1);
+		cpd = new ArrayList<Float>();
+		cpd.add(.8f);
+		cpd.add(.2f);
+		cpd.add(.1f);
+		cpd.add(.9f);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0, assumptiveQuestionIds, cpd);	// let 1->0 substitute the old edges
+		
+		// add edge 0 -> 2
+		assumptiveQuestionIds = new ArrayList<Long>();
+		assumptiveQuestionIds.add((long) 0);
+		engine.addQuestionAssumption(transactionKey, new Date(), 2, assumptiveQuestionIds, cpd);
+		
+		engine.commitNetworkActions(transactionKey);
+		
+		
+		// check network structure consistency
+		assertEquals(3, engine.getInferenceAlgorithm().getNetwork().getNodeCount());
+		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0"));
+		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("1"));
+		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("2"));
+		assertEquals(1,((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0").getParents().size());
+		assertEquals(0,((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("1").getParents().size());
+		assertEquals(1,((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("2").getParents().size());
+		assertEquals(2, engine.getInferenceAlgorithm().getNetwork().getEdges().size());
+		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).hasEdge(
+				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("1"), 
+				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0"))
+			);
+		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).hasEdge(
+				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0"), 
+				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("2"))
+			);
+		// check cpts of each node
+		nodeToTest = (ProbabilisticNode) ((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0");
+		cpt = nodeToTest.getProbabilityFunction();
+		assertEquals(4, cpt.tableSize());
+		assertEquals(.8f, cpt.getValue(0), FLOAT_ERROR_MARGIN);
+		assertEquals(.2f, cpt.getValue(1), FLOAT_ERROR_MARGIN);
+		assertEquals(.1f, cpt.getValue(2), FLOAT_ERROR_MARGIN);
+		assertEquals(.9f, cpt.getValue(3), FLOAT_ERROR_MARGIN);
+		nodeToTest = (ProbabilisticNode) ((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("1");
+		cpt = nodeToTest.getProbabilityFunction();
+		assertEquals(2, cpt.tableSize());
+		assertEquals(.5f, cpt.getValue(0), FLOAT_ERROR_MARGIN);
+		assertEquals(.5f, cpt.getValue(1), FLOAT_ERROR_MARGIN);
+		nodeToTest = (ProbabilisticNode) ((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("2");
+		cpt = nodeToTest.getProbabilityFunction();
+		assertEquals(4, cpt.tableSize());
+		assertEquals(.8f, cpt.getValue(0), FLOAT_ERROR_MARGIN);
+		assertEquals(.2f, cpt.getValue(1), FLOAT_ERROR_MARGIN);
+		assertEquals(.1f, cpt.getValue(2), FLOAT_ERROR_MARGIN);
+		assertEquals(.9f, cpt.getValue(3), FLOAT_ERROR_MARGIN);
 		
 	}
 
@@ -428,7 +628,134 @@ public class MarkovEngineTest extends TestCase {
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#addCash(long, java.util.Date, long, float, java.lang.String)}.
 	 */
 	public final void testAddCash() {
-		fail("Not yet implemented"); // TODO
+		/*
+		 * Create following net
+		 *  0<-1
+		 *  ^
+		 *  |
+		 *  2
+		 */
+		Long transactionKey = engine.startNetworkActions();
+		engine.addQuestion(transactionKey, new Date(), 0, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 1, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 2, 2, null);
+		List<Long> assumptiveQuestionIds = new ArrayList<Long>();
+		assumptiveQuestionIds.add((long) 1);
+		assumptiveQuestionIds.add((long) 2);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0, assumptiveQuestionIds, null);
+		engine.commitNetworkActions(transactionKey);
+		
+		// global cash should be 0 initially (TODO check if this is really true)
+		assertEquals(0f, engine.getCash(1, null, null), FLOAT_ERROR_MARGIN);
+		
+		// test some conditional cash as well
+		// non-null conditions
+		List<Long> assumptionIds = new ArrayList<Long>();
+		List<Integer> assumedStates = new ArrayList<Integer>();
+		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		
+		// 1 = 0
+		assumptionIds = new ArrayList<Long>();
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 1); assumedStates.add(0);	// node 1, state 0
+		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+
+		// 1 = 0, 0 = null, 2 = null (equivalent to only 1 = 0)
+		assumptionIds = new ArrayList<Long>();
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 0); assumedStates.add(null);	// node 0, state null
+		assumptionIds.add((long) 1); assumedStates.add(0);		// node 1, state 0
+		assumptionIds.add((long) 2); assumedStates.add(null);	// node 2, state null
+		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		
+		// 1 = 0, 0 = 0
+		assumptionIds = new ArrayList<Long>();
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 1); assumedStates.add(0);	// node 1, state 0
+		assumptionIds.add((long) 0); assumedStates.add(0);	// node 0, state 0
+		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+
+		// 2 = 1, 0 = 1
+		assumptionIds = new ArrayList<Long>();
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 2); assumedStates.add(1);	// node 2, state 1
+		assumptionIds.add((long) 0); assumedStates.add(1);	// node 0, state 1
+		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		
+		// 1 = 1, 2 = 0
+		assumptionIds = new ArrayList<Long>();
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 1); assumedStates.add(1);	// node 1, state 1
+		assumptionIds.add((long) 2); assumedStates.add(0);	// node 2, state 0
+		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		
+		// 0 = 0, 1 = 0, 2 = 1
+		assumptionIds = new ArrayList<Long>();
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 0); assumedStates.add(0);	// node 0, state 0
+		assumptionIds.add((long) 1); assumedStates.add(0);	// node 1, state 0
+		assumptionIds.add((long) 2); assumedStates.add(1);	// node 2, state 1
+		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		
+		// add 100 cash
+		transactionKey = engine.startNetworkActions();
+		engine.addCash(transactionKey, new Date(), 1, 100f, "Just to test");
+		engine.commitNetworkActions(transactionKey);
+		
+
+		// global cash should be 100 now
+		assertEquals(100f, engine.getCash(1, null, null), FLOAT_ERROR_MARGIN);
+		
+		// test some conditional cash as well
+		// non-null conditions
+		assumptionIds = new ArrayList<Long>();
+		assumedStates = new ArrayList<Integer>();
+		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		
+		// 1 = 0
+		assumptionIds = new ArrayList<Long>();
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 1); assumedStates.add(0);	// node 1, state 0
+		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+
+		// 1 = 0, 0 = null, 2 = null (equivalent to only 1 = 0)
+		assumptionIds = new ArrayList<Long>();
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 0); assumedStates.add(null);	// node 0, state null
+		assumptionIds.add((long) 1); assumedStates.add(0);		// node 1, state 0
+		assumptionIds.add((long) 2); assumedStates.add(null);	// node 2, state null
+		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		
+		// 1 = 0, 0 = 0
+		assumptionIds = new ArrayList<Long>();
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 1); assumedStates.add(0);	// node 1, state 0
+		assumptionIds.add((long) 0); assumedStates.add(0);	// node 0, state 0
+		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+
+		// 2 = 1, 0 = 1
+		assumptionIds = new ArrayList<Long>();
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 2); assumedStates.add(1);	// node 2, state 1
+		assumptionIds.add((long) 0); assumedStates.add(1);	// node 0, state 1
+		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		
+		// 1 = 1, 2 = 0
+		assumptionIds = new ArrayList<Long>();
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 1); assumedStates.add(1);	// node 1, state 1
+		assumptionIds.add((long) 2); assumedStates.add(0);	// node 2, state 0
+		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		
+		// 0 = 0, 1 = 0, 2 = 1
+		assumptionIds = new ArrayList<Long>();
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 0); assumedStates.add(0);	// node 0, state 0
+		assumptionIds.add((long) 1); assumedStates.add(0);	// node 1, state 0
+		assumptionIds.add((long) 2); assumedStates.add(1);	// node 2, state 1
+		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		
+		// TODO test cash after trades
 	}
 
 	/**

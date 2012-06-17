@@ -1,6 +1,3 @@
-/**
- * 
- */
 package edu.gmu.ace.daggre;
 
 import java.util.ArrayList;
@@ -12,20 +9,30 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import unbbayes.prs.Edge;
+import unbbayes.prs.INode;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.AssetNetwork;
+import unbbayes.prs.bn.AssetNode;
+import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.ProbabilisticTable;
+import unbbayes.prs.bn.Separator;
 import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
 import unbbayes.prs.exception.InvalidParentException;
 
 /**
+ * This is the default implementation of {@link MarkovEngineInterface}.
+ * This class is basically a wrapper for the functionalities offered by
+ * {@link AssetAwareInferenceAlgorithm}. 
+ * It adds history feature and transactional behaviors to
+ * {@link AssetAwareInferenceAlgorithm}.
  * @author Shou Matsumoto
- *
+ * @version July 01, 2012
  */
 public class MarkovEngineImpl implements MarkovEngineInterface {
 	
@@ -35,11 +42,69 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	private long transactionCounter;
 	private AssetAwareInferenceAlgorithm inferenceAlgorithm;
 
+	private Map<Long, AssetNetwork> userToAssetNetMap;
+
+	private boolean isToAddCashProportionally = false;
+
+	private float defaultInitialQTableValue = 1;
+
+	private float currentLogBase = 10;
+
+	private double currentCurrencyConstant = 10;
+	
+
 	/**
-	 * 
+	 * Default constructor is protected to allow inheritance.
+	 * Use {@link #getInstance()} to actually instantiate objects of this class.
 	 */
-	public MarkovEngineImpl() {
+	protected MarkovEngineImpl() {
 		this.initialize();
+	}
+	
+	/**
+	 * Constructor method design pattern.
+	 * If any implementation of {@link MarkovEngineInterface} shall substitute
+	 * this class, then changing this method will guarantee that
+	 * all callers will be automatically instantiating the new implementation instead of
+	 * {@link MarkovEngineImpl} without any further change in source code.
+	 * Callers may implement factory design pattern for a better
+	 * use of the constructor method design pattern.
+	 * @return new instance of some class implementing {@link MarkovEngineInterface}
+	 */
+	public static MarkovEngineInterface getInstance() {
+		return new MarkovEngineImpl();
+	}
+	
+	/**
+	 * Translates asset Q values to scores using logarithm functions.
+	 * <br/>
+	 * Score = b*log(assetQ), with log being the logarithm of base {@link #getCurrentLogBase()},
+	 * and b = {@link #getCurrentCurrencyConstant()}.
+	 * @param assetQ
+	 * @return the score value
+	 * @see #getQValuesFromScore(float)
+	 */
+	public float getScoreFromQValues(float assetQ) {
+		return (float) ((Math.log(assetQ)/Math.log(getCurrentLogBase())) * getCurrentCurrencyConstant());
+	}
+	
+	/**
+	 * Translates scores to asset Q values using logarithm functions.
+	 * <br/>
+	 * Score = b*log(assetQ), with log being the logarithm of base {@link #getCurrentLogBase()},
+	 * and b = {@link #getCurrentCurrencyConstant()}.
+	 * @param score
+	 * @return the asset q value
+	 * @see #getScoreFromQValues(float)
+	 */
+	public float getQValuesFromScore(float score) {
+		/*
+		 * Score = b*log(assetQ)
+		 * -> Score / b = log(assetQ)
+		 * -> power(baseOfLog, (Score / b)) = power(baseOfLog, log(assetQ))
+		 * -> power(baseOfLog, (Score / b)) = assetQ
+		 */
+		return (float) Math.pow(getCurrentLogBase(), (score/getCurrentCurrencyConstant()));
 	}
 
 	/* (non-Javadoc)
@@ -59,8 +124,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		// prepare inference algorithm for asset network
 		setInferenceAlgorithm((AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm));
 		
-		// users seem to start with 0 assets (assets are logarithmic, so 0 assets == 1 q table)
-		getInferenceAlgorithm().setDefaultInitialAssetQuantity(1);
+		// usually, users seem to start with 0 assets (assets are logarithmic, so 0 assets == 1 q table), but let's use the value of getDefaultInitialQTableValue
+		getInferenceAlgorithm().setDefaultInitialAssetQuantity(getDefaultInitialQTableValue());
+		
+		setUserToAssetNetMap(new ConcurrentHashMap<Long, AssetNetwork>()); // concurrent hash map is known to be thread safe yet fast.
 		
 		return true;
 	}
@@ -111,11 +178,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 					otherActions.add(action);
 				}
 			}
+			
 			// change the content of actions. Since we are using the same list object, this should also change the values stored in getNetworkActionsMap.
-			actions.clear();	// reset actions first
-			actions.addAll(netChangeActions);	// netChangeActions comes first
-			actions.add(new RebuildNetworkAction(new Date()));	// <rebuild action> is inserted between netChangeActions and otherActions
-			actions.addAll(otherActions);	// otherActions comes later
+			if (!netChangeActions.isEmpty()) {
+				// only make changes (reorder actions and recompile network) if there is any action changing the structure of network.
+				actions.clear();	// reset actions first
+				actions.addAll(netChangeActions);	// netChangeActions comes first
+				actions.add(new RebuildNetworkAction(netChangeActions.get(0).getTransactionKey(), new Date()));	// <rebuild action> is inserted between netChangeActions and otherActions
+				actions.addAll(otherActions);	// otherActions comes later
+			}
 			
 			// then, execute all actions
 			for (NetworkAction action : actions) {
@@ -134,7 +205,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 */
 	public class RebuildNetworkAction implements NetworkAction {
 		private final Date whenCreated;
-		public RebuildNetworkAction(Date whenCreated) {
+		private final long transactionKey;
+		public RebuildNetworkAction(long transactionKey, Date whenCreated) {
+			this.transactionKey = transactionKey;
 			this.whenCreated = whenCreated;
 		}
 		public void execute() {
@@ -165,6 +238,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public boolean isStructureChangeAction() {
 			return false;
 		}
+		public Long getTransactionKey() {
+			return transactionKey;
+		}
 		
 	}
 
@@ -179,6 +255,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		if (numberStates <= 0) {
 			// invalid quantity of states
 			throw new IllegalArgumentException("Attempted to add a question with " + numberStates + " states.");
+		}
+		if (occurredWhen == null) {
+			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
 		}
 		if (((ProbabilisticNetwork)getInferenceAlgorithm().getNetwork()).getNode(Long.toString(questionId)) != null) {
 			// duplicate question
@@ -318,7 +397,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		/**
 		 * @return the transactionKey
 		 */
-		public long getTransactionKey() {
+		public Long getTransactionKey() {
 			return transactionKey;
 		}
 
@@ -354,14 +433,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	public boolean addQuestionAssumption(long transactionKey, Date occurredWhen, long sourceQuestionId, List<Long> assumptiveQuestionIds,  List<Float> cpd) throws IllegalArgumentException {
 		
 		// initial assertions
+		if (occurredWhen == null) {
+			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
+		}
+		
+		// check existence of transactionKey
 		List<NetworkAction> actions = this.getNetworkActionsMap().get(transactionKey);
 		if (actions == null) {
 			// startNetworkAction should have been called.
 			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
-		}
-		
-		if (assumptiveQuestionIds == null || assumptiveQuestionIds.isEmpty()) {
-			throw new IllegalArgumentException("addQuestionAssumption must provide some questions");
 		}
 		
 		int childNodeStateSize = -1;	// this var stores the quantity of states of the node identified by sourceQuestionId.
@@ -392,6 +472,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		
 		// this var will store the correct size of cpd. If negative, owner of the cpd was not found.
 		int expectedSizeOfCPD = childNodeStateSize;
+		
+		// do not allow null values for collections
+		if (assumptiveQuestionIds == null) {
+			assumptiveQuestionIds = new ArrayList<Long>();
+		}
 		
 		// check existence of parents
 		for (Long assumptiveQuestionId : assumptiveQuestionIds) {
@@ -580,7 +665,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		/**
 		 * @return the transactionKey
 		 */
-		public long getTransactionKey() {
+		public Long getTransactionKey() {
 			return transactionKey;
 		}
 
@@ -611,13 +696,198 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#addCash(long, java.util.Date, long, float, java.lang.String)
+	/**
+	 * Represents an action for adding cash to {@link AssetNetwork} (i.e. increase the min-Q value with a certain amount).
+	 * @author Shou Matsumoto
+	 * @see MarkovEngineImpl#addCash(long, Date, long, float, String)
+	 * @see MarkovEngineImpl#isToAddCashProportionally()
+	 * @see MarkovEngineImpl#setToAddCashProportionally(boolean)
 	 */
-	public boolean addCash(long transactionKey, Date occurredWhen, long userId,
-			float assets, String description) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return false;
+	public class AddCashNetworkAction implements NetworkAction {
+		private final long transactionKey;
+		private final Date occurredWhen;
+		private final long userId;
+		private float assets;
+		private final String description;
+		/** becomes true once {@link #execute()} was called */
+		private boolean wasExecutedPreviously = false;
+		public AddCashNetworkAction (long transactionKey, Date occurredWhen, long userId, float assets, String description) {
+			this.transactionKey = transactionKey;
+			this.occurredWhen = occurredWhen;
+			this.userId = userId;
+			this.assets = assets;
+			this.description = description;
+		}
+		public void execute() {
+			// extract user's asset net
+			AssetNetwork assetNet = null;
+			try {
+				assetNet = getAssetNetFromUserID(userId);
+			} catch (InvalidParentException e) {
+				throw new RuntimeException("Could not create asset tables for user " + userId, e);
+			}
+			
+			synchronized (assetNet) {
+				if (isToAddCashProportionally()) {
+					/*
+					 * Calculate ratio of change (newCash/oldCash) and apply same ratio to all cells.
+					 */
+					// calculate old cash (i.e. old minQ) value
+					float minQ = Float.NaN;
+					synchronized (getInferenceAlgorithm()) {
+						getInferenceAlgorithm().setAssetNetwork(assetNet);
+						getInferenceAlgorithm().runMinPropagation();
+						minQ = getInferenceAlgorithm().calculateExplanation(new ArrayList<Map<INode,Integer>>());
+						getInferenceAlgorithm().undoMinPropagation();
+					}
+					if (!Float.isNaN(minQ)) {
+						// calculate ratio
+						float ratio = (minQ + getQValuesFromScore(assets)) / minQ;
+						// multiply ratio to all cells of asset tables of cliques
+						for (Clique clique : assetNet.getJunctionTree().getCliques()) {
+							PotentialTable assetTable = clique.getProbabilityFunction();
+							for (int i = 0; i < assetTable.tableSize(); i++) {
+								assetTable.setValue(i, assetTable.getValue(i) * ratio);
+							}
+						}
+						// mult ratio to all cells in asset tables of separators
+						for (Separator separator : assetNet.getJunctionTree().getSeparators()) {
+							PotentialTable assetTable = separator.getProbabilityFunction();
+							for (int i = 0; i < assetTable.tableSize(); i++) {
+								assetTable.setValue(i, assetTable.getValue(i) * ratio);
+							}
+						}
+					} else {
+						throw new RuntimeException("Could not extract minimum assets of user " + userId);
+					}
+				} else {
+					float qValue = getQValuesFromScore(assets);
+					// add assets to all cells in asset tables of cliques
+					for (Clique clique : assetNet.getJunctionTree().getCliques()) {
+						PotentialTable assetTable = clique.getProbabilityFunction();
+						for (int i = 0; i < assetTable.tableSize(); i++) {
+							assetTable.setValue(i, assetTable.getValue(i) + qValue);
+						}
+					}
+					// add assets to all cells in asset tables of separators
+					for (Separator separator : assetNet.getJunctionTree().getSeparators()) {
+						PotentialTable assetTable = separator.getProbabilityFunction();
+						for (int i = 0; i < assetTable.tableSize(); i++) {
+							assetTable.setValue(i, assetTable.getValue(i) + qValue);
+						}
+					}
+				}
+			}
+			
+			this.wasExecutedPreviously = true;
+		}
+		public void revert() throws UnsupportedOperationException {
+			if (wasExecutedPreviously) {
+				// undoing a add operation is equivalent to adding the inverse value
+				this.assets = -this.assets;
+				this.execute();
+			}
+		}
+		public Date getWhenCreated() {
+			return occurredWhen;
+		}
+		public boolean isStructureChangeAction() {
+			return false;	// this operation does not change network structure
+		}
+		/**
+		 * @return the transactionKey
+		 */
+		public Long getTransactionKey() {
+			return transactionKey;
+		}
+		/**
+		 * @return the assets
+		 */
+		protected float getAssets() {
+			return assets;
+		}
+		/**
+		 * @param assets the assets to set
+		 */
+		protected void setAssets(float assets) {
+			this.assets = assets;
+		}
+		/**
+		 * @return the userId
+		 */
+		protected long getUserId() {
+			return userId;
+		}
+		/**
+		 * @return the description
+		 */
+		protected String getDescription() {
+			return description;
+		}
+	}
+
+	
+	
+	/**
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#addCash(long, java.util.Date, long, float, java.lang.String)
+	 * @see MarkovEngineImpl#isToAddCashProportionally()
+	 * @see MarkovEngineImpl#setToAddCashProportionally(boolean)
+	 */
+	public boolean addCash(long transactionKey, Date occurredWhen, long userId, float assets, String description) throws IllegalArgumentException {
+		if (Float.compare(0f, assets) == 0) {
+			// nothing to add
+			return false;
+		}
+		// check if assets can be translated to asset Q values
+		try {
+			float qValue = this.getQValuesFromScore(assets);
+			if (Float.isInfinite(qValue) || Float.isNaN(qValue)) {
+				throw new IllegalArgumentException("q-value is " + (Float.isInfinite(qValue)?"infinite":"not a number"));
+			}
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Cannot calculate asset's q-value from score = " 
+						+ assets 
+						+ ", log base = " + getCurrentLogBase()
+						+ ", currency constant (b-value) = " + getCurrentCurrencyConstant()
+					, e);
+		}
+		if (occurredWhen == null) {
+			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
+		}
+		
+		// initial assertions
+		List<NetworkAction> actions = this.getNetworkActionsMap().get(transactionKey);
+		if (actions == null) {
+			// startNetworkAction should have been called.
+			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
+		}
+		
+		
+		// instantiate the action object for adding cash
+		AddCashNetworkAction newAction = new AddCashNetworkAction(transactionKey, occurredWhen, userId, assets, description);
+		
+		// let's add action to the managed list. 
+		synchronized (actions) {
+			// Prepare index of where in actions we should add newAction
+			int indexOfFirstActionCreatedAfterNewAction = 0;	// this will point to the first action created after occurredWhen
+			// Make sure the action list is ordered by the date. Insert new action to a correct position when necessary.
+			for (; indexOfFirstActionCreatedAfterNewAction < actions.size(); indexOfFirstActionCreatedAfterNewAction++) {
+				if (actions.get(indexOfFirstActionCreatedAfterNewAction).getWhenCreated().after(occurredWhen)) {
+					break;
+				}
+			}
+			
+			// add newAction into actions
+			if (indexOfFirstActionCreatedAfterNewAction < 0) {
+				// there is no action created after the new action. Add at the end.
+				actions.add(newAction);
+			} else {
+				// insert new action at the correct position
+				actions.add(indexOfFirstActionCreatedAfterNewAction, newAction);
+			}
+		}
+		
+		return true;
 	}
 
 	/* (non-Javadoc)
@@ -629,7 +899,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			List<Integer> assumedStates, Boolean allowNegative)
 			throws IllegalArgumentException {
 		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 
 	/* (non-Javadoc)
@@ -638,7 +908,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	public boolean resolveQuestion(long transactionKey, Date occurredWhen,
 			long questionID, int settledState) throws IllegalArgumentException {
 		// TODO Auto-generated method stub
-		return false;
+		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 
 	/* (non-Javadoc)
@@ -648,7 +918,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			Long startingTradeId, Long questionId)
 			throws IllegalArgumentException {
 		// TODO Auto-generated method stub
-		return false;
+
+		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 
 	/* (non-Javadoc)
@@ -657,7 +928,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	public List<Float> getProbList(long questionId, List<Long> assumptionIds,
 			List<Integer> assumedStates) throws IllegalArgumentException {
 		// TODO Auto-generated method stub
-		return null;
+
+		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 
 	/* (non-Javadoc)
@@ -667,7 +939,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			List<Long> assumptionIds, List<Integer> assumedStates)
 			throws IllegalArgumentException {
 		// TODO Auto-generated method stub
-		return null;
+
+		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 
 	/* (non-Javadoc)
@@ -676,7 +949,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	public List<Long> getPossibleQuestionAssumptions(long questionId,
 			List<Long> assumptionIds) throws IllegalArgumentException {
 		// TODO Auto-generated method stub
-		return null;
+
+		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 
 	/* (non-Javadoc)
@@ -686,7 +960,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			List<Long> assumptionIDs, List<Integer> assumedStates)
 			throws IllegalArgumentException {
 		// TODO Auto-generated method stub
-		return null;
+
+		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 
 	/* (non-Javadoc)
@@ -696,16 +971,51 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			int questionState, List<Long> assumptionIds,
 			List<Integer> assumedStates) throws IllegalArgumentException {
 		// TODO Auto-generated method stub
-		return null;
+
+		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getCash(long, java.util.List, java.util.List)
 	 */
-	public float getCash(long userId, List<Long> assumptionIds,
-			List<Integer> assumedStates) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return 0;
+	public float getCash(long userId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+		AssetNetwork assetNet;
+		try {
+			assetNet = this.getAssetNetFromUserID(userId);
+		} catch (InvalidParentException e) {
+			throw new RuntimeException("Could not extract asset tables of user " + userId, e);
+		}
+		
+		float ret = Float.NEGATIVE_INFINITY;	// value to return
+		synchronized (assetNet) {
+			// set up findings
+			if (assumptionIds != null) {
+				for (int i = 0; i < assumptionIds.size(); i++) {
+					AssetNode node = (AssetNode) assetNet.getNode(Long.toString(assumptionIds.get(i)));
+					if (node == null) {
+						throw new IllegalArgumentException("Question " + assumptionIds.get(i) + " does not exist.");
+					}
+					Integer stateIndex = assumedStates.get(i);
+					if (stateIndex != null) {
+						node.addFinding(stateIndex);
+					}
+				}
+			}
+			synchronized (getInferenceAlgorithm()) {
+				getInferenceAlgorithm().setAssetNetwork(assetNet);
+				// run only min-propagation (i.e. calculate min-q given assumptions)
+				getInferenceAlgorithm().runMinPropagation();
+				// obtain min-q value and explanation (states which cause the min-q values)
+				ArrayList<Map<INode, Integer>> statesWithMinQAssets = new ArrayList<Map<INode,Integer>>();	// this is the min-q explanation (states which cause Min-q)
+				ret = getInferenceAlgorithm().calculateExplanation(statesWithMinQAssets);	// statesWithMinQAssets will be filled by this method
+				// undo min-propagation, because the next iteration of asset updates should be based on non-min assets
+				getInferenceAlgorithm().undoMinPropagation();	
+				// TODO use the values of statesWithMinQAssets for something (currently, this is ignored)
+			}
+		}
+		
+		// convert q-values to score and return
+		return getScoreFromQValues(ret);
 	}
 
 	/* (non-Javadoc)
@@ -715,7 +1025,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			List<Long> assumptionIds, List<Integer> assumedStates)
 			throws IllegalArgumentException {
 		// TODO Auto-generated method stub
-		return 0;
+
+		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 
 	/* (non-Javadoc)
@@ -725,7 +1036,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			List<Long> questionId, List<Long> assumptionIds,
 			List<Integer> assumedStates) throws IllegalArgumentException {
 		// TODO Auto-generated method stub
-		return null;
+
+		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 
 	/* (non-Javadoc)
@@ -735,7 +1047,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			List<Long> assumptionIds, List<Integer> assumedStates)
 			throws IllegalArgumentException {
 		// TODO Auto-generated method stub
-		return 0;
+		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 
 	/* (non-Javadoc)
@@ -744,7 +1056,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	public float scoreUser(List<Long> userIds, List<Long> assumptionIds,
 			List<Integer> assumedStates) throws IllegalArgumentException {
 		// TODO Auto-generated method stub
-		return 0;
+		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 
 	/* (non-Javadoc)
@@ -755,7 +1067,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			List<Integer> assumptionIDs, List<Integer> assumedStates)
 			throws IllegalArgumentException {
 		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 
 	/* (non-Javadoc)
@@ -765,7 +1077,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			List<Integer> assumptionIDs, List<Integer> assumedStates)
 			throws IllegalArgumentException {
 		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 
 	/* (non-Javadoc)
@@ -775,7 +1087,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			List<Long> assumptionIDs, List<Integer> assumedStates)
 			throws IllegalArgumentException {
 		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 
 	/* (non-Javadoc)
@@ -785,7 +1097,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			List<Integer> assumptionIds, List<Integer> assumedStates)
 			throws IllegalArgumentException {
 		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 
 	/**
@@ -856,6 +1168,191 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 */
 	public float getProbabilityErrorMargin() {
 		return probabilityErrorMargin;
+	}
+
+	/**
+	 * Mapping from user ID to {@link AssetNetwork} 
+	 * (class representing user and asset q tables)
+	 * @return the userToAssetNetMap
+	 */
+	protected Map<Long, AssetNetwork> getUserToAssetNetMap() {
+		return userToAssetNetMap;
+	}
+
+	/**
+	 * Mapping from user ID to {@link AssetNetwork} 
+	 * (class representing user and asset q tables)
+	 * @param userToAssetNetMap the userToAssetNetMap to set
+	 */
+	protected void setUserToAssetNetMap(Map<Long, AssetNetwork> userToAssetNetMap) {
+		this.userToAssetNetMap = userToAssetNetMap;
+	}
+	
+	/**
+	 * Obtains the asset network (structure representing the user and 
+	 * the asset q values).
+	 * @param userID
+	 * @return instance of AssetNetwork
+	 * @throws InvalidParentException 
+	 * @see AssetAwareInferenceAlgorithm
+	 */
+	protected AssetNetwork getAssetNetFromUserID(long userID) throws InvalidParentException {
+		AssetNetwork assetNet = null;
+		synchronized (getUserToAssetNetMap()) {
+			assetNet = getUserToAssetNetMap().get(userID);
+			if (assetNet == null) {
+				// first time user is referenced. Generate new asset net
+				synchronized (getInferenceAlgorithm().getNetwork()) {
+					// lock access to network
+					assetNet = getInferenceAlgorithm().createAssetNetFromProbabilisticNet((ProbabilisticNetwork) getInferenceAlgorithm().getNetwork());
+				}
+				assetNet.setName(Long.toString(userID));
+				getUserToAssetNetMap().put(userID, assetNet);
+			}
+		}
+		return assetNet;
+	}
+
+	/**
+	 * @param isToAddCashProportionally the isToAddCashProportionally to set.
+	 * If true, {@link #addCash(long, Date, long, float, String)} will 
+	 * increase cash (min-q) proportionally to the current value of min-q.
+	 * <br/>
+	 * E.g. if current min-q is 5, and {@link #addCash(long, Date, long, float, String)}
+	 * is set to add 10, then the final min-q is 15 (triple of the original min-q), hence
+	 * other q-values will be also multiplied by 3.
+	 * <br/>
+	 * If false, the values added by {@link #addCash(long, Date, long, float, String)}
+	 * will only increase q-values absolutely.
+	 * <br/>
+	 * E.g. if current min-q is 5, and {@link #addCash(long, Date, long, float, String)}
+	 * is set to add 10, then 10 will also be added to the other q-values.
+	 */
+	public void setToAddCashProportionally(boolean isToAddCashProportionally) {
+		this.isToAddCashProportionally = isToAddCashProportionally;
+	}
+
+	/**
+	 * @return the isToAddCashProportionally.
+	 * If true, {@link #addCash(long, Date, long, float, String)} will 
+	 * increase cash (min-q) proportionally to the current value of min-q.
+	 * <br/>
+	 * E.g. if current min-q is 5, and {@link #addCash(long, Date, long, float, String)}
+	 * is set to add 10, then the final min-q is 15 (triple of the original min-q), hence
+	 * other q-values will be also multiplied by 3.
+	 * <br/>
+	 * If false, the values added by {@link #addCash(long, Date, long, float, String)}
+	 * will only increase q-values absolutely.
+	 * <br/>
+	 * E.g. if current min-q is 5, and {@link #addCash(long, Date, long, float, String)}
+	 * is set to add 10, then 10 will also be added to the other q-values.
+	 */
+	public boolean isToAddCashProportionally() {
+		return isToAddCashProportionally;
+	}
+
+	/**
+	 * Assets are managed by a data structure known as the asset tables
+	 * (they are clique-tables containing non-normalized float values).
+	 * When an asset table is instantiated (i.e. when a new user is created,
+	 * and then a new asset table is created for that user), each
+	 * cell of the asset table should be filled with default (uniform) values initially.
+	 * <br/><br/>
+	 * Note: the assets (S-values) and q-values (values actually stored in
+	 * the tables) are related with a logarithm relationship
+	 * S = b*log(q). So, the values in the asset tables may not actually be
+	 * the values of assets directly.
+	 * @return the value to be filled into each cell of the q-tables when the tables are initialized.
+	 * @see #initialize()
+	 */
+	public float getDefaultInitialQTableValue() {
+		return defaultInitialQTableValue;
+	}
+	
+
+	/**
+	 * Assets are managed by a data structure known as the asset tables
+	 * (they are clique-tables containing non-normalized float values).
+	 * When an asset table is instantiated (i.e. when a new user is created,
+	 * and then a new asset table is created for that user), each
+	 * cell of the asset table should be filled with default (uniform) values initially.
+	 * <br/><br/>
+	 * Note: the assets (S-values) and q-values (values actually stored in
+	 * asset tables) are related with a logarithm relationship
+	 * S = b*log(q). So, the values in the asset tables may not actually be
+	 * the values of assets directly.
+	 * @param defaultValue : the value to be filled into each cell of the q-tables when the tables are initialized.
+	 * @see #initialize()
+	 */
+	public void setDefaultInitialQTableValue(float defaultValue) {
+		this.defaultInitialQTableValue = defaultValue;
+	}
+	
+	/**
+	 * Assets (S-values) and q-values (values actually stored in
+	 * asset tables) are related with a logarithm relationship
+	 * S = b*log(q) with log being a logarithm function of some basis. 
+	 * @return the base of the current logarithm function used
+	 * for converting q-values to assets.
+	 * @see #setCurrentLogBase(float)
+	 * @see #getCurrentCurrencyConstant()
+	 * @see #setCurrentCurrencyConstant(double)
+	 * @see #getQValuesFromScore(float)
+	 * @see #getScoreFromQValues(float)
+	 */
+	public float getCurrentLogBase() {
+		return currentLogBase ;
+	}
+	
+	/**
+	 * Assets (S-values) and q-values (values actually stored in
+	 * asset tables) are related with a logarithm relationship
+	 * S = b*log(q), with log being a logarithm function of some base. 
+	 * @param base : the base of the current logarithm function used
+	 * for converting q-values to assets.
+	 * @see #getCurrentLogBase()
+	 * @see #getCurrentCurrencyConstant()
+	 * @see #setCurrentCurrencyConstant(float)
+	 * @see #getQValuesFromScore(float)
+	 * @see #getScoreFromQValues(float)
+	 */
+	public void setCurrentLogBase(float base) {
+		this.currentLogBase = base;
+	}
+	
+	/**
+	 *  Assets (S-values) and q-values (values actually stored in
+	 * asset tables) are related with a logarithm relationship
+	 * S = b*log(q), with b being a constant for defining the "unit
+	 * of currency" (more precisely, this constant defines how sensitive
+	 * is the assets).
+	 * @return the current value of b, the "unit of currency""
+	 * @see #getCurrentLogBase()
+	 * @see #setCurrentLogBase(float)
+	 * @see #setCurrentCurrencyConstant(float)
+	 * @see #getQValuesFromScore(float)
+	 * @see #getScoreFromQValues(float)
+	 */
+	public double getCurrentCurrencyConstant() {
+		return currentCurrencyConstant ;
+	}
+	
+
+	/**
+	 *  Assets (S-values) and q-values (values actually stored in
+	 * asset tables) are related with a logarithm relationship
+	 * S = b*log(q), with b being a constant for defining the "unit
+	 * of currency" (more precisely, this constant defines how sensitive
+	 * is the assets).
+	 * @param b the current value of b to set, the "unit of currency""
+	 * @see #getCurrentLogBase()
+	 * @see #setCurrentLogBase(float)
+	 * @see #getCurrentCurrencyConstant()
+	 * @see #getQValuesFromScore(float)
+	 * @see #getScoreFromQValues(float)
+	 */
+	public void setCurrentCurrencyConstant(float b) {
+		this.currentCurrencyConstant = b;
 	}
 
 }

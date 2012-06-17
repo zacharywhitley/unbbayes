@@ -14,6 +14,7 @@ import unbbayes.io.NetIO;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
+import unbbayes.prs.bn.AssetNode;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
@@ -417,6 +418,24 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		// undo only the min propagation (we do not need the min q values anymore, and next q-calculations must use q values prior to min propagation)
 		assetQAlgorithm.undoMinPropagation();
 		
+		// test conditional LPE = 110 if we assume E = e1. 
+		((AssetNode)assetQAlgorithm.getAssetNetwork().getNode("E")).addFinding(0);	// set evidence E = e1
+		assetQAlgorithm.runMinPropagation();
+		// obtain LPE and minQ when E = e1
+		inOutArgLPE = new ArrayList<Map<INode,Integer>>();
+		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		assertFalse(inOutArgLPE.isEmpty());
+		// make sure the returned LPE has E = e1
+		lpes = inOutArgLPE.get(0);
+		assertNotNull(lpes);
+		assertTrue(lpes.size() == 3);
+		assertEquals(0, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("E")).intValue());	// index 0 has state e1
+		// make sure returned minQ is 110
+		assertTrue("Obtained min q = " + minQ,((110f - ASSET_PRECISION_ERROR) < minQ) && (minQ < (110f + ASSET_PRECISION_ERROR)) );
+		
+		// undo only the min propagation (we do not need the min q values anymore, and next q-calculations must use q values prior to min propagation)
+		assetQAlgorithm.undoMinPropagation();
+		
 		// Tom bets P(E=e1|D=d1) = .55 -> .9
 		
 		// bet node is still E
@@ -508,6 +527,25 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 //		}
 		assertTrue("Obtained min q = " + minQ,((20f - ASSET_PRECISION_ERROR) < minQ) && (minQ < (20f + ASSET_PRECISION_ERROR)) );
 
+		// undo only the min propagation (we do not need the min q values anymore, and next q-calculations must use q values prior to min propagation)
+		assetQAlgorithm.undoMinPropagation();
+		
+		// test conditional LPE = 90 if we assume D = d2. 
+		((AssetNode)assetQAlgorithm.getAssetNetwork().getNode("D")).addFinding(1);	// set evidence D = d2
+		assetQAlgorithm.runMinPropagation();
+		// obtain LPE and minQ when D = d2
+		inOutArgLPE = new ArrayList<Map<INode,Integer>>();
+		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		assertFalse(inOutArgLPE.isEmpty());
+		// check that LPE contains d2, e2 and any value F
+		lpes = inOutArgLPE.get(0);
+		assertNotNull(lpes);
+		assertTrue(lpes.size() == 3);
+		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("D")).intValue());	// index 1 has state d2
+		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("E")).intValue());	// index 1 has state e2
+		// make sure returned minQ is 90
+		assertEquals("Obtained min q = " + minQ, 90f, minQ, ASSET_PRECISION_ERROR);
+		
 		// undo only the min propagation (we do not need the min q values anymore, and next q-calculations must use q values prior to min propagation)
 		assetQAlgorithm.undoMinPropagation();
 		

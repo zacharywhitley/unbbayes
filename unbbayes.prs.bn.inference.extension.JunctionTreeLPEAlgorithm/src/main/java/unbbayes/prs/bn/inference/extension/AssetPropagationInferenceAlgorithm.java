@@ -948,6 +948,12 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		for (Separator sep : this.getAssetNetwork().getJunctionTree().getSeparators()) {
 			sep.getProbabilityFunction().restoreData();
 		}
+		// reset any findings of asset nodes
+		for (Node node : getAssetNetwork().getNodes()) {
+			if (node instanceof AssetNode) {
+				((AssetNode) node).resetEvidence();
+			}
+		}
 	}
 	
 	/**

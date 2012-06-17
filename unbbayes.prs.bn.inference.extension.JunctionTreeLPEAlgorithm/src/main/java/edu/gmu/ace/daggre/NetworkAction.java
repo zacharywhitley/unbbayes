@@ -41,4 +41,9 @@ public interface NetworkAction {
 	 * @return true if this action causes changes in network structure.
 	 */
 	boolean isStructureChangeAction();
+	
+	/**
+	 * @return the identifier of the transaction containing this action.
+	 */
+	Long getTransactionKey();
 }
