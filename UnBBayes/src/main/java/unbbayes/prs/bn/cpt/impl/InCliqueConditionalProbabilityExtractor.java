@@ -15,6 +15,7 @@ import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.IProbabilityFunction;
+import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.bn.SingleEntityNetwork;
@@ -78,7 +79,7 @@ public class InCliqueConditionalProbabilityExtractor implements
 			}
 		}
 		
-		ProbabilisticTable ret = new ProbabilisticTable();
+		PotentialTable ret = new ProbabilisticTable();
 		ret.addVariable(mainNode);
 		
 		// If there are no parents, then it is just "marginal" probability instead of "conditional" probability
@@ -157,8 +158,12 @@ public class InCliqueConditionalProbabilityExtractor implements
 				// We do not need to propagate to other cliques, because we assume all nodes (mainNode and parentNodes) are in the same clique
 				cloneCliqueTable.updateEvidences(evidenceMarginal, cloneCliqueTable.indexOfVariable((Node) parentNodes.get(parentIndex)));
 			}
-			// normalize the table, because we inserted evidences
-			cloneCliqueTable.normalize();
+			if (algorithm == null 
+					|| ( (algorithm instanceof JunctionTreeAlgorithm) && ((JunctionTreeAlgorithm)algorithm).isAlgorithmWithNormalization() ) ) {
+				// an algorithm was not specified, or it does not use normalized junction tree. 
+				// So by default we normalize, because we inserted evidences
+				cloneCliqueTable.normalize(); 
+			}
 			
 			// prepare index of mainNode in the clique potential, so that we can obtain its marginal
 			int indexOfMainNode =  cloneCliqueTable.indexOfVariable((Node) mainNode);

@@ -1532,6 +1532,17 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		return likelihoodExtractor;
 	}
 
-	
+	/**
+	 * @return if true, this indicates that this junction tree algorithm performs
+	 * normalization on clique tables in order to maintain consistency.
+	 * If false, this junction tree algorithm does not perform normalization
+	 * (e.g. it may be a junction tree algorithm for explanation, instead of probability propagation).
+	 * By default, a junction tree algorithm return true here, because it is 
+	 * a probability propagation algorithm.
+	 */
+	public boolean isAlgorithmWithNormalization() {
+		return true;
+	}
+
 	
 }
