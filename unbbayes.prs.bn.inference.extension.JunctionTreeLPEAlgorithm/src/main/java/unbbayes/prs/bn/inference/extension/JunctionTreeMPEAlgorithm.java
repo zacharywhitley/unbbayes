@@ -333,6 +333,17 @@ public class JunctionTreeMPEAlgorithm extends JunctionTreeAlgorithm {
 		this.defaultJunctionTreeBuilder = defaultJunctionTreeBuilder;
 	}
 
-	
+	/**
+	 * @return if true, this indicates that this junction tree algorithm performs
+	 * normalization on clique tables in order to maintain consistency.
+	 * If false, this junction tree algorithm does not perform normalization
+	 * (e.g. it may be a junction tree algorithm for explanation, instead of probability propagation).
+	 * By default, a MPE algorithm will return false, because the sum of the probabilities
+	 * is not 1.
+	 * @see JunctionTreeAlgorithm#isAlgorithmWithNormalization()
+	 */
+	public boolean isAlgorithmWithNormalization() {
+		return false;
+	}
 	
 }
