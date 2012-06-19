@@ -3,7 +3,6 @@ package edu.gmu.ace.daggre;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-import java.util.UUID;
 
 
 
@@ -194,7 +193,7 @@ public interface MarkovEngineInterface {
 	 * 
 	 * @param transactionKey : key returned by {@link #startNetworkActions()}
 	 * @param occurredWhen : implementations of this interface may use this timestamp to store a history of modifications.
-	 * @param tradeUUID : revert and history functions can refer to specific trade actions easier, by referring to this UUID.
+	 * @param tradeKey : revert and history functions can refer to specific trade actions easier, by referring to this key (identifier).
 	 * @param userId : the ID of the user (i.e. owner of the assets).
 	 * @param questionId : the id of the question to be edited (i.e. the random variable "T"  in the example)
 	 * 
@@ -220,7 +219,7 @@ public interface MarkovEngineInterface {
 	 * (as the values returned by {@link #getAssetsIfStates(int, long, long, int, List, List, Properties)}).
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
-	public List<Float> addTrade(long transactionKey, Date occurredWhen, UUID tradeUUID, long userId, long questionId, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates,  Boolean allowNegative) throws IllegalArgumentException;
+	public List<Float> addTrade(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates,  boolean allowNegative) throws IllegalArgumentException;
 
 	/**
 	 * This function will settle a specific question.
@@ -466,7 +465,7 @@ public interface MarkovEngineInterface {
 	 * (as the values returned by {@link #getAssetsIfStates(int, long, long, int, List, List, Properties)}).
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
-	public List<Float> previewTrade(long userID, long questionID, List<Float> newValues, List<Integer> assumptionIDs, List<Integer> assumedStates) throws IllegalArgumentException;
+	public List<Float> previewTrade(long userId, long questionId, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
 	 * This method will determine the states of a balancing trade which would minimize impact once the question is resolved
@@ -503,7 +502,7 @@ public interface MarkovEngineInterface {
 	 * index 3 - P(T=t2 | A1=a12, A2=a22)<br/>
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
-	public List<Float> determineBalancingTrade(long userID, long questionID, List<Integer> assumptionIDs, List<Integer> assumedStates) throws IllegalArgumentException;
+	public List<Float> determineBalancingTrade(long userID, long questionID, List<Long> assumptionIDs, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
 	 * This function will return an ordered list of events that explain how the current probability of a question was determined. 

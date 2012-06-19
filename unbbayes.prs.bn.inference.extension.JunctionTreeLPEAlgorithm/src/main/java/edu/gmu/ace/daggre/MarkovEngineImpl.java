@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import unbbayes.prs.Edge;
@@ -23,9 +22,12 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.bn.Separator;
+import unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor;
+import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
 import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
 import unbbayes.prs.exception.InvalidParentException;
+import unbbayes.util.Debug;
 
 /**
  * This is the default implementation of {@link MarkovEngineInterface}.
@@ -41,8 +43,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	private float probabilityErrorMargin = 0.0001f;
 
 	private Map<Long, List<NetworkAction>> networkActionsMap;
-	private long transactionCounter;
-	private AssetAwareInferenceAlgorithm inferenceAlgorithm;
+	private Long transactionCounter;
 
 	private Map<Long, AssetNetwork> userToAssetNetMap;
 
@@ -53,6 +54,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	private float currentLogBase = 10;
 
 	private double currentCurrencyConstant = 10;
+
+	private ProbabilisticNetwork probabilisticNetwork;
+
+	private AssetAwareInferenceAlgorithm inferenceAlgorithm;
 	
 
 	/**
@@ -112,13 +117,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#initialize()
 	 */
-	public boolean initialize() {
+	public synchronized boolean initialize() {
 		// prepare map storing transaction keys
 		setNetworkActionsMap(new ConcurrentHashMap<Long, List<NetworkAction>>());	// concurrent hash map is known to be thread safe yet fast.
 		setTransactionCounter(0);
 		
+		setProbabilisticNetwork(new ProbabilisticNetwork("DAGGRE"));
+		
 		// prepare inference algorithm for the BN
-		JunctionTreeAlgorithm junctionTreeAlgorithm = new JunctionTreeAlgorithm(new ProbabilisticNetwork("DAGGRE"));
+		JunctionTreeAlgorithm junctionTreeAlgorithm = new JunctionTreeAlgorithm(getProbabilisticNetwork());
 		
 		// enable soft evidence by using jeffrey rule in likelihood evidence w/ virtual nodes.
 		junctionTreeAlgorithm.setLikelihoodExtractor(JeffreyRuleLikelihoodExtractor.newInstance() );
@@ -137,9 +144,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#startNetworkActions()
 	 */
-	public synchronized long startNetworkActions() {
-		getNetworkActionsMap().put(++transactionCounter, new ArrayList<NetworkAction>());
-		return transactionCounter;
+	public long startNetworkActions() {
+		long ret = Long.MIN_VALUE;
+		synchronized (transactionCounter) {
+			ret = ++transactionCounter;
+			getNetworkActionsMap().put(ret, new ArrayList<NetworkAction>());
+		}
+		System.out.println("[startNetworkActions]" + ret);
+		return ret;
+//		getNetworkActionsMap().put(++transactionCounter, new ArrayList<NetworkAction>());
+//		return transactionCounter;
 	}
 
 	/* (non-Javadoc)
@@ -214,16 +228,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		}
 		public void execute() {
 			// rebuild BN
-			synchronized (getInferenceAlgorithm()) {
-				// make sure no one is using the probabilistic network yet.
-				ProbabilisticNetwork net = (ProbabilisticNetwork) getInferenceAlgorithm().getNetwork();
-				synchronized (net) {
-					// reset
+			// make sure no one is using the probabilistic network yet.
+			ProbabilisticNetwork net = getProbabilisticNetwork();
+			synchronized (net) {
+				// reset
 //					getInferenceAlgorithm().reset();
-					// recompile
-					if (net.getNodeCount() > 0) {
-						getInferenceAlgorithm().run();
-					}
+				// recompile
+				if (net.getNodeCount() > 0) {
+					getInferenceAlgorithm().run();
 				}
 			}
 			// TODO rebuild all user asset nets
@@ -261,7 +273,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		if (occurredWhen == null) {
 			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
 		}
-		if (((ProbabilisticNetwork)getInferenceAlgorithm().getNetwork()).getNode(Long.toString(questionId)) != null) {
+		if (getProbabilisticNetwork().getNode(Long.toString(questionId)) != null) {
 			// duplicate question
 			throw new IllegalArgumentException("Question ID " + questionId + " is already present.");
 		}
@@ -352,6 +364,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			this.numberStates = numberStates;
 			this.initProbs = initProbs;
 		}
+		
+		
 
 		/**
 		 * Adds a new question into the current network
@@ -374,9 +388,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 				potTable.setValue(i, this.initProbs.get(i));
 			}
 			// add node into the network
-			synchronized (inferenceAlgorithm.getNetwork()) {
-				ProbabilisticNetwork network = (ProbabilisticNetwork) inferenceAlgorithm.getNetwork();
-				network.addNode(node);
+			synchronized (getProbabilisticNetwork()) {
+				getProbabilisticNetwork().addNode(node);
 			}
 		}
 
@@ -427,6 +440,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public boolean isStructureChangeAction() {
 			return true;
 		}
+
+
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		public String toString() {
+			// TODO Auto-generated method stub
+			return super.toString() + "{" + this.transactionKey + ", " + this.getQuestionId() + "}";
+		}
 	}
 
 	/* (non-Javadoc)
@@ -449,7 +472,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		int childNodeStateSize = -1;	// this var stores the quantity of states of the node identified by sourceQuestionId.
 		
 		// check existence of child
-		Node child = ((ProbabilisticNetwork)getInferenceAlgorithm().getNetwork()).getNode(Long.toString(sourceQuestionId));
+		Node child = getProbabilisticNetwork().getNode(Long.toString(sourceQuestionId));
 		if (child == null) {
 			// child node does not exist. Check if there was some previous transaction adding such node
 			synchronized (actions) {
@@ -482,7 +505,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		
 		// check existence of parents
 		for (Long assumptiveQuestionId : assumptiveQuestionIds) {
-			Node parent = ((ProbabilisticNetwork)getInferenceAlgorithm().getNetwork()).getNode(Long.toString(assumptiveQuestionId));
+			Node parent = getProbabilisticNetwork().getNode(Long.toString(assumptiveQuestionId));
 			if (parent == null) {
 				// parent node does not exist. Check if there was some previous transaction adding such node
 				synchronized (actions) {
@@ -597,7 +620,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public void execute() {
 			ProbabilisticNode child;	// this is the main node (the main question we are modifying)
 			
-			ProbabilisticNetwork network = (ProbabilisticNetwork) inferenceAlgorithm.getNetwork();	// network containing question
+			ProbabilisticNetwork network = getProbabilisticNetwork();	// network containing question
 			
 			synchronized (network) {
 				child = (ProbabilisticNode) network.getNode(Long.toString(sourceQuestionId));
@@ -736,12 +759,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 					 */
 					// calculate old cash (i.e. old minQ) value
 					float minQ = Float.NaN;
-					synchronized (getInferenceAlgorithm()) {
-						getInferenceAlgorithm().setAssetNetwork(assetNet);
-						getInferenceAlgorithm().runMinPropagation();
-						minQ = getInferenceAlgorithm().calculateExplanation(new ArrayList<Map<INode,Integer>>());
-						getInferenceAlgorithm().undoMinPropagation();
-					}
+					AssetAwareInferenceAlgorithm inferenceAlgorithm = getInferenceAlgorithm();
+					inferenceAlgorithm.setAssetNetwork(assetNet);
+					inferenceAlgorithm.runMinPropagation();
+					minQ = inferenceAlgorithm.calculateExplanation(new ArrayList<Map<INode,Integer>>());
+					inferenceAlgorithm.undoMinPropagation();
 					if (!Float.isNaN(minQ)) {
 						// calculate ratio
 						float ratio = (minQ + getQValuesFromScore(assets)) / minQ;
@@ -892,12 +914,95 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		return true;
 	}
 
+	
+	public class AddTradeNetworkAction implements NetworkAction {
+
+		private final Date whenCreated;
+		private final long transactionKey;
+		private final String tradeKey;
+		private final long userId;
+		private final long questionId;
+		private final List<Float> newValues;
+		private final List<Long> assumptionIds;
+		private final List<Integer> assumedStates;
+		private final boolean allowNegative;
+
+		public AddTradeNetworkAction(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Float> newValues, 
+				List<Long> assumptionIds, List<Integer> assumedStates,  boolean allowNegative) {
+			this.transactionKey = transactionKey;
+			this.whenCreated = occurredWhen;
+			this.tradeKey = tradeKey;
+			this.userId = userId;
+			this.questionId = questionId;
+			this.newValues = newValues;
+			this.assumptionIds = assumptionIds;
+			this.assumedStates = assumedStates;
+			this.allowNegative = allowNegative;
+			
+		}
+		public void execute() {
+			// TODO Auto-generated method stub
+			
+		}
+		public void revert() throws UnsupportedOperationException {
+			throw new UnsupportedOperationException("Reverting a trade is not supported yet.");
+		}
+
+		public Date getWhenCreated() {
+			return whenCreated;
+		}
+		public boolean isStructureChangeAction() {
+			return false;
+		}
+		public Long getTransactionKey() {
+			return transactionKey;
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#addTrade(long, java.util.Date, long, long, long, java.util.List, java.util.List, java.util.List, java.util.List, java.lang.Boolean)
 	 */
-	public List<Float> addTrade(long transactionKey, Date occurredWhen, UUID tradeUUID, long userId, long questionId, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates,  Boolean allowNegative) throws IllegalArgumentException{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Not implemented yet.");
+	public List<Float> addTrade(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates,  boolean allowNegative) throws IllegalArgumentException{
+		
+		// initial assertions
+		if (occurredWhen == null) {
+			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
+		}
+		// check existence of transaction key
+		List<NetworkAction> actions = this.getNetworkActionsMap().get(transactionKey);
+		if (actions == null) {
+			// startNetworkAction should have been called.
+			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
+		}
+		
+		// returned value is the same of preview trade
+		List<Float> ret = this.previewTrade(userId, questionId, newValues, assumptionIds, assumedStates);
+		
+		// instantiate the action object for adding cash
+		AddTradeNetworkAction newAction = new AddTradeNetworkAction(transactionKey, occurredWhen, tradeKey, userId, questionId, newValues, assumptionIds, assumedStates, allowNegative);
+		
+		// let's add action to the managed list. 
+		synchronized (actions) {
+			// Prepare index of where in actions we should add newAction
+			int indexOfFirstActionCreatedAfterNewAction = 0;	// this will point to the first action created after occurredWhen
+			// Make sure the action list is ordered by the date. Insert new action to a correct position when necessary.
+			for (; indexOfFirstActionCreatedAfterNewAction < actions.size(); indexOfFirstActionCreatedAfterNewAction++) {
+				if (actions.get(indexOfFirstActionCreatedAfterNewAction).getWhenCreated().after(occurredWhen)) {
+					break;
+				}
+			}
+			
+			// add newAction into actions
+			if (indexOfFirstActionCreatedAfterNewAction < 0) {
+				// there is no action created after the new action. Add at the end.
+				actions.add(newAction);
+			} else {
+				// insert new action at the correct position
+				actions.add(indexOfFirstActionCreatedAfterNewAction, newAction);
+			}
+		}
+		
+		return ret;
 	}
 
 	/* (non-Javadoc)
@@ -923,20 +1028,133 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 */
 	public List<Float> getProbList(long questionId, List<Long> assumptionIds,
 			List<Integer> assumedStates) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-
-		throw new UnsupportedOperationException("Not implemented yet.");
+		
+		// initial assertion: check consistency of assumptionIds and assumedStates
+		if (assumptionIds != null && assumedStates != null) {
+			if (assumedStates.size() != assumptionIds.size()) {
+				throw new IllegalArgumentException("assumptionIds.size() == " + assumptionIds.size() + ", assumedStates.size() == " + assumedStates.size());
+			}
+		}
+		
+		// this object extracts conditional probability of any nodes in same clique (it assumes prob network was compiled using junction tree algorithm)
+		IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = null;	
+		
+		if (getInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			JunctionTreeAlgorithm jtAlgorithm = (JunctionTreeAlgorithm) getInferenceAlgorithm().getProbabilityPropagationDelegator();
+			if (jtAlgorithm.getLikelihoodExtractor() instanceof JeffreyRuleLikelihoodExtractor) {
+				conditionalProbabilityExtractor = ((JeffreyRuleLikelihoodExtractor) jtAlgorithm.getLikelihoodExtractor()).getConditionalProbabilityExtractor();
+			}
+		}
+		if (conditionalProbabilityExtractor == null) {
+			// instantiate new extractor if nothing was found
+			Debug.println(getClass(), "Could not extract conditionalProbabilityExtractor from inference algorithm. Instantiating new.");
+			conditionalProbabilityExtractor = InCliqueConditionalProbabilityExtractor.newInstance();
+		}
+		
+		
+		PotentialTable cpt = null;
+		synchronized (getProbabilisticNetwork()) {
+			INode mainNode = getProbabilisticNetwork().getNode(Long.toString(questionId));
+			if (mainNode == null) {
+				throw new IllegalArgumentException("Question " + questionId + " not found");
+			}
+			List<INode> parentNodes = new ArrayList<INode>();
+			if (assumptionIds != null) {
+				for (Long id : assumptionIds) {
+					INode node = getProbabilisticNetwork().getNode(Long.toString(id));
+					if (node == null) {
+						throw new IllegalArgumentException("Question " + questionId + " not found");
+					}
+					parentNodes.add(node);
+				}
+			}
+			cpt = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, getProbabilisticNetwork(), null);
+		}
+		
+		// convert cpt to a list of float, given assumedStates.
+		List<Float> ret = new ArrayList<Float>(cpt.tableSize());
+		for (int i = 0; i < cpt.tableSize(); i++) {
+			boolean isToSkip = false;
+			// filter entries which are incompatible with assumedStates
+			if (assumedStates != null && !assumedStates.isEmpty()) {
+				// extract coordinate of the states (e.g. [2,1,0] means state of mainNode = 2, state of parent1 = 1, and parent2 == 0)
+				int[] multidimensionalCoord = cpt.getMultidimensionalCoord(i);
+				if (multidimensionalCoord.length != assumedStates.size()) {
+					throw new RuntimeException("Multi dimensional coordinate of index " + i + " has size " + multidimensionalCoord.length
+							+ ". Expected " + assumedStates.size());
+				}
+				for (int j = 0; j < multidimensionalCoord.length; j++) {
+					if ((assumedStates.get(j) != null)
+							&& (assumedStates.get(j) != multidimensionalCoord[j])) {
+						isToSkip = true;
+						break;
+					}
+				}
+			}
+			if (!isToSkip) {
+				ret.add(cpt.getValue(i));
+			}
+		}
+		return ret;
+		
 	}
 
 
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getPossibleQuestionAssumptions(long, java.util.List)
 	 */
-	public List<Long> getPossibleQuestionAssumptions(long questionId,
-			List<Long> assumptionIds) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-
-		throw new UnsupportedOperationException("Not implemented yet.");
+	public List<Long> getPossibleQuestionAssumptions(long questionId, List<Long> assumptionIds) throws IllegalArgumentException {
+		// this object is going to be used to extract what nodes can become assumptions in a conditional soft evidence
+		IArbitraryConditionalProbabilityExtractor extractor = null;	
+		
+		// use the same extractor as used by the junction tree algorithm
+		if (getInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			JunctionTreeAlgorithm jtAlgorithm = (JunctionTreeAlgorithm) getInferenceAlgorithm().getProbabilityPropagationDelegator();
+			if (jtAlgorithm.getLikelihoodExtractor() instanceof JeffreyRuleLikelihoodExtractor) {
+				extractor = ((JeffreyRuleLikelihoodExtractor) jtAlgorithm.getLikelihoodExtractor()).getConditionalProbabilityExtractor();
+			}
+		}
+		if (extractor == null) {
+			throw new RuntimeException("Could not extract IArbitraryConditionalProbabilityExtractor from inference algorithm. Maybe you are using an incompatible version of Markov Engine or UnBBayes");
+		}
+		
+		// extract main node and assumption nodes
+		Node mainNode = null;
+		List<INode> assumptions = new ArrayList<INode>();
+		synchronized (getProbabilisticNetwork()) {
+			mainNode = getProbabilisticNetwork().getNode(Long.toString(questionId));
+		}
+		if (mainNode == null) {
+			throw new IllegalArgumentException("Question " + questionId + " not found.");
+		}
+		for (Long id : assumptionIds) {
+			Node node = null;
+			synchronized (getProbabilisticNetwork()) {
+				node = getProbabilisticNetwork().getNode(Long.toString(id));
+			}
+			if (node == null) {
+				throw new IllegalArgumentException("Question " + id + " not found.");
+			}
+			assumptions.add(node);
+		}
+		
+		// obtain possible condition nodes
+		List<INode> returnedNodes = null;
+		synchronized (getProbabilisticNetwork()) {
+			returnedNodes = extractor.getValidConditionNodes(mainNode, assumptions, getProbabilisticNetwork(), null);
+		}
+		// convert condition nodes to ids
+		List<Long> ret = new ArrayList<Long>();
+		if (returnedNodes != null){
+			for (INode node : returnedNodes) {
+				if (node != null) {
+					// question IDs and node names are supposedly equal
+					ret.add(Long.parseLong(node.getName()));
+				}
+			}
+		}
+		
+		return ret;
 	}
 
 	/* (non-Javadoc)
@@ -1044,9 +1262,100 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#previewTrade(long, long, java.util.List, java.util.List, java.util.List, java.util.List)
 	 */
-	public List<Float> previewTrade(long userID, long questionID,List<Float> newValues,
-			List<Integer> assumptionIDs, List<Integer> assumedStates)
+	public List<Float> previewTrade(long userId, long questionId,List<Float> newValues,
+			List<Long> assumptionIds, List<Integer> assumedStates)
 			throws IllegalArgumentException {
+		
+//		int childNodeStateSize = -1;	// this var stores the quantity of states of the node identified by questionId.
+//		
+//		// check existence of child
+//		Node child = getProbabilisticNetwork().getNode(Long.toString(questionId));
+//		if (child == null) {
+//			// child node does not exist. Check if there was some previous transaction adding such node
+//			synchronized (actions) {
+//				for (NetworkAction networkAction : actions) {
+//					if (networkAction instanceof AddQuestionNetworkAction) {
+//						AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
+//						if (addQuestionNetworkAction.getQuestionId() == sourceQuestionId) {
+//							childNodeStateSize = addQuestionNetworkAction.getNumberStates();
+//							break;
+//						}
+//					}
+//				}
+//			}
+//			if (childNodeStateSize < 0) {	
+//				// if negative, then expectedSizeOfCPD was not updated, so sourceQuestionId was not found in last loop
+//				throw new IllegalArgumentException("Question ID " + sourceQuestionId + " does not exist.");
+//			}
+//		} else {
+//			// initialize the value of expectedSizeOfCPD using the number of states of future owner of the cpd
+//			childNodeStateSize = child.getStatesSize();
+//		}
+//		
+//		// this var will store the correct size of cpd. If negative, owner of the cpd was not found.
+//		int expectedSizeOfCPD = childNodeStateSize;
+//		
+//		// do not allow null values for collections
+//		if (assumptiveQuestionIds == null) {
+//			assumptiveQuestionIds = new ArrayList<Long>();
+//		}
+//		
+//		// check existence of parents
+//		for (Long assumptiveQuestionId : assumptiveQuestionIds) {
+//			Node parent = getProbabilisticNetwork().getNode(Long.toString(assumptiveQuestionId));
+//			if (parent == null) {
+//				// parent node does not exist. Check if there was some previous transaction adding such node
+//				synchronized (actions) {
+//					boolean hasFound = false;
+//					for (NetworkAction networkAction : actions) {
+//						if (networkAction instanceof AddQuestionNetworkAction) {
+//							AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
+//							if (addQuestionNetworkAction.getQuestionId() == assumptiveQuestionId) {
+//								// size of cpd = MULT (<quantity of states of child and parents>).
+//								expectedSizeOfCPD *= addQuestionNetworkAction.getNumberStates();
+//								hasFound = true;
+//								break;
+//							}
+//						}
+//					}
+//					if (!hasFound) {	
+//						// parent was not found
+//						throw new IllegalArgumentException("Question ID " + assumptiveQuestionId + " does not exist.");
+//					}
+//				}
+//			} else{
+//				// size of cpd = MULT (<quantity of states of child and parents>).
+//				expectedSizeOfCPD *= parent.getStatesSize();
+//			}
+//			
+//		}
+//		
+//		// check consistency of size of cpd
+//		if (cpd != null && !cpd.isEmpty()){
+//			if (cpd.size() != expectedSizeOfCPD) {
+//				// size of cpd is inconsistent
+//				throw new IllegalArgumentException("Expected size of cpd of question " + sourceQuestionId + " is "+ expectedSizeOfCPD + ", but was " + cpd.size());
+//			}
+//			// check value consistency
+//			float sum = 0;
+//			int counter = 0;	// counter in which possible values are mod childNodeStateSize
+//			for (Float probability : cpd) {
+//				if (probability < 0) {
+//					throw new IllegalArgumentException("Negative probability declaration found: " + probability);
+//				}
+//				sum += probability;
+//				counter++;
+//				if (counter >= childNodeStateSize) {
+//					// check if sum of conditional probability given current state of parents is 1
+//					if (!(((1 - getProbabilityErrorMargin()) < sum) && (sum < (1 + getProbabilityErrorMargin())))) {
+//						throw new IllegalArgumentException("Inconsistent prior probability: " + sum);
+//					}
+//					counter = 0;
+//					sum = 0;
+//				}
+//			}
+//		}
+		
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Not implemented yet.");
 	}
@@ -1055,7 +1364,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#determineBalancingTrade(long, long, java.util.List, java.util.List)
 	 */
 	public List<Float> determineBalancingTrade(long userID, long questionID,
-			List<Integer> assumptionIDs, List<Integer> assumedStates)
+			List<Long> assumptionIDs, List<Integer> assumedStates)
 			throws IllegalArgumentException {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Not implemented yet.");
@@ -1138,6 +1447,17 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * @return the inferenceAlgorithm
 	 */
 	public AssetAwareInferenceAlgorithm getInferenceAlgorithm() {
+//		JunctionTreeAlgorithm junctionTreeAlgorithm = new JunctionTreeAlgorithm(getProbabilisticNetwork());
+//		
+//		// enable soft evidence by using jeffrey rule in likelihood evidence w/ virtual nodes.
+//		junctionTreeAlgorithm.setLikelihoodExtractor(JeffreyRuleLikelihoodExtractor.newInstance() );
+//		
+//		// prepare inference algorithm for asset network
+//		AssetAwareInferenceAlgorithm inferenceAlgorithm = (AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm);
+//		
+//		// usually, users seem to start with 0 assets (assets are logarithmic, so 0 assets == 1 q table), but let's use the value of getDefaultInitialQTableValue
+//		inferenceAlgorithm.setDefaultInitialAssetQuantity(getDefaultInitialQTableValue());
+		
 		return inferenceAlgorithm;
 	}
 
@@ -1191,9 +1511,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			assetNet = getUserToAssetNetMap().get(userID);
 			if (assetNet == null) {
 				// first time user is referenced. Generate new asset net
-				synchronized (getInferenceAlgorithm().getNetwork()) {
+				synchronized (getProbabilisticNetwork()) {
 					// lock access to network
-					assetNet = getInferenceAlgorithm().createAssetNetFromProbabilisticNet((ProbabilisticNetwork) getInferenceAlgorithm().getNetwork());
+					assetNet = getInferenceAlgorithm().createAssetNetFromProbabilisticNet(getProbabilisticNetwork());
 				}
 				assetNet.setName(Long.toString(userID));
 				getUserToAssetNetMap().put(userID, assetNet);
@@ -1342,6 +1662,20 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 */
 	public void setCurrentCurrencyConstant(float b) {
 		this.currentCurrencyConstant = b;
+	}
+
+	/**
+	 * @param probabilisticNetwork the probabilisticNetwork to set
+	 */
+	public void setProbabilisticNetwork(ProbabilisticNetwork probabilisticNetwork) {
+		this.probabilisticNetwork = probabilisticNetwork;
+	}
+
+	/**
+	 * @return the probabilisticNetwork
+	 */
+	public ProbabilisticNetwork getProbabilisticNetwork() {
+		return probabilisticNetwork;
 	}
 
 }
