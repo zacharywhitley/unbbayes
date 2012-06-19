@@ -301,9 +301,9 @@ public interface MarkovEngineInterface {
 	 * similar to Case 1 above, except in step a, make the cells to be zeros where T=t, or A~=a. Other steps are exactly same. Return S2.
 	 * If S1>S2, the user has long position on the intended edit; otherwise, he/she has short position on the intended edit.
 	 * 
-	 * @param userID : the ID of the current user. Users shall be managed by a hash table. 
-	 * @param questionID : the id of the question to be edited (i.e. the random variable "T"  in the example)
-	 * @param assumptionIDs : a list (ordered collection) of question IDs which are the assumptions for T (i.e. random variable "A" in the example). The ordeer
+	 * @param userId : the ID of the current user. Users shall be managed by a hash table. 
+	 * @param questionId : the id of the question to be edited (i.e. the random variable "T"  in the example)
+	 * @param assumptionIds : a list (ordered collection) of question IDs which are the assumptions for T (i.e. random variable "A" in the example). The ordeer
 	 * is important, because it will indicate which states of assumedStates are associated with which questions in assumptionIDs.
 	 * @param assumedStates : a list (ordered collection) representing the states of assumptionIDs assumed.
 	 * 
@@ -320,7 +320,7 @@ public interface MarkovEngineInterface {
 	 * question while it is in state "true".
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
 	 */
-	public List<Float> getAssetsIfStates(long userID, long questionID, List<Long> assumptionIDs, List<Integer> assumedStates) throws IllegalArgumentException;
+	public List<Float> getAssetsIfStates(long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
 	 * Returns the upper and lower bounds for a specific trade given the assumptions. This can be used to constrain a UI action.

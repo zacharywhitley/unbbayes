@@ -1118,24 +1118,27 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			throw new RuntimeException("Could not extract IArbitraryConditionalProbabilityExtractor from inference algorithm. Maybe you are using an incompatible version of Markov Engine or UnBBayes");
 		}
 		
-		// extract main node and assumption nodes
+		// extract main node
 		Node mainNode = null;
-		List<INode> assumptions = new ArrayList<INode>();
 		synchronized (getProbabilisticNetwork()) {
 			mainNode = getProbabilisticNetwork().getNode(Long.toString(questionId));
 		}
 		if (mainNode == null) {
 			throw new IllegalArgumentException("Question " + questionId + " not found.");
 		}
-		for (Long id : assumptionIds) {
-			Node node = null;
-			synchronized (getProbabilisticNetwork()) {
-				node = getProbabilisticNetwork().getNode(Long.toString(id));
+		// extract assumption nodes
+		List<INode> assumptions = new ArrayList<INode>();
+		if (assumptionIds != null) {
+			for (Long id : assumptionIds) {
+				Node node = null;
+				synchronized (getProbabilisticNetwork()) {
+					node = getProbabilisticNetwork().getNode(Long.toString(id));
+				}
+				if (node == null) {
+					throw new IllegalArgumentException("Question " + id + " not found.");
+				}
+				assumptions.add(node);
 			}
-			if (node == null) {
-				throw new IllegalArgumentException("Question " + id + " not found.");
-			}
-			assumptions.add(node);
 		}
 		
 		// obtain possible condition nodes
@@ -1157,15 +1160,91 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		return ret;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getAssetsIfStates(long, long, java.util.List, java.util.List)
 	 */
-	public List<Float> getAssetsIfStates(long userID, long questionID,
-			List<Long> assumptionIDs, List<Integer> assumedStates)
+	public List<Float> getAssetsIfStates(long userId, long questionId,
+			List<Long> assumptionIds, List<Integer> assumedStates)
 			throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-
-		throw new UnsupportedOperationException("Not implemented yet.");
+		// initial assertion: check consistency of assumptionIds and assumedStates
+		if (assumptionIds != null && assumedStates != null) {
+			if (assumedStates.size() != assumptionIds.size()) {
+				throw new IllegalArgumentException("assumptionIds.size() == " + assumptionIds.size() + ", assumedStates.size() == " + assumedStates.size());
+			}
+		}
+		
+		// this object extracts conditional probability of any nodes in same clique (it assumes prob network was compiled using junction tree algorithm)
+		// we can use the same object in order to extract conditional assets, because asset cliques extends prob cliques.
+		IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = null;	
+		
+		if (getInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			JunctionTreeAlgorithm jtAlgorithm = (JunctionTreeAlgorithm) getInferenceAlgorithm().getProbabilityPropagationDelegator();
+			if (jtAlgorithm.getLikelihoodExtractor() instanceof JeffreyRuleLikelihoodExtractor) {
+				conditionalProbabilityExtractor = ((JeffreyRuleLikelihoodExtractor) jtAlgorithm.getLikelihoodExtractor()).getConditionalProbabilityExtractor();
+			}
+		}
+		if (conditionalProbabilityExtractor == null) {
+			// instantiate new extractor if nothing was found
+			Debug.println(getClass(), "Could not extract conditionalProbabilityExtractor from inference algorithm. Instantiating new.");
+			conditionalProbabilityExtractor = InCliqueConditionalProbabilityExtractor.newInstance();
+		}
+		
+		// extract user's asset network from user ID
+		AssetNetwork assetNet = null;
+		try {
+			assetNet = this.getAssetNetFromUserID(userId);
+		} catch (InvalidParentException e) {
+			throw new RuntimeException("Could not extract assets from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
+		}
+		if (assetNet == null) {
+			throw new RuntimeException("Could not extract assets from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
+		}
+		
+		PotentialTable assetTable = null;	// asset tables (clique table containing assets) are instances of potential tables
+		synchronized (assetNet) {
+			INode mainNode = assetNet.getNode(Long.toString(questionId));
+			if (mainNode == null) {
+				throw new IllegalArgumentException("Question " + questionId + " not found in asset structure of user " + userId);
+			}
+			List<INode> parentNodes = new ArrayList<INode>();
+			if (assumptionIds != null) {
+				for (Long id : assumptionIds) {
+					INode node = assetNet.getNode(Long.toString(id));
+					if (node == null) {
+						throw new IllegalArgumentException("Question " + questionId + " not found in asset structure of user " + userId);
+					}
+					parentNodes.add(node);
+				}
+			}
+			assetTable = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, assetNet, getInferenceAlgorithm().getAssetPropagationDelegator());
+		}
+		
+		// convert cpt to a list of float, given assumedStates.
+		List<Float> ret = new ArrayList<Float>(assetTable.tableSize());
+		for (int i = 0; i < assetTable.tableSize(); i++) {
+			boolean isToSkip = false;
+			// filter entries which are incompatible with assumedStates
+			if (assumedStates != null && !assumedStates.isEmpty()) {
+				// extract coordinate of the states (e.g. [2,1,0] means state of mainNode = 2, state of parent1 = 1, and parent2 == 0)
+				int[] multidimensionalCoord = assetTable.getMultidimensionalCoord(i);
+				if (multidimensionalCoord.length != assumedStates.size()) {
+					throw new RuntimeException("Multi dimensional coordinate of index " + i + " has size " + multidimensionalCoord.length
+							+ ". Expected " + assumedStates.size());
+				}
+				for (int j = 0; j < multidimensionalCoord.length; j++) {
+					if ((assumedStates.get(j) != null)
+							&& (assumedStates.get(j) != multidimensionalCoord[j])) {
+						isToSkip = true;
+						break;
+					}
+				}
+			}
+			if (!isToSkip) {
+				ret.add(assetTable.getValue(i));
+			}
+		}
+		return ret;
 	}
 
 	/* (non-Javadoc)
@@ -1174,9 +1253,88 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	public List<Float> getEditLimits(long userId, long questionId,
 			int questionState, List<Long> assumptionIds,
 			List<Integer> assumedStates) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
+		// initial assertion: check consistency of assumptionIds and assumedStates
+		if (assumptionIds != null) {
+			if ( assumedStates == null) {
+				throw new IllegalArgumentException("assumptionIds.size() == " + assumptionIds.size() + ", assumedStates == null.");
+			} else if (assumedStates.size() != assumptionIds.size()) {
+				throw new IllegalArgumentException("assumptionIds.size() == " + assumptionIds.size() + ", assumedStates.size() == " + assumedStates.size());
+			}
+		}
+		// make sure assumptionIds does not contain null
+		if (assumptionIds!= null && assumptionIds.contains(null)) {
+			throw new IllegalArgumentException("assumptionIds contains null ID.");
+		}
+		// make sure assumedStates does not contain null
+		if (assumedStates!= null && assumedStates.contains(null)) {
+			throw new IllegalArgumentException("assumedStates contains null state.");
+		}
 
-		throw new UnsupportedOperationException("Not implemented yet.");
+		// this object is going to be used to extract what nodes can become assumptions in a conditional soft evidence
+		IArbitraryConditionalProbabilityExtractor extractor = null;	
+		
+		// use the same extractor as used by the junction tree algorithm
+		if (getInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			JunctionTreeAlgorithm jtAlgorithm = (JunctionTreeAlgorithm) getInferenceAlgorithm().getProbabilityPropagationDelegator();
+			if (jtAlgorithm.getLikelihoodExtractor() instanceof JeffreyRuleLikelihoodExtractor) {
+				extractor = ((JeffreyRuleLikelihoodExtractor) jtAlgorithm.getLikelihoodExtractor()).getConditionalProbabilityExtractor();
+			}
+		}
+		if (extractor == null) {
+			throw new RuntimeException("Could not extract IArbitraryConditionalProbabilityExtractor from inference algorithm. Maybe you are using an incompatible version of Markov Engine or UnBBayes");
+		}
+		
+		// extract main node
+		Node mainNode = null;
+		synchronized (getProbabilisticNetwork()) {
+			mainNode = getProbabilisticNetwork().getNode(Long.toString(questionId));
+		}
+		if (mainNode == null) {
+			throw new IllegalArgumentException("Question " + questionId + " not found.");
+		}
+		// extract assumption nodes
+		List<INode> assumptions = new ArrayList<INode>();
+		if (assumptionIds != null) {
+			for (Long id : assumptionIds) {
+				Node node = null;
+				synchronized (getProbabilisticNetwork()) {
+					node = getProbabilisticNetwork().getNode(Long.toString(id));
+				}
+				if (node == null) {
+					throw new IllegalArgumentException("Question " + id + " not found.");
+				}
+				assumptions.add(node);
+			}
+		}
+		
+		
+		// this vector will contain allowed interval of edit
+		float editInterval[] = null;
+		synchronized (getInferenceAlgorithm()) {
+			// we usually do locks in a given order to avoid deadlock. This class tries to lock from the outer objects to inner objects
+			// in this case, inference algorithm is aggregated to probabilistic network (algorithm -> network), but not the opposite.
+			// So I locked the algorithm first, and then the network.
+			synchronized (getProbabilisticNetwork()) {
+				PotentialTable table = (PotentialTable) extractor.buildCondicionalProbability(mainNode, assumptions, getProbabilisticNetwork(), null);
+				// convert assumedStates to multi-dimensional coordinate (readable by table)
+				int [] multidimensionalCoord = new int[assumedStates.size()];
+				for (int i = 0; i < multidimensionalCoord.length; i++) {
+					multidimensionalCoord[i] = assumedStates.get(i);
+				}
+				
+				// convert multi-dimensional coordinate to linear coordinate (second argument of calculateIntervalOfAllowedEdit) and obtain edit interval. 
+				editInterval = getInferenceAlgorithm().calculateIntervalOfAllowedEdit(table, table.getLinearCoord(multidimensionalCoord));
+			}
+		}
+		if (editInterval == null) {
+			return null;
+		}
+		// convert editInterval to a list
+		List<Float> ret = new ArrayList<Float>(editInterval.length);
+		for (float interval : editInterval) {
+			ret.add(interval);
+		}
+		return ret;
 	}
 
 	/* (non-Javadoc)
