@@ -4,6 +4,7 @@
 package unbbayes.prs.bn.cpt.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -19,6 +20,7 @@ import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor;
+import unbbayes.util.Debug;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 /**
@@ -96,13 +98,11 @@ public class InCliqueConditionalProbabilityExtractor implements
 		// find clique containing all variables
 		Clique clique = null;
 		if (net instanceof SingleEntityNetwork) {
-			SingleEntityNetwork singleEntityNetwork = (SingleEntityNetwork) net;
-			for (Clique auxClique : singleEntityNetwork.getJunctionTree().getCliques()) {
-				if (auxClique.getNodes().contains(mainNode) && auxClique.getNodes().containsAll(parentNodes)) {
-					clique = auxClique;
-					break;
-				}
-			}
+			// Note: parentNodes != null && mainNode != null at this point
+			Set<INode> nodes = new HashSet<INode>(parentNodes);
+			nodes.add(mainNode);
+			nodes.remove(null);	// do not allow null content
+			clique = this.getCliqueContainingAllNodes((SingleEntityNetwork) net, nodes);
 		}
 		if (clique == null) {
 			// TODO use resource files
@@ -253,6 +253,77 @@ public class InCliqueConditionalProbabilityExtractor implements
 			return this;
 		}
 		
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor#getValidConditionNodes(unbbayes.prs.INode, java.util.List, unbbayes.prs.Graph, unbbayes.util.extension.bn.inference.IInferenceAlgorithm)
+	 */
+	public List<INode> getValidConditionNodes(INode mainNode, List<INode> includedParentNodes, Graph net, 
+			IInferenceAlgorithm algorithm) {	// algorithm is ignored
+		Set<INode> ret = new HashSet<INode>();	// use set, so that no repetition is allowed
+		if (net != null && (net instanceof SingleEntityNetwork)) {
+			// prepare input arguments
+			Set<INode> nodes = new HashSet<INode>();
+			if (includedParentNodes != null) {
+				nodes.addAll(includedParentNodes);
+			}
+			if (mainNode != null) {
+				// do not allow null content
+				nodes.add(mainNode);
+			}
+			nodes.remove(null); // do not allow null content
+			// extract all cliques satisfying conditions
+			Collection<Clique> cliques = this.getCliquesContainingAllNodes((SingleEntityNetwork) net, nodes, Integer.MAX_VALUE);
+			// append nodes which are inside the obtained cliques
+			if (cliques != null) {
+				for (Clique clique : cliques) {
+					ret.addAll(clique.getNodes());
+				}
+			}
+		}
+		return new ArrayList<INode>(ret);	// convert set to list
+	}
+	
+	/**
+	 * This is a wrapper for {@link #getCliquesContainingAllNodes(SingleEntityNetwork, Collection, 1)}
+	 * @see #getCliquesContainingAllNodes(SingleEntityNetwork, Collection, int)
+	 */
+	public Clique getCliqueContainingAllNodes(SingleEntityNetwork singleEntityNetwork, Collection<INode> nodes) {
+		Collection<Clique> cliques = this.getCliquesContainingAllNodes(singleEntityNetwork, nodes, 1);
+		if (cliques == null || cliques.isEmpty()) {
+			return null;
+		}
+		return  cliques.iterator().next();
+	}
+	
+	/**
+	 * @param net : network containing the nodes and the clique to be returned
+	 * @param nodes : nodes to be considered as a filter condition.
+	 * @param maxCount : maximum number of cliques to be returned.
+	 * @return cliques containing all the specified nodes.
+	 */
+	public Collection<Clique> getCliquesContainingAllNodes(SingleEntityNetwork singleEntityNetwork, Collection<INode> nodes, int maxCount) {
+		Collection<Clique> ret = new HashSet<Clique>();
+		if (singleEntityNetwork != null && maxCount > 0) {
+			for (Clique auxClique : singleEntityNetwork.getJunctionTree().getCliques()) {
+				if (auxClique == null) {
+					Debug.println(getClass(), singleEntityNetwork + " has a null clique.");
+					continue;
+				}
+				if (nodes == null) {
+					// no filtering
+					ret.add(auxClique);
+				} else if (auxClique.getNodes() != null		// auxClique != null at this point 
+						&& auxClique.getNodes().containsAll(nodes)) {	// nodes != null at this point
+					ret.add(auxClique);
+				}
+				if (ret.size() >= maxCount) {
+					break;
+				}
+			}
+		}
+		return ret;
 	}
 
 }
