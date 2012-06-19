@@ -10,7 +10,7 @@ import unbbayes.prs.INode;
 
 /**
  * Objects of classes implementing this interface are able to extract the likelihood
- * ratio from a list of nodes.
+ * ratio from a node
  * @author Shou Matsumoto
  * @see JunctionTreeAlgorithm#clearVirtualNodes()
  * @see JunctionTreeAlgorithm#extractLikelihoodRatio(List)
