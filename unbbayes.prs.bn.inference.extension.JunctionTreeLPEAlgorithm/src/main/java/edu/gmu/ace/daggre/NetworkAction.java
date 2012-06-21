@@ -46,4 +46,13 @@ public interface NetworkAction {
 	 * @return the identifier of the transaction containing this action.
 	 */
 	Long getTransactionKey();
+	
+	/**
+	 * If this action is related to some user ID
+	 * (e.g. the action is a trade performed by a
+	 * given user), then this 
+	 * method returns the user ID.
+	 * @return the user id.
+	 */
+	Long getUserId();
 }

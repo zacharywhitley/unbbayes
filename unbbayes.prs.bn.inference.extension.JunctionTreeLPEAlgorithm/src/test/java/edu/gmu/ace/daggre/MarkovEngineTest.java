@@ -16,7 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import junit.framework.TestCase;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
-import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 
 /**
@@ -94,10 +93,10 @@ public class MarkovEngineTest extends TestCase {
 	 */
 	public final void testAddQuestion() {
 		// initial assertion
-		assertNotNull(engine.getInferenceAlgorithm().getNetwork());
+		assertNotNull(engine.getProbabilisticNetwork());
 		
 		// no nodes in network.
-		assertEquals(0, engine.getInferenceAlgorithm().getNetwork().getNodeCount());
+		assertEquals(0, engine.getProbabilisticNetwork().getNodeCount());
 		
 		// case 1 : several threads in 1 transaction
 		
@@ -132,17 +131,17 @@ public class MarkovEngineTest extends TestCase {
 		engine.commitNetworkActions(transactionKey);
 		
 		// check if network contains THREAD_NUM nodes 
-		assertEquals(THREAD_NUM, engine.getInferenceAlgorithm().getNetwork().getNodeCount());
+		assertEquals(THREAD_NUM, engine.getProbabilisticNetwork().getNodeCount());
 		
 		// check if network contains nodes with ID from 0 to THREAD_NUM-1
 		for (int i = 0; i < THREAD_NUM; i++) {
-			assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode(Integer.toString(i)));
+			assertNotNull(engine.getProbabilisticNetwork().getNode(Integer.toString(i)));
 		}
 		
 		// reset engine
 		engine.initialize();
-		assertNotNull(engine.getInferenceAlgorithm().getNetwork());
-		assertEquals(0, engine.getInferenceAlgorithm().getNetwork().getNodeCount());
+		assertNotNull(engine.getProbabilisticNetwork());
+		assertEquals(0, engine.getProbabilisticNetwork().getNodeCount());
 		
 		
 		// case 2 : several transactions, several threads.
@@ -165,11 +164,11 @@ public class MarkovEngineTest extends TestCase {
         }
         
      	// check if network contains THREAD_NUM nodes 
-		assertEquals(THREAD_NUM, engine.getInferenceAlgorithm().getNetwork().getNodeCount());
+		assertEquals(THREAD_NUM, engine.getProbabilisticNetwork().getNodeCount());
 		
 		// check if network contains nodes with ID from 0 to THREAD_NUM-1
 		for (int i = 0; i < THREAD_NUM; i++) {
-			assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode(Integer.toString(i)));
+			assertNotNull(engine.getProbabilisticNetwork().getNode(Integer.toString(i)));
 		}
 		
 	}
@@ -311,13 +310,13 @@ public class MarkovEngineTest extends TestCase {
 	 */
 	public final void testAddQuestionAssumption() {
 		// initial assertion
-		assertNotNull(engine.getInferenceAlgorithm().getNetwork());
+		assertNotNull(engine.getProbabilisticNetwork());
 		
 		// no nodes in network.
-		assertEquals(0, engine.getInferenceAlgorithm().getNetwork().getNodeCount());
+		assertEquals(0, engine.getProbabilisticNetwork().getNodeCount());
 		
 		// no edges in network
-		assertEquals(0, engine.getInferenceAlgorithm().getNetwork().getEdges().size());
+		assertEquals(0, engine.getProbabilisticNetwork().getEdges().size());
 		
 		
 		// case 1 : several threads in 1 transaction
@@ -359,28 +358,28 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(parentNumCounterValuesSum, generatedEdges.size());
 		
 		// check if network contains all nodes and edges
-		assertEquals(generatedNodes.size(), engine.getInferenceAlgorithm().getNetwork().getNodeCount());
-		assertEquals(generatedEdges.size(), engine.getInferenceAlgorithm().getNetwork().getEdges().size());
+		assertEquals(generatedNodes.size(), engine.getProbabilisticNetwork().getNodeCount());
+		assertEquals(generatedEdges.size(), engine.getProbabilisticNetwork().getEdges().size());
 		
 		for (Long nodeID : generatedNodes) {
-			assertEquals(nodeID + " is not present in " + engine.getInferenceAlgorithm().getNetwork(),
+			assertEquals(nodeID + " is not present in " + engine.getProbabilisticNetwork(),
 					Long.toString(nodeID),
-					((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode(Long.toString(nodeID)).getName());
+					engine.getProbabilisticNetwork().getNode(Long.toString(nodeID)).getName());
 		}
 		for (QuestionPair pair : generatedEdges) {
-			Node node1 = ((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode(Long.toString(pair.left));
-			Node node2 = ((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode(Long.toString(pair.right));
+			Node node1 = engine.getProbabilisticNetwork().getNode(Long.toString(pair.left));
+			Node node2 = engine.getProbabilisticNetwork().getNode(Long.toString(pair.right));
 			assertNotNull(pair.left + " is null", node1);
 			assertNotNull(pair.right + " is null", node2);
 			assertFalse(pair.left + ".equals(" + pair.right+")", node1.equals(node2));
-			assertFalse(pair.left + "->" + pair.right + " is not present in " + engine.getInferenceAlgorithm().getNetwork(),
-					((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).hasEdge(node1, node2) < 0);
+			assertFalse(pair.left + "->" + pair.right + " is not present in " + engine.getProbabilisticNetwork(),
+					engine.getProbabilisticNetwork().hasEdge(node1, node2) < 0);
 		}
 		
 		// reset engine
 		engine.initialize();
-		assertNotNull(engine.getInferenceAlgorithm().getNetwork());
-		assertEquals(0, engine.getInferenceAlgorithm().getNetwork().getNodeCount());
+		assertNotNull(engine.getProbabilisticNetwork());
+		assertEquals(0, engine.getProbabilisticNetwork().getNodeCount());
 		
 		
 		// case 2 : several transactions, several threads.
@@ -406,29 +405,29 @@ public class MarkovEngineTest extends TestCase {
         }
         
         // check if network contains all nodes and edges
-		assertEquals(generatedNodes.size(), engine.getInferenceAlgorithm().getNetwork().getNodeCount());
-		assertEquals(generatedEdges.size(), engine.getInferenceAlgorithm().getNetwork().getEdges().size());
+		assertEquals(generatedNodes.size(), engine.getProbabilisticNetwork().getNodeCount());
+		assertEquals(generatedEdges.size(), engine.getProbabilisticNetwork().getEdges().size());
 		for (Long nodeID : generatedNodes) {
-			assertEquals(nodeID + " is not present in " + engine.getInferenceAlgorithm().getNetwork(),
+			assertEquals(nodeID + " is not present in " + engine.getProbabilisticNetwork(),
 					Long.toString(nodeID),
-					((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode(Long.toString(nodeID)).getName());
+					engine.getProbabilisticNetwork().getNode(Long.toString(nodeID)).getName());
 		}
 		for (QuestionPair pair : generatedEdges) {
-			Node node1 = ((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode(Long.toString(pair.left));
-			Node node2 = ((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode(Long.toString(pair.right));
+			Node node1 = engine.getProbabilisticNetwork().getNode(Long.toString(pair.left));
+			Node node2 = engine.getProbabilisticNetwork().getNode(Long.toString(pair.right));
 			assertNotNull(pair.left + " is null", node1);
 			assertNotNull(pair.right + " is null", node2);
 			assertFalse(pair.left + ".equals(" + pair.right+")", node1.equals(node2));
-			assertFalse(pair.left + "->" + pair.right + " is not present in " + engine.getInferenceAlgorithm().getNetwork(),
-					((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).hasEdge(node1, node2) < 0);
+			assertFalse(pair.left + "->" + pair.right + " is not present in " + engine.getProbabilisticNetwork(),
+					engine.getProbabilisticNetwork().hasEdge(node1, node2) < 0);
 		}
 		
 		// case 3 : edges being substituted
 		
 		// reset engine
 		engine.initialize();
-		assertNotNull(engine.getInferenceAlgorithm().getNetwork());
-		assertEquals(0, engine.getInferenceAlgorithm().getNetwork().getNodeCount());
+		assertNotNull(engine.getProbabilisticNetwork());
+		assertEquals(0, engine.getProbabilisticNetwork().getNodeCount());
 		
 		
 		/*
@@ -448,24 +447,24 @@ public class MarkovEngineTest extends TestCase {
 		engine.addQuestionAssumption(transactionKey, new Date(), 0, assumptiveQuestionIds, null);
 		engine.commitNetworkActions(transactionKey);
 		// check network structure consistency
-		assertEquals(3, engine.getInferenceAlgorithm().getNetwork().getNodeCount());
-		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0"));
-		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("1"));
-		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("2"));
-		assertEquals(2,((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0").getParents().size());
-		assertEquals(0,((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("1").getParents().size());
-		assertEquals(0,((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("2").getParents().size());
-		assertEquals(2, engine.getInferenceAlgorithm().getNetwork().getEdges().size());
-		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).hasEdge(
-				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("1"), 
-				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0"))
+		assertEquals(3, engine.getProbabilisticNetwork().getNodeCount());
+		assertNotNull(engine.getProbabilisticNetwork().getNode("0"));
+		assertNotNull(engine.getProbabilisticNetwork().getNode("1"));
+		assertNotNull(engine.getProbabilisticNetwork().getNode("2"));
+		assertEquals(2,engine.getProbabilisticNetwork().getNode("0").getParents().size());
+		assertEquals(0,engine.getProbabilisticNetwork().getNode("1").getParents().size());
+		assertEquals(0,engine.getProbabilisticNetwork().getNode("2").getParents().size());
+		assertEquals(2, engine.getProbabilisticNetwork().getEdges().size());
+		assertNotNull(engine.getProbabilisticNetwork().hasEdge(
+				engine.getProbabilisticNetwork().getNode("1"), 
+				engine.getProbabilisticNetwork().getNode("0"))
 			);
-		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).hasEdge(
-				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("2"), 
-				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0"))
+		assertNotNull(engine.getProbabilisticNetwork().hasEdge(
+				engine.getProbabilisticNetwork().getNode("2"), 
+				engine.getProbabilisticNetwork().getNode("0"))
 			);
 		// check cpt
-		for (Node node : engine.getInferenceAlgorithm().getNetwork().getNodes()) {
+		for (Node node : engine.getProbabilisticNetwork().getNodes()) {
 			PotentialTable cpt = ((ProbabilisticNode)node).getProbabilityFunction();
 			for (int i = 0; i < cpt.tableSize(); i++) {
 				assertEquals("Node " + node + ", index " + i, .5, cpt.getValue(i), FLOAT_ERROR_MARGIN);
@@ -497,36 +496,36 @@ public class MarkovEngineTest extends TestCase {
 		
 		engine.commitNetworkActions(transactionKey);
 		// check network structure consistency
-		assertEquals(3, engine.getInferenceAlgorithm().getNetwork().getNodeCount());
-		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0"));
-		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("1"));
-		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("2"));
-		assertEquals(1,((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0").getParents().size());
-		assertEquals(0,((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("1").getParents().size());
-		assertEquals(1,((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("2").getParents().size());
-		assertEquals(2, engine.getInferenceAlgorithm().getNetwork().getEdges().size());
-		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).hasEdge(
-				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("1"), 
-				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0"))
+		assertEquals(3, engine.getProbabilisticNetwork().getNodeCount());
+		assertNotNull(engine.getProbabilisticNetwork().getNode("0"));
+		assertNotNull(engine.getProbabilisticNetwork().getNode("1"));
+		assertNotNull(engine.getProbabilisticNetwork().getNode("2"));
+		assertEquals(1,engine.getProbabilisticNetwork().getNode("0").getParents().size());
+		assertEquals(0,engine.getProbabilisticNetwork().getNode("1").getParents().size());
+		assertEquals(1,engine.getProbabilisticNetwork().getNode("2").getParents().size());
+		assertEquals(2, engine.getProbabilisticNetwork().getEdges().size());
+		assertNotNull(engine.getProbabilisticNetwork().hasEdge(
+				engine.getProbabilisticNetwork().getNode("1"), 
+				engine.getProbabilisticNetwork().getNode("0"))
 			);
-		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).hasEdge(
-				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0"), 
-				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("2"))
+		assertNotNull(engine.getProbabilisticNetwork().hasEdge(
+				engine.getProbabilisticNetwork().getNode("0"), 
+				engine.getProbabilisticNetwork().getNode("2"))
 			);
 		// check cpts of each node
-		ProbabilisticNode nodeToTest = (ProbabilisticNode) ((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0");
+		ProbabilisticNode nodeToTest = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode("0");
 		PotentialTable cpt = nodeToTest.getProbabilityFunction();
 		assertEquals(4, cpt.tableSize());
 		assertEquals(.8f, cpt.getValue(0), FLOAT_ERROR_MARGIN);
 		assertEquals(.2f, cpt.getValue(1), FLOAT_ERROR_MARGIN);
 		assertEquals(.1f, cpt.getValue(2), FLOAT_ERROR_MARGIN);
 		assertEquals(.9f, cpt.getValue(3), FLOAT_ERROR_MARGIN);
-		nodeToTest = (ProbabilisticNode) ((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("1");
+		nodeToTest = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode("1");
 		cpt = nodeToTest.getProbabilityFunction();
 		assertEquals(2, cpt.tableSize());
 		assertEquals(.5f, cpt.getValue(0), FLOAT_ERROR_MARGIN);
 		assertEquals(.5f, cpt.getValue(1), FLOAT_ERROR_MARGIN);
-		nodeToTest = (ProbabilisticNode) ((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("2");
+		nodeToTest = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode("2");
 		cpt = nodeToTest.getProbabilityFunction();
 		assertEquals(4, cpt.tableSize());
 		assertEquals(.8f, cpt.getValue(0), FLOAT_ERROR_MARGIN);
@@ -539,8 +538,8 @@ public class MarkovEngineTest extends TestCase {
 		// case 3 : edges being substituted in same transaction
 		
 		engine.initialize();
-		assertNotNull(engine.getInferenceAlgorithm().getNetwork());
-		assertEquals(0, engine.getInferenceAlgorithm().getNetwork().getNodeCount());
+		assertNotNull(engine.getProbabilisticNetwork());
+		assertEquals(0, engine.getProbabilisticNetwork().getNodeCount());
 		
 		transactionKey = engine.startNetworkActions();
 		
@@ -585,36 +584,36 @@ public class MarkovEngineTest extends TestCase {
 		
 		
 		// check network structure consistency
-		assertEquals(3, engine.getInferenceAlgorithm().getNetwork().getNodeCount());
-		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0"));
-		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("1"));
-		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("2"));
-		assertEquals(1,((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0").getParents().size());
-		assertEquals(0,((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("1").getParents().size());
-		assertEquals(1,((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("2").getParents().size());
-		assertEquals(2, engine.getInferenceAlgorithm().getNetwork().getEdges().size());
-		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).hasEdge(
-				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("1"), 
-				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0"))
+		assertEquals(3, engine.getProbabilisticNetwork().getNodeCount());
+		assertNotNull(engine.getProbabilisticNetwork().getNode("0"));
+		assertNotNull(engine.getProbabilisticNetwork().getNode("1"));
+		assertNotNull(engine.getProbabilisticNetwork().getNode("2"));
+		assertEquals(1,engine.getProbabilisticNetwork().getNode("0").getParents().size());
+		assertEquals(0,engine.getProbabilisticNetwork().getNode("1").getParents().size());
+		assertEquals(1,engine.getProbabilisticNetwork().getNode("2").getParents().size());
+		assertEquals(2, engine.getProbabilisticNetwork().getEdges().size());
+		assertNotNull(engine.getProbabilisticNetwork().hasEdge(
+				engine.getProbabilisticNetwork().getNode("1"), 
+				engine.getProbabilisticNetwork().getNode("0"))
 			);
-		assertNotNull(((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).hasEdge(
-				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0"), 
-				((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("2"))
+		assertNotNull(engine.getProbabilisticNetwork().hasEdge(
+				engine.getProbabilisticNetwork().getNode("0"), 
+				engine.getProbabilisticNetwork().getNode("2"))
 			);
 		// check cpts of each node
-		nodeToTest = (ProbabilisticNode) ((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("0");
+		nodeToTest = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode("0");
 		cpt = nodeToTest.getProbabilityFunction();
 		assertEquals(4, cpt.tableSize());
 		assertEquals(.8f, cpt.getValue(0), FLOAT_ERROR_MARGIN);
 		assertEquals(.2f, cpt.getValue(1), FLOAT_ERROR_MARGIN);
 		assertEquals(.1f, cpt.getValue(2), FLOAT_ERROR_MARGIN);
 		assertEquals(.9f, cpt.getValue(3), FLOAT_ERROR_MARGIN);
-		nodeToTest = (ProbabilisticNode) ((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("1");
+		nodeToTest = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode("1");
 		cpt = nodeToTest.getProbabilityFunction();
 		assertEquals(2, cpt.tableSize());
 		assertEquals(.5f, cpt.getValue(0), FLOAT_ERROR_MARGIN);
 		assertEquals(.5f, cpt.getValue(1), FLOAT_ERROR_MARGIN);
-		nodeToTest = (ProbabilisticNode) ((ProbabilisticNetwork)engine.getInferenceAlgorithm().getNetwork()).getNode("2");
+		nodeToTest = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode("2");
 		cpt = nodeToTest.getProbabilityFunction();
 		assertEquals(4, cpt.tableSize());
 		assertEquals(.8f, cpt.getValue(0), FLOAT_ERROR_MARGIN);

@@ -208,11 +208,17 @@ public interface MarkovEngineInterface {
 	 * index 5 - P(T=t2 | A1=a11, A2=a22)<br/>
 	 * index 6 - P(T=t1 | A1=a12, A2=a22)<br/>
 	 * index 7 - P(T=t2 | A1=a12, A2=a22)<br/>
+	 * <br/>
+	 * If the states of the conditions are specified in assumedStates, then this list will only specify the conditional
+	 * probabilities of each states of questionID.
+	 * E.g. Again, suppose T is the target question with states t1 and t2, and A1 and A2 are assumptions with states (a11, a12), and (a21 , a22) respectively.]
+	 * Also suppose that assumedStates = (1,0). Then, the content of newValues must be: <br/>
+	 * index 0 - P(T=t1 | A1=a12, A2=a21)<br/>
+	 * index 1 - P(T=t2 | A1=a12, A2=a21)<br/>
 	 * @param assumptionIds : list (ordered collection) representing the IDs of the questions to be assumed in this edit. The order is important,
 	 * because the ordering in this list will be used in order to identify the correct indexes in "newValues".
-	 * @param assumedStates : this is not necessary if newValues contains full data (all cells of the conditional probability distribution),
-	 * however, classes implementing this method may provide special treatment when this parameter is non-null. By default, implementations will ignore this parameter,
-	 * so null should be passed.
+	 * @param assumedStates : this shall be null if newValues contains full data (all cells of the conditional probability distribution).
+	 * If not null, this list indicates which states the nodes in assumptionIds are.
 	 * @param allowNegative : If true (default is False), then checks for sufficient assets should be bypassed and we allow 
 	 * the user to go into the hole
 	 * @return the assets per state changed, if the user has sufficient assets 
@@ -455,12 +461,17 @@ public interface MarkovEngineInterface {
 	 * index 5 - P(T=t2 | A1=a11, A2=a22)<br/>
 	 * index 6 - P(T=t1 | A1=a12, A2=a22)<br/>
 	 * index 7 - P(T=t2 | A1=a12, A2=a22)<br/>
+	 * <br/>
+	 * If the states of the conditions are specified in assumedStates, then this list will only specify the conditional
+	 * probabilities of each states of questionID.
+	 * E.g. Again, suppose T is the target question with states t1 and t2, and A1 and A2 are assumptions with states (a11, a12), and (a21 , a22) respectively.]
+	 * Also suppose that assumedStates = (1,0). Then, the content of newValues must be: <br/>
+	 * index 0 - P(T=t1 | A1=a12, A2=a21)<br/>
+	 * index 1 - P(T=t2 | A1=a12, A2=a21)<br/>
 	 * @param assumptionIDs : list (ordered collection) representing the IDs of the questions to be assumed in this edit. The order is important,
 	 * because the ordering in this list will be used in order to identify the correct indexes in "newValues".
-	 * @param assumedStates : this is not necessary if newValues contains full data (all cells of the conditional probability distribution),
-	 * however, classes implementing this method may provide special treatment when this parameter is non-null. By default, implementations will ignore this parameter,
-	 * so null should be passed.
-	 * If it does not have the same size of assumptionIDs,Å@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
+	 * @param assumedStates : this shall be null if newValues contains full data (all cells of the conditional probability distribution).
+	 * If not null, this list indicates which states the nodes in assumptionIds are.
 	 * @return the assets per state changed, if the user has sufficient assets 
 	 * (as the values returned by {@link #getAssetsIfStates(int, long, long, int, List, List, Properties)}).
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
@@ -473,10 +484,8 @@ public interface MarkovEngineInterface {
 	 * @param userID: the ID of the user (i.e. owner of the assets).
 	 * @param questionID : the id of the question to be balanced.
 	 * @param assumptionIDs : list (ordered collection) representing the IDs of the questions to be assumed in this edit. The order is important,
-	 * because the ordering in this list will be used in order to identify the correct indexes in "newValues".
-	 * @param assumedStates : this is not necessary if newValues contains full data (all cells of the conditional probability distribution),
-	 * however, classes implementing this method may provide special treatment when this parameter is non-null. By default, implementations will ignore this parameter,
-	 * so null should be passed.
+	 * because the ordering in this list will be used in order to identify the correct indexes in assumedStates.
+	 * @param assumedStates : indicates the states of the nodes in assumptionIDs.
 	 * If it does not have the same size of assumptionIDs,Å@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered. 
 	 * @return value to be inserted as newValue in {@link #addTrade(long, Date, long, long, long, List, List, List, List, Boolean)} to balance the trade.
 	 * For example, suppose T is the target question (i.e. a random variable) with states t1 and t2, and A1 and A2 are assumptions with states (a11, a12), and (a21 , a22) respectively.

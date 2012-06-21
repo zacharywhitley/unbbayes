@@ -22,8 +22,8 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.bn.Separator;
+import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor;
-import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
 import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
 import unbbayes.prs.exception.InvalidParentException;
@@ -45,7 +45,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	private Map<Long, List<NetworkAction>> networkActionsMap;
 	private Long transactionCounter;
 
-	private Map<Long, AssetNetwork> userToAssetNetMap;
+	private Map<Long, AssetAwareInferenceAlgorithm> userToAssetAwareAlgorithmMap;
 
 	private boolean isToAddCashProportionally = false;
 
@@ -57,7 +57,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 
 	private ProbabilisticNetwork probabilisticNetwork;
 
-	private AssetAwareInferenceAlgorithm inferenceAlgorithm;
+	private AssetAwareInferenceAlgorithm defaultInferenceAlgorithm;
+
+	private IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor;
+
+//	private AssetAwareInferenceAlgorithm inferenceAlgorithm;
 	
 
 	/**
@@ -123,20 +127,24 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		setTransactionCounter(0);
 		
 		setProbabilisticNetwork(new ProbabilisticNetwork("DAGGRE"));
+		// disable log
+		getProbabilisticNetwork().setCreateLog(false);
 		
 		// prepare inference algorithm for the BN
 		JunctionTreeAlgorithm junctionTreeAlgorithm = new JunctionTreeAlgorithm(getProbabilisticNetwork());
-		
 		// enable soft evidence by using jeffrey rule in likelihood evidence w/ virtual nodes.
-		junctionTreeAlgorithm.setLikelihoodExtractor(JeffreyRuleLikelihoodExtractor.newInstance() );
-		
-		// prepare inference algorithm for asset network
-		setInferenceAlgorithm((AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm));
-		
+		JeffreyRuleLikelihoodExtractor jeffreyRuleLikelihoodExtractor = (JeffreyRuleLikelihoodExtractor) JeffreyRuleLikelihoodExtractor.newInstance();
+		junctionTreeAlgorithm.setLikelihoodExtractor(jeffreyRuleLikelihoodExtractor);
+		// prepare default inference algorithm for asset network
+		setDefaultInferenceAlgorithm((AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm));
 		// usually, users seem to start with 0 assets (assets are logarithmic, so 0 assets == 1 q table), but let's use the value of getDefaultInitialQTableValue
-		getInferenceAlgorithm().setDefaultInitialAssetQuantity(getDefaultInitialQTableValue());
+		getDefaultInferenceAlgorithm().setDefaultInitialAssetQuantity(getDefaultInitialQTableValue());
 		
-		setUserToAssetNetMap(new ConcurrentHashMap<Long, AssetNetwork>()); // concurrent hash map is known to be thread safe yet fast.
+		// several methods in this class reuse the same conditional probability extractor. Extract it here
+		setConditionalProbabilityExtractor(jeffreyRuleLikelihoodExtractor.getConditionalProbabilityExtractor());
+		
+		// initialize the map managing users (and the algorithms responsible for changing values of users asset networks)
+		setUserToAssetAwareAlgorithmMap(new ConcurrentHashMap<Long, AssetAwareInferenceAlgorithm>()); // concurrent hash map is known to be thread safe yet fast.
 		
 		return true;
 	}
@@ -230,12 +238,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			// rebuild BN
 			// make sure no one is using the probabilistic network yet.
 			ProbabilisticNetwork net = getProbabilisticNetwork();
-			synchronized (net) {
-				// reset
-//					getInferenceAlgorithm().reset();
-				// recompile
-				if (net.getNodeCount() > 0) {
-					getInferenceAlgorithm().run();
+			synchronized (getDefaultInferenceAlgorithm()) {
+				synchronized (net) {
+					if (net.getNodeCount() > 0) {
+						getDefaultInferenceAlgorithm().run();
+					}
 				}
 			}
 			// TODO rebuild all user asset nets
@@ -255,6 +262,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public Long getTransactionKey() {
 			return transactionKey;
 		}
+		public Long getUserId() { return null; }
 		
 	}
 
@@ -280,8 +288,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		if (initProbs != null && !initProbs.isEmpty()) {
 			float sum = 0;
 			for (Float prob : initProbs) {
-				if (prob < 0) {
-					throw new IllegalArgumentException("Negative probability declaration found: " + prob);
+				if (prob < 0 || prob > 1) {
+					throw new IllegalArgumentException("Invalid probability declaration found: " + prob);
 				}
 				sum += prob;
 			}
@@ -450,6 +458,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			// TODO Auto-generated method stub
 			return super.toString() + "{" + this.transactionKey + ", " + this.getQuestionId() + "}";
 		}
+
+		public Long getUserId() { return null; }
 	}
 
 	/* (non-Javadoc)
@@ -543,8 +553,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			float sum = 0;
 			int counter = 0;	// counter in which possible values are mod childNodeStateSize
 			for (Float probability : cpd) {
-				if (probability < 0) {
-					throw new IllegalArgumentException("Negative probability declaration found: " + probability);
+				if (probability < 0 || probability > 1) {
+					throw new IllegalArgumentException("Invalid probability declaration found: " + probability);
 				}
 				sum += probability;
 				counter++;
@@ -719,6 +729,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public boolean isStructureChangeAction() {
 			return true;
 		}
+		public Long getUserId() { return null; }
 	}
 
 	/**
@@ -744,38 +755,40 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			this.description = description;
 		}
 		public void execute() {
-			// extract user's asset net
-			AssetNetwork assetNet = null;
+			
+			// extract user's asset net and related algorithm
+			AssetAwareInferenceAlgorithm inferenceAlgorithm = null;
+			
 			try {
-				assetNet = getAssetNetFromUserID(userId);
+				inferenceAlgorithm = getAlgorithmAndAssetNetFromUserID(userId);
 			} catch (InvalidParentException e) {
 				throw new RuntimeException("Could not create asset tables for user " + userId, e);
 			}
 			
-			synchronized (assetNet) {
+			synchronized (inferenceAlgorithm.getAssetNetwork()) {
 				if (isToAddCashProportionally()) {
 					/*
 					 * Calculate ratio of change (newCash/oldCash) and apply same ratio to all cells.
 					 */
 					// calculate old cash (i.e. old minQ) value
 					float minQ = Float.NaN;
-					AssetAwareInferenceAlgorithm inferenceAlgorithm = getInferenceAlgorithm();
-					inferenceAlgorithm.setAssetNetwork(assetNet);
+					
 					inferenceAlgorithm.runMinPropagation();
 					minQ = inferenceAlgorithm.calculateExplanation(new ArrayList<Map<INode,Integer>>());
 					inferenceAlgorithm.undoMinPropagation();
+					
 					if (!Float.isNaN(minQ)) {
 						// calculate ratio
 						float ratio = (minQ + getQValuesFromScore(assets)) / minQ;
 						// multiply ratio to all cells of asset tables of cliques
-						for (Clique clique : assetNet.getJunctionTree().getCliques()) {
+						for (Clique clique : inferenceAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
 							PotentialTable assetTable = clique.getProbabilityFunction();
 							for (int i = 0; i < assetTable.tableSize(); i++) {
 								assetTable.setValue(i, assetTable.getValue(i) * ratio);
 							}
 						}
 						// mult ratio to all cells in asset tables of separators
-						for (Separator separator : assetNet.getJunctionTree().getSeparators()) {
+						for (Separator separator : inferenceAlgorithm.getAssetNetwork().getJunctionTree().getSeparators()) {
 							PotentialTable assetTable = separator.getProbabilityFunction();
 							for (int i = 0; i < assetTable.tableSize(); i++) {
 								assetTable.setValue(i, assetTable.getValue(i) * ratio);
@@ -787,14 +800,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 				} else {
 					float qValue = getQValuesFromScore(assets);
 					// add assets to all cells in asset tables of cliques
-					for (Clique clique : assetNet.getJunctionTree().getCliques()) {
+					for (Clique clique : inferenceAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
 						PotentialTable assetTable = clique.getProbabilityFunction();
 						for (int i = 0; i < assetTable.tableSize(); i++) {
 							assetTable.setValue(i, assetTable.getValue(i) + qValue);
 						}
 					}
 					// add assets to all cells in asset tables of separators
-					for (Separator separator : assetNet.getJunctionTree().getSeparators()) {
+					for (Separator separator : inferenceAlgorithm.getAssetNetwork().getJunctionTree().getSeparators()) {
 						PotentialTable assetTable = separator.getProbabilityFunction();
 						for (int i = 0; i < assetTable.tableSize(); i++) {
 							assetTable.setValue(i, assetTable.getValue(i) + qValue);
@@ -836,10 +849,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		protected void setAssets(float assets) {
 			this.assets = assets;
 		}
-		/**
-		 * @return the userId
+		/*
+		 * (non-Javadoc)
+		 * @see edu.gmu.ace.daggre.NetworkAction#getUserId()
 		 */
-		protected long getUserId() {
+		public Long getUserId() {
 			return userId;
 		}
 		/**
@@ -923,7 +937,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		private final long userId;
 		private final long questionId;
 		private final List<Float> newValues;
-		private final List<Long> assumptionIds;
+		private List<Long> assumptionIds;
 		private final List<Integer> assumedStates;
 		private final boolean allowNegative;
 
@@ -941,8 +955,28 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			
 		}
 		public void execute() {
-			// TODO Auto-generated method stub
+			// extract user's asset network from user ID
+			AssetAwareInferenceAlgorithm algorithm = null;
+			try {
+				algorithm = getAlgorithmAndAssetNetFromUserID(userId);
+			} catch (InvalidParentException e) {
+				throw new RuntimeException("Could not extract assets from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
+			}
+			if (algorithm == null) {
+				throw new RuntimeException("Could not extract assets from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
+			}
 			
+			synchronized (getProbabilisticNetwork()) {
+				synchronized (algorithm.getAssetNetwork()) {
+					if (!algorithm.getNetwork().equals(getProbabilisticNetwork())) {
+						// this should never happen, but some desync may happen.
+						Debug.println(getClass(), "[Warning] desync of network detected.");
+						algorithm.setNetwork(getProbabilisticNetwork());
+					}
+					// do trade. Since algorithm is linked to actual networks, changes will affect the actual networks
+					executeTrade(userId, questionId, newValues, assumptionIds, assumedStates, algorithm);
+				}
+			}
 		}
 		public void revert() throws UnsupportedOperationException {
 			throw new UnsupportedOperationException("Reverting a trade is not supported yet.");
@@ -957,12 +991,55 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public Long getTransactionKey() {
 			return transactionKey;
 		}
+		/**
+		 * @return the tradeKey
+		 */
+		protected String getTradeKey() {
+			return tradeKey;
+		}
+		/*
+		 * (non-Javadoc)
+		 * @see edu.gmu.ace.daggre.NetworkAction#getUserId()
+		 */
+		public Long getUserId() {
+			return userId;
+		}
+		/**
+		 * @return the questionId
+		 */
+		protected long getQuestionId() {
+			return questionId;
+		}
+		/**
+		 * @return the newValues
+		 */
+		protected List<Float> getNewValues() {
+			return newValues;
+		}
+		/**
+		 * @return the assumptionIds
+		 */
+		protected List<Long> getAssumptionIds() {
+			return assumptionIds;
+		}
+		/**
+		 * @return the assumedStates
+		 */
+		protected List<Integer> getAssumedStates() {
+			return assumedStates;
+		}
+		/**
+		 * @return the allowNegative
+		 */
+		protected boolean isAllowNegative() {
+			return allowNegative;
+		}
 	}
 	
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#addTrade(long, java.util.Date, long, long, long, java.util.List, java.util.List, java.util.List, java.util.List, java.lang.Boolean)
 	 */
-	public List<Float> addTrade(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates,  boolean allowNegative) throws IllegalArgumentException{
+	public List<Float> addTrade(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates,  boolean allowNegative) throws IllegalArgumentException {
 		
 		// initial assertions
 		if (occurredWhen == null) {
@@ -1037,18 +1114,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		}
 		
 		// this object extracts conditional probability of any nodes in same clique (it assumes prob network was compiled using junction tree algorithm)
-		IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = null;	
-		
-		if (getInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
-			JunctionTreeAlgorithm jtAlgorithm = (JunctionTreeAlgorithm) getInferenceAlgorithm().getProbabilityPropagationDelegator();
-			if (jtAlgorithm.getLikelihoodExtractor() instanceof JeffreyRuleLikelihoodExtractor) {
-				conditionalProbabilityExtractor = ((JeffreyRuleLikelihoodExtractor) jtAlgorithm.getLikelihoodExtractor()).getConditionalProbabilityExtractor();
-			}
-		}
+		IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = getConditionalProbabilityExtractor();	
 		if (conditionalProbabilityExtractor == null) {
-			// instantiate new extractor if nothing was found
-			Debug.println(getClass(), "Could not extract conditionalProbabilityExtractor from inference algorithm. Instantiating new.");
-			conditionalProbabilityExtractor = InCliqueConditionalProbabilityExtractor.newInstance();
+			throw new RuntimeException("Could not reuse conditional probability extractor of the current default inference algorithm. Perhaps you are using incompatible version of Markov Engine or UnBBayes.");
 		}
 		
 		
@@ -1079,13 +1147,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			if (assumedStates != null && !assumedStates.isEmpty()) {
 				// extract coordinate of the states (e.g. [2,1,0] means state of mainNode = 2, state of parent1 = 1, and parent2 == 0)
 				int[] multidimensionalCoord = cpt.getMultidimensionalCoord(i);
-				if (multidimensionalCoord.length != assumedStates.size()) {
+				// note: size of assumedStates is 1 unit smaller than multidimensionalCoord, because multidimensionalCoord contains the main node
+				if (multidimensionalCoord.length != assumedStates.size() + 1) {
 					throw new RuntimeException("Multi dimensional coordinate of index " + i + " has size " + multidimensionalCoord.length
 							+ ". Expected " + assumedStates.size());
 				}
-				for (int j = 0; j < multidimensionalCoord.length; j++) {
-					if ((assumedStates.get(j) != null)
-							&& (assumedStates.get(j) != multidimensionalCoord[j])) {
+				// iterate from index 1, because we do not consider the main node (which is in index 0 of multidimensionalCoord)
+				for (int j = 1; j < multidimensionalCoord.length; j++) {
+					if ((assumedStates.get(j-1) != null)
+							&& (assumedStates.get(j-1) != multidimensionalCoord[j])) {
 						isToSkip = true;
 						break;
 					}
@@ -1105,17 +1175,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 */
 	public List<Long> getPossibleQuestionAssumptions(long questionId, List<Long> assumptionIds) throws IllegalArgumentException {
 		// this object is going to be used to extract what nodes can become assumptions in a conditional soft evidence
-		IArbitraryConditionalProbabilityExtractor extractor = null;	
-		
-		// use the same extractor as used by the junction tree algorithm
-		if (getInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
-			JunctionTreeAlgorithm jtAlgorithm = (JunctionTreeAlgorithm) getInferenceAlgorithm().getProbabilityPropagationDelegator();
-			if (jtAlgorithm.getLikelihoodExtractor() instanceof JeffreyRuleLikelihoodExtractor) {
-				extractor = ((JeffreyRuleLikelihoodExtractor) jtAlgorithm.getLikelihoodExtractor()).getConditionalProbabilityExtractor();
-			}
-		}
-		if (extractor == null) {
-			throw new RuntimeException("Could not extract IArbitraryConditionalProbabilityExtractor from inference algorithm. Maybe you are using an incompatible version of Markov Engine or UnBBayes");
+		IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = getConditionalProbabilityExtractor();	
+		if (conditionalProbabilityExtractor == null) {
+			throw new RuntimeException("Could not reuse conditional probability extractor of the current default inference algorithm. Perhaps you are using incompatible version of Markov Engine or UnBBayes.");
 		}
 		
 		// extract main node
@@ -1144,7 +1206,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		// obtain possible condition nodes
 		List<INode> returnedNodes = null;
 		synchronized (getProbabilisticNetwork()) {
-			returnedNodes = extractor.getValidConditionNodes(mainNode, assumptions, getProbabilisticNetwork(), null);
+			returnedNodes = conditionalProbabilityExtractor.getValidConditionNodes(mainNode, assumptions, getProbabilisticNetwork(), null);
 		}
 		// convert condition nodes to ids
 		List<Long> ret = new ArrayList<Long>();
@@ -1176,48 +1238,39 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		
 		// this object extracts conditional probability of any nodes in same clique (it assumes prob network was compiled using junction tree algorithm)
 		// we can use the same object in order to extract conditional assets, because asset cliques extends prob cliques.
-		IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = null;	
-		
-		if (getInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
-			JunctionTreeAlgorithm jtAlgorithm = (JunctionTreeAlgorithm) getInferenceAlgorithm().getProbabilityPropagationDelegator();
-			if (jtAlgorithm.getLikelihoodExtractor() instanceof JeffreyRuleLikelihoodExtractor) {
-				conditionalProbabilityExtractor = ((JeffreyRuleLikelihoodExtractor) jtAlgorithm.getLikelihoodExtractor()).getConditionalProbabilityExtractor();
-			}
-		}
+		IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = getConditionalProbabilityExtractor();	
 		if (conditionalProbabilityExtractor == null) {
-			// instantiate new extractor if nothing was found
-			Debug.println(getClass(), "Could not extract conditionalProbabilityExtractor from inference algorithm. Instantiating new.");
-			conditionalProbabilityExtractor = InCliqueConditionalProbabilityExtractor.newInstance();
+			throw new RuntimeException("Could not reuse conditional probability extractor of the current default inference algorithm. Perhaps you are using incompatible version of Markov Engine or UnBBayes.");
 		}
 		
 		// extract user's asset network from user ID
-		AssetNetwork assetNet = null;
+		AssetAwareInferenceAlgorithm algorithm = null;
 		try {
-			assetNet = this.getAssetNetFromUserID(userId);
+			algorithm = this.getAlgorithmAndAssetNetFromUserID(userId);
 		} catch (InvalidParentException e) {
 			throw new RuntimeException("Could not extract assets from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
 		}
-		if (assetNet == null) {
+		if (algorithm == null) {
 			throw new RuntimeException("Could not extract assets from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
 		}
 		
 		PotentialTable assetTable = null;	// asset tables (clique table containing assets) are instances of potential tables
-		synchronized (assetNet) {
-			INode mainNode = assetNet.getNode(Long.toString(questionId));
+		synchronized (algorithm.getAssetNetwork()) {
+			INode mainNode = algorithm.getAssetNetwork().getNode(Long.toString(questionId));
 			if (mainNode == null) {
 				throw new IllegalArgumentException("Question " + questionId + " not found in asset structure of user " + userId);
 			}
 			List<INode> parentNodes = new ArrayList<INode>();
 			if (assumptionIds != null) {
 				for (Long id : assumptionIds) {
-					INode node = assetNet.getNode(Long.toString(id));
+					INode node = algorithm.getAssetNetwork().getNode(Long.toString(id));
 					if (node == null) {
 						throw new IllegalArgumentException("Question " + questionId + " not found in asset structure of user " + userId);
 					}
 					parentNodes.add(node);
 				}
 			}
-			assetTable = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, assetNet, getInferenceAlgorithm().getAssetPropagationDelegator());
+			assetTable = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, algorithm.getAssetNetwork(), algorithm.getAssetPropagationDelegator());
 		}
 		
 		// convert cpt to a list of float, given assumedStates.
@@ -1228,13 +1281,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			if (assumedStates != null && !assumedStates.isEmpty()) {
 				// extract coordinate of the states (e.g. [2,1,0] means state of mainNode = 2, state of parent1 = 1, and parent2 == 0)
 				int[] multidimensionalCoord = assetTable.getMultidimensionalCoord(i);
-				if (multidimensionalCoord.length != assumedStates.size()) {
+				// note: size of assumedStates is 1 unit smaller than multidimensionalCoord, because assumedStates does not contain the main node
+				if (multidimensionalCoord.length != assumedStates.size() + 1) {
 					throw new RuntimeException("Multi dimensional coordinate of index " + i + " has size " + multidimensionalCoord.length
 							+ ". Expected " + assumedStates.size());
 				}
-				for (int j = 0; j < multidimensionalCoord.length; j++) {
-					if ((assumedStates.get(j) != null)
-							&& (assumedStates.get(j) != multidimensionalCoord[j])) {
+				// start from index 1, because index 0 of multidimensionalCoord is the main node
+				for (int j = 1; j < multidimensionalCoord.length; j++) {
+					if ((assumedStates.get(j-1) != null)
+							&& (assumedStates.get(j-1) != multidimensionalCoord[j])) {
 						isToSkip = true;
 						break;
 					}
@@ -1271,17 +1326,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		}
 
 		// this object is going to be used to extract what nodes can become assumptions in a conditional soft evidence
-		IArbitraryConditionalProbabilityExtractor extractor = null;	
-		
-		// use the same extractor as used by the junction tree algorithm
-		if (getInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
-			JunctionTreeAlgorithm jtAlgorithm = (JunctionTreeAlgorithm) getInferenceAlgorithm().getProbabilityPropagationDelegator();
-			if (jtAlgorithm.getLikelihoodExtractor() instanceof JeffreyRuleLikelihoodExtractor) {
-				extractor = ((JeffreyRuleLikelihoodExtractor) jtAlgorithm.getLikelihoodExtractor()).getConditionalProbabilityExtractor();
-			}
-		}
-		if (extractor == null) {
-			throw new RuntimeException("Could not extract IArbitraryConditionalProbabilityExtractor from inference algorithm. Maybe you are using an incompatible version of Markov Engine or UnBBayes");
+		IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = getConditionalProbabilityExtractor();	
+		if (conditionalProbabilityExtractor == null) {
+			throw new RuntimeException("Could not reuse conditional probability extractor of the current default inference algorithm. Perhaps you are using incompatible version of Markov Engine or UnBBayes.");
 		}
 		
 		// extract main node
@@ -1307,23 +1354,40 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			}
 		}
 		
+		AssetAwareInferenceAlgorithm algorithm = null;
+		try {
+			algorithm = this.getAlgorithmAndAssetNetFromUserID(userId);
+		} catch (InvalidParentException e) {
+			throw new RuntimeException("Could not extract assets from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
+		}
+		if (algorithm == null) {
+			throw new RuntimeException("Could not extract assets from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
+		}
 		
 		// this vector will contain allowed interval of edit
 		float editInterval[] = null;
-		synchronized (getInferenceAlgorithm()) {
-			// we usually do locks in a given order to avoid deadlock. This class tries to lock from the outer objects to inner objects
-			// in this case, inference algorithm is aggregated to probabilistic network (algorithm -> network), but not the opposite.
-			// So I locked the algorithm first, and then the network.
+		synchronized (algorithm.getAssetNetwork()) {
 			synchronized (getProbabilisticNetwork()) {
-				PotentialTable table = (PotentialTable) extractor.buildCondicionalProbability(mainNode, assumptions, getProbabilisticNetwork(), null);
-				// convert assumedStates to multi-dimensional coordinate (readable by table)
-				int [] multidimensionalCoord = new int[assumedStates.size()];
+				PotentialTable table = (PotentialTable) getConditionalProbabilityExtractor().buildCondicionalProbability(mainNode, assumptions, getProbabilisticNetwork(), null);
+				
+				// clone assumedStates and add the state of the main node at index 0
+				List<Integer> assumedStatesIncludingMainNode = new ArrayList<Integer>();
+				if (assumedStates != null) {
+					assumedStatesIncludingMainNode.addAll(assumedStates);
+				}
+				assumedStatesIncludingMainNode.add(0, questionState);
+				if (assumedStatesIncludingMainNode.size() != table.variableCount()) {
+					throw new IllegalArgumentException("Expected size of assumedStates is " + table.variableCount() + ", but was " + (assumedStatesIncludingMainNode.size() - 1));
+				}
+				
+				// convert assumedStatesIncludingMainNode to multi-dimensional coordinate (readable by table)
+				int [] multidimensionalCoord = new int[assumedStatesIncludingMainNode.size()];
 				for (int i = 0; i < multidimensionalCoord.length; i++) {
-					multidimensionalCoord[i] = assumedStates.get(i);
+					multidimensionalCoord[i] = assumedStatesIncludingMainNode.get(i);
 				}
 				
 				// convert multi-dimensional coordinate to linear coordinate (second argument of calculateIntervalOfAllowedEdit) and obtain edit interval. 
-				editInterval = getInferenceAlgorithm().calculateIntervalOfAllowedEdit(table, table.getLinearCoord(multidimensionalCoord));
+				editInterval = algorithm.calculateIntervalOfAllowedEdit(table, table.getLinearCoord(multidimensionalCoord));
 			}
 		}
 		if (editInterval == null) {
@@ -1341,19 +1405,22 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getCash(long, java.util.List, java.util.List)
 	 */
 	public float getCash(long userId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
-		AssetNetwork assetNet;
+		AssetAwareInferenceAlgorithm algorithm = null;
 		try {
-			assetNet = this.getAssetNetFromUserID(userId);
+			algorithm = this.getAlgorithmAndAssetNetFromUserID(userId);
 		} catch (InvalidParentException e) {
-			throw new RuntimeException("Could not extract asset tables of user " + userId, e);
+			throw new RuntimeException("Could not extract assets from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
+		}
+		if (algorithm == null) {
+			throw new RuntimeException("Could not extract assets from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
 		}
 		
 		float ret = Float.NEGATIVE_INFINITY;	// value to return
-		synchronized (assetNet) {
+		synchronized (algorithm.getAssetNetwork()) {
 			// set up findings
 			if (assumptionIds != null) {
 				for (int i = 0; i < assumptionIds.size(); i++) {
-					AssetNode node = (AssetNode) assetNet.getNode(Long.toString(assumptionIds.get(i)));
+					AssetNode node = (AssetNode) algorithm.getAssetNetwork().getNode(Long.toString(assumptionIds.get(i)));
 					if (node == null) {
 						throw new IllegalArgumentException("Question " + assumptionIds.get(i) + " does not exist.");
 					}
@@ -1363,17 +1430,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 					}
 				}
 			}
-			synchronized (getInferenceAlgorithm()) {
-				getInferenceAlgorithm().setAssetNetwork(assetNet);
-				// run only min-propagation (i.e. calculate min-q given assumptions)
-				getInferenceAlgorithm().runMinPropagation();
-				// obtain min-q value and explanation (states which cause the min-q values)
-				ArrayList<Map<INode, Integer>> statesWithMinQAssets = new ArrayList<Map<INode,Integer>>();	// this is the min-q explanation (states which cause Min-q)
-				ret = getInferenceAlgorithm().calculateExplanation(statesWithMinQAssets);	// statesWithMinQAssets will be filled by this method
-				// undo min-propagation, because the next iteration of asset updates should be based on non-min assets
-				getInferenceAlgorithm().undoMinPropagation();	
-				// TODO use the values of statesWithMinQAssets for something (currently, this is ignored)
-			}
+			// run only min-propagation (i.e. calculate min-q given assumptions)
+			algorithm.runMinPropagation();
+			// obtain min-q value and explanation (states which cause the min-q values)
+			ArrayList<Map<INode, Integer>> statesWithMinQAssets = new ArrayList<Map<INode,Integer>>();	// this is the min-q explanation (states which cause Min-q)
+			ret = algorithm.calculateExplanation(statesWithMinQAssets);	// statesWithMinQAssets will be filled by this method
+			// undo min-propagation, because the next iteration of asset updates should be based on non-min assets
+			algorithm.undoMinPropagation();	
+			// TODO use the values of statesWithMinQAssets for something (currently, this is ignored)
 		}
 		
 		// convert q-values to score and return
@@ -1424,98 +1488,200 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			List<Long> assumptionIds, List<Integer> assumedStates)
 			throws IllegalArgumentException {
 		
-//		int childNodeStateSize = -1;	// this var stores the quantity of states of the node identified by questionId.
-//		
-//		// check existence of child
-//		Node child = getProbabilisticNetwork().getNode(Long.toString(questionId));
-//		if (child == null) {
-//			// child node does not exist. Check if there was some previous transaction adding such node
-//			synchronized (actions) {
-//				for (NetworkAction networkAction : actions) {
-//					if (networkAction instanceof AddQuestionNetworkAction) {
-//						AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
-//						if (addQuestionNetworkAction.getQuestionId() == sourceQuestionId) {
-//							childNodeStateSize = addQuestionNetworkAction.getNumberStates();
-//							break;
-//						}
-//					}
-//				}
-//			}
-//			if (childNodeStateSize < 0) {	
-//				// if negative, then expectedSizeOfCPD was not updated, so sourceQuestionId was not found in last loop
-//				throw new IllegalArgumentException("Question ID " + sourceQuestionId + " does not exist.");
-//			}
-//		} else {
-//			// initialize the value of expectedSizeOfCPD using the number of states of future owner of the cpd
-//			childNodeStateSize = child.getStatesSize();
-//		}
-//		
-//		// this var will store the correct size of cpd. If negative, owner of the cpd was not found.
-//		int expectedSizeOfCPD = childNodeStateSize;
-//		
-//		// do not allow null values for collections
-//		if (assumptiveQuestionIds == null) {
-//			assumptiveQuestionIds = new ArrayList<Long>();
-//		}
-//		
-//		// check existence of parents
-//		for (Long assumptiveQuestionId : assumptiveQuestionIds) {
-//			Node parent = getProbabilisticNetwork().getNode(Long.toString(assumptiveQuestionId));
-//			if (parent == null) {
-//				// parent node does not exist. Check if there was some previous transaction adding such node
-//				synchronized (actions) {
-//					boolean hasFound = false;
-//					for (NetworkAction networkAction : actions) {
-//						if (networkAction instanceof AddQuestionNetworkAction) {
-//							AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
-//							if (addQuestionNetworkAction.getQuestionId() == assumptiveQuestionId) {
-//								// size of cpd = MULT (<quantity of states of child and parents>).
-//								expectedSizeOfCPD *= addQuestionNetworkAction.getNumberStates();
-//								hasFound = true;
-//								break;
-//							}
-//						}
-//					}
-//					if (!hasFound) {	
-//						// parent was not found
-//						throw new IllegalArgumentException("Question ID " + assumptiveQuestionId + " does not exist.");
-//					}
-//				}
-//			} else{
-//				// size of cpd = MULT (<quantity of states of child and parents>).
-//				expectedSizeOfCPD *= parent.getStatesSize();
-//			}
-//			
-//		}
-//		
-//		// check consistency of size of cpd
-//		if (cpd != null && !cpd.isEmpty()){
-//			if (cpd.size() != expectedSizeOfCPD) {
-//				// size of cpd is inconsistent
-//				throw new IllegalArgumentException("Expected size of cpd of question " + sourceQuestionId + " is "+ expectedSizeOfCPD + ", but was " + cpd.size());
-//			}
-//			// check value consistency
-//			float sum = 0;
-//			int counter = 0;	// counter in which possible values are mod childNodeStateSize
-//			for (Float probability : cpd) {
-//				if (probability < 0) {
-//					throw new IllegalArgumentException("Negative probability declaration found: " + probability);
-//				}
-//				sum += probability;
-//				counter++;
-//				if (counter >= childNodeStateSize) {
-//					// check if sum of conditional probability given current state of parents is 1
-//					if (!(((1 - getProbabilityErrorMargin()) < sum) && (sum < (1 + getProbabilityErrorMargin())))) {
-//						throw new IllegalArgumentException("Inconsistent prior probability: " + sum);
-//					}
-//					counter = 0;
-//					sum = 0;
-//				}
-//			}
-//		}
+		// initial assertions
+		if (newValues == null || newValues.isEmpty()) {
+			throw new IllegalArgumentException("newValues cannot be empty or null");
+		}
+		if (assumptionIds != null && !assumptionIds.isEmpty()) {
+			// size of assumedStates must be equal to assumptionIds
+			if (assumedStates == null) {
+				throw new IllegalArgumentException("assumedStates is not expected to be null when assumptionIds is not null.");
+			} else if (assumedStates.size() != assumptionIds.size()) {
+				throw new IllegalArgumentException("Size of assumedStates is expected to be " + assumptionIds.size() + ", but was " + assumedStates.size());
+			}
+			// assumptionIds must not contain null value
+			if (assumptionIds.contains(null)) {
+				throw new IllegalArgumentException("Null assumption found.");
+			}
+			// assumedStates must not contain null value
+			if (assumedStates.contains(null)) {
+				throw new IllegalArgumentException("Assumption with state == null found.");
+			}
+		}
+		
+		// this algorithm will be alive only during the context of this method. It will contain clones of the bayesian network and asset net
+		AssetAwareInferenceAlgorithm algorithm = null;
+		try {
+			
+			// extract original algorithm, just in order to clone it
+			AssetAwareInferenceAlgorithm originalAlgorithm = this.getAlgorithmAndAssetNetFromUserID(userId);
+			if (originalAlgorithm == null) {
+				throw new RuntimeException("Could not extract assets from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
+			}
+			
+			// clone the algorithm. It shall also clone the bayesian network and asset network
+			algorithm = (AssetAwareInferenceAlgorithm) originalAlgorithm.clone();
+		} catch (InvalidParentException e) {
+			throw new RuntimeException("Could not extract assets from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
+		} catch (CloneNotSupportedException e) {
+			throw new RuntimeException("Could not clone networks of user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
+		}
+		if (algorithm == null) {
+			throw new RuntimeException("Could not extract assets from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
+		}
+		
+		// do trade on specified algorithm (which only contains link to copies of BN and asset net)
+		this.executeTrade(userId, questionId, newValues, assumptionIds, assumedStates, algorithm);
+		
+		// TODO fill return value
 		
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Not implemented yet.");
+	}
+	
+	/**
+	 * 
+	 * @param userID : the ID of the user (i.e. owner of the assets).
+	 * @param questionID : the id of the question to be edited (i.e. the random variable "T"  in the example)
+	 * @param newValues : this is a list (ordered collection) representing the probability values after the edit. 
+	 * For example, suppose T is the target question (i.e. a random variable) with states t1 and t2, and A1 and A2 are assumptions with states (a11, a12), and (a21 , a22) respectively.
+	 * Then, the list must be filled as follows:<br/>
+	 * index 0 - P(T=t1 | A1=a11, A2=a21)<br/>
+	 * index 1 - P(T=t2 | A1=a11, A2=a21)<br/>
+	 * index 2 - P(T=t1 | A1=a12, A2=a21)<br/>
+	 * index 3 - P(T=t2 | A1=a12, A2=a21)<br/>
+	 * index 4 - P(T=t1 | A1=a11, A2=a22)<br/>
+	 * index 5 - P(T=t2 | A1=a11, A2=a22)<br/>
+	 * index 6 - P(T=t1 | A1=a12, A2=a22)<br/>
+	 * index 7 - P(T=t2 | A1=a12, A2=a22)<br/>
+	 * <br/>
+	 * If the states of the conditions are specified in assumedStates, then this list will only specify the conditional
+	 * probabilities of each states of questionID.
+	 * E.g. Again, suppose T is the target question with states t1 and t2, and A1 and A2 are assumptions with states (a11, a12), and (a21 , a22) respectively.]
+	 * Also suppose that assumedStates = (1,0). Then, the content of newValues must be: <br/>
+	 * index 0 - P(T=t1 | A1=a12, A2=a21)<br/>
+	 * index 1 - P(T=t2 | A1=a12, A2=a21)<br/>
+	 * 
+	 * @param assumptionIDs : list (ordered collection) representing the IDs of the questions to be assumed in this edit. The order is important,
+	 * because the ordering in this list will be used in order to identify the correct indexes in "newValues".
+	 * @param assumedStates : this list specifies a filter for states of nodes in assumptionIDs.
+	 * If it does not have the same size of assumptionIDs,Å@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
+	 * @param algorithm : algorithm to be used in order to update probability and assets. 
+	 * {@link AssetAwareInferenceAlgorithm#getNetwork()} will be used to access the Bayes net.
+	 * {@link AssetAwareInferenceAlgorithm#getAssetNetwork()} will be used to access the asset net.
+	 * @see #addTrade(long, Date, String, long, long, List, List, List, boolean)
+	 * @see #previewTrade(long, long, List, List, List)
+	 */
+	protected void executeTrade( long userId, long questionId,List<Float> newValues,
+			List<Long> assumptionIds, List<Integer> assumedStates, AssetAwareInferenceAlgorithm algorithm) {
+		
+		// obtain the copy of the network, so that the original is always untouched
+		ProbabilisticNetwork net = algorithm.getRelatedProbabilisticNetwork();
+		if (net == null || !net.equals(getProbabilisticNetwork())) {
+			throw new RuntimeException("Could not obtain bayesian network for user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
+		}
+		
+		// check existence of child
+		TreeVariable child = (TreeVariable) net.getNode(Long.toString(questionId));
+		if (child == null) {
+			throw new IllegalArgumentException("Question " + questionId + " not found.");
+		}
+		
+		// this var will store the correct size of cpd. If negative, owner of the cpd was not found.
+		int expectedSizeOfCPD = child.getStatesSize();
+		
+		// do not allow null values for collections
+		if (assumptionIds == null) {
+			assumptionIds = new ArrayList<Long>();
+		}
+		
+		// extract assumptions
+		List<INode> assumptionNodes = new ArrayList<INode>();
+		for (Long assumptiveQuestionId : assumptionIds) {
+			Node parent = net.getNode(Long.toString(assumptiveQuestionId));
+			if (parent == null) {
+				throw new IllegalArgumentException("Question " + assumptiveQuestionId + " not found.");
+			} 
+			assumptionNodes.add(parent);
+			// size of cpd if  = MULT (<quantity of states of child and parents>).
+			expectedSizeOfCPD *= parent.getStatesSize();
+		}
+		
+		// check consistency of newValues
+		if (assumedStates == null || assumedStates.isEmpty()) {
+			// note: if assumedStates == null or empty, size of newValues must be equals to the quantity of states of the child (main) node
+			if (newValues.size() != child.getStatesSize()) {
+				throw new IllegalArgumentException("Expected size of newValues was " + child.getStatesSize() + ", but obtained " + newValues.size());
+			}
+		} else if (newValues.size() != expectedSizeOfCPD) {
+			throw new IllegalArgumentException("Expected size of newValues was " + expectedSizeOfCPD + ", but obtained " + newValues.size());
+		}
+		
+		// check consistency of content of newValues
+		float sum = 0;
+		int counter = 0;	// counter in which possible values are mod childNodeStateSize
+		for (Float probability : newValues) {
+			if (probability < 0 || probability > 1) {
+				throw new IllegalArgumentException("Invalid probability declaration found: " + probability);
+			}
+			sum += probability;
+			counter++;
+			if (counter >= child.getStatesSize()) {
+				// check if sum of conditional probability given current state of parents is 1
+				if (!(((1 - getProbabilityErrorMargin()) < sum) && (sum < (1 + getProbabilityErrorMargin())))) {
+					throw new IllegalArgumentException("Inconsistent prior probability: " + sum);
+				}
+				counter = 0;
+				sum = 0;
+			}
+		}
+		
+		
+		// this object extracts conditional probability of any nodes in same clique (it assumes prob network was compiled using junction tree algorithm)
+		IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = getConditionalProbabilityExtractor();	
+		if (conditionalProbabilityExtractor == null) {
+			throw new RuntimeException("Could not reuse conditional probability extractor of the current default inference algorithm. Perhaps you are using incompatible version of Markov Engine or UnBBayes.");
+		}
+		
+		// potential to be used as basis to calculate likelihood ratio for a soft evidence. This is the "current probability"
+		PotentialTable potential = null;
+		synchronized (net) {
+			potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(child, assumptionNodes, net, null);
+		}
+		if (potential == null) {
+			throw new RuntimeException("Could not extract current probabilities. Please, verify the version of your Markov Engine and UnBBayes.");
+		}
+		
+		// change content of potential according to newValues and assumedStates
+		if (assumedStates == null || assumedStates.isEmpty()) {
+			for (int i = 0; i < newValues.size(); i++) {
+				potential.setValue(i, newValues.get(i));
+			}
+		} else {
+			// instantiate multi-dimensional coordinate to be used in order to change values in potential table
+			int[] multidimensionalCoord = potential.getMultidimensionalCoord(0);
+			// move multidimensionalCoord to the point related to assumedStates
+			for (int i = 1; i < multidimensionalCoord.length; i++) { // index 0 is for the main node (which is not specified in assumedStates), so it is kept to 0
+				multidimensionalCoord[i] = assumedStates.get(i);
+			}
+			// modify content of potential table accourding to newValues 
+			for (int i = 0; i < newValues.size(); i++) {	// at this point, newValues.size() == child.statesSize()
+				multidimensionalCoord[0] = i; // only iterate over states of the main node (i.e. index 0 of multidimensionalCoord)
+				potential.setValue(potential.getLinearCoord(multidimensionalCoord), newValues.get(i));
+			}
+		}
+		
+		// fill array of likelihood with values in CPT
+		float [] likelihood = new float[potential.tableSize()];
+		for (int i = 0; i < likelihood.length; i++) {
+			likelihood[i] = potential.getValue(i);
+		}
+		
+		// add likelihood ratio given (empty) parents (conditions assumed in the bet - empty now)
+		child.addLikeliHood(likelihood, assumptionNodes);
+		
+		// propagate soft evidence
+		algorithm.propagate();
 	}
 
 	/* (non-Javadoc)
@@ -1594,30 +1760,34 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		return transactionCounter;
 	}
 
-	/**
-	 * @param inferenceAlgorithm the inferenceAlgorithm to set
-	 */
-	public void setInferenceAlgorithm(AssetAwareInferenceAlgorithm inferenceAlgorithm) {
-		this.inferenceAlgorithm = inferenceAlgorithm;
-	}
-
-	/**
-	 * @return the inferenceAlgorithm
-	 */
-	public AssetAwareInferenceAlgorithm getInferenceAlgorithm() {
-//		JunctionTreeAlgorithm junctionTreeAlgorithm = new JunctionTreeAlgorithm(getProbabilisticNetwork());
+//	/**
+//	 * @param inferenceAlgorithm the inferenceAlgorithm to set
+//	 */
+//	public void setInferenceAlgorithm(AssetAwareInferenceAlgorithm inferenceAlgorithm) {
+//		this.inferenceAlgorithm = inferenceAlgorithm;
+//	}
+//
+//	/**
+//	 * @return the inferenceAlgorithm
+//	 */
+//	public AssetAwareInferenceAlgorithm getInferenceAlgorithm() {
+////		JunctionTreeAlgorithm junctionTreeAlgorithm = new JunctionTreeAlgorithm(getProbabilisticNetwork());
+////		
+////		// enable soft evidence by using jeffrey rule in likelihood evidence w/ virtual nodes.
+////		junctionTreeAlgorithm.setLikelihoodExtractor(JeffreyRuleLikelihoodExtractor.newInstance() );
+////		
+////		// prepare inference algorithm for asset network
+////		AssetAwareInferenceAlgorithm inferenceAlgorithm = (AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm);
+////		
+////		// usually, users seem to start with 0 assets (assets are logarithmic, so 0 assets == 1 q table), but let's use the value of getDefaultInitialQTableValue
+////		inferenceAlgorithm.setDefaultInitialAssetQuantity(getDefaultInitialQTableValue());
 //		
-//		// enable soft evidence by using jeffrey rule in likelihood evidence w/ virtual nodes.
-//		junctionTreeAlgorithm.setLikelihoodExtractor(JeffreyRuleLikelihoodExtractor.newInstance() );
-//		
-//		// prepare inference algorithm for asset network
-//		AssetAwareInferenceAlgorithm inferenceAlgorithm = (AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm);
-//		
-//		// usually, users seem to start with 0 assets (assets are logarithmic, so 0 assets == 1 q table), but let's use the value of getDefaultInitialQTableValue
-//		inferenceAlgorithm.setDefaultInitialAssetQuantity(getDefaultInitialQTableValue());
-		
-		return inferenceAlgorithm;
-	}
+//		return inferenceAlgorithm;
+//	}
+	
+	//
+	
+	
 
 	/**
 	 * This is the error margin used when comparing two probability values.
@@ -1638,46 +1808,70 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	}
 
 	/**
-	 * Mapping from user ID to {@link AssetNetwork} 
+	 * Mapping from user ID to {@link AssetAwareInferenceAlgorithm}
+	 * (algorithm for managing bayesian network and assets), 
+	 * which is related to {@link AssetNetwork} 
 	 * (class representing user and asset q tables)
-	 * @return the userToAssetNetMap
+	 * @return the userToAssetAwareAlgorithmMap
 	 */
-	protected Map<Long, AssetNetwork> getUserToAssetNetMap() {
-		return userToAssetNetMap;
+	protected Map<Long, AssetAwareInferenceAlgorithm> getUserToAssetAwareAlgorithmMap() {
+		return userToAssetAwareAlgorithmMap;
 	}
 
 	/**
-	 * Mapping from user ID to {@link AssetNetwork} 
+	 * Mapping from user ID to {@link AssetAwareInferenceAlgorithm}
+	 * (algorithm for managing bayesian network and assets), 
+	 * which is related to {@link AssetNetwork} 
 	 * (class representing user and asset q tables)
-	 * @param userToAssetNetMap the userToAssetNetMap to set
+	 * @param map the map to set
 	 */
-	protected void setUserToAssetNetMap(Map<Long, AssetNetwork> userToAssetNetMap) {
-		this.userToAssetNetMap = userToAssetNetMap;
+	protected void setUserToAssetAwareAlgorithmMap(Map<Long, AssetAwareInferenceAlgorithm> map) {
+		this.userToAssetAwareAlgorithmMap = map;
 	}
 	
 	/**
-	 * Obtains the asset network (structure representing the user and 
+	 * Obtains the getProbabilisticNetwork() associated with an asset network (structure representing the user and 
 	 * the asset q values).
+	 * Each asset network is associated with only 1 inference algorithm, so that we do not need to lock
+	 * access to inference algorithm in order to perform operations in a scope of a single user.
 	 * @param userID
 	 * @return instance of AssetNetwork
 	 * @throws InvalidParentException 
 	 * @see AssetAwareInferenceAlgorithm
 	 */
-	protected AssetNetwork getAssetNetFromUserID(long userID) throws InvalidParentException {
-		AssetNetwork assetNet = null;
-		synchronized (getUserToAssetNetMap()) {
-			assetNet = getUserToAssetNetMap().get(userID);
-			if (assetNet == null) {
-				// first time user is referenced. Generate new asset net
+	protected AssetAwareInferenceAlgorithm getAlgorithmAndAssetNetFromUserID(long userID) throws InvalidParentException {
+		
+		// value to be returned
+		AssetAwareInferenceAlgorithm algorithm = null;
+		
+		synchronized (getUserToAssetAwareAlgorithmMap()) {
+			algorithm = getUserToAssetAwareAlgorithmMap().get(userID);
+			if (algorithm == null) {
+				// first time user is referenced. Prepare inference algorithm for the user
+				JunctionTreeAlgorithm junctionTreeAlgorithm = new JunctionTreeAlgorithm(getProbabilisticNetwork());
+				// enable soft evidence by using jeffrey rule in likelihood evidence w/ virtual nodes.
+				junctionTreeAlgorithm.setLikelihoodExtractor(JeffreyRuleLikelihoodExtractor.newInstance() );
+				// prepare default inference algorithm for asset network
+				algorithm = ((AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm));
+				// usually, users seem to start with 0 assets (assets are logarithmic, so 0 assets == 1 q table), but let's use the value of getDefaultInitialQTableValue
+				algorithm.setDefaultInitialAssetQuantity(getDefaultInitialQTableValue());
+				
+				// generate new asset net
+				AssetNetwork assetNet = null;
 				synchronized (getProbabilisticNetwork()) {
 					// lock access to network
-					assetNet = getInferenceAlgorithm().createAssetNetFromProbabilisticNet(getProbabilisticNetwork());
+					assetNet = algorithm.createAssetNetFromProbabilisticNet(getProbabilisticNetwork());
 				}
 				assetNet.setName(Long.toString(userID));
-				getUserToAssetNetMap().put(userID, assetNet);
+				
+				// link algorithm to asset net.
+				algorithm.setAssetNetwork(assetNet);
+				
+				getUserToAssetAwareAlgorithmMap().put(userID, algorithm);
 			}
 		}
-		return assetNet;
+		
+		return algorithm;
 	}
 
 	/**
@@ -1834,6 +2028,38 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 */
 	public ProbabilisticNetwork getProbabilisticNetwork() {
 		return probabilisticNetwork;
+	}
+
+	/**
+	 * @return an instance of {@link AssetAwareInferenceAlgorithm}
+	 * which is not necessary related to some user.
+	 */
+	public AssetAwareInferenceAlgorithm getDefaultInferenceAlgorithm() {
+		return defaultInferenceAlgorithm;
+	}
+	
+	/**
+	 * @param defaultInferenceAlgorithm : an instance of {@link AssetAwareInferenceAlgorithm}
+	 * which is not necessary related to some user.
+	 */
+	public void setDefaultInferenceAlgorithm(
+			AssetAwareInferenceAlgorithm defaultInferenceAlgorithm) {
+		this.defaultInferenceAlgorithm = defaultInferenceAlgorithm;
+	}
+
+	/**
+	 * @param conditionalProbabilityExtractor the conditionalProbabilityExtractor to set
+	 */
+	public void setConditionalProbabilityExtractor(
+			IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor) {
+		this.conditionalProbabilityExtractor = conditionalProbabilityExtractor;
+	}
+
+	/**
+	 * @return the conditionalProbabilityExtractor
+	 */
+	public IArbitraryConditionalProbabilityExtractor getConditionalProbabilityExtractor() {
+		return conditionalProbabilityExtractor;
 	}
 
 }

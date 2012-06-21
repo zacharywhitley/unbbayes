@@ -783,5 +783,20 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 */
 	public boolean isToNormalizeDisconnectedNets() {
 		return isToNormalizeDisconnectedNets;
-}
+	}
+
+	/**
+	 * This method will create a copy of itself, 
+	 * a copy of the probabilistic network,
+	 * and a copy of the asset network.
+	 * This method may be useful for previewing the 
+	 * result of edits without modifying the original
+	 * probabilistic network and asset network.
+	 * @param probabilisticNetwork
+	 * @return a copy of probabilisticNetwork in the context of asset calculation.
+	 */
+	public IInferenceAlgorithm clone()  throws CloneNotSupportedException  {
+		throw new CloneNotSupportedException("Not implmented yet.");
+	}
+	
 }
