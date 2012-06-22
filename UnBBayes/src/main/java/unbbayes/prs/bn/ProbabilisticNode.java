@@ -106,17 +106,25 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable, 
         float[] marginais = new float[super.marginalList.length];
         System.arraycopy(super.marginalList, 0, marginais, 0, marginais.length);
         cloned.marginalList = marginais;
-        
+//        cloned.copyMarginal();
         return cloned;
     }
     
+    /**
+     * Performs a clone which copies only basic attributes related to itself only
+     * (i.e. it does not copy CPT, parents, children, adjacents, and position)
+     * @return a new instance
+     */
     public ProbabilisticNode basicClone() {
     	ProbabilisticNode cloned = new ProbabilisticNode();
 		cloned.setDescription(this.getDescription());
 		cloned.setName(this.getName());
-		cloned.setPosition(this.getPosition().getX(), this.getPosition().getY());
+//		cloned.setPosition(this.getPosition().getX(), this.getPosition().getY());
 		cloned.setStates(SetToolkit.clone(states));
-        
+		float[] marginais = new float[super.marginalList.length];
+        System.arraycopy(super.marginalList, 0, marginais, 0, marginais.length);
+        cloned.marginalList = marginais;
+        cloned.copyMarginal();
         return cloned;
     }
 
