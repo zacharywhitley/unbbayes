@@ -1063,6 +1063,152 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assetQAlgorithm.undoMinPropagation();
 		
 		
+		// Eric makes a bet which makes his assets-q to go below 1, but the algorithm does not allow it
+		
+		// let the algorithm not to allow asset-q smaller than 1
+		assetQAlgorithm.setToAllowQValuesSmallerThan1(false);
+		
+		// bet node is D
+		betNode = (TreeVariable) network.getNode("D");
+		assertEquals(network.getNode("D"), betNode);
+		
+		// bet condition is F. 
+		betConditions.clear();
+		assumedNode = network.getNode("F");
+		betConditions.add(assumedNode);
+		assertEquals(1, betConditions.size());
+		assertTrue(betConditions.contains(assumedNode));
+		
+		// extract CPT of D given F
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+		assertNotNull(potential);
+		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
+
+		// extract allowed interval of P(D=d1|F=f2), so that we can an edit incompatible with such interval
+		editInterval = assetQAlgorithm.calculateIntervalOfAllowedEdit(potential, 2);	// 2 is the index of d1 f2
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.length);
+		
+		// set P(D=d1|F=f2) to a value lower (1/10) than the lower bound of edit interval
+		potential.setValue(2, editInterval[0]/10);
+		potential.setValue(3, 1-(editInterval[0]/10));
+		
+		// fill array of likelihood with values in CPT
+		likelihood = new float[potential.tableSize()];
+		for (int i = 0; i < likelihood.length; i++) {
+			likelihood[i] = potential.getValue(i);
+		}
+		
+		// add likelihood ratio given (empty) parents (conditions assumed in the bet - empty now)
+		betNode.addLikeliHood(likelihood, betConditions);
+		
+		try {
+			// propagate soft evidence
+			assetQAlgorithm.propagate();
+			fail("Algorithm should not allow this edit");
+		} catch (ZeroAssetsException e) {
+			// OK
+			System.out.println(network.getLog());
+			network.getLogManager().clear();
+			assertNotNull(e);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		// check that marginals have not changed: E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
+		nodeToTest = (TreeVariable) network.getNode("E");
+		assertTrue(((0.8509f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.8509f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.1491f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.1491f + PROB_PRECISION_ERROR)) );
+		nodeToTest = (TreeVariable) network.getNode("D");
+		assertTrue(((0.7232f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.7232f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.2768f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.2768f + PROB_PRECISION_ERROR)) );
+		nodeToTest = (TreeVariable) network.getNode("F");
+		assertTrue(((0.2165f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.2165f + PROB_PRECISION_ERROR)) );
+		assertTrue(((0.7835f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.7835f + PROB_PRECISION_ERROR)) );
+		
+		
+		// check that LPE has not changed - still d2, e2 and f2
+
+		// prepare argument, which is input and output at the same moment
+		inOutArgLPE.clear();
+		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		
+		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
+		assertNotNull(lpes);
+		assertTrue(lpes.size() == 3);
+		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("D")).intValue());	
+		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("E")).intValue());	
+		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("F")).intValue());	
+		
+		assertTrue("Obtained min q = " + minQ,(( 35.7393f - ASSET_PRECISION_ERROR) < minQ) && (minQ < ( 35.7393f + ASSET_PRECISION_ERROR)) );
+		
+		// undo only the min propagation (we do not need the min q values anymore, and next q-calculations must use q values prior to min propagation)
+		assetQAlgorithm.undoMinPropagation();
+		
+		// Eric makes a bet which makes his assets-q to go below 1, and the algorithm allows it
+		
+		// let the algorithm allow asset-q smaller than 1
+		assetQAlgorithm.setToAllowQValuesSmallerThan1(true);
+		
+		// bet node is D
+		betNode = (TreeVariable) network.getNode("D");
+		assertEquals(network.getNode("D"), betNode);
+		
+		// bet condition is F. 
+		assumedNode = network.getNode("F");
+		betConditions.clear();
+		betConditions.add(assumedNode);
+		assertEquals(1, betConditions.size());
+		assertTrue(betConditions.contains(assumedNode));
+		
+		// extract CPT of D given F
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+		assertNotNull(potential);
+		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
+
+		// extract allowed interval of P(D=d1|F=f2), so that we can an edit incompatible with such interval
+		editInterval = assetQAlgorithm.calculateIntervalOfAllowedEdit(potential, 2);	// 2 is the index of d1 f2
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.length);
+		
+		// set P(D=d1|F=f2) to a value lower (half) than the lower bound of edit interval
+		potential.setValue(2, editInterval[0]/2);
+		potential.setValue(3, 1-(editInterval[0]/2));
+		
+		// fill array of likelihood with values in CPT
+		likelihood = new float[potential.tableSize()];
+		for (int i = 0; i < likelihood.length; i++) {
+			likelihood[i] = potential.getValue(i);
+		}
+		
+		// add likelihood ratio given (empty) parents (conditions assumed in the bet - empty now)
+		betNode.addLikeliHood(likelihood, betConditions);
+		
+		try {
+			// propagate soft evidence
+			assetQAlgorithm.propagate();
+			System.out.println(network.getLog());
+			network.getLogManager().clear();
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		// check that LPE is 1 or below 
+
+		// prepare argument, which is input and output at the same moment
+		inOutArgLPE.clear();
+		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		
+		assertNotNull(lpes);
+		assertFalse(lpes.isEmpty());
+		assertTrue("Obtained min q = " + minQ, minQ <= 1);
+
+		// undo only the min propagation (we do not need the min q values anymore, and next q-calculations must use q values prior to min propagation)
+		assetQAlgorithm.undoMinPropagation();
+		
+		
 		
 	}
 

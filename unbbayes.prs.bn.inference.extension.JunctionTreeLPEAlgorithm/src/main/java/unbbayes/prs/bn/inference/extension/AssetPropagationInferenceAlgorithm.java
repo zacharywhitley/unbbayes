@@ -294,8 +294,15 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 						assetTable.setValues(oldAssetTables.get(modifiedCliqueOrSep).getValues());
 						// update marginal of asset nodes
 						for (int j = 0; j < assetTable.getVariablesSize(); j++) {
-							((TreeVariable)assetTable.getVariableAt(i)).updateMarginal();
+							((TreeVariable)assetTable.getVariableAt(j)).updateMarginal();
 						}
+					}
+					// do everything a normal propagation algorithm would do if it have had run properly
+					if (isToPropagateForGlobalConsistency()) {
+						this.runMinPropagation();
+					}
+					for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
+						listener.onAfterPropagate(this);
 					}
 					throw new ZeroAssetsException("Asset's q-values of clique/separator " + assetCliqueOrSeparator + " went to " + newValue);
 				}
@@ -1068,6 +1075,24 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 */
 	public void setToAllowQValuesSmallerThan1(boolean isToAllowQValuesSmallerThan1) {
 		this.isToAllowQValuesSmallerThan1 = isToAllowQValuesSmallerThan1;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#revertLastProbabilityUpdate()
+	 */
+	public void revertLastProbabilityUpdate() {
+		for (IRandomVariable origCliqueOrSeparator : getOriginalCliqueToAssetCliqueMap().keySet()) {
+			// extract previous probability (i.e. prior to propagation) values from network property
+			PotentialTable previousProbabilities = ((Map<IRandomVariable, PotentialTable>) this.getNetwork().getProperty(LAST_PROBABILITY_PROPERTY)).get(origCliqueOrSeparator);
+			// extract current probability
+			PotentialTable currentProbabilities = (PotentialTable) origCliqueOrSeparator.getProbabilityFunction();
+			// set current to the previous (i.e. revert prob)
+			currentProbabilities.setValues(previousProbabilities.getValues());
+			for (int i = 0; i < currentProbabilities.variableCount(); i++) {
+				((TreeVariable)currentProbabilities.getVariableAt(i)).updateMarginal();
+			}
+		}
 	}
 
 	

@@ -236,17 +236,39 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		// propagate probability
 		this.getProbabilityPropagationDelegator().propagate();
 		
+		// zeroAssetsException != null if this.getAssetPropagationDelegator().propagate() has thrown such exception
+		ZeroAssetsException zeroAssetsException = null;	
 		if (isToUpdateAssets()) {
 			// calculate ratio and propagate assets
-			this.getAssetPropagationDelegator().propagate();
+			try {
+				this.getAssetPropagationDelegator().propagate();
+			} catch (ZeroAssetsException e) {
+				// revert all changes in probabilities
+				this.revertLastProbabilityUpdate();
+				// do not re-throw e immediately, because we still want to execute anything (i.e. execute IInferenceAlgorithmListener) a normal propagation would do
+				zeroAssetsException = e;
+			}
 		}
 		
 		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListener()) {
 			listener.onAfterPropagate(this);
 		}
+		
+		if (zeroAssetsException != null) {
+			// this.getAssetPropagationDelegator().propagate() did not execute properly
+			throw zeroAssetsException;
+		}
 	}
 	
 	
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#revertLastProbabilityUpdate()
+	 */
+	public void revertLastProbabilityUpdate() {
+		this.getAssetPropagationDelegator().revertLastProbabilityUpdate();
+	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#addInferencceAlgorithmListener(unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener)

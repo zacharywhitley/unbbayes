@@ -161,4 +161,11 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 * @return the isToAllowQValuesSmallerThan1
 	 */
 	public boolean isToAllowQValuesSmallerThan1();
+
+	/**
+	 * This method reverts the last probability update performed by this class.
+	 * It basically uses the information stored in {@link #updateProbabilityPriorToPropagation()}
+	 * in order to restore the values.
+	 */
+	public void revertLastProbabilityUpdate();
 }
