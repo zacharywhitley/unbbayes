@@ -66,6 +66,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	private boolean isToUpdateSeparators = true;
 	
 	private boolean isToUpdateOnlyEditClique = false;
+	
+	private boolean isToAllowQValuesSmallerThan1 = true;
 
 //	private Map<IRandomVariable, IRandomVariable> originalCliqueToAssetCliqueMap;
 	
@@ -238,6 +240,10 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			// update all cliques
 			cliquesOrSepsToUpdate.addAll(getOriginalCliqueToAssetCliqueMap().keySet());
 		}
+		
+		// a mapping to be used to store old values, so that we can revert changes when q-values goes below 1
+		Map<IRandomVariable, PotentialTable> oldAssetTables = new HashMap<IRandomVariable, PotentialTable>();	// this shall be used only when isToAllowQValuesSmallerThan1() == false
+		
 		for (IRandomVariable origCliqueOrSeparator : cliquesOrSepsToUpdate) {
 			// extract clique related to the asset 
 			IRandomVariable assetCliqueOrSeparator = getOriginalCliqueToAssetCliqueMap().get(origCliqueOrSeparator);
@@ -251,7 +257,6 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			
 			// extract asset table. We assume we are using table-based representation (PotentialTable)
 			PotentialTable assetTable = (PotentialTable) assetCliqueOrSeparator.getProbabilityFunction();
-			
 			
 //			// extract probabilistic node related to asset node (they have the same name)
 //			// Note: if it is not a probabilistic node, then it means that there is an asset node created for non-probabilistic node (this is unexpected)
@@ -271,10 +276,30 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 						+ " are not synchronized with probability clique/separator " + origCliqueOrSeparator);
 			}
 			
+			// backup old asset table (so that we can revert asset tables when necessary)
+			if (!isToAllowQValuesSmallerThan1()) {
+				oldAssetTables.put(assetCliqueOrSeparator, (PotentialTable) assetTable.clone());
+			}
+			
 			// perform clique-wise update of asset values using a ratio
 			for (int i = 0; i < assetTable.tableSize(); i++) {
 				// multiply assets by the ratio (current probability values / previous probability values)
-				assetTable.setValue(i, assetTable.getValue(i) * ( currentProbabilities.getValue(i) / previousProbabilities.getValue(i) ) );
+				float newValue = assetTable.getValue(i) * ( currentProbabilities.getValue(i) / previousProbabilities.getValue(i) );
+				// check if assets is <= 1
+				if (!isToAllowQValuesSmallerThan1() && (newValue <= 1f)) {
+					// revert all previous cliques/separators, including current
+					for (IRandomVariable modifiedCliqueOrSep : oldAssetTables.keySet()) {
+						assetTable = (PotentialTable) modifiedCliqueOrSep.getProbabilityFunction();
+						// CAUTION: the following code only works because the vector of old and new values have the same size
+						assetTable.setValues(oldAssetTables.get(modifiedCliqueOrSep).getValues());
+						// update marginal of asset nodes
+						for (int j = 0; j < assetTable.getVariablesSize(); j++) {
+							((TreeVariable)assetTable.getVariableAt(i)).updateMarginal();
+						}
+					}
+					throw new ZeroAssetsException("Asset's q-values of clique/separator " + assetCliqueOrSeparator + " went to " + newValue);
+				}
+				assetTable.setValue(i,  newValue);
 			}
 			
 			// update marginal of asset nodes
@@ -1027,6 +1052,22 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 */
 	protected IRandomVariable getEditCliqueOrSeparator() {
 		return editCliqueOrSeparator;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#isToAllowQValuesSmallerThan1()
+	 */
+	public boolean isToAllowQValuesSmallerThan1() {
+		return isToAllowQValuesSmallerThan1;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setToAllowQValuesSmallerThan1(boolean)
+	 */
+	public void setToAllowQValuesSmallerThan1(boolean isToAllowQValuesSmallerThan1) {
+		this.isToAllowQValuesSmallerThan1 = isToAllowQValuesSmallerThan1;
 	}
 
 	

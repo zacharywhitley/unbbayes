@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
+
 
 
 
@@ -84,6 +86,7 @@ public interface MarkovEngineInterface {
 	 * @param transactionKey : key returned by {@link #startNetworkActions()}
 	 * @return True if operation was successful
 	 * @throws IllegalArgumentException when transactionKey was invalid.
+	 * @throws
 	 * @see #addCash(long, Date, long, float, String)
 	 * @see #addQuestion(long, Date, long, int, List)
 	 * @see #addQuestionAssumption(long, Date, long, long, List)
@@ -92,7 +95,7 @@ public interface MarkovEngineInterface {
 	 * @see #resolveQuestion(long, Date, long, int)
 	 * @see #revertTrade(long, Date, Long, Long)
 	 */
-	public boolean commitNetworkActions(long transactionKey) throws IllegalArgumentException;
+	public boolean commitNetworkActions(long transactionKey) throws IllegalArgumentException, ZeroAssetsException;
 	
 
 	/**
@@ -289,34 +292,13 @@ public interface MarkovEngineInterface {
 	public List<Long> getPossibleQuestionAssumptions(long questionId, List<Long>assumptionIds) throws IllegalArgumentException;
 	
 	/**
-	 * This method implements the feature for estimating whether a user is in a long or short position.
-	 * The feature is also described in
-	 * <a href="https://docs.google.com/document/d/1p1TY-paqEmJNshQYThr6H3SyR2-e6xmoXrI9HleqiPM/edit">https://docs.google.com/document/d/1p1TY-paqEmJNshQYThr6H3SyR2-e6xmoXrI9HleqiPM/edit</a>
-	 * as follows:
-	 * <br/><br/>
-	 * 
-	 * The intended edit is P(T=t|A=a). Before the edit, we tell the user his/her long/short position by calculating the expected score given {T=t, A=a}, and {T~=t, A=a}, respectively. 
-	 * <br/><br/>
-	 * Case 1 - given {T=t, A=a}: <br/>
-	 * we change the corresponding cells of potential tables in cliques and separators, to be zeros where T~=t, or A~=a. Then, normalize all tables affected.
-	 * Transform q-tables to be asset tables by S = b*log(q).
-	 * Multiply asset tables with corresponding potential tables cell by cell, save results into L tables.
-	 * Using Equation (2), compute expected score (S1) as sum_clq(sum_cell(L)) - sum_sep(sum_cell(L)).
-	 * <br/><br/>
-	 * Case 2 - given {T~=t, A=a}: <br/>
-	 * similar to Case 1 above, except in step a, make the cells to be zeros where T=t, or A~=a. Other steps are exactly same. Return S2.
-	 * If S1>S2, the user has long position on the intended edit; otherwise, he/she has short position on the intended edit.
-	 * 
-	 * @param userId : the ID of the current user. Users shall be managed by a hash table. 
+	 * This method implements the feature for obtaining the assets position of the user given conditions
+	 * (i.e. extract the values in the asset tables).
+	 * @param userId : the ID of the current user. 
 	 * @param questionId : the id of the question to be edited (i.e. the random variable "T"  in the example)
 	 * @param assumptionIds : a list (ordered collection) of question IDs which are the assumptions for T (i.e. random variable "A" in the example). The ordeer
 	 * is important, because it will indicate which states of assumedStates are associated with which questions in assumptionIDs.
 	 * @param assumedStates : a list (ordered collection) representing the states of assumptionIDs assumed.
-	 * 
-	 * @param properties : this object stores system properties of the markov engine.
-	 * Classes implementing this interface may use these properties to set
-	 * values of some attributes/parameters not explicitly declared in this interface.
-	 * 
 	 * @return the change in user assets if a given states occurs if the specified assumptions are met. 
 	 * The indexes are relative to the indexes of the states.
 	 * In the case of a binary question this will return a [if_true, if_false] value, if multiple choice will return a [if_0, if_1, if_2...] value list

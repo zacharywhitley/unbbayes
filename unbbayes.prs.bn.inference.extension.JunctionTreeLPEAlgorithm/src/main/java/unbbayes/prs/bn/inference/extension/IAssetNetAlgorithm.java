@@ -145,4 +145,20 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 * @param isToUpdateOnlyEditClique : true if {@link #propagate()} should only update altered clique.
 	 */
 	public void setToUpdateOnlyEditClique(boolean isToUpdateOnlyEditClique);
+	
+	/**
+	 * If false, {@link #propagate()} will throw a {@link ZeroAssetsException}
+	 * when q-values gets less than or equals to 1 (i.e. when the respective
+	 * assets - log values - goes to 0 or negative).
+	 * @param isToAllowQValuesSmallerThan1 the isToAllowQValuesSmallerThan1 to set
+	 */
+	public void setToAllowQValuesSmallerThan1(boolean isToAllowQValuesSmallerThan1);
+
+	/**
+	 * If false, {@link #propagate()} will throw a {@link ZeroAssetsException}
+	 * when q-values gets less than or equals to 1 (i.e. when the respective
+	 * assets - log values - goes to 0 or negative).
+	 * @return the isToAllowQValuesSmallerThan1
+	 */
+	public boolean isToAllowQValuesSmallerThan1();
 }

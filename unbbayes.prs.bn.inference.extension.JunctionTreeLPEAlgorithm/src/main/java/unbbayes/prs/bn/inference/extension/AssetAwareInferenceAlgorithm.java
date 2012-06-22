@@ -4,6 +4,7 @@
 package unbbayes.prs.bn.inference.extension;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,16 +12,22 @@ import javax.swing.JComponent;
 
 import unbbayes.controller.INetworkMediator;
 import unbbayes.gui.AssetCompilationPanelBuilder;
+import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
 import unbbayes.prs.bn.AssetNode;
 import unbbayes.prs.bn.Clique;
+import unbbayes.prs.bn.IRandomVariable;
+import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
+import unbbayes.prs.bn.JunctionTree;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNetworkFilter;
+import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.Separator;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.exception.InvalidParentException;
@@ -53,9 +60,6 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	private IInferenceAlgorithm probabilityPropagationDelegator;
 
 	private IAssetNetAlgorithm assetPropagationDelegator;
-
-
-
 
 	private boolean isToUpdateAssets = true;
 	
@@ -792,11 +796,274 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 * This method may be useful for previewing the 
 	 * result of edits without modifying the original
 	 * probabilistic network and asset network.
+	 * CAUTION: this method only copies attributes relevant to the inference related to 
+	 * junction tree algorithm and asset update.
 	 * @param probabilisticNetwork
 	 * @return a copy of probabilisticNetwork in the context of asset calculation.
 	 */
 	public IInferenceAlgorithm clone()  throws CloneNotSupportedException  {
-		throw new CloneNotSupportedException("Not implmented yet.");
+		// clone Bayes network
+		ProbabilisticNetwork newNet = new ProbabilisticNetwork(getRelatedProbabilisticNetwork().getId());
+		newNet.setCreateLog(getRelatedProbabilisticNetwork().isCreateLog());
+		
+		// copy nodes
+		for (Node node : getRelatedProbabilisticNetwork().getNodes()) {
+			if (!(node instanceof ProbabilisticNode)) {
+				// ignore unknown nodes
+				Debug.println(getClass(), node + " is not a ProbabilisticNode and will not be copied.");
+				continue;
+			}
+			// ProbabilisticNode has a clone() method, but it keeps parents and children pointing to old nodes (which may cause future problems)
+			ProbabilisticNode newNode = ((ProbabilisticNode)node).basicClone();
+			newNet.addNode(newNode);
+		}
+		
+		// copy edges
+		for (Edge oldEdge : getRelatedProbabilisticNetwork().getEdges()) {
+			Node node1 = newNet.getNode(oldEdge.getOriginNode().getName());
+			Node node2 = newNet.getNode(oldEdge.getDestinationNode().getName());
+			if (node1 == null || node2 == null) {
+				Debug.println(getClass(), oldEdge + " has a node which was not copied to the cloned network.");
+				continue;
+			}
+			Edge newEdge = new Edge(node1, node2);
+			try {
+				newNet.addEdge(newEdge);
+			} catch (InvalidParentException e) {
+				throw new RuntimeException("Could not clone edge " + oldEdge +" of network " + getRelatedProbabilisticNetwork() , e);
+			}
+		}
+		
+		// copy cpt
+		for (Node node : getRelatedProbabilisticNetwork().getNodes()) {
+			if (node instanceof ProbabilisticNode) {
+				PotentialTable oldCPT = ((ProbabilisticNode) node).getProbabilityFunction();
+				PotentialTable newCPT = ((ProbabilisticNode) newNet.getNode(node.getName())).getProbabilityFunction();
+				// CAUTION: the following code will throw an ArrayIndexOutouBoundException when oldCPT and newCPT have different sizes.
+				newCPT.setValues(oldCPT.getValues());	// they supposedly have same size.
+			}
+		}
+		
+		// instantiate junction tree and copy content
+		newNet.setJunctionTree(new JunctionTree());
+		
+		// mapping between original cliques/separator to copied clique/separator 
+		// (cliques are needed posteriorly in order to copy separators, and seps are needed in order to copy relation from node to clique/separators)
+		Map<IRandomVariable, IRandomVariable> oldCliqueToNewCliqueMap = new HashMap<IRandomVariable, IRandomVariable>();	// cannot use tree map, because cliques are not comparable
+		
+		// copy cliques
+		for (Clique origClique : getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
+			Clique newClique = new Clique();
+			boolean hasInvalidNode = false;	// this will be true if a clique contains a node not in new network.
+			// add nodes to clique
+			for (Node node : origClique.getNodes()) {
+				Node newNode = newNet.getNode(node.getName());	// extract associated node, because they are related by name
+				if (newNode == null) {
+					hasInvalidNode = true;
+					break;
+				}
+				newClique.getNodes().add(newNode);
+			}
+			if (hasInvalidNode) {
+				// the original clique has a node not present in the newNet
+				continue;
+			}
+			
+			// add nodes to the list "associatedProbabilisticNodes"
+			for (Node node : origClique.getAssociatedProbabilisticNodes()) {
+				Node newNode = newNet.getNode(node.getName());	// extract associated node, because they are related by name
+				if (newNode == null) {
+					hasInvalidNode = true;
+					break;
+				}
+				// origClique.getNodes() and origClique.getAssociatedProbabilisticNodes() may be different... Copy both separately. 
+				newClique.getAssociatedProbabilisticNodes().add(newNode);
+			}
+			if (hasInvalidNode) {
+				// the original clique has a node not present in the asset net
+				continue;
+			}
+			
+			newClique.setIndex(origClique.getIndex());
+			
+			// copy clique potential variables
+			PotentialTable origPotential = origClique.getProbabilityFunction();
+			PotentialTable assetPotential = newClique.getProbabilityFunction();
+			for (int i = 0; i < origPotential.getVariablesSize(); i++) {
+				Node newNode = newNet.getNode(origPotential.getVariableAt(i).getName());
+				if (newNode == null) {
+					hasInvalidNode = true;
+					break;
+				}
+				assetPotential.addVariable(newNode);
+			}
+			if (hasInvalidNode) {
+				// the original clique has a node not present in the asset net
+				continue;
+			}
+			
+			// copy the values of clique potential
+			assetPotential.setValues(origPotential.getValues());
+			
+			// NOTE: this is ignoring utility table and nodes
+			
+			newNet.getJunctionTree().getCliques().add(newClique);
+			oldCliqueToNewCliqueMap.put(origClique, newClique);
+		}
+		
+		// copy separators
+		for (Separator origSeparator : getRelatedProbabilisticNetwork().getJunctionTree().getSeparators()) {
+			boolean hasInvalidNode = false;	// this will be true if a clique contains a node not in AssetNetwork.
+			
+			// extract the cliques related to the two cliques that the origSeparator connects
+			Clique newClique1 = (Clique) oldCliqueToNewCliqueMap.get(origSeparator.getClique1());
+			Clique newClique2 = (Clique) oldCliqueToNewCliqueMap.get(origSeparator.getClique2());
+			if (newClique1 == null || newClique2 == null) {
+				try {
+					Debug.println(getClass(), "Could not clone separator between " + newClique1 + " and " + newClique2);
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				continue;
+			}
+			
+			Separator newSeparator = new Separator(newClique1, newClique2);
+			
+			// fill the separator's node list
+			for (Node origNode : origSeparator.getNodes()) {
+				Node newNode = newNet.getNode(origNode.getName());	
+				if (newNode == null) {
+					hasInvalidNode = true;
+					break;
+				}
+				newSeparator.getNodes().add(newNode);
+			}
+			if (hasInvalidNode) {
+				// the original clique has a node not present in the asset net
+				continue;
+			}
+			
+			// copy separator potential
+			PotentialTable origPotential = origSeparator.getProbabilityFunction();
+			PotentialTable newPotential = newSeparator.getProbabilityFunction();
+			for (int j = 0; j < origPotential.getVariablesSize(); j++) {
+				Node newNode = newNet.getNode(origPotential.getVariableAt(j).getName());
+				if (newNode == null) {
+					hasInvalidNode = true;
+					break;
+				}
+				newPotential.addVariable(newNode);
+			}
+			if (hasInvalidNode) {
+				// the original clique has a node not present in the asset net
+				continue;
+			}
+			
+			// copy potential
+			newPotential.setValues(origPotential.getValues());	// they supposedly have the same size
+			
+			// NOTE: this is ignoring utility table and nodes
+			newNet.getJunctionTree().addSeparator(newSeparator);
+			oldCliqueToNewCliqueMap.put(origSeparator, newSeparator);
+		}
+		
+		// copy relationship between cliques/separator and nodes
+		for (Node origNode : getRelatedProbabilisticNetwork().getNodes()) {
+			ProbabilisticNode newNode = (ProbabilisticNode)newNet.getNode(origNode.getName());
+			if (newNode == null) {
+				try {
+					Debug.println(getClass(), "Could not find node copied from " + origNode);
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				continue;
+			}
+			newNode.setAssociatedClique(oldCliqueToNewCliqueMap.get(((TreeVariable)origNode).getAssociatedClique()));
+			
+			// force marginal to have some value
+			newNode.updateMarginal();
+		}
+		
+		// clone JT algorithm using the cloned BN
+		JunctionTreeAlgorithm jtAlgorithm = new JunctionTreeAlgorithm(newNet);
+		if (getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			// reuse same likelihood extractor
+			JunctionTreeAlgorithm origJTAlgorithm = (JunctionTreeAlgorithm) getProbabilityPropagationDelegator();
+			jtAlgorithm.setLikelihoodExtractor(origJTAlgorithm.getLikelihoodExtractor());
+		} else {
+			// unknown type of BN inference algorithm...
+			Debug.println(getClass(), "Unknown type of BN inference algorithm. Cannot extract likelihood extractor. Using default: JeffreyRuleLikelihoodExtractor.");
+			jtAlgorithm.setLikelihoodExtractor(JeffreyRuleLikelihoodExtractor.newInstance());
+		}
+		
+		// clone algorithm
+		AssetAwareInferenceAlgorithm ret = (AssetAwareInferenceAlgorithm) getInstance(jtAlgorithm);
+		ret.setDefaultInitialAssetQuantity(getDefaultInitialAssetQuantity());
+		
+		// clone asset net. createAssetNetFromProbabilisticNet is supposed to create correct structure of network and JT
+		AssetNetwork newAssetNet = null;
+		try {
+			newAssetNet = ret.createAssetNetFromProbabilisticNet(newNet);
+		} catch (InvalidParentException e) {
+			throw new RuntimeException("Could not clone asset network of user " + getAssetNetwork(), e);
+		}
+		
+		// reset oldCliqueToNewCliqueMap and reuse it for asset cliques and separators.
+		oldCliqueToNewCliqueMap.clear();	
+		
+		// copy asset tables of cliques. Since cliques are stored in a list, the ordering of the copied cliques is supposedly the same
+		for (int i = 0; i < getAssetNetwork().getJunctionTree().getCliques().size(); i++) {
+			newAssetNet.getJunctionTree().getCliques().get(i).getProbabilityFunction().setValues(
+					getAssetNetwork().getJunctionTree().getCliques().get(i).getProbabilityFunction().getValues()
+				);
+			// store asset cliques in the map, so that we can use it for the separators later
+			oldCliqueToNewCliqueMap.put(getAssetNetwork().getJunctionTree().getCliques().get(i), newAssetNet.getJunctionTree().getCliques().get(i));
+		}
+		
+		// copy asset tables of separators. Use oldCliqueToNewCliqueMap, because separators are not stored in a list
+		for (Separator oldSep : getAssetNetwork().getJunctionTree().getSeparators()) {
+			Separator newSep = newAssetNet.getJunctionTree().getSeparator(
+					(Clique)oldCliqueToNewCliqueMap.get(oldSep.getClique1()),
+					(Clique)oldCliqueToNewCliqueMap.get(oldSep.getClique2())
+				);
+			if (newSep == null) {
+				throw new RuntimeException("Could not access copy of separator " + oldSep + " correctly while copying asset tables of separators.");
+			}
+			// tables are supposedly with same size
+			newSep.getProbabilityFunction().setValues(oldSep.getProbabilityFunction().getValues());
+		}
+		
+		// link algorithm to the new asset net
+		ret.setAssetNetwork(newAssetNet);
+		
+		return ret;
+	}
+
+	/**
+	 * If false, {@link #propagate()} will throw a {@link ZeroAssetsException}
+	 * when q-values gets less than or equals to 1 (i.e. when the respective
+	 * assets - log values - goes to 0 or negative).
+	 * @param isToAllowQValuesSmallerThan1 the isToAllowQValuesSmallerThan1 to set
+	 */
+	public void setToAllowQValuesSmallerThan1(boolean isToAllowQValuesSmallerThan1) {
+		IAssetNetAlgorithm assetAlgorithm = this.getAssetPropagationDelegator();
+		if (assetAlgorithm != null) {
+			assetAlgorithm.setToAllowQValuesSmallerThan1(isToAllowQValuesSmallerThan1);
+		}
+	}
+
+	/**
+	 * If false, {@link #propagate()} will throw a {@link ZeroAssetsException}
+	 * when q-values gets less than or equals to 1 (i.e. when the respective
+	 * assets - log values - goes to 0 or negative).
+	 * @return the isToAllowQValuesSmallerThan1
+	 */
+	public boolean isToAllowQValuesSmallerThan1() {
+		IAssetNetAlgorithm assetAlgorithm = this.getAssetPropagationDelegator();
+		if (assetAlgorithm != null) {
+			return assetAlgorithm.isToAllowQValuesSmallerThan1();
+		}
+		return true;	// default value
 	}
 	
 }

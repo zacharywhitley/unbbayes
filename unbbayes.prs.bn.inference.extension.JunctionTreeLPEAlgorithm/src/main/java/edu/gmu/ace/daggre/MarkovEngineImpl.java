@@ -26,6 +26,7 @@ import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor;
 import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
+import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
 
@@ -168,7 +169,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#commitNetworkActions(long)
 	 */
 	public synchronized boolean commitNetworkActions(long transactionKey)
-			throws IllegalArgumentException {
+			throws IllegalArgumentException, ZeroAssetsException {
 		
 		// initial assertion : make sure transactionKey is valid
 		List<NetworkAction> actions = getNetworkActionsMap().get(transactionKey);
@@ -974,7 +975,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 						algorithm.setNetwork(getProbabilisticNetwork());
 					}
 					// do trade. Since algorithm is linked to actual networks, changes will affect the actual networks
-					executeTrade(userId, questionId, newValues, assumptionIds, assumedStates, algorithm);
+					executeTrade(questionId, newValues, assumptionIds, assumedStates, allowNegative, algorithm);
 				}
 			}
 		}
@@ -1055,6 +1056,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		// returned value is the same of preview trade
 		List<Float> ret = this.previewTrade(userId, questionId, newValues, assumptionIds, assumedStates);
 		
+		// NOTE: preview trade is performed *before* the insertion of a new action into the transaction, 
+		// because we only want the transaction to be altered if the preview trade has returned successfully.
+		
 		// instantiate the action object for adding cash
 		AddTradeNetworkAction newAction = new AddTradeNetworkAction(transactionKey, occurredWhen, tradeKey, userId, questionId, newValues, assumptionIds, assumedStates, allowNegative);
 		
@@ -1078,7 +1082,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 				actions.add(indexOfFirstActionCreatedAfterNewAction, newAction);
 			}
 		}
-		
+		// return the previewed asset values
 		return ret;
 	}
 
@@ -1254,18 +1258,45 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			throw new RuntimeException("Could not extract assets from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
 		}
 		
+		return this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm);
+	}
+	
+	/**
+	 * This method is used in {@link #getAssetsIfStates(long, long, List, List)} and {@link #previewTrade(long, long, List, List, List)}
+	 * in order to extract the conditional assets from the {@link AssetNetwork} related to a given algorithm.
+	 * @param questionId : the id of the question to be edited (i.e. the random variable "T"  in the example)
+	 * @param assumptionIds : a list (ordered collection) of question IDs which are the assumptions for T (i.e. random variable "A" in the example). The ordeer
+	 * is important, because it will indicate which states of assumedStates are associated with which questions in assumptionIDs.
+	 * @param assumedStates : a list (ordered collection) representing the states of assumptionIDs assumed.
+	 * @param algorithm : the algorithm to be used in order to extract info from {@link AssetNetwork}. 
+	 * {@link AssetAwareInferenceAlgorithm#getAssetNetwork()} is used in order to extract the instance of {@link AssetNetwork}.
+	 * @return the change in user assets if a given states occurs if the specified assumptions are met. 
+	 * The indexes are relative to the indexes of the states.
+	 * In the case of a binary question this will return a [if_true, if_false] value, if multiple choice will return a [if_0, if_1, if_2...] value list
+	 * For example, assuming that the question identified by questionID is a boolean question (and also assuming
+	 * that state 0 indicates false and state 1 indicates true); then, index 0 contains the assets of 
+	 * the question while it is in state "false" (given assumptions), and index 1 contains the assets of the
+	 * question while it is in state "true".
+	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
+	 */
+	protected List<Float> getAssetsIfStates(long questionId, List<Long> assumptionIds, List<Integer> assumedStates, AssetAwareInferenceAlgorithm algorithm)
+			throws IllegalArgumentException {
+		// basic assertion
+		if (algorithm == null) {
+			throw new NullPointerException("AssetAwareInferenceAlgorithm cannot be null");
+		}
 		PotentialTable assetTable = null;	// asset tables (clique table containing assets) are instances of potential tables
 		synchronized (algorithm.getAssetNetwork()) {
 			INode mainNode = algorithm.getAssetNetwork().getNode(Long.toString(questionId));
 			if (mainNode == null) {
-				throw new IllegalArgumentException("Question " + questionId + " not found in asset structure of user " + userId);
+				throw new IllegalArgumentException("Question " + questionId + " not found in asset structure of user " + algorithm.getAssetNetwork());
 			}
 			List<INode> parentNodes = new ArrayList<INode>();
 			if (assumptionIds != null) {
 				for (Long id : assumptionIds) {
 					INode node = algorithm.getAssetNetwork().getNode(Long.toString(id));
 					if (node == null) {
-						throw new IllegalArgumentException("Question " + questionId + " not found in asset structure of user " + userId);
+						throw new IllegalArgumentException("Question " + questionId + " not found in asset structure of user " + algorithm.getAssetNetwork());
 					}
 					parentNodes.add(node);
 				}
@@ -1296,10 +1327,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 				}
 			}
 			if (!isToSkip) {
-				ret.add(assetTable.getValue(i));
+				// convert q-values to assets (i.e. logarithmic values)
+				ret.add(this.getScoreFromQValues(assetTable.getValue(i)));
 			}
 		}
 		return ret;
+		
 	}
 
 	/* (non-Javadoc)
@@ -1531,17 +1564,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		}
 		
 		// do trade on specified algorithm (which only contains link to copies of BN and asset net)
-		this.executeTrade(userId, questionId, newValues, assumptionIds, assumedStates, algorithm);
+		this.executeTrade(questionId, newValues, assumptionIds, assumedStates, true, algorithm);	// true := allow negative assets, since this is a preview
 		
-		// TODO fill return value
+		// TODO optimize (executeTrade and getAssetsIfStates have redundant portion of code)
 		
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Not implemented yet.");
+		// return the asset position
+		return this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm);
 	}
 	
 	/**
 	 * 
-	 * @param userID : the ID of the user (i.e. owner of the assets).
 	 * @param questionID : the id of the question to be edited (i.e. the random variable "T"  in the example)
 	 * @param newValues : this is a list (ordered collection) representing the probability values after the edit. 
 	 * For example, suppose T is the target question (i.e. a random variable) with states t1 and t2, and A1 and A2 are assumptions with states (a11, a12), and (a21 , a22) respectively.
@@ -1566,19 +1598,24 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * because the ordering in this list will be used in order to identify the correct indexes in "newValues".
 	 * @param assumedStates : this list specifies a filter for states of nodes in assumptionIDs.
 	 * If it does not have the same size of assumptionIDs,Å@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
+	 * @param isToAllowNegative : if true, negative assets (values smaller than 1 in the asset q table) is allowed.
 	 * @param algorithm : algorithm to be used in order to update probability and assets. 
 	 * {@link AssetAwareInferenceAlgorithm#getNetwork()} will be used to access the Bayes net.
 	 * {@link AssetAwareInferenceAlgorithm#getAssetNetwork()} will be used to access the asset net.
 	 * @see #addTrade(long, Date, String, long, long, List, List, List, boolean)
 	 * @see #previewTrade(long, long, List, List, List)
 	 */
-	protected void executeTrade( long userId, long questionId,List<Float> newValues,
-			List<Long> assumptionIds, List<Integer> assumedStates, AssetAwareInferenceAlgorithm algorithm) {
+	protected void executeTrade(long questionId,List<Float> newValues,
+			List<Long> assumptionIds, List<Integer> assumedStates, boolean isToAllowNegative, AssetAwareInferenceAlgorithm algorithm) {
+		// basic assertions
+		if (algorithm == null) {
+			throw new NullPointerException("AssetAwareInferenceAlgorithm was not specified.");
+		}
 		
 		// obtain the copy of the network, so that the original is always untouched
 		ProbabilisticNetwork net = algorithm.getRelatedProbabilisticNetwork();
 		if (net == null || !net.equals(getProbabilisticNetwork())) {
-			throw new RuntimeException("Could not obtain bayesian network for user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
+			throw new RuntimeException("Could not obtain bayesian network for user " + algorithm.getAssetNetwork() + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
 		}
 		
 		// check existence of child
@@ -1681,7 +1718,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		child.addLikeliHood(likelihood, assumptionNodes);
 		
 		// propagate soft evidence
-		algorithm.propagate();
+		synchronized (algorithm) {
+			synchronized (algorithm.getNetwork()) {
+				synchronized (algorithm.getAssetNetwork()) {
+//					boolean backup = algorithm.isToAllowQValuesSmallerThan1();
+					algorithm.setToAllowQValuesSmallerThan1(isToAllowNegative);
+					algorithm.propagate();
+//					algorithm.setToAllowQValuesSmallerThan1(backup);
+				}
+			}
+		}
 	}
 
 	/* (non-Javadoc)
