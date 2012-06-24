@@ -317,9 +317,11 @@ public class Clique implements IRandomVariable, java.io.Serializable {
 	 */
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
+		sb.append("Clique{");
 		for (int j = nos.size()-1; j>=0;j--) {
 			sb.append(nos.get(j) + " ");				
 		}
+		sb.append("}");
 		return sb.toString();
 	}
 

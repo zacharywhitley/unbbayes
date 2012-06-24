@@ -85,6 +85,7 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 			// variable not found. Ignore it.
 			return;
 		}
+		
 		if (variable.getType() == Node.DECISION_NODE_TYPE) {
 			DecisionNode decision = (DecisionNode) variable;
 			int statesSize = variable.getStatesSize();
@@ -92,13 +93,18 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 				finding(variableList.size()-1, index, new int[variableList.size()], decision.getEvidence());
 			} else {
 				sum(index);
-				for (int i = dataPT.size-1; i >= 0; i--) {
-					dataPT.data[i] = dataPT.data[i] / statesSize;
+				if(normalize){
+					for (int i = dataPT.size-1; i >= 0; i--) {
+						dataPT.data[i] = dataPT.data[i] / statesSize;
+					}
 				}
 			}
+		} else if (variableList.size() <= 1) {
+			// we are removing the only probabilistic node in this potential table, so we need neither to sum-out nor to normalize.
+			dataPT.size = 0;
 		} else {
+			sum(index);
 			if(normalize){
-				sum(index);
 				int statesSize = variable.getStatesSize();
 				for (int i = dataPT.size-1; i >= 0; i--) {
 					dataPT.data[i] = dataPT.data[i] / statesSize;

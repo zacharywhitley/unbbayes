@@ -146,17 +146,11 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	 */
 	protected void coleteEvidencia(Clique clique) throws Exception {
 		for (Clique auxClique : clique.getChildren()) {
-			if (!auxClique.getChildren().isEmpty()) {
-				this.coleteEvidencia(auxClique);
-			}
+			this.coleteEvidencia(auxClique);
 			
 //			Separator sep = getSeparator(clique, auxClique); 
 //			clique.absorb(auxClique, sep.getPotentialTable());
-			if (auxClique.getProbabilityFunction().getVariablesSize() > 1) {
-				absorb(clique, auxClique);
-			} else {
-				// a clique with only 1 variable is equivalent to a BN with only 1 node (there is no prob dist at all), so no need to propagate
-			}
+			absorb(clique, auxClique);
 		}
 
 		totalEstimatedProb *= clique.normalize();
@@ -172,11 +166,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 			
 //			Separator sep = getSeparator(clique, auxClique); 
 //			auxClique.absorb(clique, sep.getPotentialTable());
-			if (auxClique.getProbabilityFunction().getVariablesSize() > 1) {
-				absorb(auxClique, clique);
-			} else {
-				// a clique with only 1 variable is equivalent to a BN with only 1 node (there is no prob dist at all), so no need to propagate
-			}
+			absorb(auxClique, clique);
 			if (!auxClique.getChildren().isEmpty()) {
 				distributeEvidences(auxClique);
 			}
@@ -195,11 +185,11 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 			return;
 		}
 		PotentialTable sepTab = sep.getProbabilityFunction();
-		ArrayList<Node> toDie = SetToolkit.clone(clique2.getNodes());
 		if (sepTab.tableSize() <= 0) {
 //			Debug.println(getClass(), clique1 + " and " + clique2 + " has empty separator.");
 			return;
 		}
+		ArrayList<Node> toDie = SetToolkit.clone(clique2.getNodes());
 		for (int i = 0; i < sepTab.variableCount(); i++) {
 			toDie.remove(sepTab.getVariableAt(i));			
 		}

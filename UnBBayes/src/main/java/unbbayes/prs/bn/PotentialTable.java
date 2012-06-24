@@ -855,6 +855,9 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 * @param state
 	 */
 	protected void updateRecursive(float[] marginalList, int c, int linear, int index, int state) {
+		if (index < 0) {
+			return;
+		}
     	if (c >= this.variableList.size()) {
     		this.dataPT.data[linear] *= marginalList[state];
     		return;    		    		
