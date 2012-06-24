@@ -566,7 +566,14 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 * Get the linear coordinate from the multidimensional one.
 	 * LinearCoord = SumOf(StateOf[i] * FactorOf[i]), for all 
 	 * possible nodes (i), which are the nodes in the table.
-	 * 
+	 * <br/>
+	 * A multidimensional coordinate is an array representing 
+	 * the states of the variable {@link #getVariableAt(int)}.
+	 * for example, the coordinate [3,4,1] represents the cell in the table
+	 * in which {@link #getVariableAt(0)} is in state 3,
+	 * {@link #getVariableAt(1)} is in state 4,
+	 * and {@link #getVariableAt(2)} is in state 1.
+
 	 * @param multidimensionalCoord Multidimensional coordinate (represented by the state for
 	 * each node).
 	 * @return The corresponding linear coordinate.
@@ -607,7 +614,13 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 
 	/**
 	 * Get the multidimensional coordinate from the linear one.
-	 * 
+	 * <br/>
+	 * A multidimensional coordinate is an array representing 
+	 * the states of the variable {@link #getVariableAt(int)}.
+	 * for example, the coordinate [3,4,1] represents the cell in the table
+	 * in which {@link #getVariableAt(0)} is in state 3,
+	 * {@link #getVariableAt(1)} is in state 4,
+	 * and {@link #getVariableAt(2)} is in state 1.
 	 * @param linearCoord The linear coordinate.
 	 * @return The corresponding multidimensional coordinate.
 	 */
@@ -629,11 +642,12 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 * Get the linear coordinate from the multidimensional one.
 	 * LinearCoord = SumOf(StateOf[i] * FactorOf[i]), for all 
 	 * possible nodes (i), which are the nodes in the table.
-	 * 
 	 * @param multidimensionalCoord Multidimensional coordinate (represented by the state for
 	 * each node).
 	 * @return The corresponding linear coordinate.
+	 * @deprecated use {@link #getLinearCoord(int[])} instead.
 	 */
+	@Deprecated
 	public  int getLinearCoordMarginal(int multidimensionalCoord[]) {
 		computeFactorsMarginal();
 		int coordLinear = 0;
@@ -673,7 +687,9 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 * 
 	 * @param linearCoord The linear coordinate.
 	 * @return The corresponding multidimensional coordinate.
+	 * @deprecated use {@link #getMultidimensionalCoord(int)} instead.
 	 */
+	@Deprecated
 	public  int[] getMultidimensionalCoordMarginal(int linearCoord) {
 		computeFactors();
 		int fatorI;
