@@ -175,33 +175,39 @@ public class ProbabilisticNetwork
 			// (nonsense if you are deleting nodes in edit mode)
 			if (getJunctionTree() != null) {
 				// remove variable from separators
-				for (Separator separator : getJunctionTree().getSeparators()) {
-					if (separator.getNodes().contains(nodeToRemove)) {
-						PotentialTable sepTable = separator.getProbabilityFunction();
-						sepTable.removeVariable(nodeToRemove, false);
-						sepTable.normalize();
-						separator.getNodes().remove(nodeToRemove);
-						/*
-						 * NOTE: this method assumes that the junction tree algorithm is implemented in a way
-						 * which it ignores separators containing 0 nodes (i.e. the empty separator still represents
-						 * a link between cliques, but such link is used only for accessing cliques in a 
-						 * hierarchic ordering, and it is not supposed to propagate evidences - e.g. absorb will do nothing).
-						 */
+				if (getJunctionTree().getSeparators() != null) {
+					for (Separator separator : getJunctionTree().getSeparators()) {
+						if (separator.getNodes().contains(nodeToRemove)) {
+							PotentialTable sepTable = separator.getProbabilityFunction();
+							sepTable.removeVariable(nodeToRemove, false);
+							sepTable.normalize();
+							separator.getNodes().remove(nodeToRemove);
+							/*
+							 * NOTE: this method assumes that the junction tree algorithm is implemented in a way
+							 * which it ignores separators containing 0 nodes (i.e. the empty separator still represents
+							 * a link between cliques, but such link is used only for accessing cliques in a 
+							 * hierarchic ordering, and it is not supposed to propagate evidences - e.g. absorb will do nothing).
+							 */
+						}
 					}
 				}
 				// remove variable from cliques
-				for (Clique clique : getJunctionTree().getCliques()) {
-					if (clique.getNodes().contains(nodeToRemove)) {
-						PotentialTable cliqueTable = clique.getProbabilityFunction();
-						cliqueTable.removeVariable(nodeToRemove, false);
-						cliqueTable.normalize();
-						clique.getAssociatedProbabilisticNodes().remove(nodeToRemove);
-						clique.getNodes().remove(nodeToRemove);
+				if (getJunctionTree().getCliques() != null) {
+					for (Clique clique : getJunctionTree().getCliques()) {
+						if (clique.getNodes().contains(nodeToRemove)) {
+							PotentialTable cliqueTable = clique.getProbabilityFunction();
+							cliqueTable.removeVariable(nodeToRemove, false);
+							cliqueTable.normalize();
+							clique.getAssociatedProbabilisticNodes().remove(nodeToRemove);
+							clique.getNodes().remove(nodeToRemove);
+						}
 					}
 				}
 			}
 		}
-		getNodesCopy().remove(nodeToRemove);
+		if (getNodesCopy() != null) {
+			getNodesCopy().remove(nodeToRemove);
+		}
 		super.removeNode(nodeToRemove);
 	}
 
