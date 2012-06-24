@@ -231,6 +231,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	public class RebuildNetworkAction implements NetworkAction {
 		private final Date whenCreated;
 		private final long transactionKey;
+		/** Default constructor */
 		public RebuildNetworkAction(long transactionKey, Date whenCreated) {
 			this.transactionKey = transactionKey;
 			this.whenCreated = whenCreated;
@@ -253,16 +254,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public void revert() throws UnsupportedOperationException {
 			throw new UnsupportedOperationException("Cannot revert a network rebuild action.");
 		}
-		public Date getWhenCreated() {
-			return whenCreated;
-		}
+		public Date getWhenCreated() { return whenCreated; }
 		/** This action reboots the network, but does not change the structure by itself */
-		public boolean isStructureChangeAction() {
-			return false;
-		}
-		public Long getTransactionKey() {
-			return transactionKey;
-		}
+		public boolean isStructureChangeAction() { return false; }
+		public Long getTransactionKey() { return transactionKey; }
 		public Long getUserId() { return null; }
 		
 	}
@@ -282,9 +277,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		if (occurredWhen == null) {
 			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
 		}
-		if (getProbabilisticNetwork().getNode(Long.toString(questionId)) != null) {
-			// duplicate question
-			throw new IllegalArgumentException("Question ID " + questionId + " is already present.");
+		synchronized (getProbabilisticNetwork()) {
+			if (getProbabilisticNetwork().getNode(Long.toString(questionId)) != null) {
+				// duplicate question
+				throw new IllegalArgumentException("Question ID " + questionId + " is already present.");
+			}
 		}
 		if (initProbs != null && !initProbs.isEmpty()) {
 			float sum = 0;
@@ -360,10 +357,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		private final long questionId;
 		private final int numberStates;
 		private final List<Float> initProbs;
-
-		/**
-		 * Constructor initializing fields
-		 */
+		/** Default constructor initializing fields */
 		public AddQuestionNetworkAction(long transactionKey, Date occurredWhen,
 				long questionId, int numberStates, List<Float> initProbs) {
 			super();
@@ -373,9 +367,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			this.numberStates = numberStates;
 			this.initProbs = initProbs;
 		}
-		
-		
-
 		/**
 		 * Adds a new question into the current network
 		 */
@@ -401,66 +392,19 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 				getProbabilisticNetwork().addNode(node);
 			}
 		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see edu.gmu.ace.daggre.NetworkAction#revert()
-		 */
 		public void revert() throws UnsupportedOperationException {
 			throw new javax.help.UnsupportedOperationException("Reverting an addQuestion operation is not supported yet.");
 		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see edu.gmu.ace.daggre.NetworkAction#getWhenCreated()
-		 */
-		public Date getWhenCreated() {
-			return this.occurredWhen;
+		public Date getWhenCreated() { return this.occurredWhen; }
+		public Long getTransactionKey() { return transactionKey;
 		}
-
-		/**
-		 * @return the transactionKey
-		 */
-		public Long getTransactionKey() {
-			return transactionKey;
-		}
-
-		/**
-		 * @return the questionId
-		 */
-		public long getQuestionId() {
-			return questionId;
-		}
-
-		/**
-		 * @return the numberStates
-		 */
-		public int getNumberStates() {
-			return numberStates;
-		}
-
-		/**
-		 * @return the initProbs
-		 */
-		public List<Float> getInitProbs() {
-			return initProbs;
-		}
+		public long getQuestionId() { return questionId; }
+		public int getNumberStates() { return numberStates; }
+		public List<Float> getInitProbs() { return initProbs; }
 		/** Adding a new node is a structure change */
-		public boolean isStructureChangeAction() {
-			return true;
-		}
-
-
-
-		/* (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
-		public String toString() {
-			// TODO Auto-generated method stub
-			return super.toString() + "{" + this.transactionKey + ", " + this.getQuestionId() + "}";
-		}
-
+		public boolean isStructureChangeAction() { return true; }
 		public Long getUserId() { return null; }
+		public String toString() { return super.toString() + "{" + this.transactionKey + ", " + this.getQuestionId() + "}"; }
 	}
 
 	/* (non-Javadoc)
@@ -483,7 +427,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		int childNodeStateSize = -1;	// this var stores the quantity of states of the node identified by sourceQuestionId.
 		
 		// check existence of child
-		Node child = getProbabilisticNetwork().getNode(Long.toString(sourceQuestionId));
+		Node child  = null;
+		synchronized (getProbabilisticNetwork()) {
+			child = getProbabilisticNetwork().getNode(Long.toString(sourceQuestionId));
+		}
 		if (child == null) {
 			// child node does not exist. Check if there was some previous transaction adding such node
 			synchronized (actions) {
@@ -516,7 +463,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		
 		// check existence of parents
 		for (Long assumptiveQuestionId : assumptiveQuestionIds) {
-			Node parent = getProbabilisticNetwork().getNode(Long.toString(assumptiveQuestionId));
+			Node parent =null;
+			synchronized (getProbabilisticNetwork()) {
+				parent = getProbabilisticNetwork().getNode(Long.toString(assumptiveQuestionId));
+			}
 			if (parent == null) {
 				// parent node does not exist. Check if there was some previous transaction adding such node
 				synchronized (actions) {
@@ -604,16 +554,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * @see MarkovEngineImpl#addQuestionAssumption(long, Date, long, long, List)
 	 */
 	public class AddQuestionAssumptionNetworkAction implements NetworkAction {
-
 		private final long transactionKey;
 		private final Date occurredWhen;
 		private final long sourceQuestionId;
 		private final List<Long> assumptiveQuestionIds;
 		private final List<Float> cpd;
 
-		/**
-		 * Constructor initializing fields
-		 */
+		/** Default constructor initializing fields */
 		public AddQuestionAssumptionNetworkAction(long transactionKey,
 				Date occurredWhen, long sourceQuestionId,
 				List<Long> assumptiveQuestionIds, List<Float> cpd) {
@@ -624,10 +571,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			this.assumptiveQuestionIds = assumptiveQuestionIds;
 			this.cpd = cpd;
 		}
-
-		/**
-		 * Adds a new question into the current network
-		 */
 		public void execute() {
 			ProbabilisticNode child;	// this is the main node (the main question we are modifying)
 			
@@ -681,55 +624,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 				}
 			}
 		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see edu.gmu.ace.daggre.NetworkAction#revert()
-		 */
 		public void revert() throws UnsupportedOperationException {
 			throw new javax.help.UnsupportedOperationException("Reverting an addQuestion operation is not supported yet.");
 		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see edu.gmu.ace.daggre.NetworkAction#getWhenCreated()
-		 */
-		public Date getWhenCreated() {
-			return this.occurredWhen;
-		}
-
-		/**
-		 * @return the transactionKey
-		 */
-		public Long getTransactionKey() {
-			return transactionKey;
-		}
-
-		/**
-		 * @return the sourceQuestionId
-		 */
-		public long getSourceQuestionId() {
-			return sourceQuestionId;
-		}
-
-		/**
-		 * @return the assumptiveQuestionIds
-		 */
-		public List<Long> getAssumptiveQuestionIds() {
-			return assumptiveQuestionIds;
-		}
-
-		/**
-		 * @return the cpd
-		 */
-		public List<Float> getCpd() {
-			return cpd;
-		}
-		
+		public Date getWhenCreated() { return this.occurredWhen; }
+		public Long getTransactionKey() { return transactionKey; }
+		public long getSourceQuestionId() { return sourceQuestionId; }
+		public List<Long> getAssumptiveQuestionIds() { return assumptiveQuestionIds; }
+		public List<Float> getCpd() { return cpd; }
 		/** Adding a new edge is a structure change */
-		public boolean isStructureChangeAction() {
-			return true;
-		}
+		public boolean isStructureChangeAction() { return true; }
 		public Long getUserId() { return null; }
 	}
 
@@ -748,6 +652,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		private final String description;
 		/** becomes true once {@link #execute()} was called */
 		private boolean wasExecutedPreviously = false;
+		/** Default constructor initializing fields */
 		public AddCashNetworkAction (long transactionKey, Date occurredWhen, long userId, float assets, String description) {
 			this.transactionKey = transactionKey;
 			this.occurredWhen = occurredWhen;
@@ -826,43 +731,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 				this.execute();
 			}
 		}
-		public Date getWhenCreated() {
-			return occurredWhen;
-		}
-		public boolean isStructureChangeAction() {
-			return false;	// this operation does not change network structure
-		}
-		/**
-		 * @return the transactionKey
-		 */
-		public Long getTransactionKey() {
-			return transactionKey;
-		}
-		/**
-		 * @return the assets
-		 */
-		protected float getAssets() {
-			return assets;
-		}
-		/**
-		 * @param assets the assets to set
-		 */
-		protected void setAssets(float assets) {
-			this.assets = assets;
-		}
-		/*
-		 * (non-Javadoc)
-		 * @see edu.gmu.ace.daggre.NetworkAction#getUserId()
-		 */
-		public Long getUserId() {
-			return userId;
-		}
-		/**
-		 * @return the description
-		 */
-		protected String getDescription() {
-			return description;
-		}
+		public Date getWhenCreated() { return occurredWhen; }
+		/**this operation does not change network structure*/
+		public boolean isStructureChangeAction() { return false;	 }
+		public Long getTransactionKey() { return transactionKey; }
+		public float getAssets() { return assets; }
+		public void setAssets(float assets) { this.assets = assets; }
+		public Long getUserId() { return userId; }
+		public String getDescription() { return description; }
 	}
 
 	
@@ -929,9 +805,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		return true;
 	}
 
-	
+	/**
+	 * This is the {@link NetworkAction} command
+	 * representing {@link MarkovEngineImpl#addTrade(long, Date, String, long, long, List, List, List, boolean)}
+	 * @author Shou Matsumoto
+	 */
 	public class AddTradeNetworkAction implements NetworkAction {
-
 		private final Date whenCreated;
 		private final long transactionKey;
 		private final String tradeKey;
@@ -941,7 +820,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		private List<Long> assumptionIds;
 		private final List<Integer> assumedStates;
 		private final boolean allowNegative;
-
+		/** Default constructor initializing fields */
 		public AddTradeNetworkAction(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Float> newValues, 
 				List<Long> assumptionIds, List<Integer> assumedStates,  boolean allowNegative) {
 			this.transactionKey = transactionKey;
@@ -982,59 +861,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public void revert() throws UnsupportedOperationException {
 			throw new UnsupportedOperationException("Reverting a trade is not supported yet.");
 		}
-
-		public Date getWhenCreated() {
-			return whenCreated;
-		}
-		public boolean isStructureChangeAction() {
-			return false;
-		}
-		public Long getTransactionKey() {
-			return transactionKey;
-		}
-		/**
-		 * @return the tradeKey
-		 */
-		protected String getTradeKey() {
-			return tradeKey;
-		}
-		/*
-		 * (non-Javadoc)
-		 * @see edu.gmu.ace.daggre.NetworkAction#getUserId()
-		 */
-		public Long getUserId() {
-			return userId;
-		}
-		/**
-		 * @return the questionId
-		 */
-		protected long getQuestionId() {
-			return questionId;
-		}
-		/**
-		 * @return the newValues
-		 */
-		protected List<Float> getNewValues() {
-			return newValues;
-		}
-		/**
-		 * @return the assumptionIds
-		 */
-		protected List<Long> getAssumptionIds() {
-			return assumptionIds;
-		}
-		/**
-		 * @return the assumedStates
-		 */
-		protected List<Integer> getAssumedStates() {
-			return assumedStates;
-		}
-		/**
-		 * @return the allowNegative
-		 */
-		protected boolean isAllowNegative() {
-			return allowNegative;
-		}
+		public Date getWhenCreated() { return whenCreated; }
+		public boolean isStructureChangeAction() { return false; }
+		public Long getTransactionKey() { return transactionKey; }
+		public String getTradeKey() { return tradeKey; }
+		public Long getUserId() { return userId; }
+		public long getQuestionId() { return questionId; }
+		public List<Float> getNewValues() { return newValues; }
+		public List<Long> getAssumptionIds() { return assumptionIds; }
+		public List<Integer> getAssumedStates() { return assumedStates; }
+		public boolean isAllowNegative() { return allowNegative; }
 	}
 	
 	/* (non-Javadoc)
@@ -1086,13 +922,113 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		return ret;
 	}
 
+	/**
+	 * This is the {@link NetworkAction} command representing
+	 * {@link MarkovEngineImpl#resolveQuestion(long, Date, long, int)}.
+	 * @author Shou Matsumoto
+	 */
+	public class ResolveQuestionNetworkAction implements NetworkAction {
+		private final long transactionKey;
+		private final Date occurredWhen;
+		private final long questionId;
+		private final int settledState;
+		/** Default constructor initializing fields */
+		public ResolveQuestionNetworkAction (long transactionKey, Date occurredWhen, long questionId, int settledState) {
+			this.transactionKey = transactionKey;
+			this.occurredWhen = occurredWhen;
+			this.questionId = questionId;
+			this.settledState = settledState;
+			
+		}
+		public void execute() {
+			synchronized (getProbabilisticNetwork()) {
+				Node node = getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getNode(Long.toString(questionId));
+				getProbabilisticNetwork().removeNode(node);
+				// do not release lock to global BN until we change all asset nets
+				for (AssetAwareInferenceAlgorithm assetAlgorithm : getUserToAssetAwareAlgorithmMap().values()) {
+					synchronized (assetAlgorithm.getAssetNetwork()) {
+						assetAlgorithm.setAsPermanentEvidence(node, settledState);
+					}
+				}
+			}
+			
+		}
+		public void revert() throws UnsupportedOperationException {
+			throw new UnsupportedOperationException("Current version cannot revert a resolution of a question.");
+		}
+		public Date getWhenCreated() { return occurredWhen; }
+		/** Although this method changes the structure, we do not want to call {@link RebuildNetworkAction} after this action, so return false */
+		public boolean isStructureChangeAction() { return false; }
+		public Long getTransactionKey() { return transactionKey; }
+		/** this is not an operation performed by a particular user */ 
+		public Long getUserId() { return null;}
+		public long getQuestionId() { return questionId; }
+		public int getSettledState() { return settledState; }
+	}
+	
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#resolveQuestion(long, java.util.Date, long, int)
 	 */
 	public boolean resolveQuestion(long transactionKey, Date occurredWhen,
-			long questionID, int settledState) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Not implemented yet.");
+			long questionId, int settledState) throws IllegalArgumentException {
+
+		// initial assertions
+		if (occurredWhen == null) {
+			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
+		}
+		if (settledState < 0) {
+			throw new IllegalArgumentException("Question " + questionId + " has no state " + settledState);
+		}
+		Node node = null;
+		synchronized (getProbabilisticNetwork()) {
+			node = getProbabilisticNetwork().getNode(Long.toString(questionId));
+		}
+		if (node == null) {
+			throw new IllegalArgumentException("Question ID " + questionId + " was not found.");
+		}
+		if (settledState >= node.getStatesSize()) {
+			throw new IllegalArgumentException("Question " + questionId + " has no state " + settledState);
+		}
+
+		
+		// obtain the list which stores the actions in order and check if it was initialized
+		List<NetworkAction> actions = this.getNetworkActionsMap().get(transactionKey);
+		if (actions == null) {
+			// startNetworkAction should have been called.
+			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
+		}
+		// instantiate the action object for adding a question
+		ResolveQuestionNetworkAction newAction = new ResolveQuestionNetworkAction(transactionKey, occurredWhen, questionId, settledState);
+		
+		// let's add action to the managed list. Prepare index of where in actions we should add newAction
+		int indexOfFirstActionCreatedAfterNewAction = -1;	// this will point to the first action created after occurredWhen
+		
+		// Make sure the action list is ordered by the date. Insert new action to a correct position when necessary.
+		for (int i = 0; i < actions.size(); i++) {
+			NetworkAction action = actions.get(i);
+			if (action instanceof AddQuestionNetworkAction) {
+				AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) action;
+				if (addQuestionNetworkAction.getQuestionId() == questionId) {
+					// duplicate question in the same transaction
+					throw new IllegalArgumentException("Question ID " + questionId + " is already present.");
+				}
+			}
+			if (indexOfFirstActionCreatedAfterNewAction < 0 && action.getWhenCreated().after(occurredWhen)) {
+				indexOfFirstActionCreatedAfterNewAction = i;
+				// do not break, because we are still looking for duplicate occurrences of questionId
+			}
+		}
+		
+		// add newAction into actions
+		if (indexOfFirstActionCreatedAfterNewAction < 0) {
+			// there is no action created after the new action. Add at the end.
+			actions.add(newAction);
+		} else {
+			// insert new action at the correct position
+			actions.add(indexOfFirstActionCreatedAfterNewAction, newAction);
+		}
+		
+		return true;
 	}
 
 	/* (non-Javadoc)
@@ -1273,7 +1209,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * @return the change in user assets if a given states occurs if the specified assumptions are met. 
 	 * The indexes are relative to the indexes of the states.
 	 * In the case of a binary question this will return a [if_true, if_false] value, if multiple choice will return a [if_0, if_1, if_2...] value list
-	 * For example, assuming that the question identified by questionID is a boolean question (and also assuming
+	 * For example, assuming that the question identified by questionId is a boolean question (and also assuming
 	 * that state 0 indicates false and state 1 indicates true); then, index 0 contains the assets of 
 	 * the question while it is in state "false" (given assumptions), and index 1 contains the assets of the
 	 * question while it is in state "true".
@@ -1574,7 +1510,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	
 	/**
 	 * 
-	 * @param questionID : the id of the question to be edited (i.e. the random variable "T"  in the example)
+	 * @param questionId : the id of the question to be edited (i.e. the random variable "T"  in the example)
 	 * @param newValues : this is a list (ordered collection) representing the probability values after the edit. 
 	 * For example, suppose T is the target question (i.e. a random variable) with states t1 and t2, and A1 and A2 are assumptions with states (a11, a12), and (a21 , a22) respectively.
 	 * Then, the list must be filled as follows:<br/>
@@ -1588,7 +1524,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * index 7 - P(T=t2 | A1=a12, A2=a22)<br/>
 	 * <br/>
 	 * If the states of the conditions are specified in assumedStates, then this list will only specify the conditional
-	 * probabilities of each states of questionID.
+	 * probabilities of each states of questionId.
 	 * E.g. Again, suppose T is the target question with states t1 and t2, and A1 and A2 are assumptions with states (a11, a12), and (a21 , a22) respectively.]
 	 * Also suppose that assumedStates = (1,0). Then, the content of newValues must be: <br/>
 	 * index 0 - P(T=t1 | A1=a12, A2=a21)<br/>

@@ -168,4 +168,17 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 * in order to restore the values.
 	 */
 	public void revertLastProbabilityUpdate();
+	
+	/**
+	 * This method shall make best effort in order to mark
+	 * a state of a given node as a hard evidence permanently.
+	 * In other words, the network shall behave like if
+	 * a state of a given node is set to 100%
+	 * after this method returns.
+	 * For example, implementations may remove the node from
+	 * the network after the a hard evidence.
+	 * @param node : node to add permanent hard evidence.
+	 * @param state
+	 */
+	public void setAsPermanentEvidence(INode node, int state);
 }

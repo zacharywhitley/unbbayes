@@ -283,10 +283,16 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			
 			// perform clique-wise update of asset values using a ratio
 			for (int i = 0; i < assetTable.tableSize(); i++) {
+				float previousProbability = previousProbabilities.getValue(i);
+				if (previousProbability <= 0) {
+					// This is an impossible state, because some complementary state is set as a finding.
+					// Impossible supposedly cannot be changed anymore, so do not update this state.
+					continue;
+				}
 				// multiply assets by the ratio (current probability values / previous probability values)
-				float newValue = assetTable.getValue(i) * ( currentProbabilities.getValue(i) / previousProbabilities.getValue(i) );
+				float newValue = assetTable.getValue(i) * ( currentProbabilities.getValue(i) / previousProbability );
 				// check if assets is <= 1
-				if (!isToAllowQValuesSmallerThan1() && (newValue <= 1f)) {
+				if (!isToAllowQValuesSmallerThan1() &&  (newValue <= 1f) && (newValue > 0f) ) {
 					// revert all previous cliques/separators, including current
 					for (IRandomVariable modifiedCliqueOrSep : oldAssetTables.keySet()) {
 						assetTable = (PotentialTable) modifiedCliqueOrSep.getProbabilityFunction();
@@ -654,11 +660,11 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		String explMessage = "\n \n "+ getNetwork() + ": \n \n";
 		
 		// print probabilities and assets for each node in each clique
-		for (Clique probClique : this.getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
+		for (Clique clique : this.getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
 			try {
-				explMessage += "Clique {" + probClique + "}:\n \t \t";
-				PotentialTable assetTable = (PotentialTable) this.getOriginalCliqueToAssetCliqueMap().get(probClique).getProbabilityFunction();
-				PotentialTable probTable = probClique.getProbabilityFunction();
+				explMessage += clique + ":\n \t \t";
+				PotentialTable assetTable = (PotentialTable) this.getOriginalCliqueToAssetCliqueMap().get(clique).getProbabilityFunction();
+				PotentialTable probTable = clique.getProbabilityFunction();
 				for (int i = 0; i < assetTable.tableSize(); i++) {
 					explMessage +=  
 //						assetTable.getVariableAt(varIndex) 
@@ -675,11 +681,11 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		}
 		
 		// print probabilities and assets for each node in each separator
-		for (Separator probSeparator : this.getRelatedProbabilisticNetwork().getJunctionTree().getSeparators()) {
+		for (Separator separator : this.getRelatedProbabilisticNetwork().getJunctionTree().getSeparators()) {
 			try {
-				explMessage += "Separator {" + probSeparator + "}:\n \t \t";
-				PotentialTable assetTable = (PotentialTable) this.getOriginalCliqueToAssetCliqueMap().get(probSeparator).getProbabilityFunction();
-				PotentialTable probTable = probSeparator.getProbabilityFunction();
+				explMessage += separator + ":\n \t \t";
+				PotentialTable assetTable = (PotentialTable) this.getOriginalCliqueToAssetCliqueMap().get(separator).getProbabilityFunction();
+				PotentialTable probTable = separator.getProbabilityFunction();
 				for (int i = 0; i < assetTable.tableSize(); i++) {
 					explMessage +=  
 						assetTable.getValue(i) + " (" + probTable.getValue(i)*100 + "%)" + "\n \t \t";
@@ -1093,6 +1099,81 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 				((TreeVariable)currentProbabilities.getVariableAt(i)).updateMarginal();
 			}
 		}
+	}
+
+	/**
+	 * This method will set cells in the asset tables of {@link #getAssetNetwork()} to zero.
+	 * Zero is an identity value in marginalization (sum-out - {@link unbbayes.prs.bn.PotentialTable.SumOperation}) 
+	 * (i.e. SUM(X1,X2,...,Xn,0) = SUM(X1,X2,...,Xn) ), 
+	 * and it is also a value ignored in current implementations of 
+	 * least probable explanation (min-out - {@link unbbayes.prs.bn.inference.extension.MinProductJunctionTree.MinOperation}) 
+	 * and most probable explanation (max-out - {@link unbbayes.prs.bn.PotentialTable.MaxOperation}) operations.
+	 * Hence, by setting cells to 0, the cell will be ignored in all 3 types of currently implemented 
+	 * algorithms based on junction tree (i.e. {@link unbbayes.prs.bn.JunctionTreeAlgorithm},
+	 * {@link unbbayes.prs.bn.inference.extension.JunctionTreeLPEAlgorithm}, {@link unbbayes.prs.bn.inference.extension.JunctionTreeMPEAlgorithm}).
+	 * This method will also attempt to delete the node from the network.
+	 * @param node : only assets related to states of this node will be changed. 
+	 * {@link AssetNetwork#removeNode(Node)} will be used in order to delete this node from the {@link #getAssetNetwork()}.
+	 * @param state : q-values of states complementary to this state (i.e. states of "node" which are different
+	 * to "state") will be set to 0.
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setAsPermanentEvidence(unbbayes.prs.INode, int)
+	 */
+	public void setAsPermanentEvidence(INode node, int state) {
+		// initial assertions
+		if (node == null) {
+			throw new NullPointerException("Cannot add evidences to a null node.");
+		}
+		if (! (node instanceof Node)) {
+			throw new UnsupportedOperationException(node + " is a node of type " + node.getClass() + ", which is not supported by the current version of " + this.getClass());
+		}
+		if (state < 0 || state >= node.getStatesSize()) {
+			throw new ArrayIndexOutOfBoundsException(state + " is not a valid index for a state of node " + node);
+		}
+		if (getAssetNetwork() == null) {
+			throw new IllegalStateException("This algorithm should be related to some AssetNetwork before calling this method. Please, call #setAssetNetwork(AssetNetwork).");
+		}
+		if (getAssetNetwork().getJunctionTree() == null 
+				|| getAssetNetwork().getJunctionTree().getCliques() == null 
+				|| getAssetNetwork().getJunctionTree().getSeparators() == null ) {
+			throw new IllegalStateException("This algorithm cannot be used without a Junction Tree. Make sure getAssetNetwork().getJunctionTree() was correctly initialized.");
+		}
+		
+		// Set cells of clique tables to zero. 
+		for (Clique clique : getAssetNetwork().getJunctionTree().getCliques()) {
+			// consider only cliques containing node
+			if (clique.getNodes().contains(node)) {
+				// extract clique table
+				PotentialTable cliqueTable = clique.getProbabilityFunction();
+				// iterate over cells in the clique table
+				for (int i = 0; i < cliqueTable.tableSize(); i++) {
+					// using "multidimensionalCoord" is easier than "i" if our objective is to compare with "state"
+					int[] multidimensionalCoord = cliqueTable.getMultidimensionalCoord(i);
+					// set all cells unrelated to "state" to 0
+					if (multidimensionalCoord[cliqueTable.getVariableIndex((Node) node)] != state) {
+						cliqueTable.setValue(i,0);
+					}
+				}
+			}
+		}
+		// Set cells of separator tables to zero as well.
+		for (Separator separator : getAssetNetwork().getJunctionTree().getSeparators()) {
+			// consider only separators containing node
+			if (separator.getNodes().contains(node)) {
+				// extract separator table
+				PotentialTable separatorTable = separator.getProbabilityFunction();
+				// iterate over cells in the separator table
+				for (int i = 0; i < separatorTable.tableSize(); i++) {
+					// using "multidimensionalCoord" is easier than "i" if our objective is to compare with "state"
+					int[] multidimensionalCoord = separatorTable.getMultidimensionalCoord(i);
+					// set all cells unrelated to "state" to 0
+					if (multidimensionalCoord[separatorTable.getVariableIndex((Node) node)] != state) {
+						separatorTable.setValue(i,0);
+					}
+				}
+			}
+		}
+		// delete node. This will supposedly delete columns in the asset tables (cliques + separators) as well
+		getAssetNetwork().removeNode((Node) node);
 	}
 
 	

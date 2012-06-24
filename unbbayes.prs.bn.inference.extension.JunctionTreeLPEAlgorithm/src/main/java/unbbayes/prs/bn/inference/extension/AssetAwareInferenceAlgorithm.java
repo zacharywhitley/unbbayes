@@ -1087,5 +1087,12 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		}
 		return true;	// default value
 	}
+
+	/**
+	 * This method will only delegate to {@link #getAssetPropagationDelegator()}
+	 */
+	public void setAsPermanentEvidence(INode node, int state) {
+		this.getAssetPropagationDelegator().setAsPermanentEvidence(node, state);
+	}
 	
 }

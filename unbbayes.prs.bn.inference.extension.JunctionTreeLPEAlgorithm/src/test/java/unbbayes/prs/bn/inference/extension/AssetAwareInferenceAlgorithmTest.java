@@ -1208,6 +1208,74 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		// undo only the min propagation (we do not need the min q values anymore, and next q-calculations must use q values prior to min propagation)
 		assetQAlgorithm.undoMinPropagation();
 		
+		// Resolve question F to f1, by using hard evidence and special "Default" user
+		
+//		// create new user Default
+//		AssetNetwork assetNetDefault = null;
+//		try {
+//			assetNetDefault = assetQAlgorithm.createAssetNetFromProbabilisticNet(network);
+//			assetNetDefault.setName("Default");
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			fail(e.getMessage());
+//		}
+//		assertNotNull(assetNetDefault);
+//		
+//		// let the algorithm allow asset-q smaller than 1
+//		assetQAlgorithm.setToAllowQValuesSmallerThan1(true);
+//		
+//		// resolved node is F
+//		betNode = (TreeVariable) network.getNode("F");
+//		assertEquals(network.getNode("F"), betNode);
+//		
+//		// for resolution, bet condition is none.
+//		betConditions.clear();
+//		assertEquals(0, betConditions.size());
+//		
+//		// extract conditional probability P(F | null) == P(F)
+//		sdf
+//		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+//		assertNotNull(potential);
+//		assertEquals(2,potential.tableSize());
+//		// P(F | null) == P(F)
+//		assertEquals(betNode.getMarginalAt(0), potential.getValue(0), PROB_PRECISION_ERROR);
+//		assertEquals(betNode.getMarginalAt(1), potential.getValue(1), PROB_PRECISION_ERROR);
+//
+//		// set P(D=d1|F=f2) to a value lower (half) than the lower bound of edit interval
+//		potential.setValue(2, editInterval[0]/2);
+//		potential.setValue(3, 1-(editInterval[0]/2));
+//		
+//		// fill array of likelihood with values in CPT
+//		likelihood = new float[potential.tableSize()];
+//		for (int i = 0; i < likelihood.length; i++) {
+//			likelihood[i] = potential.getValue(i);
+//		}
+//		
+//		// add likelihood ratio given (empty) parents (conditions assumed in the bet - empty now)
+//		betNode.addLikeliHood(likelihood, betConditions);
+//		
+//		try {
+//			// propagate soft evidence
+//			assetQAlgorithm.propagate();
+//			System.out.println(network.getLog());
+//			network.getLogManager().clear();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			fail(e.getMessage());
+//		}
+//		
+//		// check that LPE is 1 or below 
+//
+//		// prepare argument, which is input and output at the same moment
+//		inOutArgLPE.clear();
+//		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+//		
+//		assertNotNull(lpes);
+//		assertFalse(lpes.isEmpty());
+//		assertTrue("Obtained min q = " + minQ, minQ <= 1);
+//
+//		// undo only the min propagation (we do not need the min q values anymore, and next q-calculations must use q values prior to min propagation)
+//		assetQAlgorithm.undoMinPropagation();
 		
 		
 	}

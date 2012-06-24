@@ -235,12 +235,12 @@ public interface MarkovEngineInterface {
 	 * Implementations of this method shall be synchronized.
 	 * @param transactionKey : key returned by {@link #startNetworkActions()}
 	 * @param occurredWhen : implementations of this interface may use this timestamp to store a history of modifications.
-	 * @param questionID : the id of the question to be settled.
+	 * @param questionId : the id of the question to be settled.
 	 * @param settledState : index of the state of the question (with ID questionID) to be settled.
 	 * @return true if successful.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
-	public boolean resolveQuestion(long transactionKey, Date occurredWhen, long questionID, int settledState) throws IllegalArgumentException;
+	public boolean resolveQuestion(long transactionKey, Date occurredWhen, long questionId, int settledState) throws IllegalArgumentException;
 	
 	/**
 	 * This function will attempt to undo all trades >= the startingTradeId against this question. 
