@@ -464,8 +464,8 @@ public interface MarkovEngineInterface {
 	 * This method will determine the states of a balancing trade which would minimize impact once the question is resolved
 	 * Ideally this balancing trade is one where all assetsifStates states where equal so settling the question would have no effect. 
 	 * @param userID: the ID of the user (i.e. owner of the assets).
-	 * @param questionID : the id of the question to be balanced.
-	 * @param assumptionIDs : list (ordered collection) representing the IDs of the questions to be assumed in this edit. The order is important,
+	 * @param questionId : the id of the question to be balanced.
+	 * @param assumptionIds : list (ordered collection) representing the IDs of the questions to be assumed in this edit. The order is important,
 	 * because the ordering in this list will be used in order to identify the correct indexes in assumedStates.
 	 * @param assumedStates : indicates the states of the nodes in assumptionIDs.
 	 * If it does not have the same size of assumptionIDs,Å@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered. 
@@ -493,7 +493,7 @@ public interface MarkovEngineInterface {
 	 * index 3 - P(T=t2 | A1=a12, A2=a22)<br/>
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
-	public List<Float> determineBalancingTrade(long userID, long questionID, List<Long> assumptionIDs, List<Integer> assumedStates) throws IllegalArgumentException;
+	public List<Float> determineBalancingTrade(long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
 	 * This function will return an ordered list of events that explain how the current probability of a question was determined. 

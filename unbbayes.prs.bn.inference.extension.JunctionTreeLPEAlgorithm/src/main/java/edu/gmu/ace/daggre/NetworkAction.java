@@ -14,7 +14,7 @@ import java.util.Date;
  * @author Shou Matsumoto
  *
  */
-public interface NetworkAction {
+public interface NetworkAction extends QuestionEvent {
 	/**
 	 * Runs the associated command.
 	 */
@@ -30,10 +30,6 @@ public interface NetworkAction {
 	 */
 	void revert() throws UnsupportedOperationException;
 	
-	/**
-	 * @return the date/time when this action was created.
-	 */
-	Date getWhenCreated();
 	
 	/**
 	 * Actions which changes the structure of a network

@@ -259,7 +259,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public boolean isStructureChangeAction() { return false; }
 		public Long getTransactionKey() { return transactionKey; }
 		public Long getUserId() { return null; }
-		
+		public List<Float> getPercent() { return null; }
+		public String getTradeId() { return null; }
 	}
 
 	/* (non-Javadoc)
@@ -400,11 +401,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		}
 		public long getQuestionId() { return questionId; }
 		public int getNumberStates() { return numberStates; }
-		public List<Float> getInitProbs() { return initProbs; }
 		/** Adding a new node is a structure change */
 		public boolean isStructureChangeAction() { return true; }
 		public Long getUserId() { return null; }
 		public String toString() { return super.toString() + "{" + this.transactionKey + ", " + this.getQuestionId() + "}"; }
+		public List<Float> getPercent() { return initProbs; }
+		public String getTradeId() { return null; }
 	}
 
 	/* (non-Javadoc)
@@ -631,10 +633,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public Long getTransactionKey() { return transactionKey; }
 		public long getSourceQuestionId() { return sourceQuestionId; }
 		public List<Long> getAssumptiveQuestionIds() { return assumptiveQuestionIds; }
-		public List<Float> getCpd() { return cpd; }
 		/** Adding a new edge is a structure change */
 		public boolean isStructureChangeAction() { return true; }
 		public Long getUserId() { return null; }
+		public List<Float> getPercent() { return cpd; }
+		public String getTradeId() { return null; }
 	}
 
 	/**
@@ -739,6 +742,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public void setAssets(float assets) { this.assets = assets; }
 		public Long getUserId() { return userId; }
 		public String getDescription() { return description; }
+		public List<Float> getPercent() { return null; }
+		/** Returns the description */
+		public String getTradeId() { return description; }
 	}
 
 	
@@ -864,13 +870,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public Date getWhenCreated() { return whenCreated; }
 		public boolean isStructureChangeAction() { return false; }
 		public Long getTransactionKey() { return transactionKey; }
-		public String getTradeKey() { return tradeKey; }
 		public Long getUserId() { return userId; }
 		public long getQuestionId() { return questionId; }
-		public List<Float> getNewValues() { return newValues; }
 		public List<Long> getAssumptionIds() { return assumptionIds; }
 		public List<Integer> getAssumedStates() { return assumedStates; }
 		public boolean isAllowNegative() { return allowNegative; }
+		public List<Float> getPercent() { return newValues; }
+		public String getTradeId() { return tradeKey; }
 	}
 	
 	/* (non-Javadoc)
@@ -932,6 +938,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		private final Date occurredWhen;
 		private final long questionId;
 		private final int settledState;
+		private List<Float> marginalWhenResolved;
 		/** Default constructor initializing fields */
 		public ResolveQuestionNetworkAction (long transactionKey, Date occurredWhen, long questionId, int settledState) {
 			this.transactionKey = transactionKey;
@@ -942,7 +949,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		}
 		public void execute() {
 			synchronized (getProbabilisticNetwork()) {
-				Node node = getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getNode(Long.toString(questionId));
+				TreeVariable node = (TreeVariable) getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getNode(Long.toString(questionId));
+				
+				// extract marginal 
+				marginalWhenResolved = new ArrayList<Float>(node.getStatesSize());
+				for (int i = 0; i < node.getStatesSize(); i++) {
+					marginalWhenResolved.add(node.getMarginalAt(i));
+				}
+				
+				// TODO revert on some error
 				getProbabilisticNetwork().removeNode(node);
 				// do not release lock to global BN until we change all asset nets
 				for (AssetAwareInferenceAlgorithm assetAlgorithm : getUserToAssetAwareAlgorithmMap().values()) {
@@ -964,6 +979,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public Long getUserId() { return null;}
 		public long getQuestionId() { return questionId; }
 		public int getSettledState() { return settledState; }
+		public List<Float> getPercent() { return marginalWhenResolved; }
+		public String getTradeId() { return null; }
 	}
 	
 	/* (non-Javadoc)
@@ -1170,18 +1187,19 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			List<Long> assumptionIds, List<Integer> assumedStates)
 			throws IllegalArgumentException {
 		// initial assertion: check consistency of assumptionIds and assumedStates
-		if (assumptionIds != null && assumedStates != null) {
-			if (assumedStates.size() != assumptionIds.size()) {
-				throw new IllegalArgumentException("assumptionIds.size() == " + assumptionIds.size() + ", assumedStates.size() == " + assumedStates.size());
-			}
-		}
+//		if (assumptionIds != null && assumedStates != null) {
+//			if (assumedStates.size() != assumptionIds.size()) {
+//				throw new IllegalArgumentException("assumptionIds.size() == " + assumptionIds.size() + ", assumedStates.size() == " + assumedStates.size());
+//			}
+//		}
+		// the above assertion is not necessary in this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm); 
 		
 		// this object extracts conditional probability of any nodes in same clique (it assumes prob network was compiled using junction tree algorithm)
 		// we can use the same object in order to extract conditional assets, because asset cliques extends prob cliques.
-		IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = getConditionalProbabilityExtractor();	
-		if (conditionalProbabilityExtractor == null) {
-			throw new RuntimeException("Could not reuse conditional probability extractor of the current default inference algorithm. Perhaps you are using incompatible version of Markov Engine or UnBBayes.");
-		}
+//		IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = getConditionalProbabilityExtractor();	
+//		if (conditionalProbabilityExtractor == null) {
+//			throw new RuntimeException("Could not reuse conditional probability extractor of the current default inference algorithm. Perhaps you are using incompatible version of Markov Engine or UnBBayes.");
+//		}
 		
 		// extract user's asset network from user ID
 		AssetAwareInferenceAlgorithm algorithm = null;
@@ -1194,18 +1212,21 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			throw new RuntimeException("Could not extract assets from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
 		}
 		
-		return this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm);
+		return this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, false);	// false := return assets instead of q-values
 	}
 	
 	/**
 	 * This method is used in {@link #getAssetsIfStates(long, long, List, List)} and {@link #previewTrade(long, long, List, List, List)}
 	 * in order to extract the conditional assets from the {@link AssetNetwork} related to a given algorithm.
 	 * @param questionId : the id of the question to be edited (i.e. the random variable "T"  in the example)
-	 * @param assumptionIds : a list (ordered collection) of question IDs which are the assumptions for T (i.e. random variable "A" in the example). The ordeer
+	 * @param assumptionIds : a list (ordered collection) of question IDs which are the assumptions for T (i.e. random variable "A" in the example). The order
 	 * is important, because it will indicate which states of assumedStates are associated with which questions in assumptionIDs.
 	 * @param assumedStates : a list (ordered collection) representing the states of assumptionIDs assumed.
 	 * @param algorithm : the algorithm to be used in order to extract info from {@link AssetNetwork}. 
 	 * {@link AssetAwareInferenceAlgorithm#getAssetNetwork()} is used in order to extract the instance of {@link AssetNetwork}.
+	 * @param isToReturnQValuesInsteadOfAssets : if false, the returned list will contain values returned by {@link #getScoreFromQValues(float)} 
+	 * (i.e. logarithm values, instead of the q-values stored in the asset tables). 
+	 * If true, the returned list will contain q-values (values actually stored in the assets table) instead of what the DAGGRE side call "assets" (the logarithm values).
 	 * @return the change in user assets if a given states occurs if the specified assumptions are met. 
 	 * The indexes are relative to the indexes of the states.
 	 * In the case of a binary question this will return a [if_true, if_false] value, if multiple choice will return a [if_0, if_1, if_2...] value list
@@ -1215,7 +1236,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * question while it is in state "true".
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
 	 */
-	protected List<Float> getAssetsIfStates(long questionId, List<Long> assumptionIds, List<Integer> assumedStates, AssetAwareInferenceAlgorithm algorithm)
+	protected List<Float> getAssetsIfStates(long questionId, List<Long> assumptionIds, List<Integer> assumedStates, AssetAwareInferenceAlgorithm algorithm, boolean isToReturnQValuesInsteadOfAssets)
 			throws IllegalArgumentException {
 		// basic assertion
 		if (algorithm == null) {
@@ -1263,8 +1284,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 				}
 			}
 			if (!isToSkip) {
-				// convert q-values to assets (i.e. logarithmic values)
-				ret.add(this.getScoreFromQValues(assetTable.getValue(i)));
+				if (isToReturnQValuesInsteadOfAssets) {
+					// return q-values directly
+					ret.add(assetTable.getValue(i));
+				} else {
+					// convert q-values to assets (i.e. logarithmic values)
+					ret.add(this.getScoreFromQValues(assetTable.getValue(i)));
+				}
 			}
 		}
 		return ret;
@@ -1505,7 +1531,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		// TODO optimize (executeTrade and getAssetsIfStates have redundant portion of code)
 		
 		// return the asset position
-		return this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm);
+		return this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, false); // false := return assets instead of q-values
 	}
 	
 	/**
@@ -1666,14 +1692,79 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		}
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * The balancing trade can be obtained by calculating the probabilities 
+	 * P1, P2 , ... , PN (N is the quantity of states of the given node), in which:
+	 * <br/><br/>
+	 * P1 + P2 + ... + PN = 1
+	 * <br/>
+	 * q1*P1/p1 = q2*P2/p2 = ... = qN*PN/pN
+	 * <br/><br/>
+	 * Note: for  1 <= i <= N; Pi is the solution (posterior probability), pi is the current (prior) probability, and qi is the 
+	 * asset-q value of the i-th state.
+	 * <br/><br/>
+	 * The solution of the above equation is:<br/>
+	 * Pi = (q1 * q2 * ... * qi-1 * qi+1 * ... * qN * pi) / ( (q2*q3*q4*...*qN * p1) + (q1*q3*q4*...*qN * p2) + ... + (q1*q2*...*qi-1*qi+1*...*qN * pi) + ... + (q1*q2*...*qN-1 * pN) ) 
+	 * <br/>
+	 * For  1 <= i <= N
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#determineBalancingTrade(long, long, java.util.List, java.util.List)
 	 */
-	public List<Float> determineBalancingTrade(long userID, long questionID,
-			List<Long> assumptionIDs, List<Integer> assumedStates)
+	public List<Float> determineBalancingTrade(long userId, long questionId,
+			List<Long> assumptionIds, List<Integer> assumedStates)
 			throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Not implemented yet.");
+		
+		// extract user's asset network from user ID
+		AssetAwareInferenceAlgorithm algorithm = null;
+		try {
+			algorithm = this.getAlgorithmAndAssetNetFromUserID(userId);
+		} catch (InvalidParentException e) {
+			throw new RuntimeException("Could not extract assets from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
+		}
+		if (algorithm == null) {
+			throw new RuntimeException("Could not extract assets from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
+		}
+		
+		// obtain q1, q1, ... , qn (the asset's q values)
+		List<Float> qValues = this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, true);	// true := return q-values instead of assets
+		
+		// obtain p1, p2, ... , pn (the prior probabilities)
+		List<Float> probabilities = this.getProbList(questionId, assumptionIds, assumedStates);
+		
+		// basic assertion
+		if (qValues.size() != probabilities.size()) {
+			throw new RuntimeException("List of probabilities and list of assets have different sizes (" 
+					+ probabilities.size() + ", and " + qValues.size() + " respectively). You may be using incompatible version of Markov Engine or UnBBayes.");
+		}
+		
+		// this is a denominator (bottom side of a division) common to all solutions P1,P2,...,PN
+		double commonDenominator = 0;	
+		
+		// Calculate q1*q2*...*qi-1*qi+1*...*qN*pi and store it in the list "probabilities". This is also a factor in commonDenominator.
+		for (int i = 0; i < probabilities.size(); i++) {
+			
+			// product := (q1*q2*...*qi-1*qi+1*...*qN)
+			double product = 1;	// 1 is the identity value in a multiplication
+			for (int indexOfQ = 0; indexOfQ < qValues.size(); indexOfQ++) {
+				if (indexOfQ != i) {
+					product *= qValues.get(indexOfQ);
+				}
+			}
+			
+			// product := (q1*q2*...*qi-1*qi+1*...*qN) * pi
+			product *= probabilities.get(i);
+			probabilities.set(i, (float)product); // TODO solve double-float precision problem
+			
+			// commonDenominator := ( (q2*q3*q4*...*qN * p1) + (q1*q3*q4*...*qN * p2) + ... + (q1*q2*...*qi-1*qi+1*...*qN * pi) + ... + (q1*q2*...*qN-1 * pN) )
+			commonDenominator += product;
+		}
+		
+		// Calculate P1,P2,...,PN and store it in probabilities. 
+		for (int i = 0; i < probabilities.size(); i++) {
+			// Pi = ((q1*q2*...*qi-1*qi+1*...*qN)*pi) / commonDenominator
+			probabilities.set(i, (float) (probabilities.get(i)/commonDenominator)); // TODO solve double-float precision problem
+		}
+		
+		return probabilities;
 	}
 
 	/* (non-Javadoc)
@@ -1710,7 +1801,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * @param networkActionsMap the networkActionsMap to set
 	 * @see NetworkAction
 	 */
-	public void setNetworkActionsMap(Map<Long, List<NetworkAction>> networkActionsMap) {
+	protected void setNetworkActionsMap(Map<Long, List<NetworkAction>> networkActionsMap) {
 		this.networkActionsMap = networkActionsMap;
 	}
 
@@ -1720,7 +1811,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * @return the networkActionsMap
 	 * @see NetworkAction
 	 */
-	public Map<Long, List<NetworkAction>> getNetworkActionsMap() {
+	protected Map<Long, List<NetworkAction>> getNetworkActionsMap() {
 		return networkActionsMap;
 	}
 

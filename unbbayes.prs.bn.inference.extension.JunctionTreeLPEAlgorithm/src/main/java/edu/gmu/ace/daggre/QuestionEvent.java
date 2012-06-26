@@ -2,7 +2,7 @@
 package edu.gmu.ace.daggre;
 
 import java.util.Date;
-import java.util.UUID;
+import java.util.List;
 
 /**
  * This class represents an entry in the history of
@@ -12,19 +12,19 @@ import java.util.UUID;
  */
 public interface QuestionEvent {
 	/**
-	 * @return the timestamp of this event.
+	 * @return the date/time when this action was created.
 	 */
-	Date getDateTime();
+	Date getWhenCreated();
 	
 	/**
 	 * @return probability at this time of event.
 	 * @see #getDateTime(). 
 	 */
-	Float getPercent();
+	List<Float> getPercent();
 	
 	/**
 	 * @return the ID which can uniquely identify a trade 
-	 * @see MarkovEngineInterface#addTrade(long, Date, long, long, long, java.util.List, java.util.List, java.util.List, java.util.List, Boolean)
+	 * @see MarkovEngineInterface#addTrade(long, Date, String, long, long, List, List, List, boolean)
 	 */
-	UUID getTradeId();
+	String getTradeId();
 }
