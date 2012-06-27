@@ -496,6 +496,27 @@ public interface MarkovEngineInterface {
 	public List<Float> determineBalancingTrade(long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
+	 * This is similar to doing {@link #determineBalancingTrade(long, long, List, List)} and then
+	 * {@link #addTrade(long, Date, String, long, long, List, List, List, boolean)}.
+	 * However, this method is safer than calling {@link #determineBalancingTrade(long, long, List, List)}
+	 * and then {@link #addTrade(long, Date, String, long, long, List, List, List, boolean)},
+	 * because it is going to be executed in a same transaction (i.e. it will be executed
+	 * during {@link #commitNetworkActions(long)}).
+	 * 
+	 * @param transactionKey : key returned by {@link #startNetworkActions()}
+	 * @param occurredWhen : implementations of this interface may use this timestamp to store a history of modifications.
+	 * @param tradeKey : revert and history functions can refer to specific trade actions easier, by referring to this key (identifier).
+	 * @param userID: the ID of the user (i.e. owner of the assets).
+	 * @param questionId : the id of the question to be balanced.
+	 * @param assumptionIds : list (ordered collection) representing the IDs of the questions to be assumed in this edit. The order is important,
+	 * because the ordering in this list will be used in order to identify the correct indexes in assumedStates.
+	 * @param assumedStates : indicates the states of the nodes in assumptionIDs.
+	 * If it does not have the same size of assumptionIDs,Å@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered. 
+	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
+	 */
+	public void balanceTrade(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	
+	/**
 	 * This function will return an ordered list of events that explain how the current probability of a question was determined. 
 	 * In phase 1, this method may simply return the tradeId and history over time that directly impacted the question.
 	 * @param questionID : filter for the history. Only history related to this question will be returned.

@@ -901,7 +901,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		// NOTE: preview trade is performed *before* the insertion of a new action into the transaction, 
 		// because we only want the transaction to be altered if the preview trade has returned successfully.
 		
-		// instantiate the action object for adding cash
+		// instantiate the action object for adding trade
 		AddTradeNetworkAction newAction = new AddTradeNetworkAction(transactionKey, occurredWhen, tradeKey, userId, questionId, newValues, assumptionIds, assumedStates, allowNegative);
 		
 		// let's add action to the managed list. 
@@ -1262,6 +1262,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		}
 		
 		// convert cpt to a list of float, given assumedStates.
+		// TODO change the way it sum-out/min-out/max-out the unspecified states in the clique potential
 		List<Float> ret = new ArrayList<Float>(assetTable.tableSize());
 		for (int i = 0; i < assetTable.tableSize(); i++) {
 			boolean isToSkip = false;
@@ -1574,7 +1575,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			throw new NullPointerException("AssetAwareInferenceAlgorithm was not specified.");
 		}
 		
-		// obtain the copy of the network, so that the original is always untouched
+		// obtain the network. It should be a copy, if the original is should be untouched
 		ProbabilisticNetwork net = algorithm.getRelatedProbabilisticNetwork();
 		if (net == null || !net.equals(getProbabilisticNetwork())) {
 			throw new RuntimeException("Could not obtain bayesian network for user " + algorithm.getAssetNetwork() + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
@@ -1766,6 +1767,172 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		
 		return probabilities;
 	}
+	
+	/**
+	 * Network action representing {@link MarkovEngineImpl#balanceTrade(long, Date, String, long, long, List, List)}
+	 * @author Shou Matsumoto
+	 */
+	public class BalanceTradeNetworkAction implements NetworkAction{
+		private final long transactionKey;
+		private final Date occurredWhen;
+		private final String tradeKey;
+		private final long userId;
+		private final long questionId;
+		private final List<Long> assumptionIds;
+		private final List<Integer> assumedStates;
+		private List<Float> newValues = null;
+		private AddTradeNetworkAction tradeAction;
+		/** Default constructor initializing fields\ */
+		public BalanceTradeNetworkAction(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) {
+			this.transactionKey = transactionKey;
+			this.occurredWhen = occurredWhen;
+			this.tradeKey = tradeKey;
+			this.userId = userId;
+			this.questionId = questionId;
+			this.assumptionIds = assumptionIds;
+			this.assumedStates = assumedStates;
+		}
+		/** Virtually does {@link MarkovEngineImpl#determineBalancingTrade(long, long, List, List)} and then {@link AddTradeNetworkAction#execute()} */
+		public void execute() {
+			synchronized (getProbabilisticNetwork()) {
+				// obtain trade values for exiting the user from a question given assumptions
+				newValues = determineBalancingTrade(userId, questionId, assumptionIds, assumedStates);
+				// execute the trade without releasing lock
+				tradeAction = new AddTradeNetworkAction(transactionKey, occurredWhen, tradeKey, userId, questionId, newValues, assumptionIds, assumedStates, false);
+				tradeAction.execute();
+				// TODO check if there is no risk of deadlock in blocking the same variable twice (here and inside AddTradeNetworkAction#execute())
+			}
+		}
+		public void revert() throws UnsupportedOperationException {
+			throw new UnsupportedOperationException("Not supported by current version of Markov Engine.");
+		}
+		public Date getWhenCreated() { return occurredWhen; }
+		public List<Float> getPercent() { return newValues; }
+		public String getTradeId() { return tradeKey; }
+		/** balancing should not change structure */
+		public boolean isStructureChangeAction() { return false; }
+		public Long getTransactionKey() { return transactionKey; }
+		public Long getUserId() { return userId; }
+		public long getQuestionId() { return questionId; }
+		public List<Long> getAssumptionIds() { return assumptionIds; }
+		public List<Integer> getAssumedStates() { return assumedStates; }
+		/** This is the action object used in order to execute the trade */
+		protected void setTradeAction(AddTradeNetworkAction tradeAction) { this.tradeAction = tradeAction; }
+		/** This is the action object used in order to execute the trade */
+		public AddTradeNetworkAction getTradeAction() { return tradeAction; }
+	}
+	
+	/* (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#balanceTrade(long, long, long, java.util.List, java.util.List)
+	 */
+	public void balanceTrade(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+		
+		// initial assertions
+		if (occurredWhen == null) {
+			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
+		}
+		
+		// check existence of transaction key
+		List<NetworkAction> actions = this.getNetworkActionsMap().get(transactionKey);
+		if (actions == null) {
+			// startNetworkAction should have been called.
+			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
+		}
+		
+		// check size of assumptions and states
+		if (assumptionIds != null && !assumptionIds.isEmpty()) {
+			// size of assumedStates must be equal to assumptionIds
+			if (assumedStates == null) {
+				throw new IllegalArgumentException("assumedStates is not expected to be null when assumptionIds is not null.");
+			} else if (assumedStates.size() != assumptionIds.size()) {
+				throw new IllegalArgumentException("Size of assumedStates is expected to be " + assumptionIds.size() + ", but was " + assumedStates.size());
+			}
+			// assumptionIds must not contain null value
+			if (assumptionIds.contains(null)) {
+				throw new IllegalArgumentException("Null assumption found.");
+			}
+			// assumedStates must not contain null value
+			if (assumedStates.contains(null)) {
+				throw new IllegalArgumentException("Assumption with state == null found.");
+			}
+		}
+		
+		// check existence of main node
+		Node mainNode  = null;
+		synchronized (getProbabilisticNetwork()) {
+			mainNode = getProbabilisticNetwork().getNode(Long.toString(questionId));
+		}
+		if (mainNode == null) {
+			// node does not exist. Check if there was some previous transaction adding such node
+			boolean willCreateNodeOnCommit = false;	// if true, the node will be created in this transaction
+			synchronized (actions) {
+				for (NetworkAction networkAction : actions) {
+					if (networkAction instanceof AddQuestionNetworkAction) {
+						AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
+						if (addQuestionNetworkAction.getQuestionId() == questionId) {
+							willCreateNodeOnCommit = true;
+							break;
+						}
+					}
+				}
+			}
+			if (willCreateNodeOnCommit) {	
+				throw new IllegalArgumentException("Question ID " + questionId + " does not exist.");
+			}
+		} 
+		
+		// check existence of assumptions
+		for (Long assumptiveQuestionId : assumptionIds) {
+			Node parent =null;
+			synchronized (getProbabilisticNetwork()) {
+				parent = getProbabilisticNetwork().getNode(Long.toString(assumptiveQuestionId));
+			}
+			if (parent == null) {
+				// parent node does not exist. Check if there was some previous transaction adding such node
+				boolean hasFound = false;
+				synchronized (actions) {
+					for (NetworkAction networkAction : actions) {
+						if (networkAction instanceof AddQuestionNetworkAction) {
+							AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
+							if (addQuestionNetworkAction.getQuestionId() == assumptiveQuestionId) {
+								hasFound = true;
+								break;
+							}
+						}
+					}
+				}
+				if (!hasFound) {	
+					// parent was not found
+					throw new IllegalArgumentException("Question ID " + assumptiveQuestionId + " does not exist.");
+				}
+			}
+		}
+		
+		// instantiate the action object for balancing trade
+		BalanceTradeNetworkAction newAction = new BalanceTradeNetworkAction(transactionKey, occurredWhen, tradeKey, userId, questionId, assumptionIds, assumedStates);
+		
+		// let's add action to the managed list. 
+		synchronized (actions) {
+			// Prepare index of where in actions we should add newAction
+			int indexOfFirstActionCreatedAfterNewAction = 0;	// this will point to the first action created after occurredWhen
+			// Make sure the action list is ordered by the date. Insert new action to a correct position when necessary.
+			for (; indexOfFirstActionCreatedAfterNewAction < actions.size(); indexOfFirstActionCreatedAfterNewAction++) {
+				if (actions.get(indexOfFirstActionCreatedAfterNewAction).getWhenCreated().after(occurredWhen)) {
+					break;
+				}
+			}
+			
+			// add newAction into actions
+			if (indexOfFirstActionCreatedAfterNewAction < 0) {
+				// there is no action created after the new action. Add at the end.
+				actions.add(newAction);
+			} else {
+				// insert new action at the correct position
+				actions.add(indexOfFirstActionCreatedAfterNewAction, newAction);
+			}
+		}
+	}
+	
 
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getQuestionHistory(java.lang.Long, java.util.List, java.util.List)
@@ -2134,5 +2301,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	public IArbitraryConditionalProbabilityExtractor getConditionalProbabilityExtractor() {
 		return conditionalProbabilityExtractor;
 	}
+
+	
 
 }
