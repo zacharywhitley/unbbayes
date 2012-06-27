@@ -157,6 +157,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		long ret = Long.MIN_VALUE;
 		synchronized (transactionCounter) {
 			ret = ++transactionCounter;
+			// NOTE: getNetworkActionsMap is supposedly an instance of concurrent map, so we do not need to synchronize it
 			getNetworkActionsMap().put(ret, new ArrayList<NetworkAction>());
 		}
 		System.out.println("[startNetworkActions]" + ret);
@@ -307,42 +308,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			}
 		}
 		
-		// obtain the list which stores the actions in order and check if it was initialized
-		List<NetworkAction> actions = this.getNetworkActionsMap().get(transactionKey);
-		if (actions == null) {
-			// startNetworkAction should have been called.
-			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
-		}
 		// instantiate the action object for adding a question
-		AddQuestionNetworkAction newAction = new AddQuestionNetworkAction(transactionKey, occurredWhen, questionId, numberStates, initProbs);
-		
-		// let's add action to the managed list. Prepare index of where in actions we should add newAction
-		int indexOfFirstActionCreatedAfterNewAction = -1;	// this will point to the first action created after occurredWhen
-		
-		// Make sure the action list is ordered by the date. Insert new action to a correct position when necessary.
-		for (int i = 0; i < actions.size(); i++) {
-			NetworkAction action = actions.get(i);
-			if (action instanceof AddQuestionNetworkAction) {
-				AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) action;
-				if (addQuestionNetworkAction.getQuestionId() == questionId) {
-					// duplicate question in the same transaction
-					throw new IllegalArgumentException("Question ID " + questionId + " is already present.");
-				}
-			}
-			if (indexOfFirstActionCreatedAfterNewAction < 0 && action.getWhenCreated().after(occurredWhen)) {
-				indexOfFirstActionCreatedAfterNewAction = i;
-				// do not break, because we are still looking for duplicate occurrences of questionId
-			}
-		}
-		
-		// add newAction into actions
-		if (indexOfFirstActionCreatedAfterNewAction < 0) {
-			// there is no action created after the new action. Add at the end.
-			actions.add(newAction);
-		} else {
-			// insert new action at the correct position
-			actions.add(indexOfFirstActionCreatedAfterNewAction, newAction);
-		}
+		this.addNetworkAction(transactionKey, new AddQuestionNetworkAction(transactionKey, occurredWhen, questionId, numberStates, initProbs));
 		
 		return true;
 	}
@@ -522,30 +489,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			}
 		}
 		
-		
 		// instantiate the action object for adding the edge
-		AddQuestionAssumptionNetworkAction newAction = new AddQuestionAssumptionNetworkAction(transactionKey, occurredWhen, sourceQuestionId, assumptiveQuestionIds, cpd);
-		
-		// let's add action to the managed list. 
-		synchronized (actions) {
-			// Prepare index of where in actions we should add newAction
-			int indexOfFirstActionCreatedAfterNewAction = 0;	// this will point to the first action created after occurredWhen
-			// Make sure the action list is ordered by the date. Insert new action to a correct position when necessary.
-			for (; indexOfFirstActionCreatedAfterNewAction < actions.size(); indexOfFirstActionCreatedAfterNewAction++) {
-				if (actions.get(indexOfFirstActionCreatedAfterNewAction).getWhenCreated().after(occurredWhen)) {
-					break;
-				}
-			}
-			
-			// add newAction into actions
-			if (indexOfFirstActionCreatedAfterNewAction < 0) {
-				// there is no action created after the new action. Add at the end.
-				actions.add(newAction);
-			} else {
-				// insert new action at the correct position
-				actions.add(indexOfFirstActionCreatedAfterNewAction, newAction);
-			}
-		}
+		this.addNetworkAction(transactionKey, new AddQuestionAssumptionNetworkAction(transactionKey, occurredWhen, sourceQuestionId, assumptiveQuestionIds, cpd));
 		
 		return true;
 	}
@@ -776,37 +721,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
 		}
 		
-		// initial assertions
-		List<NetworkAction> actions = this.getNetworkActionsMap().get(transactionKey);
-		if (actions == null) {
-			// startNetworkAction should have been called.
-			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
-		}
-		
 		
 		// instantiate the action object for adding cash
-		AddCashNetworkAction newAction = new AddCashNetworkAction(transactionKey, occurredWhen, userId, assets, description);
+		this.addNetworkAction(transactionKey, new AddCashNetworkAction(transactionKey, occurredWhen, userId, assets, description));
 		
-		// let's add action to the managed list. 
-		synchronized (actions) {
-			// Prepare index of where in actions we should add newAction
-			int indexOfFirstActionCreatedAfterNewAction = 0;	// this will point to the first action created after occurredWhen
-			// Make sure the action list is ordered by the date. Insert new action to a correct position when necessary.
-			for (; indexOfFirstActionCreatedAfterNewAction < actions.size(); indexOfFirstActionCreatedAfterNewAction++) {
-				if (actions.get(indexOfFirstActionCreatedAfterNewAction).getWhenCreated().after(occurredWhen)) {
-					break;
-				}
-			}
-			
-			// add newAction into actions
-			if (indexOfFirstActionCreatedAfterNewAction < 0) {
-				// there is no action created after the new action. Add at the end.
-				actions.add(newAction);
-			} else {
-				// insert new action at the correct position
-				actions.add(indexOfFirstActionCreatedAfterNewAction, newAction);
-			}
-		}
 		
 		return true;
 	}
@@ -888,12 +806,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		if (occurredWhen == null) {
 			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
 		}
-		// check existence of transaction key
-		List<NetworkAction> actions = this.getNetworkActionsMap().get(transactionKey);
-		if (actions == null) {
-			// startNetworkAction should have been called.
-			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
-		}
 		
 		// returned value is the same of preview trade
 		List<Float> ret = this.previewTrade(userId, questionId, newValues, assumptionIds, assumedStates);
@@ -904,29 +816,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		// instantiate the action object for adding trade
 		AddTradeNetworkAction newAction = new AddTradeNetworkAction(transactionKey, occurredWhen, tradeKey, userId, questionId, newValues, assumptionIds, assumedStates, allowNegative);
 		
-		// let's add action to the managed list. 
-		synchronized (actions) {
-			// Prepare index of where in actions we should add newAction
-			int indexOfFirstActionCreatedAfterNewAction = 0;	// this will point to the first action created after occurredWhen
-			// Make sure the action list is ordered by the date. Insert new action to a correct position when necessary.
-			for (; indexOfFirstActionCreatedAfterNewAction < actions.size(); indexOfFirstActionCreatedAfterNewAction++) {
-				if (actions.get(indexOfFirstActionCreatedAfterNewAction).getWhenCreated().after(occurredWhen)) {
-					break;
-				}
-			}
-			
-			// add newAction into actions
-			if (indexOfFirstActionCreatedAfterNewAction < 0) {
-				// there is no action created after the new action. Add at the end.
-				actions.add(newAction);
-			} else {
-				// insert new action at the correct position
-				actions.add(indexOfFirstActionCreatedAfterNewAction, newAction);
-			}
-		}
+		this.addNetworkAction(transactionKey, newAction);
+		
 		// return the previewed asset values
 		return ret;
 	}
+
+	
 
 	/**
 	 * This is the {@link NetworkAction} command representing
@@ -1008,42 +904,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		}
 
 		
-		// obtain the list which stores the actions in order and check if it was initialized
-		List<NetworkAction> actions = this.getNetworkActionsMap().get(transactionKey);
-		if (actions == null) {
-			// startNetworkAction should have been called.
-			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
-		}
 		// instantiate the action object for adding a question
-		ResolveQuestionNetworkAction newAction = new ResolveQuestionNetworkAction(transactionKey, occurredWhen, questionId, settledState);
-		
-		// let's add action to the managed list. Prepare index of where in actions we should add newAction
-		int indexOfFirstActionCreatedAfterNewAction = -1;	// this will point to the first action created after occurredWhen
-		
-		// Make sure the action list is ordered by the date. Insert new action to a correct position when necessary.
-		for (int i = 0; i < actions.size(); i++) {
-			NetworkAction action = actions.get(i);
-			if (action instanceof AddQuestionNetworkAction) {
-				AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) action;
-				if (addQuestionNetworkAction.getQuestionId() == questionId) {
-					// duplicate question in the same transaction
-					throw new IllegalArgumentException("Question ID " + questionId + " is already present.");
-				}
-			}
-			if (indexOfFirstActionCreatedAfterNewAction < 0 && action.getWhenCreated().after(occurredWhen)) {
-				indexOfFirstActionCreatedAfterNewAction = i;
-				// do not break, because we are still looking for duplicate occurrences of questionId
-			}
-		}
-		
-		// add newAction into actions
-		if (indexOfFirstActionCreatedAfterNewAction < 0) {
-			// there is no action created after the new action. Add at the end.
-			actions.add(newAction);
-		} else {
-			// insert new action at the correct position
-			actions.add(indexOfFirstActionCreatedAfterNewAction, newAction);
-		}
+		this.addNetworkAction(transactionKey, new ResolveQuestionNetworkAction(transactionKey, occurredWhen, questionId, settledState));
 		
 		return true;
 	}
@@ -1909,28 +1771,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		}
 		
 		// instantiate the action object for balancing trade
-		BalanceTradeNetworkAction newAction = new BalanceTradeNetworkAction(transactionKey, occurredWhen, tradeKey, userId, questionId, assumptionIds, assumedStates);
+		this.addNetworkAction(transactionKey, new BalanceTradeNetworkAction(transactionKey, occurredWhen, tradeKey, userId, questionId, assumptionIds, assumedStates));
 		
-		// let's add action to the managed list. 
-		synchronized (actions) {
-			// Prepare index of where in actions we should add newAction
-			int indexOfFirstActionCreatedAfterNewAction = 0;	// this will point to the first action created after occurredWhen
-			// Make sure the action list is ordered by the date. Insert new action to a correct position when necessary.
-			for (; indexOfFirstActionCreatedAfterNewAction < actions.size(); indexOfFirstActionCreatedAfterNewAction++) {
-				if (actions.get(indexOfFirstActionCreatedAfterNewAction).getWhenCreated().after(occurredWhen)) {
-					break;
-				}
-			}
-			
-			// add newAction into actions
-			if (indexOfFirstActionCreatedAfterNewAction < 0) {
-				// there is no action created after the new action. Add at the end.
-				actions.add(newAction);
-			} else {
-				// insert new action at the correct position
-				actions.add(indexOfFirstActionCreatedAfterNewAction, newAction);
-			}
-		}
 	}
 	
 
@@ -2000,33 +1842,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		return transactionCounter;
 	}
 
-//	/**
-//	 * @param inferenceAlgorithm the inferenceAlgorithm to set
-//	 */
-//	public void setInferenceAlgorithm(AssetAwareInferenceAlgorithm inferenceAlgorithm) {
-//		this.inferenceAlgorithm = inferenceAlgorithm;
-//	}
-//
-//	/**
-//	 * @return the inferenceAlgorithm
-//	 */
-//	public AssetAwareInferenceAlgorithm getInferenceAlgorithm() {
-////		JunctionTreeAlgorithm junctionTreeAlgorithm = new JunctionTreeAlgorithm(getProbabilisticNetwork());
-////		
-////		// enable soft evidence by using jeffrey rule in likelihood evidence w/ virtual nodes.
-////		junctionTreeAlgorithm.setLikelihoodExtractor(JeffreyRuleLikelihoodExtractor.newInstance() );
-////		
-////		// prepare inference algorithm for asset network
-////		AssetAwareInferenceAlgorithm inferenceAlgorithm = (AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm);
-////		
-////		// usually, users seem to start with 0 assets (assets are logarithmic, so 0 assets == 1 q table), but let's use the value of getDefaultInitialQTableValue
-////		inferenceAlgorithm.setDefaultInitialAssetQuantity(getDefaultInitialQTableValue());
-//		
-//		return inferenceAlgorithm;
-//	}
-	
-	//
-	
 	
 
 	/**
@@ -2112,6 +1927,96 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		}
 		
 		return algorithm;
+	}
+	
+	/**
+	 * This method includes an instance of {@link NetworkAction} into {@link #getNetworkActionsMap()}
+	 * and other auxiliary structures which manages {@link NetworkAction}
+	 * @param transactionKey : identifier of the transaction. This value is returned by {@link #startNetworkActions()}
+	 * @param newAction : instance of {@link NetworkAction} to be added
+	 * @throws IllegalArgumentException when transactionKey is an invalid key
+	 */
+	protected void addNetworkAction(long transactionKey,  NetworkAction newAction) throws IllegalArgumentException {
+		if (newAction == null) {
+			throw new NullPointerException("Attempted to add a null action into transaction " + transactionKey);
+		}
+		if (newAction instanceof AddQuestionNetworkAction) {
+			this.addNetworkAction(transactionKey, (AddQuestionNetworkAction)newAction);
+			return;
+		}
+		// check existence of transaction key
+		// NOTE: getNetworkActionsMap is supposedly an instance of concurrent map, so we do not need to synchronize it
+		List<NetworkAction> actions = this.getNetworkActionsMap().get(transactionKey);
+		if (actions == null) {
+			// startNetworkAction should have been called.
+			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
+		}
+		
+		// let's add action to the managed list. 
+		synchronized (actions) {
+			// Prepare index of where in actions we should add newAction
+			int indexOfFirstActionCreatedAfterNewAction = 0;	// this will point to the first action created after occurredWhen
+			// Make sure the action list is ordered by the date. Insert new action to a correct position when necessary.
+			for (; indexOfFirstActionCreatedAfterNewAction < actions.size(); indexOfFirstActionCreatedAfterNewAction++) {
+				if (actions.get(indexOfFirstActionCreatedAfterNewAction).getWhenCreated().after(newAction.getWhenCreated())) {
+					break;
+				}
+			}
+			
+			// insert new action at the correct position
+			actions.add(indexOfFirstActionCreatedAfterNewAction, newAction);
+		}
+	}
+	
+	/**
+	 * This method is similar to {@link #addNetworkAction(long, NetworkAction)},
+	 * but it blocks insertion of duplicate questionId.
+	 * @param transactionKey : identifier of the transaction. This value is returned by {@link #startNetworkActions()}
+	 * @param newAction : instance of {@link AddQuestionNetworkAction} to be added. 
+	 * Duplicate {@link AddQuestionNetworkAction#getQuestionId()} will be blocked.
+	 * @throws IllegalArgumentException when transactionKey is an invalid key, or {@link AddQuestionNetworkAction#getQuestionId()}
+	 * is already present in the transaction.
+	 */
+	protected void addNetworkAction(long transactionKey,  AddQuestionNetworkAction newAction) throws IllegalArgumentException {
+		if (newAction == null) {
+			throw new NullPointerException("Attempted to add a null action into transaction " + transactionKey);
+		}
+		// check existence of transaction key
+		// NOTE: getNetworkActionsMap is supposedly an instance of concurrent map, so we do not need to synchronize it
+		List<NetworkAction> actions = this.getNetworkActionsMap().get(transactionKey);
+		if (actions == null) {
+			// startNetworkAction should have been called.
+			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
+		}
+		
+		// let's add action to the managed list. Prepare index of where in actions we should add newAction
+		int indexOfFirstActionCreatedAfterNewAction = -1;	// this will point to the first action created after occurredWhen
+		
+		
+		// Make sure the action list is ordered by the date. Insert new action to a correct position when necessary.
+		for (int i = 0; i < actions.size(); i++) {
+			NetworkAction action = actions.get(i);
+			if (action instanceof AddQuestionNetworkAction) {
+				AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) action;
+				if (addQuestionNetworkAction.getQuestionId() == newAction.getQuestionId()) {
+					// duplicate question in the same transaction
+					throw new IllegalArgumentException("Question ID " + newAction.getQuestionId() + " is already present.");
+				}
+			}
+			if (indexOfFirstActionCreatedAfterNewAction < 0 && action.getWhenCreated().after(newAction.getWhenCreated())) {
+				indexOfFirstActionCreatedAfterNewAction = i;
+				// do not break, because we are still looking for duplicate occurrences of questionId
+			}
+		}
+		
+		// add newAction into actions
+		if (indexOfFirstActionCreatedAfterNewAction < 0) {
+			// there is no action created after the new action. Add at the end.
+			actions.add(newAction);
+		} else {
+			// insert new action at the correct position
+			actions.add(indexOfFirstActionCreatedAfterNewAction, newAction);
+		}
 	}
 
 	/**
