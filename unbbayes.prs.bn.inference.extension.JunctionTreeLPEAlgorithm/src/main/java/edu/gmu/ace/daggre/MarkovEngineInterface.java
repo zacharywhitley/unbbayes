@@ -130,11 +130,11 @@ public interface MarkovEngineInterface {
 	 * optimizing the junction tree structure or user's asset table structures). 
 	 * @param transactionKey : key returned by {@link #startNetworkActions()}
 	 * @param occurredWhen : implementations of this interface may use this timestamp to store a history of modifications.
-	 * @param sourceQuestionId : id of the child
-	 * @param assumptiveQuestionIds : ids of the parents. If cpd is set to null, then these questions will be ADDED as parents of sourceQuestionId.
+	 * @param childQuestionId : id of the child
+	 * @param parentQuestionIds : ids of the parents. If cpd is set to null, then these questions will be ADDED as parents of childQuestionId.
 	 * If cpd is non-null, then these parents will SUBSTITUTE the old parents.
-	 * @param cpd : If a null/empty cpd is passed, values will be set by uniform distribution, and assumptiveQuestionIds will
-	 * be ADDED as parents of sourceQuestionId. If non-null, then assumptiveQuestionIds will SUBSTITUTE the old parents of sourceQuestionId.
+	 * @param cpd : If a null/empty cpd is passed, values will be set by uniform distribution, and parentQuestionIds will
+	 * be ADDED as parents of childQuestionId. If non-null, then parentQuestionIds will SUBSTITUTE the old parents of childQuestionId.
 	 * <br/>
 	 * This is a list (ordered collection) representing the conditional probability distribution after the edit. 
 	 * For example, suppose T is the target random variable (i.e. question identified by questionID) with states t1 and t2, and A1 and A2 are assumptions with states (a11, a12), and (a21 , a22) respectively.
@@ -150,7 +150,7 @@ public interface MarkovEngineInterface {
 	 * @return true if operation was successful
 	 * @throws IllegalArgumentException
 	 */
-	public boolean addQuestionAssumption(long transactionKey, Date occurredWhen, long sourceQuestionId, List<Long> assumptiveQuestionIds,  List<Float> cpd) throws IllegalArgumentException;
+	public boolean addQuestionAssumption(long transactionKey, Date occurredWhen, long childQuestionId, List<Long> parentQuestionIds,  List<Float> cpd) throws IllegalArgumentException;
 	
 	/**
 	 * This function will add EXTERNAL cash to a specific userId. 

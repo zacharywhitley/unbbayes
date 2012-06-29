@@ -140,6 +140,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		setDefaultInferenceAlgorithm((AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm));
 		// usually, users seem to start with 0 assets (assets are logarithmic, so 0 assets == 1 q table), but let's use the value of getDefaultInitialQTableValue
 		getDefaultInferenceAlgorithm().setDefaultInitialAssetQuantity(getDefaultInitialQTableValue());
+		getDefaultInferenceAlgorithm().setToPropagateForGlobalConsistency(false);	// force algorithm to do min-propagation of assets only when prompted
 		
 		// several methods in this class reuse the same conditional probability extractor. Extract it here
 		setConditionalProbabilityExtractor(jeffreyRuleLikelihoodExtractor.getConditionalProbabilityExtractor());
@@ -379,7 +380,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#addQuestionAssumption(long, java.util.Date, long, long, java.util.List)
 	 */
-	public boolean addQuestionAssumption(long transactionKey, Date occurredWhen, long sourceQuestionId, List<Long> assumptiveQuestionIds,  List<Float> cpd) throws IllegalArgumentException {
+	public boolean addQuestionAssumption(long transactionKey, Date occurredWhen, long childQuestionId, List<Long> parentQuestionIds,  List<Float> cpd) throws IllegalArgumentException {
 		
 		// initial assertions
 		if (occurredWhen == null) {
@@ -398,7 +399,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		// check existence of child
 		Node child  = null;
 		synchronized (getProbabilisticNetwork()) {
-			child = getProbabilisticNetwork().getNode(Long.toString(sourceQuestionId));
+			child = getProbabilisticNetwork().getNode(Long.toString(childQuestionId));
 		}
 		if (child == null) {
 			// child node does not exist. Check if there was some previous transaction adding such node
@@ -406,7 +407,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 				for (NetworkAction networkAction : actions) {
 					if (networkAction instanceof AddQuestionNetworkAction) {
 						AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
-						if (addQuestionNetworkAction.getQuestionId() == sourceQuestionId) {
+						if (addQuestionNetworkAction.getQuestionId() == childQuestionId) {
 							childNodeStateSize = addQuestionNetworkAction.getNumberStates();
 							break;
 						}
@@ -415,7 +416,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			}
 			if (childNodeStateSize < 0) {	
 				// if negative, then expectedSizeOfCPD was not updated, so sourceQuestionId was not found in last loop
-				throw new IllegalArgumentException("Question ID " + sourceQuestionId + " does not exist.");
+				throw new IllegalArgumentException("Question ID " + childQuestionId + " does not exist.");
 			}
 		} else {
 			// initialize the value of expectedSizeOfCPD using the number of states of future owner of the cpd
@@ -426,12 +427,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		int expectedSizeOfCPD = childNodeStateSize;
 		
 		// do not allow null values for collections
-		if (assumptiveQuestionIds == null) {
-			assumptiveQuestionIds = new ArrayList<Long>();
+		if (parentQuestionIds == null) {
+			parentQuestionIds = new ArrayList<Long>();
 		}
 		
 		// check existence of parents
-		for (Long assumptiveQuestionId : assumptiveQuestionIds) {
+		for (Long assumptiveQuestionId : parentQuestionIds) {
 			Node parent =null;
 			synchronized (getProbabilisticNetwork()) {
 				parent = getProbabilisticNetwork().getNode(Long.toString(assumptiveQuestionId));
@@ -467,7 +468,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		if (cpd != null && !cpd.isEmpty()){
 			if (cpd.size() != expectedSizeOfCPD) {
 				// size of cpd is inconsistent
-				throw new IllegalArgumentException("Expected size of cpd of question " + sourceQuestionId + " is "+ expectedSizeOfCPD + ", but was " + cpd.size());
+				throw new IllegalArgumentException("Expected size of cpd of question " + childQuestionId + " is "+ expectedSizeOfCPD + ", but was " + cpd.size());
 			}
 			// check value consistency
 			float sum = 0;
@@ -490,7 +491,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		}
 		
 		// instantiate the action object for adding the edge
-		this.addNetworkAction(transactionKey, new AddQuestionAssumptionNetworkAction(transactionKey, occurredWhen, sourceQuestionId, assumptiveQuestionIds, cpd));
+		this.addNetworkAction(transactionKey, new AddQuestionAssumptionNetworkAction(transactionKey, occurredWhen, childQuestionId, parentQuestionIds, cpd));
 		
 		return true;
 	}
@@ -1470,8 +1471,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		}
 		
 		// check consistency of newValues
-		if (assumedStates == null || assumedStates.isEmpty()) {
-			// note: if assumedStates == null or empty, size of newValues must be equals to the quantity of states of the child (main) node
+		if (assumedStates != null && !assumedStates.isEmpty()) {
+			// note: if assumedStates is not empty, size of newValues must be equals to the quantity of states of the child (main) node
 			if (newValues.size() != child.getStatesSize()) {
 				throw new IllegalArgumentException("Expected size of newValues was " + child.getStatesSize() + ", but obtained " + newValues.size());
 			}
@@ -1523,8 +1524,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			// instantiate multi-dimensional coordinate to be used in order to change values in potential table
 			int[] multidimensionalCoord = potential.getMultidimensionalCoord(0);
 			// move multidimensionalCoord to the point related to assumedStates
-			for (int i = 1; i < multidimensionalCoord.length; i++) { // index 0 is for the main node (which is not specified in assumedStates), so it is kept to 0
-				multidimensionalCoord[i] = assumedStates.get(i);
+			for (int i = 1; i < multidimensionalCoord.length; i++) { // index 0 is for the main node (which is not specified in assumedStates), so it is not used.
+				multidimensionalCoord[i] = assumedStates.get(i-1);
 			}
 			// modify content of potential table accourding to newValues 
 			for (int i = 0; i < newValues.size(); i++) {	// at this point, newValues.size() == child.statesSize()
@@ -1910,6 +1911,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 				algorithm = ((AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm));
 				// usually, users seem to start with 0 assets (assets are logarithmic, so 0 assets == 1 q table), but let's use the value of getDefaultInitialQTableValue
 				algorithm.setDefaultInitialAssetQuantity(getDefaultInitialQTableValue());
+				// force algorithm to call min-propagation only when prompted (i.e. only when runMinPropagation() is called)
+				algorithm.setToPropagateForGlobalConsistency(false);	
 				
 				// generate new asset net
 				AssetNetwork assetNet = null;

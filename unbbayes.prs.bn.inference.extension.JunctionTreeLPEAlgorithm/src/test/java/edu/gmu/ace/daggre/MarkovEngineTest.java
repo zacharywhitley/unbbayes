@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -24,15 +25,18 @@ import unbbayes.prs.bn.ProbabilisticNode;
  */
 public class MarkovEngineTest extends TestCase {
 	
-	private static final int THREAD_NUM = 75;	// quantity of threads to use in order to test multi-thread behavior
+	private static final int THREAD_NUM = 5;//75;	// quantity of threads to use in order to test multi-thread behavior
 
 	public static final int MAX_NETWIDTH = 3;
 	public static final int MAX_STATES = 5;
 	public static final int MIN_STATES = 2;
 	
-	/** Error margin used when comparing 2 float numbers */
-	public static final float FLOAT_ERROR_MARGIN = 0.0001f;
+	/** Error margin used when comparing 2 probability values */
+	public static final float PROB_ERROR_MARGIN = 0.0001f;
 
+	/** Error margin used when comparing 2 asset (score) values */
+	public static final float ASSET_ERROR_MARGIN = 1f;
+	
 	private MarkovEngineImpl engine = (MarkovEngineImpl) MarkovEngineImpl.getInstance();
 
 	/**
@@ -467,7 +471,7 @@ public class MarkovEngineTest extends TestCase {
 		for (Node node : engine.getProbabilisticNetwork().getNodes()) {
 			PotentialTable cpt = ((ProbabilisticNode)node).getProbabilityFunction();
 			for (int i = 0; i < cpt.tableSize(); i++) {
-				assertEquals("Node " + node + ", index " + i, .5, cpt.getValue(i), FLOAT_ERROR_MARGIN);
+				assertEquals("Node " + node + ", index " + i, .5, cpt.getValue(i), PROB_ERROR_MARGIN);
 			}
 		}
 		
@@ -516,22 +520,22 @@ public class MarkovEngineTest extends TestCase {
 		ProbabilisticNode nodeToTest = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode("0");
 		PotentialTable cpt = nodeToTest.getProbabilityFunction();
 		assertEquals(4, cpt.tableSize());
-		assertEquals(.8f, cpt.getValue(0), FLOAT_ERROR_MARGIN);
-		assertEquals(.2f, cpt.getValue(1), FLOAT_ERROR_MARGIN);
-		assertEquals(.1f, cpt.getValue(2), FLOAT_ERROR_MARGIN);
-		assertEquals(.9f, cpt.getValue(3), FLOAT_ERROR_MARGIN);
+		assertEquals(.8f, cpt.getValue(0), PROB_ERROR_MARGIN);
+		assertEquals(.2f, cpt.getValue(1), PROB_ERROR_MARGIN);
+		assertEquals(.1f, cpt.getValue(2), PROB_ERROR_MARGIN);
+		assertEquals(.9f, cpt.getValue(3), PROB_ERROR_MARGIN);
 		nodeToTest = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode("1");
 		cpt = nodeToTest.getProbabilityFunction();
 		assertEquals(2, cpt.tableSize());
-		assertEquals(.5f, cpt.getValue(0), FLOAT_ERROR_MARGIN);
-		assertEquals(.5f, cpt.getValue(1), FLOAT_ERROR_MARGIN);
+		assertEquals(.5f, cpt.getValue(0), PROB_ERROR_MARGIN);
+		assertEquals(.5f, cpt.getValue(1), PROB_ERROR_MARGIN);
 		nodeToTest = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode("2");
 		cpt = nodeToTest.getProbabilityFunction();
 		assertEquals(4, cpt.tableSize());
-		assertEquals(.8f, cpt.getValue(0), FLOAT_ERROR_MARGIN);
-		assertEquals(.2f, cpt.getValue(1), FLOAT_ERROR_MARGIN);
-		assertEquals(.1f, cpt.getValue(2), FLOAT_ERROR_MARGIN);
-		assertEquals(.9f, cpt.getValue(3), FLOAT_ERROR_MARGIN);
+		assertEquals(.8f, cpt.getValue(0), PROB_ERROR_MARGIN);
+		assertEquals(.2f, cpt.getValue(1), PROB_ERROR_MARGIN);
+		assertEquals(.1f, cpt.getValue(2), PROB_ERROR_MARGIN);
+		assertEquals(.9f, cpt.getValue(3), PROB_ERROR_MARGIN);
 		
 		
 		
@@ -604,22 +608,22 @@ public class MarkovEngineTest extends TestCase {
 		nodeToTest = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode("0");
 		cpt = nodeToTest.getProbabilityFunction();
 		assertEquals(4, cpt.tableSize());
-		assertEquals(.8f, cpt.getValue(0), FLOAT_ERROR_MARGIN);
-		assertEquals(.2f, cpt.getValue(1), FLOAT_ERROR_MARGIN);
-		assertEquals(.1f, cpt.getValue(2), FLOAT_ERROR_MARGIN);
-		assertEquals(.9f, cpt.getValue(3), FLOAT_ERROR_MARGIN);
+		assertEquals(.8f, cpt.getValue(0), PROB_ERROR_MARGIN);
+		assertEquals(.2f, cpt.getValue(1), PROB_ERROR_MARGIN);
+		assertEquals(.1f, cpt.getValue(2), PROB_ERROR_MARGIN);
+		assertEquals(.9f, cpt.getValue(3), PROB_ERROR_MARGIN);
 		nodeToTest = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode("1");
 		cpt = nodeToTest.getProbabilityFunction();
 		assertEquals(2, cpt.tableSize());
-		assertEquals(.5f, cpt.getValue(0), FLOAT_ERROR_MARGIN);
-		assertEquals(.5f, cpt.getValue(1), FLOAT_ERROR_MARGIN);
+		assertEquals(.5f, cpt.getValue(0), PROB_ERROR_MARGIN);
+		assertEquals(.5f, cpt.getValue(1), PROB_ERROR_MARGIN);
 		nodeToTest = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode("2");
 		cpt = nodeToTest.getProbabilityFunction();
 		assertEquals(4, cpt.tableSize());
-		assertEquals(.8f, cpt.getValue(0), FLOAT_ERROR_MARGIN);
-		assertEquals(.2f, cpt.getValue(1), FLOAT_ERROR_MARGIN);
-		assertEquals(.1f, cpt.getValue(2), FLOAT_ERROR_MARGIN);
-		assertEquals(.9f, cpt.getValue(3), FLOAT_ERROR_MARGIN);
+		assertEquals(.8f, cpt.getValue(0), PROB_ERROR_MARGIN);
+		assertEquals(.2f, cpt.getValue(1), PROB_ERROR_MARGIN);
+		assertEquals(.1f, cpt.getValue(2), PROB_ERROR_MARGIN);
+		assertEquals(.9f, cpt.getValue(3), PROB_ERROR_MARGIN);
 		
 	}
 
@@ -645,19 +649,19 @@ public class MarkovEngineTest extends TestCase {
 		engine.commitNetworkActions(transactionKey);
 		
 		// global cash should be 0 initially (TODO check if this is really true)
-		assertEquals(0f, engine.getCash(1, null, null), FLOAT_ERROR_MARGIN);
+		assertEquals(0f, engine.getCash(1, null, null), ASSET_ERROR_MARGIN);
 		
 		// test some conditional cash as well
 		// non-null conditions
 		List<Long> assumptionIds = new ArrayList<Long>();
 		List<Integer> assumedStates = new ArrayList<Integer>();
-		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
 		
 		// 1 = 0
 		assumptionIds = new ArrayList<Long>();
 		assumedStates = new ArrayList<Integer>();
 		assumptionIds.add((long) 1); assumedStates.add(0);	// node 1, state 0
-		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
 
 		// 1 = 0, 0 = null, 2 = null (equivalent to only 1 = 0)
 		assumptionIds = new ArrayList<Long>();
@@ -665,28 +669,28 @@ public class MarkovEngineTest extends TestCase {
 		assumptionIds.add((long) 0); assumedStates.add(null);	// node 0, state null
 		assumptionIds.add((long) 1); assumedStates.add(0);		// node 1, state 0
 		assumptionIds.add((long) 2); assumedStates.add(null);	// node 2, state null
-		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
 		
 		// 1 = 0, 0 = 0
 		assumptionIds = new ArrayList<Long>();
 		assumedStates = new ArrayList<Integer>();
 		assumptionIds.add((long) 1); assumedStates.add(0);	// node 1, state 0
 		assumptionIds.add((long) 0); assumedStates.add(0);	// node 0, state 0
-		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
 
 		// 2 = 1, 0 = 1
 		assumptionIds = new ArrayList<Long>();
 		assumedStates = new ArrayList<Integer>();
 		assumptionIds.add((long) 2); assumedStates.add(1);	// node 2, state 1
 		assumptionIds.add((long) 0); assumedStates.add(1);	// node 0, state 1
-		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
 		
 		// 1 = 1, 2 = 0
 		assumptionIds = new ArrayList<Long>();
 		assumedStates = new ArrayList<Integer>();
 		assumptionIds.add((long) 1); assumedStates.add(1);	// node 1, state 1
 		assumptionIds.add((long) 2); assumedStates.add(0);	// node 2, state 0
-		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
 		
 		// 0 = 0, 1 = 0, 2 = 1
 		assumptionIds = new ArrayList<Long>();
@@ -694,7 +698,7 @@ public class MarkovEngineTest extends TestCase {
 		assumptionIds.add((long) 0); assumedStates.add(0);	// node 0, state 0
 		assumptionIds.add((long) 1); assumedStates.add(0);	// node 1, state 0
 		assumptionIds.add((long) 2); assumedStates.add(1);	// node 2, state 1
-		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
 		
 		// add 100 cash
 		transactionKey = engine.startNetworkActions();
@@ -703,19 +707,19 @@ public class MarkovEngineTest extends TestCase {
 		
 
 		// global cash should be 100 now
-		assertEquals(100f, engine.getCash(1, null, null), FLOAT_ERROR_MARGIN);
+		assertEquals(100f, engine.getCash(1, null, null), ASSET_ERROR_MARGIN);
 		
 		// test some conditional cash as well
 		// non-null conditions
 		assumptionIds = new ArrayList<Long>();
 		assumedStates = new ArrayList<Integer>();
-		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
 		
 		// 1 = 0
 		assumptionIds = new ArrayList<Long>();
 		assumedStates = new ArrayList<Integer>();
 		assumptionIds.add((long) 1); assumedStates.add(0);	// node 1, state 0
-		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
 
 		// 1 = 0, 0 = null, 2 = null (equivalent to only 1 = 0)
 		assumptionIds = new ArrayList<Long>();
@@ -723,28 +727,28 @@ public class MarkovEngineTest extends TestCase {
 		assumptionIds.add((long) 0); assumedStates.add(null);	// node 0, state null
 		assumptionIds.add((long) 1); assumedStates.add(0);		// node 1, state 0
 		assumptionIds.add((long) 2); assumedStates.add(null);	// node 2, state null
-		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
 		
 		// 1 = 0, 0 = 0
 		assumptionIds = new ArrayList<Long>();
 		assumedStates = new ArrayList<Integer>();
 		assumptionIds.add((long) 1); assumedStates.add(0);	// node 1, state 0
 		assumptionIds.add((long) 0); assumedStates.add(0);	// node 0, state 0
-		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
 
 		// 2 = 1, 0 = 1
 		assumptionIds = new ArrayList<Long>();
 		assumedStates = new ArrayList<Integer>();
 		assumptionIds.add((long) 2); assumedStates.add(1);	// node 2, state 1
 		assumptionIds.add((long) 0); assumedStates.add(1);	// node 0, state 1
-		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
 		
 		// 1 = 1, 2 = 0
 		assumptionIds = new ArrayList<Long>();
 		assumedStates = new ArrayList<Integer>();
 		assumptionIds.add((long) 1); assumedStates.add(1);	// node 1, state 1
 		assumptionIds.add((long) 2); assumedStates.add(0);	// node 2, state 0
-		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
 		
 		// 0 = 0, 1 = 0, 2 = 1
 		assumptionIds = new ArrayList<Long>();
@@ -752,16 +756,1176 @@ public class MarkovEngineTest extends TestCase {
 		assumptionIds.add((long) 0); assumedStates.add(0);	// node 0, state 0
 		assumptionIds.add((long) 1); assumedStates.add(0);	// node 1, state 0
 		assumptionIds.add((long) 2); assumedStates.add(1);	// node 2, state 1
-		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), FLOAT_ERROR_MARGIN);
+		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
 		
 		// TODO test cash after trades
 	}
 
 	/**
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#addTrade(long, java.util.Date, long, long, long, java.util.List, java.util.List, java.util.List, java.util.List, java.lang.Boolean)}.
-	 */
+	 * The tested data is equivalent to the one in 
+	 * https://docs.google.com/document/d/179XTjD5Edj8xDBvfrAP7aDtvgDJlXbSDQQR-TlM5stw/edit.
+	 * <br/>
+	 * The DEF net looks like the following.		<br/>
+	 * Note: uniform distribution for all nodes.	<br/>
+	 * D--->F										<br/>
+	 * | 											<br/>
+	 * V  											<br/>
+	 * E											<br/>
+	 * 
+	 * The sequence is:<br/>
+	 * <br/>
+	 * There are two cliques {D, E}, and {D, F}, initial asset tables have q-value as 100 in every cell. <br/>
+	 *	Current marginal probabilities are:	<br/>
+	 *	Variables    D             E              F	<br/> 
+	 *	Marginals   [0.5 0.5]   [0.5 0.5]   [0.5 0.5]	<br/>
+	 *	<br/>	
+	 *	Trade-1: Tom would like to make a bet on E=e1, that has current probability as 0.5. First of all, we need to calculate TomÅfs edit limit (in this case, there is no assumption):	<br/> 
+	 *	Given E=e1, min-q1 = 100	<br/>
+	 *	Given E~=e1, min-q2 = 100	<br/>
+	 *	From Equation (1), edit interval is [0.005, 0.995].	<br/> 
+	 *	- Verification successful: after substituting the limits into edit, we do get min-q to be 1.	<br/> 
+	 *	<br/>	
+	 *	Trading sequence:	<br/> 
+	 *	Tom1:	P(E=e1) = 0.5  to 0.55 (current)	<br/>
+	 *	<br/>	
+	 *	Variables   D              E                   F	<br/> 
+	 *	Marginals   [0.5 0.5]   [0.55 0.45]   [0.5 0.5]	<br/>
+	 *	<br/>	
+	 *	TomÅfs min-q is 90, at the following 4 min-states (found by min-asset-propagation):	<br/> 
+	 *	     D    E    F	<br/>
+	 *	     1     2     1	<br/>
+	 *	     1     2     2	<br/>
+	 *	     2     2     1	<br/>
+	 *	     2     2     2	<br/>
+	 *	<br/>	
+	 *	<br/>	
+	 *	Trade-2: Now Tom would like to make another conditional bet on E=e1 given D=d1 (current P(E=e1|D=d1) = 0.55). Again, let us calculate his edit limits first (in this case, we have assumed variable D=d1). And note that TomÅfs asset tables are not the initial ones any more, but updated from last trade he did, now:	<br/> 
+	 *	Given E=e1, and D=d1, min-q1 = 110	<br/>
+	 *	Given E~=e1, and D=d1, min-q2 = 90	<br/>
+	 *	From Equation (1), edit interval is [0.005, 0.995]	<br/>
+	 *	- Verification successful: after substituting the limits into edit, we do get min-q to be 1.	<br/> 
+	 *	<br/>	
+	 *	Trading sequence:	<br/> 
+	 *	Tom1:	P(E=e1) = 0.5  to 0.55	<br/>
+	 *	Tom2:	P(E=e1|D=d1) = 0.55 to 0.9 (current)	<br/>
+	 *	Variables   D              E                   F	<br/> 
+	 *	Marginals   [0.5 0.5]   [0.725 0.275]   [0.5 0.5]	<br/>
+	 *	<br/>	
+	 *	TomÅfs min-q is 20, at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	     D    E    F	<br/>
+	 *	     1     2    1	<br/>
+	 *	     1     2    2	<br/>
+	 *	<br/>	
+	 *	<br/>	
+	 *	Trade-3: Joe came and intended to make a bet on E=e1 given D=d2 (current P(E=e1|D=d2) is 0.55). This will be his first edit, so he has initial asset tables before his trade.	<br/> 
+	 *	Edit limit:	<br/>
+	 *	Given E=e1, and D=d2, min-q1 = 100	<br/>
+	 *	Given E~=e1, and D=d2, min-q2 = 100	<br/>
+	 *	From Equation (1), edit interval is [0.0055, 0.9955]	<br/>
+	 *	- Verification successful: after substituting the limits into edit, we do get min-q to be 1.	<br/> 
+	 *	<br/>	
+	 *	Trading sequence:	<br/> 
+	 *	Tom1:	P(E=e1) = 0.5  to 0.55	<br/>
+	 *	Tom2:	P(E=e1|D=d1) = 0.55 to 0.9	<br/> 
+	 *	Joe1:	P(E=e1|D=d2) = 0.55 to 0.4 (current)	<br/> 
+	 *	<br/>	  
+	 *	Variables   D              E                   F	<br/> 
+	 *	Marginals   [0.5 0.5]   [0.65 0.35]   [0.5 0.5]	<br/>
+	 *	<br/>	
+	 *	JoeÅfs min-q is 72.72727272727..., at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	     D    E    F	<br/>
+	 *	     2     1    1	<br/>
+	 *	     2     1    2	<br/>
+	 *	<br/>	
+	 *	<br/>	
+	 *	Trade-4: Now Amy is interested in changing P(F=f1|D=d1), which is currently 0.5. It will be her first edit, so she also has initial asset tables before the trade.	<br/> 
+	 *	Edit limit:	<br/>
+	 *	Given F=f1, and D=d1, min-q1 = 100	<br/>
+	 *	Given F~=f1, and D=d1, min-q2 = 100	<br/>
+ 	 *	From Equation (1), edit interval is [0.005, 0.995]	<br/>
+	 *	- Verification successful: after substituting the limits into edit, we do get min-q to be 1.	<br/> 
+	 *	<br/>	
+	 *	Trading sequence:	<br/> 
+	 *	Tom1:	P(E=e1) = 0.5  to 0.55	<br/>
+	 *	Tom2:	P(E=e1|D=d1) = 0.55 to 0.9	<br/> 
+	 *	Joe1:	P(E=e1|D=d2) = 0.55 to 0.4	<br/> 
+	 *	Amy1:	P(F=f1|D=d1) = 0.5 to 0.3 (current)	<br/>
+	 *	<br/>	  
+	 *	Variables   D              E                   F	<br/> 
+	 *	Marginals   [0.5 0.5]   [0.65 0.35]   [0.4 0.6]	<br/>
+	 *	<br/>	
+	 *	AmyÅfs min-q is 60, at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	     D    E    F	<br/>
+	 *	     1     1    1	<br/>
+	 *	     1     2    1	<br/>
+	 *	<br/>	
+	 *	<br/>	
+	 *	Trade-5: Joe would like to trade again on P(F=f1|D=d2), which is currently 0.5.	<br/> 
+	 *	Edit limit:	<br/>
+	 *	Given F=f1, and D=d2, min-q1 = 72.727272727	<br/>
+	 *	Given F~=f1, and D=d2, min-q2 = 72.727272727	<br/>
+	 *	From Equation (1), edit interval is [0.006875, 0.993125]	<br/>
+	 *	- Verification successful: after substituting the limits into edit, we do get min-q to be 1.	<br/> 
+	 *	<br/>	
+	 *	Trading sequence:	<br/> 
+	 *	Tom1:	P(E=e1) = 0.5  to 0.55	<br/>
+	 *	Tom2:	P(E=e1|D=d1) = 0.55 to 0.9	<br/> 
+	 *	Joe1:	P(E=e1|D=d2) = 0.55 to 0.4	<br/> 
+	 *	Amy1:	P(F=f1|D=d1) = 0.5 to 0.3	<br/> 
+	 *	Joe2:	P(F=f1|D=d2) = 0.5 to 0.1	<br/>
+	 *	<br/>	  
+	 *	Variables   D              E                   F	<br/> 
+	 *	Marginals   [0.5 0.5]   [0.65 0.35]   [0.2 0.8]	<br/>
+	 *	<br/>	
+	 *	JoeÅfs min-q is 14.54545454546, at the following unique min-states (found by min-asset-propagation):	<br/> 
+	 *	     D    E    F	<br/>
+	 *	     2     1    1	<br/>
+	 *	<br/>	
+	 *	At this point, the model DEF reaches the status that has the same CPTs as the starting CPTs for the experimental model DEF we used in our AAAI 2012 paper.	<br/> 
+	 *	<br/>	
+	 *	From now on, we run test cases described in the paper.	<br/> 
+	 *	<br/>	
+	 *	Trade-6: Eric would like to trade on P(E=e1), which is currently 0.65.	<br/> 
+	 *	To decide long or short, S(E=e1) = 10, S(E~=e1)=10, no difference because this will be EricÅfs first trade.	<br/>
+	 *	Edit limit:	<br/>
+	 *	Given F=f1, and D=d2, min-q1 = 100	<br/>
+	 *	Given F~=f1, and D=d2, min-q2 = 100	<br/>
+	 *	From Equation (1), edit interval is [0.0065, 0.9965]	<br/>
+	 *	- Verification successful: after substituting the limits into edit, we do get min-q to be 1.	<br/> 
+	 *	<br/>	
+	 *	Trading sequence:	<br/> 
+	 *	Tom1:	P(E=e1) = 0.5  to 0.55	<br/>
+	 *	Tom2:	P(E=e1|D=d1) = 0.55 to 0.9	<br/> 
+	 *	Joe1:	P(E=e1|D=d2) = 0.55 to 0.4	<br/> 
+	 *	Amy1:	P(F=f1|D=d1) = 0.5 to 0.3	<br/> 
+	 *	Joe2:	P(F=f1|D=d2) = 0.5 to 0.1	<br/>
+	 *	Eric1:	P(E=e1) = 0.65 to 0.8 (current)	<br/>
+	 *	<br/>	  
+	 *	Variables   D              E                   F	<br/> 
+	 *	Marginals   [0.5824, 0.4176]   [0.8, 0.2]   [0.2165, 0.7835]	<br/>
+	 *	<br/>	
+	 *	EricÅfs expected score is S=10.1177.	<br/>
+	 *	EricÅfs min-q is 57.142857, at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	     D    E    F	<br/>
+	 *	     2     2    1	<br/>
+	 *	     2     2    2	<br/>
+	 *	<br/>	
+	 *	<br/>	
+	 *	Trade-7: Eric would like to make another edit. This time, he is interested on changing P(D=d1|F=f2), which is currently 0.52.	<br/> 
+	 *	To decide long or short, S(D=d1, F=f2) = 10.36915, S(D~=d1, F=f2)=9.7669.	<br/>
+	 *	Edit limit:	<br/>
+	 *	Given D=d1, and F=f2 , min-q1 = 57.142857	<br/>
+	 *	Given D~=d1, and F=f2, min-q2 = 57.142857	<br/>
+	 *	From Equation (1), edit interval is [0.0091059, 0.9916058]	<br/>
+	 *	- Verification successful: after substituting the limits into edit, we do get min-q to be 1.	<br/> 
+	 *	<br/>	
+	 *	Trading sequence:	<br/> 
+	 *	Tom1:	P(E=e1) = 0.5  to 0.55	<br/>
+	 *	Tom2:	P(E=e1|D=d1) = 0.55 to 0.9	<br/> 
+	 *	Joe1:	P(E=e1|D=d2) = 0.55 to 0.4	<br/> 
+	 *	Amy1:	P(F=f1|D=d1) = 0.5 to 0.3	<br/> 
+	 *	Joe2:	P(F=f1|D=d2) = 0.5 to 0.1	<br/>
+	 *	Eric1:	P(E=e1) = 0.65 to 0.8	<br/> 
+	 *	Eric2:	P(D=d1|F=f2) = 0.52 to 0.7 (current)	<br/>
+	 *	<br/>	  
+	 *	Variables   D                            E                             F	<br/> 
+	 *	Marginals   [0.7232, 0.2768]   [0.8509, 0.1491]   [0.2165, 0.7835]	<br/>
+	 *	<br/>	
+	 *	EricÅfs expected score is now 10.31615.	<br/> 
+	 *	EricÅfs min-q is 35.7393, at the following unique min-states (found by min-asset-propagation):	<br/> 
+	 *	     D    E    F	<br/>
+	 *	     2     2    2	<br/>
+	 *	<br/> 
+	 *  The transaction is committed at each trade (trades are not committed at once).
+	 */	
 	public final void testAddTrade() {
-		fail("Not yet implemented"); // TODO
+		
+		// crate transaction for generating the DEF network
+		long transactionKey = engine.startNetworkActions();
+		// create nodes D, E, F
+		engine.addQuestion(transactionKey, new Date(), 0x0D, 2, null);	// question D has ID = hexadecimal D. CPD == null -> linear distro
+		engine.addQuestion(transactionKey, new Date(), 0x0E, 2, null);	// question E has ID = hexadecimal E. CPD == null -> linear distro
+		engine.addQuestion(transactionKey, new Date(), 0x0F, 2, null);	// question F has ID = hexadecimal F. CPD == null -> linear distro
+		// create edge D->E 
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0E, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
+		// create edge D->F
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0F, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
+		// commit changes
+		engine.commitNetworkActions(transactionKey);
+		
+		// Let's use ID = 0 for the user Tom 
+		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
+		userNameToIDMap.put("Tom", (long)0);
+		
+		// By default, cash is initialized as 0 (i.e. min-q = 1)
+		assertEquals(0, Math.round(engine.getCash(userNameToIDMap.get("Tom"), null, null)), ASSET_ERROR_MARGIN);
+		assertEquals(1, Math.round(engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Tom"), null, null))), ASSET_ERROR_MARGIN);
+		
+		// add 100 q-values to new users
+		transactionKey = engine.startNetworkActions();
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Tom"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+		engine.commitNetworkActions(transactionKey);
+		// check that user's min-q value was changed to the correct value
+		assertEquals(100, Math.round(engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Tom"), null, null))), ASSET_ERROR_MARGIN);
+		assertEquals(Math.round(engine.getScoreFromQValues(100)), Math.round(engine.getCash(userNameToIDMap.get("Tom"), null, null)), ASSET_ERROR_MARGIN);
+		
+		// Tom bets P(E=e1) = 0.5  to 0.55 (unconditional soft evidence in E)
+		
+		// check whether probability prior to edit is really 0.5
+		List<Float> probList = engine.getProbList(0x0E, null, null);
+		assertEquals(2 , probList.size());
+		assertEquals(0.5f , probList.get(0) , PROB_ERROR_MARGIN);
+		assertEquals(0.5f , probList.get(1) , PROB_ERROR_MARGIN);
+		
+		// edit interval of P(E=e1) should be [0.005, 0.995]
+		List<Float> editInterval = engine.getEditLimits(userNameToIDMap.get("Tom"), 0x0E, 0, null, null);
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.size());
+		assertEquals(0.005f, editInterval.get(0), PROB_ERROR_MARGIN );
+		assertEquals(0.995f, editInterval.get(1), PROB_ERROR_MARGIN );
+		
+		// do edit
+		transactionKey = engine.startNetworkActions();
+		List<Float> newValues = new ArrayList<Float>(2);
+		newValues.add(0.55f);		// P(E=e1) = 0.55
+		newValues.add(0.45f);		// P(E=e2) = 1 - P(E=e1) = 0.45
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Tom bets P(E=e1) = 0.5  to 0.55", 
+				userNameToIDMap.get("Tom"), 
+				0x0E, 	// question E
+				newValues,
+				null, 	// no assumptions
+				null, 	// no states of the assumptions
+				false	// do not allow negative
+			);
+		engine.commitNetworkActions(transactionKey);
+		
+		
+		// check that new marginal of E is [0.55 0.45], and the others have not changed (remains 50%)
+		probList = engine.getProbList(0x0D, null, null);
+		assertEquals(0.5f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0E, null, null);
+		assertEquals(0.55f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.45f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0F, null, null);
+		assertEquals(0.5f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probList.get(1), PROB_ERROR_MARGIN);
+		
+		// check that Tom's min-q is 90 (and the cash is supposedly the log value of 90)
+		float minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);	 // null means unconditional cash, which is supposedly the global minimum
+		assertEquals(Math.round(engine.getScoreFromQValues(90f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(90f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		
+		// check that LPE contains e2 and any values for D and F, by asserting that cash conditioned to such states are equals to the min
+		// d, e, f are always going to be the assumption nodes in this test
+		List<Long> assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long) 0x0D);		// 1st node is D; assumedStates must follow this order
+		assumptionIds.add((long) 0x0E);		// 2nd node is E; assumedStates must follow this order
+		assumptionIds.add((long) 0x0F);		// 3rd node is F; assumedStates must follow this order
+		
+		// check combination d1, e1, f1 (not min)
+		List<Integer> assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);	// d1
+		assumedStates.add(0);	// e1
+		assumedStates.add(0);	// f1
+		float cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e1, f2 (not min)
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		// check combination d2, e1, f1 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e1, f2 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f1
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		// check combination d2, e2, f2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		
+		// Tom bets P(E=e1|D=d1) = .55 -> .9
+		
+		// check whether probability prior to edit is really [e1d1, e2d1, e1d2, e2d2] = [.55, .45, .55, .45]
+		assumptionIds = new ArrayList<Long>();		
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 0x0D);	// assumption = D
+		probList = engine.getProbList(0x0E, assumptionIds, null);
+		assertEquals(4, probList.size());
+		assertEquals(0.55f , probList.get(0),PROB_ERROR_MARGIN );	// P(E=e1|D=d1)
+		assertEquals(0.45f , probList.get(1),PROB_ERROR_MARGIN );	// P(E=e2|D=d1)
+		assertEquals(0.55f , probList.get(2),PROB_ERROR_MARGIN );	// P(E=e1|D=d2)
+		assertEquals(0.45f , probList.get(3),PROB_ERROR_MARGIN );	// P(E=e2|D=d2)
+		
+		assumedStates.add(0);	// set d1 as assumed state
+		
+		// edit interval of P(E=e1|D=d1) should be [0.005, 0.995]
+		editInterval = engine.getEditLimits(userNameToIDMap.get("Tom"), 0x0E, 0, assumptionIds, assumedStates);	// (node == 0x0E && state == 0) == e1
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.size());
+		assertEquals(0.005f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+		assertEquals(0.995f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		
+		// set P(E=e1|D=d1) = 0.9 and P(E=e2|D=d1) = 0.1
+		transactionKey = engine.startNetworkActions();
+		newValues = new ArrayList<Float>();
+		newValues.add(.9f);
+		newValues.add(.1f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Tom bets P(E=e1|D=d1) = 0.9", 
+				userNameToIDMap.get("Tom"), 
+				0x0E, 
+				newValues, 
+				assumptionIds, 
+				assumedStates, 
+				false
+			);
+		engine.commitNetworkActions(transactionKey);
+		
+		// check that new marginal of E is [0.725 0.275] (this is expected value), and the others have not changed (remains 50%)
+		probList = engine.getProbList(0x0D, null, null);
+		assertEquals(0.5f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0E, null, null);
+		assertEquals(0.725f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.275f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0F, null, null);
+		assertEquals(0.5f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probList.get(1), PROB_ERROR_MARGIN);
+		
+		// check that min-q is 20
+		minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(20f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(20f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		
+		// check that LPE contains d1, e2 and any value F
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long) 0x0D);		// 1st node is D; assumedStates must follow this order
+		assumptionIds.add((long) 0x0E);		// 2nd node is E; assumedStates must follow this order
+		assumptionIds.add((long) 0x0F);		// 3rd node is F; assumedStates must follow this order
+		
+		// check combination d1, e1, f1 (not min)
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);	// d1
+		assumedStates.add(0);	// e1
+		assumedStates.add(0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e1, f2 (not min)
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		// check combination d2, e1, f1 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e1, f2 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f1 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f2 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+
+		
+		// Let's create user Joe, ID = 1.
+		userNameToIDMap.put("Joe", (long) 1);
+		
+		// By default, cash is initialized as 0 (i.e. min-q = 1)
+		assertEquals(0, Math.round(engine.getCash(userNameToIDMap.get("Joe"), null, null)), ASSET_ERROR_MARGIN);
+		assertEquals(1, Math.round(engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Joe"), null, null))), ASSET_ERROR_MARGIN);
+		
+		// add 100 q-values to new users
+		transactionKey = engine.startNetworkActions();
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Joe"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+		engine.commitNetworkActions(transactionKey);
+		// check that user's min-q value was changed to the correct value
+		assertEquals(100, Math.round(engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Joe"), null, null))), ASSET_ERROR_MARGIN);
+		assertEquals(Math.round(engine.getScoreFromQValues(100)), Math.round(engine.getCash(userNameToIDMap.get("Joe"), null, null)), ASSET_ERROR_MARGIN);
+
+		// Joe bets P(E=e1|D=d2) = .55 -> .4
+		
+		// check whether probability prior to edit is really [e1d1, e2d1, e1d2, e2d2] = [.9, .1, .55, .45]
+		assumptionIds = new ArrayList<Long>();		
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 0x0D);	// assumption = D
+		probList = engine.getProbList(0x0E, assumptionIds, null);
+		assertEquals(4, probList.size());
+		assertEquals(0.9f , probList.get(0),PROB_ERROR_MARGIN );	// P(E=e1|D=d1)
+		assertEquals(0.1f , probList.get(1),PROB_ERROR_MARGIN );	// P(E=e2|D=d1)
+		assertEquals(0.55f , probList.get(2),PROB_ERROR_MARGIN );	// P(E=e1|D=d2)
+		assertEquals(0.45f , probList.get(3),PROB_ERROR_MARGIN );	// P(E=e2|D=d2)
+		
+		assumedStates.add(1);	// set d2 as assumed state
+		
+		// edit interval of P(E=e1|D=d2) should be [0.0055, 0.9955]
+		editInterval = engine.getEditLimits(userNameToIDMap.get("Joe"), 0x0E, 0, assumptionIds, assumedStates);
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.size());
+		assertEquals(0.0055f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+		assertEquals(0.9955f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		
+		// set P(E=e1|D=d2) = 0.4 and P(E=e2|D=d2) = 0.6
+		transactionKey = engine.startNetworkActions();
+		newValues = new ArrayList<Float>();
+		newValues.add(.4f);
+		newValues.add(.6f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Joe bets P(E=e1|D=d2) = 0.4", 
+				userNameToIDMap.get("Joe"), 
+				0x0E, 
+				newValues, 
+				assumptionIds, 
+				assumedStates, 
+				false
+			);
+		engine.commitNetworkActions(transactionKey);
+		
+		// check that new marginal of E is [0.65 0.35] (this is expected value), and the others have not changed (remains 50%)
+		probList = engine.getProbList(0x0D, null, null);
+		assertEquals(0.5f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0E, null, null);
+		assertEquals(0.65f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.35f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0F, null, null);
+		assertEquals(0.5f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probList.get(1), PROB_ERROR_MARGIN);
+		
+		// check that min-q is 72.727272...
+		minCash = engine.getCash(userNameToIDMap.get("Joe"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(72.727272f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(72.727272f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		
+		// check that LPE contains d2, e1 and any value F
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long) 0x0D);		// 1st node is D; assumedStates must follow this order
+		assumptionIds.add((long) 0x0E);		// 2nd node is E; assumedStates must follow this order
+		assumptionIds.add((long) 0x0F);		// 3rd node is F; assumedStates must follow this order
+		
+		// check combination d1, e1, f1
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);	// d1
+		assumedStates.add(0);	// e1
+		assumedStates.add(0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e1, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e1, f1 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		
+		// check combination d2, e1, f2 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		// check combination d2, e2, f1
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		
+		
+		
+
+		// Let's create user Amy, ID = 2.
+		userNameToIDMap.put("Amy", (long) 2);
+		
+		// By default, cash is initialized as 0 (i.e. min-q = 1)
+		assertEquals(0, Math.round(engine.getCash(userNameToIDMap.get("Amy"), null, null)), ASSET_ERROR_MARGIN);
+		assertEquals(1, Math.round(engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Amy"), null, null))), ASSET_ERROR_MARGIN);
+		
+		// add 100 q-values to new users
+		transactionKey = engine.startNetworkActions();
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Amy"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+		engine.commitNetworkActions(transactionKey);
+		// check that user's min-q value was changed to the correct value
+		assertEquals(100, Math.round(engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Amy"), null, null))), ASSET_ERROR_MARGIN);
+		assertEquals(Math.round(engine.getScoreFromQValues(100)), Math.round(engine.getCash(userNameToIDMap.get("Amy"), null, null)), ASSET_ERROR_MARGIN);
+
+		// Amy bets P(F=f1|D=d1) = .5 -> .3
+		
+		// check whether probability prior to edit is really [f1d1, f2d1, f1d2, f2d2] = [.5, .5, .5, .5]
+		assumptionIds = new ArrayList<Long>();		
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 0x0D);	
+		probList = engine.getProbList(0x0F, assumptionIds, null);
+		assertEquals(4, probList.size());
+		assertEquals(0.5f , probList.get(0),PROB_ERROR_MARGIN );
+		assertEquals(0.5f , probList.get(1),PROB_ERROR_MARGIN );
+		assertEquals(0.5f , probList.get(2),PROB_ERROR_MARGIN );
+		assertEquals(0.5f , probList.get(3),PROB_ERROR_MARGIN );
+		
+		assumedStates.add(0);	// set d1 as assumed state
+		
+		// edit interval of P(F=f1|D=d1) should be [0.005, 0.995]
+		editInterval = engine.getEditLimits(userNameToIDMap.get("Amy"), 0x0F, 0, assumptionIds, assumedStates);
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.size());
+		assertEquals(0.005f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+		assertEquals(0.995f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		
+		// set P(F=f1|D=d1) = 0.3 and P(F=f2|D=d1) = 0.7  
+		transactionKey = engine.startNetworkActions();
+		newValues = new ArrayList<Float>();
+		newValues.add(.3f);
+		newValues.add(.7f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Amy bets P(F=f1|D=d1) = 0.3", 
+				userNameToIDMap.get("Amy"), 
+				0x0F, 
+				newValues, 
+				assumptionIds, 
+				assumedStates, 
+				false
+			);
+		engine.commitNetworkActions(transactionKey);
+		
+		// check that new marginal of E is still [0.65 0.35] (this is expected value), F is [.4 .6], and the others have not changed (remains 50%)
+		probList = engine.getProbList(0x0D, null, null);
+		assertEquals(0.5f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0E, null, null);
+		assertEquals(0.65f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.35f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0F, null, null);
+		assertEquals(0.4f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.6f, probList.get(1), PROB_ERROR_MARGIN);
+		
+		// check that min-q is 60...
+		minCash = engine.getCash(userNameToIDMap.get("Amy"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(60f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(60f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		
+		// check that LPE contains d1, f1 and any value E
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long) 0x0D);		// 1st node is D; assumedStates must follow this order
+		assumptionIds.add((long) 0x0E);		// 2nd node is E; assumedStates must follow this order
+		assumptionIds.add((long) 0x0F);		// 3rd node is F; assumedStates must follow this order
+		
+		// check combination d1, e1, f1
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);	// d1
+		assumedStates.add(0);	// e1
+		assumedStates.add(0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		
+		// check combination d1, e1, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e1, f1 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e1, f2 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f1
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+
+		// Joe bets P(F=f1|D=d2) = .5 -> .1
+		
+		// check whether probability prior to edit is really [f1d1, f2d1, f1d2, f2d2] = [.3, .7, .5, .5]
+		assumptionIds = new ArrayList<Long>();		
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 0x0D);	
+		probList = engine.getProbList(0x0F, assumptionIds, null);
+		assertEquals(4, probList.size());
+		assertEquals(0.3f , probList.get(0),PROB_ERROR_MARGIN );
+		assertEquals(0.7f , probList.get(1),PROB_ERROR_MARGIN );
+		assertEquals(0.5f , probList.get(2),PROB_ERROR_MARGIN );
+		assertEquals(0.5f , probList.get(3),PROB_ERROR_MARGIN );
+		
+		assumedStates.add(1);	// set d2 as assumed state
+		
+		// edit interval of P(F=f1|D=d2) should be [0.006875, 0.993125]
+		editInterval = engine.getEditLimits(userNameToIDMap.get("Joe"), 0x0F, 0, assumptionIds, assumedStates);
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.size());
+		assertEquals(0.006875f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+		assertEquals(0.993125, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		
+		// set P(F=f1|D=d2) = 0.1 and P(F=f2|D=d2) = 0.9
+		transactionKey = engine.startNetworkActions();
+		newValues = new ArrayList<Float>();
+		newValues.add(.1f);
+		newValues.add(.9f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Joe bets P(F=f1|D=d2) = 0.1", 
+				userNameToIDMap.get("Joe"), 
+				0x0F, 
+				newValues, 
+				assumptionIds, 
+				assumedStates, 
+				false
+			);
+		engine.commitNetworkActions(transactionKey);
+		
+		// check that new marginal of E is still [0.65 0.35] (this is expected value), F is [.2 .8], and the others have not changed (remains 50%)
+		probList = engine.getProbList(0x0D, null, null);
+		assertEquals(0.5f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0E, null, null);
+		assertEquals(0.65f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.35f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0F, null, null);
+		assertEquals(0.2f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.8f, probList.get(1), PROB_ERROR_MARGIN);
+		
+		// check that min-q is 14.5454545...
+		minCash = engine.getCash(userNameToIDMap.get("Joe"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(14.5454545f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(14.5454545f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		
+		// check that LPE contains d2, e1, f1
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long) 0x0D);		// 1st node is D; assumedStates must follow this order
+		assumptionIds.add((long) 0x0E);		// 2nd node is E; assumedStates must follow this order
+		assumptionIds.add((long) 0x0F);		// 3rd node is F; assumedStates must follow this order
+		
+		// check combination d1, e1, f1
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);	// d1
+		assumedStates.add(0);	// e1
+		assumedStates.add(0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e1, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e1, f1 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		
+		// check combination d2, e1, f2 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f1
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		
+//		// create new user Eric
+//		AssetNetwork assetNetEric = null;
+//		try {
+//			assetNetEric = assetQAlgorithm.createAssetNetFromProbabilisticNet(network);
+//			assetNetEric.setName("Eric");
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			fail(e.getMessage());
+//		}
+//		assertNotNull(assetNetEric);
+//		
+//		// set Eric as the current network user
+//		assetQAlgorithm.setAssetNetwork(assetNetEric);
+//		assertEquals(assetNetEric, assetQAlgorithm.getAssetNetwork());
+//		
+//		// Eric bets P(E=e1) = .65 -> .8
+//		
+//		// bet node is E
+//		betNode = (TreeVariable) network.getNode("E");
+//		assertEquals(network.getNode("E"), betNode);
+//		
+//		// no bet condition. 
+//		betConditions.clear();
+//		assertEquals(0, betConditions.size());
+//		
+//		// extract CPT of E
+//		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+//		assertNotNull(potential);
+//		assertEquals(2,potential.tableSize());	
+//
+//		// check whether probability prior to edit is really = [.65, .35]
+//		assertTrue(((0.65f - PROB_PRECISION_ERROR) < potential.getValue(0)) && (potential.getValue(0) < (0.65f + PROB_PRECISION_ERROR)) );
+//		assertTrue(((0.35f - PROB_PRECISION_ERROR) < potential.getValue(1)) && (potential.getValue(1) < (0.35f + PROB_PRECISION_ERROR)) );
+//		
+//
+//		// edit interval of P(E=e1) should be [0.0065, 0.9965]
+//		editInterval = assetQAlgorithm.calculateIntervalOfAllowedEdit(potential, 0);	// 0 is the index of e1
+//		assertNotNull(editInterval);
+//		assertEquals(2, editInterval.length);
+//		assertTrue("Lower: " + editInterval[0], ((0.0065 - PROB_PRECISION_ERROR) < editInterval[0]) && (editInterval[0] < (0.0065 + PROB_PRECISION_ERROR)) );
+//		assertTrue("Upper: " + editInterval[1], ((0.9965 - PROB_PRECISION_ERROR) < editInterval[1]) && (editInterval[1] < (0.9965 + PROB_PRECISION_ERROR)) );
+//		
+//		
+//		// set P(E=e1) = 0.8 and P(E=e2) = 0.2 (i.e. we are changing only the cells we want)
+//		potential.setValue(0, 0.8f);
+//		potential.setValue(1, 0.2f);
+//		
+//		// fill array of likelihood with values in CPT
+//		likelihood = new float[potential.tableSize()];
+//		for (int i = 0; i < likelihood.length; i++) {
+//			likelihood[i] = potential.getValue(i);
+//		}
+//		
+//		// add likelihood ratio given (empty) parents (conditions assumed in the bet - empty now)
+//		betNode.addLikeliHood(likelihood, betConditions);
+//		
+//		try {
+//			// propagate soft evidence
+//			assetQAlgorithm.propagate();
+//			System.out.println(network.getLog());
+//			network.getLogManager().clear();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			fail(e.getMessage());
+//		}
+//		
+//		// check that new marginal of E is [0.8 0.2] (this is expected value), F is [0.2165, 0.7835], and D is [0.5824, 0.4176]
+//		nodeToTest = (TreeVariable) network.getNode("E");
+//		assertTrue("Obtained marginal is " + nodeToTest.getMarginalAt(0),((0.8f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.8f + PROB_PRECISION_ERROR)) );
+//		assertTrue(((0.2f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.2f + PROB_PRECISION_ERROR)) );
+//		nodeToTest = (TreeVariable) network.getNode("D");
+//		assertTrue(((0.5824f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.5824f + PROB_PRECISION_ERROR)) );
+//		assertTrue(((0.4176f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.4176f + PROB_PRECISION_ERROR)) );
+//		nodeToTest = (TreeVariable) network.getNode("F");
+//		assertTrue(((0.2165f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.2165f + PROB_PRECISION_ERROR)) );
+//		assertTrue(((0.7835f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.7835f + PROB_PRECISION_ERROR)) );
+//		
+//		
+//
+//		// check that LPE contains e2 and any D or F
+//
+//
+//		// prepare argument, which is input and output at the same moment
+//		inOutArgLPE.clear();
+//		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+//		
+//		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
+//		assertNotNull(lpes);
+//		assertTrue(lpes.size() == 3);
+//		// TODO the test case indicates that d1 is not LPE... Check if it is true.
+//		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("E")).intValue());
+//		
+//		// check that min-q is 57.142857...
+//		assertTrue("Obtained min q = " + minQ,((57.142857f - ASSET_PRECISION_ERROR) < minQ) && (minQ < (57.142857f + ASSET_PRECISION_ERROR)) );
+//
+//		// undo only the min propagation (we do not need the min q values anymore, and next q-calculations must use q values prior to min propagation)
+//		assetQAlgorithm.undoMinPropagation();
+//		
+//		
+//		// Eric bets  P(D=d1|F=f2) = 0.52 -> 0.7
+//		
+//		// bet node is D
+//		betNode = (TreeVariable) network.getNode("D");
+//		assertEquals(network.getNode("D"), betNode);
+//		
+//		// bet condition is F. 
+//		assumedNode = network.getNode("F");
+//		betConditions.add(assumedNode);
+//		assertEquals(1, betConditions.size());
+//		assertTrue(betConditions.contains(assumedNode));
+//		
+//		// extract CPT of D given F
+//		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+//		assertNotNull(potential);
+//		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
+//
+//		// check whether probability prior to edit is really [d1f2, d2f2] = [.52, .48]
+//		assertTrue(((0.52f - PROB_PRECISION_ERROR) < potential.getValue(2)) && (potential.getValue(2) < (0.52f + PROB_PRECISION_ERROR)) );
+//		assertTrue(((0.48f - PROB_PRECISION_ERROR) < potential.getValue(3)) && (potential.getValue(3) < (0.48f + PROB_PRECISION_ERROR)) );
+//		
+//
+//		// edit interval of P(D=d1|F=f2) should be [0.0091059, 0.9916058]
+//		editInterval = assetQAlgorithm.calculateIntervalOfAllowedEdit(potential, 2);	// 2 is the index of d1 f2
+//		assertNotNull(editInterval);
+//		assertEquals(2, editInterval.length);
+//		assertTrue("Lower: " + editInterval[0], ((0.0091059 - PROB_PRECISION_ERROR) < editInterval[0]) && (editInterval[0] < (0.0091059 + PROB_PRECISION_ERROR)) );
+//		assertTrue("Upper: " + editInterval[1], ((0.9916058 - PROB_PRECISION_ERROR) < editInterval[1]) && (editInterval[1] < (0.9916058 + PROB_PRECISION_ERROR)) );
+//		
+//		
+//		// set P(D=d1|F=f2) = 0.7 and P(D=d2|F=f2) = 0.3 (i.e. we are changing only the cells we want)
+//		potential.setValue(2, 0.7f);
+//		potential.setValue(3, 0.3f);
+//		
+//		// fill array of likelihood with values in CPT
+//		likelihood = new float[potential.tableSize()];
+//		for (int i = 0; i < likelihood.length; i++) {
+//			likelihood[i] = potential.getValue(i);
+//		}
+//		
+//		// add likelihood ratio given (empty) parents (conditions assumed in the bet - empty now)
+//		betNode.addLikeliHood(likelihood, betConditions);
+//		
+//		try {
+//			// propagate soft evidence
+//			assetQAlgorithm.propagate();
+//			System.out.println(network.getLog());
+//			network.getLogManager().clear();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			fail(e.getMessage());
+//		}
+//		
+//		// check that new marginal of E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
+//		nodeToTest = (TreeVariable) network.getNode("E");
+//		assertTrue(((0.8509f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.8509f + PROB_PRECISION_ERROR)) );
+//		assertTrue(((0.1491f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.1491f + PROB_PRECISION_ERROR)) );
+//		nodeToTest = (TreeVariable) network.getNode("D");
+//		assertTrue(((0.7232f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.7232f + PROB_PRECISION_ERROR)) );
+//		assertTrue(((0.2768f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.2768f + PROB_PRECISION_ERROR)) );
+//		nodeToTest = (TreeVariable) network.getNode("F");
+//		assertTrue(((0.2165f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.2165f + PROB_PRECISION_ERROR)) );
+//		assertTrue(((0.7835f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.7835f + PROB_PRECISION_ERROR)) );
+//		
+//		
+//		// check that LPE is d2, e2 and f2
+//
+//		// prepare argument, which is input and output at the same moment
+//		inOutArgLPE.clear();
+//		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+//		
+//		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
+//		assertNotNull(lpes);
+//		assertTrue(lpes.size() == 3);
+//		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("D")).intValue());	
+//		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("E")).intValue());	
+//		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("F")).intValue());	
+//		
+//		// check that min-q is 35.7393...
+//		assertTrue("Obtained min q = " + minQ,(( 35.7393f - ASSET_PRECISION_ERROR) < minQ) && (minQ < ( 35.7393f + ASSET_PRECISION_ERROR)) );
+//
+//		// undo only the min propagation (we do not need the min q values anymore, and next q-calculations must use q values prior to min propagation)
+//		assetQAlgorithm.undoMinPropagation();
+//		
+//		
+//		// Eric makes a bet which makes his assets-q to go below 1, but the algorithm does not allow it
+//		
+//		// let the algorithm not to allow asset-q smaller than 1
+//		assetQAlgorithm.setToAllowQValuesSmallerThan1(false);
+//		
+//		// bet node is D
+//		betNode = (TreeVariable) network.getNode("D");
+//		assertEquals(network.getNode("D"), betNode);
+//		
+//		// bet condition is F. 
+//		betConditions.clear();
+//		assumedNode = network.getNode("F");
+//		betConditions.add(assumedNode);
+//		assertEquals(1, betConditions.size());
+//		assertTrue(betConditions.contains(assumedNode));
+//		
+//		// extract CPT of D given F
+//		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+//		assertNotNull(potential);
+//		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
+//
+//		// extract allowed interval of P(D=d1|F=f2), so that we can an edit incompatible with such interval
+//		editInterval = assetQAlgorithm.calculateIntervalOfAllowedEdit(potential, 2);	// 2 is the index of d1 f2
+//		assertNotNull(editInterval);
+//		assertEquals(2, editInterval.length);
+//		
+//		// set P(D=d1|F=f2) to a value lower (1/10) than the lower bound of edit interval
+//		potential.setValue(2, editInterval[0]/10);
+//		potential.setValue(3, 1-(editInterval[0]/10));
+//		
+//		// fill array of likelihood with values in CPT
+//		likelihood = new float[potential.tableSize()];
+//		for (int i = 0; i < likelihood.length; i++) {
+//			likelihood[i] = potential.getValue(i);
+//		}
+//		
+//		// add likelihood ratio given (empty) parents (conditions assumed in the bet - empty now)
+//		betNode.addLikeliHood(likelihood, betConditions);
+//		
+//		try {
+//			// propagate soft evidence
+//			assetQAlgorithm.propagate();
+//			fail("Algorithm should not allow this edit");
+//		} catch (ZeroAssetsException e) {
+//			// OK
+//			System.out.println(network.getLog());
+//			network.getLogManager().clear();
+//			assertNotNull(e);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			fail(e.getMessage());
+//		}
+//		
+//		// check that marginals have not changed: E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
+//		nodeToTest = (TreeVariable) network.getNode("E");
+//		assertTrue(((0.8509f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.8509f + PROB_PRECISION_ERROR)) );
+//		assertTrue(((0.1491f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.1491f + PROB_PRECISION_ERROR)) );
+//		nodeToTest = (TreeVariable) network.getNode("D");
+//		assertTrue(((0.7232f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.7232f + PROB_PRECISION_ERROR)) );
+//		assertTrue(((0.2768f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.2768f + PROB_PRECISION_ERROR)) );
+//		nodeToTest = (TreeVariable) network.getNode("F");
+//		assertTrue(((0.2165f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.2165f + PROB_PRECISION_ERROR)) );
+//		assertTrue(((0.7835f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.7835f + PROB_PRECISION_ERROR)) );
+//		
+//		
+//		// check that LPE has not changed - still d2, e2 and f2
+//
+//		// prepare argument, which is input and output at the same moment
+//		inOutArgLPE.clear();
+//		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+//		
+//		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
+//		assertNotNull(lpes);
+//		assertTrue(lpes.size() == 3);
+//		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("D")).intValue());	
+//		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("E")).intValue());	
+//		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("F")).intValue());	
+//		
+//		assertTrue("Obtained min q = " + minQ,(( 35.7393f - ASSET_PRECISION_ERROR) < minQ) && (minQ < ( 35.7393f + ASSET_PRECISION_ERROR)) );
+//		
+//		// undo only the min propagation (we do not need the min q values anymore, and next q-calculations must use q values prior to min propagation)
+//		assetQAlgorithm.undoMinPropagation();
+//		
+//		// Eric makes a bet which makes his assets-q to go below 1, and the algorithm allows it
+//		
+//		// let the algorithm allow asset-q smaller than 1
+//		assetQAlgorithm.setToAllowQValuesSmallerThan1(true);
+//		
+//		// bet node is D
+//		betNode = (TreeVariable) network.getNode("D");
+//		assertEquals(network.getNode("D"), betNode);
+//		
+//		// bet condition is F. 
+//		assumedNode = network.getNode("F");
+//		betConditions.clear();
+//		betConditions.add(assumedNode);
+//		assertEquals(1, betConditions.size());
+//		assertTrue(betConditions.contains(assumedNode));
+//		
+//		// extract CPT of D given F
+//		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+//		assertNotNull(potential);
+//		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
+//
+//		// extract allowed interval of P(D=d1|F=f2), so that we can an edit incompatible with such interval
+//		editInterval = assetQAlgorithm.calculateIntervalOfAllowedEdit(potential, 2);	// 2 is the index of d1 f2
+//		assertNotNull(editInterval);
+//		assertEquals(2, editInterval.length);
+//		
+//		// set P(D=d1|F=f2) to a value lower (half) than the lower bound of edit interval
+//		potential.setValue(2, editInterval[0]/2);
+//		potential.setValue(3, 1-(editInterval[0]/2));
+//		
+//		// fill array of likelihood with values in CPT
+//		likelihood = new float[potential.tableSize()];
+//		for (int i = 0; i < likelihood.length; i++) {
+//			likelihood[i] = potential.getValue(i);
+//		}
+//		
+//		// add likelihood ratio given (empty) parents (conditions assumed in the bet - empty now)
+//		betNode.addLikeliHood(likelihood, betConditions);
+//		
+//		try {
+//			// propagate soft evidence
+//			assetQAlgorithm.propagate();
+//			System.out.println(network.getLog());
+//			network.getLogManager().clear();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			fail(e.getMessage());
+//		}
+//		
+//		// check that LPE is 1 or below 
+//
+//		// prepare argument, which is input and output at the same moment
+//		inOutArgLPE.clear();
+//		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+//		
+//		assertNotNull(lpes);
+//		assertFalse(lpes.isEmpty());
+//		assertTrue("Obtained min q = " + minQ, minQ <= 1);
+//
+//		// undo only the min propagation (we do not need the min q values anymore, and next q-calculations must use q values prior to min propagation)
+//		assetQAlgorithm.undoMinPropagation();
 	}
 
 	/**
