@@ -61,7 +61,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	private INetworkMediator mediator;
 	
 
-	private boolean isToPropagateForGlobalConsistency = true;
+	private boolean isToPropagateForGlobalConsistency = false;
 
 	private boolean isToUpdateSeparators = true;
 	

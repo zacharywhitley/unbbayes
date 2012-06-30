@@ -276,6 +276,8 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		
 		// set the default asset q quantity of all clique cells to 100
 		assetQAlgorithm.setDefaultInitialAssetQuantity(100);
+		// force it to use min-propagation automatically even when we dont call doMinPropagation
+		assetQAlgorithm.setToPropagateForGlobalConsistency(true);	
 		
 		try {
 			// compile network
