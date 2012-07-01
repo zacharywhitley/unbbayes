@@ -95,6 +95,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 
 	private IRandomVariable editCliqueOrSeparator;
 
+	private Map<IRandomVariable, PotentialTable> assetTablesBeforeLastPropagation;
+
 
 //	private AssetAwareInferenceAlgorithm assetAwareInferenceAlgorithm;
 	
@@ -215,7 +217,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 * It assumes {@link #updateProbabilityPriorToPropagation()} was called prior to this method.
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#propagate()
 	 */
-	public void propagate() {
+	public synchronized void propagate() {
 		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
 			listener.onBeforePropagate(this);
 		}
@@ -241,8 +243,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			cliquesOrSepsToUpdate.addAll(getOriginalCliqueToAssetCliqueMap().keySet());
 		}
 		
-		// a mapping to be used to store old values, so that we can revert changes when q-values goes below 1
-		Map<IRandomVariable, PotentialTable> oldAssetTables = new HashMap<IRandomVariable, PotentialTable>();	// this shall be used only when isToAllowQValuesSmallerThan1() == false
+		// reset the mapping which stores the old q-values. This map can also be used in order to revert changes when q-values goes below 1
+		setAssetTablesBeforeLastPropagation(new HashMap<IRandomVariable, PotentialTable>());
 		
 		for (IRandomVariable origCliqueOrSeparator : cliquesOrSepsToUpdate) {
 			// extract clique related to the asset 
@@ -277,9 +279,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			}
 			
 			// backup old asset table (so that we can revert asset tables when necessary)
-			if (!isToAllowQValuesSmallerThan1()) {
-				oldAssetTables.put(assetCliqueOrSeparator, (PotentialTable) assetTable.clone());
-			}
+			getAssetTablesBeforeLastPropagation().put(assetCliqueOrSeparator, (PotentialTable) assetTable.clone());
 			
 			// perform clique-wise update of asset values using a ratio
 			for (int i = 0; i < assetTable.tableSize(); i++) {
@@ -294,10 +294,10 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 				// check if assets is <= 1
 				if (!isToAllowQValuesSmallerThan1() &&  (newValue <= 1f) && (newValue > 0f) ) {
 					// revert all previous cliques/separators, including current
-					for (IRandomVariable modifiedCliqueOrSep : oldAssetTables.keySet()) {
+					for (IRandomVariable modifiedCliqueOrSep : getAssetTablesBeforeLastPropagation().keySet()) {
 						assetTable = (PotentialTable) modifiedCliqueOrSep.getProbabilityFunction();
 						// CAUTION: the following code only works because the vector of old and new values have the same size
-						assetTable.setValues(oldAssetTables.get(modifiedCliqueOrSep).getValues());
+						assetTable.setValues(getAssetTablesBeforeLastPropagation().get(modifiedCliqueOrSep).getValues());
 						// update marginal of asset nodes
 						for (int j = 0; j < assetTable.getVariablesSize(); j++) {
 							((TreeVariable)assetTable.getVariableAt(j)).updateMarginal();
@@ -1174,6 +1174,24 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		}
 		// delete node. This will supposedly delete columns in the asset tables (cliques + separators) as well
 		getAssetNetwork().removeNode((Node) node);
+	}
+
+	/**
+	 * This map stores what were the asset tables before the last call of
+	 * {@link #propagate()}
+	 * @param assetTablesBeforeLastPropagation the assetTablesBeforeLastPropagation to set
+	 */
+	public void setAssetTablesBeforeLastPropagation(
+			Map<IRandomVariable, PotentialTable> assetTablesBeforeLastPropagation) {
+		this.assetTablesBeforeLastPropagation = assetTablesBeforeLastPropagation;
+	}
+
+	/**
+	 * @see #setAssetTablesBeforeLastPropagation(Map)
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#getAssetTablesBeforeLastPropagation()
+	 */
+	public Map<IRandomVariable, PotentialTable> getAssetTablesBeforeLastPropagation() {
+		return assetTablesBeforeLastPropagation;
 	}
 
 	

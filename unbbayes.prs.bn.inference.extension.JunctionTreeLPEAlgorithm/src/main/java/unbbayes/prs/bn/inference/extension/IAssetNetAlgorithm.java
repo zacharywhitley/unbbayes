@@ -6,6 +6,8 @@ import java.util.Map;
 import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
 import unbbayes.prs.bn.AssetNetwork;
+import unbbayes.prs.bn.IRandomVariable;
+import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
@@ -181,4 +183,12 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 * @param state
 	 */
 	public void setAsPermanentEvidence(INode node, int state);
+	
+	/**
+	 * This map stores what were the asset tables before the last call of
+	 * {@link #propagate()}
+	 * @return the assetTablesBeforeLastPropagation. This is a mapping from a Clique or Separator
+	 * to the PotentialTable (the assset table).
+	 */
+	public Map<IRandomVariable, PotentialTable> getAssetTablesBeforeLastPropagation();
 }

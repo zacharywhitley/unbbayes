@@ -50,4 +50,11 @@ public interface NetworkAction extends QuestionEvent {
 	 * @return the user id.
 	 */
 	Long getUserId();
+	
+	/**
+	 * @return the identifier of the question associated with this network action.
+	 * If this action is not associated with any ID, then this method shall
+	 * return null.
+	 */
+	Long getQuestionId();
 }

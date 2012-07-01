@@ -1141,5 +1141,18 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	public void setAsPermanentEvidence(INode node, int state) {
 		this.getAssetPropagationDelegator().setAsPermanentEvidence(node, state);
 	}
+
+	/**
+	 * This method only delegates to
+	 * {@link AssetPropagationInferenceAlgorithm#getAssetTablesBeforeLastPropagation()}
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#getAssetTablesBeforeLastPropagation()
+	 */
+	public Map<IRandomVariable, PotentialTable> getAssetTablesBeforeLastPropagation() {
+		IAssetNetAlgorithm delegator = getAssetPropagationDelegator();
+		if (delegator != null) {
+			return delegator.getAssetTablesBeforeLastPropagation();
+		}
+		return null;
+	}
 	
 }

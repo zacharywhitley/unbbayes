@@ -2,6 +2,7 @@ package edu.gmu.ace.daggre;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
 import unbbayes.prs.bn.AssetNode;
 import unbbayes.prs.bn.Clique;
+import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
@@ -44,6 +46,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	private float probabilityErrorMargin = 0.0001f;
 
 	private Map<Long, List<NetworkAction>> networkActionsMap;
+	
+	private HashMap<Long, List<NetworkAction>> networkActionsIndexedByQuestions;	// HashMap allows null key
+	
 	private Long transactionCounter;
 
 	private Map<Long, AssetAwareInferenceAlgorithm> userToAssetAwareAlgorithmMap;
@@ -123,9 +128,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#initialize()
 	 */
 	public synchronized boolean initialize() {
-		// prepare map storing transaction keys
-		setNetworkActionsMap(new ConcurrentHashMap<Long, List<NetworkAction>>());	// concurrent hash map is known to be thread safe yet fast.
+		// reset counter of transactions
 		setTransactionCounter(0);
+		
+		// prepare map storing network actions
+		setNetworkActionsMap(new ConcurrentHashMap<Long, List<NetworkAction>>());	// concurrent hash map is known to be thread safe yet fast.
+		setNetworkActionsIndexedByQuestions(new HashMap<Long, List<NetworkAction>>());	// HashMap allows null key.
+		
 		
 		setProbabilisticNetwork(new ProbabilisticNetwork("DAGGRE"));
 		// disable log
@@ -263,6 +272,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public Long getUserId() { return null; }
 		public List<Float> getPercent() { return null; }
 		public String getTradeId() { return null; }
+		public Long getQuestionId() { return null; }
 	}
 
 	/* (non-Javadoc)
@@ -367,7 +377,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public Date getWhenCreated() { return this.occurredWhen; }
 		public Long getTransactionKey() { return transactionKey;
 		}
-		public long getQuestionId() { return questionId; }
+		public Long getQuestionId() { return questionId; }
 		public int getNumberStates() { return numberStates; }
 		/** Adding a new node is a structure change */
 		public boolean isStructureChangeAction() { return true; }
@@ -577,7 +587,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		}
 		public Date getWhenCreated() { return this.occurredWhen; }
 		public Long getTransactionKey() { return transactionKey; }
-		public long getSourceQuestionId() { return sourceQuestionId; }
+		public Long getQuestionId() { return sourceQuestionId; }
 		public List<Long> getAssumptiveQuestionIds() { return assumptiveQuestionIds; }
 		/** Adding a new edge is a structure change */
 		public boolean isStructureChangeAction() { return true; }
@@ -691,6 +701,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public List<Float> getPercent() { return null; }
 		/** Returns the description */
 		public String getTradeId() { return description; }
+		public Long getQuestionId() { return null; }
 	}
 
 	
@@ -745,6 +756,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		private List<Long> assumptionIds;
 		private final List<Integer> assumedStates;
 		private final boolean allowNegative;
+		private Map<IRandomVariable, PotentialTable> qTablesBeforeTrade;
 		/** Default constructor initializing fields */
 		public AddTradeNetworkAction(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Float> newValues, 
 				List<Long> assumptionIds, List<Integer> assumedStates,  boolean allowNegative) {
@@ -780,22 +792,54 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 					}
 					// do trade. Since algorithm is linked to actual networks, changes will affect the actual networks
 					executeTrade(questionId, newValues, assumptionIds, assumedStates, allowNegative, algorithm);
+					// backup the previous assets so that we can revert this trade
+					qTablesBeforeTrade = algorithm.getAssetTablesBeforeLastPropagation();
 				}
 			}
 		}
+		/** 
+		 * As discussed with Dr. Robin Hanson (<a href="mailto:rhanson@gmu.edu">rhanson@gmu.edu</a>) on
+		 * 07/29/2012 during the DAGGRE algorithm meeting, the {@link MarkovEngineInterface#revertTrade(long, Date, Date, Long)}
+		 * should only set the user's assets into the point prior to when {@link #execute()} was called.
+		 * CAUTION: this method is not actually reverting a trade. It is setting
+		 * the asset tables to values prior to the execution of {@link #execute()}.
+		 */
 		public void revert() throws UnsupportedOperationException {
-			throw new UnsupportedOperationException("Reverting a trade is not supported yet.");
+			// extract user's asset network from user ID
+			AssetAwareInferenceAlgorithm algorithm = null;
+			try {
+				algorithm = getAlgorithmAndAssetNetFromUserID(userId);
+			} catch (InvalidParentException e) {
+				throw new RuntimeException("Could not extract assets from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
+			}
+			if (algorithm == null) {
+				throw new RuntimeException("Could not extract assets from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
+			}
+			synchronized (algorithm.getAssetNetwork()) {
+				// revert clique's q-tables
+				for (Clique clique : algorithm.getAssetNetwork().getJunctionTree().getCliques()) {
+					// current table and previous table are supposed to have same size
+					clique.getProbabilityFunction().setValues(getqTablesBeforeTrade().get(clique).getValues());
+				}
+				// revert separator's q-tables
+				for (Separator separator : algorithm.getAssetNetwork().getJunctionTree().getSeparators()) {
+					// current table and previous table are supposed to have same size
+					separator.getProbabilityFunction().setValues(getqTablesBeforeTrade().get(separator).getValues());
+				}
+			}
 		}
 		public Date getWhenCreated() { return whenCreated; }
 		public boolean isStructureChangeAction() { return false; }
 		public Long getTransactionKey() { return transactionKey; }
 		public Long getUserId() { return userId; }
-		public long getQuestionId() { return questionId; }
+		public Long getQuestionId() { return questionId; }
 		public List<Long> getAssumptionIds() { return assumptionIds; }
 		public List<Integer> getAssumedStates() { return assumedStates; }
 		public boolean isAllowNegative() { return allowNegative; }
 		public List<Float> getPercent() { return newValues; }
 		public String getTradeId() { return tradeKey; }
+		/** Mapping from {@link Clique}/{@link Separator} to q-tables before {@link #execute()}*/
+		public Map<IRandomVariable, PotentialTable> getqTablesBeforeTrade() { return qTablesBeforeTrade; }
 	}
 	
 	/* (non-Javadoc)
@@ -874,7 +918,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public Long getTransactionKey() { return transactionKey; }
 		/** this is not an operation performed by a particular user */ 
 		public Long getUserId() { return null;}
-		public long getQuestionId() { return questionId; }
+		public Long getQuestionId() { return questionId; }
 		public int getSettledState() { return settledState; }
 		public List<Float> getPercent() { return marginalWhenResolved; }
 		public String getTradeId() { return null; }
@@ -1635,7 +1679,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * Network action representing {@link MarkovEngineImpl#balanceTrade(long, Date, String, long, long, List, List)}
 	 * @author Shou Matsumoto
 	 */
-	public class BalanceTradeNetworkAction implements NetworkAction{
+	public class BalanceTradeNetworkAction implements NetworkAction {
 		private final long transactionKey;
 		private final Date occurredWhen;
 		private final String tradeKey;
@@ -1676,7 +1720,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public boolean isStructureChangeAction() { return false; }
 		public Long getTransactionKey() { return transactionKey; }
 		public Long getUserId() { return userId; }
-		public long getQuestionId() { return questionId; }
+		public Long getQuestionId() { return questionId; }
 		public List<Long> getAssumptionIds() { return assumptionIds; }
 		public List<Integer> getAssumedStates() { return assumedStates; }
 		/** This is the action object used in order to execute the trade */
@@ -1969,6 +2013,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			// insert new action at the correct position
 			actions.add(indexOfFirstActionCreatedAfterNewAction, newAction);
 		}
+		
+		// insert new action into the map to be used for searching actions by question id
+		this.addNetworkActionIntoQuestionMap(newAction);
 	}
 	
 	/**
@@ -2020,6 +2067,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			// insert new action at the correct position
 			actions.add(indexOfFirstActionCreatedAfterNewAction, newAction);
 		}
+		
+		// insert new action into the map to be used for searching actions by question id
+		this.addNetworkActionIntoQuestionMap(newAction);
 	}
 
 	/**
@@ -2210,6 +2260,84 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		return conditionalProbabilityExtractor;
 	}
 
-	
+	/**
+	 * This is an index for {@link #getNetworkActionsMap()}. 
+	 * The key is the question ID.
+	 * By calling {@link Map#get(null)}, all actions not related to any question will be returned.
+	 * @param networkActionsIndexedByQuestions the networkActionsIndexedByQuestions to set.
+	 * This is a {@link HashMap}, because it is known to allow null keys
+	 * (it is not guaranteed that other implementations will allow null keys).
+	 * @see #addNetworkAction(long, AddQuestionNetworkAction)
+	 * @see #addNetworkAction(long, NetworkAction)
+	 */
+	protected void setNetworkActionsIndexedByQuestions(
+			HashMap<Long, List<NetworkAction>> networkActionsIndexedByQuestions) {
+		this.networkActionsIndexedByQuestions = networkActionsIndexedByQuestions;
+	}
+
+	/**
+	 * This is an index for {@link #getNetworkActionsMap()}. 
+	 * The key is the question ID.
+	 * By calling {@link Map#get(null)}, all actions not related to any question will be returned.
+	 * @return the networkActionsIndexedByQuestions.
+	 * This is a {@link HashMap}, because it is known to allow null keys
+	 * (it is not guaranteed that other implementations will allow null keys).
+	 * @see #addNetworkAction(long, AddQuestionNetworkAction)
+	 * @see #addNetworkAction(long, NetworkAction)
+	 */
+	protected HashMap<Long, List<NetworkAction>> getNetworkActionsIndexedByQuestions() {
+		return networkActionsIndexedByQuestions;
+	}
+
+	/**
+	 * This method adds networkAction into {@link #getNetworkActionsIndexedByQuestions()}
+	 * so that the values (lists) in {@link #getNetworkActionsIndexedByQuestions()} are ordered by
+	 * {@link NetworkAction#getWhenCreated()}.
+	 * @param networkAction : the object to be inserted.
+	 * {@link NetworkAction#getQuestionId()} will be used as the key of {@link #getNetworkActionsIndexedByQuestions()}. 
+	 * Null is allowed as the key.
+	 * @return the index where networkAction was inserted
+	 */
+	protected int addNetworkActionIntoQuestionMap(NetworkAction networkAction) {
+		// initial assertion
+		if (networkAction == null) {
+			throw new NullPointerException("networkAction == null");
+		}
+		// get list of actions from getNetworkActionsIndexedByQuestions.
+		List<NetworkAction> list = null;
+		synchronized (getNetworkActionsIndexedByQuestions()) {
+			list = getNetworkActionsIndexedByQuestions().get(networkAction.getQuestionId());
+			if (list == null) {
+				// this is the fist time an action with questionId is inserted
+				list = new ArrayList<NetworkAction>();
+				getNetworkActionsIndexedByQuestions().put(networkAction.getQuestionId(), list);
+			}
+		}
+		// at this point, list != null
+		int indexOfNewElement = -1;	// index where networkAction is going to be added
+		synchronized (list) {
+			if (networkAction.getWhenCreated() == null) {
+				// if there is no date, add at the end
+				indexOfNewElement = list.size();	// we shall return this value
+				list.add(networkAction);
+				// I'd like to avoid returning the method while still inside a critical portion.
+			} else {
+				// NOTE: returning indexOfNewElement >= 0 indicates that the network action was added somewhere in the list
+				for (indexOfNewElement = 0; indexOfNewElement < list.size(); indexOfNewElement++) {
+					if ( ( list.get(indexOfNewElement) == null )
+							|| ( list.get(indexOfNewElement).getWhenCreated() == null ) ) { // at this point, list.get(indexOfNewElement) != null
+						// add new element always before null values or null dates
+						break;
+					}
+					if (list.get(indexOfNewElement).getWhenCreated().after(networkAction.getWhenCreated())) {
+						// new element was created before the current element in the list. Add here. 
+						break;
+					}
+				}
+				list.add(indexOfNewElement, networkAction);
+			}
+		}
+		return indexOfNewElement;
+	}
 
 }
