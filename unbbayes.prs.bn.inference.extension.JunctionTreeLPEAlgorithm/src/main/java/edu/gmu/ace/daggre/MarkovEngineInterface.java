@@ -273,8 +273,9 @@ public interface MarkovEngineInterface {
 	 * @return the probability of a question (i.e. random variable) given assumptions.
 	 * The order is important for identifying the states (i.e. 1st value is for the 1st state, and so on).
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
+	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
 	 */
-	public List<Float> getProbList(long questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	public List<Float> getProbList(long questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException, IllegalStateException;
 	
 	
 	/**
@@ -288,8 +289,9 @@ public interface MarkovEngineInterface {
 	 * can be selected after that. This parameter indicates what assumptions were selected so far.
 	 * @return list of any possible assumptions that can be made on the question
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
+	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
 	 */
-	public List<Long> getPossibleQuestionAssumptions(long questionId, List<Long>assumptionIds) throws IllegalArgumentException;
+	public List<Long> getPossibleQuestionAssumptions(long questionId, List<Long>assumptionIds) throws IllegalArgumentException, IllegalStateException;
 	
 	/**
 	 * This method implements the feature for obtaining the assets position of the user given conditions
@@ -307,8 +309,9 @@ public interface MarkovEngineInterface {
 	 * the question while it is in state "false" (given assumptions), and index 1 contains the assets of the
 	 * question while it is in state "true".
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
+	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
 	 */
-	public List<Float> getAssetsIfStates(long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	public List<Float> getAssetsIfStates(long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException, IllegalStateException;
 	
 	/**
 	 * Returns the upper and lower bounds for a specific trade given the assumptions. This can be used to constrain a UI action.
@@ -360,8 +363,9 @@ public interface MarkovEngineInterface {
 	 * @return a list (ordered collection) of size 2 representing respectively the lower and upper bounds for the allowed edit (allowed probability) of
 	 * a state (referenced by argument "questionState") of a question (referenced by argument "questionID").
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
+	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
 	 */
-	public List<Float> getEditLimits(long userId, long questionId, int questionState, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	public List<Float> getEditLimits(long userId, long questionId, int questionState, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException, IllegalStateException;
 	
 	/**
 	 * @param userID : the ID of the owner of the asset table.
@@ -369,8 +373,9 @@ public interface MarkovEngineInterface {
 	 * @param assumedStates : a list (ordered collection) representing the states of assumptionIDs assumed.
 	 * @return available cash (i.e. minimum assets) given a set of assumptions.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
+	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
 	 */
-	public float getCash(long userId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	public float getCash(long userId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException, IllegalStateException;
 	
 	/**
 	 * Obtains the expected assets (probability * asset).
@@ -384,6 +389,7 @@ public interface MarkovEngineInterface {
 	 * @return current expected value portion of user score given a set of assumptions. 
 	 * If questionId is set to null, then TOTAL current expected value portion of across all questions given a set of assumptions.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
+	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
 	 */
 	public float scoreUserQuestionEv(long userId, Long questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
@@ -397,6 +403,7 @@ public interface MarkovEngineInterface {
 	 * If it does not have the same size of assumptionIDs, MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
 	 * @return a list of score expectations for each possible choice that could result. This is p(state)*user_assets(state).
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
+	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
 	 */
 	public List<Float> scoreUserQuestionEvStates(long userId, long questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
@@ -411,6 +418,7 @@ public interface MarkovEngineInterface {
 	 * @return TOTAL current expected value portion of across all questions given a set of assumptions.
 	 * @throws IllegalArgumentException
 	 * @see {@link #scoreUserQuestionEv(long, Long, List, List)}
+	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
 	 */
 	public float scoreUserEv(long userId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
@@ -424,6 +432,7 @@ public interface MarkovEngineInterface {
 	 * If it does not have the same size of assumptionIDs, MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
 	 * @return TOTAL user score (expected_value + cash) across all questions given a set of assumptions.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
+	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
 	 */
 	public float scoreUser(long userId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
@@ -457,12 +466,17 @@ public interface MarkovEngineInterface {
 	 * @return the assets per state changed, if the user has sufficient assets 
 	 * (as the values returned by {@link #getAssetsIfStates(int, long, long, int, List, List, Properties)}).
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
+	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
 	 */
 	public List<Float> previewTrade(long userId, long questionId, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
 	 * This method will determine the states of a balancing trade which would minimize impact once the question is resolved
 	 * Ideally this balancing trade is one where all assetsifStates states where equal so settling the question would have no effect. 
+	 * <br/><br/>
+	 * CAUTION: in a multi-thread environment, use {@link #balanceTrade(long, Date, String, long, long, List, List)} if you want to commit a trade
+	 * which will balance the user's assets given assumptions, instead of using this method to calculate the balancing
+	 * trade and then run {@link #addTrade(long, Date, String, long, long, List, List, List, boolean)}.
 	 * @param userID: the ID of the user (i.e. owner of the assets).
 	 * @param questionId : the id of the question to be balanced.
 	 * @param assumptionIds : list (ordered collection) representing the IDs of the questions to be assumed in this edit. The order is important,
@@ -492,6 +506,8 @@ public interface MarkovEngineInterface {
 	 * index 2 - P(T=t1 | A1=a12, A2=a22)<br/>
 	 * index 3 - P(T=t2 | A1=a12, A2=a22)<br/>
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
+	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
+	 * @see #balanceTrade(long, Date, String, long, long, List, List)
 	 */
 	public List<Float> determineBalancingTrade(long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	

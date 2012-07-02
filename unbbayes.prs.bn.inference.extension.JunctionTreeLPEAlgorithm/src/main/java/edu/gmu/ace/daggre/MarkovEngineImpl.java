@@ -183,6 +183,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	public synchronized boolean commitNetworkActions(long transactionKey)
 			throws IllegalArgumentException, ZeroAssetsException {
 		
+		// TODO revert actions on error.
+		
 		// initial assertion : make sure transactionKey is valid
 		List<NetworkAction> actions = getNetworkActionsMap().get(transactionKey);
 		if (actions == null) {
@@ -248,10 +250,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			this.transactionKey = transactionKey;
 			this.whenCreated = whenCreated;
 		}
+		/** Rebuild the BN */
 		public void execute() {
-			// rebuild BN
-			// make sure no one is using the probabilistic network yet.
+			// BN to rebuild
 			ProbabilisticNetwork net = getProbabilisticNetwork();
+			// make sure no one is using the probabilistic network yet.
 			synchronized (getDefaultInferenceAlgorithm()) {
 				synchronized (net) {
 					if (net.getNodeCount() > 0) {
@@ -861,7 +864,20 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		}
 		
 		// returned value is the same of preview trade
-		List<Float> ret = this.previewTrade(userId, questionId, newValues, assumptionIds, assumedStates);
+		List<Float> ret = null;
+		try {
+			ret = this.previewTrade(userId, questionId, newValues, assumptionIds, assumedStates);
+		} catch (IllegalStateException e) {
+			Debug.println(getClass(), 
+					"[" + occurredWhen + "] failed to preview trade " + tradeKey 
+					+ " of user " + userId
+					+ " of transaction " + transactionKey
+					+ " of question " + questionId
+					+ " given assumptions: " + assumptionIds + "; states: " + assumedStates
+					+ " because the shared Bayesian Network was not properly initialized."
+					, e
+				);
+		}
 		
 		// NOTE: preview trade is performed *before* the insertion of a new action into the transaction, 
 		// because we only want the transaction to be altered if the preview trade has returned successfully.
@@ -2003,9 +2019,22 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * @param userID
 	 * @return instance of AssetNetwork
 	 * @throws InvalidParentException 
+	 * @throws IllegalStateException : when this method was called before {@link #getProbabilisticNetwork()} is initialized.
 	 * @see AssetAwareInferenceAlgorithm
 	 */
-	protected AssetAwareInferenceAlgorithm getAlgorithmAndAssetNetFromUserID(long userID) throws InvalidParentException {
+	protected AssetAwareInferenceAlgorithm getAlgorithmAndAssetNetFromUserID(long userID) throws InvalidParentException, IllegalStateException {
+		
+		// assert that network was initialized
+		boolean isNetworkOK = true;
+		synchronized (getProbabilisticNetwork()) {
+			if (getProbabilisticNetwork().getJunctionTree() == null) {
+				throw new IllegalStateException("Failed to initialize user " + userID + ", because the shared Bayesian Network was not properly initialized. Please, initialize network and commit transaction.");
+			}
+		}
+		
+		if (!isNetworkOK) {
+			throw new IllegalStateException("Failed to create user " + userID + ". The shared Bayesian Network was not properly initialized/compiled. Please, commit the transaction which initializes/compiles the shared Bayesian Network first.");
+		}
 		
 		// value to be returned
 		AssetAwareInferenceAlgorithm algorithm = null;

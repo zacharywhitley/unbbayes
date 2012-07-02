@@ -952,6 +952,13 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#runMinPropagation()
 	 */
 	public void runMinPropagation() {
+		// do not run min propagation if network was not "compiled" (i.e. junction tree was not properly initialized)
+		if (this.getAssetNetwork() == null
+				|| this.getAssetNetwork().getJunctionTree() == null
+				|| this.getAssetNetwork().getJunctionTree().getCliques() == null
+				|| this.getAssetNetwork().getJunctionTree().getSeparators() == null) {
+			throw new IllegalStateException("Method \"runMinPropagation\" was invoked before compilation of junction tree of the network " + getAssetNetwork());
+		}
 		// "store" all clique potentials, so that it can be restored later
 		for (Clique clique : this.getAssetNetwork().getJunctionTree().getCliques()) {
 			clique.getProbabilityFunction().copyData();
