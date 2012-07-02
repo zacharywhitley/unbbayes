@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import unbbayes.prs.Node;
+import unbbayes.util.Debug;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -144,6 +145,14 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable, 
      */
     protected void marginal() {
     	initMarginalList();
+    	if (cliqueAssociado == null) {
+    		try {
+				Debug.println(getClass(), "Attempted to calculate marginal probability of node " + this + " from a junction tree, but junction tree was not properly initialized.");
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+    		return;
+    	}
         PotentialTable auxTab = (PotentialTable) ((PotentialTable)cliqueAssociado.getProbabilityFunction()).clone();
         int index = auxTab.indexOfVariable(this);
         int size = cliqueAssociado.getProbabilityFunction().variableCount();
