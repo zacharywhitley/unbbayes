@@ -1,6 +1,7 @@
 package edu.gmu.ace.daggre;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -273,6 +274,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public List<Float> getPercent() { return null; }
 		public String getTradeId() { return null; }
 		public Long getQuestionId() { return null; }
+		public List<Long> getAssumptionIds() { return null; }
+		public List<Integer> getAssumedStates() { return null; }
 	}
 
 	/* (non-Javadoc)
@@ -385,6 +388,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public String toString() { return super.toString() + "{" + this.transactionKey + ", " + this.getQuestionId() + "}"; }
 		public List<Float> getPercent() { return initProbs; }
 		public String getTradeId() { return null; }
+		public List<Long> getAssumptionIds() { return null; }
+		public List<Integer> getAssumedStates() { return null; }
 	}
 
 	/* (non-Javadoc)
@@ -588,12 +593,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public Date getWhenCreated() { return this.occurredWhen; }
 		public Long getTransactionKey() { return transactionKey; }
 		public Long getQuestionId() { return sourceQuestionId; }
-		public List<Long> getAssumptiveQuestionIds() { return assumptiveQuestionIds; }
+		public List<Long> getAssumptionIds() { return assumptiveQuestionIds; }
 		/** Adding a new edge is a structure change */
 		public boolean isStructureChangeAction() { return true; }
 		public Long getUserId() { return null; }
 		public List<Float> getPercent() { return cpd; }
 		public String getTradeId() { return null; }
+		public List<Integer> getAssumedStates() { return null; }
 	}
 
 	/**
@@ -702,6 +708,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		/** Returns the description */
 		public String getTradeId() { return description; }
 		public Long getQuestionId() { return null; }
+		public List<Long> getAssumptionIds() { return null; }
+		public List<Integer> getAssumedStates() { return null; }
 	}
 
 	
@@ -922,6 +930,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public int getSettledState() { return settledState; }
 		public List<Float> getPercent() { return marginalWhenResolved; }
 		public String getTradeId() { return null; }
+		public List<Long> getAssumptionIds() { return null; }
+		public List<Integer> getAssumedStates() { return null; }
 	}
 	
 	/* (non-Javadoc)
@@ -1824,11 +1834,67 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getQuestionHistory(java.lang.Long, java.util.List, java.util.List)
 	 */
-	public List<QuestionEvent> getQuestionHistory(Long questionID,
-			List<Long> assumptionIDs, List<Integer> assumedStates)
-			throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Not implemented yet.");
+	public List<QuestionEvent> getQuestionHistory(Long questionID, List<Long> assumptionIDs, List<Integer> assumedStates) throws IllegalArgumentException {
+		List<NetworkAction> list = null;
+		synchronized (this.getNetworkActionsIndexedByQuestions()) {
+			list = this.getNetworkActionsIndexedByQuestions().get(questionID);
+		}
+		if (list == null || list.isEmpty()) {
+			// never return the object itself (because we do not want the caller to change content of getNetworkActionsIndexedByQuestions())
+			return Collections.emptyList();	
+		}
+		// at this point, list != null
+		List<QuestionEvent> ret = new ArrayList<QuestionEvent>(); // the list to be returned
+		synchronized (list) {
+			// fill ret with values in list, but filter by assumptionIDs and assumedStates
+			for (NetworkAction action : list) {
+				if (assumptionIDs == null || assumptionIDs.isEmpty()) {
+					// no filter. Add everything
+					ret.add(action);
+				} else if (action.getAssumptionIds() != null && action.getAssumptionIds().containsAll(assumptionIDs)) {
+					// matched assumptionIDs filter. Check assumedStates filter
+					boolean hasWrongMatch = false;
+					if (action.getAssumedStates() != null && !action.getAssumedStates().isEmpty()) {
+						// if any states in the filter doesn't match the states in action.getAssumedStates(), do not add
+						for (int i = 0; (i < assumedStates.size()) && (i < assumptionIDs.size()); i++) {
+							// extract index of assumption in "action".
+							int indexOfQuestionInNetworkAction = action.getAssumptionIds().indexOf(assumptionIDs.get(i));
+							if (indexOfQuestionInNetworkAction < 0) {
+								// supposedly, at this point, indexOfQuestionInNetworkAction >=0 , because action.getAssumptionIds().containsAll(assumptionIDs)
+								try {
+									Debug.println(getClass(), "Trade " + action.getTradeId() + " claims that it is using question " + assumptionIDs.get(i) 
+											+ " as one of its assumptions, but could not access such question in the trade history.");
+								} catch (Throwable t) {
+									t.printStackTrace();
+								}
+								// ignore and go on
+								continue;
+							}
+							if (indexOfQuestionInNetworkAction >= action.getAssumedStates().size()) {
+								// there were more assumed questions than assumed states.
+								try {
+									Debug.println(getClass(), "Trade " + action.getTradeId() 
+											+ " has more elements in assumptionIds (" + action.getAssumptionIds().size()  
+											+ ") thanÅ@in assumedStates (" + action.getAssumedStates().size() + ").");
+								} catch (Throwable t) {
+									t.printStackTrace();
+								}
+								// ignore and go on
+								continue;
+							}
+							if (assumedStates.get(i) != action.getAssumedStates().get(indexOfQuestionInNetworkAction)) {
+								hasWrongMatch = true;
+								break;
+							}
+						}
+					}
+					if (!hasWrongMatch) {
+						ret.add(action);
+					}
+				}
+			}
+		}
+		return ret;
 	}
 
 	/*

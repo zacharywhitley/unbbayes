@@ -1,5 +1,7 @@
 package edu.gmu.ace.daggre;
 
+import java.util.List;
+
 
 /**
  * This interface represents any action performed between
@@ -57,4 +59,21 @@ public interface NetworkAction extends QuestionEvent {
 	 * return null.
 	 */
 	Long getQuestionId();
+	
+	/**
+	 * @return : list of question identifiers considered
+	 * as assumptions of this network action.
+	 * If assumptions does not apply for this network action,
+	 * this method shall return null.
+	 * @see #getAssumedStates()
+	 */
+	List<Long> getAssumptionIds(); 
+	
+	/**
+	 * @return states of questions returned by {@link #getAssumptionIds()}.
+	 * Objects in this list and in {@link #getAssumptionIds()}
+	 * are related by their indexes (e.g. {@link List#indexOf(Object)}). 
+	 * @see #getAssumptionIds()
+	 */
+	List<Integer> getAssumedStates();
 }
