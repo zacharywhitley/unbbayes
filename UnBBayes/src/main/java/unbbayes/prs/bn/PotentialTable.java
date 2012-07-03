@@ -227,6 +227,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 //		for (int c = 0; c < sizeDados; c++) {
 //			auxTab.dataPT.add(dataPT.data[c]);
 //		}
+		auxTab.setSumOperation(this.getSumOperation());
 		return auxTab;
 	}
 	
