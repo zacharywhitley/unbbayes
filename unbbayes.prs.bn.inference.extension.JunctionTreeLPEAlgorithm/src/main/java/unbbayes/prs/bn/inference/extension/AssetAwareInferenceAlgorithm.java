@@ -62,8 +62,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	private IAssetNetAlgorithm assetPropagationDelegator;
 
 	private boolean isToUpdateAssets = true;
-	
-	
+
 	/** 
 	 * Name of the property in {@link Graph#getProperty(String)} which manages current assets. 
 	 * The content is a Map<Clique, PotentialTable>, which maps a node to its clique-wise asset table (an asset table for all nodes in the same clique).
@@ -1162,5 +1161,16 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		}
 		return null;
 	}
+
+	/**
+	 * Only delegates to {@link #getAssetPropagationDelegator()}
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setToCalculateMarginalsOfAssetNodes(boolean)
+	 */
+	public void setToCalculateMarginalsOfAssetNodes(
+			boolean isToCalculateMarginalsOfAssetNodes) {
+		getAssetPropagationDelegator().setToCalculateMarginalsOfAssetNodes(isToCalculateMarginalsOfAssetNodes);
+	}
+
+	
 	
 }

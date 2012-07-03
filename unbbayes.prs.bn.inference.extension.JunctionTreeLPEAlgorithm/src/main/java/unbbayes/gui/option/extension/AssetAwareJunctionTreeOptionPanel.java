@@ -33,6 +33,7 @@ public class AssetAwareJunctionTreeOptionPanel extends JunctionTreeOptionPanel {
 		JunctionTreeAlgorithm delegator = new JunctionTreeAlgorithm();
 		delegator.setOptionPanel(this);
 		AssetAwareInferenceAlgorithm alg = (AssetAwareInferenceAlgorithm)AssetAwareInferenceAlgorithm.getInstance(delegator);
+		alg.setToCalculateMarginalsOfAssetNodes(true);	// force GUI to display marginal assets (min-assets by default)
 		alg.setToLogAssets(true);	// enable log
 		this.setInferenceAlgorithm(alg);
 		this.setName("Asset Propagation Algorithm");

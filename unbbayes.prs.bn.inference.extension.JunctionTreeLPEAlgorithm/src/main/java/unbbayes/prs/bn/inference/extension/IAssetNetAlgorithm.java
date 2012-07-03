@@ -191,4 +191,16 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 * to the PotentialTable (the assset table).
 	 */
 	public Map<IRandomVariable, PotentialTable> getAssetTablesBeforeLastPropagation();
+	
+	/**
+	 * If false, {@link unbbayes.prs.bn.AssetNode#updateMarginal()} will set the
+	 * marginal of the asset nodes to default values
+	 * (usually, zeros). If true, {@link unbbayes.prs.bn.AssetNode#updateMarginal()} will
+	 * attempt to calculate the marginal assets using 
+	 * the clique tables and some specific operation for marginalization
+	 * (e.g. sum-out, min-out, max-out).
+	 * @param isToCalculateMarginalsOfAssetNodes the isToCalculateMarginalsOfAssetNodes to set
+	 * @see unbbayes.prs.bn.AssetNode#setToCalculateMarginal(boolean)
+	 */
+	public void setToCalculateMarginalsOfAssetNodes(boolean isToCalculateMarginalsOfAssetNodes);
 }

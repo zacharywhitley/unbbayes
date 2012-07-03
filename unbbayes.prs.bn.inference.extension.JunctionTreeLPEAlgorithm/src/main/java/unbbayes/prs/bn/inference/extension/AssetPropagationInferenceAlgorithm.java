@@ -97,6 +97,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 
 	private Map<IRandomVariable, PotentialTable> assetTablesBeforeLastPropagation;
 
+	private boolean isToCalculateMarginalsOfAssetNodes = false;
+
 
 //	private AssetAwareInferenceAlgorithm assetAwareInferenceAlgorithm;
 	
@@ -445,6 +447,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		
 		// object to return
 		AssetNetwork ret = AssetNetwork.getInstance(relatedProbabilisticNetwork);
+		ret.setToCalculateMarginalsOfAssetNodes(isToCalculateMarginalsOfAssetNodes());
 		
 		// copy/fill clique
 		if (relatedProbabilisticNetwork.getJunctionTree() != null) {
@@ -503,6 +506,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 				// copy clique potential variables
 				PotentialTable origPotential = origClique.getProbabilityFunction();
 				PotentialTable assetPotential = newClique.getProbabilityFunction();
+				// use min-out as default operation to be applied when removing a variable or when doing marginalization
+				assetPotential.setSumOperation(new MinProductJunctionTree().new MinOperation());
 				for (int i = 0; i < origPotential.getVariablesSize(); i++) {
 					Node assetNode = ret.getNode(origPotential.getVariableAt(i).getName());
 					if (assetNode == null) {
@@ -1201,6 +1206,27 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		return assetTablesBeforeLastPropagation;
 	}
 
+
+	/**
+	 * Delegates to  {@link #getAssetNetwork()} and {@link AssetNetwork#setToCalculateMarginalsOfAssetNodes(boolean)}
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setToCalculateMarginalsOfAssetNodes(boolean)
+	 */
+	public void setToCalculateMarginalsOfAssetNodes(boolean isToCalculateMarginalsOfAssetNodes) {
+		this.isToCalculateMarginalsOfAssetNodes = isToCalculateMarginalsOfAssetNodes;
+		if (this.getAssetNetwork() != null) {
+			this.getAssetNetwork().setToCalculateMarginalsOfAssetNodes(isToCalculateMarginalsOfAssetNodes);
+		}
+	}
+
+	/**
+	 * @return delegates to {@link #getAssetNetwork()} and {@link AssetNetwork#isToCalculateMarginalsOfAssetNodes()}
+	 */
+	public boolean isToCalculateMarginalsOfAssetNodes() {
+		if (this.getAssetNetwork() != null) {
+			return this.getAssetNetwork().isToCalculateMarginalsOfAssetNodes();
+		}
+		return isToCalculateMarginalsOfAssetNodes;
+	}
 	
 
 //	/**

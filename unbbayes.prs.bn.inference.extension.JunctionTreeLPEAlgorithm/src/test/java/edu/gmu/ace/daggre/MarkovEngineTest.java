@@ -1088,6 +1088,12 @@ public class MarkovEngineTest extends TestCase {
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
 		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
 		
+		// check minimal condition of LPE: e2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), Collections.singletonList((long)0x0E), Collections.singletonList(1));
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		cash = engine.getCash(userNameToIDMap.get("Tom"), Collections.singletonList((long)0x0E), Collections.singletonList(0));
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
 		// Tom bets P(E=e1|D=d1) = .55 -> .9
 		
 		// check whether probability prior to edit is really [e1d1, e2d1, e1d2, e2d2] = [.55, .45, .55, .45]
@@ -1206,7 +1212,33 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
 		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
+
+		// check minimal condition of LPE: d1, e2
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long)0x0D);
+		assumptionIds.add((long)0x0E);
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);
+		assumedStates.add(1);
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		// check conditions that do not match LPE
+		assumedStates.set(0,1);
+		assumedStates.set(1,0);
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		assumptionIds.clear();
+		assumptionIds.add((long)0x0D);
+		assumedStates.clear();
+		assumedStates.add(1);
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		assumptionIds.clear();
+		assumptionIds.add((long)0x0E);
+		assumedStates.clear();
+		assumedStates.add(0);
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
 
 		
 		// Let's create user Joe, ID = 1.
@@ -1343,7 +1375,32 @@ public class MarkovEngineTest extends TestCase {
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
 		assertTrue("Obtained cash = " + cash, minCash < cash);
 		
-		
+		// check minimal condition of LPE: d2, e1
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long)0x0D);
+		assumptionIds.add((long)0x0E);
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(1);
+		assumedStates.add(0);
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		// check conditions that do not match LPE
+		assumedStates.set(0,0);
+		assumedStates.set(1,1);
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		assumptionIds.clear();
+		assumptionIds.add((long)0x0D);
+		assumedStates.clear();
+		assumedStates.add(0);
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		assumptionIds.clear();
+		assumptionIds.add((long)0x0E);
+		assumedStates.clear();
+		assumedStates.add(1);
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
 		
 		
 

@@ -25,6 +25,7 @@ import unbbayes.util.Debug;
 public class AssetNetwork extends ProbabilisticNetwork {
 	
 	private ProbabilisticNetwork relatedNetwork;
+	private boolean isToCalculateMarginalsOfAssetNodes = false;
 
 	/**
 	 * Default constructor is protected to allow inheritance.
@@ -84,6 +85,7 @@ public class AssetNetwork extends ProbabilisticNetwork {
 					ProbabilisticNode node = (ProbabilisticNode) aux;
 					// only consider probabilistic nodes
 					AssetNode assetNode = AssetNode.getInstance();
+					assetNode.setToCalculateMarginal(isToCalculateMarginalsOfAssetNodes());
 					assetNode.setName(node.getName());
 					assetNode.setPosition(node.getPosition().getX(), node.getPosition().getY());
 					// copy states
@@ -196,5 +198,41 @@ public class AssetNetwork extends ProbabilisticNetwork {
 	    	// this is supposed to remove parent and child relationship as well
 			this.removeEdge(edge);
 		}
+	}
+	
+	/**
+	 * If false, {@link AssetNode#updateMarginal()} will set the
+	 * marginal of the asset nodes to default values
+	 * (usually, zeros). If true, {@link AssetNode#updateMarginal()} will
+	 * attempt to calculate the marginal assets using 
+	 * the clique tables and some specific operation for marginalization
+	 * (e.g. sum-out, min-out, max-out).
+	 * @param isToCalculateMarginalsOfAssetNodes the isToCalculateMarginalsOfAssetNodes to set
+	 * @see AssetNode#setToCalculateMarginal(boolean)
+	 */
+	public void setToCalculateMarginalsOfAssetNodes(boolean isToCalculateMarginalsOfAssetNodes) {
+		this.isToCalculateMarginalsOfAssetNodes   = isToCalculateMarginalsOfAssetNodes;
+		if (getNodes() != null) {
+			for (Node node : getNodes()) {
+				if (node instanceof AssetNode) {
+					AssetNode assetNode = (AssetNode) node;
+					assetNode.setToCalculateMarginal(isToCalculateMarginalsOfAssetNodes);
+				}
+			}
+		}
+	}
+
+	/**
+	 * If false, {@link AssetNode#updateMarginal()} will set the
+	 * marginal of the asset nodes to default values
+	 * (usually, zeros). If true, {@link AssetNode#updateMarginal()} will
+	 * attempt to calculate the marginal assets using 
+	 * the clique tables and some specific operation for marginalization
+	 * (e.g. sum-out, min-out, max-out).
+	 * @return the isToCalculateMarginalsOfAssetNodes
+	 * @see AssetNode#setToCalculateMarginal(boolean)
+	 */
+	public boolean isToCalculateMarginalsOfAssetNodes() {
+		return isToCalculateMarginalsOfAssetNodes;
 	}
 }
