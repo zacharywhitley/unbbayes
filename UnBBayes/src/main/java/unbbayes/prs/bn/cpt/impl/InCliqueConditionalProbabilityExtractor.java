@@ -266,6 +266,9 @@ public class InCliqueConditionalProbabilityExtractor implements
 	 */
 	public List<INode> getValidConditionNodes(INode mainNode, List<INode> includedParentNodes, Graph net, 
 			IInferenceAlgorithm algorithm) {	// algorithm is ignored
+		if (includedParentNodes != null && mainNode != null && includedParentNodes.contains(mainNode)) {
+			throw new IllegalArgumentException(mainNode + " cannot be conditioned to itself.");
+		}
 		Set<INode> ret = new HashSet<INode>();	// use set, so that no repetition is allowed
 		if (net != null && (net instanceof SingleEntityNetwork)) {
 			// prepare input arguments
@@ -287,6 +290,8 @@ public class InCliqueConditionalProbabilityExtractor implements
 				}
 			}
 		}
+		// do not include itself as valid condition (i.e. a node should never depend to itself).
+		ret.remove(mainNode);
 		return new ArrayList<INode>(ret);	// convert set to list
 	}
 	
@@ -316,7 +321,7 @@ public class InCliqueConditionalProbabilityExtractor implements
 					Debug.println(getClass(), singleEntityNetwork + " has a null clique.");
 					continue;
 				}
-				if (nodes == null) {
+				if (nodes == null || nodes.isEmpty()) {
 					// no filtering
 					ret.add(auxClique);
 				} else if (auxClique.getNodes() != null		// auxClique != null at this point 
