@@ -15,7 +15,7 @@ import unbbayes.util.Debug;
 public class AssetNode extends DecisionNode {
 	
 	private static final long serialVersionUID = -1926227466217847395L;
-	private boolean isToCalculateMarginal = false;
+	private boolean isToCalculateMarginal = true;
 
 
 	/**
@@ -105,6 +105,20 @@ public class AssetNode extends DecisionNode {
 	 */
 	public boolean isToCalculateMarginal() {
 		return isToCalculateMarginal;
+	}
+
+	/**
+	 * Instantiates the array of marginals and initializes its values to 1.
+	 * The initial value is set to 1 because it is the identity value
+	 * in any multiplication, and it represents 0 assets 
+	 * (q and assets are related by a logarithm relationship assets = constant * log(q)).
+	 * @see unbbayes.prs.bn.TreeVariable#initMarginalList()
+	 */
+	public void initMarginalList() {
+		super.initMarginalList();
+		for (int i = 0; i < marginalList.length; i++) {
+			marginalList[i] = 1;	// the 
+		}
 	}
 
 

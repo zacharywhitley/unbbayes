@@ -54,19 +54,21 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 
 	private Map<Long, AssetAwareInferenceAlgorithm> userToAssetAwareAlgorithmMap;
 
-	private boolean isToAddCashProportionally = false;
+//	private boolean isToAddCashProportionally = true;
 
 	private float defaultInitialQTableValue = 1;
 
-	private float currentLogBase = 10;
+	private float currentLogBase = 2;
 
-	private double currentCurrencyConstant = 10;
+	private double currentCurrencyConstant = 100;
 
 	private ProbabilisticNetwork probabilisticNetwork;
 
 	private AssetAwareInferenceAlgorithm defaultInferenceAlgorithm;
 
 	private IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor;
+
+//	private boolean isToReturnConditionalAssets = false;
 
 //	private AssetAwareInferenceAlgorithm inferenceAlgorithm;
 	
@@ -148,9 +150,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		junctionTreeAlgorithm.setLikelihoodExtractor(jeffreyRuleLikelihoodExtractor);
 		// prepare default inference algorithm for asset network
 		setDefaultInferenceAlgorithm((AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm));
-		// usually, users seem to start with 0 assets (assets are logarithmic, so 0 assets == 1 q table), but let's use the value of getDefaultInitialQTableValue
+		// usually, users seem to start with 0 delta (delta are logarithmic, so 0 delta == 1 q table), but let's use the value of getDefaultInitialQTableValue
 		getDefaultInferenceAlgorithm().setDefaultInitialAssetQuantity(getDefaultInitialQTableValue());
-		getDefaultInferenceAlgorithm().setToPropagateForGlobalConsistency(false);	// force algorithm to do min-propagation of assets only when prompted
+		getDefaultInferenceAlgorithm().setToPropagateForGlobalConsistency(false);	// force algorithm to do min-propagation of delta only when prompted
+		getDefaultInferenceAlgorithm().setToCalculateMarginalsOfAssetNodes(false);  // OPTIMIZATION : do not calculate marginals of asset nodes without explicit call
 		
 		// several methods in this class reuse the same conditional probability extractor. Extract it here
 		setConditionalProbabilityExtractor(jeffreyRuleLikelihoodExtractor.getConditionalProbabilityExtractor());
@@ -171,7 +174,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			// NOTE: getNetworkActionsMap is supposedly an instance of concurrent map, so we do not need to synchronize it
 			getNetworkActionsMap().put(ret, new ArrayList<NetworkAction>());
 		}
-		System.out.println("[startNetworkActions]" + ret);
+//		System.out.println("[startNetworkActions]" + ret);
 		return ret;
 //		getNetworkActionsMap().put(++transactionCounter, new ArrayList<NetworkAction>());
 //		return transactionCounter;
@@ -434,7 +437,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			}
 			if (childNodeStateSize < 0) {	
 				// if negative, then expectedSizeOfCPD was not updated, so sourceQuestionId was not found in last loop
-				throw new IllegalArgumentException("Question ID " + childQuestionId + " does not exist.");
+				throw new InexistingQuestionException("Question ID " + childQuestionId + " does not exist.", childQuestionId);
 			}
 		} else {
 			// initialize the value of expectedSizeOfCPD using the number of states of future owner of the cpd
@@ -472,7 +475,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 					}
 					if (!hasFound) {	
 						// parent was not found
-						throw new IllegalArgumentException("Question ID " + assumptiveQuestionId + " does not exist.");
+						throw new InexistingQuestionException("Question ID " + assumptiveQuestionId + " does not exist.", assumptiveQuestionId);
 					}
 				}
 			} else{
@@ -616,7 +619,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		private final long transactionKey;
 		private final Date occurredWhen;
 		private final long userId;
-		private float assets;
+		private float delta;	// how much assets were added
 		private final String description;
 		/** becomes true once {@link #execute()} was called */
 		private boolean wasExecutedPreviously = false;
@@ -625,7 +628,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			this.transactionKey = transactionKey;
 			this.occurredWhen = occurredWhen;
 			this.userId = userId;
-			this.assets = assets;
+			this.delta = assets;
 			this.description = description;
 		}
 		public void execute() {
@@ -640,52 +643,25 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			}
 			
 			synchronized (inferenceAlgorithm.getAssetNetwork()) {
-				if (isToAddCashProportionally()) {
-					/*
-					 * Calculate ratio of change (newCash/oldCash) and apply same ratio to all cells.
-					 */
-					// calculate old cash (i.e. old minQ) value
-					float minQ = Float.NaN;
-					
-					inferenceAlgorithm.runMinPropagation();
-					minQ = inferenceAlgorithm.calculateExplanation(new ArrayList<Map<INode,Integer>>());
-					inferenceAlgorithm.undoMinPropagation();
-					
-					if (!Float.isNaN(minQ)) {
-						// calculate ratio
-						float ratio = (minQ + getQValuesFromScore(assets)) / minQ;
-						// multiply ratio to all cells of asset tables of cliques
-						for (Clique clique : inferenceAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
-							PotentialTable assetTable = clique.getProbabilityFunction();
-							for (int i = 0; i < assetTable.tableSize(); i++) {
-								assetTable.setValue(i, assetTable.getValue(i) * ratio);
-							}
-						}
-						// mult ratio to all cells in asset tables of separators
-						for (Separator separator : inferenceAlgorithm.getAssetNetwork().getJunctionTree().getSeparators()) {
-							PotentialTable assetTable = separator.getProbabilityFunction();
-							for (int i = 0; i < assetTable.tableSize(); i++) {
-								assetTable.setValue(i, assetTable.getValue(i) * ratio);
-							}
-						}
-					} else {
-						throw new RuntimeException("Could not extract minimum assets of user " + userId);
+				/*
+				 * If we want to add something into a logarithm value, we must multiply some ratio.
+				 * Assuming that asset = b logX (q)  (note: X is some base), then X^(asset/b) = q
+				 * So, X^((asset+delta)/b) = X^(asset/b + delta/b) = X^(asset/b) * X^(delta/b)  = q * X^(delta/b)
+				 * So, we need to multiply X^(delta/b) in order to update q when we add delta into asset.
+				 */
+				double ratio = Math.pow(getCurrentLogBase(), delta / getCurrentCurrencyConstant() );
+				// add delta to all cells in asset tables of cliques
+				for (Clique clique : inferenceAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
+					PotentialTable assetTable = clique.getProbabilityFunction();
+					for (int i = 0; i < assetTable.tableSize(); i++) {
+						assetTable.setValue(i, (float)(assetTable.getValue(i) * ratio) );
 					}
-				} else {
-					float qValue = getQValuesFromScore(assets);
-					// add assets to all cells in asset tables of cliques
-					for (Clique clique : inferenceAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
-						PotentialTable assetTable = clique.getProbabilityFunction();
-						for (int i = 0; i < assetTable.tableSize(); i++) {
-							assetTable.setValue(i, assetTable.getValue(i) + qValue);
-						}
-					}
-					// add assets to all cells in asset tables of separators
-					for (Separator separator : inferenceAlgorithm.getAssetNetwork().getJunctionTree().getSeparators()) {
-						PotentialTable assetTable = separator.getProbabilityFunction();
-						for (int i = 0; i < assetTable.tableSize(); i++) {
-							assetTable.setValue(i, assetTable.getValue(i) + qValue);
-						}
+				}
+				// add delta to all cells in asset tables of separators
+				for (Separator separator : inferenceAlgorithm.getAssetNetwork().getJunctionTree().getSeparators()) {
+					PotentialTable assetTable = separator.getProbabilityFunction();
+					for (int i = 0; i < assetTable.tableSize(); i++) {
+						assetTable.setValue(i, (float)(assetTable.getValue(i) * ratio));
 					}
 				}
 			}
@@ -695,7 +671,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public void revert() throws UnsupportedOperationException {
 			if (wasExecutedPreviously) {
 				// undoing a add operation is equivalent to adding the inverse value
-				this.assets = -this.assets;
+				this.delta = -this.delta;
 				this.execute();
 			}
 		}
@@ -703,8 +679,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		/**this operation does not change network structure*/
 		public boolean isStructureChangeAction() { return false;	 }
 		public Long getTransactionKey() { return transactionKey; }
-		public float getAssets() { return assets; }
-		public void setAssets(float assets) { this.assets = assets; }
+		public float getAssets() { return delta; }
+		public void setAssets(float assets) { this.delta = assets; }
 		public Long getUserId() { return userId; }
 		public String getDescription() { return description; }
 		public List<Float> getPercent() { return null; }
@@ -727,7 +703,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			// nothing to add
 			return false;
 		}
-		// check if assets can be translated to asset Q values
+		// check if delta can be translated to asset Q values
 		try {
 			float qValue = this.getQValuesFromScore(assets);
 			if (Float.isInfinite(qValue) || Float.isNaN(qValue)) {
@@ -788,10 +764,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			try {
 				algorithm = getAlgorithmAndAssetNetFromUserID(userId);
 			} catch (InvalidParentException e) {
-				throw new RuntimeException("Could not extract assets from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
+				throw new RuntimeException("Could not extract delta from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
 			}
 			if (algorithm == null) {
-				throw new RuntimeException("Could not extract assets from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
+				throw new RuntimeException("Could not extract delta from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
 			}
 			
 			synchronized (getProbabilisticNetwork()) {
@@ -803,7 +779,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 					}
 					// do trade. Since algorithm is linked to actual networks, changes will affect the actual networks
 					executeTrade(questionId, newValues, assumptionIds, assumedStates, allowNegative, algorithm);
-					// backup the previous assets so that we can revert this trade
+					// backup the previous delta so that we can revert this trade
 					qTablesBeforeTrade = algorithm.getAssetTablesBeforeLastPropagation();
 				}
 			}
@@ -811,7 +787,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		/** 
 		 * As discussed with Dr. Robin Hanson (<a href="mailto:rhanson@gmu.edu">rhanson@gmu.edu</a>) on
 		 * 07/29/2012 during the DAGGRE algorithm meeting, the {@link MarkovEngineInterface#revertTrade(long, Date, Date, Long)}
-		 * should only set the user's assets into the point prior to when {@link #execute()} was called.
+		 * should only set the user's delta into the point prior to when {@link #execute()} was called.
 		 * CAUTION: this method is not actually reverting a trade. It is setting
 		 * the asset tables to values prior to the execution of {@link #execute()}.
 		 */
@@ -821,10 +797,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			try {
 				algorithm = getAlgorithmAndAssetNetFromUserID(userId);
 			} catch (InvalidParentException e) {
-				throw new RuntimeException("Could not extract assets from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
+				throw new RuntimeException("Could not extract delta from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
 			}
 			if (algorithm == null) {
-				throw new RuntimeException("Could not extract assets from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
+				throw new RuntimeException("Could not extract delta from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
 			}
 			synchronized (algorithm.getAssetNetwork()) {
 				// revert clique's q-tables
@@ -877,6 +853,40 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 					+ " because the shared Bayesian Network was not properly initialized."
 					, e
 				);
+		} catch (InexistingQuestionException e) {
+			// Perhaps the nodes are still going to be added within the context of this transaction.
+			boolean isNodeToBeCreatedWithinTransaction = false;
+			List<NetworkAction> actions = getNetworkActionsMap().get(transactionKey); // getNetworkActionsMap() is supposedly a concurrent map
+			synchronized (actions) {	// actions is not a concurrent list, so must lock it
+				for (NetworkAction action : actions) {
+					if ((action instanceof AddQuestionNetworkAction) && (e.getQuestionId() == action.getQuestionId().longValue())) {
+						// this action will create the question which was not found.
+						isNodeToBeCreatedWithinTransaction = true;
+						break;
+					}
+				}
+			}
+			if (!isNodeToBeCreatedWithinTransaction) {
+				throw e;
+			}
+		} catch (InvalidAssumptionException e) {
+			// If new nodes/edges are added within the same transaction, there are still some chances for the assumptions to become valid.
+			// However, it is very hard to check such conditions right now. So, ignore this exception if such chance may occur.
+			boolean isToIgnoreThisException = false;
+			List<NetworkAction> actions = getNetworkActionsMap().get(transactionKey); // getNetworkActionsMap() is supposedly a concurrent map
+			synchronized (actions) {	// actions is not a concurrent list, so must lock it
+				for (NetworkAction action : actions) {
+					if (action instanceof AddQuestionNetworkAction || action instanceof AddQuestionAssumptionNetworkAction) {
+						// there is a small chance for the assumptions to become correct
+						isToIgnoreThisException = true;
+						break;
+						// TODO implement algorithm for anticipating what #getPossibleQuestionAssumptions will return after the commitment this transaction and never ignore InvalidAssumptionException
+					}
+				}
+			}
+			if (!isToIgnoreThisException) {
+				throw e;
+			}
 		}
 		
 		// NOTE: preview trade is performed *before* the insertion of a new action into the transaction, 
@@ -968,7 +978,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			node = getProbabilisticNetwork().getNode(Long.toString(questionId));
 		}
 		if (node == null) {
-			throw new IllegalArgumentException("Question ID " + questionId + " was not found.");
+			throw new InexistingQuestionException("Question ID " + questionId + " was not found.", questionId);
 		}
 		if (settledState >= node.getStatesSize()) {
 			throw new IllegalArgumentException("Question " + questionId + " has no state " + settledState);
@@ -989,12 +999,25 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 
 		throw new UnsupportedOperationException("Not implemented yet.");
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getProbList(long, java.util.List, java.util.List)
 	 */
 	public List<Float> getProbList(long questionId, List<Long> assumptionIds,
 			List<Integer> assumedStates) throws IllegalArgumentException {
+		return this.getProbList(questionId, assumptionIds, assumedStates, true);
+	}
+
+	/**
+	 * This method offers the same functionality of {@link #getProbList(long, List, List)}, but
+	 * there is an additional argument to indicate whether or not to normalize the result.
+	 * @param isToNormalize : if false, the returned list will contain the clique potentials without normalization.
+	 * This may be useful for obtaining the clique potentials instead of the conditional probabilities.
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getProbList(long, java.util.List, java.util.List)
+	 * @see #getProbList(long, List, List)
+	 */
+	public List<Float> getProbList(long questionId, List<Long> assumptionIds,
+			List<Integer> assumedStates, boolean isToNormalize) throws IllegalArgumentException {
 		
 		// initial assertion: check consistency of assumptionIds and assumedStates
 		if (assumptionIds != null && assumedStates != null) {
@@ -1014,19 +1037,24 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		synchronized (getProbabilisticNetwork()) {
 			INode mainNode = getProbabilisticNetwork().getNode(Long.toString(questionId));
 			if (mainNode == null) {
-				throw new IllegalArgumentException("Question " + questionId + " not found");
+				throw new InexistingQuestionException("Question " + questionId + " not found", questionId);
 			}
 			List<INode> parentNodes = new ArrayList<INode>();
 			if (assumptionIds != null) {
 				for (Long id : assumptionIds) {
 					INode node = getProbabilisticNetwork().getNode(Long.toString(id));
 					if (node == null) {
-						throw new IllegalArgumentException("Question " + questionId + " not found");
+						throw new InexistingQuestionException("Question " + questionId + " not found", questionId);
 					}
 					parentNodes.add(node);
 				}
 			}
-			cpt = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, getProbabilisticNetwork(), null);
+			if (isToNormalize) {
+				cpt = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, getProbabilisticNetwork(), null);
+			} else {
+				// by specifying a non-normalized junction tree algorithm to conditionalProbabilityExtractor, we can force it not to normalize the result
+				cpt = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, getProbabilisticNetwork(), getDefaultInferenceAlgorithm().getAssetPropagationDelegator());
+			}
 		}
 		
 		// convert cpt to a list of float, given assumedStates.
@@ -1069,14 +1097,17 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		if (conditionalProbabilityExtractor == null) {
 			throw new RuntimeException("Could not reuse conditional probability extractor of the current default inference algorithm. Perhaps you are using incompatible version of Markov Engine or UnBBayes.");
 		}
-		
+		if (getProbabilisticNetwork() == null) {
+			// there is no way to find a node from a null network
+			throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
+		}
 		// extract main node
 		Node mainNode = null;
 		synchronized (getProbabilisticNetwork()) {
 			mainNode = getProbabilisticNetwork().getNode(Long.toString(questionId));
 		}
 		if (mainNode == null) {
-			throw new IllegalArgumentException("Question " + questionId + " not found.");
+			throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
 		}
 		// extract assumption nodes
 		List<INode> assumptions = new ArrayList<INode>();
@@ -1087,7 +1118,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 					node = getProbabilisticNetwork().getNode(Long.toString(id));
 				}
 				if (node == null) {
-					throw new IllegalArgumentException("Question " + id + " not found.");
+					throw new InexistingQuestionException("Question " + id + " not found.", id);
 				}
 				assumptions.add(node);
 			}
@@ -1119,38 +1150,24 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	public List<Float> getAssetsIfStates(long userId, long questionId,
 			List<Long> assumptionIds, List<Integer> assumedStates)
 			throws IllegalArgumentException {
-		// initial assertion: check consistency of assumptionIds and assumedStates
-//		if (assumptionIds != null && assumedStates != null) {
-//			if (assumedStates.size() != assumptionIds.size()) {
-//				throw new IllegalArgumentException("assumptionIds.size() == " + assumptionIds.size() + ", assumedStates.size() == " + assumedStates.size());
-//			}
-//		}
-		// the above assertion is not necessary in this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm); 
-		
-		// this object extracts conditional probability of any nodes in same clique (it assumes prob network was compiled using junction tree algorithm)
-		// we can use the same object in order to extract conditional assets, because asset cliques extends prob cliques.
-//		IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = getConditionalProbabilityExtractor();	
-//		if (conditionalProbabilityExtractor == null) {
-//			throw new RuntimeException("Could not reuse conditional probability extractor of the current default inference algorithm. Perhaps you are using incompatible version of Markov Engine or UnBBayes.");
-//		}
 		
 		// extract user's asset network from user ID
 		AssetAwareInferenceAlgorithm algorithm = null;
 		try {
 			algorithm = this.getAlgorithmAndAssetNetFromUserID(userId);
 		} catch (InvalidParentException e) {
-			throw new RuntimeException("Could not extract assets from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
+			throw new RuntimeException("Could not extract delta from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.", e);
 		}
 		if (algorithm == null) {
-			throw new RuntimeException("Could not extract assets from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
+			throw new RuntimeException("Could not extract delta from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
 		}
 		
-		return this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, false);	// false := return assets instead of q-values
+		return this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, false);	// false := return delta instead of q-values
 	}
 	
 	/**
 	 * This method is used in {@link #getAssetsIfStates(long, long, List, List)} and {@link #previewTrade(long, long, List, List, List)}
-	 * in order to extract the conditional assets from the {@link AssetNetwork} related to a given algorithm.
+	 * in order to extract the conditional delta from the {@link AssetNetwork} related to a given algorithm.
 	 * @param questionId : the id of the question to be edited (i.e. the random variable "T"  in the example)
 	 * @param assumptionIds : a list (ordered collection) of question IDs which are the assumptions for T (i.e. random variable "A" in the example). The order
 	 * is important, because it will indicate which states of assumedStates are associated with which questions in assumptionIDs.
@@ -1159,13 +1176,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * {@link AssetAwareInferenceAlgorithm#getAssetNetwork()} is used in order to extract the instance of {@link AssetNetwork}.
 	 * @param isToReturnQValuesInsteadOfAssets : if false, the returned list will contain values returned by {@link #getScoreFromQValues(float)} 
 	 * (i.e. logarithm values, instead of the q-values stored in the asset tables). 
-	 * If true, the returned list will contain q-values (values actually stored in the assets table) instead of what the DAGGRE side call "assets" (the logarithm values).
-	 * @return the change in user assets if a given states occurs if the specified assumptions are met. 
+	 * If true, the returned list will contain q-values (values actually stored in the delta table) instead of what the DAGGRE side call "delta" (the logarithm values).
+	 * @return the change in user delta if a given states occurs if the specified assumptions are met. 
 	 * The indexes are relative to the indexes of the states.
 	 * In the case of a binary question this will return a [if_true, if_false] value, if multiple choice will return a [if_0, if_1, if_2...] value list
 	 * For example, assuming that the question identified by questionId is a boolean question (and also assuming
-	 * that state 0 indicates false and state 1 indicates true); then, index 0 contains the assets of 
-	 * the question while it is in state "false" (given assumptions), and index 1 contains the assets of the
+	 * that state 0 indicates false and state 1 indicates true); then, index 0 contains the delta of 
+	 * the question while it is in state "false" (given assumptions), and index 1 contains the delta of the
 	 * question while it is in state "true".
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
 	 */
@@ -1175,21 +1192,27 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		if (algorithm == null) {
 			throw new NullPointerException("AssetAwareInferenceAlgorithm cannot be null");
 		}
-		PotentialTable assetTable = null;	// asset tables (clique table containing assets) are instances of potential tables
+		PotentialTable assetTable = null;	// asset tables (clique table containing delta) are instances of potential tables
 		synchronized (algorithm.getAssetNetwork()) {
-			INode mainNode = algorithm.getAssetNetwork().getNode(Long.toString(questionId));
+			AssetNode mainNode = (AssetNode) algorithm.getAssetNetwork().getNode(Long.toString(questionId));
 			if (mainNode == null) {
-				throw new IllegalArgumentException("Question " + questionId + " not found in asset structure of user " + algorithm.getAssetNetwork());
+				throw new InexistingQuestionException("Question " + questionId + " not found in asset structure of user " + algorithm.getAssetNetwork(), questionId);
 			}
 			List<INode> parentNodes = new ArrayList<INode>();
 			if (assumptionIds != null) {
 				for (Long id : assumptionIds) {
 					INode node = algorithm.getAssetNetwork().getNode(Long.toString(id));
 					if (node == null) {
-						throw new IllegalArgumentException("Question " + questionId + " not found in asset structure of user " + algorithm.getAssetNetwork());
+						throw new InexistingQuestionException("Question " + questionId + " not found in asset structure of user " + algorithm.getAssetNetwork(), questionId);
 					}
 					parentNodes.add(node);
 				}
+			}
+			if (parentNodes.isEmpty()) { // we are not calculating the conditional delta. We are calculating delta of 1 node only (i.e. "marginal" delta)
+				boolean backup = mainNode.isToCalculateMarginal();	// backup old config
+				mainNode.setToCalculateMarginal(true);		// force marginalization to calculate something.
+				mainNode.updateMarginal(); 					// make sure values of mainNode.getMarginalAt(index) is up to date
+				mainNode.setToCalculateMarginal(backup);	// revert to previous config
 			}
 			assetTable = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, algorithm.getAssetNetwork(), algorithm.getAssetPropagationDelegator());
 		}
@@ -1222,7 +1245,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 					// return q-values directly
 					ret.add(assetTable.getValue(i));
 				} else {
-					// convert q-values to assets (i.e. logarithmic values)
+					// convert q-values to delta (i.e. logarithmic values)
 					ret.add(this.getScoreFromQValues(assetTable.getValue(i)));
 				}
 			}
@@ -1266,7 +1289,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			mainNode = getProbabilisticNetwork().getNode(Long.toString(questionId));
 		}
 		if (mainNode == null) {
-			throw new IllegalArgumentException("Question " + questionId + " not found.");
+			throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
 		}
 		// extract assumption nodes
 		List<INode> assumptions = new ArrayList<INode>();
@@ -1277,7 +1300,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 					node = getProbabilisticNetwork().getNode(Long.toString(id));
 				}
 				if (node == null) {
-					throw new IllegalArgumentException("Question " + id + " not found.");
+					throw new InexistingQuestionException("Question " + id + " not found.", id);
 				}
 				assumptions.add(node);
 			}
@@ -1287,10 +1310,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		try {
 			algorithm = this.getAlgorithmAndAssetNetFromUserID(userId);
 		} catch (InvalidParentException e) {
-			throw new RuntimeException("Could not extract assets from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
+			throw new RuntimeException("Could not extract delta from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
 		}
 		if (algorithm == null) {
-			throw new RuntimeException("Could not extract assets from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
+			throw new RuntimeException("Could not extract delta from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
 		}
 		
 		// this vector will contain allowed interval of edit
@@ -1338,10 +1361,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		try {
 			algorithm = this.getAlgorithmAndAssetNetFromUserID(userId);
 		} catch (InvalidParentException e) {
-			throw new RuntimeException("Could not extract assets from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
+			throw new RuntimeException("Could not extract delta from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
 		}
 		if (algorithm == null) {
-			throw new RuntimeException("Could not extract assets from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
+			throw new RuntimeException("Could not extract delta from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
 		}
 		
 		float ret = Float.NEGATIVE_INFINITY;	// value to return
@@ -1351,7 +1374,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 				for (int i = 0; i < assumptionIds.size(); i++) {
 					AssetNode node = (AssetNode) algorithm.getAssetNetwork().getNode(Long.toString(assumptionIds.get(i)));
 					if (node == null) {
-						throw new IllegalArgumentException("Question " + assumptionIds.get(i) + " does not exist.");
+						throw new InexistingQuestionException("Question " + assumptionIds.get(i) + " does not exist.", assumptionIds.get(i));
 					}
 					Integer stateIndex = assumedStates.get(i);
 					if (stateIndex != null) {
@@ -1364,7 +1387,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			// obtain min-q value and explanation (states which cause the min-q values)
 			ArrayList<Map<INode, Integer>> statesWithMinQAssets = new ArrayList<Map<INode,Integer>>();	// this is the min-q explanation (states which cause Min-q)
 			ret = algorithm.calculateExplanation(statesWithMinQAssets);	// statesWithMinQAssets will be filled by this method
-			// undo min-propagation, because the next iteration of asset updates should be based on non-min assets
+			// undo min-propagation, because the next iteration of asset updates should be based on non-min delta
 			algorithm.undoMinPropagation();	
 			// TODO use the values of statesWithMinQAssets for something (currently, this is ignored)
 		}
@@ -1409,6 +1432,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Not implemented yet.");
 	}
+	
+	
 
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#previewTrade(long, long, java.util.List, java.util.List, java.util.List, java.util.List)
@@ -1438,6 +1463,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			}
 		}
 		
+		// check if the assumptions are semantically valid
+		if (assumptionIds != null && !assumptionIds.isEmpty() && this.getPossibleQuestionAssumptions(questionId, assumptionIds).isEmpty()) {
+			throw new InvalidAssumptionException(assumptionIds + " are invalid assumptions for question " + questionId);
+			// Note: cannot check assumptions of questions which were not added to the shared Bayes net yet
+		}
+		
 		// this algorithm will be alive only during the context of this method. It will contain clones of the bayesian network and asset net
 		AssetAwareInferenceAlgorithm algorithm = null;
 		try {
@@ -1445,27 +1476,27 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			// extract original algorithm, just in order to clone it
 			AssetAwareInferenceAlgorithm originalAlgorithm = this.getAlgorithmAndAssetNetFromUserID(userId);
 			if (originalAlgorithm == null) {
-				throw new RuntimeException("Could not extract assets from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
+				throw new RuntimeException("Could not extract delta from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
 			}
 			
 			// clone the algorithm. It shall also clone the bayesian network and asset network
 			algorithm = (AssetAwareInferenceAlgorithm) originalAlgorithm.clone();
 		} catch (InvalidParentException e) {
-			throw new RuntimeException("Could not extract assets from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
+			throw new RuntimeException("Could not extract delta from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
 		} catch (CloneNotSupportedException e) {
 			throw new RuntimeException("Could not clone networks of user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
 		}
 		if (algorithm == null) {
-			throw new RuntimeException("Could not extract assets from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
+			throw new RuntimeException("Could not extract delta from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
 		}
 		
 		// do trade on specified algorithm (which only contains link to copies of BN and asset net)
-		this.executeTrade(questionId, newValues, assumptionIds, assumedStates, true, algorithm);	// true := allow negative assets, since this is a preview
+		this.executeTrade(questionId, newValues, assumptionIds, assumedStates, true, algorithm);	// true := allow negative delta, since this is a preview
 		
 		// TODO optimize (executeTrade and getAssetsIfStates have redundant portion of code)
 		
 		// return the asset position
-		return this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, false); // false := return assets instead of q-values
+		return this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, false); // false := return delta instead of q-values
 	}
 	
 	/**
@@ -1494,8 +1525,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * because the ordering in this list will be used in order to identify the correct indexes in "newValues".
 	 * @param assumedStates : this list specifies a filter for states of nodes in assumptionIDs.
 	 * If it does not have the same size of assumptionIDs,Å@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
-	 * @param isToAllowNegative : if true, negative assets (values smaller than 1 in the asset q table) is allowed.
-	 * @param algorithm : algorithm to be used in order to update probability and assets. 
+	 * @param isToAllowNegative : if true, negative delta (values smaller than 1 in the asset q table) is allowed.
+	 * @param algorithm : algorithm to be used in order to update probability and delta. 
 	 * {@link AssetAwareInferenceAlgorithm#getNetwork()} will be used to access the Bayes net.
 	 * {@link AssetAwareInferenceAlgorithm#getAssetNetwork()} will be used to access the asset net.
 	 * @see #addTrade(long, Date, String, long, long, List, List, List, boolean)
@@ -1517,7 +1548,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		// check existence of child
 		TreeVariable child = (TreeVariable) net.getNode(Long.toString(questionId));
 		if (child == null) {
-			throw new IllegalArgumentException("Question " + questionId + " not found.");
+			throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
 		}
 		
 		// this var will store the correct size of cpd. If negative, owner of the cpd was not found.
@@ -1533,7 +1564,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		for (Long assumptiveQuestionId : assumptionIds) {
 			Node parent = net.getNode(Long.toString(assumptiveQuestionId));
 			if (parent == null) {
-				throw new IllegalArgumentException("Question " + assumptiveQuestionId + " not found.");
+				throw new InexistingQuestionException("Question " + assumptiveQuestionId + " not found.", assumptiveQuestionId);
 			} 
 			assumptionNodes.add(parent);
 			// size of cpd if  = MULT (<quantity of states of child and parents>).
@@ -1646,27 +1677,34 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	public List<Float> determineBalancingTrade(long userId, long questionId,
 			List<Long> assumptionIds, List<Integer> assumedStates)
 			throws IllegalArgumentException {
+		if (assumptionIds != null && assumedStates != null && assumptionIds.size() != assumedStates.size()) {
+			throw new IllegalArgumentException("This method does not allow assumptionIds and assumedStates with different sizes.");
+		}
+		
+		if (assumptionIds != null && !assumptionIds.isEmpty() && this.getPossibleQuestionAssumptions(questionId, assumptionIds).isEmpty()) {
+			new InvalidAssumptionException(assumptionIds + " are invalid assumptions for question " + questionId);
+		}
 		
 		// extract user's asset network from user ID
 		AssetAwareInferenceAlgorithm algorithm = null;
 		try {
 			algorithm = this.getAlgorithmAndAssetNetFromUserID(userId);
 		} catch (InvalidParentException e) {
-			throw new RuntimeException("Could not extract assets from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
+			throw new RuntimeException("Could not extract delta from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
 		}
 		if (algorithm == null) {
-			throw new RuntimeException("Could not extract assets from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
+			throw new RuntimeException("Could not extract delta from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
 		}
 		
 		// obtain q1, q1, ... , qn (the asset's q values)
-		List<Float> qValues = this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, true);	// true := return q-values instead of assets
+		List<Float> qValues = this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, true);	// true := return q-values instead of delta
 		
 		// obtain p1, p2, ... , pn (the prior probabilities)
 		List<Float> probabilities = this.getProbList(questionId, assumptionIds, assumedStates);
 		
 		// basic assertion
 		if (qValues.size() != probabilities.size()) {
-			throw new RuntimeException("List of probabilities and list of assets have different sizes (" 
+			throw new RuntimeException("List of probabilities and list of delta have different sizes (" 
 					+ probabilities.size() + ", and " + qValues.size() + " respectively). You may be using incompatible version of Markov Engine or UnBBayes.");
 		}
 		
@@ -1758,12 +1796,35 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#balanceTrade(long, long, long, java.util.List, java.util.List)
 	 */
-	public void balanceTrade(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+	public void balanceTrade(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException, InvalidAssumptionException, InexistingQuestionException {
 		
 		// initial assertions
 		if (occurredWhen == null) {
 			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
 		}
+		
+		try {
+			if (assumptionIds != null && !assumptionIds.isEmpty() && this.getPossibleQuestionAssumptions(questionId, assumptionIds).isEmpty()) {
+				throw new InvalidAssumptionException(assumptionIds + " are invalid assumptions for question " + questionId);
+			}
+		} catch (InexistingQuestionException e) {
+			// Perhaps the nodes are still going to be added within the context of this transaction.
+			boolean isNodeToBeCreatedWithinTransaction = false;
+			List<NetworkAction> actions = getNetworkActionsMap().get(transactionKey); // getNetworkActionsMap() is supposedly a concurrent map
+			synchronized (actions) {	// actions is not a concurrent list, so must lock it
+				for (NetworkAction action : actions) {
+					if ((action instanceof AddQuestionNetworkAction) && (e.getQuestionId() == action.getQuestionId().longValue())) {
+						// this action will create the question which was not found.
+						isNodeToBeCreatedWithinTransaction = true;
+						break;
+					}
+				}
+			}
+			if (!isNodeToBeCreatedWithinTransaction) {
+				throw e;
+			}
+		}
+		
 		
 		// check existence of transaction key
 		List<NetworkAction> actions = this.getNetworkActionsMap().get(transactionKey);
@@ -1810,7 +1871,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 				}
 			}
 			if (willCreateNodeOnCommit) {	
-				throw new IllegalArgumentException("Question ID " + questionId + " does not exist.");
+				throw new InexistingQuestionException("Question ID " + questionId + " does not exist.", questionId);
 			}
 		} 
 		
@@ -1836,7 +1897,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 				}
 				if (!hasFound) {	
 					// parent was not found
-					throw new IllegalArgumentException("Question ID " + assumptiveQuestionId + " does not exist.");
+					throw new InexistingQuestionException("Question ID " + assumptiveQuestionId + " does not exist.", assumptiveQuestionId);
 				}
 			}
 		}
@@ -1991,7 +2052,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 
 	/**
 	 * Mapping from user ID to {@link AssetAwareInferenceAlgorithm}
-	 * (algorithm for managing bayesian network and assets), 
+	 * (algorithm for managing bayesian network and delta), 
 	 * which is related to {@link AssetNetwork} 
 	 * (class representing user and asset q tables)
 	 * @return the userToAssetAwareAlgorithmMap
@@ -2002,7 +2063,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 
 	/**
 	 * Mapping from user ID to {@link AssetAwareInferenceAlgorithm}
-	 * (algorithm for managing bayesian network and assets), 
+	 * (algorithm for managing bayesian network and delta), 
 	 * which is related to {@link AssetNetwork} 
 	 * (class representing user and asset q tables)
 	 * @param map the map to set
@@ -2048,10 +2109,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 				junctionTreeAlgorithm.setLikelihoodExtractor(JeffreyRuleLikelihoodExtractor.newInstance() );
 				// prepare default inference algorithm for asset network
 				algorithm = ((AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm));
-				// usually, users seem to start with 0 assets (assets are logarithmic, so 0 assets == 1 q table), but let's use the value of getDefaultInitialQTableValue
+				// usually, users seem to start with 0 delta (delta are logarithmic, so 0 delta == 1 q table), but let's use the value of getDefaultInitialQTableValue
 				algorithm.setDefaultInitialAssetQuantity(getDefaultInitialQTableValue());
 				// force algorithm to call min-propagation only when prompted (i.e. only when runMinPropagation() is called)
-				algorithm.setToPropagateForGlobalConsistency(false);	
+				algorithm.setToPropagateForGlobalConsistency(false);
+				// OPTIMIZATION : do not calculate marginals of asset nodes without explicit call
+				algorithm.setToCalculateMarginalsOfAssetNodes(false);
 				
 				// generate new asset net
 				AssetNetwork assetNet = null;
@@ -2167,43 +2230,43 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		this.addNetworkActionIntoQuestionMap(newAction);
 	}
 
-	/**
-	 * @param isToAddCashProportionally the isToAddCashProportionally to set.
-	 * If true, {@link #addCash(long, Date, long, float, String)} will 
-	 * increase cash (min-q) proportionally to the current value of min-q.
-	 * <br/>
-	 * E.g. if current min-q is 5, and {@link #addCash(long, Date, long, float, String)}
-	 * is set to add 10, then the final min-q is 15 (triple of the original min-q), hence
-	 * other q-values will be also multiplied by 3.
-	 * <br/>
-	 * If false, the values added by {@link #addCash(long, Date, long, float, String)}
-	 * will only increase q-values absolutely.
-	 * <br/>
-	 * E.g. if current min-q is 5, and {@link #addCash(long, Date, long, float, String)}
-	 * is set to add 10, then 10 will also be added to the other q-values.
-	 */
-	public void setToAddCashProportionally(boolean isToAddCashProportionally) {
-		this.isToAddCashProportionally = isToAddCashProportionally;
-	}
-
-	/**
-	 * @return the isToAddCashProportionally.
-	 * If true, {@link #addCash(long, Date, long, float, String)} will 
-	 * increase cash (min-q) proportionally to the current value of min-q.
-	 * <br/>
-	 * E.g. if current min-q is 5, and {@link #addCash(long, Date, long, float, String)}
-	 * is set to add 10, then the final min-q is 15 (triple of the original min-q), hence
-	 * other q-values will be also multiplied by 3.
-	 * <br/>
-	 * If false, the values added by {@link #addCash(long, Date, long, float, String)}
-	 * will only increase q-values absolutely.
-	 * <br/>
-	 * E.g. if current min-q is 5, and {@link #addCash(long, Date, long, float, String)}
-	 * is set to add 10, then 10 will also be added to the other q-values.
-	 */
-	public boolean isToAddCashProportionally() {
-		return isToAddCashProportionally;
-	}
+//	/**
+//	 * @param isToAddCashProportionally the isToAddCashProportionally to set.
+//	 * If true, {@link #addCash(long, Date, long, float, String)} will 
+//	 * increase cash (min-q) proportionally to the current value of min-q.
+//	 * <br/>
+//	 * E.g. if current min-q is 5, and {@link #addCash(long, Date, long, float, String)}
+//	 * is set to add 10, then the final min-q is 15 (triple of the original min-q), hence
+//	 * other q-values will be also multiplied by 3.
+//	 * <br/>
+//	 * If false, the values added by {@link #addCash(long, Date, long, float, String)}
+//	 * will only increase q-values absolutely.
+//	 * <br/>
+//	 * E.g. if current min-q is 5, and {@link #addCash(long, Date, long, float, String)}
+//	 * is set to add 10, then 10 will also be added to the other q-values.
+//	 */
+//	public void setToAddCashProportionally(boolean isToAddCashProportionally) {
+//		this.isToAddCashProportionally = isToAddCashProportionally;
+//	}
+//
+//	/**
+//	 * @return the isToAddCashProportionally.
+//	 * If true, {@link #addCash(long, Date, long, float, String)} will 
+//	 * increase cash (min-q) proportionally to the current value of min-q.
+//	 * <br/>
+//	 * E.g. if current min-q is 5, and {@link #addCash(long, Date, long, float, String)}
+//	 * is set to add 10, then the final min-q is 15 (triple of the original min-q), hence
+//	 * other q-values will be also multiplied by 3.
+//	 * <br/>
+//	 * If false, the values added by {@link #addCash(long, Date, long, float, String)}
+//	 * will only increase q-values absolutely.
+//	 * <br/>
+//	 * E.g. if current min-q is 5, and {@link #addCash(long, Date, long, float, String)}
+//	 * is set to add 10, then 10 will also be added to the other q-values.
+//	 */
+//	public boolean isToAddCashProportionally() {
+//		return isToAddCashProportionally;
+//	}
 
 	/**
 	 * Assets are managed by a data structure known as the asset tables
@@ -2212,10 +2275,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * and then a new asset table is created for that user), each
 	 * cell of the asset table should be filled with default (uniform) values initially.
 	 * <br/><br/>
-	 * Note: the assets (S-values) and q-values (values actually stored in
+	 * Note: the delta (S-values) and q-values (values actually stored in
 	 * the tables) are related with a logarithm relationship
 	 * S = b*log(q). So, the values in the asset tables may not actually be
-	 * the values of assets directly.
+	 * the values of delta directly.
 	 * @return the value to be filled into each cell of the q-tables when the tables are initialized.
 	 * @see #initialize()
 	 */
@@ -2231,10 +2294,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * and then a new asset table is created for that user), each
 	 * cell of the asset table should be filled with default (uniform) values initially.
 	 * <br/><br/>
-	 * Note: the assets (S-values) and q-values (values actually stored in
+	 * Note: the delta (S-values) and q-values (values actually stored in
 	 * asset tables) are related with a logarithm relationship
 	 * S = b*log(q). So, the values in the asset tables may not actually be
-	 * the values of assets directly.
+	 * the values of delta directly.
 	 * @param defaultValue : the value to be filled into each cell of the q-tables when the tables are initialized.
 	 * @see #initialize()
 	 */
@@ -2247,7 +2310,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * asset tables) are related with a logarithm relationship
 	 * S = b*log(q) with log being a logarithm function of some basis. 
 	 * @return the base of the current logarithm function used
-	 * for converting q-values to assets.
+	 * for converting q-values to delta.
 	 * @see #setCurrentLogBase(float)
 	 * @see #getCurrentCurrencyConstant()
 	 * @see #setCurrentCurrencyConstant(double)
@@ -2263,7 +2326,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * asset tables) are related with a logarithm relationship
 	 * S = b*log(q), with log being a logarithm function of some base. 
 	 * @param base : the base of the current logarithm function used
-	 * for converting q-values to assets.
+	 * for converting q-values to delta.
 	 * @see #getCurrentLogBase()
 	 * @see #getCurrentCurrencyConstant()
 	 * @see #setCurrentCurrencyConstant(float)
@@ -2279,7 +2342,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * asset tables) are related with a logarithm relationship
 	 * S = b*log(q), with b being a constant for defining the "unit
 	 * of currency" (more precisely, this constant defines how sensitive
-	 * is the assets).
+	 * is the delta).
 	 * @return the current value of b, the "unit of currency""
 	 * @see #getCurrentLogBase()
 	 * @see #setCurrentLogBase(float)
@@ -2297,7 +2360,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * asset tables) are related with a logarithm relationship
 	 * S = b*log(q), with b being a constant for defining the "unit
 	 * of currency" (more precisely, this constant defines how sensitive
-	 * is the assets).
+	 * is the delta).
 	 * @param b the current value of b to set, the "unit of currency""
 	 * @see #getCurrentLogBase()
 	 * @see #setCurrentLogBase(float)
@@ -2433,6 +2496,53 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			}
 		}
 		return indexOfNewElement;
+	}
+
+//	/**
+//	 * If true, {@link #getAssetsIfStates(long, long, List, List)} will return
+//	 * a list in the following format (note - A(X) returns the delta of the question X, and A(X=x1|Y=y1,Z=z1) is the
+//	 * delta of state x1 of question X given state y1 of question Y, and state z1 of question Z):
+//	 * <br/><br/>
+//	 * Suppose we are calling {@link #getAssetsIfStates(long, long, List, List)} for question X given assumptions [Y, Z]
+//	 * (and also suppose that all 3 questions have 2 states). Then, the returned list is:<br/>
+//	 * [A(X=x0|Y=y0,Z=z0) ; A(X=x1|Y=y1,Z=z0); A(X=x0|Y=y0,Z=z0); A(X=x1|Y=y1,Z=z0);  A(X=x0|Y=y0,Z=z1) ; A(X=x1|Y=y1,Z=z1); A(X=x0|Y=y0,Z=z1); A(X=x1|Y=y1,Z=z1)]
+//	 * @param isToReturnConditionalAssets the isToReturnConditionalAssets to set
+//	 */
+//	public void setToReturnConditionalAssets(boolean isToReturnConditionalAssets) {
+//		this.isToReturnConditionalAssets = isToReturnConditionalAssets;
+//	}
+//
+//	/**
+//	 * @return the isToReturnConditionalAssets
+//	 */
+//	public boolean isToReturnConditionalAssets() {
+//		return isToReturnConditionalAssets;
+//	}
+	
+	/** 
+	 * Special type of {@link IllegalArgumentException} thrown when assumptions are impossible for a question. 
+	 * @see MarkovEngineImpl#getPossibleQuestionAssumptions(long, List)
+	 * @see MarkovEngineImpl#previewTrade(long, long, List, List, List)
+	 */
+	public class InvalidAssumptionException extends IllegalArgumentException {
+		private static final long serialVersionUID = 4296752629503621028L;
+		public InvalidAssumptionException() { super(); }
+		public InvalidAssumptionException(String message, Throwable cause) { super(message, cause); }
+		public InvalidAssumptionException(String s) { super(s); }
+		public InvalidAssumptionException(Throwable cause) { super(cause); }
+	}
+	
+	/** 
+	 * Special type of {@link IllegalArgumentException} thrown when questions are not in {@link MarkovEngineImpl#getProbabilisticNetwork()}.
+	 */
+	public class InexistingQuestionException extends IllegalArgumentException {
+		private static final long serialVersionUID = -2360508821973951850L;
+		private final long questionId;
+		public InexistingQuestionException(long questionId) { super(); this.questionId = questionId; }
+		public InexistingQuestionException(String message, Throwable cause, long questionId) { super(message, cause); this.questionId = questionId; }
+		public InexistingQuestionException(String s, long questionId) { super(s); this.questionId = questionId; }
+		public InexistingQuestionException(Throwable cause, long questionId) { super(cause); this.questionId = questionId; }
+		public long getQuestionId() { return questionId; }
 	}
 
 }

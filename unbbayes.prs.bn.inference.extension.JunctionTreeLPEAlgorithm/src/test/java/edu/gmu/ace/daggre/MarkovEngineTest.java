@@ -629,9 +629,12 @@ public class MarkovEngineTest extends TestCase {
 	}
 
 	/**
-	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#addCash(long, java.util.Date, long, float, java.lang.String)}.
+	 * Test method for 
+	 * {@link edu.gmu.ace.daggre.MarkovEngineImpl#addCash(long, java.util.Date, long, float, java.lang.String)},
+	 * {@link edu.gmu.ace.daggre.MarkovEngineImpl#getCash(long, List, List)},
+	 * {@link edu.gmu.ace.daggre.MarkovEngineImpl#getAssetsIfStates(long, long, List, List)}.
 	 */
-	public final void testAddCash() {
+	public final void testCashAndAssets() {
 		/*
 		 * Create following net
 		 *  0<-1
@@ -649,8 +652,12 @@ public class MarkovEngineTest extends TestCase {
 		engine.addQuestionAssumption(transactionKey, new Date(), 0, assumptiveQuestionIds, null);
 		engine.commitNetworkActions(transactionKey);
 		
-		// global cash should be 0 initially (TODO check if this is really true)
+		// global cash should be 0 initially (i.e. q-values are initialized as 1)
 		assertEquals(0f, engine.getCash(1, null, null), ASSET_ERROR_MARGIN);
+		List<Float> assetsIfStates = engine.getAssetsIfStates((long)1, (long)0, null, null);
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(0f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(0f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
 		
 		// test some conditional cash as well
 		// non-null conditions
@@ -663,6 +670,22 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates = new ArrayList<Integer>();
 		assumptionIds.add((long) 1); assumedStates.add(0);	// node 1, state 0
 		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
+		
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)0, Collections.singletonList((long)1), Collections.singletonList(0));
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(0f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(0f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		try {
+			engine.getAssetsIfStates((long)1, (long)1, Collections.singletonList((long)1), Collections.singletonList(0));
+			fail("Should throw exception, because question = assumption");
+		} catch (IllegalArgumentException e) {
+			// OK, because question == 1 && assumption == 1 is invalid argument
+			assertNotNull(e);
+		}
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)2, Collections.singletonList((long)1), Collections.singletonList(0));
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(0f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(0f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
 
 		// 1 = 0, 0 = null, 2 = null (equivalent to only 1 = 0)
 		assumptionIds = new ArrayList<Long>();
@@ -672,12 +695,51 @@ public class MarkovEngineTest extends TestCase {
 		assumptionIds.add((long) 2); assumedStates.add(null);	// node 2, state null
 		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
 		
+		try {
+			engine.getAssetsIfStates((long)1, (long)1, assumptionIds, assumedStates);
+			fail("Should throw exception, because assumption contains question");
+		} catch (IllegalArgumentException e) {
+			// OK, because if assumptions contain the question, then  it is an invalid argument
+			assertNotNull(e);
+		}
+		assumptionIds.remove(0); assumedStates.remove(0);	// remove node 0 from assumption
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)0, assumptionIds, assumedStates);
+		assertEquals(4, assetsIfStates.size());	// will return table of assets, due to 2 = null
+		assertEquals(0f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(0f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		assertEquals(0f, assetsIfStates.get(2), ASSET_ERROR_MARGIN);
+		assertEquals(0f, assetsIfStates.get(3), ASSET_ERROR_MARGIN);
+		assumptionIds.set(1, (long)0); assumedStates.set(1, null);	// remove 2 from assumptions and add 0=null
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)2, assumptionIds, assumedStates);
+		assertEquals(4, assetsIfStates.size());
+		assertEquals(0f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(0f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		assertEquals(0f, assetsIfStates.get(2), ASSET_ERROR_MARGIN);
+		assertEquals(0f, assetsIfStates.get(3), ASSET_ERROR_MARGIN);
+		
 		// 1 = 0, 0 = 0
 		assumptionIds = new ArrayList<Long>();
 		assumedStates = new ArrayList<Integer>();
 		assumptionIds.add((long) 1); assumedStates.add(0);	// node 1, state 0
 		assumptionIds.add((long) 0); assumedStates.add(0);	// node 0, state 0
 		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
+		try {
+			engine.getAssetsIfStates((long)1, (long)0, assumptionIds, assumedStates);
+			fail("Should throw exception, because assumption contains question");
+		} catch (IllegalArgumentException e) {
+			// OK, because if assumptions contain the question, then  it is an invalid argument
+			assertNotNull(e);
+		}
+		assumptionIds.remove(0); assumedStates.remove(0);	// remove node 1 from assumption
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)1, assumptionIds, assumedStates);
+		assertEquals(2, assetsIfStates.size());	
+		assertEquals(0f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(0f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		assumptionIds.add((long)1); assumedStates.add(0);	// re-add 1 = 0
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)2, assumptionIds, assumedStates);
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(0f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(0f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
 
 		// 2 = 1, 0 = 1
 		assumptionIds = new ArrayList<Long>();
@@ -685,6 +747,22 @@ public class MarkovEngineTest extends TestCase {
 		assumptionIds.add((long) 2); assumedStates.add(1);	// node 2, state 1
 		assumptionIds.add((long) 0); assumedStates.add(1);	// node 0, state 1
 		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
+		try {
+			engine.getAssetsIfStates((long)1, (long)0, assumptionIds, assumedStates);
+			fail("Should throw exception, because assumption contains question");
+		} catch (IllegalArgumentException e) {
+			// OK, because if assumptions contain the question, then  it is an invalid argument
+			assertNotNull(e);
+		}
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)1, assumptionIds, assumedStates);
+		assertEquals(2, assetsIfStates.size());	
+		assertEquals(0f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(0f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		assumptionIds.remove(0); assumedStates.remove(0);	// remove 2 = 1
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)2, assumptionIds, assumedStates);
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(0f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(0f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
 		
 		// 1 = 1, 2 = 0
 		assumptionIds = new ArrayList<Long>();
@@ -692,6 +770,22 @@ public class MarkovEngineTest extends TestCase {
 		assumptionIds.add((long) 1); assumedStates.add(1);	// node 1, state 1
 		assumptionIds.add((long) 2); assumedStates.add(0);	// node 2, state 0
 		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
+		try {
+			engine.getAssetsIfStates((long)1, (long)1, assumptionIds, assumedStates);
+			fail("Should throw exception, because assumption contains question");
+		} catch (IllegalArgumentException e) {
+			// OK, because if assumptions contain the question, then  it is an invalid argument
+			assertNotNull(e);
+		}
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)0, assumptionIds, assumedStates);
+		assertEquals(2, assetsIfStates.size());	
+		assertEquals(0f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(0f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		assumptionIds.remove(1); assumedStates.remove(1);	// remove 2 = 0
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)2, assumptionIds, assumedStates);
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(0f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(0f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
 		
 		// 0 = 0, 1 = 0, 2 = 1
 		assumptionIds = new ArrayList<Long>();
@@ -700,15 +794,51 @@ public class MarkovEngineTest extends TestCase {
 		assumptionIds.add((long) 1); assumedStates.add(0);	// node 1, state 0
 		assumptionIds.add((long) 2); assumedStates.add(1);	// node 2, state 1
 		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
+		try {
+			engine.getAssetsIfStates((long)1, (long)0, assumptionIds, assumedStates);
+			fail("Should throw exception, because assumption contains question");
+		} catch (IllegalArgumentException e) {
+			// OK, because if assumptions contain the question, then  it is an invalid argument
+			assertNotNull(e);
+		}
+		try {
+			engine.getAssetsIfStates((long)1, (long)1, assumptionIds, assumedStates);
+			fail("Should throw exception, because assumption contains question");
+		} catch (IllegalArgumentException e) {
+			// OK, because if assumptions contain the question, then  it is an invalid argument
+			assertNotNull(e);
+		}
+		try {
+			engine.getAssetsIfStates((long)1, (long)2, assumptionIds, assumedStates);
+			fail("Should throw exception, because assumption contains question");
+		} catch (IllegalArgumentException e) {
+			// OK, because if assumptions contain the question, then  it is an invalid argument
+			assertNotNull(e);
+		}
 		
 		// add 100 cash
 		transactionKey = engine.startNetworkActions();
 		engine.addCash(transactionKey, new Date(), 1, 100f, "Just to test");
 		engine.commitNetworkActions(transactionKey);
 		
+		// test assumptions == null
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)0, null, null);
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)1, null, null);
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)2, null, null);
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		
 
 		// global cash should be 100 now
 		assertEquals(100f, engine.getCash(1, null, null), ASSET_ERROR_MARGIN);
+		
 		
 		// test some conditional cash as well
 		// non-null conditions
@@ -716,11 +846,39 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates = new ArrayList<Integer>();
 		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
 		
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)0, assumptionIds, assumedStates);
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)1, assumptionIds, assumedStates);
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)2, assumptionIds, assumedStates);
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		
 		// 1 = 0
 		assumptionIds = new ArrayList<Long>();
 		assumedStates = new ArrayList<Integer>();
 		assumptionIds.add((long) 1); assumedStates.add(0);	// node 1, state 0
 		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
+		try {
+			engine.getAssetsIfStates((long)1, (long)1, assumptionIds, assumedStates);
+			fail("Should throw exception, because assumption contains question");
+		} catch (IllegalArgumentException e) {
+			// OK, because if assumptions contain the question, then  it is an invalid argument
+			assertNotNull(e);
+		}
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)0, assumptionIds, assumedStates);
+		assertEquals(2, assetsIfStates.size());	
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)2, assumptionIds, assumedStates);
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
 
 		// 1 = 0, 0 = null, 2 = null (equivalent to only 1 = 0)
 		assumptionIds = new ArrayList<Long>();
@@ -729,6 +887,27 @@ public class MarkovEngineTest extends TestCase {
 		assumptionIds.add((long) 1); assumedStates.add(0);		// node 1, state 0
 		assumptionIds.add((long) 2); assumedStates.add(null);	// node 2, state null
 		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
+		try {
+			engine.getAssetsIfStates((long)1, (long)1, assumptionIds, assumedStates);
+			fail("Should throw exception, because assumption contains question");
+		} catch (IllegalArgumentException e) {
+			// OK, because if assumptions contain the question, then  it is an invalid argument
+			assertNotNull(e);
+		}
+		assumptionIds.remove(0); assumedStates.remove(0);
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)0, assumptionIds, assumedStates);
+		assertEquals(4, assetsIfStates.size());	
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(2), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(3), ASSET_ERROR_MARGIN);
+		assumptionIds.set(1, (long)0); assumedStates.set(1, null);
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)2, assumptionIds, assumedStates);
+		assertEquals(4, assetsIfStates.size());
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(2), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(3), ASSET_ERROR_MARGIN);
 		
 		// 1 = 0, 0 = 0
 		assumptionIds = new ArrayList<Long>();
@@ -736,6 +915,22 @@ public class MarkovEngineTest extends TestCase {
 		assumptionIds.add((long) 1); assumedStates.add(0);	// node 1, state 0
 		assumptionIds.add((long) 0); assumedStates.add(0);	// node 0, state 0
 		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
+		try {
+			engine.getAssetsIfStates((long)1, (long)1, assumptionIds, assumedStates);
+			fail("Should throw exception, because assumption contains question");
+		} catch (IllegalArgumentException e) {
+			// OK, because if assumptions contain the question, then  it is an invalid argument
+			assertNotNull(e);
+		}
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)2, assumptionIds, assumedStates);
+		assertEquals(2, assetsIfStates.size());	
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		assumptionIds.remove(1); assumedStates.remove(1);
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)0, assumptionIds, assumedStates);
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
 
 		// 2 = 1, 0 = 1
 		assumptionIds = new ArrayList<Long>();
@@ -743,6 +938,22 @@ public class MarkovEngineTest extends TestCase {
 		assumptionIds.add((long) 2); assumedStates.add(1);	// node 2, state 1
 		assumptionIds.add((long) 0); assumedStates.add(1);	// node 0, state 1
 		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
+		try {
+			engine.getAssetsIfStates((long)1, (long)0, assumptionIds, assumedStates);
+			fail("Should throw exception, because assumption contains question");
+		} catch (IllegalArgumentException e) {
+			// OK, because if assumptions contain the question, then  it is an invalid argument
+			assertNotNull(e);
+		}
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)1, assumptionIds, assumedStates);
+		assertEquals(2, assetsIfStates.size());	
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		assumptionIds.remove(0); assumedStates.remove(0);
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)2, assumptionIds, assumedStates);
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
 		
 		// 1 = 1, 2 = 0
 		assumptionIds = new ArrayList<Long>();
@@ -750,6 +961,22 @@ public class MarkovEngineTest extends TestCase {
 		assumptionIds.add((long) 1); assumedStates.add(1);	// node 1, state 1
 		assumptionIds.add((long) 2); assumedStates.add(0);	// node 2, state 0
 		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
+		try {
+			engine.getAssetsIfStates((long)1, (long)1, assumptionIds, assumedStates);
+			fail("Should throw exception, because assumption contains question");
+		} catch (IllegalArgumentException e) {
+			// OK, because if assumptions contain the question, then  it is an invalid argument
+			assertNotNull(e);
+		}
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)0, assumptionIds, assumedStates);
+		assertEquals(2, assetsIfStates.size());	
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		assumptionIds.remove(1); assumedStates.remove(1);
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)2, assumptionIds, assumedStates);
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
 		
 		// 0 = 0, 1 = 0, 2 = 1
 		assumptionIds = new ArrayList<Long>();
@@ -758,7 +985,51 @@ public class MarkovEngineTest extends TestCase {
 		assumptionIds.add((long) 1); assumedStates.add(0);	// node 1, state 0
 		assumptionIds.add((long) 2); assumedStates.add(1);	// node 2, state 1
 		assertEquals(100f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
+		assumptionIds.remove(0); assumedStates.remove(0);
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)0, assumptionIds, assumedStates);
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		assumptionIds.set(0, (long)0); assumedStates.set(0, 0);
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)1, assumptionIds, assumedStates);
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		assumptionIds.set(1, (long)1); assumedStates.set(1, 0);
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)2, assumptionIds, assumedStates);
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);	
 		
+		// do some extra test regarding the structure 1 -> 0 <- 2
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)0, Collections.singletonList((long)1), Collections.singletonList(1));
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);	
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)0, Collections.singletonList((long)2), Collections.singletonList(1));
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);	
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)1, Collections.singletonList((long)0), Collections.singletonList(1));
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);	
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)2, Collections.singletonList((long)1), Collections.singletonList(1));
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);	
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)2, Collections.singletonList((long)1), null);
+		assertEquals(4, assetsIfStates.size());
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(2), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(3), ASSET_ERROR_MARGIN);	
+		assetsIfStates = engine.getAssetsIfStates((long)1, (long)1, Collections.singletonList((long)2), (List)Collections.emptyList());
+		assertEquals(4, assetsIfStates.size());
+		assertEquals(100f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(2), ASSET_ERROR_MARGIN);
+		assertEquals(100f, assetsIfStates.get(3), ASSET_ERROR_MARGIN);			
 	}
 
 	/**
@@ -766,7 +1037,8 @@ public class MarkovEngineTest extends TestCase {
 	 * {@link edu.gmu.ace.daggre.MarkovEngineImpl#addTrade(long, java.util.Date, long, long, long, java.util.List, java.util.List, java.util.List, java.util.List, java.lang.Boolean)},
 	 * {@link MarkovEngineImpl#getCash(long, List, List)}, 
 	 * {@link MarkovEngineImpl#getEditLimits(long, long, int, List, List)},
-	 * {@link MarkovEngineImpl#getProbList(long, List, List)}.
+	 * {@link MarkovEngineImpl#getProbList(long, List, List)},
+	 * {@link MarkovEngineImpl#getAssetsIfStates(long, long, List, List)}.
 	 * The tested data is equivalent to the one in 
 	 * https://docs.google.com/document/d/179XTjD5Edj8xDBvfrAP7aDtvgDJlXbSDQQR-TlM5stw/edit.
 	 * <br/>
@@ -989,6 +1261,12 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.005f, editInterval.get(0), PROB_ERROR_MARGIN );
 		assertEquals(0.995f, editInterval.get(1), PROB_ERROR_MARGIN );
 		
+		// obtain conditional probabilities and assets of the edited clique, prior to edit, so that we can use it to check assets after edit
+		List<Float> cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
+		List<Float> cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsBeforeTrade.size());
+		assertEquals(4, cliqueAssetsBeforeTrade.size());
+		
 		// do edit
 		transactionKey = engine.startNetworkActions();
 		List<Float> newValues = new ArrayList<Float>(2);
@@ -1006,6 +1284,20 @@ public class MarkovEngineTest extends TestCase {
 				false	// do not allow negative
 			);
 		engine.commitNetworkActions(transactionKey);
+		
+		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
+		List<Float> cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
+		List<Float> cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+			assertEquals(
+					"Index = " + i, 
+					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+					ASSET_ERROR_MARGIN
+				);
+		}
 		
 		
 		// check that new marginal of E is [0.55 0.45], and the others have not changed (remains 50%)
@@ -1094,6 +1386,8 @@ public class MarkovEngineTest extends TestCase {
 		cash = engine.getCash(userNameToIDMap.get("Tom"), Collections.singletonList((long)0x0E), Collections.singletonList(0));
 		assertTrue("Obtained cash = " + cash, minCash < cash);
 		
+		// TODO assert getAssetsIf
+		
 		// Tom bets P(E=e1|D=d1) = .55 -> .9
 		
 		// check whether probability prior to edit is really [e1d1, e2d1, e1d2, e2d2] = [.55, .45, .55, .45]
@@ -1116,6 +1410,13 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.005f, editInterval.get(0) ,PROB_ERROR_MARGIN);
 		assertEquals(0.995f, editInterval.get(1) ,PROB_ERROR_MARGIN);
 		
+		// obtain conditional probabilities and assets of the edited clique, prior to edit, so that we can use it to check assets
+		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+
+		
 		// set P(E=e1|D=d1) = 0.9 and P(E=e2|D=d1) = 0.1
 		transactionKey = engine.startNetworkActions();
 		newValues = new ArrayList<Float>();
@@ -1133,6 +1434,20 @@ public class MarkovEngineTest extends TestCase {
 				false
 			);
 		engine.commitNetworkActions(transactionKey);
+		
+		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
+		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+			assertEquals(
+					"Index = " + i, 
+					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+					ASSET_ERROR_MARGIN
+				);
+		}
 		
 		// check that new marginal of E is [0.725 0.275] (this is expected value), and the others have not changed (remains 50%)
 		probList = engine.getProbList(0x0D, null, null);
@@ -1239,6 +1554,8 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.add(0);
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
 		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// TODO assert getAssetsIf
 
 		
 		// Let's create user Joe, ID = 1.
@@ -1278,6 +1595,12 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.0055f, editInterval.get(0) ,PROB_ERROR_MARGIN);
 		assertEquals(0.9955f, editInterval.get(1) ,PROB_ERROR_MARGIN);
 		
+		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
+		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0E, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		
 		// set P(E=e1|D=d2) = 0.4 and P(E=e2|D=d2) = 0.6
 		transactionKey = engine.startNetworkActions();
 		newValues = new ArrayList<Float>();
@@ -1295,6 +1618,20 @@ public class MarkovEngineTest extends TestCase {
 				false
 			);
 		engine.commitNetworkActions(transactionKey);
+		
+		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
+		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0E, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+			assertEquals(
+					"Index = " + i, 
+					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+					ASSET_ERROR_MARGIN
+				);
+		}
 		
 		// check that new marginal of E is [0.65 0.35] (this is expected value), and the others have not changed (remains 50%)
 		probList = engine.getProbList(0x0D, null, null);
@@ -1402,6 +1739,8 @@ public class MarkovEngineTest extends TestCase {
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
 		assertTrue("Obtained cash = " + cash, minCash < cash);
 		
+		// TODO assert getAssetsIf
+		
 		
 
 		// Let's create user Amy, ID = 2.
@@ -1441,6 +1780,12 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.005f, editInterval.get(0) ,PROB_ERROR_MARGIN);
 		assertEquals(0.995f, editInterval.get(1) ,PROB_ERROR_MARGIN);
 		
+		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
+		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Amy"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		
 		// set P(F=f1|D=d1) = 0.3 and P(F=f2|D=d1) = 0.7  
 		transactionKey = engine.startNetworkActions();
 		newValues = new ArrayList<Float>();
@@ -1458,6 +1803,20 @@ public class MarkovEngineTest extends TestCase {
 				false
 			);
 		engine.commitNetworkActions(transactionKey);
+		
+		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
+		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Amy"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+			assertEquals(
+					"Index = " + i, 
+					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+					ASSET_ERROR_MARGIN
+				);
+		}
 		
 		// check that new marginal of E is still [0.65 0.35] (this is expected value), F is [.4 .6], and the others have not changed (remains 50%)
 		probList = engine.getProbList(0x0D, null, null);
@@ -1538,6 +1897,43 @@ public class MarkovEngineTest extends TestCase {
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
 		assertTrue("Obtained cash = " + cash, minCash < cash);
 		
+		// check minimal condition of LPE: d1, f1
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long)0x0D);
+		assumptionIds.add((long)0x0F);
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);
+		assumedStates.add(0);
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		// check conditions that do not match LPE
+		assumedStates.set(0,1);
+		assumedStates.set(1,1);
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		assumedStates.set(0,0);
+		assumedStates.set(1,1);
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		assumedStates.set(0,1);
+		assumedStates.set(1,0);
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		assumptionIds.clear();
+		assumptionIds.add((long)0x0D);
+		assumedStates.clear();
+		assumedStates.add(1);
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		assumptionIds.clear();
+		assumptionIds.add((long)0x0F);
+		assumedStates.clear();
+		assumedStates.add(1);
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// TODO assert getAssetsIf
+		
 
 		// Joe bets P(F=f1|D=d2) = .5 -> .1
 		
@@ -1561,6 +1957,12 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.006875f, editInterval.get(0) ,PROB_ERROR_MARGIN);
 		assertEquals(0.993125, editInterval.get(1) ,PROB_ERROR_MARGIN);
 		
+		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
+		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		
 		// set P(F=f1|D=d2) = 0.1 and P(F=f2|D=d2) = 0.9
 		transactionKey = engine.startNetworkActions();
 		newValues = new ArrayList<Float>();
@@ -1578,6 +1980,20 @@ public class MarkovEngineTest extends TestCase {
 				false
 			);
 		engine.commitNetworkActions(transactionKey);
+		
+		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
+		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+			assertEquals(
+					"Index = " + i, 
+					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+					ASSET_ERROR_MARGIN
+				);
+		}
 		
 		// check that new marginal of E is still [0.65 0.35] (this is expected value), F is [.2 .8], and the others have not changed (remains 50%)
 		probList = engine.getProbList(0x0D, null, null);
@@ -1658,6 +2074,8 @@ public class MarkovEngineTest extends TestCase {
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
 		assertTrue("Obtained cash = " + cash, minCash < cash);
 
+		// TODO assert getAssetsIf
+		
 		
 
 		// create new user Eric
@@ -1693,6 +2111,12 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.0065f, editInterval.get(0) ,PROB_ERROR_MARGIN);
 		assertEquals(0.9965f, editInterval.get(1) ,PROB_ERROR_MARGIN);
 		
+		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
+		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0E, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		
 		// set P(E=e1) = 0.8 and P(E=e2) = 0.2
 		transactionKey = engine.startNetworkActions();
 		newValues = new ArrayList<Float>();
@@ -1710,6 +2134,20 @@ public class MarkovEngineTest extends TestCase {
 				false
 			);
 		engine.commitNetworkActions(transactionKey);
+		
+		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
+		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0E, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+			assertEquals(
+					"Index = " + i, 
+					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+					ASSET_ERROR_MARGIN
+				);
+		}
 		
 		// check that new marginal of E is [0.8 0.2] (this is expected value), F is [0.2165, 0.7835], and D is [0.5824, 0.4176]
 		probList = engine.getProbList(0x0D, null, null);
@@ -1812,6 +2250,12 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.0091059f, editInterval.get(0) ,PROB_ERROR_MARGIN);
 		assertEquals(0.9916058f, editInterval.get(1) ,PROB_ERROR_MARGIN);
 		
+		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
+		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		
 		// set P(D=d1|F=f2) = 0.7 and P(D=d2|F=f2) = 0.3
 		transactionKey = engine.startNetworkActions();
 		newValues = new ArrayList<Float>();
@@ -1829,6 +2273,20 @@ public class MarkovEngineTest extends TestCase {
 				false
 		);
 		engine.commitNetworkActions(transactionKey);
+		
+		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
+		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+			assertEquals(
+					"Index = " + i, 
+					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+					ASSET_ERROR_MARGIN
+				);
+		}
 		
 		// check that new marginal of E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
 		probList = engine.getProbList(0x0D, null, null);
@@ -1924,6 +2382,12 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.0091059f, editInterval.get(0) ,PROB_ERROR_MARGIN);
 		assertEquals(0.9916058f, editInterval.get(1) ,PROB_ERROR_MARGIN);
 		
+		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
+		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		
 		// set P(D=d1|F=f2) to a value lower (1/10) than the lower bound of edit interval
 		transactionKey = engine.startNetworkActions();
 		newValues = new ArrayList<Float>();
@@ -1947,6 +2411,18 @@ public class MarkovEngineTest extends TestCase {
 			// ok
 			assertNotNull(e);
 		}
+		
+		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
+		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		// check that assets and conditional probs did not change
+		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+			assertEquals( "Index = " + i, cliqueAssetsBeforeTrade.get(i), cliqueAssetsAfterTrade.get(i), ASSET_ERROR_MARGIN );
+			assertEquals( "Index = " + i, cliqueProbsBeforeTrade.get(i), cliqueProbsAfterTrade.get(i), PROB_ERROR_MARGIN );
+		}
+		
 		
 		// check that marginals have not changed: E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
 		probList = engine.getProbList(0x0D, null, null);
@@ -2043,6 +2519,12 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.0091059f, editInterval.get(0) ,PROB_ERROR_MARGIN);
 		assertEquals(0.9916058f, editInterval.get(1) ,PROB_ERROR_MARGIN);
 		
+		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
+		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		
 		// set P(D=d1|F=f2) to a value lower (1/10) than the lower bound of edit interval
 		transactionKey = engine.startNetworkActions();
 		newValues = new ArrayList<Float>();
@@ -2060,6 +2542,20 @@ public class MarkovEngineTest extends TestCase {
 				true	// allow negative assets
 			);
 		engine.commitNetworkActions(transactionKey);
+		
+		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
+		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+			assertEquals(
+					"Index = " + i, 
+					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+					ASSET_ERROR_MARGIN
+				);
+		}
 		
 		// check that cash is smaller or equal to 0
 		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
@@ -2548,6 +3044,712 @@ public class MarkovEngineTest extends TestCase {
 		
 		
 	}
+	
+	/**
+	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#getPossibleQuestionAssumptions(long, java.util.List)}.
+	 */
+	public final void testGetPossibleQuestionAssumptions() {
+		
+		// Case 0: no network
+		
+		do {
+			try {
+				engine.getPossibleQuestionAssumptions((long)(Math.random()*Integer.MAX_VALUE), ((Math.random()<.5)?null:((List)Collections.emptyList())));
+				fail("It is impossible to obtain questions from a Bayes Net which was not created yet...");
+			}catch (IllegalArgumentException e) {
+				// OK. 
+				assertNotNull(e);
+			}
+		} while (Math.random() < .5);
+		
+		// Case 1: 0
+		
+		engine.initialize();
+		long transactionKey = engine.startNetworkActions();
+		// create question 0
+		engine.addQuestion(transactionKey, new Date(), 0, (int)(2+Math.round(Math.random()*3)), null);
+		engine.commitNetworkActions(transactionKey);
+		do {
+			try {
+				engine.getPossibleQuestionAssumptions((long)(1 + Math.random()*Integer.MAX_VALUE), ((Math.random()<.5)?null:((List)Collections.emptyList())));
+				fail("Only question 0 is present");
+			}catch (IllegalArgumentException e) {
+				assertNotNull(e); // OK. 
+			}
+		} while (Math.random() < .5);
+		try {
+			engine.getPossibleQuestionAssumptions(0, Collections.singletonList((long)0));
+			fail("Question cannot be assumption of itself");
+		}catch (IllegalArgumentException e) {
+			assertNotNull(e); // OK. 
+		}
+		List<Long> assumptions = engine.getPossibleQuestionAssumptions(0, null);
+		assertTrue("There is only 1 question in the network...",assumptions.isEmpty());
+		assumptions = engine.getPossibleQuestionAssumptions(0, (List)Collections.emptyList());
+		assertTrue("There is only 1 question in the network...",assumptions.isEmpty());
+		
+		// Case 2: 1->0
+		
+		engine.initialize();
+		transactionKey = engine.startNetworkActions();
+		// create questions 0,1
+		engine.addQuestion(transactionKey, new Date(), 0, (int)(2+Math.round(Math.random()*3)), null);
+		engine.addQuestion(transactionKey, new Date(), 1, (int)(2+Math.round(Math.random()*3)), null);
+		// create edge 1->0 
+		engine.addQuestionAssumption(transactionKey, new Date(), 0, Collections.singletonList((long)1), null);
+		engine.commitNetworkActions(transactionKey);
+		do {
+			try {
+				engine.getPossibleQuestionAssumptions((long)(Math.random()*Integer.MIN_VALUE), ((Math.random()<.5)?null:((List)Collections.emptyList())));
+				fail("These questions are not present");
+			}catch (IllegalArgumentException e) {
+				assertNotNull(e); // OK. 
+			}
+		} while (Math.random() < .5);
+		try {
+			engine.getPossibleQuestionAssumptions(0, Collections.singletonList((long)0));
+			fail("Question cannot be assumption of itself");
+		}catch (IllegalArgumentException e) {
+			assertNotNull(e); // OK. 
+		}
+		try {
+			engine.getPossibleQuestionAssumptions(1, Collections.singletonList((long)1));
+			fail("Question cannot be assumption of itself");
+		}catch (IllegalArgumentException e) {
+			assertNotNull(e); // OK. 
+		}
+		assumptions = engine.getPossibleQuestionAssumptions(0, null);
+		assertEquals(1, assumptions.size());
+		assertEquals(1,assumptions.get(0).longValue());
+		assumptions = engine.getPossibleQuestionAssumptions(0, (List)Collections.emptyList());
+		assertEquals(1, assumptions.size());
+		assertEquals(1,assumptions.get(0).longValue());
+		assumptions = engine.getPossibleQuestionAssumptions(0, Collections.singletonList((long)1));
+		assertEquals(1, assumptions.size());
+		assertEquals(1,assumptions.get(0).longValue());
+		assumptions = engine.getPossibleQuestionAssumptions(1, null);
+		assertEquals(1, assumptions.size());
+		assertEquals(0,assumptions.get(0).longValue());
+		assumptions = engine.getPossibleQuestionAssumptions(1, (List)Collections.emptyList());
+		assertEquals(1, assumptions.size());
+		assertEquals(0,assumptions.get(0).longValue());
+		assumptions = engine.getPossibleQuestionAssumptions(1, Collections.singletonList((long)0));
+		assertEquals(1, assumptions.size());
+		assertEquals(0,assumptions.get(0).longValue());
+		
+		
+		// Case 3: 1->0<-2
+		engine.initialize();
+		transactionKey = engine.startNetworkActions();
+		// create questions 0,1,2
+		engine.addQuestion(transactionKey, new Date(), 0, (int)(2+Math.round(Math.random()*3)), null);
+		engine.addQuestion(transactionKey, new Date(), 1, (int)(2+Math.round(Math.random()*3)), null);
+		engine.addQuestion(transactionKey, new Date(), 2, (int)(2+Math.round(Math.random()*3)), null);
+		// create edges 1->0 and 2->0
+		ArrayList<Long> parentQuestionIds = new ArrayList<Long>(2);
+		parentQuestionIds.add((long)1); parentQuestionIds.add((long)2);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0, parentQuestionIds, null);
+		engine.commitNetworkActions(transactionKey);
+		try {
+			// assumptions contains main node
+			engine.getPossibleQuestionAssumptions(0, Collections.singletonList((long)0));
+			fail("Question cannot be assumption of itself");
+		}catch (IllegalArgumentException e) {
+			assertNotNull(e); // OK. 
+		}
+		try {
+			// assumptions contains main node
+			engine.getPossibleQuestionAssumptions(1, Collections.singletonList((long)1));
+			fail("Question cannot be assumption of itself");
+		}catch (IllegalArgumentException e) {
+			assertNotNull(e); // OK. 
+		}
+		try {
+			// assumptions contains main node
+			engine.getPossibleQuestionAssumptions(2, Collections.singletonList((long)2));
+			fail("Question cannot be assumption of itself");
+		}catch (IllegalArgumentException e) {
+			assertNotNull(e); // OK. 
+		}
+		List<Long> assumptionIds;	// list to hold more than 2 assumptions
+		try {
+			// assumptions contains main node
+			assumptionIds = new ArrayList<Long>();
+			assumptionIds.add((long)0);
+			assumptionIds.add((long)((Math.random()<.5)?1:2));
+			if (Math.random() < .5) {
+				assumptionIds.add((long)(assumptionIds.contains((long)1)?2:1));
+			}
+			engine.getPossibleQuestionAssumptions(0, assumptionIds);
+			fail("Question cannot be assumption of itself");
+		}catch (IllegalArgumentException e) {
+			assertNotNull(e); // OK. 
+		}
+		try {
+			// assumptions contains main node
+			assumptionIds = new ArrayList<Long>();
+			assumptionIds.add((long)1);
+			assumptionIds.add((long)((Math.random()<.5)?0:2));
+			if (Math.random() < .5) {
+				assumptionIds.add((long)(assumptionIds.contains((long)0)?2:0));
+			}
+			engine.getPossibleQuestionAssumptions(1, assumptionIds);
+			fail("Question cannot be assumption of itself");
+		}catch (IllegalArgumentException e) {
+			assertNotNull(e); // OK. 
+		}
+		try {
+			// assumptions contains main node
+			assumptionIds = new ArrayList<Long>();
+			assumptionIds.add((long)2);
+			assumptionIds.add((long)((Math.random()<.5)?0:1));
+			if (Math.random() < .5) {
+				assumptionIds.add((long)(assumptionIds.contains((long)0)?1:0));
+			}
+			engine.getPossibleQuestionAssumptions(2, assumptionIds);
+			fail("Question cannot be assumption of itself");
+		}catch (IllegalArgumentException e) {
+			assertNotNull(e); // OK. 
+		}
+		try {
+			// test inexistent assumptions
+			assumptionIds = new ArrayList<Long>();
+			do {
+				assumptionIds.add((long)(Math.random()*Integer.MIN_VALUE) - 1);
+			} while (Math.random() < .5);
+			engine.getPossibleQuestionAssumptions(0, assumptionIds);
+			fail("Assumptions must exist in the Bayes Net");
+		}catch (IllegalArgumentException e) {
+			assertNotNull(e); // OK. 
+		}
+		assumptions = engine.getPossibleQuestionAssumptions(0, null);
+		assertEquals(2, assumptions.size());
+		assertTrue(assumptions.contains((long)1));
+		assertTrue(assumptions.contains((long)2));
+		assumptions = engine.getPossibleQuestionAssumptions(0, (List)Collections.emptyList());
+		assertEquals(2, assumptions.size());
+		assertTrue(assumptions.contains((long)1));
+		assertTrue(assumptions.contains((long)2));
+		assumptions = engine.getPossibleQuestionAssumptions(0, Collections.singletonList((long)1));
+		assertEquals(2, assumptions.size());
+		assertTrue(assumptions.contains((long)1));
+		assertTrue(assumptions.contains((long)2));
+		assumptions = engine.getPossibleQuestionAssumptions(0, Collections.singletonList((long)2));
+		assertEquals(2, assumptions.size());
+		assertTrue(assumptions.contains((long)1));
+		assertTrue(assumptions.contains((long)2));
+		assumptionIds = new ArrayList<Long>(2);
+		assumptionIds.add((long)1); assumptionIds.add((long)2);
+		assumptions = engine.getPossibleQuestionAssumptions(0, assumptionIds);
+		assertEquals(2, assumptions.size());
+		assertTrue(assumptions.contains((long)1));
+		assertTrue(assumptions.contains((long)2));
+		assumptions = engine.getPossibleQuestionAssumptions(1, null);
+		assertEquals(2, assumptions.size());
+		assertTrue(assumptions.contains((long)0));
+		assertTrue(assumptions.contains((long)2));
+		assumptions = engine.getPossibleQuestionAssumptions(1, (List)Collections.emptyList());
+		assertEquals(2, assumptions.size());
+		assertTrue(assumptions.contains((long)0));
+		assertTrue(assumptions.contains((long)2));
+		assumptions = engine.getPossibleQuestionAssumptions(1, Collections.singletonList((long)0));
+		assertEquals(2, assumptions.size());
+		assertTrue(assumptions.contains((long)0));
+		assertTrue(assumptions.contains((long)2));
+		assumptions = engine.getPossibleQuestionAssumptions(1, Collections.singletonList((long)2));
+		assertEquals(2, assumptions.size());
+		assertTrue(assumptions.contains((long)0));
+		assertTrue(assumptions.contains((long)2));
+		assumptionIds = new ArrayList<Long>(2);
+		assumptionIds.add((long)0); assumptionIds.add((long)2);
+		assumptions = engine.getPossibleQuestionAssumptions(1, assumptionIds);
+		assertEquals(2, assumptions.size());
+		assertTrue(assumptions.contains((long)0));
+		assertTrue(assumptions.contains((long)2));
+		assumptions = engine.getPossibleQuestionAssumptions(2, null);
+		assertEquals(2, assumptions.size());
+		assertTrue(assumptions.contains((long)0));
+		assertTrue(assumptions.contains((long)1));
+		assumptions = engine.getPossibleQuestionAssumptions(2, (List)Collections.emptyList());
+		assertEquals(2, assumptions.size());
+		assertTrue(assumptions.contains((long)0));
+		assertTrue(assumptions.contains((long)1));
+		assumptions = engine.getPossibleQuestionAssumptions(2, Collections.singletonList((long)0));
+		assertEquals(2, assumptions.size());
+		assertTrue(assumptions.contains((long)0));
+		assertTrue(assumptions.contains((long)1));
+		assumptions = engine.getPossibleQuestionAssumptions(2, Collections.singletonList((long)1));
+		assertEquals(2, assumptions.size());
+		assertTrue(assumptions.contains((long)0));
+		assertTrue(assumptions.contains((long)1));
+		assumptionIds = new ArrayList<Long>(2);
+		assumptionIds.add((long)0); assumptionIds.add((long)1);
+		assumptions = engine.getPossibleQuestionAssumptions(2, assumptionIds);
+		assertEquals(2, assumptions.size());
+		assertTrue(assumptions.contains((long)0));
+		assertTrue(assumptions.contains((long)1));
+		
+		
+		// case 4: 1<-0->2
+		engine.initialize();
+		transactionKey = engine.startNetworkActions();
+		// create questions 0,1,2
+		engine.addQuestion(transactionKey, new Date(), 0, (int)(2+Math.round(Math.random()*3)), null);
+		engine.addQuestion(transactionKey, new Date(), 1, (int)(2+Math.round(Math.random()*3)), null);
+		engine.addQuestion(transactionKey, new Date(), 2, (int)(2+Math.round(Math.random()*3)), null);
+		// create edges 1<-0 and 2<-0
+		engine.addQuestionAssumption(transactionKey, new Date(), 1, Collections.singletonList((long)0), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 2, Collections.singletonList((long)0), null);
+		engine.commitNetworkActions(transactionKey);
+		try {
+			// assumptions contains main node
+			engine.getPossibleQuestionAssumptions(0, Collections.singletonList((long)0));
+			fail("Question cannot be assumption of itself");
+		}catch (IllegalArgumentException e) {
+			assertNotNull(e); // OK. 
+		}
+		try {
+			// assumptions contains main node
+			engine.getPossibleQuestionAssumptions(1, Collections.singletonList((long)1));
+			fail("Question cannot be assumption of itself");
+		}catch (IllegalArgumentException e) {
+			assertNotNull(e); // OK. 
+		}
+		try {
+			// assumptions contains main node
+			engine.getPossibleQuestionAssumptions(2, Collections.singletonList((long)2));
+			fail("Question cannot be assumption of itself");
+		}catch (IllegalArgumentException e) {
+			assertNotNull(e); // OK. 
+		}
+		try {
+			// assumptions contains main node
+			assumptionIds = new ArrayList<Long>();
+			assumptionIds.add((long)0);
+			assumptionIds.add((long)((Math.random()<.5)?1:2));
+			if (Math.random() < .5) {
+				assumptionIds.add((long)(assumptionIds.contains((long)1)?2:1));
+			}
+			engine.getPossibleQuestionAssumptions(0, assumptionIds);
+			fail("Question cannot be assumption of itself");
+		}catch (IllegalArgumentException e) {
+			assertNotNull(e); // OK. 
+		}
+		try {
+			// assumptions contains main node
+			assumptionIds = new ArrayList<Long>();
+			assumptionIds.add((long)1);
+			assumptionIds.add((long)((Math.random()<.5)?0:2));
+			if (Math.random() < .5) {
+				assumptionIds.add((long)(assumptionIds.contains((long)0)?2:0));
+			}
+			engine.getPossibleQuestionAssumptions(1, assumptionIds);
+			fail("Question cannot be assumption of itself");
+		}catch (IllegalArgumentException e) {
+			assertNotNull(e); // OK. 
+		}
+		try {
+			// assumptions contains main node
+			assumptionIds = new ArrayList<Long>();
+			assumptionIds.add((long)2);
+			assumptionIds.add((long)((Math.random()<.5)?0:1));
+			if (Math.random() < .5) {
+				assumptionIds.add((long)(assumptionIds.contains((long)0)?1:0));
+			}
+			engine.getPossibleQuestionAssumptions(2, assumptionIds);
+			fail("Question cannot be assumption of itself");
+		}catch (IllegalArgumentException e) {
+			assertNotNull(e); // OK. 
+		}
+		try {
+			// test inexistent assumptions
+			assumptionIds = new ArrayList<Long>();
+			do {
+				assumptionIds.add((long)(Math.random()*Integer.MIN_VALUE) - 1);
+			} while (Math.random() < .5);
+			engine.getPossibleQuestionAssumptions(0, assumptionIds);
+			fail("Assumptions must exist in the Bayes Net");
+		}catch (IllegalArgumentException e) {
+			assertNotNull(e); // OK. 
+		}
+		assumptions = engine.getPossibleQuestionAssumptions(0, null);
+		assertEquals(2, assumptions.size());
+		assertTrue(assumptions.contains((long)1));
+		assertTrue(assumptions.contains((long)2));
+		assumptions = engine.getPossibleQuestionAssumptions(0, (List)Collections.emptyList());
+		assertEquals(2, assumptions.size());
+		assertTrue(assumptions.contains((long)1));
+		assertTrue(assumptions.contains((long)2));
+		assumptions = engine.getPossibleQuestionAssumptions(0, Collections.singletonList((long)1));
+		assertEquals(1, assumptions.size());
+		assertTrue(assumptions.contains((long)1));
+		assumptions = engine.getPossibleQuestionAssumptions(0, Collections.singletonList((long)2));
+		assertEquals(1, assumptions.size());
+		assertTrue(assumptions.contains((long)2));
+		assumptionIds = new ArrayList<Long>(2);
+		assumptionIds.add((long)1); assumptionIds.add((long)2);
+		assumptions = engine.getPossibleQuestionAssumptions(0, assumptionIds);
+		assertEquals(0, assumptions.size());
+		assumptions = engine.getPossibleQuestionAssumptions(1, null);
+		assertEquals(1, assumptions.size());
+		assertTrue(assumptions.contains((long)0));
+		assumptions = engine.getPossibleQuestionAssumptions(1, (List)Collections.emptyList());
+		assertEquals(1, assumptions.size());
+		assertTrue(assumptions.contains((long)0));
+		assumptions = engine.getPossibleQuestionAssumptions(1, Collections.singletonList((long)0));
+		assertEquals(1, assumptions.size());
+		assertTrue(assumptions.contains((long)0));
+		assumptions = engine.getPossibleQuestionAssumptions(1, Collections.singletonList((long)2));
+		assertEquals(0, assumptions.size());
+		assumptionIds = new ArrayList<Long>(2);
+		assumptionIds.add((long)0); assumptionIds.add((long)2);
+		assumptions = engine.getPossibleQuestionAssumptions(1, assumptionIds);
+		assertEquals(0, assumptions.size());
+		assumptions = engine.getPossibleQuestionAssumptions(2, null);
+		assertEquals(1, assumptions.size());
+		assertTrue(assumptions.contains((long)0));
+		assumptions = engine.getPossibleQuestionAssumptions(2, (List)Collections.emptyList());
+		assertEquals(1, assumptions.size());
+		assertTrue(assumptions.contains((long)0));
+		assumptions = engine.getPossibleQuestionAssumptions(2, Collections.singletonList((long)0));
+		assertEquals(1, assumptions.size());
+		assertTrue(assumptions.contains((long)0));
+		assumptions = engine.getPossibleQuestionAssumptions(2, Collections.singletonList((long)1));
+		assertEquals(0, assumptions.size());
+		assumptionIds = new ArrayList<Long>(2);
+		assumptionIds.add((long)0); assumptionIds.add((long)1);
+		assumptions = engine.getPossibleQuestionAssumptions(2, assumptionIds);
+		assertEquals(0, assumptions.size());
+		
+	}
+	
+	/**
+	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#determineBalancingTrade(long, long, java.util.List, java.util.List)},
+	 * {@link MarkovEngineImpl#balanceTrade(long, Date, String, long, long, List, List)}.
+	 */
+	public final void testBalanceTrade() {
+		
+		// perform the same sequence of trades of testAddTradeInOneTransaction
+		long transactionKey = engine.startNetworkActions();
+		
+		// create nodes D, E, F
+		engine.addQuestion(transactionKey, new Date(), 0x0D, 2, null);	// question D has ID = hexadecimal D. CPD == null -> linear distro
+		engine.addQuestion(transactionKey, new Date(), 0x0E, 2, null);	// question E has ID = hexadecimal E. CPD == null -> linear distro
+		engine.addQuestion(transactionKey, new Date(), 0x0F, 2, null);	// question F has ID = hexadecimal F. CPD == null -> linear distro
+		// create edge D->E 
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0E, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
+		// create edge D->F
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0F, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
+
+		// Let's use ID = 0 for the user Tom 
+		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
+		userNameToIDMap.put("Tom", (long)0);
+		
+		try {
+			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
+			engine.getCash(userNameToIDMap.get("Tom"), null, null);
+			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+		} catch (IllegalStateException e) {
+			// OK. This is the expected
+			assertNotNull(e);
+		}
+		
+		// add 100 q-values to new users
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Tom"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+		
+		// Tom bets P(E=e1) = 0.5  to 0.55 (unconditional soft evidence in E)
+		List<Float> newValues = new ArrayList<Float>(2);
+		newValues.add(0.55f);		// P(E=e1) = 0.55
+		newValues.add(0.45f);		// P(E=e2) = 1 - P(E=e1) = 0.45
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Tom bets P(E=e1) = 0.5  to 0.55", 
+				userNameToIDMap.get("Tom"), 
+				0x0E, 	// question E
+				newValues,
+				null, 	// no assumptions
+				null, 	// no states of the assumptions
+				false	// do not allow negative
+			);
+		
+		
+		// Tom bets P(E=e1|D=d1) = .55 -> .9
+		
+		// set P(E=e1|D=d1) = 0.9 and P(E=e2|D=d1) = 0.1
+		newValues = new ArrayList<Float>();
+		newValues.add(.9f);
+		newValues.add(.1f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Tom bets P(E=e1|D=d1) = 0.9", 
+				userNameToIDMap.get("Tom"), 
+				0x0E, 
+				newValues, 
+				Collections.singletonList((long)0x0D), 
+				Collections.singletonList(0), 
+				false
+			);
+		
+
+		
+		// Let's create user Joe, ID = 1.
+		userNameToIDMap.put("Joe", (long) 1);
+		
+		try {
+			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
+			engine.getCash(userNameToIDMap.get("Joe"), null, null);
+			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+		} catch (IllegalStateException e) {
+			// OK. This is the expected
+			assertNotNull(e);
+		}
+		
+		// add 100 q-values to new users
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Joe"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+
+		// Joe bets P(E=e1|D=d2) = .55 -> .4
+		newValues = new ArrayList<Float>();
+		newValues.add(.4f);
+		newValues.add(.6f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Joe bets P(E=e1|D=d2) = 0.4", 
+				userNameToIDMap.get("Joe"), 
+				0x0E, 
+				newValues, 
+				Collections.singletonList((long)0x0D), 
+				Collections.singletonList(1), 
+				false
+			);
+		
+
+		// Let's create user Amy, ID = 2.
+		userNameToIDMap.put("Amy", (long) 2);
+		
+		try {
+			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
+			engine.getCash(userNameToIDMap.get("Amy"), null, null);
+			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+		} catch (IllegalStateException e) {
+			// OK. This is the expected
+			assertNotNull(e);
+		}
+		
+		// add 100 q-values to new users
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Amy"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+
+		// Amy bets P(F=f1|D=d1) = .5 -> .3
+		newValues = new ArrayList<Float>();
+		newValues.add(.3f);
+		newValues.add(.7f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Amy bets P(F=f1|D=d1) = 0.3", 
+				userNameToIDMap.get("Amy"), 
+				0x0F, 
+				newValues, 
+				Collections.singletonList((long)0x0D), 
+				Collections.singletonList(0), 
+				false
+			);
+		
+
+		// Joe bets P(F=f1|D=d2) = .5 -> .1
+		newValues = new ArrayList<Float>();
+		newValues.add(.1f);
+		newValues.add(.9f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Joe bets P(F=f1|D=d2) = 0.1", 
+				userNameToIDMap.get("Joe"), 
+				0x0F, 
+				newValues, 
+				Collections.singletonList((long)0x0D), 
+				Collections.singletonList(1), 
+				false
+			);
+		
+
+		// create new user Eric
+		userNameToIDMap.put("Eric", (long) 3);
+		
+		try {
+			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
+			engine.getCash(userNameToIDMap.get("Eric"), null, null);
+			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+		} catch (IllegalStateException e) {
+			// OK. This is the expected
+			assertNotNull(e);
+		}
+		
+		// add 100 q-values to new users
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Eric"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+		
+		// Eric bets P(E=e1) = .65 -> .8
+		newValues = new ArrayList<Float>();
+		newValues.add(.8f);
+		newValues.add(.2f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Eric bets P(E=e1) = 0.8", 
+				userNameToIDMap.get("Eric"), 
+				0x0E, 
+				newValues, 
+				(List)Collections.emptyList(), 
+				(List)Collections.emptyList(), 
+				false
+			);
+		
+		// Eric bets  P(D=d1|F=f2) = 0.52 -> 0.7
+		newValues = new ArrayList<Float>();
+		newValues.add(.7f);
+		newValues.add(.3f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Eric bets P(D=d1|F=f2) = 0.7", 
+				userNameToIDMap.get("Eric"), 
+				0x0D, 
+				newValues, 
+				Collections.singletonList((long)0x0F), 
+				Collections.singletonList(1), 
+				false
+		);
+		
+		// commit all trades (including the creation of network and user)
+		engine.commitNetworkActions(transactionKey);
+		
+		// test invalid questions and assumptions
+		for (String key : userNameToIDMap.keySet()) {
+			// invalid question
+			do {
+				try {
+					long questionId = (long) (Math.random()*Integer.MIN_VALUE);
+					engine.determineBalancingTrade(
+							userNameToIDMap.get(key), 
+							questionId, 
+							(List)((Math.random() < .5)?null:Collections.emptyList()), 
+							(List)((Math.random() < .5)?null:Collections.emptyList())
+						);
+					fail(questionId + " should be an invalid question.");
+				} catch (IllegalArgumentException e) {
+					assertNotNull(e);	// ok
+				}
+			} while (Math.random() < .5);
+			// invalid assumption
+			do {
+				try {
+					// choose question 0x0D, 0x0E, or 0x0F randomly
+					long questionId = (Math.random() < .33)?0x0D:((Math.random() < .5)?0x0E:0x0F);
+					List<Long> assumptionIds = new ArrayList<Long>();
+					// fill assumptionIds with invalid assumptions
+					// assumption is invalid if assumptionIds contain questionId
+					if (Math.random() < .5) {
+						assumptionIds.add(questionId);
+					}
+					// assumption is invalid if it contains inexistent node
+					do {
+						assumptionIds.add((long)(Math.random()*Integer.MIN_VALUE));
+					} while (Math.random() < .5);
+					// fill valid states (the nodes have only 2 states - 0 or 1)
+					List<Integer> assumedStates = new ArrayList<Integer>();
+					for (int i = 0; i < assumptionIds.size(); i++) {
+						assumedStates.add((Math.random() < .5)?0:1);
+					}
+					engine.determineBalancingTrade(
+							userNameToIDMap.get(key), 
+							questionId, 
+							assumptionIds, 
+							assumedStates
+						);
+					fail("Questions " + assumptionIds + " and states " + assumedStates + " are invalid assumptions of question " +  questionId);
+				} catch (IllegalArgumentException e) {
+					assertNotNull(e);	// ok
+				}
+			} while (Math.random() < .5);
+		}
+		
+		// test valid balance trades
+		
+		// prepare the transaction which will make users to exit (balance) from question given assumptions
+		transactionKey = engine.startNetworkActions();
+		
+		// Available users are Joe, Tom, Amy, Eric. For each user, randomly generate question|assumptions to balance
+		Map<String, Long> userToQuestionToBalanceMap = new HashMap<String, Long>();					// map to store the question user has chosen
+		Map<String, List<Long>> userToAssumptionMap = new HashMap<String, List<Long>>();			// map to store user's assumptions
+		Map<String, List<Integer>> userToAssumedStatesMap = new HashMap<String, List<Integer>>();	// map to store user's assumed states
+		// generate random balance requests for each user
+		for (String user : userNameToIDMap.keySet()) {
+			// choose question randomly from [0x0D, 0x0E, 0x0F]
+			long question = ((Math.random() < .33)?0x0D:((Math.random() < .5)?0x0E:0x0F));
+			userToQuestionToBalanceMap.put(user, question);
+			
+			// setup assumption randomly
+			List<Long> assumptions = new ArrayList<Long>();
+			if (question > 0x0D) {	
+				// 0x0E and 0x0F can only have 1 assumption, which is 0x0D
+				if (Math.random() < .5) {
+					assumptions.add((long)0x0D);
+				}
+			} else {
+				// 0x0D can have either 0x0E or 0x0F as assumptions, but never both simultaneously.
+				if (Math.random() < .5) {
+					/*
+					 * Assume question + 1 (but choose 0x0D if question is 0x0F).
+					 * E.g. if question == 0x0D, then assumption == 0x0E;
+					 * if question == 0x0E, then assumption == 0x0F;
+					 * if question == 0x0F, then assumption == 0x0D;
+					 */
+					assumptions.add(((question == 0x0F)?0x0D:(question+1)));
+				} else if (Math.random() < .5) {	
+					/*
+					 * Assume question - 1 (but choose 0x0F if question is 0x0D).
+					 * E.g. if question == 0x0D, then assumption == 0x0F;
+					 * if question == 0x0E, then assumption == 0x0D;
+					 * if question == 0x0F, then assumption == 0x0E;
+					 */
+					assumptions.add(((question == 0x0D)?0x0F:(question-1)));
+				}
+			}
+			userToAssumptionMap.put(user, assumptions);
+			
+			// setup states of the assumptions correctly regarding assumptions
+			List<Integer> states = new ArrayList<Integer>();
+			for (int i = 0; i < assumptions.size(); i++) {
+				states.add((Math.random() < .5)?0:1);	// nodes have supposedly 2 states: 0,1
+			}
+			userToAssumedStatesMap.put(user, states);
+			
+			// add trade into transaction
+			engine.balanceTrade(transactionKey, new Date(), user + " balances question " + question, userNameToIDMap.get(user), question, assumptions, states);
+		}
+		
+		// execute trade which will balance the assets of the users
+		engine.commitNetworkActions(transactionKey);
+		
+		// check if users have quit the questions correctly
+		for (String user : userNameToIDMap.keySet()) {
+			// extract the user's choices from the maps
+			long questionId = userToQuestionToBalanceMap.get(user);
+			List<Long> assumptionIds = userToAssumptionMap.get(user);
+			List<Integer> assumedStates = userToAssumedStatesMap.get(user);
+			// The condition to exit (balance) from a trade is to make the assets to become the same for each states of a node.
+			List<Float> assets = engine.getAssetsIfStates(userNameToIDMap.get(user), questionId, assumptionIds, assumedStates);
+			// since assumedStates has the same size of assumptionIds, size of assets must be equal to quantity of states (i.e. 2)
+			assertEquals("User = " + user + ", question = " + questionId + ", assumptions = " + assumptionIds + ", states = " + assumedStates, 2, assets.size() );
+			// the asset values must be the same for all states if we did exit (balanced) correctly
+			assertEquals(
+					"User = " + user + ", question = " + questionId + ", assumptions = " + assumptionIds + ", states = " + assumedStates,
+					assets.get(0), assets.get(1), ASSET_ERROR_MARGIN
+				);
+		}
+	}
 
 	/**
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#resolveQuestion(long, java.util.Date, long, int)}.
@@ -2563,19 +3765,7 @@ public class MarkovEngineTest extends TestCase {
 		fail("Not yet implemented"); // TODO
 	}
 
-	/**
-	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#getPossibleQuestionAssumptions(long, java.util.List)}.
-	 */
-	public final void testGetPossibleQuestionAssumptions() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#getAssetsIfStates(long, long, java.util.List, java.util.List)}.
-	 */
-	public final void testGetAssetsIfStates() {
-		fail("Not yet implemented"); // TODO
-	}
+	
 
 	/**
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#scoreUserQuestionEv(long, java.lang.Long, java.util.List, java.util.List)}.
@@ -2598,12 +3788,6 @@ public class MarkovEngineTest extends TestCase {
 		fail("Not yet implemented"); // TODO
 	}
 
-	/**
-	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#determineBalancingTrade(long, long, java.util.List, java.util.List)}.
-	 */
-	public final void testDetermineBalancingTrade() {
-		fail("Not yet implemented"); // TODO
-	}
 
 	/**
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#getQuestionHistory(java.lang.Long, java.util.List, java.util.List)}.

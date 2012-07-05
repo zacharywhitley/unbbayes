@@ -301,6 +301,14 @@ public interface MarkovEngineInterface {
 	 * @param assumptionIds : a list (ordered collection) of question IDs which are the assumptions for T (i.e. random variable "A" in the example). The ordeer
 	 * is important, because it will indicate which states of assumedStates are associated with which questions in assumptionIDs.
 	 * @param assumedStates : a list (ordered collection) representing the states of assumptionIDs assumed.
+	 * <br/>
+	 * By providing a list with some null content (e.g. [1,0,null]) or a list with a size smaller than assumptionIds, this method will return a conditional asset table instead
+	 * of the assets for each state of a question.
+	 * <br/>
+	 * For example, suppose questionId points to question X (with states x0 and x1), assumptionIds points to questions [Y,Z]
+	 * (with states [y0,y1] and [z0,z1] respectively),  and assumedStates points to states [y0 , null], then the returned list will be:
+	 * <br/>
+	 * [Asset(X=x0|Y=y0,Z=z0) ; Asset(X=x1|Y=y0,Z=z0); Asset(X=x0|Y=y0,Z=z1); Asset(X=x1|Y=y0,Z=z1)]
 	 * @return the change in user assets if a given states occurs if the specified assumptions are met. 
 	 * The indexes are relative to the indexes of the states.
 	 * In the case of a binary question this will return a [if_true, if_false] value, if multiple choice will return a [if_0, if_1, if_2...] value list
@@ -308,6 +316,10 @@ public interface MarkovEngineInterface {
 	 * that state 0 indicates false and state 1 indicates true); then, index 0 contains the assets of 
 	 * the question while it is in state "false" (given assumptions), and index 1 contains the assets of the
 	 * question while it is in state "true".
+	 * <br/>
+	 * If assumedStates is filled with null values, then this method will return conditional asset table.
+	 * <br/><br/>
+	 * E.g. [Asset(X=x0|Y=y0,Z=z0) ; Asset(X=x1|Y=y0,Z=z0); Asset(X=x0|Y=y0,Z=z1); Asset(X=x1|Y=y0,Z=z1)]
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
 	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
 	 */
