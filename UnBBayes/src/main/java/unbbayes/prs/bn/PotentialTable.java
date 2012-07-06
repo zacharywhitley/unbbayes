@@ -186,7 +186,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	
 	public  int getVariableIndex(Node variable){
 		for(int i = 0; i < variableList.size(); i++){
-			if(variableList.get(i) == variable){
+			if(variableList.get(i).equals(variable)){
 				return i; 
 			}
 		}
@@ -289,6 +289,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 * @param values
 	 */
 	public  void setValues(float values[]) {
+		dataPT.data = new float[values.length];
 		System.arraycopy(values, 0, dataPT.data, 0, values.length);
 	}
 
