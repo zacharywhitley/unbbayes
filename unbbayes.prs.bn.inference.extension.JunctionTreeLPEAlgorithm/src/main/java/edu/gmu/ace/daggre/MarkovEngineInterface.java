@@ -253,7 +253,7 @@ public interface MarkovEngineInterface {
 	 * @param transactionKey : key returned by {@link #startNetworkActions()}
 	 * @param occurredWhen : implementations of this interface may use this timestamp to store a history of modifications.
 	 * @param tradesStartingWhen : all trades with date greater or equal to this id will be reverted.
-	 * @param questionID : the id of the question to be reverted.
+	 * @param questionId : the id of the question to be reverted. If null, the trades to be reverted will not be filtered by question.
 	 * @return true if successful.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */

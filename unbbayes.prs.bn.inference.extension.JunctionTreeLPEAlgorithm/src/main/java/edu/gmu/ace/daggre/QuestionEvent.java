@@ -17,6 +17,12 @@ public interface QuestionEvent {
 	Date getWhenCreated();
 	
 	/**
+	 * @return the date/time when this action was actually executed
+	 * (more precisely, the moment it finished executing).
+	 */
+	Date getWhenExecutedFirstTime();
+	
+	/**
 	 * @return probability at this time of event.
 	 * @see #getDateTime(). 
 	 */

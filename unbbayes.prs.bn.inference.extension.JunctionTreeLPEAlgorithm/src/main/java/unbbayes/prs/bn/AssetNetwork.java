@@ -137,6 +137,12 @@ public class AssetNetwork extends ProbabilisticNetwork {
 	 * {@link PotentialTable#normalize()}.
 	 */
 	public void removeNode(Node nodeToRemove) {
+		/*
+		 * NOTE: this method assumes that the junction tree algorithm is implemented in a way
+		 * which it ignores separators containing 0 nodes (i.e. the empty separator still represents
+		 * a link between cliques, but such link is used only for accessing cliques in a 
+		 * hierarchic ordering, and it is not supposed to propagate evidences - e.g. absorb will do nothing).
+		 */
 		if (!this.isID() && !this.isHybridBN()) {
 			// attempt to remove probabilistic nodes from junction tree as well
 			// this only makes sense if we are attempting to remove nodes from a compiled BN
@@ -145,28 +151,20 @@ public class AssetNetwork extends ProbabilisticNetwork {
 				// remove variable from separators
 				if (getJunctionTree().getSeparators() != null) {
 					for (Separator separator : getJunctionTree().getSeparators()) {
-						if (separator.getNodes().contains(nodeToRemove)) {
-							PotentialTable sepTable = separator.getProbabilityFunction();
-							sepTable.removeVariable(nodeToRemove, false);
-							separator.getNodes().remove(nodeToRemove);
-							/*
-							 * NOTE: this method assumes that the junction tree algorithm is implemented in a way
-							 * which it ignores separators containing 0 nodes (i.e. the empty separator still represents
-							 * a link between cliques, but such link is used only for accessing cliques in a 
-							 * hierarchic ordering, and it is not supposed to propagate evidences - e.g. absorb will do nothing).
-							 */
-						}
+						// testing presence of variable in a list has almost same comput. cost of just deleting
+						PotentialTable sepTable = separator.getProbabilityFunction();
+						sepTable.removeVariable(nodeToRemove, false);
+						separator.getNodes().remove(nodeToRemove);
 					}
 				}
 				// remove variable from cliques
 				if (getJunctionTree().getCliques() != null) {
 					for (Clique clique : getJunctionTree().getCliques()) {
-						if (clique.getNodes().contains(nodeToRemove)) {
-							PotentialTable cliqueTable = clique.getProbabilityFunction();
-							cliqueTable.removeVariable(nodeToRemove, false);
-							clique.getAssociatedProbabilisticNodes().remove(nodeToRemove);
-							clique.getNodes().remove(nodeToRemove);
-						}
+						// testing presence of variable in a list has almost same comput. cost of just deleting
+						PotentialTable cliqueTable = clique.getProbabilityFunction();
+						cliqueTable.removeVariable(nodeToRemove, false);
+						clique.getAssociatedProbabilisticNodes().remove(nodeToRemove);
+						clique.getNodes().remove(nodeToRemove);
 					}
 				}
 			}
@@ -178,26 +176,26 @@ public class AssetNetwork extends ProbabilisticNetwork {
 		}
 
 	    // delete node from the list of all available nodes in the network
-	    getNodes().remove(nodeToRemove);
-	    
-	    // rebuild index of names
-	    getNodeIndexes().clear();
-	    for (int indexOfNode = 0; indexOfNode < getNodes().size(); indexOfNode++) {
-	        Node node = getNodes().get(indexOfNode);
-	        getNodeIndexes().put(node.getName(), new Integer(indexOfNode));
-	    }
-	    
-	    // remove edges containing nodeToRemove
-	    List<Edge> edgesContainingNodeToRemove = new ArrayList<Edge>();
-	    for (Edge edge : getEdges()) {
-	    	if ((edge.getOriginNode().equals(nodeToRemove)) || (edge.getDestinationNode().equals(nodeToRemove))) {
-	    		edgesContainingNodeToRemove.add(edge);
+	    if (getNodes().remove(nodeToRemove)) {
+	    	// rebuild index of names
+	    	getNodeIndexes().clear();
+	    	for (int indexOfNode = 0; indexOfNode < getNodes().size(); indexOfNode++) {
+	    		Node node = getNodes().get(indexOfNode);
+	    		getNodeIndexes().put(node.getName(), new Integer(indexOfNode));
 	    	}
-		}
-	    for (Edge edge : edgesContainingNodeToRemove) {
-	    	// this is supposed to remove parent and child relationship as well
-			this.removeEdge(edge);
-		}
+	    	
+	    	// remove edges containing nodeToRemove
+	    	List<Edge> edgesContainingNodeToRemove = new ArrayList<Edge>();
+	    	for (Edge edge : getEdges()) {
+	    		if ((edge.getOriginNode().equals(nodeToRemove)) || (edge.getDestinationNode().equals(nodeToRemove))) {
+	    			edgesContainingNodeToRemove.add(edge);
+	    		}
+	    	}
+	    	for (Edge edge : edgesContainingNodeToRemove) {
+	    		// this is supposed to remove parent and child relationship as well
+	    		this.removeEdge(edge);
+	    	}
+	    }
 	}
 	
 	/**

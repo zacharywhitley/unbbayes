@@ -371,6 +371,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			property.put(getEditCliqueOrSeparator(), table); // update property
 			// overwrite asset network property
 			this.getNetwork().addProperty(LAST_PROBABILITY_PROPERTY, property);
+			// also, use the copied potential table to store old values, so that we can use restoreData to undo changes.
+			((PotentialTable) getEditCliqueOrSeparator().getProbabilityFunction()).copyData();
 			return;
 		}
 		
@@ -379,6 +381,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			// fill property with clones, so that changes on the original tables won't affect the property
 			PotentialTable table = (PotentialTable) ((PotentialTable) clique.getProbabilityFunction()).clone();
 			property.put(clique, table); // update property
+			// also, use the copied potential table to store old values, so that we can use restoreData to undo changes.
+			((PotentialTable) clique.getProbabilityFunction()).copyData();
 		}
 		
 		// iterate on separators
@@ -386,6 +390,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			// fill property with clones, so that changes on the original tables won't affect the property
 			PotentialTable table = (PotentialTable) ((PotentialTable) separator.getProbabilityFunction()).clone();
 			property.put(separator, table); // update property
+			// also, use the copied potential table to store old values, so that we can use restoreData to undo changes.
+			((PotentialTable) separator.getProbabilityFunction()).copyData();
 		}
 		
 		// overwrite asset network property
@@ -1152,10 +1158,12 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		
 		// Set cells of clique tables to zero. 
 		for (Clique clique : getAssetNetwork().getJunctionTree().getCliques()) {
-			// consider only cliques containing node
-			if (clique.getNodes().contains(node)) {
-				// extract clique table
-				PotentialTable cliqueTable = clique.getProbabilityFunction();
+			// extract clique table
+			PotentialTable cliqueTable = clique.getProbabilityFunction();
+			// consider only clique tables containing node
+			// clique.getNodes() may be different from the variables in cliqueTable. 
+			// We'd like to prioritize vars in the tables rather than in clique.getNodes()
+			if (cliqueTable.getVariableIndex((Node)node) >= 0) {
 				// iterate over cells in the clique table
 				for (int i = 0; i < cliqueTable.tableSize(); i++) {
 					// using "multidimensionalCoord" is easier than "i" if our objective is to compare with "state"
@@ -1169,10 +1177,12 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		}
 		// Set cells of separator tables to zero as well.
 		for (Separator separator : getAssetNetwork().getJunctionTree().getSeparators()) {
-			// consider only separators containing node
-			if (separator.getNodes().contains(node)) {
-				// extract separator table
-				PotentialTable separatorTable = separator.getProbabilityFunction();
+			// extract separator table
+			PotentialTable separatorTable = separator.getProbabilityFunction();
+			// consider only separator tables containing node
+			// separator.getNodes() may be different from the variables in separatorTable. 
+			// We'd like to prioritize vars in the tables rather than in separator.getNodes()
+			if (separatorTable.getVariableIndex((Node)node) >= 0) {
 				// iterate over cells in the separator table
 				for (int i = 0; i < separatorTable.tableSize(); i++) {
 					// using "multidimensionalCoord" is easier than "i" if our objective is to compare with "state"

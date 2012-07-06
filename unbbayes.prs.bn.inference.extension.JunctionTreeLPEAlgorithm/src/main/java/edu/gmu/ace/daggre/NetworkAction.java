@@ -1,5 +1,6 @@
 package edu.gmu.ace.daggre;
 
+import java.util.Date;
 import java.util.List;
 
 
@@ -76,4 +77,14 @@ public interface NetworkAction extends QuestionEvent {
 	 * @see #getAssumptionIds()
 	 */
 	List<Integer> getAssumedStates();
+	
+	/**
+	 * @param whenExecutedFirst : the date/time when this action was actually executed
+	 * (more precisely, the moment it finished executing).
+	 * Note that {@link #execute()} can be called several times
+	 * (because the network must be rebuild eventually), but this
+	 * attribute shall contain the date it was executed "officially"
+	 * (i.e. the first time).
+	 */
+	void setWhenExecutedFirstTime(Date whenExecutedFirst);
 }
