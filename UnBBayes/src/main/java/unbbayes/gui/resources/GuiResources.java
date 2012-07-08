@@ -207,8 +207,8 @@ public class GuiResources extends ListResourceBundle {
 		{"showMTheoryToolTip","Show MTheory tree"},	
 		{"showEntitiesToolTip","Show entities of the MTheory"},
 		{"showOVariablesToolTip","Show ord. variables of the MFrag"},			
-		{"showEntityInstancesToolTip","Show entity instance edition pane"},			
-		{"showFingingsToolTip","Show findings edition pane"},		
+		{"showEntityInstancesToolTip","Show entity instance editing pane"},			
+		{"showFingingsToolTip","Show findings editing pane"},		
 		
 		{"executeQueryToolTip","Execute Query"},
 		{"turnToSSBNModeToolTip","Turn to SSBN Mode"},
