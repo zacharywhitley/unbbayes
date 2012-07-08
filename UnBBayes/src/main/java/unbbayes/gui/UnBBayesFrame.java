@@ -1320,7 +1320,11 @@ public class UnBBayesFrame extends JFrame {
 		pluginMenuSeparator = new JPopupMenu.Separator();
 		pluginMenu.add(pluginMenuSeparator);
 
-		menu.add(pluginMenu);
+		// Number of menus.
+		int menuItemsNumber = menu.getMenuCount();
+
+		// PluginMenu must be added after menu Help.
+		menu.add(pluginMenu, menuItemsNumber - 1);
 
 		// filling components for "plugins" (default)
 		List<JComponent> componentList = new ArrayList<JComponent>();
