@@ -23,6 +23,8 @@ public abstract class UnBBayesModule extends JInternalFrame implements
 	
 	private UnBBayesFrame unbbayesFrame;
 
+	// This file storage the module in the hard disk
+	private File file;
 	/**
 	 * It is equal to super("Plugin", true, true, true, true);
 	 * @see JInternalFrame
@@ -145,5 +147,14 @@ public abstract class UnBBayesModule extends JInternalFrame implements
 		super.setName(name);
 		this.setTitle(name);
 	}
+
+	public File getFile() {
+		return file;
+	}
+
+	public void setFile(File file) {
+		this.file = file;
+	}
+	
 	
 }
