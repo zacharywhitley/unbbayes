@@ -291,6 +291,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 				if (!getUserToAssetAwareAlgorithmMap().isEmpty()) {	// we only need to rebuild user's assets if there were some users
 					// by removing all users, we are forcing markov engine to build user's asset network when first prompted
 					getUserToAssetAwareAlgorithmMap().clear();	
+					// by executing some action related to user, user will be re-created.
+					// hence, "read-only" users are not rebuild, because such users did never commit a network action.
 					synchronized (getExecutedActions()) {
 						// Note: if we are rebooting the system, the history is supposedly empty. We only need to rebuild user assets if history is not empty
 						for (NetworkAction action : getExecutedActions()) {
@@ -1910,9 +1912,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * Pi = (q1 * q2 * ... * qi-1 * qi+1 * ... * qN * pi) / ( (q2*q3*q4*...*qN * p1) + (q1*q3*q4*...*qN * p2) + ... + (q1*q2*...*qi-1*qi+1*...*qN * pi) + ... + (q1*q2*...*qN-1 * pN) ) 
 	 * <br/>
 	 * For  1 <= i <= N
-	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#determineBalancingTrade(long, long, java.util.List, java.util.List)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#previewBalancingTrade(long, long, java.util.List, java.util.List)
 	 */
-	public List<Float> determineBalancingTrade(long userId, long questionId,
+	public List<Float> previewBalancingTrade(long userId, long questionId,
 			List<Long> assumptionIds, List<Integer> assumedStates)
 			throws IllegalArgumentException {
 		if (assumptionIds != null && assumedStates != null && assumptionIds.size() != assumedStates.size()) {
@@ -1978,7 +1980,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	}
 	
 	/**
-	 * Network action representing {@link MarkovEngineImpl#balanceTrade(long, Date, String, long, long, List, List)}
+	 * Network action representing {@link MarkovEngineImpl#doBalanceTrade(long, Date, String, long, long, List, List)}
 	 * This is actually an {@link AddTradeNetworkAction}, but with values of {@link AddTradeNetworkAction#getNewValues()}
 	 * set to a probability distribution which will balance the assets of a question given assumptions.
 	 * @author Shou Matsumoto
@@ -1988,11 +1990,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public BalanceTradeNetworkAction(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) {
 			super(transactionKey, occurredWhen, tradeKey, userId, questionId, null, assumptionIds, assumedStates, false);
 		}
-		/** Virtually does {@link MarkovEngineImpl#determineBalancingTrade(long, long, List, List)} and then {@link AddTradeNetworkAction#execute()} */
+		/** Virtually does {@link MarkovEngineImpl#previewBalancingTrade(long, long, List, List)} and then {@link AddTradeNetworkAction#execute()} */
 		public void execute() {
 			synchronized (getProbabilisticNetwork()) {
 				// obtain trade values for exiting the user from a question given assumptions
-				this.setNewValues(determineBalancingTrade(getUserId(), getQuestionId(), getAssumptionIds(), getAssumedStates()));
+				this.setNewValues(previewBalancingTrade(getUserId(), getQuestionId(), getAssumptionIds(), getAssumedStates()));
 				// execute the trade without releasing lock
 				super.execute();
 			}
@@ -2005,7 +2007,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#balanceTrade(long, long, long, java.util.List, java.util.List)
 	 */
-	public void balanceTrade(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException, InvalidAssumptionException, InexistingQuestionException {
+	public boolean doBalanceTrade(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException, InvalidAssumptionException, InexistingQuestionException {
 		
 		// initial assertions
 		if (occurredWhen == null) {
@@ -2114,6 +2116,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		// instantiate the action object for balancing trade
 		this.addNetworkAction(transactionKey, new BalanceTradeNetworkAction(transactionKey, occurredWhen, tradeKey, userId, questionId, assumptionIds, assumedStates));
 		
+		return true;
 	}
 	
 
@@ -2185,20 +2188,21 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 
 	/*
 	 * (non-Javadoc)
-	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getScoreSummary(long, java.util.List, java.util.List)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getScoreSummary(long, java.lang.Long, java.util.List, java.util.List)
 	 */
-	public List<Properties> getScoreSummary(long userId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+	public List<Properties> getScoreSummary(long userId, Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 	
 	/*
 	 * (non-Javadoc)
-	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getScoreDetails(long, java.util.List, java.util.List)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getScoreDetails(long, java.lang.Long, java.util.List, java.util.List)
 	 */
-	public List<Properties> getScoreDetails(long userId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+	public List<Properties> getScoreDetails(long userId, Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
 		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Not implemented yet.");
+		// not required in the 1st release
+		throw new UnsupportedOperationException("Operation not supported by this version.");
 	}
 
 	/**

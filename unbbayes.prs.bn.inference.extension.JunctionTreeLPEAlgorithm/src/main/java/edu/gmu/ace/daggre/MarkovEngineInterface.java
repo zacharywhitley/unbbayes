@@ -486,7 +486,7 @@ public interface MarkovEngineInterface {
 	 * This method will determine the states of a balancing trade which would minimize impact once the question is resolved
 	 * Ideally this balancing trade is one where all assetsifStates states where equal so settling the question would have no effect. 
 	 * <br/><br/>
-	 * CAUTION: in a multi-thread environment, use {@link #balanceTrade(long, Date, String, long, long, List, List)} if you want to commit a trade
+	 * CAUTION: in a multi-thread environment, use {@link #doBalanceTrade(long, Date, String, long, long, List, List)} if you want to commit a trade
 	 * which will balance the user's assets given assumptions, instead of using this method to calculate the balancing
 	 * trade and then run {@link #addTrade(long, Date, String, long, long, List, List, List, boolean)}.
 	 * @param userID: the ID of the user (i.e. owner of the assets).
@@ -519,14 +519,14 @@ public interface MarkovEngineInterface {
 	 * index 3 - P(T=t2 | A1=a12, A2=a22)<br/>
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
-	 * @see #balanceTrade(long, Date, String, long, long, List, List)
+	 * @see #doBalanceTrade(long, Date, String, long, long, List, List)
 	 */
-	public List<Float> determineBalancingTrade(long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	public List<Float> previewBalancingTrade(long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
-	 * This is similar to doing {@link #determineBalancingTrade(long, long, List, List)} and then
+	 * This is similar to doing {@link #previewBalancingTrade(long, long, List, List)} and then
 	 * {@link #addTrade(long, Date, String, long, long, List, List, List, boolean)}.
-	 * However, this method is safer than calling {@link #determineBalancingTrade(long, long, List, List)}
+	 * However, this method is safer than calling {@link #previewBalancingTrade(long, long, List, List)}
 	 * and then {@link #addTrade(long, Date, String, long, long, List, List, List, boolean)},
 	 * because it is going to be executed in a same transaction (i.e. it will be executed
 	 * during {@link #commitNetworkActions(long)}).
@@ -542,7 +542,7 @@ public interface MarkovEngineInterface {
 	 * If it does not have the same size of assumptionIDs,Å@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered. 
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
-	public void balanceTrade(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	public boolean doBalanceTrade(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
 	 * This function will return an ordered list of events that explain how the current probability of a question was determined. 
@@ -562,18 +562,20 @@ public interface MarkovEngineInterface {
 	 * @param userId : ID of the user to be considered.
 	 * @param assumptionIds : assumptions to be considered in obtaining the summary
 	 * @param assumedStates : states of the assumptions. The order must be synchronized with assumptionIds.
+	 * @param questionId : ID of the main question to be used as filter. If null, all questions will be considered.
 	 * @return ordered list of score details (properties dictionary with parameters to display TBD) that shows a summary view of how the current score of a user was determined. 
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
-	public List<Properties> getScoreSummary(long userId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	public List<Properties> getScoreSummary(long userId, Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
 	 * @param userId : ID of the user to be considered.
 	 * @param assumptionIds : assumptions to be considered in obtaining the summary
 	 * @param assumedStates : states of the assumptions. The order must be synchronized with assumptionIds.
+	 * @param questionId : ID of the main question to be used as filter. If null, all questions will be considered.
 	 * @return ordered list of score details (properties dictionary with parameters to display TBD) 
 	 * that provides a detailed view of how the current score of a user was determined. 
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
-	public List<Properties> getScoreDetails(long userId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	public List<Properties> getScoreDetails(long userId, Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 }

@@ -1386,8 +1386,6 @@ public class MarkovEngineTest extends TestCase {
 		cash = engine.getCash(userNameToIDMap.get("Tom"), Collections.singletonList((long)0x0E), Collections.singletonList(0));
 		assertTrue("Obtained cash = " + cash, minCash < cash);
 		
-		// TODO assert getAssetsIf
-		
 		// Tom bets P(E=e1|D=d1) = .55 -> .9
 		
 		// check whether probability prior to edit is really [e1d1, e2d1, e1d2, e2d2] = [.55, .45, .55, .45]
@@ -1413,8 +1411,8 @@ public class MarkovEngineTest extends TestCase {
 		// obtain conditional probabilities and assets of the edited clique, prior to edit, so that we can use it to check assets
 		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
+		assertEquals(4, cliqueProbsBeforeTrade.size());
+		assertEquals(4, cliqueAssetsBeforeTrade.size());
 
 		
 		// set P(E=e1|D=d1) = 0.9 and P(E=e2|D=d1) = 0.1
@@ -1598,8 +1596,8 @@ public class MarkovEngineTest extends TestCase {
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
 		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0E, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
+		assertEquals(4, cliqueProbsBeforeTrade.size());
+		assertEquals(4, cliqueAssetsBeforeTrade.size());
 		
 		// set P(E=e1|D=d2) = 0.4 and P(E=e2|D=d2) = 0.6
 		transactionKey = engine.startNetworkActions();
@@ -1783,8 +1781,8 @@ public class MarkovEngineTest extends TestCase {
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
 		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Amy"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
+		assertEquals(4, cliqueProbsBeforeTrade.size());
+		assertEquals(4, cliqueAssetsBeforeTrade.size());
 		
 		// set P(F=f1|D=d1) = 0.3 and P(F=f2|D=d1) = 0.7  
 		transactionKey = engine.startNetworkActions();
@@ -1960,8 +1958,8 @@ public class MarkovEngineTest extends TestCase {
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
 		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
+		assertEquals(4, cliqueProbsBeforeTrade.size());
+		assertEquals(4, cliqueAssetsBeforeTrade.size());
 		
 		// set P(F=f1|D=d2) = 0.1 and P(F=f2|D=d2) = 0.9
 		transactionKey = engine.startNetworkActions();
@@ -2114,8 +2112,8 @@ public class MarkovEngineTest extends TestCase {
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
 		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0E, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
+		assertEquals(4, cliqueProbsBeforeTrade.size());
+		assertEquals(4, cliqueAssetsBeforeTrade.size());
 		
 		// set P(E=e1) = 0.8 and P(E=e2) = 0.2
 		transactionKey = engine.startNetworkActions();
@@ -2253,8 +2251,8 @@ public class MarkovEngineTest extends TestCase {
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
 		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
+		assertEquals(4, cliqueProbsBeforeTrade.size());
+		assertEquals(4, cliqueAssetsBeforeTrade.size());
 		
 		// set P(D=d1|F=f2) = 0.7 and P(D=d2|F=f2) = 0.3
 		transactionKey = engine.startNetworkActions();
@@ -2385,8 +2383,8 @@ public class MarkovEngineTest extends TestCase {
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
 		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
+		assertEquals(4, cliqueProbsBeforeTrade.size());
+		assertEquals(4, cliqueAssetsBeforeTrade.size());
 		
 		// set P(D=d1|F=f2) to a value lower (1/10) than the lower bound of edit interval
 		transactionKey = engine.startNetworkActions();
@@ -2522,8 +2520,8 @@ public class MarkovEngineTest extends TestCase {
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
 		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
+		assertEquals(4, cliqueProbsBeforeTrade.size());
+		assertEquals(4, cliqueAssetsBeforeTrade.size());
 		
 		// set P(D=d1|F=f2) to a value lower (1/10) than the lower bound of edit interval
 		transactionKey = engine.startNetworkActions();
@@ -2563,6 +2561,7 @@ public class MarkovEngineTest extends TestCase {
 		
 	}
 	
+
 	/**
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#addTrade(long, Date, String, long, long, List, List, List, boolean)}.
 	 * This method performs the same test of {@link #testAddTrade()},
@@ -3045,6 +3044,1982 @@ public class MarkovEngineTest extends TestCase {
 		
 	}
 	
+	
+	/**
+	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#addTrade(long, Date, String, long, long, List, List, List, boolean)},
+	 * {@link MarkovEngineImpl#addQuestion(long, Date, long, int, List)},
+	 * {@link MarkovEngineImpl#addQuestionAssumption(long, Date, long, List, List)}.
+	 * This method performs the trades in {@link #testAddTrade()}, but it creates nodes and edges
+	 * after some trade was performed.
+	 */
+	public final void testAddQuestionAfterTrade() {
+		
+		// generate node E
+		long transactionKey = engine.startNetworkActions();
+		engine.addQuestion(transactionKey, new Date(), 0x0E, 2, null);	// question E has ID = hexadecimal E. CPD == null -> linear distro
+		engine.commitNetworkActions(transactionKey);
+		
+		// Let's use ID = 0 for the user Tom 
+		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
+		userNameToIDMap.put("Tom", (long)0);
+		
+		// By default, cash is initialized as 0 (i.e. min-q = 1)
+		assertEquals(0, Math.round(engine.getCash(userNameToIDMap.get("Tom"), null, null)), ASSET_ERROR_MARGIN);
+		assertEquals(1, Math.round(engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Tom"), null, null))), ASSET_ERROR_MARGIN);
+		
+		// add 100 q-values to new users
+		transactionKey = engine.startNetworkActions();
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Tom"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+		engine.commitNetworkActions(transactionKey);
+		// check that user's min-q value was changed to the correct value
+		assertEquals(100, Math.round(engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Tom"), null, null))), ASSET_ERROR_MARGIN);
+		assertEquals(Math.round(engine.getScoreFromQValues(100)), Math.round(engine.getCash(userNameToIDMap.get("Tom"), null, null)), ASSET_ERROR_MARGIN);
+		
+		// Tom bets P(E=e1) = 0.5  to 0.55 (unconditional soft evidence in E)
+		
+		// check whether probability prior to edit is really 0.5
+		List<Float> probList = engine.getProbList(0x0E, null, null);
+		assertEquals(2 , probList.size());
+		assertEquals(0.5f , probList.get(0) , PROB_ERROR_MARGIN);
+		assertEquals(0.5f , probList.get(1) , PROB_ERROR_MARGIN);
+		
+		// edit interval of P(E=e1) should be [0.005, 0.995]
+		List<Float> editInterval = engine.getEditLimits(userNameToIDMap.get("Tom"), 0x0E, 0, null, null);
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.size());
+		assertEquals(0.005f, editInterval.get(0), PROB_ERROR_MARGIN );
+		assertEquals(0.995f, editInterval.get(1), PROB_ERROR_MARGIN );
+		
+		// obtain conditional probabilities and assets of the edited clique, prior to edit, so that we can use it to check assets after edit
+		List<Float> cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, null, null, false);
+		List<Float> cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, null, null);
+		assertEquals(2, cliqueProbsBeforeTrade.size());
+		assertEquals(2, cliqueAssetsBeforeTrade.size());
+		
+		// do edit
+		transactionKey = engine.startNetworkActions();
+		List<Float> newValues = new ArrayList<Float>(2);
+		newValues.add(0.55f);		// P(E=e1) = 0.55
+		newValues.add(0.45f);		// P(E=e2) = 1 - P(E=e1) = 0.45
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Tom bets P(E=e1) = 0.5  to 0.55", 
+				userNameToIDMap.get("Tom"), 
+				0x0E, 	// question E
+				newValues,
+				null, 	// no assumptions
+				null, 	// no states of the assumptions
+				false	// do not allow negative
+			);
+		engine.commitNetworkActions(transactionKey);
+		
+		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
+		List<Float> cliqueProbsAfterTrade = engine.getProbList((long)0x0E, null, null, false);
+		List<Float> cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E,null, null);
+		assertEquals(2, cliqueProbsAfterTrade.size());
+		assertEquals(2, cliqueAssetsAfterTrade.size());
+		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+			assertEquals(
+					"Index = " + i, 
+					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+					ASSET_ERROR_MARGIN
+				);
+		}
+		
+		// check that new marginal of E is [0.55 0.45], and the others have not changed (remains 50%)
+		try {
+			engine.getProbList(0x0D, null, null);
+			fail("Node was not created yet.");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);	// this is supposed to happen
+		}
+		probList = engine.getProbList(0x0E, null, null);
+		assertEquals(0.55f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.45f, probList.get(1), PROB_ERROR_MARGIN);
+		try {
+			engine.getProbList(0x0F, null, null);
+			fail("Node was not created yet.");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);	// this is supposed to happen
+		}
+		
+		// check that Tom's min-q is 90 (and the cash is supposedly the log value of 90)
+		float minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);	 // null means unconditional cash, which is supposedly the global minimum
+		assertEquals(Math.round(engine.getScoreFromQValues(90f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(90f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		
+		// check that LPE contains e2 
+		// all nodes are always going to be the assumption nodes in this test
+		List<Long> assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long) 0x0E);
+		
+		// check e1
+		List<Integer> assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);	// e1
+		float cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check e2
+		assumedStates.set(0, 1);	// e2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		
+		// create node D and edge D->E
+		transactionKey = engine.startNetworkActions();
+		engine.addQuestion(transactionKey, new Date(), 0x0D, 2, null);	// question D has ID = hexadecimal D. CPD == null -> linear distro
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0E, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
+		engine.commitNetworkActions(transactionKey);
+		
+		// check that probs and assets did not change
+		
+		// check that marginal of E is [0.55 0.45], and the others have not changed (remains 50%)
+		probList = engine.getProbList(0x0D, null, null);
+		assertEquals(0.5f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0E, null, null);
+		assertEquals(0.55f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.45f, probList.get(1), PROB_ERROR_MARGIN);
+		try {
+			engine.getProbList(0x0F, null, null);
+			fail("Node does not exist");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e); // this is supposed to happen
+		}
+		
+		// check that Tom's min-q is 90 (and the cash is supposedly the log value of 90)
+		minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);	 // null means unconditional cash, which is supposedly the global minimum
+		assertEquals(Math.round(engine.getScoreFromQValues(90f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(90f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		
+		// check that LPE contains e2 and any values for D, by asserting that cash conditioned to such states are equals to the min
+		// d, e are always going to be the assumption nodes in this test
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long) 0x0D);		// 1st node is D; assumedStates must follow this order
+		assumptionIds.add((long) 0x0E);		// 2nd node is E; assumedStates must follow this order
+		
+		// check combination d1, e1 (not min)
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);	// d1
+		assumedStates.add(0);	// e1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		// check combination d2, e1 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		// check minimal condition of LPE: e2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), Collections.singletonList((long)0x0E), Collections.singletonList(1));
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		cash = engine.getCash(userNameToIDMap.get("Tom"), Collections.singletonList((long)0x0E), Collections.singletonList(0));
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		
+		
+		// Tom bets P(E=e1|D=d1) = .55 -> .9
+		
+		// check whether probability prior to edit is really [e1d1, e2d1, e1d2, e2d2] = [.55, .45, .55, .45]
+		assumptionIds = new ArrayList<Long>();		
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 0x0D);	// assumption = D
+		probList = engine.getProbList(0x0E, assumptionIds, null);
+		assertEquals(4, probList.size());
+		assertEquals(0.55f , probList.get(0),PROB_ERROR_MARGIN );	// P(E=e1|D=d1)
+		assertEquals(0.45f , probList.get(1),PROB_ERROR_MARGIN );	// P(E=e2|D=d1)
+		assertEquals(0.55f , probList.get(2),PROB_ERROR_MARGIN );	// P(E=e1|D=d2)
+		assertEquals(0.45f , probList.get(3),PROB_ERROR_MARGIN );	// P(E=e2|D=d2)
+		
+		assumedStates.add(0);	// set d1 as assumed state
+		
+		// edit interval of P(E=e1|D=d1) should be [0.005, 0.995]
+		editInterval = engine.getEditLimits(userNameToIDMap.get("Tom"), 0x0E, 0, assumptionIds, assumedStates);	// (node == 0x0E && state == 0) == e1
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.size());
+		assertEquals(0.005f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+		assertEquals(0.995f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		
+		// obtain conditional probabilities and assets of the edited clique, prior to edit, so that we can use it to check assets
+		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsBeforeTrade.size());
+		assertEquals(4, cliqueAssetsBeforeTrade.size());
+
+		
+		// set P(E=e1|D=d1) = 0.9 and P(E=e2|D=d1) = 0.1
+		transactionKey = engine.startNetworkActions();
+		newValues = new ArrayList<Float>();
+		newValues.add(.9f);
+		newValues.add(.1f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Tom bets P(E=e1|D=d1) = 0.9", 
+				userNameToIDMap.get("Tom"), 
+				0x0E, 
+				newValues, 
+				assumptionIds, 
+				assumedStates, 
+				false
+			);
+		engine.commitNetworkActions(transactionKey);
+		
+		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
+		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+			assertEquals(
+					"Index = " + i, 
+					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+					ASSET_ERROR_MARGIN
+				);
+		}
+		
+		// check that new marginal of E is [0.725 0.275] (this is expected value), and the others have not changed (remains 50%)
+		probList = engine.getProbList(0x0D, null, null);
+		assertEquals(0.5f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0E, null, null);
+		assertEquals(0.725f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.275f, probList.get(1), PROB_ERROR_MARGIN);
+		try {
+			engine.getProbList(0x0F, null, null);
+			fail("Node was not created yet");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);	// this is expected
+		}
+		
+		// check that min-q is 20
+		minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(20f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(20f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		
+		// check that LPE contains d1, e2 
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long) 0x0D);		// 1st node is D; assumedStates must follow this order
+		assumptionIds.add((long) 0x0E);		// 2nd node is E; assumedStates must follow this order
+		
+		// check combination d1, e1 (not min)
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);	// d1
+		assumedStates.add(0);	// e1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		// check combination d2, e1 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e2 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		
+		// Let's create user Joe, ID = 1.
+		userNameToIDMap.put("Joe", (long) 1);
+		
+		// By default, cash is initialized as 0 (i.e. min-q = 1)
+		assertEquals(0, Math.round(engine.getCash(userNameToIDMap.get("Joe"), null, null)), ASSET_ERROR_MARGIN);
+		assertEquals(1, Math.round(engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Joe"), null, null))), ASSET_ERROR_MARGIN);
+		
+		// add 100 q-values to new users
+		transactionKey = engine.startNetworkActions();
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Joe"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+		engine.commitNetworkActions(transactionKey);
+		// check that user's min-q value was changed to the correct value
+		assertEquals(100, Math.round(engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Joe"), null, null))), ASSET_ERROR_MARGIN);
+		assertEquals(Math.round(engine.getScoreFromQValues(100)), Math.round(engine.getCash(userNameToIDMap.get("Joe"), null, null)), ASSET_ERROR_MARGIN);
+
+		// Joe bets P(E=e1|D=d2) = .55 -> .4
+		
+		// check whether probability prior to edit is really [e1d1, e2d1, e1d2, e2d2] = [.9, .1, .55, .45]
+		assumptionIds = new ArrayList<Long>();		
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 0x0D);	// assumption = D
+		probList = engine.getProbList(0x0E, assumptionIds, null);
+		assertEquals(4, probList.size());
+		assertEquals(0.9f , probList.get(0),PROB_ERROR_MARGIN );	// P(E=e1|D=d1)
+		assertEquals(0.1f , probList.get(1),PROB_ERROR_MARGIN );	// P(E=e2|D=d1)
+		assertEquals(0.55f , probList.get(2),PROB_ERROR_MARGIN );	// P(E=e1|D=d2)
+		assertEquals(0.45f , probList.get(3),PROB_ERROR_MARGIN );	// P(E=e2|D=d2)
+		
+		assumedStates.add(1);	// set d2 as assumed state
+		
+		// edit interval of P(E=e1|D=d2) should be [0.0055, 0.9955]
+		editInterval = engine.getEditLimits(userNameToIDMap.get("Joe"), 0x0E, 0, assumptionIds, assumedStates);
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.size());
+		assertEquals(0.0055f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+		assertEquals(0.9955f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		
+		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
+		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0E, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsBeforeTrade.size());
+		assertEquals(4, cliqueAssetsBeforeTrade.size());
+		
+		// set P(E=e1|D=d2) = 0.4 and P(E=e2|D=d2) = 0.6
+		transactionKey = engine.startNetworkActions();
+		newValues = new ArrayList<Float>();
+		newValues.add(.4f);
+		newValues.add(.6f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Joe bets P(E=e1|D=d2) = 0.4", 
+				userNameToIDMap.get("Joe"), 
+				0x0E, 
+				newValues, 
+				assumptionIds, 
+				assumedStates, 
+				false
+			);
+		engine.commitNetworkActions(transactionKey);
+		
+		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
+		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0E, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+			assertEquals(
+					"Index = " + i, 
+					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+					ASSET_ERROR_MARGIN
+				);
+		}
+		
+		// check that new marginal of E is [0.65 0.35] (this is expected value), and the others have not changed (remains 50%)
+		probList = engine.getProbList(0x0D, null, null);
+		assertEquals(0.5f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0E, null, null);
+		assertEquals(0.65f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.35f, probList.get(1), PROB_ERROR_MARGIN);
+		try {
+			engine.getProbList(0x0F, null, null);
+			fail();
+		} catch (Exception e) {
+			assertNotNull(e);
+		}
+		
+		// check that min-q is 72.727272...
+		minCash = engine.getCash(userNameToIDMap.get("Joe"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(72.727272f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(72.727272f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		
+		// check that LPE contains d2, e1 
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long) 0x0D);		// 1st node is D; assumedStates must follow this order
+		assumptionIds.add((long) 0x0E);		// 2nd node is E; assumedStates must follow this order
+		
+		// check combination d1, e1
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);	// d1
+		assumedStates.add(0);	// e1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d1, e2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e1
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		// check combination d2, e2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		
+		// create node F and edge D->F
+		transactionKey = engine.startNetworkActions();
+		engine.addQuestion(transactionKey, new Date(), 0x0F, 2, null);	// question F has ID = hexadecimal F. CPD == null -> linear distro
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0F, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
+		engine.commitNetworkActions(transactionKey);
+		
+		// check that probs and assets did not change
+		
+		// check that marginal of E is still [0.65 0.35] (this is expected value), and the others have not changed (remains 50%)
+		probList = engine.getProbList(0x0D, null, null);
+		assertEquals(0.5f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0E, null, null);
+		assertEquals(0.65f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.35f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0F, null, null);
+		assertEquals(0.5f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probList.get(1), PROB_ERROR_MARGIN);
+		
+		// check that min-q of Joe is 72.727272...
+		minCash = engine.getCash(userNameToIDMap.get("Joe"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(72.727272f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(72.727272f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		
+		// check that LPE of Joe contains d2, e1 and any value F
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long) 0x0D);		// 1st node is D; assumedStates must follow this order
+		assumptionIds.add((long) 0x0E);		// 2nd node is E; assumedStates must follow this order
+		assumptionIds.add((long) 0x0F);		// 3rd node is F; assumedStates must follow this order
+		
+		// check combination d1, e1, f1
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);	// d1
+		assumedStates.add(0);	// e1
+		assumedStates.add(0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e1, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e1, f1 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		
+		// check combination d2, e1, f2 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		// check combination d2, e2, f1
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check minimal condition of LPE: d2, e1
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long)0x0D);
+		assumptionIds.add((long)0x0E);
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(1);
+		assumedStates.add(0);
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		// check conditions that do not match LPE
+		assumedStates.set(0,0);
+		assumedStates.set(1,1);
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		assumptionIds.clear();
+		assumptionIds.add((long)0x0D);
+		assumedStates.clear();
+		assumedStates.add(0);
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		assumptionIds.clear();
+		assumptionIds.add((long)0x0E);
+		assumedStates.clear();
+		assumedStates.add(1);
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check that min-q of Tom is still 20
+		minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(20f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(20f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		
+		// check that LPE of Tom still contains d1, e2 and any value F
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long) 0x0D);		// 1st node is D; assumedStates must follow this order
+		assumptionIds.add((long) 0x0E);		// 2nd node is E; assumedStates must follow this order
+		assumptionIds.add((long) 0x0F);		// 3rd node is F; assumedStates must follow this order
+		
+		// check combination d1, e1, f1 (not min)
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);	// d1
+		assumedStates.add(0);	// e1
+		assumedStates.add(0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e1, f2 (not min)
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		// check combination d2, e1, f1 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e1, f2 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f1 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f2 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check minimal condition of LPE: d1, e2
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long)0x0D);
+		assumptionIds.add((long)0x0E);
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);
+		assumedStates.add(1);
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		// check conditions that do not match LPE
+		assumedStates.set(0,1);
+		assumedStates.set(1,0);
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		assumptionIds.clear();
+		assumptionIds.add((long)0x0D);
+		assumedStates.clear();
+		assumedStates.add(1);
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		assumptionIds.clear();
+		assumptionIds.add((long)0x0E);
+		assumedStates.clear();
+		assumedStates.add(0);
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		
+		// Let's create user Amy, ID = 2.
+		userNameToIDMap.put("Amy", (long) 2);
+		
+		// By default, cash is initialized as 0 (i.e. min-q = 1)
+		assertEquals(0, Math.round(engine.getCash(userNameToIDMap.get("Amy"), null, null)), ASSET_ERROR_MARGIN);
+		assertEquals(1, Math.round(engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Amy"), null, null))), ASSET_ERROR_MARGIN);
+		
+		// add 100 q-values to new users
+		transactionKey = engine.startNetworkActions();
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Amy"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+		engine.commitNetworkActions(transactionKey);
+		// check that user's min-q value was changed to the correct value
+		assertEquals(100, Math.round(engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Amy"), null, null))), ASSET_ERROR_MARGIN);
+		assertEquals(Math.round(engine.getScoreFromQValues(100)), Math.round(engine.getCash(userNameToIDMap.get("Amy"), null, null)), ASSET_ERROR_MARGIN);
+
+		// Amy bets P(F=f1|D=d1) = .5 -> .3
+		
+		// check whether probability prior to edit is really [f1d1, f2d1, f1d2, f2d2] = [.5, .5, .5, .5]
+		assumptionIds = new ArrayList<Long>();		
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 0x0D);	
+		probList = engine.getProbList(0x0F, assumptionIds, null);
+		assertEquals(4, probList.size());
+		assertEquals(0.5f , probList.get(0),PROB_ERROR_MARGIN );
+		assertEquals(0.5f , probList.get(1),PROB_ERROR_MARGIN );
+		assertEquals(0.5f , probList.get(2),PROB_ERROR_MARGIN );
+		assertEquals(0.5f , probList.get(3),PROB_ERROR_MARGIN );
+		
+		assumedStates.add(0);	// set d1 as assumed state
+		
+		// edit interval of P(F=f1|D=d1) should be [0.005, 0.995]
+		editInterval = engine.getEditLimits(userNameToIDMap.get("Amy"), 0x0F, 0, assumptionIds, assumedStates);
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.size());
+		assertEquals(0.005f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+		assertEquals(0.995f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		
+		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
+		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Amy"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsBeforeTrade.size());
+		assertEquals(4, cliqueAssetsBeforeTrade.size());
+		
+		// set P(F=f1|D=d1) = 0.3 and P(F=f2|D=d1) = 0.7  
+		transactionKey = engine.startNetworkActions();
+		newValues = new ArrayList<Float>();
+		newValues.add(.3f);
+		newValues.add(.7f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Amy bets P(F=f1|D=d1) = 0.3", 
+				userNameToIDMap.get("Amy"), 
+				0x0F, 
+				newValues, 
+				assumptionIds, 
+				assumedStates, 
+				false
+			);
+		engine.commitNetworkActions(transactionKey);
+		
+		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
+		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Amy"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+			assertEquals(
+					"Index = " + i, 
+					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+					ASSET_ERROR_MARGIN
+				);
+		}
+		
+		// check that new marginal of E is still [0.65 0.35] (this is expected value), F is [.4 .6], and the others have not changed (remains 50%)
+		probList = engine.getProbList(0x0D, null, null);
+		assertEquals(0.5f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0E, null, null);
+		assertEquals(0.65f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.35f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0F, null, null);
+		assertEquals(0.4f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.6f, probList.get(1), PROB_ERROR_MARGIN);
+		
+		// check that min-q is 60...
+		minCash = engine.getCash(userNameToIDMap.get("Amy"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(60f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(60f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		
+		// check that LPE contains d1, f1 and any value E
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long) 0x0D);		// 1st node is D; assumedStates must follow this order
+		assumptionIds.add((long) 0x0E);		// 2nd node is E; assumedStates must follow this order
+		assumptionIds.add((long) 0x0F);		// 3rd node is F; assumedStates must follow this order
+		
+		// check combination d1, e1, f1
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);	// d1
+		assumedStates.add(0);	// e1
+		assumedStates.add(0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		
+		// check combination d1, e1, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e1, f1 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e1, f2 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f1
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check minimal condition of LPE: d1, f1
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long)0x0D);
+		assumptionIds.add((long)0x0F);
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);
+		assumedStates.add(0);
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		// check conditions that do not match LPE
+		assumedStates.set(0,1);
+		assumedStates.set(1,1);
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		assumedStates.set(0,0);
+		assumedStates.set(1,1);
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		assumedStates.set(0,1);
+		assumedStates.set(1,0);
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		assumptionIds.clear();
+		assumptionIds.add((long)0x0D);
+		assumedStates.clear();
+		assumedStates.add(1);
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		assumptionIds.clear();
+		assumptionIds.add((long)0x0F);
+		assumedStates.clear();
+		assumedStates.add(1);
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// TODO assert getAssetsIf
+		
+
+		// Joe bets P(F=f1|D=d2) = .5 -> .1
+		
+		// check whether probability prior to edit is really [f1d1, f2d1, f1d2, f2d2] = [.3, .7, .5, .5]
+		assumptionIds = new ArrayList<Long>();		
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 0x0D);	
+		probList = engine.getProbList(0x0F, assumptionIds, null);
+		assertEquals(4, probList.size());
+		assertEquals(0.3f , probList.get(0),PROB_ERROR_MARGIN );
+		assertEquals(0.7f , probList.get(1),PROB_ERROR_MARGIN );
+		assertEquals(0.5f , probList.get(2),PROB_ERROR_MARGIN );
+		assertEquals(0.5f , probList.get(3),PROB_ERROR_MARGIN );
+		
+		assumedStates.add(1);	// set d2 as assumed state
+		
+		// edit interval of P(F=f1|D=d2) should be [0.006875, 0.993125]
+		editInterval = engine.getEditLimits(userNameToIDMap.get("Joe"), 0x0F, 0, assumptionIds, assumedStates);
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.size());
+		assertEquals(0.006875f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+		assertEquals(0.993125, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		
+		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
+		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsBeforeTrade.size());
+		assertEquals(4, cliqueAssetsBeforeTrade.size());
+		
+		// set P(F=f1|D=d2) = 0.1 and P(F=f2|D=d2) = 0.9
+		transactionKey = engine.startNetworkActions();
+		newValues = new ArrayList<Float>();
+		newValues.add(.1f);
+		newValues.add(.9f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Joe bets P(F=f1|D=d2) = 0.1", 
+				userNameToIDMap.get("Joe"), 
+				0x0F, 
+				newValues, 
+				assumptionIds, 
+				assumedStates, 
+				false
+			);
+		engine.commitNetworkActions(transactionKey);
+		
+		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
+		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+			assertEquals(
+					"Index = " + i, 
+					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+					ASSET_ERROR_MARGIN
+				);
+		}
+		
+		// check that new marginal of E is still [0.65 0.35] (this is expected value), F is [.2 .8], and the others have not changed (remains 50%)
+		probList = engine.getProbList(0x0D, null, null);
+		assertEquals(0.5f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0E, null, null);
+		assertEquals(0.65f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.35f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0F, null, null);
+		assertEquals(0.2f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.8f, probList.get(1), PROB_ERROR_MARGIN);
+		
+		// check that min-q is 14.5454545...
+		minCash = engine.getCash(userNameToIDMap.get("Joe"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(14.5454545f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(14.5454545f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		
+		// check that LPE contains d2, e1, f1
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long) 0x0D);		// 1st node is D; assumedStates must follow this order
+		assumptionIds.add((long) 0x0E);		// 2nd node is E; assumedStates must follow this order
+		assumptionIds.add((long) 0x0F);		// 3rd node is F; assumedStates must follow this order
+		
+		// check combination d1, e1, f1
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);	// d1
+		assumedStates.add(0);	// e1
+		assumedStates.add(0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e1, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e1, f1 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		
+		// check combination d2, e1, f2 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f1
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// TODO assert getAssetsIf
+		
+		
+
+		// create new user Eric
+		userNameToIDMap.put("Eric", (long) 3);
+		// By default, cash is initialized as 0 (i.e. min-q = 1)
+		assertEquals(0, Math.round(engine.getCash(userNameToIDMap.get("Eric"), null, null)), ASSET_ERROR_MARGIN);
+		assertEquals(1, Math.round(engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Eric"), null, null))), ASSET_ERROR_MARGIN);
+		
+		// add 100 q-values to new users
+		transactionKey = engine.startNetworkActions();
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Eric"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+		engine.commitNetworkActions(transactionKey);
+		// check that user's min-q value was changed to the correct value
+		assertEquals(100, Math.round(engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Eric"), null, null))), ASSET_ERROR_MARGIN);
+		assertEquals(Math.round(engine.getScoreFromQValues(100)), Math.round(engine.getCash(userNameToIDMap.get("Eric"), null, null)), ASSET_ERROR_MARGIN);
+
+		
+		// Eric bets P(E=e1) = .65 -> .8
+		
+		// check whether probability prior to edit is really = [.65, .35]
+		assumptionIds = new ArrayList<Long>();		
+		assumedStates = new ArrayList<Integer>();
+		probList = engine.getProbList(0x0E, assumptionIds, null);
+		assertEquals(2, probList.size());
+		assertEquals(0.65f , probList.get(0),PROB_ERROR_MARGIN );
+		assertEquals(0.35f , probList.get(1),PROB_ERROR_MARGIN );
+		
+		
+		// edit interval of P(E=e1) should be [0.0065, 0.9965]
+		editInterval = engine.getEditLimits(userNameToIDMap.get("Eric"), 0x0E, 0, assumptionIds, assumedStates);
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.size());
+		assertEquals(0.0065f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+		assertEquals(0.9965f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		
+		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
+		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0E, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsBeforeTrade.size());
+		assertEquals(4, cliqueAssetsBeforeTrade.size());
+		
+		// set P(E=e1) = 0.8 and P(E=e2) = 0.2
+		transactionKey = engine.startNetworkActions();
+		newValues = new ArrayList<Float>();
+		newValues.add(.8f);
+		newValues.add(.2f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Eric bets P(E=e1) = 0.8", 
+				userNameToIDMap.get("Eric"), 
+				0x0E, 
+				newValues, 
+				assumptionIds, 
+				assumedStates, 
+				false
+			);
+		engine.commitNetworkActions(transactionKey);
+		
+		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
+		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0E, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+			assertEquals(
+					"Index = " + i, 
+					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+					ASSET_ERROR_MARGIN
+				);
+		}
+		
+		// check that new marginal of E is [0.8 0.2] (this is expected value), F is [0.2165, 0.7835], and D is [0.5824, 0.4176]
+		probList = engine.getProbList(0x0D, null, null);
+		assertEquals(0.5824f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.4176f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0E, null, null);
+		assertEquals(0.8f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.2f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0F, null, null);
+		assertEquals(0.2165f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.7835f, probList.get(1), PROB_ERROR_MARGIN);
+		
+		// check that min-q is 57.142857...
+		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(57.142857f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(57.142857f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		
+		// check that LPE contains e2 and any D or F
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long) 0x0D);		// 1st node is D; assumedStates must follow this order
+		assumptionIds.add((long) 0x0E);		// 2nd node is E; assumedStates must follow this order
+		assumptionIds.add((long) 0x0F);		// 3rd node is F; assumedStates must follow this order
+		
+		// check combination d1, e1, f1
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);	// d1
+		assumedStates.add(0);	// e1
+		assumedStates.add(0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e1, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		// check combination d2, e1, f1 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e1, f2 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f1
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		// check combination d2, e2, f2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		
+		
+		// Eric bets  P(D=d1|F=f2) = 0.52 -> 0.7
+		
+		// check whether probability prior to edit is really [d1f2, d2f2] = [.52, .48]
+		assumptionIds = new ArrayList<Long>();		
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 0x0F);	
+		probList = engine.getProbList(0x0D, assumptionIds, null);
+		assertEquals(4, probList.size());
+		assertEquals(0.52f , probList.get(2),PROB_ERROR_MARGIN );
+		assertEquals(0.48f , probList.get(3),PROB_ERROR_MARGIN );
+		
+		assumedStates.add(1);	// set f2 as assumed state
+		
+		// edit interval of P(D=d1|F=f2) should be [0.0091059, 0.9916058]
+		editInterval = engine.getEditLimits(userNameToIDMap.get("Eric"), 0x0D, 0, assumptionIds, assumedStates);
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.size());
+		assertEquals(0.0091059f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+		assertEquals(0.9916058f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		
+		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
+		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsBeforeTrade.size());
+		assertEquals(4, cliqueAssetsBeforeTrade.size());
+		
+		// set P(D=d1|F=f2) = 0.7 and P(D=d2|F=f2) = 0.3
+		transactionKey = engine.startNetworkActions();
+		newValues = new ArrayList<Float>();
+		newValues.add(.7f);
+		newValues.add(.3f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Eric bets P(D=d1|F=f2) = 0.7", 
+				userNameToIDMap.get("Eric"), 
+				0x0D, 
+				newValues, 
+				assumptionIds, 
+				assumedStates, 
+				false
+		);
+		engine.commitNetworkActions(transactionKey);
+		
+		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
+		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+			assertEquals(
+					"Index = " + i, 
+					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+					ASSET_ERROR_MARGIN
+				);
+		}
+		
+		// check that new marginal of E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
+		probList = engine.getProbList(0x0D, null, null);
+		assertEquals(0.7232f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.2768f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0E, null, null);
+		assertEquals(0.8509f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.1491f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0F, null, null);
+		assertEquals(0.2165f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.7835f, probList.get(1), PROB_ERROR_MARGIN);
+		
+		
+		// check that min-q is 35.7393...
+		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(35.7393f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(35.7393f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		
+		// check that LPE is d2, e2 and f2
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long) 0x0D);		// 1st node is D; assumedStates must follow this order
+		assumptionIds.add((long) 0x0E);		// 2nd node is E; assumedStates must follow this order
+		assumptionIds.add((long) 0x0F);		// 3rd node is F; assumedStates must follow this order
+		
+		// check combination d1, e1, f1
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);	// d1
+		assumedStates.add(0);	// e1
+		assumedStates.add(0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e1, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e1, f1 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e1, f2 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e2, f1
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e2, f2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		
+
+		// Eric makes a bet which makes his assets-q to go below 1, but the algorithm does not allow it
+		
+		// extract allowed interval of P(D=d1|F=f2), so that we can an edit incompatible with such interval
+		assumptionIds = new ArrayList<Long>();		
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 0x0F);	
+		assumedStates.add(1);	// set f2 as assumed state
+		editInterval = engine.getEditLimits(userNameToIDMap.get("Eric"), 0x0D, 0, assumptionIds, assumedStates);
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.size());
+		assertEquals(0.0091059f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+		assertEquals(0.9916058f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		
+		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
+		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsBeforeTrade.size());
+		assertEquals(4, cliqueAssetsBeforeTrade.size());
+		
+		// set P(D=d1|F=f2) to a value lower (1/10) than the lower bound of edit interval
+		transactionKey = engine.startNetworkActions();
+		newValues = new ArrayList<Float>();
+		newValues.add(editInterval.get(0)/10);
+		newValues.add(1-(editInterval.get(0)/10));
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Eric bets P(D=d1|F=f2) = 0.7", 
+				userNameToIDMap.get("Eric"), 
+				0x0D, 
+				newValues, 
+				assumptionIds, 
+				assumedStates, 
+				false	// do not allow negative assets
+			);
+		try {
+			engine.commitNetworkActions(transactionKey);
+			fail("Should have thrown ZeroAssetsException, because assets went to negative");
+		} catch (ZeroAssetsException e) {
+			// ok
+			assertNotNull(e);
+		}
+		
+		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
+		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		// check that assets and conditional probs did not change
+		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+			assertEquals( "Index = " + i, cliqueAssetsBeforeTrade.get(i), cliqueAssetsAfterTrade.get(i), ASSET_ERROR_MARGIN );
+			assertEquals( "Index = " + i, cliqueProbsBeforeTrade.get(i), cliqueProbsAfterTrade.get(i), PROB_ERROR_MARGIN );
+		}
+		
+		
+		// check that marginals have not changed: E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
+		probList = engine.getProbList(0x0D, null, null);
+		assertEquals(0.7232f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.2768f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0E, null, null);
+		assertEquals(0.8509f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.1491f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0F, null, null);
+		assertEquals(0.2165f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.7835f, probList.get(1), PROB_ERROR_MARGIN);
+		
+		
+		// check that min-q has not changed
+		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(35.7393f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(35.7393f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		
+		// check that LPE has not changed - still d2, e2 and f2
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long) 0x0D);		// 1st node is D; assumedStates must follow this order
+		assumptionIds.add((long) 0x0E);		// 2nd node is E; assumedStates must follow this order
+		assumptionIds.add((long) 0x0F);		// 3rd node is F; assumedStates must follow this order
+		
+		// check combination d1, e1, f1
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);	// d1
+		assumedStates.add(0);	// e1
+		assumedStates.add(0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e1, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e1, f1 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e1, f2 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f1
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		
+		
+		
+		// Eric makes a bet which makes his assets-q to go below 1, and the algorithm allows it
+		
+		// extract allowed interval of P(D=d1|F=f2), so that we can an edit incompatible with such interval
+		assumptionIds = new ArrayList<Long>();		
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 0x0F);	
+		assumedStates.add(1);	// set f2 as assumed state
+		editInterval = engine.getEditLimits(userNameToIDMap.get("Eric"), 0x0D, 0, assumptionIds, assumedStates);
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.size());
+		assertEquals(0.0091059f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+		assertEquals(0.9916058f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		
+		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
+		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsBeforeTrade.size());
+		assertEquals(4, cliqueAssetsBeforeTrade.size());
+		
+		// set P(D=d1|F=f2) to a value lower (1/10) than the lower bound of edit interval
+		transactionKey = engine.startNetworkActions();
+		newValues = new ArrayList<Float>();
+		newValues.add(editInterval.get(0)/10);
+		newValues.add(1-(editInterval.get(0)/10));
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Eric bets P(D=d1|F=f2) = 0.7", 
+				userNameToIDMap.get("Eric"), 
+				0x0D, 
+				newValues, 
+				assumptionIds, 
+				assumedStates, 
+				true	// allow negative assets
+			);
+		engine.commitNetworkActions(transactionKey);
+		
+		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
+		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+		assertEquals(4, cliqueProbsAfterTrade.size());
+		assertEquals(4, cliqueAssetsAfterTrade.size());
+		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+			assertEquals(
+					"Index = " + i, 
+					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+					ASSET_ERROR_MARGIN
+				);
+		}
+		
+		// check that cash is smaller or equal to 0
+		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
+		assertTrue("Obtained unexpected cash = " + minCash, minCash <= 0);
+		
+		
+	}
+	
+	/**
+	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#addTrade(long, Date, String, long, long, List, List, List, boolean)},
+	 * {@link MarkovEngineImpl#addQuestion(long, Date, long, int, List)},
+	 * {@link MarkovEngineImpl#addQuestionAssumption(long, Date, long, List, List)}.
+	 * This method performs the same test of {@link #testAddQuestionAfterTrade()},
+	 * but it executes everything in a single transaction.
+	 */
+	public final void testAddQuestionAfterTradeInOneTransaction() {
+		
+		// crate transaction
+		long transactionKey = engine.startNetworkActions();
+		
+		// create nodes D, E
+		engine.addQuestion(transactionKey, new Date(), 0x0D, 2, null);	// question D has ID = hexadecimal D. CPD == null -> linear distro
+		engine.addQuestion(transactionKey, new Date(), 0x0E, 2, null);	// question E has ID = hexadecimal E. CPD == null -> linear distro
+
+		// Let's use ID = 0 for the user Tom 
+		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
+		userNameToIDMap.put("Tom", (long)0);
+		
+		try {
+			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
+			engine.getCash(userNameToIDMap.get("Tom"), null, null);
+			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+		} catch (IllegalStateException e) {
+			// OK. This is the expected
+			assertNotNull(e);
+		}
+		
+		// add 100 q-values to new users
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Tom"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+		
+		// Tom bets P(E=e1) = 0.5  to 0.55 (unconditional soft evidence in E)
+		List<Float> newValues = new ArrayList<Float>(2);
+		newValues.add(0.55f);		// P(E=e1) = 0.55
+		newValues.add(0.45f);		// P(E=e2) = 1 - P(E=e1) = 0.45
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Tom bets P(E=e1) = 0.5  to 0.55", 
+				userNameToIDMap.get("Tom"), 
+				0x0E, 	// question E
+				newValues,
+				null, 	// no assumptions
+				null, 	// no states of the assumptions
+				false	// do not allow negative
+			);
+		
+		
+		// Tom bets P(E=e1|D=d1) = .55 -> .9
+		
+		// create edge D->E 
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0E, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
+		
+		// set P(E=e1|D=d1) = 0.9 and P(E=e2|D=d1) = 0.1
+		newValues = new ArrayList<Float>();
+		newValues.add(.9f);
+		newValues.add(.1f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Tom bets P(E=e1|D=d1) = 0.9", 
+				userNameToIDMap.get("Tom"), 
+				0x0E, 
+				newValues, 
+				Collections.singletonList((long)0x0D), 
+				Collections.singletonList(0), 
+				false
+			);
+		
+
+		
+		// Let's create user Joe, ID = 1.
+		userNameToIDMap.put("Joe", (long) 1);
+		
+		try {
+			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
+			engine.getCash(userNameToIDMap.get("Joe"), null, null);
+			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+		} catch (IllegalStateException e) {
+			// OK. This is the expected
+			assertNotNull(e);
+		}
+		
+		// add 100 q-values to new users
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Joe"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+
+		// Joe bets P(E=e1|D=d2) = .55 -> .4
+		newValues = new ArrayList<Float>();
+		newValues.add(.4f);
+		newValues.add(.6f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Joe bets P(E=e1|D=d2) = 0.4", 
+				userNameToIDMap.get("Joe"), 
+				0x0E, 
+				newValues, 
+				Collections.singletonList((long)0x0D), 
+				Collections.singletonList(1), 
+				false
+			);
+		
+
+		// Let's create user Amy, ID = 2.
+		userNameToIDMap.put("Amy", (long) 2);
+		
+		try {
+			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
+			engine.getCash(userNameToIDMap.get("Amy"), null, null);
+			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+		} catch (IllegalStateException e) {
+			// OK. This is the expected
+			assertNotNull(e);
+		}
+		
+		// add 100 q-values to new users
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Amy"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+		
+		// create node F and  edge D->F
+		engine.addQuestion(transactionKey, new Date(), 0x0F, 2, null);	// question F has ID = hexadecimal F. CPD == null -> linear distro
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0F, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
+
+		// Amy bets P(F=f1|D=d1) = .5 -> .3
+		newValues = new ArrayList<Float>();
+		newValues.add(.3f);
+		newValues.add(.7f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Amy bets P(F=f1|D=d1) = 0.3", 
+				userNameToIDMap.get("Amy"), 
+				0x0F, 
+				newValues, 
+				Collections.singletonList((long)0x0D), 
+				Collections.singletonList(0), 
+				false
+			);
+		
+
+		// Joe bets P(F=f1|D=d2) = .5 -> .1
+		newValues = new ArrayList<Float>();
+		newValues.add(.1f);
+		newValues.add(.9f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Joe bets P(F=f1|D=d2) = 0.1", 
+				userNameToIDMap.get("Joe"), 
+				0x0F, 
+				newValues, 
+				Collections.singletonList((long)0x0D), 
+				Collections.singletonList(1), 
+				false
+			);
+		
+
+		// create new user Eric
+		userNameToIDMap.put("Eric", (long) 3);
+		
+		try {
+			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
+			engine.getCash(userNameToIDMap.get("Eric"), null, null);
+			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+		} catch (IllegalStateException e) {
+			// OK. This is the expected
+			assertNotNull(e);
+		}
+		
+		// add 100 q-values to new users
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Eric"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+		
+		// Eric bets P(E=e1) = .65 -> .8
+		newValues = new ArrayList<Float>();
+		newValues.add(.8f);
+		newValues.add(.2f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Eric bets P(E=e1) = 0.8", 
+				userNameToIDMap.get("Eric"), 
+				0x0E, 
+				newValues, 
+				(List)Collections.emptyList(), 
+				(List)Collections.emptyList(), 
+				false
+			);
+		
+		// Eric bets  P(D=d1|F=f2) = 0.52 -> 0.7
+		newValues = new ArrayList<Float>();
+		newValues.add(.7f);
+		newValues.add(.3f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Eric bets P(D=d1|F=f2) = 0.7", 
+				userNameToIDMap.get("Eric"), 
+				0x0D, 
+				newValues, 
+				Collections.singletonList((long)0x0F), 
+				Collections.singletonList(1), 
+				false
+		);
+		
+		// add new node C and random edge from or to C
+		engine.addQuestion(transactionKey, new Date(), 0x0C, 2, null);
+		if (Math.random() < .5) {
+			// edge from C
+			if (Math.random() < .5) {
+				engine.addQuestionAssumption(transactionKey, new Date(), 0x0D, Collections.singletonList((long)0x0C), null);
+			}
+			if (Math.random() < .5) {
+				engine.addQuestionAssumption(transactionKey, new Date(), 0x0E, Collections.singletonList((long)0x0C), null);
+			}
+			if (Math.random() < .5) {
+				engine.addQuestionAssumption(transactionKey, new Date(), 0x0F, Collections.singletonList((long)0x0C), null);
+			}
+		} else {
+			// edge to C
+			List<Long> parentQuestionIds = new ArrayList<Long>();
+			if (Math.random() < .5) {
+				parentQuestionIds.add((long)0x0D);
+			}
+			if (Math.random() < .5) {
+				parentQuestionIds.add((long)0x0E);
+			}
+			if (Math.random() < .5) {
+				parentQuestionIds.add((long)0x0F);
+			}
+			engine.addQuestionAssumption(transactionKey, new Date(), 0x0C, parentQuestionIds, null);
+		}
+		
+		
+		// commit all trades (including the creation of network and user)
+		engine.commitNetworkActions(transactionKey);
+		
+		// check that final marginal of C is [.5,.5], E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
+		List<Float> probList = engine.getProbList(0x0C, null, null);
+		assertEquals(0.5f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0D, null, null);
+		assertEquals(0.7232f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.2768f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0E, null, null);
+		assertEquals(0.8509f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.1491f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0F, null, null);
+		assertEquals(0.2165f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.7835f, probList.get(1), PROB_ERROR_MARGIN);
+		
+		// set assumptions to D,E,F, so that we can use it to calculate conditional min-q (in order to test consistency of LPE)
+		ArrayList<Long> assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long) 0x0D);		// 1st node is D; assumedStates must follow this order
+		assumptionIds.add((long) 0x0E);		// 2nd node is E; assumedStates must follow this order
+		assumptionIds.add((long) 0x0F);		// 3rd node is F; assumedStates must follow this order
+		
+		// init list of states of the assumptions
+		ArrayList<Integer> assumedStates = new ArrayList<Integer>();	
+		assumedStates.add(0);	// d1
+		assumedStates.add(0);	// e1
+		assumedStates.add(0);	// f1
+		
+		// check that final min-q of Tom is 20
+		float minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(20f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(20f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		
+		// check that final LPE of Tom contains d1, e2 and any value F
+		
+		// check combination d1, e1, f1 (not min)
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		float cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e1, f2 (not min)
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		// check combination d2, e1, f1 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e1, f2 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f1 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f2 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		
+		// check that min-q of Amy is 60...
+		minCash = engine.getCash(userNameToIDMap.get("Amy"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(60f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(60f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		
+		// check that LPE of Amy contains d1, f1 and any value E
+		
+		// check combination d1, e1, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		
+		// check combination d1, e1, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e1, f1 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e1, f2 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f1
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		
+		// check that min-q of Joe is 14.5454545...
+		minCash = engine.getCash(userNameToIDMap.get("Joe"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(14.5454545f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(14.5454545f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		
+		// check that LPE of Joe contains d2, e1, f1
+		
+		// check combination d1, e1, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e1, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e1, f1 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		
+		// check combination d2, e1, f2 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f1
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check that final min-q of Eric is 35.7393...
+		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(35.7393f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(35.7393f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		
+		// check that final LPE of Eric is d2, e2 and f2
+		
+		// check combination d1, e1, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e1, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e1, f1 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e1, f2 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e2, f1
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e2, f2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		
+		
+	}
+	
+	
 	/**
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#getPossibleQuestionAssumptions(long, java.util.List)}.
 	 */
@@ -3424,8 +5399,8 @@ public class MarkovEngineTest extends TestCase {
 	}
 	
 	/**
-	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#determineBalancingTrade(long, long, java.util.List, java.util.List)},
-	 * {@link MarkovEngineImpl#balanceTrade(long, Date, String, long, long, List, List)}.
+	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#previewBalancingTrade(long, long, java.util.List, java.util.List)},
+	 * {@link MarkovEngineImpl#doBalanceTrade(long, Date, String, long, long, List, List)}.
 	 */
 	public final void testBalanceTrade() {
 		
@@ -3631,7 +5606,7 @@ public class MarkovEngineTest extends TestCase {
 			do {
 				try {
 					long questionId = (long) (Math.random()*Integer.MIN_VALUE);
-					engine.determineBalancingTrade(
+					engine.previewBalancingTrade(
 							userNameToIDMap.get(key), 
 							questionId, 
 							(List)((Math.random() < .5)?null:Collections.emptyList()), 
@@ -3662,7 +5637,7 @@ public class MarkovEngineTest extends TestCase {
 					for (int i = 0; i < assumptionIds.size(); i++) {
 						assumedStates.add((Math.random() < .5)?0:1);
 					}
-					engine.determineBalancingTrade(
+					engine.previewBalancingTrade(
 							userNameToIDMap.get(key), 
 							questionId, 
 							assumptionIds, 
@@ -3727,7 +5702,7 @@ public class MarkovEngineTest extends TestCase {
 			userToAssumedStatesMap.put(user, states);
 			
 			// add trade into transaction
-			engine.balanceTrade(transactionKey, new Date(), user + " balances question " + question, userNameToIDMap.get(user), question, assumptions, states);
+			engine.doBalanceTrade(transactionKey, new Date(), user + " balances question " + question, userNameToIDMap.get(user), question, assumptions, states);
 		}
 		
 		// execute trade which will balance the assets of the users
@@ -3803,11 +5778,12 @@ public class MarkovEngineTest extends TestCase {
 		fail("Not yet implemented"); // TODO
 	}
 
-	/**
-	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#getScoreDetails(long, java.util.List, java.util.List)}.
-	 */
-	public final void testGetScoreDetails() {
-		fail("Not yet implemented"); // TODO
-	}
+	// not needed for the 1st release
+//	/**
+//	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#getScoreDetails(long, java.util.List, java.util.List)}.
+//	 */
+//	public final void testGetScoreDetails() {
+//		fail("Not yet implemented"); // TODO
+//	}
 
 }
