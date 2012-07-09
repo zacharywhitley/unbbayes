@@ -5750,9 +5750,9 @@ public class MarkovEngineTest extends TestCase {
 	}
 
 	/**
-	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#scoreUser(java.util.List, java.util.List, java.util.List)}.
+	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#scoreUserEV(java.util.List, java.util.List, java.util.List)}.
 	 */
-	public final void testScoreUser() {
+	public final void testScoreUserEV() {
 		fail("Not yet implemented"); // TODO
 	}
 

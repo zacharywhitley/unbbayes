@@ -1635,8 +1635,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	public float scoreUserQuestionEv(long userId, Long questionId,
 			List<Long> assumptionIds, List<Integer> assumedStates)
 			throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Not implemented yet.");
+		List<Float> evPerStates = this.scoreUserQuestionEvStates(userId, questionId, assumptionIds, assumedStates);
+		if (evPerStates == null || evPerStates.isEmpty()) {
+			throw new RuntimeException("Failed to obtain estimated values.");
+		}
+		float sum = 0;
+		for (Float ev : evPerStates) {
+			sum += ev;
+		}
+		return sum;
 	}
 	
 	/*
@@ -1644,6 +1651,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#scoreUserQuestionEvStates(long, long, java.util.List, java.util.List)
 	 */
 	public List<Float> scoreUserQuestionEvStates(long userId, long questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+		// initial assertion: if assumptions were specified and states were not specified
+		if (assumptionIds != null && assumedStates != null && assumedStates.size() != assumptionIds.size()) {
+			throw new IllegalArgumentException("Expected size of assumedStates is " + assumptionIds.size() + ", but was " + assumedStates.size());
+		}
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Not implemented yet.");
 	}
@@ -1657,14 +1668,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#scoreUser(java.util.List, java.util.List, java.util.List)
-	 */
-	public float scoreUser(long userId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Not implemented yet.");
-	}
-	
 	
 
 	/* (non-Javadoc)

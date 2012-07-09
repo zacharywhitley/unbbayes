@@ -399,7 +399,6 @@ public interface MarkovEngineInterface {
 	 * of states (i.e. choices - if boolean, then it is either 0 or 1) of assumptionIDs to be assumed.
 	 * If it does not have the same size of assumptionIDs, MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
 	 * @return current expected value portion of user score given a set of assumptions. 
-	 * If questionId is set to null, then TOTAL current expected value portion of across all questions given a set of assumptions.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
 	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
 	 */
@@ -420,7 +419,6 @@ public interface MarkovEngineInterface {
 	public List<Float> scoreUserQuestionEvStates(long userId, long questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
-	 * THIS IS NOT REQUIRED BUT MAY BE A GOOD IDEA TO PROVIDE FOR EFFICIENCY AS A OPTIMIZED OPERATION.
 	 * @param userId : the ID of the user (owner of the assets).
 	 * @param assumptionIds : (optional) list (ordered collection) of question IDs assumed when obtaining the estimated assets. If specified,
 	 * the questions (i.e. random variables) with these IDs will be assumed to be in the states specified in the argument "assumedStates".
@@ -434,19 +432,6 @@ public interface MarkovEngineInterface {
 	 */
 	public float scoreUserEv(long userId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
-	/**
-	 * THIS IS NOT REQUIRED BUT MAY BE A GOOD IDEA TO PROVIDE FOR EFFICIENCY AS A OPTIMIZED OPERATION
-	 * @param userId : the ID of the user (owner of the assets).
-	 * @param assumptionIds : (optional) list (ordered collection) of question IDs assumed when obtaining the estimated assets. If specified,
-	 * the questions (i.e. random variables) with these IDs will be assumed to be in the states specified in the argument "assumedStates".
-	 * @param assumedStates : (mandatory if assumptionIDs is specified - must have the same size of assumptionIDs) indexes
-	 * of states (i.e. choices - if boolean, then it is either 0 or 1) of assumptionIDs to be assumed.
-	 * If it does not have the same size of assumptionIDs, MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
-	 * @return TOTAL user score (expected_value + cash) across all questions given a set of assumptions.
-	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
-	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
-	 */
-	public float scoreUser(long userId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
 	 * This function will return the affect (assets per state) of this trade similar to the addTrade function,
