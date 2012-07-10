@@ -54,8 +54,9 @@ public class InCliqueConditionalProbabilityExtractor implements
 	 * It assumes that {@link unbbayes.prs.bn.JunctionTreeAlgorithm} was run prior to this method.
 	 * @param algorithm : will be ignored.
 	 * @see unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor#buildCondicionalProbability(unbbayes.prs.INode, java.util.List, unbbayes.prs.Graph, unbbayes.util.extension.bn.inference.IInferenceAlgorithm)
+	 * @throws NoCliqueException when there is no clique satisfying input conditions.
 	 */
-	public IProbabilityFunction buildCondicionalProbability(INode mainNode, List<INode> parentNodes, Graph net, IInferenceAlgorithm algorithm) {
+	public IProbabilityFunction buildCondicionalProbability(INode mainNode, List<INode> parentNodes, Graph net, IInferenceAlgorithm algorithm) throws NoCliqueException {
 		// assertion
 		if (mainNode == null) {
 			throw new NullPointerException("mainNode == null");
@@ -117,7 +118,7 @@ public class InCliqueConditionalProbabilityExtractor implements
 			for (INode node : parentNodes) {
 				message += ", " + node;
 			}
-			throw new IllegalArgumentException(message);
+			throw new NoCliqueException(message);
 		}
 		
 		int retIndex = 0;	// this index is used for filling values of ret (see following "for" loop)
@@ -185,6 +186,18 @@ public class InCliqueConditionalProbabilityExtractor implements
 		
 		
 		return ret;
+	}
+	
+	/** 
+	 * Thrown by {@link InCliqueConditionalProbabilityExtractor#buildCondicionalProbability(INode, List, Graph, IInferenceAlgorithm)} 
+	 * when there is no clique satisfying input conditions.
+	 */
+	public class NoCliqueException extends IllegalArgumentException {
+		private static final long serialVersionUID = -5056812711980844824L;
+		public NoCliqueException() { super(); }
+		public NoCliqueException(String message, Throwable cause) { super(message, cause); }
+		public NoCliqueException(String s) { super(s); }
+		public NoCliqueException(Throwable cause) { super(cause); }
 	}
 	
 	/**
