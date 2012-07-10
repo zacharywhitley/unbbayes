@@ -137,11 +137,14 @@ public class Separator implements IRandomVariable, java.io.Serializable {
 	 */
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append("Separator{");
+		sb.append("S{");
 		for (int j = nos.size()-1; j>=0;j--) {
 			sb.append(nos.get(j) + " ");				
 		}
 		sb.append("}");
+		sb.append(this.getClique1());
+		sb.append("-");
+		sb.append(this.getClique2());
 		return sb.toString();
 	}
 }
