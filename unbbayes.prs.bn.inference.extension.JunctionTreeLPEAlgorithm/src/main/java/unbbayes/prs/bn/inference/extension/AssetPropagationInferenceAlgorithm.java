@@ -73,7 +73,12 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	
 	private Comparator<IRandomVariable> randomVariableComparator = new Comparator<IRandomVariable>() {
 		public int compare(IRandomVariable v1, IRandomVariable v2) {
-			return v1.toString().compareTo(v2.toString());
+			int nameComp = v1.toString().compareTo(v2.toString());
+			if (nameComp == 0 && (v1 instanceof Clique) && (v2 instanceof Clique)) {
+				// do special treatment on cliques with same variables
+				return ((Clique)v1).getIndex() - ((Clique)v2).getIndex();
+			}
+			return nameComp;
 		}
 	};
 
@@ -867,7 +872,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 //		return new ArrayList<Map<INode,Integer>>();
 		
 		// this will hold min-q value
-		float ret = Float.NaN;
+		float ret = Float.POSITIVE_INFINITY;
 
 		// TODO return more than 1 LPE
 		Debug.println(getClass(), "Current version returns only 1 explanation");
@@ -894,6 +899,14 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 					valueOfMinInClique = table.getValue(i);
 				}
 			}
+			if (inputOutpuArgumentForExplanation == null) {
+				// we do not need to obtain explanation. So only calculate min value
+				if (valueOfMinInClique < ret) { // Note: if global consistency holds, this check is unnecessary, but in disconnected nets the global consistency does not hold
+					ret = valueOfMinInClique;	
+				}
+				continue;
+			}
+			
 			// the indexes of the states can be obtained from the index of the linearized table by doing the following operation:
 			// indexOfLPEOfNthNode = mod(indexOfMinInClique / prodNumberOfStatesPrevNodes, numberOfStates). 
 			// prodNumberOfStatesPrevNodes is the product of the number of states for all previous nodes. If this is the first node, then prodNumberOfStatesPrevNodes = 1.
@@ -924,8 +937,9 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 					// this is the first time we add this entry. Add it
 					stateMap.put(node, indexOfLPEOfNthNode);
 					valueMap.put(node, valueOfMinInClique);
-					
-					ret = valueOfMinInClique;	// assuming that global consistency holds...
+					if (valueOfMinInClique < ret) { // Note: if global consistency holds, this check is unnecessary, but in disconnected nets the global consistency does not hold
+						ret = valueOfMinInClique;	
+					}
 				} else {
 					// check consistency (min state should be unique between cliques)
 					if (!stateMap.get(node).equals(indexOfLPEOfNthNode)) {
@@ -933,7 +947,10 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 							// new value is greater. Update
 							stateMap.put(node, indexOfLPEOfNthNode);
 							valueMap.put(node, valueOfMinInClique);
-							ret = valueOfMinInClique;	// this clique has a smaller local min-q value...
+							// this clique has a smaller local min-q value...
+							if (valueOfMinInClique < ret) { 
+								ret = valueOfMinInClique;	
+							}
 						}
 						try {
 							Debug.println(getClass(), "Obtained states differ between cliques (clique inconsistency)... The current clique is: " 

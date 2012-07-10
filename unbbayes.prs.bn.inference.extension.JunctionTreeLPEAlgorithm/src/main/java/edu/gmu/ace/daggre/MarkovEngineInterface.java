@@ -419,9 +419,11 @@ public interface MarkovEngineInterface {
 	public List<Float> scoreUserQuestionEvStates(long userId, long questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
+	 * Method for calculating the global "conditional" expected score.
 	 * @param userId : the ID of the user (owner of the assets).
 	 * @param assumptionIds : (optional) list (ordered collection) of question IDs assumed when obtaining the estimated assets. If specified,
-	 * the questions (i.e. random variables) with these IDs will be assumed to be in the states specified in the argument "assumedStates".
+	 * the questions (i.e. random variables) with these IDs will be assumed to be in the states specified in the argument "assumedStates"
+	 * (i.e. the probabilities will be re-calculated assuming these values).
 	 * @param assumedStates : (mandatory if assumptionIDs is specified - must have the same size of assumptionIDs) indexes
 	 * of states (i.e. choices - if boolean, then it is either 0 or 1) of assumptionIDs to be assumed.
 	 * If it does not have the same size of assumptionIDs, MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
@@ -544,10 +546,14 @@ public interface MarkovEngineInterface {
 
 
 	/**
+	 * This method will return explanations of the 
+	 * value returned by {@link #scoreUserEv(long, List, List)}.
 	 * @param userId : ID of the user to be considered.
-	 * @param assumptionIds : assumptions to be considered in obtaining the summary
-	 * @param assumedStates : states of the assumptions. The order must be synchronized with assumptionIds.
-	 * @param questionId : ID of the main question to be used as filter. If null, all questions will be considered.
+	 * @param questionId : (optional) ID of the main question to be used as filter. If null, all questions will be considered.
+	 * @param assumptionIds : (optional) assumptions to be considered in obtaining the summary. 
+	 * Use the same list passed to {@link #scoreUserEv(long, List, List)}.
+	 * @param assumedStates : (optional) states of the assumptions. The order must be synchronized with assumptionIds.
+	 * Use the same list passed to {@link #scoreUserEv(long, List, List)}.
 	 * @return ordered list of score details (properties dictionary with parameters to display TBD) that shows a summary view of how the current score of a user was determined. 
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */

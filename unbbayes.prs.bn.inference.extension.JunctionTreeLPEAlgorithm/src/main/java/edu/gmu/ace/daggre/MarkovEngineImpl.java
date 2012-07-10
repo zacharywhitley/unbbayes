@@ -28,6 +28,7 @@ import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.bn.Separator;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor;
+import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor.NoCliqueException;
 import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.AssetPropagationInferenceAlgorithm;
@@ -445,10 +446,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#addQuestionAssumption(long, java.util.Date, long, long, java.util.List)
 	 */
 	public boolean addQuestionAssumption(long transactionKey, Date occurredWhen, long childQuestionId, List<Long> parentQuestionIds,  List<Float> cpd) throws IllegalArgumentException {
-		
 		// initial assertions
 		if (occurredWhen == null) {
 			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
+		}
+		
+		if ( (parentQuestionIds == null || parentQuestionIds.isEmpty() )
+				&& (cpd == null || cpd.isEmpty())) {
+			// this is neither a request for adding a new dependency nor for substituting cpd.
+			return false;
 		}
 		
 		// check existence of transactionKey
@@ -1264,7 +1270,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			throw new RuntimeException("Could not reuse conditional probability extractor of the current default inference algorithm. Perhaps you are using incompatible version of Markov Engine or UnBBayes.");
 		}
 		
-		
+		// if assumptions are not in same clique, we can still use BN propagation to obtain probabilities.
+		ProbabilisticNetwork netToUseWhenAssumptionsAreNotInSameClique = null;	// this is going to be a clone of the shared BN
 		PotentialTable cpt = null;
 		synchronized (getProbabilisticNetwork()) {
 			INode mainNode = getProbabilisticNetwork().getNode(Long.toString(questionId));
@@ -1282,11 +1289,21 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 				}
 			}
 			if (isToNormalize) {
-				cpt = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, getProbabilisticNetwork(), null);
+				try {
+					cpt = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, getProbabilisticNetwork(), null);
+				} catch (NoCliqueException e) {
+					Debug.println(getClass(), "Could not extract potentials within clique. Trying global propagation.", e);
+					netToUseWhenAssumptionsAreNotInSameClique = getDefaultInferenceAlgorithm().new ProbabilisticNetworkClone(getProbabilisticNetwork());
+				}
 			} else {
 				// by specifying a non-normalized junction tree algorithm to conditionalProbabilityExtractor, we can force it not to normalize the result
 				cpt = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, getProbabilisticNetwork(), getDefaultInferenceAlgorithm().getAssetPropagationDelegator());
 			}
+		}
+		
+		// If we need to do propagation, do it in non-critical portion of code
+		if (netToUseWhenAssumptionsAreNotInSameClique != null) {
+			return this.previewProbPropagation(questionId, assumptionIds, assumedStates, netToUseWhenAssumptionsAreNotInSameClique);
 		}
 		
 		// convert cpt to a list of float, given assumedStates.
@@ -1319,6 +1336,65 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		
 	}
 
+
+	/**
+	 * It uses findingNodeIDs and findingStates to set and propagate findings
+	 * in pn, and return the marginal of node identified by mainNodeID
+	 * @param mainNodeID : node to extract marginal
+	 * @param findingNodeIDs : nodes to add findings
+	 * @param findingStates : findings of findingNodes
+	 * @param pn : network to consider. Use a clone of {@link #getProbabilisticNetwork()} if you don't want
+	 * the shared BN to be changed.
+	 * @return marginal of node identified by mainNodeID
+	 */
+	protected List<Float> previewProbPropagation(long mainNodeID, List<Long> findingNodeIDs, List<Integer> findingStates, ProbabilisticNetwork pn) {
+		// make arguments are not null
+		if (pn == null) {
+			throw new NullPointerException("ProbabilisticNetwork cannot be null");
+		}
+		if (findingNodeIDs == null) {
+			findingNodeIDs = Collections.emptyList();
+		}
+		if (findingStates == null) {
+			findingStates = Collections.emptyList();
+		}
+		
+		// propagate findings only when tere are findings to propagate
+		if (!findingNodeIDs.isEmpty() && !findingStates.isEmpty()) {
+			JunctionTreeAlgorithm jtAlgorithm = new JunctionTreeAlgorithm(pn);
+			if (jtAlgorithm.getInferenceAlgorithmListeners() != null) {
+				// delete any extra operation performed prior and after compilation/propagation/reset of the network,
+				// because we only need to perform propagation from current state (we never do initialization or finalization)
+				jtAlgorithm.getInferenceAlgorithmListeners().clear();
+			}
+			// fill findings
+			for (int i = 0; i < findingNodeIDs.size(); i++) {
+				TreeVariable findingNode = (TreeVariable) pn.getNode(Long.toString(findingNodeIDs.get(i)));
+				if (findingNode == null) {
+					throw new IllegalArgumentException("Node" + findingNodeIDs.get(i) + " does not exist.");
+				}
+				if (i < findingStates.size()) {
+					findingNode.addFinding(findingStates.get(i));
+				}
+			}
+			// propagate finding
+			jtAlgorithm.propagate();
+		}
+		
+		// extract node to be used to extract marginal probabilities
+		TreeVariable mainNode = (TreeVariable) pn.getNode(Long.toString(mainNodeID));
+		if (mainNode == null) {
+			throw new IllegalArgumentException("Node" + mainNodeID + " does not exist.");
+		}
+		
+		// extract marginal probabilities
+		List<Float> ret = new ArrayList<Float>(mainNode.getStatesSize());
+		for (int i = 0; i < mainNode.getStatesSize(); i++) {
+			ret.add(mainNode.getMarginalAt(i));
+		}
+		
+		return ret;
+	}
 
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getPossibleQuestionAssumptions(long, java.util.List)
@@ -1617,11 +1693,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			// run only min-propagation (i.e. calculate min-q given assumptions)
 			algorithm.runMinPropagation();
 			// obtain min-q value and explanation (states which cause the min-q values)
-			ArrayList<Map<INode, Integer>> statesWithMinQAssets = new ArrayList<Map<INode,Integer>>();	// this is the min-q explanation (states which cause Min-q)
-			ret = algorithm.calculateExplanation(statesWithMinQAssets);	// statesWithMinQAssets will be filled by this method
+			// TODO use the explanation (set of states that causes the min assets) for something
+			ret = algorithm.calculateExplanation(null);	// by offering null, only min value is calculated (the states are not retrieved)
 			// undo min-propagation, because the next iteration of asset updates should be based on non-min delta
 			algorithm.undoMinPropagation();	
-			// TODO use the values of statesWithMinQAssets for something (currently, this is ignored)
 		}
 		
 		// convert q-values to score and return

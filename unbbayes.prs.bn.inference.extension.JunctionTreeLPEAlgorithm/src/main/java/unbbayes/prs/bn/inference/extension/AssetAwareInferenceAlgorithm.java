@@ -696,9 +696,6 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		if (this.getAssetPropagationDelegator() == null) {
 			return Float.NaN;
 		}
-		if (inputOutpuArgumentForExplanation == null) {
-			inputOutpuArgumentForExplanation = new ArrayList<Map<INode,Integer>>();
-		}
 		return this.getAssetPropagationDelegator().calculateExplanation(inputOutpuArgumentForExplanation);
 	}
 
