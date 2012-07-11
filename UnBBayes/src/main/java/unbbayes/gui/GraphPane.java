@@ -178,13 +178,13 @@ public class GraphPane extends UCanvas implements MouseListener,
 
 		this.controller = controller;
 		this.graphViewport = graphViewport;
-		this.setSize(800, 600);
+		this.setSize(DEFAULT_HEIGH, DEFAULT_WIDTH);
 
 		edgeList = controller.getGraph().getEdges();
 		nodeList = controller.getGraph().getNodes();
 
 		selectedGroup = new ArrayList<Node>();
-		graphDimension = new Dimension(1500, 1500);
+		graphDimension = new Dimension(DEFAULT_DIMENSION, DEFAULT_DIMENSION);
 		visibleDimension = new Dimension(0, 0);
 		action = GraphAction.NONE;
 
