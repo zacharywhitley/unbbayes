@@ -162,4 +162,13 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 	public PotentialTable newInstance() {
 		return new ProbabilisticTable();
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		return variableList+"@"+ super.toString();
+	}
+	
+	
 }
