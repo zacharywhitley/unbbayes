@@ -83,6 +83,12 @@ import unbbayes.util.extension.manager.CorePluginNodeManager;
 public class GraphPane extends UCanvas implements MouseListener,
 		MouseMotionListener {
 
+	private static final int DEFAULT_DIMENSION = 1500;
+
+	private static final int DEFAULT_WIDTH = 600;
+
+	private static final int DEFAULT_HEIGH = 800;
+
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
 
@@ -148,9 +154,9 @@ public class GraphPane extends UCanvas implements MouseListener,
 		edgeList = net.getEdges();
 		nodeList = net.getNodes();
 
-		this.setSize(800, 600);
+		this.setSize(DEFAULT_HEIGH, DEFAULT_WIDTH);
 
-		graphDimension = new Dimension(1500, 1500);
+		graphDimension = new Dimension(DEFAULT_DIMENSION, DEFAULT_DIMENSION);
 		visibleDimension = new Dimension(0, 0);
 		action = GraphAction.NONE;
 
