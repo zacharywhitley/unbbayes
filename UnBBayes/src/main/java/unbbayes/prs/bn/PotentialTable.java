@@ -926,6 +926,10 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
         if (Math.abs(n - 1.0) > 0.001) {
             for (int c = 0; c < sizeDados; c++) {
                 valor = this.getValue(c);
+                if (valor == 0.0) {
+                	// zeros will remain always zero.
+                	continue;
+                }
                 if (n == 0.0) {
                     throw new IllegalStateException(resource.getString("InconsistencyUnderflowException"));
                 }
