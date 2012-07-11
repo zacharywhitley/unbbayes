@@ -135,6 +135,14 @@ public class MarkovEngineTest extends TestCase {
         // commit transaction
 		engine.commitNetworkActions(transactionKey);
 		
+		// cannot reuse same transaction key
+		try {
+			engine.addQuestion(transactionKey, new Date(), Long.MAX_VALUE, 2, null);
+			fail("Should not allow to use commited transaction");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+		}
+		
 		// check if network contains THREAD_NUM nodes 
 		assertEquals(THREAD_NUM, engine.getProbabilisticNetwork().getNodeCount());
 		
@@ -353,6 +361,14 @@ public class MarkovEngineTest extends TestCase {
 		
         // commit transaction
 		engine.commitNetworkActions(transactionKey);
+		
+		// cannot reuse same transaction key
+		try {
+			engine.addQuestionAssumption(transactionKey, new Date(), (long)0, Collections.singletonList((long)1), null);
+			fail("Should not allow to use commited transaction");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+		}
 		
 		// check if data structures are synchronized
 		assertEquals(parentNumCounters.keySet().size(), generatedNodes.size());
@@ -652,6 +668,14 @@ public class MarkovEngineTest extends TestCase {
 		engine.addQuestionAssumption(transactionKey, new Date(), 0, assumptiveQuestionIds, null);
 		engine.commitNetworkActions(transactionKey);
 		
+		// cannot reuse same transaction key
+		try {
+			engine.addCash(transactionKey, new Date(), Long.MAX_VALUE, 10, "To fail");
+			fail("Should not allow to use commited transaction");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+		}
+		
 		// global cash should be 0 initially (i.e. q-values are initialized as 1)
 		assertEquals(0f, engine.getCash(1, null, null), ASSET_ERROR_MARGIN);
 		List<Float> assetsIfStates = engine.getAssetsIfStates((long)1, (long)0, null, null);
@@ -820,6 +844,14 @@ public class MarkovEngineTest extends TestCase {
 		transactionKey = engine.startNetworkActions();
 		engine.addCash(transactionKey, new Date(), 1, 100f, "Just to test");
 		engine.commitNetworkActions(transactionKey);
+		
+		// cannot reuse same transaction key
+		try {
+			engine.addCash(transactionKey, new Date(), Long.MAX_VALUE-1, 10, "To fail");
+			fail("Should not allow to use commited transaction");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+		}
 		
 		// test assumptions == null
 		assetsIfStates = engine.getAssetsIfStates((long)1, (long)0, null, null);
@@ -1230,6 +1262,16 @@ public class MarkovEngineTest extends TestCase {
 		// commit changes
 		engine.commitNetworkActions(transactionKey);
 		
+		// cannot reuse same transaction key
+		try {
+			List<Float> newValues = new ArrayList<Float>(2);
+			newValues.add(.9f);	newValues.add(.1f);
+			engine.addTrade(transactionKey, new Date(), "To fail", Long.MAX_VALUE, (long)0x0D, newValues, null, null, false);
+			fail("Should not allow to use commited transaction");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+		}
+		
 		// Let's use ID = 0 for the user Tom 
 		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
 		userNameToIDMap.put("Tom", (long)0);
@@ -1284,6 +1326,16 @@ public class MarkovEngineTest extends TestCase {
 				false	// do not allow negative
 			);
 		engine.commitNetworkActions(transactionKey);
+		
+		// cannot reuse same transaction key
+		try {
+			newValues = new ArrayList<Float>(2);
+			newValues.add(.9f);	newValues.add(.1f);
+			engine.addTrade(transactionKey, new Date(), "To fail", Long.MAX_VALUE, (long)0x0D, newValues, null, null, false);
+			fail("Should not allow to use commited transaction");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
 		List<Float> cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
@@ -1432,6 +1484,16 @@ public class MarkovEngineTest extends TestCase {
 				false
 			);
 		engine.commitNetworkActions(transactionKey);
+		
+		// cannot reuse same transaction key
+		try {
+			newValues = new ArrayList<Float>(2);
+			newValues.add(.9f);	newValues.add(.1f);
+			engine.addTrade(transactionKey, new Date(), "To fail", Long.MAX_VALUE, (long)0x0D, newValues, null, null, false);
+			fail("Should not allow to use commited transaction");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
@@ -1616,6 +1678,16 @@ public class MarkovEngineTest extends TestCase {
 				false
 			);
 		engine.commitNetworkActions(transactionKey);
+		
+		// cannot reuse same transaction key
+		try {
+			newValues = new ArrayList<Float>(2);
+			newValues.add(.9f);	newValues.add(.1f);
+			engine.addTrade(transactionKey, new Date(), "To fail", Long.MAX_VALUE, (long)0x0D, newValues, null, null, false);
+			fail("Should not allow to use commited transaction");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
@@ -1802,6 +1874,16 @@ public class MarkovEngineTest extends TestCase {
 			);
 		engine.commitNetworkActions(transactionKey);
 		
+		// cannot reuse same transaction key
+		try {
+			newValues = new ArrayList<Float>(2);
+			newValues.add(.9f);	newValues.add(.1f);
+			engine.addTrade(transactionKey, new Date(), "To fail", Long.MAX_VALUE, (long)0x0D, newValues, null, null, false);
+			fail("Should not allow to use commited transaction");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+		}
+		
 		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Amy"), (long)0x0F, Collections.singletonList((long)0x0D), null);
@@ -1979,6 +2061,16 @@ public class MarkovEngineTest extends TestCase {
 			);
 		engine.commitNetworkActions(transactionKey);
 		
+		// cannot reuse same transaction key
+		try {
+			newValues = new ArrayList<Float>(2);
+			newValues.add(.9f);	newValues.add(.1f);
+			engine.addTrade(transactionKey, new Date(), "To fail", Long.MAX_VALUE, (long)0x0D, newValues, null, null, false);
+			fail("Should not allow to use commited transaction");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+		}
+		
 		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0F, Collections.singletonList((long)0x0D), null);
@@ -2151,6 +2243,16 @@ public class MarkovEngineTest extends TestCase {
 			);
 		engine.commitNetworkActions(transactionKey);
 		
+		// cannot reuse same transaction key
+		try {
+			newValues = new ArrayList<Float>(2);
+			newValues.add(.9f);	newValues.add(.1f);
+			engine.addTrade(transactionKey, new Date(), "To fail", Long.MAX_VALUE, (long)0x0D, newValues, null, null, false);
+			fail("Should not allow to use commited transaction");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+		}
+		
 		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0E, Collections.singletonList((long)0x0D), null);
@@ -2290,6 +2392,16 @@ public class MarkovEngineTest extends TestCase {
 		);
 		engine.commitNetworkActions(transactionKey);
 		
+		// cannot reuse same transaction key
+		try {
+			newValues = new ArrayList<Float>(2);
+			newValues.add(.9f);	newValues.add(.1f);
+			engine.addTrade(transactionKey, new Date(), "To fail", Long.MAX_VALUE, (long)0x0D, newValues, null, null, false);
+			fail("Should not allow to use commited transaction");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+		}
+		
 		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
@@ -2427,6 +2539,11 @@ public class MarkovEngineTest extends TestCase {
 			// ok
 			assertNotNull(e);
 		}
+
+		// can reuse same transaction key, because the last one has failed
+		newValues = new ArrayList<Float>(2);
+		newValues.add(.9f);	newValues.add(.1f);
+		engine.addTrade(transactionKey, new Date(), "OK", Long.MIN_VALUE, (long)0x0D, newValues, null, null, false);
 		
 		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
@@ -2525,6 +2642,16 @@ public class MarkovEngineTest extends TestCase {
 		transactionKey = engine.startNetworkActions();
 		engine.addQuestion(transactionKey, new Date(), (long)0x0C, 2, null);
 		engine.commitNetworkActions(transactionKey);
+		
+		// cannot reuse same transaction key
+		try {
+			newValues = new ArrayList<Float>(2);
+			newValues.add(.9f);	newValues.add(.1f);
+			engine.addTrade(transactionKey, new Date(), "To fail", Long.MAX_VALUE, (long)0x0D, newValues, null, null, false);
+			fail("Should not allow to use commited transaction");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+		}
 		
 		// check that probabilities and assets related to old node did not change
 		
@@ -2872,6 +2999,16 @@ public class MarkovEngineTest extends TestCase {
 			);
 		engine.commitNetworkActions(transactionKey);
 		
+		// cannot reuse same transaction key
+		try {
+			newValues = new ArrayList<Float>(2);
+			newValues.add(.9f);	newValues.add(.1f);
+			engine.addTrade(transactionKey, new Date(), "To fail", Long.MAX_VALUE, (long)0x0D, newValues, null, null, false);
+			fail("Should not allow to use commited transaction");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+		}
+		
 		// check assets
 		List<Float> assetsIfStates = engine.getAssetsIfStates(userNameToIDMap.get("Amy"), (long)0x0C, null, null);
 		assertEquals(2, assetsIfStates.size());
@@ -3003,6 +3140,16 @@ public class MarkovEngineTest extends TestCase {
 				true	// allow negative assets
 			);
 		engine.commitNetworkActions(transactionKey);
+		
+		// cannot reuse same transaction key
+		try {
+			newValues = new ArrayList<Float>(2);
+			newValues.add(.9f);	newValues.add(.1f);
+			engine.addTrade(transactionKey, new Date(), "To fail", Long.MAX_VALUE, (long)0x0D, newValues, null, null, false);
+			fail("Should not allow to use commited transaction");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
@@ -3227,6 +3374,16 @@ public class MarkovEngineTest extends TestCase {
 		
 		// commit all trades (including the creation of network and user)
 		engine.commitNetworkActions(transactionKey);
+		
+		// cannot reuse same transaction key
+		try {
+			newValues = new ArrayList<Float>(2);
+			newValues.add(.9f);	newValues.add(.1f);
+			engine.addTrade(transactionKey, new Date(), "To fail", Long.MAX_VALUE, (long)0x0D, newValues, null, null, false);
+			fail("Should not allow to use commited transaction");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+		}
 		
 		// check that final marginal of E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
 		List<Float> probList = engine.getProbList(0x0D, null, null);
@@ -6067,6 +6224,14 @@ public class MarkovEngineTest extends TestCase {
 		// commit all trades (including the creation of network and user)
 		engine.commitNetworkActions(transactionKey);
 		
+		// cannot reuse same transaction key
+		try {
+			engine.doBalanceTrade(transactionKey, new Date(), "To fail", Long.MAX_VALUE, (long)0x0D, null, null);
+			fail("Should not allow to use commited transaction");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+		}
+		
 		// test invalid questions and assumptions
 		for (String key : userNameToIDMap.keySet()) {
 			// invalid question
@@ -6197,7 +6362,881 @@ public class MarkovEngineTest extends TestCase {
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#resolveQuestion(long, java.util.Date, long, int)}.
 	 */
 	public final void testResolveQuestion() {
-		fail("Not yet implemented"); // TODO
+		
+		Map<String, Long> userNameToIDMap = this.createDEFNetIn1Transaction();
+		
+		// check probs and assets before resolution D = d1
+		
+		// check that final marginal of E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
+		List<Float> probList = engine.getProbList(0x0D, null, null);
+		assertEquals(0.7232f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.2768f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0E, null, null);
+		assertEquals(0.8509f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.1491f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0F, null, null);
+		assertEquals(0.2165f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.7835f, probList.get(1), PROB_ERROR_MARGIN);
+		
+		// set assumptions to D,E,F, so that we can use it to calculate conditional min-q (in order to test consistency of LPE)
+		ArrayList<Long> assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long) 0x0D);		// 1st node is D; assumedStates must follow this order
+		assumptionIds.add((long) 0x0E);		// 2nd node is E; assumedStates must follow this order
+		assumptionIds.add((long) 0x0F);		// 3rd node is F; assumedStates must follow this order
+		// init list of states of the assumptions
+		ArrayList<Integer> assumedStates = new ArrayList<Integer>();	
+		assumedStates.add(0);	// d1
+		assumedStates.add(0);	// e1
+		assumedStates.add(0);	// f1
+		
+		// this map will store the conditional cashes for posterior comparison. 
+		// E.g. Tom -> [Cash(d1,e1,f1),Cash(d1,e1,f2),Cash(d1,e2,f1),Cash(d1,e2,f2),Cash(d2,e1,f1),Cash(d2,e1,f2),Cash(d2,e2,f1),Cash(d2,e2,f2)]
+		Map<String, List<Float>> mapOfConditionalCash = new HashMap<String, List<Float>>();
+		
+		// check that final min-q of Tom is 20
+		float minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(20f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(20f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		mapOfConditionalCash.put("Tom", new ArrayList<Float>());
+		
+		// check that final LPE of Tom contains d1, e2 and any value F
+		
+		// check combination d1, e1, f1 (not min)
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		float cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Tom").add(cash);
+		
+		// check combination d1, e1, f2 (not min)
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Tom").add(cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		mapOfConditionalCash.get("Tom").add(cash);
+
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		mapOfConditionalCash.get("Tom").add(cash);
+
+		// check combination d2, e1, f1 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Tom").add(cash);
+		
+		// check combination d2, e1, f2 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Tom").add(cash);
+
+		// check combination d2, e2, f1 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Tom").add(cash);
+
+		// check combination d2, e2, f2 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Tom").add(cash);
+
+		
+		// check that min-q of Amy is 60...
+		minCash = engine.getCash(userNameToIDMap.get("Amy"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(60f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(60f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		mapOfConditionalCash.put("Amy", new ArrayList<Float>());
+		
+		// check that LPE of Amy contains d1, f1 and any value E
+		
+		// check combination d1, e1, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		mapOfConditionalCash.get("Amy").add(cash);
+		
+		// check combination d1, e1, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Amy").add(cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		mapOfConditionalCash.get("Amy").add(cash);
+
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Amy").add(cash);
+
+		// check combination d2, e1, f1 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Amy").add(cash);
+		
+		// check combination d2, e1, f2 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Amy").add(cash);
+
+		// check combination d2, e2, f1
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Amy").add(cash);
+
+		// check combination d2, e2, f2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Amy").add(cash);
+		
+		
+		// check that min-q of Joe is 14.5454545...
+		minCash = engine.getCash(userNameToIDMap.get("Joe"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(14.5454545f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(14.5454545f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		mapOfConditionalCash.put("Joe",new ArrayList<Float>());
+		
+		// check that LPE of Joe contains d2, e1, f1
+		
+		// check combination d1, e1, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Joe").add(cash);
+		
+		// check combination d1, e1, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Joe").add(cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Joe").add(cash);
+
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Joe").add(cash);
+
+		// check combination d2, e1, f1 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		mapOfConditionalCash.get("Joe").add(cash);
+		
+		// check combination d2, e1, f2 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Joe").add(cash);
+
+		// check combination d2, e2, f1
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Joe").add(cash);
+
+		// check combination d2, e2, f2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Joe").add(cash);
+		
+		// check that final min-q of Eric is 35.7393...
+		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(35.7393f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(35.7393f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		mapOfConditionalCash.put("Eric",new ArrayList<Float>());
+		
+		// check that final LPE of Eric is d2, e2 and f2
+		
+		// check combination d1, e1, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Eric").add(cash);
+		
+		// check combination d1, e1, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Eric").add(cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Eric").add(cash);
+		
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Eric").add(cash);
+		
+		// check combination d2, e1, f1 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Eric").add(cash);
+		
+		// check combination d2, e1, f2 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Eric").add(cash);
+		
+		// check combination d2, e2, f1
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Eric").add(cash);
+		
+		// check combination d2, e2, f2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		mapOfConditionalCash.get("Eric").add(cash);
+		
+		// resolve to d1
+		long transactionKey = engine.startNetworkActions();
+		assertTrue(engine.resolveQuestion(transactionKey, new Date(), (long)0x0D, 0));
+		assertTrue(engine.commitNetworkActions(transactionKey));
+		
+		// cannot reuse same transaction key
+		try {
+			engine.resolveQuestion(transactionKey, new Date(), (long)0x0E, 0);
+			fail("Should not allow to use commited transaction");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+		}
+		
+		// assert that D is not accessible anymore
+		try {
+			probList = engine.getProbList((long)0x0D, null, null);
+			// marginals of resolved questions can still be retrieved if engine is set to retrieve such values from history.
+			if (!engine.isToObtainProbabilityOfResolvedQuestions()) {
+				fail("D should not be present anymore");
+			} else {
+				// check that final marginal of D is [1, 0]
+				assertEquals(2, probList.size());
+				assertEquals(1f, probList.get(0), PROB_ERROR_MARGIN);
+				assertEquals(0f, probList.get(1), PROB_ERROR_MARGIN);
+			}
+		} catch (IllegalArgumentException e) {
+			if (engine.isToObtainProbabilityOfResolvedQuestions()) {
+				// marginals of resolved questions can still be retrieved if engine is set to retrieve such values from history.
+				e.printStackTrace();
+				fail(e.getMessage());
+			} else {
+				assertNotNull(e);
+			}
+		}
+		try {
+			probList = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null);
+			if (engine.isToDeleteResolvedNode()) {
+				fail("D should not be present anymore");
+			} else {
+				// check that final marginal of E is [0.9509, 0.0491]
+				assertEquals(4, probList.size());
+				assertEquals(0.9509f, probList.get(0), PROB_ERROR_MARGIN);
+				assertEquals(0.0491f, probList.get(1), PROB_ERROR_MARGIN);
+				assertEquals(0f, probList.get(2), PROB_ERROR_MARGIN);
+				assertEquals(0f, probList.get(3), PROB_ERROR_MARGIN);
+			}
+		} catch (IllegalArgumentException e) {
+			if (engine.isToDeleteResolvedNode()) {
+				assertNotNull(e);
+			} else {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
+		}
+		try {
+			Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
+			List<Float> assetsIfStates = engine.getAssetsIfStates(userId, (long)0x0D, null, null);
+			if (engine.isToDeleteResolvedNode()) {
+				fail("D should not be present anymore");
+			} else {
+				// make sure the impossible state has assets == 0
+				assertEquals(2, assetsIfStates.size());
+				assertTrue(Float.isInfinite(assetsIfStates.get(1)));	// 0 of q-value means -infinite assets
+			}
+		} catch (IllegalArgumentException e) {
+			if (engine.isToDeleteResolvedNode()) {
+				assertNotNull(e);
+			} else {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
+		}
+		try {
+			Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
+			List<Float> assetsIfStates = engine.getAssetsIfStates(userId, (long)0x0E, Collections.singletonList((long)0x0D), null);
+			if (engine.isToDeleteResolvedNode()) {
+				fail("D should not be present anymore");
+			} else {
+				// make sure the impossible state has assets == 0
+				assertEquals(4, assetsIfStates.size());
+				assertTrue(Float.isInfinite(assetsIfStates.get(2)));	// 0 of q-value means -infinite assets
+				assertTrue(Float.isInfinite(assetsIfStates.get(3)));	// 0 of q-value means -infinite assets
+			}
+		} catch (IllegalArgumentException e) {
+			if (engine.isToDeleteResolvedNode()) {
+				assertNotNull(e);
+			} else {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
+		}
+		try {
+			Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
+			cash = engine.getCash(userId, Collections.singletonList((long)0x0D), Collections.singletonList(1));
+			if (engine.isToDeleteResolvedNode()) {
+				fail("D should not be present anymore");
+			} else {
+				// make sure the impossible state has assets == 0
+				assertTrue(Float.isInfinite(cash));	// 0 of q-value means -infinite assets
+			}
+		} catch (IllegalArgumentException e) {
+			if (engine.isToDeleteResolvedNode()) {
+				assertNotNull(e);
+			} else {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
+		}
+		try {
+			Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
+			List<Float> balancingTrade = engine.previewBalancingTrade(userId, (long)0x0D, null, null);
+			if (engine.isToDeleteResolvedNode()) {
+				fail("D should not be present anymore");
+			} else {
+				// make sure the impossible state has assets == 0
+				assertNull("" + balancingTrade, balancingTrade);
+			}
+		} catch (IllegalArgumentException e) {
+			if (engine.isToDeleteResolvedNode()) {
+				assertNotNull(e);
+			} else {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
+		}
+		try {
+			Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
+			List<Float> balancingTrade = engine.previewBalancingTrade(userId, (long)((Math.random() < .5)?0x0E:0x0F), Collections.singletonList((long)0x0D), Collections.singletonList(1));
+			if (engine.isToDeleteResolvedNode()) {
+				fail("D should not be present anymore");
+			} else {
+				// make sure the impossible state has assets == 0
+				assertNull("" + balancingTrade, balancingTrade);
+			}
+		} catch (IllegalArgumentException e) {
+			if (engine.isToDeleteResolvedNode()) {
+				assertNotNull(e);
+			} else {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
+		}
+		try {
+			Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
+			List<Float> newValues = new ArrayList<Float>();
+			newValues.add((float) Math.random());	newValues.add(1-newValues.get(0));
+			engine.previewTrade(userId, (long)0x0D, newValues, null, null);
+			fail("D should not be present anymore");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+		}
+		try {
+			Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
+			List<Float> newValues = new ArrayList<Float>();
+			newValues.add((float) Math.random());	newValues.add(1-newValues.get(0));
+			engine.previewTrade(userId, (long)((Math.random() < .5)?0x0E:0x0F), newValues, Collections.singletonList((long)0x0D), Collections.singletonList(((Math.random()<.5)?0:1)));
+			fail("D should not be present anymore");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+		}
+		try {
+			Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
+			engine.getEditLimits(userId, (long)0x0D, (Math.random() < .5)?0:1, null, null);
+			fail("D should not be present anymore");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+		}
+		try {
+			Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
+			engine.getEditLimits(userId, (long)((Math.random() < .5)?0x0E:0x0F), (Math.random() < .5)?0:1, Collections.singletonList((long)0x0D), Collections.singletonList(((Math.random()<.5)?0:1)));
+			fail("D should not be present anymore");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+		}
+		try {
+			List<Long> assumptions = engine.getPossibleQuestionAssumptions((long)0x0D, null);
+			if (engine.isToDeleteResolvedNode()) {
+				fail("D should not be present anymore");
+			} else {
+				assertNotNull(assumptions);
+				assertEquals(2, assumptions.size());
+				assertTrue(assumptions.contains((long)0x0E));
+				assertTrue(assumptions.contains((long)0x0F));
+			}
+		} catch (IllegalArgumentException e) {
+			if (engine.isToDeleteResolvedNode()) {
+				assertNotNull(e);
+			} else {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
+		}
+		try {
+			List<Long> assumptions = engine.getPossibleQuestionAssumptions((long)((Math.random() < .5)?0x0E:0x0F), Collections.singletonList((long)0x0D));
+			if (engine.isToDeleteResolvedNode()) {
+				fail("D should not be present anymore");
+			} else {
+				assertNotNull(assumptions);
+				assertEquals(1, assumptions.size());
+				assertTrue(assumptions.contains((long)0x0D));
+			}
+		} catch (IllegalArgumentException e) {
+			if (engine.isToDeleteResolvedNode()) {
+				assertNotNull(e);
+			} else {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
+		}
+		try {
+			Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
+			engine.scoreUserQuestionEv(userId, (long)0x0D, null, null);
+			if (engine.isToDeleteResolvedNode()) {
+				fail("D should not be present anymore");
+			}
+		} catch (IllegalArgumentException e) {
+			if (engine.isToDeleteResolvedNode()) {
+				assertNotNull(e);
+			} else {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
+		}
+		try {
+			Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
+			engine.scoreUserQuestionEv(userId, (long)((Math.random() < .5)?0x0E:0x0F), Collections.singletonList((long)0x0D), Collections.singletonList(((Math.random()<.5)?0:1)));
+			if (engine.isToDeleteResolvedNode()) {
+				fail("D should not be present anymore");
+			}
+		} catch (IllegalArgumentException e) {
+			if (engine.isToDeleteResolvedNode()) {
+				assertNotNull(e);
+			} else {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
+		}
+		try {
+			Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
+			engine.scoreUserQuestionEvStates(userId, (long)0x0D, null, null);
+			if (engine.isToDeleteResolvedNode()) {
+				fail("D should not be present anymore");
+			}
+		} catch (IllegalArgumentException e) {
+			if (engine.isToDeleteResolvedNode()) {
+				assertNotNull(e);
+			} else {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
+		}
+		try {
+			Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
+			engine.scoreUserQuestionEvStates(userId, (long)((Math.random() < .5)?0x0E:0x0F), Collections.singletonList((long)0x0D), Collections.singletonList(((Math.random()<.5)?0:1)));
+			if (engine.isToDeleteResolvedNode()) {
+				fail("D should not be present anymore");
+			}
+		} catch (IllegalArgumentException e) {
+			if (engine.isToDeleteResolvedNode()) {
+				assertNotNull(e);
+			} else {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
+		}
+		
+		// assert that D is not accessible in transactional methods as well
+		try {
+			Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
+			transactionKey = engine.startNetworkActions();
+			List<Float> newValues = new ArrayList<Float>();
+			newValues.add((float) Math.random());	newValues.add(1-newValues.get(0));
+			engine.addTrade(transactionKey, new Date(), "To fail", userId, (long)0x0D, newValues, null, null, false);
+			fail("D should not be present anymore");
+		} catch (IllegalArgumentException e) {
+			engine.commitNetworkActions(transactionKey);
+			assertNotNull(e);
+		}
+		try {
+			Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
+			transactionKey = engine.startNetworkActions();
+			List<Float> newValues = new ArrayList<Float>();
+			newValues.add((float) Math.random());	newValues.add(1-newValues.get(0));
+			engine.addTrade(transactionKey, new Date(), "To fail", userId, (long)((Math.random()<.5)?0x0E:0x0F), newValues, Collections.singletonList((long)0x0D), Collections.singletonList(((Math.random()<.5)?0:1)), false);
+			fail("D should not be present anymore");
+		} catch (IllegalArgumentException e) {
+			engine.commitNetworkActions(transactionKey);
+			assertNotNull(e);
+		}
+		try {
+			Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
+			transactionKey = engine.startNetworkActions();
+			engine.doBalanceTrade(transactionKey, new Date(), "To fail", userId, (long)0x0D, null, null );
+			fail("D should not be present anymore");
+		} catch (IllegalArgumentException e) {
+			engine.commitNetworkActions(transactionKey);
+			assertNotNull(e);
+		}
+		try {
+			Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
+			transactionKey = engine.startNetworkActions();
+			engine.doBalanceTrade(transactionKey, new Date(), "To fail", userId, (long)((Math.random()<.5)?0x0E:0x0F), Collections.singletonList((long)0x0D), Collections.singletonList(((Math.random()<.5)?0:1)));
+			fail("D should not be present anymore");
+		} catch (IllegalArgumentException e) {
+			engine.commitNetworkActions(transactionKey);
+			assertNotNull(e);
+		}
+		
+		
+		// history and score detail/summary can be accessed normally
+		assertFalse(engine.getQuestionHistory((long) 0x0D, null, null).isEmpty());
+		assertFalse(engine.getScoreDetails(userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy"), (long)0x0D, null, null).isEmpty());
+		assertFalse(engine.getScoreSummary(userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy"), (long)0x0D, null, null).isEmpty());
+		
+		// revert trade should be OK
+		transactionKey = engine.startNetworkActions();
+		engine.revertTrade(transactionKey, new Date(), new Date(new Date().getTime() + 1), (long)0x0D);	// use future date, so that nothing is actually reverted
+		engine.commitNetworkActions(transactionKey);
+		
+		
+		// check that final marginal of E is [0.9509, 0.0491], F is  [0.2416, 0.7584]
+		probList = engine.getProbList(0x0E, null, null);
+		assertEquals(0.9509f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.0491f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0F, null, null);
+		assertEquals(0.2416f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.7584f, probList.get(1), PROB_ERROR_MARGIN);
+		if (engine.isToObtainProbabilityOfResolvedQuestions()) {
+			probList = engine.getProbList(0x0D, null, null);
+			assertEquals(1f, probList.get(0), PROB_ERROR_MARGIN);
+			assertEquals(0f, probList.get(1), PROB_ERROR_MARGIN);
+		} else {
+			engine.setToObtainProbabilityOfResolvedQuestions(true);
+			probList = engine.getProbList(0x0F, null, null);
+			assertEquals(1f, probList.get(0), PROB_ERROR_MARGIN);
+			assertEquals(0f, probList.get(1), PROB_ERROR_MARGIN);
+			engine.setToObtainProbabilityOfResolvedQuestions(false);
+		}
+		
+		// test that conditional cash matches the values before resolution
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long)0x0E);	assumptionIds.add((long)0x0F);
+		if (!engine.isToDeleteResolvedNode()) {
+			assumptionIds.add((long)0x0D);
+		}
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0); assumedStates.add(0); 
+		if (!engine.isToDeleteResolvedNode()) {
+			assumedStates.add(0);
+		}
+		for (String userName : mapOfConditionalCash.keySet()) {
+			assumedStates.set(2, 0);	// d1
+			for (int i = 0; i < 4; i++) {	// combinations [e1f1,e1f2,e2f1,e2f2]
+				assumedStates.set(0, (int)i/2);	// e
+				assumedStates.set(1, (int)i%2);	// f
+				cash = engine.getCash(userNameToIDMap.get(userName), assumptionIds, assumedStates);
+				assertEquals("[" + i + "] user = " + userName + ", e = " + (int)i/2 + ", f = " + (int)i%2, mapOfConditionalCash.get(userName).get(i), cash);
+			}
+			if (!engine.isToDeleteResolvedNode()) {
+				assumedStates.set(2, 1);	// d2
+				for (int i = 0; i < 4; i++) {	// combinations [e1f1d2,e1f2d2,e2f1d2,e2f2d2]
+					assumedStates.set(0, (int)i/2);	// e
+					assumedStates.set(1, (int)i%2);	// f
+					cash = engine.getCash(userNameToIDMap.get(userName), assumptionIds, assumedStates);
+					assertTrue("[" + i + "] user = " + userName + ", e = " + (int)i/2 + ", f = " + (int)i%2 + ", cash = " + cash, Float.isInfinite(cash));
+				}
+			} 
+		}
+	}
+
+	private Map<String, Long> createDEFNetIn1Transaction() {
+		// crate transaction
+		long transactionKey = engine.startNetworkActions();
+		
+		// create nodes D, E, F
+		engine.addQuestion(transactionKey, new Date(), 0x0D, 2, null);	// question D has ID = hexadecimal D. CPD == null -> linear distro
+		engine.addQuestion(transactionKey, new Date(), 0x0E, 2, null);	// question E has ID = hexadecimal E. CPD == null -> linear distro
+		engine.addQuestion(transactionKey, new Date(), 0x0F, 2, null);	// question F has ID = hexadecimal F. CPD == null -> linear distro
+		// create edge D->E 
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0E, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
+		// create edge D->F
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0F, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
+
+		// Let's use ID = 0 for the user Tom 
+		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
+		userNameToIDMap.put("Tom", (long)0);
+		
+		try {
+			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
+			engine.getCash(userNameToIDMap.get("Tom"), null, null);
+			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+		} catch (IllegalStateException e) {
+			// OK. This is the expected
+			assertNotNull(e);
+		}
+		
+		// add 100 q-values to new users
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Tom"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+		
+		
+		// Tom bets  P(E=e1) = 0.5  to 0.55 and P(E=e1|D=d1) = .55 -> .9 simultaneously
+		
+		// set P(E=e1|D=d1) = 0.9 and P(E=e2|D=d1) = 0.1
+		List<Float> newValues = new ArrayList<Float>();
+		newValues.add(.9f);
+		newValues.add(.1f);
+		newValues.add(.55f);
+		newValues.add(.45f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Tom bets P(E=e1) = 0.55, and P(E=e1|D=d1) = 0.9", 
+				userNameToIDMap.get("Tom"), 
+				0x0E, 
+				newValues, 
+				Collections.singletonList((long)0x0D), 
+				null, 
+				false
+			);
+		
+
+		
+		// Let's create user Joe, ID = 1.
+		userNameToIDMap.put("Joe", (long) 1);
+		
+		try {
+			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
+			engine.getCash(userNameToIDMap.get("Joe"), null, null);
+			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+		} catch (IllegalStateException e) {
+			// OK. This is the expected
+			assertNotNull(e);
+		}
+		
+		// add 100 q-values to new users
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Joe"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+
+		// Joe bets P(E=e1|D=d2) = .55 -> .4
+		newValues = new ArrayList<Float>();
+		newValues.add(.4f);
+		newValues.add(.6f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Joe bets P(E=e1|D=d2) = 0.4", 
+				userNameToIDMap.get("Joe"), 
+				0x0E, 
+				newValues, 
+				Collections.singletonList((long)0x0D), 
+				Collections.singletonList(1), 
+				false
+			);
+		
+
+		// Let's create user Amy, ID = 2.
+		userNameToIDMap.put("Amy", (long) 2);
+		
+		try {
+			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
+			engine.getCash(userNameToIDMap.get("Amy"), null, null);
+			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+		} catch (IllegalStateException e) {
+			// OK. This is the expected
+			assertNotNull(e);
+		}
+		
+		// add 100 q-values to new users
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Amy"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+
+		// Amy bets P(F=f1|D=d1) = .5 -> .3
+		newValues = new ArrayList<Float>();
+		newValues.add(.3f);
+		newValues.add(.7f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Amy bets P(F=f1|D=d1) = 0.3", 
+				userNameToIDMap.get("Amy"), 
+				0x0F, 
+				newValues, 
+				Collections.singletonList((long)0x0D), 
+				Collections.singletonList(0), 
+				false
+			);
+		
+
+		// Joe bets P(F=f1|D=d2) = .5 -> .1
+		newValues = new ArrayList<Float>();
+		newValues.add(.1f);
+		newValues.add(.9f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Joe bets P(F=f1|D=d2) = 0.1", 
+				userNameToIDMap.get("Joe"), 
+				0x0F, 
+				newValues, 
+				Collections.singletonList((long)0x0D), 
+				Collections.singletonList(1), 
+				false
+			);
+		
+
+		// create new user Eric
+		userNameToIDMap.put("Eric", (long) 3);
+		
+		try {
+			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
+			engine.getCash(userNameToIDMap.get("Eric"), null, null);
+			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+		} catch (IllegalStateException e) {
+			// OK. This is the expected
+			assertNotNull(e);
+		}
+		
+		// add 100 q-values to new users
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Eric"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+		
+		// Eric bets P(E=e1) = .65 -> .8
+		newValues = new ArrayList<Float>();
+		newValues.add(.8f);
+		newValues.add(.2f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Eric bets P(E=e1) = 0.8", 
+				userNameToIDMap.get("Eric"), 
+				0x0E, 
+				newValues, 
+				(List)Collections.emptyList(), 
+				(List)Collections.emptyList(), 
+				false
+			);
+		
+		// Eric bets  P(D=d1|F=f2) = 0.52 -> 0.7
+		newValues = new ArrayList<Float>();
+		newValues.add(.7f);
+		newValues.add(.3f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Eric bets P(D=d1|F=f2) = 0.7", 
+				userNameToIDMap.get("Eric"), 
+				0x0D, 
+				newValues, 
+				Collections.singletonList((long)0x0F), 
+				Collections.singletonList(1), 
+				false
+		);
+		
+		// commit all trades (including the creation of network and user)
+		engine.commitNetworkActions(transactionKey);
+		
+		return userNameToIDMap;
 	}
 
 	/**
@@ -6209,19 +7248,6 @@ public class MarkovEngineTest extends TestCase {
 
 	
 
-//	/**
-//	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#scoreUserQuestionEv(long, java.lang.Long, java.util.List, java.util.List)}.
-//	 */
-//	public final void testScoreUserQuestionEv() {
-//		fail("Not yet implemented"); // TODO
-//	}
-
-	/**
-	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#scoreUserEV(java.util.List, java.util.List, java.util.List)}.
-	 */
-	public final void testScoreUserEV() {
-		fail("Not yet implemented"); // TODO
-	}
 
 	/**
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#previewTrade(long, long, java.util.List, java.util.List, java.util.List, java.util.List)}.
@@ -6239,6 +7265,13 @@ public class MarkovEngineTest extends TestCase {
 	}
 	
 	/**
+	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#scoreUserEV(java.util.List, java.util.List, java.util.List)}.
+	 */
+	public final void testScoreUserEV() {
+		fail("Not yet implemented"); // TODO
+	}
+	
+	/**
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#getScoreSummary(long, List, List)}.
 	 */
 	public final void testGetScoreSummary() {
@@ -6252,5 +7285,15 @@ public class MarkovEngineTest extends TestCase {
 //	public final void testGetScoreDetails() {
 //		fail("Not yet implemented"); // TODO
 //	}
+	
+
+
+//	/**
+//	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#scoreUserQuestionEv(long, java.lang.Long, java.util.List, java.util.List)}.
+//	 */
+//	public final void testScoreUserQuestionEv() {
+//		fail("Not yet implemented"); // TODO
+//	}
+
 
 }

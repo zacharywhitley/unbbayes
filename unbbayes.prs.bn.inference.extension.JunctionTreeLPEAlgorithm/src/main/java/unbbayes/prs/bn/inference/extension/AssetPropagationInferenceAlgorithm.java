@@ -294,6 +294,14 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 				if (previousProbability <= 0) {
 					// This is an impossible state, because some complementary state is set as a finding.
 					// Impossible supposedly cannot be changed anymore, so do not update this state.
+					if (currentProbabilities.getValue(i) > 0) {
+						throw new RuntimeException("Invalid attempt to change probability of clique/separator " 
+								+ assetTable
+								+ ", coordinate " + assetTable.getMultidimensionalCoord(i)
+								+ ", from " + previousProbability
+								+ " to " + currentProbabilities.getValue(i)
+								+ " was found.");
+					}
 					continue;
 				}
 				// multiply assets by the ratio (current probability values / previous probability values)
@@ -1151,9 +1159,10 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 * {@link AssetNetwork#removeNode(Node)} will be used in order to delete this node from the {@link #getAssetNetwork()}.
 	 * @param state : q-values of states complementary to this state (i.e. states of "node" which are different
 	 * to "state") will be set to 0.
+	 * @param isToDeleteNode : if true, node will be deleted after propagation.
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setAsPermanentEvidence(unbbayes.prs.INode, int)
 	 */
-	public void setAsPermanentEvidence(INode node, int state) {
+	public void setAsPermanentEvidence(INode node, int state , boolean isToDeleteNode) {
 		// initial assertions
 		if (node == null) {
 			throw new NullPointerException("Cannot add evidences to a null node.");
@@ -1212,7 +1221,9 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			}
 		}
 		// delete node. This will supposedly delete columns in the asset tables (cliques + separators) as well
-		getAssetNetwork().removeNode((Node) node);
+		if (isToDeleteNode) {
+			getAssetNetwork().removeNode((Node) node);
+		}
 	}
 
 	/**

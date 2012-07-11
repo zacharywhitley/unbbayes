@@ -1142,8 +1142,8 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	/**
 	 * This method will only delegate to {@link #getAssetPropagationDelegator()}
 	 */
-	public void setAsPermanentEvidence(INode node, int state) {
-		this.getAssetPropagationDelegator().setAsPermanentEvidence(node, state);
+	public void setAsPermanentEvidence(INode node, int state, boolean isToDeleteNode) {
+		this.getAssetPropagationDelegator().setAsPermanentEvidence(node, state, isToDeleteNode);
 	}
 
 	/**

@@ -77,6 +77,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 
 //	private AssetAwareInferenceAlgorithm inferenceAlgorithm;
 	
+	private boolean isToObtainProbabilityOfResolvedQuestions = true;
+	
+	private boolean isToDeleteResolvedNode = false;
+	
 
 	/**
 	 * Default constructor is protected to allow inheritance.
@@ -242,6 +246,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 				actions.addAll(otherActions);	// otherActions comes later
 			}
 			
+			// TODO trades of same user to same node given compatible assumptions (all nodes in same clique) can be integrated to 1 trade
+			
 			// then, execute all actions
 			for (NetworkAction action : actions) {
 				action.execute();
@@ -255,6 +261,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 					}
 				}
 			}
+			
+			// remove transaction before releasing the lock to actions
+			getNetworkActionsMap().remove(transactionKey);
+			
 		}	// release lock to actions
 		
 		return true;
@@ -999,7 +1009,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 					// propagate evidence in the probabilistic network
 					probNode.addFinding(settledState);
 					getDefaultInferenceAlgorithm().propagate();	// supposedly, default algorithm is configured so that it does not update assets
-					getProbabilisticNetwork().removeNode(probNode);
+//					probNode.addFinding(settledState);
+					if (isToDeleteResolvedNode()) {
+						getProbabilisticNetwork().removeNode(probNode);
+					} else {
+						// delete only from list 
+//						getProbabilisticNetwork().getNodeIndexes().remove(probNode.getName());
+//						getProbabilisticNetwork().getNodes().remove(probNode);
+//						getProbabilisticNetwork().getNodesCopy().remove(probNode);
+					}
 				} else {
 					try {
 						Debug.println(getClass(), "Node " + questionId + " is not present in the shared Bayes Net.");
@@ -1038,7 +1056,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 								};
 							}
 							if (assetNode != null) {
-								assetAlgorithm.setAsPermanentEvidence(assetNode, settledState);
+								assetAlgorithm.setAsPermanentEvidence(assetNode, settledState,isToDeleteResolvedNode());
+//								if (!isToDeleteResolvedNode()) {
+//									// delete only from list 
+//									assetAlgorithm.getAssetNetwork().getNodeIndexes().remove(assetNode.getName());
+//									assetAlgorithm.getAssetNetwork().getNodes().remove(assetNode);
+//									assetAlgorithm.getAssetNetwork().getNodesCopy().remove(assetNode);
+//								}
 							} else {
 								try {
 									Debug.println(getClass(), "Node " + questionId + " is not present in asset net of user " + assetAlgorithm.getAssetNetwork());
@@ -1136,7 +1160,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public void execute() {
 			// fill probBeforeRevert
 			if (questionId != null) {
+				boolean backup = isToObtainProbabilityOfResolvedQuestions();
+				setToObtainProbabilityOfResolvedQuestions(true);
 				probBeforeRevert = getProbList(questionId, null, null);
+				setToObtainProbabilityOfResolvedQuestions(backup);
 			} 
 			/*
 			 * NOTE: it is not guaranteed that actions in different transactions were executed in the same ordering/sequence of action.getWhenCreated()
@@ -1276,6 +1303,32 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		synchronized (getProbabilisticNetwork()) {
 			INode mainNode = getProbabilisticNetwork().getNode(Long.toString(questionId));
 			if (mainNode == null) {
+				if (isToObtainProbabilityOfResolvedQuestions() && (assumptionIds == null || assumptionIds.isEmpty())) {
+					// If it is a resolved question, we can get marginal (non-assumptive) probabilities from history.
+					// TODO also build conditional probability
+					try {
+						Debug.println(getClass(), questionId + " was not found. Retrieving marginal probability from history...");
+					} catch (Throwable t) {
+						t.printStackTrace();
+					}
+					// Retrieve from history
+					List<QuestionEvent> history = getQuestionHistory(questionId, null, null);
+					// search from the end, because resolutions are mostly at the end of the history
+					for (int i = history.size()-1; i >= 0; i--) {
+						if (history.get(i) instanceof ResolveQuestionNetworkAction) {
+							ResolveQuestionNetworkAction action = (ResolveQuestionNetworkAction) history.get(i);
+							// build probability of resolution (1 state is 100% and others are 0%)
+							int stateCount = action.getPercent().size();	// retrieve quantity of states == size of marginal probability
+							List<Float> ret = new ArrayList<Float>(stateCount);	// list to return
+							for (int j = 0; j < stateCount; j++) {
+								// set the settled state as 100%, and all others to 0%
+								ret.add((j==action.getSettledState())?1f:0f);
+							}
+							return ret;
+						}
+					}
+				}
+
 				throw new InexistingQuestionException("Question " + questionId + " not found", questionId);
 			}
 			List<INode> parentNodes = new ArrayList<INode>();
@@ -1521,6 +1574,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 				mainNode.setToCalculateMarginal(true);		// force marginalization to calculate something.
 				mainNode.updateMarginal(); 					// make sure values of mainNode.getMarginalAt(index) is up to date
 				mainNode.setToCalculateMarginal(backup);	// revert to previous config
+				
 			}
 			assetTable = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, algorithm.getAssetNetwork(), algorithm.getAssetPropagationDelegator());
 		}
@@ -1592,23 +1646,39 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		}
 		
 		// extract main node
-		Node mainNode = null;
+		TreeVariable mainNode = null;
 		synchronized (getProbabilisticNetwork()) {
-			mainNode = getProbabilisticNetwork().getNode(Long.toString(questionId));
-		}
-		if (mainNode == null) {
-			throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
+			mainNode = (TreeVariable) getProbabilisticNetwork().getNode(Long.toString(questionId));
+			if (mainNode == null) {
+				throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
+			}
+			if (mainNode.hasEvidence()) {
+				throw new IllegalArgumentException("Question " + mainNode + " is already resolved and cannot be changed.");
+			}
+			for (int i = 0; i < mainNode.getStatesSize(); i++) {
+				if (mainNode.getMarginalAt(i) == 0.0f || mainNode.getMarginalAt(i) == 1.0f) {
+					throw new IllegalArgumentException("State " + i + " of question " + mainNode + " has probability " + mainNode.getMarginalAt(i) + " and cannot be changed.");
+				}
+			}
 		}
 		// extract assumption nodes
 		List<INode> assumptions = new ArrayList<INode>();
 		if (assumptionIds != null) {
 			for (Long id : assumptionIds) {
-				Node node = null;
+				TreeVariable node = null;
 				synchronized (getProbabilisticNetwork()) {
-					node = getProbabilisticNetwork().getNode(Long.toString(id));
-				}
-				if (node == null) {
-					throw new InexistingQuestionException("Question " + id + " not found.", id);
+					node = (TreeVariable) getProbabilisticNetwork().getNode(Long.toString(id));
+					if (node == null) {
+						throw new InexistingQuestionException("Question " + id + " not found.", id);
+					}
+					if (node.hasEvidence()) {
+						throw new IllegalArgumentException("Question " + node + " is already resolved and cannot be changed.");
+					}
+					for (int i = 0; i < mainNode.getStatesSize(); i++) {
+						if (node.getMarginalAt(i) == 0.0f || node.getMarginalAt(i) == 1.0f) {
+							throw new IllegalArgumentException("State " + i + " of question " + node + " has probability " + node.getMarginalAt(i) + " and cannot be changed.");
+						}
+					}
 				}
 				assumptions.add(node);
 			}
@@ -1730,8 +1800,39 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		if (assumptionIds != null && assumedStates != null && assumedStates.size() != assumptionIds.size()) {
 			throw new IllegalArgumentException("Expected size of assumedStates is " + assumptionIds.size() + ", but was " + assumedStates.size());
 		}
+		// obtain the main node
+		INode node = null;
+		synchronized (getProbabilisticNetwork()) {
+			node = getProbabilisticNetwork().getNode(Long.toString(questionId));
+		}
+		if (node == null) {
+			throw new IllegalArgumentException("Question " + questionId + " not found.");
+		}
+		// check the assumption nodes
+		if (assumptionIds != null) {
+			for (int i = 0; i < assumptionIds.size(); i++) {
+				Long id = assumptionIds.get(i);
+				INode assumption = null;
+				synchronized (getProbabilisticNetwork()) {
+					assumption = getProbabilisticNetwork().getNode(Long.toString(id));
+					if (assumption == null) {
+						throw new IllegalArgumentException("Question " + id + " not found.");
+					}
+					// check state consistency
+					if ( (assumedStates != null)  && (i < assumedStates.size()) ) {
+						Integer state = assumedStates.get(i);
+						if (state != null) {
+							if (state < 0 || state >= assumption.getStatesSize()) {
+								throw new IllegalArgumentException("Question " + id + " has no state " + assumedStates.get(i));
+							}
+						}
+					}
+				}
+			}
+		}
 		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Not implemented yet.");
+		return Collections.singletonList(0f);
+//		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 	
 	/*
@@ -1740,6 +1841,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 */
 	public float scoreUserEv(long userId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
 		// TODO Auto-generated method stub
+//		return 0f;
 		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 
@@ -1758,19 +1860,19 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		}
 		if (assumptionIds != null && !assumptionIds.isEmpty()) {
 			// size of assumedStates must be equal to assumptionIds
-			if (assumedStates == null) {
-				throw new IllegalArgumentException("assumedStates is not expected to be null when assumptionIds is not null.");
-			} else if (assumedStates.size() != assumptionIds.size()) {
-				throw new IllegalArgumentException("Size of assumedStates is expected to be " + assumptionIds.size() + ", but was " + assumedStates.size());
-			}
+//			if (assumedStates == null) {
+//				throw new IllegalArgumentException("assumedStates is not expected to be null when assumptionIds is not null.");
+//			} else if (assumedStates.size() != assumptionIds.size()) {
+//				throw new IllegalArgumentException("Size of assumedStates is expected to be " + assumptionIds.size() + ", but was " + assumedStates.size());
+//			}
 			// assumptionIds must not contain null value
 			if (assumptionIds.contains(null)) {
 				throw new IllegalArgumentException("Null assumption found.");
 			}
 			// assumedStates must not contain null value
-			if (assumedStates.contains(null)) {
-				throw new IllegalArgumentException("Assumption with state == null found.");
-			}
+//			if (assumedStates.contains(null)) {
+//				throw new IllegalArgumentException("Assumption with state == null found.");
+//			}
 		}
 		
 		// check if the assumptions are semantically valid
@@ -1851,7 +1953,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			throw new NullPointerException("AssetAwareInferenceAlgorithm was not specified.");
 		}
 		
-		// obtain the network. It should be a copy, if the original is should be untouched
+		// obtain the network. Note: if you want the original to be untouched, you must provide the argument algorithm linked to a copied BN instead of the original
 		ProbabilisticNetwork net = algorithm.getRelatedProbabilisticNetwork();
 		if (net == null || !net.equals(getProbabilisticNetwork())) {
 			throw new RuntimeException("Could not obtain bayesian network for user " + algorithm.getAssetNetwork() + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
@@ -1861,6 +1963,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		TreeVariable child = (TreeVariable) net.getNode(Long.toString(questionId));
 		if (child == null) {
 			throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
+		}
+		
+		if (child.hasEvidence()) {
+			throw new IllegalArgumentException("Question " + child + " is already resolved and cannot be changed.");
+		}
+		for (int i = 0; i < child.getStatesSize(); i++) {
+			if (child.getMarginalAt(i) == 0.0f || child.getMarginalAt(i) == 1.0f) {
+				throw new IllegalArgumentException("State " + i + " of question " + child + " has probability " + child.getMarginalAt(i) + " and cannot be changed.");
+			}
 		}
 		
 		// this var will store the correct size of cpd. If negative, owner of the cpd was not found.
@@ -1874,10 +1985,18 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		// extract assumptions
 		List<INode> assumptionNodes = new ArrayList<INode>();
 		for (Long assumptiveQuestionId : assumptionIds) {
-			Node parent = net.getNode(Long.toString(assumptiveQuestionId));
+			TreeVariable parent = (TreeVariable) net.getNode(Long.toString(assumptiveQuestionId));
 			if (parent == null) {
 				throw new InexistingQuestionException("Question " + assumptiveQuestionId + " not found.", assumptiveQuestionId);
 			} 
+			if (parent.hasEvidence()) {
+				throw new IllegalArgumentException("Question " + parent + " is already resolved and cannot be changed.");
+			}
+			for (int i = 0; i < parent.getStatesSize(); i++) {
+				if (parent.getMarginalAt(i) == 0.0f || parent.getMarginalAt(i) == 1.0f) {
+					throw new IllegalArgumentException("State " + i + " of question " + parent + " has probability " + parent.getMarginalAt(i) + " and cannot be changed.");
+				}
+			}
 			assumptionNodes.add(parent);
 			// size of cpd if  = MULT (<quantity of states of child and parents>).
 			expectedSizeOfCPD *= parent.getStatesSize();
@@ -2048,6 +2167,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			commonDenominator += product;
 		}
 		
+		if (commonDenominator == 0.0d) {
+			// there is no solution
+			return null;
+		}
+		
 		// Calculate P1,P2,...,PN and store it in probabilities. 
 		for (int i = 0; i < probabilities.size(); i++) {
 			// Pi = ((q1*q2*...*qi-1*qi+1*...*qN)*pi) / commonDenominator
@@ -2093,7 +2217,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		}
 		
 		try {
-			if (assumptionIds != null && !assumptionIds.isEmpty() && this.getPossibleQuestionAssumptions(questionId, assumptionIds).isEmpty()) {
+			if (this.getPossibleQuestionAssumptions(questionId, assumptionIds).isEmpty()) {
 				throw new InvalidAssumptionException(assumptionIds + " are invalid assumptions for question " + questionId);
 			}
 		} catch (InexistingQuestionException e) {
@@ -2141,10 +2265,21 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		}
 		
 		// check existence of main node
-		Node mainNode  = null;
+		TreeVariable mainNode  = null;
 		synchronized (getProbabilisticNetwork()) {
-			mainNode = getProbabilisticNetwork().getNode(Long.toString(questionId));
+			mainNode = (TreeVariable) getProbabilisticNetwork().getNode(Long.toString(questionId));
+			if (mainNode != null) {
+				if (mainNode.hasEvidence()) {
+					throw new IllegalArgumentException("Question " + mainNode + " is already resolved and cannot be changed.");
+				}
+				for (int i = 0; i < mainNode.getStatesSize(); i++) {
+					if (mainNode.getMarginalAt(i) == 0.0f || mainNode.getMarginalAt(i) == 1.0f) {
+						throw new IllegalArgumentException("State " + i + " of question " + mainNode + " has probability " + mainNode.getMarginalAt(i) + " and cannot be changed.");
+					}
+				}
+			}
 		}
+		
 		if (mainNode == null) {
 			// node does not exist. Check if there was some previous transaction adding such node
 			boolean willCreateNodeOnCommit = false;	// if true, the node will be created in this transaction
@@ -2162,31 +2297,43 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			if (willCreateNodeOnCommit) {	
 				throw new InexistingQuestionException("Question ID " + questionId + " does not exist.", questionId);
 			}
-		} 
+		}
 		
 		// check existence of assumptions
-		for (Long assumptiveQuestionId : assumptionIds) {
-			Node parent =null;
-			synchronized (getProbabilisticNetwork()) {
-				parent = getProbabilisticNetwork().getNode(Long.toString(assumptiveQuestionId));
-			}
-			if (parent == null) {
-				// parent node does not exist. Check if there was some previous transaction adding such node
-				boolean hasFound = false;
-				synchronized (actions) {
-					for (NetworkAction networkAction : actions) {
-						if (networkAction instanceof AddQuestionNetworkAction) {
-							AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
-							if (addQuestionNetworkAction.getQuestionId() == assumptiveQuestionId) {
-								hasFound = true;
-								break;
+		if (assumptionIds != null) {
+			for (Long assumptiveQuestionId : assumptionIds) {
+				TreeVariable parent =null;
+				synchronized (getProbabilisticNetwork()) {
+					parent = (TreeVariable) getProbabilisticNetwork().getNode(Long.toString(assumptiveQuestionId));
+					if (parent != null) {
+						if (parent.hasEvidence()) {
+							throw new IllegalArgumentException("Question " + parent + " is already resolved and cannot be changed.");
+						}
+						for (int i = 0; i < parent.getStatesSize(); i++) {
+							if (parent.getMarginalAt(i) == 0.0f || parent.getMarginalAt(i) == 1.0f) {
+								throw new IllegalArgumentException("State " + i + " of question " + parent + " has probability " + parent.getMarginalAt(i) + " and cannot be changed.");
 							}
 						}
 					}
 				}
-				if (!hasFound) {	
-					// parent was not found
-					throw new InexistingQuestionException("Question ID " + assumptiveQuestionId + " does not exist.", assumptiveQuestionId);
+				if (parent == null) {
+					// parent node does not exist. Check if there was some previous transaction adding such node
+					boolean hasFound = false;
+					synchronized (actions) {
+						for (NetworkAction networkAction : actions) {
+							if (networkAction instanceof AddQuestionNetworkAction) {
+								AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
+								if (addQuestionNetworkAction.getQuestionId() == assumptiveQuestionId) {
+									hasFound = true;
+									break;
+								}
+							}
+						}
+					}
+					if (!hasFound) {	
+						// parent was not found
+						throw new InexistingQuestionException("Question ID " + assumptiveQuestionId + " does not exist.", assumptiveQuestionId);
+					}
 				}
 			}
 		}
@@ -2201,10 +2348,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getQuestionHistory(java.lang.Long, java.util.List, java.util.List)
 	 */
-	public List<QuestionEvent> getQuestionHistory(Long questionID, List<Long> assumptionIDs, List<Integer> assumedStates) throws IllegalArgumentException {
+	public List<QuestionEvent> getQuestionHistory(Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
 		List<NetworkAction> list = null;
 		synchronized (this.getNetworkActionsIndexedByQuestions()) {
-			list = this.getNetworkActionsIndexedByQuestions().get(questionID);
+			list = this.getNetworkActionsIndexedByQuestions().get(questionId);
 		}
 		if (list == null || list.isEmpty()) {
 			// never return the object itself (because we do not want the caller to change content of getNetworkActionsIndexedByQuestions())
@@ -2215,21 +2362,21 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		synchronized (list) {
 			// fill ret with values in list, but filter by assumptionIDs and assumedStates
 			for (NetworkAction action : list) {
-				if (assumptionIDs == null || assumptionIDs.isEmpty()) {
+				if (assumptionIds == null || assumptionIds.isEmpty()) {
 					// no filter. Add everything
 					ret.add(action);
-				} else if (action.getAssumptionIds() != null && action.getAssumptionIds().containsAll(assumptionIDs)) {
+				} else if (action.getAssumptionIds() != null && action.getAssumptionIds().containsAll(assumptionIds)) {
 					// matched assumptionIDs filter. Check assumedStates filter
 					boolean hasWrongMatch = false;
 					if (action.getAssumedStates() != null && !action.getAssumedStates().isEmpty()) {
 						// if any states in the filter doesn't match the states in action.getAssumedStates(), do not add
-						for (int i = 0; (i < assumedStates.size()) && (i < assumptionIDs.size()); i++) {
+						for (int i = 0; (i < assumedStates.size()) && (i < assumptionIds.size()); i++) {
 							// extract index of assumption in "action".
-							int indexOfQuestionInNetworkAction = action.getAssumptionIds().indexOf(assumptionIDs.get(i));
+							int indexOfQuestionInNetworkAction = action.getAssumptionIds().indexOf(assumptionIds.get(i));
 							if (indexOfQuestionInNetworkAction < 0) {
 								// supposedly, at this point, indexOfQuestionInNetworkAction >=0 , because action.getAssumptionIds().containsAll(assumptionIDs)
 								try {
-									Debug.println(getClass(), "Trade " + action.getTradeId() + " claims that it is using question " + assumptionIDs.get(i) 
+									Debug.println(getClass(), "Trade " + action.getTradeId() + " claims that it is using question " + assumptionIds.get(i) 
 											+ " as one of its assumptions, but could not access such question in the trade history.");
 								} catch (Throwable t) {
 									t.printStackTrace();
@@ -2270,7 +2417,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 */
 	public List<Properties> getScoreSummary(long userId, Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
 		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Not implemented yet.");
+		return Collections.singletonList(new Properties());
+//		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 	
 	/*
@@ -2280,7 +2428,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	public List<Properties> getScoreDetails(long userId, Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
 		// TODO Auto-generated method stub
 		// not required in the 1st release
-		throw new UnsupportedOperationException("Operation not supported by this version.");
+		return Collections.singletonList(new Properties());
+//		throw new UnsupportedOperationException("Operation not supported by this version.");
 	}
 
 	/**
@@ -2462,10 +2611,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			
 			// insert new action at the correct position
 			actions.add(indexOfFirstActionCreatedAfterNewAction, newAction);
+			
+			// insert new action into the map to be used for searching actions by question id
+			this.addNetworkActionIntoQuestionMap(newAction);
 		}
 		
-		// insert new action into the map to be used for searching actions by question id
-		this.addNetworkActionIntoQuestionMap(newAction);
 	}
 	
 	/**
@@ -2489,37 +2639,38 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
 		}
 		
-		// let's add action to the managed list. Prepare index of where in actions we should add newAction
-		int indexOfFirstActionCreatedAfterNewAction = -1;	// this will point to the first action created after occurredWhen
-		
-		
-		// Make sure the action list is ordered by the date. Insert new action to a correct position when necessary.
-		for (int i = 0; i < actions.size(); i++) {
-			NetworkAction action = actions.get(i);
-			if (action instanceof AddQuestionNetworkAction) {
-				AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) action;
-				if (addQuestionNetworkAction.getQuestionId() == newAction.getQuestionId()) {
-					// duplicate question in the same transaction
-					throw new IllegalArgumentException("Question ID " + newAction.getQuestionId() + " is already present.");
+		synchronized (actions) {
+			// let's add action to the managed list. Prepare index of where in actions we should add newAction
+			int indexOfFirstActionCreatedAfterNewAction = -1;	// this will point to the first action created after occurredWhen
+			
+			// Make sure the action list is ordered by the date. Insert new action to a correct position when necessary.
+			for (int i = 0; i < actions.size(); i++) {
+				NetworkAction action = actions.get(i);
+				if (action instanceof AddQuestionNetworkAction) {
+					AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) action;
+					if (addQuestionNetworkAction.getQuestionId() == newAction.getQuestionId()) {
+						// duplicate question in the same transaction
+						throw new IllegalArgumentException("Question ID " + newAction.getQuestionId() + " is already present.");
+					}
+				}
+				if (indexOfFirstActionCreatedAfterNewAction < 0 && action.getWhenCreated().after(newAction.getWhenCreated())) {
+					indexOfFirstActionCreatedAfterNewAction = i;
+					// do not break, because we are still looking for duplicate occurrences of questionId
 				}
 			}
-			if (indexOfFirstActionCreatedAfterNewAction < 0 && action.getWhenCreated().after(newAction.getWhenCreated())) {
-				indexOfFirstActionCreatedAfterNewAction = i;
-				// do not break, because we are still looking for duplicate occurrences of questionId
+			
+			// add newAction into actions
+			if (indexOfFirstActionCreatedAfterNewAction < 0) {
+				// there is no action created after the new action. Add at the end.
+				actions.add(newAction);
+			} else {
+				// insert new action at the correct position
+				actions.add(indexOfFirstActionCreatedAfterNewAction, newAction);
 			}
+			
+			// insert new action into the map to be used for searching actions by question id
+			this.addNetworkActionIntoQuestionMap(newAction);
 		}
-		
-		// add newAction into actions
-		if (indexOfFirstActionCreatedAfterNewAction < 0) {
-			// there is no action created after the new action. Add at the end.
-			actions.add(newAction);
-		} else {
-			// insert new action at the correct position
-			actions.add(indexOfFirstActionCreatedAfterNewAction, newAction);
-		}
-		
-		// insert new action into the map to be used for searching actions by question id
-		this.addNetworkActionIntoQuestionMap(newAction);
 	}
 
 //	/**
@@ -2849,6 +3000,38 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public InexistingQuestionException(String s, long questionId) { super(s); this.questionId = questionId; }
 		public InexistingQuestionException(Throwable cause, long questionId) { super(cause); this.questionId = questionId; }
 		public long getQuestionId() { return questionId; }
+	}
+
+	/**
+	 * If true, #get
+	 * @return the isToObtainProbabilityOfResolvedQuestions
+	 */
+	public boolean isToObtainProbabilityOfResolvedQuestions() {
+		return isToObtainProbabilityOfResolvedQuestions;
+	}
+
+	/**
+	 * @param isToObtainProbabilityOfResolvedQuestions the isToObtainProbabilityOfResolvedQuestions to set
+	 */
+	public void setToObtainProbabilityOfResolvedQuestions(
+			boolean isToObtainProbabilityOfResolvedQuestions) {
+		this.isToObtainProbabilityOfResolvedQuestions = isToObtainProbabilityOfResolvedQuestions;
+	}
+
+	/**
+	 * If true, {@link ResolveQuestionNetworkAction#execute()} will delete the resolved question.
+	 * @return the isToDeleteResolvedNode
+	 */
+	public boolean isToDeleteResolvedNode() {
+		return isToDeleteResolvedNode;
+	}
+
+	/**
+	 * If true, {@link ResolveQuestionNetworkAction#execute()} will delete the resolved question.
+	 * @param isToDeleteResolvedNode the isToDeleteResolvedNode to set
+	 */
+	public void setToDeleteResolvedNode(boolean isToDeleteResolvedNode) {
+		this.isToDeleteResolvedNode = isToDeleteResolvedNode;
 	}
 
 }

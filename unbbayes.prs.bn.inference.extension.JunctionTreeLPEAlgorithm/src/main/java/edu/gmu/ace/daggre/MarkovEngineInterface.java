@@ -534,15 +534,15 @@ public interface MarkovEngineInterface {
 	/**
 	 * This function will return an ordered list of events that explain how the current probability of a question was determined. 
 	 * In phase 1, this method may simply return the tradeId and history over time that directly impacted the question.
-	 * @param questionID : filter for the history. Only history related to this question will be returned.
-	 * @param assumptionIDs : filter for the history. Only histories related to questionID with these assumptions will be returned.
+	 * @param questionId : filter for the history. Only history related to this question will be returned.
+	 * @param assumptionIds : filter for the history. Only histories related to questionID with these assumptions will be returned.
 	 * @param assumedStates : filter for the history. Only histories related to assumptions with these states will be returned.
 	 * If it does not have the same size of assumptionIDs,Å@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
 	 * @return the sequence of events.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 * @see {@link QuestionEvent}
 	 */
-	public List<QuestionEvent> getQuestionHistory (Long questionID, List<Long> assumptionIDs, List<Integer> assumedStates) throws IllegalArgumentException;
+	public List<QuestionEvent> getQuestionHistory (Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 
 
 	/**
