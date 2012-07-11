@@ -112,7 +112,14 @@ public class Separator implements IRandomVariable, java.io.Serializable {
     }
 
 
-    /**
+	public boolean equals(Object obj) {
+		if (obj != null) {
+			return this.toString().equals(obj.toString());
+		}
+		return super.equals(obj);
+	}
+
+	/**
      *  Returns the first (origin) clique
      *
      *@return    node 1
