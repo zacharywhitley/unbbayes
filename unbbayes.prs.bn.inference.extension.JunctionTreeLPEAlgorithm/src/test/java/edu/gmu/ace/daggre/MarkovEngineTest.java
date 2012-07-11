@@ -19,6 +19,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
+import edu.gmu.ace.daggre.MarkovEngineImpl.AddTradeNetworkAction;
 
 /**
  * @author Shou Matsumoto
@@ -6363,7 +6364,8 @@ public class MarkovEngineTest extends TestCase {
 	 */
 	public final void testResolveQuestion() {
 		
-		Map<String, Long> userNameToIDMap = this.createDEFNetIn1Transaction();
+		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
+		this.createDEFNetIn1Transaction(userNameToIDMap);
 		
 		// check probs and assets before resolution D = d1
 		
@@ -7016,7 +7018,7 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals(0f, probList.get(1), PROB_ERROR_MARGIN);
 		} else {
 			engine.setToObtainProbabilityOfResolvedQuestions(true);
-			probList = engine.getProbList(0x0F, null, null);
+			probList = engine.getProbList(0x0D, null, null);
 			assertEquals(1f, probList.get(0), PROB_ERROR_MARGIN);
 			assertEquals(0f, probList.get(1), PROB_ERROR_MARGIN);
 			engine.setToObtainProbabilityOfResolvedQuestions(false);
@@ -7053,7 +7055,7 @@ public class MarkovEngineTest extends TestCase {
 		}
 	}
 
-	private Map<String, Long> createDEFNetIn1Transaction() {
+	private List<AddTradeNetworkAction> createDEFNetIn1Transaction(Map<String, Long> userNameToIDMap) {
 		// crate transaction
 		long transactionKey = engine.startNetworkActions();
 		
@@ -7067,7 +7069,7 @@ public class MarkovEngineTest extends TestCase {
 		engine.addQuestionAssumption(transactionKey, new Date(), 0x0F, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
 
 		// Let's use ID = 0 for the user Tom 
-		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
+//		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
 		userNameToIDMap.put("Tom", (long)0);
 		
 		try {
@@ -7236,14 +7238,509 @@ public class MarkovEngineTest extends TestCase {
 		// commit all trades (including the creation of network and user)
 		engine.commitNetworkActions(transactionKey);
 		
-		return userNameToIDMap;
+//		return userNameToIDMap;
+		Set<QuestionEvent> questionHistory = new HashSet<QuestionEvent>(engine.getQuestionHistory((long)0x0D, null, null));
+		questionHistory.addAll(engine.getQuestionHistory((long)0x0E, null, null));
+		questionHistory.addAll(engine.getQuestionHistory((long)0x0F, null, null));
+		List<AddTradeNetworkAction> ret = new ArrayList<MarkovEngineImpl.AddTradeNetworkAction>();
+		for (QuestionEvent questionEvent : questionHistory) {
+			if (questionEvent instanceof AddTradeNetworkAction) {
+				ret.add((AddTradeNetworkAction) questionEvent);
+			}
+		}
+		return ret;
 	}
 
 	/**
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#revertTrade(long, java.util.Date, java.lang.Long, java.lang.Long)}.
 	 */
 	public final void testRevertTrade() {
-		fail("Not yet implemented"); // TODO
+		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
+		List<AddTradeNetworkAction> trades = this.createDEFNetIn1Transaction(userNameToIDMap );
+		assertEquals(6, trades.size());
+		
+		// add a dummy node and dummy trade, just to add trade to a node which does not change probs of other nodes.
+		long transactionKey = engine.startNetworkActions();
+		engine.addQuestion(transactionKey, new Date(), 0x0CL, 2,null);
+		List<Float> newValues = new ArrayList<Float>();
+		newValues.add(0.55f); newValues.add(0.45f);
+		
+		// store important info about dummy trade
+		Date tradesStartingWhen = new Date();
+		Long userWhoMadeTradeOnC = userNameToIDMap.get((Math.random() < .25)?"Tom":(Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":"Amy");
+		assertTrue("User id = " + userWhoMadeTradeOnC, userNameToIDMap.containsValue(userWhoMadeTradeOnC));
+		
+		// do trade
+		engine.addTrade(transactionKey, tradesStartingWhen, "", userWhoMadeTradeOnC, 0x0CL, newValues , null, null, true);
+		
+		// add edge after trade
+		if (Math.random() < .5) {
+			// from 0 to some node
+			if (Math.random() < .5) {
+				engine.addQuestionAssumption(transactionKey, new Date(), 0x0DL, Collections.singletonList(0x0CL), null);
+				System.out.println("C->D");
+			}
+			if (Math.random() < .5) {
+				engine.addQuestionAssumption(transactionKey, new Date(), 0x0EL, Collections.singletonList(0x0CL), null);
+				System.out.println("C->E");
+			}
+			if (Math.random() < .5) {
+				engine.addQuestionAssumption(transactionKey, new Date(), 0x0FL, Collections.singletonList(0x0CL), null);
+				System.out.println("C->F");
+			}
+		} else {
+			// from some node to 0
+			List<Long> assumptions = new ArrayList<Long>();
+			if (Math.random() < .5) {
+				assumptions.add(0x0DL);
+				System.out.println("D->C");
+			}
+			if (Math.random() < .5) {
+				assumptions.add(0x0EL);
+				System.out.println("E->C");
+			}
+			if (Math.random() < .5) {
+				assumptions.add(0x0FL);
+				System.out.println("F->C");
+			}
+			engine.addQuestionAssumption(transactionKey, new Date(), 0x0CL, assumptions, null);
+		}
+		engine.commitNetworkActions(transactionKey);
+		
+		// revert the last trade (actually, the only trade).
+		transactionKey = engine.startNetworkActions();
+		engine.revertTrade(transactionKey, new Date(), new Date(0), 0x0CL);	// search by question
+		engine.commitNetworkActions(transactionKey);
+		
+		// check that the trade was reverted succesfully.
+		
+		// check that assets of question C is equal for everyone
+		for (String userName : userNameToIDMap.keySet()) {
+			List<Float> assetsIfStates = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0CL, null, null);
+			assertEquals(userName, 2, assetsIfStates.size());
+			assertEquals("User who made edit on C = " + userWhoMadeTradeOnC + ", current = " + userName + "(" + userNameToIDMap.get(userName)+ ") " + assetsIfStates, 
+					engine.getQValuesFromScore(assetsIfStates.get(0)), 
+					engine.getQValuesFromScore(assetsIfStates.get(1)),
+					ASSET_ERROR_MARGIN
+				);
+		}
+		
+		// check that final marginal of C is [0.55, 0.45] E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
+		List<Float> probList = engine.getProbList(0x0C, null, null);
+		assertEquals(0.55f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.45f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0D, null, null);
+		assertEquals(0.7232f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.2768f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0E, null, null);
+		assertEquals(0.8509f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.1491f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0F, null, null);
+		assertEquals(0.2165f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.7835f, probList.get(1), PROB_ERROR_MARGIN);
+		
+		// set assumptions to D,E,F, so that we can use it to calculate conditional min-q (in order to test consistency of LPE)
+		ArrayList<Long> assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long) 0x0D);		// 1st node is D; assumedStates must follow this order
+		assumptionIds.add((long) 0x0E);		// 2nd node is E; assumedStates must follow this order
+		assumptionIds.add((long) 0x0F);		// 3rd node is F; assumedStates must follow this order
+		// init list of states of the assumptions
+		ArrayList<Integer> assumedStates = new ArrayList<Integer>();	
+		assumedStates.add(0);	// d1
+		assumedStates.add(0);	// e1
+		assumedStates.add(0);	// f1
+		
+		// this map will store the conditional cashes for posterior comparison. 
+		// E.g. Tom -> [Cash(d1,e1,f1),Cash(d1,e1,f2),Cash(d1,e2,f1),Cash(d1,e2,f2),Cash(d2,e1,f1),Cash(d2,e1,f2),Cash(d2,e2,f1),Cash(d2,e2,f2)]
+		Map<String, List<Float>> mapOfConditionalCash = new HashMap<String, List<Float>>();
+		
+		
+		// check that final min-q of Tom is 20
+		float minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(20f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(20f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		mapOfConditionalCash.put("Tom", new ArrayList<Float>());
+		
+		
+		// check that final LPE of Tom contains d1, e2 and any value F
+		
+		// check combination d1, e1, f1 (not min)
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		float cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Tom").add(cash);
+		
+		// check combination d1, e1, f2 (not min)
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Tom").add(cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		mapOfConditionalCash.get("Tom").add(cash);
+
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		mapOfConditionalCash.get("Tom").add(cash);
+
+		// check combination d2, e1, f1 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Tom").add(cash);
+		
+		// check combination d2, e1, f2 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Tom").add(cash);
+
+		// check combination d2, e2, f1 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Tom").add(cash);
+
+		// check combination d2, e2, f2 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Tom").add(cash);
+
+		
+		// check that min-q of Amy is 60...
+		minCash = engine.getCash(userNameToIDMap.get("Amy"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(60f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(60f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		mapOfConditionalCash.put("Amy", new ArrayList<Float>());
+		
+		// check that LPE of Amy contains d1, f1 and any value E
+		
+		// check combination d1, e1, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		mapOfConditionalCash.get("Amy").add(cash);
+		
+		// check combination d1, e1, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Amy").add(cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		mapOfConditionalCash.get("Amy").add(cash);
+
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Amy").add(cash);
+
+		// check combination d2, e1, f1 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Amy").add(cash);
+		
+		// check combination d2, e1, f2 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Amy").add(cash);
+
+		// check combination d2, e2, f1
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Amy").add(cash);
+
+		// check combination d2, e2, f2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Amy").add(cash);
+		
+		
+		// check that min-q of Joe is 14.5454545...
+		minCash = engine.getCash(userNameToIDMap.get("Joe"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(14.5454545f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(14.5454545f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		mapOfConditionalCash.put("Joe",new ArrayList<Float>());
+
+		// check that LPE of Joe contains d2, e1, f1
+		
+		// check combination d1, e1, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Joe").add(cash);
+		
+		// check combination d1, e1, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Joe").add(cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Joe").add(cash);
+
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Joe").add(cash);
+
+		// check combination d2, e1, f1 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		mapOfConditionalCash.get("Joe").add(cash);
+		
+		// check combination d2, e1, f2 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Joe").add(cash);
+
+		// check combination d2, e2, f1
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Joe").add(cash);
+
+		// check combination d2, e2, f2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Joe").add(cash);
+		
+		// check that final min-q of Eric is 35.7393...
+		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
+		assertEquals(Math.round(engine.getScoreFromQValues(35.7393f)), Math.round(minCash), ASSET_ERROR_MARGIN);
+		assertEquals(35.7393f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		mapOfConditionalCash.put("Eric",new ArrayList<Float>());
+
+		// check that final LPE of Eric is d2, e2 and f2
+		
+		// check combination d1, e1, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Eric").add(cash);
+		
+		// check combination d1, e1, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Eric").add(cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Eric").add(cash);
+		
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Eric").add(cash);
+		
+		// check combination d2, e1, f1 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Eric").add(cash);
+		
+		// check combination d2, e1, f2 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Eric").add(cash);
+		
+		// check combination d2, e2, f1
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		mapOfConditionalCash.get("Eric").add(cash);
+		
+		// check combination d2, e2, f2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		mapOfConditionalCash.get("Eric").add(cash);
+		
+		// resolve to d1. Resolutions are not reverted (i.e. resolutions are supposedly re-done)
+		transactionKey = engine.startNetworkActions();
+		assertTrue(engine.resolveQuestion(transactionKey, new Date(), (long)0x0D, 0));
+		assertTrue(engine.commitNetworkActions(transactionKey));
+		
+		
+		// store assetIfs in order to check them after next revert
+		Map<String, List<Float>> mapOfConditionalAssetsE = new HashMap<String, List<Float>>();
+		Map<String, List<Float>> mapOfConditionalAssetsF = new HashMap<String, List<Float>>();
+		
+		// fill mapOfConditionalAssets for Tom
+		mapOfConditionalAssetsE.put("Tom", engine.getAssetsIfStates(userNameToIDMap.get("Tom"), 0x0EL, null, null));
+		mapOfConditionalAssetsF.put("Tom", engine.getAssetsIfStates(userNameToIDMap.get("Tom"), 0x0FL, null, null));
+		// fill mapOfConditionalAssets for Amy
+		mapOfConditionalAssetsE.put("Amy", engine.getAssetsIfStates(userNameToIDMap.get("Amy"), 0x0EL, null, null));
+		mapOfConditionalAssetsF.put("Amy", engine.getAssetsIfStates(userNameToIDMap.get("Amy"), 0x0FL, null, null));
+		// fill mapOfConditionalAssets for Amy
+		mapOfConditionalAssetsE.put("Joe", engine.getAssetsIfStates(userNameToIDMap.get("Joe"), 0x0EL, null, null));
+		mapOfConditionalAssetsF.put("Joe", engine.getAssetsIfStates(userNameToIDMap.get("Joe"), 0x0FL, null, null));
+		// fill mapOfConditionalAssets for Eric
+		mapOfConditionalAssetsE.put("Eric", engine.getAssetsIfStates(userNameToIDMap.get("Eric"), 0x0EL, null, null));
+		mapOfConditionalAssetsF.put("Eric", engine.getAssetsIfStates(userNameToIDMap.get("Eric"), 0x0FL, null, null));
+		
+		// revert the last trade of C again (actually, the only trade). This time, only specifying the date
+		transactionKey = engine.startNetworkActions();
+		engine.revertTrade(transactionKey, new Date(), tradesStartingWhen, null);	// search by date
+		engine.commitNetworkActions(transactionKey);
+		
+		// make sure assets and probs are the same of the reverted one, and probabilities are the same after resolution.
+		
+		// check that final marginal of E is [0.9509, 0.0491], F is  [0.2416, 0.7584]
+		probList = engine.getProbList(0x0E, null, null);
+		assertEquals(0.9509f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.0491f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0F, null, null);
+		assertEquals(0.2416f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.7584f, probList.get(1), PROB_ERROR_MARGIN);
+		if (engine.isToObtainProbabilityOfResolvedQuestions()) {
+			probList = engine.getProbList(0x0D, null, null);
+			assertEquals(1f, probList.get(0), PROB_ERROR_MARGIN);
+			assertEquals(0f, probList.get(1), PROB_ERROR_MARGIN);
+		} else {
+			engine.setToObtainProbabilityOfResolvedQuestions(true);
+			probList = engine.getProbList(0x0D, null, null);
+			assertEquals(1f, probList.get(0), PROB_ERROR_MARGIN);
+			assertEquals(0f, probList.get(1), PROB_ERROR_MARGIN);
+			engine.setToObtainProbabilityOfResolvedQuestions(false);
+		}
+		
+		// test that conditional cash matches the values before resolution
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long)0x0E);	assumptionIds.add((long)0x0F);
+		if (!engine.isToDeleteResolvedNode()) {
+			assumptionIds.add((long)0x0D);
+		}
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0); assumedStates.add(0); 
+		if (!engine.isToDeleteResolvedNode()) {
+			assumedStates.add(0);
+		}
+		for (String userName : mapOfConditionalCash.keySet()) {
+			assumedStates.set(2, 0);	// d1
+			for (int i = 0; i < 4; i++) {	// combinations [e1f1,e1f2,e2f1,e2f2]
+				assumedStates.set(0, (int)i/2);	// e
+				assumedStates.set(1, (int)i%2);	// f
+				cash = engine.getCash(userNameToIDMap.get(userName), assumptionIds, assumedStates);
+				assertEquals("[" + i + "] user = " + userName + ", e = " + (int)i/2 + ", f = " + (int)i%2, mapOfConditionalCash.get(userName).get(i), cash);
+			}
+			if (!engine.isToDeleteResolvedNode()) {
+				assumedStates.set(2, 1);	// d2
+				for (int i = 0; i < 4; i++) {	// combinations [e1f1d2,e1f2d2,e2f1d2,e2f2d2]
+					assumedStates.set(0, (int)i/2);	// e
+					assumedStates.set(1, (int)i%2);	// f
+					cash = engine.getCash(userNameToIDMap.get(userName), assumptionIds, assumedStates);
+					assertTrue("[" + i + "] user = " + userName + ", e = " + (int)i/2 + ", f = " + (int)i%2 + ", cash = " + cash, Float.isInfinite(cash));
+				}
+			} 
+		}
+		
+		// check that assets of question C is equal for everyone
+		for (String userName : userNameToIDMap.keySet()) {
+			List<Float> assetsIfStates = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0CL, null, null);
+			assertEquals(userName, 2, assetsIfStates.size());
+			assertEquals("User who made edit on C = " + userWhoMadeTradeOnC + ", current = " + userName + "(" + userNameToIDMap.get(userName)+ ") " + assetsIfStates, 
+					engine.getQValuesFromScore(assetsIfStates.get(0)), 
+					engine.getQValuesFromScore(assetsIfStates.get(1)),
+					ASSET_ERROR_MARGIN
+				);
+		}
+		
+		// check that assetsIfStates matches the ones before resolution
+		for (String userName : userNameToIDMap.keySet()) {
+			assertEquals(userName ,mapOfConditionalAssetsE.get(userName), engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0EL, null, null));
+			assertEquals(userName ,mapOfConditionalAssetsF.get(userName), engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0FL, null, null));
+		}
 	}
 
 	

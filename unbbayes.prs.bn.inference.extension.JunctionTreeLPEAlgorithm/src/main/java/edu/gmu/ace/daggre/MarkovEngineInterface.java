@@ -535,6 +535,8 @@ public interface MarkovEngineInterface {
 	 * This function will return an ordered list of events that explain how the current probability of a question was determined. 
 	 * In phase 1, this method may simply return the tradeId and history over time that directly impacted the question.
 	 * @param questionId : filter for the history. Only history related to this question will be returned.
+	 * If null, history not related to any question will be returned (e.g. those created by {@link #addCash(long, Date, long, float, String)},
+	 * {@link #revertTrade(long, Date, Date, Long)} with no question specified, and any auxiliary changes).
 	 * @param assumptionIds : filter for the history. Only histories related to questionID with these assumptions will be returned.
 	 * @param assumedStates : filter for the history. Only histories related to assumptions with these states will be returned.
 	 * If it does not have the same size of assumptionIDs,Å@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.

@@ -1000,23 +1000,31 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		public void execute(Long userId) {
 			synchronized (getProbabilisticNetwork()) {
 				TreeVariable probNode = (TreeVariable) getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getNode(Long.toString(questionId));
-				if (probNode != null) {
-					// extract marginal 
-					marginalWhenResolved = new ArrayList<Float>(probNode.getStatesSize());
-					for (int i = 0; i < probNode.getStatesSize(); i++) {
-						marginalWhenResolved.add(probNode.getMarginalAt(i));
+				if (probNode != null) {	
+					// if probNode.hasEvidence(), then it was resolved already
+					if (probNode.hasEvidence() && probNode.getEvidence() != settledState) {
+						throw new RuntimeException("Attempted to resolve question " + questionId + " to state " + settledState + ", but it was already resolved to " + probNode.getEvidence());
 					}
-					// propagate evidence in the probabilistic network
-					probNode.addFinding(settledState);
-					getDefaultInferenceAlgorithm().propagate();	// supposedly, default algorithm is configured so that it does not update assets
+					// do nothing if node is already settled at settledState
+					if (probNode.getEvidence() != settledState) {
+						
+						// extract marginal 
+						marginalWhenResolved = new ArrayList<Float>(probNode.getStatesSize());
+						for (int i = 0; i < probNode.getStatesSize(); i++) {
+							marginalWhenResolved.add(probNode.getMarginalAt(i));
+						}
+						// propagate evidence in the probabilistic network
+						probNode.addFinding(settledState);
+						getDefaultInferenceAlgorithm().propagate();	// supposedly, default algorithm is configured so that it does not update assets
 //					probNode.addFinding(settledState);
-					if (isToDeleteResolvedNode()) {
-						getProbabilisticNetwork().removeNode(probNode);
-					} else {
-						// delete only from list 
+						if (isToDeleteResolvedNode()) {
+							getProbabilisticNetwork().removeNode(probNode);
+						} else {
+							// delete only from list 
 //						getProbabilisticNetwork().getNodeIndexes().remove(probNode.getName());
 //						getProbabilisticNetwork().getNodes().remove(probNode);
 //						getProbabilisticNetwork().getNodesCopy().remove(probNode);
+						}
 					}
 				} else {
 					try {
@@ -1201,11 +1209,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 								}
 							} 
 						}
-						// If executed after AddTradeNetworkAction, the ResolveQuestionNetworkAction must be executed regardless of its value of getWhenCreated()
-						if (action instanceof ResolveQuestionNetworkAction
-								&& treatedUserToActionsToResolveMap.containsKey(action.getUserId()) ) {
+						// If executed after any AddTradeNetworkAction, the ResolveQuestionNetworkAction must be executed regardless of its value of getWhenCreated()
+						if (!treatedUserToActionsToResolveMap.isEmpty() && action instanceof ResolveQuestionNetworkAction) {
 							// fill values of treatedUserToActionsToResolveMap with all resolutions executed after the AddTradeNetworkAction to be reverted.
-							treatedUserToActionsToResolveMap.get(action.getUserId()).add((ResolveQuestionNetworkAction) action);
+							for (Long userId : treatedUserToActionsToResolveMap.keySet()) {
+								treatedUserToActionsToResolveMap.get(userId).add((ResolveQuestionNetworkAction) action);
+							}
 						}
 					}
 					
