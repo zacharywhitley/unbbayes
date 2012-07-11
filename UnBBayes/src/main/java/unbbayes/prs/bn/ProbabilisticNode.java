@@ -126,6 +126,10 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable, 
         System.arraycopy(super.marginalList, 0, marginais, 0, marginais.length);
         cloned.marginalList = marginais;
         cloned.copyMarginal();
+        if (this.hasEvidence()) {
+        	cloned.addFinding(this.getEvidence());
+        }
+        // TODO copy likelihood
         return cloned;
     }
 
