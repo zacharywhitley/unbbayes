@@ -405,7 +405,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			this.occurredWhen = occurredWhen;
 			this.questionId = questionId;
 			this.numberStates = numberStates;
-			this.initProbs = initProbs;
+			if (initProbs != null) {
+				// use a copy, so that changes in the original do not affect this object
+				this.initProbs = new ArrayList<Float>(initProbs);
+			} else {
+				this.initProbs = null;
+			}
 		}
 		/**
 		 * Adds a new question into the current network
@@ -597,8 +602,18 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			this.transactionKey = transactionKey;
 			this.occurredWhen = occurredWhen;
 			this.sourceQuestionId = sourceQuestionId;
-			this.assumptiveQuestionIds = assumptiveQuestionIds;
-			this.cpd = cpd;
+			if (assumptiveQuestionIds != null) {
+				// use a copy, so that changes in the original do not affect this object
+				this.assumptiveQuestionIds = new ArrayList<Long>(assumptiveQuestionIds);
+			} else {
+				this.assumptiveQuestionIds = null;
+			}
+			if (cpd != null) {
+				// use a copy, so that changes in the original do not affect this object
+				this.cpd = new ArrayList<Float>(cpd);
+			} else {
+				this.cpd = null;
+			}
 		}
 		public void execute() {
 			ProbabilisticNode child;	// this is the main node (the main question we are modifying)
@@ -820,9 +835,24 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			this.tradeKey = tradeKey;
 			this.userId = userId;
 			this.questionId = questionId;
-			this.newValues = newValues;
-			this.assumptionIds = assumptionIds;
-			this.assumedStates = assumedStates;
+			if (newValues != null) {
+				// use a copy, so that changes in the original do not affect this object
+				this.newValues = new ArrayList<Float>(newValues);
+			} else {
+				this.newValues = null;
+			}
+			if (assumptionIds != null) {
+				// use a copy, so that changes in the original do not affect this object
+				this.assumptionIds = new ArrayList<Long>(assumptionIds);
+			} else {
+				this.assumptionIds = null;
+			}
+			if (assumedStates != null) {
+				// use a copy, so that changes in the original do not affect this object
+				this.assumedStates = new ArrayList<Integer>(assumedStates);
+			} else {
+				this.assumedStates = null;
+			}
 			this.allowNegative = allowNegative;
 			
 		}
@@ -911,9 +941,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		if (occurredWhen == null) {
 			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
 		}
+		if (this.getNetworkActionsMap().get(transactionKey) == null) {
+			// startNetworkAction should have been called.
+			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
+		}
 		
 		// returned value is the same of preview trade
-		List<Float> ret = null;
+		List<Float> ret = new ArrayList<Float>();
 		try {
 			ret = this.previewTrade(userId, questionId, newValues, assumptionIds, assumedStates);
 		} catch (IllegalStateException e) {
@@ -959,6 +993,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 			}
 			if (!isToIgnoreThisException) {
 				throw e;
+			}
+		}
+		
+		// do not allow trade if the preview results in zero or negative assets and negative assets are not allowed
+		if (!allowNegative) {
+			for (Float asset : ret) {
+				if (asset <= 0) {
+					return null;
+				}
 			}
 		}
 		

@@ -20,6 +20,7 @@ import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
 import edu.gmu.ace.daggre.MarkovEngineImpl.AddTradeNetworkAction;
+import edu.gmu.ace.daggre.MarkovEngineImpl.BalanceTradeNetworkAction;
 
 /**
  * @author Shou Matsumoto
@@ -1315,7 +1316,7 @@ public class MarkovEngineTest extends TestCase {
 		List<Float> newValues = new ArrayList<Float>(2);
 		newValues.add(0.55f);		// P(E=e1) = 0.55
 		newValues.add(0.45f);		// P(E=e2) = 1 - P(E=e1) = 0.45
-		engine.addTrade(
+		assertEquals(2, engine.addTrade(
 				transactionKey, 
 				new Date(), 
 				"Tom bets P(E=e1) = 0.5  to 0.55", 
@@ -1325,7 +1326,7 @@ public class MarkovEngineTest extends TestCase {
 				null, 	// no assumptions
 				null, 	// no states of the assumptions
 				false	// do not allow negative
-			);
+			).size());
 		engine.commitNetworkActions(transactionKey);
 		
 		// cannot reuse same transaction key
@@ -1473,7 +1474,7 @@ public class MarkovEngineTest extends TestCase {
 		newValues = new ArrayList<Float>();
 		newValues.add(.9f);
 		newValues.add(.1f);
-		engine.addTrade(
+		assertEquals(2, engine.addTrade(
 				transactionKey, 
 				new Date(), 
 				"Tom bets P(E=e1|D=d1) = 0.9", 
@@ -1483,7 +1484,7 @@ public class MarkovEngineTest extends TestCase {
 				assumptionIds, 
 				assumedStates, 
 				false
-			);
+			).size());
 		engine.commitNetworkActions(transactionKey);
 		
 		// cannot reuse same transaction key
@@ -1667,7 +1668,7 @@ public class MarkovEngineTest extends TestCase {
 		newValues = new ArrayList<Float>();
 		newValues.add(.4f);
 		newValues.add(.6f);
-		engine.addTrade(
+		assertEquals(2, engine.addTrade(
 				transactionKey, 
 				new Date(), 
 				"Joe bets P(E=e1|D=d2) = 0.4", 
@@ -1677,7 +1678,7 @@ public class MarkovEngineTest extends TestCase {
 				assumptionIds, 
 				assumedStates, 
 				false
-			);
+			).size());
 		engine.commitNetworkActions(transactionKey);
 		
 		// cannot reuse same transaction key
@@ -1862,7 +1863,7 @@ public class MarkovEngineTest extends TestCase {
 		newValues = new ArrayList<Float>();
 		newValues.add(.3f);
 		newValues.add(.7f);
-		engine.addTrade(
+		assertEquals(2, engine.addTrade(
 				transactionKey, 
 				new Date(), 
 				"Amy bets P(F=f1|D=d1) = 0.3", 
@@ -1872,7 +1873,7 @@ public class MarkovEngineTest extends TestCase {
 				assumptionIds, 
 				assumedStates, 
 				false
-			);
+			).size());
 		engine.commitNetworkActions(transactionKey);
 		
 		// cannot reuse same transaction key
@@ -2049,7 +2050,7 @@ public class MarkovEngineTest extends TestCase {
 		newValues = new ArrayList<Float>();
 		newValues.add(.1f);
 		newValues.add(.9f);
-		engine.addTrade(
+		assertEquals(2, engine.addTrade(
 				transactionKey, 
 				new Date(), 
 				"Joe bets P(F=f1|D=d2) = 0.1", 
@@ -2059,7 +2060,7 @@ public class MarkovEngineTest extends TestCase {
 				assumptionIds, 
 				assumedStates, 
 				false
-			);
+			).size());
 		engine.commitNetworkActions(transactionKey);
 		
 		// cannot reuse same transaction key
@@ -2231,7 +2232,7 @@ public class MarkovEngineTest extends TestCase {
 		newValues = new ArrayList<Float>();
 		newValues.add(.8f);
 		newValues.add(.2f);
-		engine.addTrade(
+		assertEquals(2, engine.addTrade(
 				transactionKey, 
 				new Date(), 
 				"Eric bets P(E=e1) = 0.8", 
@@ -2241,7 +2242,7 @@ public class MarkovEngineTest extends TestCase {
 				assumptionIds, 
 				assumedStates, 
 				false
-			);
+			).size());
 		engine.commitNetworkActions(transactionKey);
 		
 		// cannot reuse same transaction key
@@ -2380,7 +2381,7 @@ public class MarkovEngineTest extends TestCase {
 		newValues = new ArrayList<Float>();
 		newValues.add(.7f);
 		newValues.add(.3f);
-		engine.addTrade(
+		assertEquals(2, engine.addTrade(
 				transactionKey, 
 				new Date(), 
 				"Eric bets P(D=d1|F=f2) = 0.7", 
@@ -2390,7 +2391,7 @@ public class MarkovEngineTest extends TestCase {
 				assumptionIds, 
 				assumedStates, 
 				false
-		);
+		).size());
 		engine.commitNetworkActions(transactionKey);
 		
 		// cannot reuse same transaction key
@@ -2517,12 +2518,15 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(4, cliqueProbsBeforeTrade.size());
 		assertEquals(4, cliqueAssetsBeforeTrade.size());
 		
+		// get history before transaction, so that we can make sure new transaction is not added into history
+		List<QuestionEvent> questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		
 		// set P(D=d1|F=f2) to a value lower (1/10) than the lower bound of edit interval
 		transactionKey = engine.startNetworkActions();
 		newValues = new ArrayList<Float>();
 		newValues.add(editInterval.get(0)/10);
 		newValues.add(1-(editInterval.get(0)/10));
-		engine.addTrade(
+		assertNull(engine.addTrade(
 				transactionKey, 
 				new Date(), 
 				"Eric bets P(D=d1|F=f2) = 0.7", 
@@ -2532,19 +2536,21 @@ public class MarkovEngineTest extends TestCase {
 				assumptionIds, 
 				assumedStates, 
 				false	// do not allow negative assets
-			);
+			));
+		// this is supposedly going to commit empty transaction
+		engine.commitNetworkActions(transactionKey);
+		// make sure history was not changed
+		assertEquals(questionHistory, engine.getQuestionHistory(0x0DL, null, null));
+
+		// cannot reuse same transaction key
 		try {
-			engine.commitNetworkActions(transactionKey);
-			fail("Should have thrown ZeroAssetsException, because assets went to negative");
-		} catch (ZeroAssetsException e) {
-			// ok
+			newValues = new ArrayList<Float>(2);
+			newValues.add(.9f);	newValues.add(.1f);
+			engine.addTrade(transactionKey, new Date(), "OK", Long.MIN_VALUE, (long)0x0D, newValues, null, null, false);
+			fail("It's not be supposed to reuse a commited transaction.");
+		} catch (IllegalArgumentException e) {
 			assertNotNull(e);
 		}
-
-		// can reuse same transaction key, because the last one has failed
-		newValues = new ArrayList<Float>(2);
-		newValues.add(.9f);	newValues.add(.1f);
-		engine.addTrade(transactionKey, new Date(), "OK", Long.MIN_VALUE, (long)0x0D, newValues, null, null, false);
 		
 		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
@@ -2680,8 +2686,8 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that final min-q of Tom is 20
 		minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
-		assertEquals(Math.round(engine.getScoreFromQValues(20f)), Math.round(minCash), ASSET_ERROR_MARGIN);
 		assertEquals(20f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		assertEquals(Math.round(engine.getScoreFromQValues(20f)), Math.round(minCash), ASSET_ERROR_MARGIN);
 		
 		// check that final LPE of Tom contains d1, e2 and any value F
 		
@@ -2987,7 +2993,7 @@ public class MarkovEngineTest extends TestCase {
 		newValues = new ArrayList<Float>();
 		newValues.add(.05f);
 		newValues.add(.95f);
-		engine.addTrade(
+		assertEquals(2, engine.addTrade(
 				transactionKey, 
 				new Date(), 
 				"Amy bets P(C=c1) = 0.05", 
@@ -2997,7 +3003,7 @@ public class MarkovEngineTest extends TestCase {
 				null, 
 				null, 
 				false
-			);
+			).size());
 		engine.commitNetworkActions(transactionKey);
 		
 		// cannot reuse same transaction key
@@ -3129,7 +3135,7 @@ public class MarkovEngineTest extends TestCase {
 		newValues = new ArrayList<Float>();
 		newValues.add(editInterval.get(0)/10);
 		newValues.add(1-(editInterval.get(0)/10));
-		engine.addTrade(
+		assertEquals(2, engine.addTrade(
 				transactionKey, 
 				new Date(), 
 				"Eric bets P(D=d1|F=f2) = 0.7", 
@@ -3139,7 +3145,7 @@ public class MarkovEngineTest extends TestCase {
 				assumptionIds, 
 				assumedStates, 
 				true	// allow negative assets
-			);
+			).size());
 		engine.commitNetworkActions(transactionKey);
 		
 		// cannot reuse same transaction key
@@ -3169,7 +3175,36 @@ public class MarkovEngineTest extends TestCase {
 		// check that cash is smaller or equal to 0
 		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
 		assertTrue("Obtained unexpected cash = " + minCash, minCash <= 0);
+	
 		
+		// test the case in which the trade will make the assets to go negative, but it cannot be previewed (it will throw exception only on commit)
+		transactionKey = engine.startNetworkActions();
+		
+		// add a new question in the same transaction, so that we guarantee that trade cannot be previewed
+		List<Float> initProbs = new ArrayList<Float>();
+		initProbs.add(.9f); initProbs.add(.0999f); initProbs.add(.0001f);
+		engine.addQuestion(transactionKey, new Date(), 0x0AL, 3, initProbs);
+		
+		// add a trade which will make user asset to go below zero and cannot be previewed
+		newValues = new ArrayList<Float>();
+		newValues.add(.0001f); newValues.add(.0999f);  newValues.add(.9f); 
+		assertTrue( engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Amy bets P(A = [.0001, .0999, .9])", 
+				userNameToIDMap.get("Amy"), 
+				0x0AL, 
+				newValues, 
+				null, 
+				null, 
+				false
+			).isEmpty());
+		try {
+			engine.commitNetworkActions(transactionKey);
+			fail("This is expected to throw ZeroAssetsException");
+		} catch (ZeroAssetsException e) {
+			assertNotNull(e);
+		}
 	}
 	
 
@@ -3212,7 +3247,7 @@ public class MarkovEngineTest extends TestCase {
 		List<Float> newValues = new ArrayList<Float>(2);
 		newValues.add(0.55f);		// P(E=e1) = 0.55
 		newValues.add(0.45f);		// P(E=e2) = 1 - P(E=e1) = 0.45
-		engine.addTrade(
+		assertTrue( engine.addTrade(
 				transactionKey, 
 				new Date(), 
 				"Tom bets P(E=e1) = 0.5  to 0.55", 
@@ -3222,7 +3257,7 @@ public class MarkovEngineTest extends TestCase {
 				null, 	// no assumptions
 				null, 	// no states of the assumptions
 				false	// do not allow negative
-			);
+			).isEmpty());
 		
 		
 		// Tom bets P(E=e1|D=d1) = .55 -> .9
@@ -3231,7 +3266,7 @@ public class MarkovEngineTest extends TestCase {
 		newValues = new ArrayList<Float>();
 		newValues.add(.9f);
 		newValues.add(.1f);
-		engine.addTrade(
+		assertTrue( engine.addTrade(
 				transactionKey, 
 				new Date(), 
 				"Tom bets P(E=e1|D=d1) = 0.9", 
@@ -3241,7 +3276,7 @@ public class MarkovEngineTest extends TestCase {
 				Collections.singletonList((long)0x0D), 
 				Collections.singletonList(0), 
 				false
-			);
+			).isEmpty());
 		
 
 		
@@ -3264,7 +3299,7 @@ public class MarkovEngineTest extends TestCase {
 		newValues = new ArrayList<Float>();
 		newValues.add(.4f);
 		newValues.add(.6f);
-		engine.addTrade(
+		assertTrue( engine.addTrade(
 				transactionKey, 
 				new Date(), 
 				"Joe bets P(E=e1|D=d2) = 0.4", 
@@ -3274,7 +3309,7 @@ public class MarkovEngineTest extends TestCase {
 				Collections.singletonList((long)0x0D), 
 				Collections.singletonList(1), 
 				false
-			);
+			).isEmpty());
 		
 
 		// Let's create user Amy, ID = 2.
@@ -3296,7 +3331,7 @@ public class MarkovEngineTest extends TestCase {
 		newValues = new ArrayList<Float>();
 		newValues.add(.3f);
 		newValues.add(.7f);
-		engine.addTrade(
+		assertTrue( engine.addTrade(
 				transactionKey, 
 				new Date(), 
 				"Amy bets P(F=f1|D=d1) = 0.3", 
@@ -3306,14 +3341,14 @@ public class MarkovEngineTest extends TestCase {
 				Collections.singletonList((long)0x0D), 
 				Collections.singletonList(0), 
 				false
-			);
+			).isEmpty());
 		
 
 		// Joe bets P(F=f1|D=d2) = .5 -> .1
 		newValues = new ArrayList<Float>();
 		newValues.add(.1f);
 		newValues.add(.9f);
-		engine.addTrade(
+		assertTrue( engine.addTrade(
 				transactionKey, 
 				new Date(), 
 				"Joe bets P(F=f1|D=d2) = 0.1", 
@@ -3323,7 +3358,7 @@ public class MarkovEngineTest extends TestCase {
 				Collections.singletonList((long)0x0D), 
 				Collections.singletonList(1), 
 				false
-			);
+			).isEmpty());
 		
 
 		// create new user Eric
@@ -3345,7 +3380,7 @@ public class MarkovEngineTest extends TestCase {
 		newValues = new ArrayList<Float>();
 		newValues.add(.8f);
 		newValues.add(.2f);
-		engine.addTrade(
+		assertTrue( engine.addTrade(
 				transactionKey, 
 				new Date(), 
 				"Eric bets P(E=e1) = 0.8", 
@@ -3355,13 +3390,13 @@ public class MarkovEngineTest extends TestCase {
 				(List)Collections.emptyList(), 
 				(List)Collections.emptyList(), 
 				false
-			);
+			).isEmpty());
 		
 		// Eric bets  P(D=d1|F=f2) = 0.52 -> 0.7
 		newValues = new ArrayList<Float>();
 		newValues.add(.7f);
 		newValues.add(.3f);
-		engine.addTrade(
+		assertTrue( engine.addTrade(
 				transactionKey, 
 				new Date(), 
 				"Eric bets P(D=d1|F=f2) = 0.7", 
@@ -3371,7 +3406,7 @@ public class MarkovEngineTest extends TestCase {
 				Collections.singletonList((long)0x0F), 
 				Collections.singletonList(1), 
 				false
-		);
+			).isEmpty());
 		
 		// commit all trades (including the creation of network and user)
 		engine.commitNetworkActions(transactionKey);
@@ -4945,29 +4980,31 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(4, cliqueProbsBeforeTrade.size());
 		assertEquals(4, cliqueAssetsBeforeTrade.size());
 		
+		// get history before transaction, so that we can make sure new transaction is not added into history
+		List<QuestionEvent> questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		
 		// set P(D=d1|F=f2) to a value lower (1/10) than the lower bound of edit interval
 		transactionKey = engine.startNetworkActions();
 		newValues = new ArrayList<Float>();
 		newValues.add(editInterval.get(0)/10);
 		newValues.add(1-(editInterval.get(0)/10));
-		engine.addTrade(
-				transactionKey, 
-				new Date(), 
-				"Eric bets P(D=d1|F=f2) = 0.7", 
-				userNameToIDMap.get("Eric"), 
-				0x0D, 
-				newValues, 
-				assumptionIds, 
-				assumedStates, 
-				false	// do not allow negative assets
+		assertNull(
+				engine.addTrade(
+					transactionKey, 
+					new Date(), 
+					"Eric bets P(D=d1|F=f2) = 0.7", 
+					userNameToIDMap.get("Eric"), 
+					0x0D, 
+					newValues, 
+					assumptionIds, 
+					assumedStates, 
+					false	// do not allow negative assets
+				)
 			);
-		try {
-			engine.commitNetworkActions(transactionKey);
-			fail("Should have thrown ZeroAssetsException, because assets went to negative");
-		} catch (ZeroAssetsException e) {
-			// ok
-			assertNotNull(e);
-		}
+		// this is supposedly going to commit empty transaction
+		engine.commitNetworkActions(transactionKey);
+		// make sure history was not changed
+		assertEquals(questionHistory, engine.getQuestionHistory(0x0DL, null, null));
 		
 		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
@@ -6026,6 +6063,9 @@ public class MarkovEngineTest extends TestCase {
 	/**
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#previewBalancingTrade(long, long, java.util.List, java.util.List)},
 	 * {@link MarkovEngineImpl#doBalanceTrade(long, Date, String, long, long, List, List)}.
+	 * Note: this method will not test {@link MarkovEngineImpl#previewBalancingTrade(long, long, List, List)}
+	 * directly, because {@link MarkovEngineImpl#doBalanceTrade(long, Date, String, long, long, List, List)}
+	 * calls {@link MarkovEngineImpl#previewBalancingTrade(long, long, List, List)} internally.
 	 */
 	public final void testBalanceTrade() {
 		
@@ -6285,6 +6325,8 @@ public class MarkovEngineTest extends TestCase {
 		
 		// test valid balance trades
 		
+		
+		
 		// prepare the transaction which will make users to exit (balance) from question given assumptions
 		transactionKey = engine.startNetworkActions();
 		
@@ -6292,6 +6334,7 @@ public class MarkovEngineTest extends TestCase {
 		Map<String, Long> userToQuestionToBalanceMap = new HashMap<String, Long>();					// map to store the question user has chosen
 		Map<String, List<Long>> userToAssumptionMap = new HashMap<String, List<Long>>();			// map to store user's assumptions
 		Map<String, List<Integer>> userToAssumedStatesMap = new HashMap<String, List<Integer>>();	// map to store user's assumed states
+		
 		// generate random balance requests for each user
 		for (String user : userNameToIDMap.keySet()) {
 			// choose question randomly from [0x0D, 0x0E, 0x0F]
@@ -6357,6 +6400,34 @@ public class MarkovEngineTest extends TestCase {
 					assets.get(0), assets.get(1), ASSET_ERROR_MARGIN
 				);
 		}
+		
+		// check from the history that the balancing trades were successfully created
+		HashSet<BalanceTradeNetworkAction> balanceTradesInHistory = new HashSet<MarkovEngineImpl.BalanceTradeNetworkAction>();
+		for (Long questionId : new HashSet<Long>(userToQuestionToBalanceMap.values())) {
+			for (QuestionEvent event : engine.getQuestionHistory(questionId, null, null)) {
+				if (event instanceof BalanceTradeNetworkAction) {
+					balanceTradesInHistory.add((BalanceTradeNetworkAction) event);
+				}
+			}
+		}
+		
+		// we have created 1 trade per user
+		assertEquals(userNameToIDMap.keySet().size(), balanceTradesInHistory.size());
+		for (String user : userNameToIDMap.keySet()) {
+			// check that trades of all users were actually treated
+			boolean found = false;
+			for (BalanceTradeNetworkAction action : balanceTradesInHistory) {
+				if (action.getUserId().equals(userNameToIDMap.get(user))) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				fail("Did not find balancing trade of user " + user);
+			}
+		}
+		
+		// 
 	}
 
 	/**
@@ -6783,7 +6854,7 @@ public class MarkovEngineTest extends TestCase {
 				fail("D should not be present anymore");
 			} else {
 				// make sure the impossible state has assets == 0
-				assertTrue(Float.isInfinite(cash));	// 0 of q-value means -infinite assets
+				assertTrue("Cash = " + cash, Float.isInfinite(cash));	// 0 of q-value means -infinite assets
 			}
 		} catch (IllegalArgumentException e) {
 			if (engine.isToDeleteResolvedNode()) {
@@ -7357,8 +7428,8 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that final min-q of Tom is 20
 		float minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
-		assertEquals(Math.round(engine.getScoreFromQValues(20f)), Math.round(minCash), ASSET_ERROR_MARGIN);
 		assertEquals(20f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		assertEquals(Math.round(engine.getScoreFromQValues(20f)), Math.round(minCash), ASSET_ERROR_MARGIN);
 		mapOfConditionalCash.put("Tom", new ArrayList<Float>());
 		
 		
@@ -7748,9 +7819,417 @@ public class MarkovEngineTest extends TestCase {
 
 	/**
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#previewTrade(long, long, java.util.List, java.util.List, java.util.List, java.util.List)}.
+	 * It just tests whether {@link MarkovEngineImpl#addTrade(long, Date, String, long, long, List, List, List, boolean)}
+	 * and then {@link MarkovEngineImpl#getAssetsIfStates(long, long, List, List)}
+	 * is equivalent to {@link MarkovEngineImpl#previewTrade(long, long, List, List, List)}.
 	 */
 	public final void testPreviewTrade() {
-		fail("Not yet implemented"); // TODO
+		
+		// crate transaction for generating the DEF network
+		long transactionKey = engine.startNetworkActions();
+		// create nodes D, E, F
+		engine.addQuestion(transactionKey, new Date(), 0x0D, 2, null);	// question D has ID = hexadecimal D. CPD == null -> linear distro
+		engine.addQuestion(transactionKey, new Date(), 0x0E, 2, null);	// question E has ID = hexadecimal E. CPD == null -> linear distro
+		engine.addQuestion(transactionKey, new Date(), 0x0F, 2, null);	// question F has ID = hexadecimal F. CPD == null -> linear distro
+		// create edge D->E 
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0E, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
+		// create edge D->F
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0F, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
+		// commit changes
+		engine.commitNetworkActions(transactionKey);
+		
+		// Let's use ID = 0 for the user Tom 
+		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
+		userNameToIDMap.put("Tom", (long)0);
+		
+		// By default, cash is initialized as 0 (i.e. min-q = 1)
+		assertEquals(0, Math.round(engine.getCash(userNameToIDMap.get("Tom"), null, null)), ASSET_ERROR_MARGIN);
+		assertEquals(1, Math.round(engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Tom"), null, null))), ASSET_ERROR_MARGIN);
+		
+		// add 100 q-values to new users
+		transactionKey = engine.startNetworkActions();
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Tom"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+		engine.commitNetworkActions(transactionKey);
+		// check that user's min-q value was changed to the correct value
+		assertEquals(100, Math.round(engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Tom"), null, null))), ASSET_ERROR_MARGIN);
+		assertEquals(Math.round(engine.getScoreFromQValues(100)), Math.round(engine.getCash(userNameToIDMap.get("Tom"), null, null)), ASSET_ERROR_MARGIN);
+		
+		// Tom bets P(E=e1) = 0.5  to 0.55 (unconditional soft evidence in E)
+		
+		// check whether probability prior to edit is really 0.5
+		List<Float> probList = engine.getProbList(0x0E, null, null);
+		assertEquals(2 , probList.size());
+		assertEquals(0.5f , probList.get(0) , PROB_ERROR_MARGIN);
+		assertEquals(0.5f , probList.get(1) , PROB_ERROR_MARGIN);
+		
+		
+		List<Float> newValues = new ArrayList<Float>(2);
+		newValues.add(0.55f);		// P(E=e1) = 0.55
+		newValues.add(0.45f);		// P(E=e2) = 1 - P(E=e1) = 0.45
+		
+		// get preview
+		List<Float> preview = engine.previewTrade(userNameToIDMap.get("Tom"), 0x0E, newValues, null, null);
+		assertEquals(2, preview.size());
+		
+		// do edit
+		transactionKey = engine.startNetworkActions();
+		List<Float> returnFromTrade = engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Tom bets P(E=e1) = 0.5  to 0.55", 
+				userNameToIDMap.get("Tom"), 
+				0x0E, 	// question E
+				newValues,
+				null, 	// no assumptions
+				null, 	// no states of the assumptions
+				false	// do not allow negative
+			);
+		engine.commitNetworkActions(transactionKey);
+		
+		// check if preview and value returned from trade matches
+		assertEquals(returnFromTrade.size(), preview.size());
+		assertEquals(returnFromTrade, preview);
+		
+		// check if preview matches current getAssetsIf
+		assertEquals(engine.getAssetsIfStates(userNameToIDMap.get("Tom"), 0x0E, null, null), preview);
+		
+		// Tom bets P(E=e1|D=d1) = .55 -> .9
+		
+		List<Long> assumptionIds = new ArrayList<Long>();		
+		List<Integer> assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 0x0D);	// assumption = D
+		assumedStates.add(0);	// set d1 as assumed state
+		
+		
+		// set P(E=e1|D=d1) = 0.9 and P(E=e2|D=d1) = 0.1
+		
+		newValues = new ArrayList<Float>();
+		newValues.add(.9f);
+		newValues.add(.1f);
+		
+		preview = engine.previewTrade(userNameToIDMap.get("Tom"), 0x0E, newValues, assumptionIds, assumedStates);		
+		
+		transactionKey = engine.startNetworkActions();
+		returnFromTrade = engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Tom bets P(E=e1|D=d1) = 0.9", 
+				userNameToIDMap.get("Tom"), 
+				0x0E, 
+				newValues, 
+				assumptionIds, 
+				assumedStates, 
+				false
+			);
+		engine.commitNetworkActions(transactionKey);
+		
+		// check if preview and value returned from trade matches
+		assertEquals(returnFromTrade.size(), preview.size());
+		assertEquals(returnFromTrade, preview);
+		
+		// check if preview matches current getAssetsIf
+		assertEquals(engine.getAssetsIfStates(userNameToIDMap.get("Tom"), 0x0E, assumptionIds, assumedStates), preview);
+
+		
+		// Let's create user Joe, ID = 1.
+		userNameToIDMap.put("Joe", (long) 1);
+		
+		// By default, cash is initialized as 0 (i.e. min-q = 1)
+		assertEquals(0, Math.round(engine.getCash(userNameToIDMap.get("Joe"), null, null)), ASSET_ERROR_MARGIN);
+		assertEquals(1, Math.round(engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Joe"), null, null))), ASSET_ERROR_MARGIN);
+		
+		// add 100 q-values to new users
+		transactionKey = engine.startNetworkActions();
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Joe"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+		engine.commitNetworkActions(transactionKey);
+		// check that user's min-q value was changed to the correct value
+		assertEquals(100, Math.round(engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Joe"), null, null))), ASSET_ERROR_MARGIN);
+		assertEquals(Math.round(engine.getScoreFromQValues(100)), Math.round(engine.getCash(userNameToIDMap.get("Joe"), null, null)), ASSET_ERROR_MARGIN);
+
+		// Joe bets P(E=e1|D=d2) = .55 -> .4
+		
+		// check whether probability prior to edit is really [e1d1, e2d1, e1d2, e2d2] = [.9, .1, .55, .45]
+		assumptionIds = new ArrayList<Long>();		
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 0x0D);	// assumption = D
+		assumedStates.add(1);	// set d2 as assumed state
+		
+		// edit interval of P(E=e1|D=d2) should be [0.0055, 0.9955]
+		
+		// set P(E=e1|D=d2) = 0.4 and P(E=e2|D=d2) = 0.6
+		newValues = new ArrayList<Float>();
+		newValues.add(.4f);
+		newValues.add(.6f);
+		
+		// obtain preview
+		preview = engine.previewTrade(userNameToIDMap.get("Joe"), 0x0E, newValues, assumptionIds, assumedStates);		
+		
+		transactionKey = engine.startNetworkActions();
+		returnFromTrade = engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Joe bets P(E=e1|D=d2) = 0.4", 
+				userNameToIDMap.get("Joe"), 
+				0x0E, 
+				newValues, 
+				assumptionIds, 
+				assumedStates, 
+				false
+			);
+		engine.commitNetworkActions(transactionKey);
+		
+		// check if preview and value returned from trade matches
+		assertEquals(returnFromTrade.size(), preview.size());
+		assertEquals(returnFromTrade, preview);
+		// check if preview matches current getAssetsIf
+		assertEquals(engine.getAssetsIfStates(userNameToIDMap.get("Joe"), 0x0E, assumptionIds, assumedStates), preview);
+		
+
+		// Let's create user Amy, ID = 2.
+		userNameToIDMap.put("Amy", (long) 2);
+		
+		// By default, cash is initialized as 0 (i.e. min-q = 1)
+		assertEquals(0, Math.round(engine.getCash(userNameToIDMap.get("Amy"), null, null)), ASSET_ERROR_MARGIN);
+		assertEquals(1, Math.round(engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Amy"), null, null))), ASSET_ERROR_MARGIN);
+		
+		// add 100 q-values to new users
+		transactionKey = engine.startNetworkActions();
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Amy"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+		engine.commitNetworkActions(transactionKey);
+		// check that user's min-q value was changed to the correct value
+		assertEquals(100, Math.round(engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Amy"), null, null))), ASSET_ERROR_MARGIN);
+		assertEquals(Math.round(engine.getScoreFromQValues(100)), Math.round(engine.getCash(userNameToIDMap.get("Amy"), null, null)), ASSET_ERROR_MARGIN);
+
+		// Amy bets P(F=f1|D=d1) = .5 -> .3
+		
+		// check whether probability prior to edit is really [f1d1, f2d1, f1d2, f2d2] = [.5, .5, .5, .5]
+		assumptionIds = new ArrayList<Long>();		
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 0x0D);	
+		assumedStates.add(0);	// set d1 as assumed state
+		
+		
+		// set P(F=f1|D=d1) = 0.3 and P(F=f2|D=d1) = 0.7  
+		newValues = new ArrayList<Float>();
+		newValues.add(.3f);
+		newValues.add(.7f);
+		
+
+		// obtain preview
+		preview = engine.previewTrade(userNameToIDMap.get("Amy"), 0x0F, newValues, assumptionIds, assumedStates);		
+		
+		transactionKey = engine.startNetworkActions();
+		returnFromTrade = engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Amy bets P(F=f1|D=d1) = 0.3", 
+				userNameToIDMap.get("Amy"), 
+				0x0F, 
+				newValues, 
+				assumptionIds, 
+				assumedStates, 
+				false
+			);
+		engine.commitNetworkActions(transactionKey);
+		
+		// check if preview and value returned from trade matches
+		assertEquals(returnFromTrade.size(), preview.size());
+		assertEquals(returnFromTrade, preview);
+		// check if preview matches current getAssetsIf
+		assertEquals(engine.getAssetsIfStates(userNameToIDMap.get("Amy"), 0x0F, assumptionIds, assumedStates), preview);
+		
+		// Joe bets P(F=f1|D=d2) = .5 -> .1
+		
+		// check whether probability prior to edit is really [f1d1, f2d1, f1d2, f2d2] = [.3, .7, .5, .5]
+		assumptionIds = new ArrayList<Long>();		
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 0x0D);	
+		assumedStates.add(1);	// set d2 as assumed state
+		
+		
+		// set P(F=f1|D=d2) = 0.1 and P(F=f2|D=d2) = 0.9
+		newValues = new ArrayList<Float>();
+		newValues.add(.1f);
+		newValues.add(.9f);
+		
+
+		// obtain preview
+		preview = engine.previewTrade(userNameToIDMap.get("Joe"), 0x0F, newValues, assumptionIds, assumedStates);		
+		
+		transactionKey = engine.startNetworkActions();
+		returnFromTrade = engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Joe bets P(F=f1|D=d2) = 0.1", 
+				userNameToIDMap.get("Joe"), 
+				0x0F, 
+				newValues, 
+				assumptionIds, 
+				assumedStates, 
+				false
+			);
+		engine.commitNetworkActions(transactionKey);
+		
+		// check if preview and value returned from trade matches
+		assertEquals(returnFromTrade.size(), preview.size());
+		assertEquals(returnFromTrade, preview);
+		// check if preview matches current getAssetsIf
+		assertEquals(engine.getAssetsIfStates(userNameToIDMap.get("Joe"), 0x0F, assumptionIds, assumedStates), preview);
+		
+
+		// create new user Eric
+		userNameToIDMap.put("Eric", (long) 3);
+		// By default, cash is initialized as 0 (i.e. min-q = 1)
+		assertEquals(0, Math.round(engine.getCash(userNameToIDMap.get("Eric"), null, null)), ASSET_ERROR_MARGIN);
+		assertEquals(1, Math.round(engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Eric"), null, null))), ASSET_ERROR_MARGIN);
+		
+		// add 100 q-values to new users
+		transactionKey = engine.startNetworkActions();
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Eric"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+		engine.commitNetworkActions(transactionKey);
+		// check that user's min-q value was changed to the correct value
+		assertEquals(100, Math.round(engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Eric"), null, null))), ASSET_ERROR_MARGIN);
+		assertEquals(Math.round(engine.getScoreFromQValues(100)), Math.round(engine.getCash(userNameToIDMap.get("Eric"), null, null)), ASSET_ERROR_MARGIN);
+
+		
+		// Eric bets P(E=e1) = .65 -> .8
+		
+		// check whether probability prior to edit is really = [.65, .35]
+		assumptionIds = new ArrayList<Long>();		
+		assumedStates = new ArrayList<Integer>();
+		
+		// set P(E=e1) = 0.8 and P(E=e2) = 0.2
+		newValues = new ArrayList<Float>();
+		newValues.add(.8f);
+		newValues.add(.2f);
+		
+
+		// obtain preview
+		preview = engine.previewTrade(userNameToIDMap.get("Eric"), 0x0E, newValues, assumptionIds, assumedStates);		
+		
+		transactionKey = engine.startNetworkActions();
+		returnFromTrade = engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Eric bets P(E=e1) = 0.8", 
+				userNameToIDMap.get("Eric"), 
+				0x0E, 
+				newValues, 
+				assumptionIds, 
+				assumedStates, 
+				false
+			);
+		engine.commitNetworkActions(transactionKey);
+		
+		// check if preview and value returned from trade matches
+		assertEquals(returnFromTrade.size(), preview.size());
+		assertEquals(returnFromTrade, preview);
+		// check if preview matches current getAssetsIf
+		assertEquals(engine.getAssetsIfStates(userNameToIDMap.get("Eric"), 0x0E, assumptionIds, assumedStates), preview);
+		
+		
+		// Eric bets  P(D=d1|F=f2) = 0.52 -> 0.7
+		
+		// check whether probability prior to edit is really [d1f2, d2f2] = [.52, .48]
+		assumptionIds = new ArrayList<Long>();		
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 0x0F);	
+		assumedStates.add(1);	// set f2 as assumed state
+		
+		
+		// set P(D=d1|F=f2) = 0.7 and P(D=d2|F=f2) = 0.3
+		newValues = new ArrayList<Float>();
+		newValues.add(.7f);
+		newValues.add(.3f);
+		
+
+		// obtain preview
+		preview = engine.previewTrade(userNameToIDMap.get("Eric"), 0x0D, newValues, assumptionIds, assumedStates);		
+		
+		transactionKey = engine.startNetworkActions();
+		returnFromTrade = engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Eric bets P(D=d1|F=f2) = 0.7", 
+				userNameToIDMap.get("Eric"), 
+				0x0D, 
+				newValues, 
+				assumptionIds, 
+				assumedStates, 
+				false
+		);
+		engine.commitNetworkActions(transactionKey);
+		
+		// check if preview and value returned from trade matches
+		assertEquals(returnFromTrade.size(), preview.size());
+		assertEquals(returnFromTrade, preview);
+		// check if preview matches current getAssetsIf
+		assertEquals(engine.getAssetsIfStates(userNameToIDMap.get("Eric"), 0x0D, assumptionIds, assumedStates), preview);
+		
+
+		// Eric makes a bet which makes his assets-q to go below 1, but the algorithm does not allow it
+		// this is a case in which preview != actual (because the actual trade will not be executed)
+		
+		// extract allowed interval of P(D=d1|F=f2), so that we can an edit incompatible with such interval
+		assumptionIds = new ArrayList<Long>();		
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds.add((long) 0x0F);	
+		assumedStates.add(1);	// set f2 as assumed state
+		List<Float> editInterval = engine.getEditLimits(userNameToIDMap.get("Eric"), 0x0D, 0, assumptionIds, assumedStates);
+		assertNotNull(editInterval);
+		assertEquals(2, editInterval.size());
+		assertEquals(0.0091059f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+		assertEquals(0.9916058f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		
+		// set P(D=d1|F=f2) to a value lower (1/10) than the lower bound of edit interval
+		newValues = new ArrayList<Float>();
+		newValues.add(editInterval.get(0)/10);
+		newValues.add(1-(editInterval.get(0)/10));
+		
+
+		// obtain preview
+		preview = engine.previewTrade(userNameToIDMap.get("Eric"), 0x0D, newValues, assumptionIds, assumedStates);
+		// check that some of the preview has 0 or negative assets
+		try {
+			boolean found = false;
+			for (Float previewedAsset : preview) {
+				if (previewedAsset <= 0) {
+					found = true;
+					break;
+				}
+			}
+			assertTrue("Previewed asset is " + preview, found);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		List<Float> assetsIfBeforeNegativeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), 0x0D, assumptionIds, assumedStates);
+		
+		transactionKey = engine.startNetworkActions();
+		returnFromTrade = engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Eric bets P(D=d1|F=f2) = 0.7", 
+				userNameToIDMap.get("Eric"), 
+				0x0D, 
+				newValues, 
+				assumptionIds, 
+				assumedStates, 
+				false	// do not allow negative assets
+			);
+		
+		// engine.addTrade must return nothing when previewed value is negative and it is not allowed to use negative assets
+		assertNull(returnFromTrade);
+		
+		// by committing an empty transaction, we can remove transaction from memory
+		engine.commitNetworkActions(transactionKey);
+		
+		// check if preview does not match current getAssetsIf (which is )
+		List<Float> assetsIfStates = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), 0x0D, assumptionIds, assumedStates);
+		assertEquals(assetsIfBeforeNegativeTrade, assetsIfStates);
+		assertFalse("Preview = " + preview + ", returned = " + assetsIfStates, assetsIfStates.equals(preview));
+
 	}
 
 

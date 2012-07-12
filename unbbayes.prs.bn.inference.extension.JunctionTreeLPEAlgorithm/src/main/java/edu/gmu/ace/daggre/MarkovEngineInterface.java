@@ -226,6 +226,8 @@ public interface MarkovEngineInterface {
 	 * the user to go into the hole
 	 * @return the assets per state changed, if the user has sufficient assets 
 	 * (as the values returned by {@link #getAssetsIfStates(int, long, long, int, List, List, Properties)}).
+	 * If user doesn't have sufficient assets, or if the result of the trade cannot be previewed now (e.g. it is adding a trade
+	 * to a question which is still going to be created in the same transaction), it will return null.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
 	public List<Float> addTrade(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates,  boolean allowNegative) throws IllegalArgumentException;

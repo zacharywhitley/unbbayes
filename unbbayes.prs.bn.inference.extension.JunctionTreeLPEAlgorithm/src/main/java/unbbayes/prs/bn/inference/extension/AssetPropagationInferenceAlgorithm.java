@@ -68,6 +68,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	private boolean isToUpdateOnlyEditClique = false;
 	
 	private boolean isToAllowQValuesSmallerThan1 = true;
+	
+	
 
 //	private Map<IRandomVariable, IRandomVariable> originalCliqueToAssetCliqueMap;
 	
@@ -104,6 +106,91 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 
 	private boolean isToCalculateMarginalsOfAssetNodes = false;
 
+	/** Initialize with default implementation */
+	private IMinQCalculator globalQValueCalculator = new IMinQCalculator() {
+		
+		/** Returns Product(Cliques)/Product(Separators). It assumes assetNet was compiled (i.e. has {@link AssetNetwork#getJunctionTree()}) */
+		public float getGlobalQ(AssetNetwork assetNet, Map<INode, Integer> filter) {
+			
+			// initial assertion
+			if (assetNet == null) {
+				return 0f;
+			}
+			
+			double ret = 1;	// var to be returned
+			
+			// calculate Product(Cliques)
+			for (Clique clique : assetNet.getJunctionTree().getCliques()) {
+				// extract clique table
+				PotentialTable cliqueTable = clique.getProbabilityFunction();
+				// iterate on each cell of clique table
+				for (int i = 0; i < cliqueTable.tableSize(); i++) {
+					float value = cliqueTable.getValue(i);	// value of cell in clique table
+					// filter by states
+					if (filter != null) {
+						// isNotMatching == true if the variables&states related to current cell in table is incompatible with filter
+						boolean isNotMatching = false;	
+						// what combination of states the index i represents in cliqueTable
+						int[] combinationOfStates = cliqueTable.getMultidimensionalCoord(i); 
+						// look for node&state in filter which does not match with content of combinationOfStates
+						for (INode node : filter.keySet()) {
+							if ( clique.getNodes().contains(node) && combinationOfStates[cliqueTable.getVariableIndex((Node)node)] != filter.get(node)) {
+								// current clique contain node in filter, and the state in filter does not match state of combinationOfStates
+								isNotMatching = true;
+								break;
+							}
+						}
+						if (isNotMatching) {
+							continue;	// do not multiply if current cell in table does not correspond with filter
+						}
+					}
+					// note: at this point, this cell in cliqueTable matches filter
+					if (Float.compare(value , 0.0f) == 0) {
+						// once zero, it will always be zero.
+						return 0;
+					}
+					// Product(Cliques)
+					ret *= value;
+				}
+			}
+			// calculate Product(Separators)
+			for (Separator separator : assetNet.getJunctionTree().getSeparators()) {
+				// extract the separator table from separator
+				PotentialTable sepTable = separator.getProbabilityFunction();
+				// iterate on each cell of separator table
+				for (int i = 0; i < sepTable.tableSize(); i++) {
+					float value = sepTable.getValue(i);	// value of cell in clique table
+					// filter by states
+					if (filter != null) {
+						// isNotMatching == true if the variables&states related to current cell in table is incompatible with filter
+						boolean isNotMatching = false;	
+						// what combination of states the index i represents in cliqueTable
+						int[] combinationOfStates = sepTable.getMultidimensionalCoord(i); 
+						// look for node&state in filter which does not match with content of combinationOfStates
+						for (INode node : filter.keySet()) {
+							if ( separator.getNodes().contains(node) && combinationOfStates[sepTable.getVariableIndex((Node)node)] != filter.get(node)) {
+								// current clique contain node in filter, and the state in filter does not match state of combinationOfStates
+								isNotMatching = true;
+								break;
+							}
+						}
+						if (isNotMatching) {
+							continue;	// do not multiply if current cell in table does not correspond with filter
+						}
+					}
+					// note: at this point, this cell in sepTable matches filter
+					if (Float.compare(value, 0.0f) == 0) {
+						// once divided by zero, it will be always undefined.
+						return Float.NaN;
+					}
+					// Product(Cliques)/Product(Separators)
+					ret /= value;
+				}
+			}
+			
+			return (float) ret;
+		}
+	};
 
 //	private AssetAwareInferenceAlgorithm assetAwareInferenceAlgorithm;
 	
@@ -121,6 +208,20 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 //			AssetPropagationInferenceAlgorithm.this.propagate();
 //		}
 //	};
+	
+	/**
+	 * This interface contain operation for calculating global q values
+	 * given set of nodes and states.
+	 */
+	public interface IMinQCalculator {
+		/**
+		 * Calculates the global q value given set of states.
+		 * @param assetNet : network containing nodes and states
+		 * @param filter : mapping from node to respective state.
+		 * @return global q value
+		 */
+		float getGlobalQ(AssetNetwork assetNet , Map<INode, Integer> filter);
+	}
 	
 	/**
 	 * Default constructor is protected in order to allow inheritance.
@@ -856,128 +957,244 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	public void setToUpdateSeparators(boolean isToUpdateSeparators) {
 		this.isToUpdateSeparators = isToUpdateSeparators;
 	}
-
+	
 	/** 
 	 * This method obtains the min-q states and returns the min-q value.
 	 * Currently, it assumes inputOutpuArgumentForExplanation is an empty collection.
 	 * It is assumed that {@link #runMinPropagation()} was called prior to this method.
 	 * This method will return the minimum local q value if global consistency does not hold
 	 * (i.e. if the min-q value differs between different cliques, it will return the smaller one).
+	 * We are also assuming that the variables in {@link Clique#getNodes()} are equals to
+	 * the variables related to {@link Clique#getProbabilityFunction()} (see {@link PotentialTable#getVariableAt(int)}),
+	 * no matter the ordering.
 	 * @param inputOutpuArgumentForExplanation : an input/output parameter. However, current implementation
 	 * assumes this is an empty collection (hence, this is only used as output argument).
+	 * Currently, this list will be filled with only 1 LPE.
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#calculateExplanation(List)
 	 * @see IExplanationJunctionTree#calculateExplanation(Graph, IInferenceAlgorithm)
 	 * TODO allow multiple combinations of states.
+	 * @see #getGlobalQValueCalculator()
 	 */
 	public float calculateExplanation( List<Map<INode, Integer>> inputOutpuArgumentForExplanation){
-//		IJunctionTree jt = this.getAssetNetwork().getJunctionTree();
-//		if (jt instanceof IExplanationJunctionTree) {
-//			IExplanationJunctionTree explJT = (IExplanationJunctionTree) jt;
-//			return explJT.calculateExplanation(getAssetNetwork(), this);
-//			
-//		}
-//		// avoid returning null
-//		return new ArrayList<Map<INode,Integer>>();
 		
-		// this will hold min-q value
-		float ret = Float.POSITIVE_INFINITY;
-
 		// TODO return more than 1 LPE
 		Debug.println(getClass(), "Current version returns only 1 explanation");
 		
-		// this map will contain one combination of min-q state
-		Map<INode, Integer> stateMap = new HashMap<INode, Integer>();
+		// this map will contain least probable state for each node
+		Map<INode, Integer> nodeToLPEMap = new HashMap<INode, Integer>();
 		
-		// this map contains the min-q value obtained when stateMap was updated (hence, this is synchronized with stateMap). 
-		// this map is only needed if this method must return something even when global consistency does not hold 
-		// (in order to compare min-q vales between different cliques)
-		Map<INode, Float> valueMap = new HashMap<INode, Float>();
-		
-		for (Clique clique : this.getAssetNetwork().getJunctionTree().getCliques()) {
-			PotentialTable table = clique.getProbabilityFunction();
-			if (table.tableSize() <= 0) {
-				throw new IllegalArgumentException(clique + "- table size: " + table.tableSize());
+		// look for min in cliques
+		Set<Clique> rootCliques = new HashSet<Clique>();	// for debug
+		for (Clique clique : getAssetNetwork().getJunctionTree().getCliques()) {
+			// for debug
+			if (clique.getParent() == null
+					|| getAssetNetwork().getJunctionTree().getSeparator(clique, clique.getParent()) == null
+					|| getAssetNetwork().getJunctionTree().getSeparator(clique, clique.getParent()).getNodes().isEmpty()) {
+				rootCliques.add(clique);
 			}
-			// find index of the min value in clique
-			int indexOfMinInClique = 0;
-			float valueOfMinInClique = table.getValue(indexOfMinInClique);
-			for (int i = 1; i < table.tableSize(); i++) {
-				if (this.getCellValuesComparator().compare(table.getValue(i), table.getValue(indexOfMinInClique)) < 0) {
-					indexOfMinInClique = i;
-					valueOfMinInClique = table.getValue(i);
-				}
-			}
-			if (inputOutpuArgumentForExplanation == null) {
-				// we do not need to obtain explanation. So only calculate min value
-				if (valueOfMinInClique < ret) { // Note: if global consistency holds, this check is unnecessary, but in disconnected nets the global consistency does not hold
-					ret = valueOfMinInClique;	
-				}
-				continue;
-			}
-			
-			// the indexes of the states can be obtained from the index of the linearized table by doing the following operation:
-			// indexOfLPEOfNthNode = mod(indexOfMinInClique / prodNumberOfStatesPrevNodes, numberOfStates). 
-			// prodNumberOfStatesPrevNodes is the product of the number of states for all previous nodes. If this is the first node, then prodNumberOfStatesPrevNodes = 1.
-			// e.g. suppose there are 2 nodes A(w/ 4 states), B(w/ 3 states) and C (w/ 2 states). If the maximum probability occurs at index 5, then
-			// the state of A is mod(5/1 , 4) = 1, and the state of B is mod(5/4, 3) = 1, and state of C is mod(5/(4*3),2) = 0.
-			// I.e.
-			//      |                             c0                            |                             c1                            |
-			//      |         b0        |         b1        |         b2        |         b0        |         b1        |         b2        |
-			//      | a0 | a1 | a2 | a3 | a0 | a1 | a2 | a3 | a0 | a1 | a2 | a3 | a0 | a1 | a2 | a3 | a0 | a1 | a2 | a3 | a0 | a1 | a2 | a3 |
-			//index:| 0  |  1 |  2 |  3 | 4  | 5  | 6  | 7  |  8 | 9  | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 |
-			int prodNumberOfStatesPrevNodes = 1;
-			for (int i = 0; i < table.getVariablesSize(); i++) {
-				INode node = table.getVariableAt(i);
-				int numberOfStates = node.getStatesSize();
-				// number of states must be strictly positive
-				if (numberOfStates <= 0) {
-					try {
-						Debug.println(getClass(), "[Warning] Size of " + table.getVariableAt(i) + " is " + numberOfStates);
-					} catch (Throwable t) {
-						t.printStackTrace();
+			PotentialTable cliqueTable = clique.getProbabilityFunction();
+			Set<Integer> indexesOfMin = new HashSet<Integer>();
+			double minValue = Double.MAX_VALUE;
+			for (int i = 0; i < cliqueTable.tableSize(); i++) {
+				float value = cliqueTable.getValue(i);
+				// this.getCellValuesComparator() can personalize comparison, like: ignore zero
+				if (this.getCellValuesComparator().compare(value, (float) minValue) <= 0) {
+					if (this.getCellValuesComparator().compare(value, (float) minValue) < 0) {
+						// value is smaller, so old values in indexesOfMin are useless
+						indexesOfMin.clear();
 					}
-					continue;
+					minValue = value;
+					indexesOfMin.add(i);
 				}
-				// calculate most probable state
-				int indexOfLPEOfNthNode = (indexOfMinInClique / prodNumberOfStatesPrevNodes) % numberOfStates;
-				// add to states if it was not already added
-				if (!stateMap.containsKey(node)) {
-					// this is the first time we add this entry. Add it
-					stateMap.put(node, indexOfLPEOfNthNode);
-					valueMap.put(node, valueOfMinInClique);
-					if (valueOfMinInClique < ret) { // Note: if global consistency holds, this check is unnecessary, but in disconnected nets the global consistency does not hold
-						ret = valueOfMinInClique;	
-					}
-				} else {
-					// check consistency (min state should be unique between cliques)
-					if (!stateMap.get(node).equals(indexOfLPEOfNthNode)) {
-						if (this.getCellValuesComparator().compare(valueMap.get(node), valueOfMinInClique) < 0) {
-							// new value is greater. Update
-							stateMap.put(node, indexOfLPEOfNthNode);
-							valueMap.put(node, valueOfMinInClique);
-							// this clique has a smaller local min-q value...
-							if (valueOfMinInClique < ret) { 
-								ret = valueOfMinInClique;	
-							}
-						}
-						try {
-							Debug.println(getClass(), "Obtained states differ between cliques (clique inconsistency)... The current clique is: " 
-									+ clique + "; node is " + node + "; previous state: " + stateMap.get(node) + "; index of state found in current clique: " + indexOfLPEOfNthNode);
-						} catch (Throwable t) {
-							t.printStackTrace();
+			}
+			// extract combination of states related to the indexOfMin in cliqueTable
+			for (Integer indexOfMin : indexesOfMin) {
+				// extract combination of states of this local LPE
+				int[] states = cliqueTable.getMultidimensionalCoord(indexOfMin);
+				
+				// must only consider LPEs compatible with previously considered local LPEs
+				if (!nodeToLPEMap.isEmpty()) {
+					boolean isCompatible = true;
+					// for each node, check that both indexOfMin and nodeToLPEMap points to same states
+					for (INode node : nodeToLPEMap.keySet()) {
+						// check whether current node is present in current table 
+						// and some nodes related to the cell of the table points to states other than the ones in nodeToLPEMap
+						int indexOfVariable = cliqueTable.indexOfVariable((Node) node);
+						if (indexOfVariable >= 0										// node exist in cliqueTable
+								&& states[indexOfVariable] != nodeToLPEMap.get(node)) {	// they are pointing to different states
+							isCompatible = false;
+							break;
 						}
 					}
+					if (!isCompatible) {
+						continue; // try next indexOfMin
+					} 
 				}
-				prodNumberOfStatesPrevNodes *= numberOfStates;
+				// at this point, either this is the first clique or indexOfMin is compatible with states already in nodeToLPEMap
+				
+				// NOTE: we assume the nodes in cliques == nodes in cliqueTable
+				for (Node node : clique.getNodes()) {
+					// extract LPE state of currently evaluated node
+					Integer state = states[cliqueTable.getVariableIndex(node)];
+					// put to nodeToLPEMap
+					Integer oldState = nodeToLPEMap.put(node, state);
+					if (oldState != null && oldState != state) {
+						throw new IllegalStateException(clique + " contains duplicate nodes or inconsistent assets. Please, run runMinPropagation() before this method.");
+					} 
+				}
+				
+				// use only the 1st LPE. TODO allow multiple LPEs
+				break;
 			}
 		}
+		// TODO for consistency, look for min in separators as well
 		
-		// handle the input/output argument
-		if (inputOutpuArgumentForExplanation != null && !inputOutpuArgumentForExplanation.contains(stateMap)) {
-			inputOutpuArgumentForExplanation.add(stateMap);
+		// TODO allow multiple LPE
+		if (inputOutpuArgumentForExplanation != null) {
+			inputOutpuArgumentForExplanation.add(nodeToLPEMap);
+		}
+		
+		// calculate global Q value
+		float ret = this.getGlobalQValueCalculator().getGlobalQ(getAssetNetwork(), nodeToLPEMap);
+		
+		// this is just for debugging
+		float minValueOfRootCliques = 0.0f;
+		for (Clique root : rootCliques) {
+			PotentialTable table = root.getProbabilityFunction();
+			for (int i = 0; i < table.tableSize(); i++) {
+				if (this.getCellValuesComparator().compare(table.getValue(i) , minValueOfRootCliques) < 0) {
+					minValueOfRootCliques = table.getValue(i);
+				}
+			}
+		}
+		// this is also for debugging
+		if (ret - 0.0001 >= minValueOfRootCliques || minValueOfRootCliques >= ret + 0.0001) {
+			System.err.print("[WARN]" + this.getClass().getName() + " Global min q = " + ret + ", root clique's min q = " + minValueOfRootCliques);
+			System.err.println(". This discrepancy may happen in disconnected networks/cliques : " + rootCliques);
+			if (this.getCellValuesComparator().compare(ret , minValueOfRootCliques) > 0) {
+				System.err.println("[WARN]" + this.getClass().getName() + " Using min q = " + minValueOfRootCliques + " due to the discrepancy.");
+				ret = minValueOfRootCliques;
+			}
 		}
 		return ret;
 	}
+	
+
+//	/** 
+//	 * This method obtains the min-q states and returns the min-q value.
+//	 * Currently, it assumes inputOutpuArgumentForExplanation is an empty collection.
+//	 * It is assumed that {@link #runMinPropagation()} was called prior to this method.
+//	 * This method will return the minimum local q value if global consistency does not hold
+//	 * (i.e. if the min-q value differs between different cliques, it will return the smaller one).
+//	 * @param inputOutpuArgumentForExplanation : an input/output parameter. However, current implementation
+//	 * assumes this is an empty collection (hence, this is only used as output argument).
+//	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#calculateExplanation(List)
+//	 * @see IExplanationJunctionTree#calculateExplanation(Graph, IInferenceAlgorithm)
+//	 * TODO allow multiple combinations of states.
+//	 */
+//	public float calculateExplanation( List<Map<INode, Integer>> inputOutpuArgumentForExplanation){
+//		
+//		// this will hold min-q value
+////		float ret = Float.POSITIVE_INFINITY;
+//
+//		// TODO return more than 1 LPE
+//		Debug.println(getClass(), "Current version returns only 1 explanation");
+//		
+//		// this map will contain one combination of min-q state
+//		Map<INode, Integer> stateMap = new HashMap<INode, Integer>();
+//		
+//		// this map contains the min-q value obtained when stateMap was updated (hence, this is synchronized with stateMap). 
+//		// this map is only needed if this method must return something even when global consistency does not hold 
+//		// (in order to compare min-q vales between different cliques)
+//		Map<INode, Float> valueMap = new HashMap<INode, Float>();
+//		
+//		for (Clique clique : this.getAssetNetwork().getJunctionTree().getCliques()) {
+//			PotentialTable table = clique.getProbabilityFunction();
+//			if (table.tableSize() <= 0) {
+//				throw new IllegalArgumentException(clique + "- table size: " + table.tableSize());
+//			}
+//			// find index of the min value in clique
+//			int indexOfMinInClique = 0;
+//			float valueOfMinInClique = table.getValue(indexOfMinInClique);
+//			for (int i = 1; i < table.tableSize(); i++) {
+//					indexOfMinInClique = i;
+//					valueOfMinInClique = table.getValue(i);
+//				}
+//			}
+//			if (inputOutpuArgumentForExplanation == null) {
+//				// we do not need to obtain explanation. So only calculate min value
+//				if (valueOfMinInClique < ret) { // Note: if global consistency holds, this check is unnecessary, but in disconnected nets the global consistency does not hold
+//					ret = valueOfMinInClique;	
+//				}
+//				continue;
+//			}
+//			
+//			// the indexes of the states can be obtained from the index of the linearized table by doing the following operation:
+//			// indexOfLPEOfNthNode = mod(indexOfMinInClique / prodNumberOfStatesPrevNodes, numberOfStates). 
+//			// prodNumberOfStatesPrevNodes is the product of the number of states for all previous nodes. If this is the first node, then prodNumberOfStatesPrevNodes = 1.
+//			// e.g. suppose there are 2 nodes A(w/ 4 states), B(w/ 3 states) and C (w/ 2 states). If the maximum probability occurs at index 5, then
+//			// the state of A is mod(5/1 , 4) = 1, and the state of B is mod(5/4, 3) = 1, and state of C is mod(5/(4*3),2) = 0.
+//			// I.e.
+//			//      |                             c0                            |                             c1                            |
+//			//      |         b0        |         b1        |         b2        |         b0        |         b1        |         b2        |
+//			//      | a0 | a1 | a2 | a3 | a0 | a1 | a2 | a3 | a0 | a1 | a2 | a3 | a0 | a1 | a2 | a3 | a0 | a1 | a2 | a3 | a0 | a1 | a2 | a3 |
+//			//index:| 0  |  1 |  2 |  3 | 4  | 5  | 6  | 7  |  8 | 9  | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 |
+//			int prodNumberOfStatesPrevNodes = 1;
+//			for (int i = 0; i < table.getVariablesSize(); i++) {
+//				INode node = table.getVariableAt(i);
+//				int numberOfStates = node.getStatesSize();
+//				// number of states must be strictly positive
+//				if (numberOfStates <= 0) {
+//					try {
+//						Debug.println(getClass(), "[Warning] Size of " + table.getVariableAt(i) + " is " + numberOfStates);
+//					} catch (Throwable t) {
+//						t.printStackTrace();
+//					}
+//					continue;
+//				}
+//				// calculate most probable state
+//				int indexOfLPEOfNthNode = (indexOfMinInClique / prodNumberOfStatesPrevNodes) % numberOfStates;
+//				// add to states if it was not already added
+//				if (!stateMap.containsKey(node)) {
+//					// this is the first time we add this entry. Add it
+//					stateMap.put(node, indexOfLPEOfNthNode);
+//					valueMap.put(node, valueOfMinInClique);
+////					if (valueOfMinInClique < ret) { // Note: if global consistency holds, this check is unnecessary, but in disconnected nets the global consistency does not hold
+////						ret = valueOfMinInClique;	
+////					}
+//				} else {
+//					// check consistency (min state should be unique between cliques)
+//					if (!stateMap.get(node).equals(indexOfLPEOfNthNode)) {
+//						if (this.getCellValuesComparator().compare(valueMap.get(node), valueOfMinInClique) < 0) {
+//							// new value is greater. Update
+//							stateMap.put(node, indexOfLPEOfNthNode);
+//							valueMap.put(node, valueOfMinInClique);
+//							// this clique has a smaller local min-q value...
+////							if (valueOfMinInClique < ret) { 
+////								ret = valueOfMinInClique;	
+////							}
+//						}
+//						throw new IllegalStateException("Obtained states differ between cliques (clique inconsistency)... The current clique is: " 
+//									+ clique + "; node is " + node + "; previous state: " + stateMap.get(node) + "; index of state found in current clique: " + indexOfLPEOfNthNode);
+////						try {
+////							Debug.println(getClass(), "Obtained states differ between cliques (clique inconsistency)... The current clique is: " 
+////									+ clique + "; node is " + node + "; previous state: " + stateMap.get(node) + "; index of state found in current clique: " + indexOfLPEOfNthNode);
+////						} catch (Throwable t) {
+////							t.printStackTrace();
+////						}
+//					}
+//				}
+//				prodNumberOfStatesPrevNodes *= numberOfStates;
+//			}
+//		}
+//		
+//		// handle the input/output argument
+//		if (inputOutpuArgumentForExplanation != null && !inputOutpuArgumentForExplanation.contains(stateMap)) {
+//			inputOutpuArgumentForExplanation.add(stateMap);
+//		}
+////		return ret;
+//		return this.getGlobalQValueCalculator().getGlobalQ(getAssetNetwork(), stateMap);
+//	}
 
 	/**
 	 * Just executes {@link JunctionTreeLPEAlgorithm#propagate()}.
@@ -1043,7 +1260,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 * it is possible for {@link #calculateExplanation()} to obtain, for instance, the maximum instead.
 	 * @return the cellValuesComparator
 	 */
-	public Comparator getCellValuesComparator() {
+	public Comparator<Float> getCellValuesComparator() {
 		return cellValuesComparator;
 	}
 
@@ -1264,6 +1481,24 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			return this.getAssetNetwork().isToCalculateMarginalsOfAssetNodes();
 		}
 		return isToCalculateMarginalsOfAssetNodes;
+	}
+
+	/**
+	 * This object is used in {@link #calculateExplanation(List)} in order
+	 * to calculate the min-q value given LPE.
+	 * @return the globalQValueCalculator
+	 */
+	public IMinQCalculator getGlobalQValueCalculator() {
+		return globalQValueCalculator;
+	}
+
+	/**
+	 * This object is used in {@link #calculateExplanation(List)} in order
+	 * to calculate the min-q value given LPE.
+	 * @param globalQValueCalculator the globalQValueCalculator to set
+	 */
+	public void setGlobalQValueCalculator(IMinQCalculator globalQValueCalculator) {
+		this.globalQValueCalculator = globalQValueCalculator;
 	}
 	
 
