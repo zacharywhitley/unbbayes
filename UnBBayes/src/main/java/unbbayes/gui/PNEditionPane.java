@@ -30,6 +30,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.util.EventObject;
 import java.util.List;
@@ -214,6 +215,87 @@ public class PNEditionPane extends JPanel {
 		btnHierarchy = new JButton(iconController.getHierarchyIcon());
 
 		// Set tool tip for the following buttons
+		setTooltips();
+
+		addListeners();
+
+		// colocar botoes e controladores do look-and-feel no toolbar e esse no
+		// topPanel
+		jtbEdition.add(btnPrintNet);
+		jtbEdition.add(btnPreviewNet);
+		jtbEdition.add(btnSaveNetImage);
+		jtbEdition.add(btnPrintTable);
+		jtbEdition.add(btnPreviewTable);
+		jtbEdition.add(btnSaveTableImage);
+
+		jtbEdition.addSeparator();
+
+		tbEdition = new ToolBarEdition();
+		jtbEdition.add(tbEdition);
+
+		jtbEdition.addSeparator();
+
+		jtbEdition.add(btnCompile);
+		jtbEdition.add(btnEvaluate);
+
+		jtbEdition.addSeparator();
+
+		jtbEdition.add(btnGlobalOption);
+		jtbEdition.add(btnHierarchy);
+
+		topPanel.add(jtbEdition);
+
+		// colocar bot�es, labels e textfields no toolbar e coloc�-lo no
+		// topPanel
+		jtbState.add(lblName);
+		jtbState.add(txtName);
+
+		jtbState.addSeparator();
+		jtbState.addSeparator();
+
+		jtbState.add(btnAddState);
+		jtbState.add(btnRemoveState);
+
+		jtbState.addSeparator();
+		jtbState.addSeparator();
+
+		jtbState.add(lblDescription);
+		jtbState.add(txtDescription);
+
+		topPanel.add(jtbState);
+
+		// setar o preferred size do jspTable para ser usado pelo SplitPanel
+		jspTable.setPreferredSize(new Dimension(150, 50));
+
+		// setar o auto resize off para que a tabela fique do tamanho ideal
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
+		// adicionar tela da tabela(JScrollPane) da tabela de estados para o
+		// painel do centro
+		centerPanel.setTopComponent(jspTable);
+
+		// setar o tamanho do divisor entre o jspGraph(vem do NetWindow) e
+		// jspTable
+		centerPanel.setDividerSize(7);
+
+		// setar os tamanho de cada jsp(tabela e graph) para os seus
+		// PreferredSizes
+		centerPanel.resetToPreferredSizes();
+
+		bottomPanel.add(status);
+
+		// adiciona containers para o contentPane
+		this.add(topPanel, BorderLayout.NORTH);
+		this.add(centerPanel, BorderLayout.CENTER);
+		this.add(bottomPanel, BorderLayout.SOUTH);
+		setVisible(true);
+
+	}
+
+	/**
+	 * Set tooltips for buttons
+	 */
+	private void setTooltips() {
 		btnEvaluate.setToolTipText(resource.getString("evaluateToolTip"));
 		btnCompile.setToolTipText(resource.getString("compileToolTip"));
 		btnAddState.setToolTipText(resource.getString("moreToolTip"));
@@ -230,6 +312,12 @@ public class PNEditionPane extends JPanel {
 		btnGlobalOption.setToolTipText(resource.getString("globalOptionTitle"));
 		btnHierarchy.setToolTipText(resource.getString("hierarchyToolTip"));
 
+	}
+
+	/**
+	 * Add listeners for all the elements.
+	 */
+	private void addListeners() {
 		// ao clicar no botao btnGlobalOption, mostra-se o menu para escolha das
 		// opcoes
 		btnGlobalOption.addActionListener(new ActionListener() {
@@ -271,9 +359,15 @@ public class PNEditionPane extends JPanel {
 		// listener responsible for updating the node's name.
 		txtName.addKeyListener(new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {
+
+				// get selected object
 				Object selected = netWindow.getGraphPane().getSelected();
+
+				// if the selected object is a node.
 				if (selected instanceof Node) {
 					Node nodeAux = (Node) selected;
+
+					// Event is the key ENTER.
 					if ((e.getKeyCode() == KeyEvent.VK_ENTER)
 							&& (txtName.getText().length() > 0)) {
 						try {
@@ -296,6 +390,7 @@ public class PNEditionPane extends JPanel {
 							ble.printStackTrace();
 						}
 					}
+
 				}
 			}
 		});
@@ -397,78 +492,7 @@ public class PNEditionPane extends JPanel {
 				controller.saveTableImage();
 			}
 		});
-
-		// colocar botoes e controladores do look-and-feel no toolbar e esse no
-		// topPanel
-		jtbEdition.add(btnPrintNet);
-		jtbEdition.add(btnPreviewNet);
-		jtbEdition.add(btnSaveNetImage);
-		jtbEdition.add(btnPrintTable);
-		jtbEdition.add(btnPreviewTable);
-		jtbEdition.add(btnSaveTableImage);
-
-		jtbEdition.addSeparator();
-
-		tbEdition = new ToolBarEdition();
-		jtbEdition.add(tbEdition);
-
-		jtbEdition.addSeparator();
-
-		jtbEdition.add(btnCompile);
-		jtbEdition.add(btnEvaluate);
-
-		jtbEdition.addSeparator();
-
-		jtbEdition.add(btnGlobalOption);
-		jtbEdition.add(btnHierarchy);
-
-		topPanel.add(jtbEdition);
-
-		// colocar bot�es, labels e textfields no toolbar e coloc�-lo no
-		// topPanel
-		jtbState.add(lblName);
-		jtbState.add(txtName);
-
-		jtbState.addSeparator();
-		jtbState.addSeparator();
-
-		jtbState.add(btnAddState);
-		jtbState.add(btnRemoveState);
-
-		jtbState.addSeparator();
-		jtbState.addSeparator();
-
-		jtbState.add(lblDescription);
-		jtbState.add(txtDescription);
-
-		topPanel.add(jtbState);
-
-		// setar o preferred size do jspTable para ser usado pelo SplitPanel
-		jspTable.setPreferredSize(new Dimension(150, 50));
-
-		// setar o auto resize off para que a tabela fique do tamanho ideal
-		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-
-		// adicionar tela da tabela(JScrollPane) da tabela de estados para o
-		// painel do centro
-		centerPanel.setTopComponent(jspTable);
-
-		// setar o tamanho do divisor entre o jspGraph(vem do NetWindow) e
-		// jspTable
-		centerPanel.setDividerSize(7);
-
-		// setar os tamanho de cada jsp(tabela e graph) para os seus
-		// PreferredSizes
-		centerPanel.resetToPreferredSizes();
-
-		bottomPanel.add(status);
-
-		// adiciona containers para o contentPane
-		this.add(topPanel, BorderLayout.NORTH);
-		this.add(centerPanel, BorderLayout.CENTER);
-		this.add(bottomPanel, BorderLayout.SOUTH);
-		setVisible(true);
-
+		
 	}
 
 	/**

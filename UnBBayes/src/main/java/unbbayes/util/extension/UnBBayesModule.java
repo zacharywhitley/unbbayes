@@ -1,4 +1,3 @@
-
 package unbbayes.util.extension;
 
 import java.io.File;
@@ -12,21 +11,24 @@ import unbbayes.io.BaseIO;
 
 /**
  * Plugins for UnBBayes core is expected to extend this class.
+ * 
  * @author Shou Matsumoto
  * @version 16-10-2009
- *
+ * 
  */
 public abstract class UnBBayesModule extends JInternalFrame implements
 		IPersistenceAwareWindow {
-	
+
 	private String moduleID = "UnBBayesModule";
-	
+
 	private UnBBayesFrame unbbayesFrame;
 
 	// This file storage the module in the hard disk
 	private File file;
+
 	/**
 	 * It is equal to super("Plugin", true, true, true, true);
+	 * 
 	 * @see JInternalFrame
 	 * 
 	 */
@@ -34,7 +36,7 @@ public abstract class UnBBayesModule extends JInternalFrame implements
 		super("Plugin", true, true, true, true);
 		this.setVisible(false);
 	}
-	
+
 	/**
 	 * @param title
 	 * @see JInternalFrame
@@ -42,30 +44,29 @@ public abstract class UnBBayesModule extends JInternalFrame implements
 	public UnBBayesModule(String title) {
 		super(title, true, true, true, true);
 	}
-	
 
-
-
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see unbbayes.gui.IPersistenceAwareWindow#getInternalFrame()
 	 */
 	public JInternalFrame getInternalFrame() {
 		return this;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see unbbayes.gui.IPersistenceAwareWindow#getSavingMessage()
 	 */
 	public String getSavingMessage() {
 		return "Save";
 	}
 
-	
-	
 	/**
 	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFileExtensions(boolean)
-	 * @deprecated use {@link BaseIO#getSupportedFileExtensions(boolean)} from 
-	 * {@link IPersistenceAwareWindow#getIO()} instead.
+	 * @deprecated use {@link BaseIO#getSupportedFileExtensions(boolean)} from
+	 *             {@link IPersistenceAwareWindow#getIO()} instead.
 	 */
 	public String[] getSupportedFileExtensions(boolean isLoadOnly) {
 		if (this.getIO() == null) {
@@ -74,10 +75,12 @@ public abstract class UnBBayesModule extends JInternalFrame implements
 		return this.getIO().getSupportedFileExtensions(isLoadOnly);
 	}
 
-	/** (non-Javadoc)
+	/**
+	 * (non-Javadoc)
+	 * 
 	 * @see unbbayes.gui.IPersistenceAwareWindow#getSupportedFilesDescription(boolean)
-	 * @deprecated use {@link BaseIO##getSupportedFilesDescription(boolean)} from 
-	 * {@link IPersistenceAwareWindow#getIO()} instead.
+	 * @deprecated use {@link BaseIO##getSupportedFilesDescription(boolean)}
+	 *             from {@link IPersistenceAwareWindow#getIO()} instead.
 	 */
 	public String getSupportedFilesDescription(boolean isLoadOnly) {
 		if (this.getIO() == null) {
@@ -88,25 +91,29 @@ public abstract class UnBBayesModule extends JInternalFrame implements
 
 	/**
 	 * Obtains the name of this module.
+	 * 
 	 * @return the name of this module.
 	 */
 	public abstract String getModuleName();
-	
+
 	/**
-	 * Loads a file into this window.
-	 * Please, note that the file must be compatible to this module. File compatibility is
-	 * checked by 2 possible ways: by IPersistenceAwareWindow#getSupportedFileExtensions() and/or
-	 * by getting the I/O class (IPersistenceAwareWindow#getIO()) and 
-	 * checking directly using BaseIO#supportsExtension(String).
-	 * @param file : the file to be opened
-	 * @return the UnBBayesModule which has the new opened graph. If null, no internal frame 
-	 * will be displayed to user.
+	 * Loads a file into this window. Please, note that the file must be
+	 * compatible to this module. File compatibility is checked by 2 possible
+	 * ways: by IPersistenceAwareWindow#getSupportedFileExtensions() and/or by
+	 * getting the I/O class (IPersistenceAwareWindow#getIO()) and checking
+	 * directly using BaseIO#supportsExtension(String).
+	 * 
+	 * @param file
+	 *            : the file to be opened
+	 * @return the UnBBayesModule which has the new opened graph. If null, no
+	 *         internal frame will be displayed to user.
 	 * @throws IOException
 	 * @see IPersistenceAwareWindow#getSupportedFileExtensions()
 	 * @see IPersistenceAwareWindow#getIO()
 	 * @see BaseIO#supportsExtension(String)
 	 */
-	public abstract UnBBayesModule openFile(File file) throws java.io.IOException;
+	public abstract UnBBayesModule openFile(File file)
+			throws java.io.IOException;
 
 	/**
 	 * @return the moduleID
@@ -116,15 +123,17 @@ public abstract class UnBBayesModule extends JInternalFrame implements
 	}
 
 	/**
-	 * @param moduleID the moduleID to set
+	 * @param moduleID
+	 *            the moduleID to set
 	 */
 	public void setModuleID(String moduleID) {
 		this.moduleID = moduleID;
 	}
 
 	/**
-	 * This is the top frame of UnBBayes, where all inner frames resides.
-	 * By accessing this, you can virtually control everything of UnBBayes' GUI.
+	 * This is the top frame of UnBBayes, where all inner frames resides. By
+	 * accessing this, you can virtually control everything of UnBBayes' GUI.
+	 * 
 	 * @return the unbbayesFrame
 	 */
 	public UnBBayesFrame getUnbbayesFrame() {
@@ -132,15 +141,19 @@ public abstract class UnBBayesModule extends JInternalFrame implements
 	}
 
 	/**
-	 * This is the top frame of UnBBayes, where all inner frames resides.
-	 * By accessing this, you can virtually control everything of UnBBayes' GUI.
-	 * @param unbbayesFrame the unbbayesFrame to set
+	 * This is the top frame of UnBBayes, where all inner frames resides. By
+	 * accessing this, you can virtually control everything of UnBBayes' GUI.
+	 * 
+	 * @param unbbayesFrame
+	 *            the unbbayesFrame to set
 	 */
 	public void setUnbbayesFrame(UnBBayesFrame unbbayesFrame) {
 		this.unbbayesFrame = unbbayesFrame;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.awt.Component#setName(java.lang.String)
 	 */
 	public void setName(String name) {
@@ -155,6 +168,5 @@ public abstract class UnBBayesModule extends JInternalFrame implements
 	public void setFile(File file) {
 		this.file = file;
 	}
-	
-	
+
 }
