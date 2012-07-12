@@ -60,6 +60,7 @@ import unbbayes.draw.UShapeUtilityNode;
 import unbbayes.draw.extension.IPluginUShape;
 import unbbayes.gui.table.extension.IProbabilityFunctionPanelBuilder;
 import unbbayes.prs.Edge;
+import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -217,7 +218,7 @@ public class GraphPane extends UCanvas implements KeyListener {
 			try {
 				List<Node> group = (List<Node>) fromClipboard;
 
-				List<Node> clonedGroup = cloneNodes(group);
+				pasteAndDrawNodes(group);
 				// for (Node node : group) {
 				// Debug.println("Pegar " + node.toString());
 				// }
@@ -235,34 +236,57 @@ public class GraphPane extends UCanvas implements KeyListener {
 		}
 	}
 
-	private List<Node> cloneNodes(List<Node> group) {
-		// Identify root node(no parents).
-		Node rootNode = null;
+	private void pasteAndDrawNodes(List<Node> group) {
+
+		// Nodes to copy
+		List<Node> mainNodesToCopy = new ArrayList<Node>();
+
+		// Find root nodes (no parents) and nodes without selected parents
 		for (Node node : group) {
-			if (node.getParentNodes().size() == 0) {
-				// this is the root
-				rootNode = node;
-				break;// FIXME more than a root node could be possible.
+			List<Node> parents = node.getParents();
+
+			boolean hasParents = false;
+			for (Node parent : parents) {
+
+				if (getNodeUShape(parent).getState().equals(
+						UShape.STATE_SELECTED)) {
+					hasParents = true;
+					break;
+				}
 			}
-		}
-		// No root identified.
-		if (rootNode == null) {
-			Debug.println("Root node not identified");
-			return null;
+
+			if (hasParents) {
+				continue;
+			}
+
+			mainNodesToCopy.add(node);
 		}
 
-		// Clone the root and their children recursively
-		if (rootNode instanceof ProbabilisticNode) {
-			Debug.println("Root node is a probabilistic node");
-			ProbabilisticNode probNode = (ProbabilisticNode) rootNode;
-			// ProbabilisticNode clone = (ProbabilisticNode) probNode
-			// .basicClone();
-			addCloneNodes(probNode);
+		// copy nodes
+		// FIXME this for could be inside the last for
+		for (Node rootNode : mainNodesToCopy) {
 
+			// No root identified.
+			if (rootNode == null) {
+				Debug.println("Root node not identified");
+				return;
+			}
+
+			// Des-select initial node.
+			getNodeUShape(rootNode).setState(UShape.STATE_NONE, null);
+
+			// Clone the root and their children recursively
+			if (rootNode instanceof ProbabilisticNode) {
+				Debug.println("Root node is a probabilistic node");
+				ProbabilisticNode probNode = (ProbabilisticNode) rootNode;
+
+				// ProbabilisticNode clone = (ProbabilisticNode) probNode
+				// .basicClone();
+				addCloneNodes(probNode);
+
+			}
+			// TODO support for other kind root nodes such as utility.
 		}
-		// TODO support for other kind root nodes such as utility.
-
-		return null;
 	}
 
 	private Node addCloneNodes(Node probNode) {
@@ -272,22 +296,11 @@ public class GraphPane extends UCanvas implements KeyListener {
 				probNode.getPosition().getY() + 100);
 
 		// set attributes
-		String newName = probNode.getName();
-		newNode.setName(newName + "_1");
-		// TODO every attribute might be assigned
+		String newName = probNode.getName() + "_1";
+		newName = getUniqueName(newName);
+		newNode.setName(newName);
 
-		// // FIXME if _1 exists, then it must be updated
-		// try {
-		// if (newName.length() > 1
-		// && newName.charAt(newName.length() - 2) == '_') {
-		// String copyCounter = newName.substring(newName.length() - 1);
-		// int c = Integer.valueOf(copyCounter) + 1;
-		//
-		// newName.replace("_" + copyCounter, "_" + c);
-		// }
-		// } catch (Exception e) {
-		// newName += "_1";
-		// }
+		// TODO every attribute might be assigned
 
 		UShapeProbabilisticNode shape = new UShapeProbabilisticNode(this,
 				newNode,
@@ -296,37 +309,58 @@ public class GraphPane extends UCanvas implements KeyListener {
 				newNode.getWidth(), newNode.getHeight());
 		addShape(shape);
 		shape.setState(UShape.STATE_SELECTED, null);
-		showCPT(newNode);
+		// showCPT(newNode);
 
 		// add children
 		List<Node> children = probNode.getChildren();
 		// Validate that every children is selected
 		for (Node childNode : children) {
+
+			// If child node is not selected then
+			if (!getNodeUShape(childNode).getState().equals(
+					UShape.STATE_SELECTED)) {
+				continue;
+			}
+
 			Node clonedChild = addCloneNodes(childNode);
 
 			try {
 				newNode.addChildNode(childNode);
-				
-				UShapeLine line = new UShapeLine(this,
-						getNodeUShape(newNode),
+
+				UShapeLine line = new UShapeLine(this, getNodeUShape(newNode),
 						getNodeUShape(clonedChild));
-//				line.setEdge(e);+
+
 				line.setEdge(new Edge(newNode, clonedChild));
-				//TODO add edge to network
+				// TODO add edge to network
 				line.setLearningLineSelection(false);
 				addShape(line);
-				onDrawConnectLineReleased(line,0,0);
-				
-				
-				
+				onDrawConnectLineReleased(line, 0, 0);
+
 			} catch (InvalidParentException e) {
-				Debug.println(GraphPane.class, "Node did not add as a child",
-						e);
+				Debug.println(GraphPane.class, "Node did not add as a child", e);
 			}
 		}
 
 		return newNode;
 
+	}
+
+	
+	private String getUniqueName(String newName) {
+		List<Node> nodes = controller.getGraph().getNodes();
+		for (Node node : nodes) {
+			if (newName.equals(node.getName())) {
+				int tempNameIndex = newName.lastIndexOf("_")+ 1;
+				String copyCounter = newName.substring(tempNameIndex );
+				int c = Integer.valueOf(copyCounter) + 1;
+
+				newName = newName.substring(0, tempNameIndex) + c;
+				
+				return getUniqueName(newName);
+			}
+		}
+
+		return newName;
 	}
 
 	public void keyPressed(KeyEvent e) {
