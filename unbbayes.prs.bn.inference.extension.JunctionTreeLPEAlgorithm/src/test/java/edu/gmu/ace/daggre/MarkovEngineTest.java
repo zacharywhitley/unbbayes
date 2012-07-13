@@ -8270,6 +8270,7 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(8,summary.getScoreComponents().size());
 		assertEquals(2,summary.getIntersectionScoreComponents().size());
 		
+		
 		// assert that the aggregation of contributions will result in the total expected score
 		float sum = 0f;
 		for (SummaryContribution positiveContribution : summary.getScoreComponents()) {
@@ -8298,6 +8299,7 @@ public class MarkovEngineTest extends TestCase {
 				);
 		}
 		
+		assertNotNull(engine.getScoreSummaryObject(userNameToIDMap.get("Tom"), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1)));
 		// TODO implement more test cases
 	}
 	

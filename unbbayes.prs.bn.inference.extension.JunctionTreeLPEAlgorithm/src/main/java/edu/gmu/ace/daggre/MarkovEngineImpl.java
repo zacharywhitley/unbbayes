@@ -2630,21 +2630,22 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// this will be the SummaryContribution#getQuestions()
 				final List<Long> questions = (cache != null)?cache:new ArrayList<Long>(table.getVariablesSize());
 				
-				// update cache if cache was not present
-				if (cache == null) {
-					questionsCache.put(probCliqueOrSep, questions);
-				}
-				
 				// this boolean var will remain false if node whose Node#getName() == questionId is not in table
 				boolean matchesFilter = false;	
 				
-				// Fill the list "questions" regarding the filter (i.e. "questionId")
-				for (int i = 0; i < table.variableCount(); i++) {
-					Long idOfCurrentNode = Long.parseLong(table.getVariableAt(i).getName()); // the name is supposedly the ID
-					if (idOfCurrentNode == questionId) {
-						matchesFilter = true;
+				if (cache == null) {
+					// update cache if cache was not present
+					questionsCache.put(probCliqueOrSep, questions);
+					// Fill the list "questions" regarding the filter (i.e. "questionId")
+					for (int i = 0; i < table.variableCount(); i++) {
+						Long idOfCurrentNode = Long.parseLong(table.getVariableAt(i).getName()); // the name is supposedly the ID
+						if (idOfCurrentNode == questionId) {
+							matchesFilter = true;
+						}
+						questions.add(idOfCurrentNode);	
 					}
-					questions.add(idOfCurrentNode);	
+				} else {
+					matchesFilter = questionId == null || cache.contains(questionId);
 				}
 				
 				if (questionId != null && !matchesFilter) {
