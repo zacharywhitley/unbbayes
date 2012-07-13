@@ -57,6 +57,31 @@ import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
  */
 public interface MarkovEngineInterface {
 	
+	/** Name of the property representing the total or partial score ev in the properties returned by {@link #getScoreSummary(long, Long, List, List)} */
+	public static final String SCOREEV_PROPERTY = "SCOREEV_PROPERTY";
+	
+	/** Name of the property representing the cash in the 1st property returned by {@link #getScoreSummary(long, Long, List, List)} */
+	public static final String CASH_PROPERTY = "CASH_PROPERTY";
+	
+	/** 
+	 * Name of the property indicating how many elements in the list returned by {@link #getScoreSummary(long, Long, List, List)} 
+	 * are positive contributions to the final score EV (the rest are intersections).
+	 */
+	public static final String SCORE_COMPONENT_SIZE_PROPERTY = "SCORE_COMPONENT_SIZE_PROPERTY";
+
+	/** 
+	 * Name of the property representing the comma-separated list of questions related to
+	 * the score EV components returned by {@link #getScoreSummary(long, Long, List, List)} 
+	 */
+	public static final String QUESTIONS_PROPERTY = "QUESTIONS_PROPERTY";
+
+	/** 
+	 * Name of the property representing the comma-separated list of states related to
+	 * the questions of the property {@link #QUESTIONS_PROPERTY} in the
+	 * list returned by {@link #getScoreSummary(long, Long, List, List)} 
+	 */
+	public static final String STATES_PROPERTY = "STATES_PROPERTY";
+	
 	/**
 	 * This operation indicates that the source system is requesting a complete restart/reset of all operations so all historical operations should be purged. 
 	 * This will occur when a client resets and plans to resubmit all actions. 
@@ -550,6 +575,20 @@ public interface MarkovEngineInterface {
 
 
 	/**
+	 * This method performs the same of {@link #getScoreSummary(long, Long, List, List)},
+	 * but it returns a structured object instead of a list of generic Property objects.
+	 * @param userId : ID of the user to be considered.
+	 * @param questionId : (optional) ID of the main question to be used as filter. If null, all questions will be considered (recommended).
+	 * @param assumptionIds : (optional) assumptions to be considered in obtaining the summary. 
+	 * Use the same list passed to {@link #scoreUserEv(long, List, List)}.
+	 * @param assumedStates : (optional) states of the assumptions. The order must be synchronized with assumptionIds.
+	 * Use the same list passed to {@link #scoreUserEv(long, List, List)}.
+	 * @return object representing the summary (set of attributes to display TBD) that shows a summary view of how the current score of a user was determined. 
+	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
+	 */
+	public ScoreSummary getScoreSummaryObject(long userId, Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	
+	/**
 	 * This method will return explanations of the 
 	 * value returned by {@link #scoreUserEv(long, List, List)}.
 	 * @param userId : ID of the user to be considered.
@@ -558,10 +597,30 @@ public interface MarkovEngineInterface {
 	 * Use the same list passed to {@link #scoreUserEv(long, List, List)}.
 	 * @param assumedStates : (optional) states of the assumptions. The order must be synchronized with assumptionIds.
 	 * Use the same list passed to {@link #scoreUserEv(long, List, List)}.
-	 * @return object representing the summary (set of attributes to display TBD) that shows a summary view of how the current score of a user was determined. 
+	 * @return ordered list of score details (properties dictionary with parameters to display TBD) that shows a summary view of how the current score of a user was determined. 
+	 * The first element in the list will contain the user cash in the property {@link #CASH_PROPERTY}, the user score in {@link #SCOREEV_PROPERTY},
+	 * and the size (quantity) of score components contributing positively in property {@link #SCORE_COMPONENT_SIZE_PROPERTY} (let's say, the
+	 * quentity is "N").
+	 * The next N elements in the list will be the contributions to the score EV, and the rest are negative contributions to the score EV (they are 
+	 * negative because they are intersections between the contributions, hence, adding all the contributions and then
+	 * subtracting all the negative contributions will result in the score EV).
+	 * These contributions are expressed in terms of a comma-separated list of questions (property {@link #QUESTIONS_PROPERTY})
+	 * and respective states (property {@link #STATES_PROPERTY}) and the contributed value (property {@link #SCOREEV_PROPERTY}).  
+	 * Both keys and values are String.
+	 * <br/><br/>
+	 * Example:
+	 * <br/>
+	 * 1st element in the list: <br/>
+	 * {@value #CASH_PROPERTY} = "10"; {@value #SCOREEV_PROPERTY} = "10.5"; {@value #SCORE_COMPONENT_SIZE_PROPERTY} = "2".
+	 * <br/><br/>
+	 * 2nd element in the list: <br/>
+	 * {@value #QUESTIONS_PROPERTY} = "1,2"; {@value #STATES_PROPERTY} = "10.5"; {@value #SCOREEV_PROPERTY} = 2.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
-	public ScoreSummary getScoreSummary(long userId, Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	public List<Properties> getScoreSummary(long userId, Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	
+	//@deprecated use {@link #getScoreSummaryObject(long, Long, List, List)} instead
+	
 	
 	/**
 	 * @param userId : ID of the user to be considered.
@@ -570,6 +629,7 @@ public interface MarkovEngineInterface {
 	 * @param questionId : ID of the main question to be used as filter. If null, all questions will be considered.
 	 * @return ordered list of score details (properties dictionary with parameters to display TBD) 
 	 * that provides a detailed view of how the current score of a user was determined. 
+	 * 
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
 	public List<Properties> getScoreDetails(long userId, Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;

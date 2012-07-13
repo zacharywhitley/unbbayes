@@ -31,11 +31,13 @@ import unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor;
 import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor.NoCliqueException;
 import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
+import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm.ExpectedAssetCellMultiplicationListener;
 import unbbayes.prs.bn.inference.extension.AssetPropagationInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.IQValuesToAssetsConverter;
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
+import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
 
 /**
  * This is the default implementation of {@link MarkovEngineInterface}.
@@ -48,6 +50,8 @@ import unbbayes.util.Debug;
  */
 public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssetsConverter {
 	
+	
+
 	private float probabilityErrorMargin = 0.0001f;
 
 	private Map<Long, List<NetworkAction>> networkActionsMap;
@@ -161,6 +165,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		junctionTreeAlgorithm.setLikelihoodExtractor(jeffreyRuleLikelihoodExtractor);
 		// prepare default inference algorithm for asset network
 		AssetAwareInferenceAlgorithm defaultAlgorithm = (AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm);
+		// user MarkovEngineImpl to convert from q values to assets
+		defaultAlgorithm.setqToAssetConverter(this);
 		// usually, users seem to start with 0 delta (delta are logarithmic, so 0 delta == 1 q table), but let's use the value of getDefaultInitialQTableValue
 		defaultAlgorithm.setDefaultInitialAssetQuantity(getDefaultInitialQTableValue());
 		defaultAlgorithm.setToPropagateForGlobalConsistency(false);	// force algorithm to do min-propagation of delta only when prompted
@@ -171,6 +177,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		defaultAlgorithm.setToUpdateSeparators(false);				// optimization: do not touch separators of asset junction tree
 		defaultAlgorithm.setToUpdateAssets(false);					// optimization: do not update assets at all for the default (markov engine) user
 		setDefaultInferenceAlgorithm(defaultAlgorithm);				
+		
+		
 		
 		// several methods in this class reuse the same conditional probability extractor. Extract it here
 		setConditionalProbabilityExtractor(jeffreyRuleLikelihoodExtractor.getConditionalProbabilityExtractor());
@@ -1888,11 +1896,28 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		return ret;
 	}
 	
+
 	/*
 	 * (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#scoreUserEv(long, java.util.List, java.util.List)
 	 */
 	public float scoreUserEv(long userId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+		return this.scoreUserEv(userId, assumptionIds, assumedStates, null);
+	}
+	
+	/**
+	 * This method performs what is described in {@link #scoreUserEv(long, List, List)},
+	 * but we can specify a list of listeners which will be notified
+	 * when cells of asset tables and probability tables are multiplied
+	 * during invocation of {@link AssetAwareInferenceAlgorithm#calculateExpectedAssets()}.
+	 * @param assetCellListener : the list of listeners to be notified.
+	 * {@link AssetAwareInferenceAlgorithm#setExpectedAssetCellListeners(List)} will be called passing
+	 * this argument.
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#scoreUserEv(long, java.util.List, java.util.List)
+	 * @see AssetAwareInferenceAlgorithm#getExpectedAssetCellListeners()
+	 * @see AssetAwareInferenceAlgorithm#calculateExpectedAssets()
+	 */
+	public float scoreUserEv(long userId, List<Long>assumptionIds, List<Integer> assumedStates, List<ExpectedAssetCellMultiplicationListener> assetCellListener) throws IllegalArgumentException {
 		
 		// this map will contain names of nodes identified by assumptionIds and the respective states in assumedStates
 		Map<String, Integer> nodeNameToStateMap = new HashMap<String, Integer>();
@@ -1967,7 +1992,18 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		float ret = Float.NaN;
 		synchronized (origAlgorithm.getNetwork()) {
 			synchronized (origAlgorithm.getAssetNetwork()) {
-				ret = (float) origAlgorithm.getExpectedAssets(this);
+				// both prob net and asset net must be locked
+				List<ExpectedAssetCellMultiplicationListener> backup = null;
+				if (assetCellListener != null) {
+					backup = origAlgorithm.getExpectedAssetCellListeners();
+					// assetCellListener will be executed on each multiplication between asset table and prob table
+					origAlgorithm.setExpectedAssetCellListeners(assetCellListener);
+				}
+				ret = (float) origAlgorithm.calculateExpectedAssets();
+				if (assetCellListener != null) {
+					// backup must be restored in this critical section.
+					origAlgorithm.setExpectedAssetCellListeners(backup);
+				}
 			}
 		}
 		return ret;
@@ -2541,12 +2577,145 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	/*
 	 * (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getScoreSummaryObject(long, java.lang.Long, java.util.List, java.util.List)
+	 */
+	public ScoreSummary getScoreSummaryObject(long userId, final Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+		
+		// obtain the conditional cash
+		final float cash = this.getCash(userId, assumptionIds, assumedStates);
+		
+		// this list will contain info related to expected score components (prob cell * asset cell) of cliques
+		final List<SummaryContribution> cliqueComponents = new ArrayList<ScoreSummary.SummaryContribution>();
+		
+		// this list will contain info related to expected score components (prob cell * asset cell) of separators
+		final List<SummaryContribution> sepComponents = new ArrayList<ScoreSummary.SummaryContribution>();
+		
+		// this is a dummy node used just for searching nodes in a list, by using Object#equals()
+		final Node dummyNode = new Node() {
+			public int getType() { return 0; }
+			/** Object#equals() will call this method */
+			public String getName() {return ""+questionId; }
+		};
+		
+		// prepare listener to be notified when cells of asset tables and prob tables are multiplied
+		ExpectedAssetCellMultiplicationListener listener = new ExpectedAssetCellMultiplicationListener() {
+			
+			private Map<IRandomVariable, List<Long>> questionsCache = new HashMap<IRandomVariable, List<Long>>();
+			
+			/** Fill content of cliqueComponents or sepComponents */
+			public void onModification(IRandomVariable probCliqueOrSep, IRandomVariable assetCliqueOrSep, int indexInProbTable, int indexInAssetTable, final double value) {
+				// Note: we assume indexInAssetTable == indexInProbTable and probCliqueOrSep matches assetCliqueOrSep, so we'll only look at probCliqueOrSep
+				
+				// This variable will point to either cliqueComponents or sepComponents, depending of the type of probCliqueOrSep
+				List<SummaryContribution> whereToAdd = null;
+				if (probCliqueOrSep instanceof Clique) {
+					whereToAdd = cliqueComponents;	// if clique, new SummaryContribution shall be added to cliqueComponents
+				} else if (probCliqueOrSep instanceof Separator) {
+					whereToAdd = sepComponents;	// if separator, new SummaryContribution shall be added to sepComponents
+				} else {
+					// ignore other cases
+					return;	
+				};
+				
+				// Prepare data to be used to fill new SummaryContribution
+				// Note: SummaryContribution#getContributionToScoreEV() is the argument "value", so we do not need to create new variable for it
+				
+				
+				// indexInProbTable is pointing to some cell in this table
+				PotentialTable table = (PotentialTable) probCliqueOrSep.getProbabilityFunction();	// only nodes related to this table is considered
+				
+				// check cache first (we want to reuse objects for the questions, because they will repeat a lot)
+				List<Long> cache = questionsCache.get(probCliqueOrSep);
+				
+				// this will be the SummaryContribution#getQuestions()
+				final List<Long> questions = (cache != null)?cache:new ArrayList<Long>(table.getVariablesSize());
+				
+				// update cache if cache was not present
+				if (cache == null) {
+					questionsCache.put(probCliqueOrSep, questions);
+				}
+				
+				// this boolean var will remain false if node whose Node#getName() == questionId is not in table
+				boolean matchesFilter = false;	
+				
+				// Fill the list "questions" regarding the filter (i.e. "questionId")
+				for (int i = 0; i < table.variableCount(); i++) {
+					Long idOfCurrentNode = Long.parseLong(table.getVariableAt(i).getName()); // the name is supposedly the ID
+					if (idOfCurrentNode == questionId) {
+						matchesFilter = true;
+					}
+					questions.add(idOfCurrentNode);	
+				}
+				
+				if (questionId != null && !matchesFilter) {
+					return;	// if it does not match filter, we do not need to update the list of SummaryContribution
+				}
+				
+				// multidimensionalCoord indicates what states are related to the index "indexInProbTable" in the table "table"
+				int[] multidimensionalCoord = table.getMultidimensionalCoord(indexInProbTable);	 // array with states of each node in table
+				
+				// this will be the SummaryContribution#getStates()
+				final List<Integer> states = new ArrayList<Integer>();	
+				for (int i = 0; i < multidimensionalCoord.length; i++) {
+					states.add(multidimensionalCoord[i]);
+				}
+				
+				// update the list
+				whereToAdd.add(new SummaryContribution() {
+					public List<Long> getQuestions() { return questions; }
+					public List<Integer> getStates() { return states; }
+					public float getContributionToScoreEV() { return (float) value; }
+				});
+				
+			}	// end of inner method
+		};	// end of anonymous inner class
+		
+		// obtain the conditional expected score, passing the listener as argument, so that cliqueComponents and sepComponents are filled properly
+		final float scoreEV = this.scoreUserEv(userId, assumptionIds, assumedStates, Collections.singletonList(listener));
+		
+		// integrate all data into one ScoreSummary and return.
+		return new ScoreSummary() {
+			public float getCash() { return cash; }
+			public float getScoreEV() {return scoreEV; }
+			public List<SummaryContribution> getScoreComponents() { return cliqueComponents; }
+			public List<SummaryContribution> getIntersectionScoreComponents() { return sepComponents; }
+		};
+	}
+	
+	/*
+	 * (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getScoreSummary(long, java.lang.Long, java.util.List, java.util.List)
 	 */
-	public ScoreSummary getScoreSummary(long userId, Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return new ScoreSummary() {
-		};
+	public List<Properties> getScoreSummary(long userId, Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+		ScoreSummary summary = this.getScoreSummaryObject(userId, questionId, assumptionIds, assumedStates);
+		List<Properties> ret = new ArrayList<Properties>();
+		Properties rootProperty = new Properties();
+		rootProperty.put(SCOREEV_PROPERTY, Float.toString(summary.getScoreEV()));
+		rootProperty.put(CASH_PROPERTY, Float.toString(summary.getCash()));
+		rootProperty.put(SCORE_COMPONENT_SIZE_PROPERTY, Integer.toString(summary.getScoreComponents().size()));
+		ret.add(rootProperty);
+		for (SummaryContribution contribution : summary.getScoreComponents()) {
+			Properties prop = new Properties();
+			if (contribution.getQuestions() != null && !contribution.getQuestions().isEmpty()) {
+				String commaSeparatedQuestions = "";
+				for (Long id : contribution.getQuestions()) {
+					commaSeparatedQuestions += "," + id;
+				}
+				// remove first comma and add to property
+				prop.put(QUESTIONS_PROPERTY, commaSeparatedQuestions.substring(commaSeparatedQuestions.indexOf(',')+1));
+			}
+			if (contribution.getStates() != null && !contribution.getStates().isEmpty()) {
+				String commaSeparatedStates = "";
+				for (Integer state : contribution.getStates()) {
+					commaSeparatedStates += "," + state;
+				}
+				// remove first comma and add to property
+				prop.put(STATES_PROPERTY, commaSeparatedStates.substring(commaSeparatedStates.indexOf(',')+1));
+			}
+			prop.put(SCOREEV_PROPERTY, Float.toString(contribution.getContributionToScoreEV()));
+			ret.add(prop);
+		}
+		return ret;
 	}
 	
 	/*
@@ -2673,6 +2842,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				junctionTreeAlgorithm.setLikelihoodExtractor(JeffreyRuleLikelihoodExtractor.newInstance() );
 				// prepare default inference algorithm for asset network
 				algorithm = ((AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm));
+				// set markov engine as the converter between q-values and assets
+				algorithm.setqToAssetConverter(this);
 				// usually, users seem to start with 0 delta (delta are logarithmic, so 0 delta == 1 q table), but let's use the value of getDefaultInitialQTableValue
 				algorithm.setDefaultInitialAssetQuantity(getDefaultInitialQTableValue());
 				// force algorithm to call min-propagation only when prompted (i.e. only when runMinPropagation() is called)

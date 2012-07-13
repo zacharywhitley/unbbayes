@@ -103,7 +103,12 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	};
 	
 	
+	private IQValuesToAssetsConverter qToAssetConverter = DEFAULT_Q_TO_ASSETS_CONVERTER;
+
+	private List<ExpectedAssetCellMultiplicationListener> expectedAssetCellListeners = new ArrayList<AssetAwareInferenceAlgorithm.ExpectedAssetCellMultiplicationListener>();	
 	
+
+
 	/**
 	 * Default constructor is at least protected, in order to allow inheritance.
 	 */
@@ -649,29 +654,17 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		return this.getAssetPropagationDelegator().createAssetNetFromProbabilisticNet(relatedProbabilisticNetwork);
 	}
 	
+	
 	/**
 	 * Calculates the expected assets.
 	 * If you want this to be conditional, call {@link ProbabilisticNode#addFinding(int)}
 	 * and  {@link IInferenceAlgorithm#propagate()} in {@link #getProbabilityPropagationDelegator()}
 	 * first.
-	 * @param qToAssetConverter : this object will be used in order
-	 * to convert q-values in asset tables (which can be
-	 * obtaining by calling the following methods in sequence:  {@link #getAssetNetwork()}
-	 * {@link AssetNetwork#getJunctionTree()},
-	 * {@link Clique#getProbabilityFunction()}) to assets.
-	 * <br/><br/>
-	 * Usually, assets and q-values are related with logarithm function:
-	 * asset = b log (q). 
-	 * <br/><br/>
-	 * In which b is some constant.
+	 * 
 	 * @return expected assets SUM(ProbCliques * AssetsClique) - SUM(ProbSeparators * AssetsSeparators).
+	 * @see #getqToAssetConverter()
 	 */
-	public double getExpectedAssets(IQValuesToAssetsConverter qToAssetConverter) {
-		
-		// if no converter was provided, use default
-		if (qToAssetConverter == null) {
-			qToAssetConverter = DEFAULT_Q_TO_ASSETS_CONVERTER;
-		}
+	public double calculateExpectedAssets() {
 		
 		// this is the value to be returned by this method
 		double ret = 0 ;
@@ -685,8 +678,10 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 			Clique assetClique = assetNet.getJunctionTree().getCliques().get(i) ;
 			Clique probClique  = bayesNet.getJunctionTree().getCliques().get(i) ;			
 			for (int j = 0; j < assetClique.getProbabilityFunction().tableSize(); j++) {
-				ret +=  probClique.getProbabilityFunction().getValue(j) 
-							* qToAssetConverter.getScoreFromQValues(assetClique.getProbabilityFunction().getValue(j));
+				double value = probClique.getProbabilityFunction().getValue(j) 
+				             * getqToAssetConverter().getScoreFromQValues(assetClique.getProbabilityFunction().getValue(j));
+				ret +=  value;
+				this.notifyExpectedAssetCellListener(probClique, assetClique, j, j, value);
 			}			
 		}
 		
@@ -702,15 +697,61 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		// subtracts the product of probabilities and assets of separators 
 		for (Separator assetSeparator : assetNet.getJunctionTree().getSeparators()) {
 			Separator probSeparator = listOfSeparator.get(listOfSeparator.indexOf(assetSeparator));
-			for (int i = 0; i < assetSeparator.getProbabilityFunction().tableSize(); i++) {				
-				ret -= probSeparator.getProbabilityFunction().getValue(i) 
-				           * qToAssetConverter.getScoreFromQValues(assetSeparator.getProbabilityFunction().getValue(i)) ;
+			for (int i = 0; i < assetSeparator.getProbabilityFunction().tableSize(); i++) {	
+				double value =  probSeparator.getProbabilityFunction().getValue(i) 
+		           * getqToAssetConverter().getScoreFromQValues(assetSeparator.getProbabilityFunction().getValue(i)) ;
+				ret -= value;
+				this.notifyExpectedAssetCellListener(probSeparator, assetSeparator, i, i, value);
 			}
 		}
 		
 		return ret;
 	}
 	
+
+	/**
+	 * Classes implementing this interface represents listeners
+	 * invoked when a cell in clique/separator table is read/handled 
+	 * by {@link AssetAwareInferenceAlgorithm#calculateExpectedAssets()}
+	 * @author Shou Matsumoto
+	 *
+	 */
+	public interface ExpectedAssetCellMultiplicationListener {
+		/**
+		 * This method is called by {@link AssetAwareInferenceAlgorithm#calculateExpectedAssets()} when a cell of the clique table is 
+		 * treated during calculation of expected assets. This is useful if you want to 
+		 * extract detailed components of the operation executed by {@link AssetAwareInferenceAlgorithm#calculateExpectedAssets()}.
+		 * @param probCliqueOrSep : clique or separator of the probabilistic network
+		 * @param assetCliqueOrSep : clique or separator of the asset network
+		 * @param indexInProbTable : index of the prob clique/separator table currently being read
+		 * @param indexInAssetTable : index of the asset clique/separator table currently being read
+		 * @param value : usually, this is the multiplication of the values in probCliqueOrSep
+		 * and assetCliqueOrSep respectively at index indexInProbTable and indexInAssetTable.
+		 * @see AssetAwareInferenceAlgorithm#getExpectedAssetCellListeners()
+		 * @see AssetAwareInferenceAlgorithm#notifyExpectedAssetCellListener(IRandomVariable, IRandomVariable, int, int, double)
+		 */
+		void onModification(IRandomVariable probCliqueOrSep, IRandomVariable assetCliqueOrSep, int indexInProbTable, int indexInAssetTable, double value);
+	}
+	
+	/**
+	 * This method is called by {@link #calculateExpectedAssets()} when a cell of the clique table is 
+	 * treated during calculation of expected assets. This is useful if you want to 
+	 * extract detailed components of the operation executed by {@link #calculateExpectedAssets()}.
+	 * @param probCliqueOrSep : clique or separator of the probabilistic network
+	 * @param assetCliqueOrSep : clique or separator of the asset network
+	 * @param indexInProbTable : index of the prob clique/separator table currently being read
+	 * @param indexInAssetTable : index of the asset clique/separator table currently being read
+	 * @param value : usually, this is the multiplication of the values in probCliqueOrSep
+	 * and assetCliqueOrSep respectively at index indexInProbTable and indexInAssetTable.
+	 * @see #getExpectedAssetCellListeners()
+	 */
+	protected void notifyExpectedAssetCellListener(IRandomVariable probCliqueOrSep, IRandomVariable assetCliqueOrSep, int indexInProbTable, int indexInAssetTable, double value) {
+		if (getExpectedAssetCellListeners() != null) {
+			for (ExpectedAssetCellMultiplicationListener listener : getExpectedAssetCellListeners()) {
+				listener.onModification(probCliqueOrSep, assetCliqueOrSep, indexInProbTable, indexInAssetTable, value);
+			}
+		}
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -1160,6 +1201,9 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		AssetAwareInferenceAlgorithm ret = (AssetAwareInferenceAlgorithm) getInstance(jtAlgorithm);
 		ret.setDefaultInitialAssetQuantity(getDefaultInitialAssetQuantity());
 		
+		// copy current converter which converts q values to assets and vice-versa
+		ret.setqToAssetConverter(this.getqToAssetConverter());
+		
 		// return now if we do not need to clone assets
 		if (!isToCloneAssets) {
 			ret.setAssetNetwork(null);
@@ -1263,6 +1307,65 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	public void setToCalculateMarginalsOfAssetNodes(
 			boolean isToCalculateMarginalsOfAssetNodes) {
 		getAssetPropagationDelegator().setToCalculateMarginalsOfAssetNodes(isToCalculateMarginalsOfAssetNodes);
+	}
+
+	/**
+	 * This object will be used by {@link #calculateExpectedAssets()} in order
+	 * to convert q-values in asset tables (which can be
+	 * obtaining by calling the following methods in sequence:  {@link #getAssetNetwork()}
+	 * {@link AssetNetwork#getJunctionTree()},
+	 * {@link Clique#getProbabilityFunction()}) to assets.
+	 * <br/><br/>
+	 * Usually, assets and q-values are related with logarithm function:
+	 * asset = b log (q). 
+	 * <br/><br/>
+	 * In which b is some constant.
+	 * @param qToAssetConverter the qToAssetConverter to set
+	 */
+	public void setqToAssetConverter(IQValuesToAssetsConverter qToAssetConverter) {
+		this.qToAssetConverter = qToAssetConverter;
+	}
+
+	/**
+	 * This object will be used by {@link #calculateExpectedAssets()} in order
+	 * to convert q-values in asset tables (which can be
+	 * obtaining by calling the following methods in sequence:  {@link #getAssetNetwork()}
+	 * {@link AssetNetwork#getJunctionTree()},
+	 * {@link Clique#getProbabilityFunction()}) to assets.
+	 * <br/><br/>
+	 * Usually, assets and q-values are related with logarithm function:
+	 * asset = b log (q). 
+	 * <br/><br/>
+	 * In which b is some constant.
+	 * @return the qToAssetConverter
+	 */
+	public IQValuesToAssetsConverter getqToAssetConverter() {
+		return qToAssetConverter;
+	}
+
+	/**
+	 * {@link ExpectedAssetCellMultiplicationListener#onModification(IRandomVariable, IRandomVariable, int, double)}
+	 * will be invoked on all elements in this list when {@link #notifyExpectedAssetCellListener(IRandomVariable, IRandomVariable, int, double)}
+	 * is invoked. 
+	 * {@link #notifyExpectedAssetCellListener(IRandomVariable, IRandomVariable, int, double)}
+	 * is, by default, invoked for each cell treated in {@link #calculateExpectedAssets()}.
+	 * @param expectedAssetCellListeners the expectedAssetCellListeners to set
+	 */
+	public void setExpectedAssetCellListeners(
+			List<ExpectedAssetCellMultiplicationListener> expectedAssetCellListeners) {
+		this.expectedAssetCellListeners = expectedAssetCellListeners;
+	}
+
+	/**
+	 * {@link ExpectedAssetCellMultiplicationListener#onModification(IRandomVariable, IRandomVariable, int, double)}
+	 * will be invoked on all elements in this list when {@link #notifyExpectedAssetCellListener(IRandomVariable, IRandomVariable, int, double)}
+	 * is invoked. 
+	 * {@link #notifyExpectedAssetCellListener(IRandomVariable, IRandomVariable, int, double)}
+	 * is, by default, invoked for each cell treated in {@link #calculateExpectedAssets()}.
+	 * @return the expectedAssetCellListeners
+	 */
+	public List<ExpectedAssetCellMultiplicationListener> getExpectedAssetCellListeners() {
+		return expectedAssetCellListeners;
 	}
 
 	

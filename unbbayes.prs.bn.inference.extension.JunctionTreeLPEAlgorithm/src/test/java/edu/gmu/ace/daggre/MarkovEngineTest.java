@@ -21,6 +21,7 @@ import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
 import edu.gmu.ace.daggre.MarkovEngineImpl.AddTradeNetworkAction;
 import edu.gmu.ace.daggre.MarkovEngineImpl.BalanceTradeNetworkAction;
+import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
 
 /**
  * @author Shou Matsumoto
@@ -2255,6 +2256,8 @@ public class MarkovEngineTest extends TestCase {
 			assertNotNull(e);
 		}
 		
+		assertEquals(10.1177, engine.scoreUserEv(userNameToIDMap.get("Eric"), null, null), PROB_ERROR_MARGIN);
+		
 		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0E, Collections.singletonList((long)0x0D), null);
@@ -2403,6 +2406,8 @@ public class MarkovEngineTest extends TestCase {
 		} catch (IllegalArgumentException e) {
 			assertNotNull(e);
 		}
+
+		assertEquals(10.31615, engine.scoreUserEv(userNameToIDMap.get("Eric"), null, null), PROB_ERROR_MARGIN);
 		
 		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
@@ -8233,25 +8238,96 @@ public class MarkovEngineTest extends TestCase {
 	}
 
 
-	/**
-	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#getQuestionHistory(java.lang.Long, java.util.List, java.util.List)}.
-	 */
-	public final void testGetQuestionHistory() {
-		fail("Not yet implemented"); // TODO
-	}
 	
 	/**
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#scoreUserEV(java.util.List, java.util.List, java.util.List)}.
 	 */
 	public final void testScoreUserEV() {
-		fail("Not yet implemented"); // TODO
+		// generate DEF net
+		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
+		this.createDEFNetIn1Transaction(userNameToIDMap );
+		
+		// most basic assertion
+		assertEquals(10.31615, engine.scoreUserEv(userNameToIDMap.get("Eric"), null, null), PROB_ERROR_MARGIN);
+		
+		// TODO implement more test cases
 	}
 	
 	/**
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#getScoreSummary(long, List, List)}.
 	 */
 	public final void testGetScoreSummary() {
-		fail("Not yet implemented"); // TODO
+		// generate DEF net
+		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
+		this.createDEFNetIn1Transaction(userNameToIDMap );
+		
+		// extract summary
+		ScoreSummary summary = engine.getScoreSummaryObject(userNameToIDMap.get("Eric"), null, null, null);
+		
+		// most basic assertions
+		assertEquals(engine.getCash(userNameToIDMap.get("Eric"), null, null), summary.getCash(), ASSET_ERROR_MARGIN);
+		assertEquals(10.31615, summary.getScoreEV(), PROB_ERROR_MARGIN);
+		assertEquals(8,summary.getScoreComponents().size());
+		assertEquals(2,summary.getIntersectionScoreComponents().size());
+		
+		// assert that the aggregation of contributions will result in the total expected score
+		float sum = 0f;
+		for (SummaryContribution positiveContribution : summary.getScoreComponents()) {
+			sum += positiveContribution.getContributionToScoreEV();
+		}
+		for (SummaryContribution negativeContribution : summary.getIntersectionScoreComponents()) {
+			sum -= negativeContribution.getContributionToScoreEV();
+		}
+		assertEquals(summary.getScoreEV(), sum, PROB_ERROR_MARGIN);
+		
+		// the separator D must be present at all the components
+		for (SummaryContribution contribution : summary.getIntersectionScoreComponents()) {
+			assertTrue(
+					"Questions = " + contribution.getQuestions()
+					+ ", states = " + contribution.getStates()
+					+ ", value = " + contribution.getContributionToScoreEV(), 
+					summary.getIntersectionScoreComponents().get(0).getQuestions().contains(0x0DL)
+				);
+		}
+		for (SummaryContribution contribution : summary.getScoreComponents()) {
+			assertTrue(
+					"Questions = " + contribution.getQuestions()
+					+ ", states = " + contribution.getStates()
+					+ ", value = " + contribution.getContributionToScoreEV(), 
+					summary.getIntersectionScoreComponents().get(0).getQuestions().contains(0x0DL)
+				);
+		}
+		
+		// TODO implement more test cases
+	}
+	
+	/**
+	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#getQuestionHistory(java.lang.Long, java.util.List, java.util.List)}.
+	 */
+	public final void testGetQuestionHistory() {
+		assertEquals(0, engine.getQuestionHistory(null, null, null).size());
+		
+		// generate DEF net
+		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
+		this.createDEFNetIn1Transaction(userNameToIDMap );
+		
+		// check history of actions not related to any question
+		int sum = engine.getQuestionHistory(null, null, null).size();
+		// there were 4 addCash
+		assertEquals(4, engine.getQuestionHistory(null, null, null).size());
+		
+		// check history of actions related each question
+		sum += engine.getQuestionHistory(0x0DL, null, null).size();
+		// create node and 1 trade
+		assertEquals(2, engine.getQuestionHistory(0x0DL, null, null).size());
+		sum += engine.getQuestionHistory(0x0EL, null, null).size();
+		// create node and 4 trades
+		assertEquals(5, engine.getQuestionHistory(0x0EL, null, null).size());
+		sum += engine.getQuestionHistory(0x0FL, null, null).size();
+		// create node and 3 trades
+		assertEquals(4, engine.getQuestionHistory(0x0FL, null, null).size());
+		
+		assertEquals(engine.getExecutedActions().size(), sum);
 	}
 
 	// not needed for the 1st release
