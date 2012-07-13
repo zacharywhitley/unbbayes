@@ -7068,7 +7068,7 @@ public class MarkovEngineTest extends TestCase {
 		// history and score detail/summary can be accessed normally
 		assertFalse(engine.getQuestionHistory((long) 0x0D, null, null).isEmpty());
 		assertFalse(engine.getScoreDetails(userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy"), (long)0x0D, null, null).isEmpty());
-		assertFalse(engine.getScoreSummary(userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy"), (long)0x0D, null, null).isEmpty());
+		assertNotNull(engine.getScoreSummary(userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy"), (long)0x0D, null, null));
 		
 		// revert trade should be OK
 		transactionKey = engine.startNetworkActions();

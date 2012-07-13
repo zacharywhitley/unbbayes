@@ -1069,10 +1069,10 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		}
 		// this is also for debugging
 		if (ret - 0.0001 >= minValueOfRootCliques || minValueOfRootCliques >= ret + 0.0001) {
-			System.err.print("[WARN]" + this.getClass().getName() + " Global min q = " + ret + ", root clique's min q = " + minValueOfRootCliques);
-			System.err.println(". This discrepancy may happen in disconnected networks/cliques : " + rootCliques);
-			if (this.getCellValuesComparator().compare(ret , minValueOfRootCliques) > 0) {
-				System.err.println("[WARN]" + this.getClass().getName() + " Using min q = " + minValueOfRootCliques + " due to the discrepancy.");
+//			System.err.print("[WARN]" + this.getClass().getName() + " Global min q = " + ret + ", root clique's min q = " + minValueOfRootCliques);
+//			System.err.println(". This discrepancy may happen in disconnected networks/cliques : " + rootCliques);
+			if (ret != 0.0f && this.getCellValuesComparator().compare(ret , minValueOfRootCliques) > 0) {
+//				System.err.println("[WARN]" + this.getClass().getName() + " Using min q = " + minValueOfRootCliques + " due to the discrepancy.");
 				ret = minValueOfRootCliques;
 			}
 		}

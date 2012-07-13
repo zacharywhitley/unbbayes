@@ -558,10 +558,10 @@ public interface MarkovEngineInterface {
 	 * Use the same list passed to {@link #scoreUserEv(long, List, List)}.
 	 * @param assumedStates : (optional) states of the assumptions. The order must be synchronized with assumptionIds.
 	 * Use the same list passed to {@link #scoreUserEv(long, List, List)}.
-	 * @return ordered list of score details (properties dictionary with parameters to display TBD) that shows a summary view of how the current score of a user was determined. 
+	 * @return object representing the summary (set of attributes to display TBD) that shows a summary view of how the current score of a user was determined. 
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
-	public List<Properties> getScoreSummary(long userId, Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	public ScoreSummary getScoreSummary(long userId, Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
 	 * @param userId : ID of the user to be considered.

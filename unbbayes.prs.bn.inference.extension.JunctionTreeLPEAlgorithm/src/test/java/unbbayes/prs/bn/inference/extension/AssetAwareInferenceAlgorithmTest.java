@@ -930,6 +930,9 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 			fail(e.getMessage());
 		}
 		
+		// EricÅfs expected score is S=10.1177
+		assertEquals(10.1177, assetQAlgorithm.getExpectedAssets(null), 0.0001);
+		
 		// check that new marginal of E is [0.8 0.2] (this is expected value), F is [0.2165, 0.7835], and D is [0.5824, 0.4176]
 		nodeToTest = (TreeVariable) network.getNode("E");
 		assertTrue("Obtained marginal is " + nodeToTest.getMarginalAt(0),((0.8f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.8f + PROB_PRECISION_ERROR)) );
@@ -1024,6 +1027,9 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
+		
+		// EricÅfs expected score is now 10.31615.
+		assertEquals(10.31615, assetQAlgorithm.getExpectedAssets(null), 0.0001);
 		
 		// check that new marginal of E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
 		nodeToTest = (TreeVariable) network.getNode("E");

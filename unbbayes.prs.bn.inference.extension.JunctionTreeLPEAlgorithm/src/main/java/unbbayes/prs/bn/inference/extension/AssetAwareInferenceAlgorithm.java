@@ -82,6 +82,25 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 * The content is a Map<Clique, PotentialTable>, which maps a node to its clique-wise asset table (an asset table for all nodes in the same clique). 
 	 */
 	public static final String INITIAL_ASSETS_PROPERTY = AssetAwareInferenceAlgorithm.class.getName() + ".initialAssetMap";
+
+	/**
+	 * Default implementation of IQValuesToAssetsConverter used when {@link #getExpectedAssets(IQValuesToAssetsConverter)}
+	 * is called with null argument.
+	 * This converter uses 
+	 * {@link IQValuesToAssetsConverter#getCurrentCurrencyConstant()} == 10/(Math.log(100)),
+	 * {@link IQValuesToAssetsConverter#getCurrentLogBase()} == Math.E, 
+	 * and {@link IQValuesToAssetsConverter#getScoreFromQValues(float)} == {@link IQValuesToAssetsConverter#getCurrentCurrencyConstant()}*Math.log(assetQ)).
+	 * <br/> All other operations will throw {@link UnsupportedOperationException}.
+	 */
+	public static final IQValuesToAssetsConverter DEFAULT_Q_TO_ASSETS_CONVERTER = new IQValuesToAssetsConverter() {
+		private double b = 10/(Math.log(100));
+		public void setCurrentLogBase(float base) {throw new UnsupportedOperationException();}
+		public void setCurrentCurrencyConstant(float b) {throw new UnsupportedOperationException();}
+		public float getScoreFromQValues(float assetQ) { return  (float) (b*Math.log(assetQ)); }
+		public float getQValuesFromScore(float score) {throw new UnsupportedOperationException();}
+		public float getCurrentLogBase() { return (float) Math.E; }
+		public double getCurrentCurrencyConstant() { return b; }
+	};
 	
 	
 	
@@ -629,6 +648,69 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		}
 		return this.getAssetPropagationDelegator().createAssetNetFromProbabilisticNet(relatedProbabilisticNetwork);
 	}
+	
+	/**
+	 * Calculates the expected assets.
+	 * If you want this to be conditional, call {@link ProbabilisticNode#addFinding(int)}
+	 * and  {@link IInferenceAlgorithm#propagate()} in {@link #getProbabilityPropagationDelegator()}
+	 * first.
+	 * @param qToAssetConverter : this object will be used in order
+	 * to convert q-values in asset tables (which can be
+	 * obtaining by calling the following methods in sequence:  {@link #getAssetNetwork()}
+	 * {@link AssetNetwork#getJunctionTree()},
+	 * {@link Clique#getProbabilityFunction()}) to assets.
+	 * <br/><br/>
+	 * Usually, assets and q-values are related with logarithm function:
+	 * asset = b log (q). 
+	 * <br/><br/>
+	 * In which b is some constant.
+	 * @return expected assets SUM(ProbCliques * AssetsClique) - SUM(ProbSeparators * AssetsSeparators).
+	 */
+	public double getExpectedAssets(IQValuesToAssetsConverter qToAssetConverter) {
+		
+		// if no converter was provided, use default
+		if (qToAssetConverter == null) {
+			qToAssetConverter = DEFAULT_Q_TO_ASSETS_CONVERTER;
+		}
+		
+		// this is the value to be returned by this method
+		double ret = 0 ;
+		
+		// this is the probabilistic network to be used. If there is no conditions, then this is the original network
+		ProbabilisticNetwork bayesNet = (ProbabilisticNetwork) this.getNetwork();
+		SingleEntityNetwork  assetNet = this.getAssetNetwork();
+		
+		// add product of probabilities and assets of cliques
+		for (int i = 0; i < assetNet .getJunctionTree().getCliques().size(); i++) {
+			Clique assetClique = assetNet.getJunctionTree().getCliques().get(i) ;
+			Clique probClique  = bayesNet.getJunctionTree().getCliques().get(i) ;			
+			for (int j = 0; j < assetClique.getProbabilityFunction().tableSize(); j++) {
+				ret +=  probClique.getProbabilityFunction().getValue(j) 
+							* qToAssetConverter.getScoreFromQValues(assetClique.getProbabilityFunction().getValue(j));
+			}			
+		}
+		
+		/*
+		 * Since ArrayList<Separator> uses Separator#equals() for searching objects within the list, 
+		 * and Separator#equals() compares the names of nodes contained in the separator
+		 * (and nodes in prob separators and asset separator are the same),
+		 * if we convert the set of prob separators to ArrayList, it is possible to
+		 * search for prob separators using asset separators as argument.
+		 */
+		List<Separator> listOfSeparator = new ArrayList<Separator>( bayesNet.getJunctionTree().getSeparators() );
+		
+		// subtracts the product of probabilities and assets of separators 
+		for (Separator assetSeparator : assetNet.getJunctionTree().getSeparators()) {
+			Separator probSeparator = listOfSeparator.get(listOfSeparator.indexOf(assetSeparator));
+			for (int i = 0; i < assetSeparator.getProbabilityFunction().tableSize(); i++) {				
+				ret -= probSeparator.getProbabilityFunction().getValue(i) 
+				           * qToAssetConverter.getScoreFromQValues(assetSeparator.getProbabilityFunction().getValue(i)) ;
+			}
+		}
+		
+		return ret;
+	}
+	
 
 	/*
 	 * (non-Javadoc)
@@ -1037,6 +1119,15 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	}
 	
 	/**
+	 * delegates to {@link #clone(boolean)}
+	 * @see #clone(boolean)
+	 */
+	public IInferenceAlgorithm clone()  throws CloneNotSupportedException  {
+		return this.clone(true);
+	}
+	
+	
+	/**
 	 * This method will create a copy of itself, 
 	 * a copy of the probabilistic network,
 	 * and a copy of the asset network.
@@ -1045,10 +1136,10 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 * probabilistic network and asset network.
 	 * CAUTION: this method only copies attributes relevant to the inference related to 
 	 * junction tree algorithm and asset update.
-	 * @param probabilisticNetwork
+	 * @param isToCloneAssets : if false, {@link #getAssetNetwork()} will not be cloned.
 	 * @return a copy of probabilisticNetwork in the context of asset calculation.
 	 */
-	public IInferenceAlgorithm clone()  throws CloneNotSupportedException  {
+	public IInferenceAlgorithm clone(boolean isToCloneAssets)  throws CloneNotSupportedException  {
 		
 		// clone Bayes network
 		ProbabilisticNetwork newNet = new ProbabilisticNetworkClone(getRelatedProbabilisticNetwork());
@@ -1068,6 +1159,12 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		// clone this algorithm
 		AssetAwareInferenceAlgorithm ret = (AssetAwareInferenceAlgorithm) getInstance(jtAlgorithm);
 		ret.setDefaultInitialAssetQuantity(getDefaultInitialAssetQuantity());
+		
+		// return now if we do not need to clone assets
+		if (!isToCloneAssets) {
+			ret.setAssetNetwork(null);
+			return ret;
+		}
 		
 		// clone asset net. createAssetNetFromProbabilisticNet is supposed to create correct structure of network and JT
 		AssetNetwork newAssetNet = null;

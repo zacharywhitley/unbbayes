@@ -32,6 +32,7 @@ import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor.NoClique
 import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.AssetPropagationInferenceAlgorithm;
+import unbbayes.prs.bn.inference.extension.IQValuesToAssetsConverter;
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
@@ -45,7 +46,7 @@ import unbbayes.util.Debug;
  * @author Shou Matsumoto
  * @version July 01, 2012
  */
-public class MarkovEngineImpl implements MarkovEngineInterface {
+public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssetsConverter {
 	
 	private float probabilityErrorMargin = 0.0001f;
 
@@ -61,9 +62,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 
 	private float defaultInitialQTableValue = 1;
 
-	private float currentLogBase = 2;
+	private float currentLogBase = (float)Math.E;
 
-	private double currentCurrencyConstant = 100;
+	private double currentCurrencyConstant = 10/(Math.log(100));
 
 	private ProbabilisticNetwork probabilisticNetwork;
 
@@ -1860,7 +1861,43 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 		if (node == null) {
 			throw new IllegalArgumentException("Question " + questionId + " not found.");
 		}
-		// check the assumption nodes
+		
+		// list to return
+		List<Float> ret = new ArrayList<Float>(node.getStatesSize());
+		
+		// this is a list of assumptions to pass to scoreUserEv (assumptionIds & questionId)
+		List<Long> assumptionsIncludingThisQuestion = new ArrayList<Long>();
+		if (assumptionIds != null) {
+			assumptionsIncludingThisQuestion.addAll(assumptionIds);
+		}
+		assumptionsIncludingThisQuestion.add(questionId);
+		// similarly, list of states to pass to scoreUserEv (assumedStates and states of questionId)
+		List<Integer> assumedStatesIncludingThisState = new ArrayList<Integer>();	// do not reuse 
+		if (assumedStates != null) {
+			assumedStatesIncludingThisState.addAll(assumedStates);
+		}
+		assumedStatesIncludingThisState.add(0);
+
+		// just calculate conditional expected score given each state of questionId... Use assumptionsIncludingThisQuestion and states
+		for (int i = 0; i < node.getStatesSize(); i++) {
+			// TODO optimize
+			assumedStatesIncludingThisState.set(assumedStatesIncludingThisState.size()-1, i);
+			ret.add(this.scoreUserEv(userId, assumptionsIncludingThisQuestion, assumedStatesIncludingThisState));
+		}
+		
+		return ret;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#scoreUserEv(long, java.util.List, java.util.List)
+	 */
+	public float scoreUserEv(long userId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+		
+		// this map will contain names of nodes identified by assumptionIds and the respective states in assumedStates
+		Map<String, Integer> nodeNameToStateMap = new HashMap<String, Integer>();
+		
+		// check consistency of the assumption nodes
 		if (assumptionIds != null) {
 			for (int i = 0; i < assumptionIds.size(); i++) {
 				Long id = assumptionIds.get(i);
@@ -1877,24 +1914,63 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 							if (state < 0 || state >= assumption.getStatesSize()) {
 								throw new IllegalArgumentException("Question " + id + " has no state " + assumedStates.get(i));
 							}
+							// add only nodes and states which are OK
+							nodeNameToStateMap.put(assumption.getName(), state);
 						}
 					}
 				}
 			}
 		}
-		// TODO Auto-generated method stub
-		return Collections.singletonList(0f);
-//		throw new UnsupportedOperationException("Not implemented yet.");
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#scoreUserEv(long, java.util.List, java.util.List)
-	 */
-	public float scoreUserEv(long userId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-//		return 0f;
-		throw new UnsupportedOperationException("Not implemented yet.");
+		
+		AssetAwareInferenceAlgorithm origAlgorithm;
+		try {
+			origAlgorithm = this.getAlgorithmAndAssetNetFromUserID(userId);
+		} catch (InvalidParentException e) {
+			throw new RuntimeException("Failed to initialize user " + userId, e);
+		}
+		
+		// if there are assumptions, we must clone the network. If not, we can use the original network
+		if (!nodeNameToStateMap.isEmpty()) {
+			AssetAwareInferenceAlgorithm clonedAlgorithm;
+			try {
+				synchronized (origAlgorithm.getNetwork()) {
+					clonedAlgorithm = (AssetAwareInferenceAlgorithm) origAlgorithm.clone(false);
+				}
+			} catch (CloneNotSupportedException e) {
+				throw new RuntimeException(this.getClass().getName() + " - Failed to clone Bayes Net during calculation of expected assets of user "
+						+ userId + ", given conditions " + assumptionIds + " = " + assumedStates, e);
+			}
+			
+			// force cloned algorithm not to do some unnecessary things, like updating assets
+			clonedAlgorithm.setToLogAssets(false);
+			clonedAlgorithm.setToUpdateAssets(false);
+			clonedAlgorithm.setToPropagateForGlobalConsistency(false);
+			clonedAlgorithm.setToAllowQValuesSmallerThan1(true);
+			clonedAlgorithm.setToCalculateMarginalsOfAssetNodes(false);
+			
+			// the asset network is not going to change, so we cal use the original
+			clonedAlgorithm.setAssetNetwork(origAlgorithm.getAssetNetwork());
+			
+			// treat assumptions as findings and propagate them
+			for (String name : nodeNameToStateMap.keySet()) {
+				// Findings must be in the cloned network instead of original network
+				ProbabilisticNode node = (ProbabilisticNode) ((ProbabilisticNetwork)clonedAlgorithm.getNetwork()).getNode(name);
+				node.addFinding(nodeNameToStateMap.get(name));
+			}
+			// propagate finding (no need to lock, because it is a cloned net)
+			clonedAlgorithm.propagate();
+			
+			// from here, use the clone as if it is the original
+			origAlgorithm = clonedAlgorithm;
+		}
+		
+		float ret = Float.NaN;
+		synchronized (origAlgorithm.getNetwork()) {
+			synchronized (origAlgorithm.getAssetNetwork()) {
+				ret = (float) origAlgorithm.getExpectedAssets(this);
+			}
+		}
+		return ret;
 	}
 
 	
@@ -2467,10 +2543,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	 * (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getScoreSummary(long, java.lang.Long, java.util.List, java.util.List)
 	 */
-	public List<Properties> getScoreSummary(long userId, Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+	public ScoreSummary getScoreSummary(long userId, Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
 		// TODO Auto-generated method stub
-		return Collections.singletonList(new Properties());
-//		throw new UnsupportedOperationException("Not implemented yet.");
+		return new ScoreSummary() {
+		};
 	}
 	
 	/*
@@ -2578,15 +2654,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface {
 	protected AssetAwareInferenceAlgorithm getAlgorithmAndAssetNetFromUserID(long userID) throws InvalidParentException, IllegalStateException {
 		
 		// assert that network was initialized
-		boolean isNetworkOK = true;
 		synchronized (getProbabilisticNetwork()) {
-			if (getProbabilisticNetwork().getJunctionTree() == null) {
+			if (getProbabilisticNetwork() == null || getProbabilisticNetwork().getJunctionTree() == null) {
 				throw new IllegalStateException("Failed to initialize user " + userID + ", because the shared Bayesian Network was not properly initialized. Please, initialize network and commit transaction.");
 			}
-		}
-		
-		if (!isNetworkOK) {
-			throw new IllegalStateException("Failed to create user " + userID + ". The shared Bayesian Network was not properly initialized/compiled. Please, commit the transaction which initializes/compiles the shared Bayesian Network first.");
 		}
 		
 		// value to be returned
