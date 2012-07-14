@@ -2,6 +2,7 @@ package edu.gmu.ace.daggre;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
@@ -303,6 +304,33 @@ public interface MarkovEngineInterface {
 	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
 	 */
 	public List<Float> getProbList(long questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException, IllegalStateException;
+	
+	/**
+	 * Returns probability across a list of states for all questions given an assumption. 
+	 * This is equivalent to calling getProbList for all possible questionId, but computation is supposed to be faster than calling 
+	 * getProbList multiple times.
+	 * @param questionIds : only marginals of nodes in this list will be returned.
+	 * If null, marginals of all nodes will be returned.
+	 * @param assumptionIds: (optional) list (ordered collection) of question IDs assumed when obtaining the estimated assets. If specified,
+	 * the questions (i.e. random variables) with these IDs will be assumed to be in the states specified in the argument "assumedStates".
+	 * @param assumedStates : (mandatory if assumptionIDs is specified - must have the same size of assumptionIDs) indexes
+	 * of states (i.e. choices - if boolean, then it is either 0 or 1) of assumptionIDs to be assumed.
+	 * @return a mapping from question ID to the probabilities of that question.
+	 * The order is important for identifying the states (i.e. 1st value is for the 1st state, and so on).
+	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
+	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
+	 */
+	public Map<Long,List<Float>> getProbLists(List<Long> questionIds, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	
+	/**
+	 * P(A=a1)*P(B=b2|A=a1)*P(C=c3|A=a1,B=b2)
+	 * @param assumptionIds
+	 * @param assumedStates
+	 * @return
+	 * @throws IllegalArgumentException
+	 */
+	public float getJointProbability(List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	
 	
 	
 	/**

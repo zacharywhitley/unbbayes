@@ -1333,7 +1333,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			List<Integer> assumedStates) throws IllegalArgumentException {
 		return this.getProbList(questionId, assumptionIds, assumedStates, true);
 	}
-
+	
 	/**
 	 * This method offers the same functionality of {@link #getProbList(long, List, List)}, but
 	 * there is an additional argument to indicate whether or not to normalize the result.
@@ -1342,8 +1342,28 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getProbList(long, java.util.List, java.util.List)
 	 * @see #getProbList(long, List, List)
 	 */
-	public List<Float> getProbList(long questionId, List<Long> assumptionIds,
-			List<Integer> assumedStates, boolean isToNormalize) throws IllegalArgumentException {
+	public List<Float> getProbList(long questionId, List<Long> assumptionIds, List<Integer> assumedStates, boolean isToNormalize) throws IllegalArgumentException {
+		Map<Long, List<Float>> probLists = this.getProbLists(Collections.singletonList(questionId), assumptionIds, assumedStates, isToNormalize);
+		if (probLists != null) {
+			return probLists.get(questionId);
+		}
+		return null;
+	}
+		
+			
+	
+	public Map<Long,List<Float>> getProbLists(List<Long> questionIds, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+		return this.getProbLists(questionIds, assumptionIds, assumedStates, true);
+	}
+
+	/**
+	 * This method offers the same functionality of {@link #getProbLists(List, List, List)}, but
+	 * there is an additional argument to indicate whether or not to normalize the result.
+	 * @param isToNormalize : if false, the returned list will contain the clique potentials without normalization.
+	 * This may be useful for obtaining the clique potentials instead of the conditional probabilities.
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getProbList(long, java.util.List, java.util.List)
+	 */
+	public Map<Long,List<Float>> getProbLists(List<Long> questionIds, List<Long>assumptionIds, List<Integer> assumedStates, boolean isToNormalize) throws IllegalArgumentException {
 		
 		// initial assertion: check consistency of assumptionIds and assumedStates
 		if (assumptionIds != null && assumedStates != null) {
@@ -1358,93 +1378,124 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			throw new RuntimeException("Could not reuse conditional probability extractor of the current default inference algorithm. Perhaps you are using incompatible version of Markov Engine or UnBBayes.");
 		}
 		
+		// this is the object to be returned
+		Map<Long,List<Float>> ret = new HashMap<Long, List<Float>>();
+		
 		// if assumptions are not in same clique, we can still use BN propagation to obtain probabilities.
 		ProbabilisticNetwork netToUseWhenAssumptionsAreNotInSameClique = null;	// this is going to be a clone of the shared BN
-		PotentialTable cpt = null;
-		synchronized (getProbabilisticNetwork()) {
-			INode mainNode = getProbabilisticNetwork().getNode(Long.toString(questionId));
-			if (mainNode == null) {
-				if (isToObtainProbabilityOfResolvedQuestions() && (assumptionIds == null || assumptionIds.isEmpty())) {
-					// If it is a resolved question, we can get marginal (non-assumptive) probabilities from history.
-					// TODO also build conditional probability
-					try {
-						Debug.println(getClass(), questionId + " was not found. Retrieving marginal probability from history...");
-					} catch (Throwable t) {
-						t.printStackTrace();
-					}
-					// Retrieve from history
-					List<QuestionEvent> history = getQuestionHistory(questionId, null, null);
-					// search from the end, because resolutions are mostly at the end of the history
-					for (int i = history.size()-1; i >= 0; i--) {
-						if (history.get(i) instanceof ResolveQuestionNetworkAction) {
-							ResolveQuestionNetworkAction action = (ResolveQuestionNetworkAction) history.get(i);
-							// build probability of resolution (1 state is 100% and others are 0%)
-							int stateCount = action.getPercent().size();	// retrieve quantity of states == size of marginal probability
-							List<Float> ret = new ArrayList<Float>(stateCount);	// list to return
-							for (int j = 0; j < stateCount; j++) {
-								// set the settled state as 100%, and all others to 0%
-								ret.add((j==action.getSettledState())?1f:0f);
-							}
-							return ret;
-						}
-					}
-				}
-
-				throw new InexistingQuestionException("Question " + questionId + " not found", questionId);
+		List<PotentialTable> cptList = new ArrayList<PotentialTable>();	// will contain conditional probability within clique
+		
+		// if we need to get probabilities of all nodes, and there are assumptions, then we need propagation anyway
+		if (questionIds == null && assumptionIds != null && assumedStates != null && !assumptionIds.isEmpty() && !assumedStates.isEmpty()) {
+			// netToUseWhenAssumptionsAreNotInSameClique != null if we need propagation
+			netToUseWhenAssumptionsAreNotInSameClique = getDefaultInferenceAlgorithm().new ProbabilisticNetworkClone(getProbabilisticNetwork());
+		} else {
+			// first, attempt to fill cptList with conditional probabilities that can be calculated without propagation.
+			int howManyIterations = getProbabilisticNetwork().getNodeCount();
+			if (questionIds != null && !questionIds.isEmpty()) {
+				howManyIterations = questionIds.size();
 			}
-			List<INode> parentNodes = new ArrayList<INode>();
-			if (assumptionIds != null) {
-				for (Long id : assumptionIds) {
-					INode node = getProbabilisticNetwork().getNode(Long.toString(id));
-					if (node == null) {
+			for (int i = 0; i < howManyIterations; i++) {
+				synchronized (getProbabilisticNetwork()) {
+					INode mainNode = null;
+					Long questionId = null;
+					if (questionIds != null && !questionIds.isEmpty()) {
+						questionId = questionIds.get(i);
+						mainNode = getProbabilisticNetwork().getNode(Long.toString(questionId));
+					} else {
+						mainNode = getProbabilisticNetwork().getNodeAt(i);
+						questionId = Long.parseLong(mainNode.getName());
+					}
+					if (mainNode == null || questionId == null) {
+						if (isToObtainProbabilityOfResolvedQuestions() && (assumptionIds == null || assumptionIds.isEmpty())) {
+							// If it is a resolved question, we can get marginal (non-assumptive) probabilities from history.
+							// TODO also build conditional probability
+							try {
+								Debug.println(getClass(), "Node " + questionId + " was not found. Retrieving marginal probability from history...");
+							} catch (Throwable t) {
+								t.printStackTrace();
+							}
+							// Retrieve from history
+							List<QuestionEvent> history = getQuestionHistory(questionId, null, null);
+							// search from the end, because resolutions are mostly at the end of the history
+							for (int j = history.size()-1; j >= 0; j--) {
+								if (history.get(j) instanceof ResolveQuestionNetworkAction) {
+									ResolveQuestionNetworkAction action = (ResolveQuestionNetworkAction) history.get(j);
+									// build probability of resolution (1 state is 100% and others are 0%)
+									int stateCount = action.getPercent().size();	// retrieve quantity of states == size of marginal probability
+									List<Float> marginal = new ArrayList<Float>(stateCount);	// list of marginal probs
+									for (int k = 0; k < stateCount; k++) {
+										// set the settled state as 100%, and all others to 0%
+										marginal.add((k==action.getSettledState())?1f:0f);
+									}
+									ret.put(questionId, marginal);
+									break;
+								}
+							}
+						}
+						
 						throw new InexistingQuestionException("Question " + questionId + " not found", questionId);
 					}
-					parentNodes.add(node);
-				}
-			}
-			if (isToNormalize) {
-				try {
-					cpt = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, getProbabilisticNetwork(), null);
-				} catch (NoCliqueException e) {
-					Debug.println(getClass(), "Could not extract potentials within clique. Trying global propagation.", e);
-					netToUseWhenAssumptionsAreNotInSameClique = getDefaultInferenceAlgorithm().new ProbabilisticNetworkClone(getProbabilisticNetwork());
-				}
-			} else {
-				// by specifying a non-normalized junction tree algorithm to conditionalProbabilityExtractor, we can force it not to normalize the result
-				cpt = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, getProbabilisticNetwork(), getDefaultInferenceAlgorithm().getAssetPropagationDelegator());
-			}
+					List<INode> parentNodes = new ArrayList<INode>();
+					if (assumptionIds != null) {
+						for (Long id : assumptionIds) {
+							INode node = getProbabilisticNetwork().getNode(Long.toString(id));
+							if (node == null) {
+								throw new InexistingQuestionException("Question " + questionId + " not found", questionId);
+							}
+							parentNodes.add(node);
+						}
+					}
+					if (isToNormalize) {
+						try {
+							cptList.add((PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, getProbabilisticNetwork(), null));
+						} catch (NoCliqueException e) {
+							Debug.println(getClass(), "Could not extract potentials within clique. Trying global propagation.", e);
+							netToUseWhenAssumptionsAreNotInSameClique = getDefaultInferenceAlgorithm().new ProbabilisticNetworkClone(getProbabilisticNetwork());
+							break;	// do not fill cptList anymore, because if we need to do 1 propagation anyway, the computational cost if the same for any quantity of nodes to propagate
+						}
+					} else {
+						// by specifying a non-normalized junction tree algorithm to conditionalProbabilityExtractor, we can force it not to normalize the result
+						cptList.add((PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, getProbabilisticNetwork(), getDefaultInferenceAlgorithm().getAssetPropagationDelegator()));
+					}
+				}	// unlock prob network
+			}	// end of loop
 		}
 		
 		// If we need to do propagation, do it in non-critical portion of code
 		if (netToUseWhenAssumptionsAreNotInSameClique != null) {
-			return this.previewProbPropagation(questionId, assumptionIds, assumedStates, netToUseWhenAssumptionsAreNotInSameClique);
+			return this.previewProbPropagation(questionIds, assumptionIds, assumedStates, netToUseWhenAssumptionsAreNotInSameClique);
 		}
 		
-		// convert cpt to a list of float, given assumedStates.
-		List<Float> ret = new ArrayList<Float>(cpt.tableSize());
-		for (int i = 0; i < cpt.tableSize(); i++) {
-			boolean isToSkip = false;
-			// filter entries which are incompatible with assumedStates
-			if (assumedStates != null && !assumedStates.isEmpty()) {
-				// extract coordinate of the states (e.g. [2,1,0] means state of mainNode = 2, state of parent1 = 1, and parent2 == 0)
-				int[] multidimensionalCoord = cpt.getMultidimensionalCoord(i);
-				// note: size of assumedStates is 1 unit smaller than multidimensionalCoord, because multidimensionalCoord contains the main node
-				if (multidimensionalCoord.length != assumedStates.size() + 1) {
-					throw new RuntimeException("Multi dimensional coordinate of index " + i + " has size " + multidimensionalCoord.length
-							+ ". Expected " + assumedStates.size());
-				}
-				// iterate from index 1, because we do not consider the main node (which is in index 0 of multidimensionalCoord)
-				for (int j = 1; j < multidimensionalCoord.length; j++) {
-					if ((assumedStates.get(j-1) != null)
-							&& (assumedStates.get(j-1) != multidimensionalCoord[j])) {
-						isToSkip = true;
-						break;
+		// at this point of code, all probabilities can be estimated from 
+		for (PotentialTable cpt : cptList) {
+			List<Float> marginal = new ArrayList<Float>();
+			// convert cpt to a list of float (marginal), given assumedStates.
+			for (int i = 0; i < cpt.tableSize(); i++) {
+				boolean isToSkip = false;
+				// filter entries which are incompatible with assumedStates
+				if (assumedStates != null && !assumedStates.isEmpty()) {
+					// extract coordinate of the states (e.g. [2,1,0] means state of mainNode = 2, state of parent1 = 1, and parent2 == 0)
+					int[] multidimensionalCoord = cpt.getMultidimensionalCoord(i);
+					// note: size of assumedStates is 1 unit smaller than multidimensionalCoord, because multidimensionalCoord contains the main node
+					if (multidimensionalCoord.length != assumedStates.size() + 1) {
+						throw new RuntimeException("Multi dimensional coordinate of index " + i + " has size " + multidimensionalCoord.length
+								+ ". Expected " + assumedStates.size());
+					}
+					// iterate from index 1, because we do not consider the main node (which is in index 0 of multidimensionalCoord)
+					for (int j = 1; j < multidimensionalCoord.length; j++) {
+						if ((assumedStates.get(j-1) != null)
+								&& (assumedStates.get(j-1) != multidimensionalCoord[j])) {
+							isToSkip = true;
+							break;
+						}
 					}
 				}
+				if (!isToSkip) {
+					marginal.add(cpt.getValue(i));
+				}
 			}
-			if (!isToSkip) {
-				ret.add(cpt.getValue(i));
-			}
+			ret.put(Long.parseLong(cpt.getVariableAt(0).getName()), marginal);	// cpt.getVariableAt(0) is the main (child) node of the conditional prob
 		}
 		return ret;
 		
@@ -1453,15 +1504,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	/**
 	 * It uses findingNodeIDs and findingStates to set and propagate findings
-	 * in pn, and return the marginal of node identified by mainNodeID
-	 * @param mainNodeID : node to extract marginal
+	 * in pn, and return the marginal of node identified by filterNodes
+	 * @param filterNodes : only marginals of nodes in this list will be returned.
+	 * If null, marginals of all nodes will be returned.
 	 * @param findingNodeIDs : nodes to add findings
 	 * @param findingStates : findings of findingNodes
 	 * @param pn : network to consider. Use a clone of {@link #getProbabilisticNetwork()} if you don't want
 	 * the shared BN to be changed.
-	 * @return marginal of node identified by mainNodeID
+	 * @return mapping from node ID to marginals of nodes
 	 */
-	protected List<Float> previewProbPropagation(long mainNodeID, List<Long> findingNodeIDs, List<Integer> findingStates, ProbabilisticNetwork pn) {
+	protected Map<Long, List<Float>> previewProbPropagation(List<Long> filterNodes, List<Long> findingNodeIDs, List<Integer> findingStates, ProbabilisticNetwork pn) {
 		// make arguments are not null
 		if (pn == null) {
 			throw new NullPointerException("ProbabilisticNetwork cannot be null");
@@ -1473,7 +1525,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			findingStates = Collections.emptyList();
 		}
 		
-		// propagate findings only when tere are findings to propagate
+		// propagate findings only when there are findings to propagate
 		if (!findingNodeIDs.isEmpty() && !findingStates.isEmpty()) {
 			JunctionTreeAlgorithm jtAlgorithm = new JunctionTreeAlgorithm(pn);
 			if (jtAlgorithm.getInferenceAlgorithmListeners() != null) {
@@ -1495,18 +1547,38 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			jtAlgorithm.propagate();
 		}
 		
-		// extract node to be used to extract marginal probabilities
-		TreeVariable mainNode = (TreeVariable) pn.getNode(Long.toString(mainNodeID));
-		if (mainNode == null) {
-			throw new IllegalArgumentException("Node" + mainNodeID + " does not exist.");
-		}
+		// this is the value to be returned
+		Map<Long, List<Float>> ret = new HashMap<Long, List<Float>>();
 		
-		// extract marginal probabilities
-		List<Float> ret = new ArrayList<Float>(mainNode.getStatesSize());
-		for (int i = 0; i < mainNode.getStatesSize(); i++) {
-			ret.add(mainNode.getMarginalAt(i));
+		// iterate over nodes to extract marginal
+		int sizeOfRet = 0;
+		if (filterNodes != null && !filterNodes.isEmpty()) {
+			sizeOfRet = filterNodes.size();
+		} else {
+			sizeOfRet = pn.getNodeCount();
 		}
-		
+		for (int i = 0; i < sizeOfRet; i++) {
+			// extract node to be used to extract marginal probabilities
+			TreeVariable mainNode = null;
+			if (filterNodes != null && !filterNodes.isEmpty()) {
+				mainNode = (TreeVariable) pn.getNode(Long.toString(filterNodes.get(i)));
+			} else {
+				mainNode = (TreeVariable) pn.getNodeAt(i);
+			}
+			if (mainNode == null) {
+				throw new IllegalArgumentException("Could not extract some of the nodes from the network: " + filterNodes + ", index " + i); 
+			}
+			
+			
+			// extract marginal probabilities
+			List<Float> marginal = new ArrayList<Float>(mainNode.getStatesSize());
+			for (int j = 0; j < mainNode.getStatesSize(); j++) {
+				marginal.add(mainNode.getMarginalAt(j));
+			}
+			
+			// the ID and the name of the node are supposedly the same
+			ret.put(Long.parseLong(mainNode.getName()), marginal);
+		}
 		return ret;
 	}
 
@@ -3235,6 +3307,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		return indexOfNewElement;
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getJointProbability(java.util.List, java.util.List)
+	 */
+	public float getJointProbability(List<Long> assumptionIds,
+			List<Integer> assumedStates) throws IllegalArgumentException {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not implemented yet.");
+	}
 
 //	/**
 //	 * If true, {@link #getAssetsIfStates(long, long, List, List)} will return
@@ -3328,5 +3410,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	public void setToDeleteResolvedNode(boolean isToDeleteResolvedNode) {
 		this.isToDeleteResolvedNode = isToDeleteResolvedNode;
 	}
+
 
 }
