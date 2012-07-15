@@ -327,26 +327,27 @@ public class InCliqueConditionalProbabilityExtractor implements
 	 * @return cliques containing all the specified nodes.
 	 */
 	public Collection<Clique> getCliquesContainingAllNodes(SingleEntityNetwork singleEntityNetwork, Collection<INode> nodes, int maxCount) {
-		Collection<Clique> ret = new HashSet<Clique>();
-		if (singleEntityNetwork != null && maxCount > 0) {
-			for (Clique auxClique : singleEntityNetwork.getJunctionTree().getCliques()) {
-				if (auxClique == null) {
-					Debug.println(getClass(), singleEntityNetwork + " has a null clique.");
-					continue;
-				}
-				if (nodes == null || nodes.isEmpty()) {
-					// no filtering
-					ret.add(auxClique);
-				} else if (auxClique.getNodes() != null		// auxClique != null at this point 
-						&& auxClique.getNodes().containsAll(nodes)) {	// nodes != null at this point
-					ret.add(auxClique);
-				}
-				if (ret.size() >= maxCount) {
-					break;
-				}
-			}
-		}
-		return ret;
+		return singleEntityNetwork.getJunctionTree().getCliquesContainingAllNodes(nodes, maxCount);
+//		Collection<Clique> ret = new HashSet<Clique>();
+//		if (singleEntityNetwork != null && maxCount > 0) {
+//			for (Clique auxClique : singleEntityNetwork.getJunctionTree().getCliques()) {
+//				if (auxClique == null) {
+//					Debug.println(getClass(), singleEntityNetwork + " has a null clique.");
+//					continue;
+//				}
+//				if (nodes == null || nodes.isEmpty()) {
+//					// no filtering
+//					ret.add(auxClique);
+//				} else if (auxClique.getNodes() != null		// auxClique != null at this point 
+//						&& auxClique.getNodes().containsAll(nodes)) {	// nodes != null at this point
+//					ret.add(auxClique);
+//				}
+//				if (ret.size() >= maxCount) {
+//					break;
+//				}
+//			}
+//		}
+//		return ret;
 	}
 
 }

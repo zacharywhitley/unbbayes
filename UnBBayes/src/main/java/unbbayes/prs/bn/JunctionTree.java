@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.id.UtilityNode;
 import unbbayes.util.SetToolkit;
@@ -378,6 +379,30 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	 */
 	public Collection<Separator> getSeparators() {
 		return separators;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.IJunctionTree#getCliquesContainingAllNodes(java.util.Collection, int)
+	 */
+	public List<Clique> getCliquesContainingAllNodes(Collection<INode> nodes, int maxCount) {
+		if (maxCount <= 0) {
+			return new ArrayList<Clique>();
+		}
+		if (nodes == null || nodes.isEmpty()) {
+			return new ArrayList<Clique>(this.getCliques());
+		}
+		// TODO optimize using indexing or other algorithms instead of linear search
+		List<Clique> ret = new ArrayList<Clique>();
+		for (Clique clique : this.getCliques()) {
+			if (clique.getNodes() != null && clique.getNodes().containsAll(nodes)) {
+				ret.add(clique);
+				if (ret.size() >= maxCount) {
+					return ret;
+				}
+			}
+		}
+		return ret;
 	}
 
 //	/**

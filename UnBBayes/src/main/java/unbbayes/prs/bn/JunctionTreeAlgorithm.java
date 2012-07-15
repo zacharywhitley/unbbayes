@@ -20,6 +20,7 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
+import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
 import unbbayes.util.SetToolkit;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
@@ -76,6 +77,10 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 	private float virtualNodePositionRandomness = 400;
   	
 	private ILikelihoodExtractor likelihoodExtractor = LikelihoodExtractor.newInstance();
+
+	private boolean isToCalculateJointProbabilityLocally = true;
+
+	private boolean isToUseEstimatedTotalProbability = true;
 	
 	
 	/**
@@ -764,7 +769,7 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		}
 	
 		if (nodes.size() > 0) {
-			Node auxNo = weight(nodes); //auxNo: clique de peso m�ｽ�ｽnimo.
+			Node auxNo = weight(nodes); //auxNo: clique with maximum weight.
 			net.getNodeEliminationOrder().add(auxNo);
 			if (net.isCreateLog()) {
 				net.getLogManager().append(
@@ -1219,6 +1224,152 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		}
 		getVirtualNodesToCliquesAndSeparatorsMap().clear();
 	}
+	
+	
+	/**
+	 * Obtains the joint probability of a set of node.
+	 * For nodes [A,B,C] and states [a,b,c], the joint probability is basically the chain 
+	 * P(C=c)*P(B=b|C=c)*P(A|B=b,C=c).
+	 * @param nodesAndStatesToConsider :  the nodes to calculate joint probability.
+	 * If negative states are passed, then Math.abs(state + 1) will
+	 * be set as 0%.
+	 * @return the joint probability
+	 */
+	public float getJointProbability(Map<ProbabilisticNode,Integer> nodesAndStatesToConsider) {
+		if (nodesAndStatesToConsider == null || nodesAndStatesToConsider.isEmpty()) {
+			throw new IllegalArgumentException("This method cannot calculate joint probability without specifying the nodes && states");
+		}
+		
+		// at this point, there are some values in nodesAndStatesToConsider.
+		if (nodesAndStatesToConsider.size() == 1) {
+			// we only need marginal probability
+			ProbabilisticNode node = nodesAndStatesToConsider.keySet().iterator().next();
+			Integer state = nodesAndStatesToConsider.get(node);
+			if (state < 0 ) {
+				// what is the probability of "not" state
+				return 1 - node.getMarginalAt(Math.abs(state + 1));
+			}
+			return node.getMarginalAt(state);
+		}
+		
+		// check if there is a clique containing all the nodes. If so, we do not need to propagate findings.
+		if (isToCalculateJointProbabilityLocally()) {
+			// extract 1 clique containing all nodes
+			List<Clique> cliques = this.getNet().getJunctionTree().getCliquesContainingAllNodes((Collection)nodesAndStatesToConsider.keySet(), 1);
+			if (cliques != null && !cliques.isEmpty()) {
+				// obtain clone of the clique table (need clone, because we'll marginalize-out some nodes)
+				PotentialTable cliqueTable = (PotentialTable) cliques.get(0).getProbabilityFunction().clone();
+				// Obtain all nodes which are part of clique but not specified in nodesAndStatesToConsider
+				ArrayList<Node> nodesToMarginalizeOut = new ArrayList<Node>(cliques.get(0).getNodes());
+				nodesToMarginalizeOut.removeAll(nodesAndStatesToConsider.keySet());
+				// marginalize-out nodes that are not specified in nodesAndStatesToConsider
+				for (Node node : nodesToMarginalizeOut) {
+					cliqueTable.removeVariable(node);
+				}
+				// obtain the index of the cell in cliqueTable related to the states in nodesAndStatesToConsider
+				int[] coordinate = new int[cliqueTable.getVariablesSize()];
+				boolean hasNegativeState = false;
+				for (ProbabilisticNode node : nodesAndStatesToConsider.keySet()) {
+					int state = nodesAndStatesToConsider.get(node);
+					if (state < 0) {
+						hasNegativeState = true;
+						break;
+					}
+					coordinate[cliqueTable.indexOfVariable(node)] = state;
+					// TODO check if all values were really filled
+				}
+				if (!hasNegativeState) {
+					return cliqueTable.getValue(coordinate);
+				} else {
+					// sum clique potentials that matches the nodesAndStatesToConsider
+					double sum = 0.0;
+					for (int i = 0; i < cliqueTable.tableSize(); i++) {
+						// check if states related to the current cell matches the states specified in nodesAndStatesToConsider
+						coordinate = cliqueTable.getMultidimensionalCoord(i);
+						boolean isExactMatch = true;
+						for (ProbabilisticNode node : nodesAndStatesToConsider.keySet()) {
+							Integer state = nodesAndStatesToConsider.get(node);
+							if (state >= 0 && coordinate[cliqueTable.indexOfVariable(node)] != state) {
+								// this cell is not related to the state
+								isExactMatch = false;
+								break;
+							} else if (state < 0 && coordinate[cliqueTable.indexOfVariable(node)] == Math.abs(state + 1)) {
+								// negative states indicates that we should not consider that state. So, this cell should not be used.
+								isExactMatch = false;
+								break;
+							}
+						}
+						if (isExactMatch) {
+							sum += cliqueTable.getValue(i);
+						}
+					}
+					return (float) sum;
+				}
+			}
+		}
+		
+		// if nodes are distributed across cliques, we need to propagate findings.
+		
+		// backup original network, so that we can revert to it later
+		ProbabilisticNetwork originalNetwork = this.getNet();
+		
+		// clone net, so that we don't change the original
+		ProbabilisticNetwork clonedNetwork = this.cloneProbabilisticNetwork(getNet());	
+		
+		// we will use the cloned network from now
+		this.setNet(clonedNetwork);
+		
+		// the value to return
+		double ret = 1;	// 1 is the identity value in multiplication
+		
+		// calculate P(C=c)*P(B=b|C=c)*P(A|B=b,C=c) in the cloned network
+		for (ProbabilisticNode origNode : nodesAndStatesToConsider.keySet()) {
+			// extract the state
+			Integer stateIndex = nodesAndStatesToConsider.get(origNode);
+			if (stateIndex == null) {
+				continue;	// ignore
+			}
+			// Extract cloned node. Original and cloned nodes have the same name
+			ProbabilisticNode clonedNode = (ProbabilisticNode) clonedNetwork.getNode(origNode.getName());
+			
+			// add evidences
+			if (stateIndex < 0) {
+				if (!isToUseEstimatedTotalProbability()) {
+					// multiply marginal (or conditional prob) before adding the finding (if we add finding, the marginals will have only 0s and 1s)
+					for (int i = 0; i < clonedNode.getStatesSize(); i++) {
+						if (i != Math.abs(stateIndex + 1)) {
+							ret *= clonedNode.getMarginalAt(i);
+						}
+					}
+				}
+				// this is a finding for "not" this state (i.e. a finding setting this state as 0%)
+				clonedNode.addFinding(Math.abs(stateIndex + 1), true);
+			} else {
+				if (!isToUseEstimatedTotalProbability()) {
+					// multiply marginal (or conditional prob) before adding the finding (if we add finding, the marginals will have only 0s and 1s)
+					ret *= clonedNode.getMarginalAt(stateIndex);
+				}
+				clonedNode.addFinding(stateIndex);
+			}
+			
+			// if isToUseEstimatedTotalProbability, then we shall propagate all findings at once and then use this.getJunctionTree().getN()
+			if (!isToUseEstimatedTotalProbability()) {
+				// propagate findings in the cloned network
+				this.propagate();
+			}
+		}
+		
+		// if isToUseEstimatedTotalProbability, then we shall propagate all findings at once and then use this.getJunctionTree().getN()
+		if (isToUseEstimatedTotalProbability()) {
+			this.propagate();
+			ret = this.getJunctionTree().getN();
+		}
+		
+		// revert to original network
+		this.setNet(originalNetwork);
+		
+		return (float) ret;
+	}
 
 
 	/**
@@ -1543,6 +1694,293 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 	public boolean isAlgorithmWithNormalization() {
 		return true;
 	}
-
 	
+	/**
+	 * This method clones a probabilistic network .
+	 * @param originalProbabilisticNetwork : network to clone
+	 * @return the clone of the originalProbabilisticNetwork
+	 */
+	public ProbabilisticNetwork cloneProbabilisticNetwork(ProbabilisticNetwork originalProbabilisticNetwork) {
+		return new ProbabilisticNetworkClone(originalProbabilisticNetwork);
+	}
+	
+	/**
+	 * If true, {@link #getJointProbability(Map)} will attempt to 
+	 * check whether there is a clique containing all nodes simultaneously,
+	 * and then it will attempt to calculate joint probability
+	 * without doing propagation.
+	 * @param isToCalculateJointProbabilityLocally the isToCalculateJointProbabilityLocally to set
+	 */
+	public void setToCalculateJointProbabilityLocally(
+			boolean isToCalculateJointProbabilityLocally) {
+		this.isToCalculateJointProbabilityLocally = isToCalculateJointProbabilityLocally;
+	}
+
+	/**
+	 * If true, {@link #getJointProbability(Map)} will attempt to 
+	 * check whether there is a clique containing all nodes simultaneously,
+	 * and then it will attempt to calculate joint probability
+	 * without doing propagation.
+	 * @return the isToCalculateJointProbabilityLocally
+	 */
+	public boolean isToCalculateJointProbabilityLocally() {
+		return isToCalculateJointProbabilityLocally;
+	}
+
+
+	/**
+	 * If true, {@link #getJointProbability(Map)} will rely on {@link JunctionTree#getN()}
+	 * to obtain joint probability. This is supposedly faster than calculating
+	 * the joint normally.
+	 * If you are using an unreliable implementation of {@link JunctionTree},
+	 * set this attribute to false.
+	 * @param isToUseEstimatedTotalProbability the isToUseEstimatedTotalProbability to set
+	 */
+	public void setToUseEstimatedTotalProbability(
+			boolean isToUseEstimatedTotalProbability) {
+		this.isToUseEstimatedTotalProbability = isToUseEstimatedTotalProbability;
+	}
+
+	/**
+	 * If true, {@link #getJointProbability(Map)} will rely on {@link JunctionTree#getN()}
+	 * to obtain joint probability. This is supposedly faster than calculating
+	 * the joint normally.
+	 * If you are using an unreliable implementation of {@link JunctionTree},
+	 * set this attribute to false.
+	 * @return the isToUseEstimatedTotalProbability
+	 */
+	public boolean isToUseEstimatedTotalProbability() {
+		return isToUseEstimatedTotalProbability;
+	}
+
+
+	/**
+	 * This class represents a clone of a {@link ProbabilisticNetwork},
+	 * only in the context of the {@link JunctionTreeAlgorithm} context
+	 * (i.e. it only clones attributes necessary for the correct functionality
+	 * of {@link JunctionTreeAlgorithm}).
+	 * @author Shou Matsumoto
+	 */
+	public class ProbabilisticNetworkClone extends ProbabilisticNetwork {
+		private static final long serialVersionUID = 2863527797831091610L;
+		private final ProbabilisticNetwork originalNet;
+		/** 
+		 * Instantiates a clone of a {@link ProbabilisticNetwork}
+		 * @param originalNet : net to be cloned 
+		 */
+		public ProbabilisticNetworkClone(ProbabilisticNetwork originalNet) {
+			super(originalNet.getName());
+			this.originalNet = originalNet;
+			setCreateLog(originalNet.isCreateLog());
+			
+			// copy nodes
+			for (Node node : originalNet.getNodes()) {
+				if (!(node instanceof ProbabilisticNode)) {
+					// ignore unknown nodes
+					Debug.println(getClass(), node + " is not a ProbabilisticNode and will not be copied.");
+					continue;
+				}
+				// ProbabilisticNode has a clone() method, but it keeps parents and children pointing to old nodes (which may cause future problems)
+				ProbabilisticNode newNode = ((ProbabilisticNode)node).basicClone();
+				if (newNode.getProbabilityFunction().getVariablesSize() <= 0) {
+					newNode.getProbabilityFunction().addVariable(newNode);
+				}
+				this.addNode(newNode);
+			}
+			
+			// copy edges
+			for (Edge oldEdge : originalNet.getEdges()) {
+				Node node1 = this.getNode(oldEdge.getOriginNode().getName());
+				Node node2 = this.getNode(oldEdge.getDestinationNode().getName());
+				if (node1 == null || node2 == null) {
+					Debug.println(getClass(), oldEdge + " has a node which was not copied to the cloned network.");
+					continue;
+				}
+				Edge newEdge = new Edge(node1, node2);
+				try {
+					this.addEdge(newEdge);
+				} catch (InvalidParentException e) {
+					throw new RuntimeException("Could not clone edge " + oldEdge +" of network " + originalNet , e);
+				}
+			}
+			
+			// copy cpt
+			for (Node node : originalNet.getNodes()) {
+				if (node instanceof ProbabilisticNode) {
+					PotentialTable oldCPT = ((ProbabilisticNode) node).getProbabilityFunction();
+					PotentialTable newCPT = ((ProbabilisticNode) this.getNode(node.getName())).getProbabilityFunction();
+					// CAUTION: the following code will throw an ArrayIndexOutouBoundException when oldCPT and newCPT have different sizes.
+					newCPT.setValues(oldCPT.getValues());	// they supposedly have same size.
+				}
+			}
+			
+			// instantiate junction tree and copy content
+			this.setJunctionTree(new JunctionTree());
+			
+			// mapping between original cliques/separator to copied clique/separator 
+			// (cliques are needed posteriorly in order to copy separators, and seps are needed in order to copy relation from node to clique/separators)
+			Map<IRandomVariable, IRandomVariable> oldCliqueToNewCliqueMap = new HashMap<IRandomVariable, IRandomVariable>();	// cannot use tree map, because cliques are not comparable
+			
+			// copy cliques if there are cliques to copy
+			if (originalNet.getJunctionTree() != null && originalNet.getJunctionTree().getCliques() != null) {
+				for (Clique origClique : originalNet.getJunctionTree().getCliques()) {
+					Clique newClique = new Clique();
+					boolean hasInvalidNode = false;	// this will be true if a clique contains a node not in new network.
+					// add nodes to clique
+					for (Node node : origClique.getNodes()) {
+						Node newNode = this.getNode(node.getName());	// extract associated node, because they are related by name
+						if (newNode == null) {
+							hasInvalidNode = true;
+							break;
+						}
+						newClique.getNodes().add(newNode);
+					}
+					if (hasInvalidNode) {
+						// the original clique has a node not present in this net
+						continue;
+					}
+					
+					// add nodes to the list "associatedProbabilisticNodes"
+					for (Node node : origClique.getAssociatedProbabilisticNodes()) {
+						Node newNode = this.getNode(node.getName());	// extract associated node, because they are related by name
+						if (newNode == null) {
+							hasInvalidNode = true;
+							break;
+						}
+						// origClique.getNodes() and origClique.getAssociatedProbabilisticNodes() may be different... Copy both separately. 
+						newClique.getAssociatedProbabilisticNodes().add(newNode);
+					}
+					if (hasInvalidNode) {
+						// the original clique has a node not present in the asset net
+						continue;
+					}
+					
+					newClique.setIndex(origClique.getIndex());
+					
+					// copy clique potential variables
+					PotentialTable origPotential = origClique.getProbabilityFunction();
+					PotentialTable copyPotential = newClique.getProbabilityFunction();
+					for (int i = 0; i < origPotential.getVariablesSize(); i++) {
+						Node newNode = this.getNode(origPotential.getVariableAt(i).getName());
+						if (newNode == null) {
+							hasInvalidNode = true;
+							break;
+						}
+						copyPotential.addVariable(newNode);
+					}
+					if (hasInvalidNode) {
+						// the original clique has a node not present in the asset net
+						continue;
+					}
+					
+					// copy the values of clique potential
+					copyPotential.setValues(origPotential.getValues());
+					copyPotential.copyData();
+					
+					// NOTE: this is ignoring utility table and nodes
+					
+					this.getJunctionTree().getCliques().add(newClique);
+					oldCliqueToNewCliqueMap.put(origClique, newClique);
+				}
+			}
+			
+			// copy separators if there are separators to copy
+			if (originalNet.getJunctionTree() != null && originalNet.getJunctionTree().getSeparators() != null) {
+				for (Separator origSeparator : originalNet.getJunctionTree().getSeparators()) {
+					boolean hasInvalidNode = false;	// this will be true if a clique contains a node not in AssetNetwork.
+					
+					// extract the cliques related to the two cliques that the origSeparator connects
+					Clique newClique1 = (Clique) oldCliqueToNewCliqueMap.get(origSeparator.getClique1());
+					Clique newClique2 = (Clique) oldCliqueToNewCliqueMap.get(origSeparator.getClique2());
+					if (newClique1 == null || newClique2 == null) {
+						try {
+							Debug.println(getClass(), "Could not clone separator between " + newClique1 + " and " + newClique2);
+						} catch (Throwable t) {
+							t.printStackTrace();
+						}
+						continue;
+					}
+					
+					Separator newSeparator = new Separator(newClique1, newClique2);
+					
+					// fill the separator's node list
+					for (Node origNode : origSeparator.getNodes()) {
+						Node newNode = this.getNode(origNode.getName());	
+						if (newNode == null) {
+							hasInvalidNode = true;
+							break;
+						}
+						newSeparator.getNodes().add(newNode);
+					}
+					if (hasInvalidNode) {
+						// the original clique has a node not present in the asset net
+						continue;
+					}
+					
+					// copy separator potential
+					PotentialTable origPotential = origSeparator.getProbabilityFunction();
+					PotentialTable newPotential = newSeparator.getProbabilityFunction();
+					for (int j = 0; j < origPotential.getVariablesSize(); j++) {
+						Node newNode = this.getNode(origPotential.getVariableAt(j).getName());
+						if (newNode == null) {
+							hasInvalidNode = true;
+							break;
+						}
+						newPotential.addVariable(newNode);
+					}
+					if (hasInvalidNode) {
+						// the original clique has a node not present in the asset net
+						continue;
+					}
+					
+					// copy potential
+					newPotential.setValues(origPotential.getValues());	// they supposedly have the same size
+					
+					// NOTE: this is ignoring utility table and nodes
+					this.getJunctionTree().addSeparator(newSeparator);
+					oldCliqueToNewCliqueMap.put(origSeparator, newSeparator);
+				}
+			}
+			
+			// copy relationship between cliques/separator and nodes
+			for (Node origNode : originalNet.getNodes()) {
+				ProbabilisticNode newNode = (ProbabilisticNode)this.getNode(origNode.getName());
+				if (newNode == null) {
+					try {
+						Debug.println(getClass(), "Could not find node copied from " + origNode);
+					} catch (Throwable t) {
+						t.printStackTrace();
+					}
+					continue;
+				}
+				newNode.setAssociatedClique(oldCliqueToNewCliqueMap.get(((TreeVariable)origNode).getAssociatedClique()));
+				
+				// force marginal to have some value
+				newNode.updateMarginal();
+			}
+		}
+		/**
+		 * @return the network which was used as the basis for this cloned network
+		 */
+		public ProbabilisticNetwork getOriginalNet() {
+			return originalNet;
+		}
+		
+		/* (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		public boolean equals(Object obj) {
+			if (super.equals(obj)) {
+				return true;
+			}
+			if (this.getOriginalNet().equals(obj)) {
+				return true;
+			}
+			if (obj instanceof ProbabilisticNetworkClone) {
+				ProbabilisticNetworkClone probabilisticNetworkClone = (ProbabilisticNetworkClone) obj;
+				return this.getOriginalNet().equals(probabilisticNetworkClone.getOriginalNet());
+			}
+			return false;
+		}
+	}
 }

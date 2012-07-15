@@ -3,6 +3,8 @@ package unbbayes.prs.bn;
 import java.util.Collection;
 import java.util.List;
 
+import unbbayes.prs.INode;
+
 /**
  * This interface represents a junction tree for BN.
  * @see JunctionTree for default implementation
@@ -21,6 +23,14 @@ public interface IJunctionTree {
 	 * @param sep
 	 */
 	public abstract void addSeparator(Separator sep);
+	
+	/**
+	 * This method returns cliques containing all specified nodes
+	 * @param nodes : only cliques containing these nodes will be returned.
+	 * @param maxCount : no more than this quantity of cliques will be returned.
+	 * @return list of cliques
+	 */
+	public List<Clique> getCliquesContainingAllNodes(Collection<INode> nodes, int maxCount);
 
 //	/**
 //	 * The current size of the collection of separators stored in this
