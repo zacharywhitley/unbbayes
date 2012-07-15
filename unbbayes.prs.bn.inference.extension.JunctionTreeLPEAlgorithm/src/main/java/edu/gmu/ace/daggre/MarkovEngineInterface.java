@@ -248,6 +248,8 @@ public interface MarkovEngineInterface {
 	 * because the ordering in this list will be used in order to identify the correct indexes in "newValues".
 	 * @param assumedStates : this shall be null if newValues contains full data (all cells of the conditional probability distribution).
 	 * If not null, this list indicates which states the nodes in assumptionIds are.
+	 * If negative, then "not" Math.abs(state + 1) will be considered as the state (i.e. the state Math.abs(state + 1) will be
+	 * considered as 0%).
 	 * @param allowNegative : If true (default is False), then checks for sufficient assets should be bypassed and we allow 
 	 * the user to go into the hole
 	 * @return the assets per state changed, if the user has sufficient assets 
@@ -265,6 +267,8 @@ public interface MarkovEngineInterface {
 	 * @param occurredWhen : implementations of this interface may use this timestamp to store a history of modifications.
 	 * @param questionId : the id of the question to be settled.
 	 * @param settledState : index of the state of the question (with ID questionID) to be settled.
+	 * If negative, then "not" Math.abs(settledState + 1) will be considered as the state (i.e. the state Math.abs(settledState + 1) will be
+	 * considered as 0%).
 	 * @return true if successful.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
@@ -298,6 +302,8 @@ public interface MarkovEngineInterface {
 	 * the questions (i.e. random variables) with these IDs will be assumed to be in the states specified in the argument "assumedStates".
 	 * @param assumedStates : (mandatory if assumptionIDs is specified - must have the same size of assumptionIDs) indexes
 	 * of states (i.e. choices - if boolean, then it is either 0 or 1) of assumptionIDs to be assumed.
+	 * If negative, then "not" Math.abs(state + 1) will be considered as the state (i.e. the state Math.abs(state + 1) will be
+	 * considered as 0%).
 	 * @return the probability of a question (i.e. random variable) given assumptions.
 	 * The order is important for identifying the states (i.e. 1st value is for the 1st state, and so on).
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
@@ -315,6 +321,8 @@ public interface MarkovEngineInterface {
 	 * the questions (i.e. random variables) with these IDs will be assumed to be in the states specified in the argument "assumedStates".
 	 * @param assumedStates : (mandatory if assumptionIDs is specified - must have the same size of assumptionIDs) indexes
 	 * of states (i.e. choices - if boolean, then it is either 0 or 1) of assumptionIDs to be assumed.
+	 * If negative, then "not" Math.abs(state + 1) will be considered as the state (i.e. the state Math.abs(state + 1) will be
+	 * considered as 0%).
 	 * @return a mapping from question ID to the probabilities of that question.
 	 * The order is important for identifying the states (i.e. 1st value is for the 1st state, and so on).
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
@@ -323,13 +331,16 @@ public interface MarkovEngineInterface {
 	public Map<Long,List<Float>> getProbLists(List<Long> questionIds, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
-	 * P(A=a1)*P(B=b2|A=a1)*P(C=c3|A=a1,B=b2)
-	 * @param assumptionIds
-	 * @param assumedStates
-	 * @return
-	 * @throws IllegalArgumentException
+	 * This will calculate the joint probability of the provided nodes.
+	 * @param questionIds : the nodes to calculate joint probability.
+	 * @param states : states to be considered when calculating the joint probability.
+	 * The ordering is important, because the order is what identifies which state is related to which question in "questionIds".
+	 * If negative, then "not" Math.abs(state + 1) will be considered as the state (i.e. the state Math.abs(state + 1) will be
+	 * considered as 0%).
+	 * @return the joint probability value.
+	 * @throws IllegalArgumentException : if any invalid assumption or state is provided.
 	 */
-	public float getJointProbability(List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	public float getJointProbability(List<Long>questionIds, List<Integer> states) throws IllegalArgumentException;
 	
 	
 	
@@ -482,6 +493,8 @@ public interface MarkovEngineInterface {
 	 * @param assumedStates : (mandatory if assumptionIDs is specified - must have the same size of assumptionIDs) indexes
 	 * of states (i.e. choices - if boolean, then it is either 0 or 1) of assumptionIDs to be assumed.
 	 * If it does not have the same size of assumptionIDs, MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
+	 * If negative, then "not" Math.abs(state + 1) will be considered as the state (i.e. the state Math.abs(state + 1) will be
+	 * considered as 0%).
 	 * @return TOTAL current expected value portion of across all questions given a set of assumptions.
 	 * @throws IllegalArgumentException
 	 * @see {@link #scoreUserQuestionEv(long, Long, List, List)}
@@ -611,6 +624,8 @@ public interface MarkovEngineInterface {
 	 * Use the same list passed to {@link #scoreUserEv(long, List, List)}.
 	 * @param assumedStates : (optional) states of the assumptions. The order must be synchronized with assumptionIds.
 	 * Use the same list passed to {@link #scoreUserEv(long, List, List)}.
+	 * If negative, then "not" Math.abs(state + 1) will be considered as the state (i.e. the state Math.abs(state + 1) will be
+	 * considered as 0%).
 	 * @return object representing the summary (set of attributes to display TBD) that shows a summary view of how the current score of a user was determined. 
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
@@ -644,10 +659,11 @@ public interface MarkovEngineInterface {
 	 * 2nd element in the list: <br/>
 	 * {@value #QUESTIONS_PROPERTY} = "1,2"; {@value #STATES_PROPERTY} = "10.5"; {@value #SCOREEV_PROPERTY} = 2.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
+	 * @deprecated use {@link #getScoreSummaryObject(long, Long, List, List)} instead
 	 */
+	@Deprecated
 	public List<Properties> getScoreSummary(long userId, Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
-	//@deprecated use {@link #getScoreSummaryObject(long, Long, List, List)} instead
 	
 	
 	/**

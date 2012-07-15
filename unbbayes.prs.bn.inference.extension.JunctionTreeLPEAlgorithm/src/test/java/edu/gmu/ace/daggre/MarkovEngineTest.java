@@ -16,8 +16,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import junit.framework.TestCase;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.Clique;
+import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.Separator;
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
 import edu.gmu.ace.daggre.MarkovEngineImpl.AddTradeNetworkAction;
 import edu.gmu.ace.daggre.MarkovEngineImpl.BalanceTradeNetworkAction;
@@ -5404,18 +5407,15 @@ public class MarkovEngineTest extends TestCase {
 		engine.commitNetworkActions(transactionKey);
 		
 		// check that final marginal of C is [.5,.5], E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
-		List<Float> probList = engine.getProbList(0x0C, null, null);
-		assertEquals(0.5f, probList.get(0), PROB_ERROR_MARGIN);
-		assertEquals(0.5f, probList.get(1), PROB_ERROR_MARGIN);
-		probList = engine.getProbList(0x0D, null, null);
-		assertEquals(0.7232f, probList.get(0), PROB_ERROR_MARGIN);
-		assertEquals(0.2768f, probList.get(1), PROB_ERROR_MARGIN);
-		probList = engine.getProbList(0x0E, null, null);
-		assertEquals(0.8509f, probList.get(0), PROB_ERROR_MARGIN);
-		assertEquals(0.1491f, probList.get(1), PROB_ERROR_MARGIN);
-		probList = engine.getProbList(0x0F, null, null);
-		assertEquals(0.2165f, probList.get(0), PROB_ERROR_MARGIN);
-		assertEquals(0.7835f, probList.get(1), PROB_ERROR_MARGIN);
+		Map<Long,List<Float>> probsList = engine.getProbLists(null, null, null);
+		assertEquals(0.5f, probsList.get(0x0CL).get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probsList.get(0x0CL).get(1), PROB_ERROR_MARGIN);
+		assertEquals(0.7232f, probsList.get(0x0DL).get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.2768f, probsList.get(0x0DL).get(1), PROB_ERROR_MARGIN);
+		assertEquals(0.8509f, probsList.get(0x0EL).get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.1491f, probsList.get(0x0EL).get(1), PROB_ERROR_MARGIN);
+		assertEquals(0.2165f, probsList.get(0x0FL).get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.7835f, probsList.get(0x0FL).get(1), PROB_ERROR_MARGIN);
 		
 		// set assumptions to D,E,F, so that we can use it to calculate conditional min-q (in order to test consistency of LPE)
 		ArrayList<Long> assumptionIds = new ArrayList<Long>();
@@ -8330,6 +8330,229 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(4, engine.getQuestionHistory(0x0FL, null, null).size());
 		
 		assertEquals(engine.getExecutedActions().size(), sum);
+	}
+	
+	/**
+	 * Test method for {@link MarkovEngineImpl#getJointProbability(List, List)}
+	 */
+	public final void testGetJointProbability() {
+		// initialize network
+		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
+		this.createDEFNetIn1Transaction(userNameToIDMap);
+		
+		List<Float> jointProbabilityNoOptimization = new ArrayList<Float>();	// joint prob calculation w/o optimization
+		List<Float> jointProbabilityDelegated = new ArrayList<Float>();			// joint prob calculation delegated to class unbbayes.prs.bn.JunctionTree
+		List<Float> jointProbabilityLocalOptimization = new ArrayList<Float>(); // joint prob calculation will not propagate evidences if all nodes are in same clique
+		List<Float> jointProbabilityManual = new ArrayList<Float>(); 		// joint prob obtained from manually calculating values returned by getProbList 
+		
+		// check null or empty arguments
+		for (int i = 0; i < 100; i++) {
+			// random config
+			((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToUseEstimatedTotalProbability(Math.random() < .5);
+			((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToCalculateJointProbabilityLocally(Math.random() < .5);
+			try {
+				// tested cases of questionIds := null, empty, 1 element, 2 elements, 3 elements
+				List<Long> questionIds = null;
+				if (Math.random() < .2) {
+					// questionIds = null;
+				} else if (Math.random() < .25) {
+					questionIds = Collections.emptyList();
+				} else if (Math.random() < .33334) {
+					questionIds = Collections.singletonList((Math.random() < .34)?0x0DL:((Math.random() < .5)?0x0EL:0x0FL));
+				} else if (Math.random() < .5) {
+					questionIds = new ArrayList<Long>();
+					questionIds.add(0x0DL);
+					questionIds.add((Math.random() < .5)?0x0EL:0x0FL);
+				} else {
+					questionIds = new ArrayList<Long>();
+					questionIds.add(0x0DL);
+					questionIds.add(0x0EL);
+					questionIds.add(0x0FL);
+				}
+				// tested cases of states := null, empty, out of range
+				List<Integer> states = null;
+				if (Math.random() < .34) {
+					// states = null;
+				} else if (Math.random() < .5) {
+					states = Collections.emptyList();
+				} else {
+					// add at least 1 invalid
+					states = new ArrayList<Integer>();
+					if (Math.random() < .5) {
+						states.add((int) (((Math.random()<.5)?-1:1) * Math.random()*5));
+					}
+					if (Math.random() < .5) {
+						states.add((int) (((Math.random()<.5)?-1:1) * Math.random()*5));
+					}
+					if (Math.random() < .5) {
+						states.add((int) (((Math.random()<.5)?-1:1) * Math.random()*5));
+					}
+					if (states.isEmpty()) {
+						states.add((int) (((Math.random()<.5)?-1:1) * 5));
+					} else if (questionIds != null) {
+						// if all states are within interval [-3,2], we must force add an invalid state
+						boolean hasInvalid = false;
+						for (int j = 0; j < Math.min(questionIds.size(),states.size()) ; j++) {
+							int state = states.get(j);
+							if (state < 0) {
+								state = Math.abs(state + 1);
+							}
+							if (state > 2) {
+								hasInvalid = true;
+								break;
+							}
+						}
+						if (!hasInvalid) {
+							// random generator did not add invalid state. Force to add
+							states.set(0, (int) (((Math.random()<.5)?-1:1) * 5));
+						}
+					}
+				}
+				float ret = engine.getJointProbability(questionIds, states);
+				fail("[" + i + "] should fail on invalid args: questions = " + questionIds + ", states = " + states + ", returned " + ret);
+			} catch (IllegalArgumentException e) {
+				assertNotNull(e);
+			}
+		}
+		
+		// check marginals equals to the ones returned by engine.getProbList(). Tested sequence: {d1, d2, e1, e2 , f1, f2}
+		assertEquals(engine.getProbList(0x0DL, null, null).get(0), engine.getJointProbability(Collections.singletonList(0x0DL), Collections.singletonList(0)), PROB_ERROR_MARGIN);
+		assertEquals(engine.getProbList(0x0DL, null, null).get(1), engine.getJointProbability(Collections.singletonList(0x0DL), Collections.singletonList(1)), PROB_ERROR_MARGIN);
+		assertEquals(engine.getProbList(0x0EL, null, null).get(0), engine.getJointProbability(Collections.singletonList(0x0EL), Collections.singletonList(0)), PROB_ERROR_MARGIN);
+		assertEquals(engine.getProbList(0x0EL, null, null).get(1), engine.getJointProbability(Collections.singletonList(0x0EL), Collections.singletonList(1)), PROB_ERROR_MARGIN);
+		assertEquals(engine.getProbList(0x0FL, null, null).get(0), engine.getJointProbability(Collections.singletonList(0x0FL), Collections.singletonList(0)), PROB_ERROR_MARGIN);
+		assertEquals(engine.getProbList(0x0FL, null, null).get(1), engine.getJointProbability(Collections.singletonList(0x0FL), Collections.singletonList(1)), PROB_ERROR_MARGIN);
+		assertEquals(((ProbabilisticNode)engine.getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getNode(Long.toString(0x0DL))).getMarginalAt(0), 
+				engine.getJointProbability(Collections.singletonList(0x0DL), Collections.singletonList(0)), PROB_ERROR_MARGIN);
+		assertEquals(((ProbabilisticNode)engine.getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getNode(Long.toString(0x0DL))).getMarginalAt(1), 
+				engine.getJointProbability(Collections.singletonList(0x0DL), Collections.singletonList(1)), PROB_ERROR_MARGIN);
+		assertEquals(((ProbabilisticNode)engine.getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getNode(Long.toString(0x0EL))).getMarginalAt(0), 
+				engine.getJointProbability(Collections.singletonList(0x0EL), Collections.singletonList(0)), PROB_ERROR_MARGIN);
+		assertEquals(((ProbabilisticNode)engine.getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getNode(Long.toString(0x0EL))).getMarginalAt(1), 
+				engine.getJointProbability(Collections.singletonList(0x0EL), Collections.singletonList(1)), PROB_ERROR_MARGIN);
+		assertEquals(((ProbabilisticNode)engine.getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getNode(Long.toString(0x0FL))).getMarginalAt(0), 
+				engine.getJointProbability(Collections.singletonList(0x0FL), Collections.singletonList(0)), PROB_ERROR_MARGIN);
+		assertEquals(((ProbabilisticNode)engine.getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getNode(Long.toString(0x0FL))).getMarginalAt(1), 
+				engine.getJointProbability(Collections.singletonList(0x0FL), Collections.singletonList(1)), PROB_ERROR_MARGIN);
+		
+		// test combinations of different combinations of configuration of algorithm, questions, and states
+		
+		// combo: d1e1
+		List<Long> questionIds = new ArrayList<Long>(); List<Integer> states = new ArrayList<Integer>();
+		questionIds.add(0x0DL);	states.add(0);  questionIds.add(0x0EL); states.add(0);
+		
+		// force internal algorithm not to use optimization at all
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToUseEstimatedTotalProbability(false);
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToCalculateJointProbabilityLocally(false);
+		jointProbabilityNoOptimization.add(engine.getJointProbability(questionIds, states));
+		
+		// Force internal algorithm to delegate calculation of joint probability to JunctionTree class
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToUseEstimatedTotalProbability(true);
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToCalculateJointProbabilityLocally(false);
+		jointProbabilityDelegated.add(engine.getJointProbability(questionIds, states));
+
+		// Force internal algorithm to optimize calculation if all nodes are in same clique
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToUseEstimatedTotalProbability(true);
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToCalculateJointProbabilityLocally(true);
+		jointProbabilityLocalOptimization.add(engine.getJointProbability(questionIds, states));
+		
+		// man calc := P(e1) * P(d1|e1)
+		float manuallyCalculatedValue = engine.getProbList(0x0EL, null, null).get(0);
+		manuallyCalculatedValue *= engine.getProbList(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0)).get(0);
+		jointProbabilityManual.add(manuallyCalculatedValue);
+		
+		// combo: d2f2
+		questionIds = new ArrayList<Long>(); states = new ArrayList<Integer>();
+		questionIds.add(0x0DL);	states.add(1);  questionIds.add(0x0FL); states.add(1);
+		
+		// force internal algorithm not to use optimization at all
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToUseEstimatedTotalProbability(false);
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToCalculateJointProbabilityLocally(false);
+		jointProbabilityNoOptimization.add(engine.getJointProbability(questionIds, states));
+		
+		// Force internal algorithm to delegate calculation of joint probability to JunctionTree class
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToUseEstimatedTotalProbability(true);
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToCalculateJointProbabilityLocally(false);
+		jointProbabilityDelegated.add(engine.getJointProbability(questionIds, states));
+
+		// Force internal algorithm to optimize calculation if all nodes are in same clique
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToUseEstimatedTotalProbability(true);
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToCalculateJointProbabilityLocally(true);
+		jointProbabilityLocalOptimization.add(engine.getJointProbability(questionIds, states));
+		
+		// man calc := P(f2) * P(d2|f2)
+		manuallyCalculatedValue = engine.getProbList(0x0FL, null, null).get(1);
+		manuallyCalculatedValue *= engine.getProbList(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(1)).get(1);
+		jointProbabilityManual.add(manuallyCalculatedValue);
+		
+		// combo: d1e2f1
+		questionIds = new ArrayList<Long>(); states = new ArrayList<Integer>();
+		questionIds.add(0x0DL);	states.add(0);  questionIds.add(0x0EL); states.add(1);  questionIds.add(0x0FL); states.add(0);
+		
+		// force internal algorithm not to use optimization at all
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToUseEstimatedTotalProbability(false);
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToCalculateJointProbabilityLocally(false);
+		jointProbabilityNoOptimization.add(engine.getJointProbability(questionIds, states));
+		
+		// Force internal algorithm to delegate calculation of joint probability to JunctionTree class
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToUseEstimatedTotalProbability(true);
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToCalculateJointProbabilityLocally(false);
+		jointProbabilityDelegated.add(engine.getJointProbability(questionIds, states));
+
+		// Force internal algorithm to optimize calculation if all nodes are in same clique
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToUseEstimatedTotalProbability(true);
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToCalculateJointProbabilityLocally(true);
+		jointProbabilityLocalOptimization.add(engine.getJointProbability(questionIds, states));
+
+		// man calc := P(f1)*P(d1|f1)*P(e2|f1,d1)
+		manuallyCalculatedValue = engine.getProbList(0x0FL, null, null).get(0);
+		manuallyCalculatedValue *= engine.getProbList(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(0)).get(0);
+		List<Long> manualAssumptions = new ArrayList<Long>(); 
+		List<Integer> manualAssumptionStates = new ArrayList<Integer>();
+		manualAssumptions.add(0x0FL); manualAssumptionStates.add(0);
+		manualAssumptions.add(0x0DL); manualAssumptionStates.add(0);
+		manuallyCalculatedValue *= engine.getProbList(0x0EL, manualAssumptions, manualAssumptionStates).get(1);
+		jointProbabilityManual.add(manuallyCalculatedValue);
+		
+		// combo: f2d2e2
+		questionIds = new ArrayList<Long>(); states = new ArrayList<Integer>();
+		questionIds.add(0x0FL);	states.add(1);  questionIds.add(0x0DL); states.add(1);  questionIds.add(0x0EL); states.add(1);
+		
+		// force internal algorithm not to use optimization at all
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToUseEstimatedTotalProbability(false);
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToCalculateJointProbabilityLocally(false);
+		jointProbabilityNoOptimization.add(engine.getJointProbability(questionIds, states));
+		
+		// Force internal algorithm to delegate calculation of joint probability to JunctionTree class
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToUseEstimatedTotalProbability(true);
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToCalculateJointProbabilityLocally(false);
+		jointProbabilityDelegated.add(engine.getJointProbability(questionIds, states));
+
+		// Force internal algorithm to optimize calculation if all nodes are in same clique
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToUseEstimatedTotalProbability(true);
+		((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToCalculateJointProbabilityLocally(true);
+		jointProbabilityLocalOptimization.add(engine.getJointProbability(questionIds, states));
+
+		// man calc := Prod(clique potential) / Prod (separator potential)
+		Clique cliqueDE = (Clique) ((ProbabilisticNode)engine.getProbabilisticNetwork().getNode(Long.toString(0x0EL))).getAssociatedClique();
+		Clique cliqueDF = (Clique) ((ProbabilisticNode)engine.getProbabilisticNetwork().getNode(Long.toString(0x0FL))).getAssociatedClique();
+		Separator sepD = (Separator) ((ProbabilisticNode)engine.getProbabilisticNetwork().getNode(Long.toString(0x0DL))).getAssociatedClique();
+		int coordinate[] = {1,1};
+		jointProbabilityManual.add(
+				cliqueDE.getProbabilityFunction().getValue(coordinate) 
+				* cliqueDF.getProbabilityFunction().getValue(coordinate)
+				/ sepD.getProbabilityFunction().getValue(1)
+			);
+		
+		// check that all probabilities are the same
+		assertEquals(jointProbabilityDelegated.size(), jointProbabilityLocalOptimization.size());
+		assertEquals(jointProbabilityDelegated.size(), jointProbabilityNoOptimization.size());
+		for (int i = 0; i < jointProbabilityDelegated.size(); i++) {
+			assertEquals("["+i+"]",jointProbabilityManual.get(i), jointProbabilityLocalOptimization.get(i), PROB_ERROR_MARGIN);
+			assertEquals("["+i+"]",jointProbabilityManual.get(i), jointProbabilityNoOptimization.get(i), PROB_ERROR_MARGIN);
+			assertEquals("["+i+"]",jointProbabilityManual.get(i), jointProbabilityDelegated.get(i), PROB_ERROR_MARGIN);
+		}
+		
 	}
 
 	// not needed for the 1st release

@@ -15,10 +15,12 @@ import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
 import unbbayes.prs.bn.AssetNode;
+import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor;
 import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
@@ -1216,75 +1218,51 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		// undo only the min propagation (we do not need the min q values anymore, and next q-calculations must use q values prior to min propagation)
 		assetQAlgorithm.undoMinPropagation();
 		
-		// Resolve question F to f1, by using hard evidence and special "Default" user
+		// make sure propagating evidences in cloned algorithm will give same result of propagating original network
+		AssetAwareInferenceAlgorithm clonedAlgorithm = null;
+		try {
+			clonedAlgorithm = (AssetAwareInferenceAlgorithm) assetQAlgorithm.clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		assertNotNull(clonedAlgorithm);
+		assertEquals(assetQAlgorithm.getRelatedProbabilisticNetwork().getJunctionTree().getCliques().size(), clonedAlgorithm.getRelatedProbabilisticNetwork().getJunctionTree().getCliques().size());
+		assertEquals(assetQAlgorithm.getRelatedProbabilisticNetwork().getJunctionTree().getSeparators().size(), clonedAlgorithm.getRelatedProbabilisticNetwork().getJunctionTree().getSeparators().size());
+		assertTrue(assetQAlgorithm.getRelatedProbabilisticNetwork() != clonedAlgorithm.getRelatedProbabilisticNetwork());
+		assertTrue(assetQAlgorithm.getAssetNetwork() != clonedAlgorithm.getAssetNetwork());
 		
-//		// create new user Default
-//		AssetNetwork assetNetDefault = null;
-//		try {
-//			assetNetDefault = assetQAlgorithm.createAssetNetFromProbabilisticNet(network);
-//			assetNetDefault.setName("Default");
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		assertNotNull(assetNetDefault);
-//		
-//		// let the algorithm allow asset-q smaller than 1
-//		assetQAlgorithm.setToAllowQValuesSmallerThan1(true);
-//		
-//		// resolved node is F
-//		betNode = (TreeVariable) network.getNode("F");
-//		assertEquals(network.getNode("F"), betNode);
-//		
-//		// for resolution, bet condition is none.
-//		betConditions.clear();
-//		assertEquals(0, betConditions.size());
-//		
-//		// extract conditional probability P(F | null) == P(F)
-//		sdf
-//		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
-//		assertNotNull(potential);
-//		assertEquals(2,potential.tableSize());
-//		// P(F | null) == P(F)
-//		assertEquals(betNode.getMarginalAt(0), potential.getValue(0), PROB_PRECISION_ERROR);
-//		assertEquals(betNode.getMarginalAt(1), potential.getValue(1), PROB_PRECISION_ERROR);
-//
-//		// set P(D=d1|F=f2) to a value lower (half) than the lower bound of edit interval
-//		potential.setValue(2, editInterval[0]/2);
-//		potential.setValue(3, 1-(editInterval[0]/2));
-//		
-//		// fill array of likelihood with values in CPT
-//		likelihood = new float[potential.tableSize()];
-//		for (int i = 0; i < likelihood.length; i++) {
-//			likelihood[i] = potential.getValue(i);
-//		}
-//		
-//		// add likelihood ratio given (empty) parents (conditions assumed in the bet - empty now)
-//		betNode.addLikeliHood(likelihood, betConditions);
-//		
-//		try {
-//			// propagate soft evidence
-//			assetQAlgorithm.propagate();
-//			System.out.println(network.getLog());
-//			network.getLogManager().clear();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		
-//		// check that LPE is 1 or below 
-//
-//		// prepare argument, which is input and output at the same moment
-//		inOutArgLPE.clear();
-//		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
-//		
-//		assertNotNull(lpes);
-//		assertFalse(lpes.isEmpty());
-//		assertTrue("Obtained min q = " + minQ, minQ <= 1);
-//
-//		// undo only the min propagation (we do not need the min q values anymore, and next q-calculations must use q values prior to min propagation)
-//		assetQAlgorithm.undoMinPropagation();
+		// make sure cloned and originals got same values before propagation
+		for (int i = 0; i < assetQAlgorithm.getRelatedProbabilisticNetwork().getJunctionTree().getCliques().size(); i++) {
+			Clique probOrig =  assetQAlgorithm.getRelatedProbabilisticNetwork().getJunctionTree().getCliques().get(i);
+			Clique probClone =  clonedAlgorithm.getRelatedProbabilisticNetwork().getJunctionTree().getCliques().get(i);
+			Clique assetOrig =  assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques().get(i);
+			Clique assetClone =  clonedAlgorithm.getAssetNetwork().getJunctionTree().getCliques().get(i);
+			for (int j = 0; j < probOrig.getProbabilityFunction().tableSize(); j++) {
+				assertEquals(probOrig.getProbabilityFunction().getValue(j), probClone.getProbabilityFunction().getValue(j), PROB_PRECISION_ERROR);
+				assertEquals(assetOrig.getProbabilityFunction().getValue(j), assetClone.getProbabilityFunction().getValue(j), ASSET_PRECISION_ERROR);
+			}
+		}
+
+		// set D = d2 as finding in both original and cloned networks
+		((ProbabilisticNode)assetQAlgorithm.getRelatedProbabilisticNetwork().getNode("D")).addFinding(1);
+		((ProbabilisticNode)clonedAlgorithm.getRelatedProbabilisticNetwork().getNode("D")).addFinding(1);
 		
+		
+		assetQAlgorithm.propagate();
+		clonedAlgorithm.propagate();
+		
+		// make sure cloned and originals got same results
+		for (int i = 0; i < assetQAlgorithm.getRelatedProbabilisticNetwork().getJunctionTree().getCliques().size(); i++) {
+			Clique probOrig =  assetQAlgorithm.getRelatedProbabilisticNetwork().getJunctionTree().getCliques().get(i);
+			Clique probClone =  clonedAlgorithm.getRelatedProbabilisticNetwork().getJunctionTree().getCliques().get(i);
+			Clique assetOrig =  assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques().get(i);
+			Clique assetClone =  clonedAlgorithm.getAssetNetwork().getJunctionTree().getCliques().get(i);
+			for (int j = 0; j < probOrig.getProbabilityFunction().tableSize(); j++) {
+				assertEquals(probOrig.getProbabilityFunction().getValue(j), probClone.getProbabilityFunction().getValue(j), PROB_PRECISION_ERROR);
+				assertEquals(assetOrig.getProbabilityFunction().getValue(j), assetClone.getProbabilityFunction().getValue(j), ASSET_PRECISION_ERROR);
+			}
+		}
 		
 	}
 

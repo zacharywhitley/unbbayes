@@ -1065,8 +1065,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						for (int i = 0; i < probNode.getStatesSize(); i++) {
 							marginalWhenResolved.add(probNode.getMarginalAt(i));
 						}
-						// propagate evidence in the probabilistic network
-						probNode.addFinding(settledState);
+						// set and propagate evidence in the probabilistic network
+						if (settledState < 0) {
+							// set finding as negative (i.e. finding setting a state to 0%)
+							probNode.addFinding(Math.abs(settledState+1), true);
+						} else {
+							probNode.addFinding(settledState);
+						}
 						getDefaultInferenceAlgorithm().propagate();	// supposedly, default algorithm is configured so that it does not update assets
 //					probNode.addFinding(settledState);
 						if (isToDeleteResolvedNode()) {
@@ -1351,7 +1356,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	}
 		
 			
-	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getProbLists(java.util.List, java.util.List, java.util.List)
+	 */
 	public Map<Long,List<Float>> getProbLists(List<Long> questionIds, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
 		return this.getProbLists(questionIds, assumptionIds, assumedStates, true);
 	}
@@ -1388,7 +1396,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// if we need to get probabilities of all nodes, and there are assumptions, then we need propagation anyway
 		if (questionIds == null && assumptionIds != null && assumedStates != null && !assumptionIds.isEmpty() && !assumedStates.isEmpty()) {
 			// netToUseWhenAssumptionsAreNotInSameClique != null if we need propagation
-			netToUseWhenAssumptionsAreNotInSameClique = getDefaultInferenceAlgorithm().new ProbabilisticNetworkClone(getProbabilisticNetwork());
+			netToUseWhenAssumptionsAreNotInSameClique = getDefaultInferenceAlgorithm().cloneProbabilisticNetwork(getProbabilisticNetwork());
 		} else {
 			// first, attempt to fill cptList with conditional probabilities that can be calculated without propagation.
 			int howManyIterations = getProbabilisticNetwork().getNodeCount();
@@ -1451,7 +1459,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 							cptList.add((PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, getProbabilisticNetwork(), null));
 						} catch (NoCliqueException e) {
 							Debug.println(getClass(), "Could not extract potentials within clique. Trying global propagation.", e);
-							netToUseWhenAssumptionsAreNotInSameClique = getDefaultInferenceAlgorithm().new ProbabilisticNetworkClone(getProbabilisticNetwork());
+							netToUseWhenAssumptionsAreNotInSameClique = getDefaultInferenceAlgorithm().cloneProbabilisticNetwork(getProbabilisticNetwork());
 							break;	// do not fill cptList anymore, because if we need to do 1 propagation anyway, the computational cost if the same for any quantity of nodes to propagate
 						}
 					} else {
@@ -1540,7 +1548,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					throw new IllegalArgumentException("Node" + findingNodeIDs.get(i) + " does not exist.");
 				}
 				if (i < findingStates.size()) {
-					findingNode.addFinding(findingStates.get(i));
+					// set evidence in the probabilistic network
+					if (findingStates.get(i) < 0) {
+						// set finding as negative (i.e. finding setting a state to 0%)
+						findingNode.addFinding(Math.abs(findingStates.get(i)+1), true);
+					} else {
+						findingNode.addFinding(findingStates.get(i));
+					}
 				}
 			}
 			// propagate finding
@@ -1889,7 +1903,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 					Integer stateIndex = assumedStates.get(i);
 					if (stateIndex != null) {
-						node.addFinding(stateIndex);
+						// set evidence in the probabilistic network
+						if (stateIndex < 0) {
+							// set finding as negative (i.e. finding setting a state to 0%)
+							node.addFinding(Math.abs(stateIndex+1), true);
+						} else {
+							node.addFinding(stateIndex);
+						}
 					}
 				}
 			}
@@ -2052,7 +2072,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			for (String name : nodeNameToStateMap.keySet()) {
 				// Findings must be in the cloned network instead of original network
 				ProbabilisticNode node = (ProbabilisticNode) ((ProbabilisticNetwork)clonedAlgorithm.getNetwork()).getNode(name);
-				node.addFinding(nodeNameToStateMap.get(name));
+				// set evidence in the probabilistic network
+				Integer stateIndex = nodeNameToStateMap.get(name);
+				if (stateIndex < 0) {
+					// set finding as negative (i.e. finding setting a state to 0%)
+					node.addFinding(Math.abs(stateIndex+1), true);
+				} else {
+					node.addFinding(stateIndex);
+				}
 			}
 			// propagate finding (no need to lock, because it is a cloned net)
 			clonedAlgorithm.propagate();
@@ -3312,10 +3339,48 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getJointProbability(java.util.List, java.util.List)
 	 */
-	public float getJointProbability(List<Long> assumptionIds,
-			List<Integer> assumedStates) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Not implemented yet.");
+	public float getJointProbability(List<Long> questionIds,
+			List<Integer> states) throws IllegalArgumentException {
+		// initial assertion
+		if (questionIds == null || questionIds.isEmpty() || states == null || states.isEmpty()) {
+			throw new IllegalArgumentException("This method cannot calculate joint probability without specifying the nodes and states");
+		}
+		
+		// this is an argument to be passed to inference algorithm
+		Map<ProbabilisticNode, Integer> nodesAndStatesToConsider = new HashMap<ProbabilisticNode, Integer>();
+		
+		// fill nodesAndStatesToConsider. Note: at this point, both questionIds and states are non-null
+		for (int i = 0; i < questionIds.size(); i++) {
+			Long questionId = questionIds.get(i);
+			if (questionId == null) {
+				continue;	// ignore
+			}
+			Integer state = null;
+			if (i < states.size()) {
+				state  = states.get(i);
+			}
+			if (state == null) {
+				continue;	// ignore
+			}
+			synchronized (getProbabilisticNetwork()) {
+				ProbabilisticNode node = (ProbabilisticNode) getProbabilisticNetwork().getNode(Long.toString(questionId));
+				if (node == null) {
+					throw new IllegalArgumentException("Question " + questionId + " not found.");
+				}
+				// negative states can be interpreted as "not" that state (i.e. assume 0% for that state)
+				// TODO check if we'll really need this feature
+				if (state < 0 && Math.abs(state + 1) >= node.getStatesSize()) {
+					throw new IllegalArgumentException("State " + Math.abs(state + 1) + " is invalid for question " + questionId);
+				}
+				if (state >= node.getStatesSize()) {
+					throw new IllegalArgumentException("State " + state + " is invalid for question " + questionId);
+				}
+				// add this node+state into argument
+				nodesAndStatesToConsider.put(node, state);
+			}
+		}
+		
+		return getDefaultInferenceAlgorithm().getJointProbability(nodesAndStatesToConsider);
 	}
 
 //	/**
