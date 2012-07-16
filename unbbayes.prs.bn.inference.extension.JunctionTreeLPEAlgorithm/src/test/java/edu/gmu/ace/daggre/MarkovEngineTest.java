@@ -24,6 +24,7 @@ import unbbayes.prs.bn.Separator;
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
 import edu.gmu.ace.daggre.MarkovEngineImpl.AddTradeNetworkAction;
 import edu.gmu.ace.daggre.MarkovEngineImpl.BalanceTradeNetworkAction;
+import edu.gmu.ace.daggre.MarkovEngineImpl.InexistingQuestionException;
 import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
 
 /**
@@ -32,7 +33,7 @@ import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
  */
 public class MarkovEngineTest extends TestCase {
 	
-	private static final int THREAD_NUM = 5;//75;	// quantity of threads to use in order to test multi-thread behavior
+	private static final int THREAD_NUM = 50;//75;	// quantity of threads to use in order to test multi-thread behavior
 
 	public static final int MAX_NETWIDTH = 3;
 	public static final int MAX_STATES = 5;
@@ -251,6 +252,7 @@ public class MarkovEngineTest extends TestCase {
 					transactionKey = engine.startNetworkActions();
 					isToCommitTransaction = true;
 				}
+				List<Long> newNodes = new ArrayList<Long>();
 				synchronized (parentNumCounters) {
 					int overallIterationNum = (int)(5*Math.random() + 1);	// do at least 1 operation
 					for (int j = 0; j < overallIterationNum; j++) {
@@ -265,7 +267,9 @@ public class MarkovEngineTest extends TestCase {
 										Math.max(MIN_STATES, Math.min(1 + (int)(MAX_STATES*Math.random()), MAX_STATES)), // between MIN_STATES and MAX_STATES
 										null
 								);
+								newNodes.add(nodeID);
 								generatedNodes.add(nodeID);
+//								System.out.println("Added " + nodeID);
 								parentNumCounters.put(nodeID, 0);
 							}
 						}
@@ -294,21 +298,27 @@ public class MarkovEngineTest extends TestCase {
 										if (parentNumCounters.get(child) + parents.size() > MAX_NETWIDTH) {
 											continue;
 										}
-										// origin should will always be smaller than anything in destination
-										engine.addQuestionAssumption(
-												transactionKey, 
-												new Date(), 
-												child, 
-												parents, 
-												((Math.random()<.5)?null:new ArrayList<Float>())
-										);
-										int actuallyAddedParentsCounter = 0;
-										for (Long parent : parents) {
-											if (generatedEdges.add(new QuestionPair(parent, child))) {
-												actuallyAddedParentsCounter++;
+										// origin should always be smaller than anything in destination
+										try {
+											engine.addQuestionAssumption(
+													transactionKey, 
+													new Date(), 
+													child, 
+													parents, 
+													((Math.random()<.5)?null:new ArrayList<Float>())
+											);
+											int actuallyAddedParentsCounter = 0;
+											for (Long parent : parents) {
+												if (generatedEdges.add(new QuestionPair(parent, child))) {
+													actuallyAddedParentsCounter++;
+												}
 											}
+											parentNumCounters.put(child, parentNumCounters.get(child) + actuallyAddedParentsCounter);
+										} catch (InexistingQuestionException e) {
+											i--;
+											continue;
+//											e.printStackTrace();
 										}
-										parentNumCounters.put(child, parentNumCounters.get(child) + actuallyAddedParentsCounter);
 									}
 								}
 							}
@@ -317,7 +327,12 @@ public class MarkovEngineTest extends TestCase {
 				}
 				if (isToCommitTransaction) {
 					// transactionKey was null -> several threads + several transactions case
-					engine.commitNetworkActions(transactionKey);
+					try {
+						engine.commitNetworkActions(transactionKey);
+					} catch (Exception e) {
+						generatedNodes.removeAll(newNodes);
+						e.printStackTrace();
+					}
 				}
 			}
 		}
@@ -5375,15 +5390,15 @@ public class MarkovEngineTest extends TestCase {
 		if (Math.random() < .5) {
 			// edge from C
 			if (Math.random() < .5) {
-				System.out.println("Edge C->D");
+//				System.out.println("Edge C->D");
 				engine.addQuestionAssumption(transactionKey, new Date(), 0x0D, Collections.singletonList((long)0x0C), null);
 			}
 			if (Math.random() < .5) {
-				System.out.println("Edge C->E");
+//				System.out.println("Edge C->E");
 				engine.addQuestionAssumption(transactionKey, new Date(), 0x0E, Collections.singletonList((long)0x0C), null);
 			}
 			if (Math.random() < .5) {
-				System.out.println("Edge C->F");
+//				System.out.println("Edge C->F");
 				engine.addQuestionAssumption(transactionKey, new Date(), 0x0F, Collections.singletonList((long)0x0C), null);
 			}
 		} else {
@@ -5398,7 +5413,7 @@ public class MarkovEngineTest extends TestCase {
 			if (Math.random() < .5) {
 				parentQuestionIds.add((long)0x0F);
 			}
-			System.out.println("Edge " + parentQuestionIds + " -> C");
+//			System.out.println("Edge " + parentQuestionIds + " -> C");
 			engine.addQuestionAssumption(transactionKey, new Date(), 0x0C, parentQuestionIds, null);
 		}
 		
@@ -7354,30 +7369,30 @@ public class MarkovEngineTest extends TestCase {
 			// from 0 to some node
 			if (Math.random() < .5) {
 				engine.addQuestionAssumption(transactionKey, new Date(), 0x0DL, Collections.singletonList(0x0CL), null);
-				System.out.println("C->D");
+//				System.out.println("C->D");
 			}
 			if (Math.random() < .5) {
 				engine.addQuestionAssumption(transactionKey, new Date(), 0x0EL, Collections.singletonList(0x0CL), null);
-				System.out.println("C->E");
+//				System.out.println("C->E");
 			}
 			if (Math.random() < .5) {
 				engine.addQuestionAssumption(transactionKey, new Date(), 0x0FL, Collections.singletonList(0x0CL), null);
-				System.out.println("C->F");
+//				System.out.println("C->F");
 			}
 		} else {
 			// from some node to 0
 			List<Long> assumptions = new ArrayList<Long>();
 			if (Math.random() < .5) {
 				assumptions.add(0x0DL);
-				System.out.println("D->C");
+//				System.out.println("D->C");
 			}
 			if (Math.random() < .5) {
 				assumptions.add(0x0EL);
-				System.out.println("E->C");
+//				System.out.println("E->C");
 			}
 			if (Math.random() < .5) {
 				assumptions.add(0x0FL);
-				System.out.println("F->C");
+//				System.out.println("F->C");
 			}
 			engine.addQuestionAssumption(transactionKey, new Date(), 0x0CL, assumptions, null);
 		}
