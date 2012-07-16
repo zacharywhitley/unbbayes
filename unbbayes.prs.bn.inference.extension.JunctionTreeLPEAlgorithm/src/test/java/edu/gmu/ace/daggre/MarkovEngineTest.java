@@ -33,7 +33,7 @@ import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
  */
 public class MarkovEngineTest extends TestCase {
 	
-	private static final int THREAD_NUM = 50;//75;	// quantity of threads to use in order to test multi-thread behavior
+	private static final int THREAD_NUM = 5;//75;	// quantity of threads to use in order to test multi-thread behavior
 
 	public static final int MAX_NETWIDTH = 3;
 	public static final int MAX_STATES = 5;
@@ -45,7 +45,7 @@ public class MarkovEngineTest extends TestCase {
 	/** Error margin used when comparing 2 asset (score) values */
 	public static final float ASSET_ERROR_MARGIN = 1f;
 	
-	private MarkovEngineImpl engine = (MarkovEngineImpl) MarkovEngineImpl.getInstance();
+	private MarkovEngineImpl engine = (MarkovEngineImpl) MarkovEngineImpl.getInstance((float)Math.E, (float)(10.0/Math.log(100)), 0);
 
 	/**
 	 * @param name

@@ -66,9 +66,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	private float defaultInitialQTableValue = 1;
 
-	private float currentLogBase = (float)Math.E;
+	private float currentLogBase = 2;
 
-	private double currentCurrencyConstant = 10/(Math.log(100));
+	private double currentCurrencyConstant = 100;
 
 	private ProbabilisticNetwork probabilisticNetwork;
 
@@ -107,6 +107,25 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public static MarkovEngineInterface getInstance() {
 		return new MarkovEngineImpl();
+	}
+	
+	/**
+	 * Default constructor method initializing fields.
+	 * @param logBase : see {@link #setCurrentLogBase(float)}
+	 * @param currencyConstant : see {@link #setCurrentCurrencyConstant(float)}
+	 * @param initialUserAssets : see {@link #setDefaultInitialQTableValue(float)}. Although
+	 * {@link #setDefaultInitialQTableValue(float)} expects a q-value, this argument
+	 * accepts the asset values. See {@link #getQValuesFromScore(float)} and
+	 * {@link #getScoreFromQValues(float)} to convert assets to q-values and
+	 * q-values to assets respectively.
+	 * @return new instance of some class implementing {@link MarkovEngineInterface}
+	 */
+	public static MarkovEngineInterface getInstance(float logBase, float currencyConstant, float initialUserAssets) {
+		MarkovEngineImpl ret = (MarkovEngineImpl) MarkovEngineImpl.getInstance();
+		ret.setCurrentCurrencyConstant(currencyConstant);
+		ret.setCurrentLogBase(logBase);
+		ret.setDefaultInitialQTableValue(ret.getQValuesFromScore(initialUserAssets));
+		return ret;
 	}
 	
 	/**
