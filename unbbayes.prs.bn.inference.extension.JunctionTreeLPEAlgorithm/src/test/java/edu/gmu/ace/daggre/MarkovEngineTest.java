@@ -1083,6 +1083,20 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(100f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
 		assertEquals(100f, assetsIfStates.get(2), ASSET_ERROR_MARGIN);
 		assertEquals(100f, assetsIfStates.get(3), ASSET_ERROR_MARGIN);			
+		
+		float INITIAL_ASSETS = 1000.0f;
+
+		MarkovEngineImpl me = (MarkovEngineImpl) MarkovEngineImpl.getInstance();
+		((MarkovEngineImpl)me).setCurrentLogBase(2);
+		((MarkovEngineImpl)me).setCurrentCurrencyConstant(100);
+		((MarkovEngineImpl)me).setDefaultInitialQTableValue(((MarkovEngineImpl)me).getQValuesFromScore(INITIAL_ASSETS));
+		
+		transactionKey = me.startNetworkActions();
+		me.addQuestion(transactionKey, new Date(), 1L, 2, null);
+		me.commitNetworkActions(transactionKey);
+		
+		assertFalse(Float.isInfinite(me.getCash(2L, null, null)));
+		
 	}
 
 	/**

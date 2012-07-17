@@ -66,9 +66,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	private float defaultInitialQTableValue = 1;
 
-	private float currentLogBase = 2;
+	private float currentLogBase = (float) Math.E;
 
-	private double currentCurrencyConstant = 100;
+	private double currentCurrencyConstant = 10/Math.log(100);
 
 	private ProbabilisticNetwork probabilisticNetwork;
 
