@@ -289,7 +289,7 @@ public class GraphPane extends UCanvas implements KeyListener {
 		}
 	}
 
-	private Node addCloneNodes(Node probNode) {
+	private Node addCloneNodes(final Node probNode) {
 		// Node newNode = controller.insertProbabilisticNode(mouseX, mouseY);
 		Node newNode = controller.insertProbabilisticNode(probNode
 				.getPosition().getX() + 100,
@@ -310,6 +310,30 @@ public class GraphPane extends UCanvas implements KeyListener {
 		addShape(shape);
 		shape.setState(UShape.STATE_SELECTED, null);
 		// showCPT(newNode);
+
+		// Clear the default states
+		newNode.removeStates();
+
+		// Copy states
+		int numStates = probNode.getStatesSize();
+		for (int i = 0; i < numStates; i++) {
+			newNode.appendState(probNode.getStateAt(i));
+		}
+		// /// Copy CPT Table ///
+//		float[] marginais = new float[super.marginalList.length];
+//		System.arraycopy(super.marginalList, 0, marginais, 0, marginais.length);
+		
+//		System.arraycopy(probNode.m, 0, marginais, 0, marginais.length);
+//		cloned.marginalList = marginais;
+//		cloned.copyMarginal();
+
+		// Notify parents
+		for (Node child : newNode.getChildren()) {
+			if (child.getType() == Node.CONTINUOUS_NODE_TYPE) {
+				((ContinuousNode) child).getCnNormalDistribution()
+						.refreshParents();
+			}
+		}
 
 		// add children
 		List<Node> children = probNode.getChildren();
@@ -339,23 +363,36 @@ public class GraphPane extends UCanvas implements KeyListener {
 			} catch (InvalidParentException e) {
 				Debug.println(GraphPane.class, "Node did not add as a child", e);
 			}
+
+			// // Refresh parents
+			// ((ContinuousNode) childNode).getCnNormalDistribution()
+			// .refreshParents();
 		}
 
+		showCPT(newNode);
 		return newNode;
 
 	}
 
-	
+	/**
+	 * Obtain an unique name comparing a newName with all existing node names.
+	 * This algorithm is recursive in order to verify that the new name is
+	 * unique.
+	 * 
+	 * @param newName
+	 *            first new proposed unique node name.
+	 * @return a unique node name.
+	 */
 	private String getUniqueName(String newName) {
 		List<Node> nodes = controller.getGraph().getNodes();
 		for (Node node : nodes) {
 			if (newName.equals(node.getName())) {
-				int tempNameIndex = newName.lastIndexOf("_")+ 1;
-				String copyCounter = newName.substring(tempNameIndex );
+				int tempNameIndex = newName.lastIndexOf("_") + 1;
+				String copyCounter = newName.substring(tempNameIndex);
 				int c = Integer.valueOf(copyCounter) + 1;
 
 				newName = newName.substring(0, tempNameIndex) + c;
-				
+
 				return getUniqueName(newName);
 			}
 		}
