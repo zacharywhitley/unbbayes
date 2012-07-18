@@ -301,8 +301,7 @@ public class GraphPane extends UCanvas implements KeyListener {
 		String newName = probNode.getName() + "_1";
 		newName = getUniqueName(newName);
 		newNode.setName(newName);
-
-		// TODO every attribute might be assigned
+		newNode.setDescription(probNode.getDescription());
 
 		UShapeProbabilisticNode shape = new UShapeProbabilisticNode(this,
 				newNode,
