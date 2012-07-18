@@ -116,13 +116,14 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable,
 		cloned.setExplanationDescription(this.getExplanationDescription());
 		cloned.setPhrasesMap(this.getPhrasesMap());
 		cloned.setInformationType(this.getInformationType());
-		
+
 		if (isMarginalList()) {
 			float[] marginais = new float[super.marginalList.length];
-			System.arraycopy(super.marginalList, 0, marginais, 0, marginais.length);
+			System.arraycopy(super.marginalList, 0, marginais, 0,
+					marginais.length);
 			cloned.marginalList = marginais;
 		}
-		
+
 		// cloned.copyMarginal();
 		return cloned;
 	}
@@ -148,7 +149,6 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable,
 		return cloned;
 	}
 
-	
 	
 	/**
 	 * Returns the probabilistic table of this variable.
@@ -261,8 +261,10 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable,
 					|| getChildren().get(i).getType() == Node.CONTINUOUS_NODE_TYPE) {
 				continue;
 			}
-			PotentialTable auxTab = (PotentialTable) ((IRandomVariable) getChildren()
-					.get(i)).getProbabilityFunction();
+
+			IRandomVariable randomVar = (IRandomVariable) getChildren().get(i);
+			PotentialTable auxTab = (PotentialTable) randomVar.getProbabilityFunction();
+			
 			clones[i] = auxTab.cloneVariables();
 			indexes[i] = auxTab.indexOfVariable(this);
 		}
@@ -307,7 +309,8 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable,
 				// } else {
 				// remove var, so that it is added again after the state is
 				// updated
-				auxTab.removeVariable(auxList.get(k));
+				Node node = auxList.get(k);
+				auxTab.removeVariable(node);
 				// }
 			}
 		}

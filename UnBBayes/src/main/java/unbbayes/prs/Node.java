@@ -428,6 +428,16 @@ public abstract class Node implements Serializable,
 		}
 	}
 
+	
+	/**
+	 * Remove every node state.
+	 */
+	public void removeStates() {
+		states.clear();
+		this.atualizatamanhoinfoestados();
+	}
+
+	
 	/**
 	 * Used within dalgo2. It should not be used with nodes having potential table's informations.
 	 */

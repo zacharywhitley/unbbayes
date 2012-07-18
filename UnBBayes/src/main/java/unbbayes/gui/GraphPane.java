@@ -280,20 +280,22 @@ public class GraphPane extends UCanvas implements KeyListener {
 				Debug.println("Root node is a probabilistic node");
 				ProbabilisticNode probNode = (ProbabilisticNode) rootNode;
 
-				// ProbabilisticNode clone = (ProbabilisticNode) probNode
-				// .basicClone();
-				addCloneNodes(probNode);
+				
+				addClonedNode(probNode);
+				
+				
 
 			}
 			// TODO support for other kind root nodes such as utility.
 		}
+
 	}
 
-	private Node addCloneNodes(final Node probNode) {
+	private Node addClonedNode(final Node probNode) {
 		// Node newNode = controller.insertProbabilisticNode(mouseX, mouseY);
-		Node newNode = controller.insertProbabilisticNode(probNode
-				.getPosition().getX() + 100,
-				probNode.getPosition().getY() + 100);
+		ProbabilisticNode newNode = (ProbabilisticNode) controller
+				.insertProbabilisticNode(probNode.getPosition().getX() + 100,
+						probNode.getPosition().getY() + 100);
 
 		// set attributes
 		String newName = probNode.getName() + "_1";
@@ -309,8 +311,10 @@ public class GraphPane extends UCanvas implements KeyListener {
 				newNode.getWidth(), newNode.getHeight());
 		addShape(shape);
 		shape.setState(UShape.STATE_SELECTED, null);
-		// showCPT(newNode);
 
+		
+		
+		// /// Copy CPT Table ///
 		// Clear the default states
 		newNode.removeStates();
 
@@ -319,22 +323,9 @@ public class GraphPane extends UCanvas implements KeyListener {
 		for (int i = 0; i < numStates; i++) {
 			newNode.appendState(probNode.getStateAt(i));
 		}
-		// /// Copy CPT Table ///
-//		float[] marginais = new float[super.marginalList.length];
-//		System.arraycopy(super.marginalList, 0, marginais, 0, marginais.length);
 		
-//		System.arraycopy(probNode.m, 0, marginais, 0, marginais.length);
-//		cloned.marginalList = marginais;
-//		cloned.copyMarginal();
-
-		// Notify parents
-		for (Node child : newNode.getChildren()) {
-			if (child.getType() == Node.CONTINUOUS_NODE_TYPE) {
-				((ContinuousNode) child).getCnNormalDistribution()
-						.refreshParents();
-			}
-		}
-
+		
+		
 		// add children
 		List<Node> children = probNode.getChildren();
 		// Validate that every children is selected
@@ -346,30 +337,32 @@ public class GraphPane extends UCanvas implements KeyListener {
 				continue;
 			}
 
-			Node clonedChild = addCloneNodes(childNode);
+			// Create child recursively.
+			Node clonedChild = addClonedNode(childNode);
 
 			try {
 				newNode.addChildNode(childNode);
 
+				// Add line between parent and new child.
 				UShapeLine line = new UShapeLine(this, getNodeUShape(newNode),
 						getNodeUShape(clonedChild));
 
-				line.setEdge(new Edge(newNode, clonedChild));
-				// TODO add edge to network
+				Edge edge = new Edge(newNode, clonedChild);
+				line.setEdge(edge);
+
 				line.setLearningLineSelection(false);
 				addShape(line);
+				insertEdge(edge);
 				onDrawConnectLineReleased(line, 0, 0);
 
 			} catch (InvalidParentException e) {
 				Debug.println(GraphPane.class, "Node did not add as a child", e);
 			}
-
-			// // Refresh parents
-			// ((ContinuousNode) childNode).getCnNormalDistribution()
-			// .refreshParents();
 		}
 
-		showCPT(newNode);
+	
+
+//		showCPT(newNode);
 		return newNode;
 
 	}
