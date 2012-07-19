@@ -360,6 +360,14 @@ public interface MarkovEngineInterface {
 	public List<Long> getPossibleQuestionAssumptions(long questionId, List<Long>assumptionIds) throws IllegalArgumentException, IllegalStateException;
 	
 	/**
+	 * This method is conceptually similar to calling {@link #getPossibleQuestionAssumptions(long, List)}
+	 * for all possible questionIds and then removing redundancies.
+	 * @return a list of any possible assumptions groups (likely cliques in some implementations). 
+	 * This method is there because of implementation constraints and unfortunately does violate encapsulation.
+	 */
+	public List<List<Long>> getQuestionAssumptionGroups();
+	
+	/**
 	 * This method implements the feature for obtaining the assets position of the user given conditions
 	 * (i.e. extract the values in the asset tables).
 	 * @param userId : the ID of the current user. 

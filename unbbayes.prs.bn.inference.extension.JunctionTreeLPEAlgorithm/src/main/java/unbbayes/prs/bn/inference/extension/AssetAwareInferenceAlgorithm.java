@@ -662,9 +662,11 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 * If you want this to be conditional, call {@link ProbabilisticNode#addFinding(int)}
 	 * and  {@link IInferenceAlgorithm#propagate()} in {@link #getProbabilityPropagationDelegator()}
 	 * first.
-	 * 
+	 * This method uses {@link #getEmptySeparatorsQValue()}
+	 * if an empty separator is found.
 	 * @return expected assets SUM(ProbCliques * AssetsClique) - SUM(ProbSeparators * AssetsSeparators).
 	 * @see #getqToAssetConverter()
+	 * 
 	 */
 	public double calculateExpectedAssets() {
 		
@@ -680,6 +682,9 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 			Clique assetClique = assetNet.getJunctionTree().getCliques().get(i) ;
 			Clique probClique  = bayesNet.getJunctionTree().getCliques().get(i) ;			
 			for (int j = 0; j < assetClique.getProbabilityFunction().tableSize(); j++) {
+				if (assetClique.getProbabilityFunction().getValue(j) <= 0f) {
+					continue;
+				}
 				double value = probClique.getProbabilityFunction().getValue(j) 
 				             * getqToAssetConverter().getScoreFromQValues(assetClique.getProbabilityFunction().getValue(j));
 				ret +=  value;
@@ -699,7 +704,18 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		// subtracts the product of probabilities and assets of separators 
 		for (Separator assetSeparator : assetNet.getJunctionTree().getSeparators()) {
 			Separator probSeparator = listOfSeparator.get(listOfSeparator.indexOf(assetSeparator));
+			if (probSeparator.getNodes() == null || probSeparator.getNodes().isEmpty()
+					|| probSeparator.getProbabilityFunction().getVariablesSize() <= 0 
+					|| probSeparator.getProbabilityFunction().tableSize() <= 0) {
+				// this is an empty separator, so it has 
+				double value =  getqToAssetConverter().getScoreFromQValues(getEmptySeparatorsQValue());
+				ret -= value;
+				this.notifyExpectedAssetCellListener(probSeparator, assetSeparator, -1, -1, value);
+			}
 			for (int i = 0; i < assetSeparator.getProbabilityFunction().tableSize(); i++) {	
+				if (assetSeparator.getProbabilityFunction().getValue(i) <= 0f) {
+					continue;
+				}
 				double value =  probSeparator.getProbabilityFunction().getValue(i) 
 		           * getqToAssetConverter().getScoreFromQValues(assetSeparator.getProbabilityFunction().getValue(i)) ;
 				ret -= value;
@@ -1410,6 +1426,24 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 */
 	public boolean isToCalculateMarginalsOfAssetNodes() {
 		return getAssetPropagationDelegator().isToCalculateMarginalsOfAssetNodes();
+	}
+
+	/**
+	 * Just delegates to {@link #getAssetPropagationDelegator()}.
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#getEmptySeparatorsQValue()
+	 * @see #calculateExpectedAssets()
+	 */
+	public float getEmptySeparatorsQValue() {
+		return getAssetPropagationDelegator().getEmptySeparatorsQValue();
+	}
+
+	/**
+	 * Just delegates to {@link #getAssetPropagationDelegator()}
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setEmptySeparatorsQValue(float)
+	 * @see #calculateExpectedAssets()
+	 */
+	public void setEmptySeparatorsQValue(float emptySeparatorsQValue) {
+		getAssetPropagationDelegator().setEmptySeparatorsQValue(emptySeparatorsQValue);
 	}
 
 	

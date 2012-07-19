@@ -18,6 +18,7 @@ import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
  *
  */
 public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
+	
 
 	/**
 	 * Delegates to {@link IInferenceAlgorithm#getNetwork()} from the algorithm
@@ -218,4 +219,25 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 * @see unbbayes.prs.bn.AssetNode#setToCalculateMarginal(boolean)
 	 */
 	public boolean isToCalculateMarginalsOfAssetNodes();
+	
+	/**
+	 * Separators with no variables may exist if network is disconnected.
+	 * This value will be used as a default q-value
+	 * of empty separators if such separators are present.
+	 * This value is used in methods like {@link #calculateExplanation(List)},
+	 * which uses joint q-values.
+	 * @return the emptySeparatorsQValue value,
+	 */
+	public float getEmptySeparatorsQValue();
+	
+	/**
+	 * Separators with no variables may exist if network is disconnected.
+	 * This value will be used as a default q-value
+	 * of empty separators if such separators are present.
+	 * This value is used in methods like {@link #calculateExplanation(List)},
+	 * which uses joint q-values.
+	 * @param emptySeparatorsQValue
+	 */
+	public void setEmptySeparatorsQValue(float emptySeparatorsQValue);
+	
 }

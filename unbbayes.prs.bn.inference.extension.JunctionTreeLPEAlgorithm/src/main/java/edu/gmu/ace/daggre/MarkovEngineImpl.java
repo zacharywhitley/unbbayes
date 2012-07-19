@@ -770,6 +770,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						assetTable.setValue(i, (float)(assetTable.getValue(i) * ratio));
 					}
 				}
+				// add delta to empty separators (but since all empty separators supposedly have the same assets, it is stored in only 1 place)
+				inferenceAlgorithm.setEmptySeparatorsQValue((float) (inferenceAlgorithm.getEmptySeparatorsQValue()*ratio));
 			}
 			
 			this.wasExecutedPreviously = true;
@@ -3493,6 +3495,48 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public void setToDeleteResolvedNode(boolean isToDeleteResolvedNode) {
 		this.isToDeleteResolvedNode = isToDeleteResolvedNode;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getQuestionAssumptionGroups()
+	 */
+	public List<List<Long>> getQuestionAssumptionGroups() {
+		// value to be returned
+		List<List<Long>> ret = new ArrayList<List<Long>>();
+		
+		// initial assertion
+		if (getProbabilisticNetwork() == null) {
+			return ret;
+		}
+		
+		// extract cliques
+		List<Clique> cliques = null;
+		synchronized (getProbabilisticNetwork()) {
+			List<Clique> originalCliqueList = getProbabilisticNetwork().getJunctionTree().getCliques();
+			if (originalCliqueList != null) {
+				cliques = new ArrayList<Clique>(originalCliqueList);
+			}
+		}
+		// TODO check it is OK to release lock here
+		if (cliques == null) {
+			return ret;
+		}
+		
+		// populate list of question ids based on nodes in cliques
+		for (Clique clique : cliques) {
+			List<Long> questionIds = new ArrayList<Long>();
+			for (Node node : clique.getNodes()) {
+				try {
+					questionIds.add(Long.parseLong(node.getName()));
+				} catch (Exception e) {
+					Debug.println(getClass(), e.getMessage(), e);
+					// ignore exception
+				}
+			}
+			ret.add(questionIds);
+		}
+		return ret;
 	}
 
 

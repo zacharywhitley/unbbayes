@@ -39,6 +39,13 @@ import unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener;
 public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm implements IAssetNetAlgorithm  {
 	
 	/** 
+	 * This property is used in {@link #getAssetNetwork()}, {@link AssetNetwork#getProperty(String)} in order 
+	 * to store the default q-value of empty separators. Default q-values of empty separators
+	 * are used when joint q-values are calculated (e.g.{@link #calculateExplanation(List)}). 
+	 */
+	public static final String EMPTY_SEPARATOR_DEFAULT_QVALUE_PROPERTY = "EMPTY_SEPARATOR_DEFAULT_QVALUE_PROPERTY";
+	
+	/** 
 	 * Name of the property in {@link Graph#getProperty(String)} which manages assets prior to {@link #propagate()}. 
 	 * The content is a Map<IRandomVariable, PotentialTable>, 
 	 * which maps a node to its clique-wise probability table (probabilities for all nodes in the same clique/separator).
@@ -109,7 +116,11 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	/** Initialize with default implementation */
 	private IMinQCalculator globalQValueCalculator = new IMinQCalculator() {
 		
-		/** Returns Product(Cliques)/Product(Separators). It assumes assetNet was compiled (i.e. has {@link AssetNetwork#getJunctionTree()}) */
+		/** 
+		 * Returns Product(Cliques)/Product(Separators). It assumes assetNet was compiled (i.e. has {@link AssetNetwork#getJunctionTree()}).
+		 * This method uses {@link AssetPropagationInferenceAlgorithm#getEmptySeparatorsQValue()}
+		 * if an empty separator  is found.
+		 */
 		public float getGlobalQ(AssetNetwork assetNet, Map<INode, Integer> filter) {
 			
 			// initial assertion
@@ -157,36 +168,42 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			for (Separator separator : assetNet.getJunctionTree().getSeparators()) {
 				// extract the separator table from separator
 				PotentialTable sepTable = separator.getProbabilityFunction();
-				// iterate on each cell of separator table
-				for (int i = 0; i < sepTable.tableSize(); i++) {
-					float value = sepTable.getValue(i);	// value of cell in clique table
-					// filter by states
-					if (filter != null) {
-						// isNotMatching == true if the variables&states related to current cell in table is incompatible with filter
-						boolean isNotMatching = false;	
-						// what combination of states the index i represents in cliqueTable
-						int[] combinationOfStates = sepTable.getMultidimensionalCoord(i); 
-						// look for node&state in filter which does not match with content of combinationOfStates
-						for (INode node : filter.keySet()) {
-							if ( separator.getNodes().contains(node) && combinationOfStates[sepTable.getVariableIndex((Node)node)] != filter.get(node)) {
-								// current clique contain node in filter, and the state in filter does not match state of combinationOfStates
-								isNotMatching = true;
-								break;
+				if (separator.getNodes() == null || separator.getNodes().isEmpty()
+						|| sepTable.getVariablesSize() <= 0 || sepTable.tableSize() <= 0) {
+					// this is an empty separator (i.e. network is disconnected). Use a default value when empty separator is found
+					ret /= getEmptySeparatorsQValue();
+				} else {	// separator is not empty
+					// iterate on each cell of separator table
+					for (int i = 0; i < sepTable.tableSize(); i++) {
+						float value = sepTable.getValue(i);	// value of cell in clique table
+						// filter by states
+						if (filter != null) {
+							// isNotMatching == true if the variables&states related to current cell in table is incompatible with filter
+							boolean isNotMatching = false;	
+							// what combination of states the index i represents in cliqueTable
+							int[] combinationOfStates = sepTable.getMultidimensionalCoord(i); 
+							// look for node&state in filter which does not match with content of combinationOfStates
+							for (INode node : filter.keySet()) {
+								if ( separator.getNodes().contains(node) && combinationOfStates[sepTable.getVariableIndex((Node)node)] != filter.get(node)) {
+									// current clique contain node in filter, and the state in filter does not match state of combinationOfStates
+									isNotMatching = true;
+									break;
+								}
+							}
+							if (isNotMatching) {
+								continue;	// do not multiply if current cell in table does not correspond with filter
 							}
 						}
-						if (isNotMatching) {
-							continue;	// do not multiply if current cell in table does not correspond with filter
+						// note: at this point, this cell in sepTable matches filter
+						if (Float.compare(value, 0.0f) == 0) {
+							// once divided by zero, it will be always undefined.
+							return Float.NaN;
 						}
-					}
-					// note: at this point, this cell in sepTable matches filter
-					if (Float.compare(value, 0.0f) == 0) {
-						// once divided by zero, it will be always undefined.
-						return Float.NaN;
-					}
-					// Product(Cliques)/Product(Separators)
-					ret /= value;
-				}
-			}
+						// Product(Cliques)/Product(Separators)
+						ret /= value;
+					}	// end of for i < sepTable.tableSize()
+				}	// end of else (separator is not empty)
+			} // end of foreach separator
 			
 			return (float) ret;
 		}
@@ -1069,11 +1086,11 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		}
 		// this is also for debugging
 		if (ret - 0.0001 >= minValueOfRootCliques || minValueOfRootCliques >= ret + 0.0001) {
-//			System.err.print("[WARN]" + this.getClass().getName() + " Global min q = " + ret + ", root clique's min q = " + minValueOfRootCliques);
-//			System.err.println(". This discrepancy may happen in disconnected networks/cliques : " + rootCliques);
 			if (ret != 0.0f && this.getCellValuesComparator().compare(ret , minValueOfRootCliques) > 0) {
+//				System.err.print("[WARN]" + this.getClass().getName() + " Global min q = " + ret + ", root clique's min q = " + minValueOfRootCliques);
+//				System.err.println(". This discrepancy may happen in disconnected networks/cliques : " + rootCliques);
 //				System.err.println("[WARN]" + this.getClass().getName() + " Using min q = " + minValueOfRootCliques + " due to the discrepancy.");
-				ret = minValueOfRootCliques;
+//				ret = minValueOfRootCliques;
 			}
 		}
 		return ret;
@@ -1500,6 +1517,29 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	public void setGlobalQValueCalculator(IMinQCalculator globalQValueCalculator) {
 		this.globalQValueCalculator = globalQValueCalculator;
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#getEmptySeparatorsQValue()
+	 */
+	public float getEmptySeparatorsQValue() {
+		Float ret = (Float) getAssetNetwork().getProperty(EMPTY_SEPARATOR_DEFAULT_QVALUE_PROPERTY);
+		if (ret == null) {
+			ret = getDefaultInitialAssetQuantity();
+			setEmptySeparatorsQValue(ret);
+		}
+		return ret;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setEmptySeparatorsQValue(float)
+	 */
+	public void setEmptySeparatorsQValue(float emptySeparatorsQValue) {
+		getAssetNetwork().getProperties().put(EMPTY_SEPARATOR_DEFAULT_QVALUE_PROPERTY, emptySeparatorsQValue);
+	}
+	
+	
 	
 
 //	/**
