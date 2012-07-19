@@ -23,7 +23,7 @@ package unbbayes.util;
 import java.util.ResourceBundle;
 
 /**
- * Classe que representa um array din�mico do tipo <code>float</code>.
+ * This is a class which represents a dynamic array of Float
  *
  * @author Michael
  * @author Rommel
@@ -33,7 +33,7 @@ public final class FloatCollection implements java.io.Serializable {
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
 	
-	public static final int DEFAULT_SIZE = 50;
+	public static final int DEFAULT_SIZE = 2;
 	
     public float data[];
     public int size;
