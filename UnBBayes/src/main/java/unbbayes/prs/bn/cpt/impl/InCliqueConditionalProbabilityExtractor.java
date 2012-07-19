@@ -15,9 +15,11 @@ import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.IProbabilityFunction;
+import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticTable;
+import unbbayes.prs.bn.Separator;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor;
@@ -272,6 +274,42 @@ public class InCliqueConditionalProbabilityExtractor implements
 		}
 		
 	}
+	
+	/**
+	 * Uses the tree structure of cliques in order to recursively visit only cliques containing
+	 * mainNode.
+	 * @param mainNode : only cliques containing this node will be evaluated (so, this is the primary filter).
+	 * @param includedParentNodes : only nodes in cliques containing these nodes and mainNode simultaneously will be returned.
+	 * @param currentClique : current clique recursively visited. Parent and children of this clique will be visited in next recursive call.
+	 * @param visitedCliques : cliques in this set will not be re-visited
+	 * @return nodes in cliques containing mainNode and includedParentNodes simultaneously (this list will also include includedParentNodes). 
+	 * The mainNode will not be included in the returned list.  
+	 * If empty, there is no clique containing mainNode and includedParentNodes simultaneously.
+	 */
+	private Set<INode> getValidConditionNodesRec(INode mainNode, List<INode> includedParentNodes, Clique currentClique, Set<Clique> visitedCliques) {
+		Set<INode> ret = new HashSet<INode>();
+		if (visitedCliques == null) {
+			visitedCliques = new HashSet<Clique>();
+		} else if (visitedCliques.contains(currentClique)) {
+			return ret;
+		}
+		visitedCliques.add(currentClique);
+		if (currentClique.getNodes() != null && currentClique.getNodes().contains(mainNode)) {
+			if (currentClique.getNodes().containsAll(includedParentNodes)) {
+				ret.addAll(currentClique.getNodes());
+				ret.remove(mainNode);
+			}
+			if (currentClique.getParent() != null) {
+				ret.addAll(getValidConditionNodesRec(mainNode, includedParentNodes, currentClique.getParent(), visitedCliques));
+			}
+			if (currentClique.getChildren() != null) {
+				for (Clique childClique : currentClique.getChildren()) {
+					ret.addAll(getValidConditionNodesRec(mainNode, includedParentNodes, childClique, visitedCliques));
+				}
+			}
+		}
+		return ret;
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -281,6 +319,26 @@ public class InCliqueConditionalProbabilityExtractor implements
 			IInferenceAlgorithm algorithm) {	// algorithm is ignored
 		if (includedParentNodes != null && mainNode != null && includedParentNodes.contains(mainNode)) {
 			throw new IllegalArgumentException(mainNode + " cannot be conditioned to itself.");
+		}
+		try {
+			// optimization: use associated clique/separator and adjacent ones
+			if (mainNode instanceof TreeVariable) {
+				TreeVariable treeVar = (TreeVariable) mainNode;
+				IRandomVariable cliqueOrSep = treeVar.getAssociatedClique();
+				if (cliqueOrSep instanceof Separator) {
+					Separator separator = (Separator) cliqueOrSep;
+					// visit parent and children of separator.getClique1() recursively
+					Set<INode> conditionNodes = this.getValidConditionNodesRec(mainNode, includedParentNodes, separator.getClique1(), null);
+					// visit parent and children of separator.getClique2() recursively
+					conditionNodes.addAll(this.getValidConditionNodesRec(mainNode, includedParentNodes, separator.getClique2(), null));
+					return new ArrayList<INode>(conditionNodes);
+				} else if (cliqueOrSep instanceof Clique) {
+					// visit parents and child cliques recursively
+					return new ArrayList<INode>(this.getValidConditionNodesRec(mainNode, includedParentNodes, (Clique) cliqueOrSep, null));
+				}
+			}
+		} catch (Exception e) {
+			Debug.println(getClass(), e.getMessage(),e);
 		}
 		Set<INode> ret = new HashSet<INode>();	// use set, so that no repetition is allowed
 		if (net != null && (net instanceof SingleEntityNetwork)) {
