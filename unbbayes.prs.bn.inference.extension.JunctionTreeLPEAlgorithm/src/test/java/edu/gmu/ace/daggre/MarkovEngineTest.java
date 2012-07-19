@@ -5739,6 +5739,8 @@ public class MarkovEngineTest extends TestCase {
 			}
 		} while (Math.random() < .5);
 		
+		assertTrue(engine.getQuestionAssumptionGroups().isEmpty());
+		
 		// Case 1: 0
 		
 		engine.initialize();
@@ -5764,6 +5766,11 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue("There is only 1 question in the network...",assumptions.isEmpty());
 		assumptions = engine.getPossibleQuestionAssumptions(0, (List)Collections.emptyList());
 		assertTrue("There is only 1 question in the network...",assumptions.isEmpty());
+		
+
+		assertFalse(engine.getQuestionAssumptionGroups().isEmpty());
+		assertEquals(1, engine.getQuestionAssumptionGroups().size());
+		assertTrue(engine.getQuestionAssumptionGroups().get(0).contains(0L));
 		
 		// Case 2: 1->0
 		
@@ -5814,6 +5821,11 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(1, assumptions.size());
 		assertEquals(0,assumptions.get(0).longValue());
 		
+		assertFalse(engine.getQuestionAssumptionGroups().isEmpty());
+		assertEquals(1, engine.getQuestionAssumptionGroups().size());
+		assertEquals(2, engine.getQuestionAssumptionGroups().get(0).size());
+		assertTrue(engine.getQuestionAssumptionGroups().get(0).contains(0L));
+		assertTrue(engine.getQuestionAssumptionGroups().get(0).contains(1L));
 		
 		// Case 3: 1->0<-2
 		engine.initialize();
@@ -5966,6 +5978,13 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue(assumptions.contains((long)0));
 		assertTrue(assumptions.contains((long)1));
 		
+
+		assertFalse(engine.getQuestionAssumptionGroups().isEmpty());
+		assertEquals(1, engine.getQuestionAssumptionGroups().size());
+		assertEquals(3, engine.getQuestionAssumptionGroups().get(0).size());
+		assertTrue(engine.getQuestionAssumptionGroups().get(0).contains(0L));
+		assertTrue(engine.getQuestionAssumptionGroups().get(0).contains(1L));
+		assertTrue(engine.getQuestionAssumptionGroups().get(0).contains(2L));
 		
 		// case 4: 1<-0->2
 		engine.initialize();
@@ -6098,6 +6117,15 @@ public class MarkovEngineTest extends TestCase {
 		assumptions = engine.getPossibleQuestionAssumptions(2, assumptionIds);
 		assertEquals(0, assumptions.size());
 		
+
+		assertFalse(engine.getQuestionAssumptionGroups().isEmpty());
+		assertEquals(2, engine.getQuestionAssumptionGroups().size());
+		assertEquals(2, engine.getQuestionAssumptionGroups().get(0).size());
+		assertEquals(2, engine.getQuestionAssumptionGroups().get(1).size());
+		assertTrue(engine.getQuestionAssumptionGroups().get(0).contains(0L));
+		assertTrue(engine.getQuestionAssumptionGroups().get(1).contains(0L));
+		assertTrue(engine.getQuestionAssumptionGroups().get(0).contains(1L) || engine.getQuestionAssumptionGroups().get(1).contains(1L));
+		assertTrue(engine.getQuestionAssumptionGroups().get(0).contains(2L) || engine.getQuestionAssumptionGroups().get(1).contains(2L));
 	}
 	
 	/**
