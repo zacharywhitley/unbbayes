@@ -3248,6 +3248,72 @@ public class MarkovEngineTest extends TestCase {
 		} catch (ZeroAssetsException e) {
 			assertNotNull(e);
 		}
+		
+		// test invalid assumptions
+		transactionKey = engine.startNetworkActions();
+		
+		// add a in which the assumptions will be ignored
+		newValues = new ArrayList<Float>();
+		newValues.add(.5f); newValues.add(.5f); 
+		assertFalse( engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Tom bets P(F|E = e2) = [.5,.5]", 
+				userNameToIDMap.get("Tom"), 
+				0x0FL, 
+				newValues, 
+				Collections.singletonList(0x0EL), 
+				Collections.singletonList(1), 
+				false
+			).isEmpty());
+		engine.commitNetworkActions(transactionKey);
+		
+		// check that marginal of F is [.5,.5] (i.e. condition E was ignored)
+		probList = engine.getProbList(0x0FL, null, null);
+		assertEquals(2, probList.size());
+		assertEquals(.5f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(.5f, probList.get(1), PROB_ERROR_MARGIN);
+		
+		// check that in the history, the assumption E was ignored
+		questionHistory = engine.getQuestionHistory(0x0FL, null, null);
+		assertNotNull(questionHistory);
+		assertFalse(questionHistory.isEmpty());
+		AddTradeNetworkAction action = (AddTradeNetworkAction) questionHistory.get(questionHistory.size()-1);
+		assertEquals((long)0x0F, (long)action.getQuestionId());
+		assertTrue("Assumptions = " + action.getTradeId(), action.getAssumptionIds().isEmpty());
+		
+		// test disconnected assumptions
+		transactionKey = engine.startNetworkActions();
+		
+		// add a in which the assumptions will be ignored
+		newValues = new ArrayList<Float>();
+		newValues.add(.5f); newValues.add(.5f); 
+		assertFalse( engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Tom bets P(D|A = a1) = [.5,.5]", 
+				userNameToIDMap.get("Tom"), 
+				0x0DL, 
+				newValues, 
+				Collections.singletonList(0x0AL), 
+				Collections.singletonList(0), 
+				false
+			).isEmpty());
+		engine.commitNetworkActions(transactionKey);
+		
+		// check that marginal of D is [.5,.5] (i.e. condition A was ignored)
+		probList = engine.getProbList(0x0DL, null, null);
+		assertEquals(2, probList.size());
+		assertEquals(.5f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(.5f, probList.get(1), PROB_ERROR_MARGIN);
+		
+		// check that in the history, the assumption A was ignored
+		questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		assertNotNull(questionHistory);
+		assertFalse(questionHistory.isEmpty());
+		action = (AddTradeNetworkAction) questionHistory.get(questionHistory.size()-1);
+		assertEquals((long)0x0D, (long)action.getQuestionId());
+		assertTrue("Assumptions = " + action.getTradeId(), action.getAssumptionIds().isEmpty());
 	}
 	
 
@@ -5723,9 +5789,10 @@ public class MarkovEngineTest extends TestCase {
 	
 	
 	/**
-	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#getPossibleQuestionAssumptions(long, java.util.List)}.
+	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#getPossibleQuestionAssumptions(long, java.util.List)}
+	 * and {@link edu.gmu.ace.daggre.MarkovEngineImpl#getQuestionAssumptionGroups()}.
 	 */
-	public final void testGetPossibleQuestionAssumptions() {
+	public final void testGetPossibleQuestionAssumptionsAndGetQuestionAssumptionGroups() {
 		
 		// Case 0: no network
 		
@@ -6126,6 +6193,188 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue(engine.getQuestionAssumptionGroups().get(1).contains(0L));
 		assertTrue(engine.getQuestionAssumptionGroups().get(0).contains(1L) || engine.getQuestionAssumptionGroups().get(1).contains(1L));
 		assertTrue(engine.getQuestionAssumptionGroups().get(0).contains(2L) || engine.getQuestionAssumptionGroups().get(1).contains(2L));
+		
+		// disconnected case: 0, 1->2, 3->4<-5, 6<-7->8
+		engine.initialize();
+		transactionKey = engine.startNetworkActions();
+		// create questions 0,1,2
+		engine.addQuestion(transactionKey, new Date(), 0, (int)(2+Math.round(Math.random()*3)), null);
+		engine.addQuestion(transactionKey, new Date(), 1, (int)(2+Math.round(Math.random()*3)), null);
+		engine.addQuestion(transactionKey, new Date(), 2, (int)(2+Math.round(Math.random()*3)), null);
+		engine.addQuestion(transactionKey, new Date(), 3, (int)(2+Math.round(Math.random()*3)), null);
+		engine.addQuestion(transactionKey, new Date(), 4, (int)(2+Math.round(Math.random()*3)), null);
+		engine.addQuestion(transactionKey, new Date(), 5, (int)(2+Math.round(Math.random()*3)), null);
+		engine.addQuestion(transactionKey, new Date(), 6, (int)(2+Math.round(Math.random()*3)), null);
+		engine.addQuestion(transactionKey, new Date(), 7, (int)(2+Math.round(Math.random()*3)), null);
+		engine.addQuestion(transactionKey, new Date(), 8, (int)(2+Math.round(Math.random()*3)), null);
+		// create edges 1->2,  3->4<-5, 7->6, and 7->8
+		engine.addQuestionAssumption(transactionKey, new Date(), 2, Collections.singletonList((long)1), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 4, Collections.singletonList((long)3), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 4, Collections.singletonList((long)5), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 6, Collections.singletonList((long)7), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 8, Collections.singletonList((long)7), null);
+		engine.commitNetworkActions(transactionKey);
+		for (long i = 0; i < 9; i++) {
+			try {
+				// assumptions contains main node
+				engine.getPossibleQuestionAssumptions(i, Collections.singletonList(i));
+				fail("Question cannot be assumption of itself: " + i);
+			}catch (IllegalArgumentException e) {
+				assertNotNull(e); // OK. 
+			}
+			try {
+				// assumptions contains main node
+				assumptionIds = new ArrayList<Long>();
+				assumptionIds.add(i);
+				do {
+					long assumptionToAdd = (long)((Math.random()*9));
+					if (assumptionToAdd == i) {
+						continue;
+					}
+					assumptionIds.add(assumptionToAdd);
+				} while (Math.random() < .5);
+				engine.getPossibleQuestionAssumptions(i, assumptionIds);
+				fail("Question cannot be assumption of itself: " + i + ", assumptions: " + assumptionIds);
+			}catch (IllegalArgumentException e) {
+				assertNotNull(e); // OK. 
+			}
+		}
+		try {
+			// test inexistent assumptions
+			assumptionIds = new ArrayList<Long>();
+			do {
+				assumptionIds.add((long)(Math.random()*Integer.MIN_VALUE) - 1);
+			} while (Math.random() < .5);
+			engine.getPossibleQuestionAssumptions(0, assumptionIds);
+			fail("Assumptions must exist in the Bayes Net");
+		}catch (IllegalArgumentException e) {
+			assertNotNull(e); // OK. 
+		}
+		// 0,
+		assertEquals(0,  engine.getPossibleQuestionAssumptions(0, null).size());
+		assertEquals(0,  engine.getPossibleQuestionAssumptions(0, (List)Collections.emptyList()).size());
+		for (long i = 1; i < 9; i++) {
+			assertEquals(0,  engine.getPossibleQuestionAssumptions(0, Collections.singletonList(i)).size());
+		}
+		// 1->2,
+		assumptions = engine.getPossibleQuestionAssumptions(1, null);
+		assertEquals(1, assumptions.size());
+		assertTrue("Assumptions = " + assumptions, assumptions.contains(2L));
+		assumptions = engine.getPossibleQuestionAssumptions(2, null);
+		assertEquals(1, assumptions.size());
+		assertTrue("Assumptions = " + assumptions, assumptions.contains(1L));
+		assumptions = engine.getPossibleQuestionAssumptions(1, (List)Collections.emptyList());
+		assertEquals(1, assumptions.size());
+		assertTrue("Assumptions = " + assumptions, assumptions.contains(2L));
+		assumptions = engine.getPossibleQuestionAssumptions(2, (List)Collections.emptyList());
+		assertEquals(1, assumptions.size());
+		assertTrue("Assumptions = " + assumptions, assumptions.contains(1L));
+		assumptions = engine.getPossibleQuestionAssumptions(1, Collections.singletonList(2L));
+		assertEquals(1, assumptions.size());
+		assertTrue("Assumptions = " + assumptions, assumptions.contains(2L));
+		assumptions = engine.getPossibleQuestionAssumptions(2, Collections.singletonList(1L));
+		assertEquals(1, assumptions.size());
+		assertTrue("Assumptions = " + assumptions, assumptions.contains(1L));
+		// invalid conditions
+		assertTrue(engine.getPossibleQuestionAssumptions(1, Collections.singletonList(0L)).isEmpty());
+		assertTrue(engine.getPossibleQuestionAssumptions(2, Collections.singletonList(0L)).isEmpty());
+		for (long i = 3; i < 8; i++) {
+			assertTrue(engine.getPossibleQuestionAssumptions(1, Collections.singletonList(i)).isEmpty());
+			assertTrue(engine.getPossibleQuestionAssumptions(2, Collections.singletonList(i)).isEmpty());
+		}
+		// 3->4<-5,
+		assumptions = engine.getPossibleQuestionAssumptions(3, null);
+		assertEquals(2, assumptions.size());
+		assertTrue("Assumptions = " + assumptions, assumptions.contains(4L));
+		assertTrue("Assumptions = " + assumptions, assumptions.contains(5L));
+		assumptions = engine.getPossibleQuestionAssumptions(4, null);
+		assertEquals(2, assumptions.size());
+		assertTrue("Assumptions = " + assumptions, assumptions.contains(3L));
+		assertTrue("Assumptions = " + assumptions, assumptions.contains(5L));
+		assumptions = engine.getPossibleQuestionAssumptions(5, null);
+		assertEquals(2, assumptions.size());
+		assertTrue("Assumptions = " + assumptions, assumptions.contains(3L));
+		assertTrue("Assumptions = " + assumptions, assumptions.contains(4L));
+		for (long i = 0; i < 8; i++) {
+			if (i >= 3 && i <= 5) {
+				i = 6;
+			}
+			assertTrue(engine.getPossibleQuestionAssumptions(3, Collections.singletonList(i)).isEmpty());
+			assertTrue(engine.getPossibleQuestionAssumptions(4, Collections.singletonList(i)).isEmpty());
+			assertTrue(engine.getPossibleQuestionAssumptions(5, Collections.singletonList(i)).isEmpty());
+		}
+		// 6<-7->8
+		assumptions = engine.getPossibleQuestionAssumptions(7, null);
+		assertEquals(2, assumptions.size());
+		assertTrue(assumptions.contains((long)6));
+		assertTrue(assumptions.contains((long)8));
+		assumptions = engine.getPossibleQuestionAssumptions(7, (List)Collections.emptyList());
+		assertEquals(2, assumptions.size());
+		assertTrue(assumptions.contains((long)6));
+		assertTrue(assumptions.contains((long)8));
+		assumptions = engine.getPossibleQuestionAssumptions(7, Collections.singletonList((long)6));
+		assertEquals(1, assumptions.size());
+		assertTrue(assumptions.contains((long)6));
+		assumptions = engine.getPossibleQuestionAssumptions(7, Collections.singletonList((long)8));
+		assertEquals(1, assumptions.size());
+		assertTrue(assumptions.contains((long)8));
+		assumptionIds = new ArrayList<Long>(2);
+		assumptionIds.add((long)6); assumptionIds.add((long)8);
+		assumptions = engine.getPossibleQuestionAssumptions(7, assumptionIds);
+		assertEquals(0, assumptions.size());
+		assumptions = engine.getPossibleQuestionAssumptions(6, null);
+		assertEquals(1, assumptions.size());
+		assertTrue(assumptions.contains((long)7));
+		assumptions = engine.getPossibleQuestionAssumptions(6, (List)Collections.emptyList());
+		assertEquals(1, assumptions.size());
+		assertTrue(assumptions.contains((long)7));
+		assumptions = engine.getPossibleQuestionAssumptions(6, Collections.singletonList((long)7));
+		assertEquals(1, assumptions.size());
+		assertTrue(assumptions.contains((long)7));
+		assumptions = engine.getPossibleQuestionAssumptions(6, Collections.singletonList((long)8));
+		assertEquals(0, assumptions.size());
+		assumptionIds = new ArrayList<Long>(2);
+		assumptionIds.add((long)7); assumptionIds.add((long)8);
+		assumptions = engine.getPossibleQuestionAssumptions(6, assumptionIds);
+		assertEquals(0, assumptions.size());
+		assumptions = engine.getPossibleQuestionAssumptions(8, null);
+		assertEquals(1, assumptions.size());
+		assertTrue(assumptions.contains((long)7));
+		assumptions = engine.getPossibleQuestionAssumptions(8, (List)Collections.emptyList());
+		assertEquals(1, assumptions.size());
+		assertTrue(assumptions.contains((long)7));
+		assumptions = engine.getPossibleQuestionAssumptions(8, Collections.singletonList((long)7));
+		assertEquals(1, assumptions.size());
+		assertTrue(assumptions.contains((long)7));
+		assumptions = engine.getPossibleQuestionAssumptions(8, Collections.singletonList((long)6));
+		assertEquals(0, assumptions.size());
+		assumptionIds = new ArrayList<Long>(2);
+		assumptionIds.add((long)7); assumptionIds.add((long)6);
+		assumptions = engine.getPossibleQuestionAssumptions(8, assumptionIds);
+		assertEquals(0, assumptions.size());
+		// disconnected nodes as assumptions
+		for (long i = 0; i < 6; i++) {
+			assumptions = engine.getPossibleQuestionAssumptions((Math.random()<.34)?7:(Math.random()<.34)?6:8, Collections.singletonList(i));
+			assertEquals(0, assumptions.size());
+		}
+		
+		// test getQuestionAssumptionGroups for disconnected net: 0, 1->2, 3->4<-5, 6<-7->8
+		assertFalse(engine.getQuestionAssumptionGroups().isEmpty());
+		assertEquals(5, engine.getQuestionAssumptionGroups().size());
+		for (List<Long> clique : engine.getQuestionAssumptionGroups()) {
+			assertTrue("Clique = " + clique, clique.size() >= 1 && clique.size() <= 3);
+			if (clique.size() == 1) {	// 0
+				assertTrue("Clique = " + clique, clique.contains(0L));
+			} else if (clique.size() == 2) {	// 1->2 or 6<-7->8
+				assertTrue("Clique = " + clique, ( clique.contains(1L) && clique.contains(2L) ) 
+						|| ( clique.contains(6L) && clique.contains(7L) ) 
+						|| ( clique.contains(8L) && clique.contains(7L) ) );
+			} else {	// 3->4<-5
+				assertTrue("Clique = " + clique, clique.contains(3L));
+				assertTrue("Clique = " + clique, clique.contains(4L));
+				assertTrue("Clique = " + clique, clique.contains(5L));
+			}
+		}
 	}
 	
 	/**
@@ -6495,7 +6744,34 @@ public class MarkovEngineTest extends TestCase {
 			}
 		}
 		
-		// 
+
+		// test invalid assumptions
+		transactionKey = engine.startNetworkActions();
+		
+		// add a in which the assumptions will be ignored
+		assertTrue( engine.doBalanceTrade(
+				transactionKey, 
+				new Date(), 
+				"Tom balances P(E|F = f1)", 
+				userNameToIDMap.get("Tom"), 
+				0x0EL, 
+				Collections.singletonList(0x0FL), 
+				Collections.singletonList(1) 
+			));
+		engine.commitNetworkActions(transactionKey);
+		
+		// check that Tom has exited E (i.e. condition F was ignored)
+		List<Float> assetIfStates = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), 0x0EL, null, null);
+		assertEquals(2, assetIfStates.size());
+		assertEquals(assetIfStates.get(0), assetIfStates.get(1), ASSET_ERROR_MARGIN);
+		
+		// check that in the history, the assumption F was ignored
+		List<QuestionEvent> questionHistory = engine.getQuestionHistory(0x0EL, null, null);
+		assertNotNull(questionHistory);
+		assertFalse(questionHistory.isEmpty());
+		BalanceTradeNetworkAction action = (BalanceTradeNetworkAction) questionHistory.get(questionHistory.size()-1);
+		assertEquals((long)0x0E, (long)action.getQuestionId());
+		assertTrue("Assumptions = " + action.getTradeId(), action.getAssumptionIds().isEmpty());
 	}
 
 	/**
@@ -8666,6 +8942,134 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals("["+i+"]",jointProbabilityManual.get(i), jointProbabilityDelegated.get(i), PROB_ERROR_MARGIN);
 		}
 		
+	}
+	
+	/**
+	 * Test method for {@link MarkovEngineImpl#getMaximumValidAssumptionsSublists(long, List, int)}
+	 */
+	public final void testGetMaximumValidAssumptionsSublists() {
+		this.createDEFNetIn1Transaction(new HashMap<String, Long>());
+		
+		// check assumptions of D in collection {E,F}
+		List<Long> assumptionIds = new ArrayList<Long>();
+		assumptionIds.add(0x0EL); assumptionIds.add(0x0FL);
+		List<List<Long>> validAssumptions = engine.getMaximumValidAssumptionsSublists(0x0DL, assumptionIds , Integer.MAX_VALUE);
+		assertEquals(2, validAssumptions.size());
+		for (List<Long> assumption : validAssumptions) {
+			assertEquals(1, assumption.size());
+			assertTrue("Assumption = " + assumption, assumption.contains(0x0EL) || assumption.contains(0x0FL));
+		}
+		// search for 0 or negative sublists
+		validAssumptions = engine.getMaximumValidAssumptionsSublists(0x0DL, assumptionIds , (int)(Math.random()*Integer.MIN_VALUE));
+		assertEquals(0, validAssumptions.size());
+		// search for 1 sublist
+		validAssumptions = engine.getMaximumValidAssumptionsSublists(0x0DL, assumptionIds , 1);
+		assertEquals(1, validAssumptions.size());
+		for (List<Long> assumption : validAssumptions) {
+			assertEquals(1, assumption.size());
+			assertTrue("Assumption = " + assumption, assumption.contains(0x0EL) || assumption.contains(0x0FL));
+		}
+		// search for 2 sublists
+		validAssumptions = engine.getMaximumValidAssumptionsSublists(0x0DL, assumptionIds , 2);
+		assertEquals(2, validAssumptions.size());
+		for (List<Long> assumption : validAssumptions) {
+			assertEquals(1, assumption.size());
+			assertTrue("Assumption = " + assumption, assumption.contains(0x0EL) || assumption.contains(0x0FL));
+		}
+		// search for 3 or more sublists
+		validAssumptions = engine.getMaximumValidAssumptionsSublists(0x0DL, assumptionIds , (int)(3 + (Math.random() * (Integer.MAX_VALUE - 3))));
+		assertEquals(2, validAssumptions.size());
+		for (List<Long> assumption : validAssumptions) {
+			assertEquals(1, assumption.size());
+			assertTrue("Assumption = " + assumption, assumption.contains(0x0EL) || assumption.contains(0x0FL));
+		}
+		
+		// check assumptions of D in collection {E}
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add(0x0EL);
+		validAssumptions = engine.getMaximumValidAssumptionsSublists(0x0DL, assumptionIds , Integer.MAX_VALUE);
+		assertEquals(1, validAssumptions.size());
+		assertEquals(1, validAssumptions.get(0).size());
+		assertTrue("Assumption = " + validAssumptions, validAssumptions.get(0).contains(0x0EL));
+		// search for 0 or negative sublists
+		validAssumptions = engine.getMaximumValidAssumptionsSublists(0x0DL, assumptionIds , (int)(Math.random()*Integer.MIN_VALUE));
+		assertEquals(0, validAssumptions.size());
+		// search for 1 sublist
+		validAssumptions = engine.getMaximumValidAssumptionsSublists(0x0DL, assumptionIds , 1);
+		assertEquals(1, validAssumptions.size());
+		assertEquals(1, validAssumptions.get(0).size());
+		assertTrue("Assumption = " + validAssumptions, validAssumptions.get(0).contains(0x0EL));
+		// search for 2 or more sublists
+		validAssumptions = engine.getMaximumValidAssumptionsSublists(0x0DL, assumptionIds , (int)(2 + (Math.random() * (Integer.MAX_VALUE - 2))));
+		assertEquals(1, validAssumptions.size());
+		assertEquals(1, validAssumptions.get(0).size());
+		assertTrue("Assumption = " + validAssumptions, validAssumptions.get(0).contains(0x0EL));
+		
+		// check assumptions of F in collection {D, E}
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add(0x0DL); assumptionIds.add(0x0EL);
+		validAssumptions = engine.getMaximumValidAssumptionsSublists(0x0FL, assumptionIds , Integer.MAX_VALUE);
+		assertEquals(1, validAssumptions.size());
+		assertEquals(1, validAssumptions.get(0).size());
+		assertTrue("Assumption = " + validAssumptions, validAssumptions.get(0).contains(0x0DL));
+		// search for 0 or negative sublists
+		validAssumptions = engine.getMaximumValidAssumptionsSublists(0x0FL, assumptionIds , (int)(Math.random()*Integer.MIN_VALUE));
+		assertEquals(0, validAssumptions.size());
+		// search for 1 sublist
+		validAssumptions = engine.getMaximumValidAssumptionsSublists(0x0FL, assumptionIds , 1);
+		assertEquals(1, validAssumptions.size());
+		assertEquals(1, validAssumptions.get(0).size());
+		assertTrue("Assumption = " + validAssumptions, validAssumptions.get(0).contains(0x0DL));
+		// search for 2 or more sublists
+		validAssumptions = engine.getMaximumValidAssumptionsSublists(0x0FL, assumptionIds , (int)(2 + (Math.random() * (Integer.MAX_VALUE - 2))));
+		assertEquals(1, validAssumptions.size());
+		assertEquals(1, validAssumptions.get(0).size());
+		assertTrue("Assumption = " + validAssumptions, validAssumptions.get(0).contains(0x0DL));
+		
+
+		// check assumptions of E in collection {F}
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add(0x0FL);
+		validAssumptions = engine.getMaximumValidAssumptionsSublists(0x0EL, assumptionIds , Integer.MAX_VALUE);
+		assertEquals(1, validAssumptions.size());
+		assertEquals(0, validAssumptions.get(0).size());
+		// search for 0 or negative sublists
+		validAssumptions = engine.getMaximumValidAssumptionsSublists(0x0EL, assumptionIds , (int)(Math.random()*Integer.MIN_VALUE));
+		assertEquals(0, validAssumptions.size());
+		// search for 1 sublist
+		validAssumptions = engine.getMaximumValidAssumptionsSublists(0x0EL, assumptionIds , 1);
+		assertEquals(1, validAssumptions.size());
+		assertEquals(0, validAssumptions.get(0).size());
+		// search for 2 or more sublists
+		validAssumptions = engine.getMaximumValidAssumptionsSublists(0x0EL, assumptionIds , (int)(2 + (Math.random() * (Integer.MAX_VALUE - 2))));
+		assertEquals(1, validAssumptions.size());
+		assertEquals(0, validAssumptions.get(0).size());
+		
+		// disconnected net case
+		engine.initialize();
+		long transactionKey = engine.startNetworkActions();
+		engine.addQuestion(transactionKey, new Date(), 0x0DL, 3, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0EL, 3, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0FL, 3, null);
+		engine.commitNetworkActions(transactionKey);
+		
+		// check assumptions of F in collection {D, E}
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add(0x0DL); assumptionIds.add(0x0EL);
+		validAssumptions = engine.getMaximumValidAssumptionsSublists(0x0FL, assumptionIds , Integer.MAX_VALUE);
+		assertEquals(1, validAssumptions.size());
+		assertEquals(0, validAssumptions.get(0).size());
+		// search for 0 or negative sublists
+		validAssumptions = engine.getMaximumValidAssumptionsSublists(0x0FL, assumptionIds , (int)(Math.random()*Integer.MIN_VALUE));
+		assertEquals(0, validAssumptions.size());
+		// search for 1 sublist
+		validAssumptions = engine.getMaximumValidAssumptionsSublists(0x0FL, assumptionIds , 1);
+		assertEquals(1, validAssumptions.size());
+		assertEquals(0, validAssumptions.get(0).size());
+		// search for 2 or more sublists
+		validAssumptions = engine.getMaximumValidAssumptionsSublists(0x0FL, assumptionIds , (int)(2 + (Math.random() * (Integer.MAX_VALUE - 2))));
+		assertEquals(1, validAssumptions.size());
+		assertEquals(0, validAssumptions.get(0).size());
 	}
 
 	// not needed for the 1st release

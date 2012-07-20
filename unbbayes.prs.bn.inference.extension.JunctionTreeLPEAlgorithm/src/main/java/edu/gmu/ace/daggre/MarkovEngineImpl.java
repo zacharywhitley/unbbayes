@@ -86,6 +86,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	
 	private boolean isToDeleteResolvedNode = false;
 	
+	private boolean isToThrowExceptionOnInvalidAssumptions = false;
 
 	/**
 	 * Default constructor is protected to allow inheritance.
@@ -121,10 +122,27 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @return new instance of some class implementing {@link MarkovEngineInterface}
 	 */
 	public static MarkovEngineInterface getInstance(float logBase, float currencyConstant, float initialUserAssets) {
+		return MarkovEngineImpl.getInstance(logBase, currencyConstant, initialUserAssets, false);
+	}
+	
+	/**
+	 * Default constructor method initializing fields.
+	 * @param logBase : see {@link #setCurrentLogBase(float)}
+	 * @param currencyConstant : see {@link #setCurrentCurrencyConstant(float)}
+	 * @param initialUserAssets : see {@link #setDefaultInitialQTableValue(float)}. Although
+	 * {@link #setDefaultInitialQTableValue(float)} expects a q-value, this argument
+	 * accepts the asset values. See {@link #getQValuesFromScore(float)} and
+	 * {@link #getScoreFromQValues(float)} to convert assets to q-values and
+	 * q-values to assets respectively.
+	 * @param
+	 * @return new instance of some class implementing {@link MarkovEngineInterface}
+	 */
+	public static MarkovEngineInterface getInstance(float logBase, float currencyConstant, float initialUserAssets, boolean isToThrowExceptionOnInvalidAssumptions) {
 		MarkovEngineImpl ret = (MarkovEngineImpl) MarkovEngineImpl.getInstance();
 		ret.setCurrentCurrencyConstant(currencyConstant);
 		ret.setCurrentLogBase(logBase);
 		ret.setDefaultInitialQTableValue(ret.getQValuesFromScore(initialUserAssets));
+		ret.setToThrowExceptionOnInvalidAssumptions(isToThrowExceptionOnInvalidAssumptions);
 		return ret;
 	}
 	
@@ -857,6 +875,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		private Map<IRandomVariable, PotentialTable> qTablesBeforeTrade;
 		private List<Float> oldValues = null;
 		private Date whenExecutedFirst;
+//		private final List<Integer> originalAssumedStates;
+//		private final List<Long> originalAssumptionIds;
 		/** Default constructor initializing fields */
 		public AddTradeNetworkAction(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Float> newValues, 
 				List<Long> assumptionIds, List<Integer> assumedStates,  boolean allowNegative) {
@@ -865,6 +885,18 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			this.tradeKey = tradeKey;
 			this.userId = userId;
 			this.questionId = questionId;
+//			if (originalAssumptionIds != null) {
+//				// use a copy, so that changes in the original do not affect this object
+//				this.originalAssumptionIds = new ArrayList<Long>(originalAssumptionIds);
+//			} else {
+//				this.originalAssumptionIds = null;
+//			}
+//			if (originalAssumedStates != null) {
+//				// use a copy, so that changes in the original do not affect this object
+//				this.originalAssumedStates = originalAssumedStates;
+//			} else {
+//				this.originalAssumedStates = null;
+//			}
 			if (newValues != null) {
 				// use a copy, so that changes in the original do not affect this object
 				this.newValues = new ArrayList<Float>(newValues);
@@ -906,7 +938,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						algorithm.setNetwork(getProbabilisticNetwork());
 					}
 					// do trade. Since algorithm is linked to actual networks, changes will affect the actual networks
-					oldValues = executeTrade(questionId, newValues, assumptionIds, assumedStates, allowNegative, algorithm);
+					// 2nd boolean == true := overwrite assumptionIds and assumedStates when necessary
+					oldValues = executeTrade(questionId, newValues, assumptionIds, assumedStates, allowNegative, algorithm, true);
 					// backup the previous delta so that we can revert this trade
 					qTablesBeforeTrade = algorithm.getAssetTablesBeforeLastPropagation();
 				}
@@ -960,6 +993,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public void setNewValues(List<Float> newValues) { this.newValues = newValues; }
 		public Date getWhenExecutedFirstTime() {return whenExecutedFirst ; }
 		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirst = whenExecutedFirst; }
+//		/** @return the original values of {@link #getAssumedStates()} (because some may be ignored) */
+//		public List<Integer> getOriginalAssumedStates() { return originalAssumedStates; }
+//		/** @return the original values of {@link #getAssumptionIds() (because some may be ignored)  */
+//		public List<Long> getOriginalAssumptionIds() { return originalAssumptionIds; }
 	}
 	
 	/* (non-Javadoc)
@@ -975,6 +1012,24 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// startNetworkAction should have been called.
 			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
 		}
+		
+		// if this.isToThrowExceptionOnInvalidAssumptions() == false, preview trade will not throw InvalidAssumptionException. 
+//		if (!this.isToThrowExceptionOnInvalidAssumptions()) {
+//			try {
+//				// So we must check whether assumptions are valid or not here
+//				if (assumptionIds != null && !assumptionIds.isEmpty() && this.getPossibleQuestionAssumptions(questionId, assumptionIds).isEmpty()) {
+//					// convert the set of assumptions to a valid set
+//					List<Long> oldAssumptionIds = assumptionIds;
+//					// note: getMaximumValidAssumptionsSublists will always return at least 1 element
+//					assumptionIds = this.getMaximumValidAssumptionsSublists(questionId, assumptionIds, 1).get(0);
+//					// change assumedStates accordingly to new assumptionIds
+//					assumedStates = this.convertAssumedStates(assumptionIds, oldAssumptionIds, assumedStates);
+//				}
+//			} catch (InexistingQuestionException e) {
+//				Debug.println(getClass(), e.getMessage(), e);
+//				// ignore, because questions can be created afterwards
+//			}
+//		}
 		
 		// returned value is the same of preview trade
 		List<Float> ret = new ArrayList<Float>();
@@ -1021,7 +1076,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 				}
 			}
-			if (!isToIgnoreThisException) {
+			if (!isToIgnoreThisException && this.isToThrowExceptionOnInvalidAssumptions()) {
 				throw e;
 			}
 		}
@@ -1759,7 +1814,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// note: size of assumedStates is 1 unit smaller than multidimensionalCoord, because assumedStates does not contain the main node
 				if (multidimensionalCoord.length != assumedStates.size() + 1) {
 					throw new RuntimeException("Multi dimensional coordinate of index " + i + " has size " + multidimensionalCoord.length
-							+ ". Expected " + assumedStates.size());
+							+ ". Expected " + (assumedStates.size()+1));
 				}
 				// start from index 1, because index 0 of multidimensionalCoord is the main node
 				for (int j = 1; j < multidimensionalCoord.length; j++) {
@@ -2161,8 +2216,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		// check if the assumptions are semantically valid
 		if (assumptionIds != null && !assumptionIds.isEmpty() && this.getPossibleQuestionAssumptions(questionId, assumptionIds).isEmpty()) {
-			throw new InvalidAssumptionException(assumptionIds + " are invalid assumptions for question " + questionId);
-			// Note: cannot check assumptions of questions which were not added to the shared Bayes net yet
+			if (isToThrowExceptionOnInvalidAssumptions()) {
+				throw new InvalidAssumptionException(assumptionIds + " are invalid assumptions for question " + questionId);
+				// Note: cannot check assumptions of questions which were not added to the shared Bayes net yet
+			}
+			// convert the set of assumptions to a valid set
+			List<Long> oldAssumptionIds = assumptionIds;
+			// note: getMaximumValidAssumptionsSublists will always return at least 1 element
+			assumptionIds = this.getMaximumValidAssumptionsSublists(questionId, assumptionIds, 1).get(0);
+			// change assumedStates accordingly to new assumptionIds
+			assumedStates = this.convertAssumedStates(assumptionIds, oldAssumptionIds, assumedStates);
 		}
 		
 		// this algorithm will be alive only during the context of this method. It will contain clones of the bayesian network and asset net
@@ -2187,7 +2250,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		
 		// do trade on specified algorithm (which only contains link to copies of BN and asset net)
-		this.executeTrade(questionId, newValues, assumptionIds, assumedStates, true, algorithm);	// true := allow negative delta, since this is a preview
+		// 1st boolean == true := allow negative delta, since this is a preview. 
+		// 2nd boolean == false := do not overwrite assumptionIds and assumedStates
+		this.executeTrade(questionId, newValues, assumptionIds, assumedStates, true, algorithm, false);	
 		
 		// TODO optimize (executeTrade and getAssetsIfStates have redundant portion of code)
 		
@@ -2219,19 +2284,28 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * 
 	 * @param assumptionIDs : list (ordered collection) representing the IDs of the questions to be assumed in this edit. The order is important,
 	 * because the ordering in this list will be used in order to identify the correct indexes in "newValues".
+	 * The content of this list may be changed after execution of this method. After execution of this method,
+	 * this list will contain only valid assumptions, if {@link #isToThrowExceptionOnInvalidAssumptions()} == false and
+	 * isToUpdateAssumptionIds == true.
 	 * @param assumedStates : this list specifies a filter for states of nodes in assumptionIDs.
 	 * If it does not have the same size of assumptionIDs,Å@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
+	 * The content of this list may be changed after execution of this method. After execution of this method,
+	 * this list will contain a sublist of the original assumedStates, with the indexes 
+	 * synchronized with the indexes of assumptionIDs, if {@link #isToThrowExceptionOnInvalidAssumptions()} == false and
+	 * isToUpdateAssumptionIds == true.
 	 * @param isToAllowNegative : if true, negative delta (values smaller than 1 in the asset q table) is allowed.
 	 * @param algorithm : algorithm to be used in order to update probability and delta. 
 	 * {@link AssetAwareInferenceAlgorithm#getNetwork()} will be used to access the Bayes net.
 	 * {@link AssetAwareInferenceAlgorithm#getAssetNetwork()} will be used to access the asset net.
+	 * @param isToUpdateAssumptionIds : if true, assumptionIds and assumedStates will be both input and output arguments.
+	 * If false, they will be only input arguments. 
 	 * @see #addTrade(long, Date, String, long, long, List, List, List, boolean)
 	 * @see #previewTrade(long, long, List, List, List)
 	 * @return the probabilities before trade. This list will have the same structure of newValues, but its content will be filled
 	 * with the probabilities before applying the trade.
 	 */
-	protected List<Float> executeTrade(long questionId,List<Float> newValues,
-			List<Long> assumptionIds, List<Integer> assumedStates, boolean isToAllowNegative, AssetAwareInferenceAlgorithm algorithm) {
+	protected List<Float> executeTrade(long questionId,List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates, 
+			boolean isToAllowNegative, AssetAwareInferenceAlgorithm algorithm, boolean isToUpdateAssumptionIds) {
 		// basic assertions
 		if (algorithm == null) {
 			throw new NullPointerException("AssetAwareInferenceAlgorithm was not specified.");
@@ -2258,13 +2332,48 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 		}
 		
+		
 		// this var will store the correct size of cpd. If negative, owner of the cpd was not found.
 		int expectedSizeOfCPD = child.getStatesSize();
 		
-		// do not allow null values for collections
-		if (assumptionIds == null) {
+		// convert the set of assumptions and states to valid set
+		List<Long> oldAssumptionIds = null;	// this will store a copy of the original assumptions list
+		if (assumptionIds != null) {
+			oldAssumptionIds = new ArrayList<Long>(assumptionIds);
+			if (isToUpdateAssumptionIds) {
+				// CAUTION: this is modifying an input argument (this is the desired behavior)
+				assumptionIds.clear();
+			}
+			List<Long> validAssumptions = this.getMaximumValidAssumptionsSublists(questionId, oldAssumptionIds, 1).get(0);
+			if (validAssumptions == null) {
+				assumptionIds = null;
+			} else {
+				if (isToUpdateAssumptionIds) {
+					assumptionIds.addAll(validAssumptions); 
+				}
+			}
+		} else {
 			assumptionIds = new ArrayList<Long>();
 		}
+		// change assumedStates accordingly to new assumptionIds
+		if (assumedStates != null) {
+			List<Integer> oldAssumedStates = new ArrayList<Integer>(assumedStates);
+			if (isToUpdateAssumptionIds) {
+				// CAUTION: this is modifying an input argument (this is the desired behavior)
+				assumedStates.clear();
+			}
+			List<Integer> validStates = this.convertAssumedStates(assumptionIds, oldAssumptionIds, oldAssumedStates); 
+			if (validStates == null) {
+				assumedStates = null;
+			} else {
+				if (isToUpdateAssumptionIds) {
+					assumedStates.addAll(validStates);
+				}
+			}
+		} else {
+			assumedStates = new ArrayList<Integer>();
+		}
+		
 		
 		// extract assumptions
 		List<INode> assumptionNodes = new ArrayList<INode>();
@@ -2379,6 +2488,92 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	}
 
 	/**
+	 * Obtains a list of sublists of assumptionIds which makes the assumptions to become valid.
+	 * Only sublists with maximum size are returned.
+	 * <br/><br/>
+	 * E.g.
+	 * <br/><br/>
+	 * Suppose questionId == 0, and assumptionIds := [1,2,3]. <br/>
+	 * Also, suppose that assumptions [1,2], [1,3], [1], [2], [3], [] are all
+	 * valid assumptions of questionId == 0. <br/>
+	 * Then, this method shall return [[1,2], [1,3]], because these are the
+	 * combinations of valid assumptions with maximum size == 2.
+	 * @see #getPossibleQuestionAssumptions(long, List)
+	 * @param questionId : Only valid assumptions of this question will be considered.
+	 * @param assumptionIds : the returned lists will be combinations of these questions.
+	 * @param maxCount : maximum quantity of combinations to be returned.
+	 * E.g. if maxCount == 3, then only 3 lists will be returned by this method.
+	 * If maxCount <= 0, then an empty list will be returned.
+	 * @return list of lists representing all combinations of valid assumptions with maximum size.
+	 * Naturally, all lists in this list will have the same size.
+	 */
+	public List<List<Long>> getMaximumValidAssumptionsSublists(long questionId, List<Long> assumptionIds, int maxCount) {
+		// variable to return
+		List<List<Long>> ret = new ArrayList<List<Long>>();
+		
+		// check conditions in which we do not need to calculate
+		if (maxCount <= 0) {
+			// it is requesting for 0 sublists
+			return ret;
+		}
+		if (assumptionIds == null || assumptionIds.isEmpty()) {
+			// "empty" is the only sublist of "empty".
+			ret.add(new ArrayList<Long>());	
+			return ret;
+		}
+		
+		// do normal calculation
+		if (!this.getPossibleQuestionAssumptions(questionId, assumptionIds).isEmpty()) {
+			// if all questions in assumptionIds are valid, this is already the maximum sublist.
+			ret.add(assumptionIds);
+		} else {
+			
+			int maxSize = Integer.MIN_VALUE; // stores the current maximum quantity of questions in the valid combination of assumptions
+			int currentMaxCount = maxCount;	 // counter representing maxCount, but it is reset every time the maxSize is updated
+			
+			// determine the combination of valid assumptions with smaller size, by removing 1 question from assumptionIds and calling recursively
+			for (Long assumptionToRemove : assumptionIds) {
+				
+				// create a copy of assumptionIds, but removing the assumptionToRemove
+				List<Long> assumptionsWithout1Question = new ArrayList<Long>(assumptionIds);
+				assumptionsWithout1Question.remove(assumptionToRemove);
+				
+				// recursively calculate the combinations of assumptions without assumptionToRemove. 
+				List<List<Long>> recursiveRet = null;
+				
+				if (maxSize == assumptionIds.size()-1) {
+					// maxSize is already at theoretical max, so we only need currentMaxCount more sublists
+					recursiveRet = this.getMaximumValidAssumptionsSublists(questionId, assumptionsWithout1Question, currentMaxCount);
+				} else {
+					// do not use currentMaxCount, because we don't know if maxSize is really the global maximum
+					recursiveRet = this.getMaximumValidAssumptionsSublists(questionId, assumptionsWithout1Question, maxCount);
+				}
+				
+				// check if recursiveRet has max size
+				if (!recursiveRet.isEmpty() && !recursiveRet.get(0).isEmpty() && recursiveRet.get(0).size() >= maxSize) {
+					if (recursiveRet.get(0).size() > maxSize) {
+						// if its strictly higher, then currentMaxCount and maxSize must track the new maximum (we must forget the "older" maximums)
+						maxSize = recursiveRet.get(0).size();	// all elements have supposedly the same size, so use get(0) to extract new maximum
+						currentMaxCount = maxCount;		// reset the counter
+						ret.clear();	// "forget" the older maximums
+					}
+					// add content of recursiveRet into ret, but limited to currentMaxCount
+					for (int i = 0; (i < recursiveRet.size() && currentMaxCount > 0); i++, currentMaxCount--) {
+						ret.add(recursiveRet.get(i));
+					}
+				}
+			}
+		}
+		
+		if (ret.isEmpty()) {
+			// if nothing was found, add the empty list, which is always a valid assumption.
+			ret.add(new ArrayList<Long>());
+		}
+		
+		return ret;
+	}
+
+	/**
 	 * The balancing trade can be obtained by calculating the probabilities 
 	 * P1, P2 , ... , PN (N is the quantity of states of the given node), in which:
 	 * <br/><br/>
@@ -2403,7 +2598,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		
 		if (assumptionIds != null && !assumptionIds.isEmpty() && this.getPossibleQuestionAssumptions(questionId, assumptionIds).isEmpty()) {
-			new InvalidAssumptionException(assumptionIds + " are invalid assumptions for question " + questionId);
+			if (this.isToThrowExceptionOnInvalidAssumptions()) {
+				new InvalidAssumptionException(assumptionIds + " are invalid assumptions for question " + questionId);
+			}
+			// convert the set of assumptions to a valid set
+			List<Long> oldAssumptionIds = assumptionIds;
+			// note: getMaximumValidAssumptionsSublists will always return at least 1 element
+			assumptionIds = this.getMaximumValidAssumptionsSublists(questionId, assumptionIds, 1).get(0);
+			// change assumedStates accordingly to new assumptionIds
+			assumedStates = this.convertAssumedStates(assumptionIds, oldAssumptionIds, assumedStates);
+
 		}
 		
 		// extract user's asset network from user ID
@@ -2502,7 +2706,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		try {
 			if (this.getPossibleQuestionAssumptions(questionId, assumptionIds).isEmpty()) {
-				throw new InvalidAssumptionException(assumptionIds + " are invalid assumptions for question " + questionId);
+				if (isToThrowExceptionOnInvalidAssumptions()) {
+					throw new InvalidAssumptionException(assumptionIds + " are invalid assumptions for question " + questionId);
+				}
+				// only use valid assumptions
+				// note: getMaximumValidAssumptionsSublists will always return at least 1 element
+				List<Long> oldAssumptionIds = assumptionIds;
+				assumptionIds = this.getMaximumValidAssumptionsSublists(questionId, assumptionIds, 1).get(0);
+				// change assumedStates accordingly to new assumptionIds
+				assumedStates = this.convertAssumedStates(assumptionIds, oldAssumptionIds, assumedStates);
+				
 			}
 		} catch (InexistingQuestionException e) {
 			// Perhaps the nodes are still going to be added within the context of this transaction.
@@ -2628,6 +2841,37 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		return true;
 	}
 	
+
+	/**
+	 * This method takes assumedStates, which is synchronized with oldAssumptionIds
+	 * by index, and returns assumedStates converted to the indexing 
+	 * related to assumptionIds.
+	 * @param newAssumptionIds : a sublist of oldAssumptionIds
+	 * @param oldAssumptionIds : list of questions
+	 * @param assumedStates : states of questions in oldAssumptionIds
+	 * @return  sublist of assumedStates synchronized with assumptionIds by index.
+	 */
+	protected List<Integer> convertAssumedStates(List<Long> newAssumptionIds,  List<Long> oldAssumptionIds, List<Integer> assumedStates) {
+		if (oldAssumptionIds == null || newAssumptionIds == null) {
+			return assumedStates;
+		}
+		if (!oldAssumptionIds.containsAll(newAssumptionIds)) {
+			throw new IllegalArgumentException("Cannot translate the states " + assumedStates 
+					+ " of questions " + oldAssumptionIds + " to questions " + newAssumptionIds
+					+ ", because the latter is not a subset of the former.");
+		}
+		if (assumedStates != null) {
+			List<Integer> oldAssumedStates = assumedStates;
+			assumedStates = new ArrayList<Integer>();
+			for (Long assumption : newAssumptionIds) {
+				int indexInOldAssumption = oldAssumptionIds.indexOf(assumption);
+				if (indexInOldAssumption < oldAssumedStates.size()) {
+					assumedStates.add(oldAssumedStates.get(indexInOldAssumption));
+				}
+			}
+		}
+		return assumedStates;
+	}
 
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getQuestionHistory(java.lang.Long, java.util.List, java.util.List)
@@ -3513,6 +3757,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// extract cliques
 		List<Clique> cliques = null;
 		synchronized (getProbabilisticNetwork()) {
+			if (getProbabilisticNetwork().getJunctionTree() == null 
+					|| getProbabilisticNetwork().getJunctionTree().getCliques() == null) {
+				return ret;
+			}
 			List<Clique> originalCliqueList = getProbabilisticNetwork().getJunctionTree().getCliques();
 			if (originalCliqueList != null) {
 				cliques = new ArrayList<Clique>(originalCliqueList);
@@ -3537,6 +3785,23 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			ret.add(questionIds);
 		}
 		return ret;
+	}
+
+	/**
+	 * @param isToThrowExceptionOnInvalidAssumptions the isToThrowExceptionOnInvalidAssumptions to set
+	 */
+	public void setToThrowExceptionOnInvalidAssumptions(
+			boolean isToThrowExceptionOnInvalidAssumptions) {
+		this.isToThrowExceptionOnInvalidAssumptions = isToThrowExceptionOnInvalidAssumptions;
+	}
+
+	/**
+	 * If true, methods like {@link #addTrade(long, Date, String, long, long, List, List, List, boolean)}
+	 * or {@link #previewTrade(long, long, List, List, List)} will throw exception
+	 * @return the isToThrowExceptionOnInvalidAssumptions
+	 */
+	public boolean isToThrowExceptionOnInvalidAssumptions() {
+		return isToThrowExceptionOnInvalidAssumptions;
 	}
 
 
