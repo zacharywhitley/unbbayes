@@ -1321,48 +1321,52 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		
 		// the value to return
 		double ret = 1;	// 1 is the identity value in multiplication
-		
-		// calculate P(C=c)*P(B=b|C=c)*P(A|B=b,C=c) in the cloned network
-		for (ProbabilisticNode origNode : nodesAndStatesToConsider.keySet()) {
-			// extract the state
-			Integer stateIndex = nodesAndStatesToConsider.get(origNode);
-			if (stateIndex == null) {
-				continue;	// ignore
-			}
-			// Extract cloned node. Original and cloned nodes have the same name
-			ProbabilisticNode clonedNode = (ProbabilisticNode) clonedNetwork.getNode(origNode.getName());
-			
-			// add evidences
-			if (stateIndex < 0) {
-				if (!isToUseEstimatedTotalProbability()) {
-					// multiply marginal (or conditional prob) before adding the finding (if we add finding, the marginals will have only 0s and 1s)
-					for (int i = 0; i < clonedNode.getStatesSize(); i++) {
-						if (i != Math.abs(stateIndex + 1)) {
-							ret *= clonedNode.getMarginalAt(i);
+		try {
+			// calculate P(C=c)*P(B=b|C=c)*P(A|B=b,C=c) in the cloned network
+			for (ProbabilisticNode origNode : nodesAndStatesToConsider.keySet()) {
+				// extract the state
+				Integer stateIndex = nodesAndStatesToConsider.get(origNode);
+				if (stateIndex == null) {
+					continue;	// ignore
+				}
+				// Extract cloned node. Original and cloned nodes have the same name
+				ProbabilisticNode clonedNode = (ProbabilisticNode) clonedNetwork.getNode(origNode.getName());
+				
+				// add evidences
+				if (stateIndex < 0) {
+					if (!isToUseEstimatedTotalProbability()) {
+						// multiply marginal (or conditional prob) before adding the finding (if we add finding, the marginals will have only 0s and 1s)
+						for (int i = 0; i < clonedNode.getStatesSize(); i++) {
+							if (i != Math.abs(stateIndex + 1)) {
+								ret *= clonedNode.getMarginalAt(i);
+							}
 						}
 					}
+					// this is a finding for "not" this state (i.e. a finding setting this state as 0%)
+					clonedNode.addFinding(Math.abs(stateIndex + 1), true);
+				} else {
+					if (!isToUseEstimatedTotalProbability()) {
+						// multiply marginal (or conditional prob) before adding the finding (if we add finding, the marginals will have only 0s and 1s)
+						ret *= clonedNode.getMarginalAt(stateIndex);
+					}
+					clonedNode.addFinding(stateIndex);
 				}
-				// this is a finding for "not" this state (i.e. a finding setting this state as 0%)
-				clonedNode.addFinding(Math.abs(stateIndex + 1), true);
-			} else {
+				
+				// if isToUseEstimatedTotalProbability, then we shall propagate all findings at once and then use this.getJunctionTree().getN()
 				if (!isToUseEstimatedTotalProbability()) {
-					// multiply marginal (or conditional prob) before adding the finding (if we add finding, the marginals will have only 0s and 1s)
-					ret *= clonedNode.getMarginalAt(stateIndex);
+					// propagate findings in the cloned network
+					this.propagate();
 				}
-				clonedNode.addFinding(stateIndex);
 			}
 			
 			// if isToUseEstimatedTotalProbability, then we shall propagate all findings at once and then use this.getJunctionTree().getN()
-			if (!isToUseEstimatedTotalProbability()) {
-				// propagate findings in the cloned network
+			if (isToUseEstimatedTotalProbability()) {
 				this.propagate();
+				ret = this.getJunctionTree().getN();
 			}
-		}
-		
-		// if isToUseEstimatedTotalProbability, then we shall propagate all findings at once and then use this.getJunctionTree().getN()
-		if (isToUseEstimatedTotalProbability()) {
-			this.propagate();
-			ret = this.getJunctionTree().getN();
+		} catch (Throwable t) {
+			this.setNet(originalNetwork);
+			throw new RuntimeException(t.getMessage(),t);
 		}
 		
 		// revert to original network
