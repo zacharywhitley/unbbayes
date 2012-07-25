@@ -101,6 +101,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	private double currencyMultiplier = 1.0;
 
+	private boolean isToDoFullPreview = false;
+
 	/**
 	 * Default constructor is protected to allow inheritance.
 	 * Use {@link #getInstance()} to actually instantiate objects of this class.
@@ -1000,7 +1002,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					algorithm.setToUpdateAssets(isToUpdateAssets);
 					// do trade. Since algorithm is linked to actual networks, changes will affect the actual networks
 					// 2nd boolean == true := overwrite assumptionIds and assumedStates when necessary
-					oldValues = executeTrade(questionId, newValues, assumptionIds, assumedStates, allowNegative, algorithm, true);
+					oldValues = executeTrade(questionId, newValues, assumptionIds, assumedStates, allowNegative, algorithm, true, false);
 					algorithm.setToUpdateAssets(backup);	// revert config of assets
 					// backup the previous delta so that we can revert this trade
 //					qTablesBeforeTrade = algorithm.getAssetTablesBeforeLastPropagation();
@@ -1838,7 +1840,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * question while it is in state "true".
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
 	 */
-	protected List<Float> getAssetsIfStates(long questionId, List<Long> assumptionIds, List<Integer> assumedStates, AssetAwareInferenceAlgorithm algorithm, boolean isToReturnQValuesInsteadOfAssets)
+	protected List getAssetsIfStates(long questionId, List<Long> assumptionIds, List<Integer> assumedStates, AssetAwareInferenceAlgorithm algorithm, boolean isToReturnQValuesInsteadOfAssets)
 			throws IllegalArgumentException {
 		// basic assertion
 		if (algorithm == null) {
@@ -1865,11 +1867,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				mainNode.setToCalculateMarginal(true);		// force marginalization to calculate something.
 				double[] marginal = mainNode.calculateDoublePrecisionMarginal(); 					
 				mainNode.setToCalculateMarginal(backup);	// revert to previous config
-				List<Float> ret = new ArrayList<Float>(mainNode.getStatesSize());
+				List ret = new ArrayList(mainNode.getStatesSize());
 				for (int i = 0; i < mainNode.getStatesSize(); i++) {
 					if (isToReturnQValuesInsteadOfAssets) {
 						// return q-values directly
-						ret.add((float) marginal[i]);
+						ret.add(marginal[i]);
 					} else {
 						// convert q-values to delta (i.e. logarithmic values)
 						ret.add((float) this.getScoreFromQValues(marginal[i]));
@@ -1882,7 +1884,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		// convert cpt to a list of float, given assumedStates.
 		// TODO change the way it sum-out/min-out/max-out the unspecified states in the clique potential
-		List<Float> ret = new ArrayList<Float>(assetTable.tableSize());
+		List ret = new ArrayList(assetTable.tableSize());
 		for (int i = 0; i < assetTable.tableSize(); i++) {
 			boolean isToSkip = false;
 			// filter entries which are incompatible with assumedStates
@@ -1906,7 +1908,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			if (!isToSkip) {
 				if (isToReturnQValuesInsteadOfAssets) {
 					// return q-values directly
-					ret.add((float) assetTable.getDoubleValue(i));
+					ret.add(assetTable.getDoubleValue(i));
 				} else {
 					// convert q-values to delta (i.e. logarithmic values)
 					ret.add((float) this.getScoreFromQValues(assetTable.getDoubleValue(i)));
@@ -2313,7 +2315,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 			
 			// clone the algorithm. It shall also clone the bayesian network and asset network
-			algorithm = (AssetAwareInferenceAlgorithm) originalAlgorithm.clone();
+			if (isToDoFullPreview()) {
+				algorithm = (AssetAwareInferenceAlgorithm) originalAlgorithm.clone();
+			} else {
+				// we can use the original one if we are not going to do a full preview
+				// (we don't need to clone networks if we are not going to preview literally everything)
+				algorithm = originalAlgorithm;
+			}
 		} catch (InvalidParentException e) {
 			throw new RuntimeException("Could not extract delta from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
 		} catch (CloneNotSupportedException e) {
@@ -2326,12 +2334,28 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// do trade on specified algorithm (which only contains link to copies of BN and asset net)
 		// 1st boolean == true := allow negative delta, since this is a preview. 
 		// 2nd boolean == false := do not overwrite assumptionIds and assumedStates
-		this.executeTrade(questionId, newValues, assumptionIds, assumedStates, true, algorithm, false);	
+		List<Float> oldValues = this.executeTrade(questionId, newValues, assumptionIds, assumedStates, true, algorithm, false, !isToDoFullPreview());	
 		
-		// TODO optimize (executeTrade and getAssetsIfStates have redundant portion of code)
+		if (isToDoFullPreview()) {
+			// TODO optimize (executeTrade and getAssetsIfStates have redundant portion of code)
+			// return the asset position
+			return this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, false); // false := return delta instead of q-values
+		}
 		
-		// return the asset position
-		return this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, false); // false := return delta instead of q-values
+		// just return an estimated values
+		// obtain q-values
+		List<Double> qValues = this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, true);
+		if (oldValues != null && (oldValues.size() == newValues.size()) && (qValues.size() == newValues.size())) {
+			// they are all related by indexes
+			List<Float> ret = new ArrayList<Float>(newValues.size());
+			for (int i = 0; i < newValues.size(); i++) {
+				ret.add(this.getScoreFromQValues((newValues.get(i)/oldValues.get(i)*qValues.get(i))));
+			}
+			return ret;
+		} else {
+			Debug.println(getClass(), "new = " + newValues + ", old = " + oldValues + ", q-values = " + qValues);
+		}
+		return null;
 	}
 	
 	/**
@@ -2379,7 +2403,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * with the probabilities before applying the trade.
 	 */
 	protected List<Float> executeTrade(long questionId,List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates, 
-			boolean isToAllowNegative, AssetAwareInferenceAlgorithm algorithm, boolean isToUpdateAssumptionIds) {
+			boolean isToAllowNegative, AssetAwareInferenceAlgorithm algorithm, boolean isToUpdateAssumptionIds, boolean isPreview) {
 		// basic assertions
 		if (algorithm == null) {
 			throw new NullPointerException("AssetAwareInferenceAlgorithm was not specified.");
@@ -2536,6 +2560,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				oldValues.set(i, potential.getValue(multidimensionalCoord));
 				potential.setValue(multidimensionalCoord, newValues.get(i));
 			}
+		}
+		
+		if (isPreview) {
+			// don't actually propagate if we only need to preview
+			return oldValues;
 		}
 		
 		// fill array of likelihood with values in CPT
@@ -2696,7 +2725,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		
 		// obtain q1, q1, ... , qn (the asset's q values)
-		List<Float> qValues = this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, true);	// true := return q-values instead of delta
+		List<Double> qValues = this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, true);	// true := return q-values instead of delta
 		
 		// obtain p1, p2, ... , pn (the prior probabilities)
 		List<Float> probabilities = this.getProbList(questionId, assumptionIds, assumedStates);
@@ -4009,6 +4038,24 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	protected double getCurrencyConstantMultiplier() {
 		return currencyMultiplier;
+	}
+
+	/**
+	 * If true, {@link #previewTrade(long, long, List, List, List)} will 
+	 * actually do a trade on a cloned network.
+	 * @param isToDoFullPreview the isToDoFullPreview to set
+	 */
+	public void setToDoFullPreview(boolean isToDoFullPreview) {
+		this.isToDoFullPreview = isToDoFullPreview;
+	}
+
+	/**
+	 * If true, {@link #previewTrade(long, long, List, List, List)} will 
+	 * actually do a trade on a cloned network.
+	 * @return the isToDoFullPreview
+	 */
+	public boolean isToDoFullPreview() {
+		return isToDoFullPreview;
 	}
 
 

@@ -114,7 +114,7 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 					}
 					// do trade. Since algorithm is linked to actual networks, changes will affect the actual networks
 					// 2nd boolean == true := overwrite assumptionIds and assumedStates when necessary
-					setOldValues(executeTrade(getQuestionId(), getNewValues(), getAssumptionIds(), getAssumedStates(), isAllowNegative(), algorithm, true));
+					setOldValues(executeTrade(getQuestionId(), getNewValues(), getAssumptionIds(), getAssumedStates(), isAllowNegative(), algorithm, true, false));
 					// backup the previous delta so that we can revert this trade
 					previousJointQTable = (JointPotentialTable) algorithm.getJointQTable().clone();
 				}

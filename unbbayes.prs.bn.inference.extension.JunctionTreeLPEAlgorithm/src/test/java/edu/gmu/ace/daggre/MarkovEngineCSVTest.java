@@ -38,7 +38,7 @@ public class MarkovEngineCSVTest extends TestCase {
 //	private static final File csvFile = new File("examples/DAGGRE.csv");
 	
 	/**How many times to iterate test on the same file, in order to avoid background process to impact on time*/
-	private int maxIterations = 3;//5;
+	private int maxIterations = 2;//5;
 	
 	/** If two probability values are within an interval of + or - this value, then it is considered to be equalÅ@*/
 	private float probPrecisionError = 0.01f;
