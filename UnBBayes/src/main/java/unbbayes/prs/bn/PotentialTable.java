@@ -43,9 +43,19 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	public static final int DIVISION_OPERATOR = 1;
 	public static final int PLUS_OPERATOR = 2;
 	public static final int MINUS_OPERATOR = 3;
+	
+	/** Instance called when doing marginalization. This instance sum-out values in {@link PotentialTable#removeVariable(INode)} */
+	public static final ISumOperation DEFAULT_MARGINALIZATION_OP = new PotentialTable() {
+			// this is a stub implementation of PotentialTable created  just in order to instantiate SumOperation
+			public void removeVariable(INode variable) {}
+			public void removeVariable(INode variable, boolean normalize) {}
+			public PotentialTable newInstance() { return null; }
+		}.new SumOperation();	// created an anonymous extension of PotentialTable just to instantiate inner class SumOperation
 
 	private boolean modified;
 	
+	
+
 	/** Load resource file from this package */
   	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
   			unbbayes.prs.bn.resources.BnResources.class.getName());
@@ -66,13 +76,13 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 */
 	protected FloatCollection dataCopy;
 	
-	/**
-	 * The data from the table as a list of floats. Usually used to compute
-	 * the marginal probabilities "manually", i.e. by removing each and every
-	 * parent from the potential table. The use of this data is done by using  
-	 * coordinates and linear coordinates for the marginal data.
-	 */
-	protected FloatCollection dataMarginal;
+//	/**
+//	 * The data from the table as a list of floats. Usually used to compute
+//	 * the marginal probabilities "manually", i.e. by removing each and every
+//	 * parent from the potential table. The use of this data is done by using  
+//	 * coordinates and linear coordinates for the marginal data.
+//	 */
+//	protected FloatCollection dataMarginal;
 
 	/**
 	 * Factors used to convert linear coordinates in multidimensional ones. 
@@ -97,11 +107,11 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 		modified = true;
 		dataPT = new FloatCollection();
 		dataCopy = new FloatCollection();
-		dataMarginal = new FloatCollection();
+//		dataMarginal = new FloatCollection();
 		variableList = new ArrayList<Node>();
 		
 		try{
-			this.setSumOperation(new SumOperation());
+			this.setSumOperation(DEFAULT_MARGINALIZATION_OP);
 		} catch (Exception e) {
 			Debug.println(getClass(), e.getMessage(), e);
 		}
@@ -121,6 +131,31 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 //			dataCopy.data[i] = dataPT.data[i];
 //		}
 	}
+	
+	/**
+	 * Accesses the content of data copied by
+	 * {@link #copyData()}
+	 * @param index : the index to be accessed.
+	 * @return the value at the provided index.
+	 * @see #getValue(int)
+	 * @see {@link #getCopiedValue(int[])}
+	 */
+	public float getCopiedValue(int index) {
+		return dataCopy.data[index];
+	}
+
+	/**
+	 * Accesses the content of data copied by
+	 * {@link #copyData()}
+	 * @param coordinate : multi-dimensional coordinate.
+	 * @return the value at the provided coordinate
+	 * @see #getMultidimensionalCoord(int)
+	 * @see #getValue(int[])
+	 * @see #getCopiedValue(int)
+	 */
+	public float getCopiedValue(int[] coordinate) {
+		return dataCopy.data[getLinearCoord(coordinate)];
+	};
 	
 	/**
 	 * Restores the data from the table using its stored copy.
@@ -267,6 +302,20 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	public void setValue(int[] coord, float value) {
 		dataPT.data[getLinearCoord(coord)] = value;
 	}
+	
+	/**
+	 * Set a value in the table using the multidimensional coordinate, 
+	 * which is a list containing the state of each variable in the table.
+	 * 
+	 * @param coord
+	 *            The multidimensional coordinate, which is a list containing 
+	 *            the state of each variable in the table.
+	 * @param value
+	 *            The value to be set in the table.
+	 */
+	public void setValue(int[] coord, double value) {
+		dataPT.data[getLinearCoord(coord)] = (float) value;
+	}
 
 	/**
 	 * Set a value in the table using the linear coordinate, 
@@ -280,6 +329,20 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 */
 	public  void setValue(int index, float value) {
 		dataPT.data[index] = value;
+	}
+	
+	/**
+	 * Set a value in the table using the linear coordinate, 
+	 * which corresponds to the state of each variable in the table.
+	 * 
+	 * @param index
+	 *            The linear coordinate, which corresponds to the state 
+	 *            of each variable in the table.
+	 * @param value
+	 *            The value to be set in the table.
+	 */
+	public  void setValue(int index, double value) {
+		dataPT.data[index] = (float) value;
 	}
 	
 	/**
@@ -301,6 +364,17 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 * @return a value found in the specified cell .
 	 */
 	public  float getValue(int index) {
+		return dataPT.data[index];
+	}
+	
+	/**
+	 * It returns the value of a cell identified by an index
+	 * 
+	 * @param index
+	 *            linear index of a cell
+	 * @return a value found in the specified cell .
+	 */
+	public double getDoubleValue(int index) {
 		return dataPT.data[index];
 	}
 	
@@ -427,7 +501,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 		boolean marked[]  = new boolean[dataPT.size];	
 		if ( sumOperation == null) {
 			// ensure the operation exists
-			sumOperation = new SumOperation();
+			sumOperation = DEFAULT_MARGINALIZATION_OP;
 		}
 		sumAux(variableList.size() - 1, index, 0, 0, marked);
 		
@@ -467,7 +541,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 			// concentrate the sum on the first cell. 
 			int linearCoordDestination = coord - base;
 			
-			float value = sumOperation.operate(dataPT.data[linearCoordDestination], dataPT.data[coord]);
+			float value = (float) sumOperation.operate(dataPT.data[linearCoordDestination], dataPT.data[coord]);
 			dataPT.data[linearCoordDestination] = value;
 			marked[coord] = true;
 			return;
@@ -505,7 +579,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 		 * @param arg2
 		 * @return
 		 */
-		float operate(float arg1, float arg2);
+		double operate(double arg1, double arg2);
 	}
 	
 	/**
@@ -520,7 +594,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 		 * (non-Javadoc)
 		 * @see unbbayes.prs.bn.PotentialTable.ISumOperation#operate(float, float)
 		 */
-		public float operate(float arg1, float arg2) {
+		public double operate(double arg1, double arg2) {
 			return arg1 + arg2;
 		}
 		
@@ -537,7 +611,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 		/**
 		 * Returns the value which is grater
 		 */
-		public float operate(float arg1, float arg2) {
+		public double operate(double arg1, double arg2) {
 			return ((arg1>arg2)?arg1:arg2);
 		}
 	}
@@ -939,5 +1013,25 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
         }
         return n;
     }
+	
+	/**
+	 * This var is used in {@link #notifyModification()}, {@link #computeFactors()}
+	 * and {@link #computeFactorsMarginal()} to check/notify that the cpt was modified
+	 * previously.
+	 * @return the modified
+	 */
+	protected boolean isModified() {
+		return modified;
+	}
+
+	/**
+	 * This var is used in {@link #notifyModification()}, {@link #computeFactors()}
+	 * and {@link #computeFactorsMarginal()} to check/notify that the cpt was modified
+	 * previously.
+	 * @param modified the modified to set
+	 */
+	protected void setModified(boolean modified) {
+		this.modified = modified;
+	}
 	
 }

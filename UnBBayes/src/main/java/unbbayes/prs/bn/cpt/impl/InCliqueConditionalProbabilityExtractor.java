@@ -182,7 +182,7 @@ public class InCliqueConditionalProbabilityExtractor implements
 			// Note: ret.tableSize() % cloneCliqueTable.tableSize() = 0
 			// (i.e. we will never reach a condition where ret is filled completely before cloneCliqueTable is read completely)
 			for (int i = 0; (i < cloneCliqueTable.tableSize() ); retIndex++, i++) {
-				ret.setValue(retIndex, cloneCliqueTable.getValue(i));
+				ret.setValue(retIndex, cloneCliqueTable.getDoubleValue(i));
 			}
 		}
 		

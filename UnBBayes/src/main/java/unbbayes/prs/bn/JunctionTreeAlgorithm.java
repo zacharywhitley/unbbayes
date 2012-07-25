@@ -49,7 +49,10 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 	
 	private InferenceAlgorithmOptionPanel optionPanel;
 	
-	private IJunctionTreeBuilder junctionTreeBuilder = new DefaultJunctionTreeBuilder();
+	/** This is the default instance of a builder for instantiating new {@link JunctionTree} */
+	public static final IJunctionTreeBuilder DEFAULT_JUNCTION_TREE_BUILDER = new DefaultJunctionTreeBuilder();
+	
+	private IJunctionTreeBuilder junctionTreeBuilder = DEFAULT_JUNCTION_TREE_BUILDER;
 
 	/** Load resource file from util */
   	private static ResourceBundle utilResource = unbbayes.util.ResourceController.newInstance().getBundle(
@@ -76,7 +79,10 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 
 	private float virtualNodePositionRandomness = 400;
   	
-	private ILikelihoodExtractor likelihoodExtractor = LikelihoodExtractor.newInstance();
+	/** Default value of {@link #getLikelihoodExtractor()} */
+	public static final ILikelihoodExtractor DEFAULT_LIKELIHOOD_EXTRACTOR = LikelihoodExtractor.newInstance();
+	
+	private ILikelihoodExtractor likelihoodExtractor = DEFAULT_LIKELIHOOD_EXTRACTOR;
 
 	private boolean isToCalculateJointProbabilityLocally = true;
 

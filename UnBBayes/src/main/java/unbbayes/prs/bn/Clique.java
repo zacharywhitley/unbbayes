@@ -77,7 +77,7 @@ public class Clique implements IRandomVariable, java.io.Serializable {
     private ArrayList<Node> nos;
 
     /**
-     *  Lista de N�s Probabilisticos associados ao Clique.
+     * List of probabilistic nodes related to Clique.
      */
     private ArrayList<Node> nosAssociados;
 
@@ -92,12 +92,23 @@ public class Clique implements IRandomVariable, java.io.Serializable {
      * nodes, and associated nodes. The association status is set to false.
      */
     public Clique() {
-        children = new ArrayList<Clique>();
-        nos = new ArrayList<Node>();
-        nosAssociados = new ArrayList<Node>();
-        associatedUtilNodes = new ArrayList<Node>();
-        potentialTable = new ProbabilisticTable();
-        utilityTable = new UtilityTable();
+      this(new ProbabilisticTable());
+    }
+    
+    /**
+     * Constructor initializing fields.
+     * @param cliquePotential
+     */
+    public Clique(PotentialTable cliquePotential) {
+    	  children = new ArrayList<Clique>();
+          nos = new ArrayList<Node>();
+          nosAssociados = new ArrayList<Node>();
+          associatedUtilNodes = new ArrayList<Node>();
+          potentialTable = cliquePotential;
+          if (potentialTable == null) {
+        	  potentialTable = new ProbabilisticTable();
+          }
+          utilityTable = new UtilityTable();
     }
     
 
@@ -296,6 +307,13 @@ public class Clique implements IRandomVariable, java.io.Serializable {
     public PotentialTable getProbabilityFunction() {
         return potentialTable;
     }
+    
+    /**
+	 * @param probabilityFunction the probabilityFunction to set
+	 */
+	protected void setProbabilityFunction(PotentialTable probabilityFunction) {
+		this.potentialTable = probabilityFunction;
+	}
     
 
     /**

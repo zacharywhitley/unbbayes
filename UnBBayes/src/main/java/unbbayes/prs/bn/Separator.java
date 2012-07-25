@@ -38,7 +38,10 @@ public class Separator implements IRandomVariable, java.io.Serializable {
 	private static final long serialVersionUID = 0;
 	
     private PotentialTable tabelaPot;
-    private PotentialTable utilityTable;
+   
+
+
+	private PotentialTable utilityTable;
     private ArrayList<Node> nos;
 
     private Clique clique1;
@@ -80,8 +83,21 @@ public class Separator implements IRandomVariable, java.io.Serializable {
         }
     }
 
-
     /**
+     * Constructor initializing fields
+     * @param assetClique1
+     * @param assetClique2
+     * @param table : {@link #getProbabilityFunction()} will be initialized to this object
+     */
+    public Separator(Clique assetClique1, Clique assetClique2,
+			PotentialTable table) {
+		this(assetClique1, assetClique2);
+		if (table != null) {
+			tabelaPot = table;
+		}
+	}
+
+	/**
      *@param  nodeList list of clusterized nodes
      */
     public void setNodes(ArrayList<Node> nodeList) {
@@ -95,6 +111,13 @@ public class Separator implements IRandomVariable, java.io.Serializable {
     public PotentialTable getProbabilityFunction() {
         return tabelaPot;
     }
+    
+    /**
+	 * @param probabilityFunction the probabilityFunction to set
+	 */
+	protected void setProbabilityFunction(PotentialTable probabilityFunction) {
+		this.tabelaPot = probabilityFunction;
+	}
 
     /**
      *@return    utility table associated with the separator

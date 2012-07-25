@@ -28,12 +28,12 @@ import java.util.ResourceBundle;
  * @author Michael
  * @author Rommel
  */
-public final class FloatCollection implements java.io.Serializable {
+public class FloatCollection implements java.io.Serializable {
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
 	
-	public static final int DEFAULT_SIZE = 2;
+	public static final int DEFAULT_SIZE = 0;
 	
     public float data[];
     public int size;
