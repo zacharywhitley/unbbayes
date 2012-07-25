@@ -12,6 +12,7 @@ import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
 import unbbayes.prs.bn.Clique;
+import unbbayes.prs.bn.DoublePrecisionProbabilisticTable;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
@@ -19,6 +20,7 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.bn.Separator;
+import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
@@ -39,8 +41,8 @@ import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 public class BruteForceAssetAwareInferenceAlgorithm extends
 		AssetAwareInferenceAlgorithm {
 
+	public static final String JOINT_ASSET_TABLE_PROP = BruteForceAssetAwareInferenceAlgorithm.class.getName()+".JOINT_ASSET_TABLE_PROP";
 	private JointPotentialTable jointProbabilityTable;
-	private JointPotentialTable jointAssetTable;
 
 
 
@@ -68,13 +70,6 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 		} catch (Exception e) {
 			throw new IllegalArgumentException("The network managed by " + probabilityDelegator + " must be an instance of " + ProbabilisticNetwork.class.getName(), e);
 		}
-		// we do not need to run special routines of the superclass in this class
-		ret.setToUpdateAssets(false);
-		ret.setToPropagateForGlobalConsistency(false);
-		ret.setToAllowQValuesSmallerThan1(true);
-		ret.setToCalculateMarginalsOfAssetNodes(false);
-		ret.setToUpdateOnlyEditClique(true);
-		ret.setToUpdateSeparators(false);
 		ret.setDefaultInitialAssetQuantity(initQValues);
 		ret.initializeJointAssets();
 		ret.initializeJointProbabilities();
@@ -144,8 +139,8 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 		if (getAssetNetwork().getJunctionTree() != null && getAssetNetwork().getJunctionTree().getCliques() != null) {
 			// copy asset tables of cliques. Since cliques are stored in a list, the ordering of the copied cliques is supposedly the same
 			for (int i = 0; i < getAssetNetwork().getJunctionTree().getCliques().size(); i++) {
-				newAssetNet.getJunctionTree().getCliques().get(i).getProbabilityFunction().setValues(
-						getAssetNetwork().getJunctionTree().getCliques().get(i).getProbabilityFunction().getValues()
+				((DoublePrecisionProbabilisticTable)newAssetNet.getJunctionTree().getCliques().get(i).getProbabilityFunction()).setValues(
+						((DoublePrecisionProbabilisticTable) getAssetNetwork().getJunctionTree().getCliques().get(i).getProbabilityFunction()).getDoubleValues()
 				);
 				// store asset cliques in the map, so that we can use it for the separators later
 				oldCliqueToNewCliqueMap.put(getAssetNetwork().getJunctionTree().getCliques().get(i), newAssetNet.getJunctionTree().getCliques().get(i));
@@ -163,7 +158,7 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 					throw new RuntimeException("Could not access copy of separator " + oldSep + " correctly while copying asset tables of separators.");
 				}
 				// tables are supposedly with same size
-				newSep.getProbabilityFunction().setValues(oldSep.getProbabilityFunction().getValues());
+				((DoublePrecisionProbabilisticTable)newSep.getProbabilityFunction()).setValues(((DoublePrecisionProbabilisticTable) oldSep.getProbabilityFunction()).getDoubleValues());
 			}
 		}
 		
@@ -211,10 +206,37 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 
 
 	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm#setAssetNetwork(unbbayes.prs.bn.AssetNetwork)
+	 */
+	@Override
+	public void setAssetNetwork(AssetNetwork network)
+			throws IllegalArgumentException {
+		super.setAssetNetwork(network);
+		if (this.getJointQTable() == null) {
+			this.initializeJointAssets();
+		}
+	}
+
+	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm#runMinPropagation(java.util.Map)
 	 */
 	@Override
 	public void runMinPropagation(Map<INode, Integer> conditions) {
+		if (conditions == null) {
+			conditions = new HashMap<INode, Integer>();
+		}
+		// fill conditions with current evidences, if present
+		for (Node node : getAssetNetwork().getNodes()) {
+			if (node instanceof TreeVariable) {
+				TreeVariable treeVariable = (TreeVariable) node;
+				if (treeVariable.hasEvidence()) {
+					Integer oldEvidence = conditions.put(treeVariable, treeVariable.getEvidence());
+					if (oldEvidence != null && !oldEvidence.equals(treeVariable.getEvidence())) {
+						throw new IllegalArgumentException("Attempted to set evidence of node " + treeVariable + " from " + oldEvidence + " to " + treeVariable.getEvidence());
+					}
+				}
+			}
+		}
 		JointPotentialTable table = getJointQTable();
 		table.copyData();
 		if (conditions != null && !conditions.isEmpty()) {
@@ -309,10 +331,27 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 		this.initializeJointAssets();
 		this.initializeJointProbabilities();
 		
-		
+		// clone will fail if we associate nodes with joint clique (clique with joint table)
+//		this.associateNodesWithJointTable();
 	}
 	
 	
+//	protected void associateNodesWithJointTable() {
+//		Clique jointClique = new Clique(getJointProbabilityTable());
+//		for (Node node : getRelatedProbabilisticNetwork().getNodes()) {
+//			if (node instanceof ProbabilisticNode) {
+//				if (!jointClique.getAssociatedProbabilisticNodes().contains(node)) {
+//					jointClique.getAssociatedProbabilisticNodes().add(node);
+//				}
+//				if (!jointClique.getNodes().contains(node)) {
+//					jointClique.getNodes().add(node);
+//				}
+//				ProbabilisticNode probNode = (ProbabilisticNode) node;
+//				probNode.setAssociatedClique(jointClique);
+//			}
+//		}
+//	}
+
 	protected void initializeJointProbabilities() {
 		JointPotentialTable jProbTab = new JointPotentialTable();
 		for (Node node : getRelatedProbabilisticNetwork().getNodes()) {
@@ -325,9 +364,13 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 	}
 
 	protected void initializeJointAssets() {
+		if (getAssetNetwork() == null) {
+			return;
+		}
 		// init joint asset table
 		JointPotentialTable jAstTab = new JointPotentialTable();
-		for (Node node : getRelatedProbabilisticNetwork().getNodes()) {
+		for (Node node : getAssetNetwork().getNodes()) {
+			// variables in asset table must come from asset network instead of from prob network
 			jAstTab.addVariable(node);
 		}
 		// init content of asset table
@@ -343,6 +386,7 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 		if (getRelatedProbabilisticNetwork() == null || getRelatedProbabilisticNetwork().getJunctionTree() == null) {
 			// nothing to update
 			System.err.println("No network found");
+			return;
 		}
 		// this is the joint probability table
 		JointPotentialTable jProbTable = this.getJointProbabilityTable();
@@ -382,7 +426,6 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 					}
 				}
 			}
-			
 			// iterate on separators
 			for (Separator sep : getRelatedProbabilisticNetwork().getJunctionTree().getSeparators()) {
 				// get separator potential
@@ -401,7 +444,16 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 						}
 					}
 					if (matches) {
-						product /= sepTable.getValue(indexOfSepTable);
+						float value = sepTable.getValue(indexOfSepTable);
+						if (value == 0.0f ) {
+							if (product > 0.0f) {
+								throw new IllegalStateException("Inconsistency or underflow detected in separator " + sepTable);
+							} else {
+								// consider the contribution of this separator as 0.0
+							}
+						} else {
+							product /= value;
+						}
 					}
 				}
 			}
@@ -411,11 +463,14 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 			
 			// update joint q-values
 			if (isToUpdateAssets) {
+				double value = getJointQTable().getValue(i) * jProbTable.getValue(i) / jProbTable.getCopiedValue(i);
+				if (!isToAllowQValuesSmallerThan1() && value <= 1.0) {
+					throw new ZeroAssetsException("Cell " + i + " in asset table went to " + value);
+				}
 				// new q = old q * new prob / old prob
-				getJointQTable().setValue(i, getJointQTable().getValue(i) * jProbTable.getValue(i) / jProbTable.getCopiedValue(i)); // tables have same indexes
+				getJointQTable().setValue(i, value ); // tables have same indexes
 			}
 		}
-		
 		
 		// backup the updated joint tables
 //		jProbTable.copyData();
@@ -425,16 +480,69 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 	}
 	
 	/**
+	 * Obtains the marginal probability of a node from a joint probability table
+	 * @param node
+	 * @return marginal probability
+	 */
+	protected float[] getMarginalProbabilityFromJointTable( ProbabilisticNode node) {
+		float[] ret = new float[node.getStatesSize()];
+		Map<ProbabilisticNode, Integer> nodesAndStatesToConsider = new HashMap<ProbabilisticNode, Integer>();
+		for (int i = 0; i < node.getStatesSize(); i++) {
+			nodesAndStatesToConsider.put((ProbabilisticNode) node, i);
+			ret[i] = this.getJointProbability(nodesAndStatesToConsider);
+		}
+		return ret;
+	}
+
+	/**
 	 * Updates the content of joint tables
 	 * @param isToUpdateAssets : if false, it will not update the joint q table (i.e. updates only joint probability table)
 	 * @see unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm#propagate()
 	 */
 	public void propagate() {
-		getJointProbabilityTable().copyData();	// backup old prob
+		// backup old joint values
+		getJointProbabilityTable().copyData();	
+		getJointQTable().copyData();
+		
+		// do not update assets on superclass' propagation
+		boolean backup = this.isToUpdateAssets();
+		this.setToUpdateAssets(false);	
 		super.propagate();
-		this.updateJointProbability(true);
+		this.setToUpdateAssets(backup);
+		
+		// propagate assets on joint table
+		try {
+			this.updateJointProbability(this.isToUpdateAssets());
+		} catch (ZeroAssetsException e) {
+			// undo propagation
+			getJointProbabilityTable().restoreData();
+			getJointQTable().restoreData();
+			// need to restore marginals, because super.propagate() has changed it
+			this.updateMarginalsFromJointProbability();
+			throw e;
+		}
+		
+		// update marginal probability of nodes based on joint table instead of clique table
+		this.updateMarginalsFromJointProbability();
+		if (this.isToUpdateAssets() && this.isToPropagateForGlobalConsistency()) {
+			// run min propagation on joint asset table if needed (this will only propagate findings)
+			this.runMinPropagation(null);
+		}
 	}
 	
+	/**
+	 * Forces {@link TreeVariable#getMarginalAt(int)} to
+	 * have values which reflects {@link #getJointProbabilityTable()}
+	 */
+	protected void updateMarginalsFromJointProbability() {
+		// update marginals accordingly to joint probability
+		for (Node node : getRelatedProbabilisticNetwork().getNodes()) {
+			if (node instanceof ProbabilisticNode) {
+				ProbabilisticNode probNode = (ProbabilisticNode) node;
+				probNode.setMarginalProbabilities(this.getMarginalProbabilityFromJointTable(probNode));
+			}
+		}
+	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm#getJointProbability(java.util.Map)
@@ -519,14 +627,19 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 	 * @param jointAssetTable the jointAssetTable to set
 	 */
 	public void setJointQTable(JointPotentialTable jointAssetTable) {
-		this.jointAssetTable = jointAssetTable;
+		if (getAssetNetwork() != null) {
+			getAssetNetwork().getProperties().put(JOINT_ASSET_TABLE_PROP, jointAssetTable);
+		}
 	}
 
 	/**
 	 * @return the jointAssetTable
 	 */
 	public JointPotentialTable getJointQTable() {
-		return jointAssetTable;
+		if (getAssetNetwork() != null) {
+			return (JointPotentialTable) getAssetNetwork().getProperty(JOINT_ASSET_TABLE_PROP);
+		}
+		return null;
 	}
 
 	

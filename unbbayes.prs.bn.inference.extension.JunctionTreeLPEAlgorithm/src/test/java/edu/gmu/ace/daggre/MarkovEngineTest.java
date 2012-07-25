@@ -33,14 +33,14 @@ import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
  */
 public class MarkovEngineTest extends TestCase {
 	
-	private static final int THREAD_NUM = 5;//75;	// quantity of threads to use in order to test multi-thread behavior
+	private static final int THREAD_NUM = 75;//75;	// quantity of threads to use in order to test multi-thread behavior
 
 	public static final int MAX_NETWIDTH = 3;
 	public static final int MAX_STATES = 5;
 	public static final int MIN_STATES = 2;
 	
 	/** Error margin used when comparing 2 probability values */
-	public static final float PROB_ERROR_MARGIN = 0.0005f;
+	public static final float PROB_ERROR_MARGIN = 0.005f;
 
 	/** Error margin used when comparing 2 asset (score) values */
 	public static final float ASSET_ERROR_MARGIN = 1f;
@@ -161,6 +161,24 @@ public class MarkovEngineTest extends TestCase {
 			assertNotNull(engine.getProbabilisticNetwork().getNode(Integer.toString(i)));
 		}
 		
+		// check consistency of marginal probabilities
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		assertNotNull(probLists);
+		assertEquals(engine.getProbabilisticNetwork().getNodeCount(), probLists.size());
+		for (Long questionId : probLists.keySet()) {
+			// check consistency of marginal prob value
+			List<Float> prob = probLists.get(questionId);
+			assertNotNull("Question " + questionId, prob);
+			assertFalse("Question " + questionId + " = " + prob,prob.isEmpty());
+			float sum = 0.0f;
+			for (Float value : prob) {
+				assertTrue("Question " + questionId + " = " + prob, value >= 0.0f);
+				assertTrue("Question " + questionId + " = " + prob, value <= 1.0f);
+				sum += value;
+			}
+			assertEquals("Question " + questionId + " = " + prob, 1.0f, sum, PROB_ERROR_MARGIN);
+		}
+		
 		// reset engine
 		engine.initialize();
 		assertNotNull(engine.getProbabilisticNetwork());
@@ -192,6 +210,24 @@ public class MarkovEngineTest extends TestCase {
 		// check if network contains nodes with ID from 0 to THREAD_NUM-1
 		for (int i = 0; i < THREAD_NUM; i++) {
 			assertNotNull(engine.getProbabilisticNetwork().getNode(Integer.toString(i)));
+		}
+		
+		// check consistency of marginal probabilities
+		probLists = engine.getProbLists(null, null, null);
+		assertNotNull(probLists);
+		assertEquals(engine.getProbabilisticNetwork().getNodeCount(), probLists.size());
+		for (Long questionId : probLists.keySet()) {
+			// check consistency of marginal prob value
+			List<Float> prob = probLists.get(questionId);
+			assertNotNull("Question " + questionId, prob);
+			assertFalse("Question " + questionId + " = " + prob,prob.isEmpty());
+			float sum = 0.0f;
+			for (Float value : prob) {
+				assertTrue("Question " + questionId + " = " + prob, value >= 0.0f);
+				assertTrue("Question " + questionId + " = " + prob, value <= 1.0f);
+				sum += value;
+			}
+			assertEquals("Question " + questionId + " = " + prob, 1.0f, sum, PROB_ERROR_MARGIN);
 		}
 		
 	}
@@ -421,6 +457,24 @@ public class MarkovEngineTest extends TestCase {
 					engine.getProbabilisticNetwork().hasEdge(node1, node2) < 0);
 		}
 		
+		// check consistency of marginal probabilities
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		assertNotNull(probLists);
+		assertEquals(engine.getProbabilisticNetwork().getNodeCount(), probLists.size());
+		for (Long questionId : probLists.keySet()) {
+			// check consistency of marginal prob value
+			List<Float> prob = probLists.get(questionId);
+			assertNotNull("Question " + questionId, prob);
+			assertFalse("Question " + questionId + " = " + prob,prob.isEmpty());
+			float sum = 0.0f;
+			for (Float value : prob) {
+				assertTrue("Question " + questionId + " = " + prob, value >= 0.0f);
+				assertTrue("Question " + questionId + " = " + prob, value <= 1.0f);
+				sum += value;
+			}
+			assertEquals("Question " + questionId + " = " + prob, 1.0f, sum, PROB_ERROR_MARGIN);
+		}
+		
 		// reset engine
 		engine.initialize();
 		assertNotNull(engine.getProbabilisticNetwork());
@@ -465,6 +519,24 @@ public class MarkovEngineTest extends TestCase {
 			assertFalse(pair.left + ".equals(" + pair.right+")", node1.equals(node2));
 			assertFalse(pair.left + "->" + pair.right + " is not present in " + engine.getProbabilisticNetwork(),
 					engine.getProbabilisticNetwork().hasEdge(node1, node2) < 0);
+		}
+		
+		// check consistency of marginal probabilities
+		probLists = engine.getProbLists(null, null, null);
+		assertNotNull(probLists);
+		assertEquals(engine.getProbabilisticNetwork().getNodeCount(), probLists.size());
+		for (Long questionId : probLists.keySet()) {
+			// check consistency of marginal prob value
+			List<Float> prob = probLists.get(questionId);
+			assertNotNull("Question " + questionId, prob);
+			assertFalse("Question " + questionId + " = " + prob,prob.isEmpty());
+			float sum = 0.0f;
+			for (Float value : prob) {
+				assertTrue("Question " + questionId + " = " + prob, value >= 0.0f);
+				assertTrue("Question " + questionId + " = " + prob, value <= 1.0f);
+				sum += value;
+			}
+			assertEquals("Question " + questionId + " = " + prob, 1.0f, sum, PROB_ERROR_MARGIN);
 		}
 		
 		// case 3 : edges being substituted
@@ -578,6 +650,23 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(.1f, cpt.getValue(2), PROB_ERROR_MARGIN);
 		assertEquals(.9f, cpt.getValue(3), PROB_ERROR_MARGIN);
 		
+		// check consistency of marginal probabilities
+		probLists = engine.getProbLists(null, null, null);
+		assertNotNull(probLists);
+		assertEquals(engine.getProbabilisticNetwork().getNodeCount(), probLists.size());
+		for (Long questionId : probLists.keySet()) {
+			// check consistency of marginal prob value
+			List<Float> prob = probLists.get(questionId);
+			assertNotNull("Question " + questionId, prob);
+			assertFalse("Question " + questionId + " = " + prob,prob.isEmpty());
+			float sum = 0.0f;
+			for (Float value : prob) {
+				assertTrue("Question " + questionId + " = " + prob, value >= 0.0f);
+				assertTrue("Question " + questionId + " = " + prob, value <= 1.0f);
+				sum += value;
+			}
+			assertEquals("Question " + questionId + " = " + prob, 1.0f, sum, PROB_ERROR_MARGIN);
+		}
 		
 		
 		// case 3 : edges being substituted in same transaction
@@ -666,6 +755,23 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(.1f, cpt.getValue(2), PROB_ERROR_MARGIN);
 		assertEquals(.9f, cpt.getValue(3), PROB_ERROR_MARGIN);
 		
+		// check consistency of marginal probabilities
+		probLists = engine.getProbLists(null, null, null);
+		assertNotNull(probLists);
+		assertEquals(engine.getProbabilisticNetwork().getNodeCount(), probLists.size());
+		for (Long questionId : probLists.keySet()) {
+			// check consistency of marginal prob value
+			List<Float> prob = probLists.get(questionId);
+			assertNotNull("Question " + questionId, prob);
+			assertFalse("Question " + questionId + " = " + prob,prob.isEmpty());
+			float sum = 0.0f;
+			for (Float value : prob) {
+				assertTrue("Question " + questionId + " = " + prob, value >= 0.0f);
+				assertTrue("Question " + questionId + " = " + prob, value <= 1.0f);
+				sum += value;
+			}
+			assertEquals("Question " + questionId + " = " + prob, 1.0f, sum, PROB_ERROR_MARGIN);
+		}
 	}
 
 	/**

@@ -435,27 +435,27 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 					}
 					
 					// Guarantee that each clique is normalized, if the network is disconnected
-					if ((algorithm.getNetwork() != null) && (algorithm.getNetwork() instanceof SingleEntityNetwork)) {
-						SingleEntityNetwork network = (SingleEntityNetwork) algorithm.getNetwork();
-						if (isToNormalizeDisconnectedNets() && !network.isConnected()) {
-							// network is disconnected.
-							if (network.getJunctionTree() != null) {
-								// extract all cliques and normalize them
-								for (Clique clique : network.getJunctionTree().getCliques()) {
-									try {
-										clique.normalize();
-										for (Node node : clique.getAssociatedProbabilisticNodes()) {
-											if (node instanceof TreeVariable) {
-												((TreeVariable) node).updateMarginal();
-											}
-										}
-									} catch (Exception e) {
-										throw new RuntimeException(e);
-									}
-								}
-							}
-						}
-					}
+//					if ((algorithm.getNetwork() != null) && (algorithm.getNetwork() instanceof SingleEntityNetwork)) {
+//						SingleEntityNetwork network = (SingleEntityNetwork) algorithm.getNetwork();
+//						if (isToNormalizeDisconnectedNets() && !network.isConnected()) {
+//							// network is disconnected.
+//							if (network.getJunctionTree() != null) {
+//								// extract all cliques and normalize them
+//								for (Clique clique : network.getJunctionTree().getCliques()) {
+//									try {
+//										clique.normalize();
+//										for (Node node : clique.getAssociatedProbabilisticNodes()) {
+//											if (node instanceof TreeVariable) {
+//												((TreeVariable) node).updateMarginal();
+//											}
+//										}
+//									} catch (Exception e) {
+//										throw new RuntimeException(e);
+//									}
+//								}
+//							}
+//						}
+//					}
 					
 					// clear virtual nodes if this is using junction tree algorithm or algorithms related to it
 					if (algorithm instanceof JunctionTreeAlgorithm) {

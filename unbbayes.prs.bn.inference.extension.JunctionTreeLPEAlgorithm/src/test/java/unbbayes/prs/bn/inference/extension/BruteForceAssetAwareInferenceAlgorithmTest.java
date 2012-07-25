@@ -25,16 +25,17 @@ import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor;
 import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
+import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 /**
  * This is a JUnit test case for the asset propagation algorithms
  * @author Shou Matsumoto
  *
  */
-public class AssetAwareInferenceAlgorithmTest extends TestCase {
+public class BruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 	
 	/** If two probability values are within an interval of + or - this value, then it is considered to be equalÅ@*/
-	private static final float PROB_PRECISION_ERROR = 0.0005f;
+	private static final float PROB_PRECISION_ERROR = 0.005f;
 
 	/** If two asset q values are within an interval of + or - this value, then it is considered to be equalÅ@*/
 	private static final float ASSET_PRECISION_ERROR = 0.05f;
@@ -42,7 +43,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 	/**
 	 * @param name
 	 */
-	public AssetAwareInferenceAlgorithmTest(String name) {
+	public BruteForceAssetAwareInferenceAlgorithmTest(String name) {
 		super(name);
 	}
 
@@ -264,14 +265,14 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertNotNull(network);
 		
 		// algorithm to propagate probabilities
-		JunctionTreeAlgorithm junctionTreeAlgorithm = new JunctionTreeAlgorithm(network);
-		assertNotNull(junctionTreeAlgorithm);
+		IInferenceAlgorithm algorithm = new JunctionTreeAlgorithm(network);
+		assertNotNull(algorithm);
 		
 		// enable soft evidence by using jeffrey rule in likelihood evidence w/ virtual nodes.
-		junctionTreeAlgorithm.setLikelihoodExtractor(JeffreyRuleLikelihoodExtractor.newInstance() );
+		((JunctionTreeAlgorithm)algorithm).setLikelihoodExtractor(JeffreyRuleLikelihoodExtractor.newInstance() );
 		
 		// algorithm to propagate q values (assets) given that probabilities were propagated
-		AssetAwareInferenceAlgorithm assetQAlgorithm = (AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm);
+		BruteForceAssetAwareInferenceAlgorithm assetQAlgorithm = (BruteForceAssetAwareInferenceAlgorithm) BruteForceAssetAwareInferenceAlgorithm.getInstance(algorithm, 100f);
 		assertNotNull(assetQAlgorithm);
 		
 //		assetQAlgorithm.setToPropagateForGlobalConsistency(false);
@@ -345,7 +346,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		List<INode> betConditions =  new ArrayList<INode>();
 		
 		// first, extract what is P(E) prior to edit (this is the "CPT" generated on-the-fly with no nodes assumed)
-		PotentialTable potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+		PotentialTable potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, algorithm);
 		assertNotNull(potential);
 		assertEquals(2, potential.tableSize());
 		
@@ -403,21 +404,14 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		List<Map<INode, Integer>> inOutArgLPE = new ArrayList<Map<INode,Integer>>();
 		double minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
 		
+		// check that min-q is 90
+		assertTrue("Obtained min q = " + minQ,((90f - ASSET_PRECISION_ERROR) < minQ) && (minQ < (90f + ASSET_PRECISION_ERROR)) );
+		
 		Map<INode, Integer> lpes = inOutArgLPE.get(0);
 		assertNotNull(lpes);
 		assertTrue(lpes.size() == 3);
 		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("E")).intValue());	// index 1 has state e2
 		
-		// check that min-q is 90
-//		float minQ = Float.MAX_VALUE;	
-//		for (Clique qClique : assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
-//			for (int i = 0; i < qClique.getProbabilityFunction().tableSize(); i++) {
-//				if (qClique.getProbabilityFunction().getValue(i) < minQ) {
-//					minQ = qClique.getProbabilityFunction().getValue(i);
-//				}
-//			}
-//		}
-		assertTrue("Obtained min q = " + minQ,((90f - ASSET_PRECISION_ERROR) < minQ) && (minQ < (90f + ASSET_PRECISION_ERROR)) );
 		
 		
 		// undo only the min propagation (we do not need the min q values anymore, and next q-calculations must use q values prior to min propagation)
@@ -454,7 +448,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(betConditions.contains(assumedNode));
 		
 		// extract CPT of E given D
-		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, algorithm);
 		assertNotNull(potential);
 		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
 		
@@ -579,7 +573,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(betConditions.contains(network.getNode("D")));
 		
 		// extract CPT of E given D
-		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, algorithm);
 		assertNotNull(potential);
 		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
 
@@ -687,7 +681,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(betConditions.contains(network.getNode("D")));
 		
 		// extract CPT of F given D
-		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, algorithm);
 		assertNotNull(potential);
 		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
 
@@ -783,7 +777,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(betConditions.contains(network.getNode("D")));
 		
 		// extract CPT of F given D
-		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, algorithm);
 		assertNotNull(potential);
 		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
 
@@ -893,7 +887,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertEquals(0, betConditions.size());
 		
 		// extract CPT of E
-		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, algorithm);
 		assertNotNull(potential);
 		assertEquals(2,potential.tableSize());	
 
@@ -1010,7 +1004,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(betConditions.contains(assumedNode));
 		
 		// extract CPT of D given F
-		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, algorithm);
 		assertNotNull(potential);
 		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
 
@@ -1072,7 +1066,6 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 			fail(e.getMessage());
 		}
 		
-		
 		// check that new marginal of E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
 		nodeToTest = (TreeVariable) network.getNode("E");
 		assertTrue(((0.8509f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.8509f + PROB_PRECISION_ERROR)) );
@@ -1130,7 +1123,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(betConditions.contains(assumedNode));
 		
 		// extract CPT of D given F
-		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, algorithm);
 		assertNotNull(potential);
 		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
 
@@ -1213,7 +1206,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(betConditions.contains(assumedNode));
 		
 		// extract CPT of D given F
-		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, algorithm);
 		assertNotNull(potential);
 		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
 
