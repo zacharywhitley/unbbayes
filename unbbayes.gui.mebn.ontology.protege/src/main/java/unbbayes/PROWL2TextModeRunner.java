@@ -44,7 +44,7 @@ public class PROWL2TextModeRunner extends TextModeRunner {
 	 */
 	public static void main(String[] args) {
 		if (args.length < 2) {
-			System.out.println("params: <ubfVer2File> <queryNodeName> [<argumentsOfQuery>]*");
+			System.err.println("params: <ubfVer2File> <queryNodeName> [<argumentsOfQuery>]*");
 			return;
 		}
 		try {

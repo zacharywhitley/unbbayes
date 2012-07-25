@@ -733,7 +733,7 @@ public class UbfIO2 extends UbfIO {
 								
 								//by young
 								height = Math.max(node.getHeight(), st.nval);
-								System.out.println("Setting node size:" + width + "," + height);
+								Debug.println("Setting node size:" + width + "," + height);
 								node.setSize(width,height);
 								
 								break;

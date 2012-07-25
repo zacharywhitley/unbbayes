@@ -2591,7 +2591,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					
 					// make sure knownSearchResults is not null and empty
 					if (knownSearchResults.getValuesResultList() == null || knownSearchResults.getValuesResultList().size() > 0) {
-						System.out.println("There is a synchronization problem: the search result should be empty at this moment, but it was filled... It is going to be overwritten.");
+						System.err.println("There is a synchronization problem: the search result should be empty at this moment, but it was filled... It is going to be overwritten.");
 						return null;
 					}
 					
@@ -2885,7 +2885,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					
 					// make sure knownSearchResults is not null and empty
 					if (knownSearchResults.getValuesResultList() == null || knownSearchResults.getValuesResultList().size() > 0) {
-						System.out.println("There is a synchronization problem: the search result should be empty at this moment, but it was filled... It is going to be overwritten.");
+						System.err.println("There is a synchronization problem: the search result should be empty at this moment, but it was filled... It is going to be overwritten.");
 						return null;
 					}
 					
