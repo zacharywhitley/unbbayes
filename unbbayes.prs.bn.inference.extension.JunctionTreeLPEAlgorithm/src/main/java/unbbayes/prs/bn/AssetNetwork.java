@@ -33,6 +33,8 @@ public class AssetNetwork extends ProbabilisticNetwork {
 	 */
 	protected AssetNetwork() {
 		super("Asset Network");
+		setHierarchicTree(null);
+		getLogManager().setEnabled(false);
 	}
 	
 	/**
@@ -43,8 +45,20 @@ public class AssetNetwork extends ProbabilisticNetwork {
 	 * @throws InvalidParentException : if relatedNetwork contains invalid edges
 	 */
 	public static AssetNetwork getInstance(ProbabilisticNetwork relatedNetwork) throws InvalidParentException {
+		return AssetNetwork.getInstance(relatedNetwork, false);
+	}
+	
+	/**
+	 * Default constructor method initializing network.
+	 * This method calls {@link #setRelatedNetwork(ProbabilisticNetwork)}, which instantiates asset nodes and edges.
+	 * @param relatedNetwork : probabilistic network containing the probability distribution of this asset network
+	 * 
+	 * @return a network of assets having the same structure of relatedNetwork
+	 * @throws InvalidParentException : if relatedNetwork contains invalid edges
+	 */
+	public static AssetNetwork getInstance(ProbabilisticNetwork relatedNetwork, boolean isToAddEdge) throws InvalidParentException {
 		AssetNetwork ret = new AssetNetwork();
-		ret.setRelatedNetwork(relatedNetwork);
+		ret.setRelatedNetwork(relatedNetwork, isToAddEdge);
 		if (relatedNetwork != null) {
 			ret.setName("Asssets of " + relatedNetwork.getName());
 		}
@@ -61,6 +75,22 @@ public class AssetNetwork extends ProbabilisticNetwork {
 	}
 	
 	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.Network#addNode(unbbayes.prs.Node)
+	 */
+	@Override
+	public void addNode(Node node) {
+		 nodeList.add(node);
+	    // Set its index and add the listener to make sure it is always updated.
+	    nodeIndexes.put(node.getName(), new Integer(nodeList.size()-1));
+	    // do not add listener
+//	    node.addNodeNameChangedListener(nodeNameChangedListener);
+	}
+
+	public void setRelatedNetwork(ProbabilisticNetwork relatedNetwork)  throws InvalidParentException  {
+		this.setRelatedNetwork(relatedNetwork, false);
+	}
+	
 	/**
 	 * This method sets the relatedNetwork (probabilistic network w/ the probabilities of the assets of this network)
 	 * and instantiates asset nodes and edges according to nodes/edges in relatedNetwork. It only considers instances of {@link ProbabilisticNode}
@@ -68,7 +98,7 @@ public class AssetNetwork extends ProbabilisticNetwork {
 	 * @param relatedNetwork the relatedNetwork to set
 	 * @throws InvalidParentException if relatedNetwork contains invalid edges
 	 */
-	public void setRelatedNetwork(ProbabilisticNetwork relatedNetwork)  throws InvalidParentException  {
+	public void setRelatedNetwork(ProbabilisticNetwork relatedNetwork, boolean isToAddEdge)  throws InvalidParentException  {
 		if (this.relatedNetwork == null
 				|| !this.relatedNetwork.equals(relatedNetwork)) {
 //			// stores which node has originated the corresponding asset node
@@ -87,7 +117,6 @@ public class AssetNetwork extends ProbabilisticNetwork {
 					AssetNode assetNode = AssetNode.getInstance();
 					assetNode.setToCalculateMarginal(isToCalculateMarginalsOfAssetNodes());
 					assetNode.setName(node.getName());
-					assetNode.setPosition(node.getPosition().getX(), node.getPosition().getY());
 					// copy states
 					for (int i = 0; i < node.getStatesSize(); i++) {
 						assetNode.appendState(node.getStateAt(i));
@@ -98,24 +127,26 @@ public class AssetNetwork extends ProbabilisticNetwork {
 				}
 			}
 			
-			// copy edges
-			for (Edge edge : relatedNetwork.getEdges()) {
+			if (isToAddEdge) {
+				// copy edges
+				for (Edge edge : relatedNetwork.getEdges()) {
 //				if (nodeToAssetMap.containsKey(edge.getOriginNode()) && nodeToAssetMap.containsKey(edge.getDestinationNode())) {
 //					// both nodes in the edge are mapped
 //					Edge newEdge = new Edge(nodeToAssetMap.get(edge.getOriginNode()), nodeToAssetMap.get(edge.getDestinationNode()));
 //					this.addEdge(newEdge);
 //				}
-				// the asset node and original node has the same name, so we can obtain the asset node by searching by name
-				Node assetNodeOrig = this.getNode(edge.getOriginNode().getName());	
-				Node assetNodeDest = this.getNode(edge.getDestinationNode().getName());
-				if (assetNodeOrig != null && assetNodeDest != null) {
-					Edge newEdge = new Edge(assetNodeOrig, assetNodeDest);
-					this.addEdge(newEdge);
-				} else {
-					try {
-						Debug.println(getClass(), "Could not create edge: " + assetNodeOrig + " -> " + assetNodeDest);
-					} catch (Throwable t) {
-						t.printStackTrace();
+					// the asset node and original node has the same name, so we can obtain the asset node by searching by name
+					Node assetNodeOrig = this.getNode(edge.getOriginNode().getName());	
+					Node assetNodeDest = this.getNode(edge.getDestinationNode().getName());
+					if (assetNodeOrig != null && assetNodeDest != null) {
+						Edge newEdge = new Edge(assetNodeOrig, assetNodeDest);
+						this.addEdge(newEdge);
+					} else {
+						try {
+							Debug.println(getClass(), "Could not create edge: " + assetNodeOrig + " -> " + assetNodeDest);
+						} catch (Throwable t) {
+							t.printStackTrace();
+						}
 					}
 				}
 			}

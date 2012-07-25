@@ -31,7 +31,7 @@ import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
  * @author Shou Matsumoto
  *
  */
-public class MarkovEngineTest extends TestCase {
+public class BruteForceMarkovEngineTest extends TestCase {
 	
 	private static final int THREAD_NUM = 5;//75;	// quantity of threads to use in order to test multi-thread behavior
 
@@ -45,12 +45,12 @@ public class MarkovEngineTest extends TestCase {
 	/** Error margin used when comparing 2 asset (score) values */
 	public static final float ASSET_ERROR_MARGIN = 1f;
 	
-	private MarkovEngineImpl engine = (MarkovEngineImpl) MarkovEngineImpl.getInstance((float)Math.E, (float)(10.0/Math.log(100)), 0);
+	private BruteForceMarkovEngine engine = (BruteForceMarkovEngine) BruteForceMarkovEngine.getInstance((float)Math.E, (float)(10.0/Math.log(100)), 0);
 
 	/**
 	 * @param name
 	 */
-	public MarkovEngineTest(String name) {
+	public BruteForceMarkovEngineTest(String name) {
 		super(name);
 	}
 
@@ -103,98 +103,6 @@ public class MarkovEngineTest extends TestCase {
 		}
 	}
 
-	/**
-	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#addQuestion(long, java.util.Date, long, int, java.util.List)}.
-	 */
-	public final void testAddQuestion() {
-		// initial assertion
-		assertNotNull(engine.getProbabilisticNetwork());
-		
-		// no nodes in network.
-		assertEquals(0, engine.getProbabilisticNetwork().getNodeCount());
-		
-		// case 1 : several threads in 1 transaction
-		
-		// start transaction
-		long transactionKey = engine.startNetworkActions();
-		
-		// run addQuestion in THREAD_NUM threads
-		Thread[] threads = new AddQuestionThread[THREAD_NUM];
-        for (int i = 0; i < THREAD_NUM; i++) {
-            threads[i] = new AddQuestionThread(transactionKey, i);
-            threads[i].start();
-        }
-        
-        // wait until the threads are finished
-        for (int i = 0; i < THREAD_NUM; i++) {
-            try {
-                threads[i].join();
-            } catch (InterruptedException e) {
-            	e.printStackTrace();
-                fail(e.getMessage());
-            }
-        }
-		
-        // assert actions were added in order of date
-        List<NetworkAction> actions = engine.getNetworkActionsMap().get(transactionKey);
-        for (int i = 1; i < actions.size(); i++) {
-        	// it is inconsistent if previous action was created afer next action.
-			assertFalse(actions.get(i-1).getWhenCreated().after(actions.get(i).getWhenCreated()));
-		}
-        
-        // commit transaction
-		engine.commitNetworkActions(transactionKey);
-		
-		// cannot reuse same transaction key
-		try {
-			engine.addQuestion(transactionKey, new Date(), Long.MAX_VALUE, 2, null);
-			fail("Should not allow to use commited transaction");
-		} catch (IllegalArgumentException e) {
-			assertNotNull(e);
-		}
-		
-		// check if network contains THREAD_NUM nodes 
-		assertEquals(THREAD_NUM, engine.getProbabilisticNetwork().getNodeCount());
-		
-		// check if network contains nodes with ID from 0 to THREAD_NUM-1
-		for (int i = 0; i < THREAD_NUM; i++) {
-			assertNotNull(engine.getProbabilisticNetwork().getNode(Integer.toString(i)));
-		}
-		
-		// reset engine
-		engine.initialize();
-		assertNotNull(engine.getProbabilisticNetwork());
-		assertEquals(0, engine.getProbabilisticNetwork().getNodeCount());
-		
-		
-		// case 2 : several transactions, several threads.
-		// run addQuestion in THREAD_NUM threads
-		threads = new AddQuestionThread[THREAD_NUM];
-        for (int i = 0; i < THREAD_NUM; i++) {
-        	// by passing null as transactionKey, AddQuestionThread will call startNetworkActions and commitNetworkActions for each thread
-            threads[i] = new AddQuestionThread(null, i);
-            threads[i].start();
-        }
-        
-        // wait until the threads are finished
-        for (int i = 0; i < THREAD_NUM; i++) {
-            try {
-                threads[i].join();
-            } catch (InterruptedException e) {
-            	e.printStackTrace();
-                fail(e.getMessage());
-            }
-        }
-        
-     	// check if network contains THREAD_NUM nodes 
-		assertEquals(THREAD_NUM, engine.getProbabilisticNetwork().getNodeCount());
-		
-		// check if network contains nodes with ID from 0 to THREAD_NUM-1
-		for (int i = 0; i < THREAD_NUM; i++) {
-			assertNotNull(engine.getProbabilisticNetwork().getNode(Integer.toString(i)));
-		}
-		
-	}
 
 	/**created just to represent a BN edge using only IDs*/
 	private class QuestionPair{
@@ -342,331 +250,6 @@ public class MarkovEngineTest extends TestCase {
 	}
 	
 	
-	/**
-	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#addQuestionAssumption(long, java.util.Date, long, long, java.util.List)}.
-	 */
-	public final void testAddQuestionAssumption() {
-		// initial assertion
-		assertNotNull(engine.getProbabilisticNetwork());
-		
-		// no nodes in network.
-		assertEquals(0, engine.getProbabilisticNetwork().getNodeCount());
-		
-		// no edges in network
-		assertEquals(0, engine.getProbabilisticNetwork().getEdges().size());
-		
-		
-		// case 1 : several threads in 1 transaction
-		
-
-		// start transaction
-		long transactionKey = engine.startNetworkActions();
-		
-		
-		// run addQuestion in THREAD_NUM threads
-		AddQuestionAssumptionThread[] threads = new AddQuestionAssumptionThread[THREAD_NUM];
-		List<Long> generatedNodes = Collections.synchronizedList(new ArrayList<Long>());
-		Set<QuestionPair> generatedEdges = Collections.synchronizedSet(new HashSet<QuestionPair>());
-		Map<Long, Integer> parentNumCounters = new ConcurrentHashMap<Long, Integer>();
-        for (int i = 0; i < THREAD_NUM; i++) {
-            threads[i] = new AddQuestionAssumptionThread(transactionKey, generatedNodes, generatedEdges,parentNumCounters);
-            threads[i].start();
-        }
-        
-        // wait until the threads are finished
-        for (int i = 0; i < THREAD_NUM; i++) {
-            try {
-                threads[i].join();
-            } catch (InterruptedException e) {
-            	e.printStackTrace();
-                fail(e.getMessage());
-            }
-        }
-		
-        // commit transaction
-		engine.commitNetworkActions(transactionKey);
-		
-		// cannot reuse same transaction key
-		try {
-			engine.addQuestionAssumption(transactionKey, new Date(), (long)0, Collections.singletonList((long)1), null);
-			fail("Should not allow to use commited transaction");
-		} catch (IllegalArgumentException e) {
-			assertNotNull(e);
-		}
-		
-		// check if data structures are synchronized
-		assertEquals(parentNumCounters.keySet().size(), generatedNodes.size());
-		int parentNumCounterValuesSum = 0;
-		for (Integer numParents : parentNumCounters.values()) {
-			parentNumCounterValuesSum += numParents;
-		}
-		assertEquals(parentNumCounterValuesSum, generatedEdges.size());
-		
-		// check if network contains all nodes and edges
-		assertEquals(generatedNodes.size(), engine.getProbabilisticNetwork().getNodeCount());
-		assertEquals(generatedEdges.size(), engine.getProbabilisticNetwork().getEdges().size());
-		
-		for (Long nodeID : generatedNodes) {
-			assertEquals(nodeID + " is not present in " + engine.getProbabilisticNetwork(),
-					Long.toString(nodeID),
-					engine.getProbabilisticNetwork().getNode(Long.toString(nodeID)).getName());
-		}
-		for (QuestionPair pair : generatedEdges) {
-			Node node1 = engine.getProbabilisticNetwork().getNode(Long.toString(pair.left));
-			Node node2 = engine.getProbabilisticNetwork().getNode(Long.toString(pair.right));
-			assertNotNull(pair.left + " is null", node1);
-			assertNotNull(pair.right + " is null", node2);
-			assertFalse(pair.left + ".equals(" + pair.right+")", node1.equals(node2));
-			assertFalse(pair.left + "->" + pair.right + " is not present in " + engine.getProbabilisticNetwork(),
-					engine.getProbabilisticNetwork().hasEdge(node1, node2) < 0);
-		}
-		
-		// reset engine
-		engine.initialize();
-		assertNotNull(engine.getProbabilisticNetwork());
-		assertEquals(0, engine.getProbabilisticNetwork().getNodeCount());
-		
-		
-		// case 2 : several transactions, several threads.
-		
-		// run addQuestion in THREAD_NUM threads
-		threads = new AddQuestionAssumptionThread[THREAD_NUM];
-		generatedNodes.clear();
-		generatedEdges.clear();
-        for (int i = 0; i < THREAD_NUM; i++) {
-        	// by passing null as transactionKey, AddQuestionThread will call startNetworkActions and commitNetworkActions for each thread
-            threads[i] = new AddQuestionAssumptionThread(null, generatedNodes, generatedEdges, parentNumCounters);
-            threads[i].start();
-        }
-        
-        // wait until the threads are finished
-        for (int i = 0; i < THREAD_NUM; i++) {
-            try {
-                threads[i].join();
-            } catch (InterruptedException e) {
-            	e.printStackTrace();
-                fail(e.getMessage());
-            }
-        }
-        
-        // check if network contains all nodes and edges
-		assertEquals(generatedNodes.size(), engine.getProbabilisticNetwork().getNodeCount());
-		assertEquals(generatedEdges.size(), engine.getProbabilisticNetwork().getEdges().size());
-		for (Long nodeID : generatedNodes) {
-			assertEquals(nodeID + " is not present in " + engine.getProbabilisticNetwork(),
-					Long.toString(nodeID),
-					engine.getProbabilisticNetwork().getNode(Long.toString(nodeID)).getName());
-		}
-		for (QuestionPair pair : generatedEdges) {
-			Node node1 = engine.getProbabilisticNetwork().getNode(Long.toString(pair.left));
-			Node node2 = engine.getProbabilisticNetwork().getNode(Long.toString(pair.right));
-			assertNotNull(pair.left + " is null", node1);
-			assertNotNull(pair.right + " is null", node2);
-			assertFalse(pair.left + ".equals(" + pair.right+")", node1.equals(node2));
-			assertFalse(pair.left + "->" + pair.right + " is not present in " + engine.getProbabilisticNetwork(),
-					engine.getProbabilisticNetwork().hasEdge(node1, node2) < 0);
-		}
-		
-		// case 3 : edges being substituted
-		
-		// reset engine
-		engine.initialize();
-		assertNotNull(engine.getProbabilisticNetwork());
-		assertEquals(0, engine.getProbabilisticNetwork().getNodeCount());
-		
-		
-		/*
-		 * Create following net
-		 *  0<-1
-		 *  ^
-		 *  |
-		 *  2
-		 */
-		transactionKey = engine.startNetworkActions();
-		engine.addQuestion(transactionKey, new Date(), 0, 2, null);
-		engine.addQuestion(transactionKey, new Date(), 1, 2, null);
-		engine.addQuestion(transactionKey, new Date(), 2, 2, null);
-		List<Long> assumptiveQuestionIds = new ArrayList<Long>();
-		assumptiveQuestionIds.add((long) 1);
-		assumptiveQuestionIds.add((long) 2);
-		engine.addQuestionAssumption(transactionKey, new Date(), 0, assumptiveQuestionIds, null);
-		engine.commitNetworkActions(transactionKey);
-		// check network structure consistency
-		assertEquals(3, engine.getProbabilisticNetwork().getNodeCount());
-		assertNotNull(engine.getProbabilisticNetwork().getNode("0"));
-		assertNotNull(engine.getProbabilisticNetwork().getNode("1"));
-		assertNotNull(engine.getProbabilisticNetwork().getNode("2"));
-		assertEquals(2,engine.getProbabilisticNetwork().getNode("0").getParents().size());
-		assertEquals(0,engine.getProbabilisticNetwork().getNode("1").getParents().size());
-		assertEquals(0,engine.getProbabilisticNetwork().getNode("2").getParents().size());
-		assertEquals(2, engine.getProbabilisticNetwork().getEdges().size());
-		assertNotNull(engine.getProbabilisticNetwork().hasEdge(
-				engine.getProbabilisticNetwork().getNode("1"), 
-				engine.getProbabilisticNetwork().getNode("0"))
-			);
-		assertNotNull(engine.getProbabilisticNetwork().hasEdge(
-				engine.getProbabilisticNetwork().getNode("2"), 
-				engine.getProbabilisticNetwork().getNode("0"))
-			);
-		// check cpt
-		for (Node node : engine.getProbabilisticNetwork().getNodes()) {
-			PotentialTable cpt = ((ProbabilisticNode)node).getProbabilityFunction();
-			for (int i = 0; i < cpt.tableSize(); i++) {
-				assertEquals("Node " + node + ", index " + i, .5, cpt.getValue(i), PROB_ERROR_MARGIN);
-			}
-		}
-		
-		/*
-		 * Modify to following net
-		 *  0<-1
-		 *  |
-		 *  V
-		 *  2
-		 */
-		transactionKey = engine.startNetworkActions();
-		// delete edge 2->0 (leave only 1 -> 0)
-		assumptiveQuestionIds = new ArrayList<Long>();
-		assumptiveQuestionIds.add((long) 1);
-		List<Float> cpd = new ArrayList<Float>();
-		cpd.add(.8f);
-		cpd.add(.2f);
-		cpd.add(.1f);
-		cpd.add(.9f);
-		engine.addQuestionAssumption(transactionKey, new Date(), 0, assumptiveQuestionIds, cpd);	// let 1->0 substitute the old edges
-		
-		// add edge 0 -> 2
-		assumptiveQuestionIds = new ArrayList<Long>();
-		assumptiveQuestionIds.add((long) 0);
-		engine.addQuestionAssumption(transactionKey, new Date(), 2, assumptiveQuestionIds, cpd);
-		
-		engine.commitNetworkActions(transactionKey);
-		// check network structure consistency
-		assertEquals(3, engine.getProbabilisticNetwork().getNodeCount());
-		assertNotNull(engine.getProbabilisticNetwork().getNode("0"));
-		assertNotNull(engine.getProbabilisticNetwork().getNode("1"));
-		assertNotNull(engine.getProbabilisticNetwork().getNode("2"));
-		assertEquals(1,engine.getProbabilisticNetwork().getNode("0").getParents().size());
-		assertEquals(0,engine.getProbabilisticNetwork().getNode("1").getParents().size());
-		assertEquals(1,engine.getProbabilisticNetwork().getNode("2").getParents().size());
-		assertEquals(2, engine.getProbabilisticNetwork().getEdges().size());
-		assertNotNull(engine.getProbabilisticNetwork().hasEdge(
-				engine.getProbabilisticNetwork().getNode("1"), 
-				engine.getProbabilisticNetwork().getNode("0"))
-			);
-		assertNotNull(engine.getProbabilisticNetwork().hasEdge(
-				engine.getProbabilisticNetwork().getNode("0"), 
-				engine.getProbabilisticNetwork().getNode("2"))
-			);
-		// check cpts of each node
-		ProbabilisticNode nodeToTest = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode("0");
-		PotentialTable cpt = nodeToTest.getProbabilityFunction();
-		assertEquals(4, cpt.tableSize());
-		assertEquals(.8f, cpt.getValue(0), PROB_ERROR_MARGIN);
-		assertEquals(.2f, cpt.getValue(1), PROB_ERROR_MARGIN);
-		assertEquals(.1f, cpt.getValue(2), PROB_ERROR_MARGIN);
-		assertEquals(.9f, cpt.getValue(3), PROB_ERROR_MARGIN);
-		nodeToTest = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode("1");
-		cpt = nodeToTest.getProbabilityFunction();
-		assertEquals(2, cpt.tableSize());
-		assertEquals(.5f, cpt.getValue(0), PROB_ERROR_MARGIN);
-		assertEquals(.5f, cpt.getValue(1), PROB_ERROR_MARGIN);
-		nodeToTest = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode("2");
-		cpt = nodeToTest.getProbabilityFunction();
-		assertEquals(4, cpt.tableSize());
-		assertEquals(.8f, cpt.getValue(0), PROB_ERROR_MARGIN);
-		assertEquals(.2f, cpt.getValue(1), PROB_ERROR_MARGIN);
-		assertEquals(.1f, cpt.getValue(2), PROB_ERROR_MARGIN);
-		assertEquals(.9f, cpt.getValue(3), PROB_ERROR_MARGIN);
-		
-		
-		
-		// case 3 : edges being substituted in same transaction
-		
-		engine.initialize();
-		assertNotNull(engine.getProbabilisticNetwork());
-		assertEquals(0, engine.getProbabilisticNetwork().getNodeCount());
-		
-		transactionKey = engine.startNetworkActions();
-		
-		/*
-		 * Create following net
-		 *  0<-1
-		 *  ^
-		 *  |
-		 *  2
-		 */
-		engine.addQuestion(transactionKey, new Date(), 0, 2, null);
-		engine.addQuestion(transactionKey, new Date(), 1, 2, null);
-		engine.addQuestion(transactionKey, new Date(), 2, 2, null);
-		assumptiveQuestionIds = new ArrayList<Long>();
-		assumptiveQuestionIds.add((long) 1);
-		assumptiveQuestionIds.add((long) 2);
-		engine.addQuestionAssumption(transactionKey, new Date(), 0, assumptiveQuestionIds, null);
-		
-		/*
-		 * Modify to following net
-		 *  0<-1
-		 *  |
-		 *  V
-		 *  2
-		 */
-		// delete edge 2->0 (leave only 1 -> 0)
-		assumptiveQuestionIds = new ArrayList<Long>();
-		assumptiveQuestionIds.add((long) 1);
-		cpd = new ArrayList<Float>();
-		cpd.add(.8f);
-		cpd.add(.2f);
-		cpd.add(.1f);
-		cpd.add(.9f);
-		engine.addQuestionAssumption(transactionKey, new Date(), 0, assumptiveQuestionIds, cpd);	// let 1->0 substitute the old edges
-		
-		// add edge 0 -> 2
-		assumptiveQuestionIds = new ArrayList<Long>();
-		assumptiveQuestionIds.add((long) 0);
-		engine.addQuestionAssumption(transactionKey, new Date(), 2, assumptiveQuestionIds, cpd);
-		
-		engine.commitNetworkActions(transactionKey);
-		
-		
-		// check network structure consistency
-		assertEquals(3, engine.getProbabilisticNetwork().getNodeCount());
-		assertNotNull(engine.getProbabilisticNetwork().getNode("0"));
-		assertNotNull(engine.getProbabilisticNetwork().getNode("1"));
-		assertNotNull(engine.getProbabilisticNetwork().getNode("2"));
-		assertEquals(1,engine.getProbabilisticNetwork().getNode("0").getParents().size());
-		assertEquals(0,engine.getProbabilisticNetwork().getNode("1").getParents().size());
-		assertEquals(1,engine.getProbabilisticNetwork().getNode("2").getParents().size());
-		assertEquals(2, engine.getProbabilisticNetwork().getEdges().size());
-		assertNotNull(engine.getProbabilisticNetwork().hasEdge(
-				engine.getProbabilisticNetwork().getNode("1"), 
-				engine.getProbabilisticNetwork().getNode("0"))
-			);
-		assertNotNull(engine.getProbabilisticNetwork().hasEdge(
-				engine.getProbabilisticNetwork().getNode("0"), 
-				engine.getProbabilisticNetwork().getNode("2"))
-			);
-		// check cpts of each node
-		nodeToTest = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode("0");
-		cpt = nodeToTest.getProbabilityFunction();
-		assertEquals(4, cpt.tableSize());
-		assertEquals(.8f, cpt.getValue(0), PROB_ERROR_MARGIN);
-		assertEquals(.2f, cpt.getValue(1), PROB_ERROR_MARGIN);
-		assertEquals(.1f, cpt.getValue(2), PROB_ERROR_MARGIN);
-		assertEquals(.9f, cpt.getValue(3), PROB_ERROR_MARGIN);
-		nodeToTest = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode("1");
-		cpt = nodeToTest.getProbabilityFunction();
-		assertEquals(2, cpt.tableSize());
-		assertEquals(.5f, cpt.getValue(0), PROB_ERROR_MARGIN);
-		assertEquals(.5f, cpt.getValue(1), PROB_ERROR_MARGIN);
-		nodeToTest = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode("2");
-		cpt = nodeToTest.getProbabilityFunction();
-		assertEquals(4, cpt.tableSize());
-		assertEquals(.8f, cpt.getValue(0), PROB_ERROR_MARGIN);
-		assertEquals(.2f, cpt.getValue(1), PROB_ERROR_MARGIN);
-		assertEquals(.1f, cpt.getValue(2), PROB_ERROR_MARGIN);
-		assertEquals(.9f, cpt.getValue(3), PROB_ERROR_MARGIN);
-		
-	}
 
 	/**
 	 * Test method for 
@@ -1343,11 +926,11 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.005f, editInterval.get(0), PROB_ERROR_MARGIN );
 		assertEquals(0.995f, editInterval.get(1), PROB_ERROR_MARGIN );
 		
-		// obtain conditional probabilities and assets of the edited clique, prior to edit, so that we can use it to check assets after edit
-		List<Float> cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
-		List<Float> cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
+//		// obtain conditional probabilities and assets of the edited clique, prior to edit, so that we can use it to check assets after edit
+//		List<Float> cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
+//		List<Float> cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, Collections.singletonList((long)0x0D), null);
+//		assertEquals(4, cliqueProbsBeforeTrade.size());
+//		assertEquals(4, cliqueAssetsBeforeTrade.size());
 		
 		// do edit
 		transactionKey = engine.startNetworkActions();
@@ -1377,19 +960,19 @@ public class MarkovEngineTest extends TestCase {
 			assertNotNull(e);
 		}
 		
-		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
-		List<Float> cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
-		List<Float> cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
-		}
+//		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
+//		List<Float> cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
+//		List<Float> cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, Collections.singletonList((long)0x0D), null);
+//		assertEquals(4, cliqueProbsAfterTrade.size());
+//		assertEquals(4, cliqueAssetsAfterTrade.size());
+//		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+//			assertEquals(
+//					"Index = " + i, 
+//					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+//					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+//					ASSET_ERROR_MARGIN
+//				);
+//		}
 		
 		
 		// check that new marginal of E is [0.55 0.45], and the others have not changed (remains 50%)
@@ -1501,10 +1084,10 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.995f, editInterval.get(1) ,PROB_ERROR_MARGIN);
 		
 		// obtain conditional probabilities and assets of the edited clique, prior to edit, so that we can use it to check assets
-		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
+//		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
+//		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, Collections.singletonList((long)0x0D), null);
+//		assertEquals(4, cliqueProbsBeforeTrade.size());
+//		assertEquals(4, cliqueAssetsBeforeTrade.size());
 
 		
 		// set P(E=e1|D=d1) = 0.9 and P(E=e2|D=d1) = 0.1
@@ -1536,18 +1119,18 @@ public class MarkovEngineTest extends TestCase {
 		}
 		
 		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
-		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
-		}
+//		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
+//		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, Collections.singletonList((long)0x0D), null);
+//		assertEquals(4, cliqueProbsAfterTrade.size());
+//		assertEquals(4, cliqueAssetsAfterTrade.size());
+//		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+//			assertEquals(
+//					"Index = " + i, 
+//					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+//					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+//					ASSET_ERROR_MARGIN
+//				);
+//		}
 		
 		// check that new marginal of E is [0.725 0.275] (this is expected value), and the others have not changed (remains 50%)
 		probList = engine.getProbList(0x0D, null, null);
@@ -1696,10 +1279,10 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.9955f, editInterval.get(1) ,PROB_ERROR_MARGIN);
 		
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
-		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0E, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
+//		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
+//		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0E, Collections.singletonList((long)0x0D), null);
+//		assertEquals(4, cliqueProbsBeforeTrade.size());
+//		assertEquals(4, cliqueAssetsBeforeTrade.size());
 		
 		// set P(E=e1|D=d2) = 0.4 and P(E=e2|D=d2) = 0.6
 		transactionKey = engine.startNetworkActions();
@@ -1730,18 +1313,18 @@ public class MarkovEngineTest extends TestCase {
 		}
 		
 		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
-		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0E, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
-		}
+//		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
+//		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0E, Collections.singletonList((long)0x0D), null);
+//		assertEquals(4, cliqueProbsAfterTrade.size());
+//		assertEquals(4, cliqueAssetsAfterTrade.size());
+//		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+//			assertEquals(
+//					"Index = " + i, 
+//					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+//					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+//					ASSET_ERROR_MARGIN
+//				);
+//		}
 		
 		// check that new marginal of E is [0.65 0.35] (this is expected value), and the others have not changed (remains 50%)
 		probList = engine.getProbList(0x0D, null, null);
@@ -1891,10 +1474,10 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.995f, editInterval.get(1) ,PROB_ERROR_MARGIN);
 		
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
-		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Amy"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
+//		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+//		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Amy"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+//		assertEquals(4, cliqueProbsBeforeTrade.size());
+//		assertEquals(4, cliqueAssetsBeforeTrade.size());
 		
 		// set P(F=f1|D=d1) = 0.3 and P(F=f2|D=d1) = 0.7  
 		transactionKey = engine.startNetworkActions();
@@ -1925,18 +1508,18 @@ public class MarkovEngineTest extends TestCase {
 		}
 		
 		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
-		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Amy"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
-		}
+//		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+//		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Amy"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+//		assertEquals(4, cliqueProbsAfterTrade.size());
+//		assertEquals(4, cliqueAssetsAfterTrade.size());
+//		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+//			assertEquals(
+//					"Index = " + i, 
+//					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+//					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+//					ASSET_ERROR_MARGIN
+//				);
+//		}
 		
 		// check that new marginal of E is still [0.65 0.35] (this is expected value), F is [.4 .6], and the others have not changed (remains 50%)
 		probList = engine.getProbList(0x0D, null, null);
@@ -2078,10 +1661,10 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.993125, editInterval.get(1) ,PROB_ERROR_MARGIN);
 		
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
-		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
+//		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+//		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+//		assertEquals(4, cliqueProbsBeforeTrade.size());
+//		assertEquals(4, cliqueAssetsBeforeTrade.size());
 		
 		// set P(F=f1|D=d2) = 0.1 and P(F=f2|D=d2) = 0.9
 		transactionKey = engine.startNetworkActions();
@@ -2112,18 +1695,18 @@ public class MarkovEngineTest extends TestCase {
 		}
 		
 		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
-		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
-		}
+//		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+//		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+//		assertEquals(4, cliqueProbsAfterTrade.size());
+//		assertEquals(4, cliqueAssetsAfterTrade.size());
+//		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+//			assertEquals(
+//					"Index = " + i, 
+//					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+//					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+//					ASSET_ERROR_MARGIN
+//				);
+//		}
 		
 		// check that new marginal of E is still [0.65 0.35] (this is expected value), F is [.2 .8], and the others have not changed (remains 50%)
 		probList = engine.getProbList(0x0D, null, null);
@@ -2260,10 +1843,10 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.9965f, editInterval.get(1) ,PROB_ERROR_MARGIN);
 		
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
-		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0E, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
+//		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
+//		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0E, Collections.singletonList((long)0x0D), null);
+//		assertEquals(4, cliqueProbsBeforeTrade.size());
+//		assertEquals(4, cliqueAssetsBeforeTrade.size());
 		
 		// set P(E=e1) = 0.8 and P(E=e2) = 0.2
 		transactionKey = engine.startNetworkActions();
@@ -2296,18 +1879,18 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(10.1177, engine.scoreUserEv(userNameToIDMap.get("Eric"), null, null), PROB_ERROR_MARGIN);
 		
 		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
-		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0E, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
-		}
+//		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
+//		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0E, Collections.singletonList((long)0x0D), null);
+//		assertEquals(4, cliqueProbsAfterTrade.size());
+//		assertEquals(4, cliqueAssetsAfterTrade.size());
+//		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+//			assertEquals(
+//					"Index = " + i, 
+//					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+//					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+//					ASSET_ERROR_MARGIN
+//				);
+//		}
 		
 		// check that new marginal of E is [0.8 0.2] (this is expected value), F is [0.2165, 0.7835], and D is [0.5824, 0.4176]
 		probList = engine.getProbList(0x0D, null, null);
@@ -2411,10 +1994,10 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.9916058f, editInterval.get(1) ,PROB_ERROR_MARGIN);
 		
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
-		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
+//		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+//		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+//		assertEquals(4, cliqueProbsBeforeTrade.size());
+//		assertEquals(4, cliqueAssetsBeforeTrade.size());
 		
 		// set P(D=d1|F=f2) = 0.7 and P(D=d2|F=f2) = 0.3
 		transactionKey = engine.startNetworkActions();
@@ -2447,18 +2030,18 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(10.31615, engine.scoreUserEv(userNameToIDMap.get("Eric"), null, null), PROB_ERROR_MARGIN);
 		
 		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
-		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
-		}
+//		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
+//		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
+//		assertEquals(4, cliqueProbsAfterTrade.size());
+//		assertEquals(4, cliqueAssetsAfterTrade.size());
+//		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+//			assertEquals(
+//					"Index = " + i, 
+//					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+//					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+//					ASSET_ERROR_MARGIN
+//				);
+//		}
 		
 		// check that new marginal of E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
 		probList = engine.getProbList(0x0D, null, null);
@@ -2541,151 +2124,6 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
 		
 
-		// Eric makes a bet which makes his assets-q to go below 1, but the algorithm does not allow it
-		
-		// extract allowed interval of P(D=d1|F=f2), so that we can an edit incompatible with such interval
-		assumptionIds = new ArrayList<Long>();		
-		assumedStates = new ArrayList<Integer>();
-		assumptionIds.add((long) 0x0F);	
-		assumedStates.add(1);	// set f2 as assumed state
-		editInterval = engine.getEditLimits(userNameToIDMap.get("Eric"), 0x0D, 0, assumptionIds, assumedStates);
-		assertNotNull(editInterval);
-		assertEquals(2, editInterval.size());
-		assertEquals(0.0091059f, editInterval.get(0) ,PROB_ERROR_MARGIN);
-		assertEquals(0.9916058f, editInterval.get(1) ,PROB_ERROR_MARGIN);
-		
-		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
-		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
-		
-		// get history before transaction, so that we can make sure new transaction is not added into history
-		List<QuestionEvent> questionHistory = engine.getQuestionHistory(0x0DL, null, null);
-		
-		// set P(D=d1|F=f2) to a value lower (1/10) than the lower bound of edit interval
-		transactionKey = engine.startNetworkActions();
-		newValues = new ArrayList<Float>();
-		newValues.add(editInterval.get(0)/10);
-		newValues.add(1-(editInterval.get(0)/10));
-		assertNull(engine.addTrade(
-				transactionKey, 
-				new Date(), 
-				"Eric bets P(D=d1|F=f2) = 0.7", 
-				userNameToIDMap.get("Eric"), 
-				0x0D, 
-				newValues, 
-				assumptionIds, 
-				assumedStates, 
-				false	// do not allow negative assets
-			));
-		// this is supposedly going to commit empty transaction
-		engine.commitNetworkActions(transactionKey);
-		// make sure history was not changed
-		assertEquals(questionHistory, engine.getQuestionHistory(0x0DL, null, null));
-
-		// cannot reuse same transaction key
-		try {
-			newValues = new ArrayList<Float>(2);
-			newValues.add(.9f);	newValues.add(.1f);
-			engine.addTrade(transactionKey, new Date(), "OK", Long.MIN_VALUE, (long)0x0D, newValues, null, null, false);
-			fail("It's not be supposed to reuse a commited transaction.");
-		} catch (IllegalArgumentException e) {
-			assertNotNull(e);
-		}
-		
-		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
-		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		// check that assets and conditional probs did not change
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals( "Index = " + i, cliqueAssetsBeforeTrade.get(i), cliqueAssetsAfterTrade.get(i), ASSET_ERROR_MARGIN );
-			assertEquals( "Index = " + i, cliqueProbsBeforeTrade.get(i), cliqueProbsAfterTrade.get(i), PROB_ERROR_MARGIN );
-		}
-		
-		
-		// check that marginals have not changed: E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
-		probList = engine.getProbList(0x0D, null, null);
-		assertEquals(0.7232f, probList.get(0), PROB_ERROR_MARGIN);
-		assertEquals(0.2768f, probList.get(1), PROB_ERROR_MARGIN);
-		probList = engine.getProbList(0x0E, null, null);
-		assertEquals(0.8509f, probList.get(0), PROB_ERROR_MARGIN);
-		assertEquals(0.1491f, probList.get(1), PROB_ERROR_MARGIN);
-		probList = engine.getProbList(0x0F, null, null);
-		assertEquals(0.2165f, probList.get(0), PROB_ERROR_MARGIN);
-		assertEquals(0.7835f, probList.get(1), PROB_ERROR_MARGIN);
-		
-		
-		// check that min-q has not changed
-		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
-		assertEquals(Math.round(engine.getScoreFromQValues(35.7393f)), Math.round(minCash), ASSET_ERROR_MARGIN);
-		assertEquals(35.7393f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
-		
-		// check that LPE has not changed - still d2, e2 and f2
-		assumptionIds = new ArrayList<Long>();
-		assumptionIds.add((long) 0x0D);		// 1st node is D; assumedStates must follow this order
-		assumptionIds.add((long) 0x0E);		// 2nd node is E; assumedStates must follow this order
-		assumptionIds.add((long) 0x0F);		// 3rd node is F; assumedStates must follow this order
-		
-		// check combination d1, e1, f1
-		assumedStates = new ArrayList<Integer>();
-		assumedStates.add(0);	// d1
-		assumedStates.add(0);	// e1
-		assumedStates.add(0);	// f1
-		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
-		// check combination d1, e1, f2
-		assumedStates.set(0, 0);	// d1
-		assumedStates.set(1, 0);	// e1
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
-		// check combination d1, e2, f1
-		assumedStates.set(0, 0);	// d1
-		assumedStates.set(1, 1);	// e2
-		assumedStates.set(2, 0);	// f1
-		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-
-		// check combination d1, e2, f2
-		assumedStates.set(0, 0);	// d1
-		assumedStates.set(1, 1);	// e2
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-
-		// check combination d2, e1, f1 
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 0);	// e1
-		assumedStates.set(2, 0);	// f1
-		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
-		// check combination d2, e1, f2 
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 0);	// e1
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-
-		// check combination d2, e2, f1
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 1);	// e2
-		assumedStates.set(2, 0);	// f1
-		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-
-		// check combination d2, e2, f2
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 1);	// e2
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
-		
 		
 		// add question disconnected question C
 		transactionKey = engine.startNetworkActions();
@@ -2981,7 +2419,6 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
 		
 		
-		
 		// Amy bets P(C=c1) = .5 -> .05
 		
 		// check whether probability of C prior to edit is really [.5, .5] no matter what combination of other nodes
@@ -3058,11 +2495,11 @@ public class MarkovEngineTest extends TestCase {
 			assertNotNull(e);
 		}
 		
-		// check assets
-		List<Float> assetsIfStates = engine.getAssetsIfStates(userNameToIDMap.get("Amy"), (long)0x0C, null, null);
-		assertEquals(2, assetsIfStates.size());
-		assertEquals( 10,  engine.getQValuesFromScore(assetsIfStates.get(0)), ASSET_ERROR_MARGIN );
-		assertEquals( 190,  engine.getQValuesFromScore(assetsIfStates.get(1)), ASSET_ERROR_MARGIN );
+//		// check assets
+//		List<Float> assetsIfStates = engine.getAssetsIfStates(userNameToIDMap.get("Amy"), (long)0x0C, null, null);
+//		assertEquals(2, assetsIfStates.size());
+//		assertEquals( 10,  engine.getQValuesFromScore(assetsIfStates.get(0)), ASSET_ERROR_MARGIN );
+//		assertEquals( 190,  engine.getQValuesFromScore(assetsIfStates.get(1)), ASSET_ERROR_MARGIN );
 		
 		// check that marginals of C is [.05,.95], and others have not changed: E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
 		probList = engine.getProbList(0x0C, null, null);
@@ -3078,247 +2515,8 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.2165f, probList.get(0), PROB_ERROR_MARGIN);
 		assertEquals(0.7835f, probList.get(1), PROB_ERROR_MARGIN);
 		
-		// check that min-q is 6...
-		minCash = engine.getCash(userNameToIDMap.get("Amy"), null, null);
-		assertEquals(Math.round(engine.getScoreFromQValues(6f)), Math.round(minCash), ASSET_ERROR_MARGIN);
-		assertEquals(6f, Math.round(engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
 		
-		// check that new LPE of Amy is independent of E
-		assertEquals(minCash, engine.getCash(userNameToIDMap.get("Amy"), Collections.singletonList(0x0EL), Collections.singletonList(0)), ASSET_ERROR_MARGIN);
-		assertEquals(minCash, engine.getCash(userNameToIDMap.get("Amy"), Collections.singletonList(0x0EL), Collections.singletonList(1)), ASSET_ERROR_MARGIN);
-		
-		// check that LPE is d1 c1 f1
-		assumptionIds = new ArrayList<Long>();
-		assumptionIds.add((long) 0x0D);		// 1st node is D; assumedStates must follow this order
-		assumptionIds.add((long) 0x0C);		// 2nd node is C; assumedStates must follow this order
-		assumptionIds.add((long) 0x0F);		// 3rd node is F; assumedStates must follow this order
-		
-		// check combination d1, c1, f1
-		assumedStates = new ArrayList<Integer>();
-		assumedStates.add(0);	// d1
-		assumedStates.add(0);	// c1
-		assumedStates.add(0);	// f1
-		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
-		
-		// check combination d1, c1, f2
-		assumedStates.set(0, 0);	// d1
-		assumedStates.set(1, 0);	// c1
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
-		// check combination d1, c2, f1
-		assumedStates.set(0, 0);	// d1
-		assumedStates.set(1, 1);	// c2
-		assumedStates.set(2, 0);	// f1
-		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-
-		// check combination d1, c2, f2
-		assumedStates.set(0, 0);	// d1
-		assumedStates.set(1, 1);	// c2
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-
-		// check combination d2, c1, f1 
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 0);	// c1
-		assumedStates.set(2, 0);	// f1
-		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
-		// check combination d2, c1, f2 
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 0);	// c1
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-
-		// check combination d2, c2, f1
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 1);	// c2
-		assumedStates.set(2, 0);	// f1
-		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-
-		// check combination d2, c2, f2
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 1);	// c2
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
-		// check incomplete condition of LPE: c1
-		cash = engine.getCash(userNameToIDMap.get("Amy"), Collections.singletonList((long)0x0C), Collections.singletonList(0));
-		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
-		cash = engine.getCash(userNameToIDMap.get("Amy"), Collections.singletonList((long)0x0C), Collections.singletonList(1));
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
-
-		// Eric makes a bet which makes his assets-q to go below 1, and the algorithm allows it
-		
-		// extract allowed interval of P(D=d1|F=f2), so that we can an edit incompatible with such interval
-		assumptionIds = new ArrayList<Long>();		
-		assumedStates = new ArrayList<Integer>();
-		assumptionIds.add((long) 0x0F);	
-		assumedStates.add(1);	// set f2 as assumed state
-		editInterval = engine.getEditLimits(userNameToIDMap.get("Eric"), 0x0D, 0, assumptionIds, assumedStates);
-		assertNotNull(editInterval);
-		assertEquals(2, editInterval.size());
-		assertEquals(0.0091059f, editInterval.get(0) ,PROB_ERROR_MARGIN);
-		assertEquals(0.9916058f, editInterval.get(1) ,PROB_ERROR_MARGIN);
-		
-		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
-		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
-		
-		// set P(D=d1|F=f2) to a value lower (1/10) than the lower bound of edit interval
-		transactionKey = engine.startNetworkActions();
-		newValues = new ArrayList<Float>();
-		newValues.add(editInterval.get(0)/10);
-		newValues.add(1-(editInterval.get(0)/10));
-		assertEquals(2, engine.addTrade(
-				transactionKey, 
-				new Date(), 
-				"Eric bets P(D=d1|F=f2) = 0.7", 
-				userNameToIDMap.get("Eric"), 
-				0x0D, 
-				newValues, 
-				assumptionIds, 
-				assumedStates, 
-				true	// allow negative assets
-			).size());
-		engine.commitNetworkActions(transactionKey);
-		
-		// cannot reuse same transaction key
-		try {
-			newValues = new ArrayList<Float>(2);
-			newValues.add(.9f);	newValues.add(.1f);
-			engine.addTrade(transactionKey, new Date(), "To fail", Long.MAX_VALUE, (long)0x0D, newValues, null, null, false);
-			fail("Should not allow to use commited transaction");
-		} catch (IllegalArgumentException e) {
-			assertNotNull(e);
-		}
-		
-		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
-		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
-		}
-		
-		// check that cash is smaller or equal to 0
-		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
-		assertTrue("Obtained unexpected cash = " + minCash, minCash <= 0);
-	
-		
-		// test the case in which the trade will make the assets to go negative, but it cannot be previewed (it will throw exception only on commit)
-		transactionKey = engine.startNetworkActions();
-		
-		// add a new question in the same transaction, so that we guarantee that trade cannot be previewed
-		List<Float> initProbs = new ArrayList<Float>();
-		initProbs.add(.9f); initProbs.add(.0999f); initProbs.add(.0001f);
-		engine.addQuestion(transactionKey, new Date(), 0x0AL, 3, initProbs);
-		
-		// add a trade which will make user asset to go below zero and cannot be previewed
-		newValues = new ArrayList<Float>();
-		newValues.add(.0001f); newValues.add(.0999f);  newValues.add(.9f); 
-		assertTrue( engine.addTrade(
-				transactionKey, 
-				new Date(), 
-				"Amy bets P(A = [.0001, .0999, .9])", 
-				userNameToIDMap.get("Amy"), 
-				0x0AL, 
-				newValues, 
-				null, 
-				null, 
-				false
-			).isEmpty());
-		try {
-			engine.commitNetworkActions(transactionKey);
-			fail("This is expected to throw ZeroAssetsException");
-		} catch (ZeroAssetsException e) {
-			assertNotNull(e);
-		}
-		
-		// test invalid assumptions
-		transactionKey = engine.startNetworkActions();
-		
-		// add a in which the assumptions will be ignored
-		newValues = new ArrayList<Float>();
-		newValues.add(.5f); newValues.add(.5f); 
-		assertFalse( engine.addTrade(
-				transactionKey, 
-				new Date(), 
-				"Tom bets P(F|E = e2) = [.5,.5]", 
-				userNameToIDMap.get("Tom"), 
-				0x0FL, 
-				newValues, 
-				Collections.singletonList(0x0EL), 
-				Collections.singletonList(1), 
-				false
-			).isEmpty());
-		engine.commitNetworkActions(transactionKey);
-		
-		// check that marginal of F is [.5,.5] (i.e. condition E was ignored)
-		probList = engine.getProbList(0x0FL, null, null);
-		assertEquals(2, probList.size());
-		assertEquals(.5f, probList.get(0), PROB_ERROR_MARGIN);
-		assertEquals(.5f, probList.get(1), PROB_ERROR_MARGIN);
-		
-		// check that in the history, the assumption E was ignored
-		questionHistory = engine.getQuestionHistory(0x0FL, null, null);
-		assertNotNull(questionHistory);
-		assertFalse(questionHistory.isEmpty());
-		AddTradeNetworkAction action = (AddTradeNetworkAction) questionHistory.get(questionHistory.size()-1);
-		assertEquals((long)0x0F, (long)action.getQuestionId());
-		assertTrue("Assumptions = " + action.getTradeId(), action.getAssumptionIds().isEmpty());
-		
-		// test disconnected assumptions
-		transactionKey = engine.startNetworkActions();
-		
-		// add a in which the assumptions will be ignored
-		newValues = new ArrayList<Float>();
-		newValues.add(.5f); newValues.add(.5f); 
-		assertFalse( engine.addTrade(
-				transactionKey, 
-				new Date(), 
-				"Tom bets P(D|A = a1) = [.5,.5]", 
-				userNameToIDMap.get("Tom"), 
-				0x0DL, 
-				newValues, 
-				Collections.singletonList(0x0AL), 
-				Collections.singletonList(0), 
-				false
-			).isEmpty());
-		engine.commitNetworkActions(transactionKey);
-		
-		// check that marginal of D is [.5,.5] (i.e. condition A was ignored)
-		probList = engine.getProbList(0x0DL, null, null);
-		assertEquals(2, probList.size());
-		assertEquals(.5f, probList.get(0), PROB_ERROR_MARGIN);
-		assertEquals(.5f, probList.get(1), PROB_ERROR_MARGIN);
-		
-		// check that in the history, the assumption A was ignored
-		questionHistory = engine.getQuestionHistory(0x0DL, null, null);
-		assertNotNull(questionHistory);
-		assertFalse(questionHistory.isEmpty());
-		action = (AddTradeNetworkAction) questionHistory.get(questionHistory.size()-1);
-		assertEquals((long)0x0D, (long)action.getQuestionId());
-		assertTrue("Assumptions = " + action.getTradeId(), action.getAssumptionIds().isEmpty());
 	}
-	
 	
 
 	/**
@@ -3814,449 +3012,6 @@ public class MarkovEngineTest extends TestCase {
 	}
 	
 	
-
-	/**
-	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#addTrade(long, Date, String, long, long, List, List, List, boolean)}.
-	 * This method performs the same test of {@link #testAddTradeInOneTransaction()},
-	 * but q-values are set to a very high values.
-	 * but it executes everything in a single transaction.
-	 */
-	public final void testAddTradeInOneTransactionWithHighAssets () {
-		engine.setCurrentCurrencyConstant(100);
-		engine.setCurrentLogBase(2);
-		
-		double initialQ = engine.getQValuesFromScore(1000.0);
-		
-		engine.setDefaultInitialQTableValue(initialQ);
-		
-		// crate transaction
-		long transactionKey = engine.startNetworkActions();
-		
-		// create nodes D, E, F
-		engine.addQuestion(transactionKey, new Date(), 0x0D, 2, null);	// question D has ID = hexadecimal D. CPD == null -> linear distro
-		engine.addQuestion(transactionKey, new Date(), 0x0E, 2, null);	// question E has ID = hexadecimal E. CPD == null -> linear distro
-		engine.addQuestion(transactionKey, new Date(), 0x0F, 2, null);	// question F has ID = hexadecimal F. CPD == null -> linear distro
-		// create edge D->E 
-		engine.addQuestionAssumption(transactionKey, new Date(), 0x0E, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
-		// create edge D->F
-		engine.addQuestionAssumption(transactionKey, new Date(), 0x0F, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
-
-		// Let's use ID = 0 for the user Tom 
-		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
-		userNameToIDMap.put("Tom", (long)0);
-		
-		// Tom bets P(E=e1) = 0.5  to 0.55 (unconditional soft evidence in E)
-		List<Float> newValues = new ArrayList<Float>(2);
-		newValues.add(0.55f);		// P(E=e1) = 0.55
-		newValues.add(0.45f);		// P(E=e2) = 1 - P(E=e1) = 0.45
-		assertTrue( engine.addTrade(
-				transactionKey, 
-				new Date(), 
-				"Tom bets P(E=e1) = 0.5  to 0.55", 
-				userNameToIDMap.get("Tom"), 
-				0x0E, 	// question E
-				newValues,
-				null, 	// no assumptions
-				null, 	// no states of the assumptions
-				false	// do not allow negative
-			).isEmpty());
-		
-		
-		// Tom bets P(E=e1|D=d1) = .55 -> .9
-		
-		// set P(E=e1|D=d1) = 0.9 and P(E=e2|D=d1) = 0.1
-		newValues = new ArrayList<Float>();
-		newValues.add(.9f);
-		newValues.add(.1f);
-		assertTrue( engine.addTrade(
-				transactionKey, 
-				new Date(), 
-				"Tom bets P(E=e1|D=d1) = 0.9", 
-				userNameToIDMap.get("Tom"), 
-				0x0E, 
-				newValues, 
-				Collections.singletonList((long)0x0D), 
-				Collections.singletonList(0), 
-				false
-			).isEmpty());
-		
-
-		
-		// Let's create user Joe, ID = 1.
-		userNameToIDMap.put("Joe", (long) 1);
-		
-		// Joe bets P(E=e1|D=d2) = .55 -> .4
-		newValues = new ArrayList<Float>();
-		newValues.add(.4f);
-		newValues.add(.6f);
-		assertTrue( engine.addTrade(
-				transactionKey, 
-				new Date(), 
-				"Joe bets P(E=e1|D=d2) = 0.4", 
-				userNameToIDMap.get("Joe"), 
-				0x0E, 
-				newValues, 
-				Collections.singletonList((long)0x0D), 
-				Collections.singletonList(1), 
-				false
-			).isEmpty());
-		
-
-		// Let's create user Amy, ID = 2.
-		userNameToIDMap.put("Amy", (long) 2);
-		
-		// Amy bets P(F=f1|D=d1) = .5 -> .3
-		newValues = new ArrayList<Float>();
-		newValues.add(.3f);
-		newValues.add(.7f);
-		assertTrue( engine.addTrade(
-				transactionKey, 
-				new Date(), 
-				"Amy bets P(F=f1|D=d1) = 0.3", 
-				userNameToIDMap.get("Amy"), 
-				0x0F, 
-				newValues, 
-				Collections.singletonList((long)0x0D), 
-				Collections.singletonList(0), 
-				false
-			).isEmpty());
-		
-
-		// Joe bets P(F=f1|D=d2) = .5 -> .1
-		newValues = new ArrayList<Float>();
-		newValues.add(.1f);
-		newValues.add(.9f);
-		assertTrue( engine.addTrade(
-				transactionKey, 
-				new Date(), 
-				"Joe bets P(F=f1|D=d2) = 0.1", 
-				userNameToIDMap.get("Joe"), 
-				0x0F, 
-				newValues, 
-				Collections.singletonList((long)0x0D), 
-				Collections.singletonList(1), 
-				false
-			).isEmpty());
-		
-
-		// create new user Eric
-		userNameToIDMap.put("Eric", (long) 3);
-		
-		// Eric bets P(E=e1) = .65 -> .8
-		newValues = new ArrayList<Float>();
-		newValues.add(.8f);
-		newValues.add(.2f);
-		assertTrue( engine.addTrade(
-				transactionKey, 
-				new Date(), 
-				"Eric bets P(E=e1) = 0.8", 
-				userNameToIDMap.get("Eric"), 
-				0x0E, 
-				newValues, 
-				(List)Collections.emptyList(), 
-				(List)Collections.emptyList(), 
-				false
-			).isEmpty());
-		
-		// Eric bets  P(D=d1|F=f2) = 0.52 -> 0.7
-		newValues = new ArrayList<Float>();
-		newValues.add(.7f);
-		newValues.add(.3f);
-		assertTrue( engine.addTrade(
-				transactionKey, 
-				new Date(), 
-				"Eric bets P(D=d1|F=f2) = 0.7", 
-				userNameToIDMap.get("Eric"), 
-				0x0D, 
-				newValues, 
-				Collections.singletonList((long)0x0F), 
-				Collections.singletonList(1), 
-				false
-			).isEmpty());
-		
-		// commit all trades (including the creation of network and user)
-		engine.commitNetworkActions(transactionKey);
-		
-		// check that final marginal of E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
-		List<Float> probList = engine.getProbList(0x0D, null, null);
-		assertEquals(0.7232f, probList.get(0), PROB_ERROR_MARGIN);
-		assertEquals(0.2768f, probList.get(1), PROB_ERROR_MARGIN);
-		probList = engine.getProbList(0x0E, null, null);
-		assertEquals(0.8509f, probList.get(0), PROB_ERROR_MARGIN);
-		assertEquals(0.1491f, probList.get(1), PROB_ERROR_MARGIN);
-		probList = engine.getProbList(0x0F, null, null);
-		assertEquals(0.2165f, probList.get(0), PROB_ERROR_MARGIN);
-		assertEquals(0.7835f, probList.get(1), PROB_ERROR_MARGIN);
-		
-		// set assumptions to D,E,F, so that we can use it to calculate conditional min-q (in order to test consistency of LPE)
-		ArrayList<Long> assumptionIds = new ArrayList<Long>();
-		assumptionIds.add((long) 0x0D);		// 1st node is D; assumedStates must follow this order
-		assumptionIds.add((long) 0x0E);		// 2nd node is E; assumedStates must follow this order
-		assumptionIds.add((long) 0x0F);		// 3rd node is F; assumedStates must follow this order
-		// init list of states of the assumptions
-		ArrayList<Integer> assumedStates = new ArrayList<Integer>();	
-		assumedStates.add(0);	// d1
-		assumedStates.add(0);	// e1
-		assumedStates.add(0);	// f1
-		
-		// check that final min-q of Tom is 20
-		float minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
-		assertEquals((engine.getScoreFromQValues(20*initialQ/100)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(20*initialQ/100, engine.getQValuesFromScore(minCash), ASSET_ERROR_MARGIN*initialQ/100);
-		
-		// check that final LPE of Tom contains d1, e2 and any value F
-		
-		// check combination d1, e1, f1 (not min)
-		assumedStates.set(0, 0);	// d1
-		assumedStates.set(1, 0);	// e1
-		assumedStates.set(2, 0);	// f1
-		float cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
-		// check combination d1, e1, f2 (not min)
-		assumedStates.set(0, 0);	// d1
-		assumedStates.set(1, 0);	// e1
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
-		// check combination d1, e2, f1
-		assumedStates.set(0, 0);	// d1
-		assumedStates.set(1, 1);	// e2
-		assumedStates.set(2, 0);	// f1
-		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
-
-		// check combination d1, e2, f2
-		assumedStates.set(0, 0);	// d1
-		assumedStates.set(1, 1);	// e2
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
-
-		// check combination d2, e1, f1 (not min)
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 0);	// e1
-		assumedStates.set(2, 0);	// f1
-		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
-		// check combination d2, e1, f2 (not min)
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 0);	// e1
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-
-		// check combination d2, e2, f1 (not min)
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 1);	// e2
-		assumedStates.set(2, 0);	// f1
-		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-
-		// check combination d2, e2, f2 (not min)
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 1);	// e2
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-
-		
-		// check that min-q of Amy is 60...
-		minCash = engine.getCash(userNameToIDMap.get("Amy"), null, null);
-		assertEquals((engine.getScoreFromQValues(60*initialQ/100)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(60*initialQ/100, engine.getQValuesFromScore(minCash), ASSET_ERROR_MARGIN*initialQ/100);
-		
-		// check that LPE of Amy contains d1, f1 and any value E
-		
-		// check combination d1, e1, f1
-		assumedStates.set(0, 0);	// d1
-		assumedStates.set(1, 0);	// e1
-		assumedStates.set(2, 0);	// f1
-		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
-		
-		// check combination d1, e1, f2
-		assumedStates.set(0, 0);	// d1
-		assumedStates.set(1, 0);	// e1
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
-		// check combination d1, e2, f1
-		assumedStates.set(0, 0);	// d1
-		assumedStates.set(1, 1);	// e2
-		assumedStates.set(2, 0);	// f1
-		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
-
-		// check combination d1, e2, f2
-		assumedStates.set(0, 0);	// d1
-		assumedStates.set(1, 1);	// e2
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-
-		// check combination d2, e1, f1 
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 0);	// e1
-		assumedStates.set(2, 0);	// f1
-		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
-		// check combination d2, e1, f2 
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 0);	// e1
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-
-		// check combination d2, e2, f1
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 1);	// e2
-		assumedStates.set(2, 0);	// f1
-		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-
-		// check combination d2, e2, f2
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 1);	// e2
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
-		
-		// check that min-q of Joe is 14.5454545...
-		minCash = engine.getCash(userNameToIDMap.get("Joe"), null, null);
-		assertEquals((engine.getScoreFromQValues(14.5454545*initialQ/100)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(14.5454545*initialQ/100, engine.getQValuesFromScore(minCash), ASSET_ERROR_MARGIN*initialQ/100);
-		
-		// check that LPE of Joe contains d2, e1, f1
-		
-		// check combination d1, e1, f1
-		assumedStates.set(0, 0);	// d1
-		assumedStates.set(1, 0);	// e1
-		assumedStates.set(2, 0);	// f1
-		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
-		// check combination d1, e1, f2
-		assumedStates.set(0, 0);	// d1
-		assumedStates.set(1, 0);	// e1
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
-		// check combination d1, e2, f1
-		assumedStates.set(0, 0);	// d1
-		assumedStates.set(1, 1);	// e2
-		assumedStates.set(2, 0);	// f1
-		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-
-		// check combination d1, e2, f2
-		assumedStates.set(0, 0);	// d1
-		assumedStates.set(1, 1);	// e2
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-
-		// check combination d2, e1, f1 
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 0);	// e1
-		assumedStates.set(2, 0);	// f1
-		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
-		
-		// check combination d2, e1, f2 
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 0);	// e1
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-
-		// check combination d2, e2, f1
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 1);	// e2
-		assumedStates.set(2, 0);	// f1
-		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-
-		// check combination d2, e2, f2
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 1);	// e2
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
-		// check that final min-q of Eric is 35.7393...
-		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
-		assertEquals(engine.getScoreFromQValues(35.7393*initialQ/100), minCash, ASSET_ERROR_MARGIN);
-		assertEquals(35.7393*initialQ/100, engine.getQValuesFromScore(minCash), ASSET_ERROR_MARGIN*initialQ/100);
-		
-		// check that final LPE of Eric is d2, e2 and f2
-		
-		// check combination d1, e1, f1
-		assumedStates.set(0, 0);	// d1
-		assumedStates.set(1, 0);	// e1
-		assumedStates.set(2, 0);	// f1
-		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
-		// check combination d1, e1, f2
-		assumedStates.set(0, 0);	// d1
-		assumedStates.set(1, 0);	// e1
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
-		// check combination d1, e2, f1
-		assumedStates.set(0, 0);	// d1
-		assumedStates.set(1, 1);	// e2
-		assumedStates.set(2, 0);	// f1
-		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
-		// check combination d1, e2, f2
-		assumedStates.set(0, 0);	// d1
-		assumedStates.set(1, 1);	// e2
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
-		// check combination d2, e1, f1 
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 0);	// e1
-		assumedStates.set(2, 0);	// f1
-		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
-		// check combination d2, e1, f2 
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 0);	// e1
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
-		// check combination d2, e2, f1
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 1);	// e2
-		assumedStates.set(2, 0);	// f1
-		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
-		
-		// check combination d2, e2, f2
-		assumedStates.set(0, 1);	// d2
-		assumedStates.set(1, 1);	// e2
-		assumedStates.set(2, 1);	// f2
-		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
-		
-		
-	}
-	
-	
 	/**
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#addTrade(long, Date, String, long, long, List, List, List, boolean)},
 	 * {@link MarkovEngineImpl#addQuestion(long, Date, long, int, List)},
@@ -4302,11 +3057,6 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.005f, editInterval.get(0), PROB_ERROR_MARGIN );
 		assertEquals(0.995f, editInterval.get(1), PROB_ERROR_MARGIN );
 		
-		// obtain conditional probabilities and assets of the edited clique, prior to edit, so that we can use it to check assets after edit
-		List<Float> cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, null, null, false);
-		List<Float> cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, null, null);
-		assertEquals(2, cliqueProbsBeforeTrade.size());
-		assertEquals(2, cliqueAssetsBeforeTrade.size());
 		
 		// do edit
 		transactionKey = engine.startNetworkActions();
@@ -4326,19 +3076,6 @@ public class MarkovEngineTest extends TestCase {
 			);
 		engine.commitNetworkActions(transactionKey);
 		
-		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
-		List<Float> cliqueProbsAfterTrade = engine.getProbList((long)0x0E, null, null, false);
-		List<Float> cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E,null, null);
-		assertEquals(2, cliqueProbsAfterTrade.size());
-		assertEquals(2, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
-		}
 		
 		// check that new marginal of E is [0.55 0.45], and the others have not changed (remains 50%)
 		try {
@@ -4467,11 +3204,6 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.005f, editInterval.get(0) ,PROB_ERROR_MARGIN);
 		assertEquals(0.995f, editInterval.get(1) ,PROB_ERROR_MARGIN);
 		
-		// obtain conditional probabilities and assets of the edited clique, prior to edit, so that we can use it to check assets
-		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
 
 		
 		// set P(E=e1|D=d1) = 0.9 and P(E=e2|D=d1) = 0.1
@@ -4492,19 +3224,6 @@ public class MarkovEngineTest extends TestCase {
 			);
 		engine.commitNetworkActions(transactionKey);
 		
-		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
-		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
-		}
 		
 		// check that new marginal of E is [0.725 0.275] (this is expected value), and the others have not changed (remains 50%)
 		probList = engine.getProbList(0x0D, null, null);
@@ -4593,11 +3312,6 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.0055f, editInterval.get(0) ,PROB_ERROR_MARGIN);
 		assertEquals(0.9955f, editInterval.get(1) ,PROB_ERROR_MARGIN);
 		
-		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
-		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0E, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
 		
 		// set P(E=e1|D=d2) = 0.4 and P(E=e2|D=d2) = 0.6
 		transactionKey = engine.startNetworkActions();
@@ -4617,19 +3331,6 @@ public class MarkovEngineTest extends TestCase {
 			);
 		engine.commitNetworkActions(transactionKey);
 		
-		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
-		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0E, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
-		}
 		
 		// check that new marginal of E is [0.65 0.35] (this is expected value), and the others have not changed (remains 50%)
 		probList = engine.getProbList(0x0D, null, null);
@@ -4928,11 +3629,6 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.005f, editInterval.get(0) ,PROB_ERROR_MARGIN);
 		assertEquals(0.995f, editInterval.get(1) ,PROB_ERROR_MARGIN);
 		
-		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
-		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Amy"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
 		
 		// set P(F=f1|D=d1) = 0.3 and P(F=f2|D=d1) = 0.7  
 		transactionKey = engine.startNetworkActions();
@@ -4952,19 +3648,6 @@ public class MarkovEngineTest extends TestCase {
 			);
 		engine.commitNetworkActions(transactionKey);
 		
-		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
-		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Amy"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
-		}
 		
 		// check that new marginal of E is still [0.65 0.35] (this is expected value), F is [.4 .6], and the others have not changed (remains 50%)
 		probList = engine.getProbList(0x0D, null, null);
@@ -5105,11 +3788,6 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.006875f, editInterval.get(0) ,PROB_ERROR_MARGIN);
 		assertEquals(0.993125, editInterval.get(1) ,PROB_ERROR_MARGIN);
 		
-		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
-		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
 		
 		// set P(F=f1|D=d2) = 0.1 and P(F=f2|D=d2) = 0.9
 		transactionKey = engine.startNetworkActions();
@@ -5129,19 +3807,6 @@ public class MarkovEngineTest extends TestCase {
 			);
 		engine.commitNetworkActions(transactionKey);
 		
-		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
-		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
-		}
 		
 		// check that new marginal of E is still [0.65 0.35] (this is expected value), F is [.2 .8], and the others have not changed (remains 50%)
 		probList = engine.getProbList(0x0D, null, null);
@@ -5259,11 +3924,6 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.0065f, editInterval.get(0) ,PROB_ERROR_MARGIN);
 		assertEquals(0.9965f, editInterval.get(1) ,PROB_ERROR_MARGIN);
 		
-		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
-		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0E, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
 		
 		// set P(E=e1) = 0.8 and P(E=e2) = 0.2
 		transactionKey = engine.startNetworkActions();
@@ -5283,19 +3943,6 @@ public class MarkovEngineTest extends TestCase {
 			);
 		engine.commitNetworkActions(transactionKey);
 		
-		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
-		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0E, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
-		}
 		
 		// check that new marginal of E is [0.8 0.2] (this is expected value), F is [0.2165, 0.7835], and D is [0.5824, 0.4176]
 		probList = engine.getProbList(0x0D, null, null);
@@ -5398,11 +4045,6 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.0091059f, editInterval.get(0) ,PROB_ERROR_MARGIN);
 		assertEquals(0.9916058f, editInterval.get(1) ,PROB_ERROR_MARGIN);
 		
-		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
-		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
 		
 		// set P(D=d1|F=f2) = 0.7 and P(D=d2|F=f2) = 0.3
 		transactionKey = engine.startNetworkActions();
@@ -5422,19 +4064,6 @@ public class MarkovEngineTest extends TestCase {
 		);
 		engine.commitNetworkActions(transactionKey);
 		
-		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
-		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
-		}
 		
 		// check that new marginal of E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
 		probList = engine.getProbList(0x0D, null, null);
@@ -5530,11 +4159,6 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.0091059f, editInterval.get(0) ,PROB_ERROR_MARGIN);
 		assertEquals(0.9916058f, editInterval.get(1) ,PROB_ERROR_MARGIN);
 		
-		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
-		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
 		
 		// get history before transaction, so that we can make sure new transaction is not added into history
 		List<QuestionEvent> questionHistory = engine.getQuestionHistory(0x0DL, null, null);
@@ -5562,16 +4186,6 @@ public class MarkovEngineTest extends TestCase {
 		// make sure history was not changed
 		assertEquals(questionHistory, engine.getQuestionHistory(0x0DL, null, null));
 		
-		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
-		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		// check that assets and conditional probs did not change
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals( "Index = " + i, cliqueAssetsBeforeTrade.get(i), cliqueAssetsAfterTrade.get(i), ASSET_ERROR_MARGIN );
-			assertEquals( "Index = " + i, cliqueProbsBeforeTrade.get(i), cliqueProbsAfterTrade.get(i), PROB_ERROR_MARGIN );
-		}
 		
 		
 		// check that marginals have not changed: E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
@@ -5669,11 +4283,6 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.0091059f, editInterval.get(0) ,PROB_ERROR_MARGIN);
 		assertEquals(0.9916058f, editInterval.get(1) ,PROB_ERROR_MARGIN);
 		
-		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
-		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
 		
 		// set P(D=d1|F=f2) to a value lower (1/10) than the lower bound of edit interval
 		transactionKey = engine.startNetworkActions();
@@ -5693,19 +4302,6 @@ public class MarkovEngineTest extends TestCase {
 			);
 		engine.commitNetworkActions(transactionKey);
 		
-		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
-		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
-		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
-		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
-		}
 		
 		// check that cash is smaller or equal to 0
 		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
@@ -9686,22 +8282,6 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0, validAssumptions.get(0).size());
 	}
 
-	// not needed for the 1st release
-//	/**
-//	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#getScoreDetails(long, java.util.List, java.util.List)}.
-//	 */
-//	public final void testGetScoreDetails() {
-//		fail("Not yet implemented"); // TODO
-//	}
-	
-
-
-//	/**
-//	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#scoreUserQuestionEv(long, java.lang.Long, java.util.List, java.util.List)}.
-//	 */
-//	public final void testScoreUserQuestionEv() {
-//		fail("Not yet implemented"); // TODO
-//	}
 
 
 }

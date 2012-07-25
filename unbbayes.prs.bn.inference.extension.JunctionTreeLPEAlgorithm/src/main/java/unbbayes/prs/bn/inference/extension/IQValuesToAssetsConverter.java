@@ -27,7 +27,7 @@ public interface IQValuesToAssetsConverter {
 	 * @return the asset q value
 	 * @see #getScoreFromQValues(float)
 	 */
-	public float getQValuesFromScore(float score);
+	public double getQValuesFromScore(double score);
 	
 	/**
 	 * Translates asset Q values to scores using logarithm functions.
@@ -38,7 +38,7 @@ public interface IQValuesToAssetsConverter {
 	 * @return the score value
 	 * @see #getQValuesFromScore(float)
 	 */
-	public float getScoreFromQValues(float assetQ);
+	public float getScoreFromQValues(double assetQ);
 	
 	/**
 	 * Assets (S-values) and q-values (values actually stored in
@@ -52,7 +52,7 @@ public interface IQValuesToAssetsConverter {
 	 * @see #getQValuesFromScore(float)
 	 * @see #getScoreFromQValues(float)
 	 */
-	public float getCurrentLogBase();
+	public double getCurrentLogBase();
 	
 	/**
 	 * Assets (S-values) and q-values (values actually stored in
@@ -66,7 +66,7 @@ public interface IQValuesToAssetsConverter {
 	 * @see #getQValuesFromScore(float)
 	 * @see #getScoreFromQValues(float)
 	 */
-	public void setCurrentLogBase(float base);
+	public void setCurrentLogBase(double base);
 	
 	/**
 	 *  Assets (S-values) and q-values (values actually stored in
@@ -97,6 +97,6 @@ public interface IQValuesToAssetsConverter {
 	 * @see #getQValuesFromScore(float)
 	 * @see #getScoreFromQValues(float)
 	 */
-	public void setCurrentCurrencyConstant(float b);
+	public void setCurrentCurrencyConstant(double b);
 
 }

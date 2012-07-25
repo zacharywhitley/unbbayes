@@ -28,7 +28,9 @@ import unbbayes.util.Debug;
  */
 public class JunctionTreeMPEAlgorithm extends JunctionTreeAlgorithm {
 
-	
+	/** Default value of {@link #getJunctionTreeBuilder()} */
+	public static final IJunctionTreeBuilder DEFAULT_MAX_PROPAGATION_JUNCTION_TREE_BUILDER = new DefaultJunctionTreeBuilder(MaxProductJunctionTree.class);
+
 	private boolean isToCalculateProbOfNonMPE = true;
 	
 	private IJunctionTreeBuilder defaultJunctionTreeBuilder;
@@ -46,7 +48,7 @@ public class JunctionTreeMPEAlgorithm extends JunctionTreeAlgorithm {
 	public JunctionTreeMPEAlgorithm(ProbabilisticNetwork net) {
 		super(net);
 		try {
-			this.setDefaultJunctionTreeBuilder(new DefaultJunctionTreeBuilder(MaxProductJunctionTree.class));
+			this.setDefaultJunctionTreeBuilder(DEFAULT_MAX_PROPAGATION_JUNCTION_TREE_BUILDER);
 		}catch (Exception e) {
 			e.printStackTrace();
 		}

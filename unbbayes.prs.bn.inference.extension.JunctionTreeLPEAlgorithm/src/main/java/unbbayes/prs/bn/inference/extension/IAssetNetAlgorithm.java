@@ -6,6 +6,7 @@ import java.util.Map;
 import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
 import unbbayes.prs.bn.AssetNetwork;
+import unbbayes.prs.bn.DoublePrecisionProbabilisticTable;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -63,8 +64,10 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	
 	/**
 	 * Run only the min propagation algorithm, which will propagate the minimum q values between the q-tables.
+	 * @param conditions : mapping from node to its state. This map indicates what conditions
+	 * should be considered (e.g. considered as findings) in a min-propagation.
 	 */
-	public void runMinPropagation();
+	public void runMinPropagation(Map<INode, Integer> conditions);
 	
 	/**
 	 * Reverts the change of {@link #runMinPropagation()}
@@ -108,12 +111,12 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	/**
 	 * @return the defaultInitialAssetQuantity : values assumed by the cells of q-tables when algorithm starts.
 	 */
-	public float getDefaultInitialAssetQuantity();
+	public double getDefaultInitialAssetQuantity();
 	
 	/**
 	 * @param defaultInitialAssetQuantity : values assumed by the cells of q-tables when algorithm starts.
 	 */
-	public void setDefaultInitialAssetQuantity(float defaultInitialAssetQuantity);
+	public void setDefaultInitialAssetQuantity(double defaultInitialAssetQuantity);
 	
 	/**
 	 * @return the value of explanation (i.e. min-q value).
@@ -123,7 +126,7 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 * is a set.
 	 * @see IExplanationJunctionTree#calculateExplanation(Graph, IInferenceAlgorithm)
 	 */
-	public float calculateExplanation( List<Map<INode, Integer>> inputOutpuArgumentForExplanation);
+	public double calculateExplanation( List<Map<INode, Integer>> inputOutpuArgumentForExplanation);
 
 	
 	/**
@@ -186,13 +189,13 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 */
 	public void setAsPermanentEvidence(INode node, int state, boolean isToDeleteNode);
 	
-	/**
-	 * This map stores what were the asset tables before the last call of
-	 * {@link #propagate()}
-	 * @return the assetTablesBeforeLastPropagation. This is a mapping from a Clique or Separator
-	 * to the PotentialTable (the assset table).
-	 */
-	public Map<IRandomVariable, PotentialTable> getAssetTablesBeforeLastPropagation();
+//	/**
+//	 * This map stores what were the asset tables before the last call of
+//	 * {@link #propagate()}
+//	 * @return the assetTablesBeforeLastPropagation. This is a mapping from a Clique or Separator
+//	 * to the PotentialTable (the assset table).
+//	 */
+//	public Map<IRandomVariable, DoublePrecisionProbabilisticTable> getAssetTablesBeforeLastPropagation();
 	
 	/**
 	 * If false, {@link unbbayes.prs.bn.AssetNode#updateMarginal()} will set the
@@ -228,7 +231,7 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 * which uses joint q-values.
 	 * @return the emptySeparatorsQValue value,
 	 */
-	public float getEmptySeparatorsQValue();
+	public double getEmptySeparatorsQValue();
 	
 	/**
 	 * Separators with no variables may exist if network is disconnected.
@@ -238,6 +241,6 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 * which uses joint q-values.
 	 * @param emptySeparatorsQValue
 	 */
-	public void setEmptySeparatorsQValue(float emptySeparatorsQValue);
+	public void setEmptySeparatorsQValue(double emptySeparatorsQValue);
 	
 }

@@ -10,6 +10,7 @@ import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.DefaultJunctionTreeBuilder;
+import unbbayes.prs.bn.IJunctionTreeBuilder;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.TreeVariable;
@@ -21,6 +22,9 @@ import unbbayes.util.Debug;
  */
 public class JunctionTreeLPEAlgorithm extends JunctionTreeMPEAlgorithm {
 
+
+	/** Default value of {@link #getDefaultJunctionTreeBuilder()} */
+	public static final IJunctionTreeBuilder DEFAULT_MIN_PROPAGATION_JUNCTION_TREE_BUILDER = new DefaultJunctionTreeBuilder(MinProductJunctionTree.class);
 
 	/**
 	 * Default constructor is public just to allow the plugin infrastructure to
@@ -39,7 +43,7 @@ public class JunctionTreeLPEAlgorithm extends JunctionTreeMPEAlgorithm {
 		super(net);
 		// initialize default junction tree with a min-product operator
 		try{
-			this.setDefaultJunctionTreeBuilder(new DefaultJunctionTreeBuilder(MinProductJunctionTree.class));
+			this.setDefaultJunctionTreeBuilder(DEFAULT_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

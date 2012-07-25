@@ -5,7 +5,9 @@ package unbbayes.prs.bn.inference.extension;
 
 import java.util.Comparator;
 
+import unbbayes.prs.INode;
 import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.PotentialTable.ISumOperation;
 
 /**
  * This is the junction tree to be used by algorithms implementing least probable explanation.
@@ -18,6 +20,25 @@ import unbbayes.prs.bn.PotentialTable;
  */
 public class MinProductJunctionTree extends MaxProductJunctionTree {
 
+	/** Instance called when doing marginalization. This instance will min-out values in {@link PotentialTable#removeVariable(INode)} */
+	public static final ISumOperation DEFAULT_MIN_OUT_OPERATION = new MinProductJunctionTree().new MinOperation();
+	
+	/** Default value of {@link #getTableExplanationComparator()} */
+	public static final Comparator DEFAULT_TABLE_EXPLANATION_COMPARATOR = new Comparator() {
+		public int compare(Object o1, Object o2) {
+			// ignore zeros
+			if (Double.compare((Float)o1, 0.0f) == 0) {
+				return -1;
+			}
+			if (Double.compare((Float)o2, 0.0f) == 0) {
+				return 1;
+			}
+			// compare inverting the order (so that it returns the inverse of "normal" compare)
+			return Double.compare((Double)o2, (Double)o1);
+		}
+	};
+
+
 	/**
 	 * This is the junction tree to be used by algorithms implementing least probable explanation.
 	 * This class behaves the same way of {@link MaxProductJunctionTree},
@@ -28,22 +49,10 @@ public class MinProductJunctionTree extends MaxProductJunctionTree {
 	 * @see #setMaxOperation(unbbayes.prs.bn.PotentialTable.ISumOperation)
 	 */
 	public MinProductJunctionTree() {
-		setMaxOperation(new MinOperation());
+		setMaxOperation(DEFAULT_MIN_OUT_OPERATION);
 		try {
 			// add the comparator (it is the inverse of the superclass' comparator - i.e. instead of max, return min)
-			this.setTableExplanationComparator(new Comparator() {
-				public int compare(Object o1, Object o2) {
-					// ignore zeros
-					if (Float.compare((Float)o1, 0.0f) == 0) {
-						return -1;
-					}
-					if (Float.compare((Float)o2, 0.0f) == 0) {
-						return 1;
-					}
-					// compare inverting the order (so that it returns the inverse of "normal" compare)
-					return Float.compare((Float)o2, (Float)o1);
-				}
-			});
+			this.setTableExplanationComparator(DEFAULT_TABLE_EXPLANATION_COMPARATOR);
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
@@ -108,7 +117,7 @@ public class MinProductJunctionTree extends MaxProductJunctionTree {
 		 * Return the minimum, but ignores values less than or equals to 0.0f (except when both values are 0.0f).
 		 * @return (arg1 < arg2)?arg1:arg2
 		 */
-		public float operate(float arg1, float arg2) {
+		public double operate(double arg1, double arg2) {
 			if (arg2 <= 0.0f) {
 				return arg1;
 			} else if (arg1 <= 0.0f) {

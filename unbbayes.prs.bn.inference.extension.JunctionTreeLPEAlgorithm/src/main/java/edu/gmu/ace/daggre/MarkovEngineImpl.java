@@ -33,10 +33,12 @@ import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm.ExpectedAssetCellMultiplicationListener;
 import unbbayes.prs.bn.inference.extension.AssetPropagationInferenceAlgorithm;
+import unbbayes.prs.bn.inference.extension.IAssetAwareInferenceAlgorithmBuilder;
 import unbbayes.prs.bn.inference.extension.IQValuesToAssetsConverter;
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
+import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
 
 /**
@@ -50,7 +52,13 @@ import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
  */
 public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssetsConverter {
 	
-	
+	private IAssetAwareInferenceAlgorithmBuilder assetAwareInferenceAlgorithmBuilder = new IAssetAwareInferenceAlgorithmBuilder() {
+		public AssetAwareInferenceAlgorithm build( IInferenceAlgorithm probDelegator, double initQValue) {
+			AssetAwareInferenceAlgorithm ret = (AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(probDelegator);
+			ret.setDefaultInitialAssetQuantity(initQValue);
+			return ret;
+		}
+	};
 
 	private float probabilityErrorMargin = 0.0001f;
 
@@ -64,11 +72,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 //	private boolean isToAddCashProportionally = true;
 
-	private float defaultInitialQTableValue = 1;
+	private double defaultInitialQTableValue = 1;
 
-	private float currentLogBase = (float) Math.E;
+	private double currentLogBase = (float) 2;
 
-	private double currentCurrencyConstant = 10/Math.log(100);
+	private double currentCurrencyConstant = 100;
 
 	private ProbabilisticNetwork probabilisticNetwork;
 
@@ -87,6 +95,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	private boolean isToDeleteResolvedNode = false;
 	
 	private boolean isToThrowExceptionOnInvalidAssumptions = false;
+
+	/** Set this value to < 0 to disable this feature */
+	private double forcedInitialQValue = 100.0;
+
+	private double currencyMultiplier = 1.0;
 
 	/**
 	 * Default constructor is protected to allow inheritance.
@@ -149,33 +162,37 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	/**
 	 * Translates asset Q values to scores using logarithm functions.
 	 * <br/>
-	 * Score = b*log(assetQ), with log being the logarithm of base {@link #getCurrentLogBase()},
+	 * Score = b*x*log(assetQ), with log being the logarithm of base {@link #getCurrentLogBase()},
+	 * x = {@link #getCurrencyConstantMultiplier()}, 
 	 * and b = {@link #getCurrentCurrencyConstant()}.
 	 * @param assetQ
 	 * @return the score value
 	 * @see #getQValuesFromScore(float)
 	 */
-	public float getScoreFromQValues(float assetQ) {
-		return (float) ((Math.log(assetQ)/Math.log(getCurrentLogBase())) * getCurrentCurrencyConstant());
+	public float getScoreFromQValues(double assetQ) {
+		return (float) ((Math.log(assetQ)/Math.log(getCurrentLogBase())) * (getCurrentCurrencyConstant())) ;
+//		return (float) ((Math.log(assetQ)/Math.log(getCurrentLogBase())) * (getCurrentCurrencyConstant()* getCurrencyConstantMultiplier())) ;
 	}
 	
 	/**
 	 * Translates scores to asset Q values using logarithm functions.
 	 * <br/>
-	 * Score = b*log(assetQ), with log being the logarithm of base {@link #getCurrentLogBase()},
+	 * Score = b*x*log(assetQ), with log being the logarithm of base {@link #getCurrentLogBase()},
+	 * x = {@link #getCurrencyConstantMultiplier()}, 
 	 * and b = {@link #getCurrentCurrencyConstant()}.
 	 * @param score
 	 * @return the asset q value
 	 * @see #getScoreFromQValues(float)
 	 */
-	public float getQValuesFromScore(float score) {
+	public double getQValuesFromScore(double score) {
 		/*
 		 * Score = b*log(assetQ)
 		 * -> Score / b = log(assetQ)
 		 * -> power(baseOfLog, (Score / b)) = power(baseOfLog, log(assetQ))
 		 * -> power(baseOfLog, (Score / b)) = assetQ
 		 */
-		return (float) Math.pow(getCurrentLogBase(), (score/getCurrentCurrencyConstant()));
+		return Math.pow(getCurrentLogBase(), (score/(getCurrentCurrencyConstant())));
+//		return Math.pow(getCurrentLogBase(), (score/(getCurrentCurrencyConstant() * getCurrencyConstantMultiplier())));
 	}
 
 	/* (non-Javadoc)
@@ -194,14 +211,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		setProbabilisticNetwork(new ProbabilisticNetwork("DAGGRE"));
 		// disable log
 		getProbabilisticNetwork().setCreateLog(false);
+		// disable hierarchic tree
+		getProbabilisticNetwork().setHierarchicTree(null);
 		
 		// prepare inference algorithm for the BN
 		JunctionTreeAlgorithm junctionTreeAlgorithm = new JunctionTreeAlgorithm(getProbabilisticNetwork());
 		// enable soft evidence by using jeffrey rule in likelihood evidence w/ virtual nodes.
-		JeffreyRuleLikelihoodExtractor jeffreyRuleLikelihoodExtractor = (JeffreyRuleLikelihoodExtractor) JeffreyRuleLikelihoodExtractor.newInstance();
+		JeffreyRuleLikelihoodExtractor jeffreyRuleLikelihoodExtractor = (JeffreyRuleLikelihoodExtractor) AssetAwareInferenceAlgorithm.DEFAULT_JEFFREYRULE_LIKELIHOOD_EXTRACTOR;
 		junctionTreeAlgorithm.setLikelihoodExtractor(jeffreyRuleLikelihoodExtractor);
 		// prepare default inference algorithm for asset network
-		AssetAwareInferenceAlgorithm defaultAlgorithm = (AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm);
+		AssetAwareInferenceAlgorithm defaultAlgorithm = getAssetAwareInferenceAlgorithmBuilder().build(junctionTreeAlgorithm, getDefaultInitialQTableValue());
 		// user MarkovEngineImpl to convert from q values to assets
 		defaultAlgorithm.setqToAssetConverter(this);
 		// usually, users seem to start with 0 delta (delta are logarithmic, so 0 delta == 1 q table), but let's use the value of getDefaultInitialQTableValue
@@ -288,7 +307,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// only make changes (reorder actions and recompile network) if there is any action changing the structure of network.
 				actions.clear();	// reset actions first
 				actions.addAll(netChangeActions);	// netChangeActions comes first
-				actions.add(new RebuildNetworkAction(netChangeActions.get(0).getTransactionKey(), new Date()));	// <rebuild action> is inserted between netChangeActions and otherActions
+				actions.add(new RebuildNetworkAction(netChangeActions.get(0).getTransactionKey(), new Date(), null, null));	// <rebuild action> is inserted between netChangeActions and otherActions
 				actions.addAll(otherActions);	// otherActions comes later
 			}
 			
@@ -326,16 +345,31 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		private final Date whenCreated;
 		private final long transactionKey;
 		private Date whenExecutedFirst = null;
-		/** Default constructor */
-		public RebuildNetworkAction(long transactionKey, Date whenCreated) {
+		private final Date tradesStartingWhen;
+		private final Long questionId;
+		/**
+		 * Default constructor.
+		 * @param transactionKey : mandatory key which can be obtained from {@link MarkovEngineImpl#startNetworkActions()}
+		 * @param whenCreated : when this action was created.
+		 * @param tradesStartingWhen : filter for the playback. Playback will stop after the first
+		 * {@link AddTradeNetworkAction} created after this date. If null, all actions will be played back.
+		 * @param questionId : another filter for the playback. 
+		 * If tradesStartingWhen == null, this argument will be ignored.
+		 * Playback will stop after the first
+		 * {@link AddTradeNetworkAction} with {@link AddTradeNetworkAction#getQuestionId()} matching
+		 * this questionId and created after tradesStartingWhen.
+		 */
+		public RebuildNetworkAction(long transactionKey, Date whenCreated, Date tradesStartingWhen, Long questionId) {
 			this.transactionKey = transactionKey;
 			this.whenCreated = whenCreated;
+			this.tradesStartingWhen = tradesStartingWhen;
+			this.questionId = questionId;
 		}
 		/** Rebuild the BN */
 		public void execute() {
 			// BN to rebuild
 			ProbabilisticNetwork net = getProbabilisticNetwork();
-			// make sure no one is using the probabilistic network yet.
+			// Supposedly, only 1 transaction can commit, so we only need to block net to block threads reading net
 			synchronized (getDefaultInferenceAlgorithm()) {
 				synchronized (net) {
 					if (net.getNodeCount() > 0) {
@@ -351,12 +385,51 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					// by executing some action related to user, user will be re-created.
 					// hence, "read-only" users are not rebuild, because such users did never commit a network action.
 					synchronized (getExecutedActions()) {
+						
+						int indexOfLastActionPlayedBack = 0;
 						// Note: if we are rebooting the system, the history is supposedly empty. We only need to rebuild user assets if history is not empty
-						for (NetworkAction action : getExecutedActions()) {
+						for (; indexOfLastActionPlayedBack < getExecutedActions().size(); indexOfLastActionPlayedBack++) {
+							NetworkAction action = getExecutedActions().get(indexOfLastActionPlayedBack);
+							/*
+							 * conditions regarding revertTrade: 
+							 * getTradesStartingWhen() == null -> redo all trades no matter the value of getQuestionId()
+							 * getTradesStartingWhen() != null
+							 * 			getQuestionId() == null -> redo trades until first trade after getTradesStartingWhen()
+							 * 			getQuestionId() != null -> redo trades until first trade on getQuestionId() after getTradesStartingWhen() 
+							 * 
+							 * So, redo all actions until we find a trade which matches filtering criteria.
+							 */
+							if (getTradesStartingWhen() != null && action instanceof AddTradeNetworkAction) {
+								// only consider trades when filtering by date and question
+								if (action.getWhenCreated() != null && !action.getWhenCreated().before(this.getTradesStartingWhen())) {
+									// only consider trades created after or equals to getTradesStartingWhen()
+									if (this.getQuestionId() == null) {
+										// no filter for questions
+										break;	// stop redoing trades from here
+									} else if (action.getQuestionId() != null && action.getQuestionId().equals(this.getQuestionId())) {
+										break;	// stop redoing trades from here
+									}
+								}
+							}
 							// redo all trades using the history
 							if (!action.isStructureChangeAction()) {
 								// actions with action.isStructureChangeAction() == false are supposedly the ones changing probabilities/assets and not changing structure
 								action.execute();
+								// this is not an ordinal execution of the action, so do not update attribute whenExecutedFirst.
+							}
+						}
+						
+						// from this point, play back actions without updating assets in trades
+						for (int i = indexOfLastActionPlayedBack; i < getExecutedActions().size(); i++) {
+							NetworkAction action = getExecutedActions().get(i);
+							if (!action.isStructureChangeAction()) {
+								// actions with action.isStructureChangeAction() == false are supposedly the ones changing probabilities/assets and not changing structure
+								if (action instanceof AddTradeNetworkAction) {
+									AddTradeNetworkAction tradeAction = (AddTradeNetworkAction) action;
+									tradeAction.execute(false);
+								} else {
+									action.execute();
+								}
 								// this is not an ordinal execution of the action, so do not update attribute whenExecutedFirst.
 							}
 						}
@@ -374,11 +447,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public Long getUserId() { return null; }
 		public List<Float> getPercent() { return null; }
 		public String getTradeId() { return null; }
-		public Long getQuestionId() { return null; }
+		/** This is non-null only if this action is trying to revert a trade related to this question ID */
+		public Long getQuestionId() { return this.questionId; }
 		public List<Long> getAssumptionIds() { return null; }
 		public List<Integer> getAssumedStates() { return null; }
 		public Date getWhenExecutedFirstTime() {return whenExecutedFirst ; }
 		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirst = whenExecutedFirst; }
+		/** This is a filter used when reverting trades */
+		public Date getTradesStartingWhen() { return tradesStartingWhen; }
 	}
 
 	/* (non-Javadoc)
@@ -538,7 +614,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				for (NetworkAction networkAction : actions) {
 					if (networkAction instanceof AddQuestionNetworkAction) {
 						AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
-						if (addQuestionNetworkAction.getQuestionId() == childQuestionId) {
+						if (addQuestionNetworkAction.getQuestionId().equals(childQuestionId)) {
 							childNodeStateSize = addQuestionNetworkAction.getNumberStates();
 							break;
 						}
@@ -575,7 +651,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					for (NetworkAction networkAction : actions) {
 						if (networkAction instanceof AddQuestionNetworkAction) {
 							AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
-							if (addQuestionNetworkAction.getQuestionId() == assumptiveQuestionId) {
+//							System.out.println(addQuestionNetworkAction.getQuestionId());
+							if (addQuestionNetworkAction.getQuestionId().equals(assumptiveQuestionId)) {
 								// size of cpd = MULT (<quantity of states of child and parents>).
 								expectedSizeOfCPD *= addQuestionNetworkAction.getNumberStates();
 								hasFound = true;
@@ -767,29 +844,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 			
 			synchronized (inferenceAlgorithm.getAssetNetwork()) {
-				/*
-				 * If we want to add something into a logarithm value, we must multiply some ratio.
-				 * Assuming that asset = b logX (q)  (note: X is some base), then X^(asset/b) = q
-				 * So, X^((asset+delta)/b) = X^(asset/b + delta/b) = X^(asset/b) * X^(delta/b)  = q * X^(delta/b)
-				 * So, we need to multiply X^(delta/b) in order to update q when we add delta into asset.
-				 */
-				double ratio = Math.pow(getCurrentLogBase(), delta / getCurrentCurrencyConstant() );
-				// add delta to all cells in asset tables of cliques
-				for (Clique clique : inferenceAlgorithm.getAssetNetwork().getJunctionTree().getCliques()) {
-					PotentialTable assetTable = clique.getProbabilityFunction();
-					for (int i = 0; i < assetTable.tableSize(); i++) {
-						assetTable.setValue(i, (float)(assetTable.getValue(i) * ratio) );
-					}
-				}
-				// add delta to all cells in asset tables of separators
-				for (Separator separator : inferenceAlgorithm.getAssetNetwork().getJunctionTree().getSeparators()) {
-					PotentialTable assetTable = separator.getProbabilityFunction();
-					for (int i = 0; i < assetTable.tableSize(); i++) {
-						assetTable.setValue(i, (float)(assetTable.getValue(i) * ratio));
-					}
-				}
-				// add delta to empty separators (but since all empty separators supposedly have the same assets, it is stored in only 1 place)
-				inferenceAlgorithm.setEmptySeparatorsQValue((float) (inferenceAlgorithm.getEmptySeparatorsQValue()*ratio));
+				inferenceAlgorithm.addAssets(delta);
 			}
 			
 			this.wasExecutedPreviously = true;
@@ -834,9 +889,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		// check if delta can be translated to asset Q values
 		try {
-			float qValue = this.getQValuesFromScore(assets);
-			if (Float.isInfinite(qValue) || Float.isNaN(qValue)) {
-				throw new IllegalArgumentException("q-value is " + (Float.isInfinite(qValue)?"infinite":"not a number"));
+			double qValue = this.getQValuesFromScore(assets);
+			if (Double.isInfinite(qValue) || Double.isNaN(qValue)) {
+				throw new IllegalArgumentException("q-value is " + (Double.isInfinite(qValue)?"infinite":"not a number"));
 			}
 		} catch (Exception e) {
 			throw new IllegalArgumentException("Cannot calculate asset's q-value from score = " 
@@ -872,7 +927,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		private List<Long> assumptionIds;
 		private final List<Integer> assumedStates;
 		private final boolean allowNegative;
-		private Map<IRandomVariable, PotentialTable> qTablesBeforeTrade;
+//		private Map<IRandomVariable, DoublePrecisionProbabilisticTable> qTablesBeforeTrade;
 		private List<Float> oldValues = null;
 		private Date whenExecutedFirst;
 //		private final List<Integer> originalAssumedStates;
@@ -919,6 +974,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			
 		}
 		public void execute() {
+			this.execute(true);
+		}
+		public void execute(boolean isToUpdateAssets) {
 			// extract user's asset network from user ID
 			AssetAwareInferenceAlgorithm algorithm = null;
 			try {
@@ -937,11 +995,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						Debug.println(getClass(), "[Warning] desync of network detected.");
 						algorithm.setNetwork(getProbabilisticNetwork());
 					}
+					// backup config of assets
+					boolean backup = algorithm.isToUpdateAssets();
+					algorithm.setToUpdateAssets(isToUpdateAssets);
 					// do trade. Since algorithm is linked to actual networks, changes will affect the actual networks
 					// 2nd boolean == true := overwrite assumptionIds and assumedStates when necessary
 					oldValues = executeTrade(questionId, newValues, assumptionIds, assumedStates, allowNegative, algorithm, true);
+					algorithm.setToUpdateAssets(backup);	// revert config of assets
 					// backup the previous delta so that we can revert this trade
-					qTablesBeforeTrade = algorithm.getAssetTablesBeforeLastPropagation();
+//					qTablesBeforeTrade = algorithm.getAssetTablesBeforeLastPropagation();
 				}
 			}
 		}
@@ -951,31 +1013,35 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 * should only set the user's delta into the point prior to when {@link #execute()} was called.
 		 * CAUTION: this method is not actually reverting a trade. It is setting
 		 * the asset tables to values prior to the execution of {@link #execute()}.
+		 * 
+		 * @since 2012/07/24 : due to the memory usage, reverting a trade will replay all the history until
+		 * this trade. 
+		 * 
 		 */
 		public void revert() throws UnsupportedOperationException {
-			// extract user's asset network from user ID
-			AssetAwareInferenceAlgorithm algorithm = null;
-			try {
-				algorithm = getAlgorithmAndAssetNetFromUserID(userId);
-			} catch (InvalidParentException e) {
-				throw new RuntimeException("Could not extract delta from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
-			}
-			if (algorithm == null) {
-				throw new RuntimeException("Could not extract delta from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
-			}
-			synchronized (algorithm.getAssetNetwork()) {
-				// TODO make sure resolved questions are OK
-				// revert clique's q-tables
-				for (Clique clique : algorithm.getAssetNetwork().getJunctionTree().getCliques()) {
-					// current table and previous table are supposed to have same size
-					clique.getProbabilityFunction().setValues(getqTablesBeforeTrade().get(clique).getValues());
-				}
-				// revert separator's q-tables
-				for (Separator separator : algorithm.getAssetNetwork().getJunctionTree().getSeparators()) {
-					// current table and previous table are supposed to have same size
-					separator.getProbabilityFunction().setValues(getqTablesBeforeTrade().get(separator).getValues());
-				}
-			}
+//			// extract user's asset network from user ID
+//			AssetAwareInferenceAlgorithm algorithm = null;
+//			try {
+//				algorithm = getAlgorithmAndAssetNetFromUserID(userId);
+//			} catch (InvalidParentException e) {
+//				throw new RuntimeException("Could not extract delta from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
+//			}
+//			if (algorithm == null) {
+//				throw new RuntimeException("Could not extract delta from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
+//			}
+//			synchronized (algorithm.getAssetNetwork()) {
+//				// TODO make sure resolved questions are OK
+//				// revert clique's q-tables
+//				for (Clique clique : algorithm.getAssetNetwork().getJunctionTree().getCliques()) {
+//					// current table and previous table are supposed to have same size
+//					((DoublePrecisionProbabilisticTable)clique.getProbabilityFunction()).setValues(getqTablesBeforeTrade().get(clique).getDoubleValues());
+//				}
+//				// revert separator's q-tables
+//				for (Separator separator : algorithm.getAssetNetwork().getJunctionTree().getSeparators()) {
+//					// current table and previous table are supposed to have same size
+//					((DoublePrecisionProbabilisticTable)separator.getProbabilityFunction()).setValues(getqTablesBeforeTrade().get(separator).getDoubleValues());
+//				}
+//			}
 		}
 		public Date getWhenCreated() { return whenCreated; }
 		public boolean isStructureChangeAction() { return false; }
@@ -986,9 +1052,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public List<Integer> getAssumedStates() { return assumedStates; }
 		public boolean isAllowNegative() { return allowNegative; }
 		public List<Float> getPercent() { return oldValues ; }
+		public void setOldValues(List<Float> oldValues) { this.oldValues = oldValues;};
 		public String getTradeId() { return tradeKey; }
-		/** Mapping from {@link Clique}/{@link Separator} to q-tables before {@link #execute()}*/
-		public Map<IRandomVariable, PotentialTable> getqTablesBeforeTrade() { return qTablesBeforeTrade; }
+//		/** Mapping from {@link Clique}/{@link Separator} to q-tables before {@link #execute()}*/
+//		public Map<IRandomVariable, DoublePrecisionProbabilisticTable> getqTablesBeforeTrade() { return qTablesBeforeTrade; }
 		public List<Float> getNewValues() { return newValues; }
 		public void setNewValues(List<Float> newValues) { this.newValues = newValues; }
 		public Date getWhenExecutedFirstTime() {return whenExecutedFirst ; }
@@ -1127,7 +1194,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public void execute() { this.execute(null); }
 		public void execute(Long userId) {
 			synchronized (getProbabilisticNetwork()) {
-				TreeVariable probNode = (TreeVariable) getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getNode(Long.toString(questionId));
+				TreeVariable probNode = (TreeVariable) getProbabilisticNetwork().getNode(Long.toString(questionId));
 				if (probNode != null) {	
 					// if probNode.hasEvidence(), then it was resolved already
 					if (probNode.hasEvidence() && probNode.getEvidence() != settledState) {
@@ -1311,9 +1378,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			 * (it is only guaranteed that actions in same transaction were executed in the same ordering/sequence of action.getWhenCreated()).
 			 * The argument tradesStartingWhen is supposedly a filter for action.getWhenCreated(), but
 			 * for coherence, we must mainly consider the ordering of actual execution (because such ordering is
-			 * what impacts the final values of the shared bayes net and user's assets).
+			 * what impacts the final values of the shared Bayes net and user's assets).
 			 * That's why I'm searching for the first action in getExecutedActions() whose  tradesStartingWhen < action.getWhenCreated()
-			 * and then "undoing" (call revert()) such actions.
+			 * and then replaying the actions prior to it.
 			 */
 			synchronized (getUserToAssetAwareAlgorithmMap()) {
 				// do not allow new users to be created now
@@ -1402,7 +1469,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		
 		// add action into transaction
-		this.addNetworkAction(transactionKey, new RevertTradeNetworkAction(transactionKey, occurredWhen, tradesStartingWhen, questionId));
+//		this.addNetworkAction(transactionKey, new RevertTradeNetworkAction(transactionKey, occurredWhen, tradesStartingWhen, questionId));
+		this.addNetworkAction(transactionKey, new RebuildNetworkAction(transactionKey, occurredWhen, tradesStartingWhen, questionId));
 		
 		return true;
 	}
@@ -1795,9 +1863,19 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			if (parentNodes.isEmpty()) { // we are not calculating the conditional delta. We are calculating delta of 1 node only (i.e. "marginal" delta)
 				boolean backup = mainNode.isToCalculateMarginal();	// backup old config
 				mainNode.setToCalculateMarginal(true);		// force marginalization to calculate something.
-				mainNode.updateMarginal(); 					// make sure values of mainNode.getMarginalAt(index) is up to date
+				double[] marginal = mainNode.calculateDoublePrecisionMarginal(); 					
 				mainNode.setToCalculateMarginal(backup);	// revert to previous config
-				
+				List<Float> ret = new ArrayList<Float>(mainNode.getStatesSize());
+				for (int i = 0; i < mainNode.getStatesSize(); i++) {
+					if (isToReturnQValuesInsteadOfAssets) {
+						// return q-values directly
+						ret.add((float) marginal[i]);
+					} else {
+						// convert q-values to delta (i.e. logarithmic values)
+						ret.add((float) this.getScoreFromQValues(marginal[i]));
+					}
+				}
+				return ret;
 			}
 			assetTable = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, algorithm.getAssetNetwork(), algorithm.getAssetPropagationDelegator());
 		}
@@ -1828,10 +1906,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			if (!isToSkip) {
 				if (isToReturnQValuesInsteadOfAssets) {
 					// return q-values directly
-					ret.add(assetTable.getValue(i));
+					ret.add((float) assetTable.getDoubleValue(i));
 				} else {
 					// convert q-values to delta (i.e. logarithmic values)
-					ret.add(this.getScoreFromQValues(assetTable.getValue(i)));
+					ret.add((float) this.getScoreFromQValues(assetTable.getDoubleValue(i)));
 				}
 			}
 		}
@@ -1968,8 +2046,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			throw new RuntimeException("Could not extract delta from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
 		}
 		
-		float ret = Float.NEGATIVE_INFINITY;	// value to return
+		double ret = Double.NEGATIVE_INFINITY;	// value to return
 		synchronized (algorithm.getAssetNetwork()) {
+			Map<INode, Integer> conditions = new HashMap<INode, Integer>();
 			// set up findings
 			if (assumptionIds != null) {
 				for (int i = 0; i < assumptionIds.size(); i++) {
@@ -1980,17 +2059,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					Integer stateIndex = assumedStates.get(i);
 					if (stateIndex != null) {
 						// set evidence in the probabilistic network
-						if (stateIndex < 0) {
-							// set finding as negative (i.e. finding setting a state to 0%)
-							node.addFinding(Math.abs(stateIndex+1), true);
-						} else {
-							node.addFinding(stateIndex);
-						}
+						conditions.put(node, stateIndex);
 					}
 				}
 			}
 			// run only min-propagation (i.e. calculate min-q given assumptions)
-			algorithm.runMinPropagation();
+			algorithm.runMinPropagation(conditions);
 			// obtain min-q value and explanation (states which cause the min-q values)
 			// TODO use the explanation (set of states that causes the min assets) for something
 			ret = algorithm.calculateExplanation(null);	// by offering null, only min value is calculated (the states are not retrieved)
@@ -2877,6 +2951,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getQuestionHistory(java.lang.Long, java.util.List, java.util.List)
 	 */
 	public List<QuestionEvent> getQuestionHistory(Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+//		TODO obtain indirect impact
+		
 		List<NetworkAction> list = null;
 		synchronized (this.getNetworkActionsIndexedByQuestions()) {
 			list = this.getNetworkActionsIndexedByQuestions().get(questionId);
@@ -3204,17 +3280,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// first time user is referenced. Prepare inference algorithm for the user
 				JunctionTreeAlgorithm junctionTreeAlgorithm = new JunctionTreeAlgorithm(getProbabilisticNetwork());
 				// enable soft evidence by using jeffrey rule in likelihood evidence w/ virtual nodes.
-				junctionTreeAlgorithm.setLikelihoodExtractor(JeffreyRuleLikelihoodExtractor.newInstance() );
+				junctionTreeAlgorithm.setLikelihoodExtractor(AssetAwareInferenceAlgorithm.DEFAULT_JEFFREYRULE_LIKELIHOOD_EXTRACTOR);
 				// prepare default inference algorithm for asset network
-				algorithm = ((AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm));
+				algorithm = getAssetAwareInferenceAlgorithmBuilder().build(junctionTreeAlgorithm, getDefaultInitialQTableValue());
 				// set markov engine as the converter between q-values and assets
 				algorithm.setqToAssetConverter(this);
-				// usually, users seem to start with 0 delta (delta are logarithmic, so 0 delta == 1 q table), but let's use the value of getDefaultInitialQTableValue
-				algorithm.setDefaultInitialAssetQuantity(getDefaultInitialQTableValue());
 				// force algorithm to call min-propagation only when prompted (i.e. only when runMinPropagation() is called)
 				algorithm.setToPropagateForGlobalConsistency(false);
 				// OPTIMIZATION : do not calculate marginals of asset nodes without explicit call
 				algorithm.setToCalculateMarginalsOfAssetNodes(false);
+				junctionTreeAlgorithm.setVerifyConsistencyCommandList(null);	// users don't need to verify consistency of shared bayes net
 				
 				// generate new asset net
 				AssetNetwork assetNet = null;
@@ -3384,14 +3459,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @return the value to be filled into each cell of the q-tables when the tables are initialized.
 	 * @see #initialize()
 	 */
-	public float getDefaultInitialQTableValue() {
+	public double getDefaultInitialQTableValue() {
 		return defaultInitialQTableValue;
 	}
 	
 
 	/**
-	 * Assets are managed by a data structure known as the asset tables
-	 * (they are clique-tables containing non-normalized float values).
+	 * Assets are managed by a data structure known as the asset's q-tables
+	 * (sometimes referred as q-tables or asset tables)
+	 * They are clique-tables containing non-normalized float values.
 	 * When an asset table is instantiated (i.e. when a new user is created,
 	 * and then a new asset table is created for that user), each
 	 * cell of the asset table should be filled with default (uniform) values initially.
@@ -3400,10 +3476,48 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * asset tables) are related with a logarithm relationship
 	 * S = b*log(q). So, the values in the asset tables may not actually be
 	 * the values of delta directly.
+	 * <br/><br/>
+	 * This method updates the value of {@link #getCurrencyConstantMultiplier()}
 	 * @param defaultValue : the value to be filled into each cell of the q-tables when the tables are initialized.
 	 * @see #initialize()
 	 */
-	public void setDefaultInitialQTableValue(float defaultValue) {
+	public void setDefaultInitialQTableValue(double defaultValue) {
+		if (defaultValue < 1d) {
+			throw new IllegalArgumentException("Q-values cannot be smaller than 1. Value provided: " + defaultValue);
+		}
+		if (Double.isInfinite(defaultValue)) {
+			throw new IllegalArgumentException("Cannot set default q-value to infinite");
+		}
+		if (Double.isNaN(defaultValue)) {
+			throw new IllegalArgumentException("Cannot set default q-value to NaN");
+		}
+//		if (getForcedInitialQValue() > 0 && defaultValue > getForcedInitialQValue()) {
+//			/*
+//			 * 
+//			 * We have Assets = b*log_c(q); 
+//			 *  <br/><br/>
+//			 * b := {@link #getCurrentCurrencyConstant()}<br/>
+//			 * c := {@link #getCurrentLogBase()}<br/>
+//			 * q := q-values (values stored in q-tables)<br/>
+//			 * Assets := assets (values expected by the caller of this method)<br/>
+//			 * 
+//			 * If we want to change the relationship to Assets = b*x*log_c(q'); 
+//			 * with x > 1, so that q' < q maintaining Assets intact, then:
+//			 *  <br/><br/>
+//			 * b*x*log_c(q') = b*log_c(q);<br/>
+//			 * x = log_c(q) / log_c(q')
+//			 *  <br/><br/>
+//			 * x := currencyMultiplier<br/>
+//			 * q' := new values to be stored in q-tables : {@link #getForcedInitialQValue()}<br/>
+//			 *  <br/><br/>
+//			 *  This method changes the value of x.
+//			 */
+//			
+//			// x = log_c(q) / log_c(q') = log_q'(q) = log(q)/log(q')
+//			setCurrencyConstantMultiplier(Math.log(defaultValue) / Math.log(getForcedInitialQValue()) );
+//			// force q-tables to initialize at getForcedInitialQValue() instead of the original values
+//			defaultValue = getForcedInitialQValue();
+//		}
 		this.defaultInitialQTableValue = defaultValue;
 	}
 	
@@ -3419,7 +3533,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see #getQValuesFromScore(float)
 	 * @see #getScoreFromQValues(float)
 	 */
-	public float getCurrentLogBase() {
+	public double getCurrentLogBase() {
 		return currentLogBase ;
 	}
 	
@@ -3435,7 +3549,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see #getQValuesFromScore(float)
 	 * @see #getScoreFromQValues(float)
 	 */
-	public void setCurrentLogBase(float base) {
+	public void setCurrentLogBase(double base) {
 		this.currentLogBase = base;
 	}
 	
@@ -3470,7 +3584,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see #getQValuesFromScore(float)
 	 * @see #getScoreFromQValues(float)
 	 */
-	public void setCurrentCurrencyConstant(float b) {
+	public void setCurrentCurrencyConstant(double b) {
 		this.currentCurrencyConstant = b;
 	}
 
@@ -3802,6 +3916,99 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public boolean isToThrowExceptionOnInvalidAssumptions() {
 		return isToThrowExceptionOnInvalidAssumptions;
+	}
+
+	/**
+	 * This builder is used at {@link #initialize()} and
+	 * {@link #getAlgorithmAndAssetNetFromUserID(long)} in order
+	 * to create new instances of {@link AssetAwareInferenceAlgorithm}
+	 * @param assetAwareInferenceAlgorithmBuilder the assetAwareInferenceAlgorithmBuilder to set
+	 */
+	public void setAssetAwareInferenceAlgorithmBuilder(IAssetAwareInferenceAlgorithmBuilder algorithmBuilder) {
+		this.assetAwareInferenceAlgorithmBuilder = algorithmBuilder;
+	}
+
+	/**
+	 * This builder is used at {@link #initialize()} and
+	 * {@link #getAlgorithmAndAssetNetFromUserID(long)} in order
+	 * to create new instances of {@link AssetAwareInferenceAlgorithm}
+	 * @return the assetAwareInferenceAlgorithmBuilder
+	 */
+	public IAssetAwareInferenceAlgorithmBuilder getAssetAwareInferenceAlgorithmBuilder() {
+		return assetAwareInferenceAlgorithmBuilder;
+	}
+
+	/**
+	 * If this value is > 0, then {@link #setDefaultInitialQTableValue(double)} will
+	 * force the initial q values to be at most this value.
+	 * {@link #getQValuesFromScore(double)} and {@link #getScoreFromQValues(double)}
+	 * will be adjusted regarding change.
+	 * @param forcedInitialQValue the forcedInitialQValue to set
+	 */
+	public void setForcedInitialQValue(double forcedInitialQValue) {
+		this.forcedInitialQValue = forcedInitialQValue;
+	}
+
+	/**
+	 * If this value is > 0, then {@link #setDefaultInitialQTableValue(double)} will
+	 * force the initial q values to be at most this value.
+	 * {@link #getQValuesFromScore(double)} and {@link #getScoreFromQValues(double)}
+	 * will be adjusted regarding change.
+	 * @return the forcedInitialQValue
+	 */
+	public double getForcedInitialQValue() {
+		return forcedInitialQValue;
+	}
+
+	/**
+	 *  
+	 * We have Assets = b*log_c(q); 
+	 *  <br/><br/>
+	 * b := {@link #getCurrentCurrencyConstant()}<br/>
+	 * c := {@link #getCurrentLogBase()}<br/>
+	 * q := q-values (values stored in q-tables)<br/>
+	 * Assets := assets (values expected by the caller of this method)<br/>
+	 *  <br/><br/>
+	 * If we want to change the relationship to Assets = b*x*log_c(q'); 
+	 * with x > 1, so that q' < q maintaining Assets intact, then:
+	 *  <br/><br/>
+	 * b*x*log_c(q') = b*log_c(q);<br/>
+	 * x = log_c(q) / log_c(q')
+	 *  <br/><br/>
+	 * x := currencyMultiplier<br/>
+	 * q' := new values to be stored in q-tables : {@link #getForcedInitialQValue()}<br/>
+	 *  <br/><br/>
+	 *  This method changes the value of x.
+	 * @param currencyMultiplier the currencyMultiplier to set
+	 * @see #setDefaultInitialQTableValue(double)
+	 */
+	protected void setCurrencyConstantMultiplier(double currencyMultiplier) {
+		this.currencyMultiplier = currencyMultiplier;
+	}
+
+	/**
+	 * We have Assets = b*log_c(q); 
+	 *  <br/><br/>
+	 * b := {@link #getCurrentCurrencyConstant()}<br/>
+	 * c := {@link #getCurrentLogBase()}<br/>
+	 * q := q-values (values stored in q-tables)<br/>
+	 * Assets := assets (values expected by the caller of this method)<br/>
+	 *  <br/><br/>
+	 * If we want to change the relationship to Assets = b*x*log_c(q'); 
+	 * with x > 1, so that q' < q maintaining Assets intact, then:
+	 *  <br/><br/>
+	 * b*x*log_c(q') = b*log_c(q);<br/>
+	 * x = log_c(q) / log_c(q')
+	 *  <br/><br/>
+	 * x := currencyMultiplier<br/>
+	 * q' := new values to be stored in q-tables : {@link #getForcedInitialQValue()}<br/>
+	 *  <br/><br/>
+	 *  This method changes the value of x.
+	 * @return the currencyMultiplier
+	 * @see #setDefaultInitialQTableValue(double)
+	 */
+	protected double getCurrencyConstantMultiplier() {
+		return currencyMultiplier;
 	}
 
 

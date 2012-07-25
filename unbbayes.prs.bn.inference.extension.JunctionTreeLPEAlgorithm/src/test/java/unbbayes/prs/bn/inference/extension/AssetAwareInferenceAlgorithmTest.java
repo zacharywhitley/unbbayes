@@ -16,6 +16,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
 import unbbayes.prs.bn.AssetNode;
 import unbbayes.prs.bn.Clique;
+import unbbayes.prs.bn.DoublePrecisionProbabilisticTable;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
@@ -400,7 +401,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		
 		// prepare argument, which is input and output at the same moment
 		List<Map<INode, Integer>> inOutArgLPE = new ArrayList<Map<INode,Integer>>();
-		float minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		double minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
 		
 		Map<INode, Integer> lpes = inOutArgLPE.get(0);
 		assertNotNull(lpes);
@@ -424,7 +425,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		
 		// test conditional LPE = 110 if we assume E = e1. 
 		((AssetNode)assetQAlgorithm.getAssetNetwork().getNode("E")).addFinding(0);	// set evidence E = e1
-		assetQAlgorithm.runMinPropagation();
+		assetQAlgorithm.runMinPropagation(null);
 		// obtain LPE and minQ when E = e1
 		inOutArgLPE = new ArrayList<Map<INode,Integer>>();
 		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
@@ -536,7 +537,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		
 		// test conditional LPE = 90 if we assume D = d2. 
 		((AssetNode)assetQAlgorithm.getAssetNetwork().getNode("D")).addFinding(1);	// set evidence D = d2
-		assetQAlgorithm.runMinPropagation();
+		assetQAlgorithm.runMinPropagation(null);
 		// obtain LPE and minQ when D = d2
 		inOutArgLPE = new ArrayList<Map<INode,Integer>>();
 		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
@@ -1146,7 +1147,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		
 		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
 		assertNotNull(lpes);
-		assertTrue(lpes.size() == 3);
+		assertEquals(lpes.toString()+", min = "+  minQ , 3,lpes.size());
 		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("D")).intValue());	
 		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("E")).intValue());	
 		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("F")).intValue());	
@@ -1240,7 +1241,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 			Clique assetClone =  clonedAlgorithm.getAssetNetwork().getJunctionTree().getCliques().get(i);
 			for (int j = 0; j < probOrig.getProbabilityFunction().tableSize(); j++) {
 				assertEquals(probOrig.getProbabilityFunction().getValue(j), probClone.getProbabilityFunction().getValue(j), PROB_PRECISION_ERROR);
-				assertEquals(assetOrig.getProbabilityFunction().getValue(j), assetClone.getProbabilityFunction().getValue(j), ASSET_PRECISION_ERROR);
+				assertEquals(((DoublePrecisionProbabilisticTable)assetOrig.getProbabilityFunction()).getDoubleValue(j), ((DoublePrecisionProbabilisticTable)assetClone.getProbabilityFunction()).getDoubleValue(j), ASSET_PRECISION_ERROR);
 			}
 		}
 
@@ -1260,7 +1261,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 			Clique assetClone =  clonedAlgorithm.getAssetNetwork().getJunctionTree().getCliques().get(i);
 			for (int j = 0; j < probOrig.getProbabilityFunction().tableSize(); j++) {
 				assertEquals(probOrig.getProbabilityFunction().getValue(j), probClone.getProbabilityFunction().getValue(j), PROB_PRECISION_ERROR);
-				assertEquals(assetOrig.getProbabilityFunction().getValue(j), assetClone.getProbabilityFunction().getValue(j), ASSET_PRECISION_ERROR);
+				assertEquals(((DoublePrecisionProbabilisticTable)assetOrig.getProbabilityFunction()).getDoubleValue(j), ((DoublePrecisionProbabilisticTable)assetClone.getProbabilityFunction()).getDoubleValue(j), ASSET_PRECISION_ERROR);
 			}
 		}
 		

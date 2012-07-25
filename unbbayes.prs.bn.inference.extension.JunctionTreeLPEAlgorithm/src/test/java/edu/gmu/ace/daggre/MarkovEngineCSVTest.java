@@ -1,20 +1,17 @@
 /**
  * 
  */
-package edu.gmu.ace.daggre.io;
+package edu.gmu.ace.daggre;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import junit.framework.TestCase;
 import junit.framework.TestFailure;
@@ -22,50 +19,57 @@ import junit.framework.TestResult;
 import unbbayes.io.NetIO;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
-import unbbayes.prs.bn.Clique;
-import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
+import unbbayes.prs.exception.InvalidParentException;
 import au.com.bytecode.opencsv.CSVReader;
+import edu.gmu.ace.daggre.MarkovEngineImpl.InexistingQuestionException;
+import edu.gmu.ace.daggre.io.DAGGREQuestionReader;
 
 /**
  * @author Shou Matsumoto
  *
  */
-public class DAGGREQuestionsReaderDriver extends TestCase {
+public class MarkovEngineCSVTest extends TestCase {
 
 	public static final int CONFIG_SIZE = 6;
 
 //	private static final File csvFile = new File("examples/DAGGRE.csv");
 	
 	/**How many times to iterate test on the same file, in order to avoid background process to impact on time*/
-	private int maxIterations = 5;//5;
+	private int maxIterations = 3;//5;
 	
 	/** If two probability values are within an interval of + or - this value, then it is considered to be equalÅ@*/
-	private float probPrecisionError = 0.0005f;
+	private float probPrecisionError = 0.01f;
 
-	private boolean isToTestProbValues = true;
+	private boolean isToTestProbValues = false;
 
-	private boolean isToPropagateEvidence = false;
+	private boolean isToPropagateEvidence = true;
 	
-	private boolean isToUpdateAssets = false;
 	
-	private boolean isToCreateUserAssetNets = false;
+	private boolean isToCreateUserAssetNets = true;
 
-	private boolean isToPrintProbabilityValues = false;
+	private boolean isToPrintProbabilityValues = true;
 	
-	private boolean isToObtainCliqueSizes = true;
+	/** Probability to read a line in CSV. set to 1 if you want to read all lines of CSV file */
+	private double probabilityToPickCSVLine = 0.00055d;
+	
 	
 	private File csvFile = new File("examples/DAGGRE.csv");;
 
-	private File[] netFilesToTest = new File[] {new File(csvFile.getParent(),"DAGGRE1.net"), new File(csvFile.getParent(),"DAGGRE5p5.net")  };
+//	private File[] netFilesToTest = new File[] {new File(csvFile.getParent(),"DAGGRE1.net"), new File(csvFile.getParent(),"DAGGRE5p5.net")  };
+	private File[] netFilesToTest = new File[] { new File(csvFile.getParent(),"DAGGRE5p5.net"),new File(csvFile.getParent(),"DAGGRE1.net")  };
 	
 	/**
 	 * config of values of isToTestProbValues, isToPropagateEvidence, isToUpdateAssets, isToCreateUserAssetNets, isToPrintProbabilityValues, isToObtainCliqueSizes respectively;
 	 * must match the size {@link #CONFIG_SIZE}
 	 */
-	private boolean[][] configs = new boolean[][] {{false, false, false, false, false, false}, {false, true, false, false, false, true}};
+	private boolean[][] configs = new boolean[][] {{false, true, true, true, false, false}, {false, true, true, true, false, false}};
+
+	private MarkovEngineImpl engine =  (MarkovEngineImpl)MarkovEngineImpl.getInstance(2, 100, 1000, false);;
+	
+//	private boolean[][] configs = new boolean[][] {{false, false, false, false, false, false}, {false, true, false, false, false, true}};
 
 
 
@@ -79,7 +83,7 @@ public class DAGGREQuestionsReaderDriver extends TestCase {
 	/**
 	 * @param name
 	 */
-	public DAGGREQuestionsReaderDriver(String name) {
+	public MarkovEngineCSVTest(String name) {
 		super(name);
 	}
 
@@ -88,6 +92,7 @@ public class DAGGREQuestionsReaderDriver extends TestCase {
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
+		engine.initialize();
 	}
 
 	/* (non-Javadoc)
@@ -95,6 +100,92 @@ public class DAGGREQuestionsReaderDriver extends TestCase {
 	 */
 	protected void tearDown() throws Exception {
 		super.tearDown();
+	}
+	
+	public class MarkovEngineQuestionReader extends DAGGREQuestionReader {
+
+		/* (non-Javadoc)
+		 * @see edu.gmu.ace.daggre.io.DAGGREQuestionReader#load(java.io.File, unbbayes.prs.bn.ProbabilisticNetwork, unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm, java.util.Map)
+		 */
+		@Override
+		public long load(File csv, ProbabilisticNetwork net, AssetAwareInferenceAlgorithm algorithm, Map<Integer, AssetNetwork> usersMap) throws IOException, InvalidParentException {
+
+			// initial assertion
+			if (csv == null || !csv.exists() || net == null || net.getNodeCount() == 0) {
+				return 0;
+			}
+			if (usersMap == null) {
+				// userMap is not going to be an output parameter, but let's at least reuse the map's name
+				usersMap = new HashMap<Integer, AssetNetwork>();
+			}
+
+			long transactionKey = Long.MIN_VALUE;
+			if (!isToPropagate()) {
+				// 1 transaction for all trades
+				transactionKey = engine.startNetworkActions();
+			}
+			
+			// iterate on csv
+			CSVReader reader = new CSVReader(new FileReader(csv));	// classes of open csv
+			String [] nextLine;	// the line read
+			long lineCounter = 0;	// how many lines were read
+			for (lineCounter = 0; (nextLine = reader.readNext()) != null ; lineCounter++) {
+				if (Math.random() > probabilityToPickCSVLine) {
+					continue;
+				}
+				long timestamp = System.currentTimeMillis();
+		        
+				if (isToPropagate()) {
+					// 1 transaction for each trade
+					transactionKey = engine.startNetworkActions();
+				}
+				
+				// nextLine[] is an array of values from the line
+				// extract columns of interest
+		    	Integer id = Integer.valueOf(nextLine[0]);		// question ID
+		        Integer userID = Integer.valueOf(nextLine[2]);	// user id
+		        float probTrue = Float.valueOf(nextLine[3]);	// edit (i.e. probability of the question to be true)
+		        
+		        // check consistency of probTrue
+		        if (probTrue <= 0 || probTrue >= 1) {
+		        	throw new IllegalStateException("User " + userID + " bet " + probTrue + " on question " + id);
+		        }
+		        
+		        List<Float> newValues = new ArrayList<Float>();
+		        newValues.add(probTrue); newValues.add(1-probTrue);
+				try {
+					engine.addTrade(transactionKey, new Date(), "User " + userID + " bet " + probTrue + " on question " + id, userID, id, newValues , null, null, false);
+				} catch (Exception e) {
+					e.printStackTrace();
+					continue;
+				}
+		        
+		        if (isToPropagate()) {
+					// 1 transaction for each trade
+					try {
+						engine.commitNetworkActions(transactionKey);
+					} catch (Exception e) {
+						e.printStackTrace();
+						continue;
+					}
+				}
+		        
+		        System.out.println("Time to process line " + lineCounter + " of " + csv.getName() +": " + (System.currentTimeMillis() - timestamp) + "ms.");
+		        System.out.println("User " + userID + ", question " + id +", prob = " + probTrue + ", Mem(MB) = " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/1048576);
+		    }
+			
+			if (!isToPropagate()) {
+				// 1 transaction for all trades
+				try {
+					engine.commitNetworkActions(transactionKey);
+				}catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			
+			return lineCounter;
+		}
+		
 	}
 	
 	/**
@@ -123,10 +214,8 @@ public class DAGGREQuestionsReaderDriver extends TestCase {
 				// change config
 				isToTestProbValues = (configs[0].length > 0)?configs[currentFileIndex][0]:false;
 				isToPropagateEvidence = (configs[0].length > 1)?configs[currentFileIndex][1]:false;
-				isToUpdateAssets = (configs[0].length > 2)?configs[currentFileIndex][2]:false;
 				isToCreateUserAssetNets = (configs[0].length > 3)?configs[currentFileIndex][3]:false;
 				isToPrintProbabilityValues = (configs[0].length > 4)?configs[currentFileIndex][4]:false;
-				isToObtainCliqueSizes = (configs[0].length > 5)?configs[currentFileIndex][5]:false;
 			}
 			
 			// assert existence of files
@@ -135,17 +224,11 @@ public class DAGGREQuestionsReaderDriver extends TestCase {
 			
 			// iterate maxIterations time, because background process can change execution time.
 			for (int currentIteration = 0; currentIteration < maxIterations; currentIteration++) {
-				System.gc();
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-				}
 				
 				long startTime = System.currentTimeMillis();	// for counting the time to load network file
 				
 				// instantiate this here, so that we use a clean reader at each maxIterations
-				DAGGREQuestionReader daggreQuestionReader = new DAGGREQuestionReader();
+				MarkovEngineQuestionReader daggreQuestionReader = new MarkovEngineQuestionReader();
 				daggreQuestionReader.setToPropagate(isToPropagateEvidence);
 				daggreQuestionReader.setToCreateUserAssetNet(isToCreateUserAssetNets);
 				
@@ -158,7 +241,7 @@ public class DAGGREQuestionsReaderDriver extends TestCase {
 					e.printStackTrace();
 					fail (e.getMessage());
 				}
-				System.out.println("Iteration " + currentIteration + " of " + maxIterations 
+				System.out.println("Iteration " + currentIteration  + " of " + maxIterations
 						+ ", loaded network = " 
 						+ netFile.getName() 
 						+ ", time to load network = " + (System.currentTimeMillis() - startTime) + " ms, size of network = "
@@ -167,78 +250,50 @@ public class DAGGREQuestionsReaderDriver extends TestCase {
 				assertTrue(net.getNodeCount() > 0);
 				
 				
-				// algorithm to propagate probabilities
-				JunctionTreeAlgorithm junctionTreeAlgorithm = new JunctionTreeAlgorithm(net);
-				assertNotNull(junctionTreeAlgorithm);
+				startTime = System.currentTimeMillis();	// for counting the time to init network
 				
-				// enable soft evidence by using jeffrey rule in likelihood evidence w/ virtual nodes.
-//			junctionTreeAlgorithm.setLikelihoodExtractor(JeffreyRuleLikelihoodExtractor.newInstance() );
+				// reset engine
+				engine.initialize();
+				long transactionKey = engine.startNetworkActions();
 				
-				// main algorithm
-				AssetAwareInferenceAlgorithm algorithm = (AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm);
-				algorithm.setToUpdateOnlyEditClique(true);
-				assertNotNull(algorithm);
-				algorithm.setToPropagateForGlobalConsistency(false);	// do not calculate LPE
-				algorithm.setToUpdateAssets(isToUpdateAssets);
-				
-				for (Node node : algorithm.getProbabilityPropagationDelegator().getNetwork().getNodes()) {
+				// generate nodes
+				for (Node node : net.getNodes()) {
 					float sum = (((TreeVariable)node).getMarginalAt(0) + ((TreeVariable)node).getMarginalAt(1));	// sum must be 1 (with some margin for imprecision)
 					assertTrue(node.getName() + ", sum = " + sum, ((0 - probPrecisionError) < sum) && (sum < (0 + probPrecisionError)) );
+					engine.addQuestion(transactionKey, new Date(), Long.parseLong(node.getName()), node.getStatesSize(), null);
+					System.out.println("Added node " + Long.parseLong(node.getName()));
 				}
 				
-				startTime = System.currentTimeMillis();	// for counting the time to compile network
-				
-				
-				// compile network
-				if (isToPropagateEvidence) {
-					algorithm.run();
-					// obtain the quantity of cliques and their sizes
-					if (isToObtainCliqueSizes) {
-						// mapping from clique size (in our case, it is the quantity of variables in the clique, because nodes are assumed to be boolean) to cliques with such size
-						HashMap<Integer, Set<Clique>> sizeToCliquesMap = new HashMap<Integer, Set<Clique>>();
-						// iterate over all cliques and fill mapping
-						for (Clique clique : junctionTreeAlgorithm.getJunctionTree().getCliques()) {
-							// extract size of clique
-							Integer sizeOfClique = clique.getProbabilityFunction().getVariablesSize();
-							// see if it is mapped
-							Set<Clique> cliquesWithThisSize = sizeToCliquesMap.get(sizeOfClique);
-							if (cliquesWithThisSize == null) {
-								// not mapped yet. Create object to fill mapping
-								cliquesWithThisSize = new HashSet<Clique>();
-							}
-							// add current clique to the mapping
-							cliquesWithThisSize.add(clique);
-							// fill mapping
-							sizeToCliquesMap.put(sizeOfClique, cliquesWithThisSize);
-						}
-						// prepare list of keys of sizeToCliquesMap (i.e. sizes of cliques), so that we can order it afterward
-						List<Integer> cliqueSizeList = new ArrayList<Integer>(sizeToCliquesMap.keySet());
-						Collections.sort(cliqueSizeList, new Comparator<Integer>() {
-							/** comparator for sorting the clique size in inverse (i.e. descending) order */
-							public int compare(Integer o1, Integer o2) {
-								return o2.compareTo(o1);	// just do inverse comparison
-							}
-						});
-						for (Integer cliqueSize : cliqueSizeList) {
-							// for now, just print the sizes
-							System.out.println("Quantities of cliques with size " + cliqueSize + ": " + sizeToCliquesMap.get(cliqueSize).size());
-						}
+				// generate edges
+				for (Node node : net.getNodes()) {
+					List<Long> parentQuestionIds = new ArrayList<Long>(node.getParents().size());
+					for (Node parent : node.getParents()) {
+						parentQuestionIds.add(Long.parseLong(parent.getName()));
 					}
-				} else {
-					// force nodes to start with a marginal list.
-					for (Node n : net.getNodes()) {
-						TreeVariable tv = (TreeVariable) n;
-						tv.initMarginalList();
-						tv.setMarginalAt(0, .5f);
-						tv.setMarginalAt(1, .5f);
+					if (parentQuestionIds.isEmpty()) {
+						continue;
+					}
+					System.out.println("Adding edge " + parentQuestionIds + " -> " + Long.parseLong(node.getName()));
+					try {
+						engine.addQuestionAssumption(transactionKey, new Date(), Long.parseLong(node.getName()), parentQuestionIds , null);
+					} catch (InexistingQuestionException e) {
+						e.printStackTrace();
+						throw e;
 					}
 				}
+				
+				engine.commitNetworkActions(transactionKey);
+				
 				
 				System.out.println("Iteration " + currentIteration 
-						+ ", time to compile network = " + (System.currentTimeMillis() - startTime) + " ms.");
+						+ ", time to create network = " + (System.currentTimeMillis() - startTime) + " ms.");
+				
 				if (isToTestProbValues) {
-					for (Node node : algorithm.getProbabilityPropagationDelegator().getNetwork().getNodes()) {
-						float sum = (((TreeVariable)node).getMarginalAt(0) + ((TreeVariable)node).getMarginalAt(1));	// sum must be 1 (with some margin for imprecision)
+					for (Node node : net.getNodes()) {
+						List<Float> probList = engine.getProbList(Long.valueOf(node.getName()), null, null);
+						assertTrue("State 0 = " + probList.get(0), probList.get(0) >= 0 && probList.get(0) <= 1);
+						assertTrue("State 1 = " + probList.get(1), probList.get(1) >= 0 && probList.get(1) <= 1);
+						float sum = probList.get(0) + probList.get(1);	// sum must be 1 (with some margin for imprecision)
 						assertTrue(node.getName() + ", sum = " + sum, ((1 - probPrecisionError) < sum) && (sum < (1 + probPrecisionError)) );
 					}
 				}
@@ -246,92 +301,59 @@ public class DAGGREQuestionsReaderDriver extends TestCase {
 				startTime = System.currentTimeMillis();	// for counting the time to load csv and edit net
 				
 				long processedEdits = 0;	// quantity of processed edits
-				HashMap<Integer, AssetNetwork> userMap = new HashMap<Integer, AssetNetwork>();	// users making edits (starts from 0)
 				// load csv and process edits
 				try {
 					processedEdits = daggreQuestionReader.load(
 							csvFile, // file containing edits
 							net, 	// edits will be performed on this net
-							algorithm,	// algorithm for processing edit
-							userMap	// users
+							null,	// algorithm for processing edit
+							null	// users
 					);
 				} catch (Exception e) {
 					e.printStackTrace();
 					fail(e.getMessage());
 				}
 				assertTrue(processedEdits > 0);
-				if (isToCreateUserAssetNets) {
-					assertFalse(userMap.isEmpty());
-				}
 				
 				System.out.println("Iteration " + currentIteration 
 						+ ", loaded csv = " + csvFile.getName() 
 						+ ", processed edits = " + processedEdits
 						+ ", time to process = " + (System.currentTimeMillis() - startTime) + " ms, number of users = "
-						+ userMap.size()
+						+ engine.getUserToAssetAwareAlgorithmMap().keySet().size()
 						+ ", used memory = " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) + " bytes.");
 				
 				if(isToTestProbValues) {
-					// collect last edits
-					CSVReader reader = null;
-					try {
-						reader = new CSVReader(new FileReader(csvFile)); // classes of open csv
-					} catch (FileNotFoundException e) {
-						fail(e.getMessage());
-						e.printStackTrace();
-					}	
-					String [] nextLine;	// the line read
-					Map<Integer, Float> lastEditMap = new HashMap<Integer, Float>();
-					try {
-						while ((nextLine = reader.readNext()) != null) {
-							// csv is assumed to be ordered by time, so the last edit comes last
-							lastEditMap.put(Integer.valueOf(
-									nextLine[0]), 				//1st element is the question ID
-									Float.valueOf(nextLine[3])	//3rd element is the prob value
-								);
-						}
-					} catch (IOException e) {
-						e.printStackTrace();
-						fail(e.getMessage());
-					}
 					
 					if (isToPrintProbabilityValues) {
 						System.out.println("\n**** Probabilities, file = " + netFile.getName() + ", maxIterations "+ currentIteration +" ****");
 					}
 					
 					// assuming that the name of the nodes are the question IDs (and ids are integers), convert the name of nodes (string) to integers
-					List<Integer> sortedQuestionIDList = new ArrayList<Integer>();
+					List<Long> sortedQuestionIDList = new ArrayList<Long>();
 					for (String key : net.getNodeIndexes().keySet()) {
-						sortedQuestionIDList.add(Integer.valueOf(key));
+						sortedQuestionIDList.add(Long.valueOf(key));
 					}
 					
 					// print probability of each network, in order
 					Collections.sort(sortedQuestionIDList);
-					for (Integer id : sortedQuestionIDList) {
+					for (Long id : sortedQuestionIDList) {
 						assertTrue(id.toString(),id >= 0);
 						
 						// extract node from question id, still assuming that name of nodes are ids
 						TreeVariable node = (TreeVariable)net.getNode(id.toString());	
+						List<Float> probList = engine.getProbList(id, null, null);
 						
 						// print prob
 						if (isToPrintProbabilityValues) {
-							System.out.println(node.getName() + " [false,true] = [" + node.getMarginalAt(0) + " , "+ node.getMarginalAt(1) + "]");
+							System.out.println(node.getName() + " [false,true] = [" + probList.get(0) + " , "+ probList.get(1) + "]");
 						}
 						
 						// prob value assertions, assuming that questions are boolean variables whose states are [false, true]
 						if (isToTestProbValues){
-							assertEquals("false", node.getStateAt(0));
-							assertEquals("true", node.getStateAt(1));
-							assertTrue(id + ", false = " + node.getMarginalAt(0), node.getMarginalAt(0) >= 0);
-							assertTrue(id + ", true = " + node.getMarginalAt(1), node.getMarginalAt(1) >= 0);
-							if (lastEditMap.get(id) != null) {
-								assertTrue(id + ", false = " + node.getMarginalAt(0), (((1-lastEditMap.get(id)) - probPrecisionError) < node.getMarginalAt(0)) && (node.getMarginalAt(0) < ((1-lastEditMap.get(id)) + probPrecisionError)));
-								assertTrue(id + ", true = " + node.getMarginalAt(1), ((lastEditMap.get(id) - probPrecisionError) < node.getMarginalAt(1)) && (node.getMarginalAt(1) < (lastEditMap.get(id) + probPrecisionError)));
-							} else {
-								System.err.println("Node " + id + " was never editted...");
-							}
-							float sum = (node.getMarginalAt(0) + node.getMarginalAt(1));	// sum must be 1 (with some margin for imprecision)
-							assertTrue(id + ", sum = " + sum, ((1 - probPrecisionError) < sum) && (sum < (1 + probPrecisionError)) );
+							assertTrue(id + ", state 0 = " + probList.get(0), probList.get(0) >= 0);
+							assertTrue(id + ", state 1 = " + probList.get(1), probList.get(1) >= 0);
+							float sum = (probList.get(0) + probList.get(1));	// sum must be 1 (with some margin for imprecision)
+							assertTrue(id +", prob = [" + probList.get(0)+ ", " + probList.get(1)  +  "], sum = " + sum, ((1 - probPrecisionError) < sum) && (sum < (1 + probPrecisionError)) );
 						}
 						
 					}
@@ -355,7 +377,7 @@ public class DAGGREQuestionsReaderDriver extends TestCase {
 	 * {isToTestProbValues, isToPropagateEvidence, isToUpdateAssets, isToCreateUserAssetNets, isToPrintProbabilityValues, isToObtainCliqueSizes}}
 	 */
 	public static void main(String[] args) {
-		DAGGREQuestionsReaderDriver test = new DAGGREQuestionsReaderDriver("testCSVReading");
+		MarkovEngineCSVTest test = new MarkovEngineCSVTest("testCSVReading");
 		
 		if (args.length == (test.getNetFilesToTests().length * 5) ) {	// 10 by default
 			boolean[][] configs = new boolean[2][CONFIG_SIZE];
