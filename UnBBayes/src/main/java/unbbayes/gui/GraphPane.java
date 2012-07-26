@@ -89,6 +89,9 @@ import unbbayes.util.extension.manager.CorePluginNodeManager;
  */
 public class GraphPane extends UCanvas implements KeyListener {
 
+	/** Move x pixels to the new node. */
+	private static final int MOVE_X_COPY = 100;
+
 	private static final int DEFAULT_DIMENSION = 1500;
 
 	private static final int DEFAULT_WIDTH = 600;
@@ -220,29 +223,18 @@ public class GraphPane extends UCanvas implements KeyListener {
 				List<Node> group = (List<Node>) fromClipboard;
 
 				pasteAndDrawNodes(group);
-				// for (Node node : group) {
-				// Debug.println("Pegar " + node.toString());
-				// }
-
 			} catch (Exception ex) {
 				Debug.println(GraphPane.class, "Error pasting", ex);
 			}
-
-			// Clone elements
-
-			// Add elements to the network
-			// Capture position of the mouse
-
-			// Draw the loaded network in mouse position
 		}
 	}
 
 	private void pasteAndDrawNodes(List<Node> group) {
 
-		// Nodes to copy
-		List<Node> mainNodesToCopy = new ArrayList<Node>();
+		// Nodes to copy are noly parents.
+		List<Node> parentNodesToCopy = new ArrayList<Node>();
 
-		// Find root nodes (no parents) and nodes without selected parents
+		// Find parent nodes or nodes without selected parents
 		for (Node node : group) {
 			List<Node> parents = node.getParents();
 
@@ -255,18 +247,19 @@ public class GraphPane extends UCanvas implements KeyListener {
 					break;
 				}
 			}
-
+			// If node has parents then continue.
 			if (hasParents) {
 				continue;
 			}
 
-			mainNodesToCopy.add(node);
+			parentNodesToCopy.add(node);
 		}
 
 		HashMap<Node, Node> sharedNodes = new HashMap<Node, Node>();
+
 		// copy nodes
 		// FIXME this for could be inside the last for
-		for (Node rootNode : mainNodesToCopy) {
+		for (Node rootNode : parentNodesToCopy) {
 
 			// No root identified.
 			if (rootNode == null) {
@@ -277,61 +270,72 @@ public class GraphPane extends UCanvas implements KeyListener {
 			// Des-select initial node.
 			getNodeUShape(rootNode).setState(UShape.STATE_NONE, null);
 
-		
-
 			// Clone the root and their children recursively
-			if (rootNode instanceof ProbabilisticNode) {				
-				ProbabilisticNode probNode = (ProbabilisticNode) rootNode;
-
-				addClonedNode(probNode, sharedNodes);
-
-			}
-			// TODO support for other kind root nodes such as utility.
+			addClonedNode(rootNode, sharedNodes);
 		}
 
 	}
 
-	private Node addClonedNode(final Node probNode,
+	/**
+	 * Create a new node based on another one. It clone the node's children as
+	 * well recursively.
+	 * 
+	 * @param originalNode
+	 *            node to copy
+	 * @param sharedNodes
+	 *            this attribute is created in order to not duplicate nodes with
+	 *            some network topologies.
+	 * @return a new cloned node.
+	 */
+	private Node addClonedNode(final Node originalNode,
 			HashMap<Node, Node> sharedNodes) {
-		Debug.println("Cloning "+probNode);
-		ProbabilisticNode newNode;
-		// Node newNode = controller.insertProbabilisticNode(mouseX, mouseY);
-		if (sharedNodes.get(probNode) == null) {
-			newNode = (ProbabilisticNode) controller.insertProbabilisticNode(
-					probNode.getPosition().getX() + 100, probNode.getPosition()
-							.getY() + 100);
-			sharedNodes.put(probNode, newNode);
+		Debug.println("Cloning " + originalNode);
+
+		// A new cloned node to create.
+		Node clonedNode;
+
+		// Validate if the node is new.
+		if (sharedNodes.get(originalNode) == null) {
+
+			// TODO extend to any type of node.
+			clonedNode = (ProbabilisticNode) controller
+					.insertProbabilisticNode(originalNode.getPosition().getX()
+							+ MOVE_X_COPY,
+							originalNode.getPosition().getY() + 100);
+
+			// Create a new shape for the cloned node.
+			UShape shape = new UShapeProbabilisticNode(this, clonedNode,
+					(int) clonedNode.getPosition().x - clonedNode.getWidth()
+							/ 2, (int) clonedNode.getPosition().y
+							- clonedNode.getHeight() / 2,
+					clonedNode.getWidth(), clonedNode.getHeight());
+			addShape(shape);
+			shape.setState(UShape.STATE_SELECTED, null);
+
+			// add new node to shared nodes.
+			sharedNodes.put(originalNode, clonedNode);
 		} else {
-			newNode = (ProbabilisticNode) sharedNodes.get(probNode);
-			return newNode;
+			clonedNode = sharedNodes.get(originalNode);
+			return clonedNode;
 		}
 
-		// set attributes
-		String newName = probNode.getName() + "_1";
+		// Set general attributes
+		String newName = originalNode.getName() + "_1";
 		newName = getUniqueName(newName);
-		newNode.setName(newName);
-		newNode.setDescription(probNode.getDescription());
+		clonedNode.setName(newName);
+		clonedNode.setDescription(originalNode.getDescription());
 
-		UShapeProbabilisticNode shape = new UShapeProbabilisticNode(this,
-				newNode,
-				(int) newNode.getPosition().x - newNode.getWidth() / 2,
-				(int) newNode.getPosition().y - newNode.getHeight() / 2,
-				newNode.getWidth(), newNode.getHeight());
-		addShape(shape);
-		shape.setState(UShape.STATE_SELECTED, null);
-
-		// /// Copy CPT Table ///
 		// Clear the default states
-		newNode.removeStates();
+		clonedNode.removeStates();
 
 		// Copy states
-		int numStates = probNode.getStatesSize();
+		int numStates = originalNode.getStatesSize();
 		for (int i = 0; i < numStates; i++) {
-			newNode.appendState(probNode.getStateAt(i));
+			clonedNode.appendState(originalNode.getStateAt(i));
 		}
 
-		// add children
-		List<Node> children = probNode.getChildren();
+		// add children recursively.
+		List<Node> children = originalNode.getChildren();
 		// Validate that every children is selected
 		for (Node childNode : children) {
 
@@ -345,14 +349,15 @@ public class GraphPane extends UCanvas implements KeyListener {
 			Node clonedChild = addClonedNode(childNode, sharedNodes);
 
 			try {
-				newNode.addChildNode(childNode);
+				clonedNode.addChildNode(childNode);
 
 				Debug.println("Line between " + newName + " and " + clonedChild);
-				// Add a line between parent and new child.
-				UShapeLine line = new UShapeLine(this, getNodeUShape(newNode),
-						getNodeUShape(clonedChild));
 
-				Edge edge = new Edge(newNode, clonedChild);
+				// Add a line between parent and new child.
+				UShapeLine line = new UShapeLine(this,
+						getNodeUShape(clonedNode), getNodeUShape(clonedChild));
+
+				Edge edge = new Edge(clonedNode, clonedChild);
 				line.setEdge(edge);
 
 				line.setLearningLineSelection(false);
@@ -365,8 +370,7 @@ public class GraphPane extends UCanvas implements KeyListener {
 			}
 		}
 
-		// showCPT(newNode);
-		return newNode;
+		return clonedNode;
 
 	}
 
@@ -893,8 +897,8 @@ public class GraphPane extends UCanvas implements KeyListener {
 			}
 		}
 
-		// TODO stop using if-instanceof structure and start using object
-		// binding to a UShape builder.
+		// FIXME stop using if-instanceof structure and start using object
+		// binding to a UShape builder. It could be changen by a factory.
 		if (shape == null) {
 			// if we could not find a plugin node, start testing ordinal nodes
 			if (newNode instanceof ContinuousNode) {
