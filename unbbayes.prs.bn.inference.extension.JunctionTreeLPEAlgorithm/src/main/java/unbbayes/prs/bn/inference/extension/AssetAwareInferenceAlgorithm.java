@@ -5,6 +5,7 @@ package unbbayes.prs.bn.inference.extension;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -685,19 +686,18 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		ProbabilisticNetwork bayesNet = (ProbabilisticNetwork) this.getNetwork();
 		SingleEntityNetwork  assetNet = this.getAssetNetwork();
 		
-		// add product of probabilities and assets of cliques
-		for (int i = 0; i < assetNet .getJunctionTree().getCliques().size(); i++) {
-			Clique assetClique = assetNet.getJunctionTree().getCliques().get(i) ;
-			Clique probClique  = bayesNet.getJunctionTree().getCliques().get(i) ;			
-			for (int j = 0; j < assetClique.getProbabilityFunction().tableSize(); j++) {
-				if (assetClique.getProbabilityFunction().getDoubleValue(j) <= 0f) {
-					continue;
-				}
-				double value = probClique.getProbabilityFunction().getValue(j) 
-				             * getqToAssetConverter().getScoreFromQValues(assetClique.getProbabilityFunction().getDoubleValue(j));
-				ret +=  value;
-				this.notifyExpectedAssetCellListener(probClique, assetClique, j, j, value);
-			}			
+		// initial assertion
+		if (assetNet.getJunctionTree() == null
+				|| assetNet.getJunctionTree().getCliques() == null
+				||  bayesNet.getJunctionTree() == null
+				||  bayesNet.getJunctionTree().getCliques() == null) {
+			throw new IllegalStateException("Probabilistic network or asset network of " + assetNet +  " is not correctly initialized.");
+		}
+		
+		// guarantee that quantity of cliques matches
+		if (assetNet.getJunctionTree().getCliques().size() !=  bayesNet.getJunctionTree().getCliques().size()) {
+			throw new IllegalStateException("Probabilistic network has " + bayesNet.getJunctionTree().getCliques().size()
+					+ " cliques, but asset network has " + assetNet.getJunctionTree().getCliques().size() + " cliques.");
 		}
 		
 		/*
@@ -707,27 +707,54 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		 * if we convert the set of prob separators to ArrayList, it is possible to
 		 * search for prob separators using asset separators as argument.
 		 */
-		List<Separator> listOfSeparator = new ArrayList<Separator>( bayesNet.getJunctionTree().getSeparators() );
+		List<Separator> listOfProbSeparator = new ArrayList<Separator>( bayesNet.getJunctionTree().getSeparators() );
 		
-		// subtracts the product of probabilities and assets of separators 
-		for (Separator assetSeparator : assetNet.getJunctionTree().getSeparators()) {
-			Separator probSeparator = listOfSeparator.get(listOfSeparator.indexOf(assetSeparator));
-			if (probSeparator.getNodes() == null || probSeparator.getNodes().isEmpty()
-					|| probSeparator.getProbabilityFunction().getVariablesSize() <= 0 
-					|| probSeparator.getProbabilityFunction().tableSize() <= 0) {
-				// this is an empty separator, so it has 
-				double value =  getqToAssetConverter().getScoreFromQValues(getEmptySeparatorsQValue());
-				ret -= value;
-				this.notifyExpectedAssetCellListener(probSeparator, assetSeparator, -1, -1, value);
+		// extract iterators of cliques and separators, so that we can add cliques and subtract separators alternately
+		// so that we avoid making ret to become too huge
+		Iterator<Clique> assetCliqueIterator = assetNet.getJunctionTree().getCliques().iterator();
+		Iterator<Clique> probCliqueIterator = bayesNet.getJunctionTree().getCliques().iterator();
+		Iterator<Separator> assetSeparatorIterator = assetNet.getJunctionTree().getSeparators().iterator();
+		
+		// at this point, assetCliqueIterator and probCliqueIterator have same size and supposedly have same ordering
+		while (assetCliqueIterator.hasNext() || assetSeparatorIterator.hasNext()) {
+			if (assetCliqueIterator.hasNext()) {
+				// add product of probabilities and assets of cliques , 
+				Clique assetClique = assetCliqueIterator.next();
+				Clique probClique  = probCliqueIterator.next();			
+				for (int j = 0; j < assetClique.getProbabilityFunction().tableSize(); j++) {
+					if (assetClique.getProbabilityFunction().getDoubleValue(j) <= 0f) {
+						continue;
+					}
+					double value = probClique.getProbabilityFunction().getValue(j) 
+					* getqToAssetConverter().getScoreFromQValues(assetClique.getProbabilityFunction().getDoubleValue(j));
+					ret +=  value;
+					this.notifyExpectedAssetCellListener(probClique, assetClique, j, j, value);
+				}			
 			}
-			for (int i = 0; i < assetSeparator.getProbabilityFunction().tableSize(); i++) {	
-				if (assetSeparator.getProbabilityFunction().getDoubleValue(i) <= 0f) {
-					continue;
+			if (assetSeparatorIterator.hasNext()) {
+				// subtracts the product of probabilities and assets of separators 
+				Separator assetSeparator = assetSeparatorIterator.next();
+				Separator probSeparator = listOfProbSeparator.get(listOfProbSeparator.indexOf(assetSeparator));
+				if (probSeparator.getNodes() == null || probSeparator.getNodes().isEmpty()
+						|| probSeparator.getProbabilityFunction().getVariablesSize() <= 0 
+						|| probSeparator.getProbabilityFunction().tableSize() <= 0) {
+					// this is an empty separator, so it has 
+					double value =  getqToAssetConverter().getScoreFromQValues(getEmptySeparatorsQValue());
+					ret -= value;
+					this.notifyExpectedAssetCellListener(probSeparator, assetSeparator, -1, -1, value);
 				}
-				double value =  probSeparator.getProbabilityFunction().getValue(i) 
-		           * getqToAssetConverter().getScoreFromQValues(assetSeparator.getProbabilityFunction().getDoubleValue(i)) ;
-				ret -= value;
-				this.notifyExpectedAssetCellListener(probSeparator, assetSeparator, i, i, value);
+				for (int i = 0; i < assetSeparator.getProbabilityFunction().tableSize(); i++) {	
+					if (assetSeparator.getProbabilityFunction().getDoubleValue(i) <= 0f) {
+						continue;
+					}
+					double value =  probSeparator.getProbabilityFunction().getValue(i) 
+					* getqToAssetConverter().getScoreFromQValues(assetSeparator.getProbabilityFunction().getDoubleValue(i)) ;
+					ret -= value;
+					this.notifyExpectedAssetCellListener(probSeparator, assetSeparator, i, i, value);
+				}
+			}
+			if (Double.isInfinite(ret)) {
+				throw new ZeroAssetsException("Overflow when calculating expected assets of user " + assetNet);
 			}
 		}
 		

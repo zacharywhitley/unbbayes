@@ -414,7 +414,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 								}
 							}
 							// redo all trades using the history
-							if (!action.isStructureChangeAction()) {
+							if (this.isToExecuteAction(action)) {
 								// actions with action.isStructureChangeAction() == false are supposedly the ones changing probabilities/assets and not changing structure
 								action.execute();
 								// this is not an ordinal execution of the action, so do not update attribute whenExecutedFirst.
@@ -442,6 +442,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public void revert() throws UnsupportedOperationException {
 			throw new UnsupportedOperationException("Cannot revert a network rebuild action.");
 		}
+		/** By overwriting this method, you can control which actions are executed with assets changes */
+		protected boolean isToExecuteAction(NetworkAction action) { return !action.isStructureChangeAction(); }
 		public Date getWhenCreated() { return whenCreated; }
 		/** This action reboots the network, but does not change the structure by itself */
 		public boolean isStructureChangeAction() { return false; }
@@ -457,6 +459,47 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirst = whenExecutedFirst; }
 		/** This is a filter used when reverting trades */
 		public Date getTradesStartingWhen() { return tradesStartingWhen; }
+	}
+	
+	/**
+	 * This is an network action for {@link MarkovEngineImpl#revertTrade(long, Date, Date, Long)}.
+	 * The only difference to {@link RebuildNetworkAction} is that
+	 * {@link RebuildNetworkAction#execute()} will reset the state
+	 * of {@link MarkovEngineImpl}, and
+	 * {@link RebuildNetworkAction#isToExecuteAction(NetworkAction)} will return true
+	 * to all actions (so that actions adding new nodes or edges are also executed).
+	 * @author Shou Matsumoto
+	 */
+	public class RevertTradeNetworkAction extends RebuildNetworkAction {
+		/** Default constructor initializing fields */
+		public RevertTradeNetworkAction(long transactionKey, Date whenCreated, Date tradesStartingWhen, Long questionId) {
+			super(transactionKey, whenCreated, tradesStartingWhen, questionId);
+		}
+		/** @see edu.gmu.ace.daggre.MarkovEngineImpl.RebuildNetworkAction#execute() */
+		public void execute() { 
+			// reset network
+			ProbabilisticNetwork net = getProbabilisticNetwork();
+			synchronized (getDefaultInferenceAlgorithm()) {
+				synchronized (net) {
+					ArrayList<Node> nodesToRemove = new ArrayList(net.getNodes());
+					for (Node node : nodesToRemove) {
+						net.removeNode(node);
+					}
+					try {
+						net.setJunctionTree(net.getJunctionTreeBuilder().buildJunctionTree(net));
+					} catch (InstantiationException e) {
+						throw new RuntimeException(e);
+					} catch (IllegalAccessException e) {
+						throw new RuntimeException(e);
+					}
+					// TODO redo actions which builds the bayes net
+					
+				}
+			}
+			super.execute(); 
+		}
+		/**  @see edu.gmu.ace.daggre.MarkovEngineImpl.RebuildNetworkAction#isToExecuteAction(edu.gmu.ace.daggre.NetworkAction) */
+		protected boolean isToExecuteAction(NetworkAction action) { return true; }
 	}
 
 	/* (non-Javadoc)
@@ -1335,128 +1378,128 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		return true;
 	}
 	
-	/**
-	 * This is the {@link NetworkAction} command representing
-	 * {@link MarkovEngineImpl#revertTrade(long, Date, Date, Long)}
-	 * @author Shou Matsumoto
-	 */
-	public class RevertTradeNetworkAction implements NetworkAction {
-		private final Date occurredWhen;
-		private final Date tradesStartingWhen;
-		private final long transactionKey;
-		private final Long questionId;
-		private List<Float> probBeforeRevert = null;
-		private Date whenExecutedFirst;
-		/** Default constructor initializing fields */
-		public RevertTradeNetworkAction (long transactionKey, Date occurredWhen,  Date tradesStartingWhen, Long questionId) {
-			this.transactionKey = transactionKey;
-			this.occurredWhen = occurredWhen;
-			this.tradesStartingWhen = tradesStartingWhen;
-			this.questionId = questionId;
-		}
-		/**
-		 * This method just calls the {@link AddTradeNetworkAction#revert()} of the
-		 * first instance of {@link AddTradeNetworkAction} of question {@link #getQuestionId()}, 
-		 * executed after {@link #getTradesStartingWhen()}, for each possible user.
-		 * {@link AddTradeNetworkAction#revert()} is supposed to set user's assets to the values
-		 * prior to that edit.
-		 * It will read the network actions in {@link MarkovEngineImpl#getExecutedActions()} 
-		 * (i.e. only the actions actually executed) and will delete values from
-		 * {@link MarkovEngineImpl#getExecutedActions()} to indicate that some
-		 * actions will not be considered as \"executed\" anymore.
-		 * The history is not affected, because {@link MarkovEngineImpl#getNetworkActionsIndexedByQuestions()}
-		 * is not altered.
-		 */
-		public void execute() {
-			// fill probBeforeRevert
-			if (questionId != null) {
-				boolean backup = isToObtainProbabilityOfResolvedQuestions();
-				setToObtainProbabilityOfResolvedQuestions(true);
-				probBeforeRevert = getProbList(questionId, null, null);
-				setToObtainProbabilityOfResolvedQuestions(backup);
-			} 
-			/*
-			 * NOTE: it is not guaranteed that actions in different transactions were executed in the same ordering/sequence of action.getWhenCreated()
-			 * (it is only guaranteed that actions in same transaction were executed in the same ordering/sequence of action.getWhenCreated()).
-			 * The argument tradesStartingWhen is supposedly a filter for action.getWhenCreated(), but
-			 * for coherence, we must mainly consider the ordering of actual execution (because such ordering is
-			 * what impacts the final values of the shared Bayes net and user's assets).
-			 * That's why I'm searching for the first action in getExecutedActions() whose  tradesStartingWhen < action.getWhenCreated()
-			 * and then replaying the actions prior to it.
-			 */
-			synchronized (getUserToAssetAwareAlgorithmMap()) {
-				// do not allow new users to be created now
-				synchronized (getExecutedActions()) {
-					// actions to call revert()
-					List<AddTradeNetworkAction> tradeActionsToRevert = new ArrayList<AddTradeNetworkAction>();	
-					
-					// will store what users were already processed, and what questions should be resolved again after reverting trades
-					Map<Long, List<ResolveQuestionNetworkAction>> treatedUserToActionsToResolveMap = new HashMap<Long, List<ResolveQuestionNetworkAction>>();
-					
-					for (NetworkAction action : getExecutedActions()) {
-						if (questionId != null  && !questionId.equals(action.getQuestionId())) {
-							// ignore actions not matching question ID
-							continue;
-						}
-						// If date of action is after tradesStartingWhen
-						if (action.getWhenCreated().compareTo(tradesStartingWhen) >= 0 ) {
-							// If treatedUserToActionsToResolveMap.size() >= getUserToAssetAwareAlgorithmMap().size(), 
-							// then all users were already treated. So, there's no need to fill tradeActionsToRevert anymore.
-							if (treatedUserToActionsToResolveMap.size() < getUserToAssetAwareAlgorithmMap().size()) { 
-								if ( !treatedUserToActionsToResolveMap.containsKey(action.getUserId())	// action of a user not processed yet
-										&& action instanceof AddTradeNetworkAction) {					// action is a trade
-									tradeActionsToRevert.add((AddTradeNetworkAction)action);
-									// init this map, which stores processed users and list of questions to resolve again (i.e. all resolutions coming after this action).
-									treatedUserToActionsToResolveMap.put(action.getUserId(), new ArrayList<MarkovEngineImpl.ResolveQuestionNetworkAction>());
-								}
-							} 
-						}
-						// If executed after any AddTradeNetworkAction, the ResolveQuestionNetworkAction must be executed regardless of its value of getWhenCreated()
-						if (!treatedUserToActionsToResolveMap.isEmpty() && action instanceof ResolveQuestionNetworkAction) {
-							// fill values of treatedUserToActionsToResolveMap with all resolutions executed after the AddTradeNetworkAction to be reverted.
-							for (Long userId : treatedUserToActionsToResolveMap.keySet()) {
-								treatedUserToActionsToResolveMap.get(userId).add((ResolveQuestionNetworkAction) action);
-							}
-						}
-					}
-					
-					// execute revert() so that user's assets are reverted to that moment 
-					for (AddTradeNetworkAction action : tradeActionsToRevert) {
-						action.revert();
-					}
-					
-					// AddTradeNetworkAction#revert() will bring asset tables to the moment before the trade, including its structure. 
-					// Questions must be resolved again in order to synchronize the structure of asset nets and shared Bayes net.
-					for (Long userId : treatedUserToActionsToResolveMap.keySet()) {
-						for (ResolveQuestionNetworkAction action : treatedUserToActionsToResolveMap.get(userId)) {
-							action.execute(userId);	// resolve question only for this user
-						}
-					}
-				}
-			}
-			/*
-			 * Note: we should not remove the "reverted" trades from getExecutedActions(), because 
-			 * the revert is only reseting the assets of the users.
-			 * In order for the probabilities to be restorable from history, all trades
-			 * including the reverted ones should be part of the getExecutedActions().
-			 */
-		}
-		public void revert() throws UnsupportedOperationException {
-			throw new UnsupportedOperationException("Current version cannot revert a \"revert\" operation.");
-		}
-		public Date getWhenCreated() { return occurredWhen; }
-		public List<Float> getPercent() { return probBeforeRevert; }
-		public String getTradeId() { return null; }
-		public boolean isStructureChangeAction() { return false; }
-		public Long getTransactionKey() { return transactionKey; }
-		public Long getUserId() { return null; }
-		public Long getQuestionId() { return questionId; }
-		public List<Long> getAssumptionIds() { return null; }
-		public List<Integer> getAssumedStates() { return null; }
-		public Date getTradesStartingWhen() { return tradesStartingWhen; }
-		public Date getWhenExecutedFirstTime() {return whenExecutedFirst ; }
-		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirst = whenExecutedFirst; }
-	}
+//	/**
+//	 * This is the {@link NetworkAction} command representing
+//	 * {@link MarkovEngineImpl#revertTrade(long, Date, Date, Long)}
+//	 * @author Shou Matsumoto
+//	 */
+//	public class RevertTradeNetworkAction implements NetworkAction {
+//		private final Date occurredWhen;
+//		private final Date tradesStartingWhen;
+//		private final long transactionKey;
+//		private final Long questionId;
+//		private List<Float> probBeforeRevert = null;
+//		private Date whenExecutedFirst;
+//		/** Default constructor initializing fields */
+//		public RevertTradeNetworkAction (long transactionKey, Date occurredWhen,  Date tradesStartingWhen, Long questionId) {
+//			this.transactionKey = transactionKey;
+//			this.occurredWhen = occurredWhen;
+//			this.tradesStartingWhen = tradesStartingWhen;
+//			this.questionId = questionId;
+//		}
+//		/**
+//		 * This method just calls the {@link AddTradeNetworkAction#revert()} of the
+//		 * first instance of {@link AddTradeNetworkAction} of question {@link #getQuestionId()}, 
+//		 * executed after {@link #getTradesStartingWhen()}, for each possible user.
+//		 * {@link AddTradeNetworkAction#revert()} is supposed to set user's assets to the values
+//		 * prior to that edit.
+//		 * It will read the network actions in {@link MarkovEngineImpl#getExecutedActions()} 
+//		 * (i.e. only the actions actually executed) and will delete values from
+//		 * {@link MarkovEngineImpl#getExecutedActions()} to indicate that some
+//		 * actions will not be considered as \"executed\" anymore.
+//		 * The history is not affected, because {@link MarkovEngineImpl#getNetworkActionsIndexedByQuestions()}
+//		 * is not altered.
+//		 */
+//		public void execute() {
+//			// fill probBeforeRevert
+//			if (questionId != null) {
+//				boolean backup = isToObtainProbabilityOfResolvedQuestions();
+//				setToObtainProbabilityOfResolvedQuestions(true);
+//				probBeforeRevert = getProbList(questionId, null, null);
+//				setToObtainProbabilityOfResolvedQuestions(backup);
+//			} 
+//			/*
+//			 * NOTE: it is not guaranteed that actions in different transactions were executed in the same ordering/sequence of action.getWhenCreated()
+//			 * (it is only guaranteed that actions in same transaction were executed in the same ordering/sequence of action.getWhenCreated()).
+//			 * The argument tradesStartingWhen is supposedly a filter for action.getWhenCreated(), but
+//			 * for coherence, we must mainly consider the ordering of actual execution (because such ordering is
+//			 * what impacts the final values of the shared Bayes net and user's assets).
+//			 * That's why I'm searching for the first action in getExecutedActions() whose  tradesStartingWhen < action.getWhenCreated()
+//			 * and then replaying the actions prior to it.
+//			 */
+//			synchronized (getUserToAssetAwareAlgorithmMap()) {
+//				// do not allow new users to be created now
+//				synchronized (getExecutedActions()) {
+//					// actions to call revert()
+//					List<AddTradeNetworkAction> tradeActionsToRevert = new ArrayList<AddTradeNetworkAction>();	
+//					
+//					// will store what users were already processed, and what questions should be resolved again after reverting trades
+//					Map<Long, List<ResolveQuestionNetworkAction>> treatedUserToActionsToResolveMap = new HashMap<Long, List<ResolveQuestionNetworkAction>>();
+//					
+//					for (NetworkAction action : getExecutedActions()) {
+//						if (questionId != null  && !questionId.equals(action.getQuestionId())) {
+//							// ignore actions not matching question ID
+//							continue;
+//						}
+//						// If date of action is after tradesStartingWhen
+//						if (action.getWhenCreated().compareTo(tradesStartingWhen) >= 0 ) {
+//							// If treatedUserToActionsToResolveMap.size() >= getUserToAssetAwareAlgorithmMap().size(), 
+//							// then all users were already treated. So, there's no need to fill tradeActionsToRevert anymore.
+//							if (treatedUserToActionsToResolveMap.size() < getUserToAssetAwareAlgorithmMap().size()) { 
+//								if ( !treatedUserToActionsToResolveMap.containsKey(action.getUserId())	// action of a user not processed yet
+//										&& action instanceof AddTradeNetworkAction) {					// action is a trade
+//									tradeActionsToRevert.add((AddTradeNetworkAction)action);
+//									// init this map, which stores processed users and list of questions to resolve again (i.e. all resolutions coming after this action).
+//									treatedUserToActionsToResolveMap.put(action.getUserId(), new ArrayList<MarkovEngineImpl.ResolveQuestionNetworkAction>());
+//								}
+//							} 
+//						}
+//						// If executed after any AddTradeNetworkAction, the ResolveQuestionNetworkAction must be executed regardless of its value of getWhenCreated()
+//						if (!treatedUserToActionsToResolveMap.isEmpty() && action instanceof ResolveQuestionNetworkAction) {
+//							// fill values of treatedUserToActionsToResolveMap with all resolutions executed after the AddTradeNetworkAction to be reverted.
+//							for (Long userId : treatedUserToActionsToResolveMap.keySet()) {
+//								treatedUserToActionsToResolveMap.get(userId).add((ResolveQuestionNetworkAction) action);
+//							}
+//						}
+//					}
+//					
+//					// execute revert() so that user's assets are reverted to that moment 
+//					for (AddTradeNetworkAction action : tradeActionsToRevert) {
+//						action.revert();
+//					}
+//					
+//					// AddTradeNetworkAction#revert() will bring asset tables to the moment before the trade, including its structure. 
+//					// Questions must be resolved again in order to synchronize the structure of asset nets and shared Bayes net.
+//					for (Long userId : treatedUserToActionsToResolveMap.keySet()) {
+//						for (ResolveQuestionNetworkAction action : treatedUserToActionsToResolveMap.get(userId)) {
+//							action.execute(userId);	// resolve question only for this user
+//						}
+//					}
+//				}
+//			}
+//			/*
+//			 * Note: we should not remove the "reverted" trades from getExecutedActions(), because 
+//			 * the revert is only reseting the assets of the users.
+//			 * In order for the probabilities to be restorable from history, all trades
+//			 * including the reverted ones should be part of the getExecutedActions().
+//			 */
+//		}
+//		public void revert() throws UnsupportedOperationException {
+//			throw new UnsupportedOperationException("Current version cannot revert a \"revert\" operation.");
+//		}
+//		public Date getWhenCreated() { return occurredWhen; }
+//		public List<Float> getPercent() { return probBeforeRevert; }
+//		public String getTradeId() { return null; }
+//		public boolean isStructureChangeAction() { return false; }
+//		public Long getTransactionKey() { return transactionKey; }
+//		public Long getUserId() { return null; }
+//		public Long getQuestionId() { return questionId; }
+//		public List<Long> getAssumptionIds() { return null; }
+//		public List<Integer> getAssumedStates() { return null; }
+//		public Date getTradesStartingWhen() { return tradesStartingWhen; }
+//		public Date getWhenExecutedFirstTime() {return whenExecutedFirst ; }
+//		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirst = whenExecutedFirst; }
+//	}
 
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#revertTrade(long, java.util.Date, java.lang.Long, java.lang.Long)
@@ -1471,8 +1514,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		
 		// add action into transaction
-//		this.addNetworkAction(transactionKey, new RevertTradeNetworkAction(transactionKey, occurredWhen, tradesStartingWhen, questionId));
-		this.addNetworkAction(transactionKey, new RebuildNetworkAction(transactionKey, occurredWhen, tradesStartingWhen, questionId));
+		if (isToDeleteResolvedNode()) {
+			this.addNetworkAction(transactionKey, new RevertTradeNetworkAction(transactionKey, occurredWhen, tradesStartingWhen, questionId));
+		} else {
+			this.addNetworkAction(transactionKey, new RebuildNetworkAction(transactionKey, occurredWhen, tradesStartingWhen, questionId));
+		}
 		
 		return true;
 	}
@@ -3857,7 +3903,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @return the isToObtainProbabilityOfResolvedQuestions
 	 */
 	public boolean isToObtainProbabilityOfResolvedQuestions() {
-		return isToObtainProbabilityOfResolvedQuestions;
+		return isToObtainProbabilityOfResolvedQuestions && !isToDeleteResolvedNode();
 	}
 
 	/**

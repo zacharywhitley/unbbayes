@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,7 +21,6 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
 import unbbayes.prs.bn.AssetNode;
 import unbbayes.prs.bn.Clique;
-import unbbayes.prs.bn.DefaultJunctionTreeBuilder;
 import unbbayes.prs.bn.DoublePrecisionProbabilisticTable;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
@@ -137,61 +137,27 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			
 			double ret = 1;	// var to be returned
 			
-			// calculate Product(Cliques)
-			for (Clique clique : assetNet.getJunctionTree().getCliques()) {
-				// extract clique table
-				PotentialTable cliqueTable = clique.getProbabilityFunction();
-				// iterate on each cell of clique table
-				for (int i = 0; i < cliqueTable.tableSize(); i++) {
-					double value = cliqueTable.getDoubleValue(i);	// value of cell in clique table
-					// filter by states
-					if (filter != null) {
-						// isNotMatching == true if the variables&states related to current cell in table is incompatible with filter
-						boolean isNotMatching = false;	
-						// what combination of states the index i represents in cliqueTable
-						int[] combinationOfStates = cliqueTable.getMultidimensionalCoord(i); 
-						// look for node&state in filter which does not match with content of combinationOfStates
-						for (INode node : filter.keySet()) {
-							if ( clique.getNodes().contains(node) && combinationOfStates[cliqueTable.getVariableIndex((Node)node)] != filter.get(node)) {
-								// current clique contain node in filter, and the state in filter does not match state of combinationOfStates
-								isNotMatching = true;
-								break;
-							}
-						}
-						if (isNotMatching) {
-							continue;	// do not multiply if current cell in table does not correspond with filter
-						}
-					}
-					// note: at this point, this cell in cliqueTable matches filter
-					if (Double.compare(value , 0.0d) == 0) {
-						// once zero, it will always be zero.
-						return 0;
-					}
-					// Product(Cliques)
-					ret *= value;
-				}
-			}
-			// calculate Product(Separators)
-			for (Separator separator : assetNet.getJunctionTree().getSeparators()) {
-				// extract the separator table from separator
-				PotentialTable sepTable = separator.getProbabilityFunction();
-				if (separator.getNodes() == null || separator.getNodes().isEmpty()
-						|| sepTable.getVariablesSize() <= 0 || sepTable.tableSize() <= 0) {
-					// this is an empty separator (i.e. network is disconnected). Use a default value when empty separator is found
-					ret /= getEmptySeparatorsQValue();
-				} else {	// separator is not empty
-					// iterate on each cell of separator table
-					for (int i = 0; i < sepTable.tableSize(); i++) {
-						double value = sepTable.getDoubleValue(i);	// value of cell in clique table
+			// calculate Product(Cliques) and divide by Product(Separators) alternatively, so that ret don't get too huge
+			Iterator<Clique> cliqueIterator = assetNet.getJunctionTree().getCliques().iterator();
+			Iterator<Separator> sepIterator = assetNet.getJunctionTree().getSeparators().iterator();
+			while (cliqueIterator.hasNext() || sepIterator.hasNext()) {
+				// calculate Product(Cliques)
+				if (cliqueIterator.hasNext()) {
+					// extract clique and clique table
+					Clique clique = cliqueIterator.next();
+					PotentialTable cliqueTable = clique.getProbabilityFunction();
+					// iterate on each cell of clique table
+					for (int i = 0; i < cliqueTable.tableSize(); i++) {
+						double value = cliqueTable.getDoubleValue(i);	// value of cell in clique table
 						// filter by states
 						if (filter != null) {
 							// isNotMatching == true if the variables&states related to current cell in table is incompatible with filter
 							boolean isNotMatching = false;	
 							// what combination of states the index i represents in cliqueTable
-							int[] combinationOfStates = sepTable.getMultidimensionalCoord(i); 
+							int[] combinationOfStates = cliqueTable.getMultidimensionalCoord(i); 
 							// look for node&state in filter which does not match with content of combinationOfStates
 							for (INode node : filter.keySet()) {
-								if ( separator.getNodes().contains(node) && combinationOfStates[sepTable.getVariableIndex((Node)node)] != filter.get(node)) {
+								if ( clique.getNodes().contains(node) && combinationOfStates[cliqueTable.getVariableIndex((Node)node)] != filter.get(node)) {
 									// current clique contain node in filter, and the state in filter does not match state of combinationOfStates
 									isNotMatching = true;
 									break;
@@ -201,17 +167,61 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 								continue;	// do not multiply if current cell in table does not correspond with filter
 							}
 						}
-						// note: at this point, this cell in sepTable matches filter
-						if (Double.compare(value, 0.0d) == 0) {
-							// once divided by zero, it will be always undefined.
-							return Double.NaN;
+						// note: at this point, this cell in cliqueTable matches filter
+						if (Double.compare(value , 0.0d) == 0) {
+							// once zero, it will always be zero.
+							return 0;
 						}
-						// Product(Cliques)/Product(Separators)
-						ret /= value;
-					}	// end of for i < sepTable.tableSize()
-				}	// end of else (separator is not empty)
-			} // end of foreach separator
-			
+						// Product(Cliques)
+						ret *= value;
+					}
+					
+				}
+				// calculate Product(Separators)
+				if (sepIterator.hasNext()) {
+					// extract separator and separator table
+					Separator separator = sepIterator.next();
+					PotentialTable sepTable = separator.getProbabilityFunction();
+					if (separator.getNodes() == null || separator.getNodes().isEmpty()
+							|| sepTable.getVariablesSize() <= 0 || sepTable.tableSize() <= 0) {
+						// this is an empty separator (i.e. network is disconnected). Use a default value when empty separator is found
+						ret /= getEmptySeparatorsQValue();
+					} else {	// separator is not empty
+						// iterate on each cell of separator table
+						for (int i = 0; i < sepTable.tableSize(); i++) {
+							double value = sepTable.getDoubleValue(i);	// value of cell in clique table
+							// filter by states
+							if (filter != null) {
+								// isNotMatching == true if the variables&states related to current cell in table is incompatible with filter
+								boolean isNotMatching = false;	
+								// what combination of states the index i represents in cliqueTable
+								int[] combinationOfStates = sepTable.getMultidimensionalCoord(i); 
+								// look for node&state in filter which does not match with content of combinationOfStates
+								for (INode node : filter.keySet()) {
+									if ( separator.getNodes().contains(node) && combinationOfStates[sepTable.getVariableIndex((Node)node)] != filter.get(node)) {
+										// current clique contain node in filter, and the state in filter does not match state of combinationOfStates
+										isNotMatching = true;
+										break;
+									}
+								}
+								if (isNotMatching) {
+									continue;	// do not multiply if current cell in table does not correspond with filter
+								}
+							}
+							// note: at this point, this cell in sepTable matches filter
+							if (Double.compare(value, 0.0d) == 0) {
+								// once divided by zero, it will be always undefined.
+								return Double.NaN;
+							}
+							// Product(Cliques)/Product(Separators)
+							ret /= value;
+						}	// end of for i < sepTable.tableSize()
+					}	// end of else (separator is not empty)
+				}
+				if (Double.isInfinite(ret)) {
+					throw new ZeroAssetsException("Overflow when calculating min assets of user " + assetNet);
+				}
+			}
 			return (double) ret;
 		}
 	};
@@ -442,7 +452,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 					// multiply assets by the ratio (current probability values / previous probability values)
 					double newValue = assetTable.getDoubleValue(i) * ( currentProbabilities.getValue(i) / previousProbability );
 					// check if assets is <= 1 or infinite
-					if (( !isToAllowQValuesSmallerThan1() &&  ((newValue <= 1f) && (newValue > 0f) ))
+					if (( !isToAllowQValuesSmallerThan1() &&  ((newValue <= 1f)))
 							|| (!isToAllowInfinite() && Double.isInfinite(newValue))) {
 						// revert all previous cliques/separators, including current
 //					for (IRandomVariable modifiedCliqueOrSep : getAssetTablesBeforeLastPropagation().keySet()) {
