@@ -89,6 +89,8 @@ import unbbayes.util.extension.manager.CorePluginNodeManager;
  */
 public class GraphPane extends UCanvas implements KeyListener {
 
+	private static final int MOVE_Y_COPY = 100;
+
 	/** Move x pixels to the new node. */
 	private static final int MOVE_X_COPY = 100;
 
@@ -294,23 +296,25 @@ public class GraphPane extends UCanvas implements KeyListener {
 		// A new cloned node to create.
 		Node clonedNode;
 
+		double positionX = originalNode.getPosition().getX() + MOVE_X_COPY;
+		double positionY = originalNode.getPosition().getY() + MOVE_Y_COPY;
 		// Validate if the node is new.
 		if (sharedNodes.get(originalNode) == null) {
 
-			// TODO extend to any type of node.
-			clonedNode = (ProbabilisticNode) controller
-					.insertProbabilisticNode(originalNode.getPosition().getX()
-							+ MOVE_X_COPY,
-							originalNode.getPosition().getY() + 100);
-
-			// Create a new shape for the cloned node.
-			UShape shape = new UShapeProbabilisticNode(this, clonedNode,
-					(int) clonedNode.getPosition().x - clonedNode.getWidth()
-							/ 2, (int) clonedNode.getPosition().y
-							- clonedNode.getHeight() / 2,
-					clonedNode.getWidth(), clonedNode.getHeight());
-			addShape(shape);
-			shape.setState(UShape.STATE_SELECTED, null);
+			// FIXME this if else if else if can be improved.
+			if (originalNode instanceof ProbabilisticNode) {
+				clonedNode = controller.insertProbabilisticNode(positionX,
+						positionY);
+			} else if (originalNode instanceof UtilityNode) {
+				clonedNode = controller.insertUtilityNode(positionX, positionY);
+			} else if (originalNode instanceof DecisionNode) {
+				clonedNode = controller
+						.insertDecisionNode(positionX, positionY);
+			} else {
+				// TODO extend to any type of node.
+				// TODO throw new exception "unsupported type of node".
+				return null;
+			}
 
 			// add new node to shared nodes.
 			sharedNodes.put(originalNode, clonedNode);
@@ -318,6 +322,10 @@ public class GraphPane extends UCanvas implements KeyListener {
 			clonedNode = sharedNodes.get(originalNode);
 			return clonedNode;
 		}
+
+		// Create a new shape for a new node
+		createNode(clonedNode);
+		getNodeUShape(clonedNode).setState(UShape.STATE_SELECTED, null);
 
 		// Set general attributes
 		String newName = originalNode.getName() + "_1";
