@@ -27,14 +27,14 @@ public class MinProductJunctionTree extends MaxProductJunctionTree {
 	public static final Comparator DEFAULT_TABLE_EXPLANATION_COMPARATOR = new Comparator() {
 		public int compare(Object o1, Object o2) {
 			// ignore zeros
-			if (Double.compare((Float)o1, 0.0f) == 0) {
+			if (Float.compare((Float)o1, 0.0f) == 0) {
 				return -1;
 			}
-			if (Double.compare((Float)o2, 0.0f) == 0) {
+			if (Float.compare((Float)o2, 0.0f) == 0) {
 				return 1;
 			}
 			// compare inverting the order (so that it returns the inverse of "normal" compare)
-			return Double.compare((Double)o2, (Double)o1);
+			return Float.compare((Float)o2, (Float)o1);
 		}
 	};
 
@@ -117,7 +117,7 @@ public class MinProductJunctionTree extends MaxProductJunctionTree {
 		 * Return the minimum, but ignores values less than or equals to 0.0f (except when both values are 0.0f).
 		 * @return (arg1 < arg2)?arg1:arg2
 		 */
-		public double operate(double arg1, double arg2) {
+		public float operate(float arg1, float arg2) {
 			if (arg2 <= 0.0f) {
 				return arg1;
 			} else if (arg1 <= 0.0f) {

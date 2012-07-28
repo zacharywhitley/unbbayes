@@ -42,11 +42,7 @@ public class JunctionTreeLPEAlgorithm extends JunctionTreeMPEAlgorithm {
 	public JunctionTreeLPEAlgorithm(ProbabilisticNetwork net) {
 		super(net);
 		// initialize default junction tree with a min-product operator
-		try{
-			this.setDefaultJunctionTreeBuilder(DEFAULT_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		this.setDefaultJunctionTreeBuilder(DEFAULT_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
 	}
 	
 

@@ -6,9 +6,6 @@ import java.util.Map;
 import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
 import unbbayes.prs.bn.AssetNetwork;
-import unbbayes.prs.bn.DoublePrecisionProbabilisticTable;
-import unbbayes.prs.bn.IRandomVariable;
-import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
@@ -54,7 +51,7 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	/**
 	 * This method generates a network of assets with the same nodes and network topology of
 	 * relatedProbabilisticNetwork, and initializes the assets using the
-	 * values obtained from {@link #getDefaultInitialAssetQuantity()}.
+	 * values obtained from {@link #getDefaultInitialAssetTableValue()}.
 	 * @param relatedProbabilisticNetwork : the bayesian network to be based on
 	 * @return an asset network
 	 * @throws InvalidParentException 
@@ -109,14 +106,14 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	public void updateProbabilityPriorToPropagation();
 	
 	/**
-	 * @return the defaultInitialAssetQuantity : values assumed by the cells of q-tables when algorithm starts.
+	 * @return the defaultInitialAssetTableValue : values assumed by the cells of q-tables when algorithm starts.
 	 */
-	public double getDefaultInitialAssetQuantity();
+	public float getDefaultInitialAssetTableValue();
 	
 	/**
-	 * @param defaultInitialAssetQuantity : values assumed by the cells of q-tables when algorithm starts.
+	 * @param defaultInitialAssetTableValue : values assumed by the cells of q-tables when algorithm starts.
 	 */
-	public void setDefaultInitialAssetQuantity(double defaultInitialAssetQuantity);
+	public void setDefaultInitialAssetTableValue(float defaultInitialAssetQuantity);
 	
 	/**
 	 * @return the value of explanation (i.e. min-q value).
@@ -126,7 +123,7 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 * is a set.
 	 * @see IExplanationJunctionTree#calculateExplanation(Graph, IInferenceAlgorithm)
 	 */
-	public double calculateExplanation( List<Map<INode, Integer>> inputOutpuArgumentForExplanation);
+	public float calculateExplanation( List<Map<INode, Integer>> inputOutpuArgumentForExplanation);
 
 	
 	/**
@@ -225,22 +222,62 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	
 	/**
 	 * Separators with no variables may exist if network is disconnected.
-	 * This value will be used as a default q-value
+	 * This value will be used as a default content (q-value or asset)
 	 * of empty separators if such separators are present.
 	 * This value is used in methods like {@link #calculateExplanation(List)},
 	 * which uses joint q-values.
 	 * @return the emptySeparatorsQValue value,
 	 */
-	public double getEmptySeparatorsQValue();
+	public float getEmptySeparatorsDefaultContent();
 	
 	/**
 	 * Separators with no variables may exist if network is disconnected.
-	 * This value will be used as a default q-value
+	 * This value will be used as a default content (assets or q-value)
 	 * of empty separators if such separators are present.
 	 * This value is used in methods like {@link #calculateExplanation(List)},
 	 * which uses joint q-values.
-	 * @param emptySeparatorsQValue
+	 * @param emptySeparatorsContent
 	 */
-	public void setEmptySeparatorsQValue(double emptySeparatorsQValue);
+	public void setEmptySeparatorsDefaultContent(float emptySeparatorsContent);
+	
+	/**
+	 * If true, then exponential q values will be stored instead of
+	 * logarithmic assets. If false, asset tables will store
+	 * assets instead of q-values.
+	 * @param isToUseQValues the isToUseQValues to set
+	 */
+	public void setToUseQValues(boolean isToUseQValues);
+
+	/**
+	 * If true, then exponential q values will be stored instead of
+	 * logarithmic assets. If false, asset tables will store
+	 * assets instead of q-values.
+	 * @return the isToUseQValues
+	 */
+	public boolean isToUseQValues();
+	
+	/**
+	 * This object will be used to convert q-values to assets,
+	 * and assets to q-values.
+	 * <br/><br/>
+	 * Usually, assets and q-values are related with logarithm function:
+	 * asset = b log (q). 
+	 * <br/><br/>
+	 * In which b is some constant.
+	 * @param qToAssetConverter the qToAssetConverter to set
+	 */
+	public void setqToAssetConverter(IQValuesToAssetsConverter qToAssetConverter);
+
+	/**
+	 * This object will be used to convert q-values to assets,
+	 * and assets to q-values.
+	 * <br/><br/>
+	 * Usually, assets and q-values are related with logarithm function:
+	 * asset = b log (q). 
+	 * <br/><br/>
+	 * In which b is some constant.
+	 * @return the qToAssetConverter
+	 */
+	public IQValuesToAssetsConverter getqToAssetConverter();
 	
 }

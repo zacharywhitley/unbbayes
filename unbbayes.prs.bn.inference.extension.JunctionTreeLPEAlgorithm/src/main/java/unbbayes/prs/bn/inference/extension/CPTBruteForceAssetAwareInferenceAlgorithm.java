@@ -55,7 +55,7 @@ public class CPTBruteForceAssetAwareInferenceAlgorithm extends
 	/**
 	 * Default instantiation method.
 	 */
-	public static IInferenceAlgorithm getInstance(IInferenceAlgorithm probabilityDelegator, double initQValues) {
+	public static IInferenceAlgorithm getInstance(IInferenceAlgorithm probabilityDelegator, float initQValues) {
 		CPTBruteForceAssetAwareInferenceAlgorithm ret = new CPTBruteForceAssetAwareInferenceAlgorithm();
 		// for some reason, polymorphism is not working so properly...
 		if (probabilityDelegator instanceof JunctionTreeAlgorithm) {
@@ -69,7 +69,7 @@ public class CPTBruteForceAssetAwareInferenceAlgorithm extends
 		} catch (Exception e) {
 			throw new IllegalArgumentException("The network managed by " + probabilityDelegator + " must be an instance of " + ProbabilisticNetwork.class.getName(), e);
 		}
-		ret.setDefaultInitialAssetQuantity(initQValues);
+		ret.setDefaultInitialAssetTableValue(initQValues);
 		ret.initializeJointAssets();
 		ret.initializeJointProbabilities();
 		return ret;
@@ -135,7 +135,7 @@ public class CPTBruteForceAssetAwareInferenceAlgorithm extends
 			}
 			
 			// update joint probability
-			jProbTable.setValue(i, product);
+			jProbTable.setValue(i, (float)product);
 			
 			// update joint q-values
 			if (isToUpdateAssets) {
@@ -144,7 +144,7 @@ public class CPTBruteForceAssetAwareInferenceAlgorithm extends
 					throw new ZeroAssetsException("Cell " + i + " in asset table went to " + value);
 				}
 				// new q = old q * new prob / old prob
-				getJointQTable().setValue(i, value ); // tables have same indexes
+				getJointQTable().setValue(i, (float)value ); // tables have same indexes
 			}
 		}
 		

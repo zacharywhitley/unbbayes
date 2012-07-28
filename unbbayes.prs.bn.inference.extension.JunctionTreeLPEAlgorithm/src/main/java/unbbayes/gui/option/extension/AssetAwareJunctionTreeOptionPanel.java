@@ -53,7 +53,7 @@ public class AssetAwareJunctionTreeOptionPanel extends JunctionTreeOptionPanel {
 		this.add(this.getMainLabel());
 		
 		try {
-			this.setAssetQuantityTextField(new JTextField(String.valueOf(((AssetAwareInferenceAlgorithm) this.getInferenceAlgorithm()).getDefaultInitialAssetQuantity())));
+			this.setAssetQuantityTextField(new JTextField(String.valueOf(((AssetAwareInferenceAlgorithm) this.getInferenceAlgorithm()).getDefaultInitialAssetTableValue())));
 		} catch (Exception e) {
 			Debug.println(getClass(), e.getMessage(), e);
 			this.setAssetQuantityTextField(new JTextField("1000"));
@@ -131,7 +131,7 @@ public class AssetAwareJunctionTreeOptionPanel extends JunctionTreeOptionPanel {
 	public void commitChanges() {
 		super.commitChanges();
 		try {
-			((AssetAwareInferenceAlgorithm) this.getInferenceAlgorithm()).setDefaultInitialAssetQuantity(Float.parseFloat(this.getAssetQuantityTextField().getText()));
+			((AssetAwareInferenceAlgorithm) this.getInferenceAlgorithm()).setDefaultInitialAssetTableValue(Float.parseFloat(this.getAssetQuantityTextField().getText()));
 		} catch (Exception e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(this, "Could not commit change: " + e.getMessage());
@@ -176,7 +176,7 @@ public class AssetAwareJunctionTreeOptionPanel extends JunctionTreeOptionPanel {
 	public void revertChanges() {
 		super.revertChanges();
 		try {
-			this.getAssetQuantityTextField().setText(String.valueOf(((AssetAwareInferenceAlgorithm) this.getInferenceAlgorithm()).getDefaultInitialAssetQuantity()));
+			this.getAssetQuantityTextField().setText(String.valueOf(((AssetAwareInferenceAlgorithm) this.getInferenceAlgorithm()).getDefaultInitialAssetTableValue()));
 		} catch (Exception e) {
 			Debug.println(getClass(), e.getMessage(), e);
 			this.getAssetQuantityTextField().setText("1000");

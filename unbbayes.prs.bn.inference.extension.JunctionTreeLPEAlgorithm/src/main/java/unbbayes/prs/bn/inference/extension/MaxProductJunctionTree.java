@@ -16,7 +16,6 @@ import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JunctionTree;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.PotentialTable.ISumOperation;
-import unbbayes.prs.bn.PotentialTable.MaxOperation;
 import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.bn.Separator;
 import unbbayes.util.Debug;
@@ -48,7 +47,7 @@ public class MaxProductJunctionTree extends JunctionTree implements IPropagation
 		try {
 			this.setTableExplanationComparator(new Comparator() {
 				public int compare(Object o1, Object o2) {
-					return Double.compare((Double)o1, (Double)o2);
+					return Float.compare((Float)o1, (Float)o2);
 				}
 			});
 		} catch (Throwable t) {
@@ -100,7 +99,7 @@ public class MaxProductJunctionTree extends JunctionTree implements IPropagation
 			(PotentialTable) sepTab.clone();
 
 		for (int i = sepTab.tableSize() - 1; i >= 0; i--) {
-			sepTab.setValue(i, dummyTable.getDoubleValue(i));
+			sepTab.setValue(i, dummyTable.getValue(i));
 		}
 
 		dummyTable.directOpTab(
@@ -176,7 +175,7 @@ public class MaxProductJunctionTree extends JunctionTree implements IPropagation
 		// TODO return more than 1 MPE
 		System.err.println("Current version returns only 1 MPE");
 		Map<INode, Integer> stateMap = new HashMap<INode, Integer>();
-		Map<INode, Double> valueMap = new HashMap<INode, Double>();
+		Map<INode, Float> valueMap = new HashMap<INode, Float>();
 		for (Clique clique : this.getCliques()) {
 			PotentialTable table = clique.getProbabilityFunction();
 			if (table.tableSize() <= 0) {
@@ -184,11 +183,11 @@ public class MaxProductJunctionTree extends JunctionTree implements IPropagation
 			}
 			// find index of the maximum value in clique
 			int indexOfMaximumInClique = 0;
-			double valueOfMaximumInClique = Float.NaN;
+			float valueOfMaximumInClique = Float.NaN;
 			for (int i = 1; i < table.tableSize(); i++) {
-				if (this.getTableExplanationComparator().compare(table.getDoubleValue(i), table.getDoubleValue(indexOfMaximumInClique)) > 0) {
+				if (this.getTableExplanationComparator().compare(table.getValue(i), table.getValue(indexOfMaximumInClique)) > 0) {
 					indexOfMaximumInClique = i;
-					valueOfMaximumInClique = table.getDoubleValue(i);
+					valueOfMaximumInClique = table.getValue(i);
 				}
 			}
 			// the indexes of the states can be obtained from the index of the linearized table by doing the following operation:
@@ -253,7 +252,7 @@ public class MaxProductJunctionTree extends JunctionTree implements IPropagation
 	 * (non-Javadoc)
 	 * @see unbbayes.prs.bn.inference.extension.IExplanationJunctionTree#calculateJointProbability(java.util.Map, unbbayes.prs.Graph, unbbayes.util.extension.bn.inference.IInferenceAlgorithm)
 	 */
-	public double calculateJointProbability(Map<INode, Integer> states,
+	public float calculateJointProbability(Map<INode, Integer> states,
 			Graph graph, IInferenceAlgorithm algorithm) {
 		// TODO implement it
 		throw new RuntimeException("Not implemented yet");

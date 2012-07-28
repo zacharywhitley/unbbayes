@@ -12,7 +12,6 @@ import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
 import unbbayes.prs.bn.Clique;
-import unbbayes.prs.bn.DoublePrecisionProbabilisticTable;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
@@ -50,13 +49,14 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 	 * Default constructor is not private, to allow inheritance
 	 */
 	protected BruteForceAssetAwareInferenceAlgorithm() {
-		// TODO Auto-generated constructor stub
+		// use q-values by default
+		this.setToUseQValues(true);
 	}
 	
 	/**
 	 * Default instantiation method.
 	 */
-	public static IInferenceAlgorithm getInstance(IInferenceAlgorithm probabilityDelegator, double initQValues) {
+	public static IInferenceAlgorithm getInstance(IInferenceAlgorithm probabilityDelegator, float initQValues) {
 		BruteForceAssetAwareInferenceAlgorithm ret = new BruteForceAssetAwareInferenceAlgorithm();
 		// for some reason, polymorphism is not working so properly...
 		if (probabilityDelegator instanceof JunctionTreeAlgorithm) {
@@ -70,7 +70,7 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 		} catch (Exception e) {
 			throw new IllegalArgumentException("The network managed by " + probabilityDelegator + " must be an instance of " + ProbabilisticNetwork.class.getName(), e);
 		}
-		ret.setDefaultInitialAssetQuantity(initQValues);
+		ret.setDefaultInitialAssetTableValue(initQValues);
 		ret.initializeJointAssets();
 		ret.initializeJointProbabilities();
 		return ret;
@@ -99,9 +99,9 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 		}
 		
 		// clone this algorithm
-		BruteForceAssetAwareInferenceAlgorithm ret = (BruteForceAssetAwareInferenceAlgorithm) BruteForceAssetAwareInferenceAlgorithm.getInstance(jtAlgorithm, getDefaultInitialAssetQuantity());
+		BruteForceAssetAwareInferenceAlgorithm ret = (BruteForceAssetAwareInferenceAlgorithm) BruteForceAssetAwareInferenceAlgorithm.getInstance(jtAlgorithm, getDefaultInitialAssetTableValue());
 		// copy settings
-		ret.setDefaultInitialAssetQuantity(getDefaultInitialAssetQuantity());
+		ret.setDefaultInitialAssetTableValue(getDefaultInitialAssetTableValue());
 		ret.setToAllowQValuesSmallerThan1(this.isToAllowQValuesSmallerThan1());
 		ret.setToCalculateMarginalsOfAssetNodes(this.isToCalculateMarginalsOfAssetNodes());
 		ret.setToLogAssets(this.isToLogAssets());
@@ -139,8 +139,8 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 		if (getAssetNetwork().getJunctionTree() != null && getAssetNetwork().getJunctionTree().getCliques() != null) {
 			// copy asset tables of cliques. Since cliques are stored in a list, the ordering of the copied cliques is supposedly the same
 			for (int i = 0; i < getAssetNetwork().getJunctionTree().getCliques().size(); i++) {
-				((DoublePrecisionProbabilisticTable)newAssetNet.getJunctionTree().getCliques().get(i).getProbabilityFunction()).setValues(
-						((DoublePrecisionProbabilisticTable) getAssetNetwork().getJunctionTree().getCliques().get(i).getProbabilityFunction()).getDoubleValues()
+				(newAssetNet.getJunctionTree().getCliques().get(i).getProbabilityFunction()).setValues(
+						( getAssetNetwork().getJunctionTree().getCliques().get(i).getProbabilityFunction()).getValues()
 				);
 				// store asset cliques in the map, so that we can use it for the separators later
 				oldCliqueToNewCliqueMap.put(getAssetNetwork().getJunctionTree().getCliques().get(i), newAssetNet.getJunctionTree().getCliques().get(i));
@@ -158,7 +158,7 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 					throw new RuntimeException("Could not access copy of separator " + oldSep + " correctly while copying asset tables of separators.");
 				}
 				// tables are supposedly with same size
-				((DoublePrecisionProbabilisticTable)newSep.getProbabilityFunction()).setValues(((DoublePrecisionProbabilisticTable) oldSep.getProbabilityFunction()).getDoubleValues());
+				(newSep.getProbabilityFunction()).setValues(( oldSep.getProbabilityFunction()).getValues());
 			}
 		}
 		
@@ -172,22 +172,22 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm#calculateExplanation(java.util.List)
 	 */
-	public double calculateExplanation(  List<Map<INode, Integer>> inputOutpuArgumentForExplanation) {
+	public float calculateExplanation(  List<Map<INode, Integer>> inputOutpuArgumentForExplanation) {
 		if (inputOutpuArgumentForExplanation == null) {
 			inputOutpuArgumentForExplanation = new ArrayList<Map<INode,Integer>>();
 		}
 		
 		// value to be returned
-		double minValue = Float.MAX_VALUE;
+		float minValue = Float.MAX_VALUE;
 		
 		// find joint asset with smallest value
 		JointPotentialTable table = getJointQTable();
 		for (int i = 0; i < table.tableSize(); i++) {
-			if (table.getDoubleValue(i) > 0f && table.getDoubleValue(i) <= minValue) {
-				if (table.getDoubleValue(i) < minValue) {
+			if (table.getValue(i) > 0f && table.getValue(i) <= minValue) {
+				if (table.getValue(i) < minValue) {
 					// if strictly small, reset explanation
 					inputOutpuArgumentForExplanation.clear();
-					minValue = table.getDoubleValue(i);
+					minValue = table.getValue(i);
 				}
 				// extract states having this (min) value
 				int[] states = table.getMultidimensionalCoord(i);
@@ -251,7 +251,7 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 					}
 				}
 				if (!matches) {
-					table.setValue(i, 0.0);
+					table.setValue(i, (float)0.0);
 				}
 			}
 		}
@@ -281,16 +281,6 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 		private static final long serialVersionUID = -4355963169676077807L;
 		public JointPotentialTable() {}
 		
-		/** TODO start using double values */
-		public void setValue(int i, double d) {
-			this.setValue(i, (float)d);
-		}
-
-		/** TODO start using double values */
-		public double getDoubleValue(int index) {
-			return this.getValue(index);
-		}
-
 		/** This is used in {@link #clone()} */
 		public PotentialTable newInstance() { return new JointPotentialTable(); }
 		
@@ -375,7 +365,7 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 		}
 		// init content of asset table
 		for (int i = 0; i < jAstTab.tableSize(); i++) {
-			jAstTab.setValue(i, getDefaultInitialAssetQuantity());
+			jAstTab.setValue(i, getDefaultInitialAssetTableValue());
 		}
 		jAstTab.copyData();	// backup initial values of asset table
 		setJointQTable(jAstTab);
@@ -401,7 +391,7 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 			int[] jointTableStates = jProbTable.getMultidimensionalCoord(i);
 			
 			// calculate Product(Clique)/Product(Separator) regarding the states related to this cell
-			double product = 1f;	// 1 is the identity value of a product
+			float product = 1f;	// 1 is the identity value of a product
 			
 			// iterate on cliques
 			for (Clique clique : getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
@@ -463,7 +453,7 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 			
 			// update joint q-values
 			if (isToUpdateAssets) {
-				double value = getJointQTable().getValue(i) * jProbTable.getValue(i) / jProbTable.getCopiedValue(i);
+				float value = getJointQTable().getValue(i) * jProbTable.getValue(i) / jProbTable.getCopiedValue(i);
 				if (!isToAllowQValuesSmallerThan1() && value <= 1.0) {
 					throw new ZeroAssetsException("Cell " + i + " in asset table went to " + value);
 				}
@@ -571,7 +561,7 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm#addAssets(float)
 	 */
-	public void addAssets(double delta) {
+	public void addAssets(float delta) {
 		super.addAssets(delta);
 		/*
 		 * If we want to add something into a logarithm value, we must multiply some ratio.
@@ -579,10 +569,14 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 		 * So, X^((asset+delta)/b) = X^(asset/b + delta/b) = X^(asset/b) * X^(delta/b)  = q * X^(delta/b)
 		 * So, we need to multiply X^(delta/b) in order to update q when we add delta into asset.
 		 */
-		double ratio = Math.pow(getqToAssetConverter().getCurrentLogBase(), delta / getqToAssetConverter().getCurrentCurrencyConstant() );
+		float ratio = (float) Math.pow(getqToAssetConverter().getCurrentLogBase(), delta / getqToAssetConverter().getCurrentCurrencyConstant() );
 		JointPotentialTable assetTable = getJointQTable();
 		for (int i = 0; i < assetTable.tableSize(); i++) {
-			assetTable.setValue(i, (assetTable.getDoubleValue(i) * ratio) );
+			if (isToUseQValues()) {
+				assetTable.setValue(i, (assetTable.getValue(i) * ratio) );
+			} else {
+				assetTable.setValue(i, (assetTable.getValue(i) + delta) );
+			}
 		}
 	}
 
@@ -602,7 +596,7 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 				continue;
 			}
 			double value = probabilityTable.getValue(j) 
-			* getqToAssetConverter().getScoreFromQValues(qTable.getDoubleValue(j));
+			* getqToAssetConverter().getScoreFromQValues(qTable.getValue(j));
 			ret +=  value;
 		}			
 		

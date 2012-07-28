@@ -30,7 +30,7 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 	protected BruteForceMarkovEngine() {
 		super();
 		this.setAssetAwareInferenceAlgorithmBuilder(new IAssetAwareInferenceAlgorithmBuilder() {
-			public AssetAwareInferenceAlgorithm build(IInferenceAlgorithm probDelegator, double initQValues) {
+			public AssetAwareInferenceAlgorithm build(IInferenceAlgorithm probDelegator, float initQValues) {
 				return (AssetAwareInferenceAlgorithm) BruteForceAssetAwareInferenceAlgorithm.getInstance(probDelegator, initQValues);
 			}
 		});
@@ -50,8 +50,8 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 	 * Default constructor method initializing fields.
 	 * @param logBase : see {@link #setCurrentLogBase(float)}
 	 * @param currencyConstant : see {@link #setCurrentCurrencyConstant(float)}
-	 * @param initialUserAssets : see {@link #setDefaultInitialQTableValue(float)}. Although
-	 * {@link #setDefaultInitialQTableValue(float)} expects a q-value, this argument
+	 * @param initialUserAssets : see {@link #setDefaultInitialAssetTableValue(float)}. Although
+	 * {@link #setDefaultInitialAssetTableValue(float)} expects a q-value, this argument
 	 * accepts the asset values. See {@link #getQValuesFromScore(float)} and
 	 * {@link #getScoreFromQValues(float)} to convert assets to q-values and
 	 * q-values to assets respectively.
@@ -65,8 +65,8 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 	 * Default constructor method initializing fields.
 	 * @param logBase : see {@link #setCurrentLogBase(float)}
 	 * @param currencyConstant : see {@link #setCurrentCurrencyConstant(float)}
-	 * @param initialUserAssets : see {@link #setDefaultInitialQTableValue(float)}. Although
-	 * {@link #setDefaultInitialQTableValue(float)} expects a q-value, this argument
+	 * @param initialUserAssets : see {@link #setDefaultInitialAssetTableValue(float)}. Although
+	 * {@link #setDefaultInitialAssetTableValue(float)} expects a q-value, this argument
 	 * accepts the asset values. See {@link #getQValuesFromScore(float)} and
 	 * {@link #getScoreFromQValues(float)} to convert assets to q-values and
 	 * q-values to assets respectively.
@@ -77,7 +77,7 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 		BruteForceMarkovEngine ret = (BruteForceMarkovEngine) BruteForceMarkovEngine.getInstance();
 		ret.setCurrentCurrencyConstant(currencyConstant);
 		ret.setCurrentLogBase(logBase);
-		ret.setDefaultInitialQTableValue(ret.getQValuesFromScore(initialUserAssets));
+		ret.setDefaultInitialAssetTableValue((float) ret.getQValuesFromScore(initialUserAssets));
 		ret.setToThrowExceptionOnInvalidAssumptions(isToThrowExceptionOnInvalidAssumptions);
 		return ret;
 	}

@@ -93,7 +93,7 @@ public class MinProductJunctionTreeComplement extends MaxProductJunctionTree {
 			PotentialTable tab = clique.getProbabilityFunction();
 			for (int i = 0; i < tab.tableSize(); i++) {
 				// set to complementar value
-				tab.setValue(i, 1 - tab.getDoubleValue(i));
+				tab.setValue(i, 1 - tab.getValue(i));
 			}
 		}
 //		for (int i = 0; i < this.getSeparatorsSize(); i++) {

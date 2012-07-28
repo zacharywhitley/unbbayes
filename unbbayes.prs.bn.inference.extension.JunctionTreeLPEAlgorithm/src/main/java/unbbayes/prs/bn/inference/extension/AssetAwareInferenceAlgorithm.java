@@ -19,7 +19,6 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
 import unbbayes.prs.bn.AssetNode;
 import unbbayes.prs.bn.Clique;
-import unbbayes.prs.bn.DoublePrecisionProbabilisticTable;
 import unbbayes.prs.bn.ILikelihoodExtractor;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
@@ -63,6 +62,8 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	private IAssetNetAlgorithm assetPropagationDelegator;
 
 	private boolean isToUpdateAssets = true;
+	
+	private boolean isToUseQValues = true;
 
 	/** 
 	 * Name of the property in {@link Graph#getProperty(String)} which manages current assets. 
@@ -84,30 +85,12 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 */
 	public static final String INITIAL_ASSETS_PROPERTY = AssetAwareInferenceAlgorithm.class.getName() + ".initialAssetMap";
 
-	/**
-	 * Default implementation of IQValuesToAssetsConverter used when {@link #getExpectedAssets(IQValuesToAssetsConverter)}
-	 * is called with null argument.
-	 * This converter uses 
-	 * {@link IQValuesToAssetsConverter#getCurrentCurrencyConstant()} == 10/(Math.log(100)),
-	 * {@link IQValuesToAssetsConverter#getCurrentLogBase()} == Math.E, 
-	 * and {@link IQValuesToAssetsConverter#getScoreFromQValues(float)} == {@link IQValuesToAssetsConverter#getCurrentCurrencyConstant()}*Math.log(assetQ)).
-	 * <br/> All other operations will throw {@link UnsupportedOperationException}.
-	 */
-	public static final IQValuesToAssetsConverter DEFAULT_Q_TO_ASSETS_CONVERTER = new IQValuesToAssetsConverter() {
-		private double b = 10/(Math.log(100));
-		public void setCurrentLogBase(double base) {throw new UnsupportedOperationException();}
-		public void setCurrentCurrencyConstant(double b) {throw new UnsupportedOperationException();}
-		public float getScoreFromQValues(double assetQ) { return  (float) (b*Math.log(assetQ)); }
-		public double getQValuesFromScore(double score) {throw new UnsupportedOperationException();}
-		public double getCurrentLogBase() { return (double) Math.E; }
-		public double getCurrentCurrencyConstant() { return b; }
-	};
+	
 
 	/** Default value to fill {@link JunctionTreeAlgorithm#setLikelihoodExtractor(ILikelihoodExtractor)} */
 	public static final ILikelihoodExtractor DEFAULT_JEFFREYRULE_LIKELIHOOD_EXTRACTOR = JeffreyRuleLikelihoodExtractor.newInstance();
 	
 	
-	private IQValuesToAssetsConverter qToAssetConverter = DEFAULT_Q_TO_ASSETS_CONVERTER;
 
 	private List<ExpectedAssetCellMultiplicationListener> expectedAssetCellListeners = new ArrayList<AssetAwareInferenceAlgorithm.ExpectedAssetCellMultiplicationListener>();	
 	
@@ -535,6 +518,10 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		this.runMinPropagation(conditions);
 		double minQValue = this.calculateExplanation(new ArrayList<Map<INode,Integer>>());	// this is m1
 		this.undoMinPropagation();	// revert changes in the asset tables
+		if (!this.isToUseQValues()) {
+			// in this case, calculateExplanation returned min assets. Convert it to Q.
+			minQValue = this.getqToAssetConverter().getQValuesFromScore((float) minQValue);
+		}
 		
 		// assume T!=t and A=a
 		assetNodes.get(0).addFinding(indexesOfStatesOfNodes[0], true);	// negative evidence to T = t (which is always the first node in cpt)
@@ -548,6 +535,10 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		this.runMinPropagation(null);
 		double minQValueAssumingNotTarget = this.calculateExplanation(new ArrayList<Map<INode,Integer>>());	// this is m2
 		this.undoMinPropagation();	// revert changes in the asset tables
+		if (!this.isToUseQValues()) {
+			// in this case, calculateExplanation returned min assets. Convert it to Q.
+			minQValueAssumingNotTarget = this.getqToAssetConverter().getQValuesFromScore((float) minQValueAssumingNotTarget);
+		}
 		
 		// clear all findings explicitly.
 		for (int i = 0; i < assetNodes.size(); i++) {
@@ -622,9 +613,9 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 * This will delegate to {@link #getAssetPropagationDelegator()}
 	 * @return
 	 */
-	public double getDefaultInitialAssetQuantity() {
+	public float getDefaultInitialAssetTableValue() {
 		try {
-			return this.getAssetPropagationDelegator().getDefaultInitialAssetQuantity();
+			return this.getAssetPropagationDelegator().getDefaultInitialAssetTableValue();
 		} catch (Exception e) {
 			Debug.println(getClass(), e.getMessage(), e);
 		}
@@ -635,9 +626,9 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 * This will delegate to {@link #getAssetPropagationDelegator()}
 	 * @param initialAssetQuantity
 	 */
-	public void setDefaultInitialAssetQuantity(double initialAssetQuantity) {
+	public void setDefaultInitialAssetTableValue(float initialAssetQuantity) {
 		try {
-			this.getAssetPropagationDelegator().setDefaultInitialAssetQuantity(initialAssetQuantity);
+			this.getAssetPropagationDelegator().setDefaultInitialAssetTableValue(initialAssetQuantity);
 		} catch (Exception e) {
 			Debug.println(getClass(), e.getMessage(), e);
 		}
@@ -671,7 +662,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 * If you want this to be conditional, call {@link ProbabilisticNode#addFinding(int)}
 	 * and  {@link IInferenceAlgorithm#propagate()} in {@link #getProbabilityPropagationDelegator()}
 	 * first.
-	 * This method uses {@link #getEmptySeparatorsQValue()}
+	 * This method uses {@link #getEmptySeparatorsDefaultContent()}
 	 * if an empty separator is found.
 	 * @return expected assets SUM(ProbCliques * AssetsClique) - SUM(ProbSeparators * AssetsSeparators).
 	 * @see #getqToAssetConverter()
@@ -722,11 +713,16 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 				Clique assetClique = assetCliqueIterator.next();
 				Clique probClique  = probCliqueIterator.next();			
 				for (int j = 0; j < assetClique.getProbabilityFunction().tableSize(); j++) {
-					if (assetClique.getProbabilityFunction().getDoubleValue(j) <= 0f) {
+					if (assetClique.getProbabilityFunction().getValue(j) <= 0f) {
 						continue;
 					}
-					double value = probClique.getProbabilityFunction().getValue(j) 
-					* getqToAssetConverter().getScoreFromQValues(assetClique.getProbabilityFunction().getDoubleValue(j));
+					double value;
+					if (isToUseQValues()) {
+						value = probClique.getProbabilityFunction().getValue(j) 
+							* getqToAssetConverter().getScoreFromQValues(assetClique.getProbabilityFunction().getValue(j));
+					} else {
+						value = probClique.getProbabilityFunction().getValue(j) * assetClique.getProbabilityFunction().getValue(j);
+					}
 					ret +=  value;
 					this.notifyExpectedAssetCellListener(probClique, assetClique, j, j, value);
 				}			
@@ -739,16 +735,26 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 						|| probSeparator.getProbabilityFunction().getVariablesSize() <= 0 
 						|| probSeparator.getProbabilityFunction().tableSize() <= 0) {
 					// this is an empty separator, so it has 
-					double value =  getqToAssetConverter().getScoreFromQValues(getEmptySeparatorsQValue());
+					double value;
+					if (isToUseQValues()) {
+						value = getqToAssetConverter().getScoreFromQValues(getEmptySeparatorsDefaultContent());
+					} else {
+						value = getEmptySeparatorsDefaultContent();
+					}
 					ret -= value;
 					this.notifyExpectedAssetCellListener(probSeparator, assetSeparator, -1, -1, value);
 				}
 				for (int i = 0; i < assetSeparator.getProbabilityFunction().tableSize(); i++) {	
-					if (assetSeparator.getProbabilityFunction().getDoubleValue(i) <= 0f) {
+					if (assetSeparator.getProbabilityFunction().getValue(i) <= 0f) {
 						continue;
 					}
-					double value =  probSeparator.getProbabilityFunction().getValue(i) 
-					* getqToAssetConverter().getScoreFromQValues(assetSeparator.getProbabilityFunction().getDoubleValue(i)) ;
+					double value ;
+					if (isToUseQValues()) {
+						value = probSeparator.getProbabilityFunction().getValue(i) 
+							* getqToAssetConverter().getScoreFromQValues(assetSeparator.getProbabilityFunction().getValue(i));
+					} else {
+						value = probSeparator.getProbabilityFunction().getValue(i) * assetSeparator.getProbabilityFunction().getValue(i);
+					}
 					ret -= value;
 					this.notifyExpectedAssetCellListener(probSeparator, assetSeparator, i, i, value);
 				}
@@ -868,7 +874,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 * @see AssetPropagationInferenceAlgorithm#calculateExplanation(List)
 	 * @see IExplanationJunctionTree#calculateExplanation(Graph, IInferenceAlgorithm)
 	 */
-	public double calculateExplanation( List<Map<INode, Integer>> inputOutpuArgumentForExplanation){
+	public float calculateExplanation( List<Map<INode, Integer>> inputOutpuArgumentForExplanation){
 		if (this.getAssetPropagationDelegator() == null) {
 			return Float.NaN;
 		}
@@ -983,235 +989,6 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		return isToNormalizeDisconnectedNets;
 	}
 
-	// The following inner class was migrated to unbbayes.prs.bn.JunctionTreeAlgorithm
-//	/**
-//	 * This class represents a clone of a {@link ProbabilisticNetwork},
-//	 * only in the context of the {@link AssetAwareInferenceAlgorithm} context
-//	 * (i.e. it only clones attributes necessary for the correct functionality
-//	 * of {@link AssetAwareInferenceAlgorithm}).
-//	 * @author Shou Matsumoto
-//	 */
-//	public class ProbabilisticNetworkClone extends ProbabilisticNetwork {
-//		private static final long serialVersionUID = 2863527797831091610L;
-//		private final ProbabilisticNetwork originalNet;
-//		/** 
-//		 * Instantiates a clone of a {@link ProbabilisticNetwork}
-//		 * @param originalNet : net to be cloned 
-//		 */
-//		public ProbabilisticNetworkClone(ProbabilisticNetwork originalNet) {
-//			super(originalNet.getName());
-//			this.originalNet = originalNet;
-//			setCreateLog(originalNet.isCreateLog());
-//			
-//			// copy nodes
-//			for (Node node : originalNet.getNodes()) {
-//				if (!(node instanceof ProbabilisticNode)) {
-//					// ignore unknown nodes
-//					Debug.println(getClass(), node + " is not a ProbabilisticNode and will not be copied.");
-//					continue;
-//				}
-//				// ProbabilisticNode has a clone() method, but it keeps parents and children pointing to old nodes (which may cause future problems)
-//				ProbabilisticNode newNode = ((ProbabilisticNode)node).basicClone();
-//				if (newNode.getProbabilityFunction().getVariablesSize() <= 0) {
-//					newNode.getProbabilityFunction().addVariable(newNode);
-//				}
-//				this.addNode(newNode);
-//			}
-//			
-//			// copy edges
-//			for (Edge oldEdge : originalNet.getEdges()) {
-//				Node node1 = this.getNode(oldEdge.getOriginNode().getName());
-//				Node node2 = this.getNode(oldEdge.getDestinationNode().getName());
-//				if (node1 == null || node2 == null) {
-//					Debug.println(getClass(), oldEdge + " has a node which was not copied to the cloned network.");
-//					continue;
-//				}
-//				Edge newEdge = new Edge(node1, node2);
-//				try {
-//					this.addEdge(newEdge);
-//				} catch (InvalidParentException e) {
-//					throw new RuntimeException("Could not clone edge " + oldEdge +" of network " + originalNet , e);
-//				}
-//			}
-//			
-//			// copy cpt
-//			for (Node node : originalNet.getNodes()) {
-//				if (node instanceof ProbabilisticNode) {
-//					PotentialTable oldCPT = ((ProbabilisticNode) node).getProbabilityFunction();
-//					PotentialTable newCPT = ((ProbabilisticNode) this.getNode(node.getName())).getProbabilityFunction();
-//					// CAUTION: the following code will throw an ArrayIndexOutouBoundException when oldCPT and newCPT have different sizes.
-//					newCPT.setValues(oldCPT.getValues());	// they supposedly have same size.
-//				}
-//			}
-//			
-//			// instantiate junction tree and copy content
-//			this.setJunctionTree(new JunctionTree());
-//			
-//			// mapping between original cliques/separator to copied clique/separator 
-//			// (cliques are needed posteriorly in order to copy separators, and seps are needed in order to copy relation from node to clique/separators)
-//			Map<IRandomVariable, IRandomVariable> oldCliqueToNewCliqueMap = new HashMap<IRandomVariable, IRandomVariable>();	// cannot use tree map, because cliques are not comparable
-//			
-//			// copy cliques if there are cliques to copy
-//			if (originalNet.getJunctionTree() != null && originalNet.getJunctionTree().getCliques() != null) {
-//				for (Clique origClique : originalNet.getJunctionTree().getCliques()) {
-//					Clique newClique = new Clique();
-//					boolean hasInvalidNode = false;	// this will be true if a clique contains a node not in new network.
-//					// add nodes to clique
-//					for (Node node : origClique.getNodes()) {
-//						Node newNode = this.getNode(node.getName());	// extract associated node, because they are related by name
-//						if (newNode == null) {
-//							hasInvalidNode = true;
-//							break;
-//						}
-//						newClique.getNodes().add(newNode);
-//					}
-//					if (hasInvalidNode) {
-//						// the original clique has a node not present in this net
-//						continue;
-//					}
-//					
-//					// add nodes to the list "associatedProbabilisticNodes"
-//					for (Node node : origClique.getAssociatedProbabilisticNodes()) {
-//						Node newNode = this.getNode(node.getName());	// extract associated node, because they are related by name
-//						if (newNode == null) {
-//							hasInvalidNode = true;
-//							break;
-//						}
-//						// origClique.getNodes() and origClique.getAssociatedProbabilisticNodes() may be different... Copy both separately. 
-//						newClique.getAssociatedProbabilisticNodes().add(newNode);
-//					}
-//					if (hasInvalidNode) {
-//						// the original clique has a node not present in the asset net
-//						continue;
-//					}
-//					
-//					newClique.setIndex(origClique.getIndex());
-//					
-//					// copy clique potential variables
-//					PotentialTable origPotential = origClique.getProbabilityFunction();
-//					PotentialTable assetPotential = newClique.getProbabilityFunction();
-//					for (int i = 0; i < origPotential.getVariablesSize(); i++) {
-//						Node newNode = this.getNode(origPotential.getVariableAt(i).getName());
-//						if (newNode == null) {
-//							hasInvalidNode = true;
-//							break;
-//						}
-//						assetPotential.addVariable(newNode);
-//					}
-//					if (hasInvalidNode) {
-//						// the original clique has a node not present in the asset net
-//						continue;
-//					}
-//					
-//					// copy the values of clique potential
-//					assetPotential.setValues(origPotential.getValues());
-//					
-//					// NOTE: this is ignoring utility table and nodes
-//					
-//					this.getJunctionTree().getCliques().add(newClique);
-//					oldCliqueToNewCliqueMap.put(origClique, newClique);
-//				}
-//			}
-//			
-//			// copy separators if there are separators to copy
-//			if (originalNet.getJunctionTree() != null && originalNet.getJunctionTree().getSeparators() != null) {
-//				for (Separator origSeparator : originalNet.getJunctionTree().getSeparators()) {
-//					boolean hasInvalidNode = false;	// this will be true if a clique contains a node not in AssetNetwork.
-//					
-//					// extract the cliques related to the two cliques that the origSeparator connects
-//					Clique newClique1 = (Clique) oldCliqueToNewCliqueMap.get(origSeparator.getClique1());
-//					Clique newClique2 = (Clique) oldCliqueToNewCliqueMap.get(origSeparator.getClique2());
-//					if (newClique1 == null || newClique2 == null) {
-//						try {
-//							Debug.println(getClass(), "Could not clone separator between " + newClique1 + " and " + newClique2);
-//						} catch (Throwable t) {
-//							t.printStackTrace();
-//						}
-//						continue;
-//					}
-//					
-//					Separator newSeparator = new Separator(newClique1, newClique2);
-//					
-//					// fill the separator's node list
-//					for (Node origNode : origSeparator.getNodes()) {
-//						Node newNode = this.getNode(origNode.getName());	
-//						if (newNode == null) {
-//							hasInvalidNode = true;
-//							break;
-//						}
-//						newSeparator.getNodes().add(newNode);
-//					}
-//					if (hasInvalidNode) {
-//						// the original clique has a node not present in the asset net
-//						continue;
-//					}
-//					
-//					// copy separator potential
-//					PotentialTable origPotential = origSeparator.getProbabilityFunction();
-//					PotentialTable newPotential = newSeparator.getProbabilityFunction();
-//					for (int j = 0; j < origPotential.getVariablesSize(); j++) {
-//						Node newNode = this.getNode(origPotential.getVariableAt(j).getName());
-//						if (newNode == null) {
-//							hasInvalidNode = true;
-//							break;
-//						}
-//						newPotential.addVariable(newNode);
-//					}
-//					if (hasInvalidNode) {
-//						// the original clique has a node not present in the asset net
-//						continue;
-//					}
-//					
-//					// copy potential
-//					newPotential.setValues(origPotential.getValues());	// they supposedly have the same size
-//					
-//					// NOTE: this is ignoring utility table and nodes
-//					this.getJunctionTree().addSeparator(newSeparator);
-//					oldCliqueToNewCliqueMap.put(origSeparator, newSeparator);
-//				}
-//			}
-//			
-//			// copy relationship between cliques/separator and nodes
-//			for (Node origNode : originalNet.getNodes()) {
-//				ProbabilisticNode newNode = (ProbabilisticNode)this.getNode(origNode.getName());
-//				if (newNode == null) {
-//					try {
-//						Debug.println(getClass(), "Could not find node copied from " + origNode);
-//					} catch (Throwable t) {
-//						t.printStackTrace();
-//					}
-//					continue;
-//				}
-//				newNode.setAssociatedClique(oldCliqueToNewCliqueMap.get(((TreeVariable)origNode).getAssociatedClique()));
-//				
-//				// force marginal to have some value
-//				newNode.updateMarginal();
-//			}
-//		}
-//		/**
-//		 * @return the network which was used as the basis for this cloned network
-//		 */
-//		public ProbabilisticNetwork getOriginalNet() {
-//			return originalNet;
-//		}
-//		
-//		/* (non-Javadoc)
-//		 * @see java.lang.Object#equals(java.lang.Object)
-//		 */
-//		public boolean equals(Object obj) {
-//			if (super.equals(obj)) {
-//				return true;
-//			}
-//			if (this.getOriginalNet().equals(obj)) {
-//				return true;
-//			}
-//			if (obj instanceof ProbabilisticNetworkClone) {
-//				ProbabilisticNetworkClone probabilisticNetworkClone = (ProbabilisticNetworkClone) obj;
-//				return this.getOriginalNet().equals(probabilisticNetworkClone.getOriginalNet());
-//			}
-//			return false;
-//		}
-//	}
 	
 	/**
 	 * delegates to {@link #clone(boolean)}
@@ -1266,7 +1043,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		// clone this algorithm
 		AssetAwareInferenceAlgorithm ret = (AssetAwareInferenceAlgorithm) getInstance(jtAlgorithm);
 		// copy settings
-		ret.setDefaultInitialAssetQuantity(getDefaultInitialAssetQuantity());
+		ret.setDefaultInitialAssetTableValue(getDefaultInitialAssetTableValue());
 		ret.setToAllowQValuesSmallerThan1(this.isToAllowQValuesSmallerThan1());
 		ret.setToCalculateMarginalsOfAssetNodes(this.isToCalculateMarginalsOfAssetNodes());
 		ret.setToLogAssets(this.isToLogAssets());
@@ -1299,8 +1076,8 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		if (getAssetNetwork().getJunctionTree() != null && getAssetNetwork().getJunctionTree().getCliques() != null) {
 			// copy asset tables of cliques. Since cliques are stored in a list, the ordering of the copied cliques is supposedly the same
 			for (int i = 0; i < getAssetNetwork().getJunctionTree().getCliques().size(); i++) {
-				((DoublePrecisionProbabilisticTable)newAssetNet.getJunctionTree().getCliques().get(i).getProbabilityFunction()).setValues(
-						((DoublePrecisionProbabilisticTable)getAssetNetwork().getJunctionTree().getCliques().get(i).getProbabilityFunction()).getDoubleValues()
+				(newAssetNet.getJunctionTree().getCliques().get(i).getProbabilityFunction()).setValues(
+						(getAssetNetwork().getJunctionTree().getCliques().get(i).getProbabilityFunction()).getValues()
 				);
 				// store asset cliques in the map, so that we can use it for the separators later
 				oldCliqueToNewCliqueMap.put(getAssetNetwork().getJunctionTree().getCliques().get(i), newAssetNet.getJunctionTree().getCliques().get(i));
@@ -1318,7 +1095,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 					throw new RuntimeException("Could not access copy of separator " + oldSep + " correctly while copying asset tables of separators.");
 				}
 				// tables are supposedly with same size
-				((DoublePrecisionProbabilisticTable)newSep.getProbabilityFunction()).setValues(((DoublePrecisionProbabilisticTable)oldSep.getProbabilityFunction()).getDoubleValues());
+				(newSep.getProbabilityFunction()).setValues((oldSep.getProbabilityFunction()).getValues());
 			}
 		}
 		
@@ -1397,37 +1174,24 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	}
 
 	/**
-	 * This object will be used by {@link #calculateExpectedAssets()} in order
-	 * to convert q-values in asset tables (which can be
-	 * obtaining by calling the following methods in sequence:  {@link #getAssetNetwork()}
-	 * {@link AssetNetwork#getJunctionTree()},
-	 * {@link Clique#getProbabilityFunction()}) to assets.
-	 * <br/><br/>
-	 * Usually, assets and q-values are related with logarithm function:
-	 * asset = b log (q). 
-	 * <br/><br/>
-	 * In which b is some constant.
-	 * @param qToAssetConverter the qToAssetConverter to set
+	 * This method only delegates to {@link #getAssetPropagationDelegator()}
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setqToAssetConverter(unbbayes.prs.bn.inference.extension.IQValuesToAssetsConverter)
 	 */
 	public void setqToAssetConverter(IQValuesToAssetsConverter qToAssetConverter) {
-		this.qToAssetConverter = qToAssetConverter;
+		if (getAssetPropagationDelegator() != null) {
+			getAssetPropagationDelegator().setqToAssetConverter(qToAssetConverter);
+		}
 	}
 
-	/**
-	 * This object will be used by {@link #calculateExpectedAssets()} in order
-	 * to convert q-values in asset tables (which can be
-	 * obtaining by calling the following methods in sequence:  {@link #getAssetNetwork()}
-	 * {@link AssetNetwork#getJunctionTree()},
-	 * {@link Clique#getProbabilityFunction()}) to assets.
-	 * <br/><br/>
-	 * Usually, assets and q-values are related with logarithm function:
-	 * asset = b log (q). 
-	 * <br/><br/>
-	 * In which b is some constant.
-	 * @return the qToAssetConverter
+	/** 
+	 * This method only delegates to {@link #getAssetPropagationDelegator()}
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#getqToAssetConverter()
 	 */
 	public IQValuesToAssetsConverter getqToAssetConverter() {
-		return qToAssetConverter;
+		if (getAssetPropagationDelegator() == null) {
+			return null;
+		}
+		return getAssetPropagationDelegator().getqToAssetConverter();
 	}
 
 	/**
@@ -1465,20 +1229,20 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 
 	/**
 	 * Just delegates to {@link #getAssetPropagationDelegator()}.
-	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#getEmptySeparatorsQValue()
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#getEmptySeparatorsDefaultContent()
 	 * @see #calculateExpectedAssets()
 	 */
-	public double getEmptySeparatorsQValue() {
-		return getAssetPropagationDelegator().getEmptySeparatorsQValue();
+	public float getEmptySeparatorsDefaultContent() {
+		return getAssetPropagationDelegator().getEmptySeparatorsDefaultContent();
 	}
 
 	/**
 	 * Just delegates to {@link #getAssetPropagationDelegator()}
-	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setEmptySeparatorsQValue(double)
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setEmptySeparatorsDefaultContent(double)
 	 * @see #calculateExpectedAssets()
 	 */
-	public void setEmptySeparatorsQValue(double emptySeparatorsQValue) {
-		getAssetPropagationDelegator().setEmptySeparatorsQValue(emptySeparatorsQValue);
+	public void setEmptySeparatorsDefaultContent(float emptySeparatorsContent) {
+		getAssetPropagationDelegator().setEmptySeparatorsDefaultContent(emptySeparatorsContent);
 	}
 
 	/**
@@ -1486,32 +1250,75 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 * @param delta : assets to add. Caution: this is assets, not q-values.
 	 * @see #getqToAssetConverter()
 	 * @see #getAssetNetwork()
-	 * @see #setEmptySeparatorsQValue(double)
+	 * @see #setEmptySeparatorsDefaultContent(double)
 	 */
-	public void addAssets(double delta) {
+	public void addAssets(float delta) {
 		/*
 		 * If we want to add something into a logarithm value, we must multiply some ratio.
 		 * Assuming that asset = b logX (q)  (note: X is some base), then X^(asset/b) = q
 		 * So, X^((asset+delta)/b) = X^(asset/b + delta/b) = X^(asset/b) * X^(delta/b)  = q * X^(delta/b)
 		 * So, we need to multiply X^(delta/b) in order to update q when we add delta into asset.
 		 */
-		double ratio = Math.pow(getqToAssetConverter().getCurrentLogBase(), delta / getqToAssetConverter().getCurrentCurrencyConstant() );
+		float ratio = (float) Math.pow(getqToAssetConverter().getCurrentLogBase(), delta / getqToAssetConverter().getCurrentCurrencyConstant() );
 		// add delta to all cells in asset tables of cliques
 		for (Clique clique : this.getAssetNetwork().getJunctionTree().getCliques()) {
 			PotentialTable assetTable = clique.getProbabilityFunction();
 			for (int i = 0; i < assetTable.tableSize(); i++) {
-				assetTable.setValue(i, (assetTable.getDoubleValue(i) * ratio) );
+				if (isToUseQValues()) {
+					if (Float.isInfinite(assetTable.getValue(i) * ratio)) {
+						throw new ZeroAssetsException("Overflow detected when adding " + delta + " to min assets of user " + getAssetNetwork());
+					}
+					assetTable.setValue(i, (assetTable.getValue(i) * ratio) );
+				} else {
+					assetTable.setValue(i, (assetTable.getValue(i) + delta) );
+				}
 			}
 		}
 		// add delta to all cells in asset tables of separators
 		for (Separator separator : this.getAssetNetwork().getJunctionTree().getSeparators()) {
 			PotentialTable assetTable = separator.getProbabilityFunction();
 			for (int i = 0; i < assetTable.tableSize(); i++) {
-				assetTable.setValue(i, (assetTable.getDoubleValue(i) * ratio));
+				if (isToUseQValues()) {
+					if (Float.isInfinite(assetTable.getValue(i) * ratio)) {
+						throw new ZeroAssetsException("Overflow detected when adding " + delta + " to min assets of user " + getAssetNetwork());
+					}
+					assetTable.setValue(i, (assetTable.getValue(i) * ratio));
+				} else {
+					assetTable.setValue(i, (assetTable.getValue(i) + delta));
+				}
 			}
 		}
 		// add delta to empty separators (but since all empty separators supposedly have the same assets, it is stored in only 1 place)
-		this.setEmptySeparatorsQValue((double) (this.getEmptySeparatorsQValue()*ratio));
+		if (isToUseQValues()) {
+			if (Float.isInfinite(this.getEmptySeparatorsDefaultContent() * ratio)) {
+				throw new ZeroAssetsException("Overflow detected when adding " + delta + " to min assets of user " + getAssetNetwork());
+			}
+			this.setEmptySeparatorsDefaultContent((this.getEmptySeparatorsDefaultContent()*ratio));
+		} else {
+			this.setEmptySeparatorsDefaultContent((this.getEmptySeparatorsDefaultContent() + delta));
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setToUseQValues(boolean)
+	 */
+	public void setToUseQValues(boolean isToUseQValues) {
+		this.isToUseQValues = isToUseQValues;
+		if (this.getAssetPropagationDelegator() != null) {
+			this.getAssetPropagationDelegator().setToUseQValues(isToUseQValues);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#isToUseQValues()
+	 */
+	public boolean isToUseQValues() {
+		if (this.getAssetPropagationDelegator() != null) {
+			return this.getAssetPropagationDelegator().isToUseQValues();
+		}
+		return isToUseQValues;
 	}
 
 	

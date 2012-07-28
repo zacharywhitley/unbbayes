@@ -18,5 +18,5 @@ public interface IAssetAwareInferenceAlgorithmBuilder {
 	 * @return instance of AssetAwareInferenceAlgorithm
 	 * @see AssetAwareInferenceAlgorithm#getInstance(IInferenceAlgorithm)
 	 */
-	public AssetAwareInferenceAlgorithm build(IInferenceAlgorithm probDelegator, double initialQValues);
+	public AssetAwareInferenceAlgorithm build(IInferenceAlgorithm probDelegator, float initialQValues);
 }

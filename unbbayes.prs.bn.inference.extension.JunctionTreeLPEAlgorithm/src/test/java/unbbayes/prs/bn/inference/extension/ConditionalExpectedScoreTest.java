@@ -93,7 +93,7 @@ public class ConditionalExpectedScoreTest extends TestCase {
 		assertNotNull(assetQAlgorithm);
 		
 		// set the default asset q quantity of all clique cells to 100
-		assetQAlgorithm.setDefaultInitialAssetQuantity(100);
+		assetQAlgorithm.setDefaultInitialAssetTableValue(100);
 		
 		try {
 			// compile network

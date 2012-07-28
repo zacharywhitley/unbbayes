@@ -40,6 +40,6 @@ public interface IExplanationJunctionTree {
 	 * @param algorithm : the algorithm which has compiled the graph.
 	 * @return the joint probability value (probability assuming that the states happens).
 	 */
-	public double calculateJointProbability(Map<INode, Integer> states, Graph graph, IInferenceAlgorithm algorithm);
+	public float calculateJointProbability(Map<INode, Integer> states, Graph graph, IInferenceAlgorithm algorithm);
 	
 }

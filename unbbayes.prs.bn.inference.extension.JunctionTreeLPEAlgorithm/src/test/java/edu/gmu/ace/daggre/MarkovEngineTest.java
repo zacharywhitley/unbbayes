@@ -62,7 +62,7 @@ public class MarkovEngineTest extends TestCase {
 		engine.initialize();
 		engine.setCurrentLogBase((float) Math.E);
 		engine.setCurrentCurrencyConstant((float) (10/Math.log(100)));
-		engine.setDefaultInitialQTableValue(engine.getQValuesFromScore(0f));
+		engine.setDefaultInitialAssetTableValue((float) engine.getQValuesFromScore(0f));
 	}
 
 	/* (non-Javadoc)
@@ -1198,7 +1198,7 @@ public class MarkovEngineTest extends TestCase {
 		MarkovEngineImpl me = (MarkovEngineImpl) MarkovEngineImpl.getInstance();
 		((MarkovEngineImpl)me).setCurrentLogBase(2);
 		((MarkovEngineImpl)me).setCurrentCurrencyConstant(100);
-		((MarkovEngineImpl)me).setDefaultInitialQTableValue(((MarkovEngineImpl)me).getQValuesFromScore(INITIAL_ASSETS));
+		((MarkovEngineImpl)me).setDefaultInitialAssetTableValue((float) ((MarkovEngineImpl)me).getQValuesFromScore(INITIAL_ASSETS));
 		
 		transactionKey = me.startNetworkActions();
 		me.addQuestion(transactionKey, new Date(), 1L, 2, null);
@@ -3931,9 +3931,9 @@ public class MarkovEngineTest extends TestCase {
 		engine.setCurrentCurrencyConstant(100);
 		engine.setCurrentLogBase(2);
 		
-		double initialQ = engine.getQValuesFromScore(1000.0);
+		double initialQ = engine.getQValuesFromScore(1000.0f);
 		
-		engine.setDefaultInitialQTableValue(initialQ);
+		engine.setDefaultInitialAssetTableValue((float) initialQ);
 		
 		// crate transaction
 		long transactionKey = engine.startNetworkActions();
@@ -8026,7 +8026,7 @@ public class MarkovEngineTest extends TestCase {
 	public final void testResolveAllQuestion() {
 		engine.setCurrentCurrencyConstant(100);
 		engine.setCurrentLogBase(2);
-		engine.setDefaultInitialQTableValue(engine.getQValuesFromScore(12050.81f));
+		engine.setDefaultInitialAssetTableValue((float) engine.getQValuesFromScore(12050.81f));
 		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
 		this.createDEFNetIn1Transaction(userNameToIDMap);
 		long transactionKey = engine.startNetworkActions();
@@ -8054,7 +8054,7 @@ public class MarkovEngineTest extends TestCase {
 		engine.initialize();
 		engine.setCurrentCurrencyConstant((float) (1000/(Math.log(10)/Math.log(2))));
 		engine.setCurrentLogBase(2);
-		engine.setDefaultInitialQTableValue(10);
+		engine.setDefaultInitialAssetTableValue(10);
 		userNameToIDMap = new HashMap<String, Long>();
 		this.createDEFNetIn1Transaction(userNameToIDMap);
 		transactionKey = engine.startNetworkActions();
@@ -8907,7 +8907,12 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(returnFromTrade, preview);
 		
 		// check if preview matches current getAssetsIf
-		assertEquals(engine.getAssetsIfStates(userNameToIDMap.get("Tom"), 0x0E, assumptionIds, assumedStates), preview);
+		List<Float> currentAsssetsIf = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), 0x0E, assumptionIds, assumedStates);
+		assertNotNull(currentAsssetsIf);
+		assertEquals(preview.size(), currentAsssetsIf.size());
+		for (int i = 0; i < currentAsssetsIf.size(); i++) {
+			assertEquals(currentAsssetsIf.get(i), preview.get(i), ASSET_ERROR_MARGIN);
+		}
 
 		
 		// Let's create user Joe, ID = 1.
@@ -8960,9 +8965,14 @@ public class MarkovEngineTest extends TestCase {
 		// check if preview and value returned from trade matches
 		assertEquals(returnFromTrade.size(), preview.size());
 		assertEquals(returnFromTrade, preview);
-		// check if preview matches current getAssetsIf
-		assertEquals(engine.getAssetsIfStates(userNameToIDMap.get("Joe"), 0x0E, assumptionIds, assumedStates), preview);
 		
+		// check if preview matches current getAssetsIf
+		currentAsssetsIf = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), 0x0E, assumptionIds, assumedStates);
+		assertNotNull(currentAsssetsIf);
+		assertEquals(preview.size(), currentAsssetsIf.size());
+		for (int i = 0; i < currentAsssetsIf.size(); i++) {
+			assertEquals(currentAsssetsIf.get(i), preview.get(i), ASSET_ERROR_MARGIN);
+		}
 
 		// Let's create user Amy, ID = 2.
 		userNameToIDMap.put("Amy", (long) 2);
@@ -9014,8 +9024,14 @@ public class MarkovEngineTest extends TestCase {
 		// check if preview and value returned from trade matches
 		assertEquals(returnFromTrade.size(), preview.size());
 		assertEquals(returnFromTrade, preview);
+		
 		// check if preview matches current getAssetsIf
-		assertEquals(engine.getAssetsIfStates(userNameToIDMap.get("Amy"), 0x0F, assumptionIds, assumedStates), preview);
+		currentAsssetsIf = engine.getAssetsIfStates(userNameToIDMap.get("Amy"), 0x0F, assumptionIds, assumedStates);
+		assertNotNull(currentAsssetsIf);
+		assertEquals(preview.size(), currentAsssetsIf.size());
+		for (int i = 0; i < currentAsssetsIf.size(); i++) {
+			assertEquals(currentAsssetsIf.get(i), preview.get(i), ASSET_ERROR_MARGIN);
+		}
 		
 		// Joe bets P(F=f1|D=d2) = .5 -> .1
 		
@@ -9052,9 +9068,14 @@ public class MarkovEngineTest extends TestCase {
 		// check if preview and value returned from trade matches
 		assertEquals(returnFromTrade.size(), preview.size());
 		assertEquals(returnFromTrade, preview);
-		// check if preview matches current getAssetsIf
-		assertEquals(engine.getAssetsIfStates(userNameToIDMap.get("Joe"), 0x0F, assumptionIds, assumedStates), preview);
 		
+		// check if preview matches current getAssetsIf
+		currentAsssetsIf = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), 0x0F, assumptionIds, assumedStates);
+		assertNotNull(currentAsssetsIf);
+		assertEquals(preview.size(), currentAsssetsIf.size());
+		for (int i = 0; i < currentAsssetsIf.size(); i++) {
+			assertEquals(currentAsssetsIf.get(i), preview.get(i), ASSET_ERROR_MARGIN);
+		}
 
 		// create new user Eric
 		userNameToIDMap.put("Eric", (long) 3);
@@ -9103,9 +9124,14 @@ public class MarkovEngineTest extends TestCase {
 		// check if preview and value returned from trade matches
 		assertEquals(returnFromTrade.size(), preview.size());
 		assertEquals(returnFromTrade, preview);
-		// check if preview matches current getAssetsIf
-		assertEquals(engine.getAssetsIfStates(userNameToIDMap.get("Eric"), 0x0E, assumptionIds, assumedStates), preview);
 		
+		// check if preview matches current getAssetsIf
+		currentAsssetsIf = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), 0x0E, assumptionIds, assumedStates);
+		assertNotNull(currentAsssetsIf);
+		assertEquals(preview.size(), currentAsssetsIf.size());
+		for (int i = 0; i < currentAsssetsIf.size(); i++) {
+			assertEquals(currentAsssetsIf.get(i), preview.get(i), ASSET_ERROR_MARGIN);
+		}
 		
 		// Eric bets  P(D=d1|F=f2) = 0.52 -> 0.7
 		
@@ -9142,9 +9168,14 @@ public class MarkovEngineTest extends TestCase {
 		// check if preview and value returned from trade matches
 		assertEquals(returnFromTrade.size(), preview.size());
 		assertEquals(returnFromTrade, preview);
-		// check if preview matches current getAssetsIf
-		assertEquals(engine.getAssetsIfStates(userNameToIDMap.get("Eric"), 0x0D, assumptionIds, assumedStates), preview);
 		
+		// check if preview matches current getAssetsIf
+		currentAsssetsIf = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), 0x0D, assumptionIds, assumedStates);
+		assertNotNull(currentAsssetsIf);
+		assertEquals(preview.size(), currentAsssetsIf.size());
+		for (int i = 0; i < currentAsssetsIf.size(); i++) {
+			assertEquals(currentAsssetsIf.get(i), preview.get(i), ASSET_ERROR_MARGIN);
+		}
 
 		// Eric makes a bet which makes his assets-q to go below 1, but the algorithm does not allow it
 		// this is a case in which preview != actual (because the actual trade will not be executed)
@@ -9229,7 +9260,7 @@ public class MarkovEngineTest extends TestCase {
 		engine.initialize();
 		engine.setCurrentCurrencyConstant(100);
 		engine.setCurrentLogBase(2);
-		engine.setDefaultInitialQTableValue(engine.getQValuesFromScore(1000));
+		engine.setDefaultInitialAssetTableValue((float) engine.getQValuesFromScore(1000));
 		
 		long transactionKey = engine.startNetworkActions();
 		engine.addQuestion(transactionKey, new Date(), 1L, 2, null);
@@ -9258,7 +9289,7 @@ public class MarkovEngineTest extends TestCase {
 		engine.initialize();
 		engine.setCurrentCurrencyConstant(100);
 		engine.setCurrentLogBase(2);
-		engine.setDefaultInitialQTableValue(engine.getQValuesFromScore(1000));
+		engine.setDefaultInitialAssetTableValue((float) engine.getQValuesFromScore(1000));
 		transactionKey = engine.startNetworkActions();
 		engine.addQuestion(transactionKey, new Date(), 1L, 2, null);
 		engine.addQuestion(transactionKey, new Date(), 2L, 2, null);

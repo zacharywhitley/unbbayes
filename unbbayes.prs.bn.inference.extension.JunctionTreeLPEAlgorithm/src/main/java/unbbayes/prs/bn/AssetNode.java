@@ -82,18 +82,46 @@ public class AssetNode extends DecisionNode {
     * @see unbbayes.prs.id.DecisionNode#marginal()
     */
     protected void marginal() {
-    	return;
-//    	initMarginalList();	// at least make sure marginal list is not null
-//    	if (!isToCalculateMarginal()) {
-//    		return;
-//    	}
+    	initMarginalList();	// at least make sure marginal list is not null
+    	if (!isToCalculateMarginal()) {
+    		return;
+    	}
 
-//    	//    	return;	// asset nodes has no semantics for marginals
 ////    	for (int i = 0; i < marginalList.length; i++) {
 ////    		marginalList[i] = 1;
 ////    	}
 ////    	return;
     	
+    	PotentialTable auxTab = (PotentialTable) ((PotentialTable)getAssociatedClique().getProbabilityFunction()).clone();
+        int index = auxTab.indexOfVariable(this);
+        int size = getAssociatedClique().getProbabilityFunction().variableCount();
+        for (int i = 0; i < size; i++) {
+            if (i != index) {
+                auxTab.removeVariable(getAssociatedClique().getProbabilityFunction().getVariableAt(i));
+            }
+        }
+
+        int tableSize = auxTab.tableSize();
+        if (tableSize > marginalList.length) {
+        	Debug.println(getClass(), "There is some inconsistency. Maybe there is some node with no state at all.");
+        } else {
+        	for (int i = 0; i < tableSize; i++) {
+        		marginalList[i] = auxTab.getValue(i);
+        	}
+        }
+    }
+    
+//    /**
+//     * If {@link #isToCalculateMarginal()}, then it calculates the marginals
+//     * using double precision.
+//     * @return array with marginal
+//     * @see #marginal()
+//     */
+//    public double[] calculateDoublePrecisionMarginal() {
+//    	initMarginalList();	// at least make sure marginal list is not null
+//    	if (!isToCalculateMarginal()) {
+//    		return null;
+//    	}
 //    	DoublePrecisionProbabilisticTable auxTab = (DoublePrecisionProbabilisticTable) ((DoublePrecisionProbabilisticTable)getAssociatedClique().getProbabilityFunction()).clone();
 //        int index = auxTab.indexOfVariable(this);
 //        int size = getAssociatedClique().getProbabilityFunction().variableCount();
@@ -102,51 +130,21 @@ public class AssetNode extends DecisionNode {
 //                auxTab.removeVariable(getAssociatedClique().getProbabilityFunction().getVariableAt(i));
 //            }
 //        }
+//        
+//        double[] ret = new double[getStatesSize()];
 //
 //        int tableSize = auxTab.tableSize();
 //        if (tableSize > marginalList.length) {
 //        	Debug.println(getClass(), "There is some inconsistency. Maybe there is some node with no state at all.");
+//        	return null;
 //        } else {
 //        	for (int i = 0; i < tableSize; i++) {
-//        		marginalList[i] = auxTab.getDoubleValue(i);
+//        		ret[i] = auxTab.getDoubleValue(i);
 //        	}
 //        }
-    }
-    
-    /**
-     * If {@link #isToCalculateMarginal()}, then it calculates the marginals
-     * using double precision.
-     * @return array with marginal
-     * @see #marginal()
-     */
-    public double[] calculateDoublePrecisionMarginal() {
-    	initMarginalList();	// at least make sure marginal list is not null
-    	if (!isToCalculateMarginal()) {
-    		return null;
-    	}
-    	DoublePrecisionProbabilisticTable auxTab = (DoublePrecisionProbabilisticTable) ((DoublePrecisionProbabilisticTable)getAssociatedClique().getProbabilityFunction()).clone();
-        int index = auxTab.indexOfVariable(this);
-        int size = getAssociatedClique().getProbabilityFunction().variableCount();
-        for (int i = 0; i < size; i++) {
-            if (i != index) {
-                auxTab.removeVariable(getAssociatedClique().getProbabilityFunction().getVariableAt(i));
-            }
-        }
-        
-        double[] ret = new double[getStatesSize()];
-
-        int tableSize = auxTab.tableSize();
-        if (tableSize > marginalList.length) {
-        	Debug.println(getClass(), "There is some inconsistency. Maybe there is some node with no state at all.");
-        	return null;
-        } else {
-        	for (int i = 0; i < tableSize; i++) {
-        		ret[i] = auxTab.getDoubleValue(i);
-        	}
-        }
-        
-        return ret;
-    }
+//        
+//        return ret;
+//    }
     
 
 //	/**

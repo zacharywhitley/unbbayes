@@ -12,16 +12,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import junit.framework.TestCase;
-import unbbayes.prs.Node;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
-import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.Separator;
-import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
 import edu.gmu.ace.daggre.MarkovEngineImpl.AddTradeNetworkAction;
 import edu.gmu.ace.daggre.MarkovEngineImpl.BalanceTradeNetworkAction;
 import edu.gmu.ace.daggre.MarkovEngineImpl.InexistingQuestionException;
@@ -62,7 +58,7 @@ public class BruteForceMarkovEngineTest extends TestCase {
 		engine.initialize();
 		engine.setCurrentLogBase((float) Math.E);
 		engine.setCurrentCurrencyConstant((float) (10/Math.log(100)));
-		engine.setDefaultInitialQTableValue(engine.getQValuesFromScore(0f));
+		engine.setDefaultInitialAssetTableValue((float) engine.getQValuesFromScore(0f));
 	}
 
 	/* (non-Javadoc)
@@ -675,7 +671,7 @@ public class BruteForceMarkovEngineTest extends TestCase {
 		MarkovEngineImpl me = (MarkovEngineImpl) MarkovEngineImpl.getInstance();
 		((MarkovEngineImpl)me).setCurrentLogBase(2);
 		((MarkovEngineImpl)me).setCurrentCurrencyConstant(100);
-		((MarkovEngineImpl)me).setDefaultInitialQTableValue(((MarkovEngineImpl)me).getQValuesFromScore(INITIAL_ASSETS));
+		((MarkovEngineImpl)me).setDefaultInitialAssetTableValue((float) ((MarkovEngineImpl)me).getQValuesFromScore(INITIAL_ASSETS));
 		
 		transactionKey = me.startNetworkActions();
 		me.addQuestion(transactionKey, new Date(), 1L, 2, null);
@@ -6516,7 +6512,7 @@ public class BruteForceMarkovEngineTest extends TestCase {
 	public final void testResolveAllQuestion() {
 		engine.setCurrentCurrencyConstant(100);
 		engine.setCurrentLogBase(2);
-		engine.setDefaultInitialQTableValue(engine.getQValuesFromScore(12050.81f));
+		engine.setDefaultInitialAssetTableValue((float) engine.getQValuesFromScore(12050.81f));
 		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
 		this.createDEFNetIn1Transaction(userNameToIDMap);
 		long transactionKey = engine.startNetworkActions();
@@ -6544,7 +6540,7 @@ public class BruteForceMarkovEngineTest extends TestCase {
 		engine.initialize();
 		engine.setCurrentCurrencyConstant((float) (1000/(Math.log(10)/Math.log(2))));
 		engine.setCurrentLogBase(2);
-		engine.setDefaultInitialQTableValue(10);
+		engine.setDefaultInitialAssetTableValue(10);
 		userNameToIDMap = new HashMap<String, Long>();
 		this.createDEFNetIn1Transaction(userNameToIDMap);
 		transactionKey = engine.startNetworkActions();
@@ -7719,7 +7715,7 @@ public class BruteForceMarkovEngineTest extends TestCase {
 		engine.initialize();
 		engine.setCurrentCurrencyConstant(100);
 		engine.setCurrentLogBase(2);
-		engine.setDefaultInitialQTableValue(engine.getQValuesFromScore(1000));
+		engine.setDefaultInitialAssetTableValue((float) engine.getQValuesFromScore(1000));
 		
 		long transactionKey = engine.startNetworkActions();
 		engine.addQuestion(transactionKey, new Date(), 1L, 2, null);
@@ -7748,7 +7744,7 @@ public class BruteForceMarkovEngineTest extends TestCase {
 		engine.initialize();
 		engine.setCurrentCurrencyConstant(100);
 		engine.setCurrentLogBase(2);
-		engine.setDefaultInitialQTableValue(engine.getQValuesFromScore(1000));
+		engine.setDefaultInitialAssetTableValue((float) engine.getQValuesFromScore(1000));
 		transactionKey = engine.startNetworkActions();
 		engine.addQuestion(transactionKey, new Date(), 1L, 2, null);
 		engine.addQuestion(transactionKey, new Date(), 2L, 2, null);

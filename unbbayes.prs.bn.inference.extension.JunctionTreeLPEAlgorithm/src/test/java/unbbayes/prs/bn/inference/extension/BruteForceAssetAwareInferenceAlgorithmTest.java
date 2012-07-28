@@ -16,7 +16,6 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
 import unbbayes.prs.bn.AssetNode;
 import unbbayes.prs.bn.Clique;
-import unbbayes.prs.bn.DoublePrecisionProbabilisticTable;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
@@ -279,7 +278,7 @@ public class BruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 //		assetQAlgorithm.setToUpdateSeparators(false);
 		
 		// set the default asset q quantity of all clique cells to 100
-		assetQAlgorithm.setDefaultInitialAssetQuantity(100);
+		assetQAlgorithm.setDefaultInitialAssetTableValue(100);
 		// force it to use min-propagation automatically even when we dont call doMinPropagation
 		assetQAlgorithm.setToPropagateForGlobalConsistency(true);	
 		
@@ -1273,7 +1272,7 @@ public class BruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 			Clique assetClone =  clonedAlgorithm.getAssetNetwork().getJunctionTree().getCliques().get(i);
 			for (int j = 0; j < probOrig.getProbabilityFunction().tableSize(); j++) {
 				assertEquals(probOrig.getProbabilityFunction().getValue(j), probClone.getProbabilityFunction().getValue(j), PROB_PRECISION_ERROR);
-				assertEquals(((DoublePrecisionProbabilisticTable)assetOrig.getProbabilityFunction()).getDoubleValue(j), ((DoublePrecisionProbabilisticTable)assetClone.getProbabilityFunction()).getDoubleValue(j), ASSET_PRECISION_ERROR);
+				assertEquals((assetOrig.getProbabilityFunction()).getValue(j), (assetClone.getProbabilityFunction()).getValue(j), ASSET_PRECISION_ERROR);
 			}
 		}
 
@@ -1293,7 +1292,7 @@ public class BruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 			Clique assetClone =  clonedAlgorithm.getAssetNetwork().getJunctionTree().getCliques().get(i);
 			for (int j = 0; j < probOrig.getProbabilityFunction().tableSize(); j++) {
 				assertEquals(probOrig.getProbabilityFunction().getValue(j), probClone.getProbabilityFunction().getValue(j), PROB_PRECISION_ERROR);
-				assertEquals(((DoublePrecisionProbabilisticTable)assetOrig.getProbabilityFunction()).getDoubleValue(j), ((DoublePrecisionProbabilisticTable)assetClone.getProbabilityFunction()).getDoubleValue(j), ASSET_PRECISION_ERROR);
+				assertEquals((assetOrig.getProbabilityFunction()).getValue(j), (assetClone.getProbabilityFunction()).getValue(j), ASSET_PRECISION_ERROR);
 			}
 		}
 		
