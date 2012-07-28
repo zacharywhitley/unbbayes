@@ -206,7 +206,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 			(PotentialTable) sepTab.clone();
 
 		for (int i = sepTab.tableSize() - 1; i >= 0; i--) {
-			sepTab.setValue(i, dummyTable.getDoubleValue(i));
+			sepTab.setValue(i, dummyTable.getValue(i));
 		}
 
 		dummyTable.directOpTab(

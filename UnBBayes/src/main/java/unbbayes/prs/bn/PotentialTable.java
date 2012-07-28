@@ -54,8 +54,6 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 
 	private boolean modified;
 	
-	
-
 	/** Load resource file from this package */
   	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
   			unbbayes.prs.bn.resources.BnResources.class.getName());
@@ -302,20 +300,6 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	public void setValue(int[] coord, float value) {
 		dataPT.data[getLinearCoord(coord)] = value;
 	}
-	
-	/**
-	 * Set a value in the table using the multidimensional coordinate, 
-	 * which is a list containing the state of each variable in the table.
-	 * 
-	 * @param coord
-	 *            The multidimensional coordinate, which is a list containing 
-	 *            the state of each variable in the table.
-	 * @param value
-	 *            The value to be set in the table.
-	 */
-	public void setValue(int[] coord, double value) {
-		dataPT.data[getLinearCoord(coord)] = (float) value;
-	}
 
 	/**
 	 * Set a value in the table using the linear coordinate, 
@@ -329,20 +313,6 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 */
 	public  void setValue(int index, float value) {
 		dataPT.data[index] = value;
-	}
-	
-	/**
-	 * Set a value in the table using the linear coordinate, 
-	 * which corresponds to the state of each variable in the table.
-	 * 
-	 * @param index
-	 *            The linear coordinate, which corresponds to the state 
-	 *            of each variable in the table.
-	 * @param value
-	 *            The value to be set in the table.
-	 */
-	public  void setValue(int index, double value) {
-		dataPT.data[index] = (float) value;
 	}
 	
 	/**
@@ -364,17 +334,6 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 * @return a value found in the specified cell .
 	 */
 	public  float getValue(int index) {
-		return dataPT.data[index];
-	}
-	
-	/**
-	 * It returns the value of a cell identified by an index
-	 * 
-	 * @param index
-	 *            linear index of a cell
-	 * @return a value found in the specified cell .
-	 */
-	public double getDoubleValue(int index) {
 		return dataPT.data[index];
 	}
 	
@@ -541,7 +500,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 			// concentrate the sum on the first cell. 
 			int linearCoordDestination = coord - base;
 			
-			float value = (float) sumOperation.operate(dataPT.data[linearCoordDestination], dataPT.data[coord]);
+			float value = sumOperation.operate(dataPT.data[linearCoordDestination], dataPT.data[coord]);
 			dataPT.data[linearCoordDestination] = value;
 			marked[coord] = true;
 			return;
@@ -579,7 +538,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 		 * @param arg2
 		 * @return
 		 */
-		double operate(double arg1, double arg2);
+		float operate(float arg1, float arg2);
 	}
 	
 	/**
@@ -594,7 +553,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 		 * (non-Javadoc)
 		 * @see unbbayes.prs.bn.PotentialTable.ISumOperation#operate(float, float)
 		 */
-		public double operate(double arg1, double arg2) {
+		public float operate(float arg1, float arg2) {
 			return arg1 + arg2;
 		}
 		
@@ -611,7 +570,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 		/**
 		 * Returns the value which is grater
 		 */
-		public double operate(double arg1, double arg2) {
+		public float operate(float arg1, float arg2) {
 			return ((arg1>arg2)?arg1:arg2);
 		}
 	}
