@@ -746,6 +746,12 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 *            table to operate.
 	 * @param operator
 	 *            operator to use, defined in this class constants.
+	 *            The possible values are:
+	 *            <br/>
+	 *            <br/> #PLUS_OPERATOR
+	 * 			  <br/> #MINUS_OPERATOR
+	 * 			  <br/> #PRODUCT_OPERATOR
+	 * 			  <br/> #DIVISION_OPERATOR
 	 */
 	public  void directOpTab(PotentialTable tab, int operator) {
 		if (tableSize() != tab.tableSize()) {
@@ -774,6 +780,14 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 					dataPT.data[k] -= tab.dataPT.data[k];
 				}
 				break;
+
+			case PLUS_OPERATOR:
+				for (int k = tableSize()-1; k >= 0; k--) {
+					dataPT.data[k] += tab.dataPT.data[k];
+				}
+				break;
+//			default:
+//				throw new IllegalArgumentException(resource.getString("OperatorException") + " [" + operator + "]");
 		}
 	}
 
@@ -815,7 +829,8 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 				fastOpTabDiv(0, 0, 0, index, tab);
 				break;
 				
-			default:
+//			default:
+//				throw new IllegalArgumentException(resource.getString("OperatorException") + " [" + operator + "]");
 		}
 	}
 	
