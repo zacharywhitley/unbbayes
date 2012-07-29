@@ -33,6 +33,22 @@ public class AssetNode extends DecisionNode {
 //		this.marginalList = marginalList;
 //	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.TreeVariable#addFinding(int, boolean)
+	 */
+	@Override
+	public void addFinding(int stateIndex, boolean isNegative) {
+		// TODO Auto-generated method stub
+		super.addFinding(stateIndex, isNegative);
+        for (int i = 0; i < getStatesSize(); i++) {
+        	// if not isNegative, set marginal to 1 if stateindex == i; 0 otherwise.
+        	// if isNegative, set marginal to 0 if stateindex == i; 1 otherwise.
+			setMarginalAt(i, ((i==stateIndex)?(isNegative?Float.POSITIVE_INFINITY:1):(isNegative?1:Float.POSITIVE_INFINITY)) );
+		}
+	}
+
+
+
 	/**
 	 * Default constructor is protected only to allow inheritance.
 	 * Use {@link #getInstance()} to instantiate.

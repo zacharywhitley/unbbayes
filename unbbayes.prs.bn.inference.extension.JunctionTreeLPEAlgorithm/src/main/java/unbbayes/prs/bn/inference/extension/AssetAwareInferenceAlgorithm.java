@@ -63,7 +63,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 
 	private boolean isToUpdateAssets = true;
 	
-	private boolean isToUseQValues = true;
+	private boolean isToUseQValues = AssetPropagationInferenceAlgorithm.IS_TO_USE_Q_VALUES;
 
 	/** 
 	 * Name of the property in {@link Graph#getProperty(String)} which manages current assets. 
@@ -713,8 +713,15 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 				Clique assetClique = assetCliqueIterator.next();
 				Clique probClique  = probCliqueIterator.next();			
 				for (int j = 0; j < assetClique.getProbabilityFunction().tableSize(); j++) {
-					if (assetClique.getProbabilityFunction().getValue(j) <= 0f) {
-						continue;
+					if (probClique.getProbabilityFunction().getValue(j) == 0f) {
+						continue; // if probability is zero, no need to consider it
+					} 
+					if (isToUseQValues()) {
+						if (assetClique.getProbabilityFunction().getValue(j) <= 0f) {
+							throw new ZeroAssetsException("Negative infinite asset detected in clique "+ assetClique +". User = " + getAssetNetwork());
+						}
+					} else if (Float.isInfinite(assetClique.getProbabilityFunction().getValue(j))) {
+						throw new ZeroAssetsException("Inconsistent asset detected in clique "+ assetClique +": " + assetClique.getProbabilityFunction().getValue(j) + ", user = " + getAssetNetwork());
 					}
 					double value;
 					if (isToUseQValues()) {
@@ -745,8 +752,15 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 					this.notifyExpectedAssetCellListener(probSeparator, assetSeparator, -1, -1, value);
 				}
 				for (int i = 0; i < assetSeparator.getProbabilityFunction().tableSize(); i++) {	
-					if (assetSeparator.getProbabilityFunction().getValue(i) <= 0f) {
-						continue;
+					if (probSeparator.getProbabilityFunction().getValue(i) == 0f) {
+						continue; // if probability is zero, no need to consider it
+					} 
+					if (isToUseQValues()) {
+						if (assetSeparator.getProbabilityFunction().getValue(i) <= 0f) {
+							throw new ZeroAssetsException("Negative infinite asset detected in separator "+ assetSeparator +  ". User = " + getAssetNetwork());
+						}
+					} else if (Float.isInfinite(assetSeparator.getProbabilityFunction().getValue(i))) {
+						throw new ZeroAssetsException("Inconsistent asset detected in separator + " + assetSeparator+  " : " + assetSeparator.getProbabilityFunction().getValue(i) + ", user = " + getAssetNetwork());
 					}
 					double value ;
 					if (isToUseQValues()) {
@@ -876,7 +890,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 */
 	public float calculateExplanation( List<Map<INode, Integer>> inputOutpuArgumentForExplanation){
 		if (this.getAssetPropagationDelegator() == null) {
-			return Float.NaN;
+			throw new IllegalStateException("getAssetPropagationDelegator() == null. You may be using an incompatible algorithm for asset updating.");
 		}
 		return this.getAssetPropagationDelegator().calculateExplanation(inputOutpuArgumentForExplanation);
 	}
@@ -1044,7 +1058,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		AssetAwareInferenceAlgorithm ret = (AssetAwareInferenceAlgorithm) getInstance(jtAlgorithm);
 		// copy settings
 		ret.setDefaultInitialAssetTableValue(getDefaultInitialAssetTableValue());
-		ret.setToAllowQValuesSmallerThan1(this.isToAllowQValuesSmallerThan1());
+		ret.setToAllowZeroAssets(this.isToAllowZeroAssets());
 		ret.setToCalculateMarginalsOfAssetNodes(this.isToCalculateMarginalsOfAssetNodes());
 		ret.setToLogAssets(this.isToLogAssets());
 		ret.setToNormalizeDisconnectedNets(this.isToNormalizeDisconnectedNets());
@@ -1123,10 +1137,10 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 * assets - log values - goes to 0 or negative).
 	 * @param isToAllowQValuesSmallerThan1 the isToAllowQValuesSmallerThan1 to set
 	 */
-	public void setToAllowQValuesSmallerThan1(boolean isToAllowQValuesSmallerThan1) {
+	public void setToAllowZeroAssets(boolean isToAllowQValuesSmallerThan1) {
 		IAssetNetAlgorithm assetAlgorithm = this.getAssetPropagationDelegator();
 		if (assetAlgorithm != null) {
-			assetAlgorithm.setToAllowQValuesSmallerThan1(isToAllowQValuesSmallerThan1);
+			assetAlgorithm.setToAllowZeroAssets(isToAllowQValuesSmallerThan1);
 		}
 	}
 
@@ -1136,10 +1150,10 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 * assets - log values - goes to 0 or negative).
 	 * @return the isToAllowQValuesSmallerThan1
 	 */
-	public boolean isToAllowQValuesSmallerThan1() {
+	public boolean isToAllowZeroAssets() {
 		IAssetNetAlgorithm assetAlgorithm = this.getAssetPropagationDelegator();
 		if (assetAlgorithm != null) {
-			return assetAlgorithm.isToAllowQValuesSmallerThan1();
+			return assetAlgorithm.isToAllowZeroAssets();
 		}
 		return true;	// default value
 	}

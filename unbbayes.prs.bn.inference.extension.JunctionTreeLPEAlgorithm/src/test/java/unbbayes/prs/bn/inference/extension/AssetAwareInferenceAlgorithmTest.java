@@ -38,6 +38,12 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 	/** If two asset q values are within an interval of + or - this value, then it is considered to be equalÅ@*/
 	private static final float ASSET_PRECISION_ERROR = 0.05f;
 
+	private AssetAwareInferenceAlgorithm assetQAlgorithm;
+
+	private ProbabilisticNetwork network;
+
+	private JunctionTreeAlgorithm junctionTreeAlgorithm;
+
 	/**
 	 * @param name
 	 */
@@ -50,6 +56,58 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
+		
+		// load DEF network
+		File file = null;
+		try {
+			file = new File(this.getClass().getClassLoader().getResource("DEF_flat.net").toURI());
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		assertNotNull(file);
+		
+		NetIO netio = new NetIO();
+		try {
+			network = (ProbabilisticNetwork) netio.load(file);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		assertNotNull(network);
+		
+		// algorithm to propagate probabilities
+		junctionTreeAlgorithm = new JunctionTreeAlgorithm(network);
+		assertNotNull(junctionTreeAlgorithm);
+		
+		// enable soft evidence by using jeffrey rule in likelihood evidence w/ virtual nodes.
+		junctionTreeAlgorithm.setLikelihoodExtractor(JeffreyRuleLikelihoodExtractor.newInstance() );
+		
+		// algorithm to propagate q values (assets) given that probabilities were propagated
+		assetQAlgorithm = (AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm);
+		assertNotNull(assetQAlgorithm);
+		
+//		assetQAlgorithm.setToPropagateForGlobalConsistency(false);
+//		assetQAlgorithm.setToUpdateSeparators(false);
+		
+		// set the default asset q quantity of all clique cells to 100
+		if (assetQAlgorithm.isToUseQValues()) {
+			assetQAlgorithm.setDefaultInitialAssetTableValue(100);
+		} else {
+			// algorithm will use asset space instead of q. Initialize with a value of assets equivalent of using q = 100
+			assetQAlgorithm.setDefaultInitialAssetTableValue(assetQAlgorithm.getqToAssetConverter().getScoreFromQValues(100));
+		}
+		// force it to use min-propagation automatically even when we dont call doMinPropagation
+		assetQAlgorithm.setToPropagateForGlobalConsistency(true);	
+		
+		try {
+			// compile network
+			assetQAlgorithm.run();
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
 	}
 
 	/* (non-Javadoc)
@@ -241,53 +299,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 	 */	
 	public final void testDEFNet() {
 		
-		// load DEF network
-		File file = null;
-		try {
-			file = new File(this.getClass().getClassLoader().getResource("DEF_flat.net").toURI());
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		assertNotNull(file);
 		
-		NetIO netio = new NetIO();
-		ProbabilisticNetwork network = null;
-		try {
-			network = (ProbabilisticNetwork) netio.load(file);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		assertNotNull(network);
-		
-		// algorithm to propagate probabilities
-		JunctionTreeAlgorithm junctionTreeAlgorithm = new JunctionTreeAlgorithm(network);
-		assertNotNull(junctionTreeAlgorithm);
-		
-		// enable soft evidence by using jeffrey rule in likelihood evidence w/ virtual nodes.
-		junctionTreeAlgorithm.setLikelihoodExtractor(JeffreyRuleLikelihoodExtractor.newInstance() );
-		
-		// algorithm to propagate q values (assets) given that probabilities were propagated
-		AssetAwareInferenceAlgorithm assetQAlgorithm = (AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm);
-		assertNotNull(assetQAlgorithm);
-		
-//		assetQAlgorithm.setToPropagateForGlobalConsistency(false);
-//		assetQAlgorithm.setToUpdateSeparators(false);
-		
-		// set the default asset q quantity of all clique cells to 100
-		assetQAlgorithm.setDefaultInitialAssetTableValue(100);
-		// force it to use min-propagation automatically even when we dont call doMinPropagation
-		assetQAlgorithm.setToPropagateForGlobalConsistency(true);	
-		
-		try {
-			// compile network
-			assetQAlgorithm.run();
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
 		
 		// create new user Tom and his asset net. A new asset net represents a new user.
 		AssetNetwork assetNetTom = null;
@@ -400,7 +412,11 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		
 		// prepare argument, which is input and output at the same moment
 		List<Map<INode, Integer>> inOutArgLPE = new ArrayList<Map<INode,Integer>>();
-		double minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		float minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		if (!assetQAlgorithm.isToUseQValues()) {
+			// minQ contains assets instead of q-values. Convert to q-values
+			minQ = (float) assetQAlgorithm.getqToAssetConverter().getQValuesFromScore(minQ);
+		}
 		
 		Map<INode, Integer> lpes = inOutArgLPE.get(0);
 		assertNotNull(lpes);
@@ -428,6 +444,10 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		// obtain LPE and minQ when E = e1
 		inOutArgLPE = new ArrayList<Map<INode,Integer>>();
 		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		if (!assetQAlgorithm.isToUseQValues()) {
+			// minQ contains assets instead of q-values. Convert to q-values
+			minQ = (float) assetQAlgorithm.getqToAssetConverter().getQValuesFromScore(minQ);
+		}
 		assertFalse(inOutArgLPE.isEmpty());
 		// make sure the returned LPE has E = e1
 		lpes = inOutArgLPE.get(0);
@@ -513,6 +533,10 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		// prepare argument, which is input and output at the same moment
 		inOutArgLPE.clear();
 		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		if (!assetQAlgorithm.isToUseQValues()) {
+			// minQ contains assets instead of q-values. Convert to q-values
+			minQ = (float) assetQAlgorithm.getqToAssetConverter().getQValuesFromScore(minQ);
+		}
 		
 		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
 		assertNotNull(lpes);
@@ -540,6 +564,10 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		// obtain LPE and minQ when D = d2
 		inOutArgLPE = new ArrayList<Map<INode,Integer>>();
 		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		if (!assetQAlgorithm.isToUseQValues()) {
+			// minQ contains assets instead of q-values. Convert to q-values
+			minQ = (float) assetQAlgorithm.getqToAssetConverter().getQValuesFromScore(minQ);
+		}
 		assertFalse(inOutArgLPE.isEmpty());
 		// check that LPE contains d2, e2 and any value F
 		lpes = inOutArgLPE.get(0);
@@ -639,6 +667,10 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		// prepare argument, which is input and output at the same moment
 		inOutArgLPE.clear();
 		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		if (!assetQAlgorithm.isToUseQValues()) {
+			// minQ contains assets instead of q-values. Convert to q-values
+			minQ = (float) assetQAlgorithm.getqToAssetConverter().getQValuesFromScore(minQ);
+		}
 		
 		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
 		assertNotNull(lpes);
@@ -746,6 +778,10 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		// prepare argument, which is input and output at the same moment
 		inOutArgLPE.clear();
 		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		if (!assetQAlgorithm.isToUseQValues()) {
+			// minQ contains assets instead of q-values. Convert to q-values
+			minQ = (float) assetQAlgorithm.getqToAssetConverter().getQValuesFromScore(minQ);
+		}
 		
 		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
 		assertNotNull(lpes);
@@ -843,6 +879,10 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		// prepare argument, which is input and output at the same moment
 		inOutArgLPE.clear();
 		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		if (!assetQAlgorithm.isToUseQValues()) {
+			// minQ contains assets instead of q-values. Convert to q-values
+			minQ = (float) assetQAlgorithm.getqToAssetConverter().getQValuesFromScore(minQ);
+		}
 		
 		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
 		assertNotNull(lpes);
@@ -973,6 +1013,10 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		// prepare argument, which is input and output at the same moment
 		inOutArgLPE.clear();
 		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		if (!assetQAlgorithm.isToUseQValues()) {
+			// minQ contains assets instead of q-values. Convert to q-values
+			minQ = (float) assetQAlgorithm.getqToAssetConverter().getQValuesFromScore(minQ);
+		}
 		
 		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
 		assertNotNull(lpes);
@@ -1089,6 +1133,10 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		// prepare argument, which is input and output at the same moment
 		inOutArgLPE.clear();
 		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		if (!assetQAlgorithm.isToUseQValues()) {
+			// minQ contains assets instead of q-values. Convert to q-values
+			minQ = (float) assetQAlgorithm.getqToAssetConverter().getQValuesFromScore(minQ);
+		}
 		
 		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
 		assertNotNull(lpes);
@@ -1115,7 +1163,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		// Eric makes a bet which makes his assets-q to go below 1, but the algorithm does not allow it
 		
 		// let the algorithm not to allow asset-q smaller than 1
-		assetQAlgorithm.setToAllowQValuesSmallerThan1(false);
+		assetQAlgorithm.setToAllowZeroAssets(false);
 		
 		// bet node is D
 		betNode = (TreeVariable) network.getNode("D");
@@ -1182,6 +1230,10 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		// prepare argument, which is input and output at the same moment
 		inOutArgLPE.clear();
 		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		if (!assetQAlgorithm.isToUseQValues()) {
+			// minQ contains assets instead of q-values. Convert to q-values
+			minQ = (float) assetQAlgorithm.getqToAssetConverter().getQValuesFromScore(minQ);
+		}
 		
 		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
 		assertNotNull(lpes);
@@ -1198,7 +1250,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		// Eric makes a bet which makes his assets-q to go below 1, and the algorithm allows it
 		
 		// let the algorithm allow asset-q smaller than 1
-		assetQAlgorithm.setToAllowQValuesSmallerThan1(true);
+		assetQAlgorithm.setToAllowZeroAssets(true);
 		
 		// bet node is D
 		betNode = (TreeVariable) network.getNode("D");
@@ -1249,6 +1301,10 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		// prepare argument, which is input and output at the same moment
 		inOutArgLPE.clear();
 		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		if (!assetQAlgorithm.isToUseQValues()) {
+			// minQ contains assets instead of q-values. Convert to q-values
+			minQ = (float) assetQAlgorithm.getqToAssetConverter().getQValuesFromScore(minQ);
+		}
 		
 		assertNotNull(lpes);
 		assertFalse(lpes.isEmpty());
@@ -1287,9 +1343,12 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		((ProbabilisticNode)assetQAlgorithm.getRelatedProbabilisticNetwork().getNode("D")).addFinding(1);
 		((ProbabilisticNode)clonedAlgorithm.getRelatedProbabilisticNetwork().getNode("D")).addFinding(1);
 		
-		
+		assetQAlgorithm.setToUpdateAssets(false);
+		clonedAlgorithm.setToUpdateAssets(false);
 		assetQAlgorithm.propagate();
 		clonedAlgorithm.propagate();
+		assetQAlgorithm.setToUpdateAssets(true);
+		clonedAlgorithm.setToUpdateAssets(true);
 		
 		// make sure cloned and originals got same results
 		for (int i = 0; i < assetQAlgorithm.getRelatedProbabilisticNetwork().getJunctionTree().getCliques().size(); i++) {
@@ -1302,6 +1361,26 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 				assertEquals((assetOrig.getProbabilityFunction()).getValue(j), (assetClone.getProbabilityFunction()).getValue(j), ASSET_PRECISION_ERROR);
 			}
 		}
+		
+		// this time, propagation should not change anything
+		boolean backup = assetQAlgorithm.isToPropagateForGlobalConsistency();
+		assetQAlgorithm.setToPropagateForGlobalConsistency(false);
+		assetQAlgorithm.propagate();
+		assetQAlgorithm.setToPropagateForGlobalConsistency(backup);
+		
+		// make sure cloned and originals got same results
+		for (int i = 0; i < assetQAlgorithm.getRelatedProbabilisticNetwork().getJunctionTree().getCliques().size(); i++) {
+			Clique probOrig =  assetQAlgorithm.getRelatedProbabilisticNetwork().getJunctionTree().getCliques().get(i);
+			Clique probClone =  clonedAlgorithm.getRelatedProbabilisticNetwork().getJunctionTree().getCliques().get(i);
+			Clique assetOrig =  assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques().get(i);
+			Clique assetClone =  clonedAlgorithm.getAssetNetwork().getJunctionTree().getCliques().get(i);
+			for (int j = 0; j < probOrig.getProbabilityFunction().tableSize(); j++) {
+				assertEquals(probOrig.getProbabilityFunction().getValue(j), probClone.getProbabilityFunction().getValue(j), PROB_PRECISION_ERROR);
+				assertEquals((assetOrig.getProbabilityFunction()).getValue(j), (assetClone.getProbabilityFunction()).getValue(j), ASSET_PRECISION_ERROR);
+			}
+		}
+		
+		assertEquals(assetQAlgorithm.calculateExpectedAssets(), clonedAlgorithm.calculateExpectedAssets(), ASSET_PRECISION_ERROR);
 		
 	}
 

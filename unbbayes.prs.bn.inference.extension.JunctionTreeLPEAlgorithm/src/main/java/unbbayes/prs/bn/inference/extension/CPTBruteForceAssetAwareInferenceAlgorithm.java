@@ -140,7 +140,7 @@ public class CPTBruteForceAssetAwareInferenceAlgorithm extends
 			// update joint q-values
 			if (isToUpdateAssets) {
 				double value = getJointQTable().getValue(i) * jProbTable.getValue(i) / jProbTable.getCopiedValue(i);
-				if (!isToAllowQValuesSmallerThan1() && value <= 1.0) {
+				if (!isToAllowZeroAssets() && value <= (isToUseQValues()?1f:0f)) {	// note: 0 assets == 1 q-value
 					throw new ZeroAssetsException("Cell " + i + " in asset table went to " + value);
 				}
 				// new q = old q * new prob / old prob

@@ -41,6 +41,9 @@ import unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener;
  */
 public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm implements IAssetNetAlgorithm  {
 	
+	/** {@link #isToUseQValues()} is initialized to this value */
+	public static final boolean IS_TO_USE_Q_VALUES = false;
+	
 	/** 
 	 * Default value of {@link #getDefaultJunctionTreeBuilder()} for algorithms based on propagation of logarithmic values.
 	 * @see {@link LogarithmicMinProductJunctionTree} 
@@ -103,8 +106,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		}
 	};
 	
-	/** This is the default value of {@link #getCellValuesComparator()} */
-	public static final Comparator DEFAULT_CELL_VALUES_COMPARATOR = new Comparator() {
+	/** This is the default value of {@link #getCellValuesComparator()} for comparing q-values */
+	public static final Comparator DEFAULT_QVALUES_COMPARATOR = new Comparator() {
 		public int compare(Object o1, Object o2) {
 			// ignore zeros and negatives
 			if ((Float)o1 <= 0) {
@@ -116,9 +119,16 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			return Float.compare((Float)o1, (Float)o2);
 		}
 	};
+	
+	/** This is the default value of {@link #getCellValuesComparator()} for comparing q-values */
+	public static final Comparator DEFAULT_ASSET_COMPARATOR = new Comparator() {
+		public int compare(Object o1, Object o2) {
+			return Float.compare((Float)o1, (Float)o2);
+		}
+	};
 
 	/** @see AssetPropagationInferenceAlgorithm#getCellValuesComparator() */
-	private Comparator cellValuesComparator = DEFAULT_CELL_VALUES_COMPARATOR;
+	private Comparator cellValuesComparator = IS_TO_USE_Q_VALUES?DEFAULT_QVALUES_COMPARATOR:DEFAULT_ASSET_COMPARATOR;
 
 	private boolean isToLogAssets = false;
 
@@ -143,10 +153,12 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		public void setCurrentLogBase(float base) {throw new UnsupportedOperationException();}
 		public void setCurrentCurrencyConstant(float b) {throw new UnsupportedOperationException();}
 		public float getScoreFromQValues(double assetQ) { return  (float) (b*Math.log(assetQ)); }
-		public double getQValuesFromScore(float score) {throw new UnsupportedOperationException();}
+		public double getQValuesFromScore(float score) { return Math.pow(Math.E, score/b);}
 		public float getCurrentLogBase() { return (float) Math.E; }
 		public float getCurrentCurrencyConstant() { return b; }
 	};
+
+	
 	private IQValuesToAssetsConverter qToAssetConverter = DEFAULT_Q_TO_ASSETS_CONVERTER;
 
 	/** Initialize with default implementation */
@@ -202,17 +214,19 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 						}
 						// note: at this point, this cell in cliqueTable matches filter
 						if (isToUseQValues()) {
-							if (Double.compare(value , 0.0d) == 0) {
-								// once zero, it will always be zero.
-								return 0;
+							if (Float.compare(value , 0.0f) == 0) {
+								// Zero represents impossible state.
+								throw new ZeroAssetsException("Attempted to calculate assets regarding an impossible state in clique " + clique);
 							}
 							// Product(Cliques)
 							ret *= value;
 						} else {
-//							if (Double.isInfinite(value) || Double.isNaN(value)) {
-//								// once infinite/NaN, it will always remain.
-//								return value;
-//							}
+							if (value == Float.POSITIVE_INFINITY) {
+								// infinite represents impossible state.
+								throw new ZeroAssetsException("Attempted to calculate assets regarding an impossible state in clique " + clique);
+							} else if (value == Float.NEGATIVE_INFINITY || Float.isNaN(value)) {
+								throw new IllegalStateException("Encontered " + value + " while calculating joint assets. Clique: " + clique);
+							}
 							// Sum(Cliques)
 							ret += value;
 						}
@@ -227,11 +241,15 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 					if (separator.getNodes() == null || separator.getNodes().isEmpty()
 							|| sepTable.getVariablesSize() <= 0 || sepTable.tableSize() <= 0) {
 						// this is an empty separator (i.e. network is disconnected). Use a default value when empty separator is found
-						ret /= getEmptySeparatorsDefaultContent();
+						if (isToUseQValues()) {
+							ret /= getEmptySeparatorsDefaultContent();
+						} else {
+							ret -= getEmptySeparatorsDefaultContent();
+						}
 					} else {	// separator is not empty
 						// iterate on each cell of separator table
 						for (int i = 0; i < sepTable.tableSize(); i++) {
-							double value = sepTable.getValue(i);	// value of cell in clique table
+							float value = sepTable.getValue(i);	// value of cell in clique table
 							// filter by states
 							if (filter != null) {
 								// isNotMatching == true if the variables&states related to current cell in table is incompatible with filter
@@ -252,13 +270,19 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 							}
 							// note: at this point, this cell in sepTable matches filter
 							if (isToUseQValues()) {
-								if (Double.compare(value, 0.0d) == 0) {
+								if (Float.compare(value, 0.0f) == 0) {
 									// once divided by zero, it will be always undefined.
-									return Float.NaN;
+									throw new ZeroAssetsException("Attempted to calculate assets regarding an impossible state in separator " + separator);
 								}
 								// Product(Cliques)/Product(Separators)
 								ret /= value;
 							} else {
+								if (value == Float.POSITIVE_INFINITY) {
+									// this is an impossible state
+									throw new ZeroAssetsException("Attempted to calculate assets regarding an impossible state in separator " + separator);
+								} else if (value == Float.NEGATIVE_INFINITY || Float.isNaN(value)) {
+									throw new IllegalStateException("Encontered " + value + " while calculating joint assets. Separator: " + separator);
+								}
 								ret -= value;
 							}
 						}	// end of for i < sepTable.tableSize()
@@ -274,7 +298,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 
 	private boolean isToAllowInfinite = false;
 
-	private boolean isToUseQValues = true;
+	private boolean isToUseQValues = IS_TO_USE_Q_VALUES;
 
 //	private AssetAwareInferenceAlgorithm assetAwareInferenceAlgorithm;
 	
@@ -316,7 +340,9 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		this.getVerifyConsistencyCommandList().clear();
 		if (isToUseQValues()) {
 			this.setDefaultJunctionTreeBuilder(DEFAULT_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
+			this.setJunctionTreeBuilder(DEFAULT_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
 		} else {
+			this.setJunctionTreeBuilder(DEFAULT_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
 			this.setDefaultJunctionTreeBuilder(DEFAULT_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
 		}
 	}
@@ -396,11 +422,11 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		}
 		
 		for (Clique clique : this.getAssetNetwork().getJunctionTree().getCliques()) {
-			this.initAssetPotential(clique.getProbabilityFunction());
+			this.initAssetPotential(clique.getProbabilityFunction(), getAssetNetwork());
 		}
 		
 		for (Separator sep : this.getAssetNetwork().getJunctionTree().getSeparators()) {
-			this.initAssetPotential(sep.getProbabilityFunction());
+			this.initAssetPotential(sep.getProbabilityFunction(), getAssetNetwork());
 		}
 		
 		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
@@ -439,6 +465,12 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		} else {
 			// update all cliques
 			cliquesOrSepsToUpdate.addAll(getOriginalCliqueToAssetCliqueMap().keySet());
+		}
+		
+		// backup assets before changing something, so that we can revert
+		for (IRandomVariable origCliqueOrSeparator : cliquesOrSepsToUpdate) {
+			IRandomVariable assetCliqueOrSeparator = getOriginalCliqueToAssetCliqueMap().get(origCliqueOrSeparator);
+			((PotentialTable)assetCliqueOrSeparator.getProbabilityFunction()).copyData();
 		}
 		
 		// reset the mapping which stores the old q-values. This map can also be used in order to revert changes when q-values goes below 1
@@ -508,9 +540,9 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 						// add delta
 						newValue = assetTable.getValue(i) + this.getqToAssetConverter().getScoreFromQValues( currentProbabilities.getValue(i) / previousProbability );
 					}
-					// check if assets is <= 1 or infinite
-					if (( !isToAllowQValuesSmallerThan1() &&  ((newValue <= 1f)))
-							|| (!isToAllowInfinite() && Double.isInfinite(newValue))) {
+					// check if assets is zero or negative (note: 0 assets == 1 q-value, because of log scale) or infinite (i.e. overflow)
+					if ( ( !isToAllowZeroAssets() &&  ( newValue <= (isToUseQValues()?1f:0f) ) )	// this is zero or negative asset
+							|| ( !isToAllowInfinite() && Float.isInfinite(newValue) ) ) {			// or this is infinite asset
 						// revert all previous cliques/separators, including current
 //					for (IRandomVariable modifiedCliqueOrSep : getAssetTablesBeforeLastPropagation().keySet()) {
 //						assetTable = (DoublePrecisionProbabilisticTable) modifiedCliqueOrSep.getProbabilityFunction();
@@ -522,7 +554,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 //						}
 //					}
 						
-						throw new ZeroAssetsException("Asset's q-values of clique/separator " + assetCliqueOrSeparator + " went to " + newValue);
+						throw new ZeroAssetsException((isToUseQValues()?"Q-values":"Assets") + " of clique/separator " + assetCliqueOrSeparator + " went to " + newValue);
 					}
 					assetTable.setValue(i,  newValue);
 				}
@@ -687,6 +719,9 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		AssetNetwork ret = AssetNetwork.getInstance(relatedProbabilisticNetwork);
 		ret.setToCalculateMarginalsOfAssetNodes(isToCalculateMarginalsOfAssetNodes());
 		
+		// initialize asset tables of empty separators to the default values
+		this.setEmptySeparatorsDefaultContent(ret, getDefaultInitialAssetTableValue());
+		
 		// copy/fill clique
 		if (relatedProbabilisticNetwork.getJunctionTree() != null) {
 			// prepare JT, which is a data format to store cliques and separators
@@ -760,7 +795,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 				}
 				
 				// fills the values of assets with default values
-				this.initAssetPotential(assetPotential);
+				this.initAssetPotential(assetPotential, ret);
 				
 				
 				// NOTE: this is ignoring utility table and nodes
@@ -819,7 +854,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 				}
 				
 				// fills the values of assets with default values
-				this.initAssetPotential(assetPotential);
+				this.initAssetPotential(assetPotential, ret);
 				
 				
 				// NOTE: this is ignoring utility table and nodes
@@ -856,7 +891,16 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 * @see #createAssetNetFromProbabilisticNet(ProbabilisticNetwork)
 	 * @see #reset()
 	 */
-	protected void initAssetPotential(PotentialTable assetCliquePotential) {
+	protected void initAssetPotential(PotentialTable assetCliquePotential, AssetNetwork net) {
+		// set up the marginalization operator (in our case, set up min-out operation)
+		if (net.getJunctionTree() instanceof MinProductJunctionTree) {
+			MinProductJunctionTree minProductJunctionTree = (MinProductJunctionTree) net.getJunctionTree();
+			assetCliquePotential.setSumOperation(minProductJunctionTree.getMaxOperation());
+		} else {
+			// use default
+			assetCliquePotential.setSumOperation(MinProductJunctionTree.DEFAULT_MIN_OUT_OPERATION);
+		}
+		
 		for (int i = 0; i < assetCliquePotential.tableSize(); i++) {
 			assetCliquePotential.setValue(i, this.getDefaultInitialAssetTableValue());
 		}
@@ -1476,7 +1520,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 * (non-Javadoc)
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#isToAllowQValuesSmallerThan1()
 	 */
-	public boolean isToAllowQValuesSmallerThan1() {
+	public boolean isToAllowZeroAssets() {
 		return isToAllowQValuesSmallerThan1;
 	}
 
@@ -1484,7 +1528,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 * (non-Javadoc)
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setToAllowQValuesSmallerThan1(boolean)
 	 */
-	public void setToAllowQValuesSmallerThan1(boolean isToAllowQValuesSmallerThan1) {
+	public void setToAllowZeroAssets(boolean isToAllowQValuesSmallerThan1) {
 		this.isToAllowQValuesSmallerThan1 = isToAllowQValuesSmallerThan1;
 	}
 
@@ -1545,7 +1589,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			throw new IllegalStateException("This algorithm cannot be used without a Junction Tree. Make sure getAssetNetwork().getJunctionTree() was correctly initialized.");
 		}
 		
-		// Set cells of clique tables to zero. 
+		// Set cells of clique tables to values which are ignored by the algorithm. 
 		for (Clique clique : getAssetNetwork().getJunctionTree().getCliques()) {
 			// extract clique table
 			PotentialTable cliqueTable = clique.getProbabilityFunction();
@@ -1559,7 +1603,11 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 					int[] multidimensionalCoord = cliqueTable.getMultidimensionalCoord(i);
 					// set all cells unrelated to "state" to 0
 					if (multidimensionalCoord[cliqueTable.getVariableIndex((Node) node)] != state) {
-						cliqueTable.setValue(i,0f);
+						if (isToUseQValues()) {
+							cliqueTable.setValue(i,0f);
+						} else {
+							cliqueTable.setValue(i,Float.POSITIVE_INFINITY);
+						}
 					}
 				}
 			}
@@ -1578,7 +1626,11 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 					int[] multidimensionalCoord = separatorTable.getMultidimensionalCoord(i);
 					// set all cells unrelated to "state" to 0
 					if (multidimensionalCoord[separatorTable.getVariableIndex((Node) node)] != state) {
-						separatorTable.setValue(i,0f);
+						if (isToUseQValues()) {
+							separatorTable.setValue(i,0f);
+						} else {
+							separatorTable.setValue(i,Float.POSITIVE_INFINITY);
+						}
 					}
 				}
 			}
@@ -1650,10 +1702,27 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#getEmptySeparatorsQValue()
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#getEmptySeparatorsDefaultContent()
 	 */
 	public float getEmptySeparatorsDefaultContent() {
-		Float ret = (Float) getAssetNetwork().getProperty(EMPTY_SEPARATOR_DEFAULT_CONTENT_PROPERTY);
+		return this.getEmptySeparatorsDefaultContent(getAssetNetwork());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setEmptySeparatorsDefaultContent(float)
+	 */
+	public void setEmptySeparatorsDefaultContent(float emptySeparatorsContent) {
+		this.setEmptySeparatorsDefaultContent(getAssetNetwork(), emptySeparatorsContent);
+	}
+	
+	/**
+	 * Uses the property {@link #EMPTY_SEPARATOR_DEFAULT_CONTENT_PROPERTY}
+	 * to access the default value in asset tables of empty separators.
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#getEmptySeparatorsDefaultContent()
+	 */
+	public float getEmptySeparatorsDefaultContent(Graph net) {
+		Float ret = (Float) net.getProperty(EMPTY_SEPARATOR_DEFAULT_CONTENT_PROPERTY);
 		if (ret == null) {
 			ret = getDefaultInitialAssetTableValue();
 			setEmptySeparatorsDefaultContent(ret);
@@ -1661,12 +1730,13 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		return ret;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setEmptySeparatorsQValue(double)
+	/**
+	 * Uses the property {@link #EMPTY_SEPARATOR_DEFAULT_CONTENT_PROPERTY}
+	 * to access the default value in asset tables of empty separators.
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setEmptySeparatorsDefaultContent(float)
 	 */
-	public void setEmptySeparatorsDefaultContent(float emptySeparatorsContent) {
-		getAssetNetwork().getProperties().put(EMPTY_SEPARATOR_DEFAULT_CONTENT_PROPERTY, emptySeparatorsContent);
+	public void setEmptySeparatorsDefaultContent(Network net, float emptySeparatorsContent) {
+		net.getProperties().put(EMPTY_SEPARATOR_DEFAULT_CONTENT_PROPERTY, emptySeparatorsContent);
 	}
 
 	/**
@@ -1693,6 +1763,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		if (this.isToUseQValues != isToUseQValues) {
 			this.isToUseQValues = isToUseQValues;
 			this.setDefaultJunctionTreeBuilder(isToUseQValues?DEFAULT_MIN_PROPAGATION_JUNCTION_TREE_BUILDER:DEFAULT_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
+			this.setCellValuesComparator(isToUseQValues?DEFAULT_QVALUES_COMPARATOR:DEFAULT_ASSET_COMPARATOR);
 		}
 	}
 

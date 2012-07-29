@@ -153,9 +153,9 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 * If false, {@link #propagate()} will throw a {@link ZeroAssetsException}
 	 * when q-values gets less than or equals to 1 (i.e. when the respective
 	 * assets - log values - goes to 0 or negative).
-	 * @param isToAllowQValuesSmallerThan1 the isToAllowQValuesSmallerThan1 to set
+	 * @param isToAllowZeroAssets the isToAllowQValuesSmallerThan1 to set
 	 */
-	public void setToAllowQValuesSmallerThan1(boolean isToAllowQValuesSmallerThan1);
+	public void setToAllowZeroAssets(boolean isToAllowZeroAssets);
 
 	/**
 	 * If false, {@link #propagate()} will throw a {@link ZeroAssetsException}
@@ -163,7 +163,9 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 * assets - log values - goes to 0 or negative).
 	 * @return the isToAllowQValuesSmallerThan1
 	 */
-	public boolean isToAllowQValuesSmallerThan1();
+	public boolean isToAllowZeroAssets();
+	
+	
 
 	/**
 	 * This method reverts the last probability update performed by this class.

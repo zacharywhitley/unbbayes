@@ -1108,7 +1108,7 @@ public class BruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		// Eric makes a bet which makes his assets-q to go below 1, but the algorithm does not allow it
 		
 		// let the algorithm not to allow asset-q smaller than 1
-		assetQAlgorithm.setToAllowQValuesSmallerThan1(false);
+		assetQAlgorithm.setToAllowZeroAssets(false);
 		
 		// bet node is D
 		betNode = (TreeVariable) network.getNode("D");
@@ -1191,7 +1191,7 @@ public class BruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		// Eric makes a bet which makes his assets-q to go below 1, and the algorithm allows it
 		
 		// let the algorithm allow asset-q smaller than 1
-		assetQAlgorithm.setToAllowQValuesSmallerThan1(true);
+		assetQAlgorithm.setToAllowZeroAssets(true);
 		
 		// bet node is D
 		betNode = (TreeVariable) network.getNode("D");

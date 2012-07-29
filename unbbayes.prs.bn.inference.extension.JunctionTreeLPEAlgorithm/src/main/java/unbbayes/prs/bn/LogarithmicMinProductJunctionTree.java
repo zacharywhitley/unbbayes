@@ -5,7 +5,9 @@ package unbbayes.prs.bn;
 
 import java.util.ArrayList;
 
+import unbbayes.prs.INode;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.PotentialTable.ISumOperation;
 import unbbayes.prs.bn.inference.extension.MinProductJunctionTree;
 import unbbayes.util.SetToolkit;
 
@@ -18,14 +20,20 @@ import unbbayes.util.SetToolkit;
  *
  */
 public class LogarithmicMinProductJunctionTree extends MinProductJunctionTree {
-
+	
+	/** Instance called when doing marginalization. This instance will min-out values in {@link PotentialTable#removeVariable(INode)} */
+	public static final ISumOperation DEFAULT_MIN_OUT_OPERATION = new LogarithmicMinProductJunctionTree().new MinOperation();
+	
+	
 	/**
 	 *  This is an extension of {@link MinProductJunctionTree}
 	 * for values in logarithmic scale. That is, instead of using
 	 * multiplications and divisions during the method {@link #absorb(Clique, Clique)}, 
 	 * it uses addition and subtraction respectively.
 	 */
-	public LogarithmicMinProductJunctionTree() { }
+	public LogarithmicMinProductJunctionTree() {
+		setMaxOperation(DEFAULT_MIN_OUT_OPERATION);
+	}
 	
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.JunctionTree#absorb(unbbayes.prs.bn.Clique, unbbayes.prs.bn.Clique)
@@ -72,11 +80,37 @@ public class LogarithmicMinProductJunctionTree extends MinProductJunctionTree {
 			sepTab.setValue(i, dummyTable.getValue(i));
 		}
 
-		dummyTable.directOpTab(
-			originalSeparatorTable,
-			PotentialTable.MINUS_OPERATOR);
-
+//		dummyTable.directOpTab(
+//			originalSeparatorTable,
+//			PotentialTable.MINUS_OPERATOR);
+		// the following code performs the above, but it forces that Float.POSITIVE_INFINITY
+		// is treated specially: any operation with Float.POSITIVE_INFINITY will result in Float.POSITIVE_INFINITY.
+		for (int k = dummyTable.tableSize()-1; k >= 0; k--) {
+			if (originalSeparatorTable.dataPT.data[k] == Float.POSITIVE_INFINITY) {
+				// force a subtraction with infinity to result in positive infinity
+				dummyTable.dataPT.data[k] = Float.POSITIVE_INFINITY;
+			} else {
+				dummyTable.dataPT.data[k] -= originalSeparatorTable.dataPT.data[k];
+			}
+		}
+		
 		clique1.getProbabilityFunction().opTab(dummyTable, PotentialTable.PLUS_OPERATOR);
+	}
+	
+	/**
+	 * {@link #operate(float, float)} returns the minimum,
+	 * without ignoring zeros or negatives.
+	 * @author Shou Matsumoto
+	 */
+	public class MinOperation extends MinProductJunctionTree.MinOperation {
+		/**
+		 * Return the minimum, but ignores values less than or equals to 0.0f (except when both values are 0.0f).
+		 * @return (arg1 < arg2)?arg1:arg2
+		 */
+		public float operate(float arg1, float arg2) {
+			return (arg1 < arg2)?(arg1):(arg2);
+		}
+		
 	}
 
 }

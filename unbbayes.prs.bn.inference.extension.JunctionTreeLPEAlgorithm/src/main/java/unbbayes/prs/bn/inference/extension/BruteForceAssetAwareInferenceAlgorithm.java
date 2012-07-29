@@ -102,7 +102,7 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 		BruteForceAssetAwareInferenceAlgorithm ret = (BruteForceAssetAwareInferenceAlgorithm) BruteForceAssetAwareInferenceAlgorithm.getInstance(jtAlgorithm, getDefaultInitialAssetTableValue());
 		// copy settings
 		ret.setDefaultInitialAssetTableValue(getDefaultInitialAssetTableValue());
-		ret.setToAllowQValuesSmallerThan1(this.isToAllowQValuesSmallerThan1());
+		ret.setToAllowZeroAssets(this.isToAllowZeroAssets());
 		ret.setToCalculateMarginalsOfAssetNodes(this.isToCalculateMarginalsOfAssetNodes());
 		ret.setToLogAssets(this.isToLogAssets());
 		ret.setToNormalizeDisconnectedNets(this.isToNormalizeDisconnectedNets());
@@ -454,7 +454,7 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 			// update joint q-values
 			if (isToUpdateAssets) {
 				float value = getJointQTable().getValue(i) * jProbTable.getValue(i) / jProbTable.getCopiedValue(i);
-				if (!isToAllowQValuesSmallerThan1() && value <= 1.0) {
+				if (!isToAllowZeroAssets() && value <= (isToUseQValues()?1f:0f) ) { // note: 0 assets == 1 q-value
 					throw new ZeroAssetsException("Cell " + i + " in asset table went to " + value);
 				}
 				// new q = old q * new prob / old prob
