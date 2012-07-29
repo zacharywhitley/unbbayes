@@ -35,6 +35,13 @@ import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 public class InCliqueConditionalProbabilityExtractor implements
 		IArbitraryConditionalProbabilityExtractor {
 
+	/** Default implementation of {@link CliqueEvidenceUpdater}. This is used by {@link #buildCondicionalProbability(INode, List, Graph, IInferenceAlgorithm)} */
+	public static final CliqueEvidenceUpdater DEFAULT_CLIQUE_EVIDENCE_UPDATER = new CliqueEvidenceUpdater() {
+		public void updateEvidenceWithinClique(Clique clique, PotentialTable cliqueTable, float[] marginalMultiplier, Node nodeWithEvidence) {
+			cliqueTable.updateEvidences(marginalMultiplier, cliqueTable.indexOfVariable(nodeWithEvidence));
+		}
+	};
+
 	/**
 	 * default constructor is made protected to at least allow inheritance.
 	 * @deprecated use {@link #newInstance()} instead
@@ -50,6 +57,22 @@ public class InCliqueConditionalProbabilityExtractor implements
 	public static IArbitraryConditionalProbabilityExtractor newInstance() {
 		return new InCliqueConditionalProbabilityExtractor();
 	}
+	
+	/**
+	 * Classes implementing this interface will be used by {@link InCliqueConditionalProbabilityExtractor#buildCondicionalProbability(INode, List, Graph, IInferenceAlgorithm, CliqueEvidenceUpdater)}
+	 * in order to update clique potentials.
+	 * @author Shou Matsumoto
+	 */
+	public interface CliqueEvidenceUpdater {
+		/**
+		 * @param clique : clique whose potentials will be updated
+		 * @param cliqueTable : the potential table of the clique. This is passed separately from the clique, so that
+		 * clones can be used
+		 * @param marginalMultiplier : will be multiplied to clique potentials in order to update clique potentials
+		 * @param nodeWithEvidence : marginalMultiplier is a marginal for this node.
+		 */
+		public void updateEvidenceWithinClique(Clique clique, PotentialTable cliqueTable, float marginalMultiplier[], Node nodeWithEvidence);
+	}
 
 	/**
 	 * Extracts conditional probability assuming that every nodes are in the same clique.
@@ -59,6 +82,17 @@ public class InCliqueConditionalProbabilityExtractor implements
 	 * @throws NoCliqueException when there is no clique satisfying input conditions.
 	 */
 	public IProbabilityFunction buildCondicionalProbability(INode mainNode, List<INode> parentNodes, Graph net, IInferenceAlgorithm algorithm) throws NoCliqueException {
+		return this.buildCondicionalProbability(mainNode, parentNodes, net, algorithm, DEFAULT_CLIQUE_EVIDENCE_UPDATER);
+	}
+	/**
+	 * Extracts conditional probability assuming that every nodes are in the same clique.
+	 * It assumes that {@link unbbayes.prs.bn.JunctionTreeAlgorithm} was run prior to this method.
+	 * @param algorithm : will be ignored.
+	 * @param cliqueEvidenceUpdater : this will be used to update evidences locally in clique
+	 * @see unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor#buildCondicionalProbability(unbbayes.prs.INode, java.util.List, unbbayes.prs.Graph, unbbayes.util.extension.bn.inference.IInferenceAlgorithm)
+	 * @throws NoCliqueException when there is no clique satisfying input conditions.
+	 */
+	public IProbabilityFunction buildCondicionalProbability(INode mainNode, List<INode> parentNodes, Graph net, IInferenceAlgorithm algorithm, CliqueEvidenceUpdater cliqueEvidenceUpdater) throws NoCliqueException {
 		// assertion
 		if (mainNode == null) {
 			throw new NullPointerException("mainNode == null");
@@ -159,7 +193,8 @@ public class InCliqueConditionalProbabilityExtractor implements
 				
 				// add evidence to clique potential. 
 				// We do not need to propagate to other cliques, because we assume all nodes (mainNode and parentNodes) are in the same clique
-				cloneCliqueTable.updateEvidences(evidenceMarginal, cloneCliqueTable.indexOfVariable((Node) parentNodes.get(parentIndex)));
+				cliqueEvidenceUpdater.updateEvidenceWithinClique(clique, cloneCliqueTable, evidenceMarginal, (Node) parentNodes.get(parentIndex));
+//				cloneCliqueTable.updateEvidences(evidenceMarginal, cloneCliqueTable.indexOfVariable((Node) parentNodes.get(parentIndex)));
 			}
 			if (algorithm == null 
 					|| ( (algorithm instanceof JunctionTreeAlgorithm) && ((JunctionTreeAlgorithm)algorithm).isAlgorithmWithNormalization() ) ) {
