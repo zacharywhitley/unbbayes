@@ -55,7 +55,7 @@ public class LikelihoodExtractor implements ILikelihoodExtractor {
 	public List<INode> extractLikelihoodParents(Graph graph, INode node) {
 		List<INode> ret = null;
 		try {
-			ret = ((TreeVariable)node).getLikelihoodParents();
+			ret = new ArrayList<INode>(((TreeVariable)node).getLikelihoodParents());
 		} catch (ClassCastException e) {
 			Debug.println(getClass(), e.getMessage(), e);
 		}
