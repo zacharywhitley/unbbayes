@@ -25,6 +25,7 @@ import unbbayes.prs.bn.DefaultJunctionTreeBuilder;
 import unbbayes.prs.bn.IJunctionTreeBuilder;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.LogarithmicMinProductJunctionTree;
+import unbbayes.prs.bn.OneWayLogarithmicMinProductJunctionTree;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.Separator;
@@ -44,11 +45,23 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	/** {@link #isToUseQValues()} is initialized to this value */
 	public static final boolean IS_TO_USE_Q_VALUES = false;
 	
+	private boolean isToCalculateLPE = true;
+	
+	
+
 	/** 
 	 * Default value of {@link #getDefaultJunctionTreeBuilder()} for algorithms based on propagation of logarithmic values.
 	 * @see {@link LogarithmicMinProductJunctionTree} 
 	 */
 	public static final IJunctionTreeBuilder DEFAULT_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER = new DefaultJunctionTreeBuilder(LogarithmicMinProductJunctionTree.class);
+	
+	/** 
+	 * Default value of {@link #getDefaultJunctionTreeBuilder()} for algorithms based on propagation of logarithmic values.
+	 * and {@link #isToCalculateLPE()} == false
+	 * @see {@link LogarithmicMinProductJunctionTree} 
+	 */
+	public static final IJunctionTreeBuilder DEFAULT_ONEWAY_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER = new DefaultJunctionTreeBuilder(OneWayLogarithmicMinProductJunctionTree.class);
+	
 	
 	/** 
 	 * This property is used in {@link #getAssetNetwork()}, {@link AssetNetwork#getProperty(String)} in order 
@@ -84,7 +97,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 
 	private boolean isToUpdateSeparators = true;
 	
-	private boolean isToUpdateOnlyEditClique = false;
+	private boolean isToUpdateOnlyEditClique = true;
 	
 	private boolean isToAllowQValuesSmallerThan1 = true;
 	
@@ -132,7 +145,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 
 	private boolean isToLogAssets = false;
 
-	private IRandomVariable editCliqueOrSeparator;
+	private Clique editClique;
 
 //	private Map<IRandomVariable, DoublePrecisionProbabilisticTable> assetTablesBeforeLastPropagation;
 
@@ -342,8 +355,13 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			this.setDefaultJunctionTreeBuilder(DEFAULT_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
 			this.setJunctionTreeBuilder(DEFAULT_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
 		} else {
-			this.setJunctionTreeBuilder(DEFAULT_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
-			this.setDefaultJunctionTreeBuilder(DEFAULT_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
+			if (isToCalculateLPE()) {
+				this.setJunctionTreeBuilder(DEFAULT_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
+				this.setDefaultJunctionTreeBuilder(DEFAULT_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
+			} else {
+				this.setJunctionTreeBuilder(DEFAULT_ONEWAY_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
+				this.setDefaultJunctionTreeBuilder(DEFAULT_ONEWAY_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
+			}
 		}
 	}
 	
@@ -459,9 +477,9 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		
 		// cliques/separators to update
 		Set<IRandomVariable> cliquesOrSepsToUpdate = new HashSet<IRandomVariable>();
-		if (isToUpdateOnlyEditClique()) {
+		if (isToUpdateOnlyEditClique() && getEditClique() != null) {
 			// update only the edited clique
-			cliquesOrSepsToUpdate.add(getEditCliqueOrSeparator());
+			cliquesOrSepsToUpdate.add(getEditClique());
 		} else {
 			// update all cliques
 			cliquesOrSepsToUpdate.addAll(getOriginalCliqueToAssetCliqueMap().keySet());
@@ -624,21 +642,23 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 				if (node instanceof TreeVariable) {
 					TreeVariable treeVar = (TreeVariable) node;
 					if (treeVar.hasLikelihood()) {
-						setEditCliqueOrSeparator(treeVar.getAssociatedClique());
+						List<INode> likelihoodParents = getLikelihoodExtractor().extractLikelihoodParents(getRelatedProbabilisticNetwork(), treeVar);
+						likelihoodParents.add(treeVar);
+						List<Clique> cliquesContainingAllNodes = getRelatedProbabilisticNetwork().getJunctionTree().getCliquesContainingAllNodes(likelihoodParents, 1);
+						if (cliquesContainingAllNodes.isEmpty()) {
+							setEditClique(null);
+						} else {
+							setEditClique(cliquesContainingAllNodes.get(0));
+						}
 						// TODO do not assume only 1 edit per propagation
 						break;
 					}
 				}
 			}
-			// fill property with clones, so that changes on the original tables won't affect the property
-//			PotentialTable table = (PotentialTable) ((PotentialTable) getEditCliqueOrSeparator().getProbabilityFunction()).clone();
-//			property.put(getEditCliqueOrSeparator(), table); // update property
-//			// overwrite asset network property
-//			this.getNetwork().addProperty(LAST_PROBABILITY_PROPERTY, property);
-			// also, use the copied potential table to store old values, so that we can use restoreData to undo changes.
-			((PotentialTable) getEditCliqueOrSeparator().getProbabilityFunction()).copyData();
-			return;
+			// we need to copy data of all prob cliques/separators prior to update anyway, because we want to revert propagation in case of ZeroAssetsException
 		}
+		
+		// copy the probabilities prior to update
 		
 		// iterate on cliques
 		for (Clique clique : this.getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
@@ -1139,7 +1159,25 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 * @see #getGlobalQValueCalculator()
 	 */
 	public float calculateExplanation( List<Map<INode, Integer>> inputOutpuArgumentForExplanation){
+		// if inputOutpuArgumentForExplanation == null, this means that we do not need to obtain min states
+		// (i.e. we only want the minimum assets or q-values)
+		if (inputOutpuArgumentForExplanation == null) {	
+			// calculate only min-value
+			try {
+				return calculateMinimum();
+			} catch (Exception e) {
+				Debug.println(getClass(), e.getMessage(), e);
+				// in case of exception, we can still try to calculate the miin-value using the traditional way
+			}
+		} else if (!isToCalculateLPE()) {
+			// runMinPropagation() should have been run with isToCalculateLPE() == true. This is an inconsistent state
+			throw new IllegalStateException("calculateExplanation was asked to calculate min-states, " +
+					"but the algorithm is configured to calculate only the min-values. " +
+					"Please, call setToCalculateLPE(true) and then runMinPropagation() if you need to " +
+					"obtain the min-states as well.");
+		}
 		
+		// calculate both min value and min states
 		// TODO return more than 1 LPE
 		Debug.println(getClass(), "Current version returns only 1 explanation");
 		
@@ -1243,6 +1281,117 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		return ret;
 	}
 	
+	/**
+	 * This method is an optimization of {@link #calculateExplanation(List)}
+	 * in case the provided list is null (i.e. the caller only wants to 
+	 * obtain the min-values, not the min-states).
+	 * <br/>
+	 * This method expects that {@link #runMinPropagation(Map)} was called
+	 * prior to this method.
+	 * <br/>
+	 * {@link #calculateExplanation(List)} uses this method when
+	 * the argument is empty.
+	 * <br/>
+	 * <br/>
+	 * <br/>
+	 * Note: the smallest value in the root clique is the min-value.
+	 * <br/>
+	 * Suppose a junction tree like the following format:
+	 * <br/>
+	 * <br/>
+	 * Clique3<-Separator2<-Clique1->Separator1->Clique2
+	 *  <br/>
+	 * <br/>
+	 *  If clique tables contains assets (instead of q-values)
+	 *  Then, the cells of the clique table of Clique1 will contain
+	 *  <br/>
+	 * <br/>
+	 *  the MIN(Clique2) - Separator1 + MIN(Clique3) - Separator2 + MIN(Clique1)
+	 *  <br/>
+	 *  	= Sum(Cliques) - Sum(Separators)
+	 *   <br/>
+	 *  This is the global min assets.
+	 *   <br/> <br/>
+	 *  Similarly, if clique tables contains q-values, then, Clique1 will contain
+	 *  the MIN(Clique2) / Separator1 * MIN(Clique3) / Separator2 * MIN(Clique1)
+	 *   <br/>
+	 *  	= Product(Cliques)/Product(Separators).
+	 *   <br/>
+	 *  This is the global min q.
+	 *  <br/> <br/>
+	 * @return the min-values in the cliques and separators of {@link #getAssetNetwork()}.
+	 * @see #calculateExplanation(List)
+	 */
+	protected float calculateMinimum() {
+		// initial assertions
+		if (getAssetNetwork() == null) {
+			throw new IllegalStateException("This algorithm must be aggregated to some asset network.");
+		}
+		if (getAssetNetwork().getJunctionTree() == null) {
+			throw new IllegalStateException("The asset network is invalid. It is either empty or created from a Bayes Net which was not compiled yet.");
+		}
+		
+		// obtain the minimum of root clique (clique containing the min values if runMinPropagation was performed correctly)
+		// if getAssetNetwork().getJunctionTree() is an instance of LPE junction tree algorithms, getN will return min value of root
+		// this will contain only the minimum  of the root clique
+		float minValue = getAssetNetwork().getJunctionTree().getN();	
+		if (minValue == Float.POSITIVE_INFINITY) {
+			// infinite represents impossible state.
+			throw new ZeroAssetsException("Attempted to calculate assets regarding an impossible state in root clique of asset net " + getAssetNetwork());
+		} else if (minValue == Float.NEGATIVE_INFINITY || Float.isNaN(minValue)) {
+			throw new IllegalStateException("Encontered " + minValue + " while calculating minimum assets of root clique of asset net " + getAssetNetwork());
+		}
+		
+		/*
+		 * If network is disconnected, we need to subtract (divide, in case of q-values) 
+		 * the getEmptySeparatorsDefaultContent() for each empty separator.
+		 * or else it won't conform with the global q-values.
+		 * We also need to consider the min-values of each disconnected sub-networks
+		 * in order to conform with the global q-values.
+		 * Virtually, this method will behave as if the empty separators have 1 state
+		 * with getEmptySeparatorsDefaultContent() as the content of its asset table. 
+		 */
+		if (getAssetNetwork().getJunctionTree().getSeparators() != null) {
+			// just subtract  (divide in case of q-values)
+			for (Separator separator : getAssetNetwork().getJunctionTree().getSeparators()) {
+				if (separator.getNodes() == null || separator.getNodes().isEmpty()
+						|| separator.getProbabilityFunction() == null
+						|| separator.getProbabilityFunction().tableSize() <= 0) {
+					if (isToUseQValues()) {
+						minValue /= getEmptySeparatorsDefaultContent();
+					} else {
+						minValue -= getEmptySeparatorsDefaultContent();
+					}
+					// we also need to add (multiply in case of q-values) the minimum of the roots of the disconnected sub-network.
+					// The empty separator is always pointing to the root clique of the disconnected sub-network
+					Clique localRootClique = separator.getClique2();
+					// obtain the max value in clique
+					float localMin = Float.NaN;
+					PotentialTable table = localRootClique.getProbabilityFunction();
+					for (int i = 0; i < table.tableSize(); i++) {
+						float value = table.getValue(i);
+						if (Float.isNaN(localMin)){ 
+							localMin = value;
+						} else if (value < localMin) {
+							localMin = value;
+						}
+					}
+					if (isToUseQValues()) {
+						minValue *= localMin;
+					} else {
+						minValue += localMin;
+					}
+				}
+				if (minValue == Float.POSITIVE_INFINITY) {
+					// infinite represents impossible state.
+					throw new ZeroAssetsException("Attempted to calculate assets regarding an impossible state in clique " + separator.getClique2());
+				} else if (minValue == Float.NEGATIVE_INFINITY || Float.isNaN(minValue)) {
+					throw new IllegalStateException("Encontered " + minValue + " while calculating minimum assets in clique " + separator.getClique2());
+				}
+			}
+		}
+		return minValue;
+	}
 
 //	/** 
 //	 * This method obtains the min-q states and returns the min-q value.
@@ -1392,13 +1541,13 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 					continue;
 				}
 				Integer stateIndex = conditions.get(key);
-				Node node = getAssetNetwork().getNode(key.getName());
+				AssetNode node = (AssetNode) getAssetNetwork().getNode(key.getName());
 				if (stateIndex != null && node != null && node instanceof TreeVariable) {
 					if (stateIndex < 0) {
 						// set finding as negative (i.e. finding setting a state to 0%)
-						((TreeVariable)node).addFinding(Math.abs(stateIndex+1), true);
+						node.addFinding(Math.abs(stateIndex+1), true, isToUseQValues());
 					} else {
-						((TreeVariable)node).addFinding(stateIndex);
+						node.addFinding(stateIndex, false, isToUseQValues());
 					}
 				} else {
 					try {
@@ -1444,9 +1593,9 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	}
 	
 	/**
-	 * This comparator is used by {@link #calculateExplanation()} in order
+	 * This comparator is used by {@link #calculateMinimum()} in order
 	 * to obtain the minimum value in a clique table. By changing this comparator,
-	 * it is possible for {@link #calculateExplanation()} to obtain, for instance, the maximum instead.
+	 * it is possible for {@link #calculateMinimum()} to obtain, for instance, the maximum instead.
 	 * @return the cellValuesComparator
 	 */
 	public Comparator<Float> getCellValuesComparator() {
@@ -1454,9 +1603,9 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	}
 
 	/**
-	 * This comparator is used by {@link #calculateExplanation()} in order
+	 * This comparator is used by {@link #calculateMinimum()} in order
 	 * to obtain the minimum value in a clique table. By changing this comparator,
-	 * it is possible for {@link #calculateExplanation()} to obtain, for instance, the maximum instead.
+	 * it is possible for {@link #calculateMinimum()} to obtain, for instance, the maximum instead.
 	 * @param cellValuesComparator the cellValuesComparator to set
 	 */
 	public void setCellValuesComparator(Comparator cellValuesComparator) {
@@ -1505,15 +1654,15 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	/**
 	 * @param editCliquesOrSeparators the editCliquesOrSeparators to set
 	 */
-	protected void setEditCliqueOrSeparator(IRandomVariable editCliqueOrSeparator) {
-		this.editCliqueOrSeparator = editCliqueOrSeparator;
+	protected void setEditClique(Clique editClique) {
+		this.editClique = editClique;
 	}
 
 	/**
 	 * @return the editCliquesOrSeparators
 	 */
-	protected IRandomVariable getEditCliqueOrSeparator() {
-		return editCliqueOrSeparator;
+	protected Clique getEditClique() {
+		return editClique;
 	}
 
 	/*
@@ -1537,16 +1686,18 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#revertLastProbabilityUpdate()
 	 */
 	public void revertLastProbabilityUpdate() {
-		for (IRandomVariable origCliqueOrSeparator : getOriginalCliqueToAssetCliqueMap().keySet()) {
-//			// extract previous probability (i.e. prior to propagation) values from network property
-//			PotentialTable previousProbabilities = ((Map<IRandomVariable, PotentialTable>) this.getNetwork().getProperty(LAST_PROBABILITY_PROPERTY)).get(origCliqueOrSeparator);
-//			// extract current probability
-			PotentialTable currentProbabilities = (PotentialTable) origCliqueOrSeparator.getProbabilityFunction();
-//			// set current to the previous (i.e. revert prob)
-//			currentProbabilities.setValues(previousProbabilities.getValues());
+		for (IRandomVariable clique : getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
+			PotentialTable currentProbabilities = (PotentialTable) clique.getProbabilityFunction();
 			currentProbabilities.restoreData();
-			for (int i = 0; i < currentProbabilities.variableCount(); i++) {
-				((TreeVariable)currentProbabilities.getVariableAt(i)).updateMarginal();
+		}
+		for (IRandomVariable separator : getRelatedProbabilisticNetwork().getJunctionTree().getSeparators()) {
+			PotentialTable currentProbabilities = (PotentialTable) separator.getProbabilityFunction();
+			currentProbabilities.restoreData();
+		}
+		for (Node node : getRelatedProbabilisticNetwork().getNodes()) {
+			if (node instanceof TreeVariable) {
+				TreeVariable treeVariable = (TreeVariable) node;
+				treeVariable.updateMarginal();
 			}
 		}
 	}
@@ -1721,7 +1872,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 * to access the default value in asset tables of empty separators.
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#getEmptySeparatorsDefaultContent()
 	 */
-	public float getEmptySeparatorsDefaultContent(Graph net) {
+	protected float getEmptySeparatorsDefaultContent(Graph net) {
 		Float ret = (Float) net.getProperty(EMPTY_SEPARATOR_DEFAULT_CONTENT_PROPERTY);
 		if (ret == null) {
 			ret = getDefaultInitialAssetTableValue();
@@ -1735,7 +1886,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 * to access the default value in asset tables of empty separators.
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setEmptySeparatorsDefaultContent(float)
 	 */
-	public void setEmptySeparatorsDefaultContent(Network net, float emptySeparatorsContent) {
+	protected void setEmptySeparatorsDefaultContent(Network net, float emptySeparatorsContent) {
 		net.getProperties().put(EMPTY_SEPARATOR_DEFAULT_CONTENT_PROPERTY, emptySeparatorsContent);
 	}
 
@@ -1762,7 +1913,11 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	public void setToUseQValues(boolean isToUseQValues) {
 		if (this.isToUseQValues != isToUseQValues) {
 			this.isToUseQValues = isToUseQValues;
-			this.setDefaultJunctionTreeBuilder(isToUseQValues?DEFAULT_MIN_PROPAGATION_JUNCTION_TREE_BUILDER:DEFAULT_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
+			if (isToCalculateLPE()) {
+				this.setDefaultJunctionTreeBuilder(isToUseQValues?DEFAULT_MIN_PROPAGATION_JUNCTION_TREE_BUILDER:DEFAULT_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
+			} else {
+				this.setDefaultJunctionTreeBuilder(isToUseQValues?DEFAULT_MIN_PROPAGATION_JUNCTION_TREE_BUILDER:DEFAULT_ONEWAY_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
+			}
 			this.setCellValuesComparator(isToUseQValues?DEFAULT_QVALUES_COMPARATOR:DEFAULT_ASSET_COMPARATOR);
 		}
 	}
@@ -1809,6 +1964,39 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 */
 	public IQValuesToAssetsConverter getqToAssetConverter() {
 		return qToAssetConverter;
+	}
+	
+	/**
+	 * If true, {@link #calculateExplanation(List)} will 
+	 * fill the input/output argument (the list) with the
+	 * least probable explanation (i.e. the min-states).
+	 * If false, the method will only return the min-values.
+	 * This can be used to improve performance when
+	 * the min-state is not necessary.
+	 * @return the isToCalculateLPE
+	 */
+	public boolean isToCalculateLPE() {
+		return isToCalculateLPE;
+	}
+
+	/**
+	 * If true, {@link #calculateExplanation(List)} will 
+	 * fill the input/output argument (the list) with the
+	 * least probable explanation (i.e. the min-states).
+	 * If false, the method will only return the min-values.
+	 * This can be used to improve performance when
+	 * the min-state is not necessary.
+	 * @param isToCalculateLPE the isToCalculateLPE to set
+	 */
+	public void setToCalculateLPE(boolean isToCalculateLPE) {
+		this.isToCalculateLPE = isToCalculateLPE;
+		if (isToCalculateLPE) {
+			this.setJunctionTreeBuilder(DEFAULT_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
+			this.setDefaultJunctionTreeBuilder(DEFAULT_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
+		} else {
+			this.setJunctionTreeBuilder(DEFAULT_ONEWAY_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
+			this.setDefaultJunctionTreeBuilder(DEFAULT_ONEWAY_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
+		}
 	}
 	
 

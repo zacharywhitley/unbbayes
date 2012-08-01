@@ -282,4 +282,26 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 */
 	public IQValuesToAssetsConverter getqToAssetConverter();
 	
+	/**
+	 * If true, {@link #calculateExplanation(List)} will 
+	 * fill the input/output argument (the list) with the
+	 * least probable explanation (i.e. the min-states).
+	 * If false, the method will only return the min-values.
+	 * This can be used to improve performance when
+	 * the min-state is not necessary.
+	 * @return the isToCalculateLPE
+	 */
+	public boolean isToCalculateLPE() ;
+
+	/**
+	 * If true, {@link #calculateExplanation(List)} will 
+	 * fill the input/output argument (the list) with the
+	 * least probable explanation (i.e. the min-states).
+	 * If false, the method will only return the min-values.
+	 * This can be used to improve performance when
+	 * the min-state is not necessary.
+	 * @param isToCalculateLPE the isToCalculateLPE to set
+	 */
+	public void setToCalculateLPE(boolean isToCalculateLPE) ;
+	
 }

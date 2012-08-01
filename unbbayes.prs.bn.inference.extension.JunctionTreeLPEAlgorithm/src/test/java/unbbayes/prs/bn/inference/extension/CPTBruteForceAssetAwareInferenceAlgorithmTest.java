@@ -24,7 +24,6 @@ import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor;
 import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
-import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 /**
  * This is a JUnit test case for the asset propagation algorithms
@@ -34,10 +33,16 @@ import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 	
 	/** If two probability values are within an interval of + or - this value, then it is considered to be equalÅ@*/
-	private static final float PROB_PRECISION_ERROR = 0.005f;
+	private static final float PROB_PRECISION_ERROR = 0.0005f;
 
 	/** If two asset q values are within an interval of + or - this value, then it is considered to be equalÅ@*/
 	private static final float ASSET_PRECISION_ERROR = 0.05f;
+
+	private CPTBruteForceAssetAwareInferenceAlgorithm assetQAlgorithm;
+
+	private ProbabilisticNetwork network;
+
+	private JunctionTreeAlgorithm junctionTreeAlgorithm;
 
 	/**
 	 * @param name
@@ -51,6 +56,59 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
+		
+		// load DEF network
+		File file = null;
+		try {
+			file = new File(this.getClass().getClassLoader().getResource("DEF_flat.net").toURI());
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		assertNotNull(file);
+		
+		NetIO netio = new NetIO();
+		try {
+			network = (ProbabilisticNetwork) netio.load(file);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		assertNotNull(network);
+		
+		// algorithm to propagate probabilities
+		junctionTreeAlgorithm = new JunctionTreeAlgorithm(network);
+		assertNotNull(junctionTreeAlgorithm);
+		
+		// enable soft evidence by using jeffrey rule in likelihood evidence w/ virtual nodes.
+		junctionTreeAlgorithm.setLikelihoodExtractor(JeffreyRuleLikelihoodExtractor.newInstance() );
+		
+		// algorithm to propagate q values (assets) given that probabilities were propagated
+		assetQAlgorithm = (CPTBruteForceAssetAwareInferenceAlgorithm) CPTBruteForceAssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm);
+		assertNotNull(assetQAlgorithm);
+		assetQAlgorithm.setToUseQValues(true);
+		
+//		assetQAlgorithm.setToPropagateForGlobalConsistency(false);
+//		assetQAlgorithm.setToUpdateSeparators(false);
+		
+		// set the default asset q quantity of all clique cells to 100
+		if (assetQAlgorithm.isToUseQValues()) {
+			assetQAlgorithm.setDefaultInitialAssetTableValue(100);
+		} else {
+			// algorithm will use asset space instead of q. Initialize with a value of assets equivalent of using q = 100
+			assetQAlgorithm.setDefaultInitialAssetTableValue(assetQAlgorithm.getqToAssetConverter().getScoreFromQValues(100));
+		}
+		// force it to use min-propagation automatically even when we dont call doMinPropagation
+		assetQAlgorithm.setToPropagateForGlobalConsistency(true);	
+		
+		try {
+			// compile network
+			assetQAlgorithm.run();
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
 	}
 
 	/* (non-Javadoc)
@@ -242,53 +300,7 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 	 */	
 	public final void testDEFNet() {
 		
-		// load DEF network
-		File file = null;
-		try {
-			file = new File(this.getClass().getClassLoader().getResource("DEF_flat.net").toURI());
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		assertNotNull(file);
 		
-		NetIO netio = new NetIO();
-		ProbabilisticNetwork network = null;
-		try {
-			network = (ProbabilisticNetwork) netio.load(file);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		assertNotNull(network);
-		
-		// algorithm to propagate probabilities
-		IInferenceAlgorithm algorithm = new JunctionTreeAlgorithm(network);
-		assertNotNull(algorithm);
-		
-		// enable soft evidence by using jeffrey rule in likelihood evidence w/ virtual nodes.
-		((JunctionTreeAlgorithm)algorithm).setLikelihoodExtractor(JeffreyRuleLikelihoodExtractor.newInstance() );
-		
-		// algorithm to propagate q values (assets) given that probabilities were propagated
-		CPTBruteForceAssetAwareInferenceAlgorithm assetQAlgorithm = (CPTBruteForceAssetAwareInferenceAlgorithm) CPTBruteForceAssetAwareInferenceAlgorithm.getInstance(algorithm);
-		assertNotNull(assetQAlgorithm);
-		
-//		assetQAlgorithm.setToPropagateForGlobalConsistency(false);
-//		assetQAlgorithm.setToUpdateSeparators(false);
-		
-		// set the default asset q quantity of all clique cells to 100
-		assetQAlgorithm.setDefaultInitialAssetTableValue(100);
-		// force it to use min-propagation automatically even when we dont call doMinPropagation
-		assetQAlgorithm.setToPropagateForGlobalConsistency(true);	
-		
-		try {
-			// compile network
-			assetQAlgorithm.run();
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
 		
 		// create new user Tom and his asset net. A new asset net represents a new user.
 		AssetNetwork assetNetTom = null;
@@ -345,7 +357,7 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		List<INode> betConditions =  new ArrayList<INode>();
 		
 		// first, extract what is P(E) prior to edit (this is the "CPT" generated on-the-fly with no nodes assumed)
-		PotentialTable potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, algorithm);
+		PotentialTable potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
 		assertNotNull(potential);
 		assertEquals(2, potential.tableSize());
 		
@@ -401,16 +413,19 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		
 		// prepare argument, which is input and output at the same moment
 		List<Map<INode, Integer>> inOutArgLPE = new ArrayList<Map<INode,Integer>>();
-		double minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
-		
-		// check that min-q is 90
-		assertTrue("Obtained min q = " + minQ,((90f - ASSET_PRECISION_ERROR) < minQ) && (minQ < (90f + ASSET_PRECISION_ERROR)) );
+		float minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		if (!assetQAlgorithm.isToUseQValues()) {
+			// minQ contains assets instead of q-values. Convert to q-values
+			minQ = (float) assetQAlgorithm.getqToAssetConverter().getQValuesFromScore(minQ);
+		}
 		
 		Map<INode, Integer> lpes = inOutArgLPE.get(0);
 		assertNotNull(lpes);
 		assertTrue(lpes.size() == 3);
 		assertEquals(1, lpes.get(assetQAlgorithm.getAssetNetwork().getNode("E")).intValue());	// index 1 has state e2
 		
+		// check that min-q is 90
+		assertTrue("Obtained min q = " + minQ,((90f - ASSET_PRECISION_ERROR) < minQ) && (minQ < (90f + ASSET_PRECISION_ERROR)) );
 		
 		
 		// undo only the min propagation (we do not need the min q values anymore, and next q-calculations must use q values prior to min propagation)
@@ -422,6 +437,10 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		// obtain LPE and minQ when E = e1
 		inOutArgLPE = new ArrayList<Map<INode,Integer>>();
 		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		if (!assetQAlgorithm.isToUseQValues()) {
+			// minQ contains assets instead of q-values. Convert to q-values
+			minQ = (float) assetQAlgorithm.getqToAssetConverter().getQValuesFromScore(minQ);
+		}
 		assertFalse(inOutArgLPE.isEmpty());
 		// make sure the returned LPE has E = e1
 		lpes = inOutArgLPE.get(0);
@@ -447,7 +466,7 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(betConditions.contains(assumedNode));
 		
 		// extract CPT of E given D
-		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, algorithm);
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
 		assertNotNull(potential);
 		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
 		
@@ -507,6 +526,10 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		// prepare argument, which is input and output at the same moment
 		inOutArgLPE.clear();
 		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		if (!assetQAlgorithm.isToUseQValues()) {
+			// minQ contains assets instead of q-values. Convert to q-values
+			minQ = (float) assetQAlgorithm.getqToAssetConverter().getQValuesFromScore(minQ);
+		}
 		
 		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
 		assertNotNull(lpes);
@@ -534,6 +557,10 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		// obtain LPE and minQ when D = d2
 		inOutArgLPE = new ArrayList<Map<INode,Integer>>();
 		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		if (!assetQAlgorithm.isToUseQValues()) {
+			// minQ contains assets instead of q-values. Convert to q-values
+			minQ = (float) assetQAlgorithm.getqToAssetConverter().getQValuesFromScore(minQ);
+		}
 		assertFalse(inOutArgLPE.isEmpty());
 		// check that LPE contains d2, e2 and any value F
 		lpes = inOutArgLPE.get(0);
@@ -572,7 +599,7 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(betConditions.contains(network.getNode("D")));
 		
 		// extract CPT of E given D
-		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, algorithm);
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
 		assertNotNull(potential);
 		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
 
@@ -633,6 +660,10 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		// prepare argument, which is input and output at the same moment
 		inOutArgLPE.clear();
 		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		if (!assetQAlgorithm.isToUseQValues()) {
+			// minQ contains assets instead of q-values. Convert to q-values
+			minQ = (float) assetQAlgorithm.getqToAssetConverter().getQValuesFromScore(minQ);
+		}
 		
 		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
 		assertNotNull(lpes);
@@ -680,7 +711,7 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(betConditions.contains(network.getNode("D")));
 		
 		// extract CPT of F given D
-		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, algorithm);
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
 		assertNotNull(potential);
 		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
 
@@ -740,6 +771,10 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		// prepare argument, which is input and output at the same moment
 		inOutArgLPE.clear();
 		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		if (!assetQAlgorithm.isToUseQValues()) {
+			// minQ contains assets instead of q-values. Convert to q-values
+			minQ = (float) assetQAlgorithm.getqToAssetConverter().getQValuesFromScore(minQ);
+		}
 		
 		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
 		assertNotNull(lpes);
@@ -776,7 +811,7 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(betConditions.contains(network.getNode("D")));
 		
 		// extract CPT of F given D
-		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, algorithm);
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
 		assertNotNull(potential);
 		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
 
@@ -837,6 +872,10 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		// prepare argument, which is input and output at the same moment
 		inOutArgLPE.clear();
 		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		if (!assetQAlgorithm.isToUseQValues()) {
+			// minQ contains assets instead of q-values. Convert to q-values
+			minQ = (float) assetQAlgorithm.getqToAssetConverter().getQValuesFromScore(minQ);
+		}
 		
 		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
 		assertNotNull(lpes);
@@ -886,7 +925,7 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		assertEquals(0, betConditions.size());
 		
 		// extract CPT of E
-		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, algorithm);
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
 		assertNotNull(potential);
 		assertEquals(2,potential.tableSize());	
 
@@ -967,6 +1006,10 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		// prepare argument, which is input and output at the same moment
 		inOutArgLPE.clear();
 		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		if (!assetQAlgorithm.isToUseQValues()) {
+			// minQ contains assets instead of q-values. Convert to q-values
+			minQ = (float) assetQAlgorithm.getqToAssetConverter().getQValuesFromScore(minQ);
+		}
 		
 		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
 		assertNotNull(lpes);
@@ -1003,7 +1046,7 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(betConditions.contains(assumedNode));
 		
 		// extract CPT of D given F
-		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, algorithm);
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
 		assertNotNull(potential);
 		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
 
@@ -1065,6 +1108,7 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 			fail(e.getMessage());
 		}
 		
+		
 		// check that new marginal of E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
 		nodeToTest = (TreeVariable) network.getNode("E");
 		assertTrue(((0.8509f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.8509f + PROB_PRECISION_ERROR)) );
@@ -1082,6 +1126,10 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		// prepare argument, which is input and output at the same moment
 		inOutArgLPE.clear();
 		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		if (!assetQAlgorithm.isToUseQValues()) {
+			// minQ contains assets instead of q-values. Convert to q-values
+			minQ = (float) assetQAlgorithm.getqToAssetConverter().getQValuesFromScore(minQ);
+		}
 		
 		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
 		assertNotNull(lpes);
@@ -1122,7 +1170,7 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(betConditions.contains(assumedNode));
 		
 		// extract CPT of D given F
-		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, algorithm);
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
 		assertNotNull(potential);
 		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
 
@@ -1175,6 +1223,10 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		// prepare argument, which is input and output at the same moment
 		inOutArgLPE.clear();
 		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		if (!assetQAlgorithm.isToUseQValues()) {
+			// minQ contains assets instead of q-values. Convert to q-values
+			minQ = (float) assetQAlgorithm.getqToAssetConverter().getQValuesFromScore(minQ);
+		}
 		
 		lpes = inOutArgLPE.get(0);	// current implementation only returns 1 LPE
 		assertNotNull(lpes);
@@ -1205,7 +1257,7 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(betConditions.contains(assumedNode));
 		
 		// extract CPT of D given F
-		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, algorithm);
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
 		assertNotNull(potential);
 		assertEquals(4,potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
 
@@ -1242,6 +1294,10 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		// prepare argument, which is input and output at the same moment
 		inOutArgLPE.clear();
 		minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		if (!assetQAlgorithm.isToUseQValues()) {
+			// minQ contains assets instead of q-values. Convert to q-values
+			minQ = (float) assetQAlgorithm.getqToAssetConverter().getQValuesFromScore(minQ);
+		}
 		
 		assertNotNull(lpes);
 		assertFalse(lpes.isEmpty());
@@ -1263,6 +1319,7 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		assertEquals(assetQAlgorithm.getRelatedProbabilisticNetwork().getJunctionTree().getSeparators().size(), clonedAlgorithm.getRelatedProbabilisticNetwork().getJunctionTree().getSeparators().size());
 		assertTrue(assetQAlgorithm.getRelatedProbabilisticNetwork() != clonedAlgorithm.getRelatedProbabilisticNetwork());
 		assertTrue(assetQAlgorithm.getAssetNetwork() != clonedAlgorithm.getAssetNetwork());
+		assertEquals(assetQAlgorithm.calculateExpectedAssets(), clonedAlgorithm.calculateExpectedAssets(), ASSET_PRECISION_ERROR);
 		
 		// make sure cloned and originals got same values before propagation
 		for (int i = 0; i < assetQAlgorithm.getRelatedProbabilisticNetwork().getJunctionTree().getCliques().size(); i++) {
@@ -1280,9 +1337,13 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 		((ProbabilisticNode)assetQAlgorithm.getRelatedProbabilisticNetwork().getNode("D")).addFinding(1);
 		((ProbabilisticNode)clonedAlgorithm.getRelatedProbabilisticNetwork().getNode("D")).addFinding(1);
 		
-		
+		assetQAlgorithm.setToUpdateAssets(false);
+		clonedAlgorithm.setToUpdateAssets(false);
 		assetQAlgorithm.propagate();
 		clonedAlgorithm.propagate();
+		assetQAlgorithm.setToUpdateAssets(true);
+		clonedAlgorithm.setToUpdateAssets(true);
+		assertEquals(assetQAlgorithm.calculateExpectedAssets(), clonedAlgorithm.calculateExpectedAssets(), ASSET_PRECISION_ERROR);
 		
 		// make sure cloned and originals got same results
 		for (int i = 0; i < assetQAlgorithm.getRelatedProbabilisticNetwork().getJunctionTree().getCliques().size(); i++) {
@@ -1295,6 +1356,26 @@ public class CPTBruteForceAssetAwareInferenceAlgorithmTest extends TestCase {
 				assertEquals((assetOrig.getProbabilityFunction()).getValue(j), (assetClone.getProbabilityFunction()).getValue(j), ASSET_PRECISION_ERROR);
 			}
 		}
+		
+		// this time, propagation should not change anything
+		boolean backup = assetQAlgorithm.isToPropagateForGlobalConsistency();
+		assetQAlgorithm.setToPropagateForGlobalConsistency(false);
+		assetQAlgorithm.propagate();
+		assetQAlgorithm.setToPropagateForGlobalConsistency(backup);
+		
+		// make sure cloned and originals got same results
+		for (int i = 0; i < assetQAlgorithm.getRelatedProbabilisticNetwork().getJunctionTree().getCliques().size(); i++) {
+			Clique probOrig =  assetQAlgorithm.getRelatedProbabilisticNetwork().getJunctionTree().getCliques().get(i);
+			Clique probClone =  clonedAlgorithm.getRelatedProbabilisticNetwork().getJunctionTree().getCliques().get(i);
+			Clique assetOrig =  assetQAlgorithm.getAssetNetwork().getJunctionTree().getCliques().get(i);
+			Clique assetClone =  clonedAlgorithm.getAssetNetwork().getJunctionTree().getCliques().get(i);
+			for (int j = 0; j < probOrig.getProbabilityFunction().tableSize(); j++) {
+				assertEquals(probOrig.getProbabilityFunction().getValue(j), probClone.getProbabilityFunction().getValue(j), PROB_PRECISION_ERROR);
+				assertEquals((assetOrig.getProbabilityFunction()).getValue(j), (assetClone.getProbabilityFunction()).getValue(j), ASSET_PRECISION_ERROR);
+			}
+		}
+		
+		assertEquals(assetQAlgorithm.calculateExpectedAssets(), clonedAlgorithm.calculateExpectedAssets(), ASSET_PRECISION_ERROR);
 		
 	}
 

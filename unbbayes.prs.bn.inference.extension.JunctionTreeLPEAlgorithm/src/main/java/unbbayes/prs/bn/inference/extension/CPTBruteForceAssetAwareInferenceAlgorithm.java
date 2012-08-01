@@ -43,14 +43,6 @@ public class CPTBruteForceAssetAwareInferenceAlgorithm extends
 	
 	
 	
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.bn.inference.extension.BruteForceAssetAwareInferenceAlgorithm#updateMarginalsFromJointProbability()
-	 */
-	@Override
-	protected void updateMarginalsFromJointProbability() {
-		// TODO Auto-generated method stub
-		super.updateMarginalsFromJointProbability();
-	}
 
 	/**
 	 * Default instantiation method.
@@ -75,6 +67,15 @@ public class CPTBruteForceAssetAwareInferenceAlgorithm extends
 		return ret;
 	}
 	
+	
+	
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.BruteForceAssetAwareInferenceAlgorithm#newInstance(unbbayes.util.extension.bn.inference.IInferenceAlgorithm, float)
+	 */
+	protected IInferenceAlgorithm newInstance( IInferenceAlgorithm probabilityDelegator, float defaultInitialQValue) {
+		return getInstance(probabilityDelegator, defaultInitialQValue);
+	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.inference.extension.BruteForceAssetAwareInferenceAlgorithm#updateJointProbability(boolean)

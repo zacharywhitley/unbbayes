@@ -322,6 +322,41 @@ public class MaxProductJunctionTree extends JunctionTree implements IPropagation
 	}
 
 	
-	
+	/**
+	 * @return the max value in root clique, instead
+	 * of the estimated total probability
+	 */
+	public float getN() {
+		// initial assertion
+		if (getCliques() == null) {
+			throw new IllegalStateException("Cliques == null");
+		}
+		// obtain root clique
+		Clique rootClique = null;
+		for (Clique clique : getCliques()) {
+			if (clique.getParent() == null) {
+				rootClique = clique;
+				break;
+			}
+		}
+		if (rootClique == null) {
+			throw new IllegalStateException("rootClique == null");
+		}
+		if (rootClique.getProbabilityFunction() == null) {
+			throw new IllegalStateException("rootClique.getProbabilityFunction() == null");
+		}
+		// obtain the max value in clique
+		float ret = Float.NaN;
+		PotentialTable table = rootClique.getProbabilityFunction();
+		for (int i = 0; i < table.tableSize(); i++) {
+			float value = table.getValue(i);
+			if (Float.isNaN(ret)){ 
+				ret = value;
+			} else if (getMaxOperation().operate(value, ret) == value) {
+				ret = value;
+			}
+		}
+		return ret;
+	}
 
 }

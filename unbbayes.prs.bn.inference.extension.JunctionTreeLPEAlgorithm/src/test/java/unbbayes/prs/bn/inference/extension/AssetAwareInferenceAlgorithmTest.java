@@ -6,6 +6,7 @@ package unbbayes.prs.bn.inference.extension;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -87,6 +88,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		// algorithm to propagate q values (assets) given that probabilities were propagated
 		assetQAlgorithm = (AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(junctionTreeAlgorithm);
 		assertNotNull(assetQAlgorithm);
+		assetQAlgorithm.setToUseQValues(false);
 		
 //		assetQAlgorithm.setToPropagateForGlobalConsistency(false);
 //		assetQAlgorithm.setToUpdateSeparators(false);
@@ -412,7 +414,9 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		
 		// prepare argument, which is input and output at the same moment
 		List<Map<INode, Integer>> inOutArgLPE = new ArrayList<Map<INode,Integer>>();
+		
 		float minQ = assetQAlgorithm.calculateExplanation(inOutArgLPE);		// it obtains both min-q value and states.
+		
 		if (!assetQAlgorithm.isToUseQValues()) {
 			// minQ contains assets instead of q-values. Convert to q-values
 			minQ = (float) assetQAlgorithm.getqToAssetConverter().getQValuesFromScore(minQ);
@@ -1384,4 +1388,199 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		
 	}
 
+
+	public final void testDEFNet2() {
+		// force algorithm to use assets
+		assetQAlgorithm.setToUseQValues(false);
+		assetQAlgorithm.setToUpdateOnlyEditClique(true);
+		
+		// use base of log == e, and b = 100/log_e(2)
+		assetQAlgorithm.setqToAssetConverter(new IQValuesToAssetsConverter() {
+			public void setCurrentLogBase(float base) { }
+			public void setCurrentCurrencyConstant(float b) { }
+			public float getScoreFromQValues(double assetQ) {
+				return (float) (getCurrentCurrencyConstant()*Math.log(assetQ));
+			}
+			public double getQValuesFromScore(float score) {
+				return Math.pow(getCurrentLogBase(), score/getCurrentCurrencyConstant());
+			}
+			public float getCurrentLogBase() {
+				return (float) Math.E;
+			}
+			public float getCurrentCurrencyConstant() {
+				return (float) (100.0/Math.log(2));
+			}
+		});
+		
+		// initialized with 1000 assets
+		assetQAlgorithm.setDefaultInitialAssetTableValue(1000);
+		
+		// create new user Tom and his asset net. A new asset net represents a new user.
+		AssetNetwork assetNetTom = null;
+		try {
+			assetNetTom = assetQAlgorithm.createAssetNetFromProbabilisticNet(network);
+			assetNetTom.setName("Tom");
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		assertNotNull(assetNetTom);
+		
+		// set Tom as the current network user
+		assetQAlgorithm.setAssetNetwork(assetNetTom);
+		assertEquals(assetNetTom, assetQAlgorithm.getAssetNetwork());
+		
+		
+		
+		// A soft evidence is represented as a list of conditions (assumed nodes) and an array of float representing new conditional probability.
+		// Non-edited probabilities must remain in the values before the edit. Thus, we must extract what are the current probability values.
+		// this object extracts conditional probability of any nodes in same clique (it assumes prob network was compiled using junction tree algorithm)
+		InCliqueConditionalProbabilityExtractor conditionalProbabilityExtractor = (InCliqueConditionalProbabilityExtractor) InCliqueConditionalProbabilityExtractor.newInstance();	
+		assertNotNull(conditionalProbabilityExtractor);
+		
+		// Tom bets P(E=e1|D=d1) = .55 -> .9
+		
+		ProbabilisticNode betNode = (ProbabilisticNode) assetQAlgorithm.getRelatedProbabilisticNetwork().getNode("E");
+		// bet node is still E
+		assertEquals(network.getNode("E"), betNode);
+		
+		// add D to bet condition
+		Node assumedNode = network.getNode("D");
+		assertNotNull(assumedNode);
+		List<INode> betConditions = new ArrayList<INode>();
+		betConditions.add(assumedNode);
+		assertEquals(1, betConditions.size());
+		assertTrue(betConditions.contains(assumedNode));
+		
+		// extract CPT of E given D
+		PotentialTable potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+		assertNotNull(potential);
+		assertEquals(4, potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
+		
+		
+		// set P(E=e1|D=d1) = 0.9 and P(E=e2|D=d1) = 0.1 (i.e. we are changing only the cells we want)
+		potential.setValue(0, 0.02f);
+		potential.setValue(1, 0.98f);
+		
+		// fill array of likelihood with values in CPT
+		float[] likelihood = new float[potential.tableSize()];
+		for (int i = 0; i < likelihood.length; i++) {
+			likelihood[i] = potential.getValue(i);
+		}
+		
+		// add likelihood ratio given (empty) parents (conditions assumed in the bet - empty now)
+		betNode.addLikeliHood(likelihood, betConditions);
+		
+		
+		
+		try {
+			// propagate soft evidence
+			assetQAlgorithm.propagate();
+			System.out.println(network.getLog());
+			network.getLogManager().clear();
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		// check that new marginal of E is [0.725 0.275] (this is expected value), and the others have not changed (remains 50%)
+		
+		assetQAlgorithm.undoMinPropagation();
+		
+		
+		assertEquals(1043, assetQAlgorithm.calculateExpectedAssets(), 1);
+		
+		
+		// Tom bets P(F=f1|D=d2) = .5 -> .99
+		
+		betNode = (ProbabilisticNode) assetQAlgorithm.getRelatedProbabilisticNetwork().getNode("F");
+		
+		// add D to bet condition
+		assumedNode = network.getNode("D");
+		assertNotNull(assumedNode);
+		betConditions = new ArrayList<INode>();
+		betConditions.add(assumedNode);
+		assertEquals(1, betConditions.size());
+		assertTrue(betConditions.contains(assumedNode));
+		
+		// extract CPT of F given D
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+		assertNotNull(potential);
+		assertEquals(4, potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
+		
+		
+		potential.setValue(2, 0.99f);
+		potential.setValue(3, 0.01f);
+		
+		// fill array of likelihood with values in CPT
+		likelihood = new float[potential.tableSize()];
+		for (int i = 0; i < likelihood.length; i++) {
+			likelihood[i] = potential.getValue(i);
+		}
+		
+		// add likelihood ratio given (empty) parents (conditions assumed in the bet - empty now)
+		betNode.addLikeliHood(likelihood, betConditions);
+		
+		try {
+			// propagate soft evidence
+			assetQAlgorithm.propagate();
+			System.out.println(network.getLog());
+			network.getLogManager().clear();
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		assetQAlgorithm.undoMinPropagation();
+		
+		assertEquals(1088.9, assetQAlgorithm.calculateExpectedAssets(), 1);
+		
+		// Tom bets P(F=f1|D=d1) = .5 -> .99
+		
+		betNode = (ProbabilisticNode) assetQAlgorithm.getRelatedProbabilisticNetwork().getNode("F");
+		
+		// add D to bet condition
+		assumedNode = network.getNode("D");
+		assertNotNull(assumedNode);
+		betConditions = new ArrayList<INode>();
+		betConditions.add(assumedNode);
+		assertEquals(1, betConditions.size());
+		assertTrue(betConditions.contains(assumedNode));
+		
+		// extract CPT of F given D
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+		assertNotNull(potential);
+		assertEquals(4, potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
+		
+		
+		potential.setValue(0, 0.0313f);
+		potential.setValue(1, 1-0.0313f);
+		
+		// fill array of likelihood with values in CPT
+		likelihood = new float[potential.tableSize()];
+		for (int i = 0; i < likelihood.length; i++) {
+			likelihood[i] = potential.getValue(i);
+		}
+		
+		// add likelihood ratio given (empty) parents (conditions assumed in the bet - empty now)
+		betNode.addLikeliHood(likelihood, betConditions);
+		
+		try {
+			// propagate soft evidence
+			assetQAlgorithm.propagate();
+			System.out.println(network.getLog());
+			network.getLogManager().clear();
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		assetQAlgorithm.undoMinPropagation();
+		
+		assertEquals(1128.8, assetQAlgorithm.calculateExpectedAssets(), 1);
+	
+	}
+
+	
+	
 }

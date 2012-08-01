@@ -35,7 +35,7 @@ import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
  */
 public class MarkovEngineTest extends TestCase {
 	
-	private static final int THREAD_NUM = 5;//75;	// quantity of threads to use in order to test multi-thread behavior
+	private static final int THREAD_NUM = 1;//75;	// quantity of threads to use in order to test multi-thread behavior
 
 	public static final int MAX_NETWIDTH = 3;
 	public static final int MAX_STATES = 5;
@@ -49,6 +49,8 @@ public class MarkovEngineTest extends TestCase {
 	
 	private MarkovEngineImpl engine = (MarkovEngineImpl) MarkovEngineImpl.getInstance((float)Math.E, (float)(10.0/Math.log(100)), 0);
 
+	private boolean isToUseQValues = false;
+
 	/**
 	 * @param name
 	 */
@@ -61,14 +63,15 @@ public class MarkovEngineTest extends TestCase {
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
-		engine.initialize();
-		engine.setCurrentLogBase((float) Math.E);
-		engine.setCurrentCurrencyConstant((float) (10/Math.log(100)));
-		if (AssetPropagationInferenceAlgorithm.IS_TO_USE_Q_VALUES) {
+		engine.setToUseQValues(isToUseQValues());
+		if (engine.isToUseQValues()) {
 			engine.setDefaultInitialAssetTableValue((float) engine.getQValuesFromScore(0f));
 		} else {
 			engine.setDefaultInitialAssetTableValue(0f);
 		}
+		engine.setCurrentLogBase((float) Math.E);
+		engine.setCurrentCurrencyConstant((float) (10/Math.log(100)));
+		engine.initialize();
 	}
 
 	/* (non-Javadoc)
@@ -3358,6 +3361,7 @@ public class MarkovEngineTest extends TestCase {
 		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
 		assertTrue("Obtained unexpected cash = " + minCash, minCash <= 0);
 	
+		Map<Long, List<Float>> probListsBeforeTrade = engine.getProbLists(null, null, null);
 		
 		// test the case in which the trade will make the assets to go negative, but it cannot be previewed (it will throw exception only on commit)
 		transactionKey = engine.startNetworkActions();
@@ -3386,6 +3390,98 @@ public class MarkovEngineTest extends TestCase {
 			fail("This is expected to throw ZeroAssetsException");
 		} catch (ZeroAssetsException e) {
 			assertNotNull(e);
+		}
+		
+		// probability of nodes present before this transaction must remain unchanged
+		Map<Long, List<Float>> probListsAfterTrade = engine.getProbLists(null, null, null);
+		for (Long id : probListsBeforeTrade.keySet()) {
+			assertEquals("question = " + id , probListsBeforeTrade.get(id).size(), probListsAfterTrade.get(id).size());
+			for (int i = 0; i < probListsBeforeTrade.get(id).size(); i++) {
+				assertEquals("Question = " + id , probListsBeforeTrade.get(id).get(i), probListsAfterTrade.get(id).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		
+		// check that final min-q of Tom is 20
+		minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
+		assertEquals(20f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		assertEquals((engine.getScoreFromQValues(20f)), (minCash), ASSET_ERROR_MARGIN);
+		
+		// check that final LPE of Tom contains d1, e2 and any value F
+		assumedStates = new ArrayList<Integer>();
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add(0x0DL); assumptionIds.add(0x0EL); assumptionIds.add(0x0FL); 
+		
+		// check combination d1, e1, f1 (not min)
+		assumedStates.add(0);	// d1
+		assumedStates.add(0);	// e1
+		assumedStates.add(0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e1, f2 (not min)
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
+		// check combination d2, e1, f1 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e1, f2 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f1 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f2 (not min)
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		try {
+			List<Long> questionIds = new ArrayList<Long>();
+			questionIds.add(13L); questionIds.add(14L); questionIds.add(15L); 
+			questionIds.add(12L); questionIds.add(10L);
+			List<Integer> states = new ArrayList<Integer>();
+			states.add(0); states.add(0); states.add(0); 
+			states.add(0); states.add(0);
+			for (int i = 0; i < 32; i++) {
+				states.set(0, i%2); states.set(1,(i/2)%2); states.set(2,(i/4)%2); 
+				states.set(3,(i/16)%2); states.set(4,(i/32)%2);
+				System.out.println(engine.getJointProbability(questionIds, states));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
 		}
 		
 		// test invalid assumptions
@@ -3421,6 +3517,14 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals((long)0x0F, (long)action.getQuestionId());
 		assertTrue("Assumptions = " + action.getTradeId(), action.getAssumptionIds().isEmpty());
 		
+		List<Float> editLimits = engine.getEditLimits(userNameToIDMap.get("Tom"), 0x0DL, 0, null, null);
+		assertEquals(2, editLimits.size());
+		assertTrue(editLimits.toString() , editLimits.get(0) > 0);
+		assertTrue(editLimits.toString() , editLimits.get(0) < 1);
+		assertTrue(editLimits.toString() , editLimits.get(1) > 0);
+		assertTrue(editLimits.toString() , editLimits.get(1) < 1);
+		assertTrue(editLimits.toString() , editLimits.get(0) < 0.5 && 0.5 < editLimits.get(1));
+	
 		// test disconnected assumptions
 		transactionKey = engine.startNetworkActions();
 		
@@ -6089,7 +6193,9 @@ public class MarkovEngineTest extends TestCase {
 //			System.out.println("Edge " + parentQuestionIds + " -> C");
 			engine.addQuestionAssumption(transactionKey, new Date(), 0x0C, parentQuestionIds, null);
 		}
-		
+//		List<Long> parentQuestionIds = new ArrayList<Long>();
+//		parentQuestionIds.add(0x0EL); parentQuestionIds.add(0x0FL);
+//		engine.addQuestionAssumption(transactionKey, new Date(), 0x0C, parentQuestionIds, null);
 		
 		// commit all trades (including the creation of network and user)
 		engine.commitNetworkActions(transactionKey);
@@ -6129,6 +6235,12 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		float cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		if (Float.isNaN(cash)) {
+			for (Node node : engine.getProbabilisticNetwork().getNodes()) {
+				System.out.println(node.getParents() + "->" + node);
+			}
+			fail();
+		}
 		assertTrue("Obtained cash = " + cash, minCash < cash);
 		
 		// check combination d1, e1, f2 (not min)
@@ -8394,6 +8506,9 @@ public class MarkovEngineTest extends TestCase {
 			}
 			engine.addQuestionAssumption(transactionKey, new Date(), 0x0CL, assumptions, null);
 		}
+//		List<Long> assumptions = new ArrayList<Long>();
+//		assumptions.add(0x0FL);
+//		engine.addQuestionAssumption(transactionKey, new Date(), 0x0CL, assumptions, null);
 		engine.commitNetworkActions(transactionKey);
 		
 		// revert the last trade (actually, the only trade).
@@ -8458,6 +8573,12 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		float cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
+		if (Float.isNaN(cash)) {
+			for (Node node : engine.getProbabilisticNetwork().getNodes()) {
+				System.out.println(node.getParents() + "->" + node);
+			}
+			fail();
+		}
 		assertTrue("Obtained cash = " + cash, minCash < cash);
 		mapOfConditionalCash.get("Tom").add(cash);
 		
@@ -8846,6 +8967,12 @@ public class MarkovEngineTest extends TestCase {
 					assumedStates.set(0, (int)i/2);	// e
 					assumedStates.set(1, (int)i%2);	// f
 					cash = engine.getCash(userNameToIDMap.get(userName), assumptionIds, assumedStates);
+					if (Float.isNaN(cash)) {
+						for (Node node : engine.getProbabilisticNetwork().getNodes()) {
+							System.out.println(node.getParents() + "->" + node);
+						}
+						fail();
+					}
 					assertEquals("[" + repeat + "-" + i + "] user = " + userName + ", e = " + (int)i/2 + ", f = " + (int)i%2, mapOfConditionalCash.get(userName).get(i), cash);
 				}
 				if (!engine.isToDeleteResolvedNode()) {
@@ -9919,6 +10046,20 @@ public class MarkovEngineTest extends TestCase {
 		validAssumptions = engine.getMaximumValidAssumptionsSublists(0x0FL, assumptionIds , (int)(2 + (Math.random() * (Integer.MAX_VALUE - 2))));
 		assertEquals(1, validAssumptions.size());
 		assertEquals(0, validAssumptions.get(0).size());
+	}
+
+	/**
+	 * @param isToUseQValues the isToUseQValues to set
+	 */
+	public void setToUseQValues(boolean isToUseQValues) {
+		this.isToUseQValues = isToUseQValues;
+	}
+
+	/**
+	 * @return the isToUseQValues
+	 */
+	public boolean isToUseQValues() {
+		return isToUseQValues;
 	}
 
 	// not needed for the 1st release

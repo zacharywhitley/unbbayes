@@ -38,12 +38,23 @@ public class AssetNode extends DecisionNode {
 	 */
 	@Override
 	public void addFinding(int stateIndex, boolean isNegative) {
-		// TODO Auto-generated method stub
+		this.addFinding(stateIndex, isNegative, false);
+	}
+	
+	/**
+	 * @param isToUseQValues : if false, impossible states will be marked as {@link Float#POSITIVE_INFINITY}
+	 * @see TreeVariable#addFinding(int, boolean)
+	 */
+	public void addFinding(int stateIndex, boolean isNegative, boolean isToUseQValues) {
 		super.addFinding(stateIndex, isNegative);
         for (int i = 0; i < getStatesSize(); i++) {
         	// if not isNegative, set marginal to 1 if stateindex == i; 0 otherwise.
         	// if isNegative, set marginal to 0 if stateindex == i; 1 otherwise.
-			setMarginalAt(i, ((i==stateIndex)?(isNegative?Float.POSITIVE_INFINITY:1):(isNegative?1:Float.POSITIVE_INFINITY)) );
+        	if (isToUseQValues) {
+        		setMarginalAt(i, ((i==stateIndex)?(isNegative?0:1):(isNegative?1:0)) );
+        	} else {
+        		setMarginalAt(i, ((i==stateIndex)?(isNegative?Float.POSITIVE_INFINITY:1):(isNegative?1:Float.POSITIVE_INFINITY)) );
+        	}
 		}
 	}
 

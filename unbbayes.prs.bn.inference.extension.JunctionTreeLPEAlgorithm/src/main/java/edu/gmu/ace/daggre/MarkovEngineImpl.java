@@ -54,6 +54,10 @@ import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
  */
 public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssetsConverter {
 	
+	private boolean isToUseQValues = false;
+	
+	
+
 	/** 
 	 * This is used in {@link #getAssetsIfStates(long, List, List, AssetAwareInferenceAlgorithm, boolean)} 
 	 * as argument of {@link InCliqueConditionalProbabilityExtractor#buildCondicionalProbability(INode, List, unbbayes.prs.Graph, IInferenceAlgorithm, CliqueEvidenceUpdater)}
@@ -90,6 +94,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	private IAssetAwareInferenceAlgorithmBuilder assetAwareInferenceAlgorithmBuilder = new IAssetAwareInferenceAlgorithmBuilder() {
 		public AssetAwareInferenceAlgorithm build( IInferenceAlgorithm probDelegator, float initQValue) {
 			AssetAwareInferenceAlgorithm ret = (AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(probDelegator);
+			ret.setToUseQValues(isToUseQValues());
 			ret.setDefaultInitialAssetTableValue(initQValue);
 			return ret;
 		}
@@ -188,14 +193,43 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @return new instance of some class implementing {@link MarkovEngineInterface}
 	 */
 	public static MarkovEngineInterface getInstance(float logBase, float currencyConstant, float initialUserAssets, boolean isToThrowExceptionOnInvalidAssumptions) {
+		return MarkovEngineImpl.getInstance(logBase, currencyConstant, initialUserAssets, isToThrowExceptionOnInvalidAssumptions, false);
+	}
+	
+	/**
+	 * Default constructor method initializing fields.
+	 * @param logBase : see {@link #setCurrentLogBase(float)}
+	 * @param currencyConstant : see {@link #setCurrentCurrencyConstant(float)}
+	 * @param initialUserAssets : see {@link #setDefaultInitialAssetTableValue(float)}. Although
+	 * {@link #setDefaultInitialAssetTableValue(float)} expects a q-value, this argument
+	 * accepts the asset values. See {@link #getQValuesFromScore(float)} and
+	 * {@link #getScoreFromQValues(float)} to convert assets to q-values and
+	 * q-values to assets respectively.
+	 * @param isToThrowExceptionOnInvalidAssumptions : if true, methods in this class
+	 * will throw exceptions if invalid assumptions are passed. If false, the 
+	 * program will try to ignore invalid assumptions.
+	 * @param isToUseQValues : if true, assets will be handled in terms of q values
+	 * (values which changes are linearly proportional to the changes in probabilities).
+	 * If false, assets will be handled directly (changes in assets are logarithmically
+	 * proportional to changes in probabilities).
+	 * @return new instance of some class implementing {@link MarkovEngineInterface}
+	 */
+	public static MarkovEngineInterface getInstance(float logBase, float currencyConstant, float initialUserAssets, 
+			boolean isToThrowExceptionOnInvalidAssumptions, boolean isToUseQValues) {
 		MarkovEngineImpl ret = (MarkovEngineImpl) MarkovEngineImpl.getInstance();
+		ret.setToUseQValues(isToUseQValues);
 		ret.setCurrentCurrencyConstant(currencyConstant);
 		ret.setCurrentLogBase(logBase);
-		ret.setDefaultInitialAssetTableValue((float) ret.getQValuesFromScore(initialUserAssets));
+		if (isToUseQValues) {
+			ret.setDefaultInitialAssetTableValue((float) ret.getQValuesFromScore(initialUserAssets));
+		} else {
+			ret.setDefaultInitialAssetTableValue(initialUserAssets);
+		}
 		ret.setToThrowExceptionOnInvalidAssumptions(isToThrowExceptionOnInvalidAssumptions);
 		return ret;
 	}
 	
+
 	/**
 	 * Translates asset Q values to scores using logarithm functions.
 	 * <br/>
@@ -265,6 +299,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		junctionTreeAlgorithm.setLikelihoodExtractor(jeffreyRuleLikelihoodExtractor);
 		// prepare default inference algorithm for asset network
 		AssetAwareInferenceAlgorithm defaultAlgorithm = getAssetAwareInferenceAlgorithmBuilder().build(junctionTreeAlgorithm, getDefaultInitialAssetTableValue());
+		defaultAlgorithm.setToCalculateLPE(false);	// we are only interested on min-values, never min-states
 		// user MarkovEngineImpl to convert from q values to assets
 		defaultAlgorithm.setqToAssetConverter(this);
 		// usually, users seem to start with 0 delta (delta are logarithmic, so 0 delta == 1 q table), but let's use the value of getDefaultInitialQTableValue
@@ -3479,6 +3514,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				junctionTreeAlgorithm.setLikelihoodExtractor(AssetAwareInferenceAlgorithm.DEFAULT_JEFFREYRULE_LIKELIHOOD_EXTRACTOR);
 				// prepare default inference algorithm for asset network
 				algorithm = getAssetAwareInferenceAlgorithmBuilder().build(junctionTreeAlgorithm, getDefaultInitialAssetTableValue());
+				algorithm.setToCalculateLPE(false);	// we are only interested on min-values, never min-states
 				// set markov engine as the converter between q-values and assets
 				algorithm.setqToAssetConverter(this);
 				// force algorithm to call min-propagation only when prompted (i.e. only when runMinPropagation() is called)
@@ -4230,5 +4266,19 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		return isToDoFullPreview;
 	}
 
+
+	/**
+	 * @return the isToUseQValues
+	 */
+	public boolean isToUseQValues() {
+		return isToUseQValues;
+	}
+
+	/**
+	 * @param isToUseQValues the isToUseQValues to set
+	 */
+	public void setToUseQValues(boolean isToUseQValues) {
+		this.isToUseQValues = isToUseQValues;
+	}
 
 }

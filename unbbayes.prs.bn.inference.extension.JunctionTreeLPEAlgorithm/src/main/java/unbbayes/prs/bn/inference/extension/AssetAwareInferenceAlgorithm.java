@@ -92,7 +92,9 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	
 	
 
-	private List<ExpectedAssetCellMultiplicationListener> expectedAssetCellListeners = new ArrayList<AssetAwareInferenceAlgorithm.ExpectedAssetCellMultiplicationListener>();	
+	private List<ExpectedAssetCellMultiplicationListener> expectedAssetCellListeners = new ArrayList<AssetAwareInferenceAlgorithm.ExpectedAssetCellMultiplicationListener>();
+
+	private boolean isToCalculateLPE = false;	
 	
 
 
@@ -516,7 +518,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		
 		// obtain m1, which is the min-q value assuming  T=t and A=a
 		this.runMinPropagation(conditions);
-		double minQValue = this.calculateExplanation(new ArrayList<Map<INode,Integer>>());	// this is m1
+		double minQValue = this.calculateExplanation(null);	// this is m1
 		this.undoMinPropagation();	// revert changes in the asset tables
 		if (!this.isToUseQValues()) {
 			// in this case, calculateExplanation returned min assets. Convert it to Q.
@@ -524,16 +526,13 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		}
 		
 		// assume T!=t and A=a
-		assetNodes.get(0).addFinding(indexesOfStatesOfNodes[0], true);	// negative evidence to T = t (which is always the first node in cpt)
-		for (int i = 1; i < assetNodes.size(); i++) { // all other evidences are ordinal evidences
-			// coord[0] has the state of T (the target node). coord[1] has the state of first node of A (assumption nodes), and so on
-			assetNodes.get(i).addFinding(indexesOfStatesOfNodes[i]);
-		}
+		// T!=t is represented as negative evidence (e.g. not state 0 == state -1, not state 1 == state -2, not state 2 == state -3, and so on)
+		conditions.put(assetNodes.get(0), -(indexesOfStatesOfNodes[0] + 1)); // negative evidence to T = t (which is always the first node in cpt)
 		
 		// obtain m2, which is the min-q value assuming  T!=t and A=a
 		// TODO use conditional min propagation
-		this.runMinPropagation(null);
-		double minQValueAssumingNotTarget = this.calculateExplanation(new ArrayList<Map<INode,Integer>>());	// this is m2
+		this.runMinPropagation(conditions);
+		double minQValueAssumingNotTarget = this.calculateExplanation(null);	// this is m2
 		this.undoMinPropagation();	// revert changes in the asset tables
 		if (!this.isToUseQValues()) {
 			// in this case, calculateExplanation returned min assets. Convert it to Q.
@@ -1024,6 +1023,15 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		return ((JunctionTreeAlgorithm)this.getProbabilityPropagationDelegator()).cloneProbabilisticNetwork(originalProbabilisticNetwork);
 	}
 	
+	/**
+	 * This is used in {@link #clone()} to create a new instance of this class.
+	 * @param probAlgorithm
+	 * @return
+	 * @see #getInstance(IInferenceAlgorithm)
+	 */
+	protected IInferenceAlgorithm newInstance(IInferenceAlgorithm probAlgorithm) {
+		return getInstance(probAlgorithm);
+	}
 	
 	/**
 	 * This method will create a copy of itself, 
@@ -1066,6 +1074,8 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		ret.setToUpdateAssets(this.isToUpdateAssets());
 		ret.setToUpdateOnlyEditClique(this.isToUpdateOnlyEditClique());
 		ret.setToUpdateSeparators(this.isToUpdateSeparators());
+		ret.setToUseQValues(this.isToUseQValues());
+		ret.setToCalculateLPE(this.isToCalculateLPE());
 		
 		// copy current converter which converts q values to assets and vice-versa
 		ret.setqToAssetConverter(this.getqToAssetConverter());
@@ -1333,6 +1343,28 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 			return this.getAssetPropagationDelegator().isToUseQValues();
 		}
 		return isToUseQValues;
+	}
+
+	/**
+	 * Only delegates to {@link #getAssetPropagationDelegator()}
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#isToCalculateLPE()
+	 */
+	public boolean isToCalculateLPE() {
+		if (getAssetPropagationDelegator() != null) {
+			return this.getAssetPropagationDelegator().isToCalculateLPE();
+		}
+		return isToCalculateLPE;
+	}
+
+	/**
+	 * Only delegates to {@link #getAssetPropagationDelegator()}
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setToCalculateLPE(boolean)
+	 */
+	public void setToCalculateLPE(boolean isToCalculateLPE) {
+		this.isToCalculateLPE  = isToCalculateLPE;
+		if (this.getAssetPropagationDelegator() != null) {
+			this.getAssetPropagationDelegator().setToCalculateLPE(isToCalculateLPE);
+		}
 	}
 
 	

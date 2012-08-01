@@ -41,7 +41,9 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 		AssetAwareInferenceAlgorithm {
 
 	public static final String JOINT_ASSET_TABLE_PROP = BruteForceAssetAwareInferenceAlgorithm.class.getName()+".JOINT_ASSET_TABLE_PROP";
-	private JointPotentialTable jointProbabilityTable;
+
+	public static final String JOINT_PROBABILITY_TABLE_PROP = BruteForceAssetAwareInferenceAlgorithm.class.getName()+".JOINT_PROBABILITY_TABLE_PROP";
+//	private JointPotentialTable jointProbabilityTable;
 
 
 
@@ -50,9 +52,14 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 	 */
 	protected BruteForceAssetAwareInferenceAlgorithm() {
 		// use q-values by default
-		this.setToUseQValues(true);
 	}
 	
+	public static IInferenceAlgorithm getInstance(IInferenceAlgorithm probabilityDelegator) {
+		return getInstance(probabilityDelegator, 100f);
+	}
+	
+	
+
 	/**
 	 * Default instantiation method.
 	 */
@@ -79,6 +86,24 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 	
 	
 	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm#newInstance(unbbayes.util.extension.bn.inference.IInferenceAlgorithm)
+	 */
+	protected IInferenceAlgorithm newInstance(IInferenceAlgorithm probabilityDelegator) {
+		return this.newInstance(probabilityDelegator, getDefaultInitialAssetTableValue());
+	}
+	
+	/**
+	 * This is used in {@link #clone()} to create a new instance of this class
+	 * @param probabilityDelegator
+	 * @param defaultInitialQValue
+	 * @return
+	 * @see #getInstance(IInferenceAlgorithm, float)
+	 */
+	protected IInferenceAlgorithm newInstance( IInferenceAlgorithm probabilityDelegator, float defaultInitialQValue) {
+		return getInstance(probabilityDelegator, defaultInitialQValue);
+	}
+
+	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm#clone(boolean)
 	 */
 	public IInferenceAlgorithm clone(boolean isToCloneAssets)
@@ -99,7 +124,7 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 		}
 		
 		// clone this algorithm
-		BruteForceAssetAwareInferenceAlgorithm ret = (BruteForceAssetAwareInferenceAlgorithm) BruteForceAssetAwareInferenceAlgorithm.getInstance(jtAlgorithm, getDefaultInitialAssetTableValue());
+		BruteForceAssetAwareInferenceAlgorithm ret = (BruteForceAssetAwareInferenceAlgorithm) newInstance(jtAlgorithm, getDefaultInitialAssetTableValue());
 		// copy settings
 		ret.setDefaultInitialAssetTableValue(getDefaultInitialAssetTableValue());
 		ret.setToAllowZeroAssets(this.isToAllowZeroAssets());
@@ -110,6 +135,7 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 		ret.setToUpdateAssets(this.isToUpdateAssets());
 		ret.setToUpdateOnlyEditClique(this.isToUpdateOnlyEditClique());
 		ret.setToUpdateSeparators(this.isToUpdateSeparators());
+		ret.setToUseQValues(this.isToUseQValues());
 		
 		// copy current converter which converts q values to assets and vice-versa
 		ret.setqToAssetConverter(this.getqToAssetConverter());
@@ -122,8 +148,6 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 			ret.setAssetNetwork(null);
 			return ret;
 		}
-		// clone joint asset net.
-		ret.setJointQTable((JointPotentialTable) this.getJointQTable().clone());
 		
 		// clone asset net. just for backward compatibility
 		AssetNetwork newAssetNet = null;
@@ -165,8 +189,14 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 		// link algorithm to the new asset net
 		ret.setAssetNetwork(newAssetNet);
 		
+		// clone joint asset table.
+		ret.setJointQTable((JointPotentialTable) this.getJointQTable().clone());
+		
 		return ret;
 	}
+
+
+	
 
 
 	/* (non-Javadoc)
@@ -200,6 +230,11 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 			}
 		}
 		
+		// if LPE was not found, it means that joint table was all 0 (so, min is also 0)
+		if (inputOutpuArgumentForExplanation.isEmpty()) {
+			return 0f;
+		}
+		
 		return minValue;
 	}
 
@@ -230,9 +265,9 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 			if (node instanceof TreeVariable) {
 				TreeVariable treeVariable = (TreeVariable) node;
 				if (treeVariable.hasEvidence()) {
-					Integer oldEvidence = conditions.put(treeVariable, treeVariable.getEvidence());
-					if (oldEvidence != null && !oldEvidence.equals(treeVariable.getEvidence())) {
-						throw new IllegalArgumentException("Attempted to set evidence of node " + treeVariable + " from " + oldEvidence + " to " + treeVariable.getEvidence());
+					// fill conditions with extra values, but the priority is the content of conditions.
+					if (!conditions.containsKey(treeVariable)) {
+						conditions.put(treeVariable, treeVariable.getEvidence());
 					}
 				}
 			}
@@ -245,7 +280,14 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 				int[] states = table.getMultidimensionalCoord(i);
 				boolean matches = true;
 				for (INode key : conditions.keySet()) {
-					if (states[table.indexOfVariable((Node) key)] != conditions.get(key)) {
+					int condition = conditions.get(key);
+					boolean isNegativeCondition = false;	// when true, this is a "not" evidence (i.e. all states but the condition must be considered).
+					if (condition < 0) {
+						isNegativeCondition = true;
+						condition = -(condition + 1);	// -1 == not 0, -2 = not 1, -3 = not 2 and so on
+					}
+					if ( ( isNegativeCondition && states[table.indexOfVariable((Node) key)] == conditions.get(key) )
+							|| ( !isNegativeCondition && states[table.indexOfVariable((Node) key)] != conditions.get(key) )) {
 						matches = false;
 						break;
 					}
@@ -494,6 +536,14 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 		getJointProbabilityTable().copyData();	
 		getJointQTable().copyData();
 		
+		// backup old clique/sep potentials
+		for (Clique clique : getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
+			clique.getProbabilityFunction().copyData();
+		}
+		for (Separator separator : getRelatedProbabilisticNetwork().getJunctionTree().getSeparators()) {
+			separator.getProbabilityFunction().copyData();
+		}
+		
 		// do not update assets on superclass' propagation
 		boolean backup = this.isToUpdateAssets();
 		this.setToUpdateAssets(false);	
@@ -524,7 +574,7 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 	 * Forces {@link TreeVariable#getMarginalAt(int)} to
 	 * have values which reflects {@link #getJointProbabilityTable()}
 	 */
-	protected void updateMarginalsFromJointProbability() {
+	public void updateMarginalsFromJointProbability() {
 		// update marginals accordingly to joint probability
 		for (Node node : getRelatedProbabilisticNetwork().getNodes()) {
 			if (node instanceof ProbabilisticNode) {
@@ -556,6 +606,17 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 			}
 		}
 		return sum;
+	}
+	
+	
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm#revertLastProbabilityUpdate()
+	 */
+	@Override
+	public void revertLastProbabilityUpdate() {
+		super.revertLastProbabilityUpdate();
+		this.getJointProbabilityTable().restoreData();
 	}
 
 	/* (non-Javadoc)
@@ -607,23 +668,26 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 	 * @param jointProbabilityTable the jointProbabilityTable to set
 	 */
 	public void setJointProbabilityTable(JointPotentialTable jointProbabilityTable) {
-		this.jointProbabilityTable = jointProbabilityTable;
+//		this.jointProbabilityTable = jointProbabilityTable;
+		getRelatedProbabilisticNetwork().getProperties().put(JOINT_PROBABILITY_TABLE_PROP, jointProbabilityTable);
 	}
 
 	/**
 	 * @return the jointProbabilityTable
 	 */
 	public JointPotentialTable getJointProbabilityTable() {
-		return jointProbabilityTable;
+//		return jointProbabilityTable;
+		if (getRelatedProbabilisticNetwork() != null) {
+			return (JointPotentialTable) getRelatedProbabilisticNetwork().getProperty(JOINT_PROBABILITY_TABLE_PROP);
+		}
+		return null;
 	}
 
 	/**
 	 * @param jointAssetTable the jointAssetTable to set
 	 */
 	public void setJointQTable(JointPotentialTable jointAssetTable) {
-		if (getAssetNetwork() != null) {
-			getAssetNetwork().getProperties().put(JOINT_ASSET_TABLE_PROP, jointAssetTable);
-		}
+		getAssetNetwork().getProperties().put(JOINT_ASSET_TABLE_PROP, jointAssetTable);
 	}
 
 	/**
@@ -637,6 +701,23 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 	}
 
 	
+	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm#setToUseQValues(boolean)
+	 */
+	public void setToUseQValues(boolean isToUseQValues) {
+		if (!isToUseQValues) {
+			throw new UnsupportedOperationException("Brute force algorithm will always use q-values instead of assets.");
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm#isToUseQValues()
+	 */
+	public boolean isToUseQValues() {
+		// brute force algorithm always use q-values
+		return true;
+	}
 
 	
 }

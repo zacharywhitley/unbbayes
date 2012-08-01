@@ -250,6 +250,45 @@ public class AssetNetwork extends ProbabilisticNetwork {
 			}
 		}
 	}
+	
+	
+
+//	/* (non-Javadoc)
+//	 * @see unbbayes.prs.bn.SingleEntityNetwork#updateEvidences()
+//	 */
+//	@Override
+//	public void updateEvidences() throws Exception {
+//		int sizeNos = this.getNodesCopy().size();
+//		for (int c = 0; c < sizeNos; c++) {
+//			TreeVariable node = (TreeVariable) copiaNos.get(c);
+//			node.updateEvidences();
+//			if (this.getJunctionTree() instanceof LogarithmicMinProductJunctionTree) {
+//				// impossible values in logarithm space are represented as positive infinity. However, if asset were negative, 
+//				// multiplication with positive infinity may result in negative infinity. Hence, we correct it
+//				PotentialTable table = (PotentialTable) node.getAssociatedClique().getProbabilityFunction();
+//				for (int i = 0; i < table.tableSize(); i++) {
+//					if (table.getValue(i) == Float.NEGATIVE_INFINITY) {
+//						table.setValue(i, Float.POSITIVE_INFINITY);
+//					}
+//				}
+//			}
+//		}
+//
+//		try {
+//			junctionTree.consistency();
+//		} catch (Exception e) {
+//			try {
+//				initialize();
+//			} catch (Exception e2) {
+//				// added this catch, because if an exception is thrown at initialize(), 
+//				// the exception e will be lost.
+//				e2.printStackTrace();
+//			}
+//			throw e;
+//		}
+//		updateMarginais();
+//		resetLikelihoods();
+//	}
 
 	/**
 	 * If false, {@link AssetNode#updateMarginal()} will set the
