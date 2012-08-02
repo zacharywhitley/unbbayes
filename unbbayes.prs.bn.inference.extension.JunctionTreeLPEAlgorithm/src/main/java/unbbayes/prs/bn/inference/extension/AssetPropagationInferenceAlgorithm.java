@@ -1331,24 +1331,25 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			throw new IllegalStateException("The asset network is invalid. It is either empty or created from a Bayes Net which was not compiled yet.");
 		}
 		
-		// obtain the minimum of root clique (clique containing the min values if runMinPropagation was performed correctly)
-		// if getAssetNetwork().getJunctionTree() is an instance of LPE junction tree algorithms, getN will return min value of root
-		// this will contain only the minimum  of the root clique
-		float minValue = getAssetNetwork().getJunctionTree().getN();	
+		// obtain the minimum of root clique (clique containing the min values if runMinPropagation was performed correctly).
+		// If getAssetNetwork().getJunctionTree() is an instance of LPE junction tree algorithms, getN will return min value of root.
+		float minValue = getAssetNetwork().getJunctionTree().getN(); // this contains the minimum of the root clique
 		if (minValue == Float.POSITIVE_INFINITY) {
-			// infinite represents impossible state.
+			// infinite represents impossible state in min propagation.
 			throw new ZeroAssetsException("Attempted to calculate assets regarding an impossible state in root clique of asset net " + getAssetNetwork());
 		} else if (minValue == Float.NEGATIVE_INFINITY || Float.isNaN(minValue)) {
+			// this is probably a bug or overflow (negative)
 			throw new IllegalStateException("Encontered " + minValue + " while calculating minimum assets of root clique of asset net " + getAssetNetwork());
 		}
 		
 		/*
 		 * If network is disconnected, we need to subtract (divide, in case of q-values) 
-		 * the getEmptySeparatorsDefaultContent() for each empty separator.
+		 * the getEmptySeparatorsDefaultContent() for each empty separator found,
 		 * or else it won't conform with the global q-values.
 		 * We also need to consider the min-values of each disconnected sub-networks
-		 * in order to conform with the global q-values.
-		 * Virtually, this method will behave as if the empty separators have 1 state
+		 * in order to conform with the global q-values, by adding (multiplying, in case of q-values)
+		 * the minimum of the disconnected sub-networks.
+		 * Virtually, this method should behave as if the empty separators have 1 state
 		 * with getEmptySeparatorsDefaultContent() as the content of its asset table. 
 		 */
 		if (getAssetNetwork().getJunctionTree().getSeparators() != null) {
@@ -1371,11 +1372,38 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 					for (int i = 0; i < table.tableSize(); i++) {
 						float value = table.getValue(i);
 						if (Float.isNaN(localMin)){ 
+							// this is the first value
 							localMin = value;
-						} else if (value < localMin) {
+						} else if (isToUseQValues()) {	// using q instead of assets
+							// extract the minimum q of this clique
+							if (getJunctionTree() instanceof IPropagationOperationHolder) { // x instanceof <interface> is usually more flexible than x instanceof <class> 
+								// reuse the same operation performed by min-propagation (the min-out operation)
+								IPropagationOperationHolder opHolder = (IPropagationOperationHolder) getJunctionTree();
+								// NOTE: reusing the same operation yields more flexibility, due to dependency injection
+								if (opHolder.getMaxOperation().operate(value, localMin) == value) {
+									// the name is MaxOperation only because interface was initially designed for most probable explanation (i.e. max-out)
+									localMin = value;
+								}
+							} else {	// could not extract the operation used in min-propagation. We can still try comparing "manually"
+								Debug.println(getClass(), "Could not obtain operation used in min-propagation. " +
+										"This is probably using incompatible component, but we can still get the minimum by using the operator '<'.");
+								// make comparisons, but ignore zeros (zero represents impossible values)
+								if (localMin == 0f) {
+									localMin = value;
+								} else if (value != 0f && value < localMin) {
+									localMin = value;
+								} else {
+									// value == 0 || value >= localMin. So, do nothing
+								}
+							}
+						} else if (value < localMin) {	// it's using assets instead of q
+							// Extract the minimum assets of this clique.
+							// Its OK to use "<" in assets, because evidences are represented by using Float.POSITIVE_INFINITE in impossible states,
+							// and value < Float.POSITIVE_INFINITE, unless it is related to an impossible state 
+							// (i.e. if value is impossible, then value == Float.POSITIVE_INFINITE and it will be bigger than current localMin).
 							localMin = value;
 						}
-					}
+					}	// end of loop
 					if (isToUseQValues()) {
 						minValue *= localMin;
 					} else {
@@ -1991,11 +2019,11 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	public void setToCalculateLPE(boolean isToCalculateLPE) {
 		this.isToCalculateLPE = isToCalculateLPE;
 		if (isToCalculateLPE) {
-			this.setJunctionTreeBuilder(DEFAULT_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
-			this.setDefaultJunctionTreeBuilder(DEFAULT_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
+			this.setJunctionTreeBuilder(isToUseQValues()?DEFAULT_MIN_PROPAGATION_JUNCTION_TREE_BUILDER:DEFAULT_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
+			this.setDefaultJunctionTreeBuilder(isToUseQValues()?DEFAULT_MIN_PROPAGATION_JUNCTION_TREE_BUILDER:DEFAULT_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
 		} else {
-			this.setJunctionTreeBuilder(DEFAULT_ONEWAY_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
-			this.setDefaultJunctionTreeBuilder(DEFAULT_ONEWAY_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
+			this.setJunctionTreeBuilder(isToUseQValues()?DEFAULT_MIN_PROPAGATION_JUNCTION_TREE_BUILDER:DEFAULT_ONEWAY_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
+			this.setDefaultJunctionTreeBuilder(isToUseQValues()?DEFAULT_MIN_PROPAGATION_JUNCTION_TREE_BUILDER:DEFAULT_ONEWAY_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
 		}
 	}
 	

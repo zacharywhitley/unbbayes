@@ -2239,13 +2239,13 @@ public class MarkovEngineSystemTest extends TestCase {
 			assertEquals(0.5f , probList.get(1),PROB_ERROR_MARGIN );
 		}
 		
-		// edit interval of P(C=c1) should be [0.005, 0.995]
+		// edit interval of P(C=c1) should be [0.0083, 0.9916667]
 		for (MarkovEngineImpl engine : engines) {
 			editInterval = engine.getEditLimits(userNameToIDMap.get("Amy"), 0x0C, 0, null, null);
 			assertNotNull(editInterval);
 			assertEquals(2, editInterval.size());
-			assertEquals(0.0083f, editInterval.get(0) ,PROB_ERROR_MARGIN);
-			assertEquals(0.9916667f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+			assertEquals(engine.toString(), 0.0083f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+			assertEquals(engine.toString(), 0.9916667f, editInterval.get(1) ,PROB_ERROR_MARGIN);
 		}
 		
 		// set P(C=c1) = 0.05 and   P(C=c1) = 0.95

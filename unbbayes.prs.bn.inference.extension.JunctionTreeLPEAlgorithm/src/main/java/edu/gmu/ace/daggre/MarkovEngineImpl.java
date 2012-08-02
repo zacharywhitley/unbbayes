@@ -4281,4 +4281,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		this.isToUseQValues = isToUseQValues;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return super.toString() + "[isToUseQValues=" + isToUseQValues()  + "]";
+	}
+
+	
+	
 }
