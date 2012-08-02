@@ -478,7 +478,9 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 * the min-q will never become below 1), and index 1 is the respective upper bound. 
 	 * In this formula, the value m1 is the min-q assuming T=t and A=a, and m2 is the min-q
 	 * assuming T!=t and A=a.
-	 * 
+	 * <br/><br/>
+	 * If {@link #isToUseQValues()} == false (i.e. asset tables are storing assets - logarithm space - instead of q-values), then
+	 * this method returns [ P(T=t|A=a)*power(base, -m1/b) ; 1- (1 - P(T=t|A=a))*power(base,-m2/b) ]
 	 * @see #runMinPropagation()
 	 * @see #calculateExplanation(List)
 	 * @see #undoMinPropagation()
@@ -512,32 +514,22 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		Map<INode, Integer> conditions = new HashMap<INode, Integer>();
 		for (int i = 0; i < assetNodes.size(); i++) {
 			// coord[0] has the state of T (the target node). coord[1] has the state of first node of A (assumption nodes), and so on
-//			assetNodes.get(i).addFinding(indexesOfStatesOfNodes[i]);
 			conditions.put(assetNodes.get(i), indexesOfStatesOfNodes[i]);
 		}
 		
-		// obtain m1, which is the min-q value assuming  T=t and A=a
+		// obtain m1, which is the min value (q or assets, depending on isToUseQValues()) assuming  T=t and A=a
 		this.runMinPropagation(conditions);
-		double minQValue = this.calculateExplanation(null);	// this is m1
+		double minValue = this.calculateExplanation(null);	// this is m1
 		this.undoMinPropagation();	// revert changes in the asset tables
-		if (!this.isToUseQValues()) {
-			// in this case, calculateExplanation returned min assets. Convert it to Q.
-			minQValue = this.getqToAssetConverter().getQValuesFromScore((float) minQValue);
-		}
 		
 		// assume T!=t and A=a
 		// T!=t is represented as negative evidence (e.g. not state 0 == state -1, not state 1 == state -2, not state 2 == state -3, and so on)
 		conditions.put(assetNodes.get(0), -(indexesOfStatesOfNodes[0] + 1)); // negative evidence to T = t (which is always the first node in cpt)
 		
-		// obtain m2, which is the min-q value assuming  T!=t and A=a
-		// TODO use conditional min propagation
+		// obtain m2, which is the min value (q or assets, depending on isToUseQValues()) assuming  T!=t and A=a
 		this.runMinPropagation(conditions);
-		double minQValueAssumingNotTarget = this.calculateExplanation(null);	// this is m2
+		double minValueAssumingNotTarget = this.calculateExplanation(null);	// this is m2
 		this.undoMinPropagation();	// revert changes in the asset tables
-		if (!this.isToUseQValues()) {
-			// in this case, calculateExplanation returned min assets. Convert it to Q.
-			minQValueAssumingNotTarget = this.getqToAssetConverter().getQValuesFromScore((float) minQValueAssumingNotTarget);
-		}
 		
 		// clear all findings explicitly.
 		for (int i = 0; i < assetNodes.size(); i++) {
@@ -550,11 +542,31 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		// this will be the value to return
 		float[] ret = new float[2];
 		
-		// P(T=t|A=a)/m1  
-		ret[0] = (float) (prob/minQValue);
+		if (isToUseQValues()) {
+			// P(T=t|A=a)/m1  
+			ret[0] = (float) (prob/minValue);
+			// 1 - (1-P(T=t|A=a))/m2
+			ret[1] = (float) (1-((1 - prob)/minValueAssumingNotTarget));
+		} else { // minQValue and minQValueAssumingNotTarget are asset values instead of q-values
+			// P(T=t|A=a)*power(base, -m1/b)
+			ret[0] = (float) (prob*(Math.pow(this.getqToAssetConverter().getCurrentLogBase(), -minValue/this.getqToAssetConverter().getCurrentCurrencyConstant())));
+			if (Float.isInfinite(ret[0]) || Float.isNaN(ret[0])) {
+				// in this case, calculateExplanation returned min assets. Convert it to Q.
+				minValue = this.getqToAssetConverter().getQValuesFromScore((float) minValue);
+				// we can still try using the old equation using q-values
+				ret[0] = (float) (prob/minValue);
+			}
+			// 1- (1 - P(T=t|A=a))*power(base,-m2/b)
+			ret[1] = (float) (1-((1 - prob)*Math.pow(this.getqToAssetConverter().getCurrentLogBase(), -minValueAssumingNotTarget/this.getqToAssetConverter().getCurrentCurrencyConstant())));
+			if (Float.isInfinite(ret[1]) || Float.isNaN(ret[1])) {
+				// in this case, calculateExplanation returned min assets. Convert it to Q.
+				minValueAssumingNotTarget = this.getqToAssetConverter().getQValuesFromScore((float) minValueAssumingNotTarget);
+				// we can still try using the old equation using q-values
+				ret[1] = (float) (1-((1 - prob)/minValueAssumingNotTarget));
+			}
+		}
 		
-		// 1 - (1-P(T=t|A=a))/m2
-		ret[1] = (float) (1-((1 - prob)/minQValueAssumingNotTarget));
+		
 		
 		return ret;
 	}
