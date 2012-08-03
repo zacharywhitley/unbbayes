@@ -50,7 +50,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private enum FivePointTestType {BELOW_LIMIT, ON_LOWER_LIMIT, BETWEEN_LIMITS, ON_UPPER_LIMIT, ABOVE_LIMIT}; 
 	
 	/** File names to be used in {@link #testFiles()}  */
-	private String[] fileNames = {"fullyConnected.net", "fullyDisconnected.net", "disconnected.net"};
+	private String[] fileNames = {"disconnected.net", "fullyConnected.net", "fullyDisconnected.net"};
 
 	
 
@@ -68,9 +68,9 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		super.setUp();
 		engines = new ArrayList<MarkovEngineImpl>();
 		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 1000f));
-//		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 1000f, false, true));
+		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 1000f, false, true));
 		engines.add(BruteForceMarkovEngine.getInstance(2f, 100f, 1000f));
-//		engines.add(CPTBruteForceMarkovEngine.getInstance(2f, 100f, 1000f));
+		engines.add(CPTBruteForceMarkovEngine.getInstance(2f, 100f, 1000f));
 		for (MarkovEngineInterface engine : engines) {
 			engine.initialize();
 		}
@@ -281,6 +281,9 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				}
 			}
 			// c.) min-q values after a user confirms a trade.
+//			if (pointWithin5PointTest == FivePointTestType.BELOW_LIMIT && engine.getCash(userId, null, null) >= 0) {
+//				 engine.getCash(userId, null, null);
+//			}
 			assertEquals(engine.toString(), minimum, engine.getCash(userId, null, null), 
 					((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
 			// e.) The expected score.
@@ -291,6 +294,11 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
 				);
 			// f. ) conditional min-q and expected score on randomly given states. How many random given states depends on network size. We choose floor(0.3*numberOfVariablesInTheNet).
+//			if (Math.abs(engines.get(0).getCash(userId, assumptionIds, assumedStates) - engine.getCash(userId, assumptionIds, assumedStates))
+//					> ((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)) {
+//				engines.get(0).getCash(userId, assumptionIds, assumedStates);
+//				engine.getCash(userId, assumptionIds, assumedStates);
+//			}
 			assertEquals(
 					engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
 					engines.get(0).getCash(userId, assumptionIds, assumedStates), 
@@ -430,16 +438,20 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			
 			// obtain the bounds for the 5-point test
 			List<Float> editLimits = engines.get(0).getEditLimits(userId, questionId, stateOfEditLimit, assumptionIds, assumedStates);
-//			for (int i = 1; i < engines.size(); i++) {
-//				List<Float> editLimitsOfOtherEngine = engines.get(i).getEditLimits(userId, questionId, 1, assumptionIds, assumedStates);
-//				assertEquals(engines.get(i).toString(), editLimits.size(), editLimitsOfOtherEngine.size());
-//				for (int j = 0; j < editLimits.size(); j++) {
-//					assertEquals(engines.get(i).toString() + ", user=" + userId + ", question=" + questionId 
-//							+", state=" + stateOfEditLimit + "," +  assumptionIds + "=" + assumedStates, 
-//							editLimits.get(j), editLimitsOfOtherEngine.get(j), 
-//							((engines.get(i) instanceof CPTBruteForceMarkovEngine)?PROB_ERROR_MARGIN_CPT_BRUTE_FORCE:PROB_ERROR_MARGIN));
-//				}
-//			}
+			for (int i = 1; i < engines.size(); i++) {
+				List<Float> editLimitsOfOtherEngine = engines.get(i).getEditLimits(userId, questionId, stateOfEditLimit, assumptionIds, assumedStates);
+				assertEquals(engines.get(i).toString(), editLimits.size(), editLimitsOfOtherEngine.size());
+				for (int j = 0; j < editLimits.size(); j++) {
+					assertEquals(engines.get(i).toString() + ", user=" + userId + ", question=" + questionId 
+							+", state=" + stateOfEditLimit + "," +  assumptionIds + "=" + assumedStates, 
+							editLimits.get(j), editLimitsOfOtherEngine.get(j), 
+							((engines.get(i) instanceof CPTBruteForceMarkovEngine)?PROB_ERROR_MARGIN_CPT_BRUTE_FORCE:PROB_ERROR_MARGIN));
+				}
+			}
+			
+			
+			System.out.println("Iteration " + iteration + ", question=" + questionId + ", state=" + stateOfEditLimit + 
+					", limit="+ editLimits + ", user="  +userId + ", assumptions: " + assumptionIds + "=" + assumedStates);
 			
 			// a.) 5-point min-q values test regarding the edit bound; expect to see corresponding q<1, =1, >1 respectively.
 			
@@ -457,9 +469,6 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			
 			// (3) random probability in between the bound;
 			this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.BETWEEN_LIMITS);
-			
-			System.out.println("End of iteration " + iteration + ", question=" + questionId + ", state=" + stateOfEditLimit + 
-					", limit="+ editLimits + ", user="  +userId + ", assumptions: " + assumptionIds + "=" + assumedStates);
 		}	// end of for : iteration
 	}
 

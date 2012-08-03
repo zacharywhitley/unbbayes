@@ -3,9 +3,17 @@
  */
 package edu.gmu.ace.daggre;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import edu.gmu.ace.daggre.MarkovEngineImpl.ProbabilityAndAssetTablesMemento;
+import unbbayes.prs.bn.IRandomVariable;
+import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
+import unbbayes.prs.bn.inference.extension.BruteForceAssetAwareInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.CPTBruteForceAssetAwareInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.IAssetAwareInferenceAlgorithmBuilder;
+import unbbayes.prs.bn.inference.extension.BruteForceAssetAwareInferenceAlgorithm.JointPotentialTable;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 /**
@@ -74,4 +82,63 @@ public class CPTBruteForceMarkovEngine extends BruteForceMarkovEngine {
 		return ret;
 	}
 
+	
+	/**
+	 * This is an extension of {@link ProbabilityAndAssetTablesMemento}
+	 * which also stores current joint tables.
+	 * @author Shou Matsumoto
+	 * @see ProbabilityAndAssetTablesMemento
+	 */
+	public class CPTMemento extends JointProbabilityAndAssetTablesMemento {
+
+		private JointPotentialTable jointProbTable;
+		private Map<BruteForceAssetAwareInferenceAlgorithm, JointPotentialTable> algorithmToJointAssetMap;
+		/**
+		 * Stores probability tables of cliques/separators of {@link MarkovEngineImpl#getProbabilisticNetwork()},
+		 * asset tables of {@link MarkovEngineImpl#getUserToAssetAwareAlgorithmMap()},
+		 * joint probability table, and joint asset tables.
+		 */
+		public CPTMemento() {
+			super();
+			
+		}
+		/**
+		 * @see edu.gmu.ace.daggre.MarkovEngineImpl.ProbabilityAndAssetTablesMemento#restore()
+		 */
+		protected void restore() {
+			super.restore();
+			synchronized (getUserToAssetAwareAlgorithmMap()) {
+				for (AssetAwareInferenceAlgorithm algorithm : getUserToAssetAwareAlgorithmMap().values()) {
+					((CPTBruteForceAssetAwareInferenceAlgorithm)algorithm).updateCPT();
+				}
+			}
+		}
+		/* (non-Javadoc)
+		 * @see edu.gmu.ace.daggre.MarkovEngineImpl.ProbabilityAndAssetTablesMemento#getProbTableMap()
+		 */
+		@Override
+		public Map<IRandomVariable, PotentialTable> getProbTableMap() {
+			Map<IRandomVariable, PotentialTable> ret = new HashMap<IRandomVariable, PotentialTable>();
+			for (IRandomVariable key : probTableMap.keySet()) {
+				ret.put(key, jointProbTable);
+			}
+			return ret;
+		}
+		/* (non-Javadoc)
+		 * @see edu.gmu.ace.daggre.MarkovEngineImpl.ProbabilityAndAssetTablesMemento#getAssetTableMap()
+		 */
+		@Override
+		public Map<AssetAwareInferenceAlgorithm, Map<IRandomVariable, PotentialTable>> getAssetTableMap() {
+			Map<AssetAwareInferenceAlgorithm, Map<IRandomVariable, PotentialTable>> ret = new HashMap<AssetAwareInferenceAlgorithm, Map<IRandomVariable,PotentialTable>>();
+			for (AssetAwareInferenceAlgorithm algorithm : assetTableMap.keySet()) {
+				Map<IRandomVariable, PotentialTable> map = new HashMap<IRandomVariable, PotentialTable>();
+				for (IRandomVariable key : assetTableMap.get(algorithm).keySet()) {
+					map.put(key, algorithmToJointAssetMap.get(algorithm));
+				}
+				ret.put(algorithm, map);
+			}
+			return super.getAssetTableMap();
+		}
+		
+	}
 }

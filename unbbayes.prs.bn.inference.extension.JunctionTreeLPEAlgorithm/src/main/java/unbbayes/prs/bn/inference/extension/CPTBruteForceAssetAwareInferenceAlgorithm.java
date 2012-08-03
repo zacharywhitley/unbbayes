@@ -189,7 +189,7 @@ public class CPTBruteForceAssetAwareInferenceAlgorithm extends
 	 * This method is needed, because this class
 	 * uses CPT to calculate joint prob.
 	 */
-	protected void updateCPT() {
+	public void updateCPT() {
 		if (getRelatedProbabilisticNetwork() == null || getRelatedProbabilisticNetwork().getNodes() == null) {
 			return;
 		}
