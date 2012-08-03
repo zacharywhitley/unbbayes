@@ -7,19 +7,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import junit.framework.TestCase;
-import unbbayes.prs.Node;
-import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
-import edu.gmu.ace.daggre.MarkovEngineImpl.AddTradeNetworkAction;
 
 /**
  * @author Shou Matsumoto
  *
  */
-public class MarkovEngineSystemTest extends TestCase {
+public class MarkovEngineBruteForceTest extends TestCase {
 
 	/** Error margin used when comparing 2 probability values */
 	public static final float PROB_ERROR_MARGIN = 0.005f;
@@ -29,13 +28,16 @@ public class MarkovEngineSystemTest extends TestCase {
 	
 	private List<MarkovEngineImpl> engines;
 
+	/** This value indicates how many test iterations (5-point tests) will be performed by default*/
+	private int maxQuantityOfIterations = 20;//100;
 
 
+	
 
 	/**
 	 * @param name
 	 */
-	public MarkovEngineSystemTest(String name) {
+	public MarkovEngineBruteForceTest(String name) {
 		super(name);
 	}
 
@@ -45,9 +47,12 @@ public class MarkovEngineSystemTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		engines = new ArrayList<MarkovEngineImpl>();
-		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance((float)Math.E, (float)(10.0/Math.log(100)), 0));
-		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance((float)Math.E, (float)(10.0/Math.log(100)), (float) 0, false, true));
-		engines.add(BruteForceMarkovEngine.getInstance((float) Math.E, (float)(10.0/Math.log(100)), (float) 0));
+//		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance((float)Math.E, (float)(10.0/Math.log(100)), 0));
+//		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance((float)Math.E, (float)(10.0/Math.log(100)), (float) 0, false, true));
+//		engines.add(BruteForceMarkovEngine.getInstance((float) Math.E, (float)(10.0/Math.log(100)), (float) 0));
+		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 0f));
+		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 0f, false, true));
+		engines.add(BruteForceMarkovEngine.getInstance(2f, 100f, 0f));
 		for (MarkovEngineInterface engine : engines) {
 			engine.initialize();
 		}
@@ -249,6 +254,16 @@ public class MarkovEngineSystemTest extends TestCase {
 		// crate transaction for generating the DEF network
 		assertNotNull(engines);
 		assertFalse(engines.isEmpty());
+		
+		for (MarkovEngineImpl engine : engines) {
+			engine.setCurrentCurrencyConstant((float)(10.0/Math.log(100)));
+			engine.setCurrentLogBase((float)Math.E);
+			if (engine.isToUseQValues()) {
+				engine.setDefaultInitialAssetTableValue(1f);
+			} else {
+				engine.setDefaultInitialAssetTableValue(0f);
+			}
+		}
 		
 		long transactionKey = engines.get(0).startNetworkActions();
 		for (int i = 1; i < engines.size() ; i++) {
@@ -2529,4 +2544,200 @@ public class MarkovEngineSystemTest extends TestCase {
 	}
 	
 
+	
+	/**
+	 * Test method for the DEF network. Testing the following conditions
+	 * in 4 engines (respectively the Markov Engine - the official - Markov Engine with q-values,
+	 * Brute force markov engine - product of cliques / product of separators, and Brute force
+	 * markov engine - product of CPTs):
+	 * <br/>
+	 * a.) 5-point min-q values test regarding the edit bound; expect to see corresponding 
+	 * q<1, =1, >1 respectively. <br/>
+	 * b.) marginal probability on individual variable.<br/>
+	 * c.) min-q values after a user confirms a trade.<br/>
+	 * d.) min-q state. (Necessity Level: low)<br/>
+	 * e.) The expected score.<br/>
+	 * f. ) conditional min-q and expected score on randomly given states. 
+	 * How many random given states depends on network size. 
+	 * We choose floor(0.3*numberOfVariablesInTheNet).<br/>
+	 * g.) An userÅfs asset table is not changed when other user makes edit.<br/>
+	 * <br/>
+	 * Methodology (using total of 3 users):<br/>
+	 * (1) Randomly choose one user; <br/>
+	 * (2) Randomly choose one node, and randomly choose assumption set in the same clique of the node. 
+	 * If the clique size is bigger than 3, the size of assumption set has to be at least 2.<br/>
+	 * <br/>
+	 * <br/>
+	 * Definition: 5-point min-q test is to verify the min-q values returned after trades are 
+	 * made on specific edit around boundary over the edit limit. 
+	 * In particular, we choose 5 point of probability edit: <br/>
+	 * (1) the probability close to but smaller than the lower bound;<br/> 
+	 * (2) the probability exactly on the lower bound;<br/> 
+	 * (3) random probability in between the bound;<br/> 
+	 * (4) the probability exactly on the upper bound;<br/> 
+	 * (5) the probability close to but bigger than the upper bound;<br/> 
+	 */
+	public final void testDEF5Points() {
+		
+		// most basic assertion
+		assertNotNull(engines);
+		assertFalse(engines.isEmpty());
+		
+		// set engines to initialize asset tables with 1000
+		for (MarkovEngineImpl engine : engines) {
+			if (engine.isToUseQValues()) {
+				engine.setDefaultInitialAssetTableValue((float) engine.getQValuesFromScore(1000f));
+			} else {
+				engine.setDefaultInitialAssetTableValue(1000f);
+			}
+		}
+		
+		// generate the DEF network
+		for (MarkovEngineInterface engine : engines) {
+			long transactionKey = engine.startNetworkActions();
+			// create nodes D, E, F
+			engine.addQuestion(transactionKey, new Date(), 0x0D, 2, null);	// question D has ID = hexadecimal D. CPD == null -> linear distro
+			engine.addQuestion(transactionKey, new Date(), 0x0E, 2, null);	// question E has ID = hexadecimal E. CPD == null -> linear distro
+			engine.addQuestion(transactionKey, new Date(), 0x0F, 2, null);	// question F has ID = hexadecimal F. CPD == null -> linear distro
+			// create edge D->E 
+			engine.addQuestionAssumption(transactionKey, new Date(), 0x0E, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
+			// create edge D->F
+			engine.addQuestionAssumption(transactionKey, new Date(), 0x0F, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
+			// commit changes
+			engine.commitNetworkActions(transactionKey);
+		}
+		
+		// Randomly create 3 user IDs
+		List<Long> userIDs = new ArrayList<Long>(3);
+		do {
+			userIDs.clear();
+			Set<Long> userFilter = new HashSet<Long>(3);
+			userFilter.add((long) (Math.random()*Long.MAX_VALUE));
+			userFilter.add((long) (Math.random()*Long.MAX_VALUE));
+			userFilter.add((long) (Math.random()*Long.MAX_VALUE));
+			userIDs.addAll(userFilter);
+		} while (userIDs.size() != 3);
+		
+		// make sure initial cash is 1000
+		for (MarkovEngineInterface engine : engines) {
+			for (Long userId : userIDs) {
+				assertEquals(engine.toString(), 1000f, engine.getCash(userId, null, null), ASSET_ERROR_MARGIN);
+			}
+		}
+		
+		// Make sure getProbLists can list up all available questions, and initial marginal probabilities are the same for all engines
+		Map<Long, List<Float>> probabilities = engines.get(0).getProbLists(null, null, null);
+		List<Long> listOfQuestions = new ArrayList<Long>(probabilities.keySet());
+		assertEquals(3, listOfQuestions.size());
+		assertTrue(listOfQuestions.toString(), listOfQuestions.contains((long)0x0D));
+		assertTrue(listOfQuestions.toString(), listOfQuestions.contains((long)0x0E));
+		assertTrue(listOfQuestions.toString(), listOfQuestions.contains((long)0x0F));
+		for (int i = 1; i < engines.size(); i++) {
+			// make sure all engines are retrieving the same questions
+			Map<Long, List<Float>> probabilitiesOfOtherEngines = engines.get(i).getProbLists(null, null, null);
+			assertEquals(engines.get(i).toString(), probabilities.size(), probabilitiesOfOtherEngines.size());
+			List<Long> listOfQuestionsOfOtherEngines = new ArrayList<Long>(probabilitiesOfOtherEngines.keySet());
+			assertEquals(engines.get(i).toString(), listOfQuestions.size(), listOfQuestionsOfOtherEngines.size());
+			// if size is same and contains all, then the lists are equal (regardless of size).
+			assertTrue(engines.get(i).toString() + ", " + listOfQuestions.toString(), listOfQuestionsOfOtherEngines.containsAll(listOfQuestions));
+			// also, make sure that probabilities are initialized equally
+			for (Long id : probabilities.keySet()) {
+				List<Float> probOfQuestion = probabilities.get(id);
+				List<Float> probOfQuestionOfOtherEngines = probabilitiesOfOtherEngines.get(id);
+				assertEquals(engines.get(i).toString() + ", ID = " + id, probabilities.size(), probabilitiesOfOtherEngines.size());
+				for (int j = 0; j < probOfQuestion.size(); j++) {
+					assertEquals(
+							engines.get(i).toString() + ", ID = " + id, 
+							probOfQuestion.get(j), 
+							probOfQuestionOfOtherEngines.get(j), 
+							PROB_ERROR_MARGIN
+					);
+				}
+			}
+			// make sure that initial 
+		}
+		
+		// actually run the tests
+		for (int iteration = 0; iteration < getMaxQuantityOfIterations(); iteration++) {
+			// (1) Randomly choose one user; 
+			long userId = userIDs.get((int) (Math.random() * userIDs.size()));
+			
+			// (2) Randomly choose one node, 
+			
+			
+			// randomly choose assumption set in the same clique of the node. 
+			
+			// obtain the bounds for the 5-point test
+			
+			// a.) 5-point min-q values test regarding the edit bound; expect to see corresponding q<1, =1, >1 respectively.
+			
+			// (1) the probability close to but smaller than the lower bound;
+			for (MarkovEngineImpl engine : engines) {
+				// b.) marginal probability on individual variable.
+				// c.) min-q values after a user confirms a trade.
+				// d.) min-q state. (Necessity Level: low)
+				// e.) The expected score.
+				// f. ) conditional min-q and expected score on randomly given states. How many random given states depends on network size. We choose floor(0.3*numberOfVariablesInTheNet).
+				// g.) An userÅfs asset table is not changed when other user makes edit.
+			}
+			
+			// (2) the probability exactly on the lower bound;
+			for (MarkovEngineImpl engine : engines) {
+				// b.) marginal probability on individual variable.
+				// c.) min-q values after a user confirms a trade.
+				// d.) min-q state. (Necessity Level: low)
+				// e.) The expected score.
+				// f. ) conditional min-q and expected score on randomly given states. How many random given states depends on network size. We choose floor(0.3*numberOfVariablesInTheNet).
+				// g.) An userÅfs asset table is not changed when other user makes edit.
+			}
+			
+			// (3) random probability in between the bound;
+			for (MarkovEngineImpl engine : engines) {
+				// b.) marginal probability on individual variable.
+				// c.) min-q values after a user confirms a trade.
+				// d.) min-q state. (Necessity Level: low)
+				// e.) The expected score.
+				// f. ) conditional min-q and expected score on randomly given states. How many random given states depends on network size. We choose floor(0.3*numberOfVariablesInTheNet).
+				// g.) An userÅfs asset table is not changed when other user makes edit.
+			}
+			
+			// (4) the probability exactly on the upper bound;
+			for (MarkovEngineImpl engine : engines) {
+				// b.) marginal probability on individual variable.
+				// c.) min-q values after a user confirms a trade.
+				// d.) min-q state. (Necessity Level: low)
+				// e.) The expected score.
+				// f. ) conditional min-q and expected score on randomly given states. How many random given states depends on network size. We choose floor(0.3*numberOfVariablesInTheNet).
+				// g.) An userÅfs asset table is not changed when other user makes edit.
+			}
+			
+			// (5) the probability close to but bigger than the upper bound;
+			for (MarkovEngineImpl engine : engines) {
+				// b.) marginal probability on individual variable.
+				// c.) min-q values after a user confirms a trade.
+				// d.) min-q state. (Necessity Level: low)
+				// e.) The expected score.
+				// f. ) conditional min-q and expected score on randomly given states. How many random given states depends on network size. We choose floor(0.3*numberOfVariablesInTheNet).
+				// g.) An userÅfs asset table is not changed when other user makes edit.
+			}
+			
+		}	// end of for : iteration
+	}	// end of DEF case
+	
+	
+	/**
+	 * This value indicates how many test iterations (5-point tests) will be performed by default
+	 * @return the maxQuantityOfIterations
+	 */
+	public int getMaxQuantityOfIterations() {
+		return maxQuantityOfIterations;
+	}
+
+	/**
+	 * This value indicates how many test iterations (5-point tests) will be performed by default
+	 * @param maxQuantityOfIterations the maxQuantityOfIterations to set
+	 */
+	public void setMaxQuantityOfIterations(int maxQuantityOfIterations) {
+		this.maxQuantityOfIterations = maxQuantityOfIterations;
+	}
 }

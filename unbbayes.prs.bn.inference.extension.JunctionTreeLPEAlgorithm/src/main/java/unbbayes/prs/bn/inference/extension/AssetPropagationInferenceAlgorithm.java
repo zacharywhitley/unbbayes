@@ -27,6 +27,7 @@ import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.LogarithmicMinProductJunctionTree;
 import unbbayes.prs.bn.OneWayLogarithmicMinProductJunctionTree;
 import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.PotentialTable.ISumOperation;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.Separator;
 import unbbayes.prs.bn.TreeVariable;
@@ -170,6 +171,16 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		public float getCurrentLogBase() { return (float) Math.E; }
 		public float getCurrentCurrencyConstant() { return b; }
 	};
+
+	private static final AssetNode ONE_STATE_ASSETNODE;
+	static{
+		ONE_STATE_ASSETNODE = AssetNode.getInstance();
+		ONE_STATE_ASSETNODE.setToCalculateMarginal(false);
+		ONE_STATE_ASSETNODE.setName("VIRTUAL_ASSETNODE");
+		// copy states
+		ONE_STATE_ASSETNODE.appendState("VIRTUAL_STATE");
+		ONE_STATE_ASSETNODE.initMarginalList();	// guarantee that marginal list is initialized
+	}
 
 	
 	private IQValuesToAssetsConverter qToAssetConverter = DEFAULT_Q_TO_ASSETS_CONVERTER;
@@ -1331,12 +1342,45 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			throw new IllegalStateException("The asset network is invalid. It is either empty or created from a Bayes Net which was not compiled yet.");
 		}
 		
+		
+		// reuse the same operation performed by min-propagation (the min-out operation)
+		ISumOperation minOutOperation = ((IPropagationOperationHolder) getJunctionTree()).getMaxOperation();
+		// the name is MaxOperation only because interface was initially designed for most probable explanation (i.e. max-out)
+		
+		
+		// get root clique
+		Clique globalRootClique = null;
+		for (Clique clique : getAssetNetwork().getJunctionTree().getCliques()) {
+			if (clique.getParent() == null) {
+				globalRootClique = clique;
+				break;
+			}
+		}
+		
 		// obtain the minimum of root clique (clique containing the min values if runMinPropagation was performed correctly).
-		// If getAssetNetwork().getJunctionTree() is an instance of LPE junction tree algorithms, getN will return min value of root.
-		float minValue = getAssetNetwork().getJunctionTree().getN(); // this contains the minimum of the root clique
+		float minValue = isToUseQValues()?0f:Float.POSITIVE_INFINITY; // initialize with invalid values
+		if (globalRootClique == null) {
+			throw new IllegalStateException("rootClique == null");
+		} else if (globalRootClique.getProbabilityFunction() == null) {
+			throw new IllegalStateException("rootClique.getProbabilityFunction() == null");
+		} else {
+			// obtain the min value in root clique
+			PotentialTable table = globalRootClique.getProbabilityFunction();
+			for (int i = 0; i < table.tableSize(); i++) {
+				float value = table.getValue(i);
+				if (minOutOperation.operate(value, minValue) == value) {
+					minValue = value;
+				}
+			}
+		} 		
+		
 		if (minValue == Float.POSITIVE_INFINITY) {
 			// infinite represents impossible state in min propagation.
-			throw new ZeroAssetsException("Attempted to calculate assets regarding an impossible state in root clique of asset net " + getAssetNetwork());
+			if (isToUseQValues()) {
+				throw new ZeroAssetsException("Overflow in asset net " + getAssetNetwork());
+			} else {
+				throw new ZeroAssetsException("Attempted to calculate assets regarding an impossible state in root clique of asset net " + getAssetNetwork());
+			}
 		} else if (minValue == Float.NEGATIVE_INFINITY || Float.isNaN(minValue)) {
 			// this is probably a bug or overflow (negative)
 			throw new IllegalStateException("Encontered " + minValue + " while calculating minimum assets of root clique of asset net " + getAssetNetwork());
@@ -1367,53 +1411,24 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 					// The empty separator is always pointing to the root clique of the disconnected sub-network
 					Clique localRootClique = separator.getClique2();
 					// obtain the max value in clique
-					float localMin = Float.NaN;
+					float localMin = isToUseQValues()?0f:Float.POSITIVE_INFINITY;
 					PotentialTable table = localRootClique.getProbabilityFunction();
 					for (int i = 0; i < table.tableSize(); i++) {
 						float value = table.getValue(i);
-						if (Float.isNaN(localMin)){ 
-							// this is the first value
-							localMin = value;
-						} else if (isToUseQValues()) {	// using q instead of assets
-							// extract the minimum q of this clique
-							if (getJunctionTree() instanceof IPropagationOperationHolder) { // x instanceof <interface> is usually more flexible than x instanceof <class> 
-								// reuse the same operation performed by min-propagation (the min-out operation)
-								IPropagationOperationHolder opHolder = (IPropagationOperationHolder) getJunctionTree();
-								// NOTE: reusing the same operation yields more flexibility, due to dependency injection
-								if (opHolder.getMaxOperation().operate(value, localMin) == value) {
-									// the name is MaxOperation only because interface was initially designed for most probable explanation (i.e. max-out)
-									localMin = value;
-								}
-							} else {	// could not extract the operation used in min-propagation. We can still try comparing "manually"
-								Debug.println(getClass(), "Could not obtain operation used in min-propagation. " +
-										"This is probably using incompatible component, but we can still get the minimum by using the operator '<'.");
-								// make comparisons, but ignore zeros (zero represents impossible values)
-								if (localMin == 0f) {
-									localMin = value;
-								} else if (value != 0f && value < localMin) {
-									localMin = value;
-								} else {
-									// value == 0 || value >= localMin. So, do nothing
-								}
-							}
-						} else if (value < localMin) {	// it's using assets instead of q
-							// Extract the minimum assets of this clique.
-							// Its OK to use "<" in assets, because evidences are represented by using Float.POSITIVE_INFINITE in impossible states,
-							// and value < Float.POSITIVE_INFINITE, unless it is related to an impossible state 
-							// (i.e. if value is impossible, then value == Float.POSITIVE_INFINITE and it will be bigger than current localMin).
+						if (minOutOperation.operate(value, localMin) == value) {
 							localMin = value;
 						}
-					}	// end of loop
+					}
 					if (isToUseQValues()) {
 						minValue *= localMin;
 					} else {
 						minValue += localMin;
 					}
 				}
-				if (minValue == Float.POSITIVE_INFINITY) {
+				if (minValue == (isToUseQValues()?0f:Float.POSITIVE_INFINITY)) {
 					// infinite represents impossible state.
 					throw new ZeroAssetsException("Attempted to calculate assets regarding an impossible state in clique " + separator.getClique2());
-				} else if (minValue == Float.NEGATIVE_INFINITY || Float.isNaN(minValue)) {
+				} else if (Float.isInfinite(minValue) || Float.isNaN(minValue)) {
 					throw new IllegalStateException("Encontered " + minValue + " while calculating minimum assets in clique " + separator.getClique2());
 				}
 			}
@@ -1768,6 +1783,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			throw new IllegalStateException("This algorithm cannot be used without a Junction Tree. Make sure getAssetNetwork().getJunctionTree() was correctly initialized.");
 		}
 		
+		Map<Clique, Float> resolvedAssetValues = new HashMap<Clique, Float>();
+		
 		// Set cells of clique tables to values which are ignored by the algorithm. 
 		for (Clique clique : getAssetNetwork().getJunctionTree().getCliques()) {
 			// extract clique table
@@ -1776,6 +1793,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			// clique.getNodes() may be different from the variables in cliqueTable. 
 			// We'd like to prioritize vars in the tables rather than in clique.getNodes()
 			if (cliqueTable.getVariableIndex((Node)node) >= 0) {
+				// last value which is not set as invalid value.
+				float resolvedAsset = isToUseQValues()?0f:Float.POSITIVE_INFINITY;	// init to invalid values
 				// iterate over cells in the clique table
 				for (int i = 0; i < cliqueTable.tableSize(); i++) {
 					// using "multidimensionalCoord" is easier than "i" if our objective is to compare with "state"
@@ -1787,7 +1806,13 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 						} else {
 							cliqueTable.setValue(i,Float.POSITIVE_INFINITY);
 						}
+					} else {
+						resolvedAsset = cliqueTable.getValue(i);
 					}
+				} 
+				if (cliqueTable.getVariablesSize() <= 1) {
+					// we are trying to remove the only 
+					resolvedAssetValues.put(clique, resolvedAsset);
 				}
 			}
 		}
@@ -1817,6 +1842,13 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		// delete node. This will supposedly delete columns in the asset tables (cliques + separators) as well
 		if (isToDeleteNode) {
 			getAssetNetwork().removeNode((Node) node);
+			for (Clique resolvedClique : resolvedAssetValues.keySet()) {
+				if (resolvedClique.getProbabilityFunction().tableSize() > 0) {
+					throw new IllegalStateException(resolvedClique + " is supposedly resolved, but it has potentials.");
+				}
+				resolvedClique.getProbabilityFunction().addVariable(ONE_STATE_ASSETNODE);
+				resolvedClique.getProbabilityFunction().setValue(0, resolvedAssetValues.get(resolvedClique));
+			}
 		}
 	}
 

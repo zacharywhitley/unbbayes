@@ -66,6 +66,7 @@ public class MaxProductJunctionTree extends JunctionTree implements IPropagation
 			// cliques are disconnected (they are separated subnets of a disconnected network)
 			return;
 		}
+		
 		// table of separator
 		PotentialTable sepTab = sep.getProbabilityFunction();
 		// who are going to be removed 
@@ -348,6 +349,9 @@ public class MaxProductJunctionTree extends JunctionTree implements IPropagation
 		// obtain the max value in clique
 		float ret = Float.NaN;
 		PotentialTable table = rootClique.getProbabilityFunction();
+		if (table.tableSize() <= 0) {
+			throw new RuntimeException(rootClique + " == []");
+		}
 		for (int i = 0; i < table.tableSize(); i++) {
 			float value = table.getValue(i);
 			if (Float.isNaN(ret)){ 

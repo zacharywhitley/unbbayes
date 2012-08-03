@@ -722,24 +722,31 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 			if (assetCliqueIterator.hasNext()) {
 				// add product of probabilities and assets of cliques , 
 				Clique assetClique = assetCliqueIterator.next();
-				Clique probClique  = probCliqueIterator.next();			
+				Clique probClique  = probCliqueIterator.next();
 				for (int j = 0; j < assetClique.getProbabilityFunction().tableSize(); j++) {
-					if (probClique.getProbabilityFunction().getValue(j) == 0f) {
+					// extract values in the cell
+					float assetValue = assetClique.getProbabilityFunction().getValue(j);
+					float probValue = 1f; // if probClique has no variable, it is considered as if it has 1 variable with 100% prob
+					if (probClique.getProbabilityFunction().tableSize() > 0) {
+						probValue = probClique.getProbabilityFunction().getValue(j);
+					}
+					
+					if (probValue == 0f) {
 						continue; // if probability is zero, no need to consider it
 					} 
 					if (isToUseQValues()) {
-						if (assetClique.getProbabilityFunction().getValue(j) <= 0f) {
+						if (assetValue <= 0f) {
 							throw new ZeroAssetsException("Negative infinite asset detected in clique "+ assetClique +". User = " + getAssetNetwork());
 						}
-					} else if (Float.isInfinite(assetClique.getProbabilityFunction().getValue(j))) {
-						throw new ZeroAssetsException("Inconsistent asset detected in clique "+ assetClique +": " + assetClique.getProbabilityFunction().getValue(j) + ", user = " + getAssetNetwork());
+					} else if (Float.isInfinite(assetValue)) {
+						throw new ZeroAssetsException("Inconsistent asset detected in clique "+ assetClique +": " + assetValue + ", user = " + getAssetNetwork());
 					}
 					double value;
 					if (isToUseQValues()) {
-						value = probClique.getProbabilityFunction().getValue(j) 
-							* getqToAssetConverter().getScoreFromQValues(assetClique.getProbabilityFunction().getValue(j));
+						value = probValue 
+							* getqToAssetConverter().getScoreFromQValues(assetValue);
 					} else {
-						value = probClique.getProbabilityFunction().getValue(j) * assetClique.getProbabilityFunction().getValue(j);
+						value = probValue * assetValue;
 					}
 					ret +=  value;
 					this.notifyExpectedAssetCellListener(probClique, assetClique, j, j, value);

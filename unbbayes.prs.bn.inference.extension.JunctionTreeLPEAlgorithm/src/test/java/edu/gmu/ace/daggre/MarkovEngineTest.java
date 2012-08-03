@@ -16,13 +16,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import junit.framework.TestCase;
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.AssetNode;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.Separator;
-import unbbayes.prs.bn.inference.extension.AssetPropagationInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
 import edu.gmu.ace.daggre.MarkovEngineImpl.AddTradeNetworkAction;
 import edu.gmu.ace.daggre.MarkovEngineImpl.BalanceTradeNetworkAction;
@@ -64,13 +62,9 @@ public class MarkovEngineTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		engine.setToUseQValues(isToUseQValues());
-		if (engine.isToUseQValues()) {
-			engine.setDefaultInitialAssetTableValue((float) engine.getQValuesFromScore(0f));
-		} else {
-			engine.setDefaultInitialAssetTableValue(0f);
-		}
 		engine.setCurrentLogBase((float) Math.E);
 		engine.setCurrentCurrencyConstant((float) (10/Math.log(100)));
+		engine.setDefaultInitialAssetTableValue(0f);
 		engine.initialize();
 	}
 
@@ -3557,6 +3551,16 @@ public class MarkovEngineTest extends TestCase {
 		action = (AddTradeNetworkAction) questionHistory.get(questionHistory.size()-1);
 		assertEquals((long)0x0D, (long)action.getQuestionId());
 		assertTrue("Assumptions = " + action.getTradeId(), action.getAssumptionIds().isEmpty());
+		
+		assertNotNull(engine.getScoreSummaryObject(userNameToIDMap.get("Tom"), null, null, null));
+		assertFalse(engine.getQuestionHistory(null, null, null).isEmpty());
+		assertFalse(engine.previewBalancingTrade(userNameToIDMap.get("Tom"), 0x0AL, null, null).isEmpty());
+		assertFalse(engine.getAssetsIfStates(userNameToIDMap.get("Tom"), 0x0AL, null, null).isEmpty());
+		assertFalse(Float.isNaN(engine.getCash(userNameToIDMap.get("Tom"), null, null)));
+		assertNotNull(engine.getEditLimits(userNameToIDMap.get("Tom"), 0x0AL, 2, null, null));
+		assertEquals(0,engine.getMaximumValidAssumptionsSublists(0x0AL, null, 1).get(0).size());
+		assertTrue(engine.getPossibleQuestionAssumptions(0x0A, null).isEmpty());
+		assertNotNull(engine.getScoreDetails(userNameToIDMap.get("Tom"), 0x0AL, null, null));
 	}
 	
 	
@@ -8148,7 +8152,9 @@ public class MarkovEngineTest extends TestCase {
 			assumedStates.add(0);
 		}
 		for (String userName : mapOfConditionalCash.keySet()) {
-			assumedStates.set(2, 0);	// d1
+			if (!engine.isToDeleteResolvedNode()) {
+				assumedStates.set(2, 0);	// d1
+			}
 			for (int i = 0; i < 4; i++) {	// combinations [e1f1,e1f2,e2f1,e2f2]
 				assumedStates.set(0, (int)i/2);	// e
 				assumedStates.set(1, (int)i%2);	// f
@@ -8173,6 +8179,8 @@ public class MarkovEngineTest extends TestCase {
 	}
 	
 	public final void testResolveAllQuestion() {
+
+		engine.setToDeleteResolvedNode(false);
 		engine.setCurrentCurrencyConstant(100);
 		engine.setCurrentLogBase(2);
 		float initAsssets = 12050.81f;
@@ -8189,8 +8197,8 @@ public class MarkovEngineTest extends TestCase {
 		engine.resolveQuestion(transactionKey, new Date(), 0x0FL, 0);
 		engine.commitNetworkActions(transactionKey);
 
-		Map<String, Float> cashMap = new HashMap<String, Float>();
-		Map<String, Float> scoreMap = new HashMap<String, Float>();
+		// after all nodes are resolved, cash and expected scores are equal
+		Map<String, Float> cashAndScoreMap = new HashMap<String, Float>();
 		
 		for (String user : userNameToIDMap.keySet()) {
 			float cash = engine.getCash(userNameToIDMap.get(user), null, null);
@@ -8199,8 +8207,25 @@ public class MarkovEngineTest extends TestCase {
 			assertFalse("Score of " + user + " = " + score,Float.isInfinite(score) || Float.isNaN(score));
 			assertEquals(cash, score, ASSET_ERROR_MARGIN);
 			assertTrue(cash > 0 && score > 0);
-			cashMap.put(user, cash);
-			scoreMap.put(user, score);
+			cashAndScoreMap.put(user, cash);
+		}
+		
+		engine.setToDeleteResolvedNode(true);
+		engine.initialize();
+		this.createDEFNetIn1Transaction(userNameToIDMap);
+		transactionKey = engine.startNetworkActions();
+		engine.resolveQuestion(transactionKey, new Date(), 0x0DL, 0);
+		engine.resolveQuestion(transactionKey, new Date(), 0x0EL, 0);
+		engine.resolveQuestion(transactionKey, new Date(), 0x0FL, 0);
+		engine.commitNetworkActions(transactionKey);
+		for (String user : userNameToIDMap.keySet()) {
+			float cash = engine.getCash(userNameToIDMap.get(user), null, null);
+			assertFalse("Cash of " + user + " = " + cash,Float.isInfinite(cash) || Float.isNaN(cash));
+			float score = engine.scoreUserEv(userNameToIDMap.get(user), null, null);
+			assertFalse("Score of " + user + " = " + score,Float.isInfinite(score) || Float.isNaN(score));
+			assertEquals("User=" + user, cash, score, ASSET_ERROR_MARGIN);
+			assertEquals("User=" + user, cashAndScoreMap.get(user), cash, ASSET_ERROR_MARGIN);
+			assertEquals("User=" + user, cashAndScoreMap.get(user), score, ASSET_ERROR_MARGIN);
 		}
 		
 		engine.initialize();
@@ -8962,7 +8987,9 @@ public class MarkovEngineTest extends TestCase {
 		}
 		for (int repeat = 0; repeat < 3; repeat++) {
 			for (String userName : mapOfConditionalCash.keySet()) {
-				assumedStates.set(2, 0);	// d1
+				if (!engine.isToDeleteResolvedNode()) {
+					assumedStates.set(2, 0);	// d1
+				}
 				for (int i = 0; i < 4; i++) {	// combinations [e1f1,e1f2,e2f1,e2f2]
 					assumedStates.set(0, (int)i/2);	// e
 					assumedStates.set(1, (int)i%2);	// f

@@ -132,7 +132,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	
 	private boolean isToObtainProbabilityOfResolvedQuestions = true;
 	
-	private boolean isToDeleteResolvedNode = false;
+	private boolean isToDeleteResolvedNode = true;
 	
 	private boolean isToThrowExceptionOnInvalidAssumptions = false;
 
@@ -450,6 +450,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		/** Rebuild the BN */
 		public void execute() {
+			this.execute(getExecutedActions());
+		}
+		/** Rebuild the BN */
+		protected void execute(List<NetworkAction> actions) {
 			// BN to rebuild
 			ProbabilisticNetwork net = getProbabilisticNetwork();
 			// Supposedly, only 1 transaction can commit, so we only need to block net to block threads reading net
@@ -467,12 +471,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					getUserToAssetAwareAlgorithmMap().clear();	
 					// by executing some action related to user, user will be re-created.
 					// hence, "read-only" users are not rebuild, because such users did never commit a network action.
-					synchronized (getExecutedActions()) {
+					synchronized (actions) {
 						
 						int indexOfLastActionPlayedBack = 0;
 						// Note: if we are rebooting the system, the history is supposedly empty. We only need to rebuild user assets if history is not empty
-						for (; indexOfLastActionPlayedBack < getExecutedActions().size(); indexOfLastActionPlayedBack++) {
-							NetworkAction action = getExecutedActions().get(indexOfLastActionPlayedBack);
+						for (; indexOfLastActionPlayedBack < actions.size(); indexOfLastActionPlayedBack++) {
+							NetworkAction action = actions.get(indexOfLastActionPlayedBack);
 							if (action.equals(this)) {
 								// do not execute actions which comes after myself
 								break;
@@ -507,8 +511,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						}
 						
 						// from this point, play back actions without updating assets in trades
-						for (int i = indexOfLastActionPlayedBack; i < getExecutedActions().size(); i++) {
-							NetworkAction action = getExecutedActions().get(i);
+						for (int i = indexOfLastActionPlayedBack; i < actions.size(); i++) {
+							NetworkAction action = actions.get(i);
 							if (action.equals(this)) {
 								// do not execute actions which comes after myself
 								break;
@@ -564,28 +568,44 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public RevertTradeNetworkAction(long transactionKey, Date whenCreated, Date tradesStartingWhen, Long questionId) {
 			super(transactionKey, whenCreated, tradesStartingWhen, questionId);
 		}
-		/** @see edu.gmu.ace.daggre.MarkovEngineImpl.RebuildNetworkAction#execute() */
-		public void execute() { 
+		/** @see edu.gmu.ace.daggre.MarkovEngineImpl.RebuildNetworkAction#execute(java.util.List)*/
+		protected void execute(List<NetworkAction> actions) { 
 			// reset network
 			ProbabilisticNetwork net = getProbabilisticNetwork();
-			synchronized (getDefaultInferenceAlgorithm()) {
-				synchronized (net) {
-					ArrayList<Node> nodesToRemove = new ArrayList(net.getNodes());
-					for (Node node : nodesToRemove) {
-						net.removeNode(node);
+			// the list "actions" without network change actions
+			List<NetworkAction> actionsToExecute = new ArrayList<NetworkAction>();	
+			synchronized (getExecutedActions()) {
+				synchronized (getDefaultInferenceAlgorithm()) {
+					synchronized (net) {
+						ArrayList<Node> nodesToRemove = new ArrayList(net.getNodes());
+						for (Node node : nodesToRemove) {
+							net.removeNode(node);
+						}
+						try {
+							net.setJunctionTree(net.getJunctionTreeBuilder().buildJunctionTree(net));
+						} catch (InstantiationException e) {
+							throw new RuntimeException(e);
+						} catch (IllegalAccessException e) {
+							throw new RuntimeException(e);
+						}
 					}
-					try {
-						net.setJunctionTree(net.getJunctionTreeBuilder().buildJunctionTree(net));
-					} catch (InstantiationException e) {
-						throw new RuntimeException(e);
-					} catch (IllegalAccessException e) {
-						throw new RuntimeException(e);
+				}
+				// network change actions
+				List<NetworkAction> networkChangeActions = new ArrayList<NetworkAction>(); 
+				for (NetworkAction action : actions) {
+					if (action.isStructureChangeAction()) {
+						networkChangeActions.add(action);
+					} else {
+						actionsToExecute.add(action);
 					}
-					// TODO redo actions which builds the bayes net
-					
+				}
+				// execute the trades related to network construction before actionsToExecute
+				for (NetworkAction changeAction : networkChangeActions) {
+					changeAction.execute();
 				}
 			}
-			super.execute(); 
+			// execute actionsToExecute
+			super.execute(actionsToExecute); 
 		}
 		/**  @see edu.gmu.ace.daggre.MarkovEngineImpl.RebuildNetworkAction#isToExecuteAction(edu.gmu.ace.daggre.NetworkAction) */
 		protected boolean isToExecuteAction(NetworkAction action) { return true; }
@@ -1698,7 +1718,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						questionId = Long.parseLong(mainNode.getName());
 					}
 					if (mainNode == null || questionId == null) {
-						if (isToObtainProbabilityOfResolvedQuestions() && (assumptionIds == null || assumptionIds.isEmpty())) {
+						boolean isResolvedQuestion = false;
+						if (isToObtainProbabilityOfResolvedQuestions()) {
 							// If it is a resolved question, we can get marginal (non-assumptive) probabilities from history.
 							// TODO also build conditional probability
 							try {
@@ -1720,11 +1741,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 										marginal.add((k==action.getSettledState())?1f:0f);
 									}
 									ret.put(questionId, marginal);
+									isResolvedQuestion = true;
 									break;
 								}
 							}
 						}
-						
+						if (isResolvedQuestion) {
+							continue;
+						}
 						throw new InexistingQuestionException("Question " + questionId + " not found", questionId);
 					}
 					List<INode> parentNodes = new ArrayList<INode>();
@@ -3323,13 +3347,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					return;	// if it does not match filter, we do not need to update the list of SummaryContribution
 				}
 				
-				// multidimensionalCoord indicates what states are related to the index "indexInProbTable" in the table "table"
-				int[] multidimensionalCoord = table.getMultidimensionalCoord(indexInProbTable);	 // array with states of each node in table
-				
 				// this will be the SummaryContribution#getStates()
 				final List<Integer> states = new ArrayList<Integer>();	
-				for (int i = 0; i < multidimensionalCoord.length; i++) {
-					states.add(multidimensionalCoord[i]);
+				// only fill states if this is not an empty clique/separator (empty separator can happen if it is a virtual separator)
+				if (indexInProbTable >= 0 && table.tableSize() > 0) {
+					// multidimensionalCoord indicates what states are related to the index "indexInProbTable" in the table "table"
+					int[] multidimensionalCoord = table.getMultidimensionalCoord(indexInProbTable);	 // array with states of each node in table
+					for (int i = 0; i < multidimensionalCoord.length; i++) {
+						states.add(multidimensionalCoord[i]);
+					}
 				}
 				
 				// update the list
@@ -3714,43 +3740,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see #initialize()
 	 */
 	public void setDefaultInitialAssetTableValue(float defaultValue) {
-//		if (defaultValue < 1d) {
-//			throw new IllegalArgumentException("Q-values cannot be smaller than 1. Value provided: " + defaultValue);
-//		}
-		if (Float.isInfinite(defaultValue)) {
+		if (isToUseQValues() && defaultValue <= 0) {
+			throw new IllegalArgumentException("Cannot set default q table value to " + defaultValue);
+		}
+		this.defaultInitialAssetTableValue = defaultValue;
+		if (Float.isInfinite(defaultInitialAssetTableValue)) {
 			throw new IllegalArgumentException("Cannot set default asset table value to infinite");
 		}
-		if (Float.isNaN(defaultValue)) {
+		if (Float.isNaN(defaultInitialAssetTableValue)) {
 			throw new IllegalArgumentException("Cannot set default asset table value to NaN");
 		}
-//		if (getForcedInitialQValue() > 0 && defaultValue > getForcedInitialQValue()) {
-//			/*
-//			 * 
-//			 * We have Assets = b*log_c(q); 
-//			 *  <br/><br/>
-//			 * b := {@link #getCurrentCurrencyConstant()}<br/>
-//			 * c := {@link #getCurrentLogBase()}<br/>
-//			 * q := q-values (values stored in q-tables)<br/>
-//			 * Assets := assets (values expected by the caller of this method)<br/>
-//			 * 
-//			 * If we want to change the relationship to Assets = b*x*log_c(q'); 
-//			 * with x > 1, so that q' < q maintaining Assets intact, then:
-//			 *  <br/><br/>
-//			 * b*x*log_c(q') = b*log_c(q);<br/>
-//			 * x = log_c(q) / log_c(q')
-//			 *  <br/><br/>
-//			 * x := currencyMultiplier<br/>
-//			 * q' := new values to be stored in q-tables : {@link #getForcedInitialQValue()}<br/>
-//			 *  <br/><br/>
-//			 *  This method changes the value of x.
-//			 */
-//			
-//			// x = log_c(q) / log_c(q') = log_q'(q) = log(q)/log(q')
-//			setCurrencyConstantMultiplier(Math.log(defaultValue) / Math.log(getForcedInitialQValue()) );
-//			// force q-tables to initialize at getForcedInitialQValue() instead of the original values
-//			defaultValue = getForcedInitialQValue();
-//		}
-		this.defaultInitialAssetTableValue = defaultValue;
 	}
 	
 	/**
@@ -4065,7 +4064,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @return the isToObtainProbabilityOfResolvedQuestions
 	 */
 	public boolean isToObtainProbabilityOfResolvedQuestions() {
-		return isToObtainProbabilityOfResolvedQuestions && !isToDeleteResolvedNode();
+		return isToObtainProbabilityOfResolvedQuestions;// && !isToDeleteResolvedNode();
 	}
 
 	/**

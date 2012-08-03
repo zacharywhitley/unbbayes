@@ -77,6 +77,7 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 		ret.setCurrentLogBase(logBase);
 		ret.setDefaultInitialAssetTableValue((float) ret.getQValuesFromScore(initialUserAssets));
 		ret.setToThrowExceptionOnInvalidAssumptions(isToThrowExceptionOnInvalidAssumptions);
+		ret.setToUseQValues(true);
 		return ret;
 	}
 	
