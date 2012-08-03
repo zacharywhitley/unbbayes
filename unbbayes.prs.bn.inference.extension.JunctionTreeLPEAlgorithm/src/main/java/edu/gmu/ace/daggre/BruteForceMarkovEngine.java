@@ -222,8 +222,8 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 	 */
 	public class JointProbabilityAndAssetTablesMemento extends ProbabilityAndAssetTablesMemento {
 
-		private JointPotentialTable jointProbTable;
-		private Map<BruteForceAssetAwareInferenceAlgorithm, JointPotentialTable> algorithmToJointAssetMap;
+		protected JointPotentialTable jointProbTable;
+		protected Map<BruteForceAssetAwareInferenceAlgorithm, JointPotentialTable> algorithmToJointAssetMap;
 		/**
 		 * Stores probability tables of cliques/separators of {@link MarkovEngineImpl#getProbabilisticNetwork()},
 		 * asset tables of {@link MarkovEngineImpl#getUserToAssetAwareAlgorithmMap()},

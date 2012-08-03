@@ -91,8 +91,6 @@ public class CPTBruteForceMarkovEngine extends BruteForceMarkovEngine {
 	 */
 	public class CPTMemento extends JointProbabilityAndAssetTablesMemento {
 
-		private JointPotentialTable jointProbTable;
-		private Map<BruteForceAssetAwareInferenceAlgorithm, JointPotentialTable> algorithmToJointAssetMap;
 		/**
 		 * Stores probability tables of cliques/separators of {@link MarkovEngineImpl#getProbabilisticNetwork()},
 		 * asset tables of {@link MarkovEngineImpl#getUserToAssetAwareAlgorithmMap()},
@@ -141,4 +139,13 @@ public class CPTBruteForceMarkovEngine extends BruteForceMarkovEngine {
 		}
 		
 	}
+
+
+	/* (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.BruteForceMarkovEngine#getMemento()
+	 */
+	public ProbabilityAndAssetTablesMemento getMemento() {
+		return new CPTMemento();
+	}
+	
 }

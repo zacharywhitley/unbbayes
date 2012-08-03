@@ -286,8 +286,8 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 						isNegativeCondition = true;
 						condition = -(condition + 1);	// -1 == not 0, -2 = not 1, -3 = not 2 and so on
 					}
-					if ( ( isNegativeCondition && states[table.indexOfVariable((Node) key)] == conditions.get(key) )
-							|| ( !isNegativeCondition && states[table.indexOfVariable((Node) key)] != conditions.get(key) )) {
+					if ( ( isNegativeCondition && states[table.indexOfVariable((Node) key)] == condition )
+							|| ( !isNegativeCondition && states[table.indexOfVariable((Node) key)] != condition )) {
 						matches = false;
 						break;
 					}

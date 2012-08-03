@@ -2,6 +2,7 @@ net
 {
      node_size = (0 0);
      name = "New BN";
+     tree = "(C0,C1,C2,C3,C4,C5,C6,C7,C8,C9)";
      UnBBayes_Color_Probabilistic_Description = "-256";
      UnBBayes_Color_Probabilistic_Explanation = "-16711936";
 }
@@ -73,7 +74,7 @@ node 9
 {
      label = "C9";
      position = (725 201);
-     states = ("State 0" "State 1");
+     states = ("State 0" "State 1" "State 2");
 }
 
 potential (0)
@@ -123,6 +124,6 @@ potential (8)
 
 potential (9)
 {
- data = ( 0.5 0.5 );
+ data = ( 0.33333334 0.33333334 0.33333334 );
 }
 
