@@ -4136,6 +4136,106 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		return ret;
 	}
+	
+	/**
+	 * This is a memento class (see Memento design pattern), which stores the important
+	 * states clique and separator tables of probability  and assets in a given moment.
+	 * This is useful for reverting the last trade.
+	 * @author Shou Matsumoto
+	 *
+	 */
+	public class ProbabilityAndAssetTablesMemento {
+		protected Map<IRandomVariable, PotentialTable> probTableMap;
+		protected Map<AssetAwareInferenceAlgorithm, Map<IRandomVariable, PotentialTable>> assetTableMap;
+
+		/**
+		 * Stores probability tables of cliques/separators of {@link MarkovEngineImpl#getProbabilisticNetwork()}
+		 * and asset tables of {@link MarkovEngineImpl#getUserToAssetAwareAlgorithmMap()}.
+		 */
+		public ProbabilityAndAssetTablesMemento() {
+			probTableMap = new HashMap<IRandomVariable, PotentialTable>();
+			synchronized (getProbabilisticNetwork()) {
+				for (Clique clique : getProbabilisticNetwork().getJunctionTree().getCliques()) {
+					probTableMap.put(clique, (PotentialTable) clique.getProbabilityFunction().clone());
+				}
+				for (Separator separator : getProbabilisticNetwork().getJunctionTree().getSeparators()) {
+					probTableMap.put(separator, (PotentialTable) separator.getProbabilityFunction().clone());
+				}
+			}
+			synchronized (getUserToAssetAwareAlgorithmMap()) {
+				assetTableMap = new HashMap<AssetAwareInferenceAlgorithm, Map<IRandomVariable,PotentialTable>>();
+				for (AssetAwareInferenceAlgorithm algorithm : getUserToAssetAwareAlgorithmMap().values()) {
+					Map<IRandomVariable,PotentialTable> assetTables = new HashMap<IRandomVariable, PotentialTable>();
+					synchronized (algorithm.getAssetNetwork()) {
+						for (Clique clique : algorithm.getAssetNetwork().getJunctionTree().getCliques()) {
+							assetTables.put(clique, (PotentialTable) clique.getProbabilityFunction().clone());
+						}
+						for (Separator separator : algorithm.getAssetNetwork().getJunctionTree().getSeparators()) {
+							assetTables.put(separator, (PotentialTable) separator.getProbabilityFunction().clone());
+						}
+					}
+					assetTableMap.put(algorithm, assetTables);
+				}
+			}
+		}
+		/** Restore the {@link MarkovEngineImpl} to the state of this memento */
+		protected void restore() {
+			synchronized (getProbabilisticNetwork()) {
+				for (Clique clique : getProbabilisticNetwork().getJunctionTree().getCliques()) {
+					clique.getProbabilityFunction().setValues(probTableMap.get(clique).getValues());
+//					clique.getProbabilityFunction().copyData();
+				}
+				for (Separator separator : getProbabilisticNetwork().getJunctionTree().getSeparators()) {
+					separator.getProbabilityFunction().setValues(probTableMap.get(separator).getValues());
+//					separator.getProbabilityFunction().copyData();
+				}
+				// make sure marginals are restored.
+				for (Node node : getProbabilisticNetwork().getNodes()) {
+					((TreeVariable)node).updateMarginal();
+				}
+			}
+			synchronized (getUserToAssetAwareAlgorithmMap()) {
+				for (AssetAwareInferenceAlgorithm algorithm : getUserToAssetAwareAlgorithmMap().values()) {
+					Map<IRandomVariable,PotentialTable> assetTables = assetTableMap.get(algorithm);
+					if (assetTables == null) {
+						continue;
+					}
+					synchronized (algorithm.getAssetNetwork()) {
+						for (Clique clique : algorithm.getAssetNetwork().getJunctionTree().getCliques()) {
+							clique.getProbabilityFunction().setValues(assetTables.get(clique).getValues());
+//							clique.getProbabilityFunction().copyData();
+						}
+						for (Separator separator : algorithm.getAssetNetwork().getJunctionTree().getSeparators()) {
+							separator.getProbabilityFunction().setValues(assetTables.get(separator).getValues());
+//							separator.getProbabilityFunction().copyData();
+						}
+					}
+				}
+			}
+		}
+		public Map<IRandomVariable, PotentialTable> getProbTableMap() {
+			return new HashMap<IRandomVariable, PotentialTable>(probTableMap);
+		}
+		public Map<AssetAwareInferenceAlgorithm, Map<IRandomVariable, PotentialTable>> getAssetTableMap() {
+			return new HashMap<AssetAwareInferenceAlgorithm, Map<IRandomVariable,PotentialTable>>(assetTableMap);
+		}
+	}
+	
+	/**
+	 * This is useful for reverting the last trade.
+	 * @return memento object storing the state of the markov engine.
+	 */
+	public ProbabilityAndAssetTablesMemento getMemento() {
+		return this.new ProbabilityAndAssetTablesMemento();
+	}
+	
+	/**
+	 * This is useful for reverting the last trade.
+	 * @param memento  object storing the state of the markov engine.
+	 */
+	public void restoreMemento(ProbabilityAndAssetTablesMemento memento) {
+		memento.restore();
+	}
 
 	/**
 	 * @param isToThrowExceptionOnInvalidAssumptions the isToThrowExceptionOnInvalidAssumptions to set

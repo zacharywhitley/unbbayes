@@ -417,7 +417,7 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 	protected void updateJointProbability(boolean isToUpdateAssets) {
 		if (getRelatedProbabilisticNetwork() == null || getRelatedProbabilisticNetwork().getJunctionTree() == null) {
 			// nothing to update
-			System.err.println("No network found");
+			Debug.println(getClass(), "No network found");
 			return;
 		}
 		// this is the joint probability table

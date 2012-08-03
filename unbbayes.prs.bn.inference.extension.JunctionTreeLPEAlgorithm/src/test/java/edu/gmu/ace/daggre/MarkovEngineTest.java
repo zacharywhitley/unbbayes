@@ -3561,6 +3561,7 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0,engine.getMaximumValidAssumptionsSublists(0x0AL, null, 1).get(0).size());
 		assertTrue(engine.getPossibleQuestionAssumptions(0x0A, null).isEmpty());
 		assertNotNull(engine.getScoreDetails(userNameToIDMap.get("Tom"), 0x0AL, null, null));
+		assertFalse(engine.getQuestionAssumptionGroups().isEmpty());
 	}
 	
 	
@@ -8279,6 +8280,9 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals("User = " + user, cash, score, ASSET_ERROR_MARGIN);
 			assertTrue(cash > 0 && score > 0);
 		}
+		
+
+		assertFalse(engine.getQuestionAssumptionGroups().isEmpty());
 	}
 
 	private List<AddTradeNetworkAction> createDEFNetIn1Transaction(Map<String, Long> userNameToIDMap) {

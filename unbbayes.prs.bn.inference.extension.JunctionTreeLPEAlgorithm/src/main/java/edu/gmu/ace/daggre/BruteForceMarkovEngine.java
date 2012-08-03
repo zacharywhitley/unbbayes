@@ -11,6 +11,8 @@ import java.util.Map;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNode;
+import unbbayes.prs.bn.IRandomVariable;
+import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.BruteForceAssetAwareInferenceAlgorithm;
@@ -212,6 +214,83 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 		return ret;
 	}
 	
-	
+	/**
+	 * This is an extension of {@link ProbabilityAndAssetTablesMemento}
+	 * which also stores current joint tables.
+	 * @author Shou Matsumoto
+	 * @see ProbabilityAndAssetTablesMemento
+	 */
+	public class JointProbabilityAndAssetTablesMemento extends ProbabilityAndAssetTablesMemento {
+
+		private JointPotentialTable jointProbTable;
+		private Map<BruteForceAssetAwareInferenceAlgorithm, JointPotentialTable> algorithmToJointAssetMap;
+		/**
+		 * Stores probability tables of cliques/separators of {@link MarkovEngineImpl#getProbabilisticNetwork()},
+		 * asset tables of {@link MarkovEngineImpl#getUserToAssetAwareAlgorithmMap()},
+		 * joint probability table, and joint asset tables.
+		 */
+		public JointProbabilityAndAssetTablesMemento() {
+			super();
+			synchronized (getDefaultInferenceAlgorithm()) {
+				jointProbTable = (JointPotentialTable) ((BruteForceAssetAwareInferenceAlgorithm)getDefaultInferenceAlgorithm()).getJointProbabilityTable().clone();
+			}
+			algorithmToJointAssetMap = new HashMap<BruteForceAssetAwareInferenceAlgorithm, BruteForceAssetAwareInferenceAlgorithm.JointPotentialTable>();
+			synchronized (getUserToAssetAwareAlgorithmMap()) {
+				for (AssetAwareInferenceAlgorithm algorithm : getUserToAssetAwareAlgorithmMap().values()) {
+					algorithmToJointAssetMap.put(((BruteForceAssetAwareInferenceAlgorithm)algorithm), (JointPotentialTable) ((BruteForceAssetAwareInferenceAlgorithm)algorithm).getJointQTable().clone());
+				}
+			}
+		}
+		/**
+		 * @see edu.gmu.ace.daggre.MarkovEngineImpl.ProbabilityAndAssetTablesMemento#restore()
+		 */
+		protected void restore() {
+			super.restore();
+			synchronized (getDefaultInferenceAlgorithm()) {
+				((BruteForceAssetAwareInferenceAlgorithm)getDefaultInferenceAlgorithm()).getJointProbabilityTable().setValues(jointProbTable.getValues());
+				((BruteForceAssetAwareInferenceAlgorithm)getDefaultInferenceAlgorithm()).updateMarginalsFromJointProbability();
+			}
+			synchronized (getUserToAssetAwareAlgorithmMap()) {
+				for (AssetAwareInferenceAlgorithm algorithm : getUserToAssetAwareAlgorithmMap().values()) {
+					((BruteForceAssetAwareInferenceAlgorithm)algorithm).getJointQTable().setValues(algorithmToJointAssetMap.get(algorithm).getValues());
+				}
+			}
+		}
+		/* (non-Javadoc)
+		 * @see edu.gmu.ace.daggre.MarkovEngineImpl.ProbabilityAndAssetTablesMemento#getProbTableMap()
+		 */
+		@Override
+		public Map<IRandomVariable, PotentialTable> getProbTableMap() {
+			Map<IRandomVariable, PotentialTable> ret = new HashMap<IRandomVariable, PotentialTable>();
+			for (IRandomVariable key : probTableMap.keySet()) {
+				ret.put(key, jointProbTable);
+			}
+			return ret;
+		}
+		/* (non-Javadoc)
+		 * @see edu.gmu.ace.daggre.MarkovEngineImpl.ProbabilityAndAssetTablesMemento#getAssetTableMap()
+		 */
+		@Override
+		public Map<AssetAwareInferenceAlgorithm, Map<IRandomVariable, PotentialTable>> getAssetTableMap() {
+			Map<AssetAwareInferenceAlgorithm, Map<IRandomVariable, PotentialTable>> ret = new HashMap<AssetAwareInferenceAlgorithm, Map<IRandomVariable,PotentialTable>>();
+			for (AssetAwareInferenceAlgorithm algorithm : assetTableMap.keySet()) {
+				Map<IRandomVariable, PotentialTable> map = new HashMap<IRandomVariable, PotentialTable>();
+				for (IRandomVariable key : assetTableMap.get(algorithm).keySet()) {
+					map.put(key, algorithmToJointAssetMap.get(algorithm));
+				}
+				ret.put(algorithm, map);
+			}
+			return super.getAssetTableMap();
+		}
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineImpl#getMemento()
+	 */
+	@Override
+	public ProbabilityAndAssetTablesMemento getMemento() {
+		return new JointProbabilityAndAssetTablesMemento();
+	}
 
 }

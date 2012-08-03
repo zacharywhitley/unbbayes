@@ -11,6 +11,7 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor;
 import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
+import unbbayes.util.Debug;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 /**
@@ -24,6 +25,7 @@ import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
  */
 public class CPTBruteForceAssetAwareInferenceAlgorithm extends
 		BruteForceAssetAwareInferenceAlgorithm {
+
 
 	/** Default constructor is not private in order to allow inheritance */
 	protected CPTBruteForceAssetAwareInferenceAlgorithm() {
@@ -71,6 +73,34 @@ public class CPTBruteForceAssetAwareInferenceAlgorithm extends
 	
 
 	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.BruteForceAssetAwareInferenceAlgorithm#run()
+	 */
+	@Override
+	public void run() throws IllegalStateException {
+		// restore the initial CPT
+		for (Node node : getRelatedProbabilisticNetwork().getNodes()) {
+			if (node instanceof ProbabilisticNode) {
+				ProbabilisticNode probNode = (ProbabilisticNode) node;
+				try {
+					probNode.getProbabilityFunction().getCopiedValue(0);
+				} catch (ArrayIndexOutOfBoundsException e) {
+					Debug.println(getClass(), "CPT of " + probNode + " is new.");
+					continue;
+				}
+				probNode.getProbabilityFunction().restoreData();
+			}
+		}
+		super.run();
+		// store the initial CPT
+		for (Node node : getRelatedProbabilisticNetwork().getNodes()) {
+			if (node instanceof ProbabilisticNode) {
+				ProbabilisticNode probNode = (ProbabilisticNode) node;
+				probNode.getProbabilityFunction().copyData();
+			}
+		}
+	}
+
+	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.inference.extension.BruteForceAssetAwareInferenceAlgorithm#newInstance(unbbayes.util.extension.bn.inference.IInferenceAlgorithm, float)
 	 */
 	protected IInferenceAlgorithm newInstance( IInferenceAlgorithm probabilityDelegator, float defaultInitialQValue) {
@@ -84,7 +114,7 @@ public class CPTBruteForceAssetAwareInferenceAlgorithm extends
 	protected void updateJointProbability(boolean isToUpdateAssets) {
 		if (getRelatedProbabilisticNetwork() == null || getRelatedProbabilisticNetwork().getJunctionTree() == null) {
 			// nothing to update
-			System.err.println("No network found");
+			Debug.println(getClass(), "No network found");
 			return;
 		}
 		
@@ -187,8 +217,6 @@ public class CPTBruteForceAssetAwareInferenceAlgorithm extends
 			}
 		}
 	}
-	
-	 
-	
+
 
 }
