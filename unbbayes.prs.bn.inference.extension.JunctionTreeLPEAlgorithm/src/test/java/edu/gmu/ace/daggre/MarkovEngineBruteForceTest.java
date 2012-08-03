@@ -21,6 +21,7 @@ import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
 import edu.gmu.ace.daggre.MarkovEngineImpl.ProbabilityAndAssetTablesMemento;
+import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
 
 /**
  * @author Shou Matsumoto
@@ -32,7 +33,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	public static final float PROB_ERROR_MARGIN = 0.005f;
 
 	/** Error margin used when comparing 2 probability values. {@link CPTBruteForceMarkovEngine} have less precision. */
-	public static final float PROB_ERROR_MARGIN_CPT_BRUTE_FORCE = 0.01f;
+	public static final float PROB_ERROR_MARGIN_CPT_BRUTE_FORCE = 0.05f;
 	
 	/** Error margin used when comparing 2 asset (score) values */
 	public static final float ASSET_ERROR_MARGIN = 1f;
@@ -43,7 +44,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private List<MarkovEngineImpl> engines;
 
 	/** This value indicates how many test iterations (5-point tests) will be performed by default*/
-	private int howManyTradesToTest = 20;//100;
+	private int howManyTradesToTest = (int) (Math.random() * 100);//100;
 
 
 	private enum FivePointTestType {BELOW_LIMIT, ON_LOWER_LIMIT, BETWEEN_LIMITS, ON_UPPER_LIMIT, ABOVE_LIMIT}; 
@@ -66,13 +67,10 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		engines = new ArrayList<MarkovEngineImpl>();
-//		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance((float)Math.E, (float)(10.0/Math.log(100)), 0));
-//		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance((float)Math.E, (float)(10.0/Math.log(100)), (float) 0, false, true));
-//		engines.add(BruteForceMarkovEngine.getInstance((float) Math.E, (float)(10.0/Math.log(100)), (float) 0));
 		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 1000f));
+//		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 1000f, false, true));
 		engines.add(BruteForceMarkovEngine.getInstance(2f, 100f, 1000f));
-		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 1000f, false, true));
-		engines.add(CPTBruteForceMarkovEngine.getInstance(2f, 100f, 1000f));
+//		engines.add(CPTBruteForceMarkovEngine.getInstance(2f, 100f, 1000f));
 		for (MarkovEngineInterface engine : engines) {
 			engine.initialize();
 		}
@@ -123,7 +121,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		for (int i = 0; i < numToRemove; i++) {
 			randomGroup.remove((int)(Math.random() * randomGroup.size()));
 		}
-		return new ArrayList<Long>();
+		return randomGroup;
 	}
 	
 	/** Obtains a list of questions randomly. How many random given states depends on network size. We choose floor(0.3*numberOfVariablesInTheNet). */
@@ -147,7 +145,8 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	}
 	
 	/** generate an edit which conforms with one of the 5-point test type */
-	private List<Float> generateEdit(Long questionId, int totalNumStates, int stateToConsider, List<Float> editLimits, FivePointTestType type) {
+	private List<Float> generateEdit(Long questionId, int totalNumStates, int stateToConsider, 
+			List<Float> editLimits, List<Float> priorProb, FivePointTestType type) {
 		
 		float probOfStateToConsider = Float.NaN;
 		
@@ -172,17 +171,20 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			break;
 		}
 		
-		// this test is assuming that other states can be anything, so I'm using uniform.
-		float probOfOtherStates  = (1-probOfStateToConsider)/(totalNumStates-1);	// make others uniform
-		// TODO change other probabilities proportionally
-		
-		// prepare return
+		/*
+		 * The probability of other states are:
+		 * p*(1-P0)/(1-p0)
+		 * Where p is the prior probability of the state,
+		 * P0 is probOfStateToConsider (posterior prob), and
+		 * p0 is the prior probability of stateToConsider 
+		 */
 		List<Float> ret = new ArrayList<Float>();
 		for (int i = 0; i < totalNumStates; i++) {
 			if (i == stateToConsider) {
 				ret.add(probOfStateToConsider);
 			} else {
-				ret.add(probOfOtherStates);
+				// p*(1-P0)/(1-p0)
+				ret.add(priorProb.get(i) * (1 - probOfStateToConsider) / (1 - priorProb.get(stateToConsider)));
 			}
 		}
 		
@@ -190,28 +192,32 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	}
 	
 	/** Execute the actual test given the point of test in the 5-point test */
-	private void do5PointTest(Map<Long,Integer> questionsToNumberOfStatesMap, Long questionId, int stateOfEditLimit, List<Float> editLimits, Long userId, List<Long> assumptionsOfTrade, List<Integer> statesOfAssumption, FivePointTestType pointWithin5PointTest) {
-		
-		// these vars will store values to be compared between different engines
-		Map<Long, List<Float>> probabilities = null;
-		float minimum = Float.NaN;	
-		float expectedScore = Float.NaN;
-		float conditionalCash = Float.NaN;
-		float conditionalExpectedScore = Float.NaN;
+	private void do5PointTest(Map<Long,Integer> questionsToNumberOfStatesMap, Long questionId, int stateOfEditLimit, 
+			List<Float> editLimits, Long userId, List<Long> assumptionsOfTrade, 
+			List<Integer> statesOfAssumption, FivePointTestType pointWithin5PointTest) {
 		
 		// value to be used in trade
-		List<Float> newValues = this.generateEdit(questionId, questionsToNumberOfStatesMap.get(questionId), stateOfEditLimit, editLimits, pointWithin5PointTest);
+		List<Float> newValues = this.generateEdit(
+				questionId, 
+				questionsToNumberOfStatesMap.get(questionId), 
+				stateOfEditLimit, 
+				editLimits, 
+				engines.get(0).getProbList(questionId, assumptionsOfTrade, statesOfAssumption), 
+				pointWithin5PointTest
+			);
 		
 		// we need the current state in order to revert trade, or in order to check if assets of other users were modified
 		Map<MarkovEngineImpl, ProbabilityAndAssetTablesMemento> mementos = new HashMap<MarkovEngineImpl, MarkovEngineImpl.ProbabilityAndAssetTablesMemento>();
 		
-		// assumptions to be used in conditional cash and score
+		
+		// set up conditions for conditional cash and score
 		List<Long> assumptionIds = this.getRandomQuestionsForConditionalAssets(questionId, new ArrayList<Long>(questionsToNumberOfStatesMap.keySet()));
 		List<Integer> assumedStates = this.getRandomAssumptionStates(assumptionIds);
 		
 		// do trade in all engines
-		boolean isInitialized = false;
-		for (MarkovEngineImpl engine : engines) {
+		for (int i = 0; i < engines.size(); i++) {
+			MarkovEngineImpl engine = engines.get(i);
+			
 			mementos.put(engine, engine.getMemento());
 			
 			long transactionKey = engine.startNetworkActions();
@@ -230,74 +236,73 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					).isEmpty()
 			);
 			engine.commitNetworkActions(transactionKey);
-			
-			
-			// set up conditions for conditional cash and score
-			
-			if (!isInitialized) { // values of 1st engine is used in comparison
-				// b.) marginal probability on individual variable.
-				probabilities = engine.getProbLists(null, null, null);
-				// c.) min-q values after a user confirms a trade.
-				minimum = engine.getCash(userId, null, null);
-				switch (pointWithin5PointTest) {
-				case BELOW_LIMIT:
-					assertTrue(engine.toString()+ ", min = " + minimum, minimum < 0);
-					break;
-				case ON_LOWER_LIMIT:
-					assertEquals(engine.toString(), 0f, minimum, 
-							((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
-					break;
-				case BETWEEN_LIMITS:
-					assertTrue(engine.toString()+ ", min = " + minimum, minimum > 0);
-					break;
-				case ON_UPPER_LIMIT:
-					assertEquals(engine.toString(), 0f, minimum, 
-							((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
-					break;
-				case ABOVE_LIMIT:
-					assertTrue(engine.toString()+ ", min = " + minimum, minimum < 0);
-					break;
-				}
-				// e.) The expected score.
-				expectedScore = engine.scoreUserEv(userId, null, null);
-				assertFalse(Float.isInfinite(expectedScore) || Float.isNaN(expectedScore));
-				// f. ) conditional min-q and expected score on randomly given states. 
-				conditionalCash = engine.getCash(userId, assumptionIds, assumedStates);
-				conditionalExpectedScore = engine.scoreUserEv(userId, assumptionIds, assumedStates);
-				assertFalse(Float.isInfinite(conditionalCash) || Float.isNaN(conditionalCash));
-				assertFalse(Float.isInfinite(conditionalExpectedScore) || Float.isNaN(conditionalExpectedScore));
-				isInitialized = true;
-			} else { // compare
-				// b.) marginal probability on individual variable.
-				Map<Long, List<Float>> probToCompare = engine.getProbLists(null, null, null);
-				assertNotNull(engine.toString(), probToCompare);
-				assertEquals(engine.toString(), probabilities.size(), probToCompare.size());
-				for (Long id : probabilities.keySet()) {
-					List<Float> marginal = probabilities.get(id);
-					List<Float> marginalToCompare = probToCompare.get(id);
-					assertEquals(engine.toString(), marginal.size(), marginalToCompare.size());
-					for (int i = 0; i < marginal.size(); i++) {
-						assertEquals(engine.toString() + ", question = " + id + ", state = " + i,  
-								marginal.get(i), 
-								marginalToCompare.get(i), 
-								((engine instanceof CPTBruteForceMarkovEngine)?PROB_ERROR_MARGIN_CPT_BRUTE_FORCE:PROB_ERROR_MARGIN)
-							);
-					}
-				}
-				// c.) min-q values after a user confirms a trade.
-				assertEquals(engine.toString(), minimum, engine.getCash(userId, null, null), 
-						((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
-				// e.) The expected score.
-				assertEquals(engine.toString(), expectedScore, engine.scoreUserEv(userId, null, null), 
-						((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
-				// f. ) conditional min-q and expected score on randomly given states. How many random given states depends on network size. We choose floor(0.3*numberOfVariablesInTheNet).
-				assertEquals(engine.toString() + userId + " , " + assumptionIds + assumedStates, 
-						conditionalCash, engine.getCash(userId, assumptionIds, assumedStates), 
-						((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
-				assertEquals(engine.toString() + userId + " , " + assumptionIds + assumedStates, 
-						conditionalExpectedScore, engine.scoreUserEv(userId, assumptionIds, assumedStates), 
-						((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
+			if (i == 0) {
+				continue;
 			}
+			
+			float minimum = engines.get(0).getCash(userId, null, null);
+			switch (pointWithin5PointTest) {
+			case BELOW_LIMIT:
+				assertTrue(engine.toString()+ ", min = " + minimum, minimum < 0);
+				break;
+			case ON_LOWER_LIMIT:
+				assertEquals(engine.toString(), 0f, minimum, 
+						((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
+				break;
+			case BETWEEN_LIMITS:
+				assertTrue(engine.toString()+ ", min = " + minimum, minimum > 0);
+				break;
+			case ON_UPPER_LIMIT:
+				assertEquals(engine.toString(), 0f, minimum, 
+						((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
+				break;
+			case ABOVE_LIMIT:
+				assertTrue(engine.toString()+ ", min = " + minimum, minimum < 0);
+				break;
+			}
+			
+			// b.) marginal probability on individual variable.
+			Map<Long, List<Float>> probabilities = engines.get(0).getProbLists(null, null, null);
+			Map<Long, List<Float>> probToCompare = engine.getProbLists(null, null, null);
+			assertNotNull(engine.toString(), probToCompare);
+			assertEquals(engine.toString(), probabilities.size(), probToCompare.size());
+			
+			// compare marginals
+			for (Long id : probabilities.keySet()) {
+				List<Float> marginal = probabilities.get(id);
+				List<Float> marginalToCompare = probToCompare.get(id);
+				assertEquals(engine.toString(), marginal.size(), marginalToCompare.size());
+				for (int state = 0; state < marginal.size(); state++) {
+					assertEquals(engine.toString() + ", question = " + id + ", state = " + state,  
+							marginal.get(state), 
+							marginalToCompare.get(state), 
+							((engine instanceof CPTBruteForceMarkovEngine)?PROB_ERROR_MARGIN_CPT_BRUTE_FORCE:PROB_ERROR_MARGIN)
+					);
+				}
+			}
+			// c.) min-q values after a user confirms a trade.
+			assertEquals(engine.toString(), minimum, engine.getCash(userId, null, null), 
+					((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
+			// e.) The expected score.
+			assertEquals(
+					engine.toString(), 
+					engines.get(0).scoreUserEv(userId, null, null), 
+					engine.scoreUserEv(userId, null, null), 
+					((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
+				);
+			// f. ) conditional min-q and expected score on randomly given states. How many random given states depends on network size. We choose floor(0.3*numberOfVariablesInTheNet).
+			assertEquals(
+					engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
+					engines.get(0).getCash(userId, assumptionIds, assumedStates), 
+					engine.getCash(userId, assumptionIds, assumedStates), 
+					((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
+				);
+			assertEquals(
+					engine.toString() + userId + " , " + assumptionIds + assumedStates, 
+					engines.get(0).scoreUserEv(userId, assumptionIds, assumedStates), 
+					engine.scoreUserEv(userId, assumptionIds, assumedStates), 
+					((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
+				);
 			
 			// g.) An userfs asset table is not changed when other user makes edit.
 			ProbabilityAndAssetTablesMemento posteriorMemento = engine.getMemento();	// get current status of the engine
@@ -320,6 +325,34 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				}
 			}
 			
+			ScoreSummary scoreSummaryObject = engine.getScoreSummaryObject(userId, questionId, assumptionIds, assumedStates);
+			assertNotNull(scoreSummaryObject);
+			assertEquals(
+					engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
+					engines.get(0).getCash(userId, assumptionIds, assumedStates), 
+					scoreSummaryObject.getCash(), 
+					((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
+				);
+			assertEquals(
+					engine.toString() + userId + " , " + assumptionIds + assumedStates, 
+					engines.get(0).scoreUserEv(userId, assumptionIds, assumedStates), 
+					scoreSummaryObject.getScoreEV(), 
+					((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
+				);
+			float sumOfScoreComponents = 0f;
+			for (SummaryContribution contribution : scoreSummaryObject.getScoreComponents()) {
+				sumOfScoreComponents += contribution.getContributionToScoreEV();
+			}
+			for (SummaryContribution contribution : scoreSummaryObject.getIntersectionScoreComponents()) {
+				sumOfScoreComponents -= contribution.getContributionToScoreEV();
+			}
+			assertFalse(engine.toString() + userId + " , " + assumptionIds + assumedStates, Float.isNaN(sumOfScoreComponents));
+			assertEquals(
+					engine.toString() + userId + " , " + assumptionIds + assumedStates, 
+					scoreSummaryObject.getScoreEV(), 
+					sumOfScoreComponents, 
+					((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
+				);
 		}
 		// revert trades if this was not supposedly a valid trade
 		if (pointWithin5PointTest != FivePointTestType.BETWEEN_LIMITS) {
@@ -338,9 +371,9 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		do {
 			userIDs.clear();
 			Set<Long> userFilter = new HashSet<Long>(3);
-			userFilter.add((long) (Math.random()*Long.MAX_VALUE));
-			userFilter.add((long) (Math.random()*Long.MAX_VALUE));
-			userFilter.add((long) (Math.random()*Long.MAX_VALUE));
+			userFilter.add((long) (Math.random()*0x0F));
+			userFilter.add((long) (Math.random()*0x0F));
+			userFilter.add((long) (Math.random()*0x0F));
 			userIDs.addAll(userFilter);
 		} while (userIDs.size() != 3);
 		
@@ -356,8 +389,6 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		Map<Long, List<Float>> probabilities = engines.get(0).getProbLists(null, null, null);
 		assertEquals(questionsToNumberOfStatesMap.size(), probabilities.keySet().size());
 		assertTrue(probabilities + " != " + questionsToNumberOfStatesMap, probabilities.keySet().containsAll(questionsToNumberOfStatesMap.keySet()));
-		for (Long questionId : questionsToNumberOfStatesMap.keySet()) {
-		}
 		for (int i = 1; i < engines.size(); i++) {
 			// make sure all engines are retrieving the same questions
 			Map<Long, List<Float>> probabilitiesOfOtherEngines = engines.get(i).getProbLists(null, null, null);
@@ -618,7 +649,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	 *	<br/> 
 	 *  The transaction is committed at each trade (trades are not committed at once).
 	 */	
-	public final void basicTest() {
+	public final void testBasicDEF() {
 		
 		// crate transaction for generating the DEF network
 		assertNotNull(engines);
@@ -3023,8 +3054,9 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		
 		Graph network = null;
 		for (String fileName : getFileNames()) {
+			System.out.println("Reading file " + fileName);
 			try {
-				network = io.load(new File(fileName));
+				network = io.load(new File(getClass().getClassLoader().getResource(fileName).getFile()));
 			} catch (Exception e) {
 				e.printStackTrace();
 				fail(e.getMessage());
@@ -3035,6 +3067,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			Map<Long,Integer> questionsToQuantityOfStatesMap = new HashMap<Long, Integer>();
 			// generate the DEF network
 			for (MarkovEngineInterface engine : engines) {
+				engine.initialize();
 				long transactionKey = engine.startNetworkActions();
 				// create nodes
 				for (Node node : network.getNodes()) {
@@ -3052,6 +3085,8 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					}
 					engine.addQuestionAssumption(transactionKey, new Date(), Long.parseLong(node.getName()), parentIds, null);	// cpd == null -> linear distro
 				}
+				// commit changes
+				engine.commitNetworkActions(transactionKey);
 			}
 			
 			assertNotNull(questionsToQuantityOfStatesMap);

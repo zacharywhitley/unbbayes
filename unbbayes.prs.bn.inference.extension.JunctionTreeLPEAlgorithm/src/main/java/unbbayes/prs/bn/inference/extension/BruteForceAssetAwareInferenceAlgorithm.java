@@ -652,6 +652,17 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 		JointPotentialTable probabilityTable = getJointProbabilityTable();
 		JointPotentialTable qTable = getJointQTable();
 		
+		// generate a dummy clique for prob
+		Clique dummyProbClique = null;
+		if (getExpectedAssetCellListeners() != null && !getExpectedAssetCellListeners().isEmpty()) {
+			dummyProbClique = new Clique(probabilityTable);
+		}
+		// generate a dummy clique for prob
+		Clique dummyAssetClique = null;
+		if (getExpectedAssetCellListeners() != null && !getExpectedAssetCellListeners().isEmpty()) {
+			dummyAssetClique = new Clique(qTable);
+		}
+		
 		for (int j = 0; j < probabilityTable.tableSize(); j++) {
 			if (probabilityTable.getValue(j) <= 0f) {
 				continue;
@@ -659,6 +670,7 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 			double value = probabilityTable.getValue(j) 
 			* getqToAssetConverter().getScoreFromQValues(qTable.getValue(j));
 			ret +=  value;
+			this.notifyExpectedAssetCellListener(dummyProbClique, dummyAssetClique, j, j, value);
 		}			
 		
 		return ret;

@@ -2154,7 +2154,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					if (node.hasEvidence()) {
 						throw new IllegalArgumentException("Question " + node + " is already resolved and cannot be changed.");
 					}
-					for (int i = 0; i < mainNode.getStatesSize(); i++) {
+					for (int i = 0; i < node.getStatesSize(); i++) {
 						if (node.getMarginalAt(i) == 0.0f || node.getMarginalAt(i) == 1.0f) {
 							throw new IllegalArgumentException("State " + i + " of question " + node + " has probability " + node.getMarginalAt(i) + " and cannot be changed.");
 						}
