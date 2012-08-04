@@ -279,6 +279,8 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					).isEmpty()
 			);
 			engine.commitNetworkActions(transactionKey);
+			
+			ScoreSummary scoreSummaryOrig= engines.get(0).getScoreSummaryObject(userId, questionId, assumptionIds, assumedStates);
 			if (i == 0) {
 				continue;
 			}
@@ -390,11 +392,23 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
 				);
 			assertEquals(
+					engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
+					scoreSummaryOrig.getCash(), 
+					scoreSummaryObject.getCash(), 
+					((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
+			);
+			assertEquals(
 					engine.toString() + userId + " , " + assumptionIds + assumedStates, 
 					engines.get(0).scoreUserEv(userId, assumptionIds, assumedStates), 
 					scoreSummaryObject.getScoreEV(), 
 					((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
 				);
+			assertEquals(
+					engine.toString() + userId + " , " + assumptionIds + assumedStates, 
+					scoreSummaryOrig.getScoreEV(), 
+					scoreSummaryObject.getScoreEV(), 
+					((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
+			);
 			float sumOfScoreComponents = 0f;
 			for (SummaryContribution contribution : scoreSummaryObject.getScoreComponents()) {
 				sumOfScoreComponents += contribution.getContributionToScoreEV();

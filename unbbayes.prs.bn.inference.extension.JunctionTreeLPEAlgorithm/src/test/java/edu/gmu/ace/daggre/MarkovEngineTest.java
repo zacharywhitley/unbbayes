@@ -8279,6 +8279,7 @@ public class MarkovEngineTest extends TestCase {
 			assertFalse("Score of " + user + " = " + score,Float.isInfinite(score) || Float.isNaN(score));
 			assertEquals("User = " + user, cash, score, ASSET_ERROR_MARGIN);
 			assertTrue(cash > 0 && score > 0);
+			assertFalse(engine.getScoreDetails(userNameToIDMap.get(user), null, null, null).isEmpty());
 		}
 		
 
