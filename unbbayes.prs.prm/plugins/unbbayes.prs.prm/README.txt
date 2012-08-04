@@ -24,12 +24,15 @@ Every plugin will become available when you start UnBBayes
 or when you click "Plugins > Reload Plugins" menu.
 Check the graphical user interface for new icons or menu items.
 
+For inference, select a cell in the skeleton view and press the "compile" button.
 
 ATTENTION
 ------------------------------
 Some plugins use other plugins. In such case, you must install all dependencies too.
 
 This plugin particularly does not have dependencies to other plugins.
+
+THIS PLUGIN IS IN ALPHA STAGE. IT USES SQL SCRIPTS INSTEAD OF DATABASE, IT PERFORMS NON-LIFTED INFERENCE, AND INFERENCE RESULTS IN A BAYESIAN NETWORK CONTAINING ALL NODES CONNECTED TO THE QUERY NODE, INCLUDING D-SEPARATED AND BARREN NODES.
 	
 AVALILABILITY
 ------------------------------
