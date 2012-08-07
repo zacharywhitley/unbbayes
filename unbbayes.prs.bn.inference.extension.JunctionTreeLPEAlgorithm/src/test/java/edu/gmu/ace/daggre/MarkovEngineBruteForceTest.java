@@ -263,6 +263,12 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					engine.getCash(userId, assumptionIds, assumedStates), 
 					((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
 			
+			List<Float> scoreUserQuestionEvStatesBeforeTrade = engine.scoreUserQuestionEvStates(userId, questionId, assumptionsOfTrade, statesOfAssumption);
+			assertEquals(engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
+					(int)questionsToNumberOfStatesMap.get(questionId), 
+					(int)scoreUserQuestionEvStatesBeforeTrade.size()
+				);
+			
 			long transactionKey = engine.startNetworkActions();
 			assertFalse(
 					engine.toString() , 
@@ -279,6 +285,28 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					).isEmpty()
 			);
 			engine.commitNetworkActions(transactionKey);
+			
+			List<Float> scoreUserQuestionEvStatesAfterTrade = engine.scoreUserQuestionEvStates(userId, questionId, assumptionsOfTrade, statesOfAssumption);
+			assertEquals(engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
+					(int)questionsToNumberOfStatesMap.get(questionId), 
+					(int)scoreUserQuestionEvStatesAfterTrade.size()
+			);
+			
+			boolean hasChanged = false;
+			for (int j = 0; j < scoreUserQuestionEvStatesAfterTrade.size(); j++) {
+//				float errorMargin = ASSET_ERROR_MARGIN;
+				float errorMargin = PROB_ERROR_MARGIN;
+				if (pointWithin5PointTest == FivePointTestType.BETWEEN_LIMITS) {
+					errorMargin = 0f;
+				}
+				hasChanged = hasChanged 
+				        || scoreUserQuestionEvStatesBeforeTrade.get(j) - errorMargin > scoreUserQuestionEvStatesAfterTrade.get(j)
+						|| scoreUserQuestionEvStatesBeforeTrade.get(j) < scoreUserQuestionEvStatesAfterTrade.get(j)  - errorMargin;
+			}
+			assertTrue(engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates
+						+ ", old = " + scoreUserQuestionEvStatesBeforeTrade + ", new = " + scoreUserQuestionEvStatesAfterTrade, 
+					hasChanged
+				);
 			
 			ScoreSummary scoreSummaryOrig= engines.get(0).getScoreSummaryObject(userId, questionId, assumptionIds, assumedStates);
 			if (i == 0) {

@@ -1236,7 +1236,7 @@ public class MarkovEngineTest extends TestCase {
 	 *	Variables    D             E              F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.5 0.5]   [0.5 0.5]	<br/>
 	 *	<br/>	
-	 *	Trade-1: Tom would like to make a bet on E=e1, that has current probability as 0.5. First of all, we need to calculate TomÅfs edit limit (in this case, there is no assumption):	<br/> 
+	 *	Trade-1: Tom would like to make a bet on E=e1, that has current probability as 0.5. First of all, we need to calculate Tom‚Äôs edit limit (in this case, there is no assumption):	<br/> 
 	 *	Given E=e1, min-q1 = 100	<br/>
 	 *	Given E~=e1, min-q2 = 100	<br/>
 	 *	From Equation (1), edit interval is [0.005, 0.995].	<br/> 
@@ -1248,7 +1248,7 @@ public class MarkovEngineTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.55 0.45]   [0.5 0.5]	<br/>
 	 *	<br/>	
-	 *	TomÅfs min-q is 90, at the following 4 min-states (found by min-asset-propagation):	<br/> 
+	 *	Tom‚Äôs min-q is 90, at the following 4 min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     1     2     1	<br/>
 	 *	     1     2     2	<br/>
@@ -1256,7 +1256,7 @@ public class MarkovEngineTest extends TestCase {
 	 *	     2     2     2	<br/>
 	 *	<br/>	
 	 *	<br/>	
-	 *	Trade-2: Now Tom would like to make another conditional bet on E=e1 given D=d1 (current P(E=e1|D=d1) = 0.55). Again, let us calculate his edit limits first (in this case, we have assumed variable D=d1). And note that TomÅfs asset tables are not the initial ones any more, but updated from last trade he did, now:	<br/> 
+	 *	Trade-2: Now Tom would like to make another conditional bet on E=e1 given D=d1 (current P(E=e1|D=d1) = 0.55). Again, let us calculate his edit limits first (in this case, we have assumed variable D=d1). And note that Tom‚Äôs asset tables are not the initial ones any more, but updated from last trade he did, now:	<br/> 
 	 *	Given E=e1, and D=d1, min-q1 = 110	<br/>
 	 *	Given E~=e1, and D=d1, min-q2 = 90	<br/>
 	 *	From Equation (1), edit interval is [0.005, 0.995]	<br/>
@@ -1268,7 +1268,7 @@ public class MarkovEngineTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.725 0.275]   [0.5 0.5]	<br/>
 	 *	<br/>	
-	 *	TomÅfs min-q is 20, at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	Tom‚Äôs min-q is 20, at the following two min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     1     2    1	<br/>
 	 *	     1     2    2	<br/>
@@ -1289,7 +1289,7 @@ public class MarkovEngineTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.65 0.35]   [0.5 0.5]	<br/>
 	 *	<br/>	
-	 *	JoeÅfs min-q is 72.72727272727..., at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	Joe‚Äôs min-q is 72.72727272727..., at the following two min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     2     1    1	<br/>
 	 *	     2     1    2	<br/>
@@ -1311,7 +1311,7 @@ public class MarkovEngineTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.65 0.35]   [0.4 0.6]	<br/>
 	 *	<br/>	
-	 *	AmyÅfs min-q is 60, at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	Amy‚Äôs min-q is 60, at the following two min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     1     1    1	<br/>
 	 *	     1     2    1	<br/>
@@ -1334,7 +1334,7 @@ public class MarkovEngineTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.65 0.35]   [0.2 0.8]	<br/>
 	 *	<br/>	
-	 *	JoeÅfs min-q is 14.54545454546, at the following unique min-states (found by min-asset-propagation):	<br/> 
+	 *	Joe‚Äôs min-q is 14.54545454546, at the following unique min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     2     1    1	<br/>
 	 *	<br/>	
@@ -1343,7 +1343,7 @@ public class MarkovEngineTest extends TestCase {
 	 *	From now on, we run test cases described in the paper.	<br/> 
 	 *	<br/>	
 	 *	Trade-6: Eric would like to trade on P(E=e1), which is currently 0.65.	<br/> 
-	 *	To decide long or short, S(E=e1) = 10, S(E~=e1)=10, no difference because this will be EricÅfs first trade.	<br/>
+	 *	To decide long or short, S(E=e1) = 10, S(E~=e1)=10, no difference because this will be Eric‚Äôs first trade.	<br/>
 	 *	Edit limit:	<br/>
 	 *	Given F=f1, and D=d2, min-q1 = 100	<br/>
 	 *	Given F~=f1, and D=d2, min-q2 = 100	<br/>
@@ -1361,8 +1361,8 @@ public class MarkovEngineTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5824, 0.4176]   [0.8, 0.2]   [0.2165, 0.7835]	<br/>
 	 *	<br/>	
-	 *	EricÅfs expected score is S=10.1177.	<br/>
-	 *	EricÅfs min-q is 57.142857, at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	Eric‚Äôs expected score is S=10.1177.	<br/>
+	 *	Eric‚Äôs min-q is 57.142857, at the following two min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     2     2    1	<br/>
 	 *	     2     2    2	<br/>
@@ -1388,8 +1388,8 @@ public class MarkovEngineTest extends TestCase {
 	 *	Variables   D                            E                             F	<br/> 
 	 *	Marginals   [0.7232, 0.2768]   [0.8509, 0.1491]   [0.2165, 0.7835]	<br/>
 	 *	<br/>	
-	 *	EricÅfs expected score is now 10.31615.	<br/> 
-	 *	EricÅfs min-q is 35.7393, at the following unique min-states (found by min-asset-propagation):	<br/> 
+	 *	Eric‚Äôs expected score is now 10.31615.	<br/> 
+	 *	Eric‚Äôs min-q is 35.7393, at the following unique min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     2     2    2	<br/>
 	 *	<br/> 
@@ -9500,9 +9500,176 @@ public class MarkovEngineTest extends TestCase {
 		// generate DEF net
 		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
 		this.createDEFNetIn1Transaction(userNameToIDMap );
-		
+		engine.setDefaultInitialAssetTableValue(1000);
 		// most basic assertion
 		assertEquals(10.31615, engine.scoreUserEv(userNameToIDMap.get("Eric"), null, null), PROB_ERROR_MARGIN);
+		List<Float> scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(10L, 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+		assertEquals(2, scoreUserQuestionEvStates.size());
+		assertEquals(1000f, scoreUserQuestionEvStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(1000f, scoreUserQuestionEvStates.get(1), ASSET_ERROR_MARGIN);
+		
+		for (String user : userNameToIDMap.keySet()) {
+			boolean hasAtLeastOneCombinationWithDifferentValues = false;
+			scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(userNameToIDMap.get(user), 0x0DL, null, null);
+			assertEquals(2, scoreUserQuestionEvStates.size());
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(0) > 0);
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(1) > 0);
+			hasAtLeastOneCombinationWithDifferentValues = hasAtLeastOneCombinationWithDifferentValues
+				|| scoreUserQuestionEvStates.get(0) - ASSET_ERROR_MARGIN > scoreUserQuestionEvStates.get(1) 
+				|| scoreUserQuestionEvStates.get(0) < scoreUserQuestionEvStates.get(1) - ASSET_ERROR_MARGIN;
+				
+			scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(userNameToIDMap.get(user), 0x0EL, null, null);
+			assertEquals(2, scoreUserQuestionEvStates.size());
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(0) > 0);
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(1) > 0);
+			hasAtLeastOneCombinationWithDifferentValues = hasAtLeastOneCombinationWithDifferentValues
+			|| scoreUserQuestionEvStates.get(0) - ASSET_ERROR_MARGIN > scoreUserQuestionEvStates.get(1) 
+			|| scoreUserQuestionEvStates.get(0) < scoreUserQuestionEvStates.get(1) - ASSET_ERROR_MARGIN;
+			
+			scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(userNameToIDMap.get(user), 0x0FL, null, null);
+			assertEquals(2, scoreUserQuestionEvStates.size());
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(0) > 0);
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(1) > 0);
+			hasAtLeastOneCombinationWithDifferentValues = hasAtLeastOneCombinationWithDifferentValues
+			|| scoreUserQuestionEvStates.get(0) - ASSET_ERROR_MARGIN > scoreUserQuestionEvStates.get(1) 
+			|| scoreUserQuestionEvStates.get(0) < scoreUserQuestionEvStates.get(1) - ASSET_ERROR_MARGIN;
+			
+			scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(userNameToIDMap.get(user), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+			assertEquals(2, scoreUserQuestionEvStates.size());
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(0) > 0);
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(1) > 0);
+			hasAtLeastOneCombinationWithDifferentValues = hasAtLeastOneCombinationWithDifferentValues
+			|| scoreUserQuestionEvStates.get(0) - ASSET_ERROR_MARGIN > scoreUserQuestionEvStates.get(1) 
+			|| scoreUserQuestionEvStates.get(0) < scoreUserQuestionEvStates.get(1) - ASSET_ERROR_MARGIN;
+			
+			scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(userNameToIDMap.get(user), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+			assertEquals(2, scoreUserQuestionEvStates.size());
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(0) > 0);
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(1) > 0);
+			hasAtLeastOneCombinationWithDifferentValues = hasAtLeastOneCombinationWithDifferentValues
+			|| scoreUserQuestionEvStates.get(0) - ASSET_ERROR_MARGIN > scoreUserQuestionEvStates.get(1) 
+			|| scoreUserQuestionEvStates.get(0) < scoreUserQuestionEvStates.get(1) - ASSET_ERROR_MARGIN;
+			
+			scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(userNameToIDMap.get(user), 0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+			assertEquals(2, scoreUserQuestionEvStates.size());
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(0) > 0);
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(1) > 0);
+			hasAtLeastOneCombinationWithDifferentValues = hasAtLeastOneCombinationWithDifferentValues
+			|| scoreUserQuestionEvStates.get(0) - ASSET_ERROR_MARGIN > scoreUserQuestionEvStates.get(1) 
+			|| scoreUserQuestionEvStates.get(0) < scoreUserQuestionEvStates.get(1) - ASSET_ERROR_MARGIN;
+			
+			scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(userNameToIDMap.get(user), 0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(1));
+			assertEquals(2, scoreUserQuestionEvStates.size());
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(0) > 0);
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(1) > 0);
+			hasAtLeastOneCombinationWithDifferentValues = hasAtLeastOneCombinationWithDifferentValues
+			|| scoreUserQuestionEvStates.get(0) - ASSET_ERROR_MARGIN > scoreUserQuestionEvStates.get(1) 
+			|| scoreUserQuestionEvStates.get(0) < scoreUserQuestionEvStates.get(1) - ASSET_ERROR_MARGIN;
+			
+			scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(userNameToIDMap.get(user), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+			assertEquals(2, scoreUserQuestionEvStates.size());
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(0) > 0);
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(1) > 0);
+			hasAtLeastOneCombinationWithDifferentValues = hasAtLeastOneCombinationWithDifferentValues
+			|| scoreUserQuestionEvStates.get(0) - ASSET_ERROR_MARGIN > scoreUserQuestionEvStates.get(1) 
+			|| scoreUserQuestionEvStates.get(0) < scoreUserQuestionEvStates.get(1) - ASSET_ERROR_MARGIN;
+			
+			scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(userNameToIDMap.get(user), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+			assertEquals(2, scoreUserQuestionEvStates.size());
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(0) > 0);
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(1) > 0);
+			hasAtLeastOneCombinationWithDifferentValues = hasAtLeastOneCombinationWithDifferentValues
+			|| scoreUserQuestionEvStates.get(0) - ASSET_ERROR_MARGIN > scoreUserQuestionEvStates.get(1) 
+			|| scoreUserQuestionEvStates.get(0) < scoreUserQuestionEvStates.get(1) - ASSET_ERROR_MARGIN;
+			
+			scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(userNameToIDMap.get(user), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+			assertEquals(2, scoreUserQuestionEvStates.size());
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(0) > 0);
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(1) > 0);
+			hasAtLeastOneCombinationWithDifferentValues = hasAtLeastOneCombinationWithDifferentValues
+			|| scoreUserQuestionEvStates.get(0) - ASSET_ERROR_MARGIN > scoreUserQuestionEvStates.get(1) 
+			|| scoreUserQuestionEvStates.get(0) < scoreUserQuestionEvStates.get(1) - ASSET_ERROR_MARGIN;
+			
+			scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(userNameToIDMap.get(user), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(1));
+			assertEquals(2, scoreUserQuestionEvStates.size());
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(0) > 0);
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(1) > 0);
+			hasAtLeastOneCombinationWithDifferentValues = hasAtLeastOneCombinationWithDifferentValues
+			|| scoreUserQuestionEvStates.get(0) - ASSET_ERROR_MARGIN > scoreUserQuestionEvStates.get(1) 
+			|| scoreUserQuestionEvStates.get(0) < scoreUserQuestionEvStates.get(1) - ASSET_ERROR_MARGIN;
+			
+			scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(userNameToIDMap.get(user), 0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+			assertEquals(2, scoreUserQuestionEvStates.size());
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(0) > 0);
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(1) > 0);
+			hasAtLeastOneCombinationWithDifferentValues = hasAtLeastOneCombinationWithDifferentValues
+			|| scoreUserQuestionEvStates.get(0) - ASSET_ERROR_MARGIN > scoreUserQuestionEvStates.get(1) 
+			|| scoreUserQuestionEvStates.get(0) < scoreUserQuestionEvStates.get(1) - ASSET_ERROR_MARGIN;
+			
+			scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(userNameToIDMap.get(user), 0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+			assertEquals(2, scoreUserQuestionEvStates.size());
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(0) > 0);
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(1) > 0);
+			hasAtLeastOneCombinationWithDifferentValues = hasAtLeastOneCombinationWithDifferentValues
+			|| scoreUserQuestionEvStates.get(0) - ASSET_ERROR_MARGIN > scoreUserQuestionEvStates.get(1) 
+			|| scoreUserQuestionEvStates.get(0) < scoreUserQuestionEvStates.get(1) - ASSET_ERROR_MARGIN;
+			
+			scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(userNameToIDMap.get(user), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+			assertEquals(2, scoreUserQuestionEvStates.size());
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(0) > 0);
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(1) > 0);
+			hasAtLeastOneCombinationWithDifferentValues = hasAtLeastOneCombinationWithDifferentValues
+			|| scoreUserQuestionEvStates.get(0) - ASSET_ERROR_MARGIN > scoreUserQuestionEvStates.get(1) 
+			|| scoreUserQuestionEvStates.get(0) < scoreUserQuestionEvStates.get(1) - ASSET_ERROR_MARGIN;
+			
+			scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(userNameToIDMap.get(user), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+			assertEquals(2, scoreUserQuestionEvStates.size());
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(0) > 0);
+			assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(1) > 0);
+			hasAtLeastOneCombinationWithDifferentValues = hasAtLeastOneCombinationWithDifferentValues
+			|| scoreUserQuestionEvStates.get(0) - ASSET_ERROR_MARGIN > scoreUserQuestionEvStates.get(1) 
+			|| scoreUserQuestionEvStates.get(0) < scoreUserQuestionEvStates.get(1) - ASSET_ERROR_MARGIN;
+			
+			
+			List<Long> assumptionIds = new ArrayList<Long>();
+			assumptionIds.add(0x0EL); assumptionIds.add(0x0FL);
+			for (int i = 0; i < 4; i++) {
+				List<Integer> assumedStates = new ArrayList<Integer>();
+				assumedStates.add(i%2); assumedStates.add((int) ((i/2.0)%2.0));
+				scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(userNameToIDMap.get(user), 0x0DL, assumptionIds, assumedStates);
+				assertEquals(2, scoreUserQuestionEvStates.size());
+				assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(0) > 0);
+				assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(1) > 0);
+				hasAtLeastOneCombinationWithDifferentValues = hasAtLeastOneCombinationWithDifferentValues
+					|| scoreUserQuestionEvStates.get(0) - ASSET_ERROR_MARGIN > scoreUserQuestionEvStates.get(1) 
+					|| scoreUserQuestionEvStates.get(0) < scoreUserQuestionEvStates.get(1) - ASSET_ERROR_MARGIN;
+			}
+
+			assumptionIds.set(0,0x0DL); assumptionIds.set(1,0x0FL);
+			for (int i = 0; i < 4; i++) {
+				List<Integer> assumedStates = new ArrayList<Integer>();
+				assumedStates.add(i%2); assumedStates.add((int) ((i/2.0)%2.0));
+				scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(userNameToIDMap.get(user), 0x0EL, assumptionIds, assumedStates);
+				assertEquals(2, scoreUserQuestionEvStates.size());
+				assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(0) > 0);
+				assertTrue(user + "," + scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(1) > 0);
+				hasAtLeastOneCombinationWithDifferentValues = hasAtLeastOneCombinationWithDifferentValues
+				|| scoreUserQuestionEvStates.get(0) - ASSET_ERROR_MARGIN > scoreUserQuestionEvStates.get(1) 
+				|| scoreUserQuestionEvStates.get(0) < scoreUserQuestionEvStates.get(1) - ASSET_ERROR_MARGIN;
+			}
+			
+			assumptionIds.set(0,0x0DL); assumptionIds.set(1,0x0EL);
+			for (int i = 0; i < 4; i++) {
+				List<Integer> assumedStates = new ArrayList<Integer>();
+				assumedStates.add(i%2); assumedStates.add((int) ((i/2.0)%2.0));
+				scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(userNameToIDMap.get(user), 0x0FL, assumptionIds, assumedStates);
+				assertEquals(2, scoreUserQuestionEvStates.size());
+				hasAtLeastOneCombinationWithDifferentValues = hasAtLeastOneCombinationWithDifferentValues
+				|| scoreUserQuestionEvStates.get(0) - ASSET_ERROR_MARGIN > scoreUserQuestionEvStates.get(1) 
+				|| scoreUserQuestionEvStates.get(0) < scoreUserQuestionEvStates.get(1) - ASSET_ERROR_MARGIN;
+			}
+			assertTrue(user, hasAtLeastOneCombinationWithDifferentValues);
+		}
 		
 		// TODO implement more test cases
 		
@@ -9526,17 +9693,43 @@ public class MarkovEngineTest extends TestCase {
 		
 		assertEquals(1000f, engine.getCash(1L, null, null), ASSET_ERROR_MARGIN);
 		assertEquals(1000f, engine.scoreUserEv(1L, null, null), ASSET_ERROR_MARGIN);
+		scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(2L, 2L, Collections.singletonList(1L), Collections.singletonList(1));
+		assertEquals(2, scoreUserQuestionEvStates.size());
+		assertEquals(1000f, scoreUserQuestionEvStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(1000f, scoreUserQuestionEvStates.get(1), ASSET_ERROR_MARGIN);
+		
 		
 		transactionKey = engine.startNetworkActions();
-		List<Float> newValues = new ArrayList();
+		List<Float> newValues = new ArrayList<Float>();
 		newValues.add(.8f); newValues.add(.2f);
 		engine.addTrade(transactionKey, new Date(), "", 1L, 1L, newValues , null, null, false);
+		engine.commitNetworkActions(transactionKey);
+		
+		scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(1L, 1L, Collections.singletonList(2L), Collections.singletonList(0));
+		assertEquals(2, scoreUserQuestionEvStates.size());
+		assertTrue(scoreUserQuestionEvStates.toString(), scoreUserQuestionEvStates.get(0) > scoreUserQuestionEvStates.get(1));
+		assertEquals(1067.8073f, scoreUserQuestionEvStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(867.8072f, scoreUserQuestionEvStates.get(1), ASSET_ERROR_MARGIN);
+		
+		transactionKey = engine.startNetworkActions();
 		engine.resolveQuestion(transactionKey, new Date(), 1L, 0);
 		engine.commitNetworkActions(transactionKey);
 		
-		
 		assertFalse(Float.isNaN(engine.scoreUserEv(1L, null, null)));
 		assertEquals(1067.8073, engine.scoreUserEv(1L, null, null), ASSET_ERROR_MARGIN);
+
+		scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(1L, 2L, null, null);
+		assertEquals(2, scoreUserQuestionEvStates.size());
+		assertEquals(1067.8073f, scoreUserQuestionEvStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(1067.8073f, scoreUserQuestionEvStates.get(1), ASSET_ERROR_MARGIN);
+		
+		try {
+			scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(1L, 2L, Collections.singletonList(2L), Collections.singletonList(0));
+			fail("Assumptions should not contain node itself");
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+		}
+		
 		
 		// simple disconnected network cases
 		engine.initialize();
@@ -9563,6 +9756,7 @@ public class MarkovEngineTest extends TestCase {
 		
 		assertEquals(1638.4f, engine.getQValuesFromScore(engine.scoreUserEv(1L, null, null)), ASSET_ERROR_MARGIN);
 		assertEquals(engine.getScoreFromQValues(1638.4f), engine.scoreUserEv(1L, null, null), ASSET_ERROR_MARGIN);
+		
 	}
 	
 	/**

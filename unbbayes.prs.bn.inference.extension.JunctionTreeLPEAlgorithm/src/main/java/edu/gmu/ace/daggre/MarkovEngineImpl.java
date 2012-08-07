@@ -2308,7 +2308,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		if (assumptionIds != null) {
 			assumptionsIncludingThisQuestion.addAll(assumptionIds);
 		}
-		assumptionsIncludingThisQuestion.add(questionId);
+		if (!assumptionsIncludingThisQuestion.contains(questionId)) {
+			assumptionsIncludingThisQuestion.add(questionId);
+		} else {
+			throw new IllegalArgumentException("Assumptions must not contain the question itself.");
+		}
 		// similarly, list of states to pass to scoreUserEv (assumedStates and states of questionId)
 		List<Integer> assumedStatesIncludingThisState = new ArrayList<Integer>();	// do not reuse 
 		if (assumedStates != null) {
