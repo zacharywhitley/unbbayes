@@ -3,20 +3,17 @@
  */
 package unbbayes.prs.prm;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
  * Default implementation of {@link IPRMObject}
+ * 
  * @author Shou Matsumoto
- *
+ * 
  */
 public class PRMObject implements IPRMObject {
 
-	
-	
 	private Map<IAttributeDescriptor, IAttributeValue> attributeValueMap;
 	private IPRMClass prmClass;
 
@@ -26,9 +23,10 @@ public class PRMObject implements IPRMObject {
 	protected PRMObject() {
 		this.attributeValueMap = new HashMap<IAttributeDescriptor, IAttributeValue>();
 	}
-	
+
 	/**
 	 * Default construction method using fields
+	 * 
 	 * @param prmClass
 	 * @return
 	 */
@@ -44,31 +42,40 @@ public class PRMObject implements IPRMObject {
 	 */
 	protected void initValues() {
 		if (this.getPRMClass() == null) {
-			// cannot extract prm class -> cannot extract attributes. Abort
+			// Cannot extract PRM class -> cannot extract attributes. Abort
 			return;
 		}
-		// fill default values = null
-		for (IAttributeDescriptor attribute : this.getPRMClass().getAttributeDescriptors()) {
-			this.getAttributeValueMap().put(attribute, AttributeValue.newInstance(this, attribute));
+
+		// Fill default values = null
+		for (IAttributeDescriptor attribute : this.getPRMClass()
+				.getAttributeDescriptors()) {
+			this.getAttributeValueMap().put(attribute,
+					AttributeValue.newInstance(this, attribute));
 		}
-		
+
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see unbbayes.prs.prm.IPRMObject#getAttributeValueMap()
 	 */
 	public Map<IAttributeDescriptor, IAttributeValue> getAttributeValueMap() {
 		return this.attributeValueMap;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see unbbayes.prs.prm.IPRMObject#getPRMClass()
 	 */
 	public IPRMClass getPRMClass() {
 		return this.prmClass;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see unbbayes.prs.prm.IPRMObject#setAttributeValueMap(java.util.Map)
 	 */
 	public void setAttributeValueMap(
@@ -76,33 +83,41 @@ public class PRMObject implements IPRMObject {
 		this.attributeValueMap = attributeValueMap;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see unbbayes.prs.prm.IPRMObject#setPRMClass(unbbayes.prs.prm.IPRMClass)
 	 */
 	public void setPRMClass(IPRMClass prmClass) {
 		this.prmClass = prmClass;
-		if (this.prmClass != null && this.prmClass.getPRMObjects() != null && !this.prmClass.getPRMObjects().contains(this)) {
+		if (this.prmClass != null && this.prmClass.getPRMObjects() != null
+				&& !this.prmClass.getPRMObjects().contains(this)) {
 			this.prmClass.getPRMObjects().add(this);
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
 		try {
-			// render name using PK if this object contains it
+			// Render name using PK if this object contains it
 			String pkString = "";
-			for (IAttributeDescriptor attribute : this.getAttributeValueMap().keySet()) {
+			for (IAttributeDescriptor attribute : this.getAttributeValueMap()
+					.keySet()) {
 				if (attribute.isPrimaryKey()) {
-					IAttributeValue value = this.getAttributeValueMap().get(attribute);
-					if (value != null && value.getValue() != null && (value.getValue().trim().length() > 0)) {
+					IAttributeValue value = this.getAttributeValueMap().get(
+							attribute);
+					if (value != null && value.getValue() != null
+							&& (value.getValue().trim().length() > 0)) {
 						pkString += (value.getValue().trim());
 					}
 				}
 			}
 			if (pkString.length() > 0) {
-				return this.getPRMClass().getName()  + "_" + pkString;
+				return this.getPRMClass().getName() + "_" + pkString;
 			}
 			// TODO support multiple PK
 			// string = <ClassName>_<PKValue>
@@ -110,17 +125,14 @@ public class PRMObject implements IPRMObject {
 			e.printStackTrace();
 		}
 		try {
-			// no PK found. Use index instead
-			return this.getPRMClass().getName() 
-			+ "_"
-			+ this.getPRMClass().getPRMObjects().indexOf(this);
+			// PK do not found. Use index instead
+			return this.getPRMClass().getName() + "_"
+					+ this.getPRMClass().getPRMObjects().indexOf(this);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		// could not extract name. Use default
+		// Could not extract name. Use default
 		return super.toString();
 	}
-	
-	
 
 }
