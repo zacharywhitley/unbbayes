@@ -32,31 +32,33 @@ import unbbayes.prs.prm.cpt.compiler.PRMCPTCompiler;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 /**
- * Default compiler of PRM project.
- * It converts PRM to BN
+ * Default compiler of PRM project. It converts PRM to BN
+ * 
  * @author Shou Matsumoto
- *
+ * 
  */
-public class PRMToBNCompiler implements IPRMCompiler, IBNInferenceAlgorithmHolder {
+public class PRMToBNCompiler implements IPRMCompiler,
+		IBNInferenceAlgorithmHolder {
 
 	private IProbabilisticNetworkBuilder networkBuilder;
-	
+
 	private IPRMCPTCompiler cptCompiler;
 
 	private IInferenceAlgorithm bnCompilationAlgorithm;
-	
+
 	/**
-	 * At least one constructor must be visible to 
-	 * subclasses to allow inheritance
+	 * At least one constructor must be visible to subclasses to allow
+	 * inheritance
 	 */
 	protected PRMToBNCompiler() {
 		this.networkBuilder = DefaultProbabilisticNetworkBuilder.newInstance();
 		this.cptCompiler = PRMCPTCompiler.newInstance();
 		this.bnCompilationAlgorithm = new JunctionTreeAlgorithm();
 	}
-	
+
 	/**
 	 * Default construction method
+	 * 
 	 * @return
 	 */
 	public static PRMToBNCompiler newInstance() {
@@ -66,202 +68,252 @@ public class PRMToBNCompiler implements IPRMCompiler, IBNInferenceAlgorithmHolde
 
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.prs.prm.compiler.IPRMCompiler#compile(unbbayes.controller.prm.IDatabaseController, unbbayes.prs.prm.IPRM, java.util.Collection)
+	 * 
+	 * @see
+	 * unbbayes.prs.prm.compiler.IPRMCompiler#compile(unbbayes.controller.prm
+	 * .IDatabaseController, unbbayes.prs.prm.IPRM, java.util.Collection)
 	 */
 	public Graph compile(IDatabaseController databaseController, IPRM prm,
 			Collection<IAttributeValue> query) {
-		
-		// input assertion
+
+		// Input assertion
 		if (prm == null) {
 			return null;
 		}
-		
+
 		// TODO ALPHA version allows only single node query.
 		if (query == null || query.size() != 1) {
-			throw new IllegalArgumentException("ALPHA version only allows a query to a single node. Select exactly 1 node to start compiling PRM.");
+			throw new IllegalArgumentException(
+					"ALPHA version only allows a query to a single node. Select exactly 1 node to start compiling PRM.");
 		}
-		
-		ProbabilisticNetwork ret = this.getNetworkBuilder().buildNetwork(prm.getName()); // network to be returned
-		
-		// build nodes (with no edges yet). We consider only nodes having a path to the query node
+
+		// Network to be returned
+		ProbabilisticNetwork resultNet = networkBuilder.buildNetwork(prm
+				.getName());
+
+		// Build nodes (with no edges yet). We consider only nodes having a path
+		// to the query node
 		// TODO Use some D-separation to avoid creation of unnecessary nodes
-		// TODO ALPHA version allows only single node query. 
-		// nodes we are working on - this is basically a map from IAttributeValue to pairs of (IAttributeValue, ProbabilisticNode)
-		// we are using maps to speed up search
+		// TODO ALPHA version allows only single node query.
+		// nodes we are working on - this is basically a map from
+		// IAttributeValue to pairs of (IAttributeValue, ProbabilisticNode)
+		// We are using maps to speed up search
 		Map<IAttributeValue, PRMNode> workingNodes = new HashMap<IAttributeValue, PRMNode>();
-		this.fillRelatedNodes(query.iterator().next(), workingNodes);	// it also add query.iterator().next() to workingNodes
-		
-		// add nodes to ret
+
+		// Fill related nodes with query. (Currently only one query supported)
+		// it also add query.iterator().next() to workingNodes
+		fillRelatedNodes(query.iterator().next(), workingNodes);
+
+		// Add working nodes to the network.
 		for (PRMNode prmNode : workingNodes.values()) {
-			ret.addNode(prmNode.getBnNode());
+			resultNet.addNode(prmNode.getBnNode());
 		}
-		
-		// build edges (consider only 1 direction - node to parent - to avoid repetition)
+
+		// Build edges (consider only 1 direction - node to parent - to avoid
+		// repetition)
 		for (PRMNode node : workingNodes.values()) {
-			for (INode parentNode : node.getParentNodes()) {	// use buffered parents
-				Edge edge = new Edge(workingNodes.get(parentNode).getBnNode(), node.getBnNode());
+			for (INode parentNode : node.getParentNodes()) { // use buffered
+																// parents
+				Edge edge = new Edge(workingNodes.get(parentNode).getBnNode(),
+						node.getBnNode());
 				try {
-					ret.addEdge(edge);
+					resultNet.addEdge(edge);
 				} catch (InvalidParentException e) {
-					throw new RuntimeException("Could not add edge from " + node.getWrappedPrmNode() + " to " + parentNode, e);
+					throw new RuntimeException("Could not add edge from "
+							+ node.getWrappedPrmNode() + " to " + parentNode, e);
 				}
 			}
 		}
-		
-		// build a map from ProbabilisticNode to IAttributeValue by reversing workingNodes.
-		// This is possible because PRMNode/ProbabilisticNode and IAttributeValue is 1-1 mapping
+
+		// Build a map from ProbabilisticNode to IAttributeValue by reversing
+		// workingNodes.
+		// This is possible because PRMNode/ProbabilisticNode and
+		// IAttributeValue is 1-1 mapping
 		Map<INode, IAttributeValue> inverseWorkingNodesMap = new HashMap<INode, IAttributeValue>();
 		for (IAttributeValue key : workingNodes.keySet()) {
-			inverseWorkingNodesMap.put(workingNodes.get(key).getBnNode(), key);	// put almost as inverse mapping
+			inverseWorkingNodesMap.put(workingNodes.get(key).getBnNode(), key); // put
+																				// almost
+																				// as
+																				// inverse
+																				// mapping
 		}
-		
-		// build CPT
+
+		// Build CPT
 		for (PRMNode workingNode : workingNodes.values()) {
-			// ignore the returned value (IPRobabilityFunction), because it supposedly works on-place 
-			// (it is a in/out argument) passed indirectly from workingNode.getBnNode()
-			this.getCptCompiler().compileCPT(workingNode.getWrappedPrmNode(), workingNode.getBnNode(), inverseWorkingNodesMap);
+			// ignore the returned value (IPRobabilityFunction), because it
+			// supposedly works on-place
+			// (it is a in/out argument) passed indirectly from
+			// workingNode.getBnNode()
+			cptCompiler.compileCPT(workingNode.getWrappedPrmNode(),
+					workingNode.getBnNode(), inverseWorkingNodesMap);
 		}
-		
+
 		// set up findings of the resulting BN
-		try{
-			this.compileBN(ret);
-			this.fillFindings(workingNodes.values(), ret);
-			this.propagateFindings(ret);
+		try {
+			compileBN(resultNet);
+			fillFindings(workingNodes.values(), resultNet);
+			propagateFindings(resultNet);
 		} catch (Exception e) {
 			// ignore any exception, because we can still show the uncompiled BN
 			e.printStackTrace();
 		}
-		
-		return ret;
+
+		return resultNet;
 	}
-	
-	
+
 	/**
-	 * This method is called at the end of {@link #compile(IDatabaseController, IPRM, Collection)}.
-	 * Basically, it calls {@link #getBnCompilationAlgorithm()} and
-	 * {@link IInferenceAlgorithm#propagate()}.
-	 * Update evidences of Bayesian Network.
+	 * This method is called at the end of
+	 * {@link #compile(IDatabaseController, IPRM, Collection)}. Basically, it
+	 * calls {@link #getBnCompilationAlgorithm()} and
+	 * {@link IInferenceAlgorithm#propagate()}. Update evidences of Bayesian
+	 * Network.
+	 * 
 	 * @param net
 	 */
 	protected void propagateFindings(ProbabilisticNetwork net) {
 		if (net != null) {
-			this.getBNInferenceAlgorithm().setNetwork(net);
+			bnCompilationAlgorithm.setNetwork(net);
 			// the code below is almost equivalent to net.updateEvidences();
-			this.getBNInferenceAlgorithm().propagate();
+			bnCompilationAlgorithm.propagate();
 		}
 	}
 
 	/**
-	 * Compile the generated BN
-	 * This method is called at the end of {@link #compile(IDatabaseController, IPRM, Collection)}.
-	 * Basically, it calls {@link #getBnCompilationAlgorithm()} and
+	 * Compile the generated BN This method is called at the end of
+	 * {@link #compile(IDatabaseController, IPRM, Collection)}. Basically, it
+	 * calls {@link #getBnCompilationAlgorithm()} and
 	 * {@link IInferenceAlgorithm#run()}.
-	 * @param net  network generated by {@link #compile(IDatabaseController, IPRM, Collection)}
+	 * 
+	 * @param net
+	 *            network generated by
+	 *            {@link #compile(IDatabaseController, IPRM, Collection)}
 	 * @throws Exception
 	 */
 	protected void compileBN(ProbabilisticNetwork net) {
 		if (net != null) {
-			this.getBNInferenceAlgorithm().setNetwork(net);
+			bnCompilationAlgorithm.setNetwork(net);
 			// the code below is almost equivalent to net.compile();
-			this.getBNInferenceAlgorithm().run();
+			bnCompilationAlgorithm.run();
 			// the code below is almost equivalent to net.initialize();
-			this.getBNInferenceAlgorithm().reset();
+			bnCompilationAlgorithm.reset();
 		}
 	}
-	
+
 	/**
-	 * Fill up the findings. 
-	 * This method is called at the end of {@link #compile(IDatabaseController, IPRM, Collection)}
-	 * @param workingNodes : pairs of {@link PRMNode} and {@link IAttributeValue}.
-	 * @param net : network generated by {@link #compile(IDatabaseController, IPRM, Collection)}
+	 * Fill up the findings. This method is called at the end of
+	 * {@link #compile(IDatabaseController, IPRM, Collection)}
+	 * 
+	 * @param workingNodes
+	 *            : pairs of {@link PRMNode} and {@link IAttributeValue}.
+	 * @param net
+	 *            : network generated by
+	 *            {@link #compile(IDatabaseController, IPRM, Collection)}
 	 */
-	protected void fillFindings(Collection<PRMNode> workingNodes, ProbabilisticNetwork net) {
-		// find evidences (nodes containing known values -> (IAttributeValue#getValue() != null))
-		for(PRMNode workingNode: workingNodes){
-			if ((workingNode == null) 
-					|| (workingNode.getBnNode() == null)
-					|| (workingNode.getWrappedPrmNode() == null) 
+	protected void fillFindings(Collection<PRMNode> workingNodes,
+			ProbabilisticNetwork net) {
+		// find evidences (nodes containing known values ->
+		// (IAttributeValue#getValue() != null))
+		for (PRMNode workingNode : workingNodes) {
+			if ((workingNode == null) || (workingNode.getBnNode() == null)
+					|| (workingNode.getWrappedPrmNode() == null)
 					|| (workingNode.getWrappedPrmNode().getValue() == null)) {
-				// this is not a finding or, even, this is not a consistent PRM node... Ignore
+				// this is not a finding or, even, this is not a consistent PRM
+				// node... Ignore
 				continue;
 			}
 			// set up known value
 			TreeVariable bnNode = workingNode.getBnNode();
 			String knownValue = workingNode.getWrappedPrmNode().getValue();
-			for(int i = 0; i < bnNode.getStatesSize(); i++){
-				if(bnNode.getStateAt(i).equals(knownValue)){
+			for (int i = 0; i < bnNode.getStatesSize(); i++) {
+				if (bnNode.getStateAt(i).equals(knownValue)) {
 					bnNode.addFinding(i);
-					break; 
+					break;
 				}
 			}
 		}
 	}
-	
+
 	/**
-	 * Obtains recursively the ancestors and descendants of a prm node,
-	 * building a network connected to the parameter "value"
-	 * @param value : the center node (all nodes obtained by this method must have a path to it)
-	 * @param evaluated : in/out argument. Nodes already having a path to "value".
+	 * Obtains recursively the ancestors and descendants of a prm node, building
+	 * a network connected to the parameter "value"
+	 * 
+	 * @param value
+	 *            : the center node (all nodes obtained by this method must have
+	 *            a path to it)
+	 * @param evaluated
+	 *            : in/out argument. Nodes already having a path to "value".
 	 */
-	protected void fillRelatedNodes(IAttributeValue value, Map<IAttributeValue, PRMNode> evaluated) {
-		
+	private void fillRelatedNodes(IAttributeValue value,
+			Map<IAttributeValue, PRMNode> evaluated) {
+
 		// assertion of input/output
 		if (value == null || evaluated == null) {
 			return;
 		}
-		
+
 		// if evaluated contains value, it is not evaluated
-		if (evaluated.get(value) != null && value.equals(evaluated.get(value).getWrappedPrmNode())) {
+		if (evaluated.get(value) != null
+				&& value.equals(evaluated.get(value).getWrappedPrmNode())) {
 			return;
 		}
-		
-		// create the value/node pair
-		PRMNode pair = new PRMNode(value, (ProbabilisticNode)this.getNetworkBuilder().getProbabilisticNodeBuilder().buildNode());
+
+		// Create the value/node pair
+		PRMNode pair = new PRMNode(value, (ProbabilisticNode) networkBuilder
+				.getProbabilisticNodeBuilder().buildNode());
 		pair.getBnNode().setName(pair.getWrappedPrmNode().toString());
 		// TODO use a more decent way to set variable position
 		pair.getBnNode().setPosition(Math.random() * 400, Math.random() * 300);
-		
-		// build state
-		for (int i = 0; i < pair.getWrappedPrmNode().getAttributeDescriptor().getStatesSize(); i++) {
-			pair.getBnNode().appendState(pair.getWrappedPrmNode().getAttributeDescriptor().getStateAt(i));
+
+		// Build state
+		for (int i = 0; i < pair.getWrappedPrmNode().getAttributeDescriptor()
+				.getStatesSize(); i++) {
+			pair.getBnNode().appendState(
+					pair.getWrappedPrmNode().getAttributeDescriptor()
+							.getStateAt(i));
 		}
-		
-		// TODO refactor core to automatically add itself to the table it owns, instead of forcing callers to do it manually
-		// ... it seems that we have to add states before touching to probability function...
+
+		// TODO refactor core to automatically add itself to the table it owns,
+		// instead of forcing callers to do it manually
+		// ... it seems that we have to add states before touching to
+		// probability function...
 		pair.getBnNode().getProbabilityFunction().addVariable(pair.getBnNode());
-		
+
 		// mark as evaluated
 		evaluated.put(value, pair);
-		
-		// iterate over children. It is not buffered, so start a query to chain solver
-		for (IAttributeValue attributeValue : value.getDependencyChainSolver().solveChildren(value)) {
+
+		// Iterate over children. It is not buffered, so start a query to chain
+		// solver
+		for (IAttributeValue attributeValue : value.getDependencyChainSolver()
+				.solveChildren(value)) {
 			if (!evaluated.keySet().contains(attributeValue)) {
 				// recursive call
 				this.fillRelatedNodes(attributeValue, evaluated);
 			}
 		}
-		
-		// iterate over parents (use buffered values)
+
+		// Iterate over parents (use buffered values)
 		for (INode inode : pair.getParentNodes()) {
 			if (!evaluated.keySet().contains(inode)) {
 				// recursive call
-				this.fillRelatedNodes((IAttributeValue)inode, evaluated);
+				this.fillRelatedNodes((IAttributeValue) inode, evaluated);
 			}
 		}
-		
+
 	}
-	
+
 	/**
 	 * This class is a temporary representation of nodes of PRM in a compilation
 	 * process. It contains both references to {@link IAttributeValue} and
-	 * references to the {@link ProbabilisticNode}s of the resulting {@link unbbayes.prs.bn.ProbabilisticNetwork}.
-	 * It also wraps {@link IAttributeValue}.
-	 * This is basically a IAttributeValue containing a reference to a {@link ProbabilisticNode} and
-	 * organized in a graph structure (the same structure of the resulting network).
-	 * It also stores the parents locally (buffer), so that we do not need to use
+	 * references to the {@link ProbabilisticNode}s of the resulting
+	 * {@link unbbayes.prs.bn.ProbabilisticNetwork}. It also wraps
+	 * {@link IAttributeValue}. This is basically a IAttributeValue containing a
+	 * reference to a {@link ProbabilisticNode} and organized in a graph
+	 * structure (the same structure of the resulting network). It also stores
+	 * the parents locally (buffer), so that we do not need to use
 	 * {@link #getDependencyChainSolver()} to solve parents
+	 * 
 	 * @author Shou Matsumoto
-	 *
+	 * 
 	 */
 	protected class PRMNode implements IAttributeValue {
 
@@ -274,9 +326,10 @@ public class PRMToBNCompiler implements IPRMCompiler, IBNInferenceAlgorithmHolde
 			this.prmNode = prmNode;
 			this.bnNode = bnNode;
 			// fill buffer of parent nodes
-			this.parentNodes = new ArrayList<INode>(prmNode.getDependencyChainSolver().solveParents(prmNode));
+			this.parentNodes = new ArrayList<INode>(prmNode
+					.getDependencyChainSolver().solveParents(prmNode));
 		}
-		
+
 		/**
 		 * @return the prmNode
 		 */
@@ -285,7 +338,8 @@ public class PRMToBNCompiler implements IPRMCompiler, IBNInferenceAlgorithmHolde
 		}
 
 		/**
-		 * @param prmNode the prmNode to set
+		 * @param prmNode
+		 *            the prmNode to set
 		 */
 		public void setWrappedPrmNode(IAttributeValue prmNode) {
 			this.prmNode = prmNode;
@@ -299,7 +353,8 @@ public class PRMToBNCompiler implements IPRMCompiler, IBNInferenceAlgorithmHolde
 		}
 
 		/**
-		 * @param bnNode the bnNode to set
+		 * @param bnNode
+		 *            the bnNode to set
 		 */
 		public void setBnNode(ProbabilisticNode bnNode) {
 			this.bnNode = bnNode;
@@ -390,9 +445,9 @@ public class PRMToBNCompiler implements IPRMCompiler, IBNInferenceAlgorithmHolde
 		}
 
 		/**
-		 * This is a buffer of parent nodes.
-		 * By filling a buffer, we do not need to use
-		 * {@link #getDependencyChainSolver()} at each access.
+		 * This is a buffer of parent nodes. By filling a buffer, we do not need
+		 * to use {@link #getDependencyChainSolver()} at each access.
+		 * 
 		 * @return instances of {@link IAttributeValue}
 		 * @see unbbayes.prs.INode#getParentNodes()
 		 */
@@ -515,9 +570,9 @@ public class PRMToBNCompiler implements IPRMCompiler, IBNInferenceAlgorithmHolde
 		}
 
 		/**
-		 * This is a buffer of parent nodes.
-		 * By filling a buffer, we do not need to use
-		 * {@link #getDependencyChainSolver()} at each access.
+		 * This is a buffer of parent nodes. By filling a buffer, we do not need
+		 * to use {@link #getDependencyChainSolver()} at each access.
+		 * 
 		 * @param arg0
 		 * @see unbbayes.prs.INode#setParentNodes(java.util.List)
 		 */
@@ -549,41 +604,15 @@ public class PRMToBNCompiler implements IPRMCompiler, IBNInferenceAlgorithmHolde
 		public void setValue(String value) {
 			prmNode.setValue(value);
 		}
-		
-	}
 
-	/**
-	 * Builders to help constructing correct instances of {@link Network} and {@link Node}
-	 * @return the networkBuilder
-	 */
-	public IProbabilisticNetworkBuilder getNetworkBuilder() {
-		return networkBuilder;
-	}
-
-	/**
-	 * @param networkBuilder the networkBuilder to set
-	 */
-	public void setNetworkBuilder(IProbabilisticNetworkBuilder networkBuilder) {
-		this.networkBuilder = networkBuilder;
-	}
-
-	/**
-	 * @return the cptCompiler
-	 */
-	public IPRMCPTCompiler getCptCompiler() {
-		return cptCompiler;
-	}
-
-	/**
-	 * @param cptCompiler the cptCompiler to set
-	 */
-	public void setCptCompiler(IPRMCPTCompiler cptCompiler) {
-		this.cptCompiler = cptCompiler;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.prs.prm.compiler.IBNInferenceAlgorithmHolder#getBNInferenceAlgorithm()
+	 * 
+	 * @see
+	 * unbbayes.prs.prm.compiler.IBNInferenceAlgorithmHolder#getBNInferenceAlgorithm
+	 * ()
 	 */
 	public IInferenceAlgorithm getBNInferenceAlgorithm() {
 		return this.bnCompilationAlgorithm;
@@ -591,11 +620,13 @@ public class PRMToBNCompiler implements IPRMCompiler, IBNInferenceAlgorithmHolde
 
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.prs.prm.compiler.IBNInferenceAlgorithmHolder#setBNInferenceAlgorithm(unbbayes.util.extension.bn.inference.IInferenceAlgorithm)
+	 * 
+	 * @see
+	 * unbbayes.prs.prm.compiler.IBNInferenceAlgorithmHolder#setBNInferenceAlgorithm
+	 * (unbbayes.util.extension.bn.inference.IInferenceAlgorithm)
 	 */
 	public void setBNInferenceAlgorithm(IInferenceAlgorithm inferenceAlgorithm) {
 		this.bnCompilationAlgorithm = inferenceAlgorithm;
 	}
-
 
 }
