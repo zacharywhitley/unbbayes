@@ -100,7 +100,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 	};
 
-	private float probabilityErrorMargin = 0.0001f;
+	private float probabilityErrorMargin = 0.001f;
 
 	private Map<Long, List<NetworkAction>> networkActionsMap;
 	
@@ -1363,23 +1363,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						marginalWhenResolved = new ArrayList<Float>(probNode.getStatesSize());
 						for (int i = 0; i < probNode.getStatesSize(); i++) {
 							marginalWhenResolved.add(probNode.getMarginalAt(i));
-						}
-						// set and propagate evidence in the probabilistic network
-						if (settledState < 0) {
-							// set finding as negative (i.e. finding setting a state to 0%)
-							probNode.addFinding(Math.abs(settledState+1), true);
-						} else {
-							probNode.addFinding(settledState);
-						}
-						getDefaultInferenceAlgorithm().propagate();	// supposedly, default algorithm is configured so that it does not update assets
-//					probNode.addFinding(settledState);
-						if (isToDeleteResolvedNode()) {
-							getProbabilisticNetwork().removeNode(probNode);
-						} else {
-							// delete only from list 
-//						getProbabilisticNetwork().getNodeIndexes().remove(probNode.getName());
-//						getProbabilisticNetwork().getNodes().remove(probNode);
-//						getProbabilisticNetwork().getNodesCopy().remove(probNode);
 						}
 					}
 				} else {
@@ -3322,6 +3305,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				
 				// indexInProbTable is pointing to some cell in this table
 				PotentialTable table = (PotentialTable) probCliqueOrSep.getProbabilityFunction();	// only nodes related to this table is considered
+				if (table.tableSize() <= 1) {
+					// ignore clique tables of resolved cliques
+					return;
+				}
 				
 				// check cache first (we want to reuse objects for the questions, because they will repeat a lot)
 				List<Long> cache = questionsCache.get(probCliqueOrSep);

@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.gmu.ace.daggre.MarkovEngineImpl.AddQuestionNetworkAction;
+
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNode;
@@ -212,6 +214,38 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 		}
 		
 		return ret;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineImpl#addNetworkAction(long, edu.gmu.ace.daggre.NetworkAction)
+	 */
+	protected void addNetworkAction(long transactionKey,  NetworkAction newAction) throws IllegalArgumentException {
+		if (newAction == null) {
+			throw new NullPointerException("Attempted to add a null action into transaction " + transactionKey);
+		}
+		if (newAction instanceof AddQuestionNetworkAction) {
+			this.addNetworkAction(transactionKey, (AddQuestionNetworkAction)newAction);
+			return;
+		}
+		// check existence of transaction key
+		// NOTE: getNetworkActionsMap is supposedly an instance of concurrent map, so we do not need to synchronize it
+		List<NetworkAction> actions = this.getNetworkActionsMap().get(transactionKey);
+		if (actions == null) {
+			// startNetworkAction should have been called.
+			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
+		}
+		
+		// let's add action to the managed list. 
+		synchronized (actions) {
+			
+			// insert new action at the end
+			actions.add(newAction);
+			
+			// insert new action into the map to be used for searching actions by question id
+			this.addNetworkActionIntoQuestionMap(newAction);
+		}
+		
 	}
 	
 	/**

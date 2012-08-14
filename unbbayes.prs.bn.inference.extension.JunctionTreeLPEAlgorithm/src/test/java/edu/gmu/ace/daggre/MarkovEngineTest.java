@@ -8278,12 +8278,29 @@ public class MarkovEngineTest extends TestCase {
 			float score = engine.scoreUserEv(userNameToIDMap.get(user), null, null);
 			assertFalse("Score of " + user + " = " + score,Float.isInfinite(score) || Float.isNaN(score));
 			assertEquals("User = " + user, cash, score, ASSET_ERROR_MARGIN);
-			assertTrue(cash > 0 && score > 0);
-			assertFalse(engine.getScoreDetails(userNameToIDMap.get(user), null, null, null).isEmpty());
+			assertTrue("User = " + user, cash > 0 && score > 0);
+			assertFalse("User = " + user, engine.getScoreDetails(userNameToIDMap.get(user), null, null, null).isEmpty());
+			assertNotNull("User = " + user, engine.getScoreSummaryObject(userNameToIDMap.get(user), null, null, null));
+			assertEquals("User = " + user, engine.getScoreSummaryObject(userNameToIDMap.get(user), null, null, null).getCash(), cash);
+			assertEquals("User = " + user, engine.getScoreSummaryObject(userNameToIDMap.get(user), null, null, null).getScoreEV(), score);
 		}
 		
 
 		assertFalse(engine.getQuestionAssumptionGroups().isEmpty());
+		
+		// check new user
+		assertEquals(12050.81f, engine.getCash(Long.MAX_VALUE, null, null), ASSET_ERROR_MARGIN);
+		assertEquals(12050.81f, engine.scoreUserEv(Long.MIN_VALUE, null, null), ASSET_ERROR_MARGIN);
+		assertEquals(12050.81f, engine.getCash(Long.MIN_VALUE, null, null), ASSET_ERROR_MARGIN);
+		assertEquals(12050.81f, engine.scoreUserEv(Long.MAX_VALUE, null, null), ASSET_ERROR_MARGIN);
+		assertFalse(engine.getScoreDetails(Long.MAX_VALUE, null, null, null).isEmpty());
+		assertFalse(engine.getScoreDetails(Long.MIN_VALUE, null, null, null).isEmpty());
+		assertNotNull(engine.getScoreSummaryObject(Long.MAX_VALUE, null, null, null));
+		assertNotNull(engine.getScoreSummaryObject(Long.MIN_VALUE, null, null, null));
+		assertEquals(engine.getScoreSummaryObject(Long.MAX_VALUE, null, null, null).getCash(), 12050.81f);
+		assertEquals(engine.getScoreSummaryObject(Long.MAX_VALUE, null, null, null).getScoreEV(), 12050.81f);
+		assertEquals(engine.getScoreSummaryObject(Long.MIN_VALUE, null, null, null).getCash(), 12050.81f);
+		assertEquals(engine.getScoreSummaryObject(Long.MIN_VALUE, null, null, null).getScoreEV(), 12050.81f);
 	}
 
 	private List<AddTradeNetworkAction> createDEFNetIn1Transaction(Map<String, Long> userNameToIDMap) {

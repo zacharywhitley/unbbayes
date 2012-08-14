@@ -176,7 +176,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	static{
 		ONE_STATE_ASSETNODE = AssetNode.getInstance();
 		ONE_STATE_ASSETNODE.setToCalculateMarginal(false);
-		ONE_STATE_ASSETNODE.setName("VIRTUAL_ASSETNODE");
+		ONE_STATE_ASSETNODE.setName("NODE_WITH_SINGLE_STATE");
 		// copy states
 		ONE_STATE_ASSETNODE.appendState("VIRTUAL_STATE");
 		ONE_STATE_ASSETNODE.initMarginalList();	// guarantee that marginal list is initialized
@@ -812,13 +812,18 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 				PotentialTable assetPotential = (PotentialTable) newClique.getProbabilityFunction();
 				// use min-out as default operation to be applied when removing a variable or when doing marginalization
 				assetPotential.setSumOperation(MinProductJunctionTree.DEFAULT_MIN_OUT_OPERATION);
-				for (int i = 0; i < probPotential.getVariablesSize(); i++) {
-					Node assetNode = ret.getNode(probPotential.getVariableAt(i).getName());
-					if (assetNode == null) {
-						hasInvalidNode = true;
-						break;
+				if (probPotential.tableSize() > 1) {
+					for (int i = 0; i < probPotential.getVariablesSize(); i++) {
+						Node assetNode = ret.getNode(probPotential.getVariableAt(i).getName());
+						if (assetNode == null) {
+							hasInvalidNode = true;
+							break;
+						}
+						assetPotential.addVariable(assetNode);
 					}
-					assetPotential.addVariable(assetNode);
+				} else {
+					// this is a table which was containing a node marked as permanent evidence (setAsPermanentEvidence)
+					assetPotential.addVariable(ONE_STATE_ASSETNODE);
 				}
 				if (hasInvalidNode) {
 					// the original clique has a node not present in the asset net

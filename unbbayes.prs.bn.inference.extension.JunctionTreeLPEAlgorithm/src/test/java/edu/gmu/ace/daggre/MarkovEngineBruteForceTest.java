@@ -67,10 +67,10 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		engines = new ArrayList<MarkovEngineImpl>();
-		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 1000f));
-//		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 1000f, false, true));
 		engines.add(BruteForceMarkovEngine.getInstance(2f, 100f, 1000f));
 //		engines.add(CPTBruteForceMarkovEngine.getInstance(2f, 100f, 1000f));
+		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 1000f));
+//		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 1000f, false, true));
 		for (MarkovEngineInterface engine : engines) {
 			engine.initialize();
 		}
@@ -92,10 +92,14 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		return ret;
 	}
 
-	/** Obtains a list of assumptions randomly */
-	private List<Long> getRandomAssumptions(Long questionId) {
+	/** Obtains a list of assumptions randomly 
+	 * @param uncommittedTransactionKeyMap */
+	private List<Long> getRandomAssumptions(Long questionId, Map<MarkovEngineImpl, Long> uncommittedTransactionKeyMap) {
 		List<List<Long>> questionAssumptionGroups = engines.get(0).getQuestionAssumptionGroups();
 		for (int i = 0; i < engines.size(); i++) {
+			if (uncommittedTransactionKeyMap.containsKey(engines.get(i))) {
+				continue;
+			}
 			assertEquals(engines.get(i).toString(), questionAssumptionGroups, engines.get(i).getQuestionAssumptionGroups());
 		}
 		List<List<Long>> groupsNotContainingQuestion = new ArrayList<List<Long>>();
@@ -191,10 +195,11 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		return ret;
 	}
 	
-	/** Execute the actual test given the point of test in the 5-point test */
+	/** Execute the actual test given the point of test in the 5-point test 
+	 * @param uncommittedTransactionsKeyMap : mapping of engines which were not committed yet, and its respective transaction key */
 	private void do5PointTest(Map<Long,Integer> questionsToNumberOfStatesMap, Long questionId, int stateOfEditLimit, 
 			List<Float> editLimits, Long userId, List<Long> assumptionsOfTrade, 
-			List<Integer> statesOfAssumption, FivePointTestType pointWithin5PointTest) {
+			List<Integer> statesOfAssumption, FivePointTestType pointWithin5PointTest, Map<MarkovEngineImpl, Long> uncommittedTransactionsKeyMap ) {
 		
 		// value to be used in trade
 		List<Float> newValues = this.generateEdit(
@@ -224,67 +229,82 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		for (int i = 0; i < engines.size(); i++) {
 			MarkovEngineImpl engine = engines.get(i);
 			
-			mementos.put(engine, engine.getMemento());
-			
-			// compare marginals before the trade
-			Map<Long, List<Float>> priorProbToCompare = engine.getProbLists(null, null, null);
-			assertNotNull(engine.toString(), probBeforeTrade); assertNotNull(engine.toString(), priorProbToCompare);
-			assertEquals(engine.toString(), probBeforeTrade.size(), priorProbToCompare.size());
-			// compare marginals
-			for (Long id : probBeforeTrade.keySet()) {
-				List<Float> marginal = probBeforeTrade.get(id);
-				List<Float> marginalToCompare = priorProbToCompare.get(id);
-				assertEquals(engine.toString(), marginal.size(), marginalToCompare.size());
-				for (int state = 0; state < marginal.size(); state++) {
-					assertEquals(engine.toString() + ", question = " + id + ", state = " + state,  
-							marginal.get(state), 
-							marginalToCompare.get(state), 
-							((engine instanceof CPTBruteForceMarkovEngine)?PROB_ERROR_MARGIN_CPT_BRUTE_FORCE:PROB_ERROR_MARGIN)
-					);
+			if (!uncommittedTransactionsKeyMap.containsKey(engine)) {
+				mementos.put(engine, engine.getMemento());
+				
+				// compare marginals before the trade
+				Map<Long, List<Float>> priorProbToCompare = engine.getProbLists(null, null, null);
+				assertNotNull(engine.toString(), probBeforeTrade); assertNotNull(engine.toString(), priorProbToCompare);
+				assertEquals(engine.toString(), probBeforeTrade.size(), priorProbToCompare.size());
+				// compare marginals
+				for (Long id : probBeforeTrade.keySet()) {
+					List<Float> marginal = probBeforeTrade.get(id);
+					List<Float> marginalToCompare = priorProbToCompare.get(id);
+					assertEquals(engine.toString(), marginal.size(), marginalToCompare.size());
+					for (int state = 0; state < marginal.size(); state++) {
+						assertEquals(engine.toString() + ", question = " + id + ", state = " + state,  
+								marginal.get(state), 
+								marginalToCompare.get(state), 
+								((engine instanceof CPTBruteForceMarkovEngine)?PROB_ERROR_MARGIN_CPT_BRUTE_FORCE:PROB_ERROR_MARGIN)
+						);
+					}
 				}
 			}
 			
 			// assert that minimum before trade are the same
-			if (Math.abs(minBeforeTrade - engine.getCash(userId, null, null)) >
-					((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)) {
-				engines.get(0).getCash(userId, null, null);
-				engine.getCash(userId, null, null);
-			}
-			assertEquals(engine.toString(), minBeforeTrade, engine.getCash(userId, null, null), 
-					((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
-			if (Math.abs(conditionalMinBeforeTrade - engine.getCash(userId, assumptionIds, assumedStates))
-					> ((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)) {
-				engines.get(0).getCash(userId, assumptionIds, assumedStates);
-				engine.getCash(userId, assumptionIds, assumedStates);
-			}
-			assertEquals(
-					engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
-					conditionalMinBeforeTrade, 
-					engine.getCash(userId, assumptionIds, assumedStates), 
-					((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
-			
-			List<Float> scoreUserQuestionEvStatesBeforeTrade = engine.scoreUserQuestionEvStates(userId, questionId, assumptionsOfTrade, statesOfAssumption);
-			assertEquals(engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
-					(int)questionsToNumberOfStatesMap.get(questionId), 
-					(int)scoreUserQuestionEvStatesBeforeTrade.size()
+			List<Float> scoreUserQuestionEvStatesBeforeTrade = null;
+			if (!uncommittedTransactionsKeyMap.containsKey(engine)) {
+				if (Math.abs(minBeforeTrade - engine.getCash(userId, null, null)) >
+				((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)) {
+					engines.get(0).getCash(userId, null, null);
+					engine.getCash(userId, null, null);
+				}
+				assertEquals(engine.toString(), minBeforeTrade, engine.getCash(userId, null, null), 
+						((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
+				if (Math.abs(conditionalMinBeforeTrade - engine.getCash(userId, assumptionIds, assumedStates))
+						> ((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)) {
+					engines.get(0).getCash(userId, assumptionIds, assumedStates);
+					engine.getCash(userId, assumptionIds, assumedStates);
+				}
+				assertEquals(
+						engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
+						conditionalMinBeforeTrade, 
+						engine.getCash(userId, assumptionIds, assumedStates), 
+						((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
+				
+				scoreUserQuestionEvStatesBeforeTrade = engine.scoreUserQuestionEvStates(userId, questionId, assumptionsOfTrade, statesOfAssumption);
+				assertEquals(engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
+						(int)questionsToNumberOfStatesMap.get(questionId), 
+						(int)scoreUserQuestionEvStatesBeforeTrade.size()
 				);
+			}
 			
-			long transactionKey = engine.startNetworkActions();
-			assertFalse(
-					engine.toString() , 
-					engine.addTrade(
-							transactionKey, 
-							new Date(), 
-							"User " + userId + " trades on P(" + questionId + " | " + assumptionsOfTrade + " = " + statesOfAssumption + ") = " + newValues, 
-							userId, 
-							questionId, 
-							newValues, 
-							assumptionsOfTrade, 
-							statesOfAssumption, 
-							true		// allow negative, so that we can see that min went to negative
-					).isEmpty()
+			// reuse uncommitted transaction key or open new transaction
+			Long transactionKey = uncommittedTransactionsKeyMap.get(engine);
+			if (transactionKey == null) {
+				transactionKey = engine.startNetworkActions();
+			}
+			List<Float> returnOfTrade = engine.addTrade(
+					transactionKey, 
+					new Date(), 
+					"User " + userId + " trades on P(" + questionId + " | " + assumptionsOfTrade + " = " + statesOfAssumption + ") = " + newValues, 
+					userId, 
+					questionId, 
+					newValues, 
+					assumptionsOfTrade, 
+					statesOfAssumption, 
+					true		// allow negative, so that we can see that min went to negative
 			);
-			engine.commitNetworkActions(transactionKey);
+			if (uncommittedTransactionsKeyMap.containsKey(engine)) {
+//				assertTrue( engine.toString() , returnOfTrade == null || returnOfTrade.isEmpty());
+				// do not compare results of uncommitted engines here. They will be compared later when all trades are finished
+				continue;
+			} else {
+				assertFalse( engine.toString() ,  returnOfTrade.isEmpty());
+				// commit transaction and compare results
+				engine.commitNetworkActions(transactionKey);
+			}
+			
 			
 			List<Float> scoreUserQuestionEvStatesAfterTrade = engine.scoreUserQuestionEvStates(userId, questionId, assumptionsOfTrade, statesOfAssumption);
 			assertEquals(engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
@@ -462,21 +482,20 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	
 	
 
-	/** This is a common portion for each test case, regardless of the network. It assumes the {@link #engines} was filled with nodes and edges already */
-	private void runTestAssumingInitializedNetwork(Map<Long,Integer> questionsToNumberOfStatesMap) {
-		// Randomly create 3 user IDs
-		List<Long> userIDs = new ArrayList<Long>(3);
-		do {
-			userIDs.clear();
-			Set<Long> userFilter = new HashSet<Long>(3);
-			userFilter.add((long) (Math.random()*0x0F));
-			userFilter.add((long) (Math.random()*0x0F));
-			userFilter.add((long) (Math.random()*0x0F));
-			userIDs.addAll(userFilter);
-		} while (userIDs.size() != 3);
+	/** This is a common portion for each test case, regardless of the network. It assumes the {@link #engines} was filled with nodes and edges already 
+	 * @param uncommittedTransactionKeyMap : mapping from engine to transaction key to be used in trades 
+	 * @param userIDs */
+	private void runTestAssumingInitializedNetwork(Map<Long,Integer> questionsToNumberOfStatesMap, Map<MarkovEngineImpl, Long> uncommittedTransactionKeyMap, List<Long> userIDs) {
+		
+		assertNotNull(userIDs);
+		assertFalse(userIDs.isEmpty());
 		
 		// make sure initial cash and expected score are 1000
 		for (MarkovEngineInterface engine : engines) {
+			if (uncommittedTransactionKeyMap.containsKey(engine)) {
+				// do not test engines in transactionKeyMap, because they were not committed yet
+				continue;
+			}
 			for (Long userId : userIDs) {
 				assertEquals(engine.toString(), 1000f, engine.getCash(userId, null, null), ASSET_ERROR_MARGIN);
 				assertEquals(engine.toString(), 1000f, engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
@@ -488,6 +507,10 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		assertEquals(questionsToNumberOfStatesMap.size(), probabilities.keySet().size());
 		assertTrue(probabilities + " != " + questionsToNumberOfStatesMap, probabilities.keySet().containsAll(questionsToNumberOfStatesMap.keySet()));
 		for (int i = 1; i < engines.size(); i++) {
+			if (uncommittedTransactionKeyMap.containsKey(engines.get(i))) {
+				// do not test engines in transactionKeyMap, because they were not committed yet
+				continue;
+			}
 			// make sure all engines are retrieving the same questions
 			Map<Long, List<Float>> probabilitiesOfOtherEngines = engines.get(i).getProbLists(null, null, null);
 			assertEquals(engines.get(i).toString(), probabilities.size(), probabilitiesOfOtherEngines.size());
@@ -523,20 +546,19 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			int stateOfEditLimit = this.getRandomAssumptionStates(Collections.singletonList(questionId)).get(0);
 			
 			// randomly choose assumption set in the same clique of the node. 
-			List<Long> assumptionIds = this.getRandomAssumptions(questionId);
+			List<Long> assumptionIds = this.getRandomAssumptions(questionId, uncommittedTransactionKeyMap);
 			List<Integer> assumedStates = this.getRandomAssumptionStates(assumptionIds);
 			
 			// obtain the bounds for the 5-point test
 			List<Float> editLimits = engines.get(0).getEditLimits(userId, questionId, stateOfEditLimit, assumptionIds, assumedStates);
 			for (int i = 1; i < engines.size(); i++) {
+				if (uncommittedTransactionKeyMap.containsKey(engines.get(i))) {
+					// do not test engines in transactionKeyMap, because they were not committed yet
+					continue;
+				}
 				List<Float> editLimitsOfOtherEngine = engines.get(i).getEditLimits(userId, questionId, stateOfEditLimit, assumptionIds, assumedStates);
 				assertEquals(engines.get(i).toString(), editLimits.size(), editLimitsOfOtherEngine.size());
 				for (int j = 0; j < editLimits.size(); j++) {
-//					if (Math.abs(editLimits.get(j) - editLimitsOfOtherEngine.get(j)) >
-//					((engines.get(i) instanceof CPTBruteForceMarkovEngine)?PROB_ERROR_MARGIN_CPT_BRUTE_FORCE:PROB_ERROR_MARGIN)) {
-//						engines.get(0).getEditLimits(userId, questionId, stateOfEditLimit, assumptionIds, assumedStates);
-//						engines.get(i).getEditLimits(userId, questionId, stateOfEditLimit, assumptionIds, assumedStates);
-//					}
 					assertEquals(engines.get(i).toString() + ", user=" + userId + ", question=" + questionId 
 							+", state=" + stateOfEditLimit + "," +  assumptionIds + "=" + assumedStates, 
 							editLimits.get(j), editLimitsOfOtherEngine.get(j), 
@@ -550,20 +572,22 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			
 			// a.) 5-point min-q values test regarding the edit bound; expect to see corresponding q<1, =1, >1 respectively.
 			
-			// (1) the probability close to but smaller than the lower bound;
-			this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.BELOW_LIMIT);
-			
-			// (2) the probability exactly on the lower bound;
-			this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.ON_LOWER_LIMIT);
-			
-			// (4) the probability exactly on the upper bound;
-			this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.ON_UPPER_LIMIT);
-			
-			// (5) the probability close to but bigger than the upper bound;
-			this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.ABOVE_LIMIT);
+			if (uncommittedTransactionKeyMap.isEmpty()) {	// only do these tests if we are not comparing the cases which runs all trades in 1 transaction or multiple transactions
+				// (1) the probability close to but smaller than the lower bound;
+				this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.BELOW_LIMIT, uncommittedTransactionKeyMap);
+				
+				// (2) the probability exactly on the lower bound;
+				this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.ON_LOWER_LIMIT, uncommittedTransactionKeyMap);
+				
+				// (4) the probability exactly on the upper bound;
+				this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.ON_UPPER_LIMIT, uncommittedTransactionKeyMap);
+				
+				// (5) the probability close to but bigger than the upper bound;
+				this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.ABOVE_LIMIT, uncommittedTransactionKeyMap);
+			}
 			
 			// (3) random probability in between the bound;
-			this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.BETWEEN_LIMITS);
+			this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.BETWEEN_LIMITS, uncommittedTransactionKeyMap);
 		}	// end of for : iteration
 	}
 
@@ -3107,8 +3131,19 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			engine.commitNetworkActions(transactionKey);
 		}
 		
+		// Randomly create 3 user IDs
+		List<Long> userIDs = new ArrayList<Long>(3);
+		do {
+			userIDs.clear();
+			Set<Long> userFilter = new HashSet<Long>(3);
+			userFilter.add((long) (Math.random()*0x0F));
+			userFilter.add((long) (Math.random()*0x0F));
+			userFilter.add((long) (Math.random()*0x0F));
+			userIDs.addAll(userFilter);
+		} while (userIDs.size() != 3);
+		
 		assertNotNull(questionsToQuantityOfStatesMap);
-		this.runTestAssumingInitializedNetwork(questionsToQuantityOfStatesMap);
+		this.runTestAssumingInitializedNetwork(questionsToQuantityOfStatesMap, new HashMap<MarkovEngineImpl, Long>(), userIDs);
 	}	
 	
 	
@@ -3193,11 +3228,259 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				engine.commitNetworkActions(transactionKey);
 			}
 			
+			// Randomly create 3 user IDs
+			List<Long> userIDs = new ArrayList<Long>(3);
+			do {
+				userIDs.clear();
+				Set<Long> userFilter = new HashSet<Long>(3);
+				userFilter.add((long) (Math.random()*0x0F));
+				userFilter.add((long) (Math.random()*0x0F));
+				userFilter.add((long) (Math.random()*0x0F));
+				userIDs.addAll(userFilter);
+			} while (userIDs.size() != 3);
+			
 			assertNotNull(questionsToQuantityOfStatesMap);
-			this.runTestAssumingInitializedNetwork(questionsToQuantityOfStatesMap);
+			this.runTestAssumingInitializedNetwork(questionsToQuantityOfStatesMap, new HashMap<MarkovEngineImpl, Long>(), userIDs);
 		}
 	}	
 	
+
+	/**
+	 * This test case will run the same test of {@link #testFiles()},
+	 * but the engines in {@link #engines} will run in a single transaction
+	 * except for the 1st engine.
+	 */
+	public final void testFilesIn1Transaction() {
+		
+		// markov engine which commits every trade 1-by-1
+		engines.add(0, (MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 1000f));
+		
+		// engine which commits 2 times: add questions, commit (1st time), add trades, commit (2nd time)
+		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 1000f));
+		
+		// most basic assertion
+		assertNotNull(engines);
+		assertFalse(engines.isEmpty());
+		
+		assertNotNull(getFileNames());
+		assertFalse(getFileNames().length <= 0);
+		
+		NetIO io = new NetIO();
+		
+		Graph network = null;
+		for (String fileName : getFileNames()) {
+			System.out.println("Reading file " + fileName);
+			try {
+				network = io.load(new File(getClass().getClassLoader().getResource(fileName).getFile()));
+			} catch (Exception e) {
+				e.printStackTrace();
+				fail(e.getMessage());
+			} 
+			assertNotNull(network);
+			
+			
+			// initialize network based on network loaded from file
+			Map<Long,Integer> questionsToQuantityOfStatesMap = new HashMap<Long, Integer>();
+			
+			// for the 1st engine, generate the DEF network and commit transaction
+			engines.get(0).initialize();
+			
+			long transactionKey = engines.get(0).startNetworkActions();
+			
+			// create nodes
+			for (Node node : network.getNodes()) {
+				engines.get(0).addQuestion(transactionKey, new Date(), Long.parseLong(node.getName()), node.getStatesSize(), null); // assume uniform distribution for all nodes 
+				questionsToQuantityOfStatesMap.put(Long.parseLong(node.getName()), node.getStatesSize());
+			}
+			// create edges 
+			for (Node node : network.getNodes()) {
+				List<Long> parentIds = new ArrayList<Long>();
+				for (Node parent : node.getParents()) {
+					parentIds.add(Long.parseLong(parent.getName()));
+				}
+				if (parentIds.isEmpty() && Math.random() <= .5) {
+					parentIds = null;
+				}
+				// cpd == null -> linear distro
+				engines.get(0).addQuestionAssumption(transactionKey, new Date(), Long.parseLong(node.getName()), parentIds, null);	
+			}
+			// commit transaction of 1st engine
+			engines.get(0).commitNetworkActions(transactionKey);
+			
+			// this map stores what transaction key shall be used by the trades of each engine. If none, each trade will open its own transaction
+			Map<MarkovEngineImpl, Long> uncommittedTransactionKeyMap = new HashMap<MarkovEngineImpl, Long>();
+			
+			// for other engines, generate DEF network and do not commit the transaction
+			for (int i = 1; i < engines.size(); i++) {
+				MarkovEngineImpl engine = engines.get(i);
+				
+				engine.initialize();
+				
+				transactionKey = engine.startNetworkActions();
+				uncommittedTransactionKeyMap.put(engine, transactionKey);
+				
+				// create nodes
+				for (Node node : network.getNodes()) {
+					engine.addQuestion(transactionKey, new Date(), Long.parseLong(node.getName()), node.getStatesSize(), null); // assume uniform distribution for all nodes 
+					questionsToQuantityOfStatesMap.put(Long.parseLong(node.getName()), node.getStatesSize());
+				}
+				// create edges 
+				for (Node node : network.getNodes()) {
+					List<Long> parentIds = new ArrayList<Long>();
+					for (Node parent : node.getParents()) {
+						parentIds.add(Long.parseLong(parent.getName()));
+					}
+					if (parentIds.isEmpty() && Math.random() <= .5) {
+						parentIds = null;
+					}
+					engine.addQuestionAssumption(transactionKey, new Date(), Long.parseLong(node.getName()), parentIds, null);	// cpd == null -> linear distro
+				}
+				// do not commit changes
+			}
+			
+			// we can commit the last engine, but register new transaction to uncommittedTransactionKeyMap so that all trades are committed at once
+			engines.get(engines.size()-1).commitNetworkActions(uncommittedTransactionKeyMap.get(engines.get(engines.size()-1)));
+			uncommittedTransactionKeyMap.put(engines.get(engines.size()-1), engines.get(engines.size()-1).startNetworkActions());
+
+			// Randomly create 3 user IDs
+			List<Long> userIDs = new ArrayList<Long>(3);
+			do {
+				userIDs.clear();
+				Set<Long> userFilter = new HashSet<Long>(3);
+				userFilter.add((long) (Math.random()*0x0F));
+				userFilter.add((long) (Math.random()*0x0F));
+				userFilter.add((long) (Math.random()*0x0F));
+				userIDs.addAll(userFilter);
+			} while (userIDs.size() != 3);
+			
+			assertNotNull(questionsToQuantityOfStatesMap);
+			this.runTestAssumingInitializedNetwork(questionsToQuantityOfStatesMap, uncommittedTransactionKeyMap, userIDs);
+			
+			// commit all uncommitted transactions
+			for (MarkovEngineImpl uncommittedEngine : uncommittedTransactionKeyMap.keySet()) {
+				uncommittedEngine.commitNetworkActions(uncommittedTransactionKeyMap.get(uncommittedEngine));
+			}
+			// all transactions were committed.
+			uncommittedTransactionKeyMap.clear();
+			
+			// b.) marginal probability on individual variable.
+			Map<Long, List<Float>> probabilities = engines.get(0).getProbLists(null, null, null);
+			for (int i = 1; i < engines.size(); i++) {
+				MarkovEngineImpl engine = engines.get(i);
+				Map<Long, List<Float>> probToCompare = engine.getProbLists(null, null, null);
+				assertNotNull(engine.toString(), probToCompare);
+				assertEquals(engine.toString(), probabilities.size(), probToCompare.size());
+				
+				// compare marginals
+				for (Long id : probabilities.keySet()) {
+					List<Float> marginal = probabilities.get(id);
+					List<Float> marginalToCompare = probToCompare.get(id);
+					assertEquals(engine.toString(), marginal.size(), marginalToCompare.size());
+					for (int state = 0; state < marginal.size(); state++) {
+						assertEquals(engine.toString() + ", question = " + id + ", state = " + state,  
+								marginal.get(state), 
+								marginalToCompare.get(state), 
+								((engine instanceof CPTBruteForceMarkovEngine)?PROB_ERROR_MARGIN_CPT_BRUTE_FORCE:PROB_ERROR_MARGIN)
+						);
+					}
+				}
+				for (Long questionId : questionsToQuantityOfStatesMap.keySet()) {
+					for (Long userId : userIDs) {
+						List<Long> assumptionIds = this.getRandomAssumptions(questionId, uncommittedTransactionKeyMap);
+						List<Integer> assumedStates = this.getRandomAssumptionStates(assumptionIds);
+						
+						List<Float> scoreUserQuestionEvStatesAfterTrade = engine.scoreUserQuestionEvStates(userId, questionId, assumptionIds , assumedStates);
+						assertEquals(engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
+								(int)questionsToQuantityOfStatesMap.get(questionId), 
+								(int)scoreUserQuestionEvStatesAfterTrade.size()
+						);
+						
+						ScoreSummary scoreSummaryOrig= engines.get(0).getScoreSummaryObject(userId, questionId, assumptionIds, assumedStates);
+						
+						float minimum = engines.get(0).getCash(userId, null, null);
+						
+						// c.) min-q values after a user confirms a trade.
+//						if (Math.abs(minimum - engine.getCash(userId, null, null)) >
+//						((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)) {
+//							engines.get(0).getCash(userId, null, null);
+//							engine.getCash(userId, null, null);
+//						}
+						assertEquals(engine.toString(), minimum, engine.getCash(userId, null, null), 
+								((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
+						// e.) The expected score.
+						assertEquals(
+								engine.toString(), 
+								engines.get(0).scoreUserEv(userId, null, null), 
+								engine.scoreUserEv(userId, null, null), 
+								((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
+						);
+						// f. ) conditional min-q and expected score on randomly given states. How many random given states depends on network size. We choose floor(0.3*numberOfVariablesInTheNet).
+//						if (Math.abs(engines.get(0).getCash(userId, assumptionIds, assumedStates) - engine.getCash(userId, assumptionIds, assumedStates))
+//								> ((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)) {
+//							engines.get(0).getCash(userId, assumptionIds, assumedStates);
+//							engine.getCash(userId, assumptionIds, assumedStates);
+//						}
+						assertEquals(
+								engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
+								engines.get(0).getCash(userId, assumptionIds, assumedStates), 
+								engine.getCash(userId, assumptionIds, assumedStates), 
+								((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
+						);
+						assertEquals(
+								engine.toString() + userId + " , " + assumptionIds + assumedStates, 
+								engines.get(0).scoreUserEv(userId, assumptionIds, assumedStates), 
+								engine.scoreUserEv(userId, assumptionIds, assumedStates), 
+								((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
+						);
+						
+						
+						ScoreSummary scoreSummaryObject = engine.getScoreSummaryObject(userId, null, assumptionIds, assumedStates);
+						assertNotNull(scoreSummaryObject);
+						assertEquals(
+								engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
+								engines.get(0).getCash(userId, assumptionIds, assumedStates), 
+								scoreSummaryObject.getCash(), 
+								((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
+						);
+						assertEquals(
+								engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
+								scoreSummaryOrig.getCash(), 
+								scoreSummaryObject.getCash(), 
+								((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
+						);
+						assertEquals(
+								engine.toString() + userId + " , " + assumptionIds + assumedStates, 
+								engines.get(0).scoreUserEv(userId, assumptionIds, assumedStates), 
+								scoreSummaryObject.getScoreEV(), 
+								((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
+						);
+						assertEquals(
+								engine.toString() + userId + " , " + assumptionIds + assumedStates, 
+								scoreSummaryOrig.getScoreEV(), 
+								scoreSummaryObject.getScoreEV(), 
+								((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
+						);
+						float sumOfScoreComponents = 0f;
+						for (SummaryContribution contribution : scoreSummaryObject.getScoreComponents()) {
+							sumOfScoreComponents += contribution.getContributionToScoreEV();
+						}
+						for (SummaryContribution contribution : scoreSummaryObject.getIntersectionScoreComponents()) {
+							sumOfScoreComponents -= contribution.getContributionToScoreEV();
+						}
+						assertFalse(engine.toString() + userId + " , " + assumptionIds + assumedStates, Float.isNaN(sumOfScoreComponents));
+						assertEquals(
+								engine.toString() + userId + " , " + assumptionIds + assumedStates, 
+								scoreSummaryObject.getScoreEV(), 
+								sumOfScoreComponents, 
+								((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
+						);
+					}
+				}
+			} // end of value verification
+			
+		} // end of iteration of file names
+		
+	}	
 	
 	
 

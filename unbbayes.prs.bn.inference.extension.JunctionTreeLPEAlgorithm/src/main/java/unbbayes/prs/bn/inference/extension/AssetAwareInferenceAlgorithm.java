@@ -89,6 +89,16 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 
 	/** Default value to fill {@link JunctionTreeAlgorithm#setLikelihoodExtractor(ILikelihoodExtractor)} */
 	public static final ILikelihoodExtractor DEFAULT_JEFFREYRULE_LIKELIHOOD_EXTRACTOR = JeffreyRuleLikelihoodExtractor.newInstance();
+
+	private static final ProbabilisticNode ONE_STATE_PROBNODE;
+	static{
+		ONE_STATE_PROBNODE = new ProbabilisticNode();
+		ONE_STATE_PROBNODE.setName("PROB_NODE_WITH_SINGLE_STATE");
+		// copy states
+		ONE_STATE_PROBNODE.appendState("VIRTUAL_STATE");
+		ONE_STATE_PROBNODE.initMarginalList();	// guarantee that marginal list is initialized
+		ONE_STATE_PROBNODE.setMarginalAt(0, 1f);	// set the only state to 100%
+	}
 	
 	
 
@@ -726,8 +736,9 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 				for (int j = 0; j < assetClique.getProbabilityFunction().tableSize(); j++) {
 					// extract values in the cell
 					float assetValue = assetClique.getProbabilityFunction().getValue(j);
-					float probValue = 1f; // if probClique has no variable, it is considered as if it has 1 variable with 100% prob
-					if (probClique.getProbabilityFunction().tableSize() > 0) {
+					float probValue = 1f; 
+					if (probClique.getProbabilityFunction().tableSize() > 1) {
+						// note: if probClique has no variable, it is considered as if it has 1 variable with 100% prob
 						probValue = probClique.getProbabilityFunction().getValue(j);
 					}
 					
@@ -1191,6 +1202,29 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 * This method will only delegate to {@link #getAssetPropagationDelegator()}
 	 */
 	public void setAsPermanentEvidence(INode node, int state, boolean isToDeleteNode) {
+		ProbabilisticNode probNode = (ProbabilisticNode) getRelatedProbabilisticNetwork().getNode(node.getName());
+		if (probNode != null) {
+			// set and propagate evidence in the probabilistic network
+			if (state < 0) {
+				// set finding as negative (i.e. finding setting a state to 0%)
+				probNode.addFinding(Math.abs(state+1), true);
+			} else {
+				probNode.addFinding(state);
+			}
+			getProbabilityPropagationDelegator().propagate();// propagate only the probabilities
+			if (isToDeleteNode) {
+				getRelatedProbabilisticNetwork().removeNode(probNode); // this will supposedly delete the cliques as well
+				// special treatment if the node to remove makes the clique to become empty
+				for (Clique clique : getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
+					// TODO update only the important clique
+					if (clique.getProbabilityFunction().tableSize() <= 0) {
+						clique.getProbabilityFunction().addVariable(ONE_STATE_PROBNODE);
+					}
+				}
+			}
+		} else {
+			Debug.println(getClass(), "Prob node " + node + " not found.");
+		}
 		this.getAssetPropagationDelegator().setAsPermanentEvidence(node, state, isToDeleteNode);
 	}
 
