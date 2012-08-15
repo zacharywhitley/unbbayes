@@ -246,7 +246,7 @@ public class PRMToBNCompiler implements IPRMCompiler,
 	private void fillRelatedNodes(IAttributeValue value,
 			Map<IAttributeValue, PRMNode> evaluated) {
 
-		// assertion of input/output
+		// Assertion of input/output
 		if (value == null || evaluated == null) {
 			return;
 		}
@@ -607,6 +607,36 @@ public class PRMToBNCompiler implements IPRMCompiler,
 
 	}
 
+	/** 	 
+     * Builders to help constructing correct instances of {@link Network} and {@link Node} 	 
+     * @return the networkBuilder 	 
+     */ 	 
+    public IProbabilisticNetworkBuilder getNetworkBuilder() { 	 
+            return networkBuilder; 	 
+    } 	 
+	 
+    /** 	 
+     * @param networkBuilder the networkBuilder to set 	 
+     */ 	 
+    public void setNetworkBuilder(IProbabilisticNetworkBuilder networkBuilder) { 	 
+            this.networkBuilder = networkBuilder; 	 
+    } 	 
+	 
+    /** 	 
+     * @return the cptCompiler 	 
+     */ 	 
+    public IPRMCPTCompiler getCptCompiler() { 	 
+            return cptCompiler; 	 
+    } 	 
+	 
+    /** 	 
+     * @param cptCompiler the cptCompiler to set 	 
+     */ 	 
+    public void setCptCompiler(IPRMCPTCompiler cptCompiler) { 	 
+            this.cptCompiler = cptCompiler; 	 
+    }
+    
+    
 	/*
 	 * (non-Javadoc)
 	 * 

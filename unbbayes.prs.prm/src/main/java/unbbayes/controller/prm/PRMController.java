@@ -203,4 +203,39 @@ public class PRMController implements IPRMController,
 	public BaseIO getIO() {
 		return defaultIO;
 	}
+	
+	/** 	 
+     * @param io the defaultIO to set 	 
+     */ 	 
+    public void setIO(BaseIO io) { 	 
+            defaultIO = io; 	 
+    } 	 
+	 
+    /** 	 
+     * @return the prmIOExtensionPointID 	 
+     */ 	 
+    public String getPrmIOExtensionPointID() { 	 
+            return prmIOExtensionPointID; 	 
+    } 	 
+	 
+    /** 	 
+     * @param prmIOExtensionPointID the prmIOExtensionPointID to set 	 
+     */ 	 
+    public void setPrmIOExtensionPointID(String prmIOExtensionPointID) { 	 
+            this.prmIOExtensionPointID = prmIOExtensionPointID; 	 
+    } 	 
+	 
+    /** 	 
+     * @return the prmModulePluginID 	 
+     */ 	 
+    public String getPrmModulePluginID() { 	 
+            return prmModulePluginID; 	 
+    } 	 
+	 
+    /** 	 
+     * @param prmModulePluginID the prmModulePluginID to set 	 
+     */ 	 
+    public void setPrmModulePluginID(String prmModulePluginID) { 	 
+            this.prmModulePluginID = prmModulePluginID; 	 
+    }
 }
