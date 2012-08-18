@@ -4515,10 +4515,16 @@ public class MarkovEngineTest extends TestCase {
 	 */
 	public final void testAddQuestionAfterTrade() {
 		
+		List<List<Long>> questionAssumptionGroups = engine.getQuestionAssumptionGroups();
+		assertTrue(questionAssumptionGroups.toString(), questionAssumptionGroups.isEmpty());
+		
 		// generate node E
 		long transactionKey = engine.startNetworkActions();
 		engine.addQuestion(transactionKey, new Date(), 0x0E, 2, null);	// question E has ID = hexadecimal E. CPD == null -> linear distro
 		engine.commitNetworkActions(transactionKey);
+		
+		questionAssumptionGroups = engine.getQuestionAssumptionGroups();
+		assertEquals(questionAssumptionGroups.toString(), 1, questionAssumptionGroups.size());
 		
 		// Let's use ID = 0 for the user Tom 
 		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
@@ -4627,12 +4633,20 @@ public class MarkovEngineTest extends TestCase {
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
 		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
 
+
+		questionAssumptionGroups = engine.getQuestionAssumptionGroups();
+		assertEquals(questionAssumptionGroups.toString(), 1, questionAssumptionGroups.size());
+		assertEquals(questionAssumptionGroups.toString(), 1, questionAssumptionGroups.get(0).size());
 		
 		// create node D and edge D->E
 		transactionKey = engine.startNetworkActions();
 		engine.addQuestion(transactionKey, new Date(), 0x0D, 2, null);	// question D has ID = hexadecimal D. CPD == null -> linear distro
 		engine.addQuestionAssumption(transactionKey, new Date(), 0x0E, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
 		engine.commitNetworkActions(transactionKey);
+
+		questionAssumptionGroups = engine.getQuestionAssumptionGroups();
+		assertEquals(questionAssumptionGroups.toString(), 1, questionAssumptionGroups.size());
+		assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.get(0).size());
 		
 		// check that probs and assets did not change
 		
@@ -4929,12 +4943,23 @@ public class MarkovEngineTest extends TestCase {
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
 		assertTrue("Obtained cash = " + cash, minCash < cash);
 
+
+		questionAssumptionGroups = engine.getQuestionAssumptionGroups();
+		assertEquals(questionAssumptionGroups.toString(), 1, questionAssumptionGroups.size());
+		assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.get(0).size());
 		
 		// create node F and edge D->F
 		transactionKey = engine.startNetworkActions();
 		engine.addQuestion(transactionKey, new Date(), 0x0F, 2, null);	// question F has ID = hexadecimal F. CPD == null -> linear distro
 		engine.addQuestionAssumption(transactionKey, new Date(), 0x0F, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
 		engine.commitNetworkActions(transactionKey);
+		
+
+		questionAssumptionGroups = engine.getQuestionAssumptionGroups();
+		assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.size());
+		for (List<Long> group : questionAssumptionGroups) {
+			assertEquals(questionAssumptionGroups.toString(), 2, group.size());
+		}
 		
 		// check that probs and assets did not change
 		
@@ -5960,6 +5985,11 @@ public class MarkovEngineTest extends TestCase {
 		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
 		assertTrue("Obtained unexpected cash = " + minCash, minCash <= 0);
 		
+		questionAssumptionGroups = engine.getQuestionAssumptionGroups();
+		assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.size());
+		for (List<Long> group : questionAssumptionGroups) {
+			assertEquals(questionAssumptionGroups.toString(), 2, group.size());
+		}
 		
 	}
 	
@@ -5971,6 +6001,9 @@ public class MarkovEngineTest extends TestCase {
 	 * but it executes everything in a single transaction.
 	 */
 	public final void testAddQuestionAfterTradeInOneTransaction() {
+		
+		List<List<Long>> questionAssumptionGroups = engine.getQuestionAssumptionGroups();
+		assertEquals(questionAssumptionGroups.toString(), 0, questionAssumptionGroups.size());
 		
 		// crate transaction
 		long transactionKey = engine.startNetworkActions();
@@ -6167,6 +6200,8 @@ public class MarkovEngineTest extends TestCase {
 				false
 		);
 		
+		// if true, the quantity of cliques has changed
+		
 		// add new node C and random edge from or to C
 		engine.addQuestion(transactionKey, new Date(), 0x0C, 2, null);
 		if (Math.random() < .5) {
@@ -6204,6 +6239,9 @@ public class MarkovEngineTest extends TestCase {
 		
 		// commit all trades (including the creation of network and user)
 		engine.commitNetworkActions(transactionKey);
+		
+		questionAssumptionGroups = engine.getQuestionAssumptionGroups();
+		assertTrue(questionAssumptionGroups.toString(), questionAssumptionGroups.size() >= 2);
 		
 		// check that final marginal of C is [.5,.5], E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
 		Map<Long,List<Float>> probsList = engine.getProbLists(null, null, null);

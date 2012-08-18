@@ -3305,10 +3305,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				
 				// indexInProbTable is pointing to some cell in this table
 				PotentialTable table = (PotentialTable) probCliqueOrSep.getProbabilityFunction();	// only nodes related to this table is considered
-				if (table.tableSize() <= 1) {
-					// ignore clique tables of resolved cliques
-					return;
-				}
+				
 				
 				// check cache first (we want to reuse objects for the questions, because they will repeat a lot)
 				List<Long> cache = questionsCache.get(probCliqueOrSep);
@@ -3324,11 +3321,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					questionsCache.put(probCliqueOrSep, questions);
 					// Fill the list "questions" regarding the filter (i.e. "questionId")
 					for (int i = 0; i < table.variableCount(); i++) {
-						Long idOfCurrentNode = Long.parseLong(table.getVariableAt(i).getName()); // the name is supposedly the ID
-						if (idOfCurrentNode == questionId) {
-							matchesFilter = true;
+						try {
+							Long idOfCurrentNode = Long.parseLong(table.getVariableAt(i).getName()); // the name is supposedly the ID
+							if (idOfCurrentNode == questionId) {
+								matchesFilter = true;
+							}
+							questions.add(idOfCurrentNode);	
+						} catch (NumberFormatException e) {
+							Debug.println(getClass(), table.getVariableAt(i) + " is not a question ID :" + e.getMessage(), e);
+							// continue;
 						}
-						questions.add(idOfCurrentNode);	
 					}
 				} else {
 					matchesFilter = questionId == null || cache.contains(questionId);

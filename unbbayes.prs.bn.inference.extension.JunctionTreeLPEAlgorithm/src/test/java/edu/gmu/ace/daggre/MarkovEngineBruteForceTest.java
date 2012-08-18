@@ -71,6 +71,11 @@ public class MarkovEngineBruteForceTest extends TestCase {
 //		engines.add(CPTBruteForceMarkovEngine.getInstance(2f, 100f, 1000f));
 		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 1000f));
 //		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 1000f, false, true));
+
+		// add another engine which does not delete nodes when resolved
+		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 1000f));
+		engines.get(engines.size()-1).setToDeleteResolvedNode(false);
+		engines.get(engines.size()-1).setToObtainProbabilityOfResolvedQuestions(true);
 		for (MarkovEngineInterface engine : engines) {
 			engine.initialize();
 		}
@@ -465,7 +470,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				sumOfScoreComponents -= contribution.getContributionToScoreEV();
 			}
 			assertFalse(engine.toString() + userId + " , " + assumptionIds + assumedStates, Float.isNaN(sumOfScoreComponents));
-			assertEquals(
+			assertEquals("["+ engines.indexOf(engine) + "]"+
 					engine.toString() + userId + " , " + assumptionIds + assumedStates, 
 					scoreSummaryObject.getScoreEV(), 
 					sumOfScoreComponents, 
