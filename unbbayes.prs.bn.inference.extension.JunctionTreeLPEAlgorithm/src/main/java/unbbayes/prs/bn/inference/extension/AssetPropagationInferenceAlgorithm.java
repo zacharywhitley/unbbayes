@@ -2146,6 +2146,13 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 						// TODO restore clique/net structure
 					}
 				}
+				// set marginals after the cliques/seps were restored
+				for (Node node : getRelatedProbabilisticNetwork().getNodes()) {
+					if (node instanceof TreeVariable) {
+						((TreeVariable) node).updateMarginal();
+					}
+				}
+				// TODO optimize
 			}
 			// restore assets
 			if (getAssetNetwork() != null && getAssetNetwork().getJunctionTree() != null){

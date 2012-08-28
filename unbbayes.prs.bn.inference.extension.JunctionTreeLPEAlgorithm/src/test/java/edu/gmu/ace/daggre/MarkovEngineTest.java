@@ -22,6 +22,7 @@ import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.Separator;
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
+import unbbayes.prs.exception.InvalidParentException;
 import edu.gmu.ace.daggre.MarkovEngineImpl.AddTradeNetworkAction;
 import edu.gmu.ace.daggre.MarkovEngineImpl.BalanceTradeNetworkAction;
 import edu.gmu.ace.daggre.MarkovEngineImpl.InexistingQuestionException;
@@ -12362,22 +12363,6 @@ public class MarkovEngineTest extends TestCase {
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
 		assertTrue("Obtained cash = " + cash, minCash < cash);
 		
-		try {
-			List<Long> questionIds = new ArrayList<Long>();
-			questionIds.add(13L); questionIds.add(14L); questionIds.add(15L); 
-			questionIds.add(12L); questionIds.add(10L);
-			List<Integer> states = new ArrayList<Integer>();
-			states.add(0); states.add(0); states.add(0); 
-			states.add(0); states.add(0);
-			for (int i = 0; i < 32; i++) {
-				states.set(0, i%2); states.set(1,(i/2)%2); states.set(2,(i/4)%2); 
-				states.set(3,(i/16)%2); states.set(4,(i/32)%2);
-//				System.out.println(engine.getJointProbability(questionIds, states));
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
 		
 		// test invalid assumptions
 		
@@ -12448,6 +12433,197 @@ public class MarkovEngineTest extends TestCase {
 		action = (AddTradeNetworkAction) questionHistory.get(questionHistory.size()-1);
 		assertEquals((long)0x0D, (long)action.getQuestionId());
 		assertTrue("Assumptions = " + action.getTradeId(), action.getAssumptionIds().isEmpty());
+		
+		assertNotNull(engine.getScoreSummaryObject(userNameToIDMap.get("Tom"), null, null, null));
+		assertFalse(engine.getQuestionHistory(null, null, null).isEmpty());
+		assertFalse(engine.previewBalancingTrade(userNameToIDMap.get("Tom"), 0x0AL, null, null).isEmpty());
+		assertFalse(engine.getAssetsIfStates(userNameToIDMap.get("Tom"), 0x0AL, null, null).isEmpty());
+		assertFalse(Float.isNaN(engine.getCash(userNameToIDMap.get("Tom"), null, null)));
+		assertNotNull(engine.getEditLimits(userNameToIDMap.get("Tom"), 0x0AL, 2, null, null));
+		assertEquals(0,engine.getMaximumValidAssumptionsSublists(0x0AL, null, 1).get(0).size());
+		assertTrue(engine.getPossibleQuestionAssumptions(0x0A, null).isEmpty());
+		assertNotNull(engine.getScoreDetails(userNameToIDMap.get("Tom"), 0x0AL, null, null));
+		assertFalse(engine.getQuestionAssumptionGroups().isEmpty());
+		
+		
+		
+		// test condition in which min is below 0 even though no entry in asset table is below 0
+		
+		// backup values before edit
+		probListsBeforeTrade = engine.getProbLists(null, null, null);
+		
+		// assert that the min is positive
+		assertTrue("Cash = " + engine.getCash(userNameToIDMap.get("Amy"), null, null), engine.getCash(userNameToIDMap.get("Amy"), null, null) > 0f);
+		
+		float emptySeparatorsDefaultContent = Float.NaN;
+		try {
+			emptySeparatorsDefaultContent = engine.getAlgorithmAndAssetNetFromUserID(userNameToIDMap.get("Amy")).getEmptySeparatorsDefaultContent();
+			engine.getAlgorithmAndAssetNetFromUserID(userNameToIDMap.get("Amy")).setEmptySeparatorsDefaultContent(20);
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+			fail();
+		} catch (InvalidParentException e) {
+			e.printStackTrace();
+			fail();
+		}
+		
+		// now the min should be negative
+		assertFalse("Cash = " + engine.getCash(userNameToIDMap.get("Amy"), null, null), engine.getCash(userNameToIDMap.get("Amy"), null, null) > 0f);
+		
+		// do trade 
+		newValues = new ArrayList<Float>();
+		newValues.add(.3f); newValues.add(.3f); newValues.add(.4f);
+		try {
+			engine.addTrade(
+					null, 
+					new Date(), 
+					"Amy makes a trade P(A) = [.3,.3,.4].", 
+					userNameToIDMap.get("Amy"), 
+					0X0AL, 
+					newValues, 
+					null, 
+					null, 
+					false
+			);
+			fail("Should throw exception indicating 0 or negative min");
+		} catch (ZeroAssetsException e) {
+			assertNotNull(e);
+		}
+		
+		// probability of nodes present before this transaction must remain unchanged
+		probListsAfterTrade = engine.getProbLists(null, null, null);
+		for (Long id : probListsBeforeTrade.keySet()) {
+			assertEquals("question = " + id , probListsBeforeTrade.get(id).size(), probListsAfterTrade.get(id).size());
+			for (int i = 0; i < probListsBeforeTrade.get(id).size(); i++) {
+				assertEquals("Question = " + id , probListsBeforeTrade.get(id).get(i), probListsAfterTrade.get(id).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		
+		
+		try {
+			engine.getAlgorithmAndAssetNetFromUserID(userNameToIDMap.get("Amy")).setEmptySeparatorsDefaultContent(emptySeparatorsDefaultContent);
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+			fail();
+		} catch (InvalidParentException e) {
+			e.printStackTrace();
+			fail();
+		}
+		
+		// check that final min-q of Amy remains 6...
+		minCash = engine.getCash(userNameToIDMap.get("Amy"), null, null);
+		assertEquals((engine.getScoreFromQValues(6f)), (minCash), ASSET_ERROR_MARGIN);
+		assertEquals(6f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		
+		// check that new LPE of Amy is independent of E
+		assertEquals(minCash, engine.getCash(userNameToIDMap.get("Amy"), Collections.singletonList(0x0EL), Collections.singletonList(0)), ASSET_ERROR_MARGIN);
+		assertEquals(minCash, engine.getCash(userNameToIDMap.get("Amy"), Collections.singletonList(0x0EL), Collections.singletonList(1)), ASSET_ERROR_MARGIN);
+		
+		// check that LPE is d1 c1 f1
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long) 0x0D);		// 1st node is D; assumedStates must follow this order
+		assumptionIds.add((long) 0x0C);		// 2nd node is C; assumedStates must follow this order
+		assumptionIds.add((long) 0x0F);		// 3rd node is F; assumedStates must follow this order
+		
+		// check combination d1, c1, f1
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);	// d1
+		assumedStates.add(0);	// c1
+		assumedStates.add(0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		
+		// check combination d1, c1, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// c1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, c2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// c2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d1, c2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// c2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, c1, f1 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// c1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, c1, f2 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// c1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, c2, f1
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// c2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, c2, f2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// c2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check incomplete condition of LPE: c1
+		cash = engine.getCash(userNameToIDMap.get("Amy"), Collections.singletonList((long)0x0C), Collections.singletonList(0));
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		cash = engine.getCash(userNameToIDMap.get("Amy"), Collections.singletonList((long)0x0C), Collections.singletonList(1));
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		
+		
+		assertNotNull(engine.getScoreSummaryObject(userNameToIDMap.get("Tom"), null, null, null));
+		assertFalse(engine.getQuestionHistory(null, null, null).isEmpty());
+		assertFalse(engine.previewBalancingTrade(userNameToIDMap.get("Tom"), 0x0AL, null, null).isEmpty());
+		assertFalse(engine.getAssetsIfStates(userNameToIDMap.get("Tom"), 0x0AL, null, null).isEmpty());
+		assertFalse(Float.isNaN(engine.getCash(userNameToIDMap.get("Tom"), null, null)));
+		assertNotNull(engine.getEditLimits(userNameToIDMap.get("Tom"), 0x0AL, 2, null, null));
+		assertEquals(0,engine.getMaximumValidAssumptionsSublists(0x0AL, null, 1).get(0).size());
+		assertTrue(engine.getPossibleQuestionAssumptions(0x0A, null).isEmpty());
+		assertNotNull(engine.getScoreDetails(userNameToIDMap.get("Tom"), 0x0AL, null, null));
+		assertFalse(engine.getQuestionAssumptionGroups().isEmpty());
+		
+		// now, the trade should be OK to do this trade, because the empty separators were fixed
+		engine.addTrade(
+				null, 
+				new Date(), 
+				"Amy makes a trade P(A) = [.3,.3,.4].", 
+				userNameToIDMap.get("Amy"), 
+				0X0AL, 
+				newValues, 
+				null, 
+				null, 
+				false
+		);
+		
+		// marginal is [.3,.3,.4]
+		probList = engine.getProbList(0x0AL, null, null);
+		assertEquals(3, probList.size());
+		assertEquals(probList.get(0), .3f, PROB_ERROR_MARGIN);
+		assertEquals(probList.get(1), .3f, PROB_ERROR_MARGIN);
+		assertEquals(probList.get(2), .4f, PROB_ERROR_MARGIN);
+		
+		// assert that the min is positive
+		assertTrue("Cash = " + engine.getCash(userNameToIDMap.get("Amy"), null, null), engine.getCash(userNameToIDMap.get("Amy"), null, null) > 0f);
+		
 		
 		assertNotNull(engine.getScoreSummaryObject(userNameToIDMap.get("Tom"), null, null, null));
 		assertFalse(engine.getQuestionHistory(null, null, null).isEmpty());
