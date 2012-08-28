@@ -328,7 +328,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				        || scoreUserQuestionEvStatesBeforeTrade.get(j) - errorMargin > scoreUserQuestionEvStatesAfterTrade.get(j)
 						|| scoreUserQuestionEvStatesBeforeTrade.get(j) < scoreUserQuestionEvStatesAfterTrade.get(j)  - errorMargin;
 			}
-			assertTrue(engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates
+			assertTrue("["+ engines.indexOf(engine) + "]" + engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates
 						+ ", old = " + scoreUserQuestionEvStatesBeforeTrade + ", new = " + scoreUserQuestionEvStatesAfterTrade, 
 					hasChanged
 				);
@@ -344,7 +344,10 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				assertTrue(engine.toString()+ ", min = " + minimum, minimum < 0);
 				break;
 			case ON_LOWER_LIMIT:
-				assertEquals(engine.toString(), 0f, minimum, 
+				if (Math.abs(minimum) > ((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)) {
+					engines.get(0).getCash(userId, null, null);
+				}
+				assertEquals(engines.indexOf(engine) + "-" +engine.toString(), 0f, minimum, 
 						((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
 				break;
 			case BETWEEN_LIMITS:
@@ -354,7 +357,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				if (Math.abs(minimum) > ((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)) {
 					engines.get(0).getCash(userId, null, null);
 				}
-				assertEquals(engine.toString(), 0f, minimum, 
+				assertEquals(engines.indexOf(engine) + "-" +engine.toString(), 0f, minimum, 
 						((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
 				break;
 			case ABOVE_LIMIT:
@@ -476,6 +479,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					sumOfScoreComponents, 
 					((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
 				);
+			
 		}
 		// revert trades if this was not supposedly a valid trade
 		if (pointWithin5PointTest != FivePointTestType.BETWEEN_LIMITS) {
@@ -3150,43 +3154,14 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		assertNotNull(questionsToQuantityOfStatesMap);
 		this.runTestAssumingInitializedNetwork(questionsToQuantityOfStatesMap, new HashMap<MarkovEngineImpl, Long>(), userIDs);
 	}	
-	
+
 	
 	/**
-	 * Test method for the networks loaded from files identified by the names in {@link #getFileNames()}.
-	 * Testing the following conditions
-	 * in 4 engines (respectively the Markov Engine - the official - Markov Engine with q-values,
-	 * Brute force markov engine - product of cliques / product of separators, and Brute force
-	 * markov engine - product of CPTs):
-	 * <br/>
-	 * a.) 5-point min-q values test regarding the edit bound; expect to see corresponding 
-	 * q<1, =1, >1 respectively. <br/>
-	 * b.) marginal probability on individual variable.<br/>
-	 * c.) min-q values after a user confirms a trade.<br/>
-	 * d.) min-q state. (not tested in this version)<br/>
-	 * e.) The expected score.<br/>
-	 * f. ) conditional min-q and expected score on randomly given states. 
-	 * How many random given states depends on network size. 
-	 * We choose floor(0.3*numberOfVariablesInTheNet).<br/>
-	 * g.) An userÅfs asset table is not changed when other user makes edit.<br/>
-	 * <br/>
-	 * Methodology (using total of 3 users):<br/>
-	 * (1) Randomly choose one user; <br/>
-	 * (2) Randomly choose one node, and randomly choose assumption set in the same clique of the node. 
-	 * If the clique size is bigger than 3, the size of assumption set has to be at least 2.<br/>
-	 * <br/>
-	 * <br/>
-	 * Definition: 5-point min-q test is to verify the min-q values returned after trades are 
-	 * made on specific edit around boundary over the edit limit. 
-	 * In particular, we choose 5 point of probability edit: <br/>
-	 * (1) the probability close to but smaller than the lower bound;<br/> 
-	 * (2) the probability exactly on the lower bound;<br/> 
-	 * (3) random probability in between the bound;<br/> 
-	 * (4) the probability exactly on the upper bound;<br/> 
-	 * (5) the probability close to but bigger than the upper bound;<br/> 
+	 * This performs the same as the {@link #testFiles()},
+	 * but it randomly resolves questions and
+	 * adds new ones.
 	 */
-	public final void testFiles() {
-		
+	public final void testFilesWithResolution() {
 		// most basic assertion
 		assertNotNull(engines);
 		assertFalse(engines.isEmpty());
@@ -3251,12 +3226,11 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	
 
 	/**
-	 * This test case will run the same test of {@link #testFiles()},
+	 * This test case will run the same test of {@link #testFilesWithResolution()},
 	 * but the engines in {@link #engines} will run in a single transaction
 	 * except for the 1st engine.
 	 */
-	public final void testFilesIn1Transaction() {
-		
+	public final void testFilesWithResolutionIn1Transaction() {
 		// markov engine which commits every trade 1-by-1
 		engines.add(0, (MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 1000f));
 		

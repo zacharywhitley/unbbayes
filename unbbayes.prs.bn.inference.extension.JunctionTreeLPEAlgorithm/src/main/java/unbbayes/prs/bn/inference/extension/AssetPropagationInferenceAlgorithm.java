@@ -4,6 +4,7 @@
 package unbbayes.prs.bn.inference.extension;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -2061,6 +2062,131 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		} else {
 			this.setJunctionTreeBuilder(isToUseQValues()?DEFAULT_MIN_PROPAGATION_JUNCTION_TREE_BUILDER:DEFAULT_ONEWAY_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
 			this.setDefaultJunctionTreeBuilder(isToUseQValues()?DEFAULT_MIN_PROPAGATION_JUNCTION_TREE_BUILDER:DEFAULT_ONEWAY_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
+		}
+	}
+	
+	/**
+	 * This is an object storing minimum information to restore 
+	 * assets and probabilities to a given moment.
+	 * CAUTION: it cannot restore if there were changes in network structure.
+	 * @author Shou Matsumoto
+	 */
+	public class AssetPropagationInferenceAlgorithmMemento implements IAssetNetAlgorithmMemento {
+		/** Backup of clique potentials */
+		private Map<Clique, PotentialTable> probCliques = new HashMap<Clique, PotentialTable>();
+		/** Backup of separator potentials */
+		private Map<Separator, PotentialTable> probSeps = new HashMap<Separator, PotentialTable>();
+		/** Backup of clique asset tables */
+		private Map<Clique, PotentialTable> assetCliques = new HashMap<Clique, PotentialTable>();
+		/** Backup of separator's asset tables */
+		private Map<Separator, PotentialTable> assetSeps = new HashMap<Separator, PotentialTable>();;
+		/**
+		 * Default constructor.
+		 * It backs up the values of probability clique tables and asset tables.
+		 */
+		public AssetPropagationInferenceAlgorithmMemento() {
+			super();
+			// backup probabilities
+			if (getRelatedProbabilisticNetwork() != null && getRelatedProbabilisticNetwork().getJunctionTree() != null){
+				// fill probCliques
+				List<Clique> cliques = getRelatedProbabilisticNetwork().getJunctionTree().getCliques();
+				if (cliques != null) {
+					for (Clique clique : cliques) {
+						probCliques.put(clique, (PotentialTable) clique.getProbabilityFunction().clone());
+					}
+				}
+				// fill probSeps
+				Collection<Separator> separators = getRelatedProbabilisticNetwork().getJunctionTree().getSeparators();
+				if (separators != null) {
+					for (Separator sep : separators) {
+						probSeps.put(sep, (PotentialTable) sep.getProbabilityFunction().clone());
+					}
+				}
+			}
+			// backup assets
+			if (getAssetNetwork() != null && getAssetNetwork().getJunctionTree() != null){
+				// fill assetCliques
+				List<Clique> cliques = getAssetNetwork().getJunctionTree().getCliques();
+				if (cliques != null) {
+					for (Clique clique : cliques) {
+						assetCliques.put(clique, (PotentialTable) clique.getProbabilityFunction().clone());
+					}
+				}
+				// fill assetSeps
+				Collection<Separator> separators = getAssetNetwork().getJunctionTree().getSeparators();
+				if (separators != null) {
+					for (Separator sep : separators) {
+						assetSeps.put(sep, (PotentialTable) sep.getProbabilityFunction().clone());
+					}
+				}
+			}
+		}
+
+		/**
+		 * It uses the backup to restore probability clique tables and asset tables.
+		 * @throws ArrayIndexOutOfBoundsException : if the network structure has changes,
+		 * and consequently the size of tables has changed.
+		 */
+		public void restore() {
+			// restore probabilities
+			if (getRelatedProbabilisticNetwork() != null && getRelatedProbabilisticNetwork().getJunctionTree() != null){
+				// restore clique potentials
+				List<Clique> cliques = getRelatedProbabilisticNetwork().getJunctionTree().getCliques();
+				if (cliques != null) {
+					for (Clique clique : cliques) {
+						clique.getProbabilityFunction().setValues(probCliques.get(clique).getValues());
+						// TODO restore clique/net structure
+					}
+				}
+				// restore separator potentials
+				Collection<Separator> separators = getRelatedProbabilisticNetwork().getJunctionTree().getSeparators();
+				if (separators != null) {
+					for (Separator sep : separators) {
+						sep.getProbabilityFunction().setValues(probSeps.get(sep).getValues());
+						// TODO restore clique/net structure
+					}
+				}
+			}
+			// restore assets
+			if (getAssetNetwork() != null && getAssetNetwork().getJunctionTree() != null){
+				// restore clique assets
+				List<Clique> cliques = getAssetNetwork().getJunctionTree().getCliques();
+				if (cliques != null) {
+					for (Clique clique : cliques) {
+						clique.getProbabilityFunction().setValues(assetCliques.get(clique).getValues());
+						// TODO restore clique/net structure
+					}
+				}
+				// restore separator assets
+				Collection<Separator> separators = getAssetNetwork().getJunctionTree().getSeparators();
+				if (separators != null) {
+					for (Separator sep : separators) {
+						sep.getProbabilityFunction().setValues(assetSeps.get(sep).getValues());
+						// TODO restore clique/net structure
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Obtains an instance of {@link AssetPropagationInferenceAlgorithmMemento}
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#getMemento()
+	 */
+	public IAssetNetAlgorithmMemento getMemento() {
+		return new AssetPropagationInferenceAlgorithmMemento();
+	}
+
+	/**
+	 * Uses an instance of {@link AssetPropagationInferenceAlgorithmMemento} to
+	 * restore probabilities and assets.
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setMemento(unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm.IAssetNetAlgorithmMemento)
+	 */
+	public void setMemento(IAssetNetAlgorithmMemento memento) throws NoSuchFieldException {
+		if (memento instanceof AssetPropagationInferenceAlgorithmMemento) {
+			((AssetPropagationInferenceAlgorithmMemento)memento).restore();
+		} else {
+			throw new NoSuchFieldException("Expected an instance of " + AssetPropagationInferenceAlgorithmMemento.class.getName());
 		}
 	}
 	

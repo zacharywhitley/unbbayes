@@ -104,7 +104,9 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 
 	private List<ExpectedAssetCellMultiplicationListener> expectedAssetCellListeners = new ArrayList<AssetAwareInferenceAlgorithm.ExpectedAssetCellMultiplicationListener>();
 
-	private boolean isToCalculateLPE = false;	
+	private boolean isToCalculateLPE = false;
+
+	private float expectedAssetPivot = 0;	
 	
 
 
@@ -755,9 +757,9 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 					double value;
 					if (isToUseQValues()) {
 						value = probValue 
-							* getqToAssetConverter().getScoreFromQValues(assetValue);
+							* (getqToAssetConverter().getScoreFromQValues(assetValue) - getExpectedAssetBasis());
 					} else {
-						value = probValue * assetValue;
+						value = probValue * (assetValue - getExpectedAssetBasis());
 					}
 					ret +=  value;
 					this.notifyExpectedAssetCellListener(probClique, assetClique, j, j, value);
@@ -773,9 +775,9 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 					// this is an empty separator, so it has 
 					double value;
 					if (isToUseQValues()) {
-						value = getqToAssetConverter().getScoreFromQValues(getEmptySeparatorsDefaultContent());
+						value = getqToAssetConverter().getScoreFromQValues(getEmptySeparatorsDefaultContent()) - getExpectedAssetBasis();
 					} else {
-						value = getEmptySeparatorsDefaultContent();
+						value = getEmptySeparatorsDefaultContent() - getExpectedAssetBasis();
 					}
 					ret -= value;
 					this.notifyExpectedAssetCellListener(probSeparator, assetSeparator, -1, -1, value);
@@ -794,9 +796,10 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 					double value ;
 					if (isToUseQValues()) {
 						value = probSeparator.getProbabilityFunction().getValue(i) 
-							* getqToAssetConverter().getScoreFromQValues(assetSeparator.getProbabilityFunction().getValue(i));
+							* (getqToAssetConverter().getScoreFromQValues(assetSeparator.getProbabilityFunction().getValue(i))  - getExpectedAssetBasis());
 					} else {
-						value = probSeparator.getProbabilityFunction().getValue(i) * assetSeparator.getProbabilityFunction().getValue(i);
+						value = probSeparator.getProbabilityFunction().getValue(i) 
+							* (assetSeparator.getProbabilityFunction().getValue(i)  - getExpectedAssetBasis());
 					}
 					ret -= value;
 					this.notifyExpectedAssetCellListener(probSeparator, assetSeparator, i, i, value);
@@ -1106,6 +1109,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		ret.setToUpdateSeparators(this.isToUpdateSeparators());
 		ret.setToUseQValues(this.isToUseQValues());
 		ret.setToCalculateLPE(this.isToCalculateLPE());
+		ret.setExpectedAssetPivot(this.getExpectedAssetBasis());
 		
 		// copy current converter which converts q values to assets and vice-versa
 		ret.setqToAssetConverter(this.getqToAssetConverter());
@@ -1418,6 +1422,44 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		if (this.getAssetPropagationDelegator() != null) {
 			this.getAssetPropagationDelegator().setToCalculateLPE(isToCalculateLPE);
 		}
+	}
+
+	/**
+	 * Just delegates to {@link #getAssetPropagationDelegator()}.
+	 * May return null if {@link #getAssetPropagationDelegator()} == null
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#getMemento()
+	 */
+	public IAssetNetAlgorithmMemento getMemento() {
+		if (this.getAssetPropagationDelegator() == null) {
+			return null;
+		}
+		return this.getAssetPropagationDelegator().getMemento();
+	}
+
+	/**
+	 * Just delegates to {@link #getAssetPropagationDelegator()}
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setMemento(unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm.IAssetNetAlgorithmMemento)
+	 * @throws NullPointerException : if {@link #getAssetPropagationDelegator()} == null
+	 */
+	public void setMemento(IAssetNetAlgorithmMemento memento) throws NoSuchFieldException {
+		if (this.getAssetPropagationDelegator() == null) {
+			throw new NoSuchFieldException("this.getAssetPropagationDelegator() == null");
+		}
+		this.getAssetPropagationDelegator().setMemento(memento);
+	}
+
+	/**
+	 * @param expectedAssetPivot the expectedAssetPivot to set
+	 */
+	public void setExpectedAssetPivot(float expectedAssetPivot) {
+		this.expectedAssetPivot = expectedAssetPivot;
+	}
+
+	/**
+	 * @return the expectedAssetPivot
+	 */
+	public float getExpectedAssetBasis() {
+		return expectedAssetPivot;
 	}
 
 	

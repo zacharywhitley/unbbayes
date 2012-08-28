@@ -33,6 +33,7 @@ public class AssetAwareJunctionTreeOptionPanel extends JunctionTreeOptionPanel {
 		JunctionTreeAlgorithm delegator = new JunctionTreeAlgorithm();
 		delegator.setOptionPanel(this);
 		AssetAwareInferenceAlgorithm alg = (AssetAwareInferenceAlgorithm)AssetAwareInferenceAlgorithm.getInstance(delegator);
+		alg.setToAllowZeroAssets(true);
 		alg.setToCalculateMarginalsOfAssetNodes(true);	// force GUI to display marginal assets (min-assets by default)
 		alg.setToLogAssets(true);	// enable log
 		this.setInferenceAlgorithm(alg);
@@ -132,6 +133,7 @@ public class AssetAwareJunctionTreeOptionPanel extends JunctionTreeOptionPanel {
 		super.commitChanges();
 		try {
 			((AssetAwareInferenceAlgorithm) this.getInferenceAlgorithm()).setDefaultInitialAssetTableValue(Float.parseFloat(this.getAssetQuantityTextField().getText()));
+			((AssetAwareInferenceAlgorithm) this.getInferenceAlgorithm()).setToAllowZeroAssets(true);
 		} catch (Exception e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(this, "Could not commit change: " + e.getMessage());

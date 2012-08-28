@@ -36,6 +36,7 @@ import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm.ExpectedAssetCellMultiplicationListener;
 import unbbayes.prs.bn.inference.extension.AssetPropagationInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.IAssetAwareInferenceAlgorithmBuilder;
+import unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm.IAssetNetAlgorithmMemento;
 import unbbayes.prs.bn.inference.extension.IQValuesToAssetsConverter;
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
 import unbbayes.prs.exception.InvalidParentException;
@@ -426,7 +427,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public class RebuildNetworkAction implements NetworkAction {
 		private final Date whenCreated;
-		private final long transactionKey;
+		private final Long transactionKey;
 		private Date whenExecutedFirst = null;
 		private final Date tradesStartingWhen;
 		private final Long questionId;
@@ -442,7 +443,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 * {@link AddTradeNetworkAction} with {@link AddTradeNetworkAction#getQuestionId()} matching
 		 * this questionId and created after tradesStartingWhen.
 		 */
-		public RebuildNetworkAction(long transactionKey, Date whenCreated, Date tradesStartingWhen, Long questionId) {
+		public RebuildNetworkAction(Long transactionKey, Date whenCreated, Date tradesStartingWhen, Long questionId) {
 			this.transactionKey = transactionKey;
 			this.whenCreated = whenCreated;
 			this.tradesStartingWhen = tradesStartingWhen;
@@ -565,7 +566,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public class RevertTradeNetworkAction extends RebuildNetworkAction {
 		/** Default constructor initializing fields */
-		public RevertTradeNetworkAction(long transactionKey, Date whenCreated, Date tradesStartingWhen, Long questionId) {
+		public RevertTradeNetworkAction(Long transactionKey, Date whenCreated, Date tradesStartingWhen, Long questionId) {
 			super(transactionKey, whenCreated, tradesStartingWhen, questionId);
 		}
 		/** @see edu.gmu.ace.daggre.MarkovEngineImpl.RebuildNetworkAction#execute(java.util.List)*/
@@ -614,7 +615,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#addQuestion(long, java.util.Date, long, int, java.util.List)
 	 */
-	public synchronized boolean addQuestion(long transactionKey, Date occurredWhen,
+	public synchronized boolean addQuestion(Long transactionKey, Date occurredWhen,
 			long questionId, int numberStates, List<Float> initProbs)
 			throws IllegalArgumentException {
 		
@@ -656,7 +657,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		
 		// instantiate the action object for adding a question
-		this.addNetworkAction(transactionKey, new AddQuestionNetworkAction(transactionKey, occurredWhen, questionId, numberStates, initProbs));
+		if (transactionKey == null) {
+			transactionKey = this.startNetworkActions();
+			this.addNetworkAction(transactionKey, new AddQuestionNetworkAction(transactionKey, occurredWhen, questionId, numberStates, initProbs));
+			this.commitNetworkActions(transactionKey);
+		} else {
+			this.addNetworkAction(transactionKey, new AddQuestionNetworkAction(transactionKey, occurredWhen, questionId, numberStates, initProbs));
+		}
 		
 		return true;
 	}
@@ -667,14 +674,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see MarkovEngineImpl#addQuestion(long, Date, long, int, List)
 	 */
 	public class AddQuestionNetworkAction implements NetworkAction {
-		private final long transactionKey;
+		private final Long transactionKey;
 		private final Date occurredWhen;
 		private final long questionId;
 		private final int numberStates;
 		private final List<Float> initProbs;
 		private Date whenExecutedFirst;
 		/** Default constructor initializing fields */
-		public AddQuestionNetworkAction(long transactionKey, Date occurredWhen,
+		public AddQuestionNetworkAction(Long transactionKey, Date occurredWhen,
 				long questionId, int numberStates, List<Float> initProbs) {
 			super();
 			this.transactionKey = transactionKey;
@@ -714,7 +721,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 		}
 		public void revert() throws UnsupportedOperationException {
-			throw new javax.help.UnsupportedOperationException("Reverting an addQuestion operation is not supported yet.");
+			throw new UnsupportedOperationException("Reverting an addQuestion operation is not supported yet.");
 		}
 		public Date getWhenCreated() { return this.occurredWhen; }
 		public Long getTransactionKey() { return transactionKey;
@@ -736,7 +743,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#addQuestionAssumption(long, java.util.Date, long, long, java.util.List)
 	 */
-	public boolean addQuestionAssumption(long transactionKey, Date occurredWhen, long childQuestionId, List<Long> parentQuestionIds,  List<Float> cpd) throws IllegalArgumentException {
+	public boolean addQuestionAssumption(Long transactionKey, Date occurredWhen, long childQuestionId, List<Long> parentQuestionIds,  List<Float> cpd) throws IllegalArgumentException {
 		// initial assertions
 		if (occurredWhen == null) {
 			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
@@ -748,12 +755,18 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			return false;
 		}
 		
-		// check existence of transactionKey
-		List<NetworkAction> actions = this.getNetworkActionsMap().get(transactionKey);
-		if (actions == null) {
-			// startNetworkAction should have been called.
-			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
+		// this is the list of actions in a same transaction.
+		List<NetworkAction> actions = null;
+		if (transactionKey != null) {
+			actions = this.getNetworkActionsMap().get(transactionKey);
+			// check existence of transactionKey
+			if (actions == null) {
+				// startNetworkAction should have been called.
+				throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
+			}
+			// action should be at least a non-null empty list if startNetworkAction was called previously
 		}
+		
 		
 		int childNodeStateSize = -1;	// this var stores the quantity of states of the node identified by sourceQuestionId.
 		
@@ -762,8 +775,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		synchronized (getProbabilisticNetwork()) {
 			child = getProbabilisticNetwork().getNode(Long.toString(childQuestionId));
 		}
-		if (child == null) {
-			// child node does not exist. Check if there was some previous transaction adding such node
+		if (child == null && actions != null) {
+			// child node does not exist. Check if there was some previous action (in same transaction) adding such node
 			synchronized (actions) {
 				for (NetworkAction networkAction : actions) {
 					if (networkAction instanceof AddQuestionNetworkAction) {
@@ -798,7 +811,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			synchronized (getProbabilisticNetwork()) {
 				parent = getProbabilisticNetwork().getNode(Long.toString(assumptiveQuestionId));
 			}
-			if (parent == null) {
+			if (parent == null && actions != null) {
 				// parent node does not exist. Check if there was some previous transaction adding such node
 				synchronized (actions) {
 					boolean hasFound = false;
@@ -853,7 +866,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		
 		// instantiate the action object for adding the edge
-		this.addNetworkAction(transactionKey, new AddQuestionAssumptionNetworkAction(transactionKey, occurredWhen, childQuestionId, parentQuestionIds, cpd));
+		if (transactionKey == null) {
+			transactionKey = this.startNetworkActions();
+			this.addNetworkAction(transactionKey, new AddQuestionAssumptionNetworkAction(transactionKey, occurredWhen, childQuestionId, parentQuestionIds, cpd));
+			this.commitNetworkActions(transactionKey);
+		} else {
+			this.addNetworkAction(transactionKey, new AddQuestionAssumptionNetworkAction(transactionKey, occurredWhen, childQuestionId, parentQuestionIds, cpd));
+		}
 		
 		return true;
 	}
@@ -864,7 +883,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see MarkovEngineImpl#addQuestionAssumption(long, Date, long, long, List)
 	 */
 	public class AddQuestionAssumptionNetworkAction implements NetworkAction {
-		private final long transactionKey;
+		private final Long transactionKey;
 		private final Date occurredWhen;
 		private final long sourceQuestionId;
 		private final List<Long> assumptiveQuestionIds;
@@ -872,7 +891,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		private Date whenExecutedFirst;
 
 		/** Default constructor initializing fields */
-		public AddQuestionAssumptionNetworkAction(long transactionKey,
+		public AddQuestionAssumptionNetworkAction(Long transactionKey,
 				Date occurredWhen, long sourceQuestionId,
 				List<Long> assumptiveQuestionIds, List<Float> cpd) {
 			super();
@@ -946,7 +965,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 		}
 		public void revert() throws UnsupportedOperationException {
-			throw new javax.help.UnsupportedOperationException("Reverting an addQuestion operation is not supported yet.");
+			throw new UnsupportedOperationException("Reverting an addQuestion operation is not supported yet.");
 		}
 		public Date getWhenCreated() { return this.occurredWhen; }
 		public Long getTransactionKey() { return transactionKey; }
@@ -970,7 +989,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see MarkovEngineImpl#setToAddCashProportionally(boolean)
 	 */
 	public class AddCashNetworkAction implements NetworkAction {
-		private final long transactionKey;
+		private final Long transactionKey;
 		private final Date occurredWhen;
 		private final long userId;
 		private float delta;	// how much assets were added
@@ -979,7 +998,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		private boolean wasExecutedPreviously = false;
 		private Date whenExecutedFirst;
 		/** Default constructor initializing fields */
-		public AddCashNetworkAction (long transactionKey, Date occurredWhen, long userId, float assets, String description) {
+		public AddCashNetworkAction (Long transactionKey, Date occurredWhen, long userId, float assets, String description) {
 			this.transactionKey = transactionKey;
 			this.occurredWhen = occurredWhen;
 			this.userId = userId;
@@ -1036,7 +1055,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see MarkovEngineImpl#isToAddCashProportionally()
 	 * @see MarkovEngineImpl#setToAddCashProportionally(boolean)
 	 */
-	public boolean addCash(long transactionKey, Date occurredWhen, long userId, float assets, String description) throws IllegalArgumentException {
+	public boolean addCash(Long transactionKey, Date occurredWhen, long userId, float assets, String description) throws IllegalArgumentException {
 		if (Float.compare(0f, assets) == 0) {
 			// nothing to add
 			return false;
@@ -1058,9 +1077,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
 		}
 		
-		
 		// instantiate the action object for adding cash
-		this.addNetworkAction(transactionKey, new AddCashNetworkAction(transactionKey, occurredWhen, userId, assets, description));
+		if (transactionKey == null) {
+			transactionKey = this.startNetworkActions();
+			this.addNetworkAction(transactionKey, new AddCashNetworkAction(transactionKey, occurredWhen, userId, assets, description));
+			this.commitNetworkActions(transactionKey);
+		} else {
+			this.addNetworkAction(transactionKey, new AddCashNetworkAction(transactionKey, occurredWhen, userId, assets, description));
+		}
 		
 		
 		return true;
@@ -1073,7 +1097,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public class AddTradeNetworkAction implements NetworkAction {
 		private final Date whenCreated;
-		private final long transactionKey;
+		private final Long transactionKey;
 		private final String tradeKey;
 		private final long userId;
 		private final long questionId;
@@ -1087,7 +1111,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //		private final List<Integer> originalAssumedStates;
 //		private final List<Long> originalAssumptionIds;
 		/** Default constructor initializing fields */
-		public AddTradeNetworkAction(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Float> newValues, 
+		public AddTradeNetworkAction(Long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Float> newValues, 
 				List<Long> assumptionIds, List<Integer> assumedStates,  boolean allowNegative) {
 			this.transactionKey = transactionKey;
 			this.whenCreated = occurredWhen;
@@ -1223,13 +1247,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#addTrade(long, java.util.Date, long, long, long, java.util.List, java.util.List, java.util.List, java.util.List, java.lang.Boolean)
 	 */
-	public List<Float> addTrade(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates,  boolean allowNegative) throws IllegalArgumentException {
+	public List<Float> addTrade(Long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates,  boolean allowNegative) throws IllegalArgumentException {
 		
 		// initial assertions
 		if (occurredWhen == null) {
 			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
 		}
-		if (this.getNetworkActionsMap().get(transactionKey) == null) {
+		if (transactionKey != null && this.getNetworkActionsMap().get(transactionKey) == null) {
 			// startNetworkAction should have been called.
 			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
 		}
@@ -1304,9 +1328,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		// do not allow trade if the preview results in zero or negative assets and negative assets are not allowed
 		if (!allowNegative) {
-			for (Float asset : ret) {
+			for (int i = 0; i < ret.size(); i++) {
+				Float asset = ret.get(i);
 				if (asset <= 0) {
-					return null;
+					if (transactionKey == null) {
+						throw new ZeroAssetsException("Asset of state " + i + " of question " + questionId + " went to " + asset);
+					} else {
+						return null;
+					}
 				}
 			}
 		}
@@ -1314,10 +1343,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// NOTE: preview trade is performed *before* the insertion of a new action into the transaction, 
 		// because we only want the transaction to be altered if the preview trade has returned successfully.
 		
-		// instantiate the action object for adding trade
-		AddTradeNetworkAction newAction = new AddTradeNetworkAction(transactionKey, occurredWhen, tradeKey, userId, questionId, newValues, assumptionIds, assumedStates, allowNegative);
-		
-		this.addNetworkAction(transactionKey, newAction);
+		if (transactionKey == null) {
+			transactionKey = this.startNetworkActions();
+			AddTradeNetworkAction newAction = new AddTradeNetworkAction(transactionKey, occurredWhen, tradeKey, userId, questionId, newValues, assumptionIds, assumedStates, allowNegative);
+			this.addNetworkAction(transactionKey, newAction);
+			this.commitNetworkActions(transactionKey);
+		} else {
+			// instantiate the action object for adding trade
+			AddTradeNetworkAction newAction = new AddTradeNetworkAction(transactionKey, occurredWhen, tradeKey, userId, questionId, newValues, assumptionIds, assumedStates, allowNegative);
+			this.addNetworkAction(transactionKey, newAction);
+		}
 		
 		// return the previewed asset values
 		return ret;
@@ -1331,14 +1366,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @author Shou Matsumoto
 	 */
 	public class ResolveQuestionNetworkAction implements NetworkAction {
-		private final long transactionKey;
+		private final Long transactionKey;
 		private final Date occurredWhen;
 		private final long questionId;
 		private final int settledState;
 		private List<Float> marginalWhenResolved;
 		private Date whenExecutedFirst;
 		/** Default constructor initializing fields */
-		public ResolveQuestionNetworkAction (long transactionKey, Date occurredWhen, long questionId, int settledState) {
+		public ResolveQuestionNetworkAction (Long transactionKey, Date occurredWhen, long questionId, int settledState) {
 			this.transactionKey = transactionKey;
 			this.occurredWhen = occurredWhen;
 			this.questionId = questionId;
@@ -1444,7 +1479,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#resolveQuestion(long, java.util.Date, long, int)
 	 */
-	public boolean resolveQuestion(long transactionKey, Date occurredWhen,
+	public boolean resolveQuestion(Long transactionKey, Date occurredWhen,
 			long questionId, int settledState) throws IllegalArgumentException {
 
 		// initial assertions
@@ -1465,9 +1500,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			throw new IllegalArgumentException("Question " + questionId + " has no state " + settledState);
 		}
 
-		
-		// instantiate the action object for adding a question
-		this.addNetworkAction(transactionKey, new ResolveQuestionNetworkAction(transactionKey, occurredWhen, questionId, settledState));
+		if (transactionKey == null) {
+			transactionKey = this.startNetworkActions();
+			// instantiate the action object for adding a question
+			this.addNetworkAction(transactionKey, new ResolveQuestionNetworkAction(transactionKey, occurredWhen, questionId, settledState));
+			this.commitNetworkActions(transactionKey);
+		} else {
+			// instantiate the action object for adding a question
+			this.addNetworkAction(transactionKey, new ResolveQuestionNetworkAction(transactionKey, occurredWhen, questionId, settledState));
+		}
 		
 		return true;
 	}
@@ -1480,12 +1521,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //	public class RevertTradeNetworkAction implements NetworkAction {
 //		private final Date occurredWhen;
 //		private final Date tradesStartingWhen;
-//		private final long transactionKey;
+//		private final Long transactionKey;
 //		private final Long questionId;
 //		private List<Float> probBeforeRevert = null;
 //		private Date whenExecutedFirst;
 //		/** Default constructor initializing fields */
-//		public RevertTradeNetworkAction (long transactionKey, Date occurredWhen,  Date tradesStartingWhen, Long questionId) {
+//		public RevertTradeNetworkAction (Long transactionKey, Date occurredWhen,  Date tradesStartingWhen, Long questionId) {
 //			this.transactionKey = transactionKey;
 //			this.occurredWhen = occurredWhen;
 //			this.tradesStartingWhen = tradesStartingWhen;
@@ -1596,9 +1637,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //	}
 
 	/* (non-Javadoc)
-	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#revertTrade(long, java.util.Date, java.lang.Long, java.lang.Long)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#revertTrade(Long, java.util.Date, java.lang.Long, java.lang.Long)
 	 */
-	public boolean revertTrade(long transactionKey, Date occurredWhen,  Date tradesStartingWhen, Long questionId) throws IllegalArgumentException {
+	public boolean revertTrade(Long transactionKey, Date occurredWhen,  Date tradesStartingWhen, Long questionId) throws IllegalArgumentException {
 		// initial assertions
 		if (occurredWhen == null) {
 			throw new IllegalArgumentException("Value of \"occurredWhen\" should not be null.");
@@ -1607,11 +1648,22 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			throw new IllegalArgumentException("Value of \"tradesStartingWhen\" should not be null.");
 		}
 		
-		// add action into transaction
-		if (isToDeleteResolvedNode()) {
-			this.addNetworkAction(transactionKey, new RevertTradeNetworkAction(transactionKey, occurredWhen, tradesStartingWhen, questionId));
+		if (transactionKey == null) {
+			transactionKey = this.startNetworkActions();
+			// add action into transaction
+			if (isToDeleteResolvedNode()) {
+				this.addNetworkAction(transactionKey, new RevertTradeNetworkAction(transactionKey, occurredWhen, tradesStartingWhen, questionId));
+			} else {
+				this.addNetworkAction(transactionKey, new RebuildNetworkAction(transactionKey, occurredWhen, tradesStartingWhen, questionId));
+			}
+			this.commitNetworkActions(transactionKey);
 		} else {
-			this.addNetworkAction(transactionKey, new RebuildNetworkAction(transactionKey, occurredWhen, tradesStartingWhen, questionId));
+			// add action into transaction
+			if (isToDeleteResolvedNode()) {
+				this.addNetworkAction(transactionKey, new RevertTradeNetworkAction(transactionKey, occurredWhen, tradesStartingWhen, questionId));
+			} else {
+				this.addNetworkAction(transactionKey, new RebuildNetworkAction(transactionKey, occurredWhen, tradesStartingWhen, questionId));
+			}
 		}
 		
 		return true;
@@ -2768,8 +2820,33 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				synchronized (algorithm.getAssetNetwork()) {
 //					boolean backup = algorithm.isToAllowQValuesSmallerThan1();
 					algorithm.setToAllowZeroAssets(isToAllowNegative);
+					
+					// Note: memento costs more than algorithm.revertLastProbabilityUpdate(), but it can revert 2 or more updates.
+					// in our case, we'll the min propagation, and the asset/prob update
+					IAssetNetAlgorithmMemento memento = null;
+					if (!isToAllowNegative) {
+						memento = algorithm.getMemento();
+					}
+					
 					algorithm.propagate();
 //					algorithm.setToAllowQValuesSmallerThan1(backup);
+					
+					// check that minimum is below 0
+					if (!isToAllowNegative) {
+						// calculate minimum by running min propagation and then calculating global assets posterior to min propagation
+						algorithm.runMinPropagation(null);
+						// Note: if we are using q-values, 1 means 0 (because it's not log scale).
+						if (algorithm.calculateExplanation(null) <= (this.isToUseQValues()?1:0)) {
+							try {
+								algorithm.setMemento(memento);
+							} catch (NoSuchFieldException e) {
+								throw new RuntimeException("Could not revert last trade after a negative asset was detected.",e);
+							}
+							throw new ZeroAssetsException("Cash <= 0");
+						}
+						// if successful, only revert last min propagation
+						algorithm.undoMinPropagation();
+					}
 				}
 			}
 		}
@@ -3010,10 +3087,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#balanceTrade(long, long, long, java.util.List, java.util.List)
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#doBalanceTrade(java.lang.Long, java.util.Date, java.lang.String, long, long, java.util.List, java.util.List)
 	 */
-	public boolean doBalanceTrade(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException, InvalidAssumptionException, InexistingQuestionException {
+	public boolean doBalanceTrade(Long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException, InvalidAssumptionException, InexistingQuestionException {
 		
 		// initial assertions
 		if (occurredWhen == null) {
@@ -3151,8 +3229,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 		}
 		
-		// instantiate the action object for balancing trade
-		this.addNetworkAction(transactionKey, new BalanceTradeNetworkAction(transactionKey, occurredWhen, tradeKey, userId, questionId, assumptionIds, assumedStates));
+		if (transactionKey == null) {
+			transactionKey = this.startNetworkActions();
+			this.addNetworkAction(transactionKey, new BalanceTradeNetworkAction(transactionKey, occurredWhen, tradeKey, userId, questionId, assumptionIds, assumedStates));
+			this.commitNetworkActions(transactionKey);
+		} else {
+			// instantiate the action object for balancing trade
+			this.addNetworkAction(transactionKey, new BalanceTradeNetworkAction(transactionKey, occurredWhen, tradeKey, userId, questionId, assumptionIds, assumedStates));
+		}
 		
 		return true;
 	}

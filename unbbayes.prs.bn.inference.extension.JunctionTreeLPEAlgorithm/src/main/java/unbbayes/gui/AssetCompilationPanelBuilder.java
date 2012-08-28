@@ -3,6 +3,7 @@
  */
 package unbbayes.gui;
 
+import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
@@ -20,12 +21,17 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 
 import unbbayes.controller.INetworkMediator;
 import unbbayes.controller.IconController;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Network;
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
+import unbbayes.prs.bn.AssetNode;
+import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.bn.inference.ICompilationPanelBuilder;
@@ -128,6 +134,23 @@ public class AssetCompilationPanelBuilder implements ICompilationPanelBuilder {
 	 * @param assetNet
 	 */
 	public void addAssetNetToTab(Graph assetNet, String name) {
+		
+		// init graphical requirements of network, because they are not usually initialized when called from non-GUI apps.
+		if (assetNet instanceof SingleEntityNetwork) {
+			SingleEntityNetwork singleEntityNetwork = (SingleEntityNetwork) assetNet;
+			if (singleEntityNetwork.getHierarchicTree() == null) {
+				singleEntityNetwork.setHierarchicTree(new HierarchicTree(new DefaultTreeModel(new DefaultMutableTreeNode("root"))));
+			}
+		}
+		// init graphical requirements of nodes, because they are not usually initialized when called from non-GUI apps
+		for (Node node : assetNet.getNodes()) {
+			if (node instanceof AssetNode) {
+				AssetNode assetNode = (AssetNode) node;
+				assetNode.setPosition(10.0, 10.0);
+				assetNode.setSize(50.0, 50.0);
+				assetNode.setColor(Color.YELLOW);
+			}
+		}
 		
 		NetworkWindow assetWindow = new NetworkWindow((Network) assetNet);
 		assetWindow.changeToPNCompilationPane();

@@ -8,6 +8,7 @@ import unbbayes.prs.bn.PotentialTable.ISumOperation;
 import unbbayes.prs.bn.inference.extension.MinProductJunctionTree.MinOperation;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.util.Debug;
+import unbbayes.util.SerializablePoint2D;
 
 /**
  * @author Shou Matsumoto
@@ -248,6 +249,28 @@ public class AssetNode extends DecisionNode {
 	 */
 	public boolean isToCalculateMarginal() {
 		return isToCalculateMarginal;
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.Node#setPosition(double, double)
+	 */
+	@Override
+	public void setPosition(double x, double y) {
+		if (this.position == null) {
+			this.position = new SerializablePoint2D(DEFAULT_SIZE.getX(), DEFAULT_SIZE.getY());
+		}
+		super.setPosition(x, y);
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.Node#setSize(double, double)
+	 */
+	@Override
+	public void setSize(double width, double height) {
+		if (this.size == null) {
+			this.size = new SerializablePoint2D(DEFAULT_SIZE.getX(), DEFAULT_SIZE.getY());
+		}
+		super.setSize(width, height);
 	}
 
 //	/**

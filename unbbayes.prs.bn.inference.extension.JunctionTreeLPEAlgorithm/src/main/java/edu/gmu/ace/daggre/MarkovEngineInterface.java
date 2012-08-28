@@ -140,7 +140,7 @@ public interface MarkovEngineInterface {
 	 * @return true if operation was successful.
 	 * @throws IllegalArgumentException when a key or Id is not found or a range of values or cpdÅfs is not legal (i.e. newValues > 100%)
 	 */
-	public boolean addQuestion(long transactionKey, Date occurredWhen, long questionId, int numberStates, List<Float> initProbs) throws IllegalArgumentException;
+	public boolean addQuestion(Long transactionKey, Date occurredWhen, long questionId, int numberStates, List<Float> initProbs) throws IllegalArgumentException;
 	
 	
 	/**
@@ -176,7 +176,7 @@ public interface MarkovEngineInterface {
 	 * @return true if operation was successful
 	 * @throws IllegalArgumentException
 	 */
-	public boolean addQuestionAssumption(long transactionKey, Date occurredWhen, long childQuestionId, List<Long> parentQuestionIds,  List<Float> cpd) throws IllegalArgumentException;
+	public boolean addQuestionAssumption(Long transactionKey, Date occurredWhen, long childQuestionId, List<Long> parentQuestionIds,  List<Float> cpd) throws IllegalArgumentException;
 	
 	/**
 	 * This function will add EXTERNAL cash to a specific userId. 
@@ -194,7 +194,7 @@ public interface MarkovEngineInterface {
 	 * @return true if operation was successful.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
-	public boolean addCash(long transactionKey, Date occurredWhen, long userId, float assets, String description) throws IllegalArgumentException;
+	public boolean addCash(Long transactionKey, Date occurredWhen, long userId, float assets, String description) throws IllegalArgumentException;
 	
 	/**
 	 * This function will add a specific trade to the system. 
@@ -258,7 +258,7 @@ public interface MarkovEngineInterface {
 	 * to a question which is still going to be created in the same transaction), it will return null.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
-	public List<Float> addTrade(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates,  boolean allowNegative) throws IllegalArgumentException;
+	public List<Float> addTrade(Long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates,  boolean allowNegative) throws IllegalArgumentException;
 
 	/**
 	 * This function will settle a specific question.
@@ -272,7 +272,7 @@ public interface MarkovEngineInterface {
 	 * @return true if successful.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
-	public boolean resolveQuestion(long transactionKey, Date occurredWhen, long questionId, int settledState) throws IllegalArgumentException;
+	public boolean resolveQuestion(Long transactionKey, Date occurredWhen, long questionId, int settledState) throws IllegalArgumentException;
 	
 	/**
 	 * This function will attempt to undo all trades >= the startingTradeId against this question. 
@@ -289,7 +289,7 @@ public interface MarkovEngineInterface {
 	 * @return true if successful.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
-	public boolean revertTrade(long transactionKey, Date occurredWhen,  Date tradesStartingWhen, Long questionId) throws IllegalArgumentException;
+	public boolean revertTrade(Long transactionKey, Date occurredWhen,  Date tradesStartingWhen, Long questionId) throws IllegalArgumentException;
 	
 	/**
 	 * Returns probability across a list of states for a question given assumptions.
@@ -605,7 +605,7 @@ public interface MarkovEngineInterface {
 	 * If it does not have the same size of assumptionIDs,Å@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered. 
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
-	public boolean doBalanceTrade(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	public boolean doBalanceTrade(Long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
 	 * This function will return an ordered list of events that explain how the current probability of a question was determined. 

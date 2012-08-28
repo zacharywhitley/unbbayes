@@ -304,4 +304,36 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 */
 	public void setToCalculateLPE(boolean isToCalculateLPE) ;
 	
+	/**
+	 * Obtains a "memento" object, which is
+	 * an object representing the current state
+	 * of this algorithm. Usually, the asset network
+	 * and probabilistic network are enough for
+	 * representing the algorithm.
+	 * @return a memento object
+	 */
+	public IAssetNetAlgorithmMemento getMemento();
+	
+	/**
+	 * Restore the state of this algorithm by using
+	 * a memento object, which is
+	 * an object representing the current state
+	 * of this algorithm. Usually, the asset network
+	 * and probabilistic network are enough for
+	 * representing the algorithm.
+	 * @param memento : object returned by {@link #getMemento()}
+	 * @throws NoSuchFieldException : if memento does not
+	 * contain required fields (i.e. it is not in a 
+	 * required format). This may happen if the memento
+	 * object was not obtained from {@link #getMemento()}.
+	 */
+	public void setMemento(IAssetNetAlgorithmMemento memento) throws NoSuchFieldException;
+	
+	/**
+	 * Memento objects (object representing the current state of another object)
+	 * of {@link IAssetNetAlgorithm} shall implement this empty interface.
+	 * @author Shou Matsumoto
+	 */
+	public interface IAssetNetAlgorithmMemento{};
+	
 }
