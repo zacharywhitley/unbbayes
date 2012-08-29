@@ -259,6 +259,9 @@ public class NetIO implements BaseIO {
 	}
 
 	protected String saveHierarchicTree(HierarchicTree hierarchicTree) {
+		if (hierarchicTree == null) {
+			return null;
+		}
 		TreeModel model = hierarchicTree.getModel();
 		StringBuffer sb = new StringBuffer();
 		TreeNode root = (TreeNode) model.getRoot();
