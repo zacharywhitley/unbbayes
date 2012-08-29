@@ -107,7 +107,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	
 	private HashMap<Long, List<NetworkAction>> networkActionsIndexedByQuestions;	// HashMap allows null key
 	
-	private Long transactionCounter;
+	private Long transactionCounter = 0L;
 
 	private Map<Long, AssetAwareInferenceAlgorithm> userToAssetAwareAlgorithmMap;
 
@@ -775,15 +775,17 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		synchronized (getProbabilisticNetwork()) {
 			child = getProbabilisticNetwork().getNode(Long.toString(childQuestionId));
 		}
-		if (child == null && actions != null) {
+		if (child == null) {
 			// child node does not exist. Check if there was some previous action (in same transaction) adding such node
-			synchronized (actions) {
-				for (NetworkAction networkAction : actions) {
-					if (networkAction instanceof AddQuestionNetworkAction) {
-						AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
-						if (addQuestionNetworkAction.getQuestionId().equals(childQuestionId)) {
-							childNodeStateSize = addQuestionNetworkAction.getNumberStates();
-							break;
+			if (actions != null) {
+				synchronized (actions) {
+					for (NetworkAction networkAction : actions) {
+						if (networkAction instanceof AddQuestionNetworkAction) {
+							AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
+							if (addQuestionNetworkAction.getQuestionId().equals(childQuestionId)) {
+								childNodeStateSize = addQuestionNetworkAction.getNumberStates();
+								break;
+							}
 						}
 					}
 				}
@@ -811,26 +813,30 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			synchronized (getProbabilisticNetwork()) {
 				parent = getProbabilisticNetwork().getNode(Long.toString(assumptiveQuestionId));
 			}
-			if (parent == null && actions != null) {
+			if (parent == null) {
 				// parent node does not exist. Check if there was some previous transaction adding such node
-				synchronized (actions) {
-					boolean hasFound = false;
-					for (NetworkAction networkAction : actions) {
-						if (networkAction instanceof AddQuestionNetworkAction) {
-							AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
+				if (actions != null) {
+					synchronized (actions) {
+						boolean hasFound = false;
+						for (NetworkAction networkAction : actions) {
+							if (networkAction instanceof AddQuestionNetworkAction) {
+								AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
 //							System.out.println(addQuestionNetworkAction.getQuestionId());
-							if (addQuestionNetworkAction.getQuestionId().equals(assumptiveQuestionId)) {
-								// size of cpd = MULT (<quantity of states of child and parents>).
-								expectedSizeOfCPD *= addQuestionNetworkAction.getNumberStates();
-								hasFound = true;
-								break;
+								if (addQuestionNetworkAction.getQuestionId().equals(assumptiveQuestionId)) {
+									// size of cpd = MULT (<quantity of states of child and parents>).
+									expectedSizeOfCPD *= addQuestionNetworkAction.getNumberStates();
+									hasFound = true;
+									break;
+								}
 							}
 						}
+						if (!hasFound) {	
+							// parent was not found
+							throw new InexistingQuestionException("Question ID " + assumptiveQuestionId + " does not exist.", assumptiveQuestionId);
+						}
 					}
-					if (!hasFound) {	
-						// parent was not found
-						throw new InexistingQuestionException("Question ID " + assumptiveQuestionId + " does not exist.", assumptiveQuestionId);
-					}
+				} else {
+					throw new InexistingQuestionException("Question ID " + assumptiveQuestionId + " does not exist.", assumptiveQuestionId);
 				}
 			} else{
 				// size of cpd = MULT (<quantity of states of child and parents>).

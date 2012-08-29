@@ -405,7 +405,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				engines.get(0).getCash(userId, assumptionIds, assumedStates);
 				engine.getCash(userId, assumptionIds, assumedStates);
 			}
-			assertEquals(
+			assertEquals("[" + engines.indexOf(engine) + "]" +
 					engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
 					engines.get(0).getCash(userId, assumptionIds, assumedStates), 
 					engine.getCash(userId, assumptionIds, assumedStates), 
