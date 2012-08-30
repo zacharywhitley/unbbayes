@@ -88,7 +88,6 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 
 	private boolean isToUseEstimatedTotalProbability = true;
 	
-	
 	/**
 	 * Default constructor for plugin support
 	 */
@@ -1835,34 +1834,34 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 			if (originalNet.getJunctionTree() != null && originalNet.getJunctionTree().getCliques() != null) {
 				for (Clique origClique : originalNet.getJunctionTree().getCliques()) {
 					Clique newClique = new Clique();
-					boolean hasInvalidNode = false;	// this will be true if a clique contains a node not in new network.
+//					boolean hasInvalidNode = false;	// this will be true if a clique contains a node not in new network.
 					// add nodes to clique
 					for (Node node : origClique.getNodes()) {
 						Node newNode = this.getNode(node.getName());	// extract associated node, because they are related by name
 						if (newNode == null) {
-							hasInvalidNode = true;
-							break;
+							if (node instanceof ProbabilisticNode) {
+								// create the new node on the fly
+								newNode = (ProbabilisticNode) ((ProbabilisticNode) node).clone();
+							} else {
+								throw new IllegalStateException(JunctionTreeAlgorithm.utilResource.getString("InstantiationException") + ": " + node + ", " + origClique);
+							}
 						}
 						newClique.getNodes().add(newNode);
-					}
-					if (hasInvalidNode) {
-						// the original clique has a node not present in this net
-						continue;
 					}
 					
 					// add nodes to the list "associatedProbabilisticNodes"
 					for (Node node : origClique.getAssociatedProbabilisticNodes()) {
 						Node newNode = this.getNode(node.getName());	// extract associated node, because they are related by name
 						if (newNode == null) {
-							hasInvalidNode = true;
-							break;
+							if (node instanceof ProbabilisticNode) {
+								// create the new node on the fly
+								newNode = (ProbabilisticNode) ((ProbabilisticNode) node).clone();
+							} else {
+								throw new IllegalStateException(JunctionTreeAlgorithm.utilResource.getString("InstantiationException") + ": " + node + ", " + origClique);
+							}
 						}
 						// origClique.getNodes() and origClique.getAssociatedProbabilisticNodes() may be different... Copy both separately. 
 						newClique.getAssociatedProbabilisticNodes().add(newNode);
-					}
-					if (hasInvalidNode) {
-						// the original clique has a node not present in the asset net
-						continue;
 					}
 					
 					newClique.setIndex(origClique.getIndex());
@@ -1873,14 +1872,14 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 					for (int i = 0; i < origPotential.getVariablesSize(); i++) {
 						Node newNode = this.getNode(origPotential.getVariableAt(i).getName());
 						if (newNode == null) {
-							hasInvalidNode = true;
-							break;
+							if (origPotential.getVariableAt(i) instanceof ProbabilisticNode) {
+								// create the new node on the fly
+								newNode = (ProbabilisticNode) ((ProbabilisticNode) origPotential.getVariableAt(i)).clone();
+							} else {
+								throw new IllegalStateException(JunctionTreeAlgorithm.utilResource.getString("InstantiationException") + ": " + origPotential.getVariableAt(i) + ", " + origClique);
+							}
 						}
 						copyPotential.addVariable(newNode);
-					}
-					if (hasInvalidNode) {
-						// the original clique has a node not present in the asset net
-						continue;
 					}
 					
 					// copy the values of clique potential
