@@ -13146,7 +13146,29 @@ public class MarkovEngineTest extends TestCase {
 		
 	}
 	
-	
+	/**
+	 * This method is used as a regression test of a bug which causes the
+	 * {@link ProbabilisticNode#clone()}, called from {@link MarkovEngineImpl#scoreUserEv(long, List, List)} 
+	 * not to copy empty cliques, causing inconsistency between probabilistic network and asset network.
+	 */
+	public final void testConditionalExpectedScoreWithEmptyCliques() {
+		engine.setDefaultInitialAssetTableValue(100);
+		engine.setToDeleteResolvedNode(true);
+		engine.addQuestion(null, new Date(), 1L, 3, null);
+		engine.addQuestion(null, new Date(), 2L, 3, null);
+		engine.addQuestion(null, new Date(), 3L, 3, null);
+		engine.resolveQuestion(null, new Date(), 1, 0);
+		engine.resolveQuestion(null, new Date(), 2, 0);
+		assertEquals(1f, engine.getProbList(1, null, null).get(0));
+		assertEquals(1f, engine.getProbList(2, null, null).get(0));
+		try {
+			float scoreUserEv = engine.scoreUserEv(Long.MAX_VALUE, Collections.singletonList(3L), Collections.singletonList(0));
+			assertTrue("score = " + scoreUserEv, scoreUserEv > 0);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}
 	
 
 	// not needed for the 1st release

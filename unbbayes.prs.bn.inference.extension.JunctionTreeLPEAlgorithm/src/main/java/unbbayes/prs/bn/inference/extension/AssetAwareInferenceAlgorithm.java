@@ -90,16 +90,39 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	/** Default value to fill {@link JunctionTreeAlgorithm#setLikelihoodExtractor(ILikelihoodExtractor)} */
 	public static final ILikelihoodExtractor DEFAULT_JEFFREYRULE_LIKELIHOOD_EXTRACTOR = JeffreyRuleLikelihoodExtractor.newInstance();
 
-	private static final ProbabilisticNode ONE_STATE_PROBNODE;
+	/** This is a default instance of a node with only 1 state. Use this instance if you want to have nodes with 1 state not to occupy too much space in memory */
+	public static final ProbabilisticNode ONE_STATE_PROBNODE = new ProbabilisticNode() {
+		// TODO do not allow edit
+
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.bn.ProbabilisticNode#clone(double)
+		 */
+		public ProbabilisticNode clone(double radius) {
+			return this;
+		}
+
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.bn.ProbabilisticNode#clone()
+		 */
+		public Object clone() {
+			return this;
+		}
+
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.bn.ProbabilisticNode#basicClone()
+		 */
+		public ProbabilisticNode basicClone() {
+			return this;
+		}
+	};
 	static{
-		ONE_STATE_PROBNODE = new ProbabilisticNode();
+//		ONE_STATE_PROBNODE = new ProbabilisticNode();
 		ONE_STATE_PROBNODE.setName("PROB_NODE_WITH_SINGLE_STATE");
 		// copy states
 		ONE_STATE_PROBNODE.appendState("VIRTUAL_STATE");
 		ONE_STATE_PROBNODE.initMarginalList();	// guarantee that marginal list is initialized
 		ONE_STATE_PROBNODE.setMarginalAt(0, 1f);	// set the only state to 100%
 	}
-	
 	
 
 	private List<ExpectedAssetCellMultiplicationListener> expectedAssetCellListeners = new ArrayList<AssetAwareInferenceAlgorithm.ExpectedAssetCellMultiplicationListener>();
@@ -1229,7 +1252,9 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		} else {
 			Debug.println(getClass(), "Prob node " + node + " not found.");
 		}
-		this.getAssetPropagationDelegator().setAsPermanentEvidence(node, state, isToDeleteNode);
+		if (isToUpdateAssets()) {
+			this.getAssetPropagationDelegator().setAsPermanentEvidence(node, state, isToDeleteNode);
+		}
 	}
 
 //	/**

@@ -36,6 +36,7 @@ import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm.ExpectedAssetCellMultiplicationListener;
 import unbbayes.prs.bn.inference.extension.AssetPropagationInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.IAssetAwareInferenceAlgorithmBuilder;
+import unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm;
 import unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm.IAssetNetAlgorithmMemento;
 import unbbayes.prs.bn.inference.extension.IQValuesToAssetsConverter;
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
@@ -1430,11 +1431,21 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						usersToChange = Collections.emptyList();
 					}
 					
+					synchronized (getDefaultInferenceAlgorithm()) {
+						Node node = getProbabilisticNetwork().getNode(Long.toString(questionId));
+						if (node != null) {
+							getDefaultInferenceAlgorithm().setAsPermanentEvidence(node, settledState, isToDeleteResolvedNode());
+						} else {
+							throw new IllegalStateException("Node " + questionId + " is not present in network.");
+						}
+					}
+					
 					// do not allow getUserToAssetAwareAlgorithmMap() to be changed here. I.e. do not allow new users to be added now
-					for (AssetAwareInferenceAlgorithm assetAlgorithm : usersToChange) {
-						synchronized (assetAlgorithm.getAssetNetwork()) {
+					for (AssetAwareInferenceAlgorithm algorithm : usersToChange) {
+						IAssetNetAlgorithm assetAlgorithm = algorithm.getAssetPropagationDelegator();
+						synchronized (assetAlgorithm .getAssetNetwork()) {
 							Node assetNode = assetAlgorithm.getAssetNetwork().getNode(Long.toString(questionId));
-							if (assetNode == null && (assetAlgorithm.getAssetPropagationDelegator() instanceof AssetPropagationInferenceAlgorithm)) {
+							if (assetNode == null && (assetAlgorithm instanceof AssetPropagationInferenceAlgorithm)) {
 								// in this algorithm, setAsPermanentEvidence will only use assetNode for name comparison and to check size of states, 
 								// so we can try using a stub node
 								assetNode = new Node() {	// a node just for purpose of searching nodes in lists
@@ -1453,7 +1464,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //								}
 							} else {
 								try {
-									Debug.println(getClass(), "Node " + questionId + " is not present in asset net of user " + assetAlgorithm.getAssetNetwork());
+//									Debug.println(getClass(), "Node " + questionId + " is not present in asset net of user " + assetAlgorithm.getAssetNetwork());
+									throw new IllegalStateException("Node " + questionId + " is not present in asset net of user " + assetAlgorithm.getAssetNetwork());
 								} catch (Throwable t) {
 									t.printStackTrace();
 								}
