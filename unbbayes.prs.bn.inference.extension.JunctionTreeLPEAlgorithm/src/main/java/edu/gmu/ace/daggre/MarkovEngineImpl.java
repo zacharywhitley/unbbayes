@@ -4366,6 +4366,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 			List<Clique> originalCliqueList = getProbabilisticNetwork().getJunctionTree().getCliques();
 			if (originalCliqueList != null) {
+				// we are using another instance, so that we can release the lock and let other threads change the clique structre as they wish
 				cliques = new ArrayList<Clique>(originalCliqueList);
 			}
 		}
@@ -4376,6 +4377,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		// populate list of question ids based on nodes in cliques
 		for (Clique clique : cliques) {
+			if (clique.getNodes().isEmpty() || clique.getProbabilityFunction().tableSize() <= 1) {
+				// this clique is empty. Do not consider this
+				continue;
+			}
 			List<Long> questionIds = new ArrayList<Long>();
 			for (Node node : clique.getNodes()) {
 				try {
