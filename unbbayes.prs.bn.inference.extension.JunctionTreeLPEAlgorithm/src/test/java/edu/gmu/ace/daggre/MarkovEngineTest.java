@@ -66,6 +66,7 @@ public class MarkovEngineTest extends TestCase {
 		engine.setCurrentLogBase((float) Math.E);
 		engine.setCurrentCurrencyConstant((float) (10/Math.log(100)));
 		engine.setDefaultInitialAssetTableValue(0f);
+		engine.setToReturnEVComponentsAsScoreSummary(false);
 		engine.initialize();
 	}
 
@@ -1458,6 +1459,11 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(4, cliqueProbsBeforeTrade.size());
 		assertEquals(4, cliqueAssetsBeforeTrade.size());
 		
+		// check that no one has made any trade on any question yet.
+		for (String user : userNameToIDMap.keySet()) {
+			assertEquals(user, 0, engine.getTradedQuestions(userNameToIDMap.get(user)).size());
+		}
+		
 		// do edit
 		transactionKey = engine.startNetworkActions();
 		List<Float> newValues = new ArrayList<Float>(2);
@@ -1475,6 +1481,10 @@ public class MarkovEngineTest extends TestCase {
 				false	// do not allow negative
 			).size());
 		engine.commitNetworkActions(transactionKey);
+		
+		// check that the question can be retrieved from getTradedQuestions.
+		assertEquals(1, engine.getTradedQuestions(userNameToIDMap.get("Tom")).size());
+		assertEquals(0x0El, engine.getTradedQuestions(userNameToIDMap.get("Tom")).get(0).longValue());
 		
 		// cannot reuse same transaction key
 		try {
@@ -1633,6 +1643,10 @@ public class MarkovEngineTest extends TestCase {
 				false
 			).size());
 		engine.commitNetworkActions(transactionKey);
+		
+		// check that the question can be retrieved from getTradedQuestions.
+		assertEquals(1, engine.getTradedQuestions(userNameToIDMap.get("Tom")).size());
+		assertEquals(0x0El, engine.getTradedQuestions(userNameToIDMap.get("Tom")).get(0).longValue());
 		
 		// cannot reuse same transaction key
 		try {
@@ -1827,6 +1841,11 @@ public class MarkovEngineTest extends TestCase {
 				false
 			).size());
 		engine.commitNetworkActions(transactionKey);
+		
+
+		// check that the question can be retrieved from getTradedQuestions.
+		assertEquals(1, engine.getTradedQuestions(userNameToIDMap.get("Joe")).size());
+		assertEquals(0x0El, engine.getTradedQuestions(userNameToIDMap.get("Joe")).get(0).longValue());
 		
 		// cannot reuse same transaction key
 		try {
@@ -2023,6 +2042,11 @@ public class MarkovEngineTest extends TestCase {
 			).size());
 		engine.commitNetworkActions(transactionKey);
 		
+
+		// check that the question can be retrieved from getTradedQuestions.
+		assertEquals(1, engine.getTradedQuestions(userNameToIDMap.get("Amy")).size());
+		assertEquals(0x0Fl, engine.getTradedQuestions(userNameToIDMap.get("Amy")).get(0).longValue());
+		
 		// cannot reuse same transaction key
 		try {
 			newValues = new ArrayList<Float>(2);
@@ -2209,6 +2233,11 @@ public class MarkovEngineTest extends TestCase {
 				false
 			).size());
 		engine.commitNetworkActions(transactionKey);
+
+		// check that the question can be retrieved from getTradedQuestions.
+		assertEquals(2, engine.getTradedQuestions(userNameToIDMap.get("Joe")).size());
+		assertEquals(0x0El, engine.getTradedQuestions(userNameToIDMap.get("Joe")).get(0).longValue());
+		assertEquals(0x0Fl, engine.getTradedQuestions(userNameToIDMap.get("Joe")).get(1).longValue());
 		
 		// cannot reuse same transaction key
 		try {
@@ -2392,6 +2421,11 @@ public class MarkovEngineTest extends TestCase {
 			).size());
 		engine.commitNetworkActions(transactionKey);
 		
+
+		// check that the question can be retrieved from getTradedQuestions.
+		assertEquals(1, engine.getTradedQuestions(userNameToIDMap.get("Eric")).size());
+		assertEquals(0x0El, engine.getTradedQuestions(userNameToIDMap.get("Eric")).get(0).longValue());
+		
 		// cannot reuse same transaction key
 		try {
 			newValues = new ArrayList<Float>(2);
@@ -2542,6 +2576,12 @@ public class MarkovEngineTest extends TestCase {
 				false
 		).size());
 		engine.commitNetworkActions(transactionKey);
+		
+
+		// check that the question can be retrieved from getTradedQuestions.
+		assertEquals(2, engine.getTradedQuestions(userNameToIDMap.get("Eric")).size());
+		assertEquals(0x0El, engine.getTradedQuestions(userNameToIDMap.get("Eric")).get(0).longValue());
+		assertEquals(0x0Dl, engine.getTradedQuestions(userNameToIDMap.get("Eric")).get(1).longValue());
 		
 		// cannot reuse same transaction key
 		try {
@@ -2697,6 +2737,12 @@ public class MarkovEngineTest extends TestCase {
 		engine.commitNetworkActions(transactionKey);
 		// make sure history was not changed
 		assertEquals(questionHistory, engine.getQuestionHistory(0x0DL, null, null));
+		
+
+		// check that the questions that can be retrieved from getTradedQuestions are still the same.
+		assertEquals(2, engine.getTradedQuestions(userNameToIDMap.get("Eric")).size());
+		assertEquals(0x0El, engine.getTradedQuestions(userNameToIDMap.get("Eric")).get(0).longValue());
+		assertEquals(0x0Dl, engine.getTradedQuestions(userNameToIDMap.get("Eric")).get(1).longValue());
 
 		// check that final min-q of Tom is 20
 		minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
@@ -3182,6 +3228,12 @@ public class MarkovEngineTest extends TestCase {
 			).size());
 		engine.commitNetworkActions(transactionKey);
 		
+
+		// check that the question can be retrieved from getTradedQuestions.
+		assertEquals(2, engine.getTradedQuestions(userNameToIDMap.get("Amy")).size());
+		assertEquals(0x0Fl, engine.getTradedQuestions(userNameToIDMap.get("Amy")).get(0).longValue());
+		assertEquals(0x0Cl, engine.getTradedQuestions(userNameToIDMap.get("Amy")).get(1).longValue());
+		
 		// cannot reuse same transaction key
 		try {
 			newValues = new ArrayList<Float>(2);
@@ -3328,6 +3380,12 @@ public class MarkovEngineTest extends TestCase {
 			).size());
 		engine.commitNetworkActions(transactionKey);
 		
+
+		// check that the question can be retrieved from getTradedQuestions.
+		assertEquals(2, engine.getTradedQuestions(userNameToIDMap.get("Eric")).size());
+		assertEquals(0x0El, engine.getTradedQuestions(userNameToIDMap.get("Eric")).get(0).longValue());
+		assertEquals(0x0Dl, engine.getTradedQuestions(userNameToIDMap.get("Eric")).get(1).longValue());
+		
 		// cannot reuse same transaction key
 		try {
 			newValues = new ArrayList<Float>(2);
@@ -3386,6 +3444,12 @@ public class MarkovEngineTest extends TestCase {
 		} catch (ZeroAssetsException e) {
 			assertNotNull(e);
 		}
+		
+
+		// check that the question can be retrieved from getTradedQuestions.
+		assertEquals(2, engine.getTradedQuestions(userNameToIDMap.get("Amy")).size());
+		assertEquals(0x0Fl, engine.getTradedQuestions(userNameToIDMap.get("Amy")).get(0).longValue());
+		assertEquals(0x0Cl, engine.getTradedQuestions(userNameToIDMap.get("Amy")).get(1).longValue());
 		
 		// probability of nodes present before this transaction must remain unchanged
 		Map<Long, List<Float>> probListsAfterTrade = engine.getProbLists(null, null, null);
@@ -3498,6 +3562,12 @@ public class MarkovEngineTest extends TestCase {
 			).isEmpty());
 		engine.commitNetworkActions(transactionKey);
 		
+
+		// check that the question can be retrieved from getTradedQuestions.
+		assertEquals(2, engine.getTradedQuestions(userNameToIDMap.get("Tom")).size());
+		assertEquals(0x0El, engine.getTradedQuestions(userNameToIDMap.get("Tom")).get(0).longValue());
+		assertEquals(0x0Fl, engine.getTradedQuestions(userNameToIDMap.get("Tom")).get(1).longValue());
+		
 		// check that marginal of F is [.5,.5] (i.e. condition E was ignored)
 		probList = engine.getProbList(0x0FL, null, null);
 		assertEquals(2, probList.size());
@@ -3538,6 +3608,13 @@ public class MarkovEngineTest extends TestCase {
 				false
 			).isEmpty());
 		engine.commitNetworkActions(transactionKey);
+		
+
+		// check that the question can be retrieved from getTradedQuestions.
+		assertEquals(3, engine.getTradedQuestions(userNameToIDMap.get("Tom")).size());
+		assertEquals(0x0El, engine.getTradedQuestions(userNameToIDMap.get("Tom")).get(0).longValue());
+		assertEquals(0x0Fl, engine.getTradedQuestions(userNameToIDMap.get("Tom")).get(1).longValue());
+		assertEquals(0x0Dl, engine.getTradedQuestions(userNameToIDMap.get("Tom")).get(2).longValue());
 		
 		// check that marginal of D is [.5,.5] (i.e. condition A was ignored)
 		probList = engine.getProbList(0x0DL, null, null);
@@ -9780,12 +9857,12 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(1067.8073f, scoreUserQuestionEvStates.get(0), ASSET_ERROR_MARGIN);
 		assertEquals(1067.8073f, scoreUserQuestionEvStates.get(1), ASSET_ERROR_MARGIN);
 		
-		try {
-			scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(1L, 2L, Collections.singletonList(2L), Collections.singletonList(0));
-			fail("Assumptions should not contain node itself");
-		} catch (IllegalArgumentException e) {
-			assertNotNull(e);
-		}
+		assertEquals(0f, engine.scoreUserQuestionEvStates(1L, 2L, Collections.singletonList(2L), Collections.singletonList(0)).get(1), PROB_ERROR_MARGIN);
+		assertEquals(0f, engine.scoreUserQuestionEvStates(1L, 2L, Collections.singletonList(2L), Collections.singletonList(1)).get(0), PROB_ERROR_MARGIN);
+		assertEquals(engine.scoreUserEv(1L, Collections.singletonList(2L), Collections.singletonList(0)), 
+				engine.scoreUserQuestionEvStates(1L, 2L, Collections.singletonList(2L), Collections.singletonList(0)).get(0), ASSET_ERROR_MARGIN);
+		assertEquals(engine.scoreUserEv(1L, Collections.singletonList(2L), Collections.singletonList(1)), 
+				engine.scoreUserQuestionEvStates(1L, 2L, Collections.singletonList(2L), Collections.singletonList(1)).get(1), ASSET_ERROR_MARGIN);
 		
 		
 		// simple disconnected network cases
@@ -9817,9 +9894,11 @@ public class MarkovEngineTest extends TestCase {
 	}
 	
 	/**
-	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#getScoreSummary(long, List, List)}.
+	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#getScoreSummary(long, List, List)}
 	 */
 	public final void testGetScoreSummary() {
+		engine.setToReturnEVComponentsAsScoreSummary(true);
+		
 		// generate DEF net
 		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
 		this.createDEFNetIn1Transaction(userNameToIDMap );
@@ -9863,6 +9942,267 @@ public class MarkovEngineTest extends TestCase {
 		}
 		
 		assertNotNull(engine.getScoreSummaryObject(userNameToIDMap.get("Tom"), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1)));
+		
+		// test the case in which the score summary contains expected score given states
+		engine.setToReturnEVComponentsAsScoreSummary(false);
+		
+		// basic test: value of eric's score summary is unchanged
+		assertEquals(10.31615, engine.getScoreSummaryObject(userNameToIDMap.get("Eric"), null, null, null).getScoreEV(), PROB_ERROR_MARGIN);
+		
+		// extract marginal probability of each question so that we can use them later for consistency check
+		Map<Long, List<Float>> marginals = engine.getProbLists(null, null, null);
+		assertEquals(marginals.toString(), 3, marginals.keySet().size());	// must be marginals of 3 questions
+		for (Long key : marginals.keySet()) {
+			assertEquals(marginals.toString(), 2, marginals.get(key).size());	// must be nods with 2 states
+		}
+		
+		// add user who did not do any trade in userNameToIDMap in order to test boundary condition (users with no trades at all)
+		userNameToIDMap.put("User with no trade " + Long.MIN_VALUE, Long.MIN_VALUE);
+		
+		for (String user : userNameToIDMap.keySet()) {
+			// extract new summary
+			summary = engine.getScoreSummaryObject(userNameToIDMap.get(user), null, null, null);
+			
+			// most basic assertions
+			assertEquals(user, engine.getCash(userNameToIDMap.get(user), null, null), summary.getCash(), ASSET_ERROR_MARGIN);
+			assertEquals(user, engine.scoreUserEv(userNameToIDMap.get(user), null, null), summary.getScoreEV(), ASSET_ERROR_MARGIN);
+			
+			
+			// check that getQuestions of summary.getScoreComponents retains the same ordering of engine.getTradedQuestions
+			List<Long> tradedQuestions = engine.getTradedQuestions(userNameToIDMap.get(user));
+//			assertFalse(user, tradedQuestions.isEmpty());	// users did actually trade in the system, so its not empty
+			assertEquals(user, tradedQuestions.size(), summary.getScoreComponents().size()/2);	// Note: I'm assuming each question has 2 states
+			for (int questionIndex = 0; questionIndex < tradedQuestions.size(); questionIndex++) {
+				
+				sum = 0f;	// prepare to calculate the sum of (<Expected score given state> * <marginal of state>)
+				
+				for (int stateIndex = 0; stateIndex < marginals.get(tradedQuestions.get(questionIndex)).size(); stateIndex++) {
+					
+					// Note: I'm assuming that all nodes have 2 states
+					int scoreComponentIndex = questionIndex*2 + stateIndex;	
+					
+					// assert that getScoreComponents is related to current question
+					assertEquals("user = " + user + ", question = " + tradedQuestions.get(questionIndex) + ", state = " + stateIndex, 
+							1, summary.getScoreComponents().get(scoreComponentIndex).getQuestions().size());
+					assertEquals("user = " + user + ", question = " + tradedQuestions.get(questionIndex) + ", state = " + stateIndex, 
+							tradedQuestions.get(questionIndex),
+							summary.getScoreComponents().get(scoreComponentIndex).getQuestions().get(0)
+					);
+					
+					// assert that getScoreComponents is related to current state
+					assertEquals("user = " + user + ", question = " + tradedQuestions.get(questionIndex) + ", state = " + stateIndex, 
+							1, summary.getScoreComponents().get(scoreComponentIndex).getStates().size() );
+					assertEquals("user = " + user + ", question = " + tradedQuestions.get(questionIndex) + ", state = " + stateIndex, 
+							stateIndex,
+							summary.getScoreComponents().get(scoreComponentIndex).getStates().get(0).intValue()
+					);
+					
+					// multiply marginal (of this state of this question) and expected score of this state of this question
+					sum += marginals.get(tradedQuestions.get(questionIndex)).get(stateIndex) // marginal
+						* summary.getScoreComponents().get(scoreComponentIndex).getContributionToScoreEV();	 // expected
+				}
+				
+				// assert that, for each question, the sum of expected score per state multiplied by its marginal will result in the total expected score
+				// i.e. scoreUserEV = Expected(D=d1)*P(D=d1) + Expected(D=d2)*P(D=d2) = Expected(E=e1)*P(E=e1) + Expected(E=e2)*P(E=e2) = Expected(F=f1)*P(F=f1) + Expected(F=f2)*P(F=f2)
+				assertEquals("user = " + user + ", question = " + tradedQuestions.get(questionIndex), summary.getScoreEV(), sum, PROB_ERROR_MARGIN);
+			}
+		}
+		
+		// make the same test, but for a random single node
+		Long selectedNode = (Math.random()<.3?0x0Fl:(Math.random()<.3?0x0El:0x0Dl));
+		
+		// extract marginal probability of each question so that we can use them later for consistency check
+		marginals = engine.getProbLists(null, null, null);
+		assertEquals(marginals.toString(), 3, marginals.keySet().size());	// must be marginals of 1 question (the selected one)
+		for (Long key : marginals.keySet()) {
+			assertEquals(marginals.toString(), 2, marginals.get(key).size());	// must be nods with 2 states
+		}
+		
+		// add user who did not do any trade in userNameToIDMap in order to test boundary condition (users with no trades at all)
+		userNameToIDMap.put("User with no trade " + Long.MAX_VALUE, Long.MAX_VALUE);
+		
+		for (String user : userNameToIDMap.keySet()) {
+			// extract new summary
+			summary = engine.getScoreSummaryObject(userNameToIDMap.get(user), selectedNode, null, null);
+			
+			// most basic assertions
+			assertEquals(user, engine.getCash(userNameToIDMap.get(user), null, null), summary.getCash(), ASSET_ERROR_MARGIN);
+			assertEquals(user, engine.scoreUserEv(userNameToIDMap.get(user), null, null), summary.getScoreEV(), ASSET_ERROR_MARGIN);
+			
+			
+			// check that getQuestions of summary.getScoreComponents retains the same ordering of engine.getTradedQuestions
+//			List<Long> tradedQuestions = engine.getTradedQuestions(userNameToIDMap.get(user));
+//			assertFalse(user, tradedQuestions.isEmpty());	// users did actually trade in the system, so its not empty
+			assertEquals(user, 1, summary.getScoreComponents().size()/2);	// This time I'm considering only 1 question. Note: again, I'm assuming each question has 2 states
+			
+			sum = 0f;	// prepare to calculate the sum of (<Expected score given state> * <marginal of state>)
+			
+			for (int stateIndex = 0; stateIndex < marginals.get(selectedNode).size(); stateIndex++) {
+				
+				// assert that getScoreComponents is related to current question
+				assertEquals("user = " + user + ", question = " + selectedNode + ", state = " + stateIndex, 
+						1, summary.getScoreComponents().get(stateIndex).getQuestions().size());
+				assertEquals("user = " + user + ", question = " + selectedNode + ", state = " + stateIndex, 
+						selectedNode, summary.getScoreComponents().get(stateIndex).getQuestions().get(0) );
+				
+				// assert that getScoreComponents is related to current state
+				assertEquals("user = " + user + ", question = " + selectedNode + ", state = " + stateIndex, 
+						1, summary.getScoreComponents().get(stateIndex).getStates().size() );
+				assertEquals("user = " + user + ", question = " + selectedNode + ", state = " + stateIndex, 
+						stateIndex, summary.getScoreComponents().get(stateIndex).getStates().get(0).intValue() );
+				
+				// multiply marginal (of this state of this question) and expected score of this state of this question
+				sum += marginals.get(selectedNode).get(stateIndex) // marginal
+				* summary.getScoreComponents().get(stateIndex).getContributionToScoreEV();	 // expected
+			}
+			
+			// assert that, for each question, the sum of expected score per state multiplied by its marginal will result in the total expected score
+			// i.e. scoreUserEV = Expected(D=d1)*P(D=d1) + Expected(D=d2)*P(D=d2) = Expected(E=e1)*P(E=e1) + Expected(E=e2)*P(E=e2) = Expected(F=f1)*P(F=f1) + Expected(F=f2)*P(F=f2)
+			assertEquals("user = " + user + ", question = " + selectedNode, summary.getScoreEV(), sum, PROB_ERROR_MARGIN);
+		}
+		
+		// repeat the same test, but now using assumptions
+		List<Long> assumptionIds = new ArrayList<Long>();
+		List<Integer> assumedStates = new ArrayList<Integer>();
+		if (Math.random() < .25) {
+			assumptionIds.add(0x0Dl);
+			assumedStates.add((Math.random()<.5)?0:1);
+		}
+		if (Math.random() < .25) {
+			assumptionIds.add(0x0El);
+			assumedStates.add((Math.random()<.5)?0:1);
+		}
+		if (Math.random() < .25) {
+			assumptionIds.add(0x0Fl);
+			assumedStates.add((Math.random()<.5)?0:1);
+		}
+		
+		// extract marginal probability of each question so that we can use them later for consistency check
+		marginals = engine.getProbLists(null, assumptionIds, assumedStates);
+		assertEquals(marginals.toString()+ ", assumptions = " + assumptionIds + assumedStates, 3, marginals.keySet().size());	// must be marginals of 3 questions
+		for (Long key : marginals.keySet()) {
+			assertEquals(marginals.toString() + ", assumptions = " + assumptionIds + assumedStates, 2, marginals.get(key).size());	// must be nods with 2 states
+		}
+		
+		// add user who did not do any trade in userNameToIDMap in order to test boundary condition (users with no trades at all)
+		userNameToIDMap.put("User with no trade " + (Long.MAX_VALUE-1), Long.MAX_VALUE-1);
+		
+		for (String user : userNameToIDMap.keySet()) {
+			// extract new summary
+			summary = engine.getScoreSummaryObject(userNameToIDMap.get(user), null, assumptionIds, assumedStates);
+			
+			// most basic assertions
+			assertEquals(user+ ", assumptions = " + assumptionIds + assumedStates, engine.getCash(userNameToIDMap.get(user), assumptionIds, assumedStates), summary.getCash(), ASSET_ERROR_MARGIN);
+			assertEquals(user+ ", assumptions = " + assumptionIds + assumedStates, engine.scoreUserEv(userNameToIDMap.get(user), assumptionIds, assumedStates), summary.getScoreEV(), ASSET_ERROR_MARGIN);
+			
+			
+			// check that getQuestions of summary.getScoreComponents retains the same ordering of engine.getTradedQuestions
+			List<Long> tradedQuestions = engine.getTradedQuestions(userNameToIDMap.get(user));
+//			assertFalse(user+ ", assumptions = " + assumptionIds + assumedStates, tradedQuestions.isEmpty());	// users did actually trade in the system, so its not empty
+			assertEquals(user+ ", assumptions = " + assumptionIds + assumedStates, tradedQuestions.size(), summary.getScoreComponents().size()/2);	// Note: I'm assuming each question has 2 states
+			for (int questionIndex = 0; questionIndex < tradedQuestions.size(); questionIndex++) {
+				
+				sum = 0f;	// prepare to calculate the sum of (<Expected score given state> * <marginal of state>)
+				
+				for (int stateIndex = 0; stateIndex < marginals.get(tradedQuestions.get(questionIndex)).size(); stateIndex++) {
+					
+					// Note: I'm assuming that all nodes have 2 states
+					int scoreComponentIndex = questionIndex*2 + stateIndex;	
+					
+					// assert that getScoreComponents is related to current question
+					assertEquals("user = " + user + ", question = " + tradedQuestions.get(questionIndex) + ", state = " + stateIndex
+							+ ", assumptions = " + assumptionIds + assumedStates, 
+							1, summary.getScoreComponents().get(scoreComponentIndex).getQuestions().size());
+					assertEquals("user = " + user + ", question = " + tradedQuestions.get(questionIndex) 
+							+ ", state = " + stateIndex+ ", assumptions = " + assumptionIds + assumedStates, 
+							tradedQuestions.get(questionIndex),
+							summary.getScoreComponents().get(scoreComponentIndex).getQuestions().get(0)
+					);
+					
+					// assert that getScoreComponents is related to current state
+					assertEquals("user = " + user + ", question = " + tradedQuestions.get(questionIndex) 
+							+ ", state = " + stateIndex+ ", assumptions = " + assumptionIds + assumedStates, 
+							1, summary.getScoreComponents().get(scoreComponentIndex).getStates().size() );
+					assertEquals("user = " + user + ", question = " + tradedQuestions.get(questionIndex) 
+							+ ", state = " + stateIndex+ ", assumptions = " + assumptionIds + assumedStates, 
+							stateIndex,
+							summary.getScoreComponents().get(scoreComponentIndex).getStates().get(0).intValue()
+					);
+					
+					// multiply marginal (of this state of this question) and expected score of this state of this question
+					sum += marginals.get(tradedQuestions.get(questionIndex)).get(stateIndex) // marginal
+						* summary.getScoreComponents().get(scoreComponentIndex).getContributionToScoreEV();	 // expected
+				}
+				
+				// assert that, for each question, the sum of expected score per state multiplied by its marginal will result in the total expected score
+				// i.e. scoreUserEV = Expected(D=d1)*P(D=d1) + Expected(D=d2)*P(D=d2) = Expected(E=e1)*P(E=e1) + Expected(E=e2)*P(E=e2) = Expected(F=f1)*P(F=f1) + Expected(F=f2)*P(F=f2)
+				assertEquals("user = " + user + ", question = " + tradedQuestions.get(questionIndex)
+						+ ", assumptions = " + assumptionIds + assumedStates, 
+						summary.getScoreEV(), sum, PROB_ERROR_MARGIN);
+			}
+			
+		}
+		
+		// make the same test, but for a random single node and assumptions
+		selectedNode = (Math.random()<.3?0x0Fl:(Math.random()<.3?0x0El:0x0Dl));
+		
+		// extract marginal probability of each question so that we can use them later for consistency check
+		marginals = engine.getProbLists(null, assumptionIds, assumedStates);
+		assertEquals(marginals.toString()+ ", assumptions = " + assumptionIds + assumedStates, 3, marginals.keySet().size());	// must be marginals of 1 question (the selected one)
+		for (Long key : marginals.keySet()) {
+			assertEquals(marginals.toString()+ ", assumptions = " + assumptionIds + assumedStates, 2, marginals.get(key).size());	// must be nods with 2 states
+		}
+		
+		// add user who did not do any trade in userNameToIDMap in order to test boundary condition (users with no trades at all)
+		userNameToIDMap.put("User with no trade " + (Long.MIN_VALUE+1), Long.MIN_VALUE + 1);
+		
+		for (String user : userNameToIDMap.keySet()) {
+			// extract new summary
+			summary = engine.getScoreSummaryObject(userNameToIDMap.get(user), selectedNode, assumptionIds, assumedStates);
+			
+			// most basic assertions
+			assertEquals(user+ ", assumptions = " + assumptionIds + assumedStates, engine.getCash(userNameToIDMap.get(user), assumptionIds, assumedStates), summary.getCash(), ASSET_ERROR_MARGIN);
+			assertEquals(user+ ", assumptions = " + assumptionIds + assumedStates, engine.scoreUserEv(userNameToIDMap.get(user), assumptionIds, assumedStates), summary.getScoreEV(), ASSET_ERROR_MARGIN);
+			
+			
+			// check that getQuestions of summary.getScoreComponents retains the same ordering of engine.getTradedQuestions
+//			List<Long> tradedQuestions = engine.getTradedQuestions(userNameToIDMap.get(user));
+//			assertFalse(user+ ", assumptions = " + assumptionIds + assumedStates, tradedQuestions.isEmpty());	// users did actually trade in the system, so its not empty
+			assertEquals(user+ ", assumptions = " + assumptionIds + assumedStates, 1, summary.getScoreComponents().size()/2);	// This time I'm considering only 1 question. Note: again, I'm assuming each question has 2 states
+			
+			sum = 0f;	// prepare to calculate the sum of (<Expected score given state> * <marginal of state>)
+			
+			for (int stateIndex = 0; stateIndex < marginals.get(selectedNode).size(); stateIndex++) {
+				
+				// assert that getScoreComponents is related to current question
+				assertEquals("user = " + user + ", question = " + selectedNode + ", state = " + stateIndex
+						+ ", assumptions = " + assumptionIds + assumedStates, 
+						1, summary.getScoreComponents().get(stateIndex).getQuestions().size());
+				assertEquals("user = " + user + ", question = " + selectedNode + ", state = " + stateIndex
+						+ ", assumptions = " + assumptionIds + assumedStates, 
+						selectedNode, summary.getScoreComponents().get(stateIndex).getQuestions().get(0) );
+				
+				// assert that getScoreComponents is related to current state
+				assertEquals("user = " + user + ", question = " + selectedNode + ", state = " + stateIndex
+						+ ", assumptions = " + assumptionIds + assumedStates, 
+						1, summary.getScoreComponents().get(stateIndex).getStates().size() );
+				assertEquals("user = " + user + ", question = " + selectedNode + ", state = " + stateIndex
+						+ ", assumptions = " + assumptionIds + assumedStates, 
+						stateIndex, summary.getScoreComponents().get(stateIndex).getStates().get(0).intValue() );
+				
+				// multiply marginal (of this state of this question) and expected score of this state of this question
+				sum += marginals.get(selectedNode).get(stateIndex) // marginal
+				* summary.getScoreComponents().get(stateIndex).getContributionToScoreEV();	 // expected
+			}
+			
+			// assert that, for each question, the sum of expected score per state multiplied by its marginal will result in the total expected score
+			// i.e. scoreUserEV = Expected(D=d1)*P(D=d1) + Expected(D=d2)*P(D=d2) = Expected(E=e1)*P(E=e1) + Expected(E=e2)*P(E=e2) = Expected(F=f1)*P(F=f1) + Expected(F=f2)*P(F=f2)
+			assertEquals("user = " + user + ", question = " + selectedNode
+					+ ", assumptions = " + assumptionIds + assumedStates, 
+					summary.getScoreEV(), sum, PROB_ERROR_MARGIN);
+		}
+		
+		
 		// TODO implement more test cases
 	}
 	

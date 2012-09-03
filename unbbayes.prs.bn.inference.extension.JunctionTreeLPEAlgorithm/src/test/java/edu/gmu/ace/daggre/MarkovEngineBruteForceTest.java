@@ -68,14 +68,17 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		super.setUp();
 		engines = new ArrayList<MarkovEngineImpl>();
 		engines.add(BruteForceMarkovEngine.getInstance(2f, 100f, 1000f));
-//		engines.add(CPTBruteForceMarkovEngine.getInstance(2f, 100f, 1000f));
+		engines.add(CPTBruteForceMarkovEngine.getInstance(2f, 100f, 1000f));
 		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 1000f));
-//		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 1000f, false, true));
+		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 1000f, false, true));
 
 		// add another engine which does not delete nodes when resolved
 		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 1000f));
 		engines.get(engines.size()-1).setToDeleteResolvedNode(false);
 		engines.get(engines.size()-1).setToObtainProbabilityOfResolvedQuestions(true);
+		
+		
+		
 		for (MarkovEngineInterface engine : engines) {
 			engine.initialize();
 		}

@@ -145,6 +145,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	private boolean isToDoFullPreview = false;
 
+	private Map<Long, List<Long>> tradedQuestionsMap = new HashMap<Long, List<Long>>();
+
+	private boolean isToReturnEVComponentsAsScoreSummary = false;
+
 	/**
 	 * Default constructor is protected to allow inheritance.
 	 * Use {@link #getInstance()} to actually instantiate objects of this class.
@@ -322,6 +326,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		// initialize the map managing users (and the algorithms responsible for changing values of users asset networks)
 		setUserToAssetAwareAlgorithmMap(new ConcurrentHashMap<Long, AssetAwareInferenceAlgorithm>()); // concurrent hash map is known to be thread safe yet fast.
+		
+		// initialize map which manages which questions have trades from a given user
+		setTradedQuestionsMap(new HashMap<Long, List<Long>>());
 		
 		return true;
 	}
@@ -1189,6 +1196,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					algorithm.setToUpdateAssets(backup);	// revert config of assets
 					// backup the previous delta so that we can revert this trade
 //					qTablesBeforeTrade = algorithm.getAssetTablesBeforeLastPropagation();
+					
+					// add this question to the mapping of questions traded by the user
+					List<Long> questions = getTradedQuestionsMap().get(userId);
+					if (questions == null) {
+						questions = new ArrayList<Long>();
+						getTradedQuestionsMap().put(userId, questions);
+					}
+					if (!questions.contains(questionId)) {
+						questions.add(questionId);
+					}
 				}
 			}
 		}
@@ -1436,7 +1453,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						if (node != null) {
 							getDefaultInferenceAlgorithm().setAsPermanentEvidence(node, settledState, isToDeleteResolvedNode());
 						} else {
-							throw new IllegalStateException("Node " + questionId + " is not present in network.");
+							throw new InexistingQuestionException("Node " + questionId + " is not present in network.", questionId);
 						}
 					}
 					
@@ -1465,7 +1482,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 							} else {
 								try {
 //									Debug.println(getClass(), "Node " + questionId + " is not present in asset net of user " + assetAlgorithm.getAssetNetwork());
-									throw new IllegalStateException("Node " + questionId + " is not present in asset net of user " + assetAlgorithm.getAssetNetwork());
+									throw new InexistingQuestionException("Node " + questionId + " is not present in asset net of user " + assetAlgorithm.getAssetNetwork(), questionId);
 								} catch (Throwable t) {
 									t.printStackTrace();
 								}
@@ -1905,7 +1922,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			for (int i = 0; i < findingNodeIDs.size(); i++) {
 				TreeVariable findingNode = (TreeVariable) pn.getNode(Long.toString(findingNodeIDs.get(i)));
 				if (findingNode == null) {
-					throw new IllegalArgumentException("Node" + findingNodeIDs.get(i) + " does not exist.");
+					throw new InexistingQuestionException("Node" + findingNodeIDs.get(i) + " does not exist.", findingNodeIDs.get(i));
 				}
 				if (i < findingStates.size()) {
 					// set evidence in the probabilistic network
@@ -1940,7 +1957,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				mainNode = (TreeVariable) pn.getNodeAt(i);
 			}
 			if (mainNode == null) {
-				throw new IllegalArgumentException("Could not extract some of the nodes from the network: " + filterNodes + ", index " + i); 
+				throw new InexistingQuestionException("Could not extract some of the nodes from the network: " + filterNodes + ", index " + i, null); 
 			}
 			
 			
@@ -2165,7 +2182,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		// make sure assumptionIds does not contain null
 		if (assumptionIds!= null && assumptionIds.contains(null)) {
-			throw new IllegalArgumentException("assumptionIds contains null ID.");
+			throw new InexistingQuestionException("assumptionIds contains null ID.", null);
 		}
 		// make sure assumedStates does not contain null
 		if (assumedStates!= null && assumedStates.contains(null)) {
@@ -2350,35 +2367,55 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			node = getProbabilisticNetwork().getNode(Long.toString(questionId));
 		}
 		if (node == null) {
-			throw new IllegalArgumentException("Question " + questionId + " not found.");
+			throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
 		}
 		
 		// list to return
 		List<Float> ret = new ArrayList<Float>(node.getStatesSize());
 		
-		// this is a list of assumptions to pass to scoreUserEv (assumptionIds & questionId)
+		// this is a non-null list of assumptions to pass to scoreUserEv (assumptionIds & questionId)
 		List<Long> assumptionsIncludingThisQuestion = new ArrayList<Long>();
+		// similarly, non-null list of states to pass to scoreUserEv (assumedStates and states of questionId)
+		List<Integer> assumedStatesIncludingThisState = new ArrayList<Integer>();	// do not reuse 
 		if (assumptionIds != null) {
 			assumptionsIncludingThisQuestion.addAll(assumptionIds);
 		}
-		if (!assumptionsIncludingThisQuestion.contains(questionId)) {
-			assumptionsIncludingThisQuestion.add(questionId);
-		} else {
-			throw new IllegalArgumentException("Assumptions must not contain the question itself.");
-		}
-		// similarly, list of states to pass to scoreUserEv (assumedStates and states of questionId)
-		List<Integer> assumedStatesIncludingThisState = new ArrayList<Integer>();	// do not reuse 
 		if (assumedStates != null) {
 			assumedStatesIncludingThisState.addAll(assumedStates);
 		}
-		assumedStatesIncludingThisState.add(0);
-
-		// just calculate conditional expected score given each state of questionId... Use assumptionsIncludingThisQuestion and states
-		for (int i = 0; i < node.getStatesSize(); i++) {
-			// TODO optimize
-			assumedStatesIncludingThisState.set(assumedStatesIncludingThisState.size()-1, i);
-			ret.add(this.scoreUserEv(userId, assumptionsIncludingThisQuestion, assumedStatesIncludingThisState));
+		
+		// if questionId is in assumption, this var will have the index of questionId in assumptionsIncludingThisQuestion
+		int indexOfThisQuestion = assumptionsIncludingThisQuestion.indexOf(questionId);
+		
+		// if we assume the question itself, do different operations
+		if (indexOfThisQuestion < 0) {	// questionId is not assumed
+			
+			// the last element in the list will contain the question itself
+			assumptionsIncludingThisQuestion.add(questionId);
+			assumedStatesIncludingThisState.add(0);
+			
+			// just calculate conditional expected score given each state of questionId... Use assumptionsIncludingThisQuestion and states
+			for (int i = 0; i < node.getStatesSize(); i++) {
+				// TODO optimize
+				assumedStatesIncludingThisState.set(assumedStatesIncludingThisState.size()-1, i);
+				ret.add(this.scoreUserEv(userId, assumptionsIncludingThisQuestion, assumedStatesIncludingThisState));
+			}
+		} else {	// questionId is assumed
+//			throw new IllegalArgumentException("Assumptions must not contain the question itself.");
+			Integer assumedStateOfThisQuestion = assumedStatesIncludingThisState.get(indexOfThisQuestion);
+			// calculate conditional expected score only for the evidence state, and the other states will have 0
+			for (int i = 0; i < node.getStatesSize(); i++) {
+				// TODO optimize
+				if (i == assumedStateOfThisQuestion) {
+					// the assumed state will have the value added
+					ret.add(this.scoreUserEv(userId, assumptionsIncludingThisQuestion, assumedStatesIncludingThisState));
+				} else {
+					// other states will have expected value = 0f
+					ret.add(0f);
+				}
+			}
 		}
+
 		
 		return ret;
 	}
@@ -2417,7 +2454,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				synchronized (getProbabilisticNetwork()) {
 					assumption = getProbabilisticNetwork().getNode(Long.toString(id));
 					if (assumption == null) {
-						throw new IllegalArgumentException("Question " + id + " not found.");
+						throw new InexistingQuestionException("Question " + id + " not found.", id);
 					}
 					// check state consistency
 					if ( (assumedStates != null)  && (i < assumedStates.size()) ) {
@@ -2525,7 +2562,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //			}
 			// assumptionIds must not contain null value
 			if (assumptionIds.contains(null)) {
-				throw new IllegalArgumentException("Null assumption found.");
+				throw new InexistingQuestionException("Null assumption found.", null);
 			}
 			// assumedStates must not contain null value
 //			if (assumedStates.contains(null)) {
@@ -2868,6 +2905,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				}
 			}
 		}
+		
 		return oldValues;
 	}
 
@@ -3358,12 +3396,132 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		return ret;
 	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getScoreSummaryObject(long, java.lang.Long, java.util.List, java.util.List)
 	 */
 	public ScoreSummary getScoreSummaryObject(long userId, final Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+		if (isToReturnEVComponentsAsScoreSummary()) {
+			return this.getScoreEVComponent(userId, questionId, assumptionIds, assumedStates);
+		}
+		return getScoreEVQuestionStateComponent(userId, questionId, assumptionIds, assumedStates);
+	}
+	
+	/**
+	 * This is an implementation of {@link SummaryContribution}
+	 * which carries the values of {@link MarkovEngineImpl#scoreUserQuestionEvStates(long, long, List, List)}
+	 * @author Shou Matsumoto
+	 */
+	public class ScoreEVPerQuestionSummaryContribution implements SummaryContribution {
+		private List<Long> questionId;
+		private List<Integer> stateIndex;
+		private float scoreEvOfState;
+
+		/** Constructor initializing fields */
+		public ScoreEVPerQuestionSummaryContribution(Long questionId, int stateIndex, float scoreEvOfState) {
+			super();
+			this.questionId = Collections.singletonList(questionId);
+			this.stateIndex = Collections.singletonList(stateIndex);
+			this.scoreEvOfState = scoreEvOfState;
+		}
+		/** This is a {@link Collections#singletonList(Object)} (a list with only 1 element) containing only the ID of the question */
+		public List<Long> getQuestions() {
+			return questionId;
+		}
+		/** This is a {@link Collections#singletonList(Object)} (a list with only 1 element) containing only the index of the state  */
+		public List<Integer> getStates() {
+			return stateIndex;
+		}
+		
+		/** 
+		 * Contains an entry of {@link MarkovEngineImpl#scoreUserQuestionEvStates(long, long, List, List)}
+		 * (i.e. the value of {@link MarkovEngineImpl#scoreUserQuestionEvStates(long, long, List, List)}
+		 * of the state {@link #getStates()} ) 
+		 */
+		public float getContributionToScoreEV() {
+			return scoreEvOfState;
+		}
+		
+	}
+	
+	
+	/**
+	 * This method is used in {@link #getScoreSummaryObject(long, Long, List, List)}
+	 * in order to describe the value of {@link #scoreUserEv(long, List, List)}
+	 * in terms of estimated scores given states of questions 
+	 * (i.e. in terms of {@link #scoreUserQuestionEvStates(long, long, List, List)}).
+	 * @param userId
+	 * @param questionId
+	 * @param assumptionIds
+	 * @param assumedStates
+	 * @return
+	 * @throws IllegalArgumentException
+	 */
+	protected ScoreSummary getScoreEVQuestionStateComponent(long userId, final Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+		// obtain the conditional cash
+		final float cash = this.getCash(userId, assumptionIds, assumedStates);
+		
+		// obtain the conditional expected score, 
+		final float scoreEV = this.scoreUserEv(userId, assumptionIds, assumedStates);
+		
+		// this list will contain the expected score given states of the povided question
+		final List<SummaryContribution> scoreEVPerStateList = new ArrayList<ScoreSummary.SummaryContribution>();
+		
+		// scoreUserQuestionEvStates will be called for questions in this list
+		List<Long> questionsToConsider = new ArrayList<Long>();
+		if (questionId != null) {
+			// questionId was explicitly specified, so use only this question ID
+			questionsToConsider.add(questionId);
+		} else {
+			// look for questions which the user has traded directly
+			questionsToConsider.addAll(this.getTradedQuestions(userId));
+		}
+		
+		// fill scoreEVPerStateList with values returned by scoreUserQuestionEvStates
+		for (Long idOfQuestionToConsider : questionsToConsider) {
+			if (this.hasQuestion(idOfQuestionToConsider)) {
+				List<Float> expectedScorePerState = this.scoreUserQuestionEvStates(userId, idOfQuestionToConsider, assumptionIds, assumedStates);
+				if (expectedScorePerState == null || expectedScorePerState.isEmpty()) {
+					throw new RuntimeException("scoreUserQuestionEvStates is returning a null/empty list for user = " + userId 
+							+ ", question = " + idOfQuestionToConsider
+							+ ", assumptions = " + assumptionIds 
+							+ ", states of the assumptions = " + assumedStates);
+				}
+				// ScoreEVPerQuestionSummaryContribution is the content of scoreEVPerStateList
+				for (int state = 0; state < expectedScorePerState.size(); state++) {
+					scoreEVPerStateList.add(new ScoreEVPerQuestionSummaryContribution(idOfQuestionToConsider, state, expectedScorePerState.get(state)));
+				}
+			}
+		}
+		
+		// integrate all data into one ScoreSummary and return.
+		return new ScoreSummary() {
+			public float getCash() { return cash; }
+			public float getScoreEV() {return scoreEV; }
+			public List<SummaryContribution> getScoreComponents() { return scoreEVPerStateList; }
+			public List<SummaryContribution> getIntersectionScoreComponents() { return Collections.emptyList(); }
+		};
+	}
+	
+	/**
+	 * Checks whether a question exists in the system.
+	 * @param questionId : id of the question to look for
+	 * @return true if a question with ID == questionId is present in the system.
+	 * False otherwise.
+	 */
+	public boolean hasQuestion(Long questionId) {
+		synchronized (getProbabilisticNetwork()) {
+			return getProbabilisticNetwork().getNodeIndex(""+questionId) >= 0;
+		}
+	}
+
+	/**
+	 * This method implements the old specification of {@link #getScoreSummaryObject(long, Long, List, List), which is to
+	 * return how much each cell in clique table contributes to the overall expected score (i.e. how #scoreUserEv(long, List, List)
+	 * is calculated from the clique potentials and asset tables).
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getScoreSummaryObject(long, java.lang.Long, java.util.List, java.util.List)
+	 */
+	protected ScoreSummary getScoreEVComponent(long userId, final Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
 		
 		// obtain the conditional cash
 		final float cash = this.getCash(userId, assumptionIds, assumedStates);
@@ -4075,7 +4233,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			synchronized (getProbabilisticNetwork()) {
 				ProbabilisticNode node = (ProbabilisticNode) getProbabilisticNetwork().getNode(Long.toString(questionId));
 				if (node == null) {
-					throw new IllegalArgumentException("Question " + questionId + " not found.");
+					throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
 				}
 				// negative states can be interpreted as "not" that state (i.e. assume 0% for that state)
 				// TODO check if we'll really need this feature
@@ -4146,12 +4304,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public class InexistingQuestionException extends IllegalArgumentException {
 		private static final long serialVersionUID = -2360508821973951850L;
-		private final long questionId;
-		public InexistingQuestionException(long questionId) { super(); this.questionId = questionId; }
-		public InexistingQuestionException(String message, Throwable cause, long questionId) { super(message, cause); this.questionId = questionId; }
-		public InexistingQuestionException(String s, long questionId) { super(s); this.questionId = questionId; }
-		public InexistingQuestionException(Throwable cause, long questionId) { super(cause); this.questionId = questionId; }
-		public long getQuestionId() { return questionId; }
+		private final Long questionId;
+		public InexistingQuestionException(Long questionId) { super(); this.questionId = questionId; }
+		public InexistingQuestionException(String message, Throwable cause, Long questionId) { super(message, cause); this.questionId = questionId; }
+		public InexistingQuestionException(String s, Long questionId) { super(s); this.questionId = questionId; }
+		public InexistingQuestionException(Throwable cause, Long questionId) { super(cause); this.questionId = questionId; }
+		public Long getQuestionId() { return questionId; }
 	}
 
 	/**
@@ -4441,6 +4599,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //	protected double getCurrencyConstantMultiplier() {
 //		return currencyMultiplier;
 //	}
+	
 
 	/**
 	 * If true, {@link #previewTrade(long, long, List, List, List)} will 
@@ -4480,9 +4639,64 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	@Override
 	public String toString() {
-		return super.toString() + "[isToUseQValues=" + isToUseQValues()  + "]";
+		return super.toString() + "[isToUseQValues=" + isToUseQValues()  
+		+ ", isToDeleteResolvedNode=" + isToDeleteResolvedNode() 
+		+ ", isToObtainProbabilityOfResolvedQuestions=" + isToObtainProbabilityOfResolvedQuestions()
+		+ ", isToThrowExceptionOnInvalidAssumptions=" + isToThrowExceptionOnInvalidAssumptions()
+		+ "]";
 	}
 
-	
+	/**
+	 * @param userId : user to consider
+	 * @return a list of what questions were traded by this user. This is a non-null value.
+	 * This list is updated in {@link AddTradeNetworkAction#execute()}
+	 */
+	public List<Long> getTradedQuestions(Long userId) {
+		if (getTradedQuestionsMap().containsKey(userId)) {
+			// do not return the original list, because we do not want the map to be changed from external access.
+			return new ArrayList<Long>(getTradedQuestionsMap().get(userId));
+		}
+		// do not return null.
+		return Collections.emptyList();
+	}
+
+	/**
+	 * Map which stores which questions were traded by a user
+	 * @param tradedQuestionsMap the tradedQuestionsMap to set
+	 */
+	protected void setTradedQuestionsMap(Map<Long, List<Long>> tradedQuestionsMap) {
+		this.tradedQuestionsMap = tradedQuestionsMap;
+	}
+
+	/**
+	 * Map which stores which questions were traded by a user
+	 * @return the tradedQuestionsMap
+	 */
+	protected Map<Long, List<Long>> getTradedQuestionsMap() {
+		return tradedQuestionsMap;
+	}
+
+	/**
+	 * If true, {@link #getScoreSummary(long, Long, List, List)} and {@link #getScoreSummaryObject(long, Long, List, List)}
+	 * will return a specification of how {@link #scoreUserEv(long, List, List)} is calculated
+	 * from clique potentials and asset tables. If false, {@link #getScoreSummary(long, Long, List, List)} and {@link #getScoreSummaryObject(long, Long, List, List)}
+	 * will have the default behavior: return {@link #scoreUserQuestionEv(long, Long, List, List)}
+	 * @param isToReturnEVComponentsAsScoreSummary the isToReturnEVComponentsAsScoreSummary to set
+	 */
+	public void setToReturnEVComponentsAsScoreSummary(
+			boolean isToReturnEVComponentsAsScoreSummary) {
+		this.isToReturnEVComponentsAsScoreSummary = isToReturnEVComponentsAsScoreSummary;
+	}
+
+	/**
+	 * If true, {@link #getScoreSummary(long, Long, List, List)} and {@link #getScoreSummaryObject(long, Long, List, List)}
+	 * will return a specification of how {@link #scoreUserEv(long, List, List)} is calculated
+	 * from clique potentials and asset tables. If false, {@link #getScoreSummary(long, Long, List, List)} and {@link #getScoreSummaryObject(long, Long, List, List)}
+	 * will have the default behavior: return {@link #scoreUserQuestionEv(long, Long, List, List)}
+	 * @return the isToReturnEVComponentsAsScoreSummary
+	 */
+	public boolean isToReturnEVComponentsAsScoreSummary() {
+		return isToReturnEVComponentsAsScoreSummary;
+	}
 	
 }
