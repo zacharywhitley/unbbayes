@@ -8402,8 +8402,13 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals("User = " + user, engine.getScoreSummaryObject(userNameToIDMap.get(user), null, null, null).getScoreEV(), score);
 		}
 		
-
-		assertFalse(engine.getQuestionAssumptionGroups().isEmpty());
+		if (engine.isToDeleteResolvedNode()) {
+			// questions were resolved, but they are still in the system
+			assertTrue(engine.getQuestionAssumptionGroups().isEmpty());
+		} else {
+			// all questions were supposedly removed from system
+			assertFalse(engine.getQuestionAssumptionGroups().isEmpty());
+		}
 		
 		// check new user
 		assertEquals(12050.81f, engine.getCash(Long.MAX_VALUE, null, null), ASSET_ERROR_MARGIN);
