@@ -459,7 +459,44 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		/** Rebuild the BN */
 		public void execute() {
-			this.execute(getExecutedActions());
+			List<NetworkAction> actions = getExecutedActions();
+			// reset network
+			ProbabilisticNetwork net = getProbabilisticNetwork();
+			// the list "actions" without network change actions
+			List<NetworkAction> actionsToExecute = new ArrayList<NetworkAction>();	
+			synchronized (actions) {
+				synchronized (getDefaultInferenceAlgorithm()) {
+					// clear content of net
+					synchronized (net) {
+						ArrayList<Node> nodesToRemove = new ArrayList(net.getNodes());
+						for (Node node : nodesToRemove) {
+							net.removeNode(node);
+						}
+						try {
+							net.setJunctionTree(net.getJunctionTreeBuilder().buildJunctionTree(net));
+						} catch (InstantiationException e) {
+							throw new RuntimeException(e);
+						} catch (IllegalAccessException e) {
+							throw new RuntimeException(e);
+						}
+					}
+				}
+				// separate the content of actions into those changing network structure and those not changing structure
+				List<NetworkAction> networkChangeActions = new ArrayList<NetworkAction>(); 
+				for (NetworkAction action : actions) {
+					if (action.isStructureChangeAction()) {
+						networkChangeActions.add(action);
+					} else {
+						actionsToExecute.add(action);
+					}
+				}
+				// execute the trades related to network construction before actionsToExecute
+				for (NetworkAction changeAction : networkChangeActions) {
+					changeAction.execute();
+				}
+			}
+			// recompile network and execute actions which does not change network structure
+			this.execute(actionsToExecute); 
 		}
 		/** Rebuild the BN */
 		protected void execute(List<NetworkAction> actions) {
@@ -545,7 +582,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			throw new UnsupportedOperationException("Cannot revert a network rebuild action.");
 		}
 		/** By overwriting this method, you can control which actions are executed with assets changes */
-		protected boolean isToExecuteAction(NetworkAction action) { return !action.isStructureChangeAction(); }
+		protected boolean isToExecuteAction(NetworkAction action) { return true /*!action.isStructureChangeAction()*/; }
 		public Date getWhenCreated() { return whenCreated; }
 		/** This action reboots the network, but does not change the structure by itself */
 		public boolean isStructureChangeAction() { return false; }
@@ -565,11 +602,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	
 	/**
 	 * This is an network action for {@link MarkovEngineImpl#revertTrade(long, Date, Date, Long)}.
-	 * The only difference to {@link RebuildNetworkAction} is that
-	 * {@link RebuildNetworkAction#execute()} will reset the state
-	 * of {@link MarkovEngineImpl}, and
-	 * {@link RebuildNetworkAction#isToExecuteAction(NetworkAction)} will return true
-	 * to all actions (so that actions adding new nodes or edges are also executed).
+	 * Currently, there is no difference to {@link RebuildNetworkAction},
+	 * so this is only a placeholder for future changes.
 	 * @author Shou Matsumoto
 	 */
 	public class RevertTradeNetworkAction extends RebuildNetworkAction {
@@ -577,47 +611,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public RevertTradeNetworkAction(Long transactionKey, Date whenCreated, Date tradesStartingWhen, Long questionId) {
 			super(transactionKey, whenCreated, tradesStartingWhen, questionId);
 		}
-		/** @see edu.gmu.ace.daggre.MarkovEngineImpl.RebuildNetworkAction#execute(java.util.List)*/
-		protected void execute(List<NetworkAction> actions) { 
-			// reset network
-			ProbabilisticNetwork net = getProbabilisticNetwork();
-			// the list "actions" without network change actions
-			List<NetworkAction> actionsToExecute = new ArrayList<NetworkAction>();	
-			synchronized (getExecutedActions()) {
-				synchronized (getDefaultInferenceAlgorithm()) {
-					synchronized (net) {
-						ArrayList<Node> nodesToRemove = new ArrayList(net.getNodes());
-						for (Node node : nodesToRemove) {
-							net.removeNode(node);
-						}
-						try {
-							net.setJunctionTree(net.getJunctionTreeBuilder().buildJunctionTree(net));
-						} catch (InstantiationException e) {
-							throw new RuntimeException(e);
-						} catch (IllegalAccessException e) {
-							throw new RuntimeException(e);
-						}
-					}
-				}
-				// network change actions
-				List<NetworkAction> networkChangeActions = new ArrayList<NetworkAction>(); 
-				for (NetworkAction action : actions) {
-					if (action.isStructureChangeAction()) {
-						networkChangeActions.add(action);
-					} else {
-						actionsToExecute.add(action);
-					}
-				}
-				// execute the trades related to network construction before actionsToExecute
-				for (NetworkAction changeAction : networkChangeActions) {
-					changeAction.execute();
-				}
-			}
-			// execute actionsToExecute
-			super.execute(actionsToExecute); 
-		}
-		/**  @see edu.gmu.ace.daggre.MarkovEngineImpl.RebuildNetworkAction#isToExecuteAction(edu.gmu.ace.daggre.NetworkAction) */
-		protected boolean isToExecuteAction(NetworkAction action) { return true; }
 	}
 
 	/* (non-Javadoc)
@@ -1692,22 +1685,20 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			throw new IllegalArgumentException("Value of \"tradesStartingWhen\" should not be null.");
 		}
 		
+		synchronized (getExecutedActions()) {
+			if (getExecutedActions().isEmpty()) {
+				return false;
+			}
+		}
+		
 		if (transactionKey == null) {
 			transactionKey = this.startNetworkActions();
 			// add action into transaction
-			if (isToDeleteResolvedNode()) {
-				this.addNetworkAction(transactionKey, new RevertTradeNetworkAction(transactionKey, occurredWhen, tradesStartingWhen, questionId));
-			} else {
-				this.addNetworkAction(transactionKey, new RebuildNetworkAction(transactionKey, occurredWhen, tradesStartingWhen, questionId));
-			}
+			this.addNetworkAction(transactionKey, new RevertTradeNetworkAction(transactionKey, occurredWhen, tradesStartingWhen, questionId));
 			this.commitNetworkActions(transactionKey);
 		} else {
 			// add action into transaction
-			if (isToDeleteResolvedNode()) {
-				this.addNetworkAction(transactionKey, new RevertTradeNetworkAction(transactionKey, occurredWhen, tradesStartingWhen, questionId));
-			} else {
-				this.addNetworkAction(transactionKey, new RebuildNetworkAction(transactionKey, occurredWhen, tradesStartingWhen, questionId));
-			}
+			this.addNetworkAction(transactionKey, new RevertTradeNetworkAction(transactionKey, occurredWhen, tradesStartingWhen, questionId));
 		}
 		
 		return true;
@@ -3940,6 +3931,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			this.addNetworkAction(transactionKey, (AddQuestionNetworkAction)newAction);
 			return;
 		}
+		
+		
 		// check existence of transaction key
 		// NOTE: getNetworkActionsMap is supposedly an instance of concurrent map, so we do not need to synchronize it
 		List<NetworkAction> actions = this.getNetworkActionsMap().get(transactionKey);

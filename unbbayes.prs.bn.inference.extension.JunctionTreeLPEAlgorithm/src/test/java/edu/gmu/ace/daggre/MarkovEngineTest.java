@@ -8625,6 +8625,10 @@ public class MarkovEngineTest extends TestCase {
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#revertTrade(long, java.util.Date, java.lang.Long, java.lang.Long)}.
 	 */
 	public final void testRevertTrade() {
+		
+		// nothing to revert yet
+		assertFalse(engine.revertTrade(null, new Date(), new Date(0), null));
+		
 		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
 		List<AddTradeNetworkAction> trades = this.createDEFNetIn1Transaction(userNameToIDMap );
 		assertEquals(6, trades.size());
@@ -13636,6 +13640,31 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue(engine.addQuestion(null, new Date(), Long.MAX_VALUE, 2, null));
 	}
 	
+	/**
+	 * Verify what happens when we revert a trade after resolving it
+	 */
+	public final void testResolveAndRevert() {
+		
+		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
+		this.createDEFNetIn1Transaction(userNameToIDMap );
+		
+		Set<Long> resolved = new HashSet<Long>();
+		
+		if (Math.random() < .5) {
+			assertTrue(engine.resolveQuestion(null, new Date(), 0x0DL, (Math.random()<.5)?0:1));
+			resolved.add(0x0DL);
+		}
+		if (Math.random() < .5) {
+			assertTrue(engine.resolveQuestion(null, new Date(), 0x0EL, (Math.random()<.5)?0:1));
+			resolved.add(0x0EL);
+		}
+		if (Math.random() < .5) {
+			assertTrue(engine.resolveQuestion(null, new Date(), 0x0FL, (Math.random()<.5)?0:1));
+			resolved.add(0x0FL);
+		}
+		
+		assertTrue(engine.revertTrade(null, new Date(), new Date(0), (Math.random()<.5)?null:((Math.random()<.5)?0x0DL:((Math.random()<.5)?0x0EL:0X0F))));
+	}
 
 	// not needed for the 1st release
 //	/**
