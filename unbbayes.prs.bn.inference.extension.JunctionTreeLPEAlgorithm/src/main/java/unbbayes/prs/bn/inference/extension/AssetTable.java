@@ -60,5 +60,9 @@ public class AssetTable extends ProbabilisticTable {
     		}
     	}
     }
+	
+	public PotentialTable newInstance() {
+		return getInstance();
+	}
 
 }

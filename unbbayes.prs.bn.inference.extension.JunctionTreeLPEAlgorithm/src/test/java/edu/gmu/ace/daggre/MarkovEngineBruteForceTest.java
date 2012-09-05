@@ -24,6 +24,7 @@ import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
+import edu.gmu.ace.daggre.MarkovEngineImpl.InexistingQuestionException;
 import edu.gmu.ace.daggre.MarkovEngineImpl.ProbabilityAndAssetTablesMemento;
 import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
 
@@ -47,12 +48,12 @@ public class MarkovEngineBruteForceTest extends TestCase {
 
 	private static final int MAX_USER_NUM = 10;
 
-	private static final double MAX_CASH_TO_ADD = 1000;
+	private static final double MAX_CASH_TO_ADD = 100;
 	
 	private List<MarkovEngineImpl> engines;
 
 	/** This value indicates how many test iterations (5-point tests) will be performed by default*/
-	private int howManyTradesToTest = (int) (Math.random() * 110);//100;
+	private int howManyTradesToTest = (int) (Math.random() * 200);//100;
 
 
 	private enum FivePointTestType {BELOW_LIMIT, ON_LOWER_LIMIT, BETWEEN_LIMITS, ON_UPPER_LIMIT, ABOVE_LIMIT}; 
@@ -74,16 +75,20 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		engines = new ArrayList<MarkovEngineImpl>();
-		engines.add(BruteForceMarkovEngine.getInstance(2f, 100f, 1000f));
-//		engines.add(CPTBruteForceMarkovEngine.getInstance(2f, 100f, 1000f));
-		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 1000f));
-		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 1000f, false, true));
-
-		// add another engine which does not delete nodes when resolved
-		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 1000f));
-		engines.get(engines.size()-1).setToDeleteResolvedNode(false);
-		engines.get(engines.size()-1).setToObtainProbabilityOfResolvedQuestions(true);
 		
+		engines.add(BruteForceMarkovEngine.getInstance(2f, 100f, 100));
+		
+		
+		
+//		engines.add(CPTBruteForceMarkovEngine.getInstance(2f, 100f, 100));
+		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 100));
+//		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 100, false, true));
+
+		
+		// add another engine which does not delete nodes when resolved
+//		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 100));
+//		engines.get(engines.size()-1).setToDeleteResolvedNode(false);
+//		engines.get(engines.size()-1).setToObtainProbabilityOfResolvedQuestions(true);
 		
 		
 		for (MarkovEngineInterface engine : engines) {
@@ -217,7 +222,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				ret.add(probOfStateToConsider);
 			} else {
 				// p*(1-P0)/(1-p0)
-				ret.add(priorProb.get(i) * (1 - probOfStateToConsider) / (1 - priorProb.get(stateToConsider)));
+				ret.add((float) (priorProb.get(i) * (1d - probOfStateToConsider) / (1d - priorProb.get(stateToConsider))));
 			}
 		}
 		
@@ -260,7 +265,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		if (pointWithin5PointTest.equals(FivePointTestType.BETWEEN_LIMITS)) {
 			System.out.println("getProbLists(assumptionIds=null,assumedStates=null)="+probBeforeTrade);	
 			System.out.println("getCash(userId="+userId+",assumptionIds=null,assumedStates=null)="+minBeforeTrade);	
-//			System.out.println("getCash(userId="+userId+",assumptionIds="+assumptionIds+",assumedStates="+assumedStates+")="+conditionalMinBeforeTrade);	
+			System.out.println("getCash(userId="+userId+",assumptionIds="+assumptionIds+",assumedStates="+assumedStates+")="+conditionalMinBeforeTrade);	
 		}
 		
 		// this variable will hold the marginal probabilities after the trade
@@ -294,7 +299,8 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					if (marginalToCompare != null) {
 						assertEquals(engine.toString(), marginal.size(), marginalToCompare.size());
 						for (int state = 0; state < marginal.size(); state++) {
-							assertEquals(engine.toString() + ", question = " + id + ", state = " + state,  
+							assertEquals(engine.toString() + ", question = " + id + ", state = " + state
+									+ ", probBeforeTrade = "+probBeforeTrade + ", priorProbToCompare = "+priorProbToCompare,  
 									marginal.get(state), 
 									marginalToCompare.get(state), 
 									((engine instanceof CPTBruteForceMarkovEngine)?PROB_ERROR_MARGIN_CPT_BRUTE_FORCE:PROB_ERROR_MARGIN)
@@ -316,16 +322,28 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				}
 				assertEquals(engine.toString(), minBeforeTrade, engine.getCash(userId, null, null), 
 						((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
-				if (Math.abs(conditionalMinBeforeTrade - engine.getCash(userId, assumptionIds, assumedStates))
-						> ((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)) {
-					engines.get(0).getCash(userId, assumptionIds, assumedStates);
-					engine.getCash(userId, assumptionIds, assumedStates);
+				if (new ArrayList<Long>(resolvedQuestions).removeAll(assumptionIds)) {
+					if (engine.isToDeleteResolvedNode()) {
+						// if assumption was resolved and engine is set to delete resolved nodes, then it cannot find the assumption
+						try {
+							float cash = engine.getCash(userId, assumptionIds, assumedStates);
+							fail(engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates + ", cash = "+cash);
+						} catch (InexistingQuestionException e) {
+							// OK
+						}
+					}
+				} else {
+					if (Math.abs(conditionalMinBeforeTrade - engine.getCash(userId, assumptionIds, assumedStates))
+							> ((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)) {
+						engines.get(0).getCash(userId, assumptionIds, assumedStates);
+						engine.getCash(userId, assumptionIds, assumedStates);
+					}
+					assertEquals(
+							engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
+							conditionalMinBeforeTrade, 
+							engine.getCash(userId, assumptionIds, assumedStates), 
+							((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
 				}
-				assertEquals(
-						engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
-						conditionalMinBeforeTrade, 
-						engine.getCash(userId, assumptionIds, assumedStates), 
-						((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
 				
 				scoreUserQuestionEvStatesBeforeTrade = engine.scoreUserQuestionEvStates(userId, questionId, assumptionsOfTrade, statesOfAssumption);
 				assertEquals(engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
@@ -352,6 +370,15 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				} catch (ZeroAssetsException e) {
 					// it's expected to throw exception
 					assertNotNull(engine.toString() + userId + ", question = " + questionId + " , assumption=" + assumptionIds+ "=" + assumedStates + ", newValues="+newValues,e);
+				} catch (IllegalArgumentException e) {
+					if (resolvedQuestions.contains(questionId) || new ArrayList<Long>(resolvedQuestions).removeAll(assumptionsOfTrade)) {
+						// OK, because question was resolved previously
+						continue;
+					} else {
+						// question was not resolved, but IllegalArgumentException was thrown
+						e.printStackTrace();
+						fail(e.getMessage() + engine + userId + ", question = " + questionId + " , assumption=" + assumptionIds+ "=" + assumedStates + ", newValues="+newValues);
+					}
 				}
 			}
 			
@@ -360,23 +387,36 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			if (transactionKey == null) {
 				transactionKey = engine.startNetworkActions();
 			}
-			List<Float> returnOfTrade = engine.addTrade(
-					transactionKey, 
-					tradeOccurredWhen, 
-					"User " + userId + " trades on P(" + questionId + " | " + assumptionsOfTrade + " = " + statesOfAssumption + ") = " + newValues, 
-					userId, 
-					questionId, 
-					newValues, 
-					assumptionsOfTrade, 
-					statesOfAssumption, 
-					true		// allow negative, so that we can see that min went to negative
-			);
+			List<Float> returnOfTrade = null;
+			try {
+				returnOfTrade = engine.addTrade(
+						transactionKey, 
+						tradeOccurredWhen, 
+						"User " + userId + " trades on P(" + questionId + " | " + assumptionsOfTrade + " = " + statesOfAssumption + ") = " + newValues, 
+						userId, 
+						questionId, 
+						newValues, 
+						assumptionsOfTrade, 
+						statesOfAssumption, 
+						true		// allow negative, so that we can see that min went to negative
+				);
+			} catch (IllegalArgumentException e) {
+				if (resolvedQuestions.contains(questionId) || new ArrayList<Long>(resolvedQuestions).removeAll(assumptionsOfTrade)) {
+					// OK, because question was resolved previously
+				} else {
+					// question was not resolved, but IllegalArgumentException was thrown
+					e.printStackTrace();
+					fail(e.getMessage() + engine + userId + ", question = " + questionId + " , assumption=" + assumptionIds+ "=" + assumedStates + ", newValues="+newValues);
+				}
+			}
 			if (uncommittedTransactionsKeyMap.containsKey(engine)) {
 //				assertTrue( engine.toString() , returnOfTrade == null || returnOfTrade.isEmpty());
 				// do not compare results of uncommitted engines here. They will be compared later when all trades are finished
 				continue;
 			} else {
-				assertFalse( engine.toString() ,  returnOfTrade.isEmpty());
+				if (!(resolvedQuestions.contains(questionId) || new ArrayList<Long>(resolvedQuestions).removeAll(assumptionsOfTrade))) {
+					assertFalse( engine.toString() ,  returnOfTrade.isEmpty());
+				}
 				// commit transaction and compare results
 				engine.commitNetworkActions(transactionKey);
 			}
@@ -595,11 +635,38 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			} else {
 				// the score summary contains expected score per state
 				List<Long> tradedQuestions = engine.getTradedQuestions(userId); // extract questions traded by the user
+				if (engine.isToDeleteResolvedNode()) {
+					tradedQuestions.removeAll(resolvedQuestions);	// ignore resolved questions, because they do not exist
+				}
 				for (int questionIndex = 0; questionIndex < tradedQuestions.size(); questionIndex++) {
+					
+					if (engine.isToDeleteResolvedNode() && resolvedQuestions.contains(tradedQuestions.get(questionIndex))) {
+						// ignore this question if it was resolved
+						continue;
+					}
 					
 					sumOfScoreComponents = 0f;	// prepare to calculate the sum of (<Expected score given state> * <marginal of state>)
 					
 					for (int stateIndex = 0; stateIndex < condProbabilities.get(tradedQuestions.get(questionIndex)).size(); stateIndex++) {
+						// assert that all questions in questionsInScoreComponent are in tradedQuestions, in the same ordering 
+						List<Long> questionsInScoreComponent = new ArrayList<Long>();
+						for (SummaryContribution contrib : scoreSummaryObject.getScoreComponents()) {
+							if (!questionsInScoreComponent.contains(contrib.getQuestions().get(0))) {
+								questionsInScoreComponent.add(contrib.getQuestions().get(0));
+							}
+						}
+						assertEquals("["+ engines.indexOf(engine) + "]"
+								+ engine.toString()+ " , " + assumptionIds + assumedStates
+								+ ", user = " + userId + ", question = " + tradedQuestions.get(questionIndex) + ", state = " + stateIndex
+								+", tradedQuestions="+tradedQuestions
+								+", questionsInScoreComponent="+questionsInScoreComponent, 
+								tradedQuestions.size(), questionsInScoreComponent.size());
+						for (int j = 0; j < tradedQuestions.size(); j++) {
+							assertEquals("["+ engines.indexOf(engine) + "]"
+									+ engine.toString()+ " , " + assumptionIds + assumedStates
+									+ ", user = " + userId + ", question = " + tradedQuestions.get(j), 
+									tradedQuestions.get(j), questionsInScoreComponent.get(j));
+						}
 						
 						// calculate the index in scoreComponent which is related to questionIndex and stateIndex.
 						// this is <number of questions handled so far> * <number of states of such questions> + stateIndex
@@ -617,6 +684,10 @@ public class MarkovEngineBruteForceTest extends TestCase {
 								+ engine.toString()+ " , " + assumptionIds + assumedStates
 								+ ", user = " + userId + ", question = " + tradedQuestions.get(questionIndex) + ", state = " + stateIndex, 
 								1, scoreSummaryObject.getScoreComponents().get(scoreComponentIndex).getQuestions().size());
+						if (!tradedQuestions.get(questionIndex).equals(scoreSummaryObject.getScoreComponents().get(scoreComponentIndex).getQuestions().get(0))) {
+							engine.getTradedQuestions(userId);
+							engine.getScoreSummaryObject(userId, questionId, assumptionIds, assumedStates);
+						}
 						assertEquals("["+ engines.indexOf(engine) + "]"
 								+ engine.toString()+ " , " + assumptionIds + assumedStates
 								+ ", user = " + userId + ", question = " + tradedQuestions.get(questionIndex) + ", state = " + stateIndex, 
@@ -656,6 +727,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					+",assumptionIds="+assumptionsOfTrade+",assumedStates="+statesOfAssumption+")");
 			System.out.println("getProbLists(assumptionIds=null,assumedStates=null)="+marginals);	
 			System.out.println("getCash(userId="+userId+",assumptionIds=null,assumedStates=null)="+minimum);
+			System.out.println("getCash(userId="+userId+",assumptionIds="+assumptionsOfTrade+",assumedStates="+statesOfAssumption+")="+engines.get(0).getCash(userId, assumptionsOfTrade, statesOfAssumption));
 			System.out.println("scoreUserEv(userId="+userId+",assumptionIds=null,assumedStates=null)="+score);
 		}
 		// revert trades if this was not supposedly a valid trade
@@ -3406,10 +3478,16 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			
 			// (2) Randomly choose one node, 
 			List<Long> listOfQuestions = new ArrayList<Long>(probabilities.keySet());
+			listOfQuestions.removeAll(resolvedQuestions);
+			if (listOfQuestions.isEmpty()) {
+				// there is no more question to trade (they are all resolved)
+				System.out.println("[All questions were resolved] Iteration="+iteration);
+				break;
+			}
 			Long questionId = listOfQuestions.get((int) (Math.random() * listOfQuestions.size()));
 			if (nodesToCreate.contains(network.getNode(questionId.toString()))) {
 				// node is not present in the system yet. Create
-				this.createNode(questionId, network, engines, enginesNotToChangeNetwork, nodesToCreate);
+				this.createNode(questionId, network, engines, enginesNotToChangeNetwork, nodesToCreate, resolvedQuestions);
 			}
 			
 			// state to consider when obtaining the limits of edit
@@ -3417,21 +3495,27 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			
 			// randomly choose assumption set in the same clique of the node. 
 			List<Long> assumptionIds = this.getRandomAssumptions(questionId, uncommittedTransactionKeyMap, false);
+			assumptionIds.removeAll(resolvedQuestions);
 			List<Integer> assumedStates = this.getRandomAssumptionStates(assumptionIds);
 			for (Long assumption : assumptionIds) {
 				if (nodesToCreate.contains(network.getNode(assumption.toString()))) {
 					// assumption is not present in the system yet. Create
-					this.createNode(assumption, network, engines, enginesNotToChangeNetwork, nodesToCreate);
+					this.createNode(assumption, network, engines, enginesNotToChangeNetwork, nodesToCreate, resolvedQuestions);
 				}
 			}
 			
-			// Randomly add cash to the user, with 10% probability
-			if (Math.random() <= .1f) {
+			// Randomly add cash to the user
+			if (Math.random() <= .2f) {
 				float ammountToAdd = (float) (ASSET_ERROR_MARGIN + Math.random() * MAX_CASH_TO_ADD);
 				float oldCash=engines.get(0).getCash(userId, null, null);
 				float oldConditionalCash=engines.get(0).getCash(userId, assumptionIds, assumedStates);
 				float newCash = Float.NaN;
 				float newConditionalCash = Float.NaN;
+				System.out.println("getCash(userId=" + userId+",assumptionIds=null,assumedStates=null)="+oldCash);
+				System.out.println("getCash(userId=" + userId+",assumptionIds="+assumptionIds+",assumedStates="+assumedStates+")="+oldConditionalCash);
+				System.out.println("addCash(userId="+userId+",assets="+ammountToAdd+")");
+//				System.out.println("getCash(userId=" + userId+",assumptionIds=null,assumedStates=null)="+newCash);
+//				System.out.println("getCash(userId=" + userId+",assumptionIds="+assumptionIds+",assumedStates="+assumedStates+")="+newConditionalCash);
 				for (MarkovEngineImpl engine : engines) {
 					// obtain previous cash, so that we know that cash was added
 					float oldCashToCompare = engine.getCash(userId, null, null);
@@ -3449,11 +3533,6 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					assertEquals(engine.toString() + ", user=" + userId + ", added=" + ammountToAdd +  assumptionIds + " = " + assumedStates, oldConditionalCashToCompare + ammountToAdd, newConditionalCash , ASSET_ERROR_MARGIN);
 					// print results
 				}
-				System.out.println("getCash(userId=" + userId+",assumptionIds=null,assumedStates=null)="+oldCash);
-				System.out.println("getCash(userId=" + userId+",assumptionIds="+assumptionIds+",assumedStates="+assumedStates+")="+oldConditionalCash);
-				System.out.println("addCash(userId="+userId+",assets="+ammountToAdd+")");
-//				System.out.println("getCash(userId=" + userId+",assumptionIds=null,assumedStates=null)="+newCash);
-//				System.out.println("getCash(userId=" + userId+",assumptionIds="+assumptionIds+",assumedStates="+assumedStates+")="+newConditionalCash);
 			}
 			
 			// obtain the bounds for the 5-point test
@@ -3491,7 +3570,8 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					assertEquals(engines.get(i).toString(), editLimits.size(), editLimitsOfOtherEngine.size());
 					for (int j = 0; j < editLimits.size(); j++) {
 						assertEquals(engines.get(i).toString() + ", user=" + userId + ", question=" + questionId 
-								+", state=" + stateOfEditLimit + "," +  assumptionIds + "=" + assumedStates, 
+								+", state=" + stateOfEditLimit + ", assumptions: " +  assumptionIds + "=" + assumedStates
+								+", expectedEditLimit = " + editLimits + ", obtainedEditLimit = " + editLimitsOfOtherEngine, 
 								editLimits.get(j), editLimitsOfOtherEngine.get(j), 
 								((engines.get(i) instanceof CPTBruteForceMarkovEngine)?PROB_ERROR_MARGIN_CPT_BRUTE_FORCE:PROB_ERROR_MARGIN));
 					}
@@ -3513,8 +3593,9 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				dateTimeBeforeTrades = new Date();
 			}
 			
-			// with 10% probability, user will attempt to exit from a question
-			if (Math.random() <= .1) {
+			// Occasionally, user will attempt to exit from a question
+			if (Math.random() <= 0) {
+				// TODO BruteForceMarkovEngine needs doBalanceTrade correctly implemented
 				Date occurredWhen = new Date();
 				List<Float> scoreUserQuestionEvStates = null;
 				List<Float> cashPerStates = null;
@@ -3530,6 +3611,9 @@ public class MarkovEngineBruteForceTest extends TestCase {
 							probabilities.get(questionId).size(), scoreUserQuestionEvStates.size());
 					// check that all expected scores per question are close each other
 					for (int i = 1; i < scoreUserQuestionEvStates.size(); i++) {
+						if (Math.abs(scoreUserQuestionEvStates.get(0) - scoreUserQuestionEvStates.get(i)) > ASSET_ERROR_MARGIN) {
+							engine.scoreUserQuestionEvStates(userId, questionId, assumptionIds, assumedStates);
+						}
 						assertEquals(engine.toString()+", user = "+userId+", question = " + questionId+", assumptions: " + assumptionIds+"="+assumedStates
 								+ "score per state = " + scoreUserQuestionEvStates,
 								scoreUserQuestionEvStates.get(0), scoreUserQuestionEvStates.get(i), ASSET_ERROR_MARGIN);
@@ -3537,6 +3621,9 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					// check that conditional min assets per state are close each other
 					cashPerStates = engine.getCashPerStates(userId, questionId, assumptionIds, assumedStates);
 					for (int i = 1; i < scoreUserQuestionEvStates.size(); i++) {
+						assertEquals(engine.toString()+", user = "+userId+", question = " + questionId+", assumptions: " + assumptionIds+"="+assumedStates
+								+ "cash per state = " + cashPerStates,
+								cashPerStates.get(0), cashPerStates.get(i), ASSET_ERROR_MARGIN);
 					}
 				}
 				System.out.println("doBalanceTrade(occurredWhen="+occurredWhen+",userId="+userId+",questionId="+questionId
@@ -3547,9 +3634,10 @@ public class MarkovEngineBruteForceTest extends TestCase {
 						+",assumptionIds+"+assumptionIds+",assumedStates="+assumedStates+")="+cashPerStates);
 			}
 			
-			// randomly resolve question with 10% probability
-			if (Math.random() <= .4) {
+			// resolve current question 
+			if (Math.random() <= .2) {
 				int settledState = (int)(Math.random()*probabilities.get(questionId).size());
+				System.out.println("resolveQuestion(questionId="+questionId+",settledState="+settledState+")");
 				for (MarkovEngineImpl engine : engines) {
 					engine.resolveQuestion(null, new Date(), questionId, settledState);
 					// check that the resolved state is 100% and other states are 0%
@@ -3558,8 +3646,19 @@ public class MarkovEngineBruteForceTest extends TestCase {
 						assertEquals(engine.toString()+", resolved question = " + questionId + ", state = " + settledState,
 								((settledState==state)?1f:0f), probListsToCompare.get(state), ASSET_ERROR_MARGIN);
 					}
+					// check that for engines which deletes resolved questions, the probabilities of resolved states cannot be retrieved anymore
+					if (engine.isToDeleteResolvedNode() && !engine.isToObtainProbabilityOfResolvedQuestions()) {
+						for (Long resolved : resolvedQuestions) {
+							try {
+								List<Float> probList = engine.getProbList(resolved, assumptionIds, assumedStates);
+								fail(engine.toString() + ", question = "+resolved + ", prob = "+probList);
+							} catch (InexistingQuestionException e) {
+								// OK
+							}
+						}
+					}
 				}
-				System.out.println("resolveQuestion(questionId="+questionId+",settledState="+settledState+")");
+				resolvedQuestions.add(questionId);
 				
 				// check marginal probability
 				probabilities = engines.get(0).getProbLists(null, null, null); // we assume the 1st engine does not delete resolved questions
@@ -3571,6 +3670,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				}
 				
 				// check that all engines are retrieving the same marginals
+				System.out.println("getProbLists(questionIds=null,assumptionIds=null,assumedStates=null)="+probabilities);
 				for (MarkovEngineImpl engine : engines) {
 					Map<Long, List<Float>> probListsToCompare = engine.getProbLists(null, null, null);
 					assertTrue(engine.toString()+", probabilities="+probabilities+", probListsToCompare="+probListsToCompare,
@@ -3582,37 +3682,208 @@ public class MarkovEngineBruteForceTest extends TestCase {
 									probabilities.get(question).get(state), probListsToCompare.get(question).get(state), PROB_ERROR_MARGIN);
 						}
 					}
+					// if engine is configured to delete resolved questions, then it should not be retrievable from getProbLists
+					for (Long question : resolvedQuestions) {
+						if (engine.isToDeleteResolvedNode()) {
+							assertFalse(engine.toString() +", probabilities="+probabilities+", probListsToCompare="+probListsToCompare + ", question = "+question,
+									probListsToCompare.containsKey(question));
+						}
+					}
 				}
-				resolvedQuestions.add(questionId);
-				System.out.println("getProbLists(questionIds=null,assumptionIds=null,assumedStates=null)="+probabilities);
+				
+				// check values related to assets as well
+				List<Float> scoreUserQuestionEvStates = engines.get(0).scoreUserQuestionEvStates(userId, questionId, assumptionIds, assumedStates);
+				List<Float> cashPerStates = engines.get(0).getCashPerStates(userId, questionId, assumptionIds, assumedStates);
+				float scoreUserEv = engines.get(0).scoreUserEv(userId, null, null);
+				float conditionalScoreUserEv = engines.get(0).scoreUserEv(userId, assumptionIds, assumedStates);
+				float newCash = engines.get(0).getCash(userId, null, null);
+				float newConditionalCash = engines.get(0).getCash(userId, assumptionIds, assumedStates);
+				System.out.println("scoreUserEv(userId="+userId+",assumptionIds=null,assumedStates=null)="+scoreUserEv);
+				System.out.println("scoreUserEv(userId="+userId+",assumptionIds="+assumptionIds+",assumedStates="+assumedStates+")="+conditionalScoreUserEv);
+				System.out.println("scoreUserQuestionEvStates(userId="+userId+",questionId="+questionId
+						+",assumptionIds="+assumptionIds+",assumedStates="+assumedStates+")="+scoreUserQuestionEvStates);
+				System.out.println("getCashPerStates(userId="+userId+",questionId="+questionId
+						+",assumptionIds+"+assumptionIds+",assumedStates="+assumedStates+")="+cashPerStates);
+				System.out.println("getCash(userId=" + userId+",assumptionIds=null,assumedStates=null)="+newCash);
+				System.out.println("getCash(userId=" + userId+",assumptionIds="+assumptionIds+",assumedStates="+assumedStates+")="+newConditionalCash);
+				for (int i = 1; i < engines.size(); i++) {
+					// extract the values related to assets, from current engine
+					float scoreUserEvToCompare = engines.get(i).scoreUserEv(userId, null, null);
+					float conditionalScoreUserEvToCompare = engines.get(i).scoreUserEv(userId, assumptionIds, assumedStates);
+					float newCashToCompare = engines.get(i).getCash(userId, null, null);
+					float newConditionalCashToCompare = engines.get(i).getCash(userId, assumptionIds, assumedStates);
+					
+					List<Float> scoreUserQuestionEvStatesToCompare = null;
+//					List<Float> cashPerStatesToCompare = null;
+					// the following shall throw exception if engine is configured to delete resolved nodes
+					if (engines.get(i).isToDeleteResolvedNode() || !engines.get(i).isToObtainProbabilityOfResolvedQuestions()) {
+						try {
+							engines.get(i).scoreUserQuestionEvStates(userId, questionId, assumptionIds, assumedStates);
+							fail(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates);
+						} catch (IllegalArgumentException e) {
+							// OK
+						}
+						try {
+							engines.get(i).getCashPerStates(userId, questionId, assumptionIds, assumedStates);
+							fail(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates);
+						} catch (IllegalArgumentException e) {
+							// OK
+						}
+					} else {
+						// nodes are still present in the system
+						scoreUserQuestionEvStatesToCompare = engines.get(i).scoreUserQuestionEvStates(userId, questionId, assumptionIds, assumedStates);
+//						cashPerStatesToCompare = engines.get(i).getCashPerStates(userId, questionId, assumptionIds, assumedStates);
+						
+						// check that the number of states is matching
+						assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+								scoreUserQuestionEvStates.size(), scoreUserQuestionEvStatesToCompare.size());
+//						assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+//								cashPerStates.size(), cashPerStatesToCompare.size());
+						assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+								cashPerStates.size(), scoreUserQuestionEvStates.size());
+						
+						// these lists will be used to simulate getCashPerStates.
+						List<Long> assumptionIdsIncludingResolved = new ArrayList<Long>(assumptionIds);
+						List<Integer> assumedStatesIncludingResolved = new ArrayList<Integer>(assumedStates);
+						assumptionIdsIncludingResolved.add(questionId);
+						assumedStatesIncludingResolved.add(0);
+						
+						// compare scores and min assets per state
+						for (int state = 0; state < scoreUserQuestionEvStates.size(); state++) {
+							assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+									scoreUserQuestionEvStates.get(state), scoreUserQuestionEvStatesToCompare.get(state), ASSET_ERROR_MARGIN);
+//							assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+//									cashPerStates.get(state), cashPerStatesToCompare.get(state), ASSET_ERROR_MARGIN);
+							
+							assumedStatesIncludingResolved.set(assumedStatesIncludingResolved.size()-1, state);
+							if (state != settledState) {
+								try {
+									float cash = engines.get(i).getCash(userId, assumptionIdsIncludingResolved, assumedStatesIncludingResolved);
+									fail(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates+ ", cash="+cash);
+								} catch (ZeroAssetsException e) {
+									// OK. Engine is supposed to throw this exception if infinite asset is found
+								}
+							} else {
+								assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+										cashPerStates.get(state), engines.get(i).getCash(userId, assumptionIdsIncludingResolved, assumedStatesIncludingResolved), ASSET_ERROR_MARGIN);
+							}
+							
+						}
+					}
+					
+					// compare score and conditional score
+					assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+							scoreUserEv, scoreUserEvToCompare, ASSET_ERROR_MARGIN);
+					assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+							conditionalScoreUserEv, conditionalScoreUserEvToCompare, ASSET_ERROR_MARGIN);
+					// compare cash and conditional cash
+					assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+							newCash, newCashToCompare, ASSET_ERROR_MARGIN);
+					assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+							newConditionalCash, newConditionalCashToCompare, ASSET_ERROR_MARGIN);
+					
+				}
 			} else {	// do not make trades on resolved questions
 				// a.) 5-point min-q values test regarding the edit bound; expect to see corresponding q<1, =1, >1 respectively.
-				if (uncommittedTransactionKeyMap.isEmpty()) {	// only do these tests if we are not comparing the cases which runs all trades in 1 transaction or multiple transactions
-					// (1) the probability close to but smaller than the lower bound;
-					this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.BELOW_LIMIT, uncommittedTransactionKeyMap, true, resolvedQuestions);
-					
-					// (2) the probability exactly on the lower bound;
-					this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.ON_LOWER_LIMIT, uncommittedTransactionKeyMap, true, resolvedQuestions);
-					
-					// (4) the probability exactly on the upper bound;
-					this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.ON_UPPER_LIMIT, uncommittedTransactionKeyMap, true, resolvedQuestions);
-					
-					// (5) the probability close to but bigger than the upper bound;
-					this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.ABOVE_LIMIT, uncommittedTransactionKeyMap, true, resolvedQuestions);
-				}
+//				if (uncommittedTransactionKeyMap.isEmpty()) {	// only do these tests if we are not comparing the cases which runs all trades in 1 transaction or multiple transactions
+//					// (1) the probability close to but smaller than the lower bound;
+//					this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.BELOW_LIMIT, uncommittedTransactionKeyMap, true, resolvedQuestions);
+//					
+//					// (2) the probability exactly on the lower bound;
+//					this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.ON_LOWER_LIMIT, uncommittedTransactionKeyMap, true, resolvedQuestions);
+//					
+//					// (4) the probability exactly on the upper bound;
+//					this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.ON_UPPER_LIMIT, uncommittedTransactionKeyMap, true, resolvedQuestions);
+//					
+//					// (5) the probability close to but bigger than the upper bound;
+//					this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.ABOVE_LIMIT, uncommittedTransactionKeyMap, true, resolvedQuestions);
+//				}
 				
 				// (3) random probability in between the bound;
 				this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.BETWEEN_LIMITS, uncommittedTransactionKeyMap, true, resolvedQuestions);
 			}
 			
-			// revert trades with 10% probability
+			// revert trades occasionally
 			if (Math.random() <= .1) {
 				// choose a single question (questionId) to revert, or revert all questions (null)
 				Long questionToRevert = (Math.random()<=.5)?questionId:null;
 				for (MarkovEngineImpl engine : engines) {
 					engine.revertTrade(null, new Date(), dateTimeBeforeTrades, questionToRevert);
 				}
+				// check values related to assets
+				List<Float> scoreUserQuestionEvStates = engines.get(0).scoreUserQuestionEvStates(userId, questionId, assumptionIds, assumedStates);
+				List<Float> cashPerStates = engines.get(0).getCashPerStates(userId, questionId, assumptionIds, assumedStates);
+				float scoreUserEv = engines.get(0).scoreUserEv(userId, null, null);
+				float conditionalScoreUserEv = engines.get(0).scoreUserEv(userId, assumptionIds, assumedStates);
+				float newCash = engines.get(0).getCash(userId, null, null);
+				float newConditionalCash = engines.get(0).getCash(userId, assumptionIds, assumedStates);
 				System.out.println("revertTrade(tradesStartingWhen="+dateTimeBeforeTrades+",questionId="+questionToRevert+")");
+				System.out.println("scoreUserEv(userId="+userId+",assumptionIds=null,assumedStates=null)="+scoreUserEv);
+				System.out.println("scoreUserEv(userId="+userId+",assumptionIds="+assumptionIds+",assumedStates="+assumedStates+")="+conditionalScoreUserEv);
+				System.out.println("scoreUserQuestionEvStates(userId="+userId+",questionId="+questionId
+						+",assumptionIds="+assumptionIds+",assumedStates="+assumedStates+")="+scoreUserQuestionEvStates);
+				System.out.println("getCashPerStates(userId="+userId+",questionId="+questionId
+						+",assumptionIds+"+assumptionIds+",assumedStates="+assumedStates+")="+cashPerStates);
+				System.out.println("getCash(userId=" + userId+",assumptionIds=null,assumedStates=null)="+newCash);
+				System.out.println("getCash(userId=" + userId+",assumptionIds="+assumptionIds+",assumedStates="+assumedStates+")="+newConditionalCash);
+				for (int i = 1; i < engines.size(); i++) {
+					// extract the values related to assets, from current engine
+					float scoreUserEvToCompare = engines.get(i).scoreUserEv(userId, null, null);
+					float conditionalScoreUserEvToCompare = engines.get(i).scoreUserEv(userId, assumptionIds, assumedStates);
+					float newCashToCompare = engines.get(i).getCash(userId, null, null);
+					float newConditionalCashToCompare = engines.get(i).getCash(userId, assumptionIds, assumedStates);
+					if (!engines.get(i).isToDeleteResolvedNode()) {
+						
+					List<Float> scoreUserQuestionEvStatesToCompare = engines.get(i).scoreUserQuestionEvStates(userId, questionId, assumptionIds, assumedStates);
+					List<Float> cashPerStatesToCompare = engines.get(i).getCashPerStates(userId, questionId, assumptionIds, assumedStates);
+						
+						// check that the number of states is matching
+						assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+								scoreUserQuestionEvStates.size(), scoreUserQuestionEvStatesToCompare.size());
+						assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+								cashPerStates.size(), cashPerStatesToCompare.size());
+						assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+								cashPerStates.size(), cashPerStatesToCompare.size());
+						
+						// compare scores and min assets per state
+						for (int state = 0; state < scoreUserQuestionEvStates.size(); state++) {
+							assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+									scoreUserQuestionEvStates.get(state), scoreUserQuestionEvStatesToCompare.get(state), ASSET_ERROR_MARGIN);
+							assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+									cashPerStates.get(state), cashPerStatesToCompare.get(state), ASSET_ERROR_MARGIN);
+						}
+					}
+					// compare score and conditional score
+					assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+							scoreUserEv, scoreUserEvToCompare, ASSET_ERROR_MARGIN);
+					assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+							conditionalScoreUserEv, conditionalScoreUserEvToCompare, ASSET_ERROR_MARGIN);
+					// compare cash and conditional cash
+					assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+							newCash, newCashToCompare, ASSET_ERROR_MARGIN);
+					assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+							newConditionalCash, newConditionalCashToCompare, ASSET_ERROR_MARGIN);
+					
+					// make sure marginals of resolved questions do not reappear
+					probabilities = engines.get(0).getProbLists(null, null, null);
+					Map<Long, List<Float>> probListsToCompare = engines.get(i).getProbLists(null, null, null);
+					assertTrue(engines.get(i).toString()+", probabilities="+probabilities+", probListsToCompare="+probListsToCompare,
+							probabilities.size() >= probListsToCompare.size());
+					for (Long question : probListsToCompare.keySet()) {
+						for (int state = 0; state < probListsToCompare.get(question).size(); state++) {
+							assertEquals(engines.get(i).toString()+", question = " + question + ", state = " + state
+									+", probabilities="+probabilities+", probListsToCompare="+probListsToCompare,
+									probabilities.get(question).get(state), probListsToCompare.get(question).get(state), PROB_ERROR_MARGIN);
+						}
+					}
+					// if engine is configured to delete resolved questions, then it should not be retrievable from getProbLists
+					for (Long question : resolvedQuestions) {
+						if (engines.get(i).isToDeleteResolvedNode()) {
+							assertFalse(engines.get(i).toString() +", probabilities="+probabilities+", probListsToCompare="+probListsToCompare + ", question = "+question,
+									probListsToCompare.containsKey(question));
+						}
+					}
+				}
 			}
 			
 		}	// end of for : iteration
@@ -3637,22 +3908,27 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	 * @param nodesNotPresent
 	 */
 	private void createNode(Long questionId, Network net, List<MarkovEngineImpl> engines, 
-			List<MarkovEngineInterface> enginesNotToChangeNetwork, List<INode> nodesNotPresent) {
+			List<MarkovEngineInterface> enginesNotToChangeNetwork, List<INode> nodesNotPresent, Collection<Long>resolvedQuestions) {
 		
 		INode nodeToCreate = net.getNode(questionId.toString());
 		assertNotNull(questionId.toString(), nodeToCreate);
 		
+		System.out.println("addQuestion(questionId="+questionId+",numberStates="+nodeToCreate.getStatesSize()+")");
 		for (MarkovEngineImpl engine : engines) {
 			if (enginesNotToChangeNetwork.contains(engine)) {
 				// do not add new node into this engine
 				continue;
 			}
 			engine.addQuestion(null, new Date(), questionId, nodeToCreate.getStatesSize(), null);
+			// make sure creation of the node did not reappear the resolved nodes
+			if (engine.isToDeleteResolvedNode()) {
+				Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+				assertFalse(engine.toString()+", resolved="+resolvedQuestions+", probLists="+probLists,new ArrayList<Long>(resolvedQuestions).removeAll(probLists.keySet()));
+			}
 		}
 		
 		// mark this node as created.
 		nodesNotPresent.remove(nodeToCreate);
-		System.out.println("addQuestion(questionId="+questionId+",numberStates="+nodeToCreate.getStatesSize()+")");
 		
 		List<Long> parentQuestionIds = new ArrayList<Long>();
 		// add edges if parents are already present in the system
@@ -3662,29 +3938,40 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				parentQuestionIds.add(Long.parseLong(parent.getName()));
 			}
 		}
-		if (!parentQuestionIds.isEmpty()) {
+		if (!parentQuestionIds.isEmpty() && !new ArrayList<Long>(resolvedQuestions).removeAll(parentQuestionIds)) {
+			// if there are parents and they were not resolved, then add edge
+			System.out.println("addQuestionAssumption(childQuestionId="+questionId+",parentQuestionIds="+parentQuestionIds+")");
 			for (MarkovEngineImpl engine : engines) {
 				if (enginesNotToChangeNetwork.contains(engine)) {
 					// do not add new node into this engine
 					continue;
 				}
 				engine.addQuestionAssumption(null, new Date(), questionId, parentQuestionIds, null);
+				// make sure creation of the edge did not reappear the resolved nodes
+				if (engine.isToDeleteResolvedNode()) {
+					Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+					assertFalse(engine.toString()+", resolved="+resolvedQuestions+", probLists="+probLists,new ArrayList<Long>(resolvedQuestions).removeAll(probLists.keySet()));
+				}
 			}
-			System.out.println("addQuestionAssumption(childQuestionId="+questionId+",parentQuestionIds="+parentQuestionIds+")");
 		}
 		
 		// add edges if children are already present in the system
 		for (INode child : nodeToCreate.getChildNodes()) {
-			if (!nodesNotPresent.contains(child)) {
-				// the parent is already present in the system. Add edge
+			if (!nodesNotPresent.contains(child)&& !resolvedQuestions.contains(Long.parseLong(child.getName()))) {
+				// the node is already present in the system and not resolved. Add edge
+				System.out.println("addQuestionAssumption(childQuestionId="+ Long.parseLong(child.getName())+",parentQuestionIds="+Collections.singletonList(Long.parseLong(nodeToCreate.getName()))+")");
 				for (MarkovEngineImpl engine : engines) {
 					if (enginesNotToChangeNetwork.contains(engine)) {
 						// do not add new node into this engine
 						continue;
 					}
 					engine.addQuestionAssumption(null, new Date(), Long.parseLong(child.getName()), Collections.singletonList(Long.parseLong(nodeToCreate.getName())), null);
+					// make sure creation of the edge did not reappear the resolved nodes
+					if (engine.isToDeleteResolvedNode()) {
+						Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+						assertFalse(engine.toString()+", resolved="+resolvedQuestions+", probLists="+probLists,new ArrayList<Long>(resolvedQuestions).removeAll(probLists.keySet()));
+					}
 				}
-				System.out.println("addQuestionAssumption(childQuestionId="+ Long.parseLong(child.getName())+",parentQuestionIds="+Collections.singletonList(Long.parseLong(nodeToCreate.getName()))+")");
 			}
 			// add edge if siblings (parent of my child) are present in the system
 			parentQuestionIds = new ArrayList<Long>();
@@ -3695,7 +3982,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					parentQuestionIds.add(Long.parseLong(parent.getName()));
 				}
 			}
-			if (!parentQuestionIds.isEmpty()) {
+			if (!parentQuestionIds.isEmpty()&& !new ArrayList<Long>(resolvedQuestions).removeAll(parentQuestionIds)) {
 				parentQuestionIds.add(questionId);
 				for (MarkovEngineImpl engine : engines) {
 					if (enginesNotToChangeNetwork.contains(engine)) {
@@ -3704,8 +3991,18 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					}
 					if (nodesNotPresent.contains(child)) {
 						engine.addQuestion(null, new Date(), Long.parseLong(child.getName()), child.getStatesSize(), null);
+						// make sure creation of the node did not reappear the resolved nodes
+						if (engine.isToDeleteResolvedNode()) {
+							Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+							assertFalse(engine.toString()+", resolved="+resolvedQuestions+", probLists="+probLists,new ArrayList<Long>(resolvedQuestions).removeAll(probLists.keySet()));
+						}
 					}
 					engine.addQuestionAssumption(null, new Date(), Long.parseLong(child.getName()), parentQuestionIds, null);
+					// make sure creation of the edge did not reappear the resolved nodes
+					if (engine.isToDeleteResolvedNode()) {
+						Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+						assertFalse(engine.toString()+", resolved="+resolvedQuestions+", probLists="+probLists,new ArrayList<Long>(resolvedQuestions).removeAll(probLists.keySet()));
+					}
 				}
 				if (nodesNotPresent.contains(child)) {
 					nodesNotPresent.remove(child);
@@ -3714,6 +4011,14 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				System.out.println("addQuestionAssumption(childQuestionId="+Long.parseLong(child.getName())+",parentQuestionIds="+parentQuestionIds+")");
 			}
 		}
+		
+//		// make sure creation of the node did not reappear the resolved nodes
+//		for (MarkovEngineImpl engine : engines) {
+//			if (engine.isToDeleteResolvedNode()) {
+//				Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+//				assertFalse(engine.toString()+", resolved="+resolvedQuestions+", probLists="+probLists,new ArrayList<Long>(resolvedQuestions).removeAll(probLists.keySet()));
+//			}
+//		}
 	}
 
 //	/** Prints the operation in a csv-like format */

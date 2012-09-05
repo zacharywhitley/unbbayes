@@ -4,11 +4,15 @@
 package edu.gmu.ace.daggre;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import edu.gmu.ace.daggre.MarkovEngineImpl.AddQuestionNetworkAction;
+import edu.gmu.ace.daggre.MarkovEngineImpl.InexistingQuestionException;
+import edu.gmu.ace.daggre.MarkovEngineImpl.ResolveQuestionNetworkAction;
 
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
@@ -20,6 +24,7 @@ import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.BruteForceAssetAwareInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.BruteForceAssetAwareInferenceAlgorithm.JointPotentialTable;
 import unbbayes.prs.bn.inference.extension.IAssetAwareInferenceAlgorithmBuilder;
+import unbbayes.util.Debug;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 /**
@@ -328,5 +333,182 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 	public ProbabilityAndAssetTablesMemento getMemento() {
 		return new JointProbabilityAndAssetTablesMemento();
 	}
+
+	public class BruteForceRevertTradeNetworkAction extends RevertTradeNetworkAction{
+
+		public BruteForceRevertTradeNetworkAction(Long transactionKey,
+				Date whenCreated, Date tradesStartingWhen, Long questionId) {
+			super(transactionKey, whenCreated, tradesStartingWhen, questionId);
+		}
+
+		/* (non-Javadoc)
+		 * @see edu.gmu.ace.daggre.MarkovEngineImpl.RebuildNetworkAction#execute()
+		 */
+		@Override
+		public void execute() {
+			this.execute(getExecutedActions());
+		}
+
+		/* (non-Javadoc)
+		 * @see edu.gmu.ace.daggre.MarkovEngineImpl.RebuildNetworkAction#isToExecuteAction(edu.gmu.ace.daggre.NetworkAction)
+		 */
+		protected boolean isToExecuteAction(NetworkAction action) {
+			return !action.isStructureChangeAction();
+		}
+		
+	}
+	
+	/* (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineImpl#revertTrade(java.lang.Long, java.util.Date, java.util.Date, java.lang.Long)
+	 */
+	public boolean revertTrade(Long transactionKey, Date occurredWhen,  Date tradesStartingWhen, Long questionId) throws IllegalArgumentException {
+		// initial assertions
+		if (occurredWhen == null) {
+			throw new IllegalArgumentException("Value of \"occurredWhen\" should not be null.");
+		}
+		if (tradesStartingWhen == null) {
+			throw new IllegalArgumentException("Value of \"tradesStartingWhen\" should not be null.");
+		}
+		
+		synchronized (getExecutedActions()) {
+			if (getExecutedActions().isEmpty()) {
+				return false;
+			}
+		}
+		
+		if (transactionKey == null) {
+			transactionKey = this.startNetworkActions();
+			// add action into transaction
+			this.addNetworkAction(transactionKey, new BruteForceRevertTradeNetworkAction(transactionKey, occurredWhen, tradesStartingWhen, questionId));
+			this.commitNetworkActions(transactionKey);
+		} else {
+			// add action into transaction
+			this.addNetworkAction(transactionKey, new BruteForceRevertTradeNetworkAction(transactionKey, occurredWhen, tradesStartingWhen, questionId));
+		}
+		
+		return true;
+	}
+	
+	public class BruteForceResolveQuestionNetworkAction extends ResolveQuestionNetworkAction {
+		private ArrayList<Float> marginalWhenResolved;
+		/** Default constructor initializing fields */
+		public BruteForceResolveQuestionNetworkAction (Long transactionKey, Date occurredWhen, long questionId, int settledState) {
+			super(transactionKey, occurredWhen, questionId, settledState);
+		}
+		public void execute(Long userId) {
+			synchronized (getProbabilisticNetwork()) {
+				TreeVariable probNode = (TreeVariable) getProbabilisticNetwork().getNode(Long.toString(getQuestionId()));
+				if (probNode != null) {	
+					// if probNode.hasEvidence(), then it was resolved already
+					if (probNode.hasEvidence() && probNode.getEvidence() != getSettledState()) {
+						throw new RuntimeException("Attempted to resolve question " + getQuestionId() + " to state " + getSettledState() + ", but it was already resolved to " + probNode.getEvidence());
+					}
+					// do nothing if node is already settled at settledState
+					if (probNode.getEvidence() != getSettledState()) {
+						
+						// extract marginal 
+						marginalWhenResolved = new ArrayList<Float>(probNode.getStatesSize());
+						for (int i = 0; i < probNode.getStatesSize(); i++) {
+							marginalWhenResolved.add(probNode.getMarginalAt(i));
+						}
+					}
+				} else {
+					try {
+						Debug.println(getClass(), "Node " + getQuestionId() + " is not present in the shared Bayes Net.");
+					} catch (Throwable t) {
+						t.printStackTrace();
+					}
+					// must keep running, because RevertTradeNetworkAction#revert() may be calling this method just to resolve questions in the asset networks
+				}
+				// TODO revert on some error
+				
+				// do not release lock to global BN until we change all asset nets
+				synchronized (getUserToAssetAwareAlgorithmMap()) {
+					Collection<AssetAwareInferenceAlgorithm> usersToChange = null;
+					if (userId == null) {
+						// update all stored users
+						usersToChange = getUserToAssetAwareAlgorithmMap().values();
+					} else if (getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
+						// update only asset net of the specified user
+						usersToChange = Collections.singletonList(getUserToAssetAwareAlgorithmMap().get(userId));
+					} else {
+						// update nothing
+						usersToChange = Collections.emptyList();
+					}
+					
+					synchronized (getDefaultInferenceAlgorithm()) {
+						Node node = getProbabilisticNetwork().getNode(Long.toString(getQuestionId()));
+						if (node != null) {
+//							getDefaultInferenceAlgorithm().setAsPermanentEvidence(node, getSettledState(), isToDeleteResolvedNode());
+						} else {
+							throw new InexistingQuestionException("Node " + getQuestionId() + " is not present in network.", getQuestionId());
+						}
+					}
+					
+					// do not allow getUserToAssetAwareAlgorithmMap() to be changed here. I.e. do not allow new users to be added now
+					for (AssetAwareInferenceAlgorithm algorithm : usersToChange) {
+						synchronized (algorithm.getAssetNetwork()) {
+							Node assetNode = algorithm.getAssetNetwork().getNode(Long.toString(getQuestionId()));
+							if (assetNode == null ) {
+								throw new InexistingQuestionException("Node " + getQuestionId() + " is not present in asset net of user " + algorithm.getAssetNetwork(), getQuestionId());
+							}
+							algorithm.setAsPermanentEvidence(assetNode, getSettledState(),isToDeleteResolvedNode());
+						}
+					}
+				}
+			}
+		}
+		public List<Float> getPercent() { return marginalWhenResolved; }
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineImpl#resolveQuestion(java.lang.Long, java.util.Date, long, int)
+	 */
+	public boolean resolveQuestion(Long transactionKey, Date occurredWhen,
+			long questionId, int settledState) throws IllegalArgumentException {
+
+		// initial assertions
+		if (occurredWhen == null) {
+			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
+		}
+		if (settledState < 0) {
+			throw new IllegalArgumentException("Question " + questionId + " has no state " + settledState);
+		}
+		Node node = null;
+		synchronized (getProbabilisticNetwork()) {
+			node = getProbabilisticNetwork().getNode(Long.toString(questionId));
+		}
+		if (node == null) {
+			throw new InexistingQuestionException("Question ID " + questionId + " was not found.", questionId);
+		}
+		if (settledState >= node.getStatesSize()) {
+			throw new IllegalArgumentException("Question " + questionId + " has no state " + settledState);
+		}
+		if (node instanceof TreeVariable) {
+			TreeVariable var = (TreeVariable) node;
+			if (var.hasEvidence()) {
+				int state = (settledState<0)?((-settledState)-1):settledState;
+				if (var.getEvidence() != state || var.getMarginalAt(state) <= 0f) {
+					throw new IllegalArgumentException("Question " + questionId + " is already resolved, hence it cannot be resolved to " + settledState);
+				}
+			}
+		}
+
+		if (transactionKey == null) {
+			transactionKey = this.startNetworkActions();
+			// instantiate the action object for adding a question
+			this.addNetworkAction(transactionKey, new BruteForceResolveQuestionNetworkAction(transactionKey, occurredWhen, questionId, settledState));
+			this.commitNetworkActions(transactionKey);
+		} else {
+			// instantiate the action object for adding a question
+			this.addNetworkAction(transactionKey, new BruteForceResolveQuestionNetworkAction(transactionKey, occurredWhen, questionId, settledState));
+		}
+		
+		return true;
+	}
+
+
+	// TODO BruteForceMarkovEngine needs doBalanceTrade correctly implemented
 
 }

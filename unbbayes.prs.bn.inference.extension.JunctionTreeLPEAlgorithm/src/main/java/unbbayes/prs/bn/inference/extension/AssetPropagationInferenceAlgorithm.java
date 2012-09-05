@@ -113,9 +113,19 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	public static final Comparator<IRandomVariable> DEFAULT_RV_COMPARATOR = new Comparator<IRandomVariable>() {
 		public int compare(IRandomVariable v1, IRandomVariable v2) {
 			int nameComp = v1.toString().compareTo(v2.toString());
-			if (nameComp == 0 && (v1 instanceof Clique) && (v2 instanceof Clique)) {
+			if (nameComp == 0) {
 				// do special treatment on cliques with same variables
-				return ((Clique)v1).getIndex() - ((Clique)v2).getIndex();
+				if ((v1 instanceof Clique) && (v2 instanceof Clique)) {
+					return ((Clique)v1).getIndex() - ((Clique)v2).getIndex();
+				} else if ((v1 instanceof Separator) && (v2 instanceof Separator)) {
+					nameComp = this.compare(((Separator)v1).getClique1(), ((Separator)v2).getClique1());
+					if (nameComp == 0) {
+						return this.compare(((Separator)v1).getClique2(), ((Separator)v2).getClique2());
+					}
+					return nameComp;
+				} else if ((v1 instanceof Separator)) {
+					return 1;
+				}
 			}
 			return nameComp;
 		}
@@ -248,7 +258,12 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 						} else {
 							if (value == Float.POSITIVE_INFINITY) {
 								// infinite represents impossible state.
-								throw new ZeroAssetsException("Attempted to calculate assets regarding an impossible state in clique " + clique);
+								if (isToAllowInfinite()) {
+									// by convention, we consider the min asset of invalid state is infinitely low.
+									return Float.NEGATIVE_INFINITY;
+								} else {
+									throw new ZeroAssetsException("Attempted to calculate assets regarding an impossible state in clique " + clique);
+								}
 							} else if (value == Float.NEGATIVE_INFINITY || Float.isNaN(value)) {
 								throw new IllegalStateException("Encontered " + value + " while calculating joint assets. Clique: " + clique);
 							}
@@ -500,6 +515,12 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		// backup assets before changing something, so that we can revert
 		for (IRandomVariable origCliqueOrSeparator : cliquesOrSepsToUpdate) {
 			IRandomVariable assetCliqueOrSeparator = getOriginalCliqueToAssetCliqueMap().get(origCliqueOrSeparator);
+			if (assetCliqueOrSeparator == null || assetCliqueOrSeparator.getProbabilityFunction() == null) {
+				assetCliqueOrSeparator = getOriginalCliqueToAssetCliqueMap().get(origCliqueOrSeparator);
+				if (assetCliqueOrSeparator == null) {
+					throw new RuntimeException("Probabilistic network and asset network are not synchronized: " + getAssetNetwork());
+				}
+			}
 			((PotentialTable)assetCliqueOrSeparator.getProbabilityFunction()).copyData();
 		}
 		
@@ -1817,7 +1838,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 					}
 				} 
 				if (cliqueTable.getVariablesSize() <= 1) {
-					// we are trying to remove the only 
+					// we are trying to remove the only node
 					resolvedAssetValues.put(clique, resolvedAsset);
 				}
 			}
@@ -1847,6 +1868,14 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		}
 		// delete node. This will supposedly delete columns in the asset tables (cliques + separators) as well
 		if (isToDeleteNode) {
+			// backup mapping, because a change in the cliques/seps may cause this mapping to become inaccessible (we may need to rebuild mapping)
+			// convert tree map to hash map. HashMap can correctly map elements whose name mapping is broken (because it uses hash, not name comparison)
+			Map<IRandomVariable, IRandomVariable> originalCliqueToAssetCliqueMapBackup = null;
+			if (!(getOriginalCliqueToAssetCliqueMap() instanceof HashMap)) {
+				originalCliqueToAssetCliqueMapBackup = new HashMap<IRandomVariable, IRandomVariable>(getOriginalCliqueToAssetCliqueMap());
+			}
+			
+			// remove node from net
 			getAssetNetwork().removeNode((Node) node);
 			for (Clique resolvedClique : resolvedAssetValues.keySet()) {
 				if (resolvedClique.getProbabilityFunction().tableSize() > 0) {
@@ -1854,6 +1883,22 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 				}
 				resolvedClique.getProbabilityFunction().addVariable(ONE_STATE_ASSETNODE);
 				resolvedClique.getProbabilityFunction().setValue(0, resolvedAssetValues.get(resolvedClique));
+			}
+			
+			// rebuild mapping
+			if (originalCliqueToAssetCliqueMapBackup != null) {
+				getOriginalCliqueToAssetCliqueMap().clear();
+				for (IRandomVariable key : originalCliqueToAssetCliqueMapBackup.keySet()) {
+					getOriginalCliqueToAssetCliqueMap().put(key, originalCliqueToAssetCliqueMapBackup.get(key));
+				}
+			}
+		} else {
+			// copy all clique/separator potentials
+			for (Clique clique : getAssetNetwork().getJunctionTree().getCliques()) {
+				clique.getProbabilityFunction().copyData();
+			}
+			for (Separator sep : getAssetNetwork().getJunctionTree().getSeparators()) {
+				sep.getProbabilityFunction().copyData();
 			}
 		}
 	}

@@ -102,7 +102,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 	};
 
-	private float probabilityErrorMargin = 0.001f;
+	private float probabilityErrorMargin = 0.005f;
 
 	private Map<Long, List<NetworkAction>> networkActionsMap;
 	
@@ -492,7 +492,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				}
 				// execute the trades related to network construction before actionsToExecute
 				for (NetworkAction changeAction : networkChangeActions) {
-					changeAction.execute();
+					if (this.isToExecuteAction(changeAction)) {
+						changeAction.execute();
+					}
 				}
 			}
 			// recompile network and execute actions which does not change network structure
@@ -1453,7 +1455,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					// do not allow getUserToAssetAwareAlgorithmMap() to be changed here. I.e. do not allow new users to be added now
 					for (AssetAwareInferenceAlgorithm algorithm : usersToChange) {
 						IAssetNetAlgorithm assetAlgorithm = algorithm.getAssetPropagationDelegator();
-						synchronized (assetAlgorithm .getAssetNetwork()) {
+						synchronized (assetAlgorithm.getAssetNetwork()) {
 							Node assetNode = assetAlgorithm.getAssetNetwork().getNode(Long.toString(questionId));
 							if (assetNode == null && (assetAlgorithm instanceof AssetPropagationInferenceAlgorithm)) {
 								// in this algorithm, setAsPermanentEvidence will only use assetNode for name comparison and to check size of states, 
@@ -2875,7 +2877,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		float sum = 0;
 		int counter = 0;	// counter in which possible values are mod childNodeStateSize
 		for (Float probability : newValues) {
-			if (probability < 0 || probability > 1) {
+			if (probability < (0-getProbabilityErrorMargin()) || probability > (1+getProbabilityErrorMargin())) {
 				throw new IllegalArgumentException("Invalid probability declaration found: " + probability);
 			}
 			sum += probability;
@@ -2883,7 +2885,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			if (counter >= child.getStatesSize()) {
 				// check if sum of conditional probability given current state of parents is 1
 				if (!(((1 - getProbabilityErrorMargin()) < sum) && (sum < (1 + getProbabilityErrorMargin())))) {
-					throw new IllegalArgumentException("Inconsistent prior probability: " + sum);
+					if (!(((1 - getProbabilityErrorMargin()*2) < sum) && (sum < (1 + getProbabilityErrorMargin()*2)))) {
+						throw new IllegalArgumentException("Inconsistent prior probability: " + sum);
+					}
 				}
 				counter = 0;
 				sum = 0;

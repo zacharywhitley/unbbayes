@@ -131,7 +131,9 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 
 	private float expectedAssetPivot = 0;
 
-	private boolean isToResetEvidenceBeforeRun = true;	
+	private boolean isToResetEvidenceBeforeRun = true;
+
+	private Map<TreeVariable, Integer> permanentEvidenceMap = null;
 	
 
 
@@ -285,6 +287,18 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	public void propagate() {
 		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListener()) {
 			listener.onBeforePropagate(this);
+		}
+		
+		if (getPermanentEvidenceMap()!= null) {
+			for (TreeVariable node : getPermanentEvidenceMap().keySet()) {
+				int state = getPermanentEvidenceMap().get(node);
+				if (state < 0) {
+					// set finding as negative (i.e. finding setting a state to 0%)
+					node.addFinding(Math.abs(state+1), true);
+				} else {
+					node.addFinding(state);
+				}
+			}
 		}
 		
 		if (isToUpdateAssets()) {
@@ -1266,6 +1280,19 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		if (isToUpdateAssets()) {
 			this.getAssetPropagationDelegator().setAsPermanentEvidence(node, state, isToDeleteNode);
 		}
+		if (!isToDeleteNode) {
+			// copy all clique/separator potentials
+			for (Clique clique : getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
+				clique.getProbabilityFunction().copyData();
+			}
+			for (Separator sep : getRelatedProbabilisticNetwork().getJunctionTree().getSeparators()) {
+				sep.getProbabilityFunction().copyData();
+			}
+			if (getPermanentEvidenceMap() == null) {
+				setPermanentEvidenceMap(new HashMap<TreeVariable, Integer>());
+			}
+			getPermanentEvidenceMap().put((TreeVariable) node, state);
+		}
 	}
 
 //	/**
@@ -1382,8 +1409,8 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 			PotentialTable assetTable = clique.getProbabilityFunction();
 			for (int i = 0; i < assetTable.tableSize(); i++) {
 				if (isToUseQValues()) {
-					if (Float.isInfinite(assetTable.getValue(i) * ratio)) {
-						throw new ZeroAssetsException("Overflow detected when adding " + delta + " to min assets of user " + getAssetNetwork());
+					if (assetTable.getValue(i) != Float.POSITIVE_INFINITY && Float.isInfinite(assetTable.getValue(i) * ratio)) {
+						throw new ZeroAssetsException("Overflow detected when adding " + delta + " to min assets of user " + getAssetNetwork() + ". The asset table's cell had value " + assetTable.getValue(i));
 					}
 					assetTable.setValue(i, (assetTable.getValue(i) * ratio) );
 				} else {
@@ -1396,7 +1423,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 			PotentialTable assetTable = separator.getProbabilityFunction();
 			for (int i = 0; i < assetTable.tableSize(); i++) {
 				if (isToUseQValues()) {
-					if (Float.isInfinite(assetTable.getValue(i) * ratio)) {
+					if (assetTable.getValue(i) != Float.POSITIVE_INFINITY && Float.isInfinite(assetTable.getValue(i) * ratio)) {
 						throw new ZeroAssetsException("Overflow detected when adding " + delta + " to min assets of user " + getAssetNetwork());
 					}
 					assetTable.setValue(i, (assetTable.getValue(i) * ratio));
@@ -1515,6 +1542,23 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	public boolean isToResetEvidenceBeforeRun() {
 		return isToResetEvidenceBeforeRun;
 	}
+
+	/**
+	 * This map stores nodes which were marked as findings by {@link #setPermanentEvidenceMap(Map)}.
+	 * @param permanentEvidenceMap the permanentEvidenceMap to set
+	 */
+	protected void setPermanentEvidenceMap(Map<TreeVariable, Integer> permanentEvidenceMap) {
+		this.permanentEvidenceMap = permanentEvidenceMap;
+	}
+
+	/**
+	 * This map stores nodes which were marked as findings by {@link #setPermanentEvidenceMap(Map)}.
+	 * @return the permanentEvidenceMap
+	 */
+	protected Map<TreeVariable, Integer> getPermanentEvidenceMap() {
+		return permanentEvidenceMap;
+	}
+
 
 	
 	

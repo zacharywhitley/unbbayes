@@ -52,6 +52,7 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 	 */
 	protected BruteForceAssetAwareInferenceAlgorithm() {
 		// use q-values by default
+		this.setToUseQValues(true);
 	}
 	
 	public static IInferenceAlgorithm getInstance(IInferenceAlgorithm probabilityDelegator) {
@@ -77,6 +78,7 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 		} catch (Exception e) {
 			throw new IllegalArgumentException("The network managed by " + probabilityDelegator + " must be an instance of " + ProbabilisticNetwork.class.getName(), e);
 		}
+		ret.setToUseQValues(true);
 		ret.setDefaultInitialAssetTableValue(initQValues);
 		ret.initializeJointAssets();
 		ret.initializeJointProbabilities();
@@ -721,6 +723,7 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 		if (!isToUseQValues) {
 			throw new UnsupportedOperationException("Brute force algorithm will always use q-values instead of assets.");
 		}
+		super.setToUseQValues(true);
 	}
 
 	/* (non-Javadoc)
@@ -729,6 +732,19 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 	public boolean isToUseQValues() {
 		// brute force algorithm always use q-values
 		return true;
+	}
+	
+	public void setAsPermanentEvidence(INode node, int state, boolean isToDeleteNode) {
+		super.setAsPermanentEvidence(node, state, isToDeleteNode);
+		this.updateJointProbability(false);
+		// copy joint probability
+		this.getJointProbabilityTable().copyData();
+		// update joint assets
+		Map<INode, Integer> conditions = new HashMap<INode, Integer>();
+		conditions.put(node, state);
+		this.runMinPropagation(conditions);// this is equivalent to set finding node=state 
+		// copy joint assets
+		this.getJointQTable().copyData();
 	}
 
 	
