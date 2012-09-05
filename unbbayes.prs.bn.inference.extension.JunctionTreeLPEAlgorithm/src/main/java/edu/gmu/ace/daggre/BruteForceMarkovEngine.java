@@ -31,6 +31,8 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 	protected BruteForceMarkovEngine() {
 		super();
 		this.setDefaultInitialAssetTableValue(1);	// brute force is still using q-values
+		this.setToDeleteResolvedNode(false);
+		this.setToObtainProbabilityOfResolvedQuestions(true);
 		this.setAssetAwareInferenceAlgorithmBuilder(new IAssetAwareInferenceAlgorithmBuilder() {
 			public AssetAwareInferenceAlgorithm build(IInferenceAlgorithm probDelegator, float initQValues) {
 				return (AssetAwareInferenceAlgorithm) BruteForceAssetAwareInferenceAlgorithm.getInstance(probDelegator, initQValues);

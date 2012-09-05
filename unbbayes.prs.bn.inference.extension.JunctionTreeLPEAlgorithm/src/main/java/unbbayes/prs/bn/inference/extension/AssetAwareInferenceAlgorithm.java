@@ -129,7 +129,9 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 
 	private boolean isToCalculateLPE = false;
 
-	private float expectedAssetPivot = 0;	
+	private float expectedAssetPivot = 0;
+
+	private boolean isToResetEvidenceBeforeRun = true;	
 	
 
 
@@ -210,6 +212,15 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		}
 		if (getNetwork() instanceof SingleEntityNetwork && ((SingleEntityNetwork) getNetwork()).isID()) {
 			throw new IllegalStateException(this.getName() + " does not support Influence Diagrams.");
+		}
+		// explicitly reset all evidences
+		if (isToResetEvidenceBeforeRun()) {
+			for (Node node : getNetwork().getNodes()) {
+				if (node instanceof TreeVariable) {
+					((TreeVariable) node).resetLikelihood();
+					((TreeVariable) node).resetEvidence();
+				}
+			}
 		}
 		this.getProbabilityPropagationDelegator().run();
 //		try {
@@ -1485,6 +1496,24 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 */
 	public float getExpectedAssetBasis() {
 		return expectedAssetPivot;
+	}
+
+	/**
+	 * If true, evidences will be forced to be removed from system
+	 * before {@link #run()}
+	 * @param isToResetEvidenceBeforeRun the isToResetEvidenceBeforeRun to set
+	 */
+	public void setToResetEvidenceBeforeRun(boolean isToResetEvidenceBeforeRun) {
+		this.isToResetEvidenceBeforeRun = isToResetEvidenceBeforeRun;
+	}
+
+	/** 
+	 * If true, evidences will be forced to be removed from system
+	 * before {@link #run()}
+	 * @return the isToResetEvidenceBeforeRun
+	 */
+	public boolean isToResetEvidenceBeforeRun() {
+		return isToResetEvidenceBeforeRun;
 	}
 
 	

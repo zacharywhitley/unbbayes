@@ -776,7 +776,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			// copy cliques
 			for (Clique origClique : relatedProbabilisticNetwork.getJunctionTree().getCliques()) {
 				
-				Clique newClique = new Clique();
+				Clique newClique = new Clique(AssetTable.getInstance());
 				
 				boolean hasInvalidNode = false;	// this will be true if a clique contains a node not in AssetNetwork.
 				for (Node node : origClique.getNodes()) {
@@ -858,7 +858,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 					continue;
 				}
 				
-				Separator newSeparator = new Separator(assetClique1, assetClique2);
+				Separator newSeparator = new Separator(assetClique1, assetClique2, AssetTable.getInstance());
 				
 				// fill the separator's node list
 				for (Node origNode : origSeparator.getNodes()) {

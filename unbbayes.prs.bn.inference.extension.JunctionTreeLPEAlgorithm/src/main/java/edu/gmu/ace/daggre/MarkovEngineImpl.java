@@ -1534,6 +1534,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		if (settledState >= node.getStatesSize()) {
 			throw new IllegalArgumentException("Question " + questionId + " has no state " + settledState);
 		}
+		if (node instanceof TreeVariable) {
+			TreeVariable var = (TreeVariable) node;
+			if (var.hasEvidence()) {
+				int state = (settledState<0)?((-settledState)-1):settledState;
+				if (var.getEvidence() != state || var.getMarginalAt(state) <= 0f) {
+					throw new IllegalArgumentException("Question " + questionId + " is already resolved, hence it cannot be resolved to " + settledState);
+				}
+			}
+		}
 
 		if (transactionKey == null) {
 			transactionKey = this.startNetworkActions();
@@ -2420,6 +2429,81 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		return ret;
 	}
 	
+	/**
+	 * This method performs the same idea of {@link #scoreUserQuestionEvStates(long, long, List, List)},
+	 * but instead of calculating the expected score per state, it calculates the cash (min assets)
+	 * per state of a question.
+	 * @param userId
+	 * @param questionId
+	 * @param assumptionIds
+	 * @param assumedStates
+	 * @return cash (min assets) per state of a question.
+	 * @throws IllegalArgumentException
+	 */
+	public List<Float> getCashPerStates(long userId, long questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+		// initial assertion: if assumptions were specified and states were not specified
+		if (assumptionIds != null && assumedStates != null && assumedStates.size() != assumptionIds.size()) {
+			throw new IllegalArgumentException("Expected size of assumedStates is " + assumptionIds.size() + ", but was " + assumedStates.size());
+		}
+		// obtain the main node
+		INode node = null;
+		synchronized (getProbabilisticNetwork()) {
+			node = getProbabilisticNetwork().getNode(Long.toString(questionId));
+		}
+		if (node == null) {
+			throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
+		}
+		
+		// list to return
+		List<Float> ret = new ArrayList<Float>(node.getStatesSize());
+		
+		// this is a non-null list of assumptions to pass to scoreUserEv (assumptionIds & questionId)
+		List<Long> assumptionsIncludingThisQuestion = new ArrayList<Long>();
+		// similarly, non-null list of states to pass to scoreUserEv (assumedStates and states of questionId)
+		List<Integer> assumedStatesIncludingThisState = new ArrayList<Integer>();	// do not reuse 
+		if (assumptionIds != null) {
+			assumptionsIncludingThisQuestion.addAll(assumptionIds);
+		}
+		if (assumedStates != null) {
+			assumedStatesIncludingThisState.addAll(assumedStates);
+		}
+		
+		// if questionId is in assumption, this var will have the index of questionId in assumptionsIncludingThisQuestion
+		int indexOfThisQuestion = assumptionsIncludingThisQuestion.indexOf(questionId);
+		
+		// if we assume the question itself, do different operations
+		if (indexOfThisQuestion < 0) {	// questionId is not assumed
+			
+			// the last element in the list will contain the question itself
+			assumptionsIncludingThisQuestion.add(questionId);
+			assumedStatesIncludingThisState.add(0);
+			
+			// just calculate conditional expected score given each state of questionId... Use assumptionsIncludingThisQuestion and states
+			for (int i = 0; i < node.getStatesSize(); i++) {
+				// TODO optimize
+				assumedStatesIncludingThisState.set(assumedStatesIncludingThisState.size()-1, i);
+				ret.add(this.getCash(userId, assumptionsIncludingThisQuestion, assumedStatesIncludingThisState));
+			}
+		} else {	// questionId is assumed
+//			throw new IllegalArgumentException("Assumptions must not contain the question itself.");
+			Integer assumedStateOfThisQuestion = assumedStatesIncludingThisState.get(indexOfThisQuestion);
+			// calculate conditional expected score only for the evidence state, and the other states will have 0
+			for (int i = 0; i < node.getStatesSize(); i++) {
+				// TODO optimize
+				if (i == assumedStateOfThisQuestion) {
+					// the assumed state will have the value added
+					ret.add(this.getCash(userId, assumptionsIncludingThisQuestion, assumedStatesIncludingThisState));
+				} else {
+					// other states will have expected value = 0f
+					ret.add(0f);
+				}
+			}
+		}
+		
+		
+		return ret;
+	}
+	
 
 	/*
 	 * (non-Javadoc)
@@ -3153,6 +3237,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		if (occurredWhen == null) {
 			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
 		}
+		if (transactionKey != null && !this.getNetworkActionsMap().containsKey(transactionKey)) {
+			// startNetworkAction should have been called.
+			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
+		}
 		
 		try {
 			if (this.getPossibleQuestionAssumptions(questionId, assumptionIds).isEmpty()) {
@@ -3186,12 +3274,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		
 		
-		// check existence of transaction key
-		List<NetworkAction> actions = this.getNetworkActionsMap().get(transactionKey);
-		if (actions == null) {
-			// startNetworkAction should have been called.
-			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
-		}
 		
 		// check size of assumptions and states
 		if (assumptionIds != null && !assumptionIds.isEmpty()) {
@@ -3228,8 +3310,20 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		
 		if (mainNode == null) {
-			// node does not exist. Check if there was some previous transaction adding such node
+			// node does not exist. Check if there was some previous actions (in same transaction) adding such node
+			if (transactionKey == null) {
+				// this transaction has only this action (so, there is no previous actions adding such node)
+				throw new InexistingQuestionException("Question ID " + questionId + " does not exist.", questionId);
+			}
 			boolean willCreateNodeOnCommit = false;	// if true, the node will be created in this transaction
+			
+			// iterate on the actions in the same transaction
+			List<NetworkAction> actions = this.getNetworkActionsMap().get(transactionKey);
+			if (actions == null) {
+				// desynchronized call detected. This is unlikely to happen, but subclasses may cause this
+				// actions cannot be null, because we checked this condition before
+				throw new IllegalStateException("Desync detected in transaction " + transactionKey + ": the transaction was deleted while doBalanceTrade was in execution.");
+			}
 			synchronized (actions) {
 				for (NetworkAction networkAction : actions) {
 					if (networkAction instanceof AddQuestionNetworkAction) {
@@ -3265,7 +3359,18 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				}
 				if (parent == null) {
 					// parent node does not exist. Check if there was some previous transaction adding such node
+					if (transactionKey == null) {
+						// this transaction has only this action (so, there is no previous actions adding such node)
+						throw new InexistingQuestionException("Question ID " + assumptiveQuestionId + " does not exist.", assumptiveQuestionId);
+					}
 					boolean hasFound = false;
+					// iterate on the actions in the same transaction
+					List<NetworkAction> actions = this.getNetworkActionsMap().get(transactionKey);
+					if (actions == null) {
+						// desynchronized call detected. This is unlikely to happen, but subclasses may cause this
+						// actions cannot be null, because we checked this condition before
+						throw new IllegalStateException("Desync detected in transaction " + transactionKey + ": the transaction was deleted while doBalanceTrade was in execution.");
+					}
 					synchronized (actions) {
 						for (NetworkAction networkAction : actions) {
 							if (networkAction instanceof AddQuestionNetworkAction) {
