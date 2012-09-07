@@ -149,6 +149,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	private boolean isToReturnEVComponentsAsScoreSummary = false;
 
+
+
+	private Map<Long,Integer> resolvedQuestionsAndNumberOfStates = new HashMap<Long, Integer>();
+
 	/**
 	 * Default constructor is protected to allow inheritance.
 	 * Use {@link #getInstance()} to actually instantiate objects of this class.
@@ -330,6 +334,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// initialize map which manages which questions have trades from a given user
 		setTradedQuestionsMap(new HashMap<Long, List<Long>>());
 		
+		// initialize set containing what questions were resolved
+		setResolvedQuestions(new HashMap<Long, Integer>());
+		
 		return true;
 	}
 
@@ -397,7 +404,24 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			if (!netChangeActions.isEmpty()) {
 				// only make changes (reorder actions and recompile network) if there is any action changing the structure of network.
 				actions.clear();	// reset actions first
-				actions.addAll(netChangeActions);	// netChangeActions comes first
+				
+				/*
+				 * mark the structure change actions as executed, 
+				 * so that RebuildNetworkAction can handle them when rebuilding network.
+				 * CAUTION: be careful not to change the behavior of RebuildNetworkAction
+				 */
+				for (NetworkAction action : netChangeActions) {
+					// mark action as executed
+					action.setWhenExecutedFirstTime(new Date());	// normal execution of action -> update attribute "whenExecutedFirst"
+					if (!(action.equals(rebuildNetworkAction))) {
+						synchronized (getExecutedActions()) {
+							// this is partially ordered by NetworkAction#getWhenCreated(), because actions is ordered by NetworkAction#getWhenCreated()
+							getExecutedActions().add(action);	
+							// TODO do we need to store RebuildNetworkAction in the history?
+						}
+					}
+				}
+//				actions.addAll(netChangeActions);	// netChangeActions comes first
 				rebuildNetworkAction = new RebuildNetworkAction(netChangeActions.get(0).getTransactionKey(), new Date(), null, null);
 				actions.add(rebuildNetworkAction);	// <rebuild action> is inserted between netChangeActions and otherActions
 				actions.addAll(otherActions);	// otherActions comes later
@@ -494,6 +518,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				for (NetworkAction changeAction : networkChangeActions) {
 					if (this.isToExecuteAction(changeAction)) {
 						changeAction.execute();
+						/*
+						 * Caution: do not change this behavior (recreate network structure
+						 * using the actions from the history), because
+						 * #commitNetworkAction is relying in this behavior
+						 * in order to add edges before resolution of nodes
+						 */
 					}
 				}
 			}
@@ -629,6 +659,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		if (occurredWhen == null) {
 			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
+		}
+		
+		synchronized (this.getResolvedQuestions()) {
+			if (this.getResolvedQuestions().containsKey(questionId)) {
+				throw new IllegalArgumentException("Question " + questionId + " was already resolved.");
+			}
 		}
 		synchronized (getProbabilisticNetwork()) {
 			if (getProbabilisticNetwork().getNode(Long.toString(questionId)) != null) {
@@ -793,8 +829,17 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 				}
 			}
+			if (childNodeStateSize < 0) {
+				// see if we can find the node in history. If so, RebuildNetworkAction can add the arcs correctly
+				synchronized (this.getResolvedQuestions()) {
+					Integer stateSize = this.getResolvedQuestions().get(childQuestionId);
+					if (stateSize != null) {
+						childNodeStateSize = stateSize;
+					}
+				}
+			}
 			if (childNodeStateSize < 0) {	
-				// if negative, then expectedSizeOfCPD was not updated, so sourceQuestionId was not found in last loop
+				// sourceQuestionId was not found neither in transaction nor in history
 				throw new InexistingQuestionException("Question ID " + childQuestionId + " does not exist.", childQuestionId);
 			}
 		} else {
@@ -830,6 +875,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 									expectedSizeOfCPD *= addQuestionNetworkAction.getNumberStates();
 									hasFound = true;
 									break;
+								}
+							}
+						}
+						if (!hasFound) {
+							// see if we can find the node in history. If so, RebuildNetworkAction can add the arcs correctly
+							synchronized (this.getResolvedQuestions()) {
+								Integer stateSize = this.getResolvedQuestions().get(assumptiveQuestionId);
+								if (stateSize != null) {
+									expectedSizeOfCPD *= stateSize;
+									hasFound = true;
 								}
 							}
 						}
@@ -1403,8 +1458,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			this.execute(null); 
 		}
 		public void execute(Long userId) {
+			TreeVariable probNode = null;
 			synchronized (getProbabilisticNetwork()) {
-				TreeVariable probNode = (TreeVariable) getProbabilisticNetwork().getNode(Long.toString(questionId));
+				probNode = (TreeVariable) getProbabilisticNetwork().getNode(Long.toString(questionId));
 				if (probNode != null) {	
 					// if probNode.hasEvidence(), then it was resolved already
 					if (probNode.hasEvidence() && probNode.getEvidence() != settledState) {
@@ -1486,6 +1542,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 				}
 			}
+			synchronized (getResolvedQuestions()) {
+				try {
+					getResolvedQuestions().put(getQuestionId(), probNode.getStatesSize());
+				} catch (Exception e) {
+					Debug.println(getClass(), e.getMessage(), e);
+					getResolvedQuestions().put(getQuestionId(), 1);
+				}
+			}
 		}
 		public void revert() throws UnsupportedOperationException {
 			throw new UnsupportedOperationException("Current version cannot revert a resolution of a question.");
@@ -1518,6 +1582,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		if (settledState < 0) {
 			throw new IllegalArgumentException("Question " + questionId + " has no state " + settledState);
+		}
+		synchronized (this.getResolvedQuestions()) {
+			if (this.getResolvedQuestions().containsKey(questionId)) {
+				throw new IllegalArgumentException("Question " + questionId + " was resolved already.");
+			}
 		}
 		Node node = null;
 		synchronized (getProbabilisticNetwork()) {
@@ -4804,6 +4873,24 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public boolean isToReturnEVComponentsAsScoreSummary() {
 		return isToReturnEVComponentsAsScoreSummary;
+	}
+
+	/**
+	 * Stores what questions were resolved
+	 * and how many states it had
+	 * @param resolvedQuestionsAndNumberOfStates the resolvedQuestionsAndNumberOfStates to set
+	 */
+	public void setResolvedQuestions(Map<Long,Integer> resolvedQuestions) {
+		this.resolvedQuestionsAndNumberOfStates = resolvedQuestions;
+	}
+
+	/**
+	 * Stores what questions were resolved 
+	 * and how many states it had
+	 * @return the resolvedQuestionsAndNumberOfStates
+	 */
+	public Map<Long,Integer> getResolvedQuestions() {
+		return resolvedQuestionsAndNumberOfStates;
 	}
 	
 }

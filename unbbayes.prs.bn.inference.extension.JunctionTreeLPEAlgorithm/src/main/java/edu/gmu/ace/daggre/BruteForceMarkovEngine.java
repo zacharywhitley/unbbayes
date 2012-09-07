@@ -11,9 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import edu.gmu.ace.daggre.MarkovEngineImpl.InexistingQuestionException;
-import edu.gmu.ace.daggre.MarkovEngineImpl.ResolveQuestionNetworkAction;
-
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNode;
@@ -43,7 +40,9 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 				return (AssetAwareInferenceAlgorithm) BruteForceAssetAwareInferenceAlgorithm.getInstance(probDelegator, initQValues);
 			}
 		});
+		this.setToDoFullPreview(true);
 		this.initialize();
+		this.setToDoFullPreview(true);
 	}
 	
 	/**
@@ -89,6 +88,7 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 		ret.setDefaultInitialAssetTableValue((float) ret.getQValuesFromScore(initialUserAssets));
 		ret.setToThrowExceptionOnInvalidAssumptions(isToThrowExceptionOnInvalidAssumptions);
 		ret.setToUseQValues(true);
+		ret.setToDoFullPreview(true);
 		return ret;
 	}
 	
@@ -210,7 +210,7 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 						}
 					}
 					if (matches) {
-						if (jointQTable.getValue(i) < min) {
+						if (jointQTable.getValue(i) < min && jointQTable.getValue(i) > 0) {
 							min = jointQTable.getValue(i);
 						}
 					}
@@ -508,6 +508,29 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineImpl#doBalanceTrade(java.lang.Long, java.util.Date, java.lang.String, long, long, java.util.List, java.util.List)
+	 */
+	@Override
+	public boolean doBalanceTrade(Long transactionKey, Date occurredWhen,
+			String tradeKey, long userId, long questionId,
+			List<Long> assumptionIds, List<Integer> assumedStates)
+			throws IllegalArgumentException, InvalidAssumptionException,
+			InexistingQuestionException {
+		throw new UnsupportedOperationException("This operation is not supported by this engine yet");
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineImpl#previewBalancingTrade(long, long, java.util.List, java.util.List)
+	 */
+	@Override
+	public List<Float> previewBalancingTrade(long userId, long questionId,
+			List<Long> assumptionIds, List<Integer> assumedStates)
+			throws IllegalArgumentException {
+		throw new UnsupportedOperationException("This operation is not supported by this engine yet");
+	}
+
+	
 
 	// TODO BruteForceMarkovEngine needs doBalanceTrade correctly implemented
 

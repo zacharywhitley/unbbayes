@@ -496,7 +496,7 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 			jProbTable.setValue(i, product);
 			
 			// update joint q-values
-			if (isToUpdateAssets) {
+			if (isToUpdateAssets && getJointQTable().getValue(i) > 0.0) {
 				float value = getJointQTable().getValue(i) * jProbTable.getValue(i) / jProbTable.getCopiedValue(i);
 				if (!isToAllowZeroAssets() && value <= (isToUseQValues()?1f:0f) ) { // note: 0 assets == 1 q-value
 					throw new ZeroAssetsException("Cell " + i + " in asset table went to " + value);

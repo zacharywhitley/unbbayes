@@ -235,6 +235,33 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals("Question " + questionId + " = " + prob, 1.0f, sum, PROB_ERROR_MARGIN);
 		}
 		
+		// check if we can add same nodes again
+		Node duplicateNode = engine.getProbabilisticNetwork().getNodeAt((int) (Math.random()*engine.getProbabilisticNetwork().getNodeCount()));
+		try {
+			engine.addQuestion(null, new Date(), Long.parseLong(duplicateNode.getName()), duplicateNode.getStatesSize(), null);
+			fail("Should report duplicate node " + duplicateNode);
+		} catch (IllegalArgumentException e) {
+			//ok
+		}
+		
+		// check that we cannot add a resolved node
+		transactionKey = engine.startNetworkActions();
+		engine.resolveQuestion(transactionKey, new Date(), Long.parseLong(duplicateNode.getName()), (int)(Math.random()*duplicateNode.getStatesSize()));
+		try {
+			engine.addQuestion(transactionKey, new Date(), Long.parseLong(duplicateNode.getName()), (int)(Math.random()*5)+1, null);
+			fail("Should report duplicate node " + duplicateNode);
+		} catch (IllegalArgumentException e) {
+			//ok
+		}
+		
+		// same test with transactionKey == null
+		engine.resolveQuestion(null, new Date(), Long.parseLong(duplicateNode.getName()), (int)(Math.random()*duplicateNode.getStatesSize()));
+		try {
+			engine.addQuestion(null, new Date(), Long.parseLong(duplicateNode.getName()), (int)(Math.random()*5)+1, null);
+			fail("Should report duplicate node " + duplicateNode);
+		} catch (IllegalArgumentException e) {
+			//ok
+		}
 	}
 
 	/**created just to represent a BN edge using only IDs*/
@@ -776,6 +803,21 @@ public class MarkovEngineTest extends TestCase {
 			}
 			assertEquals("Question " + questionId + " = " + prob, 1.0f, sum, PROB_ERROR_MARGIN);
 		}
+		
+		// check that we can add arcs related to resolved nodes
+		engine.addQuestion(null, new Date(), Long.MAX_VALUE, 3, null);
+		engine.addQuestion(null, new Date(), Long.MIN_VALUE, 3, null);
+		engine.resolveQuestion(null, new Date(), 1, 0);
+		engine.addQuestionAssumption(null, new Date(), 1, Collections.singletonList(Long.MAX_VALUE), null);
+		engine.addQuestionAssumption(null, new Date(), Long.MIN_VALUE, Collections.singletonList(1L), null);
+		
+		// check that if we are using same transaction, it's also OK 
+		transactionKey = engine.startNetworkActions();
+		engine.resolveQuestion(transactionKey, new Date(), 0L, 0);
+		engine.addQuestionAssumption(transactionKey, new Date(),0L, Collections.singletonList(Long.MAX_VALUE), null);
+		engine.addQuestionAssumption(null, new Date(), Long.MIN_VALUE, Collections.singletonList(0L), null);
+		engine.commitNetworkActions(transactionKey);
+		
 	}
 
 	/**
