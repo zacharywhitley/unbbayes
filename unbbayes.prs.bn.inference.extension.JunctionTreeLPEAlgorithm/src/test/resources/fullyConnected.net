@@ -2,6 +2,7 @@ net
 {
      node_size = (0 0);
      name = "New BN";
+     tree = "(C0,C1,C2,C3,C4,C5)";
      UnBBayes_Color_Probabilistic_Description = "-256";
      UnBBayes_Color_Probabilistic_Explanation = "-16711936";
 }
@@ -9,42 +10,42 @@ net
 node 0
 {
      label = "C0";
-     position = (116 70);
+     position = (19 87);
      states = ("State 0" "State 1");
 }
 
 node 1
 {
      label = "C1";
-     position = (254 8);
+     position = (312 3);
      states = ("State 0" "State 1");
 }
 
 node 2
 {
      label = "C2";
-     position = (376 69);
+     position = (653 75);
      states = ("State 0" "State 1");
 }
 
 node 3
 {
      label = "C3";
-     position = (376 168);
+     position = (659 318);
      states = ("State 0" "State 1");
 }
 
 node 4
 {
      label = "C4";
-     position = (254 245);
+     position = (313 404);
      states = ("State 0" "State 1");
 }
 
 node 5
 {
      label = "C5";
-     position = (116 169);
+     position = (19 305);
      states = ("State 0" "State 1" "State 2");
 }
 
