@@ -20,6 +20,7 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
 import unbbayes.util.SetToolkit;
@@ -89,15 +90,122 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 	private boolean isToUseEstimatedTotalProbability = true;
 	
 	/**
-	 * Default constructor for plugin support
+	 * This listener can be used if you want the junction tree algorithm not to reset the clique potentials before each propagation.
+	 * This listener also clears all virtual nodes automatically at the end of the propagation.
+	 * @see #DEFAULT_INFERENCE_ALGORITHM_LISTENER
+	 * @see #clearVirtualNodes()
 	 */
-	public JunctionTreeAlgorithm() {
-		super();
-		// initialize commands for checkConsistency
-		this.setVerifyConsistencyCommandList(this.initConsistencyCommandList());
+	public static final IInferenceAlgorithmListener CLEAR_VIRTUAL_NODES_ALGORITHM_LISTENER = new IInferenceAlgorithmListener() {
 		
-		// add dynamically changeable behavior (i.e. routines that are not "mandatory", so it is interesting to be able to disable them when needed)
-		this.getInferenceAlgorithmListeners().add(new IInferenceAlgorithmListener() {
+
+		public void onBeforeRun(IInferenceAlgorithm algorithm) {
+			if (algorithm == null) {
+				Debug.println(getClass(), "Algorithm == null");
+				return;
+			}
+			if ((algorithm.getNetwork() != null) && ( algorithm.getNetwork() instanceof SingleEntityNetwork)) {
+				SingleEntityNetwork net = (SingleEntityNetwork)algorithm.getNetwork();
+				
+				if (net.isHybridBN()) {
+					// TODO use resource file instead
+					throw new IllegalArgumentException(
+								algorithm.getName() 
+								+ " cannot handle continuous nodes. \n\n Please, go to the Global Options and choose another inference algorithm."
+							);
+				}
+			}
+		}
+		public void onBeforeReset(IInferenceAlgorithm algorithm) {}
+		
+		/**
+		 * Add virtual nodes.
+		 * This code was added here (before propagation) because we need current marginal (i.e. prior probabilities) to calculate likelihood ratio of soft evidence by using
+		 * Jeffrey's rule.
+		 */
+		public void onBeforePropagate(IInferenceAlgorithm algorithm) {
+			// we will iterate on all nodes and check whether they have soft/likelihood evidences. If so, create virtual nodes
+			if ((algorithm.getNetwork() != null) && ( algorithm.getNetwork() instanceof SingleEntityNetwork)) {
+				SingleEntityNetwork net = (SingleEntityNetwork)algorithm.getNetwork();
+				// iterate in a new list, because net.getNodes may suffer concurrent changes because of virtual nodes.
+				for (Node n : new ArrayList<Node>(net.getNodes())) {	
+					if (n instanceof TreeVariable) {
+						TreeVariable node = (TreeVariable)n;
+						if (node.hasEvidence()) {
+							if (node.hasLikelihood()) {
+								if (algorithm instanceof JunctionTreeAlgorithm) {
+									JunctionTreeAlgorithm jt = (JunctionTreeAlgorithm) algorithm;
+									// Enter the likelihood as virtual nodes
+									try {
+										// prepare list of nodes to add soft/likelihood evidence
+										List<INode> evidenceNodes = new ArrayList<INode>();
+										evidenceNodes.add(node);	// the main node is the one carrying the likelihood ratio
+										// if conditional soft evidence, add all condition nodes (if non-conditional, then this will add an empty list)
+										evidenceNodes.addAll(jt.getLikelihoodExtractor().extractLikelihoodParents(algorithm.getNetwork(), node));
+										// create the virtual node
+										jt.addVirtualNode(algorithm.getNetwork(), evidenceNodes);
+									} catch (Exception e) {
+										throw new RuntimeException(e);
+									}
+								}
+							} 
+						}
+					}
+				}
+			}
+				
+			// Finally propagate evidence
+		}
+		public void onAfterRun(IInferenceAlgorithm algorithm) {}
+		public void onAfterReset(IInferenceAlgorithm algorithm) {}
+		
+		/**
+		 * Guarantee that each clique is normalized, if the network is disconnected
+		 * and clear virtual nodes
+		 */
+		public void onAfterPropagate(IInferenceAlgorithm algorithm) {
+			if (algorithm == null) {
+				Debug.println(getClass(), "Algorithm == null");
+				return;
+			}
+			
+			if ((algorithm.getNetwork() != null) && (algorithm.getNetwork() instanceof SingleEntityNetwork)) {
+				SingleEntityNetwork network = (SingleEntityNetwork) algorithm.getNetwork();
+				if (!network.isConnected()) {
+					// network is disconnected.
+					if (network.getJunctionTree() != null) {
+						// extract all cliques and normalize them
+						for (Clique clique : network.getJunctionTree().getCliques()) {
+							try {
+								clique.normalize();
+								for (Node node : clique.getAssociatedProbabilisticNodes()) {
+									if (node instanceof TreeVariable) {
+										((TreeVariable) node).updateMarginal();
+									}
+								}
+							} catch (Exception e) {
+								throw new RuntimeException(e);
+							}
+						}
+					}
+				}
+			}
+			
+			// clear virtual nodes if this is using junction tree algorithm or algorithms related to it
+			if (algorithm instanceof JunctionTreeAlgorithm) {
+				((JunctionTreeAlgorithm) algorithm).clearVirtualNodes();						
+			} 
+		}
+		
+	};
+
+	/**
+	 * This is the default inference algorithm listener.
+	 * Note that this listener resets the clique potentials before propagation, so that hard evidences
+	 * can overwrite conflicting hard evidences which was added previously, so it is not
+	 * suitable for absorbing virtual evidence.
+	 * @see #CLEAR_VIRTUAL_NODES_ALGORITHM_LISTENER
+	 */
+	public static final IInferenceAlgorithmListener DEFAULT_INFERENCE_ALGORITHM_LISTENER = new IInferenceAlgorithmListener() {
 //			private Map<String, Float[]> likelihoodMap;
 
 			public void onBeforeRun(IInferenceAlgorithm algorithm) {
@@ -158,11 +266,11 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 											List<INode> evidenceNodes = new ArrayList<INode>();
 											evidenceNodes.add(node);	// the main node is the one carrying the likelihood ratio
 											// if conditional soft evidence, add all condition nodes (if non-conditional, then this will add an empty list)
-											evidenceNodes.addAll(jt.getLikelihoodExtractor().extractLikelihoodParents(getNetwork(), node));
+											evidenceNodes.addAll(jt.getLikelihoodExtractor().extractLikelihoodParents(algorithm.getNetwork(), node));
 											// create the virtual node
 											INode virtual = null;
 											try {
-												virtual = jt.addVirtualNode(getNetwork(), evidenceNodes);
+												virtual = jt.addVirtualNode(algorithm.getNetwork(), evidenceNodes);
 												// store the hard evidence of the new virtual node, so that it can be retrieved after reset
 												// hard evidence of virtual node is never a "NOT" evidence (evidence is always about a given particular state, and never about values "NOT" in a given state)
 												evidenceMap.put(virtual.getName(), ((TreeVariable) virtual).getEvidence());
@@ -268,7 +376,18 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 					}
 				}
 			}
-		});
+		};
+	
+	/**
+	 * Default constructor for plugin support
+	 */
+	public JunctionTreeAlgorithm() {
+		super();
+		// initialize commands for checkConsistency
+		this.setVerifyConsistencyCommandList(this.initConsistencyCommandList());
+		
+		// add dynamically changeable behavior (i.e. routines that are not "mandatory", so it is interesting to be able to disable them when needed)
+		this.getInferenceAlgorithmListeners().add(DEFAULT_INFERENCE_ALGORITHM_LISTENER);
 	}
 	
 	/**
@@ -1896,7 +2015,7 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 			// copy separators if there are separators to copy
 			if (originalNet.getJunctionTree() != null && originalNet.getJunctionTree().getSeparators() != null) {
 				for (Separator origSeparator : originalNet.getJunctionTree().getSeparators()) {
-					boolean hasInvalidNode = false;	// this will be true if a clique contains a node not in AssetNetwork.
+					boolean hasInvalidNode = false;	// this will be true if a clique contains a node not in Network.
 					
 					// extract the cliques related to the two cliques that the origSeparator connects
 					Clique newClique1 = (Clique) oldCliqueToNewCliqueMap.get(origSeparator.getClique1());
@@ -1922,7 +2041,7 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 						newSeparator.getNodes().add(newNode);
 					}
 					if (hasInvalidNode) {
-						// the original clique has a node not present in the asset net
+						// the original clique has a node not present in the net
 						continue;
 					}
 					
@@ -1938,7 +2057,7 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 						newPotential.addVariable(newNode);
 					}
 					if (hasInvalidNode) {
-						// the original clique has a node not present in the asset net
+						// the original clique has a node not present in the net
 						continue;
 					}
 					
@@ -1991,5 +2110,24 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 			}
 			return false;
 		}
+	}
+	
+	/**
+	 * This method updates the CPTs of each nodes based on what the
+	 * clique potentials tells about conditional probabilities of nodes
+	 * given parents. This is useful to permanently store
+	 * cliques which have absorbed virtual/soft evidences.
+	 * @return the updated network.
+	 */
+	public ProbabilisticNetwork updateCPTBasedOnCliques () {
+		InCliqueConditionalProbabilityExtractor cptExtractor = (InCliqueConditionalProbabilityExtractor) InCliqueConditionalProbabilityExtractor.newInstance();
+		for (Node node : getNet().getNodes()) {
+			if (node instanceof ProbabilisticNode) {
+				PotentialTable newCPT = (PotentialTable) cptExtractor.buildCondicionalProbability(node, node.getParentNodes(), getNet(), this);
+				PotentialTable oldCPT = ((ProbabilisticNode) node).getProbabilityFunction();
+				oldCPT.setValues(newCPT.getValues());
+			}
+		}
+		return this.getNet();
 	}
 }
