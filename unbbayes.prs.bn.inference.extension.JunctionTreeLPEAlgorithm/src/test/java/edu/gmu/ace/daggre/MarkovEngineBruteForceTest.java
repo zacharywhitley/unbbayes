@@ -637,7 +637,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					sumOfScoreComponents += contribution.getContributionToScoreEV();
 				}
 				for (SummaryContribution contribution : scoreSummaryObject.getIntersectionScoreComponents()) {
-					sumOfScoreComponents -= contribution.getContributionToScoreEV();
+					sumOfScoreComponents += contribution.getContributionToScoreEV();
 				}
 				assertFalse(engine.toString() + userId + " , " + assumptionIds + assumedStates, Float.isNaN(sumOfScoreComponents));
 				assertEquals("["+ engines.indexOf(engine) + "]"+
@@ -4505,7 +4505,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 								sumOfScoreComponents += contribution.getContributionToScoreEV();
 							}
 							for (SummaryContribution contribution : scoreSummaryObject.getIntersectionScoreComponents()) {
-								sumOfScoreComponents -= contribution.getContributionToScoreEV();
+								sumOfScoreComponents += contribution.getContributionToScoreEV();
 							}
 							assertFalse(engine.toString() + userId + " , " + assumptionIds + assumedStates, Float.isNaN(sumOfScoreComponents));
 							assertEquals("["+ engines.indexOf(engine) + "]"+

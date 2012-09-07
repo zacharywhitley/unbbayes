@@ -3714,7 +3714,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			private Map<IRandomVariable, List<Long>> questionsCache = new HashMap<IRandomVariable, List<Long>>();
 			
 			/** Fill content of cliqueComponents or sepComponents */
-			public void onModification(IRandomVariable probCliqueOrSep, IRandomVariable assetCliqueOrSep, int indexInProbTable, int indexInAssetTable, final double value) {
+			public void onModification(IRandomVariable probCliqueOrSep, IRandomVariable assetCliqueOrSep, int indexInProbTable, int indexInAssetTable, double offeredValue) {
 				// Note: we assume indexInAssetTable == indexInProbTable and probCliqueOrSep matches assetCliqueOrSep, so we'll only look at probCliqueOrSep
 				
 				// This variable will point to either cliqueComponents or sepComponents, depending of the type of probCliqueOrSep
@@ -3727,6 +3727,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					// ignore other cases
 					return;	
 				};
+				
+				// if we are adding a component related to a separator, its value contributes negatively
+				final float value = (float) (((probCliqueOrSep instanceof Separator))?-offeredValue:offeredValue);	// this value will be used to fill SummaryContribution
 				
 				// Prepare data to be used to fill new SummaryContribution
 				// Note: SummaryContribution#getContributionToScoreEV() is the argument "value", so we do not need to create new variable for it
@@ -3784,7 +3787,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				whereToAdd.add(new SummaryContribution() {
 					public List<Long> getQuestions() { return questions; }
 					public List<Integer> getStates() { return states; }
-					public float getContributionToScoreEV() { return (float) value; }
+					public float getContributionToScoreEV() { return value; }
 				});
 				
 			}	// end of inner method
@@ -3815,6 +3818,27 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		rootProperty.put(SCORE_COMPONENT_SIZE_PROPERTY, Integer.toString(summary.getScoreComponents().size()));
 		ret.add(rootProperty);
 		for (SummaryContribution contribution : summary.getScoreComponents()) {
+			Properties prop = new Properties();
+			if (contribution.getQuestions() != null && !contribution.getQuestions().isEmpty()) {
+				String commaSeparatedQuestions = "";
+				for (Long id : contribution.getQuestions()) {
+					commaSeparatedQuestions += "," + id;
+				}
+				// remove first comma and add to property
+				prop.put(QUESTIONS_PROPERTY, commaSeparatedQuestions.substring(commaSeparatedQuestions.indexOf(',')+1));
+			}
+			if (contribution.getStates() != null && !contribution.getStates().isEmpty()) {
+				String commaSeparatedStates = "";
+				for (Integer state : contribution.getStates()) {
+					commaSeparatedStates += "," + state;
+				}
+				// remove first comma and add to property
+				prop.put(STATES_PROPERTY, commaSeparatedStates.substring(commaSeparatedStates.indexOf(',')+1));
+			}
+			prop.put(SCOREEV_PROPERTY, Float.toString(contribution.getContributionToScoreEV()));
+			ret.add(prop);
+		}
+		for (SummaryContribution contribution : summary.getIntersectionScoreComponents()) {
 			Properties prop = new Properties();
 			if (contribution.getQuestions() != null && !contribution.getQuestions().isEmpty()) {
 				String commaSeparatedQuestions = "";

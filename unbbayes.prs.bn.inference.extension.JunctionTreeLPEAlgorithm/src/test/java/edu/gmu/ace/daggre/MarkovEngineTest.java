@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -9957,11 +9958,23 @@ public class MarkovEngineTest extends TestCase {
 		// extract summary
 		ScoreSummary summary = engine.getScoreSummaryObject(userNameToIDMap.get("Eric"), null, null, null);
 		
+		// extract summary in a property format
+		List<Properties> summaryProperty = engine.getScoreSummary(userNameToIDMap.get("Eric"), null, null, null);
+		
 		// most basic assertions
 		assertEquals(engine.getCash(userNameToIDMap.get("Eric"), null, null), summary.getCash(), ASSET_ERROR_MARGIN);
+		assertEquals(engine.getCash(userNameToIDMap.get("Eric"), null, null), Float.parseFloat(summaryProperty.get(0).getProperty(MarkovEngineInterface.CASH_PROPERTY)), ASSET_ERROR_MARGIN);
 		assertEquals(10.31615, summary.getScoreEV(), PROB_ERROR_MARGIN);
+		assertEquals(10.31615, Float.parseFloat(summaryProperty.get(0).getProperty(MarkovEngineInterface.SCOREEV_PROPERTY)), PROB_ERROR_MARGIN);
 		assertEquals(8,summary.getScoreComponents().size());
+		assertEquals(8,Integer.parseInt(summaryProperty.get(0).getProperty(MarkovEngineInterface.SCORE_COMPONENT_SIZE_PROPERTY)));
 		assertEquals(2,summary.getIntersectionScoreComponents().size());
+		assertEquals(	
+				2,							// the size of intersection component is...
+				 summaryProperty.size()		// ...total size...
+				- 1							// ...minus the root property (which contains the cash, score, and the size of score component)
+				- Integer.parseInt(summaryProperty.get(0).getProperty(MarkovEngineInterface.SCORE_COMPONENT_SIZE_PROPERTY))	// minus the (positive) score components
+			);
 		
 		
 		// assert that the aggregation of contributions will result in the total expected score
@@ -9970,7 +9983,13 @@ public class MarkovEngineTest extends TestCase {
 			sum += positiveContribution.getContributionToScoreEV();
 		}
 		for (SummaryContribution negativeContribution : summary.getIntersectionScoreComponents()) {
-			sum -= negativeContribution.getContributionToScoreEV();
+			sum += negativeContribution.getContributionToScoreEV();
+		}
+		assertEquals(summary.getScoreEV(), sum, PROB_ERROR_MARGIN);
+		
+		sum = 0f;
+		for (int i = 1; i < summaryProperty.size(); i++) {
+			sum += Float.parseFloat(summaryProperty.get(i).getProperty(MarkovEngineInterface.SCOREEV_PROPERTY));
 		}
 		assertEquals(summary.getScoreEV(), sum, PROB_ERROR_MARGIN);
 		
@@ -9991,20 +10010,30 @@ public class MarkovEngineTest extends TestCase {
 					summary.getIntersectionScoreComponents().get(0).getQuestions().contains(0x0DL)
 				);
 		}
+		for (int i = 1; i < summaryProperty.size(); i++) {
+			assertTrue(
+					"Questions = " + summaryProperty.get(i).getProperty(MarkovEngineInterface.QUESTIONS_PROPERTY)
+					+ ", states = " + summaryProperty.get(i).getProperty(MarkovEngineInterface.STATES_PROPERTY)
+					+ ", value = " + summaryProperty.get(i).getProperty(MarkovEngineInterface.SCOREEV_PROPERTY), 
+					summaryProperty.get(i).getProperty(MarkovEngineInterface.QUESTIONS_PROPERTY).contains("13")
+			);
+		}
 		
 		assertNotNull(engine.getScoreSummaryObject(userNameToIDMap.get("Tom"), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1)));
+		assertNotNull(engine.getScoreSummary(userNameToIDMap.get("Tom"), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1)));
 		
 		// test the case in which the score summary contains expected score given states
 		engine.setToReturnEVComponentsAsScoreSummary(false);
 		
 		// basic test: value of eric's score summary is unchanged
 		assertEquals(10.31615, engine.getScoreSummaryObject(userNameToIDMap.get("Eric"), null, null, null).getScoreEV(), PROB_ERROR_MARGIN);
+		assertEquals(10.31615, Float.parseFloat(engine.getScoreSummary(userNameToIDMap.get("Eric"), null, null, null).get(0).getProperty(MarkovEngineInterface.SCOREEV_PROPERTY)), PROB_ERROR_MARGIN);
 		
 		// extract marginal probability of each question so that we can use them later for consistency check
 		Map<Long, List<Float>> marginals = engine.getProbLists(null, null, null);
 		assertEquals(marginals.toString(), 3, marginals.keySet().size());	// must be marginals of 3 questions
 		for (Long key : marginals.keySet()) {
-			assertEquals(marginals.toString(), 2, marginals.get(key).size());	// must be nods with 2 states
+			assertEquals(marginals.toString(), 2, marginals.get(key).size());	// must be nodes with 2 states
 		}
 		
 		// add user who did not do any trade in userNameToIDMap in order to test boundary condition (users with no trades at all)
@@ -10059,9 +10088,67 @@ public class MarkovEngineTest extends TestCase {
 			}
 		}
 		
+		// dispose summary
+		summary = null;
+		
+		// add user who did not do any trade in userNameToIDMap in order to test boundary condition (users with no trades at all)
+		userNameToIDMap.put("User with no trade " + Long.MIN_VALUE+1, Long.MIN_VALUE+1);
+		
+		for (String user : userNameToIDMap.keySet()) {
+			// extract new summary
+			summaryProperty = engine.getScoreSummary(userNameToIDMap.get(user), null, null, null);
+			
+			// most basic assertions
+			assertEquals(user, engine.getCash(userNameToIDMap.get(user), null, null), Float.parseFloat(summaryProperty.get(0).getProperty(MarkovEngineInterface.CASH_PROPERTY)), ASSET_ERROR_MARGIN);
+			assertEquals(user, engine.scoreUserEv(userNameToIDMap.get(user), null, null), Float.parseFloat(summaryProperty.get(0).getProperty(MarkovEngineInterface.SCOREEV_PROPERTY)), ASSET_ERROR_MARGIN);
+			
+			
+			// check that getQuestions of summary.getScoreComponents retains the same ordering of engine.getTradedQuestions
+			List<Long> tradedQuestions = engine.getTradedQuestions(userNameToIDMap.get(user));
+			
+			assertEquals(user, tradedQuestions.size(), Integer.parseInt(summaryProperty.get(0).getProperty(MarkovEngineInterface.SCORE_COMPONENT_SIZE_PROPERTY))/2);	// Note: I'm assuming each question has 2 states
+			
+			for (int questionIndex = 0; questionIndex < tradedQuestions.size(); questionIndex++) {
+				
+				sum = 0f;	// prepare to calculate the sum of (<Expected score given state> * <marginal of state>)
+				
+				for (int stateIndex = 0; stateIndex < marginals.get(tradedQuestions.get(questionIndex)).size(); stateIndex++) {
+					
+					// Note: I'm assuming that all nodes have 2 states
+					int scoreComponentIndex = (questionIndex*2 + stateIndex) + 1;	// +1 because the root contains cash, score, and size of components	
+					
+					String question = summaryProperty.get(scoreComponentIndex).getProperty(MarkovEngineInterface.QUESTIONS_PROPERTY);
+					// assert that getScoreComponents is related to current question
+					assertFalse("user = " + user + ", question = " + tradedQuestions.get(questionIndex) + ", state = " + stateIndex, 
+							question.contains(","));
+					assertEquals("user = " + user + ", question = " + tradedQuestions.get(questionIndex) + ", state = " + stateIndex, 
+							tradedQuestions.get(questionIndex).longValue(),
+							Long.parseLong(question)
+					);
+					
+					// assert that getScoreComponents is related to current state
+					String state = summaryProperty.get(scoreComponentIndex).getProperty(MarkovEngineInterface.STATES_PROPERTY);
+					assertFalse("user = " + user + ", question = " + tradedQuestions.get(questionIndex) + ", state = " + stateIndex, 
+							state.contains(",") );
+					assertEquals("user = " + user + ", question = " + tradedQuestions.get(questionIndex) + ", state = " + stateIndex, 
+							stateIndex,
+							Integer.parseInt(state)
+					);
+					
+					// multiply marginal (of this state of this question) and expected score of this state of this question
+					sum += marginals.get(tradedQuestions.get(questionIndex)).get(stateIndex) // marginal
+					* Float.parseFloat(summaryProperty.get(scoreComponentIndex).getProperty(MarkovEngineInterface.SCOREEV_PROPERTY));	 // expected
+				}
+				
+				// assert that, for each question, the sum of expected score per state multiplied by its marginal will result in the total expected score
+				// i.e. scoreUserEV = Expected(D=d1)*P(D=d1) + Expected(D=d2)*P(D=d2) = Expected(E=e1)*P(E=e1) + Expected(E=e2)*P(E=e2) = Expected(F=f1)*P(F=f1) + Expected(F=f2)*P(F=f2)
+				assertEquals("user = " + user + ", question = " + tradedQuestions.get(questionIndex), 
+						Float.parseFloat(summaryProperty.get(0).getProperty(MarkovEngineInterface.SCOREEV_PROPERTY)), sum, PROB_ERROR_MARGIN);
+			}
+		}
+		
 		// make the same test, but for a random single node
 		Long selectedNode = (Math.random()<.3?0x0Fl:(Math.random()<.3?0x0El:0x0Dl));
-		
 		// extract marginal probability of each question so that we can use them later for consistency check
 		marginals = engine.getProbLists(null, null, null);
 		assertEquals(marginals.toString(), 3, marginals.keySet().size());	// must be marginals of 1 question (the selected one)

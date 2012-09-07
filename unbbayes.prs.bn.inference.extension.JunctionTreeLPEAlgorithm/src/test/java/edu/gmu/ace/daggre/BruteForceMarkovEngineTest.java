@@ -9836,7 +9836,7 @@ public class BruteForceMarkovEngineTest extends TestCase {
 			sum += positiveContribution.getContributionToScoreEV();
 		}
 		for (SummaryContribution negativeContribution : summary.getIntersectionScoreComponents()) {
-			sum -= negativeContribution.getContributionToScoreEV();
+			sum += negativeContribution.getContributionToScoreEV();
 		}
 		assertEquals(summary.getScoreEV(), sum, PROB_ERROR_MARGIN);
 		
