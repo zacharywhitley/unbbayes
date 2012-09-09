@@ -12,8 +12,12 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import junit.framework.TestCase;
+import junit.framework.TestFailure;
+import junit.framework.TestResult;
 import unbbayes.io.XMLBIFIO;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
@@ -28,7 +32,19 @@ import au.com.bytecode.opencsv.CSVReader;
  *
  */
 public class CSVHypothesysReaderTest extends TestCase {
+	
+	private static String bnName = "GreekExit.xml";
 
+	private static String[] outputs = {"hypothesisCurrent.csv","gapCurrent.csv"};
+	private static Map<String, String> nodeNameToCSVFileMap = new HashMap<String, String>();
+	static {
+		nodeNameToCSVFileMap.put("Withdraw", "244-treated.csv");
+		nodeNameToCSVFileMap.put("Germany", "245-treated.csv");
+		nodeNameToCSVFileMap.put("Hypothesis", "246-treated.csv");
+	}
+	
+	private static DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+	
 	/**
 	 * @param name
 	 */
@@ -62,11 +78,11 @@ public class CSVHypothesysReaderTest extends TestCase {
 	 * 3. Write this in a hypothesis.csv file (should have 2 columns: date, propagated value)
 	 */
 	public final void testWriteHypothesisCSV() {
-		System.out.println("\n\n[Writing hypothesys.csv]");
+		System.out.println("\n\n[Writing "+outputs[0]+"]");
 		// load the main bayes net
 		ProbabilisticNetwork net = null;
 		try {
-			net = new XMLBIFIO().load(new File(this.getClass().getClassLoader().getResource("GreekExit.xml").toURI()));
+			net = new XMLBIFIO().load(new File(this.getClass().getClassLoader().getResource(bnName).toURI()));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -100,7 +116,7 @@ public class CSVHypothesysReaderTest extends TestCase {
 		// this is the output file
 		PrintStream hypothesisCSV = null;
 		try {
-			hypothesisCSV = new PrintStream(new FileOutputStream(new File("hypothesis.csv")));
+			hypothesisCSV = new PrintStream(new FileOutputStream(new File(outputs[0])));
 			// 1st line has the name of the attributes
 			hypothesisCSV.println("date,propagated value");
 		} catch (Exception e) {
@@ -111,7 +127,7 @@ public class CSVHypothesysReaderTest extends TestCase {
 		// load the csv file which contains the likelihoods of the Withdraw node
 		CSVReader withdrawNodeReader = null;
 		try {
-			withdrawNodeReader = new CSVReader(new FileReader(new File(this.getClass().getClassLoader().getResource("196-treated.csv").toURI())));
+			withdrawNodeReader = new CSVReader(new FileReader(new File(this.getClass().getClassLoader().getResource(nodeNameToCSVFileMap.get("Withdraw")).toURI())));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -120,7 +136,7 @@ public class CSVHypothesysReaderTest extends TestCase {
 		// load the csv file which contains the likelihoods of the Germany node
 		CSVReader germanyNodeReader = null;
 		try {
-			germanyNodeReader = new CSVReader(new FileReader(new File(this.getClass().getClassLoader().getResource("195-treated.csv").toURI())));
+			germanyNodeReader = new CSVReader(new FileReader(new File(this.getClass().getClassLoader().getResource(nodeNameToCSVFileMap.get("Germany")).toURI())));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -135,8 +151,6 @@ public class CSVHypothesysReaderTest extends TestCase {
 		boolean isToTreatGermanyNode = true;	// if false, germanyNode will not be updated in current iteration (due to different date)
 		
 		// object to convert string to date
-//		DateFormat dateFormat = new SimpleDateFormat("MM/dd/yy");
-		DateFormat dateFormat = DateFormat.getDateInstance();
 		
 		// treat each line
 		for (int iteration = 0; iteration < Integer.MAX_VALUE; iteration++) {
@@ -182,7 +196,7 @@ public class CSVHypothesysReaderTest extends TestCase {
 					// convert string to date, so that we can compare the day easily
 					Date withdrawDate = dateFormat.parse(withdrawNodeLine[0]);
 					Date germanyDate = dateFormat.parse(germanyNodeLine[0]);
-					if (withdrawDate.getDate() != germanyDate.getDate()) {
+					if (!withdrawDate.equals(germanyDate)) {
 						// dates are different. 
 						if (withdrawDate.before(germanyDate)) {
 							// we must only treat withdraw node, and the next iteration should not re-read germany node
@@ -251,12 +265,12 @@ public class CSVHypothesysReaderTest extends TestCase {
 	 * Write the differences in a new gap.csv file (date, gap) (should have all dates from both files). 
 	 */
 	public final void testWriteGapCSV() {
-		System.out.println("\n\n[Writing gap.csv]");
+		System.out.println("\n\n[Writing "+outputs[1]+"]");
 		
 		// load the main bayes net
 		ProbabilisticNetwork net = null;
 		try {
-			net = new XMLBIFIO().load(new File(this.getClass().getClassLoader().getResource("GreekExit.xml").toURI()));
+			net = new XMLBIFIO().load(new File(this.getClass().getClassLoader().getResource(bnName).toURI()));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -278,7 +292,7 @@ public class CSVHypothesysReaderTest extends TestCase {
 		// this is the output file
 		PrintStream gapCSV = null;
 		try {
-			gapCSV = new PrintStream(new FileOutputStream(new File("gap.csv")));
+			gapCSV = new PrintStream(new FileOutputStream(new File(outputs[1])));
 			// 1st line has the name of the attributes
 			gapCSV.println("date,gap");
 		} catch (Exception e) {
@@ -289,7 +303,7 @@ public class CSVHypothesysReaderTest extends TestCase {
 		// load the csv file which contains the probabilities of the hypothesis node from the market
 		CSVReader marketReader = null;
 		try {
-			marketReader = new CSVReader(new FileReader(new File(this.getClass().getClassLoader().getResource("109-treated.csv").toURI())));
+			marketReader = new CSVReader(new FileReader(new File(this.getClass().getClassLoader().getResource(nodeNameToCSVFileMap.get("Hypothesis")).toURI())));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -298,7 +312,7 @@ public class CSVHypothesysReaderTest extends TestCase {
 		// load the hypothesis.csv file (the infered values)
 		CSVReader inferredReader = null;
 		try {
-			inferredReader = new CSVReader(new FileReader(new File("hypothesis.csv")));
+			inferredReader = new CSVReader(new FileReader(new File(outputs[0])));
 			// the 1st line contains the name of the attributes, so skip it
 			inferredReader.readNext();
 		} catch (Exception e) {
@@ -314,8 +328,6 @@ public class CSVHypothesysReaderTest extends TestCase {
 		boolean isToTreatInferredLine = true;	
 		boolean isToTreatMarketLine = true;	
 		
-		// object to convert string to date
-		DateFormat dateFormat = new SimpleDateFormat("MM/dd/yy");
 		
 		// the values to compare
 		float inferredValue = ((TreeVariable)net.getNode("Hypothesis")).getMarginalAt(0)*100;	// initialize to the value in bayes net
@@ -366,7 +378,7 @@ public class CSVHypothesysReaderTest extends TestCase {
 					// convert string to date, so that we can compare the day easily
 					Date inferredDate = dateFormat.parse(inferredLine[0]);
 					Date marketDate = dateFormat.parse(marketLine[0]);
-					if (inferredDate.getDate() != marketDate.getDate()) {
+					if (!inferredDate.equals(marketDate)) {
 						// dates are different. 
 						if (inferredDate.before(marketDate)) {
 							// we must only treat withdraw node, and the next iteration should not re-read germany node
@@ -409,6 +421,104 @@ public class CSVHypothesysReaderTest extends TestCase {
 			
 			// clear virtual nodes (absorb likelihood evidence).
 //			algorithm.clearVirtualNodes(); 
+		}
+	}
+
+	/**
+	 * @return the bnName
+	 */
+	public static String getBnName() {
+		return bnName;
+	}
+
+	/**
+	 * @param bnName the bnName to set
+	 */
+	public static void setBnName(String bnName) {
+		CSVHypothesysReaderTest.bnName = bnName;
+	}
+
+	/**
+	 * @return the outputs
+	 */
+	public static String[] getOutputs() {
+		return outputs;
+	}
+
+	/**
+	 * @param outputs the outputs to set
+	 */
+	public static void setOutputs(String[] outputs) {
+		CSVHypothesysReaderTest.outputs = outputs;
+	}
+
+	/**
+	 * @return the nodeNameToCSVFileMap
+	 */
+	public static Map<String, String> getNodeNameToCSVFileMap() {
+		return nodeNameToCSVFileMap;
+	}
+
+	/**
+	 * @param nodeNameToCSVFileMap the nodeNameToCSVFileMap to set
+	 */
+	public static void setNodeNameToCSVFileMap(
+			Map<String, String> nodeNameToCSVFileMap) {
+		CSVHypothesysReaderTest.nodeNameToCSVFileMap = nodeNameToCSVFileMap;
+	}
+
+	/**
+	 * @return the dateFormat
+	 */
+	public static DateFormat getDateFormat() {
+		return dateFormat;
+	}
+
+	/**
+	 * @param dateFormat the dateFormat to set
+	 */
+	public static void setDateFormat(DateFormat dateFormat) {
+		CSVHypothesysReaderTest.dateFormat = dateFormat;
+	}
+	
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		try {
+			String defaultArgs[] = {"GreekExit.xml","244-treated.csv","245-treated.csv","246-treated.csv", "hypothesis.csv", "gap.csv", "yyyy/MM/dd HH:mm:ss"};
+			if (args == null || args.length <= 0) {
+				args = defaultArgs;
+			}
+			CSVHypothesysReaderTest test = new CSVHypothesysReaderTest("testWriteHypothesisCSV");
+			CSVHypothesysReaderTest test2 = new CSVHypothesysReaderTest("testWriteGapCSV");
+
+			
+			if (args.length != 7 ) {
+				System.out.println("Usage:");
+				System.out.println("java -jar csvhypothesis GreekExit.xml 244-treated.csv 245-treated.csv 246-treated.csv hypothesis.csv gap.csv \"yyyy/MM/dd HH:mm:ss\"");
+			}
+			bnName = args[0];
+			nodeNameToCSVFileMap.put("Withdraw", args[1]);
+			nodeNameToCSVFileMap.put("Germany", args[2]);
+			nodeNameToCSVFileMap.put("Hypothesis", args[3]);
+			outputs[0] = args[4];
+			outputs[1] = args[5];
+			dateFormat = new SimpleDateFormat(args[6]);
+			
+			TestResult result = test.run();
+			if (!result.wasSuccessful()) {
+				System.err.println("Error on test: " + test);
+				return ;
+			} 
+			TestResult result2 = test2.run();
+			if (!result2.wasSuccessful()) {
+				System.err.println("Error on test: " + test2);
+				return ;
+			} 
+			System.out.println("Success.");
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 

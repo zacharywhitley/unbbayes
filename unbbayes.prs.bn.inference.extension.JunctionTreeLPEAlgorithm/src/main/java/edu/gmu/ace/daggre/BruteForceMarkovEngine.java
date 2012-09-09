@@ -43,6 +43,7 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 		this.setToDoFullPreview(true);
 		this.initialize();
 		this.setToDoFullPreview(true);
+		this.setToIntegrateConsecutiveResolutions(false);
 	}
 	
 	/**
@@ -89,6 +90,7 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 		ret.setToThrowExceptionOnInvalidAssumptions(isToThrowExceptionOnInvalidAssumptions);
 		ret.setToUseQValues(true);
 		ret.setToDoFullPreview(true);
+		ret.setToIntegrateConsecutiveResolutions(false);
 		return ret;
 	}
 	

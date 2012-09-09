@@ -63,6 +63,8 @@ public class MarkovEngineBruteForceTest extends TestCase {
 
 	private boolean isToRun5PointTestInStructureTest = false;
 
+	private boolean isToTestBalanceTrade = false;
+
 
 	/**
 	 * @param name
@@ -764,6 +766,11 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		
 		// make sure initial cash and expected score are 1000
 		for (MarkovEngineImpl engine : engines) {
+			if (engine.isToUseQValues()) {
+				engine.setDefaultInitialAssetTableValue((float) engine.getQValuesFromScore(1000f));
+			} else {
+				engine.setDefaultInitialAssetTableValue(1000f);
+			}
 			if (uncommittedTransactionKeyMap.containsKey(engine)) {
 				// do not test engines in transactionKeyMap, because they were not committed yet
 				continue;
@@ -3579,7 +3586,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			}
 			
 			// Occasionally, user will attempt to exit from a question
-			if (Math.random() <= (assumptionIds.isEmpty()?0.05:0.15)) {
+			if (isToTestBalanceTrade  && Math.random() <= (assumptionIds.isEmpty()?0.05:0.15)) {
 				// TODO BruteForceMarkovEngine needs doBalanceTrade correctly implemented
 				Date occurredWhen = new Date();
 				List<Float> scoreUserQuestionEvStates = null;
@@ -4128,6 +4135,14 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		// most basic assertion
 		assertNotNull(engines);
 		assertFalse(engines.isEmpty());
+		
+		for (MarkovEngineImpl engine : engines) {
+			if (engine.isToUseQValues()) {
+				engine.setDefaultInitialAssetTableValue((float) engine.getQValuesFromScore(1000f));
+			} else {
+				engine.setDefaultInitialAssetTableValue(1000f);
+			}
+		}
 		
 		// initialize network
 		Map<Long,Integer> questionsToQuantityOfStatesMap = new HashMap<Long, Integer>();

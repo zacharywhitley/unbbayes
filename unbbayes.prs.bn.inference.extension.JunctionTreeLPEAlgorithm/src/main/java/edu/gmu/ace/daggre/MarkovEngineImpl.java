@@ -3,6 +3,7 @@ package edu.gmu.ace.daggre;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import unbbayes.prs.Edge;
@@ -150,8 +152,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	private boolean isToReturnEVComponentsAsScoreSummary = false;
 
 
+	private Map<Long,StatePair> resolvedQuestionsAndNumberOfStates = new HashMap<Long,StatePair>();
 
-	private Map<Long,Integer> resolvedQuestionsAndNumberOfStates = new HashMap<Long, Integer>();
+
+	private boolean isToIntegrateConsecutiveResolutions = true;
 
 	/**
 	 * Default constructor is protected to allow inheritance.
@@ -335,7 +339,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		setTradedQuestionsMap(new HashMap<Long, List<Long>>());
 		
 		// initialize set containing what questions were resolved
-		setResolvedQuestions(new HashMap<Long, Integer>());
+		setResolvedQuestions(new HashMap<Long,StatePair>());
 		
 		return true;
 	}
@@ -346,7 +350,17 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	public long startNetworkActions() {
 		long ret = Long.MIN_VALUE;
 		synchronized (transactionCounter) {
-			ret = ++transactionCounter;
+			if (transactionCounter == Long.MAX_VALUE) {
+				// rotate explicitly to negative value instead of doing overflow
+				ret = transactionCounter;
+				transactionCounter = Long.MIN_VALUE;
+			} else if (transactionCounter == -1L) {
+				// avoid using the 0.
+				ret = transactionCounter;
+				transactionCounter = 1L;
+			} else {
+				ret = ++transactionCounter;
+			}
 			// NOTE: getNetworkActionsMap is supposedly an instance of concurrent map, so we do not need to synchronize it
 			getNetworkActionsMap().put(ret, new ArrayList<NetworkAction>());
 		}
@@ -388,7 +402,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		synchronized (actions) {	// make sure actions are not changed by other threads
 			List<NetworkAction> netChangeActions = new ArrayList<NetworkAction>();	// will store actions which changes network structures
 			List<NetworkAction> otherActions = new ArrayList<NetworkAction>();	// will store actions which does not change network structure
-			// collect all network change actions and other actions, respecting their original order
+			// collect all network change actions and other actions, regarding their original order
 			for (NetworkAction action : actions) {
 				if (action.isStructureChangeAction()) {
 					netChangeActions.add(action);
@@ -430,8 +444,41 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// TODO trades of same user to same node given compatible assumptions (all nodes in same clique) can be integrated to 1 trade
 			
 			// then, execute all actions
-			for (NetworkAction action : actions) {
+			for (int i = 0; i < actions.size(); i++) {
+				NetworkAction action = actions.get(i);
+				
+				// check if we can integrate several resolutions into a single mass resolution (if there are resolutions in sequence)
+				if (isToIntegrateConsecutiveResolutions() && 
+						(action instanceof ResolveQuestionNetworkAction) 
+						&& (i+1 < actions.size()) && (actions.get(i+1) instanceof ResolveQuestionNetworkAction)) {
+					
+					// store the series of resolutions
+					List<ResolveQuestionNetworkAction> consecutiveResolutions = new ArrayList<MarkovEngineImpl.ResolveQuestionNetworkAction>();
+					// add the 2 consecutive resolutions to the list
+					consecutiveResolutions.add((ResolveQuestionNetworkAction) action);
+					consecutiveResolutions.add((ResolveQuestionNetworkAction)actions.get(++i));
+					
+					// check if there are more resolutions following the above two
+					while (++i < actions.size()) {
+						if (actions.get(i) instanceof ResolveQuestionNetworkAction) {
+							consecutiveResolutions.add((ResolveQuestionNetworkAction) actions.get(i));
+						} else {
+							// the i should be pointing to the last instance of ResolveQuestionNetworkAction 
+							// (so that in next iteration of for it will point to an action which is not a ResolveQuestionNetworkAction)
+							--i;
+							break;
+						}
+					}
+					// note: it's OK if i >= actions.size() happens at this point, 
+					// because ResolveSetOfQuestionsNetworkAction will be executed and the "for" loop will finish
+					
+					// substitute consecutive resolutions to a single mass resolution
+					action = new ResolveSetOfQuestionsNetworkAction(transactionKey, action.getWhenCreated(), consecutiveResolutions);
+				}
+				
+				// actually run action
 				action.execute();
+				
 				// mark action as executed
 				action.setWhenExecutedFirstTime(new Date());	// normal execution of action -> update attribute "whenExecutedFirst"
 				if (!(action.equals(rebuildNetworkAction))) {
@@ -832,9 +879,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			if (childNodeStateSize < 0) {
 				// see if we can find the node in history. If so, RebuildNetworkAction can add the arcs correctly
 				synchronized (this.getResolvedQuestions()) {
-					Integer stateSize = this.getResolvedQuestions().get(childQuestionId);
-					if (stateSize != null) {
-						childNodeStateSize = stateSize;
+					StatePair stateSizeAndResolution = this.getResolvedQuestions().get(childQuestionId);
+					if (stateSizeAndResolution != null) {
+						childNodeStateSize = stateSizeAndResolution.getStatesSize();
 					}
 				}
 			}
@@ -881,9 +928,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						if (!hasFound) {
 							// see if we can find the node in history. If so, RebuildNetworkAction can add the arcs correctly
 							synchronized (this.getResolvedQuestions()) {
-								Integer stateSize = this.getResolvedQuestions().get(assumptiveQuestionId);
-								if (stateSize != null) {
-									expectedSizeOfCPD *= stateSize;
+								StatePair statePair = this.getResolvedQuestions().get(assumptiveQuestionId);
+								if (statePair != null) {
+									expectedSizeOfCPD *= statePair.getStatesSize();
 									hasFound = true;
 								}
 							}
@@ -1454,10 +1501,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			this.settledState = settledState;
 			
 		}
-		public void execute() { 
-			this.execute(null); 
-		}
-		public void execute(Long userId) {
+		public void execute() {
 			TreeVariable probNode = null;
 			synchronized (getProbabilisticNetwork()) {
 				probNode = (TreeVariable) getProbabilisticNetwork().getNode(Long.toString(questionId));
@@ -1488,16 +1532,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// do not release lock to global BN until we change all asset nets
 				synchronized (getUserToAssetAwareAlgorithmMap()) {
 					Collection<AssetAwareInferenceAlgorithm> usersToChange = null;
-					if (userId == null) {
-						// update all stored users
-						usersToChange = getUserToAssetAwareAlgorithmMap().values();
-					} else if (getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
-						// update only asset net of the specified user
-						usersToChange = Collections.singletonList(getUserToAssetAwareAlgorithmMap().get(userId));
-					} else {
-						// update nothing
-						usersToChange = Collections.emptyList();
-					}
+					
+					// update all stored users
+					usersToChange = getUserToAssetAwareAlgorithmMap().values();
 					
 					synchronized (getDefaultInferenceAlgorithm()) {
 						Node node = getProbabilisticNetwork().getNode(Long.toString(questionId));
@@ -1512,7 +1549,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					for (AssetAwareInferenceAlgorithm algorithm : usersToChange) {
 						IAssetNetAlgorithm assetAlgorithm = algorithm.getAssetPropagationDelegator();
 						synchronized (assetAlgorithm.getAssetNetwork()) {
-							Node assetNode = assetAlgorithm.getAssetNetwork().getNode(Long.toString(questionId));
+							INode assetNode = assetAlgorithm.getAssetNetwork().getNode(Long.toString(questionId));
 							if (assetNode == null && (assetAlgorithm instanceof AssetPropagationInferenceAlgorithm)) {
 								// in this algorithm, setAsPermanentEvidence will only use assetNode for name comparison and to check size of states, 
 								// so we can try using a stub node
@@ -1523,7 +1560,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 								};
 							}
 							if (assetNode != null) {
-								assetAlgorithm.setAsPermanentEvidence(assetNode, settledState,isToDeleteResolvedNode());
+								assetAlgorithm.setAsPermanentEvidence(Collections.singletonMap(assetNode, settledState),isToDeleteResolvedNode());
 //								if (!isToDeleteResolvedNode()) {
 //									// delete only from list 
 //									assetAlgorithm.getAssetNetwork().getNodeIndexes().remove(assetNode.getName());
@@ -1543,12 +1580,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				}
 			}
 			synchronized (getResolvedQuestions()) {
-				try {
-					getResolvedQuestions().put(getQuestionId(), probNode.getStatesSize());
-				} catch (Exception e) {
-					Debug.println(getClass(), e.getMessage(), e);
-					getResolvedQuestions().put(getQuestionId(), 1);
-				}
+				getResolvedQuestions().put(getQuestionId(), new StatePair(probNode.getStatesSize(), settledState));
 			}
 		}
 		public void revert() throws UnsupportedOperationException {
@@ -1563,11 +1595,121 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public Long getQuestionId() { return questionId; }
 		public int getSettledState() { return settledState; }
 		public List<Float> getPercent() { return marginalWhenResolved; }
+		public void setMarginalWhenResolved(List<Float> newValue) { marginalWhenResolved = newValue; }
 		public String getTradeId() { return null; }
 		public List<Long> getAssumptionIds() { return null; }
 		public List<Integer> getAssumedStates() { return null; }
 		public Date getWhenExecutedFirstTime() {return whenExecutedFirst ; }
 		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirst = whenExecutedFirst; }
+	}
+	
+	/**
+	 * Integrates a set of ResolveQuestionNetworkAction
+	 * into a single bayesian network propagation.
+	 * This is basically for optimization 
+	 * (junction tree algorithm can propagate all hard evidences in single propagation instead of 1 propagation per each evidence)
+	 * @author Shou Matsumoto
+	 */
+	public class ResolveSetOfQuestionsNetworkAction extends ResolveQuestionNetworkAction {
+		/** The set of ResolveQuestionNetworkAction which this action integrates */
+		private final Collection<ResolveQuestionNetworkAction> resolutions;
+		
+		/** Default constructor using fields */
+		public ResolveSetOfQuestionsNetworkAction(Long transactionKey, Date occurredWhen, Collection<ResolveQuestionNetworkAction> resolutions) {
+			super(transactionKey, occurredWhen, Long.MIN_VALUE, Integer.MIN_VALUE);
+			if (resolutions == null || resolutions.isEmpty()) {
+				throw new IllegalArgumentException("Invalid resolution: "+ resolutions);
+			}
+			this.resolutions = resolutions;
+		}
+
+		/** @see edu.gmu.ace.daggre.MarkovEngineImpl.ResolveQuestionNetworkAction#execute() */
+		public void execute() {
+
+			// mapping to be used to update history of resolved nodes at the end of this action
+			Map<Long, StatePair> mapForHistory = new HashMap<Long, MarkovEngineImpl.StatePair>();
+			
+			synchronized (getProbabilisticNetwork()) {
+				
+				// map of evidences to be passed to the algorithm in order to resolve all questions in 1 step
+				// A tree map with name comparator will allow me to use the same map in BN and asset net 
+				// (i.e. keys - nodes - with same name will be considered as same key, although they are different instances)
+				Map<INode, Integer> mapOfEvidences = new TreeMap<INode, Integer>(new Comparator<INode>() {
+					public int compare(INode o1, INode o2) {
+						return o1.getName().compareTo(o2.getName());
+					}
+				});
+				
+				// check consistency and fill the map of evidences and the map for the history
+				for (ResolveQuestionNetworkAction action : resolutions) {
+					TreeVariable probNode = (TreeVariable) getProbabilisticNetwork().getNode(Long.toString(action.getQuestionId()));
+					if (probNode != null) {	
+						// if probNode.hasEvidence(), then it was resolved already
+						if (probNode.hasEvidence() && probNode.getEvidence() != action.getSettledState()) {
+							throw new RuntimeException("Attempted to resolve question " + action.getQuestionId() 
+									+ " to state " + action.getSettledState() 
+									+ ", but it was already resolved to " + probNode.getEvidence());
+						} else {
+							// do nothing if node is already settled at settledState
+						}
+						if (probNode.getEvidence() != action.getSettledState()) {	// note: probNode.getEvidence() < 0 if there is no evidence
+							// store the marginal of this node before the resolution
+							ArrayList<Float> marginalBeforeResolution = new ArrayList<Float>(probNode.getStatesSize());
+							for (int i = 0; i < probNode.getStatesSize(); i++) {
+								marginalBeforeResolution.add(probNode.getMarginalAt(i));
+							}
+							action.setMarginalWhenResolved(marginalBeforeResolution);
+						}
+						// in the map which will be passed to the algorithm, mark that this node has an evidence at this state
+						mapOfEvidences.put(probNode, action.getSettledState());
+						// update the map to be used to update the history all at once at the end of this method
+						mapForHistory.put(action.getQuestionId(), new StatePair(probNode.getStatesSize(), action.getSettledState()));
+					} else {
+						throw new InexistingQuestionException("Question " + action.getQuestionId() + " does not exist.", action.getQuestionId());
+					}
+				}
+				
+				// propagate findings on probabilistic network by using the default algorithm
+				synchronized (getDefaultInferenceAlgorithm()) {
+					// CAUTION: this portion assumes that getDefaultInferenceAlgorithm().isToUpdateAssets() == false
+					getDefaultInferenceAlgorithm().setAsPermanentEvidence(mapOfEvidences, isToDeleteResolvedNode());
+				}
+				
+				// TODO revert on some error
+				
+				// Update only the asset nets of the users by using the asset nets + algorithms allocated for each user.
+				// CAUTION: Do not release lock to global BN until we change all asset nets
+				synchronized (getUserToAssetAwareAlgorithmMap()) {
+					// all users shall be changed
+					Collection<AssetAwareInferenceAlgorithm> usersToChange = getUserToAssetAwareAlgorithmMap().values();
+					
+					// do not allow getUserToAssetAwareAlgorithmMap() to be changed here. I.e. do not allow new users to be added now
+					for (AssetAwareInferenceAlgorithm algorithm : usersToChange) {
+						IAssetNetAlgorithm assetAlgorithm = algorithm.getAssetPropagationDelegator();
+						synchronized (assetAlgorithm.getAssetNetwork()) {
+							assetAlgorithm.setAsPermanentEvidence(mapOfEvidences, isToDeleteResolvedNode());
+						}
+					}
+				}
+			}
+			
+			// update the history of resolved questions
+			synchronized (getResolvedQuestions()) {
+				getResolvedQuestions().putAll(mapForHistory);
+			}
+		}
+		
+		/** The set of ResolveQuestionNetworkAction which this action integrates */
+		public Collection<ResolveQuestionNetworkAction> getResolutions() { return resolutions; }
+
+		/** @see edu.gmu.ace.daggre.MarkovEngineImpl.ResolveQuestionNetworkAction#setWhenExecutedFirstTime(java.util.Date)*/
+		public void setWhenExecutedFirstTime(Date whenExecutedFirst) {
+			super.setWhenExecutedFirstTime(whenExecutedFirst);
+			for (ResolveQuestionNetworkAction action : getResolutions()) {
+				action.setWhenExecutedFirstTime(whenExecutedFirst);
+			}
+		}
+		
 	}
 	
 	/* (non-Javadoc)
@@ -1869,21 +2011,28 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 								t.printStackTrace();
 							}
 							// Retrieve from history
-							List<QuestionEvent> history = getQuestionHistory(questionId, null, null);
-							// search from the end, because resolutions are mostly at the end of the history
-							for (int j = history.size()-1; j >= 0; j--) {
-								if (history.get(j) instanceof ResolveQuestionNetworkAction) {
-									ResolveQuestionNetworkAction action = (ResolveQuestionNetworkAction) history.get(j);
-									// build probability of resolution (1 state is 100% and others are 0%)
-									int stateCount = action.getPercent().size();	// retrieve quantity of states == size of marginal probability
-									List<Float> marginal = new ArrayList<Float>(stateCount);	// list of marginal probs
-									for (int k = 0; k < stateCount; k++) {
-										// set the settled state as 100%, and all others to 0%
-										marginal.add((k==action.getSettledState())?1f:0f);
+							synchronized (getResolvedQuestions()) {
+								// if questionId == null, retrieve all resolved questions. 
+								Collection<Long> questionsToSearch = null;
+								if (questionId == null) {
+									questionsToSearch = getResolvedQuestions().keySet();
+								} else {
+									questionsToSearch = Collections.singletonList(questionId);
+								}
+								// iterate either on single node or all resolved nodes
+								for (Long id : questionsToSearch) {
+									StatePair statePair = getResolvedQuestions().get(id);
+									if (statePair != null) {
+										// build probability of resolution (1 state is 100% and others are 0%)
+										int stateCount = statePair.getStatesSize();	// retrieve quantity of states
+										List<Float> marginal = new ArrayList<Float>(stateCount);	// list of marginal probs
+										for (int k = 0; k < stateCount; k++) {
+											// set the settled state as 100%, and all others to 0%
+											marginal.add((k==statePair.getResolvedState())?1f:0f);
+										}
+										ret.put(questionId, marginal);
+										isResolvedQuestion = true;	// remember that this question was actually resolved previously
 									}
-									ret.put(questionId, marginal);
-									isResolvedQuestion = true;
-									break;
 								}
 							}
 						}
@@ -4900,21 +5049,60 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	}
 
 	/**
-	 * Stores what questions were resolved
-	 * and how many states it had
+	 * Stores a mapping from what questions were resolved,
+	 * to a mapping from how many states and which of them was the resolution.
 	 * @param resolvedQuestionsAndNumberOfStates the resolvedQuestionsAndNumberOfStates to set
 	 */
-	public void setResolvedQuestions(Map<Long,Integer> resolvedQuestions) {
-		this.resolvedQuestionsAndNumberOfStates = resolvedQuestions;
+	public void setResolvedQuestions(Map<Long,StatePair> statesSizeOfResolvedQuestions) {
+		this.resolvedQuestionsAndNumberOfStates = statesSizeOfResolvedQuestions;
 	}
 
 	/**
-	 * Stores what questions were resolved 
-	 * and how many states it had
+	 * Stores a mapping from what questions were resolved,
+	 * to how many states the original question had, and .
 	 * @return the resolvedQuestionsAndNumberOfStates
 	 */
-	public Map<Long,Integer> getResolvedQuestions() {
+	public Map<Long,StatePair> getResolvedQuestions() {
 		return resolvedQuestionsAndNumberOfStates;
 	}
 	
+	/**
+	 * If true, {@link #commitNetworkActions(long)} will attempt to 
+	 * collect all question resolutions which are in sequence
+	 * and execute them in 1 BN propagation.
+	 * @param isToIntegrateConsecutiveResolutions the isToIntegrateConsecutiveResolutions to set
+	 */
+	public void setToIntegrateConsecutiveResolutions(
+			boolean isToIntegrateConsecutiveResolutions) {
+		this.isToIntegrateConsecutiveResolutions = isToIntegrateConsecutiveResolutions;
+	}
+
+	/**
+	 * If true, {@link #commitNetworkActions(long)} will attempt to 
+	 * collect all question resolutions which are in sequence
+	 * and execute them in 1 BN propagation.
+	 * @return the isToIntegrateConsecutiveResolutions
+	 */
+	public boolean isToIntegrateConsecutiveResolutions() {
+		return isToIntegrateConsecutiveResolutions;
+	}
+
+	/**
+	 * This class is used to represent a resolution of a question,
+	 * which is a pair: total number of states, and resolved state
+	 * @author Shou Matsumoto
+	 */
+	public class StatePair {
+		private final Integer statesSize;
+		private final Integer resolvedState;
+		public StatePair(Integer statesSize, Integer resolvedState) {
+			this.statesSize = statesSize;
+			this.resolvedState = resolvedState;
+		}
+		public Integer getStatesSize() { return statesSize; }
+		public Integer getResolvedState() { return resolvedState; }
+		public String toString() {return "["+ resolvedState +"/" + statesSize + "]";}
+		
+	}
+
 }

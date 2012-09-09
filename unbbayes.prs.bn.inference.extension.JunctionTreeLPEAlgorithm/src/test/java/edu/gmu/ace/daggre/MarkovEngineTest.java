@@ -8357,6 +8357,12 @@ public class MarkovEngineTest extends TestCase {
 		engine.resolveQuestion(transactionKey, new Date(), 0x0EL, 0);
 		engine.resolveQuestion(transactionKey, new Date(), 0x0FL, 0);
 		engine.commitNetworkActions(transactionKey);
+		
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		assertEquals(3, probLists.size());
+		assertTrue(probLists.get(0x0DL).contains(0f));
+		assertTrue(probLists.get(0x0EL).contains(0f));
+		assertTrue(probLists.get(0x0FL).contains(0f));
 
 		// after all nodes are resolved, cash and expected scores are equal
 		Map<String, Float> cashAndScoreMap = new HashMap<String, Float>();
@@ -8366,10 +8372,12 @@ public class MarkovEngineTest extends TestCase {
 			assertFalse("Cash of " + user + " = " + cash,Float.isInfinite(cash) || Float.isNaN(cash));
 			float score = engine.scoreUserEv(userNameToIDMap.get(user), null, null);
 			assertFalse("Score of " + user + " = " + score,Float.isInfinite(score) || Float.isNaN(score));
-			assertEquals(cash, score, ASSET_ERROR_MARGIN);
+			assertEquals("user="+user+", cash="+cash+", score="+score,cash, score, ASSET_ERROR_MARGIN);
 			assertTrue(cash > 0 && score > 0);
 			cashAndScoreMap.put(user, cash);
 		}
+		
+		assertFalse(engine.getQuestionAssumptionGroups().isEmpty());
 		
 		engine.setToDeleteResolvedNode(true);
 		engine.initialize();
@@ -8379,6 +8387,17 @@ public class MarkovEngineTest extends TestCase {
 		engine.resolveQuestion(transactionKey, new Date(), 0x0EL, 0);
 		engine.resolveQuestion(transactionKey, new Date(), 0x0FL, 0);
 		engine.commitNetworkActions(transactionKey);
+		
+		// assert that if we look for probabilities of all nodes, no node is present
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals(0, probLists.size());
+		
+		// check that we can retrieve marginals by explicitly quering them
+		assertTrue(engine.getProbList(0x0DL, null, null).contains(0f));
+		assertTrue(engine.getProbList(0x0EL, null, null).contains(0f));
+		assertTrue(engine.getProbList(0x0FL, null, null).contains(0f));
+		
+		
 		for (String user : userNameToIDMap.keySet()) {
 			float cash = engine.getCash(userNameToIDMap.get(user), null, null);
 			assertFalse("Cash of " + user + " = " + cash,Float.isInfinite(cash) || Float.isNaN(cash));
@@ -8389,15 +8408,48 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals("User=" + user, cashAndScoreMap.get(user), score, ASSET_ERROR_MARGIN);
 		}
 		
+		// run same test again, but 1 of the nodes will be resolved outside the trade
+		engine.initialize();
+		this.createDEFNetIn1Transaction(userNameToIDMap);
+		transactionKey = engine.startNetworkActions();
+		engine.resolveQuestion(transactionKey, new Date(), 0x0DL, 0);
+		engine.resolveQuestion(transactionKey, new Date(), 0x0FL, 0);
+		engine.commitNetworkActions(transactionKey);
+		engine.resolveQuestion(null, new Date(), 0x0EL, 0);
+		
+		// assert that if we look for probabilities of all nodes, no node is present
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals(0, probLists.size());
+		
+		// check that we can retrieve marginals by explicitly quering them
+		assertTrue(engine.getProbList(0x0DL, null, null).contains(0f));
+		assertTrue(engine.getProbList(0x0EL, null, null).contains(0f));
+		assertTrue(engine.getProbList(0x0FL, null, null).contains(0f));
+		
+		
+		for (String user : userNameToIDMap.keySet()) {
+			float cash = engine.getCash(userNameToIDMap.get(user), null, null);
+			assertFalse("Cash of " + user + " = " + cash,Float.isInfinite(cash) || Float.isNaN(cash));
+			float score = engine.scoreUserEv(userNameToIDMap.get(user), null, null);
+			assertFalse("Score of " + user + " = " + score,Float.isInfinite(score) || Float.isNaN(score));
+			assertEquals("User=" + user, cash, score, ASSET_ERROR_MARGIN);
+			assertEquals("User=" + user, cashAndScoreMap.get(user), cash, ASSET_ERROR_MARGIN);
+			assertEquals("User=" + user, cashAndScoreMap.get(user), score, ASSET_ERROR_MARGIN);
+		}
+		
+		
+		
+		// run other configurations
+		
 		engine.initialize();
 		engine.setCurrentCurrencyConstant((float) (1000/(Math.log(10)/Math.log(2))));
 		engine.setCurrentLogBase(2);
 		engine.setDefaultInitialAssetTableValue(10);
 		userNameToIDMap = new HashMap<String, Long>();
 		this.createDEFNetIn1Transaction(userNameToIDMap);
+		engine.resolveQuestion(null, new Date(), 0x0EL, 0);
 		transactionKey = engine.startNetworkActions();
 		engine.resolveQuestion(transactionKey, new Date(), 0x0DL, 0);
-		engine.resolveQuestion(transactionKey, new Date(), 0x0EL, 0);
 		engine.resolveQuestion(transactionKey, new Date(), 0x0FL, 0);
 		engine.commitNetworkActions(transactionKey);
 		
@@ -8446,11 +8498,9 @@ public class MarkovEngineTest extends TestCase {
 		}
 		
 		if (engine.isToDeleteResolvedNode()) {
-			// questions were resolved, but they are still in the system
 			assertTrue(engine.getQuestionAssumptionGroups().isEmpty());
 		} else {
-			// all questions were supposedly removed from system
-			assertFalse(engine.getQuestionAssumptionGroups().isEmpty());
+			assertTrue(engine.getQuestionAssumptionGroups().isEmpty());
 		}
 		
 		// check new user
@@ -10162,16 +10212,20 @@ public class MarkovEngineTest extends TestCase {
 		for (String user : userNameToIDMap.keySet()) {
 			// extract new summary
 			summary = engine.getScoreSummaryObject(userNameToIDMap.get(user), selectedNode, null, null);
+			summaryProperty = engine.getScoreSummary(userNameToIDMap.get(user), selectedNode, null, null);
 			
 			// most basic assertions
 			assertEquals(user, engine.getCash(userNameToIDMap.get(user), null, null), summary.getCash(), ASSET_ERROR_MARGIN);
 			assertEquals(user, engine.scoreUserEv(userNameToIDMap.get(user), null, null), summary.getScoreEV(), ASSET_ERROR_MARGIN);
+			assertEquals(user, engine.getCash(userNameToIDMap.get(user), null, null), Float.parseFloat(summaryProperty.get(0).getProperty(MarkovEngineInterface.CASH_PROPERTY)), ASSET_ERROR_MARGIN);
+			assertEquals(user, engine.scoreUserEv(userNameToIDMap.get(user), null, null),  Float.parseFloat(summaryProperty.get(0).getProperty(MarkovEngineInterface.SCOREEV_PROPERTY)), ASSET_ERROR_MARGIN);
 			
 			
 			// check that getQuestions of summary.getScoreComponents retains the same ordering of engine.getTradedQuestions
 //			List<Long> tradedQuestions = engine.getTradedQuestions(userNameToIDMap.get(user));
 //			assertFalse(user, tradedQuestions.isEmpty());	// users did actually trade in the system, so its not empty
 			assertEquals(user, 1, summary.getScoreComponents().size()/2);	// This time I'm considering only 1 question. Note: again, I'm assuming each question has 2 states
+			assertEquals(user, 1, Integer.parseInt(summaryProperty.get(0).getProperty(MarkovEngineInterface.SCORE_COMPONENT_SIZE_PROPERTY))/2);	// This time I'm considering only 1 question. Note: again, I'm assuming each question has 2 states
 			
 			sum = 0f;	// prepare to calculate the sum of (<Expected score given state> * <marginal of state>)
 			

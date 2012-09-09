@@ -5,6 +5,7 @@ package unbbayes.prs.bn.inference.extension;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -516,10 +517,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		for (IRandomVariable origCliqueOrSeparator : cliquesOrSepsToUpdate) {
 			IRandomVariable assetCliqueOrSeparator = getOriginalCliqueToAssetCliqueMap().get(origCliqueOrSeparator);
 			if (assetCliqueOrSeparator == null || assetCliqueOrSeparator.getProbabilityFunction() == null) {
-				assetCliqueOrSeparator = getOriginalCliqueToAssetCliqueMap().get(origCliqueOrSeparator);
-				if (assetCliqueOrSeparator == null) {
-					throw new RuntimeException("Probabilistic network and asset network are not synchronized: " + getAssetNetwork());
-				}
+				throw new RuntimeException("Probabilistic network and asset network are not synchronized: " + getAssetNetwork());
 			}
 			((PotentialTable)assetCliqueOrSeparator.getProbabilityFunction()).copyData();
 		}
@@ -1771,6 +1769,17 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			}
 		}
 	}
+	
+	/**
+	 * This is equivalent to {@link #setAsPermanentEvidence(Map, boolean)}
+	 * with the map being {@link Collections#singletonMap(Object, Object)}
+	 * @param node : node to add hard evidence
+	 * @param state : state of hard evidence
+	 * @param isToDeleteNode : if true, the node will be deleted from the network.
+	 */
+	public void setAsPermanentEvidence(INode node, Integer state, boolean isToDeleteNode){
+		this.setAsPermanentEvidence(Collections.singletonMap(node, state), isToDeleteNode);
+	}
 
 	/**
 	 * This method will set cells in the asset tables of {@link #getAssetNetwork()} to zero.
@@ -1783,24 +1792,15 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 * algorithms based on junction tree (i.e. {@link unbbayes.prs.bn.JunctionTreeAlgorithm},
 	 * {@link unbbayes.prs.bn.inference.extension.JunctionTreeLPEAlgorithm}, {@link unbbayes.prs.bn.inference.extension.JunctionTreeMPEAlgorithm}).
 	 * This method will also attempt to delete the node from the network.
-	 * @param node : only assets related to states of this node will be changed. 
+	 * @param evidences : only assets related to states of this node will be changed. 
 	 * {@link AssetNetwork#removeNode(Node)} will be used in order to delete this node from the {@link #getAssetNetwork()}.
-	 * @param state : q-values of states complementary to this state (i.e. states of "node" which are different
+	 * The q-values of states complementary to this state (i.e. states of "node" which are different
 	 * to "state") will be set to 0.
 	 * @param isToDeleteNode : if true, node will be deleted after propagation.
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setAsPermanentEvidence(unbbayes.prs.INode, int)
 	 */
-	public void setAsPermanentEvidence(INode node, int state , boolean isToDeleteNode) {
+	public void setAsPermanentEvidence(Map<INode, Integer> evidences, boolean isToDeleteNode){
 		// initial assertions
-		if (node == null) {
-			throw new NullPointerException("Cannot add evidences to a null node.");
-		}
-		if (! (node instanceof Node)) {
-			throw new UnsupportedOperationException(node + " is a node of type " + node.getClass() + ", which is not supported by the current version of " + this.getClass());
-		}
-		if (state < 0 || state >= node.getStatesSize()) {
-			throw new ArrayIndexOutOfBoundsException(state + " is not a valid index for a state of node " + node);
-		}
 		if (getAssetNetwork() == null) {
 			throw new IllegalStateException("This algorithm should be related to some AssetNetwork before calling this method. Please, call #setAssetNetwork(AssetNetwork).");
 		}
@@ -1809,38 +1809,70 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 				|| getAssetNetwork().getJunctionTree().getSeparators() == null ) {
 			throw new IllegalStateException("This algorithm cannot be used without a Junction Tree. Make sure getAssetNetwork().getJunctionTree() was correctly initialized.");
 		}
+		if (evidences == null || evidences.isEmpty()) {
+			return;
+		}
 		
 		Map<Clique, Float> resolvedAssetValues = new HashMap<Clique, Float>();
 		
+		// extract the nodes containing findings
+		Set<INode> evidenceNodes = evidences.keySet();
+		
 		// Set cells of clique tables to values which are ignored by the algorithm. 
 		for (Clique clique : getAssetNetwork().getJunctionTree().getCliques()) {
+			
 			// extract clique table
 			PotentialTable cliqueTable = clique.getProbabilityFunction();
+			if (cliqueTable.tableSize() <= 1) {
+				// ignore this clique, because there is nothing to resolve
+				continue;
+			}
+			
+			// last asset read and not set as "invalid". This will be used as the asset of an empty clique
+			float resolvedAsset = Float.NaN;	// init to invalid values
+			
+			// how many nodes there are in the clique table, but not in the evidenceNodes
+			int remainingNodesCount = cliqueTable.variableCount();
+			
 			// consider only clique tables containing node
 			// clique.getNodes() may be different from the variables in cliqueTable. 
 			// We'd like to prioritize vars in the tables rather than in clique.getNodes()
-			if (cliqueTable.getVariableIndex((Node)node) >= 0) {
-				// last value which is not set as invalid value.
-				float resolvedAsset = isToUseQValues()?0f:Float.POSITIVE_INFINITY;	// init to invalid values
-				// iterate over cells in the clique table
-				for (int i = 0; i < cliqueTable.tableSize(); i++) {
-					// using "multidimensionalCoord" is easier than "i" if our objective is to compare with "state"
-					int[] multidimensionalCoord = cliqueTable.getMultidimensionalCoord(i);
-					// set all cells unrelated to "state" to 0
-					if (multidimensionalCoord[cliqueTable.getVariableIndex((Node) node)] != state) {
-						if (isToUseQValues()) {
-							cliqueTable.setValue(i,0f);
-						} else {
-							cliqueTable.setValue(i,Float.POSITIVE_INFINITY);
-						}
-					} else {
-						resolvedAsset = cliqueTable.getValue(i);
+			for (int indexOfNodeInTheCliqueTable = 0; indexOfNodeInTheCliqueTable < cliqueTable.variableCount(); indexOfNodeInTheCliqueTable++) {
+				// extract node from table
+				INode nodeInCliqueTable = cliqueTable.getVariableAt(indexOfNodeInTheCliqueTable);
+				// only handle nodes with evidence
+				if (evidenceNodes.contains(nodeInCliqueTable)) {
+					// there is a node to be set as finding. extract state of finding
+					Integer state = evidences.get(nodeInCliqueTable);
+					// check consistency of findings
+					if (state == null) {
+						Debug.println(getClass(), "Finding of node "+ nodeInCliqueTable + " was set to null");
+						continue;
 					}
-				} 
-				if (cliqueTable.getVariablesSize() <= 1) {
-					// we are trying to remove the only node
-					resolvedAssetValues.put(clique, resolvedAsset);
-				}
+					if (state < 0 || state >= nodeInCliqueTable.getStatesSize()) {
+						throw new ArrayIndexOutOfBoundsException(state + " is not a valid index for a state of node " + nodeInCliqueTable);
+					}
+					// iterate over cells in the clique table
+					for (int i = 0; i < cliqueTable.tableSize(); i++) {
+						// using "multidimensionalCoord" is easier than "i" if our objective is to compare with "state"
+						int[] multidimensionalCoord = cliqueTable.getMultidimensionalCoord(i);
+						// set all cells unrelated to "state" to 0
+						if (multidimensionalCoord[cliqueTable.getVariableIndex((Node) nodeInCliqueTable)] != state) {
+							if (isToUseQValues()) {
+								cliqueTable.setValue(i,0f);
+							} else {
+								cliqueTable.setValue(i,Float.POSITIVE_INFINITY);
+							}
+						} else if (cliqueTable.getValue(i) != (isToUseQValues()?0f:Float.POSITIVE_INFINITY)) {
+							resolvedAsset = cliqueTable.getValue(i);
+						}
+					}
+					remainingNodesCount--;
+				} // else := current node is not in the evidences map.
+			}
+			if (remainingNodesCount <= 0) {
+				// we are trying to remove all nodes from the clique
+				resolvedAssetValues.put(clique, resolvedAsset);
 			}
 		}
 		// Set cells of separator tables to zero as well.
@@ -1850,17 +1882,34 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			// consider only separator tables containing node
 			// separator.getNodes() may be different from the variables in separatorTable. 
 			// We'd like to prioritize vars in the tables rather than in separator.getNodes()
-			if (separatorTable.getVariableIndex((Node)node) >= 0) {
-				// iterate over cells in the separator table
-				for (int i = 0; i < separatorTable.tableSize(); i++) {
-					// using "multidimensionalCoord" is easier than "i" if our objective is to compare with "state"
-					int[] multidimensionalCoord = separatorTable.getMultidimensionalCoord(i);
-					// set all cells unrelated to "state" to 0
-					if (multidimensionalCoord[separatorTable.getVariableIndex((Node) node)] != state) {
-						if (isToUseQValues()) {
-							separatorTable.setValue(i,0f);
-						} else {
-							separatorTable.setValue(i,Float.POSITIVE_INFINITY);
+			if (separatorTable.tableSize() <= 1) {
+				// ignore, because there is nothing to resolve
+				continue;
+			}
+			for (int indexOfNodeInSeparator = 0; indexOfNodeInSeparator < separatorTable.getVariablesSize(); indexOfNodeInSeparator++) {
+				INode node = separatorTable.getVariableAt(indexOfNodeInSeparator);
+				if (evidenceNodes.contains(node)) {
+					// Extract state of finding
+					Integer state = evidences.get(node);
+					// check consistency of findings
+					if (state == null) {
+						Debug.println(getClass(), "Finding of node "+ node + " was set to null");
+						continue;
+					}
+					if (state < 0 || state >= node.getStatesSize()) {
+						throw new ArrayIndexOutOfBoundsException(state + " is not a valid index for a state of node " + node);
+					}
+					// iterate over cells in the separator table
+					for (int i = 0; i < separatorTable.tableSize(); i++) {
+						// using "multidimensionalCoord" is easier than "i" if our objective is to compare with "state"
+						int[] multidimensionalCoord = separatorTable.getMultidimensionalCoord(i);
+						// set all cells unrelated to "state" to 0
+						if (multidimensionalCoord[separatorTable.getVariableIndex((Node) node)] != state) {
+							if (isToUseQValues()) {
+								separatorTable.setValue(i,0f);
+							} else {
+								separatorTable.setValue(i,Float.POSITIVE_INFINITY);
+							}
 						}
 					}
 				}
@@ -1875,14 +1924,23 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 				originalCliqueToAssetCliqueMapBackup = new HashMap<IRandomVariable, IRandomVariable>(getOriginalCliqueToAssetCliqueMap());
 			}
 			
-			// remove node from net
-			getAssetNetwork().removeNode((Node) node);
+			// remove nodes from net
+			for (INode node : evidenceNodes) {
+				getAssetNetwork().removeNode((Node) node);
+			}
+			
 			for (Clique resolvedClique : resolvedAssetValues.keySet()) {
 				if (resolvedClique.getProbabilityFunction().tableSize() > 0) {
 					throw new IllegalStateException(resolvedClique + " is supposedly resolved, but it has potentials.");
 				}
 				resolvedClique.getProbabilityFunction().addVariable(ONE_STATE_ASSETNODE);
-				resolvedClique.getProbabilityFunction().setValue(0, resolvedAssetValues.get(resolvedClique));
+				Float value = resolvedAssetValues.get(resolvedClique);
+				if (value != (isToUseQValues()?0f:Float.POSITIVE_INFINITY)) {
+					resolvedClique.getProbabilityFunction().setValue(0, value);
+				} else {
+					// node resolved to an impossible state!
+					throw new IllegalStateException(evidences + " is resolving some node to an impossible state.");
+				}
 			}
 			
 			// rebuild mapping

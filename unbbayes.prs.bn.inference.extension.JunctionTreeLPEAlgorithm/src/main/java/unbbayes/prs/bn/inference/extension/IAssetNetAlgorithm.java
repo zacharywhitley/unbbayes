@@ -182,11 +182,10 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 * after this method returns.
 	 * For example, implementations may remove the node from
 	 * the network after the a hard evidence.
-	 * @param node : node to add permanent hard evidence.
-	 * @param state : state to set as hard evidence
+	 * @param evidences : node to add permanent hard evidence and their states.
 	 * @param isToDeleteNode : if true, node will be deleted after setting as permanent node.
 	 */
-	public void setAsPermanentEvidence(INode node, int state, boolean isToDeleteNode);
+	public void setAsPermanentEvidence(Map<INode, Integer> evidences, boolean isToDeleteNode);
 	
 //	/**
 //	 * This map stores what were the asset tables before the last call of

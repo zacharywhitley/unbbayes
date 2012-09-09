@@ -4,6 +4,7 @@
 package unbbayes.prs.bn.inference.extension;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -1249,13 +1250,41 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		}
 		return true;	// default value
 	}
-
+	
 	/**
-	 * This method will only delegate to {@link #getAssetPropagationDelegator()}
+	 * This is equivalent to {@link #setAsPermanentEvidence(Map, boolean)}
+	 * with the map being {@link Collections#singletonMap(Object, Object)}
+	 * @param node : node to add hard evidence
+	 * @param state : state of hard evidence
+	 * @param isToDeleteNode : if true, the node will be deleted from the network.
 	 */
-	public void setAsPermanentEvidence(INode node, int state, boolean isToDeleteNode) {
-		ProbabilisticNode probNode = (ProbabilisticNode) getRelatedProbabilisticNetwork().getNode(node.getName());
-		if (probNode != null) {
+	public void setAsPermanentEvidence(INode node, Integer state, boolean isToDeleteNode){
+		this.setAsPermanentEvidence(Collections.singletonMap(node, state), isToDeleteNode);
+	}
+	
+	/**
+	 * This method will add evidences to nodes, propagate evidence in the probabilistic network, and
+	 * then delegate to {@link #getAssetPropagationDelegator()}
+	 */
+	public void setAsPermanentEvidence(Map<INode, Integer> evidences, boolean isToDeleteNode){
+		// initial assertion
+		if (evidences == null || evidences.isEmpty()) {
+			return;
+		}
+		// fill the findings
+		for (INode node : evidences.keySet()) {
+			ProbabilisticNode probNode = (ProbabilisticNode) getRelatedProbabilisticNetwork().getNode(node.getName());
+			// ignore nodes which we did not find
+			if (probNode == null) {
+				throw new IllegalArgumentException("Probabilistic node " + node + " was not found in probabilistic network.");
+			} 
+			// extract state of evidence
+			Integer state = evidences.get(node);
+			if (state == null) {
+				Debug.println(getClass(), "Evidence of node " + node + " was null");
+				// ignore this value
+				continue;
+			}
 			// set and propagate evidence in the probabilistic network
 			if (state < 0) {
 				// set finding as negative (i.e. finding setting a state to 0%)
@@ -1263,22 +1292,26 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 			} else {
 				probNode.addFinding(state);
 			}
-			getProbabilityPropagationDelegator().propagate();// propagate only the probabilities
-			if (isToDeleteNode) {
-				getRelatedProbabilisticNetwork().removeNode(probNode); // this will supposedly delete the cliques as well
-				// special treatment if the node to remove makes the clique to become empty
-				for (Clique clique : getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
-					// TODO update only the important clique
-					if (clique.getProbabilityFunction().tableSize() <= 0) {
-						clique.getProbabilityFunction().addVariable(ONE_STATE_PROBNODE);
-					}
+		}
+		
+		// propagate only the probabilities
+		getProbabilityPropagationDelegator().propagate();
+		
+		// delete resolved nodes
+		if (isToDeleteNode) {
+			for (INode node : evidences.keySet()) {
+				getRelatedProbabilisticNetwork().removeNode((Node) node); // this will supposedly delete the nodes from cliques as well
+			}
+			// special treatment if the node to remove makes the clique to become empty
+			for (Clique clique : getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
+				// TODO update only the important clique
+				if (clique.getProbabilityFunction().tableSize() <= 0) {
+					clique.getProbabilityFunction().addVariable(ONE_STATE_PROBNODE);
 				}
 			}
-		} else {
-			Debug.println(getClass(), "Prob node " + node + " not found.");
 		}
 		if (isToUpdateAssets()) {
-			this.getAssetPropagationDelegator().setAsPermanentEvidence(node, state, isToDeleteNode);
+			this.getAssetPropagationDelegator().setAsPermanentEvidence(evidences, isToDeleteNode);
 		}
 		if (!isToDeleteNode) {
 			// copy all clique/separator potentials
@@ -1291,7 +1324,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 			if (getPermanentEvidenceMap() == null) {
 				setPermanentEvidenceMap(new HashMap<TreeVariable, Integer>());
 			}
-			getPermanentEvidenceMap().put((TreeVariable) node, state);
+			getPermanentEvidenceMap().putAll((Map)evidences);
 		}
 	}
 
