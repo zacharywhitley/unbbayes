@@ -42,11 +42,11 @@ public interface IPrmController {
 	
 
 	/**
-	 * Get the number of parents for an attribute.
+	 * Get the parents for an attribute.
 	 * @param attribute interested attribute.
-	 * @return number of parents.
+	 * @return parents.
 	 */
-	int numParents(Attribute attribute);
+	Attribute[] parentsOf(Attribute attribute);
 	
 	/**
 	 * Define a Conditional Probability Distribution for an attribute.

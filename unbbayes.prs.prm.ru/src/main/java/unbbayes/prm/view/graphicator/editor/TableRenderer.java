@@ -31,10 +31,10 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 
+import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
 import org.apache.log4j.Logger;
 
@@ -82,18 +82,17 @@ public class TableRenderer extends JComponent {
 	/**
      *
      */
-	public JTable table;
-	private IGraphicTableListener tableListener;
+	public GraphicRelTable table;
 
 	/**
      *
      */
 	@SuppressWarnings("serial")
 	public TableRenderer(final Object cell,
-			final mxGraphComponent graphContainer, RelSchemaConsult consult, IGraphicTableListener tableListener) {
+			final mxGraphComponent graphContainer, RelSchemaConsult consult,
+			IGraphicTableListener tableListener) {
 		this.cell = cell;
 		this.graphContainer = graphContainer;
-		this.tableListener = tableListener;
 		this.graph = graphContainer.getGraph();
 
 		String cellName = String.valueOf(graph.getLabel(cell));
@@ -110,9 +109,9 @@ public class TableRenderer extends JComponent {
 		title.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 1));
 		title.setLayout(new BorderLayout());
 		// Icon for the title
-		JLabel icon = new JLabel(new ImageIcon(
-				TableRenderer.class
-						.getResource(IMAGE_PATH + "preferences.gif")));
+		JLabel icon = new JLabel(
+				new ImageIcon(TableRenderer.class.getResource(IMAGE_PATH
+						+ "preferences.gif")));
 		icon.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 1));
 		title.add(icon, BorderLayout.WEST);
 		// Title label.
@@ -158,7 +157,7 @@ public class TableRenderer extends JComponent {
 
 		if (tableByName != null) {
 			// Table
-			table = new GraphicRelTable(tableByName,tableListener);
+			table = new GraphicRelTable(tableByName, tableListener);
 		} else {
 			log.warn("Table " + cellName + " not found");
 		}
@@ -177,20 +176,6 @@ public class TableRenderer extends JComponent {
 			setOpaque(true);
 			add(scrollPane, BorderLayout.CENTER);
 		}
-
-		// label = new JLabel(new ImageIcon(JTableRenderer.class
-		// .getResource(IMAGE_PATH + "resize.gif")));
-		// label.setCursor(new Cursor(Cursor.NW_RESIZE_CURSOR));
-
-		// JPanel panel = new JPanel();
-		// panel.setLayout(new BorderLayout());
-		// panel.add(labelTitle, BorderLayout.EAST);
-		//
-		// add(panel, BorderLayout.SOUTH);
-
-		// ResizeHandler resizeHandler = new ResizeHandler();
-		// label.addMouseListener(resizeHandler);
-		// label.addMouseMotionListener(resizeHandler);
 
 		setMinimumSize(new Dimension(20, 30));
 	}
@@ -274,5 +259,13 @@ public class TableRenderer extends JComponent {
 		}
 
 		return null;
+	}
+
+	public void enableCPDFor(Column c) {
+		table.enableCPDFor(c);
+	}
+	
+	public void disableCPDFor(Column c) {
+		table.disableCPDFor(c);
 	}
 }

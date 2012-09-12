@@ -96,16 +96,16 @@ public class PrmController implements IPrmController {
 	 * @see unbbayes.prm.controller.prm.IPrmController
 	 */
 	@Override
-	public int numParents(Attribute attribute) {
+	public Attribute[] parentsOf(Attribute attribute) {
 
-		int numParents = 0;
+		List<Attribute> parentsOf = new ArrayList<Attribute>();
 		for (ParentRel parent : parents) {
 			if (parent.getChild().equals(attribute)) {
-				numParents++;
+				parentsOf.add(attribute);
 			}
 			;
 		}
-		return numParents;
+		return parentsOf.toArray(new Attribute[0]);
 	}
 
 }

@@ -23,6 +23,7 @@ import unbbayes.prm.model.Attribute;
 import unbbayes.prm.model.ParentRel;
 import unbbayes.prm.view.graphicator.IGraphicTableListener;
 import unbbayes.prm.view.graphicator.RelationalGraphicator;
+import unbbayes.prm.view.graphicator.editor.TableRenderer;
 
 public class PRMProcessPanel extends JPanel implements IGraphicTableListener {
 	/**
@@ -214,7 +215,7 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener {
 
 		// FIXME validate ID or FK, because it works only for descriptive
 		// attributes.
-		
+
 		// Select the parent
 		if (parentPM == null) {
 			parentPM = selectedAttribute;
@@ -226,6 +227,9 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener {
 			prmController.addParent(newRel);
 			rg.drawRelationShip(newRel);
 
+			// Show CPT buttons.
+			showCPTButtons(newRel);
+
 			parentPM = null;
 			childrenPM = null;
 
@@ -234,6 +238,34 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener {
 			log.warn("Error, neither parent nor children are not null");
 		}
 
+	}
+
+	private void showCPTButtons(ParentRel newRel) {
+		// Show to parent
+		TableRenderer parentTable = rg.getGraphicTable(newRel.getParent()
+				.getTable().getName());
+		parentTable.enableCPDFor(newRel.getParent().getAttribute());
+
+		// Show to child
+		TableRenderer childTable = rg.getGraphicTable(newRel.getChild()
+				.getTable().getName());
+		childTable.enableCPDFor(newRel.getChild().getAttribute());
+
+	}
+
+	@Override
+	public void selectedCPD(Attribute attribute) {
+		log.debug("Show CPD for " + attribute.getAttribute().getName());
+
+		// Get parents
+		Attribute[] parents = prmController.parentsOf(attribute);
+
+		// TODO Ask user to introduce CPD.
+		JOptionPane.showMessageDialog(this, "CPT table");
+		double[][] cpd = null;
+
+		// Notify CPD to controller.
+		prmController.setCPD(attribute, cpd);
 	}
 
 }

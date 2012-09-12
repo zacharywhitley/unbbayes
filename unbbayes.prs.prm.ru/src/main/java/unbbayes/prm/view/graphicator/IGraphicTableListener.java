@@ -14,4 +14,5 @@ public interface IGraphicTableListener {
 	
 	void selectedAttribute(Attribute attribute);
 	
+	void selectedCPD(Attribute attribute);
 }

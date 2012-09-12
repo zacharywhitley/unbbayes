@@ -42,20 +42,23 @@ public class RelationalGraphicator extends BasicGraphEditor {
 	 * object.
 	 */
 	HashMap<String, Object> indexedTables;
+	private SchemaGraphComponent schemaGraphComponent;
 
 	public RelationalGraphicator(Database dbSchema,
 			IGraphicTableListener tableListener) {
 		// Get DB schema.
 		this.dbSchema = dbSchema;
 
-		initGraphEditor("PRM Plugin", new SchemaGraphComponent(new mxGraph() {
+		schemaGraphComponent = new SchemaGraphComponent(new mxGraph() {
 			/**
 			 * Allows expanding tables
 			 */
 			public boolean isCellFoldable(Object cell, boolean collapse) {
 				return model.isVertex(cell);
 			}
-		}, new RelSchemaConsult(dbSchema), tableListener));
+		}, new RelSchemaConsult(dbSchema), tableListener);
+
+		initGraphEditor("PRM Plugin", schemaGraphComponent);
 
 		//
 
@@ -153,7 +156,7 @@ public class RelationalGraphicator extends BasicGraphEditor {
 
 	public void drawRelationShip(ParentRel newRel) {
 		log.debug("Drawing relationship");
-		//FIXME change arrow type.
+		// FIXME change arrow type.
 		mxGraph graph = getGraphComponent().getGraph();
 		Object parent = graph.getDefaultParent();
 
@@ -175,4 +178,7 @@ public class RelationalGraphicator extends BasicGraphEditor {
 		}
 	}
 
+	public TableRenderer getGraphicTable(String name) {
+		return schemaGraphComponent.getGraphicTable(name);
+	}
 }

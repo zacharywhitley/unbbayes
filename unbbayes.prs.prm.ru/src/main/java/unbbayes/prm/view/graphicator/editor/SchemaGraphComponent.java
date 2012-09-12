@@ -1,6 +1,7 @@
 package unbbayes.prm.view.graphicator.editor;
 
 import java.awt.Component;
+import java.util.HashMap;
 
 import javax.swing.ImageIcon;
 
@@ -21,15 +22,21 @@ public class SchemaGraphComponent extends mxGraphComponent {
 	private RelSchemaConsult relSchemaConsult;
 	private IGraphicTableListener tableListener;
 
+	private HashMap<String, TableRenderer> graphicTables;
+
 	/**
 	 * 
 	 * @param graph
 	 * @param relSchemaConsult
 	 */
-	public SchemaGraphComponent(mxGraph graph, RelSchemaConsult relSchemaConsult, IGraphicTableListener tableListener) {
+	public SchemaGraphComponent(mxGraph graph,
+			RelSchemaConsult relSchemaConsult,
+			IGraphicTableListener tableListener) {
 		super(graph);
 		this.relSchemaConsult = relSchemaConsult;
 		this.tableListener = tableListener;
+
+		graphicTables = new HashMap<String, TableRenderer>();
 
 		// mxGraphView graphView = new mxGraphView(graph) {
 		// /**
@@ -124,8 +131,11 @@ public class SchemaGraphComponent extends mxGraphComponent {
      */
 	public Component[] createComponents(mxCellState state) {
 		if (getGraph().getModel().isVertex(state.getCell())) {
-			return new Component[] { new TableRenderer(state.getCell(), this,
-					relSchemaConsult,tableListener) };
+			TableRenderer gTable = new TableRenderer(state.getCell(), this,
+					relSchemaConsult, tableListener);
+			graphicTables.put(state.getLabel(), gTable);
+
+			return new Component[] { gTable };
 		}
 
 		return null;
@@ -136,5 +146,9 @@ public class SchemaGraphComponent extends mxGraphComponent {
 	 */
 	public ImageIcon getFoldingIcon(mxCellState state) {
 		return null;
+	}
+
+	public TableRenderer getGraphicTable(String name) {
+		return graphicTables.get(name);
 	}
 }

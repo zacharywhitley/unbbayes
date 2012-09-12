@@ -38,6 +38,24 @@ import com.mxgraph.swing.util.mxGraphTransferable;
  */
 public class GraphicRelTable extends JTable implements DropTargetListener,
 		MouseListener {
+
+	/**
+	 * Size in pixels of the column CPD butom.
+	 */
+	private static final int CPD_COLUMN_SIZE = 35;
+
+	/**
+	 * Size in pixels of the column ID.
+	 */
+	private static final int ID_COLUMN_SIZE = 20;
+	/**
+	 * Button title
+	 */
+	private static final String BUTTON_TITLE = "CPD";// CPD
+
+	/**
+	 * Logger.
+	 */
 	Logger log = Logger.getLogger(GraphicRelTable.class);
 
 	/**
@@ -50,15 +68,38 @@ public class GraphicRelTable extends JTable implements DropTargetListener,
 	private Column[] tableColumns;
 
 	/**
-    *
-    */
-	private static final long serialVersionUID = 5841175227984561071L;
+	 * Row enabled to CPD.
+	 */
+	private boolean[] cpdEnabledRow;
+
+	/**
+	 * Default serial.
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * Table data.
+	 */
 	Object[][] data;
+
+	/**
+	 * Column names.
+	 */
 	String[] colNames = new String[] { "FK", "Name", "Apply" };
 
+	/**
+	 * Listener.
+	 */
 	private IGraphicTableListener tableListener;
 
-	@SuppressWarnings("serial")
+	/**
+	 * Default constructor.
+	 * 
+	 * @param t
+	 *            table to show.
+	 * @param tableListener
+	 *            listener.
+	 */
 	public GraphicRelTable(Table t, IGraphicTableListener tableListener) {
 		relationalTable = t;
 		this.tableListener = tableListener;
@@ -66,32 +107,52 @@ public class GraphicRelTable extends JTable implements DropTargetListener,
 
 		data = new Object[tableColumns.length][3];
 
+		// The number of columns/attributes are the rows of the graphic table.
+		int rows = tableColumns.length;
+
+		// Array to manage the attributes with CPD.
+		cpdEnabledRow = new boolean[rows];
+
+		// Foreign keys to show in the fist column.
 		ForeignKey[] foreignKeys = t.getForeignKeys();
 
-		for (int i = 0; i < tableColumns.length; i++) {
+		/**
+		 * Fill the rows with attribute values.
+		 */
+		for (int i = 0; i < rows; i++) {
 			Column c = tableColumns[i];
 
+			// If this attribute is an ID.
 			data[i][0] = c.isPrimaryKey() ? "ID " : "";
-			// if it is a FK
+
+			// If this attribute is a FK.
 			for (ForeignKey foreignKey : foreignKeys) {
 				if (foreignKey.getFirstReference().getLocalColumn() == c) {
 					data[i][0] = "FK";
 				}
 			}
-
+			// Attribute name.
 			data[i][1] = c.getName();
-			// data[i][2] = (Math.random() > 0.5) ? new ImageIcon(
-			// JTableRenderer.class.getResource(JTableRenderer.IMAGE_PATH
-			// + "preferences.gif")) : null;
+
 		}
+
+		// Table Model.
 		setModel(createModel());
 		setTableHeader(null);
 		setAutoscrolls(true);
-		setGridColor(Color.WHITE);
+		setGridColor(Color.LIGHT_GRAY);
+
+		// Default size for ID-FK column.
 		TableColumn column = getColumnModel().getColumn(0);
-		column.setMaxWidth(20);
+		column.setMaxWidth(ID_COLUMN_SIZE);
+
+		// Default size for attribute name
+		column = getColumnModel().getColumn(1);
+
+		// Default for button.
 		column = getColumnModel().getColumn(2);
-		column.setMaxWidth(12);
+		column.setMaxWidth(CPD_COLUMN_SIZE);
+
 		// column = getColumnModel().getColumn(3);
 		// column.setMaxWidth(12);
 		// column = getColumnModel().getColumn(4);
@@ -261,31 +322,80 @@ public class GraphicRelTable extends JTable implements DropTargetListener,
 	public void mouseClicked(MouseEvent e) {
 		// if (e.getClickCount() == 2) {
 		int row = this.getSelectedRow();
+		int column = this.getSelectedColumn();
+
 		Column selectedCol = tableColumns[row];
 		log.debug("Selected collumn " + selectedCol.getName());
+		Attribute selectedAtt = new Attribute(relationalTable, selectedCol);
 
-		// Notify to listener.
-		tableListener.selectedAttribute(new Attribute(relationalTable,
-				selectedCol));
+		if (column == 1) {
+			// Notify to listener.
+			tableListener.selectedAttribute(selectedAtt);
 
-		// TODO consultar si ahora es
-		// }
-
+			// If the click was on the column 2 and the CPD is enabled.
+		} else if (column == 2 && cpdEnabledRow[row]) {
+			tableListener.selectedCPD(selectedAtt);
+		}
 	}
 
 	public void mousePressed(MouseEvent e) {
-
 	}
 
 	public void mouseReleased(MouseEvent e) {
-
 	}
 
 	public void mouseEntered(MouseEvent e) {
-
 	}
 
 	public void mouseExited(MouseEvent e) {
+	}
 
+	/**
+	 * Enable a CPD for the attribute c.
+	 * 
+	 * @param c
+	 *            column/attribute with CPD.
+	 */
+	public void enableCPDFor(Column c) {
+		int i = getRowNumber(c);
+		data[i][2] = new ImageIcon(
+				TableRenderer.class.getResource(TableRenderer.IMAGE_PATH
+						+ "preferences.gif"));
+		repaint();
+		clearSelection();
+		cpdEnabledRow[i] = true;
+	}
+
+	/**
+	 * Disable a CPD for the attribute c.
+	 * 
+	 * @param c
+	 *            column/attribute with CPD.
+	 */
+	public void disableCPDFor(Column c) {
+		int i = getRowNumber(c);
+
+		// CPD table
+		data[i][2] = null;
+		repaint();
+		clearSelection();
+		cpdEnabledRow[i] = false;
+	}
+
+	/**
+	 * Return the row number for column c.
+	 * 
+	 * @param c
+	 *            column to search.
+	 * @return number of row.
+	 */
+	private int getRowNumber(Column c) {
+
+		for (int i = 0; i < tableColumns.length; i++) {
+			if (c.equals(tableColumns[i])) {
+				return i;
+			}
+		}
+		return -1;
 	}
 }
