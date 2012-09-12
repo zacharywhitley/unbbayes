@@ -44,6 +44,12 @@ public class RelGraphicatorTest {
 						
 						
 					}
+
+					@Override
+					public void selectedCPD(Attribute attribute) {
+						// TODO Auto-generated method stub
+						
+					}
 				});
 		rl.showPalette();
 
