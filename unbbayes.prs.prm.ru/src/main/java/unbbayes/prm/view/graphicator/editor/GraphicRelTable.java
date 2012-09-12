@@ -21,6 +21,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 import org.apache.ddlutils.model.Column;
+import org.apache.ddlutils.model.ForeignKey;
 import org.apache.ddlutils.model.Table;
 import org.apache.log4j.Logger;
 
@@ -65,10 +66,19 @@ public class GraphicRelTable extends JTable implements DropTargetListener,
 
 		data = new Object[tableColumns.length][3];
 
+		ForeignKey[] foreignKeys = t.getForeignKeys();
+
 		for (int i = 0; i < tableColumns.length; i++) {
 			Column c = tableColumns[i];
 
 			data[i][0] = c.isPrimaryKey() ? "ID " : "";
+			// if it is a FK
+			for (ForeignKey foreignKey : foreignKeys) {
+				if (foreignKey.getFirstReference().getLocalColumn() == c) {
+					data[i][0] = "FK";
+				}
+			}
+
 			data[i][1] = c.getName();
 			// data[i][2] = (Math.random() > 0.5) ? new ImageIcon(
 			// JTableRenderer.class.getResource(JTableRenderer.IMAGE_PATH
@@ -257,8 +267,8 @@ public class GraphicRelTable extends JTable implements DropTargetListener,
 		// Notify to listener.
 		tableListener.selectedAttribute(new Attribute(relationalTable,
 				selectedCol));
-		
-		// TODO consultar si ahora es 
+
+		// TODO consultar si ahora es
 		// }
 
 	}
