@@ -104,7 +104,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 	};
 
-	private float probabilityErrorMargin = 0.005f;
+	private float probabilityErrorMargin = 0.001f;
 
 	private Map<Long, List<NetworkAction>> networkActionsMap;
 	
@@ -156,6 +156,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 
 	private boolean isToIntegrateConsecutiveResolutions = true;
+
+
+
+	private boolean isToRetriveOnlyTradeHistory = true;
 
 	/**
 	 * Default constructor is protected to allow inheritance.
@@ -667,7 +671,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public boolean isStructureChangeAction() { return false; }
 		public Long getTransactionKey() { return transactionKey; }
 		public Long getUserId() { return null; }
-		public List<Float> getPercent() { return null; }
+		public List<Float> getOldValues() { return null; }
+		public List<Float> getNewValues() { return null; }
 		public String getTradeId() { return null; }
 		/** This is non-null only if this action is trying to revert a trade related to this question ID */
 		public Long getQuestionId() { return this.questionId; }
@@ -818,7 +823,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public boolean isStructureChangeAction() { return true; }
 		public Long getUserId() { return null; }
 		public String toString() { return super.toString() + "{" + this.transactionKey + ", " + this.getQuestionId() + "}"; }
-		public List<Float> getPercent() { return initProbs; }
+		public List<Float> getOldValues() { return initProbs; }
+		public List<Float> getNewValues() { return initProbs; }
 		public String getTradeId() { return null; }
 		public List<Long> getAssumptionIds() { return null; }
 		public List<Integer> getAssumedStates() { return null; }
@@ -1085,7 +1091,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		/** Adding a new edge is a structure change */
 		public boolean isStructureChangeAction() { return true; }
 		public Long getUserId() { return null; }
-		public List<Float> getPercent() { return cpd; }
+		public List<Float> getOldValues() { return cpd; }
+		public List<Float> getNewValues() { return cpd; }
 		public String getTradeId() { return null; }
 		public List<Integer> getAssumedStates() { return null; }
 		public Date getWhenExecutedFirstTime() {return whenExecutedFirst ; }
@@ -1108,6 +1115,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		/** becomes true once {@link #execute()} was called */
 		private boolean wasExecutedPreviously = false;
 		private Date whenExecutedFirst;
+//		private Float oldCash = Float.NaN;
 		/** Default constructor initializing fields */
 		public AddCashNetworkAction (Long transactionKey, Date occurredWhen, long userId, float assets, String description) {
 			this.transactionKey = transactionKey;
@@ -1126,7 +1134,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			} catch (InvalidParentException e) {
 				throw new RuntimeException("Could not create asset tables for user " + userId, e);
 			}
-			
+//			oldCash = getCash(userId, null, null);
 			synchronized (inferenceAlgorithm.getAssetNetwork()) {
 				inferenceAlgorithm.addAssets(delta);
 			}
@@ -1149,7 +1157,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public void setAssets(float assets) { this.delta = assets; }
 		public Long getUserId() { return userId; }
 		public String getDescription() { return description; }
-		public List<Float> getPercent() { return null; }
+//		public List<Float> getOldValues() { return Collections.singletonList(oldCash ); }
+		// TODO return the cash before execution
+		public List<Float> getOldValues() { return null; }
+		// TODO return the cash after execution
+		public List<Float> getNewValues() { return null; }
 		/** Returns the description */
 		public String getTradeId() { return description; }
 		public Long getQuestionId() { return null; }
@@ -1219,6 +1231,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //		private Map<IRandomVariable, DoublePrecisionProbabilisticTable> qTablesBeforeTrade;
 		private List<Float> oldValues = null;
 		private Date whenExecutedFirst;
+		/** link from this original trade to all virtual trades (representation of changes in marginals caused by this original trade) */
+		private List<VirtualTradeAction> affectedQuestions = new ArrayList<MarkovEngineImpl.VirtualTradeAction>();
 //		private final List<Integer> originalAssumedStates;
 //		private final List<Long> originalAssumptionIds;
 		/** Default constructor initializing fields */
@@ -1277,23 +1291,40 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				throw new RuntimeException("Could not extract delta from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
 			}
 			
+			// this is the marginals before this trade
+			Map<Long, List<Float>> marginalsBefore = null;
+			
 			synchronized (getProbabilisticNetwork()) {
+				// first, check that node exists
+				Node node = getProbabilisticNetwork().getNode(Long.toString(questionId));
+				if (node == null) {
+					throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
+				}
+				// in most of cases, questions are disconnected
+				if (!(node.getParents() == null || node.getParents().isEmpty()) 
+						|| !(node.getChildren() == null || node.getChildren().isEmpty()) ) {
+					// question connected to another question
+					marginalsBefore = getProbLists(null, null, null);
+				}
 				synchronized (algorithm.getAssetNetwork()) {
 					if (!algorithm.getNetwork().equals(getProbabilisticNetwork())) {
+						throw new IllegalStateException("Asset net of user " + algorithm.getAssetNetwork() 
+								+ " is not synchronized with the Bayes Net. This could be caused by incompatible versions of markov engine and libraries.");
 						// this should never happen, but some desync may happen.
-						Debug.println(getClass(), "[Warning] desync of network detected.");
-						algorithm.setNetwork(getProbabilisticNetwork());
+//						Debug.println(getClass(), "[Warning] desync of network detected.");
+//						algorithm.setNetwork(getProbabilisticNetwork());
 					}
+					
 					// backup config of assets
 					boolean backup = algorithm.isToUpdateAssets();
 					algorithm.setToUpdateAssets(isToUpdateAssets);
 					// do trade. Since algorithm is linked to actual networks, changes will affect the actual networks
 					// 2nd boolean == true := overwrite assumptionIds and assumedStates when necessary
-					oldValues = executeTrade(questionId, newValues, assumptionIds, assumedStates, allowNegative, algorithm, true, false);
+					// Note: affectedQuestions will be filled with questions whose marginals were affected by this trade
+					oldValues = executeTrade(questionId, newValues, assumptionIds, assumedStates, allowNegative, algorithm, true, false );
 					algorithm.setToUpdateAssets(backup);	// revert config of assets
 					// backup the previous delta so that we can revert this trade
 //					qTablesBeforeTrade = algorithm.getAssetTablesBeforeLastPropagation();
-					
 					// add this question to the mapping of questions traded by the user
 					List<Long> questions = getTradedQuestionsMap().get(userId);
 					if (questions == null) {
@@ -1302,6 +1333,37 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 					if (!questions.contains(questionId)) {
 						questions.add(questionId);
+					}
+				}
+			}
+			// compare prior and posterior marginal, and fill affectedQuestions
+			if (marginalsBefore != null) {
+				// get the marginals after trade
+				Map<Long, List<Float>> marginalsAfter = getProbLists(null, null, null);
+				// for each question, compare the marginals and if changed, add to affectedQuestions
+				for (Long question : marginalsBefore.keySet()) {
+					if (question.equals(questionId)) {
+						// We are only interested on indirect trade here. Do not double-count the direct trade.
+						continue;	
+					}
+					List<Float> oldMarginal = marginalsBefore.get(question);
+					List<Float> newMarginal = marginalsAfter.get(question);
+					if (newMarginal != null) {
+						boolean hasChanged = false;
+						// compare marginals
+						for (int i = 0; i < newMarginal.size(); i++) {
+							if (Math.abs(newMarginal.get(i) - oldMarginal.get(i)) > getProbabilityErrorMargin()) {
+								hasChanged = true;
+								break;
+							}
+						}
+						if (hasChanged) {
+							// generate a virtual trade representing a change of marginal probability of another node caused by this trade.
+							VirtualTradeAction virtualTrade = new VirtualTradeAction(this, question, oldMarginal, newMarginal);
+							affectedQuestions.add(virtualTrade);	// link from original trade to virtual trades
+							// indicate that this trade is related to question (although indirectly).
+							addNetworkActionIntoQuestionMap(virtualTrade, question);
+						}
 					}
 				}
 			}
@@ -1350,7 +1412,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public List<Long> getAssumptionIds() { return assumptionIds; }
 		public List<Integer> getAssumedStates() { return assumedStates; }
 		public boolean isAllowNegative() { return allowNegative; }
-		public List<Float> getPercent() { return oldValues ; }
+		public List<Float> getOldValues() { return oldValues ; }
 		public void setOldValues(List<Float> oldValues) { this.oldValues = oldValues;};
 		public String getTradeId() { return tradeKey; }
 //		/** Mapping from {@link Clique}/{@link Separator} to q-tables before {@link #execute()}*/
@@ -1358,11 +1420,54 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public List<Float> getNewValues() { return newValues; }
 		public void setNewValues(List<Float> newValues) { this.newValues = newValues; }
 		public Date getWhenExecutedFirstTime() {return whenExecutedFirst ; }
-		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirst = whenExecutedFirst; }
+		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { 
+			this.whenExecutedFirst = whenExecutedFirst; 
+			for (AddTradeNetworkAction action : affectedQuestions) {
+				action.setWhenExecutedFirstTime(whenExecutedFirst);
+			}
+		}
 //		/** @return the original values of {@link #getAssumedStates()} (because some may be ignored) */
 //		public List<Integer> getOriginalAssumedStates() { return originalAssumedStates; }
 //		/** @return the original values of {@link #getAssumptionIds() (because some may be ignored)  */
 //		public List<Long> getOriginalAssumptionIds() { return originalAssumptionIds; }
+		/** 
+		 * Trades containing the marginals of affected questions before and after this trade 
+		 * In another word, this is a link from this original trade to all virtual trades 
+		 * (representation of changes in marginals caused by this original trade)
+		 */
+		public List<VirtualTradeAction> getAffectedQuestions() { return affectedQuestions; }
+	}
+	
+	/**
+	 * Objects of this class represent marginals of questions which were changed due to another trade of
+	 * (directly or indirectly) dependent questions.<br/>
+	 * {@link #getOldValues()} will contain the old marginal (before the trade).<br/>
+	 * {@link #getNewValues()} will contain the new marginal (after the trade).<br/>
+	 * {@link #getQuestionId()} will contain the affected question.<br/>
+	 * {@link #getParentAction()} will contain the original trade 
+	 * (trade which made the marginals of {@link #getQuestionId()} to change).<br/>
+	 * @author Shou Matsumoto
+	 */
+	public class VirtualTradeAction extends AddTradeNetworkAction {
+		private final AddTradeNetworkAction parentAction;
+		/**
+		 * Default constructor initializing fields.
+		 * @param parentAction : original trade (trade which made the marginals of questionId to change
+		 * @param questionId : the affected question
+		 * @param oldMarginal : the old marginal (before the trade)
+		 * @param newMarginal :  the new marginal (after the trade)
+		 */
+		public VirtualTradeAction(AddTradeNetworkAction parentAction, long questionId, List<Float> oldMarginal, List<Float> newMarginal) {
+			// initialize fields using values of parentAction mostly.
+			super(parentAction.getTransactionKey(), parentAction.getWhenCreated(), parentAction.getTradeId(), parentAction.getUserId(), 
+					questionId, newMarginal, parentAction.getAssumptionIds(), parentAction.getAssumedStates(), parentAction.isAllowNegative());
+			this.setWhenExecutedFirstTime(parentAction.getWhenExecutedFirstTime());
+			this.setOldValues(oldMarginal);
+			this.parentAction = parentAction;
+		}
+		/** What trade caused the marginal of {@link #getQuestionId()} to change */
+		public AddTradeNetworkAction getParentAction() { return parentAction; }
+		
 	}
 	
 	/* (non-Javadoc)
@@ -1594,7 +1699,20 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public Long getUserId() { return null;}
 		public Long getQuestionId() { return questionId; }
 		public int getSettledState() { return settledState; }
-		public List<Float> getPercent() { return marginalWhenResolved; }
+		public List<Float> getOldValues() { return marginalWhenResolved; }
+		/** Builds the list of new values (1 for the resolved state and 0 otherwise) under request */
+		public List<Float> getNewValues() {
+			StatePair statePair = getResolvedQuestions().get(questionId);
+			if (statePair == null) {
+				return null;
+			}
+			List<Float> ret = new ArrayList<Float>(statePair.getStatesSize());
+			for (int i = 0; i < statePair.getStatesSize(); i++) {
+				// add 1 if it is the resolved state. 0 otherwise.
+				ret.add((i == statePair.getResolvedState().intValue())?1f:0f);
+			}
+			return ret; 
+		}
 		public void setMarginalWhenResolved(List<Float> newValue) { marginalWhenResolved = newValue; }
 		public String getTradeId() { return null; }
 		public List<Long> getAssumptionIds() { return null; }
@@ -1873,7 +1991,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //			throw new UnsupportedOperationException("Current version cannot revert a \"revert\" operation.");
 //		}
 //		public Date getWhenCreated() { return occurredWhen; }
-//		public List<Float> getPercent() { return probBeforeRevert; }
+//		public List<Float> getNewValues() { return probBeforeRevert; }
 //		public String getTradeId() { return null; }
 //		public boolean isStructureChangeAction() { return false; }
 //		public Long getTransactionKey() { return transactionKey; }
@@ -2909,6 +3027,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// do trade on specified algorithm (which only contains link to copies of BN and asset net)
 		// 1st boolean == true := allow negative delta, since this is a preview. 
 		// 2nd boolean == false := do not overwrite assumptionIds and assumedStates
+		// last null argument indicates that we are not interested in obtaining what other questions' marginals were affected by this trade
 		List<Float> oldValues = this.executeTrade(questionId, newValues, assumptionIds, assumedStates, true, algorithm, false, !isToDoFullPreview());	
 		
 		if (isToDoFullPreview()) {
@@ -3179,6 +3298,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					if (!isToAllowNegative) {
 						memento = algorithm.getMemento();
 					}
+					// TODO use this memento to store clique tables in order to allow conditional trade history
+					
 					
 					algorithm.propagate();
 //					algorithm.setToAllowQValuesSmallerThan1(backup);
@@ -3199,6 +3320,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						// if successful, only revert last min propagation
 						algorithm.undoMinPropagation();
 					}
+					
 				}
 			}
 		}
@@ -3666,6 +3788,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		synchronized (list) {
 			// fill ret with values in list, but filter by assumptionIDs and assumedStates
 			for (NetworkAction action : list) {
+				if (isToRetriveOnlyTradeHistory() && !(action instanceof AddTradeNetworkAction)) {
+					// do not consider AddQuestionNetworkAction if engine is configured to ignore them
+					continue;
+				}
 				if (assumptionIds == null || assumptionIds.isEmpty()) {
 					// no filter. Add everything
 					ret.add(action);
@@ -4202,7 +4328,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			actions.add(indexOfFirstActionCreatedAfterNewAction, newAction);
 			
 			// insert new action into the map to be used for searching actions by question id
-			this.addNetworkActionIntoQuestionMap(newAction);
+			this.addNetworkActionIntoQuestionMap(newAction, null);
 		}
 		
 	}
@@ -4258,7 +4384,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 			
 			// insert new action into the map to be used for searching actions by question id
-			this.addNetworkActionIntoQuestionMap(newAction);
+			this.addNetworkActionIntoQuestionMap(newAction, null);
 		}
 	}
 
@@ -4500,12 +4626,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * This method adds networkAction into {@link #getNetworkActionsIndexedByQuestions()}
 	 * so that the values (lists) in {@link #getNetworkActionsIndexedByQuestions()} are ordered by
 	 * {@link NetworkAction#getWhenCreated()}.
-	 * @param networkAction : the object to be inserted.
-	 * {@link NetworkAction#getQuestionId()} will be used as the key of {@link #getNetworkActionsIndexedByQuestions()}. 
+	 * @param questionId : the question id to be considered as the key
 	 * Null is allowed as the key.
+	 * @param networkAction : the object to be inserted.
+	 * {@link NetworkAction#getQuestionId()} will be used as the key of {@link #getNetworkActionsIndexedByQuestions()},
+	 * if questionId is null. 
 	 * @return the index where networkAction was inserted
 	 */
-	protected int addNetworkActionIntoQuestionMap(NetworkAction networkAction) {
+	protected int addNetworkActionIntoQuestionMap(NetworkAction networkAction, Long questionId) {
 		// initial assertion
 		if (networkAction == null) {
 			throw new NullPointerException("networkAction == null");
@@ -4513,11 +4641,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// get list of actions from getNetworkActionsIndexedByQuestions.
 		List<NetworkAction> list = null;
 		synchronized (getNetworkActionsIndexedByQuestions()) {
-			list = getNetworkActionsIndexedByQuestions().get(networkAction.getQuestionId());
+			if (questionId == null) {
+				questionId = networkAction.getQuestionId();
+			}
+			list = getNetworkActionsIndexedByQuestions().get(questionId);
 			if (list == null) {
 				// this is the fist time an action with questionId is inserted
 				list = new ArrayList<NetworkAction>();
-				getNetworkActionsIndexedByQuestions().put(networkAction.getQuestionId(), list);
+				getNetworkActionsIndexedByQuestions().put(questionId, list);
 			}
 		}
 		// at this point, list != null
@@ -5085,6 +5216,29 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public boolean isToIntegrateConsecutiveResolutions() {
 		return isToIntegrateConsecutiveResolutions;
+	}
+
+	/**
+	 * If true, {@link #getQuestionHistory(Long, List, List)} will
+	 * only consider history of trades, and will ignore history
+	 * of {@link #addQuestion(Long, Date, long, int, List)}
+	 * or {@link #addCash(Long, Date, long, float, String)}.
+	 * @param isToRetriveOnlyTradeHistory the isToRetriveOnlyTradeHistory to set
+	 */
+	public void setToRetriveOnlyTradeHistory(
+			boolean isToInserAddQuestionActionIntoHistory) {
+		this.isToRetriveOnlyTradeHistory = isToInserAddQuestionActionIntoHistory;
+	}
+
+	/**
+	 * If true, {@link #getQuestionHistory(Long, List, List)} will
+	 * only consider history of trades, and will ignore history
+	 * of {@link #addQuestion(Long, Date, long, int, List)}
+	 * or {@link #addCash(Long, Date, long, float, String)}.
+	 * @return the isToRetriveOnlyTradeHistory
+	 */
+	public boolean isToRetriveOnlyTradeHistory() {
+		return isToRetriveOnlyTradeHistory;
 	}
 
 	/**

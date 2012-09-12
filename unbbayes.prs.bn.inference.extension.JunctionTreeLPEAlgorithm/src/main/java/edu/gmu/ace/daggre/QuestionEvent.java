@@ -24,13 +24,19 @@ public interface QuestionEvent {
 	
 	/**
 	 * @return probability at this time of event.
-	 * @see #getDateTime(). 
+	 * @see #getWhenExecutedFirstTime(). 
 	 */
-	List<Float> getPercent();
+	List<Float> getOldValues();
+	
+	/**
+	 * @return probability afer this time of event.
+	 * @see #getWhenExecutedFirstTime(). 
+	 */
+	List<Float> getNewValues();
 	
 	/**
 	 * @return the ID which can uniquely identify a trade 
-	 * @see MarkovEngineInterface#addTrade(long, Date, String, long, long, List, List, List, boolean)
+	 * @see MarkovEngineInterface#addTrade(Long, Date, String, long, long, List, List, List, boolean)
 	 */
 	String getTradeId();
 }

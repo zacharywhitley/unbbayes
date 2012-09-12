@@ -27,6 +27,7 @@ import unbbayes.prs.exception.InvalidParentException;
 import edu.gmu.ace.daggre.MarkovEngineImpl.AddTradeNetworkAction;
 import edu.gmu.ace.daggre.MarkovEngineImpl.BalanceTradeNetworkAction;
 import edu.gmu.ace.daggre.MarkovEngineImpl.InexistingQuestionException;
+import edu.gmu.ace.daggre.MarkovEngineImpl.VirtualTradeAction;
 import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
 
 /**
@@ -3674,7 +3675,11 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue("Assumptions = " + action.getTradeId(), action.getAssumptionIds().isEmpty());
 		
 		assertNotNull(engine.getScoreSummaryObject(userNameToIDMap.get("Tom"), null, null, null));
-		assertFalse(engine.getQuestionHistory(null, null, null).isEmpty());
+		if (engine.isToRetriveOnlyTradeHistory()) {
+			assertTrue(engine.getQuestionHistory(null, null, null).isEmpty());
+		} else {
+			assertFalse(engine.getQuestionHistory(null, null, null).isEmpty());
+		}
 		assertFalse(engine.previewBalancingTrade(userNameToIDMap.get("Tom"), 0x0AL, null, null).isEmpty());
 		assertFalse(engine.getAssetsIfStates(userNameToIDMap.get("Tom"), 0x0AL, null, null).isEmpty());
 		assertFalse(Float.isNaN(engine.getCash(userNameToIDMap.get("Tom"), null, null)));
@@ -8518,6 +8523,18 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(engine.getScoreSummaryObject(Long.MIN_VALUE, null, null, null).getScoreEV(), 12050.81f);
 	}
 
+	/**
+	 * Runs the following trade sequence:	<br/> 
+	 *	Tom1:	P(E=e1|D=d2) = 0.5  to 0.55 and P(E=e1|D=d1) = 0.55 to 0.9	<br/>
+	 *	Joe1:	P(E=e1|D=d2) = 0.55 to 0.4	<br/> 
+	 *	Amy1:	P(F=f1|D=d1) = 0.5 to 0.3	<br/> 
+	 *	Joe2:	P(F=f1|D=d2) = 0.5 to 0.1	<br/>
+	 *	Eric1:	P(E=e1) = 0.65 to 0.8	<br/> 
+	 *	Eric2:	P(D=d1|F=f2) = 0.52 to 0.7 <br/> 
+	 * @param userNameToIDMap : this is an output argumen. This map will be filled with the name
+	 * and ID of the users Tom, Joe, Amy, and Eric.
+	 * @return : list of actually executed trades.
+	 */
 	private List<AddTradeNetworkAction> createDEFNetIn1Transaction(Map<String, Long> userNameToIDMap) {
 		// crate transaction
 		long transactionKey = engine.startNetworkActions();
@@ -8707,7 +8724,9 @@ public class MarkovEngineTest extends TestCase {
 		questionHistory.addAll(engine.getQuestionHistory((long)0x0F, null, null));
 		List<AddTradeNetworkAction> ret = new ArrayList<MarkovEngineImpl.AddTradeNetworkAction>();
 		for (QuestionEvent questionEvent : questionHistory) {
-			if (questionEvent instanceof AddTradeNetworkAction) {
+			if (questionEvent instanceof AddTradeNetworkAction
+					&& !(questionEvent instanceof VirtualTradeAction)) {
+				// consider only direct trades
 				ret.add((AddTradeNetworkAction) questionEvent);
 			}
 		}
@@ -10407,7 +10426,12 @@ public class MarkovEngineTest extends TestCase {
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#getQuestionHistory(java.lang.Long, java.util.List, java.util.List)}.
 	 */
 	public final void testGetQuestionHistory() {
+		
+		// test inconditional history on DEF network first
 		assertEquals(0, engine.getQuestionHistory(null, null, null).size());
+		
+		// the engine will retrieve any action related to a question
+		engine.setToRetriveOnlyTradeHistory(false);
 		
 		// generate DEF net
 		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
@@ -10420,16 +10444,237 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check history of actions related each question
 		sum += engine.getQuestionHistory(0x0DL, null, null).size();
-		// create node and 1 trade
-		assertEquals(2, engine.getQuestionHistory(0x0DL, null, null).size());
+		sum -= 1;	// do not count the indirect trad in the sum
+		// create node, 1 direct trade (trade on D), and 1 indirect trade (Eric bets P(E=e1) = 0.8) 
+		assertEquals(3, engine.getQuestionHistory(0x0DL, null, null).size());
 		sum += engine.getQuestionHistory(0x0EL, null, null).size();
-		// create node and 4 trades
-		assertEquals(5, engine.getQuestionHistory(0x0EL, null, null).size());
+		sum -= 1;	// do not count the indirect trad in the sum
+		// create node, create edge, 3 direct trades, and 1 indirect trade (Eric bets P(D=d1|F=f2) = 0.7)
+		assertEquals(6, engine.getQuestionHistory(0x0EL, null, null).size());
 		sum += engine.getQuestionHistory(0x0FL, null, null).size();
-		// create node and 3 trades
-		assertEquals(4, engine.getQuestionHistory(0x0FL, null, null).size());
+		sum -= 1;	// do not count the indirect trad in the sum
+		// create node, create arc, 2 direct trades, and 1 indirect trade (Eric bets P(E=e1) = 0.8)
+		assertEquals(5, engine.getQuestionHistory(0x0FL, null, null).size());
 		
 		assertEquals(engine.getExecutedActions().size(), sum);
+		
+		// now, set the engine to retrive only the history of trades		
+		engine.setToRetriveOnlyTradeHistory(true);
+		
+		// check history of actions not related to any question
+		sum = engine.getQuestionHistory(null, null, null).size();
+		// there were no trades with question ID = null
+		assertEquals(0, engine.getQuestionHistory(null, null, null).size());
+		
+		// check history of actions related each question
+		sum += engine.getQuestionHistory(0x0DL, null, null).size();
+		sum -= 1;	// do not count the indirect trad in the sum
+		// 1 direct trade (trade on D), and 1 indirect trade (Eric bets P(E=e1) = 0.8) 
+		assertEquals(2, engine.getQuestionHistory(0x0DL, null, null).size());
+		sum += engine.getQuestionHistory(0x0EL, null, null).size();
+		sum -= 1;	// do not count the indirect trad in the sum
+		// 3 direct trades, and 1 indirect trade (Eric bets P(D=d1|F=f2) = 0.7)
+		assertEquals(4, engine.getQuestionHistory(0x0EL, null, null).size());
+		sum += engine.getQuestionHistory(0x0FL, null, null).size();
+		sum -= 1;	// do not count the indirect trad in the sum
+		// 2 direct trades, and 1 indirect trade (Eric bets P(E=e1) = 0.8)
+		assertEquals(3, engine.getQuestionHistory(0x0FL, null, null).size());
+		
+		// 4*addCash, 3*addQuestion, and 2*addQuestionAssumption were ignored (9 actions were ignored)
+		assertEquals(engine.getExecutedActions().size()-9, sum);
+		
+		
+		// test a more controlled network
+
+		/*
+		 * The following network structure is used:
+		 * <br/><br/>
+		 * E<-D->F  C
+		 * <br/><br/>
+		 * D have 3 states, and others have 2 states.
+		 * All cpt are uniform, except for E<-D, which has the following cpt:
+		 * <br/><br/>
+		 * P(E=e1|D=d1)=.1
+		 * P(E=e2|D=d1)=.9
+		 * P(E=e1|D=d2)=.2
+		 * P(E=e2|D=d2)=.8
+		 * P(E=e1|D=d3)=.3
+		 * P(E=e2|D=d3)=.7
+		 */
+		engine.setDefaultInitialAssetTableValue(100f);
+		engine.initialize();
+		
+		// create the structure
+		long transactionKey = engine.startNetworkActions();
+		engine.addQuestion(transactionKey, new Date(), 0x0C, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0D, 3, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0E, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0F, 2, null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0F, Collections.singletonList((long)0x0D), null);
+		List<Float> probDist = new ArrayList<Float>();
+		probDist.add(.1f); probDist.add(.9f); // P(E|D=d1)
+		probDist.add(.2f); probDist.add(.8f); // P(E|D=d2)
+		probDist.add(.3f); probDist.add(.7f); // P(E|D=d3)
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0E, Collections.singletonList((long)0x0D), probDist );
+		engine.commitNetworkActions(transactionKey);
+		
+		// obtain marginals
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		// assert size (quantity of states)
+		assertEquals(probLists.toString(), 2, probLists.get(0x0Cl).size());
+		assertEquals(probLists.toString(), 3, probLists.get(0x0Dl).size());
+		assertEquals(probLists.toString(), 2, probLists.get(0x0El).size());
+		assertEquals(probLists.toString(), 2, probLists.get(0x0Fl).size());
+		// check marginal prob
+		assertEquals(probLists.toString(), .5f, probLists.get(0x0Cl).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .5f, probLists.get(0x0Cl).get(1), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), 1/3f, probLists.get(0x0Dl).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), 1/3f, probLists.get(0x0Dl).get(1), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), 1/3f, probLists.get(0x0Dl).get(2), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .2f, probLists.get(0x0El).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .8f, probLists.get(0x0El).get(1), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .5f, probLists.get(0x0Fl).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .5f, probLists.get(0x0Fl).get(1), PROB_ERROR_MARGIN);
+		
+		// check prob conditioned on D = d1
+		probLists = engine.getProbLists(null, Collections.singletonList(0x0Dl), Collections.singletonList(0));
+		// assert size (quantity of states)
+		assertEquals(probLists.toString(), 2, probLists.get(0x0Cl).size());
+		assertEquals(probLists.toString(), 3, probLists.get(0x0Dl).size());
+		assertEquals(probLists.toString(), 2, probLists.get(0x0El).size());
+		assertEquals(probLists.toString(), 2, probLists.get(0x0Fl).size());
+		// check marginal prob
+		assertEquals(probLists.toString(), .5f, probLists.get(0x0Cl).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .5f, probLists.get(0x0Cl).get(1), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), 1f, probLists.get(0x0Dl).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), 0f, probLists.get(0x0Dl).get(1), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), 0f, probLists.get(0x0Dl).get(2), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .1f, probLists.get(0x0El).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .9f, probLists.get(0x0El).get(1), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .5f, probLists.get(0x0Fl).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .5f, probLists.get(0x0Fl).get(1), PROB_ERROR_MARGIN);
+		
+		// check prob conditioned on D = d2
+		probLists = engine.getProbLists(null, Collections.singletonList(0x0Dl), Collections.singletonList(1));
+		// assert size (quantity of states)
+		assertEquals(probLists.toString(), 2, probLists.get(0x0Cl).size());
+		assertEquals(probLists.toString(), 3, probLists.get(0x0Dl).size());
+		assertEquals(probLists.toString(), 2, probLists.get(0x0El).size());
+		assertEquals(probLists.toString(), 2, probLists.get(0x0Fl).size());
+		// check marginal prob
+		assertEquals(probLists.toString(), .5f, probLists.get(0x0Cl).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .5f, probLists.get(0x0Cl).get(1), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), 0f, probLists.get(0x0Dl).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), 1f, probLists.get(0x0Dl).get(1), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), 0f, probLists.get(0x0Dl).get(2), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .2f, probLists.get(0x0El).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .8f, probLists.get(0x0El).get(1), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .5f, probLists.get(0x0Fl).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .5f, probLists.get(0x0Fl).get(1), PROB_ERROR_MARGIN);
+		
+		// check prob conditioned on D = d3
+		probLists = engine.getProbLists(null, Collections.singletonList(0x0Dl), Collections.singletonList(2));
+		// assert size (quantity of states)
+		assertEquals(probLists.toString(), 2, probLists.get(0x0Cl).size());
+		assertEquals(probLists.toString(), 3, probLists.get(0x0Dl).size());
+		assertEquals(probLists.toString(), 2, probLists.get(0x0El).size());
+		assertEquals(probLists.toString(), 2, probLists.get(0x0Fl).size());
+		// check marginal prob
+		assertEquals(probLists.toString(), .5f, probLists.get(0x0Cl).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .5f, probLists.get(0x0Cl).get(1), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), 0f, probLists.get(0x0Dl).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), 0f, probLists.get(0x0Dl).get(1), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), 1f, probLists.get(0x0Dl).get(2), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .3f, probLists.get(0x0El).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .7f, probLists.get(0x0El).get(1), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .5f, probLists.get(0x0Fl).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .5f, probLists.get(0x0Fl).get(1), PROB_ERROR_MARGIN);
+		
+		// user 0 adds trades on each questions
+		transactionKey = engine.startNetworkActions();
+		probDist = new ArrayList<Float>();
+		probDist.add(.5f); probDist.add(.3f); probDist.add(.2f);
+		engine.addTrade(transactionKey, new Date(), "User 0 trades D = [.5,.3,.2]", 0, 0x0Dl, probDist, null, null, false);
+		probDist = new ArrayList<Float>();
+		probDist.add(.7f); probDist.add(.3f);
+		engine.addTrade(transactionKey, new Date(), "User 0 trades C = [.7,.3]", 0, 0x0Cl, probDist, null, null, false);
+		engine.addTrade(transactionKey, new Date(), "User 0 trades E = [.7,.3]", 0, 0x0El, probDist, null, null, false);
+		engine.addTrade(transactionKey, new Date(), "User 0 trades F = [.7,.3]", 0, 0x0Fl, probDist, null, null, false);
+		engine.commitNetworkActions(transactionKey);
+		
+		// user 1 adds trades on each questions
+		probDist = new ArrayList<Float>();
+		probDist.add(.6f); probDist.add(.3f); probDist.add(.1f);
+		// conditional trade should not change marginal of E
+		engine.addTrade(null, new Date(), "User 1 trades D = [.6,.2,.2]", 1, 0x0Dl, probDist, Collections.singletonList(0x0El), Collections.singletonList(1), false);
+		probDist = new ArrayList<Float>();
+		probDist.add(.4f); probDist.add(.6f);
+		engine.addTrade(null, new Date(), "User 1 trades C = [.4,.6]", 1, 0x0Cl, probDist, null, null, false);
+		engine.addTrade(null, new Date(), "User 1 trades E = [.4,.6]", 1, 0x0El, probDist, null, null, false);
+		engine.addTrade(null, new Date(), "User 1 trades F = [.4,.6]", 1, 0x0Fl, probDist, null, null, false);
+		
+		// check content of history of each question
+		List<QuestionEvent> history = engine.getQuestionHistory(0x0Cl, null, null);
+		assertEquals(history.toString(), 2, history.size());
+		assertEquals("User 0 trades C = [.7,.3]", history.get(0).getTradeId());
+		assertEquals(2, history.get(0).getOldValues().size());
+		assertEquals(.5f, history.get(0).getOldValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.5f, history.get(0).getOldValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals(.7f, history.get(0).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.3f, history.get(0).getNewValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals("User 1 trades C = [.4,.6]", history.get(1).getTradeId());
+		assertEquals(2, history.get(1).getOldValues().size());
+		assertEquals(.7f, history.get(1).getOldValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.3f, history.get(1).getOldValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals(.4f, history.get(1).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.6f, history.get(1).getNewValues().get(1), PROB_ERROR_MARGIN);
+		for (QuestionEvent questionEvent : history) {
+			assertEquals(0x0CL, ((AddTradeNetworkAction)questionEvent).getQuestionId().longValue());
+			assertEquals(2, questionEvent.getNewValues().size());
+			assertEquals(2, questionEvent.getOldValues().size());
+		}
+		
+		// F is a question which has arc, but is independent because the cpt is uniform
+		history = engine.getQuestionHistory(0x0Fl, null, null);
+		assertEquals(history.toString(), 2, history.size());
+		assertEquals("User 0 trades F = [.7,.3]", history.get(0).getTradeId());
+		assertEquals(2, history.get(0).getOldValues().size());
+		assertEquals(.5f, history.get(0).getOldValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.5f, history.get(0).getOldValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals(.7f, history.get(0).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.3f, history.get(0).getNewValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals("User 1 trades F = [.4,.6]", history.get(1).getTradeId());
+		assertEquals(2, history.get(1).getOldValues().size());
+		assertEquals(.7f, history.get(1).getOldValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.3f, history.get(1).getOldValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals(.4f, history.get(1).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.6f, history.get(1).getNewValues().get(1), PROB_ERROR_MARGIN);
+		for (QuestionEvent questionEvent : history) {
+			assertEquals(0x0FL, ((AddTradeNetworkAction)questionEvent).getQuestionId().longValue());
+			assertEquals(2, questionEvent.getNewValues().size());
+			assertEquals(2, questionEvent.getOldValues().size());
+		}
+		
+		// special case: indirect trade may change prob
+		history = engine.getQuestionHistory(0x0Dl, null, null);
+		assertEquals(history.toString(), 4, history.size());	// 2 direct and 2 indirect trades from E
+		for (QuestionEvent questionEvent : history) {
+			assertEquals(0x0DL, ((AddTradeNetworkAction)questionEvent).getQuestionId().longValue());
+			assertEquals(3, questionEvent.getNewValues().size());
+			assertEquals(3, questionEvent.getOldValues().size());
+		}
+		
+		// special case: indirect trade may change prob
+		history = engine.getQuestionHistory(0x0El, null, null);
+		assertEquals(history.toString(), 3, history.size());	// 2 direct trad, and 1 indirect (User 0 trades D = [.5,.3,.2])
+		for (QuestionEvent questionEvent : history) {
+			assertEquals(0x0EL, ((AddTradeNetworkAction)questionEvent).getQuestionId().longValue());
+			assertEquals(2, questionEvent.getNewValues().size());
+			assertEquals(2, questionEvent.getOldValues().size());
+		}
+		
+		
+		// TODO conditional question history
 	}
 	
 	/**
@@ -12971,8 +13216,15 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals((long)0x0D, (long)action.getQuestionId());
 		assertTrue("Assumptions = " + action.getTradeId(), action.getAssumptionIds().isEmpty());
 		
-		assertNotNull(engine.getScoreSummaryObject(userNameToIDMap.get("Tom"), null, null, null));
+		// check history of questions
+		boolean bkp = engine.isToRetriveOnlyTradeHistory();
+		engine.setToRetriveOnlyTradeHistory(false);
 		assertFalse(engine.getQuestionHistory(null, null, null).isEmpty());
+		engine.setToRetriveOnlyTradeHistory(true);
+		assertTrue(engine.getQuestionHistory(null, null, null).isEmpty());
+		engine.setToRetriveOnlyTradeHistory(bkp);
+		
+		assertNotNull(engine.getScoreSummaryObject(userNameToIDMap.get("Tom"), null, null, null));
 		assertFalse(engine.previewBalancingTrade(userNameToIDMap.get("Tom"), 0x0AL, null, null).isEmpty());
 		assertFalse(engine.getAssetsIfStates(userNameToIDMap.get("Tom"), 0x0AL, null, null).isEmpty());
 		assertFalse(Float.isNaN(engine.getCash(userNameToIDMap.get("Tom"), null, null)));
@@ -13126,9 +13378,15 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue("Obtained cash = " + cash, minCash < cash);
 		
 		
+		// check history of questions
+		bkp = engine.isToRetriveOnlyTradeHistory();
+		engine.setToRetriveOnlyTradeHistory(false);
+		assertFalse(engine.getQuestionHistory(null, null, null).isEmpty());
+		engine.setToRetriveOnlyTradeHistory(true);
+		assertTrue(engine.getQuestionHistory(null, null, null).isEmpty());
+		engine.setToRetriveOnlyTradeHistory(bkp);
 		
 		assertNotNull(engine.getScoreSummaryObject(userNameToIDMap.get("Tom"), null, null, null));
-		assertFalse(engine.getQuestionHistory(null, null, null).isEmpty());
 		assertFalse(engine.previewBalancingTrade(userNameToIDMap.get("Tom"), 0x0AL, null, null).isEmpty());
 		assertFalse(engine.getAssetsIfStates(userNameToIDMap.get("Tom"), 0x0AL, null, null).isEmpty());
 		assertFalse(Float.isNaN(engine.getCash(userNameToIDMap.get("Tom"), null, null)));
@@ -13161,9 +13419,15 @@ public class MarkovEngineTest extends TestCase {
 		// assert that the min is positive
 		assertTrue("Cash = " + engine.getCash(userNameToIDMap.get("Amy"), null, null), engine.getCash(userNameToIDMap.get("Amy"), null, null) > 0f);
 		
+		// check history of questions
+		bkp = engine.isToRetriveOnlyTradeHistory();
+		engine.setToRetriveOnlyTradeHistory(false);
+		assertFalse(engine.getQuestionHistory(null, null, null).isEmpty());
+		engine.setToRetriveOnlyTradeHistory(true);
+		assertTrue(engine.getQuestionHistory(null, null, null).isEmpty());
+		engine.setToRetriveOnlyTradeHistory(bkp);
 		
 		assertNotNull(engine.getScoreSummaryObject(userNameToIDMap.get("Tom"), null, null, null));
-		assertFalse(engine.getQuestionHistory(null, null, null).isEmpty());
 		assertFalse(engine.previewBalancingTrade(userNameToIDMap.get("Tom"), 0x0AL, null, null).isEmpty());
 		assertFalse(engine.getAssetsIfStates(userNameToIDMap.get("Tom"), 0x0AL, null, null).isEmpty());
 		assertFalse(Float.isNaN(engine.getCash(userNameToIDMap.get("Tom"), null, null)));
@@ -13848,6 +14112,7 @@ public class MarkovEngineTest extends TestCase {
 		
 		assertTrue(engine.revertTrade(null, new Date(), new Date(0), (Math.random()<.5)?null:((Math.random()<.5)?0x0DL:((Math.random()<.5)?0x0EL:0X0F))));
 	}
+	
 
 	// not needed for the 1st release
 //	/**

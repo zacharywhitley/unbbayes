@@ -4,9 +4,11 @@
 package unbbayes.prs.bn.inference.extension;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
@@ -734,14 +736,18 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 		return true;
 	}
 	
-	public void setAsPermanentEvidence(INode node, int state, boolean isToDeleteNode) {
-		super.setAsPermanentEvidence(node, state, isToDeleteNode);
+	public void setAsPermanentEvidence(Map<INode, Integer> evidences, boolean isToDeleteNode) {
+		super.setAsPermanentEvidence(evidences, isToDeleteNode);
 		this.updateJointProbability(false);
 		// copy joint probability
 		this.getJointProbabilityTable().copyData();
 		// update joint assets
-		Map<INode, Integer> conditions = new HashMap<INode, Integer>();
-		conditions.put(node, state);
+		TreeMap<INode, Integer> conditions = new TreeMap<INode, Integer>(new Comparator<INode>() {
+			public int compare(INode o1, INode o2) {
+				return o1.getName().compareTo(o2.getName());
+			}
+		});
+		conditions.putAll(evidences);
 		this.runMinPropagation(conditions);// this is equivalent to set finding node=state 
 		// copy joint assets
 		this.getJointQTable().copyData();

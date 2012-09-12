@@ -5,7 +5,6 @@ package edu.gmu.ace.daggre;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -252,7 +251,7 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 			actions.add(newAction);
 			
 			// insert new action into the map to be used for searching actions by question id
-			this.addNetworkActionIntoQuestionMap(newAction);
+			this.addNetworkActionIntoQuestionMap(newAction, null);
 		}
 		
 	}
@@ -397,7 +396,7 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 		public BruteForceResolveQuestionNetworkAction (Long transactionKey, Date occurredWhen, long questionId, int settledState) {
 			super(transactionKey, occurredWhen, questionId, settledState);
 		}
-		public void execute(Long userId) {
+		public void execute() {
 			synchronized (getProbabilisticNetwork()) {
 				TreeVariable probNode = (TreeVariable) getProbabilisticNetwork().getNode(Long.toString(getQuestionId()));
 				if (probNode != null) {	
@@ -427,16 +426,8 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 				// do not release lock to global BN until we change all asset nets
 				synchronized (getUserToAssetAwareAlgorithmMap()) {
 					Collection<AssetAwareInferenceAlgorithm> usersToChange = null;
-					if (userId == null) {
-						// update all stored users
-						usersToChange = getUserToAssetAwareAlgorithmMap().values();
-					} else if (getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
-						// update only asset net of the specified user
-						usersToChange = Collections.singletonList(getUserToAssetAwareAlgorithmMap().get(userId));
-					} else {
-						// update nothing
-						usersToChange = Collections.emptyList();
-					}
+					// update all stored users
+					usersToChange = getUserToAssetAwareAlgorithmMap().values();
 					
 					synchronized (getDefaultInferenceAlgorithm()) {
 						Node node = getProbabilisticNetwork().getNode(Long.toString(getQuestionId()));
