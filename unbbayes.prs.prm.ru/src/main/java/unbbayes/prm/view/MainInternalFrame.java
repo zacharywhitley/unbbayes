@@ -39,7 +39,7 @@ public class MainInternalFrame extends UnBBayesModule {
 	/**
 	 * Module name.
 	 */
-	private static final String MODULE_NAME = "PRM - ALPHA";
+	private static final String MODULE_NAME = "PRM - RU";
 
 	/**
 	 * Default constructor.
@@ -62,24 +62,21 @@ public class MainInternalFrame extends UnBBayesModule {
 			// Database controller
 			IDBController sl = new DBControllerImp();
 			sl.init(urlDB);
-			
+
 			// PRM controller
 			IPrmController prmController = new PrmController();
-			
 
 			// Graphic
 			// RelationalGraphicator relGraphicator = new RelationalGraphicator(
 			// dbSchema);
-			PRMProcessPanel relGraphicator = new PRMProcessPanel(sl,prmController);
+			PRMProcessPanel relGraphicator = new PRMProcessPanel(sl,
+					prmController, getDesktopPane());
 			this.add(relGraphicator);
 
 		} else {
 			this.dispose();
 		}
 	}
-
-	
-
 
 	/*
 	 * @see unbbayes.util.extension.UnBBayesModule#getModuleName()

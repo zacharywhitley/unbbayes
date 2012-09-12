@@ -7,6 +7,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.JDesktopPane;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
@@ -16,6 +17,7 @@ import org.apache.ddlutils.model.Database;
 import org.apache.ddlutils.model.Table;
 import org.apache.log4j.Logger;
 
+import unbbayes.gui.NetworkWindow;
 import unbbayes.prm.controller.dao.IDBController;
 import unbbayes.prm.controller.dao.PrmProcessState;
 import unbbayes.prm.controller.prm.IPrmController;
@@ -24,8 +26,13 @@ import unbbayes.prm.model.ParentRel;
 import unbbayes.prm.view.graphicator.IGraphicTableListener;
 import unbbayes.prm.view.graphicator.RelationalGraphicator;
 import unbbayes.prm.view.graphicator.editor.TableRenderer;
+import unbbayes.prs.Graph;
+import unbbayes.prs.Network;
 
-public class PRMProcessPanel extends JPanel implements IGraphicTableListener {
+import java.awt.FlowLayout;
+
+public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
+		ActionListener {
 	/**
 	 * 
 	 */
@@ -61,17 +68,20 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener {
 	// Children for probabilistic model
 	private Attribute childrenPM;
 	private IPrmController prmController;
+	private JDesktopPane unbbayesDesktop;
 
 	/**
 	 * Create the panel.
 	 * 
 	 * @param dbController
 	 * @param prmController
+	 * @param unbbayesDesktop
 	 */
 	public PRMProcessPanel(IDBController dbController,
-			IPrmController prmController) {
+			IPrmController prmController, JDesktopPane unbbayesDesktop) {
 		this.dbController = dbController;
 		this.prmController = prmController;
+		this.unbbayesDesktop = unbbayesDesktop;
 
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] { 0, 0 };
@@ -88,7 +98,7 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener {
 		gbc_panel.gridx = 0;
 		gbc_panel.gridy = 1;
 		add(panel, gbc_panel);
-		panel.setLayout(new GridLayout(0, 4, 0, 0));
+		panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
 		buttonProbModel = new JToggleButton("> Prob. Model");
 		panel.add(buttonProbModel);
@@ -109,6 +119,7 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener {
 		panel.add(buttomPartitioning);
 
 		buttonCompile = new JToggleButton("> Compile");
+		buttonCompile.addActionListener(this);
 		buttonCompile.setEnabled(false);
 		panel.add(buttonCompile);
 
@@ -266,6 +277,24 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener {
 
 		// Notify CPD to controller.
 		prmController.setCPD(attribute, cpd);
+	}
+
+	/**
+	 * Action performed for compile button.
+	 */
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// Create the graph. Look at PRMToBNCompiler.
+		Graph compiledPRM = prmController.compile();
+
+		// Create a new internal window
+		// Display generated BN
+		NetworkWindow netWindow = new NetworkWindow((Network) compiledPRM);
+
+		unbbayesDesktop.add(netWindow);
+
+		netWindow.setVisible(true);
+
 	}
 
 }

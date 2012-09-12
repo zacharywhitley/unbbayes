@@ -2,6 +2,7 @@ package unbbayes.prm.controller.prm;
 
 import unbbayes.prm.model.Attribute;
 import unbbayes.prm.model.ParentRel;
+import unbbayes.prs.Graph;
 
 /**
  * Methods to manage a PRM schema.
@@ -60,5 +61,5 @@ public interface IPrmController {
 	 * Compile the current probabilistic definition.
 	 */
 	
-	void compile();
+	Graph compile();
 }

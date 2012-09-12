@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 
 import unbbayes.prm.model.Attribute;
 import unbbayes.prm.model.ParentRel;
+import unbbayes.prs.Graph;
 
 /**
  * PRM algorithm implementation.
@@ -88,8 +89,13 @@ public class PrmController implements IPrmController {
 	 * @see unbbayes.prm.controller.prm.IPrmController
 	 */
 	@Override
-	public void compile() {
+	public Graph compile() {
+
+		Graph g = null;
+
 		// TODO everything to do
+
+		return g;
 	}
 
 	/**
