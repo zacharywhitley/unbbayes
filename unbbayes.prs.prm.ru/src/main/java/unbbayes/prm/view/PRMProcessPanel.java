@@ -1,5 +1,6 @@
 package unbbayes.prm.view;
 
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -11,6 +12,7 @@ import javax.swing.JDesktopPane;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 
 import org.apache.ddlutils.model.Column;
@@ -28,12 +30,11 @@ import unbbayes.prm.model.ParentRel;
 import unbbayes.prm.view.graphicator.IGraphicTableListener;
 import unbbayes.prm.view.graphicator.RelationalGraphicator;
 import unbbayes.prm.view.graphicator.editor.TableRenderer;
+import unbbayes.prm.view.table.DataTable;
 import unbbayes.prm.view.table.PrmTable;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Network;
 import unbbayes.prs.bn.PotentialTable;
-
-import java.awt.FlowLayout;
 
 public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 		ActionListener {
@@ -73,7 +74,8 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 	private Attribute childrenPM;
 	private IPrmController prmController;
 	private JDesktopPane unbbayesDesktop;
-
+	
+	private JSplitPane outerSplit;
 	/**
 	 * Create the panel.
 	 * 
@@ -87,29 +89,33 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 		this.prmController = prmController;
 		this.unbbayesDesktop = unbbayesDesktop;
 
+		setLayout(new GridLayout(1, 1));
+
+		JPanel panelGraph = new JPanel();
+
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] { 0, 0 };
 		gridBagLayout.rowHeights = new int[] { 10, 30, 10, 10, 0 };
 		gridBagLayout.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
 		gridBagLayout.rowWeights = new double[] { 0.0, 0.0, 0.0, 20000.0,
 				Double.MIN_VALUE };
-		setLayout(gridBagLayout);
+		panelGraph.setLayout(gridBagLayout);
 
-		JPanel panel = new JPanel();
+		JPanel panelProcess = new JPanel();
 		GridBagConstraints gbc_panel = new GridBagConstraints();
 		gbc_panel.insets = new Insets(0, 0, 5, 0);
 		gbc_panel.fill = GridBagConstraints.HORIZONTAL;
 		gbc_panel.gridx = 0;
 		gbc_panel.gridy = 1;
-		add(panel, gbc_panel);
-		panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		panelGraph.add(panelProcess, gbc_panel);
+		panelProcess.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
 		buttonProbModel = new JToggleButton("> Prob. Model");
-		panel.add(buttonProbModel);
+		panelProcess.add(buttonProbModel);
 
 		buttonSelectorAtt = new JToggleButton("> Selector attribute");
 		buttonSelectorAtt.setEnabled(false);
-		panel.add(buttonSelectorAtt);
+		panelProcess.add(buttonSelectorAtt);
 
 		buttomPartitioning = new JToggleButton("> Partitioning");
 		buttomPartitioning.setEnabled(false);
@@ -120,12 +126,12 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 				rg.setPrmState(PrmProcessState.Partitioning);
 			}
 		});
-		panel.add(buttomPartitioning);
+		panelProcess.add(buttomPartitioning);
 
 		buttonCompile = new JToggleButton("> Compile");
 		buttonCompile.addActionListener(this);
 		buttonCompile.setEnabled(false);
-		panel.add(buttonCompile);
+		panelProcess.add(buttonCompile);
 
 		// Get relational schema
 		relSchema = dbController.getRelSchema();
@@ -135,12 +141,26 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 		gbc_chckbxNewCheckBox.fill = GridBagConstraints.BOTH;
 		gbc_chckbxNewCheckBox.gridx = 0;
 		gbc_chckbxNewCheckBox.gridy = 3;
-		add(rg, gbc_chckbxNewCheckBox);
+		panelGraph.add(rg, gbc_chckbxNewCheckBox);
 
+		// add(panelGraph);
+
+		outerSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+				panelGraph, null);
+
+		outerSplit.setOneTouchExpandable(true);
+
+		outerSplit.setDividerSize(6);
+		outerSplit.setBorder(null);
+
+		add(outerSplit);
 	}
 
 	public void selectedTable(Table t) {
-
+		log.debug("Selected table");
+		DataTable dt = new DataTable(t, dbController.getTableValues(relSchema, t));
+		outerSplit.setRightComponent(dt);
+		outerSplit.setDividerLocation(400);
 	}
 
 	public void selectedAttributes(Attribute[] attributes) {
@@ -274,9 +294,9 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 		// Get parents
 		Attribute[] parents = prmController.parentsOf(attribute);
 
-		// TODO Ask user to introduce CPD.
+		// Ask user to introduce CPD.
 		PotentialTable cpd = showCPDTableDialog(attribute);
-		
+
 		// Notify CPD to controller.
 		prmController.setCPD(attribute, cpd);
 	}
@@ -300,13 +320,13 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 		// Graphic table
 		PrmTable table = new PrmTable(parentStates, childStates);
 
-		// show 
+		// show
 		JDialog dialog = new JDialog();
 		dialog.setModal(true);
 		dialog.add(table);
 		dialog.pack();
 		dialog.setVisible(true);
-		
+
 		return table.getCPD();
 	}
 

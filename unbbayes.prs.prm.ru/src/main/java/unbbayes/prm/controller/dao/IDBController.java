@@ -1,5 +1,8 @@
 package unbbayes.prm.controller.dao;
 
+import java.util.Iterator;
+
+import org.apache.commons.beanutils.DynaBean;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Database;
 import org.apache.ddlutils.model.Table;
@@ -56,4 +59,6 @@ public interface IDBController {
 	 * @return possible values.
 	 */
 	String[] getPossibleValues(Database db, Attribute attribute);
+
+	Iterator<DynaBean> getTableValues(Database db, Table t);
 }

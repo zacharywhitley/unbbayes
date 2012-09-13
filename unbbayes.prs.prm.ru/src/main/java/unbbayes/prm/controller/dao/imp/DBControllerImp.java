@@ -75,12 +75,25 @@ public class DBControllerImp implements IDBController {
 			// Get results
 			while (it.hasNext()) {
 				DynaBean bean = (DynaBean) it.next();
-				possibleValues.add((String) bean.get(colName));
+				possibleValues.add(String.valueOf(bean.get(colName)));
 			}
 
 		}
 
 		return possibleValues.toArray(new String[0]);
+	}
+
+	/**
+	 * @see unbbayes.prm.controller.dao.IDBController
+	 */
+	public Iterator<DynaBean> getTableValues(Database db, Table t) {
+		// SQL query.
+		String sqlQuery = "SELECT * FROM " + t.getName();
+
+		// Query to DB.
+		Iterator<DynaBean> it1 = platform.query(db, sqlQuery);
+
+		return it1;
 	}
 
 	public void end() {

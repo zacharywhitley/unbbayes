@@ -320,7 +320,13 @@ public class GraphicRelTable extends JTable implements DropTargetListener,
 	}
 
 	public void mouseClicked(MouseEvent e) {
-		// if (e.getClickCount() == 2) {
+		
+		// Doble click to select a table.
+		if (e.getClickCount() == 2) {
+			tableListener.selectedTable(relationalTable);
+			return;
+		}
+		
 		int row = this.getSelectedRow();
 		int column = this.getSelectedColumn();
 
