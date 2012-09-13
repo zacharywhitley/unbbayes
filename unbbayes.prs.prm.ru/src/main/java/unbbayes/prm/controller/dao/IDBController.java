@@ -4,6 +4,8 @@ import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Database;
 import org.apache.ddlutils.model.Table;
 
+import unbbayes.prm.model.Attribute;
+
 /**
  * Load a relational schema from a data source (database or xml). The model is
  * based on the ddlutils library. The model can be seen here:
@@ -43,4 +45,15 @@ public interface IDBController {
 	 * @return possible values.
 	 */
 	String[] getPossibleValues(Database db, Table t, Column[] cols);
+	
+	
+	/**
+	 * Get the possible values of some columns of a table. This is only
+	 * supported for types VARCHAR.
+	 * 
+	 * @param t table to search.
+	 * @param cols interested columns
+	 * @return possible values.
+	 */
+	String[] getPossibleValues(Database db, Attribute attribute);
 }

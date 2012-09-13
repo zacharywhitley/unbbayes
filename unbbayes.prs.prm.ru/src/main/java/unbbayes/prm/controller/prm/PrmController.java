@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import unbbayes.prm.model.Attribute;
 import unbbayes.prm.model.ParentRel;
 import unbbayes.prs.Graph;
+import unbbayes.prs.bn.PotentialTable;
 
 /**
  * PRM algorithm implementation.
@@ -81,7 +82,7 @@ public class PrmController implements IPrmController {
 	 * @see unbbayes.prm.controller.prm.IPrmController
 	 */
 	@Override
-	public void setCPD(Attribute attribute, double[][] table) {
+	public void setCPD(Attribute attribute, PotentialTable table) {
 
 	}
 
@@ -109,7 +110,6 @@ public class PrmController implements IPrmController {
 			if (parent.getChild().equals(attribute)) {
 				parentsOf.add(attribute);
 			}
-			;
 		}
 		return parentsOf.toArray(new Attribute[0]);
 	}

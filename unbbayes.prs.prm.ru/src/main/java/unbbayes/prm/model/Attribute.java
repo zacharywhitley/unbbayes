@@ -17,7 +17,7 @@ public class Attribute {
 	 * Table that has the attribute.
 	 */
 	private Table table;
-	
+
 	/**
 	 * Interested attribute.
 	 */
@@ -43,5 +43,20 @@ public class Attribute {
 
 	public Table getTable() {
 		return table;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Attribute)) {
+			return false;
+		}
+		Attribute ext = (Attribute) obj;
+
+		boolean sameTableName = this.getTable().getName()
+				.equals(ext.getTable().getName());
+		boolean sameAttName = this.getAttribute().getName()
+				.equals(ext.getAttribute().getName());
+
+		return sameAttName && sameAttName;
 	}
 }

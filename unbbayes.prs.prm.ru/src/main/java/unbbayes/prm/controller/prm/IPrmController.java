@@ -3,6 +3,7 @@ package unbbayes.prm.controller.prm;
 import unbbayes.prm.model.Attribute;
 import unbbayes.prm.model.ParentRel;
 import unbbayes.prs.Graph;
+import unbbayes.prs.bn.PotentialTable;
 
 /**
  * Methods to manage a PRM schema.
@@ -54,7 +55,7 @@ public interface IPrmController {
 	 * @param attribute
 	 * @param table
 	 */
-	void setCPD(Attribute attribute, double[][] table);
+	void setCPD(Attribute attribute, PotentialTable table);
 	
 	
 	/**

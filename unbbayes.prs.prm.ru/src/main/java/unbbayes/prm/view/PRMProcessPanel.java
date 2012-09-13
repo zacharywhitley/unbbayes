@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JDesktopPane;
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
@@ -22,12 +23,15 @@ import unbbayes.prm.controller.dao.IDBController;
 import unbbayes.prm.controller.dao.PrmProcessState;
 import unbbayes.prm.controller.prm.IPrmController;
 import unbbayes.prm.model.Attribute;
+import unbbayes.prm.model.AttributeStates;
 import unbbayes.prm.model.ParentRel;
 import unbbayes.prm.view.graphicator.IGraphicTableListener;
 import unbbayes.prm.view.graphicator.RelationalGraphicator;
 import unbbayes.prm.view.graphicator.editor.TableRenderer;
+import unbbayes.prm.view.table.PrmTable;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Network;
+import unbbayes.prs.bn.PotentialTable;
 
 import java.awt.FlowLayout;
 
@@ -136,7 +140,6 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 	}
 
 	public void selectedTable(Table t) {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -272,11 +275,39 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 		Attribute[] parents = prmController.parentsOf(attribute);
 
 		// TODO Ask user to introduce CPD.
-		JOptionPane.showMessageDialog(this, "CPT table");
-		double[][] cpd = null;
-
+		PotentialTable cpd = showCPDTableDialog(attribute);
+		
 		// Notify CPD to controller.
 		prmController.setCPD(attribute, cpd);
+	}
+
+	private PotentialTable showCPDTableDialog(Attribute attribute) {
+		Attribute[] parents = prmController.parentsOf(attribute);
+		AttributeStates[] parentStates = new AttributeStates[parents.length];
+
+		// Fill possible values for parents.
+		for (int i = 0; i < parentStates.length; i++) {
+			String[] possibleValues = dbController.getPossibleValues(relSchema,
+					parents[i]);
+			parentStates[i] = new AttributeStates(parents[i], possibleValues);
+		}
+
+		String[] childValues = dbController.getPossibleValues(relSchema,
+				attribute);
+		AttributeStates childStates = new AttributeStates(attribute,
+				childValues);
+
+		// Graphic table
+		PrmTable table = new PrmTable(parentStates, childStates);
+
+		// show 
+		JDialog dialog = new JDialog();
+		dialog.setModal(true);
+		dialog.add(table);
+		dialog.pack();
+		dialog.setVisible(true);
+		
+		return table.getCPD();
 	}
 
 	/**

@@ -14,6 +14,7 @@ import org.apache.derby.jdbc.EmbeddedDataSource;
 import org.apache.log4j.Logger;
 
 import unbbayes.prm.controller.dao.IDBController;
+import unbbayes.prm.model.Attribute;
 
 /**
  * Get a relational schema from a DB.
@@ -69,7 +70,7 @@ public class DBControllerImp implements IDBController {
 			log.debug("Sql query: " + sqlQuery);
 
 			// Query to DB.
-			Iterator it = platform.query(db, sqlQuery);
+			Iterator<?> it = platform.query(db, sqlQuery);
 
 			// Get results
 			while (it.hasNext()) {
@@ -84,6 +85,12 @@ public class DBControllerImp implements IDBController {
 
 	public void end() {
 		// TODO close connection.
+	}
+
+	@Override
+	public String[] getPossibleValues(Database db, Attribute attribute) {
+		return getPossibleValues(db, attribute.getTable(),
+				new Column[] { attribute.getAttribute() });
 	}
 
 }

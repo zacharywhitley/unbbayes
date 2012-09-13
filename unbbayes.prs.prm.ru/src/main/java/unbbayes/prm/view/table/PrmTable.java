@@ -10,11 +10,8 @@ import org.apache.log4j.Logger;
 
 import unbbayes.gui.table.GUIPotentialTable;
 import unbbayes.prm.model.AttributeStates;
-import unbbayes.prs.Edge;
 import unbbayes.prs.bn.PotentialTable;
-import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.exception.InvalidParentException;
 
 public class PrmTable extends JPanel {
 	/**
@@ -30,6 +27,8 @@ public class PrmTable extends JPanel {
 
 	private AttributeStates childStates;
 
+	private PotentialTable auxCPT;
+
 	/**
 	 * Create the panel.
 	 */
@@ -44,42 +43,60 @@ public class PrmTable extends JPanel {
 		add(new JScrollPane(table));
 	}
 
+	/**
+	 * Convert relational data to nodes in order to get a PotentialTable.
+	 * 
+	 * @return Potential table for attribute child.
+	 */
 	private PotentialTable getPotentialTable() {
+		// Create a child
+		ProbabilisticNode childNode = new ProbabilisticNode();
+		childNode.setName(childStates.getAttribute().getAttribute().getName());
+		String[] states1 = childStates.getStates();
+
+		// Add node states
+		for (String state : states1) {
+			childNode.appendState(state);
+		}
+
+		// Conditional Probabilities Table.
+		auxCPT = childNode.getProbabilityFunction();
+		auxCPT.addVariable(childNode);
+		
+		
 		// One node for each parent.
-		ProbabilisticNode[] node = new ProbabilisticNode[parentStates.length];
+		ProbabilisticNode[] nodes = new ProbabilisticNode[parentStates.length];
 
 		// Fill each parent.
-		for (int i = 0; i < node.length; i++) {
-			node[i] = new ProbabilisticNode();
+		for (int i = 0; i < nodes.length; i++) {
+			nodes[i] = new ProbabilisticNode();
 
 			// Node name
-			node[i].setName(parentStates[i].getAttribute().getAttribute()
+			nodes[i].setName(parentStates[i].getAttribute().getAttribute()
 					.getName());
 
 			String[] states = parentStates[i].getStates();
 
 			// Add node states
 			for (String state : states) {
-				node[i].appendState(state);
+				nodes[i].appendState(state);
 			}
-		}
-
-		// Create a child
-		ProbabilisticNode childNode = new ProbabilisticNode();
-		childNode.setName(childStates.getAttribute().getAttribute().getName());
-		String[] states = childStates.getStates();
-
-		// Add node states
-		for (String state : states) {
-			childNode.appendState(state);
-		}
-
-		PotentialTable auxCPT = childNode.getProbabilityFunction();
-		// Add edges
-		for (int i = 0; i < node.length; i++) {
-			auxCPT.addVariable(node[i]);
+			
+			// Add edges			
+			auxCPT.addVariable(nodes[i]);
 		}
 
 		return childNode.getProbabilityFunction();
+	}
+
+	public PotentialTable getCPD() {
+		// int rows = childStates.getStates().length;
+		// int columns = 0;
+		//
+		// for (AttributeStates p : parentStates) {
+		// columns *= p*.
+		// }
+		// auxCPT.getValue();
+		return auxCPT;
 	}
 }
