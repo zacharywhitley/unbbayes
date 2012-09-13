@@ -18,7 +18,7 @@ import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.ProbabilisticTable;
 
-public class TableTest extends JFrame {
+public class UnBBayesTableTest extends JFrame {
 
 	private JPanel contentPane;
 
@@ -29,7 +29,7 @@ public class TableTest extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					TableTest frame = new TableTest();
+					UnBBayesTableTest frame = new UnBBayesTableTest();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -41,7 +41,7 @@ public class TableTest extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public TableTest() {
+	public UnBBayesTableTest() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		contentPane = new JPanel();
