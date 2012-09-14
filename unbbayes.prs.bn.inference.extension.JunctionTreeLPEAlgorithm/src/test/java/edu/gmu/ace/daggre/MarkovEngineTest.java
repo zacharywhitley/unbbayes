@@ -14795,6 +14795,73 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue(engine.revertTrade(null, new Date(), new Date(0), (Math.random()<.5)?null:((Math.random()<.5)?0x0DL:((Math.random()<.5)?0x0EL:0X0F))));
 	}
 	
+	public final void test5678Net() {
+		engine.setDefaultInitialAssetTableValue(100f);
+		engine.setCurrentCurrencyConstant(100f);
+		engine.setCurrentLogBase(2f);
+		
+		engine.initialize();
+		
+		engine.addQuestion(null, new Date(), 8L	, 2, null);
+		engine.addQuestion(null, new Date(), 5L	, 3, null);
+		engine.addQuestion(null, new Date(), 7L	, 2, null);
+		List<Long> assumptionIds = new ArrayList<Long>();
+		assumptionIds.add(8L); assumptionIds.add(5L);
+		engine.addQuestionAssumption(null, new Date(), 7L, assumptionIds , null);
+		engine.addQuestion(null, new Date(), 6L	, 2, null);
+		engine.addQuestionAssumption(null, new Date(), 5L, Collections.singletonList(6L) , null);
+		engine.addQuestionAssumption(null, new Date(), 8L, Collections.singletonList(6L) , null);
+		
+		// add nodes not related to the edit
+		Long transactionKey = engine.startNetworkActions();
+		engine.addQuestion(transactionKey , new Date(), 0L, 2, null);
+		engine.addQuestion(transactionKey , new Date(), 1L, 2, null);
+		engine.addQuestion(transactionKey , new Date(), 2L, 2, null);
+		engine.addQuestion(transactionKey , new Date(), 3L, 2, null);
+		engine.addQuestion(transactionKey , new Date(), 4L, 2, null);
+		engine.addQuestion(transactionKey , new Date(), 9L, 2, null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 1L, Collections.singletonList(0L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 3L, Collections.singletonList(2L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 3L, Collections.singletonList(4L), null);
+		engine.commitNetworkActions(transactionKey);
+		
+		assertEquals(1,engine.getProbabilisticNetwork().getNode("1").getParents().size());
+		assertTrue(engine.getProbabilisticNetwork().getNode("1").getParents().contains(engine.getProbabilisticNetwork().getNode("0")));
+		assertEquals(2,engine.getProbabilisticNetwork().getNode("3").getParents().size());
+		assertTrue(engine.getProbabilisticNetwork().getNode("3").getParents().contains(engine.getProbabilisticNetwork().getNode("2")));
+		assertTrue(engine.getProbabilisticNetwork().getNode("3").getParents().contains(engine.getProbabilisticNetwork().getNode("4")));
+		
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add(5L); assumptionIds.add(6L);
+		List<Integer> assumedStates = new ArrayList<Integer>();
+		assumedStates.add(1); assumedStates.add(0);
+		List<Float> editLimits = engine.getEditLimits(6, 8L, 1, assumptionIds, assumedStates);
+		
+		assertEquals(2,editLimits.size());
+		assertEquals(.25f,editLimits.get(0), PROB_ERROR_MARGIN);
+		assertEquals(.75f,editLimits.get(1), PROB_ERROR_MARGIN);
+		
+		List<Float> newValues = new ArrayList<Float>();
+		newValues.add(0.5510288f); newValues.add(0.4489712f);
+		engine.addTrade(null, new Date(), "User 6 bets P(8|5=1,6=0) = [0.5510288, 0.4489712]", 6L, 8L, newValues , assumptionIds, assumedStates, false);
+		
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		assertTrue(4 <= probLists.size());
+		assertEquals(0.3333f, probLists.get(5L).get(0),PROB_ERROR_MARGIN);
+		assertEquals(0.3333f, probLists.get(5L).get(1),PROB_ERROR_MARGIN);
+		assertEquals(0.3333f, probLists.get(5L).get(2),PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probLists.get(6L).get(0),PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probLists.get(6L).get(1),PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probLists.get(7L).get(0),PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probLists.get(7L).get(1),PROB_ERROR_MARGIN);
+		assertEquals(0.5085031f, probLists.get(8L).get(0),PROB_ERROR_MARGIN);
+		assertEquals(0.49149314f, probLists.get(8L).get(1),PROB_ERROR_MARGIN);
+		
+		assertEquals(84.4694808988f, engine.getCash(6L, null, null), PROB_ERROR_MARGIN);
+		assertEquals(100.1254412613f, engine.scoreUserEv(6L, null, null), PROB_ERROR_MARGIN);
+	
+	}
+	
 
 	// not needed for the 1st release
 //	/**
