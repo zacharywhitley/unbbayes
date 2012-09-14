@@ -89,7 +89,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	
 
 	/** Default value to fill {@link JunctionTreeAlgorithm#setLikelihoodExtractor(ILikelihoodExtractor)} */
-	public static final ILikelihoodExtractor DEFAULT_JEFFREYRULE_LIKELIHOOD_EXTRACTOR = JeffreyRuleLikelihoodExtractor.newInstance();
+	public static final JeffreyRuleLikelihoodExtractor DEFAULT_JEFFREYRULE_LIKELIHOOD_EXTRACTOR = (JeffreyRuleLikelihoodExtractor) JeffreyRuleLikelihoodExtractor.newInstance();
 
 	/** This is a default instance of a node with only 1 state. Use this instance if you want to have nodes with 1 state not to occupy too much space in memory */
 	public static final ProbabilisticNode ONE_STATE_PROBNODE = new ProbabilisticNode() {
@@ -1590,6 +1590,84 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 */
 	protected Map<TreeVariable, Integer> getPermanentEvidenceMap() {
 		return permanentEvidenceMap;
+	}
+
+	/**
+	 * Calculates the marginal probability of a node from a clique table.
+	 * This method supposedly performs the same of
+	 * {@link ProbabilisticNode#updateMarginal()} and returns the marginals
+	 * as a list of float, but it uses an arbitrary clique table instead
+	 * of the clique table of {@link ProbabilisticNode#getAssociatedClique()}.
+	 * @param mainNode : node to obtain marginal
+	 * @param cliqueTable : clique table from which the marginal probability will be calculated
+	 * @param evidences : those values will be considered as hard evidences in the clique.
+	 * @return : non-null list of the marginal probabilities. The ordering is important, because
+	 * element 0 will represent the marginal probability of state 0 of mainNode, the element 1
+	 * will represent the state 1 of mainNode, and so on.
+	 */
+	public List<Float> getMarginalFromPotentialTable( ProbabilisticNode mainNode, PotentialTable cliqueTable, Map<INode, Integer> evidences) {
+		List<Float> ret = new ArrayList<Float>();
+		
+		// use a clone, because we will sum out some variables (i.e. modify content of the table)
+		PotentialTable table = (PotentialTable) cliqueTable.clone();
+		
+		// consider the hard evidences specified in the map "evidences"
+		if (evidences != null && !evidences.isEmpty()) {
+			// set all impossible states (complement of the states specified in evidences) to zero
+			for (int i = 0; i < table.tableSize(); i++) {
+				// convert i into a vetor which indicates what node is in which state at cell i.
+				int[] multidimensionalCoord = table.getMultidimensionalCoord(i);
+				// if states of multidimensionalCoord dont match evidences, the cell shall be filled with zero
+				boolean isToSetToZero = false;
+				for (INode evidenceNode : evidences.keySet()) {
+					int indexOfEvidenceNode = table.indexOfVariable((Node) evidenceNode);
+					if (indexOfEvidenceNode < 0) {
+						continue;	// ignore evidence nodes which are not in the table
+					}
+					if (multidimensionalCoord[indexOfEvidenceNode ] != evidences.get(evidenceNode)) {
+						isToSetToZero = true;
+						break;
+					}
+				}
+				if (isToSetToZero) {
+					table.setValue(i, 0f);
+				}
+			}
+			
+			// normalize table, because the sum is not 1 anymore (because we set some cells to zero)
+			table.normalize();
+		}
+		
+		// the index of main node in the clique table
+		int indexOfMainNode = table.indexOfVariable(mainNode);
+		if (indexOfMainNode < 0) {
+			// cannot calculate marginal if mainNode is not in the table
+			Debug.println(getClass(), mainNode + " is not in the provided clique table.");
+			return ret;
+		}
+		
+		// sum out all nodes except for mainNode
+        int nodeCount = table.variableCount();
+		for (int i = 0; i < nodeCount ; i++) {
+            if (i != indexOfMainNode) {
+            	table.removeVariable(cliqueTable.getVariableAt(i));
+            }
+        }
+
+		// obtain the size of the table and assert that all nodes were summed out
+        int tableSize = table.tableSize();
+        if (tableSize != mainNode.getStatesSize()) {
+        	// not all nodes were summed out
+        	Debug.println(getClass(), "Failed to sum out all nodes except " + mainNode);
+        	return ret;
+        }
+        
+        // update ret
+        for (int i = 0; i < tableSize; i++) {
+            ret.add(table.getValue(i));
+        }
+		
+		return ret;
 	}
 
 

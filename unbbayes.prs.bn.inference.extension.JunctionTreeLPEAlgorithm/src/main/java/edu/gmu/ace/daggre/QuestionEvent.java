@@ -39,4 +39,15 @@ public interface QuestionEvent {
 	 * @see MarkovEngineInterface#addTrade(Long, Date, String, long, long, List, List, List, boolean)
 	 */
 	String getTradeId();
+	
+	/**
+	 * @return the ID of the question related to this event.
+	 */
+	Long getQuestionId();
+	
+	/**
+	 * @return if this question event represents a resolution of a question,
+	 * this method the settled state.
+	 */
+	Integer getSettledState();
 }

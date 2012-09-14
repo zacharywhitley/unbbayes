@@ -353,7 +353,10 @@ public interface MarkovEngineInterface {
 	 * to the cliques containing a question with "questionID" as its ID) can initially have nodes in several cliques
 	 * as assumptions, but after one assumption is selected, only cliques containing questionID and the new assumptions simultaneously
 	 * can be selected after that. This parameter indicates what assumptions were selected so far.
-	 * @return list of any possible assumptions that can be made on the question
+	 * @return list of any possible assumptions that can be made on the question, with the content of assumptionIds inclusively.
+	 * If questionId is not compatible with assumptionIds
+	 * (if there is no possible assumptions satisfying questionId and all assumptionIds simultaneously), 
+	 * an empty list will be returned.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
 	 */
@@ -608,7 +611,7 @@ public interface MarkovEngineInterface {
 	public boolean doBalanceTrade(Long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
-	 * This function will return an ordered list of events that explain how the current probability of a question was determined. 
+	 * This function will return an ordered list of history objects that describes the changes in probabilities by time.
 	 * In phase 1, this method may simply return the tradeId and history over time that directly impacted the question.
 	 * @param questionId : filter for the history. Only history related to this question will be returned.
 	 * If null, history not related to any question will be returned (e.g. those created by {@link #addCash(long, Date, long, float, String)},
@@ -616,8 +619,8 @@ public interface MarkovEngineInterface {
 	 * @param assumptionIds : filter for the history. Only histories related to questionID with these assumptions will be returned.
 	 * @param assumedStates : filter for the history. Only histories related to assumptions with these states will be returned.
 	 * If it does not have the same size of assumptionIDs,Å@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
-	 * @return the sequence of events.
-	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
+	 * @return non-null list with the sequence of events.
+	 * @throws IllegalArgumentException when any argument was invalid (e.g. states were invalid).
 	 * @see {@link QuestionEvent}
 	 */
 	public List<QuestionEvent> getQuestionHistory (Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;

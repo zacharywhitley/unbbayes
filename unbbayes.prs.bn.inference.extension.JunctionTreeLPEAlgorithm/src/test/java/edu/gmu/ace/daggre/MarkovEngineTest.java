@@ -27,6 +27,7 @@ import unbbayes.prs.exception.InvalidParentException;
 import edu.gmu.ace.daggre.MarkovEngineImpl.AddTradeNetworkAction;
 import edu.gmu.ace.daggre.MarkovEngineImpl.BalanceTradeNetworkAction;
 import edu.gmu.ace.daggre.MarkovEngineImpl.InexistingQuestionException;
+import edu.gmu.ace.daggre.MarkovEngineImpl.ResolveQuestionNetworkAction;
 import edu.gmu.ace.daggre.MarkovEngineImpl.VirtualTradeAction;
 import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
 
@@ -10426,6 +10427,8 @@ public class MarkovEngineTest extends TestCase {
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#getQuestionHistory(java.lang.Long, java.util.List, java.util.List)}.
 	 */
 	public final void testGetQuestionHistory() {
+		// temporary disable storage of cliques in the history
+		engine.setMaxConditionalProbHistorySize(0);
 		
 		// test inconditional history on DEF network first
 		assertEquals(0, engine.getQuestionHistory(null, null, null).size());
@@ -10458,6 +10461,36 @@ public class MarkovEngineTest extends TestCase {
 		
 		assertEquals(engine.getExecutedActions().size(), sum);
 		
+		// check that no history of conditional probability is included (because the size of history for conditional probability was set to 0)
+		
+		// D has history of node creation (but node creation has no assumptions), and no history of conditional probabilities 
+		// (because the size of history of conditional probability was set to 0)
+		List<QuestionEvent> history = engine.getQuestionHistory(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+		assertEquals(0, history.size());
+		history = engine.getQuestionHistory(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+		assertEquals(0, history.size());
+		history = engine.getQuestionHistory(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		assertEquals(0, history.size());
+		history = engine.getQuestionHistory(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(1));
+		assertEquals(0, history.size());
+		
+		// E has the following history: create edge
+//		history = engine.getQuestionHistory(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+//		assertEquals(1, history.size());
+//		assertTrue(history.get(0) instanceof AddQuestionAssumptionNetworkAction);
+//		history = engine.getQuestionHistory(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+//		assertEquals(1, history.size());
+//		assertTrue(history.get(0) instanceof AddQuestionAssumptionNetworkAction);
+//		
+//		// F has the following history: create edge
+//		history = engine.getQuestionHistory(0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+//		assertEquals(1, history.size());
+//		assertTrue(history.get(0) instanceof AddQuestionAssumptionNetworkAction);
+//		history = engine.getQuestionHistory(0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+//		assertEquals(1, history.size());
+//		assertTrue(history.get(0) instanceof AddQuestionAssumptionNetworkAction);
+		
+		
 		// now, set the engine to retrive only the history of trades		
 		engine.setToRetriveOnlyTradeHistory(true);
 		
@@ -10483,6 +10516,16 @@ public class MarkovEngineTest extends TestCase {
 		// 4*addCash, 3*addQuestion, and 2*addQuestionAssumption were ignored (9 actions were ignored)
 		assertEquals(engine.getExecutedActions().size()-9, sum);
 		
+		// check that no history of conditional probability is included (because the size of history for conditional probability was set to 0)
+		assertTrue(engine.getQuestionHistory(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(0)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(1)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(0)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(1)).isEmpty());
+		
 		
 		// test a more controlled network
 
@@ -10501,6 +10544,7 @@ public class MarkovEngineTest extends TestCase {
 		 * P(E=e1|D=d3)=.3
 		 * P(E=e2|D=d3)=.7
 		 */
+		engine.setMaxConditionalProbHistorySize(10);	// now, we store the history of conditional probabilities
 		engine.setDefaultInitialAssetTableValue(100f);
 		engine.initialize();
 		
@@ -10601,20 +10645,44 @@ public class MarkovEngineTest extends TestCase {
 		engine.addTrade(transactionKey, new Date(), "User 0 trades E = [.7,.3]", 0, 0x0El, probDist, null, null, false);
 		engine.addTrade(transactionKey, new Date(), "User 0 trades F = [.7,.3]", 0, 0x0Fl, probDist, null, null, false);
 		engine.commitNetworkActions(transactionKey);
+
+		// check new marginal prob
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals(probLists.toString(), .7f, probLists.get(0x0Cl).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .3f, probLists.get(0x0Cl).get(1), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), 0.3685f, probLists.get(0x0Dl).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), 0.3338f, probLists.get(0x0Dl).get(1), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), 0.2977f, probLists.get(0x0Dl).get(2), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .7f, probLists.get(0x0El).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .3f, probLists.get(0x0El).get(1), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .7f, probLists.get(0x0Fl).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .3f, probLists.get(0x0Fl).get(1), PROB_ERROR_MARGIN);
 		
 		// user 1 adds trades on each questions
 		probDist = new ArrayList<Float>();
-		probDist.add(.6f); probDist.add(.3f); probDist.add(.1f);
+		probDist.add(.6f); probDist.add(.2f); probDist.add(.2f);
 		// conditional trade should not change marginal of E
-		engine.addTrade(null, new Date(), "User 1 trades D = [.6,.2,.2]", 1, 0x0Dl, probDist, Collections.singletonList(0x0El), Collections.singletonList(1), false);
+		engine.addTrade(null, new Date(), "User 1 trades D = [.6,.2,.2] given E=e1", 1, 0x0Dl, probDist, Collections.singletonList(0x0El), Collections.singletonList(1), false);
 		probDist = new ArrayList<Float>();
 		probDist.add(.4f); probDist.add(.6f);
 		engine.addTrade(null, new Date(), "User 1 trades C = [.4,.6]", 1, 0x0Cl, probDist, null, null, false);
 		engine.addTrade(null, new Date(), "User 1 trades E = [.4,.6]", 1, 0x0El, probDist, null, null, false);
 		engine.addTrade(null, new Date(), "User 1 trades F = [.4,.6]", 1, 0x0Fl, probDist, null, null, false);
 		
+		// check new marginal prob
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals(probLists.toString(), .4f, probLists.get(0x0Cl).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .6f, probLists.get(0x0Cl).get(1), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), 0.4776f, probLists.get(0x0Dl).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), 0.2612f, probLists.get(0x0Dl).get(1), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), 0.2612f, probLists.get(0x0Dl).get(2), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .4f, probLists.get(0x0El).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .6f, probLists.get(0x0El).get(1), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .4f, probLists.get(0x0Fl).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), .6f, probLists.get(0x0Fl).get(1), PROB_ERROR_MARGIN);
+		
 		// check content of history of each question
-		List<QuestionEvent> history = engine.getQuestionHistory(0x0Cl, null, null);
+		history = engine.getQuestionHistory(0x0Cl, null, null);
 		assertEquals(history.toString(), 2, history.size());
 		assertEquals("User 0 trades C = [.7,.3]", history.get(0).getTradeId());
 		assertEquals(2, history.get(0).getOldValues().size());
@@ -10674,7 +10742,621 @@ public class MarkovEngineTest extends TestCase {
 		}
 		
 		
-		// TODO conditional question history
+		// check conditional question history
+		
+		// check invalid assumptions returns empty history
+		
+		// C have no possible assumptions
+		assertTrue(engine.getQuestionHistory(0x0CL, 
+				Collections.singletonList((Math.random() < .25)?0x0DL:((Math.random() < .33)?0x0EL:((Math.random() < .5)?0x0EL:0x0CL))), 
+				Collections.singletonList((Math.random() < .5)?0:1) ).isEmpty());
+		// no node can have C as assumption
+		assertTrue(engine.getQuestionHistory(0x0DL, 
+				Collections.singletonList(0x0CL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0EL, 
+				Collections.singletonList(0x0CL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0FL, 
+				Collections.singletonList(0x0CL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		// no node can have itself as assumption
+		assertTrue(engine.getQuestionHistory(0x0DL, 
+				Collections.singletonList(0x0DL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0EL, 
+				Collections.singletonList(0x0EL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0FL, 
+				Collections.singletonList(0x0FL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		// no node can have assumptions outside the clique in the current implementation
+		assertTrue(engine.getQuestionHistory(0x0EL, 
+				Collections.singletonList(0x0FL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0FL, 
+				Collections.singletonList(0x0EL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		
+		
+		// check content of history of conditional probabilities
+		
+		// although F is independent because the cpt is uniform, changes in marginals usually changes conditional prob
+		// check P(F|D = d1)
+		history = engine.getQuestionHistory(0x0Fl, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		assertTrue("Obtained size = " + history.size(), 2 <= history.size());
+		assertEquals("User 0 trades F = [.7,.3]", history.get(history.size()-2).getTradeId());
+		assertEquals(2, history.get(history.size()-2).getOldValues().size());
+		assertEquals(.5f, history.get(history.size()-2).getOldValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.5f, history.get(history.size()-2).getOldValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals(.7f, history.get(history.size()-2).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.3f, history.get(history.size()-2).getNewValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals("User 1 trades F = [.4,.6]", history.get(history.size()-1).getTradeId());
+		assertEquals(2, history.get(history.size()-1).getOldValues().size());
+		assertEquals(.7f, history.get(history.size()-1).getOldValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.3f, history.get(history.size()-1).getOldValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals(.4f, history.get(history.size()-1).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.6f, history.get(history.size()-1).getNewValues().get(1), PROB_ERROR_MARGIN);
+		for (QuestionEvent questionEvent : history) {
+			assertEquals(0x0FL, ((AddTradeNetworkAction)questionEvent).getQuestionId().longValue());
+			assertEquals(2, questionEvent.getNewValues().size());
+			if (questionEvent.getOldValues() != null) {
+				assertEquals(2, questionEvent.getOldValues().size());
+			}
+		}
+		List<Float> probList = engine.getProbList(0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		// check P(F|D = d2), which should be equals to  P(F|D = d1) due to independency. 
+		history = engine.getQuestionHistory(0x0Fl, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		assertTrue(history.toString(), 2 <= history.size());
+		assertEquals("User 0 trades F = [.7,.3]", history.get(history.size()-2).getTradeId());
+		assertEquals(2, history.get(history.size()-2).getOldValues().size());
+		assertEquals(.5f, history.get(history.size()-2).getOldValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.5f, history.get(history.size()-2).getOldValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals(.7f, history.get(history.size()-2).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.3f, history.get(history.size()-2).getNewValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals("User 1 trades F = [.4,.6]", history.get(history.size()-1).getTradeId());
+		assertEquals(2, history.get(history.size()-1).getOldValues().size());
+		assertEquals(.7f, history.get(history.size()-1).getOldValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.3f, history.get(history.size()-1).getOldValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals(.4f, history.get(history.size()-1).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.6f, history.get(history.size()-1).getNewValues().get(1), PROB_ERROR_MARGIN);
+		for (QuestionEvent questionEvent : history) {
+			assertEquals(0x0FL, ((AddTradeNetworkAction)questionEvent).getQuestionId().longValue());
+			assertEquals(2, questionEvent.getNewValues().size());
+			if (questionEvent.getOldValues() != null) {
+				assertEquals(2, questionEvent.getOldValues().size());
+			}
+		}
+		probList = engine.getProbList(0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		
+		// special case: indirect trade may change conditional prob
+		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0EL), Collections.singletonList(0));
+		assertTrue("Obtained size = " + history.size(), 1 <= history.size());	// the conditional probability given E is only changing 1 time
+		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0EL), Collections.singletonList(1));
+		assertTrue("Obtained size = " + history.size(), 2 <= history.size());	// the conditional probability given E2 was only changing twice
+		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		assertTrue("Obtained size = " + history.size(), 4 <= history.size());	// at least 2 direct and 2 indirect trades from E
+		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0FL), Collections.singletonList(1));
+		assertTrue("Obtained size = " + history.size(), 4 <= history.size());	// at least 2 direct and 2 indirect trades from E
+		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(1));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		
+		// special case: indirect trade may change conditional prob
+		history = engine.getQuestionHistory(0x0El, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		assertTrue("Obtained size = " + history.size(), 3 <= history.size());	// at least 2 direct trade, and 1 indirect (User 0 trades D = [.5,.3,.2])
+		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		history = engine.getQuestionHistory(0x0El, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		assertTrue("Obtained size = " + history.size(), 3 <= history.size());	// at least 2 direct trade, and 1 indirect (User 0 trades D = [.5,.3,.2])
+		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		
+		
+		/*
+		 * Convert the structure to:
+		 * B->E<-D->F  C
+		 * 
+		 * The new node is B, and it has 3 states
+		 * Note: now, the clique ED (2 nodes) was converted to BED (3 nodes)
+		 * 
+		 * The new cpt of E is:
+		 * P(E=e1|D=d1, B=b1)=.1
+		 * P(E=e2|D=d1, B=b1)=.9
+		 * P(E=e1|D=d2, B=b1)=.2
+		 * P(E=e2|D=d2, B=b1)=.8
+		 * P(E=e1|D=d3, B=b1)=.3
+		 * P(E=e2|D=d3, B=b1)=.7
+		 * P(E=e1|D=d1, B=b2)=.4
+		 * P(E=e2|D=d1, B=b2)=.9
+		 * P(E=e1|D=d2, B=b2)=.2
+		 * P(E=e2|D=d2, B=b2)=.8
+		 * P(E=e1|D=d3, B=b2)=.3
+		 * P(E=e2|D=d3, B=b2)=.7
+		 * P(E=e1|D=d1, B=b3)=.1
+		 * P(E=e2|D=d1, B=b3)=.9
+		 * P(E=e1|D=d2, B=b3)=.2
+		 * P(E=e2|D=d2, B=b3)=.8
+		 * P(E=e1|D=d3, B=b3)=.3
+		 * P(E=e2|D=d3, B=b3)=.7
+		 */
+		
+		transactionKey = engine.startNetworkActions();
+		engine.addQuestion(transactionKey, new Date(), 0x0BL, 3, null);	// add the node B
+		List<Long> parents = new ArrayList<Long>();
+		parents.add(0x0DL); parents.add(0x0BL);
+		List<Float> cpt = new ArrayList<Float>();
+		cpt.add(.1f); cpt.add(.9f); cpt.add(.2f); cpt.add(.8f); cpt.add(.3f); cpt.add(.7f);
+		cpt.add(.1f); cpt.add(.9f); cpt.add(.2f); cpt.add(.8f); cpt.add(.3f); cpt.add(.7f);
+		cpt.add(.1f); cpt.add(.9f); cpt.add(.2f); cpt.add(.8f); cpt.add(.3f); cpt.add(.7f);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0EL, parents , cpt); // add the arc B->E
+		engine.commitNetworkActions(transactionKey);	// commit and rebuild network from history
+		
+		
+		// check content of history of each question again (they should be equal)
+		history = engine.getQuestionHistory(0x0Cl, null, null);
+		assertEquals(history.toString(), 2, history.size());
+		assertEquals("User 0 trades C = [.7,.3]", history.get(0).getTradeId());
+		assertEquals(2, history.get(0).getOldValues().size());
+		assertEquals(.5f, history.get(0).getOldValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.5f, history.get(0).getOldValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals(.7f, history.get(0).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.3f, history.get(0).getNewValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals("User 1 trades C = [.4,.6]", history.get(1).getTradeId());
+		assertEquals(2, history.get(1).getOldValues().size());
+		assertEquals(.7f, history.get(1).getOldValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.3f, history.get(1).getOldValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals(.4f, history.get(1).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.6f, history.get(1).getNewValues().get(1), PROB_ERROR_MARGIN);
+		for (QuestionEvent questionEvent : history) {
+			assertEquals(0x0CL, ((AddTradeNetworkAction)questionEvent).getQuestionId().longValue());
+			assertEquals(2, questionEvent.getNewValues().size());
+			assertEquals(2, questionEvent.getOldValues().size());
+		}
+		
+		// F is a question which has arc, but is independent because the cpt is uniform
+		history = engine.getQuestionHistory(0x0Fl, null, null);
+		assertEquals(history.toString(), 2, history.size());
+		assertEquals("User 0 trades F = [.7,.3]", history.get(0).getTradeId());
+		assertEquals(2, history.get(0).getOldValues().size());
+		assertEquals(.5f, history.get(0).getOldValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.5f, history.get(0).getOldValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals(.7f, history.get(0).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.3f, history.get(0).getNewValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals("User 1 trades F = [.4,.6]", history.get(1).getTradeId());
+		assertEquals(2, history.get(1).getOldValues().size());
+		assertEquals(.7f, history.get(1).getOldValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.3f, history.get(1).getOldValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals(.4f, history.get(1).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.6f, history.get(1).getNewValues().get(1), PROB_ERROR_MARGIN);
+		for (QuestionEvent questionEvent : history) {
+			assertEquals(0x0FL, ((AddTradeNetworkAction)questionEvent).getQuestionId().longValue());
+			assertEquals(2, questionEvent.getNewValues().size());
+			assertEquals(2, questionEvent.getOldValues().size());
+		}
+		
+		// special case: indirect trade may change prob
+		history = engine.getQuestionHistory(0x0Dl, null, null);
+		assertEquals(history.toString(), 4, history.size());	// 2 direct and 2 indirect trades from E
+		for (QuestionEvent questionEvent : history) {
+			assertEquals(0x0DL, ((AddTradeNetworkAction)questionEvent).getQuestionId().longValue());
+			assertEquals(3, questionEvent.getNewValues().size());
+			assertEquals(3, questionEvent.getOldValues().size());
+		}
+		
+		// special case: indirect trade may change prob
+		history = engine.getQuestionHistory(0x0El, null, null);
+		assertEquals(history.toString(), 3, history.size());	// 2 direct trad, and 1 indirect (User 0 trades D = [.5,.3,.2])
+		for (QuestionEvent questionEvent : history) {
+			assertEquals(0x0EL, ((AddTradeNetworkAction)questionEvent).getQuestionId().longValue());
+			assertEquals(2, questionEvent.getNewValues().size());
+			assertEquals(2, questionEvent.getOldValues().size());
+		}
+		
+		
+		// check conditional question history
+		
+		// check invalid assumptions returns empty history
+		
+		// C have no possible assumptions
+		assertTrue(engine.getQuestionHistory(0x0CL, 
+				Collections.singletonList((Math.random() < .25)?0x0DL:((Math.random() < .33)?0x0EL:((Math.random() < .5)?0x0EL:0x0CL))), 
+				Collections.singletonList((Math.random() < .5)?0:1) ).isEmpty());
+		// no node can have C as assumption
+		assertTrue(engine.getQuestionHistory(0x0DL, 
+				Collections.singletonList(0x0CL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0EL, 
+				Collections.singletonList(0x0CL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0FL, 
+				Collections.singletonList(0x0CL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		// no node can have itself as assumption
+		assertTrue(engine.getQuestionHistory(0x0DL, 
+				Collections.singletonList(0x0DL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0EL, 
+				Collections.singletonList(0x0EL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0FL, 
+				Collections.singletonList(0x0FL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		// no node can have assumptions outside the clique in the current implementation
+		assertTrue(engine.getQuestionHistory(0x0EL, 
+				Collections.singletonList(0x0FL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0FL, 
+				Collections.singletonList(0x0EL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		
+		
+		// check content of history of conditional probabilities
+		
+		// although F is independent because the cpt is uniform, changes in marginals usually changes conditional prob
+		// check P(F|D = d1)
+		history = engine.getQuestionHistory(0x0Fl, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		assertTrue("Obtained size = " + history.size(), 2 <= history.size());
+		assertEquals("User 0 trades F = [.7,.3]", history.get(history.size()-2).getTradeId());
+		assertEquals(2, history.get(history.size()-2).getOldValues().size());
+		assertEquals(.5f, history.get(history.size()-2).getOldValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.5f, history.get(history.size()-2).getOldValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals(.7f, history.get(history.size()-2).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.3f, history.get(history.size()-2).getNewValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals("User 1 trades F = [.4,.6]", history.get(history.size()-1).getTradeId());
+		assertEquals(2, history.get(history.size()-1).getOldValues().size());
+		assertEquals(.7f, history.get(history.size()-1).getOldValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.3f, history.get(history.size()-1).getOldValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals(.4f, history.get(history.size()-1).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.6f, history.get(history.size()-1).getNewValues().get(1), PROB_ERROR_MARGIN);
+		for (QuestionEvent questionEvent : history) {
+			assertEquals(0x0FL, ((AddTradeNetworkAction)questionEvent).getQuestionId().longValue());
+			assertEquals(2, questionEvent.getNewValues().size());
+			if (questionEvent.getOldValues() != null) {
+				assertEquals(2, questionEvent.getOldValues().size());
+			}
+		}
+		probList = engine.getProbList(0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		// check P(F|D = d2), which should be equals to  P(F|D = d1) due to independency. 
+		history = engine.getQuestionHistory(0x0Fl, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		assertTrue(history.toString(), 2 <= history.size());
+		assertEquals("User 0 trades F = [.7,.3]", history.get(history.size()-2).getTradeId());
+		assertEquals(2, history.get(history.size()-2).getOldValues().size());
+		assertEquals(.5f, history.get(history.size()-2).getOldValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.5f, history.get(history.size()-2).getOldValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals(.7f, history.get(history.size()-2).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.3f, history.get(history.size()-2).getNewValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals("User 1 trades F = [.4,.6]", history.get(history.size()-1).getTradeId());
+		assertEquals(2, history.get(history.size()-1).getOldValues().size());
+		assertEquals(.7f, history.get(history.size()-1).getOldValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.3f, history.get(history.size()-1).getOldValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals(.4f, history.get(history.size()-1).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.6f, history.get(history.size()-1).getNewValues().get(1), PROB_ERROR_MARGIN);
+		for (QuestionEvent questionEvent : history) {
+			assertEquals(0x0FL, ((AddTradeNetworkAction)questionEvent).getQuestionId().longValue());
+			assertEquals(2, questionEvent.getNewValues().size());
+			if (questionEvent.getOldValues() != null) {
+				assertEquals(2, questionEvent.getOldValues().size());
+			}
+		}
+		probList = engine.getProbList(0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		
+		// special case: indirect trade may change conditional prob
+		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0EL), Collections.singletonList(0));
+		assertTrue("Obtained size = " + history.size(), 1 <= history.size());	// the conditional probability given E is only changing 1 time
+		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0EL), Collections.singletonList(1));
+		assertTrue("Obtained size = " + history.size(), 2 <= history.size());	// the conditional probability given E2 was only changing twice
+		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		assertTrue("Obtained size = " + history.size(), 4 <= history.size());	// at least 2 direct and 2 indirect trades from E
+		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0FL), Collections.singletonList(1));
+		assertTrue("Obtained size = " + history.size(), 4 <= history.size());	// at least 2 direct and 2 indirect trades from E
+		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(1));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		
+		// special case: indirect trade may change conditional prob
+		history = engine.getQuestionHistory(0x0El, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		assertTrue("Obtained size = " + history.size(), 3 <= history.size());	// at least 2 direct trade, and 1 indirect (User 0 trades D = [.5,.3,.2])
+		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		history = engine.getQuestionHistory(0x0El, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		assertTrue("Obtained size = " + history.size(), 3 <= history.size());	// at least 2 direct trade, and 1 indirect (User 0 trades D = [.5,.3,.2])
+		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		
+		// store history before resolution for comparison
+		List<QuestionEvent> marginalHistoryBeforeResolution = engine.getQuestionHistory(0x0EL, null, null);
+		
+		// resolve a question and test again, but before that, add dependency between B and E
+		List<Float> newValues = new ArrayList<Float>();
+		newValues.add(.5f); newValues.add(.5f);
+		int settledState = 1;
+		engine.addTrade(null, new Date(), "User 1 sets P(E|B=1) = [.5,.5]", 1L, 
+				0x0EL, newValues , Collections.singletonList(0x0BL), Collections.singletonList(settledState), false);
+		engine.resolveQuestion(null, new Date(), 0x0BL, settledState);
+		
+		List<QuestionEvent> marginalHistoryAfterResolution = engine.getQuestionHistory(0x0EL, null, null);
+		assertEquals(marginalHistoryBeforeResolution.size() + 2, marginalHistoryAfterResolution.size());	// +2 because of the last addTrade and resolveQuestion
+		assertTrue(((VirtualTradeAction)marginalHistoryAfterResolution.get(marginalHistoryAfterResolution.size() - 1)).getParentAction() instanceof ResolveQuestionNetworkAction);
+		assertEquals(0x0BL, marginalHistoryAfterResolution.get(marginalHistoryAfterResolution.size() - 1).getQuestionId().longValue());
+		assertEquals(settledState, marginalHistoryAfterResolution.get(marginalHistoryAfterResolution.size() - 1).getSettledState().intValue());
+		
+		// check invalid assumptions returns empty history
+		
+		// C have no possible assumptions
+		assertTrue(engine.getQuestionHistory(0x0CL, 
+				Collections.singletonList((Math.random() < .25)?0x0DL:((Math.random() < .33)?0x0EL:((Math.random() < .5)?0x0EL:0x0CL))), 
+				Collections.singletonList((Math.random() < .5)?0:1) ).isEmpty());
+		// no node can have C as assumption
+		assertTrue(engine.getQuestionHistory(0x0DL, 
+				Collections.singletonList(0x0CL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0EL, 
+				Collections.singletonList(0x0CL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0FL, 
+				Collections.singletonList(0x0CL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		// no node can have itself as assumption
+		assertTrue(engine.getQuestionHistory(0x0DL, 
+				Collections.singletonList(0x0DL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0EL, 
+				Collections.singletonList(0x0EL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0FL, 
+				Collections.singletonList(0x0FL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		// no node can have assumptions outside the clique in the current implementation
+		assertTrue(engine.getQuestionHistory(0x0EL, 
+				Collections.singletonList(0x0FL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0FL, 
+				Collections.singletonList(0x0EL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		
+		
+		// check content of history of conditional probabilities
+		
+		// although F is independent because the cpt is uniform, changes in marginals usually changes conditional prob
+		// check P(F|D = d1)
+		history = engine.getQuestionHistory(0x0Fl, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		assertTrue("Obtained size = " + history.size(), 2 <= history.size());
+		assertEquals("User 0 trades F = [.7,.3]", history.get(history.size()-2).getTradeId());
+		assertEquals(2, history.get(history.size()-2).getOldValues().size());
+		assertEquals(.5f, history.get(history.size()-2).getOldValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.5f, history.get(history.size()-2).getOldValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals(.7f, history.get(history.size()-2).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.3f, history.get(history.size()-2).getNewValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals("User 1 trades F = [.4,.6]", history.get(history.size()-1).getTradeId());
+		assertEquals(2, history.get(history.size()-1).getOldValues().size());
+		assertEquals(.7f, history.get(history.size()-1).getOldValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.3f, history.get(history.size()-1).getOldValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals(.4f, history.get(history.size()-1).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.6f, history.get(history.size()-1).getNewValues().get(1), PROB_ERROR_MARGIN);
+		for (QuestionEvent questionEvent : history) {
+			assertEquals(0x0FL, ((AddTradeNetworkAction)questionEvent).getQuestionId().longValue());
+			assertEquals(2, questionEvent.getNewValues().size());
+			if (questionEvent.getOldValues() != null) {
+				assertEquals(2, questionEvent.getOldValues().size());
+			}
+		}
+		probList = engine.getProbList(0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		// check P(F|D = d2), which should be equals to  P(F|D = d1) due to independency. 
+		history = engine.getQuestionHistory(0x0Fl, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		assertTrue(history.toString(), 2 <= history.size());
+		assertEquals("User 0 trades F = [.7,.3]", history.get(history.size()-2).getTradeId());
+		assertEquals(2, history.get(history.size()-2).getOldValues().size());
+		assertEquals(.5f, history.get(history.size()-2).getOldValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.5f, history.get(history.size()-2).getOldValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals(.7f, history.get(history.size()-2).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.3f, history.get(history.size()-2).getNewValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals("User 1 trades F = [.4,.6]", history.get(history.size()-1).getTradeId());
+		assertEquals(2, history.get(history.size()-1).getOldValues().size());
+		assertEquals(.7f, history.get(history.size()-1).getOldValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.3f, history.get(history.size()-1).getOldValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals(.4f, history.get(history.size()-1).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(.6f, history.get(history.size()-1).getNewValues().get(1), PROB_ERROR_MARGIN);
+		for (QuestionEvent questionEvent : history) {
+			assertEquals(0x0FL, ((AddTradeNetworkAction)questionEvent).getQuestionId().longValue());
+			assertEquals(2, questionEvent.getNewValues().size());
+			if (questionEvent.getOldValues() != null) {
+				assertEquals(2, questionEvent.getOldValues().size());
+			}
+		}
+		probList = engine.getProbList(0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		
+		// special case: indirect trade may change conditional prob
+		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0EL), Collections.singletonList(0));
+		assertTrue("Obtained size = " + history.size(), 1 <= history.size());	// the conditional probability given E is only changing 1 time
+		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0EL), Collections.singletonList(1));
+		assertTrue("Obtained size = " + history.size(), 2 <= history.size());	// the conditional probability given E2 was only changing twice
+		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		assertTrue("Obtained size = " + history.size(), 4 <= history.size());	// at least 2 direct and 2 indirect trades from E
+		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		assertTrue(((VirtualTradeAction)history.get(history.size()-1)).getParentAction() instanceof ResolveQuestionNetworkAction);
+		assertEquals(0x0BL, history.get(history.size() - 1).getQuestionId().longValue());
+		assertEquals(settledState, history.get(history.size() - 1).getSettledState().intValue());
+		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0FL), Collections.singletonList(1));
+		assertTrue("Obtained size = " + history.size(), 4 <= history.size());	// at least 2 direct and 2 indirect trades from E
+		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(1));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		assertTrue(((VirtualTradeAction)history.get(history.size()-1)).getParentAction() instanceof ResolveQuestionNetworkAction);
+		assertEquals(0x0BL, history.get(history.size() - 1).getQuestionId().longValue());
+		assertEquals(settledState, history.get(history.size() - 1).getSettledState().intValue());
+		
+		// special case: indirect trade may change conditional prob
+		history = engine.getQuestionHistory(0x0El, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		assertTrue("Obtained size = " + history.size(), 3 <= history.size());	// at least 2 direct trade, and 1 indirect (User 0 trades D = [.5,.3,.2])
+		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		history = engine.getQuestionHistory(0x0El, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		assertTrue("Obtained size = " + history.size(), 3 <= history.size());	// at least 2 direct trade, and 1 indirect (User 0 trades D = [.5,.3,.2])
+		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
+		}
+		assertTrue(((VirtualTradeAction)history.get(history.size()-1)).getParentAction() instanceof ResolveQuestionNetworkAction);
+		
+		// resolve all questions and test again
+		settledState = (Math.random() < .5)?0:1;
+		transactionKey = engine.startNetworkActions();
+		engine.resolveQuestion(transactionKey, new Date(), 0x0DL, settledState);
+		engine.resolveQuestion(transactionKey, new Date(), 0x0EL, settledState);
+		engine.resolveQuestion(transactionKey, new Date(), 0x0FL, settledState);
+		engine.commitNetworkActions(transactionKey);
+		
+		// check invalid assumptions returns empty history
+		
+		// C have no possible assumptions
+		assertTrue(engine.getQuestionHistory(0x0CL, 
+				Collections.singletonList((Math.random() < .25)?0x0DL:((Math.random() < .33)?0x0EL:((Math.random() < .5)?0x0EL:0x0CL))), 
+				Collections.singletonList((Math.random() < .5)?0:1) ).isEmpty());
+		// no node can have C as assumption
+		assertTrue(engine.getQuestionHistory(0x0DL, 
+				Collections.singletonList(0x0CL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0EL, 
+				Collections.singletonList(0x0CL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0FL, 
+				Collections.singletonList(0x0CL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		// no node can have itself as assumption
+		assertTrue(engine.getQuestionHistory(0x0DL, 
+				Collections.singletonList(0x0DL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0EL, 
+				Collections.singletonList(0x0EL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0FL, 
+				Collections.singletonList(0x0FL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		// no node can have assumptions outside the clique in the current implementation
+		assertTrue(engine.getQuestionHistory(0x0EL, 
+				Collections.singletonList(0x0FL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		assertTrue(engine.getQuestionHistory(0x0FL, 
+				Collections.singletonList(0x0EL), 
+				Collections.singletonList((Math.random() < .5)?0:1)).isEmpty());
+		
+		
+		// check content of history of conditional probabilities
+		
+		// although F is independent because the cpt is uniform, changes in marginals usually changes conditional prob
+		// check P(F|D = d1), but D was resolved already
+		history = engine.getQuestionHistory(0x0Fl, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		assertEquals("Obtained size = " + history.size(), 0 , history.size());	// assumption was already resolved
+		// check P(F|D = d2),  but D was resolved already
+		history = engine.getQuestionHistory(0x0Fl, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		assertEquals(history.toString(), 0 , history.size());
+		
+		// special case: indirect trade may change conditional prob
+		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0EL), Collections.singletonList(0));
+		assertEquals("Obtained size = " + history.size(), 0 , history.size());	// D is not present anymore
+		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0EL), Collections.singletonList(1));
+		assertEquals("Obtained size = " + history.size(), 0 , history.size());	// D is not present anymore
+		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		assertEquals("Obtained size = " + history.size(), 0 , history.size());	// D is not present anymore
+		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0FL), Collections.singletonList(1));
+		assertEquals("Obtained size = " + history.size(), 0 , history.size());	// D is not present anymore
+		
+		// special case: indirect trade may change conditional prob
+		history = engine.getQuestionHistory(0x0El, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		assertEquals("Obtained size = " + history.size(), 0 , history.size());	// D is not present anymore
+		history = engine.getQuestionHistory(0x0El, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		assertEquals("Obtained size = " + history.size(), 0 , history.size());	// D is not present anymore
 	}
 	
 	/**

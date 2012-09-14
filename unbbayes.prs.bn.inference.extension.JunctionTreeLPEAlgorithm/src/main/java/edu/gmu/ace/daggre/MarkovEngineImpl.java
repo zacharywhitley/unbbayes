@@ -37,6 +37,7 @@ import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm.ExpectedAssetCellMultiplicationListener;
 import unbbayes.prs.bn.inference.extension.AssetPropagationInferenceAlgorithm;
+import unbbayes.prs.bn.inference.extension.AssetPropagationInferenceAlgorithm.AssetPropagationInferenceAlgorithmMemento;
 import unbbayes.prs.bn.inference.extension.IAssetAwareInferenceAlgorithmBuilder;
 import unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm;
 import unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm.IAssetNetAlgorithmMemento;
@@ -161,6 +162,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	private boolean isToRetriveOnlyTradeHistory = true;
 
+	/** This is the default initial value of {@link #getMaxConditionalProbHistorySize()} */
+	public static int DEFAULT_MAX_CONDITIONAL_PROB_HISTORY_SIZE = 10;
+
+	private int maxConditionalProbHistorySize = DEFAULT_MAX_CONDITIONAL_PROB_HISTORY_SIZE;
+
+	private HashMap<Clique, List<ParentActionPotentialTablePair>> lastNCliquePotentialMap;
+
 	/**
 	 * Default constructor is protected to allow inheritance.
 	 * Use {@link #getInstance()} to actually instantiate objects of this class.
@@ -211,7 +219,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @return new instance of some class implementing {@link MarkovEngineInterface}
 	 */
 	public static MarkovEngineInterface getInstance(float logBase, float currencyConstant, float initialUserAssets, boolean isToThrowExceptionOnInvalidAssumptions) {
-		return MarkovEngineImpl.getInstance(logBase, currencyConstant, initialUserAssets, isToThrowExceptionOnInvalidAssumptions, false);
+		return MarkovEngineImpl.getInstance(logBase, currencyConstant, initialUserAssets, isToThrowExceptionOnInvalidAssumptions, false, DEFAULT_MAX_CONDITIONAL_PROB_HISTORY_SIZE);
 	}
 	
 	/**
@@ -233,8 +241,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @return new instance of some class implementing {@link MarkovEngineInterface}
 	 */
 	public static MarkovEngineInterface getInstance(float logBase, float currencyConstant, float initialUserAssets, 
-			boolean isToThrowExceptionOnInvalidAssumptions, boolean isToUseQValues) {
+			boolean isToThrowExceptionOnInvalidAssumptions, boolean isToUseQValues, int maxConditionalProbHistorySize) {
 		MarkovEngineImpl ret = (MarkovEngineImpl) MarkovEngineImpl.getInstance();
+		ret.setMaxConditionalProbHistorySize(maxConditionalProbHistorySize);
 		ret.setToUseQValues(isToUseQValues);
 		ret.setCurrentCurrencyConstant(currencyConstant);
 		ret.setCurrentLogBase(logBase);
@@ -344,6 +353,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		// initialize set containing what questions were resolved
 		setResolvedQuestions(new HashMap<Long,StatePair>());
+		
+		// initialize the history of last N clique potentials, with N = getMaxConditionalProbHistorySize()
+		setLastNCliquePotentialMap(new HashMap<Clique, List<ParentActionPotentialTablePair>>());
 		
 		return true;
 	}
@@ -591,6 +603,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					if (net.getNodeCount() > 0) {
 						getDefaultInferenceAlgorithm().run();
 					}
+					getLastNCliquePotentialMap().clear();
 				}
 			}
 			// rebuild all user asset nets
@@ -682,6 +695,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirst = whenExecutedFirst; }
 		/** This is a filter used when reverting trades */
 		public Date getTradesStartingWhen() { return tradesStartingWhen; }
+		public boolean isHardEvidenceAction() {return false; }
+		public Integer getSettledState() {return null;}
 	}
 	
 	/**
@@ -814,9 +829,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public void revert() throws UnsupportedOperationException {
 			throw new UnsupportedOperationException("Reverting an addQuestion operation is not supported yet.");
 		}
+		public boolean isHardEvidenceAction() {return false; }
 		public Date getWhenCreated() { return this.occurredWhen; }
-		public Long getTransactionKey() { return transactionKey;
-		}
+		public Long getTransactionKey() { return transactionKey;}
 		public Long getQuestionId() { return questionId; }
 		public int getNumberStates() { return numberStates; }
 		/** Adding a new node is a structure change */
@@ -830,6 +845,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public List<Integer> getAssumedStates() { return null; }
 		public Date getWhenExecutedFirstTime() {return whenExecutedFirst ; }
 		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirst = whenExecutedFirst; }
+		/** returns {@link #getNumberStates()} */
+		public Integer getSettledState() {return numberStates;}
 	}
 
 	/* (non-Javadoc)
@@ -1097,6 +1114,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public List<Integer> getAssumedStates() { return null; }
 		public Date getWhenExecutedFirstTime() {return whenExecutedFirst ; }
 		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirst = whenExecutedFirst; }
+		public boolean isHardEvidenceAction() {return false; }
+		public Integer getSettledState() {return null;}
 	}
 
 	/**
@@ -1169,6 +1188,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public List<Integer> getAssumedStates() { return null; }
 		public Date getWhenExecutedFirstTime() {return whenExecutedFirst ; }
 		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirst = whenExecutedFirst; }
+		public boolean isHardEvidenceAction() {return false; }
+		public Integer getSettledState() {return null;}
 	}
 
 	
@@ -1222,8 +1243,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		private final Date whenCreated;
 		private final Long transactionKey;
 		private final String tradeKey;
-		private final long userId;
-		private final long questionId;
+		private final Long userId;
+		private final Long questionId;
 		private List<Float> newValues;
 		private List<Long> assumptionIds;
 		private final List<Integer> assumedStates;
@@ -1231,12 +1252,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //		private Map<IRandomVariable, DoublePrecisionProbabilisticTable> qTablesBeforeTrade;
 		private List<Float> oldValues = null;
 		private Date whenExecutedFirst;
-		/** link from this original trade to all virtual trades (representation of changes in marginals caused by this original trade) */
-		private List<VirtualTradeAction> affectedQuestions = new ArrayList<MarkovEngineImpl.VirtualTradeAction>();
+//		/** link from this original trade to all virtual trades (representation of changes in marginals caused by this original trade) */
+//		private List<VirtualTradeAction> affectedQuestions = new ArrayList<MarkovEngineImpl.VirtualTradeAction>();
 //		private final List<Integer> originalAssumedStates;
 //		private final List<Long> originalAssumptionIds;
 		/** Default constructor initializing fields */
-		public AddTradeNetworkAction(Long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Float> newValues, 
+		public AddTradeNetworkAction(Long transactionKey, Date occurredWhen, String tradeKey, Long userId, Long questionId, List<Float> newValues, 
 				List<Long> assumptionIds, List<Integer> assumedStates,  boolean allowNegative) {
 			this.transactionKey = transactionKey;
 			this.whenCreated = occurredWhen;
@@ -1295,16 +1316,19 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			Map<Long, List<Float>> marginalsBefore = null;
 			
 			synchronized (getProbabilisticNetwork()) {
-				// first, check that node exists
-				Node node = getProbabilisticNetwork().getNode(Long.toString(questionId));
-				if (node == null) {
-					throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
-				}
-				// in most of cases, questions are disconnected
-				if (!(node.getParents() == null || node.getParents().isEmpty()) 
-						|| !(node.getChildren() == null || node.getChildren().isEmpty()) ) {
-					// question connected to another question
-					marginalsBefore = getProbLists(null, null, null);
+				if (getWhenExecutedFirstTime() == null) {
+					// for optimization, only update history if this is first execution.
+					// first, check that node exists
+					Node node = getProbabilisticNetwork().getNode(Long.toString(questionId));
+					if (node == null) {
+						throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
+					}
+					// in most of cases, questions are disconnected
+					if (!(node.getParents() == null || node.getParents().isEmpty()) 
+							|| !(node.getChildren() == null || node.getChildren().isEmpty()) ) {
+						// question connected to another question
+						marginalsBefore = getProbLists(null, null, null);
+					}
 				}
 				synchronized (algorithm.getAssetNetwork()) {
 					if (!algorithm.getNetwork().equals(getProbabilisticNetwork())) {
@@ -1321,7 +1345,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					// do trade. Since algorithm is linked to actual networks, changes will affect the actual networks
 					// 2nd boolean == true := overwrite assumptionIds and assumedStates when necessary
 					// Note: affectedQuestions will be filled with questions whose marginals were affected by this trade
-					oldValues = executeTrade(questionId, newValues, assumptionIds, assumedStates, allowNegative, algorithm, true, false );
+					oldValues = executeTrade(questionId, newValues, assumptionIds, assumedStates, allowNegative, algorithm, true, false, this);
 					algorithm.setToUpdateAssets(backup);	// revert config of assets
 					// backup the previous delta so that we can revert this trade
 //					qTablesBeforeTrade = algorithm.getAssetTablesBeforeLastPropagation();
@@ -1337,37 +1361,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				}
 			}
 			// compare prior and posterior marginal, and fill affectedQuestions
-			if (marginalsBefore != null) {
-				// get the marginals after trade
-				Map<Long, List<Float>> marginalsAfter = getProbLists(null, null, null);
-				// for each question, compare the marginals and if changed, add to affectedQuestions
-				for (Long question : marginalsBefore.keySet()) {
-					if (question.equals(questionId)) {
-						// We are only interested on indirect trade here. Do not double-count the direct trade.
-						continue;	
-					}
-					List<Float> oldMarginal = marginalsBefore.get(question);
-					List<Float> newMarginal = marginalsAfter.get(question);
-					if (newMarginal != null) {
-						boolean hasChanged = false;
-						// compare marginals
-						for (int i = 0; i < newMarginal.size(); i++) {
-							if (Math.abs(newMarginal.get(i) - oldMarginal.get(i)) > getProbabilityErrorMargin()) {
-								hasChanged = true;
-								break;
-							}
-						}
-						if (hasChanged) {
-							// generate a virtual trade representing a change of marginal probability of another node caused by this trade.
-							VirtualTradeAction virtualTrade = new VirtualTradeAction(this, question, oldMarginal, newMarginal);
-							affectedQuestions.add(virtualTrade);	// link from original trade to virtual trades
-							// indicate that this trade is related to question (although indirectly).
-							addNetworkActionIntoQuestionMap(virtualTrade, question);
-						}
-					}
-				}
+			if (marginalsBefore != null) {	
+				// note: if getWhenExecutedFirstTime() == null, then marginalsBefore == null
+//				this.affectedQuestions = addVirtualTrade(this, marginalsBefore); // link from original trade to virtual trades
+				addVirtualTrade(this, marginalsBefore); // link from original trade to virtual trades
 			}
 		}
+		
 		/** 
 		 * As discussed with Dr. Robin Hanson (<a href="mailto:rhanson@gmu.edu">rhanson@gmu.edu</a>) on
 		 * 07/29/2012 during the DAGGRE algorithm meeting, the {@link MarkovEngineInterface#revertTrade(long, Date, Date, Long)}
@@ -1422,9 +1422,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public Date getWhenExecutedFirstTime() {return whenExecutedFirst ; }
 		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { 
 			this.whenExecutedFirst = whenExecutedFirst; 
-			for (AddTradeNetworkAction action : affectedQuestions) {
-				action.setWhenExecutedFirstTime(whenExecutedFirst);
-			}
+//			for (AddTradeNetworkAction action : affectedQuestions) {
+//				action.setWhenExecutedFirstTime(whenExecutedFirst);
+//			}
 		}
 //		/** @return the original values of {@link #getAssumedStates()} (because some may be ignored) */
 //		public List<Integer> getOriginalAssumedStates() { return originalAssumedStates; }
@@ -1435,8 +1435,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 * In another word, this is a link from this original trade to all virtual trades 
 		 * (representation of changes in marginals caused by this original trade)
 		 */
-		public List<VirtualTradeAction> getAffectedQuestions() { return affectedQuestions; }
+//		public List<VirtualTradeAction> getAffectedQuestions() { return affectedQuestions; }
+		public boolean isHardEvidenceAction() {return false; }
+		public Integer getSettledState() {return null;}
 	}
+	
+	
 	
 	/**
 	 * Objects of this class represent marginals of questions which were changed due to another trade of
@@ -1449,7 +1453,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @author Shou Matsumoto
 	 */
 	public class VirtualTradeAction extends AddTradeNetworkAction {
-		private final AddTradeNetworkAction parentAction;
+		private final NetworkAction parentAction;
+		private final Integer settledState;
 		/**
 		 * Default constructor initializing fields.
 		 * @param parentAction : original trade (trade which made the marginals of questionId to change
@@ -1457,17 +1462,175 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 * @param oldMarginal : the old marginal (before the trade)
 		 * @param newMarginal :  the new marginal (after the trade)
 		 */
-		public VirtualTradeAction(AddTradeNetworkAction parentAction, long questionId, List<Float> oldMarginal, List<Float> newMarginal) {
+		public VirtualTradeAction(NetworkAction parentAction, long questionId, List<Float> oldMarginal, List<Float> newMarginal, Integer settledState) {
 			// initialize fields using values of parentAction mostly.
 			super(parentAction.getTransactionKey(), parentAction.getWhenCreated(), parentAction.getTradeId(), parentAction.getUserId(), 
-					questionId, newMarginal, parentAction.getAssumptionIds(), parentAction.getAssumedStates(), parentAction.isAllowNegative());
+					questionId, newMarginal, parentAction.getAssumptionIds(), parentAction.getAssumedStates(), true);
+			this.settledState = settledState;
+			this.setWhenExecutedFirstTime(parentAction.getWhenExecutedFirstTime());
+			this.setOldValues(oldMarginal);
+			this.parentAction = parentAction;
+		}
+		/**
+		 * This is the same of {@link VirtualTradeAction#VirtualTradeAction(NetworkAction, long, List, List, Integer)},
+		 * burt it ignores the parameter questionId and uses the {@link ResolveQuestionNetworkAction#getQuestionId()}
+		 */
+		public VirtualTradeAction(ResolveQuestionNetworkAction parentAction, long questionId, List<Float> oldMarginal, List<Float> newMarginal, Integer settledState) {
+			// initialize fields using values of parentAction mostly.
+			super(parentAction.getTransactionKey(), parentAction.getWhenCreated(), parentAction.getTradeId(), parentAction.getUserId(), 
+					parentAction.getQuestionId(), newMarginal, parentAction.getAssumptionIds(), parentAction.getAssumedStates(), true);
+			this.settledState = settledState;
 			this.setWhenExecutedFirstTime(parentAction.getWhenExecutedFirstTime());
 			this.setOldValues(oldMarginal);
 			this.parentAction = parentAction;
 		}
 		/** What trade caused the marginal of {@link #getQuestionId()} to change */
-		public AddTradeNetworkAction getParentAction() { return parentAction; }
-		
+		public NetworkAction getParentAction() { return parentAction; }
+		public Date getWhenExecutedFirstTime() { return (parentAction != null)?parentAction.getWhenExecutedFirstTime():null; }
+		public Integer getSettledState() { return settledState; }
+	}
+	
+	/**
+	 * Compare the marginal probabilities in marginalsBefore with the current marginal probabilities,
+	 * and calls {@link MarkovEngineImpl#addNetworkActionIntoQuestionMap(NetworkAction, Long)}
+	 * in order to insert a new virtual trade into the history.
+	 * Basically, this method inserts new entries into the history of trades regarding
+	 * the changes in marginal probabilities caused by indirect trades.
+	 * @param parentAction : the {@link AddTradeNetworkAction} which caused the marginals of
+	 * other nodes to change. {@link AddTradeNetworkAction#execute()} is expected to be executed before this method.
+	 * @param marginalsBefore : marginal probabilities before the execution of parentAction.
+	 * @return the list of virtual trades created and inserted to {@link MarkovEngineImpl#getNetworkActionsIndexedByQuestions()}
+	 */
+	protected List<VirtualTradeAction> addVirtualTrade( NetworkAction parentAction, Map<Long, List<Float>> marginalsBefore) {
+		List<VirtualTradeAction> ret = new ArrayList<MarkovEngineImpl.VirtualTradeAction>();
+		// get the marginals after trade
+		Map<Long, List<Float>> marginalsAfter = getProbLists(null, null, null);
+		// for each question, compare the marginals and if changed, add to affectedQuestions
+		for (Long question : marginalsBefore.keySet()) {
+			if (question.equals(parentAction.getQuestionId())) {
+				// We are only interested on indirect trade here. Do not double-count the direct trade.
+				continue;	
+			}
+			List<Float> oldMarginal = marginalsBefore.get(question);
+			List<Float> newMarginal = marginalsAfter.get(question);
+			if (newMarginal != null) {
+				boolean hasChanged = false;
+				// compare marginals
+				for (int i = 0; i < newMarginal.size(); i++) {
+					if (Math.abs(newMarginal.get(i) - oldMarginal.get(i)) > getProbabilityErrorMargin()) {
+						hasChanged = true;
+						break;
+					}
+				}
+				if (hasChanged) {
+					// generate a virtual trade representing a change of marginal probability of another node caused by this trade.
+					VirtualTradeAction virtualTrade = new VirtualTradeAction(parentAction, question, oldMarginal, newMarginal, parentAction.getSettledState());
+					// indicate that this trade is related to question (although indirectly).
+					addNetworkActionIntoQuestionMap(virtualTrade, question);
+					ret.add(virtualTrade);
+				}
+			}
+		}
+		return ret;
+	}
+	
+	/**
+	 * This is the same of {@link #addVirtualTrade(NetworkAction, Map)}, but specialized for {@link ResolveQuestionNetworkAction}
+	 */
+	protected List<VirtualTradeAction> addVirtualTrade( ResolveQuestionNetworkAction parentAction, Map<Long, List<Float>> marginalsBefore) {
+		List<VirtualTradeAction> ret = new ArrayList<MarkovEngineImpl.VirtualTradeAction>();
+		// get the marginals after trade
+		Map<Long, List<Float>> marginalsAfter = getProbLists(null, null, null);
+		// for each question, compare the marginals and if changed, add to affectedQuestions
+		for (Long question : marginalsBefore.keySet()) {
+			if (question.equals(parentAction.getQuestionId())) {
+				// We are only interested on indirect trade here. Do not double-count the direct trade.
+				continue;	
+			}
+			List<Float> oldMarginal = marginalsBefore.get(question);
+			List<Float> newMarginal = marginalsAfter.get(question);
+			if (newMarginal != null) {
+				boolean hasChanged = false;
+				// compare marginals
+				for (int i = 0; i < newMarginal.size(); i++) {
+					if (Math.abs(newMarginal.get(i) - oldMarginal.get(i)) > getProbabilityErrorMargin()) {
+						hasChanged = true;
+						break;
+					}
+				}
+				if (hasChanged) {
+					// generate a virtual trade representing a change of marginal probability of another node caused by this trade.
+					VirtualTradeAction virtualTrade = new VirtualTradeAction(parentAction, parentAction.getQuestionId(), oldMarginal, newMarginal, parentAction.getSettledState());
+					// indicate that this trade is related to question (although indirectly).
+					addNetworkActionIntoQuestionMap(virtualTrade, question);
+					ret.add(virtualTrade);
+				}
+			}
+		}
+		return ret;
+	}
+	
+	/**
+	 * This method adds a new element in {@link #getLastNCliquePotentialMap()} if
+	 * the current clique potentials of {@link #getProbabilisticNetwork()} has changed
+	 * compared to previousCliquePotentials.
+	 * @param parentAction : this object will be used to instantiate {@link ParentActionPotentialTablePair}, which
+	 * is the time of the values of {@link #getLastNCliquePotentialMap()}.
+	 * @param previousCliquePotentials : contains the clique potentials (tables) before an edit. These tables will be
+	 * be compared to the current clique tables.
+	 */
+	protected void addToLastNCliquePotentialMap(NetworkAction parentAction, Map<Clique, PotentialTable> previousCliquePotentials) {
+		// iterate on all cliques and compare differences
+		for (Clique clique : getProbabilisticNetwork().getJunctionTree().getCliques()) {
+			
+			// extract the clique potentials before and after the trade
+			PotentialTable currentTable = clique.getProbabilityFunction();
+			PotentialTable lastTable = previousCliquePotentials.get(clique);
+			
+			// some assertions
+			if (lastTable == null) {
+				throw new IllegalStateException("Clique " + clique + " was not found in " + previousCliquePotentials
+						+ ", which is a snapshot of cliques before a trade on question " + parentAction.getQuestionId()
+						+ ". This is an unexpected state of the system, which may have been caused by a clique modified during a trade.");
+			}
+			
+			// true if the clique potentials have changed
+			boolean isChanged = false;
+			
+			if (currentTable.tableSize() != lastTable.tableSize()) {
+//				throw new IllegalStateException("The size of clique table of " + clique + " has changed from "
+//						+ lastTable.tableSize() + " to " + currentTable.tableSize()
+//						+ " during a trade. This is an unexpected behavior of the system.");
+				isChanged = true; // this can happen if we resolve a question
+			} else {
+				// check if content has changed, regarding an error margin
+				for (int i = 0; i < currentTable.tableSize(); i++) {
+					if (Math.abs(currentTable.getValue(i) - lastTable.getValue(i)) > getProbabilityErrorMargin()) {
+						isChanged = true;
+						break;
+					}
+				}
+			}
+			
+			if (isChanged) {
+				// store in the history
+				synchronized (getLastNCliquePotentialMap()) {
+					List<ParentActionPotentialTablePair> history = getLastNCliquePotentialMap().get(clique);
+					if (history == null) {
+						// this is the first time this clique has changed. Initialize.
+						history = new ArrayList<MarkovEngineImpl.ParentActionPotentialTablePair>();
+						getLastNCliquePotentialMap().put(clique, history);
+					}
+					// delete entries if the size will become greater than getMaxConditionalProbHistorySize().
+					// Note: getMaxConditionalProbHistorySize() > 0 at this point, because of "if (memento != null && getMaxConditionalProbHistorySize() > 0)"
+					while (history.size() + 1 > getMaxConditionalProbHistorySize()) {
+						history.remove(0);	// remove the initial entries (old records)
+					}
+					// add entry in the history
+					history.add(new ParentActionPotentialTablePair(parentAction, (PotentialTable) currentTable.clone()));
+				}
+			}
+		} // end of iteration over cliques
 	}
 	
 	/* (non-Javadoc)
@@ -1644,7 +1807,18 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					synchronized (getDefaultInferenceAlgorithm()) {
 						Node node = getProbabilisticNetwork().getNode(Long.toString(questionId));
 						if (node != null) {
+							// backup marginals, so that we can make comparison and add history of indirect changes in marginals
+							Map<Long, List<Float>> marginalsBeforeResolution = getProbLists(null, null, null);
+							// backup clique potentials
+							Map<Clique, PotentialTable> previousCliquePotentials = getCurrentCliquePotentials();
+							
+							// actually add hard evidences and propagate (only on BN, because getDefaultInferenceAlgorithm().isToUpdateAssets() == false)
 							getDefaultInferenceAlgorithm().setAsPermanentEvidence(node, settledState, isToDeleteResolvedNode());
+							
+							// store marginals in history
+							addVirtualTrade(this, marginalsBeforeResolution);	
+							// store cliques in history of conditional probability (w/ limited size)
+							addToLastNCliquePotentialMap(this, previousCliquePotentials);	
 						} else {
 							throw new InexistingQuestionException("Node " + questionId + " is not present in network.", questionId);
 						}
@@ -1698,7 +1872,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		/** this is not an operation performed by a particular user */ 
 		public Long getUserId() { return null;}
 		public Long getQuestionId() { return questionId; }
-		public int getSettledState() { return settledState; }
+		public Integer getSettledState() { return settledState; }
 		public List<Float> getOldValues() { return marginalWhenResolved; }
 		/** Builds the list of new values (1 for the resolved state and 0 otherwise) under request */
 		public List<Float> getNewValues() {
@@ -1719,8 +1893,28 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public List<Integer> getAssumedStates() { return null; }
 		public Date getWhenExecutedFirstTime() {return whenExecutedFirst ; }
 		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirst = whenExecutedFirst; }
+		public boolean isHardEvidenceAction() {return true; }
 	}
 	
+	/**
+	 * This method is used in {@link ResolveQuestionNetworkAction#execute()} in order to backup clique potentials,
+	 * so that they can be compared posteriorly in order to fill {@link MarkovEngineImpl#getLastNCliquePotentialMap()}
+	 * @return : a map from cliques to its current tables
+	 */
+	protected Map<Clique, PotentialTable> getCurrentCliquePotentials() {
+		Map<Clique, PotentialTable> ret = new HashMap<Clique, PotentialTable>();
+		
+		if (getProbabilisticNetwork() != null && getProbabilisticNetwork().getJunctionTree() != null){
+			List<Clique> cliques = getProbabilisticNetwork().getJunctionTree().getCliques();
+			if (cliques != null) {
+				for (Clique clique : cliques) {
+					ret.put(clique, (PotentialTable) clique.getProbabilityFunction().clone());
+				}
+			}
+		}
+		
+		return ret;
+	}
 	/**
 	 * Integrates a set of ResolveQuestionNetworkAction
 	 * into a single bayesian network propagation.
@@ -3028,7 +3222,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// 1st boolean == true := allow negative delta, since this is a preview. 
 		// 2nd boolean == false := do not overwrite assumptionIds and assumedStates
 		// last null argument indicates that we are not interested in obtaining what other questions' marginals were affected by this trade
-		List<Float> oldValues = this.executeTrade(questionId, newValues, assumptionIds, assumedStates, true, algorithm, false, !isToDoFullPreview());	
+		List<Float> oldValues = this.executeTrade(questionId, newValues, assumptionIds, assumedStates, true, algorithm, false, !isToDoFullPreview(), null);	
 		
 		if (isToDoFullPreview()) {
 			// TODO optimize (executeTrade and getAssetsIfStates have redundant portion of code)
@@ -3104,13 +3298,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * {@link AssetAwareInferenceAlgorithm#getAssetNetwork()} will be used to access the asset net.
 	 * @param isToUpdateAssumptionIds : if true, assumptionIds and assumedStates will be both input and output arguments.
 	 * If false, they will be only input arguments. 
+	 * @param parentTrade : (optional) points to the trade action executing this method. This will be used to fill
+	 * trade history of conditional probabilities.
 	 * @see #addTrade(long, Date, String, long, long, List, List, List, boolean)
 	 * @see #previewTrade(long, long, List, List, List)
 	 * @return the probabilities before trade. This list will have the same structure of newValues, but its content will be filled
 	 * with the probabilities before applying the trade.
 	 */
 	protected List<Float> executeTrade(long questionId,List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates, 
-			boolean isToAllowNegative, AssetAwareInferenceAlgorithm algorithm, boolean isToUpdateAssumptionIds, boolean isPreview) {
+			boolean isToAllowNegative, AssetAwareInferenceAlgorithm algorithm, boolean isToUpdateAssumptionIds, boolean isPreview, 
+			AddTradeNetworkAction parentTrade) {
 		// basic assertions
 		if (algorithm == null) {
 			throw new NullPointerException("AssetAwareInferenceAlgorithm was not specified.");
@@ -3287,39 +3484,61 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		// propagate soft evidence
 		synchronized (algorithm) {
-			synchronized (algorithm.getNetwork()) {
+			synchronized (algorithm.getRelatedProbabilisticNetwork()) {
 				synchronized (algorithm.getAssetNetwork()) {
 //					boolean backup = algorithm.isToAllowQValuesSmallerThan1();
 					algorithm.setToAllowZeroAssets(isToAllowNegative);
 					
-					// Note: memento costs more than algorithm.revertLastProbabilityUpdate(), but it can revert 2 or more updates.
-					// in our case, we'll the min propagation, and the asset/prob update
+					// Note: memento (snapshot) costs more than algorithm.revertLastProbabilityUpdate(), but it can revert 2 or more updates.
+					// in our case, if the cash goes below zero, we'll revert 2 operations: the min propagation and the asset/prob update
 					IAssetNetAlgorithmMemento memento = null;
-					if (!isToAllowNegative) {
-						memento = algorithm.getMemento();
+					if (algorithm.getRelatedProbabilisticNetwork() == getProbabilisticNetwork()) {
+						// we are making changes in the global shared bayes net, not its clone
+						if ( !isToAllowNegative || (getMaxConditionalProbHistorySize() > 0 && (!child.getParents().isEmpty() || !child.getChildren().isEmpty()) ) ) {
+							// if this trade does not allow negative, or if we need to store the history of conditional probabilities, then create snapshot now
+							memento = algorithm.getMemento();
+						}
 					}
-					// TODO use this memento to store clique tables in order to allow conditional trade history
+					// Note: this memento is also used in order to store clique tables, so that we can retrieve history of any conditional probabilities
 					
-					
+					// actually update the probabilities and assets
 					algorithm.propagate();
 //					algorithm.setToAllowQValuesSmallerThan1(backup);
+					
+					// check if prob clique potentials have changed. If so, store in the history of conditional probabilities
+					// only store in the history if we are currently editing the shared Bayes net
+					if (memento != null && (getMaxConditionalProbHistorySize() > 0 && (!child.getParents().isEmpty() || !child.getChildren().isEmpty()) )) { 
+						// note: memento != null includes the condition: algorithm.getRelatedProbabilisticNetwork() == getProbabilisticNetwork()
+						if (memento instanceof AssetPropagationInferenceAlgorithmMemento) {
+							// update the map getLastNCliquePotentialMap()
+							addToLastNCliquePotentialMap(parentTrade, ((AssetPropagationInferenceAlgorithmMemento) memento).getProbCliques());
+						} else {
+							throw new UnsupportedOperationException("This version of the markov engine can only support "
+									+ AssetPropagationInferenceAlgorithmMemento.class.getName()
+									+ ". This may have been caused by incompatible libraries or version numbers.");
+						}
+					}
 					
 					// check that minimum is below 0
 					if (!isToAllowNegative) {
 						// calculate minimum by running min propagation and then calculating global assets posterior to min propagation
 						algorithm.runMinPropagation(null);
-						// Note: if we are using q-values, 1 means 0 (because it's not log scale).
+						// Note: if we are using q-values, 1 means 0 (because of log scale).
 						if (algorithm.calculateExplanation(null) <= (this.isToUseQValues()?1:0)) {
-							try {
-								algorithm.setMemento(memento);
-							} catch (NoSuchFieldException e) {
-								throw new RuntimeException("Could not revert last trade after a negative asset was detected.",e);
+							// Only revert the last operations (the min propagation and asset/prob update) if we are updating the original network
+							if (algorithm.getRelatedProbabilisticNetwork() == getProbabilisticNetwork()) {
+								try {
+									algorithm.setMemento(memento);
+								} catch (Exception e) {
+									// this is an exception translation (a bad habit), but allows us to add personalized message.
+									throw new RuntimeException("Could not revert last trade after a negative asset was detected. The probability or assets may be inconsistent now.",e);
+								}
 							}
 							throw new ZeroAssetsException("Cash <= 0");
 						}
 						// if successful, only revert last min propagation
 						algorithm.undoMinPropagation();
-					}
+					} 
 					
 				}
 			}
@@ -3327,6 +3546,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		return oldValues;
 	}
+
 
 	/**
 	 * Obtains a list of sublists of assumptionIds which makes the assumptions to become valid.
@@ -3769,75 +3989,173 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		return assumedStates;
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * If no assumptions are provided (assumptionIds == null or empty), then this method
+	 * uses {@link #getNetworkActionsIndexedByQuestions()} to retrieve the trade history.
+	 * If {@link #isToRetriveOnlyTradeHistory()} is false, {@link AddCashNetworkAction},
+	 * {@link AddQuestionAssumptionNetworkAction} and {@link AddQuestionNetworkAction} will
+	 * also be retrieved.
+	 * <br/><br/>
+	 * If assumptionIds != null, then it will use
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getQuestionHistory(java.lang.Long, java.util.List, java.util.List)
 	 */
 	public List<QuestionEvent> getQuestionHistory(Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
-//		TODO obtain indirect impact
 		
-		List<NetworkAction> list = null;
-		synchronized (this.getNetworkActionsIndexedByQuestions()) {
-			list = this.getNetworkActionsIndexedByQuestions().get(questionId);
-		}
-		if (list == null || list.isEmpty()) {
-			// never return the object itself (because we do not want the caller to change content of getNetworkActionsIndexedByQuestions())
-			return Collections.emptyList();	
-		}
-		// at this point, list != null
-		List<QuestionEvent> ret = new ArrayList<QuestionEvent>(); // the list to be returned
-		synchronized (list) {
-			// fill ret with values in list, but filter by assumptionIDs and assumedStates
-			for (NetworkAction action : list) {
-				if (isToRetriveOnlyTradeHistory() && !(action instanceof AddTradeNetworkAction)) {
-					// do not consider AddQuestionNetworkAction if engine is configured to ignore them
-					continue;
-				}
-				if (assumptionIds == null || assumptionIds.isEmpty()) {
-					// no filter. Add everything
-					ret.add(action);
-				} else if (action.getAssumptionIds() != null && action.getAssumptionIds().containsAll(assumptionIds)) {
-					// matched assumptionIDs filter. Check assumedStates filter
-					boolean hasWrongMatch = false;
-					if (action.getAssumedStates() != null && !action.getAssumedStates().isEmpty()) {
-						// if any states in the filter doesn't match the states in action.getAssumedStates(), do not add
-						for (int i = 0; (i < assumedStates.size()) && (i < assumptionIds.size()); i++) {
-							// extract index of assumption in "action".
-							int indexOfQuestionInNetworkAction = action.getAssumptionIds().indexOf(assumptionIds.get(i));
-							if (indexOfQuestionInNetworkAction < 0) {
-								// supposedly, at this point, indexOfQuestionInNetworkAction >=0 , because action.getAssumptionIds().containsAll(assumptionIDs)
-								try {
-									Debug.println(getClass(), "Trade " + action.getTradeId() + " claims that it is using question " + assumptionIds.get(i) 
-											+ " as one of its assumptions, but could not access such question in the trade history.");
-								} catch (Throwable t) {
-									t.printStackTrace();
-								}
-								// ignore and go on
-								continue;
-							}
-							if (indexOfQuestionInNetworkAction >= action.getAssumedStates().size()) {
-								// there were more assumed questions than assumed states.
-								try {
-									Debug.println(getClass(), "Trade " + action.getTradeId() 
-											+ " has more elements in assumptionIds (" + action.getAssumptionIds().size()  
-											+ ") thanÅ@in assumedStates (" + action.getAssumedStates().size() + ").");
-								} catch (Throwable t) {
-									t.printStackTrace();
-								}
-								// ignore and go on
-								continue;
-							}
-							if (assumedStates.get(i) != action.getAssumedStates().get(indexOfQuestionInNetworkAction)) {
-								hasWrongMatch = true;
-								break;
-							}
-						}
+		// change the size of assumptionIds and assumedStates to the minimum of the two lists
+		if (assumptionIds != null) {
+			if (assumedStates == null) {
+				assumptionIds = null;
+			} else if (assumptionIds.size() != assumedStates.size()) {
+				if (assumptionIds.size() < assumedStates.size()) {
+					// delete last few elements from assumedStates
+					int diff = assumedStates.size() - assumptionIds.size();
+					for (int i = 0; i < diff ; i++) {
+						assumedStates.remove(assumedStates.size()-1);
 					}
-					if (!hasWrongMatch) {
-						ret.add(action);
+				} else {
+					// delete last few elements from assumptionIds
+					int diff = assumptionIds.size() - assumedStates.size();
+					for (int i = 0; i < diff ; i++) {
+						assumptionIds.remove(assumptionIds.size()-1);
 					}
 				}
 			}
+		} 
+		
+		// at this point, assumptionIds == null || assumptionIds.size() == assumedStates.size()
+		
+		// never return the object itself (because we do not want the caller to change content of the mappings)
+		List<QuestionEvent> ret = new ArrayList<QuestionEvent>(); // the list to be returned
+		if (questionId == null) { // We have to retrieve history of actions unrelated to any question.
+			// Supposedly, trades are always related to some question, so we do not need to retrieve trades
+			if (!isToRetriveOnlyTradeHistory()) {
+				synchronized (this.getNetworkActionsIndexedByQuestions()) {
+					ret.addAll(this.getNetworkActionsIndexedByQuestions().get(null));
+				}
+			}
+		} else if (assumptionIds == null || assumptionIds.isEmpty()) {
+			// History of marginals. Retrieve from the network actions indexed by question ID
+			List<NetworkAction> list = null;
+			synchronized (this.getNetworkActionsIndexedByQuestions()) {
+				list = this.getNetworkActionsIndexedByQuestions().get(questionId);
+			}
+			if (list == null) {
+				return Collections.emptyList();
+			}
+			// at this point, list != null
+			synchronized (list) {
+				if (list.isEmpty()) {
+					// never return the object itself (because we do not want the caller to change content of getNetworkActionsIndexedByQuestions())
+					return Collections.emptyList();	
+				}
+				// fill ret with values in list, but filter by assumptionIDs and assumedStates
+				for (NetworkAction action : list) {
+					if (isToRetriveOnlyTradeHistory() && !(action instanceof AddTradeNetworkAction)) {
+						// do not consider AddQuestionNetworkAction if engine is configured to ignore them
+						continue;
+					}
+					ret.add(action);
+				}
+			}
+		} else {// retrieve from the last N changes in the clique, with N = getMaxConditionalProbHistorySize()
+			// obtain the extractor of cliques containing all nodes
+			InCliqueConditionalProbabilityExtractor conditionalProbabilityExtractor = null;
+			try {
+				conditionalProbabilityExtractor = (InCliqueConditionalProbabilityExtractor) getConditionalProbabilityExtractor();
+			} catch (Exception e) {
+				Debug.println(getClass(), e.getMessage()+ " : cannot use current conditional probability extractor to obtain cliques." , e);
+			}
+			if (conditionalProbabilityExtractor == null) {
+				Debug.println(getClass(), "Could not extract conditional probability extractor for cliques. Will attempt to use default.");
+				conditionalProbabilityExtractor = (InCliqueConditionalProbabilityExtractor) AssetAwareInferenceAlgorithm.DEFAULT_JEFFREYRULE_LIKELIHOOD_EXTRACTOR.getConditionalProbabilityExtractor();
+			}
+			
+			ProbabilisticNode mainNode = null;	// node of questionId
+			Clique clique = null;	// clique w/ mainNode and all assumed nodes
+			Map<INode, Integer> assumptions = new HashMap<INode, Integer>();	// encodes the assumptionIds and assumedStates
+			// list of nodes containing questionId and assumptionIds
+			List<INode> nodes = new ArrayList<INode>();
+			synchronized (getProbabilisticNetwork()) {
+				mainNode = (ProbabilisticNode) getProbabilisticNetwork().getNode(Long.toString(questionId));
+				if (mainNode == null) {
+					Debug.println("Could not find question "  + questionId);
+					return ret;
+				}
+				for (Long assumptionId : assumptionIds) {
+					INode assumptionNode = getProbabilisticNetwork().getNode(Long.toString(assumptionId));
+					if (assumptionNode == null) {
+						Debug.println("Could not find question "  + assumptionId);
+						return ret;
+					}
+					nodes.add(assumptionNode);
+					
+					// also update the mapping from node to assumed state
+					assumptions.put(assumptionNode, assumedStates.get(assumptionIds.indexOf(assumptionId)));
+				}
+				if (nodes.contains(mainNode)) {
+					Debug.println("Could not retrieve history of trades of question + " + questionId
+							+" with assumptions " + assumptionIds + ", because the assumptions contains the question itself.");
+					return ret;
+				}
+				nodes.add(mainNode);
+				// extract the clique containing all nodes
+				clique = conditionalProbabilityExtractor.getCliqueContainingAllNodes(getProbabilisticNetwork(), nodes );
+			}
+			if (clique == null) {
+				Debug.println("Could not retrieve clique containing question "+ questionId + " and assumptions " + assumptionIds);
+				return ret;
+			}
+			// at this point, clique != null
+			
+			// obtain the last N changes in the clique potential, with N = getMaxConditionalProbHistorySize()
+			List<ParentActionPotentialTablePair> cliquePotentialHistory = getLastNCliquePotentialMap().get(clique);
+			
+			if (cliquePotentialHistory != null) {
+				// iterate over the N changes, obtain the conditional probabilities, and fill ret with instances of QuestionEvent.
+				
+				List<Float> oldMarginal = null;
+				for (ParentActionPotentialTablePair tradeAndCliqueTable : cliquePotentialHistory) {
+					// prepare the list of marginal probability
+					List<Float> newMarginal = null;
+					synchronized (getDefaultInferenceAlgorithm()) {
+						// obtain the marginal probability using the clique's potential table at that moment, given assumptions
+						newMarginal = getDefaultInferenceAlgorithm().getMarginalFromPotentialTable(mainNode, tradeAndCliqueTable.getTable(), assumptions );
+					}
+					if (newMarginal != null) {
+						// do not add entry if oldMarginal and newMarginal have no diferences
+						boolean hasDifference = (oldMarginal == null);
+						if (oldMarginal != null) {
+							if ( newMarginal.size() == oldMarginal.size()) {
+								for (int i = 0; i < newMarginal.size(); i++) {
+									if (Math.abs(newMarginal.get(i) - oldMarginal.get(i)) > getProbabilityErrorMargin()) {
+										hasDifference = true;
+										break;
+									}
+								}
+							} else {
+								Debug.println("New marginal is " + newMarginal + ", and old marginal is " + oldMarginal);
+							}
+						} 
+						if (hasDifference) {
+							// fill ret with a proper instance of QuestionEvent
+							if (tradeAndCliqueTable.getParentAction() instanceof ResolveQuestionNetworkAction) {
+								// for some reason, this type detection is not working automatically sometimes... So, I added this explicit if-then-else
+								ret.add(new VirtualTradeAction(((ResolveQuestionNetworkAction)tradeAndCliqueTable.getParentAction()), questionId, oldMarginal, newMarginal, tradeAndCliqueTable.getParentAction().getSettledState()));
+							} else {
+								ret.add(new VirtualTradeAction(tradeAndCliqueTable.getParentAction(), questionId, oldMarginal, newMarginal, tradeAndCliqueTable.getParentAction().getSettledState()));
+							}
+							// oldMarginal of the next iteration is the current newMarginal
+							oldMarginal = newMarginal;
+						}
+					} else {
+						Debug.println(getClass(), "Could not extract marginal of question " + questionId + ", assuming " + assumptionIds + " = " + assumedStates 
+								+ ", from entry " + cliquePotentialHistory.indexOf(tradeAndCliqueTable) + " of the history of conditional probabilities.");
+					}
+				}
+			}
+			
 		}
+		
 		return ret;
 	}
 	/*
@@ -5239,6 +5557,89 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public boolean isToRetriveOnlyTradeHistory() {
 		return isToRetriveOnlyTradeHistory;
+	}
+
+	/**
+	 * Trades (i.e. {@link AddTradeNetworkAction#execute()}) will only store the 
+	 * history of conditional probabilities (i.e. clique potentials) until the number
+	 * of stored clique tables reaches this value. 
+	 * Old histories will be deleted when new entries are added.
+	 * Set this value to 0 or below in order to disable history of conditional probabilities.
+	 * @param maxConditionalProbHistorySize the maxConditionalProbHistorySize to set
+	 */
+	public void setMaxConditionalProbHistorySize( int maxConditionalProbHistorySize ) {
+		
+		this.maxConditionalProbHistorySize = maxConditionalProbHistorySize;
+		
+		// update getLastNCliquePotentialMap() regarding the new size
+		if (getLastNCliquePotentialMap() != null) {
+			if (maxConditionalProbHistorySize <= 0 ) {
+				// the history of conditional probability is de facto disabled
+				synchronized (getLastNCliquePotentialMap()) {
+					getLastNCliquePotentialMap().clear();
+				}
+			} else {
+				// resize the history if necessary
+				synchronized (getLastNCliquePotentialMap()) {
+					// delete elements from the history if the new size is smaller than current
+					for (List<ParentActionPotentialTablePair> value : getLastNCliquePotentialMap().values()) {
+						while (maxConditionalProbHistorySize < value.size()) {
+							value.remove(0);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Trades (i.e. {@link AddTradeNetworkAction#execute()}) will only store the 
+	 * history of conditional probabilities (i.e. clique potentials) until the number
+	 * of stored clique tables reaches this value. 
+	 * Old histories will be deleted when new entries are added.
+	 * Set this value to 0 or below in order to disable history of conditional probabilities.
+	 * @return the maxConditionalProbHistorySize
+	 */
+	public int getMaxConditionalProbHistorySize() {
+		return maxConditionalProbHistorySize;
+	}
+
+	/**
+	 * This map stores the history of last N (with N = {@link #getMaxConditionalProbHistorySize()}) clique potentials, modified over edits.
+	 * This map can be useful for retrieving the history of conditional probabilities.
+	 * The values of this map are a list (ordered by the date/time of the trade) of a pair object.
+	 * The pair object contains the clique table and the trade which caused the change in the clique table.
+	 * @param lastNCliquePotentialMap the lastNCliquePotentialMap to set
+	 */
+	public void setLastNCliquePotentialMap(HashMap<Clique, List<ParentActionPotentialTablePair>> lastNCliquePotentialMap) {
+		this.lastNCliquePotentialMap = lastNCliquePotentialMap;
+	}
+
+	/**
+	 * This map stores the history of last N (with N = {@link #getMaxConditionalProbHistorySize()}) clique potentials, modified over edits.
+	 * This map can be useful for retrieving the history of conditional probabilities.
+	 * The values of this map are a list (ordered by the date/time of the trade) of a pair object.
+	 * The pair object contains the clique table and the trade which caused the change in the clique table.
+	 * @return the lastNCliquePotentialMap
+	 */
+	public HashMap<Clique, List<ParentActionPotentialTablePair>> getLastNCliquePotentialMap() {
+		return lastNCliquePotentialMap;
+	}
+	
+	/**
+	 * This is a class representing a pair: one object of AddTradeNetworkAction
+	 * and one object of PotentialTable.
+	 * @author Shou Matsumoto
+	 */
+	public class ParentActionPotentialTablePair {
+		private final NetworkAction parentAction;
+		private final PotentialTable table;
+		public ParentActionPotentialTablePair(NetworkAction parentAction, PotentialTable table) {
+			this.parentAction = parentAction;
+			this.table = table;
+		}
+		public NetworkAction getParentAction() { return parentAction; }
+		public PotentialTable getTable() { return table; }
 	}
 
 	/**

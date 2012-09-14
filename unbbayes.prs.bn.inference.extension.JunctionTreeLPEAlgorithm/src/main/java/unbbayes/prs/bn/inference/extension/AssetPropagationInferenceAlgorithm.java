@@ -2277,6 +2277,34 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 				}
 			}
 		}
+
+		/**
+		 * @return the probCliques
+		 */
+		public Map<Clique, PotentialTable> getProbCliques() {
+			return probCliques;
+		}
+
+		/**
+		 * @return the probSeps
+		 */
+		public Map<Separator, PotentialTable> getProbSeps() {
+			return probSeps;
+		}
+
+		/**
+		 * @return the assetCliques
+		 */
+		public Map<Clique, PotentialTable> getAssetCliques() {
+			return assetCliques;
+		}
+
+		/**
+		 * @return the assetSeps
+		 */
+		public Map<Separator, PotentialTable> getAssetSeps() {
+			return assetSeps;
+		}
 	}
 
 	/**

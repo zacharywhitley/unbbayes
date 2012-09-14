@@ -40,6 +40,14 @@ public interface NetworkAction extends QuestionEvent {
 	 */
 	boolean isStructureChangeAction();
 	
+
+	/**
+	 * This is true in actions which adds hard evidences into the network, 
+	 * like the resolution of a question.
+	 * @return true if this action inserts hard evidences into the network.
+	 */
+	boolean isHardEvidenceAction();
+	
 	/**
 	 * @return the identifier of the transaction containing this action.
 	 */
