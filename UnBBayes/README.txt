@@ -23,7 +23,9 @@ CREATING A RELEASE
 and the candidates features and bugs for the next version in README.txt. 
 3. Change the unbbayes.properties file to the correct version
 4. Create dist file. Go to the projects root folder command line and run*:
+
 mvn assembly:assembly -Dmaven.test.skip=true
+
 5. Make a few changes in the generated dist file. 
 a) Unzip the distribution file somewhere. Remove unnecessary example files (until examples folder is cleaned up).
 b) Rename the jar file to unbbayes.jar.
