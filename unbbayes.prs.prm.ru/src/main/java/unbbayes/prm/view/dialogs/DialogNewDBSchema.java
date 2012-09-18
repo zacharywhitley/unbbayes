@@ -52,7 +52,7 @@ public class DialogNewDBSchema extends JDialog {
 
 		txtUrl = new JTextField();
 		txtUrl
-				.setText("jdbc:derby:examples/movies/MovieTest.db");
+				.setText("jdbc:derby:/home/dav/workspace-unb/unbbayes.prs.prm2/examples/bloodType/BloodType.db");
 		txtUrl.setBounds(83, 75, 312, 19);
 		contentPanel.add(txtUrl);
 		txtUrl.setColumns(10);

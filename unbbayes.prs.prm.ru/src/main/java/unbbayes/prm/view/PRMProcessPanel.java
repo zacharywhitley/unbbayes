@@ -7,6 +7,8 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JDesktopPane;
 import javax.swing.JDialog;
@@ -17,6 +19,7 @@ import javax.swing.JToggleButton;
 
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Database;
+import org.apache.ddlutils.model.ForeignKey;
 import org.apache.ddlutils.model.Table;
 import org.apache.log4j.Logger;
 
@@ -27,6 +30,7 @@ import unbbayes.prm.controller.prm.IPrmController;
 import unbbayes.prm.model.Attribute;
 import unbbayes.prm.model.AttributeStates;
 import unbbayes.prm.model.ParentRel;
+import unbbayes.prm.util.PathFinderAlgorithm;
 import unbbayes.prm.view.graphicator.IGraphicTableListener;
 import unbbayes.prm.view.graphicator.PrmTable;
 import unbbayes.prm.view.graphicator.RelationalGraphicator;
@@ -245,13 +249,13 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 		}
 	}
 
+	/**
+	 * This method is called when an attribute is selected.
+	 */
 	@Override
 	public void selectedAttribute(Attribute selectedAttribute) {
 		log.debug("Selected attribute"
 				+ selectedAttribute.getAttribute().getName());
-
-		// FIXME validate ID or FK, because it works only for descriptive
-		// attributes.
 
 		// Select the parent
 		if (parentPM == null) {
@@ -261,9 +265,13 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 
 			// New parent relationship
 			ParentRel newRel = new ParentRel(parentPM, childPM);
+			PathFinderAlgorithm paths = new PathFinderAlgorithm(parentPM, childPM);
+
+			// FIXME validate ID or FK, because it works only for descriptive
+			// attributes.
+
 			prmController.addParent(newRel);
 			rg.drawRelationShip(newRel);
-			
 
 			// Show CPT buttons.
 			showCPTButtons(newRel);
@@ -278,6 +286,8 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 
 	}
 
+	
+
 	private void showCPTButtons(ParentRel newRel) {
 		// Show to parent
 		TableRenderer parentTable = rg.getGraphicTable(newRel.getParent()
@@ -291,6 +301,9 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 
 	}
 
+	/**
+	 * This method is called when the user selects a CPD table button.
+	 */
 	@Override
 	public void selectedCPD(Attribute attribute) {
 		log.debug("Show CPD for " + attribute.getAttribute().getName());

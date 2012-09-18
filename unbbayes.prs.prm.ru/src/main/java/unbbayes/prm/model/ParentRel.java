@@ -8,8 +8,20 @@ package unbbayes.prm.model;
  */
 public class ParentRel {
 
+	/**
+	 * Child of the relationship.
+	 */
 	private Attribute child;
+	/**
+	 * Parent of the relationship.
+	 */
 	private Attribute parent;
+
+	/**
+	 * This attribute represents the path that the parent requires to get
+	 * connected to the child.
+	 */
+	private Attribute[] path;
 
 	public ParentRel(Attribute parent, Attribute children) {
 		this.parent = parent;
@@ -30,6 +42,14 @@ public class ParentRel {
 
 	public void setParent(Attribute parent) {
 		this.parent = parent;
+	}
+
+	public Attribute[] getPath() {
+		return path;
+	}
+
+	public void setPath(Attribute[] path) {
+		this.path = path;
 	}
 
 }
