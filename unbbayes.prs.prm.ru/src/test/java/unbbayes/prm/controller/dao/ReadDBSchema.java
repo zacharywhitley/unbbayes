@@ -15,20 +15,22 @@ import unbbayes.prm.view.graphicator.RelationalGraphicator;
 /**
  * 
  * @author David Saldaña
- *
+ * 
  */
 public class ReadDBSchema {
 	/**
 	 * URL to connect. include ";create=true" if the db does not exist.
 	 */
-	private static String DB_URL = "jdbc:derby:examples/movies/MovieTest.db";
+	private static String DB_URL = "jdbc:derby:/home/dav/workspace-unb/unbbayes.prs.prm2/examples/bloodType/BloodType.db";
+	private static String[] tableNames = { "PERSON" };
+
 	IDBController relSchemaLoader;
 
 	@Before
 	public void setUp() throws Exception {
 		relSchemaLoader = new DBControllerImp();
 		relSchemaLoader.init(DB_URL);
-		
+
 	}
 
 	@After
@@ -37,22 +39,20 @@ public class ReadDBSchema {
 
 	@Test
 	public void test() {
-		String[] tableNames = { "MOVIE", "SHOW", "THEATER" };
 
 		Database db = relSchemaLoader.getRelSchema();
 
 		Table[] tables = db.getTables();
-		for (int i = 0; i < tables.length; i++) {
+		for (int i = 0; i < tableNames.length; i++) {
 			System.out.println("Table: " + tables[i]);
 			assertTrue(tables[i].getName().equals(tableNames[i]));
-			
+
 			// Columns
 			Column[] columns = tables[i].getColumns();
 			for (int j = 0; j < columns.length; j++) {
-				System.out.println(" Column: "+ columns[j].getName());
+				System.out.println(" Column: " + columns[j].getName());
 			}
 		}
-		
 
 	}
 }

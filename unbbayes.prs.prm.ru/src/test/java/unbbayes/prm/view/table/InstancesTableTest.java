@@ -6,6 +6,7 @@ import org.apache.ddlutils.model.Database;
 import org.apache.ddlutils.model.Table;
 
 import unbbayes.prm.controller.dao.imp.DBControllerImp;
+import unbbayes.prm.view.instances.InstancesTableViewer;
 
 public class InstancesTableTest {
 	private static String DB_URL = "jdbc:derby:examples/movies/MovieTest.db";
@@ -19,7 +20,8 @@ public class InstancesTableTest {
 
 		// Parent 1
 		Table t = relSchema.getTable(0);
-		DataTable dt = new DataTable(t, ds.getTableValues(relSchema, t));
+		InstancesTableViewer dt = new InstancesTableViewer(t,
+				ds.getTableValues(relSchema, t), null);
 
 		// Show table
 		JFrame frame = new JFrame();

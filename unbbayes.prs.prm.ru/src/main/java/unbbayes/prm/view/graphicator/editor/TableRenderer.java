@@ -83,6 +83,7 @@ public class TableRenderer extends JComponent {
      *
      */
 	public GraphicRelTable table;
+	private IGraphicTableListener tableListener;
 
 	/**
      *
@@ -90,9 +91,10 @@ public class TableRenderer extends JComponent {
 	@SuppressWarnings("serial")
 	public TableRenderer(final Object cell,
 			final mxGraphComponent graphContainer, RelSchemaConsult consult,
-			IGraphicTableListener tableListener) {
+			final IGraphicTableListener tableListener) {
 		this.cell = cell;
 		this.graphContainer = graphContainer;
+		this.tableListener = tableListener;
 		this.graph = graphContainer.getGraph();
 
 		String cellName = String.valueOf(graph.getLabel(cell));
@@ -124,17 +126,18 @@ public class TableRenderer extends JComponent {
 		// Minimize button on the top
 		JButton buttonMinimize = new JButton(new AbstractAction("",
 				new ImageIcon(TableRenderer.class.getResource(IMAGE_PATH
-						+ "minimize.gif"))) {
+						+ "preview.png"))) {
 			public void actionPerformed(ActionEvent e) {
-				graph.foldCells(!graph.isCellCollapsed(cell), false,
-						new Object[] { cell });
-				((JButton) e.getSource()).setIcon(new ImageIcon(
-						TableRenderer.class.getResource(IMAGE_PATH
-								+ ((graph.isCellCollapsed(cell)) ? "maximize.gif"
-										: "minimize.gif"))));
+				tableListener.selectedTable(table.getRelationalTable());
+				// graph.foldCells(!graph.isCellCollapsed(cell), false,
+				// new Object[] { cell });
+				// ((JButton) e.getSource()).setIcon(new ImageIcon(
+				// TableRenderer.class.getResource(IMAGE_PATH
+				// + ((graph.isCellCollapsed(cell)) ? "maximize.gif"
+				// : "minimize.gif"))));
 			}
 		});
-		buttonMinimize.setPreferredSize(new Dimension(16, 16));
+		buttonMinimize.setPreferredSize(new Dimension(18, 18));
 		buttonMinimize.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		buttonMinimize.setToolTipText("Collapse/Expand");
 		buttonMinimize.setOpaque(false);

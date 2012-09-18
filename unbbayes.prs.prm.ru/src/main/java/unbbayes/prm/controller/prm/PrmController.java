@@ -108,7 +108,7 @@ public class PrmController implements IPrmController {
 		List<Attribute> parentsOf = new ArrayList<Attribute>();
 		for (ParentRel parent : parents) {
 			if (parent.getChild().equals(attribute)) {
-				parentsOf.add(attribute);
+				parentsOf.add(parent.getParent());
 			}
 		}
 		return parentsOf.toArray(new Attribute[0]);

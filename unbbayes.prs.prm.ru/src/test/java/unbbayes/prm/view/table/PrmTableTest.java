@@ -11,6 +11,7 @@ import com.sun.msv.reader.xmlschema.AttributeState;
 import unbbayes.prm.controller.dao.imp.DBControllerImp;
 import unbbayes.prm.model.Attribute;
 import unbbayes.prm.model.AttributeStates;
+import unbbayes.prm.view.graphicator.PrmTable;
 
 public class PrmTableTest {
 	private static String DB_URL = "jdbc:derby:examples/movies/MovieTest.db";

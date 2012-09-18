@@ -101,7 +101,7 @@ public class GraphicRelTable extends JTable implements DropTargetListener,
 	 *            listener.
 	 */
 	public GraphicRelTable(Table t, IGraphicTableListener tableListener) {
-		relationalTable = t;
+		setRelationalTable(t);
 		this.tableListener = tableListener;
 		this.tableColumns = t.getColumns();
 
@@ -137,7 +137,7 @@ public class GraphicRelTable extends JTable implements DropTargetListener,
 		}
 
 		// Table Model.
-		setModel(createModel());
+		setModel(new TableModelWithGraphics(colNames, data));
 		setTableHeader(null);
 		setAutoscrolls(true);
 		setGridColor(Color.LIGHT_GRAY);
@@ -268,71 +268,23 @@ public class GraphicRelTable extends JTable implements DropTargetListener,
 	public void dragExit(DropTargetEvent dte) {
 	}
 
-	/**
-	 * 
-	 * @return the created table model
-	 */
-	public TableModel createModel() {
-		return new AbstractTableModel() {
-			/**
-            *
-            */
-			private static final long serialVersionUID = -3642207266816170738L;
-
-			public int getColumnCount() {
-				return colNames.length;
-			}
-
-			public int getRowCount() {
-				return data.length;
-			}
-
-			public String getColumnName(int col) {
-				return colNames[col];
-			}
-
-			public Object getValueAt(int row, int col) {
-				return data[row][col];
-			}
-
-			public Class<? extends Object> getColumnClass(int c) {
-				Object value = getValueAt(0, c);
-				return (value != null) ? value.getClass() : ImageIcon.class;
-			}
-
-			/*
-			 * The table is not editable.
-			 */
-			public boolean isCellEditable(int row, int col) {
-				return col == 0;
-			}
-
-			/*
-			 * Don't need to implement this method unless your table's data can
-			 * change.
-			 */
-			public void setValueAt(Object value, int row, int col) {
-				data[row][col] = value;
-				fireTableCellUpdated(row, col);
-			}
-		};
-
-	}
+	
 
 	public void mouseClicked(MouseEvent e) {
 		
 		// Doble click to select a table.
-		if (e.getClickCount() == 2) {
-			tableListener.selectedTable(relationalTable);
-			return;
-		}
+		// if (e.getButton() == MouseEvent.BUTTON3) {
+		// log.debug("Double click on table");
+		// tableListener.selectedTable(getRelationalTable());
+		// return;
+		// }
 		
 		int row = this.getSelectedRow();
 		int column = this.getSelectedColumn();
 
 		Column selectedCol = tableColumns[row];
 		log.debug("Selected collumn " + selectedCol.getName());
-		Attribute selectedAtt = new Attribute(relationalTable, selectedCol);
+		Attribute selectedAtt = new Attribute(getRelationalTable(), selectedCol);
 
 		if (column == 1) {
 			// Notify to listener.
@@ -403,5 +355,19 @@ public class GraphicRelTable extends JTable implements DropTargetListener,
 			}
 		}
 		return -1;
+	}
+
+	/**
+	 * @return the relationalTable
+	 */
+	public Table getRelationalTable() {
+		return relationalTable;
+	}
+
+	/**
+	 * @param relationalTable the relationalTable to set
+	 */
+	public void setRelationalTable(Table relationalTable) {
+		this.relationalTable = relationalTable;
 	}
 }

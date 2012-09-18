@@ -28,16 +28,17 @@ import unbbayes.prm.model.Attribute;
 import unbbayes.prm.model.AttributeStates;
 import unbbayes.prm.model.ParentRel;
 import unbbayes.prm.view.graphicator.IGraphicTableListener;
+import unbbayes.prm.view.graphicator.PrmTable;
 import unbbayes.prm.view.graphicator.RelationalGraphicator;
 import unbbayes.prm.view.graphicator.editor.TableRenderer;
-import unbbayes.prm.view.table.DataTable;
-import unbbayes.prm.view.table.PrmTable;
+import unbbayes.prm.view.instances.IInstanceTableListener;
+import unbbayes.prm.view.instances.InstancesTableViewer;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Network;
 import unbbayes.prs.bn.PotentialTable;
 
 public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
-		ActionListener {
+		IInstanceTableListener, ActionListener {
 	/**
 	 * 
 	 */
@@ -71,11 +72,12 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 	// Parent to Probabilistic model
 	private Attribute parentPM;
 	// Children for probabilistic model
-	private Attribute childrenPM;
+	private Attribute childPM;
 	private IPrmController prmController;
 	private JDesktopPane unbbayesDesktop;
-	
+
 	private JSplitPane outerSplit;
+
 	/**
 	 * Create the panel.
 	 * 
@@ -145,8 +147,7 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 
 		// add(panelGraph);
 
-		outerSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-				panelGraph, null);
+		outerSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, panelGraph, null);
 
 		outerSplit.setOneTouchExpandable(true);
 
@@ -158,7 +159,8 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 
 	public void selectedTable(Table t) {
 		log.debug("Selected table");
-		DataTable dt = new DataTable(t, dbController.getTableValues(relSchema, t));
+		InstancesTableViewer dt = new InstancesTableViewer(t,
+				dbController.getTableValues(relSchema, t), this);
 		outerSplit.setRightComponent(dt);
 		outerSplit.setDividerLocation(400);
 	}
@@ -205,6 +207,7 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 	 * 
 	 * @param t
 	 * @param columns
+	 * @deprecated
 	 */
 	private void partitioning(Attribute[] attributes) {
 		log.debug("Partitioning");
@@ -253,19 +256,20 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 		// Select the parent
 		if (parentPM == null) {
 			parentPM = selectedAttribute;
-		} else if (childrenPM == null) {
-			childrenPM = selectedAttribute;
+		} else if (childPM == null) {
+			childPM = selectedAttribute;
 
 			// New parent relationship
-			ParentRel newRel = new ParentRel(parentPM, childrenPM);
+			ParentRel newRel = new ParentRel(parentPM, childPM);
 			prmController.addParent(newRel);
 			rg.drawRelationShip(newRel);
+			
 
 			// Show CPT buttons.
 			showCPTButtons(newRel);
 
 			parentPM = null;
-			childrenPM = null;
+			childPM = null;
 
 			// TODO unselect all the graphic attributes.
 		} else {
@@ -312,6 +316,8 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 			parentStates[i] = new AttributeStates(parents[i], possibleValues);
 		}
 
+		// Get possible values from DB.
+		// FIXME what happens when there is no values??
 		String[] childValues = dbController.getPossibleValues(relSchema,
 				attribute);
 		AttributeStates childStates = new AttributeStates(attribute,
@@ -345,6 +351,12 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 		unbbayesDesktop.add(netWindow);
 
 		netWindow.setVisible(true);
+
+	}
+
+	@Override
+	public void attributeSelected(Object[] data, int row, int column, Table t) {
+		log.debug("An attribute without evidence is selected");
 
 	}
 
