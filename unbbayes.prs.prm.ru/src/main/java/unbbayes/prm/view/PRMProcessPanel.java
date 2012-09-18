@@ -265,8 +265,8 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 
 			// New parent relationship
 			ParentRel newRel = new ParentRel(parentPM, childPM);
-			PathFinderAlgorithm paths = new PathFinderAlgorithm(parentPM, childPM);
-
+			PathFinderAlgorithm paths = new PathFinderAlgorithm();
+			paths.getPossiblePaths(parentPM, childPM);
 			// FIXME validate ID or FK, because it works only for descriptive
 			// attributes.
 

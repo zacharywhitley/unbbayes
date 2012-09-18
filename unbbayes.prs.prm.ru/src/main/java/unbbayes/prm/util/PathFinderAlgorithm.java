@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.ForeignKey;
 import org.apache.ddlutils.model.Table;
+import org.apache.log4j.Logger;
 
 import unbbayes.prm.model.Attribute;
 
@@ -18,10 +19,7 @@ import unbbayes.prm.model.Attribute;
  * 
  */
 public class PathFinderAlgorithm {
-
-	private Attribute child;
-	private Attribute parent;
-
+	Logger log = Logger.getLogger(PathFinderAlgorithm.class);
 	/**
 	 * A collection to store every possible path.
 	 */
@@ -35,22 +33,20 @@ public class PathFinderAlgorithm {
 
 	/**
 	 * 
-	 * @param parent
-	 * @param child
 	 */
-	public PathFinderAlgorithm(Attribute parent, Attribute child) {
-		this.parent = parent;
-		this.child = child;
+	public PathFinderAlgorithm() {
+	}
 
+	public List<Attribute[]> getPossiblePaths(final Attribute parent,
+			final Attribute child) {
 		// Every possible path
 		paths = new ArrayList<Attribute[]>();
 		checkedFks = new ArrayList<ForeignKey>();
-	}
-
-	public List<Attribute[]> getPossiblePaths() {
 
 		// A single path to start recursively.
 		List<Attribute> path = new ArrayList<Attribute>();
+		// Add parent as a fist node of the path.
+		path.add(parent);
 
 		identifyPaths(parent, child, path);
 
@@ -67,40 +63,78 @@ public class PathFinderAlgorithm {
 	 */
 	private void identifyPaths(Attribute tmpParent, Attribute tmpChild,
 			List<Attribute> path) {
-		// The parent is the fist in the path
-		path.add(tmpParent);
+		log.debug("IdentifyPath size=" + path.size());
+		log.debug("Path =" + pathToString(path));
 
 		// Three search algorithm //
 
 		// 1. Check every referenced table based on foreign keys.
-		ForeignKey[] fKeys = parent.getTable().getForeignKeys();
+		ForeignKey[] fKeys = tmpParent.getTable().getForeignKeys();
 		for (ForeignKey foreignKey : fKeys) {
+			// Referenced table
 			Table refTable = foreignKey.getForeignTable();
+
+			// Create a hard copy for this new path.
+			List<Attribute> newPath = new ArrayList<Attribute>(path);
+			// Add local and remote FK
+			Attribute tmpFKLocal = new Attribute(refTable, foreignKey
+					.getFirstReference().getLocalColumn());
+
+			Attribute tmpFKRemote = new Attribute(refTable, foreignKey
+					.getFirstReference().getForeignColumn());
+			newPath.add(tmpFKLocal);
+			newPath.add(tmpFKRemote);
+			log.debug("Adding " + refTable.getName() + "."
+					+ tmpFKLocal.getAttribute().getName());
+			log.debug("Adding " + refTable.getName() + "."
+					+ tmpFKRemote.getAttribute().getName());
 
 			// 2. Check if the target (child) is inside this column.
 			Column[] columns = refTable.getColumns();
 
+			boolean found = false;
+
 			for (Column column : columns) {
 				Attribute tmpAtt = new Attribute(refTable, column);
-			
+
 				if (tmpAtt.equals(tmpChild)) {
 					// The child is the last in the path.
-					path.add(child);
-					paths.add(path.toArray(new Attribute[0]));
+					newPath.add(tmpChild);
+
+					log.debug("Final Path =" + pathToString(newPath));
+					paths.add(newPath.toArray(new Attribute[0]));
+
+					newPath = null;
+					found = true;
+					break;
 				}
 			}
 
-			// Check if the fk was checked previously.
+			if (found) {
+				continue;
+			}
+			// Check if the FK was checked previously.
 			if (!checkedFks.contains(foreignKey)) {
 
 				// FK is checked.
 				checkedFks.add(foreignKey);
 
 				// 3. If the target is not inside this column, then apply recu
-				Attribute tmpAtt = new Attribute(refTable, foreignKey
-						.getFirstReference().getForeignColumn());
-				identifyPaths(tmpAtt, tmpChild, new ArrayList<Attribute>(path));
+				identifyPaths(tmpParent, tmpChild, newPath);
 			}
 		}
+	}
+
+	private String pathToString(List<Attribute> possiblePath) {
+		String path = "";
+
+		for (Attribute attribute : possiblePath) {
+			path = path
+					+ " "
+					+ (attribute.getTable().getName() + "."
+							+ attribute.getAttribute().getName() + " ");
+		}
+		return path;
+
 	}
 }
