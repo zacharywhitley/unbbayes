@@ -36,6 +36,7 @@ public class AssetAwareJunctionTreeOptionPanel extends JunctionTreeOptionPanel {
 		alg.setToAllowZeroAssets(true);
 		alg.setToCalculateMarginalsOfAssetNodes(true);	// force GUI to display marginal assets (min-assets by default)
 		alg.setToLogAssets(true);	// enable log
+		alg.setToUseQValues(true);
 		this.setInferenceAlgorithm(alg);
 		this.setName("Asset Propagation Algorithm");
 		// the following are already called by super()
