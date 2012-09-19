@@ -1,5 +1,9 @@
 package edu.gmu.ace.daggre;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -138,7 +142,7 @@ public interface MarkovEngineInterface {
 	 * @param numberStates : quantity of possible states (choices) for this question
 	 * @param initProbs : the prior probability of this node. If set to null, uniform distribution shall be used.
 	 * @return true if operation was successful.
-	 * @throws IllegalArgumentException when a key or Id is not found or a range of values or cpdÅfs is not legal (i.e. newValues > 100%)
+	 * @throws IllegalArgumentException when a key or Id is not found or a range of values or cpdÔøΩfs is not legal (i.e. newValues > 100%)
 	 */
 	public boolean addQuestion(Long transactionKey, Date occurredWhen, long questionId, int numberStates, List<Float> initProbs) throws IllegalArgumentException;
 	
@@ -560,7 +564,7 @@ public interface MarkovEngineInterface {
 	 * @param assumptionIds : list (ordered collection) representing the IDs of the questions to be assumed in this edit. The order is important,
 	 * because the ordering in this list will be used in order to identify the correct indexes in assumedStates.
 	 * @param assumedStates : indicates the states of the nodes in assumptionIDs.
-	 * If it does not have the same size of assumptionIDs,Å@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered. 
+	 * If it does not have the same size of assumptionIDs,ÔøΩ@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered. 
 	 * @return value to be inserted as newValue in {@link #addTrade(long, Date, long, long, long, List, List, List, List, Boolean)} to balance the trade.
 	 * For example, suppose T is the target question (i.e. a random variable) with states t1 and t2, and A1 and A2 are assumptions with states (a11, a12), and (a21 , a22) respectively.
 	 * Also suppose that assumedStates is empty or null (i.e. the returned list will represent all cells in a conditional probability distribution).
@@ -605,7 +609,7 @@ public interface MarkovEngineInterface {
 	 * @param assumptionIds : list (ordered collection) representing the IDs of the questions to be assumed in this edit. The order is important,
 	 * because the ordering in this list will be used in order to identify the correct indexes in assumedStates.
 	 * @param assumedStates : indicates the states of the nodes in assumptionIDs.
-	 * If it does not have the same size of assumptionIDs,Å@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered. 
+	 * If it does not have the same size of assumptionIDs,ÔøΩ@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered. 
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
 	public boolean doBalanceTrade(Long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
@@ -618,7 +622,7 @@ public interface MarkovEngineInterface {
 	 * {@link #revertTrade(long, Date, Date, Long)} with no question specified, and any auxiliary changes).
 	 * @param assumptionIds : filter for the history. Only histories related to questionID with these assumptions will be returned.
 	 * @param assumedStates : filter for the history. Only histories related to assumptions with these states will be returned.
-	 * If it does not have the same size of assumptionIDs,Å@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
+	 * If it does not have the same size of assumptionIDs,ÔøΩ@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
 	 * @return non-null list with the sequence of events.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. states were invalid).
 	 * @see {@link QuestionEvent}
@@ -688,4 +692,55 @@ public interface MarkovEngineInterface {
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
 	public List<Properties> getScoreDetails(long userId, Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	
+	/**
+	 * Exports the current Bayes net structure into a file, so that 
+	 * it can be edited in some GUI and imported back.
+	 * @param file : file to be written.
+	 * @throws IOException : in case of Input/Output problem.
+	 * @throws IllegalStateException : if this method was called when the Markov Engine was in an
+	 * invalid state.
+	 * @see #importNetwork(File)
+	 */
+	public void exportNetwork(File file) throws IOException, IllegalStateException;
+	
+	
+	/**
+	 * Imports a network from a file.
+	 * The actual definition of "import" may depend on the implementation.
+	 * @param file : file to be read
+	 * @throws IOException : in case of Input/Output problem.
+	 * @throws IllegalStateException : if this method was called when the Markov Engine was in an
+	 * invalid state.
+	 * @see #exportNetwork(File)
+	 */
+	public void importNetwork(File file) throws IOException, IllegalStateException;
+	
+
+//	/**
+//	 * Note: Not required in the 1st iteration. 
+//	 * This is similar to {@link #exportNetwork(File)}.
+//	 * However, this method exports the current Bayes net structure into an output stream, so that 
+//	 * the exported network can be redirected to some other medium (e.g. network stream).
+//	 * @param stream : stream to be written.
+//	 * @throws IOException : in case of Input/Output problem.
+//	 * @throws IllegalStateException : if this method was called when the Markov Engine was in an
+//	 * invalid state.
+//	 * @see #exportNetwork(File)
+//	 * @see #importNetwork(File)
+//	 * @see #importNetwork(InputStream)
+//	 */
+//	public void exportNetwork(OutputStream stream) throws IOException, IllegalStateException;
+
+//	/**
+//	 * Note: Not required in the 1st iteration. 
+//	 * This is similar to {@link #importNetwork(File)}.
+//	 * However, this method imports the Bayes net structure from an input stream, so that 
+//	 * the network can be redirected from some other medium (e.g. network stream).
+//	 * @param stream : stream to be read
+//	 * @throws IOException : in case of Input/Output problem.
+//	 * @throws IllegalStateException : if this method was called when the Markov Engine was in an
+//	 * invalid state.
+//	 */
+//	public void importNetwork(InputStream stream)  throws IOException, IllegalStateException;
 }

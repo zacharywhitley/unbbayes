@@ -3,6 +3,8 @@
  */
 package edu.gmu.ace.daggre;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -16,10 +18,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import junit.framework.TestCase;
+import unbbayes.io.NetIO;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.Separator;
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
@@ -14795,6 +14799,57 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue(engine.revertTrade(null, new Date(), new Date(0), (Math.random()<.5)?null:((Math.random()<.5)?0x0DL:((Math.random()<.5)?0x0EL:0X0F))));
 	}
 	
+	/** Test method for {@link MarkovEngineImpl#exportNetwork(java.io.File)} */
+	public final void exportNetwork() {
+		
+		this.createDEFNetIn1Transaction(new HashMap<String, Long>());
+		
+		// make sure the export works with resolved questions
+		engine.resolveQuestion(null, new Date(), 0X0DL, (Math.random()<.5)?0:1);
+		
+		try {
+			engine.setIO(new NetIO());
+			engine.exportNetwork(new File("ExportedNetwork.net"));
+		} catch (IOException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		// assert that the exported file exists
+		File fileToLoad = new File("ExportedNetwork.net");
+		assertNotNull(fileToLoad);
+		assertTrue(fileToLoad.exists());
+		assertTrue(fileToLoad.isFile());
+		
+		// assert that the exported file is a net file 
+		ProbabilisticNetwork loadedNet = null;
+		try {
+			loadedNet = (ProbabilisticNetwork) new NetIO().load(fileToLoad);
+		} catch (IOException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		assertNotNull(loadedNet);
+		
+		// assert that the exported file contains D (resolved), E, and F 
+		assertEquals(3, loadedNet.getNodeCount());
+		assertNotNull(loadedNet.getNode(engine.getExportedNodePrefix()+"13"));
+		assertNotNull(loadedNet.getNode(engine.getExportedNodePrefix()+"14"));
+		assertNotNull(loadedNet.getNode(engine.getExportedNodePrefix()+"15"));
+		
+		// assert that all cpts have uniform distributions
+		for (Node node : loadedNet.getNodes()) {
+			PotentialTable table = ((ProbabilisticNode)node).getProbabilityFunction();
+			float expectedValue = (float) (1.0/node.getStatesSize());
+			for (int i = 0; i < table.tableSize(); i++) {
+				assertEquals(node.toString() + ", position " + i, expectedValue, table.getValue(i), PROB_ERROR_MARGIN);
+			}
+		}
+		
+		fileToLoad.delete();
+	}
+	
+	/** Yet another test case for regression test */
 	public final void test5678Net() {
 		engine.setDefaultInitialAssetTableValue(100f);
 		engine.setCurrentCurrencyConstant(100f);

@@ -1,5 +1,7 @@
 package edu.gmu.ace.daggre;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -14,6 +16,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
+import unbbayes.io.BaseIO;
+import unbbayes.io.NetIO;
 import unbbayes.prs.Edge;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
@@ -169,11 +173,23 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	private HashMap<Clique, List<ParentActionPotentialTablePair>> lastNCliquePotentialMap;
 
+
+	private BaseIO io;
+
+
+	private float nodePositionRandomRange = 800;
+	
+	public static String DEFAULT_EXPORTED_NODE_PREFIX = "N";
+	
+	private String exportedNodePrefix = DEFAULT_EXPORTED_NODE_PREFIX;
+
+	
 	/**
 	 * Default constructor is protected to allow inheritance.
 	 * Use {@link #getInstance()} to actually instantiate objects of this class.
 	 */
 	protected MarkovEngineImpl() {
+		setIO(new NetIO());
 		this.initialize();
 	}
 	
@@ -774,12 +790,29 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		return true;
 	}
 	
+	/** Class of network actions which changes network structure */
+	public abstract class StructureChangeNetworkAction implements NetworkAction {
+		public boolean isStructureChangeAction() { return true; }
+		/**
+		 * Changes the structure of the current network
+		 * @see MarkovEngineImpl#getProbabilisticNetwork()
+		 */
+		public void execute() {
+			this.execute(getProbabilisticNetwork());
+		}
+		/**
+		 * Changes the structure of the specified network
+		 * @param net : the specified network
+		 */
+		public abstract void execute(ProbabilisticNetwork net);
+	}
+	
 	/**
 	 * Represents a network action for adding a question into a BN.
 	 * @author Shou Matsumoto
 	 * @see MarkovEngineImpl#addQuestion(long, Date, long, int, List)
 	 */
-	public class AddQuestionNetworkAction implements NetworkAction {
+	public class AddQuestionNetworkAction extends StructureChangeNetworkAction {
 		private final Long transactionKey;
 		private final Date occurredWhen;
 		private final long questionId;
@@ -802,9 +835,35 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 		}
 		/**
-		 * Adds a new question into the current network
+		 * Adds a new question into the specified network
+		 * @param net : the specified network
 		 */
-		public void execute() {
+		public void execute(ProbabilisticNetwork net) {
+//			// do not execute action if there is a RebuildNetworkAction after this action, because it will be redundant
+//			synchronized (getNetworkActionsMap()) {
+//				List<NetworkAction> otherActionsInSameTransaction = getNetworkActionsMap().get(transactionKey);
+//				if (otherActionsInSameTransaction != null) {
+//					synchronized (otherActionsInSameTransaction) {
+//						int indexOfThisAction = otherActionsInSameTransaction.indexOf(this);
+//						if (indexOfThisAction < 0) {
+//							throw new IllegalStateException("Transaction " + transactionKey + " is in an invalid state.");
+//						}
+//						boolean hasRebuildAction = false;
+//						for (int i = indexOfThisAction + 1; i < otherActionsInSameTransaction.size(); i++) {
+//							if (otherActionsInSameTransaction.get(i) instanceof RebuildNetworkAction) {
+//								hasRebuildAction = true;
+//								break;
+//							}
+//						}
+//						if (hasRebuildAction) {
+//							Debug.println(getClass(), "Do not create node " + questionId + " now, because it will be re-executed later on rebuild action");
+//							return;
+//						}
+//					}
+//				}
+//			}
+			// the above check was migrated to commitNetworkAction
+			
 			// create new node
 			ProbabilisticNode node = new ProbabilisticNode();
 			node.setName(Long.toString(this.questionId));
@@ -822,8 +881,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				potTable.setValue(i, this.initProbs.get(i));
 			}
 			// add node into the network
-			synchronized (getProbabilisticNetwork()) {
-				getProbabilisticNetwork().addNode(node);
+			synchronized (net) {
+				net.addNode(node);
 			}
 		}
 		public void revert() throws UnsupportedOperationException {
@@ -834,8 +893,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public Long getTransactionKey() { return transactionKey;}
 		public Long getQuestionId() { return questionId; }
 		public int getNumberStates() { return numberStates; }
-		/** Adding a new node is a structure change */
-		public boolean isStructureChangeAction() { return true; }
 		public Long getUserId() { return null; }
 		public String toString() { return super.toString() + "{" + this.transactionKey + ", " + this.getQuestionId() + "}"; }
 		public List<Float> getOldValues() { return initProbs; }
@@ -1016,7 +1073,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @author Shou Matsumoto
 	 * @see MarkovEngineImpl#addQuestionAssumption(long, Date, long, long, List)
 	 */
-	public class AddQuestionAssumptionNetworkAction implements NetworkAction {
+	public class AddQuestionAssumptionNetworkAction extends StructureChangeNetworkAction {
 		private final Long transactionKey;
 		private final Date occurredWhen;
 		private final long sourceQuestionId;
@@ -1045,10 +1102,37 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				this.cpd = null;
 			}
 		}
-		public void execute() {
-			ProbabilisticNode child;	// this is the main node (the main question we are modifying)
+		/**
+		 * Add arc to the specified network
+		 * @param net : the specified network
+		 */
+		public void execute(ProbabilisticNetwork network) {
+//			// do not execute action if there is a RebuildNetworkAction after this action, because it will be redundant
+//			synchronized (getNetworkActionsMap()) {
+//				List<NetworkAction> otherActionsInSameTransaction = getNetworkActionsMap().get(transactionKey);
+//				if (otherActionsInSameTransaction != null) {
+//					synchronized (otherActionsInSameTransaction) {
+//						int indexOfThisAction = otherActionsInSameTransaction.indexOf(this);
+//						if (indexOfThisAction < 0) {
+//							throw new IllegalStateException("Transaction " + transactionKey + " is in an invalid state.");
+//						}
+//						boolean hasRebuildAction = false;
+//						for (int i = indexOfThisAction + 1; i < otherActionsInSameTransaction.size(); i++) {
+//							if (otherActionsInSameTransaction.get(i) instanceof RebuildNetworkAction) {
+//								hasRebuildAction = true;
+//								break;
+//							}
+//						}
+//						if (hasRebuildAction) {
+//							Debug.println(getClass(), "Do not create arcs " + assumptiveQuestionIds + " -> " + sourceQuestionId + " now, because they will be created later on rebuild action");
+//							return;
+//						}
+//					}
+//				}
+//			}
+			// the above check was migrated to commitNetworkAction
 			
-			ProbabilisticNetwork network = getProbabilisticNetwork();	// network containing question
+			ProbabilisticNode child;	// this is the main node (the main question we are modifying)
 			
 			synchronized (network) {
 				child = (ProbabilisticNode) network.getNode(Long.toString(sourceQuestionId));
@@ -1106,7 +1190,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public Long getQuestionId() { return sourceQuestionId; }
 		public List<Long> getAssumptionIds() { return assumptiveQuestionIds; }
 		/** Adding a new edge is a structure change */
-		public boolean isStructureChangeAction() { return true; }
 		public Long getUserId() { return null; }
 		public List<Float> getOldValues() { return cpd; }
 		public List<Float> getNewValues() { return cpd; }
@@ -1116,6 +1199,64 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirst = whenExecutedFirst; }
 		public boolean isHardEvidenceAction() {return false; }
 		public Integer getSettledState() {return null;}
+	}
+	
+	/**
+	 * This class represents a network action for substituting the current network
+	 * with another (imported) network.
+	 * This method will attempt to re-run all trades from the history.
+	 * @author Shou Matsumoto
+	 */
+	public class ImportNetworkAction extends StructureChangeNetworkAction {
+		private final Long transactionKey;
+		private final Date occurredWhen;
+		private final ProbabilisticNetwork importedNet;
+		private Date whenExecutedFirstTime = null;
+
+		/** Default constructor initializing fields */
+		public ImportNetworkAction(Long transactionKey, Date occurredWhen, ProbabilisticNetwork importedNet) {
+			if (importedNet == null) {
+				throw new IllegalArgumentException("Imported network cannot be null.");
+			}
+			this.importedNet = importedNet;
+			this.transactionKey = transactionKey;
+			this.occurredWhen = occurredWhen;
+		}
+		
+//		/**
+//		 * Substitutes the current network and re-run trades
+//		 */
+//		@Override
+//		public void execute() {
+//			throw new UnsupportedOperationException("Not implemented yet");
+//		}
+		
+		/** Substitutes the current network and re-run trades */
+		public void execute(ProbabilisticNetwork net) {
+//			if (net == getProbabilisticNetwork()) {
+//				this.execute();
+//				return;
+//			}
+			throw new UnsupportedOperationException("Use execute() instead.");
+		}
+		
+		/** Not defined */
+		public void revert() throws UnsupportedOperationException {throw new UnsupportedOperationException("Revert not supported for " + this.getClass());}
+		public Date getWhenCreated() { return occurredWhen; }
+		public Date getWhenExecutedFirstTime() { return whenExecutedFirstTime; }
+		public List<Float> getOldValues() { return null; }
+		public List<Float> getNewValues() { return null; }
+		public String getTradeId() { return getImportedNet().getId(); }
+		public Integer getSettledState() {return null; }
+		public boolean isHardEvidenceAction() { return false; }
+		public Long getTransactionKey() { return transactionKey; }
+		public Long getUserId() { return null; }
+		public Long getQuestionId() { return null; }
+		public List<Long> getAssumptionIds() {  return null; }
+		public List<Integer> getAssumedStates() { return null; }
+		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirstTime = whenExecutedFirst; }
+		public ProbabilisticNetwork getImportedNet() { return importedNet; }
+
 	}
 
 	/**
@@ -3287,7 +3428,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * this list will contain only valid assumptions, if {@link #isToThrowExceptionOnInvalidAssumptions()} == false and
 	 * isToUpdateAssumptionIds == true.
 	 * @param assumedStates : this list specifies a filter for states of nodes in assumptionIDs.
-	 * If it does not have the same size of assumptionIDs,Å@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
+	 * If it does not have the same size of assumptionIDs,ÔøΩ@MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
 	 * The content of this list may be changed after execution of this method. After execution of this method,
 	 * this list will contain a sublist of the original assumedStates, with the indexes 
 	 * synchronized with the indexes of assumptionIDs, if {@link #isToThrowExceptionOnInvalidAssumptions()} == false and
@@ -5658,6 +5799,166 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public Integer getResolvedState() { return resolvedState; }
 		public String toString() {return "["+ resolvedState +"/" + statesSize + "]";}
 		
+	}
+
+	/**
+	 * This method implements the following requirements:<br/><br/>
+	 * 1. Export the BN in a ".net" format (which can supposedly be opened in Hugin, 
+	 * UnBBayes and Netica). Tecnically, this method will use {@link MarkovEngineImpl#getIO()}
+	 * in order to store/load networks. <br/>
+	 * 1.1. It will be exported to a file in this iteration.<br/>
+	 * 1.2. The exported BN will have the CPTs with uniform distribution.<br/>
+	 * 1.3. The exported BN will contain the resolved questions 
+	 * (which will be retrieved from the history).<br/>
+	 * 1.4. The position (x and y coordinates) of the nodes will be random.<br/>
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#exportNetwork(java.io.File)
+	 */
+	public synchronized void exportNetwork(File file) throws IOException, IllegalStateException {
+		
+		// the exported net will have this name
+		String netName = "Exported_" + new Date().toString();
+		netName.replace(" ", "_");
+		netName.replace(":", "-");
+		
+		// use a new instance of the network and rebuild the structure from history, 
+		// because we want the resolved questions to be present in the exported network.
+		ProbabilisticNetwork netToSave = new ProbabilisticNetwork(netName);
+		
+		// retrieve nodes from history, because of the following requirement:
+		//		1.3. The exported BN will contain the resolved questions (which will be retrieved from the history).
+		
+		synchronized (getExecutedActions()) {
+			// since we are reusing network actions (which initializes CPT w/ uniform distribution),
+			// the following requirement is also satisfied
+			//		1.2. The exported BN will have the CPTs with uniform distribution.
+			List<NetworkAction> actions = getExecutedActions();
+			for (NetworkAction action : actions) {
+				
+				// only execute actions related to structure changes
+				if (action.isStructureChangeAction()) {
+					
+					if (action instanceof AddQuestionNetworkAction) {
+						((AddQuestionNetworkAction)action).execute(netToSave);
+						//		1.4. The position (x and y coordinates) of the nodes will be random.
+						Node node = netToSave.getNode(action.getQuestionId().toString());
+						node.setPosition(50 + Math.random()*getNodePositionRandomRange() , 50 + Math.random()*getNodePositionRandomRange());
+						// for compatibility with hugin and netica, names of nodes should not start with numbers.
+						node.setName(getExportedNodePrefix() + node.getName());
+					} else if (action instanceof AddQuestionAssumptionNetworkAction) {
+						((AddQuestionAssumptionNetworkAction)action).execute(netToSave);
+					} else if (action instanceof ImportNetworkAction) {
+						// drop everything and substitute with the imported network at this moment
+						// TODO optimize
+						synchronized (getDefaultInferenceAlgorithm()) {
+							netToSave = getDefaultInferenceAlgorithm().cloneProbabilisticNetwork(((ImportNetworkAction)action).getImportedNet());
+						}
+					}
+				}
+			}
+		}
+		
+		//		1. Export the BN in a ".net" format (which can supposedly be opened in Hugin, UnBBayes and Netica). 
+		//		1.1. It will be exported to a file in this iteration
+		BaseIO io = this.getIO();
+		synchronized (io) {
+			io.save(file, netToSave);
+		}
+	}
+
+	/**
+	 * This method implements the following requirements: <br/> <br/>
+	 * 2. Import the BN from a ".net" format, and re-run all trades from the history 
+	 * (i.e. handle the import feature as if it is an ordinal request for changing the network structure).<br/> 
+	 * 2.1. It will be imported to a file in this iteration. Tecnically, this method will use {@link MarkovEngineImpl#getIO()}
+	 * in order to store/load networks.<br/>
+	 * 2.2. If any trade in the history cannot be performed in the imported BN 
+	 * (e.g. nodes/arcs are missing), it will throw an exception.<br/>
+	 * 2.3. If the CPTs of the imported BN are not uniform, then they will be initially converted to uniform, 
+	 * all trades will be re-run from the history, and then "virtual" trades 
+	 * (changes in probabilities which will not change user's assets) will be performed in order to set 
+	 * the current conditional probabilities equal to the non-uniform CPTs (i.e. if any CPT of the imported BN is not uniform, 
+	 * then it will be treated like a trade performed at the moment of the import).<br/>
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#importNetwork(java.io.File)
+	 */
+	public synchronized void importNetwork(File file) throws IOException, IllegalStateException {
+		throw new UnsupportedOperationException("Not implemented yet");
+		
+//		2. Import the BN from a ".net" format, and re-run all trades from the history (i.e. handle the import feature as if it is an ordinal request for changing the network structure). 
+
+//		2.1. It will be imported to a file in this iteration
+
+//		2.2. If any trade in the history cannot be performed in the imported BN (e.g. nodes/arcs are missing), it will throw an exception.
+
+//		2.3. If the CPTs of the imported BN are not uniform, then they will be initially converted to uniform, 
+//		all trades will be re-run from the history, 
+//		and then "virtual" trades will be performed in order to set the current conditional probabilities equal to the non-uniform CPTs 
+		
+		// do not forget to update history of executed actions, so that future rebuilds can execute this action again
+		
+	}
+
+	/**
+	 * This object will be used by {@link #exportNetwork(File)}
+	 * and {@link #importNetwork(File)} in order to 
+	 * load/save the Bayes net from/into files.
+	 * @param io the io to set
+	 */
+	public void setIO(BaseIO io) {
+		this.io = io;
+	}
+
+	/**
+	 * This object will be used by {@link #exportNetwork(File)}
+	 * and {@link #importNetwork(File)} in order to 
+	 * load/save the Bayes net from/into files.
+	 * By changing this object, more file formats will be available.
+	 * @return the io
+	 */
+	public BaseIO getIO() {
+		return io;
+	}
+
+	/**
+	 * {@link #exportNetwork(File)} will set the position of the nodes 
+	 * using {@link Math#random()} multiplied by this value.
+	 * By changing this object, more file formats will be available.
+	 * @param nodePositionRandomRange the nodePositionRandomRange to set
+	 */
+	public void setNodePositionRandomRange(float nodePositionRandomRange) {
+		this.nodePositionRandomRange = nodePositionRandomRange;
+	}
+
+	/**
+	 * {@link #exportNetwork(File)} will set the position of the nodes 
+	 * using {@link Math#random()} multiplied by this value.
+	 * @return the nodePositionRandomRange
+	 */
+	public float getNodePositionRandomRange() {
+		return nodePositionRandomRange;
+	}
+
+	/**
+	 * The names of the nodes exported by {@link #exportNetwork(File)} will
+	 * have this string as prefix.
+	 * Additionally, {@link #importNetwork(File)} will assume that
+	 * the imported nodes have this value as prefix (hence, the prefixes will be removed before
+	 * import).
+	 * @return the exportedNodePrefix
+	 */
+	public String getExportedNodePrefix() {
+		return exportedNodePrefix;
+	}
+
+	/**
+	 * The names of the nodes exported by {@link #exportNetwork(File)} will
+	 * have this string as prefix.
+	 * Additionally, {@link #importNetwork(File)} will assume that
+	 * the imported nodes have this value as prefix (hence, the prefixes will be removed before
+	 * import).
+	 * @param exportedNodePrefix the exportedNodePrefix to set
+	 */
+	public void setExportedNodePrefix(String exportedNodePrefix) {
+		this.exportedNodePrefix = exportedNodePrefix;
 	}
 
 }
