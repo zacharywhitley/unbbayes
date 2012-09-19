@@ -37,8 +37,8 @@ public class PathFinderAlgorithm {
 	public PathFinderAlgorithm() {
 	}
 
-	public List<Attribute[]> getPossiblePaths(final Attribute parent,
-			final Attribute child) {
+	public List<Attribute[]> getPossiblePaths(final Attribute child,
+			final Attribute parent) {
 		// Every possible path
 		paths = new ArrayList<Attribute[]>();
 		checkedFks = new ArrayList<ForeignKey>();
@@ -77,8 +77,8 @@ public class PathFinderAlgorithm {
 			// Create a hard copy for this new path.
 			List<Attribute> newPath = new ArrayList<Attribute>(path);
 			// Add local and remote FK
-			Attribute tmpFKLocal = new Attribute(refTable, foreignKey
-					.getFirstReference().getLocalColumn());
+			Attribute tmpFKLocal = new Attribute(tmpParent.getTable(),
+					foreignKey.getFirstReference().getLocalColumn());
 
 			Attribute tmpFKRemote = new Attribute(refTable, foreignKey
 					.getFirstReference().getForeignColumn());

@@ -16,6 +16,9 @@ import java.awt.event.ActionEvent;
 
 public class DialogNewDBSchema extends JDialog {
 
+//	private static final String DEFAULT_DB_URL = "jdbc:derby:/home/dav/workspace-unb/unbbayes.prs.prm2/examples/bloodType/BloodType.db";
+	 private static final String DEFAULT_DB_URL =
+	 "examples/movies/MovieTest.db";
 	private final JPanel contentPanel = new JPanel();
 	private JTextField txtUrl;
 
@@ -51,8 +54,7 @@ public class DialogNewDBSchema extends JDialog {
 		contentPanel.add(rdbtnDbSchemaDefinition);
 
 		txtUrl = new JTextField();
-		txtUrl
-				.setText("jdbc:derby:/home/dav/workspace-unb/unbbayes.prs.prm2/examples/bloodType/BloodType.db");
+		txtUrl.setText(DEFAULT_DB_URL);
 		txtUrl.setBounds(83, 75, 312, 19);
 		contentPanel.add(txtUrl);
 		txtUrl.setColumns(10);
@@ -73,7 +75,7 @@ public class DialogNewDBSchema extends JDialog {
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						url = txtUrl.getText();
-						dialogAccepted=true;
+						dialogAccepted = true;
 						close();
 					}
 				});
@@ -104,6 +106,7 @@ public class DialogNewDBSchema extends JDialog {
 	public boolean isDialogAccepted() {
 		return dialogAccepted;
 	}
+
 	public String getUrl() {
 		return url;
 	}

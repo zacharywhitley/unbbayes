@@ -7,7 +7,6 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JDesktopPane;
@@ -19,7 +18,6 @@ import javax.swing.JToggleButton;
 
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Database;
-import org.apache.ddlutils.model.ForeignKey;
 import org.apache.ddlutils.model.Table;
 import org.apache.log4j.Logger;
 
@@ -266,18 +264,34 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 
 			// New parent relationship
 			ParentRel newRel = new ParentRel(parentPM, childPM);
+
 			PathFinderAlgorithm paths = new PathFinderAlgorithm();
+			// Get possible paths
 			List<Attribute[]> possiblePaths = paths.getPossiblePaths(parentPM,
 					childPM);
-			
-			if(possiblePaths.size()==1){
+
+			// Only one path is assigned automatically. If more than one exist
+			// then ask to user to choose.
+			// If there is no possible path, then the relationship is not valid.
+			if (possiblePaths.size() == 0) {
+				JOptionPane.showInternalMessageDialog(this,
+						"There is no possible path between attributes",
+						"No path", JOptionPane.WARNING_MESSAGE);
+
+				// Clear the selected attributes and exit.
+				parentPM = null;
+				childPM = null;
+
+				return;
+			} else if (possiblePaths.size() == 1) {
 				newRel.setPath(possiblePaths.get(0));
-			}else{
-				ParentPathDialog parentPathDialog = new ParentPathDialog(possiblePaths);
+			} else {
+				ParentPathDialog parentPathDialog = new ParentPathDialog(
+						possiblePaths);
 				parentPathDialog.setModal(true);
-				parentPathDialog.setVisible(true);				
+				parentPathDialog.setVisible(true);
+				newRel.setPath(parentPathDialog.getSelectedPath());
 			}
-			
 
 			// FIXME validate ID or FK, because it works only for descriptive
 			// attributes.
@@ -291,7 +305,6 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 			parentPM = null;
 			childPM = null;
 
-			// TODO unselect all the graphic attributes.
 		} else {
 			log.warn("Error, neither parent nor children are not null");
 		}
@@ -318,9 +331,6 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 	public void selectedCPD(Attribute attribute) {
 		log.debug("Show CPD for " + attribute.getAttribute().getName());
 
-		// Get parents
-		Attribute[] parents = prmController.parentsOf(attribute);
-
 		// Ask user to introduce CPD.
 		PotentialTable cpd = showCPDTableDialog(attribute);
 
@@ -329,6 +339,7 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 	}
 
 	private PotentialTable showCPDTableDialog(Attribute attribute) {
+		// Get parents
 		Attribute[] parents = prmController.parentsOf(attribute);
 		AttributeStates[] parentStates = new AttributeStates[parents.length];
 

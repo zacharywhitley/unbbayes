@@ -17,11 +17,15 @@ import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.util.List;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class ParentPathDialog extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
 	private List<Attribute[]> possiblePaths;
+	private Attribute[] selectedPath;
+	private JComboBox comboBox;
 
 	/**
 	 * Create the dialog.
@@ -52,7 +56,7 @@ public class ParentPathDialog extends JDialog {
 			contentPanel.add(lblSelectAPath, gbc_lblSelectAPath);
 		}
 		{
-			JComboBox comboBox = new JComboBox();
+			comboBox = new JComboBox();
 
 			// add paths
 			for (Attribute[] attributes : possiblePaths) {
@@ -71,16 +75,33 @@ public class ParentPathDialog extends JDialog {
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			{
 				JButton okButton = new JButton("OK");
+				okButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						int index = comboBox.getSelectedIndex();
+						selectedPath = ParentPathDialog.this.possiblePaths
+								.get(index);
+						dispose();
+					}
+				});
 				okButton.setActionCommand("OK");
 				buttonPane.add(okButton);
 				getRootPane().setDefaultButton(okButton);
 			}
 			{
 				JButton cancelButton = new JButton("Cancel");
+				cancelButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent arg0) {
+						dispose();
+					}
+				});
 				cancelButton.setActionCommand("Cancel");
 				buttonPane.add(cancelButton);
 			}
 		}
+	}
+
+	public Attribute[] getSelectedPath() {
+		return selectedPath;
 	}
 
 }
