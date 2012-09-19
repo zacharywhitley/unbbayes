@@ -31,6 +31,7 @@ import unbbayes.prm.model.Attribute;
 import unbbayes.prm.model.AttributeStates;
 import unbbayes.prm.model.ParentRel;
 import unbbayes.prm.util.PathFinderAlgorithm;
+import unbbayes.prm.view.dialogs.ParentPathDialog;
 import unbbayes.prm.view.graphicator.IGraphicTableListener;
 import unbbayes.prm.view.graphicator.PrmTable;
 import unbbayes.prm.view.graphicator.RelationalGraphicator;
@@ -266,7 +267,18 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 			// New parent relationship
 			ParentRel newRel = new ParentRel(parentPM, childPM);
 			PathFinderAlgorithm paths = new PathFinderAlgorithm();
-			paths.getPossiblePaths(parentPM, childPM);
+			List<Attribute[]> possiblePaths = paths.getPossiblePaths(parentPM,
+					childPM);
+			
+			if(possiblePaths.size()==1){
+				newRel.setPath(possiblePaths.get(0));
+			}else{
+				ParentPathDialog parentPathDialog = new ParentPathDialog(possiblePaths);
+				parentPathDialog.setModal(true);
+				parentPathDialog.setVisible(true);				
+			}
+			
+
 			// FIXME validate ID or FK, because it works only for descriptive
 			// attributes.
 
@@ -285,8 +297,6 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 		}
 
 	}
-
-	
 
 	private void showCPTButtons(ParentRel newRel) {
 		// Show to parent

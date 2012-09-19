@@ -63,8 +63,8 @@ public class PathFinderAlgorithm {
 	 */
 	private void identifyPaths(Attribute tmpParent, Attribute tmpChild,
 			List<Attribute> path) {
-		log.debug("IdentifyPath size=" + path.size());
-		log.debug("Path =" + pathToString(path));
+		// log.debug("IdentifyPath size=" + path.size());
+		// log.debug("Path =" + pathToString(path));
 
 		// Three search algorithm //
 
@@ -100,9 +100,9 @@ public class PathFinderAlgorithm {
 				if (tmpAtt.equals(tmpChild)) {
 					// The child is the last in the path.
 					newPath.add(tmpChild);
-
-					log.debug("Final Path =" + pathToString(newPath));
-					paths.add(newPath.toArray(new Attribute[0]));
+					Attribute[] array = newPath.toArray(new Attribute[0]);
+					log.debug("Final Path =" + pathToString(array));
+					paths.add(array);
 
 					newPath = null;
 					found = true;
@@ -125,7 +125,7 @@ public class PathFinderAlgorithm {
 		}
 	}
 
-	private String pathToString(List<Attribute> possiblePath) {
+	public static String pathToString(Attribute[] possiblePath) {
 		String path = "";
 
 		for (Attribute attribute : possiblePath) {
@@ -137,4 +137,5 @@ public class PathFinderAlgorithm {
 		return path;
 
 	}
+
 }
