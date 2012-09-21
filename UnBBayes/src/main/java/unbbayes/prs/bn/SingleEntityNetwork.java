@@ -1355,5 +1355,17 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	public void setNodeEliminationOrder(ArrayList<Node> nodeEliminationOrder) {
 		this.nodeEliminationOrder = nodeEliminationOrder;
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.Network#clear()
+	 */
+	public void clear() {
+		super.clear();
+		if (this.copiaNos != null) {
+			this.copiaNos.clear();
+		}
+		this.setJunctionTree(null);
+	}
 }
 

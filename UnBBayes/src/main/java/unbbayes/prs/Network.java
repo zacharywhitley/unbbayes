@@ -407,5 +407,23 @@ public class Network implements Graph{
 	public void setProperties(Map<String, Object> properties) {
 		this.properties = properties;
 	}
+	
+	/**
+	 * Clears the content of this network
+	 */
+	public void clear() {
+		if (this.getProperties() != null) {
+			this.clearProperty();
+		}
+		if (this.nodeIndexes != null) {
+			this.nodeIndexes.clear();
+		}
+		if (this.nodeList != null) {
+			this.nodeList.clear();
+		}
+		if (this.edgeList != null) {
+			this.edgeList.clear();
+		}
+	}
 
 }
