@@ -1,5 +1,7 @@
 package unbbayes.prm.model;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+
 /**
  * Parent relationship.
  * 
@@ -50,6 +52,25 @@ public class ParentRel {
 
 	public void setPath(Attribute[] path) {
 		this.path = path;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null) {
+			return false;
+		}
+		if (obj == this) {
+			return true;
+		}
+		if (obj.getClass() != getClass()) {
+			return false;
+		}
+		
+		ParentRel rhs = (ParentRel) obj;
+		
+		return new EqualsBuilder().appendSuper(super.equals(obj))
+				.append(child, rhs.child).append(parent, rhs.parent)
+				.append(path, rhs.path).isEquals();
 	}
 
 }

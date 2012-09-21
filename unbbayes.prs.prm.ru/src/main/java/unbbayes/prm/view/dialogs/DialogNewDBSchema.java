@@ -16,9 +16,9 @@ import java.awt.event.ActionEvent;
 
 public class DialogNewDBSchema extends JDialog {
 
-//	private static final String DEFAULT_DB_URL = "jdbc:derby:/home/dav/workspace-unb/unbbayes.prs.prm2/examples/bloodType/BloodType.db";
-	 private static final String DEFAULT_DB_URL =
-	 "examples/movies/MovieTest.db";
+	private static final String DEFAULT_DB_URL = "jdbc:derby:examples/bloodType/BloodType.db";
+//	 private static final String DEFAULT_DB_URL =
+//	 "examples/movies/MovieTest.db";
 	private final JPanel contentPanel = new JPanel();
 	private JTextField txtUrl;
 

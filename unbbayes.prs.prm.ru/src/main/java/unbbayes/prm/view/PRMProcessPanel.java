@@ -7,6 +7,7 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JDesktopPane;
@@ -25,6 +26,7 @@ import unbbayes.gui.NetworkWindow;
 import unbbayes.prm.controller.dao.IDBController;
 import unbbayes.prm.controller.dao.PrmProcessState;
 import unbbayes.prm.controller.prm.IPrmController;
+import unbbayes.prm.controller.prm.PrmCompiler;
 import unbbayes.prm.model.Attribute;
 import unbbayes.prm.model.AttributeStates;
 import unbbayes.prm.model.ParentRel;
@@ -41,7 +43,7 @@ import unbbayes.prs.Network;
 import unbbayes.prs.bn.PotentialTable;
 
 public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
-		IInstanceTableListener, ActionListener {
+		IInstanceTableListener {
 	/**
 	 * 
 	 */
@@ -77,7 +79,7 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 	// Children for probabilistic model
 	private Attribute childPM;
 	private IPrmController prmController;
-	private JDesktopPane unbbayesDesktop;
+	private MainInternalFrame unbbayesDesktop;
 
 	private JSplitPane outerSplit;
 
@@ -89,7 +91,7 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 	 * @param unbbayesDesktop
 	 */
 	public PRMProcessPanel(IDBController dbController,
-			IPrmController prmController, JDesktopPane unbbayesDesktop) {
+			IPrmController prmController, MainInternalFrame unbbayesDesktop) {
 		this.dbController = dbController;
 		this.prmController = prmController;
 		this.unbbayesDesktop = unbbayesDesktop;
@@ -134,7 +136,6 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 		panelProcess.add(buttomPartitioning);
 
 		buttonCompile = new JToggleButton("> Compile");
-		buttonCompile.addActionListener(this);
 		buttonCompile.setEnabled(false);
 		panelProcess.add(buttonCompile);
 
@@ -163,7 +164,7 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 	public void selectedTable(Table t) {
 		log.debug("Selected table");
 		InstancesTableViewer dt = new InstancesTableViewer(t,
-				dbController.getTableValues(relSchema, t), this);
+				dbController.getTableValues(t), this);
 		outerSplit.setRightComponent(dt);
 		outerSplit.setDividerLocation(400);
 	}
@@ -220,7 +221,7 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 			cols[i] = attributes[i].getAttribute();
 		}
 
-		String[] partitionNames = dbController.getPossibleValues(relSchema,
+		String[] partitionNames = dbController.getPossibleValues(
 				attributes[0].getTable(), cols);
 
 		String pvs = "";
@@ -332,28 +333,44 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 		log.debug("Show CPD for " + attribute.getAttribute().getName());
 
 		// Ask user to introduce CPD.
-		PotentialTable cpd = showCPDTableDialog(attribute);
+		showCPDTableDialog(attribute);
 
-		// Notify CPD to controller.
-		prmController.setCPD(attribute, cpd);
 	}
 
-	private PotentialTable showCPDTableDialog(Attribute attribute) {
+	private void showCPDTableDialog(final Attribute attribute) {
 		// Get parents
-		Attribute[] parents = prmController.parentsOf(attribute);
-		AttributeStates[] parentStates = new AttributeStates[parents.length];
+		ParentRel[] parentRels = prmController.parentsOf(attribute);
+		AttributeStates[] parentStates = new AttributeStates[parentRels.length];
+
+		List<PotentialTable> potentialTables = new ArrayList<PotentialTable>();
 
 		// Fill possible values for parents.
 		for (int i = 0; i < parentStates.length; i++) {
-			String[] possibleValues = dbController.getPossibleValues(relSchema,
-					parents[i]);
-			parentStates[i] = new AttributeStates(parents[i], possibleValues);
+			Attribute parent2 = parentRels[i].getParent();
+			String[] possibleValues = dbController
+					.getPossibleValues(parentRels[i].getParent());
+			parentStates[i] = new AttributeStates(parent2, possibleValues);
+
+			// When it is the same parent.
+			if (parent2.equals(attribute)) {
+
+				String[] childValues = dbController
+						.getPossibleValues(attribute);
+				AttributeStates childStates = new AttributeStates(attribute,
+						childValues);
+
+				// Graphic table
+				PrmTable table = new PrmTable(new AttributeStates[] {},
+						childStates);
+
+				// show
+				showPrmTable(table);
+				potentialTables.add(table.getCPD());
+			}
 		}
 
 		// Get possible values from DB.
-		// FIXME what happens when there is no values??
-		String[] childValues = dbController.getPossibleValues(relSchema,
-				attribute);
+		String[] childValues = dbController.getPossibleValues(attribute);
 		AttributeStates childStates = new AttributeStates(attribute,
 				childValues);
 
@@ -361,37 +378,36 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 		PrmTable table = new PrmTable(parentStates, childStates);
 
 		// show
+		showPrmTable(table);
+
+		potentialTables.add(table.getCPD());
+		prmController.setCPD(attribute,
+				potentialTables.toArray(new PotentialTable[0]));
+	}
+
+	private void showPrmTable(PrmTable table) {
 		JDialog dialog = new JDialog();
 		dialog.setModal(true);
 		dialog.add(table);
 		dialog.pack();
 		dialog.setVisible(true);
-
-		return table.getCPD();
-	}
-
-	/**
-	 * Action performed for compile button.
-	 */
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		// Create the graph. Look at PRMToBNCompiler.
-		Graph compiledPRM = prmController.compile();
-
-		// Create a new internal window
-		// Display generated BN
-		NetworkWindow netWindow = new NetworkWindow((Network) compiledPRM);
-
-		unbbayesDesktop.add(netWindow);
-
-		netWindow.setVisible(true);
-
 	}
 
 	@Override
-	public void attributeSelected(Object[] data, int row, int column, Table t) {
+	public void attributeSelected(Table table, Column uniqueIndexColumn,
+			Object indexValue, Column column, Object value) {
 		log.debug("An attribute without evidence is selected");
 
+		// // Create a compiler.
+		PrmCompiler compiler = new PrmCompiler(prmController, dbController);
+		Network bn = (Network) compiler.compile(table, uniqueIndexColumn,
+				indexValue, column, value);
+		NetworkWindow netWindow = new NetworkWindow(bn);
+		netWindow.setVisible(true);
+		//
+		//
+		//
+		unbbayesDesktop.delegateToGraphRenderer(bn);
 	}
 
 }

@@ -32,7 +32,7 @@ public class PathFinderAlgorithm {
 	List<ForeignKey> checkedFks;
 
 	/**
-	 * 
+	 * Default construct.
 	 */
 	public PathFinderAlgorithm() {
 	}

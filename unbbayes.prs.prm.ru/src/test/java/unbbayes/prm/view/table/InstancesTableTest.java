@@ -21,7 +21,7 @@ public class InstancesTableTest {
 		// Parent 1
 		Table t = relSchema.getTable(0);
 		InstancesTableViewer dt = new InstancesTableViewer(t,
-				ds.getTableValues(relSchema, t), null);
+				ds.getTableValues( t), null);
 
 		// Show table
 		JFrame frame = new JFrame();

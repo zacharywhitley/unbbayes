@@ -70,7 +70,7 @@ public class MainInternalFrame extends UnBBayesModule {
 			// RelationalGraphicator relGraphicator = new RelationalGraphicator(
 			// dbSchema);
 			PRMProcessPanel relGraphicator = new PRMProcessPanel(sl,
-					prmController, getDesktopPane());
+					prmController, this);
 			this.add(relGraphicator);
 
 		} else {
@@ -124,6 +124,8 @@ public class MainInternalFrame extends UnBBayesModule {
 			NetworkWindow bnWindow = new NetworkWindow(
 					(ProbabilisticNetwork) graph);
 			this.getUnbbayesFrame().addWindow(bnWindow);
+			
+			bnWindow.changeToPNCompilationPane();
 			bnWindow.setVisible(true);
 		}
 	}

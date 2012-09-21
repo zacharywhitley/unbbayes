@@ -1,6 +1,7 @@
 package unbbayes.prm.controller.prm;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -9,7 +10,6 @@ import org.apache.log4j.Logger;
 
 import unbbayes.prm.model.Attribute;
 import unbbayes.prm.model.ParentRel;
-import unbbayes.prs.Graph;
 import unbbayes.prs.bn.PotentialTable;
 
 /**
@@ -23,9 +23,20 @@ public class PrmController implements IPrmController {
 
 	List<ParentRel> parents;
 
+	/**
+	 * Dictionary to store every potential table from an attribute. Normally an
+	 * attribute only has a PotentialTable, but there is a special case when the
+	 * same attribute act as parent and child at the same time. Just for this
+	 * case is required more tan a potential table.
+	 * 
+	 * PotentialTable[] is stored initially every parent and then the child. Eg.
+	 * {parent1CPD, parent2CPD, parent3CPD, childCPD}.
+	 */
+	HashMap<Attribute, PotentialTable[]> cpds;
+
 	public PrmController() {
 		parents = new ArrayList<ParentRel>();
-
+		cpds = new HashMap<Attribute, PotentialTable[]>();
 	}
 
 	/**
@@ -83,35 +94,53 @@ public class PrmController implements IPrmController {
 	 */
 	@Override
 	public void setCPD(Attribute attribute, PotentialTable table) {
-
+		setCPD(attribute, new PotentialTable[] { table });
 	}
 
 	/**
 	 * @see unbbayes.prm.controller.prm.IPrmController
 	 */
 	@Override
-	public Graph compile() {
-
-		Graph g = null;
-
-		// TODO everything to do
-
-		return g;
+	public void setCPD(Attribute attribute, PotentialTable[] table) {
+		cpds.put(attribute, table);
 	}
 
 	/**
 	 * @see unbbayes.prm.controller.prm.IPrmController
 	 */
 	@Override
-	public Attribute[] parentsOf(Attribute attribute) {
+	public PotentialTable getCPD(Attribute attribute) {
+		PotentialTable[] potentialTables = cpds.get(attribute);
 
-		List<Attribute> parentsOf = new ArrayList<Attribute>();
+		if (potentialTables != null) {
+			return cpds.get(attribute)[0];
+		}
+		return null;
+	}
+	
+	/**
+	 * @see unbbayes.prm.controller.prm.IPrmController
+	 */
+	@Override
+	public PotentialTable[] getCPDs(Attribute attribute) {
+		return cpds.get(attribute);
+	}
+
+	
+
+	/**
+	 * @see unbbayes.prm.controller.prm.IPrmController
+	 */
+	@Override
+	public ParentRel[] parentsOf(Attribute attribute) {
+
+		List<ParentRel> parentsOf = new ArrayList<ParentRel>();
 		for (ParentRel parent : parents) {
 			if (parent.getChild().equals(attribute)) {
-				parentsOf.add(parent.getParent());
+				parentsOf.add(parent);
 			}
 		}
-		return parentsOf.toArray(new Attribute[0]);
+		return parentsOf.toArray(new ParentRel[0]);
 	}
 
 }

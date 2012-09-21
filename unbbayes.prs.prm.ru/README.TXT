@@ -1,10 +1,10 @@
 
 - aggregate function
-- only one path
 - PRM algorithm
-
+- same attribute: parent and child.
 
 FIXED
+- only one path
 - cpt is not working.
 - bloodtype example
 

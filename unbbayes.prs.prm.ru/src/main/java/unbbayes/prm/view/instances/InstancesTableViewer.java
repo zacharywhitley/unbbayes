@@ -16,9 +16,11 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
 
 import org.apache.commons.beanutils.DynaBean;
+import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
 import org.apache.log4j.Logger;
 
+import unbbayes.prm.util.helper.DBSchemaHelper;
 import unbbayes.prm.view.graphicator.editor.TableModelWithGraphics;
 import unbbayes.prm.view.graphicator.editor.TableRenderer;
 
@@ -30,13 +32,32 @@ public class InstancesTableViewer extends JPanel implements MouseListener {
 
 	private static Logger log = Logger.getLogger(InstancesTableViewer.class);
 
+	/**
+	 * Component to show the table.
+	 */
 	private JTable graphicTable;
 
+	/**
+	 * Table to show.
+	 */
 	private Table table;
 
+	/**
+	 * Data stored in the db.
+	 */
 	private Object[][] data;
 
+	/**
+	 * Listener.
+	 */
 	private IInstanceTableListener listener;
+
+	/**
+	 * This is the index of the column that represents the table index.
+	 */
+	private int indexColumn;
+
+	private Column uniqueIndexColumn;
 
 	/**
 	 * Constructor.
@@ -73,6 +94,12 @@ public class InstancesTableViewer extends JPanel implements MouseListener {
 		String[] columnNames = new String[columns];
 		for (int i = 0; i < columnNames.length; i++) {
 			columnNames[i] = table.getColumn(i).getName();
+
+			// Column Index
+			if (table.getColumn(i).isPrimaryKey()) {
+				indexColumn = i;
+				uniqueIndexColumn = table.getColumn(i);
+			}
 		}
 
 		List<Object[]> rows = new ArrayList<Object[]>();
@@ -85,13 +112,6 @@ public class InstancesTableViewer extends JPanel implements MouseListener {
 			// Get each value from iterator
 			for (int i = 0; i < columns; i++) {
 				Object cellValue = bean.get(columnNames[i]);
-
-				// if (cellValue == null) {
-				// cellValue = new ImageIcon(
-				// TableRenderer.class
-				// .getResource(TableRenderer.IMAGE_PATH
-				// + "question.png"));
-				// }
 				row[i] = cellValue;
 			}
 			rows.add(row);
@@ -109,12 +129,19 @@ public class InstancesTableViewer extends JPanel implements MouseListener {
 		int row = graphicTable.getSelectedRow();
 		int column = graphicTable.getSelectedColumn();
 
-		Object val = data[row][column];
+		// Index value
+		Object indexValue = data[row][indexColumn];
+
+		// value
+		Object value = data[row][column];
 
 		// Notify only when there is data without evidence.
-		if (val == null) {
-			log.debug("Value=" + val);
-			listener.attributeSelected(data, row, column, table);
+		if (value == null) {
+			log.debug("Value=" + value);
+			
+			
+			listener.attributeSelected(table, uniqueIndexColumn, indexValue,
+					table.getColumn(column), value);
 		}
 	}
 
