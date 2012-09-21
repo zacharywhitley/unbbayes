@@ -122,10 +122,12 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable, 
 		cloned.setName(this.getName());
 //		cloned.setPosition(this.getPosition().getX(), this.getPosition().getY());
 		cloned.setStates(SetToolkit.clone(states));
-		float[] marginais = new float[super.marginalList.length];
-        System.arraycopy(super.marginalList, 0, marginais, 0, marginais.length);
-        cloned.marginalList = marginais;
-        cloned.copyMarginal();
+		if (super.marginalList != null) {
+			float[] marginais = new float[super.marginalList.length];
+			System.arraycopy(super.marginalList, 0, marginais, 0, marginais.length);
+			cloned.marginalList = marginais;
+			cloned.copyMarginal();
+		}
         if (this.hasEvidence()) {
         	cloned.addFinding(this.getEvidence());
         }
